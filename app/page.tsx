@@ -173,8 +173,8 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-stone-100 text-stone-900">
-      <div className="grid min-h-screen grid-cols-12">
-        <aside className="col-span-3 border-r border-stone-200 bg-white">
+      <div className="grid min-h-screen grid-cols-1 md:grid-cols-12">
+        <aside className="md:col-span-3 border-b border-stone-200 bg-white md:border-b-0 md:border-r">
           <div className="border-b border-stone-200 p-4">
             <h1 className="text-xl font-semibold">PeacebyPiece</h1>
             <p className="mt-1 text-sm text-stone-500">
@@ -211,8 +211,8 @@ export default function Home() {
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-sm font-semibold">{item.productName}</div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold break-keep">{item.productName}</div>
                     <div
                       className={`mt-1 text-xs ${
                         index === 0 ? "text-stone-300" : "text-stone-500"
@@ -222,7 +222,7 @@ export default function Home() {
                     </div>
                   </div>
                   <span
-                    className={`rounded-full px-2 py-1 text-[11px] ${
+                    className={`shrink-0 rounded-full px-2 py-1 text-[11px] ${
                       index === 0
                         ? "bg-white/15 text-white"
                         : "bg-stone-100 text-stone-700"
@@ -237,7 +237,7 @@ export default function Home() {
                     index === 0 ? "text-stone-300" : "text-stone-600"
                   }`}
                 >
-                  <div>{item.category}</div>
+                  <div className="break-keep">{item.category}</div>
                   <div>거래처/공장: {item.vendor}</div>
                   <div>마감: {item.dueDate}</div>
                   <div>재고: {item.inventoryStatus}</div>
@@ -248,14 +248,14 @@ export default function Home() {
           </div>
         </aside>
 
-        <section className="col-span-6 overflow-y-auto p-6">
-          <div className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
+        <section className="md:col-span-6 p-4 md:overflow-y-auto md:p-6">
+          <div className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm md:p-6">
             <div className="flex flex-wrap items-start justify-between gap-4 border-b border-stone-200 pb-5">
               <div>
                 <div className="text-sm text-stone-500">
                   작업지시서 번호 {selectedWorkOrder.id}
                 </div>
-                <h2 className="mt-1 text-2xl font-semibold">
+                <h2 className="mt-1 text-2xl font-semibold break-keep">
                   {selectedWorkOrder.title}
                 </h2>
                 <div className="mt-2 inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
@@ -263,20 +263,20 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="flex gap-2">
-                <button className="rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm">
+              <div className="flex w-full gap-2 sm:w-auto">
+                <button className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm sm:flex-none">
                   복제
                 </button>
-                <button className="rounded-xl bg-stone-900 px-4 py-2 text-sm text-white">
+                <button className="flex-1 rounded-xl bg-stone-900 px-4 py-2 text-sm text-white sm:flex-none">
                   저장
                 </button>
               </div>
             </div>
 
             <div className="mt-6 grid gap-6">
-              <div className="rounded-2xl bg-stone-50 p-5">
+              <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
                 <h3 className="text-base font-semibold">기본 분류</h3>
-                <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                <div className="mt-4 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
                   <Info label="대분류" value={selectedWorkOrder.category1} />
                   <Info label="중분류" value={selectedWorkOrder.category2} />
                   <Info label="소분류" value={selectedWorkOrder.category3} />
@@ -290,8 +290,8 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-stone-50 p-5">
-                <div className="flex items-center justify-between">
+              <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <h3 className="text-base font-semibold">원단 / 부자재 구성</h3>
                   <button className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm">
                     항목 추가
@@ -299,7 +299,7 @@ export default function Home() {
                 </div>
 
                 <div className="mt-4 overflow-x-auto">
-                  <table className="min-w-full text-left text-sm">
+                  <table className="min-w-[760px] text-left text-sm">
                     <thead className="text-stone-500">
                       <tr className="border-b border-stone-200">
                         <th className="px-2 py-3">구분</th>
@@ -314,7 +314,10 @@ export default function Home() {
                     </thead>
                     <tbody>
                       {materials.map((item) => (
-                        <tr key={`${item.name}-${item.role}`} className="border-b border-stone-100">
+                        <tr
+                          key={`${item.name}-${item.role}`}
+                          className="border-b border-stone-100"
+                        >
                           <td className="px-2 py-3">{item.type}</td>
                           <td className="px-2 py-3">{item.name}</td>
                           <td className="px-2 py-3">{item.role}</td>
@@ -337,8 +340,8 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-stone-50 p-5">
-                <div className="flex items-center justify-between">
+              <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <h3 className="text-base font-semibold">외주 공정</h3>
                   <button className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm">
                     공정 추가
@@ -346,7 +349,7 @@ export default function Home() {
                 </div>
 
                 <div className="mt-4 overflow-x-auto">
-                  <table className="min-w-full text-left text-sm">
+                  <table className="min-w-[720px] text-left text-sm">
                     <thead className="text-stone-500">
                       <tr className="border-b border-stone-200">
                         <th className="px-2 py-3">공정</th>
@@ -360,7 +363,10 @@ export default function Home() {
                     </thead>
                     <tbody>
                       {outsourcing.map((item) => (
-                        <tr key={`${item.process}-${item.vendor}`} className="border-b border-stone-100">
+                        <tr
+                          key={`${item.process}-${item.vendor}`}
+                          className="border-b border-stone-100"
+                        >
                           <td className="px-2 py-3">{item.process}</td>
                           <td className="px-2 py-3">{item.vendor}</td>
                           <td className="px-2 py-3">{item.quantity}</td>
@@ -379,7 +385,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-stone-50 p-5">
+              <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
                 <h3 className="text-base font-semibold">작업 메모</h3>
                 <div className="mt-3 rounded-2xl border border-stone-200 bg-white p-4 text-sm text-stone-700">
                   {selectedWorkOrder.memo}
@@ -389,7 +395,7 @@ export default function Home() {
           </div>
         </section>
 
-        <aside className="col-span-3 border-l border-stone-200 bg-stone-50 p-6">
+        <aside className="md:col-span-3 border-t border-stone-200 bg-stone-50 p-4 md:border-t-0 md:border-l md:p-6">
           <div className="space-y-6">
             <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
               <h3 className="text-base font-semibold">진행 단계</h3>
@@ -399,7 +405,7 @@ export default function Home() {
                   return (
                     <div key={stage} className="flex items-center gap-3">
                       <div
-                        className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${
+                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs ${
                           active
                             ? "bg-stone-900 text-white"
                             : "bg-stone-200 text-stone-500"
@@ -438,7 +444,10 @@ export default function Home() {
                     value={`${totalCost.toLocaleString()}원`}
                     strong
                   />
-                  <SummaryRow label="장당 추정 원가" value={`${unitCost.toLocaleString()}원`} />
+                  <SummaryRow
+                    label="장당 추정 원가"
+                    value={`${unitCost.toLocaleString()}원`}
+                  />
                 </div>
               </div>
             </div>
@@ -460,7 +469,10 @@ export default function Home() {
               <h3 className="text-base font-semibold">최근 히스토리</h3>
               <div className="mt-4 space-y-3">
                 {history.map((item) => (
-                  <div key={`${item.time}-${item.action}`} className="rounded-xl bg-stone-50 p-3">
+                  <div
+                    key={`${item.time}-${item.action}`}
+                    className="rounded-xl bg-stone-50 p-3"
+                  >
                     <div className="text-xs text-stone-500">
                       {item.time} · {item.user}
                     </div>
