@@ -1,5 +1,5 @@
 export default function Home() {
-  const version = "0.0.6";
+  const version = "0.0.7";
 
   const workOrders = [
     {
@@ -181,9 +181,7 @@ export default function Home() {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h1 className="text-xl font-semibold">PeacebyPiece</h1>
-                <p className="mt-1 text-sm text-stone-500">
-                  작업지시 워크스테이션
-                </p>
+                <p className="mt-1 text-sm text-stone-500">작업지시 워크스테이션</p>
               </div>
               <span className="shrink-0 rounded-full border border-stone-300 bg-stone-50 px-3 py-1 text-xs font-medium text-stone-700">
                 v{version}
@@ -196,13 +194,9 @@ export default function Home() {
               className="w-full rounded-xl border border-stone-300 bg-stone-50 px-3 py-2 text-sm outline-none"
               placeholder="제품명 / 품번 검색"
             />
-
             <div className="mt-3 flex flex-wrap gap-2">
               {["전체", "진행중", "발주대기", "입고대기", "완료"].map((tag) => (
-                <button
-                  key={tag}
-                  className="rounded-full border border-stone-300 bg-white px-3 py-1 text-xs"
-                >
+                <button key={tag} className="rounded-full border border-stone-300 bg-white px-3 py-1 text-xs">
                   {tag}
                 </button>
               ))}
@@ -214,40 +208,26 @@ export default function Home() {
               <div
                 key={item.id}
                 className={`rounded-2xl border p-4 shadow-sm ${
-                  index === 0
-                    ? "border-stone-900 bg-stone-900 text-white"
-                    : "border-stone-200 bg-white"
+                  index === 0 ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white"
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="break-keep text-sm font-semibold">
-                      {item.productName}
-                    </div>
-                    <div
-                      className={`mt-1 text-xs ${
-                        index === 0 ? "text-stone-300" : "text-stone-500"
-                      }`}
-                    >
+                    <div className="break-keep text-sm font-semibold">{item.productName}</div>
+                    <div className={`mt-1 text-xs ${index === 0 ? "text-stone-300" : "text-stone-500"}`}>
                       {item.code}
                     </div>
                   </div>
                   <span
                     className={`shrink-0 rounded-full px-2 py-1 text-[11px] ${
-                      index === 0
-                        ? "bg-white/15 text-white"
-                        : "bg-stone-100 text-stone-700"
+                      index === 0 ? "bg-white/15 text-white" : "bg-stone-100 text-stone-700"
                     }`}
                   >
                     {item.stage}
                   </span>
                 </div>
 
-                <div
-                  className={`mt-3 space-y-1 text-xs ${
-                    index === 0 ? "text-stone-300" : "text-stone-600"
-                  }`}
-                >
+                <div className={`mt-3 space-y-1 text-xs ${index === 0 ? "text-stone-300" : "text-stone-600"}`}>
                   <div className="break-keep">{item.category}</div>
                   <div>거래처/공장: {item.vendor}</div>
                   <div>마감: {item.dueDate}</div>
@@ -260,50 +240,34 @@ export default function Home() {
         </aside>
 
         <section className="min-w-0 p-4 md:col-span-6 md:overflow-y-auto md:p-6">
-          <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 md:hidden">
+          <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 md:hidden">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <div className="text-sm font-semibold text-amber-900">
-                  모바일 체크포인트
-                </div>
-                <div className="mt-1 text-xs text-amber-800">
-                  v{version} 반영 여부를 여기 기준으로 확인
-                </div>
+                <div className="text-sm font-semibold text-emerald-900">모바일 체크포인트</div>
+                <div className="mt-1 text-xs text-emerald-800">v{version} 반영 여부를 여기 기준으로 확인</div>
               </div>
-              <span className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-amber-800">
-                test
-              </span>
+              <span className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-emerald-800">cards</span>
             </div>
-            <div className="mt-3 space-y-1 text-xs text-amber-900">
+            <div className="mt-3 space-y-1 text-xs text-emerald-900">
               <div>1. 상단 버전 v{version} 보이는지</div>
-              <div>2. 오른쪽 검은 여백이 없는지</div>
-              <div>3. 페이지 전체는 세로 스크롤만 되는지</div>
-              <div>4. 표 위 안내 문구가 보이는지</div>
-              <div>5. 표 영역을 길게 누른 뒤 좌우로 밀면 움직이는지</div>
+              <div>2. 원단/부자재가 카드 목록으로 보이는지</div>
+              <div>3. 외주 공정도 카드 목록으로 보이는지</div>
+              <div>4. 표 좌우 스크롤 시도 없이 읽을 수 있는지</div>
             </div>
           </div>
 
           <div className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm md:p-6">
             <div className="flex flex-wrap items-start justify-between gap-4 border-b border-stone-200 pb-5">
               <div>
-                <div className="text-sm text-stone-500">
-                  작업지시서 번호 {selectedWorkOrder.id}
-                </div>
-                <h2 className="mt-1 break-keep text-2xl font-semibold">
-                  {selectedWorkOrder.title}
-                </h2>
+                <div className="text-sm text-stone-500">작업지시서 번호 {selectedWorkOrder.id}</div>
+                <h2 className="mt-1 break-keep text-2xl font-semibold">{selectedWorkOrder.title}</h2>
                 <div className="mt-2 inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
                   상태: {selectedWorkOrder.status}
                 </div>
               </div>
-
               <div className="flex w-full gap-2 sm:w-auto">
-                <button className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm sm:flex-none">
-                  복제
-                </button>
-                <button className="flex-1 rounded-xl bg-stone-900 px-4 py-2 text-sm text-white sm:flex-none">
-                  저장
-                </button>
+                <button className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm sm:flex-none">복제</button>
+                <button className="flex-1 rounded-xl bg-stone-900 px-4 py-2 text-sm text-white sm:flex-none">저장</button>
               </div>
             </div>
 
@@ -324,44 +288,117 @@ export default function Home() {
                 </div>
               </div>
 
-              <TableCard
-                title="원단 / 부자재 구성"
-                buttonLabel="항목 추가"
-                minWidthClass="min-w-[760px]"
-                headers={["구분", "자재명", "역할", "거래처", "수량", "단가", "금액", "상태"]}
-                rows={materials.map((item) => [
-                  item.type,
-                  item.name,
-                  item.role,
-                  item.vendor,
-                  `${item.quantity}${item.unit}`,
-                  `${item.unitCost.toLocaleString()}원`,
-                  `${item.totalCost.toLocaleString()}원`,
-                  item.status,
-                ])}
-              />
+              <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h3 className="text-base font-semibold">원단 / 부자재 구성</h3>
+                  <button className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm">항목 추가</button>
+                </div>
 
-              <TableCard
-                title="외주 공정"
-                buttonLabel="공정 추가"
-                minWidthClass="min-w-[720px]"
-                headers={["공정", "외주처", "수량", "단가기준", "단가", "금액", "상태"]}
-                rows={outsourcing.map((item) => [
-                  item.process,
-                  item.vendor,
-                  String(item.quantity),
-                  item.unitType,
-                  `${item.unitCost.toLocaleString()}원`,
-                  `${item.totalCost.toLocaleString()}원`,
-                  item.status,
-                ])}
-              />
+                <div className="mt-4 space-y-3 md:hidden">
+                  {materials.map((item) => (
+                    <MobileDataCard
+                      key={`${item.name}-${item.role}`}
+                      title={`${item.type} · ${item.name}`}
+                      rows={[
+                        ["역할", item.role],
+                        ["거래처", item.vendor],
+                        ["수량", `${item.quantity}${item.unit}`],
+                        ["단가", `${item.unitCost.toLocaleString()}원`],
+                        ["금액", `${item.totalCost.toLocaleString()}원`],
+                        ["상태", item.status],
+                      ]}
+                    />
+                  ))}
+                </div>
+
+                <div className="mt-4 hidden overflow-x-auto md:block">
+                  <table className="min-w-full text-left text-sm">
+                    <thead className="text-stone-500">
+                      <tr className="border-b border-stone-200">
+                        <th className="px-2 py-3">구분</th>
+                        <th className="px-2 py-3">자재명</th>
+                        <th className="px-2 py-3">역할</th>
+                        <th className="px-2 py-3">거래처</th>
+                        <th className="px-2 py-3">수량</th>
+                        <th className="px-2 py-3">단가</th>
+                        <th className="px-2 py-3">금액</th>
+                        <th className="px-2 py-3">상태</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {materials.map((item) => (
+                        <tr key={`${item.name}-${item.role}`} className="border-b border-stone-100">
+                          <td className="px-2 py-3">{item.type}</td>
+                          <td className="px-2 py-3">{item.name}</td>
+                          <td className="px-2 py-3">{item.role}</td>
+                          <td className="px-2 py-3">{item.vendor}</td>
+                          <td className="px-2 py-3">{item.quantity}{item.unit}</td>
+                          <td className="px-2 py-3">{item.unitCost.toLocaleString()}원</td>
+                          <td className="px-2 py-3 font-medium">{item.totalCost.toLocaleString()}원</td>
+                          <td className="px-2 py-3">{item.status}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h3 className="text-base font-semibold">외주 공정</h3>
+                  <button className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm">공정 추가</button>
+                </div>
+
+                <div className="mt-4 space-y-3 md:hidden">
+                  {outsourcing.map((item) => (
+                    <MobileDataCard
+                      key={`${item.process}-${item.vendor}`}
+                      title={item.process}
+                      rows={[
+                        ["외주처", item.vendor],
+                        ["수량", String(item.quantity)],
+                        ["단가기준", item.unitType],
+                        ["단가", `${item.unitCost.toLocaleString()}원`],
+                        ["금액", `${item.totalCost.toLocaleString()}원`],
+                        ["상태", item.status],
+                      ]}
+                    />
+                  ))}
+                </div>
+
+                <div className="mt-4 hidden overflow-x-auto md:block">
+                  <table className="min-w-full text-left text-sm">
+                    <thead className="text-stone-500">
+                      <tr className="border-b border-stone-200">
+                        <th className="px-2 py-3">공정</th>
+                        <th className="px-2 py-3">외주처</th>
+                        <th className="px-2 py-3">수량</th>
+                        <th className="px-2 py-3">단가기준</th>
+                        <th className="px-2 py-3">단가</th>
+                        <th className="px-2 py-3">금액</th>
+                        <th className="px-2 py-3">상태</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {outsourcing.map((item) => (
+                        <tr key={`${item.process}-${item.vendor}`} className="border-b border-stone-100">
+                          <td className="px-2 py-3">{item.process}</td>
+                          <td className="px-2 py-3">{item.vendor}</td>
+                          <td className="px-2 py-3">{item.quantity}</td>
+                          <td className="px-2 py-3">{item.unitType}</td>
+                          <td className="px-2 py-3">{item.unitCost.toLocaleString()}원</td>
+                          <td className="px-2 py-3 font-medium">{item.totalCost.toLocaleString()}원</td>
+                          <td className="px-2 py-3">{item.status}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
 
               <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
                 <h3 className="text-base font-semibold">작업 메모</h3>
-                <div className="mt-3 rounded-2xl border border-stone-200 bg-white p-4 text-sm text-stone-700">
-                  {selectedWorkOrder.memo}
-                </div>
+                <div className="mt-3 rounded-2xl border border-stone-200 bg-white p-4 text-sm text-stone-700">{selectedWorkOrder.memo}</div>
               </div>
             </div>
           </div>
@@ -376,20 +413,10 @@ export default function Home() {
                   const active = index <= 2;
                   return (
                     <div key={stage} className="flex items-center gap-3">
-                      <div
-                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs ${
-                          active
-                            ? "bg-stone-900 text-white"
-                            : "bg-stone-200 text-stone-500"
-                        }`}
-                      >
+                      <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs ${active ? "bg-stone-900 text-white" : "bg-stone-200 text-stone-500"}`}>
                         {index + 1}
                       </div>
-                      <div
-                        className={`text-sm ${
-                          active ? "font-medium text-stone-900" : "text-stone-500"
-                        }`}
-                      >
+                      <div className={`text-sm ${active ? "font-medium text-stone-900" : "text-stone-500"}`}>
                         {stage}
                       </div>
                     </div>
@@ -402,20 +429,10 @@ export default function Home() {
               <h3 className="text-base font-semibold">비용 요약</h3>
               <div className="mt-4 space-y-3 text-sm">
                 <SummaryRow label="원단 합계" value={`${fabricTotal.toLocaleString()}원`} />
-                <SummaryRow
-                  label="부자재 합계"
-                  value={`${subsidiaryTotal.toLocaleString()}원`}
-                />
-                <SummaryRow
-                  label="외주 합계"
-                  value={`${outsourcingTotal.toLocaleString()}원`}
-                />
+                <SummaryRow label="부자재 합계" value={`${subsidiaryTotal.toLocaleString()}원`} />
+                <SummaryRow label="외주 합계" value={`${outsourcingTotal.toLocaleString()}원`} />
                 <div className="border-t border-stone-200 pt-3">
-                  <SummaryRow
-                    label="총합"
-                    value={`${totalCost.toLocaleString()}원`}
-                    strong
-                  />
+                  <SummaryRow label="총합" value={`${totalCost.toLocaleString()}원`} strong />
                   <SummaryRow label="장당 추정 원가" value={`${unitCost.toLocaleString()}원`} />
                 </div>
               </div>
@@ -425,11 +442,7 @@ export default function Home() {
               <h3 className="text-base font-semibold">공정별 금액</h3>
               <div className="mt-4 space-y-2 text-sm">
                 {outsourcing.map((item) => (
-                  <SummaryRow
-                    key={item.process}
-                    label={item.process}
-                    value={`${item.totalCost.toLocaleString()}원`}
-                  />
+                  <SummaryRow key={item.process} label={item.process} value={`${item.totalCost.toLocaleString()}원`} />
                 ))}
               </div>
             </div>
@@ -439,9 +452,7 @@ export default function Home() {
               <div className="mt-4 space-y-3">
                 {history.map((item) => (
                   <div key={`${item.time}-${item.action}`} className="rounded-xl bg-stone-50 p-3">
-                    <div className="text-xs text-stone-500">
-                      {item.time} · {item.user}
-                    </div>
+                    <div className="text-xs text-stone-500">{item.time} · {item.user}</div>
                     <div className="mt-1 text-sm">{item.action}</div>
                   </div>
                 ))}
@@ -454,64 +465,17 @@ export default function Home() {
   );
 }
 
-function TableCard({
-  title,
-  buttonLabel,
-  minWidthClass,
-  headers,
-  rows,
-}: {
-  title: string;
-  buttonLabel: string;
-  minWidthClass: string;
-  headers: string[];
-  rows: string[][];
-}) {
+function MobileDataCard({ title, rows }: { title: string; rows: [string, string][] }) {
   return (
-    <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-base font-semibold">{title}</h3>
-        <button className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm">
-          {buttonLabel}
-        </button>
-      </div>
-
-      <p className="mt-3 text-xs text-stone-500 md:hidden">
-        표 영역을 길게 누른 뒤 좌우로 밀어서 확인
-      </p>
-
-      <div className="mt-4">
-        <div className="mobile-table-shell">
-          <div className={`mobile-table-scroller ${minWidthClass}`}>
-            <table className="w-max text-left text-sm">
-              <thead className="text-stone-500">
-                <tr className="border-b border-stone-200">
-                  {headers.map((header) => (
-                    <th key={header} className="whitespace-nowrap px-2 py-3">
-                      {header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row, rowIndex) => (
-                  <tr key={rowIndex} className="border-b border-stone-100">
-                    {row.map((cell, cellIndex) => (
-                      <td
-                        key={`${rowIndex}-${cellIndex}`}
-                        className={`px-2 py-3 whitespace-nowrap ${
-                          cellIndex === row.length - 2 ? "font-medium" : ""
-                        }`}
-                      >
-                        {cell}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+    <div className="rounded-2xl border border-stone-200 bg-white p-4">
+      <div className="text-sm font-semibold text-stone-900">{title}</div>
+      <div className="mt-3 space-y-2">
+        {rows.map(([label, value]) => (
+          <div key={`${title}-${label}`} className="flex items-start justify-between gap-4">
+            <span className="shrink-0 text-xs text-stone-500">{label}</span>
+            <span className="text-right text-sm font-medium text-stone-900">{value}</span>
           </div>
-        </div>
+        ))}
       </div>
     </div>
   );
@@ -526,23 +490,11 @@ function Info({ label, value }: { label: string; value: string }) {
   );
 }
 
-function SummaryRow({
-  label,
-  value,
-  strong = false,
-}: {
-  label: string;
-  value: string;
-  strong?: boolean;
-}) {
+function SummaryRow({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <span className={strong ? "font-semibold text-stone-900" : "text-stone-600"}>
-        {label}
-      </span>
-      <span className={strong ? "font-semibold text-stone-900" : "font-medium"}>
-        {value}
-      </span>
+      <span className={strong ? "font-semibold text-stone-900" : "text-stone-600"}>{label}</span>
+      <span className={strong ? "font-semibold text-stone-900" : "font-medium"}>{value}</span>
     </div>
   );
 }

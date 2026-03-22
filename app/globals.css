@@ -30,21 +30,3 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
-
-.mobile-table-shell {
-  width: 100%;
-  overflow: hidden;
-}
-
-.mobile-table-scroller {
-  overflow-x: scroll;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-x;
-  overscroll-behavior-x: contain;
-}
-
-.mobile-table-scroller > table {
-  border-collapse: separate;
-  border-spacing: 0;
-}
