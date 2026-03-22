@@ -1,5 +1,5 @@
 export default function Home() {
-  const version = "0.0.5";
+  const version = "0.0.6";
 
   const workOrders = [
     {
@@ -279,7 +279,7 @@ export default function Home() {
               <div>2. 오른쪽 검은 여백이 없는지</div>
               <div>3. 페이지 전체는 세로 스크롤만 되는지</div>
               <div>4. 표 위 안내 문구가 보이는지</div>
-              <div>5. 표를 손가락으로 좌우 밀면 움직이는지</div>
+              <div>5. 표 영역을 길게 누른 뒤 좌우로 밀면 움직이는지</div>
             </div>
           </div>
 
@@ -324,106 +324,38 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h3 className="text-base font-semibold">원단 / 부자재 구성</h3>
-                  <button className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm">
-                    항목 추가
-                  </button>
-                </div>
+              <TableCard
+                title="원단 / 부자재 구성"
+                buttonLabel="항목 추가"
+                minWidthClass="min-w-[760px]"
+                headers={["구분", "자재명", "역할", "거래처", "수량", "단가", "금액", "상태"]}
+                rows={materials.map((item) => [
+                  item.type,
+                  item.name,
+                  item.role,
+                  item.vendor,
+                  `${item.quantity}${item.unit}`,
+                  `${item.unitCost.toLocaleString()}원`,
+                  `${item.totalCost.toLocaleString()}원`,
+                  item.status,
+                ])}
+              />
 
-                <p className="mt-3 text-xs text-stone-500 md:hidden">
-                  표 영역을 좌우로 밀어서 확인
-                </p>
-
-                <div className="mt-4">
-                  <div className="touch-scroll-x mobile-table-scroll">
-                    <table className="mobile-table-content text-left text-sm">
-                      <thead className="text-stone-500">
-                        <tr className="border-b border-stone-200">
-                          <th className="px-2 py-3 whitespace-nowrap">구분</th>
-                          <th className="px-2 py-3 whitespace-nowrap">자재명</th>
-                          <th className="px-2 py-3 whitespace-nowrap">역할</th>
-                          <th className="px-2 py-3 whitespace-nowrap">거래처</th>
-                          <th className="px-2 py-3 whitespace-nowrap">수량</th>
-                          <th className="px-2 py-3 whitespace-nowrap">단가</th>
-                          <th className="px-2 py-3 whitespace-nowrap">금액</th>
-                          <th className="px-2 py-3 whitespace-nowrap">상태</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {materials.map((item) => (
-                          <tr key={`${item.name}-${item.role}`} className="border-b border-stone-100">
-                            <td className="px-2 py-3 whitespace-nowrap">{item.type}</td>
-                            <td className="px-2 py-3 whitespace-nowrap">{item.name}</td>
-                            <td className="px-2 py-3 whitespace-nowrap">{item.role}</td>
-                            <td className="px-2 py-3 whitespace-nowrap">{item.vendor}</td>
-                            <td className="px-2 py-3 whitespace-nowrap">
-                              {item.quantity}
-                              {item.unit}
-                            </td>
-                            <td className="px-2 py-3 whitespace-nowrap">
-                              {item.unitCost.toLocaleString()}원
-                            </td>
-                            <td className="px-2 py-3 font-medium whitespace-nowrap">
-                              {item.totalCost.toLocaleString()}원
-                            </td>
-                            <td className="px-2 py-3 whitespace-nowrap">{item.status}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h3 className="text-base font-semibold">외주 공정</h3>
-                  <button className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm">
-                    공정 추가
-                  </button>
-                </div>
-
-                <p className="mt-3 text-xs text-stone-500 md:hidden">
-                  표 영역을 좌우로 밀어서 확인
-                </p>
-
-                <div className="mt-4">
-                  <div className="touch-scroll-x mobile-table-scroll">
-                    <table className="mobile-table-content text-left text-sm">
-                      <thead className="text-stone-500">
-                        <tr className="border-b border-stone-200">
-                          <th className="px-2 py-3 whitespace-nowrap">공정</th>
-                          <th className="px-2 py-3 whitespace-nowrap">외주처</th>
-                          <th className="px-2 py-3 whitespace-nowrap">수량</th>
-                          <th className="px-2 py-3 whitespace-nowrap">단가기준</th>
-                          <th className="px-2 py-3 whitespace-nowrap">단가</th>
-                          <th className="px-2 py-3 whitespace-nowrap">금액</th>
-                          <th className="px-2 py-3 whitespace-nowrap">상태</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {outsourcing.map((item) => (
-                          <tr key={`${item.process}-${item.vendor}`} className="border-b border-stone-100">
-                            <td className="px-2 py-3 whitespace-nowrap">{item.process}</td>
-                            <td className="px-2 py-3 whitespace-nowrap">{item.vendor}</td>
-                            <td className="px-2 py-3 whitespace-nowrap">{item.quantity}</td>
-                            <td className="px-2 py-3 whitespace-nowrap">{item.unitType}</td>
-                            <td className="px-2 py-3 whitespace-nowrap">
-                              {item.unitCost.toLocaleString()}원
-                            </td>
-                            <td className="px-2 py-3 font-medium whitespace-nowrap">
-                              {item.totalCost.toLocaleString()}원
-                            </td>
-                            <td className="px-2 py-3 whitespace-nowrap">{item.status}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
+              <TableCard
+                title="외주 공정"
+                buttonLabel="공정 추가"
+                minWidthClass="min-w-[720px]"
+                headers={["공정", "외주처", "수량", "단가기준", "단가", "금액", "상태"]}
+                rows={outsourcing.map((item) => [
+                  item.process,
+                  item.vendor,
+                  String(item.quantity),
+                  item.unitType,
+                  `${item.unitCost.toLocaleString()}원`,
+                  `${item.totalCost.toLocaleString()}원`,
+                  item.status,
+                ])}
+              />
 
               <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
                 <h3 className="text-base font-semibold">작업 메모</h3>
@@ -522,6 +454,69 @@ export default function Home() {
   );
 }
 
+function TableCard({
+  title,
+  buttonLabel,
+  minWidthClass,
+  headers,
+  rows,
+}: {
+  title: string;
+  buttonLabel: string;
+  minWidthClass: string;
+  headers: string[];
+  rows: string[][];
+}) {
+  return (
+    <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 className="text-base font-semibold">{title}</h3>
+        <button className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm">
+          {buttonLabel}
+        </button>
+      </div>
+
+      <p className="mt-3 text-xs text-stone-500 md:hidden">
+        표 영역을 길게 누른 뒤 좌우로 밀어서 확인
+      </p>
+
+      <div className="mt-4">
+        <div className="mobile-table-shell">
+          <div className={`mobile-table-scroller ${minWidthClass}`}>
+            <table className="w-max text-left text-sm">
+              <thead className="text-stone-500">
+                <tr className="border-b border-stone-200">
+                  {headers.map((header) => (
+                    <th key={header} className="whitespace-nowrap px-2 py-3">
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row, rowIndex) => (
+                  <tr key={rowIndex} className="border-b border-stone-100">
+                    {row.map((cell, cellIndex) => (
+                      <td
+                        key={`${rowIndex}-${cellIndex}`}
+                        className={`px-2 py-3 whitespace-nowrap ${
+                          cellIndex === row.length - 2 ? "font-medium" : ""
+                        }`}
+                      >
+                        {cell}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Info({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0 rounded-xl border border-stone-200 bg-white p-3">
@@ -546,7 +541,8 @@ function SummaryRow({
         {label}
       </span>
       <span className={strong ? "font-semibold text-stone-900" : "font-medium"}>
-        {value}</span>
+        {value}
+      </span>
     </div>
   );
 }
