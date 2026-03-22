@@ -3,15 +3,51 @@
 import { useEffect, useMemo, useState } from "react";
 
 export default function Home() {
-  const version = "0.0.9";
+  const version = "0.0.10";
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [materialOpen, setMaterialOpen] = useState(false);
   const [outsourcingOpen, setOutsourcingOpen] = useState(false);
 
   useEffect(() => {
-    document.body.style.overflow = drawerOpen ? "hidden" : "";
+    const body = document.body;
+    const html = document.documentElement;
+
+    if (drawerOpen) {
+      const scrollY = window.scrollY;
+      body.dataset.scrollY = String(scrollY);
+      body.style.position = "fixed";
+      body.style.top = `-${scrollY}px`;
+      body.style.left = "0";
+      body.style.right = "0";
+      body.style.width = "100%";
+      body.style.overflow = "hidden";
+      html.style.overflow = "hidden";
+    } else {
+      const saved = body.dataset.scrollY || "0";
+      body.style.position = "";
+      body.style.top = "";
+      body.style.left = "";
+      body.style.right = "";
+      body.style.width = "";
+      body.style.overflow = "";
+      html.style.overflow = "";
+      window.scrollTo(0, Number(saved));
+      delete body.dataset.scrollY;
+    }
+
     return () => {
-      document.body.style.overflow = "";
+      const saved = body.dataset.scrollY || "0";
+      body.style.position = "";
+      body.style.top = "";
+      body.style.left = "";
+      body.style.right = "";
+      body.style.width = "";
+      body.style.overflow = "";
+      html.style.overflow = "";
+      if (drawerOpen) {
+        window.scrollTo(0, Number(saved));
+      }
+      delete body.dataset.scrollY;
     };
   }, [drawerOpen]);
 
@@ -97,17 +133,11 @@ export default function Home() {
   const stageList = ["작업지시 작성", "검토 완료", "발주 요청", "발주 완료", "입고 대기", "생산 중", "완료"];
 
   const materialSummary = useMemo(() => {
-    return {
-      count: materials.length,
-      total: materials.reduce((sum, item) => sum + item.totalCost, 0),
-    };
+    return { count: materials.length, total: materials.reduce((sum, item) => sum + item.totalCost, 0) };
   }, [materials]);
 
   const outsourcingSummary = useMemo(() => {
-    return {
-      count: outsourcing.length,
-      total: outsourcing.reduce((sum, item) => sum + item.totalCost, 0),
-    };
+    return { count: outsourcing.length, total: outsourcing.reduce((sum, item) => sum + item.totalCost, 0) };
   }, [outsourcing]);
 
   return (
@@ -121,19 +151,18 @@ export default function Home() {
         </aside>
 
         <section className="min-w-0 p-4 md:col-span-6 md:overflow-y-auto md:p-6">
-          <div className="mb-4 rounded-2xl border border-violet-200 bg-violet-50 p-4 md:hidden">
+          <div className="mb-4 rounded-2xl border border-blue-200 bg-blue-50 p-4 md:hidden">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <div className="text-sm font-semibold text-violet-900">모바일 체크포인트</div>
-                <div className="mt-1 text-xs text-violet-800">v{version} 반영 여부를 여기 기준으로 확인</div>
+                <div className="text-sm font-semibold text-blue-900">모바일 체크포인트</div>
+                <div className="mt-1 text-xs text-blue-800">v{version} 반영 여부를 여기 기준으로 확인</div>
               </div>
-              <span className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-violet-800">accordion</span>
+              <span className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-blue-800">lock</span>
             </div>
-            <div className="mt-3 space-y-1 text-xs text-violet-900">
-              <div>1. 상단 메뉴 버튼 및 v{version} 보이는지</div>
-              <div>2. 원단/부자재 섹션이 기본 접힘 상태인지</div>
-              <div>3. 외주 공정 섹션도 기본 접힘 상태인지</div>
-              <div>4. 각 섹션을 누르면 카드형 상세가 펼쳐지는지</div>
+            <div className="mt-3 space-y-1 text-xs text-blue-900">
+              <div>1. 메뉴 열면 뒤 화면 스크롤이 멈추는지</div>
+              <div>2. 메뉴 닫으면 원래 위치로 돌아오는지</div>
+              <div>3. Accordion 접기/펼치기 유지되는지</div>
             </div>
           </div>
 
@@ -142,11 +171,8 @@ export default function Home() {
               <div>
                 <div className="text-sm text-stone-500">작업지시서 번호 {selectedWorkOrder.id}</div>
                 <h2 className="mt-1 break-keep text-2xl font-semibold">{selectedWorkOrder.title}</h2>
-                <div className="mt-2 inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
-                  상태: {selectedWorkOrder.status}
-                </div>
+                <div className="mt-2 inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">상태: {selectedWorkOrder.status}</div>
               </div>
-
               <div className="flex w-full gap-2 sm:w-auto">
                 <button className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm sm:flex-none">복제</button>
                 <button className="flex-1 rounded-xl bg-stone-900 px-4 py-2 text-sm text-white sm:flex-none">저장</button>
@@ -233,9 +259,7 @@ export default function Home() {
 
               <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
                 <h3 className="text-base font-semibold">작업 메모</h3>
-                <div className="mt-3 rounded-2xl border border-stone-200 bg-white p-4 text-sm text-stone-700">
-                  {selectedWorkOrder.memo}
-                </div>
+                <div className="mt-3 rounded-2xl border border-stone-200 bg-white p-4 text-sm text-stone-700">{selectedWorkOrder.memo}</div>
               </div>
             </div>
           </div>
@@ -250,9 +274,7 @@ export default function Home() {
                   const active = index <= 2;
                   return (
                     <div key={stage} className="flex items-center gap-3">
-                      <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs ${active ? "bg-stone-900 text-white" : "bg-stone-200 text-stone-500"}`}>
-                        {index + 1}
-                      </div>
+                      <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs ${active ? "bg-stone-900 text-white" : "bg-stone-200 text-stone-500"}`}>{index + 1}</div>
                       <div className={`text-sm ${active ? "font-medium text-stone-900" : "text-stone-500"}`}>{stage}</div>
                     </div>
                   );
@@ -327,11 +349,7 @@ function AccordionSection({
       </div>
 
       <div className="mt-4 md:hidden">
-        <button
-          type="button"
-          onClick={onToggle}
-          className="w-full rounded-2xl border border-stone-200 bg-white px-4 py-4 text-left"
-        >
+        <button type="button" onClick={onToggle} className="w-full rounded-2xl border border-stone-200 bg-white px-4 py-4 text-left">
           <div className="flex items-center justify-between gap-3">
             <div>
               <div className="text-sm font-semibold text-stone-900">{title}</div>
@@ -363,9 +381,7 @@ function AccordionSection({
             {desktopRows.map((row, rowIndex) => (
               <tr key={rowIndex} className="border-b border-stone-100">
                 {row.map((cell, cellIndex) => (
-                  <td key={`${rowIndex}-${cellIndex}`} className={`px-2 py-3 ${cellIndex === row.length - 2 ? "font-medium" : ""}`}>
-                    {cell}
-                  </td>
+                  <td key={`${rowIndex}-${cellIndex}`} className={`px-2 py-3 ${cellIndex === row.length - 2 ? "font-medium" : ""}`}>{cell}</td>
                 ))}
               </tr>
             ))}
@@ -380,7 +396,7 @@ function MobileTopBar({ version, onOpen }: { version: string; onOpen: () => void
   return (
     <div className="sticky top-0 z-30 flex items-center justify-between border-b border-stone-200 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
       <button type="button" onClick={onOpen} className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800">메뉴</button>
-      <div className="text-sm font-semibold text-stone-900">PeacebyPiece v0.0.9</div>
+      <div className="text-sm font-semibold text-stone-900">PeacebyPiece v{version}</div>
     </div>
   );
 }
@@ -397,7 +413,10 @@ function MobileDrawer({
   return (
     <div className={`${open ? "pointer-events-auto" : "pointer-events-none"} fixed inset-0 z-40 md:hidden`}>
       <div className={`absolute inset-0 bg-black/30 transition-opacity ${open ? "opacity-100" : "opacity-0"}`} onClick={onClose} />
-      <div className={`absolute left-0 top-0 h-full w-[85%] max-w-80 overflow-y-auto bg-white shadow-xl transition-transform duration-200 ${open ? "translate-x-0" : "-translate-x-full"}`}>
+      <div
+        className={`absolute left-0 top-0 h-full w-[85%] max-w-80 overflow-y-auto bg-white shadow-xl transition-transform duration-200 ${open ? "translate-x-0" : "-translate-x-full"}`}
+        onTouchMove={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between border-b border-stone-200 p-4">
           <div>
             <div className="text-base font-semibold text-stone-900">작업 리스트</div>
