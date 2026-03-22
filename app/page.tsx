@@ -212,7 +212,9 @@ export default function Home() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="text-sm font-semibold">{item.productName}</div>
+                    <div className="break-keep text-sm font-semibold">
+                      {item.productName}
+                    </div>
                     <div
                       className={`mt-1 text-xs ${
                         index === 0 ? "text-stone-300" : "text-stone-500"
@@ -237,7 +239,7 @@ export default function Home() {
                     index === 0 ? "text-stone-300" : "text-stone-600"
                   }`}
                 >
-                  <div>{item.category}</div>
+                  <div className="break-keep">{item.category}</div>
                   <div>거래처/공장: {item.vendor}</div>
                   <div>마감: {item.dueDate}</div>
                   <div>재고: {item.inventoryStatus}</div>
@@ -255,7 +257,7 @@ export default function Home() {
                 <div className="text-sm text-stone-500">
                   작업지시서 번호 {selectedWorkOrder.id}
                 </div>
-                <h2 className="mt-1 text-2xl font-semibold">
+                <h2 className="mt-1 break-keep text-2xl font-semibold">
                   {selectedWorkOrder.title}
                 </h2>
                 <div className="mt-2 inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
