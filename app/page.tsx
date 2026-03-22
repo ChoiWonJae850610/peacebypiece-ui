@@ -7,7 +7,7 @@ type Material = {
   name: string;
   vendor: string;
   quantity: number;
-  inventoryQuantity: number;
+  inventoryQuantity?: number;
   unit: string;
   unitCost: number;
   totalCost: number;
@@ -80,6 +80,7 @@ type WorkOrder = {
   manager: string;
   priority: string;
   quantity: number;
+  inventoryQuantity: number;
   memo: string;
   historyItems: { time: string; user: string; action: string }[];
   materials: Material[];
