@@ -1,5 +1,5 @@
 export default function Home() {
-  const version = "0.0.3";
+  const version = "0.0.4";
 
   const workOrders = [
     {
@@ -277,8 +277,8 @@ export default function Home() {
             <div className="mt-3 space-y-1 text-xs text-amber-900">
               <div>1. 상단 버전 v{version} 보이는지</div>
               <div>2. 오른쪽 검은 여백이 없는지</div>
-              <div>3. 가로 스크롤 없이 세로 스크롤만 되는지</div>
-              <div>4. 표 부분만 좌우 스크롤되는지</div>
+              <div>3. 페이지 전체는 세로 스크롤만 되는지</div>
+              <div>4. 표를 손가락으로 좌우 스크롤할 수 있는지</div>
             </div>
           </div>
 
@@ -331,42 +331,48 @@ export default function Home() {
                   </button>
                 </div>
 
-                <div className="-mx-4 mt-4 overflow-x-auto px-4 md:mx-0 md:px-0">
-                  <table className="min-w-[760px] text-left text-sm">
-                    <thead className="text-stone-500">
-                      <tr className="border-b border-stone-200">
-                        <th className="px-2 py-3">구분</th>
-                        <th className="px-2 py-3">자재명</th>
-                        <th className="px-2 py-3">역할</th>
-                        <th className="px-2 py-3">거래처</th>
-                        <th className="px-2 py-3">수량</th>
-                        <th className="px-2 py-3">단가</th>
-                        <th className="px-2 py-3">금액</th>
-                        <th className="px-2 py-3">상태</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {materials.map((item) => (
-                        <tr key={`${item.name}-${item.role}`} className="border-b border-stone-100">
-                          <td className="px-2 py-3">{item.type}</td>
-                          <td className="px-2 py-3">{item.name}</td>
-                          <td className="px-2 py-3">{item.role}</td>
-                          <td className="px-2 py-3">{item.vendor}</td>
-                          <td className="px-2 py-3">
-                            {item.quantity}
-                            {item.unit}
-                          </td>
-                          <td className="px-2 py-3">
-                            {item.unitCost.toLocaleString()}원
-                          </td>
-                          <td className="px-2 py-3 font-medium">
-                            {item.totalCost.toLocaleString()}원
-                          </td>
-                          <td className="px-2 py-3">{item.status}</td>
+                <p className="mt-3 text-xs text-stone-500 md:hidden">
+                  표 영역을 좌우로 밀어서 확인
+                </p>
+
+                <div className="touch-scroll-x -mx-4 mt-4 overflow-x-auto overflow-y-hidden px-4 md:mx-0 md:px-0">
+                  <div className="inline-block min-w-full align-top">
+                    <table className="min-w-[760px] text-left text-sm">
+                      <thead className="text-stone-500">
+                        <tr className="border-b border-stone-200">
+                          <th className="px-2 py-3">구분</th>
+                          <th className="px-2 py-3">자재명</th>
+                          <th className="px-2 py-3">역할</th>
+                          <th className="px-2 py-3">거래처</th>
+                          <th className="px-2 py-3">수량</th>
+                          <th className="px-2 py-3">단가</th>
+                          <th className="px-2 py-3">금액</th>
+                          <th className="px-2 py-3">상태</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {materials.map((item) => (
+                          <tr key={`${item.name}-${item.role}`} className="border-b border-stone-100">
+                            <td className="px-2 py-3">{item.type}</td>
+                            <td className="px-2 py-3">{item.name}</td>
+                            <td className="px-2 py-3">{item.role}</td>
+                            <td className="px-2 py-3">{item.vendor}</td>
+                            <td className="px-2 py-3">
+                              {item.quantity}
+                              {item.unit}
+                            </td>
+                            <td className="px-2 py-3">
+                              {item.unitCost.toLocaleString()}원
+                            </td>
+                            <td className="px-2 py-3 font-medium">
+                              {item.totalCost.toLocaleString()}원
+                            </td>
+                            <td className="px-2 py-3">{item.status}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
 
@@ -378,37 +384,43 @@ export default function Home() {
                   </button>
                 </div>
 
-                <div className="-mx-4 mt-4 overflow-x-auto px-4 md:mx-0 md:px-0">
-                  <table className="min-w-[720px] text-left text-sm">
-                    <thead className="text-stone-500">
-                      <tr className="border-b border-stone-200">
-                        <th className="px-2 py-3">공정</th>
-                        <th className="px-2 py-3">외주처</th>
-                        <th className="px-2 py-3">수량</th>
-                        <th className="px-2 py-3">단가기준</th>
-                        <th className="px-2 py-3">단가</th>
-                        <th className="px-2 py-3">금액</th>
-                        <th className="px-2 py-3">상태</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {outsourcing.map((item) => (
-                        <tr key={`${item.process}-${item.vendor}`} className="border-b border-stone-100">
-                          <td className="px-2 py-3">{item.process}</td>
-                          <td className="px-2 py-3">{item.vendor}</td>
-                          <td className="px-2 py-3">{item.quantity}</td>
-                          <td className="px-2 py-3">{item.unitType}</td>
-                          <td className="px-2 py-3">
-                            {item.unitCost.toLocaleString()}원
-                          </td>
-                          <td className="px-2 py-3 font-medium">
-                            {item.totalCost.toLocaleString()}원
-                          </td>
-                          <td className="px-2 py-3">{item.status}</td>
+                <p className="mt-3 text-xs text-stone-500 md:hidden">
+                  표 영역을 좌우로 밀어서 확인
+                </p>
+
+                <div className="touch-scroll-x -mx-4 mt-4 overflow-x-auto overflow-y-hidden px-4 md:mx-0 md:px-0">
+                  <div className="inline-block min-w-full align-top">
+                    <table className="min-w-[720px] text-left text-sm">
+                      <thead className="text-stone-500">
+                        <tr className="border-b border-stone-200">
+                          <th className="px-2 py-3">공정</th>
+                          <th className="px-2 py-3">외주처</th>
+                          <th className="px-2 py-3">수량</th>
+                          <th className="px-2 py-3">단가기준</th>
+                          <th className="px-2 py-3">단가</th>
+                          <th className="px-2 py-3">금액</th>
+                          <th className="px-2 py-3">상태</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {outsourcing.map((item) => (
+                          <tr key={`${item.process}-${item.vendor}`} className="border-b border-stone-100">
+                            <td className="px-2 py-3">{item.process}</td>
+                            <td className="px-2 py-3">{item.vendor}</td>
+                            <td className="px-2 py-3">{item.quantity}</td>
+                            <td className="px-2 py-3">{item.unitType}</td>
+                            <td className="px-2 py-3">
+                              {item.unitCost.toLocaleString()}원
+                            </td>
+                            <td className="px-2 py-3 font-medium">
+                              {item.totalCost.toLocaleString()}원
+                            </td>
+                            <td className="px-2 py-3">{item.status}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
 
