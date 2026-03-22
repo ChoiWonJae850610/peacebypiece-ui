@@ -2,11 +2,58 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+type Material = {
+  type: string;
+  name: string;
+  vendor: string;
+  quantity: number;
+  unit: string;
+  unitCost: number;
+  totalCost: number;
+  status: string;
+};
+
+type Outsourcing = {
+  process: string;
+  vendor: string;
+  quantity: number;
+  unitType: string;
+  unitCost: number;
+  totalCost: number;
+  status: string;
+};
+
+type WorkOrder = {
+  id: string;
+  productName: string;
+  internalCode: string;
+  category: string;
+  stage: string;
+  vendor: string;
+  dueDate: string;
+  inventoryStatus: string;
+  filesCount: number;
+  title: string;
+  status: string;
+  category1: string;
+  category2: string;
+  category3: string;
+  season: string;
+  manager: string;
+  priority: string;
+  quantity: number;
+  memo: string;
+  historyItems: { time: string; user: string; action: string }[];
+  materials: Material[];
+  outsourcing: Outsourcing[];
+};
+
 export default function Home() {
-  const version = "0.0.10";
+  const version = "0.0.11";
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [materialOpen, setMaterialOpen] = useState(false);
   const [outsourcingOpen, setOutsourcingOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState("WO-2026-0014");
 
   useEffect(() => {
     const body = document.body;
@@ -51,79 +98,120 @@ export default function Home() {
     };
   }, [drawerOpen]);
 
-  const workOrders = [
+  const workOrders: WorkOrder[] = [
     {
       id: "WO-2026-0014",
+      internalCode: "MN-24031",
       productName: "코튼 레이어드 반팔",
-      code: "MN-24031",
+      title: "코튼 레이어드 반팔",
       category: "의류 > 상의 > 반팔",
       stage: "발주대기",
       vendor: "A공장",
       dueDate: "03/29",
       inventoryStatus: "부족",
       filesCount: 4,
+      status: "발주대기",
+      category1: "의류",
+      category2: "상의",
+      category3: "반팔",
+      season: "SS",
+      manager: "김담당",
+      priority: "높음",
+      quantity: 20,
+      memo: "샘플 1차 진행. 넥라인 시보리 톤 다운 요청.",
+      historyItems: [
+        { time: "09:14", user: "Kty", action: "수량 30 → 50 변경" },
+        { time: "09:18", user: "김담당", action: "발주상태 요청 → 완료 변경" },
+        { time: "09:23", user: "staff1", action: "샘플사진 2장 업로드" },
+        { time: "09:40", user: "Kty", action: "외주공정 나염 추가" },
+      ],
+      materials: [
+        { type: "원단", name: "30수 코튼", vendor: "A텍스타일", quantity: 12, unit: "yd", unitCost: 3500, totalCost: 42000, status: "발주완료" },
+        { type: "원단", name: "폴리 안감", vendor: "B원단", quantity: 8, unit: "yd", unitCost: 2200, totalCost: 17600, status: "입고완료" },
+        { type: "부자재", name: "단추 18mm", vendor: "C부자재", quantity: 40, unit: "개", unitCost: 120, totalCost: 4800, status: "발주완료" },
+        { type: "부자재", name: "케어라벨", vendor: "D라벨", quantity: 20, unit: "개", unitCost: 150, totalCost: 3000, status: "요청전" },
+      ],
+      outsourcing: [
+        { process: "재단", vendor: "A공장", quantity: 20, unitType: "장당", unitCost: 1500, totalCost: 30000, status: "완료" },
+        { process: "봉제", vendor: "B공장", quantity: 20, unitType: "장당", unitCost: 8000, totalCost: 160000, status: "진행중" },
+        { process: "나염", vendor: "C프린트", quantity: 1, unitType: "건당", unitCost: 50000, totalCost: 50000, status: "요청전" },
+        { process: "라벨봉제", vendor: "D업체", quantity: 20, unitType: "장당", unitCost: 300, totalCost: 6000, status: "완료" },
+      ],
     },
     {
       id: "WO-2026-0015",
+      internalCode: "MN-24032",
       productName: "워싱 데님 팬츠",
-      code: "MN-24032",
+      title: "워싱 데님 팬츠",
       category: "의류 > 하의 > 데님",
       stage: "봉제중",
       vendor: "B공장",
       dueDate: "04/02",
       inventoryStatus: "정상",
       filesCount: 6,
+      status: "봉제중",
+      category1: "의류",
+      category2: "하의",
+      category3: "데님",
+      season: "SS",
+      manager: "이담당",
+      priority: "중간",
+      quantity: 30,
+      memo: "워싱 강도 샘플 확인 후 본생산 진행 예정.",
+      historyItems: [
+        { time: "10:05", user: "이담당", action: "워싱 샘플 확인 요청" },
+        { time: "10:20", user: "Kty", action: "봉제 수량 재확인" },
+      ],
+      materials: [
+        { type: "원단", name: "데님 10oz", vendor: "청원단", quantity: 20, unit: "yd", unitCost: 5200, totalCost: 104000, status: "입고완료" },
+        { type: "부자재", name: "지퍼", vendor: "YKK", quantity: 30, unit: "개", unitCost: 600, totalCost: 18000, status: "발주완료" },
+        { type: "부자재", name: "리벳", vendor: "금속부자재", quantity: 60, unit: "개", unitCost: 120, totalCost: 7200, status: "입고완료" },
+      ],
+      outsourcing: [
+        { process: "재단", vendor: "B공장", quantity: 30, unitType: "장당", unitCost: 1800, totalCost: 54000, status: "완료" },
+        { process: "봉제", vendor: "B공장", quantity: 30, unitType: "장당", unitCost: 9000, totalCost: 270000, status: "진행중" },
+        { process: "워싱", vendor: "세탁공정", quantity: 30, unitType: "장당", unitCost: 2500, totalCost: 75000, status: "요청전" },
+      ],
     },
     {
       id: "WO-2026-0016",
+      internalCode: "MN-24033",
       productName: "미니 숄더백",
-      code: "MN-24033",
+      title: "미니 숄더백",
       category: "가방 > 숄더백 > 미니백",
       stage: "완료",
       vendor: "C업체",
       dueDate: "03/18",
       inventoryStatus: "정상",
       filesCount: 3,
+      status: "완료",
+      category1: "가방",
+      category2: "숄더백",
+      category3: "미니백",
+      season: "FW",
+      manager: "박담당",
+      priority: "낮음",
+      quantity: 15,
+      memo: "완료된 샘플. 사진 아카이브만 추가 정리 예정.",
+      historyItems: [
+        { time: "11:10", user: "박담당", action: "완료 처리" },
+      ],
+      materials: [
+        { type: "원단", name: "합성피혁", vendor: "가방원단", quantity: 10, unit: "yd", unitCost: 6800, totalCost: 68000, status: "입고완료" },
+        { type: "부자재", name: "체인 스트랩", vendor: "금속부자재", quantity: 15, unit: "개", unitCost: 2200, totalCost: 33000, status: "입고완료" },
+      ],
+      outsourcing: [
+        { process: "재단", vendor: "C업체", quantity: 15, unitType: "개당", unitCost: 2000, totalCost: 30000, status: "완료" },
+        { process: "봉제", vendor: "C업체", quantity: 15, unitType: "개당", unitCost: 7500, totalCost: 112500, status: "완료" },
+      ],
     },
   ];
 
-  const selectedWorkOrder = {
-    id: "WO-2026-0014",
-    title: "코튼 레이어드 반팔",
-    code: "MN-24031",
-    status: "발주대기",
-    category1: "의류",
-    category2: "상의",
-    category3: "반팔",
-    season: "SS",
-    vendor: "A공장",
-    manager: "김담당",
-    dueDate: "2026-03-29",
-    priority: "높음",
-    quantity: 20,
-    memo: "샘플 1차 진행. 넥라인 시보리 톤 다운 요청.",
-  };
+  const selectedWorkOrder = workOrders.find((item) => item.id === selectedId) ?? workOrders[0];
 
-  const materials = [
-    { type: "원단", name: "30수 코튼", role: "겉감", vendor: "A텍스타일", quantity: 12, unit: "yd", unitCost: 3500, totalCost: 42000, status: "발주완료" },
-    { type: "원단", name: "폴리 안감", role: "안감", vendor: "B원단", quantity: 8, unit: "yd", unitCost: 2200, totalCost: 17600, status: "입고완료" },
-    { type: "부자재", name: "단추 18mm", role: "앞여밈", vendor: "C부자재", quantity: 40, unit: "개", unitCost: 120, totalCost: 4800, status: "발주완료" },
-    { type: "부자재", name: "케어라벨", role: "라벨", vendor: "D라벨", quantity: 20, unit: "개", unitCost: 150, totalCost: 3000, status: "요청전" },
-  ];
-
-  const outsourcing = [
-    { process: "재단", vendor: "A공장", quantity: 20, unitType: "장당", unitCost: 1500, totalCost: 30000, status: "완료" },
-    { process: "봉제", vendor: "B공장", quantity: 20, unitType: "장당", unitCost: 8000, totalCost: 160000, status: "진행중" },
-    { process: "나염", vendor: "C프린트", quantity: 1, unitType: "건당", unitCost: 50000, totalCost: 50000, status: "요청전" },
-    { process: "라벨봉제", vendor: "D업체", quantity: 20, unitType: "장당", unitCost: 300, totalCost: 6000, status: "완료" },
-  ];
-
-  const history = [
-    { time: "09:14", user: "Kty", action: "수량 30 → 50 변경" },
-    { time: "09:18", user: "김담당", action: "발주상태 요청 → 완료 변경" },
-    { time: "09:23", user: "staff1", action: "샘플사진 2장 업로드" },
-    { time: "09:40", user: "Kty", action: "외주공정 나염 추가" },
-  ];
+  const materials = selectedWorkOrder.materials;
+  const outsourcing = selectedWorkOrder.outsourcing;
+  const historyItems = selectedWorkOrder.historyItems;
 
   const fabricTotal = materials.filter((item) => item.type === "원단").reduce((sum, item) => sum + item.totalCost, 0);
   const subsidiaryTotal = materials.filter((item) => item.type === "부자재").reduce((sum, item) => sum + item.totalCost, 0);
@@ -140,36 +228,43 @@ export default function Home() {
     return { count: outsourcing.length, total: outsourcing.reduce((sum, item) => sum + item.totalCost, 0) };
   }, [outsourcing]);
 
+  const handleSelectWorkOrder = (id: string, closeDrawer = false) => {
+    setSelectedId(id);
+    setMaterialOpen(false);
+    setOutsourcingOpen(false);
+    if (closeDrawer) setDrawerOpen(false);
+  };
+
   return (
     <main className="min-h-screen overflow-x-hidden bg-stone-100 text-stone-900">
       <MobileTopBar version={version} onOpen={() => setDrawerOpen(true)} />
-      <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} workOrders={workOrders} />
+      <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} workOrders={workOrders} selectedId={selectedId} onSelect={handleSelectWorkOrder} />
 
       <div className="grid min-h-screen w-full grid-cols-1 md:grid-cols-12">
         <aside className="hidden min-w-0 border-r border-stone-200 bg-white md:block md:col-span-3">
-          <SidebarContent version={version} workOrders={workOrders} />
+          <SidebarContent version={version} workOrders={workOrders} selectedId={selectedId} onSelect={handleSelectWorkOrder} />
         </aside>
 
         <section className="min-w-0 p-4 md:col-span-6 md:overflow-y-auto md:p-6">
-          <div className="mb-4 rounded-2xl border border-blue-200 bg-blue-50 p-4 md:hidden">
+          <div className="mb-4 rounded-2xl border border-cyan-200 bg-cyan-50 p-4 md:hidden">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <div className="text-sm font-semibold text-blue-900">모바일 체크포인트</div>
-                <div className="mt-1 text-xs text-blue-800">v{version} 반영 여부를 여기 기준으로 확인</div>
+                <div className="text-sm font-semibold text-cyan-900">모바일 체크포인트</div>
+                <div className="mt-1 text-xs text-cyan-800">v{version} 반영 여부를 여기 기준으로 확인</div>
               </div>
-              <span className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-blue-800">lock</span>
+              <span className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-cyan-800">select</span>
             </div>
-            <div className="mt-3 space-y-1 text-xs text-blue-900">
-              <div>1. 메뉴 열면 뒤 화면 스크롤이 멈추는지</div>
-              <div>2. 메뉴 닫으면 원래 위치로 돌아오는지</div>
-              <div>3. Accordion 접기/펼치기 유지되는지</div>
+            <div className="mt-3 space-y-1 text-xs text-cyan-900">
+              <div>1. 메뉴에서 작업 선택 시 드로어가 닫히는지</div>
+              <div>2. 중앙 상세 제목이 선택한 작업으로 바뀌는지</div>
+              <div>3. 품번/작업지시서 번호가 화면에서 사라졌는지</div>
+              <div>4. 원단/부자재에서 역할 항목이 사라졌는지</div>
             </div>
           </div>
 
           <div className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm md:p-6">
             <div className="flex flex-wrap items-start justify-between gap-4 border-b border-stone-200 pb-5">
               <div>
-                <div className="text-sm text-stone-500">작업지시서 번호 {selectedWorkOrder.id}</div>
                 <h2 className="mt-1 break-keep text-2xl font-semibold">{selectedWorkOrder.title}</h2>
                 <div className="mt-2 inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">상태: {selectedWorkOrder.status}</div>
               </div>
@@ -187,7 +282,6 @@ export default function Home() {
                   <Info label="중분류" value={selectedWorkOrder.category2} />
                   <Info label="소분류" value={selectedWorkOrder.category3} />
                   <Info label="시즌" value={selectedWorkOrder.season} />
-                  <Info label="품번" value={selectedWorkOrder.code} />
                   <Info label="우선순위" value={selectedWorkOrder.priority} />
                   <Info label="공장" value={selectedWorkOrder.vendor} />
                   <Info label="담당자" value={selectedWorkOrder.manager} />
@@ -203,10 +297,9 @@ export default function Home() {
                 onToggle={() => setMaterialOpen((prev) => !prev)}
                 summaryText={`총 ${materialSummary.count}개 / ${materialSummary.total.toLocaleString()}원`}
                 mobileItems={materials.map((item) => ({
-                  key: `${item.name}-${item.role}`,
+                  key: `${item.name}-${item.vendor}`,
                   title: `${item.type} · ${item.name}`,
                   rows: [
-                    ["역할", item.role],
                     ["거래처", item.vendor],
                     ["수량", `${item.quantity}${item.unit}`],
                     ["단가", `${item.unitCost.toLocaleString()}원`],
@@ -214,11 +307,10 @@ export default function Home() {
                     ["상태", item.status],
                   ],
                 }))}
-                desktopHeaders={["구분", "자재명", "역할", "거래처", "수량", "단가", "금액", "상태"]}
+                desktopHeaders={["구분", "자재명", "거래처", "수량", "단가", "금액", "상태"]}
                 desktopRows={materials.map((item) => [
                   item.type,
                   item.name,
-                  item.role,
                   item.vendor,
                   `${item.quantity}${item.unit}`,
                   `${item.unitCost.toLocaleString()}원`,
@@ -307,7 +399,7 @@ export default function Home() {
             <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
               <h3 className="text-base font-semibold">최근 히스토리</h3>
               <div className="mt-4 space-y-3">
-                {history.map((item) => (
+                {historyItems.map((item) => (
                   <div key={`${item.time}-${item.action}`} className="rounded-xl bg-stone-50 p-3">
                     <div className="text-xs text-stone-500">{item.time} · {item.user}</div>
                     <div className="mt-1 text-sm">{item.action}</div>
@@ -396,7 +488,7 @@ function MobileTopBar({ version, onOpen }: { version: string; onOpen: () => void
   return (
     <div className="sticky top-0 z-30 flex items-center justify-between border-b border-stone-200 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
       <button type="button" onClick={onOpen} className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800">메뉴</button>
-      <div className="text-sm font-semibold text-stone-900">PeacebyPiece v{version}</div>
+      <div className="text-sm font-semibold text-stone-900">PeacebyPiece v0.0.11</div>
     </div>
   );
 }
@@ -405,10 +497,14 @@ function MobileDrawer({
   open,
   onClose,
   workOrders,
+  selectedId,
+  onSelect,
 }: {
   open: boolean;
   onClose: () => void;
-  workOrders: { id: string; productName: string; code: string; stage: string; category: string; dueDate: string }[];
+  workOrders: WorkOrder[];
+  selectedId: string;
+  onSelect: (id: string, closeDrawer?: boolean) => void;
 }) {
   return (
     <div className={`${open ? "pointer-events-auto" : "pointer-events-none"} fixed inset-0 z-40 md:hidden`}>
@@ -425,7 +521,7 @@ function MobileDrawer({
           <button type="button" onClick={onClose} className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm">닫기</button>
         </div>
         <div className="p-4">
-          <input className="w-full rounded-xl border border-stone-300 bg-stone-50 px-3 py-2 text-sm outline-none" placeholder="제품명 / 품번 검색" />
+          <input className="w-full rounded-xl border border-stone-300 bg-stone-50 px-3 py-2 text-sm outline-none" placeholder="제품명 검색" />
           <div className="mt-3 flex flex-wrap gap-2">
             {["전체", "진행중", "발주대기", "입고대기", "완료"].map((tag) => (
               <button key={tag} className="rounded-full border border-stone-300 bg-white px-3 py-1 text-xs">{tag}</button>
@@ -433,21 +529,29 @@ function MobileDrawer({
           </div>
         </div>
         <div className="space-y-3 px-4 pb-6">
-          {workOrders.map((item, index) => (
-            <div key={item.id} className={`rounded-2xl border p-4 shadow-sm ${index === 0 ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white"}`}>
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="break-keep text-sm font-semibold">{item.productName}</div>
-                  <div className={`mt-1 text-xs ${index === 0 ? "text-stone-300" : "text-stone-500"}`}>{item.code}</div>
+          {workOrders.map((item) => {
+            const selected = item.id === selectedId;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => onSelect(item.id, true)}
+                className={`block w-full rounded-2xl border p-4 text-left shadow-sm ${selected ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white"}`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="break-keep text-sm font-semibold">{item.productName}</div>
+                    <div className={`mt-1 text-xs ${selected ? "text-stone-300" : "text-stone-500"}`}>{item.internalCode}</div>
+                  </div>
+                  <span className={`shrink-0 rounded-full px-2 py-1 text-[11px] ${selected ? "bg-white/15 text-white" : "bg-stone-100 text-stone-700"}`}>{item.stage}</span>
                 </div>
-                <span className={`shrink-0 rounded-full px-2 py-1 text-[11px] ${index === 0 ? "bg-white/15 text-white" : "bg-stone-100 text-stone-700"}`}>{item.stage}</span>
-              </div>
-              <div className={`mt-3 space-y-1 text-xs ${index === 0 ? "text-stone-300" : "text-stone-600"}`}>
-                <div className="break-keep">{item.category}</div>
-                <div>마감: {item.dueDate}</div>
-              </div>
-            </div>
-          ))}
+                <div className={`mt-3 space-y-1 text-xs ${selected ? "text-stone-300" : "text-stone-600"}`}>
+                  <div className="break-keep">{item.category}</div>
+                  <div>마감: {item.dueDate}</div>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -457,9 +561,13 @@ function MobileDrawer({
 function SidebarContent({
   version,
   workOrders,
+  selectedId,
+  onSelect,
 }: {
   version: string;
-  workOrders: { id: string; productName: string; code: string; stage: string; category: string; vendor: string; dueDate: string; inventoryStatus: string; filesCount: number }[];
+  workOrders: WorkOrder[];
+  selectedId: string;
+  onSelect: (id: string, closeDrawer?: boolean) => void;
 }) {
   return (
     <>
@@ -473,7 +581,7 @@ function SidebarContent({
         </div>
       </div>
       <div className="p-4">
-        <input className="w-full rounded-xl border border-stone-300 bg-stone-50 px-3 py-2 text-sm outline-none" placeholder="제품명 / 품번 검색" />
+        <input className="w-full rounded-xl border border-stone-300 bg-stone-50 px-3 py-2 text-sm outline-none" placeholder="제품명 검색" />
         <div className="mt-3 flex flex-wrap gap-2">
           {["전체", "진행중", "발주대기", "입고대기", "완료"].map((tag) => (
             <button key={tag} className="rounded-full border border-stone-300 bg-white px-3 py-1 text-xs">{tag}</button>
@@ -481,24 +589,32 @@ function SidebarContent({
         </div>
       </div>
       <div className="space-y-3 px-4 pb-4">
-        {workOrders.map((item, index) => (
-          <div key={item.id} className={`rounded-2xl border p-4 shadow-sm ${index === 0 ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white"}`}>
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <div className="break-keep text-sm font-semibold">{item.productName}</div>
-                <div className={`mt-1 text-xs ${index === 0 ? "text-stone-300" : "text-stone-500"}`}>{item.code}</div>
+        {workOrders.map((item) => {
+          const selected = item.id === selectedId;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => onSelect(item.id)}
+              className={`block w-full rounded-2xl border p-4 text-left shadow-sm ${selected ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white"}`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="break-keep text-sm font-semibold">{item.productName}</div>
+                  <div className={`mt-1 text-xs ${selected ? "text-stone-300" : "text-stone-500"}`}>{item.internalCode}</div>
+                </div>
+                <span className={`shrink-0 rounded-full px-2 py-1 text-[11px] ${selected ? "bg-white/15 text-white" : "bg-stone-100 text-stone-700"}`}>{item.stage}</span>
               </div>
-              <span className={`shrink-0 rounded-full px-2 py-1 text-[11px] ${index === 0 ? "bg-white/15 text-white" : "bg-stone-100 text-stone-700"}`}>{item.stage}</span>
-            </div>
-            <div className={`mt-3 space-y-1 text-xs ${index === 0 ? "text-stone-300" : "text-stone-600"}`}>
-              <div className="break-keep">{item.category}</div>
-              <div>거래처/공장: {item.vendor}</div>
-              <div>마감: {item.dueDate}</div>
-              <div>재고: {item.inventoryStatus}</div>
-              <div>첨부파일: {item.filesCount}개</div>
-            </div>
-          </div>
-        ))}
+              <div className={`mt-3 space-y-1 text-xs ${selected ? "text-stone-300" : "text-stone-600"}`}>
+                <div className="break-keep">{item.category}</div>
+                <div>거래처/공장: {item.vendor}</div>
+                <div>마감: {item.dueDate}</div>
+                <div>재고: {item.inventoryStatus}</div>
+                <div>첨부파일: {item.filesCount}개</div>
+              </div>
+            </button>
+          );
+        })}
       </div>
     </>
   );
