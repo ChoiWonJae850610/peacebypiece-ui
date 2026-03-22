@@ -36,3 +36,15 @@ body {
   overscroll-behavior-x: contain;
   touch-action: pan-x;
 }
+
+.mobile-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-table-content {
+  width: max-content;
+  min-width: 720px;
+}

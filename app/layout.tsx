@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PeacebyPiece v0.0.4",
+  title: "PeacebyPiece v0.0.5",
   description: "작업지시 워크스테이션",
 };
 
