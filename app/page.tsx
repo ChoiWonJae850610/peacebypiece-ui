@@ -7,6 +7,7 @@ type Material = {
   name: string;
   vendor: string;
   quantity: number;
+  inventoryQuantity: number;
   unit: string;
   unitCost: number;
   totalCost: number;
@@ -214,7 +215,7 @@ function getVisibleStageList(currentState: WorkflowState) {
 }
 
 export default function Home() {
-  const version = "0.0.12";
+  const version = "0.0.13";
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [materialOpen, setMaterialOpen] = useState(false);
   const [outsourcingOpen, setOutsourcingOpen] = useState(false);
@@ -284,6 +285,7 @@ export default function Home() {
       manager: "김담당",
       priority: "높음",
       quantity: 20,
+      inventoryQuantity: 8,
       memo: "샘플 1차 진행. 넥라인 시보리 톤 다운 요청.",
       historyItems: [
         { time: "09:14", user: "Kty", action: "수량 30 → 50 변경" },
@@ -323,6 +325,7 @@ export default function Home() {
       manager: "이담당",
       priority: "중간",
       quantity: 30,
+      inventoryQuantity: 18,
       memo: "워싱 강도 샘플 확인 후 본생산 진행 예정.",
       historyItems: [
         { time: "10:05", user: "이담당", action: "워싱 샘플 확인 요청" },
@@ -358,6 +361,7 @@ export default function Home() {
       manager: "박담당",
       priority: "낮음",
       quantity: 15,
+      inventoryQuantity: 15,
       memo: "완료된 샘플. 사진 아카이브만 추가 정리 예정.",
       historyItems: [{ time: "11:10", user: "박담당", action: "완료 처리" }],
       materials: [
@@ -444,7 +448,7 @@ export default function Home() {
               <span className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-cyan-800">state</span>
             </div>
             <div className="mt-3 space-y-1 text-xs text-cyan-900">
-              <div>1. 상단 버전이 v0.0.12로 표시되는지</div>
+              <div>1. 상단 버전이 v0.0.13으로 표시되는지</div>
               <div>2. 메뉴에서 작업 선택 시 드로어가 닫히는지</div>
               <div>3. 우측 진행단계 카드가 상태/액션 구조로 바뀌었는지</div>
               <div>4. 역할 변경 시 액션 버튼이 달라지는지</div>
@@ -477,7 +481,8 @@ export default function Home() {
                   <Info label="공장" value={selectedWorkOrder.vendor} />
                   <Info label="담당자" value={selectedWorkOrder.manager} />
                   <Info label="납기일" value={selectedWorkOrder.dueDate} />
-                  <Info label="총 수량" value={`${selectedWorkOrder.quantity}장`} />
+                  <Info label="발주 수량" value={`${selectedWorkOrder.quantity}장`} valueClassName="text-base font-semibold tabular-nums" />
+                  <Info label="재고 수량" value={`${selectedWorkOrder.inventoryQuantity}장`} valueClassName="text-base font-semibold tabular-nums" />
                 </div>
               </div>
 
@@ -791,7 +796,7 @@ function MobileTopBar({ version, onOpen }: { version: string; onOpen: () => void
       <button type="button" onClick={onOpen} className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800">
         메뉴
       </button>
-      <div className="text-sm font-semibold text-stone-900">PeacebyPiece v0.0.12</div>
+      <div className="text-sm font-semibold text-stone-900">PeacebyPiece v0.0.13</div>
     </div>
   );
 }
@@ -951,11 +956,19 @@ function MobileDataCard({ title, rows }: { title: string; rows: [string, string]
   );
 }
 
-function Info({ label, value }: { label: string; value: string }) {
+function Info({
+  label,
+  value,
+  valueClassName,
+}: {
+  label: string;
+  value: string;
+  valueClassName?: string;
+}) {
   return (
     <div className="min-w-0 rounded-xl border border-stone-200 bg-white p-3">
       <div className="text-xs text-stone-500">{label}</div>
-      <div className="mt-1 text-sm font-medium">{value}</div>
+      <div className={`mt-1 font-medium ${valueClassName ?? "text-sm"}`}>{value}</div>
     </div>
   );
 }
