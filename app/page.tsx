@@ -312,89 +312,7 @@ function getPermissionSummary(user: UserProfile) {
   return "디자이너";
 }
 
-export default function Home() {
-  const version = "0.0.15";
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [materialOpen, setMaterialOpen] = useState(false);
-  const [outsourcingOpen, setOutsourcingOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState("WO-2026-0014");
-  const [inventoryEditorOpen, setInventoryEditorOpen] = useState(false);
-  const [permissionModalOpen, setPermissionModalOpen] = useState(false);
-  const [users, setUsers] = useState<UserProfile[]>(INITIAL_USERS);
-  const [currentUserId, setCurrentUserId] = useState("user-admin");
-  const [permissionTargetUserId, setPermissionTargetUserId] = useState("user-designer");
-  const appShellRef = useRef<HTMLDivElement | null>(null);
-
-  const blockingOverlayOpen = drawerOpen || inventoryEditorOpen || permissionModalOpen;
-
-  useEffect(() => {
-    const body = document.body;
-    const html = document.documentElement;
-
-    if (blockingOverlayOpen) {
-      const scrollY = window.scrollY;
-      body.dataset.scrollY = String(scrollY);
-      body.style.position = "fixed";
-      body.style.top = `-${scrollY}px`;
-      body.style.left = "0";
-      body.style.right = "0";
-      body.style.width = "100%";
-      body.style.overflow = "hidden";
-      body.style.touchAction = "none";
-      html.style.overflow = "hidden";
-      html.style.touchAction = "none";
-    } else {
-      const saved = body.dataset.scrollY || "0";
-      body.style.position = "";
-      body.style.top = "";
-      body.style.left = "";
-      body.style.right = "";
-      body.style.width = "";
-      body.style.overflow = "";
-      body.style.touchAction = "";
-      html.style.overflow = "";
-      html.style.touchAction = "";
-      window.scrollTo(0, Number(saved));
-      delete body.dataset.scrollY;
-    }
-
-    return () => {
-      const saved = body.dataset.scrollY || "0";
-      body.style.position = "";
-      body.style.top = "";
-      body.style.left = "";
-      body.style.right = "";
-      body.style.width = "";
-      body.style.overflow = "";
-      body.style.touchAction = "";
-      html.style.overflow = "";
-      html.style.touchAction = "";
-      if (blockingOverlayOpen) {
-        window.scrollTo(0, Number(saved));
-      }
-      delete body.dataset.scrollY;
-    };
-  }, [blockingOverlayOpen]);
-
-  useEffect(() => {
-    const appShell = appShellRef.current;
-    if (!appShell) return;
-
-    if (inventoryEditorOpen || permissionModalOpen) {
-      appShell.setAttribute("inert", "");
-      appShell.setAttribute("aria-hidden", "true");
-    } else {
-      appShell.removeAttribute("inert");
-      appShell.removeAttribute("aria-hidden");
-    }
-
-    return () => {
-      appShell.removeAttribute("inert");
-      appShell.removeAttribute("aria-hidden");
-    };
-  }, [inventoryEditorOpen, permissionModalOpen]);
-
-  const workOrders: WorkOrder[] = [
+const INITIAL_WORK_ORDERS: WorkOrder[] = [
     {
       id: "WO-2026-0014",
       internalCode: "MN-24031",
@@ -504,11 +422,96 @@ export default function Home() {
     },
   ];
 
+
+
+export default function Home() {
+  const version = "0.0.16";
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [materialOpen, setMaterialOpen] = useState(false);
+  const [outsourcingOpen, setOutsourcingOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState("WO-2026-0014");
+  const [inventoryEditorOpen, setInventoryEditorOpen] = useState(false);
+  const [permissionModalOpen, setPermissionModalOpen] = useState(false);
+  const [users, setUsers] = useState<UserProfile[]>(INITIAL_USERS);
+  const [currentUserId, setCurrentUserId] = useState("user-admin");
+  const [permissionTargetUserId, setPermissionTargetUserId] = useState("user-designer");
+  const appShellRef = useRef<HTMLDivElement | null>(null);
+  const [workOrders, setWorkOrders] = useState<WorkOrder[]>(INITIAL_WORK_ORDERS);
+
+  const blockingOverlayOpen = drawerOpen || inventoryEditorOpen || permissionModalOpen;
+
+  useEffect(() => {
+    const body = document.body;
+    const html = document.documentElement;
+
+    if (blockingOverlayOpen) {
+      const scrollY = window.scrollY;
+      body.dataset.scrollY = String(scrollY);
+      body.style.position = "fixed";
+      body.style.top = `-${scrollY}px`;
+      body.style.left = "0";
+      body.style.right = "0";
+      body.style.width = "100%";
+      body.style.overflow = "hidden";
+      body.style.touchAction = "none";
+      html.style.overflow = "hidden";
+      html.style.touchAction = "none";
+    } else {
+      const saved = body.dataset.scrollY || "0";
+      body.style.position = "";
+      body.style.top = "";
+      body.style.left = "";
+      body.style.right = "";
+      body.style.width = "";
+      body.style.overflow = "";
+      body.style.touchAction = "";
+      html.style.overflow = "";
+      html.style.touchAction = "";
+      window.scrollTo(0, Number(saved));
+      delete body.dataset.scrollY;
+    }
+
+    return () => {
+      const saved = body.dataset.scrollY || "0";
+      body.style.position = "";
+      body.style.top = "";
+      body.style.left = "";
+      body.style.right = "";
+      body.style.width = "";
+      body.style.overflow = "";
+      body.style.touchAction = "";
+      html.style.overflow = "";
+      html.style.touchAction = "";
+      if (blockingOverlayOpen) {
+        window.scrollTo(0, Number(saved));
+      }
+      delete body.dataset.scrollY;
+    };
+  }, [blockingOverlayOpen]);
+
+  useEffect(() => {
+    const appShell = appShellRef.current;
+    if (!appShell) return;
+
+    if (inventoryEditorOpen || permissionModalOpen) {
+      appShell.setAttribute("inert", "");
+      appShell.setAttribute("aria-hidden", "true");
+    } else {
+      appShell.removeAttribute("inert");
+      appShell.removeAttribute("aria-hidden");
+    }
+
+    return () => {
+      appShell.removeAttribute("inert");
+      appShell.removeAttribute("aria-hidden");
+    };
+  }, [inventoryEditorOpen, permissionModalOpen]);
+
   const [workflowStateById, setWorkflowStateById] = useState<Record<string, WorkflowState>>(() =>
-    Object.fromEntries(workOrders.map((item) => [item.id, item.status])),
+    Object.fromEntries(INITIAL_WORK_ORDERS.map((item) => [item.id, item.status])),
   );
   const [inventoryQuantityById, setInventoryQuantityById] = useState<Record<string, number>>(() =>
-    Object.fromEntries(workOrders.map((item) => [item.id, item.inventoryQuantity])),
+    Object.fromEntries(INITIAL_WORK_ORDERS.map((item) => [item.id, item.inventoryQuantity])),
   );
   const [inventoryLogsById, setInventoryLogsById] = useState<Record<string, InventoryLog[]>>(() => ({
     "WO-2026-0014": [
@@ -546,6 +549,46 @@ export default function Home() {
 
   const handleSelectWorkOrder = (id: string, closeDrawer = false) => {
     setSelectedId(id);
+    setMaterialOpen(false);
+    setOutsourcingOpen(false);
+    if (closeDrawer) setDrawerOpen(false);
+  };
+
+  const handleCreateWorkOrder = (closeDrawer = false) => {
+    const newId = `WO-2026-${String(workOrders.length + 14).padStart(4, "0")}`;
+    const newInternalCode = `MN-${String(24031 + workOrders.length).padStart(5, "0")}`;
+    const draftTitle = `새 작업지시서 ${workOrders.length - 2}`;
+    const newWorkOrder: WorkOrder = {
+      id: newId,
+      internalCode: newInternalCode,
+      productName: draftTitle,
+      title: draftTitle,
+      category: "미분류 > 미분류 > 미분류",
+      stage: "작성중",
+      vendor: "미정",
+      dueDate: "미정",
+      inventoryStatus: "확인전",
+      filesCount: 0,
+      status: "작성중",
+      category1: "미분류",
+      category2: "미분류",
+      category3: "미분류",
+      season: "미정",
+      manager: currentUser.name,
+      priority: "보통",
+      quantity: 0,
+      inventoryQuantity: 0,
+      memo: "새 작업지시서 초안입니다.",
+      historyItems: [{ time: getCurrentTimeLabel(), user: currentUser.name, action: "새 작업지시서 초안 생성" }],
+      materials: [],
+      outsourcing: [],
+    };
+
+    setWorkOrders((prev) => [newWorkOrder, ...prev]);
+    setWorkflowStateById((prev) => ({ ...prev, [newId]: "작성중" }));
+    setInventoryQuantityById((prev) => ({ ...prev, [newId]: 0 }));
+    setInventoryLogsById((prev) => ({ ...prev, [newId]: [] }));
+    setSelectedId(newId);
     setMaterialOpen(false);
     setOutsourcingOpen(false);
     if (closeDrawer) setDrawerOpen(false);
@@ -617,6 +660,7 @@ export default function Home() {
             selectedId={selectedId}
             workflowStateById={workflowStateById}
             onSelect={handleSelectWorkOrder}
+            onCreate={handleCreateWorkOrder}
           />
         </aside>
 
@@ -630,7 +674,7 @@ export default function Home() {
               <span className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-cyan-800">state</span>
             </div>
             <div className="mt-3 space-y-1 text-xs text-cyan-900">
-              <div>1. 상단 버전이 v0.0.15로 표시되는지</div>
+              <div>1. 상단 버전이 v0.0.16로 표시되는지</div>
               <div>2. 메뉴에서 작업 선택 시 드로어가 닫히는지</div>
               <div>3. 우측 진행단계 카드가 상태/액션 구조로 바뀌었는지</div>
               <div>4. 권한/사용자 변경 시 액션 버튼과 재고 수정 가능 여부가 달라지는지</div>
@@ -1094,6 +1138,7 @@ function MobileDrawer({
   selectedId,
   workflowStateById,
   onSelect,
+  onCreate,
 }: {
   open: boolean;
   onClose: () => void;
@@ -1101,6 +1146,7 @@ function MobileDrawer({
   selectedId: string;
   workflowStateById: Record<string, WorkflowState>;
   onSelect: (id: string, closeDrawer?: boolean) => void;
+  onCreate: (closeDrawer?: boolean) => void;
 }) {
   return (
     <div className={`${open ? "pointer-events-auto" : "pointer-events-none"} fixed inset-0 z-40 md:hidden`}>
@@ -1119,6 +1165,13 @@ function MobileDrawer({
           </button>
         </div>
         <div className="p-4">
+          <button
+            type="button"
+            onClick={() => onCreate(true)}
+            className="mb-3 flex w-full items-center justify-center rounded-2xl bg-stone-900 px-4 py-3 text-sm font-semibold text-white shadow-sm"
+          >
+            + 새 작업지시서
+          </button>
           <input className="w-full rounded-xl border border-stone-300 bg-stone-50 px-3 py-2 text-sm outline-none" placeholder="제품명 검색" />
           <div className="mt-3 flex flex-wrap gap-2">
             {["전체", "진행중", "발주요청", "입고대기", "완료"].map((tag) => (
@@ -1165,12 +1218,14 @@ function SidebarContent({
   selectedId,
   workflowStateById,
   onSelect,
+  onCreate,
 }: {
   version: string;
   workOrders: WorkOrder[];
   selectedId: string;
   workflowStateById: Record<string, WorkflowState>;
   onSelect: (id: string, closeDrawer?: boolean) => void;
+  onCreate: (closeDrawer?: boolean) => void;
 }) {
   return (
     <>
@@ -1184,6 +1239,13 @@ function SidebarContent({
         </div>
       </div>
       <div className="p-4">
+        <button
+          type="button"
+          onClick={() => onCreate()}
+          className="mb-3 flex w-full items-center justify-center rounded-2xl bg-stone-900 px-4 py-3 text-sm font-semibold text-white shadow-sm"
+        >
+          + 새 작업지시서
+        </button>
         <input className="w-full rounded-xl border border-stone-300 bg-stone-50 px-3 py-2 text-sm outline-none" placeholder="제품명 검색" />
         <div className="mt-3 flex flex-wrap gap-2">
           {["전체", "진행중", "발주요청", "입고대기", "완료"].map((tag) => (
