@@ -103,88 +103,84 @@ export default function PermissionModal({
   return (
     <div className="fixed inset-0 z-50">
       <div className="absolute inset-0 bg-black/35" onClick={onClose} />
-      <div className="absolute inset-x-0 bottom-0 flex max-h-[90vh] flex-col rounded-t-3xl border border-stone-200 bg-white shadow-2xl md:left-1/2 md:top-1/2 md:bottom-auto md:w-full md:max-w-2xl md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl">
+      <div className="absolute inset-x-0 bottom-0 flex max-h-[90vh] flex-col overflow-hidden rounded-t-3xl border border-stone-200 bg-white shadow-2xl md:left-1/2 md:top-1/2 md:bottom-auto md:w-full md:max-w-2xl md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl">
         <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-stone-200 bg-white px-4 py-4 md:px-6">
           <div>
             <div className="text-lg font-semibold text-stone-900">권한 설정</div>
             <div className="mt-1 text-sm text-stone-500">사용자별 권한을 스위치로 조정하는 테스트 화면입니다.</div>
           </div>
-          <button type="button" onClick={onClose} className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700 shadow-sm">
+          <button
+            type="button"
+            onClick={onClose}
+            className="shrink-0 whitespace-nowrap rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm text-stone-700 shadow-sm"
+          >
             닫기
           </button>
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 md:px-6 md:py-5">
           <div className="grid gap-3 md:grid-cols-[220px_minmax(0,1fr)]">
-          <div className="space-y-2">
-            {users.map((user) => {
-              const active = user.id === selectedUser.id;
-              const isCurrent = user.id === currentUserId;
-              return (
-                <button
-                  key={user.id}
-                  type="button"
-                  onClick={() => onSelectedUserChange(user.id)}
-                  className={`block w-full rounded-2xl border p-4 text-left ${active ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white"}`}
-                >
-                  <div className="text-sm font-semibold">{user.name}</div>
-                  <div className={`mt-1 text-xs ${active ? "text-stone-300" : "text-stone-500"}`}>{user.team}</div>
-                  {isCurrent && <div className={`mt-2 text-[11px] ${active ? "text-stone-200" : "text-cyan-700"}`}>현재 선택 사용자</div>}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="min-w-0 rounded-2xl border border-stone-200 bg-stone-50 p-4">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <div className="text-base font-semibold text-stone-900">{selectedUser.name}</div>
-                <div className="mt-1 text-sm text-stone-500">{selectedUser.team}</div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {PRESETS.map((preset) => (
-                  <button
-                    key={preset.label}
-                    type="button"
-                    onClick={() => onApplyPreset(selectedUser.id, preset.permissions)}
-                    className="rounded-full border border-stone-300 bg-white px-3 py-1 text-xs text-stone-700"
-                  >
-                    {preset.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-3">
-              {PERMISSION_LABELS.map((item) => {
-                const enabled = selectedUser.permissions[item.key];
+            <div className="space-y-2">
+              {users.map((user) => {
+                const active = user.id === selectedUser.id;
+                const isCurrent = user.id === currentUserId;
                 return (
-                  <div key={item.key} className="flex items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white px-4 py-3">
-                    <div>
-                      <div className="text-sm font-medium text-stone-900">{item.label}</div>
-                      <div className="mt-1 text-xs text-stone-500">{enabled ? "권한 허용" : "권한 비허용"}</div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => onTogglePermission(selectedUser.id, item.key)}
-                      className={`relative h-7 w-12 rounded-full transition ${enabled ? "bg-stone-900" : "bg-stone-300"}`}
-                      aria-pressed={enabled}
-                    >
-                      <span className={`absolute top-1 h-5 w-5 rounded-full bg-white transition ${enabled ? "left-6" : "left-1"}`} />
-                    </button>
-                  </div>
+                  <button
+                    key={user.id}
+                    type="button"
+                    onClick={() => onSelectedUserChange(user.id)}
+                    className={`block w-full rounded-2xl border p-4 text-left ${active ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white"}`}
+                  >
+                    <div className="text-sm font-semibold">{user.name}</div>
+                    <div className={`mt-1 text-xs ${active ? "text-stone-300" : "text-stone-500"}`}>{user.team}</div>
+                    {isCurrent && <div className={`mt-2 text-[11px] ${active ? "text-stone-200" : "text-cyan-700"}`}>현재 선택 사용자</div>}
+                  </button>
                 );
               })}
             </div>
-          </div>
-        </div>
-      </div>
 
-        <div className="sticky bottom-0 z-10 border-t border-stone-200 bg-white px-4 py-3 md:px-6">
-          <div className="flex justify-end">
-            <button type="button" onClick={onClose} className="rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm text-stone-700 shadow-sm">
-              닫기
-            </button>
+            <div className="min-w-0 rounded-2xl border border-stone-200 bg-stone-50 p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="text-base font-semibold text-stone-900">{selectedUser.name}</div>
+                  <div className="mt-1 text-sm text-stone-500">{selectedUser.team}</div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {PRESETS.map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => onApplyPreset(selectedUser.id, preset.permissions)}
+                      className="rounded-full border border-stone-300 bg-white px-3 py-1 text-xs text-stone-700"
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                {PERMISSION_LABELS.map((item) => {
+                  const enabled = selectedUser.permissions[item.key];
+                  return (
+                    <div key={item.key} className="flex items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white px-4 py-3">
+                      <div>
+                        <div className="text-sm font-medium text-stone-900">{item.label}</div>
+                        <div className="mt-1 text-xs text-stone-500">{enabled ? "권한 허용" : "권한 비허용"}</div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => onTogglePermission(selectedUser.id, item.key)}
+                        className={`relative h-7 w-12 rounded-full transition ${enabled ? "bg-stone-900" : "bg-stone-300"}`}
+                        aria-pressed={enabled}
+                      >
+                        <span className={`absolute top-1 h-5 w-5 rounded-full bg-white transition ${enabled ? "left-6" : "left-1"}`} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       </div>
