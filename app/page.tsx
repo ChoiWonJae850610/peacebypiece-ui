@@ -470,20 +470,21 @@ const INITIAL_WORK_ORDERS: WorkOrder[] = [
 
 
 export default function Home() {
-  const version = "0.0.23";
+  const version = "0.0.24";
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [materialOpen, setMaterialOpen] = useState(false);
   const [outsourcingOpen, setOutsourcingOpen] = useState(false);
   const [selectedId, setSelectedId] = useState("WO-2026-0014");
   const [inventoryEditorOpen, setInventoryEditorOpen] = useState(false);
   const [permissionModalOpen, setPermissionModalOpen] = useState(false);
+  const [inventoryLogModalOpen, setInventoryLogModalOpen] = useState(false);
   const [users, setUsers] = useState<UserProfile[]>(INITIAL_USERS);
   const [currentUserId, setCurrentUserId] = useState("user-admin");
   const [permissionTargetUserId, setPermissionTargetUserId] = useState("user-designer");
   const appShellRef = useRef<HTMLDivElement | null>(null);
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>(INITIAL_WORK_ORDERS);
 
-  const blockingOverlayOpen = drawerOpen || inventoryEditorOpen || permissionModalOpen;
+  const blockingOverlayOpen = drawerOpen || inventoryEditorOpen || permissionModalOpen || inventoryLogModalOpen;
 
   useEffect(() => {
     const body = document.body;
@@ -538,7 +539,7 @@ export default function Home() {
     const appShell = appShellRef.current;
     if (!appShell) return;
 
-    if (inventoryEditorOpen || permissionModalOpen) {
+    if (inventoryEditorOpen || permissionModalOpen || inventoryLogModalOpen) {
       appShell.setAttribute("inert", "");
       appShell.setAttribute("aria-hidden", "true");
     } else {
@@ -550,7 +551,7 @@ export default function Home() {
       appShell.removeAttribute("inert");
       appShell.removeAttribute("aria-hidden");
     };
-  }, [inventoryEditorOpen, permissionModalOpen]);
+  }, [inventoryEditorOpen, permissionModalOpen, inventoryLogModalOpen]);
 
   const [workflowStateById, setWorkflowStateById] = useState<Record<string, WorkflowState>>(() =>
     Object.fromEntries(INITIAL_WORK_ORDERS.map((item) => [item.id, item.status])),
@@ -745,7 +746,7 @@ export default function Home() {
               <span className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-cyan-800">state</span>
             </div>
             <div className="mt-3 space-y-1 text-xs text-cyan-900">
-              <div>1. 상단 버전이 v0.0.23로 표시되는지</div>
+              <div>1. 상단 버전이 v0.0.24로 표시되는지</div>
               <div>2. 메뉴에서 작업 선택 시 드로어가 닫히는지</div>
               <div>3. 우측 진행단계 카드가 상태/액션 구조로 바뀌었는지</div>
               <div>4. 권한/사용자 변경 시 액션 버튼과 재고 수정 가능 여부가 달라지는지</div>
@@ -800,39 +801,6 @@ export default function Home() {
                       >
                         재고 수정
                       </button>
-                    </div>
-                    <div className="mt-4 rounded-2xl border border-stone-200 bg-white p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <div className="text-sm font-semibold text-stone-900">최근 재고 히스토리</div>
-                          <div className="mt-1 text-xs text-stone-500">최근 3건 기준으로 재고 변경 이력을 표시합니다.</div>
-                        </div>
-                        <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">{inventoryLogs.length}건</span>
-                      </div>
-                      <div className="mt-3 space-y-2">
-                        {inventoryLogs.length > 0 ? (
-                          inventoryLogs.slice(0, 3).map((item) => (
-                            <div key={item.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
-                              <div className="flex items-center justify-between gap-3">
-                                <div className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${
-                                  item.type === "입고"
-                                    ? "bg-emerald-100 text-emerald-700"
-                                    : item.type === "차감"
-                                      ? "bg-rose-100 text-rose-700"
-                                      : "bg-amber-100 text-amber-700"
-                                }`}>
-                                  {item.type} {item.delta > 0 ? `+${item.delta}` : item.delta}
-                                </div>
-                                <div className="text-[11px] text-stone-500">{item.time}</div>
-                              </div>
-                              <div className="mt-2 text-xs text-stone-500">{item.user}</div>
-                              <div className="mt-1 text-sm text-stone-700">{item.memo || "메모 없음"}</div>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-sm text-stone-500">최근 재고 변경 이력이 없습니다.</div>
-                        )}
-                      </div>
                     </div>
                   </>
                 )}
@@ -967,27 +935,59 @@ export default function Home() {
 
             {canSeeInventorySections && (
             <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-              <h3 className="text-base font-semibold">전체 재고 로그</h3>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-base font-semibold">전체 재고 로그</h3>
+                  <div className="mt-1 text-xs text-stone-500">화면에는 최신 3건만 표시합니다.</div>
+                </div>
+                <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">{inventoryLogs.length}건</span>
+              </div>
               <div className="mt-4 space-y-3">
                 {inventoryLogs.length > 0 ? (
                   inventoryLogs.slice(0, 3).map((item) => (
-                    <div key={item.id} className="rounded-xl bg-stone-50 p-3">
-                      <div className="text-xs text-stone-500">
-                        {item.time} · {item.user}
+                    <div key={item.id} className="rounded-xl border border-stone-200 bg-stone-50 p-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${
+                          item.type === "입고"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : item.type === "차감"
+                              ? "bg-rose-100 text-rose-700"
+                              : "bg-amber-100 text-amber-700"
+                        }`}>
+                          {item.type} {item.delta > 0 ? `+${item.delta}` : item.delta}
+                        </div>
+                        <div className="text-[11px] text-stone-500">{item.time}</div>
                       </div>
-                      <div className="mt-1 text-sm">{item.type} {item.delta > 0 ? `+${item.delta}` : item.delta} · {item.memo || "메모 없음"}</div>
+                      <div className="mt-2 text-xs text-stone-500">{item.user}</div>
+                      <div className="mt-1 text-sm text-stone-700">{item.memo || "메모 없음"}</div>
                     </div>
                   ))
                 ) : (
                   <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-sm text-stone-500">재고 변경 로그가 없습니다.</div>
                 )}
               </div>
+              {inventoryLogs.length > 3 && (
+                <button
+                  type="button"
+                  onClick={() => setInventoryLogModalOpen(true)}
+                  className="mt-4 w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800"
+                >
+                  전체 로그 보기
+                </button>
+              )}
             </div>
             )}
           </div>
         </aside>
       </div>
       </div>
+
+
+      <InventoryLogModal
+        open={inventoryLogModalOpen}
+        onClose={() => setInventoryLogModalOpen(false)}
+        logs={inventoryLogs}
+      />
 
       <InventoryEditor
         open={inventoryEditorOpen}
@@ -1009,6 +1009,68 @@ export default function Home() {
         onApplyRole={handleApplyRole}
       />
     </main>
+  );
+}
+
+function InventoryLogModal({
+  open,
+  onClose,
+  logs,
+}: {
+  open: boolean;
+  onClose: () => void;
+  logs: InventoryLog[];
+}) {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="inventory-log-modal-title">
+      <div className="absolute inset-0 bg-black/35" onClick={onClose} aria-hidden="true" />
+      <div className="absolute inset-x-0 bottom-0 top-[max(env(safe-area-inset-top),12px)] flex h-[calc(100dvh-max(env(safe-area-inset-top),12px))] flex-col overflow-hidden rounded-t-3xl border border-stone-200 bg-white shadow-2xl md:left-1/2 md:top-1/2 md:bottom-auto md:h-auto md:max-h-[90vh] md:w-full md:max-w-2xl md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl">
+        <div className="sticky top-0 z-10 shrink-0 border-b border-stone-200 bg-white px-4 py-4 md:px-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div id="inventory-log-modal-title" className="text-lg font-semibold text-stone-900">전체 재고 로그</div>
+              <div className="mt-1 text-sm text-stone-500">최신순으로 전체 재고 변경 로그를 확인합니다.</div>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="shrink-0 whitespace-nowrap rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm text-stone-700 shadow-sm"
+            >
+              닫기
+            </button>
+          </div>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 md:px-6 md:py-5">
+          <div className="space-y-3">
+            {logs.length > 0 ? (
+              logs.map((item) => (
+                <div key={item.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${
+                      item.type === "입고"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : item.type === "차감"
+                          ? "bg-rose-100 text-rose-700"
+                          : "bg-amber-100 text-amber-700"
+                    }`}>
+                      {item.type} {item.delta > 0 ? `+${item.delta}` : item.delta}
+                    </div>
+                    <div className="text-[11px] text-stone-500">{item.time}</div>
+                  </div>
+                  <div className="mt-2 text-xs text-stone-500">{item.user}</div>
+                  <div className="mt-1 text-sm text-stone-700">{item.memo || "메모 없음"}</div>
+                </div>
+              ))
+            ) : (
+              <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-sm text-stone-500">재고 변경 로그가 없습니다.</div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
