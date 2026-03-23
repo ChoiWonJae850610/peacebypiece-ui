@@ -283,23 +283,17 @@ const DEFAULT_PERMISSIONS: PermissionSet = {
   permissionManage: false,
 };
 
-const INITIAL_USERS: UserProfile[] = [
-  {
-    id: "user-designer",
-    name: "김디자이너",
-    team: "디자인팀",
+const ROLE_PRESETS = {
+  디자이너: {
+    team: "디자이너",
     permissions: {
       ...DEFAULT_PERMISSIONS,
       createWorkorder: true,
       reviewRequest: true,
       orderRequest: true,
-      inbound: true,
-      inspection: true,
     },
   },
-  {
-    id: "user-admin",
-    name: "박관리",
+  관리자: {
     team: "관리자",
     permissions: {
       ...DEFAULT_PERMISSIONS,
@@ -314,15 +308,40 @@ const INITIAL_USERS: UserProfile[] = [
       permissionManage: true,
     },
   },
-  {
-    id: "user-inspection",
-    name: "이검수",
+  "입고/검수": {
     team: "입고/검수",
     permissions: {
       ...DEFAULT_PERMISSIONS,
       inbound: true,
       inspection: true,
       inventoryEdit: true,
+    },
+  },
+} as const;
+
+const INITIAL_USERS: UserProfile[] = [
+  {
+    id: "user-designer",
+    name: "김디자이너",
+    team: "디자이너",
+    permissions: {
+      ...ROLE_PRESETS["디자이너"].permissions,
+    },
+  },
+  {
+    id: "user-admin",
+    name: "박관리",
+    team: "관리자",
+    permissions: {
+      ...ROLE_PRESETS["관리자"].permissions,
+    },
+  },
+  {
+    id: "user-inspection",
+    name: "이검수",
+    team: "입고/검수",
+    permissions: {
+      ...ROLE_PRESETS["입고/검수"].permissions,
     },
   },
 ];
@@ -451,7 +470,7 @@ const INITIAL_WORK_ORDERS: WorkOrder[] = [
 
 
 export default function Home() {
-  const version = "0.0.21";
+  const version = "0.0.22";
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [materialOpen, setMaterialOpen] = useState(false);
   const [outsourcingOpen, setOutsourcingOpen] = useState(false);
@@ -670,8 +689,15 @@ export default function Home() {
     );
   };
 
-  const handleApplyPreset = (userId: string, permissions: PermissionSet) => {
-    setUsers((prev) => prev.map((user) => (user.id === userId ? { ...user, permissions: { ...permissions } } : user)));
+  const handleApplyRole = (userId: string, role: "디자이너" | "관리자" | "입고/검수") => {
+    const preset = ROLE_PRESETS[role];
+    setUsers((prev) =>
+      prev.map((user) =>
+        user.id === userId
+          ? { ...user, team: preset.team, permissions: { ...preset.permissions } }
+          : user,
+      ),
+    );
   };
 
   return (
@@ -711,7 +737,7 @@ export default function Home() {
               <span className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-cyan-800">state</span>
             </div>
             <div className="mt-3 space-y-1 text-xs text-cyan-900">
-              <div>1. 상단 버전이 v0.0.21로 표시되는지</div>
+              <div>1. 상단 버전이 v0.0.22로 표시되는지</div>
               <div>2. 메뉴에서 작업 선택 시 드로어가 닫히는지</div>
               <div>3. 우측 진행단계 카드가 상태/액션 구조로 바뀌었는지</div>
               <div>4. 권한/사용자 변경 시 액션 버튼과 재고 수정 가능 여부가 달라지는지</div>
@@ -956,7 +982,7 @@ export default function Home() {
         selectedUserId={permissionTargetUserId}
         onSelectedUserChange={setPermissionTargetUserId}
         onTogglePermission={handleTogglePermission}
-        onApplyPreset={handleApplyPreset}
+        onApplyRole={handleApplyRole}
       />
     </main>
   );

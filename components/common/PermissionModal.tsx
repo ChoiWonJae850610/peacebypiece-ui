@@ -22,61 +22,12 @@ type UserProfile = {
   permissions: PermissionSet;
 };
 
-const PERMISSION_LABELS: { key: PermissionKey; label: string }[] = [
-  { key: "createWorkorder", label: "작업지시 생성/수정" },
-  { key: "reviewRequest", label: "검토 요청" },
-  { key: "reviewApprove", label: "검토 승인/반려" },
-  { key: "orderRequest", label: "발주 요청" },
-  { key: "orderConfirm", label: "발주 확정" },
-  { key: "inbound", label: "입고 등록" },
-  { key: "inspection", label: "검수 완료" },
-  { key: "inventoryEdit", label: "재고 수정" },
-  { key: "permissionManage", label: "권한 설정" },
-];
+type RoleType = "디자이너" | "관리자" | "입고/검수";
 
-const PRESETS: { label: string; permissions: PermissionSet }[] = [
-  {
-    label: "디자이너 기본",
-    permissions: {
-      createWorkorder: true,
-      reviewRequest: true,
-      reviewApprove: false,
-      orderRequest: true,
-      orderConfirm: false,
-      inbound: false,
-      inspection: false,
-      inventoryEdit: false,
-      permissionManage: false,
-    },
-  },
-  {
-    label: "관리자 기본",
-    permissions: {
-      createWorkorder: true,
-      reviewRequest: true,
-      reviewApprove: true,
-      orderRequest: true,
-      orderConfirm: true,
-      inbound: true,
-      inspection: true,
-      inventoryEdit: true,
-      permissionManage: true,
-    },
-  },
-  {
-    label: "입고/검수 기본",
-    permissions: {
-      createWorkorder: false,
-      reviewRequest: false,
-      reviewApprove: false,
-      orderRequest: false,
-      orderConfirm: false,
-      inbound: true,
-      inspection: true,
-      inventoryEdit: true,
-      permissionManage: false,
-    },
-  },
+const ROLE_OPTIONS: { role: RoleType; title: string; description: string }[] = [
+  { role: "디자이너", title: "디자이너", description: "작업지시 작성, 검토 요청, 발주 요청 중심" },
+  { role: "관리자", title: "관리자", description: "전체 승인, 발주 확정, 상태 관리까지 가능" },
+  { role: "입고/검수", title: "입고/검수", description: "입고 처리, 검수 완료, 재고 수정 중심" },
 ];
 
 function getFocusableElements(container: HTMLElement) {
@@ -87,6 +38,12 @@ function getFocusableElements(container: HTMLElement) {
   ).filter((element) => !element.hasAttribute("inert") && !element.getAttribute("aria-hidden"));
 }
 
+function inferRole(user: UserProfile): RoleType {
+  if (user.permissions.permissionManage || user.permissions.reviewApprove) return "관리자";
+  if (user.permissions.inventoryEdit || user.permissions.inbound || user.permissions.inspection) return "입고/검수";
+  return "디자이너";
+}
+
 export default function PermissionModal({
   open,
   onClose,
@@ -94,8 +51,7 @@ export default function PermissionModal({
   currentUserId,
   selectedUserId,
   onSelectedUserChange,
-  onTogglePermission,
-  onApplyPreset,
+  onApplyRole,
 }: {
   open: boolean;
   onClose: () => void;
@@ -103,8 +59,8 @@ export default function PermissionModal({
   currentUserId: string;
   selectedUserId: string;
   onSelectedUserChange: (id: string) => void;
-  onTogglePermission: (userId: string, key: PermissionKey) => void;
-  onApplyPreset: (userId: string, permissions: PermissionSet) => void;
+  onTogglePermission?: (userId: string, key: PermissionKey) => void;
+  onApplyRole: (userId: string, role: RoleType) => void;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
 
@@ -161,6 +117,7 @@ export default function PermissionModal({
   if (!open) return null;
 
   const selectedUser = users.find((item) => item.id === selectedUserId) ?? users[0];
+  const activeRole = inferRole(selectedUser);
 
   return (
     <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="permission-modal-title">
@@ -174,7 +131,7 @@ export default function PermissionModal({
           <div className="flex items-start justify-between gap-4">
             <div>
               <div id="permission-modal-title" className="text-lg font-semibold text-stone-900">권한 설정</div>
-              <div className="mt-1 text-sm text-stone-500 break-keep">사용자별 권한을 스위치로 조정하는 테스트 화면입니다.</div>
+              <div className="mt-1 text-sm text-stone-500 break-keep">세부 토글 대신 역할 3개 중 하나를 선택하는 방식으로 단순화했습니다.</div>
             </div>
             <button
               type="button"
@@ -208,46 +165,40 @@ export default function PermissionModal({
             </div>
 
             <div className="min-w-0 rounded-2xl border border-stone-200 bg-stone-50 p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <div className="text-base font-semibold text-stone-900">{selectedUser.name}</div>
-                  <div className="mt-1 text-sm text-stone-500">{selectedUser.team}</div>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {PRESETS.map((preset) => (
-                    <button
-                      key={preset.label}
-                      type="button"
-                      onClick={() => onApplyPreset(selectedUser.id, preset.permissions)}
-                      className="rounded-full border border-stone-300 bg-white px-3 py-1 text-xs text-stone-700"
-                    >
-                      {preset.label}
-                    </button>
-                  ))}
-                </div>
+              <div>
+                <div className="text-base font-semibold text-stone-900">{selectedUser.name}</div>
+                <div className="mt-1 text-sm text-stone-500">현재 역할: {activeRole}</div>
               </div>
 
               <div className="mt-4 space-y-3">
-                {PERMISSION_LABELS.map((item) => {
-                  const enabled = selectedUser.permissions[item.key];
+                {ROLE_OPTIONS.map((item) => {
+                  const checked = item.role === activeRole;
                   return (
-                    <div key={item.key} className="flex items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white px-4 py-3">
+                    <button
+                      key={item.role}
+                      type="button"
+                      onClick={() => onApplyRole(selectedUser.id, item.role)}
+                      className={`flex w-full items-center justify-between gap-4 rounded-2xl border px-4 py-4 text-left ${checked ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white text-stone-900"}`}
+                    >
                       <div>
-                        <div className="text-sm font-medium text-stone-900">{item.label}</div>
-                        <div className="mt-1 text-xs text-stone-500">{enabled ? "권한 허용" : "권한 비허용"}</div>
+                        <div className="text-sm font-semibold">{item.title}</div>
+                        <div className={`mt-1 text-xs ${checked ? "text-stone-300" : "text-stone-500"}`}>{item.description}</div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => onTogglePermission(selectedUser.id, item.key)}
-                        className={`relative h-7 w-12 rounded-full transition ${enabled ? "bg-stone-900" : "bg-stone-300"}`}
-                        aria-label={`${item.label} ${enabled ? "끄기" : "켜기"}`}
-                        aria-pressed={enabled}
-                      >
-                        <span className={`absolute top-1 h-5 w-5 rounded-full bg-white transition ${enabled ? "left-6" : "left-1"}`} />
-                      </button>
-                    </div>
+                      <div className={`flex h-5 w-5 items-center justify-center rounded-full border ${checked ? "border-white" : "border-stone-300"}`}>
+                        {checked && <div className="h-2.5 w-2.5 rounded-full bg-white" />}
+                      </div>
+                    </button>
                   );
                 })}
+              </div>
+
+              <div className="mt-4 rounded-2xl border border-stone-200 bg-white p-4">
+                <div className="text-sm font-semibold text-stone-900">역할 설명</div>
+                <div className="mt-2 space-y-1 text-xs text-stone-500">
+                  <div>디자이너: 작업지시 작성, 검토 요청, 발주 요청</div>
+                  <div>관리자: 승인, 발주 확정, 전체 상태 관리</div>
+                  <div>입고/검수: 입고 등록, 검수 완료, 재고 수정</div>
+                </div>
               </div>
             </div>
           </div>
