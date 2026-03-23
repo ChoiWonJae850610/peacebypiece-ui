@@ -168,9 +168,9 @@ export default function PermissionModal({
       <div
         ref={dialogRef}
         tabIndex={-1}
-        className="absolute inset-x-0 bottom-0 flex max-h-[90vh] flex-col overflow-hidden rounded-t-3xl border border-stone-200 bg-white shadow-2xl outline-none md:left-1/2 md:top-1/2 md:bottom-auto md:w-full md:max-w-2xl md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl"
+        className="absolute inset-x-0 bottom-0 top-[max(env(safe-area-inset-top),12px)] flex h-[calc(100dvh-max(env(safe-area-inset-top),12px))] flex-col overflow-hidden rounded-t-3xl border border-stone-200 bg-white shadow-2xl outline-none md:left-1/2 md:top-1/2 md:bottom-auto md:h-auto md:max-h-[90vh] md:w-full md:max-w-2xl md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl"
       >
-        <div className="shrink-0 border-b border-stone-200 bg-white px-4 py-4 md:px-6">
+        <div className="sticky top-0 z-10 shrink-0 border-b border-stone-200 bg-white px-4 py-4 md:px-6">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div id="permission-modal-title" className="text-lg font-semibold text-stone-900">권한 설정</div>
