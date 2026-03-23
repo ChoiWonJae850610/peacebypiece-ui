@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
 type PermissionKey =
   | "createWorkorder"
   | "reviewRequest"
@@ -77,6 +79,14 @@ const PRESETS: { label: string; permissions: PermissionSet }[] = [
   },
 ];
 
+function getFocusableElements(container: HTMLElement) {
+  return Array.from(
+    container.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ),
+  ).filter((element) => !element.hasAttribute("inert") && !element.getAttribute("aria-hidden"));
+}
+
 export default function PermissionModal({
   open,
   onClose,
@@ -96,29 +106,87 @@ export default function PermissionModal({
   onTogglePermission: (userId: string, key: PermissionKey) => void;
   onApplyPreset: (userId: string, permissions: PermissionSet) => void;
 }) {
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open || !dialogRef.current) return;
+
+    const dialog = dialogRef.current;
+    const previousActive = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+    const focusTimer = window.setTimeout(() => {
+      const focusables = getFocusableElements(dialog);
+      (focusables[0] ?? dialog).focus();
+    }, 0);
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+      const focusables = getFocusableElements(dialog);
+      if (focusables.length === 0) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement;
+
+      if (event.shiftKey) {
+        if (active === first || !dialog.contains(active)) {
+          event.preventDefault();
+          last.focus();
+        }
+      } else if (active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.removeEventListener("keydown", handleKeyDown);
+      previousActive?.focus();
+    };
+  }, [open, onClose]);
+
   if (!open) return null;
 
   const selectedUser = users.find((item) => item.id === selectedUserId) ?? users[0];
 
   return (
-    <div className="fixed inset-0 z-50">
-      <div className="absolute inset-0 bg-black/35" onClick={onClose} />
-      <div className="absolute inset-x-0 bottom-0 flex max-h-[90vh] flex-col overflow-hidden rounded-t-3xl border border-stone-200 bg-white shadow-2xl md:left-1/2 md:top-1/2 md:bottom-auto md:w-full md:max-w-2xl md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl">
-        <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-stone-200 bg-white px-4 py-4 md:px-6">
-          <div>
-            <div className="text-lg font-semibold text-stone-900">권한 설정</div>
-            <div className="mt-1 text-sm text-stone-500">사용자별 권한을 스위치로 조정하는 테스트 화면입니다.</div>
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="permission-modal-title">
+      <div className="absolute inset-0 bg-black/35" onClick={onClose} aria-hidden="true" />
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        className="absolute inset-x-0 bottom-0 flex max-h-[90vh] flex-col overflow-hidden rounded-t-3xl border border-stone-200 bg-white shadow-2xl outline-none md:left-1/2 md:top-1/2 md:bottom-auto md:w-full md:max-w-2xl md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl"
+      >
+        <div className="shrink-0 border-b border-stone-200 bg-white px-4 py-4 md:px-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div id="permission-modal-title" className="text-lg font-semibold text-stone-900">권한 설정</div>
+              <div className="mt-1 text-sm text-stone-500 break-keep">사용자별 권한을 스위치로 조정하는 테스트 화면입니다.</div>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="shrink-0 whitespace-nowrap rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm text-stone-700 shadow-sm"
+            >
+              닫기
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="shrink-0 whitespace-nowrap rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm text-stone-700 shadow-sm"
-          >
-            닫기
-          </button>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 md:px-6 md:py-5">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 md:px-6 md:py-5">
           <div className="grid gap-3 md:grid-cols-[220px_minmax(0,1fr)]">
             <div className="space-y-2">
               {users.map((user) => {
@@ -172,6 +240,7 @@ export default function PermissionModal({
                         type="button"
                         onClick={() => onTogglePermission(selectedUser.id, item.key)}
                         className={`relative h-7 w-12 rounded-full transition ${enabled ? "bg-stone-900" : "bg-stone-300"}`}
+                        aria-label={`${item.label} ${enabled ? "끄기" : "켜기"}`}
                         aria-pressed={enabled}
                       >
                         <span className={`absolute top-1 h-5 w-5 rounded-full bg-white transition ${enabled ? "left-6" : "left-1"}`} />

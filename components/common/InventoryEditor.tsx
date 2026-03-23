@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type InventoryMode = "입고" | "차감" | "보정";
 
@@ -12,6 +12,14 @@ type InventoryLog = {
   user: string;
   time: string;
 };
+
+function getFocusableElements(container: HTMLElement) {
+  return Array.from(
+    container.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ),
+  ).filter((element) => !element.hasAttribute("inert") && !element.getAttribute("aria-hidden"));
+}
 
 export default function InventoryEditor({
   open,
@@ -31,6 +39,7 @@ export default function InventoryEditor({
   const [mode, setMode] = useState<InventoryMode>("입고");
   const [quantity, setQuantity] = useState<string>("");
   const [memo, setMemo] = useState("");
+  const dialogRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!open) {
@@ -39,6 +48,56 @@ export default function InventoryEditor({
       setMemo("");
     }
   }, [open]);
+
+  useEffect(() => {
+    if (!open || !dialogRef.current) return;
+
+    const dialog = dialogRef.current;
+    const previousActive = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+    const focusTimer = window.setTimeout(() => {
+      const focusables = getFocusableElements(dialog);
+      (focusables[0] ?? dialog).focus();
+    }, 0);
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+      const focusables = getFocusableElements(dialog);
+      if (focusables.length === 0) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement;
+
+      if (event.shiftKey) {
+        if (active === first || !dialog.contains(active)) {
+          event.preventDefault();
+          last.focus();
+        }
+      } else if (active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.removeEventListener("keydown", handleKeyDown);
+      previousActive?.focus();
+    };
+  }, [open, onClose]);
 
   const parsedQuantity = Number(quantity || 0);
   const nextStock = useMemo(() => {
@@ -57,12 +116,16 @@ export default function InventoryEditor({
   };
 
   return (
-    <div className="fixed inset-0 z-50">
-      <div className="absolute inset-0 bg-black/35" onClick={onClose} />
-      <div className="absolute inset-x-0 bottom-0 rounded-t-3xl border border-stone-200 bg-white p-4 shadow-2xl md:left-1/2 md:top-1/2 md:bottom-auto md:w-full md:max-w-lg md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl md:p-6">
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="inventory-editor-title">
+      <div className="absolute inset-0 bg-black/35" onClick={onClose} aria-hidden="true" />
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        className="absolute inset-x-0 bottom-0 max-h-[90vh] overflow-y-auto overscroll-contain rounded-t-3xl border border-stone-200 bg-white p-4 shadow-2xl outline-none md:left-1/2 md:top-1/2 md:bottom-auto md:w-full md:max-w-lg md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl md:p-6"
+      >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <div className="text-lg font-semibold text-stone-900">재고 수정</div>
+            <div id="inventory-editor-title" className="text-lg font-semibold text-stone-900">재고 수정</div>
             <div className="mt-1 text-sm text-stone-500">모바일은 드로어, PC는 모달처럼 동작합니다.</div>
           </div>
           <button type="button" onClick={onClose} className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import InventoryEditor from "@/components/common/InventoryEditor";
 import PermissionModal from "@/components/common/PermissionModal";
 
@@ -323,12 +323,15 @@ export default function Home() {
   const [users, setUsers] = useState<UserProfile[]>(INITIAL_USERS);
   const [currentUserId, setCurrentUserId] = useState("user-admin");
   const [permissionTargetUserId, setPermissionTargetUserId] = useState("user-designer");
+  const appShellRef = useRef<HTMLDivElement | null>(null);
+
+  const blockingOverlayOpen = drawerOpen || inventoryEditorOpen || permissionModalOpen;
 
   useEffect(() => {
     const body = document.body;
     const html = document.documentElement;
 
-    if (drawerOpen) {
+    if (blockingOverlayOpen) {
       const scrollY = window.scrollY;
       body.dataset.scrollY = String(scrollY);
       body.style.position = "fixed";
@@ -337,7 +340,9 @@ export default function Home() {
       body.style.right = "0";
       body.style.width = "100%";
       body.style.overflow = "hidden";
+      body.style.touchAction = "none";
       html.style.overflow = "hidden";
+      html.style.touchAction = "none";
     } else {
       const saved = body.dataset.scrollY || "0";
       body.style.position = "";
@@ -346,7 +351,9 @@ export default function Home() {
       body.style.right = "";
       body.style.width = "";
       body.style.overflow = "";
+      body.style.touchAction = "";
       html.style.overflow = "";
+      html.style.touchAction = "";
       window.scrollTo(0, Number(saved));
       delete body.dataset.scrollY;
     }
@@ -359,13 +366,33 @@ export default function Home() {
       body.style.right = "";
       body.style.width = "";
       body.style.overflow = "";
+      body.style.touchAction = "";
       html.style.overflow = "";
-      if (drawerOpen) {
+      html.style.touchAction = "";
+      if (blockingOverlayOpen) {
         window.scrollTo(0, Number(saved));
       }
       delete body.dataset.scrollY;
     };
-  }, [drawerOpen]);
+  }, [blockingOverlayOpen]);
+
+  useEffect(() => {
+    const appShell = appShellRef.current;
+    if (!appShell) return;
+
+    if (inventoryEditorOpen || permissionModalOpen) {
+      appShell.setAttribute("inert", "");
+      appShell.setAttribute("aria-hidden", "true");
+    } else {
+      appShell.removeAttribute("inert");
+      appShell.removeAttribute("aria-hidden");
+    }
+
+    return () => {
+      appShell.removeAttribute("inert");
+      appShell.removeAttribute("aria-hidden");
+    };
+  }, [inventoryEditorOpen, permissionModalOpen]);
 
   const workOrders: WorkOrder[] = [
     {
@@ -570,6 +597,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-stone-100 text-stone-900">
+      <div ref={appShellRef}>
       <MobileTopBar version={version} onOpen={() => setDrawerOpen(true)} />
 
       <MobileDrawer
@@ -793,6 +821,7 @@ export default function Home() {
             </div>
           </div>
         </aside>
+      </div>
       </div>
 
       <InventoryEditor
