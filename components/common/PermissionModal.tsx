@@ -25,9 +25,21 @@ type UserProfile = {
 type RoleType = "디자이너" | "관리자" | "입고/검수";
 
 const ROLE_OPTIONS: { role: RoleType; title: string; description: string }[] = [
-  { role: "디자이너", title: "디자이너", description: "작업지시 작성, 검토 요청, 발주 요청 중심" },
-  { role: "관리자", title: "관리자", description: "전체 승인, 발주 확정, 상태 관리까지 가능" },
-  { role: "입고/검수", title: "입고/검수", description: "입고 처리, 검수 완료, 재고 수정 중심" },
+  {
+    role: "디자이너",
+    title: "디자이너",
+    description: "작업지시 작성, 검토 요청, 발주 요청 중심",
+  },
+  {
+    role: "관리자",
+    title: "관리자",
+    description: "전체 승인, 발주 확정, 상태 관리까지 가능",
+  },
+  {
+    role: "입고/검수",
+    title: "입고/검수",
+    description: "입고 처리, 검수 완료, 재고 수정 중심",
+  },
 ];
 
 function getFocusableElements(container: HTMLElement) {
@@ -35,12 +47,21 @@ function getFocusableElements(container: HTMLElement) {
     container.querySelectorAll<HTMLElement>(
       'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
     ),
-  ).filter((element) => !element.hasAttribute("inert") && !element.getAttribute("aria-hidden"));
+  ).filter(
+    (element) =>
+      !element.hasAttribute("inert") && !element.getAttribute("aria-hidden"),
+  );
 }
 
 function inferRole(user: UserProfile): RoleType {
-  if (user.permissions.permissionManage || user.permissions.reviewApprove) return "관리자";
-  if (user.permissions.inventoryEdit || user.permissions.inbound || user.permissions.inspection) return "입고/검수";
+  if (user.permissions.permissionManage || user.permissions.reviewApprove)
+    return "관리자";
+  if (
+    user.permissions.inventoryEdit ||
+    user.permissions.inbound ||
+    user.permissions.inspection
+  )
+    return "입고/검수";
   return "디자이너";
 }
 
@@ -68,7 +89,10 @@ export default function PermissionModal({
     if (!open || !dialogRef.current) return;
 
     const dialog = dialogRef.current;
-    const previousActive = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousActive =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
 
     const focusTimer = window.setTimeout(() => {
       const focusables = getFocusableElements(dialog);
@@ -116,12 +140,22 @@ export default function PermissionModal({
 
   if (!open) return null;
 
-  const selectedUser = users.find((item) => item.id === selectedUserId) ?? users[0];
+  const selectedUser =
+    users.find((item) => item.id === selectedUserId) ?? users[0];
   const activeRole = inferRole(selectedUser);
 
   return (
-    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="permission-modal-title">
-      <div className="absolute inset-0 bg-black/35" onClick={onClose} aria-hidden="true" />
+    <div
+      className="fixed inset-0 z-50"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="permission-modal-title"
+    >
+      <div
+        className="absolute inset-0 bg-black/35"
+        onClick={onClose}
+        aria-hidden="true"
+      />
       <div
         ref={dialogRef}
         tabIndex={-1}
@@ -130,8 +164,16 @@ export default function PermissionModal({
         <div className="sticky top-0 z-10 shrink-0 border-b border-stone-200 bg-white px-4 py-4 md:px-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div id="permission-modal-title" className="text-lg font-semibold text-stone-900">권한 설정</div>
-              <div className="mt-1 text-sm text-stone-500 break-keep">세부 토글 대신 역할 3개 중 하나를 선택하는 방식으로 단순화했습니다.</div>
+              <div
+                id="permission-modal-title"
+                className="text-lg font-semibold text-stone-900"
+              >
+                권한 설정
+              </div>
+              <div className="mt-1 text-sm text-stone-500 break-keep">
+                세부 토글 대신 역할 3개 중 하나를 선택하는 방식으로
+                단순화했습니다.
+              </div>
             </div>
             <button
               type="button"
@@ -157,8 +199,18 @@ export default function PermissionModal({
                     className={`block w-full rounded-2xl border p-4 text-left ${active ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white"}`}
                   >
                     <div className="text-sm font-semibold">{user.name}</div>
-                    <div className={`mt-1 text-xs ${active ? "text-stone-300" : "text-stone-500"}`}>{user.team}</div>
-                    {isCurrent && <div className={`mt-2 text-[11px] ${active ? "text-stone-200" : "text-cyan-700"}`}>현재 선택 사용자</div>}
+                    <div
+                      className={`mt-1 text-xs ${active ? "text-stone-300" : "text-stone-500"}`}
+                    >
+                      {user.team}
+                    </div>
+                    {isCurrent && (
+                      <div
+                        className={`mt-2 text-[11px] ${active ? "text-stone-200" : "text-cyan-700"}`}
+                      >
+                        현재 선택 사용자
+                      </div>
+                    )}
                   </button>
                 );
               })}
@@ -166,8 +218,12 @@ export default function PermissionModal({
 
             <div className="min-w-0 rounded-2xl border border-stone-200 bg-stone-50 p-4">
               <div>
-                <div className="text-base font-semibold text-stone-900">{selectedUser.name}</div>
-                <div className="mt-1 text-sm text-stone-500">현재 역할: {activeRole}</div>
+                <div className="text-base font-semibold text-stone-900">
+                  {selectedUser.name}
+                </div>
+                <div className="mt-1 text-sm text-stone-500">
+                  현재 역할: {activeRole}
+                </div>
               </div>
 
               <div className="mt-4 space-y-3">
@@ -181,11 +237,21 @@ export default function PermissionModal({
                       className={`flex w-full items-center justify-between gap-4 rounded-2xl border px-4 py-4 text-left ${checked ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white text-stone-900"}`}
                     >
                       <div>
-                        <div className="text-sm font-semibold">{item.title}</div>
-                        <div className={`mt-1 text-xs ${checked ? "text-stone-300" : "text-stone-500"}`}>{item.description}</div>
+                        <div className="text-sm font-semibold">
+                          {item.title}
+                        </div>
+                        <div
+                          className={`mt-1 text-xs ${checked ? "text-stone-300" : "text-stone-500"}`}
+                        >
+                          {item.description}
+                        </div>
                       </div>
-                      <div className={`flex h-5 w-5 items-center justify-center rounded-full border ${checked ? "border-white" : "border-stone-300"}`}>
-                        {checked && <div className="h-2.5 w-2.5 rounded-full bg-white" />}
+                      <div
+                        className={`flex h-5 w-5 items-center justify-center rounded-full border ${checked ? "border-white" : "border-stone-300"}`}
+                      >
+                        {checked && (
+                          <div className="h-2.5 w-2.5 rounded-full bg-white" />
+                        )}
                       </div>
                     </button>
                   );
@@ -193,7 +259,9 @@ export default function PermissionModal({
               </div>
 
               <div className="mt-4 rounded-2xl border border-stone-200 bg-white p-4">
-                <div className="text-sm font-semibold text-stone-900">역할 설명</div>
+                <div className="text-sm font-semibold text-stone-900">
+                  역할 설명
+                </div>
                 <div className="mt-2 space-y-1 text-xs text-stone-500">
                   <div>디자이너: 작업지시 작성, 검토 요청, 발주 요청</div>
                   <div>관리자: 승인, 발주 확정, 전체 상태 관리</div>

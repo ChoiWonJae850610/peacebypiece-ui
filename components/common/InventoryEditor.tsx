@@ -18,7 +18,10 @@ function getFocusableElements(container: HTMLElement) {
     container.querySelectorAll<HTMLElement>(
       'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
     ),
-  ).filter((element) => !element.hasAttribute("inert") && !element.getAttribute("aria-hidden"));
+  ).filter(
+    (element) =>
+      !element.hasAttribute("inert") && !element.getAttribute("aria-hidden"),
+  );
 }
 
 export default function InventoryEditor({
@@ -34,7 +37,11 @@ export default function InventoryEditor({
   currentStock: number;
   currentUserName: string;
   logs: InventoryLog[];
-  onApply: (payload: { type: InventoryMode; quantity: number; memo: string }) => void;
+  onApply: (payload: {
+    type: InventoryMode;
+    quantity: number;
+    memo: string;
+  }) => void;
 }) {
   const [mode, setMode] = useState<InventoryMode>("입고");
   const [quantity, setQuantity] = useState<string>("");
@@ -53,7 +60,10 @@ export default function InventoryEditor({
     if (!open || !dialogRef.current) return;
 
     const dialog = dialogRef.current;
-    const previousActive = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousActive =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
 
     const focusTimer = window.setTimeout(() => {
       const focusables = getFocusableElements(dialog);
@@ -116,8 +126,17 @@ export default function InventoryEditor({
   };
 
   return (
-    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="inventory-editor-title">
-      <div className="absolute inset-0 bg-black/35" onClick={onClose} aria-hidden="true" />
+    <div
+      className="fixed inset-0 z-50"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="inventory-editor-title"
+    >
+      <div
+        className="absolute inset-0 bg-black/35"
+        onClick={onClose}
+        aria-hidden="true"
+      />
       <div
         ref={dialogRef}
         tabIndex={-1}
@@ -126,8 +145,15 @@ export default function InventoryEditor({
         <div className="sticky top-0 z-10 shrink-0 border-b border-stone-200 bg-white px-4 py-4 md:px-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div id="inventory-editor-title" className="text-lg font-semibold text-stone-900">재고 수정</div>
-              <div className="mt-1 text-sm text-stone-500 break-keep">입고, 차감, 보정 기준으로 재고를 수정하는 화면입니다.</div>
+              <div
+                id="inventory-editor-title"
+                className="text-lg font-semibold text-stone-900"
+              >
+                재고 수정
+              </div>
+              <div className="mt-1 text-sm text-stone-500 break-keep">
+                입고, 차감, 보정 기준으로 재고를 수정하는 화면입니다.
+              </div>
             </div>
             <button
               type="button"
@@ -143,11 +169,15 @@ export default function InventoryEditor({
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
               <div className="text-xs text-stone-500">현재 재고</div>
-              <div className="mt-1 text-lg font-semibold tabular-nums text-stone-900">{currentStock}장</div>
+              <div className="mt-1 text-lg font-semibold tabular-nums text-stone-900">
+                {currentStock}장
+              </div>
             </div>
             <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-3">
               <div className="text-xs text-cyan-700">반영 후 예상</div>
-              <div className="mt-1 text-lg font-semibold tabular-nums text-cyan-900">{nextStock}장</div>
+              <div className="mt-1 text-lg font-semibold tabular-nums text-cyan-900">
+                {nextStock}장
+              </div>
             </div>
           </div>
 
@@ -169,18 +199,24 @@ export default function InventoryEditor({
 
           <div className="mt-4 space-y-3">
             <div>
-              <label className="mb-2 block text-sm font-medium text-stone-700">수량</label>
+              <label className="mb-2 block text-sm font-medium text-stone-700">
+                수량
+              </label>
               <input
                 type="number"
                 min={0}
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-                placeholder={mode === "보정" ? "최종 재고 수량 입력" : "수량 입력"}
+                placeholder={
+                  mode === "보정" ? "최종 재고 수량 입력" : "수량 입력"
+                }
                 className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-stone-500"
               />
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium text-stone-700">메모</label>
+              <label className="mb-2 block text-sm font-medium text-stone-700">
+                메모
+              </label>
               <textarea
                 value={memo}
                 onChange={(e) => setMemo(e.target.value)}
@@ -191,31 +227,54 @@ export default function InventoryEditor({
             </div>
             <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-700">
               <div>
-                수정자: <span className="font-medium text-stone-900">{currentUserName}</span>
+                수정자:{" "}
+                <span className="font-medium text-stone-900">
+                  {currentUserName}
+                </span>
               </div>
-              <div className="mt-1 text-xs text-stone-500">현재는 로컬 상태 기반 테스트 단계입니다.</div>
+              <div className="mt-1 text-xs text-stone-500">
+                현재는 로컬 상태 기반 테스트 단계입니다.
+              </div>
             </div>
           </div>
 
           <div className="mt-5 border-t border-stone-200 pt-4">
             <div className="flex items-center justify-between gap-3">
-              <div className="text-sm font-semibold text-stone-900">최근 수정</div>
-              <span className="text-xs text-stone-500">최근 {Math.min(logs.length, 3)}건</span>
+              <div className="text-sm font-semibold text-stone-900">
+                최근 수정
+              </div>
+              <span className="text-xs text-stone-500">
+                최근 {Math.min(logs.length, 3)}건
+              </span>
             </div>
             <div className="mt-3 space-y-2">
               {logs.length > 0 ? (
                 logs.slice(0, 3).map((item) => (
-                  <div key={item.id} className="rounded-2xl border border-stone-200 bg-white p-3 text-sm">
+                  <div
+                    key={item.id}
+                    className="rounded-2xl border border-stone-200 bg-white p-3 text-sm"
+                  >
                     <div className="flex items-center justify-between gap-3">
-                      <span className="font-medium text-stone-900">{item.type} {item.delta > 0 ? `+${item.delta}` : item.delta}</span>
-                      <span className="text-xs text-stone-500">{item.time}</span>
+                      <span className="font-medium text-stone-900">
+                        {item.type}{" "}
+                        {item.delta > 0 ? `+${item.delta}` : item.delta}
+                      </span>
+                      <span className="text-xs text-stone-500">
+                        {item.time}
+                      </span>
                     </div>
-                    <div className="mt-1 text-xs text-stone-500">{item.user}</div>
-                    <div className="mt-1 text-sm text-stone-700">{item.memo || "메모 없음"}</div>
+                    <div className="mt-1 text-xs text-stone-500">
+                      {item.user}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-700">
+                      {item.memo || "메모 없음"}
+                    </div>
                   </div>
                 ))
               ) : (
-                <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-3 text-sm text-stone-500">아직 수정 이력이 없습니다.</div>
+                <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-3 text-sm text-stone-500">
+                  아직 수정 이력이 없습니다.
+                </div>
               )}
             </div>
           </div>
@@ -223,10 +282,19 @@ export default function InventoryEditor({
 
         <div className="shrink-0 border-t border-stone-200 bg-white px-4 py-4 md:px-6">
           <div className="flex gap-2">
-            <button type="button" onClick={onClose} className="flex-1 rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-800">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-800"
+            >
               취소
             </button>
-            <button type="button" onClick={handleApply} className="flex-1 rounded-2xl bg-stone-900 px-4 py-3 text-sm font-medium text-white disabled:opacity-50" disabled={!parsedQuantity && mode !== "보정"}>
+            <button
+              type="button"
+              onClick={handleApply}
+              className="flex-1 rounded-2xl bg-stone-900 px-4 py-3 text-sm font-medium text-white disabled:opacity-50"
+              disabled={!parsedQuantity && mode !== "보정"}
+            >
               적용
             </button>
           </div>
