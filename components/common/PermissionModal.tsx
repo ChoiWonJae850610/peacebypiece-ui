@@ -1,0 +1,183 @@
+"use client";
+
+type PermissionKey =
+  | "createWorkorder"
+  | "reviewRequest"
+  | "reviewApprove"
+  | "orderRequest"
+  | "orderConfirm"
+  | "inbound"
+  | "inspection"
+  | "inventoryEdit"
+  | "permissionManage";
+
+type PermissionSet = Record<PermissionKey, boolean>;
+
+type UserProfile = {
+  id: string;
+  name: string;
+  team: string;
+  permissions: PermissionSet;
+};
+
+const PERMISSION_LABELS: { key: PermissionKey; label: string }[] = [
+  { key: "createWorkorder", label: "작업지시 생성/수정" },
+  { key: "reviewRequest", label: "검토 요청" },
+  { key: "reviewApprove", label: "검토 승인/반려" },
+  { key: "orderRequest", label: "발주 요청" },
+  { key: "orderConfirm", label: "발주 확정" },
+  { key: "inbound", label: "입고 등록" },
+  { key: "inspection", label: "검수 완료" },
+  { key: "inventoryEdit", label: "재고 수정" },
+  { key: "permissionManage", label: "권한 설정" },
+];
+
+const PRESETS: { label: string; permissions: PermissionSet }[] = [
+  {
+    label: "디자이너 기본",
+    permissions: {
+      createWorkorder: true,
+      reviewRequest: true,
+      reviewApprove: false,
+      orderRequest: true,
+      orderConfirm: false,
+      inbound: false,
+      inspection: false,
+      inventoryEdit: false,
+      permissionManage: false,
+    },
+  },
+  {
+    label: "관리자 기본",
+    permissions: {
+      createWorkorder: true,
+      reviewRequest: true,
+      reviewApprove: true,
+      orderRequest: true,
+      orderConfirm: true,
+      inbound: true,
+      inspection: true,
+      inventoryEdit: true,
+      permissionManage: true,
+    },
+  },
+  {
+    label: "입고/검수 기본",
+    permissions: {
+      createWorkorder: false,
+      reviewRequest: false,
+      reviewApprove: false,
+      orderRequest: false,
+      orderConfirm: false,
+      inbound: true,
+      inspection: true,
+      inventoryEdit: true,
+      permissionManage: false,
+    },
+  },
+];
+
+export default function PermissionModal({
+  open,
+  onClose,
+  users,
+  currentUserId,
+  selectedUserId,
+  onSelectedUserChange,
+  onTogglePermission,
+  onApplyPreset,
+}: {
+  open: boolean;
+  onClose: () => void;
+  users: UserProfile[];
+  currentUserId: string;
+  selectedUserId: string;
+  onSelectedUserChange: (id: string) => void;
+  onTogglePermission: (userId: string, key: PermissionKey) => void;
+  onApplyPreset: (userId: string, permissions: PermissionSet) => void;
+}) {
+  if (!open) return null;
+
+  const selectedUser = users.find((item) => item.id === selectedUserId) ?? users[0];
+
+  return (
+    <div className="fixed inset-0 z-50">
+      <div className="absolute inset-0 bg-black/35" onClick={onClose} />
+      <div className="absolute inset-x-0 bottom-0 max-h-[90vh] overflow-y-auto rounded-t-3xl border border-stone-200 bg-white p-4 shadow-2xl md:left-1/2 md:top-1/2 md:bottom-auto md:w-full md:max-w-2xl md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl md:p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-lg font-semibold text-stone-900">권한 설정</div>
+            <div className="mt-1 text-sm text-stone-500">사용자별 권한을 스위치로 조정하는 테스트 화면입니다.</div>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700">
+            닫기
+          </button>
+        </div>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-[220px_minmax(0,1fr)]">
+          <div className="space-y-2">
+            {users.map((user) => {
+              const active = user.id === selectedUser.id;
+              const isCurrent = user.id === currentUserId;
+              return (
+                <button
+                  key={user.id}
+                  type="button"
+                  onClick={() => onSelectedUserChange(user.id)}
+                  className={`block w-full rounded-2xl border p-4 text-left ${active ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white"}`}
+                >
+                  <div className="text-sm font-semibold">{user.name}</div>
+                  <div className={`mt-1 text-xs ${active ? "text-stone-300" : "text-stone-500"}`}>{user.team}</div>
+                  {isCurrent && <div className={`mt-2 text-[11px] ${active ? "text-stone-200" : "text-cyan-700"}`}>현재 선택 사용자</div>}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="min-w-0 rounded-2xl border border-stone-200 bg-stone-50 p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <div className="text-base font-semibold text-stone-900">{selectedUser.name}</div>
+                <div className="mt-1 text-sm text-stone-500">{selectedUser.team}</div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {PRESETS.map((preset) => (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => onApplyPreset(selectedUser.id, preset.permissions)}
+                    className="rounded-full border border-stone-300 bg-white px-3 py-1 text-xs text-stone-700"
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-4 space-y-3">
+              {PERMISSION_LABELS.map((item) => {
+                const enabled = selectedUser.permissions[item.key];
+                return (
+                  <div key={item.key} className="flex items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white px-4 py-3">
+                    <div>
+                      <div className="text-sm font-medium text-stone-900">{item.label}</div>
+                      <div className="mt-1 text-xs text-stone-500">{enabled ? "권한 허용" : "권한 비허용"}</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => onTogglePermission(selectedUser.id, item.key)}
+                      className={`relative h-7 w-12 rounded-full transition ${enabled ? "bg-stone-900" : "bg-stone-300"}`}
+                      aria-pressed={enabled}
+                    >
+                      <span className={`absolute top-1 h-5 w-5 rounded-full bg-white transition ${enabled ? "left-6" : "left-1"}`} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

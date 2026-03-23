@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import InventoryEditor from "@/components/common/InventoryEditor";
+import PermissionModal from "@/components/common/PermissionModal";
 
 type Material = {
   type: string;
@@ -38,7 +40,25 @@ type WorkflowState =
   | "반려"
   | "종결";
 
-type UserRole = "디자이너" | "관리자" | "입고/검수";
+type PermissionKey =
+  | "createWorkorder"
+  | "reviewRequest"
+  | "reviewApprove"
+  | "orderRequest"
+  | "orderConfirm"
+  | "inbound"
+  | "inspection"
+  | "inventoryEdit"
+  | "permissionManage";
+
+type PermissionSet = Record<PermissionKey, boolean>;
+
+type UserProfile = {
+  id: string;
+  name: string;
+  team: string;
+  permissions: PermissionSet;
+};
 
 type ActionId =
   | "saveDraft"
@@ -58,7 +78,17 @@ type WorkflowAction = {
   id: ActionId;
   label: string;
   nextState: WorkflowState;
-  roles: UserRole[];
+  permission: PermissionKey;
+};
+
+type InventoryLog = {
+  id: string;
+  workOrderId: string;
+  type: "입고" | "차감" | "보정";
+  delta: number;
+  memo: string;
+  user: string;
+  time: string;
 };
 
 type WorkOrder = {
@@ -118,49 +148,49 @@ const PRIMARY_FLOW: WorkflowState[] = [
 
 const ACTIONS_BY_STATE: Partial<Record<WorkflowState, WorkflowAction[]>> = {
   작성중: [
-    { id: "saveDraft", label: "임시저장", nextState: "작성중", roles: ["디자이너"] },
-    { id: "requestReview", label: "검토요청", nextState: "검토대기", roles: ["디자이너"] },
+    { id: "saveDraft", label: "임시저장", nextState: "작성중", permission: "createWorkorder" },
+    { id: "requestReview", label: "검토요청", nextState: "검토대기", permission: "reviewRequest" },
   ],
   검토대기: [
-    { id: "approveReview", label: "검토승인", nextState: "검토완료", roles: ["관리자"] },
-    { id: "rejectReview", label: "검토반려", nextState: "반려", roles: ["관리자"] },
+    { id: "approveReview", label: "검토승인", nextState: "검토완료", permission: "reviewApprove" },
+    { id: "rejectReview", label: "검토반려", nextState: "반려", permission: "reviewApprove" },
   ],
   검토완료: [
-    { id: "requestOrder", label: "발주요청", nextState: "발주요청", roles: ["디자이너"] },
-    { id: "closeOrder", label: "종결처리", nextState: "종결", roles: ["관리자"] },
+    { id: "requestOrder", label: "발주요청", nextState: "발주요청", permission: "orderRequest" },
+    { id: "closeOrder", label: "종결처리", nextState: "종결", permission: "reviewApprove" },
   ],
   발주요청: [
-    { id: "confirmOrder", label: "발주확정", nextState: "발주완료", roles: ["관리자"] },
-    { id: "rejectReview", label: "반려", nextState: "반려", roles: ["관리자"] },
+    { id: "confirmOrder", label: "발주확정", nextState: "발주완료", permission: "orderConfirm" },
+    { id: "rejectReview", label: "반려", nextState: "반려", permission: "reviewApprove" },
   ],
   발주완료: [
-    { id: "startProduction", label: "생산시작", nextState: "생산중", roles: ["입고/검수"] },
-    { id: "closeOrder", label: "종결처리", nextState: "종결", roles: ["관리자"] },
+    { id: "startProduction", label: "생산시작", nextState: "생산중", permission: "inbound" },
+    { id: "closeOrder", label: "종결처리", nextState: "종결", permission: "reviewApprove" },
   ],
   생산중: [
-    { id: "registerInbound", label: "입고등록", nextState: "입고대기", roles: ["입고/검수"] },
-    { id: "closeOrder", label: "종결처리", nextState: "종결", roles: ["관리자"] },
+    { id: "registerInbound", label: "입고등록", nextState: "입고대기", permission: "inbound" },
+    { id: "closeOrder", label: "종결처리", nextState: "종결", permission: "reviewApprove" },
   ],
   입고대기: [
-    { id: "startInspection", label: "검수시작", nextState: "검수중", roles: ["입고/검수"] },
-    { id: "closeOrder", label: "종결처리", nextState: "종결", roles: ["관리자"] },
+    { id: "startInspection", label: "검수시작", nextState: "검수중", permission: "inspection" },
+    { id: "closeOrder", label: "종결처리", nextState: "종결", permission: "reviewApprove" },
   ],
   검수중: [
-    { id: "completeInspection", label: "검수완료", nextState: "완료", roles: ["입고/검수"] },
-    { id: "markPartial", label: "부분완료", nextState: "부분완료", roles: ["입고/검수"] },
-    { id: "closeOrder", label: "종결처리", nextState: "종결", roles: ["관리자"] },
+    { id: "completeInspection", label: "검수완료", nextState: "완료", permission: "inspection" },
+    { id: "markPartial", label: "부분완료", nextState: "부분완료", permission: "inspection" },
+    { id: "closeOrder", label: "종결처리", nextState: "종결", permission: "reviewApprove" },
   ],
   부분완료: [
-    { id: "registerInbound", label: "추가입고 등록", nextState: "입고대기", roles: ["입고/검수"] },
-    { id: "closeOrder", label: "종결처리", nextState: "종결", roles: ["관리자"] },
+    { id: "registerInbound", label: "추가입고 등록", nextState: "입고대기", permission: "inbound" },
+    { id: "closeOrder", label: "종결처리", nextState: "종결", permission: "reviewApprove" },
   ],
   완료: [
-    { id: "closeOrder", label: "종결처리", nextState: "종결", roles: ["관리자"] },
+    { id: "closeOrder", label: "종결처리", nextState: "종결", permission: "reviewApprove" },
   ],
   반려: [
-    { id: "saveDraft", label: "수정 후 저장", nextState: "작성중", roles: ["디자이너"] },
-    { id: "requestReview", label: "재검토요청", nextState: "검토대기", roles: ["디자이너"] },
-    { id: "closeOrder", label: "종결처리", nextState: "종결", roles: ["관리자"] },
+    { id: "saveDraft", label: "수정 후 저장", nextState: "작성중", permission: "createWorkorder" },
+    { id: "requestReview", label: "재검토요청", nextState: "검토대기", permission: "createWorkorder" },
+    { id: "closeOrder", label: "종결처리", nextState: "종결", permission: "reviewApprove" },
   ],
 };
 
@@ -215,13 +245,84 @@ function getVisibleStageList(currentState: WorkflowState) {
   return PRIMARY_FLOW;
 }
 
+const DEFAULT_PERMISSIONS: PermissionSet = {
+  createWorkorder: false,
+  reviewRequest: false,
+  reviewApprove: false,
+  orderRequest: false,
+  orderConfirm: false,
+  inbound: false,
+  inspection: false,
+  inventoryEdit: false,
+  permissionManage: false,
+};
+
+const INITIAL_USERS: UserProfile[] = [
+  {
+    id: "user-designer",
+    name: "김디자이너",
+    team: "디자인팀",
+    permissions: {
+      ...DEFAULT_PERMISSIONS,
+      createWorkorder: true,
+      reviewRequest: true,
+      orderRequest: true,
+      inbound: true,
+      inspection: true,
+    },
+  },
+  {
+    id: "user-admin",
+    name: "박관리",
+    team: "관리자",
+    permissions: {
+      ...DEFAULT_PERMISSIONS,
+      createWorkorder: true,
+      reviewRequest: true,
+      reviewApprove: true,
+      orderRequest: true,
+      orderConfirm: true,
+      inbound: true,
+      inspection: true,
+      inventoryEdit: true,
+      permissionManage: true,
+    },
+  },
+  {
+    id: "user-inspection",
+    name: "이검수",
+    team: "입고/검수",
+    permissions: {
+      ...DEFAULT_PERMISSIONS,
+      inbound: true,
+      inspection: true,
+      inventoryEdit: true,
+    },
+  },
+];
+
+function getCurrentTimeLabel() {
+  const now = new Date();
+  return `${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+}
+
+function getPermissionSummary(user: UserProfile) {
+  if (user.permissions.permissionManage) return "관리자";
+  if (user.permissions.inventoryEdit && user.permissions.inspection) return "입고/검수";
+  return "디자이너";
+}
+
 export default function Home() {
-  const version = "0.0.13";
+  const version = "0.0.14";
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [materialOpen, setMaterialOpen] = useState(false);
   const [outsourcingOpen, setOutsourcingOpen] = useState(false);
   const [selectedId, setSelectedId] = useState("WO-2026-0014");
-  const [currentRole, setCurrentRole] = useState<UserRole>("디자이너");
+  const [inventoryEditorOpen, setInventoryEditorOpen] = useState(false);
+  const [permissionModalOpen, setPermissionModalOpen] = useState(false);
+  const [users, setUsers] = useState<UserProfile[]>(INITIAL_USERS);
+  const [currentUserId, setCurrentUserId] = useState("user-admin");
+  const [permissionTargetUserId, setPermissionTargetUserId] = useState("user-designer");
 
   useEffect(() => {
     const body = document.body;
@@ -379,9 +480,21 @@ export default function Home() {
   const [workflowStateById, setWorkflowStateById] = useState<Record<string, WorkflowState>>(() =>
     Object.fromEntries(workOrders.map((item) => [item.id, item.status])),
   );
+  const [inventoryQuantityById, setInventoryQuantityById] = useState<Record<string, number>>(() =>
+    Object.fromEntries(workOrders.map((item) => [item.id, item.inventoryQuantity])),
+  );
+  const [inventoryLogsById, setInventoryLogsById] = useState<Record<string, InventoryLog[]>>(() => ({
+    "WO-2026-0014": [
+      { id: "log-1", workOrderId: "WO-2026-0014", type: "입고", delta: 5, memo: "샘플 1차 입고", user: "박관리", time: "03-22 11:40" },
+      { id: "log-2", workOrderId: "WO-2026-0014", type: "차감", delta: -2, memo: "검수 불량 차감", user: "이검수", time: "03-22 16:20" },
+    ],
+  }));
 
   const selectedWorkOrder = workOrders.find((item) => item.id === selectedId) ?? workOrders[0];
   const currentWorkflowState = workflowStateById[selectedWorkOrder.id] ?? selectedWorkOrder.status;
+  const currentUser = users.find((item) => item.id === currentUserId) ?? users[0];
+  const currentInventoryQuantity = inventoryQuantityById[selectedWorkOrder.id] ?? selectedWorkOrder.inventoryQuantity;
+  const inventoryLogs = inventoryLogsById[selectedWorkOrder.id] ?? [];
 
   const materials = selectedWorkOrder.materials;
   const outsourcing = selectedWorkOrder.outsourcing;
@@ -401,7 +514,7 @@ export default function Home() {
     return { count: outsourcing.length, total: outsourcing.reduce((sum, item) => sum + item.totalCost, 0) };
   }, [outsourcing]);
 
-  const availableActions = (ACTIONS_BY_STATE[currentWorkflowState] ?? []).filter((action) => action.roles.includes(currentRole));
+  const availableActions = (ACTIONS_BY_STATE[currentWorkflowState] ?? []).filter((action) => currentUser.permissions[action.permission]);
   const visibleStages = getVisibleStageList(currentWorkflowState);
 
   const handleSelectWorkOrder = (id: string, closeDrawer = false) => {
@@ -413,6 +526,46 @@ export default function Home() {
 
   const handleWorkflowAction = (action: WorkflowAction) => {
     setWorkflowStateById((prev) => ({ ...prev, [selectedWorkOrder.id]: action.nextState }));
+  };
+
+  const handleInventoryApply = ({ type, quantity, memo }: { type: "입고" | "차감" | "보정"; quantity: number; memo: string }) => {
+    setInventoryQuantityById((prev) => {
+      const current = prev[selectedWorkOrder.id] ?? selectedWorkOrder.inventoryQuantity;
+      const nextValue = type === "입고" ? current + quantity : type === "차감" ? Math.max(0, current - quantity) : quantity;
+      return { ...prev, [selectedWorkOrder.id]: nextValue };
+    });
+
+    const delta = type === "입고" ? quantity : type === "차감" ? -quantity : quantity - (inventoryQuantityById[selectedWorkOrder.id] ?? selectedWorkOrder.inventoryQuantity);
+
+    setInventoryLogsById((prev) => ({
+      ...prev,
+      [selectedWorkOrder.id]: [
+        {
+          id: `${selectedWorkOrder.id}-${Date.now()}`,
+          workOrderId: selectedWorkOrder.id,
+          type,
+          delta,
+          memo,
+          user: currentUser.name,
+          time: getCurrentTimeLabel(),
+        },
+        ...(prev[selectedWorkOrder.id] ?? []),
+      ],
+    }));
+  };
+
+  const handleTogglePermission = (userId: string, key: PermissionKey) => {
+    setUsers((prev) =>
+      prev.map((user) =>
+        user.id === userId
+          ? { ...user, permissions: { ...user.permissions, [key]: !user.permissions[key] } }
+          : user,
+      ),
+    );
+  };
+
+  const handleApplyPreset = (userId: string, permissions: PermissionSet) => {
+    setUsers((prev) => prev.map((user) => (user.id === userId ? { ...user, permissions: { ...permissions } } : user)));
   };
 
   return (
@@ -449,10 +602,10 @@ export default function Home() {
               <span className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-cyan-800">state</span>
             </div>
             <div className="mt-3 space-y-1 text-xs text-cyan-900">
-              <div>1. 상단 버전이 v0.0.13으로 표시되는지</div>
+              <div>1. 상단 버전이 v0.0.14로 표시되는지</div>
               <div>2. 메뉴에서 작업 선택 시 드로어가 닫히는지</div>
               <div>3. 우측 진행단계 카드가 상태/액션 구조로 바뀌었는지</div>
-              <div>4. 역할 변경 시 액션 버튼이 달라지는지</div>
+              <div>4. 권한/사용자 변경 시 액션 버튼과 재고 수정 가능 여부가 달라지는지</div>
             </div>
           </div>
 
@@ -464,7 +617,14 @@ export default function Home() {
                   상태: {currentWorkflowState}
                 </div>
               </div>
-              <div className="flex w-full gap-2 sm:w-auto">
+              <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => setPermissionModalOpen(true)}
+                  className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm sm:flex-none"
+                >
+                  권한 설정
+                </button>
                 <button className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm sm:flex-none">복제</button>
                 <button className="flex-1 rounded-xl bg-stone-900 px-4 py-2 text-sm text-white sm:flex-none">저장</button>
               </div>
@@ -483,7 +643,25 @@ export default function Home() {
                   <Info label="담당자" value={selectedWorkOrder.manager} />
                   <Info label="납기일" value={selectedWorkOrder.dueDate} />
                   <Info label="발주 수량" value={`${selectedWorkOrder.quantity}장`} valueClassName="text-base font-semibold tabular-nums" />
-                  <Info label="재고 수량" value={`${selectedWorkOrder.inventoryQuantity}장`} valueClassName="text-base font-semibold tabular-nums" />
+                  <Info label="재고 수량" value={`${currentInventoryQuantity}장`} valueClassName="text-base font-semibold tabular-nums" />
+                </div>
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-3">
+                  <div>
+                    <div className="text-sm font-semibold text-stone-900">재고 수정</div>
+                    <div className="mt-1 text-xs text-stone-500">수정자: {currentUser.name} · {getPermissionSummary(currentUser)}</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setInventoryEditorOpen(true)}
+                    disabled={!currentUser.permissions.inventoryEdit}
+                    className={`rounded-xl px-4 py-2 text-sm font-medium ${
+                      currentUser.permissions.inventoryEdit
+                        ? "bg-stone-900 text-white"
+                        : "cursor-not-allowed border border-stone-300 bg-stone-100 text-stone-400"
+                    }`}
+                  >
+                    재고 수정
+                  </button>
                 </div>
               </div>
 
@@ -557,11 +735,13 @@ export default function Home() {
         <aside className="min-w-0 border-t border-stone-200 bg-stone-50 p-4 md:col-span-3 md:border-t-0 md:border-l md:p-6">
           <div className="space-y-6">
             <WorkflowPanel
-              currentRole={currentRole}
+              currentUser={currentUser}
+              users={users}
+              onCurrentUserChange={setCurrentUserId}
+              onOpenPermissions={() => setPermissionModalOpen(true)}
               currentState={currentWorkflowState}
               visibleStages={visibleStages}
               actions={availableActions}
-              onRoleChange={setCurrentRole}
               onAction={handleWorkflowAction}
             />
 
@@ -600,26 +780,68 @@ export default function Home() {
                 ))}
               </div>
             </div>
+
+            <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+              <h3 className="text-base font-semibold">재고 수정 로그</h3>
+              <div className="mt-4 space-y-3">
+                {inventoryLogs.length > 0 ? (
+                  inventoryLogs.slice(0, 3).map((item) => (
+                    <div key={item.id} className="rounded-xl bg-stone-50 p-3">
+                      <div className="text-xs text-stone-500">
+                        {item.time} · {item.user}
+                      </div>
+                      <div className="mt-1 text-sm">{item.type} {item.delta > 0 ? `+${item.delta}` : item.delta} · {item.memo || "메모 없음"}</div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-sm text-stone-500">재고 수정 로그가 없습니다.</div>
+                )}
+              </div>
+            </div>
           </div>
         </aside>
       </div>
+
+      <InventoryEditor
+        open={inventoryEditorOpen}
+        onClose={() => setInventoryEditorOpen(false)}
+        currentStock={currentInventoryQuantity}
+        currentUserName={currentUser.name}
+        logs={inventoryLogs}
+        onApply={handleInventoryApply}
+      />
+
+      <PermissionModal
+        open={permissionModalOpen}
+        onClose={() => setPermissionModalOpen(false)}
+        users={users}
+        currentUserId={currentUserId}
+        selectedUserId={permissionTargetUserId}
+        onSelectedUserChange={setPermissionTargetUserId}
+        onTogglePermission={handleTogglePermission}
+        onApplyPreset={handleApplyPreset}
+      />
     </main>
   );
 }
 
 function WorkflowPanel({
-  currentRole,
+  currentUser,
+  users,
+  onCurrentUserChange,
+  onOpenPermissions,
   currentState,
   visibleStages,
   actions,
-  onRoleChange,
   onAction,
 }: {
-  currentRole: UserRole;
+  currentUser: UserProfile;
+  users: UserProfile[];
+  onCurrentUserChange: (userId: string) => void;
+  onOpenPermissions: () => void;
   currentState: WorkflowState;
   visibleStages: WorkflowState[];
   actions: WorkflowAction[];
-  onRoleChange: (role: UserRole) => void;
   onAction: (action: WorkflowAction) => void;
 }) {
   const currentIndex = visibleStages.indexOf(currentState);
@@ -635,20 +857,28 @@ function WorkflowPanel({
       </div>
 
       <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-4">
-        <div className="text-xs font-medium text-stone-500">현재 역할</div>
-        <div className="mt-3 grid grid-cols-3 gap-2">
-          {(["디자이너", "관리자", "입고/검수"] as UserRole[]).map((role) => {
-            const active = role === currentRole;
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-xs font-medium text-stone-500">현재 사용자</div>
+          <button
+            type="button"
+            onClick={onOpenPermissions}
+            className="rounded-full border border-stone-300 bg-white px-3 py-1 text-[11px] text-stone-700"
+          >
+            권한 설정
+          </button>
+        </div>
+        <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3 md:grid-cols-1 xl:grid-cols-3">
+          {users.map((user) => {
+            const active = user.id === currentUser.id;
             return (
               <button
-                key={role}
+                key={user.id}
                 type="button"
-                onClick={() => onRoleChange(role)}
-                className={`rounded-xl px-3 py-2 text-xs font-medium ${
-                  active ? "bg-stone-900 text-white" : "border border-stone-300 bg-white text-stone-700"
-                }`}
+                onClick={() => onCurrentUserChange(user.id)}
+                className={`rounded-xl px-3 py-3 text-left ${active ? "bg-stone-900 text-white" : "border border-stone-300 bg-white text-stone-700"}`}
               >
-                {role}
+                <div className="text-xs font-semibold">{user.name}</div>
+                <div className={`mt-1 text-[11px] ${active ? "text-stone-300" : "text-stone-500"}`}>{getPermissionSummary(user)}</div>
               </button>
             );
           })}
@@ -692,7 +922,7 @@ function WorkflowPanel({
       <div className="mt-5 border-t border-stone-200 pt-4">
         <div className="flex items-center justify-between gap-3">
           <div className="text-sm font-semibold text-stone-900">가능한 액션</div>
-          <span className="text-xs text-stone-500">역할 기준</span>
+          <span className="text-xs text-stone-500">권한 기준</span>
         </div>
         {actions.length > 0 ? (
           <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-1 xl:grid-cols-2">
@@ -709,7 +939,7 @@ function WorkflowPanel({
           </div>
         ) : (
           <div className="mt-3 rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-sm text-stone-500">
-            현재 역할에서는 실행 가능한 액션이 없습니다.
+            현재 사용자 권한에서는 실행 가능한 액션이 없습니다.
           </div>
         )}
       </div>
@@ -797,7 +1027,7 @@ function MobileTopBar({ version, onOpen }: { version: string; onOpen: () => void
       <button type="button" onClick={onOpen} className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800">
         메뉴
       </button>
-      <div className="text-sm font-semibold text-stone-900">PeacebyPiece v0.0.13</div>
+      <div className="text-sm font-semibold text-stone-900">PeacebyPiece v{version}</div>
     </div>
   );
 }
