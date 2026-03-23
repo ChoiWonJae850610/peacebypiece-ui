@@ -40,6 +40,9 @@ type WorkflowState =
   | "반려"
   | "종결";
 
+
+type DisplayStage = "작성중" | "검토중" | "발주대기" | "입고대기" | "완료" | "반려";
+
 type PermissionKey =
   | "createWorkorder"
   | "reviewRequest"
@@ -209,40 +212,63 @@ function getStageTone(state: WorkflowState) {
   }
 }
 
-function getStageDescription(state: WorkflowState) {
+function getDisplayStage(state: WorkflowState): DisplayStage {
   switch (state) {
     case "작성중":
-      return "디자이너가 작업지시서를 작성 중입니다.";
+      return "작성중";
     case "검토대기":
-      return "관리자 검토가 필요한 상태입니다.";
     case "검토완료":
-      return "검토가 끝나 발주 요청이 가능합니다.";
+      return "검토중";
     case "발주요청":
-      return "발주 확정 대기 상태입니다.";
     case "발주완료":
-      return "발주 확정 완료, 생산 시작 전 단계입니다.";
     case "생산중":
-      return "공장 또는 외주처에서 생산 진행 중입니다.";
+      return "발주대기";
     case "입고대기":
-      return "생산 이후 입고 및 검수 준비 단계입니다.";
     case "검수중":
-      return "입고 물량 검수 중이며 재고 반영 전입니다.";
     case "부분완료":
-      return "일부 수량만 정상 처리된 상태입니다.";
+      return "입고대기";
     case "완료":
-      return "검수 완료 및 정상 수량 반영까지 끝났습니다.";
-    case "반려":
-      return "내용 수정 후 다시 검토 요청이 필요합니다.";
     case "종결":
-      return "더 이상 진행하지 않는 종료 상태입니다.";
+      return "완료";
+    case "반려":
+      return "반려";
   }
 }
 
-function getVisibleStageList(currentState: WorkflowState) {
-  if (currentState === "반려") {
-    return ["작성중", "검토대기", "반려"] as WorkflowState[];
+function getDisplayStageDescription(state: DisplayStage) {
+  switch (state) {
+    case "작성중":
+      return "작업지시서 초안을 작성하거나 수정하는 단계입니다.";
+    case "검토중":
+      return "검토 요청 이후 승인 또는 반려가 진행되는 단계입니다.";
+    case "발주대기":
+      return "발주 요청, 확정, 생산 진행까지를 묶어 보여주는 단계입니다.";
+    case "입고대기":
+      return "입고 등록과 검수 진행 상태를 묶어 보여주는 단계입니다.";
+    case "완료":
+      return "검수 완료 또는 종결까지 마무리된 단계입니다.";
+    case "반려":
+      return "수정 후 다시 검토 요청이 필요한 상태입니다.";
   }
-  return PRIMARY_FLOW;
+}
+
+function getVisibleStageListByUser(user: UserProfile, currentState: WorkflowState): DisplayStage[] {
+  const summary = getPermissionSummary(user);
+
+  if (currentState === "반려") {
+    if (summary === "입고/검수") return ["입고대기", "반려"];
+    return ["작성중", "검토중", "반려"];
+  }
+
+  if (summary === "디자이너") {
+    return ["작성중", "검토중", "발주대기", "완료"];
+  }
+
+  if (summary === "입고/검수") {
+    return ["입고대기", "완료"];
+  }
+
+  return ["작성중", "검토중", "발주대기", "입고대기", "완료"];
 }
 
 const DEFAULT_PERMISSIONS: PermissionSet = {
@@ -425,7 +451,7 @@ const INITIAL_WORK_ORDERS: WorkOrder[] = [
 
 
 export default function Home() {
-  const version = "0.0.20";
+  const version = "0.0.21";
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [materialOpen, setMaterialOpen] = useState(false);
   const [outsourcingOpen, setOutsourcingOpen] = useState(false);
@@ -523,6 +549,7 @@ export default function Home() {
   const selectedWorkOrder = workOrders.find((item) => item.id === selectedId) ?? workOrders[0];
   const currentWorkflowState = workflowStateById[selectedWorkOrder.id] ?? selectedWorkOrder.status;
   const currentUser = users.find((item) => item.id === currentUserId) ?? users[0];
+  const currentDisplayStage = getDisplayStage(currentWorkflowState);
   const currentInventoryQuantity = inventoryQuantityById[selectedWorkOrder.id] ?? selectedWorkOrder.inventoryQuantity;
   const inventoryLogs = inventoryLogsById[selectedWorkOrder.id] ?? [];
 
@@ -545,7 +572,7 @@ export default function Home() {
   }, [outsourcing]);
 
   const availableActions = (ACTIONS_BY_STATE[currentWorkflowState] ?? []).filter((action) => currentUser.permissions[action.permission]);
-  const visibleStages = getVisibleStageList(currentWorkflowState);
+  const visibleStages = getVisibleStageListByUser(currentUser, currentWorkflowState);
 
   const handleSelectWorkOrder = (id: string, closeDrawer = false) => {
     setSelectedId(id);
@@ -684,7 +711,7 @@ export default function Home() {
               <span className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-cyan-800">state</span>
             </div>
             <div className="mt-3 space-y-1 text-xs text-cyan-900">
-              <div>1. 상단 버전이 v0.0.20로 표시되는지</div>
+              <div>1. 상단 버전이 v0.0.21로 표시되는지</div>
               <div>2. 메뉴에서 작업 선택 시 드로어가 닫히는지</div>
               <div>3. 우측 진행단계 카드가 상태/액션 구조로 바뀌었는지</div>
               <div>4. 권한/사용자 변경 시 액션 버튼과 재고 수정 가능 여부가 달라지는지</div>
@@ -848,6 +875,7 @@ export default function Home() {
               onCurrentUserChange={setCurrentUserId}
               onOpenPermissions={() => setPermissionModalOpen(true)}
               currentState={currentWorkflowState}
+              currentDisplayStage={currentDisplayStage}
               visibleStages={visibleStages}
               actions={availableActions}
               onAction={handleWorkflowAction}
@@ -940,6 +968,7 @@ function WorkflowPanel({
   onCurrentUserChange,
   onOpenPermissions,
   currentState,
+  currentDisplayStage,
   visibleStages,
   actions,
   onAction,
@@ -949,11 +978,12 @@ function WorkflowPanel({
   onCurrentUserChange: (userId: string) => void;
   onOpenPermissions: () => void;
   currentState: WorkflowState;
-  visibleStages: WorkflowState[];
+  currentDisplayStage: DisplayStage;
+  visibleStages: DisplayStage[];
   actions: WorkflowAction[];
   onAction: (action: WorkflowAction) => void;
 }) {
-  const currentIndex = visibleStages.indexOf(currentState);
+  const currentIndex = visibleStages.indexOf(currentDisplayStage);
 
   return (
     <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
@@ -996,12 +1026,12 @@ function WorkflowPanel({
 
       <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-4">
         <div className="text-xs font-medium text-stone-500">현재 상태 설명</div>
-        <div className="mt-2 text-sm leading-6 text-stone-800">{getStageDescription(currentState)}</div>
+        <div className="mt-2 text-sm leading-6 text-stone-800">{getDisplayStageDescription(currentDisplayStage)}</div>
       </div>
 
       <div className="mt-4 space-y-3">
         {visibleStages.map((stage, index) => {
-          const isCurrent = stage === currentState;
+          const isCurrent = stage === currentDisplayStage;
           const isDone = currentIndex >= 0 && index < currentIndex;
           const isUpcoming = !isCurrent && !isDone;
           return (
