@@ -618,13 +618,6 @@ export default function Home() {
                 </div>
               </div>
               <div className="flex w-full flex-wrap gap-2 sm:w-auto">
-                <button
-                  type="button"
-                  onClick={() => setPermissionModalOpen(true)}
-                  className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm sm:flex-none"
-                >
-                  권한 설정
-                </button>
                 <button className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm sm:flex-none">복제</button>
                 <button className="flex-1 rounded-xl bg-stone-900 px-4 py-2 text-sm text-white sm:flex-none">저장</button>
               </div>
