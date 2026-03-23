@@ -470,7 +470,7 @@ const INITIAL_WORK_ORDERS: WorkOrder[] = [
 
 
 export default function Home() {
-  const version = "0.0.22";
+  const version = "0.0.23";
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [materialOpen, setMaterialOpen] = useState(false);
   const [outsourcingOpen, setOutsourcingOpen] = useState(false);
@@ -568,6 +568,14 @@ export default function Home() {
   const selectedWorkOrder = workOrders.find((item) => item.id === selectedId) ?? workOrders[0];
   const currentWorkflowState = workflowStateById[selectedWorkOrder.id] ?? selectedWorkOrder.status;
   const currentUser = users.find((item) => item.id === currentUserId) ?? users[0];
+  const currentRole = getPermissionSummary(currentUser);
+  const isAdmin = currentRole === "관리자";
+  const isDesigner = currentRole === "디자이너";
+  const isInspection = currentRole === "입고/검수";
+  const canSeeProductionSections = isAdmin || isDesigner;
+  const canSeeCostSections = isAdmin || isDesigner;
+  const canSeeInventorySections = isAdmin || isInspection;
+  const canSeeRecentHistory = isAdmin;
   const currentDisplayStage = getDisplayStage(currentWorkflowState);
   const currentInventoryQuantity = inventoryQuantityById[selectedWorkOrder.id] ?? selectedWorkOrder.inventoryQuantity;
   const inventoryLogs = inventoryLogsById[selectedWorkOrder.id] ?? [];
@@ -737,7 +745,7 @@ export default function Home() {
               <span className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-cyan-800">state</span>
             </div>
             <div className="mt-3 space-y-1 text-xs text-cyan-900">
-              <div>1. 상단 버전이 v0.0.22로 표시되는지</div>
+              <div>1. 상단 버전이 v0.0.23로 표시되는지</div>
               <div>2. 메뉴에서 작업 선택 시 드로어가 닫히는지</div>
               <div>3. 우측 진행단계 카드가 상태/액션 구조로 바뀌었는지</div>
               <div>4. 권한/사용자 변경 시 액션 버튼과 재고 수정 가능 여부가 달라지는지</div>
@@ -773,60 +781,65 @@ export default function Home() {
                   <Info label="발주 수량" value={`${selectedWorkOrder.quantity}장`} valueClassName="text-base font-semibold tabular-nums" />
                   <Info label="재고 수량" value={`${currentInventoryQuantity}장`} valueClassName="text-base font-semibold tabular-nums" />
                 </div>
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-3">
-                  <div>
-                    <div className="text-sm font-semibold text-stone-900">재고 수정</div>
-                    <div className="mt-1 text-xs text-stone-500">수정자: {currentUser.name} · {getPermissionSummary(currentUser)}</div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setInventoryEditorOpen(true)}
-                    disabled={!currentUser.permissions.inventoryEdit}
-                    className={`rounded-xl px-4 py-2 text-sm font-medium ${
-                      currentUser.permissions.inventoryEdit
-                        ? "bg-stone-900 text-white"
-                        : "cursor-not-allowed border border-stone-300 bg-stone-100 text-stone-400"
-                    }`}
-                  >
-                    재고 수정
-                  </button>
-                </div>
-                <div className="mt-4 rounded-2xl border border-stone-200 bg-white p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <div className="text-sm font-semibold text-stone-900">최근 재고 히스토리</div>
-                      <div className="mt-1 text-xs text-stone-500">최근 3건 기준으로 재고 변경 이력을 표시합니다.</div>
+                {canSeeInventorySections && (
+                  <>
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-3">
+                      <div>
+                        <div className="text-sm font-semibold text-stone-900">재고 수정</div>
+                        <div className="mt-1 text-xs text-stone-500">수정자: {currentUser.name} · {getPermissionSummary(currentUser)}</div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setInventoryEditorOpen(true)}
+                        disabled={!currentUser.permissions.inventoryEdit}
+                        className={`rounded-xl px-4 py-2 text-sm font-medium ${
+                          currentUser.permissions.inventoryEdit
+                            ? "bg-stone-900 text-white"
+                            : "cursor-not-allowed border border-stone-300 bg-stone-100 text-stone-400"
+                        }`}
+                      >
+                        재고 수정
+                      </button>
                     </div>
-                    <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">{inventoryLogs.length}건</span>
-                  </div>
-                  <div className="mt-3 space-y-2">
-                    {inventoryLogs.length > 0 ? (
-                      inventoryLogs.slice(0, 3).map((item) => (
-                        <div key={item.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
-                          <div className="flex items-center justify-between gap-3">
-                            <div className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${
-                              item.type === "입고"
-                                ? "bg-emerald-100 text-emerald-700"
-                                : item.type === "차감"
-                                  ? "bg-rose-100 text-rose-700"
-                                  : "bg-amber-100 text-amber-700"
-                            }`}>
-                              {item.type} {item.delta > 0 ? `+${item.delta}` : item.delta}
-                            </div>
-                            <div className="text-[11px] text-stone-500">{item.time}</div>
-                          </div>
-                          <div className="mt-2 text-xs text-stone-500">{item.user}</div>
-                          <div className="mt-1 text-sm text-stone-700">{item.memo || "메모 없음"}</div>
+                    <div className="mt-4 rounded-2xl border border-stone-200 bg-white p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <div className="text-sm font-semibold text-stone-900">최근 재고 히스토리</div>
+                          <div className="mt-1 text-xs text-stone-500">최근 3건 기준으로 재고 변경 이력을 표시합니다.</div>
                         </div>
-                      ))
-                    ) : (
-                      <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-sm text-stone-500">최근 재고 변경 이력이 없습니다.</div>
-                    )}
-                  </div>
-                </div>
+                        <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">{inventoryLogs.length}건</span>
+                      </div>
+                      <div className="mt-3 space-y-2">
+                        {inventoryLogs.length > 0 ? (
+                          inventoryLogs.slice(0, 3).map((item) => (
+                            <div key={item.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
+                              <div className="flex items-center justify-between gap-3">
+                                <div className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${
+                                  item.type === "입고"
+                                    ? "bg-emerald-100 text-emerald-700"
+                                    : item.type === "차감"
+                                      ? "bg-rose-100 text-rose-700"
+                                      : "bg-amber-100 text-amber-700"
+                                }`}>
+                                  {item.type} {item.delta > 0 ? `+${item.delta}` : item.delta}
+                                </div>
+                                <div className="text-[11px] text-stone-500">{item.time}</div>
+                              </div>
+                              <div className="mt-2 text-xs text-stone-500">{item.user}</div>
+                              <div className="mt-1 text-sm text-stone-700">{item.memo || "메모 없음"}</div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-sm text-stone-500">최근 재고 변경 이력이 없습니다.</div>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
-              <AccordionSection
+              {canSeeProductionSections && (
+                <AccordionSection
                 title="원단 / 부자재 구성"
                 buttonLabel="항목 추가"
                 mobileOpen={materialOpen}
@@ -854,8 +867,10 @@ export default function Home() {
                   item.status,
                 ])}
               />
+              )}
 
-              <AccordionSection
+              {canSeeProductionSections && (
+                <AccordionSection
                 title="외주 공정"
                 buttonLabel="공정 추가"
                 mobileOpen={outsourcingOpen}
@@ -884,6 +899,7 @@ export default function Home() {
                   item.status,
                 ])}
               />
+              )}
 
               <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
                 <h3 className="text-base font-semibold">작업 메모</h3>
@@ -907,6 +923,7 @@ export default function Home() {
               onAction={handleWorkflowAction}
             />
 
+            {canSeeCostSections && (
             <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
               <h3 className="text-base font-semibold">비용 요약</h3>
               <div className="mt-4 space-y-3 text-sm">
@@ -919,7 +936,9 @@ export default function Home() {
                 </div>
               </div>
             </div>
+            )}
 
+            {canSeeCostSections && (
             <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
               <h3 className="text-base font-semibold">공정별 금액</h3>
               <div className="mt-4 space-y-2 text-sm">
@@ -928,7 +947,9 @@ export default function Home() {
                 ))}
               </div>
             </div>
+            )}
 
+            {canSeeRecentHistory && (
             <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
               <h3 className="text-base font-semibold">최근 히스토리</h3>
               <div className="mt-4 space-y-3">
@@ -942,7 +963,9 @@ export default function Home() {
                 ))}
               </div>
             </div>
+            )}
 
+            {canSeeInventorySections && (
             <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
               <h3 className="text-base font-semibold">전체 재고 로그</h3>
               <div className="mt-4 space-y-3">
@@ -960,6 +983,7 @@ export default function Home() {
                 )}
               </div>
             </div>
+            )}
           </div>
         </aside>
       </div>
