@@ -1032,7 +1032,7 @@ export default function Home() {
     setSaveStatus("saving");
     const timer = window.setTimeout(() => {
       handleSave(true);
-    }, 1200);
+    }, 2500);
 
     return () => window.clearTimeout(timer);
   }, [
@@ -1331,7 +1331,7 @@ export default function Home() {
                   <button className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm sm:flex-none">
                     복제
                   </button>
-                  <button type="button" onClick={handleSave} className="flex-1 rounded-xl bg-stone-900 px-4 py-2 text-sm text-white sm:flex-none">
+                  <button type="button" onClick={() => handleSave(false)} className="flex-1 rounded-xl bg-stone-900 px-4 py-2 text-sm text-white sm:flex-none">
                     즉시 저장
                   </button>
                 </div>
