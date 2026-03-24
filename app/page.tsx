@@ -99,6 +99,21 @@ type InventoryLog = {
   time: string;
 };
 
+type HistoryCategory = "work" | "inventory";
+type HistoryTone = "blue" | "violet" | "emerald" | "rose" | "amber" | "stone";
+type HistoryFilter = "all" | "work" | "inventory";
+
+type HistoryLog = {
+  id: string;
+  workOrderId: string;
+  category: HistoryCategory;
+  action: string;
+  message: string;
+  user: string;
+  time: string;
+  tone: HistoryTone;
+};
+
 type WorkOrder = {
   id: string;
   productName: string;
@@ -442,7 +457,7 @@ const ROLE_PRESETS = {
   },
 } as const;
 
-const LOCAL_STORAGE_KEY = "peacebypiece-ui-v0.0.25";
+const LOCAL_STORAGE_KEY = "peacebypiece-ui-v0.0.27";
 
 const INITIAL_USERS: UserProfile[] = [
   {
@@ -481,6 +496,166 @@ function getPermissionSummary(user: UserProfile) {
   if (user.permissions.inventoryEdit && user.permissions.inspection)
     return "입고/검수";
   return "디자이너";
+}
+
+const INITIAL_HISTORY_LOGS: Record<string, HistoryLog[]> = {
+  "WO-2026-0014": [
+    {
+      id: "h-14-1",
+      workOrderId: "WO-2026-0014",
+      category: "work",
+      action: "작업지시서 생성",
+      message: "작업지시서가 생성되었습니다.",
+      user: "김디자이너",
+      time: "03-21 09:00",
+      tone: "blue",
+    },
+    {
+      id: "h-14-2",
+      workOrderId: "WO-2026-0014",
+      category: "work",
+      action: "검토 요청",
+      message: "검토 요청을 진행했습니다.",
+      user: "김디자이너",
+      time: "03-21 13:20",
+      tone: "violet",
+    },
+    {
+      id: "h-14-3",
+      workOrderId: "WO-2026-0014",
+      category: "work",
+      action: "발주 요청",
+      message: "발주 요청 상태로 변경했습니다.",
+      user: "박관리",
+      time: "03-22 09:18",
+      tone: "blue",
+    },
+    {
+      id: "h-14-4",
+      workOrderId: "WO-2026-0014",
+      category: "inventory",
+      action: "입고",
+      message: "입고 +5 · 샘플 1차 입고",
+      user: "박관리",
+      time: "03-22 11:40",
+      tone: "emerald",
+    },
+    {
+      id: "h-14-5",
+      workOrderId: "WO-2026-0014",
+      category: "inventory",
+      action: "차감",
+      message: "차감 -2 · 검수 불량 차감",
+      user: "이검수",
+      time: "03-22 16:20",
+      tone: "rose",
+    },
+  ],
+  "WO-2026-0015": [
+    {
+      id: "h-15-1",
+      workOrderId: "WO-2026-0015",
+      category: "work",
+      action: "작업지시서 생성",
+      message: "작업지시서가 생성되었습니다.",
+      user: "김디자이너",
+      time: "03-20 10:00",
+      tone: "blue",
+    },
+    {
+      id: "h-15-2",
+      workOrderId: "WO-2026-0015",
+      category: "work",
+      action: "메모 수정",
+      message: "워싱 샘플 확인 메모를 수정했습니다.",
+      user: "이담당",
+      time: "03-22 10:05",
+      tone: "stone",
+    },
+  ],
+  "WO-2026-0016": [
+    {
+      id: "h-16-1",
+      workOrderId: "WO-2026-0016",
+      category: "work",
+      action: "작업지시서 생성",
+      message: "작업지시서가 생성되었습니다.",
+      user: "박관리",
+      time: "03-17 15:10",
+      tone: "blue",
+    },
+    {
+      id: "h-16-2",
+      workOrderId: "WO-2026-0016",
+      category: "work",
+      action: "완료 처리",
+      message: "검수 완료 후 작업을 완료 처리했습니다.",
+      user: "박관리",
+      time: "03-18 11:10",
+      tone: "violet",
+    },
+  ],
+};
+
+function getHistoryToneClass(tone: HistoryTone) {
+  switch (tone) {
+    case "blue":
+      return "bg-blue-100 text-blue-700";
+    case "violet":
+      return "bg-violet-100 text-violet-700";
+    case "emerald":
+      return "bg-emerald-100 text-emerald-700";
+    case "rose":
+      return "bg-rose-100 text-rose-700";
+    case "amber":
+      return "bg-amber-100 text-amber-700";
+    default:
+      return "bg-stone-100 text-stone-700";
+  }
+}
+
+function getDefaultHistoryFilterByRole(
+  role: ReturnType<typeof getPermissionSummary>,
+): HistoryFilter {
+  if (role === "관리자") return "all";
+  if (role === "입고/검수") return "inventory";
+  return "work";
+}
+
+function filterHistoryLogs(
+  logs: HistoryLog[],
+  role: ReturnType<typeof getPermissionSummary>,
+  filter: HistoryFilter,
+) {
+  const roleFiltered = logs.filter((log) => {
+    if (role === "관리자") return true;
+    if (role === "입고/검수") return log.category === "inventory";
+    return log.category === "work";
+  });
+
+  if (role !== "관리자") return roleFiltered;
+  if (filter === "all") return roleFiltered;
+  return roleFiltered.filter((log) => log.category === filter);
+}
+
+function extractDeltaFromMessage(message: string) {
+  const matched = message.match(/([+-]?\d+)/);
+  if (!matched) return 0;
+  return Number(matched[1]);
+}
+
+function mapHistoryToInventoryLogs(logs: HistoryLog[]): InventoryLog[] {
+  return logs
+    .filter((log) => log.category === "inventory")
+    .map((log) => ({
+      id: log.id,
+      workOrderId: log.workOrderId,
+      type: log.action as InventoryLog["type"],
+      delta: extractDeltaFromMessage(log.message),
+      memo: log.message,
+      user: log.user,
+      time: log.time,
+    }));
 }
 
 const INITIAL_WORK_ORDERS: WorkOrder[] = [
@@ -757,13 +932,13 @@ function buildPersistedState(payload: {
   currentUserId: string;
   workflowStateById: Record<string, WorkflowState>;
   inventoryQuantityById: Record<string, number>;
-  inventoryLogsById: Record<string, InventoryLog[]>;
+  historyLogsById: Record<string, HistoryLog[]>;
 }) {
   return JSON.stringify(payload);
 }
 
 export default function Home() {
-  const version = "0.0.26";
+  const version = "0.0.27";
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [materialOpen, setMaterialOpen] = useState(false);
   const [outsourcingOpen, setOutsourcingOpen] = useState(false);
@@ -775,12 +950,15 @@ export default function Home() {
   const [currentUserId, setCurrentUserId] = useState("user-admin");
   const [permissionTargetUserId, setPermissionTargetUserId] =
     useState("user-designer");
+  const [historyFilter, setHistoryFilter] = useState<HistoryFilter>("all");
   const appShellRef = useRef<HTMLDivElement | null>(null);
   const savedSnapshotRef = useRef<string>("");
   const [isHydrated, setIsHydrated] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
-  const [saveStatus, setSaveStatus] = useState<"saved" | "dirty" | "saving">("saved");
+  const [saveStatus, setSaveStatus] = useState<"saved" | "dirty" | "saving">(
+    "saved",
+  );
   const [workOrders, setWorkOrders] =
     useState<WorkOrder[]>(INITIAL_WORK_ORDERS);
 
@@ -863,21 +1041,62 @@ export default function Home() {
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed.workOrders)) setWorkOrders(parsed.workOrders);
-        if (typeof parsed.selectedId === "string") setSelectedId(parsed.selectedId);
+        if (typeof parsed.selectedId === "string")
+          setSelectedId(parsed.selectedId);
         if (Array.isArray(parsed.users)) setUsers(parsed.users);
-        if (typeof parsed.currentUserId === "string") setCurrentUserId(parsed.currentUserId);
-        if (parsed.workflowStateById && typeof parsed.workflowStateById === "object") setWorkflowStateById(parsed.workflowStateById);
-        if (parsed.inventoryQuantityById && typeof parsed.inventoryQuantityById === "object") setInventoryQuantityById(parsed.inventoryQuantityById);
-        if (parsed.inventoryLogsById && typeof parsed.inventoryLogsById === "object") setInventoryLogsById(parsed.inventoryLogsById);
-        if (typeof parsed.lastSavedAt === "string") setLastSavedAt(parsed.lastSavedAt);
+        if (typeof parsed.currentUserId === "string")
+          setCurrentUserId(parsed.currentUserId);
+        if (
+          parsed.workflowStateById &&
+          typeof parsed.workflowStateById === "object"
+        )
+          setWorkflowStateById(parsed.workflowStateById);
+        if (
+          parsed.inventoryQuantityById &&
+          typeof parsed.inventoryQuantityById === "object"
+        )
+          setInventoryQuantityById(parsed.inventoryQuantityById);
+        if (
+          parsed.historyLogsById &&
+          typeof parsed.historyLogsById === "object"
+        )
+          setHistoryLogsById(parsed.historyLogsById);
+        if (typeof parsed.lastSavedAt === "string")
+          setLastSavedAt(parsed.lastSavedAt);
         savedSnapshotRef.current = buildPersistedState({
-          workOrders: Array.isArray(parsed.workOrders) ? parsed.workOrders : INITIAL_WORK_ORDERS,
-          selectedId: typeof parsed.selectedId === "string" ? parsed.selectedId : "WO-2026-0014",
+          workOrders: Array.isArray(parsed.workOrders)
+            ? parsed.workOrders
+            : INITIAL_WORK_ORDERS,
+          selectedId:
+            typeof parsed.selectedId === "string"
+              ? parsed.selectedId
+              : "WO-2026-0014",
           users: Array.isArray(parsed.users) ? parsed.users : INITIAL_USERS,
-          currentUserId: typeof parsed.currentUserId === "string" ? parsed.currentUserId : "user-admin",
-          workflowStateById: parsed.workflowStateById && typeof parsed.workflowStateById === "object" ? parsed.workflowStateById : Object.fromEntries(INITIAL_WORK_ORDERS.map((item) => [item.id, item.status])),
-          inventoryQuantityById: parsed.inventoryQuantityById && typeof parsed.inventoryQuantityById === "object" ? parsed.inventoryQuantityById : Object.fromEntries(INITIAL_WORK_ORDERS.map((item) => [item.id, item.inventoryQuantity])),
-          inventoryLogsById: parsed.inventoryLogsById && typeof parsed.inventoryLogsById === "object" ? parsed.inventoryLogsById : { "WO-2026-0014": [] },
+          currentUserId:
+            typeof parsed.currentUserId === "string"
+              ? parsed.currentUserId
+              : "user-admin",
+          workflowStateById:
+            parsed.workflowStateById &&
+            typeof parsed.workflowStateById === "object"
+              ? parsed.workflowStateById
+              : Object.fromEntries(
+                  INITIAL_WORK_ORDERS.map((item) => [item.id, item.status]),
+                ),
+          inventoryQuantityById:
+            parsed.inventoryQuantityById &&
+            typeof parsed.inventoryQuantityById === "object"
+              ? parsed.inventoryQuantityById
+              : Object.fromEntries(
+                  INITIAL_WORK_ORDERS.map((item) => [
+                    item.id,
+                    item.inventoryQuantity,
+                  ]),
+                ),
+          historyLogsById:
+            parsed.historyLogsById && typeof parsed.historyLogsById === "object"
+              ? parsed.historyLogsById
+              : INITIAL_HISTORY_LOGS,
         });
       } else {
         savedSnapshotRef.current = buildPersistedState({
@@ -885,12 +1104,16 @@ export default function Home() {
           selectedId: "WO-2026-0014",
           users: INITIAL_USERS,
           currentUserId: "user-admin",
-          workflowStateById: Object.fromEntries(INITIAL_WORK_ORDERS.map((item) => [item.id, item.status])),
-          inventoryQuantityById: Object.fromEntries(INITIAL_WORK_ORDERS.map((item) => [item.id, item.inventoryQuantity])),
-          inventoryLogsById: { "WO-2026-0014": [
-            { id: "log-1", workOrderId: "WO-2026-0014", type: "입고", delta: 5, memo: "샘플 1차 입고", user: "박관리", time: "03-22 11:40" },
-            { id: "log-2", workOrderId: "WO-2026-0014", type: "차감", delta: -2, memo: "검수 불량 차감", user: "이검수", time: "03-22 16:20" },
-          ] },
+          workflowStateById: Object.fromEntries(
+            INITIAL_WORK_ORDERS.map((item) => [item.id, item.status]),
+          ),
+          inventoryQuantityById: Object.fromEntries(
+            INITIAL_WORK_ORDERS.map((item) => [
+              item.id,
+              item.inventoryQuantity,
+            ]),
+          ),
+          historyLogsById: INITIAL_HISTORY_LOGS,
         });
       }
     } catch (error) {
@@ -914,30 +1137,9 @@ export default function Home() {
       INITIAL_WORK_ORDERS.map((item) => [item.id, item.inventoryQuantity]),
     ),
   );
-  const [inventoryLogsById, setInventoryLogsById] = useState<
-    Record<string, InventoryLog[]>
-  >(() => ({
-    "WO-2026-0014": [
-      {
-        id: "log-1",
-        workOrderId: "WO-2026-0014",
-        type: "입고",
-        delta: 5,
-        memo: "샘플 1차 입고",
-        user: "박관리",
-        time: "03-22 11:40",
-      },
-      {
-        id: "log-2",
-        workOrderId: "WO-2026-0014",
-        type: "차감",
-        delta: -2,
-        memo: "검수 불량 차감",
-        user: "이검수",
-        time: "03-22 16:20",
-      },
-    ],
-  }));
+  const [historyLogsById, setHistoryLogsById] = useState<
+    Record<string, HistoryLog[]>
+  >(() => INITIAL_HISTORY_LOGS);
 
   const selectedWorkOrder =
     workOrders.find((item) => item.id === selectedId) ?? workOrders[0];
@@ -952,16 +1154,20 @@ export default function Home() {
   const canSeeProductionSections = isAdmin || isDesigner;
   const canSeeCostSections = isAdmin || isDesigner;
   const canSeeInventorySections = isAdmin || isInspection;
-  const canSeeRecentHistory = isAdmin;
   const currentDisplayStage = getDisplayStage(currentWorkflowState);
   const currentInventoryQuantity =
     inventoryQuantityById[selectedWorkOrder.id] ??
     selectedWorkOrder.inventoryQuantity;
-  const inventoryLogs = inventoryLogsById[selectedWorkOrder.id] ?? [];
+  const historyLogs = historyLogsById[selectedWorkOrder.id] ?? [];
+  const filteredHistoryLogs = filterHistoryLogs(
+    historyLogs,
+    currentRole,
+    historyFilter,
+  );
+  const inventoryLogs = mapHistoryToInventoryLogs(historyLogs);
 
   const materials = selectedWorkOrder.materials;
   const outsourcing = selectedWorkOrder.outsourcing;
-  const historyItems = selectedWorkOrder.historyItems;
 
   const fabricTotal = materials
     .filter((item) => item.type === "원단")
@@ -999,7 +1205,7 @@ export default function Home() {
         currentUserId,
         workflowStateById,
         inventoryQuantityById,
-        inventoryLogsById,
+        historyLogsById,
       }),
     [
       workOrders,
@@ -1008,7 +1214,7 @@ export default function Home() {
       currentUserId,
       workflowStateById,
       inventoryQuantityById,
-      inventoryLogsById,
+      historyLogsById,
     ],
   );
 
@@ -1035,11 +1241,7 @@ export default function Home() {
     }, 2500);
 
     return () => window.clearTimeout(timer);
-  }, [
-    currentSnapshot,
-    isDirty,
-    isHydrated,
-  ]);
+  }, [currentSnapshot, isDirty, isHydrated]);
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -1064,7 +1266,7 @@ export default function Home() {
       currentUserId,
       workflowStateById,
       inventoryQuantityById,
-      inventoryLogsById,
+      historyLogsById,
       lastSavedAt: savedAt,
     };
     try {
@@ -1076,7 +1278,7 @@ export default function Home() {
         currentUserId,
         workflowStateById,
         inventoryQuantityById,
-        inventoryLogsById,
+        historyLogsById,
       });
       setLastSavedAt(savedAt);
       setIsDirty(false);
@@ -1086,6 +1288,10 @@ export default function Home() {
       console.error("localStorage save failed", error);
     }
   };
+
+  useEffect(() => {
+    setHistoryFilter(getDefaultHistoryFilterByRole(currentRole));
+  }, [currentRole]);
 
   const availableActions = (
     ACTIONS_BY_STATE[currentWorkflowState] ?? []
@@ -1141,7 +1347,21 @@ export default function Home() {
     setWorkOrders((prev) => [newWorkOrder, ...prev]);
     setWorkflowStateById((prev) => ({ ...prev, [newId]: "작성중" }));
     setInventoryQuantityById((prev) => ({ ...prev, [newId]: 0 }));
-    setInventoryLogsById((prev) => ({ ...prev, [newId]: [] }));
+    setHistoryLogsById((prev) => ({
+      ...prev,
+      [newId]: [
+        {
+          id: `${newId}-created-${Date.now()}`,
+          workOrderId: newId,
+          category: "work",
+          action: "작업지시서 생성",
+          message: "작업지시서 초안을 생성했습니다.",
+          user: currentUser.name,
+          time: getCurrentTimeLabel(),
+          tone: "blue",
+        },
+      ],
+    }));
     setSelectedId(newId);
     setMaterialOpen(false);
     setOutsourcingOpen(false);
@@ -1152,6 +1372,22 @@ export default function Home() {
     setWorkflowStateById((prev) => ({
       ...prev,
       [selectedWorkOrder.id]: action.nextState,
+    }));
+    setHistoryLogsById((prev) => ({
+      ...prev,
+      [selectedWorkOrder.id]: [
+        {
+          id: `${selectedWorkOrder.id}-${action.id}-${Date.now()}`,
+          workOrderId: selectedWorkOrder.id,
+          category: "work",
+          action: action.label,
+          message: `${action.label} 처리: ${currentWorkflowState} → ${action.nextState}`,
+          user: currentUser.name,
+          time: getCurrentTimeLabel(),
+          tone: action.id === "rejectReview" ? "rose" : "violet",
+        },
+        ...(prev[selectedWorkOrder.id] ?? []),
+      ],
     }));
   };
 
@@ -1197,17 +1433,19 @@ export default function Home() {
           ? -quantity
           : quantity - current;
 
-    setInventoryLogsById((prev) => ({
+    setHistoryLogsById((prev) => ({
       ...prev,
       [selectedWorkOrder.id]: [
         {
           id: `${selectedWorkOrder.id}-${Date.now()}`,
           workOrderId: selectedWorkOrder.id,
-          type,
-          delta,
-          memo,
+          category: "inventory",
+          action: type,
+          message: `${type} ${delta > 0 ? `+${delta}` : delta}${memo ? ` · ${memo}` : ""}`,
           user: currentUser.name,
           time: getCurrentTimeLabel(),
+          tone:
+            type === "입고" ? "emerald" : type === "차감" ? "rose" : "amber",
         },
         ...(prev[selectedWorkOrder.id] ?? []),
       ],
@@ -1291,7 +1529,7 @@ export default function Home() {
                 </span>
               </div>
               <div className="mt-3 space-y-1 text-xs text-cyan-900">
-                <div>1. 상단 버전이 v0.0.26으로 표시되는지</div>
+                <div>1. 상단 버전이 v0.0.27으로 표시되는지</div>
                 <div>2. 메뉴에서 작업 선택 시 드로어가 닫히는지</div>
                 <div>3. 우측 진행단계 카드가 상태/액션 구조로 바뀌었는지</div>
                 <div>
@@ -1313,17 +1551,25 @@ export default function Home() {
                     >
                       상태: {currentWorkflowState}
                     </div>
-                    <div className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
-                      saveStatus === "saving"
-                        ? "bg-cyan-100 text-cyan-800"
+                    <div
+                      className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
+                        saveStatus === "saving"
+                          ? "bg-cyan-100 text-cyan-800"
+                          : saveStatus === "dirty"
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-emerald-100 text-emerald-800"
+                      }`}
+                    >
+                      {saveStatus === "saving"
+                        ? "저장 중"
                         : saveStatus === "dirty"
-                          ? "bg-amber-100 text-amber-800"
-                          : "bg-emerald-100 text-emerald-800"
-                    }`}>
-                      {saveStatus === "saving" ? "저장 중" : saveStatus === "dirty" ? "저장되지 않음" : "저장됨"}
+                          ? "저장되지 않음"
+                          : "저장됨"}
                     </div>
                     {lastSavedAt && (
-                      <div className="text-xs text-stone-500">마지막 저장: {lastSavedAt}</div>
+                      <div className="text-xs text-stone-500">
+                        마지막 저장: {lastSavedAt}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -1331,7 +1577,11 @@ export default function Home() {
                   <button className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm sm:flex-none">
                     복제
                   </button>
-                  <button type="button" onClick={() => handleSave(false)} className="flex-1 rounded-xl bg-stone-900 px-4 py-2 text-sm text-white sm:flex-none">
+                  <button
+                    type="button"
+                    onClick={() => handleSave(false)}
+                    className="flex-1 rounded-xl bg-stone-900 px-4 py-2 text-sm text-white sm:flex-none"
+                  >
                     즉시 저장
                   </button>
                 </div>
@@ -1538,89 +1788,87 @@ export default function Home() {
                 </div>
               )}
 
-              {canSeeRecentHistory && (
-                <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-                  <h3 className="text-base font-semibold">최근 히스토리</h3>
-                  <div className="mt-4 space-y-3">
-                    {historyItems.map((item) => (
-                      <div
-                        key={`${item.time}-${item.action}`}
-                        className="rounded-xl bg-stone-50 p-3"
+              <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-base font-semibold">최근 히스토리</h3>
+                    <div className="mt-1 text-xs text-stone-500">
+                      {isAdmin
+                        ? "전체 / 작업 / 재고 필터로 히스토리를 확인할 수 있습니다."
+                        : currentRole === "디자이너"
+                          ? "작업 관련 히스토리만 표시됩니다."
+                          : "재고 관련 히스토리만 표시됩니다."}
+                    </div>
+                  </div>
+                  <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">
+                    {filteredHistoryLogs.length}건
+                  </span>
+                </div>
+                {isAdmin && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {(
+                      [
+                        ["all", "전체"],
+                        ["work", "작업"],
+                        ["inventory", "재고"],
+                      ] as [HistoryFilter, string][]
+                    ).map(([value, label]) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setHistoryFilter(value)}
+                        className={`rounded-full px-3 py-1 text-xs font-medium ${
+                          historyFilter === value
+                            ? "bg-stone-900 text-white"
+                            : "border border-stone-300 bg-white text-stone-700"
+                        }`}
                       >
-                        <div className="text-xs text-stone-500">
-                          {item.time} · {item.user}
-                        </div>
-                        <div className="mt-1 text-sm">{item.action}</div>
-                      </div>
+                        {label}
+                      </button>
                     ))}
                   </div>
-                </div>
-              )}
-
-              {canSeeInventorySections && (
-                <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <h3 className="text-base font-semibold">
-                        전체 재고 로그
-                      </h3>
-                      <div className="mt-1 text-xs text-stone-500">
-                        화면에는 최신 3건만 표시합니다.
-                      </div>
-                    </div>
-                    <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">
-                      {inventoryLogs.length}건
-                    </span>
-                  </div>
-                  <div className="mt-4 space-y-3">
-                    {inventoryLogs.length > 0 ? (
-                      inventoryLogs.slice(0, 3).map((item) => (
-                        <div
-                          key={item.id}
-                          className="rounded-xl border border-stone-200 bg-stone-50 p-3"
-                        >
-                          <div className="flex items-center justify-between gap-3">
-                            <div
-                              className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${
-                                item.type === "입고"
-                                  ? "bg-emerald-100 text-emerald-700"
-                                  : item.type === "차감"
-                                    ? "bg-rose-100 text-rose-700"
-                                    : "bg-amber-100 text-amber-700"
-                              }`}
-                            >
-                              {item.type}{" "}
-                              {item.delta > 0 ? `+${item.delta}` : item.delta}
-                            </div>
-                            <div className="text-[11px] text-stone-500">
-                              {item.time}
-                            </div>
+                )}
+                <div className="mt-4 space-y-3">
+                  {filteredHistoryLogs.length > 0 ? (
+                    filteredHistoryLogs.slice(0, 3).map((item) => (
+                      <div
+                        key={item.id}
+                        className="rounded-xl border border-stone-200 bg-stone-50 p-3"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div
+                            className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${getHistoryToneClass(item.tone)}`}
+                          >
+                            {item.action}
                           </div>
-                          <div className="mt-2 text-xs text-stone-500">
-                            {item.user}
-                          </div>
-                          <div className="mt-1 text-sm text-stone-700">
-                            {item.memo || "메모 없음"}
+                          <div className="text-[11px] text-stone-500">
+                            {item.time}
                           </div>
                         </div>
-                      ))
-                    ) : (
-                      <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-sm text-stone-500">
-                        재고 변경 로그가 없습니다.
+                        <div className="mt-2 text-xs text-stone-500">
+                          {item.user}
+                        </div>
+                        <div className="mt-1 text-sm text-stone-700">
+                          {item.message}
+                        </div>
                       </div>
-                    )}
-                  </div>
-                  {inventoryLogs.length > 3 && (
-                    <button
-                      type="button"
-                      onClick={() => setInventoryLogModalOpen(true)}
-                      className="mt-4 w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800"
-                    >
-                      전체 로그 보기
-                    </button>
+                    ))
+                  ) : (
+                    <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-sm text-stone-500">
+                      표시할 히스토리가 없습니다.
+                    </div>
                   )}
                 </div>
-              )}
+                {filteredHistoryLogs.length > 3 && (
+                  <button
+                    type="button"
+                    onClick={() => setInventoryLogModalOpen(true)}
+                    className="mt-4 w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800"
+                  >
+                    전체 히스토리 보기
+                  </button>
+                )}
+              </div>
             </div>
           </aside>
         </div>
@@ -1629,7 +1877,9 @@ export default function Home() {
       <InventoryLogModal
         open={inventoryLogModalOpen}
         onClose={() => setInventoryLogModalOpen(false)}
-        logs={inventoryLogs}
+        logs={filteredHistoryLogs}
+        role={currentRole}
+        filter={historyFilter}
       />
 
       <InventoryEditor
@@ -1659,10 +1909,14 @@ function InventoryLogModal({
   open,
   onClose,
   logs,
+  role,
+  filter,
 }: {
   open: boolean;
   onClose: () => void;
-  logs: InventoryLog[];
+  logs: HistoryLog[];
+  role: ReturnType<typeof getPermissionSummary>;
+  filter: HistoryFilter;
 }) {
   if (!open) return null;
 
@@ -1686,10 +1940,15 @@ function InventoryLogModal({
                 id="inventory-log-modal-title"
                 className="text-lg font-semibold text-stone-900"
               >
-                전체 재고 로그
+                전체 히스토리
               </div>
               <div className="mt-1 text-sm text-stone-500">
-                최신순으로 전체 재고 변경 로그를 확인합니다.
+                최신순으로 해당 작업지시서의 히스토리를 확인합니다.
+              </div>
+              <div className="mt-2 text-xs text-stone-400">
+                {role === "관리자"
+                  ? `현재 필터: ${filter === "all" ? "전체" : filter === "work" ? "작업" : "재고"}`
+                  : `현재 보기 권한: ${role}`}
               </div>
             </div>
             <button
@@ -1712,16 +1971,9 @@ function InventoryLogModal({
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div
-                      className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${
-                        item.type === "입고"
-                          ? "bg-emerald-100 text-emerald-700"
-                          : item.type === "차감"
-                            ? "bg-rose-100 text-rose-700"
-                            : "bg-amber-100 text-amber-700"
-                      }`}
+                      className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${getHistoryToneClass(item.tone)}`}
                     >
-                      {item.type}{" "}
-                      {item.delta > 0 ? `+${item.delta}` : item.delta}
+                      {item.action}
                     </div>
                     <div className="text-[11px] text-stone-500">
                       {item.time}
@@ -1729,13 +1981,13 @@ function InventoryLogModal({
                   </div>
                   <div className="mt-2 text-xs text-stone-500">{item.user}</div>
                   <div className="mt-1 text-sm text-stone-700">
-                    {item.memo || "메모 없음"}
+                    {item.message}
                   </div>
                 </div>
               ))
             ) : (
               <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-sm text-stone-500">
-                재고 변경 로그가 없습니다.
+                표시할 히스토리가 없습니다.
               </div>
             )}
           </div>
