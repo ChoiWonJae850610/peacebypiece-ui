@@ -465,7 +465,7 @@ const ROLE_PRESETS = {
   },
 } as const;
 
-const LOCAL_STORAGE_KEY = "peacebypiece-ui-v0.0.28";
+const LOCAL_STORAGE_KEY = "peacebypiece-ui-v0.0.30";
 
 const INITIAL_USERS: UserProfile[] = [
   {
@@ -1005,7 +1005,7 @@ function buildPersistedState(payload: {
 }
 
 export default function Home() {
-  const version = "0.0.28";
+  const version = "0.0.30";
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [materialOpen, setMaterialOpen] = useState(false);
   const [outsourcingOpen, setOutsourcingOpen] = useState(false);
@@ -1021,6 +1021,8 @@ export default function Home() {
   const [historyFilter, setHistoryFilter] = useState<HistoryFilter>("all");
   const appShellRef = useRef<HTMLDivElement | null>(null);
   const attachmentInputRef = useRef<HTMLInputElement | null>(null);
+  const lockedScrollYRef = useRef(0);
+  const overlayWasOpenRef = useRef(false);
   const savedSnapshotRef = useRef<string>("");
   const [isHydrated, setIsHydrated] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
@@ -1042,11 +1044,10 @@ export default function Home() {
     const body = document.body;
     const html = document.documentElement;
 
-    if (blockingOverlayOpen) {
-      const scrollY = window.scrollY;
-      body.dataset.scrollY = String(scrollY);
+    if (blockingOverlayOpen && !overlayWasOpenRef.current) {
+      lockedScrollYRef.current = window.scrollY;
       body.style.position = "fixed";
-      body.style.top = `-${scrollY}px`;
+      body.style.top = `-${lockedScrollYRef.current}px`;
       body.style.left = "0";
       body.style.right = "0";
       body.style.width = "100%";
@@ -1054,8 +1055,10 @@ export default function Home() {
       body.style.touchAction = "none";
       html.style.overflow = "hidden";
       html.style.touchAction = "none";
-    } else {
-      const saved = body.dataset.scrollY || "0";
+      overlayWasOpenRef.current = true;
+    }
+
+    if (!blockingOverlayOpen && overlayWasOpenRef.current) {
       body.style.position = "";
       body.style.top = "";
       body.style.left = "";
@@ -1065,12 +1068,12 @@ export default function Home() {
       body.style.touchAction = "";
       html.style.overflow = "";
       html.style.touchAction = "";
-      window.scrollTo(0, Number(saved));
-      delete body.dataset.scrollY;
+      window.scrollTo(0, lockedScrollYRef.current);
+      overlayWasOpenRef.current = false;
     }
 
     return () => {
-      const saved = body.dataset.scrollY || "0";
+      if (!overlayWasOpenRef.current) return;
       body.style.position = "";
       body.style.top = "";
       body.style.left = "";
@@ -1080,10 +1083,6 @@ export default function Home() {
       body.style.touchAction = "";
       html.style.overflow = "";
       html.style.touchAction = "";
-      if (blockingOverlayOpen) {
-        window.scrollTo(0, Number(saved));
-      }
-      delete body.dataset.scrollY;
     };
   }, [blockingOverlayOpen]);
 
@@ -1659,7 +1658,7 @@ export default function Home() {
                 </span>
               </div>
               <div className="mt-3 space-y-1 text-xs text-cyan-900">
-                <div>1. 상단 버전이 v0.0.28으로 표시되는지</div>
+                <div>1. 상단 버전이 v0.0.30으로 표시되는지</div>
                 <div>2. 메뉴에서 작업 선택 시 드로어가 닫히는지</div>
                 <div>3. 우측 진행단계 카드가 상태/액션 구조로 바뀌었는지</div>
                 <div>
