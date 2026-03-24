@@ -442,6 +442,8 @@ const ROLE_PRESETS = {
   },
 } as const;
 
+const LOCAL_STORAGE_KEY = "peacebypiece-ui-v0.0.25";
+
 const INITIAL_USERS: UserProfile[] = [
   {
     id: "user-designer",
@@ -748,8 +750,20 @@ const INITIAL_WORK_ORDERS: WorkOrder[] = [
   },
 ];
 
+function buildPersistedState(payload: {
+  workOrders: WorkOrder[];
+  selectedId: string;
+  users: UserProfile[];
+  currentUserId: string;
+  workflowStateById: Record<string, WorkflowState>;
+  inventoryQuantityById: Record<string, number>;
+  inventoryLogsById: Record<string, InventoryLog[]>;
+}) {
+  return JSON.stringify(payload);
+}
+
 export default function Home() {
-  const version = "0.0.24";
+  const version = "0.0.25";
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [materialOpen, setMaterialOpen] = useState(false);
   const [outsourcingOpen, setOutsourcingOpen] = useState(false);
@@ -762,6 +776,10 @@ export default function Home() {
   const [permissionTargetUserId, setPermissionTargetUserId] =
     useState("user-designer");
   const appShellRef = useRef<HTMLDivElement | null>(null);
+  const savedSnapshotRef = useRef<string>("");
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
   const [workOrders, setWorkOrders] =
     useState<WorkOrder[]>(INITIAL_WORK_ORDERS);
 
@@ -837,6 +855,49 @@ export default function Home() {
       appShell.removeAttribute("aria-hidden");
     };
   }, [inventoryEditorOpen, permissionModalOpen, inventoryLogModalOpen]);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed.workOrders)) setWorkOrders(parsed.workOrders);
+        if (typeof parsed.selectedId === "string") setSelectedId(parsed.selectedId);
+        if (Array.isArray(parsed.users)) setUsers(parsed.users);
+        if (typeof parsed.currentUserId === "string") setCurrentUserId(parsed.currentUserId);
+        if (parsed.workflowStateById && typeof parsed.workflowStateById === "object") setWorkflowStateById(parsed.workflowStateById);
+        if (parsed.inventoryQuantityById && typeof parsed.inventoryQuantityById === "object") setInventoryQuantityById(parsed.inventoryQuantityById);
+        if (parsed.inventoryLogsById && typeof parsed.inventoryLogsById === "object") setInventoryLogsById(parsed.inventoryLogsById);
+        if (typeof parsed.lastSavedAt === "string") setLastSavedAt(parsed.lastSavedAt);
+        savedSnapshotRef.current = buildPersistedState({
+          workOrders: Array.isArray(parsed.workOrders) ? parsed.workOrders : INITIAL_WORK_ORDERS,
+          selectedId: typeof parsed.selectedId === "string" ? parsed.selectedId : "WO-2026-0014",
+          users: Array.isArray(parsed.users) ? parsed.users : INITIAL_USERS,
+          currentUserId: typeof parsed.currentUserId === "string" ? parsed.currentUserId : "user-admin",
+          workflowStateById: parsed.workflowStateById && typeof parsed.workflowStateById === "object" ? parsed.workflowStateById : Object.fromEntries(INITIAL_WORK_ORDERS.map((item) => [item.id, item.status])),
+          inventoryQuantityById: parsed.inventoryQuantityById && typeof parsed.inventoryQuantityById === "object" ? parsed.inventoryQuantityById : Object.fromEntries(INITIAL_WORK_ORDERS.map((item) => [item.id, item.inventoryQuantity])),
+          inventoryLogsById: parsed.inventoryLogsById && typeof parsed.inventoryLogsById === "object" ? parsed.inventoryLogsById : { "WO-2026-0014": [] },
+        });
+      } else {
+        savedSnapshotRef.current = buildPersistedState({
+          workOrders: INITIAL_WORK_ORDERS,
+          selectedId: "WO-2026-0014",
+          users: INITIAL_USERS,
+          currentUserId: "user-admin",
+          workflowStateById: Object.fromEntries(INITIAL_WORK_ORDERS.map((item) => [item.id, item.status])),
+          inventoryQuantityById: Object.fromEntries(INITIAL_WORK_ORDERS.map((item) => [item.id, item.inventoryQuantity])),
+          inventoryLogsById: { "WO-2026-0014": [
+            { id: "log-1", workOrderId: "WO-2026-0014", type: "입고", delta: 5, memo: "샘플 1차 입고", user: "박관리", time: "03-22 11:40" },
+            { id: "log-2", workOrderId: "WO-2026-0014", type: "차감", delta: -2, memo: "검수 불량 차감", user: "이검수", time: "03-22 16:20" },
+          ] },
+        });
+      }
+    } catch (error) {
+      console.error("localStorage load failed", error);
+    } finally {
+      setIsHydrated(true);
+    }
+  }, []);
 
   const [workflowStateById, setWorkflowStateById] = useState<
     Record<string, WorkflowState>
@@ -927,6 +988,76 @@ export default function Home() {
       total: outsourcing.reduce((sum, item) => sum + item.totalCost, 0),
     };
   }, [outsourcing]);
+
+  const currentSnapshot = useMemo(
+    () =>
+      buildPersistedState({
+        workOrders,
+        selectedId,
+        users,
+        currentUserId,
+        workflowStateById,
+        inventoryQuantityById,
+        inventoryLogsById,
+      }),
+    [
+      workOrders,
+      selectedId,
+      users,
+      currentUserId,
+      workflowStateById,
+      inventoryQuantityById,
+      inventoryLogsById,
+    ],
+  );
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    setIsDirty(currentSnapshot !== savedSnapshotRef.current);
+  }, [currentSnapshot, isHydrated]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!isDirty) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty, isHydrated]);
+
+  const handleSave = () => {
+    const savedAt = getCurrentTimeLabel();
+    const payload = {
+      workOrders,
+      selectedId,
+      users,
+      currentUserId,
+      workflowStateById,
+      inventoryQuantityById,
+      inventoryLogsById,
+      lastSavedAt: savedAt,
+    };
+    try {
+      window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(payload));
+      savedSnapshotRef.current = buildPersistedState({
+        workOrders,
+        selectedId,
+        users,
+        currentUserId,
+        workflowStateById,
+        inventoryQuantityById,
+        inventoryLogsById,
+      });
+      setLastSavedAt(savedAt);
+      setIsDirty(false);
+    } catch (error) {
+      console.error("localStorage save failed", error);
+    }
+  };
 
   const availableActions = (
     ACTIONS_BY_STATE[currentWorkflowState] ?? []
@@ -1132,7 +1263,7 @@ export default function Home() {
                 </span>
               </div>
               <div className="mt-3 space-y-1 text-xs text-cyan-900">
-                <div>1. 상단 버전이 v0.0.24로 표시되는지</div>
+                <div>1. 상단 버전이 v0.0.25로 표시되는지</div>
                 <div>2. 메뉴에서 작업 선택 시 드로어가 닫히는지</div>
                 <div>3. 우측 진행단계 카드가 상태/액션 구조로 바뀌었는지</div>
                 <div>
@@ -1148,17 +1279,25 @@ export default function Home() {
                   <h2 className="mt-1 break-keep text-2xl font-semibold">
                     {selectedWorkOrder.title}
                   </h2>
-                  <div
-                    className={`mt-2 inline-flex rounded-full px-3 py-1 text-xs font-medium ${getStageTone(currentWorkflowState)}`}
-                  >
-                    상태: {currentWorkflowState}
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <div
+                      className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${getStageTone(currentWorkflowState)}`}
+                    >
+                      상태: {currentWorkflowState}
+                    </div>
+                    <div className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${isDirty ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}>
+                      {isDirty ? "저장되지 않음" : "저장됨"}
+                    </div>
+                    {lastSavedAt && (
+                      <div className="text-xs text-stone-500">마지막 저장: {lastSavedAt}</div>
+                    )}
                   </div>
                 </div>
                 <div className="flex w-full flex-wrap gap-2 sm:w-auto">
                   <button className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm sm:flex-none">
                     복제
                   </button>
-                  <button className="flex-1 rounded-xl bg-stone-900 px-4 py-2 text-sm text-white sm:flex-none">
+                  <button type="button" onClick={handleSave} className="flex-1 rounded-xl bg-stone-900 px-4 py-2 text-sm text-white sm:flex-none">
                     저장
                   </button>
                 </div>
