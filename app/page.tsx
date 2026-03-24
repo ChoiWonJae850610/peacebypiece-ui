@@ -114,6 +114,13 @@ type HistoryLog = {
   tone: HistoryTone;
 };
 
+type Attachment = {
+  id: string;
+  type: "image" | "pdf";
+  name: string;
+  url: string;
+};
+
 type WorkOrder = {
   id: string;
   productName: string;
@@ -124,6 +131,7 @@ type WorkOrder = {
   dueDate: string;
   inventoryStatus: string;
   filesCount: number;
+  attachments: Attachment[];
   title: string;
   status: WorkflowState;
   category1: string;
@@ -457,7 +465,7 @@ const ROLE_PRESETS = {
   },
 } as const;
 
-const LOCAL_STORAGE_KEY = "peacebypiece-ui-v0.0.27";
+const LOCAL_STORAGE_KEY = "peacebypiece-ui-v0.0.28";
 
 const INITIAL_USERS: UserProfile[] = [
   {
@@ -658,6 +666,62 @@ function mapHistoryToInventoryLogs(logs: HistoryLog[]): InventoryLog[] {
     }));
 }
 
+function buildSvgDataUrl(label: string, bg: string, fg: string) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600"><rect width="800" height="600" fill="${bg}"/><text x="400" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="54" font-weight="700" fill="${fg}">${label}</text><text x="400" y="340" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="${fg}" opacity="0.8">PeacebyPiece Attachment Preview</text></svg>`;
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
+function createSampleAttachments(workOrderId: string, count: number): Attachment[] {
+  const base: Attachment[] = [
+    {
+      id: `${workOrderId}-att-image-1`,
+      type: "image",
+      name: "front-sample.jpg",
+      url: buildSvgDataUrl("FRONT SAMPLE", "#E7EEF8", "#26415F"),
+    },
+    {
+      id: `${workOrderId}-att-pdf-1`,
+      type: "pdf",
+      name: "workorder-sheet.pdf",
+      url: buildSvgDataUrl("PDF", "#FDECEC", "#991B1B"),
+    },
+    {
+      id: `${workOrderId}-att-image-2`,
+      type: "image",
+      name: "detail-note.jpg",
+      url: buildSvgDataUrl("DETAIL NOTE", "#EEF7E9", "#31572C"),
+    },
+    {
+      id: `${workOrderId}-att-image-3`,
+      type: "image",
+      name: "color-chip.jpg",
+      url: buildSvgDataUrl("COLOR CHIP", "#FFF4DF", "#9A6700"),
+    },
+    {
+      id: `${workOrderId}-att-pdf-2`,
+      type: "pdf",
+      name: "spec-sheet.pdf",
+      url: buildSvgDataUrl("SPEC PDF", "#F4EAFE", "#6D28D9"),
+    },
+    {
+      id: `${workOrderId}-att-image-4`,
+      type: "image",
+      name: "back-view.jpg",
+      url: buildSvgDataUrl("BACK VIEW", "#E9F8F8", "#155E75"),
+    },
+  ];
+  return base.slice(0, count);
+}
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
 const INITIAL_WORK_ORDERS: WorkOrder[] = [
   {
     id: "WO-2026-0014",
@@ -670,6 +734,7 @@ const INITIAL_WORK_ORDERS: WorkOrder[] = [
     dueDate: "03/29",
     inventoryStatus: "부족",
     filesCount: 4,
+    attachments: createSampleAttachments("WO-2026-0014", 4),
     status: "발주요청",
     category1: "의류",
     category2: "상의",
@@ -782,6 +847,7 @@ const INITIAL_WORK_ORDERS: WorkOrder[] = [
     dueDate: "04/02",
     inventoryStatus: "정상",
     filesCount: 6,
+    attachments: createSampleAttachments("WO-2026-0015", 6),
     status: "생산중",
     category1: "의류",
     category2: "하의",
@@ -869,6 +935,7 @@ const INITIAL_WORK_ORDERS: WorkOrder[] = [
     dueDate: "03/18",
     inventoryStatus: "정상",
     filesCount: 3,
+    attachments: createSampleAttachments("WO-2026-0016", 3),
     status: "완료",
     category1: "가방",
     category2: "숄더백",
@@ -938,7 +1005,7 @@ function buildPersistedState(payload: {
 }
 
 export default function Home() {
-  const version = "0.0.27";
+  const version = "0.0.28";
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [materialOpen, setMaterialOpen] = useState(false);
   const [outsourcingOpen, setOutsourcingOpen] = useState(false);
@@ -946,12 +1013,14 @@ export default function Home() {
   const [inventoryEditorOpen, setInventoryEditorOpen] = useState(false);
   const [permissionModalOpen, setPermissionModalOpen] = useState(false);
   const [inventoryLogModalOpen, setInventoryLogModalOpen] = useState(false);
+  const [attachmentPreviewId, setAttachmentPreviewId] = useState<string | null>(null);
   const [users, setUsers] = useState<UserProfile[]>(INITIAL_USERS);
   const [currentUserId, setCurrentUserId] = useState("user-admin");
   const [permissionTargetUserId, setPermissionTargetUserId] =
     useState("user-designer");
   const [historyFilter, setHistoryFilter] = useState<HistoryFilter>("all");
   const appShellRef = useRef<HTMLDivElement | null>(null);
+  const attachmentInputRef = useRef<HTMLInputElement | null>(null);
   const savedSnapshotRef = useRef<string>("");
   const [isHydrated, setIsHydrated] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
@@ -966,7 +1035,8 @@ export default function Home() {
     drawerOpen ||
     inventoryEditorOpen ||
     permissionModalOpen ||
-    inventoryLogModalOpen;
+    inventoryLogModalOpen ||
+    attachmentPreviewId !== null;
 
   useEffect(() => {
     const body = document.body;
@@ -1021,7 +1091,7 @@ export default function Home() {
     const appShell = appShellRef.current;
     if (!appShell) return;
 
-    if (inventoryEditorOpen || permissionModalOpen || inventoryLogModalOpen) {
+    if (inventoryEditorOpen || permissionModalOpen || inventoryLogModalOpen || attachmentPreviewId !== null) {
       appShell.setAttribute("inert", "");
       appShell.setAttribute("aria-hidden", "true");
     } else {
@@ -1033,7 +1103,7 @@ export default function Home() {
       appShell.removeAttribute("inert");
       appShell.removeAttribute("aria-hidden");
     };
-  }, [inventoryEditorOpen, permissionModalOpen, inventoryLogModalOpen]);
+  }, [inventoryEditorOpen, permissionModalOpen, inventoryLogModalOpen, attachmentPreviewId]);
 
   useEffect(() => {
     try {
@@ -1165,6 +1235,8 @@ export default function Home() {
     historyFilter,
   );
   const inventoryLogs = mapHistoryToInventoryLogs(historyLogs);
+  const selectedAttachment =
+    selectedWorkOrder.attachments.find((item) => item.id === attachmentPreviewId) ?? null;
 
   const materials = selectedWorkOrder.materials;
   const outsourcing = selectedWorkOrder.outsourcing;
@@ -1323,6 +1395,7 @@ export default function Home() {
       dueDate: "미정",
       inventoryStatus: "확인전",
       filesCount: 0,
+      attachments: [],
       status: "작성중",
       category1: "미분류",
       category2: "미분류",
@@ -1486,6 +1559,63 @@ export default function Home() {
     );
   };
 
+  const handleOpenAttachmentPicker = () => {
+    attachmentInputRef.current?.click();
+  };
+
+  const handleAttachmentFiles = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = Array.from(event.target.files ?? []);
+    if (files.length === 0) return;
+
+    try {
+      const uploaded = await Promise.all(
+        files.map(async (file) => ({
+          id: `${selectedWorkOrder.id}-attachment-${Date.now()}-${file.name}`,
+          type: file.type === "application/pdf" ? ("pdf" as const) : ("image" as const),
+          name: file.name,
+          url: await readFileAsDataUrl(file),
+        })),
+      );
+
+      setWorkOrders((prev) =>
+        prev.map((workOrder) =>
+          workOrder.id === selectedWorkOrder.id
+            ? {
+                ...workOrder,
+                attachments: [...workOrder.attachments, ...uploaded],
+                filesCount: workOrder.attachments.length + uploaded.length,
+              }
+            : workOrder,
+        ),
+      );
+    } catch (error) {
+      console.error("attachment load failed", error);
+    } finally {
+      event.target.value = "";
+    }
+  };
+
+  const handleDeleteAttachment = (attachmentId: string) => {
+    setWorkOrders((prev) =>
+      prev.map((workOrder) => {
+        if (workOrder.id !== selectedWorkOrder.id) return workOrder;
+        const nextAttachments = workOrder.attachments.filter(
+          (item) => item.id !== attachmentId,
+        );
+        return {
+          ...workOrder,
+          attachments: nextAttachments,
+          filesCount: nextAttachments.length,
+        };
+      }),
+    );
+    if (attachmentPreviewId === attachmentId) {
+      setAttachmentPreviewId(null);
+    }
+  };
+
   return (
     <main className="min-h-screen overflow-x-hidden bg-stone-100 text-stone-900">
       <div ref={appShellRef}>
@@ -1529,7 +1659,7 @@ export default function Home() {
                 </span>
               </div>
               <div className="mt-3 space-y-1 text-xs text-cyan-900">
-                <div>1. 상단 버전이 v0.0.27으로 표시되는지</div>
+                <div>1. 상단 버전이 v0.0.28으로 표시되는지</div>
                 <div>2. 메뉴에서 작업 선택 시 드로어가 닫히는지</div>
                 <div>3. 우측 진행단계 카드가 상태/액션 구조로 바뀌었는지</div>
                 <div>
@@ -1724,6 +1854,85 @@ export default function Home() {
                     {selectedWorkOrder.memo}
                   </div>
                 </div>
+
+                <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-base font-semibold">첨부파일</h3>
+                      <div className="mt-1 text-xs text-stone-500">
+                        이미지와 PDF를 작업지시서에 함께 보관합니다.
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleOpenAttachmentPicker}
+                      className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800"
+                    >
+                      + 추가
+                    </button>
+                  </div>
+                  <input
+                    ref={attachmentInputRef}
+                    type="file"
+                    accept="image/*,.pdf,application/pdf"
+                    multiple
+                    className="hidden"
+                    onChange={handleAttachmentFiles}
+                  />
+                  {selectedWorkOrder.attachments.length > 0 ? (
+                    <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
+                      {selectedWorkOrder.attachments.map((attachment) => (
+                        <div
+                          key={attachment.id}
+                          className="overflow-hidden rounded-2xl border border-stone-200 bg-white"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => setAttachmentPreviewId(attachment.id)}
+                            className="block w-full text-left"
+                          >
+                            <div className="aspect-[4/3] overflow-hidden bg-stone-100">
+                              {attachment.type === "image" ? (
+                                <img
+                                  src={attachment.url}
+                                  alt={attachment.name}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <div className="flex h-full items-center justify-center bg-rose-50 text-sm font-semibold text-rose-700">
+                                  PDF 미리보기
+                                </div>
+                              )}
+                            </div>
+                            <div className="p-3">
+                              <div className="truncate text-sm font-medium text-stone-900">
+                                {attachment.name}
+                              </div>
+                              <div className="mt-1 text-xs text-stone-500">
+                                {attachment.type === "image" ? "이미지" : "PDF"}
+                              </div>
+                            </div>
+                          </button>
+                          {isAdmin && (
+                            <div className="border-t border-stone-200 p-3">
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteAttachment(attachment.id)}
+                                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700"
+                              >
+                                삭제
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="mt-4 rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-10 text-center text-sm text-stone-500">
+                      아직 첨부파일이 없습니다.
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </section>
@@ -1874,6 +2083,13 @@ export default function Home() {
         </div>
       </div>
 
+      <AttachmentPreviewModal
+        attachment={selectedAttachment}
+        canDelete={isAdmin}
+        onClose={() => setAttachmentPreviewId(null)}
+        onDelete={() => selectedAttachment && handleDeleteAttachment(selectedAttachment.id)}
+      />
+
       <InventoryLogModal
         open={inventoryLogModalOpen}
         onClose={() => setInventoryLogModalOpen(false)}
@@ -1902,6 +2118,59 @@ export default function Home() {
         onApplyRole={handleApplyRole}
       />
     </main>
+  );
+}
+
+function AttachmentPreviewModal({
+  attachment,
+  canDelete,
+  onClose,
+  onDelete,
+}: {
+  attachment: Attachment | null;
+  canDelete: boolean;
+  onClose: () => void;
+  onDelete: () => void;
+}) {
+  if (!attachment) return null;
+
+  return (
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="attachment-preview-title">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
+      <div className="absolute inset-x-0 bottom-0 top-[max(env(safe-area-inset-top),12px)] flex h-[calc(100dvh-max(env(safe-area-inset-top),12px))] flex-col overflow-hidden rounded-t-3xl border border-stone-200 bg-white shadow-2xl md:left-1/2 md:top-1/2 md:bottom-auto md:h-auto md:max-h-[92vh] md:w-full md:max-w-4xl md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl">
+        <div className="sticky top-0 z-10 shrink-0 border-b border-stone-200 bg-white px-4 py-4 md:px-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div id="attachment-preview-title" className="text-lg font-semibold text-stone-900">첨부파일 보기</div>
+              <div className="mt-1 text-sm text-stone-500">{attachment.name}</div>
+            </div>
+            <button type="button" onClick={onClose} className="shrink-0 whitespace-nowrap rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm text-stone-700 shadow-sm">
+              닫기
+            </button>
+          </div>
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-stone-50 p-4 md:p-6">
+          {attachment.type === "image" ? (
+            <img src={attachment.url} alt={attachment.name} className="mx-auto max-h-[75vh] w-auto rounded-2xl border border-stone-200 bg-white object-contain shadow-sm" />
+          ) : (
+            <div className="flex min-h-[360px] items-center justify-center rounded-2xl border border-stone-200 bg-white p-8 text-center">
+              <div>
+                <div className="text-lg font-semibold text-stone-900">PDF 파일</div>
+                <div className="mt-2 text-sm text-stone-500">{attachment.name}</div>
+                <div className="mt-4 inline-flex rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700">PDF 미리보기 카드</div>
+              </div>
+            </div>
+          )}
+        </div>
+        {canDelete && (
+          <div className="shrink-0 border-t border-stone-200 bg-white px-4 py-4 md:px-6">
+            <button type="button" onClick={onDelete} className="w-full rounded-2xl border border-rose-300 bg-white px-4 py-3 text-sm font-medium text-rose-700">
+              첨부파일 삭제
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
