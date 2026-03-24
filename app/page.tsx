@@ -763,7 +763,7 @@ function buildPersistedState(payload: {
 }
 
 export default function Home() {
-  const version = "0.0.25";
+  const version = "0.0.26";
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [materialOpen, setMaterialOpen] = useState(false);
   const [outsourcingOpen, setOutsourcingOpen] = useState(false);
@@ -780,6 +780,7 @@ export default function Home() {
   const [isHydrated, setIsHydrated] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<"saved" | "dirty" | "saving">("saved");
   const [workOrders, setWorkOrders] =
     useState<WorkOrder[]>(INITIAL_WORK_ORDERS);
 
@@ -1018,6 +1019,30 @@ export default function Home() {
 
   useEffect(() => {
     if (!isHydrated) return;
+    if (isDirty) {
+      setSaveStatus((prev) => (prev === "saving" ? prev : "dirty"));
+    } else {
+      setSaveStatus("saved");
+    }
+  }, [isDirty, isHydrated]);
+
+  useEffect(() => {
+    if (!isHydrated || !isDirty) return;
+
+    setSaveStatus("saving");
+    const timer = window.setTimeout(() => {
+      handleSave(true);
+    }, 1200);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    currentSnapshot,
+    isDirty,
+    isHydrated,
+  ]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
 
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       if (!isDirty) return;
@@ -1029,7 +1054,8 @@ export default function Home() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [isDirty, isHydrated]);
 
-  const handleSave = () => {
+  const handleSave = (isAutoSave = false) => {
+    if (!isHydrated) return;
     const savedAt = getCurrentTimeLabel();
     const payload = {
       workOrders,
@@ -1054,7 +1080,9 @@ export default function Home() {
       });
       setLastSavedAt(savedAt);
       setIsDirty(false);
+      setSaveStatus("saved");
     } catch (error) {
+      setSaveStatus(isAutoSave ? "dirty" : "dirty");
       console.error("localStorage save failed", error);
     }
   };
@@ -1263,7 +1291,7 @@ export default function Home() {
                 </span>
               </div>
               <div className="mt-3 space-y-1 text-xs text-cyan-900">
-                <div>1. 상단 버전이 v0.0.25로 표시되는지</div>
+                <div>1. 상단 버전이 v0.0.26으로 표시되는지</div>
                 <div>2. 메뉴에서 작업 선택 시 드로어가 닫히는지</div>
                 <div>3. 우측 진행단계 카드가 상태/액션 구조로 바뀌었는지</div>
                 <div>
@@ -1285,8 +1313,14 @@ export default function Home() {
                     >
                       상태: {currentWorkflowState}
                     </div>
-                    <div className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${isDirty ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}>
-                      {isDirty ? "저장되지 않음" : "저장됨"}
+                    <div className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
+                      saveStatus === "saving"
+                        ? "bg-cyan-100 text-cyan-800"
+                        : saveStatus === "dirty"
+                          ? "bg-amber-100 text-amber-800"
+                          : "bg-emerald-100 text-emerald-800"
+                    }`}>
+                      {saveStatus === "saving" ? "저장 중" : saveStatus === "dirty" ? "저장되지 않음" : "저장됨"}
                     </div>
                     {lastSavedAt && (
                       <div className="text-xs text-stone-500">마지막 저장: {lastSavedAt}</div>
@@ -1298,7 +1332,7 @@ export default function Home() {
                     복제
                   </button>
                   <button type="button" onClick={handleSave} className="flex-1 rounded-xl bg-stone-900 px-4 py-2 text-sm text-white sm:flex-none">
-                    저장
+                    즉시 저장
                   </button>
                 </div>
               </div>
