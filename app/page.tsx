@@ -494,7 +494,7 @@ const ROLE_PRESETS = {
   },
 } as const;
 
-const LOCAL_STORAGE_KEY = "peacebypiece-ui-v0.1.2";
+const LOCAL_STORAGE_KEY = "peacebypiece-ui-v0.1.3";
 
 const INITIAL_USERS: UserProfile[] = [
   {
@@ -1049,7 +1049,7 @@ function buildPersistedState(payload: {
 }
 
 export default function Home() {
-  const version = "0.1.2";
+  const version = "0.1.3";
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [materialOpen, setMaterialOpen] = useState(false);
   const [outsourcingOpen, setOutsourcingOpen] = useState(false);
@@ -1274,7 +1274,8 @@ export default function Home() {
     currentRole === "디자이너" ? true : canViewInventoryHistory;
   const canSeeAttachments = currentUser.permissions.viewAttachments;
   const canEditAttachments =
-    currentUser.permissions.editAttachments && currentUser.permissions.viewAttachments;
+    (currentUser.permissions.editAttachments || currentUser.permissions.permissionManage) &&
+    currentUser.permissions.viewAttachments;
   const currentDisplayStage = getDisplayStage(currentWorkflowState);
   const currentInventoryQuantity =
     inventoryQuantityById[selectedWorkOrder.id] ??
@@ -1288,6 +1289,10 @@ export default function Home() {
   const inventoryLogs = mapHistoryToInventoryLogs(historyLogs);
   const selectedAttachment =
     selectedWorkOrder.attachments.find((item) => item.id === attachmentPreviewId) ?? null;
+  const canDeleteAttachment = (attachment: Attachment | null) => {
+    if (!attachment) return false;
+    return isAdmin || (attachment.ownerId ?? "") === currentUser.id;
+  };
 
   const materials = selectedWorkOrder.materials;
   const outsourcing = selectedWorkOrder.outsourcing;
@@ -1757,7 +1762,7 @@ export default function Home() {
                     모바일 체크포인트
                   </div>
                   <div className="mt-1 text-xs text-cyan-800">
-                    v{version} 반영 여부를 여기 기준으로 확인
+                    모바일 체크포인트 기준: 버전/드로어/카드 정보량/모달 동작 확인
                   </div>
                 </div>
                 <span className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-cyan-800">
@@ -2022,7 +2027,7 @@ export default function Home() {
                               </div>
                             </div>
                           </button>
-                          {(attachment.ownerId ?? "") === currentUser.id && (
+                          {canDeleteAttachment(attachment) && (
                             <div className="border-t border-stone-200 p-3">
                               <button
                                 type="button"
@@ -2197,7 +2202,7 @@ export default function Home() {
 
       <AttachmentPreviewModal
         attachment={selectedAttachment}
-        canDelete={(selectedAttachment?.ownerId ?? "") === currentUser.id}
+        canDelete={canDeleteAttachment(selectedAttachment)}
         onClose={() => setAttachmentPreviewId(null)}
         onDelete={() => selectedAttachment && handleDeleteAttachment(selectedAttachment.id)}
       />

@@ -7,6 +7,11 @@ type WorkOrderLike = {
   title: string;
   vendor?: string;
   dueDate?: string;
+  category1?: string;
+  category2?: string;
+  category3?: string;
+  inventoryStatus?: string;
+  filesCount?: number;
 };
 
 type Props = {
@@ -24,6 +29,17 @@ const getTone = (state: string) => {
   if (state === "반려") return "bg-rose-100 text-rose-800";
   if (state === "발주요청" || state === "검토대기" || state === "입고대기") return "bg-amber-100 text-amber-800";
   return "bg-cyan-100 text-cyan-800";
+};
+
+const getInventoryLabel = (status?: string) => {
+  if (!status) return "재고: 미확인";
+  return `재고: ${status}`;
+};
+
+const getCategoryPath = (workOrder: WorkOrderLike) => {
+  return [workOrder.category1, workOrder.category2, workOrder.category3]
+    .filter(Boolean)
+    .join(" > ");
 };
 
 export default function MobileDrawer({
@@ -112,8 +128,12 @@ export default function MobileDrawer({
                       </div>
                     </div>
                   </div>
-                  <div className={`mt-2 text-xs ${active ? "text-stone-200" : "text-stone-500"}`}>
-                    {workOrder.vendor ?? "거래처 미지정"} · {workOrder.dueDate ?? "납기 미지정"}
+                  <div className={`mt-3 space-y-1 text-xs ${active ? "text-stone-200" : "text-stone-500"}`}>
+                    <div className="truncate">{getCategoryPath(workOrder) || "분류 미지정"}</div>
+                    <div className="truncate">거래처/공장: {workOrder.vendor ?? "미지정"}</div>
+                    <div>마감: {workOrder.dueDate ?? "미지정"}</div>
+                    <div>{getInventoryLabel(workOrder.inventoryStatus)}</div>
+                    <div>첨부파일: {workOrder.filesCount ?? 0}개</div>
                   </div>
                 </button>
               );
