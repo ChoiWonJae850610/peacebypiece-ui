@@ -2,8 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import InventoryEditor from "@/components/common/InventoryEditor";
-import PermissionModal from "@/components/common/PermissionModal";
+import AttachmentPreviewModal from "@/components/common/modal/AttachmentPreviewModal";
+import InventoryEditor from "@/components/common/modal/InventoryEditor";
+import InventoryLogModal from "@/components/common/modal/InventoryLogModal";
+import PermissionModal from "@/components/common/modal/PermissionModal";
+import MobileDrawer from "@/components/layout/MobileDrawer";
+import MobileTopBar from "@/components/layout/MobileTopBar";
+import SidebarContent from "@/components/layout/SidebarContent";
 
 type Material = {
   type: string;
@@ -489,7 +494,7 @@ const ROLE_PRESETS = {
   },
 } as const;
 
-const LOCAL_STORAGE_KEY = "peacebypiece-ui-v0.0.35";
+const LOCAL_STORAGE_KEY = "peacebypiece-ui-v0.1.2";
 
 const INITIAL_USERS: UserProfile[] = [
   {
@@ -1043,16 +1048,8 @@ function buildPersistedState(payload: {
   return JSON.stringify(payload);
 }
 
-function getFocusableElements(container: HTMLElement) {
-  return Array.from(
-    container.querySelectorAll<HTMLElement>(
-      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-    ),
-  ).filter((element) => !element.hasAttribute("inert") && !element.getAttribute("aria-hidden"));
-}
-
 export default function Home() {
-  const version = "0.0.35";
+  const version = "0.1.2";
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [materialOpen, setMaterialOpen] = useState(false);
   const [outsourcingOpen, setOutsourcingOpen] = useState(false);
@@ -2235,254 +2232,6 @@ export default function Home() {
   );
 }
 
-function AttachmentPreviewModal({
-  attachment,
-  canDelete,
-  onClose,
-  onDelete,
-}: {
-  attachment: Attachment | null;
-  canDelete: boolean;
-  onClose: () => void;
-  onDelete: () => void;
-}) {
-  const dialogRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!attachment || !dialogRef.current) return;
-
-    const dialog = dialogRef.current;
-    const previousActive = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-
-    const focusTimer = window.setTimeout(() => {
-      const focusables = getFocusableElements(dialog);
-      (focusables[0] ?? dialog).focus();
-    }, 0);
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onClose();
-        return;
-      }
-
-      if (event.key !== "Tab") return;
-      const focusables = getFocusableElements(dialog);
-      if (focusables.length === 0) {
-        event.preventDefault();
-        dialog.focus();
-        return;
-      }
-
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
-      const active = document.activeElement;
-
-      if (event.shiftKey) {
-        if (active === first || !dialog.contains(active)) {
-          event.preventDefault();
-          last.focus();
-        }
-      } else if (active === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.clearTimeout(focusTimer);
-      document.removeEventListener("keydown", handleKeyDown);
-      previousActive?.focus();
-    };
-  }, [attachment, onClose]);
-
-  if (!attachment) return null;
-
-  return (
-    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="attachment-preview-title">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
-      <div ref={dialogRef} tabIndex={-1} className="absolute inset-x-0 bottom-0 top-[max(env(safe-area-inset-top),12px)] flex h-[calc(100dvh-max(env(safe-area-inset-top),12px))] flex-col overflow-hidden rounded-t-3xl border border-stone-200 bg-white shadow-2xl outline-none md:left-1/2 md:top-1/2 md:bottom-auto md:h-auto md:max-h-[92vh] md:w-full md:max-w-4xl md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl">
-        <div className="sticky top-0 z-10 shrink-0 border-b border-stone-200 bg-white px-4 py-4 md:px-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div id="attachment-preview-title" className="text-lg font-semibold text-stone-900">첨부파일 보기</div>
-              <div className="mt-1 text-sm text-stone-500">{attachment.name}</div>
-            </div>
-            <button type="button" onClick={onClose} className="shrink-0 whitespace-nowrap rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm text-stone-700 shadow-sm">
-              닫기
-            </button>
-          </div>
-        </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-stone-50 p-4 md:p-6">
-          {attachment.type === "image" ? (
-            <img src={attachment.url} alt={attachment.name} className="mx-auto max-h-[75vh] w-auto rounded-2xl border border-stone-200 bg-white object-contain shadow-sm" />
-          ) : (
-            <div className="flex min-h-[360px] items-center justify-center rounded-2xl border border-stone-200 bg-white p-8 text-center">
-              <div>
-                <div className="text-lg font-semibold text-stone-900">PDF 파일</div>
-                <div className="mt-2 text-sm text-stone-500">{attachment.name}</div>
-                <div className="mt-4 inline-flex rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700">PDF 미리보기 카드</div>
-              </div>
-            </div>
-          )}
-        </div>
-        {canDelete && (
-          <div className="shrink-0 border-t border-stone-200 bg-white px-4 py-4 md:px-6">
-            <button type="button" onClick={onDelete} className="w-full rounded-2xl border border-rose-300 bg-white px-4 py-3 text-sm font-medium text-rose-700">
-              첨부파일 삭제
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function InventoryLogModal({
-  open,
-  onClose,
-  logs,
-  role,
-  filter,
-}: {
-  open: boolean;
-  onClose: () => void;
-  logs: HistoryLog[];
-  role: ReturnType<typeof getPermissionSummary>;
-  filter: HistoryFilter;
-}) {
-  const dialogRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!open || !dialogRef.current) return;
-
-    const dialog = dialogRef.current;
-    const previousActive = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-
-    const focusTimer = window.setTimeout(() => {
-      const focusables = getFocusableElements(dialog);
-      (focusables[0] ?? dialog).focus();
-    }, 0);
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onClose();
-        return;
-      }
-
-      if (event.key !== "Tab") return;
-      const focusables = getFocusableElements(dialog);
-      if (focusables.length === 0) {
-        event.preventDefault();
-        dialog.focus();
-        return;
-      }
-
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
-      const active = document.activeElement;
-
-      if (event.shiftKey) {
-        if (active === first || !dialog.contains(active)) {
-          event.preventDefault();
-          last.focus();
-        }
-      } else if (active === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.clearTimeout(focusTimer);
-      document.removeEventListener("keydown", handleKeyDown);
-      previousActive?.focus();
-    };
-  }, [open, onClose]);
-
-  if (!open) return null;
-
-  return (
-    <div
-      className="fixed inset-0 z-50"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="inventory-log-modal-title"
-    >
-      <div
-        className="absolute inset-0 bg-black/35"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-      <div ref={dialogRef} tabIndex={-1} className="absolute inset-x-0 bottom-0 top-[max(env(safe-area-inset-top),12px)] flex h-[calc(100dvh-max(env(safe-area-inset-top),12px))] flex-col overflow-hidden rounded-t-3xl border border-stone-200 bg-white shadow-2xl outline-none md:left-1/2 md:top-1/2 md:bottom-auto md:h-auto md:max-h-[90vh] md:w-full md:max-w-2xl md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl">
-        <div className="sticky top-0 z-10 shrink-0 border-b border-stone-200 bg-white px-4 py-4 md:px-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div
-                id="inventory-log-modal-title"
-                className="text-lg font-semibold text-stone-900"
-              >
-                전체 히스토리
-              </div>
-              <div className="mt-1 text-sm text-stone-500">
-                최신순으로 해당 작업지시서의 히스토리를 확인합니다.
-              </div>
-              <div className="mt-2 text-xs text-stone-400">
-                {role === "관리자"
-                  ? `현재 필터: ${filter === "all" ? "전체" : filter === "work" ? "작업" : "재고"}`
-                  : `현재 보기 권한: ${role}`}
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="shrink-0 whitespace-nowrap rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm text-stone-700 shadow-sm"
-            >
-              닫기
-            </button>
-          </div>
-        </div>
-
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 md:px-6 md:py-5">
-          <div className="space-y-3">
-            {logs.length > 0 ? (
-              logs.map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-2xl border border-stone-200 bg-stone-50 p-4"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div
-                      className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${getHistoryToneClass(item.tone)}`}
-                    >
-                      {item.action}
-                    </div>
-                    <div className="text-[11px] text-stone-500">
-                      {item.time}
-                    </div>
-                  </div>
-                  <div className="mt-2 text-xs text-stone-500">{item.user}</div>
-                  <div className="mt-1 text-sm text-stone-700">
-                    {item.message}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-sm text-stone-500">
-                표시할 히스토리가 없습니다.
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function WorkflowPanel({
   currentUser,
@@ -2512,13 +2261,9 @@ function WorkflowPanel({
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="text-base font-semibold">진행 단계</h3>
-          <p className="mt-1 text-xs text-stone-500">
-            상태와 가능한 행동을 함께 표시
-          </p>
+          <p className="mt-1 text-xs text-stone-500">상태와 가능한 행동을 함께 표시</p>
         </div>
-        <span
-          className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${getStageTone(currentState)}`}
-        >
+        <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${getStageTone(currentState)}`}>
           {currentState}
         </span>
       </div>
@@ -2545,9 +2290,7 @@ function WorkflowPanel({
                 className={`rounded-xl px-3 py-3 text-left ${active ? "bg-stone-900 text-white" : "border border-stone-300 bg-white text-stone-700"}`}
               >
                 <div className="text-xs font-semibold">{user.name}</div>
-                <div
-                  className={`mt-1 text-[11px] ${active ? "text-stone-300" : "text-stone-500"}`}
-                >
+                <div className={`mt-1 text-[11px] ${active ? "text-stone-300" : "text-stone-500"}`}>
                   {getPermissionSummary(user)}
                 </div>
               </button>
@@ -2582,14 +2325,10 @@ function WorkflowPanel({
                 {isDone ? "✓" : index + 1}
               </div>
               <div className="min-w-0 flex-1">
-                <div
-                  className={`text-sm ${isCurrent ? "font-semibold text-stone-900" : isUpcoming ? "text-stone-500" : "text-stone-700"}`}
-                >
+                <div className={`text-sm ${isCurrent ? "font-semibold text-stone-900" : isUpcoming ? "text-stone-500" : "text-stone-700"}`}>
                   {stage}
                 </div>
-                {isCurrent && (
-                  <div className="mt-1 text-xs text-stone-500">현재 단계</div>
-                )}
+                {isCurrent && <div className="mt-1 text-xs text-stone-500">현재 단계</div>}
               </div>
             </div>
           );
@@ -2598,9 +2337,7 @@ function WorkflowPanel({
 
       <div className="mt-5 border-t border-stone-200 pt-4">
         <div className="flex items-center justify-between gap-3">
-          <div className="text-sm font-semibold text-stone-900">
-            가능한 액션
-          </div>
+          <div className="text-sm font-semibold text-stone-900">가능한 액션</div>
           <span className="text-xs text-stone-500">권한 기준</span>
         </div>
         {actions.length > 0 ? (
@@ -2662,25 +2399,17 @@ function AccordionSection({
         >
           <div className="flex items-center justify-between gap-3">
             <div>
-              <div className="text-sm font-semibold text-stone-900">
-                {title}
-              </div>
+              <div className="text-sm font-semibold text-stone-900">{title}</div>
               <div className="mt-1 text-xs text-stone-500">{summaryText}</div>
             </div>
-            <span className="shrink-0 text-lg text-stone-500">
-              {mobileOpen ? "−" : "+"}
-            </span>
+            <span className="shrink-0 text-lg text-stone-500">{mobileOpen ? "−" : "+"}</span>
           </div>
         </button>
 
         {mobileOpen && (
           <div className="mt-3 space-y-3">
             {mobileItems.map((item) => (
-              <MobileDataCard
-                key={item.key}
-                title={item.title}
-                rows={item.rows}
-              />
+              <MobileDataCard key={item.key} title={item.title} rows={item.rows} />
             ))}
           </div>
         )}
@@ -2717,227 +2446,6 @@ function AccordionSection({
   );
 }
 
-function MobileTopBar({
-  version,
-  onOpen,
-}: {
-  version: string;
-  onOpen: () => void;
-}) {
-  return (
-    <div className="sticky top-0 z-30 flex items-center justify-between border-b border-stone-200 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
-      <button
-        type="button"
-        onClick={onOpen}
-        className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800"
-      >
-        메뉴
-      </button>
-      <div className="text-sm font-semibold text-stone-900">
-        PeacebyPiece v{version}
-      </div>
-    </div>
-  );
-}
-
-function MobileDrawer({
-  open,
-  onClose,
-  workOrders,
-  selectedId,
-  workflowStateById,
-  onSelect,
-  onCreate,
-}: {
-  open: boolean;
-  onClose: () => void;
-  workOrders: WorkOrder[];
-  selectedId: string;
-  workflowStateById: Record<string, WorkflowState>;
-  onSelect: (id: string, closeDrawer?: boolean) => void;
-  onCreate: (closeDrawer?: boolean) => void;
-}) {
-  return (
-    <div
-      className={`${open ? "pointer-events-auto" : "pointer-events-none"} fixed inset-0 z-40 md:hidden`}
-    >
-      <div
-        className={`absolute inset-0 bg-black/30 transition-opacity ${open ? "opacity-100" : "opacity-0"}`}
-        onClick={onClose}
-      />
-      <div
-        className={`absolute left-0 top-0 h-full w-[85%] max-w-80 overflow-y-auto bg-white shadow-xl transition-transform duration-200 ${open ? "translate-x-0" : "-translate-x-full"}`}
-        onTouchMove={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between border-b border-stone-200 p-4">
-          <div>
-            <div className="text-base font-semibold text-stone-900">
-              작업 리스트
-            </div>
-            <div className="mt-1 text-xs text-stone-500">
-              모바일 드로어 메뉴
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm"
-          >
-            닫기
-          </button>
-        </div>
-        <div className="p-4">
-          <button
-            type="button"
-            onClick={() => onCreate(true)}
-            className="mb-3 flex w-full items-center justify-center rounded-2xl bg-stone-900 px-4 py-3 text-sm font-semibold text-white shadow-sm"
-          >
-            + 새 작업지시서
-          </button>
-          <input
-            className="w-full rounded-xl border border-stone-300 bg-stone-50 px-3 py-2 text-sm outline-none"
-            placeholder="제품명 검색"
-          />
-          <div className="mt-3 flex flex-wrap gap-2">
-            {["전체", "진행중", "발주요청", "입고대기", "완료"].map((tag) => (
-              <button
-                key={tag}
-                className="rounded-full border border-stone-300 bg-white px-3 py-1 text-xs"
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="space-y-3 px-4 pb-6">
-          {workOrders.map((item) => {
-            const selected = item.id === selectedId;
-            const state = workflowStateById[item.id] ?? item.status;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => onSelect(item.id, true)}
-                className={`block w-full rounded-2xl border p-4 text-left shadow-sm ${selected ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white"}`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="break-keep text-sm font-semibold">
-                      {item.productName}
-                    </div>
-                  </div>
-                  <span
-                    className={`shrink-0 rounded-full px-2 py-1 text-[11px] ${selected ? "bg-white/15 text-white" : "bg-stone-100 text-stone-700"}`}
-                  >
-                    {state}
-                  </span>
-                </div>
-                <div
-                  className={`mt-3 space-y-1 text-xs ${selected ? "text-stone-300" : "text-stone-600"}`}
-                >
-                  <div className="break-keep">{item.category}</div>
-                  <div>마감: {item.dueDate}</div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SidebarContent({
-  version,
-  workOrders,
-  selectedId,
-  workflowStateById,
-  onSelect,
-  onCreate,
-}: {
-  version: string;
-  workOrders: WorkOrder[];
-  selectedId: string;
-  workflowStateById: Record<string, WorkflowState>;
-  onSelect: (id: string, closeDrawer?: boolean) => void;
-  onCreate: (closeDrawer?: boolean) => void;
-}) {
-  return (
-    <>
-      <div className="border-b border-stone-200 p-4">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-semibold">PeacebyPiece</h1>
-            <p className="mt-1 text-sm text-stone-500">작업지시 워크스테이션</p>
-          </div>
-          <span className="shrink-0 rounded-full border border-stone-300 bg-stone-50 px-3 py-1 text-xs font-medium text-stone-700">
-            v{version}
-          </span>
-        </div>
-      </div>
-      <div className="p-4">
-        <button
-          type="button"
-          onClick={() => onCreate()}
-          className="mb-3 flex w-full items-center justify-center rounded-2xl bg-stone-900 px-4 py-3 text-sm font-semibold text-white shadow-sm"
-        >
-          + 새 작업지시서
-        </button>
-        <input
-          className="w-full rounded-xl border border-stone-300 bg-stone-50 px-3 py-2 text-sm outline-none"
-          placeholder="제품명 검색"
-        />
-        <div className="mt-3 flex flex-wrap gap-2">
-          {["전체", "진행중", "발주요청", "입고대기", "완료"].map((tag) => (
-            <button
-              key={tag}
-              className="rounded-full border border-stone-300 bg-white px-3 py-1 text-xs"
-            >
-              {tag}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="space-y-3 px-4 pb-4">
-        {workOrders.map((item) => {
-          const selected = item.id === selectedId;
-          const state = workflowStateById[item.id] ?? item.status;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => onSelect(item.id)}
-              className={`block w-full rounded-2xl border p-4 text-left shadow-sm ${selected ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white"}`}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="break-keep text-sm font-semibold">
-                    {item.productName}
-                  </div>
-                </div>
-                <span
-                  className={`shrink-0 rounded-full px-2 py-1 text-[11px] ${selected ? "bg-white/15 text-white" : "bg-stone-100 text-stone-700"}`}
-                >
-                  {state}
-                </span>
-              </div>
-              <div
-                className={`mt-3 space-y-1 text-xs ${selected ? "text-stone-300" : "text-stone-600"}`}
-              >
-                <div className="break-keep">{item.category}</div>
-                <div>거래처/공장: {item.vendor}</div>
-                <div>마감: {item.dueDate}</div>
-                <div>재고: {item.inventoryStatus}</div>
-                <div>첨부파일: {item.filesCount}개</div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-    </>
-  );
-}
-
 function MobileDataCard({
   title,
   rows,
@@ -2950,14 +2458,9 @@ function MobileDataCard({
       <div className="text-sm font-semibold text-stone-900">{title}</div>
       <div className="mt-3 space-y-2">
         {rows.map(([label, value]) => (
-          <div
-            key={`${title}-${label}`}
-            className="flex items-start justify-between gap-4"
-          >
+          <div key={`${title}-${label}`} className="flex items-start justify-between gap-4">
             <span className="shrink-0 text-xs text-stone-500">{label}</span>
-            <span className="text-right text-sm font-medium text-stone-900">
-              {value}
-            </span>
+            <span className="text-right text-sm font-medium text-stone-900">{value}</span>
           </div>
         ))}
       </div>
@@ -2977,9 +2480,7 @@ function Info({
   return (
     <div className="min-w-0 rounded-xl border border-stone-200 bg-white p-3">
       <div className="text-xs text-stone-500">{label}</div>
-      <div className={`mt-1 font-medium ${valueClassName ?? "text-sm"}`}>
-        {value}
-      </div>
+      <div className={`mt-1 font-medium ${valueClassName ?? "text-sm"}`}>{value}</div>
     </div>
   );
 }
@@ -2995,14 +2496,8 @@ function SummaryRow({
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <span
-        className={strong ? "font-semibold text-stone-900" : "text-stone-600"}
-      >
-        {label}
-      </span>
-      <span className={strong ? "font-semibold text-stone-900" : "font-medium"}>
-        {value}
-      </span>
+      <span className={strong ? "font-semibold text-stone-900" : "text-stone-600"}>{label}</span>
+      <span className={strong ? "font-semibold text-stone-900" : "font-medium"}>{value}</span>
     </div>
   );
 }
