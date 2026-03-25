@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
+import { APP_VERSION } from "@/lib/constants/app";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PeacebyPiece v0.1.1",
+  title: `PeacebyPiece v${APP_VERSION}`,
   description: "작업지시 워크스테이션",
 };
 

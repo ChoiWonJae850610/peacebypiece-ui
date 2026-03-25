@@ -4,51 +4,8 @@ import { useRef } from "react";
 import BaseModal from "@/components/common/modal/BaseModal";
 import ModalHeader from "@/components/common/modal/ModalHeader";
 import { useModalFocusTrap } from "@/components/common/modal/modalUtils";
-
-type PermissionKey =
-  | "createWorkorder"
-  | "reviewRequest"
-  | "reviewApprove"
-  | "orderRequest"
-  | "orderConfirm"
-  | "inbound"
-  | "inspection"
-  | "inventoryEdit"
-  | "permissionManage"
-  | "viewProductionDetails"
-  | "viewCost"
-  | "viewInventoryHistory"
-  | "viewAttachments"
-  | "editAttachments";
-
-type PermissionSet = Record<PermissionKey, boolean>;
-
-type UserProfile = {
-  id: string;
-  name: string;
-  team: string;
-  permissions: PermissionSet;
-};
-
-type RoleType = "디자이너" | "관리자" | "입고/검수";
-
-const ROLE_OPTIONS: { role: RoleType; title: string; description: string }[] = [
-  {
-    role: "디자이너",
-    title: "디자이너",
-    description: "작업지시 작성, 검토 요청, 발주 요청 중심",
-  },
-  {
-    role: "관리자",
-    title: "관리자",
-    description: "전체 승인, 발주 확정, 상태 관리까지 가능",
-  },
-  {
-    role: "입고/검수",
-    title: "입고/검수",
-    description: "입고 처리, 검수 완료, 재고 수정 중심",
-  },
-];
+import { ROLE_OPTIONS } from "@/lib/constants/roles";
+import type { RoleType, UserProfile } from "@/types/workorder";
 
 function inferRole(user: UserProfile): RoleType {
   if (user.team === "관리자") return "관리자";

@@ -4,15 +4,7 @@ import { useRef } from "react";
 import BaseModal from "@/components/common/modal/BaseModal";
 import ModalHeader from "@/components/common/modal/ModalHeader";
 import { useModalFocusTrap } from "@/components/common/modal/modalUtils";
-
-type Attachment = {
-  id: string;
-  type: "image" | "pdf";
-  name: string;
-  url: string;
-  ownerId: string;
-  ownerName: string;
-};
+import type { Attachment } from "@/types/workorder";
 
 export default function AttachmentPreviewModal({
   attachment,

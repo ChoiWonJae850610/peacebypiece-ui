@@ -9,532 +9,54 @@ import PermissionModal from "@/components/common/modal/PermissionModal";
 import MobileDrawer from "@/components/layout/MobileDrawer";
 import MobileTopBar from "@/components/layout/MobileTopBar";
 import SidebarContent from "@/components/layout/SidebarContent";
-
-type Material = {
-  type: string;
-  name: string;
-  vendor: string;
-  quantity: number;
-  inventoryQuantity?: number;
-  unit: string;
-  unitCost: number;
-  totalCost: number;
-  status: string;
-};
-
-type Outsourcing = {
-  process: string;
-  vendor: string;
-  quantity: number;
-  unitType: string;
-  unitCost: number;
-  totalCost: number;
-  status: string;
-};
-
-type WorkflowState =
-  | "작성중"
-  | "검토대기"
-  | "검토완료"
-  | "발주요청"
-  | "발주완료"
-  | "생산중"
-  | "입고대기"
-  | "검수중"
-  | "부분완료"
-  | "완료"
-  | "반려"
-  | "종결";
-
-type DisplayStage =
-  | "작성중"
-  | "검토중"
-  | "발주대기"
-  | "입고대기"
-  | "완료"
-  | "반려";
-
-type PermissionKey =
-  | "createWorkorder"
-  | "reviewRequest"
-  | "reviewApprove"
-  | "orderRequest"
-  | "orderConfirm"
-  | "inbound"
-  | "inspection"
-  | "inventoryEdit"
-  | "permissionManage"
-  | "viewProductionDetails"
-  | "viewCost"
-  | "viewInventoryHistory"
-  | "viewAttachments"
-  | "editAttachments";
-
-type PermissionSet = Record<PermissionKey, boolean>;
-
-type UserProfile = {
-  id: string;
-  name: string;
-  team: string;
-  permissions: PermissionSet;
-};
-
-type ActionId =
-  | "saveDraft"
-  | "requestReview"
-  | "approveReview"
-  | "rejectReview"
-  | "requestOrder"
-  | "confirmOrder"
-  | "startProduction"
-  | "registerInbound"
-  | "startInspection"
-  | "completeInspection"
-  | "markPartial"
-  | "closeOrder";
-
-type WorkflowAction = {
-  id: ActionId;
-  label: string;
-  nextState: WorkflowState;
-  permission: PermissionKey;
-};
-
-type InventoryLog = {
-  id: string;
-  workOrderId: string;
-  type: "입고" | "차감" | "보정";
-  delta: number;
-  memo: string;
-  user: string;
-  time: string;
-};
-
-type HistoryCategory = "work" | "inventory";
-type HistoryTone = "blue" | "violet" | "emerald" | "rose" | "amber" | "stone";
-type HistoryFilter = "all" | "work" | "inventory";
-
-type HistoryLog = {
-  id: string;
-  workOrderId: string;
-  category: HistoryCategory;
-  action: string;
-  message: string;
-  user: string;
-  time: string;
-  tone: HistoryTone;
-};
-
-type Attachment = {
-  id: string;
-  type: "image" | "pdf";
-  name: string;
-  url: string;
-  ownerId: string;
-  ownerName: string;
-};
-
-type WorkOrder = {
-  id: string;
-  productName: string;
-  internalCode: string;
-  category: string;
-  stage: WorkflowState;
-  vendor: string;
-  dueDate: string;
-  inventoryStatus: string;
-  filesCount: number;
-  attachments: Attachment[];
-  title: string;
-  status: WorkflowState;
-  category1: string;
-  category2: string;
-  category3: string;
-  season: string;
-  manager: string;
-  priority: string;
-  quantity: number;
-  inventoryQuantity: number;
-  memo: string;
-  historyItems: { time: string; user: string; action: string }[];
-  materials: Material[];
-  outsourcing: Outsourcing[];
-};
-
-const STAGE_ORDER: WorkflowState[] = [
-  "작성중",
-  "검토대기",
-  "검토완료",
-  "발주요청",
-  "발주완료",
-  "생산중",
-  "입고대기",
-  "검수중",
-  "부분완료",
-  "완료",
-  "반려",
-  "종결",
-];
-
-const PRIMARY_FLOW: WorkflowState[] = [
-  "작성중",
-  "검토대기",
-  "검토완료",
-  "발주요청",
-  "발주완료",
-  "생산중",
-  "입고대기",
-  "검수중",
-  "부분완료",
-  "완료",
-  "종결",
-];
-
-const ACTIONS_BY_STATE: Partial<Record<WorkflowState, WorkflowAction[]>> = {
-  작성중: [
-    {
-      id: "saveDraft",
-      label: "임시저장",
-      nextState: "작성중",
-      permission: "createWorkorder",
-    },
-    {
-      id: "requestReview",
-      label: "검토요청",
-      nextState: "검토대기",
-      permission: "reviewRequest",
-    },
-  ],
-  검토대기: [
-    {
-      id: "approveReview",
-      label: "검토승인",
-      nextState: "검토완료",
-      permission: "reviewApprove",
-    },
-    {
-      id: "rejectReview",
-      label: "검토반려",
-      nextState: "반려",
-      permission: "reviewApprove",
-    },
-  ],
-  검토완료: [
-    {
-      id: "requestOrder",
-      label: "발주요청",
-      nextState: "발주요청",
-      permission: "orderRequest",
-    },
-    {
-      id: "closeOrder",
-      label: "종결처리",
-      nextState: "종결",
-      permission: "reviewApprove",
-    },
-  ],
-  발주요청: [
-    {
-      id: "confirmOrder",
-      label: "발주확정",
-      nextState: "발주완료",
-      permission: "orderConfirm",
-    },
-    {
-      id: "rejectReview",
-      label: "반려",
-      nextState: "반려",
-      permission: "reviewApprove",
-    },
-  ],
-  발주완료: [
-    {
-      id: "startProduction",
-      label: "생산시작",
-      nextState: "생산중",
-      permission: "inbound",
-    },
-    {
-      id: "closeOrder",
-      label: "종결처리",
-      nextState: "종결",
-      permission: "reviewApprove",
-    },
-  ],
-  생산중: [
-    {
-      id: "registerInbound",
-      label: "입고등록",
-      nextState: "입고대기",
-      permission: "inbound",
-    },
-    {
-      id: "closeOrder",
-      label: "종결처리",
-      nextState: "종결",
-      permission: "reviewApprove",
-    },
-  ],
-  입고대기: [
-    {
-      id: "startInspection",
-      label: "검수시작",
-      nextState: "검수중",
-      permission: "inspection",
-    },
-    {
-      id: "closeOrder",
-      label: "종결처리",
-      nextState: "종결",
-      permission: "reviewApprove",
-    },
-  ],
-  검수중: [
-    {
-      id: "completeInspection",
-      label: "검수완료",
-      nextState: "완료",
-      permission: "inspection",
-    },
-    {
-      id: "markPartial",
-      label: "부분완료",
-      nextState: "부분완료",
-      permission: "inspection",
-    },
-    {
-      id: "closeOrder",
-      label: "종결처리",
-      nextState: "종결",
-      permission: "reviewApprove",
-    },
-  ],
-  부분완료: [
-    {
-      id: "registerInbound",
-      label: "추가입고 등록",
-      nextState: "입고대기",
-      permission: "inbound",
-    },
-    {
-      id: "closeOrder",
-      label: "종결처리",
-      nextState: "종결",
-      permission: "reviewApprove",
-    },
-  ],
-  완료: [
-    {
-      id: "closeOrder",
-      label: "종결처리",
-      nextState: "종결",
-      permission: "reviewApprove",
-    },
-  ],
-  반려: [
-    {
-      id: "saveDraft",
-      label: "수정 후 저장",
-      nextState: "작성중",
-      permission: "createWorkorder",
-    },
-    {
-      id: "requestReview",
-      label: "재검토요청",
-      nextState: "검토대기",
-      permission: "createWorkorder",
-    },
-    {
-      id: "closeOrder",
-      label: "종결처리",
-      nextState: "종결",
-      permission: "reviewApprove",
-    },
-  ],
-};
-
-function getStageTone(state: WorkflowState) {
-  switch (state) {
-    case "완료":
-      return "bg-emerald-100 text-emerald-800";
-    case "부분완료":
-      return "bg-amber-100 text-amber-800";
-    case "반려":
-      return "bg-rose-100 text-rose-800";
-    case "종결":
-      return "bg-stone-200 text-stone-700";
-    default:
-      return "bg-cyan-100 text-cyan-800";
-  }
-}
-
-function getDisplayStage(state: WorkflowState): DisplayStage {
-  switch (state) {
-    case "작성중":
-      return "작성중";
-    case "검토대기":
-    case "검토완료":
-      return "검토중";
-    case "발주요청":
-    case "발주완료":
-    case "생산중":
-      return "발주대기";
-    case "입고대기":
-    case "검수중":
-    case "부분완료":
-      return "입고대기";
-    case "완료":
-    case "종결":
-      return "완료";
-    case "반려":
-      return "반려";
-  }
-}
-
-function getDisplayStageDescription(state: DisplayStage) {
-  switch (state) {
-    case "작성중":
-      return "작업지시서 초안을 작성하거나 수정하는 단계입니다.";
-    case "검토중":
-      return "검토 요청 이후 승인 또는 반려가 진행되는 단계입니다.";
-    case "발주대기":
-      return "발주 요청, 확정, 생산 진행까지를 묶어 보여주는 단계입니다.";
-    case "입고대기":
-      return "입고 등록과 검수 진행 상태를 묶어 보여주는 단계입니다.";
-    case "완료":
-      return "검수 완료 또는 종결까지 마무리된 단계입니다.";
-    case "반려":
-      return "수정 후 다시 검토 요청이 필요한 상태입니다.";
-  }
-}
-
-function getVisibleStageListByUser(
-  user: UserProfile,
-  currentState: WorkflowState,
-): DisplayStage[] {
-  const summary = getPermissionSummary(user);
-
-  if (currentState === "반려") {
-    if (summary === "입고/검수") return ["입고대기", "반려"];
-    return ["작성중", "검토중", "반려"];
-  }
-
-  if (summary === "디자이너") {
-    return ["작성중", "검토중", "발주대기", "완료"];
-  }
-
-  if (summary === "입고/검수") {
-    return ["입고대기", "완료"];
-  }
-
-  return ["작성중", "검토중", "발주대기", "입고대기", "완료"];
-}
-
-const DEFAULT_PERMISSIONS: PermissionSet = {
-  createWorkorder: false,
-  reviewRequest: false,
-  reviewApprove: false,
-  orderRequest: false,
-  orderConfirm: false,
-  inbound: false,
-  inspection: false,
-  inventoryEdit: false,
-  permissionManage: false,
-  viewProductionDetails: false,
-  viewCost: false,
-  viewInventoryHistory: false,
-  viewAttachments: false,
-  editAttachments: false,
-};
-
-const ROLE_PRESETS = {
-  디자이너: {
-    team: "디자이너",
-    permissions: {
-      ...DEFAULT_PERMISSIONS,
-      createWorkorder: true,
-      reviewRequest: true,
-      orderRequest: true,
-      viewProductionDetails: true,
-      viewCost: true,
-      viewAttachments: true,
-      editAttachments: true,
-    },
-  },
-  관리자: {
-    team: "관리자",
-    permissions: {
-      ...DEFAULT_PERMISSIONS,
-      createWorkorder: true,
-      reviewRequest: true,
-      reviewApprove: true,
-      orderRequest: true,
-      orderConfirm: true,
-      inbound: true,
-      inspection: true,
-      inventoryEdit: true,
-      permissionManage: true,
-      viewProductionDetails: true,
-      viewCost: true,
-      viewInventoryHistory: true,
-      viewAttachments: true,
-      editAttachments: true,
-    },
-  },
-  "입고/검수": {
-    team: "입고/검수",
-    permissions: {
-      ...DEFAULT_PERMISSIONS,
-      inbound: true,
-      inspection: true,
-      inventoryEdit: true,
-      viewInventoryHistory: true,
-      viewAttachments: true,
-    },
-  },
-} as const;
-
-const LOCAL_STORAGE_KEY = "peacebypiece-ui-v0.1.3";
-
-const INITIAL_USERS: UserProfile[] = [
-  {
-    id: "user-designer",
-    name: "김디자이너",
-    team: "디자이너",
-    permissions: {
-      ...ROLE_PRESETS["디자이너"].permissions,
-    },
-  },
-  {
-    id: "user-admin",
-    name: "박관리",
-    team: "관리자",
-    permissions: {
-      ...ROLE_PRESETS["관리자"].permissions,
-    },
-  },
-  {
-    id: "user-inspection",
-    name: "이검수",
-    team: "입고/검수",
-    permissions: {
-      ...ROLE_PRESETS["입고/검수"].permissions,
-    },
-  },
-];
+import { APP_VERSION, LEGACY_STORAGE_KEYS, STORAGE_KEY, STORAGE_SCHEMA_VERSION } from "@/lib/constants/app";
+import { getPermissionSummary, INITIAL_USERS, ROLE_PRESETS } from "@/lib/constants/roles";
+import {
+  ACTIONS_BY_STATE,
+  getDisplayStage,
+  getDisplayStageDescription,
+  getStageTone,
+  getVisibleStageListByUser,
+  PRIMARY_FLOW,
+  STAGE_ORDER,
+} from "@/lib/constants/workflow";
+import { canDeleteAttachmentByUser } from "@/lib/permissions/attachments";
+import type {
+  Attachment,
+  DisplayStage,
+  HistoryFilter,
+  HistoryLog,
+  HistoryTone,
+  InventoryLog,
+  Material,
+  Outsourcing,
+  PermissionKey,
+  RoleType,
+  UserProfile,
+  WorkOrder,
+  WorkflowAction,
+  WorkflowState,
+} from "@/types/workorder";
 
 function getCurrentTimeLabel() {
   const now = new Date();
   return `${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
 }
 
-function getPermissionSummary(user: UserProfile) {
-  if (user.team === "관리자") return "관리자";
-  if (user.team === "입고/검수") return "입고/검수";
-  if (user.team === "디자이너") return "디자이너";
-  if (user.permissions.permissionManage) return "관리자";
-  if (user.permissions.inventoryEdit && user.permissions.inspection) return "입고/검수";
-  return "디자이너";
+function loadPersistedPayload() {
+  const storageKeys = [STORAGE_KEY, ...LEGACY_STORAGE_KEYS];
+
+  for (const key of storageKeys) {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) continue;
+
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object") {
+      return parsed;
+    }
+  }
+
+  return null;
 }
 
 const INITIAL_HISTORY_LOGS: Record<string, HistoryLog[]> = {
@@ -1049,7 +571,7 @@ function buildPersistedState(payload: {
 }
 
 export default function Home() {
-  const version = "0.1.3";
+  const version = APP_VERSION;
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [materialOpen, setMaterialOpen] = useState(false);
   const [outsourcingOpen, setOutsourcingOpen] = useState(false);
@@ -1059,7 +581,7 @@ export default function Home() {
   const [inventoryLogModalOpen, setInventoryLogModalOpen] = useState(false);
   const [attachmentPreviewId, setAttachmentPreviewId] = useState<string | null>(null);
   const [users, setUsers] = useState<UserProfile[]>(INITIAL_USERS);
-  const [rolePermissionTemplates, setRolePermissionTemplates] = useState(ROLE_PRESETS);
+  const [rolePermissionTemplates, setRolePermissionTemplates] = useState<typeof ROLE_PRESETS>(ROLE_PRESETS);
   const [currentUserId, setCurrentUserId] = useState("user-admin");
   const [permissionTargetUserId, setPermissionTargetUserId] =
     useState("user-designer");
@@ -1151,9 +673,8 @@ export default function Home() {
 
   useEffect(() => {
     try {
-      const raw = window.localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
+      const parsed = loadPersistedPayload();
+      if (parsed) {
         if (Array.isArray(parsed.workOrders)) setWorkOrders(parsed.workOrders);
         if (typeof parsed.selectedId === "string")
           setSelectedId(parsed.selectedId);
@@ -1289,10 +810,7 @@ export default function Home() {
   const inventoryLogs = mapHistoryToInventoryLogs(historyLogs);
   const selectedAttachment =
     selectedWorkOrder.attachments.find((item) => item.id === attachmentPreviewId) ?? null;
-  const canDeleteAttachment = (attachment: Attachment | null) => {
-    if (!attachment) return false;
-    return isAdmin || (attachment.ownerId ?? "") === currentUser.id;
-  };
+  const canDeleteAttachment = (attachment: Attachment | null) => canDeleteAttachmentByUser(currentUser, attachment);
 
   const materials = selectedWorkOrder.materials;
   const outsourcing = selectedWorkOrder.outsourcing;
@@ -1401,7 +919,7 @@ export default function Home() {
       lastSavedAt: savedAt,
     };
     try {
-      window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(payload));
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...payload, storageSchemaVersion: STORAGE_SCHEMA_VERSION }));
       savedSnapshotRef.current = buildPersistedState({
         workOrders,
         selectedId,
