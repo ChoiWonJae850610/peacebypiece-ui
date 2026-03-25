@@ -287,6 +287,18 @@ function readFileAsDataUrl(file: File) {
   });
 }
 
+function createWorkflowStateMap(orders: WorkOrder[]): Record<string, WorkflowState> {
+  return Object.fromEntries(
+    orders.map((item) => [item.id, item.status as WorkflowState]),
+  ) as Record<string, WorkflowState>;
+}
+
+function createInventoryQuantityMap(orders: WorkOrder[]): Record<string, number> {
+  return Object.fromEntries(
+    orders.map((item) => [item.id, item.inventoryQuantity]),
+  ) as Record<string, number>;
+}
+
 const INITIAL_WORK_ORDERS: WorkOrder[] = [
   {
     id: "WO-2026-0014",
@@ -717,19 +729,12 @@ export default function Home() {
             parsed.workflowStateById &&
             typeof parsed.workflowStateById === "object"
               ? parsed.workflowStateById
-              : Object.fromEntries(
-                  INITIAL_WORK_ORDERS.map((item) => [item.id, item.status]),
-                ),
+              : createWorkflowStateMap(INITIAL_WORK_ORDERS),
           inventoryQuantityById:
             parsed.inventoryQuantityById &&
             typeof parsed.inventoryQuantityById === "object"
               ? parsed.inventoryQuantityById
-              : Object.fromEntries(
-                  INITIAL_WORK_ORDERS.map((item) => [
-                    item.id,
-                    item.inventoryQuantity,
-                  ]),
-                ),
+              : createInventoryQuantityMap(INITIAL_WORK_ORDERS),
           historyLogsById:
             parsed.historyLogsById && typeof parsed.historyLogsById === "object"
               ? parsed.historyLogsById
@@ -742,15 +747,8 @@ export default function Home() {
           users: INITIAL_USERS,
           currentUserId: "user-admin",
           rolePermissionTemplates: ROLE_PRESETS,
-          workflowStateById: Object.fromEntries(
-            INITIAL_WORK_ORDERS.map((item) => [item.id, item.status]),
-          ),
-          inventoryQuantityById: Object.fromEntries(
-            INITIAL_WORK_ORDERS.map((item) => [
-              item.id,
-              item.inventoryQuantity,
-            ]),
-          ),
+          workflowStateById: createWorkflowStateMap(INITIAL_WORK_ORDERS),
+          inventoryQuantityById: createInventoryQuantityMap(INITIAL_WORK_ORDERS),
           historyLogsById: INITIAL_HISTORY_LOGS,
         });
       }
@@ -764,16 +762,12 @@ export default function Home() {
   const [workflowStateById, setWorkflowStateById] = useState<
     Record<string, WorkflowState>
   >(() =>
-    Object.fromEntries(
-      INITIAL_WORK_ORDERS.map((item) => [item.id, item.status]),
-    ),
+    createWorkflowStateMap(INITIAL_WORK_ORDERS),
   );
   const [inventoryQuantityById, setInventoryQuantityById] = useState<
     Record<string, number>
   >(() =>
-    Object.fromEntries(
-      INITIAL_WORK_ORDERS.map((item) => [item.id, item.inventoryQuantity]),
-    ),
+    createInventoryQuantityMap(INITIAL_WORK_ORDERS),
   );
   const [historyLogsById, setHistoryLogsById] = useState<
     Record<string, HistoryLog[]>
@@ -808,37 +802,38 @@ export default function Home() {
     historyFilter,
   );
   const inventoryLogs = mapHistoryToInventoryLogs(historyLogs);
+  const selectedAttachments = selectedWorkOrder.attachments ?? [];
   const selectedAttachment =
-    selectedWorkOrder.attachments.find((item) => item.id === attachmentPreviewId) ?? null;
+    selectedAttachments.find((item) => item.id === attachmentPreviewId) ?? null;
   const canDeleteAttachment = (attachment: Attachment | null) => canDeleteAttachmentByUser(currentUser, attachment);
 
-  const materials = selectedWorkOrder.materials;
-  const outsourcing = selectedWorkOrder.outsourcing;
+  const materials = selectedWorkOrder.materials ?? [];
+  const outsourcing = selectedWorkOrder.outsourcing ?? [];
 
   const fabricTotal = materials
     .filter((item) => item.type === "원단")
-    .reduce((sum, item) => sum + item.totalCost, 0);
+    .reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
   const subsidiaryTotal = materials
     .filter((item) => item.type === "부자재")
-    .reduce((sum, item) => sum + item.totalCost, 0);
+    .reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
   const outsourcingTotal = outsourcing.reduce(
-    (sum, item) => sum + item.totalCost,
+    (sum, item) => sum + (item.totalCost ?? 0),
     0,
   );
   const totalCost = fabricTotal + subsidiaryTotal + outsourcingTotal;
-  const unitCost = Math.round(totalCost / selectedWorkOrder.quantity);
+  const unitCost = Math.round(totalCost / (selectedWorkOrder.quantity || 1));
 
   const materialSummary = useMemo(() => {
     return {
       count: materials.length,
-      total: materials.reduce((sum, item) => sum + item.totalCost, 0),
+      total: materials.reduce((sum, item) => sum + (item.totalCost ?? 0), 0),
     };
   }, [materials]);
 
   const outsourcingSummary = useMemo(() => {
     return {
       count: outsourcing.length,
-      total: outsourcing.reduce((sum, item) => sum + item.totalCost, 0),
+      total: outsourcing.reduce((sum, item) => sum + (item.totalCost ?? 0), 0),
     };
   }, [outsourcing]);
 
@@ -1019,6 +1014,15 @@ export default function Home() {
     if (closeDrawer) setDrawerOpen(false);
   };
 
+  const getWorkflowActionKey = (action: WorkflowAction) => {
+    const normalizedLabel = action.label.replace(/\s+/g, "-");
+    return `${action.nextState}-${normalizedLabel}`;
+  };
+
+  const getWorkflowActionTone = (action: WorkflowAction): HistoryTone => {
+    return action.label.includes("반려") ? "rose" : "violet";
+  };
+
   const handleWorkflowAction = (action: WorkflowAction) => {
     setWorkflowStateById((prev) => ({
       ...prev,
@@ -1028,14 +1032,14 @@ export default function Home() {
       ...prev,
       [selectedWorkOrder.id]: [
         {
-          id: `${selectedWorkOrder.id}-${action.id}-${Date.now()}`,
+          id: `${selectedWorkOrder.id}-${getWorkflowActionKey(action)}-${Date.now()}`,
           workOrderId: selectedWorkOrder.id,
           category: "work",
           action: action.label,
           message: `${action.label} 처리: ${currentWorkflowState} → ${action.nextState}`,
           user: currentUser.name,
           time: getCurrentTimeLabel(),
-          tone: action.id === "rejectReview" ? "rose" : "violet",
+          tone: getWorkflowActionTone(action),
         },
         ...(prev[selectedWorkOrder.id] ?? []),
       ],
@@ -1213,8 +1217,8 @@ export default function Home() {
           workOrder.id === selectedWorkOrder.id
             ? {
                 ...workOrder,
-                attachments: [...workOrder.attachments, ...uploaded],
-                filesCount: workOrder.attachments.length + uploaded.length,
+                attachments: [...(workOrder.attachments ?? []), ...uploaded],
+                filesCount: (workOrder.attachments ?? []).length + uploaded.length,
               }
             : workOrder,
         ),
@@ -1230,7 +1234,7 @@ export default function Home() {
     setWorkOrders((prev) =>
       prev.map((workOrder) => {
         if (workOrder.id !== selectedWorkOrder.id) return workOrder;
-        const nextAttachments = workOrder.attachments.filter(
+        const nextAttachments = (workOrder.attachments ?? []).filter(
           (item) => item.id !== attachmentId,
         );
         return {
@@ -1408,8 +1412,8 @@ export default function Home() {
                       rows: [
                         ["거래처", item.vendor],
                         ["수량", `${item.quantity}${item.unit}`],
-                        ["단가", `${item.unitCost.toLocaleString()}원`],
-                        ["금액", `${item.totalCost.toLocaleString()}원`],
+                        ["단가", `${(item.unitCost ?? 0).toLocaleString()}원`],
+                        ["금액", `${(item.totalCost ?? 0).toLocaleString()}원`],
                         ["상태", item.status],
                       ],
                     }))}
@@ -1427,8 +1431,8 @@ export default function Home() {
                       item.name,
                       item.vendor,
                       `${item.quantity}${item.unit}`,
-                      `${item.unitCost.toLocaleString()}원`,
-                      `${item.totalCost.toLocaleString()}원`,
+                      `${(item.unitCost ?? 0).toLocaleString()}원`,
+                      `${(item.totalCost ?? 0).toLocaleString()}원`,
                       item.status,
                     ])}
                   />
@@ -1448,8 +1452,8 @@ export default function Home() {
                         ["외주처", item.vendor],
                         ["수량", String(item.quantity)],
                         ["단가기준", item.unitType],
-                        ["단가", `${item.unitCost.toLocaleString()}원`],
-                        ["금액", `${item.totalCost.toLocaleString()}원`],
+                        ["단가", `${(item.unitCost ?? 0).toLocaleString()}원`],
+                        ["금액", `${(item.totalCost ?? 0).toLocaleString()}원`],
                         ["상태", item.status],
                       ],
                     }))}
@@ -1467,8 +1471,8 @@ export default function Home() {
                       item.vendor,
                       String(item.quantity),
                       item.unitType,
-                      `${item.unitCost.toLocaleString()}원`,
-                      `${item.totalCost.toLocaleString()}원`,
+                      `${(item.unitCost ?? 0).toLocaleString()}원`,
+                      `${(item.totalCost ?? 0).toLocaleString()}원`,
                       item.status,
                     ])}
                   />
@@ -1508,9 +1512,9 @@ export default function Home() {
                     className="hidden"
                     onChange={handleAttachmentFiles}
                   />
-                  {selectedWorkOrder.attachments.length > 0 ? (
+                  {selectedAttachments.length > 0 ? (
                     <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
-                      {selectedWorkOrder.attachments.map((attachment) => (
+                      {selectedAttachments.map((attachment) => (
                         <div
                           key={attachment.id}
                           className="overflow-hidden rounded-2xl border border-stone-200 bg-white"
@@ -1623,7 +1627,7 @@ export default function Home() {
                       <SummaryRow
                         key={item.process}
                         label={item.process}
-                        value={`${item.totalCost.toLocaleString()}원`}
+                        value={`${(item.totalCost ?? 0).toLocaleString()}원`}
                       />
                     ))}
                   </div>
@@ -1867,7 +1871,7 @@ function WorkflowPanel({
           <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-1 xl:grid-cols-2">
             {actions.map((action) => (
               <button
-                key={`${currentState}-${action.id}`}
+                key={`${currentState}-${action.nextState}-${action.label}`}
                 type="button"
                 onClick={() => onAction(action)}
                 className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 transition hover:border-stone-400 hover:bg-stone-50"
@@ -1901,9 +1905,9 @@ function AccordionSection({
   mobileOpen: boolean;
   onToggle: () => void;
   summaryText: string;
-  mobileItems: { key: string; title: string; rows: [string, string][] }[];
+  mobileItems: { key: string; title: string; rows: [string, string | number | null | undefined][] }[];
   desktopHeaders: string[];
-  desktopRows: string[][];
+  desktopRows: (string | number | null | undefined)[][];
 }) {
   return (
     <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
@@ -1957,7 +1961,7 @@ function AccordionSection({
                     key={`${rowIndex}-${cellIndex}`}
                     className={`px-2 py-3 ${cellIndex === row.length - 2 ? "font-medium" : ""}`}
                   >
-                    {cell}
+                    {toDisplayValue(cell)}
                   </td>
                 ))}
               </tr>
@@ -1969,12 +1973,17 @@ function AccordionSection({
   );
 }
 
+function toDisplayValue(value: string | number | null | undefined) {
+  if (value === null || value === undefined) return "-";
+  return String(value);
+}
+
 function MobileDataCard({
   title,
   rows,
 }: {
   title: string;
-  rows: [string, string][];
+  rows: [string, string | number | null | undefined][];
 }) {
   return (
     <div className="rounded-2xl border border-stone-200 bg-white p-4">
@@ -1983,7 +1992,7 @@ function MobileDataCard({
         {rows.map(([label, value]) => (
           <div key={`${title}-${label}`} className="flex items-start justify-between gap-4">
             <span className="shrink-0 text-xs text-stone-500">{label}</span>
-            <span className="text-right text-sm font-medium text-stone-900">{value}</span>
+            <span className="text-right text-sm font-medium text-stone-900">{toDisplayValue(value)}</span>
           </div>
         ))}
       </div>
@@ -1997,13 +2006,13 @@ function Info({
   valueClassName,
 }: {
   label: string;
-  value: string;
+  value: string | number | null | undefined;
   valueClassName?: string;
 }) {
   return (
     <div className="min-w-0 rounded-xl border border-stone-200 bg-white p-3">
       <div className="text-xs text-stone-500">{label}</div>
-      <div className={`mt-1 font-medium ${valueClassName ?? "text-sm"}`}>{value}</div>
+      <div className={`mt-1 font-medium ${valueClassName ?? "text-sm"}`}>{toDisplayValue(value)}</div>
     </div>
   );
 }
@@ -2014,13 +2023,13 @@ function SummaryRow({
   strong = false,
 }: {
   label: string;
-  value: string;
+  value: string | number | null | undefined;
   strong?: boolean;
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
       <span className={strong ? "font-semibold text-stone-900" : "text-stone-600"}>{label}</span>
-      <span className={strong ? "font-semibold text-stone-900" : "font-medium"}>{value}</span>
+      <span className={strong ? "font-semibold text-stone-900" : "font-medium"}>{toDisplayValue(value)}</span>
     </div>
   );
 }
