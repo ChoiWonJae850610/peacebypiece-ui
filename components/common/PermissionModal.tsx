@@ -11,7 +11,12 @@ type PermissionKey =
   | "inbound"
   | "inspection"
   | "inventoryEdit"
-  | "permissionManage";
+  | "permissionManage"
+  | "viewProductionDetails"
+  | "viewCost"
+  | "viewInventoryHistory"
+  | "viewAttachments"
+  | "editAttachments";
 
 type PermissionSet = Record<PermissionKey, boolean>;
 
@@ -54,14 +59,8 @@ function getFocusableElements(container: HTMLElement) {
 }
 
 function inferRole(user: UserProfile): RoleType {
-  if (user.permissions.permissionManage || user.permissions.reviewApprove)
-    return "관리자";
-  if (
-    user.permissions.inventoryEdit ||
-    user.permissions.inbound ||
-    user.permissions.inspection
-  )
-    return "입고/검수";
+  if (user.team === "관리자") return "관리자";
+  if (user.team === "입고/검수") return "입고/검수";
   return "디자이너";
 }
 
@@ -80,7 +79,6 @@ export default function PermissionModal({
   currentUserId: string;
   selectedUserId: string;
   onSelectedUserChange: (id: string) => void;
-  onTogglePermission?: (userId: string, key: PermissionKey) => void;
   onApplyRole: (userId: string, role: RoleType) => void;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
@@ -171,8 +169,7 @@ export default function PermissionModal({
                 권한 설정
               </div>
               <div className="mt-1 text-sm text-stone-500 break-keep">
-                세부 토글 대신 역할 3개 중 하나를 선택하는 방식으로
-                단순화했습니다.
+                상세 권한 토글을 제거하고 역할 지정만 유지하는 구조로 정리했습니다.
               </div>
             </div>
             <button
@@ -264,7 +261,7 @@ export default function PermissionModal({
                 </div>
                 <div className="mt-2 space-y-1 text-xs text-stone-500">
                   <div>디자이너: 작업지시 작성, 검토 요청, 발주 요청</div>
-                  <div>관리자: 승인, 발주 확정, 전체 상태 관리</div>
+                  <div>관리자: 승인, 발주 확정, 역할 지정</div>
                   <div>입고/검수: 입고 등록, 검수 완료, 재고 수정</div>
                 </div>
               </div>

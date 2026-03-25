@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { ChangeEvent } from "react";
 import InventoryEditor from "@/components/common/InventoryEditor";
 import PermissionModal from "@/components/common/PermissionModal";
 
@@ -57,7 +58,12 @@ type PermissionKey =
   | "inbound"
   | "inspection"
   | "inventoryEdit"
-  | "permissionManage";
+  | "permissionManage"
+  | "viewProductionDetails"
+  | "viewCost"
+  | "viewInventoryHistory"
+  | "viewAttachments"
+  | "editAttachments";
 
 type PermissionSet = Record<PermissionKey, boolean>;
 
@@ -119,6 +125,8 @@ type Attachment = {
   type: "image" | "pdf";
   name: string;
   url: string;
+  ownerId: string;
+  ownerName: string;
 };
 
 type WorkOrder = {
@@ -427,6 +435,11 @@ const DEFAULT_PERMISSIONS: PermissionSet = {
   inspection: false,
   inventoryEdit: false,
   permissionManage: false,
+  viewProductionDetails: false,
+  viewCost: false,
+  viewInventoryHistory: false,
+  viewAttachments: false,
+  editAttachments: false,
 };
 
 const ROLE_PRESETS = {
@@ -437,6 +450,10 @@ const ROLE_PRESETS = {
       createWorkorder: true,
       reviewRequest: true,
       orderRequest: true,
+      viewProductionDetails: true,
+      viewCost: true,
+      viewAttachments: true,
+      editAttachments: true,
     },
   },
   관리자: {
@@ -452,6 +469,11 @@ const ROLE_PRESETS = {
       inspection: true,
       inventoryEdit: true,
       permissionManage: true,
+      viewProductionDetails: true,
+      viewCost: true,
+      viewInventoryHistory: true,
+      viewAttachments: true,
+      editAttachments: true,
     },
   },
   "입고/검수": {
@@ -461,11 +483,13 @@ const ROLE_PRESETS = {
       inbound: true,
       inspection: true,
       inventoryEdit: true,
+      viewInventoryHistory: true,
+      viewAttachments: true,
     },
   },
 } as const;
 
-const LOCAL_STORAGE_KEY = "peacebypiece-ui-v0.0.30";
+const LOCAL_STORAGE_KEY = "peacebypiece-ui-v0.0.35";
 
 const INITIAL_USERS: UserProfile[] = [
   {
@@ -500,9 +524,11 @@ function getCurrentTimeLabel() {
 }
 
 function getPermissionSummary(user: UserProfile) {
+  if (user.team === "관리자") return "관리자";
+  if (user.team === "입고/검수") return "입고/검수";
+  if (user.team === "디자이너") return "디자이너";
   if (user.permissions.permissionManage) return "관리자";
-  if (user.permissions.inventoryEdit && user.permissions.inspection)
-    return "입고/검수";
+  if (user.permissions.inventoryEdit && user.permissions.inspection) return "입고/검수";
   return "디자이너";
 }
 
@@ -678,36 +704,48 @@ function createSampleAttachments(workOrderId: string, count: number): Attachment
       type: "image",
       name: "front-sample.jpg",
       url: buildSvgDataUrl("FRONT SAMPLE", "#E7EEF8", "#26415F"),
+      ownerId: "user-designer",
+      ownerName: "김디자이너",
     },
     {
       id: `${workOrderId}-att-pdf-1`,
       type: "pdf",
       name: "workorder-sheet.pdf",
       url: buildSvgDataUrl("PDF", "#FDECEC", "#991B1B"),
+      ownerId: "user-admin",
+      ownerName: "박관리",
     },
     {
       id: `${workOrderId}-att-image-2`,
       type: "image",
       name: "detail-note.jpg",
       url: buildSvgDataUrl("DETAIL NOTE", "#EEF7E9", "#31572C"),
+      ownerId: "user-designer",
+      ownerName: "김디자이너",
     },
     {
       id: `${workOrderId}-att-image-3`,
       type: "image",
       name: "color-chip.jpg",
       url: buildSvgDataUrl("COLOR CHIP", "#FFF4DF", "#9A6700"),
+      ownerId: "user-inspection",
+      ownerName: "이검수",
     },
     {
       id: `${workOrderId}-att-pdf-2`,
       type: "pdf",
       name: "spec-sheet.pdf",
       url: buildSvgDataUrl("SPEC PDF", "#F4EAFE", "#6D28D9"),
+      ownerId: "user-admin",
+      ownerName: "박관리",
     },
     {
       id: `${workOrderId}-att-image-4`,
       type: "image",
       name: "back-view.jpg",
       url: buildSvgDataUrl("BACK VIEW", "#E9F8F8", "#155E75"),
+      ownerId: "user-inspection",
+      ownerName: "이검수",
     },
   ];
   return base.slice(0, count);
@@ -997,6 +1035,7 @@ function buildPersistedState(payload: {
   selectedId: string;
   users: UserProfile[];
   currentUserId: string;
+  rolePermissionTemplates: typeof ROLE_PRESETS;
   workflowStateById: Record<string, WorkflowState>;
   inventoryQuantityById: Record<string, number>;
   historyLogsById: Record<string, HistoryLog[]>;
@@ -1013,7 +1052,7 @@ function getFocusableElements(container: HTMLElement) {
 }
 
 export default function Home() {
-  const version = "0.0.31";
+  const version = "0.0.35";
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [materialOpen, setMaterialOpen] = useState(false);
   const [outsourcingOpen, setOutsourcingOpen] = useState(false);
@@ -1023,6 +1062,7 @@ export default function Home() {
   const [inventoryLogModalOpen, setInventoryLogModalOpen] = useState(false);
   const [attachmentPreviewId, setAttachmentPreviewId] = useState<string | null>(null);
   const [users, setUsers] = useState<UserProfile[]>(INITIAL_USERS);
+  const [rolePermissionTemplates, setRolePermissionTemplates] = useState(ROLE_PRESETS);
   const [currentUserId, setCurrentUserId] = useState("user-admin");
   const [permissionTargetUserId, setPermissionTargetUserId] =
     useState("user-designer");
@@ -1121,6 +1161,7 @@ export default function Home() {
         if (typeof parsed.selectedId === "string")
           setSelectedId(parsed.selectedId);
         if (Array.isArray(parsed.users)) setUsers(parsed.users);
+        if (parsed.rolePermissionTemplates && typeof parsed.rolePermissionTemplates === "object") setRolePermissionTemplates(parsed.rolePermissionTemplates);
         if (typeof parsed.currentUserId === "string")
           setCurrentUserId(parsed.currentUserId);
         if (
@@ -1153,6 +1194,7 @@ export default function Home() {
             typeof parsed.currentUserId === "string"
               ? parsed.currentUserId
               : "user-admin",
+          rolePermissionTemplates: parsed.rolePermissionTemplates && typeof parsed.rolePermissionTemplates === "object" ? parsed.rolePermissionTemplates : ROLE_PRESETS,
           workflowStateById:
             parsed.workflowStateById &&
             typeof parsed.workflowStateById === "object"
@@ -1181,6 +1223,7 @@ export default function Home() {
           selectedId: "WO-2026-0014",
           users: INITIAL_USERS,
           currentUserId: "user-admin",
+          rolePermissionTemplates: ROLE_PRESETS,
           workflowStateById: Object.fromEntries(
             INITIAL_WORK_ORDERS.map((item) => [item.id, item.status]),
           ),
@@ -1226,11 +1269,15 @@ export default function Home() {
     users.find((item) => item.id === currentUserId) ?? users[0];
   const currentRole = getPermissionSummary(currentUser);
   const isAdmin = currentRole === "관리자";
-  const isDesigner = currentRole === "디자이너";
-  const isInspection = currentRole === "입고/검수";
-  const canSeeProductionSections = isAdmin || isDesigner;
-  const canSeeCostSections = isAdmin || isDesigner;
-  const canSeeInventorySections = isAdmin || isInspection;
+  const canSeeProductionSections = currentUser.permissions.viewProductionDetails;
+  const canSeeCostSections = currentUser.permissions.viewCost;
+  const canViewInventoryHistory = currentUser.permissions.viewInventoryHistory;
+  const canEditInventory = currentUser.permissions.inventoryEdit;
+  const canSeeInventoryHistorySection =
+    currentRole === "디자이너" ? true : canViewInventoryHistory;
+  const canSeeAttachments = currentUser.permissions.viewAttachments;
+  const canEditAttachments =
+    currentUser.permissions.editAttachments && currentUser.permissions.viewAttachments;
   const currentDisplayStage = getDisplayStage(currentWorkflowState);
   const currentInventoryQuantity =
     inventoryQuantityById[selectedWorkOrder.id] ??
@@ -1282,6 +1329,7 @@ export default function Home() {
         selectedId,
         users,
         currentUserId,
+        rolePermissionTemplates,
         workflowStateById,
         inventoryQuantityById,
         historyLogsById,
@@ -1291,6 +1339,7 @@ export default function Home() {
       selectedId,
       users,
       currentUserId,
+      rolePermissionTemplates,
       workflowStateById,
       inventoryQuantityById,
       historyLogsById,
@@ -1343,6 +1392,7 @@ export default function Home() {
       selectedId,
       users,
       currentUserId,
+      rolePermissionTemplates,
       workflowStateById,
       inventoryQuantityById,
       historyLogsById,
@@ -1355,6 +1405,7 @@ export default function Home() {
         selectedId,
         users,
         currentUserId,
+        rolePermissionTemplates,
         workflowStateById,
         inventoryQuantityById,
         historyLogsById,
@@ -1548,11 +1599,60 @@ export default function Home() {
     );
   };
 
+  const handleToggleRolePermission = (
+    role: "디자이너" | "관리자" | "입고/검수",
+    key:
+      | "viewAttachments"
+      | "editAttachments"
+      | "viewCost"
+      | "viewInventoryHistory"
+      | "viewProductionDetails",
+  ) => {
+    setRolePermissionTemplates((prev) => {
+      const currentTemplate = prev[role];
+      let nextPermissions = {
+        ...currentTemplate.permissions,
+        [key]: !currentTemplate.permissions[key],
+      };
+
+      if (key === "viewAttachments" && !nextPermissions.viewAttachments) {
+        nextPermissions.editAttachments = false;
+      }
+
+      if (key === "editAttachments" && nextPermissions.editAttachments) {
+        nextPermissions.viewAttachments = true;
+      }
+
+      const nextTemplates = {
+        ...prev,
+        [role]: {
+          ...currentTemplate,
+          permissions: nextPermissions,
+        },
+      };
+
+      setUsers((currentUsers) =>
+        currentUsers.map((user) =>
+          user.team === currentTemplate.team
+            ? {
+                ...user,
+                permissions: {
+                  ...nextTemplates[role].permissions,
+                },
+              }
+            : user,
+        ),
+      );
+
+      return nextTemplates;
+    });
+  };
+
   const handleApplyRole = (
     userId: string,
     role: "디자이너" | "관리자" | "입고/검수",
   ) => {
-    const preset = ROLE_PRESETS[role];
+    const preset = rolePermissionTemplates[role];
     setUsers((prev) =>
       prev.map((user) =>
         user.id === userId
@@ -1571,7 +1671,7 @@ export default function Home() {
   };
 
   const handleAttachmentFiles = async (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: ChangeEvent<HTMLInputElement>,
   ) => {
     const files = Array.from(event.target.files ?? []);
     if (files.length === 0) return;
@@ -1583,6 +1683,8 @@ export default function Home() {
           type: file.type === "application/pdf" ? ("pdf" as const) : ("image" as const),
           name: file.name,
           url: await readFileAsDataUrl(file),
+          ownerId: currentUser.id,
+          ownerName: currentUser.name,
         })),
       );
 
@@ -1747,32 +1849,29 @@ export default function Home() {
                       valueClassName="text-base font-semibold tabular-nums"
                     />
                   </div>
-                  {canSeeInventorySections && (
-                    <>
-                      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-3">
-                        <div>
-                          <div className="text-sm font-semibold text-stone-900">
-                            재고 수정
-                          </div>
-                          <div className="mt-1 text-xs text-stone-500">
-                            수정자: {currentUser.name} ·{" "}
-                            {getPermissionSummary(currentUser)}
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setInventoryEditorOpen(true)}
-                          disabled={!currentUser.permissions.inventoryEdit}
-                          className={`rounded-xl px-4 py-2 text-sm font-medium ${
-                            currentUser.permissions.inventoryEdit
-                              ? "bg-stone-900 text-white"
-                              : "cursor-not-allowed border border-stone-300 bg-stone-100 text-stone-400"
-                          }`}
-                        >
+                  {canEditInventory && (
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-3">
+                      <div>
+                        <div className="text-sm font-semibold text-stone-900">
                           재고 수정
-                        </button>
+                        </div>
+                        <div className="mt-1 text-xs text-stone-500">
+                          수정자: {currentUser.name} · {getPermissionSummary(currentUser)}
+                        </div>
                       </div>
-                    </>
+                      <button
+                        type="button"
+                        onClick={() => setInventoryEditorOpen(true)}
+                        disabled={!currentUser.permissions.inventoryEdit}
+                        className={`rounded-xl px-4 py-2 text-sm font-medium ${
+                          currentUser.permissions.inventoryEdit
+                            ? "bg-stone-900 text-white"
+                            : "cursor-not-allowed border border-stone-300 bg-stone-100 text-stone-400"
+                        }`}
+                      >
+                        재고 수정
+                      </button>
+                    </div>
                   )}
                 </div>
 
@@ -1862,6 +1961,7 @@ export default function Home() {
                   </div>
                 </div>
 
+                {canSeeAttachments && (
                 <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -1870,6 +1970,7 @@ export default function Home() {
                         이미지와 PDF를 작업지시서에 함께 보관합니다.
                       </div>
                     </div>
+                    {canSeeAttachments && (
                     <button
                       type="button"
                       onClick={handleOpenAttachmentPicker}
@@ -1877,6 +1978,7 @@ export default function Home() {
                     >
                       + 추가
                     </button>
+                    )}
                   </div>
                   <input
                     ref={attachmentInputRef}
@@ -1918,9 +2020,12 @@ export default function Home() {
                               <div className="mt-1 text-xs text-stone-500">
                                 {attachment.type === "image" ? "이미지" : "PDF"}
                               </div>
+                              <div className="mt-1 text-[11px] text-stone-400">
+                                업로드: {attachment.ownerName ?? "기존 첨부"}
+                              </div>
                             </div>
                           </button>
-                          {isAdmin && (
+                          {(attachment.ownerId ?? "") === currentUser.id && (
                             <div className="border-t border-stone-200 p-3">
                               <button
                                 type="button"
@@ -1940,6 +2045,7 @@ export default function Home() {
                     </div>
                   )}
                 </div>
+                )}
               </div>
             </div>
           </section>
@@ -2004,6 +2110,7 @@ export default function Home() {
                 </div>
               )}
 
+              {canSeeInventoryHistorySection && (
               <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -2085,6 +2192,7 @@ export default function Home() {
                   </button>
                 )}
               </div>
+              )}
             </div>
           </aside>
         </div>
@@ -2092,7 +2200,7 @@ export default function Home() {
 
       <AttachmentPreviewModal
         attachment={selectedAttachment}
-        canDelete={isAdmin}
+        canDelete={(selectedAttachment?.ownerId ?? "") === currentUser.id}
         onClose={() => setAttachmentPreviewId(null)}
         onDelete={() => selectedAttachment && handleDeleteAttachment(selectedAttachment.id)}
       />
@@ -2121,7 +2229,6 @@ export default function Home() {
         currentUserId={currentUserId}
         selectedUserId={permissionTargetUserId}
         onSelectedUserChange={setPermissionTargetUserId}
-        onTogglePermission={handleTogglePermission}
         onApplyRole={handleApplyRole}
       />
     </main>
@@ -2718,11 +2825,6 @@ function MobileDrawer({
                     <div className="break-keep text-sm font-semibold">
                       {item.productName}
                     </div>
-                    <div
-                      className={`mt-1 text-xs ${selected ? "text-stone-300" : "text-stone-500"}`}
-                    >
-                      {item.internalCode}
-                    </div>
                   </div>
                   <span
                     className={`shrink-0 rounded-full px-2 py-1 text-[11px] ${selected ? "bg-white/15 text-white" : "bg-stone-100 text-stone-700"}`}
@@ -2811,11 +2913,6 @@ function SidebarContent({
                 <div className="min-w-0">
                   <div className="break-keep text-sm font-semibold">
                     {item.productName}
-                  </div>
-                  <div
-                    className={`mt-1 text-xs ${selected ? "text-stone-300" : "text-stone-500"}`}
-                  >
-                    {item.internalCode}
                   </div>
                 </div>
                 <span
