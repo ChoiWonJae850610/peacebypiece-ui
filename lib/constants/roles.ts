@@ -1,55 +1,80 @@
-import type { PermissionMap, RoleType, UserProfile } from "@/types/workorder";
+import type { PermissionSet, RoleType, UserProfile } from "@/types/workorder";
 
-const designerPermissions: PermissionMap = {
-  viewProductionDetails: true,
-  viewCost: true,
-  viewAttachments: true,
-  editAttachments: true,
-  permissionManage: false,
-  inventoryEdit: false,
-  viewInventoryHistory: false,
+function permissionsFor(role: RoleType): PermissionSet {
+  switch (role) {
+    case "관리자":
+      return {
+        viewAttachments: true,
+        editAttachments: true,
+        viewCost: true,
+        viewInventoryHistory: true,
+        viewProductionDetails: true,
+        inventoryEdit: true,
+        permissionManage: true,
+        requestReview: true,
+        requestOrder: true,
+        approveReview: true,
+        confirmOrder: true,
+        markProduction: true,
+        startInspection: true,
+        completeInspection: true,
+      };
+    case "입고/검수":
+      return {
+        viewAttachments: true,
+        editAttachments: false,
+        viewCost: false,
+        viewInventoryHistory: true,
+        viewProductionDetails: true,
+        inventoryEdit: true,
+        permissionManage: false,
+        requestReview: false,
+        requestOrder: false,
+        approveReview: false,
+        confirmOrder: false,
+        markProduction: false,
+        startInspection: true,
+        completeInspection: true,
+      };
+    case "디자이너":
+    default:
+      return {
+        viewAttachments: true,
+        editAttachments: true,
+        viewCost: true,
+        viewInventoryHistory: false,
+        viewProductionDetails: true,
+        inventoryEdit: false,
+        permissionManage: false,
+        requestReview: true,
+        requestOrder: true,
+        approveReview: false,
+        confirmOrder: false,
+        markProduction: false,
+        startInspection: false,
+        completeInspection: false,
+      };
+  }
+}
+
+export const ROLE_PRESETS: Record<RoleType, { team: RoleType; permissions: PermissionSet }> = {
+  "디자이너": { team: "디자이너", permissions: permissionsFor("디자이너") },
+  "관리자": { team: "관리자", permissions: permissionsFor("관리자") },
+  "입고/검수": { team: "입고/검수", permissions: permissionsFor("입고/검수") },
 };
-
-const adminPermissions: PermissionMap = {
-  viewProductionDetails: true,
-  viewCost: true,
-  viewAttachments: true,
-  editAttachments: true,
-  permissionManage: true,
-  inventoryEdit: true,
-  viewInventoryHistory: true,
-};
-
-const inventoryPermissions: PermissionMap = {
-  viewProductionDetails: true,
-  viewCost: false,
-  viewAttachments: true,
-  editAttachments: false,
-  permissionManage: false,
-  inventoryEdit: true,
-  viewInventoryHistory: true,
-};
-
-export const ROLE_PRESETS: Record<RoleType, { team: RoleType; permissions: PermissionMap }> = {
-  디자이너: { team: "디자이너", permissions: designerPermissions },
-  관리자: { team: "관리자", permissions: adminPermissions },
-  "입고/검수": { team: "입고/검수", permissions: inventoryPermissions },
-};
-
-export const ROLE_OPTIONS = [
-  { role: "디자이너" as const, title: "디자이너", description: "작업지시 작성과 검토/발주 요청 중심 역할" },
-  { role: "관리자" as const, title: "관리자", description: "전체 승인과 첨부 삭제, 권한 관리까지 가능" },
-  { role: "입고/검수" as const, title: "입고/검수", description: "입고 처리와 재고 수정, 재고 히스토리 확인 중심" },
-];
 
 export const INITIAL_USERS: UserProfile[] = [
-  { id: "user-admin", name: "박관리", team: "관리자", permissions: { ...adminPermissions } },
-  { id: "user-designer", name: "김디자이너", team: "디자이너", permissions: { ...designerPermissions } },
-  { id: "user-inspector", name: "이검수", team: "입고/검수", permissions: { ...inventoryPermissions } },
-  { id: "user-merch", name: "이담당", team: "디자이너", permissions: { ...designerPermissions } },
+  { id: "user-designer", name: "김디자이너", team: "디자이너", permissions: { ...ROLE_PRESETS["디자이너"].permissions } },
+  { id: "user-admin", name: "박관리", team: "관리자", permissions: { ...ROLE_PRESETS["관리자"].permissions } },
+  { id: "user-inspection", name: "이검수", team: "입고/검수", permissions: { ...ROLE_PRESETS["입고/검수"].permissions } },
 ];
 
-export function getPermissionSummary(user?: Pick<UserProfile, "team"> | null): RoleType {
-  if (!user) return "디자이너";
+export const ROLE_OPTIONS: Array<{ role: RoleType; title: string; description: string }> = [
+  { role: "디자이너", title: "디자이너", description: "작업지시 작성, 검토 요청, 첨부 관리" },
+  { role: "관리자", title: "관리자", description: "승인, 발주 확정, 권한 설정 및 전체 관리" },
+  { role: "입고/검수", title: "입고/검수", description: "입고 등록, 재고 수정, 검수 완료 처리" },
+];
+
+export function getPermissionSummary(user: Pick<UserProfile, "team">): RoleType {
   return user.team;
 }

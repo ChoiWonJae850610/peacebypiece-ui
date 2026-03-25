@@ -1,81 +1,76 @@
-export type RoleType = "관리자" | "디자이너" | "입고/검수";
+export type RoleType = "디자이너" | "관리자" | "입고/검수";
+export type TeamType = RoleType;
 
-export type PermissionKey =
-  | "viewProductionDetails"
-  | "viewCost"
-  | "viewAttachments"
-  | "editAttachments"
-  | "permissionManage"
-  | "inventoryEdit"
-  | "viewInventoryHistory";
+export type PermissionSet = {
+  viewAttachments: boolean;
+  editAttachments: boolean;
+  viewCost: boolean;
+  viewInventoryHistory: boolean;
+  viewProductionDetails: boolean;
+  inventoryEdit: boolean;
+  permissionManage: boolean;
+  requestReview: boolean;
+  requestOrder: boolean;
+  approveReview: boolean;
+  confirmOrder: boolean;
+  markProduction: boolean;
+  startInspection: boolean;
+  completeInspection: boolean;
+};
 
-export type WorkflowState =
-  | "요청전"
-  | "작성중"
-  | "진행중"
-  | "발주요청"
-  | "발주완료"
-  | "생산중"
-  | "입고완료"
-  | "완료";
+export type PermissionKey = keyof PermissionSet;
 
-export type DisplayStage = "작성" | "검토" | "발주" | "생산" | "입고" | "완료";
-
-export type HistoryCategory = "work" | "inventory";
-export type HistoryTone = "blue" | "violet" | "emerald" | "rose" | "amber" | "stone";
-export type HistoryFilter = "all" | "work" | "inventory";
+export type UserProfile = {
+  id: string;
+  name: string;
+  team: TeamType;
+  permissions: PermissionSet;
+};
 
 export type Attachment = {
   id: string;
+  type: "image" | "pdf";
   name: string;
   url: string;
-  type: "image" | "pdf";
-  uploadedBy?: string;
-  uploadedByUserId?: string;
-  uploadedAt?: string;
-  [key: string]: unknown;
+  ownerId: string;
+  ownerName: string;
 };
 
 export type Material = {
-  id: string;
-  type?: string;
-  name?: string;
-  code?: string;
+  id?: string;
+  type: "원단" | "부자재" | string;
+  name: string;
   vendor?: string;
-  color?: string;
-  unit?: string;
-  qty?: number;
   quantity?: number;
-  unitPrice?: number;
-  totalPrice?: number;
-  note?: string;
-  [key: string]: unknown;
+  unit?: string;
+  unitCost?: number;
+  totalCost?: number;
+  status?: string;
 };
 
 export type Outsourcing = {
-  id: string;
-  process?: string;
-  name?: string;
+  id?: string;
+  process: string;
   vendor?: string;
-  unit?: string;
-  qty?: number;
   quantity?: number;
-  unitPrice?: number;
-  totalPrice?: number;
-  note?: string;
-  [key: string]: unknown;
+  unitType?: string;
+  unitCost?: number;
+  totalCost?: number;
+  status?: string;
 };
+
+export type HistoryTone = "blue" | "violet" | "emerald" | "rose" | "amber" | "stone";
+export type HistoryFilter = "all" | "work" | "inventory";
 
 export type HistoryLog = {
   id: string;
   workOrderId: string;
-  category: HistoryCategory;
+  category: "work" | "inventory";
   action: string;
   message: string;
   user: string;
   time: string;
   tone: HistoryTone;
-  [key: string]: unknown;
 };
 
 export type InventoryLog = {
@@ -86,45 +81,59 @@ export type InventoryLog = {
   memo: string;
   user: string;
   time: string;
-  [key: string]: unknown;
 };
 
+export type WorkflowState =
+  | "작성중"
+  | "검토요청"
+  | "검토완료"
+  | "발주요청"
+  | "발주완료"
+  | "생산중"
+  | "입고대기"
+  | "검수중"
+  | "완료";
+
+export type DisplayStage = "작성" | "검토" | "발주" | "생산" | "입고/검수" | "완료";
+
 export type WorkflowAction = {
-  id: string;
+  key: string;
   label: string;
   nextState: WorkflowState;
   permission: PermissionKey;
 };
 
-export type PermissionMap = Record<PermissionKey, boolean>;
-
-export type UserProfile = {
-  id: string;
-  name: string;
-  team: RoleType;
-  permissions: PermissionMap;
-  [key: string]: unknown;
+export type WorkHistoryItem = {
+  time: string;
+  user: string;
+  action: string;
 };
 
-export type WorkOrderBase = {
+export type WorkOrder = {
   id: string;
+  internalCode?: string;
+  productName: string;
   title: string;
-  status: WorkflowState;
+  category?: string;
+  stage?: string;
   vendor?: string;
   dueDate?: string;
   inventoryStatus?: string;
   filesCount?: number;
-  category?: string;
+  attachments?: Attachment[];
+  status?: WorkflowState | string;
   category1?: string;
   category2?: string;
   category3?: string;
+  season?: string;
+  manager?: string;
+  priority?: string;
+  quantity?: number;
   inventoryQuantity?: number;
-  attachments?: Attachment[];
+  memo?: string;
+  historyItems?: WorkHistoryItem[];
   materials?: Material[];
   outsourcing?: Outsourcing[];
-  historyItems?: Array<{ time: string; user: string; action: string }>;
-  [key: string]: unknown;
 };
 
-export type WorkOrder = WorkOrderBase;
-export type WorkOrderListItem = WorkOrderBase;
+export type WorkOrderListItem = WorkOrder;
