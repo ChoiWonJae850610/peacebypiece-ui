@@ -11,6 +11,7 @@ type BaseModalProps = {
   maxWidthClassName?: string;
   panelClassName?: string;
   overlayClassName?: string;
+  closeOnBackdrop?: boolean;
 };
 
 export default function BaseModal({
@@ -22,19 +23,15 @@ export default function BaseModal({
   maxWidthClassName = "md:max-w-2xl",
   panelClassName = "",
   overlayClassName = "bg-black/35",
+  closeOnBackdrop = true,
 }: BaseModalProps) {
   if (!open) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={titleId}
-    >
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby={titleId}>
       <div
         className={`absolute inset-0 ${overlayClassName}`}
-        onClick={onClose}
+        onClick={closeOnBackdrop ? onClose : undefined}
         aria-hidden="true"
       />
       <div

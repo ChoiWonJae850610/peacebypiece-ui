@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import BaseModal from "@/components/common/modal/BaseModal";
+import ModalBody from "@/components/common/modal/ModalBody";
+import ModalFooter from "@/components/common/modal/ModalFooter";
 import ModalHeader from "@/components/common/modal/ModalHeader";
-import { useModalFocusTrap } from "@/components/common/modal/modalUtils";
+import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 
 type InventoryMode = "입고" | "차감" | "보정";
 
@@ -48,7 +50,7 @@ export default function InventoryEditor({
     }
   }, [open]);
 
-  useModalFocusTrap({ open, dialogRef, onClose });
+  useModalEnvironment({ open, dialogRef, onClose });
 
   const parsedQuantity = Number(quantity || 0);
   const nextStock = useMemo(() => {
@@ -65,13 +67,7 @@ export default function InventoryEditor({
   };
 
   return (
-    <BaseModal
-      open={open}
-      onClose={onClose}
-      dialogRef={dialogRef}
-      titleId="inventory-editor-title"
-      maxWidthClassName="md:max-w-lg"
-    >
+    <BaseModal open={open} onClose={onClose} dialogRef={dialogRef} titleId="inventory-editor-title" maxWidthClassName="md:max-w-lg">
       <ModalHeader
         titleId="inventory-editor-title"
         title="재고 수정"
@@ -79,19 +75,15 @@ export default function InventoryEditor({
         onClose={onClose}
       />
 
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 md:px-6 md:py-5">
+      <ModalBody>
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
             <div className="text-xs text-stone-500">현재 재고</div>
-            <div className="mt-1 text-lg font-semibold tabular-nums text-stone-900">
-              {currentStock}장
-            </div>
+            <div className="mt-1 text-lg font-semibold tabular-nums text-stone-900">{currentStock}장</div>
           </div>
           <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-3">
             <div className="text-xs text-cyan-700">반영 후 예상</div>
-            <div className="mt-1 text-lg font-semibold tabular-nums text-cyan-900">
-              {nextStock}장
-            </div>
+            <div className="mt-1 text-lg font-semibold tabular-nums text-cyan-900">{nextStock}장</div>
           </div>
         </div>
 
@@ -113,9 +105,7 @@ export default function InventoryEditor({
 
         <div className="mt-4 space-y-3">
           <div>
-            <label className="mb-2 block text-sm font-medium text-stone-700">
-              수량
-            </label>
+            <label className="mb-2 block text-sm font-medium text-stone-700">수량</label>
             <input
               type="number"
               min={0}
@@ -126,9 +116,7 @@ export default function InventoryEditor({
             />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium text-stone-700">
-              메모
-            </label>
+            <label className="mb-2 block text-sm font-medium text-stone-700">메모</label>
             <textarea
               value={memo}
               onChange={(event) => setMemo(event.target.value)}
@@ -139,55 +127,37 @@ export default function InventoryEditor({
           </div>
           <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-700">
             <div>
-              수정자:{" "}
-              <span className="font-medium text-stone-900">
-                {currentUserName}
-              </span>
+              수정자: <span className="font-medium text-stone-900">{currentUserName}</span>
             </div>
-            <div className="mt-1 text-xs text-stone-500">
-              현재는 로컬 상태 기반 테스트 단계입니다.
-            </div>
+            <div className="mt-1 text-xs text-stone-500">현재는 로컬 상태 기반 테스트 단계입니다.</div>
           </div>
         </div>
 
         <div className="mt-5 border-t border-stone-200 pt-4">
           <div className="flex items-center justify-between gap-3">
-            <div className="text-sm font-semibold text-stone-900">
-              최근 수정
-            </div>
-            <span className="text-xs text-stone-500">
-              최근 {Math.min(logs.length, 3)}건
-            </span>
+            <div className="text-sm font-semibold text-stone-900">최근 수정</div>
+            <span className="text-xs text-stone-500">최근 {Math.min(logs.length, 3)}건</span>
           </div>
           <div className="mt-3 space-y-2">
             {logs.length > 0 ? (
               logs.slice(0, 3).map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-2xl border border-stone-200 bg-white p-3 text-sm"
-                >
+                <div key={item.id} className="rounded-2xl border border-stone-200 bg-white p-3 text-sm">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="font-medium text-stone-900">
-                      {item.type} {item.delta > 0 ? `+${item.delta}` : item.delta}
-                    </span>
+                    <span className="font-medium text-stone-900">{item.type} {item.delta > 0 ? `+${item.delta}` : item.delta}</span>
                     <span className="text-xs text-stone-500">{item.time}</span>
                   </div>
                   <div className="mt-1 text-xs text-stone-500">{item.user}</div>
-                  <div className="mt-1 text-sm text-stone-700">
-                    {item.memo || "메모 없음"}
-                  </div>
+                  <div className="mt-1 text-sm text-stone-700">{item.memo || "메모 없음"}</div>
                 </div>
               ))
             ) : (
-              <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-3 text-sm text-stone-500">
-                아직 수정 이력이 없습니다.
-              </div>
+              <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-3 text-sm text-stone-500">아직 수정 이력이 없습니다.</div>
             )}
           </div>
         </div>
-      </div>
+      </ModalBody>
 
-      <div className="shrink-0 border-t border-stone-200 bg-white px-4 py-4 md:px-6">
+      <ModalFooter>
         <div className="flex gap-2">
           <button
             type="button"
@@ -205,7 +175,7 @@ export default function InventoryEditor({
             적용
           </button>
         </div>
-      </div>
+      </ModalFooter>
     </BaseModal>
   );
 }

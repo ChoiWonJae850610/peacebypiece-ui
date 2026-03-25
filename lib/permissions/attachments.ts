@@ -1,11 +1,12 @@
-import { getPermissionSummary } from "@/lib/constants/roles";
 import type { Attachment, UserProfile } from "@/types/workorder";
 
-export function canDeleteAttachmentByUser(
-  currentUser: UserProfile,
-  attachment: Attachment | null,
-) {
-  if (!attachment) return false;
-  if (getPermissionSummary(currentUser) === "관리자") return true;
-  return (attachment.ownerId ?? "") === currentUser.id;
+export function canDeleteAttachmentByUser(user: UserProfile | null | undefined, attachment: Attachment | null | undefined) {
+  if (!user || !attachment) return false;
+  if (user.team === "관리자") return true;
+  if (!user.permissions.viewAttachments) return false;
+  return (
+    attachment.uploadedByUserId === user.id ||
+    attachment.uploadedBy === user.name ||
+    (user.permissions.editAttachments && !attachment.uploadedBy && !attachment.uploadedByUserId)
+  );
 }

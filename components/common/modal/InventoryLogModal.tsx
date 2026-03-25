@@ -2,8 +2,9 @@
 
 import { useRef } from "react";
 import BaseModal from "@/components/common/modal/BaseModal";
+import ModalBody from "@/components/common/modal/ModalBody";
 import ModalHeader from "@/components/common/modal/ModalHeader";
-import { useModalFocusTrap } from "@/components/common/modal/modalUtils";
+import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 
 type HistoryCategory = "work" | "inventory";
 type HistoryTone = "blue" | "violet" | "emerald" | "rose" | "amber" | "stone";
@@ -52,16 +53,10 @@ export default function InventoryLogModal({
   filter: HistoryFilter;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
-  useModalFocusTrap({ open, dialogRef, onClose });
+  useModalEnvironment({ open, dialogRef, onClose });
 
   return (
-    <BaseModal
-      open={open}
-      onClose={onClose}
-      dialogRef={dialogRef}
-      titleId="inventory-log-modal-title"
-      maxWidthClassName="md:max-w-2xl"
-    >
+    <BaseModal open={open} onClose={onClose} dialogRef={dialogRef} titleId="inventory-log-modal-title" maxWidthClassName="md:max-w-2xl">
       <ModalHeader
         titleId="inventory-log-modal-title"
         title="전체 히스토리"
@@ -69,7 +64,7 @@ export default function InventoryLogModal({
         onClose={onClose}
       />
 
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 md:px-6 md:py-5">
+      <ModalBody>
         <div className="mb-4 text-xs text-stone-400">
           {role === "관리자"
             ? `현재 필터: ${filter === "all" ? "전체" : filter === "work" ? "작업" : "재고"}`
@@ -79,14 +74,9 @@ export default function InventoryLogModal({
         <div className="space-y-3">
           {logs.length > 0 ? (
             logs.map((item) => (
-              <div
-                key={item.id}
-                className="rounded-2xl border border-stone-200 bg-stone-50 p-4"
-              >
+              <div key={item.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
                 <div className="flex items-center justify-between gap-3">
-                  <div
-                    className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${getHistoryToneClass(item.tone)}`}
-                  >
+                  <div className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${getHistoryToneClass(item.tone)}`}>
                     {item.action}
                   </div>
                   <div className="text-[11px] text-stone-500">{item.time}</div>
@@ -101,7 +91,7 @@ export default function InventoryLogModal({
             </div>
           )}
         </div>
-      </div>
+      </ModalBody>
     </BaseModal>
   );
 }

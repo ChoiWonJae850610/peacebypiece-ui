@@ -1,9 +1,10 @@
-export const APP_VERSION = "0.1.4";
-export const STORAGE_KEY = "peacebypiece-ui";
-export const STORAGE_SCHEMA_VERSION = 1;
+export const APP_VERSION = "0.1.5";
+export const STORAGE_KEY = "peacebypiece-workorders";
 export const LEGACY_STORAGE_KEYS = [
-  "peacebypiece-ui-v0.1.3",
-  "peacebypiece-ui-v0.1.2",
-  "peacebypiece-ui-v0.1.1",
-  "peacebypiece-ui-v0.0.35",
+  "peacebypiece-workorders-0.1.4",
+  "peacebypiece-workorders-0.1.3",
+  "peacebypiece-workorders-0.1.2",
+  "peacebypiece-workorders-0.1.1",
+  "peacebypiece-workorders-0.0.35",
 ];
+export const STORAGE_SCHEMA_VERSION = 2;

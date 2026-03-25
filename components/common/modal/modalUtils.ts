@@ -13,7 +13,7 @@ export function getFocusableElements(container: HTMLElement) {
   );
 }
 
-export function useModalFocusTrap({
+export function useModalEnvironment({
   open,
   dialogRef,
   onClose,
@@ -26,10 +26,9 @@ export function useModalFocusTrap({
     if (!open || !dialogRef.current) return;
 
     const dialog = dialogRef.current;
-    const previousActive =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null;
+    const previousActive = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
 
     const focusTimer = window.setTimeout(() => {
       const focusables = getFocusableElements(dialog);
@@ -60,7 +59,7 @@ export function useModalFocusTrap({
           event.preventDefault();
           last.focus();
         }
-      } else if (active === last) {
+      } else if (active === last || !dialog.contains(active)) {
         event.preventDefault();
         first.focus();
       }
@@ -71,7 +70,10 @@ export function useModalFocusTrap({
     return () => {
       window.clearTimeout(focusTimer);
       document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousOverflow;
       previousActive?.focus();
     };
   }, [open, dialogRef, onClose]);
 }
+
+export const useModalFocusTrap = useModalEnvironment;

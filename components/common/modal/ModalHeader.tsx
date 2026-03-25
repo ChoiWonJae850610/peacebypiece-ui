@@ -16,15 +16,11 @@ export default function ModalHeader({
   return (
     <div className="sticky top-0 z-10 shrink-0 border-b border-stone-200 bg-white px-4 py-4 md:px-6">
       <div className="flex items-start justify-between gap-4">
-        <div>
+        <div className="min-w-0">
           <div id={titleId} className="text-lg font-semibold text-stone-900">
             {title}
           </div>
-          {description ? (
-            <div className="mt-1 break-keep text-sm text-stone-500">
-              {description}
-            </div>
-          ) : null}
+          {description ? <div className="mt-1 break-keep text-sm text-stone-500">{description}</div> : null}
         </div>
         <button
           type="button"
