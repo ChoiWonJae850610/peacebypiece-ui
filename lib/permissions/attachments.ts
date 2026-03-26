@@ -1,7 +1,8 @@
 import type { Attachment, UserProfile } from "@/types/workorder";
 
-export function canDeleteAttachmentByUser(user: UserProfile | null | undefined, attachment: Attachment | null | undefined): boolean {
-  if (!user || !attachment) return false;
+export function canDeleteAttachmentByUser(user: UserProfile, attachment: Attachment | null) {
+  if (!attachment) return false;
   if (user.permissions.permissionManage) return true;
-  return user.permissions.editAttachments && user.id === attachment.ownerId;
+  if (!user.permissions.editAttachments) return false;
+  return attachment.ownerId === user.id;
 }
