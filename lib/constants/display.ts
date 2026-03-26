@@ -1,1 +1,1 @@
-export const DISPLAY_EMPTY = "-";
+export const EMPTY_DISPLAY = "-";

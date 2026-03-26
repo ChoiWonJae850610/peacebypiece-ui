@@ -1,17 +1,20 @@
-import { DISPLAY_EMPTY } from "@/lib/constants/display";
+import { EMPTY_DISPLAY } from "@/lib/constants/display";
 
-export function toDisplayValue(value: string | number | null | undefined): string {
-  if (value === null || value === undefined) return DISPLAY_EMPTY;
-  if (typeof value === "string" && value.trim() === "") return DISPLAY_EMPTY;
-  return String(value);
+export function toDisplayValue(value: string | number | null | undefined) {
+  if (value === null || value === undefined) return EMPTY_DISPLAY;
+  if (typeof value === "string" && value.trim() === "") return EMPTY_DISPLAY;
+  return value;
 }
 
-export function toCurrency(value: number | null | undefined): string {
-  if (value === null || value === undefined || Number.isNaN(value)) return DISPLAY_EMPTY;
-  return `${value.toLocaleString()}원`;
+export function toNumber(value: unknown) {
+  const next = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(next) ? next : 0;
 }
 
-export function toNumber(value: number | null | undefined): string {
-  if (value === null || value === undefined || Number.isNaN(value)) return DISPLAY_EMPTY;
-  return value.toLocaleString();
+export function toCurrency(value: unknown) {
+  return `${toNumber(value).toLocaleString()}원`;
+}
+
+export function toDate(value: string | null | undefined) {
+  return value && value.trim() ? value : EMPTY_DISPLAY;
 }

@@ -1,74 +1,57 @@
-import type { RoleType, UserPermissions, UserProfile } from "@/types/workorder";
+import type { RoleTemplate, RoleType } from "@/types/permission";
+import type { UserProfile } from "@/types/user";
 
-function createPermissions(overrides: Partial<UserPermissions>): UserPermissions {
-  return {
-    viewProductionDetails: false,
-    viewCost: false,
-    inventoryEdit: false,
-    viewInventoryHistory: false,
-    viewAttachments: true,
-    requestReview: false,
-    requestOrder: false,
-    markInboundReady: false,
-    startInspection: false,
-    startProduction: false,
-    completeWork: false,
-    rejectWork: false,
-    ...overrides,
-  };
-}
-
-export const ROLE_PRESETS: Record<RoleType, { team: RoleType; permissions: UserPermissions }> = {
-  관리자: {
-    team: "관리자",
-    permissions: createPermissions({
-      viewProductionDetails: true,
-      viewCost: true,
-      inventoryEdit: true,
-      viewInventoryHistory: true,
-      viewAttachments: true,
-      requestReview: true,
-      requestOrder: true,
-      markInboundReady: true,
-      startInspection: true,
-      startProduction: true,
-      completeWork: true,
-      rejectWork: true,
-    }),
-  },
-  디자이너: {
+export const ROLE_TEMPLATES: Record<RoleType, RoleTemplate> = {
+  "디자이너": {
+    role: "디자이너",
+    label: "디자이너",
+    description: "작업지시 작성, 검토 요청, 발주 요청 중심 역할",
     team: "디자이너",
-    permissions: createPermissions({
-      viewProductionDetails: true,
-      viewCost: false,
-      viewInventoryHistory: false,
-      requestReview: true,
-      requestOrder: true,
-      rejectWork: true,
-    }),
+    permissions: {
+      canSeeProductionSections: true,
+      canSeeCostSections: false,
+      canEditInventory: false,
+      canSeeInventoryHistorySection: true,
+      canSeeAttachments: true,
+      canAssignRoles: false,
+    },
+  },
+  "관리자": {
+    role: "관리자",
+    label: "관리자",
+    description: "전체 승인과 비용, 권한 관리가 가능한 역할",
+    team: "관리자",
+    permissions: {
+      canSeeProductionSections: true,
+      canSeeCostSections: true,
+      canEditInventory: true,
+      canSeeInventoryHistorySection: true,
+      canSeeAttachments: true,
+      canAssignRoles: true,
+    },
   },
   "입고/검수": {
+    role: "입고/검수",
+    label: "입고/검수",
+    description: "입고 등록, 검수 완료, 재고 수정 중심 역할",
     team: "입고/검수",
-    permissions: createPermissions({
-      viewProductionDetails: true,
-      inventoryEdit: true,
-      viewInventoryHistory: true,
-      markInboundReady: true,
-      startInspection: true,
-      startProduction: true,
-      completeWork: true,
-    }),
+    permissions: {
+      canSeeProductionSections: false,
+      canSeeCostSections: false,
+      canEditInventory: true,
+      canSeeInventoryHistorySection: true,
+      canSeeAttachments: true,
+      canAssignRoles: false,
+    },
   },
 };
 
-export const ROLE_OPTIONS: RoleType[] = ["관리자", "디자이너", "입고/검수"];
+export const ROLE_OPTIONS = Object.values(ROLE_TEMPLATES).map((item) => ({
+  role: item.role,
+  title: item.label,
+  description: item.description,
+}));
 
-export const INITIAL_USERS: UserProfile[] = [
-  { id: "user-admin", name: "박관리", ...ROLE_PRESETS["관리자"] },
-  { id: "user-designer", name: "김디자이너", ...ROLE_PRESETS["디자이너"] },
-  { id: "user-inspection", name: "이검수", ...ROLE_PRESETS["입고/검수"] },
-];
-
-export function getPermissionSummary(user: UserProfile): RoleType {
-  return user.team;
+export function getPermissionSummary(user: Pick<UserProfile, "role" | "team">): string {
+  return user.role ?? user.team;
 }
