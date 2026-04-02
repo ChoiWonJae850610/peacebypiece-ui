@@ -1,9 +1,10 @@
 import type { HistoryLog, WorkOrder } from "@/types/workorder";
+import type { MockWorkOrderSource } from "@/lib/data/mock/types";
 
 const placeholderImage = "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=80";
 const placeholderPdf = "about:blank";
 
-export const MOCK_WORK_ORDERS: WorkOrder[] = [
+const workOrders: WorkOrder[] = [
   {
     id: "wo-1",
     title: "코튼 레이어드 반팔",
@@ -96,7 +97,7 @@ export const MOCK_WORK_ORDERS: WorkOrder[] = [
   },
 ];
 
-export const MOCK_HISTORY_LOGS: HistoryLog[] = [
+const historyLogs: HistoryLog[] = [
   { id: "h-1", workOrderId: "wo-1", category: "work", action: "검토 요청", message: "검토 요청 상태로 변경했습니다.", user: "김디자이너", time: "03-26 21:22", tone: "violet" },
   { id: "h-2", workOrderId: "wo-1", category: "inventory", action: "입고 등록", message: "원단 12yd 입고 수량을 반영했습니다.", user: "박관리", time: "03-26 20:10", tone: "emerald" },
   { id: "h-3", workOrderId: "wo-1", category: "work", action: "저장 완료", message: "작업지시 메모를 저장했습니다.", user: "김디자이너", time: "03-26 19:48", tone: "stone" },
@@ -105,3 +106,13 @@ export const MOCK_HISTORY_LOGS: HistoryLog[] = [
   { id: "h-6", workOrderId: "wo-2", category: "inventory", action: "차감", message: "샘플 검토용으로 2장 차감했습니다.", user: "이검수", time: "03-25 11:00", tone: "rose" },
   { id: "h-7", workOrderId: "wo-3", category: "work", action: "완료", message: "최종 검수 후 완료 처리했습니다.", user: "이검수", time: "03-24 17:40", tone: "stone" },
 ];
+
+export const MOCK_WORK_ORDER_SOURCE: MockWorkOrderSource = {
+  workOrders,
+  historyLogs,
+  defaultSelectedId: workOrders[0]?.id ?? "",
+};
+
+export const MOCK_WORK_ORDERS = MOCK_WORK_ORDER_SOURCE.workOrders;
+export const MOCK_HISTORY_LOGS = MOCK_WORK_ORDER_SOURCE.historyLogs;
+export const DEFAULT_SELECTED_WORK_ORDER_ID = MOCK_WORK_ORDER_SOURCE.defaultSelectedId;

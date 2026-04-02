@@ -1,7 +1,8 @@
 import { ROLE_TEMPLATES } from "@/lib/constants/roles";
+import type { MockUserSource } from "@/lib/data/mock/types";
 import type { UserProfile } from "@/types/user";
 
-export const MOCK_USERS: UserProfile[] = [
+const users: UserProfile[] = [
   {
     id: "user-designer",
     name: "김디자이너",
@@ -24,3 +25,13 @@ export const MOCK_USERS: UserProfile[] = [
     permissions: ROLE_TEMPLATES["입고/검수"].permissions,
   },
 ];
+
+export const MOCK_USER_SOURCE: MockUserSource = {
+  users,
+  defaultCurrentUserId: users[0]?.id ?? "",
+  defaultPermissionTargetId: users[0]?.id ?? "",
+};
+
+export const MOCK_USERS = MOCK_USER_SOURCE.users;
+export const DEFAULT_CURRENT_USER_ID = MOCK_USER_SOURCE.defaultCurrentUserId;
+export const DEFAULT_PERMISSION_TARGET_ID = MOCK_USER_SOURCE.defaultPermissionTargetId;

@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useRef, useState, type ChangeEvent } from "react";
-import { MOCK_HISTORY_LOGS, MOCK_WORK_ORDERS } from "@/lib/data/mock/workorders";
-import { MOCK_USERS } from "@/lib/data/mock/users";
+import { DEFAULT_SELECTED_WORK_ORDER_ID, MOCK_HISTORY_LOGS, MOCK_WORK_ORDERS } from "@/lib/data/mock/workorders";
+import { DEFAULT_CURRENT_USER_ID, DEFAULT_PERMISSION_TARGET_ID, MOCK_USERS } from "@/lib/data/mock/users";
 import { ROLE_TEMPLATES } from "@/lib/constants/roles";
 import { VISIBLE_STAGES } from "@/lib/constants/workflow";
 import type { RoleType } from "@/types/permission";
@@ -86,14 +86,14 @@ export function useWorkOrder() {
   const [inventoryLogModalOpen, setInventoryLogModalOpen] = useState(false);
   const [attachmentPreviewId, setAttachmentPreviewId] = useState<string | null>(null);
   const [users, setUsers] = useState<UserProfile[]>(MOCK_USERS);
-  const [currentUserId, setCurrentUserId] = useState(MOCK_USERS[0].id);
-  const [permissionTargetUserId, setPermissionTargetUserId] = useState(MOCK_USERS[0].id);
+  const [currentUserId, setCurrentUserId] = useState(DEFAULT_CURRENT_USER_ID);
+  const [permissionTargetUserId, setPermissionTargetUserId] = useState(DEFAULT_PERMISSION_TARGET_ID);
   const [historyFilter, setHistoryFilter] = useState<HistoryFilter>("all");
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>(MOCK_WORK_ORDERS);
   const [historyLogs, setHistoryLogs] = useState<HistoryLog[]>(MOCK_HISTORY_LOGS);
-  const [selectedId, setSelectedId] = useState(MOCK_WORK_ORDERS[0].id);
+  const [selectedId, setSelectedId] = useState(DEFAULT_SELECTED_WORK_ORDER_ID);
   const [saveStatus, setSaveStatus] = useState<"saved" | "dirty" | "saving">("saved");
-  const [lastSavedAt, setLastSavedAt] = useState<string | null>(MOCK_WORK_ORDERS[0].lastSavedAt);
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(MOCK_WORK_ORDERS.find((item) => item.id === DEFAULT_SELECTED_WORK_ORDER_ID)?.lastSavedAt ?? MOCK_WORK_ORDERS[0]?.lastSavedAt ?? null);
 
   const selectedWorkOrder = useMemo(
     () => workOrders.find((item) => item.id === selectedId) ?? workOrders[0],
