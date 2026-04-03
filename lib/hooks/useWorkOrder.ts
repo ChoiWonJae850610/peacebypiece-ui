@@ -5,7 +5,16 @@ import { DEFAULT_SELECTED_WORK_ORDER_ID, MOCK_HISTORY_LOGS, MOCK_WORK_ORDERS } f
 import { DEFAULT_CURRENT_USER_ID, DEFAULT_PERMISSION_TARGET_ID, MOCK_USERS } from "@/lib/data/mock/users";
 import { ROLE_TEMPLATES } from "@/lib/constants/roles";
 import { VISIBLE_STAGES } from "@/lib/constants/workflow";
-import { createHistoryLog, filterHistoryLogs, nowLabel, toInventoryLogs } from "@/lib/workorder/history";
+import {
+  createAttachmentHistoryLog,
+  createCreationHistoryLog,
+  createInventoryHistoryLog,
+  createStatusHistoryLog,
+  createUpdateHistoryLog,
+  filterHistoryLogs,
+  nowLabel,
+  toInventoryLogs,
+} from "@/lib/workorder/history";
 import { createNewWorkOrder, applyInventoryAdjustment, appendAttachments, removeAttachment, updateWorkflowState } from "@/lib/workorder/actions";
 import { createWorkOrderListItem, calculateWorkOrderCosts } from "@/lib/workorder/selectors";
 import { getAvailableWorkflowActions } from "@/lib/workorder/workflow";
@@ -99,7 +108,10 @@ export function useWorkOrder() {
     setLastSavedAt(label);
     setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id ? { ...item, lastSavedAt: label } : item));
     setHistoryLogs((prev) => [
-      createHistoryLog("저장 완료", "작업지시를 저장했습니다.", currentUser.name, selectedWorkOrder.id, "work", "stone"),
+      createUpdateHistoryLog(currentUser.name, selectedWorkOrder.id, [
+        { label: "저장", value: `저장 시각 ${label}` },
+        { label: "작업지시서", value: selectedWorkOrder.title },
+      ]),
       ...prev,
     ]);
     setSaveStatus("saved");
@@ -119,15 +131,16 @@ export function useWorkOrder() {
     setLastSavedAt(newWorkOrder.lastSavedAt);
     setSaveStatus("dirty");
     setHistoryLogs((prev) => [
-      createHistoryLog("생성", "새 작업지시서를 생성했습니다.", currentUser.name, newWorkOrder.id, "work", "blue"),
+      createCreationHistoryLog(currentUser.name, newWorkOrder.id),
       ...prev,
     ]);
   };
 
   const handleWorkflowAction = (action: WorkflowAction) => {
+    const previousState = selectedWorkOrder.workflowState;
     setWorkOrders((prev) => updateWorkflowState(prev, selectedWorkOrder.id, action));
     setHistoryLogs((prev) => [
-      createHistoryLog(action.label, `${action.nextState} 상태로 변경했습니다.`, currentUser.name, selectedWorkOrder.id, "work", "violet"),
+      createStatusHistoryLog(currentUser.name, selectedWorkOrder.id, previousState, action.nextState, action.label),
       ...prev,
     ]);
   };
@@ -135,7 +148,7 @@ export function useWorkOrder() {
   const handleInventoryApply = ({ type, quantity, memo }: { type: InventoryLog["type"]; quantity: number; memo: string }) => {
     setWorkOrders((prev) => applyInventoryAdjustment(prev, selectedWorkOrder.id, { type, quantity }));
     setHistoryLogs((prev) => [
-      createHistoryLog(type === "보정" ? "재고 보정" : type, memo || `${type} ${quantity}장 반영`, currentUser.name, selectedWorkOrder.id, "inventory", type === "차감" ? "rose" : type === "보정" ? "amber" : "emerald"),
+      createInventoryHistoryLog(currentUser.name, selectedWorkOrder.id, { type, quantity, memo }),
       ...prev,
     ]);
   };
@@ -159,14 +172,28 @@ export function useWorkOrder() {
       ownerName: currentUser.name,
     }));
     setWorkOrders((prev) => appendAttachments(prev, selectedWorkOrder.id, nextAttachments));
+    setHistoryLogs((prev) => [
+      createAttachmentHistoryLog(currentUser.name, selectedWorkOrder.id, nextAttachments.map((attachment) => ({
+        label: "추가",
+        value: attachment.name,
+      }))),
+      ...prev,
+    ]);
     setSaveStatus("dirty");
     event.target.value = "";
   };
 
   const handleDeleteAttachment = (attachmentId: string) => {
+    const targetAttachment = selectedWorkOrder.attachments.find((item) => item.id === attachmentId);
     setWorkOrders((prev) => removeAttachment(prev, selectedWorkOrder.id, attachmentId));
     if (attachmentPreviewId === attachmentId) {
       setAttachmentPreviewId(null);
+    }
+    if (targetAttachment) {
+      setHistoryLogs((prev) => [
+        createAttachmentHistoryLog(currentUser.name, selectedWorkOrder.id, [{ label: "삭제", value: targetAttachment.name }]),
+        ...prev,
+      ]);
     }
     setSaveStatus("dirty");
   };
@@ -219,6 +246,7 @@ export function useWorkOrder() {
     inventoryLogs,
     selectedAttachment,
     canDeleteAttachment,
+    materials,
     outsourcing,
     fabricTotal,
     subsidiaryTotal,

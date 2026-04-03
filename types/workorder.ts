@@ -60,6 +60,16 @@ export type WorkOrderListItem = Pick<
   filesCount: number;
 };
 
+export type HistoryDetailLine = {
+  label?: string;
+  value: string;
+};
+
+export type HistoryTransition = {
+  from: string;
+  to: string;
+};
+
 export type HistoryLog = {
   id: string;
   workOrderId: string;
@@ -69,6 +79,8 @@ export type HistoryLog = {
   user: string;
   time: string;
   tone: HistoryTone;
+  detailLines?: HistoryDetailLine[];
+  transition?: HistoryTransition | null;
 };
 
 export type InventoryLog = {

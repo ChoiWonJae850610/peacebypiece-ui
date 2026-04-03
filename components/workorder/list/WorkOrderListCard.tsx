@@ -1,6 +1,6 @@
 "use client";
 
-import { getCategoryPath, getInventoryLabel, getWorkOrderCardTone, getWorkOrderStateLabel } from "@/lib/utils/workorder";
+import { getCategoryPath, getWorkOrderCardTone, getWorkOrderStateLabel } from "@/lib/utils/workorder";
 import type { WorkOrderListItem } from "@/types/workorder";
 
 type Props = {
@@ -45,7 +45,6 @@ export default function WorkOrderListCard({
         <div className="truncate">{getCategoryPath(workOrder) || "분류 미지정"}</div>
         <div className="truncate">거래처/공장: {workOrder.vendor ?? "미지정"}</div>
         <div>마감: {workOrder.dueDate ?? "미지정"}</div>
-        <div>{getInventoryLabel(workOrder.inventoryStatus)}</div>
         <div>첨부파일: {workOrder.filesCount ?? 0}개</div>
       </div>
     </button>
