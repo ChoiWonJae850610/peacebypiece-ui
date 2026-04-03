@@ -40,15 +40,16 @@ export default function AttachmentPreviewModal({
           <img
             src={attachment.url}
             alt={attachment.name}
-            className="mx-auto max-h-[75vh] w-auto rounded-2xl border border-stone-200 bg-white object-contain shadow-sm"
+            className="mx-auto max-h-[70dvh] w-auto rounded-2xl border border-stone-200 bg-white object-contain shadow-sm"
           />
         ) : attachment ? (
-          <div className="flex min-h-[360px] items-center justify-center rounded-2xl border border-stone-200 bg-white p-8 text-center">
-            <div>
-              <div className="text-lg font-semibold text-stone-900">PDF 파일</div>
-              <div className="mt-2 text-sm text-stone-500">{attachment.name}</div>
-              <div className="mt-4 inline-flex rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700">PDF 미리보기 카드</div>
-            </div>
+          <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
+            <div className="border-b border-stone-200 px-4 py-3 text-sm font-medium text-stone-700">PDF 미리보기</div>
+            <iframe
+              title={attachment.name}
+              src={attachment.url}
+              className="h-[70dvh] w-full bg-white"
+            />
           </div>
         ) : null}
       </ModalBody>

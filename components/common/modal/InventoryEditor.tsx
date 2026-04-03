@@ -24,6 +24,7 @@ export default function InventoryEditor({
   currentStock,
   currentUserName,
   logs,
+  showRecentLogs,
   onApply,
 }: {
   open: boolean;
@@ -31,6 +32,7 @@ export default function InventoryEditor({
   currentStock: number;
   currentUserName: string;
   logs: InventoryLog[];
+  showRecentLogs: boolean;
   onApply: (payload: {
     type: InventoryMode;
     quantity: number;
@@ -133,6 +135,7 @@ export default function InventoryEditor({
           </div>
         </div>
 
+        {showRecentLogs ? (
         <div className="mt-5 border-t border-stone-200 pt-4">
           <div className="flex items-center justify-between gap-3">
             <div className="text-sm font-semibold text-stone-900">최근 수정</div>
@@ -155,6 +158,7 @@ export default function InventoryEditor({
             )}
           </div>
         </div>
+        ) : null}
       </ModalBody>
 
       <ModalFooter>

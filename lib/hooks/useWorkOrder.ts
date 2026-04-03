@@ -4,6 +4,7 @@ import { useMemo, useRef, useState, type ChangeEvent } from "react";
 import { DEFAULT_SELECTED_WORK_ORDER_ID, MOCK_HISTORY_LOGS, MOCK_WORK_ORDERS } from "@/lib/data/mock/workorders";
 import { DEFAULT_CURRENT_USER_ID, DEFAULT_PERMISSION_TARGET_ID, MOCK_USERS } from "@/lib/data/mock/users";
 import { ROLE_TEMPLATES } from "@/lib/constants/roles";
+import { canDeleteAttachmentByUser } from "@/lib/permissions/attachments";
 import { VISIBLE_STAGES } from "@/lib/constants/workflow";
 import {
   createAttachmentHistoryLog,
@@ -184,7 +185,10 @@ export function useWorkOrder() {
   };
 
   const handleDeleteAttachment = (attachmentId: string) => {
-    const targetAttachment = selectedWorkOrder.attachments.find((item) => item.id === attachmentId);
+    const targetAttachment = selectedWorkOrder.attachments.find((item) => item.id === attachmentId) ?? null;
+    if (!canDeleteAttachmentByUser(currentUser, targetAttachment)) {
+      return;
+    }
     setWorkOrders((prev) => removeAttachment(prev, selectedWorkOrder.id, attachmentId));
     if (attachmentPreviewId === attachmentId) {
       setAttachmentPreviewId(null);
@@ -199,8 +203,7 @@ export function useWorkOrder() {
   };
 
   const canDeleteAttachment = (attachment: Attachment | null) => {
-    if (!attachment) return false;
-    return isAdmin || attachment.ownerId === currentUser.id;
+    return canDeleteAttachmentByUser(currentUser, attachment);
   };
 
   return {
