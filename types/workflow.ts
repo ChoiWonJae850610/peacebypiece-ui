@@ -14,9 +14,9 @@ export type WorkflowAction = {
   nextState: WorkflowState;
 };
 
-export type HistoryCategory = "work" | "inventory";
+export type HistoryCategory = "work" | "inventory" | "attachment";
 export type HistoryTone = "blue" | "violet" | "emerald" | "rose" | "amber" | "stone";
-export type HistoryFilter = "all" | "work" | "inventory";
+export type HistoryFilter = "all" | "work" | "inventory" | "attachment";
 
 export const DISPLAY_STAGES: DisplayStage[] = [
   "작성중",

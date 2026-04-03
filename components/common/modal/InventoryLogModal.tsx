@@ -87,9 +87,9 @@ export default function InventoryLogModal({
   useModalEnvironment({ open, dialogRef, onClose });
   const summaryText = useMemo(() => {
     if (role === "관리자") {
-      return `현재 필터: ${filter === "all" ? "전체" : filter === "work" ? "작업" : "재고"}`;
+      return `현재 필터: ${filter === "all" ? "전체" : filter === "work" ? "작업" : filter === "inventory" ? "재고" : "첨부"}`;
     }
-    return `현재 보기 권한: ${role}`;
+    return `현재 보기 권한: ${role === "디자이너" ? "작업/상태/첨부" : "재고/첨부"}`;
   }, [filter, role]);
 
   return (

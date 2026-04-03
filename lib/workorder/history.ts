@@ -101,7 +101,7 @@ export function createAttachmentHistoryLog(
     message: "첨부파일 내용이 수정되었습니다.",
     user,
     workOrderId,
-    category: "work",
+    category: "attachment",
     tone: "stone",
     detailLines,
   });
@@ -119,10 +119,10 @@ export function filterHistoryLogs(
   }
 
   if (currentRole === "디자이너") {
-    return scopedHistoryLogs.filter((item) => item.category === "work");
+    return scopedHistoryLogs.filter((item) => item.category === "work" || item.category === "attachment");
   }
 
-  return scopedHistoryLogs.filter((item) => item.category === "inventory");
+  return scopedHistoryLogs.filter((item) => item.category === "inventory" || item.category === "attachment");
 }
 
 function extractDelta(log: HistoryLog) {

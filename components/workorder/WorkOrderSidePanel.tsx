@@ -214,14 +214,14 @@ export default function WorkOrderSidePanel({
             <div>
               <h3 className="text-base font-semibold">최근 히스토리</h3>
               <div className="mt-1 text-xs text-stone-500">
-                {isAdmin ? "요약 문구를 누르면 상세 변경 내용을 펼쳐서 확인할 수 있습니다." : currentRole === "디자이너" ? "작업 관련 히스토리만 표시됩니다." : "재고 관련 히스토리만 표시됩니다."}
+                {isAdmin ? "요약 문구를 누르면 상세 변경 내용을 펼쳐서 확인할 수 있습니다." : currentRole === "디자이너" ? "작업/상태/첨부 히스토리만 표시됩니다." : "재고/첨부 히스토리만 표시됩니다."}
               </div>
             </div>
             <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">{filteredHistoryLogs.length}건</span>
           </div>
           {isAdmin && (
             <div className="mt-3 flex flex-wrap gap-2">
-              {([ ["all", "전체"], ["work", "작업"], ["inventory", "재고"] ] as [HistoryFilter, string][]).map(([value, label]) => (
+              {([ ["all", "전체"], ["work", "작업"], ["inventory", "재고"], ["attachment", "첨부"] ] as [HistoryFilter, string][]).map(([value, label]) => (
                 <button key={value} type="button" onClick={() => onHistoryFilterChange(value)} className={`rounded-full px-3 py-1 text-xs font-medium ${historyFilter === value ? "bg-stone-900 text-white" : "border border-stone-300 bg-white text-stone-700"}`}>{label}</button>
               ))}
             </div>

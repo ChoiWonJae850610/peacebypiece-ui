@@ -139,6 +139,19 @@ const historyLogs: HistoryLog[] = [
     ],
   },
   {
+    id: "h-3a",
+    workOrderId: "wo-1",
+    category: "attachment",
+    action: "첨부 변경",
+    message: "첨부파일 내용이 수정되었습니다.",
+    user: "박관리",
+    time: "03-26 19:10",
+    tone: "stone",
+    detailLines: [
+      { label: "추가", value: "사이즈 표.pdf" },
+    ],
+  },
+  {
     id: "h-4",
     workOrderId: "wo-1",
     category: "inventory",
