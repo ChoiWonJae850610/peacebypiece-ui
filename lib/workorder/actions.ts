@@ -1,6 +1,11 @@
-import type { Attachment, InventoryLog, WorkOrder, WorkflowAction } from "@/types/workorder";
+import type { Attachment, InventoryLog, RoleType, WorkOrder, WorkflowAction } from "@/types/workorder";
 
-export function createNewWorkOrder(nextIndex: number, managerName: string, createdAt: string): WorkOrder {
+export function createNewWorkOrder(nextIndex: number, payload: {
+  managerName: string;
+  managerId: string;
+  managerRole: RoleType;
+  createdAt: string;
+}): WorkOrder {
   return {
     id: `wo-${Date.now()}`,
     title: `새 작업지시서 ${nextIndex}`,
@@ -10,7 +15,9 @@ export function createNewWorkOrder(nextIndex: number, managerName: string, creat
     season: "ALL",
     priority: "보통",
     vendor: "미정",
-    manager: managerName,
+    manager: payload.managerName,
+    createdById: payload.managerId,
+    createdByRole: payload.managerRole,
     dueDate: "미정",
     quantity: 0,
     inventoryQuantity: 0,
@@ -20,7 +27,7 @@ export function createNewWorkOrder(nextIndex: number, managerName: string, creat
     outsourcing: [],
     attachments: [],
     workflowState: "작성중",
-    lastSavedAt: createdAt,
+    lastSavedAt: payload.createdAt,
   };
 }
 

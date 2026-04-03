@@ -19,12 +19,12 @@ export function getWorkOrderCardTone(state: string) {
       return "bg-stone-200 text-stone-800";
     case "검토요청":
       return "bg-violet-100 text-violet-700";
+    case "검토완료":
+      return "bg-fuchsia-100 text-fuchsia-700";
     case "발주요청":
       return "bg-amber-100 text-amber-700";
     case "생산중":
       return "bg-blue-100 text-blue-700";
-    case "입고대기":
-      return "bg-cyan-100 text-cyan-700";
     case "검수중":
       return "bg-emerald-100 text-emerald-700";
     default:

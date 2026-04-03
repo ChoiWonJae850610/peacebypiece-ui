@@ -33,6 +33,8 @@ export type WorkOrder = {
   priority: string;
   vendor: string;
   manager: string;
+  createdById: string;
+  createdByRole: RoleType;
   dueDate: string;
   quantity: number;
   inventoryQuantity: number;

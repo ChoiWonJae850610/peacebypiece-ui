@@ -99,8 +99,13 @@ export function useWorkOrder() {
   const inventoryLogs: InventoryLog[] = useMemo(() => toInventoryLogs(scopedHistoryLogs), [scopedHistoryLogs]);
 
   const availableActions = useMemo(
-    () => getAvailableWorkflowActions(currentWorkflowState, currentRole),
-    [currentWorkflowState, currentRole],
+    () => getAvailableWorkflowActions({
+      currentWorkflowState,
+      currentRole,
+      currentUserId,
+      workOrder: selectedWorkOrder,
+    }),
+    [currentWorkflowState, currentRole, currentUserId, selectedWorkOrder],
   );
 
   const handleSave = () => {
@@ -126,7 +131,12 @@ export function useWorkOrder() {
   };
 
   const handleCreateWorkOrder = () => {
-    const newWorkOrder = createNewWorkOrder(workOrders.length + 1, currentUser.name, nowLabel());
+    const newWorkOrder = createNewWorkOrder(workOrders.length + 1, {
+      managerName: currentUser.name,
+      managerId: currentUser.id,
+      managerRole: currentUser.role,
+      createdAt: nowLabel(),
+    });
     setWorkOrders((prev) => [newWorkOrder, ...prev]);
     setSelectedId(newWorkOrder.id);
     setLastSavedAt(newWorkOrder.lastSavedAt);
@@ -144,6 +154,9 @@ export function useWorkOrder() {
       createStatusHistoryLog(currentUser.name, selectedWorkOrder.id, previousState, action.nextState, action.label),
       ...prev,
     ]);
+    if (action.nextState === "검수중") {
+      setInventoryEditorOpen(true);
+    }
   };
 
   const handleInventoryApply = ({ type, quantity, memo }: { type: InventoryLog["type"]; quantity: number; memo: string }) => {

@@ -114,7 +114,7 @@ export default function Home() {
                 <span className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-cyan-800">state</span>
               </div>
               <div className="mt-3 space-y-1 text-xs text-cyan-900">
-                <div>1. 상단 버전이 v0.1.15로 표시되는지</div>
+                <div>1. 상단 버전이 v0.1.16로 표시되는지</div>
                 <div>2. 메뉴에서 작업 선택 시 드로어가 닫히는지</div>
                 <div>3. 우측 진행단계 카드가 상태/액션 구조로 유지되는지</div>
                 <div>4. 권한/사용자 변경 시 액션 버튼과 재고 수정 가능 여부가 달라지는지</div>
