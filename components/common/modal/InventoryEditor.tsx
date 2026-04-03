@@ -11,11 +11,15 @@ type InventoryMode = "입고" | "차감" | "보정";
 
 type InventoryLog = {
   id: string;
-  type: InventoryMode;
+  summary: string;
   delta: number;
   memo: string;
   user: string;
   time: string;
+  changes: Array<{
+    type: InventoryMode;
+    quantity: number;
+  }>;
 };
 
 export default function InventoryEditor({
@@ -34,37 +38,50 @@ export default function InventoryEditor({
   logs: InventoryLog[];
   showRecentLogs: boolean;
   onApply: (payload: {
-    type: InventoryMode;
-    quantity: number;
+    inboundQuantity: number;
+    adjustmentQuantity: number;
+    deductionQuantity: number;
     memo: string;
   }) => void;
 }) {
-  const [mode, setMode] = useState<InventoryMode>("입고");
-  const [quantity, setQuantity] = useState<string>("");
+  const [inboundQuantity, setInboundQuantity] = useState<string>("");
+  const [adjustmentQuantity, setAdjustmentQuantity] = useState<string>("");
+  const [deductionQuantity, setDeductionQuantity] = useState<string>("");
   const [memo, setMemo] = useState("");
   const dialogRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!open) {
-      setMode("입고");
-      setQuantity("");
+      setInboundQuantity("");
+      setAdjustmentQuantity("");
+      setDeductionQuantity("");
       setMemo("");
     }
   }, [open]);
 
   useModalEnvironment({ open, dialogRef, onClose });
 
-  const parsedQuantity = Number(quantity || 0);
+  const parsedInboundQuantity = Number(inboundQuantity || 0);
+  const parsedAdjustmentQuantity = Number(adjustmentQuantity || 0);
+  const parsedDeductionQuantity = Number(deductionQuantity || 0);
+  const hasAnyChange = parsedInboundQuantity > 0 || parsedAdjustmentQuantity > 0 || parsedDeductionQuantity > 0;
+
   const nextStock = useMemo(() => {
-    if (!parsedQuantity) return currentStock;
-    if (mode === "입고") return currentStock + parsedQuantity;
-    if (mode === "차감") return Math.max(0, currentStock - parsedQuantity);
-    return parsedQuantity;
-  }, [currentStock, mode, parsedQuantity]);
+    let next = currentStock;
+    if (parsedInboundQuantity > 0) next += parsedInboundQuantity;
+    if (parsedDeductionQuantity > 0) next = Math.max(0, next - parsedDeductionQuantity);
+    if (parsedAdjustmentQuantity > 0) next = parsedAdjustmentQuantity;
+    return next;
+  }, [currentStock, parsedInboundQuantity, parsedAdjustmentQuantity, parsedDeductionQuantity]);
 
   const handleApply = () => {
-    if (!parsedQuantity || parsedQuantity < 0) return;
-    onApply({ type: mode, quantity: parsedQuantity, memo: memo.trim() });
+    if (!hasAnyChange) return;
+    onApply({
+      inboundQuantity: parsedInboundQuantity,
+      adjustmentQuantity: parsedAdjustmentQuantity,
+      deductionQuantity: parsedDeductionQuantity,
+      memo: memo.trim(),
+    });
     onClose();
   };
 
@@ -73,7 +90,7 @@ export default function InventoryEditor({
       <ModalHeader
         titleId="inventory-editor-title"
         title="재고 수정"
-        description="입고, 차감, 보정 기준으로 재고를 수정하는 화면입니다."
+        description="입고, 보정, 차감 수량을 한 번에 입력해 재고를 수정하는 화면입니다."
         onClose={onClose}
       />
 
@@ -89,33 +106,41 @@ export default function InventoryEditor({
           </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-3 gap-2">
-          {(["입고", "차감", "보정"] as InventoryMode[]).map((item) => {
-            const active = item === mode;
-            return (
-              <button
-                key={item}
-                type="button"
-                onClick={() => setMode(item)}
-                className={`rounded-xl px-3 py-2 text-sm font-medium ${active ? "bg-stone-900 text-white" : "border border-stone-300 bg-white text-stone-700"}`}
-              >
-                {item}
-              </button>
-            );
-          })}
-        </div>
-
         <div className="mt-4 space-y-3">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-stone-700">수량</label>
-            <input
-              type="number"
-              min={0}
-              value={quantity}
-              onChange={(event) => setQuantity(event.target.value)}
-              placeholder={mode === "보정" ? "최종 재고 수량 입력" : "수량 입력"}
-              className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-stone-500"
-            />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-stone-700">입고 수량</label>
+              <input
+                type="number"
+                min={0}
+                value={inboundQuantity}
+                onChange={(event) => setInboundQuantity(event.target.value)}
+                placeholder="입고 수량 입력"
+                className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-stone-500"
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm font-medium text-stone-700">보정 수량</label>
+              <input
+                type="number"
+                min={0}
+                value={adjustmentQuantity}
+                onChange={(event) => setAdjustmentQuantity(event.target.value)}
+                placeholder="최종 재고 수량"
+                className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-stone-500"
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm font-medium text-stone-700">차감 수량</label>
+              <input
+                type="number"
+                min={0}
+                value={deductionQuantity}
+                onChange={(event) => setDeductionQuantity(event.target.value)}
+                placeholder="차감 수량 입력"
+                className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-stone-500"
+              />
+            </div>
           </div>
           <div>
             <label className="mb-2 block text-sm font-medium text-stone-700">메모</label>
@@ -146,7 +171,7 @@ export default function InventoryEditor({
               logs.slice(0, 3).map((item) => (
                 <div key={item.id} className="rounded-2xl border border-stone-200 bg-white p-3 text-sm">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="font-medium text-stone-900">{item.type} {item.delta > 0 ? `+${item.delta}` : item.delta}</span>
+                    <span className="font-medium text-stone-900">{item.summary}</span>
                     <span className="text-xs text-stone-500">{item.time}</span>
                   </div>
                   <div className="mt-1 text-xs text-stone-500">{item.user}</div>
@@ -174,7 +199,7 @@ export default function InventoryEditor({
             type="button"
             onClick={handleApply}
             className="flex-1 rounded-2xl bg-stone-900 px-4 py-3 text-sm font-medium text-white disabled:opacity-50"
-            disabled={!parsedQuantity && mode !== "보정"}
+            disabled={!hasAnyChange}
           >
             적용
           </button>

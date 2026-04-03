@@ -54,6 +54,7 @@ export function useWorkOrder() {
   );
   const currentRole = currentUser.role;
   const isAdmin = currentRole === "관리자";
+  const canCreateWorkOrder = currentRole !== "입고/검수";
   const permissionTargetUser = useMemo(
     () => users.find((user) => user.id === permissionTargetUserId) ?? users[0],
     [users, permissionTargetUserId],
@@ -131,6 +132,7 @@ export function useWorkOrder() {
   };
 
   const handleCreateWorkOrder = () => {
+    if (!canCreateWorkOrder) return;
     const newWorkOrder = createNewWorkOrder(workOrders.length + 1, {
       managerName: currentUser.name,
       managerId: currentUser.id,
@@ -159,10 +161,28 @@ export function useWorkOrder() {
     }
   };
 
-  const handleInventoryApply = ({ type, quantity, memo }: { type: InventoryLog["type"]; quantity: number; memo: string }) => {
-    setWorkOrders((prev) => applyInventoryAdjustment(prev, selectedWorkOrder.id, { type, quantity }));
+  const handleInventoryApply = ({
+    inboundQuantity,
+    adjustmentQuantity,
+    deductionQuantity,
+    memo,
+  }: {
+    inboundQuantity: number;
+    adjustmentQuantity: number;
+    deductionQuantity: number;
+    memo: string;
+  }) => {
+    const changes = [
+      ...(inboundQuantity > 0 ? [{ type: "입고" as const, quantity: inboundQuantity }] : []),
+      ...(adjustmentQuantity > 0 ? [{ type: "보정" as const, quantity: adjustmentQuantity }] : []),
+      ...(deductionQuantity > 0 ? [{ type: "차감" as const, quantity: deductionQuantity }] : []),
+    ];
+
+    if (changes.length === 0) return;
+
+    setWorkOrders((prev) => applyInventoryAdjustment(prev, selectedWorkOrder.id, { changes }));
     setHistoryLogs((prev) => [
-      createInventoryHistoryLog(currentUser.name, selectedWorkOrder.id, { type, quantity, memo }),
+      createInventoryHistoryLog(currentUser.name, selectedWorkOrder.id, { changes, memo }),
       ...prev,
     ]);
   };
@@ -251,6 +271,7 @@ export function useWorkOrder() {
     currentUser,
     currentRole,
     isAdmin,
+    canCreateWorkOrder,
     canSeeProductionSections,
     canSeeCostSections,
     canEditInventory,

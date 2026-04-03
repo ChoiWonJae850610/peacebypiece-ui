@@ -1,4 +1,4 @@
-import type { Attachment, InventoryLog, RoleType, WorkOrder, WorkflowAction } from "@/types/workorder";
+import type { Attachment, InventoryChange, RoleType, WorkOrder, WorkflowAction } from "@/types/workorder";
 
 export function createNewWorkOrder(nextIndex: number, payload: {
   managerName: string;
@@ -38,15 +38,17 @@ export function updateWorkflowState(workOrders: WorkOrder[], workOrderId: string
 export function applyInventoryAdjustment(
   workOrders: WorkOrder[],
   workOrderId: string,
-  payload: { type: InventoryLog["type"]; quantity: number },
+  payload: { changes: InventoryChange[] },
 ) {
   return workOrders.map((item) => {
     if (item.id !== workOrderId) return item;
-    const nextInventory = payload.type === "입고"
-      ? item.inventoryQuantity + payload.quantity
-      : payload.type === "차감"
-        ? Math.max(0, item.inventoryQuantity - payload.quantity)
-        : payload.quantity;
+
+    let nextInventory = item.inventoryQuantity;
+    for (const change of payload.changes) {
+      if (change.type === "입고") nextInventory += change.quantity;
+      else if (change.type === "차감") nextInventory = Math.max(0, nextInventory - change.quantity);
+      else nextInventory = change.quantity;
+    }
 
     return {
       ...item,

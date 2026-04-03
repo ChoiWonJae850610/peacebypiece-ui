@@ -1,4 +1,4 @@
-import type { HistoryFilter, HistoryLog, InventoryLog } from "@/types/workorder";
+import type { HistoryFilter, HistoryLog, InventoryChange, InventoryLog } from "@/types/workorder";
 import type { RoleType } from "@/types/permission";
 
 export function nowLabel() {
@@ -74,18 +74,23 @@ export function createStatusHistoryLog(user: string, workOrderId: string, from: 
 export function createInventoryHistoryLog(
   user: string,
   workOrderId: string,
-  payload: { type: InventoryLog["type"]; quantity: number; memo?: string },
+  payload: { changes: InventoryChange[]; memo?: string },
 ) {
-  const quantityLabel = payload.type === "보정" ? `보정 ${payload.quantity}장 반영` : `${payload.type} ${payload.quantity}장 반영`;
+  const activeChanges = payload.changes.filter((item) => item.quantity > 0);
+  const detailLines = activeChanges.map((item) => ({
+    label: item.type,
+    value: item.type === "보정" ? `${item.quantity}장으로 보정` : `${item.quantity}장 반영`,
+  }));
+
   return createHistoryLog({
-    action: payload.type === "보정" ? "재고 보정" : payload.type,
+    action: "재고 수정",
     message: "재고 상태가 변경되었습니다.",
     user,
     workOrderId,
     category: "inventory",
-    tone: payload.type === "차감" ? "rose" : payload.type === "보정" ? "amber" : "emerald",
+    tone: activeChanges.some((item) => item.type === "차감") ? "rose" : activeChanges.some((item) => item.type === "보정") ? "amber" : "emerald",
     detailLines: [
-      { label: "변경", value: quantityLabel },
+      ...detailLines,
       ...(payload.memo?.trim() ? [{ label: "메모", value: payload.memo.trim() }] : []),
     ],
   });
@@ -125,23 +130,45 @@ export function filterHistoryLogs(
   return scopedHistoryLogs.filter((item) => item.category === "inventory" || item.category === "attachment");
 }
 
-function extractDelta(log: HistoryLog) {
-  const detailValue = log.detailLines?.find((item) => item.label === "변경")?.value ?? log.message;
-  const matched = detailValue.match(/(\d+)장/);
-  const quantity = matched ? Number(matched[1]) : 0;
-  if (detailValue.includes("차감")) return -quantity;
-  return quantity;
+function parseInventoryChanges(log: HistoryLog): InventoryChange[] {
+  const changes: InventoryChange[] = [];
+  for (const detail of log.detailLines ?? []) {
+    if (detail.label !== "입고" && detail.label !== "차감" && detail.label !== "보정") continue;
+    const matched = detail.value.match(/(\d+)장/);
+    const quantity = matched ? Number(matched[1]) : 0;
+    if (quantity > 0) changes.push({ type: detail.label, quantity });
+  }
+  return changes;
+}
+
+function summarizeInventoryChanges(changes: InventoryChange[]) {
+  if (changes.length === 0) return "재고 수정";
+  return changes
+    .map((item) => `${item.type} ${item.type === "보정" ? item.quantity : item.quantity}` + '장')
+    .join(" / ");
+}
+
+function extractDelta(changes: InventoryChange[]) {
+  return changes.reduce((acc, item) => {
+    if (item.type === "입고") return acc + item.quantity;
+    if (item.type === "차감") return acc - item.quantity;
+    return acc;
+  }, 0);
 }
 
 export function toInventoryLogs(scopedHistoryLogs: HistoryLog[]): InventoryLog[] {
   return scopedHistoryLogs
     .filter((item) => item.category === "inventory")
-    .map((item) => ({
-      id: item.id,
-      type: item.action.includes("입고") ? "입고" : item.action.includes("보정") ? "보정" : "차감",
-      delta: extractDelta(item),
-      memo: item.detailLines?.map((detail) => `${detail.label ? `${detail.label}: ` : ""}${detail.value}`).join(" / ") ?? item.message,
-      user: item.user,
-      time: item.time,
-    }));
+    .map((item) => {
+      const changes = parseInventoryChanges(item);
+      return {
+        id: item.id,
+        summary: summarizeInventoryChanges(changes),
+        delta: extractDelta(changes),
+        memo: item.detailLines?.map((detail) => `${detail.label ? `${detail.label}: ` : ""}${detail.value}`).join(" / ") ?? item.message,
+        user: item.user,
+        time: item.time,
+        changes,
+      };
+    });
 }

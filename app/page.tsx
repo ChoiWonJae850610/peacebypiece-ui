@@ -46,6 +46,7 @@ export default function Home() {
     currentUser,
     currentRole,
     isAdmin,
+    canCreateWorkOrder,
     canSeeProductionSections,
     canSeeCostSections,
     canEditInventory,
@@ -90,6 +91,7 @@ export default function Home() {
           workflowStateById={workflowStateById}
           onSelect={handleSelectWorkOrder}
           onCreate={handleCreateWorkOrder}
+          canCreate={canCreateWorkOrder}
         />
 
         <div className="grid min-h-screen w-full grid-cols-1 md:grid-cols-12">
@@ -101,6 +103,7 @@ export default function Home() {
               workflowStateById={workflowStateById}
               onSelect={handleSelectWorkOrder}
               onCreate={handleCreateWorkOrder}
+              canCreate={canCreateWorkOrder}
             />
           </aside>
 

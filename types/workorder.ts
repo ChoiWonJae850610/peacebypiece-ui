@@ -85,13 +85,19 @@ export type HistoryLog = {
   transition?: HistoryTransition | null;
 };
 
+export type InventoryChange = {
+  type: "입고" | "차감" | "보정";
+  quantity: number;
+};
+
 export type InventoryLog = {
   id: string;
-  type: "입고" | "차감" | "보정";
+  summary: string;
   delta: number;
   memo: string;
   user: string;
   time: string;
+  changes: InventoryChange[];
 };
 
 export type { Material, UserProfile, WorkflowAction, WorkflowState, DisplayStage, HistoryFilter, HistoryTone, RoleType };

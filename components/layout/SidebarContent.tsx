@@ -10,6 +10,7 @@ type Props = {
   workflowStateById: Record<string, string>;
   onSelect: (id: string) => void;
   onCreate: () => void;
+  canCreate: boolean;
 };
 
 export default function SidebarContent({
@@ -19,19 +20,22 @@ export default function SidebarContent({
   workflowStateById,
   onSelect,
   onCreate,
+  canCreate,
 }: Props) {
   return (
     <div className="flex h-full flex-col">
       <div className="border-b border-stone-200 p-4">
         <div className="text-lg font-semibold text-stone-900">PeacebyPiece v{version}</div>
         <div className="mt-1 text-xs text-stone-500">작업지시서 목록</div>
-        <button
-          type="button"
-          onClick={onCreate}
-          className="mt-4 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white"
-        >
-          새 작업 추가
-        </button>
+        {canCreate ? (
+          <button
+            type="button"
+            onClick={onCreate}
+            className="mt-4 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white"
+          >
+            새 작업 추가
+          </button>
+        ) : null}
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
         <div className="space-y-3">

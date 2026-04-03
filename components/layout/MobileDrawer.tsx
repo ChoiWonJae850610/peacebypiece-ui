@@ -13,6 +13,7 @@ type Props = {
   workflowStateById: Record<string, string>;
   onSelect: (id: string) => void;
   onCreate: () => void;
+  canCreate: boolean;
 };
 
 export default function MobileDrawer({
@@ -23,6 +24,7 @@ export default function MobileDrawer({
   workflowStateById,
   onSelect,
   onCreate,
+  canCreate,
 }: Props) {
   const drawerRef = useRef<HTMLDivElement | null>(null);
 
@@ -57,16 +59,18 @@ export default function MobileDrawer({
               닫기
             </button>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              onCreate();
-              onClose();
-            }}
-            className="mt-3 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white"
-          >
-            새 작업 추가
-          </button>
+          {canCreate ? (
+            <button
+              type="button"
+              onClick={() => {
+                onCreate();
+                onClose();
+              }}
+              className="mt-3 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white"
+            >
+              새 작업 추가
+            </button>
+          ) : null}
         </div>
         <div className="h-[calc(100%-84px)] overflow-y-auto px-4 py-4">
           <div className="space-y-3">
