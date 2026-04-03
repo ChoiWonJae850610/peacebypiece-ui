@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useRef } from "react";
+import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import WorkOrderListCard from "@/components/workorder/list/WorkOrderListCard";
 import type { WorkOrderListItem } from "@/types/workorder";
 
@@ -23,35 +24,29 @@ export default function MobileDrawer({
   onSelect,
   onCreate,
 }: Props) {
-  useEffect(() => {
-    if (!open) return;
-    const original = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.style.overflow = original;
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open, onClose]);
+  const drawerRef = useRef<HTMLDivElement | null>(null);
+
+  useModalEnvironment({
+    open,
+    dialogRef: drawerRef,
+    onClose,
+  });
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-40 md:hidden" aria-modal="true" role="dialog">
+    <div className="fixed inset-0 z-40 md:hidden" aria-modal="true" role="dialog" aria-labelledby="mobile-drawer-title">
       <button
         type="button"
         aria-label="드로어 닫기"
         className="absolute inset-0 bg-stone-900/35"
         onClick={onClose}
       />
-      <div className="absolute left-0 top-0 h-full w-[86%] max-w-sm overflow-hidden rounded-r-3xl bg-white shadow-2xl">
+      <div ref={drawerRef} tabIndex={-1} className="absolute left-0 top-0 h-full w-[86%] max-w-sm overflow-hidden rounded-r-3xl bg-white shadow-2xl focus:outline-none">
         <div className="sticky top-0 z-10 border-b border-stone-200 bg-white px-4 pb-3 pt-[max(env(safe-area-inset-top),1rem)]">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <div className="text-sm font-semibold text-stone-900">작업 목록</div>
+              <div id="mobile-drawer-title" className="text-sm font-semibold text-stone-900">작업 목록</div>
               <div className="text-[11px] text-stone-500">모바일 드로어</div>
             </div>
             <button
