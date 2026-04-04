@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent, type RefObject } from "react";
+import type { ChangeEvent, ReactNode, RefObject } from "react";
 import { getStageTone } from "@/lib/constants/workflow";
 import type { DisplayStage } from "@/types/workflow";
 import { toDisplayValue } from "@/lib/utils/display";
@@ -31,10 +31,41 @@ function MobileDataCard({ title, rows }: { title: string; rows: [string, RowValu
   );
 }
 
+function SectionHeader({
+  title,
+  summary,
+  open,
+  onToggle,
+  rightSlot,
+}: {
+  title: string;
+  summary: string;
+  open: boolean;
+  onToggle: () => void;
+  rightSlot?: ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex min-w-0 flex-1 items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-left transition hover:border-stone-300 hover:bg-stone-50"
+      >
+        <div className="min-w-0">
+          <div className="text-sm font-semibold text-stone-900 md:text-base">{title}</div>
+          <div className="mt-1 truncate text-xs text-stone-500 md:text-sm">{summary}</div>
+        </div>
+        <span className="shrink-0 rounded-full border border-stone-200 px-2.5 py-1 text-xs font-medium text-stone-600">{open ? "접기" : "펼치기"}</span>
+      </button>
+      {rightSlot ? <div className="hidden shrink-0 md:block">{rightSlot}</div> : null}
+    </div>
+  );
+}
+
 function DataSection({
   title,
   buttonLabel,
-  mobileOpen,
+  open,
   onToggle,
   summaryText,
   mobileItems,
@@ -43,7 +74,7 @@ function DataSection({
 }: {
   title: string;
   buttonLabel: string;
-  mobileOpen: boolean;
+  open: boolean;
   onToggle: () => void;
   summaryText: string;
   mobileItems: { key: string; title: string; rows: [string, RowValue][] }[];
@@ -52,49 +83,44 @@ function DataSection({
 }) {
   return (
     <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-base font-semibold">{title}</h3>
-        <button type="button" className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm">{buttonLabel}</button>
-      </div>
-      <div className="mt-4 md:hidden">
-        <button type="button" onClick={onToggle} className="w-full rounded-2xl border border-stone-200 bg-white px-4 py-4 text-left">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <div className="text-sm font-semibold text-stone-900">{title}</div>
-              <div className="mt-1 text-xs text-stone-500">{summaryText}</div>
-            </div>
-            <span className="shrink-0 text-lg text-stone-500">{mobileOpen ? "−" : "+"}</span>
+      <SectionHeader
+        title={title}
+        summary={summaryText}
+        open={open}
+        onToggle={onToggle}
+        rightSlot={<button type="button" className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm">{buttonLabel}</button>}
+      />
+      {open ? (
+        <>
+          <div className="mt-3 md:hidden">
+            <button type="button" className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm">{buttonLabel}</button>
           </div>
-        </button>
-        {mobileOpen && (
-          <div className="mt-3 space-y-3">
+          <div className="mt-4 space-y-3 md:hidden">
             {mobileItems.map((item) => <MobileDataCard key={item.key} title={item.title} rows={item.rows} />)}
           </div>
-        )}
-      </div>
-      <div className="mt-4 hidden overflow-x-auto md:block">
-        <table className="min-w-full text-left text-sm">
-          <thead className="text-stone-500">
-            <tr className="border-b border-stone-200">
-              {desktopHeaders.map((header) => <th key={header} className="px-2 py-3">{header}</th>)}
-            </tr>
-          </thead>
-          <tbody>
-            {desktopRows.map((row, rowIndex) => (
-              <tr key={rowIndex} className="border-b border-stone-100">
-                {row.map((cell, cellIndex) => (
-                  <td key={`${rowIndex}-${cellIndex}`} className={`px-2 py-3 ${cellIndex === row.length - 2 ? "font-medium" : ""}`}>{toDisplayValue(cell)}</td>
+          <div className="mt-4 hidden overflow-x-auto md:block">
+            <table className="min-w-full text-left text-sm">
+              <thead className="text-stone-500">
+                <tr className="border-b border-stone-200">
+                  {desktopHeaders.map((header) => <th key={header} className="px-2 py-3">{header}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {desktopRows.map((row, rowIndex) => (
+                  <tr key={rowIndex} className="border-b border-stone-100">
+                    {row.map((cell, cellIndex) => (
+                      <td key={`${rowIndex}-${cellIndex}`} className={`px-2 py-3 ${cellIndex === row.length - 2 ? "font-medium" : ""}`}>{toDisplayValue(cell)}</td>
+                    ))}
+                  </tr>
                 ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+              </tbody>
+            </table>
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }
-
-
 
 function StageProgressBar({ stages, currentStage }: { stages: DisplayStage[]; currentStage: DisplayStage }) {
   const currentIndex = stages.indexOf(currentStage);
@@ -172,6 +198,8 @@ function BasicInfoSection({
   canEditInventory,
   currentUserName,
   currentRole,
+  open,
+  onToggle,
   onOpenInventoryEditor,
 }: {
   workOrder: WorkOrder;
@@ -179,14 +207,10 @@ function BasicInfoSection({
   canEditInventory: boolean;
   currentUserName: string;
   currentRole: string;
+  open: boolean;
+  onToggle: () => void;
   onOpenInventoryEditor: () => void;
 }) {
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    setOpen(false);
-  }, [workOrder.id]);
-
   const infoItems: [string, RowValue, string?][] = [
     ["대분류", workOrder.category1],
     ["중분류", workOrder.category2],
@@ -200,53 +224,48 @@ function BasicInfoSection({
     ["재고 수량", `${currentInventoryQuantity}장`, "text-base font-semibold tabular-nums"],
   ];
 
+  const summary = [workOrder.category1, workOrder.category2, workOrder.vendor, `${workOrder.quantity}장`, workOrder.dueDate]
+    .filter(Boolean)
+    .join(" · ");
+
   return (
     <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
-      <div className="flex items-center justify-between gap-3 md:hidden">
-        <button type="button" onClick={() => setOpen((prev) => !prev)} className="w-full rounded-2xl border border-stone-200 bg-white px-4 py-4 text-left">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <div className="text-sm font-semibold text-stone-900">기본 정보</div>
-              <div className="mt-1 text-xs text-stone-500">{workOrder.category1} · {workOrder.vendor} · {workOrder.quantity}장</div>
-            </div>
-            <span className="shrink-0 text-lg text-stone-500">{open ? "−" : "+"}</span>
+      <SectionHeader title="기본 정보" summary={summary} open={open} onToggle={onToggle} />
+      {open ? (
+        <div className="mt-4">
+          <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
+            {infoItems.map(([label, value, valueClassName]) => (
+              <Info key={label} label={label} value={value} valueClassName={valueClassName} />
+            ))}
           </div>
-        </button>
-      </div>
-
-      <div className="hidden md:block">
-        <h3 className="text-base font-semibold">기본 정보</h3>
-      </div>
-
-      <div className={`${open ? "mt-4" : "hidden"} md:mt-4 md:block`}>
-        <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
-          {infoItems.map(([label, value, valueClassName]) => (
-            <Info key={label} label={label} value={value} valueClassName={valueClassName} />
-          ))}
+          {canEditInventory && (
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-3">
+              <div>
+                <div className="text-sm font-semibold text-stone-900">재고 수정</div>
+                <div className="mt-1 text-xs text-stone-500">수정자: {currentUserName} · {currentRole}</div>
+              </div>
+              <button type="button" onClick={onOpenInventoryEditor} className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white">재고 수정</button>
+            </div>
+          )}
         </div>
-        {canEditInventory && (
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-3">
-            <div>
-              <div className="text-sm font-semibold text-stone-900">재고 수정</div>
-              <div className="mt-1 text-xs text-stone-500">수정자: {currentUserName} · {currentRole}</div>
-            </div>
-            <button type="button" onClick={onOpenInventoryEditor} className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white">재고 수정</button>
-          </div>
-        )}
-      </div>
+      ) : null}
     </div>
   );
 }
 
 function MaterialSection({ materials, open, onToggle }: { materials: Material[]; open: boolean; onToggle: () => void }) {
   const total = materials.reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
+  const summary = materials.length > 0
+    ? `${materials[0].name}${materials.length > 1 ? ` 외 ${materials.length - 1}개` : ""} · 총 ${total.toLocaleString()}원`
+    : "등록된 원단/부자재가 없습니다.";
+
   return (
     <DataSection
       title="원단 / 부자재 구성"
       buttonLabel="항목 추가"
-      mobileOpen={open}
+      open={open}
       onToggle={onToggle}
-      summaryText={`총 ${materials.length}개 / ${total.toLocaleString()}원`}
+      summaryText={summary}
       mobileItems={materials.map((item) => ({
         key: `${item.name}-${item.vendor}`,
         title: `${item.type} · ${item.name}`,
@@ -260,13 +279,17 @@ function MaterialSection({ materials, open, onToggle }: { materials: Material[];
 
 function OutsourcingSection({ outsourcing, open, onToggle }: { outsourcing: Outsourcing[]; open: boolean; onToggle: () => void }) {
   const total = outsourcing.reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
+  const summary = outsourcing.length > 0
+    ? `${outsourcing[0].process}${outsourcing.length > 1 ? ` 외 ${outsourcing.length - 1}개` : ""} · 총 ${total.toLocaleString()}원`
+    : "등록된 외주 공정이 없습니다.";
+
   return (
     <DataSection
       title="외주 공정"
       buttonLabel="공정 추가"
-      mobileOpen={open}
+      open={open}
       onToggle={onToggle}
-      summaryText={`총 ${outsourcing.length}개 / ${total.toLocaleString()}원`}
+      summaryText={summary}
       mobileItems={outsourcing.map((item) => ({
         key: `${item.process}-${item.vendor}`,
         title: item.process,
@@ -275,65 +298,6 @@ function OutsourcingSection({ outsourcing, open, onToggle }: { outsourcing: Outs
       desktopHeaders={["공정", "외주처", "수량", "단가기준", "단가", "금액", "상태"]}
       desktopRows={outsourcing.map((item) => [item.process, item.vendor, String(item.quantity), item.unitType, `${(item.unitCost ?? 0).toLocaleString()}원`, `${(item.totalCost ?? 0).toLocaleString()}원`, item.status])}
     />
-  );
-}
-
-function AttachmentSection({
-  canSeeAttachments,
-  attachments,
-  attachmentInputRef,
-  onOpenAttachmentPicker,
-  onAttachmentFiles,
-  onPreviewAttachment,
-  onDeleteAttachment,
-  canDeleteAttachment,
-}: {
-  canSeeAttachments: boolean;
-  attachments: Attachment[];
-  attachmentInputRef: RefObject<HTMLInputElement | null>;
-  onOpenAttachmentPicker: () => void;
-  onAttachmentFiles: (event: ChangeEvent<HTMLInputElement>) => void;
-  onPreviewAttachment: (attachmentId: string) => void;
-  onDeleteAttachment: (attachmentId: string) => void;
-  canDeleteAttachment: (attachment: Attachment | null) => boolean;
-}) {
-  if (!canSeeAttachments) return null;
-  return (
-    <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className="text-base font-semibold">첨부파일</h3>
-          <div className="mt-1 text-xs text-stone-500">이미지와 PDF를 작업지시서에 함께 보관합니다.</div>
-        </div>
-        <button type="button" onClick={onOpenAttachmentPicker} className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800">+ 추가</button>
-      </div>
-      <input ref={attachmentInputRef} type="file" accept="image/*,.pdf,application/pdf" multiple className="hidden" onChange={onAttachmentFiles} />
-      {attachments.length > 0 ? (
-        <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
-          {attachments.map((attachment) => (
-            <div key={attachment.id} className="overflow-hidden rounded-2xl border border-stone-200 bg-white">
-              <button type="button" onClick={() => onPreviewAttachment(attachment.id)} className="block w-full text-left">
-                <div className="aspect-[4/3] overflow-hidden bg-stone-100">
-                  {attachment.type === "image" ? <img src={attachment.url} alt={attachment.name} className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center bg-rose-50 text-sm font-semibold text-rose-700">PDF 미리보기</div>}
-                </div>
-                <div className="p-3">
-                  <div className="truncate text-sm font-medium text-stone-900">{attachment.name}</div>
-                  <div className="mt-1 text-xs text-stone-500">{attachment.type === "image" ? "이미지" : "PDF"}</div>
-                  <div className="mt-1 text-[11px] text-stone-400">업로드: {attachment.ownerName ?? "기존 첨부"}</div>
-                </div>
-              </button>
-              {canDeleteAttachment(attachment) && (
-                <div className="border-t border-stone-200 p-3">
-                  <button type="button" onClick={() => onDeleteAttachment(attachment.id)} className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700">삭제</button>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="mt-4 rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-10 text-center text-sm text-stone-500">아직 첨부파일이 없습니다.</div>
-      )}
-    </div>
   );
 }
 
@@ -347,19 +311,14 @@ export default function WorkOrderDetail({
   currentRole,
   canEditInventory,
   canSeeProductionSections,
-  canSeeAttachments,
+  basicInfoOpen,
   materialOpen,
   outsourcingOpen,
-  attachmentInputRef,
   onSave,
   onOpenInventoryEditor,
+  onToggleBasicInfo,
   onToggleMaterial,
   onToggleOutsourcing,
-  onOpenAttachmentPicker,
-  onAttachmentFiles,
-  onPreviewAttachment,
-  onDeleteAttachment,
-  canDeleteAttachment,
   visibleStages,
   currentDisplayStage,
   actions,
@@ -374,19 +333,14 @@ export default function WorkOrderDetail({
   currentRole: string;
   canEditInventory: boolean;
   canSeeProductionSections: boolean;
-  canSeeAttachments: boolean;
+  basicInfoOpen: boolean;
   materialOpen: boolean;
   outsourcingOpen: boolean;
-  attachmentInputRef: RefObject<HTMLInputElement | null>;
   onSave: () => void;
   onOpenInventoryEditor: () => void;
+  onToggleBasicInfo: () => void;
   onToggleMaterial: () => void;
   onToggleOutsourcing: () => void;
-  onOpenAttachmentPicker: () => void;
-  onAttachmentFiles: (event: ChangeEvent<HTMLInputElement>) => void;
-  onPreviewAttachment: (attachmentId: string) => void;
-  onDeleteAttachment: (attachmentId: string) => void;
-  canDeleteAttachment: (attachment: Attachment | null) => boolean;
   visibleStages: DisplayStage[];
   currentDisplayStage: DisplayStage;
   actions: WorkflowAction[];
@@ -432,11 +386,13 @@ export default function WorkOrderDetail({
           canEditInventory={canEditInventory}
           currentUserName={currentUserName}
           currentRole={currentRole}
+          open={basicInfoOpen}
+          onToggle={onToggleBasicInfo}
           onOpenInventoryEditor={onOpenInventoryEditor}
         />
 
-        {canSeeProductionSections && <MaterialSection materials={workOrder.materials ?? []} open={materialOpen} onToggle={onToggleMaterial} />}
-        {canSeeProductionSections && <OutsourcingSection outsourcing={workOrder.outsourcing ?? []} open={outsourcingOpen} onToggle={onToggleOutsourcing} />}
+        {canSeeProductionSections ? <MaterialSection materials={workOrder.materials ?? []} open={materialOpen} onToggle={onToggleMaterial} /> : null}
+        {canSeeProductionSections ? <OutsourcingSection outsourcing={workOrder.outsourcing ?? []} open={outsourcingOpen} onToggle={onToggleOutsourcing} /> : null}
 
         <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
           <h3 className="text-base font-semibold">작업 메모</h3>

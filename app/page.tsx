@@ -19,6 +19,8 @@ export default function Home() {
     attachmentInputRef,
     drawerOpen,
     setDrawerOpen,
+    basicInfoOpen,
+    setBasicInfoOpen,
     materialOpen,
     setMaterialOpen,
     outsourcingOpen,
@@ -119,19 +121,14 @@ export default function Home() {
               currentRole={currentRole}
               canEditInventory={canEditInventory}
               canSeeProductionSections={canSeeProductionSections}
-              canSeeAttachments={canSeeAttachments}
+              basicInfoOpen={basicInfoOpen}
               materialOpen={materialOpen}
               outsourcingOpen={outsourcingOpen}
-              attachmentInputRef={attachmentInputRef}
               onSave={() => handleSave()}
               onOpenInventoryEditor={() => setInventoryEditorOpen(true)}
+              onToggleBasicInfo={() => setBasicInfoOpen((prev) => !prev)}
               onToggleMaterial={() => setMaterialOpen((prev) => !prev)}
               onToggleOutsourcing={() => setOutsourcingOpen((prev) => !prev)}
-              onOpenAttachmentPicker={handleOpenAttachmentPicker}
-              onAttachmentFiles={handleAttachmentFiles}
-              onPreviewAttachment={setAttachmentPreviewId}
-              onDeleteAttachment={handleDeleteAttachment}
-              canDeleteAttachment={canDeleteAttachment}
               visibleStages={visibleStages}
               currentDisplayStage={currentDisplayStage}
               actions={availableActions}
@@ -141,12 +138,7 @@ export default function Home() {
 
           <aside className="min-w-0 border-t border-stone-200 bg-stone-50 p-4 md:col-span-3 md:border-l md:border-t-0 md:p-6">
             <WorkOrderSidePanel
-              canSeeAttachments={canSeeAttachments}
               attachments={selectedWorkOrder.attachments ?? []}
-              onOpenAttachmentPicker={handleOpenAttachmentPicker}
-              onPreviewAttachment={setAttachmentPreviewId}
-              onDeleteAttachment={handleDeleteAttachment}
-              canDeleteAttachment={canDeleteAttachment}
               canSeeCostSections={canSeeCostSections}
               fabricTotal={fabricTotal}
               subsidiaryTotal={subsidiaryTotal}

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { DEFAULT_SELECTED_WORK_ORDER_ID, MOCK_HISTORY_LOGS, MOCK_WORK_ORDERS } from "@/lib/data/mock/workorders";
 import { DEFAULT_CURRENT_USER_ID, DEFAULT_PERMISSION_TARGET_ID, MOCK_USERS } from "@/lib/data/mock/users";
 import { ROLE_TEMPLATES } from "@/lib/constants/roles";
+import { SECTION_PREFERENCES_STORAGE_KEY } from "@/lib/constants/app";
 import { canDeleteAttachmentByUser } from "@/lib/permissions/attachments";
 import { VISIBLE_STAGES } from "@/lib/constants/workflow";
 import {
@@ -28,6 +29,7 @@ export function useWorkOrder() {
   const attachmentInputRef = useRef<HTMLInputElement | null>(null);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [basicInfoOpen, setBasicInfoOpen] = useState(false);
   const [materialOpen, setMaterialOpen] = useState(false);
   const [outsourcingOpen, setOutsourcingOpen] = useState(false);
   const [inventoryEditorOpen, setInventoryEditorOpen] = useState(false);
@@ -100,9 +102,25 @@ export function useWorkOrder() {
   const inventoryLogs: InventoryLog[] = useMemo(() => toInventoryLogs(scopedHistoryLogs), [scopedHistoryLogs]);
 
   useEffect(() => {
-    setMaterialOpen(false);
-    setOutsourcingOpen(false);
-  }, [selectedWorkOrder.id]);
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem(SECTION_PREFERENCES_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { basicInfoOpen?: boolean; materialOpen?: boolean; outsourcingOpen?: boolean };
+      setBasicInfoOpen(Boolean(parsed.basicInfoOpen));
+      setMaterialOpen(Boolean(parsed.materialOpen));
+      setOutsourcingOpen(Boolean(parsed.outsourcingOpen));
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(SECTION_PREFERENCES_STORAGE_KEY, JSON.stringify({
+      basicInfoOpen,
+      materialOpen,
+      outsourcingOpen,
+    }));
+  }, [basicInfoOpen, materialOpen, outsourcingOpen]);
 
   const availableActions = useMemo(
     () => getAvailableWorkflowActions({
@@ -249,6 +267,8 @@ export function useWorkOrder() {
     attachmentInputRef,
     drawerOpen,
     setDrawerOpen,
+    basicInfoOpen,
+    setBasicInfoOpen,
     materialOpen,
     setMaterialOpen,
     outsourcingOpen,
