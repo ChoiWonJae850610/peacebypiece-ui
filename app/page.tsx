@@ -148,6 +148,8 @@ export default function Home() {
               onPreviewAttachment={setAttachmentPreviewId}
               onDeleteAttachment={handleDeleteAttachment}
               canDeleteAttachment={canDeleteAttachment}
+              visibleStages={visibleStages}
+              currentDisplayStage={currentDisplayStage}
             />
           </section>
 

@@ -1,5 +1,6 @@
 import type { ChangeEvent, RefObject } from "react";
 import { getStageTone } from "@/lib/constants/workflow";
+import type { DisplayStage } from "@/types/workflow";
 import { toDisplayValue } from "@/lib/utils/display";
 import type { Attachment, Material, Outsourcing, WorkOrder, WorkflowState } from "@/types/workorder";
 
@@ -88,6 +89,63 @@ function DataSection({
             ))}
           </tbody>
         </table>
+      </div>
+    </div>
+  );
+}
+
+
+
+function StageProgressBar({ stages, currentStage }: { stages: DisplayStage[]; currentStage: DisplayStage }) {
+  const currentIndex = stages.indexOf(currentStage);
+
+  return (
+    <div className="mt-5 rounded-2xl border border-stone-200 bg-stone-50 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <div className="text-sm font-semibold text-stone-900">진행 단계</div>
+          <div className="mt-1 text-xs text-stone-500">현재 상태를 한눈에 확인하는 가로 단계 바입니다.</div>
+        </div>
+        <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${getStageTone(currentStage)}`}>{currentStage}</span>
+      </div>
+      <div className="mt-4 overflow-x-auto pb-1">
+        <div className="flex min-w-max items-start gap-3">
+          {stages.map((stage, index) => {
+            const isCurrent = stage === currentStage;
+            const isDone = currentIndex >= 0 && index < currentIndex;
+            const isUpcoming = !isCurrent && !isDone;
+
+            return (
+              <div key={stage} className="flex items-center gap-3">
+                <div className="flex min-w-[96px] flex-col items-center text-center">
+                  <div
+                    className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold ${
+                      isCurrent
+                        ? "bg-stone-900 text-white"
+                        : isDone
+                        ? "bg-emerald-600 text-white"
+                        : "bg-stone-200 text-stone-500"
+                    }`}
+                  >
+                    {isDone ? "✓" : index + 1}
+                  </div>
+                  <div
+                    className={`mt-2 text-xs leading-5 ${
+                      isCurrent
+                        ? "font-semibold text-stone-900"
+                        : isUpcoming
+                        ? "text-stone-500"
+                        : "text-stone-700"
+                    }`}
+                  >
+                    {stage}
+                  </div>
+                </div>
+                {index < stages.length - 1 ? <div className="mt-4 h-px w-8 shrink-0 bg-stone-300" /> : null}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -215,6 +273,8 @@ export default function WorkOrderDetail({
   onPreviewAttachment,
   onDeleteAttachment,
   canDeleteAttachment,
+  visibleStages,
+  currentDisplayStage,
 }: {
   workOrder: WorkOrder;
   currentWorkflowState: WorkflowState;
@@ -238,6 +298,8 @@ export default function WorkOrderDetail({
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;
   canDeleteAttachment: (attachment: Attachment | null) => boolean;
+  visibleStages: DisplayStage[];
+  currentDisplayStage: DisplayStage;
 }) {
   return (
     <div className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm md:p-6">
@@ -257,6 +319,8 @@ export default function WorkOrderDetail({
           <button type="button" onClick={onSave} className="flex-1 rounded-xl bg-stone-900 px-4 py-2 text-sm text-white sm:flex-none">즉시 저장</button>
         </div>
       </div>
+
+      <StageProgressBar stages={visibleStages} currentStage={currentDisplayStage} />
 
       <div className="mt-6 grid gap-6">
         <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
