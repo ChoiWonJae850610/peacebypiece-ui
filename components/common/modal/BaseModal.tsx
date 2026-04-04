@@ -22,7 +22,7 @@ export default function BaseModal({
   children,
   maxWidthClassName = "md:max-w-2xl",
   panelClassName = "",
-  overlayClassName = "bg-black/50",
+  overlayClassName = "bg-stone-950/55 md:bg-stone-950/50",
   closeOnBackdrop = true,
 }: BaseModalProps) {
   if (!open) return null;
@@ -37,13 +37,13 @@ export default function BaseModal({
   return (
     <div className="fixed inset-0 z-[90]" role="dialog" aria-modal="true" aria-labelledby={titleId}>
       <div className={`absolute inset-0 pbp-overlay-enter ${overlayClassName}`} aria-hidden="true" />
-      <div className="absolute inset-0" onClick={handleBackdropClick}>
+      <div className="absolute inset-0 md:p-6" onClick={handleBackdropClick}>
         <div
           ref={dialogRef}
           tabIndex={-1}
           className={[
-            "absolute inset-x-0 bottom-0 top-auto flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden rounded-t-[1.75rem] bg-white shadow-2xl outline-none overscroll-contain pbp-mobile-sheet-enter",
-            "border border-stone-200 md:left-1/2 md:top-1/2 md:bottom-auto md:h-auto md:max-h-[92vh] md:w-full md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl",
+            "absolute inset-x-0 bottom-0 top-auto mt-auto flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden rounded-t-[1.75rem] bg-white shadow-2xl outline-none overscroll-contain pbp-mobile-sheet-enter",
+            "border border-stone-200 md:left-1/2 md:top-1/2 md:bottom-auto md:h-auto md:max-h-[min(92dvh,960px)] md:w-full md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl",
             maxWidthClassName,
             panelClassName,
           ].join(" ").trim()}

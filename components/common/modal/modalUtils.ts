@@ -6,7 +6,9 @@ type LockState = {
   count: number;
   scrollY: number;
   previousHtmlOverflow: string;
+  previousHtmlOverscrollBehavior: string;
   previousBodyOverflow: string;
+  previousBodyOverscrollBehavior: string;
   previousBodyPosition: string;
   previousBodyTop: string;
   previousBodyWidth: string;
@@ -17,7 +19,9 @@ const modalLockState: LockState = {
   count: 0,
   scrollY: 0,
   previousHtmlOverflow: "",
+  previousHtmlOverscrollBehavior: "",
   previousBodyOverflow: "",
+  previousBodyOverscrollBehavior: "",
   previousBodyPosition: "",
   previousBodyTop: "",
   previousBodyWidth: "",
@@ -39,18 +43,23 @@ function lockDocumentScroll() {
   if (modalLockState.count === 0) {
     modalLockState.scrollY = window.scrollY;
     modalLockState.previousHtmlOverflow = html.style.overflow;
+    modalLockState.previousHtmlOverscrollBehavior = html.style.overscrollBehavior;
     modalLockState.previousBodyOverflow = body.style.overflow;
+    modalLockState.previousBodyOverscrollBehavior = body.style.overscrollBehavior;
     modalLockState.previousBodyPosition = body.style.position;
     modalLockState.previousBodyTop = body.style.top;
     modalLockState.previousBodyWidth = body.style.width;
     modalLockState.previousBodyTouchAction = body.style.touchAction;
 
     html.style.overflow = "hidden";
+    html.style.overscrollBehavior = "none";
     body.style.overflow = "hidden";
+    body.style.overscrollBehavior = "none";
     body.style.position = "fixed";
     body.style.top = `-${modalLockState.scrollY}px`;
     body.style.width = "100%";
     body.style.touchAction = "none";
+    body.dataset.pbpOverlayOpen = "true";
   }
 
   modalLockState.count += 1;
@@ -64,11 +73,14 @@ function unlockDocumentScroll() {
   if (modalLockState.count > 0) return;
 
   html.style.overflow = modalLockState.previousHtmlOverflow;
+  html.style.overscrollBehavior = modalLockState.previousHtmlOverscrollBehavior;
   body.style.overflow = modalLockState.previousBodyOverflow;
+  body.style.overscrollBehavior = modalLockState.previousBodyOverscrollBehavior;
   body.style.position = modalLockState.previousBodyPosition;
   body.style.top = modalLockState.previousBodyTop;
   body.style.width = modalLockState.previousBodyWidth;
   body.style.touchAction = modalLockState.previousBodyTouchAction;
+  delete body.dataset.pbpOverlayOpen;
   window.scrollTo(0, modalLockState.scrollY);
 }
 
@@ -92,7 +104,7 @@ export function useModalEnvironment({
     const focusTimer = window.setTimeout(() => {
       const focusables = getFocusableElements(dialog);
       (focusables[0] ?? dialog).focus();
-    }, 10);
+    }, 24);
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
