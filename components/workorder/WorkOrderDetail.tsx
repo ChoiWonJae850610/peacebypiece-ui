@@ -2,7 +2,7 @@ import type { ChangeEvent, RefObject } from "react";
 import { getStageTone } from "@/lib/constants/workflow";
 import type { DisplayStage } from "@/types/workflow";
 import { toDisplayValue } from "@/lib/utils/display";
-import type { Attachment, Material, Outsourcing, WorkOrder, WorkflowState } from "@/types/workorder";
+import type { Attachment, Material, Outsourcing, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
 
 type RowValue = string | number | null | undefined;
 
@@ -275,6 +275,8 @@ export default function WorkOrderDetail({
   canDeleteAttachment,
   visibleStages,
   currentDisplayStage,
+  actions,
+  onAction,
 }: {
   workOrder: WorkOrder;
   currentWorkflowState: WorkflowState;
@@ -300,6 +302,8 @@ export default function WorkOrderDetail({
   canDeleteAttachment: (attachment: Attachment | null) => boolean;
   visibleStages: DisplayStage[];
   currentDisplayStage: DisplayStage;
+  actions: WorkflowAction[];
+  onAction: (action: WorkflowAction) => void;
 }) {
   return (
     <div className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm md:p-6">
@@ -321,6 +325,32 @@ export default function WorkOrderDetail({
       </div>
 
       <StageProgressBar stages={visibleStages} currentStage={currentDisplayStage} />
+
+      <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="text-sm font-semibold text-stone-900">현재 가능한 액션</div>
+            <div className="mt-1 text-xs text-stone-500">현재 상태와 권한 기준으로 실행 가능한 작업만 표시됩니다.</div>
+          </div>
+          <span className={`rounded-full px-3 py-1 text-xs font-medium ${getStageTone(currentWorkflowState)}`}>{currentWorkflowState}</span>
+        </div>
+        {actions.length > 0 ? (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {actions.map((action) => (
+              <button
+                key={`${currentWorkflowState}-${action.nextState}-${action.label}`}
+                type="button"
+                onClick={() => onAction(action)}
+                className="rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800 transition hover:border-stone-400 hover:bg-stone-100"
+              >
+                {action.label}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-4 rounded-xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm text-stone-500">현재 사용자 권한에서는 실행 가능한 액션이 없습니다.</div>
+        )}
+      </div>
 
       <div className="mt-6 grid gap-6">
         <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
@@ -355,17 +385,6 @@ export default function WorkOrderDetail({
           <h3 className="text-base font-semibold">작업 메모</h3>
           <div className="mt-3 rounded-2xl border border-stone-200 bg-white p-4 text-sm text-stone-700">{workOrder.memo}</div>
         </div>
-
-        <AttachmentSection
-          canSeeAttachments={canSeeAttachments}
-          attachments={workOrder.attachments ?? []}
-          attachmentInputRef={attachmentInputRef}
-          onOpenAttachmentPicker={onOpenAttachmentPicker}
-          onAttachmentFiles={onAttachmentFiles}
-          onPreviewAttachment={onPreviewAttachment}
-          onDeleteAttachment={onDeleteAttachment}
-          canDeleteAttachment={canDeleteAttachment}
-        />
       </div>
     </div>
   );

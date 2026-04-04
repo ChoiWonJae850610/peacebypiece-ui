@@ -150,16 +150,19 @@ export default function Home() {
               canDeleteAttachment={canDeleteAttachment}
               visibleStages={visibleStages}
               currentDisplayStage={currentDisplayStage}
+              actions={availableActions}
+              onAction={handleWorkflowAction}
             />
           </section>
 
           <aside className="min-w-0 border-t border-stone-200 bg-stone-50 p-4 md:col-span-3 md:border-l md:border-t-0 md:p-6">
             <WorkOrderSidePanel
-              currentState={currentWorkflowState}
-              currentDisplayStage={currentDisplayStage}
-              visibleStages={visibleStages}
-              actions={availableActions}
-              onAction={handleWorkflowAction}
+              canSeeAttachments={canSeeAttachments}
+              attachments={selectedWorkOrder.attachments ?? []}
+              onOpenAttachmentPicker={handleOpenAttachmentPicker}
+              onPreviewAttachment={setAttachmentPreviewId}
+              onDeleteAttachment={handleDeleteAttachment}
+              canDeleteAttachment={canDeleteAttachment}
               canSeeCostSections={canSeeCostSections}
               fabricTotal={fabricTotal}
               subsidiaryTotal={subsidiaryTotal}

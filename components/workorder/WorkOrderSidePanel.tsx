@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { getDisplayStageDescription, getStageTone } from "@/lib/constants/workflow";
 import { toDisplayValue } from "@/lib/utils/display";
-import type { DisplayStage, HistoryFilter, HistoryLog, HistoryTone, Outsourcing, WorkflowAction, WorkflowState } from "@/types/workorder";
+import type { Attachment, HistoryFilter, HistoryLog, HistoryTone, Outsourcing } from "@/types/workorder";
 
 function SummaryRow({ label, value, strong = false }: { label: string; value: string | number | null | undefined; strong?: boolean }) {
   return (
@@ -69,12 +68,69 @@ function HistoryPreviewItem({ item }: { item: HistoryLog }) {
   );
 }
 
+function AttachmentPanel({
+  canSeeAttachments,
+  attachments,
+  onOpenAttachmentPicker,
+  onPreviewAttachment,
+  onDeleteAttachment,
+  canDeleteAttachment,
+}: {
+  canSeeAttachments: boolean;
+  attachments: Attachment[];
+  onOpenAttachmentPicker: () => void;
+  onPreviewAttachment: (attachmentId: string) => void;
+  onDeleteAttachment: (attachmentId: string) => void;
+  canDeleteAttachment: (attachment: Attachment | null) => boolean;
+}) {
+  if (!canSeeAttachments) return null;
+
+  return (
+    <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-base font-semibold">첨부파일</h3>
+          <div className="mt-1 text-xs text-stone-500">우측 패널에서 바로 확인하고 관리할 수 있습니다.</div>
+        </div>
+        <button type="button" onClick={onOpenAttachmentPicker} className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800">+ 추가</button>
+      </div>
+      {attachments.length > 0 ? (
+        <div className="mt-4 space-y-3">
+          {attachments.map((attachment) => (
+            <div key={attachment.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
+              <button type="button" onClick={() => onPreviewAttachment(attachment.id)} className="flex w-full items-center gap-3 text-left">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white">
+                  {attachment.type === "image" ? (
+                    <img src={attachment.url} alt={attachment.name} className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-xs font-semibold text-rose-700">PDF</span>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-medium text-stone-900">{attachment.name}</div>
+                  <div className="mt-1 text-xs text-stone-500">{attachment.ownerName ?? "기존 첨부"}</div>
+                </div>
+              </button>
+              {canDeleteAttachment(attachment) && (
+                <button type="button" onClick={() => onDeleteAttachment(attachment.id)} className="mt-3 w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700">삭제</button>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="mt-4 rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-10 text-center text-sm text-stone-500">아직 첨부파일이 없습니다.</div>
+      )}
+    </div>
+  );
+}
+
 export default function WorkOrderSidePanel({
-  currentState,
-  currentDisplayStage,
-  visibleStages,
-  actions,
-  onAction,
+  canSeeAttachments,
+  attachments,
+  onOpenAttachmentPicker,
+  onPreviewAttachment,
+  onDeleteAttachment,
+  canDeleteAttachment,
   canSeeCostSections,
   fabricTotal,
   subsidiaryTotal,
@@ -90,11 +146,12 @@ export default function WorkOrderSidePanel({
   onHistoryFilterChange,
   onOpenInventoryLogModal,
 }: {
-  currentState: WorkflowState;
-  currentDisplayStage: DisplayStage;
-  visibleStages: DisplayStage[];
-  actions: WorkflowAction[];
-  onAction: (action: WorkflowAction) => void;
+  canSeeAttachments: boolean;
+  attachments: Attachment[];
+  onOpenAttachmentPicker: () => void;
+  onPreviewAttachment: (attachmentId: string) => void;
+  onDeleteAttachment: (attachmentId: string) => void;
+  canDeleteAttachment: (attachment: Attachment | null) => boolean;
   canSeeCostSections: boolean;
   fabricTotal: number;
   subsidiaryTotal: number;
@@ -110,58 +167,16 @@ export default function WorkOrderSidePanel({
   onHistoryFilterChange: (filter: HistoryFilter) => void;
   onOpenInventoryLogModal: () => void;
 }) {
-  const currentIndex = visibleStages.indexOf(currentDisplayStage);
-
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h3 className="text-base font-semibold">진행 단계</h3>
-            <p className="mt-1 text-xs text-stone-500">상태와 가능한 행동을 함께 표시</p>
-          </div>
-          <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${getStageTone(currentState)}`}>{currentState}</span>
-        </div>
-        <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-4">
-          <div className="text-xs font-medium text-stone-500">상태 안내</div>
-          <div className="mt-2 text-sm leading-6 text-stone-800">테스트용 사용자 전환과 권한 변경은 상단 우측 환경설정에서 조정합니다.</div>
-        </div>
-        <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-4">
-          <div className="text-xs font-medium text-stone-500">현재 상태 설명</div>
-          <div className="mt-2 text-sm leading-6 text-stone-800">{getDisplayStageDescription(currentDisplayStage)}</div>
-        </div>
-        <div className="mt-4 space-y-3">
-          {visibleStages.map((stage, index) => {
-            const isCurrent = stage === currentDisplayStage;
-            const isDone = currentIndex >= 0 && index < currentIndex;
-            const isUpcoming = !isCurrent && !isDone;
-            return (
-              <div key={stage} className="flex items-center gap-3">
-                <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${isCurrent ? "bg-stone-900 text-white" : isDone ? "bg-emerald-600 text-white" : "bg-stone-200 text-stone-500"}`}>{isDone ? "✓" : index + 1}</div>
-                <div className="min-w-0 flex-1">
-                  <div className={`text-sm ${isCurrent ? "font-semibold text-stone-900" : isUpcoming ? "text-stone-500" : "text-stone-700"}`}>{stage}</div>
-                  {isCurrent && <div className="mt-1 text-xs text-stone-500">현재 단계</div>}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        <div className="mt-5 border-t border-stone-200 pt-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="text-sm font-semibold text-stone-900">가능한 액션</div>
-            <span className="text-xs text-stone-500">권한 기준</span>
-          </div>
-          {actions.length > 0 ? (
-            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-1 xl:grid-cols-2">
-              {actions.map((action) => (
-                <button key={`${currentState}-${action.nextState}-${action.label}`} type="button" onClick={() => onAction(action)} className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 transition hover:border-stone-400 hover:bg-stone-50">{action.label}</button>
-              ))}
-            </div>
-          ) : (
-            <div className="mt-3 rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-sm text-stone-500">현재 사용자 권한에서는 실행 가능한 액션이 없습니다.</div>
-          )}
-        </div>
-      </div>
+      <AttachmentPanel
+        canSeeAttachments={canSeeAttachments}
+        attachments={attachments}
+        onOpenAttachmentPicker={onOpenAttachmentPicker}
+        onPreviewAttachment={onPreviewAttachment}
+        onDeleteAttachment={onDeleteAttachment}
+        canDeleteAttachment={canDeleteAttachment}
+      />
 
       {canSeeCostSections && (
         <>
