@@ -318,39 +318,25 @@ export default function WorkOrderDetail({
             {lastSavedAt && <div className="text-xs text-stone-500">마지막 저장: {lastSavedAt}</div>}
           </div>
         </div>
-        <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+        <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:justify-end">
+          {actions.length > 0 ? (
+            actions.map((action) => (
+              <button
+                key={`${currentWorkflowState}-${action.nextState}-${action.label}`}
+                type="button"
+                onClick={() => onAction(action)}
+                className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800 transition hover:border-stone-400 hover:bg-stone-100 sm:flex-none"
+              >
+                {action.label}
+              </button>
+            ))
+          ) : null}
           <button type="button" className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm sm:flex-none">복제</button>
           <button type="button" onClick={onSave} className="flex-1 rounded-xl bg-stone-900 px-4 py-2 text-sm text-white sm:flex-none">즉시 저장</button>
         </div>
       </div>
 
       <StageProgressBar stages={visibleStages} currentStage={currentDisplayStage} />
-
-      <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div className="text-sm font-semibold text-stone-900">현재 가능한 액션</div>
-            <div className="mt-1 text-xs text-stone-500">현재 상태와 권한 기준으로 실행 가능한 작업만 표시됩니다.</div>
-          </div>
-          <span className={`rounded-full px-3 py-1 text-xs font-medium ${getStageTone(currentWorkflowState)}`}>{currentWorkflowState}</span>
-        </div>
-        {actions.length > 0 ? (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {actions.map((action) => (
-              <button
-                key={`${currentWorkflowState}-${action.nextState}-${action.label}`}
-                type="button"
-                onClick={() => onAction(action)}
-                className="rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800 transition hover:border-stone-400 hover:bg-stone-100"
-              >
-                {action.label}
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div className="mt-4 rounded-xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm text-stone-500">현재 사용자 권한에서는 실행 가능한 액션이 없습니다.</div>
-        )}
-      </div>
 
       <div className="mt-6 grid gap-6">
         <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
