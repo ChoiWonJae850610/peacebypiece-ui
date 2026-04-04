@@ -2,15 +2,74 @@
 
 import { useEffect, type RefObject } from "react";
 
+type LockState = {
+  count: number;
+  scrollY: number;
+  previousHtmlOverflow: string;
+  previousBodyOverflow: string;
+  previousBodyPosition: string;
+  previousBodyTop: string;
+  previousBodyWidth: string;
+  previousBodyTouchAction: string;
+};
+
+const modalLockState: LockState = {
+  count: 0,
+  scrollY: 0,
+  previousHtmlOverflow: "",
+  previousBodyOverflow: "",
+  previousBodyPosition: "",
+  previousBodyTop: "",
+  previousBodyWidth: "",
+  previousBodyTouchAction: "",
+};
+
 export function getFocusableElements(container: HTMLElement) {
   return Array.from(
     container.querySelectorAll<HTMLElement>(
       'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
     ),
-  ).filter(
-    (element) =>
-      !element.hasAttribute("inert") && !element.getAttribute("aria-hidden"),
-  );
+  ).filter((element) => !element.hasAttribute("inert") && !element.getAttribute("aria-hidden"));
+}
+
+function lockDocumentScroll() {
+  const html = document.documentElement;
+  const body = document.body;
+
+  if (modalLockState.count === 0) {
+    modalLockState.scrollY = window.scrollY;
+    modalLockState.previousHtmlOverflow = html.style.overflow;
+    modalLockState.previousBodyOverflow = body.style.overflow;
+    modalLockState.previousBodyPosition = body.style.position;
+    modalLockState.previousBodyTop = body.style.top;
+    modalLockState.previousBodyWidth = body.style.width;
+    modalLockState.previousBodyTouchAction = body.style.touchAction;
+
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    body.style.position = "fixed";
+    body.style.top = `-${modalLockState.scrollY}px`;
+    body.style.width = "100%";
+    body.style.touchAction = "none";
+  }
+
+  modalLockState.count += 1;
+}
+
+function unlockDocumentScroll() {
+  const html = document.documentElement;
+  const body = document.body;
+
+  modalLockState.count = Math.max(0, modalLockState.count - 1);
+  if (modalLockState.count > 0) return;
+
+  html.style.overflow = modalLockState.previousHtmlOverflow;
+  body.style.overflow = modalLockState.previousBodyOverflow;
+  body.style.position = modalLockState.previousBodyPosition;
+  body.style.top = modalLockState.previousBodyTop;
+  body.style.width = modalLockState.previousBodyWidth;
+  body.style.touchAction = modalLockState.previousBodyTouchAction;
+  window.scrollTo(0, modalLockState.scrollY);
 }
 
 export function useModalEnvironment({
@@ -27,27 +86,13 @@ export function useModalEnvironment({
 
     const dialog = dialogRef.current;
     const previousActive = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const html = document.documentElement;
-    const body = document.body;
-    const scrollY = window.scrollY;
-    const previousHtmlOverflow = html.style.overflow;
-    const previousBodyOverflow = body.style.overflow;
-    const previousBodyPosition = body.style.position;
-    const previousBodyTop = body.style.top;
-    const previousBodyWidth = body.style.width;
-    const previousBodyTouchAction = body.style.touchAction;
 
-    html.style.overflow = "hidden";
-    body.style.overflow = "hidden";
-    body.style.position = "fixed";
-    body.style.top = `-${scrollY}px`;
-    body.style.width = "100%";
-    body.style.touchAction = "none";
+    lockDocumentScroll();
 
     const focusTimer = window.setTimeout(() => {
       const focusables = getFocusableElements(dialog);
       (focusables[0] ?? dialog).focus();
-    }, 0);
+    }, 10);
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -84,13 +129,7 @@ export function useModalEnvironment({
     return () => {
       window.clearTimeout(focusTimer);
       document.removeEventListener("keydown", handleKeyDown);
-      html.style.overflow = previousHtmlOverflow;
-      body.style.overflow = previousBodyOverflow;
-      body.style.position = previousBodyPosition;
-      body.style.top = previousBodyTop;
-      body.style.width = previousBodyWidth;
-      body.style.touchAction = previousBodyTouchAction;
-      window.scrollTo(0, scrollY);
+      unlockDocumentScroll();
       previousActive?.focus();
     };
   }, [open, dialogRef, onClose]);

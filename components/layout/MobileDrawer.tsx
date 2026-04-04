@@ -38,13 +38,12 @@ export default function MobileDrawer({
 
   return (
     <div className="fixed inset-0 z-40 md:hidden" aria-modal="true" role="dialog" aria-labelledby="mobile-drawer-title">
-      <button
-        type="button"
-        aria-label="드로어 닫기"
-        className="absolute inset-0 bg-stone-900/35"
-        onClick={onClose}
-      />
-      <div ref={drawerRef} tabIndex={-1} className="absolute left-0 top-0 h-full w-[86%] max-w-sm overflow-hidden rounded-r-3xl bg-white shadow-2xl focus:outline-none">
+      <button type="button" aria-label="드로어 닫기" className="absolute inset-0 bg-stone-950/45 pbp-overlay-enter" onClick={onClose} />
+      <div
+        ref={drawerRef}
+        tabIndex={-1}
+        className="absolute left-0 top-0 h-full w-[86%] max-w-sm overflow-hidden rounded-r-3xl bg-white shadow-2xl focus:outline-none pbp-drawer-enter"
+      >
         <div className="sticky top-0 z-10 border-b border-stone-200 bg-white px-4 pb-3 pt-[max(env(safe-area-inset-top),1rem)]">
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -66,7 +65,7 @@ export default function MobileDrawer({
                 onCreate();
                 onClose();
               }}
-              className="mt-3 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white"
+              className="mt-3 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white active:scale-[0.99]"
             >
               새 작업 추가
             </button>
