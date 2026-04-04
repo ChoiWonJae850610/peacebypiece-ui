@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { DEFAULT_SELECTED_WORK_ORDER_ID, MOCK_HISTORY_LOGS, MOCK_WORK_ORDERS } from "@/lib/data/mock/workorders";
 import { DEFAULT_CURRENT_USER_ID, DEFAULT_PERMISSION_TARGET_ID, MOCK_USERS } from "@/lib/data/mock/users";
 import { ROLE_TEMPLATES } from "@/lib/constants/roles";
@@ -28,8 +28,8 @@ export function useWorkOrder() {
   const attachmentInputRef = useRef<HTMLInputElement | null>(null);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [materialOpen, setMaterialOpen] = useState(true);
-  const [outsourcingOpen, setOutsourcingOpen] = useState(true);
+  const [materialOpen, setMaterialOpen] = useState(false);
+  const [outsourcingOpen, setOutsourcingOpen] = useState(false);
   const [inventoryEditorOpen, setInventoryEditorOpen] = useState(false);
   const [permissionModalOpen, setPermissionModalOpen] = useState(false);
   const [inventoryLogModalOpen, setInventoryLogModalOpen] = useState(false);
@@ -98,6 +98,11 @@ export function useWorkOrder() {
   );
 
   const inventoryLogs: InventoryLog[] = useMemo(() => toInventoryLogs(scopedHistoryLogs), [scopedHistoryLogs]);
+
+  useEffect(() => {
+    setMaterialOpen(false);
+    setOutsourcingOpen(false);
+  }, [selectedWorkOrder.id]);
 
   const availableActions = useMemo(
     () => getAvailableWorkflowActions({

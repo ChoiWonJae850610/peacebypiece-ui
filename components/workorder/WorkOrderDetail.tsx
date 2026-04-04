@@ -1,4 +1,4 @@
-import type { ChangeEvent, RefObject } from "react";
+import { useEffect, useState, type ChangeEvent, type RefObject } from "react";
 import { getStageTone } from "@/lib/constants/workflow";
 import type { DisplayStage } from "@/types/workflow";
 import { toDisplayValue } from "@/lib/utils/display";
@@ -161,6 +161,78 @@ function StageProgressBar({ stages, currentStage }: { stages: DisplayStage[]; cu
             );
           })}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function BasicInfoSection({
+  workOrder,
+  currentInventoryQuantity,
+  canEditInventory,
+  currentUserName,
+  currentRole,
+  onOpenInventoryEditor,
+}: {
+  workOrder: WorkOrder;
+  currentInventoryQuantity: number;
+  canEditInventory: boolean;
+  currentUserName: string;
+  currentRole: string;
+  onOpenInventoryEditor: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [workOrder.id]);
+
+  const infoItems: [string, RowValue, string?][] = [
+    ["대분류", workOrder.category1],
+    ["중분류", workOrder.category2],
+    ["소분류", workOrder.category3],
+    ["시즌", workOrder.season],
+    ["우선순위", workOrder.priority],
+    ["공장", workOrder.vendor],
+    ["담당자", workOrder.manager],
+    ["납기일", workOrder.dueDate],
+    ["발주 수량", `${workOrder.quantity}장`, "text-base font-semibold tabular-nums"],
+    ["재고 수량", `${currentInventoryQuantity}장`, "text-base font-semibold tabular-nums"],
+  ];
+
+  return (
+    <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
+      <div className="flex items-center justify-between gap-3 md:hidden">
+        <button type="button" onClick={() => setOpen((prev) => !prev)} className="w-full rounded-2xl border border-stone-200 bg-white px-4 py-4 text-left">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="text-sm font-semibold text-stone-900">기본 정보</div>
+              <div className="mt-1 text-xs text-stone-500">{workOrder.category1} · {workOrder.vendor} · {workOrder.quantity}장</div>
+            </div>
+            <span className="shrink-0 text-lg text-stone-500">{open ? "−" : "+"}</span>
+          </div>
+        </button>
+      </div>
+
+      <div className="hidden md:block">
+        <h3 className="text-base font-semibold">기본 정보</h3>
+      </div>
+
+      <div className={`${open ? "mt-4" : "hidden"} md:mt-4 md:block`}>
+        <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
+          {infoItems.map(([label, value, valueClassName]) => (
+            <Info key={label} label={label} value={value} valueClassName={valueClassName} />
+          ))}
+        </div>
+        {canEditInventory && (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-3">
+            <div>
+              <div className="text-sm font-semibold text-stone-900">재고 수정</div>
+              <div className="mt-1 text-xs text-stone-500">수정자: {currentUserName} · {currentRole}</div>
+            </div>
+            <button type="button" onClick={onOpenInventoryEditor} className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white">재고 수정</button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -354,30 +426,14 @@ export default function WorkOrderDetail({
       <StageProgressBar stages={visibleStages} currentStage={currentDisplayStage} />
 
       <div className="mt-6 grid gap-6">
-        <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
-          <h3 className="text-base font-semibold">기본 분류</h3>
-          <div className="mt-4 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
-            <Info label="대분류" value={workOrder.category1} />
-            <Info label="중분류" value={workOrder.category2} />
-            <Info label="소분류" value={workOrder.category3} />
-            <Info label="시즌" value={workOrder.season} />
-            <Info label="우선순위" value={workOrder.priority} />
-            <Info label="공장" value={workOrder.vendor} />
-            <Info label="담당자" value={workOrder.manager} />
-            <Info label="납기일" value={workOrder.dueDate} />
-            <Info label="발주 수량" value={`${workOrder.quantity}장`} valueClassName="text-base font-semibold tabular-nums" />
-            <Info label="재고 수량" value={`${currentInventoryQuantity}장`} valueClassName="text-base font-semibold tabular-nums" />
-          </div>
-          {canEditInventory && (
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-3">
-              <div>
-                <div className="text-sm font-semibold text-stone-900">재고 수정</div>
-                <div className="mt-1 text-xs text-stone-500">수정자: {currentUserName} · {currentRole}</div>
-              </div>
-              <button type="button" onClick={onOpenInventoryEditor} className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white">재고 수정</button>
-            </div>
-          )}
-        </div>
+        <BasicInfoSection
+          workOrder={workOrder}
+          currentInventoryQuantity={currentInventoryQuantity}
+          canEditInventory={canEditInventory}
+          currentUserName={currentUserName}
+          currentRole={currentRole}
+          onOpenInventoryEditor={onOpenInventoryEditor}
+        />
 
         {canSeeProductionSections && <MaterialSection materials={workOrder.materials ?? []} open={materialOpen} onToggle={onToggleMaterial} />}
         {canSeeProductionSections && <OutsourcingSection outsourcing={workOrder.outsourcing ?? []} open={outsourcingOpen} onToggle={onToggleOutsourcing} />}
