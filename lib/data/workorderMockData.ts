@@ -55,14 +55,32 @@ function extractDeltaFromMessage(message: string) {
 export function mapHistoryToInventoryLogs(logs: HistoryLog[]): InventoryLog[] {
   return logs
     .filter((log) => log.category === "inventory")
-    .map((log) => ({
-      id: log.id,
-      type: log.action.includes("입고") ? "입고" : log.action.includes("보정") ? "보정" : "차감",
-      delta: extractDeltaFromMessage(log.message),
-      memo: log.message,
-      user: log.user,
-      time: log.time,
-    }));
+    .map((log) => {
+      const type = log.action.includes("입고")
+        ? "입고"
+        : log.action.includes("보정")
+        ? "보정"
+        : "차감";
+
+      const delta = extractDeltaFromMessage(log.message);
+
+      return {
+        id: log.id,
+        type,
+        delta,
+        memo: log.message,
+        user: log.user,
+        time: log.time,
+        summary: `${type} ${delta}`,
+        changes: [
+          {
+            type,
+            quantity: delta,
+            memo: log.message,
+          },
+        ],
+      };
+    });
 }
 
 function buildSvgDataUrl(label: string, bg: string, fg: string) {
