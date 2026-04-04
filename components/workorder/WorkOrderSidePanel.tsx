@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { getDisplayStageDescription, getStageTone } from "@/lib/constants/workflow";
-import { getPermissionSummary } from "@/lib/constants/roles";
 import { toDisplayValue } from "@/lib/utils/display";
-import type { DisplayStage, HistoryFilter, HistoryLog, HistoryTone, Outsourcing, UserProfile, WorkflowAction, WorkflowState } from "@/types/workorder";
+import type { DisplayStage, HistoryFilter, HistoryLog, HistoryTone, Outsourcing, WorkflowAction, WorkflowState } from "@/types/workorder";
 
 function SummaryRow({ label, value, strong = false }: { label: string; value: string | number | null | undefined; strong?: boolean }) {
   return (
@@ -71,10 +70,6 @@ function HistoryPreviewItem({ item }: { item: HistoryLog }) {
 }
 
 export default function WorkOrderSidePanel({
-  currentUser,
-  users,
-  onCurrentUserChange,
-  onOpenPermissions,
   currentState,
   currentDisplayStage,
   visibleStages,
@@ -95,10 +90,6 @@ export default function WorkOrderSidePanel({
   onHistoryFilterChange,
   onOpenInventoryLogModal,
 }: {
-  currentUser: UserProfile;
-  users: UserProfile[];
-  onCurrentUserChange: (userId: string) => void;
-  onOpenPermissions: () => void;
   currentState: WorkflowState;
   currentDisplayStage: DisplayStage;
   visibleStages: DisplayStage[];
@@ -132,21 +123,8 @@ export default function WorkOrderSidePanel({
           <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${getStageTone(currentState)}`}>{currentState}</span>
         </div>
         <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="text-xs font-medium text-stone-500">현재 사용자</div>
-            <button type="button" onClick={onOpenPermissions} className="rounded-full border border-stone-300 bg-white px-3 py-1 text-[11px] text-stone-700">권한 설정</button>
-          </div>
-          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3 md:grid-cols-1 xl:grid-cols-3">
-            {users.map((user) => {
-              const active = user.id === currentUser.id;
-              return (
-                <button key={user.id} type="button" onClick={() => onCurrentUserChange(user.id)} className={`rounded-xl px-3 py-3 text-left ${active ? "bg-stone-900 text-white" : "border border-stone-300 bg-white text-stone-700"}`}>
-                  <div className="text-xs font-semibold">{user.name}</div>
-                  <div className={`mt-1 text-[11px] ${active ? "text-stone-300" : "text-stone-500"}`}>{getPermissionSummary(user)}</div>
-                </button>
-              );
-            })}
-          </div>
+          <div className="text-xs font-medium text-stone-500">상태 안내</div>
+          <div className="mt-2 text-sm leading-6 text-stone-800">테스트용 사용자 전환과 권한 변경은 상단 우측 환경설정에서 조정합니다.</div>
         </div>
         <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-4">
           <div className="text-xs font-medium text-stone-500">현재 상태 설명</div>

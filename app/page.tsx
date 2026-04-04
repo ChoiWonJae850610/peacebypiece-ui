@@ -82,7 +82,7 @@ export default function Home() {
   return (
     <main className="min-h-screen overflow-x-hidden bg-stone-100 text-stone-900">
       <div ref={appShellRef}>
-        <MobileTopBar version={version} onOpen={() => setDrawerOpen(true)} />
+        <MobileTopBar version={version} onOpen={() => setDrawerOpen(true)} onOpenSettings={() => setPermissionModalOpen(true)} />
         <MobileDrawer
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
@@ -103,6 +103,7 @@ export default function Home() {
               workflowStateById={workflowStateById}
               onSelect={handleSelectWorkOrder}
               onCreate={handleCreateWorkOrder}
+              onOpenSettings={() => setPermissionModalOpen(true)}
               canCreate={canCreateWorkOrder}
             />
           </aside>
@@ -117,7 +118,7 @@ export default function Home() {
                 <span className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-cyan-800">state</span>
               </div>
               <div className="mt-3 space-y-1 text-xs text-cyan-900">
-                <div>1. 상단 버전이 v0.1.18로 표시되는지</div>
+                <div>1. 상단 버전이 v0.2.1로 표시되는지</div>
                 <div>2. 메뉴에서 작업 선택 시 드로어가 닫히는지</div>
                 <div>3. 우측 진행단계 카드가 상태/액션 구조로 유지되는지</div>
                 <div>4. 권한/사용자 변경 시 액션 버튼과 재고 수정 가능 여부가 달라지는지</div>
@@ -152,10 +153,6 @@ export default function Home() {
 
           <aside className="min-w-0 border-t border-stone-200 bg-stone-50 p-4 md:col-span-3 md:border-l md:border-t-0 md:p-6">
             <WorkOrderSidePanel
-              currentUser={currentUser}
-              users={users}
-              onCurrentUserChange={setCurrentUserId}
-              onOpenPermissions={() => setPermissionModalOpen(true)}
               currentState={currentWorkflowState}
               currentDisplayStage={currentDisplayStage}
               visibleStages={visibleStages}
@@ -210,6 +207,7 @@ export default function Home() {
         selectedUserId={permissionTargetUserId}
         onSelectedUserChange={setPermissionTargetUserId}
         onApplyRole={handleApplyRole}
+        onCurrentUserChange={setCurrentUserId}
       />
     </main>
   );

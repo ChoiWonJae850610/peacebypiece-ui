@@ -10,6 +10,7 @@ type Props = {
   workflowStateById: Record<string, string>;
   onSelect: (id: string) => void;
   onCreate: () => void;
+  onOpenSettings: () => void;
   canCreate: boolean;
 };
 
@@ -20,13 +21,26 @@ export default function SidebarContent({
   workflowStateById,
   onSelect,
   onCreate,
+  onOpenSettings,
   canCreate,
 }: Props) {
   return (
     <div className="flex h-full flex-col">
       <div className="border-b border-stone-200 p-4">
-        <div className="text-lg font-semibold text-stone-900">PeacebyPiece v{version}</div>
-        <div className="mt-1 text-xs text-stone-500">작업지시서 목록</div>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="text-lg font-semibold text-stone-900">PeacebyPiece v{version}</div>
+            <div className="mt-1 text-xs text-stone-500">작업지시서 목록</div>
+          </div>
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            aria-label="환경 설정 열기"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stone-300 bg-white text-base font-medium text-stone-700 shadow-sm transition hover:bg-stone-50"
+          >
+            ⚙️
+          </button>
+        </div>
         {canCreate ? (
           <button
             type="button"

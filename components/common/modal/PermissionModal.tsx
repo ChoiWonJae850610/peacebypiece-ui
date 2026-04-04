@@ -98,6 +98,7 @@ export default function PermissionModal({
   selectedUserId,
   onSelectedUserChange,
   onApplyRole,
+  onCurrentUserChange,
 }: {
   open: boolean;
   onClose: () => void;
@@ -106,6 +107,7 @@ export default function PermissionModal({
   selectedUserId: string;
   onSelectedUserChange: (id: string) => void;
   onApplyRole: (userId: string, role: RoleType) => void;
+  onCurrentUserChange: (userId: string) => void;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   useModalEnvironment({ open, dialogRef, onClose });
@@ -134,12 +136,34 @@ export default function PermissionModal({
     <BaseModal open={open} onClose={onClose} dialogRef={dialogRef} titleId="permission-modal-title" maxWidthClassName="md:max-w-2xl">
       <ModalHeader
         titleId="permission-modal-title"
-        title="권한 설정"
-        description="상세 권한 토글을 제거하고 역할 지정만 유지하는 구조로 정리했습니다."
+        title="환경 설정"
+        description="테스트용 사용자 전환과 역할 변경을 이 화면에서만 조정합니다."
         onClose={onClose}
       />
 
       <ModalBody>
+        <div className="mb-4 rounded-2xl border border-stone-200 bg-stone-50 p-4">
+          <div className="text-sm font-semibold text-stone-900">테스트 화면 기준 사용자</div>
+          <div className="mt-1 text-xs text-stone-500">실제 화면에서 보이는 권한과 액션을 빠르게 확인하기 위한 임시 설정입니다.</div>
+          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+            {users.map((user) => {
+              const active = user.id === currentUserId;
+              return (
+                <button
+                  key={`current-${user.id}`}
+                  type="button"
+                  onClick={() => onCurrentUserChange(user.id)}
+                  className={`rounded-2xl border px-4 py-3 text-left ${active ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white text-stone-900"}`}
+                >
+                  <div className="text-sm font-semibold">{user.name}</div>
+                  <div className={`mt-1 text-[11px] ${active ? "text-stone-300" : "text-stone-500"}`}>{inferRole(user)}</div>
+                  {active ? <div className="mt-2 text-[11px] text-stone-200">현재 화면 기준 사용자</div> : null}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="grid gap-3 md:grid-cols-[220px_minmax(0,1fr)]">
           <div className="space-y-2">
             {users.map((user) => {
