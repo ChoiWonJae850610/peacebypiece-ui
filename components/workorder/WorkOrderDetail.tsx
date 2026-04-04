@@ -98,28 +98,43 @@ function DataSection({
 
 function StageProgressBar({ stages, currentStage }: { stages: DisplayStage[]; currentStage: DisplayStage }) {
   const currentIndex = stages.indexOf(currentStage);
+  const previousStage = currentIndex > 0 ? stages[currentIndex - 1] : null;
+  const nextStage = currentIndex >= 0 && currentIndex < stages.length - 1 ? stages[currentIndex + 1] : null;
 
   return (
-    <div className="mt-5 rounded-2xl border border-stone-200 bg-stone-50 p-4">
+    <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-3 md:mt-5 md:p-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <div className="text-sm font-semibold text-stone-900">진행 단계</div>
-          <div className="mt-1 text-xs text-stone-500">현재 상태를 한눈에 확인하는 가로 단계 바입니다.</div>
+          <div className="text-xs font-semibold text-stone-900 md:text-sm">진행 단계</div>
+          <div className="mt-1 text-[11px] text-stone-500 md:text-xs">현재 상태를 중심으로 확인합니다.</div>
         </div>
-        <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${getStageTone(currentStage)}`}>{currentStage}</span>
+        <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium md:px-3 md:text-xs ${getStageTone(currentStage)}`}>{currentStage}</span>
       </div>
-      <div className="mt-4 overflow-x-auto pb-1">
-        <div className="flex min-w-max items-start gap-3">
+
+      <div className="mt-3 md:hidden">
+        <div className="rounded-2xl border border-stone-200 bg-white px-3 py-3">
+          <div className="flex items-center justify-between gap-2 text-[11px] text-stone-500">
+            <span className="min-w-0 flex-1 truncate text-left">{previousStage ?? "시작"}</span>
+            <span className="shrink-0">→</span>
+            <span className="rounded-full bg-stone-900 px-2.5 py-1 text-[11px] font-semibold text-white">{currentStage}</span>
+            <span className="shrink-0">→</span>
+            <span className="min-w-0 flex-1 truncate text-right">{nextStage ?? "완료"}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-3 hidden overflow-x-auto pb-1 md:block">
+        <div className="flex min-w-max items-center gap-2">
           {stages.map((stage, index) => {
             const isCurrent = stage === currentStage;
             const isDone = currentIndex >= 0 && index < currentIndex;
             const isUpcoming = !isCurrent && !isDone;
 
             return (
-              <div key={stage} className="flex items-center gap-3">
-                <div className="flex min-w-[96px] flex-col items-center text-center">
+              <div key={stage} className="flex items-center gap-2">
+                <div className="flex min-w-[82px] flex-col items-center text-center">
                   <div
-                    className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold ${
+                    className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-semibold ${
                       isCurrent
                         ? "bg-stone-900 text-white"
                         : isDone
@@ -130,7 +145,7 @@ function StageProgressBar({ stages, currentStage }: { stages: DisplayStage[]; cu
                     {isDone ? "✓" : index + 1}
                   </div>
                   <div
-                    className={`mt-2 text-xs leading-5 ${
+                    className={`mt-1.5 text-[11px] leading-4 ${
                       isCurrent
                         ? "font-semibold text-stone-900"
                         : isUpcoming
@@ -141,7 +156,7 @@ function StageProgressBar({ stages, currentStage }: { stages: DisplayStage[]; cu
                     {stage}
                   </div>
                 </div>
-                {index < stages.length - 1 ? <div className="mt-4 h-px w-8 shrink-0 bg-stone-300" /> : null}
+                {index < stages.length - 1 ? <div className="h-px w-6 shrink-0 bg-stone-300" /> : null}
               </div>
             );
           })}
