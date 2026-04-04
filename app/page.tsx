@@ -138,7 +138,12 @@ export default function Home() {
 
           <aside className="min-w-0 border-t border-stone-200 bg-stone-50 p-4 md:col-span-3 md:border-l md:border-t-0 md:p-6">
             <WorkOrderSidePanel
+              canSeeAttachments={canSeeAttachments}
               attachments={selectedWorkOrder.attachments ?? []}
+              onOpenAttachmentPicker={handleOpenAttachmentPicker}
+              onPreviewAttachment={setAttachmentPreviewId}
+              onDeleteAttachment={handleDeleteAttachment}
+              canDeleteAttachment={canDeleteAttachment}
               canSeeCostSections={canSeeCostSections}
               fabricTotal={fabricTotal}
               subsidiaryTotal={subsidiaryTotal}
