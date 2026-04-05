@@ -144,7 +144,7 @@ function EditableValue({
         onChange={(event) => onStartEdit(section, rowId, field, event.target.value)}
         onBlur={onCommit}
         onKeyDown={handleKeyDown}
-        className={`w-full rounded-lg border border-stone-300 bg-white px-2 py-1 text-sm text-stone-900 outline-none ring-0 focus:border-stone-400 ${alignRight ? "text-right" : "text-left"}`}
+        className={`h-9 w-full min-w-0 rounded-lg border border-stone-300 bg-white px-2.5 text-sm text-stone-900 outline-none ring-0 transition focus:border-stone-400 ${alignRight ? "text-right tabular-nums" : "text-left"}`}
       />
     );
   }
@@ -153,9 +153,9 @@ function EditableValue({
     <button
       type="button"
       onClick={() => onStartEdit(section, rowId, field, value)}
-      className={`w-full rounded-lg border border-transparent px-2 py-1 text-sm text-stone-900 transition hover:border-stone-200 hover:bg-stone-50 ${alignRight ? "text-right" : "text-left"}`}
+      className={`flex h-9 w-full min-w-0 items-center rounded-lg border border-transparent px-2.5 text-sm text-stone-900 transition hover:border-stone-200 hover:bg-stone-50 ${alignRight ? "justify-end text-right tabular-nums" : "text-left"}`}
     >
-      {value || "-"}
+      <span className="block w-full truncate">{value || "-"}</span>
     </button>
   );
 }
@@ -385,32 +385,48 @@ function MaterialSection({
             </button>
           </div>
           <div className="mt-4 hidden overflow-x-auto md:block">
-            <table className="min-w-full text-left text-sm">
+            <table className="min-w-full table-fixed text-left text-sm">
+              <colgroup>
+                <col className="w-[10%]" />
+                <col className="w-[19%]" />
+                <col className="w-[18%]" />
+                <col className="w-[11%]" />
+                <col className="w-[10%]" />
+                <col className="w-[12%]" />
+                <col className="w-[12%]" />
+                <col className="w-[10%]" />
+                <col className="w-[60px]" />
+              </colgroup>
               <thead className="text-stone-500">
                 <tr className="border-b border-stone-200">
                   {["구분", "자재명", "거래처", "수량", "단위", "단가", "금액", "상태", ""].map((header, index) => (
-                    <th key={`${header}-${index}`} className="px-2 py-3">{header}</th>
+                    <th
+                      key={`${header}-${index}`}
+                      className={`px-2 py-3 text-xs font-medium ${header === "수량" || header === "단가" || header === "금액" ? "text-right" : header === "" ? "text-center" : "text-left"}`}
+                    >
+                      {header}
+                    </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {materials.map((item, rowIndex) => (
                   <tr key={item.id} className="border-b border-stone-100">
-                    <td className="px-2 py-3"><EditableValue section="material" rowId={item.id} field="type" value={item.type} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="px-2 py-3"><EditableValue section="material" rowId={item.id} field="name" value={item.name} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="px-2 py-3"><EditableValue section="material" rowId={item.id} field="vendor" value={item.vendor} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="px-2 py-3"><EditableValue section="material" rowId={item.id} field="quantity" value={String(item.quantity)} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="px-2 py-3"><EditableValue section="material" rowId={item.id} field="unit" value={item.unit} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="px-2 py-3"><EditableValue section="material" rowId={item.id} field="unitCost" value={String(item.unitCost)} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="px-2 py-3 font-medium">{(item.totalCost ?? 0).toLocaleString()}원</td>
-                    <td className="px-2 py-3"><EditableValue section="material" rowId={item.id} field="status" value={item.status} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="px-2 py-3">
+                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="type" value={item.type} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="name" value={item.name} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="vendor" value={item.vendor} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="quantity" value={String(item.quantity)} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="unit" value={item.unit} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="unitCost" value={String(item.unitCost)} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 px-2 py-2 text-right align-middle font-medium tabular-nums">{(item.totalCost ?? 0).toLocaleString()}원</td>
+                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="status" value={item.status} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="px-2 py-2 text-center align-middle">
                       <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.name || `자재 ${rowIndex + 1}`} 삭제`} />
                     </td>
                   </tr>
                 ))}
                 <tr>
-                  <td colSpan={9} className="px-2 pb-2 pt-3">
+                  <td colSpan={9} className="px-2 pb-2 pt-2">
                     <button
                       type="button"
                       onClick={onAdd}
@@ -521,31 +537,46 @@ function OutsourcingSection({
             </button>
           </div>
           <div className="mt-4 hidden overflow-x-auto md:block">
-            <table className="min-w-full text-left text-sm">
+            <table className="min-w-full table-fixed text-left text-sm">
+              <colgroup>
+                <col className="w-[18%]" />
+                <col className="w-[18%]" />
+                <col className="w-[12%]" />
+                <col className="w-[14%]" />
+                <col className="w-[12%]" />
+                <col className="w-[14%]" />
+                <col className="w-[12%]" />
+                <col className="w-[60px]" />
+              </colgroup>
               <thead className="text-stone-500">
                 <tr className="border-b border-stone-200">
                   {["공정", "외주처", "수량", "단가기준", "단가", "금액", "상태", ""].map((header, index) => (
-                    <th key={`${header}-${index}`} className="px-2 py-3">{header}</th>
+                    <th
+                      key={`${header}-${index}`}
+                      className={`px-2 py-3 text-xs font-medium ${header === "수량" || header === "단가" || header === "금액" ? "text-right" : header === "" ? "text-center" : "text-left"}`}
+                    >
+                      {header}
+                    </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {outsourcing.map((item, rowIndex) => (
                   <tr key={item.id} className="border-b border-stone-100">
-                    <td className="px-2 py-3"><EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="px-2 py-3"><EditableValue section="outsourcing" rowId={item.id} field="vendor" value={item.vendor} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="px-2 py-3"><EditableValue section="outsourcing" rowId={item.id} field="quantity" value={String(item.quantity)} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="px-2 py-3"><EditableValue section="outsourcing" rowId={item.id} field="unitType" value={item.unitType} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="px-2 py-3"><EditableValue section="outsourcing" rowId={item.id} field="unitCost" value={String(item.unitCost)} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="px-2 py-3 font-medium">{(item.totalCost ?? 0).toLocaleString()}원</td>
-                    <td className="px-2 py-3"><EditableValue section="outsourcing" rowId={item.id} field="status" value={item.status} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="px-2 py-3">
+                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="vendor" value={item.vendor} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="quantity" value={String(item.quantity)} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="unitType" value={item.unitType} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="unitCost" value={String(item.unitCost)} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 px-2 py-2 text-right align-middle font-medium tabular-nums">{(item.totalCost ?? 0).toLocaleString()}원</td>
+                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="status" value={item.status} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="px-2 py-2 text-center align-middle">
                       <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.process || `공정 ${rowIndex + 1}`} 삭제`} />
                     </td>
                   </tr>
                 ))}
                 <tr>
-                  <td colSpan={8} className="px-2 pb-2 pt-3">
+                  <td colSpan={8} className="px-2 pb-2 pt-2">
                     <button
                       type="button"
                       onClick={onAdd}
