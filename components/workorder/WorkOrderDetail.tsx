@@ -1,4 +1,5 @@
 import { useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
+import { MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS, OUTSOURCING_PROCESS_OPTIONS, OUTSOURCING_UNIT_OPTIONS } from "@/lib/constants/workorderOptions";
 import { getStageTone } from "@/lib/constants/workflow";
 import type { DisplayStage } from "@/types/workflow";
 import { toDisplayValue } from "@/lib/utils/display";
@@ -7,6 +8,7 @@ import type { Material, Outsourcing, WorkOrder, WorkflowAction, WorkflowState } 
 type RowValue = string | number | null | undefined;
 type EditableSectionKey = "material" | "outsourcing";
 type EditableCell = { section: EditableSectionKey; rowId: string; field: string } | null;
+type SelectOption = readonly string[];
 
 function Info({ label, value, valueClassName }: { label: string; value: RowValue; valueClassName?: string }) {
   return (
@@ -105,6 +107,7 @@ function EditableValue({
   editingValue,
   inputMode,
   alignRight,
+  options,
   onStartEdit,
   onCommit,
   onCancel,
@@ -117,13 +120,14 @@ function EditableValue({
   editingValue: string;
   inputMode?: "text" | "decimal" | "numeric";
   alignRight?: boolean;
+  options?: SelectOption;
   onStartEdit: (section: EditableSectionKey, rowId: string, field: string, value: string) => void;
-  onCommit: () => void;
+  onCommit: (nextValue?: string) => void;
   onCancel: () => void;
 }) {
   const editing = isEditingCell(editingCell, section, rowId, field);
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+  const handleInputKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       event.preventDefault();
       onCommit();
@@ -134,6 +138,36 @@ function EditableValue({
     }
   };
 
+  const handleSelectKeyDown = (event: KeyboardEvent<HTMLSelectElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      onCommit((event.currentTarget as HTMLSelectElement).value);
+    }
+    if (event.key === "Escape") {
+      event.preventDefault();
+      onCancel();
+    }
+  };
+
+  if (editing && options) {
+    return (
+      <select
+        autoFocus
+        value={editingValue}
+        onChange={(event) => onCommit(event.target.value)}
+        onBlur={(event) => onCommit(event.target.value)}
+        onKeyDown={handleSelectKeyDown}
+        className={`h-9 w-full min-w-0 rounded-lg border border-stone-300 bg-white px-2.5 text-sm text-stone-900 outline-none ring-0 transition focus:border-stone-400 ${alignRight ? "text-right tabular-nums" : "text-left"}`}
+      >
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    );
+  }
+
   if (editing) {
     return (
       <input
@@ -142,8 +176,8 @@ function EditableValue({
         inputMode={inputMode}
         value={editingValue}
         onChange={(event) => onStartEdit(section, rowId, field, event.target.value)}
-        onBlur={onCommit}
-        onKeyDown={handleKeyDown}
+        onBlur={() => onCommit()}
+        onKeyDown={handleInputKeyDown}
         className={`h-9 w-full min-w-0 rounded-lg border border-stone-300 bg-white px-2.5 text-sm text-stone-900 outline-none ring-0 transition focus:border-stone-400 ${alignRight ? "text-right tabular-nums" : "text-left"}`}
       />
     );
@@ -361,6 +395,7 @@ function MaterialSection({
                           editingCell={editingCell}
                           editingValue={editingValue}
                           inputMode={inputMode as "text" | "decimal"}
+                          options={field === "type" ? MATERIAL_TYPE_OPTIONS : field === "unit" ? MATERIAL_UNIT_OPTIONS : undefined}
                           alignRight={field === "quantity" || field === "unitCost"}
                           onStartEdit={onStartEdit}
                           onCommit={onCommitEdit}
@@ -412,11 +447,11 @@ function MaterialSection({
               <tbody>
                 {materials.map((item, rowIndex) => (
                   <tr key={item.id} className="border-b border-stone-100">
-                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="type" value={item.type} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="type" value={item.type} options={MATERIAL_TYPE_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="name" value={item.name} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="vendor" value={item.vendor} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="quantity" value={String(item.quantity)} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="unit" value={item.unit} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="unit" value={item.unit} options={MATERIAL_UNIT_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="unitCost" value={String(item.unitCost)} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 px-2 py-2 text-right align-middle font-medium tabular-nums">{(item.totalCost ?? 0).toLocaleString()}원</td>
                     <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="status" value={item.status} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
@@ -513,6 +548,7 @@ function OutsourcingSection({
                           editingCell={editingCell}
                           editingValue={editingValue}
                           inputMode={inputMode as "text" | "decimal"}
+                          options={field === "process" ? OUTSOURCING_PROCESS_OPTIONS : field === "unitType" ? OUTSOURCING_UNIT_OPTIONS : undefined}
                           alignRight={field === "quantity" || field === "unitCost"}
                           onStartEdit={onStartEdit}
                           onCommit={onCommitEdit}
@@ -563,10 +599,10 @@ function OutsourcingSection({
               <tbody>
                 {outsourcing.map((item, rowIndex) => (
                   <tr key={item.id} className="border-b border-stone-100">
-                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} options={OUTSOURCING_PROCESS_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="vendor" value={item.vendor} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="quantity" value={String(item.quantity)} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="unitType" value={item.unitType} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="unitType" value={item.unitType} options={OUTSOURCING_UNIT_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="unitCost" value={String(item.unitCost)} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 px-2 py-2 text-right align-middle font-medium tabular-nums">{(item.totalCost ?? 0).toLocaleString()}원</td>
                     <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="status" value={item.status} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
@@ -663,10 +699,10 @@ export default function WorkOrderDetail({
     setEditingValue("");
   };
 
-  const commitEdit = () => {
+  const commitEdit = (nextValueOverride?: string) => {
     if (!editingCell) return;
 
-    const nextValue = editingValue.trim();
+    const nextValue = (nextValueOverride ?? editingValue).trim();
 
     if (editingCell.section === "material") {
       setMaterialItems((current) =>
@@ -713,11 +749,11 @@ export default function WorkOrderDetail({
       ...current,
       recalculateMaterial({
         id: createId("material"),
-        type: "원단",
+        type: MATERIAL_TYPE_OPTIONS[0],
         name: "새 자재",
         vendor: "",
         quantity: 0,
-        unit: "yd",
+        unit: MATERIAL_UNIT_OPTIONS[0],
         unitCost: 0,
         totalCost: 0,
         status: "준비",
@@ -737,10 +773,10 @@ export default function WorkOrderDetail({
       ...current,
       recalculateOutsourcing({
         id: createId("outsourcing"),
-        process: "새 공정",
+        process: OUTSOURCING_PROCESS_OPTIONS[0],
         vendor: "",
         quantity: 0,
-        unitType: "장",
+        unitType: OUTSOURCING_UNIT_OPTIONS[0],
         unitCost: 0,
         totalCost: 0,
         status: "대기",
