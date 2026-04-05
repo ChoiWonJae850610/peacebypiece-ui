@@ -1,32 +1,18 @@
-import type { ChangeEvent, ReactNode, RefObject } from "react";
+import { useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
 import { getStageTone } from "@/lib/constants/workflow";
 import type { DisplayStage } from "@/types/workflow";
 import { toDisplayValue } from "@/lib/utils/display";
-import type { Attachment, Material, Outsourcing, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
+import type { Material, Outsourcing, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
 
 type RowValue = string | number | null | undefined;
+type EditableSectionKey = "material" | "outsourcing";
+type EditableCell = { section: EditableSectionKey; rowId: string; field: string } | null;
 
 function Info({ label, value, valueClassName }: { label: string; value: RowValue; valueClassName?: string }) {
   return (
     <div className="min-w-0 rounded-xl border border-stone-200 bg-white p-3">
       <div className="text-xs text-stone-500">{label}</div>
       <div className={`mt-1 font-medium ${valueClassName ?? "text-sm"}`}>{toDisplayValue(value)}</div>
-    </div>
-  );
-}
-
-function MobileDataCard({ title, rows }: { title: string; rows: [string, RowValue][] }) {
-  return (
-    <div className="rounded-2xl border border-stone-200 bg-white p-4">
-      <div className="text-sm font-semibold text-stone-900">{title}</div>
-      <div className="mt-3 space-y-2">
-        {rows.map(([label, value]) => (
-          <div key={`${title}-${label}`} className="flex items-start justify-between gap-4">
-            <span className="shrink-0 text-xs text-stone-500">{label}</span>
-            <span className="text-right text-sm font-medium text-stone-900">{toDisplayValue(value)}</span>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
@@ -68,65 +54,124 @@ function SectionHeader({
   );
 }
 
-function DataSection({
-  title,
-  buttonLabel,
-  open,
-  onToggle,
-  summaryText,
-  mobileItems,
-  desktopHeaders,
-  desktopRows,
-}: {
-  title: string;
-  buttonLabel: string;
-  open: boolean;
-  onToggle: () => void;
-  summaryText: string;
-  mobileItems: { key: string; title: string; rows: [string, RowValue][] }[];
-  desktopHeaders: string[];
-  desktopRows: RowValue[][];
-}) {
+function createId(prefix: string) {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function toNumber(value: string) {
+  const normalized = value.trim().replace(/,/g, "");
+  if (!normalized) return 0;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function recalculateMaterial(item: Material): Material {
+  return {
+    ...item,
+    totalCost: (Number(item.quantity) || 0) * (Number(item.unitCost) || 0),
+  };
+}
+
+function recalculateOutsourcing(item: Outsourcing): Outsourcing {
+  return {
+    ...item,
+    totalCost: (Number(item.quantity) || 0) * (Number(item.unitCost) || 0),
+  };
+}
+
+function isEditingCell(editingCell: EditableCell, section: EditableSectionKey, rowId: string, field: string) {
+  return editingCell?.section === section && editingCell.rowId === rowId && editingCell.field === field;
+}
+
+function AddButton({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
-      <SectionHeader
-        title={title}
-        summary={summaryText}
-        open={open}
-        onToggle={onToggle}
-        rightSlot={<button type="button" className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm">{buttonLabel}</button>}
-      />
-      {open ? (
-        <>
-          <div className="mt-3 md:hidden">
-            <button type="button" className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm">{buttonLabel}</button>
-          </div>
-          <div className="mt-4 space-y-3 md:hidden">
-            {mobileItems.map((item) => <MobileDataCard key={item.key} title={item.title} rows={item.rows} />)}
-          </div>
-          <div className="mt-4 hidden overflow-x-auto md:block">
-            <table className="min-w-full text-left text-sm">
-              <thead className="text-stone-500">
-                <tr className="border-b border-stone-200">
-                  {desktopHeaders.map((header) => <th key={header} className="px-2 py-3">{header}</th>)}
-                </tr>
-              </thead>
-              <tbody>
-                {desktopRows.map((row, rowIndex) => (
-                  <tr key={rowIndex} className="border-b border-stone-100">
-                    {row.map((cell, cellIndex) => (
-                      <td key={`${rowIndex}-${cellIndex}`} className={`px-2 py-3 ${cellIndex === row.length - 2 ? "font-medium" : ""}`}>{toDisplayValue(cell)}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
-      ) : null}
-    </div>
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 transition hover:border-stone-400 hover:bg-stone-50"
+    >
+      + {label}
+    </button>
   );
 }
+
+function DeleteButton({ onClick, srLabel }: { onClick: () => void; srLabel: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={srLabel}
+      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 bg-white text-base font-semibold text-rose-600 transition hover:bg-rose-50"
+    >
+      -
+    </button>
+  );
+}
+
+function EditableValue({
+  section,
+  rowId,
+  field,
+  value,
+  editingCell,
+  editingValue,
+  inputMode,
+  alignRight,
+  onStartEdit,
+  onCommit,
+  onCancel,
+}: {
+  section: EditableSectionKey;
+  rowId: string;
+  field: string;
+  value: string;
+  editingCell: EditableCell;
+  editingValue: string;
+  inputMode?: "text" | "decimal" | "numeric";
+  alignRight?: boolean;
+  onStartEdit: (section: EditableSectionKey, rowId: string, field: string, value: string) => void;
+  onCommit: () => void;
+  onCancel: () => void;
+}) {
+  const editing = isEditingCell(editingCell, section, rowId, field);
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      onCommit();
+    }
+    if (event.key === "Escape") {
+      event.preventDefault();
+      onCancel();
+    }
+  };
+
+  if (editing) {
+    return (
+      <input
+        autoFocus
+        type="text"
+        inputMode={inputMode}
+        value={editingValue}
+        onChange={(event) => onStartEdit(section, rowId, field, event.target.value)}
+        onBlur={onCommit}
+        onKeyDown={handleKeyDown}
+        className={`w-full rounded-lg border border-stone-300 bg-white px-2 py-1 text-sm text-stone-900 outline-none ring-0 focus:border-stone-400 ${alignRight ? "text-right" : "text-left"}`}
+      />
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => onStartEdit(section, rowId, field, value)}
+      className={`w-full rounded-lg border border-transparent px-2 py-1 text-sm text-stone-900 transition hover:border-stone-200 hover:bg-stone-50 ${alignRight ? "text-right" : "text-left"}`}
+    >
+      {value || "-"}
+    </button>
+  );
+}
+
 
 function StageProgressBar({ stages, currentStage }: { stages: DisplayStage[]; currentStage: DisplayStage }) {
   const currentIndex = stages.indexOf(currentStage);
@@ -259,51 +304,247 @@ function BasicInfoSection({
   );
 }
 
-function MaterialSection({ materials, open, onToggle }: { materials: Material[]; open: boolean; onToggle: () => void }) {
+function MaterialSection({
+  materials,
+  open,
+  onToggle,
+  editingCell,
+  editingValue,
+  onStartEdit,
+  onCommitEdit,
+  onCancelEdit,
+  onAdd,
+  onRemove,
+}: {
+  materials: Material[];
+  open: boolean;
+  onToggle: () => void;
+  editingCell: EditableCell;
+  editingValue: string;
+  onStartEdit: (section: EditableSectionKey, rowId: string, field: string, value: string) => void;
+  onCommitEdit: () => void;
+  onCancelEdit: () => void;
+  onAdd: () => void;
+  onRemove: (id: string) => void;
+}) {
   const total = materials.reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
   const summary = materials.length > 0
     ? `${materials[0].name}${materials.length > 1 ? ` 외 ${materials.length - 1}개` : ""} · 총 ${total.toLocaleString()}원`
     : "등록된 원단/부자재가 없습니다.";
 
   return (
-    <DataSection
-      title="원단 / 부자재 구성"
-      buttonLabel="항목 추가"
-      open={open}
-      onToggle={onToggle}
-      summaryText={summary}
-      mobileItems={materials.map((item) => ({
-        key: `${item.name}-${item.vendor}`,
-        title: `${item.type} · ${item.name}`,
-        rows: [["거래처", item.vendor], ["수량", `${item.quantity}${item.unit}`], ["단가", `${(item.unitCost ?? 0).toLocaleString()}원`], ["금액", `${(item.totalCost ?? 0).toLocaleString()}원`], ["상태", item.status]],
-      }))}
-      desktopHeaders={["구분", "자재명", "거래처", "수량", "단가", "금액", "상태"]}
-      desktopRows={materials.map((item) => [item.type, item.name, item.vendor, `${item.quantity}${item.unit}`, `${(item.unitCost ?? 0).toLocaleString()}원`, `${(item.totalCost ?? 0).toLocaleString()}원`, item.status])}
-    />
+    <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
+      <SectionHeader
+        title="원단 / 부자재 구성"
+        summary={summary}
+        open={open}
+        onToggle={onToggle}
+        rightSlot={<AddButton label="항목 추가" onClick={onAdd} />}
+      />
+      {open ? (
+        <>
+          <div className="mt-3 md:hidden">
+            <div className="w-full"><AddButton label="항목 추가" onClick={onAdd} /></div>
+          </div>
+          <div className="mt-4 space-y-3 md:hidden">
+            {materials.map((item, index) => (
+              <div key={item.id} className="rounded-2xl border border-stone-200 bg-white p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-semibold text-stone-900">{item.name || `자재 ${index + 1}`}</div>
+                    <div className="mt-1 text-xs text-stone-500">금액 {(item.totalCost ?? 0).toLocaleString()}원</div>
+                  </div>
+                  <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.name || `자재 ${index + 1}`} 삭제`} />
+                </div>
+                <div className="mt-3 space-y-2">
+                  {[
+                    ["구분", "type", item.type, "text"],
+                    ["자재명", "name", item.name, "text"],
+                    ["거래처", "vendor", item.vendor, "text"],
+                    ["수량", "quantity", String(item.quantity), "decimal"],
+                    ["단위", "unit", item.unit, "text"],
+                    ["단가", "unitCost", String(item.unitCost), "decimal"],
+                    ["상태", "status", item.status, "text"],
+                  ].map(([label, field, value, inputMode]) => (
+                    <div key={`${item.id}-${field}`} className="flex items-center justify-between gap-4">
+                      <span className="shrink-0 text-xs text-stone-500">{label}</span>
+                      <div className="min-w-0 flex-1">
+                        <EditableValue
+                          section="material"
+                          rowId={item.id}
+                          field={String(field)}
+                          value={String(value)}
+                          editingCell={editingCell}
+                          editingValue={editingValue}
+                          inputMode={inputMode as "text" | "decimal"}
+                          alignRight={field === "quantity" || field === "unitCost"}
+                          onStartEdit={onStartEdit}
+                          onCommit={onCommitEdit}
+                          onCancel={onCancelEdit}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="shrink-0 text-xs text-stone-500">금액</span>
+                    <span className="text-sm font-medium text-stone-900">{(item.totalCost ?? 0).toLocaleString()}원</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 hidden overflow-x-auto md:block">
+            <table className="min-w-full text-left text-sm">
+              <thead className="text-stone-500">
+                <tr className="border-b border-stone-200">
+                  {["구분", "자재명", "거래처", "수량", "단위", "단가", "금액", "상태", "삭제"].map((header) => (
+                    <th key={header} className="px-2 py-3">{header}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {materials.map((item, rowIndex) => (
+                  <tr key={item.id} className="border-b border-stone-100">
+                    <td className="px-2 py-3"><EditableValue section="material" rowId={item.id} field="type" value={item.type} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="px-2 py-3"><EditableValue section="material" rowId={item.id} field="name" value={item.name} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="px-2 py-3"><EditableValue section="material" rowId={item.id} field="vendor" value={item.vendor} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="px-2 py-3"><EditableValue section="material" rowId={item.id} field="quantity" value={String(item.quantity)} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="px-2 py-3"><EditableValue section="material" rowId={item.id} field="unit" value={item.unit} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="px-2 py-3"><EditableValue section="material" rowId={item.id} field="unitCost" value={String(item.unitCost)} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="px-2 py-3 font-medium">{(item.totalCost ?? 0).toLocaleString()}원</td>
+                    <td className="px-2 py-3"><EditableValue section="material" rowId={item.id} field="status" value={item.status} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="px-2 py-3">
+                      <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.name || `자재 ${rowIndex + 1}`} 삭제`} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      ) : null}
+    </div>
   );
 }
 
-function OutsourcingSection({ outsourcing, open, onToggle }: { outsourcing: Outsourcing[]; open: boolean; onToggle: () => void }) {
+function OutsourcingSection({
+  outsourcing,
+  open,
+  onToggle,
+  editingCell,
+  editingValue,
+  onStartEdit,
+  onCommitEdit,
+  onCancelEdit,
+  onAdd,
+  onRemove,
+}: {
+  outsourcing: Outsourcing[];
+  open: boolean;
+  onToggle: () => void;
+  editingCell: EditableCell;
+  editingValue: string;
+  onStartEdit: (section: EditableSectionKey, rowId: string, field: string, value: string) => void;
+  onCommitEdit: () => void;
+  onCancelEdit: () => void;
+  onAdd: () => void;
+  onRemove: (id: string) => void;
+}) {
   const total = outsourcing.reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
   const summary = outsourcing.length > 0
     ? `${outsourcing[0].process}${outsourcing.length > 1 ? ` 외 ${outsourcing.length - 1}개` : ""} · 총 ${total.toLocaleString()}원`
     : "등록된 외주 공정이 없습니다.";
 
   return (
-    <DataSection
-      title="외주 공정"
-      buttonLabel="공정 추가"
-      open={open}
-      onToggle={onToggle}
-      summaryText={summary}
-      mobileItems={outsourcing.map((item) => ({
-        key: `${item.process}-${item.vendor}`,
-        title: item.process,
-        rows: [["외주처", item.vendor], ["수량", String(item.quantity)], ["단가기준", item.unitType], ["단가", `${(item.unitCost ?? 0).toLocaleString()}원`], ["금액", `${(item.totalCost ?? 0).toLocaleString()}원`], ["상태", item.status]],
-      }))}
-      desktopHeaders={["공정", "외주처", "수량", "단가기준", "단가", "금액", "상태"]}
-      desktopRows={outsourcing.map((item) => [item.process, item.vendor, String(item.quantity), item.unitType, `${(item.unitCost ?? 0).toLocaleString()}원`, `${(item.totalCost ?? 0).toLocaleString()}원`, item.status])}
-    />
+    <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
+      <SectionHeader
+        title="외주 공정"
+        summary={summary}
+        open={open}
+        onToggle={onToggle}
+        rightSlot={<AddButton label="공정 추가" onClick={onAdd} />}
+      />
+      {open ? (
+        <>
+          <div className="mt-3 md:hidden">
+            <div className="w-full"><AddButton label="공정 추가" onClick={onAdd} /></div>
+          </div>
+          <div className="mt-4 space-y-3 md:hidden">
+            {outsourcing.map((item, index) => (
+              <div key={item.id} className="rounded-2xl border border-stone-200 bg-white p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-semibold text-stone-900">{item.process || `공정 ${index + 1}`}</div>
+                    <div className="mt-1 text-xs text-stone-500">금액 {(item.totalCost ?? 0).toLocaleString()}원</div>
+                  </div>
+                  <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.process || `공정 ${index + 1}`} 삭제`} />
+                </div>
+                <div className="mt-3 space-y-2">
+                  {[
+                    ["공정", "process", item.process, "text"],
+                    ["외주처", "vendor", item.vendor, "text"],
+                    ["수량", "quantity", String(item.quantity), "decimal"],
+                    ["단가기준", "unitType", item.unitType, "text"],
+                    ["단가", "unitCost", String(item.unitCost), "decimal"],
+                    ["상태", "status", item.status, "text"],
+                  ].map(([label, field, value, inputMode]) => (
+                    <div key={`${item.id}-${field}`} className="flex items-center justify-between gap-4">
+                      <span className="shrink-0 text-xs text-stone-500">{label}</span>
+                      <div className="min-w-0 flex-1">
+                        <EditableValue
+                          section="outsourcing"
+                          rowId={item.id}
+                          field={String(field)}
+                          value={String(value)}
+                          editingCell={editingCell}
+                          editingValue={editingValue}
+                          inputMode={inputMode as "text" | "decimal"}
+                          alignRight={field === "quantity" || field === "unitCost"}
+                          onStartEdit={onStartEdit}
+                          onCommit={onCommitEdit}
+                          onCancel={onCancelEdit}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="shrink-0 text-xs text-stone-500">금액</span>
+                    <span className="text-sm font-medium text-stone-900">{(item.totalCost ?? 0).toLocaleString()}원</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 hidden overflow-x-auto md:block">
+            <table className="min-w-full text-left text-sm">
+              <thead className="text-stone-500">
+                <tr className="border-b border-stone-200">
+                  {["공정", "외주처", "수량", "단가기준", "단가", "금액", "상태", "삭제"].map((header) => (
+                    <th key={header} className="px-2 py-3">{header}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {outsourcing.map((item, rowIndex) => (
+                  <tr key={item.id} className="border-b border-stone-100">
+                    <td className="px-2 py-3"><EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="px-2 py-3"><EditableValue section="outsourcing" rowId={item.id} field="vendor" value={item.vendor} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="px-2 py-3"><EditableValue section="outsourcing" rowId={item.id} field="quantity" value={String(item.quantity)} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="px-2 py-3"><EditableValue section="outsourcing" rowId={item.id} field="unitType" value={item.unitType} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="px-2 py-3"><EditableValue section="outsourcing" rowId={item.id} field="unitCost" value={String(item.unitCost)} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="px-2 py-3 font-medium">{(item.totalCost ?? 0).toLocaleString()}원</td>
+                    <td className="px-2 py-3"><EditableValue section="outsourcing" rowId={item.id} field="status" value={item.status} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="px-2 py-3">
+                      <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.process || `공정 ${rowIndex + 1}`} 삭제`} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      ) : null}
+    </div>
   );
 }
 
@@ -352,6 +593,121 @@ export default function WorkOrderDetail({
   actions: WorkflowAction[];
   onAction: (action: WorkflowAction) => void;
 }) {
+  const [materialItems, setMaterialItems] = useState<Material[]>(() => (workOrder.materials ?? []).map(recalculateMaterial));
+  const [outsourcingItems, setOutsourcingItems] = useState<Outsourcing[]>(() => (workOrder.outsourcing ?? []).map(recalculateOutsourcing));
+  const [editingCell, setEditingCell] = useState<EditableCell>(null);
+  const [editingValue, setEditingValue] = useState("");
+
+  useEffect(() => {
+    setMaterialItems((workOrder.materials ?? []).map(recalculateMaterial));
+  }, [workOrder.materials]);
+
+  useEffect(() => {
+    setOutsourcingItems((workOrder.outsourcing ?? []).map(recalculateOutsourcing));
+  }, [workOrder.outsourcing]);
+
+  const startEdit = (section: EditableSectionKey, rowId: string, field: string, value: string) => {
+    setEditingCell({ section, rowId, field });
+    setEditingValue(value);
+  };
+
+  const cancelEdit = () => {
+    setEditingCell(null);
+    setEditingValue("");
+  };
+
+  const commitEdit = () => {
+    if (!editingCell) return;
+
+    const nextValue = editingValue.trim();
+
+    if (editingCell.section === "material") {
+      setMaterialItems((current) =>
+        current.map((item) => {
+          if (item.id !== editingCell.rowId) return item;
+
+          if (editingCell.field === "quantity") {
+            return recalculateMaterial({ ...item, quantity: toNumber(nextValue) });
+          }
+          if (editingCell.field === "unitCost") {
+            return recalculateMaterial({ ...item, unitCost: toNumber(nextValue) });
+          }
+          if (editingCell.field === "type") {
+            return { ...item, type: (nextValue || "원단") as Material["type"] };
+          }
+
+          return { ...item, [editingCell.field]: nextValue } as Material;
+        }),
+      );
+    }
+
+    if (editingCell.section === "outsourcing") {
+      setOutsourcingItems((current) =>
+        current.map((item) => {
+          if (item.id !== editingCell.rowId) return item;
+
+          if (editingCell.field === "quantity") {
+            return recalculateOutsourcing({ ...item, quantity: toNumber(nextValue) });
+          }
+          if (editingCell.field === "unitCost") {
+            return recalculateOutsourcing({ ...item, unitCost: toNumber(nextValue) });
+          }
+
+          return { ...item, [editingCell.field]: nextValue } as Outsourcing;
+        }),
+      );
+    }
+
+    cancelEdit();
+  };
+
+  const addMaterial = () => {
+    setMaterialItems((current) => [
+      ...current,
+      recalculateMaterial({
+        id: createId("material"),
+        type: "원단",
+        name: "새 자재",
+        vendor: "",
+        quantity: 0,
+        unit: "yd",
+        unitCost: 0,
+        totalCost: 0,
+        status: "준비",
+      }),
+    ]);
+  };
+
+  const removeMaterial = (id: string) => {
+    setMaterialItems((current) => current.filter((item) => item.id !== id));
+    if (editingCell?.section === "material" && editingCell.rowId === id) {
+      cancelEdit();
+    }
+  };
+
+  const addOutsourcing = () => {
+    setOutsourcingItems((current) => [
+      ...current,
+      recalculateOutsourcing({
+        id: createId("outsourcing"),
+        process: "새 공정",
+        vendor: "",
+        quantity: 0,
+        unitType: "장",
+        unitCost: 0,
+        totalCost: 0,
+        status: "대기",
+      }),
+    ]);
+  };
+
+  const removeOutsourcing = (id: string) => {
+    setOutsourcingItems((current) => current.filter((item) => item.id !== id));
+    if (editingCell?.section === "outsourcing" && editingCell.rowId === id) {
+      cancelEdit();
+    }
+  };
+
   return (
     <div className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm md:p-6">
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-stone-200 pb-5">
@@ -397,8 +753,34 @@ export default function WorkOrderDetail({
           onOpenInventoryEditor={onOpenInventoryEditor}
         />
 
-        {canSeeProductionSections ? <MaterialSection materials={workOrder.materials ?? []} open={materialOpen} onToggle={onToggleMaterial} /> : null}
-        {canSeeProductionSections ? <OutsourcingSection outsourcing={workOrder.outsourcing ?? []} open={outsourcingOpen} onToggle={onToggleOutsourcing} /> : null}
+        {canSeeProductionSections ? (
+          <MaterialSection
+            materials={materialItems}
+            open={materialOpen}
+            onToggle={onToggleMaterial}
+            editingCell={editingCell}
+            editingValue={editingValue}
+            onStartEdit={startEdit}
+            onCommitEdit={commitEdit}
+            onCancelEdit={cancelEdit}
+            onAdd={addMaterial}
+            onRemove={removeMaterial}
+          />
+        ) : null}
+        {canSeeProductionSections ? (
+          <OutsourcingSection
+            outsourcing={outsourcingItems}
+            open={outsourcingOpen}
+            onToggle={onToggleOutsourcing}
+            editingCell={editingCell}
+            editingValue={editingValue}
+            onStartEdit={startEdit}
+            onCommitEdit={commitEdit}
+            onCancelEdit={cancelEdit}
+            onAdd={addOutsourcing}
+            onRemove={removeOutsourcing}
+          />
+        ) : null}
 
         <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
           <h3 className="text-base font-semibold">작업 메모</h3>
