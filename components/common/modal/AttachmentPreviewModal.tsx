@@ -3,7 +3,6 @@
 import { useRef } from "react";
 import BaseModal from "@/components/common/modal/BaseModal";
 import ModalBody from "@/components/common/modal/ModalBody";
-import ModalFooter from "@/components/common/modal/ModalFooter";
 import ModalHeader from "@/components/common/modal/ModalHeader";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import type { Attachment } from "@/types/workorder";
@@ -54,17 +53,6 @@ export default function AttachmentPreviewModal({
         ) : null}
       </ModalBody>
 
-      {canDelete ? (
-        <ModalFooter>
-          <button
-            type="button"
-            onClick={onDelete}
-            className="w-full rounded-2xl border border-rose-300 bg-white px-4 py-3 text-sm font-medium text-rose-700"
-          >
-            첨부파일 삭제
-          </button>
-        </ModalFooter>
-      ) : null}
     </BaseModal>
   );
 }
