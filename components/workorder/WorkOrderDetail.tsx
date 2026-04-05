@@ -1,5 +1,5 @@
 import { useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
-import { MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS, OUTSOURCING_PROCESS_OPTIONS, OUTSOURCING_UNIT_OPTIONS } from "@/lib/constants/workorderOptions";
+import { DEFAULT_MATERIAL_TYPE, DEFAULT_MATERIAL_UNIT, DEFAULT_OUTSOURCING_PROCESS, DEFAULT_OUTSOURCING_UNIT, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS, OUTSOURCING_PROCESS_OPTIONS, OUTSOURCING_UNIT_OPTIONS } from "@/lib/constants/workorderOptions";
 import { getStageTone } from "@/lib/constants/workflow";
 import type { DisplayStage } from "@/types/workflow";
 import { toDisplayValue } from "@/lib/utils/display";
@@ -65,6 +65,26 @@ function toNumber(value: string) {
   if (!normalized) return 0;
   const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function isNumericField(field: string) {
+  return field === "quantity" || field === "unitCost";
+}
+
+function formatNumericDisplay(value: string) {
+  const normalized = value.trim().replace(/,/g, "");
+  if (!normalized) return "0";
+  const parsed = Number(normalized);
+  if (!Number.isFinite(parsed)) return value;
+  return parsed.toLocaleString();
+}
+
+function getEditingInitialValue(field: string, value: string) {
+  return isNumericField(field) ? value.replace(/,/g, "") : value;
+}
+
+function getDisplayValue(field: string, value: string) {
+  return isNumericField(field) ? formatNumericDisplay(value) : value;
 }
 
 function recalculateMaterial(item: Material): Material {
@@ -186,10 +206,10 @@ function EditableValue({
   return (
     <button
       type="button"
-      onClick={() => onStartEdit(section, rowId, field, value)}
+      onClick={() => onStartEdit(section, rowId, field, getEditingInitialValue(field, value))}
       className={`flex h-9 w-full min-w-0 items-center rounded-lg border border-transparent px-2.5 text-sm text-stone-900 transition hover:border-stone-200 hover:bg-stone-50 ${alignRight ? "justify-end text-right tabular-nums" : "text-left"}`}
     >
-      <span className="block w-full truncate">{value || "-"}</span>
+      <span className="block w-full truncate">{getDisplayValue(field, value) || "-"}</span>
     </button>
   );
 }
@@ -379,9 +399,9 @@ function MaterialSection({
                     ["구분", "type", item.type, "text"],
                     ["자재명", "name", item.name, "text"],
                     ["거래처", "vendor", item.vendor, "text"],
-                    ["수량", "quantity", String(item.quantity), "decimal"],
+                    ["수량", "quantity", item.quantity.toLocaleString(), "decimal"],
                     ["단위", "unit", item.unit, "text"],
-                    ["단가", "unitCost", String(item.unitCost), "decimal"],
+                    ["단가", "unitCost", item.unitCost.toLocaleString(), "decimal"],
                     ["상태", "status", item.status, "text"],
                   ].map(([label, field, value, inputMode]) => (
                     <div key={`${item.id}-${field}`} className="flex items-center justify-between gap-4">
@@ -450,9 +470,9 @@ function MaterialSection({
                     <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="type" value={item.type} options={MATERIAL_TYPE_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="name" value={item.name} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="vendor" value={item.vendor} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="quantity" value={String(item.quantity)} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="unit" value={item.unit} options={MATERIAL_UNIT_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="unitCost" value={String(item.unitCost)} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="unitCost" value={item.unitCost.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 px-2 py-2 text-right align-middle font-medium tabular-nums">{(item.totalCost ?? 0).toLocaleString()}원</td>
                     <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="status" value={item.status} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="px-2 py-2 text-center align-middle">
@@ -532,9 +552,9 @@ function OutsourcingSection({
                   {[
                     ["공정", "process", item.process, "text"],
                     ["외주처", "vendor", item.vendor, "text"],
-                    ["수량", "quantity", String(item.quantity), "decimal"],
+                    ["수량", "quantity", item.quantity.toLocaleString(), "decimal"],
                     ["단가기준", "unitType", item.unitType, "text"],
-                    ["단가", "unitCost", String(item.unitCost), "decimal"],
+                    ["단가", "unitCost", item.unitCost.toLocaleString(), "decimal"],
                     ["상태", "status", item.status, "text"],
                   ].map(([label, field, value, inputMode]) => (
                     <div key={`${item.id}-${field}`} className="flex items-center justify-between gap-4">
@@ -601,9 +621,9 @@ function OutsourcingSection({
                   <tr key={item.id} className="border-b border-stone-100">
                     <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} options={OUTSOURCING_PROCESS_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="vendor" value={item.vendor} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="quantity" value={String(item.quantity)} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="unitType" value={item.unitType} options={OUTSOURCING_UNIT_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="unitCost" value={String(item.unitCost)} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="unitCost" value={item.unitCost.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 px-2 py-2 text-right align-middle font-medium tabular-nums">{(item.totalCost ?? 0).toLocaleString()}원</td>
                     <td className="min-w-0 px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="status" value={item.status} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="px-2 py-2 text-center align-middle">
@@ -749,11 +769,11 @@ export default function WorkOrderDetail({
       ...current,
       recalculateMaterial({
         id: createId("material"),
-        type: MATERIAL_TYPE_OPTIONS[0],
+        type: DEFAULT_MATERIAL_TYPE,
         name: "새 자재",
         vendor: "",
         quantity: 0,
-        unit: MATERIAL_UNIT_OPTIONS[0],
+        unit: DEFAULT_MATERIAL_UNIT,
         unitCost: 0,
         totalCost: 0,
         status: "준비",
@@ -773,10 +793,10 @@ export default function WorkOrderDetail({
       ...current,
       recalculateOutsourcing({
         id: createId("outsourcing"),
-        process: OUTSOURCING_PROCESS_OPTIONS[0],
+        process: DEFAULT_OUTSOURCING_PROCESS,
         vendor: "",
         quantity: 0,
-        unitType: OUTSOURCING_UNIT_OPTIONS[0],
+        unitType: DEFAULT_OUTSOURCING_UNIT,
         unitCost: 0,
         totalCost: 0,
         status: "대기",
