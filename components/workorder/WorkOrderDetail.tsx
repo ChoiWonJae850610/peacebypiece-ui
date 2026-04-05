@@ -49,13 +49,19 @@ function SectionHeader({
       <button
         type="button"
         onClick={onToggle}
+        aria-expanded={open}
         className="flex min-w-0 flex-1 items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-left transition hover:border-stone-300 hover:bg-stone-50"
       >
         <div className="min-w-0">
           <div className="text-sm font-semibold text-stone-900 md:text-base">{title}</div>
           <div className="mt-1 truncate text-xs text-stone-500 md:text-sm">{summary}</div>
         </div>
-        <span className="shrink-0 rounded-full border border-stone-200 px-2.5 py-1 text-xs font-medium text-stone-600">{open ? "접기" : "펼치기"}</span>
+        <span
+          aria-hidden="true"
+          className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition-transform ${open ? "rotate-180" : "rotate-0"}`}
+        >
+          ▾
+        </span>
       </button>
       {rightSlot ? <div className="hidden shrink-0 md:block">{rightSlot}</div> : null}
     </div>
