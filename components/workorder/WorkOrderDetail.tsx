@@ -83,18 +83,6 @@ function isEditingCell(editingCell: EditableCell, section: EditableSectionKey, r
   return editingCell?.section === section && editingCell.rowId === rowId && editingCell.field === field;
 }
 
-function AddButton({ label, onClick }: { label: string; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 transition hover:border-stone-400 hover:bg-stone-50"
-    >
-      + {label}
-    </button>
-  );
-}
-
 function DeleteButton({ onClick, srLabel }: { onClick: () => void; srLabel: string }) {
   return (
     <button
@@ -339,13 +327,9 @@ function MaterialSection({
         summary={summary}
         open={open}
         onToggle={onToggle}
-        rightSlot={<AddButton label="항목 추가" onClick={onAdd} />}
       />
       {open ? (
         <>
-          <div className="mt-3 md:hidden">
-            <div className="w-full"><AddButton label="항목 추가" onClick={onAdd} /></div>
-          </div>
           <div className="mt-4 space-y-3 md:hidden">
             {materials.map((item, index) => (
               <div key={item.id} className="rounded-2xl border border-stone-200 bg-white p-4">
@@ -392,13 +376,20 @@ function MaterialSection({
                 </div>
               </div>
             ))}
+            <button
+              type="button"
+              onClick={onAdd}
+              className="flex w-full items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-50"
+            >
+              + 항목 추가
+            </button>
           </div>
           <div className="mt-4 hidden overflow-x-auto md:block">
             <table className="min-w-full text-left text-sm">
               <thead className="text-stone-500">
                 <tr className="border-b border-stone-200">
-                  {["구분", "자재명", "거래처", "수량", "단위", "단가", "금액", "상태", "삭제"].map((header) => (
-                    <th key={header} className="px-2 py-3">{header}</th>
+                  {["구분", "자재명", "거래처", "수량", "단위", "단가", "금액", "상태", ""].map((header, index) => (
+                    <th key={`${header}-${index}`} className="px-2 py-3">{header}</th>
                   ))}
                 </tr>
               </thead>
@@ -418,6 +409,17 @@ function MaterialSection({
                     </td>
                   </tr>
                 ))}
+                <tr>
+                  <td colSpan={9} className="px-2 pb-2 pt-3">
+                    <button
+                      type="button"
+                      onClick={onAdd}
+                      className="flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-3 text-sm font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-50"
+                    >
+                      + 항목 추가
+                    </button>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -462,13 +464,9 @@ function OutsourcingSection({
         summary={summary}
         open={open}
         onToggle={onToggle}
-        rightSlot={<AddButton label="공정 추가" onClick={onAdd} />}
       />
       {open ? (
         <>
-          <div className="mt-3 md:hidden">
-            <div className="w-full"><AddButton label="공정 추가" onClick={onAdd} /></div>
-          </div>
           <div className="mt-4 space-y-3 md:hidden">
             {outsourcing.map((item, index) => (
               <div key={item.id} className="rounded-2xl border border-stone-200 bg-white p-4">
@@ -514,13 +512,20 @@ function OutsourcingSection({
                 </div>
               </div>
             ))}
+            <button
+              type="button"
+              onClick={onAdd}
+              className="flex w-full items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-50"
+            >
+              + 공정 추가
+            </button>
           </div>
           <div className="mt-4 hidden overflow-x-auto md:block">
             <table className="min-w-full text-left text-sm">
               <thead className="text-stone-500">
                 <tr className="border-b border-stone-200">
-                  {["공정", "외주처", "수량", "단가기준", "단가", "금액", "상태", "삭제"].map((header) => (
-                    <th key={header} className="px-2 py-3">{header}</th>
+                  {["공정", "외주처", "수량", "단가기준", "단가", "금액", "상태", ""].map((header, index) => (
+                    <th key={`${header}-${index}`} className="px-2 py-3">{header}</th>
                   ))}
                 </tr>
               </thead>
@@ -539,6 +544,17 @@ function OutsourcingSection({
                     </td>
                   </tr>
                 ))}
+                <tr>
+                  <td colSpan={8} className="px-2 pb-2 pt-3">
+                    <button
+                      type="button"
+                      onClick={onAdd}
+                      className="flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-3 text-sm font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-50"
+                    >
+                      + 공정 추가
+                    </button>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
