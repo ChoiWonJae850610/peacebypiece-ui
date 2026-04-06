@@ -1,7 +1,6 @@
 import { useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
 import PartnerFactoryRegistryModal, { type RegistryType } from "@/components/workorder/PartnerFactoryRegistryModal";
 import { CATEGORY1_OPTIONS, CATEGORY2_OPTIONS_MAP, CATEGORY3_OPTIONS_MAP, DEFAULT_BASIC_YEAR, DEFAULT_FACTORY_OPTION, DEFAULT_MATERIAL_TYPE, DEFAULT_MATERIAL_UNIT, DEFAULT_OUTSOURCING_PROCESS, DEFAULT_OUTSOURCING_UNIT, DEFAULT_PARTNER_OPTION, FACTORY_OPTIONS, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS, OUTSOURCING_PROCESS_OPTIONS, OUTSOURCING_UNIT_OPTIONS, PARTNER_OPTIONS, PRIORITY_OPTIONS, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
-import { getStageTone } from "@/lib/constants/workflow";
 import type { DisplayStage } from "@/types/workflow";
 import { toDisplayValue } from "@/lib/utils/display";
 import type { Material, Outsourcing, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
@@ -281,19 +280,42 @@ function getInitialBasicInfo(workOrder: WorkOrder): BasicInfoState {
   };
 }
 
-function StageProgressBar({ stages, currentStage }: { stages: DisplayStage[]; currentStage: DisplayStage }) {
+function StageProgressBar({
+  stages,
+  currentStage,
+  actions,
+  onAction,
+}: {
+  stages: DisplayStage[];
+  currentStage: DisplayStage;
+  actions: WorkflowAction[];
+  onAction: (action: WorkflowAction) => void;
+}) {
   const currentIndex = stages.indexOf(currentStage);
   const previousStage = currentIndex > 0 ? stages[currentIndex - 1] : null;
   const nextStage = currentIndex >= 0 && currentIndex < stages.length - 1 ? stages[currentIndex + 1] : null;
 
   return (
     <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-3 md:mt-5 md:p-4">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-xs font-semibold text-stone-900 md:text-sm">진행 단계</div>
-          <div className="mt-1 text-[11px] text-stone-500 md:text-xs">현재 상태를 중심으로 확인합니다.</div>
+          <div className="mt-1 text-[11px] text-stone-500 md:text-xs">현재 상태를 중심으로 다음 작업을 진행합니다.</div>
         </div>
-        <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium md:px-3 md:text-xs ${getStageTone(currentStage)}`}>{currentStage}</span>
+        {actions.length > 0 ? (
+          <div className="hidden flex-wrap justify-end gap-2 md:flex">
+            {actions.map((action) => (
+              <button
+                key={`${currentStage}-${action.nextState}-${action.label}-desktop`}
+                type="button"
+                onClick={() => onAction(action)}
+                className="rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800 transition hover:border-stone-400 hover:bg-stone-100"
+              >
+                {action.label}
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-3 md:hidden">
@@ -347,6 +369,21 @@ function StageProgressBar({ stages, currentStage }: { stages: DisplayStage[]; cu
           })}
         </div>
       </div>
+
+      {actions.length > 0 ? (
+        <div className="mt-3 flex flex-wrap gap-2 md:hidden">
+          {actions.map((action) => (
+            <button
+              key={`${currentStage}-${action.nextState}-${action.label}-mobile`}
+              type="button"
+              onClick={() => onAction(action)}
+              className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800 transition hover:border-stone-400 hover:bg-stone-100 sm:flex-none"
+            >
+              {action.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -1014,13 +1051,7 @@ export default function WorkOrderDetail({
                   저장
                 </button>
               </div>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <div className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${getStageTone(currentWorkflowState)}`}>상태: {currentWorkflowState}</div>
-                <div className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${saveStatus === "saving" ? "bg-cyan-100 text-cyan-800" : saveStatus === "dirty" ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}>
-                  {saveStatus === "saving" ? "저장 중" : saveStatus === "dirty" ? "저장되지 않음" : "저장됨"}
-                </div>
-              </div>
-              <div className="mt-2 text-xs text-stone-400">최근 변경 {lastSavedAt || "-"}</div>
+              <div className="mt-3 text-xs text-stone-400">최근 변경 {lastSavedAt || "-"}</div>
               <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 pr-2 text-sm text-stone-600 md:hidden">
                 <span className="truncate">담당자 <span className="font-medium text-stone-900">{workOrder.manager || "-"}</span></span>
                 {canEditInventory ? (
@@ -1035,20 +1066,6 @@ export default function WorkOrderDetail({
                   <span>현재 재고 <span className="font-medium tabular-nums text-stone-900">{currentInventoryQuantity.toLocaleString()}장</span></span>
                 )}
               </div>
-              {actions.length > 0 ? (
-                <div className="mt-3 flex w-full flex-wrap gap-2 md:hidden">
-                  {actions.map((action) => (
-                    <button
-                      key={`${currentWorkflowState}-${action.nextState}-${action.label}`}
-                      type="button"
-                      onClick={() => onAction(action)}
-                      className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800 transition hover:border-stone-400 hover:bg-stone-100 sm:flex-none"
-                    >
-                      {action.label}
-                    </button>
-                  ))}
-                </div>
-              ) : null}
             </div>
             <div className="hidden shrink-0 md:flex md:min-w-[220px] md:flex-col md:items-end md:gap-3 md:text-right">
               <button
@@ -1074,26 +1091,12 @@ export default function WorkOrderDetail({
                   )}
                 </div>
               </div>
-              {actions.length > 0 ? (
-                <div className="flex w-full flex-wrap justify-end gap-2">
-                  {actions.map((action) => (
-                    <button
-                      key={`${currentWorkflowState}-${action.nextState}-${action.label}`}
-                      type="button"
-                      onClick={() => onAction(action)}
-                      className="rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800 transition hover:border-stone-400 hover:bg-stone-100"
-                    >
-                      {action.label}
-                    </button>
-                  ))}
-                </div>
-              ) : null}
             </div>
           </div>
         </div>
       </div>
 
-      <StageProgressBar stages={visibleStages} currentStage={currentDisplayStage} />
+      <StageProgressBar stages={visibleStages} currentStage={currentDisplayStage} actions={actions} onAction={onAction} />
 
       <div className="mt-6 grid gap-6">
         <BasicInfoSection
