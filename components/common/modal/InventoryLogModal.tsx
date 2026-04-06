@@ -97,7 +97,7 @@ export default function InventoryLogModal({
       <ModalHeader
         titleId="inventory-log-modal-title"
         title="전체 히스토리"
-        description="요약 문구를 누르면 상세 변경 내용을 펼쳐서 확인할 수 있습니다."
+        description={undefined}
         onClose={onClose}
       />
 

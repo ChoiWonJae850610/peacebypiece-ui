@@ -90,7 +90,6 @@ function AttachmentPanel({
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="text-base font-semibold">첨부파일</h3>
-          <div className="mt-1 text-xs text-stone-500">우측 패널에서 바로 확인하고 관리할 수 있습니다.</div>
         </div>
         <button type="button" onClick={onOpenAttachmentPicker} className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">+ 첨부 추가</button>
       </div>
@@ -218,9 +217,6 @@ export default function WorkOrderSidePanel({
           <div className="flex items-start justify-between gap-3">
             <div>
               <h3 className="text-base font-semibold">최근 히스토리</h3>
-              <div className="mt-1 text-xs text-stone-500">
-                {isAdmin ? "요약 문구를 누르면 상세 변경 내용을 펼쳐서 확인할 수 있습니다." : currentRole === "디자이너" ? "작업/상태/첨부 히스토리만 표시됩니다." : "재고/첨부 히스토리만 표시됩니다."}
-              </div>
             </div>
             <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">{filteredHistoryLogs.length}건</span>
           </div>

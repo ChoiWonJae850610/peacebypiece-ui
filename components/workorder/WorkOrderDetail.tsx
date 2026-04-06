@@ -294,28 +294,33 @@ function StageProgressBar({
 }) {
   const currentIndex = stages.indexOf(currentStage);
   const primaryActionIndex = actions.findIndex((action) => !action.label.includes("반려"));
-  const currentStageTone = getStageTone(currentStage);
-  const currentStageDotTone = currentStageTone.includes("bg-") ? currentStageTone : "bg-stone-900 text-white";
-  const currentStageTrackTone = currentStageTone.includes("bg-violet")
-    ? "bg-violet-300"
-    : currentStageTone.includes("bg-fuchsia")
-    ? "bg-fuchsia-300"
-    : currentStageTone.includes("bg-amber")
-    ? "bg-amber-300"
-    : currentStageTone.includes("bg-blue")
-    ? "bg-blue-300"
-    : currentStageTone.includes("bg-emerald")
-    ? "bg-emerald-300"
-    : currentStageTone.includes("bg-stone")
-    ? "bg-stone-400"
-    : "bg-stone-300";
+  const getDotTone = (stage: DisplayStage) => {
+    const tone = getStageTone(stage);
+    return tone.includes("bg-") ? tone : "bg-stone-900 text-white";
+  };
+
+  const getTrackTone = (stage: DisplayStage) => {
+    const tone = getStageTone(stage);
+    return tone.includes("bg-violet")
+      ? "bg-violet-300"
+      : tone.includes("bg-fuchsia")
+      ? "bg-fuchsia-300"
+      : tone.includes("bg-amber")
+      ? "bg-amber-300"
+      : tone.includes("bg-blue")
+      ? "bg-blue-300"
+      : tone.includes("bg-emerald")
+      ? "bg-emerald-300"
+      : tone.includes("bg-stone")
+      ? "bg-stone-400"
+      : "bg-stone-300";
+  };
 
   return (
     <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-3 md:mt-5 md:p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-xs font-semibold text-stone-900 md:text-sm">진행 단계</div>
-          <div className="mt-1 text-[11px] text-stone-500 md:text-xs">현재 상태를 중심으로 다음 작업을 진행합니다.</div>
         </div>
         {actions.length > 0 ? (
           <div className="hidden flex-wrap justify-end gap-2 md:flex">
@@ -346,15 +351,17 @@ function StageProgressBar({
               const isCurrent = stage === currentStage;
               const isDone = currentIndex >= 0 && index < currentIndex;
               const isUpcoming = !isCurrent && !isDone;
+              const dotTone = getDotTone(stage);
+              const trackTone = getTrackTone(stage);
               return (
                 <div key={`${stage}-mobile`} className="flex items-center gap-1.5">
                   <div className="flex min-w-[48px] flex-col items-center text-center">
                     <div
                       className={`flex h-3.5 w-3.5 items-center justify-center rounded-full ${
                         isCurrent
-                          ? currentStageDotTone
+                          ? dotTone
                           : isDone
-                          ? `${currentStageTrackTone} text-transparent`
+                          ? `${trackTone} text-transparent`
                           : "bg-stone-300 text-transparent"
                       }`}
                     >
@@ -364,7 +371,7 @@ function StageProgressBar({
                       {stage}
                     </div>
                   </div>
-                  {index < stages.length - 1 ? <div className={`h-0.5 w-5 shrink-0 rounded-full ${index < currentIndex ? currentStageTrackTone : "bg-stone-200"}`} /> : null}
+                  {index < stages.length - 1 ? <div className={`h-0.5 w-5 shrink-0 rounded-full ${index < currentIndex ? trackTone : "bg-stone-200"}`} /> : null}
                 </div>
               );
             })}
@@ -378,6 +385,8 @@ function StageProgressBar({
             const isCurrent = stage === currentStage;
             const isDone = currentIndex >= 0 && index < currentIndex;
             const isUpcoming = !isCurrent && !isDone;
+            const dotTone = getDotTone(stage);
+            const trackTone = getTrackTone(stage);
 
             return (
               <div key={stage} className="flex items-center gap-2">
@@ -385,9 +394,9 @@ function StageProgressBar({
                   <div
                     className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-semibold ${
                       isCurrent
-                        ? currentStageDotTone
+                        ? dotTone
                         : isDone
-                        ? `${currentStageTrackTone} text-white`
+                        ? `${trackTone} text-white`
                         : "bg-stone-200 text-stone-500"
                     }`}
                   >
@@ -405,7 +414,7 @@ function StageProgressBar({
                     {stage}
                   </div>
                 </div>
-                {index < stages.length - 1 ? <div className={`h-px w-6 shrink-0 ${index < currentIndex ? currentStageTrackTone : "bg-stone-300"}`} /> : null}
+                {index < stages.length - 1 ? <div className={`h-px w-6 shrink-0 ${index < currentIndex ? trackTone : "bg-stone-300"}`} /> : null}
               </div>
             );
           })}

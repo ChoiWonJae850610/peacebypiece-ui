@@ -90,7 +90,7 @@ export default function InventoryEditor({
       <ModalHeader
         titleId="inventory-editor-title"
         title="재고 수정"
-        description="입고, 보정, 차감 수량을 한 번에 입력해 재고를 수정하는 화면입니다."
+        description={undefined}
         onClose={onClose}
       />
 
