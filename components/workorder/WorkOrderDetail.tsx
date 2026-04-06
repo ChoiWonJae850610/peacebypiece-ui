@@ -1020,6 +1020,7 @@ export default function WorkOrderDetail({
                   {saveStatus === "saving" ? "저장 중" : saveStatus === "dirty" ? "저장되지 않음" : "저장됨"}
                 </div>
               </div>
+              <div className="mt-2 text-xs text-stone-400">최근 변경 {lastSavedAt || "-"}</div>
               <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 pr-2 text-sm text-stone-600 md:hidden">
                 <span className="truncate">담당자 <span className="font-medium text-stone-900">{workOrder.manager || "-"}</span></span>
                 {canEditInventory ? (
@@ -1057,8 +1058,8 @@ export default function WorkOrderDetail({
               >
                 저장
               </button>
-              <div className="flex flex-col items-end gap-1 text-sm text-stone-600">
-                <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-right">
+              <div className="flex flex-col items-end gap-3 text-right">
+                <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-sm text-stone-600">
                   <span>담당자 <span className="font-medium text-stone-900">{workOrder.manager || "-"}</span></span>
                   {canEditInventory ? (
                     <button
@@ -1072,7 +1073,6 @@ export default function WorkOrderDetail({
                     <span>현재 재고 <span className="font-medium tabular-nums text-stone-900">{currentInventoryQuantity.toLocaleString()}장</span></span>
                   )}
                 </div>
-                <span className="text-xs text-stone-400">최근 변경 {lastSavedAt || "-"}</span>
               </div>
               {actions.length > 0 ? (
                 <div className="flex w-full flex-wrap justify-end gap-2">
