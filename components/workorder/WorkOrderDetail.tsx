@@ -294,7 +294,7 @@ function StageProgressBar({
 }) {
   const currentIndex = stages.indexOf(currentStage);
   const primaryActionIndex = actions.findIndex((action) => !action.label.includes("반려"));
-<<<<<<< HEAD
+
   const getDotTone = (stage: DisplayStage) => {
     const tone = getStageTone(stage);
     return tone.includes("bg-") ? tone : "bg-stone-900 text-white";
@@ -316,7 +316,7 @@ function StageProgressBar({
       ? "bg-stone-400"
       : "bg-stone-300";
   };
-=======
+
   const currentStageTone = getStageTone(currentStage);
   const currentStageDotTone = currentStageTone.includes("bg-") ? currentStageTone : "bg-stone-900 text-white";
   const currentStageTrackTone = currentStageTone.includes("bg-violet")
@@ -338,8 +338,6 @@ function StageProgressBar({
     { label: "검수", stages: ["검수", "완료"] },
   ];
   const currentGroupIndex = stageGroups.findIndex((group) => group.stages.includes(currentStage));
->>>>>>> 086d46263ac7a7409da842a06162bc5c6d35b60e
-
   return (
     <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-3 md:mt-5 md:p-4">
       <div className="flex items-start justify-between gap-3">
