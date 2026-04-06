@@ -367,28 +367,49 @@ function StageProgressBar({
       </div>
 
       <div className="mt-3">
-        <div className="grid grid-cols-3 gap-2 rounded-2xl border border-stone-200 bg-white p-2 md:px-3 md:py-2.5">
-          {stageGroups.map((group, index) => {
-            const isCurrentGroup = index === currentGroupIndex;
-            const isCompletedGroup = currentGroupIndex > index;
-            return (
-              <div
-                key={group.label}
-                className={`rounded-xl border px-2 py-2 text-center ${
-                  isCurrentGroup
-                    ? "border-stone-900 bg-stone-900 text-white"
-                    : isCompletedGroup
-                    ? "border-stone-300 bg-stone-100 text-stone-700"
-                    : "border-stone-200 bg-stone-50 text-stone-400"
-                }`}
-              >
-                <div className="text-[11px] font-semibold md:text-xs">{group.label}</div>
-                <div className="mt-1 text-[10px] leading-3 opacity-80 md:text-[11px]">
-                  {group.stages.join(" · ")}
+        <div className="rounded-2xl border border-stone-200 bg-white px-3 py-3 md:px-4 md:py-3.5">
+          <div className="grid grid-cols-3 gap-2 md:gap-3">
+            {stageGroups.map((group, index) => {
+              const isCurrentGroup = index === currentGroupIndex;
+              const isCompletedGroup = currentGroupIndex > index;
+              const isUpcomingGroup = !isCurrentGroup && !isCompletedGroup;
+              return (
+                <div key={group.label} className="min-w-0">
+                  <div
+                    className={`h-1.5 w-full rounded-full ${
+                      isCurrentGroup
+                        ? "bg-stone-900"
+                        : isCompletedGroup
+                        ? "bg-stone-400"
+                        : "bg-stone-200"
+                    }`}
+                  />
+                  <div
+                    className={`mt-2 inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold md:text-xs ${
+                      isCurrentGroup
+                        ? "bg-stone-900 text-white"
+                        : isCompletedGroup
+                        ? "bg-stone-100 text-stone-700"
+                        : "bg-stone-50 text-stone-400"
+                    }`}
+                  >
+                    {group.label}
+                  </div>
+                  <div
+                    className={`mt-1 text-[10px] leading-3 md:text-[11px] ${
+                      isCurrentGroup
+                        ? "text-stone-700"
+                        : isUpcomingGroup
+                        ? "text-stone-400"
+                        : "text-stone-500"
+                    }`}
+                  >
+                    {group.stages.join(" · ")}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
 
