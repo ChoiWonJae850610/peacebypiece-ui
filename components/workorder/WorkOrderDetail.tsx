@@ -304,6 +304,7 @@ function StageProgressBar({
     { label: "검수", stages: ["검수", "완료"] },
   ];
   const currentGroupIndex = stageGroups.findIndex((group) => group.stages.includes(currentStage));
+  const currentGroup = currentGroupIndex >= 0 ? stageGroups[currentGroupIndex] : null;
   const groupByStage = new Map(stageGroups.flatMap((group, groupIndex) => group.stages.map((stage) => [stage, groupIndex] as const)));
   return (
     <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-3 md:mt-5 md:p-4">
@@ -333,50 +334,22 @@ function StageProgressBar({
         ) : null}
       </div>
 
-      <div className="mt-3">
-        <div className="rounded-2xl border border-stone-200 bg-white px-3 py-3 md:px-4 md:py-3.5">
-          <div className="grid grid-cols-3 gap-2 md:gap-3">
-            {stageGroups.map((group, index) => {
-              const isCurrentGroup = index === currentGroupIndex;
-              const isCompletedGroup = currentGroupIndex > index;
-              const isUpcomingGroup = !isCurrentGroup && !isCompletedGroup;
-              return (
-                <div key={group.label} className="min-w-0">
-                  <div
-                    className={`h-1.5 w-full rounded-full ${
-                      isCurrentGroup
-                        ? currentTrackTone
-                        : isCompletedGroup
-                        ? doneTrackTone
-                        : "bg-stone-200"
-                    }`}
-                  />
-                  <div
-                    className={`mt-2 inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold md:text-xs ${
-                      isCurrentGroup
-                        ? "bg-stone-900 text-white"
-                        : isCompletedGroup
-                        ? "bg-stone-100 text-stone-700"
-                        : "bg-stone-50 text-stone-400"
-                    }`}
-                  >
-                    {group.label}
-                  </div>
-                  <div
-                    className={`mt-1 text-[10px] leading-3 md:text-[11px] ${
-                      isCurrentGroup
-                        ? "text-stone-700"
-                        : isUpcomingGroup
-                        ? "text-stone-400"
-                        : "text-stone-500"
-                    }`}
-                  >
-                    {group.stages.join(" · ")}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+      <div className="mt-3 px-1">
+        <div className="flex flex-wrap items-end gap-x-4 gap-y-1 md:gap-x-5">
+          {stageGroups.map((group, index) => {
+            const isCurrentGroup = index === currentGroupIndex;
+            return (
+              <div
+                key={group.label}
+                className={isCurrentGroup
+                  ? "text-base font-semibold leading-none text-stone-900 md:text-lg"
+                  : "text-xs font-medium leading-none text-stone-400 md:text-sm"
+                }
+              >
+                {group.label}
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -388,12 +361,11 @@ function StageProgressBar({
               const isDone = currentIndex >= 0 && index < currentIndex;
               const isUpcoming = !isCurrent && !isDone;
               const stageGroupIndex = groupByStage.get(stage) ?? -1;
-              const isCurrentGroupStage = stageGroupIndex === currentGroupIndex;
               const nextStageGroupIndex = index < stages.length - 1 ? (groupByStage.get(stages[index + 1]) ?? -1) : -1;
               const isGroupBreakAfter = nextStageGroupIndex !== -1 && nextStageGroupIndex !== stageGroupIndex;
 
               return (
-                <div key={`${stage}-mobile`} className={`flex items-center gap-1.5 rounded-xl px-1.5 py-1 ${isCurrentGroupStage ? "bg-stone-50" : ""}`}>
+                <div key={`${stage}-mobile`} className="flex items-center gap-1.5 rounded-xl px-1.5 py-1">
                   <div className="flex min-w-[48px] flex-col items-center text-center">
                     <div
                       className={`flex h-3.5 w-3.5 items-center justify-center rounded-full ${
@@ -427,16 +399,13 @@ function StageProgressBar({
             const isDone = currentIndex >= 0 && index < currentIndex;
             const isUpcoming = !isCurrent && !isDone;
             const stageGroupIndex = groupByStage.get(stage) ?? -1;
-            const isCurrentGroupStage = stageGroupIndex === currentGroupIndex;
             const nextStageGroupIndex = index < stages.length - 1 ? (groupByStage.get(stages[index + 1]) ?? -1) : -1;
             const isGroupBreakAfter = nextStageGroupIndex !== -1 && nextStageGroupIndex !== stageGroupIndex;
 
             return (
               <div
                 key={stage}
-                className={`flex items-center gap-2 rounded-xl px-2 py-2 ${
-                  isCurrentGroupStage ? "bg-stone-50 ring-1 ring-inset ring-stone-200" : ""
-                } ${isGroupBreakAfter ? "mr-3" : ""}`}
+                className={`flex items-center gap-2 rounded-xl px-2 py-2 ${isGroupBreakAfter ? "mr-3" : ""}`}
               >
                 <div className="flex min-w-[82px] flex-col items-center text-center">
                   <div
