@@ -294,6 +294,7 @@ function StageProgressBar({
 }) {
   const currentIndex = stages.indexOf(currentStage);
   const primaryActionIndex = actions.findIndex((action) => !action.label.includes("반려"));
+<<<<<<< HEAD
   const getDotTone = (stage: DisplayStage) => {
     const tone = getStageTone(stage);
     return tone.includes("bg-") ? tone : "bg-stone-900 text-white";
@@ -315,6 +316,29 @@ function StageProgressBar({
       ? "bg-stone-400"
       : "bg-stone-300";
   };
+=======
+  const currentStageTone = getStageTone(currentStage);
+  const currentStageDotTone = currentStageTone.includes("bg-") ? currentStageTone : "bg-stone-900 text-white";
+  const currentStageTrackTone = currentStageTone.includes("bg-violet")
+    ? "bg-violet-300"
+    : currentStageTone.includes("bg-fuchsia")
+    ? "bg-fuchsia-300"
+    : currentStageTone.includes("bg-amber")
+    ? "bg-amber-300"
+    : currentStageTone.includes("bg-blue")
+    ? "bg-blue-300"
+    : currentStageTone.includes("bg-emerald")
+    ? "bg-emerald-300"
+    : currentStageTone.includes("bg-stone")
+    ? "bg-stone-400"
+    : "bg-stone-300";
+  const stageGroups: Array<{ label: string; stages: DisplayStage[] }> = [
+    { label: "제작", stages: ["작성중", "검토요청", "검토완료"] },
+    { label: "생산", stages: ["발주요청"] },
+    { label: "검수", stages: ["검수", "완료"] },
+  ];
+  const currentGroupIndex = stageGroups.findIndex((group) => group.stages.includes(currentStage));
+>>>>>>> 086d46263ac7a7409da842a06162bc5c6d35b60e
 
   return (
     <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-3 md:mt-5 md:p-4">
@@ -342,6 +366,32 @@ function StageProgressBar({
             })}
           </div>
         ) : null}
+      </div>
+
+      <div className="mt-3">
+        <div className="grid grid-cols-3 gap-2 rounded-2xl border border-stone-200 bg-white p-2 md:px-3 md:py-2.5">
+          {stageGroups.map((group, index) => {
+            const isCurrentGroup = index === currentGroupIndex;
+            const isCompletedGroup = currentGroupIndex > index;
+            return (
+              <div
+                key={group.label}
+                className={`rounded-xl border px-2 py-2 text-center ${
+                  isCurrentGroup
+                    ? "border-stone-900 bg-stone-900 text-white"
+                    : isCompletedGroup
+                    ? "border-stone-300 bg-stone-100 text-stone-700"
+                    : "border-stone-200 bg-stone-50 text-stone-400"
+                }`}
+              >
+                <div className="text-[11px] font-semibold md:text-xs">{group.label}</div>
+                <div className="mt-1 text-[10px] leading-3 opacity-80 md:text-[11px]">
+                  {group.stages.join(" · ")}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <div className="mt-3 md:hidden">
