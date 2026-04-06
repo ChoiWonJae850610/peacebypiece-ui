@@ -1002,9 +1002,18 @@ export default function WorkOrderDetail({
     <div className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm md:p-6">
       <div className="border-b border-stone-200 pb-4">
         <div className="flex flex-col gap-3 md:gap-4">
-          <div className="flex items-start justify-between gap-3 md:gap-6">
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-6">
             <div className="min-w-0 flex-1">
-              <h2 className="mt-1 break-keep text-2xl font-semibold">{workOrder.title}</h2>
+              <div className="flex items-start justify-between gap-3 md:block">
+                <h2 className="mt-1 break-keep text-2xl font-semibold">{workOrder.title}</h2>
+                <button
+                  type="button"
+                  onClick={onSave}
+                  className="shrink-0 rounded-xl bg-stone-900 px-4 py-2 text-sm text-white transition hover:bg-stone-800 md:hidden"
+                >
+                  저장
+                </button>
+              </div>
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <div className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${getStageTone(currentWorkflowState)}`}>상태: {currentWorkflowState}</div>
                 <div className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${saveStatus === "saving" ? "bg-cyan-100 text-cyan-800" : saveStatus === "dirty" ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}>
@@ -1025,48 +1034,62 @@ export default function WorkOrderDetail({
                   <span>현재 재고 <span className="font-medium tabular-nums text-stone-900">{currentInventoryQuantity.toLocaleString()}장</span></span>
                 )}
               </div>
+              {actions.length > 0 ? (
+                <div className="mt-3 flex w-full flex-wrap gap-2 md:hidden">
+                  {actions.map((action) => (
+                    <button
+                      key={`${currentWorkflowState}-${action.nextState}-${action.label}`}
+                      type="button"
+                      onClick={() => onAction(action)}
+                      className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800 transition hover:border-stone-400 hover:bg-stone-100 sm:flex-none"
+                    >
+                      {action.label}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
             </div>
-            <button
-              type="button"
-              onClick={onSave}
-              className="shrink-0 rounded-xl bg-stone-900 px-4 py-2 text-sm text-white transition hover:bg-stone-800"
-            >
-              저장
-            </button>
-          </div>
-          <div className="hidden md:flex md:items-start md:justify-end">
-            <div className="flex flex-col items-end gap-1 text-sm text-stone-600">
-              <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-right">
-                <span>담당자 <span className="font-medium text-stone-900">{workOrder.manager || "-"}</span></span>
-                {canEditInventory ? (
-                  <button
-                    type="button"
-                    onClick={onOpenInventoryEditor}
-                    className="inline-flex items-center bg-transparent p-0 text-sm font-medium text-stone-700 underline-offset-2 transition hover:text-stone-900 hover:underline"
-                  >
-                    현재 재고 <span className="ml-1 tabular-nums text-stone-900">{currentInventoryQuantity.toLocaleString()}장</span>
-                  </button>
-                ) : (
-                  <span>현재 재고 <span className="font-medium tabular-nums text-stone-900">{currentInventoryQuantity.toLocaleString()}장</span></span>
-                )}
+            <div className="hidden shrink-0 md:flex md:min-w-[220px] md:flex-col md:items-end md:gap-3 md:text-right">
+              <button
+                type="button"
+                onClick={onSave}
+                className="rounded-xl bg-stone-900 px-4 py-2 text-sm text-white transition hover:bg-stone-800"
+              >
+                저장
+              </button>
+              <div className="flex flex-col items-end gap-1 text-sm text-stone-600">
+                <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-right">
+                  <span>담당자 <span className="font-medium text-stone-900">{workOrder.manager || "-"}</span></span>
+                  {canEditInventory ? (
+                    <button
+                      type="button"
+                      onClick={onOpenInventoryEditor}
+                      className="inline-flex items-center bg-transparent p-0 text-sm font-medium text-stone-700 underline-offset-2 transition hover:text-stone-900 hover:underline"
+                    >
+                      현재 재고 <span className="ml-1 tabular-nums text-stone-900">{currentInventoryQuantity.toLocaleString()}장</span>
+                    </button>
+                  ) : (
+                    <span>현재 재고 <span className="font-medium tabular-nums text-stone-900">{currentInventoryQuantity.toLocaleString()}장</span></span>
+                  )}
+                </div>
+                <span className="text-xs text-stone-400">최근 변경 {lastSavedAt || "-"}</span>
               </div>
-              <span className="text-xs text-stone-400">최근 변경 {lastSavedAt || "-"}</span>
+              {actions.length > 0 ? (
+                <div className="flex w-full flex-wrap justify-end gap-2">
+                  {actions.map((action) => (
+                    <button
+                      key={`${currentWorkflowState}-${action.nextState}-${action.label}`}
+                      type="button"
+                      onClick={() => onAction(action)}
+                      className="rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800 transition hover:border-stone-400 hover:bg-stone-100"
+                    >
+                      {action.label}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
             </div>
           </div>
-          {actions.length > 0 ? (
-            <div className="flex w-full flex-wrap gap-2">
-              {actions.map((action) => (
-                <button
-                  key={`${currentWorkflowState}-${action.nextState}-${action.label}`}
-                  type="button"
-                  onClick={() => onAction(action)}
-                  className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800 transition hover:border-stone-400 hover:bg-stone-100 sm:flex-none"
-                >
-                  {action.label}
-                </button>
-              ))}
-            </div>
-          ) : null}
         </div>
       </div>
 
