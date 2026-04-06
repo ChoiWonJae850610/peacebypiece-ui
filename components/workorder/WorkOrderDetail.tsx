@@ -1,5 +1,6 @@
 import { useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
-import { CATEGORY1_OPTIONS, CATEGORY2_OPTIONS_MAP, CATEGORY3_OPTIONS_MAP, DEFAULT_BASIC_YEAR, DEFAULT_MATERIAL_TYPE, DEFAULT_MATERIAL_UNIT, DEFAULT_OUTSOURCING_PROCESS, DEFAULT_OUTSOURCING_UNIT, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS, OUTSOURCING_PROCESS_OPTIONS, OUTSOURCING_UNIT_OPTIONS, PRIORITY_OPTIONS, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
+import PartnerFactoryRegistryModal, { type RegistryType } from "@/components/workorder/PartnerFactoryRegistryModal";
+import { CATEGORY1_OPTIONS, CATEGORY2_OPTIONS_MAP, CATEGORY3_OPTIONS_MAP, DEFAULT_BASIC_YEAR, DEFAULT_FACTORY_OPTION, DEFAULT_MATERIAL_TYPE, DEFAULT_MATERIAL_UNIT, DEFAULT_OUTSOURCING_PROCESS, DEFAULT_OUTSOURCING_UNIT, DEFAULT_PARTNER_OPTION, FACTORY_OPTIONS, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS, OUTSOURCING_PROCESS_OPTIONS, OUTSOURCING_UNIT_OPTIONS, PARTNER_OPTIONS, PRIORITY_OPTIONS, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
 import { getStageTone } from "@/lib/constants/workflow";
 import type { DisplayStage } from "@/types/workflow";
 import { toDisplayValue } from "@/lib/utils/display";
@@ -13,6 +14,8 @@ type BasicInfoState = {
   category1: string;
   category2: string;
   category3: string;
+  partner: string;
+  factory: string;
   season: string;
   year: string;
   priority: string;
@@ -236,6 +239,18 @@ function getCategory3Options(category2: string) {
   return CATEGORY3_OPTIONS_MAP[category2] ?? CATEGORY3_OPTIONS_MAP[getCategory2Options(CATEGORY1_OPTIONS[0])[0] ?? ""] ?? [];
 }
 
+function sanitizeSelectValue(value: string, options: readonly string[], fallback?: string) {
+  if (value && options.includes(value)) return value;
+  return fallback ?? options[0] ?? "";
+}
+
+function appendOption(options: string[], value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return options;
+  if (options.includes(trimmed)) return options;
+  return [...options, trimmed];
+}
+
 function parseSeasonYear(value: string) {
   const trimmed = value.trim();
   const match = trimmed.match(/^(SS|FW|NOS|ALL)(?:\s+(\d{4}))?$/i);
@@ -265,6 +280,8 @@ function getInitialBasicInfo(workOrder: WorkOrder): BasicInfoState {
     category1,
     category2,
     category3,
+    partner: DEFAULT_PARTNER_OPTION,
+    factory: workOrder.vendor || DEFAULT_FACTORY_OPTION,
     season: parsedSeason.season || SEASON_OPTIONS[0],
     year: parsedSeason.year || DEFAULT_BASIC_YEAR,
     priority: workOrder.priority || PRIORITY_OPTIONS[0],
@@ -344,30 +361,36 @@ function StageProgressBar({ stages, currentStage }: { stages: DisplayStage[]; cu
 }
 
 function BasicInfoSection({
-  workOrder,
   basicInfo,
+  partnerOptions,
+  factoryOptions,
   currentInventoryQuantity,
   canEditInventory,
+  managerName,
   currentUserName,
   currentRole,
   open,
   onToggle,
   onOpenInventoryEditor,
+  onOpenRegistryModal,
   editingCell,
   editingValue,
   onStartEdit,
   onCommitEdit,
   onCancelEdit,
 }: {
-  workOrder: WorkOrder;
   basicInfo: BasicInfoState;
+  partnerOptions: readonly string[];
+  factoryOptions: readonly string[];
   currentInventoryQuantity: number;
   canEditInventory: boolean;
+  managerName: string;
   currentUserName: string;
   currentRole: string;
   open: boolean;
   onToggle: () => void;
   onOpenInventoryEditor: () => void;
+  onOpenRegistryModal: (type: RegistryType) => void;
   editingCell: EditableCell;
   editingValue: string;
   onStartEdit: (section: EditableSectionKey, rowId: string, field: string, value: string) => void;
@@ -380,6 +403,8 @@ function BasicInfoSection({
     { label: "대분류", field: "category1", value: basicInfo.category1, options: CATEGORY1_OPTIONS },
     { label: "중분류", field: "category2", value: basicInfo.category2, options: category2Options },
     { label: "소분류", field: "category3", value: basicInfo.category3, options: category3Options },
+    { label: "거래처", field: "partner", value: basicInfo.partner, options: partnerOptions, registerType: "거래처" as RegistryType },
+    { label: "공장", field: "factory", value: basicInfo.factory, options: factoryOptions, registerType: "공장" as RegistryType },
     { label: "시즌", field: "season", value: basicInfo.season, options: SEASON_OPTIONS },
     { label: "연도", field: "year", value: basicInfo.year, options: YEAR_OPTIONS },
     { label: "우선순위", field: "priority", value: basicInfo.priority, options: PRIORITY_OPTIONS },
@@ -390,6 +415,8 @@ function BasicInfoSection({
   const summary = [
     basicInfo.category1,
     basicInfo.category2,
+    basicInfo.partner !== DEFAULT_PARTNER_OPTION ? basicInfo.partner : "",
+    basicInfo.factory !== DEFAULT_FACTORY_OPTION ? basicInfo.factory : "",
     `${basicInfo.season} ${basicInfo.year}`.trim(),
     `${basicInfo.quantity.toLocaleString()}장`,
     basicInfo.dueDate,
@@ -405,7 +432,18 @@ function BasicInfoSection({
           <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
             {infoItems.map((item) => (
               <div key={item.field} className="min-w-0 rounded-xl border border-stone-200 bg-white p-3">
-                <div className="text-xs text-stone-500">{item.label}</div>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="text-xs text-stone-500">{item.label}</div>
+                  {item.registerType ? (
+                    <button
+                      type="button"
+                      onClick={() => onOpenRegistryModal(item.registerType)}
+                      className="inline-flex h-7 shrink-0 items-center justify-center rounded-lg border border-stone-200 px-2.5 text-[11px] font-medium text-stone-700 transition hover:bg-stone-50"
+                    >
+                      등록
+                    </button>
+                  ) : null}
+                </div>
                 <div className="mt-2">
                   <EditableValue
                     section="basic"
@@ -425,8 +463,7 @@ function BasicInfoSection({
                 </div>
               </div>
             ))}
-            <Info label="공장" value={workOrder.vendor} />
-            <Info label="담당자" value={workOrder.manager} />
+            <Info label="담당자" value={managerName} />
             <Info label="재고 수량" value={`${currentInventoryQuantity.toLocaleString()}장`} valueClassName="text-base font-semibold tabular-nums" />
           </div>
           {canEditInventory && (
@@ -795,14 +832,26 @@ export default function WorkOrderDetail({
   onAction: (action: WorkflowAction) => void;
 }) {
   const [basicInfo, setBasicInfo] = useState<BasicInfoState>(() => getInitialBasicInfo(workOrder));
+  const [partnerOptions, setPartnerOptions] = useState<string[]>(() => Array.from(new Set(PARTNER_OPTIONS)));
+  const [factoryOptions, setFactoryOptions] = useState<string[]>(() => appendOption(Array.from(new Set(FACTORY_OPTIONS)), workOrder.vendor || ""));
+  const [registryModalOpen, setRegistryModalOpen] = useState(false);
+  const [registryType, setRegistryType] = useState<RegistryType>("거래처");
   const [materialItems, setMaterialItems] = useState<Material[]>(() => (workOrder.materials ?? []).map(recalculateMaterial));
   const [outsourcingItems, setOutsourcingItems] = useState<Outsourcing[]>(() => (workOrder.outsourcing ?? []).map(recalculateOutsourcing));
   const [editingCell, setEditingCell] = useState<EditableCell>(null);
   const [editingValue, setEditingValue] = useState("");
 
   useEffect(() => {
-    setBasicInfo(getInitialBasicInfo(workOrder));
-  }, [workOrder]);
+    setBasicInfo((current) => {
+      const next = getInitialBasicInfo(workOrder);
+      return {
+        ...next,
+        partner: sanitizeSelectValue(current.partner, partnerOptions, next.partner),
+        factory: sanitizeSelectValue(current.factory, appendOption(factoryOptions, workOrder.vendor || ""), next.factory),
+      };
+    });
+    setFactoryOptions((current) => appendOption(current, workOrder.vendor || ""));
+  }, [workOrder, partnerOptions, factoryOptions]);
 
   useEffect(() => {
     setMaterialItems((workOrder.materials ?? []).map(recalculateMaterial));
@@ -861,6 +910,12 @@ export default function WorkOrderDetail({
         }
         if (editingCell.field === "priority") {
           return { ...current, priority: nextValue || PRIORITY_OPTIONS[0] };
+        }
+        if (editingCell.field === "partner") {
+          return { ...current, partner: sanitizeSelectValue(nextValue, partnerOptions, DEFAULT_PARTNER_OPTION) };
+        }
+        if (editingCell.field === "factory") {
+          return { ...current, factory: sanitizeSelectValue(nextValue, factoryOptions, DEFAULT_FACTORY_OPTION) };
         }
         if (editingCell.field === "dueDate") {
           return { ...current, dueDate: nextValue };
@@ -959,6 +1014,26 @@ export default function WorkOrderDetail({
     }
   };
 
+  const openRegistryModal = (type: RegistryType) => {
+    setRegistryType(type);
+    setRegistryModalOpen(true);
+  };
+
+  const closeRegistryModal = () => {
+    setRegistryModalOpen(false);
+  };
+
+  const handleRegistrySave = ({ type, name }: { type: RegistryType; name: string }) => {
+    if (type === "거래처") {
+      setPartnerOptions((current) => appendOption(current, name));
+      setBasicInfo((current) => ({ ...current, partner: name }));
+      return;
+    }
+
+    setFactoryOptions((current) => appendOption(current, name));
+    setBasicInfo((current) => ({ ...current, factory: name }));
+  };
+
   return (
     <div className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm md:p-6">
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-stone-200 pb-5">
@@ -994,15 +1069,18 @@ export default function WorkOrderDetail({
 
       <div className="mt-6 grid gap-6">
         <BasicInfoSection
-          workOrder={workOrder}
           basicInfo={basicInfo}
+          partnerOptions={partnerOptions}
+          factoryOptions={factoryOptions}
           currentInventoryQuantity={currentInventoryQuantity}
           canEditInventory={canEditInventory}
+          managerName={workOrder.manager}
           currentUserName={currentUserName}
           currentRole={currentRole}
           open={basicInfoOpen}
           onToggle={onToggleBasicInfo}
           onOpenInventoryEditor={onOpenInventoryEditor}
+          onOpenRegistryModal={openRegistryModal}
           editingCell={editingCell}
           editingValue={editingValue}
           onStartEdit={startEdit}
@@ -1044,6 +1122,13 @@ export default function WorkOrderDetail({
           <div className="mt-3 rounded-2xl border border-stone-200 bg-white p-4 text-sm text-stone-700">{workOrder.memo}</div>
         </div>
       </div>
+
+      <PartnerFactoryRegistryModal
+        open={registryModalOpen}
+        initialType={registryType}
+        onClose={closeRegistryModal}
+        onSave={handleRegistrySave}
+      />
     </div>
   );
 }
