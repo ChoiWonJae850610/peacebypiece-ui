@@ -362,11 +362,9 @@ function StageProgressBar({ stages, currentStage }: { stages: DisplayStage[]; cu
 
 function BasicInfoSection({
   basicInfo,
-  partnerOptions,
   factoryOptions,
   currentInventoryQuantity,
   canEditInventory,
-  managerName,
   currentUserName,
   currentRole,
   open,
@@ -380,11 +378,9 @@ function BasicInfoSection({
   onCancelEdit,
 }: {
   basicInfo: BasicInfoState;
-  partnerOptions: readonly string[];
   factoryOptions: readonly string[];
   currentInventoryQuantity: number;
   canEditInventory: boolean;
-  managerName: string;
   currentUserName: string;
   currentRole: string;
   open: boolean;
@@ -403,7 +399,6 @@ function BasicInfoSection({
     { label: "대분류", field: "category1", value: basicInfo.category1, options: CATEGORY1_OPTIONS },
     { label: "중분류", field: "category2", value: basicInfo.category2, options: category2Options },
     { label: "소분류", field: "category3", value: basicInfo.category3, options: category3Options },
-    { label: "거래처", field: "partner", value: basicInfo.partner, options: partnerOptions, registerType: "거래처" as RegistryType },
     { label: "공장", field: "factory", value: basicInfo.factory, options: factoryOptions, registerType: "공장" as RegistryType },
     { label: "시즌", field: "season", value: basicInfo.season, options: SEASON_OPTIONS },
     { label: "연도", field: "year", value: basicInfo.year, options: YEAR_OPTIONS },
@@ -415,7 +410,6 @@ function BasicInfoSection({
   const summary = [
     basicInfo.category1,
     basicInfo.category2,
-    basicInfo.partner !== DEFAULT_PARTNER_OPTION ? basicInfo.partner : "",
     basicInfo.factory !== DEFAULT_FACTORY_OPTION ? basicInfo.factory : "",
     `${basicInfo.season} ${basicInfo.year}`.trim(),
     `${basicInfo.quantity.toLocaleString()}장`,
@@ -463,8 +457,6 @@ function BasicInfoSection({
                 </div>
               </div>
             ))}
-            <Info label="담당자" value={managerName} />
-            <Info label="재고 수량" value={`${currentInventoryQuantity.toLocaleString()}장`} valueClassName="text-base font-semibold tabular-nums" />
           </div>
           {canEditInventory && (
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-3">
@@ -1036,18 +1028,25 @@ export default function WorkOrderDetail({
 
   return (
     <div className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm md:p-6">
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-stone-200 pb-5">
-        <div>
-          <h2 className="mt-1 break-keep text-2xl font-semibold">{workOrder.title}</h2>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <div className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${getStageTone(currentWorkflowState)}`}>상태: {currentWorkflowState}</div>
-            <div className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${saveStatus === "saving" ? "bg-cyan-100 text-cyan-800" : saveStatus === "dirty" ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}>
-              {saveStatus === "saving" ? "저장 중" : saveStatus === "dirty" ? "저장되지 않음" : "저장됨"}
+      <div className="border-b border-stone-200 pb-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <h2 className="mt-1 break-keep text-2xl font-semibold">{workOrder.title}</h2>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <div className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${getStageTone(currentWorkflowState)}`}>상태: {currentWorkflowState}</div>
+              <div className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${saveStatus === "saving" ? "bg-cyan-100 text-cyan-800" : saveStatus === "dirty" ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}>
+                {saveStatus === "saving" ? "저장 중" : saveStatus === "dirty" ? "저장되지 않음" : "저장됨"}
+              </div>
             </div>
-            {lastSavedAt && <div className="text-xs text-stone-500">마지막 저장: {lastSavedAt}</div>}
+            <div className="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2 xl:grid-cols-4">
+              <Info label="담당자" value={workOrder.manager} />
+              <Info label="현재 재고" value={`${currentInventoryQuantity.toLocaleString()}장`} valueClassName="text-base font-semibold tabular-nums" />
+              <Info label="납기일" value={basicInfo.dueDate} />
+              <Info label="최근 변경" value={lastSavedAt || "-"} />
+            </div>
           </div>
         </div>
-        <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:justify-end">
+        <div className="mt-4 flex w-full flex-wrap gap-2">
           {actions.length > 0 ? (
             actions.map((action) => (
               <button
@@ -1061,7 +1060,7 @@ export default function WorkOrderDetail({
             ))
           ) : null}
           <button type="button" className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm sm:flex-none">복제</button>
-          <button type="button" onClick={onSave} className="flex-1 rounded-xl bg-stone-900 px-4 py-2 text-sm text-white sm:flex-none">즉시 저장</button>
+          <button type="button" onClick={onSave} className="flex-1 rounded-xl bg-stone-900 px-4 py-2 text-sm text-white sm:flex-none">저장</button>
         </div>
       </div>
 
@@ -1070,11 +1069,9 @@ export default function WorkOrderDetail({
       <div className="mt-6 grid gap-6">
         <BasicInfoSection
           basicInfo={basicInfo}
-          partnerOptions={partnerOptions}
           factoryOptions={factoryOptions}
           currentInventoryQuantity={currentInventoryQuantity}
           canEditInventory={canEditInventory}
-          managerName={workOrder.manager}
           currentUserName={currentUserName}
           currentRole={currentRole}
           open={basicInfoOpen}
