@@ -1,14 +1,24 @@
 import { useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
-import { DEFAULT_MATERIAL_TYPE, DEFAULT_MATERIAL_UNIT, DEFAULT_OUTSOURCING_PROCESS, DEFAULT_OUTSOURCING_UNIT, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS, OUTSOURCING_PROCESS_OPTIONS, OUTSOURCING_UNIT_OPTIONS } from "@/lib/constants/workorderOptions";
+import { CATEGORY1_OPTIONS, CATEGORY2_OPTIONS_MAP, CATEGORY3_OPTIONS_MAP, DEFAULT_BASIC_YEAR, DEFAULT_MATERIAL_TYPE, DEFAULT_MATERIAL_UNIT, DEFAULT_OUTSOURCING_PROCESS, DEFAULT_OUTSOURCING_UNIT, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS, OUTSOURCING_PROCESS_OPTIONS, OUTSOURCING_UNIT_OPTIONS, PRIORITY_OPTIONS, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
 import { getStageTone } from "@/lib/constants/workflow";
 import type { DisplayStage } from "@/types/workflow";
 import { toDisplayValue } from "@/lib/utils/display";
 import type { Material, Outsourcing, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
 
 type RowValue = string | number | null | undefined;
-type EditableSectionKey = "material" | "outsourcing";
+type EditableSectionKey = "basic" | "material" | "outsourcing";
 type EditableCell = { section: EditableSectionKey; rowId: string; field: string } | null;
 type SelectOption = readonly string[];
+type BasicInfoState = {
+  category1: string;
+  category2: string;
+  category3: string;
+  season: string;
+  year: string;
+  priority: string;
+  dueDate: string;
+  quantity: number;
+};
 
 function Info({ label, value, valueClassName }: { label: string; value: RowValue; valueClassName?: string }) {
   return (
@@ -126,6 +136,7 @@ function EditableValue({
   editingCell,
   editingValue,
   inputMode,
+  inputType = "text",
   alignRight,
   options,
   onStartEdit,
@@ -139,6 +150,7 @@ function EditableValue({
   editingCell: EditableCell;
   editingValue: string;
   inputMode?: "text" | "decimal" | "numeric";
+  inputType?: "text" | "date";
   alignRight?: boolean;
   options?: SelectOption;
   onStartEdit: (section: EditableSectionKey, rowId: string, field: string, value: string) => void;
@@ -192,8 +204,8 @@ function EditableValue({
     return (
       <input
         autoFocus
-        type="text"
-        inputMode={inputMode}
+        type={inputType}
+        inputMode={inputType === "date" ? undefined : inputMode}
         value={editingValue}
         onChange={(event) => onStartEdit(section, rowId, field, event.target.value)}
         onBlur={() => onCommit()}
@@ -214,6 +226,52 @@ function EditableValue({
   );
 }
 
+
+
+function getCategory2Options(category1: string) {
+  return CATEGORY2_OPTIONS_MAP[category1] ?? CATEGORY2_OPTIONS_MAP[CATEGORY1_OPTIONS[0]] ?? [];
+}
+
+function getCategory3Options(category2: string) {
+  return CATEGORY3_OPTIONS_MAP[category2] ?? CATEGORY3_OPTIONS_MAP[getCategory2Options(CATEGORY1_OPTIONS[0])[0] ?? ""] ?? [];
+}
+
+function parseSeasonYear(value: string) {
+  const trimmed = value.trim();
+  const match = trimmed.match(/^(SS|FW|NOS|ALL)(?:\s+(\d{4}))?$/i);
+  if (match) {
+    return {
+      season: match[1].toUpperCase(),
+      year: match[2] ?? DEFAULT_BASIC_YEAR,
+    };
+  }
+
+  const [first = "", second = ""] = trimmed.split(/\s+/);
+  return {
+    season: first || SEASON_OPTIONS[0],
+    year: second || DEFAULT_BASIC_YEAR,
+  };
+}
+
+function getInitialBasicInfo(workOrder: WorkOrder): BasicInfoState {
+  const parsedSeason = parseSeasonYear(workOrder.season);
+  const category1 = workOrder.category1 || CATEGORY1_OPTIONS[0];
+  const category2Options = getCategory2Options(category1);
+  const category2 = workOrder.category2 || category2Options[0] || "";
+  const category3Options = getCategory3Options(category2);
+  const category3 = workOrder.category3 || category3Options[0] || "";
+
+  return {
+    category1,
+    category2,
+    category3,
+    season: parsedSeason.season || SEASON_OPTIONS[0],
+    year: parsedSeason.year || DEFAULT_BASIC_YEAR,
+    priority: workOrder.priority || PRIORITY_OPTIONS[0],
+    dueDate: workOrder.dueDate || "",
+    quantity: Number.isFinite(workOrder.quantity) ? workOrder.quantity : 0,
+  };
+}
 
 function StageProgressBar({ stages, currentStage }: { stages: DisplayStage[]; currentStage: DisplayStage }) {
   const currentIndex = stages.indexOf(currentStage);
@@ -287,6 +345,7 @@ function StageProgressBar({ stages, currentStage }: { stages: DisplayStage[]; cu
 
 function BasicInfoSection({
   workOrder,
+  basicInfo,
   currentInventoryQuantity,
   canEditInventory,
   currentUserName,
@@ -294,8 +353,14 @@ function BasicInfoSection({
   open,
   onToggle,
   onOpenInventoryEditor,
+  editingCell,
+  editingValue,
+  onStartEdit,
+  onCommitEdit,
+  onCancelEdit,
 }: {
   workOrder: WorkOrder;
+  basicInfo: BasicInfoState;
   currentInventoryQuantity: number;
   canEditInventory: boolean;
   currentUserName: string;
@@ -303,21 +368,32 @@ function BasicInfoSection({
   open: boolean;
   onToggle: () => void;
   onOpenInventoryEditor: () => void;
+  editingCell: EditableCell;
+  editingValue: string;
+  onStartEdit: (section: EditableSectionKey, rowId: string, field: string, value: string) => void;
+  onCommitEdit: () => void;
+  onCancelEdit: () => void;
 }) {
-  const infoItems: [string, RowValue, string?][] = [
-    ["대분류", workOrder.category1],
-    ["중분류", workOrder.category2],
-    ["소분류", workOrder.category3],
-    ["시즌", workOrder.season],
-    ["우선순위", workOrder.priority],
-    ["공장", workOrder.vendor],
-    ["담당자", workOrder.manager],
-    ["납기일", workOrder.dueDate],
-    ["발주 수량", `${workOrder.quantity}장`, "text-base font-semibold tabular-nums"],
-    ["재고 수량", `${currentInventoryQuantity}장`, "text-base font-semibold tabular-nums"],
+  const category2Options = getCategory2Options(basicInfo.category1);
+  const category3Options = getCategory3Options(basicInfo.category2);
+  const infoItems = [
+    { label: "대분류", field: "category1", value: basicInfo.category1, options: CATEGORY1_OPTIONS },
+    { label: "중분류", field: "category2", value: basicInfo.category2, options: category2Options },
+    { label: "소분류", field: "category3", value: basicInfo.category3, options: category3Options },
+    { label: "시즌", field: "season", value: basicInfo.season, options: SEASON_OPTIONS },
+    { label: "연도", field: "year", value: basicInfo.year, options: YEAR_OPTIONS },
+    { label: "우선순위", field: "priority", value: basicInfo.priority, options: PRIORITY_OPTIONS },
+    { label: "납기일", field: "dueDate", value: basicInfo.dueDate, inputType: "date" as const },
+    { label: "발주 수량", field: "quantity", value: basicInfo.quantity.toLocaleString(), inputMode: "numeric" as const, alignRight: true },
   ];
 
-  const summary = [workOrder.category1, workOrder.category2, workOrder.vendor, `${workOrder.quantity}장`, workOrder.dueDate]
+  const summary = [
+    basicInfo.category1,
+    basicInfo.category2,
+    `${basicInfo.season} ${basicInfo.year}`.trim(),
+    `${basicInfo.quantity.toLocaleString()}장`,
+    basicInfo.dueDate,
+  ]
     .filter(Boolean)
     .join(" · ");
 
@@ -326,10 +402,32 @@ function BasicInfoSection({
       <SectionHeader title="기본 정보" summary={summary} open={open} onToggle={onToggle} />
       {open ? (
         <div className="mt-4">
-          <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
-            {infoItems.map(([label, value, valueClassName]) => (
-              <Info key={label} label={label} value={value} valueClassName={valueClassName} />
+          <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
+            {infoItems.map((item) => (
+              <div key={item.field} className="min-w-0 rounded-xl border border-stone-200 bg-white p-3">
+                <div className="text-xs text-stone-500">{item.label}</div>
+                <div className="mt-2">
+                  <EditableValue
+                    section="basic"
+                    rowId="basic"
+                    field={item.field}
+                    value={String(item.value)}
+                    editingCell={editingCell}
+                    editingValue={editingValue}
+                    inputMode={item.inputMode}
+                    inputType={item.inputType}
+                    alignRight={item.alignRight}
+                    options={item.options}
+                    onStartEdit={onStartEdit}
+                    onCommit={onCommitEdit}
+                    onCancel={onCancelEdit}
+                  />
+                </div>
+              </div>
             ))}
+            <Info label="공장" value={workOrder.vendor} />
+            <Info label="담당자" value={workOrder.manager} />
+            <Info label="재고 수량" value={`${currentInventoryQuantity.toLocaleString()}장`} valueClassName="text-base font-semibold tabular-nums" />
           </div>
           {canEditInventory && (
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-3">
@@ -696,10 +794,15 @@ export default function WorkOrderDetail({
   actions: WorkflowAction[];
   onAction: (action: WorkflowAction) => void;
 }) {
+  const [basicInfo, setBasicInfo] = useState<BasicInfoState>(() => getInitialBasicInfo(workOrder));
   const [materialItems, setMaterialItems] = useState<Material[]>(() => (workOrder.materials ?? []).map(recalculateMaterial));
   const [outsourcingItems, setOutsourcingItems] = useState<Outsourcing[]>(() => (workOrder.outsourcing ?? []).map(recalculateOutsourcing));
   const [editingCell, setEditingCell] = useState<EditableCell>(null);
   const [editingValue, setEditingValue] = useState("");
+
+  useEffect(() => {
+    setBasicInfo(getInitialBasicInfo(workOrder));
+  }, [workOrder]);
 
   useEffect(() => {
     setMaterialItems((workOrder.materials ?? []).map(recalculateMaterial));
@@ -723,6 +826,51 @@ export default function WorkOrderDetail({
     if (!editingCell) return;
 
     const nextValue = (nextValueOverride ?? editingValue).trim();
+
+    if (editingCell.section === "basic") {
+      setBasicInfo((current) => {
+        if (editingCell.field === "category1") {
+          const category1 = nextValue || CATEGORY1_OPTIONS[0];
+          const nextCategory2Options = getCategory2Options(category1);
+          const category2 = nextCategory2Options[0] ?? "";
+          const nextCategory3Options = getCategory3Options(category2);
+          return {
+            ...current,
+            category1,
+            category2,
+            category3: nextCategory3Options[0] ?? "",
+          };
+        }
+        if (editingCell.field === "category2") {
+          const category2 = nextValue || getCategory2Options(current.category1)[0] || "";
+          const nextCategory3Options = getCategory3Options(category2);
+          return {
+            ...current,
+            category2,
+            category3: nextCategory3Options[0] ?? "",
+          };
+        }
+        if (editingCell.field === "category3") {
+          return { ...current, category3: nextValue || getCategory3Options(current.category2)[0] || "" };
+        }
+        if (editingCell.field === "season") {
+          return { ...current, season: nextValue || SEASON_OPTIONS[0] };
+        }
+        if (editingCell.field === "year") {
+          return { ...current, year: nextValue || DEFAULT_BASIC_YEAR };
+        }
+        if (editingCell.field === "priority") {
+          return { ...current, priority: nextValue || PRIORITY_OPTIONS[0] };
+        }
+        if (editingCell.field === "dueDate") {
+          return { ...current, dueDate: nextValue };
+        }
+        if (editingCell.field === "quantity") {
+          return { ...current, quantity: toNumber(nextValue) };
+        }
+        return current;
+      });
+    }
 
     if (editingCell.section === "material") {
       setMaterialItems((current) =>
@@ -847,6 +995,7 @@ export default function WorkOrderDetail({
       <div className="mt-6 grid gap-6">
         <BasicInfoSection
           workOrder={workOrder}
+          basicInfo={basicInfo}
           currentInventoryQuantity={currentInventoryQuantity}
           canEditInventory={canEditInventory}
           currentUserName={currentUserName}
@@ -854,6 +1003,11 @@ export default function WorkOrderDetail({
           open={basicInfoOpen}
           onToggle={onToggleBasicInfo}
           onOpenInventoryEditor={onOpenInventoryEditor}
+          editingCell={editingCell}
+          editingValue={editingValue}
+          onStartEdit={startEdit}
+          onCommitEdit={commitEdit}
+          onCancelEdit={cancelEdit}
         />
 
         {canSeeProductionSections ? (
