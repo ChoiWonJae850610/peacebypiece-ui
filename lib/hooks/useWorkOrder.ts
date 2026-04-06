@@ -6,7 +6,7 @@ import { DEFAULT_CURRENT_USER_ID, DEFAULT_PERMISSION_TARGET_ID, MOCK_USERS } fro
 import { ROLE_TEMPLATES } from "@/lib/constants/roles";
 import { SECTION_PREFERENCES_STORAGE_KEY } from "@/lib/constants/app";
 import { canDeleteAttachmentByUser } from "@/lib/permissions/attachments";
-import { VISIBLE_STAGES } from "@/lib/constants/workflow";
+import { getDisplayStageFromWorkflowState, VISIBLE_STAGES } from "@/lib/constants/workflow";
 import {
   createAttachmentHistoryLog,
   createCreationHistoryLog,
@@ -67,7 +67,7 @@ export function useWorkOrder() {
     [workOrders],
   );
   const currentWorkflowState = selectedWorkOrder.workflowState;
-  const currentDisplayStage = currentWorkflowState;
+  const currentDisplayStage = getDisplayStageFromWorkflowState(currentWorkflowState);
   const visibleStages = VISIBLE_STAGES;
 
   const workOrderList: WorkOrderListItem[] = useMemo(() => workOrders.map(createWorkOrderListItem), [workOrders]);

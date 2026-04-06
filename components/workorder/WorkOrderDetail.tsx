@@ -294,7 +294,7 @@ function StageProgressBar({
 }) {
   const currentIndex = stages.indexOf(currentStage);
   const primaryActionIndex = actions.findIndex((action) => !action.label.includes("반려"));
-  const currentStageTone = getStageTone(currentStage as WorkflowState);
+  const currentStageTone = getStageTone(currentStage);
   const currentStageDotTone = currentStageTone.includes("bg-") ? currentStageTone : "bg-stone-900 text-white";
   const currentStageTrackTone = currentStageTone.includes("bg-violet")
     ? "bg-violet-300"
