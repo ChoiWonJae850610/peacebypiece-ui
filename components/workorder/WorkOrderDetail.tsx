@@ -2,7 +2,6 @@ import { useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
 import PartnerFactoryRegistryModal, { type RegistryType } from "@/components/workorder/PartnerFactoryRegistryModal";
 import { CATEGORY1_OPTIONS, CATEGORY2_OPTIONS_MAP, CATEGORY3_OPTIONS_MAP, DEFAULT_BASIC_YEAR, DEFAULT_FACTORY_OPTION, DEFAULT_MATERIAL_TYPE, DEFAULT_MATERIAL_UNIT, DEFAULT_OUTSOURCING_PROCESS, DEFAULT_OUTSOURCING_UNIT, DEFAULT_PARTNER_OPTION, FACTORY_OPTIONS, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS, OUTSOURCING_PROCESS_OPTIONS, OUTSOURCING_UNIT_OPTIONS, PARTNER_OPTIONS, PRIORITY_OPTIONS, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
 import type { DisplayStage } from "@/types/workflow";
-import { getStageTone } from "@/lib/constants/workflow";
 import { toDisplayValue } from "@/lib/utils/display";
 import type { Material, Outsourcing, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
 
@@ -295,43 +294,10 @@ function StageProgressBar({
   const currentIndex = stages.indexOf(currentStage);
   const primaryActionIndex = actions.findIndex((action) => !action.label.includes("반려"));
 
-  const getDotTone = (stage: DisplayStage) => {
-    const tone = getStageTone(stage);
-    return tone.includes("bg-") ? tone : "bg-stone-900 text-white";
-  };
-
-  const getTrackTone = (stage: DisplayStage) => {
-    const tone = getStageTone(stage);
-    return tone.includes("bg-violet")
-      ? "bg-violet-300"
-      : tone.includes("bg-fuchsia")
-      ? "bg-fuchsia-300"
-      : tone.includes("bg-amber")
-      ? "bg-amber-300"
-      : tone.includes("bg-blue")
-      ? "bg-blue-300"
-      : tone.includes("bg-emerald")
-      ? "bg-emerald-300"
-      : tone.includes("bg-stone")
-      ? "bg-stone-400"
-      : "bg-stone-300";
-  };
-
-  const currentStageTone = getStageTone(currentStage);
-  const currentStageDotTone = currentStageTone.includes("bg-") ? currentStageTone : "bg-stone-900 text-white";
-  const currentStageTrackTone = currentStageTone.includes("bg-violet")
-    ? "bg-violet-300"
-    : currentStageTone.includes("bg-fuchsia")
-    ? "bg-fuchsia-300"
-    : currentStageTone.includes("bg-amber")
-    ? "bg-amber-300"
-    : currentStageTone.includes("bg-blue")
-    ? "bg-blue-300"
-    : currentStageTone.includes("bg-emerald")
-    ? "bg-emerald-300"
-    : currentStageTone.includes("bg-stone")
-    ? "bg-stone-400"
-    : "bg-stone-300";
+  const doneDotTone = "bg-emerald-500 text-white";
+  const currentDotTone = "bg-stone-900 text-white";
+  const doneTrackTone = "bg-stone-400";
+  const currentTrackTone = "bg-stone-900";
   const stageGroups: Array<{ label: string; stages: DisplayStage[] }> = [
     { label: "제작", stages: ["작성중", "검토요청", "검토완료"] },
     { label: "생산", stages: ["발주요청"] },
@@ -378,9 +344,9 @@ function StageProgressBar({
                   <div
                     className={`h-1.5 w-full rounded-full ${
                       isCurrentGroup
-                        ? "bg-stone-900"
+                        ? currentTrackTone
                         : isCompletedGroup
-                        ? "bg-stone-400"
+                        ? doneTrackTone
                         : "bg-stone-200"
                     }`}
                   />
@@ -420,17 +386,16 @@ function StageProgressBar({
               const isCurrent = stage === currentStage;
               const isDone = currentIndex >= 0 && index < currentIndex;
               const isUpcoming = !isCurrent && !isDone;
-              const dotTone = getDotTone(stage);
-              const trackTone = getTrackTone(stage);
+              
               return (
                 <div key={`${stage}-mobile`} className="flex items-center gap-1.5">
                   <div className="flex min-w-[48px] flex-col items-center text-center">
                     <div
                       className={`flex h-3.5 w-3.5 items-center justify-center rounded-full ${
                         isCurrent
-                          ? dotTone
+                          ? currentDotTone
                           : isDone
-                          ? `${trackTone} text-transparent`
+                          ? `${doneDotTone} text-transparent`
                           : "bg-stone-300 text-transparent"
                       }`}
                     >
@@ -440,7 +405,7 @@ function StageProgressBar({
                       {stage}
                     </div>
                   </div>
-                  {index < stages.length - 1 ? <div className={`h-0.5 w-5 shrink-0 rounded-full ${index < currentIndex ? trackTone : "bg-stone-200"}`} /> : null}
+                  {index < stages.length - 1 ? <div className={`h-0.5 w-5 shrink-0 rounded-full ${index < currentIndex ? doneTrackTone : "bg-stone-200"}`} /> : null}
                 </div>
               );
             })}
@@ -454,8 +419,7 @@ function StageProgressBar({
             const isCurrent = stage === currentStage;
             const isDone = currentIndex >= 0 && index < currentIndex;
             const isUpcoming = !isCurrent && !isDone;
-            const dotTone = getDotTone(stage);
-            const trackTone = getTrackTone(stage);
+            
 
             return (
               <div key={stage} className="flex items-center gap-2">
@@ -463,9 +427,9 @@ function StageProgressBar({
                   <div
                     className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-semibold ${
                       isCurrent
-                        ? dotTone
+                        ? currentDotTone
                         : isDone
-                        ? `${trackTone} text-white`
+                        ? doneDotTone
                         : "bg-stone-200 text-stone-500"
                     }`}
                   >
@@ -483,7 +447,7 @@ function StageProgressBar({
                     {stage}
                   </div>
                 </div>
-                {index < stages.length - 1 ? <div className={`h-px w-6 shrink-0 ${index < currentIndex ? trackTone : "bg-stone-300"}`} /> : null}
+                {index < stages.length - 1 ? <div className={`h-px w-6 shrink-0 ${index < currentIndex ? doneTrackTone : "bg-stone-300"}`} /> : null}
               </div>
             );
           })}
