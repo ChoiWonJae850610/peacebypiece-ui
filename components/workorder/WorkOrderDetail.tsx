@@ -1001,7 +1001,7 @@ export default function WorkOrderDetail({
   return (
     <div className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm md:p-6">
       <div className="border-b border-stone-200 pb-5">
-        <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-6">
           <div className="min-w-0 flex-1">
             <h2 className="mt-1 break-keep text-2xl font-semibold">{workOrder.title}</h2>
             <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -1010,19 +1010,37 @@ export default function WorkOrderDetail({
                 {saveStatus === "saving" ? "저장 중" : saveStatus === "dirty" ? "저장되지 않음" : "저장됨"}
               </div>
             </div>
-            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-stone-600">
+            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-stone-600 md:hidden">
               <span className="truncate">담당자 <span className="font-medium text-stone-900">{workOrder.manager || "-"}</span></span>
               {canEditInventory ? (
                 <button
                   type="button"
                   onClick={onOpenInventoryEditor}
-                  className="inline-flex items-center rounded-full border border-stone-200 bg-white px-2.5 py-1 text-sm font-medium text-stone-900 transition hover:border-stone-300 hover:bg-stone-50"
+                  className="inline-flex items-center bg-transparent p-0 text-sm font-medium text-stone-700 underline-offset-2 transition hover:text-stone-900 hover:underline"
                 >
-                  현재 재고 <span className="ml-1 tabular-nums">{currentInventoryQuantity.toLocaleString()}장</span>
+                  현재 재고 <span className="ml-1 tabular-nums text-stone-900">{currentInventoryQuantity.toLocaleString()}장</span>
                 </button>
               ) : (
                 <span>현재 재고 <span className="font-medium tabular-nums text-stone-900">{currentInventoryQuantity.toLocaleString()}장</span></span>
               )}
+            </div>
+          </div>
+          <div className="hidden shrink-0 md:block md:pt-1">
+            <div className="flex flex-col items-end gap-1 text-sm text-stone-600">
+              <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-right">
+                <span>담당자 <span className="font-medium text-stone-900">{workOrder.manager || "-"}</span></span>
+                {canEditInventory ? (
+                  <button
+                    type="button"
+                    onClick={onOpenInventoryEditor}
+                    className="inline-flex items-center bg-transparent p-0 text-sm font-medium text-stone-700 underline-offset-2 transition hover:text-stone-900 hover:underline"
+                  >
+                    현재 재고 <span className="ml-1 tabular-nums text-stone-900">{currentInventoryQuantity.toLocaleString()}장</span>
+                  </button>
+                ) : (
+                  <span>현재 재고 <span className="font-medium tabular-nums text-stone-900">{currentInventoryQuantity.toLocaleString()}장</span></span>
+                )}
+              </div>
               <span className="text-xs text-stone-400">최근 변경 {lastSavedAt || "-"}</span>
             </div>
           </div>
