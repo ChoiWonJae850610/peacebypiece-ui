@@ -92,7 +92,7 @@ function AttachmentPanel({
           <h3 className="text-base font-semibold">첨부파일</h3>
           <div className="mt-1 text-xs text-stone-500">우측 패널에서 바로 확인하고 관리할 수 있습니다.</div>
         </div>
-        <button type="button" onClick={onOpenAttachmentPicker} className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800">+ 첨부 추가</button>
+        <button type="button" onClick={onOpenAttachmentPicker} className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">+ 첨부 추가</button>
       </div>
       {attachments.length > 0 ? (
         <div className="mt-4 space-y-3">
@@ -236,7 +236,7 @@ export default function WorkOrderSidePanel({
               <HistoryPreviewItem key={item.id} item={item} />
             )) : <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-sm text-stone-500">표시할 히스토리가 없습니다.</div>}
           </div>
-          {filteredHistoryLogs.length > 3 && <button type="button" onClick={onOpenInventoryLogModal} className="mt-4 w-full rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800">전체 히스토리 보기</button>}
+          {filteredHistoryLogs.length > 3 && <button type="button" onClick={onOpenInventoryLogModal} className="mt-4 w-full rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">전체 히스토리 보기</button>}
         </div>
       )}
     </div>

@@ -2,6 +2,7 @@ import { useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
 import PartnerFactoryRegistryModal, { type RegistryType } from "@/components/workorder/PartnerFactoryRegistryModal";
 import { CATEGORY1_OPTIONS, CATEGORY2_OPTIONS_MAP, CATEGORY3_OPTIONS_MAP, DEFAULT_BASIC_YEAR, DEFAULT_FACTORY_OPTION, DEFAULT_MATERIAL_TYPE, DEFAULT_MATERIAL_UNIT, DEFAULT_OUTSOURCING_PROCESS, DEFAULT_OUTSOURCING_UNIT, DEFAULT_PARTNER_OPTION, FACTORY_OPTIONS, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS, OUTSOURCING_PROCESS_OPTIONS, OUTSOURCING_UNIT_OPTIONS, PARTNER_OPTIONS, PRIORITY_OPTIONS, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
 import type { DisplayStage } from "@/types/workflow";
+import { getStageTone } from "@/lib/constants/workflow";
 import { toDisplayValue } from "@/lib/utils/display";
 import type { Material, Outsourcing, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
 
@@ -292,8 +293,22 @@ function StageProgressBar({
   onAction: (action: WorkflowAction) => void;
 }) {
   const currentIndex = stages.indexOf(currentStage);
-  const previousStage = currentIndex > 0 ? stages[currentIndex - 1] : null;
-  const nextStage = currentIndex >= 0 && currentIndex < stages.length - 1 ? stages[currentIndex + 1] : null;
+  const primaryActionIndex = actions.findIndex((action) => !action.label.includes("반려"));
+  const currentStageTone = getStageTone(currentStage as WorkflowState);
+  const currentStageDotTone = currentStageTone.includes("bg-") ? currentStageTone : "bg-stone-900 text-white";
+  const currentStageTrackTone = currentStageTone.includes("bg-violet")
+    ? "bg-violet-300"
+    : currentStageTone.includes("bg-fuchsia")
+    ? "bg-fuchsia-300"
+    : currentStageTone.includes("bg-amber")
+    ? "bg-amber-300"
+    : currentStageTone.includes("bg-blue")
+    ? "bg-blue-300"
+    : currentStageTone.includes("bg-emerald")
+    ? "bg-emerald-300"
+    : currentStageTone.includes("bg-stone")
+    ? "bg-stone-400"
+    : "bg-stone-300";
 
   return (
     <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-3 md:mt-5 md:p-4">
@@ -304,28 +319,55 @@ function StageProgressBar({
         </div>
         {actions.length > 0 ? (
           <div className="hidden flex-wrap justify-end gap-2 md:flex">
-            {actions.map((action) => (
-              <button
-                key={`${currentStage}-${action.nextState}-${action.label}-desktop`}
-                type="button"
-                onClick={() => onAction(action)}
-                className="rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800 transition hover:border-stone-400 hover:bg-stone-100"
-              >
-                {action.label}
-              </button>
-            ))}
+            {actions.map((action, index) => {
+              const isPrimary = primaryActionIndex === -1 ? index === 0 : index === primaryActionIndex;
+              return (
+                <button
+                  key={`${currentStage}-${action.nextState}-${action.label}-desktop`}
+                  type="button"
+                  onClick={() => onAction(action)}
+                  className={isPrimary
+                    ? "rounded-full bg-stone-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-stone-800"
+                    : "rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100"
+                  }
+                >
+                  {action.label}
+                </button>
+              );
+            })}
           </div>
         ) : null}
       </div>
 
       <div className="mt-3 md:hidden">
         <div className="rounded-2xl border border-stone-200 bg-white px-3 py-3">
-          <div className="flex items-center justify-between gap-2 text-[11px] text-stone-500">
-            <span className="min-w-0 flex-1 truncate text-left">{previousStage ?? "시작"}</span>
-            <span className="shrink-0">→</span>
-            <span className="rounded-full bg-stone-900 px-2.5 py-1 text-[11px] font-semibold text-white">{currentStage}</span>
-            <span className="shrink-0">→</span>
-            <span className="min-w-0 flex-1 truncate text-right">{nextStage ?? "완료"}</span>
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+            {stages.map((stage, index) => {
+              const isCurrent = stage === currentStage;
+              const isDone = currentIndex >= 0 && index < currentIndex;
+              const isUpcoming = !isCurrent && !isDone;
+              return (
+                <div key={`${stage}-mobile`} className="flex items-center gap-1.5">
+                  <div className="flex min-w-[48px] flex-col items-center text-center">
+                    <div
+                      className={`flex h-3.5 w-3.5 items-center justify-center rounded-full ${
+                        isCurrent
+                          ? currentStageDotTone
+                          : isDone
+                          ? `${currentStageTrackTone} text-transparent`
+                          : "bg-stone-300 text-transparent"
+                      }`}
+                    >
+                      •
+                    </div>
+                    <div className={`mt-1 text-[10px] leading-3 ${isCurrent ? "font-semibold text-stone-900" : isUpcoming ? "text-stone-400" : "text-stone-600"}`}>
+                      {stage}
+                    </div>
+                  </div>
+                  {index < stages.length - 1 ? <div className={`h-0.5 w-5 shrink-0 rounded-full ${index < currentIndex ? currentStageTrackTone : "bg-stone-200"}`} /> : null}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -343,9 +385,9 @@ function StageProgressBar({
                   <div
                     className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-semibold ${
                       isCurrent
-                        ? "bg-stone-900 text-white"
+                        ? currentStageDotTone
                         : isDone
-                        ? "bg-emerald-600 text-white"
+                        ? `${currentStageTrackTone} text-white`
                         : "bg-stone-200 text-stone-500"
                     }`}
                   >
@@ -363,7 +405,7 @@ function StageProgressBar({
                     {stage}
                   </div>
                 </div>
-                {index < stages.length - 1 ? <div className="h-px w-6 shrink-0 bg-stone-300" /> : null}
+                {index < stages.length - 1 ? <div className={`h-px w-6 shrink-0 ${index < currentIndex ? currentStageTrackTone : "bg-stone-300"}`} /> : null}
               </div>
             );
           })}
@@ -372,16 +414,22 @@ function StageProgressBar({
 
       {actions.length > 0 ? (
         <div className="mt-3 flex flex-wrap gap-2 md:hidden">
-          {actions.map((action) => (
-            <button
-              key={`${currentStage}-${action.nextState}-${action.label}-mobile`}
-              type="button"
-              onClick={() => onAction(action)}
-              className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800 transition hover:border-stone-400 hover:bg-stone-100 sm:flex-none"
-            >
-              {action.label}
-            </button>
-          ))}
+          {actions.map((action, index) => {
+            const isPrimary = primaryActionIndex === -1 ? index === 0 : index === primaryActionIndex;
+            return (
+              <button
+                key={`${currentStage}-${action.nextState}-${action.label}-mobile`}
+                type="button"
+                onClick={() => onAction(action)}
+                className={isPrimary
+                  ? "flex-1 rounded-full bg-stone-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-stone-800 sm:flex-none"
+                  : "flex-1 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100 sm:flex-none"
+                }
+              >
+                {action.label}
+              </button>
+            );
+          })}
         </div>
       ) : null}
     </div>
@@ -1046,7 +1094,7 @@ export default function WorkOrderDetail({
                 <button
                   type="button"
                   onClick={onSave}
-                  className="shrink-0 rounded-xl bg-stone-900 px-4 py-2 text-sm text-white transition hover:bg-stone-800 md:hidden"
+                  className="shrink-0 rounded-full bg-stone-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-stone-800 md:hidden"
                 >
                   저장
                 </button>
@@ -1071,7 +1119,7 @@ export default function WorkOrderDetail({
               <button
                 type="button"
                 onClick={onSave}
-                className="rounded-xl bg-stone-900 px-4 py-2 text-sm text-white transition hover:bg-stone-800"
+                className="rounded-full bg-stone-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-stone-800"
               >
                 저장
               </button>
