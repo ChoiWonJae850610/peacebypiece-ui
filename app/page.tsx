@@ -106,6 +106,7 @@ export default function Home() {
               onSelect={handleSelectWorkOrder}
               onCreate={handleCreateWorkOrder}
               onOpenSettings={() => setPermissionModalOpen(true)}
+              onReorder={() => {}}
               canCreate={canCreateWorkOrder}
             />
           </aside>

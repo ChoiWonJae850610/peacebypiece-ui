@@ -13,6 +13,7 @@ type Props = {
   workflowStateById: Record<string, string>;
   onSelect: (id: string) => void;
   onCreate: () => void;
+  onReorder?: (id: string) => void;
   canCreate: boolean;
 };
 
@@ -24,6 +25,7 @@ export default function MobileDrawer({
   workflowStateById,
   onSelect,
   onCreate,
+  onReorder,
   canCreate,
 }: Props) {
   const drawerRef = useRef<HTMLDivElement | null>(null);
@@ -83,6 +85,7 @@ export default function MobileDrawer({
                   onSelect(id);
                   onClose();
                 }}
+                onReorder={onReorder}
               />
             ))}
           </div>

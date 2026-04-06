@@ -23,15 +23,6 @@ type BasicInfoState = {
   quantity: number;
 };
 
-function Info({ label, value, valueClassName }: { label: string; value: RowValue; valueClassName?: string }) {
-  return (
-    <div className="min-w-0 rounded-xl border border-stone-200 bg-white p-3">
-      <div className="text-xs text-stone-500">{label}</div>
-      <div className={`mt-1 font-medium ${valueClassName ?? "text-sm"}`}>{toDisplayValue(value)}</div>
-    </div>
-  );
-}
-
 function SectionHeader({
   title,
   summary,
@@ -363,13 +354,8 @@ function StageProgressBar({ stages, currentStage }: { stages: DisplayStage[]; cu
 function BasicInfoSection({
   basicInfo,
   factoryOptions,
-  currentInventoryQuantity,
-  canEditInventory,
-  currentUserName,
-  currentRole,
   open,
   onToggle,
-  onOpenInventoryEditor,
   onOpenRegistryModal,
   editingCell,
   editingValue,
@@ -379,13 +365,8 @@ function BasicInfoSection({
 }: {
   basicInfo: BasicInfoState;
   factoryOptions: readonly string[];
-  currentInventoryQuantity: number;
-  canEditInventory: boolean;
-  currentUserName: string;
-  currentRole: string;
   open: boolean;
   onToggle: () => void;
-  onOpenInventoryEditor: () => void;
   onOpenRegistryModal: (type: RegistryType) => void;
   editingCell: EditableCell;
   editingValue: string;
@@ -458,15 +439,6 @@ function BasicInfoSection({
               </div>
             ))}
           </div>
-          {canEditInventory && (
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-3">
-              <div>
-                <div className="text-sm font-semibold text-stone-900">재고 수정</div>
-                <div className="mt-1 text-xs text-stone-500">수정자: {currentUserName} · {currentRole}</div>
-              </div>
-              <button type="button" onClick={onOpenInventoryEditor} className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white">재고 수정</button>
-            </div>
-          )}
         </div>
       ) : null}
     </div>
@@ -1038,11 +1010,20 @@ export default function WorkOrderDetail({
                 {saveStatus === "saving" ? "저장 중" : saveStatus === "dirty" ? "저장되지 않음" : "저장됨"}
               </div>
             </div>
-            <div className="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2 xl:grid-cols-4">
-              <Info label="담당자" value={workOrder.manager} />
-              <Info label="현재 재고" value={`${currentInventoryQuantity.toLocaleString()}장`} valueClassName="text-base font-semibold tabular-nums" />
-              <Info label="납기일" value={basicInfo.dueDate} />
-              <Info label="최근 변경" value={lastSavedAt || "-"} />
+            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-stone-600">
+              <span className="truncate">담당자 <span className="font-medium text-stone-900">{workOrder.manager || "-"}</span></span>
+              {canEditInventory ? (
+                <button
+                  type="button"
+                  onClick={onOpenInventoryEditor}
+                  className="inline-flex items-center rounded-full border border-stone-200 bg-white px-2.5 py-1 text-sm font-medium text-stone-900 transition hover:border-stone-300 hover:bg-stone-50"
+                >
+                  현재 재고 <span className="ml-1 tabular-nums">{currentInventoryQuantity.toLocaleString()}장</span>
+                </button>
+              ) : (
+                <span>현재 재고 <span className="font-medium tabular-nums text-stone-900">{currentInventoryQuantity.toLocaleString()}장</span></span>
+              )}
+              <span className="text-xs text-stone-400">최근 변경 {lastSavedAt || "-"}</span>
             </div>
           </div>
         </div>
@@ -1059,7 +1040,6 @@ export default function WorkOrderDetail({
               </button>
             ))
           ) : null}
-          <button type="button" className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm sm:flex-none">복제</button>
           <button type="button" onClick={onSave} className="flex-1 rounded-xl bg-stone-900 px-4 py-2 text-sm text-white sm:flex-none">저장</button>
         </div>
       </div>
@@ -1070,13 +1050,8 @@ export default function WorkOrderDetail({
         <BasicInfoSection
           basicInfo={basicInfo}
           factoryOptions={factoryOptions}
-          currentInventoryQuantity={currentInventoryQuantity}
-          canEditInventory={canEditInventory}
-          currentUserName={currentUserName}
-          currentRole={currentRole}
           open={basicInfoOpen}
           onToggle={onToggleBasicInfo}
-          onOpenInventoryEditor={onOpenInventoryEditor}
           onOpenRegistryModal={openRegistryModal}
           editingCell={editingCell}
           editingValue={editingValue}

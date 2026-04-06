@@ -11,6 +11,7 @@ type Props = {
   onSelect: (id: string) => void;
   onCreate: () => void;
   onOpenSettings: () => void;
+  onReorder?: (id: string) => void;
   canCreate: boolean;
 };
 
@@ -22,6 +23,7 @@ export default function SidebarContent({
   onSelect,
   onCreate,
   onOpenSettings,
+  onReorder,
   canCreate,
 }: Props) {
   return (
@@ -60,6 +62,7 @@ export default function SidebarContent({
               selectedId={selectedId}
               workflowStateById={workflowStateById}
               onClick={onSelect}
+              onReorder={onReorder}
             />
           ))}
         </div>
