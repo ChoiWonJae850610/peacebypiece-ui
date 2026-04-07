@@ -37,10 +37,32 @@ const workOrders: WorkOrder[] = [
       { id: "o-3", process: "나염", vendor: "C나염", quantity: 20, unitType: "장당", unitCost: 5300, totalCost: 106000, status: "대기" },
     ],
     attachments: [
-      { id: "att-1", name: "메인 샘플.jpg", type: "image", url: placeholderImage, ownerId: "user-designer", ownerName: "김디자이너" },
-      { id: "att-2", name: "작업 지시서.pdf", type: "pdf", url: placeholderPdf, ownerId: "user-admin", ownerName: "박관리" },
-      { id: "att-3", name: "원단 스와치.jpg", type: "image", url: placeholderImage, ownerId: null, ownerName: "기존 첨부" },
-      { id: "att-4", name: "사이즈 표.pdf", type: "pdf", url: placeholderPdf, ownerId: null, ownerName: "기존 첨부" },
+      { id: "att-1", name: "메인 샘플.jpg", type: "image", url: placeholderImage, scope: "official", ownerId: "user-designer", ownerName: "김디자이너" },
+      { id: "att-2", name: "작업 지시서.pdf", type: "pdf", url: placeholderPdf, scope: "official", ownerId: "user-admin", ownerName: "박관리" },
+      { id: "att-3", name: "원단 스와치.jpg", type: "image", url: placeholderImage, scope: "memo", linkedThreadId: "memo-1", ownerId: null, ownerName: "기존 첨부" },
+      { id: "att-4", name: "사이즈 표.pdf", type: "pdf", url: placeholderPdf, scope: "memo", linkedReplyId: "reply-1", ownerId: null, ownerName: "기존 첨부" },
+    ],
+    memoThreads: [
+      {
+        id: "memo-1",
+        authorId: "user-designer",
+        authorName: "김디자이너",
+        authorRole: "디자이너",
+        content: "메인 컬러와 배색 확인 후 생산 요청합니다. 목 시보리 톤은 첨부 이미지를 먼저 봐주세요.",
+        createdAt: "03-26 19:20",
+        attachmentIds: ["att-3"],
+        replies: [
+          {
+            id: "reply-1",
+            authorId: "user-admin",
+            authorName: "박관리",
+            authorRole: "관리자",
+            content: "사이즈 표 같이 확인해서 발주 전에 최종 체크하겠습니다.",
+            createdAt: "03-26 19:42",
+            attachmentIds: ["att-4"],
+          },
+        ],
+      },
     ],
   },
   {
@@ -71,6 +93,26 @@ const workOrders: WorkOrder[] = [
       { id: "o-21", process: "워싱", vendor: "워싱랩", quantity: 30, unitType: "장당", unitCost: 2500, totalCost: 75000, status: "진행중" },
     ],
     attachments: [],
+    memoThreads: [
+      {
+        id: "memo-21",
+        authorId: "user-admin",
+        authorName: "박관리",
+        authorRole: "관리자",
+        content: "워싱 테스트 완료 후 본생산 일정 다시 공유 예정입니다.",
+        createdAt: "03-25 10:10",
+        replies: [
+          {
+            id: "reply-21",
+            authorId: "user-qc",
+            authorName: "이검수",
+            authorRole: "입고/검수",
+            content: "검수 기준표는 입고 시점에 맞춰 다시 체크하겠습니다.",
+            createdAt: "03-25 11:10",
+          },
+        ],
+      },
+    ],
   },
   {
     id: "wo-3",
@@ -99,9 +141,21 @@ const workOrders: WorkOrder[] = [
       { id: "o-31", process: "박음질", vendor: "C업체", quantity: 10, unitType: "장당", unitCost: 4000, totalCost: 40000, status: "완료" },
     ],
     attachments: [
-      { id: "att-31", name: "완료 이미지.jpg", type: "image", url: placeholderImage, ownerId: "user-qc", ownerName: "이검수" },
-      { id: "att-32", name: "출고 체크리스트.pdf", type: "pdf", url: placeholderPdf, ownerId: null, ownerName: "기존 첨부" },
-      { id: "att-33", name: "부자재 명세.pdf", type: "pdf", url: placeholderPdf, ownerId: null, ownerName: "기존 첨부" },
+      { id: "att-31", name: "완료 이미지.jpg", type: "image", url: placeholderImage, scope: "official", ownerId: "user-qc", ownerName: "이검수" },
+      { id: "att-32", name: "출고 체크리스트.pdf", type: "pdf", url: placeholderPdf, scope: "official", ownerId: null, ownerName: "기존 첨부" },
+      { id: "att-33", name: "부자재 명세.pdf", type: "pdf", url: placeholderPdf, scope: "memo", linkedThreadId: "memo-31", ownerId: null, ownerName: "기존 첨부" },
+    ],
+    memoThreads: [
+      {
+        id: "memo-31",
+        authorId: "user-qc",
+        authorName: "이검수",
+        authorRole: "입고/검수",
+        content: "완료 후 샘플 보관용 1개 별도 관리 예정입니다.",
+        createdAt: "03-24 15:30",
+        attachmentIds: ["att-33"],
+        replies: [],
+      },
     ],
   },
 ];

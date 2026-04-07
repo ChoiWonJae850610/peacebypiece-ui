@@ -12,16 +12,17 @@ import {
   createCreationHistoryLog,
   createInventoryHistoryLog,
   createManagerChangeHistoryLog,
+  createMemoHistoryLog,
   createStatusHistoryLog,
   createUpdateHistoryLog,
   filterHistoryLogs,
   nowLabel,
   toInventoryLogs,
 } from "@/lib/workorder/history";
-import { createNewWorkOrder, applyInventoryAdjustment, appendAttachments, removeAttachment, updateWorkflowState, updateWorkOrderManager } from "@/lib/workorder/actions";
+import { addMemoReply, addMemoThread, createNewWorkOrder, applyInventoryAdjustment, appendAttachments, removeAttachment, updateWorkflowState, updateWorkOrderManager } from "@/lib/workorder/actions";
 import { createWorkOrderListItem, calculateWorkOrderCosts } from "@/lib/workorder/selectors";
 import { getAvailableWorkflowActions } from "@/lib/workorder/workflow";
-import type { Attachment, HistoryLog, InventoryLog, UserProfile, WorkOrder, WorkOrderListItem, WorkflowAction } from "@/types/workorder";
+import type { Attachment, HistoryLog, InventoryLog, MemoReply, MemoThread, UserProfile, WorkOrder, WorkOrderListItem, WorkflowAction } from "@/types/workorder";
 import type { RoleType } from "@/types/permission";
 import type { HistoryFilter } from "@/types/workflow";
 
@@ -102,6 +103,10 @@ export function useWorkOrder() {
   const canSeeAttachments = currentUser.permissions.canSeeAttachments;
 
   const currentInventoryQuantity = selectedWorkOrder.inventoryQuantity;
+  const officialAttachments = useMemo(
+    () => (selectedWorkOrder.attachments ?? []).filter((item) => (item.scope ?? "official") === "official"),
+    [selectedWorkOrder.attachments],
+  );
   const selectedAttachment = useMemo(
     () => selectedWorkOrder.attachments.find((item) => item.id === attachmentPreviewId) ?? null,
     [selectedWorkOrder, attachmentPreviewId],
@@ -334,6 +339,7 @@ export function useWorkOrder() {
       name: file.name,
       type: file.type.includes("pdf") ? "pdf" : "image",
       url: file.type.includes("pdf") ? "about:blank" : URL.createObjectURL(file),
+      scope: "official",
       ownerId: currentUser.id,
       ownerName: currentUser.name,
     }));
@@ -365,6 +371,51 @@ export function useWorkOrder() {
       ]);
     }
     setSaveStatus("dirty");
+  };
+
+  const handleCreateMemoThread = (content: string) => {
+    const trimmed = content.trim();
+    if (!trimmed) return;
+
+    const nextThread: MemoThread = {
+      id: `memo-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      authorId: currentUser.id,
+      authorName: currentUser.name,
+      authorRole: currentUser.role,
+      content: trimmed,
+      createdAt: nowLabel(),
+      replies: [],
+    };
+
+    setWorkOrders((prev) => addMemoThread(prev, selectedWorkOrder.id, nextThread));
+    setHistoryLogs((prev) => [
+      createMemoHistoryLog(currentUser.name, selectedWorkOrder.id, { action: "thread", content: trimmed }),
+      ...prev,
+    ]);
+    setSaveStatus("dirty");
+    setToastMessage("작업 메모가 등록되었습니다.");
+  };
+
+  const handleCreateMemoReply = (threadId: string, content: string) => {
+    const trimmed = content.trim();
+    if (!trimmed) return;
+
+    const nextReply: MemoReply = {
+      id: `reply-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      authorId: currentUser.id,
+      authorName: currentUser.name,
+      authorRole: currentUser.role,
+      content: trimmed,
+      createdAt: nowLabel(),
+    };
+
+    setWorkOrders((prev) => addMemoReply(prev, selectedWorkOrder.id, threadId, nextReply));
+    setHistoryLogs((prev) => [
+      createMemoHistoryLog(currentUser.name, selectedWorkOrder.id, { action: "reply", content: trimmed }),
+      ...prev,
+    ]);
+    setSaveStatus("dirty");
+    setToastMessage("메모 댓글이 등록되었습니다.");
   };
 
   const canDeleteAttachment = (attachment: Attachment | null) => {
@@ -423,6 +474,7 @@ export function useWorkOrder() {
     currentInventoryQuantity,
     filteredHistoryLogs,
     inventoryLogs,
+    officialAttachments,
     selectedAttachment,
     canDeleteAttachment,
     materials,
@@ -452,5 +504,7 @@ export function useWorkOrder() {
     handleOpenAttachmentPicker,
     handleAttachmentFiles,
     handleDeleteAttachment,
+    handleCreateMemoThread,
+    handleCreateMemoReply,
   };
 }

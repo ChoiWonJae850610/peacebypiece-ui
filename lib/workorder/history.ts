@@ -97,6 +97,24 @@ export function createInventoryHistoryLog(
 }
 
 
+
+export function createMemoHistoryLog(
+  user: string,
+  workOrderId: string,
+  payload: { action: "thread" | "reply"; content: string },
+) {
+  const label = payload.action === "thread" ? "메모 등록" : "댓글 등록";
+  return createHistoryLog({
+    action: label,
+    message: payload.action === "thread" ? "작업 메모가 등록되었습니다." : "작업 메모 댓글이 등록되었습니다.",
+    user,
+    workOrderId,
+    category: "work",
+    tone: "blue",
+    detailLines: [{ label: "내용", value: payload.content.trim() }],
+  });
+}
+
 export function createManagerChangeHistoryLog(user: string, workOrderId: string, from: string, to: string) {
   return createHistoryLog({
     action: "담당자 변경",

@@ -8,7 +8,7 @@ import PartnerFactoryRegistryModal, { type RegistryType } from "@/components/wor
 import { CATEGORY1_OPTIONS, CATEGORY2_OPTIONS_MAP, CATEGORY3_OPTIONS_MAP, DEFAULT_BASIC_YEAR, DEFAULT_FACTORY_OPTION, DEFAULT_MATERIAL_TYPE, DEFAULT_MATERIAL_UNIT, DEFAULT_OUTSOURCING_PROCESS, DEFAULT_OUTSOURCING_UNIT, DEFAULT_PARTNER_OPTION, FACTORY_OPTIONS, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS, OUTSOURCING_PROCESS_OPTIONS, OUTSOURCING_UNIT_OPTIONS, PARTNER_OPTIONS, PRIORITY_OPTIONS, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
 import type { DisplayStage } from "@/types/workflow";
 import { toDisplayValue } from "@/lib/utils/display";
-import type { Material, Outsourcing, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
+import type { Attachment, Material, MemoThread, Outsourcing, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
 
 type RowValue = string | number | null | undefined;
 type EditableSectionKey = "basic" | "material" | "outsourcing";
@@ -1079,6 +1079,165 @@ function OutsourcingSection({
   );
 }
 
+
+function MemoAttachmentList({
+  attachmentIds,
+  attachmentsById,
+}: {
+  attachmentIds?: string[];
+  attachmentsById: Map<string, Attachment>;
+}) {
+  const linkedAttachments = (attachmentIds ?? [])
+    .map((attachmentId) => attachmentsById.get(attachmentId))
+    .filter((attachment): attachment is Attachment => Boolean(attachment));
+
+  if (linkedAttachments.length === 0) return null;
+
+  return (
+    <div className="mt-3 flex flex-wrap gap-2">
+      {linkedAttachments.map((attachment) => (
+        <div key={attachment.id} className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-xs text-stone-700">
+          <span className="font-semibold text-stone-900">{attachment.type === "pdf" ? "PDF" : "IMG"}</span>
+          <span className="truncate max-w-[180px]">{attachment.name}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function MemoThreadCard({
+  thread,
+  attachmentsById,
+  onCreateReply,
+}: {
+  thread: MemoThread;
+  attachmentsById: Map<string, Attachment>;
+  onCreateReply: (threadId: string, content: string) => void;
+}) {
+  const [replyDraft, setReplyDraft] = useState("");
+
+  return (
+    <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-sm font-semibold text-stone-900">{thread.authorName}</div>
+          <div className="mt-1 text-xs text-stone-500">{thread.authorRole} · {thread.createdAt}</div>
+        </div>
+        <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-medium text-stone-600">스레드</span>
+      </div>
+      <div className="mt-3 whitespace-pre-wrap text-sm leading-6 text-stone-700">{thread.content}</div>
+      <MemoAttachmentList attachmentIds={thread.attachmentIds} attachmentsById={attachmentsById} />
+
+      <div className="mt-4 space-y-3 border-t border-stone-200 pt-4">
+        {(thread.replies ?? []).length > 0 ? (
+          thread.replies.map((reply) => (
+            <div key={reply.id} className="rounded-2xl bg-stone-50 p-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="text-sm font-medium text-stone-900">{reply.authorName}</div>
+                  <div className="mt-1 text-xs text-stone-500">{reply.authorRole} · {reply.createdAt}</div>
+                </div>
+                <span className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-stone-600">댓글</span>
+              </div>
+              <div className="mt-2 whitespace-pre-wrap text-sm leading-6 text-stone-700">{reply.content}</div>
+              <MemoAttachmentList attachmentIds={reply.attachmentIds} attachmentsById={attachmentsById} />
+            </div>
+          ))
+        ) : (
+          <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-5 text-sm text-stone-500">아직 댓글이 없습니다.</div>
+        )}
+
+        <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
+          <textarea
+            value={replyDraft}
+            onChange={(event) => setReplyDraft(event.target.value)}
+            placeholder="댓글을 입력하세요"
+            className="min-h-[88px] w-full resize-none rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-800 outline-none transition focus:border-stone-400"
+          />
+          <div className="mt-3 flex justify-end">
+            <button
+              type="button"
+              onClick={() => {
+                onCreateReply(thread.id, replyDraft);
+                setReplyDraft("");
+              }}
+              className="rounded-full bg-stone-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-stone-800"
+            >
+              댓글 등록
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MemoThreadSection({
+  workOrder,
+  currentUserName,
+  currentUserRole,
+  onCreateThread,
+  onCreateReply,
+}: {
+  workOrder: WorkOrder;
+  currentUserName: string;
+  currentUserRole: string;
+  onCreateThread: (content: string) => void;
+  onCreateReply: (threadId: string, content: string) => void;
+}) {
+  const [threadDraft, setThreadDraft] = useState("");
+  const memoThreads = workOrder.memoThreads ?? [];
+  const attachmentsById = new Map((workOrder.attachments ?? []).map((attachment) => [attachment.id, attachment]));
+
+  return (
+    <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-base font-semibold">작업 메모</h3>
+          <div className="mt-1 text-sm text-stone-500">메모 스레드와 댓글로 작업 내용을 이어서 기록합니다.</div>
+        </div>
+        <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-stone-600">{memoThreads.length}개 스레드</span>
+      </div>
+
+      <div className="mt-4 rounded-2xl border border-stone-200 bg-white p-4">
+        <div className="text-sm font-medium text-stone-900">{currentUserName}</div>
+        <div className="mt-1 text-xs text-stone-500">{currentUserRole}</div>
+        <textarea
+          value={threadDraft}
+          onChange={(event) => setThreadDraft(event.target.value)}
+          placeholder="작업 메모를 입력하세요"
+          className="mt-3 min-h-[110px] w-full resize-none rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-800 outline-none transition focus:border-stone-400"
+        />
+        <div className="mt-3 flex justify-end">
+          <button
+            type="button"
+            onClick={() => {
+              onCreateThread(threadDraft);
+              setThreadDraft("");
+            }}
+            className="rounded-full bg-stone-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-stone-800"
+          >
+            메모 등록
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-4 space-y-4">
+        {memoThreads.length > 0 ? memoThreads.map((thread) => (
+          <MemoThreadCard
+            key={thread.id}
+            thread={thread}
+            attachmentsById={attachmentsById}
+            onCreateReply={onCreateReply}
+          />
+        )) : (
+          <div className="rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-8 text-center text-sm text-stone-500">등록된 작업 메모가 없습니다.</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function WorkOrderDetail({
   workOrder,
   currentWorkflowState,
@@ -1086,7 +1245,7 @@ export default function WorkOrderDetail({
   lastSavedAt,
   currentInventoryQuantity,
   currentUserName,
-  currentRole,
+  currentUserRole,
   canEditInventory,
   canChangeManager,
   canSeeProductionSections,
@@ -1105,6 +1264,8 @@ export default function WorkOrderDetail({
   currentDisplayStage,
   actions,
   onAction,
+  onCreateMemoThread,
+  onCreateMemoReply,
 }: {
   workOrder: WorkOrder;
   currentWorkflowState: WorkflowState;
@@ -1112,7 +1273,7 @@ export default function WorkOrderDetail({
   lastSavedAt: string | null;
   currentInventoryQuantity: number;
   currentUserName: string;
-  currentRole: string;
+  currentUserRole: string;
   canEditInventory: boolean;
   canChangeManager: boolean;
   canSeeProductionSections: boolean;
@@ -1131,6 +1292,8 @@ export default function WorkOrderDetail({
   currentDisplayStage: DisplayStage;
   actions: WorkflowAction[];
   onAction: (action: WorkflowAction) => void;
+  onCreateMemoThread: (content: string) => void;
+  onCreateMemoReply: (threadId: string, content: string) => void;
 }) {
   const [basicInfo, setBasicInfo] = useState<BasicInfoState>(() => getInitialBasicInfo(workOrder));
   const [partnerOptions, setPartnerOptions] = useState<string[]>(() => Array.from(new Set(PARTNER_OPTIONS)));
@@ -1485,10 +1648,13 @@ export default function WorkOrderDetail({
           />
         ) : null}
 
-        <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
-          <h3 className="text-base font-semibold">작업 메모</h3>
-          <div className="mt-3 rounded-2xl border border-stone-200 bg-white p-4 text-sm text-stone-700">{workOrder.memo}</div>
-        </div>
+        <MemoThreadSection
+          workOrder={workOrder}
+          currentUserName={currentUserName}
+          currentUserRole={currentUserRole}
+          onCreateThread={onCreateMemoThread}
+          onCreateReply={onCreateMemoReply}
+        />
       </div>
 
       <BasicInfoEditModal

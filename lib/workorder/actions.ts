@@ -1,4 +1,4 @@
-import type { Attachment, InventoryChange, RoleType, WorkOrder, WorkflowAction } from "@/types/workorder";
+import type { Attachment, InventoryChange, MemoReply, MemoThread, RoleType, WorkOrder, WorkflowAction } from "@/types/workorder";
 
 export function createNewWorkOrder(nextIndex: number, payload: {
   managerName: string;
@@ -27,6 +27,7 @@ export function createNewWorkOrder(nextIndex: number, payload: {
     materials: [],
     outsourcing: [],
     attachments: [],
+    memoThreads: [],
     workflowState: "작성중",
     lastSavedAt: payload.createdAt,
   };
@@ -69,6 +70,23 @@ export function removeAttachment(workOrders: WorkOrder[], workOrderId: string, a
     : item);
 }
 
+export function addMemoThread(workOrders: WorkOrder[], workOrderId: string, thread: MemoThread) {
+  return workOrders.map((item) => item.id === workOrderId
+    ? { ...item, memoThreads: [thread, ...(item.memoThreads ?? [])] }
+    : item);
+}
+
+export function addMemoReply(workOrders: WorkOrder[], workOrderId: string, threadId: string, reply: MemoReply) {
+  return workOrders.map((item) => {
+    if (item.id !== workOrderId) return item;
+    return {
+      ...item,
+      memoThreads: (item.memoThreads ?? []).map((thread) => thread.id === threadId
+        ? { ...thread, replies: [...(thread.replies ?? []), reply] }
+        : thread),
+    };
+  });
+}
 
 export function updateWorkOrderManager(
   workOrders: WorkOrder[],

@@ -23,7 +23,8 @@ export default function OrderRequestConfirmModal({
 
   useModalEnvironment({ open, dialogRef, onClose });
 
-  const attachmentCount = workOrder.attachments?.length ?? 0;
+  const officialAttachments = (workOrder.attachments ?? []).filter((attachment) => (attachment.scope ?? "official") === "official");
+  const attachmentCount = officialAttachments.length;
   const attachmentSummary = attachmentCount > 0 ? `${attachmentCount}개 첨부됨` : "첨부파일 없음";
 
   return (
@@ -80,7 +81,7 @@ export default function OrderRequestConfirmModal({
           </div>
           {attachmentCount > 0 ? (
             <ul className="mt-3 space-y-2 text-sm text-stone-700">
-              {workOrder.attachments.map((attachment) => (
+              {officialAttachments.map((attachment) => (
                 <li key={attachment.id} className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2">
                   <div className="font-medium text-stone-900">{attachment.name}</div>
                   <div className="mt-1 text-xs text-stone-500">{attachment.type === "pdf" ? "PDF" : "이미지"}</div>

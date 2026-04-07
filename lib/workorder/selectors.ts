@@ -1,6 +1,12 @@
-import type { WorkOrder, WorkOrderListItem } from "@/types/workorder";
+import type { Attachment, WorkOrder, WorkOrderListItem } from "@/types/workorder";
+
+function isOfficialAttachment(attachment: Attachment) {
+  return (attachment.scope ?? "official") === "official";
+}
 
 export function createWorkOrderListItem(workOrder: WorkOrder): WorkOrderListItem {
+  const officialAttachments = (workOrder.attachments ?? []).filter(isOfficialAttachment);
+
   return {
     id: workOrder.id,
     title: workOrder.title,
@@ -10,8 +16,8 @@ export function createWorkOrderListItem(workOrder: WorkOrder): WorkOrderListItem
     vendor: workOrder.vendor,
     dueDate: workOrder.dueDate,
     inventoryStatus: workOrder.inventoryStatus,
-    attachments: workOrder.attachments,
-    filesCount: workOrder.attachments.length,
+    attachments: officialAttachments,
+    filesCount: officialAttachments.length,
   };
 }
 

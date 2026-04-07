@@ -3,13 +3,39 @@ import type { RoleType } from "@/types/permission";
 import type { UserProfile } from "@/types/user";
 import type { DisplayStage, HistoryCategory, HistoryFilter, HistoryTone, WorkflowAction, WorkflowState } from "@/types/workflow";
 
+export type AttachmentScope = "official" | "memo";
+
 export type Attachment = {
   id: string;
   name: string;
   type: "image" | "pdf";
   url: string;
+  scope?: AttachmentScope;
   ownerId?: string | null;
   ownerName?: string | null;
+  linkedThreadId?: string | null;
+  linkedReplyId?: string | null;
+};
+
+export type MemoReply = {
+  id: string;
+  authorId: string;
+  authorName: string;
+  authorRole: RoleType;
+  content: string;
+  createdAt: string;
+  attachmentIds?: string[];
+};
+
+export type MemoThread = {
+  id: string;
+  authorId: string;
+  authorName: string;
+  authorRole: RoleType;
+  content: string;
+  createdAt: string;
+  attachmentIds?: string[];
+  replies: MemoReply[];
 };
 
 export type Outsourcing = {
@@ -44,6 +70,7 @@ export type WorkOrder = {
   materials: Material[];
   outsourcing: Outsourcing[];
   attachments: Attachment[];
+  memoThreads: MemoThread[];
   workflowState: WorkflowState;
   lastSavedAt: string;
 };
