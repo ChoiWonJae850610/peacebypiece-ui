@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import WorkOrderListCard from "@/components/workorder/list/WorkOrderListCard";
-import type { WorkOrderListItem } from "@/types/workorder";
+import type { WorkOrderListItem, WorkflowState } from "@/types/workorder";
 
 type Props = {
   open: boolean;
@@ -14,7 +14,11 @@ type Props = {
   onSelect: (id: string) => void;
   onCreate: () => void;
   onReorder?: (id: string) => void;
+  onDelete?: (id: string) => void;
+  canDelete?: (workflowState: WorkflowState) => boolean;
   canCreate: boolean;
+  searchQuery: string;
+  onSearchQueryChange: (value: string) => void;
 };
 
 export default function MobileDrawer({
@@ -26,7 +30,11 @@ export default function MobileDrawer({
   onSelect,
   onCreate,
   onReorder,
+  onDelete,
+  canDelete,
   canCreate,
+  searchQuery,
+  onSearchQueryChange,
 }: Props) {
   const drawerRef = useRef<HTMLDivElement | null>(null);
 
@@ -60,6 +68,16 @@ export default function MobileDrawer({
               닫기
             </button>
           </div>
+          <label className="mt-3 block">
+            <span className="sr-only">작업지시서 검색</span>
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => onSearchQueryChange(event.target.value)}
+              placeholder="작업명, 분류, 공장, 상태 검색"
+              className="h-11 w-full rounded-xl border border-stone-300 bg-white px-4 text-sm text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-stone-500"
+            />
+          </label>
           {canCreate ? (
             <button
               type="button"
@@ -86,9 +104,12 @@ export default function MobileDrawer({
                   onClose();
                 }}
                 onReorder={onReorder}
+                onDelete={onDelete}
+                canDelete={canDelete}
               />
             ))}
           </div>
+          {workOrders.length === 0 ? <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">검색 결과가 없습니다.</div> : null}
         </div>
       </div>
     </div>

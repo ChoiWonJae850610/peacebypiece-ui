@@ -48,6 +48,7 @@ export function useWorkOrder() {
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>(MOCK_WORK_ORDERS);
   const [historyLogs, setHistoryLogs] = useState<HistoryLog[]>(MOCK_HISTORY_LOGS);
   const [selectedId, setSelectedId] = useState(DEFAULT_SELECTED_WORK_ORDER_ID);
+  const [searchQuery, setSearchQuery] = useState("");
   const [saveStatus, setSaveStatus] = useState<"saved" | "dirty" | "saving">("saved");
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(MOCK_WORK_ORDERS.find((item) => item.id === DEFAULT_SELECTED_WORK_ORDER_ID)?.lastSavedAt ?? MOCK_WORK_ORDERS[0]?.lastSavedAt ?? null);
 
@@ -77,6 +78,22 @@ export function useWorkOrder() {
   const visibleStages = VISIBLE_STAGES;
 
   const workOrderList: WorkOrderListItem[] = useMemo(() => workOrders.map(createWorkOrderListItem), [workOrders]);
+
+  const filteredWorkOrderList = useMemo(() => {
+    const normalized = searchQuery.trim().toLowerCase();
+    if (!normalized) return workOrderList;
+    return workOrderList.filter((item) => {
+      const fields = [
+        item.title,
+        item.category1,
+        item.category2,
+        item.category3,
+        item.vendor,
+        workflowStateById[item.id] ?? "",
+      ];
+      return fields.some((field) => String(field ?? "").toLowerCase().includes(normalized));
+    });
+  }, [searchQuery, workOrderList, workflowStateById]);
 
   const canSeeProductionSections = currentUser.permissions.canSeeProductionSections;
   const canSeeCostSections = currentUser.permissions.canSeeCostSections;
@@ -166,6 +183,8 @@ export function useWorkOrder() {
     setLastSavedAt(next?.lastSavedAt ?? null);
     setSaveStatus("saved");
   };
+
+  const canDeleteWorkOrder = (workflowState: WorkOrder["workflowState"]) => workflowState === "작성중" || workflowState === "검토요청";
 
   const handleCreateWorkOrder = () => {
     if (!canCreateWorkOrder) return;
@@ -284,6 +303,27 @@ export function useWorkOrder() {
     setManagerAssignModalOpen(false);
   };
 
+  const handleDeleteWorkOrder = (workOrderId: string) => {
+    const target = workOrders.find((item) => item.id === workOrderId);
+    if (!target || !canDeleteWorkOrder(target.workflowState) || workOrders.length <= 1) return;
+    if (typeof window !== "undefined") {
+      const ok = window.confirm(`작업지시서 "${target.title}"를 삭제할까요?`);
+      if (!ok) return;
+    }
+
+    const remaining = workOrders.filter((item) => item.id !== workOrderId);
+    const fallbackSelectedId = remaining[0]?.id ?? DEFAULT_SELECTED_WORK_ORDER_ID;
+    setWorkOrders(remaining);
+    setHistoryLogs((prev) => prev.filter((item) => item.workOrderId !== workOrderId));
+    if (selectedId === workOrderId) {
+      setSelectedId(fallbackSelectedId);
+      const fallbackWorkOrder = remaining.find((item) => item.id === fallbackSelectedId) ?? remaining[0];
+      setLastSavedAt(fallbackWorkOrder?.lastSavedAt ?? null);
+      setSaveStatus("saved");
+    }
+    setToastMessage("작업지시서가 삭제되었습니다.");
+  };
+
   const handleOpenAttachmentPicker = () => attachmentInputRef.current?.click();
 
   const handleAttachmentFiles = (event: ChangeEvent<HTMLInputElement>) => {
@@ -362,7 +402,9 @@ export function useWorkOrder() {
     setPermissionTargetUserId,
     historyFilter,
     setHistoryFilter,
-    workOrders: workOrderList,
+    searchQuery,
+    setSearchQuery,
+    workOrders: filteredWorkOrderList,
     workflowStateById,
     selectedId,
     selectedWorkOrder,
@@ -396,7 +438,9 @@ export function useWorkOrder() {
     visibleStages,
     handleSave,
     handleSelectWorkOrder,
+    canDeleteWorkOrder,
     handleCreateWorkOrder,
+    handleDeleteWorkOrder,
     handleWorkflowAction,
     handleConfirmOrderRequest,
     handleCloseOrderRequestConfirm,
