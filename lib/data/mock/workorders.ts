@@ -2,7 +2,21 @@ import type { HistoryLog, WorkOrder } from "@/types/workorder";
 import type { MockWorkOrderSource } from "@/lib/data/mock/types";
 
 const placeholderImage = "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=80";
-const placeholderPdf = "about:blank";
+const placeholderPdf = `data:text/html;charset=UTF-8,${encodeURIComponent(`
+<!doctype html>
+<html lang="ko">
+  <body style="margin:0;font-family:Arial,sans-serif;background:#f5f5f4;color:#1c1917;display:flex;align-items:center;justify-content:center;min-height:100vh;">
+    <div style="width:min(92vw,720px);background:white;border:1px solid #e7e5e4;border-radius:24px;padding:32px;box-shadow:0 10px 30px rgba(0,0,0,0.08);">
+      <div style="display:inline-block;padding:6px 12px;border-radius:999px;background:#fee2e2;color:#991b1b;font-weight:700;font-size:12px;">PDF 미리보기</div>
+      <h1 style="margin:18px 0 8px;font-size:28px;">PeacebyPiece 샘플 PDF</h1>
+      <p style="margin:0 0 18px;line-height:1.7;color:#57534e;">현재 mock 데이터용 미리보기 화면입니다. 실제 업로드된 PDF는 이 영역에서 바로 미리볼 수 있습니다.</p>
+      <div style="border:1px dashed #d6d3d1;border-radius:16px;padding:18px;background:#fafaf9;line-height:1.7;">
+        작업지시 요약 / 첨부 검토 / 발주 전달용 PDF가 여기에 표시됩니다.
+      </div>
+    </div>
+  </body>
+</html>
+`)}`;
 
 const workOrders: WorkOrder[] = [
   {
@@ -44,6 +58,7 @@ const workOrders: WorkOrder[] = [
     ],
     memoThreads: [
       {
+        kind: "general",
         id: "memo-1",
         authorId: "user-designer",
         authorName: "김디자이너",
@@ -95,6 +110,7 @@ const workOrders: WorkOrder[] = [
     attachments: [],
     memoThreads: [
       {
+        kind: "general",
         id: "memo-21",
         authorId: "user-admin",
         authorName: "박관리",
@@ -147,6 +163,7 @@ const workOrders: WorkOrder[] = [
     ],
     memoThreads: [
       {
+        kind: "general",
         id: "memo-31",
         authorId: "user-qc",
         authorName: "이검수",

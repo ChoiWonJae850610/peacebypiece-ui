@@ -5,6 +5,11 @@ import type { DisplayStage, HistoryCategory, HistoryFilter, HistoryTone, Workflo
 
 export type AttachmentScope = "official" | "memo";
 
+export type MemoAttachmentPayload = {
+  selectedAttachmentIds?: string[];
+  files?: File[];
+};
+
 export type Attachment = {
   id: string;
   name: string;
@@ -17,6 +22,8 @@ export type Attachment = {
   linkedReplyId?: string | null;
 };
 
+export type MemoThreadKind = "general" | "attachment-request";
+
 export type MemoReply = {
   id: string;
   authorId: string;
@@ -28,6 +35,7 @@ export type MemoReply = {
 };
 
 export type MemoThread = {
+  kind?: MemoThreadKind;
   id: string;
   authorId: string;
   authorName: string;

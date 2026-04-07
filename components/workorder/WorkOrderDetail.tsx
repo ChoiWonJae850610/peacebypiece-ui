@@ -1080,12 +1080,79 @@ function OutsourcingSection({
 }
 
 
+function MemoComposerAttachmentControls({
+  availableAttachments,
+  selectedAttachmentIds,
+  onToggleAttachment,
+  uploadedFiles,
+  onFilesChange,
+}: {
+  availableAttachments: Attachment[];
+  selectedAttachmentIds: string[];
+  onToggleAttachment: (attachmentId: string) => void;
+  uploadedFiles: File[];
+  onFilesChange: (files: File[]) => void;
+}) {
+  return (
+    <div className="mt-3 space-y-3 rounded-xl border border-stone-200 bg-white p-3">
+      <div>
+        <div className="text-xs font-semibold text-stone-700">기존 공식 첨부 선택</div>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {availableAttachments.length > 0 ? availableAttachments.map((attachment) => {
+            const selected = selectedAttachmentIds.includes(attachment.id);
+            return (
+              <button
+                key={attachment.id}
+                type="button"
+                onClick={() => onToggleAttachment(attachment.id)}
+                className={`rounded-full border px-3 py-1 text-xs font-medium ${selected ? "border-stone-900 bg-stone-900 text-white" : "border-stone-300 bg-stone-50 text-stone-700"}`}
+              >
+                {attachment.type === "pdf" ? "PDF" : "IMG"} · {attachment.name}
+              </button>
+            );
+          }) : (
+            <div className="text-xs text-stone-500">선택할 공식 첨부가 없습니다.</div>
+          )}
+        </div>
+      </div>
+
+      <div>
+        <div className="text-xs font-semibold text-stone-700">메모 첨부 업로드</div>
+        <label className="mt-2 inline-flex cursor-pointer items-center rounded-full border border-stone-300 bg-stone-50 px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400">
+          + 파일 선택
+          <input
+            type="file"
+            multiple
+            accept="image/*,.pdf,application/pdf"
+            className="sr-only"
+            onChange={(event) => onFilesChange(Array.from<File>(event.target.files ?? []))}
+          />
+        </label>
+        {uploadedFiles.length > 0 ? (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {uploadedFiles.map((file) => (
+              <span key={`${file.name}-${file.size}`} className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-xs text-stone-700">
+                <span className="font-semibold text-stone-900">{file.type.includes("pdf") ? "PDF" : "IMG"}</span>
+                <span className="max-w-[180px] truncate">{file.name}</span>
+              </span>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 function MemoAttachmentList({
   attachmentIds,
   attachmentsById,
+  canPromoteMemoAttachment = false,
+  onPromoteMemoAttachment,
 }: {
   attachmentIds?: string[];
   attachmentsById: Map<string, Attachment>;
+  canPromoteMemoAttachment?: boolean;
+  onPromoteMemoAttachment?: (attachmentId: string) => void;
 }) {
   const linkedAttachments = (attachmentIds ?? [])
     .map((attachmentId) => attachmentsById.get(attachmentId))
@@ -1095,12 +1162,25 @@ function MemoAttachmentList({
 
   return (
     <div className="mt-3 flex flex-wrap gap-2">
-      {linkedAttachments.map((attachment) => (
-        <div key={attachment.id} className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-xs text-stone-700">
-          <span className="font-semibold text-stone-900">{attachment.type === "pdf" ? "PDF" : "IMG"}</span>
-          <span className="truncate max-w-[180px]">{attachment.name}</span>
-        </div>
-      ))}
+      {linkedAttachments.map((attachment) => {
+        const isOfficial = (attachment.scope ?? "official") === "official";
+        return (
+          <div key={attachment.id} className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-xs text-stone-700">
+            <span className="font-semibold text-stone-900">{attachment.type === "pdf" ? "PDF" : "IMG"}</span>
+            <span className="truncate max-w-[180px]">{attachment.name}</span>
+            <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${isOfficial ? "bg-stone-200 text-stone-700" : "bg-amber-100 text-amber-700"}`}>{isOfficial ? "공식" : "메모"}</span>
+            {!isOfficial && canPromoteMemoAttachment && onPromoteMemoAttachment ? (
+              <button
+                type="button"
+                onClick={() => onPromoteMemoAttachment(attachment.id)}
+                className="rounded-full border border-stone-300 bg-white px-2 py-0.5 text-[10px] font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100"
+              >
+                공식 승격
+              </button>
+            ) : null}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -1108,13 +1188,21 @@ function MemoAttachmentList({
 function MemoThreadCard({
   thread,
   attachmentsById,
+  availableAttachments,
+  canPromoteMemoAttachment,
+  onPromoteMemoAttachment,
   onCreateReply,
 }: {
   thread: MemoThread;
   attachmentsById: Map<string, Attachment>;
-  onCreateReply: (threadId: string, content: string) => void;
+  availableAttachments: Attachment[];
+  canPromoteMemoAttachment: boolean;
+  onPromoteMemoAttachment: (attachmentId: string) => void;
+  onCreateReply: (threadId: string, content: string, payload?: MemoAttachmentPayload) => void;
 }) {
   const [replyDraft, setReplyDraft] = useState("");
+  const [selectedAttachmentIds, setSelectedAttachmentIds] = useState<string[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   return (
     <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
@@ -1123,10 +1211,11 @@ function MemoThreadCard({
           <div className="text-sm font-semibold text-stone-900">{thread.authorName}</div>
           <div className="mt-1 text-xs text-stone-500">{thread.authorRole} · {thread.createdAt}</div>
         </div>
-        <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-medium text-stone-600">스레드</span>
+        {thread.kind === "attachment-request" ? <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-medium text-amber-700">첨부 요청</span> : <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-medium text-stone-600">스레드</span>}
       </div>
       <div className="mt-3 whitespace-pre-wrap text-sm leading-6 text-stone-700">{thread.content}</div>
-      <MemoAttachmentList attachmentIds={thread.attachmentIds} attachmentsById={attachmentsById} />
+      {thread.kind === "attachment-request" ? <div className="mt-2 text-xs text-amber-700">관리자가 검토 후 메모 첨부를 공식 첨부로 승격할 수 있습니다.</div> : null}
+      <MemoAttachmentList attachmentIds={thread.attachmentIds} attachmentsById={attachmentsById} canPromoteMemoAttachment={canPromoteMemoAttachment} onPromoteMemoAttachment={onPromoteMemoAttachment} />
 
       <div className="mt-4 space-y-3 border-t border-stone-200 pt-4">
         {(thread.replies ?? []).length > 0 ? (
@@ -1140,7 +1229,7 @@ function MemoThreadCard({
                 <span className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-stone-600">댓글</span>
               </div>
               <div className="mt-2 whitespace-pre-wrap text-sm leading-6 text-stone-700">{reply.content}</div>
-              <MemoAttachmentList attachmentIds={reply.attachmentIds} attachmentsById={attachmentsById} />
+              <MemoAttachmentList attachmentIds={reply.attachmentIds} attachmentsById={attachmentsById} canPromoteMemoAttachment={canPromoteMemoAttachment} onPromoteMemoAttachment={onPromoteMemoAttachment} />
             </div>
           ))
         ) : (
@@ -1154,12 +1243,21 @@ function MemoThreadCard({
             placeholder="댓글을 입력하세요"
             className="min-h-[88px] w-full resize-none rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-800 outline-none transition focus:border-stone-400"
           />
+          <MemoComposerAttachmentControls
+            availableAttachments={availableAttachments}
+            selectedAttachmentIds={selectedAttachmentIds}
+            onToggleAttachment={(attachmentId) => setSelectedAttachmentIds((prev) => prev.includes(attachmentId) ? prev.filter((item) => item !== attachmentId) : [...prev, attachmentId])}
+            uploadedFiles={uploadedFiles}
+            onFilesChange={setUploadedFiles}
+          />
           <div className="mt-3 flex justify-end">
             <button
               type="button"
               onClick={() => {
-                onCreateReply(thread.id, replyDraft);
+                onCreateReply(thread.id, replyDraft, { selectedAttachmentIds, files: uploadedFiles });
                 setReplyDraft("");
+                setSelectedAttachmentIds([]);
+                setUploadedFiles([]);
               }}
               className="rounded-full bg-stone-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-stone-800"
             >
@@ -1176,18 +1274,25 @@ function MemoThreadSection({
   workOrder,
   currentUserName,
   currentUserRole,
+  canPromoteMemoAttachment,
+  onPromoteMemoAttachment,
   onCreateThread,
   onCreateReply,
 }: {
   workOrder: WorkOrder;
   currentUserName: string;
   currentUserRole: string;
-  onCreateThread: (content: string) => void;
-  onCreateReply: (threadId: string, content: string) => void;
+  canPromoteMemoAttachment: boolean;
+  onPromoteMemoAttachment: (attachmentId: string) => void;
+  onCreateThread: (content: string, payload?: MemoAttachmentPayload) => void;
+  onCreateReply: (threadId: string, content: string, payload?: MemoAttachmentPayload) => void;
 }) {
   const [threadDraft, setThreadDraft] = useState("");
+  const [selectedAttachmentIds, setSelectedAttachmentIds] = useState<string[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const memoThreads = workOrder.memoThreads ?? [];
   const attachmentsById = new Map((workOrder.attachments ?? []).map((attachment) => [attachment.id, attachment]));
+  const availableAttachments = (workOrder.attachments ?? []).filter((attachment) => (attachment.scope ?? "official") === "official");
 
   return (
     <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
@@ -1208,12 +1313,21 @@ function MemoThreadSection({
           placeholder="작업 메모를 입력하세요"
           className="mt-3 min-h-[110px] w-full resize-none rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-800 outline-none transition focus:border-stone-400"
         />
+        <MemoComposerAttachmentControls
+          availableAttachments={availableAttachments}
+          selectedAttachmentIds={selectedAttachmentIds}
+          onToggleAttachment={(attachmentId) => setSelectedAttachmentIds((prev) => prev.includes(attachmentId) ? prev.filter((item) => item !== attachmentId) : [...prev, attachmentId])}
+          uploadedFiles={uploadedFiles}
+          onFilesChange={setUploadedFiles}
+        />
         <div className="mt-3 flex justify-end">
           <button
             type="button"
             onClick={() => {
-              onCreateThread(threadDraft);
+              onCreateThread(threadDraft, { selectedAttachmentIds, files: uploadedFiles });
               setThreadDraft("");
+              setSelectedAttachmentIds([]);
+              setUploadedFiles([]);
             }}
             className="rounded-full bg-stone-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-stone-800"
           >
@@ -1228,6 +1342,9 @@ function MemoThreadSection({
             key={thread.id}
             thread={thread}
             attachmentsById={attachmentsById}
+            availableAttachments={availableAttachments}
+            canPromoteMemoAttachment={canPromoteMemoAttachment}
+            onPromoteMemoAttachment={onPromoteMemoAttachment}
             onCreateReply={onCreateReply}
           />
         )) : (
@@ -1266,6 +1383,8 @@ export default function WorkOrderDetail({
   onAction,
   onCreateMemoThread,
   onCreateMemoReply,
+  canPromoteMemoAttachment,
+  onPromoteMemoAttachment,
 }: {
   workOrder: WorkOrder;
   currentWorkflowState: WorkflowState;
@@ -1292,8 +1411,10 @@ export default function WorkOrderDetail({
   currentDisplayStage: DisplayStage;
   actions: WorkflowAction[];
   onAction: (action: WorkflowAction) => void;
-  onCreateMemoThread: (content: string) => void;
-  onCreateMemoReply: (threadId: string, content: string) => void;
+  onCreateMemoThread: (content: string, payload?: MemoAttachmentPayload) => void;
+  onCreateMemoReply: (threadId: string, content: string, payload?: MemoAttachmentPayload) => void;
+  canPromoteMemoAttachment: boolean;
+  onPromoteMemoAttachment: (attachmentId: string) => void;
 }) {
   const [basicInfo, setBasicInfo] = useState<BasicInfoState>(() => getInitialBasicInfo(workOrder));
   const [partnerOptions, setPartnerOptions] = useState<string[]>(() => Array.from(new Set(PARTNER_OPTIONS)));

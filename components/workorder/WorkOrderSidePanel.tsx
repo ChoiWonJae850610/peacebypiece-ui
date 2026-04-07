@@ -71,14 +71,20 @@ function HistoryPreviewItem({ item }: { item: HistoryLog }) {
 function AttachmentPanel({
   canSeeAttachments,
   attachments,
+  isAdmin,
+  pendingAttachmentRequestCount,
   onOpenAttachmentPicker,
+  onOpenAttachmentRequestModal,
   onPreviewAttachment,
   onDeleteAttachment,
   canDeleteAttachment,
 }: {
   canSeeAttachments: boolean;
   attachments: Attachment[];
+  isAdmin: boolean;
+  pendingAttachmentRequestCount: number;
   onOpenAttachmentPicker: () => void;
+  onOpenAttachmentRequestModal: () => void;
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;
   canDeleteAttachment: (attachment: Attachment | null) => boolean;
@@ -91,8 +97,18 @@ function AttachmentPanel({
         <div>
           <h3 className="text-base font-semibold">공식 첨부파일</h3>
         </div>
-        <button type="button" onClick={onOpenAttachmentPicker} className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">+ 첨부 추가</button>
+        {isAdmin ? (
+          <button type="button" onClick={onOpenAttachmentPicker} className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">+ 공식 첨부 추가</button>
+        ) : (
+          <button type="button" onClick={onOpenAttachmentRequestModal} className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-700 transition hover:border-amber-400 hover:bg-amber-100">첨부 요청</button>
+        )}
       </div>
+      {!isAdmin ? (
+        <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-3 text-xs leading-5 text-amber-800">
+          공식 첨부는 관리자만 바로 추가할 수 있습니다. 필요한 파일은 첨부 요청으로 등록하면 메모 스레드에 남고, 관리자가 검토 후 공식 첨부로 승격할 수 있습니다.
+          {pendingAttachmentRequestCount > 0 ? <div className="mt-2 font-semibold">대기 중 요청 {pendingAttachmentRequestCount}건</div> : null}
+        </div>
+      ) : null}
       {attachments.length > 0 ? (
         <div className="mt-4 space-y-3">
           {attachments.map((attachment) => {
@@ -138,7 +154,9 @@ function AttachmentPanel({
 export default function WorkOrderSidePanel({
   canSeeAttachments,
   attachments,
+  pendingAttachmentRequestCount,
   onOpenAttachmentPicker,
+  onOpenAttachmentRequestModal,
   onPreviewAttachment,
   onDeleteAttachment,
   canDeleteAttachment,
@@ -159,7 +177,9 @@ export default function WorkOrderSidePanel({
 }: {
   canSeeAttachments: boolean;
   attachments: Attachment[];
+  pendingAttachmentRequestCount: number;
   onOpenAttachmentPicker: () => void;
+  onOpenAttachmentRequestModal: () => void;
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;
   canDeleteAttachment: (attachment: Attachment | null) => boolean;
@@ -183,7 +203,10 @@ export default function WorkOrderSidePanel({
       <AttachmentPanel
         canSeeAttachments={canSeeAttachments}
         attachments={attachments}
+        isAdmin={isAdmin}
+        pendingAttachmentRequestCount={pendingAttachmentRequestCount}
         onOpenAttachmentPicker={onOpenAttachmentPicker}
+        onOpenAttachmentRequestModal={onOpenAttachmentRequestModal}
         onPreviewAttachment={onPreviewAttachment}
         onDeleteAttachment={onDeleteAttachment}
         canDeleteAttachment={canDeleteAttachment}
