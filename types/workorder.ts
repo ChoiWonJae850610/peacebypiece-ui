@@ -6,7 +6,6 @@ import type { DisplayStage, HistoryCategory, HistoryFilter, HistoryTone, Workflo
 export type AttachmentScope = "official" | "memo";
 
 export type MemoAttachmentPayload = {
-  selectedAttachmentIds?: string[];
   files?: File[];
 };
 

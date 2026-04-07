@@ -2,7 +2,6 @@
 
 import ToastMessage from "@/components/common/ToastMessage";
 import AttachmentPreviewModal from "@/components/common/modal/AttachmentPreviewModal";
-import AttachmentRequestModal from "@/components/common/modal/AttachmentRequestModal";
 import InventoryEditor from "@/components/common/modal/InventoryEditor";
 import InventoryLogModal from "@/components/common/modal/InventoryLogModal";
 import ManagerAssignModal from "@/components/common/modal/ManagerAssignModal";
@@ -34,7 +33,6 @@ export default function Home() {
     permissionModalOpen,
     setPermissionModalOpen,
     managerAssignModalOpen,
-    attachmentRequestModalOpen,
     inventoryLogModalOpen,
     setInventoryLogModalOpen,
     attachmentPreviewId,
@@ -96,12 +94,9 @@ export default function Home() {
     handleCloseManagerAssignModal,
     handleChangeManager,
     handleOpenAttachmentPicker,
-    handleOpenAttachmentRequestModal,
-    handleCloseAttachmentRequestModal,
     handleAttachmentFiles,
     handleDeleteAttachment,
     handleCreateMemoThread,
-    handleSubmitAttachmentRequest,
     handleCreateMemoReply,
     handlePromoteMemoAttachment,
   } = useWorkOrder();
@@ -184,9 +179,7 @@ export default function Home() {
             <WorkOrderSidePanel
               canSeeAttachments={canSeeAttachments}
               attachments={officialAttachments}
-              pendingAttachmentRequestCount={(selectedWorkOrder.memoThreads ?? []).filter((thread) => thread.kind === "attachment-request").length}
               onOpenAttachmentPicker={handleOpenAttachmentPicker}
-              onOpenAttachmentRequestModal={handleOpenAttachmentRequestModal}
               onPreviewAttachment={setAttachmentPreviewId}
               onDeleteAttachment={handleDeleteAttachment}
               canDeleteAttachment={canDeleteAttachment}
@@ -214,11 +207,6 @@ export default function Home() {
         workOrder={selectedWorkOrder}
         onClose={handleCloseOrderRequestConfirm}
         onConfirm={handleConfirmOrderRequest}
-      />
-      <AttachmentRequestModal
-        open={attachmentRequestModalOpen}
-        onClose={handleCloseAttachmentRequestModal}
-        onSubmit={handleSubmitAttachmentRequest}
       />
       <AttachmentPreviewModal
         attachment={selectedAttachment}

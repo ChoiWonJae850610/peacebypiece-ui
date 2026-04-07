@@ -37,7 +37,6 @@ export function useWorkOrder() {
   const [inventoryEditorOpen, setInventoryEditorOpen] = useState(false);
   const [permissionModalOpen, setPermissionModalOpen] = useState(false);
   const [managerAssignModalOpen, setManagerAssignModalOpen] = useState(false);
-  const [attachmentRequestModalOpen, setAttachmentRequestModalOpen] = useState(false);
   const [inventoryLogModalOpen, setInventoryLogModalOpen] = useState(false);
   const [attachmentPreviewId, setAttachmentPreviewId] = useState<string | null>(null);
   const [orderRequestConfirmOpen, setOrderRequestConfirmOpen] = useState(false);
@@ -335,15 +334,6 @@ export function useWorkOrder() {
     attachmentInputRef.current?.click();
   };
 
-  const handleOpenAttachmentRequestModal = () => {
-    if (isAdmin || !canSeeAttachments) return;
-    setAttachmentRequestModalOpen(true);
-  };
-
-  const handleCloseAttachmentRequestModal = () => {
-    setAttachmentRequestModalOpen(false);
-  };
-
   const handleAttachmentFiles = (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from<File>(event.target.files ?? []);
     if (files.length === 0) return;
@@ -403,7 +393,6 @@ export function useWorkOrder() {
 
   const handleCreateMemoThread = (content: string, payload?: MemoAttachmentPayload) => {
     const trimmed = content.trim();
-    const selectedAttachmentIds = payload?.selectedAttachmentIds ?? [];
     const files = payload?.files ?? [];
     if (!trimmed) return;
 
@@ -414,7 +403,7 @@ export function useWorkOrder() {
       authorRole: currentUser.role,
       content: trimmed,
       createdAt: nowLabel(),
-      attachmentIds: selectedAttachmentIds,
+      attachmentIds: [],
       replies: [],
     };
 
@@ -430,7 +419,6 @@ export function useWorkOrder() {
     });
     setHistoryLogs((prev) => {
       const attachmentDetails = [
-        ...(selectedAttachmentIds.length > 0 ? [{ label: "기존 첨부 연결", value: `${selectedAttachmentIds.length}개` }] : []),
         ...(memoAttachments.length > 0 ? [{ label: "메모 첨부 추가", value: memoAttachments.map((attachment) => attachment.name).join(", ") }] : []),
       ];
       return [
@@ -440,48 +428,12 @@ export function useWorkOrder() {
       ];
     });
     setSaveStatus("dirty");
-    setToastMessage(memoAttachments.length > 0 || selectedAttachmentIds.length > 0 ? "첨부가 포함된 작업 메모가 등록되었습니다." : "작업 메모가 등록되었습니다.");
+    setToastMessage(memoAttachments.length > 0 ? "첨부가 포함된 작업 메모가 등록되었습니다." : "작업 메모가 등록되었습니다.");
   };
 
-  const handleSubmitAttachmentRequest = (content: string, files: File[] = []) => {
-    if (isAdmin) return;
-    const trimmed = content.trim();
-    if (!trimmed && files.length === 0) return;
-
-    const requestThread: MemoThread = {
-      kind: "attachment-request",
-      id: `memo-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      authorId: currentUser.id,
-      authorName: currentUser.name,
-      authorRole: currentUser.role,
-      content: trimmed || "첨부 승격 검토 요청",
-      createdAt: nowLabel(),
-      replies: [],
-    };
-
-    const memoAttachments = createMemoAttachments(files, { threadId: requestThread.id });
-
-    setWorkOrders((prev) => {
-      const withThread = addMemoThread(prev, selectedWorkOrder.id, requestThread);
-      if (memoAttachments.length === 0) return withThread;
-      return appendMemoAttachmentsToThread(withThread, selectedWorkOrder.id, requestThread.id, {
-        attachmentIds: memoAttachments.map((item) => item.id),
-        attachments: memoAttachments,
-      });
-    });
-    setHistoryLogs((prev) => [
-      ...(memoAttachments.length > 0 ? [createAttachmentHistoryLog(currentUser.name, selectedWorkOrder.id, [{ label: "첨부 요청", value: memoAttachments.map((attachment) => attachment.name).join(", ") }])] : []),
-      createMemoHistoryLog(currentUser.name, selectedWorkOrder.id, { action: "thread", content: `[첨부 요청] ${trimmed || "첨부 승격 검토 요청"}` }),
-      ...prev,
-    ]);
-    setSaveStatus("dirty");
-    setToastMessage(memoAttachments.length > 0 ? "첨부 요청이 등록되었습니다." : "첨부 요청 메모가 등록되었습니다.");
-    setAttachmentRequestModalOpen(false);
-  };
 
   const handleCreateMemoReply = (threadId: string, content: string, payload?: MemoAttachmentPayload) => {
     const trimmed = content.trim();
-    const selectedAttachmentIds = payload?.selectedAttachmentIds ?? [];
     const files = payload?.files ?? [];
     if (!trimmed) return;
 
@@ -492,7 +444,7 @@ export function useWorkOrder() {
       authorRole: currentUser.role,
       content: trimmed,
       createdAt: nowLabel(),
-      attachmentIds: selectedAttachmentIds,
+      attachmentIds: [],
     };
 
     const memoAttachments = createMemoAttachments(files, { threadId, replyId: nextReply.id });
@@ -507,7 +459,6 @@ export function useWorkOrder() {
     });
     setHistoryLogs((prev) => {
       const attachmentDetails = [
-        ...(selectedAttachmentIds.length > 0 ? [{ label: "기존 첨부 연결", value: `${selectedAttachmentIds.length}개` }] : []),
         ...(memoAttachments.length > 0 ? [{ label: "메모 첨부 추가", value: memoAttachments.map((attachment) => attachment.name).join(", ") }] : []),
       ];
       return [
@@ -517,7 +468,7 @@ export function useWorkOrder() {
       ];
     });
     setSaveStatus("dirty");
-    setToastMessage(memoAttachments.length > 0 || selectedAttachmentIds.length > 0 ? "첨부가 포함된 메모 댓글이 등록되었습니다." : "메모 댓글이 등록되었습니다.");
+    setToastMessage(memoAttachments.length > 0 ? "첨부가 포함된 메모 댓글이 등록되었습니다." : "메모 댓글이 등록되었습니다.");
   };
 
   const handlePromoteMemoAttachment = (attachmentId: string) => {
@@ -554,8 +505,6 @@ export function useWorkOrder() {
     setPermissionModalOpen,
     managerAssignModalOpen,
     setManagerAssignModalOpen,
-    attachmentRequestModalOpen,
-    setAttachmentRequestModalOpen,
     inventoryLogModalOpen,
     setInventoryLogModalOpen,
     attachmentPreviewId,
@@ -619,12 +568,9 @@ export function useWorkOrder() {
     handleCloseManagerAssignModal,
     handleChangeManager,
     handleOpenAttachmentPicker,
-    handleOpenAttachmentRequestModal,
-    handleCloseAttachmentRequestModal,
     handleAttachmentFiles,
     handleDeleteAttachment,
     handleCreateMemoThread,
-    handleSubmitAttachmentRequest,
     handleCreateMemoReply,
     handlePromoteMemoAttachment,
   };
