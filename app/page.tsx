@@ -98,6 +98,7 @@ export default function Home() {
     handleDeleteAttachment,
     handleCreateMemoThread,
     handleCreateMemoReply,
+    handlePromoteMemoAttachment,
   } = useWorkOrder();
 
   return (
@@ -168,6 +169,8 @@ export default function Home() {
               onAction={handleWorkflowAction}
               onCreateMemoThread={handleCreateMemoThread}
               onCreateMemoReply={handleCreateMemoReply}
+              canPromoteMemoAttachment={isAdmin}
+              onPromoteMemoAttachment={handlePromoteMemoAttachment}
             />
             </div>
           </section>
@@ -244,6 +247,15 @@ export default function Home() {
         onSelectedUserChange={setPermissionTargetUserId}
         onApplyRole={handleApplyRole}
         onCurrentUserChange={setCurrentUserId}
+      />
+
+      <input
+        ref={attachmentInputRef}
+        type="file"
+        accept="image/*,.pdf,application/pdf"
+        multiple
+        className="sr-only"
+        onChange={handleAttachmentFiles}
       />
       <ToastMessage message={toastMessage} />
     </main>
