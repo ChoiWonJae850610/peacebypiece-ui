@@ -646,13 +646,14 @@ function OrderInfoSection({
   ];
 
   return (
-    <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
-      <SectionHeader title="발주 정보" summary={formatOrderSummary(basicInfo)} open={open} onToggle={onToggle} />
-      {open ? (
-        <div className="mt-4">
-          <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 xl:grid-cols-4">
-            {infoItems.map((item) => (
-              <div key={item.field} className="min-w-0 rounded-xl border border-stone-200 bg-white p-3">
+    <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 md:p-5">
+      <div className="rounded-2xl border border-stone-200 bg-white p-3 md:p-4">
+        <SectionHeader title="발주 정보" summary={formatOrderSummary(basicInfo)} open={open} onToggle={onToggle} />
+        {open ? (
+          <div className="mt-4">
+            <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 xl:grid-cols-4">
+              {infoItems.map((item) => (
+                <div key={item.field} className="min-w-0 rounded-xl border border-stone-200 bg-stone-50 p-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="text-xs text-stone-500">{item.label}</div>
                   {item.registerType ? (
@@ -683,10 +684,11 @@ function OrderInfoSection({
                   />
                 </div>
               </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      ) : null}
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -740,11 +742,12 @@ function ProductionCompositionSection({
   ].join(' · ');
 
   return (
-    <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
-      <SectionHeader title="생산 구성" summary={summary} open={open} onToggle={onToggle} />
-      {open ? (
-        <div className="mt-4 space-y-4">
-          <MaterialSection
+    <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 md:p-5">
+      <div className="rounded-2xl border border-stone-200 bg-white p-3 md:p-4">
+        <SectionHeader title="생산 구성" summary={summary} open={open} onToggle={onToggle} />
+        {open ? (
+          <div className="mt-4 space-y-4">
+            <MaterialSection
             materials={materials}
             open={materialOpen}
             onToggle={onToggleMaterial}
@@ -756,20 +759,21 @@ function ProductionCompositionSection({
             onAdd={onAddMaterial}
             onRemove={onRemoveMaterial}
           />
-          <OutsourcingSection
-            outsourcing={outsourcing}
-            open={outsourcingOpen}
-            onToggle={onToggleOutsourcing}
-            editingCell={editingCell}
-            editingValue={editingValue}
-            onStartEdit={onStartEdit}
-            onCommitEdit={onCommitEdit}
-            onCancelEdit={onCancelEdit}
-            onAdd={onAddOutsourcing}
-            onRemove={onRemoveOutsourcing}
-          />
-        </div>
-      ) : null}
+            <OutsourcingSection
+              outsourcing={outsourcing}
+              open={outsourcingOpen}
+              onToggle={onToggleOutsourcing}
+              editingCell={editingCell}
+              editingValue={editingValue}
+              onStartEdit={onStartEdit}
+              onCommitEdit={onCommitEdit}
+              onCancelEdit={onCancelEdit}
+              onAdd={onAddOutsourcing}
+              onRemove={onRemoveOutsourcing}
+            />
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }
