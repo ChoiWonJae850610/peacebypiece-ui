@@ -144,6 +144,8 @@ export default function Home() {
               onToggleBasicInfo={() => setBasicInfoOpen((prev) => !prev)}
               onToggleMaterial={() => setMaterialOpen((prev) => !prev)}
               onToggleOutsourcing={() => setOutsourcingOpen((prev) => !prev)}
+              onSetMaterialOpen={setMaterialOpen}
+              onSetOutsourcingOpen={setOutsourcingOpen}
               visibleStages={visibleStages}
               currentDisplayStage={currentDisplayStage}
               actions={availableActions}

@@ -691,6 +691,89 @@ function OrderInfoSection({
   );
 }
 
+
+function ProductionCompositionSection({
+  materials,
+  outsourcing,
+  open,
+  onToggle,
+  materialOpen,
+  outsourcingOpen,
+  onToggleMaterial,
+  onToggleOutsourcing,
+  editingCell,
+  editingValue,
+  onStartEdit,
+  onCommitEdit,
+  onCancelEdit,
+  onAddMaterial,
+  onRemoveMaterial,
+  onAddOutsourcing,
+  onRemoveOutsourcing,
+}: {
+  materials: Material[];
+  outsourcing: Outsourcing[];
+  open: boolean;
+  onToggle: () => void;
+  materialOpen: boolean;
+  outsourcingOpen: boolean;
+  onToggleMaterial: () => void;
+  onToggleOutsourcing: () => void;
+  editingCell: EditableCell;
+  editingValue: string;
+  onStartEdit: (section: EditableSectionKey, rowId: string, field: string, value: string) => void;
+  onCommitEdit: () => void;
+  onCancelEdit: () => void;
+  onAddMaterial: () => void;
+  onRemoveMaterial: (id: string) => void;
+  onAddOutsourcing: () => void;
+  onRemoveOutsourcing: (id: string) => void;
+}) {
+  const materialCount = materials.length;
+  const outsourcingCount = outsourcing.length;
+  const materialTotal = materials.reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
+  const outsourcingTotal = outsourcing.reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
+  const summary = [
+    `원단/부자재 ${materialCount}건`,
+    `외주공정 ${outsourcingCount}건`,
+    `총 ${(materialTotal + outsourcingTotal).toLocaleString()}원`,
+  ].join(' · ');
+
+  return (
+    <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
+      <SectionHeader title="생산 구성" summary={summary} open={open} onToggle={onToggle} />
+      {open ? (
+        <div className="mt-4 space-y-4">
+          <MaterialSection
+            materials={materials}
+            open={materialOpen}
+            onToggle={onToggleMaterial}
+            editingCell={editingCell}
+            editingValue={editingValue}
+            onStartEdit={onStartEdit}
+            onCommitEdit={onCommitEdit}
+            onCancelEdit={onCancelEdit}
+            onAdd={onAddMaterial}
+            onRemove={onRemoveMaterial}
+          />
+          <OutsourcingSection
+            outsourcing={outsourcing}
+            open={outsourcingOpen}
+            onToggle={onToggleOutsourcing}
+            editingCell={editingCell}
+            editingValue={editingValue}
+            onStartEdit={onStartEdit}
+            onCommitEdit={onCommitEdit}
+            onCancelEdit={onCancelEdit}
+            onAdd={onAddOutsourcing}
+            onRemove={onRemoveOutsourcing}
+          />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function MaterialSection({
   materials,
   open,
@@ -720,9 +803,9 @@ function MaterialSection({
     : "등록된 원단/부자재가 없습니다.";
 
   return (
-    <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
+    <div className="rounded-2xl border border-stone-200 bg-white p-4 md:p-5">
       <SectionHeader
-        title="원단 / 부자재 구성"
+        title="원단 / 부자재"
         summary={summary}
         open={open}
         onToggle={onToggle}
@@ -874,7 +957,7 @@ function OutsourcingSection({
     : "등록된 외주 공정이 없습니다.";
 
   return (
-    <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
+    <div className="rounded-2xl border border-stone-200 bg-white p-4 md:p-5">
       <SectionHeader
         title="외주 공정"
         summary={summary}
@@ -1016,6 +1099,8 @@ export default function WorkOrderDetail({
   onToggleBasicInfo,
   onToggleMaterial,
   onToggleOutsourcing,
+  onSetMaterialOpen,
+  onSetOutsourcingOpen,
   visibleStages,
   currentDisplayStage,
   actions,
@@ -1040,6 +1125,8 @@ export default function WorkOrderDetail({
   onToggleBasicInfo: () => void;
   onToggleMaterial: () => void;
   onToggleOutsourcing: () => void;
+  onSetMaterialOpen: (next: boolean) => void;
+  onSetOutsourcingOpen: (next: boolean) => void;
   visibleStages: DisplayStage[];
   currentDisplayStage: DisplayStage;
   actions: WorkflowAction[];
@@ -1373,31 +1460,28 @@ export default function WorkOrderDetail({
         />
 
         {canSeeProductionSections ? (
-          <MaterialSection
+          <ProductionCompositionSection
             materials={materialItems}
-            open={materialOpen}
-            onToggle={onToggleMaterial}
-            editingCell={editingCell}
-            editingValue={editingValue}
-            onStartEdit={startEdit}
-            onCommitEdit={commitEdit}
-            onCancelEdit={cancelEdit}
-            onAdd={addMaterial}
-            onRemove={removeMaterial}
-          />
-        ) : null}
-        {canSeeProductionSections ? (
-          <OutsourcingSection
             outsourcing={outsourcingItems}
-            open={outsourcingOpen}
-            onToggle={onToggleOutsourcing}
+            open={materialOpen || outsourcingOpen}
+            onToggle={() => {
+              const nextOpen = !(materialOpen || outsourcingOpen);
+              onSetMaterialOpen(nextOpen);
+              onSetOutsourcingOpen(nextOpen);
+            }}
+            materialOpen={materialOpen}
+            outsourcingOpen={outsourcingOpen}
+            onToggleMaterial={onToggleMaterial}
+            onToggleOutsourcing={onToggleOutsourcing}
             editingCell={editingCell}
             editingValue={editingValue}
             onStartEdit={startEdit}
             onCommitEdit={commitEdit}
             onCancelEdit={cancelEdit}
-            onAdd={addOutsourcing}
-            onRemove={removeOutsourcing}
+            onAddMaterial={addMaterial}
+            onRemoveMaterial={removeMaterial}
+            onAddOutsourcing={addOutsourcing}
+            onRemoveOutsourcing={removeOutsourcing}
           />
         ) : null}
 
