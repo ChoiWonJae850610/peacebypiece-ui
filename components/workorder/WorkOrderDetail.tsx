@@ -8,7 +8,7 @@ import PartnerFactoryRegistryModal, { type RegistryType } from "@/components/wor
 import { CATEGORY1_OPTIONS, CATEGORY2_OPTIONS_MAP, CATEGORY3_OPTIONS_MAP, DEFAULT_BASIC_YEAR, DEFAULT_FACTORY_OPTION, DEFAULT_MATERIAL_TYPE, DEFAULT_MATERIAL_UNIT, DEFAULT_OUTSOURCING_PROCESS, DEFAULT_OUTSOURCING_UNIT, DEFAULT_PARTNER_OPTION, FACTORY_OPTIONS, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS, OUTSOURCING_PROCESS_OPTIONS, OUTSOURCING_UNIT_OPTIONS, PARTNER_OPTIONS, PRIORITY_OPTIONS, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
 import type { DisplayStage } from "@/types/workflow";
 import { toDisplayValue } from "@/lib/utils/display";
-import type { Attachment, Material, MemoThread, Outsourcing, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
+import type { Attachment, Material, MemoAttachmentPayload, MemoThread, Outsourcing, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
 
 type RowValue = string | number | null | undefined;
 type EditableSectionKey = "basic" | "material" | "outsourcing";
@@ -1214,9 +1214,10 @@ function MemoThreadCard({
         {thread.kind === "attachment-request" ? <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-medium text-amber-700">첨부 요청</span> : <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-medium text-stone-600">스레드</span>}
       </div>
       <div className="mt-3 whitespace-pre-wrap text-sm leading-6 text-stone-700">{thread.content}</div>
-      {thread.kind === "attachment-request" ? <div className="mt-2 text-xs text-amber-700">관리자가 검토 후 메모 첨부를 공식 첨부로 승격할 수 있습니다.</div> : null}
-      <MemoAttachmentList attachmentIds={thread.attachmentIds} attachmentsById={attachmentsById} canPromoteMemoAttachment={canPromoteMemoAttachment} onPromoteMemoAttachment={onPromoteMemoAttachment} />
 
+      {thread.kind === "attachment-request" ? <div className="mt-2 text-xs text-amber-700">관리자가 검토 후 메모 첨부를 공식 첨부로 승격할 수 있습니다.</div> : null}
+
+      <MemoAttachmentList attachmentIds={thread.attachmentIds} attachmentsById={attachmentsById} canPromoteMemoAttachment={canPromoteMemoAttachment} onPromoteMemoAttachment={onPromoteMemoAttachment} />
       <div className="mt-4 space-y-3 border-t border-stone-200 pt-4">
         {(thread.replies ?? []).length > 0 ? (
           thread.replies.map((reply) => (
@@ -1773,6 +1774,8 @@ export default function WorkOrderDetail({
           workOrder={workOrder}
           currentUserName={currentUserName}
           currentUserRole={currentUserRole}
+          canPromoteMemoAttachment={canPromoteMemoAttachment}
+          onPromoteMemoAttachment={onPromoteMemoAttachment}
           onCreateThread={onCreateMemoThread}
           onCreateReply={onCreateMemoReply}
         />
