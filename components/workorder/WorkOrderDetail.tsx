@@ -1254,10 +1254,19 @@ function MemoThreadSection({
   onCreateThread: (content: string, payload?: MemoAttachmentPayload) => void;
   onCreateReply: (threadId: string, content: string, payload?: MemoAttachmentPayload) => void;
 }) {
+  const DEFAULT_VISIBLE_MEMO_COUNT = 3;
   const [threadDraft, setThreadDraft] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [showAllThreads, setShowAllThreads] = useState(false);
   const memoThreads = workOrder.memoThreads ?? [];
   const attachmentsById = new Map((workOrder.attachments ?? []).map((attachment) => [attachment.id, attachment]));
+  const hasHiddenThreads = memoThreads.length > DEFAULT_VISIBLE_MEMO_COUNT;
+  const visibleMemoThreads = showAllThreads ? memoThreads : memoThreads.slice(0, DEFAULT_VISIBLE_MEMO_COUNT);
+  const hiddenThreadCount = Math.max(0, memoThreads.length - DEFAULT_VISIBLE_MEMO_COUNT);
+
+  useEffect(() => {
+    setShowAllThreads(false);
+  }, [workOrder.id]);
 
   return (
     <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
@@ -1297,16 +1306,36 @@ function MemoThreadSection({
       </div>
 
       <div className="mt-4 space-y-4">
-        {memoThreads.length > 0 ? memoThreads.map((thread) => (
-          <MemoThreadCard
-            key={thread.id}
-            thread={thread}
-            attachmentsById={attachmentsById}
-                      canPromoteMemoAttachment={canPromoteMemoAttachment}
-            onPromoteMemoAttachment={onPromoteMemoAttachment}
-            onCreateReply={onCreateReply}
-          />
-        )) : (
+        {memoThreads.length > 0 ? (
+          <>
+            {visibleMemoThreads.map((thread) => (
+              <MemoThreadCard
+                key={thread.id}
+                thread={thread}
+                attachmentsById={attachmentsById}
+                canPromoteMemoAttachment={canPromoteMemoAttachment}
+                onPromoteMemoAttachment={onPromoteMemoAttachment}
+                onCreateReply={onCreateReply}
+              />
+            ))}
+            {hasHiddenThreads ? (
+              <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-4 text-center">
+                <div className="text-xs text-stone-500">
+                  {showAllThreads
+                    ? `전체 ${memoThreads.length}개 스레드를 보고 있습니다.`
+                    : `최근 ${DEFAULT_VISIBLE_MEMO_COUNT}개만 표시 중 · ${hiddenThreadCount}개 숨김`}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAllThreads((prev) => !prev)}
+                  className="rounded-full border border-stone-300 bg-stone-50 px-4 py-2 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100"
+                >
+                  {showAllThreads ? "접기" : `더보기 (${hiddenThreadCount})`}
+                </button>
+              </div>
+            ) : null}
+          </>
+        ) : (
           <div className="rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-8 text-center text-sm text-stone-500">등록된 작업 메모가 없습니다.</div>
         )}
       </div>
