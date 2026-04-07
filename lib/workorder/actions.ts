@@ -136,16 +136,19 @@ export function promoteAttachmentToOfficial(
   workOrders: WorkOrder[],
   workOrderId: string,
   attachmentId: string,
-  payload: { ownerId: string; ownerName: string },
 ) {
-  return workOrders.map((item) => item.id === workOrderId
-    ? {
-        ...item,
-        attachments: item.attachments.map((attachment) => attachment.id === attachmentId
-          ? { ...attachment, scope: "official", ownerId: payload.ownerId, ownerName: payload.ownerName }
-          : attachment),
-      }
-    : item);
+  return workOrders.map((item) =>
+    item.id === workOrderId
+      ? {
+          ...item,
+          attachments: item.attachments.map((attachment): Attachment =>
+            attachment.id === attachmentId
+              ? { ...attachment, scope: "official" as const }
+              : attachment,
+          ),
+        }
+      : item,
+  );
 }
 
 export function updateWorkOrderManager(

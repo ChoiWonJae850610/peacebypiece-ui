@@ -524,10 +524,7 @@ export function useWorkOrder() {
     const targetAttachment = selectedWorkOrder.attachments.find((item) => item.id === attachmentId);
     if (!targetAttachment || (targetAttachment.scope ?? "official") === "official" || !isAdmin) return;
 
-    setWorkOrders((prev) => promoteAttachmentToOfficial(prev, selectedWorkOrder.id, attachmentId, {
-      ownerId: currentUser.id,
-      ownerName: currentUser.name,
-    }));
+    setWorkOrders((prev) => promoteAttachmentToOfficial(prev, selectedWorkOrder.id, attachmentId));
     setHistoryLogs((prev) => [
       createAttachmentHistoryLog(currentUser.name, selectedWorkOrder.id, [{ label: "공식 첨부 승격", value: targetAttachment.name }]),
       ...prev,
