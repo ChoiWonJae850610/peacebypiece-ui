@@ -96,6 +96,22 @@ export function createInventoryHistoryLog(
   });
 }
 
+
+export function createManagerChangeHistoryLog(user: string, workOrderId: string, from: string, to: string) {
+  return createHistoryLog({
+    action: "담당자 변경",
+    message: "담당자가 변경되었습니다.",
+    user,
+    workOrderId,
+    category: "work",
+    tone: "blue",
+    detailLines: [
+      { label: "이전", value: from || "-" },
+      { label: "변경", value: to || "-" },
+    ],
+  });
+}
+
 export function createAttachmentHistoryLog(
   user: string,
   workOrderId: string,

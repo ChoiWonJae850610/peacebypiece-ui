@@ -16,6 +16,7 @@ export function createNewWorkOrder(nextIndex: number, payload: {
     priority: "보통",
     vendor: "미정",
     manager: payload.managerName,
+    managerId: payload.managerId,
     createdById: payload.managerId,
     createdByRole: payload.managerRole,
     dueDate: "미정",
@@ -65,5 +66,16 @@ export function appendAttachments(workOrders: WorkOrder[], workOrderId: string, 
 export function removeAttachment(workOrders: WorkOrder[], workOrderId: string, attachmentId: string) {
   return workOrders.map((item) => item.id === workOrderId
     ? { ...item, attachments: item.attachments.filter((attachment) => attachment.id !== attachmentId) }
+    : item);
+}
+
+
+export function updateWorkOrderManager(
+  workOrders: WorkOrder[],
+  workOrderId: string,
+  payload: { managerId: string; managerName: string },
+) {
+  return workOrders.map((item) => item.id === workOrderId
+    ? { ...item, managerId: payload.managerId, manager: payload.managerName }
     : item);
 }

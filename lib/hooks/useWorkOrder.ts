@@ -11,13 +11,14 @@ import {
   createAttachmentHistoryLog,
   createCreationHistoryLog,
   createInventoryHistoryLog,
+  createManagerChangeHistoryLog,
   createStatusHistoryLog,
   createUpdateHistoryLog,
   filterHistoryLogs,
   nowLabel,
   toInventoryLogs,
 } from "@/lib/workorder/history";
-import { createNewWorkOrder, applyInventoryAdjustment, appendAttachments, removeAttachment, updateWorkflowState } from "@/lib/workorder/actions";
+import { createNewWorkOrder, applyInventoryAdjustment, appendAttachments, removeAttachment, updateWorkflowState, updateWorkOrderManager } from "@/lib/workorder/actions";
 import { createWorkOrderListItem, calculateWorkOrderCosts } from "@/lib/workorder/selectors";
 import { getAvailableWorkflowActions } from "@/lib/workorder/workflow";
 import type { Attachment, HistoryLog, InventoryLog, UserProfile, WorkOrder, WorkOrderListItem, WorkflowAction } from "@/types/workorder";
@@ -34,6 +35,7 @@ export function useWorkOrder() {
   const [outsourcingOpen, setOutsourcingOpen] = useState(false);
   const [inventoryEditorOpen, setInventoryEditorOpen] = useState(false);
   const [permissionModalOpen, setPermissionModalOpen] = useState(false);
+  const [managerAssignModalOpen, setManagerAssignModalOpen] = useState(false);
   const [inventoryLogModalOpen, setInventoryLogModalOpen] = useState(false);
   const [attachmentPreviewId, setAttachmentPreviewId] = useState<string | null>(null);
   const [orderRequestConfirmOpen, setOrderRequestConfirmOpen] = useState(false);
@@ -70,6 +72,7 @@ export function useWorkOrder() {
     [workOrders],
   );
   const currentWorkflowState = selectedWorkOrder.workflowState;
+  const canChangeManager = isAdmin && (currentWorkflowState === "작성중" || currentWorkflowState === "검토요청");
   const currentDisplayStage = getDisplayStageFromWorkflowState(currentWorkflowState);
   const visibleStages = VISIBLE_STAGES;
 
@@ -247,6 +250,40 @@ export function useWorkOrder() {
     setUsers((prev) => prev.map((user) => user.id === userId ? { ...user, role: preset.role, team: preset.team, permissions: preset.permissions } : user));
   };
 
+  const handleOpenManagerAssignModal = () => {
+    if (!canChangeManager) return;
+    setManagerAssignModalOpen(true);
+  };
+
+  const handleCloseManagerAssignModal = () => {
+    setManagerAssignModalOpen(false);
+  };
+
+  const handleChangeManager = (managerId: string) => {
+    if (!canChangeManager) return;
+    const nextManager = users.find((user) => user.id === managerId);
+    if (!nextManager) return;
+
+    const previousManagerName = selectedWorkOrder.manager || "-";
+    const previousManagerId = selectedWorkOrder.managerId ?? null;
+    if (previousManagerId === nextManager.id || previousManagerName === nextManager.name) {
+      setManagerAssignModalOpen(false);
+      return;
+    }
+
+    setWorkOrders((prev) => updateWorkOrderManager(prev, selectedWorkOrder.id, {
+      managerId: nextManager.id,
+      managerName: nextManager.name,
+    }));
+    setHistoryLogs((prev) => [
+      createManagerChangeHistoryLog(currentUser.name, selectedWorkOrder.id, previousManagerName, nextManager.name),
+      ...prev,
+    ]);
+    setSaveStatus("dirty");
+    setToastMessage("담당자가 변경되었습니다.");
+    setManagerAssignModalOpen(false);
+  };
+
   const handleOpenAttachmentPicker = () => attachmentInputRef.current?.click();
 
   const handleAttachmentFiles = (event: ChangeEvent<HTMLInputElement>) => {
@@ -309,6 +346,8 @@ export function useWorkOrder() {
     setInventoryEditorOpen,
     permissionModalOpen,
     setPermissionModalOpen,
+    managerAssignModalOpen,
+    setManagerAssignModalOpen,
     inventoryLogModalOpen,
     setInventoryLogModalOpen,
     attachmentPreviewId,
@@ -332,6 +371,7 @@ export function useWorkOrder() {
     currentRole,
     isAdmin,
     canCreateWorkOrder,
+    canChangeManager,
     canSeeProductionSections,
     canSeeCostSections,
     canEditInventory,
@@ -362,6 +402,9 @@ export function useWorkOrder() {
     handleCloseOrderRequestConfirm,
     handleInventoryApply,
     handleApplyRole,
+    handleOpenManagerAssignModal,
+    handleCloseManagerAssignModal,
+    handleChangeManager,
     handleOpenAttachmentPicker,
     handleAttachmentFiles,
     handleDeleteAttachment,

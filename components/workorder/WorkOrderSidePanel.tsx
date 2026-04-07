@@ -216,7 +216,7 @@ export default function WorkOrderSidePanel({
         <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h3 className="text-base font-semibold">최근 히스토리</h3>
+              <h3 className="text-base font-semibold">{isAdmin ? "최근 히스토리" : "최근 변경 요약"}</h3>
             </div>
             <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">{filteredHistoryLogs.length}건</span>
           </div>
@@ -232,7 +232,7 @@ export default function WorkOrderSidePanel({
               <HistoryPreviewItem key={item.id} item={item} />
             )) : <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-sm text-stone-500">표시할 히스토리가 없습니다.</div>}
           </div>
-          {filteredHistoryLogs.length > 3 && <button type="button" onClick={onOpenInventoryLogModal} className="mt-4 w-full rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">전체 히스토리 보기</button>}
+          {isAdmin && filteredHistoryLogs.length > 3 && <button type="button" onClick={onOpenInventoryLogModal} className="mt-4 w-full rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">전체 히스토리 보기</button>}
         </div>
       )}
     </div>

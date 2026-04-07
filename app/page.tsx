@@ -4,6 +4,7 @@ import ToastMessage from "@/components/common/ToastMessage";
 import AttachmentPreviewModal from "@/components/common/modal/AttachmentPreviewModal";
 import InventoryEditor from "@/components/common/modal/InventoryEditor";
 import InventoryLogModal from "@/components/common/modal/InventoryLogModal";
+import ManagerAssignModal from "@/components/common/modal/ManagerAssignModal";
 import OrderRequestConfirmModal from "@/components/common/modal/OrderRequestConfirmModal";
 import PermissionModal from "@/components/common/modal/PermissionModal";
 import MobileDrawer from "@/components/layout/MobileDrawer";
@@ -31,6 +32,7 @@ export default function Home() {
     setInventoryEditorOpen,
     permissionModalOpen,
     setPermissionModalOpen,
+    managerAssignModalOpen,
     inventoryLogModalOpen,
     setInventoryLogModalOpen,
     attachmentPreviewId,
@@ -53,6 +55,7 @@ export default function Home() {
     currentRole,
     isAdmin,
     canCreateWorkOrder,
+    canChangeManager,
     canSeeProductionSections,
     canSeeCostSections,
     canEditInventory,
@@ -82,6 +85,9 @@ export default function Home() {
     handleCloseOrderRequestConfirm,
     handleInventoryApply,
     handleApplyRole,
+    handleOpenManagerAssignModal,
+    handleCloseManagerAssignModal,
+    handleChangeManager,
     handleOpenAttachmentPicker,
     handleAttachmentFiles,
     handleDeleteAttachment,
@@ -127,6 +133,8 @@ export default function Home() {
               currentUserName={currentUser.name}
               currentRole={currentRole}
               canEditInventory={canEditInventory}
+              canChangeManager={canChangeManager}
+              onOpenManagerAssignModal={handleOpenManagerAssignModal}
               canSeeProductionSections={canSeeProductionSections}
               basicInfoOpen={basicInfoOpen}
               materialOpen={materialOpen}
@@ -183,11 +191,19 @@ export default function Home() {
         onDelete={() => selectedAttachment && handleDeleteAttachment(selectedAttachment.id)}
       />
       <InventoryLogModal
-        open={inventoryLogModalOpen}
+        open={inventoryLogModalOpen && isAdmin}
         onClose={() => setInventoryLogModalOpen(false)}
         logs={filteredHistoryLogs}
         role={currentRole}
         filter={historyFilter}
+      />
+      <ManagerAssignModal
+        open={managerAssignModalOpen}
+        onClose={handleCloseManagerAssignModal}
+        users={users}
+        currentManagerId={selectedWorkOrder.managerId ?? null}
+        currentManagerName={selectedWorkOrder.manager}
+        onSelectManager={handleChangeManager}
       />
       <InventoryEditor
         open={inventoryEditorOpen}

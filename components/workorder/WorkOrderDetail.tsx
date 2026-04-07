@@ -870,12 +870,14 @@ export default function WorkOrderDetail({
   currentUserName,
   currentRole,
   canEditInventory,
+  canChangeManager,
   canSeeProductionSections,
   basicInfoOpen,
   materialOpen,
   outsourcingOpen,
   onSave,
   onOpenInventoryEditor,
+  onOpenManagerAssignModal,
   onToggleBasicInfo,
   onToggleMaterial,
   onToggleOutsourcing,
@@ -892,12 +894,14 @@ export default function WorkOrderDetail({
   currentUserName: string;
   currentRole: string;
   canEditInventory: boolean;
+  canChangeManager: boolean;
   canSeeProductionSections: boolean;
   basicInfoOpen: boolean;
   materialOpen: boolean;
   outsourcingOpen: boolean;
   onSave: () => void;
   onOpenInventoryEditor: () => void;
+  onOpenManagerAssignModal: () => void;
   onToggleBasicInfo: () => void;
   onToggleMaterial: () => void;
   onToggleOutsourcing: () => void;
@@ -1127,7 +1131,17 @@ export default function WorkOrderDetail({
               </div>
               <div className="mt-3 text-xs text-stone-400">최근 변경 {lastSavedAt || "-"}</div>
               <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 pr-2 text-sm text-stone-600 md:hidden">
-                <span className="truncate">담당자 <span className="font-medium text-stone-900">{workOrder.manager || "-"}</span></span>
+                {canChangeManager ? (
+                  <button
+                    type="button"
+                    onClick={onOpenManagerAssignModal}
+                    className="inline-flex items-center bg-transparent p-0 text-sm font-medium text-stone-700 underline-offset-2 transition hover:text-stone-900 hover:underline"
+                  >
+                    담당자 <span className="ml-1 text-stone-900">{workOrder.manager || "-"}</span>
+                  </button>
+                ) : (
+                  <span className="truncate">담당자 <span className="font-medium text-stone-900">{workOrder.manager || "-"}</span></span>
+                )}
                 {canEditInventory ? (
                   <button
                     type="button"
@@ -1151,7 +1165,17 @@ export default function WorkOrderDetail({
               </button>
               <div className="flex flex-col items-end gap-3 text-right">
                 <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-sm text-stone-600">
-                  <span>담당자 <span className="font-medium text-stone-900">{workOrder.manager || "-"}</span></span>
+                  {canChangeManager ? (
+                    <button
+                      type="button"
+                      onClick={onOpenManagerAssignModal}
+                      className="inline-flex items-center bg-transparent p-0 text-sm font-medium text-stone-700 underline-offset-2 transition hover:text-stone-900 hover:underline"
+                    >
+                      담당자 <span className="ml-1 text-stone-900">{workOrder.manager || "-"}</span>
+                    </button>
+                  ) : (
+                    <span>담당자 <span className="font-medium text-stone-900">{workOrder.manager || "-"}</span></span>
+                  )}
                   {canEditInventory ? (
                     <button
                       type="button"
