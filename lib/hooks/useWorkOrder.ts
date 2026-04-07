@@ -36,6 +36,9 @@ export function useWorkOrder() {
   const [permissionModalOpen, setPermissionModalOpen] = useState(false);
   const [inventoryLogModalOpen, setInventoryLogModalOpen] = useState(false);
   const [attachmentPreviewId, setAttachmentPreviewId] = useState<string | null>(null);
+  const [orderRequestConfirmOpen, setOrderRequestConfirmOpen] = useState(false);
+  const [pendingWorkflowAction, setPendingWorkflowAction] = useState<WorkflowAction | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [users, setUsers] = useState<UserProfile[]>(MOCK_USERS);
   const [currentUserId, setCurrentUserId] = useState(DEFAULT_CURRENT_USER_ID);
   const [permissionTargetUserId, setPermissionTargetUserId] = useState(DEFAULT_PERMISSION_TARGET_ID);
@@ -122,6 +125,12 @@ export function useWorkOrder() {
     }));
   }, [basicInfoOpen, materialOpen, outsourcingOpen]);
 
+  useEffect(() => {
+    if (!toastMessage) return;
+    const timeout = window.setTimeout(() => setToastMessage(null), 2200);
+    return () => window.clearTimeout(timeout);
+  }, [toastMessage]);
+
   const availableActions = useMemo(
     () => getAvailableWorkflowActions({
       currentWorkflowState,
@@ -145,6 +154,7 @@ export function useWorkOrder() {
       ...prev,
     ]);
     setSaveStatus("saved");
+    setToastMessage("저장이 완료되었습니다.");
   };
 
   const handleSelectWorkOrder = (id: string) => {
@@ -172,7 +182,7 @@ export function useWorkOrder() {
     ]);
   };
 
-  const handleWorkflowAction = (action: WorkflowAction) => {
+  const applyWorkflowAction = (action: WorkflowAction) => {
     const previousState = selectedWorkOrder.workflowState;
     setWorkOrders((prev) => updateWorkflowState(prev, selectedWorkOrder.id, action));
     setHistoryLogs((prev) => [
@@ -182,6 +192,28 @@ export function useWorkOrder() {
     if (action.nextState === "검수중") {
       setInventoryEditorOpen(true);
     }
+  };
+
+  const handleWorkflowAction = (action: WorkflowAction) => {
+    if (action.label === "발주 요청" && action.nextState === "생산중") {
+      setPendingWorkflowAction(action);
+      setOrderRequestConfirmOpen(true);
+      return;
+    }
+
+    applyWorkflowAction(action);
+  };
+
+  const handleConfirmOrderRequest = () => {
+    if (!pendingWorkflowAction) return;
+    applyWorkflowAction(pendingWorkflowAction);
+    setPendingWorkflowAction(null);
+    setOrderRequestConfirmOpen(false);
+  };
+
+  const handleCloseOrderRequestConfirm = () => {
+    setPendingWorkflowAction(null);
+    setOrderRequestConfirmOpen(false);
   };
 
   const handleInventoryApply = ({
@@ -281,6 +313,9 @@ export function useWorkOrder() {
     setInventoryLogModalOpen,
     attachmentPreviewId,
     setAttachmentPreviewId,
+    orderRequestConfirmOpen,
+    pendingWorkflowAction,
+    toastMessage,
     users,
     currentUserId,
     setCurrentUserId,
@@ -323,6 +358,8 @@ export function useWorkOrder() {
     handleSelectWorkOrder,
     handleCreateWorkOrder,
     handleWorkflowAction,
+    handleConfirmOrderRequest,
+    handleCloseOrderRequestConfirm,
     handleInventoryApply,
     handleApplyRole,
     handleOpenAttachmentPicker,

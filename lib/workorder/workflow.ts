@@ -17,7 +17,7 @@ export function getAvailableWorkflowActions({ currentWorkflowState, currentRole,
         return [{ label: "검토 요청", nextState: "검토요청" }];
       }
       if (currentRole === "관리자") {
-        return [{ label: "발주 요청", nextState: "발주요청" }];
+        return [{ label: "발주 요청", nextState: "생산중" }];
       }
       return [];
     case "검토요청":
@@ -30,13 +30,10 @@ export function getAvailableWorkflowActions({ currentWorkflowState, currentRole,
       return [];
     case "검토완료":
       if (currentRole === "관리자") {
-        return [{ label: "발주 요청", nextState: "발주요청" }];
+        return [{ label: "발주 요청", nextState: "생산중" }];
       }
       return [];
     case "발주요청":
-      if (currentRole === "관리자") {
-        return [{ label: "생산 시작", nextState: "생산중" }];
-      }
       return [];
     case "생산중":
       if (currentRole === "입고/검수") {

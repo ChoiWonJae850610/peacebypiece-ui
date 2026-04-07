@@ -1,8 +1,10 @@
 "use client";
 
+import ToastMessage from "@/components/common/ToastMessage";
 import AttachmentPreviewModal from "@/components/common/modal/AttachmentPreviewModal";
 import InventoryEditor from "@/components/common/modal/InventoryEditor";
 import InventoryLogModal from "@/components/common/modal/InventoryLogModal";
+import OrderRequestConfirmModal from "@/components/common/modal/OrderRequestConfirmModal";
 import PermissionModal from "@/components/common/modal/PermissionModal";
 import MobileDrawer from "@/components/layout/MobileDrawer";
 import MobileTopBar from "@/components/layout/MobileTopBar";
@@ -33,6 +35,8 @@ export default function Home() {
     setInventoryLogModalOpen,
     attachmentPreviewId,
     setAttachmentPreviewId,
+    orderRequestConfirmOpen,
+    toastMessage,
     users,
     currentUserId,
     setCurrentUserId,
@@ -74,6 +78,8 @@ export default function Home() {
     handleSelectWorkOrder,
     handleCreateWorkOrder,
     handleWorkflowAction,
+    handleConfirmOrderRequest,
+    handleCloseOrderRequestConfirm,
     handleInventoryApply,
     handleApplyRole,
     handleOpenAttachmentPicker,
@@ -164,6 +170,12 @@ export default function Home() {
         </div>
       </div>
 
+      <OrderRequestConfirmModal
+        open={orderRequestConfirmOpen}
+        workOrder={selectedWorkOrder}
+        onClose={handleCloseOrderRequestConfirm}
+        onConfirm={handleConfirmOrderRequest}
+      />
       <AttachmentPreviewModal
         attachment={selectedAttachment}
         canDelete={canDeleteAttachment(selectedAttachment)}
@@ -196,6 +208,7 @@ export default function Home() {
         onApplyRole={handleApplyRole}
         onCurrentUserChange={setCurrentUserId}
       />
+      <ToastMessage message={toastMessage} />
     </main>
   );
 }
