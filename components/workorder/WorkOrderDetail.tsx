@@ -454,6 +454,10 @@ function getInitialBasicInfo(workOrder: WorkOrder): BasicInfoState {
   };
 }
 
+function getStageStepFillTone(stage: DisplayStage) {
+  return stage === "완료" ? "bg-stone-900" : getStageDotTone(stage);
+}
+
 function StageProgressBar({
   stages,
   currentStage,
@@ -547,13 +551,13 @@ function StageProgressBar({
                     <div
                       className={`flex h-3.5 w-3.5 items-center justify-center rounded-full ${
                         isCurrent
-                          ? `${getStageDotTone(stage)} ring-2 ring-white`
+                          ? `${getStageStepFillTone(stage)} ring-2 ring-white text-white`
                           : isDone
-                          ? `${getStageDotTone(stage)} text-transparent`
+                          ? `${getStageStepFillTone(stage)} text-white`
                           : "bg-stone-300 text-transparent"
                       }`}
                     >
-                      •
+                      {isCurrent || isDone ? "✓" : "•"}
                     </div>
                     <div className={`mt-1 text-[10px] leading-3 ${isCurrent ? `font-semibold ${getStageTextTone(stage)}` : isUpcoming ? "text-stone-400" : "text-stone-600"}`}>
                       {stage}
@@ -574,6 +578,8 @@ function StageProgressBar({
           {stages.map((stage, index) => {
             const isCurrent = stage === currentStage;
             const isDone = currentIndex >= 0 && index < currentIndex;
+            const isCompletedStage = stage === "완료";
+            const isCompleted = isDone || (isCompletedStage && isCurrent);
             const isUpcoming = !isCurrent && !isDone;
             const stageGroupIndex = groupByStage.get(stage) ?? -1;
             const nextStageGroupIndex = index < stages.length - 1 ? (groupByStage.get(stages[index + 1]) ?? -1) : -1;
@@ -587,14 +593,14 @@ function StageProgressBar({
                 <div className="flex min-w-[86px] flex-col items-center text-center">
                   <div
                     className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-semibold ${
-                      isCurrent
-                        ? `${getStageDotTone(stage)} text-white ring-2 ring-stone-200`
-                        : isDone
-                        ? `${getStageDotTone(stage)} text-white`
+                      isCompleted
+                        ? `bg-stone-900 text-white`
+                        : isCurrent
+                        ? `${getStageStepFillTone(stage)} text-white ring-2 ring-stone-200`
                         : "bg-stone-200 text-stone-500"
                     }`}
                   >
-                    {isDone ? "✓" : index + 1}
+                    {isCompleted ? "✓" : index + 1}
                   </div>
                   <div
                     className={`mt-1.5 text-[11px] leading-4 ${
