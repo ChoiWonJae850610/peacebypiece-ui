@@ -5,6 +5,11 @@ import type { DisplayStage, HistoryCategory, HistoryFilter, HistoryTone, Workflo
 
 export type AttachmentScope = "official" | "memo";
 
+export type MemoAttachmentPayload = {
+  selectedAttachmentIds?: string[];
+  files?: File[];
+};
+
 export type Attachment = {
   id: string;
   name: string;
