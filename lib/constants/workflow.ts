@@ -33,6 +33,44 @@ export function getStageTone(state: WorkflowState | DisplayStage) {
   }
 }
 
+export function getStageDotTone(state: WorkflowState | DisplayStage) {
+  switch (state) {
+    case "완료":
+      return "bg-stone-900";
+    case "검토요청":
+      return "bg-violet-500";
+    case "검토완료":
+      return "bg-fuchsia-500";
+    case "발주요청":
+    case "생산중":
+      return "bg-amber-500";
+    case "검수":
+    case "검수중":
+      return "bg-emerald-500";
+    default:
+      return "bg-stone-500";
+  }
+}
+
+export function getStageTextTone(state: WorkflowState | DisplayStage) {
+  switch (state) {
+    case "완료":
+      return "text-stone-900";
+    case "검토요청":
+      return "text-violet-700";
+    case "검토완료":
+      return "text-fuchsia-700";
+    case "발주요청":
+    case "생산중":
+      return "text-amber-700";
+    case "검수":
+    case "검수중":
+      return "text-emerald-700";
+    default:
+      return "text-stone-700";
+  }
+}
+
 export function getDisplayStageDescription(stage: DisplayStage) {
   switch (stage) {
     case "작성중":

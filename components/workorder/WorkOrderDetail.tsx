@@ -5,6 +5,7 @@ import ModalFooter from "@/components/common/modal/ModalFooter";
 import ModalHeader from "@/components/common/modal/ModalHeader";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import PartnerFactoryRegistryModal, { type RegistryType } from "@/components/workorder/PartnerFactoryRegistryModal";
+import { getStageDotTone, getStageTextTone, getStageTone } from "@/lib/constants/workflow";
 import { CATEGORY1_OPTIONS, CATEGORY2_OPTIONS_MAP, CATEGORY3_OPTIONS_MAP, DEFAULT_BASIC_YEAR, DEFAULT_FACTORY_OPTION, DEFAULT_MATERIAL_TYPE, DEFAULT_MATERIAL_UNIT, DEFAULT_OUTSOURCING_PROCESS, DEFAULT_OUTSOURCING_UNIT, DEFAULT_PARTNER_OPTION, FACTORY_OPTIONS, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS, OUTSOURCING_PROCESS_OPTIONS, OUTSOURCING_UNIT_OPTIONS, PARTNER_OPTIONS, PRIORITY_OPTIONS, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
 import type { DisplayStage } from "@/types/workflow";
 import { toDisplayValue } from "@/lib/utils/display";
@@ -464,10 +465,7 @@ function StageProgressBar({
   const currentIndex = stages.indexOf(currentStage);
   const primaryActionIndex = actions.findIndex((action) => !action.label.includes("반려"));
 
-  const doneDotTone = "bg-emerald-500 text-white";
-  const currentDotTone = "bg-stone-900 text-white";
   const doneTrackTone = "bg-stone-400";
-  const currentTrackTone = "bg-stone-900";
   const stageGroups: Array<{ label: string; stages: DisplayStage[] }> = [
     { label: "제작", stages: ["작성중", "검토요청", "검토완료"] },
     { label: "생산", stages: ["발주요청"] },
@@ -479,8 +477,14 @@ function StageProgressBar({
   return (
     <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-3 md:mt-5 md:p-4">
       <div className="flex items-start justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <div className="text-xs font-semibold text-stone-900 md:text-sm">진행 단계</div>
+          <div className="mt-1 flex h-7 items-center">
+            <span className={`inline-flex h-7 items-center gap-2 rounded-full px-2.5 text-[11px] font-semibold ring-1 ring-black/5 ${getStageTone(currentStage)}`}>
+              <span className={`h-2 w-2 rounded-full ${getStageDotTone(currentStage)}`} aria-hidden="true" />
+              {currentStage}
+            </span>
+          </div>
         </div>
         {actions.length > 0 ? (
           <div className="hidden flex-wrap justify-end gap-2 md:flex">
@@ -536,19 +540,19 @@ function StageProgressBar({
 
               return (
                 <div key={`${stage}-mobile`} className="flex items-center gap-1.5 rounded-xl px-1.5 py-1">
-                  <div className="flex min-w-[48px] flex-col items-center text-center">
+                  <div className="flex min-w-[52px] flex-col items-center text-center">
                     <div
                       className={`flex h-3.5 w-3.5 items-center justify-center rounded-full ${
                         isCurrent
-                          ? currentDotTone
+                          ? `${getStageDotTone(stage)} ring-2 ring-white`
                           : isDone
-                          ? `${doneDotTone} text-transparent`
+                          ? `${getStageDotTone(stage)} text-transparent`
                           : "bg-stone-300 text-transparent"
                       }`}
                     >
                       •
                     </div>
-                    <div className={`mt-1 text-[10px] leading-3 ${isCurrent ? "font-semibold text-stone-900" : isUpcoming ? "text-stone-400" : "text-stone-600"}`}>
+                    <div className={`mt-1 text-[10px] leading-3 ${isCurrent ? `font-semibold ${getStageTextTone(stage)}` : isUpcoming ? "text-stone-400" : "text-stone-600"}`}>
                       {stage}
                     </div>
                   </div>
@@ -577,13 +581,13 @@ function StageProgressBar({
                 key={stage}
                 className={`flex items-center gap-2 rounded-xl px-2 py-2 ${isGroupBreakAfter ? "mr-3" : ""}`}
               >
-                <div className="flex min-w-[82px] flex-col items-center text-center">
+                <div className="flex min-w-[86px] flex-col items-center text-center">
                   <div
                     className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-semibold ${
                       isCurrent
-                        ? currentDotTone
+                        ? `${getStageDotTone(stage)} text-white ring-2 ring-stone-200`
                         : isDone
-                        ? doneDotTone
+                        ? `${getStageDotTone(stage)} text-white`
                         : "bg-stone-200 text-stone-500"
                     }`}
                   >
@@ -592,7 +596,7 @@ function StageProgressBar({
                   <div
                     className={`mt-1.5 text-[11px] leading-4 ${
                       isCurrent
-                        ? "font-semibold text-stone-900"
+                        ? `font-semibold ${getStageTextTone(stage)}`
                         : isUpcoming
                         ? "text-stone-500"
                         : "text-stone-700"
