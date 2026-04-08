@@ -76,6 +76,9 @@ export default function InventoryEditor({
 
   const handleApply = () => {
     if (!hasAnyChange) return;
+    if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
     onApply({
       inboundQuantity: parsedInboundQuantity,
       adjustmentQuantity: parsedAdjustmentQuantity,

@@ -36,9 +36,9 @@ export function useWorkOrder() {
   const [outsourcingOpen, setOutsourcingOpen] = useState(false);
   const [inventoryEditorOpen, setInventoryEditorOpen] = useState(false);
   const [permissionModalOpen, setPermissionModalOpen] = useState(false);
-  const [adminPanelModalOpen, setAdminPanelModalOpen] = useState(false);
   const [managerAssignModalOpen, setManagerAssignModalOpen] = useState(false);
   const [inventoryLogModalOpen, setInventoryLogModalOpen] = useState(false);
+  const [adminPanelModalOpen, setAdminPanelModalOpen] = useState(false);
   const [attachmentPreviewId, setAttachmentPreviewId] = useState<string | null>(null);
   const [orderRequestConfirmOpen, setOrderRequestConfirmOpen] = useState(false);
   const [pendingWorkflowAction, setPendingWorkflowAction] = useState<WorkflowAction | null>(null);
@@ -361,13 +361,6 @@ export function useWorkOrder() {
       ownerName: currentUser.name,
     }));
     setWorkOrders((prev) => appendAttachments(prev, selectedWorkOrder.id, nextAttachments));
-    setHistoryLogs((prev) => [
-      createAttachmentHistoryLog(currentUser.name, selectedWorkOrder.id, nextAttachments.map((attachment) => ({
-        label: "추가",
-        value: attachment.name,
-      }))),
-      ...prev,
-    ]);
     setSaveStatus("dirty");
     event.target.value = "";
   };
@@ -380,12 +373,6 @@ export function useWorkOrder() {
     setWorkOrders((prev) => removeAttachment(prev, selectedWorkOrder.id, attachmentId));
     if (attachmentPreviewId === attachmentId) {
       setAttachmentPreviewId(null);
-    }
-    if (targetAttachment) {
-      setHistoryLogs((prev) => [
-        createAttachmentHistoryLog(currentUser.name, selectedWorkOrder.id, [{ label: "삭제", value: targetAttachment.name }]),
-        ...prev,
-      ]);
     }
     setSaveStatus("dirty");
   };
@@ -432,17 +419,17 @@ export function useWorkOrder() {
         attachments: memoAttachments,
       });
     });
-    setHistoryLogs((prev) => {
-      const attachmentDetails = [
-        ...(selectedAttachmentIds.length > 0 ? [{ label: "기존 첨부 연결", value: `${selectedAttachmentIds.length}개` }] : []),
-        ...(memoAttachments.length > 0 ? [{ label: "메모 첨부 추가", value: memoAttachments.map((attachment) => attachment.name).join(", ") }] : []),
-      ];
-      return [
-        ...(attachmentDetails.length > 0 ? [createAttachmentHistoryLog(currentUser.name, selectedWorkOrder.id, attachmentDetails)] : []),
-        createMemoHistoryLog(currentUser.name, selectedWorkOrder.id, { action: "thread", content: trimmed }),
-        ...prev,
-      ];
-    });
+    setHistoryLogs((prev) => [
+      createMemoHistoryLog(currentUser.name, selectedWorkOrder.id, {
+        action: "thread",
+        content: trimmed,
+        attachmentNames: [
+          ...selectedAttachmentIds.map((attachmentId) => selectedWorkOrder.attachments.find((item) => item.id === attachmentId)?.name).filter((name): name is string => Boolean(name)),
+          ...memoAttachments.map((attachment) => attachment.name),
+        ],
+      }),
+      ...prev,
+    ]);
     setSaveStatus("dirty");
     setToastMessage(memoAttachments.length > 0 || selectedAttachmentIds.length > 0 ? "첨부가 포함된 작업 메모가 등록되었습니다." : "작업 메모가 등록되었습니다.");
   };
@@ -473,17 +460,17 @@ export function useWorkOrder() {
         attachments: memoAttachments,
       });
     });
-    setHistoryLogs((prev) => {
-      const attachmentDetails = [
-        ...(selectedAttachmentIds.length > 0 ? [{ label: "기존 첨부 연결", value: `${selectedAttachmentIds.length}개` }] : []),
-        ...(memoAttachments.length > 0 ? [{ label: "메모 첨부 추가", value: memoAttachments.map((attachment) => attachment.name).join(", ") }] : []),
-      ];
-      return [
-        ...(attachmentDetails.length > 0 ? [createAttachmentHistoryLog(currentUser.name, selectedWorkOrder.id, attachmentDetails)] : []),
-        createMemoHistoryLog(currentUser.name, selectedWorkOrder.id, { action: "reply", content: trimmed }),
-        ...prev,
-      ];
-    });
+    setHistoryLogs((prev) => [
+      createMemoHistoryLog(currentUser.name, selectedWorkOrder.id, {
+        action: "reply",
+        content: trimmed,
+        attachmentNames: [
+          ...selectedAttachmentIds.map((attachmentId) => selectedWorkOrder.attachments.find((item) => item.id === attachmentId)?.name).filter((name): name is string => Boolean(name)),
+          ...memoAttachments.map((attachment) => attachment.name),
+        ],
+      }),
+      ...prev,
+    ]);
     setSaveStatus("dirty");
     setToastMessage(memoAttachments.length > 0 || selectedAttachmentIds.length > 0 ? "첨부가 포함된 메모 댓글이 등록되었습니다." : "메모 댓글이 등록되었습니다.");
   };
@@ -496,20 +483,17 @@ export function useWorkOrder() {
       ownerId: currentUser.id,
       ownerName: currentUser.name,
     }));
-    setHistoryLogs((prev) => [
-      createAttachmentHistoryLog(currentUser.name, selectedWorkOrder.id, [{ label: "공식 첨부 승격", value: targetAttachment.name }]),
-      ...prev,
-    ]);
+
     setSaveStatus("dirty");
     setToastMessage("메모 첨부가 공식 첨부로 승격되었습니다.");
   };
 
-  const handleToggleNotificationSetting = (key: NotificationSettingKey) => {
-    setNotificationSettings((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
-
   const canDeleteAttachment = (attachment: Attachment | null) => {
     return canDeleteAttachmentByUser(currentUser, attachment);
+  };
+
+  const handleToggleNotificationSetting = (key: NotificationSettingKey) => {
+    setNotificationSettings((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   return {
@@ -527,12 +511,12 @@ export function useWorkOrder() {
     setInventoryEditorOpen,
     permissionModalOpen,
     setPermissionModalOpen,
-    adminPanelModalOpen,
-    setAdminPanelModalOpen,
     managerAssignModalOpen,
     setManagerAssignModalOpen,
     inventoryLogModalOpen,
     setInventoryLogModalOpen,
+    adminPanelModalOpen,
+    setAdminPanelModalOpen,
     attachmentPreviewId,
     setAttachmentPreviewId,
     orderRequestConfirmOpen,
@@ -546,6 +530,7 @@ export function useWorkOrder() {
     historyFilter,
     setHistoryFilter,
     notificationSettings,
+    handleToggleNotificationSetting,
     searchQuery,
     setSearchQuery,
     workOrders: filteredWorkOrderList,
@@ -600,6 +585,5 @@ export function useWorkOrder() {
     handleCreateMemoThread,
     handleCreateMemoReply,
     handlePromoteMemoAttachment,
-    handleToggleNotificationSetting,
   };
 }

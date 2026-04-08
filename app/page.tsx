@@ -4,6 +4,7 @@ import ToastMessage from "@/components/common/ToastMessage";
 import AttachmentPreviewModal from "@/components/common/modal/AttachmentPreviewModal";
 import AdminPanelModal from "@/components/common/modal/AdminPanelModal";
 import InventoryEditor from "@/components/common/modal/InventoryEditor";
+import InventoryLogModal from "@/components/common/modal/InventoryLogModal";
 import ManagerAssignModal from "@/components/common/modal/ManagerAssignModal";
 import OrderRequestConfirmModal from "@/components/common/modal/OrderRequestConfirmModal";
 import PermissionModal from "@/components/common/modal/PermissionModal";
@@ -35,6 +36,8 @@ export default function Home() {
     adminPanelModalOpen,
     setAdminPanelModalOpen,
     managerAssignModalOpen,
+    inventoryLogModalOpen,
+    setInventoryLogModalOpen,
     attachmentPreviewId,
     setAttachmentPreviewId,
     orderRequestConfirmOpen,
@@ -47,6 +50,7 @@ export default function Home() {
     historyFilter,
     setHistoryFilter,
     notificationSettings,
+    handleToggleNotificationSetting,
     searchQuery,
     setSearchQuery,
     workOrders,
@@ -62,6 +66,7 @@ export default function Home() {
     canSeeProductionSections,
     canSeeCostSections,
     canEditInventory,
+    canSeeInventoryHistorySection,
     canSeeAttachments,
     currentDisplayStage,
     currentInventoryQuantity,
@@ -99,13 +104,17 @@ export default function Home() {
     handleCreateMemoThread,
     handleCreateMemoReply,
     handlePromoteMemoAttachment,
-    handleToggleNotificationSetting,
   } = useWorkOrder();
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-stone-100 text-stone-900">
       <div ref={appShellRef} className="overflow-x-hidden">
-        <MobileTopBar version={version} onOpen={() => setDrawerOpen(true)} onOpenSettings={() => setPermissionModalOpen(true)} onOpenAdminPanel={() => setAdminPanelModalOpen(true)} isAdmin={isAdmin} />
+        <MobileTopBar
+          version={version}
+          onOpen={() => setDrawerOpen(true)}
+          onOpenSettings={() => setPermissionModalOpen(true)}
+          onOpenAdminPanel={isAdmin ? () => setAdminPanelModalOpen(true) : undefined}
+        />
         <MobileDrawer
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
@@ -131,8 +140,7 @@ export default function Home() {
               onSelect={handleSelectWorkOrder}
               onCreate={handleCreateWorkOrder}
               onOpenSettings={() => setPermissionModalOpen(true)}
-              onOpenAdminPanel={() => setAdminPanelModalOpen(true)}
-              isAdmin={isAdmin}
+              onOpenAdminPanel={isAdmin ? () => setAdminPanelModalOpen(true) : undefined}
               onReorder={() => {}}
               onDelete={handleDeleteWorkOrder}
               canDelete={canDeleteWorkOrder}
@@ -212,6 +220,13 @@ export default function Home() {
         canDelete={canDeleteAttachment(selectedAttachment)}
         onClose={() => setAttachmentPreviewId(null)}
         onDelete={() => selectedAttachment && handleDeleteAttachment(selectedAttachment.id)}
+      />
+      <InventoryLogModal
+        open={inventoryLogModalOpen && isAdmin}
+        onClose={() => setInventoryLogModalOpen(false)}
+        logs={filteredHistoryLogs}
+        role={currentRole}
+        filter={historyFilter}
       />
       <ManagerAssignModal
         open={managerAssignModalOpen}
