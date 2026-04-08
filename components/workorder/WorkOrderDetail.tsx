@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import BaseModal from "@/components/common/modal/BaseModal";
 import ModalBody from "@/components/common/modal/ModalBody";
 import ModalFooter from "@/components/common/modal/ModalFooter";
@@ -8,7 +8,7 @@ import PartnerFactoryRegistryModal, { type RegistryType } from "@/components/wor
 import { CATEGORY1_OPTIONS, CATEGORY2_OPTIONS_MAP, CATEGORY3_OPTIONS_MAP, DEFAULT_BASIC_YEAR, DEFAULT_FACTORY_OPTION, DEFAULT_MATERIAL_TYPE, DEFAULT_MATERIAL_UNIT, DEFAULT_OUTSOURCING_PROCESS, DEFAULT_OUTSOURCING_UNIT, DEFAULT_PARTNER_OPTION, FACTORY_OPTIONS, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS, OUTSOURCING_PROCESS_OPTIONS, OUTSOURCING_UNIT_OPTIONS, PARTNER_OPTIONS, PRIORITY_OPTIONS, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
 import type { DisplayStage } from "@/types/workflow";
 import { toDisplayValue } from "@/lib/utils/display";
-import type { Material, Outsourcing, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
+import type { Attachment, Material, MemoThread, Outsourcing, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
 
 type RowValue = string | number | null | undefined;
 type EditableSectionKey = "basic" | "material" | "outsourcing";
@@ -25,20 +25,6 @@ type BasicInfoState = {
   priority: string;
   dueDate: string;
   quantity: number;
-  sewingUnitCost: number;
-  lossCost: number;
-};
-
-export type LiveWorkOrderSummary = {
-  materials: Material[];
-  outsourcing: Outsourcing[];
-  fabricTotal: number;
-  subsidiaryTotal: number;
-  outsourcingTotal: number;
-  sewingTotal: number;
-  lossCost: number;
-  totalCost: number;
-  unitCost: number;
 };
 
 function SectionHeader({
@@ -290,7 +276,6 @@ function formatOrderSummary(basicInfo: BasicInfoState) {
     basicInfo.factory !== DEFAULT_FACTORY_OPTION ? basicInfo.factory : "공장 미지정",
     `${basicInfo.quantity.toLocaleString()}장`,
     basicInfo.dueDate || "납기 미정",
-    `${basicInfo.sewingUnitCost.toLocaleString()}원/장`,
     basicInfo.priority,
   ].filter(Boolean).join(" · ");
 }
@@ -445,8 +430,6 @@ function getInitialBasicInfo(workOrder: WorkOrder): BasicInfoState {
     priority: workOrder.priority || PRIORITY_OPTIONS[0],
     dueDate: workOrder.dueDate || "",
     quantity: Number.isFinite(workOrder.quantity) ? workOrder.quantity : 0,
-    sewingUnitCost: Number.isFinite(workOrder.sewingUnitCost) ? workOrder.sewingUnitCost : 0,
-    lossCost: Number.isFinite(workOrder.lossCost) ? workOrder.lossCost : 0,
   };
 }
 
@@ -659,22 +642,17 @@ function OrderInfoSection({
     { label: "공장", field: "factory", value: basicInfo.factory, options: factoryOptions, registerType: "공장" as RegistryType },
     { label: "납기일", field: "dueDate", value: basicInfo.dueDate, inputType: "date" as const },
     { label: "발주 수량", field: "quantity", value: basicInfo.quantity.toLocaleString(), inputMode: "numeric" as const, alignRight: true },
-    { label: "봉제공임", field: "sewingUnitCost", value: basicInfo.sewingUnitCost.toLocaleString(), inputMode: "numeric" as const, alignRight: true, suffix: "/장" },
-    { label: "로스비용", field: "lossCost", value: basicInfo.lossCost.toLocaleString(), inputMode: "numeric" as const, alignRight: true, suffix: "원" },
     { label: "우선순위", field: "priority", value: basicInfo.priority, options: PRIORITY_OPTIONS },
   ];
 
   return (
-    <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 md:p-5">
+    <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
       <SectionHeader title="발주 정보" summary={formatOrderSummary(basicInfo)} open={open} onToggle={onToggle} />
       {open ? (
-        <div className="mt-4 rounded-2xl border border-stone-200 bg-white p-3 md:p-4">
-          <div className="grid grid-cols-1 gap-0 text-sm sm:grid-cols-2 xl:grid-cols-4">
-            {infoItems.map((item, index) => (
-              <div
-                key={item.field}
-                className={`min-w-0 px-1 py-3 sm:px-3 ${index > 0 ? "border-t border-stone-100 sm:border-t-0" : ""} ${index % 2 === 1 ? "sm:border-l sm:border-stone-100 xl:border-l" : ""} ${index >= 2 ? "xl:border-l xl:border-stone-100" : ""}`}
-              >
+        <div className="mt-4">
+          <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 xl:grid-cols-4">
+            {infoItems.map((item) => (
+              <div key={item.field} className="min-w-0 rounded-xl border border-stone-200 bg-white p-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="text-xs text-stone-500">{item.label}</div>
                   {item.registerType ? (
@@ -687,25 +665,22 @@ function OrderInfoSection({
                     </button>
                   ) : null}
                 </div>
-                <div className="mt-2 flex items-center gap-2">
-                  <div className="min-w-0 flex-1">
-                    <EditableValue
-                      section="basic"
-                      rowId="basic"
-                      field={item.field}
-                      value={String(item.value)}
-                      editingCell={editingCell}
-                      editingValue={editingValue}
-                      inputMode={item.inputMode}
-                      inputType={item.inputType}
-                      alignRight={item.alignRight}
-                      options={item.options}
-                      onStartEdit={onStartEdit}
-                      onCommit={onCommitEdit}
-                      onCancel={onCancelEdit}
-                    />
-                  </div>
-                  {"suffix" in item && item.suffix ? <span className="shrink-0 text-xs font-medium text-stone-500">{item.suffix}</span> : null}
+                <div className="mt-2">
+                  <EditableValue
+                    section="basic"
+                    rowId="basic"
+                    field={item.field}
+                    value={String(item.value)}
+                    editingCell={editingCell}
+                    editingValue={editingValue}
+                    inputMode={item.inputMode}
+                    inputType={item.inputType}
+                    alignRight={item.alignRight}
+                    options={item.options}
+                    onStartEdit={onStartEdit}
+                    onCommit={onCommitEdit}
+                    onCancel={onCancelEdit}
+                  />
                 </div>
               </div>
             ))}
@@ -765,10 +740,10 @@ function ProductionCompositionSection({
   ].join(' · ');
 
   return (
-    <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 md:p-5">
+    <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
       <SectionHeader title="생산 구성" summary={summary} open={open} onToggle={onToggle} />
       {open ? (
-        <div className="mt-4 space-y-3">
+        <div className="mt-4 space-y-4">
           <MaterialSection
             materials={materials}
             open={materialOpen}
@@ -1105,152 +1080,46 @@ function OutsourcingSection({
 }
 
 
-function MemoComposerAttachmentControls({
-  uploadedFiles,
-  onFilesChange,
+
+
+function CostSummarySection({
+  fabricTotal,
+  subsidiaryTotal,
+  outsourcingTotal,
+  totalCost,
+  unitCost,
+  outsourcing,
 }: {
-  uploadedFiles: File[];
-  onFilesChange: (files: File[]) => void;
+  fabricTotal: number;
+  subsidiaryTotal: number;
+  outsourcingTotal: number;
+  totalCost: number;
+  unitCost: number;
+  outsourcing: Outsourcing[];
 }) {
   return (
-    <div className="mt-2 flex flex-wrap items-center gap-2">
-      <label className="inline-flex h-8 cursor-pointer items-center rounded-full border border-stone-300 bg-white px-3 text-[11px] font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-50">
-        첨부
-        <input
-          type="file"
-          multiple
-          accept="image/*,.pdf,application/pdf"
-          className="sr-only"
-          onChange={(event) => onFilesChange(Array.from<File>(event.target.files ?? []))}
-        />
-      </label>
-      {uploadedFiles.length > 0 ? (
-        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-          {uploadedFiles.map((file) => (
-            <span key={`${file.name}-${file.size}`} className="inline-flex max-w-[180px] items-center gap-1 rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-[11px] text-stone-700">
-              <span className="font-semibold text-stone-900">{file.type.includes("pdf") ? "PDF" : "IMG"}</span>
-              <span className="truncate">{file.name}</span>
-            </span>
-          ))}
-        </div>
-      ) : (
-        <span className="text-[11px] text-stone-400">파일 없음</span>
-      )}
-    </div>
-  );
-}
-
-function MemoAttachmentList({
-  attachmentIds,
-  attachmentsById,
-  canPromoteMemoAttachment = false,
-}: {
-  attachmentIds?: string[];
-  attachmentsById: Map<string, Attachment>;
-  canPromoteMemoAttachment?: boolean;
-  onPromoteMemoAttachment?: (attachmentId: string) => void;
-}) {
-  const linkedAttachments = (attachmentIds ?? [])
-    .map((attachmentId) => attachmentsById.get(attachmentId))
-    .filter((attachment): attachment is Attachment => Boolean(attachment));
-
-  if (linkedAttachments.length === 0) return null;
-
-  return (
-    <div className="mt-3 flex flex-wrap gap-2">
-      {linkedAttachments.map((attachment) => {
-        const isOfficial = (attachment.scope ?? "official") === "official";
-        return (
-          <div key={attachment.id} className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-xs text-stone-700">
-            <span className="font-semibold text-stone-900">{attachment.type === "pdf" ? "PDF" : "IMG"}</span>
-            <span className="truncate max-w-[180px]">{attachment.name}</span>
-            <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${isOfficial ? "bg-stone-200 text-stone-700" : "bg-amber-100 text-amber-700"}`}>{isOfficial ? "공식" : "메모"}</span>
-            {!isOfficial && canPromoteMemoAttachment && onPromoteMemoAttachment ? (
-              <button
-                type="button"
-                onClick={() => onPromoteMemoAttachment(attachment.id)}
-                className="rounded-full border border-stone-300 bg-white px-2 py-0.5 text-[10px] font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100"
-              >
-                공식 승격
-              </button>
-            ) : null}
+    <div className="grid gap-4 lg:grid-cols-2">
+      <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm md:p-5">
+        <h3 className="text-base font-semibold text-stone-900">비용 요약</h3>
+        <div className="mt-4 space-y-3 text-sm">
+          <div className="flex items-center justify-between gap-4"><span className="text-stone-600">원단 합계</span><span className="font-medium text-stone-900">{fabricTotal.toLocaleString()}원</span></div>
+          <div className="flex items-center justify-between gap-4"><span className="text-stone-600">부자재 합계</span><span className="font-medium text-stone-900">{subsidiaryTotal.toLocaleString()}원</span></div>
+          <div className="flex items-center justify-between gap-4"><span className="text-stone-600">외주 합계</span><span className="font-medium text-stone-900">{outsourcingTotal.toLocaleString()}원</span></div>
+          <div className="border-t border-stone-200 pt-3">
+            <div className="flex items-center justify-between gap-4"><span className="font-semibold text-stone-900">총합</span><span className="font-semibold text-stone-900">{totalCost.toLocaleString()}원</span></div>
+            <div className="mt-3 flex items-center justify-between gap-4"><span className="text-stone-600">장당 추정 원가</span><span className="font-medium text-stone-900">{unitCost.toLocaleString()}원</span></div>
           </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function MemoThreadCard({
-  thread,
-  attachmentsById,
-  onCreateReply,
-}: {
-  thread: MemoThread;
-  attachmentsById: Map<string, Attachment>;
-  onCreateReply: (threadId: string, content: string, payload?: MemoAttachmentPayload) => void;
-}) {
-  const [replyDraft, setReplyDraft] = useState("");
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-
-  return (
-    <div className="rounded-xl border border-stone-200 bg-white p-3.5 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="text-sm font-semibold text-stone-900">{thread.authorName}</div>
-          <div className="mt-1 text-xs text-stone-500">{thread.authorRole} · {thread.createdAt}</div>
         </div>
-        {thread.kind === "attachment-request" ? <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-medium text-amber-700">첨부 요청</span> : <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-medium text-stone-600">스레드</span>}
       </div>
-      <div className="mt-2.5 whitespace-pre-wrap text-sm leading-5 text-stone-700">{thread.content}</div>
-
-      {thread.kind === "attachment-request" ? <div className="mt-2 text-xs text-amber-700">관리자가 검토 후 메모 첨부를 공식 첨부로 승격할 수 있습니다.</div> : null}
-
-      <MemoAttachmentList attachmentIds={thread.attachmentIds} attachmentsById={attachmentsById} canPromoteMemoAttachment={canPromoteMemoAttachment} onPromoteMemoAttachment={onPromoteMemoAttachment} />
-      <div className="mt-3 space-y-2.5 border-t border-stone-200 pt-3">
-        {(thread.replies ?? []).length > 0 ? (
-          thread.replies.map((reply) => (
-            <div key={reply.id} className="rounded-2xl bg-stone-50 p-3">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-sm font-medium text-stone-900">{reply.authorName}</div>
-                  <div className="mt-1 text-xs text-stone-500">{reply.authorRole} · {reply.createdAt}</div>
-                </div>
-                <span className="rounded-full bg-white px-2 py-1 text-[11px] font-medium text-stone-600">댓글</span>
-              </div>
-              <div className="mt-2 whitespace-pre-wrap text-sm leading-6 text-stone-700">{reply.content}</div>
-              <MemoAttachmentList attachmentIds={reply.attachmentIds} attachmentsById={attachmentsById} canPromoteMemoAttachment={canPromoteMemoAttachment} onPromoteMemoAttachment={onPromoteMemoAttachment} />
+      <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm md:p-5">
+        <h3 className="text-base font-semibold text-stone-900">공정별 금액</h3>
+        <div className="mt-4 space-y-2 text-sm">
+          {outsourcing.length > 0 ? outsourcing.map((item, index) => (
+            <div key={`${item.id ?? item.process}-${index}`} className="flex items-center justify-between gap-4">
+              <span className="text-stone-600">{item.process || `공정 ${index + 1}`}</span>
+              <span className="font-medium text-stone-900">{(item.totalCost ?? 0).toLocaleString()}원</span>
             </div>
-          ))
-        ) : (
-          <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-5 text-sm text-stone-500">아직 댓글이 없습니다.</div>
-        )}
-
-        <div className="rounded-xl border border-stone-200 bg-stone-50 p-2.5">
-          <div className="text-[11px] text-stone-500">댓글 작성</div>
-          <textarea
-            value={replyDraft}
-            onChange={(event) => setReplyDraft(event.target.value)}
-            placeholder="댓글을 입력하세요"
-            className="mt-1.5 min-h-[64px] w-full resize-none rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm text-stone-800 outline-none transition focus:border-stone-400"
-          />
-          <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-            <MemoComposerAttachmentControls
-              uploadedFiles={uploadedFiles}
-              onFilesChange={setUploadedFiles}
-            />
-            <button
-              type="button"
-              onClick={() => {
-                onCreateReply(thread.id, replyDraft, { files: uploadedFiles });
-                setReplyDraft("");
-                setUploadedFiles([]);
-              }}
-              className="inline-flex h-8 items-center rounded-full bg-stone-900 px-3 text-[11px] font-semibold text-white transition hover:bg-stone-800"
-            >
-              댓글 등록
-            </button>
-          </div>
+          )) : <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-sm text-stone-500">표시할 외주 공정 금액이 없습니다.</div>}
         </div>
       </div>
     </div>
@@ -1268,6 +1137,12 @@ export default function WorkOrderDetail({
   canEditInventory,
   canChangeManager,
   canSeeProductionSections,
+  canSeeCostSections,
+  fabricTotal,
+  subsidiaryTotal,
+  outsourcingTotal,
+  totalCost,
+  unitCost,
   basicInfoOpen,
   materialOpen,
   outsourcingOpen,
@@ -1283,9 +1158,6 @@ export default function WorkOrderDetail({
   currentDisplayStage,
   actions,
   onAction,
-  onLiveSummaryChange,
-  showCostSummary = false,
-  costSummarySlot,
 }: {
   workOrder: WorkOrder;
   currentWorkflowState: WorkflowState;
@@ -1297,6 +1169,12 @@ export default function WorkOrderDetail({
   canEditInventory: boolean;
   canChangeManager: boolean;
   canSeeProductionSections: boolean;
+  canSeeCostSections: boolean;
+  fabricTotal: number;
+  subsidiaryTotal: number;
+  outsourcingTotal: number;
+  totalCost: number;
+  unitCost: number;
   basicInfoOpen: boolean;
   materialOpen: boolean;
   outsourcingOpen: boolean;
@@ -1312,9 +1190,6 @@ export default function WorkOrderDetail({
   currentDisplayStage: DisplayStage;
   actions: WorkflowAction[];
   onAction: (action: WorkflowAction) => void;
-  onLiveSummaryChange?: (summary: LiveWorkOrderSummary) => void;
-  showCostSummary?: boolean;
-  costSummarySlot?: ReactNode;
 }) {
   const [basicInfo, setBasicInfo] = useState<BasicInfoState>(() => getInitialBasicInfo(workOrder));
   const [partnerOptions, setPartnerOptions] = useState<string[]>(() => Array.from(new Set(PARTNER_OPTIONS)));
@@ -1410,12 +1285,6 @@ export default function WorkOrderDetail({
         }
         if (editingCell.field === "quantity") {
           return { ...current, quantity: toNumber(nextValue) };
-        }
-        if (editingCell.field === "sewingUnitCost") {
-          return { ...current, sewingUnitCost: toNumber(nextValue) };
-        }
-        if (editingCell.field === "lossCost") {
-          return { ...current, lossCost: toNumber(nextValue) };
         }
         return current;
       });
@@ -1545,36 +1414,6 @@ export default function WorkOrderDetail({
     setBasicInfoModalOpen(false);
   };
 
-  const liveSummary = useMemo<LiveWorkOrderSummary>(() => {
-    const fabricTotal = materialItems
-      .filter((item) => item.type === "원단")
-      .reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
-    const subsidiaryTotal = materialItems
-      .filter((item) => item.type === "부자재")
-      .reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
-    const outsourcingTotal = outsourcingItems.reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
-    const sewingTotal = (basicInfo.sewingUnitCost ?? 0) * (basicInfo.quantity ?? 0);
-    const lossCost = basicInfo.lossCost ?? 0;
-    const totalCost = fabricTotal + subsidiaryTotal + outsourcingTotal + sewingTotal + lossCost;
-    const unitCost = basicInfo.quantity > 0 ? Math.round(totalCost / basicInfo.quantity) : 0;
-
-    return {
-      materials: materialItems,
-      outsourcing: outsourcingItems,
-      fabricTotal,
-      subsidiaryTotal,
-      outsourcingTotal,
-      sewingTotal,
-      lossCost,
-      totalCost,
-      unitCost,
-    };
-  }, [basicInfo.lossCost, basicInfo.quantity, basicInfo.sewingUnitCost, materialItems, outsourcingItems]);
-
-  useEffect(() => {
-    onLiveSummaryChange?.(liveSummary);
-  }, [liveSummary, onLiveSummaryChange]);
-
   return (
     <div className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm md:p-6">
       <div className="border-b border-stone-200 pb-4">
@@ -1665,7 +1504,18 @@ export default function WorkOrderDetail({
 
       <StageProgressBar stages={visibleStages} currentStage={currentDisplayStage} actions={actions} onAction={onAction} />
 
-      {showCostSummary && costSummarySlot ? <div className="mt-6">{costSummarySlot}</div> : null}
+      {canSeeCostSections ? (
+        <div className="mt-6">
+          <CostSummarySection
+            fabricTotal={fabricTotal}
+            subsidiaryTotal={subsidiaryTotal}
+            outsourcingTotal={outsourcingTotal}
+            totalCost={totalCost}
+            unitCost={unitCost}
+            outsourcing={outsourcingItems}
+          />
+        </div>
+      ) : null}
 
       <div className="mt-6 grid gap-6">
         <OrderInfoSection

@@ -112,7 +112,7 @@ export function useWorkOrder() {
     [selectedWorkOrder, attachmentPreviewId],
   );
 
-  const { materials, outsourcing, fabricTotal, subsidiaryTotal, outsourcingTotal, sewingTotal, lossCost, totalCost, unitCost } = useMemo(
+  const { materials, outsourcing, fabricTotal, subsidiaryTotal, outsourcingTotal, totalCost, unitCost } = useMemo(
     () => calculateWorkOrderCosts(selectedWorkOrder),
     [selectedWorkOrder],
   );
@@ -329,10 +329,7 @@ export function useWorkOrder() {
     setToastMessage("작업지시서가 삭제되었습니다.");
   };
 
-  const handleOpenAttachmentPicker = () => {
-    if (!isAdmin) return;
-    attachmentInputRef.current?.click();
-  };
+  const handleOpenAttachmentPicker = () => attachmentInputRef.current?.click();
 
   const handleAttachmentFiles = (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from<File>(event.target.files ?? []);
@@ -341,7 +338,7 @@ export function useWorkOrder() {
       id: `${file.name}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       name: file.name,
       type: file.type.includes("pdf") ? "pdf" : "image",
-      url: URL.createObjectURL(file),
+      url: file.type.includes("pdf") ? "about:blank" : URL.createObjectURL(file),
       scope: "official",
       ownerId: currentUser.id,
       ownerName: currentUser.name,
@@ -382,7 +379,7 @@ export function useWorkOrder() {
       id: `${file.name}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       name: file.name,
       type: file.type.includes("pdf") ? "pdf" : "image",
-      url: URL.createObjectURL(file),
+      url: file.type.includes("pdf") ? "about:blank" : URL.createObjectURL(file),
       scope: "memo" as const,
       ownerId: currentUser.id,
       ownerName: currentUser.name,
@@ -393,6 +390,7 @@ export function useWorkOrder() {
 
   const handleCreateMemoThread = (content: string, payload?: MemoAttachmentPayload) => {
     const trimmed = content.trim();
+    const selectedAttachmentIds = payload?.selectedAttachmentIds ?? [];
     const files = payload?.files ?? [];
     if (!trimmed) return;
 
@@ -403,7 +401,7 @@ export function useWorkOrder() {
       authorRole: currentUser.role,
       content: trimmed,
       createdAt: nowLabel(),
-      attachmentIds: [],
+      attachmentIds: selectedAttachmentIds,
       replies: [],
     };
 
@@ -419,6 +417,7 @@ export function useWorkOrder() {
     });
     setHistoryLogs((prev) => {
       const attachmentDetails = [
+        ...(selectedAttachmentIds.length > 0 ? [{ label: "기존 첨부 연결", value: `${selectedAttachmentIds.length}개` }] : []),
         ...(memoAttachments.length > 0 ? [{ label: "메모 첨부 추가", value: memoAttachments.map((attachment) => attachment.name).join(", ") }] : []),
       ];
       return [
@@ -428,12 +427,12 @@ export function useWorkOrder() {
       ];
     });
     setSaveStatus("dirty");
-    setToastMessage(memoAttachments.length > 0 ? "첨부가 포함된 작업 메모가 등록되었습니다." : "작업 메모가 등록되었습니다.");
+    setToastMessage(memoAttachments.length > 0 || selectedAttachmentIds.length > 0 ? "첨부가 포함된 작업 메모가 등록되었습니다." : "작업 메모가 등록되었습니다.");
   };
-
 
   const handleCreateMemoReply = (threadId: string, content: string, payload?: MemoAttachmentPayload) => {
     const trimmed = content.trim();
+    const selectedAttachmentIds = payload?.selectedAttachmentIds ?? [];
     const files = payload?.files ?? [];
     if (!trimmed) return;
 
@@ -444,7 +443,7 @@ export function useWorkOrder() {
       authorRole: currentUser.role,
       content: trimmed,
       createdAt: nowLabel(),
-      attachmentIds: [],
+      attachmentIds: selectedAttachmentIds,
     };
 
     const memoAttachments = createMemoAttachments(files, { threadId, replyId: nextReply.id });
@@ -459,6 +458,7 @@ export function useWorkOrder() {
     });
     setHistoryLogs((prev) => {
       const attachmentDetails = [
+        ...(selectedAttachmentIds.length > 0 ? [{ label: "기존 첨부 연결", value: `${selectedAttachmentIds.length}개` }] : []),
         ...(memoAttachments.length > 0 ? [{ label: "메모 첨부 추가", value: memoAttachments.map((attachment) => attachment.name).join(", ") }] : []),
       ];
       return [
@@ -468,14 +468,17 @@ export function useWorkOrder() {
       ];
     });
     setSaveStatus("dirty");
-    setToastMessage(memoAttachments.length > 0 ? "첨부가 포함된 메모 댓글이 등록되었습니다." : "메모 댓글이 등록되었습니다.");
+    setToastMessage(memoAttachments.length > 0 || selectedAttachmentIds.length > 0 ? "첨부가 포함된 메모 댓글이 등록되었습니다." : "메모 댓글이 등록되었습니다.");
   };
 
   const handlePromoteMemoAttachment = (attachmentId: string) => {
     const targetAttachment = selectedWorkOrder.attachments.find((item) => item.id === attachmentId);
     if (!targetAttachment || (targetAttachment.scope ?? "official") === "official" || !isAdmin) return;
 
-    setWorkOrders((prev) => promoteAttachmentToOfficial(prev, selectedWorkOrder.id, attachmentId));
+    setWorkOrders((prev) => promoteAttachmentToOfficial(prev, selectedWorkOrder.id, attachmentId, {
+      ownerId: currentUser.id,
+      ownerName: currentUser.name,
+    }));
     setHistoryLogs((prev) => [
       createAttachmentHistoryLog(currentUser.name, selectedWorkOrder.id, [{ label: "공식 첨부 승격", value: targetAttachment.name }]),
       ...prev,
@@ -548,8 +551,6 @@ export function useWorkOrder() {
     fabricTotal,
     subsidiaryTotal,
     outsourcingTotal,
-    sewingTotal,
-    lossCost,
     totalCost,
     unitCost,
     saveStatus,

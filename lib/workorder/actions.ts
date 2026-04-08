@@ -21,8 +21,6 @@ export function createNewWorkOrder(nextIndex: number, payload: {
     createdByRole: payload.managerRole,
     dueDate: "미정",
     quantity: 0,
-    sewingUnitCost: 0,
-    lossCost: 0,
     inventoryQuantity: 0,
     inventoryStatus: "확인전",
     memo: "새 작업지시서가 생성되었습니다.",
@@ -138,19 +136,16 @@ export function promoteAttachmentToOfficial(
   workOrders: WorkOrder[],
   workOrderId: string,
   attachmentId: string,
+  payload: { ownerId: string; ownerName: string },
 ) {
-  return workOrders.map((item) =>
-    item.id === workOrderId
-      ? {
-          ...item,
-          attachments: item.attachments.map((attachment): Attachment =>
-            attachment.id === attachmentId
-              ? { ...attachment, scope: "official" as const }
-              : attachment,
-          ),
-        }
-      : item,
-  );
+  return workOrders.map((item) => item.id === workOrderId
+    ? {
+        ...item,
+        attachments: item.attachments.map((attachment) => attachment.id === attachmentId
+          ? { ...attachment, scope: "official", ownerId: payload.ownerId, ownerName: payload.ownerName }
+          : attachment),
+      }
+    : item);
 }
 
 export function updateWorkOrderManager(

@@ -27,9 +27,7 @@ export function calculateWorkOrderCosts(workOrder: WorkOrder) {
   const fabricTotal = materials.filter((item) => item.type === "원단").reduce((sum, item) => sum + item.totalCost, 0);
   const subsidiaryTotal = materials.filter((item) => item.type === "부자재").reduce((sum, item) => sum + item.totalCost, 0);
   const outsourcingTotal = outsourcing.reduce((sum, item) => sum + item.totalCost, 0);
-  const sewingTotal = (workOrder.sewingUnitCost ?? 0) * (workOrder.quantity ?? 0);
-  const lossCost = workOrder.lossCost ?? 0;
-  const totalCost = fabricTotal + subsidiaryTotal + outsourcingTotal + sewingTotal + lossCost;
+  const totalCost = fabricTotal + subsidiaryTotal + outsourcingTotal;
   const unitCost = workOrder.quantity > 0 ? Math.round(totalCost / workOrder.quantity) : 0;
 
   return {
@@ -38,8 +36,6 @@ export function calculateWorkOrderCosts(workOrder: WorkOrder) {
     fabricTotal,
     subsidiaryTotal,
     outsourcingTotal,
-    sewingTotal,
-    lossCost,
     totalCost,
     unitCost,
   };
