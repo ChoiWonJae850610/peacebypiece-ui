@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import BaseModal from "@/components/common/modal/BaseModal";
 import ModalBody from "@/components/common/modal/ModalBody";
 import ModalFooter from "@/components/common/modal/ModalFooter";
@@ -27,6 +27,18 @@ type BasicInfoState = {
   quantity: number;
   sewingUnitCost: number;
   lossCost: number;
+};
+
+export type LiveWorkOrderSummary = {
+  materials: Material[];
+  outsourcing: Outsourcing[];
+  fabricTotal: number;
+  subsidiaryTotal: number;
+  outsourcingTotal: number;
+  sewingTotal: number;
+  lossCost: number;
+  totalCost: number;
+  unitCost: number;
 };
 
 function SectionHeader({
@@ -1386,6 +1398,7 @@ export default function WorkOrderDetail({
   onCreateMemoReply,
   canPromoteMemoAttachment,
   onPromoteMemoAttachment,
+  onLiveSummaryChange,
 }: {
   workOrder: WorkOrder;
   currentWorkflowState: WorkflowState;
@@ -1416,6 +1429,7 @@ export default function WorkOrderDetail({
   onCreateMemoReply: (threadId: string, content: string, payload?: MemoAttachmentPayload) => void;
   canPromoteMemoAttachment: boolean;
   onPromoteMemoAttachment: (attachmentId: string) => void;
+  onLiveSummaryChange?: (summary: LiveWorkOrderSummary) => void;
 }) {
   const [basicInfo, setBasicInfo] = useState<BasicInfoState>(() => getInitialBasicInfo(workOrder));
   const [partnerOptions, setPartnerOptions] = useState<string[]>(() => Array.from(new Set(PARTNER_OPTIONS)));
@@ -1645,6 +1659,36 @@ export default function WorkOrderDetail({
     setBasicInfo(basicInfoDraft);
     setBasicInfoModalOpen(false);
   };
+
+  const liveSummary = useMemo<LiveWorkOrderSummary>(() => {
+    const fabricTotal = materialItems
+      .filter((item) => item.type === "원단")
+      .reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
+    const subsidiaryTotal = materialItems
+      .filter((item) => item.type === "부자재")
+      .reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
+    const outsourcingTotal = outsourcingItems.reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
+    const sewingTotal = (basicInfo.sewingUnitCost ?? 0) * (basicInfo.quantity ?? 0);
+    const lossCost = basicInfo.lossCost ?? 0;
+    const totalCost = fabricTotal + subsidiaryTotal + outsourcingTotal + sewingTotal + lossCost;
+    const unitCost = basicInfo.quantity > 0 ? Math.round(totalCost / basicInfo.quantity) : 0;
+
+    return {
+      materials: materialItems,
+      outsourcing: outsourcingItems,
+      fabricTotal,
+      subsidiaryTotal,
+      outsourcingTotal,
+      sewingTotal,
+      lossCost,
+      totalCost,
+      unitCost,
+    };
+  }, [basicInfo.lossCost, basicInfo.quantity, basicInfo.sewingUnitCost, materialItems, outsourcingItems]);
+
+  useEffect(() => {
+    onLiveSummaryChange?.(liveSummary);
+  }, [liveSummary, onLiveSummaryChange]);
 
   return (
     <div className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm md:p-6">
