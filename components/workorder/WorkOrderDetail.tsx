@@ -34,6 +34,7 @@ const EDITABLE_INPUT_CLASS = `${EDITABLE_FIELD_BASE_CLASS} border-stone-300 bg-w
 const EDITABLE_DISPLAY_CLASS = `${EDITABLE_FIELD_BASE_CLASS} flex items-center border-transparent bg-transparent hover:border-stone-200 hover:bg-stone-50 focus-visible:border-stone-300 focus-visible:bg-stone-50`
 const EDITABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
 const TABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
+const TABLE_HEADER_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
 
 function SectionHeader({
   title,
@@ -56,9 +57,9 @@ function SectionHeader({
         aria-expanded={open}
         className="pbp-touch-target pbp-interactive-button flex min-w-0 flex-1 items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white px-3.5 py-3 text-left hover:border-stone-300 hover:bg-stone-50 active:bg-stone-100"
       >
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1 overflow-hidden">
           <div className="text-sm font-semibold leading-5 text-stone-900">{title}</div>
-          <div className="mt-1 truncate text-xs leading-4 text-stone-500 md:text-sm">{summary}</div>
+          <div className="mt-1 block min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs leading-4 text-stone-500 md:text-sm">{summary}</div>
         </div>
         <span
           aria-hidden="true"
@@ -890,27 +891,27 @@ function MaterialSection({
               + 항목 추가
             </button>
           </div>
-          <div className="mt-4 hidden overflow-x-auto md:block">
-            <table className="min-w-full table-fixed text-left text-sm">
+          <div className="mt-4 hidden max-w-full overflow-hidden md:block">
+            <table className="w-full max-w-full table-fixed text-left text-sm">
               <colgroup>
-                <col className="w-[10%]" />
-                <col className="w-[19%]" />
-                <col className="w-[18%]" />
-                <col className="w-[11%]" />
-                <col className="w-[10%]" />
-                <col className="w-[12%]" />
-                <col className="w-[12%]" />
-                <col className="w-[10%]" />
-                <col className="w-[60px]" />
+                <col className="w-[72px]" />
+                <col />
+                <col />
+                <col className="w-[88px]" />
+                <col className="w-[64px]" />
+                <col className="w-[120px]" />
+                <col className="w-[132px]" />
+                <col className="w-[92px]" />
+                <col className="w-[52px]" />
               </colgroup>
               <thead className="text-stone-500">
                 <tr className="border-b border-stone-200">
                   {["구분", "자재명", "거래처", "수량", "단위", "단가", "금액", "상태", ""].map((header, index) => (
                     <th
                       key={`${header}-${index}`}
-                      className={`px-2 py-3 text-xs font-medium ${header === "수량" || header === "단가" || header === "금액" ? "text-right" : header === "" ? "text-center" : "text-left"}`}
+                      className={`min-w-0 overflow-hidden px-2 py-3 text-xs font-medium ${header === "수량" || header === "단가" || header === "금액" ? "text-right" : header === "" ? "text-center" : "text-left"}`}
                     >
-                      {header}
+                      <span className={TABLE_HEADER_TEXT_CLASS}>{header}</span>
                     </th>
                   ))}
                 </tr>
@@ -1043,26 +1044,26 @@ function OutsourcingSection({
               + 공정 추가
             </button>
           </div>
-          <div className="mt-4 hidden overflow-x-auto md:block">
-            <table className="min-w-full table-fixed text-left text-sm">
+          <div className="mt-4 hidden max-w-full overflow-hidden md:block">
+            <table className="w-full max-w-full table-fixed text-left text-sm">
               <colgroup>
-                <col className="w-[18%]" />
-                <col className="w-[18%]" />
-                <col className="w-[12%]" />
-                <col className="w-[14%]" />
-                <col className="w-[12%]" />
-                <col className="w-[14%]" />
-                <col className="w-[12%]" />
-                <col className="w-[60px]" />
+                <col />
+                <col />
+                <col className="w-[88px]" />
+                <col className="w-[96px]" />
+                <col className="w-[120px]" />
+                <col className="w-[132px]" />
+                <col className="w-[92px]" />
+                <col className="w-[52px]" />
               </colgroup>
               <thead className="text-stone-500">
                 <tr className="border-b border-stone-200">
                   {["공정", "외주처", "수량", "단가기준", "단가", "금액", "상태", ""].map((header, index) => (
                     <th
                       key={`${header}-${index}`}
-                      className={`px-2 py-3 text-xs font-medium ${header === "수량" || header === "단가" || header === "금액" ? "text-right" : header === "" ? "text-center" : "text-left"}`}
+                      className={`min-w-0 overflow-hidden px-2 py-3 text-xs font-medium ${header === "수량" || header === "단가" || header === "금액" ? "text-right" : header === "" ? "text-center" : "text-left"}`}
                     >
-                      {header}
+                      <span className={TABLE_HEADER_TEXT_CLASS}>{header}</span>
                     </th>
                   ))}
                 </tr>
