@@ -6,7 +6,6 @@ import type { DisplayStage, HistoryCategory, HistoryFilter, HistoryTone, Workflo
 export type AttachmentScope = "official" | "memo";
 
 export type MemoAttachmentPayload = {
-  selectedAttachmentIds?: string[];
   files?: File[];
 };
 
@@ -22,6 +21,8 @@ export type Attachment = {
   linkedReplyId?: string | null;
 };
 
+export type MemoThreadKind = "general" | "attachment-request";
+
 export type MemoReply = {
   id: string;
   authorId: string;
@@ -33,6 +34,7 @@ export type MemoReply = {
 };
 
 export type MemoThread = {
+  kind?: MemoThreadKind;
   id: string;
   authorId: string;
   authorName: string;
@@ -69,6 +71,8 @@ export type WorkOrder = {
   createdByRole: RoleType;
   dueDate: string;
   quantity: number;
+  sewingUnitCost: number;
+  lossCost: number;
   inventoryQuantity: number;
   inventoryStatus: string;
   memo: string;
