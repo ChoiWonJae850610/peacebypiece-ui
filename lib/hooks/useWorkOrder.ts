@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { DEFAULT_SELECTED_WORK_ORDER_ID, MOCK_HISTORY_LOGS, MOCK_WORK_ORDERS } from "@/lib/data/mock/workorders";
 import { DEFAULT_CURRENT_USER_ID, DEFAULT_PERMISSION_TARGET_ID, MOCK_USERS } from "@/lib/data/mock/users";
 import { buildUserRoleState, canCreateWorkOrderByRoles, canUploadOfficialAttachmentsByRoles, isAdminRole, normalizeRoles } from "@/lib/constants/roles";
@@ -498,6 +498,11 @@ export function useWorkOrder() {
     setNotificationSettings((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const handleUpdateSelectedWorkOrder = useCallback((patch: Partial<WorkOrder>) => {
+    setWorkOrders((prev) => prev.map((item) => (item.id === selectedWorkOrder.id ? { ...item, ...patch } : item)));
+    setSaveStatus("dirty");
+  }, [selectedWorkOrder.id]);
+
   return {
     appShellRef,
     attachmentInputRef,
@@ -576,6 +581,7 @@ export function useWorkOrder() {
     handleCreateWorkOrder,
     handleDeleteWorkOrder,
     handleWorkflowAction,
+    handleUpdateSelectedWorkOrder,
     handleConfirmOrderRequest,
     handleCloseOrderRequestConfirm,
     handleInventoryApply,

@@ -95,6 +95,7 @@ export default function Home() {
     handleCreateWorkOrder,
     handleDeleteWorkOrder,
     handleWorkflowAction,
+    handleUpdateSelectedWorkOrder,
     handleConfirmOrderRequest,
     handleCloseOrderRequestConfirm,
     handleInventoryApply,
@@ -208,6 +209,7 @@ export default function Home() {
               currentDisplayStage={currentDisplayStage}
               actions={availableActions}
               onAction={handleWorkflowAction}
+              onUpdateWorkOrder={handleUpdateSelectedWorkOrder}
             />
             </div>
           </section>

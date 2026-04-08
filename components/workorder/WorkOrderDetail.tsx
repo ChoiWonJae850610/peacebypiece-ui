@@ -1078,6 +1078,7 @@ export default function WorkOrderDetail({
   currentDisplayStage,
   actions,
   onAction,
+  onUpdateWorkOrder,
 }: {
   workOrder: WorkOrder;
   currentWorkflowState: WorkflowState;
@@ -1110,13 +1111,14 @@ export default function WorkOrderDetail({
   currentDisplayStage: DisplayStage;
   actions: WorkflowAction[];
   onAction: (action: WorkflowAction) => void;
+  onUpdateWorkOrder: (patch: Partial<WorkOrder>) => void;
 }) {
   const [basicInfo, setBasicInfo] = useState<BasicInfoState>(() => getInitialBasicInfo(workOrder));
   const [partnerOptions, setPartnerOptions] = useState<string[]>(() => Array.from(new Set(PARTNER_OPTIONS)));
   const [orderItems, setOrderItems] = useState<OrderEntryState[]>(() => getInitialOrderEntries(workOrder));
   const [factoryOptions, setFactoryOptions] = useState<string[]>(() => {
-    const seeded = Array.from(new Set(FACTORY_OPTIONS));
-    return getInitialOrderEntries(workOrder).reduce((options, item) => appendOption(options, item.factory), seeded);
+    const seeded: string[] = Array.from(new Set(FACTORY_OPTIONS));
+    return getInitialOrderEntries(workOrder).reduce<string[]>((options, item) => appendOption(options, item.factory), seeded);
   });
   const [registryModalOpen, setRegistryModalOpen] = useState(false);
   const [registryType, setRegistryType] = useState<RegistryType>("거래처");
@@ -1144,7 +1146,7 @@ export default function WorkOrderDetail({
     setBasicInfoDraft(getInitialBasicInfo(workOrder));
     const nextOrderEntries = getInitialOrderEntries(workOrder);
     setOrderItems(nextOrderEntries);
-    setFactoryOptions((current) => nextOrderEntries.reduce((options, item) => appendOption(options, item.factory), current));
+    setFactoryOptions((current) => nextOrderEntries.reduce<string[]>((options, item) => appendOption(options, item.factory), current));
   }, [workOrder, partnerOptions]);
 
   useEffect(() => {
@@ -1172,72 +1174,72 @@ export default function WorkOrderDetail({
     const nextValue = (nextValueOverride ?? editingValue).trim();
 
     if (editingCell.section === "order") {
-      setOrderItems((current) =>
-        current.map((item) => {
-          if (item.id !== editingCell.rowId) return item;
+      const nextItems = orderItems.map((item) => {
+        if (item.id !== editingCell.rowId) return item;
 
-          if (editingCell.field === "quantity") {
-            return sanitizeOrderEntry({ ...item, quantity: toNumber(nextValue) }, item);
-          }
-          if (editingCell.field === "laborCost") {
-            return sanitizeOrderEntry({ ...item, laborCost: toNumber(nextValue) }, item);
-          }
-          if (editingCell.field === "lossCost") {
-            return sanitizeOrderEntry({ ...item, lossCost: toNumber(nextValue) }, item);
-          }
-          if (editingCell.field === "factory") {
-            return sanitizeOrderEntry({ ...item, factory: sanitizeSelectValue(nextValue, factoryOptions, DEFAULT_FACTORY_OPTION) }, item);
-          }
-          if (editingCell.field === "priority") {
-            return sanitizeOrderEntry({ ...item, priority: nextValue || PRIORITY_OPTIONS[0] }, item);
-          }
-          if (editingCell.field === "type") {
-            return sanitizeOrderEntry({ ...item, type: nextValue || DEFAULT_ORDER_TYPE }, item);
-          }
-          if (editingCell.field === "dueDate") {
-            return sanitizeOrderEntry({ ...item, dueDate: nextValue }, item);
-          }
+        if (editingCell.field === "quantity") {
+          return sanitizeOrderEntry({ ...item, quantity: toNumber(nextValue) }, item);
+        }
+        if (editingCell.field === "laborCost") {
+          return sanitizeOrderEntry({ ...item, laborCost: toNumber(nextValue) }, item);
+        }
+        if (editingCell.field === "lossCost") {
+          return sanitizeOrderEntry({ ...item, lossCost: toNumber(nextValue) }, item);
+        }
+        if (editingCell.field === "factory") {
+          return sanitizeOrderEntry({ ...item, factory: sanitizeSelectValue(nextValue, factoryOptions, DEFAULT_FACTORY_OPTION) }, item);
+        }
+        if (editingCell.field === "priority") {
+          return sanitizeOrderEntry({ ...item, priority: nextValue || PRIORITY_OPTIONS[0] }, item);
+        }
+        if (editingCell.field === "type") {
+          return sanitizeOrderEntry({ ...item, type: nextValue || DEFAULT_ORDER_TYPE }, item);
+        }
+        if (editingCell.field === "dueDate") {
+          return sanitizeOrderEntry({ ...item, dueDate: nextValue }, item);
+        }
 
-          return item;
-        }),
-      );
+        return item;
+      });
+      setOrderItems(nextItems);
+      onUpdateWorkOrder({ orderEntries: nextItems.map((item) => sanitizeOrderEntry(item)) });
     }
 
     if (editingCell.section === "material") {
-      setMaterialItems((current) =>
-        current.map((item) => {
-          if (item.id !== editingCell.rowId) return item;
+      const nextItems = materialItems.map((item) => {
+        if (item.id !== editingCell.rowId) return item;
 
-          if (editingCell.field === "quantity") {
-            return recalculateMaterial({ ...item, quantity: toNumber(nextValue) });
-          }
-          if (editingCell.field === "unitCost") {
-            return recalculateMaterial({ ...item, unitCost: toNumber(nextValue) });
-          }
-          if (editingCell.field === "type") {
-            return { ...item, type: (nextValue || "원단") as Material["type"] };
-          }
+        if (editingCell.field === "quantity") {
+          return recalculateMaterial({ ...item, quantity: toNumber(nextValue) });
+        }
+        if (editingCell.field === "unitCost") {
+          return recalculateMaterial({ ...item, unitCost: toNumber(nextValue) });
+        }
+        if (editingCell.field === "type") {
+          return { ...item, type: (nextValue || "원단") as Material["type"] };
+        }
 
-          return { ...item, [editingCell.field]: nextValue } as Material;
-        }),
-      );
+        return { ...item, [editingCell.field]: nextValue } as Material;
+      });
+      setMaterialItems(nextItems);
+      onUpdateWorkOrder({ materials: nextItems.map((item) => recalculateMaterial(item)) });
     }
 
     if (editingCell.section === "outsourcing") {
-      setOutsourcingItems((current) =>
-        current.map((item) => {
-          if (item.id !== editingCell.rowId) return item;
+      const nextItems = outsourcingItems.map((item) => {
+        if (item.id !== editingCell.rowId) return item;
 
-          if (editingCell.field === "quantity") {
-            return recalculateOutsourcing({ ...item, quantity: toNumber(nextValue) });
-          }
-          if (editingCell.field === "unitCost") {
-            return recalculateOutsourcing({ ...item, unitCost: toNumber(nextValue) });
-          }
+        if (editingCell.field === "quantity") {
+          return recalculateOutsourcing({ ...item, quantity: toNumber(nextValue) });
+        }
+        if (editingCell.field === "unitCost") {
+          return recalculateOutsourcing({ ...item, unitCost: toNumber(nextValue) });
+        }
 
-          return { ...item, [editingCell.field]: nextValue } as Outsourcing;
-        }),
-      );
+        return { ...item, [editingCell.field]: nextValue } as Outsourcing;
+      });
+      setOutsourcingItems(nextItems);
+      onUpdateWorkOrder({ outsourcing: nextItems.map((item) => recalculateOutsourcing(item)) });
     }
 
     blurActiveEditableElement();
@@ -1245,31 +1247,35 @@ export default function WorkOrderDetail({
   };
 
   const addOrderEntry = () => {
-    setOrderItems((current) => [
-      ...current,
+    const nextItems = [
+      ...orderItems,
       sanitizeOrderEntry({
         id: createId("order"),
         type: DEFAULT_ORDER_TYPE,
         factory: DEFAULT_FACTORY_OPTION,
-        dueDate: current[0]?.dueDate || "",
+        dueDate: orderItems[0]?.dueDate || "",
         quantity: 0,
         laborCost: 0,
         lossCost: 0,
-        priority: current[0]?.priority || PRIORITY_OPTIONS[0],
+        priority: orderItems[0]?.priority || PRIORITY_OPTIONS[0],
       }),
-    ]);
+    ];
+    setOrderItems(nextItems);
+    onUpdateWorkOrder({ orderEntries: nextItems.map((item) => sanitizeOrderEntry(item)) });
   };
 
   const removeOrderEntry = (id: string) => {
-    setOrderItems((current) => (current.length > 1 ? current.filter((item) => item.id !== id) : current));
+    const nextItems = orderItems.length > 1 ? orderItems.filter((item) => item.id !== id) : orderItems;
+    setOrderItems(nextItems);
+    onUpdateWorkOrder({ orderEntries: nextItems.map((item) => sanitizeOrderEntry(item)) });
     if (editingCell?.section === "order" && editingCell.rowId === id) {
       cancelEdit();
     }
   };
 
   const addMaterial = () => {
-    setMaterialItems((current) => [
-      ...current,
+    const nextItems = [
+      ...materialItems,
       recalculateMaterial({
         id: createId("material"),
         type: DEFAULT_MATERIAL_TYPE,
@@ -1281,19 +1287,23 @@ export default function WorkOrderDetail({
         totalCost: 0,
         status: "준비",
       }),
-    ]);
+    ];
+    setMaterialItems(nextItems);
+    onUpdateWorkOrder({ materials: nextItems.map((item) => recalculateMaterial(item)) });
   };
 
   const removeMaterial = (id: string) => {
-    setMaterialItems((current) => current.filter((item) => item.id !== id));
+    const nextItems = materialItems.filter((item) => item.id !== id);
+    setMaterialItems(nextItems);
+    onUpdateWorkOrder({ materials: nextItems.map((item) => recalculateMaterial(item)) });
     if (editingCell?.section === "material" && editingCell.rowId === id) {
       cancelEdit();
     }
   };
 
   const addOutsourcing = () => {
-    setOutsourcingItems((current) => [
-      ...current,
+    const nextItems = [
+      ...outsourcingItems,
       recalculateOutsourcing({
         id: createId("outsourcing"),
         process: DEFAULT_OUTSOURCING_PROCESS,
@@ -1304,11 +1314,15 @@ export default function WorkOrderDetail({
         totalCost: 0,
         status: "대기",
       }),
-    ]);
+    ];
+    setOutsourcingItems(nextItems);
+    onUpdateWorkOrder({ outsourcing: nextItems.map((item) => recalculateOutsourcing(item)) });
   };
 
   const removeOutsourcing = (id: string) => {
-    setOutsourcingItems((current) => current.filter((item) => item.id !== id));
+    const nextItems = outsourcingItems.filter((item) => item.id !== id);
+    setOutsourcingItems(nextItems);
+    onUpdateWorkOrder({ outsourcing: nextItems.map((item) => recalculateOutsourcing(item)) });
     if (editingCell?.section === "outsourcing" && editingCell.rowId === id) {
       cancelEdit();
     }
@@ -1332,7 +1346,9 @@ export default function WorkOrderDetail({
     }
 
     setFactoryOptions((current) => appendOption(current, name));
-    setOrderItems((current) => current.map((item, index) => (index === 0 ? { ...item, factory: name } : item)));
+    const nextItems = orderItems.map((item, index) => (index === 0 ? { ...item, factory: name } : item));
+    setOrderItems(nextItems);
+    onUpdateWorkOrder({ orderEntries: nextItems.map((item) => sanitizeOrderEntry(item)) });
   };
 
   const handleOpenBasicInfoModal = () => {
@@ -1347,6 +1363,12 @@ export default function WorkOrderDetail({
 
   const handleSaveBasicInfoModal = () => {
     setBasicInfo(basicInfoDraft);
+    onUpdateWorkOrder({
+      category1: basicInfoDraft.category1,
+      category2: basicInfoDraft.category2,
+      category3: basicInfoDraft.category3,
+      season: `${basicInfoDraft.season} ${basicInfoDraft.year}`.trim(),
+    });
     setBasicInfoModalOpen(false);
   };
 
