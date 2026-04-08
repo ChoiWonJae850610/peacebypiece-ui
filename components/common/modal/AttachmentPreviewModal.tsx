@@ -44,11 +44,17 @@ export default function AttachmentPreviewModal({
         ) : attachment ? (
           <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
             <div className="border-b border-stone-200 px-4 py-3 text-sm font-medium text-stone-700">PDF 미리보기</div>
-            <iframe
-              title={attachment.name}
-              src={attachment.url}
-              className="h-[70dvh] w-full bg-white"
-            />
+            {attachment.url ? (
+              <iframe
+                title={attachment.name}
+                src={attachment.url}
+                className="h-[70dvh] w-full bg-white"
+              />
+            ) : (
+              <div className="flex h-[70dvh] items-center justify-center bg-stone-50 px-6 text-center text-sm text-stone-500">
+                이 PDF는 미리보기 데이터를 찾을 수 없습니다.
+              </div>
+            )}
           </div>
         ) : null}
       </ModalBody>

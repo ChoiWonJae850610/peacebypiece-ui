@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import ToastMessage from "@/components/common/ToastMessage";
 import AttachmentPreviewModal from "@/components/common/modal/AttachmentPreviewModal";
 import InventoryEditor from "@/components/common/modal/InventoryEditor";
@@ -10,13 +12,14 @@ import PermissionModal from "@/components/common/modal/PermissionModal";
 import MobileDrawer from "@/components/layout/MobileDrawer";
 import MobileTopBar from "@/components/layout/MobileTopBar";
 import SidebarContent from "@/components/layout/SidebarContent";
-import WorkOrderDetail from "@/components/workorder/WorkOrderDetail";
-import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
+import WorkOrderDetail, { type LiveWorkOrderSummary } from "@/components/workorder/WorkOrderDetail";
+import WorkOrderSidePanel, { CostSummaryPanel, MemoThreadPanel } from "@/components/workorder/WorkOrderSidePanel";
 import { APP_VERSION } from "@/lib/constants/app";
 import { useWorkOrder } from "@/lib/hooks/useWorkOrder";
 
 export default function Home() {
   const version = APP_VERSION;
+  const [liveSummary, setLiveSummary] = useState<LiveWorkOrderSummary | null>(null);
   const {
     appShellRef,
     attachmentInputRef,
@@ -74,6 +77,8 @@ export default function Home() {
     fabricTotal,
     subsidiaryTotal,
     outsourcingTotal,
+    sewingTotal,
+    lossCost,
     totalCost,
     unitCost,
     saveStatus,
@@ -100,6 +105,10 @@ export default function Home() {
     handleCreateMemoReply,
     handlePromoteMemoAttachment,
   } = useWorkOrder();
+
+  useEffect(() => {
+    setLiveSummary(null);
+  }, [selectedId]);
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-stone-100 text-stone-900">
@@ -153,12 +162,6 @@ export default function Home() {
               canChangeManager={canChangeManager}
               onOpenManagerAssignModal={handleOpenManagerAssignModal}
               canSeeProductionSections={canSeeProductionSections}
-              canSeeCostSections={canSeeCostSections}
-              fabricTotal={fabricTotal}
-              subsidiaryTotal={subsidiaryTotal}
-              outsourcingTotal={outsourcingTotal}
-              totalCost={totalCost}
-              unitCost={unitCost}
               basicInfoOpen={basicInfoOpen}
               materialOpen={materialOpen}
               outsourcingOpen={outsourcingOpen}
@@ -173,6 +176,21 @@ export default function Home() {
               currentDisplayStage={currentDisplayStage}
               actions={availableActions}
               onAction={handleWorkflowAction}
+              onLiveSummaryChange={setLiveSummary}
+              showCostSummary={isAdmin && canSeeCostSections}
+              costSummarySlot={isAdmin && canSeeCostSections ? (
+                <CostSummaryPanel
+                  canSeeCostSections={false}
+                  fabricTotal={liveSummary?.fabricTotal ?? fabricTotal}
+                  subsidiaryTotal={liveSummary?.subsidiaryTotal ?? subsidiaryTotal}
+                  outsourcingTotal={liveSummary?.outsourcingTotal ?? outsourcingTotal}
+                  sewingTotal={liveSummary?.sewingTotal ?? sewingTotal}
+                  lossCost={liveSummary?.lossCost ?? lossCost}
+                  totalCost={liveSummary?.totalCost ?? totalCost}
+                  unitCost={liveSummary?.unitCost ?? unitCost}
+                  outsourcing={liveSummary?.outsourcing ?? outsourcing}
+                />
+              ) : undefined}
             />
             </div>
           </section>
@@ -185,19 +203,28 @@ export default function Home() {
               onPreviewAttachment={setAttachmentPreviewId}
               onDeleteAttachment={handleDeleteAttachment}
               canDeleteAttachment={canDeleteAttachment}
+              canSeeCostSections={false}
+              fabricTotal={liveSummary?.fabricTotal ?? fabricTotal}
+              subsidiaryTotal={liveSummary?.subsidiaryTotal ?? subsidiaryTotal}
+              outsourcingTotal={liveSummary?.outsourcingTotal ?? outsourcingTotal}
+              sewingTotal={liveSummary?.sewingTotal ?? sewingTotal}
+              lossCost={liveSummary?.lossCost ?? lossCost}
+              totalCost={liveSummary?.totalCost ?? totalCost}
+              unitCost={liveSummary?.unitCost ?? unitCost}
+              outsourcing={liveSummary?.outsourcing ?? outsourcing}
               canSeeInventoryHistorySection={canSeeInventoryHistorySection}
               isAdmin={isAdmin}
               currentRole={currentRole}
+              workOrder={selectedWorkOrder}
+              currentUserName={currentUser.name}
+              canPromoteMemoAttachment={isAdmin}
+              onPromoteMemoAttachment={handlePromoteMemoAttachment}
+              onCreateMemoThread={handleCreateMemoThread}
+              onCreateMemoReply={handleCreateMemoReply}
               filteredHistoryLogs={filteredHistoryLogs}
               historyFilter={historyFilter}
               onHistoryFilterChange={setHistoryFilter}
               onOpenInventoryLogModal={() => setInventoryLogModalOpen(true)}
-              workOrder={selectedWorkOrder}
-              currentUserName={currentUser.name}
-              onCreateMemoThread={handleCreateMemoThread}
-              onCreateMemoReply={handleCreateMemoReply}
-              canPromoteMemoAttachment={isAdmin}
-              onPromoteMemoAttachment={handlePromoteMemoAttachment}
             />
           </aside>
         </div>
