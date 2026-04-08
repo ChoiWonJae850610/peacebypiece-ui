@@ -20,6 +20,10 @@ export function getAttachmentType(file: File | { type?: string | null; name?: st
   return "image";
 }
 
+export function createAttachmentId(name: string): string {
+  return `${name}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+}
+
 export function getAttachmentOwnerLabel(attachment: Attachment | null | undefined): string {
   return attachment?.ownerName?.trim() || "기존 첨부";
 }

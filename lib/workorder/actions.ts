@@ -1,3 +1,4 @@
+import { createAttachmentId } from "@/lib/permissions/attachments";
 import type { Attachment, InventoryChange, MemoReply, MemoThread, RoleType, WorkOrder, WorkflowAction } from "@/types/workorder";
 
 export function createNewWorkOrder(nextIndex: number, payload: {
@@ -7,7 +8,7 @@ export function createNewWorkOrder(nextIndex: number, payload: {
   createdAt: string;
 }): WorkOrder {
   return {
-    id: `wo-${Date.now()}`,
+    id: createAttachmentId("wo"),
     title: `새 작업지시서 ${nextIndex}`,
     category1: "의류",
     category2: "미분류",

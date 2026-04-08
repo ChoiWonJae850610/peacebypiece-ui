@@ -5,7 +5,7 @@ import { DEFAULT_SELECTED_WORK_ORDER_ID, MOCK_HISTORY_LOGS, MOCK_WORK_ORDERS } f
 import { DEFAULT_CURRENT_USER_ID, DEFAULT_PERMISSION_TARGET_ID, MOCK_USERS } from "@/lib/data/mock/users";
 import { buildUserRoleState, canCreateWorkOrderByRoles, canUploadOfficialAttachmentsByRoles, isAdminRole, normalizeRoles } from "@/lib/constants/roles";
 import { SECTION_PREFERENCES_STORAGE_KEY } from "@/lib/constants/app";
-import { canDeleteAttachmentByUser, getAttachmentType, isOfficialAttachment } from "@/lib/permissions/attachments";
+import { canDeleteAttachmentByUser, createAttachmentId, getAttachmentType, isOfficialAttachment } from "@/lib/permissions/attachments";
 import { getDisplayStageFromWorkflowState, VISIBLE_STAGES, WORKFLOW_ACTION_LABELS } from "@/lib/constants/workflow";
 import {
   createCreationHistoryLog,
@@ -354,7 +354,7 @@ export function useWorkOrder() {
     const files = Array.from<File>(event.target.files ?? []);
     if (files.length === 0) return;
     const nextAttachments: Attachment[] = files.map((file) => ({
-      id: `${file.name}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      id: createAttachmentId(file.name),
       name: file.name,
       type: getAttachmentType(file),
       url: URL.createObjectURL(file),
@@ -382,7 +382,7 @@ export function useWorkOrder() {
 
   const createMemoAttachments = (files: File[], target: { threadId?: string; replyId?: string } = {}): Attachment[] => {
     return files.map((file): Attachment => ({
-      id: `${file.name}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      id: createAttachmentId(file.name),
       name: file.name,
       type: getAttachmentType(file),
       url: URL.createObjectURL(file),
@@ -401,7 +401,7 @@ export function useWorkOrder() {
     if (!trimmed) return;
 
     const nextThread: MemoThread = {
-      id: `memo-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      id: createAttachmentId("memo"),
       authorId: currentUser.id,
       authorName: currentUser.name,
       authorRole: currentUser.role,
@@ -443,7 +443,7 @@ export function useWorkOrder() {
     if (!trimmed) return;
 
     const nextReply: MemoReply = {
-      id: `reply-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      id: createAttachmentId("reply"),
       authorId: currentUser.id,
       authorName: currentUser.name,
       authorRole: currentUser.role,
