@@ -21,6 +21,8 @@ export function createNewWorkOrder(nextIndex: number, payload: {
     createdByRole: payload.managerRole,
     dueDate: "미정",
     quantity: 0,
+    sewingUnitCost: 0,
+    lossCost: 0,
     inventoryQuantity: 0,
     inventoryStatus: "확인전",
     memo: "새 작업지시서가 생성되었습니다.",

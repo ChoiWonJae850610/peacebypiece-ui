@@ -74,6 +74,8 @@ export default function Home() {
     fabricTotal,
     subsidiaryTotal,
     outsourcingTotal,
+    sewingTotal,
+    lossCost,
     totalCost,
     unitCost,
     saveStatus,
@@ -187,6 +189,8 @@ export default function Home() {
               fabricTotal={fabricTotal}
               subsidiaryTotal={subsidiaryTotal}
               outsourcingTotal={outsourcingTotal}
+              sewingTotal={sewingTotal}
+              lossCost={lossCost}
               totalCost={totalCost}
               unitCost={unitCost}
               outsourcing={outsourcing}

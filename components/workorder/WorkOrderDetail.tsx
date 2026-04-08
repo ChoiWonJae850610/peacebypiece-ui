@@ -25,6 +25,8 @@ type BasicInfoState = {
   priority: string;
   dueDate: string;
   quantity: number;
+  sewingUnitCost: number;
+  lossCost: number;
 };
 
 function SectionHeader({
@@ -276,6 +278,7 @@ function formatOrderSummary(basicInfo: BasicInfoState) {
     basicInfo.factory !== DEFAULT_FACTORY_OPTION ? basicInfo.factory : "공장 미지정",
     `${basicInfo.quantity.toLocaleString()}장`,
     basicInfo.dueDate || "납기 미정",
+    `${basicInfo.sewingUnitCost.toLocaleString()}원/장`,
     basicInfo.priority,
   ].filter(Boolean).join(" · ");
 }
@@ -430,6 +433,8 @@ function getInitialBasicInfo(workOrder: WorkOrder): BasicInfoState {
     priority: workOrder.priority || PRIORITY_OPTIONS[0],
     dueDate: workOrder.dueDate || "",
     quantity: Number.isFinite(workOrder.quantity) ? workOrder.quantity : 0,
+    sewingUnitCost: Number.isFinite(workOrder.sewingUnitCost) ? workOrder.sewingUnitCost : 0,
+    lossCost: Number.isFinite(workOrder.lossCost) ? workOrder.lossCost : 0,
   };
 }
 
@@ -642,6 +647,8 @@ function OrderInfoSection({
     { label: "공장", field: "factory", value: basicInfo.factory, options: factoryOptions, registerType: "공장" as RegistryType },
     { label: "납기일", field: "dueDate", value: basicInfo.dueDate, inputType: "date" as const },
     { label: "발주 수량", field: "quantity", value: basicInfo.quantity.toLocaleString(), inputMode: "numeric" as const, alignRight: true },
+    { label: "봉제공임", field: "sewingUnitCost", value: basicInfo.sewingUnitCost.toLocaleString(), inputMode: "numeric" as const, alignRight: true, suffix: "/장" },
+    { label: "로스비용", field: "lossCost", value: basicInfo.lossCost.toLocaleString(), inputMode: "numeric" as const, alignRight: true, suffix: "원" },
     { label: "우선순위", field: "priority", value: basicInfo.priority, options: PRIORITY_OPTIONS },
   ];
 
@@ -668,22 +675,25 @@ function OrderInfoSection({
                     </button>
                   ) : null}
                 </div>
-                <div className="mt-2">
-                  <EditableValue
-                    section="basic"
-                    rowId="basic"
-                    field={item.field}
-                    value={String(item.value)}
-                    editingCell={editingCell}
-                    editingValue={editingValue}
-                    inputMode={item.inputMode}
-                    inputType={item.inputType}
-                    alignRight={item.alignRight}
-                    options={item.options}
-                    onStartEdit={onStartEdit}
-                    onCommit={onCommitEdit}
-                    onCancel={onCancelEdit}
-                  />
+                <div className="mt-2 flex items-center gap-2">
+                  <div className="min-w-0 flex-1">
+                    <EditableValue
+                      section="basic"
+                      rowId="basic"
+                      field={item.field}
+                      value={String(item.value)}
+                      editingCell={editingCell}
+                      editingValue={editingValue}
+                      inputMode={item.inputMode}
+                      inputType={item.inputType}
+                      alignRight={item.alignRight}
+                      options={item.options}
+                      onStartEdit={onStartEdit}
+                      onCommit={onCommitEdit}
+                      onCancel={onCancelEdit}
+                    />
+                  </div>
+                  {"suffix" in item && item.suffix ? <span className="shrink-0 text-xs font-medium text-stone-500">{item.suffix}</span> : null}
                 </div>
               </div>
             ))}
@@ -1501,6 +1511,12 @@ export default function WorkOrderDetail({
         }
         if (editingCell.field === "quantity") {
           return { ...current, quantity: toNumber(nextValue) };
+        }
+        if (editingCell.field === "sewingUnitCost") {
+          return { ...current, sewingUnitCost: toNumber(nextValue) };
+        }
+        if (editingCell.field === "lossCost") {
+          return { ...current, lossCost: toNumber(nextValue) };
         }
         return current;
       });

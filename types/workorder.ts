@@ -71,6 +71,8 @@ export type WorkOrder = {
   createdByRole: RoleType;
   dueDate: string;
   quantity: number;
+  sewingUnitCost: number;
+  lossCost: number;
   inventoryQuantity: number;
   inventoryStatus: string;
   memo: string;

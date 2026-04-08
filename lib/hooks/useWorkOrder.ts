@@ -112,7 +112,7 @@ export function useWorkOrder() {
     [selectedWorkOrder, attachmentPreviewId],
   );
 
-  const { materials, outsourcing, fabricTotal, subsidiaryTotal, outsourcingTotal, totalCost, unitCost } = useMemo(
+  const { materials, outsourcing, fabricTotal, subsidiaryTotal, outsourcingTotal, sewingTotal, lossCost, totalCost, unitCost } = useMemo(
     () => calculateWorkOrderCosts(selectedWorkOrder),
     [selectedWorkOrder],
   );
@@ -548,6 +548,8 @@ export function useWorkOrder() {
     fabricTotal,
     subsidiaryTotal,
     outsourcingTotal,
+    sewingTotal,
+    lossCost,
     totalCost,
     unitCost,
     saveStatus,

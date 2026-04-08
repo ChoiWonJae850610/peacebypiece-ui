@@ -150,6 +150,8 @@ export default function WorkOrderSidePanel({
   fabricTotal,
   subsidiaryTotal,
   outsourcingTotal,
+  sewingTotal,
+  lossCost,
   totalCost,
   unitCost,
   outsourcing,
@@ -171,6 +173,8 @@ export default function WorkOrderSidePanel({
   fabricTotal: number;
   subsidiaryTotal: number;
   outsourcingTotal: number;
+  sewingTotal: number;
+  lossCost: number;
   totalCost: number;
   unitCost: number;
   outsourcing: Outsourcing[];
@@ -202,6 +206,8 @@ export default function WorkOrderSidePanel({
               <SummaryRow label="원단 합계" value={`${fabricTotal.toLocaleString()}원`} />
               <SummaryRow label="부자재 합계" value={`${subsidiaryTotal.toLocaleString()}원`} />
               <SummaryRow label="외주 합계" value={`${outsourcingTotal.toLocaleString()}원`} />
+              <SummaryRow label="봉제공임" value={`${sewingTotal.toLocaleString()}원`} />
+              <SummaryRow label="로스비용" value={`${lossCost.toLocaleString()}원`} />
               <div className="border-t border-stone-200 pt-3">
                 <SummaryRow label="총합" value={`${totalCost.toLocaleString()}원`} strong />
                 <SummaryRow label="장당 추정 원가" value={`${unitCost.toLocaleString()}원`} />
