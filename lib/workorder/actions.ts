@@ -1,5 +1,5 @@
 import { createAttachmentId } from "@/lib/permissions/attachments";
-import type { Attachment, InventoryChange, MemoReply, MemoThread, RoleType, WorkOrder, WorkflowAction } from "@/types/workorder";
+import type { Attachment, InventoryChange, MemoReply, MemoThread, OrderEntry, RoleType, WorkOrder, WorkflowAction } from "@/types/workorder";
 
 export function createNewWorkOrder(nextIndex: number, payload: {
   managerName: string;
@@ -35,7 +35,24 @@ export function createNewWorkOrder(nextIndex: number, payload: {
 }
 
 export function updateWorkflowState(workOrders: WorkOrder[], workOrderId: string, action: WorkflowAction) {
-  return workOrders.map((item) => item.id === workOrderId ? { ...item, workflowState: action.nextState } : item);
+  return workOrders.map((item) => {
+    if (item.id !== workOrderId) return item;
+
+    if (action.label === "발주 요청") {
+      const nextOrderEntries: OrderEntry[] = (item.orderEntries ?? []).map((entry) => ({
+        ...entry,
+        inspectionStatus: entry.inspectionStatus === "검수완료" ? "검수완료" : "검수대기",
+      }));
+
+      return {
+        ...item,
+        workflowState: action.nextState,
+        orderEntries: nextOrderEntries,
+      };
+    }
+
+    return { ...item, workflowState: action.nextState };
+  });
 }
 
 export function applyInventoryAdjustment(

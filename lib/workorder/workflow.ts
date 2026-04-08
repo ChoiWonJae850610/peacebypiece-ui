@@ -7,7 +7,7 @@ import {
 } from "@/lib/constants/roles";
 import { WORKFLOW_ACTION_LABELS } from "@/lib/constants/workflow";
 import type { RoleType } from "@/types/permission";
-import type { WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
+import type { OrderEntry, OrderInspectionStatus, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
 
 export type WorkflowContext = {
   currentWorkflowState: WorkflowState;
@@ -15,6 +15,35 @@ export type WorkflowContext = {
   currentUserId: string;
   workOrder: WorkOrder;
 };
+
+
+export function getDefaultInspectionStatusForWorkflowState(workflowState: WorkflowState): OrderInspectionStatus {
+  switch (workflowState) {
+    case "생산중":
+      return "검수대기";
+    case "검수중":
+      return "검수중";
+    case "완료":
+      return "검수완료";
+    default:
+      return "발주대기";
+  }
+}
+
+export function sanitizeOrderInspectionStatus(value: string | undefined | null, workflowState: WorkflowState): OrderInspectionStatus {
+  if (value === "발주대기" || value === "검수대기" || value === "검수중" || value === "검수완료") return value;
+  return getDefaultInspectionStatusForWorkflowState(workflowState);
+}
+
+export function deriveWorkflowStateFromOrderEntries(baseState: WorkflowState, orderEntries?: OrderEntry[]): WorkflowState {
+  const entries = orderEntries ?? [];
+  if (entries.length === 0) return baseState;
+  const statuses = entries.map((item) => sanitizeOrderInspectionStatus(item.inspectionStatus, baseState));
+  if (statuses.every((status) => status === "검수완료")) return "완료";
+  if (statuses.some((status) => status === "검수중" || status === "검수완료")) return "검수중";
+  if (statuses.some((status) => status === "검수대기")) return "생산중";
+  return baseState;
+}
 
 export function canManageWorkOrderManager(currentRoles: RoleType[], _currentWorkflowState: WorkflowState) {
   return isAdminRole(currentRoles);
@@ -71,14 +100,8 @@ export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles
     case "발주요청":
       return [];
     case "생산중":
-      if (canStartInspection(currentRoles)) {
-        return [{ label: WORKFLOW_ACTION_LABELS.startInspection, nextState: "검수중" }];
-      }
       return [];
     case "검수중":
-      if (canCompleteInspection(currentRoles)) {
-        return [{ label: WORKFLOW_ACTION_LABELS.completeInspection, nextState: "완료" }];
-      }
       return [];
     default:
       return [];

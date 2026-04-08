@@ -56,6 +56,8 @@ export type Outsourcing = {
   status: string;
 };
 
+export type OrderInspectionStatus = "발주대기" | "검수대기" | "검수중" | "검수완료";
+
 export type OrderEntry = {
   id: string;
   type: string;
@@ -65,6 +67,7 @@ export type OrderEntry = {
   laborCost: number;
   lossCost: number;
   priority: string;
+  inspectionStatus?: OrderInspectionStatus;
 };
 
 

@@ -20,7 +20,7 @@ import {
 } from "@/lib/workorder/history";
 import { addMemoReply, addMemoThread, createNewWorkOrder, applyInventoryAdjustment, appendAttachments, appendMemoAttachmentsToReply, appendMemoAttachmentsToThread, promoteAttachmentToOfficial, removeAttachment, updateWorkflowState, updateWorkOrderManager } from "@/lib/workorder/actions";
 import { createWorkOrderListItem, calculateWorkOrderCosts } from "@/lib/workorder/selectors";
-import { canEditInventoryForWorkflow, canManageWorkOrderManager, getAvailableWorkflowActions } from "@/lib/workorder/workflow";
+import { canEditInventoryForWorkflow, canManageWorkOrderManager, deriveWorkflowStateFromOrderEntries, getAvailableWorkflowActions } from "@/lib/workorder/workflow";
 import type { Attachment, HistoryLog, InventoryLog, MemoAttachmentPayload, MemoReply, MemoThread, UserProfile, WorkOrder, WorkOrderListItem, WorkflowAction } from "@/types/workorder";
 import type { RoleType } from "@/types/permission";
 import type { HistoryFilter, NotificationSettingKey, NotificationSettings } from "@/types/workflow";
@@ -81,10 +81,13 @@ export function useWorkOrder() {
   );
 
   const workflowStateById = useMemo(
-    () => Object.fromEntries(workOrders.map((item) => [item.id, item.workflowState])),
+    () => Object.fromEntries(workOrders.map((item) => [item.id, deriveWorkflowStateFromOrderEntries(item.workflowState, item.orderEntries)])),
     [workOrders],
   );
-  const currentWorkflowState = selectedWorkOrder.workflowState;
+  const currentWorkflowState = useMemo(
+    () => deriveWorkflowStateFromOrderEntries(selectedWorkOrder.workflowState, selectedWorkOrder.orderEntries),
+    [selectedWorkOrder.workflowState, selectedWorkOrder.orderEntries],
+  );
   const canChangeManager = canManageWorkOrderManager(currentRoles, currentWorkflowState);
   const currentDisplayStage = getDisplayStageFromWorkflowState(currentWorkflowState);
   const visibleStages = VISIBLE_STAGES;
@@ -499,7 +502,14 @@ export function useWorkOrder() {
   };
 
   const handleUpdateSelectedWorkOrder = useCallback((patch: Partial<WorkOrder>) => {
-    setWorkOrders((prev) => prev.map((item) => (item.id === selectedWorkOrder.id ? { ...item, ...patch } : item)));
+    setWorkOrders((prev) => prev.map((item) => {
+      if (item.id !== selectedWorkOrder.id) return item;
+      const nextItem = { ...item, ...patch };
+      if (patch.orderEntries) {
+        nextItem.workflowState = deriveWorkflowStateFromOrderEntries(item.workflowState, patch.orderEntries);
+      }
+      return nextItem;
+    }));
     setSaveStatus("dirty");
   }, [selectedWorkOrder.id]);
 

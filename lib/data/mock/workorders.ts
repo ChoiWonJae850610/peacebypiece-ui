@@ -88,8 +88,8 @@ const workOrders: WorkOrder[] = [
     laborCost: 24000,
     lossCost: 9000,
     orderEntries: [
-      { id: "ord-21", type: "메인 생산", factory: "B공장", dueDate: "04/02", quantity: 20, laborCost: 16000, lossCost: 5000, priority: "중간" },
-      { id: "ord-22", type: "추가 생산", factory: "워싱랩", dueDate: "04/05", quantity: 10, laborCost: 8000, lossCost: 4000, priority: "중간" },
+      { id: "ord-21", type: "메인 생산", factory: "B공장", dueDate: "04/02", quantity: 20, laborCost: 16000, lossCost: 5000, priority: "중간", inspectionStatus: "검수대기" },
+      { id: "ord-22", type: "추가 생산", factory: "워싱랩", dueDate: "04/05", quantity: 10, laborCost: 8000, lossCost: 4000, priority: "중간", inspectionStatus: "검수대기" },
     ],
     inventoryQuantity: 28,
     inventoryStatus: "정상",
@@ -141,7 +141,7 @@ const workOrders: WorkOrder[] = [
     dueDate: "03/18",
     quantity: 10,
     orderEntries: [
-      { id: "ord-31", type: "메인 생산", factory: "C업체", dueDate: "03/18", quantity: 10, laborCost: 0, lossCost: 0, priority: "낮음" },
+      { id: "ord-31", type: "메인 생산", factory: "C업체", dueDate: "03/18", quantity: 10, laborCost: 0, lossCost: 0, priority: "낮음", inspectionStatus: "검수완료" },
     ],
     inventoryQuantity: 10,
     inventoryStatus: "정상",

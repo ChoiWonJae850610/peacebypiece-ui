@@ -12,7 +12,7 @@ import { getStageTone } from "@/lib/constants/workflow";
 import { CATEGORY1_OPTIONS, CATEGORY2_OPTIONS_MAP, CATEGORY3_OPTIONS_MAP, DEFAULT_BASIC_YEAR, DEFAULT_FACTORY_OPTION, DEFAULT_MATERIAL_TYPE, DEFAULT_MATERIAL_UNIT, DEFAULT_ORDER_TYPE, DEFAULT_OUTSOURCING_PROCESS, DEFAULT_OUTSOURCING_UNIT, DEFAULT_PARTNER_OPTION, FACTORY_OPTIONS, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS, ORDER_TYPE_OPTIONS, OUTSOURCING_PROCESS_OPTIONS, OUTSOURCING_UNIT_OPTIONS, PARTNER_OPTIONS, PRIORITY_OPTIONS, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
 import type { DisplayStage } from "@/types/workflow";
 import { toDisplayValue } from "@/lib/utils/display";
-import type { Attachment, Material, MemoThread, OrderEntry, Outsourcing, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
+import type { Attachment, Material, MemoThread, OrderEntry, OrderInspectionStatus, Outsourcing, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
 
 type RowValue = string | number | null | undefined;
 type EditableSectionKey = "material" | "outsourcing" | "order";
@@ -131,7 +131,25 @@ function recalculateOutsourcing(item: Outsourcing): Outsourcing {
   };
 }
 
-function sanitizeOrderEntry(item: Partial<OrderEntryState>, fallback?: Partial<OrderEntryState>): OrderEntryState {
+function getDefaultInspectionStatus(workflowState: WorkflowState): OrderInspectionStatus {
+  switch (workflowState) {
+    case "생산중":
+      return "검수대기";
+    case "검수중":
+      return "검수중";
+    case "완료":
+      return "검수완료";
+    default:
+      return "발주대기";
+  }
+}
+
+function sanitizeInspectionStatus(value: string | undefined | null, workflowState: WorkflowState): OrderInspectionStatus {
+  if (value === "발주대기" || value === "검수대기" || value === "검수중" || value === "검수완료") return value;
+  return getDefaultInspectionStatus(workflowState);
+}
+
+function sanitizeOrderEntry(item: Partial<OrderEntryState>, fallback?: Partial<OrderEntryState>, workflowState: WorkflowState = "작성중"): OrderEntryState {
   return {
     id: item.id || fallback?.id || createId("order"),
     type: item.type || fallback?.type || DEFAULT_ORDER_TYPE,
@@ -141,11 +159,38 @@ function sanitizeOrderEntry(item: Partial<OrderEntryState>, fallback?: Partial<O
     laborCost: Math.max(0, Number(item.laborCost ?? fallback?.laborCost) || 0),
     lossCost: Math.max(0, Number(item.lossCost ?? fallback?.lossCost) || 0),
     priority: item.priority || fallback?.priority || PRIORITY_OPTIONS[0],
+    inspectionStatus: sanitizeInspectionStatus(item.inspectionStatus ?? fallback?.inspectionStatus, workflowState),
   };
 }
 
+function getInspectionStatusLabel(status: OrderInspectionStatus) {
+  switch (status) {
+    case "검수대기":
+      return "검수 대기";
+    case "검수중":
+      return "검수중";
+    case "검수완료":
+      return "검수 완료";
+    default:
+      return "발주 전";
+  }
+}
+
+function getInspectionStatusTone(status: OrderInspectionStatus) {
+  switch (status) {
+    case "검수완료":
+      return "bg-stone-900 text-white";
+    case "검수중":
+      return "bg-emerald-100 text-emerald-700";
+    case "검수대기":
+      return "bg-amber-100 text-amber-700";
+    default:
+      return "bg-stone-100 text-stone-600";
+  }
+}
+
 function getInitialOrderEntries(workOrder: WorkOrder): OrderEntryState[] {
-  const entries = (workOrder.orderEntries ?? []).map((item) => sanitizeOrderEntry(item));
+  const entries = (workOrder.orderEntries ?? []).map((item) => sanitizeOrderEntry(item, undefined, workOrder.workflowState));
   if (entries.length > 0) return entries;
 
   return [sanitizeOrderEntry({
@@ -157,7 +202,8 @@ function getInitialOrderEntries(workOrder: WorkOrder): OrderEntryState[] {
     laborCost: Math.max(0, Number(workOrder.laborCost) || 0),
     lossCost: Math.max(0, Number(workOrder.lossCost) || 0),
     priority: workOrder.priority || PRIORITY_OPTIONS[0],
-  })];
+    inspectionStatus: getDefaultInspectionStatus(workOrder.workflowState),
+  }, undefined, workOrder.workflowState)];
 }
 
 function calculateOrderEntryTotals(orderEntries: OrderEntryState[]) {
@@ -335,10 +381,11 @@ function formatBasicSummary(basicInfo: BasicInfoState) {
 function formatOrderSummary(orderEntries: OrderEntryState[]) {
   if (orderEntries.length === 0) return "등록된 발주 정보가 없습니다.";
   const totals = calculateOrderEntryTotals(orderEntries);
+  const completedCount = orderEntries.filter((item) => item.inspectionStatus === "검수완료").length;
   return [
     `${orderEntries.length}건`,
     `${totals.quantity.toLocaleString()}장`,
-    orderEntries[0]?.factory && orderEntries[0].factory !== DEFAULT_FACTORY_OPTION ? `${orderEntries[0].factory}${orderEntries.length > 1 ? ` 외 ${orderEntries.length - 1}` : ""}` : "공장 미지정",
+    `검수완료 ${completedCount}/${orderEntries.length}`,
   ].filter(Boolean).join(" · ");
 }
 
@@ -511,6 +558,9 @@ function OrderInfoSection({
   onCancelEdit,
   onAdd,
   onRemove,
+  canManageInspectionRows,
+  onStartInspection,
+  onCompleteInspection,
 }: {
   orderEntries: OrderEntryState[];
   factoryOptions: readonly string[];
@@ -523,6 +573,9 @@ function OrderInfoSection({
   onCancelEdit: () => void;
   onAdd: () => void;
   onRemove: (id: string) => void;
+  canManageInspectionRows: boolean;
+  onStartInspection: (id: string) => void;
+  onCompleteInspection: (id: string) => void;
 }) {
   const totals = calculateOrderEntryTotals(orderEntries);
 
@@ -540,6 +593,16 @@ function OrderInfoSection({
                     <div className="mt-1 truncate text-xs text-stone-500">{item.type} · {item.quantity.toLocaleString()}장</div>
                   </div>
                   <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || `발주 ${index + 1}`} 삭제`} />
+                </div>
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${getInspectionStatusTone(item.inspectionStatus ?? "발주대기")}`}>{getInspectionStatusLabel(item.inspectionStatus ?? "발주대기")}</span>
+                  {canManageInspectionRows ? (
+                    item.inspectionStatus === "검수대기" ? (
+                      <button type="button" onClick={() => onStartInspection(item.id)} className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">검수 시작</button>
+                    ) : item.inspectionStatus === "검수중" ? (
+                      <button type="button" onClick={() => onCompleteInspection(item.id)} className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs font-medium text-stone-700">검수 완료</button>
+                    ) : null
+                  ) : null}
                 </div>
                 <div className="mt-3 space-y-2">
                   {[
@@ -593,14 +656,16 @@ function OrderInfoSection({
                 <col className="w-[14%]" />
                 <col className="w-[14%]" />
                 <col className="w-[11%]" />
+                <col className="w-[10%]" />
+                <col className="w-[10%]" />
                 <col className="w-[4%]" />
               </colgroup>
               <thead className="text-stone-500">
                 <tr className="border-b border-stone-200">
-                  {["구분", "공장", "납기일", "수량", "공임비", "로스비", "우선순위", ""].map((header, index) => (
+                  {["구분", "공장", "납기일", "수량", "공임비", "로스비", "우선순위", "검수", "액션", ""].map((header, index) => (
                     <th
                       key={`${header}-${index}`}
-                      className={`min-w-0 overflow-hidden px-2 py-3 text-[11px] font-medium lg:text-xs ${header === "수량" || header === "공임비" || header === "로스비" ? "text-right" : header === "" ? "text-center" : "text-left"}`}
+                      className={`min-w-0 overflow-hidden px-2 py-3 text-[11px] font-medium lg:text-xs ${header === "수량" || header === "공임비" || header === "로스비" ? "text-right" : header === "" || header === "검수" || header === "액션" ? "text-center" : "text-left"}`}
                     >
                       <span className={`${TABLE_HEADER_TEXT_CLASS} break-keep`}>{header}</span>
                     </th>
@@ -617,6 +682,16 @@ function OrderInfoSection({
                     <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="order" rowId={item.id} field="laborCost" value={item.laborCost.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="numeric" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="order" rowId={item.id} field="lossCost" value={item.lossCost.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="numeric" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="order" rowId={item.id} field="priority" value={item.priority} options={PRIORITY_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="px-2 py-2 text-center align-middle"><span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium ${getInspectionStatusTone(item.inspectionStatus ?? "발주대기")}`}>{getInspectionStatusLabel(item.inspectionStatus ?? "발주대기")}</span></td>
+                    <td className="px-2 py-2 text-center align-middle">
+                      {canManageInspectionRows ? (
+                        item.inspectionStatus === "검수대기" ? (
+                          <button type="button" onClick={() => onStartInspection(item.id)} className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-[11px] font-medium text-emerald-700">검수 시작</button>
+                        ) : item.inspectionStatus === "검수중" ? (
+                          <button type="button" onClick={() => onCompleteInspection(item.id)} className="rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-[11px] font-medium text-stone-700">검수 완료</button>
+                        ) : <span className="text-[11px] text-stone-400">-</span>
+                      ) : <span className="text-[11px] text-stone-400">-</span>}
+                    </td>
                     <td className="px-2 py-2 text-center align-middle">
                       <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || `발주 ${rowIndex + 1}`} 삭제`} />
                     </td>
@@ -627,10 +702,10 @@ function OrderInfoSection({
                   <td className="px-2 py-2 text-right text-sm font-semibold text-stone-900 tabular-nums">{totals.quantity.toLocaleString()}장</td>
                   <td className="px-2 py-2 text-right text-sm font-semibold text-stone-900 tabular-nums">{totals.laborCost.toLocaleString()}원</td>
                   <td className="px-2 py-2 text-right text-sm font-semibold text-stone-900 tabular-nums">{totals.lossCost.toLocaleString()}원</td>
-                  <td colSpan={2} />
+                  <td colSpan={4} />
                 </tr>
                 <tr>
-                  <td colSpan={8} className="px-2 pb-2 pt-2">
+                  <td colSpan={10} className="px-2 pb-2 pt-2">
                     <button
                       type="button"
                       onClick={onAdd}
@@ -1168,6 +1243,12 @@ export default function WorkOrderDetail({
     setEditingValue("");
   };
 
+  const syncOrderEntries = (nextItems: OrderEntryState[]) => {
+    onUpdateWorkOrder({
+      orderEntries: nextItems.map((item) => sanitizeOrderEntry(item, undefined, currentWorkflowState)),
+    });
+  };
+
   const commitEdit = (nextValueOverride?: string) => {
     if (!editingCell) return;
 
@@ -1178,31 +1259,31 @@ export default function WorkOrderDetail({
         if (item.id !== editingCell.rowId) return item;
 
         if (editingCell.field === "quantity") {
-          return sanitizeOrderEntry({ ...item, quantity: toNumber(nextValue) }, item);
+          return sanitizeOrderEntry({ ...item, quantity: toNumber(nextValue) }, item, currentWorkflowState);
         }
         if (editingCell.field === "laborCost") {
-          return sanitizeOrderEntry({ ...item, laborCost: toNumber(nextValue) }, item);
+          return sanitizeOrderEntry({ ...item, laborCost: toNumber(nextValue) }, item, currentWorkflowState);
         }
         if (editingCell.field === "lossCost") {
-          return sanitizeOrderEntry({ ...item, lossCost: toNumber(nextValue) }, item);
+          return sanitizeOrderEntry({ ...item, lossCost: toNumber(nextValue) }, item, currentWorkflowState);
         }
         if (editingCell.field === "factory") {
-          return sanitizeOrderEntry({ ...item, factory: sanitizeSelectValue(nextValue, factoryOptions, DEFAULT_FACTORY_OPTION) }, item);
+          return sanitizeOrderEntry({ ...item, factory: sanitizeSelectValue(nextValue, factoryOptions, DEFAULT_FACTORY_OPTION) }, item, currentWorkflowState);
         }
         if (editingCell.field === "priority") {
-          return sanitizeOrderEntry({ ...item, priority: nextValue || PRIORITY_OPTIONS[0] }, item);
+          return sanitizeOrderEntry({ ...item, priority: nextValue || PRIORITY_OPTIONS[0] }, item, currentWorkflowState);
         }
         if (editingCell.field === "type") {
-          return sanitizeOrderEntry({ ...item, type: nextValue || DEFAULT_ORDER_TYPE }, item);
+          return sanitizeOrderEntry({ ...item, type: nextValue || DEFAULT_ORDER_TYPE }, item, currentWorkflowState);
         }
         if (editingCell.field === "dueDate") {
-          return sanitizeOrderEntry({ ...item, dueDate: nextValue }, item);
+          return sanitizeOrderEntry({ ...item, dueDate: nextValue }, item, currentWorkflowState);
         }
 
         return item;
       });
       setOrderItems(nextItems);
-      onUpdateWorkOrder({ orderEntries: nextItems.map((item) => sanitizeOrderEntry(item)) });
+      syncOrderEntries(nextItems);
     }
 
     if (editingCell.section === "material") {
@@ -1258,19 +1339,35 @@ export default function WorkOrderDetail({
         laborCost: 0,
         lossCost: 0,
         priority: orderItems[0]?.priority || PRIORITY_OPTIONS[0],
-      }),
+      }, undefined, currentWorkflowState),
     ];
     setOrderItems(nextItems);
-    onUpdateWorkOrder({ orderEntries: nextItems.map((item) => sanitizeOrderEntry(item)) });
+    syncOrderEntries(nextItems);
   };
 
   const removeOrderEntry = (id: string) => {
     const nextItems = orderItems.length > 1 ? orderItems.filter((item) => item.id !== id) : orderItems;
     setOrderItems(nextItems);
-    onUpdateWorkOrder({ orderEntries: nextItems.map((item) => sanitizeOrderEntry(item)) });
+    syncOrderEntries(nextItems);
     if (editingCell?.section === "order" && editingCell.rowId === id) {
       cancelEdit();
     }
+  };
+
+  const handleStartOrderInspection = (id: string) => {
+    const nextItems = orderItems.map((item) => item.id === id
+      ? sanitizeOrderEntry({ ...item, inspectionStatus: "검수중" }, item, currentWorkflowState)
+      : item);
+    setOrderItems(nextItems);
+    syncOrderEntries(nextItems);
+  };
+
+  const handleCompleteOrderInspection = (id: string) => {
+    const nextItems = orderItems.map((item) => item.id === id
+      ? sanitizeOrderEntry({ ...item, inspectionStatus: "검수완료" }, item, currentWorkflowState)
+      : item);
+    setOrderItems(nextItems);
+    syncOrderEntries(nextItems);
   };
 
   const addMaterial = () => {
@@ -1348,7 +1445,7 @@ export default function WorkOrderDetail({
     setFactoryOptions((current) => appendOption(current, name));
     const nextItems = orderItems.map((item, index) => (index === 0 ? { ...item, factory: name } : item));
     setOrderItems(nextItems);
-    onUpdateWorkOrder({ orderEntries: nextItems.map((item) => sanitizeOrderEntry(item)) });
+    syncOrderEntries(nextItems);
   };
 
   const handleOpenBasicInfoModal = () => {
@@ -1418,6 +1515,9 @@ export default function WorkOrderDetail({
           onCancelEdit={cancelEdit}
           onAdd={addOrderEntry}
           onRemove={removeOrderEntry}
+          canManageInspectionRows={canEditInventory && (currentWorkflowState === "생산중" || currentWorkflowState === "검수중")}
+          onStartInspection={handleStartOrderInspection}
+          onCompleteInspection={handleCompleteOrderInspection}
         />
 
         {canSeeProductionSections ? (
