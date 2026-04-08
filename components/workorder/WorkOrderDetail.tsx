@@ -768,7 +768,7 @@ function ProductionCompositionSection({
     <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 md:p-5">
       <SectionHeader title="생산 구성" summary={summary} open={open} onToggle={onToggle} />
       {open ? (
-        <div className="mt-4 space-y-4">
+        <div className="mt-4 space-y-3">
           <MaterialSection
             materials={materials}
             open={materialOpen}
@@ -1113,30 +1113,29 @@ function MemoComposerAttachmentControls({
   onFilesChange: (files: File[]) => void;
 }) {
   return (
-    <div className="mt-3 space-y-3 rounded-xl border border-stone-200 bg-white p-3">
-      <div>
-        <div className="text-xs font-semibold text-stone-700">메모 첨부 업로드</div>
-        <label className="mt-2 inline-flex cursor-pointer items-center rounded-full border border-stone-300 bg-stone-50 px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400">
-          + 파일 선택
-          <input
-            type="file"
-            multiple
-            accept="image/*,.pdf,application/pdf"
-            className="sr-only"
-            onChange={(event) => onFilesChange(Array.from<File>(event.target.files ?? []))}
-          />
-        </label>
-        {uploadedFiles.length > 0 ? (
-          <div className="mt-2 flex flex-wrap gap-2">
-            {uploadedFiles.map((file) => (
-              <span key={`${file.name}-${file.size}`} className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-xs text-stone-700">
-                <span className="font-semibold text-stone-900">{file.type.includes("pdf") ? "PDF" : "IMG"}</span>
-                <span className="max-w-[180px] truncate">{file.name}</span>
-              </span>
-            ))}
-          </div>
-        ) : null}
-      </div>
+    <div className="mt-2 flex flex-wrap items-center gap-2">
+      <label className="inline-flex h-8 cursor-pointer items-center rounded-full border border-stone-300 bg-white px-3 text-[11px] font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-50">
+        첨부
+        <input
+          type="file"
+          multiple
+          accept="image/*,.pdf,application/pdf"
+          className="sr-only"
+          onChange={(event) => onFilesChange(Array.from<File>(event.target.files ?? []))}
+        />
+      </label>
+      {uploadedFiles.length > 0 ? (
+        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+          {uploadedFiles.map((file) => (
+            <span key={`${file.name}-${file.size}`} className="inline-flex max-w-[180px] items-center gap-1 rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-[11px] text-stone-700">
+              <span className="font-semibold text-stone-900">{file.type.includes("pdf") ? "PDF" : "IMG"}</span>
+              <span className="truncate">{file.name}</span>
+            </span>
+          ))}
+        </div>
+      ) : (
+        <span className="text-[11px] text-stone-400">파일 없음</span>
+      )}
     </div>
   );
 }
@@ -1200,7 +1199,7 @@ function MemoThreadCard({
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+    <div className="rounded-xl border border-stone-200 bg-white p-3.5 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-sm font-semibold text-stone-900">{thread.authorName}</div>
@@ -1208,12 +1207,12 @@ function MemoThreadCard({
         </div>
         {thread.kind === "attachment-request" ? <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-medium text-amber-700">첨부 요청</span> : <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-medium text-stone-600">스레드</span>}
       </div>
-      <div className="mt-3 whitespace-pre-wrap text-sm leading-6 text-stone-700">{thread.content}</div>
+      <div className="mt-2.5 whitespace-pre-wrap text-sm leading-5 text-stone-700">{thread.content}</div>
 
       {thread.kind === "attachment-request" ? <div className="mt-2 text-xs text-amber-700">관리자가 검토 후 메모 첨부를 공식 첨부로 승격할 수 있습니다.</div> : null}
 
       <MemoAttachmentList attachmentIds={thread.attachmentIds} attachmentsById={attachmentsById} canPromoteMemoAttachment={canPromoteMemoAttachment} onPromoteMemoAttachment={onPromoteMemoAttachment} />
-      <div className="mt-4 space-y-3 border-t border-stone-200 pt-4">
+      <div className="mt-3 space-y-2.5 border-t border-stone-200 pt-3">
         {(thread.replies ?? []).length > 0 ? (
           thread.replies.map((reply) => (
             <div key={reply.id} className="rounded-2xl bg-stone-50 p-3">
@@ -1232,18 +1231,19 @@ function MemoThreadCard({
           <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-5 text-sm text-stone-500">아직 댓글이 없습니다.</div>
         )}
 
-        <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
+        <div className="rounded-xl border border-stone-200 bg-stone-50 p-2.5">
+          <div className="text-[11px] text-stone-500">댓글 작성</div>
           <textarea
             value={replyDraft}
             onChange={(event) => setReplyDraft(event.target.value)}
             placeholder="댓글을 입력하세요"
-            className="min-h-[88px] w-full resize-none rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-800 outline-none transition focus:border-stone-400"
+            className="mt-1.5 min-h-[64px] w-full resize-none rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm text-stone-800 outline-none transition focus:border-stone-400"
           />
-          <MemoComposerAttachmentControls
-            uploadedFiles={uploadedFiles}
-            onFilesChange={setUploadedFiles}
-          />
-          <div className="mt-3 flex justify-end">
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+            <MemoComposerAttachmentControls
+              uploadedFiles={uploadedFiles}
+              onFilesChange={setUploadedFiles}
+            />
             <button
               type="button"
               onClick={() => {
@@ -1251,7 +1251,7 @@ function MemoThreadCard({
                 setReplyDraft("");
                 setUploadedFiles([]);
               }}
-              className="rounded-full bg-stone-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-stone-800"
+              className="inline-flex h-8 items-center rounded-full bg-stone-900 px-3 text-[11px] font-semibold text-white transition hover:bg-stone-800"
             >
               댓글 등록
             </button>
@@ -1303,19 +1303,19 @@ function MemoThreadSection({
         <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-stone-600">{memoThreads.length}개 스레드</span>
       </div>
 
-      <div className="mt-4 rounded-2xl border border-stone-200 bg-white p-4">
-        <div className="text-sm font-medium text-stone-900">{currentUserName} <span className="font-normal text-stone-500">· {currentUserRole}</span></div>
+      <div className="mt-4 rounded-xl border border-stone-200 bg-white p-3">
+        <div className="text-[11px] text-stone-500">{currentUserName} · {currentUserRole}</div>
         <textarea
           value={threadDraft}
           onChange={(event) => setThreadDraft(event.target.value)}
           placeholder="작업 메모를 입력하세요"
-          className="mt-3 min-h-[92px] w-full resize-none rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-800 outline-none transition focus:border-stone-400"
+          className="mt-1.5 min-h-[72px] w-full resize-none rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-800 outline-none transition focus:border-stone-400"
         />
-        <MemoComposerAttachmentControls
-          uploadedFiles={uploadedFiles}
-          onFilesChange={setUploadedFiles}
-        />
-        <div className="mt-3 flex justify-end">
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+          <MemoComposerAttachmentControls
+            uploadedFiles={uploadedFiles}
+            onFilesChange={setUploadedFiles}
+          />
           <button
             type="button"
             onClick={() => {
@@ -1323,7 +1323,7 @@ function MemoThreadSection({
               setThreadDraft("");
               setUploadedFiles([]);
             }}
-            className="rounded-full bg-stone-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-stone-800"
+            className="inline-flex h-8 items-center rounded-full bg-stone-900 px-3 text-[11px] font-semibold text-white transition hover:bg-stone-800"
           >
             메모 등록
           </button>
