@@ -8,7 +8,7 @@ import PartnerFactoryRegistryModal, { type RegistryType } from "@/components/wor
 import { CATEGORY1_OPTIONS, CATEGORY2_OPTIONS_MAP, CATEGORY3_OPTIONS_MAP, DEFAULT_BASIC_YEAR, DEFAULT_FACTORY_OPTION, DEFAULT_MATERIAL_TYPE, DEFAULT_MATERIAL_UNIT, DEFAULT_OUTSOURCING_PROCESS, DEFAULT_OUTSOURCING_UNIT, DEFAULT_PARTNER_OPTION, FACTORY_OPTIONS, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS, OUTSOURCING_PROCESS_OPTIONS, OUTSOURCING_UNIT_OPTIONS, PARTNER_OPTIONS, PRIORITY_OPTIONS, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
 import type { DisplayStage } from "@/types/workflow";
 import { toDisplayValue } from "@/lib/utils/display";
-import type { Attachment, Material, MemoAttachmentPayload, MemoThread, Outsourcing, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
+import type { Material, Outsourcing, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
 
 type RowValue = string | number | null | undefined;
 type EditableSectionKey = "basic" | "material" | "outsourcing";
@@ -1144,7 +1144,6 @@ function MemoAttachmentList({
   attachmentIds,
   attachmentsById,
   canPromoteMemoAttachment = false,
-  onPromoteMemoAttachment,
 }: {
   attachmentIds?: string[];
   attachmentsById: Map<string, Attachment>;
@@ -1185,14 +1184,10 @@ function MemoAttachmentList({
 function MemoThreadCard({
   thread,
   attachmentsById,
-  canPromoteMemoAttachment,
-  onPromoteMemoAttachment,
   onCreateReply,
 }: {
   thread: MemoThread;
   attachmentsById: Map<string, Attachment>;
-  canPromoteMemoAttachment: boolean;
-  onPromoteMemoAttachment: (attachmentId: string) => void;
   onCreateReply: (threadId: string, content: string, payload?: MemoAttachmentPayload) => void;
 }) {
   const [replyDraft, setReplyDraft] = useState("");
@@ -1262,112 +1257,6 @@ function MemoThreadCard({
   );
 }
 
-function MemoThreadSection({
-  workOrder,
-  currentUserName,
-  currentUserRole,
-  canPromoteMemoAttachment,
-  onPromoteMemoAttachment,
-  onCreateThread,
-  onCreateReply,
-}: {
-  workOrder: WorkOrder;
-  currentUserName: string;
-  currentUserRole: string;
-  canPromoteMemoAttachment: boolean;
-  onPromoteMemoAttachment: (attachmentId: string) => void;
-  onCreateThread: (content: string, payload?: MemoAttachmentPayload) => void;
-  onCreateReply: (threadId: string, content: string, payload?: MemoAttachmentPayload) => void;
-}) {
-  const DEFAULT_VISIBLE_MEMO_COUNT = 3;
-  const [threadDraft, setThreadDraft] = useState("");
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [showAllThreads, setShowAllThreads] = useState(false);
-  const memoThreads = workOrder.memoThreads ?? [];
-  const attachmentsById = new Map((workOrder.attachments ?? []).map((attachment) => [attachment.id, attachment]));
-  const hasHiddenThreads = memoThreads.length > DEFAULT_VISIBLE_MEMO_COUNT;
-  const visibleMemoThreads = showAllThreads ? memoThreads : memoThreads.slice(0, DEFAULT_VISIBLE_MEMO_COUNT);
-  const hiddenThreadCount = Math.max(0, memoThreads.length - DEFAULT_VISIBLE_MEMO_COUNT);
-
-  useEffect(() => {
-    setShowAllThreads(false);
-  }, [workOrder.id]);
-
-  return (
-    <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className="text-base font-semibold">작업 메모</h3>
-          <div className="mt-1 text-sm text-stone-500">메모 스레드와 댓글로 작업 내용을 이어서 기록합니다.</div>
-        </div>
-        <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-stone-600">{memoThreads.length}개 스레드</span>
-      </div>
-
-      <div className="mt-4 rounded-xl border border-stone-200 bg-white p-3">
-        <div className="text-[11px] text-stone-500">{currentUserName} · {currentUserRole}</div>
-        <textarea
-          value={threadDraft}
-          onChange={(event) => setThreadDraft(event.target.value)}
-          placeholder="작업 메모를 입력하세요"
-          className="mt-1.5 min-h-[72px] w-full resize-none rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-800 outline-none transition focus:border-stone-400"
-        />
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-          <MemoComposerAttachmentControls
-            uploadedFiles={uploadedFiles}
-            onFilesChange={setUploadedFiles}
-          />
-          <button
-            type="button"
-            onClick={() => {
-              onCreateThread(threadDraft, { files: uploadedFiles });
-              setThreadDraft("");
-              setUploadedFiles([]);
-            }}
-            className="inline-flex h-8 items-center rounded-full bg-stone-900 px-3 text-[11px] font-semibold text-white transition hover:bg-stone-800"
-          >
-            메모 등록
-          </button>
-        </div>
-      </div>
-
-      <div className="mt-4 space-y-4">
-        {memoThreads.length > 0 ? (
-          <>
-            {visibleMemoThreads.map((thread) => (
-              <MemoThreadCard
-                key={thread.id}
-                thread={thread}
-                attachmentsById={attachmentsById}
-                canPromoteMemoAttachment={canPromoteMemoAttachment}
-                onPromoteMemoAttachment={onPromoteMemoAttachment}
-                onCreateReply={onCreateReply}
-              />
-            ))}
-            {hasHiddenThreads ? (
-              <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-4 text-center">
-                <div className="text-xs text-stone-500">
-                  {showAllThreads
-                    ? `전체 ${memoThreads.length}개 스레드를 보고 있습니다.`
-                    : `최근 ${DEFAULT_VISIBLE_MEMO_COUNT}개만 표시 중 · ${hiddenThreadCount}개 숨김`}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowAllThreads((prev) => !prev)}
-                  className="rounded-full border border-stone-300 bg-stone-50 px-4 py-2 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100"
-                >
-                  {showAllThreads ? "접기" : `더보기 (${hiddenThreadCount})`}
-                </button>
-              </div>
-            ) : null}
-          </>
-        ) : (
-          <div className="rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-8 text-center text-sm text-stone-500">등록된 작업 메모가 없습니다.</div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export default function WorkOrderDetail({
   workOrder,
   currentWorkflowState,
@@ -1394,11 +1283,9 @@ export default function WorkOrderDetail({
   currentDisplayStage,
   actions,
   onAction,
-  onCreateMemoThread,
-  onCreateMemoReply,
-  canPromoteMemoAttachment,
-  onPromoteMemoAttachment,
   onLiveSummaryChange,
+  showCostSummary = false,
+  costSummarySlot,
 }: {
   workOrder: WorkOrder;
   currentWorkflowState: WorkflowState;
@@ -1425,11 +1312,9 @@ export default function WorkOrderDetail({
   currentDisplayStage: DisplayStage;
   actions: WorkflowAction[];
   onAction: (action: WorkflowAction) => void;
-  onCreateMemoThread: (content: string, payload?: MemoAttachmentPayload) => void;
-  onCreateMemoReply: (threadId: string, content: string, payload?: MemoAttachmentPayload) => void;
-  canPromoteMemoAttachment: boolean;
-  onPromoteMemoAttachment: (attachmentId: string) => void;
   onLiveSummaryChange?: (summary: LiveWorkOrderSummary) => void;
+  showCostSummary?: boolean;
+  costSummarySlot?: ReactNode;
 }) {
   const [basicInfo, setBasicInfo] = useState<BasicInfoState>(() => getInitialBasicInfo(workOrder));
   const [partnerOptions, setPartnerOptions] = useState<string[]>(() => Array.from(new Set(PARTNER_OPTIONS)));
@@ -1780,6 +1665,8 @@ export default function WorkOrderDetail({
 
       <StageProgressBar stages={visibleStages} currentStage={currentDisplayStage} actions={actions} onAction={onAction} />
 
+      {showCostSummary && costSummarySlot ? <div className="mt-6">{costSummarySlot}</div> : null}
+
       <div className="mt-6 grid gap-6">
         <OrderInfoSection
           basicInfo={basicInfo}
@@ -1819,16 +1706,6 @@ export default function WorkOrderDetail({
             onRemoveOutsourcing={removeOutsourcing}
           />
         ) : null}
-
-        <MemoThreadSection
-          workOrder={workOrder}
-          currentUserName={currentUserName}
-          currentUserRole={currentUserRole}
-          canPromoteMemoAttachment={canPromoteMemoAttachment}
-          onPromoteMemoAttachment={onPromoteMemoAttachment}
-          onCreateThread={onCreateMemoThread}
-          onCreateReply={onCreateMemoReply}
-        />
       </div>
 
       <BasicInfoEditModal
