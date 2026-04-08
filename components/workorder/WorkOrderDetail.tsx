@@ -50,12 +50,12 @@ function SectionHeader({
   rightSlot?: ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-start gap-3 border-b border-stone-200 pb-3">
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className="pbp-touch-target pbp-interactive-button flex min-w-0 flex-1 items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white px-3.5 py-3 text-left hover:border-stone-300 hover:bg-stone-50 active:bg-stone-100"
+        className="pbp-touch-target pbp-interactive-button flex min-w-0 flex-1 items-start justify-between gap-3 rounded-xl px-0.5 py-0.5 text-left hover:bg-transparent active:bg-transparent"
       >
         <div className="min-w-0 flex-1 overflow-hidden">
           <div className="text-sm font-semibold leading-5 text-stone-900">{title}</div>
@@ -63,7 +63,7 @@ function SectionHeader({
         </div>
         <span
           aria-hidden="true"
-          className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition-transform ${open ? "rotate-180" : "rotate-0"}`}
+          className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition-transform ${open ? "rotate-180" : "rotate-0"}`}
         >
           ▾
         </span>
@@ -836,7 +836,7 @@ function MaterialSection({
       />
       {open ? (
         <>
-          <div className="mt-4 space-y-3 md:hidden">
+          <div className="mt-3 space-y-3 md:hidden">
             {materials.map((item, index) => (
               <div key={item.id} className="rounded-2xl border border-stone-200 bg-white p-3.5">
                 <div className="flex items-start justify-between gap-3">
@@ -891,7 +891,7 @@ function MaterialSection({
               + 항목 추가
             </button>
           </div>
-          <div className="mt-4 hidden max-w-full overflow-hidden md:block">
+          <div className="mt-3 hidden max-w-full overflow-hidden md:block">
             <table className="w-full max-w-full table-fixed text-left text-sm">
               <colgroup>
                 <col className="w-[72px]" />
@@ -990,7 +990,7 @@ function OutsourcingSection({
       />
       {open ? (
         <>
-          <div className="mt-4 space-y-3 md:hidden">
+          <div className="mt-3 space-y-3 md:hidden">
             {outsourcing.map((item, index) => (
               <div key={item.id} className="rounded-2xl border border-stone-200 bg-white p-3.5">
                 <div className="flex items-start justify-between gap-3">
@@ -1044,7 +1044,7 @@ function OutsourcingSection({
               + 공정 추가
             </button>
           </div>
-          <div className="mt-4 hidden max-w-full overflow-hidden md:block">
+          <div className="mt-3 hidden max-w-full overflow-hidden md:block">
             <table className="w-full max-w-full table-fixed text-left text-sm">
               <colgroup>
                 <col />

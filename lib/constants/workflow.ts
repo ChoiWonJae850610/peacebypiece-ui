@@ -36,7 +36,7 @@ export function getStageTone(state: WorkflowState | DisplayStage) {
 export function getStageDotTone(state: WorkflowState | DisplayStage) {
   switch (state) {
     case "완료":
-      return "bg-stone-900";
+      return "bg-white";
     case "검토요청":
       return "bg-violet-500";
     case "검토완료":
