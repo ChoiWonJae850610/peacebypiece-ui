@@ -133,11 +133,56 @@ body {
   }
 }
 
+
+
+.pbp-interactive-card {
+  transition: border-color 160ms ease-out, background-color 160ms ease-out, box-shadow 180ms ease-out, transform 160ms ease-out;
+}
+
+@media (hover: hover) {
+  .pbp-interactive-card:hover {
+    transform: translateY(-1px);
+  }
+}
+
+.pbp-interactive-button {
+  transition: border-color 150ms ease-out, background-color 150ms ease-out, color 150ms ease-out, box-shadow 160ms ease-out, transform 120ms ease-out, opacity 120ms ease-out;
+}
+
+.pbp-interactive-button:active {
+  transform: scale(0.98);
+}
+
+.pbp-press-subtle {
+  transition: transform 120ms ease-out;
+}
+
+.pbp-press-subtle:active {
+  transform: scale(0.992);
+}
+
+.pbp-field-interaction {
+  transition: border-color 150ms ease-out, background-color 150ms ease-out, box-shadow 150ms ease-out, color 150ms ease-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pbp-overlay-enter,
   .pbp-mobile-sheet-enter,
   .pbp-drawer-enter,
   .pbp-mobile-content-switch {
     animation: none !important;
+  }
+
+  .pbp-interactive-card,
+  .pbp-interactive-button,
+  .pbp-press-subtle,
+  .pbp-field-interaction {
+    transition: none !important;
+  }
+
+  .pbp-interactive-card:hover,
+  .pbp-interactive-button:active,
+  .pbp-press-subtle:active {
+    transform: none !important;
   }
 }

@@ -46,7 +46,7 @@ export default function SidebarContent({
             type="button"
             onClick={onOpenSettings}
             aria-label="환경 설정 열기"
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stone-300 bg-white text-base font-medium text-stone-700 shadow-sm transition hover:bg-stone-50"
+            className="pbp-interactive-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stone-300 bg-white text-base font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
           >
             ⚙️
           </button>
@@ -58,14 +58,14 @@ export default function SidebarContent({
             value={searchQuery}
             onChange={(event) => onSearchQueryChange(event.target.value)}
             placeholder="작업명, 분류, 공장, 상태 검색"
-            className="h-11 w-full rounded-xl border border-stone-300 bg-white px-4 text-sm text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-stone-500"
+            className="pbp-field-interaction h-11 w-full rounded-xl border border-stone-300 bg-white px-4 text-sm text-stone-900 outline-none placeholder:text-stone-400 focus:border-stone-500 focus:bg-stone-50"
           />
         </label>
         {canCreate ? (
           <button
             type="button"
             onClick={onCreate}
-            className="mt-3.5 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white"
+            className="pbp-touch-target pbp-interactive-button mt-3.5 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white hover:bg-stone-800 active:bg-black"
           >
             새 작업 추가
           </button>

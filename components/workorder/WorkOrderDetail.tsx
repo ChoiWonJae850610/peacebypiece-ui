@@ -29,7 +29,7 @@ type BasicInfoState = {
 };
 
 const EDITABLE_FIELD_HEIGHT_CLASS = "h-10";
-const EDITABLE_FIELD_BASE_CLASS = `${EDITABLE_FIELD_HEIGHT_CLASS} w-full min-w-0 rounded-xl border px-3 text-sm text-stone-900 outline-none ring-0 transition`;
+const EDITABLE_FIELD_BASE_CLASS = `pbp-field-interaction ${EDITABLE_FIELD_HEIGHT_CLASS} w-full min-w-0 rounded-xl border px-3 text-sm text-stone-900 outline-none ring-0`;
 const EDITABLE_INPUT_CLASS = `${EDITABLE_FIELD_BASE_CLASS} border-stone-300 bg-white focus:border-stone-400 focus:bg-white`;
 const EDITABLE_DISPLAY_CLASS = `${EDITABLE_FIELD_BASE_CLASS} flex items-center border-transparent bg-transparent hover:border-stone-200 hover:bg-stone-50 focus-visible:border-stone-300 focus-visible:bg-stone-50`;
 
@@ -52,7 +52,7 @@ function SectionHeader({
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className="pbp-touch-target flex min-w-0 flex-1 items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white px-3.5 py-3 text-left transition hover:border-stone-300 hover:bg-stone-50"
+        className="pbp-touch-target pbp-interactive-button flex min-w-0 flex-1 items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white px-3.5 py-3 text-left hover:border-stone-300 hover:bg-stone-50 active:bg-stone-100"
       >
         <div className="min-w-0">
           <div className="text-sm font-semibold leading-5 text-stone-900">{title}</div>
@@ -136,7 +136,7 @@ function DeleteButton({ onClick, srLabel }: { onClick: () => void; srLabel: stri
       type="button"
       onClick={onClick}
       aria-label={srLabel}
-      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 bg-white text-base font-semibold text-rose-600 transition hover:bg-rose-50"
+      className="pbp-interactive-button inline-flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 bg-white text-base font-semibold text-rose-600 hover:border-rose-300 hover:bg-rose-50 active:bg-rose-100"
     >
       -
     </button>
@@ -412,14 +412,14 @@ function BasicInfoEditModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+            className="pbp-interactive-button flex-1 rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
           >
             취소
           </button>
           <button
             type="button"
             onClick={onSave}
-            className="flex-1 rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-stone-800"
+            className="pbp-interactive-button flex-1 rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white hover:bg-stone-800 active:bg-black"
           >
             적용
           </button>
@@ -496,8 +496,8 @@ function StageProgressBar({
                   type="button"
                   onClick={() => onAction(action)}
                   className={isPrimary
-                    ? "rounded-full bg-stone-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-stone-800"
-                    : "rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100"
+                    ? "pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-stone-800 active:bg-black"
+                    : "pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200"
                   }
                 >
                   {action.label}
@@ -622,8 +622,8 @@ function StageProgressBar({
                 type="button"
                 onClick={() => onAction(action)}
                 className={isPrimary
-                  ? "flex-1 rounded-full bg-stone-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-stone-800 sm:flex-none"
-                  : "flex-1 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100 sm:flex-none"
+                  ? "flex-1 pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-stone-800 active:bg-black sm:flex-none"
+                  : "flex-1 pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200 sm:flex-none"
                 }
               >
                 {action.label}
@@ -680,7 +680,7 @@ function OrderInfoSection({
                     <button
                       type="button"
                       onClick={() => onOpenRegistryModal(item.registerType)}
-                      className="inline-flex h-7 shrink-0 items-center justify-center rounded-lg border border-stone-200 px-2.5 text-[11px] font-medium text-stone-700 transition hover:bg-stone-50"
+                      className="pbp-interactive-button inline-flex h-7 shrink-0 items-center justify-center rounded-lg border border-stone-200 px-2.5 text-[11px] font-medium text-stone-700 hover:border-stone-300 hover:bg-stone-50 active:bg-stone-100"
                     >
                       등록
                     </button>
@@ -883,7 +883,7 @@ function MaterialSection({
             <button
               type="button"
               onClick={onAdd}
-              className="flex w-full items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-50"
+              className="pbp-interactive-button flex w-full items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
             >
               + 항목 추가
             </button>
@@ -934,7 +934,7 @@ function MaterialSection({
                     <button
                       type="button"
                       onClick={onAdd}
-                      className="flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-3 text-sm font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-50"
+                      className="pbp-interactive-button flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
                     >
                       + 항목 추가
                     </button>
@@ -1036,7 +1036,7 @@ function OutsourcingSection({
             <button
               type="button"
               onClick={onAdd}
-              className="flex w-full items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-50"
+              className="pbp-interactive-button flex w-full items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
             >
               + 공정 추가
             </button>
@@ -1085,7 +1085,7 @@ function OutsourcingSection({
                     <button
                       type="button"
                       onClick={onAdd}
-                      className="flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-3 text-sm font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-50"
+                      className="pbp-interactive-button flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
                     >
                       + 공정 추가
                     </button>
@@ -1446,7 +1446,7 @@ export default function WorkOrderDetail({
                 <button
                   type="button"
                   onClick={onSave}
-                  className="shrink-0 rounded-full bg-stone-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-stone-800 md:hidden"
+                  className="shrink-0 pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-stone-800 active:bg-black md:hidden"
                 >
                   저장
                 </button>
@@ -1455,7 +1455,7 @@ export default function WorkOrderDetail({
               <button
                 type="button"
                 onClick={handleOpenBasicInfoModal}
-                className="mt-3 inline-flex max-w-full items-center rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-left text-xs font-medium text-stone-700 transition hover:border-stone-300 hover:bg-stone-100 md:text-sm"
+                className="pbp-interactive-button mt-3 inline-flex max-w-full items-center rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-left text-xs font-medium text-stone-700 hover:border-stone-300 hover:bg-stone-100 active:bg-stone-200 md:text-sm"
               >
                 <span className="truncate">{formatBasicSummary(basicInfo)}</span>
               </button>
@@ -1464,7 +1464,7 @@ export default function WorkOrderDetail({
                   <button
                     type="button"
                     onClick={onOpenManagerAssignModal}
-                    className="inline-flex items-center bg-transparent p-0 text-sm font-medium text-stone-700 underline-offset-2 transition hover:text-stone-900 hover:underline"
+                    className="pbp-interactive-button inline-flex items-center bg-transparent p-0 text-sm font-medium text-stone-700 underline-offset-2 hover:text-stone-900 hover:underline"
                   >
                     담당자 <span className="ml-1 text-stone-900">{workOrder.manager || "-"}</span>
                   </button>
@@ -1475,7 +1475,7 @@ export default function WorkOrderDetail({
                   <button
                     type="button"
                     onClick={onOpenInventoryEditor}
-                    className="inline-flex items-center bg-transparent p-0 text-sm font-medium text-stone-700 underline-offset-2 transition hover:text-stone-900 hover:underline"
+                    className="pbp-interactive-button inline-flex items-center bg-transparent p-0 text-sm font-medium text-stone-700 underline-offset-2 hover:text-stone-900 hover:underline"
                   >
                     현재 재고 <span className="ml-1 tabular-nums text-stone-900">{currentInventoryQuantity.toLocaleString()}장</span>
                   </button>
@@ -1488,7 +1488,7 @@ export default function WorkOrderDetail({
               <button
                 type="button"
                 onClick={onSave}
-                className="rounded-full bg-stone-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-stone-800"
+                className="pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-stone-800 active:bg-black"
               >
                 저장
               </button>
@@ -1498,7 +1498,7 @@ export default function WorkOrderDetail({
                     <button
                       type="button"
                       onClick={onOpenManagerAssignModal}
-                      className="inline-flex items-center bg-transparent p-0 text-sm font-medium text-stone-700 underline-offset-2 transition hover:text-stone-900 hover:underline"
+                      className="pbp-interactive-button inline-flex items-center bg-transparent p-0 text-sm font-medium text-stone-700 underline-offset-2 hover:text-stone-900 hover:underline"
                     >
                       담당자 <span className="ml-1 text-stone-900">{workOrder.manager || "-"}</span>
                     </button>
@@ -1509,7 +1509,7 @@ export default function WorkOrderDetail({
                     <button
                       type="button"
                       onClick={onOpenInventoryEditor}
-                      className="inline-flex items-center bg-transparent p-0 text-sm font-medium text-stone-700 underline-offset-2 transition hover:text-stone-900 hover:underline"
+                      className="pbp-interactive-button inline-flex items-center bg-transparent p-0 text-sm font-medium text-stone-700 underline-offset-2 hover:text-stone-900 hover:underline"
                     >
                       현재 재고 <span className="ml-1 tabular-nums text-stone-900">{currentInventoryQuantity.toLocaleString()}장</span>
                     </button>

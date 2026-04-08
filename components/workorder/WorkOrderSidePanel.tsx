@@ -91,7 +91,7 @@ function AttachmentPanel({
         <div>
           <h3 className="text-sm font-semibold text-stone-900">공식 첨부파일</h3>
         </div>
-        <button type="button" onClick={onOpenAttachmentPicker} className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">+ 첨부 추가</button>
+        <button type="button" onClick={onOpenAttachmentPicker} className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200">+ 첨부 추가</button>
       </div>
       {attachments.length > 0 ? (
         <div className="mt-2.5 space-y-2">
@@ -104,7 +104,7 @@ function AttachmentPanel({
                   <button
                     type="button"
                     onClick={() => onDeleteAttachment(attachment.id)}
-                    className="absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-full border border-stone-300 bg-white text-sm font-semibold text-stone-600 transition hover:border-rose-300 hover:text-rose-600"
+                    className="pbp-interactive-button absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-full border border-stone-300 bg-white text-sm font-semibold text-stone-600 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 active:bg-rose-100"
                     aria-label={`${attachment.name} 삭제`}
                     title="삭제"
                   >
@@ -147,7 +147,7 @@ function CompactAttachmentPicker({
 }) {
   return (
     <div className="flex items-start gap-2">
-      <label className="inline-flex h-8 shrink-0 cursor-pointer items-center rounded-full border border-stone-300 bg-white px-2.5 text-[11px] font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">
+      <label className="pbp-interactive-button inline-flex h-8 shrink-0 cursor-pointer items-center rounded-full border border-stone-300 bg-white px-2.5 text-[11px] font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200">
         첨부추가
         <input
           type="file"
@@ -162,7 +162,7 @@ function CompactAttachmentPicker({
           {uploadedFiles.map((file, index) => (
             <span key={`${file.name}-${file.size}-${index}`} className="inline-flex max-w-full items-center gap-1 rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-[11px] text-stone-700">
               <span className="truncate max-w-[120px]">{file.name}</span>
-              <button type="button" onClick={() => onRemoveFile(index)} className="text-stone-500 transition hover:text-rose-600" aria-label={`${file.name} 삭제`}>×</button>
+              <button type="button" onClick={() => onRemoveFile(index)} className="pbp-interactive-button text-stone-500 hover:text-rose-600" aria-label={`${file.name} 삭제`}>×</button>
             </span>
           ))}
         </div>
@@ -193,7 +193,7 @@ function MemoAttachmentList({
             <span className="font-semibold text-stone-900">{attachment.type === "pdf" ? "PDF" : "IMG"}</span>
             <span className="truncate max-w-[120px]">{attachment.name}</span>
             {!isOfficial && canPromoteMemoAttachment && onPromoteMemoAttachment ? (
-              <button type="button" onClick={() => onPromoteMemoAttachment(attachment.id)} className="rounded-full border border-stone-300 bg-white px-1.5 py-0.5 text-[10px] font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">승격</button>
+              <button type="button" onClick={() => onPromoteMemoAttachment(attachment.id)} className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-1.5 py-0.5 text-[10px] font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200">승격</button>
             ) : null}
           </div>
         );
@@ -258,7 +258,7 @@ function MemoThreadCard({
           <button
             type="button"
             onClick={() => setReplyComposerOpen((prev) => !prev)}
-            className="rounded-full border border-stone-300 bg-white px-3 py-1 text-[11px] font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100"
+            className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1 text-[11px] font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200"
           >
             {replyComposerOpen ? "댓글 닫기" : "댓글"}
           </button>
@@ -271,11 +271,11 @@ function MemoThreadCard({
               onChange={(event) => setReplyDraft(event.target.value)}
               onKeyDown={onReplyKeyDown}
               placeholder="댓글 입력"
-              className="min-h-[36px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-2 text-sm text-stone-800 outline-none transition focus:border-stone-400"
+              className="pbp-field-interaction min-h-[36px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-2 text-sm text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50"
             />
             <div className="mt-2 flex items-start justify-between gap-2">
               <CompactAttachmentPicker uploadedFiles={uploadedFiles} onFilesChange={setUploadedFiles} onRemoveFile={(index) => setUploadedFiles((prev) => prev.filter((_, i) => i !== index))} />
-              <button type="button" onClick={submitReply} className="rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-stone-800">등록</button>
+              <button type="button" onClick={submitReply} className="pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-stone-800 active:bg-black">등록</button>
             </div>
           </div>
         ) : null}
@@ -333,11 +333,11 @@ function MemoPanel({
           onChange={(event) => setThreadDraft(event.target.value)}
           onKeyDown={onThreadKeyDown}
           placeholder="작업 메모 입력"
-          className="mt-2 min-h-[38px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-2 text-sm text-stone-800 outline-none transition focus:border-stone-400"
+          className="pbp-field-interaction mt-2 min-h-[38px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-2 text-sm text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50"
         />
         <div className="mt-2 flex items-start justify-between gap-2">
           <CompactAttachmentPicker uploadedFiles={uploadedFiles} onFilesChange={setUploadedFiles} onRemoveFile={(index) => setUploadedFiles((prev) => prev.filter((_, i) => i !== index))} />
-          <button type="button" onClick={submitThread} className="rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-stone-800">등록</button>
+          <button type="button" onClick={submitThread} className="pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-stone-800 active:bg-black">등록</button>
         </div>
       </div>
       <div className="mt-2.5 space-y-2">
@@ -422,7 +422,7 @@ export default function WorkOrderSidePanel({
           {isAdmin && (
             <div className="mt-3 flex flex-wrap gap-2">
               {([ ["all", "전체"], ["work", "작업"], ["inventory", "재고"], ["attachment", "첨부"] ] as [HistoryFilter, string][]).map(([value, label]) => (
-                <button key={value} type="button" onClick={() => onHistoryFilterChange(value)} className={`pbp-touch-target rounded-full px-3 py-1 text-xs font-medium ${historyFilter === value ? "bg-stone-900 text-white" : "border border-stone-300 bg-white text-stone-700"}`}>{label}</button>
+                <button key={value} type="button" onClick={() => onHistoryFilterChange(value)} className={`pbp-touch-target pbp-interactive-button rounded-full px-3 py-1 text-xs font-medium ${historyFilter === value ? "bg-stone-900 text-white hover:bg-stone-800 active:bg-black" : "border border-stone-300 bg-white text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200"}`}>{label}</button>
               ))}
             </div>
           )}
@@ -431,7 +431,7 @@ export default function WorkOrderSidePanel({
               <HistoryPreviewItem key={item.id} item={item} />
             )) : <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-sm text-stone-500">표시할 히스토리가 없습니다.</div>}
           </div>
-          {isAdmin && filteredHistoryLogs.length > 3 && <button type="button" onClick={onOpenInventoryLogModal} className="pbp-touch-target mt-3.5 w-full rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">전체 히스토리 보기</button>}
+          {isAdmin && filteredHistoryLogs.length > 3 && <button type="button" onClick={onOpenInventoryLogModal} className="pbp-touch-target pbp-interactive-button mt-3.5 w-full rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200">전체 히스토리 보기</button>}
         </div>
       )}
     </div>

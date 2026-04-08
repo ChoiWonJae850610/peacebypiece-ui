@@ -63,7 +63,7 @@ export default function MobileDrawer({
             <button
               type="button"
               onClick={onClose}
-              className="pbp-touch-target inline-flex h-11 items-center justify-center rounded-xl border border-stone-300 bg-white px-3.5 text-sm font-medium text-stone-700 transition active:scale-[0.97]"
+              className="pbp-touch-target pbp-interactive-button inline-flex h-11 items-center justify-center rounded-xl border border-stone-300 bg-white px-3.5 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
             >
               닫기
             </button>
@@ -75,7 +75,7 @@ export default function MobileDrawer({
               value={searchQuery}
               onChange={(event) => onSearchQueryChange(event.target.value)}
               placeholder="작업명, 분류, 공장, 상태 검색"
-              className="h-11 w-full rounded-xl border border-stone-300 bg-white px-4 text-sm text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-stone-500"
+              className="pbp-field-interaction h-11 w-full rounded-xl border border-stone-300 bg-white px-4 text-sm text-stone-900 outline-none placeholder:text-stone-400 focus:border-stone-500 focus:bg-stone-50"
             />
           </label>
           {canCreate ? (
@@ -85,7 +85,7 @@ export default function MobileDrawer({
                 onCreate();
                 onClose();
               }}
-              className="pbp-touch-target mt-3 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white transition active:scale-[0.99]"
+              className="pbp-touch-target pbp-interactive-button mt-3 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white hover:bg-stone-800 active:bg-black"
             >
               새 작업 추가
             </button>
