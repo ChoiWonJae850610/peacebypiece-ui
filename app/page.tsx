@@ -103,7 +103,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-stone-100 text-stone-900">
-      <div ref={appShellRef}>
+      <div ref={appShellRef} className="overflow-x-hidden">
         <MobileTopBar version={version} onOpen={() => setDrawerOpen(true)} onOpenSettings={() => setPermissionModalOpen(true)} />
         <MobileDrawer
           open={drawerOpen}
@@ -120,7 +120,7 @@ export default function Home() {
           onSearchQueryChange={setSearchQuery}
         />
 
-        <div className="grid min-h-screen w-full grid-cols-1 md:grid-cols-12">
+        <div className="grid min-h-screen w-full max-w-full grid-cols-1 overflow-x-hidden md:grid-cols-12">
           <aside className="hidden min-w-0 border-r border-stone-200 bg-white md:block md:col-span-3">
             <SidebarContent
               version={version}
@@ -139,7 +139,7 @@ export default function Home() {
             />
           </aside>
 
-          <section className="min-w-0 px-3 py-3 md:col-span-6 md:overflow-y-auto md:p-6">
+          <section className="min-w-0 overflow-x-hidden px-3 py-3 md:col-span-6 md:overflow-y-auto md:p-6">
             <div key={selectedId} className="pbp-mobile-content-switch md:contents">
             <WorkOrderDetail
               workOrder={selectedWorkOrder}
@@ -177,7 +177,7 @@ export default function Home() {
             </div>
           </section>
 
-          <aside className="min-w-0 border-t border-stone-200 bg-stone-50 px-3 py-3 md:col-span-3 md:border-l md:border-t-0 md:p-6">
+          <aside className="min-w-0 overflow-x-hidden border-t border-stone-200 bg-stone-50 px-3 py-3 md:col-span-3 md:border-l md:border-t-0 md:p-6">
             <WorkOrderSidePanel
               canSeeAttachments={canSeeAttachments}
               attachments={officialAttachments}
