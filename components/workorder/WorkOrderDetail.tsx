@@ -29,10 +29,10 @@ type BasicInfoState = {
 };
 
 const EDITABLE_FIELD_HEIGHT_CLASS = "h-10";
-const EDITABLE_FIELD_BASE_CLASS = `pbp-field-interaction ${EDITABLE_FIELD_HEIGHT_CLASS} block w-full min-w-0 max-w-full overflow-hidden rounded-xl border px-3 text-sm text-stone-900 outline-none ring-0`;
-const EDITABLE_INPUT_CLASS = `${EDITABLE_FIELD_BASE_CLASS} border-stone-300 bg-white focus:border-stone-400 focus:bg-white`;
+const EDITABLE_FIELD_BASE_CLASS = `pbp-field-interaction ${EDITABLE_FIELD_HEIGHT_CLASS} block w-full min-w-0 max-w-full overflow-hidden rounded-xl border px-3 text-stone-900 outline-none ring-0`;
+const EDITABLE_INPUT_CLASS = `${EDITABLE_FIELD_BASE_CLASS} text-base md:text-sm border-stone-300 bg-white focus:border-stone-400 focus:bg-white`;
 const EDITABLE_SELECT_CLASS = `${EDITABLE_INPUT_CLASS} appearance-none pr-8`;
-const EDITABLE_DISPLAY_CLASS = `${EDITABLE_FIELD_BASE_CLASS} flex items-center border-transparent bg-transparent hover:border-stone-200 hover:bg-stone-50 focus-visible:border-stone-300 focus-visible:bg-stone-50`;
+const EDITABLE_DISPLAY_CLASS = `${EDITABLE_FIELD_BASE_CLASS} text-sm flex items-center border-transparent bg-transparent hover:border-stone-200 hover:bg-stone-50 focus-visible:border-stone-300 focus-visible:bg-stone-50`;
 const EDITABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
 const TABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
 const TABLE_HEADER_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
@@ -433,6 +433,14 @@ function BasicInfoEditModal({
   );
 }
 
+function blurActiveEditableElement() {
+  if (typeof document === "undefined") return;
+  const activeElement = document.activeElement;
+  if (activeElement instanceof HTMLElement) {
+    activeElement.blur();
+  }
+}
+
 function getInitialBasicInfo(workOrder: WorkOrder): BasicInfoState {
   const parsedSeason = parseSeasonYear(workOrder.season);
   const category1 = workOrder.category1 || CATEGORY1_OPTIONS[0];
@@ -480,8 +488,15 @@ function StageProgressBar({
     { label: "검수", stages: ["검수", "완료"] },
   ];
   const currentGroupIndex = stageGroups.findIndex((group) => group.stages.includes(currentStage));
-  const currentGroup = currentGroupIndex >= 0 ? stageGroups[currentGroupIndex] : null;
   const groupByStage = new Map(stageGroups.flatMap((group, groupIndex) => group.stages.map((stage) => [stage, groupIndex] as const)));
+  const mobileStageSlots = [-1, 0, 1].map((offset) => {
+    const stageIndex = currentIndex + offset;
+    if (stageIndex < 0 || stageIndex >= stages.length) return null;
+    return {
+      index: stageIndex,
+      stage: stages[stageIndex],
+    };
+  });
   return (
     <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-3 md:mt-5 md:p-4">
       <div className="flex items-start justify-between gap-3">
@@ -531,35 +546,53 @@ function StageProgressBar({
 
       <div className="mt-3 md:hidden">
         <div className="rounded-2xl border border-stone-200 bg-white px-3 py-3">
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-            {stages.map((stage, index) => {
-              const isCurrent = stage === currentStage;
-              const isDone = currentIndex >= 0 && index < currentIndex;
-              const isUpcoming = !isCurrent && !isDone;
-              const stageGroupIndex = groupByStage.get(stage) ?? -1;
-              const nextStageGroupIndex = index < stages.length - 1 ? (groupByStage.get(stages[index + 1]) ?? -1) : -1;
-              const isGroupBreakAfter = nextStageGroupIndex !== -1 && nextStageGroupIndex !== stageGroupIndex;
+          <div className="flex items-start">
+            {mobileStageSlots.map((slot, slotIndex) => {
+              const stage = slot?.stage;
+              const index = slot?.index ?? -1;
+              const isPlaceholder = !slot;
+              const isCurrent = index === currentIndex;
+              const isDone = index >= 0 && index < currentIndex;
+              const isCompletedStage = stage === "완료";
+              const isCompleted = isDone || (isCompletedStage && isCurrent);
+              const isUpcoming = index > currentIndex;
+              const nextSlot = slotIndex < mobileStageSlots.length - 1 ? mobileStageSlots[slotIndex + 1] : null;
+              const nextStage = nextSlot?.stage;
+              const stageGroupIndex = stage ? (groupByStage.get(stage) ?? -1) : -1;
+              const nextStageGroupIndex = nextStage ? (groupByStage.get(nextStage) ?? -1) : -1;
+              const isGroupBreakAfter = !isPlaceholder && nextSlot && stageGroupIndex !== -1 && nextStageGroupIndex !== -1 && stageGroupIndex !== nextStageGroupIndex;
+              const connectorTone = !slot || !nextSlot
+                ? "bg-transparent"
+                : index < currentIndex
+                ? doneTrackTone
+                : "bg-stone-200";
 
               return (
-                <div key={`${stage}-mobile`} className="flex items-center gap-1.5 rounded-xl px-1.5 py-1">
-                  <div className="flex min-w-[52px] flex-col items-center text-center">
+                <div key={stage ? `${stage}-mobile` : `placeholder-${slotIndex}`} className="flex min-w-0 flex-1 items-center">
+                  <div className={`flex min-w-0 flex-1 flex-col items-center text-center ${isPlaceholder ? "opacity-0" : ""}`}>
                     <div
-                      className={`flex h-3.5 w-3.5 items-center justify-center rounded-full ${
-                        isCurrent
-                          ? `${getStageStepFillTone(stage)} ring-2 ring-white text-white`
-                          : isDone
-                          ? `${getStageStepFillTone(stage)} text-white`
-                          : "bg-stone-300 text-transparent"
+                      className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
+                        isCompleted
+                          ? "bg-stone-900 text-white"
+                          : isCurrent
+                          ? `${getStageStepFillTone(stage!)} text-white ring-2 ring-stone-200`
+                          : "bg-stone-200 text-stone-500"
                       }`}
                     >
-                      {isCurrent || isDone ? "✓" : "•"}
+                      {isPlaceholder ? "" : isCompleted ? "✓" : index + 1}
                     </div>
-                    <div className={`mt-1 text-[10px] leading-3 ${isCurrent ? `font-semibold ${getStageTextTone(stage)}` : isUpcoming ? "text-stone-400" : "text-stone-600"}`}>
-                      {stage}
+                    <div className={`mt-2 block max-w-full overflow-hidden text-ellipsis whitespace-nowrap px-1 text-[11px] leading-4 ${
+                      isCurrent
+                        ? `font-semibold ${getStageTextTone(stage!)}`
+                        : isUpcoming
+                        ? "text-stone-400"
+                        : "text-stone-600"
+                    }`}>
+                      {stage ?? ""}
                     </div>
                   </div>
-                  {index < stages.length - 1 ? (
-                    <div className={`h-0.5 w-5 shrink-0 rounded-full ${index < currentIndex ? doneTrackTone : "bg-stone-200"} ${isGroupBreakAfter ? "mr-2" : ""}`} />
+                  {slotIndex < mobileStageSlots.length - 1 ? (
+                    <div className={`mt-4 h-0.5 min-w-0 flex-1 rounded-full ${connectorTone} ${isGroupBreakAfter ? "mx-2" : "mx-1.5"}`} />
                   ) : null}
                 </div>
               );
@@ -827,10 +860,10 @@ function MaterialSection({
           <div className="mt-3 space-y-3 md:hidden">
             {materials.map((item, index) => (
               <div key={item.id} className="rounded-2xl border border-stone-200 bg-white p-3.5">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-sm font-semibold text-stone-900">{item.name || `자재 ${index + 1}`}</div>
-                    <div className="mt-1 text-xs text-stone-500">금액 {(item.totalCost ?? 0).toLocaleString()}원</div>
+                <div className="flex items-start justify-between gap-3 min-w-0">
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <div className="truncate text-sm font-semibold text-stone-900">{item.name || `자재 ${index + 1}`}</div>
+                    <div className="mt-1 truncate text-xs text-stone-500">금액 {(item.totalCost ?? 0).toLocaleString()}원</div>
                   </div>
                   <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.name || `자재 ${index + 1}`} 삭제`} />
                 </div>
@@ -843,9 +876,9 @@ function MaterialSection({
                     ["단위", "unit", item.unit, "text"],
                     ["단가", "unitCost", item.unitCost.toLocaleString(), "decimal"],
                   ].map(([label, field, value, inputMode]) => (
-                    <div key={`${item.id}-${field}`} className="flex items-center justify-between gap-4 min-w-0">
-                      <span className="shrink-0 text-xs text-stone-500">{label}</span>
-                      <div className="min-w-0 flex-1 overflow-hidden">
+                    <div key={`${item.id}-${field}`} className="flex items-center justify-between gap-3 min-w-0">
+                      <span className="w-14 shrink-0 text-xs text-stone-500">{label}</span>
+                      <div className="min-w-0 max-w-full flex-1 basis-0 overflow-hidden">
                         <EditableValue
                           section="material"
                           rowId={item.id}
@@ -863,9 +896,11 @@ function MaterialSection({
                       </div>
                     </div>
                   ))}
-                  <div className="flex items-center justify-between gap-4 min-w-0">
-                    <span className="shrink-0 text-xs text-stone-500">금액</span>
-                    <span className="block min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm font-medium text-stone-900 tabular-nums">{(item.totalCost ?? 0).toLocaleString()}원</span>
+                  <div className="flex items-center justify-between gap-3 min-w-0">
+                    <span className="w-14 shrink-0 text-xs text-stone-500">금액</span>
+                    <div className="min-w-0 max-w-full flex-1 basis-0 overflow-hidden text-right">
+                      <span className="block min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm font-medium text-stone-900 tabular-nums">{(item.totalCost ?? 0).toLocaleString()}원</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -980,10 +1015,10 @@ function OutsourcingSection({
           <div className="mt-3 space-y-3 md:hidden">
             {outsourcing.map((item, index) => (
               <div key={item.id} className="rounded-2xl border border-stone-200 bg-white p-3.5">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-sm font-semibold text-stone-900">{item.process || `공정 ${index + 1}`}</div>
-                    <div className="mt-1 text-xs text-stone-500">금액 {(item.totalCost ?? 0).toLocaleString()}원</div>
+                <div className="flex items-start justify-between gap-3 min-w-0">
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <div className="truncate text-sm font-semibold text-stone-900">{item.process || `공정 ${index + 1}`}</div>
+                    <div className="mt-1 truncate text-xs text-stone-500">금액 {(item.totalCost ?? 0).toLocaleString()}원</div>
                   </div>
                   <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.process || `공정 ${index + 1}`} 삭제`} />
                 </div>
@@ -995,9 +1030,9 @@ function OutsourcingSection({
                     ["단가기준", "unitType", item.unitType, "text"],
                     ["단가", "unitCost", item.unitCost.toLocaleString(), "decimal"],
                   ].map(([label, field, value, inputMode]) => (
-                    <div key={`${item.id}-${field}`} className="flex items-center justify-between gap-4 min-w-0">
-                      <span className="shrink-0 text-xs text-stone-500">{label}</span>
-                      <div className="min-w-0 flex-1 overflow-hidden">
+                    <div key={`${item.id}-${field}`} className="flex items-center justify-between gap-3 min-w-0">
+                      <span className="w-16 shrink-0 text-xs text-stone-500">{label}</span>
+                      <div className="min-w-0 max-w-full flex-1 basis-0 overflow-hidden">
                         <EditableValue
                           section="outsourcing"
                           rowId={item.id}
@@ -1015,9 +1050,11 @@ function OutsourcingSection({
                       </div>
                     </div>
                   ))}
-                  <div className="flex items-center justify-between gap-4 min-w-0">
-                    <span className="shrink-0 text-xs text-stone-500">금액</span>
-                    <span className="block min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm font-medium text-stone-900 tabular-nums">{(item.totalCost ?? 0).toLocaleString()}원</span>
+                  <div className="flex items-center justify-between gap-3 min-w-0">
+                    <span className="w-16 shrink-0 text-xs text-stone-500">금액</span>
+                    <div className="min-w-0 max-w-full flex-1 basis-0 overflow-hidden text-right">
+                      <span className="block min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm font-medium text-stone-900 tabular-nums">{(item.totalCost ?? 0).toLocaleString()}원</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1238,6 +1275,7 @@ export default function WorkOrderDetail({
   };
 
   const cancelEdit = () => {
+    blurActiveEditableElement();
     setEditingCell(null);
     setEditingValue("");
   };
@@ -1335,6 +1373,7 @@ export default function WorkOrderDetail({
       );
     }
 
+    blurActiveEditableElement();
     cancelEdit();
   };
 
