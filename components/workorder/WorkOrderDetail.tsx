@@ -9,13 +9,13 @@ import WorkOrderCostSummarySection from "@/components/workorder/detail/WorkOrder
 import WorkOrderHeaderSection from "@/components/workorder/detail/WorkOrderHeaderSection";
 import WorkOrderActionSection from "@/components/workorder/detail/WorkOrderActionSection";
 import { getStageTone } from "@/lib/constants/workflow";
-import { CATEGORY1_OPTIONS, CATEGORY2_OPTIONS_MAP, CATEGORY3_OPTIONS_MAP, DEFAULT_BASIC_YEAR, DEFAULT_FACTORY_OPTION, DEFAULT_MATERIAL_TYPE, DEFAULT_MATERIAL_UNIT, DEFAULT_OUTSOURCING_PROCESS, DEFAULT_OUTSOURCING_UNIT, DEFAULT_PARTNER_OPTION, FACTORY_OPTIONS, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS, OUTSOURCING_PROCESS_OPTIONS, OUTSOURCING_UNIT_OPTIONS, PARTNER_OPTIONS, PRIORITY_OPTIONS, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
+import { CATEGORY1_OPTIONS, CATEGORY2_OPTIONS_MAP, CATEGORY3_OPTIONS_MAP, DEFAULT_BASIC_YEAR, DEFAULT_FACTORY_OPTION, DEFAULT_MATERIAL_TYPE, DEFAULT_MATERIAL_UNIT, DEFAULT_ORDER_TYPE, DEFAULT_OUTSOURCING_PROCESS, DEFAULT_OUTSOURCING_UNIT, DEFAULT_PARTNER_OPTION, FACTORY_OPTIONS, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS, ORDER_TYPE_OPTIONS, OUTSOURCING_PROCESS_OPTIONS, OUTSOURCING_UNIT_OPTIONS, PARTNER_OPTIONS, PRIORITY_OPTIONS, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
 import type { DisplayStage } from "@/types/workflow";
 import { toDisplayValue } from "@/lib/utils/display";
-import type { Attachment, Material, MemoThread, Outsourcing, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
+import type { Attachment, Material, MemoThread, OrderEntry, Outsourcing, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
 
 type RowValue = string | number | null | undefined;
-type EditableSectionKey = "basic" | "material" | "outsourcing";
+type EditableSectionKey = "material" | "outsourcing" | "order";
 type EditableCell = { section: EditableSectionKey; rowId: string; field: string } | null;
 type SelectOption = readonly string[];
 type BasicInfoState = {
@@ -23,15 +23,11 @@ type BasicInfoState = {
   category2: string;
   category3: string;
   partner: string;
-  factory: string;
   season: string;
   year: string;
-  priority: string;
-  dueDate: string;
-  quantity: number;
-  laborCost: number;
-  lossCost: number;
 };
+
+type OrderEntryState = OrderEntry;
 
 const EDITABLE_FIELD_HEIGHT_CLASS = "h-10";
 const EDITABLE_FIELD_BASE_CLASS = `pbp-field-interaction ${EDITABLE_FIELD_HEIGHT_CLASS} block w-full min-w-0 max-w-full overflow-hidden truncate rounded-xl border px-3 text-stone-900 outline-none ring-0`;
@@ -133,6 +129,44 @@ function recalculateOutsourcing(item: Outsourcing): Outsourcing {
     ...item,
     totalCost: (Number(item.quantity) || 0) * (Number(item.unitCost) || 0),
   };
+}
+
+function sanitizeOrderEntry(item: Partial<OrderEntryState>, fallback?: Partial<OrderEntryState>): OrderEntryState {
+  return {
+    id: item.id || fallback?.id || createId("order"),
+    type: item.type || fallback?.type || DEFAULT_ORDER_TYPE,
+    factory: item.factory || fallback?.factory || DEFAULT_FACTORY_OPTION,
+    dueDate: item.dueDate || fallback?.dueDate || "",
+    quantity: Math.max(0, Number(item.quantity ?? fallback?.quantity) || 0),
+    laborCost: Math.max(0, Number(item.laborCost ?? fallback?.laborCost) || 0),
+    lossCost: Math.max(0, Number(item.lossCost ?? fallback?.lossCost) || 0),
+    priority: item.priority || fallback?.priority || PRIORITY_OPTIONS[0],
+  };
+}
+
+function getInitialOrderEntries(workOrder: WorkOrder): OrderEntryState[] {
+  const entries = (workOrder.orderEntries ?? []).map((item) => sanitizeOrderEntry(item));
+  if (entries.length > 0) return entries;
+
+  return [sanitizeOrderEntry({
+    id: `${workOrder.id}-legacy-order`,
+    type: DEFAULT_ORDER_TYPE,
+    factory: workOrder.vendor || DEFAULT_FACTORY_OPTION,
+    dueDate: workOrder.dueDate || "",
+    quantity: Number.isFinite(workOrder.quantity) ? workOrder.quantity : 0,
+    laborCost: Math.max(0, Number(workOrder.laborCost) || 0),
+    lossCost: Math.max(0, Number(workOrder.lossCost) || 0),
+    priority: workOrder.priority || PRIORITY_OPTIONS[0],
+  })];
+}
+
+function calculateOrderEntryTotals(orderEntries: OrderEntryState[]) {
+  return orderEntries.reduce((acc, item) => {
+    acc.quantity += Number(item.quantity) || 0;
+    acc.laborCost += Number(item.laborCost) || 0;
+    acc.lossCost += Number(item.lossCost) || 0;
+    return acc;
+  }, { quantity: 0, laborCost: 0, lossCost: 0 });
 }
 
 function isEditingCell(editingCell: EditableCell, section: EditableSectionKey, rowId: string, field: string) {
@@ -298,12 +332,13 @@ function formatBasicSummary(basicInfo: BasicInfoState) {
   ].filter(Boolean).join(" · ");
 }
 
-function formatOrderSummary(basicInfo: BasicInfoState) {
+function formatOrderSummary(orderEntries: OrderEntryState[]) {
+  if (orderEntries.length === 0) return "등록된 발주 정보가 없습니다.";
+  const totals = calculateOrderEntryTotals(orderEntries);
   return [
-    basicInfo.factory !== DEFAULT_FACTORY_OPTION ? basicInfo.factory : "공장 미지정",
-    `${basicInfo.quantity.toLocaleString()}장`,
-    basicInfo.dueDate || "납기 미정",
-    basicInfo.priority,
+    `${orderEntries.length}건`,
+    `${totals.quantity.toLocaleString()}장`,
+    orderEntries[0]?.factory && orderEntries[0].factory !== DEFAULT_FACTORY_OPTION ? `${orderEntries[0].factory}${orderEntries.length > 1 ? ` 외 ${orderEntries.length - 1}` : ""}` : "공장 미지정",
   ].filter(Boolean).join(" · ");
 }
 
@@ -459,19 +494,13 @@ function getInitialBasicInfo(workOrder: WorkOrder): BasicInfoState {
     category2,
     category3,
     partner: DEFAULT_PARTNER_OPTION,
-    factory: workOrder.vendor || DEFAULT_FACTORY_OPTION,
     season: parsedSeason.season || SEASON_OPTIONS[0],
     year: parsedSeason.year || DEFAULT_BASIC_YEAR,
-    priority: workOrder.priority || PRIORITY_OPTIONS[0],
-    dueDate: workOrder.dueDate || "",
-    quantity: Number.isFinite(workOrder.quantity) ? workOrder.quantity : 0,
-    laborCost: Math.max(0, Number(workOrder.laborCost) || 0),
-    lossCost: Math.max(0, Number(workOrder.lossCost) || 0),
   };
 }
 
 function OrderInfoSection({
-  basicInfo,
+  orderEntries,
   factoryOptions,
   open,
   onToggle,
@@ -480,8 +509,10 @@ function OrderInfoSection({
   onStartEdit,
   onCommitEdit,
   onCancelEdit,
+  onAdd,
+  onRemove,
 }: {
-  basicInfo: BasicInfoState;
+  orderEntries: OrderEntryState[];
   factoryOptions: readonly string[];
   open: boolean;
   onToggle: () => void;
@@ -490,46 +521,129 @@ function OrderInfoSection({
   onStartEdit: (section: EditableSectionKey, rowId: string, field: string, value: string) => void;
   onCommitEdit: () => void;
   onCancelEdit: () => void;
+  onAdd: () => void;
+  onRemove: (id: string) => void;
 }) {
-  const infoItems = [
-    { label: "공장", field: "factory", value: basicInfo.factory, options: factoryOptions },
-    { label: "납기일", field: "dueDate", value: basicInfo.dueDate, inputType: "date" as const },
-    { label: "발주 수량", field: "quantity", value: basicInfo.quantity.toLocaleString(), inputMode: "numeric" as const, alignRight: true },
-    { label: "공임비", field: "laborCost", value: basicInfo.laborCost.toLocaleString(), inputMode: "numeric" as const, alignRight: true },
-    { label: "로스비", field: "lossCost", value: basicInfo.lossCost.toLocaleString(), inputMode: "numeric" as const, alignRight: true },
-    { label: "우선순위", field: "priority", value: basicInfo.priority, options: PRIORITY_OPTIONS },
-  ];
+  const totals = calculateOrderEntryTotals(orderEntries);
 
   return (
     <div className="overflow-hidden rounded-2xl bg-stone-50 p-4">
-      <SectionHeader title="발주 정보" summary={formatOrderSummary(basicInfo)} open={open} onToggle={onToggle} />
+      <SectionHeader title="발주 정보" summary={formatOrderSummary(orderEntries)} open={open} onToggle={onToggle} />
       {open ? (
-        <div className="mt-4">
-          <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
-            {infoItems.map((item) => (
-              <div key={item.field} className="min-w-0 max-w-full overflow-hidden rounded-xl border border-stone-200 bg-white p-3">
-                <div className="text-xs text-stone-500">{item.label}</div>
-                <div className="mt-2">
-                  <EditableValue
-                    section="basic"
-                    rowId="basic"
-                    field={item.field}
-                    value={String(item.value)}
-                    editingCell={editingCell}
-                    editingValue={editingValue}
-                    inputMode={item.inputMode}
-                    inputType={item.inputType}
-                    alignRight={item.alignRight}
-                    options={item.options}
-                    onStartEdit={onStartEdit}
-                    onCommit={onCommitEdit}
-                    onCancel={onCancelEdit}
-                  />
+        <>
+          <div className="mt-3 space-y-3 md:hidden">
+            {orderEntries.map((item, index) => (
+              <div key={item.id} className="max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-white p-3.5">
+                <div className="flex items-start justify-between gap-3 min-w-0">
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <div className="truncate text-sm font-semibold text-stone-900">{item.factory || `발주 ${index + 1}`}</div>
+                    <div className="mt-1 truncate text-xs text-stone-500">{item.type} · {item.quantity.toLocaleString()}장</div>
+                  </div>
+                  <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || `발주 ${index + 1}`} 삭제`} />
+                </div>
+                <div className="mt-3 space-y-2">
+                  {[
+                    ["구분", "type", item.type, "text"],
+                    ["공장", "factory", item.factory, "text"],
+                    ["납기일", "dueDate", item.dueDate, "text"],
+                    ["수량", "quantity", item.quantity.toLocaleString(), "decimal"],
+                    ["공임비", "laborCost", item.laborCost.toLocaleString(), "decimal"],
+                    ["로스비", "lossCost", item.lossCost.toLocaleString(), "decimal"],
+                    ["우선순위", "priority", item.priority, "text"],
+                  ].map(([label, field, value, inputMode]) => (
+                    <div key={`${item.id}-${field}`} className="flex items-center justify-between gap-3 min-w-0">
+                      <span className="w-16 shrink-0 text-xs text-stone-500">{label}</span>
+                      <div className="min-w-0 max-w-full flex-1 basis-0 overflow-hidden">
+                        <EditableValue
+                          section="order"
+                          rowId={item.id}
+                          field={String(field)}
+                          value={String(value)}
+                          editingCell={editingCell}
+                          editingValue={editingValue}
+                          inputMode={field === 'quantity' || field === 'laborCost' || field === 'lossCost' ? 'numeric' : inputMode as "text" | "decimal"}
+                          inputType={field === 'dueDate' ? 'date' : 'text'}
+                          options={field === 'type' ? ORDER_TYPE_OPTIONS : field === 'factory' ? factoryOptions : field === 'priority' ? PRIORITY_OPTIONS : undefined}
+                          alignRight={field === 'quantity' || field === 'laborCost' || field === 'lossCost'}
+                          onStartEdit={onStartEdit}
+                          onCommit={onCommitEdit}
+                          onCancel={onCancelEdit}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}
+            <button
+              type="button"
+              onClick={onAdd}
+              className="pbp-interactive-button flex w-full items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+            >
+              + 발주 추가
+            </button>
           </div>
-        </div>
+          <div className="mt-3 hidden max-w-full overflow-hidden md:block">
+            <table className="w-full max-w-full table-fixed text-left text-xs lg:text-sm">
+              <colgroup>
+                <col className="w-[14%]" />
+                <col className="w-[17%]" />
+                <col className="w-[14%]" />
+                <col className="w-[12%]" />
+                <col className="w-[14%]" />
+                <col className="w-[14%]" />
+                <col className="w-[11%]" />
+                <col className="w-[4%]" />
+              </colgroup>
+              <thead className="text-stone-500">
+                <tr className="border-b border-stone-200">
+                  {["구분", "공장", "납기일", "수량", "공임비", "로스비", "우선순위", ""].map((header, index) => (
+                    <th
+                      key={`${header}-${index}`}
+                      className={`min-w-0 overflow-hidden px-2 py-3 text-[11px] font-medium lg:text-xs ${header === "수량" || header === "공임비" || header === "로스비" ? "text-right" : header === "" ? "text-center" : "text-left"}`}
+                    >
+                      <span className={`${TABLE_HEADER_TEXT_CLASS} break-keep`}>{header}</span>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {orderEntries.map((item, rowIndex) => (
+                  <tr key={item.id} className="border-b border-stone-100">
+                    <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="order" rowId={item.id} field="type" value={item.type} options={ORDER_TYPE_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="order" rowId={item.id} field="factory" value={item.factory} options={factoryOptions} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="order" rowId={item.id} field="dueDate" value={item.dueDate} editingCell={editingCell} editingValue={editingValue} inputType="date" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="order" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="numeric" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="order" rowId={item.id} field="laborCost" value={item.laborCost.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="numeric" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="order" rowId={item.id} field="lossCost" value={item.lossCost.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="numeric" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="order" rowId={item.id} field="priority" value={item.priority} options={PRIORITY_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="px-2 py-2 text-center align-middle">
+                      <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || `발주 ${rowIndex + 1}`} 삭제`} />
+                    </td>
+                  </tr>
+                ))}
+                <tr className="bg-stone-50/70">
+                  <td className="px-2 py-2 text-xs font-medium text-stone-500" colSpan={3}>합계</td>
+                  <td className="px-2 py-2 text-right text-sm font-semibold text-stone-900 tabular-nums">{totals.quantity.toLocaleString()}장</td>
+                  <td className="px-2 py-2 text-right text-sm font-semibold text-stone-900 tabular-nums">{totals.laborCost.toLocaleString()}원</td>
+                  <td className="px-2 py-2 text-right text-sm font-semibold text-stone-900 tabular-nums">{totals.lossCost.toLocaleString()}원</td>
+                  <td colSpan={2} />
+                </tr>
+                <tr>
+                  <td colSpan={8} className="px-2 pb-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={onAdd}
+                      className="pbp-interactive-button flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+                    >
+                      + 발주 추가
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </>
       ) : null}
     </div>
   );
@@ -999,7 +1113,11 @@ export default function WorkOrderDetail({
 }) {
   const [basicInfo, setBasicInfo] = useState<BasicInfoState>(() => getInitialBasicInfo(workOrder));
   const [partnerOptions, setPartnerOptions] = useState<string[]>(() => Array.from(new Set(PARTNER_OPTIONS)));
-  const [factoryOptions, setFactoryOptions] = useState<string[]>(() => appendOption(Array.from(new Set(FACTORY_OPTIONS)), workOrder.vendor || ""));
+  const [orderItems, setOrderItems] = useState<OrderEntryState[]>(() => getInitialOrderEntries(workOrder));
+  const [factoryOptions, setFactoryOptions] = useState<string[]>(() => {
+    const seeded = Array.from(new Set(FACTORY_OPTIONS));
+    return getInitialOrderEntries(workOrder).reduce((options, item) => appendOption(options, item.factory), seeded);
+  });
   const [registryModalOpen, setRegistryModalOpen] = useState(false);
   const [registryType, setRegistryType] = useState<RegistryType>("거래처");
   const [basicInfoModalOpen, setBasicInfoModalOpen] = useState(false);
@@ -1009,10 +1127,11 @@ export default function WorkOrderDetail({
   const [editingCell, setEditingCell] = useState<EditableCell>(null);
   const [editingValue, setEditingValue] = useState("");
 
-  const laborCost = Math.max(0, basicInfo.laborCost || 0);
-  const lossCost = Math.max(0, basicInfo.lossCost || 0);
+  const orderTotals = calculateOrderEntryTotals(orderItems);
+  const laborCost = orderTotals.laborCost;
+  const lossCost = orderTotals.lossCost;
   const totalCostWithOrderInfo = fabricTotal + subsidiaryTotal + outsourcingTotal + laborCost + lossCost;
-  const unitCostWithOrderInfo = basicInfo.quantity > 0 ? Math.round(totalCostWithOrderInfo / basicInfo.quantity) : 0;
+  const unitCostWithOrderInfo = orderTotals.quantity > 0 ? Math.round(totalCostWithOrderInfo / orderTotals.quantity) : 0;
 
   useEffect(() => {
     setBasicInfo((current) => {
@@ -1020,12 +1139,13 @@ export default function WorkOrderDetail({
       return {
         ...next,
         partner: sanitizeSelectValue(current.partner, partnerOptions, next.partner),
-        factory: sanitizeSelectValue(current.factory, appendOption(factoryOptions, workOrder.vendor || ""), next.factory),
       };
     });
     setBasicInfoDraft(getInitialBasicInfo(workOrder));
-    setFactoryOptions((current) => appendOption(current, workOrder.vendor || ""));
-  }, [workOrder, partnerOptions, factoryOptions]);
+    const nextOrderEntries = getInitialOrderEntries(workOrder);
+    setOrderItems(nextOrderEntries);
+    setFactoryOptions((current) => nextOrderEntries.reduce((options, item) => appendOption(options, item.factory), current));
+  }, [workOrder, partnerOptions]);
 
   useEffect(() => {
     setMaterialItems((workOrder.materials ?? []).map(recalculateMaterial));
@@ -1051,61 +1171,36 @@ export default function WorkOrderDetail({
 
     const nextValue = (nextValueOverride ?? editingValue).trim();
 
-    if (editingCell.section === "basic") {
-      setBasicInfo((current) => {
-        if (editingCell.field === "category1") {
-          const category1 = nextValue || CATEGORY1_OPTIONS[0];
-          const nextCategory2Options = getCategory2Options(category1);
-          const category2 = nextCategory2Options[0] ?? "";
-          const nextCategory3Options = getCategory3Options(category2);
-          return {
-            ...current,
-            category1,
-            category2,
-            category3: nextCategory3Options[0] ?? "",
-          };
-        }
-        if (editingCell.field === "category2") {
-          const category2 = nextValue || getCategory2Options(current.category1)[0] || "";
-          const nextCategory3Options = getCategory3Options(category2);
-          return {
-            ...current,
-            category2,
-            category3: nextCategory3Options[0] ?? "",
-          };
-        }
-        if (editingCell.field === "category3") {
-          return { ...current, category3: nextValue || getCategory3Options(current.category2)[0] || "" };
-        }
-        if (editingCell.field === "season") {
-          return { ...current, season: nextValue || SEASON_OPTIONS[0] };
-        }
-        if (editingCell.field === "year") {
-          return { ...current, year: nextValue || DEFAULT_BASIC_YEAR };
-        }
-        if (editingCell.field === "priority") {
-          return { ...current, priority: nextValue || PRIORITY_OPTIONS[0] };
-        }
-        if (editingCell.field === "partner") {
-          return { ...current, partner: sanitizeSelectValue(nextValue, partnerOptions, DEFAULT_PARTNER_OPTION) };
-        }
-        if (editingCell.field === "factory") {
-          return { ...current, factory: sanitizeSelectValue(nextValue, factoryOptions, DEFAULT_FACTORY_OPTION) };
-        }
-        if (editingCell.field === "dueDate") {
-          return { ...current, dueDate: nextValue };
-        }
-        if (editingCell.field === "quantity") {
-          return { ...current, quantity: toNumber(nextValue) };
-        }
-        if (editingCell.field === "laborCost") {
-          return { ...current, laborCost: toNumber(nextValue) };
-        }
-        if (editingCell.field === "lossCost") {
-          return { ...current, lossCost: toNumber(nextValue) };
-        }
-        return current;
-      });
+    if (editingCell.section === "order") {
+      setOrderItems((current) =>
+        current.map((item) => {
+          if (item.id !== editingCell.rowId) return item;
+
+          if (editingCell.field === "quantity") {
+            return sanitizeOrderEntry({ ...item, quantity: toNumber(nextValue) }, item);
+          }
+          if (editingCell.field === "laborCost") {
+            return sanitizeOrderEntry({ ...item, laborCost: toNumber(nextValue) }, item);
+          }
+          if (editingCell.field === "lossCost") {
+            return sanitizeOrderEntry({ ...item, lossCost: toNumber(nextValue) }, item);
+          }
+          if (editingCell.field === "factory") {
+            return sanitizeOrderEntry({ ...item, factory: sanitizeSelectValue(nextValue, factoryOptions, DEFAULT_FACTORY_OPTION) }, item);
+          }
+          if (editingCell.field === "priority") {
+            return sanitizeOrderEntry({ ...item, priority: nextValue || PRIORITY_OPTIONS[0] }, item);
+          }
+          if (editingCell.field === "type") {
+            return sanitizeOrderEntry({ ...item, type: nextValue || DEFAULT_ORDER_TYPE }, item);
+          }
+          if (editingCell.field === "dueDate") {
+            return sanitizeOrderEntry({ ...item, dueDate: nextValue }, item);
+          }
+
+          return item;
+        }),
+      );
     }
 
     if (editingCell.section === "material") {
@@ -1147,6 +1242,29 @@ export default function WorkOrderDetail({
 
     blurActiveEditableElement();
     cancelEdit();
+  };
+
+  const addOrderEntry = () => {
+    setOrderItems((current) => [
+      ...current,
+      sanitizeOrderEntry({
+        id: createId("order"),
+        type: DEFAULT_ORDER_TYPE,
+        factory: DEFAULT_FACTORY_OPTION,
+        dueDate: current[0]?.dueDate || "",
+        quantity: 0,
+        laborCost: 0,
+        lossCost: 0,
+        priority: current[0]?.priority || PRIORITY_OPTIONS[0],
+      }),
+    ]);
+  };
+
+  const removeOrderEntry = (id: string) => {
+    setOrderItems((current) => (current.length > 1 ? current.filter((item) => item.id !== id) : current));
+    if (editingCell?.section === "order" && editingCell.rowId === id) {
+      cancelEdit();
+    }
   };
 
   const addMaterial = () => {
@@ -1214,8 +1332,7 @@ export default function WorkOrderDetail({
     }
 
     setFactoryOptions((current) => appendOption(current, name));
-    setBasicInfo((current) => ({ ...current, factory: name }));
-    setBasicInfoDraft((current) => ({ ...current, factory: name }));
+    setOrderItems((current) => current.map((item, index) => (index === 0 ? { ...item, factory: name } : item)));
   };
 
   const handleOpenBasicInfoModal = () => {
@@ -1268,7 +1385,7 @@ export default function WorkOrderDetail({
 
       <div className="mt-6 grid gap-6">
         <OrderInfoSection
-          basicInfo={basicInfo}
+          orderEntries={orderItems}
           factoryOptions={factoryOptions}
           open={basicInfoOpen}
           onToggle={onToggleBasicInfo}
@@ -1277,6 +1394,8 @@ export default function WorkOrderDetail({
           onStartEdit={startEdit}
           onCommitEdit={commitEdit}
           onCancelEdit={cancelEdit}
+          onAdd={addOrderEntry}
+          onRemove={removeOrderEntry}
         />
 
         {canSeeProductionSections ? (

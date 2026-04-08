@@ -11,8 +11,8 @@ export function createWorkOrderListItem(workOrder: WorkOrder): WorkOrderListItem
     category1: workOrder.category1,
     category2: workOrder.category2,
     category3: workOrder.category3,
-    vendor: workOrder.vendor,
-    dueDate: workOrder.dueDate,
+    vendor: workOrder.orderEntries?.[0]?.factory || workOrder.vendor,
+    dueDate: workOrder.orderEntries?.[0]?.dueDate || workOrder.dueDate,
     inventoryStatus: workOrder.inventoryStatus,
     attachments: officialAttachments,
     filesCount: officialAttachments.length,
@@ -25,10 +25,16 @@ export function calculateWorkOrderCosts(workOrder: WorkOrder) {
   const fabricTotal = materials.filter((item) => item.type === "원단").reduce((sum, item) => sum + item.totalCost, 0);
   const subsidiaryTotal = materials.filter((item) => item.type === "부자재").reduce((sum, item) => sum + item.totalCost, 0);
   const outsourcingTotal = outsourcing.reduce((sum, item) => sum + item.totalCost, 0);
-  const laborCost = Math.max(0, Number(workOrder.laborCost) || 0);
-  const lossCost = Math.max(0, Number(workOrder.lossCost) || 0);
+  const orderEntries = workOrder.orderEntries ?? [];
+  const quantity = orderEntries.length > 0 ? orderEntries.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0) : workOrder.quantity;
+  const laborCost = orderEntries.length > 0
+    ? orderEntries.reduce((sum, item) => sum + Math.max(0, Number(item.laborCost) || 0), 0)
+    : Math.max(0, Number(workOrder.laborCost) || 0);
+  const lossCost = orderEntries.length > 0
+    ? orderEntries.reduce((sum, item) => sum + Math.max(0, Number(item.lossCost) || 0), 0)
+    : Math.max(0, Number(workOrder.lossCost) || 0);
   const totalCost = fabricTotal + subsidiaryTotal + outsourcingTotal + laborCost + lossCost;
-  const unitCost = workOrder.quantity > 0 ? Math.round(totalCost / workOrder.quantity) : 0;
+  const unitCost = quantity > 0 ? Math.round(totalCost / quantity) : 0;
 
   return {
     materials,

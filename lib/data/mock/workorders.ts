@@ -22,6 +22,9 @@ const workOrders: WorkOrder[] = [
     quantity: 20,
     laborCost: 18000,
     lossCost: 6000,
+    orderEntries: [
+      { id: "ord-1", type: "메인 생산", factory: "A공장", dueDate: "03/29", quantity: 20, laborCost: 18000, lossCost: 6000, priority: "높음" },
+    ],
     inventoryQuantity: 12,
     inventoryStatus: "부족",
     memo: "메인 컬러와 배색 확인 후 생산 요청. 목 시보리 톤은 첨부 이미지를 우선 기준으로 확인합니다.",
@@ -84,6 +87,10 @@ const workOrders: WorkOrder[] = [
     quantity: 30,
     laborCost: 24000,
     lossCost: 9000,
+    orderEntries: [
+      { id: "ord-21", type: "메인 생산", factory: "B공장", dueDate: "04/02", quantity: 20, laborCost: 16000, lossCost: 5000, priority: "중간" },
+      { id: "ord-22", type: "추가 생산", factory: "워싱랩", dueDate: "04/05", quantity: 10, laborCost: 8000, lossCost: 4000, priority: "중간" },
+    ],
     inventoryQuantity: 28,
     inventoryStatus: "정상",
     memo: "워싱 견뢰도 테스트 후 본생산 진행 예정.",
@@ -133,6 +140,9 @@ const workOrders: WorkOrder[] = [
     createdByRole: "관리자",
     dueDate: "03/18",
     quantity: 10,
+    orderEntries: [
+      { id: "ord-31", type: "메인 생산", factory: "C업체", dueDate: "03/18", quantity: 10, laborCost: 0, lossCost: 0, priority: "낮음" },
+    ],
     inventoryQuantity: 10,
     inventoryStatus: "정상",
     memo: "완료 후 샘플 보관용 1개 별도 관리.",

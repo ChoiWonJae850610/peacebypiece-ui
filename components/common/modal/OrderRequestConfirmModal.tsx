@@ -26,6 +26,17 @@ export default function OrderRequestConfirmModal({
   const officialAttachments = (workOrder.attachments ?? []).filter((attachment) => (attachment.scope ?? "official") === "official");
   const attachmentCount = officialAttachments.length;
   const attachmentSummary = attachmentCount > 0 ? `${attachmentCount}개 첨부됨` : "첨부파일 없음";
+  const orderEntries = workOrder.orderEntries ?? [{
+    id: `${workOrder.id}-legacy-order`,
+    type: "메인 생산",
+    factory: workOrder.vendor || "-",
+    dueDate: workOrder.dueDate || "",
+    quantity: workOrder.quantity || 0,
+    laborCost: workOrder.laborCost || 0,
+    lossCost: workOrder.lossCost || 0,
+    priority: workOrder.priority || "-",
+  }];
+  const totalQuantity = orderEntries.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
 
   return (
     <BaseModal
@@ -56,22 +67,54 @@ export default function OrderRequestConfirmModal({
               <dd className="mt-1 font-medium text-stone-900">{workOrder.manager || "-"}</dd>
             </div>
             <div>
-              <dt className="text-xs font-medium text-stone-400">공장</dt>
-              <dd className="mt-1 font-medium text-stone-900">{workOrder.vendor || "-"}</dd>
+              <dt className="text-xs font-medium text-stone-400">발주 건수</dt>
+              <dd className="mt-1 font-medium text-stone-900">{orderEntries.length}건</dd>
             </div>
             <div>
-              <dt className="text-xs font-medium text-stone-400">납기</dt>
-              <dd className="mt-1 font-medium text-stone-900">{workOrder.dueDate || "-"}</dd>
-            </div>
-            <div>
-              <dt className="text-xs font-medium text-stone-400">수량</dt>
-              <dd className="mt-1 font-medium text-stone-900">{workOrder.quantity.toLocaleString()}장</dd>
-            </div>
-            <div>
-              <dt className="text-xs font-medium text-stone-400">우선순위</dt>
-              <dd className="mt-1 font-medium text-stone-900">{workOrder.priority || "-"}</dd>
+              <dt className="text-xs font-medium text-stone-400">총 수량</dt>
+              <dd className="mt-1 font-medium text-stone-900">{totalQuantity.toLocaleString()}장</dd>
             </div>
           </dl>
+        </section>
+
+        <section className="rounded-2xl border border-stone-200 bg-white p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-sm font-semibold text-stone-900">발주 정보</div>
+            <div className="rounded-full bg-stone-100 px-2.5 py-1 text-xs font-medium text-stone-700">{orderEntries.length}개 공정/공장</div>
+          </div>
+          <div className="mt-3 overflow-hidden rounded-xl border border-stone-200">
+            <table className="w-full table-fixed text-left text-xs md:text-sm">
+              <colgroup>
+                <col className="w-[18%]" />
+                <col className="w-[18%]" />
+                <col className="w-[16%]" />
+                <col className="w-[12%]" />
+                <col className="w-[14%]" />
+                <col className="w-[14%]" />
+                <col className="w-[8%]" />
+              </colgroup>
+              <thead className="bg-stone-50 text-stone-500">
+                <tr>
+                  {['구분', '공장', '납기일', '수량', '공임비', '로스비', '우선'] .map((header) => (
+                    <th key={header} className={`px-3 py-2 font-medium ${header === '수량' || header === '공임비' || header === '로스비' ? 'text-right' : 'text-left'}`}>{header}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {orderEntries.map((item) => (
+                  <tr key={item.id} className="border-t border-stone-200 text-stone-800">
+                    <td className="px-3 py-2">{item.type}</td>
+                    <td className="px-3 py-2">{item.factory || '-'}</td>
+                    <td className="px-3 py-2">{item.dueDate || '-'}</td>
+                    <td className="px-3 py-2 text-right tabular-nums">{item.quantity.toLocaleString()}장</td>
+                    <td className="px-3 py-2 text-right tabular-nums">{item.laborCost.toLocaleString()}원</td>
+                    <td className="px-3 py-2 text-right tabular-nums">{item.lossCost.toLocaleString()}원</td>
+                    <td className="px-3 py-2">{item.priority || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section className="rounded-2xl border border-stone-200 bg-white p-4">

@@ -56,6 +56,18 @@ export type Outsourcing = {
   status: string;
 };
 
+export type OrderEntry = {
+  id: string;
+  type: string;
+  factory: string;
+  dueDate: string;
+  quantity: number;
+  laborCost: number;
+  lossCost: number;
+  priority: string;
+};
+
+
 export type WorkOrder = {
   id: string;
   title: string;
@@ -73,6 +85,7 @@ export type WorkOrder = {
   quantity: number;
   laborCost?: number;
   lossCost?: number;
+  orderEntries?: OrderEntry[];
   inventoryQuantity: number;
   inventoryStatus: string;
   memo: string;
