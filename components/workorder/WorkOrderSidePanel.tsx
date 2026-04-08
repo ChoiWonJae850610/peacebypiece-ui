@@ -217,12 +217,14 @@ function MemoThreadCard({
 }) {
   const [replyDraft, setReplyDraft] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [replyComposerOpen, setReplyComposerOpen] = useState(false);
 
   const submitReply = () => {
     if (!replyDraft.trim()) return;
     onCreateReply(thread.id, replyDraft, { files: uploadedFiles });
     setReplyDraft("");
     setUploadedFiles([]);
+    setReplyComposerOpen(false);
   };
 
   const onReplyKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -252,19 +254,31 @@ function MemoThreadCard({
           </div>
         )) : null}
 
-        <div className="rounded-xl border border-stone-200 bg-stone-50 p-2.5">
-          <textarea
-            value={replyDraft}
-            onChange={(event) => setReplyDraft(event.target.value)}
-            onKeyDown={onReplyKeyDown}
-            placeholder="댓글 입력"
-            className="min-h-[36px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-2 text-sm text-stone-800 outline-none transition focus:border-stone-400"
-          />
-          <div className="mt-2 flex items-start justify-between gap-2">
-            <CompactAttachmentPicker uploadedFiles={uploadedFiles} onFilesChange={setUploadedFiles} onRemoveFile={(index) => setUploadedFiles((prev) => prev.filter((_, i) => i !== index))} />
-            <button type="button" onClick={submitReply} className="rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-stone-800">등록</button>
-          </div>
+        <div className="flex items-center justify-between gap-2 pt-1">
+          <button
+            type="button"
+            onClick={() => setReplyComposerOpen((prev) => !prev)}
+            className="rounded-full border border-stone-300 bg-white px-3 py-1 text-[11px] font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100"
+          >
+            {replyComposerOpen ? "댓글 닫기" : "댓글"}
+          </button>
         </div>
+
+        {replyComposerOpen ? (
+          <div className="rounded-xl border border-stone-200 bg-stone-50 p-2.5">
+            <textarea
+              value={replyDraft}
+              onChange={(event) => setReplyDraft(event.target.value)}
+              onKeyDown={onReplyKeyDown}
+              placeholder="댓글 입력"
+              className="min-h-[36px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-2 text-sm text-stone-800 outline-none transition focus:border-stone-400"
+            />
+            <div className="mt-2 flex items-start justify-between gap-2">
+              <CompactAttachmentPicker uploadedFiles={uploadedFiles} onFilesChange={setUploadedFiles} onRemoveFile={(index) => setUploadedFiles((prev) => prev.filter((_, i) => i !== index))} />
+              <button type="button" onClick={submitReply} className="rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-stone-800">등록</button>
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );
