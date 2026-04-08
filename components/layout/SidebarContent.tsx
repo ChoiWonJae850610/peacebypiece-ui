@@ -39,7 +39,7 @@ export default function SidebarContent({
       <div className="border-b border-stone-200 p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-lg font-semibold text-stone-900">PeacebyPiece v{version}</div>
+            <div className="text-lg font-semibold leading-6 text-stone-900">PeacebyPiece v{version}</div>
             <div className="mt-1 text-xs text-stone-500">작업지시서 목록</div>
           </div>
           <button
@@ -51,7 +51,7 @@ export default function SidebarContent({
             ⚙️
           </button>
         </div>
-        <label className="mt-4 block">
+        <label className="mt-3.5 block">
           <span className="sr-only">작업지시서 검색</span>
           <input
             type="search"
@@ -65,14 +65,14 @@ export default function SidebarContent({
           <button
             type="button"
             onClick={onCreate}
-            className="mt-4 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white"
+            className="mt-3.5 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white"
           >
             새 작업 추가
           </button>
         ) : null}
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {workOrders.map((workOrder) => (
             <WorkOrderListCard
               key={workOrder.id}

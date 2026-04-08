@@ -41,7 +41,7 @@ function SectionHeader({
   rightSlot?: ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2.5">
       <button
         type="button"
         onClick={onToggle}
@@ -49,8 +49,8 @@ function SectionHeader({
         className="flex min-w-0 flex-1 items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-left transition hover:border-stone-300 hover:bg-stone-50"
       >
         <div className="min-w-0">
-          <div className="text-sm font-semibold text-stone-900 md:text-base">{title}</div>
-          <div className="mt-1 truncate text-xs text-stone-500 md:text-sm">{summary}</div>
+          <div className="text-sm font-semibold leading-5 text-stone-900">{title}</div>
+          <div className="mt-1 truncate text-xs leading-4 text-stone-500 md:text-sm">{summary}</div>
         </div>
         <span
           aria-hidden="true"
@@ -646,7 +646,7 @@ function OrderInfoSection({
   ];
 
   return (
-    <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
+    <div className="rounded-2xl bg-stone-50 p-4">
       <SectionHeader title="발주 정보" summary={formatOrderSummary(basicInfo)} open={open} onToggle={onToggle} />
       {open ? (
         <div className="mt-4">
@@ -740,10 +740,10 @@ function ProductionCompositionSection({
   ].join(' · ');
 
   return (
-    <div className="rounded-2xl bg-stone-50 p-4 md:p-5">
+    <div className="rounded-2xl bg-stone-50 p-4">
       <SectionHeader title="생산 구성" summary={summary} open={open} onToggle={onToggle} />
       {open ? (
-        <div className="mt-4 space-y-4">
+        <div className="mt-3.5 space-y-3.5">
           <MaterialSection
             materials={materials}
             open={materialOpen}
@@ -803,7 +803,7 @@ function MaterialSection({
     : "등록된 원단/부자재가 없습니다.";
 
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white p-4 md:p-5">
+    <div className="rounded-2xl border border-stone-200 bg-white p-4">
       <SectionHeader
         title="원단 / 부자재"
         summary={summary}
@@ -814,7 +814,7 @@ function MaterialSection({
         <>
           <div className="mt-4 space-y-3 md:hidden">
             {materials.map((item, index) => (
-              <div key={item.id} className="rounded-2xl border border-stone-200 bg-white p-4">
+              <div key={item.id} className="rounded-2xl border border-stone-200 bg-white p-3.5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="text-sm font-semibold text-stone-900">{item.name || `자재 ${index + 1}`}</div>
@@ -957,7 +957,7 @@ function OutsourcingSection({
     : "등록된 외주 공정이 없습니다.";
 
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white p-4 md:p-5">
+    <div className="rounded-2xl border border-stone-200 bg-white p-4">
       <SectionHeader
         title="외주 공정"
         summary={summary}
@@ -968,7 +968,7 @@ function OutsourcingSection({
         <>
           <div className="mt-4 space-y-3 md:hidden">
             {outsourcing.map((item, index) => (
-              <div key={item.id} className="rounded-2xl border border-stone-200 bg-white p-4">
+              <div key={item.id} className="rounded-2xl border border-stone-200 bg-white p-3.5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="text-sm font-semibold text-stone-900">{item.process || `공정 ${index + 1}`}</div>
@@ -1099,8 +1099,8 @@ function CostSummarySection({
 }) {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm md:p-5">
-        <h3 className="text-base font-semibold text-stone-900">비용 요약</h3>
+      <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+        <h3 className="text-sm font-semibold text-stone-900">비용 요약</h3>
         <div className="mt-4 space-y-3 text-sm">
           <div className="flex items-center justify-between gap-4"><span className="text-stone-600">원단 합계</span><span className="font-medium text-stone-900">{fabricTotal.toLocaleString()}원</span></div>
           <div className="flex items-center justify-between gap-4"><span className="text-stone-600">부자재 합계</span><span className="font-medium text-stone-900">{subsidiaryTotal.toLocaleString()}원</span></div>
@@ -1111,8 +1111,8 @@ function CostSummarySection({
           </div>
         </div>
       </div>
-      <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm md:p-5">
-        <h3 className="text-base font-semibold text-stone-900">공정별 금액</h3>
+      <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+        <h3 className="text-sm font-semibold text-stone-900">공정별 금액</h3>
         <div className="mt-4 space-y-2 text-sm">
           {outsourcing.length > 0 ? outsourcing.map((item, index) => (
             <div key={`${item.id ?? item.process}-${index}`} className="flex items-center justify-between gap-4">

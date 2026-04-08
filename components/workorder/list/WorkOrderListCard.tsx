@@ -29,7 +29,7 @@ export default function WorkOrderListCard({
 
   return (
     <div
-      className={`w-full rounded-2xl border p-4 transition ${
+      className={`w-full rounded-2xl border p-3.5 transition ${
         active
           ? "border-stone-900 bg-stone-900 text-white"
           : "border-stone-200 bg-stone-50 text-stone-900 hover:border-stone-300"
@@ -37,8 +37,8 @@ export default function WorkOrderListCard({
     >
       <div className="flex items-start justify-between gap-3">
         <button type="button" onClick={() => onClick(workOrder.id)} className="min-w-0 flex-1 text-left">
-          <div className="truncate text-sm font-semibold">{workOrder.title}</div>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
+          <div className="truncate text-sm font-semibold leading-5">{workOrder.title}</div>
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
             <span
               className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ${
                 active ? "bg-white/15 text-white" : getWorkOrderCardTone(state)
@@ -48,7 +48,7 @@ export default function WorkOrderListCard({
               {state}
             </span>
           </div>
-          <div className={`mt-3 space-y-1 text-xs ${active ? "text-stone-200" : "text-stone-500"}`}>
+          <div className={`mt-2.5 space-y-1 text-xs leading-4 ${active ? "text-stone-200" : "text-stone-500"}`}>
             <div className="truncate">{getCategoryPath(workOrder) || "분류 미지정"}</div>
             <div className="truncate">공장: {workOrder.vendor ?? "미지정"}</div>
             <div>마감: {workOrder.dueDate ?? "미지정"}</div>
@@ -60,7 +60,7 @@ export default function WorkOrderListCard({
             <button
               type="button"
               onClick={() => onReorder?.(workOrder.id)}
-              className={`rounded-xl border px-3 py-2 text-xs font-medium transition ${
+              className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition ${
                 active
                   ? "border-white/20 bg-white/10 text-white hover:bg-white/15"
                   : "border-stone-300 bg-white text-stone-800 hover:border-stone-400 hover:bg-stone-100"

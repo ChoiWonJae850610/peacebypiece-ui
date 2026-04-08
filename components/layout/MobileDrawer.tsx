@@ -57,7 +57,7 @@ export default function MobileDrawer({
         <div className="sticky top-0 z-10 border-b border-stone-200 bg-white/95 px-4 pb-3 pt-[max(env(safe-area-inset-top),1rem)] backdrop-blur">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <div id="mobile-drawer-title" className="text-sm font-semibold text-stone-900">작업 목록</div>
+              <div id="mobile-drawer-title" className="text-sm font-semibold leading-5 text-stone-900">작업 목록</div>
               <div className="text-[11px] text-stone-500">모바일 드로어</div>
             </div>
             <button
@@ -92,7 +92,7 @@ export default function MobileDrawer({
           ) : null}
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {workOrders.map((workOrder) => (
               <WorkOrderListCard
                 key={workOrder.id}
