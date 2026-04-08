@@ -116,7 +116,7 @@ export default function InventoryEditor({
                 value={inboundQuantity}
                 onChange={(event) => setInboundQuantity(event.target.value)}
                 placeholder="입고 수량 입력"
-                className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-stone-500"
+                className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base outline-none transition focus:border-stone-500 md:text-sm"
               />
             </div>
             <div>
@@ -127,7 +127,7 @@ export default function InventoryEditor({
                 value={adjustmentQuantity}
                 onChange={(event) => setAdjustmentQuantity(event.target.value)}
                 placeholder="최종 재고 수량"
-                className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-stone-500"
+                className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base outline-none transition focus:border-stone-500 md:text-sm"
               />
             </div>
             <div>
@@ -138,7 +138,7 @@ export default function InventoryEditor({
                 value={deductionQuantity}
                 onChange={(event) => setDeductionQuantity(event.target.value)}
                 placeholder="차감 수량 입력"
-                className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-stone-500"
+                className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base outline-none transition focus:border-stone-500 md:text-sm"
               />
             </div>
           </div>
@@ -149,7 +149,7 @@ export default function InventoryEditor({
               onChange={(event) => setMemo(event.target.value)}
               placeholder="입고 사유, 차감 사유, 보정 메모"
               rows={3}
-              className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-stone-500"
+              className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base outline-none transition focus:border-stone-500 md:text-sm"
             />
           </div>
           <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-700">

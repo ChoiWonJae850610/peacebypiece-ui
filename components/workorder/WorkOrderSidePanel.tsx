@@ -70,6 +70,7 @@ function HistoryPreviewItem({ item }: { item: HistoryLog }) {
 
 function AttachmentPanel({
   canSeeAttachments,
+  canUploadOfficialAttachments,
   attachments,
   onOpenAttachmentPicker,
   onPreviewAttachment,
@@ -77,6 +78,7 @@ function AttachmentPanel({
   canDeleteAttachment,
 }: {
   canSeeAttachments: boolean;
+  canUploadOfficialAttachments: boolean;
   attachments: Attachment[];
   onOpenAttachmentPicker: () => void;
   onPreviewAttachment: (attachmentId: string) => void;
@@ -91,7 +93,9 @@ function AttachmentPanel({
         <div>
           <h3 className="text-sm font-semibold text-stone-900">공식 첨부파일</h3>
         </div>
-        <button type="button" onClick={onOpenAttachmentPicker} className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200">+ 첨부 추가</button>
+        {canUploadOfficialAttachments ? (
+          <button type="button" onClick={onOpenAttachmentPicker} className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200">+ 첨부 추가</button>
+        ) : null}
       </div>
       {attachments.length > 0 ? (
         <div className="mt-2.5 space-y-2">
@@ -351,6 +355,7 @@ function MemoPanel({
 
 export default function WorkOrderSidePanel({
   canSeeAttachments,
+  canUploadOfficialAttachments,
   attachments,
   onOpenAttachmentPicker,
   onPreviewAttachment,
@@ -371,6 +376,7 @@ export default function WorkOrderSidePanel({
   onPromoteMemoAttachment,
 }: {
   canSeeAttachments: boolean;
+  canUploadOfficialAttachments: boolean;
   attachments: Attachment[];
   onOpenAttachmentPicker: () => void;
   onPreviewAttachment: (attachmentId: string) => void;
@@ -394,6 +400,7 @@ export default function WorkOrderSidePanel({
     <div className="space-y-3 md:space-y-4">
       <AttachmentPanel
         canSeeAttachments={canSeeAttachments}
+        canUploadOfficialAttachments={canUploadOfficialAttachments}
         attachments={attachments}
         onOpenAttachmentPicker={onOpenAttachmentPicker}
         onPreviewAttachment={onPreviewAttachment}
@@ -415,7 +422,7 @@ export default function WorkOrderSidePanel({
         <div className="rounded-2xl border border-stone-200 bg-white p-3 md:p-4 shadow-sm">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h3 className="text-sm font-semibold text-stone-900">{isAdmin ? "최근 히스토리" : "최근 변경 요약"}</h3>
+              <h3 className="text-sm font-semibold text-stone-900">히스토리</h3>
             </div>
             <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">{filteredHistoryLogs.length}건</span>
           </div>
@@ -427,11 +434,10 @@ export default function WorkOrderSidePanel({
             </div>
           )}
           <div className="mt-2.5 space-y-2">
-            {filteredHistoryLogs.length > 0 ? filteredHistoryLogs.slice(0, 3).map((item) => (
+            {filteredHistoryLogs.length > 0 ? filteredHistoryLogs.map((item) => (
               <HistoryPreviewItem key={item.id} item={item} />
             )) : <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-sm text-stone-500">표시할 히스토리가 없습니다.</div>}
           </div>
-          {isAdmin && filteredHistoryLogs.length > 3 && <button type="button" onClick={onOpenInventoryLogModal} className="pbp-touch-target pbp-interactive-button mt-3.5 w-full rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200">전체 히스토리 보기</button>}
         </div>
       )}
     </div>

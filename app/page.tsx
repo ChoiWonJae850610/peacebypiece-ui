@@ -180,6 +180,7 @@ export default function Home() {
           <aside className="min-w-0 overflow-x-hidden border-t border-stone-200 bg-stone-50 px-3 py-3 md:col-span-3 md:border-l md:border-t-0 md:p-6">
             <WorkOrderSidePanel
               canSeeAttachments={canSeeAttachments}
+              canUploadOfficialAttachments={isAdmin}
               attachments={officialAttachments}
               onOpenAttachmentPicker={handleOpenAttachmentPicker}
               onPreviewAttachment={setAttachmentPreviewId}

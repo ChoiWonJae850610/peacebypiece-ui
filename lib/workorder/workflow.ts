@@ -10,10 +10,11 @@ type WorkflowContext = {
 
 export function getAvailableWorkflowActions({ currentWorkflowState, currentRole, currentUserId, workOrder }: WorkflowContext): WorkflowAction[] {
   const createdByCurrentUser = workOrder.createdById === currentUserId;
+  const assignedManagerIsCurrentUser = (workOrder.managerId ?? null) === currentUserId;
 
   switch (currentWorkflowState) {
     case "작성중":
-      if (currentRole === "디자이너" && createdByCurrentUser) {
+      if (currentRole === "디자이너" && (createdByCurrentUser || assignedManagerIsCurrentUser)) {
         return [{ label: "검토 요청", nextState: "검토요청" }];
       }
       if (currentRole === "관리자") {

@@ -329,9 +329,16 @@ export function useWorkOrder() {
     setToastMessage("작업지시서가 삭제되었습니다.");
   };
 
-  const handleOpenAttachmentPicker = () => attachmentInputRef.current?.click();
+  const handleOpenAttachmentPicker = () => {
+    if (!isAdmin) return;
+    attachmentInputRef.current?.click();
+  };
 
   const handleAttachmentFiles = (event: ChangeEvent<HTMLInputElement>) => {
+    if (!isAdmin) {
+      event.target.value = "";
+      return;
+    }
     const files = Array.from<File>(event.target.files ?? []);
     if (files.length === 0) return;
     const nextAttachments: Attachment[] = files.map((file) => ({
