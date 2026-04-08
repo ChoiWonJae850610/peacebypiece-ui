@@ -1,8 +1,10 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import ToastMessage from "@/components/common/ToastMessage";
 import AttachmentPreviewModal from "@/components/common/modal/AttachmentPreviewModal";
 import AdminPanelModal from "@/components/common/modal/AdminPanelModal";
+import AttachmentDeleteConfirmModal from "@/components/common/modal/AttachmentDeleteConfirmModal";
 import InventoryEditor from "@/components/common/modal/InventoryEditor";
 import InventoryLogModal from "@/components/common/modal/InventoryLogModal";
 import ManagerAssignModal from "@/components/common/modal/ManagerAssignModal";
@@ -108,6 +110,26 @@ export default function Home() {
     handlePromoteMemoAttachment,
   } = useWorkOrder();
 
+  const [pendingAttachmentDeleteId, setPendingAttachmentDeleteId] = useState<string | null>(null);
+  const pendingAttachmentDelete = useMemo(
+    () => selectedWorkOrder.attachments.find((item) => item.id === pendingAttachmentDeleteId) ?? null,
+    [selectedWorkOrder.attachments, pendingAttachmentDeleteId],
+  );
+
+  const handleRequestDeleteAttachment = (attachmentId: string) => {
+    setPendingAttachmentDeleteId(attachmentId);
+  };
+
+  const handleCloseDeleteAttachmentConfirm = () => {
+    setPendingAttachmentDeleteId(null);
+  };
+
+  const handleConfirmDeleteAttachment = () => {
+    if (!pendingAttachmentDeleteId) return;
+    handleDeleteAttachment(pendingAttachmentDeleteId);
+    setPendingAttachmentDeleteId(null);
+  };
+
   return (
     <main className="min-h-screen overflow-x-hidden bg-stone-100 text-stone-900">
       <div ref={appShellRef} className="overflow-x-hidden">
@@ -197,7 +219,7 @@ export default function Home() {
               attachments={officialAttachments}
               onOpenAttachmentPicker={handleOpenAttachmentPicker}
               onPreviewAttachment={setAttachmentPreviewId}
-              onDeleteAttachment={handleDeleteAttachment}
+              onDeleteAttachment={handleRequestDeleteAttachment}
               canDeleteAttachment={canDeleteAttachment}
               currentRole={currentRole}
               workOrder={selectedWorkOrder}
@@ -221,7 +243,13 @@ export default function Home() {
         attachment={selectedAttachment}
         canDelete={canDeleteAttachment(selectedAttachment)}
         onClose={() => setAttachmentPreviewId(null)}
-        onDelete={() => selectedAttachment && handleDeleteAttachment(selectedAttachment.id)}
+        onDelete={() => selectedAttachment && handleRequestDeleteAttachment(selectedAttachment.id)}
+      />
+      <AttachmentDeleteConfirmModal
+        open={pendingAttachmentDelete !== null}
+        attachmentName={pendingAttachmentDelete?.name ?? null}
+        onClose={handleCloseDeleteAttachmentConfirm}
+        onConfirm={handleConfirmDeleteAttachment}
       />
       <InventoryLogModal
         open={inventoryLogModalOpen && isAdmin}

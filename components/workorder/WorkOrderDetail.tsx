@@ -29,6 +29,8 @@ type BasicInfoState = {
   priority: string;
   dueDate: string;
   quantity: number;
+  laborCost: number;
+  lossCost: number;
 };
 
 const EDITABLE_FIELD_HEIGHT_CLASS = "h-10";
@@ -89,7 +91,7 @@ function toNumber(value: string) {
 }
 
 function isNumericField(field: string) {
-  return field === "quantity" || field === "unitCost";
+  return field === "quantity" || field === "unitCost" || field === "laborCost" || field === "lossCost";
 }
 
 function formatNumericDisplay(value: string) {
@@ -463,6 +465,8 @@ function getInitialBasicInfo(workOrder: WorkOrder): BasicInfoState {
     priority: workOrder.priority || PRIORITY_OPTIONS[0],
     dueDate: workOrder.dueDate || "",
     quantity: Number.isFinite(workOrder.quantity) ? workOrder.quantity : 0,
+    laborCost: Math.max(0, Number(workOrder.laborCost) || 0),
+    lossCost: Math.max(0, Number(workOrder.lossCost) || 0),
   };
 }
 
@@ -491,6 +495,8 @@ function OrderInfoSection({
     { label: "공장", field: "factory", value: basicInfo.factory, options: factoryOptions },
     { label: "납기일", field: "dueDate", value: basicInfo.dueDate, inputType: "date" as const },
     { label: "발주 수량", field: "quantity", value: basicInfo.quantity.toLocaleString(), inputMode: "numeric" as const, alignRight: true },
+    { label: "공임비", field: "laborCost", value: basicInfo.laborCost.toLocaleString(), inputMode: "numeric" as const, alignRight: true },
+    { label: "로스비", field: "lossCost", value: basicInfo.lossCost.toLocaleString(), inputMode: "numeric" as const, alignRight: true },
     { label: "우선순위", field: "priority", value: basicInfo.priority, options: PRIORITY_OPTIONS },
   ];
 
@@ -499,7 +505,7 @@ function OrderInfoSection({
       <SectionHeader title="발주 정보" summary={formatOrderSummary(basicInfo)} open={open} onToggle={onToggle} />
       {open ? (
         <div className="mt-4">
-          <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
             {infoItems.map((item) => (
               <div key={item.field} className="min-w-0 max-w-full overflow-hidden rounded-xl border border-stone-200 bg-white p-3">
                 <div className="text-xs text-stone-500">{item.label}</div>
@@ -713,15 +719,15 @@ function MaterialSection({
             </button>
           </div>
           <div className="mt-3 hidden max-w-full overflow-hidden md:block">
-            <table className="w-full max-w-full table-fixed text-left text-sm">
+            <table className="w-full max-w-full table-fixed text-left text-xs lg:text-sm">
               <colgroup>
+                <col className="w-[78px]" />
+                <col className="w-[18%]" />
+                <col className="w-[18%]" />
+                <col className="w-[84px]" />
                 <col className="w-[72px]" />
-                <col />
-                <col />
-                <col className="w-[88px]" />
-                <col className="w-[64px]" />
-                <col className="w-[120px]" />
-                <col className="w-[132px]" />
+                <col className="w-[108px]" />
+                <col className="w-[116px]" />
                 <col className="w-[52px]" />
               </colgroup>
               <thead className="text-stone-500">
@@ -729,9 +735,9 @@ function MaterialSection({
                   {["구분", "자재명", "거래처", "수량", "단위", "단가", "금액", ""].map((header, index) => (
                     <th
                       key={`${header}-${index}`}
-                      className={`min-w-0 overflow-hidden px-2 py-3 text-xs font-medium ${header === "수량" || header === "단가" || header === "금액" ? "text-right" : header === "" ? "text-center" : "text-left"}`}
+                      className={`min-w-0 overflow-hidden px-2 py-3 text-[11px] font-medium lg:text-xs ${header === "수량" || header === "단가" || header === "금액" ? "text-right" : header === "" ? "text-center" : "text-left"}`}
                     >
-                      <span className={TABLE_HEADER_TEXT_CLASS}>{header}</span>
+                      <span className={`${TABLE_HEADER_TEXT_CLASS} break-keep`}>{header}</span>
                     </th>
                   ))}
                 </tr>
@@ -867,14 +873,14 @@ function OutsourcingSection({
             </button>
           </div>
           <div className="mt-3 hidden max-w-full overflow-hidden md:block">
-            <table className="w-full max-w-full table-fixed text-left text-sm">
+            <table className="w-full max-w-full table-fixed text-left text-xs lg:text-sm">
               <colgroup>
-                <col />
-                <col />
-                <col className="w-[88px]" />
-                <col className="w-[96px]" />
-                <col className="w-[120px]" />
-                <col className="w-[132px]" />
+                <col className="w-[18%]" />
+                <col className="w-[18%]" />
+                <col className="w-[84px]" />
+                <col className="w-[92px]" />
+                <col className="w-[108px]" />
+                <col className="w-[116px]" />
                 <col className="w-[52px]" />
               </colgroup>
               <thead className="text-stone-500">
@@ -882,9 +888,9 @@ function OutsourcingSection({
                   {["공정", "외주처", "수량", "단가기준", "단가", "금액", ""].map((header, index) => (
                     <th
                       key={`${header}-${index}`}
-                      className={`min-w-0 overflow-hidden px-2 py-3 text-xs font-medium ${header === "수량" || header === "단가" || header === "금액" ? "text-right" : header === "" ? "text-center" : "text-left"}`}
+                      className={`min-w-0 overflow-hidden px-2 py-3 text-[11px] font-medium lg:text-xs ${header === "수량" || header === "단가" || header === "금액" ? "text-right" : header === "" ? "text-center" : "text-left"}`}
                     >
-                      <span className={TABLE_HEADER_TEXT_CLASS}>{header}</span>
+                      <span className={`${TABLE_HEADER_TEXT_CLASS} break-keep`}>{header}</span>
                     </th>
                   ))}
                 </tr>
@@ -1003,6 +1009,11 @@ export default function WorkOrderDetail({
   const [editingCell, setEditingCell] = useState<EditableCell>(null);
   const [editingValue, setEditingValue] = useState("");
 
+  const laborCost = Math.max(0, basicInfo.laborCost || 0);
+  const lossCost = Math.max(0, basicInfo.lossCost || 0);
+  const totalCostWithOrderInfo = fabricTotal + subsidiaryTotal + outsourcingTotal + laborCost + lossCost;
+  const unitCostWithOrderInfo = basicInfo.quantity > 0 ? Math.round(totalCostWithOrderInfo / basicInfo.quantity) : 0;
+
   useEffect(() => {
     setBasicInfo((current) => {
       const next = getInitialBasicInfo(workOrder);
@@ -1086,6 +1097,12 @@ export default function WorkOrderDetail({
         }
         if (editingCell.field === "quantity") {
           return { ...current, quantity: toNumber(nextValue) };
+        }
+        if (editingCell.field === "laborCost") {
+          return { ...current, laborCost: toNumber(nextValue) };
+        }
+        if (editingCell.field === "lossCost") {
+          return { ...current, lossCost: toNumber(nextValue) };
         }
         return current;
       });
@@ -1240,8 +1257,10 @@ export default function WorkOrderDetail({
             fabricTotal={fabricTotal}
             subsidiaryTotal={subsidiaryTotal}
             outsourcingTotal={outsourcingTotal}
-            totalCost={totalCost}
-            unitCost={unitCost}
+            laborCost={laborCost}
+            lossCost={lossCost}
+            totalCost={totalCostWithOrderInfo}
+            unitCost={unitCostWithOrderInfo}
             outsourcing={outsourcingItems}
           />
         </div>

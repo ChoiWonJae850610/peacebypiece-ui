@@ -5,6 +5,8 @@ type WorkOrderCostSummarySectionProps = {
   fabricTotal: number;
   subsidiaryTotal: number;
   outsourcingTotal: number;
+  laborCost: number;
+  lossCost: number;
   totalCost: number;
   unitCost: number;
   outsourcing: Outsourcing[];
@@ -14,6 +16,8 @@ export default function WorkOrderCostSummarySection({
   fabricTotal,
   subsidiaryTotal,
   outsourcingTotal,
+  laborCost,
+  lossCost,
   totalCost,
   unitCost,
   outsourcing,
@@ -25,6 +29,8 @@ export default function WorkOrderCostSummarySection({
           <div className="flex min-w-0 items-center justify-between gap-4"><span className="text-stone-600">원단 합계</span><span className="font-medium text-stone-900">{fabricTotal.toLocaleString()}원</span></div>
           <div className="flex min-w-0 items-center justify-between gap-4"><span className="text-stone-600">부자재 합계</span><span className="font-medium text-stone-900">{subsidiaryTotal.toLocaleString()}원</span></div>
           <div className="flex min-w-0 items-center justify-between gap-4"><span className="text-stone-600">외주 합계</span><span className="font-medium text-stone-900">{outsourcingTotal.toLocaleString()}원</span></div>
+          <div className="flex min-w-0 items-center justify-between gap-4"><span className="text-stone-600">공임비</span><span className="font-medium text-stone-900">{laborCost.toLocaleString()}원</span></div>
+          <div className="flex min-w-0 items-center justify-between gap-4"><span className="text-stone-600">로스비</span><span className="font-medium text-stone-900">{lossCost.toLocaleString()}원</span></div>
           <div className="border-t border-stone-200 pt-3">
             <div className="flex min-w-0 items-center justify-between gap-4"><span className="font-semibold text-stone-900">총합</span><span className="font-semibold text-stone-900">{totalCost.toLocaleString()}원</span></div>
             <div className="mt-3 flex items-center justify-between gap-4"><span className="text-stone-600">장당 추정 원가</span><span className="font-medium text-stone-900">{unitCost.toLocaleString()}원</span></div>

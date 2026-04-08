@@ -5,11 +5,9 @@ import {
   isDesignerRole,
   normalizeRoles,
 } from "@/lib/constants/roles";
-import { MANAGER_ASSIGNABLE_STATES, WORKFLOW_ACTION_LABELS } from "@/lib/constants/workflow";
+import { WORKFLOW_ACTION_LABELS } from "@/lib/constants/workflow";
 import type { RoleType } from "@/types/permission";
 import type { WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
-
-const MANAGER_ASSIGNABLE_STATE_SET = new Set<WorkflowState>(MANAGER_ASSIGNABLE_STATES);
 
 export type WorkflowContext = {
   currentWorkflowState: WorkflowState;
@@ -18,8 +16,8 @@ export type WorkflowContext = {
   workOrder: WorkOrder;
 };
 
-export function canManageWorkOrderManager(currentRoles: RoleType[], currentWorkflowState: WorkflowState) {
-  return isAdminRole(currentRoles) && MANAGER_ASSIGNABLE_STATE_SET.has(currentWorkflowState);
+export function canManageWorkOrderManager(currentRoles: RoleType[], _currentWorkflowState: WorkflowState) {
+  return isAdminRole(currentRoles);
 }
 
 export function canRequestReview({ currentRoles, currentUserId, workOrder }: Pick<WorkflowContext, "currentRoles" | "currentUserId" | "workOrder">) {
@@ -41,8 +39,8 @@ export function canCompleteInspection(currentRoles: RoleType[]) {
   return canEditInventoryByRoles(currentRoles);
 }
 
-export function canEditInventoryForWorkflow(currentRoles: RoleType[], currentWorkflowState: WorkflowState) {
-  return hasRole(currentRoles, "관리자") || (canEditInventoryByRoles(currentRoles) && currentWorkflowState === "검수중");
+export function canEditInventoryForWorkflow(currentRoles: RoleType[], _currentWorkflowState: WorkflowState) {
+  return hasRole(currentRoles, "관리자") || canEditInventoryByRoles(currentRoles);
 }
 
 export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles, currentUserId, workOrder }: WorkflowContext): WorkflowAction[] {
