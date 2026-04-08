@@ -180,11 +180,13 @@ function MemoAttachmentList({
   attachmentsById,
   canPromoteMemoAttachment = false,
   onPromoteMemoAttachment,
+  onPreviewAttachment,
 }: {
   attachmentIds?: string[];
   attachmentsById: Map<string, Attachment>;
   canPromoteMemoAttachment?: boolean;
   onPromoteMemoAttachment?: (attachmentId: string) => void;
+  onPreviewAttachment?: (attachmentId: string) => void;
 }) {
   const linkedAttachments = (attachmentIds ?? []).map((attachmentId) => attachmentsById.get(attachmentId)).filter((attachment): attachment is Attachment => Boolean(attachment));
   if (linkedAttachments.length === 0) return null;
@@ -193,11 +195,17 @@ function MemoAttachmentList({
       {linkedAttachments.map((attachment) => {
         const isOfficial = (attachment.scope ?? "official") === "official";
         return (
-          <div key={attachment.id} className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-[11px] text-stone-700">
-            <span className="font-semibold text-stone-900">{attachment.type === "pdf" ? "PDF" : "IMG"}</span>
-            <span className="truncate max-w-[120px]">{attachment.name}</span>
+          <div key={attachment.id} className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-[11px] text-stone-700">
+            <button
+              type="button"
+              onClick={() => onPreviewAttachment?.(attachment.id)}
+              className="flex min-w-0 max-w-full items-center gap-1.5 text-left"
+            >
+              <span className="font-semibold text-stone-900">{attachment.type === "pdf" ? "PDF" : "IMG"}</span>
+              <span className="max-w-[160px] truncate">{attachment.name}</span>
+            </button>
             {!isOfficial && canPromoteMemoAttachment && onPromoteMemoAttachment ? (
-              <button type="button" onClick={() => onPromoteMemoAttachment(attachment.id)} className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-1.5 py-0.5 text-[10px] font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200">승격</button>
+              <button type="button" onClick={() => onPromoteMemoAttachment(attachment.id)} className="pbp-interactive-button shrink-0 rounded-full border border-stone-300 bg-white px-1.5 py-0.5 text-[10px] font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200">승격</button>
             ) : null}
           </div>
         );
@@ -211,12 +219,14 @@ function MemoThreadCard({
   attachmentsById,
   canPromoteMemoAttachment,
   onPromoteMemoAttachment,
+  onPreviewAttachment,
   onCreateReply,
 }: {
   thread: MemoThread;
   attachmentsById: Map<string, Attachment>;
   canPromoteMemoAttachment: boolean;
   onPromoteMemoAttachment: (attachmentId: string) => void;
+  onPreviewAttachment: (attachmentId: string) => void;
   onCreateReply: (threadId: string, content: string, payload?: MemoAttachmentPayload) => void;
 }) {
   const [replyDraft, setReplyDraft] = useState("");
@@ -247,14 +257,14 @@ function MemoThreadCard({
         </div>
       </div>
       <div className="mt-2 whitespace-pre-wrap text-sm leading-5 text-stone-700">{thread.content}</div>
-      <MemoAttachmentList attachmentIds={thread.attachmentIds} attachmentsById={attachmentsById} canPromoteMemoAttachment={canPromoteMemoAttachment} onPromoteMemoAttachment={onPromoteMemoAttachment} />
+      <MemoAttachmentList attachmentIds={thread.attachmentIds} attachmentsById={attachmentsById} canPromoteMemoAttachment={canPromoteMemoAttachment} onPromoteMemoAttachment={onPromoteMemoAttachment} onPreviewAttachment={onPreviewAttachment} />
 
       <div className="mt-3 space-y-2 border-t border-stone-200 pt-3">
         {(thread.replies ?? []).length > 0 ? thread.replies.map((reply) => (
           <div key={reply.id} className="pl-3 text-sm text-stone-700">
             <div className="text-[11px] text-stone-500">ㄴ {reply.authorName} · {reply.authorRole} · {reply.createdAt}</div>
             <div className="mt-0.5 whitespace-pre-wrap leading-5">{reply.content}</div>
-            <MemoAttachmentList attachmentIds={reply.attachmentIds} attachmentsById={attachmentsById} canPromoteMemoAttachment={canPromoteMemoAttachment} onPromoteMemoAttachment={onPromoteMemoAttachment} />
+            <MemoAttachmentList attachmentIds={reply.attachmentIds} attachmentsById={attachmentsById} canPromoteMemoAttachment={canPromoteMemoAttachment} onPromoteMemoAttachment={onPromoteMemoAttachment} onPreviewAttachment={onPreviewAttachment} />
           </div>
         )) : null}
 
@@ -296,6 +306,7 @@ function MemoPanel({
   onCreateReply,
   canPromoteMemoAttachment,
   onPromoteMemoAttachment,
+  onPreviewAttachment,
 }: {
   workOrder: WorkOrder;
   currentUserName: string;
@@ -304,6 +315,7 @@ function MemoPanel({
   onCreateReply: (threadId: string, content: string, payload?: MemoAttachmentPayload) => void;
   canPromoteMemoAttachment: boolean;
   onPromoteMemoAttachment: (attachmentId: string) => void;
+  onPreviewAttachment: (attachmentId: string) => void;
 }) {
   const [threadDraft, setThreadDraft] = useState('');
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -346,7 +358,7 @@ function MemoPanel({
       </div>
       <div className="mt-2.5 space-y-2">
         {memoThreads.length > 0 ? memoThreads.map((thread) => (
-          <MemoThreadCard key={thread.id} thread={thread} attachmentsById={attachmentsById} canPromoteMemoAttachment={canPromoteMemoAttachment} onPromoteMemoAttachment={onPromoteMemoAttachment} onCreateReply={onCreateReply} />
+          <MemoThreadCard key={thread.id} thread={thread} attachmentsById={attachmentsById} canPromoteMemoAttachment={canPromoteMemoAttachment} onPromoteMemoAttachment={onPromoteMemoAttachment} onPreviewAttachment={onPreviewAttachment} onCreateReply={onCreateReply} />
         )) : <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-5 text-center text-sm text-stone-500">등록된 작업 메모가 없습니다.</div>}
       </div>
     </div>
@@ -416,6 +428,7 @@ export default function WorkOrderSidePanel({
         onCreateReply={onCreateMemoReply}
         canPromoteMemoAttachment={canPromoteMemoAttachment}
         onPromoteMemoAttachment={onPromoteMemoAttachment}
+        onPreviewAttachment={onPreviewAttachment}
       />
 
       {canSeeInventoryHistorySection && isAdmin && (

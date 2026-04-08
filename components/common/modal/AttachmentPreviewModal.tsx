@@ -42,23 +42,14 @@ export default function AttachmentPreviewModal({
             className="mx-auto max-h-[70dvh] w-auto rounded-2xl border border-stone-200 bg-white object-contain shadow-sm"
           />
         ) : attachment ? (
-          <>
-            <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm md:hidden">
-              <div className="border-b border-stone-200 px-4 py-3 text-sm font-medium text-stone-700">PDF 미리보기</div>
-              <div className="px-4 py-6 text-sm leading-6 text-stone-600">
-                모바일에서는 PDF 미리보기를 지원하지 않습니다.
-                <div className="mt-2 break-all text-xs text-stone-500">{attachment.name}</div>
-              </div>
-            </div>
-            <div className="hidden overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm md:block">
-              <div className="border-b border-stone-200 px-4 py-3 text-sm font-medium text-stone-700">PDF 미리보기</div>
-              <iframe
-                title={attachment.name}
-                src={attachment.url}
-                className="h-[70dvh] w-full bg-white"
-              />
-            </div>
-          </>
+          <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
+            <div className="border-b border-stone-200 px-4 py-3 text-sm font-medium text-stone-700">PDF 미리보기</div>
+            <iframe
+              title={attachment.name}
+              src={attachment.url}
+              className="h-[65dvh] w-full bg-white md:h-[70dvh]"
+            />
+          </div>
         ) : null}
       </ModalBody>
 
