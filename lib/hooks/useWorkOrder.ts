@@ -24,7 +24,7 @@ import { createWorkOrderListItem, calculateWorkOrderCosts } from "@/lib/workorde
 import { getAvailableWorkflowActions } from "@/lib/workorder/workflow";
 import type { Attachment, HistoryLog, InventoryLog, MemoAttachmentPayload, MemoReply, MemoThread, UserProfile, WorkOrder, WorkOrderListItem, WorkflowAction } from "@/types/workorder";
 import type { RoleType } from "@/types/permission";
-import type { HistoryFilter } from "@/types/workflow";
+import type { HistoryFilter, NotificationSettingKey, NotificationSettings } from "@/types/workflow";
 
 export function useWorkOrder() {
   const appShellRef = useRef<HTMLDivElement | null>(null);
@@ -36,6 +36,7 @@ export function useWorkOrder() {
   const [outsourcingOpen, setOutsourcingOpen] = useState(false);
   const [inventoryEditorOpen, setInventoryEditorOpen] = useState(false);
   const [permissionModalOpen, setPermissionModalOpen] = useState(false);
+  const [adminPanelModalOpen, setAdminPanelModalOpen] = useState(false);
   const [managerAssignModalOpen, setManagerAssignModalOpen] = useState(false);
   const [inventoryLogModalOpen, setInventoryLogModalOpen] = useState(false);
   const [attachmentPreviewId, setAttachmentPreviewId] = useState<string | null>(null);
@@ -46,6 +47,15 @@ export function useWorkOrder() {
   const [currentUserId, setCurrentUserId] = useState(DEFAULT_CURRENT_USER_ID);
   const [permissionTargetUserId, setPermissionTargetUserId] = useState(DEFAULT_PERMISSION_TARGET_ID);
   const [historyFilter, setHistoryFilter] = useState<HistoryFilter>("all");
+  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({
+    created: false,
+    updated: false,
+    status_changed: true,
+    materials_changed: false,
+    outsourcing_changed: false,
+    stock_changed: true,
+    comment_added: true,
+  });
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>(MOCK_WORK_ORDERS);
   const [historyLogs, setHistoryLogs] = useState<HistoryLog[]>(MOCK_HISTORY_LOGS);
   const [selectedId, setSelectedId] = useState(DEFAULT_SELECTED_WORK_ORDER_ID);
@@ -494,6 +504,10 @@ export function useWorkOrder() {
     setToastMessage("메모 첨부가 공식 첨부로 승격되었습니다.");
   };
 
+  const handleToggleNotificationSetting = (key: NotificationSettingKey) => {
+    setNotificationSettings((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
   const canDeleteAttachment = (attachment: Attachment | null) => {
     return canDeleteAttachmentByUser(currentUser, attachment);
   };
@@ -513,6 +527,8 @@ export function useWorkOrder() {
     setInventoryEditorOpen,
     permissionModalOpen,
     setPermissionModalOpen,
+    adminPanelModalOpen,
+    setAdminPanelModalOpen,
     managerAssignModalOpen,
     setManagerAssignModalOpen,
     inventoryLogModalOpen,
@@ -529,6 +545,7 @@ export function useWorkOrder() {
     setPermissionTargetUserId,
     historyFilter,
     setHistoryFilter,
+    notificationSettings,
     searchQuery,
     setSearchQuery,
     workOrders: filteredWorkOrderList,
@@ -583,5 +600,6 @@ export function useWorkOrder() {
     handleCreateMemoThread,
     handleCreateMemoReply,
     handlePromoteMemoAttachment,
+    handleToggleNotificationSetting,
   };
 }

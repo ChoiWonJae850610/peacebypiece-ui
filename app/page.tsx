@@ -2,6 +2,7 @@
 
 import ToastMessage from "@/components/common/ToastMessage";
 import AttachmentPreviewModal from "@/components/common/modal/AttachmentPreviewModal";
+import AdminPanelModal from "@/components/common/modal/AdminPanelModal";
 import InventoryEditor from "@/components/common/modal/InventoryEditor";
 import InventoryLogModal from "@/components/common/modal/InventoryLogModal";
 import ManagerAssignModal from "@/components/common/modal/ManagerAssignModal";
@@ -32,6 +33,8 @@ export default function Home() {
     setInventoryEditorOpen,
     permissionModalOpen,
     setPermissionModalOpen,
+    adminPanelModalOpen,
+    setAdminPanelModalOpen,
     managerAssignModalOpen,
     inventoryLogModalOpen,
     setInventoryLogModalOpen,
@@ -46,6 +49,7 @@ export default function Home() {
     setPermissionTargetUserId,
     historyFilter,
     setHistoryFilter,
+    notificationSettings,
     searchQuery,
     setSearchQuery,
     workOrders,
@@ -99,12 +103,13 @@ export default function Home() {
     handleCreateMemoThread,
     handleCreateMemoReply,
     handlePromoteMemoAttachment,
+    handleToggleNotificationSetting,
   } = useWorkOrder();
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-stone-100 text-stone-900">
       <div ref={appShellRef} className="overflow-x-hidden">
-        <MobileTopBar version={version} onOpen={() => setDrawerOpen(true)} onOpenSettings={() => setPermissionModalOpen(true)} />
+        <MobileTopBar version={version} onOpen={() => setDrawerOpen(true)} onOpenSettings={() => setPermissionModalOpen(true)} onOpenAdminPanel={() => setAdminPanelModalOpen(true)} isAdmin={isAdmin} />
         <MobileDrawer
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
@@ -130,6 +135,8 @@ export default function Home() {
               onSelect={handleSelectWorkOrder}
               onCreate={handleCreateWorkOrder}
               onOpenSettings={() => setPermissionModalOpen(true)}
+              onOpenAdminPanel={() => setAdminPanelModalOpen(true)}
+              isAdmin={isAdmin}
               onReorder={() => {}}
               onDelete={handleDeleteWorkOrder}
               canDelete={canDeleteWorkOrder}
@@ -249,6 +256,13 @@ export default function Home() {
         onSelectedUserChange={setPermissionTargetUserId}
         onApplyRole={handleApplyRole}
         onCurrentUserChange={setCurrentUserId}
+      />
+
+      <AdminPanelModal
+        open={adminPanelModalOpen && isAdmin}
+        onClose={() => setAdminPanelModalOpen(false)}
+        notificationSettings={notificationSettings}
+        onToggleNotificationSetting={handleToggleNotificationSetting}
       />
 
       <input

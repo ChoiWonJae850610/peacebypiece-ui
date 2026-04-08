@@ -19,3 +19,15 @@ export type HistoryTone = "blue" | "violet" | "emerald" | "rose" | "amber" | "st
 export type HistoryFilter = "all" | "work" | "inventory" | "attachment";
 
 export const DISPLAY_STAGES: DisplayStage[] = ["작성중", "검토요청", "검토완료", "발주요청", "검수", "완료"];
+
+
+export type NotificationSettingKey =
+  | "created"
+  | "updated"
+  | "status_changed"
+  | "materials_changed"
+  | "outsourcing_changed"
+  | "stock_changed"
+  | "comment_added";
+
+export type NotificationSettings = Record<NotificationSettingKey, boolean>;
