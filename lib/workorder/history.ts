@@ -96,8 +96,6 @@ export function createInventoryHistoryLog(
   });
 }
 
-
-
 export function createMemoHistoryLog(
   user: string,
   workOrderId: string,
@@ -162,6 +160,33 @@ export function filterHistoryLogs(
   }
 
   return scopedHistoryLogs.filter((item) => item.category === "inventory" || item.category === "attachment");
+}
+
+function getHistoryDetailSummary(log: HistoryLog) {
+  if (log.transition) {
+    return `${log.transition.from} → ${log.transition.to}`;
+  }
+
+  const firstDetail = (log.detailLines ?? []).find((detail) => detail.value.trim().length > 0);
+  if (!firstDetail) return "";
+
+  if (!firstDetail.label || firstDetail.label === "변경") {
+    return firstDetail.value;
+  }
+
+  if (firstDetail.label === "메모") {
+    return "메모 포함";
+  }
+
+  return `${firstDetail.label} ${firstDetail.value}`;
+}
+
+export function formatHistorySummary(log: HistoryLog) {
+  const detailSummary = getHistoryDetailSummary(log);
+  if (!detailSummary) {
+    return `${log.action} · ${log.user}`;
+  }
+  return `${log.action}: ${detailSummary} · ${log.user}`;
 }
 
 function parseInventoryChanges(log: HistoryLog): InventoryChange[] {

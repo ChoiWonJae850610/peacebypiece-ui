@@ -4,7 +4,6 @@ import ToastMessage from "@/components/common/ToastMessage";
 import AttachmentPreviewModal from "@/components/common/modal/AttachmentPreviewModal";
 import AdminPanelModal from "@/components/common/modal/AdminPanelModal";
 import InventoryEditor from "@/components/common/modal/InventoryEditor";
-import InventoryLogModal from "@/components/common/modal/InventoryLogModal";
 import ManagerAssignModal from "@/components/common/modal/ManagerAssignModal";
 import OrderRequestConfirmModal from "@/components/common/modal/OrderRequestConfirmModal";
 import PermissionModal from "@/components/common/modal/PermissionModal";
@@ -36,8 +35,6 @@ export default function Home() {
     adminPanelModalOpen,
     setAdminPanelModalOpen,
     managerAssignModalOpen,
-    inventoryLogModalOpen,
-    setInventoryLogModalOpen,
     attachmentPreviewId,
     setAttachmentPreviewId,
     orderRequestConfirmOpen,
@@ -65,7 +62,6 @@ export default function Home() {
     canSeeProductionSections,
     canSeeCostSections,
     canEditInventory,
-    canSeeInventoryHistorySection,
     canSeeAttachments,
     currentDisplayStage,
     currentInventoryQuantity,
@@ -193,13 +189,7 @@ export default function Home() {
               onPreviewAttachment={setAttachmentPreviewId}
               onDeleteAttachment={handleDeleteAttachment}
               canDeleteAttachment={canDeleteAttachment}
-              canSeeInventoryHistorySection={canSeeInventoryHistorySection}
-              isAdmin={isAdmin}
               currentRole={currentRole}
-              filteredHistoryLogs={filteredHistoryLogs}
-              historyFilter={historyFilter}
-              onHistoryFilterChange={setHistoryFilter}
-              onOpenInventoryLogModal={() => setInventoryLogModalOpen(true)}
               workOrder={selectedWorkOrder}
               currentUserName={currentUser.name}
               onCreateMemoThread={handleCreateMemoThread}
@@ -222,13 +212,6 @@ export default function Home() {
         canDelete={canDeleteAttachment(selectedAttachment)}
         onClose={() => setAttachmentPreviewId(null)}
         onDelete={() => selectedAttachment && handleDeleteAttachment(selectedAttachment.id)}
-      />
-      <InventoryLogModal
-        open={inventoryLogModalOpen && isAdmin}
-        onClose={() => setInventoryLogModalOpen(false)}
-        logs={filteredHistoryLogs}
-        role={currentRole}
-        filter={historyFilter}
       />
       <ManagerAssignModal
         open={managerAssignModalOpen}
@@ -263,6 +246,9 @@ export default function Home() {
         onClose={() => setAdminPanelModalOpen(false)}
         notificationSettings={notificationSettings}
         onToggleNotificationSetting={handleToggleNotificationSetting}
+        historyLogs={filteredHistoryLogs}
+        historyFilter={historyFilter}
+        onHistoryFilterChange={setHistoryFilter}
       />
 
       <input
