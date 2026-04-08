@@ -3,10 +3,10 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { DEFAULT_SELECTED_WORK_ORDER_ID, MOCK_HISTORY_LOGS, MOCK_WORK_ORDERS } from "@/lib/data/mock/workorders";
 import { DEFAULT_CURRENT_USER_ID, DEFAULT_PERMISSION_TARGET_ID, MOCK_USERS } from "@/lib/data/mock/users";
-import { buildUserRoleState, hasRole, normalizeRoles } from "@/lib/constants/roles";
+import { buildUserRoleState, canCreateWorkOrderByRoles, canUploadOfficialAttachmentsByRoles, isAdminRole, normalizeRoles } from "@/lib/constants/roles";
 import { SECTION_PREFERENCES_STORAGE_KEY } from "@/lib/constants/app";
 import { canDeleteAttachmentByUser } from "@/lib/permissions/attachments";
-import { getDisplayStageFromWorkflowState, VISIBLE_STAGES } from "@/lib/constants/workflow";
+import { getDisplayStageFromWorkflowState, VISIBLE_STAGES, WORKFLOW_ACTION_LABELS } from "@/lib/constants/workflow";
 import {
   createAttachmentHistoryLog,
   createCreationHistoryLog,
@@ -21,7 +21,7 @@ import {
 } from "@/lib/workorder/history";
 import { addMemoReply, addMemoThread, createNewWorkOrder, applyInventoryAdjustment, appendAttachments, appendMemoAttachmentsToReply, appendMemoAttachmentsToThread, promoteAttachmentToOfficial, removeAttachment, updateWorkflowState, updateWorkOrderManager } from "@/lib/workorder/actions";
 import { createWorkOrderListItem, calculateWorkOrderCosts } from "@/lib/workorder/selectors";
-import { getAvailableWorkflowActions } from "@/lib/workorder/workflow";
+import { canEditInventoryForWorkflow, canManageWorkOrderManager, getAvailableWorkflowActions } from "@/lib/workorder/workflow";
 import type { Attachment, HistoryLog, InventoryLog, MemoAttachmentPayload, MemoReply, MemoThread, UserProfile, WorkOrder, WorkOrderListItem, WorkflowAction } from "@/types/workorder";
 import type { RoleType } from "@/types/permission";
 import type { HistoryFilter, NotificationSettingKey, NotificationSettings } from "@/types/workflow";
@@ -73,10 +73,9 @@ export function useWorkOrder() {
   );
   const currentRoles = normalizeRoles(currentUser.roles, currentUser.role);
   const currentRole = currentUser.role;
-  const isAdmin = hasRole(currentRoles, "관리자");
-  const isDesigner = hasRole(currentRoles, "디자이너");
-  const isInspector = hasRole(currentRoles, "입고/검수");
-  const canCreateWorkOrder = isAdmin || isDesigner;
+  const isAdmin = isAdminRole(currentRoles);
+  const canCreateWorkOrder = canCreateWorkOrderByRoles(currentRoles);
+  const canUploadOfficialAttachments = canUploadOfficialAttachmentsByRoles(currentRoles);
   const permissionTargetUser = useMemo(
     () => users.find((user) => user.id === permissionTargetUserId) ?? users[0],
     [users, permissionTargetUserId],
@@ -87,7 +86,7 @@ export function useWorkOrder() {
     [workOrders],
   );
   const currentWorkflowState = selectedWorkOrder.workflowState;
-  const canChangeManager = isAdmin && (currentWorkflowState === "작성중" || currentWorkflowState === "검토요청");
+  const canChangeManager = canManageWorkOrderManager(currentRoles, currentWorkflowState);
   const currentDisplayStage = getDisplayStageFromWorkflowState(currentWorkflowState);
   const visibleStages = VISIBLE_STAGES;
 
@@ -112,6 +111,7 @@ export function useWorkOrder() {
   const canSeeProductionSections = currentUser.permissions.canSeeProductionSections;
   const canSeeCostSections = currentUser.permissions.canSeeCostSections;
   const canEditInventory = currentUser.permissions.canEditInventory;
+  const canOpenInventoryEditor = canEditInventoryForWorkflow(currentRoles, currentWorkflowState);
   const canSeeInventoryHistorySection = currentUser.permissions.canSeeInventoryHistorySection;
   const canSeeAttachments = currentUser.permissions.canSeeAttachments;
 
@@ -235,7 +235,7 @@ export function useWorkOrder() {
   };
 
   const handleWorkflowAction = (action: WorkflowAction) => {
-    if (action.label === "발주 요청" && action.nextState === "생산중") {
+    if (action.label === WORKFLOW_ACTION_LABELS.requestOrder && action.nextState === "생산중") {
       setPendingWorkflowAction(action);
       setOrderRequestConfirmOpen(true);
       return;
@@ -343,12 +343,12 @@ export function useWorkOrder() {
   };
 
   const handleOpenAttachmentPicker = () => {
-    if (!isAdmin) return;
+    if (!canUploadOfficialAttachments) return;
     attachmentInputRef.current?.click();
   };
 
   const handleAttachmentFiles = (event: ChangeEvent<HTMLInputElement>) => {
-    if (!isAdmin) {
+    if (!canUploadOfficialAttachments) {
       event.target.value = "";
       return;
     }
@@ -480,7 +480,7 @@ export function useWorkOrder() {
 
   const handlePromoteMemoAttachment = (attachmentId: string) => {
     const targetAttachment = selectedWorkOrder.attachments.find((item) => item.id === attachmentId);
-    if (!targetAttachment || (targetAttachment.scope ?? "official") === "official" || !isAdmin) return;
+    if (!targetAttachment || (targetAttachment.scope ?? "official") === "official" || !canUploadOfficialAttachments) return;
 
     setWorkOrders((prev) => promoteAttachmentToOfficial(prev, selectedWorkOrder.id, attachmentId, {
       ownerId: currentUser.id,
@@ -545,10 +545,12 @@ export function useWorkOrder() {
     currentRole,
     isAdmin,
     canCreateWorkOrder,
+    canUploadOfficialAttachments,
     canChangeManager,
     canSeeProductionSections,
     canSeeCostSections,
     canEditInventory,
+    canOpenInventoryEditor,
     canSeeInventoryHistorySection,
     canSeeAttachments,
     currentDisplayStage,

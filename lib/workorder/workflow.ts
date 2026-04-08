@@ -1,56 +1,85 @@
-import { hasRole, normalizeRoles } from "@/lib/constants/roles";
+import {
+  canEditInventoryByRoles,
+  hasRole,
+  isAdminRole,
+  isDesignerRole,
+  normalizeRoles,
+} from "@/lib/constants/roles";
+import { MANAGER_ASSIGNABLE_STATES, WORKFLOW_ACTION_LABELS } from "@/lib/constants/workflow";
 import type { RoleType } from "@/types/permission";
 import type { WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
 
-type WorkflowContext = {
+const MANAGER_ASSIGNABLE_STATE_SET = new Set<WorkflowState>(MANAGER_ASSIGNABLE_STATES);
+
+export type WorkflowContext = {
   currentWorkflowState: WorkflowState;
   currentRoles: RoleType[];
   currentUserId: string;
   workOrder: WorkOrder;
 };
 
-export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles, currentUserId, workOrder }: WorkflowContext): WorkflowAction[] {
+export function canManageWorkOrderManager(currentRoles: RoleType[], currentWorkflowState: WorkflowState) {
+  return isAdminRole(currentRoles) && MANAGER_ASSIGNABLE_STATE_SET.has(currentWorkflowState);
+}
+
+export function canRequestReview({ currentRoles, currentUserId, workOrder }: Pick<WorkflowContext, "currentRoles" | "currentUserId" | "workOrder">) {
   const roles = normalizeRoles(currentRoles);
   const createdByCurrentUser = workOrder.createdById === currentUserId;
   const assignedManagerIsCurrentUser = (workOrder.managerId ?? null) === currentUserId;
-  const isDesigner = hasRole(roles, "디자이너");
-  const isAdmin = hasRole(roles, "관리자");
-  const isInspector = hasRole(roles, "입고/검수");
+  return isDesignerRole(roles) && (createdByCurrentUser || assignedManagerIsCurrentUser);
+}
 
+export function canRequestOrder(currentRoles: RoleType[]) {
+  return isAdminRole(currentRoles);
+}
+
+export function canStartInspection(currentRoles: RoleType[]) {
+  return canEditInventoryByRoles(currentRoles);
+}
+
+export function canCompleteInspection(currentRoles: RoleType[]) {
+  return canEditInventoryByRoles(currentRoles);
+}
+
+export function canEditInventoryForWorkflow(currentRoles: RoleType[], currentWorkflowState: WorkflowState) {
+  return hasRole(currentRoles, "관리자") || (canEditInventoryByRoles(currentRoles) && currentWorkflowState === "검수중");
+}
+
+export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles, currentUserId, workOrder }: WorkflowContext): WorkflowAction[] {
   switch (currentWorkflowState) {
     case "작성중": {
       const actions: WorkflowAction[] = [];
-      if (isDesigner && (createdByCurrentUser || assignedManagerIsCurrentUser)) {
-        actions.push({ label: "검토 요청", nextState: "검토요청" });
+      if (canRequestReview({ currentRoles, currentUserId, workOrder })) {
+        actions.push({ label: WORKFLOW_ACTION_LABELS.requestReview, nextState: "검토요청" });
       }
-      if (isAdmin) {
-        actions.push({ label: "발주 요청", nextState: "생산중" });
+      if (canRequestOrder(currentRoles)) {
+        actions.push({ label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "생산중" });
       }
       return actions;
     }
     case "검토요청":
-      if (isAdmin) {
+      if (isAdminRole(currentRoles)) {
         return [
-          { label: "반려", nextState: "작성중" },
-          { label: "검토 완료", nextState: "검토완료" },
+          { label: WORKFLOW_ACTION_LABELS.rejectReview, nextState: "작성중" },
+          { label: WORKFLOW_ACTION_LABELS.approveReview, nextState: "검토완료" },
         ];
       }
       return [];
     case "검토완료":
-      if (isAdmin) {
-        return [{ label: "발주 요청", nextState: "생산중" }];
+      if (canRequestOrder(currentRoles)) {
+        return [{ label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "생산중" }];
       }
       return [];
     case "발주요청":
       return [];
     case "생산중":
-      if (isInspector || isAdmin) {
-        return [{ label: "검수 시작", nextState: "검수중" }];
+      if (canStartInspection(currentRoles)) {
+        return [{ label: WORKFLOW_ACTION_LABELS.startInspection, nextState: "검수중" }];
       }
       return [];
     case "검수중":
-      if (isInspector || isAdmin) {
-        return [{ label: "검수 완료", nextState: "완료" }];
+      if (canCompleteInspection(currentRoles)) {
+        return [{ label: WORKFLOW_ACTION_LABELS.completeInspection, nextState: "완료" }];
       }
       return [];
     default:

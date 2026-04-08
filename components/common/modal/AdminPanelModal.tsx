@@ -5,18 +5,9 @@ import BaseModal from "@/components/common/modal/BaseModal";
 import ModalBody from "@/components/common/modal/ModalBody";
 import ModalHeader from "@/components/common/modal/ModalHeader";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
+import { HISTORY_FILTER_OPTIONS, NOTIFICATION_SETTING_META } from "@/lib/constants/workflow";
 import type { NotificationSettingKey, NotificationSettings, HistoryFilter } from "@/types/workflow";
 import type { HistoryLog, HistoryTone } from "@/types/workorder";
-
-const SETTING_META: { key: NotificationSettingKey; label: string; description: string }[] = [
-  { key: "created", label: "작업지시서 생성", description: "새 작업지시서 생성 이벤트" },
-  { key: "updated", label: "기본사항 수정", description: "기본정보 저장 및 수정 이벤트" },
-  { key: "status_changed", label: "상태 변경", description: "작성중, 검토요청, 발주요청 등 단계 변경" },
-  { key: "materials_changed", label: "원단/부자재 변경", description: "원단, 부자재, 단가 등 생산구성 변경" },
-  { key: "outsourcing_changed", label: "외주 공정 변경", description: "외주 공정 추가, 수정, 삭제" },
-  { key: "stock_changed", label: "재고 변경", description: "입고, 차감, 보정 수량 변경" },
-  { key: "comment_added", label: "메모 작성", description: "작업메모와 댓글 등록" },
-];
 
 function getHistoryToneClass(tone: HistoryTone) {
   switch (tone) {
@@ -123,7 +114,7 @@ export default function AdminPanelModal({
             <span className="rounded-full bg-sky-100 px-2 py-1 text-[11px] font-medium text-sky-700">테스트용</span>
           </div>
           <div className="mt-3 space-y-2">
-            {SETTING_META.map((item) => {
+            {NOTIFICATION_SETTING_META.map((item) => {
               const checked = notificationSettings[item.key];
               return (
                 <label key={item.key} className="flex cursor-pointer items-start gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-3 py-3 transition hover:border-stone-300 hover:bg-stone-100">
@@ -153,7 +144,7 @@ export default function AdminPanelModal({
             <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">{historyLogs.length}건</span>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
-            {([ ["all", "전체"], ["work", "작업"], ["inventory", "재고"], ["attachment", "첨부"] ] as [HistoryFilter, string][]).map(([value, label]) => (
+            {HISTORY_FILTER_OPTIONS.map(([value, label]) => (
               <button key={value} type="button" onClick={() => onHistoryFilterChange(value)} className={`pbp-touch-target pbp-interactive-button rounded-full px-3 py-1 text-xs font-medium ${historyFilter === value ? "bg-stone-900 text-white hover:bg-stone-800 active:bg-black" : "border border-stone-300 bg-white text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200"}`}>{label}</button>
             ))}
           </div>

@@ -62,10 +62,12 @@ export default function Home() {
     currentRole,
     isAdmin,
     canCreateWorkOrder,
+    canUploadOfficialAttachments,
     canChangeManager,
     canSeeProductionSections,
     canSeeCostSections,
     canEditInventory,
+    canOpenInventoryEditor,
     canSeeInventoryHistorySection,
     canSeeAttachments,
     currentDisplayStage,
@@ -160,7 +162,7 @@ export default function Home() {
               currentInventoryQuantity={currentInventoryQuantity}
               currentUserName={currentUser.name}
               currentUserRole={currentRole}
-              canEditInventory={canEditInventory}
+              canEditInventory={canOpenInventoryEditor}
               canChangeManager={canChangeManager}
               onOpenManagerAssignModal={handleOpenManagerAssignModal}
               canSeeProductionSections={canSeeProductionSections}
@@ -191,7 +193,7 @@ export default function Home() {
           <aside className="min-w-0 overflow-x-hidden border-t border-stone-200 bg-stone-50 px-3 py-3 md:col-span-3 md:border-l md:border-t-0 md:p-6">
             <WorkOrderSidePanel
               canSeeAttachments={canSeeAttachments}
-              canUploadOfficialAttachments={isAdmin}
+              canUploadOfficialAttachments={canUploadOfficialAttachments}
               attachments={officialAttachments}
               onOpenAttachmentPicker={handleOpenAttachmentPicker}
               onPreviewAttachment={setAttachmentPreviewId}
@@ -202,7 +204,7 @@ export default function Home() {
               currentUserName={currentUser.name}
               onCreateMemoThread={handleCreateMemoThread}
               onCreateMemoReply={handleCreateMemoReply}
-              canPromoteMemoAttachment={isAdmin}
+              canPromoteMemoAttachment={canUploadOfficialAttachments}
               onPromoteMemoAttachment={handlePromoteMemoAttachment}
             />
           </aside>

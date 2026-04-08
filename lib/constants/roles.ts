@@ -47,6 +47,9 @@ export const ROLE_TEMPLATES: Record<RoleType, RoleTemplate> = {
 };
 
 export const ROLE_PRIORITY: readonly RoleType[] = ["관리자", "디자이너", "입고/검수"] as const;
+export const WORK_ORDER_CREATOR_ROLES: readonly RoleType[] = ["관리자", "디자이너"] as const;
+export const OFFICIAL_ATTACHMENT_MANAGER_ROLES: readonly RoleType[] = ["관리자"] as const;
+export const INVENTORY_EDITOR_ROLES: readonly RoleType[] = ["관리자", "입고/검수"] as const;
 
 export const ROLE_OPTIONS = Object.values(ROLE_TEMPLATES).map((item) => ({
   role: item.role,
@@ -103,6 +106,37 @@ export function hasRole(source: readonly RoleType[] | Pick<UserProfile, "role" |
     ? source
     : normalizeRoles((source as Pick<UserProfile, "role" | "roles">).roles, (source as Pick<UserProfile, "role" | "roles">).role);
   return roles.includes(role);
+}
+
+export function hasAnyRole(source: readonly RoleType[] | Pick<UserProfile, "role" | "roles">, targetRoles: readonly RoleType[]): boolean {
+  const roles = Array.isArray(source)
+    ? normalizeRoles(source)
+    : normalizeRoles((source as Pick<UserProfile, "role" | "roles">).roles, (source as Pick<UserProfile, "role" | "roles">).role);
+  return targetRoles.some((role) => roles.includes(role));
+}
+
+export function isAdminRole(source: readonly RoleType[] | Pick<UserProfile, "role" | "roles">) {
+  return hasRole(source, "관리자");
+}
+
+export function isDesignerRole(source: readonly RoleType[] | Pick<UserProfile, "role" | "roles">) {
+  return hasRole(source, "디자이너");
+}
+
+export function isInspectorRole(source: readonly RoleType[] | Pick<UserProfile, "role" | "roles">) {
+  return hasRole(source, "입고/검수");
+}
+
+export function canCreateWorkOrderByRoles(source: readonly RoleType[] | Pick<UserProfile, "role" | "roles">) {
+  return hasAnyRole(source, WORK_ORDER_CREATOR_ROLES);
+}
+
+export function canUploadOfficialAttachmentsByRoles(source: readonly RoleType[] | Pick<UserProfile, "role" | "roles">) {
+  return hasAnyRole(source, OFFICIAL_ATTACHMENT_MANAGER_ROLES);
+}
+
+export function canEditInventoryByRoles(source: readonly RoleType[] | Pick<UserProfile, "role" | "roles">) {
+  return hasAnyRole(source, INVENTORY_EDITOR_ROLES);
 }
 
 export function formatRoles(roles?: readonly RoleType[] | null, fallback?: RoleType | null): string {
