@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type KeyboardEvent } from "react";
 import { toDisplayValue } from "@/lib/utils/display";
-import type { Attachment, HistoryFilter, HistoryLog, HistoryTone, Outsourcing } from "@/types/workorder";
+import type { Attachment, HistoryFilter, HistoryLog, HistoryTone, MemoAttachmentPayload, MemoThread, WorkOrder } from "@/types/workorder";
 
 function SummaryRow({ label, value, strong = false }: { label: string; value: string | number | null | undefined; strong?: boolean }) {
   return (
@@ -135,6 +135,206 @@ function AttachmentPanel({
   );
 }
 
+
+function CompactAttachmentPicker({
+  uploadedFiles,
+  onFilesChange,
+  onRemoveFile,
+}: {
+  uploadedFiles: File[];
+  onFilesChange: (files: File[]) => void;
+  onRemoveFile: (index: number) => void;
+}) {
+  return (
+    <div className="flex items-start gap-2">
+      <label className="inline-flex h-8 shrink-0 cursor-pointer items-center rounded-full border border-stone-300 bg-white px-2.5 text-[11px] font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">
+        첨부추가
+        <input
+          type="file"
+          multiple
+          accept="image/*,.pdf,application/pdf"
+          className="sr-only"
+          onChange={(event) => onFilesChange([...(uploadedFiles ?? []), ...Array.from<File>(event.target.files ?? [])])}
+        />
+      </label>
+      {uploadedFiles.length > 0 ? (
+        <div className="flex min-w-0 flex-1 flex-wrap gap-1.5 pt-0.5">
+          {uploadedFiles.map((file, index) => (
+            <span key={`${file.name}-${file.size}-${index}`} className="inline-flex max-w-full items-center gap-1 rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-[11px] text-stone-700">
+              <span className="truncate max-w-[120px]">{file.name}</span>
+              <button type="button" onClick={() => onRemoveFile(index)} className="text-stone-500 transition hover:text-rose-600" aria-label={`${file.name} 삭제`}>×</button>
+            </span>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function MemoAttachmentList({
+  attachmentIds,
+  attachmentsById,
+  canPromoteMemoAttachment = false,
+  onPromoteMemoAttachment,
+}: {
+  attachmentIds?: string[];
+  attachmentsById: Map<string, Attachment>;
+  canPromoteMemoAttachment?: boolean;
+  onPromoteMemoAttachment?: (attachmentId: string) => void;
+}) {
+  const linkedAttachments = (attachmentIds ?? []).map((attachmentId) => attachmentsById.get(attachmentId)).filter((attachment): attachment is Attachment => Boolean(attachment));
+  if (linkedAttachments.length === 0) return null;
+  return (
+    <div className="mt-2 flex flex-wrap gap-1.5">
+      {linkedAttachments.map((attachment) => {
+        const isOfficial = (attachment.scope ?? "official") === "official";
+        return (
+          <div key={attachment.id} className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-[11px] text-stone-700">
+            <span className="font-semibold text-stone-900">{attachment.type === "pdf" ? "PDF" : "IMG"}</span>
+            <span className="truncate max-w-[120px]">{attachment.name}</span>
+            {!isOfficial && canPromoteMemoAttachment && onPromoteMemoAttachment ? (
+              <button type="button" onClick={() => onPromoteMemoAttachment(attachment.id)} className="rounded-full border border-stone-300 bg-white px-1.5 py-0.5 text-[10px] font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">승격</button>
+            ) : null}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function MemoThreadCard({
+  thread,
+  attachmentsById,
+  canPromoteMemoAttachment,
+  onPromoteMemoAttachment,
+  onCreateReply,
+}: {
+  thread: MemoThread;
+  attachmentsById: Map<string, Attachment>;
+  canPromoteMemoAttachment: boolean;
+  onPromoteMemoAttachment: (attachmentId: string) => void;
+  onCreateReply: (threadId: string, content: string, payload?: MemoAttachmentPayload) => void;
+}) {
+  const [replyDraft, setReplyDraft] = useState("");
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+
+  const submitReply = () => {
+    if (!replyDraft.trim()) return;
+    onCreateReply(thread.id, replyDraft, { files: uploadedFiles });
+    setReplyDraft("");
+    setUploadedFiles([]);
+  };
+
+  const onReplyKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      submitReply();
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border border-stone-200 bg-white p-3 shadow-sm">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="truncate text-sm font-semibold text-stone-900">{thread.authorName}</div>
+          <div className="mt-0.5 text-[11px] text-stone-500">{thread.authorRole} · {thread.createdAt}</div>
+        </div>
+      </div>
+      <div className="mt-2 whitespace-pre-wrap text-sm leading-5 text-stone-700">{thread.content}</div>
+      <MemoAttachmentList attachmentIds={thread.attachmentIds} attachmentsById={attachmentsById} canPromoteMemoAttachment={canPromoteMemoAttachment} onPromoteMemoAttachment={onPromoteMemoAttachment} />
+
+      <div className="mt-3 space-y-2 border-t border-stone-200 pt-3">
+        {(thread.replies ?? []).length > 0 ? thread.replies.map((reply) => (
+          <div key={reply.id} className="pl-3 text-sm text-stone-700">
+            <div className="text-[11px] text-stone-500">ㄴ {reply.authorName} · {reply.authorRole} · {reply.createdAt}</div>
+            <div className="mt-0.5 whitespace-pre-wrap leading-5">{reply.content}</div>
+            <MemoAttachmentList attachmentIds={reply.attachmentIds} attachmentsById={attachmentsById} canPromoteMemoAttachment={canPromoteMemoAttachment} onPromoteMemoAttachment={onPromoteMemoAttachment} />
+          </div>
+        )) : null}
+
+        <div className="rounded-xl border border-stone-200 bg-stone-50 p-2.5">
+          <textarea
+            value={replyDraft}
+            onChange={(event) => setReplyDraft(event.target.value)}
+            onKeyDown={onReplyKeyDown}
+            placeholder="댓글 입력"
+            className="min-h-[36px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-2 text-sm text-stone-800 outline-none transition focus:border-stone-400"
+          />
+          <div className="mt-2 flex items-start justify-between gap-2">
+            <CompactAttachmentPicker uploadedFiles={uploadedFiles} onFilesChange={setUploadedFiles} onRemoveFile={(index) => setUploadedFiles((prev) => prev.filter((_, i) => i !== index))} />
+            <button type="button" onClick={submitReply} className="rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-stone-800">등록</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MemoPanel({
+  workOrder,
+  currentUserName,
+  currentUserRole,
+  onCreateThread,
+  onCreateReply,
+  canPromoteMemoAttachment,
+  onPromoteMemoAttachment,
+}: {
+  workOrder: WorkOrder;
+  currentUserName: string;
+  currentUserRole: string;
+  onCreateThread: (content: string, payload?: MemoAttachmentPayload) => void;
+  onCreateReply: (threadId: string, content: string, payload?: MemoAttachmentPayload) => void;
+  canPromoteMemoAttachment: boolean;
+  onPromoteMemoAttachment: (attachmentId: string) => void;
+}) {
+  const [threadDraft, setThreadDraft] = useState('');
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const memoThreads = workOrder.memoThreads ?? [];
+  const attachmentsById = new Map((workOrder.attachments ?? []).map((attachment) => [attachment.id, attachment]));
+
+  const submitThread = () => {
+    if (!threadDraft.trim()) return;
+    onCreateThread(threadDraft, { files: uploadedFiles });
+    setThreadDraft('');
+    setUploadedFiles([]);
+  };
+
+  const onThreadKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      submitThread();
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-base font-semibold">작업메모</h3>
+        <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">{memoThreads.length}개</span>
+      </div>
+      <div className="mt-3 rounded-xl border border-stone-200 bg-stone-50 p-2.5">
+        <div className="text-[11px] text-stone-500">{currentUserName} · {currentUserRole}</div>
+        <textarea
+          value={threadDraft}
+          onChange={(event) => setThreadDraft(event.target.value)}
+          onKeyDown={onThreadKeyDown}
+          placeholder="작업 메모 입력"
+          className="mt-2 min-h-[38px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-2 text-sm text-stone-800 outline-none transition focus:border-stone-400"
+        />
+        <div className="mt-2 flex items-start justify-between gap-2">
+          <CompactAttachmentPicker uploadedFiles={uploadedFiles} onFilesChange={setUploadedFiles} onRemoveFile={(index) => setUploadedFiles((prev) => prev.filter((_, i) => i !== index))} />
+          <button type="button" onClick={submitThread} className="rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-stone-800">등록</button>
+        </div>
+      </div>
+      <div className="mt-3 space-y-3">
+        {memoThreads.length > 0 ? memoThreads.map((thread) => (
+          <MemoThreadCard key={thread.id} thread={thread} attachmentsById={attachmentsById} canPromoteMemoAttachment={canPromoteMemoAttachment} onPromoteMemoAttachment={onPromoteMemoAttachment} onCreateReply={onCreateReply} />
+        )) : <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-5 text-center text-sm text-stone-500">등록된 작업 메모가 없습니다.</div>}
+      </div>
+    </div>
+  );
+}
+
 export default function WorkOrderSidePanel({
   canSeeAttachments,
   attachments,
@@ -142,13 +342,6 @@ export default function WorkOrderSidePanel({
   onPreviewAttachment,
   onDeleteAttachment,
   canDeleteAttachment,
-  canSeeCostSections,
-  fabricTotal,
-  subsidiaryTotal,
-  outsourcingTotal,
-  totalCost,
-  unitCost,
-  outsourcing,
   canSeeInventoryHistorySection,
   isAdmin,
   currentRole,
@@ -156,6 +349,12 @@ export default function WorkOrderSidePanel({
   historyFilter,
   onHistoryFilterChange,
   onOpenInventoryLogModal,
+  workOrder,
+  currentUserName,
+  onCreateMemoThread,
+  onCreateMemoReply,
+  canPromoteMemoAttachment,
+  onPromoteMemoAttachment,
 }: {
   canSeeAttachments: boolean;
   attachments: Attachment[];
@@ -163,13 +362,6 @@ export default function WorkOrderSidePanel({
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;
   canDeleteAttachment: (attachment: Attachment | null) => boolean;
-  canSeeCostSections: boolean;
-  fabricTotal: number;
-  subsidiaryTotal: number;
-  outsourcingTotal: number;
-  totalCost: number;
-  unitCost: number;
-  outsourcing: Outsourcing[];
   canSeeInventoryHistorySection: boolean;
   isAdmin: boolean;
   currentRole: string;
@@ -177,6 +369,12 @@ export default function WorkOrderSidePanel({
   historyFilter: HistoryFilter;
   onHistoryFilterChange: (filter: HistoryFilter) => void;
   onOpenInventoryLogModal: () => void;
+  workOrder: WorkOrder;
+  currentUserName: string;
+  onCreateMemoThread: (content: string, payload?: MemoAttachmentPayload) => void;
+  onCreateMemoReply: (threadId: string, content: string, payload?: MemoAttachmentPayload) => void;
+  canPromoteMemoAttachment: boolean;
+  onPromoteMemoAttachment: (attachmentId: string) => void;
 }) {
   return (
     <div className="space-y-6">
@@ -189,30 +387,17 @@ export default function WorkOrderSidePanel({
         canDeleteAttachment={canDeleteAttachment}
       />
 
-      {canSeeCostSections && (
-        <>
-          <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-            <h3 className="text-base font-semibold">비용 요약</h3>
-            <div className="mt-4 space-y-3 text-sm">
-              <SummaryRow label="원단 합계" value={`${fabricTotal.toLocaleString()}원`} />
-              <SummaryRow label="부자재 합계" value={`${subsidiaryTotal.toLocaleString()}원`} />
-              <SummaryRow label="외주 합계" value={`${outsourcingTotal.toLocaleString()}원`} />
-              <div className="border-t border-stone-200 pt-3">
-                <SummaryRow label="총합" value={`${totalCost.toLocaleString()}원`} strong />
-                <SummaryRow label="장당 추정 원가" value={`${unitCost.toLocaleString()}원`} />
-              </div>
-            </div>
-          </div>
-          <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-            <h3 className="text-base font-semibold">공정별 금액</h3>
-            <div className="mt-4 space-y-2 text-sm">
-              {outsourcing.map((item) => <SummaryRow key={item.process} label={item.process} value={`${(item.totalCost ?? 0).toLocaleString()}원`} />)}
-            </div>
-          </div>
-        </>
-      )}
+      <MemoPanel
+        workOrder={workOrder}
+        currentUserName={currentUserName}
+        currentUserRole={currentRole}
+        onCreateThread={onCreateMemoThread}
+        onCreateReply={onCreateMemoReply}
+        canPromoteMemoAttachment={canPromoteMemoAttachment}
+        onPromoteMemoAttachment={onPromoteMemoAttachment}
+      />
 
-      {canSeeInventoryHistorySection && (
+      {canSeeInventoryHistorySection && isAdmin && (
         <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
           <div className="flex items-start justify-between gap-3">
             <div>

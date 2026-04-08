@@ -98,6 +98,7 @@ export default function Home() {
     handleDeleteAttachment,
     handleCreateMemoThread,
     handleCreateMemoReply,
+    handlePromoteMemoAttachment,
   } = useWorkOrder();
 
   return (
@@ -152,6 +153,12 @@ export default function Home() {
               canChangeManager={canChangeManager}
               onOpenManagerAssignModal={handleOpenManagerAssignModal}
               canSeeProductionSections={canSeeProductionSections}
+              canSeeCostSections={canSeeCostSections}
+              fabricTotal={fabricTotal}
+              subsidiaryTotal={subsidiaryTotal}
+              outsourcingTotal={outsourcingTotal}
+              totalCost={totalCost}
+              unitCost={unitCost}
               basicInfoOpen={basicInfoOpen}
               materialOpen={materialOpen}
               outsourcingOpen={outsourcingOpen}
@@ -166,8 +173,6 @@ export default function Home() {
               currentDisplayStage={currentDisplayStage}
               actions={availableActions}
               onAction={handleWorkflowAction}
-              onCreateMemoThread={handleCreateMemoThread}
-              onCreateMemoReply={handleCreateMemoReply}
             />
             </div>
           </section>
@@ -180,13 +185,6 @@ export default function Home() {
               onPreviewAttachment={setAttachmentPreviewId}
               onDeleteAttachment={handleDeleteAttachment}
               canDeleteAttachment={canDeleteAttachment}
-              canSeeCostSections={canSeeCostSections}
-              fabricTotal={fabricTotal}
-              subsidiaryTotal={subsidiaryTotal}
-              outsourcingTotal={outsourcingTotal}
-              totalCost={totalCost}
-              unitCost={unitCost}
-              outsourcing={outsourcing}
               canSeeInventoryHistorySection={canSeeInventoryHistorySection}
               isAdmin={isAdmin}
               currentRole={currentRole}
@@ -194,6 +192,12 @@ export default function Home() {
               historyFilter={historyFilter}
               onHistoryFilterChange={setHistoryFilter}
               onOpenInventoryLogModal={() => setInventoryLogModalOpen(true)}
+              workOrder={selectedWorkOrder}
+              currentUserName={currentUser.name}
+              onCreateMemoThread={handleCreateMemoThread}
+              onCreateMemoReply={handleCreateMemoReply}
+              canPromoteMemoAttachment={isAdmin}
+              onPromoteMemoAttachment={handlePromoteMemoAttachment}
             />
           </aside>
         </div>
@@ -244,6 +248,15 @@ export default function Home() {
         onSelectedUserChange={setPermissionTargetUserId}
         onApplyRole={handleApplyRole}
         onCurrentUserChange={setCurrentUserId}
+      />
+
+      <input
+        ref={attachmentInputRef}
+        type="file"
+        accept="image/*,.pdf,application/pdf"
+        multiple
+        className="sr-only"
+        onChange={handleAttachmentFiles}
       />
       <ToastMessage message={toastMessage} />
     </main>
