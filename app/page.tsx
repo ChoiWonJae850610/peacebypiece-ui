@@ -139,7 +139,7 @@ export default function Home() {
             />
           </aside>
 
-          <section className="min-w-0 p-4 md:col-span-6 md:overflow-y-auto md:p-6">
+          <section className="min-w-0 px-3 py-3 md:col-span-6 md:overflow-y-auto md:p-6">
             <div key={selectedId} className="pbp-mobile-content-switch md:contents">
             <WorkOrderDetail
               workOrder={selectedWorkOrder}
@@ -177,7 +177,7 @@ export default function Home() {
             </div>
           </section>
 
-          <aside className="min-w-0 border-t border-stone-200 bg-stone-50 p-4 md:col-span-3 md:border-l md:border-t-0 md:p-6">
+          <aside className="min-w-0 border-t border-stone-200 bg-stone-50 px-3 py-3 md:col-span-3 md:border-l md:border-t-0 md:p-6">
             <WorkOrderSidePanel
               canSeeAttachments={canSeeAttachments}
               attachments={officialAttachments}

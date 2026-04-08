@@ -30,16 +30,16 @@ export default function WorkOrderListCard({
 
   return (
     <div
-      className={`group w-full rounded-2xl border p-3.5 transition ${
+      className={`group w-full rounded-2xl border p-3 transition ${
         active
           ? "border-stone-900 bg-stone-900 text-white shadow-[0_10px_28px_rgba(28,25,23,0.18)] ring-1 ring-stone-900/10"
           : "border-stone-200 bg-stone-50 text-stone-900 hover:border-stone-300 hover:bg-white hover:shadow-[0_10px_24px_rgba(28,25,23,0.08)]"
       }`}
     >
       <div className="flex items-start justify-between gap-3">
-        <button type="button" onClick={() => onClick(workOrder.id)} className="min-w-0 flex-1 text-left">
+        <button type="button" onClick={() => onClick(workOrder.id)} className="pbp-touch-target min-w-0 flex-1 text-left">
           <div className="truncate text-sm font-semibold leading-5">{workOrder.title}</div>
-          <div className="mt-2.5 flex h-7 items-center">
+          <div className="mt-2 flex h-7 items-center">
             <span
               className={`inline-flex h-7 items-center gap-2 rounded-full px-2.5 text-[11px] font-semibold transition ${
                 active ? "bg-white/15 text-white ring-1 ring-white/10" : `${getWorkOrderCardTone(state)} ring-1 ring-black/5 group-hover:ring-black/10`
@@ -49,19 +49,19 @@ export default function WorkOrderListCard({
               {state}
             </span>
           </div>
-          <div className={`mt-2.5 space-y-1 text-xs leading-4 ${active ? "text-stone-200" : "text-stone-500"}`}>
+          <div className={`mt-2 space-y-0.5 text-xs leading-4 ${active ? "text-stone-200" : "text-stone-500"}`}>
             <div className="truncate">{getCategoryPath(workOrder) || "분류 미지정"}</div>
             <div className="truncate">공장: {workOrder.vendor ?? "미지정"}</div>
             <div>마감: {workOrder.dueDate ?? "미지정"}</div>
             <div>첨부파일: {workOrder.filesCount ?? 0}개</div>
           </div>
         </button>
-        <div className="flex shrink-0 items-start gap-2">
+        <div className="flex shrink-0 items-start gap-1.5">
           {canShowReorder ? (
             <button
               type="button"
               onClick={() => onReorder?.(workOrder.id)}
-              className={`h-8 rounded-xl border px-3 text-xs font-medium transition ${
+              className={`pbp-touch-target h-9 rounded-xl border px-3 text-xs font-medium transition ${
                 active
                   ? "border-white/20 bg-white/10 text-white hover:bg-white/15"
                   : "border-stone-300 bg-white text-stone-800 hover:border-stone-400 hover:bg-stone-100"
@@ -74,7 +74,7 @@ export default function WorkOrderListCard({
             <button
               type="button"
               onClick={() => onDelete?.(workOrder.id)}
-              className={`h-8 rounded-xl border px-3 text-xs font-medium transition ${
+              className={`pbp-touch-target h-9 rounded-xl border px-3 text-xs font-medium transition ${
                 active
                   ? "border-white/20 bg-white/10 text-white hover:bg-white/15"
                   : "border-rose-200 bg-white text-rose-600 hover:border-rose-300 hover:bg-rose-50"

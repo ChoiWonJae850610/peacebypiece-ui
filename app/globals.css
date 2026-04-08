@@ -111,6 +111,28 @@ body {
   overscroll-behavior: none;
 }
 
+
+.pbp-mobile-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  touch-action: pan-y;
+}
+
+.pbp-touch-target {
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+.pbp-card-stack-mobile {
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .pbp-card-stack-mobile {
+    gap: 1rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pbp-overlay-enter,
   .pbp-mobile-sheet-enter,

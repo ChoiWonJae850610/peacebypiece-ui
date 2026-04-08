@@ -54,7 +54,7 @@ export default function MobileDrawer({
         tabIndex={-1}
         className="absolute left-0 top-0 flex h-full w-[86%] max-w-sm flex-col overflow-hidden rounded-r-3xl bg-white shadow-2xl focus:outline-none pbp-drawer-enter"
       >
-        <div className="sticky top-0 z-10 border-b border-stone-200 bg-white/95 px-4 pb-3 pt-[max(env(safe-area-inset-top),1rem)] backdrop-blur">
+        <div className="sticky top-0 z-10 border-b border-stone-200 bg-white/95 px-3 pb-2.5 pt-[max(env(safe-area-inset-top),0.875rem)] backdrop-blur">
           <div className="flex items-center justify-between gap-3">
             <div>
               <div id="mobile-drawer-title" className="text-sm font-semibold leading-5 text-stone-900">작업 목록</div>
@@ -63,7 +63,7 @@ export default function MobileDrawer({
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex h-10 items-center justify-center rounded-xl border border-stone-300 bg-white px-3 text-sm font-medium text-stone-700 active:scale-[0.97]"
+              className="pbp-touch-target inline-flex h-11 items-center justify-center rounded-xl border border-stone-300 bg-white px-3.5 text-sm font-medium text-stone-700 transition active:scale-[0.97]"
             >
               닫기
             </button>
@@ -85,14 +85,14 @@ export default function MobileDrawer({
                 onCreate();
                 onClose();
               }}
-              className="mt-3 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white active:scale-[0.99]"
+              className="pbp-touch-target mt-3 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white transition active:scale-[0.99]"
             >
               새 작업 추가
             </button>
           ) : null}
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
-          <div className="space-y-2.5">
+        <div className="pbp-mobile-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3 pb-[calc(env(safe-area-inset-bottom)+0.875rem)]">
+          <div className="flex flex-col pbp-card-stack-mobile">
             {workOrders.map((workOrder) => (
               <WorkOrderListCard
                 key={workOrder.id}
