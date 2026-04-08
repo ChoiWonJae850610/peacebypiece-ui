@@ -29,9 +29,9 @@ type BasicInfoState = {
 };
 
 const EDITABLE_FIELD_HEIGHT_CLASS = "h-10";
-const EDITABLE_FIELD_BASE_CLASS = `pbp-field-interaction ${EDITABLE_FIELD_HEIGHT_CLASS} block w-full min-w-0 max-w-full overflow-hidden rounded-xl border px-3 text-stone-900 outline-none ring-0`;
+const EDITABLE_FIELD_BASE_CLASS = `pbp-field-interaction ${EDITABLE_FIELD_HEIGHT_CLASS} block w-full min-w-0 max-w-full overflow-hidden truncate rounded-xl border px-3 text-stone-900 outline-none ring-0`;
 const EDITABLE_INPUT_CLASS = `${EDITABLE_FIELD_BASE_CLASS} text-base md:text-sm border-stone-300 bg-white focus:border-stone-400 focus:bg-white`;
-const EDITABLE_SELECT_CLASS = `${EDITABLE_INPUT_CLASS} appearance-none pr-8`;
+const EDITABLE_SELECT_CLASS = `${EDITABLE_INPUT_CLASS} appearance-none truncate pr-8`;
 const EDITABLE_DISPLAY_CLASS = `${EDITABLE_FIELD_BASE_CLASS} text-sm flex items-center border-transparent bg-transparent hover:border-stone-200 hover:bg-stone-50 focus-visible:border-stone-300 focus-visible:bg-stone-50`;
 const EDITABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
 const TABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
@@ -546,57 +546,60 @@ function StageProgressBar({
 
       <div className="mt-3 md:hidden">
         <div className="rounded-2xl border border-stone-200 bg-white px-3 py-3">
-          <div className="flex items-start">
-            {mobileStageSlots.map((slot, slotIndex) => {
-              const stage = slot?.stage;
-              const index = slot?.index ?? -1;
-              const isPlaceholder = !slot;
-              const isCurrent = index === currentIndex;
-              const isDone = index >= 0 && index < currentIndex;
-              const isCompletedStage = stage === "완료";
-              const isCompleted = isDone || (isCompletedStage && isCurrent);
-              const isUpcoming = index > currentIndex;
-              const nextSlot = slotIndex < mobileStageSlots.length - 1 ? mobileStageSlots[slotIndex + 1] : null;
-              const nextStage = nextSlot?.stage;
-              const stageGroupIndex = stage ? (groupByStage.get(stage) ?? -1) : -1;
-              const nextStageGroupIndex = nextStage ? (groupByStage.get(nextStage) ?? -1) : -1;
-              const isGroupBreakAfter = !isPlaceholder && nextSlot && stageGroupIndex !== -1 && nextStageGroupIndex !== -1 && stageGroupIndex !== nextStageGroupIndex;
-              const connectorTone = !slot || !nextSlot
-                ? "bg-transparent"
-                : index < currentIndex
-                ? doneTrackTone
-                : "bg-stone-200";
-
+          <div className="relative">
+            <div className="pointer-events-none absolute left-[16.666%] right-[16.666%] top-4 h-0.5 rounded-full bg-stone-200" />
+            {mobileStageSlots.slice(0, -1).map((slot, slotIndex) => {
+              if (!slot) return null;
+              const nextSlot = mobileStageSlots[slotIndex + 1];
+              if (!nextSlot) return null;
+              const connectorTone = slot.index < currentIndex ? doneTrackTone : "bg-stone-200";
               return (
-                <div key={stage ? `${stage}-mobile` : `placeholder-${slotIndex}`} className="flex min-w-0 flex-1 items-center">
-                  <div className={`flex min-w-0 flex-1 flex-col items-center text-center ${isPlaceholder ? "opacity-0" : ""}`}>
-                    <div
-                      className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
-                        isCompleted
-                          ? "bg-stone-900 text-white"
-                          : isCurrent
-                          ? `${getStageStepFillTone(stage!)} text-white ring-2 ring-stone-200`
-                          : "bg-stone-200 text-stone-500"
-                      }`}
-                    >
-                      {isPlaceholder ? "" : isCompleted ? "✓" : index + 1}
-                    </div>
-                    <div className={`mt-2 block max-w-full overflow-hidden text-ellipsis whitespace-nowrap px-1 text-[11px] leading-4 ${
-                      isCurrent
-                        ? `font-semibold ${getStageTextTone(stage!)}`
-                        : isUpcoming
-                        ? "text-stone-400"
-                        : "text-stone-600"
-                    }`}>
-                      {stage ?? ""}
-                    </div>
-                  </div>
-                  {slotIndex < mobileStageSlots.length - 1 ? (
-                    <div className={`mt-4 h-0.5 min-w-0 flex-1 rounded-full ${connectorTone} ${isGroupBreakAfter ? "mx-2" : "mx-1.5"}`} />
-                  ) : null}
-                </div>
+                <div
+                  key={`mobile-connector-${slotIndex}`}
+                  className={`pointer-events-none absolute top-4 h-0.5 rounded-full ${connectorTone}`}
+                  style={{ left: `${16.666 + slotIndex * 33.333}%`, width: '33.333%' }}
+                />
               );
             })}
+            <div className="grid grid-cols-3 gap-2">
+              {mobileStageSlots.map((slot, slotIndex) => {
+                const stage = slot?.stage;
+                const index = slot?.index ?? -1;
+                const isPlaceholder = !slot;
+                const isCurrent = index === currentIndex;
+                const isDone = index >= 0 && index < currentIndex;
+                const isCompletedStage = stage === "완료";
+                const isCompleted = isDone || (isCompletedStage && isCurrent);
+                const isUpcoming = index > currentIndex;
+
+                return (
+                  <div key={stage ? `${stage}-mobile` : `placeholder-${slotIndex}`} className={`min-w-0 ${isPlaceholder ? "opacity-0" : ""}`}>
+                    <div className="flex min-w-0 flex-col items-center text-center">
+                      <div
+                        className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
+                          isCompleted
+                            ? "bg-stone-900 text-white"
+                            : isCurrent
+                            ? `${getStageStepFillTone(stage!)} text-white ring-2 ring-stone-200`
+                            : "bg-stone-200 text-stone-500"
+                        }`}
+                      >
+                        {isPlaceholder ? "" : isCompleted ? "✓" : index + 1}
+                      </div>
+                      <div className={`mt-2 block min-h-[2rem] w-full min-w-0 break-keep px-1 text-center text-[11px] leading-4 whitespace-normal ${
+                        isCurrent
+                          ? `font-semibold ${getStageTextTone(stage!)}`
+                          : isUpcoming
+                          ? "text-stone-400"
+                          : "text-stone-600"
+                      }`}>
+                        {stage ?? ""}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
@@ -696,13 +699,13 @@ function OrderInfoSection({
   ];
 
   return (
-    <div className="rounded-2xl bg-stone-50 p-4">
+    <div className="overflow-hidden rounded-2xl bg-stone-50 p-4">
       <SectionHeader title="발주 정보" summary={formatOrderSummary(basicInfo)} open={open} onToggle={onToggle} />
       {open ? (
         <div className="mt-4">
           <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 xl:grid-cols-4">
             {infoItems.map((item) => (
-              <div key={item.field} className="min-w-0 overflow-hidden rounded-xl border border-stone-200 bg-white p-3">
+              <div key={item.field} className="min-w-0 max-w-full overflow-hidden rounded-xl border border-stone-200 bg-white p-3">
                 <div className="text-xs text-stone-500">{item.label}</div>
                 <div className="mt-2">
                   <EditableValue
@@ -781,7 +784,7 @@ function ProductionCompositionSection({
   ].join(' · ');
 
   return (
-    <div className="rounded-2xl bg-stone-50 p-4">
+    <div className="overflow-hidden rounded-2xl bg-stone-50 p-4">
       <SectionHeader title="생산 구성" summary={summary} open={open} onToggle={onToggle} />
       {open ? (
         <div className="mt-3.5 space-y-3.5">
@@ -848,7 +851,7 @@ function MaterialSection({
     : "등록된 원단/부자재가 없습니다.";
 
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white p-4">
+    <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white p-4">
       <SectionHeader
         title="원단 / 부자재"
         summary={summary}
@@ -859,7 +862,7 @@ function MaterialSection({
         <>
           <div className="mt-3 space-y-3 md:hidden">
             {materials.map((item, index) => (
-              <div key={item.id} className="rounded-2xl border border-stone-200 bg-white p-3.5">
+              <div key={item.id} className="max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-white p-3.5">
                 <div className="flex items-start justify-between gap-3 min-w-0">
                   <div className="min-w-0 flex-1 overflow-hidden">
                     <div className="truncate text-sm font-semibold text-stone-900">{item.name || `자재 ${index + 1}`}</div>
@@ -877,7 +880,7 @@ function MaterialSection({
                     ["단가", "unitCost", item.unitCost.toLocaleString(), "decimal"],
                   ].map(([label, field, value, inputMode]) => (
                     <div key={`${item.id}-${field}`} className="flex items-center justify-between gap-3 min-w-0">
-                      <span className="w-14 shrink-0 text-xs text-stone-500">{label}</span>
+                      <span className="w-16 shrink-0 text-xs text-stone-500">{label}</span>
                       <div className="min-w-0 max-w-full flex-1 basis-0 overflow-hidden">
                         <EditableValue
                           section="material"
@@ -897,7 +900,7 @@ function MaterialSection({
                     </div>
                   ))}
                   <div className="flex items-center justify-between gap-3 min-w-0">
-                    <span className="w-14 shrink-0 text-xs text-stone-500">금액</span>
+                    <span className="w-16 shrink-0 text-xs text-stone-500">금액</span>
                     <div className="min-w-0 max-w-full flex-1 basis-0 overflow-hidden text-right">
                       <span className="block min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm font-medium text-stone-900 tabular-nums">{(item.totalCost ?? 0).toLocaleString()}원</span>
                     </div>
@@ -1003,7 +1006,7 @@ function OutsourcingSection({
     : "등록된 외주 공정이 없습니다.";
 
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white p-4">
+    <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white p-4">
       <SectionHeader
         title="외주 공정"
         summary={summary}
@@ -1014,7 +1017,7 @@ function OutsourcingSection({
         <>
           <div className="mt-3 space-y-3 md:hidden">
             {outsourcing.map((item, index) => (
-              <div key={item.id} className="rounded-2xl border border-stone-200 bg-white p-3.5">
+              <div key={item.id} className="max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-white p-3.5">
                 <div className="flex items-start justify-between gap-3 min-w-0">
                   <div className="min-w-0 flex-1 overflow-hidden">
                     <div className="truncate text-sm font-semibold text-stone-900">{item.process || `공정 ${index + 1}`}</div>
