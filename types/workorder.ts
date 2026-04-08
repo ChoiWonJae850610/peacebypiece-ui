@@ -10,10 +10,12 @@ export type MemoAttachmentPayload = {
   files?: File[];
 };
 
+export type AttachmentType = "image" | "pdf";
+
 export type Attachment = {
   id: string;
   name: string;
-  type: "image" | "pdf";
+  type: AttachmentType;
   url: string;
   scope?: AttachmentScope;
   ownerId?: string | null;
@@ -114,6 +116,7 @@ export type HistoryLog = {
   user: string;
   time: string;
   tone: HistoryTone;
+  summary: string;
   detailLines?: HistoryDetailLine[];
   transition?: HistoryTransition | null;
 };

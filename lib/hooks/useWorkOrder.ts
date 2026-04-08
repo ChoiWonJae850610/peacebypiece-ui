@@ -5,10 +5,9 @@ import { DEFAULT_SELECTED_WORK_ORDER_ID, MOCK_HISTORY_LOGS, MOCK_WORK_ORDERS } f
 import { DEFAULT_CURRENT_USER_ID, DEFAULT_PERMISSION_TARGET_ID, MOCK_USERS } from "@/lib/data/mock/users";
 import { buildUserRoleState, canCreateWorkOrderByRoles, canUploadOfficialAttachmentsByRoles, isAdminRole, normalizeRoles } from "@/lib/constants/roles";
 import { SECTION_PREFERENCES_STORAGE_KEY } from "@/lib/constants/app";
-import { canDeleteAttachmentByUser } from "@/lib/permissions/attachments";
+import { canDeleteAttachmentByUser, getAttachmentType, isOfficialAttachment } from "@/lib/permissions/attachments";
 import { getDisplayStageFromWorkflowState, VISIBLE_STAGES, WORKFLOW_ACTION_LABELS } from "@/lib/constants/workflow";
 import {
-  createAttachmentHistoryLog,
   createCreationHistoryLog,
   createInventoryHistoryLog,
   createManagerChangeHistoryLog,
@@ -117,7 +116,7 @@ export function useWorkOrder() {
 
   const currentInventoryQuantity = selectedWorkOrder.inventoryQuantity;
   const officialAttachments = useMemo(
-    () => (selectedWorkOrder.attachments ?? []).filter((item) => (item.scope ?? "official") === "official"),
+    () => (selectedWorkOrder.attachments ?? []).filter((item) => isOfficialAttachment(item)),
     [selectedWorkOrder.attachments],
   );
   const selectedAttachment = useMemo(
@@ -357,7 +356,7 @@ export function useWorkOrder() {
     const nextAttachments: Attachment[] = files.map((file) => ({
       id: `${file.name}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       name: file.name,
-      type: file.type.includes("pdf") ? "pdf" : "image",
+      type: getAttachmentType(file),
       url: URL.createObjectURL(file),
       scope: "official",
       ownerId: currentUser.id,
@@ -385,7 +384,7 @@ export function useWorkOrder() {
     return files.map((file): Attachment => ({
       id: `${file.name}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       name: file.name,
-      type: file.type.includes("pdf") ? "pdf" : "image",
+      type: getAttachmentType(file),
       url: URL.createObjectURL(file),
       scope: "memo" as const,
       ownerId: currentUser.id,

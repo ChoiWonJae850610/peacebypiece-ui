@@ -2,6 +2,29 @@ import { hasRole, normalizeRoles } from "@/lib/constants/roles";
 import type { HistoryFilter, HistoryLog, InventoryChange, InventoryLog } from "@/types/workorder";
 import type { RoleType } from "@/types/permission";
 
+function withActor(summary: string, user: string) {
+  return `${summary} · ${user}`;
+}
+
+function buildHistorySummary(payload: {
+  action: string;
+  user: string;
+  transition?: HistoryLog["transition"];
+  detailLines?: HistoryLog["detailLines"];
+}) {
+  if (payload.transition) {
+    return withActor(`${payload.action}: ${payload.transition.from} → ${payload.transition.to}`, payload.user);
+  }
+
+  const firstDetail = payload.detailLines?.find((detail) => detail.value.trim())?.value?.trim();
+  if (firstDetail) {
+    const compact = firstDetail.length > 42 ? `${firstDetail.slice(0, 42)}…` : firstDetail;
+    return withActor(`${payload.action}: ${compact}`, payload.user);
+  }
+
+  return withActor(payload.action, payload.user);
+}
+
 export function nowLabel() {
   const now = new Date();
   const month = String(now.getMonth() + 1).padStart(2, "0");
@@ -14,6 +37,7 @@ export function nowLabel() {
 export function createHistoryLog(payload: {
   action: string;
   message: string;
+  summary?: string;
   user: string;
   workOrderId: string;
   category: HistoryLog["category"];
@@ -30,6 +54,7 @@ export function createHistoryLog(payload: {
     user: payload.user,
     time: nowLabel(),
     tone: payload.tone,
+    summary: payload.summary ?? buildHistorySummary(payload),
     detailLines: payload.detailLines,
     transition: payload.transition ?? null,
   };
@@ -37,7 +62,7 @@ export function createHistoryLog(payload: {
 
 export function createCreationHistoryLog(user: string, workOrderId: string) {
   return createHistoryLog({
-    action: "생성",
+    action: "작업지시서 생성",
     message: "최초 생성되었습니다.",
     user,
     workOrderId,
@@ -49,7 +74,7 @@ export function createCreationHistoryLog(user: string, workOrderId: string) {
 
 export function createUpdateHistoryLog(user: string, workOrderId: string, detailLines: HistoryLog["detailLines"]) {
   return createHistoryLog({
-    action: "수정",
+    action: "기본사항 수정",
     message: "수정되었습니다.",
     user,
     workOrderId,
@@ -84,7 +109,7 @@ export function createInventoryHistoryLog(
   }));
 
   return createHistoryLog({
-    action: "재고 수정",
+    action: "재고 변경",
     message: "재고 상태가 변경되었습니다.",
     user,
     workOrderId,
@@ -97,24 +122,30 @@ export function createInventoryHistoryLog(
   });
 }
 
-
-
 export function createMemoHistoryLog(
   user: string,
   workOrderId: string,
   payload: { action: "thread" | "reply"; content: string; attachmentNames?: string[] },
 ) {
-  const label = payload.action === "thread" ? "메모 등록" : "댓글 등록";
+  const action = payload.action === "thread" ? "메모 작성" : "댓글 작성";
+  const trimmedContent = payload.content.trim();
+  const attachmentNames = payload.attachmentNames?.filter(Boolean) ?? [];
+
+  const summary = attachmentNames.length > 0
+    ? `${action}(첨부 ${attachmentNames.length}개) · ${user}`
+    : `${action} · ${user}`;
+
   return createHistoryLog({
-    action: label,
+    action,
     message: payload.action === "thread" ? "작업 메모가 등록되었습니다." : "작업 메모 댓글이 등록되었습니다.",
     user,
     workOrderId,
     category: "work",
     tone: "blue",
+    summary,
     detailLines: [
-      { label: "내용", value: payload.content.trim() },
-      ...(payload.attachmentNames && payload.attachmentNames.length > 0 ? [{ label: "첨부", value: payload.attachmentNames.join(", ") }] : []),
+      { label: "내용", value: trimmedContent },
+      ...(attachmentNames.length > 0 ? [{ label: `첨부 ${attachmentNames.length}개`, value: attachmentNames.join(", ") }] : []),
     ],
   });
 }
@@ -131,22 +162,6 @@ export function createManagerChangeHistoryLog(user: string, workOrderId: string,
       { label: "이전", value: from || "-" },
       { label: "변경", value: to || "-" },
     ],
-  });
-}
-
-export function createAttachmentHistoryLog(
-  user: string,
-  workOrderId: string,
-  detailLines: HistoryLog["detailLines"],
-) {
-  return createHistoryLog({
-    action: "첨부 변경",
-    message: "첨부파일 내용이 수정되었습니다.",
-    user,
-    workOrderId,
-    category: "attachment",
-    tone: "stone",
-    detailLines,
   });
 }
 
@@ -181,10 +196,8 @@ function parseInventoryChanges(log: HistoryLog): InventoryChange[] {
 }
 
 function summarizeInventoryChanges(changes: InventoryChange[]) {
-  if (changes.length === 0) return "재고 수정";
-  return changes
-    .map((item) => `${item.type} ${item.type === "보정" ? item.quantity : item.quantity}` + '장')
-    .join(" / ");
+  if (changes.length === 0) return "재고 변경";
+  return changes.map((item) => `${item.type} ${item.quantity}장`).join(" / ");
 }
 
 function extractDelta(changes: InventoryChange[]) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type KeyboardEvent } from "react";
+import { getAttachmentOwnerLabel, getAttachmentPreviewLabel, isOfficialAttachment } from "@/lib/permissions/attachments";
 import { toDisplayValue } from "@/lib/utils/display";
 import type { Attachment, MemoAttachmentPayload, MemoThread, WorkOrder } from "@/types/workorder";
 
@@ -65,12 +66,12 @@ function AttachmentPanel({
                     {attachment.type === "image" ? (
                       <img src={attachment.url} alt={attachment.name} className="h-full w-full object-cover" />
                     ) : (
-                      <span className="text-xs font-semibold text-rose-700">PDF</span>
+                      <span className="text-xs font-semibold text-rose-700">{getAttachmentPreviewLabel(attachment)}</span>
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="truncate pr-2 text-sm font-medium text-stone-900">{attachment.name}</div>
-                    <div className="mt-1 text-xs text-stone-500">{attachment.ownerName ?? "기존 첨부"}</div>
+                    <div className="mt-1 text-xs text-stone-500">{getAttachmentOwnerLabel(attachment)}</div>
                   </div>
                 </button>
               </div>
@@ -138,7 +139,7 @@ function MemoAttachmentList({
   return (
     <div className="mt-2 flex flex-wrap gap-1.5">
       {linkedAttachments.map((attachment) => {
-        const isOfficial = (attachment.scope ?? "official") === "official";
+        const isOfficial = isOfficialAttachment(attachment);
         return (
           <div key={attachment.id} className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-[11px] text-stone-700">
             <button
@@ -146,7 +147,7 @@ function MemoAttachmentList({
               onClick={() => onPreviewAttachment?.(attachment.id)}
               className="flex min-w-0 max-w-full items-center gap-1.5 text-left"
             >
-              <span className="inline-flex h-5 min-w-9 items-center justify-center rounded-full bg-white px-1.5 font-semibold text-stone-900">{attachment.type === "pdf" ? "PDF" : "IMG"}</span>
+              <span className="inline-flex h-5 min-w-9 items-center justify-center rounded-full bg-white px-1.5 font-semibold text-stone-900">{getAttachmentPreviewLabel(attachment)}</span>
               <span className="max-w-[160px] truncate">{attachment.name}</span>
             </button>
             {!isOfficial && canPromoteMemoAttachment && onPromoteMemoAttachment ? (

@@ -20,18 +20,6 @@ function getHistoryToneClass(tone: HistoryTone) {
   }
 }
 
-function formatSummary(item: HistoryLog) {
-  if (item.transition) {
-    return `${item.action}: ${item.transition.from} → ${item.transition.to} · ${item.user}`;
-  }
-  const firstDetail = item.detailLines?.[0]?.value?.trim();
-  if (firstDetail) {
-    const compact = firstDetail.length > 42 ? `${firstDetail.slice(0, 42)}…` : firstDetail;
-    return `${item.action}: ${compact} · ${item.user}`;
-  }
-  return `${item.action} · ${item.user}`;
-}
-
 function HistoryPreviewItem({ item }: { item: HistoryLog }) {
   const [open, setOpen] = useState(false);
   const hasDetails = Boolean(item.transition || (item.detailLines && item.detailLines.length > 0));
@@ -49,7 +37,7 @@ function HistoryPreviewItem({ item }: { item: HistoryLog }) {
             {hasDetails ? <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-medium text-stone-600">{open ? "접기" : "상세"}</span> : null}
           </div>
         </div>
-        <div className="mt-2 text-sm text-stone-700 break-words">{formatSummary(item)}</div>
+        <div className="mt-2 text-sm text-stone-700 break-words">{item.summary}</div>
       </button>
 
       {hasDetails && open ? (

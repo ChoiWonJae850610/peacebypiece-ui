@@ -1,8 +1,6 @@
-import type { Attachment, WorkOrder, WorkOrderListItem } from "@/types/workorder";
+import { isOfficialAttachment } from "@/lib/permissions/attachments";
+import type { WorkOrder, WorkOrderListItem } from "@/types/workorder";
 
-function isOfficialAttachment(attachment: Attachment) {
-  return (attachment.scope ?? "official") === "official";
-}
 
 export function createWorkOrderListItem(workOrder: WorkOrder): WorkOrderListItem {
   const officialAttachments = (workOrder.attachments ?? []).filter(isOfficialAttachment);

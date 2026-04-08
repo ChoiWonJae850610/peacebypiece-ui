@@ -170,6 +170,7 @@ const historyLogs: HistoryLog[] = [
     user: "김디자이너",
     time: "03-26 21:22",
     tone: "violet",
+    summary: "상태 변경: 작성중 → 검토요청 · 김디자이너",
     transition: { from: "작성중", to: "검토요청" },
     detailLines: [{ label: "변경", value: "작성중 → 검토요청" }],
   },
@@ -182,6 +183,7 @@ const historyLogs: HistoryLog[] = [
     user: "박관리",
     time: "03-26 20:10",
     tone: "emerald",
+    summary: "입고: 입고 12장 반영 · 박관리",
     detailLines: [
       { label: "변경", value: "입고 12장 반영" },
       { label: "메모", value: "원단 12yd 입고 수량을 반영했습니다." },
@@ -196,6 +198,7 @@ const historyLogs: HistoryLog[] = [
     user: "김디자이너",
     time: "03-26 19:48",
     tone: "stone",
+    summary: "기본사항 수정: 메모 · 김디자이너",
     detailLines: [
       { label: "수정 항목", value: "메모" },
       { label: "상세", value: "작업지시 메모를 저장했습니다." },
@@ -210,6 +213,7 @@ const historyLogs: HistoryLog[] = [
     user: "박관리",
     time: "03-26 19:10",
     tone: "stone",
+    summary: "첨부 변경: 사이즈 표.pdf · 박관리",
     detailLines: [
       { label: "추가", value: "사이즈 표.pdf" },
     ],
@@ -223,6 +227,7 @@ const historyLogs: HistoryLog[] = [
     user: "이검수",
     time: "03-26 18:30",
     tone: "amber",
+    summary: "재고 보정: 보정 2장 반영 · 이검수",
     detailLines: [
       { label: "변경", value: "보정 2장 반영" },
       { label: "메모", value: "실재고 기준으로 2장 보정했습니다." },
@@ -237,6 +242,7 @@ const historyLogs: HistoryLog[] = [
     user: "박관리",
     time: "03-25 14:20",
     tone: "violet",
+    summary: "상태 변경: 발주요청 → 생산중 · 박관리",
     transition: { from: "발주요청", to: "생산중" },
     detailLines: [{ label: "변경", value: "발주요청 → 생산중" }],
   },
@@ -249,6 +255,7 @@ const historyLogs: HistoryLog[] = [
     user: "이검수",
     time: "03-25 11:00",
     tone: "rose",
+    summary: "차감: 차감 2장 반영 · 이검수",
     detailLines: [
       { label: "변경", value: "차감 2장 반영" },
       { label: "메모", value: "샘플 검토용으로 2장 차감했습니다." },
@@ -263,6 +270,7 @@ const historyLogs: HistoryLog[] = [
     user: "이검수",
     time: "03-24 17:40",
     tone: "violet",
+    summary: "상태 변경: 검수중 → 완료 · 이검수",
     transition: { from: "검수중", to: "완료" },
     detailLines: [{ label: "변경", value: "검수중 → 완료" }],
   },
