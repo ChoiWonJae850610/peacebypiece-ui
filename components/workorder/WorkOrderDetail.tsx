@@ -27,6 +27,11 @@ type BasicInfoState = {
   quantity: number;
 };
 
+const EDITABLE_FIELD_HEIGHT_CLASS = "h-10";
+const EDITABLE_FIELD_BASE_CLASS = `${EDITABLE_FIELD_HEIGHT_CLASS} w-full min-w-0 rounded-xl border px-3 text-sm text-stone-900 outline-none ring-0 transition`;
+const EDITABLE_INPUT_CLASS = `${EDITABLE_FIELD_BASE_CLASS} border-stone-300 bg-white focus:border-stone-400 focus:bg-white`;
+const EDITABLE_DISPLAY_CLASS = `${EDITABLE_FIELD_BASE_CLASS} flex items-center border-transparent bg-transparent hover:border-stone-200 hover:bg-stone-50 focus-visible:border-stone-300 focus-visible:bg-stone-50`;
+
 function SectionHeader({
   title,
   summary,
@@ -93,6 +98,17 @@ function getEditingInitialValue(field: string, value: string) {
 
 function getDisplayValue(field: string, value: string) {
   return isNumericField(field) ? formatNumericDisplay(value) : value;
+}
+
+function normalizeEditingValue(field: string, value: string) {
+  if (!isNumericField(field)) return value;
+  const sanitized = value.replace(/[^\d.,-]/g, "");
+  const hasMinus = sanitized.startsWith("-");
+  const unsigned = sanitized.replace(/-/g, "");
+  const normalized = unsigned
+    .replace(/,/g, "")
+    .replace(/(\..*)\./g, "$1");
+  return `${hasMinus ? "-" : ""}${normalized}`;
 }
 
 function recalculateMaterial(item: Material): Material {
@@ -187,7 +203,7 @@ function EditableValue({
         onChange={(event) => onCommit(event.target.value)}
         onBlur={(event) => onCommit(event.target.value)}
         onKeyDown={handleSelectKeyDown}
-        className={`h-9 w-full min-w-0 rounded-lg border border-stone-300 bg-white px-2.5 text-sm text-stone-900 outline-none ring-0 transition focus:border-stone-400 ${alignRight ? "text-right tabular-nums" : "text-left"}`}
+        className={`${EDITABLE_INPUT_CLASS} ${alignRight ? "text-right tabular-nums" : "text-left"}`}
       >
         {options.map((option) => (
           <option key={option} value={option}>
@@ -205,10 +221,11 @@ function EditableValue({
         type={inputType}
         inputMode={inputType === "date" ? undefined : inputMode}
         value={editingValue}
-        onChange={(event) => onStartEdit(section, rowId, field, event.target.value)}
+        onChange={(event) => onStartEdit(section, rowId, field, normalizeEditingValue(field, event.target.value))}
+        onFocus={(event) => event.currentTarget.select()}
         onBlur={() => onCommit()}
         onKeyDown={handleInputKeyDown}
-        className={`h-9 w-full min-w-0 rounded-lg border border-stone-300 bg-white px-2.5 text-sm text-stone-900 outline-none ring-0 transition focus:border-stone-400 ${alignRight ? "text-right tabular-nums" : "text-left"}`}
+        className={`${EDITABLE_INPUT_CLASS} ${alignRight ? "text-right tabular-nums" : "text-left"}`}
       />
     );
   }
@@ -217,7 +234,7 @@ function EditableValue({
     <button
       type="button"
       onClick={() => onStartEdit(section, rowId, field, getEditingInitialValue(field, value))}
-      className={`flex h-9 w-full min-w-0 items-center rounded-lg border border-transparent px-2.5 text-sm text-stone-900 transition hover:border-stone-200 hover:bg-stone-50 ${alignRight ? "justify-end text-right tabular-nums" : "text-left"}`}
+      className={`${EDITABLE_DISPLAY_CLASS} ${alignRight ? "justify-end text-right tabular-nums" : "text-left"}`}
     >
       <span className="block w-full truncate">{getDisplayValue(field, value) || "-"}</span>
     </button>
