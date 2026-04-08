@@ -94,7 +94,7 @@ export default function Home() {
     handleConfirmOrderRequest,
     handleCloseOrderRequestConfirm,
     handleInventoryApply,
-    handleApplyRole,
+    handleApplyRoles,
     handleOpenManagerAssignModal,
     handleCloseManagerAssignModal,
     handleChangeManager,
@@ -252,7 +252,7 @@ export default function Home() {
         currentUserId={currentUserId}
         selectedUserId={permissionTargetUserId}
         onSelectedUserChange={setPermissionTargetUserId}
-        onApplyRole={handleApplyRole}
+        onApplyRoles={handleApplyRoles}
         onCurrentUserChange={setCurrentUserId}
       />
 

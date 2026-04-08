@@ -5,7 +5,7 @@ import BaseModal from "@/components/common/modal/BaseModal";
 import ModalBody from "@/components/common/modal/ModalBody";
 import ModalHeader from "@/components/common/modal/ModalHeader";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
-import { ROLE_OPTIONS } from "@/lib/constants/roles";
+import { ROLE_OPTIONS, formatRoles, normalizeRoles } from "@/lib/constants/roles";
 import type { RoleType, UserProfile } from "@/types/workorder";
 
 type NormalizedRoleOption = {
@@ -31,12 +31,6 @@ const ROLE_FALLBACKS: Record<RoleType, NormalizedRoleOption> = {
     description: "입고 등록, 검수 완료, 재고 수정 중심 역할",
   },
 };
-
-function inferRole(user: UserProfile): RoleType {
-  if (user.team === "관리자") return "관리자";
-  if (user.team === "입고/검수") return "입고/검수";
-  return "디자이너";
-}
 
 function toRoleType(value: unknown): RoleType | null {
   if (value === "디자이너" || value === "관리자" || value === "입고/검수") {
@@ -97,7 +91,7 @@ export default function PermissionModal({
   currentUserId,
   selectedUserId,
   onSelectedUserChange,
-  onApplyRole,
+  onApplyRoles,
   onCurrentUserChange,
 }: {
   open: boolean;
@@ -106,7 +100,7 @@ export default function PermissionModal({
   currentUserId: string;
   selectedUserId: string;
   onSelectedUserChange: (id: string) => void;
-  onApplyRole: (userId: string, role: RoleType) => void;
+  onApplyRoles: (userId: string, roles: RoleType[]) => void;
   onCurrentUserChange: (userId: string) => void;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
@@ -130,14 +124,20 @@ export default function PermissionModal({
 
   if (!selectedUser) return null;
 
-  const activeRole = inferRole(selectedUser);
+  const activeRoles = normalizeRoles(selectedUser.roles, selectedUser.role);
+
+  const toggleRole = (role: RoleType) => {
+    const checked = activeRoles.includes(role);
+    const nextRoles = checked ? activeRoles.filter((item) => item !== role) : [...activeRoles, role];
+    onApplyRoles(selectedUser.id, nextRoles);
+  };
 
   return (
     <BaseModal open={open} onClose={onClose} dialogRef={dialogRef} titleId="permission-modal-title" maxWidthClassName="md:max-w-2xl">
       <ModalHeader
         titleId="permission-modal-title"
         title="환경 설정"
-        description="테스트용 사용자 전환과 역할 변경을 이 화면에서만 조정합니다."
+        description="테스트용 사용자 전환과 다중 권한 변경을 이 화면에서만 조정합니다."
         onClose={onClose}
       />
 
@@ -156,7 +156,7 @@ export default function PermissionModal({
                   className={`rounded-2xl border px-4 py-3 text-left ${active ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white text-stone-900"}`}
                 >
                   <div className="text-sm font-semibold">{user.name}</div>
-                  <div className={`mt-1 text-[11px] ${active ? "text-stone-300" : "text-stone-500"}`}>{inferRole(user)}</div>
+                  <div className={`mt-1 text-[11px] ${active ? "text-stone-300" : "text-stone-500"}`}>{formatRoles(user.roles, user.role)}</div>
                   {active ? <div className="mt-2 text-[11px] text-stone-200">현재 화면 기준 사용자</div> : null}
                 </button>
               );
@@ -177,7 +177,7 @@ export default function PermissionModal({
                   className={`block w-full rounded-2xl border p-4 text-left ${active ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white"}`}
                 >
                   <div className="text-sm font-semibold">{user.name}</div>
-                  <div className={`mt-1 text-xs ${active ? "text-stone-300" : "text-stone-500"}`}>{user.team}</div>
+                  <div className={`mt-1 text-xs ${active ? "text-stone-300" : "text-stone-500"}`}>{formatRoles(user.roles, user.role)}</div>
                   {isCurrent ? (
                     <div className={`mt-2 text-[11px] ${active ? "text-stone-200" : "text-cyan-700"}`}>
                       현재 선택 사용자
@@ -191,36 +191,37 @@ export default function PermissionModal({
           <div className="min-w-0 rounded-2xl border border-stone-200 bg-stone-50 p-4">
             <div>
               <div className="text-base font-semibold text-stone-900">{selectedUser.name}</div>
-              <div className="mt-1 text-sm text-stone-500">현재 역할: {activeRole}</div>
+              <div className="mt-1 text-sm text-stone-500">현재 권한: {formatRoles(activeRoles)}</div>
             </div>
 
             <div className="mt-4 space-y-3">
               {normalizedRoleOptions.map((item) => {
-                const checked = item.role === activeRole;
+                const checked = activeRoles.includes(item.role);
                 return (
-                  <button
+                  <label
                     key={item.role}
-                    type="button"
-                    onClick={() => onApplyRole(selectedUser.id, item.role)}
-                    className={`flex w-full items-center justify-between gap-4 rounded-2xl border px-4 py-4 text-left ${checked ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white text-stone-900"}`}
+                    className={`flex w-full cursor-pointer items-start justify-between gap-4 rounded-2xl border px-4 py-4 text-left ${checked ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white text-stone-900"}`}
                   >
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <div className="text-sm font-semibold">{item.title}</div>
                       <div className={`mt-1 text-xs ${checked ? "text-stone-300" : "text-stone-500"}`}>{item.description}</div>
                     </div>
-                    <div className={`flex h-5 w-5 items-center justify-center rounded-full border ${checked ? "border-white" : "border-stone-300"}`}>
-                      {checked ? <div className="h-2.5 w-2.5 rounded-full bg-white" /> : null}
-                    </div>
-                  </button>
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleRole(item.role)}
+                      className="mt-1 h-4 w-4 rounded border-stone-300 text-stone-900 focus:ring-stone-400"
+                    />
+                  </label>
                 );
               })}
             </div>
 
             <div className="mt-4 rounded-2xl border border-stone-200 bg-white p-4">
-              <div className="text-sm font-semibold text-stone-900">역할 설명</div>
+              <div className="text-sm font-semibold text-stone-900">권한 설명</div>
               <div className="mt-2 space-y-1 text-xs text-stone-500">
                 <div>디자이너: 작업지시 작성, 검토 요청, 발주 요청</div>
-                <div>관리자: 승인, 발주 확정, 역할 지정</div>
+                <div>관리자: 승인, 발주 확정, 역할 지정, 공식 첨부</div>
                 <div>입고/검수: 입고 등록, 검수 완료, 재고 수정</div>
               </div>
             </div>

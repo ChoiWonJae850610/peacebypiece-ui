@@ -5,6 +5,7 @@ import BaseModal from "@/components/common/modal/BaseModal";
 import ModalBody from "@/components/common/modal/ModalBody";
 import ModalHeader from "@/components/common/modal/ModalHeader";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
+import { formatRoles, hasRole } from "@/lib/constants/roles";
 import type { UserProfile } from "@/types/user";
 
 export default function ManagerAssignModal({
@@ -26,7 +27,7 @@ export default function ManagerAssignModal({
   useModalEnvironment({ open, dialogRef, onClose });
 
   const managerCandidates = useMemo(
-    () => users.filter((user) => user.role === "관리자" || user.role === "디자이너"),
+    () => users.filter((user) => hasRole(user, "관리자") || hasRole(user, "디자이너")),
     [users],
   );
 
@@ -60,7 +61,7 @@ export default function ManagerAssignModal({
               >
                 <div>
                   <div className="text-sm font-semibold">{user.name}</div>
-                  <div className={selected ? "mt-1 text-xs text-white/75" : "mt-1 text-xs text-stone-500"}>{user.role}</div>
+                  <div className={selected ? "mt-1 text-xs text-white/75" : "mt-1 text-xs text-stone-500"}>{formatRoles(user.roles, user.role)}</div>
                 </div>
                 {selected ? <span className="text-xs font-medium">현재</span> : null}
               </button>

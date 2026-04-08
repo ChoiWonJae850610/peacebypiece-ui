@@ -1,4 +1,4 @@
-import type { RoleTemplate, RoleType } from "@/types/permission";
+import type { PermissionSet, RoleTemplate, RoleType } from "@/types/permission";
 import type { UserProfile } from "@/types/user";
 
 export const ROLE_TEMPLATES: Record<RoleType, RoleTemplate> = {
@@ -46,38 +46,98 @@ export const ROLE_TEMPLATES: Record<RoleType, RoleTemplate> = {
   },
 };
 
+export const ROLE_PRIORITY: readonly RoleType[] = ["관리자", "디자이너", "입고/검수"] as const;
+
 export const ROLE_OPTIONS = Object.values(ROLE_TEMPLATES).map((item) => ({
   role: item.role,
   title: item.label,
   description: item.description,
 }));
 
-export function getPermissionSummary(user: Pick<UserProfile, "role" | "team">): string {
-  return user.role ?? user.team;
+function isRoleType(value: unknown): value is RoleType {
+  return value === "디자이너" || value === "관리자" || value === "입고/검수";
 }
 
+export function normalizeRoles(roles?: readonly RoleType[] | null, fallback?: RoleType | null): RoleType[] {
+  const next = Array.from(
+    new Set(
+      [...(roles ?? []), ...(fallback ? [fallback] : [])].filter((value): value is RoleType => isRoleType(value)),
+    ),
+  );
+  if (next.length > 0) return next;
+  return [fallback ?? "디자이너"];
+}
+
+export function getPrimaryRole(roles?: readonly RoleType[] | null, fallback?: RoleType | null): RoleType {
+  const normalized = normalizeRoles(roles, fallback);
+  return ROLE_PRIORITY.find((role) => normalized.includes(role)) ?? normalized[0] ?? "디자이너";
+}
+
+export function getPermissionsFromRoles(roles?: readonly RoleType[] | null, fallback?: RoleType | null): PermissionSet {
+  const normalized = normalizeRoles(roles, fallback);
+  return normalized.reduce<PermissionSet>(
+    (acc, role) => {
+      const permissions = ROLE_TEMPLATES[role].permissions;
+      return {
+        canSeeProductionSections: acc.canSeeProductionSections || permissions.canSeeProductionSections,
+        canSeeCostSections: acc.canSeeCostSections || permissions.canSeeCostSections,
+        canEditInventory: acc.canEditInventory || permissions.canEditInventory,
+        canSeeInventoryHistorySection: acc.canSeeInventoryHistorySection || permissions.canSeeInventoryHistorySection,
+        canSeeAttachments: acc.canSeeAttachments || permissions.canSeeAttachments,
+        canAssignRoles: acc.canAssignRoles || permissions.canAssignRoles,
+      };
+    },
+    {
+      canSeeProductionSections: false,
+      canSeeCostSections: false,
+      canEditInventory: false,
+      canSeeInventoryHistorySection: false,
+      canSeeAttachments: false,
+      canAssignRoles: false,
+    },
+  );
+}
+
+export function hasRole(source: readonly RoleType[] | Pick<UserProfile, "role" | "roles">, role: RoleType): boolean {
+  const roles = Array.isArray(source)
+    ? source
+    : normalizeRoles((source as Pick<UserProfile, "role" | "roles">).roles, (source as Pick<UserProfile, "role" | "roles">).role);
+  return roles.includes(role);
+}
+
+export function formatRoles(roles?: readonly RoleType[] | null, fallback?: RoleType | null): string {
+  return normalizeRoles(roles, fallback).join(" · ");
+}
+
+export function buildUserRoleState(roles?: readonly RoleType[] | null, fallback?: RoleType | null) {
+  const normalized = normalizeRoles(roles, fallback);
+  return {
+    roles: normalized,
+    role: getPrimaryRole(normalized, fallback),
+    team: getPrimaryRole(normalized, fallback),
+    permissions: getPermissionsFromRoles(normalized, fallback),
+  };
+}
+
+export function getPermissionSummary(user: Pick<UserProfile, "role" | "team" | "roles">): string {
+  return formatRoles(user.roles, user.role ?? user.team);
+}
 
 export const INITIAL_USERS: UserProfile[] = [
   {
     id: "user-designer",
     name: "김디자이너",
-    team: "디자이너",
-    role: "디자이너",
-    permissions: ROLE_TEMPLATES["디자이너"].permissions,
+    ...buildUserRoleState(["디자이너"]),
   },
   {
     id: "user-admin",
     name: "박관리",
-    team: "관리자",
-    role: "관리자",
-    permissions: ROLE_TEMPLATES["관리자"].permissions,
+    ...buildUserRoleState(["관리자"]),
   },
   {
     id: "user-inspection",
     name: "이검수",
-    team: "입고/검수",
-    role: "입고/검수",
-    permissions: ROLE_TEMPLATES["입고/검수"].permissions,
+    ...buildUserRoleState(["입고/검수"]),
   },
 ];
 

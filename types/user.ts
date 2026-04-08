@@ -5,5 +5,6 @@ export type UserProfile = {
   name: string;
   team: RoleType;
   role: RoleType;
+  roles: RoleType[];
   permissions: PermissionSet;
 };

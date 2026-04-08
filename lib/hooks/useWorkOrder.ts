@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { DEFAULT_SELECTED_WORK_ORDER_ID, MOCK_HISTORY_LOGS, MOCK_WORK_ORDERS } from "@/lib/data/mock/workorders";
 import { DEFAULT_CURRENT_USER_ID, DEFAULT_PERMISSION_TARGET_ID, MOCK_USERS } from "@/lib/data/mock/users";
-import { ROLE_TEMPLATES } from "@/lib/constants/roles";
+import { buildUserRoleState, hasRole, normalizeRoles } from "@/lib/constants/roles";
 import { SECTION_PREFERENCES_STORAGE_KEY } from "@/lib/constants/app";
 import { canDeleteAttachmentByUser } from "@/lib/permissions/attachments";
 import { getDisplayStageFromWorkflowState, VISIBLE_STAGES } from "@/lib/constants/workflow";
@@ -71,9 +71,12 @@ export function useWorkOrder() {
     () => users.find((user) => user.id === currentUserId) ?? users[0],
     [users, currentUserId],
   );
+  const currentRoles = normalizeRoles(currentUser.roles, currentUser.role);
   const currentRole = currentUser.role;
-  const isAdmin = currentRole === "관리자";
-  const canCreateWorkOrder = currentRole !== "입고/검수";
+  const isAdmin = hasRole(currentRoles, "관리자");
+  const isDesigner = hasRole(currentRoles, "디자이너");
+  const isInspector = hasRole(currentRoles, "입고/검수");
+  const canCreateWorkOrder = isAdmin || isDesigner;
   const permissionTargetUser = useMemo(
     () => users.find((user) => user.id === permissionTargetUserId) ?? users[0],
     [users, permissionTargetUserId],
@@ -133,8 +136,8 @@ export function useWorkOrder() {
   );
 
   const filteredHistoryLogs = useMemo(
-    () => filterHistoryLogs(scopedHistoryLogs, isAdmin, historyFilter, currentRole),
-    [scopedHistoryLogs, isAdmin, historyFilter, currentRole],
+    () => filterHistoryLogs(scopedHistoryLogs, isAdmin, historyFilter, currentRoles),
+    [scopedHistoryLogs, isAdmin, historyFilter, currentRoles],
   );
 
   const inventoryLogs: InventoryLog[] = useMemo(() => toInventoryLogs(scopedHistoryLogs), [scopedHistoryLogs]);
@@ -169,11 +172,11 @@ export function useWorkOrder() {
   const availableActions = useMemo(
     () => getAvailableWorkflowActions({
       currentWorkflowState,
-      currentRole,
+      currentRoles,
       currentUserId,
       workOrder: selectedWorkOrder,
     }),
-    [currentWorkflowState, currentRole, currentUserId, selectedWorkOrder],
+    [currentWorkflowState, currentRoles, currentUserId, selectedWorkOrder],
   );
 
   const handleSave = () => {
@@ -279,9 +282,9 @@ export function useWorkOrder() {
     ]);
   };
 
-  const handleApplyRole = (userId: string, role: RoleType) => {
-    const preset = ROLE_TEMPLATES[role];
-    setUsers((prev) => prev.map((user) => user.id === userId ? { ...user, role: preset.role, team: preset.team, permissions: preset.permissions } : user));
+  const handleApplyRoles = (userId: string, roles: RoleType[]) => {
+    const nextRoleState = buildUserRoleState(roles);
+    setUsers((prev) => prev.map((user) => user.id === userId ? { ...user, ...nextRoleState } : user));
   };
 
   const handleOpenManagerAssignModal = () => {
@@ -575,7 +578,7 @@ export function useWorkOrder() {
     handleConfirmOrderRequest,
     handleCloseOrderRequestConfirm,
     handleInventoryApply,
-    handleApplyRole,
+    handleApplyRoles,
     handleOpenManagerAssignModal,
     handleCloseManagerAssignModal,
     handleChangeManager,
