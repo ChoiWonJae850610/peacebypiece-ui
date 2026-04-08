@@ -31,7 +31,8 @@ type BasicInfoState = {
 const EDITABLE_FIELD_HEIGHT_CLASS = "h-10";
 const EDITABLE_FIELD_BASE_CLASS = `pbp-field-interaction ${EDITABLE_FIELD_HEIGHT_CLASS} block w-full min-w-0 max-w-full overflow-hidden rounded-xl border px-3 text-sm text-stone-900 outline-none ring-0`;
 const EDITABLE_INPUT_CLASS = `${EDITABLE_FIELD_BASE_CLASS} border-stone-300 bg-white focus:border-stone-400 focus:bg-white`;
-const EDITABLE_DISPLAY_CLASS = `${EDITABLE_FIELD_BASE_CLASS} flex items-center border-transparent bg-transparent hover:border-stone-200 hover:bg-stone-50 focus-visible:border-stone-300 focus-visible:bg-stone-50`
+const EDITABLE_SELECT_CLASS = `${EDITABLE_INPUT_CLASS} appearance-none pr-8`;
+const EDITABLE_DISPLAY_CLASS = `${EDITABLE_FIELD_BASE_CLASS} flex items-center border-transparent bg-transparent hover:border-stone-200 hover:bg-stone-50 focus-visible:border-stone-300 focus-visible:bg-stone-50`;
 const EDITABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
 const TABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
 const TABLE_HEADER_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
@@ -207,7 +208,7 @@ function EditableValue({
         onChange={(event) => onCommit(event.target.value)}
         onBlur={(event) => onCommit(event.target.value)}
         onKeyDown={handleSelectKeyDown}
-        className={`${EDITABLE_INPUT_CLASS} ${alignRight ? "text-right tabular-nums" : "text-left"}`}
+        className={`${EDITABLE_SELECT_CLASS} ${alignRight ? "text-right tabular-nums" : "text-left"}`}
       >
         {options.map((option) => (
           <option key={option} value={option}>
@@ -638,7 +639,6 @@ function OrderInfoSection({
   factoryOptions,
   open,
   onToggle,
-  onOpenRegistryModal,
   editingCell,
   editingValue,
   onStartEdit,
@@ -649,7 +649,6 @@ function OrderInfoSection({
   factoryOptions: readonly string[];
   open: boolean;
   onToggle: () => void;
-  onOpenRegistryModal: (type: RegistryType) => void;
   editingCell: EditableCell;
   editingValue: string;
   onStartEdit: (section: EditableSectionKey, rowId: string, field: string, value: string) => void;
@@ -657,7 +656,7 @@ function OrderInfoSection({
   onCancelEdit: () => void;
 }) {
   const infoItems = [
-    { label: "공장", field: "factory", value: basicInfo.factory, options: factoryOptions, registerType: "공장" as RegistryType },
+    { label: "공장", field: "factory", value: basicInfo.factory, options: factoryOptions },
     { label: "납기일", field: "dueDate", value: basicInfo.dueDate, inputType: "date" as const },
     { label: "발주 수량", field: "quantity", value: basicInfo.quantity.toLocaleString(), inputMode: "numeric" as const, alignRight: true },
     { label: "우선순위", field: "priority", value: basicInfo.priority, options: PRIORITY_OPTIONS },
@@ -671,18 +670,7 @@ function OrderInfoSection({
           <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 xl:grid-cols-4">
             {infoItems.map((item) => (
               <div key={item.field} className="min-w-0 overflow-hidden rounded-xl border border-stone-200 bg-white p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="text-xs text-stone-500">{item.label}</div>
-                  {item.registerType ? (
-                    <button
-                      type="button"
-                      onClick={() => onOpenRegistryModal(item.registerType)}
-                      className="pbp-interactive-button inline-flex h-7 shrink-0 items-center justify-center rounded-lg border border-stone-200 px-2.5 text-[11px] font-medium text-stone-700 hover:border-stone-300 hover:bg-stone-50 active:bg-stone-100"
-                    >
-                      등록
-                    </button>
-                  ) : null}
-                </div>
+                <div className="text-xs text-stone-500">{item.label}</div>
                 <div className="mt-2">
                   <EditableValue
                     section="basic"
@@ -728,6 +716,7 @@ function ProductionCompositionSection({
   onRemoveMaterial,
   onAddOutsourcing,
   onRemoveOutsourcing,
+  vendorOptions,
 }: {
   materials: Material[];
   outsourcing: Outsourcing[];
@@ -746,6 +735,7 @@ function ProductionCompositionSection({
   onRemoveMaterial: (id: string) => void;
   onAddOutsourcing: () => void;
   onRemoveOutsourcing: (id: string) => void;
+  vendorOptions: readonly string[];
 }) {
   const materialCount = materials.length;
   const outsourcingCount = outsourcing.length;
@@ -773,6 +763,7 @@ function ProductionCompositionSection({
             onCancelEdit={onCancelEdit}
             onAdd={onAddMaterial}
             onRemove={onRemoveMaterial}
+            vendorOptions={vendorOptions}
           />
           <OutsourcingSection
             outsourcing={outsourcing}
@@ -785,6 +776,7 @@ function ProductionCompositionSection({
             onCancelEdit={onCancelEdit}
             onAdd={onAddOutsourcing}
             onRemove={onRemoveOutsourcing}
+            vendorOptions={vendorOptions}
           />
         </div>
       ) : null}
@@ -803,6 +795,7 @@ function MaterialSection({
   onCancelEdit,
   onAdd,
   onRemove,
+  vendorOptions,
 }: {
   materials: Material[];
   open: boolean;
@@ -814,6 +807,7 @@ function MaterialSection({
   onCancelEdit: () => void;
   onAdd: () => void;
   onRemove: (id: string) => void;
+  vendorOptions: readonly string[];
 }) {
   const total = materials.reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
   const summary = materials.length > 0
@@ -848,7 +842,6 @@ function MaterialSection({
                     ["수량", "quantity", item.quantity.toLocaleString(), "decimal"],
                     ["단위", "unit", item.unit, "text"],
                     ["단가", "unitCost", item.unitCost.toLocaleString(), "decimal"],
-                    ["상태", "status", item.status, "text"],
                   ].map(([label, field, value, inputMode]) => (
                     <div key={`${item.id}-${field}`} className="flex items-center justify-between gap-4 min-w-0">
                       <span className="shrink-0 text-xs text-stone-500">{label}</span>
@@ -861,7 +854,7 @@ function MaterialSection({
                           editingCell={editingCell}
                           editingValue={editingValue}
                           inputMode={inputMode as "text" | "decimal"}
-                          options={field === "type" ? MATERIAL_TYPE_OPTIONS : field === "unit" ? MATERIAL_UNIT_OPTIONS : undefined}
+                          options={field === "type" ? MATERIAL_TYPE_OPTIONS : field === "unit" ? MATERIAL_UNIT_OPTIONS : field === "vendor" ? vendorOptions : undefined}
                           alignRight={field === "quantity" || field === "unitCost"}
                           onStartEdit={onStartEdit}
                           onCommit={onCommitEdit}
@@ -895,12 +888,11 @@ function MaterialSection({
                 <col className="w-[64px]" />
                 <col className="w-[120px]" />
                 <col className="w-[132px]" />
-                <col className="w-[92px]" />
                 <col className="w-[52px]" />
               </colgroup>
               <thead className="text-stone-500">
                 <tr className="border-b border-stone-200">
-                  {["구분", "자재명", "거래처", "수량", "단위", "단가", "금액", "상태", ""].map((header, index) => (
+                  {["구분", "자재명", "거래처", "수량", "단위", "단가", "금액", ""].map((header, index) => (
                     <th
                       key={`${header}-${index}`}
                       className={`min-w-0 overflow-hidden px-2 py-3 text-xs font-medium ${header === "수량" || header === "단가" || header === "금액" ? "text-right" : header === "" ? "text-center" : "text-left"}`}
@@ -915,19 +907,18 @@ function MaterialSection({
                   <tr key={item.id} className="border-b border-stone-100">
                     <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="type" value={item.type} options={MATERIAL_TYPE_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="name" value={item.name} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="vendor" value={item.vendor} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="vendor" value={item.vendor} options={vendorOptions} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="unit" value={item.unit} options={MATERIAL_UNIT_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="unitCost" value={item.unitCost.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 overflow-hidden px-2 py-2 text-right align-middle font-medium tabular-nums"><span className={TABLE_VALUE_TEXT_CLASS}>{(item.totalCost ?? 0).toLocaleString()}원</span></td>
-                    <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="material" rowId={item.id} field="status" value={item.status} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="px-2 py-2 text-center align-middle">
                       <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.name || `자재 ${rowIndex + 1}`} 삭제`} />
                     </td>
                   </tr>
                 ))}
                 <tr>
-                  <td colSpan={9} className="px-2 pb-2 pt-2">
+                  <td colSpan={8} className="px-2 pb-2 pt-2">
                     <button
                       type="button"
                       onClick={onAdd}
@@ -957,6 +948,7 @@ function OutsourcingSection({
   onCancelEdit,
   onAdd,
   onRemove,
+  vendorOptions,
 }: {
   outsourcing: Outsourcing[];
   open: boolean;
@@ -968,6 +960,7 @@ function OutsourcingSection({
   onCancelEdit: () => void;
   onAdd: () => void;
   onRemove: (id: string) => void;
+  vendorOptions: readonly string[];
 }) {
   const total = outsourcing.reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
   const summary = outsourcing.length > 0
@@ -1001,7 +994,6 @@ function OutsourcingSection({
                     ["수량", "quantity", item.quantity.toLocaleString(), "decimal"],
                     ["단가기준", "unitType", item.unitType, "text"],
                     ["단가", "unitCost", item.unitCost.toLocaleString(), "decimal"],
-                    ["상태", "status", item.status, "text"],
                   ].map(([label, field, value, inputMode]) => (
                     <div key={`${item.id}-${field}`} className="flex items-center justify-between gap-4 min-w-0">
                       <span className="shrink-0 text-xs text-stone-500">{label}</span>
@@ -1014,7 +1006,7 @@ function OutsourcingSection({
                           editingCell={editingCell}
                           editingValue={editingValue}
                           inputMode={inputMode as "text" | "decimal"}
-                          options={field === "process" ? OUTSOURCING_PROCESS_OPTIONS : field === "unitType" ? OUTSOURCING_UNIT_OPTIONS : undefined}
+                          options={field === "process" ? OUTSOURCING_PROCESS_OPTIONS : field === "unitType" ? OUTSOURCING_UNIT_OPTIONS : field === "vendor" ? vendorOptions : undefined}
                           alignRight={field === "quantity" || field === "unitCost"}
                           onStartEdit={onStartEdit}
                           onCommit={onCommitEdit}
@@ -1047,12 +1039,11 @@ function OutsourcingSection({
                 <col className="w-[96px]" />
                 <col className="w-[120px]" />
                 <col className="w-[132px]" />
-                <col className="w-[92px]" />
                 <col className="w-[52px]" />
               </colgroup>
               <thead className="text-stone-500">
                 <tr className="border-b border-stone-200">
-                  {["공정", "외주처", "수량", "단가기준", "단가", "금액", "상태", ""].map((header, index) => (
+                  {["공정", "외주처", "수량", "단가기준", "단가", "금액", ""].map((header, index) => (
                     <th
                       key={`${header}-${index}`}
                       className={`min-w-0 overflow-hidden px-2 py-3 text-xs font-medium ${header === "수량" || header === "단가" || header === "금액" ? "text-right" : header === "" ? "text-center" : "text-left"}`}
@@ -1066,19 +1057,18 @@ function OutsourcingSection({
                 {outsourcing.map((item, rowIndex) => (
                   <tr key={item.id} className="border-b border-stone-100">
                     <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} options={OUTSOURCING_PROCESS_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="vendor" value={item.vendor} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="vendor" value={item.vendor} options={vendorOptions} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="unitType" value={item.unitType} options={OUTSOURCING_UNIT_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="unitCost" value={item.unitCost.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 overflow-hidden px-2 py-2 text-right align-middle font-medium tabular-nums"><span className={TABLE_VALUE_TEXT_CLASS}>{(item.totalCost ?? 0).toLocaleString()}원</span></td>
-                    <td className="min-w-0 overflow-hidden px-2 py-2 align-middle"><EditableValue section="outsourcing" rowId={item.id} field="status" value={item.status} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="px-2 py-2 text-center align-middle">
                       <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.process || `공정 ${rowIndex + 1}`} 삭제`} />
                     </td>
                   </tr>
                 ))}
                 <tr>
-                  <td colSpan={8} className="px-2 pb-2 pt-2">
+                  <td colSpan={7} className="px-2 pb-2 pt-2">
                     <button
                       type="button"
                       onClick={onAdd}
@@ -1541,7 +1531,6 @@ export default function WorkOrderDetail({
           factoryOptions={factoryOptions}
           open={basicInfoOpen}
           onToggle={onToggleBasicInfo}
-          onOpenRegistryModal={openRegistryModal}
           editingCell={editingCell}
           editingValue={editingValue}
           onStartEdit={startEdit}
@@ -1572,6 +1561,7 @@ export default function WorkOrderDetail({
             onRemoveMaterial={removeMaterial}
             onAddOutsourcing={addOutsourcing}
             onRemoveOutsourcing={removeOutsourcing}
+            vendorOptions={Array.from(new Set([...partnerOptions, ...materialItems.map((item) => item.vendor).filter(Boolean), ...outsourcingItems.map((item) => item.vendor).filter(Boolean)]))}
           />
         ) : null}
       </div>
