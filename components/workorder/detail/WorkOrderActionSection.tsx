@@ -83,7 +83,7 @@ export default function WorkOrderActionSection({
       </div>
 
       <div className="mt-3 md:hidden">
-        <div className="rounded-2xl border border-stone-200 bg-white px-3 py-3">
+        <div className="rounded-2xl border border-stone-200 bg-white px-3 py-2.5">
           <div className="relative">
             <div className="pointer-events-none absolute left-[16.666%] right-[16.666%] top-4 h-0.5 rounded-full bg-stone-200" />
             {mobileStageSlots.slice(0, -1).map((slot, slotIndex) => {
@@ -112,7 +112,7 @@ export default function WorkOrderActionSection({
 
                 return (
                   <div key={stage ? `${stage}-mobile` : `placeholder-${slotIndex}`} className={`min-w-0 ${isPlaceholder ? "opacity-0" : ""}`}>
-                    <div className="flex min-w-0 flex-col items-center text-center">
+                    <div className="flex min-w-0 min-h-[3.6rem] flex-col items-center justify-center text-center">
                       <div
                         className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
                           isCompleted
@@ -124,7 +124,7 @@ export default function WorkOrderActionSection({
                       >
                         {isPlaceholder ? "" : isCompleted ? "✓" : index + 1}
                       </div>
-                      <div className={`mt-2 block min-h-[2rem] w-full min-w-0 break-keep px-1 text-center text-[11px] leading-4 whitespace-normal ${
+                      <div className={`mt-1.5 block min-h-[1.75rem] w-full min-w-0 break-keep px-1 text-center text-[11px] leading-4 whitespace-normal ${
                         isCurrent
                           ? `font-semibold ${getStageTextTone(stage!)}`
                           : isUpcoming
