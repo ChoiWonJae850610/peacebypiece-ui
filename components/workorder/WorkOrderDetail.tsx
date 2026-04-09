@@ -36,11 +36,11 @@ const EDITABLE_SELECT_CLASS = `${EDITABLE_INPUT_CLASS} appearance-none truncate 
 const EDITABLE_DISPLAY_CLASS = `${EDITABLE_FIELD_BASE_CLASS} text-sm flex items-center border-transparent bg-transparent hover:border-stone-200 hover:bg-stone-50 focus-visible:border-stone-300 focus-visible:bg-stone-50`;
 const EDITABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
 const TABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
-const TABLE_HEADER_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
-const MOBILE_LABEL_CLASS = "w-[4.75rem] shrink-0 text-left text-xs tracking-tight text-stone-500";
-const MOBILE_VALUE_WRAPPER_CLASS = "min-w-0 max-w-full flex-1 basis-0 overflow-hidden text-center";
-const TABLE_HEADER_CELL_CLASS = "min-w-0 overflow-hidden px-2 py-3 text-[11px] font-medium leading-4 lg:text-[11px]";
-const TABLE_BODY_CELL_CLASS = "min-w-0 overflow-hidden px-2 py-2 align-middle text-[11px] leading-4 lg:text-[11px]";
+const TABLE_HEADER_TEXT_CLASS = "block w-full min-w-0 max-w-full whitespace-normal break-keep leading-4";
+const MOBILE_LABEL_CLASS = "w-[4rem] shrink-0 text-left text-xs tracking-tight text-stone-500";
+const MOBILE_VALUE_WRAPPER_CLASS = "min-w-0 max-w-full flex-1 basis-0 overflow-hidden text-left";
+const TABLE_HEADER_CELL_CLASS = "min-w-0 overflow-hidden px-2 py-2.5 text-xs font-semibold leading-4 lg:text-sm";
+const TABLE_BODY_CELL_CLASS = "min-w-0 overflow-hidden px-2 py-2 align-middle text-[10px] leading-4 lg:text-[11px]";
 const EDITABLE_VALUE_TEXT_WRAP_CLASS = "block w-full min-w-0 max-w-full whitespace-normal break-words leading-4";
 
 function SectionHeader({
@@ -674,7 +674,7 @@ function OrderInfoSection({
                   {["구분", "공장", "납기일", "수량", "공임비", "로스비", "우선순위", "검수", "액션", ""].map((header, index) => (
                     <th
                       key={`${header}-${index}`}
-                      className={`${TABLE_HEADER_CELL_CLASS} ${header === "수량" || header === "공임비" || header === "로스비" ? "text-right" : header === "" || header === "검수" || header === "액션" ? "text-center" : "text-left"}`}
+                      className={`${TABLE_HEADER_CELL_CLASS} ${header === "" ? "text-center" : "text-center"}`}
                     >
                       <span className="block w-full whitespace-normal break-keep leading-4">{header}</span>
                     </th>
@@ -691,8 +691,8 @@ function OrderInfoSection({
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="laborCost" value={item.laborCost.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="numeric" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="lossCost" value={item.lossCost.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="numeric" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="priority" value={item.priority} options={PRIORITY_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="px-3 py-2 text-center align-middle"><span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium ${getInspectionStatusTone(item.inspectionStatus ?? "발주대기")}`}>{getInspectionStatusLabel(item.inspectionStatus ?? "발주대기")}</span></td>
-                    <td className="px-3 py-2 text-center align-middle">
+                    <td className="px-2 py-2 text-center align-middle"><span className={`inline-flex rounded-full px-2 py-1 text-[10px] font-medium lg:text-[11px] ${getInspectionStatusTone(item.inspectionStatus ?? "발주대기")}`}>{getInspectionStatusLabel(item.inspectionStatus ?? "발주대기")}</span></td>
+                    <td className="px-2 py-2 text-center align-middle">
                       {canManageInspectionRows ? (
                         item.inspectionStatus === "검수대기" ? (
                           <button type="button" onClick={() => onStartInspection(item.id)} className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-[11px] font-medium text-emerald-700">검수 시작</button>
@@ -701,7 +701,7 @@ function OrderInfoSection({
                         ) : <span className="text-[11px] text-stone-400">-</span>
                       ) : <span className="text-[11px] text-stone-400">-</span>}
                     </td>
-                    <td className="px-3 py-2 text-center align-middle">
+                    <td className="px-2 py-2 text-center align-middle">
                       <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || `발주 ${rowIndex + 1}`} 삭제`} />
                     </td>
                   </tr>
@@ -933,7 +933,7 @@ function MaterialSection({
                   {["구분", "자재명", "거래처", "수량", "단위", "단가", "금액", ""].map((header, index) => (
                     <th
                       key={`${header}-${index}`}
-                      className={`${TABLE_HEADER_CELL_CLASS} ${header === "수량" || header === "단가" || header === "금액" ? "text-right" : header === "" ? "text-center" : "text-left"}`}
+                      className={`${TABLE_HEADER_CELL_CLASS} ${header === "" ? "text-center" : "text-center"}`}
                     >
                       <span className="block w-full whitespace-normal break-keep leading-4">{header}</span>
                     </th>
@@ -949,8 +949,8 @@ function MaterialSection({
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="unit" value={item.unit} options={MATERIAL_UNIT_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="unitCost" value={item.unitCost.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="min-w-0 overflow-hidden px-3 py-2 text-right align-middle font-medium tabular-nums"><span className={TABLE_VALUE_TEXT_CLASS}>{(item.totalCost ?? 0).toLocaleString()}원</span></td>
-                    <td className="px-3 py-2 text-center align-middle">
+                    <td className="min-w-0 overflow-hidden px-2 py-2 text-right align-middle text-[10px] font-medium tabular-nums lg:text-[11px]"><span className={TABLE_VALUE_TEXT_CLASS}>{(item.totalCost ?? 0).toLocaleString()}원</span></td>
+                    <td className="px-2 py-2 text-center align-middle">
                       <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.name || `자재 ${rowIndex + 1}`} 삭제`} />
                     </td>
                   </tr>
@@ -1086,7 +1086,7 @@ function OutsourcingSection({
                   {["공정", "외주처", "수량", "단가기준", "단가", "금액", ""].map((header, index) => (
                     <th
                       key={`${header}-${index}`}
-                      className={`${TABLE_HEADER_CELL_CLASS} ${header === "수량" || header === "단가" || header === "금액" ? "text-right" : header === "" ? "text-center" : "text-left"}`}
+                      className={`${TABLE_HEADER_CELL_CLASS} ${header === "" ? "text-center" : "text-center"}`}
                     >
                       <span className="block w-full whitespace-normal break-keep leading-4">{header}</span>
                     </th>
@@ -1101,8 +1101,8 @@ function OutsourcingSection({
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="unitType" value={item.unitType} options={OUTSOURCING_UNIT_OPTIONS} wrapText editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="unitCost" value={item.unitCost.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="min-w-0 overflow-hidden px-3 py-2 text-right align-middle font-medium tabular-nums"><span className={TABLE_VALUE_TEXT_CLASS}>{(item.totalCost ?? 0).toLocaleString()}원</span></td>
-                    <td className="px-3 py-2 text-center align-middle">
+                    <td className="min-w-0 overflow-hidden px-2 py-2 text-right align-middle text-[10px] font-medium tabular-nums lg:text-[11px]"><span className={TABLE_VALUE_TEXT_CLASS}>{(item.totalCost ?? 0).toLocaleString()}원</span></td>
+                    <td className="px-2 py-2 text-center align-middle">
                       <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.process || `공정 ${rowIndex + 1}`} 삭제`} />
                     </td>
                   </tr>
