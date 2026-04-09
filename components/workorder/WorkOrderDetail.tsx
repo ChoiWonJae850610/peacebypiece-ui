@@ -688,23 +688,22 @@ function OrderInfoSection({
           <div className="mt-1 hidden max-w-full overflow-hidden md:block">
             <table className="w-full max-w-full table-fixed text-left">
               <colgroup>
-                <col className="w-[12%]" />
+                <col className="w-[92px]" />
                 <col className="w-[18%]" />
-                <col className="w-[14%]" />
-                <col className="w-[8%]" />
-                <col className="w-[10%]" />
-                <col className="w-[10%]" />
-                <col className="w-[10%]" />
-                <col className="w-[8%]" />
-                <col className="w-[6%]" />
-                <col className="w-[4%]" />
+                <col className="w-[104px]" />
+                <col className="w-[72px]" />
+                <col className="w-[92px]" />
+                <col className="w-[92px]" />
+                <col className="w-[88px]" />
+                <col className="w-[104px]" />
+                <col className="w-[52px]" />
               </colgroup>
               <thead className="text-stone-500">
                 <tr className="border-b border-stone-200">
-                  {["구분", "공장", "납기일", "수량", "공임비", "로스비", "우선순위", "검수", "액션", ""].map((header, index) => (
+                  {["구분", "공장", "납기일", "수량", "공임비", "로스비", "우선순위", "검수여부", ""].map((header, index) => (
                     <th
                       key={`${header}-${index}`}
-                      className={`${TABLE_HEADER_CELL_CLASS} ${header === "" ? "text-center" : "text-center"}`}
+                      className={TABLE_HEADER_CELL_CLASS}
                     >
                       <span className="block w-full whitespace-nowrap leading-4">{header}</span>
                     </th>
@@ -714,7 +713,7 @@ function OrderInfoSection({
               <tbody>
                 {orderEntries.map((item, rowIndex) => (
                   <tr key={item.id} className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
-                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="type" value={item.type} options={ORDER_TYPE_OPTIONS} centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="type" value={item.type} options={ORDER_TYPE_OPTIONS} centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="factory" value={item.factory} options={factoryOptions} centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="dueDate" value={item.dueDate} centered editingCell={editingCell} editingValue={editingValue} inputType="date" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
@@ -722,15 +721,6 @@ function OrderInfoSection({
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="lossCost" value={item.lossCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="priority" value={item.priority} options={PRIORITY_OPTIONS} centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="px-1.5 py-2 text-center align-middle text-[11px] lg:px-2 lg:text-[11px]"><span className={`inline-flex rounded-full px-2 py-1 text-[11px] font-medium lg:text-[11px] ${getInspectionStatusTone(item.inspectionStatus ?? "발주대기")}`}>{getInspectionStatusLabel(item.inspectionStatus ?? "발주대기")}</span></td>
-                    <td className="px-1.5 py-2 text-center align-middle text-[11px] lg:px-2 lg:text-[11px]">
-                      {canManageInspectionRows ? (
-                        item.inspectionStatus === "검수대기" ? (
-                          <button type="button" onClick={() => onStartInspection(item.id)} className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-[11px] font-medium text-emerald-700 lg:text-[11px]">검수 시작</button>
-                        ) : item.inspectionStatus === "검수중" ? (
-                          <button type="button" onClick={() => onCompleteInspection(item.id)} className="rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-[11px] font-medium text-stone-700 lg:text-[11px]">검수 완료</button>
-                        ) : <span className="text-[11px] text-stone-400 lg:text-[11px]">-</span>
-                      ) : <span className="text-[11px] text-stone-400 lg:text-[11px]">-</span>}
-                    </td>
                     <td className="px-1.5 py-2 text-center align-middle lg:px-2">
                       <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || `발주 ${rowIndex + 1}`} 삭제`} />
                     </td>
@@ -741,10 +731,10 @@ function OrderInfoSection({
                   <td className="px-3 py-2 text-center text-[11px] font-semibold text-stone-900 tabular-nums lg:text-[11px]">{totals.quantity.toLocaleString()}장</td>
                   <td className="px-3 py-2 text-center text-[11px] font-semibold text-stone-900 tabular-nums lg:text-[11px]">{totals.laborCost.toLocaleString()}원</td>
                   <td className="px-3 py-2 text-center text-[11px] font-semibold text-stone-900 tabular-nums lg:text-[11px]">{totals.lossCost.toLocaleString()}원</td>
-                  <td colSpan={4} />
+                  <td colSpan={3} />
                 </tr>
                 <tr>
-                  <td colSpan={10} className="px-3 pb-2 pt-2">
+                  <td colSpan={9} className="px-3 pb-2 pt-2">
                     <button
                       type="button"
                       onClick={onAdd}
