@@ -573,13 +573,13 @@ function OrderInspectionModal({
   orderEntries: OrderEntryState[];
   currentInventoryQuantity: number;
   onClose: () => void;
-  onApply: (payload: { orderEntryId: string; inventoryQuantity: number }) => void;
+  onApply: (payload: { orderEntryId: string; inboundQuantity: number; nextInventoryQuantity: number; memo: string }) => void;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const pendingEntries = orderEntries.filter((item) => item.inspectionStatus !== "검수완료");
   const [selectedFactory, setSelectedFactory] = useState("");
   const [selectedOrderId, setSelectedOrderId] = useState("");
-  const [inventoryQuantity, setInventoryQuantity] = useState("");
+  const [inspectionMemo, setInspectionMemo] = useState("");
 
   useModalEnvironment({ open, dialogRef, onClose });
 
@@ -587,17 +587,16 @@ function OrderInspectionModal({
     if (!open) {
       setSelectedFactory("");
       setSelectedOrderId("");
-      setInventoryQuantity("");
+      setInspectionMemo("");
       return;
     }
 
     const firstEntry = pendingEntries[0] ?? orderEntries[0];
-    if (!selectedFactory && !selectedOrderId && inventoryQuantity === "") {
+    if (!selectedFactory && !selectedOrderId) {
       setSelectedFactory(firstEntry?.factory || DEFAULT_FACTORY_OPTION);
       setSelectedOrderId(firstEntry?.id || "");
-      setInventoryQuantity(String(Math.max(0, currentInventoryQuantity || 0)));
     }
-  }, [open, pendingEntries, orderEntries, currentInventoryQuantity, selectedFactory, selectedOrderId, inventoryQuantity]);
+  }, [open, pendingEntries, orderEntries, currentInventoryQuantity, selectedFactory, selectedOrderId]);
 
   const factoryOptions = Array.from(new Set((pendingEntries.length > 0 ? pendingEntries : orderEntries).map((item) => item.factory || DEFAULT_FACTORY_OPTION)));
   const filteredEntries = (pendingEntries.length > 0 ? pendingEntries : orderEntries).filter((item) => (item.factory || DEFAULT_FACTORY_OPTION) === selectedFactory);
@@ -609,12 +608,16 @@ function OrderInspectionModal({
     setSelectedOrderId(nextEntries[0]?.id || "");
   };
 
+  const inboundQuantity = Math.max(0, Number(selectedEntry?.quantity) || 0);
+  const nextInventoryQuantity = Math.max(0, Number(currentInventoryQuantity) || 0) + inboundQuantity;
+
   const handleApply = () => {
     if (!selectedEntry) return;
-    const parsedQuantity = Math.max(0, Number(inventoryQuantity.replace(/,/g, "")) || 0);
     onApply({
       orderEntryId: selectedEntry.id,
-      inventoryQuantity: parsedQuantity,
+      inboundQuantity,
+      nextInventoryQuantity,
+      memo: inspectionMemo,
     });
     onClose();
   };
@@ -624,7 +627,7 @@ function OrderInspectionModal({
       <ModalHeader
         titleId="order-inspection-modal-title"
         title="검수 진행"
-        description="공장을 선택하고 재고 반영값을 입력한 뒤 해당 발주행을 검수 완료로 처리합니다."
+        description="공장을 선택한 뒤 발주 수량 기준으로 재고 반영값을 확인하고 검수 메모와 함께 완료 처리합니다."
         onClose={onClose}
       />
       <ModalBody>
@@ -669,18 +672,30 @@ function OrderInspectionModal({
               </div>
             </div>
 
-            <label className="block rounded-2xl border border-stone-200 bg-white p-3">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-xs text-stone-500">재고 반영값</span>
-                <span className="text-xs text-stone-500">현재 {currentInventoryQuantity.toLocaleString()}장</span>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl border border-stone-200 bg-white p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xs text-stone-500">재고 반영값</span>
+                  <span className="text-xs text-stone-500">현재 {currentInventoryQuantity.toLocaleString()}장</span>
+                </div>
+                <div className="mt-2 text-lg font-semibold text-stone-900">{nextInventoryQuantity.toLocaleString()}장</div>
+                <div className="mt-1 text-xs text-stone-500">현재 재고 {currentInventoryQuantity.toLocaleString()}장 + 발주 수량 {inboundQuantity.toLocaleString()}장</div>
               </div>
-              <input
-                type="number"
-                min={0}
-                value={inventoryQuantity}
-                onChange={(event) => setInventoryQuantity(event.target.value)}
-                placeholder="최종 재고 수량"
-                className="mt-2 h-11 w-full rounded-xl border border-stone-300 bg-white px-3 text-base text-stone-900 outline-none focus:border-stone-400 md:text-sm"
+              <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
+                <div className="text-xs text-stone-500">검수 반영 수량</div>
+                <div className="mt-2 text-lg font-semibold text-stone-900">{inboundQuantity.toLocaleString()}장</div>
+                <div className="mt-1 text-xs text-stone-500">선택된 발주행 수량 기준으로 자동 반영됩니다.</div>
+              </div>
+            </div>
+
+            <label className="block rounded-2xl border border-stone-200 bg-white p-3">
+              <div className="text-xs text-stone-500">검수 메모</div>
+              <textarea
+                value={inspectionMemo}
+                onChange={(event) => setInspectionMemo(event.target.value)}
+                rows={4}
+                placeholder="검수 메모를 입력하면 검수 관련 로그에 함께 기록됩니다."
+                className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 outline-none focus:border-stone-400"
               />
             </label>
           </div>
@@ -1347,6 +1362,7 @@ export default function WorkOrderDetail({
   actions,
   onAction,
   onUpdateWorkOrder,
+  onCompleteInspection,
 }: {
   workOrder: WorkOrder;
   currentWorkflowState: WorkflowState;
@@ -1381,6 +1397,7 @@ export default function WorkOrderDetail({
   actions: WorkflowAction[];
   onAction: (action: WorkflowAction) => void;
   onUpdateWorkOrder: (patch: Partial<WorkOrder>) => void;
+  onCompleteInspection: (payload: { orderEntryId: string; inboundQuantity: number; nextInventoryQuantity: number; memo: string }) => void;
 }) {
   const [basicInfo, setBasicInfo] = useState<BasicInfoState>(() => getInitialBasicInfo(workOrder));
   const [partnerOptions, setPartnerOptions] = useState<string[]>(() => Array.from(new Set(PARTNER_OPTIONS)));
@@ -1557,14 +1574,26 @@ export default function WorkOrderDetail({
     setInspectionModalOpen(false);
   };
 
-  const handleApplyInspection = ({ orderEntryId, inventoryQuantity }: { orderEntryId: string; inventoryQuantity: number }) => {
+  const handleApplyInspection = ({
+    orderEntryId,
+    inboundQuantity,
+    nextInventoryQuantity,
+    memo,
+  }: {
+    orderEntryId: string;
+    inboundQuantity: number;
+    nextInventoryQuantity: number;
+    memo: string;
+  }) => {
     const nextItems = orderItems.map((item) => item.id === orderEntryId
       ? sanitizeOrderEntry({ ...item, inspectionStatus: "검수완료" }, item, currentWorkflowState)
       : item);
     setOrderItems(nextItems);
-    syncOrderEntries(nextItems, {
-      inventoryQuantity,
-      inventoryStatus: inventoryQuantity > 0 ? "정상" : "부족",
+    onCompleteInspection({
+      orderEntryId,
+      inboundQuantity,
+      nextInventoryQuantity,
+      memo,
     });
   };
 
@@ -1681,6 +1710,7 @@ export default function WorkOrderDetail({
         onOpenBasicInfoModal={handleOpenBasicInfoModal}
         onOpenManagerAssignModal={onOpenManagerAssignModal}
         onOpenInventoryEditor={onOpenInventoryEditor}
+        locked={isReviewRequestLocked}
       />
 
       <WorkOrderActionSection stages={visibleStages} currentStage={currentDisplayStage} actions={actions} onAction={onAction} />

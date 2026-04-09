@@ -100,6 +100,7 @@ export default function Home() {
     handleConfirmOrderRequest,
     handleCloseOrderRequestConfirm,
     handleInventoryApply,
+    handleCompleteInspection,
     handleApplyRoles,
     handleOpenManagerAssignModal,
     handleCloseManagerAssignModal,
@@ -212,6 +213,7 @@ export default function Home() {
               actions={availableActions}
               onAction={handleWorkflowAction}
               onUpdateWorkOrder={handleUpdateSelectedWorkOrder}
+              onCompleteInspection={handleCompleteInspection}
             />
             </div>
           </section>

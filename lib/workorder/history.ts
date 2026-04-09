@@ -122,6 +122,26 @@ export function createInventoryHistoryLog(
   });
 }
 
+export function createInspectionCompleteHistoryLog(
+  user: string,
+  workOrderId: string,
+  payload: { inboundQuantity: number; nextInventoryQuantity: number; memo?: string },
+) {
+  return createHistoryLog({
+    action: "검수 완료",
+    message: "검수 완료와 재고 반영이 기록되었습니다.",
+    user,
+    workOrderId,
+    category: "inventory",
+    tone: "emerald",
+    detailLines: [
+      { label: "입고", value: `${payload.inboundQuantity}장 반영` },
+      { label: "최종 재고", value: `${payload.nextInventoryQuantity}장` },
+      ...(payload.memo?.trim() ? [{ label: "메모", value: payload.memo.trim() }] : []),
+    ],
+  });
+}
+
 export function createMemoHistoryLog(
   user: string,
   workOrderId: string,

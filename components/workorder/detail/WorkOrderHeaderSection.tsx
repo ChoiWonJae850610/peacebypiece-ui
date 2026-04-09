@@ -12,6 +12,7 @@ type WorkOrderHeaderSectionProps = {
   onOpenBasicInfoModal: () => void;
   onOpenManagerAssignModal: () => void;
   onOpenInventoryEditor: () => void;
+  locked?: boolean;
 };
 
 export default function WorkOrderHeaderSection({
@@ -26,6 +27,7 @@ export default function WorkOrderHeaderSection({
   onOpenBasicInfoModal,
   onOpenManagerAssignModal,
   onOpenInventoryEditor,
+  locked = false,
 }: WorkOrderHeaderSectionProps) {
   const managerValue = managerName || "-";
   const inventoryValue = `${currentInventoryQuantity.toLocaleString()}장`;
@@ -40,6 +42,7 @@ export default function WorkOrderHeaderSection({
               <button
                 type="button"
                 onClick={onSave}
+                disabled={locked}
                 className="shrink-0 pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-stone-800 active:bg-black md:hidden"
               >
                 저장
@@ -49,12 +52,13 @@ export default function WorkOrderHeaderSection({
             <button
               type="button"
               onClick={onOpenBasicInfoModal}
+              disabled={locked}
               className="pbp-interactive-button mt-3 inline-flex max-w-full items-center rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-left text-xs font-medium text-stone-700 hover:border-stone-300 hover:bg-stone-100 active:bg-stone-200 md:text-sm"
             >
               <span className="truncate">{summaryText}</span>
             </button>
             <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 pr-2 text-sm text-stone-600 md:hidden">
-              <InlineInfoItem label="담당자" value={managerValue} onClick={canChangeManager ? onOpenManagerAssignModal : undefined} />
+              <InlineInfoItem label="담당자" value={managerValue} onClick={!locked && canChangeManager ? onOpenManagerAssignModal : undefined} />
               <InlineInfoItem label="현재 재고" value={inventoryValue} onClick={canEditInventory ? onOpenInventoryEditor : undefined} valueClassName="tabular-nums text-stone-900" />
             </div>
           </div>
@@ -62,13 +66,14 @@ export default function WorkOrderHeaderSection({
             <button
               type="button"
               onClick={onSave}
+              disabled={locked}
               className="pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-stone-800 active:bg-black"
             >
               저장
             </button>
             <div className="flex flex-col items-end gap-3 text-right">
               <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-sm text-stone-600">
-                <InlineInfoItem label="담당자" value={managerValue} onClick={canChangeManager ? onOpenManagerAssignModal : undefined} />
+                <InlineInfoItem label="담당자" value={managerValue} onClick={!locked && canChangeManager ? onOpenManagerAssignModal : undefined} />
                 <InlineInfoItem label="현재 재고" value={inventoryValue} onClick={canEditInventory ? onOpenInventoryEditor : undefined} valueClassName="tabular-nums text-stone-900" />
               </div>
             </div>

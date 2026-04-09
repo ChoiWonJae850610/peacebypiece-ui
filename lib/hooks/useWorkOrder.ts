@@ -9,6 +9,7 @@ import { canDeleteAttachmentByUser, createAttachmentId, getAttachmentType, isOff
 import { getDisplayStageFromWorkflowState, VISIBLE_STAGES, WORKFLOW_ACTION_LABELS } from "@/lib/constants/workflow";
 import {
   createCreationHistoryLog,
+  createInspectionCompleteHistoryLog,
   createInventoryHistoryLog,
   createManagerChangeHistoryLog,
   createMemoHistoryLog,
@@ -25,21 +26,24 @@ import type { Attachment, HistoryLog, InventoryLog, MemoAttachmentPayload, MemoR
 import type { RoleType } from "@/types/permission";
 import type { HistoryFilter, NotificationSettingKey, NotificationSettings } from "@/types/workflow";
 
+function isUnselectedValue(value: string | undefined | null) {
+  const normalized = String(value ?? "").trim();
+  return !normalized || normalized === "선택 안함" || normalized === "미정 공장";
+}
+
 function isEmptyOrderEntry(entry: NonNullable<WorkOrder["orderEntries"]>[number]) {
   const factory = String(entry.factory ?? "").trim();
   const dueDate = String(entry.dueDate ?? "").trim();
-  return !dueDate && (Number(entry.quantity) || 0) === 0 && (Number(entry.laborCost) || 0) === 0 && (Number(entry.lossCost) || 0) === 0 && (!factory || factory === "미정 공장");
+  return isUnselectedValue(factory) || !dueDate;
 }
 
 function isEmptyMaterialRow(material: WorkOrder["materials"][number]) {
   const name = String(material.name ?? "").trim();
-  const vendor = String(material.vendor ?? "").trim();
-  return !vendor && (!name || name === "새 자재") && (Number(material.quantity) || 0) === 0 && (Number(material.unitCost) || 0) === 0;
+  return isUnselectedValue(material.vendor) && isUnselectedValue(material.type) && (!name || name === "새 자재") && (Number(material.quantity) || 0) === 0 && (Number(material.unitCost) || 0) === 0;
 }
 
 function isEmptyOutsourcingRow(item: WorkOrder["outsourcing"][number]) {
-  const vendor = String(item.vendor ?? "").trim();
-  return !vendor && (Number(item.quantity) || 0) === 0 && (Number(item.unitCost) || 0) === 0;
+  return isUnselectedValue(item.vendor) && isUnselectedValue(item.process) && (Number(item.quantity) || 0) === 0 && (Number(item.unitCost) || 0) === 0;
 }
 
 function pruneDraftRows(workOrder: WorkOrder): WorkOrder {
@@ -317,6 +321,40 @@ export function useWorkOrder() {
       createInventoryHistoryLog(currentUser.name, selectedWorkOrder.id, { changes, memo }),
       ...prev,
     ]);
+  };
+
+  const handleCompleteInspection = ({
+    orderEntryId,
+    inboundQuantity,
+    nextInventoryQuantity,
+    memo,
+  }: {
+    orderEntryId: string;
+    inboundQuantity: number;
+    nextInventoryQuantity: number;
+    memo: string;
+  }) => {
+    const trimmedMemo = memo.trim();
+    setWorkOrders((prev) => prev.map((item) => {
+      if (item.id !== selectedWorkOrder.id) return item;
+      const nextOrderEntries = (item.orderEntries ?? []).map((entry) => entry.id === orderEntryId ? { ...entry, inspectionStatus: "검수완료" as const } : entry);
+      return {
+        ...item,
+        orderEntries: nextOrderEntries,
+        inventoryQuantity: nextInventoryQuantity,
+        inventoryStatus: nextInventoryQuantity > 0 ? "정상" : "부족",
+      };
+    }));
+    setHistoryLogs((prev) => [
+      createInspectionCompleteHistoryLog(currentUser.name, selectedWorkOrder.id, {
+        inboundQuantity,
+        nextInventoryQuantity,
+        memo: trimmedMemo,
+      }),
+      ...prev,
+    ]);
+    setSaveStatus("dirty");
+    setToastMessage("검수 완료가 반영되었습니다.");
   };
 
   const handleApplyRoles = (userId: string, roles: RoleType[]) => {
@@ -640,6 +678,7 @@ export function useWorkOrder() {
     handleConfirmOrderRequest,
     handleCloseOrderRequestConfirm,
     handleInventoryApply,
+    handleCompleteInspection,
     handleApplyRoles,
     handleOpenManagerAssignModal,
     handleCloseManagerAssignModal,
