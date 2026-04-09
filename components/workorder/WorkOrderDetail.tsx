@@ -37,9 +37,9 @@ const EDITABLE_DISPLAY_CLASS = `${EDITABLE_FIELD_BASE_CLASS} text-sm flex items-
 const EDITABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
 const TABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
 const TABLE_HEADER_TEXT_CLASS = "block w-full min-w-0 max-w-full whitespace-normal break-keep leading-4";
-const MOBILE_INFO_ROW_CLASS = "grid min-w-0 grid-cols-[2.9rem_minmax(0,1fr)] items-center gap-x-2";
+const MOBILE_INFO_ROW_CLASS = "grid min-w-0 grid-cols-[4.4rem_minmax(0,1fr)] items-center gap-x-2.5";
 const MOBILE_LABEL_CLASS = "min-w-0 text-left text-[11px] leading-5 tracking-tight text-stone-500";
-const MOBILE_VALUE_WRAPPER_CLASS = "min-w-0 max-w-full overflow-hidden text-left";
+const MOBILE_VALUE_WRAPPER_CLASS = "flex min-w-0 max-w-full items-center justify-center overflow-hidden";
 const TABLE_HEADER_CELL_CLASS = "min-w-0 overflow-hidden px-1.5 py-2 text-center text-[11px] font-semibold leading-4 text-stone-600 lg:px-2 lg:text-xs";
 const TABLE_BODY_CELL_CLASS = "min-w-0 overflow-hidden px-1.5 py-2 align-middle text-[10px] leading-4 text-stone-900 lg:px-2 lg:text-[11px]";
 const EDITABLE_VALUE_TEXT_WRAP_CLASS = "block w-full min-w-0 max-w-full whitespace-normal break-words leading-4";
@@ -254,6 +254,7 @@ function EditableValue({
   onStartEdit,
   onCommit,
   onCancel,
+  compact,
 }: {
   section: EditableSectionKey;
   rowId: string;
@@ -267,6 +268,7 @@ function EditableValue({
   options?: SelectOption;
   wrapText?: boolean;
   centered?: boolean;
+  compact?: boolean;
   onStartEdit: (section: EditableSectionKey, rowId: string, field: string, value: string) => void;
   onCommit: (nextValue?: string) => void;
   onCancel: () => void;
@@ -303,7 +305,7 @@ function EditableValue({
         onChange={(event) => onCommit(event.target.value)}
         onBlur={(event) => onCommit(event.target.value)}
         onKeyDown={handleSelectKeyDown}
-        className={`${EDITABLE_SELECT_CLASS} ${alignRight ? "text-right tabular-nums" : centered ? "text-center" : "text-left"}`}
+        className={`${EDITABLE_SELECT_CLASS} ${compact ? "mx-auto max-w-[11rem]" : ""} ${alignRight ? "text-right tabular-nums" : centered ? "text-center" : "text-left"}`}
       >
         {options.map((option) => (
           <option key={option} value={option}>
@@ -325,7 +327,7 @@ function EditableValue({
         onFocus={(event) => event.currentTarget.select()}
         onBlur={() => onCommit()}
         onKeyDown={handleInputKeyDown}
-        className={`${EDITABLE_INPUT_CLASS} ${alignRight ? "text-right tabular-nums" : centered ? "text-center" : "text-left"}`}
+        className={`${EDITABLE_INPUT_CLASS} ${compact ? "mx-auto max-w-[11rem]" : ""} ${alignRight ? "text-right tabular-nums" : centered ? "text-center" : "text-left"}`}
       />
     );
   }
@@ -334,7 +336,7 @@ function EditableValue({
     <button
       type="button"
       onClick={() => onStartEdit(section, rowId, field, getEditingInitialValue(field, value))}
-      className={`${EDITABLE_DISPLAY_CLASS} ${alignRight ? "justify-end text-right tabular-nums" : centered ? "justify-center text-center" : "text-left"}`}
+      className={`${EDITABLE_DISPLAY_CLASS} ${compact ? "mx-auto max-w-[11rem]" : ""} ${alignRight ? "justify-end text-right tabular-nums" : centered ? "justify-center text-center" : "text-left"}`}
     >
       <span className={wrapText ? EDITABLE_VALUE_TEXT_WRAP_CLASS : EDITABLE_VALUE_TEXT_CLASS}>{getDisplayValue(field, value) || "-"}</span>
     </button>
@@ -637,6 +639,8 @@ function OrderInfoSection({
                           inputMode={field === 'quantity' || field === 'laborCost' || field === 'lossCost' ? 'numeric' : inputMode as "text" | "decimal"}
                           inputType={field === 'dueDate' ? 'date' : 'text'}
                           options={field === 'type' ? ORDER_TYPE_OPTIONS : field === 'factory' ? factoryOptions : field === 'priority' ? PRIORITY_OPTIONS : undefined}
+                          centered
+                          compact
                           onStartEdit={onStartEdit}
                           onCommit={onCommitEdit}
                           onCancel={onCancelEdit}
@@ -683,7 +687,7 @@ function OrderInfoSection({
               </thead>
               <tbody>
                 {orderEntries.map((item, rowIndex) => (
-                  <tr key={item.id} className="border-b border-stone-100">
+                  <tr key={item.id} className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="type" value={item.type} options={ORDER_TYPE_OPTIONS} wrapText editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="factory" value={item.factory} options={factoryOptions} wrapText editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="dueDate" value={item.dueDate} editingCell={editingCell} editingValue={editingValue} inputType="date" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
@@ -891,6 +895,8 @@ function MaterialSection({
                           editingValue={editingValue}
                           inputMode={inputMode as "text" | "decimal"}
                           options={field === "type" ? MATERIAL_TYPE_OPTIONS : field === "unit" ? MATERIAL_UNIT_OPTIONS : field === "vendor" ? vendorOptions : undefined}
+                          centered
+                          compact
                           onStartEdit={onStartEdit}
                           onCommit={onCommitEdit}
                           onCancel={onCancelEdit}
@@ -935,7 +941,7 @@ function MaterialSection({
               </thead>
               <tbody>
                 {materials.map((item, rowIndex) => (
-                  <tr key={item.id} className="border-b border-stone-100">
+                  <tr key={item.id} className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="type" value={item.type} options={MATERIAL_TYPE_OPTIONS} wrapText editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="name" value={item.name} wrapText editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="vendor" value={item.vendor} options={vendorOptions} wrapText editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
@@ -1038,6 +1044,8 @@ function OutsourcingSection({
                           editingValue={editingValue}
                           inputMode={inputMode as "text" | "decimal"}
                           options={field === "process" ? OUTSOURCING_PROCESS_OPTIONS : field === "unitType" ? OUTSOURCING_UNIT_OPTIONS : field === "vendor" ? vendorOptions : undefined}
+                          centered
+                          compact
                           onStartEdit={onStartEdit}
                           onCommit={onCommitEdit}
                           onCancel={onCancelEdit}
@@ -1081,7 +1089,7 @@ function OutsourcingSection({
               </thead>
               <tbody>
                 {outsourcing.map((item, rowIndex) => (
-                  <tr key={item.id} className="border-b border-stone-100">
+                  <tr key={item.id} className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} options={OUTSOURCING_PROCESS_OPTIONS} wrapText editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="vendor" value={item.vendor} options={vendorOptions} wrapText editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
