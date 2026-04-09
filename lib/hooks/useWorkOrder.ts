@@ -25,6 +25,32 @@ import type { Attachment, HistoryLog, InventoryLog, MemoAttachmentPayload, MemoR
 import type { RoleType } from "@/types/permission";
 import type { HistoryFilter, NotificationSettingKey, NotificationSettings } from "@/types/workflow";
 
+function isEmptyOrderEntry(entry: NonNullable<WorkOrder["orderEntries"]>[number]) {
+  const factory = String(entry.factory ?? "").trim();
+  const dueDate = String(entry.dueDate ?? "").trim();
+  return !dueDate && (Number(entry.quantity) || 0) === 0 && (Number(entry.laborCost) || 0) === 0 && (Number(entry.lossCost) || 0) === 0 && (!factory || factory === "미정 공장");
+}
+
+function isEmptyMaterialRow(material: WorkOrder["materials"][number]) {
+  const name = String(material.name ?? "").trim();
+  const vendor = String(material.vendor ?? "").trim();
+  return !vendor && (!name || name === "새 자재") && (Number(material.quantity) || 0) === 0 && (Number(material.unitCost) || 0) === 0;
+}
+
+function isEmptyOutsourcingRow(item: WorkOrder["outsourcing"][number]) {
+  const vendor = String(item.vendor ?? "").trim();
+  return !vendor && (Number(item.quantity) || 0) === 0 && (Number(item.unitCost) || 0) === 0;
+}
+
+function pruneDraftRows(workOrder: WorkOrder): WorkOrder {
+  return {
+    ...workOrder,
+    orderEntries: (workOrder.orderEntries ?? []).filter((entry) => !isEmptyOrderEntry(entry)),
+    materials: (workOrder.materials ?? []).filter((item) => !isEmptyMaterialRow(item)),
+    outsourcing: (workOrder.outsourcing ?? []).filter((item) => !isEmptyOutsourcingRow(item)),
+  };
+}
+
 export function useWorkOrder() {
   const appShellRef = useRef<HTMLDivElement | null>(null);
   const attachmentInputRef = useRef<HTMLInputElement | null>(null);
@@ -74,7 +100,6 @@ export function useWorkOrder() {
   const currentRole = currentUser.role;
   const isAdmin = isAdminRole(currentRoles);
   const canCreateWorkOrder = canCreateWorkOrderByRoles(currentRoles);
-  const canUploadOfficialAttachments = canUploadOfficialAttachmentsByRoles(currentRoles);
   const permissionTargetUser = useMemo(
     () => users.find((user) => user.id === permissionTargetUserId) ?? users[0],
     [users, permissionTargetUserId],
@@ -91,6 +116,8 @@ export function useWorkOrder() {
   const canChangeManager = canManageWorkOrderManager(currentRoles, currentWorkflowState);
   const currentDisplayStage = getDisplayStageFromWorkflowState(currentWorkflowState);
   const visibleStages = VISIBLE_STAGES;
+  const isReviewRequestLocked = currentWorkflowState === "검토요청";
+  const canUploadOfficialAttachments = canUploadOfficialAttachmentsByRoles(currentRoles) && !isReviewRequestLocked;
 
   const workOrderList: WorkOrderListItem[] = useMemo(() => workOrders.map(createWorkOrderListItem), [workOrders]);
 
@@ -226,11 +253,19 @@ export function useWorkOrder() {
 
   const applyWorkflowAction = (action: WorkflowAction) => {
     const previousState = selectedWorkOrder.workflowState;
-    setWorkOrders((prev) => updateWorkflowState(prev, selectedWorkOrder.id, action));
+    const targetWorkOrder = action.label === WORKFLOW_ACTION_LABELS.requestReview ? pruneDraftRows(selectedWorkOrder) : selectedWorkOrder;
+
+    setWorkOrders((prev) => prev.map((item) => {
+      if (item.id !== selectedWorkOrder.id) return item;
+      return updateWorkflowState([targetWorkOrder], selectedWorkOrder.id, action)[0] ?? item;
+    }));
     setHistoryLogs((prev) => [
       createStatusHistoryLog(currentUser.name, selectedWorkOrder.id, previousState, action.nextState, action.label),
       ...prev,
     ]);
+    if (action.label === WORKFLOW_ACTION_LABELS.requestReview) {
+      setSaveStatus("dirty");
+    }
     if (action.nextState === "검수중") {
       setInventoryEditorOpen(true);
     }
@@ -372,6 +407,9 @@ export function useWorkOrder() {
 
   const handleDeleteAttachment = (attachmentId: string) => {
     const targetAttachment = selectedWorkOrder.attachments.find((item) => item.id === attachmentId) ?? null;
+    if (isReviewRequestLocked && isOfficialAttachment(targetAttachment)) {
+      return;
+    }
     if (!canDeleteAttachmentByUser(currentUser, targetAttachment)) {
       return;
     }
@@ -482,7 +520,7 @@ export function useWorkOrder() {
 
   const handlePromoteMemoAttachment = (attachmentId: string) => {
     const targetAttachment = selectedWorkOrder.attachments.find((item) => item.id === attachmentId);
-    if (!targetAttachment || (targetAttachment.scope ?? "official") === "official" || !canUploadOfficialAttachments) return;
+    if (!targetAttachment || (targetAttachment.scope ?? "official") === "official" || !canUploadOfficialAttachments || isReviewRequestLocked) return;
 
     setWorkOrders((prev) => promoteAttachmentToOfficial(prev, selectedWorkOrder.id, attachmentId, {
       ownerId: currentUser.id,
@@ -494,6 +532,7 @@ export function useWorkOrder() {
   };
 
   const canDeleteAttachment = (attachment: Attachment | null) => {
+    if (isReviewRequestLocked && isOfficialAttachment(attachment)) return false;
     return canDeleteAttachmentByUser(currentUser, attachment);
   };
 
@@ -502,6 +541,11 @@ export function useWorkOrder() {
   };
 
   const handleUpdateSelectedWorkOrder = useCallback((patch: Partial<WorkOrder>) => {
+    const hasLockedChanges = Boolean(patch.orderEntries || patch.materials || patch.outsourcing || patch.attachments);
+    if (isReviewRequestLocked && hasLockedChanges) {
+      return;
+    }
+
     setWorkOrders((prev) => prev.map((item) => {
       if (item.id !== selectedWorkOrder.id) return item;
       const nextItem = { ...item, ...patch };
@@ -511,7 +555,7 @@ export function useWorkOrder() {
       return nextItem;
     }));
     setSaveStatus("dirty");
-  }, [selectedWorkOrder.id]);
+  }, [isReviewRequestLocked, selectedWorkOrder.id]);
 
   return {
     appShellRef,
@@ -560,6 +604,7 @@ export function useWorkOrder() {
     isAdmin,
     canCreateWorkOrder,
     canUploadOfficialAttachments,
+    isReviewRequestLocked,
     canChangeManager,
     canSeeProductionSections,
     canSeeCostSections,

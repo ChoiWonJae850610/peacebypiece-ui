@@ -84,14 +84,18 @@ export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles
       }
       return actions;
     }
-    case "검토요청":
+    case "검토요청": {
       if (isAdminRole(currentRoles)) {
         return [
           { label: WORKFLOW_ACTION_LABELS.rejectReview, nextState: "작성중" },
           { label: WORKFLOW_ACTION_LABELS.approveReview, nextState: "검토완료" },
         ];
       }
+      if (canRequestReview({ currentRoles, currentUserId, workOrder })) {
+        return [{ label: WORKFLOW_ACTION_LABELS.cancelReviewRequest, nextState: "작성중" }];
+      }
       return [];
+    }
     case "검토완료":
       if (canRequestOrder(currentRoles)) {
         return [{ label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "생산중" }];

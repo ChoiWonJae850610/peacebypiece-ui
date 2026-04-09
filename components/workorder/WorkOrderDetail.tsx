@@ -225,13 +225,14 @@ function isEditingCell(editingCell: EditableCell, section: EditableSectionKey, r
   return editingCell?.section === section && editingCell.rowId === rowId && editingCell.field === field;
 }
 
-function DeleteButton({ onClick, srLabel }: { onClick: () => void; srLabel: string }) {
+function DeleteButton({ onClick, srLabel, disabled = false }: { onClick: () => void; srLabel: string; disabled?: boolean }) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-label={srLabel}
-      className="pbp-interactive-button inline-flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 bg-white text-base font-semibold text-rose-600 hover:border-rose-300 hover:bg-rose-50 active:bg-rose-100"
+      disabled={disabled}
+      className="pbp-interactive-button inline-flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 bg-white text-base font-semibold text-rose-600 hover:border-rose-300 hover:bg-rose-50 active:bg-rose-100 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
     >
       -
     </button>
@@ -255,6 +256,7 @@ function EditableValue({
   onCommit,
   onCancel,
   compact,
+  disabled = false,
 }: {
   section: EditableSectionKey;
   rowId: string;
@@ -269,11 +271,12 @@ function EditableValue({
   wrapText?: boolean;
   centered?: boolean;
   compact?: boolean;
+  disabled?: boolean;
   onStartEdit: (section: EditableSectionKey, rowId: string, field: string, value: string) => void;
   onCommit: (nextValue?: string) => void;
   onCancel: () => void;
 }) {
-  const editing = isEditingCell(editingCell, section, rowId, field);
+  const editing = !disabled && isEditingCell(editingCell, section, rowId, field);
 
   const handleInputKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
@@ -362,7 +365,8 @@ function EditableValue({
     <button
       type="button"
       onClick={() => onStartEdit(section, rowId, field, getEditingInitialValue(field, value))}
-      className={`${EDITABLE_DISPLAY_CLASS} ${compact ? "mx-auto max-w-[11rem]" : ""} ${alignRight ? "items-center justify-center w-[48px] text-right tabular-nums" : centered ? "justify-center text-center" : "text-left"}`}
+      disabled={disabled}
+      className={`${EDITABLE_DISPLAY_CLASS} ${compact ? "mx-auto max-w-[11rem]" : ""} ${alignRight ? "items-center justify-center w-[48px] text-right tabular-nums" : centered ? "justify-center text-center" : "text-left"} ${disabled ? "cursor-not-allowed opacity-60 hover:border-transparent hover:bg-transparent" : ""}`}
     >
       <span className={wrapText ? EDITABLE_VALUE_TEXT_WRAP_CLASS : EDITABLE_VALUE_TEXT_CLASS}>{getDisplayValue(field, value) || "-"}</span>
     </button>
@@ -588,10 +592,12 @@ function OrderInspectionModal({
     }
 
     const firstEntry = pendingEntries[0] ?? orderEntries[0];
-    setSelectedFactory(firstEntry?.factory || DEFAULT_FACTORY_OPTION);
-    setSelectedOrderId(firstEntry?.id || "");
-    setInventoryQuantity(String(Math.max(0, currentInventoryQuantity || 0)));
-  }, [open, pendingEntries, orderEntries, currentInventoryQuantity]);
+    if (!selectedFactory && !selectedOrderId && inventoryQuantity === "") {
+      setSelectedFactory(firstEntry?.factory || DEFAULT_FACTORY_OPTION);
+      setSelectedOrderId(firstEntry?.id || "");
+      setInventoryQuantity(String(Math.max(0, currentInventoryQuantity || 0)));
+    }
+  }, [open, pendingEntries, orderEntries, currentInventoryQuantity, selectedFactory, selectedOrderId, inventoryQuantity]);
 
   const factoryOptions = Array.from(new Set((pendingEntries.length > 0 ? pendingEntries : orderEntries).map((item) => item.factory || DEFAULT_FACTORY_OPTION)));
   const filteredEntries = (pendingEntries.length > 0 ? pendingEntries : orderEntries).filter((item) => (item.factory || DEFAULT_FACTORY_OPTION) === selectedFactory);
@@ -746,6 +752,7 @@ function OrderInfoSection({
   onAdd,
   onRemove,
   canOpenInspectionModal,
+  locked = false,
   onOpenInspectionModal,
 }: {
   orderEntries: OrderEntryState[];
@@ -760,6 +767,7 @@ function OrderInfoSection({
   onAdd: () => void;
   onRemove: (id: string) => void;
   canOpenInspectionModal: boolean;
+  locked?: boolean;
   onOpenInspectionModal: () => void;
 }) {
   const totals = calculateOrderEntryTotals(orderEntries);
@@ -787,7 +795,7 @@ function OrderInfoSection({
                     <div className="whitespace-nowrap text-sm font-semibold text-stone-900">{item.factory || `발주 ${index + 1}`}</div>
                     <div className="mt-1 whitespace-nowrap text-xs text-stone-500">{item.type} · {item.quantity.toLocaleString()}장</div>
                   </div>
-                  <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || `발주 ${index + 1}`} 삭제`} />
+                  <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || `발주 ${index + 1}`} 삭제`} disabled={locked} />
                 </div>
                 <div className="mt-2 space-y-1.5">
                   {[
@@ -820,6 +828,7 @@ function OrderInfoSection({
                             onStartEdit={onStartEdit}
                             onCommit={onCommitEdit}
                             onCancel={onCancelEdit}
+                            disabled={locked}
                           />
                         )}
                       </div>
@@ -831,9 +840,10 @@ function OrderInfoSection({
             <button
               type="button"
               onClick={onAdd}
+              disabled={locked}
               className="pbp-interactive-button flex w-full items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
             >
-              + 발주 추가
+              {locked ? "검토요청 중 잠금" : "+ 발주 추가"}
             </button>
           </div>
           <div className="mt-1 hidden max-w-full overflow-hidden md:block">
@@ -863,15 +873,15 @@ function OrderInfoSection({
               <tbody>
                 {orderEntries.map((item, rowIndex) => (
                   <tr key={item.id} className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
-                    <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="type" value={item.type} options={ORDER_TYPE_OPTIONS} centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="factory" value={item.factory} options={factoryOptions} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="dueDate" value={item.dueDate} centered editingCell={editingCell} editingValue={editingValue} inputType="date" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="laborCost" value={item.laborCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="lossCost" value={item.lossCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="type" value={item.type} options={ORDER_TYPE_OPTIONS} centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
+                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="factory" value={item.factory} options={factoryOptions} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
+                    <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="dueDate" value={item.dueDate} centered editingCell={editingCell} editingValue={editingValue} inputType="date" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
+                    <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
+                    <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="laborCost" value={item.laborCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
+                    <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="lossCost" value={item.lossCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                     <td className="px-1.5 py-2 text-center align-middle text-[11px] lg:px-2 lg:text-[11px]"><span className={`inline-flex rounded-full px-2 py-1 text-[11px] font-medium lg:text-[11px] ${getInspectionStatusTone(item.inspectionStatus ?? "발주대기")}`}>{getInspectionStatusLabel(item.inspectionStatus ?? "발주대기")}</span></td>
                     <td className="px-1.5 py-2 text-center align-middle lg:px-2">
-                      <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || `발주 ${rowIndex + 1}`} 삭제`} />
+                      <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || `발주 ${rowIndex + 1}`} 삭제`} disabled={locked} />
                     </td>
                   </tr>
                 ))}
@@ -922,6 +932,7 @@ function ProductionCompositionSection({
   onAddOutsourcing,
   onRemoveOutsourcing,
   vendorOptions,
+  locked = false,
 }: {
   materials: Material[];
   outsourcing: Outsourcing[];
@@ -941,6 +952,7 @@ function ProductionCompositionSection({
   onAddOutsourcing: () => void;
   onRemoveOutsourcing: (id: string) => void;
   vendorOptions: readonly string[];
+  locked?: boolean;
 }) {
   const materialCount = materials.length;
   const outsourcingCount = outsourcing.length;
@@ -969,6 +981,7 @@ function ProductionCompositionSection({
             onAdd={onAddMaterial}
             onRemove={onRemoveMaterial}
             vendorOptions={vendorOptions}
+            locked={locked}
           />
           <OutsourcingSection
             outsourcing={outsourcing}
@@ -982,6 +995,7 @@ function ProductionCompositionSection({
             onAdd={onAddOutsourcing}
             onRemove={onRemoveOutsourcing}
             vendorOptions={vendorOptions}
+            locked={locked}
           />
         </div>
       ) : null}
@@ -1001,6 +1015,7 @@ function MaterialSection({
   onAdd,
   onRemove,
   vendorOptions,
+  locked = false,
 }: {
   materials: Material[];
   open: boolean;
@@ -1013,6 +1028,7 @@ function MaterialSection({
   onAdd: () => void;
   onRemove: (id: string) => void;
   vendorOptions: readonly string[];
+  locked?: boolean;
 }) {
   const total = materials.reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
   const summary = materials.length > 0
@@ -1037,7 +1053,7 @@ function MaterialSection({
                     <div className="whitespace-nowrap text-sm font-semibold text-stone-900">{item.name || `자재 ${index + 1}`}</div>
                     <div className="mt-0.5 whitespace-nowrap text-xs text-stone-500">금액 {(item.totalCost ?? 0).toLocaleString()}원</div>
                   </div>
-                  <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.name || `자재 ${index + 1}`} 삭제`} />
+                  <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.name || `자재 ${index + 1}`} 삭제`} disabled={locked} />
                 </div>
                 <div className="mt-2 space-y-1.5">
                   {[
@@ -1065,6 +1081,7 @@ function MaterialSection({
                           onStartEdit={onStartEdit}
                           onCommit={onCommitEdit}
                           onCancel={onCancelEdit}
+                          disabled={locked}
                         />
                       </div>
                     </div>
@@ -1075,9 +1092,10 @@ function MaterialSection({
             <button
               type="button"
               onClick={onAdd}
-              className="pbp-interactive-button flex w-full items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+              disabled={locked}
+              className="pbp-interactive-button flex w-full items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
             >
-              + 항목 추가
+              {locked ? "검토요청 중 잠금" : "+ 항목 추가"}
             </button>
           </div>
           <div className="mt-1 hidden max-w-full overflow-hidden md:block">
@@ -1107,15 +1125,15 @@ function MaterialSection({
               <tbody>
                 {materials.map((item, rowIndex) => (
                   <tr key={item.id} className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
-                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="type" value={item.type} options={MATERIAL_TYPE_OPTIONS} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="name" value={item.name} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="vendor" value={item.vendor} options={vendorOptions} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="decimal" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="unit" value={item.unit} options={MATERIAL_UNIT_OPTIONS} centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="unitCost" value={item.unitCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="decimal" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="type" value={item.type} options={MATERIAL_TYPE_OPTIONS} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
+                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="name" value={item.name} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
+                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="vendor" value={item.vendor} options={vendorOptions} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
+                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="decimal" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
+                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="unit" value={item.unit} options={MATERIAL_UNIT_OPTIONS} centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
+                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="unitCost" value={item.unitCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="decimal" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                     <td className="min-w-0 overflow-hidden px-1.5 py-2 text-center align-middle text-[11px] font-medium tabular-nums lg:px-2 lg:text-[11px]"><span className={TABLE_VALUE_TEXT_CLASS}>{(item.totalCost ?? 0).toLocaleString()}원</span></td>
                     <td className="px-1.5 py-2 text-center align-middle lg:px-2">
-                      <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.name || `자재 ${rowIndex + 1}`} 삭제`} />
+                      <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.name || `자재 ${rowIndex + 1}`} 삭제`} disabled={locked} />
                     </td>
                   </tr>
                 ))}
@@ -1124,9 +1142,10 @@ function MaterialSection({
                     <button
                       type="button"
                       onClick={onAdd}
-                      className="pbp-interactive-button flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+                      disabled={locked}
+                      className="pbp-interactive-button flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
                     >
-                      + 항목 추가
+                      {locked ? "검토요청 중 잠금" : "+ 항목 추가"}
                     </button>
                   </td>
                 </tr>
@@ -1151,6 +1170,7 @@ function OutsourcingSection({
   onAdd,
   onRemove,
   vendorOptions,
+  locked = false,
 }: {
   outsourcing: Outsourcing[];
   open: boolean;
@@ -1163,6 +1183,7 @@ function OutsourcingSection({
   onAdd: () => void;
   onRemove: (id: string) => void;
   vendorOptions: readonly string[];
+  locked?: boolean;
 }) {
   const total = outsourcing.reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
   const summary = outsourcing.length > 0
@@ -1187,7 +1208,7 @@ function OutsourcingSection({
                     <div className="whitespace-nowrap text-sm font-semibold text-stone-900">{item.process || `공정 ${index + 1}`}</div>
                     <div className="mt-0.5 whitespace-nowrap text-xs text-stone-500">금액 {(item.totalCost ?? 0).toLocaleString()}원</div>
                   </div>
-                  <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.process || `공정 ${index + 1}`} 삭제`} />
+                  <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.process || `공정 ${index + 1}`} 삭제`} disabled={locked} />
                 </div>
                 <div className="mt-2 space-y-1.5">
                   {[
@@ -1214,6 +1235,7 @@ function OutsourcingSection({
                           onStartEdit={onStartEdit}
                           onCommit={onCommitEdit}
                           onCancel={onCancelEdit}
+                          disabled={locked}
                         />
                       </div>
                     </div>
@@ -1224,9 +1246,10 @@ function OutsourcingSection({
             <button
               type="button"
               onClick={onAdd}
-              className="pbp-interactive-button flex w-full items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+              disabled={locked}
+              className="pbp-interactive-button flex w-full items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
             >
-              + 공정 추가
+              {locked ? "검토요청 중 잠금" : "+ 공정 추가"}
             </button>
           </div>
           <div className="mt-1 hidden max-w-full overflow-hidden md:block">
@@ -1255,14 +1278,14 @@ function OutsourcingSection({
               <tbody>
                 {outsourcing.map((item, rowIndex) => (
                   <tr key={item.id} className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
-                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} options={OUTSOURCING_PROCESS_OPTIONS} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="vendor" value={item.vendor} options={vendorOptions} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="decimal" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="unitType" value={item.unitType} options={OUTSOURCING_UNIT_OPTIONS} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="unitCost" value={item.unitCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="decimal" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} options={OUTSOURCING_PROCESS_OPTIONS} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
+                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="vendor" value={item.vendor} options={vendorOptions} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
+                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="decimal" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
+                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="unitType" value={item.unitType} options={OUTSOURCING_UNIT_OPTIONS} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
+                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="unitCost" value={item.unitCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="decimal" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                     <td className="min-w-0 overflow-hidden px-1.5 py-2 text-center align-middle text-[11px] font-medium tabular-nums lg:px-2 lg:text-[11px]"><span className={TABLE_VALUE_TEXT_CLASS}>{(item.totalCost ?? 0).toLocaleString()}원</span></td>
                     <td className="px-1.5 py-2 text-center align-middle lg:px-2">
-                      <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.process || `공정 ${rowIndex + 1}`} 삭제`} />
+                      <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.process || `공정 ${rowIndex + 1}`} 삭제`} disabled={locked} />
                     </td>
                   </tr>
                 ))}
@@ -1271,9 +1294,10 @@ function OutsourcingSection({
                     <button
                       type="button"
                       onClick={onAdd}
-                      className="pbp-interactive-button flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+                      disabled={locked}
+                      className="pbp-interactive-button flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
                     >
-                      + 공정 추가
+                      {locked ? "검토요청 중 잠금" : "+ 공정 추가"}
                     </button>
                   </td>
                 </tr>
@@ -1311,6 +1335,7 @@ export default function WorkOrderDetail({
   outsourcingOpen,
   onSave,
   onOpenInventoryEditor,
+  isReviewRequestLocked,
   onOpenManagerAssignModal,
   onToggleBasicInfo,
   onToggleMaterial,
@@ -1344,6 +1369,7 @@ export default function WorkOrderDetail({
   outsourcingOpen: boolean;
   onSave: () => void;
   onOpenInventoryEditor: () => void;
+  isReviewRequestLocked: boolean;
   onOpenManagerAssignModal: () => void;
   onToggleBasicInfo: () => void;
   onToggleMaterial: () => void;
@@ -1689,6 +1715,7 @@ export default function WorkOrderDetail({
           onRemove={removeOrderEntry}
           canOpenInspectionModal={canEditInventory && (currentWorkflowState === "생산중" || currentWorkflowState === "검수중") && orderItems.some((item) => item.inspectionStatus !== "검수완료")}
           onOpenInspectionModal={handleOpenInspectionModal}
+          locked={isReviewRequestLocked}
         />
 
         {canSeeProductionSections ? (
@@ -1715,6 +1742,7 @@ export default function WorkOrderDetail({
             onAddOutsourcing={addOutsourcing}
             onRemoveOutsourcing={removeOutsourcing}
             vendorOptions={Array.from(new Set([...partnerOptions, ...materialItems.map((item) => item.vendor).filter(Boolean), ...outsourcingItems.map((item) => item.vendor).filter(Boolean)]))}
+            locked={isReviewRequestLocked}
           />
         ) : null}
       </div>

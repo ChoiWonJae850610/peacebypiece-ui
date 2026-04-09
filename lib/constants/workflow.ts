@@ -7,6 +7,7 @@ export const INVENTORY_EDITABLE_STATES: readonly WorkflowState[] = ["검수중",
 
 export const WORKFLOW_ACTION_LABELS = {
   requestReview: "검토 요청",
+  cancelReviewRequest: "요청 취소",
   rejectReview: "반려",
   approveReview: "검토 완료",
   requestOrder: "발주 요청",

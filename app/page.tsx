@@ -65,6 +65,7 @@ export default function Home() {
     isAdmin,
     canCreateWorkOrder,
     canUploadOfficialAttachments,
+    isReviewRequestLocked,
     canChangeManager,
     canSeeProductionSections,
     canSeeCostSections,
@@ -200,6 +201,7 @@ export default function Home() {
               outsourcingOpen={outsourcingOpen}
               onSave={() => handleSave()}
               onOpenInventoryEditor={() => setInventoryEditorOpen(true)}
+              isReviewRequestLocked={isReviewRequestLocked}
               onToggleBasicInfo={() => setBasicInfoOpen((prev) => !prev)}
               onToggleMaterial={() => setMaterialOpen((prev) => !prev)}
               onToggleOutsourcing={() => setOutsourcingOpen((prev) => !prev)}
