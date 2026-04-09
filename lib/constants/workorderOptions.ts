@@ -3,35 +3,7 @@ export const MATERIAL_UNIT_OPTIONS = ["yd", "m", "개", "장", "롤", "kg"] as c
 export const OUTSOURCING_PROCESS_OPTIONS = ["선택 안함", "재단", "봉제", "나염", "자수", "워싱", "후가공", "기타"] as const;
 export const OUTSOURCING_UNIT_OPTIONS = ["장", "개", "벌", "세트", "롤"] as const;
 
-export const CATEGORY_TREE = {
-  상의: {
-    티셔츠: ["반팔", "긴팔", "오버핏"],
-    셔츠: ["베이직", "오버핏", "크롭"],
-    니트: ["라운드", "가디건", "베스트"],
-  },
-  하의: {
-    팬츠: ["슬랙스", "와이드", "조거"],
-    스커트: ["미니", "미디", "롱"],
-    데님: ["스트레이트", "와이드", "부츠컷"],
-  },
-  아우터: {
-    자켓: ["테일러드", "트위드", "크롭"],
-    코트: ["롱", "하프", "트렌치"],
-    점퍼: ["바람막이", "패딩", "블루종"],
-  },
-} as const;
-
-export const CATEGORY1_OPTIONS = Object.keys(CATEGORY_TREE) as Array<keyof typeof CATEGORY_TREE>;
-
-export const CATEGORY2_OPTIONS_MAP: Record<string, readonly string[]> = Object.fromEntries(
-  CATEGORY1_OPTIONS.map((category1) => [category1, Object.keys(CATEGORY_TREE[category1])]),
-);
-
-export const CATEGORY3_OPTIONS_MAP: Record<string, readonly string[]> = Object.fromEntries(
-  CATEGORY1_OPTIONS.flatMap((category1) =>
-    Object.entries(CATEGORY_TREE[category1]).map(([category2, category3Options]) => [category2, category3Options]),
-  ),
-);
+export { CATEGORY_TREE, CATEGORY1_OPTIONS, CATEGORY2_OPTIONS_MAP, CATEGORY3_OPTIONS_MAP, DEFAULT_CATEGORY1, DEFAULT_CATEGORY2, DEFAULT_CATEGORY3 } from "@/lib/constants/workorderCategories";
 
 export const SEASON_OPTIONS = ["SS", "FW", "NOS", "ALL"] as const;
 const currentYear = new Date().getFullYear();
