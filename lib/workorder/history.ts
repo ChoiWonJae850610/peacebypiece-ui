@@ -170,6 +170,22 @@ export function createMemoHistoryLog(
   });
 }
 
+
+export function createReorderHistoryLog(user: string, workOrderId: string, payload: { sourceTitle: string; nextTitle: string }) {
+  return createHistoryLog({
+    action: "리오더 생성",
+    message: "이전 작업지시서를 복사해 새 작업지시서가 생성되었습니다.",
+    user,
+    workOrderId,
+    category: "work",
+    tone: "blue",
+    detailLines: [
+      { label: "원본", value: payload.sourceTitle },
+      { label: "생성", value: payload.nextTitle },
+    ],
+  });
+}
+
 export function createManagerChangeHistoryLog(user: string, workOrderId: string, from: string, to: string) {
   return createHistoryLog({
     action: "담당자 변경",

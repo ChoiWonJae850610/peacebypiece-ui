@@ -97,6 +97,7 @@ export default function SidebarContent({
               onReorder={onReorder}
               onDelete={onDelete}
               canDelete={canDelete}
+              canReorder={Boolean(onReorder)}
             />
           ))}
         </div>

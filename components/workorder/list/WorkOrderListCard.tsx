@@ -12,6 +12,7 @@ type Props = {
   onReorder?: (id: string) => void;
   onDelete?: (id: string) => void;
   canDelete?: (workflowState: WorkflowState) => boolean;
+  canReorder?: boolean;
 };
 
 export default function WorkOrderListCard({
@@ -22,10 +23,11 @@ export default function WorkOrderListCard({
   onReorder,
   onDelete,
   canDelete,
+  canReorder = false,
 }: Props) {
   const state = getWorkOrderStateLabel(workflowStateById, workOrder.id) as WorkflowState;
   const active = workOrder.id === selectedId;
-  const canShowReorder = ["생산중", "검수중", "완료"].includes(state);
+  const canShowReorder = canReorder && ["생산중", "검수중", "완료"].includes(state);
   const canShowDelete = canDelete?.(state) ?? false;
 
   return (

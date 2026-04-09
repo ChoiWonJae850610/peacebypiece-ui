@@ -10,6 +10,7 @@ import { getDisplayStageFromWorkflowState, VISIBLE_STAGES, WORKFLOW_ACTION_LABEL
 import {
   createCreationHistoryLog,
   createInspectionCompleteHistoryLog,
+  createReorderHistoryLog,
   createInventoryHistoryLog,
   createManagerChangeHistoryLog,
   createMemoHistoryLog,
@@ -19,7 +20,7 @@ import {
   nowLabel,
   toInventoryLogs,
 } from "@/lib/workorder/history";
-import { addMemoReply, addMemoThread, createNewWorkOrder, applyInventoryAdjustment, appendAttachments, appendMemoAttachmentsToReply, appendMemoAttachmentsToThread, promoteAttachmentToOfficial, removeAttachment, updateWorkflowState, updateWorkOrderManager } from "@/lib/workorder/actions";
+import { addMemoReply, addMemoThread, cloneWorkOrderForReorder, createNewWorkOrder, applyInventoryAdjustment, appendAttachments, appendMemoAttachmentsToReply, appendMemoAttachmentsToThread, promoteAttachmentToOfficial, removeAttachment, updateWorkflowState, updateWorkOrderManager } from "@/lib/workorder/actions";
 import { createWorkOrderListItem, calculateWorkOrderCosts } from "@/lib/workorder/selectors";
 import { canEditInventoryForWorkflow, canManageWorkOrderManager, deriveWorkflowStateFromOrderEntries, getAvailableWorkflowActions } from "@/lib/workorder/workflow";
 import type { Attachment, HistoryLog, InventoryLog, MemoAttachmentPayload, MemoReply, MemoThread, UserProfile, WorkOrder, WorkOrderListItem, WorkflowAction } from "@/types/workorder";
@@ -102,6 +103,7 @@ export function useWorkOrder() {
   const currentRole = currentUser.role;
   const isAdmin = isAdminRole(currentRoles);
   const canCreateWorkOrder = canCreateWorkOrderByRoles(currentRoles);
+  const canReorderWorkOrder = canCreateWorkOrderByRoles(currentRoles);
   const permissionTargetUser = useMemo(
     () => users.find((user) => user.id === permissionTargetUserId) ?? users[0],
     [users, permissionTargetUserId],
@@ -251,6 +253,31 @@ export function useWorkOrder() {
       createCreationHistoryLog(currentUser.name, newWorkOrder.id),
       ...prev,
     ]);
+  };
+
+  const handleReorderWorkOrder = (workOrderId: string) => {
+    if (!canReorderWorkOrder) return;
+    const sourceWorkOrder = workOrders.find((item) => item.id === workOrderId);
+    if (!sourceWorkOrder) return;
+
+    const createdAt = nowLabel();
+    const nextWorkOrder = cloneWorkOrderForReorder(workOrders, sourceWorkOrder, {
+      createdAt,
+      createdById: currentUser.id,
+      createdByRole: currentUser.role,
+      managerId: sourceWorkOrder.managerId ?? currentUser.id,
+      managerName: sourceWorkOrder.manager || currentUser.name,
+    });
+
+    setWorkOrders((prev) => [nextWorkOrder, ...prev]);
+    setSelectedId(nextWorkOrder.id);
+    setLastSavedAt(nextWorkOrder.lastSavedAt);
+    setSaveStatus("dirty");
+    setHistoryLogs((prev) => [
+      createReorderHistoryLog(currentUser.name, nextWorkOrder.id, { sourceTitle: sourceWorkOrder.title, nextTitle: nextWorkOrder.title }),
+      ...prev,
+    ]);
+    setToastMessage(`리오더 작업지시서 "${nextWorkOrder.title}"가 생성되었습니다.`);
   };
 
   const applyWorkflowAction = (action: WorkflowAction) => {
@@ -670,6 +697,7 @@ export function useWorkOrder() {
     handleSelectWorkOrder,
     canDeleteWorkOrder,
     handleCreateWorkOrder,
+    handleReorderWorkOrder,
     handleDeleteWorkOrder,
     handleWorkflowAction,
     handleUpdateSelectedWorkOrder,

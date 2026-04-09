@@ -1,4 +1,5 @@
 import { createAttachmentId } from "@/lib/permissions/attachments";
+import type { Material } from "@/types/material";
 import type { Attachment, InventoryChange, MemoReply, MemoThread, OrderEntry, RoleType, WorkOrder, WorkflowAction } from "@/types/workorder";
 
 export function createNewWorkOrder(nextIndex: number, payload: {
@@ -174,4 +175,76 @@ export function updateWorkOrderManager(
   return workOrders.map((item) => item.id === workOrderId
     ? { ...item, managerId: payload.managerId, manager: payload.managerName }
     : item);
+}
+
+function nextId(prefix: string) {
+  return createAttachmentId(prefix);
+}
+
+function cloneOrderEntries(orderEntries: OrderEntry[] | undefined): OrderEntry[] {
+  return (orderEntries ?? []).map((entry) => ({
+    ...entry,
+    id: nextId("order"),
+    inspectionStatus: "발주대기" as const,
+  }));
+}
+
+function cloneMaterials(materials: Material[]): Material[] {
+  return (materials ?? []).map((material) => ({ ...material, id: nextId("mat") }));
+}
+
+function cloneOutsourcingRows(rows: WorkOrder["outsourcing"]): WorkOrder["outsourcing"] {
+  return (rows ?? []).map((row) => ({ ...row, id: nextId("out") }));
+}
+
+function cloneAttachments(attachments: Attachment[]): Attachment[] {
+  return (attachments ?? []).map((attachment) => ({
+    ...attachment,
+    id: nextId("att"),
+    linkedThreadId: null,
+    linkedReplyId: null,
+  }));
+}
+
+function extractReorderBaseTitle(title: string): string {
+  return title.replace(/\s+\d+차$/, "").trim();
+}
+
+function getNextReorderTitle(sourceTitle: string, workOrders: WorkOrder[]): string {
+  const baseTitle = extractReorderBaseTitle(sourceTitle);
+  const escapedBaseTitle = baseTitle.replace(/[.*+?^${}()|[\]\\]/g, "\$&");
+  const pattern = new RegExp(`^${escapedBaseTitle}(?:\s+(\d+)차)?$`);
+  let maxRound = 1;
+
+  for (const item of workOrders) {
+    const matched = item.title.match(pattern);
+    if (!matched) continue;
+    const round = matched[1] ? Number(matched[1]) : 1;
+    if (round > maxRound) maxRound = round;
+  }
+
+  return `${baseTitle} ${maxRound + 1}차`;
+}
+
+export function cloneWorkOrderForReorder(workOrders: WorkOrder[], sourceWorkOrder: WorkOrder, payload: { createdAt: string; createdById: string; createdByRole: RoleType; managerId: string | null; managerName: string; }) : WorkOrder {
+  const title = getNextReorderTitle(sourceWorkOrder.title, workOrders);
+  return {
+    ...sourceWorkOrder,
+    id: nextId("wo"),
+    title,
+    managerId: payload.managerId,
+    manager: payload.managerName,
+    createdById: payload.createdById,
+    createdByRole: payload.createdByRole,
+    workflowState: "작성중",
+    inventoryStatus: sourceWorkOrder.inventoryQuantity > 0 ? "정상" : sourceWorkOrder.inventoryStatus,
+    orderEntries: cloneOrderEntries(sourceWorkOrder.orderEntries),
+    materials: cloneMaterials(sourceWorkOrder.materials),
+    outsourcing: cloneOutsourcingRows(sourceWorkOrder.outsourcing),
+    attachments: cloneAttachments(sourceWorkOrder.attachments),
+    memoThreads: [],
+    lastSavedAt: payload.createdAt,
+    reorderedFromId: sourceWorkOrder.id,
+    reorderedFromTitle: sourceWorkOrder.title,
+  };
 }

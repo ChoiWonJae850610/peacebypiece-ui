@@ -95,6 +95,7 @@ export default function Home() {
     canDeleteWorkOrder,
     handleCreateWorkOrder,
     handleDeleteWorkOrder,
+    handleReorderWorkOrder,
     handleWorkflowAction,
     handleUpdateSelectedWorkOrder,
     handleConfirmOrderRequest,
@@ -150,6 +151,10 @@ export default function Home() {
           workflowStateById={workflowStateById}
           onSelect={handleSelectWorkOrder}
           onCreate={handleCreateWorkOrder}
+          onReorder={(id) => {
+            handleReorderWorkOrder(id);
+            setDrawerOpen(false);
+          }}
           onDelete={handleDeleteWorkOrder}
           canDelete={canDeleteWorkOrder}
           canCreate={canCreateWorkOrder}
@@ -168,7 +173,7 @@ export default function Home() {
               onCreate={handleCreateWorkOrder}
               onOpenSettings={() => setPermissionModalOpen(true)}
               onOpenAdminPanel={isAdmin ? () => setAdminPanelModalOpen(true) : undefined}
-              onReorder={() => {}}
+              onReorder={handleReorderWorkOrder}
               onDelete={handleDeleteWorkOrder}
               canDelete={canDeleteWorkOrder}
               canCreate={canCreateWorkOrder}
@@ -253,7 +258,7 @@ export default function Home() {
       />
       <AttachmentDeleteConfirmModal
         open={pendingAttachmentDelete !== null}
-        attachmentName={pendingAttachmentDelete?.name ?? null}
+        attachment={pendingAttachmentDelete}
         onClose={handleCloseDeleteAttachmentConfirm}
         onConfirm={handleConfirmDeleteAttachment}
       />

@@ -72,6 +72,8 @@ export type OrderEntry = {
 
 
 export type WorkOrder = {
+  reorderedFromId?: string | null;
+  reorderedFromTitle?: string | null;
   id: string;
   title: string;
   category1: string;
