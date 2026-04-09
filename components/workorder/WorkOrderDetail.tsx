@@ -37,8 +37,9 @@ const EDITABLE_DISPLAY_CLASS = `${EDITABLE_FIELD_BASE_CLASS} text-sm flex items-
 const EDITABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
 const TABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
 const TABLE_HEADER_TEXT_CLASS = "block w-full min-w-0 max-w-full whitespace-normal break-keep leading-4";
-const MOBILE_LABEL_CLASS = "w-[3.35rem] shrink-0 text-left text-[11px] leading-5 tracking-tight text-stone-500";
-const MOBILE_VALUE_WRAPPER_CLASS = "min-w-0 max-w-full flex-1 basis-0 overflow-hidden pl-1 text-left";
+const MOBILE_INFO_ROW_CLASS = "grid min-w-0 grid-cols-[2.9rem_minmax(0,1fr)] items-center gap-x-2";
+const MOBILE_LABEL_CLASS = "min-w-0 text-left text-[11px] leading-5 tracking-tight text-stone-500";
+const MOBILE_VALUE_WRAPPER_CLASS = "min-w-0 max-w-full overflow-hidden text-left";
 const TABLE_HEADER_CELL_CLASS = "min-w-0 overflow-hidden px-1.5 py-2 text-center text-[11px] font-semibold leading-4 text-stone-600 lg:px-2 lg:text-xs";
 const TABLE_BODY_CELL_CLASS = "min-w-0 overflow-hidden px-1.5 py-2 align-middle text-[10px] leading-4 text-stone-900 lg:px-2 lg:text-[11px]";
 const EDITABLE_VALUE_TEXT_WRAP_CLASS = "block w-full min-w-0 max-w-full whitespace-normal break-words leading-4";
@@ -595,7 +596,7 @@ function OrderInfoSection({
         <>
           <div className="mt-2 space-y-2.5 md:hidden">
             {orderEntries.map((item, index) => (
-              <div key={item.id} className="max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-white p-3">
+              <div key={item.id} className="max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-white px-4 py-3">
                 <div className="flex items-start justify-between gap-3 min-w-0">
                   <div className="min-w-0 flex-1 overflow-hidden">
                     <div className="truncate text-sm font-semibold text-stone-900">{item.factory || `발주 ${index + 1}`}</div>
@@ -603,7 +604,7 @@ function OrderInfoSection({
                   </div>
                   <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || `발주 ${index + 1}`} 삭제`} />
                 </div>
-                <div className="mt-2 flex items-center justify-between gap-3">
+                <div className="mt-2 flex items-center justify-between gap-2">
                   <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${getInspectionStatusTone(item.inspectionStatus ?? "발주대기")}`}>{getInspectionStatusLabel(item.inspectionStatus ?? "발주대기")}</span>
                   {canManageInspectionRows ? (
                     item.inspectionStatus === "검수대기" ? (
@@ -613,7 +614,7 @@ function OrderInfoSection({
                     ) : null
                   ) : null}
                 </div>
-                <div className="mt-2.5 space-y-1.5">
+                <div className="mt-2 space-y-1.5">
                   {[
                     ["구분", "type", item.type, "text"],
                     ["공장", "factory", item.factory, "text"],
@@ -623,7 +624,7 @@ function OrderInfoSection({
                     ["로스비", "lossCost", item.lossCost.toLocaleString(), "decimal"],
                     ["우선순위", "priority", item.priority, "text"],
                   ].map(([label, field, value, inputMode]) => (
-                    <div key={`${item.id}-${field}`} className="flex items-center gap-3 min-w-0">
+                    <div key={`${item.id}-${field}`} className={MOBILE_INFO_ROW_CLASS}>
                       <span className={MOBILE_LABEL_CLASS}>{label}</span>
                       <div className={MOBILE_VALUE_WRAPPER_CLASS}>
                         <EditableValue
@@ -861,15 +862,15 @@ function MaterialSection({
         <>
           <div className="mt-2 space-y-2.5 md:hidden">
             {materials.map((item, index) => (
-              <div key={item.id} className="max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-white p-3">
+              <div key={item.id} className="max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-white px-4 py-3">
                 <div className="flex items-start justify-between gap-3 min-w-0">
                   <div className="min-w-0 flex-1 overflow-hidden">
                     <div className="truncate text-sm font-semibold text-stone-900">{item.name || `자재 ${index + 1}`}</div>
-                    <div className="mt-1 truncate text-xs text-stone-500">금액 {(item.totalCost ?? 0).toLocaleString()}원</div>
+                    <div className="mt-0.5 truncate text-xs text-stone-500">금액 {(item.totalCost ?? 0).toLocaleString()}원</div>
                   </div>
                   <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.name || `자재 ${index + 1}`} 삭제`} />
                 </div>
-                <div className="mt-2.5 space-y-1.5">
+                <div className="mt-2 space-y-1.5">
                   {[
                     ["구분", "type", item.type, "text"],
                     ["자재명", "name", item.name, "text"],
@@ -878,7 +879,7 @@ function MaterialSection({
                     ["단위", "unit", item.unit, "text"],
                     ["단가", "unitCost", item.unitCost.toLocaleString(), "decimal"],
                   ].map(([label, field, value, inputMode]) => (
-                    <div key={`${item.id}-${field}`} className="flex items-center gap-3 min-w-0">
+                    <div key={`${item.id}-${field}`} className={MOBILE_INFO_ROW_CLASS}>
                       <span className={MOBILE_LABEL_CLASS}>{label}</span>
                       <div className={MOBILE_VALUE_WRAPPER_CLASS}>
                         <EditableValue
@@ -897,12 +898,6 @@ function MaterialSection({
                       </div>
                     </div>
                   ))}
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className={MOBILE_LABEL_CLASS}>금액</span>
-                    <div className={MOBILE_VALUE_WRAPPER_CLASS}>
-                      <span className="block min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm font-medium text-stone-900 tabular-nums">{(item.totalCost ?? 0).toLocaleString()}원</span>
-                    </div>
-                  </div>
                 </div>
               </div>
             ))}
@@ -1015,15 +1010,15 @@ function OutsourcingSection({
         <>
           <div className="mt-2 space-y-2.5 md:hidden">
             {outsourcing.map((item, index) => (
-              <div key={item.id} className="max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-white p-3">
+              <div key={item.id} className="max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-white px-4 py-3">
                 <div className="flex items-start justify-between gap-3 min-w-0">
                   <div className="min-w-0 flex-1 overflow-hidden">
                     <div className="truncate text-sm font-semibold text-stone-900">{item.process || `공정 ${index + 1}`}</div>
-                    <div className="mt-1 truncate text-xs text-stone-500">금액 {(item.totalCost ?? 0).toLocaleString()}원</div>
+                    <div className="mt-0.5 truncate text-xs text-stone-500">금액 {(item.totalCost ?? 0).toLocaleString()}원</div>
                   </div>
                   <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.process || `공정 ${index + 1}`} 삭제`} />
                 </div>
-                <div className="mt-2.5 space-y-1.5">
+                <div className="mt-2 space-y-1.5">
                   {[
                     ["공정", "process", item.process, "text"],
                     ["외주처", "vendor", item.vendor, "text"],
@@ -1031,7 +1026,7 @@ function OutsourcingSection({
                     ["단가기준", "unitType", item.unitType, "text"],
                     ["단가", "unitCost", item.unitCost.toLocaleString(), "decimal"],
                   ].map(([label, field, value, inputMode]) => (
-                    <div key={`${item.id}-${field}`} className="flex items-center gap-3 min-w-0">
+                    <div key={`${item.id}-${field}`} className={MOBILE_INFO_ROW_CLASS}>
                       <span className={MOBILE_LABEL_CLASS}>{label}</span>
                       <div className={MOBILE_VALUE_WRAPPER_CLASS}>
                         <EditableValue
@@ -1050,12 +1045,6 @@ function OutsourcingSection({
                       </div>
                     </div>
                   ))}
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className={MOBILE_LABEL_CLASS}>금액</span>
-                    <div className={MOBILE_VALUE_WRAPPER_CLASS}>
-                      <span className="block min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm font-medium text-stone-900 tabular-nums">{(item.totalCost ?? 0).toLocaleString()}원</span>
-                    </div>
-                  </div>
                 </div>
               </div>
             ))}
