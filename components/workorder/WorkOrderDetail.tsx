@@ -30,16 +30,16 @@ type BasicInfoState = {
 type OrderEntryState = OrderEntry;
 
 const EDITABLE_FIELD_HEIGHT_CLASS = "h-10";
-const EDITABLE_FIELD_BASE_CLASS = `pbp-field-interaction ${EDITABLE_FIELD_HEIGHT_CLASS} block w-full min-w-0 max-w-full overflow-hidden truncate rounded-xl border px-3 text-stone-900 outline-none ring-0`;
+const EDITABLE_FIELD_BASE_CLASS = `pbp-field-interaction ${EDITABLE_FIELD_HEIGHT_CLASS} block w-full min-w-0 max-w-full overflow-hidden whitespace-nowrap rounded-xl border px-3 text-stone-900 outline-none ring-0`;
 const EDITABLE_INPUT_CLASS = `${EDITABLE_FIELD_BASE_CLASS} text-base md:text-sm border-stone-300 bg-white focus:border-stone-400 focus:bg-white`;
-const EDITABLE_SELECT_CLASS = `${EDITABLE_INPUT_CLASS} appearance-none truncate pr-8`;
+const EDITABLE_SELECT_CLASS = `${EDITABLE_INPUT_CLASS} appearance-none whitespace-nowrap pr-8`;
 const EDITABLE_DISPLAY_CLASS = `${EDITABLE_FIELD_BASE_CLASS} text-sm flex items-center border-transparent bg-transparent hover:border-stone-200 hover:bg-stone-50 focus-visible:border-stone-300 focus-visible:bg-stone-50`;
 const EDITABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
 const TABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
 const TABLE_HEADER_TEXT_CLASS = "block w-full min-w-0 max-w-full whitespace-normal break-keep leading-4";
-const MOBILE_INFO_ROW_CLASS = "grid min-w-0 grid-cols-[4.4rem_minmax(0,1fr)] items-center gap-x-2.5";
+const MOBILE_INFO_ROW_CLASS = "grid min-w-0 grid-cols-[1fr_1.4fr_1.2fr_1.2fr_1fr_1fr_48px] items-center gap-x-2.5";
 const MOBILE_LABEL_CLASS = "min-w-0 text-left text-[11px] leading-5 tracking-tight text-stone-500";
-const MOBILE_VALUE_WRAPPER_CLASS = "flex min-w-0 max-w-full items-center justify-end overflow-hidden";
+const MOBILE_VALUE_WRAPPER_CLASS = "flex min-w-0 max-w-full items-center items-center justify-center w-[48px] overflow-hidden";
 const TABLE_HEADER_CELL_CLASS = "min-w-0 overflow-hidden px-1.5 py-2 text-center text-[11px] font-medium leading-4 text-stone-600 lg:px-2 lg:text-[11px]";
 const TABLE_BODY_CELL_CLASS = "min-w-0 overflow-hidden px-1.5 py-2 align-middle text-center text-[10px] leading-4 text-stone-900 lg:px-2 lg:text-[10px]";
 const EDITABLE_VALUE_TEXT_WRAP_CLASS = "block w-full min-w-0 max-w-full whitespace-normal break-words leading-4";
@@ -362,7 +362,7 @@ function EditableValue({
     <button
       type="button"
       onClick={() => onStartEdit(section, rowId, field, getEditingInitialValue(field, value))}
-      className={`${EDITABLE_DISPLAY_CLASS} ${compact ? "mx-auto max-w-[11rem]" : ""} ${alignRight ? "justify-end text-right tabular-nums" : centered ? "justify-center text-center" : "text-left"}`}
+      className={`${EDITABLE_DISPLAY_CLASS} ${compact ? "mx-auto max-w-[11rem]" : ""} ${alignRight ? "items-center justify-center w-[48px] text-right tabular-nums" : centered ? "justify-center text-center" : "text-left"}`}
     >
       <span className={wrapText ? EDITABLE_VALUE_TEXT_WRAP_CLASS : EDITABLE_VALUE_TEXT_CLASS}>{getDisplayValue(field, value) || "-"}</span>
     </button>
@@ -784,8 +784,8 @@ function OrderInfoSection({
               <div key={item.id} className="max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-white px-4 py-3">
                 <div className="flex items-start justify-between gap-3 min-w-0">
                   <div className="min-w-0 flex-1 overflow-hidden">
-                    <div className="truncate text-sm font-semibold text-stone-900">{item.factory || `발주 ${index + 1}`}</div>
-                    <div className="mt-1 truncate text-xs text-stone-500">{item.type} · {item.quantity.toLocaleString()}장</div>
+                    <div className="whitespace-nowrap text-sm font-semibold text-stone-900">{item.factory || `발주 ${index + 1}`}</div>
+                    <div className="mt-1 whitespace-nowrap text-xs text-stone-500">{item.type} · {item.quantity.toLocaleString()}장</div>
                   </div>
                   <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || `발주 ${index + 1}`} 삭제`} />
                 </div>
@@ -1037,8 +1037,8 @@ function MaterialSection({
               <div key={item.id} className="max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-white px-4 py-3">
                 <div className="flex items-start justify-between gap-3 min-w-0">
                   <div className="min-w-0 flex-1 overflow-hidden">
-                    <div className="truncate text-sm font-semibold text-stone-900">{item.name || `자재 ${index + 1}`}</div>
-                    <div className="mt-0.5 truncate text-xs text-stone-500">금액 {(item.totalCost ?? 0).toLocaleString()}원</div>
+                    <div className="whitespace-nowrap text-sm font-semibold text-stone-900">{item.name || `자재 ${index + 1}`}</div>
+                    <div className="mt-0.5 whitespace-nowrap text-xs text-stone-500">금액 {(item.totalCost ?? 0).toLocaleString()}원</div>
                   </div>
                   <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.name || `자재 ${index + 1}`} 삭제`} />
                 </div>
@@ -1187,8 +1187,8 @@ function OutsourcingSection({
               <div key={item.id} className="max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-white px-4 py-3">
                 <div className="flex items-start justify-between gap-3 min-w-0">
                   <div className="min-w-0 flex-1 overflow-hidden">
-                    <div className="truncate text-sm font-semibold text-stone-900">{item.process || `공정 ${index + 1}`}</div>
-                    <div className="mt-0.5 truncate text-xs text-stone-500">금액 {(item.totalCost ?? 0).toLocaleString()}원</div>
+                    <div className="whitespace-nowrap text-sm font-semibold text-stone-900">{item.process || `공정 ${index + 1}`}</div>
+                    <div className="mt-0.5 whitespace-nowrap text-xs text-stone-500">금액 {(item.totalCost ?? 0).toLocaleString()}원</div>
                   </div>
                   <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.process || `공정 ${index + 1}`} 삭제`} />
                 </div>
