@@ -558,6 +558,155 @@ function BasicInfoEditModal({
   );
 }
 
+function OrderInspectionModal({
+  open,
+  orderEntries,
+  currentInventoryQuantity,
+  onClose,
+  onApply,
+}: {
+  open: boolean;
+  orderEntries: OrderEntryState[];
+  currentInventoryQuantity: number;
+  onClose: () => void;
+  onApply: (payload: { orderEntryId: string; inventoryQuantity: number }) => void;
+}) {
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const pendingEntries = orderEntries.filter((item) => item.inspectionStatus !== "검수완료");
+  const [selectedFactory, setSelectedFactory] = useState("");
+  const [selectedOrderId, setSelectedOrderId] = useState("");
+  const [inventoryQuantity, setInventoryQuantity] = useState("");
+
+  useModalEnvironment({ open, dialogRef, onClose });
+
+  useEffect(() => {
+    if (!open) {
+      setSelectedFactory("");
+      setSelectedOrderId("");
+      setInventoryQuantity("");
+      return;
+    }
+
+    const firstEntry = pendingEntries[0] ?? orderEntries[0];
+    setSelectedFactory(firstEntry?.factory || DEFAULT_FACTORY_OPTION);
+    setSelectedOrderId(firstEntry?.id || "");
+    setInventoryQuantity(String(Math.max(0, currentInventoryQuantity || 0)));
+  }, [open, pendingEntries, orderEntries, currentInventoryQuantity]);
+
+  const factoryOptions = Array.from(new Set((pendingEntries.length > 0 ? pendingEntries : orderEntries).map((item) => item.factory || DEFAULT_FACTORY_OPTION)));
+  const filteredEntries = (pendingEntries.length > 0 ? pendingEntries : orderEntries).filter((item) => (item.factory || DEFAULT_FACTORY_OPTION) === selectedFactory);
+  const selectedEntry = filteredEntries.find((item) => item.id === selectedOrderId) ?? filteredEntries[0] ?? null;
+
+  const handleFactoryChange = (factory: string) => {
+    setSelectedFactory(factory);
+    const nextEntries = (pendingEntries.length > 0 ? pendingEntries : orderEntries).filter((item) => (item.factory || DEFAULT_FACTORY_OPTION) === factory);
+    setSelectedOrderId(nextEntries[0]?.id || "");
+  };
+
+  const handleApply = () => {
+    if (!selectedEntry) return;
+    const parsedQuantity = Math.max(0, Number(inventoryQuantity.replace(/,/g, "")) || 0);
+    onApply({
+      orderEntryId: selectedEntry.id,
+      inventoryQuantity: parsedQuantity,
+    });
+    onClose();
+  };
+
+  return (
+    <BaseModal open={open} onClose={onClose} dialogRef={dialogRef} titleId="order-inspection-modal-title" maxWidthClassName="md:max-w-lg">
+      <ModalHeader
+        titleId="order-inspection-modal-title"
+        title="검수 진행"
+        description="공장을 선택하고 재고 반영값을 입력한 뒤 해당 발주행을 검수 완료로 처리합니다."
+        onClose={onClose}
+      />
+      <ModalBody>
+        {selectedEntry ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <label className="rounded-2xl border border-stone-200 bg-white p-3">
+                <div className="text-xs text-stone-500">공장 선택</div>
+                <select
+                  value={selectedFactory}
+                  onChange={(event) => handleFactoryChange(event.target.value)}
+                  className="mt-2 h-10 w-full rounded-xl border border-stone-300 bg-white px-3 text-sm text-stone-900 outline-none focus:border-stone-400"
+                >
+                  {factoryOptions.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="rounded-2xl border border-stone-200 bg-white p-3">
+                <div className="text-xs text-stone-500">발주행 선택</div>
+                <select
+                  value={selectedOrderId}
+                  onChange={(event) => setSelectedOrderId(event.target.value)}
+                  className="mt-2 h-10 w-full rounded-xl border border-stone-300 bg-white px-3 text-sm text-stone-900 outline-none focus:border-stone-400"
+                >
+                  {filteredEntries.map((item) => (
+                    <option key={item.id} value={item.id}>{item.type} · {item.quantity.toLocaleString()}장</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
+                <div className="text-xs text-stone-500">검수 대상</div>
+                <div className="mt-1 text-sm font-semibold text-stone-900">{selectedEntry.factory || "-"}</div>
+                <div className="mt-1 text-xs text-stone-500">{selectedEntry.type} · {selectedEntry.dueDate || "납기 미정"}</div>
+              </div>
+              <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
+                <div className="text-xs text-stone-500">현재 검수여부</div>
+                <div className={`mt-1 inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${getInspectionStatusTone(selectedEntry.inspectionStatus ?? "발주대기")}`}>{getInspectionStatusLabel(selectedEntry.inspectionStatus ?? "발주대기")}</div>
+              </div>
+            </div>
+
+            <label className="block rounded-2xl border border-stone-200 bg-white p-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-xs text-stone-500">재고 반영값</span>
+                <span className="text-xs text-stone-500">현재 {currentInventoryQuantity.toLocaleString()}장</span>
+              </div>
+              <input
+                type="number"
+                min={0}
+                value={inventoryQuantity}
+                onChange={(event) => setInventoryQuantity(event.target.value)}
+                placeholder="최종 재고 수량"
+                className="mt-2 h-11 w-full rounded-xl border border-stone-300 bg-white px-3 text-base text-stone-900 outline-none focus:border-stone-400 md:text-sm"
+              />
+            </label>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">
+            검수 진행 가능한 발주행이 없습니다.
+          </div>
+        )}
+      </ModalBody>
+      <ModalFooter>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-800"
+          >
+            취소
+          </button>
+          <button
+            type="button"
+            onClick={handleApply}
+            disabled={!selectedEntry}
+            className="flex-1 rounded-2xl bg-stone-900 px-4 py-3 text-sm font-medium text-white disabled:opacity-50"
+          >
+            재고 반영 후 완료
+          </button>
+        </div>
+      </ModalFooter>
+    </BaseModal>
+  );
+}
+
 function blurActiveEditableElement() {
   if (typeof document === "undefined") return;
   const activeElement = document.activeElement;
@@ -596,9 +745,8 @@ function OrderInfoSection({
   onCancelEdit,
   onAdd,
   onRemove,
-  canManageInspectionRows,
-  onStartInspection,
-  onCompleteInspection,
+  canOpenInspectionModal,
+  onOpenInspectionModal,
 }: {
   orderEntries: OrderEntryState[];
   factoryOptions: readonly string[];
@@ -611,18 +759,27 @@ function OrderInfoSection({
   onCancelEdit: () => void;
   onAdd: () => void;
   onRemove: (id: string) => void;
-  canManageInspectionRows: boolean;
-  onStartInspection: (id: string) => void;
-  onCompleteInspection: (id: string) => void;
+  canOpenInspectionModal: boolean;
+  onOpenInspectionModal: () => void;
 }) {
   const totals = calculateOrderEntryTotals(orderEntries);
+  const inspectionButton = canOpenInspectionModal ? (
+    <button
+      type="button"
+      onClick={onOpenInspectionModal}
+      className="pbp-interactive-button inline-flex items-center justify-center rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+    >
+      검수 진행
+    </button>
+  ) : null;
 
   return (
     <div className="overflow-hidden rounded-2xl bg-stone-50 p-3 md:p-3.5">
-      <SectionHeader title="발주 정보" summary={formatOrderSummary(orderEntries)} open={open} onToggle={onToggle} />
+      <SectionHeader title="발주 정보" summary={formatOrderSummary(orderEntries)} open={open} onToggle={onToggle} rightSlot={inspectionButton} />
       {open ? (
         <>
           <div className="mt-2 space-y-2.5 md:hidden">
+            {inspectionButton ? <div className="pb-0.5">{inspectionButton}</div> : null}
             {orderEntries.map((item, index) => (
               <div key={item.id} className="max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-white px-4 py-3">
                 <div className="flex items-start justify-between gap-3 min-w-0">
@@ -632,15 +789,8 @@ function OrderInfoSection({
                   </div>
                   <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || `발주 ${index + 1}`} 삭제`} />
                 </div>
-                <div className="mt-2 flex items-center justify-between gap-2">
+                <div className="mt-2 flex items-center justify-start gap-2">
                   <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${getInspectionStatusTone(item.inspectionStatus ?? "발주대기")}`}>{getInspectionStatusLabel(item.inspectionStatus ?? "발주대기")}</span>
-                  {canManageInspectionRows ? (
-                    item.inspectionStatus === "검수대기" ? (
-                      <button type="button" onClick={() => onStartInspection(item.id)} className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">검수 시작</button>
-                    ) : item.inspectionStatus === "검수중" ? (
-                      <button type="button" onClick={() => onCompleteInspection(item.id)} className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs font-medium text-stone-700">검수 완료</button>
-                    ) : null
-                  ) : null}
                 </div>
                 <div className="mt-2 space-y-1.5">
                   {[
@@ -650,27 +800,31 @@ function OrderInfoSection({
                     ["수량", "quantity", item.quantity.toLocaleString(), "decimal"],
                     ["공임비", "laborCost", item.laborCost.toLocaleString(), "decimal"],
                     ["로스비", "lossCost", item.lossCost.toLocaleString(), "decimal"],
-                    ["우선순위", "priority", item.priority, "text"],
+                    ["검수여부", "inspectionStatus", getInspectionStatusLabel(item.inspectionStatus ?? "발주대기"), "text"],
                   ].map(([label, field, value, inputMode]) => (
                     <div key={`${item.id}-${field}`} className={MOBILE_INFO_ROW_CLASS}>
                       <span className={MOBILE_LABEL_CLASS}>{label}</span>
                       <div className={MOBILE_VALUE_WRAPPER_CLASS}>
-                        <EditableValue
-                          section="order"
-                          rowId={item.id}
-                          field={String(field)}
-                          value={String(value)}
-                          editingCell={editingCell}
-                          editingValue={editingValue}
-                          inputMode={field === 'quantity' || field === 'laborCost' || field === 'lossCost' ? 'numeric' : inputMode as "text" | "decimal"}
-                          inputType={field === 'dueDate' ? 'date' : 'text'}
-                          options={field === 'type' ? ORDER_TYPE_OPTIONS : field === 'factory' ? factoryOptions : field === 'priority' ? PRIORITY_OPTIONS : undefined}
-                          alignRight
-                          compact
-                          onStartEdit={onStartEdit}
-                          onCommit={onCommitEdit}
-                          onCancel={onCancelEdit}
-                        />
+                        {field === "inspectionStatus" ? (
+                          <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${getInspectionStatusTone(item.inspectionStatus ?? "발주대기")}`}>{getInspectionStatusLabel(item.inspectionStatus ?? "발주대기")}</span>
+                        ) : (
+                          <EditableValue
+                            section="order"
+                            rowId={item.id}
+                            field={String(field)}
+                            value={String(value)}
+                            editingCell={editingCell}
+                            editingValue={editingValue}
+                            inputMode={field === 'quantity' || field === 'laborCost' || field === 'lossCost' ? 'numeric' : inputMode as "text" | "decimal"}
+                            inputType={field === 'dueDate' ? 'date' : 'text'}
+                            options={field === 'type' ? ORDER_TYPE_OPTIONS : field === 'factory' ? factoryOptions : undefined}
+                            alignRight={field === 'quantity' || field === 'laborCost' || field === 'lossCost'}
+                            compact
+                            onStartEdit={onStartEdit}
+                            onCommit={onCommitEdit}
+                            onCancel={onCancelEdit}
+                          />
+                        )}
                       </div>
                     </div>
                   ))}
@@ -688,19 +842,18 @@ function OrderInfoSection({
           <div className="mt-1 hidden max-w-full overflow-hidden md:block">
             <table className="w-full max-w-full table-fixed text-left">
               <colgroup>
-                <col className="w-[92px]" />
-                <col className="w-[18%]" />
-                <col className="w-[104px]" />
-                <col className="w-[72px]" />
-                <col className="w-[92px]" />
-                <col className="w-[92px]" />
-                <col className="w-[88px]" />
-                <col className="w-[104px]" />
+                <col className="w-[100px]" />
+                <col className="w-[22%]" />
+                <col className="w-[112px]" />
+                <col className="w-[76px]" />
+                <col className="w-[96px]" />
+                <col className="w-[96px]" />
+                <col className="w-[112px]" />
                 <col className="w-[52px]" />
               </colgroup>
               <thead className="text-stone-500">
                 <tr className="border-b border-stone-200">
-                  {["구분", "공장", "납기일", "수량", "공임비", "로스비", "우선순위", "검수여부", ""].map((header, index) => (
+                  {["구분", "공장", "납기일", "수량", "공임비", "로스비", "검수여부", ""].map((header, index) => (
                     <th
                       key={`${header}-${index}`}
                       className={TABLE_HEADER_CELL_CLASS}
@@ -719,7 +872,6 @@ function OrderInfoSection({
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="laborCost" value={item.laborCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="lossCost" value={item.lossCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="priority" value={item.priority} options={PRIORITY_OPTIONS} centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="px-1.5 py-2 text-center align-middle text-[11px] lg:px-2 lg:text-[11px]"><span className={`inline-flex rounded-full px-2 py-1 text-[11px] font-medium lg:text-[11px] ${getInspectionStatusTone(item.inspectionStatus ?? "발주대기")}`}>{getInspectionStatusLabel(item.inspectionStatus ?? "발주대기")}</span></td>
                     <td className="px-1.5 py-2 text-center align-middle lg:px-2">
                       <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || `발주 ${rowIndex + 1}`} 삭제`} />
@@ -731,10 +883,10 @@ function OrderInfoSection({
                   <td className="px-3 py-2 text-center text-[11px] font-semibold text-stone-900 tabular-nums lg:text-[11px]">{totals.quantity.toLocaleString()}장</td>
                   <td className="px-3 py-2 text-center text-[11px] font-semibold text-stone-900 tabular-nums lg:text-[11px]">{totals.laborCost.toLocaleString()}원</td>
                   <td className="px-3 py-2 text-center text-[11px] font-semibold text-stone-900 tabular-nums lg:text-[11px]">{totals.lossCost.toLocaleString()}원</td>
-                  <td colSpan={3} />
+                  <td colSpan={2} />
                 </tr>
                 <tr>
-                  <td colSpan={9} className="px-3 pb-2 pt-2">
+                  <td colSpan={8} className="px-3 pb-2 pt-2">
                     <button
                       type="button"
                       onClick={onAdd}
@@ -1222,6 +1374,7 @@ export default function WorkOrderDetail({
   const [outsourcingItems, setOutsourcingItems] = useState<Outsourcing[]>(() => (workOrder.outsourcing ?? []).map(recalculateOutsourcing));
   const [editingCell, setEditingCell] = useState<EditableCell>(null);
   const [editingValue, setEditingValue] = useState("");
+  const [inspectionModalOpen, setInspectionModalOpen] = useState(false);
 
   const orderTotals = calculateOrderEntryTotals(orderItems);
   const laborCost = orderTotals.laborCost;
@@ -1262,8 +1415,9 @@ export default function WorkOrderDetail({
     setEditingValue("");
   };
 
-  const syncOrderEntries = (nextItems: OrderEntryState[]) => {
+  const syncOrderEntries = (nextItems: OrderEntryState[], extraPatch: Partial<WorkOrder> = {}) => {
     onUpdateWorkOrder({
+      ...extraPatch,
       orderEntries: nextItems.map((item) => sanitizeOrderEntry(item, undefined, currentWorkflowState)),
     });
   };
@@ -1357,7 +1511,6 @@ export default function WorkOrderDetail({
         quantity: 0,
         laborCost: 0,
         lossCost: 0,
-        priority: orderItems[0]?.priority || PRIORITY_OPTIONS[0],
       }, undefined, currentWorkflowState),
     ];
     setOrderItems(nextItems);
@@ -1373,20 +1526,23 @@ export default function WorkOrderDetail({
     }
   };
 
-  const handleStartOrderInspection = (id: string) => {
-    const nextItems = orderItems.map((item) => item.id === id
-      ? sanitizeOrderEntry({ ...item, inspectionStatus: "검수중" }, item, currentWorkflowState)
-      : item);
-    setOrderItems(nextItems);
-    syncOrderEntries(nextItems);
+  const handleOpenInspectionModal = () => {
+    setInspectionModalOpen(true);
   };
 
-  const handleCompleteOrderInspection = (id: string) => {
-    const nextItems = orderItems.map((item) => item.id === id
+  const handleCloseInspectionModal = () => {
+    setInspectionModalOpen(false);
+  };
+
+  const handleApplyInspection = ({ orderEntryId, inventoryQuantity }: { orderEntryId: string; inventoryQuantity: number }) => {
+    const nextItems = orderItems.map((item) => item.id === orderEntryId
       ? sanitizeOrderEntry({ ...item, inspectionStatus: "검수완료" }, item, currentWorkflowState)
       : item);
     setOrderItems(nextItems);
-    syncOrderEntries(nextItems);
+    syncOrderEntries(nextItems, {
+      inventoryQuantity,
+      inventoryStatus: inventoryQuantity > 0 ? "정상" : "부족",
+    });
   };
 
   const addMaterial = () => {
@@ -1534,9 +1690,8 @@ export default function WorkOrderDetail({
           onCancelEdit={cancelEdit}
           onAdd={addOrderEntry}
           onRemove={removeOrderEntry}
-          canManageInspectionRows={canEditInventory && (currentWorkflowState === "생산중" || currentWorkflowState === "검수중")}
-          onStartInspection={handleStartOrderInspection}
-          onCompleteInspection={handleCompleteOrderInspection}
+          canOpenInspectionModal={canEditInventory && (currentWorkflowState === "생산중" || currentWorkflowState === "검수중") && orderItems.some((item) => item.inspectionStatus !== "검수완료")}
+          onOpenInspectionModal={handleOpenInspectionModal}
         />
 
         {canSeeProductionSections ? (
@@ -1566,6 +1721,14 @@ export default function WorkOrderDetail({
           />
         ) : null}
       </div>
+
+      <OrderInspectionModal
+        open={inspectionModalOpen}
+        orderEntries={orderItems}
+        currentInventoryQuantity={currentInventoryQuantity}
+        onClose={handleCloseInspectionModal}
+        onApply={handleApplyInspection}
+      />
 
       <BasicInfoEditModal
         open={basicInfoModalOpen}

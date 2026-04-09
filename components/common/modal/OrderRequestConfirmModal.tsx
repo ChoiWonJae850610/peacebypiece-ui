@@ -34,7 +34,6 @@ export default function OrderRequestConfirmModal({
     quantity: workOrder.quantity || 0,
     laborCost: workOrder.laborCost || 0,
     lossCost: workOrder.lossCost || 0,
-    priority: workOrder.priority || "-",
   }];
   const totalQuantity = orderEntries.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
 
@@ -91,11 +90,10 @@ export default function OrderRequestConfirmModal({
                 <col className="w-[12%]" />
                 <col className="w-[14%]" />
                 <col className="w-[14%]" />
-                <col className="w-[8%]" />
               </colgroup>
               <thead className="bg-stone-50 text-stone-500">
                 <tr>
-                  {['구분', '공장', '납기일', '수량', '공임비', '로스비', '우선'] .map((header) => (
+                  {['구분', '공장', '납기일', '수량', '공임비', '로스비'] .map((header) => (
                     <th key={header} className={`px-3 py-2 font-medium ${header === '수량' || header === '공임비' || header === '로스비' ? 'text-right' : 'text-left'}`}>{header}</th>
                   ))}
                 </tr>
@@ -109,7 +107,6 @@ export default function OrderRequestConfirmModal({
                     <td className="px-3 py-2 text-right tabular-nums">{item.quantity.toLocaleString()}장</td>
                     <td className="px-3 py-2 text-right tabular-nums">{item.laborCost.toLocaleString()}원</td>
                     <td className="px-3 py-2 text-right tabular-nums">{item.lossCost.toLocaleString()}원</td>
-                    <td className="px-3 py-2">{item.priority || '-'}</td>
                   </tr>
                 ))}
               </tbody>
