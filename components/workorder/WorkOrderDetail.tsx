@@ -40,8 +40,8 @@ const TABLE_HEADER_TEXT_CLASS = "block w-full min-w-0 max-w-full whitespace-norm
 const MOBILE_INFO_ROW_CLASS = "grid min-w-0 grid-cols-[4.4rem_minmax(0,1fr)] items-center gap-x-2.5";
 const MOBILE_LABEL_CLASS = "min-w-0 text-left text-[11px] leading-5 tracking-tight text-stone-500";
 const MOBILE_VALUE_WRAPPER_CLASS = "flex min-w-0 max-w-full items-center justify-end overflow-hidden";
-const TABLE_HEADER_CELL_CLASS = "min-w-0 overflow-hidden px-1.5 py-2 text-center text-[11px] font-semibold leading-4 text-stone-600 lg:px-2 lg:text-[11px]";
-const TABLE_BODY_CELL_CLASS = "min-w-0 overflow-hidden px-1.5 py-2 align-middle text-center text-[11px] leading-4 text-stone-900 lg:px-2 lg:text-[11px]";
+const TABLE_HEADER_CELL_CLASS = "min-w-0 overflow-hidden px-1.5 py-2 text-center text-[11px] font-medium leading-4 text-stone-600 lg:px-2 lg:text-[11px]";
+const TABLE_BODY_CELL_CLASS = "min-w-0 overflow-hidden px-1.5 py-2 align-middle text-center text-[10px] leading-4 text-stone-900 lg:px-2 lg:text-[10px]";
 const EDITABLE_VALUE_TEXT_WRAP_CLASS = "block w-full min-w-0 max-w-full whitespace-normal break-words leading-4";
 
 function SectionHeader({

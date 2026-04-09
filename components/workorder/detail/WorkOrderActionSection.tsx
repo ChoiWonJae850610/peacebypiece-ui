@@ -83,9 +83,9 @@ export default function WorkOrderActionSection({
       </div>
 
       <div className="mt-3 md:hidden">
-        <div className="rounded-2xl border border-stone-200 bg-white px-3 py-3">
-          <div className="relative">
-            <div className="pointer-events-none absolute left-[16.666%] right-[16.666%] top-[1.05rem] h-0.5 rounded-full bg-stone-200" />
+        <div className="rounded-2xl border border-stone-200 bg-white px-3 py-2.5">
+          <div className="relative mx-auto flex min-h-[5.35rem] w-full max-w-sm items-center">
+            <div className="pointer-events-none absolute left-[16.666%] right-[16.666%] top-[1.55rem] h-0.5 rounded-full bg-stone-200" />
             {mobileStageSlots.slice(0, -1).map((slot, slotIndex) => {
               if (!slot) return null;
               const nextSlot = mobileStageSlots[slotIndex + 1];
@@ -94,12 +94,12 @@ export default function WorkOrderActionSection({
               return (
                 <div
                   key={`mobile-connector-${slotIndex}`}
-                  className={`pointer-events-none absolute top-[1.05rem] h-0.5 rounded-full ${connectorTone}`}
+                  className={`pointer-events-none absolute top-[1.55rem] h-0.5 rounded-full ${connectorTone}`}
                   style={{ left: `${16.666 + slotIndex * 33.333}%`, width: "33.333%" }}
                 />
               );
             })}
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid w-full grid-cols-3 gap-2">
               {mobileStageSlots.map((slot, slotIndex) => {
                 const stage = slot?.stage;
                 const index = slot?.index ?? -1;
@@ -112,7 +112,7 @@ export default function WorkOrderActionSection({
 
                 return (
                   <div key={stage ? `${stage}-mobile` : `placeholder-${slotIndex}`} className={`min-w-0 ${isPlaceholder ? "opacity-0" : ""}`}>
-                    <div className="flex min-w-0 min-h-[3.9rem] flex-col items-center justify-start pt-1.5 pb-0.5 text-center">
+                    <div className="flex min-w-0 min-h-[4.4rem] flex-col items-center justify-center text-center">
                       <div
                         className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
                           isCompleted
@@ -124,7 +124,7 @@ export default function WorkOrderActionSection({
                       >
                         {isPlaceholder ? "" : isCompleted ? "✓" : index + 1}
                       </div>
-                      <div className={`mt-1.5 block min-h-[1.75rem] w-full min-w-0 break-keep px-1 text-center text-[11px] leading-4 whitespace-normal ${
+                      <div className={`mt-2 block min-h-[1.5rem] w-full min-w-0 break-keep px-1 text-center text-[11px] leading-4 whitespace-normal ${
                         isCurrent
                           ? `font-semibold ${getStageTextTone(stage!)}`
                           : isUpcoming
