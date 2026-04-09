@@ -87,7 +87,7 @@ export default function MobileDrawer({
               }}
               className="pbp-touch-target pbp-interactive-button mt-3 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white hover:bg-stone-800 active:bg-black"
             >
-              새 작업 추가
+              작업지시서 생성
             </button>
           ) : null}
         </div>
@@ -106,6 +106,7 @@ export default function MobileDrawer({
                 onReorder={onReorder}
                 onDelete={onDelete}
                 canDelete={canDelete}
+                canReorder={Boolean(onReorder)}
               />
             ))}
           </div>

@@ -81,7 +81,7 @@ export default function SidebarContent({
             onClick={onCreate}
             className="pbp-touch-target pbp-interactive-button mt-3.5 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white hover:bg-stone-800 active:bg-black"
           >
-            새 작업 추가
+            작업지시서 생성
           </button>
         ) : null}
       </div>

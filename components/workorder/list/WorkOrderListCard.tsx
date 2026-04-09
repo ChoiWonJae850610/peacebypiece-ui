@@ -54,7 +54,7 @@ export default function WorkOrderListCard({
           <div className={`mt-2 space-y-0.5 text-xs leading-4 ${active ? "text-stone-200" : "text-stone-500"}`}>
             <div className="truncate">{getCategoryPath(workOrder) || "분류 미지정"}</div>
             <div className="truncate">공장: {workOrder.vendor ?? "미지정"}</div>
-            <div>마감: {workOrder.dueDate ?? "미지정"}</div>
+            <div>납기일: {workOrder.dueDate ?? "미지정"}</div>
             <div>첨부파일: {workOrder.filesCount ?? 0}개</div>
           </div>
         </button>
