@@ -37,10 +37,10 @@ const EDITABLE_DISPLAY_CLASS = `${EDITABLE_FIELD_BASE_CLASS} text-sm flex items-
 const EDITABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
 const TABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
 const TABLE_HEADER_TEXT_CLASS = "block w-full min-w-0 max-w-full whitespace-normal break-keep leading-4";
-const MOBILE_LABEL_CLASS = "w-[4rem] shrink-0 text-left text-xs tracking-tight text-stone-500";
-const MOBILE_VALUE_WRAPPER_CLASS = "min-w-0 max-w-full flex-1 basis-0 overflow-hidden text-left";
-const TABLE_HEADER_CELL_CLASS = "min-w-0 overflow-hidden px-2 py-2.5 text-xs font-semibold leading-4 lg:text-sm";
-const TABLE_BODY_CELL_CLASS = "min-w-0 overflow-hidden px-2 py-2 align-middle text-[10px] leading-4 lg:text-[11px]";
+const MOBILE_LABEL_CLASS = "w-[3.35rem] shrink-0 text-left text-[11px] leading-5 tracking-tight text-stone-500";
+const MOBILE_VALUE_WRAPPER_CLASS = "min-w-0 max-w-full flex-1 basis-0 overflow-hidden pl-1 text-left";
+const TABLE_HEADER_CELL_CLASS = "min-w-0 overflow-hidden px-1.5 py-2 text-center text-[11px] font-semibold leading-4 text-stone-600 lg:px-2 lg:text-xs";
+const TABLE_BODY_CELL_CLASS = "min-w-0 overflow-hidden px-1.5 py-2 align-middle text-[10px] leading-4 text-stone-900 lg:px-2 lg:text-[11px]";
 const EDITABLE_VALUE_TEXT_WRAP_CLASS = "block w-full min-w-0 max-w-full whitespace-normal break-words leading-4";
 
 function SectionHeader({
@@ -57,7 +57,7 @@ function SectionHeader({
   rightSlot?: ReactNode;
 }) {
   return (
-    <div className="flex items-start gap-3 border-b border-stone-200 pb-3">
+    <div className="flex items-start gap-3 border-b border-stone-200 pb-1.5">
       <button
         type="button"
         onClick={onToggle}
@@ -66,7 +66,7 @@ function SectionHeader({
       >
         <div className="min-w-0 flex-1 overflow-hidden">
           <div className="text-sm font-semibold leading-5 text-stone-900">{title}</div>
-          <div className="mt-1 block min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs leading-4 text-stone-500 md:text-sm">{summary}</div>
+          <div className="mt-0.5 block min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-[11px] leading-4 text-stone-500 md:text-xs">{summary}</div>
         </div>
         <span
           aria-hidden="true"
@@ -589,13 +589,13 @@ function OrderInfoSection({
   const totals = calculateOrderEntryTotals(orderEntries);
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-stone-50 p-4">
+    <div className="overflow-hidden rounded-2xl bg-stone-50 p-3 md:p-3.5">
       <SectionHeader title="발주 정보" summary={formatOrderSummary(orderEntries)} open={open} onToggle={onToggle} />
       {open ? (
         <>
-          <div className="mt-3 space-y-3 md:hidden">
+          <div className="mt-2 space-y-2.5 md:hidden">
             {orderEntries.map((item, index) => (
-              <div key={item.id} className="max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-white p-3.5">
+              <div key={item.id} className="max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-white p-3">
                 <div className="flex items-start justify-between gap-3 min-w-0">
                   <div className="min-w-0 flex-1 overflow-hidden">
                     <div className="truncate text-sm font-semibold text-stone-900">{item.factory || `발주 ${index + 1}`}</div>
@@ -603,7 +603,7 @@ function OrderInfoSection({
                   </div>
                   <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || `발주 ${index + 1}`} 삭제`} />
                 </div>
-                <div className="mt-3 flex items-center justify-between gap-3">
+                <div className="mt-2 flex items-center justify-between gap-3">
                   <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${getInspectionStatusTone(item.inspectionStatus ?? "발주대기")}`}>{getInspectionStatusLabel(item.inspectionStatus ?? "발주대기")}</span>
                   {canManageInspectionRows ? (
                     item.inspectionStatus === "검수대기" ? (
@@ -613,7 +613,7 @@ function OrderInfoSection({
                     ) : null
                   ) : null}
                 </div>
-                <div className="mt-3 space-y-2">
+                <div className="mt-2.5 space-y-1.5">
                   {[
                     ["구분", "type", item.type, "text"],
                     ["공장", "factory", item.factory, "text"],
@@ -636,7 +636,6 @@ function OrderInfoSection({
                           inputMode={field === 'quantity' || field === 'laborCost' || field === 'lossCost' ? 'numeric' : inputMode as "text" | "decimal"}
                           inputType={field === 'dueDate' ? 'date' : 'text'}
                           options={field === 'type' ? ORDER_TYPE_OPTIONS : field === 'factory' ? factoryOptions : field === 'priority' ? PRIORITY_OPTIONS : undefined}
-                          centered
                           onStartEdit={onStartEdit}
                           onCommit={onCommitEdit}
                           onCancel={onCancelEdit}
@@ -655,8 +654,8 @@ function OrderInfoSection({
               + 발주 추가
             </button>
           </div>
-          <div className="mt-3 hidden max-w-full overflow-hidden md:block">
-            <table className="w-full max-w-full table-fixed text-xs lg:text-sm">
+          <div className="mt-1 hidden max-w-full overflow-hidden md:block">
+            <table className="w-full max-w-full table-fixed text-left">
               <colgroup>
                 <col className="w-[12%]" />
                 <col className="w-[16%]" />
@@ -691,8 +690,8 @@ function OrderInfoSection({
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="laborCost" value={item.laborCost.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="numeric" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="lossCost" value={item.lossCost.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="numeric" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="priority" value={item.priority} options={PRIORITY_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="px-2 py-2 text-center align-middle"><span className={`inline-flex rounded-full px-2 py-1 text-[10px] font-medium lg:text-[11px] ${getInspectionStatusTone(item.inspectionStatus ?? "발주대기")}`}>{getInspectionStatusLabel(item.inspectionStatus ?? "발주대기")}</span></td>
-                    <td className="px-2 py-2 text-center align-middle">
+                    <td className="px-1.5 py-2 text-center align-middle lg:px-2"><span className={`inline-flex rounded-full px-2 py-1 text-[10px] font-medium lg:text-[11px] ${getInspectionStatusTone(item.inspectionStatus ?? "발주대기")}`}>{getInspectionStatusLabel(item.inspectionStatus ?? "발주대기")}</span></td>
+                    <td className="px-1.5 py-2 text-center align-middle lg:px-2">
                       {canManageInspectionRows ? (
                         item.inspectionStatus === "검수대기" ? (
                           <button type="button" onClick={() => onStartInspection(item.id)} className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-[11px] font-medium text-emerald-700">검수 시작</button>
@@ -701,7 +700,7 @@ function OrderInfoSection({
                         ) : <span className="text-[11px] text-stone-400">-</span>
                       ) : <span className="text-[11px] text-stone-400">-</span>}
                     </td>
-                    <td className="px-2 py-2 text-center align-middle">
+                    <td className="px-1.5 py-2 text-center align-middle lg:px-2">
                       <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || `발주 ${rowIndex + 1}`} 삭제`} />
                     </td>
                   </tr>
@@ -784,7 +783,7 @@ function ProductionCompositionSection({
   ].join(' · ');
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-stone-50 p-4">
+    <div className="overflow-hidden rounded-2xl bg-stone-50 p-3 md:p-3.5">
       <SectionHeader title="생산 구성" summary={summary} open={open} onToggle={onToggle} />
       {open ? (
         <div className="mt-3.5 space-y-3.5">
@@ -851,7 +850,7 @@ function MaterialSection({
     : "등록된 원단/부자재가 없습니다.";
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white p-4">
+    <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white p-3 md:p-3.5">
       <SectionHeader
         title="원단 / 부자재"
         summary={summary}
@@ -860,9 +859,9 @@ function MaterialSection({
       />
       {open ? (
         <>
-          <div className="mt-3 space-y-3 md:hidden">
+          <div className="mt-2 space-y-2.5 md:hidden">
             {materials.map((item, index) => (
-              <div key={item.id} className="max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-white p-3.5">
+              <div key={item.id} className="max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-white p-3">
                 <div className="flex items-start justify-between gap-3 min-w-0">
                   <div className="min-w-0 flex-1 overflow-hidden">
                     <div className="truncate text-sm font-semibold text-stone-900">{item.name || `자재 ${index + 1}`}</div>
@@ -870,7 +869,7 @@ function MaterialSection({
                   </div>
                   <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.name || `자재 ${index + 1}`} 삭제`} />
                 </div>
-                <div className="mt-3 space-y-2">
+                <div className="mt-2.5 space-y-1.5">
                   {[
                     ["구분", "type", item.type, "text"],
                     ["자재명", "name", item.name, "text"],
@@ -891,7 +890,6 @@ function MaterialSection({
                           editingValue={editingValue}
                           inputMode={inputMode as "text" | "decimal"}
                           options={field === "type" ? MATERIAL_TYPE_OPTIONS : field === "unit" ? MATERIAL_UNIT_OPTIONS : field === "vendor" ? vendorOptions : undefined}
-                          centered
                           onStartEdit={onStartEdit}
                           onCommit={onCommitEdit}
                           onCancel={onCancelEdit}
@@ -916,8 +914,8 @@ function MaterialSection({
               + 항목 추가
             </button>
           </div>
-          <div className="mt-3 hidden max-w-full overflow-hidden md:block">
-            <table className="w-full max-w-full table-fixed text-xs lg:text-sm">
+          <div className="mt-1 hidden max-w-full overflow-hidden md:block">
+            <table className="w-full max-w-full table-fixed text-left">
               <colgroup>
                 <col className="w-[13%]" />
                 <col className="w-[19%]" />
@@ -949,14 +947,14 @@ function MaterialSection({
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="unit" value={item.unit} options={MATERIAL_UNIT_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="unitCost" value={item.unitCost.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="min-w-0 overflow-hidden px-2 py-2 text-right align-middle text-[10px] font-medium tabular-nums lg:text-[11px]"><span className={TABLE_VALUE_TEXT_CLASS}>{(item.totalCost ?? 0).toLocaleString()}원</span></td>
-                    <td className="px-2 py-2 text-center align-middle">
+                    <td className="min-w-0 overflow-hidden px-1.5 py-2 text-right align-middle text-[10px] font-medium tabular-nums lg:px-2 lg:text-[11px]"><span className={TABLE_VALUE_TEXT_CLASS}>{(item.totalCost ?? 0).toLocaleString()}원</span></td>
+                    <td className="px-1.5 py-2 text-center align-middle lg:px-2">
                       <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.name || `자재 ${rowIndex + 1}`} 삭제`} />
                     </td>
                   </tr>
                 ))}
                 <tr>
-                  <td colSpan={8} className="px-3 pb-2 pt-2">
+                  <td colSpan={8} className="px-1.5 pb-1 pt-1.5 lg:px-2">
                     <button
                       type="button"
                       onClick={onAdd}
@@ -1006,7 +1004,7 @@ function OutsourcingSection({
     : "등록된 외주 공정이 없습니다.";
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white p-4">
+    <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white p-3 md:p-3.5">
       <SectionHeader
         title="외주 공정"
         summary={summary}
@@ -1015,9 +1013,9 @@ function OutsourcingSection({
       />
       {open ? (
         <>
-          <div className="mt-3 space-y-3 md:hidden">
+          <div className="mt-2 space-y-2.5 md:hidden">
             {outsourcing.map((item, index) => (
-              <div key={item.id} className="max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-white p-3.5">
+              <div key={item.id} className="max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-white p-3">
                 <div className="flex items-start justify-between gap-3 min-w-0">
                   <div className="min-w-0 flex-1 overflow-hidden">
                     <div className="truncate text-sm font-semibold text-stone-900">{item.process || `공정 ${index + 1}`}</div>
@@ -1025,7 +1023,7 @@ function OutsourcingSection({
                   </div>
                   <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.process || `공정 ${index + 1}`} 삭제`} />
                 </div>
-                <div className="mt-3 space-y-2">
+                <div className="mt-2.5 space-y-1.5">
                   {[
                     ["공정", "process", item.process, "text"],
                     ["외주처", "vendor", item.vendor, "text"],
@@ -1045,7 +1043,6 @@ function OutsourcingSection({
                           editingValue={editingValue}
                           inputMode={inputMode as "text" | "decimal"}
                           options={field === "process" ? OUTSOURCING_PROCESS_OPTIONS : field === "unitType" ? OUTSOURCING_UNIT_OPTIONS : field === "vendor" ? vendorOptions : undefined}
-                          centered
                           onStartEdit={onStartEdit}
                           onCommit={onCommitEdit}
                           onCancel={onCancelEdit}
@@ -1070,8 +1067,8 @@ function OutsourcingSection({
               + 공정 추가
             </button>
           </div>
-          <div className="mt-3 hidden max-w-full overflow-hidden md:block">
-            <table className="w-full max-w-full table-fixed text-xs lg:text-sm">
+          <div className="mt-1 hidden max-w-full overflow-hidden md:block">
+            <table className="w-full max-w-full table-fixed text-left">
               <colgroup>
                 <col className="w-[21%]" />
                 <col className="w-[21%]" />
@@ -1101,14 +1098,14 @@ function OutsourcingSection({
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="unitType" value={item.unitType} options={OUTSOURCING_UNIT_OPTIONS} wrapText editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="unitCost" value={item.unitCost.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className="min-w-0 overflow-hidden px-2 py-2 text-right align-middle text-[10px] font-medium tabular-nums lg:text-[11px]"><span className={TABLE_VALUE_TEXT_CLASS}>{(item.totalCost ?? 0).toLocaleString()}원</span></td>
-                    <td className="px-2 py-2 text-center align-middle">
+                    <td className="min-w-0 overflow-hidden px-1.5 py-2 text-right align-middle text-[10px] font-medium tabular-nums lg:px-2 lg:text-[11px]"><span className={TABLE_VALUE_TEXT_CLASS}>{(item.totalCost ?? 0).toLocaleString()}원</span></td>
+                    <td className="px-1.5 py-2 text-center align-middle lg:px-2">
                       <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.process || `공정 ${rowIndex + 1}`} 삭제`} />
                     </td>
                   </tr>
                 ))}
                 <tr>
-                  <td colSpan={7} className="px-3 pb-2 pt-2">
+                  <td colSpan={7} className="px-1.5 pb-1 pt-1.5 lg:px-2">
                     <button
                       type="button"
                       onClick={onAdd}
