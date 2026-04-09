@@ -1,5 +1,6 @@
 "use client";
 
+import { createPortal } from "react-dom";
 import type { MouseEvent, ReactNode, RefObject } from "react";
 
 type BaseModalProps = {
@@ -34,7 +35,7 @@ export default function BaseModal({
     }
   };
 
-  return (
+  const modalContent = (
     <div className="fixed inset-0 z-[90]" role="dialog" aria-modal="true" aria-labelledby={titleId}>
       <div className={`absolute inset-0 pbp-overlay-enter ${overlayClassName}`} aria-hidden="true" />
       <div className="absolute inset-0 md:p-6" onClick={handleBackdropClick}>
@@ -53,4 +54,8 @@ export default function BaseModal({
       </div>
     </div>
   );
+
+  if (typeof document === "undefined") return modalContent;
+
+  return createPortal(modalContent, document.body);
 }

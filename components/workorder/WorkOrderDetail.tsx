@@ -789,9 +789,6 @@ function OrderInfoSection({
                   </div>
                   <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || `발주 ${index + 1}`} 삭제`} />
                 </div>
-                <div className="mt-2 flex items-center justify-start gap-2">
-                  <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${getInspectionStatusTone(item.inspectionStatus ?? "발주대기")}`}>{getInspectionStatusLabel(item.inspectionStatus ?? "발주대기")}</span>
-                </div>
                 <div className="mt-2 space-y-1.5">
                   {[
                     ["구분", "type", item.type, "text"],
