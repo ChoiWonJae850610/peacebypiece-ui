@@ -577,45 +577,58 @@ function OrderInspectionModal({
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const pendingEntries = orderEntries.filter((item) => item.inspectionStatus !== "검수완료");
+  const availableEntries = pendingEntries.length > 0 ? pendingEntries : orderEntries;
   const [selectedFactory, setSelectedFactory] = useState("");
   const [selectedOrderId, setSelectedOrderId] = useState("");
   const [inspectionMemo, setInspectionMemo] = useState("");
+  const [appliedQuantityInput, setAppliedQuantityInput] = useState("");
 
   useModalEnvironment({ open, dialogRef, onClose });
+
+  const factoryOptions = Array.from(new Set(availableEntries.map((item) => item.factory || DEFAULT_FACTORY_OPTION)));
+  const resolvedFactory = factoryOptions.includes(selectedFactory) ? selectedFactory : (factoryOptions[0] ?? "");
+  const filteredEntries = availableEntries.filter((item) => (item.factory || DEFAULT_FACTORY_OPTION) === resolvedFactory);
+  const selectedEntry = filteredEntries.find((item) => item.id === selectedOrderId) ?? filteredEntries[0] ?? null;
 
   useEffect(() => {
     if (!open) {
       setSelectedFactory("");
       setSelectedOrderId("");
       setInspectionMemo("");
+      setAppliedQuantityInput("");
       return;
     }
 
-    const firstEntry = pendingEntries[0] ?? orderEntries[0];
-    if (!selectedFactory && !selectedOrderId) {
-      setSelectedFactory(firstEntry?.factory || DEFAULT_FACTORY_OPTION);
-      setSelectedOrderId(firstEntry?.id || "");
+    if (!resolvedFactory) return;
+    if (selectedFactory !== resolvedFactory) {
+      setSelectedFactory(resolvedFactory);
     }
-  }, [open, pendingEntries, orderEntries, currentInventoryQuantity, selectedFactory, selectedOrderId]);
+    if (!selectedEntry) return;
+    if (selectedOrderId !== selectedEntry.id) {
+      setSelectedOrderId(selectedEntry.id);
+    }
+  }, [open, resolvedFactory, selectedFactory, selectedEntry, selectedOrderId]);
 
-  const factoryOptions = Array.from(new Set((pendingEntries.length > 0 ? pendingEntries : orderEntries).map((item) => item.factory || DEFAULT_FACTORY_OPTION)));
-  const filteredEntries = (pendingEntries.length > 0 ? pendingEntries : orderEntries).filter((item) => (item.factory || DEFAULT_FACTORY_OPTION) === selectedFactory);
-  const selectedEntry = filteredEntries.find((item) => item.id === selectedOrderId) ?? filteredEntries[0] ?? null;
+  useEffect(() => {
+    if (!open || !selectedEntry) return;
+    setAppliedQuantityInput(String(Math.max(0, Number(selectedEntry.quantity) || 0)));
+  }, [open, selectedEntry?.id]);
 
   const handleFactoryChange = (factory: string) => {
     setSelectedFactory(factory);
-    const nextEntries = (pendingEntries.length > 0 ? pendingEntries : orderEntries).filter((item) => (item.factory || DEFAULT_FACTORY_OPTION) === factory);
+    const nextEntries = availableEntries.filter((item) => (item.factory || DEFAULT_FACTORY_OPTION) === factory);
     setSelectedOrderId(nextEntries[0]?.id || "");
   };
 
-  const inboundQuantity = Math.max(0, Number(selectedEntry?.quantity) || 0);
-  const nextInventoryQuantity = Math.max(0, Number(currentInventoryQuantity) || 0) + inboundQuantity;
+  const orderedQuantity = Math.max(0, Number(selectedEntry?.quantity) || 0);
+  const appliedQuantity = Math.max(0, toNumber(appliedQuantityInput));
+  const nextInventoryQuantity = Math.max(0, Number(currentInventoryQuantity) || 0) + appliedQuantity;
 
   const handleApply = () => {
     if (!selectedEntry) return;
     onApply({
       orderEntryId: selectedEntry.id,
-      inboundQuantity,
+      inboundQuantity: appliedQuantity,
       nextInventoryQuantity,
       memo: inspectionMemo,
     });
@@ -627,7 +640,7 @@ function OrderInspectionModal({
       <ModalHeader
         titleId="order-inspection-modal-title"
         title="검수 진행"
-        description="공장을 선택한 뒤 발주 수량 기준으로 재고 반영값을 확인하고 검수 메모와 함께 완료 처리합니다."
+        description="공장을 선택한 뒤 실제 검수 반영 수량을 입력하고 메모와 함께 완료 처리합니다."
         onClose={onClose}
       />
       <ModalBody>
@@ -679,13 +692,18 @@ function OrderInspectionModal({
                   <span className="text-xs text-stone-500">현재 {currentInventoryQuantity.toLocaleString()}장</span>
                 </div>
                 <div className="mt-2 text-lg font-semibold text-stone-900">{nextInventoryQuantity.toLocaleString()}장</div>
-                <div className="mt-1 text-xs text-stone-500">현재 재고 {currentInventoryQuantity.toLocaleString()}장 + 발주 수량 {inboundQuantity.toLocaleString()}장</div>
+                <div className="mt-1 text-xs text-stone-500">현재 재고 {currentInventoryQuantity.toLocaleString()}장 + 실제 반영 수량 {appliedQuantity.toLocaleString()}장</div>
               </div>
-              <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
+              <label className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
                 <div className="text-xs text-stone-500">검수 반영 수량</div>
-                <div className="mt-2 text-lg font-semibold text-stone-900">{inboundQuantity.toLocaleString()}장</div>
-                <div className="mt-1 text-xs text-stone-500">선택된 발주행 수량 기준으로 자동 반영됩니다.</div>
-              </div>
+                <input
+                  value={appliedQuantityInput}
+                  onChange={(event) => setAppliedQuantityInput(normalizeEditingValue("quantity", event.target.value))}
+                  inputMode="numeric"
+                  className="mt-2 h-10 w-full rounded-xl border border-stone-300 bg-white px-3 text-sm text-stone-900 outline-none focus:border-stone-400"
+                />
+                <div className="mt-1 text-xs text-stone-500">발주 수량 {orderedQuantity.toLocaleString()}장 기준이며, 불량·누락 수량만큼 직접 조정할 수 있습니다.</div>
+              </label>
             </div>
 
             <label className="block rounded-2xl border border-stone-200 bg-white p-3">

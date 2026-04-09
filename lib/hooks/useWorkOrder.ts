@@ -33,17 +33,15 @@ function isUnselectedValue(value: string | undefined | null) {
 
 function isEmptyOrderEntry(entry: NonNullable<WorkOrder["orderEntries"]>[number]) {
   const factory = String(entry.factory ?? "").trim();
-  const dueDate = String(entry.dueDate ?? "").trim();
-  return isUnselectedValue(factory) || !dueDate;
+  return isUnselectedValue(factory) && (Number(entry.quantity) || 0) === 0;
 }
 
 function isEmptyMaterialRow(material: WorkOrder["materials"][number]) {
-  const name = String(material.name ?? "").trim();
-  return isUnselectedValue(material.vendor) && isUnselectedValue(material.type) && (!name || name === "새 자재") && (Number(material.quantity) || 0) === 0 && (Number(material.unitCost) || 0) === 0;
+  return (Number(material.quantity) || 0) === 0;
 }
 
 function isEmptyOutsourcingRow(item: WorkOrder["outsourcing"][number]) {
-  return isUnselectedValue(item.vendor) && isUnselectedValue(item.process) && (Number(item.quantity) || 0) === 0 && (Number(item.unitCost) || 0) === 0;
+  return (Number(item.quantity) || 0) === 0;
 }
 
 function pruneDraftRows(workOrder: WorkOrder): WorkOrder {
@@ -120,7 +118,7 @@ export function useWorkOrder() {
   const canChangeManager = canManageWorkOrderManager(currentRoles, currentWorkflowState);
   const currentDisplayStage = getDisplayStageFromWorkflowState(currentWorkflowState);
   const visibleStages = VISIBLE_STAGES;
-  const isReviewRequestLocked = currentWorkflowState === "검토요청";
+  const isReviewRequestLocked = currentWorkflowState !== "작성중";
   const canUploadOfficialAttachments = canUploadOfficialAttachmentsByRoles(currentRoles) && !isReviewRequestLocked;
 
   const workOrderList: WorkOrderListItem[] = useMemo(() => workOrders.map(createWorkOrderListItem), [workOrders]);
@@ -363,7 +361,7 @@ export function useWorkOrder() {
   };
 
   const handleOpenManagerAssignModal = () => {
-    if (!canChangeManager) return;
+    if (!canChangeManager || isReviewRequestLocked) return;
     setManagerAssignModalOpen(true);
   };
 
@@ -372,7 +370,7 @@ export function useWorkOrder() {
   };
 
   const handleChangeManager = (managerId: string) => {
-    if (!canChangeManager) return;
+    if (!canChangeManager || isReviewRequestLocked) return;
     const nextManager = users.find((user) => user.id === managerId);
     if (!nextManager) return;
 
@@ -579,7 +577,7 @@ export function useWorkOrder() {
   };
 
   const handleUpdateSelectedWorkOrder = useCallback((patch: Partial<WorkOrder>) => {
-    const hasLockedChanges = Boolean(patch.orderEntries || patch.materials || patch.outsourcing || patch.attachments);
+    const hasLockedChanges = Object.keys(patch).some((key) => key !== "memoThreads" && key !== "lastSavedAt");
     if (isReviewRequestLocked && hasLockedChanges) {
       return;
     }
