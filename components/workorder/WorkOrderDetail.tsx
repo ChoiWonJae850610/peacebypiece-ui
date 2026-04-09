@@ -12,6 +12,7 @@ import { getStageTone } from "@/lib/constants/workflow";
 import { CATEGORY1_OPTIONS, CATEGORY2_OPTIONS_MAP, CATEGORY3_OPTIONS_MAP, DEFAULT_BASIC_YEAR, DEFAULT_FACTORY_OPTION, DEFAULT_MATERIAL_TYPE, DEFAULT_MATERIAL_UNIT, DEFAULT_ORDER_TYPE, DEFAULT_OUTSOURCING_PROCESS, DEFAULT_OUTSOURCING_UNIT, DEFAULT_PARTNER_OPTION, FACTORY_OPTIONS, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS, ORDER_TYPE_OPTIONS, OUTSOURCING_PROCESS_OPTIONS, OUTSOURCING_UNIT_OPTIONS, PARTNER_OPTIONS, PRIORITY_OPTIONS, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
 import type { DisplayStage } from "@/types/workflow";
 import { toDisplayValue } from "@/lib/utils/display";
+import { getWorkOrderDisplayTitle } from "@/lib/utils/workorder";
 import type { Attachment, Material, MemoThread, OrderEntry, OrderInspectionStatus, Outsourcing, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
 
 type RowValue = string | number | null | undefined;
@@ -1721,7 +1722,7 @@ export default function WorkOrderDetail({
   return (
     <div className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm md:p-6">
       <WorkOrderHeaderSection
-        title={workOrder.title}
+        title={getWorkOrderDisplayTitle(workOrder)}
         summaryText={formatBasicSummary(basicInfo)}
         managerName={workOrder.manager || "-"}
         currentInventoryQuantity={currentInventoryQuantity}

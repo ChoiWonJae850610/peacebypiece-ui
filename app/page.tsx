@@ -5,6 +5,7 @@ import ToastMessage from "@/components/common/ToastMessage";
 import AttachmentPreviewModal from "@/components/common/modal/AttachmentPreviewModal";
 import AdminPanelModal from "@/components/common/modal/AdminPanelModal";
 import AttachmentDeleteConfirmModal from "@/components/common/modal/AttachmentDeleteConfirmModal";
+import CreateWorkOrderModal from "@/components/common/modal/CreateWorkOrderModal";
 import InventoryEditor from "@/components/common/modal/InventoryEditor";
 import InventoryLogModal from "@/components/common/modal/InventoryLogModal";
 import ManagerAssignModal from "@/components/common/modal/ManagerAssignModal";
@@ -35,6 +36,8 @@ export default function Home() {
     setInventoryEditorOpen,
     permissionModalOpen,
     setPermissionModalOpen,
+    createWorkOrderModalOpen,
+    setCreateWorkOrderModalOpen,
     adminPanelModalOpen,
     setAdminPanelModalOpen,
     managerAssignModalOpen,
@@ -150,7 +153,7 @@ export default function Home() {
           selectedId={selectedId}
           workflowStateById={workflowStateById}
           onSelect={handleSelectWorkOrder}
-          onCreate={handleCreateWorkOrder}
+          onCreate={() => setCreateWorkOrderModalOpen(true)}
           onReorder={(id) => {
             handleReorderWorkOrder(id);
             setDrawerOpen(false);
@@ -170,7 +173,7 @@ export default function Home() {
               selectedId={selectedId}
               workflowStateById={workflowStateById}
               onSelect={handleSelectWorkOrder}
-              onCreate={handleCreateWorkOrder}
+              onCreate={() => setCreateWorkOrderModalOpen(true)}
               onOpenSettings={() => setPermissionModalOpen(true)}
               onOpenAdminPanel={isAdmin ? () => setAdminPanelModalOpen(true) : undefined}
               onReorder={handleReorderWorkOrder}
@@ -286,6 +289,12 @@ export default function Home() {
         showRecentLogs={isAdmin}
         onApply={handleInventoryApply}
       />
+      <CreateWorkOrderModal
+        open={createWorkOrderModalOpen}
+        onClose={() => setCreateWorkOrderModalOpen(false)}
+        onCreate={handleCreateWorkOrder}
+      />
+
       <PermissionModal
         open={permissionModalOpen}
         onClose={() => setPermissionModalOpen(false)}

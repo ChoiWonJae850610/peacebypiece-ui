@@ -22,6 +22,7 @@ import {
 } from "@/lib/workorder/history";
 import { addMemoReply, addMemoThread, cloneWorkOrderForReorder, createNewWorkOrder, applyInventoryAdjustment, appendAttachments, appendMemoAttachmentsToReply, appendMemoAttachmentsToThread, promoteAttachmentToOfficial, removeAttachment, updateWorkflowState, updateWorkOrderManager } from "@/lib/workorder/actions";
 import { createWorkOrderListItem, calculateWorkOrderCosts } from "@/lib/workorder/selectors";
+import { getWorkOrderDisplayTitle } from "@/lib/utils/workorder";
 import { canEditInventoryForWorkflow, canManageWorkOrderManager, deriveWorkflowStateFromOrderEntries, getAvailableWorkflowActions } from "@/lib/workorder/workflow";
 import type { Attachment, HistoryLog, InventoryLog, MemoAttachmentPayload, MemoReply, MemoThread, UserProfile, WorkOrder, WorkOrderListItem, WorkflowAction } from "@/types/workorder";
 import type { RoleType } from "@/types/permission";
@@ -64,6 +65,7 @@ export function useWorkOrder() {
   const [outsourcingOpen, setOutsourcingOpen] = useState(false);
   const [inventoryEditorOpen, setInventoryEditorOpen] = useState(false);
   const [permissionModalOpen, setPermissionModalOpen] = useState(false);
+  const [createWorkOrderModalOpen, setCreateWorkOrderModalOpen] = useState(false);
   const [managerAssignModalOpen, setManagerAssignModalOpen] = useState(false);
   const [inventoryLogModalOpen, setInventoryLogModalOpen] = useState(false);
   const [adminPanelModalOpen, setAdminPanelModalOpen] = useState(false);
@@ -237,13 +239,18 @@ export function useWorkOrder() {
 
   const canDeleteWorkOrder = (workflowState: WorkOrder["workflowState"]) => workflowState === "작성중" || workflowState === "검토요청";
 
-  const handleCreateWorkOrder = () => {
+  const handleCreateWorkOrder = (payload?: { title: string; category1: string; category2: string; category3: string; season: string }) => {
     if (!canCreateWorkOrder) return;
     const newWorkOrder = createNewWorkOrder(workOrders.length + 1, {
       managerName: currentUser.name,
       managerId: currentUser.id,
       managerRole: currentUser.role,
       createdAt: nowLabel(),
+      title: payload?.title,
+      category1: payload?.category1,
+      category2: payload?.category2,
+      category3: payload?.category3,
+      season: payload?.season,
     });
     setWorkOrders((prev) => [newWorkOrder, ...prev]);
     setSelectedId(newWorkOrder.id);
@@ -253,6 +260,7 @@ export function useWorkOrder() {
       createCreationHistoryLog(currentUser.name, newWorkOrder.id),
       ...prev,
     ]);
+    setCreateWorkOrderModalOpen(false);
   };
 
   const handleReorderWorkOrder = (workOrderId: string) => {
@@ -274,10 +282,10 @@ export function useWorkOrder() {
     setLastSavedAt(nextWorkOrder.lastSavedAt);
     setSaveStatus("dirty");
     setHistoryLogs((prev) => [
-      createReorderHistoryLog(currentUser.name, nextWorkOrder.id, { sourceTitle: sourceWorkOrder.title, nextTitle: nextWorkOrder.title }),
+      createReorderHistoryLog(currentUser.name, nextWorkOrder.id, { sourceTitle: getWorkOrderDisplayTitle(sourceWorkOrder), nextTitle: getWorkOrderDisplayTitle(nextWorkOrder) }),
       ...prev,
     ]);
-    setToastMessage(`리오더 작업지시서 "${nextWorkOrder.title}"가 생성되었습니다.`);
+    setToastMessage(`리오더 작업지시서 "${getWorkOrderDisplayTitle(nextWorkOrder)}"가 생성되었습니다.`);
   };
 
   const applyWorkflowAction = (action: WorkflowAction) => {
@@ -635,6 +643,8 @@ export function useWorkOrder() {
     setInventoryEditorOpen,
     permissionModalOpen,
     setPermissionModalOpen,
+    createWorkOrderModalOpen,
+    setCreateWorkOrderModalOpen,
     managerAssignModalOpen,
     setManagerAssignModalOpen,
     inventoryLogModalOpen,

@@ -1,4 +1,5 @@
 import { isOfficialAttachment } from "@/lib/permissions/attachments";
+import { getWorkOrderDisplayTitle } from "@/lib/utils/workorder";
 import type { WorkOrder, WorkOrderListItem } from "@/types/workorder";
 
 
@@ -7,7 +8,7 @@ export function createWorkOrderListItem(workOrder: WorkOrder): WorkOrderListItem
 
   return {
     id: workOrder.id,
-    title: workOrder.title,
+    title: getWorkOrderDisplayTitle(workOrder),
     category1: workOrder.category1,
     category2: workOrder.category2,
     category3: workOrder.category3,

@@ -31,3 +31,10 @@ export function getWorkOrderCardTone(state: string) {
       return "bg-stone-100 text-stone-700";
   }
 }
+
+
+export function getWorkOrderDisplayTitle(workOrder: { title?: string | null; baseTitle?: string | null; revision?: number | null }) {
+  const baseTitle = String(workOrder.baseTitle ?? workOrder.title ?? "").trim() || "새 작업지시서";
+  const revision = Number(workOrder.revision ?? 1);
+  return revision > 1 ? `${baseTitle} ${revision}차` : baseTitle;
+}

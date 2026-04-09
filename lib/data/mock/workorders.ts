@@ -8,6 +8,9 @@ const workOrders: WorkOrder[] = [
   {
     id: "wo-1",
     title: "코튼 레이어드 반팔",
+    baseTitle: "코튼 레이어드 반팔",
+    revision: 1,
+    reorderRootId: "wo-1",
     category1: "의류",
     category2: "상의",
     category3: "반팔",
@@ -73,6 +76,9 @@ const workOrders: WorkOrder[] = [
   {
     id: "wo-2",
     title: "워싱 데님 팬츠",
+    baseTitle: "워싱 데님 팬츠",
+    revision: 1,
+    reorderRootId: "wo-2",
     category1: "의류",
     category2: "하의",
     category3: "데님",
@@ -128,6 +134,9 @@ const workOrders: WorkOrder[] = [
   {
     id: "wo-3",
     title: "미니 숄더백",
+    baseTitle: "미니 숄더백",
+    revision: 1,
+    reorderRootId: "wo-3",
     category1: "가방",
     category2: "숄더백",
     category3: "미니백",

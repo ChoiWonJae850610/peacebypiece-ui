@@ -7,14 +7,25 @@ export function createNewWorkOrder(nextIndex: number, payload: {
   managerId: string;
   managerRole: RoleType;
   createdAt: string;
+  title?: string;
+  category1?: string;
+  category2?: string;
+  category3?: string;
+  season?: string;
 }): WorkOrder {
+  const title = String(payload.title ?? `새 작업지시서 ${nextIndex}`).trim() || `새 작업지시서 ${nextIndex}`;
+  const id = createAttachmentId("wo");
+
   return {
-    id: createAttachmentId("wo"),
-    title: `새 작업지시서 ${nextIndex}`,
-    category1: "의류",
-    category2: "미분류",
-    category3: "미분류",
-    season: "ALL",
+    id,
+    title,
+    baseTitle: title,
+    revision: 1,
+    reorderRootId: id,
+    category1: payload.category1 ?? "의류",
+    category2: payload.category2 ?? "미분류",
+    category3: payload.category3 ?? "미분류",
+    season: payload.season ?? "ALL",
     priority: "보통",
     vendor: "미정",
     manager: payload.managerName,
@@ -106,8 +117,6 @@ export function addMemoReply(workOrders: WorkOrder[], workOrderId: string, threa
     };
   });
 }
-
-
 
 export function appendMemoAttachmentsToThread(
   workOrders: WorkOrder[],
@@ -206,32 +215,45 @@ function cloneAttachments(attachments: Attachment[]): Attachment[] {
   }));
 }
 
-function extractReorderBaseTitle(title: string): string {
-  return title.replace(/\s+\d+차$/, "").trim();
+function resolveBaseTitle(workOrder: WorkOrder): string {
+  return String(workOrder.baseTitle ?? workOrder.title ?? "").trim() || "새 작업지시서";
 }
 
-function getNextReorderTitle(sourceTitle: string, workOrders: WorkOrder[]): string {
-  const baseTitle = extractReorderBaseTitle(sourceTitle);
-  const escapedBaseTitle = baseTitle.replace(/[.*+?^${}()|[\]\\]/g, "\$&");
-  const pattern = new RegExp(`^${escapedBaseTitle}(?:\s+(\d+)차)?$`);
-  let maxRound = 1;
-
-  for (const item of workOrders) {
-    const matched = item.title.match(pattern);
-    if (!matched) continue;
-    const round = matched[1] ? Number(matched[1]) : 1;
-    if (round > maxRound) maxRound = round;
-  }
-
-  return `${baseTitle} ${maxRound + 1}차`;
+function resolveRootId(workOrder: WorkOrder): string {
+  return workOrder.reorderRootId || workOrder.id;
 }
 
-export function cloneWorkOrderForReorder(workOrders: WorkOrder[], sourceWorkOrder: WorkOrder, payload: { createdAt: string; createdById: string; createdByRole: RoleType; managerId: string | null; managerName: string; }) : WorkOrder {
-  const title = getNextReorderTitle(sourceWorkOrder.title, workOrders);
+function resolveDisplayedSourceTitle(workOrder: WorkOrder): string {
+  const baseTitle = resolveBaseTitle(workOrder);
+  const revision = Number(workOrder.revision ?? 1);
+  return revision > 1 ? `${baseTitle} ${revision}차` : baseTitle;
+}
+
+function getNextRevision(workOrders: WorkOrder[], sourceWorkOrder: WorkOrder): number {
+  const rootId = resolveRootId(sourceWorkOrder);
+  return workOrders.reduce((maxValue, item) => {
+    if (resolveRootId(item) !== rootId) return maxValue;
+    const revision = Number(item.revision ?? 1);
+    return revision > maxValue ? revision : maxValue;
+  }, 1) + 1;
+}
+
+export function cloneWorkOrderForReorder(
+  workOrders: WorkOrder[],
+  sourceWorkOrder: WorkOrder,
+  payload: { createdAt: string; createdById: string; createdByRole: RoleType; managerId: string | null; managerName: string; },
+): WorkOrder {
+  const baseTitle = resolveBaseTitle(sourceWorkOrder);
+  const revision = getNextRevision(workOrders, sourceWorkOrder);
+  const title = baseTitle;
+
   return {
     ...sourceWorkOrder,
     id: nextId("wo"),
     title,
+    baseTitle,
+    revision,
+    reorderRootId: resolveRootId(sourceWorkOrder),
     managerId: payload.managerId,
     manager: payload.managerName,
     createdById: payload.createdById,
@@ -245,6 +267,6 @@ export function cloneWorkOrderForReorder(workOrders: WorkOrder[], sourceWorkOrde
     memoThreads: [],
     lastSavedAt: payload.createdAt,
     reorderedFromId: sourceWorkOrder.id,
-    reorderedFromTitle: sourceWorkOrder.title,
+    reorderedFromTitle: resolveDisplayedSourceTitle(sourceWorkOrder),
   };
 }
