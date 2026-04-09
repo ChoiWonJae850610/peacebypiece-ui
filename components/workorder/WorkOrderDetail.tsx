@@ -37,10 +37,11 @@ const EDITABLE_DISPLAY_CLASS = `${EDITABLE_FIELD_BASE_CLASS} text-sm flex items-
 const EDITABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
 const TABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
 const TABLE_HEADER_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
-const MOBILE_LABEL_CLASS = "w-[4.75rem] shrink-0 text-right text-xs tracking-tight text-stone-500";
-const MOBILE_VALUE_WRAPPER_CLASS = "min-w-0 max-w-full flex-1 basis-0 overflow-hidden text-right";
-const TABLE_HEADER_CELL_CLASS = "min-w-0 overflow-hidden px-3 py-3 text-xs font-medium";
-const TABLE_BODY_CELL_CLASS = "min-w-0 overflow-hidden px-3 py-2 align-middle";
+const MOBILE_LABEL_CLASS = "w-[4.75rem] shrink-0 text-left text-xs tracking-tight text-stone-500";
+const MOBILE_VALUE_WRAPPER_CLASS = "min-w-0 max-w-full flex-1 basis-0 overflow-hidden text-center";
+const TABLE_HEADER_CELL_CLASS = "min-w-0 overflow-hidden px-2 py-3 text-[11px] font-medium leading-4 lg:text-[11px]";
+const TABLE_BODY_CELL_CLASS = "min-w-0 overflow-hidden px-2 py-2 align-middle text-[11px] leading-4 lg:text-[11px]";
+const EDITABLE_VALUE_TEXT_WRAP_CLASS = "block w-full min-w-0 max-w-full whitespace-normal break-words leading-4";
 
 function SectionHeader({
   title,
@@ -247,6 +248,8 @@ function EditableValue({
   inputType = "text",
   alignRight,
   options,
+  wrapText,
+  centered,
   onStartEdit,
   onCommit,
   onCancel,
@@ -261,6 +264,8 @@ function EditableValue({
   inputType?: "text" | "date";
   alignRight?: boolean;
   options?: SelectOption;
+  wrapText?: boolean;
+  centered?: boolean;
   onStartEdit: (section: EditableSectionKey, rowId: string, field: string, value: string) => void;
   onCommit: (nextValue?: string) => void;
   onCancel: () => void;
@@ -297,7 +302,7 @@ function EditableValue({
         onChange={(event) => onCommit(event.target.value)}
         onBlur={(event) => onCommit(event.target.value)}
         onKeyDown={handleSelectKeyDown}
-        className={`${EDITABLE_SELECT_CLASS} ${alignRight ? "text-right tabular-nums" : "text-left"}`}
+        className={`${EDITABLE_SELECT_CLASS} ${alignRight ? "text-right tabular-nums" : centered ? "text-center" : "text-left"}`}
       >
         {options.map((option) => (
           <option key={option} value={option}>
@@ -319,7 +324,7 @@ function EditableValue({
         onFocus={(event) => event.currentTarget.select()}
         onBlur={() => onCommit()}
         onKeyDown={handleInputKeyDown}
-        className={`${EDITABLE_INPUT_CLASS} ${alignRight ? "text-right tabular-nums" : "text-left"}`}
+        className={`${EDITABLE_INPUT_CLASS} ${alignRight ? "text-right tabular-nums" : centered ? "text-center" : "text-left"}`}
       />
     );
   }
@@ -328,9 +333,9 @@ function EditableValue({
     <button
       type="button"
       onClick={() => onStartEdit(section, rowId, field, getEditingInitialValue(field, value))}
-      className={`${EDITABLE_DISPLAY_CLASS} ${alignRight ? "justify-end text-right tabular-nums" : "text-left"}`}
+      className={`${EDITABLE_DISPLAY_CLASS} ${alignRight ? "justify-end text-right tabular-nums" : centered ? "justify-center text-center" : "text-left"}`}
     >
-      <span className={EDITABLE_VALUE_TEXT_CLASS}>{getDisplayValue(field, value) || "-"}</span>
+      <span className={wrapText ? EDITABLE_VALUE_TEXT_WRAP_CLASS : EDITABLE_VALUE_TEXT_CLASS}>{getDisplayValue(field, value) || "-"}</span>
     </button>
   );
 }
@@ -631,7 +636,7 @@ function OrderInfoSection({
                           inputMode={field === 'quantity' || field === 'laborCost' || field === 'lossCost' ? 'numeric' : inputMode as "text" | "decimal"}
                           inputType={field === 'dueDate' ? 'date' : 'text'}
                           options={field === 'type' ? ORDER_TYPE_OPTIONS : field === 'factory' ? factoryOptions : field === 'priority' ? PRIORITY_OPTIONS : undefined}
-                          alignRight
+                          centered
                           onStartEdit={onStartEdit}
                           onCommit={onCommitEdit}
                           onCancel={onCancelEdit}
@@ -671,7 +676,7 @@ function OrderInfoSection({
                       key={`${header}-${index}`}
                       className={`${TABLE_HEADER_CELL_CLASS} ${header === "수량" || header === "공임비" || header === "로스비" ? "text-right" : header === "" || header === "검수" || header === "액션" ? "text-center" : "text-left"}`}
                     >
-                      <span className={`${TABLE_HEADER_TEXT_CLASS} break-keep`}>{header}</span>
+                      <span className="block w-full whitespace-normal break-keep leading-4">{header}</span>
                     </th>
                   ))}
                 </tr>
@@ -679,8 +684,8 @@ function OrderInfoSection({
               <tbody>
                 {orderEntries.map((item, rowIndex) => (
                   <tr key={item.id} className="border-b border-stone-100">
-                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="type" value={item.type} options={ORDER_TYPE_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="factory" value={item.factory} options={factoryOptions} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="type" value={item.type} options={ORDER_TYPE_OPTIONS} wrapText editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="factory" value={item.factory} options={factoryOptions} wrapText editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="dueDate" value={item.dueDate} editingCell={editingCell} editingValue={editingValue} inputType="date" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="numeric" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="laborCost" value={item.laborCost.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="numeric" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
@@ -886,7 +891,7 @@ function MaterialSection({
                           editingValue={editingValue}
                           inputMode={inputMode as "text" | "decimal"}
                           options={field === "type" ? MATERIAL_TYPE_OPTIONS : field === "unit" ? MATERIAL_UNIT_OPTIONS : field === "vendor" ? vendorOptions : undefined}
-                          alignRight
+                          centered
                           onStartEdit={onStartEdit}
                           onCommit={onCommitEdit}
                           onCancel={onCancelEdit}
@@ -930,7 +935,7 @@ function MaterialSection({
                       key={`${header}-${index}`}
                       className={`${TABLE_HEADER_CELL_CLASS} ${header === "수량" || header === "단가" || header === "금액" ? "text-right" : header === "" ? "text-center" : "text-left"}`}
                     >
-                      <span className={`${TABLE_HEADER_TEXT_CLASS} break-keep`}>{header}</span>
+                      <span className="block w-full whitespace-normal break-keep leading-4">{header}</span>
                     </th>
                   ))}
                 </tr>
@@ -938,9 +943,9 @@ function MaterialSection({
               <tbody>
                 {materials.map((item, rowIndex) => (
                   <tr key={item.id} className="border-b border-stone-100">
-                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="type" value={item.type} options={MATERIAL_TYPE_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="name" value={item.name} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="vendor" value={item.vendor} options={vendorOptions} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="type" value={item.type} options={MATERIAL_TYPE_OPTIONS} wrapText editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="name" value={item.name} wrapText editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="vendor" value={item.vendor} options={vendorOptions} wrapText editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="unit" value={item.unit} options={MATERIAL_UNIT_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="material" rowId={item.id} field="unitCost" value={item.unitCost.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
@@ -1040,7 +1045,7 @@ function OutsourcingSection({
                           editingValue={editingValue}
                           inputMode={inputMode as "text" | "decimal"}
                           options={field === "process" ? OUTSOURCING_PROCESS_OPTIONS : field === "unitType" ? OUTSOURCING_UNIT_OPTIONS : field === "vendor" ? vendorOptions : undefined}
-                          alignRight
+                          centered
                           onStartEdit={onStartEdit}
                           onCommit={onCommitEdit}
                           onCancel={onCancelEdit}
@@ -1083,7 +1088,7 @@ function OutsourcingSection({
                       key={`${header}-${index}`}
                       className={`${TABLE_HEADER_CELL_CLASS} ${header === "수량" || header === "단가" || header === "금액" ? "text-right" : header === "" ? "text-center" : "text-left"}`}
                     >
-                      <span className={`${TABLE_HEADER_TEXT_CLASS} break-keep`}>{header}</span>
+                      <span className="block w-full whitespace-normal break-keep leading-4">{header}</span>
                     </th>
                   ))}
                 </tr>
@@ -1091,10 +1096,10 @@ function OutsourcingSection({
               <tbody>
                 {outsourcing.map((item, rowIndex) => (
                   <tr key={item.id} className="border-b border-stone-100">
-                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} options={OUTSOURCING_PROCESS_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="vendor" value={item.vendor} options={vendorOptions} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} options={OUTSOURCING_PROCESS_OPTIONS} wrapText editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="vendor" value={item.vendor} options={vendorOptions} wrapText editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
-                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="unitType" value={item.unitType} options={OUTSOURCING_UNIT_OPTIONS} editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
+                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="unitType" value={item.unitType} options={OUTSOURCING_UNIT_OPTIONS} wrapText editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="unitCost" value={item.unitCost.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} /></td>
                     <td className="min-w-0 overflow-hidden px-3 py-2 text-right align-middle font-medium tabular-nums"><span className={TABLE_VALUE_TEXT_CLASS}>{(item.totalCost ?? 0).toLocaleString()}원</span></td>
                     <td className="px-3 py-2 text-center align-middle">
