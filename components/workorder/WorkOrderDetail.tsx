@@ -697,12 +697,16 @@ function OrderInspectionModal({
               <label className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
                 <div className="text-xs text-stone-500">검수 반영 수량</div>
                 <input
+                  type="number"
+                  min={0}
+                  step={1}
                   value={appliedQuantityInput}
-                  onChange={(event) => setAppliedQuantityInput(normalizeEditingValue("quantity", event.target.value))}
+                  onChange={(event) => setAppliedQuantityInput(event.target.value)}
                   inputMode="numeric"
+                  placeholder="검수 반영 수량 입력"
                   className="mt-2 h-10 w-full rounded-xl border border-stone-300 bg-white px-3 text-sm text-stone-900 outline-none focus:border-stone-400"
                 />
-                <div className="mt-1 text-xs text-stone-500">발주 수량 {orderedQuantity.toLocaleString()}장 기준이며, 불량·누락 수량만큼 직접 조정할 수 있습니다.</div>
+                <div className="mt-1 text-xs text-stone-500">발주 수량 {orderedQuantity.toLocaleString()}장 기준이며, PC에서는 입력창 포커스 상태에서 마우스 휠로 수량을 조정할 수 있습니다.</div>
               </label>
             </div>
 

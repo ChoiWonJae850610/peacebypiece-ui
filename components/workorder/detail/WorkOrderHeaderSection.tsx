@@ -74,7 +74,7 @@ export default function WorkOrderHeaderSection({
             <div className="flex flex-col items-end gap-3 text-right">
               <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-sm text-stone-600">
                 <InlineInfoItem label="담당자" value={managerValue} onClick={!locked && canChangeManager ? onOpenManagerAssignModal : undefined} />
-                <InlineInfoItem label="현재 재고" value={inventoryValue} onClick={!locked && canEditInventory ? onOpenInventoryEditor : undefined} valueClassName="tabular-nums text-stone-900" />
+                <InlineInfoItem label="현재 재고" value={inventoryValue} onClick={canEditInventory ? onOpenInventoryEditor : undefined} valueClassName="tabular-nums text-stone-900" />
               </div>
             </div>
           </div>
