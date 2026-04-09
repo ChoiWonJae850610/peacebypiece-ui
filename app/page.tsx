@@ -100,6 +100,7 @@ export default function Home() {
     handleDeleteWorkOrder,
     handleReorderWorkOrder,
     handleWorkflowAction,
+    handleRenameSelectedWorkOrder,
     handleUpdateSelectedWorkOrder,
     handleConfirmOrderRequest,
     handleCloseOrderRequestConfirm,
@@ -220,6 +221,7 @@ export default function Home() {
               currentDisplayStage={currentDisplayStage}
               actions={availableActions}
               onAction={handleWorkflowAction}
+              onRenameWorkOrderTitle={handleRenameSelectedWorkOrder}
               onUpdateWorkOrder={handleUpdateSelectedWorkOrder}
               onCompleteInspection={handleCompleteInspection}
             />

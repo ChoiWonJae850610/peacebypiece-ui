@@ -201,6 +201,21 @@ export function createManagerChangeHistoryLog(user: string, workOrderId: string,
   });
 }
 
+export function createTitleRenameHistoryLog(user: string, workOrderId: string, from: string, to: string) {
+  return createHistoryLog({
+    action: "작업지시서명 변경",
+    message: "작업지시서명이 변경되었습니다.",
+    user,
+    workOrderId,
+    category: "work",
+    tone: "blue",
+    detailLines: [
+      { label: "이전", value: from || "-" },
+      { label: "변경", value: to || "-" },
+    ],
+  });
+}
+
 export function filterHistoryLogs(
   scopedHistoryLogs: HistoryLog[],
   isAdmin: boolean,

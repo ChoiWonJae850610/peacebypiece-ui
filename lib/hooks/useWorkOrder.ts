@@ -15,6 +15,7 @@ import {
   createManagerChangeHistoryLog,
   createMemoHistoryLog,
   createStatusHistoryLog,
+  createTitleRenameHistoryLog,
   createUpdateHistoryLog,
   filterHistoryLogs,
   nowLabel,
@@ -611,6 +612,33 @@ export function useWorkOrder() {
     setNotificationSettings((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const handleRenameSelectedWorkOrder = useCallback((nextTitle: string) => {
+    const trimmedTitle = nextTitle.trim();
+    if (!trimmedTitle || isReviewRequestLocked) return false;
+
+    const currentBaseTitle = String(selectedWorkOrder.baseTitle ?? selectedWorkOrder.title ?? "").trim() || "새 작업지시서";
+    if (trimmedTitle === currentBaseTitle) return false;
+
+    const nextDisplayTitle = Number(selectedWorkOrder.revision ?? 1) > 1
+      ? `${trimmedTitle} ${Number(selectedWorkOrder.revision ?? 1)}차`
+      : trimmedTitle;
+
+    setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
+      ? {
+          ...item,
+          title: trimmedTitle,
+          baseTitle: trimmedTitle,
+        }
+      : item));
+    setHistoryLogs((prev) => [
+      createTitleRenameHistoryLog(currentUser.name, selectedWorkOrder.id, getWorkOrderDisplayTitle(selectedWorkOrder), nextDisplayTitle),
+      ...prev,
+    ]);
+    setSaveStatus("dirty");
+    setToastMessage("작업지시서명이 변경되었습니다.");
+    return true;
+  }, [currentUser.name, isReviewRequestLocked, selectedWorkOrder]);
+
   const handleUpdateSelectedWorkOrder = useCallback((patch: Partial<WorkOrder>) => {
     const hasLockedChanges = Object.keys(patch).some((key) => key !== "memoThreads" && key !== "lastSavedAt");
     if (isReviewRequestLocked && hasLockedChanges) {
@@ -710,6 +738,7 @@ export function useWorkOrder() {
     handleReorderWorkOrder,
     handleDeleteWorkOrder,
     handleWorkflowAction,
+    handleRenameSelectedWorkOrder,
     handleUpdateSelectedWorkOrder,
     handleConfirmOrderRequest,
     handleCloseOrderRequestConfirm,
