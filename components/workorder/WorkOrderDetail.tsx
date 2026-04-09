@@ -1727,6 +1727,7 @@ export default function WorkOrderDetail({
         currentInventoryQuantity={currentInventoryQuantity}
         lastSavedAt={lastSavedAt}
         canChangeManager={canChangeManager}
+        currentUserRole={currentUserRole}
         canEditInventory={canEditInventory}
         onSave={onSave}
         onOpenBasicInfoModal={handleOpenBasicInfoModal}
