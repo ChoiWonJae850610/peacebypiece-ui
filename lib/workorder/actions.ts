@@ -215,15 +215,15 @@ function cloneAttachments(attachments: Attachment[]): Attachment[] {
   }));
 }
 
-function resolveBaseTitle(workOrder: WorkOrder): string {
+export function resolveBaseTitle(workOrder: WorkOrder): string {
   return String(workOrder.baseTitle ?? workOrder.title ?? "").trim() || "새 작업지시서";
 }
 
-function resolveRootId(workOrder: WorkOrder): string {
+export function resolveRootId(workOrder: WorkOrder): string {
   return workOrder.reorderRootId || workOrder.id;
 }
 
-function resolveDisplayedSourceTitle(workOrder: WorkOrder): string {
+export function resolveDisplayedSourceTitle(workOrder: WorkOrder): string {
   const baseTitle = resolveBaseTitle(workOrder);
   const revision = Number(workOrder.revision ?? 1);
   return revision > 1 ? `${baseTitle} ${revision}차` : baseTitle;
@@ -236,6 +236,43 @@ function getNextRevision(workOrders: WorkOrder[], sourceWorkOrder: WorkOrder): n
     const revision = Number(item.revision ?? 1);
     return revision > maxValue ? revision : maxValue;
   }, 1) + 1;
+}
+
+
+export function renameWorkOrderGroupBaseTitle(
+  workOrders: WorkOrder[],
+  workOrderId: string,
+  nextBaseTitle: string,
+): { nextWorkOrders: WorkOrder[]; affectedWorkOrderIds: string[]; previousBaseTitle: string | null; } {
+  const targetWorkOrder = workOrders.find((item) => item.id === workOrderId);
+  if (!targetWorkOrder) {
+    return { nextWorkOrders: workOrders, affectedWorkOrderIds: [], previousBaseTitle: null };
+  }
+
+  const trimmedBaseTitle = String(nextBaseTitle ?? '').trim();
+  if (!trimmedBaseTitle) {
+    return { nextWorkOrders: workOrders, affectedWorkOrderIds: [], previousBaseTitle: null };
+  }
+
+  const rootId = resolveRootId(targetWorkOrder);
+  const previousBaseTitle = resolveBaseTitle(targetWorkOrder);
+  const affectedWorkOrderIds = workOrders.filter((item) => resolveRootId(item) == rootId).map((item) => item.id);
+
+  if (affectedWorkOrderIds.length === 0 || previousBaseTitle === trimmedBaseTitle) {
+    return { nextWorkOrders: workOrders, affectedWorkOrderIds, previousBaseTitle };
+  }
+
+  const nextWorkOrders = workOrders.map((item) => {
+    if (resolveRootId(item) !== rootId) return item;
+    const revision = Number(item.revision ?? 1);
+    return {
+      ...item,
+      baseTitle: trimmedBaseTitle,
+      title: revision > 1 ? `${trimmedBaseTitle} ${revision}차` : trimmedBaseTitle,
+    };
+  });
+
+  return { nextWorkOrders, affectedWorkOrderIds, previousBaseTitle };
 }
 
 export function cloneWorkOrderForReorder(

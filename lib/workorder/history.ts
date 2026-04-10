@@ -186,25 +186,33 @@ export function createReorderHistoryLog(user: string, workOrderId: string, paylo
   });
 }
 
-export function createManagerChangeHistoryLog(user: string, workOrderId: string, from: string, to: string) {
+
+export function createTitleRenameHistoryLog(
+  user: string,
+  workOrderId: string,
+  payload: { from: string; to: string; appliedToGroup?: boolean },
+) {
+  const detailLines = [
+    { label: "이전", value: payload.from || "-" },
+    { label: "변경", value: payload.to || "-" },
+    ...(payload.appliedToGroup ? [{ label: "반영 범위", value: "리오더 계열 전체" }] : []),
+  ];
+
   return createHistoryLog({
-    action: "담당자 변경",
-    message: "담당자가 변경되었습니다.",
+    action: "작업지시서명 변경",
+    message: payload.appliedToGroup ? "작업지시서명이 리오더 계열 전체에 반영되었습니다." : "작업지시서명이 변경되었습니다.",
     user,
     workOrderId,
     category: "work",
     tone: "blue",
-    detailLines: [
-      { label: "이전", value: from || "-" },
-      { label: "변경", value: to || "-" },
-    ],
+    detailLines,
   });
 }
 
-export function createTitleRenameHistoryLog(user: string, workOrderId: string, from: string, to: string) {
+export function createManagerChangeHistoryLog(user: string, workOrderId: string, from: string, to: string) {
   return createHistoryLog({
-    action: "작업지시서명 변경",
-    message: "작업지시서명이 변경되었습니다.",
+    action: "담당자 변경",
+    message: "담당자가 변경되었습니다.",
     user,
     workOrderId,
     category: "work",

@@ -13,7 +13,6 @@ import { CATEGORY1_OPTIONS, CATEGORY2_OPTIONS_MAP, CATEGORY3_OPTIONS_MAP, DEFAUL
 import type { DisplayStage } from "@/types/workflow";
 import { toDisplayValue } from "@/lib/utils/display";
 import { getWorkOrderDisplayTitle } from "@/lib/utils/workorder";
-import type { WorkOrderCategoryRecommendation } from "@/lib/constants/workorderCategoryKeywords";
 import type { Attachment, Material, MemoThread, OrderEntry, OrderInspectionStatus, Outsourcing, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
 
 type RowValue = string | number | null | undefined;
@@ -1360,6 +1359,7 @@ export default function WorkOrderDetail({
   currentInventoryQuantity,
   currentUserName,
   currentUserRole,
+  canRenameTitle = false,
   canEditInventory,
   canChangeManager,
   canSeeProductionSections,
@@ -1385,8 +1385,8 @@ export default function WorkOrderDetail({
   currentDisplayStage,
   actions,
   onAction,
-  onRenameWorkOrderTitle,
   onUpdateWorkOrder,
+  onRenameWorkOrderTitle,
   onCompleteInspection,
 }: {
   workOrder: WorkOrder;
@@ -1396,6 +1396,7 @@ export default function WorkOrderDetail({
   currentInventoryQuantity: number;
   currentUserName: string;
   currentUserRole: string;
+  canRenameTitle?: boolean;
   canEditInventory: boolean;
   canChangeManager: boolean;
   canSeeProductionSections: boolean;
@@ -1421,8 +1422,8 @@ export default function WorkOrderDetail({
   currentDisplayStage: DisplayStage;
   actions: WorkflowAction[];
   onAction: (action: WorkflowAction) => void;
-  onRenameWorkOrderTitle: (nextTitle: string) => boolean;
   onUpdateWorkOrder: (patch: Partial<WorkOrder>) => void;
+  onRenameWorkOrderTitle: (nextTitle: string) => void;
   onCompleteInspection: (payload: { orderEntryId: string; inboundQuantity: number; nextInventoryQuantity: number; memo: string }) => void;
 }) {
   const [basicInfo, setBasicInfo] = useState<BasicInfoState>(() => getInitialBasicInfo(workOrder));
@@ -1726,26 +1727,18 @@ export default function WorkOrderDetail({
     <div className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm md:p-6">
       <WorkOrderHeaderSection
         title={getWorkOrderDisplayTitle(workOrder)}
-        editableTitle={String(workOrder.baseTitle ?? workOrder.title ?? "").trim() || "새 작업지시서"}
         summaryText={formatBasicSummary(basicInfo)}
         managerName={workOrder.manager || "-"}
         currentInventoryQuantity={currentInventoryQuantity}
         lastSavedAt={lastSavedAt}
         canChangeManager={canChangeManager}
-        currentUserRole={currentUserRole}
+        canRenameTitle={canRenameTitle}
         canEditInventory={canEditInventory}
         onSave={onSave}
-        onRenameTitle={onRenameWorkOrderTitle}
-        onApplyRecommendedCategory={(recommendation: WorkOrderCategoryRecommendation) => {
-          onUpdateWorkOrder({
-            category1: recommendation.category1,
-            category2: recommendation.category2,
-            category3: recommendation.category3,
-          });
-        }}
         onOpenBasicInfoModal={handleOpenBasicInfoModal}
         onOpenManagerAssignModal={onOpenManagerAssignModal}
         onOpenInventoryEditor={onOpenInventoryEditor}
+        onRenameTitle={onRenameWorkOrderTitle}
         locked={isReviewRequestLocked}
       />
 

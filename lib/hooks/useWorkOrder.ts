@@ -13,15 +13,15 @@ import {
   createReorderHistoryLog,
   createInventoryHistoryLog,
   createManagerChangeHistoryLog,
+  createTitleRenameHistoryLog,
   createMemoHistoryLog,
   createStatusHistoryLog,
-  createTitleRenameHistoryLog,
   createUpdateHistoryLog,
   filterHistoryLogs,
   nowLabel,
   toInventoryLogs,
 } from "@/lib/workorder/history";
-import { addMemoReply, addMemoThread, cloneWorkOrderForReorder, createNewWorkOrder, applyInventoryAdjustment, appendAttachments, appendMemoAttachmentsToReply, appendMemoAttachmentsToThread, promoteAttachmentToOfficial, removeAttachment, updateWorkflowState, updateWorkOrderManager } from "@/lib/workorder/actions";
+import { addMemoReply, addMemoThread, cloneWorkOrderForReorder, createNewWorkOrder, applyInventoryAdjustment, appendAttachments, appendMemoAttachmentsToReply, appendMemoAttachmentsToThread, promoteAttachmentToOfficial, removeAttachment, renameWorkOrderGroupBaseTitle, updateWorkflowState, updateWorkOrderManager } from "@/lib/workorder/actions";
 import { createWorkOrderListItem, calculateWorkOrderCosts } from "@/lib/workorder/selectors";
 import { getWorkOrderDisplayTitle } from "@/lib/utils/workorder";
 import { canEditInventoryForWorkflow, canManageWorkOrderManager, deriveWorkflowStateFromOrderEntries, getAvailableWorkflowActions } from "@/lib/workorder/workflow";
@@ -612,32 +612,29 @@ export function useWorkOrder() {
     setNotificationSettings((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const handleRenameSelectedWorkOrder = useCallback((nextTitle: string) => {
-    const trimmedTitle = nextTitle.trim();
-    if (!trimmedTitle || isReviewRequestLocked) return false;
 
-    const currentBaseTitle = String(selectedWorkOrder.baseTitle ?? selectedWorkOrder.title ?? "").trim() || "새 작업지시서";
-    if (trimmedTitle === currentBaseTitle) return false;
+  const handleRenameWorkOrderTitle = useCallback((nextTitle: string) => {
+    const trimmedTitle = String(nextTitle ?? '').trim();
+    if (!trimmedTitle) return;
 
-    const nextDisplayTitle = Number(selectedWorkOrder.revision ?? 1) > 1
-      ? `${trimmedTitle} ${Number(selectedWorkOrder.revision ?? 1)}차`
-      : trimmedTitle;
+    const previousBaseTitle = String(selectedWorkOrder.baseTitle ?? selectedWorkOrder.title ?? '').trim() || '새 작업지시서';
+    if (previousBaseTitle === trimmedTitle) return;
 
-    setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
-      ? {
-          ...item,
-          title: trimmedTitle,
-          baseTitle: trimmedTitle,
-        }
-      : item));
+    const renameResult = renameWorkOrderGroupBaseTitle(workOrders, selectedWorkOrder.id, trimmedTitle);
+    if (renameResult.affectedWorkOrderIds.length === 0 || renameResult.previousBaseTitle === trimmedTitle) return;
+
+    setWorkOrders(renameResult.nextWorkOrders);
     setHistoryLogs((prev) => [
-      createTitleRenameHistoryLog(currentUser.name, selectedWorkOrder.id, getWorkOrderDisplayTitle(selectedWorkOrder), nextDisplayTitle),
+      ...renameResult.affectedWorkOrderIds.map((workOrderId) => createTitleRenameHistoryLog(currentUser.name, workOrderId, {
+        from: renameResult.previousBaseTitle ?? previousBaseTitle,
+        to: trimmedTitle,
+        appliedToGroup: renameResult.affectedWorkOrderIds.length > 1,
+      })),
       ...prev,
     ]);
-    setSaveStatus("dirty");
-    setToastMessage("작업지시서명이 변경되었습니다.");
-    return true;
-  }, [currentUser.name, isReviewRequestLocked, selectedWorkOrder]);
+    setSaveStatus('dirty');
+    setToastMessage(renameResult.affectedWorkOrderIds.length > 1 ? '작업지시서명이 리오더 계열 전체에 반영되었습니다.' : '작업지시서명이 변경되었습니다.');
+  }, [currentUser.name, selectedWorkOrder.id, selectedWorkOrder.baseTitle, selectedWorkOrder.title, workOrders]);
 
   const handleUpdateSelectedWorkOrder = useCallback((patch: Partial<WorkOrder>) => {
     const hasLockedChanges = Object.keys(patch).some((key) => key !== "memoThreads" && key !== "lastSavedAt");
@@ -738,8 +735,8 @@ export function useWorkOrder() {
     handleReorderWorkOrder,
     handleDeleteWorkOrder,
     handleWorkflowAction,
-    handleRenameSelectedWorkOrder,
     handleUpdateSelectedWorkOrder,
+    handleRenameWorkOrderTitle,
     handleConfirmOrderRequest,
     handleCloseOrderRequestConfirm,
     handleInventoryApply,

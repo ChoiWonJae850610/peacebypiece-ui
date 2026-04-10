@@ -100,7 +100,6 @@ export default function Home() {
     handleDeleteWorkOrder,
     handleReorderWorkOrder,
     handleWorkflowAction,
-    handleRenameSelectedWorkOrder,
     handleUpdateSelectedWorkOrder,
     handleConfirmOrderRequest,
     handleCloseOrderRequestConfirm,
@@ -196,6 +195,7 @@ export default function Home() {
               currentInventoryQuantity={currentInventoryQuantity}
               currentUserName={currentUser.name}
               currentUserRole={currentRole}
+              canRenameTitle={isAdmin}
               canEditInventory={canOpenInventoryEditor}
               canChangeManager={canChangeManager}
               onOpenManagerAssignModal={handleOpenManagerAssignModal}
@@ -221,7 +221,6 @@ export default function Home() {
               currentDisplayStage={currentDisplayStage}
               actions={availableActions}
               onAction={handleWorkflowAction}
-              onRenameWorkOrderTitle={handleRenameSelectedWorkOrder}
               onUpdateWorkOrder={handleUpdateSelectedWorkOrder}
               onCompleteInspection={handleCompleteInspection}
             />
