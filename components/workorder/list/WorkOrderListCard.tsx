@@ -1,8 +1,8 @@
 "use client";
 
 import { REORDERABLE_WORKFLOW_STATES } from "@/lib/constants/workorderStates";
-import { getStageDotTone, getWorkflowStateLabel } from "@/lib/constants/workflow";
-import { getCategoryPath, getWorkOrderCardTone, getWorkOrderStateLabel } from "@/lib/utils/workorder";
+import { getStageDotTone, getWorkflowStateLabel } from "@/lib/workorder/presentation/statusPresentation";
+import { getCategoryPath, getWorkOrderCardTone, getWorkOrderState } from "@/lib/workorder/presentation/workOrderPresentation";
 import type { WorkOrderListItem, WorkflowState } from "@/types/workorder";
 
 type Props = {
@@ -26,7 +26,7 @@ export default function WorkOrderListCard({
   canDelete,
   canReorder = false,
 }: Props) {
-  const state = getWorkOrderStateLabel(workflowStateById, workOrder.id) as WorkflowState;
+  const state = getWorkOrderState(workflowStateById, workOrder.id);
   const stateLabel = getWorkflowStateLabel(state);
   const active = workOrder.id === selectedId;
   const canShowReorder = canReorder && (REORDERABLE_WORKFLOW_STATES as readonly WorkflowState[]).includes(state);

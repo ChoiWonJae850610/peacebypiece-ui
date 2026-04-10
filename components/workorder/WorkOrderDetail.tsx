@@ -13,7 +13,7 @@ import { calculateOrderEntryTotals, recalculateMaterial, recalculateOutsourcing 
 import { formatBasicSummary } from "@/lib/workorder/detail/detailFormatting";
 import { appendOption, createId, getInitialBasicInfo, getInitialOrderEntries, sanitizeOrderEntry, sanitizeSelectValue, toNumber } from "@/lib/workorder/detail/detailSanitizers";
 import type { DisplayStage } from "@/types/workflow";
-import { getWorkOrderDisplayTitle } from "@/lib/utils/workorder";
+import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import type { Material, WorkOrder, WorkflowAction, WorkflowState, Outsourcing } from "@/types/workorder";
 
 export default function WorkOrderDetail({

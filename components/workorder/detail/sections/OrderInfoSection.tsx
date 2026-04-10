@@ -1,6 +1,7 @@
 import { ORDER_TYPE_OPTIONS } from "@/lib/constants/workorderOptions";
 import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculations";
-import { formatOrderSummary, getInspectionStatusLabel, getInspectionStatusTone } from "@/lib/workorder/detail/detailFormatting";
+import { formatOrderSummary } from "@/lib/workorder/detail/detailFormatting";
+import { getInspectionStatusLabel, getInspectionStatusTone } from "@/lib/workorder/presentation/statusPresentation";
 import {
   DeleteButton,
   EditableValue,

@@ -1,5 +1,5 @@
 import { isOfficialAttachment } from "@/lib/permissions/attachments";
-import { getWorkOrderDisplayTitle } from "@/lib/utils/workorder";
+import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import type { WorkOrder, WorkOrderListItem } from "@/types/workorder";
 
 

@@ -1,8 +1,5 @@
-import { getI18n } from "@/lib/i18n";
 import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculations";
-import type { OrderEntry, OrderInspectionStatus } from "@/types/workorder";
-
-const i18n = getI18n();
+import type { OrderEntry } from "@/types/workorder";
 
 type BasicInfoLike = {
   category1: string;
@@ -32,22 +29,6 @@ export function getDisplayValue(field: string, value: string) {
   return isNumericField(field) ? formatNumericDisplay(value) : value;
 }
 
-export function getInspectionStatusLabel(status: OrderInspectionStatus) {
-  return i18n.workorder.inspectionStatuses[status];
-}
-
-export function getInspectionStatusTone(status: OrderInspectionStatus) {
-  switch (status) {
-    case "inspection_completed":
-      return "bg-stone-900 text-white";
-    case "inspection_in_progress":
-      return "bg-emerald-100 text-emerald-700";
-    case "inspection_pending":
-      return "bg-amber-100 text-amber-700";
-    default:
-      return "bg-stone-100 text-stone-600";
-  }
-}
 
 export function formatBasicSummary(basicInfo: BasicInfoLike) {
   return [

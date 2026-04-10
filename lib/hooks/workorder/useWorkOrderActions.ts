@@ -25,7 +25,7 @@ import {
   updateWorkflowState,
 } from "@/lib/workorder/actions";
 import { pruneDraftRows } from "@/lib/workorder/draftRows";
-import { getWorkOrderDisplayTitle } from "@/lib/utils/workorder";
+import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
 import type { RoleType } from "@/types/permission";
 import type { HistoryLog, UserProfile, WorkOrder, WorkflowAction } from "@/types/workorder";

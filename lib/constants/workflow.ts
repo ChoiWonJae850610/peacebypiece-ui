@@ -2,12 +2,17 @@ import {
   DISPLAY_STAGES,
   INVENTORY_EDITABLE_STATES,
   MANAGER_ASSIGNABLE_STATES,
-  WORKFLOW_STATE_BADGE_TONE,
-  WORKFLOW_STATE_DOT_TONE,
-  WORKFLOW_STATE_TEXT_TONE,
   WORKFLOW_STATE_TO_STAGE,
 } from "@/lib/constants/workorderStates";
 import { getI18n } from "@/lib/i18n";
+import {
+  getDisplayStageDescription as getDisplayStageDescriptionFromPresentation,
+  getDisplayStageLabel as getDisplayStageLabelFromPresentation,
+  getStageDotTone as getStageDotToneFromPresentation,
+  getStageTextTone as getStageTextToneFromPresentation,
+  getWorkflowStageBadgeTone as getWorkflowStageBadgeToneFromPresentation,
+  getWorkflowStateLabel as getWorkflowStateLabelFromPresentation,
+} from "@/lib/workorder/presentation/statusPresentation";
 import type { DisplayStage, NotificationSettingKey, WorkflowState } from "@/types/workflow";
 
 const i18n = getI18n();
@@ -34,25 +39,26 @@ export function getDisplayStageFromWorkflowState(state: WorkflowState): DisplayS
 }
 
 export function getWorkflowStateLabel(state: WorkflowState) {
-  return i18n.workorder.workflowStates[state];
+  return getWorkflowStateLabelFromPresentation(state);
 }
 
 export function getDisplayStageLabel(stage: DisplayStage) {
-  return i18n.workorder.displayStages[stage];
+  return getDisplayStageLabelFromPresentation(stage);
 }
 
 export function getStageTone(state: WorkflowState | DisplayStage) {
-  return WORKFLOW_STATE_BADGE_TONE[state];
+  return getWorkflowStageBadgeToneFromPresentation(state);
 }
 
 export function getStageDotTone(state: WorkflowState | DisplayStage) {
-  return WORKFLOW_STATE_DOT_TONE[state];
+  return getStageDotToneFromPresentation(state);
 }
 
 export function getStageTextTone(state: WorkflowState | DisplayStage) {
-  return WORKFLOW_STATE_TEXT_TONE[state];
+  return getStageTextToneFromPresentation(state);
 }
 
 export function getDisplayStageDescription(stage: DisplayStage) {
-  return i18n.workorder.workflowDescriptions[stage] ?? "현재 작업 상태 설명이 준비되지 않았습니다.";
+  return getDisplayStageDescriptionFromPresentation(stage);
 }
+
