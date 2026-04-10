@@ -9,7 +9,10 @@ import WorkOrderCostSummarySection from "@/components/workorder/detail/WorkOrder
 import WorkOrderHeaderSection from "@/components/workorder/detail/WorkOrderHeaderSection";
 import WorkOrderActionSection from "@/components/workorder/detail/WorkOrderActionSection";
 import { getStageTone } from "@/lib/constants/workflow";
-import { CATEGORY1_OPTIONS, CATEGORY2_OPTIONS_MAP, CATEGORY3_OPTIONS_MAP, DEFAULT_BASIC_YEAR, DEFAULT_FACTORY_OPTION, DEFAULT_MATERIAL_TYPE, DEFAULT_MATERIAL_UNIT, DEFAULT_ORDER_TYPE, DEFAULT_OUTSOURCING_PROCESS, DEFAULT_OUTSOURCING_UNIT, DEFAULT_PARTNER_OPTION, FACTORY_OPTIONS, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS, ORDER_TYPE_OPTIONS, OUTSOURCING_PROCESS_OPTIONS, OUTSOURCING_UNIT_OPTIONS, PARTNER_OPTIONS, PRIORITY_OPTIONS, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
+import { CATEGORY1_OPTIONS, DEFAULT_BASIC_YEAR, DEFAULT_FACTORY_OPTION, DEFAULT_MATERIAL_TYPE, DEFAULT_MATERIAL_UNIT, DEFAULT_ORDER_TYPE, DEFAULT_OUTSOURCING_PROCESS, DEFAULT_OUTSOURCING_UNIT, DEFAULT_PARTNER_OPTION, FACTORY_OPTIONS, MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS, ORDER_TYPE_OPTIONS, OUTSOURCING_PROCESS_OPTIONS, OUTSOURCING_UNIT_OPTIONS, PARTNER_OPTIONS, PRIORITY_OPTIONS, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
+import { calculateOrderEntryTotals, recalculateMaterial, recalculateOutsourcing } from "@/lib/workorder/detailCalculations";
+import { formatBasicSummary, formatOrderSummary, getDisplayValue, getEditingInitialValue, getInspectionStatusLabel, getInspectionStatusTone } from "@/lib/workorder/detailFormatting";
+import { appendOption, createId, getCategory2Options, getCategory3Options, getInitialBasicInfo, getInitialOrderEntries, normalizeEditingValue, sanitizeOrderEntry, sanitizeSelectValue, toNumber } from "@/lib/workorder/detailSanitizers";
 import type { DisplayStage } from "@/types/workflow";
 import { toDisplayValue } from "@/lib/utils/display";
 import { getWorkOrderDisplayTitle } from "@/lib/utils/workorder";
@@ -80,146 +83,6 @@ function SectionHeader({
       {rightSlot ? <div className="hidden shrink-0 md:block">{rightSlot}</div> : null}
     </div>
   );
-}
-
-function createId(prefix: string) {
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
-function toNumber(value: string) {
-  const normalized = value.trim().replace(/,/g, "");
-  if (!normalized) return 0;
-  const parsed = Number(normalized);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function isNumericField(field: string) {
-  return field === "quantity" || field === "unitCost" || field === "laborCost" || field === "lossCost";
-}
-
-function formatNumericDisplay(value: string) {
-  const normalized = value.trim().replace(/,/g, "");
-  if (!normalized) return "0";
-  const parsed = Number(normalized);
-  if (!Number.isFinite(parsed)) return value;
-  return parsed.toLocaleString();
-}
-
-function getEditingInitialValue(field: string, value: string) {
-  return isNumericField(field) ? value.replace(/,/g, "") : value;
-}
-
-function getDisplayValue(field: string, value: string) {
-  return isNumericField(field) ? formatNumericDisplay(value) : value;
-}
-
-function normalizeEditingValue(field: string, value: string) {
-  if (!isNumericField(field)) return value;
-  const sanitized = value.replace(/[^\d.,-]/g, "");
-  const hasMinus = sanitized.startsWith("-");
-  const unsigned = sanitized.replace(/-/g, "");
-  const normalized = unsigned
-    .replace(/,/g, "")
-    .replace(/(\..*)\./g, "$1");
-  return `${hasMinus ? "-" : ""}${normalized}`;
-}
-
-function recalculateMaterial(item: Material): Material {
-  return {
-    ...item,
-    totalCost: (Number(item.quantity) || 0) * (Number(item.unitCost) || 0),
-  };
-}
-
-function recalculateOutsourcing(item: Outsourcing): Outsourcing {
-  return {
-    ...item,
-    totalCost: (Number(item.quantity) || 0) * (Number(item.unitCost) || 0),
-  };
-}
-
-function getDefaultInspectionStatus(workflowState: WorkflowState): OrderInspectionStatus {
-  switch (workflowState) {
-    case "생산중":
-      return "검수대기";
-    case "검수중":
-      return "검수중";
-    case "완료":
-      return "검수완료";
-    default:
-      return "발주대기";
-  }
-}
-
-function sanitizeInspectionStatus(value: string | undefined | null, workflowState: WorkflowState): OrderInspectionStatus {
-  if (value === "발주대기" || value === "검수대기" || value === "검수중" || value === "검수완료") return value;
-  return getDefaultInspectionStatus(workflowState);
-}
-
-function sanitizeOrderEntry(item: Partial<OrderEntryState>, fallback?: Partial<OrderEntryState>, workflowState: WorkflowState = "작성중"): OrderEntryState {
-  return {
-    id: item.id || fallback?.id || createId("order"),
-    type: item.type || fallback?.type || DEFAULT_ORDER_TYPE,
-    factory: item.factory || fallback?.factory || DEFAULT_FACTORY_OPTION,
-    dueDate: item.dueDate || fallback?.dueDate || "",
-    quantity: Math.max(0, Number(item.quantity ?? fallback?.quantity) || 0),
-    laborCost: Math.max(0, Number(item.laborCost ?? fallback?.laborCost) || 0),
-    lossCost: Math.max(0, Number(item.lossCost ?? fallback?.lossCost) || 0),
-    priority: item.priority || fallback?.priority || PRIORITY_OPTIONS[0],
-    inspectionStatus: sanitizeInspectionStatus(item.inspectionStatus ?? fallback?.inspectionStatus, workflowState),
-  };
-}
-
-function getInspectionStatusLabel(status: OrderInspectionStatus) {
-  switch (status) {
-    case "검수대기":
-      return "검수 대기";
-    case "검수중":
-      return "검수중";
-    case "검수완료":
-      return "검수 완료";
-    default:
-      return "발주 전";
-  }
-}
-
-function getInspectionStatusTone(status: OrderInspectionStatus) {
-  switch (status) {
-    case "검수완료":
-      return "bg-stone-900 text-white";
-    case "검수중":
-      return "bg-emerald-100 text-emerald-700";
-    case "검수대기":
-      return "bg-amber-100 text-amber-700";
-    default:
-      return "bg-stone-100 text-stone-600";
-  }
-}
-
-function getInitialOrderEntries(workOrder: WorkOrder): OrderEntryState[] {
-  const entries = (workOrder.orderEntries ?? []).map((item) => sanitizeOrderEntry(item, undefined, workOrder.workflowState));
-  if (entries.length > 0) return entries;
-
-  return [sanitizeOrderEntry({
-    id: `${workOrder.id}-legacy-order`,
-    type: DEFAULT_ORDER_TYPE,
-    factory: workOrder.vendor || DEFAULT_FACTORY_OPTION,
-    dueDate: workOrder.dueDate || "",
-    quantity: Number.isFinite(workOrder.quantity) ? workOrder.quantity : 0,
-    laborCost: Math.max(0, Number(workOrder.laborCost) || 0),
-    lossCost: Math.max(0, Number(workOrder.lossCost) || 0),
-    priority: workOrder.priority || PRIORITY_OPTIONS[0],
-    inspectionStatus: getDefaultInspectionStatus(workOrder.workflowState),
-  }, undefined, workOrder.workflowState)];
-}
-
-function calculateOrderEntryTotals(orderEntries: OrderEntryState[]) {
-  return orderEntries.reduce((acc, item) => {
-    acc.quantity += Number(item.quantity) || 0;
-    acc.laborCost += Number(item.laborCost) || 0;
-    acc.lossCost += Number(item.lossCost) || 0;
-    return acc;
-  }, { quantity: 0, laborCost: 0, lossCost: 0 });
 }
 
 function isEditingCell(editingCell: EditableCell, section: EditableSectionKey, rowId: string, field: string) {
@@ -375,62 +238,6 @@ function EditableValue({
 }
 
 
-
-function getCategory2Options(category1: string) {
-  return CATEGORY2_OPTIONS_MAP[category1] ?? CATEGORY2_OPTIONS_MAP[CATEGORY1_OPTIONS[0]] ?? [];
-}
-
-function getCategory3Options(category2: string) {
-  return CATEGORY3_OPTIONS_MAP[category2] ?? CATEGORY3_OPTIONS_MAP[getCategory2Options(CATEGORY1_OPTIONS[0])[0] ?? ""] ?? [];
-}
-
-function sanitizeSelectValue(value: string, options: readonly string[], fallback?: string) {
-  if (value && options.includes(value)) return value;
-  return fallback ?? options[0] ?? "";
-}
-
-function appendOption(options: string[], value: string) {
-  const trimmed = value.trim();
-  if (!trimmed) return options;
-  if (options.includes(trimmed)) return options;
-  return [...options, trimmed];
-}
-
-function parseSeasonYear(value: string) {
-  const trimmed = value.trim();
-  const match = trimmed.match(/^(SS|FW|NOS|ALL)(?:\s+(\d{4}))?$/i);
-  if (match) {
-    return {
-      season: match[1].toUpperCase(),
-      year: match[2] ?? DEFAULT_BASIC_YEAR,
-    };
-  }
-
-  const [first = "", second = ""] = trimmed.split(/\s+/);
-  return {
-    season: first || SEASON_OPTIONS[0],
-    year: second || DEFAULT_BASIC_YEAR,
-  };
-}
-
-
-function formatBasicSummary(basicInfo: BasicInfoState) {
-  return [
-    [basicInfo.category1, basicInfo.category2, basicInfo.category3].filter(Boolean).join(" > "),
-    `${basicInfo.season} ${basicInfo.year}`.trim(),
-  ].filter(Boolean).join(" · ");
-}
-
-function formatOrderSummary(orderEntries: OrderEntryState[]) {
-  if (orderEntries.length === 0) return "등록된 발주 정보가 없습니다.";
-  const totals = calculateOrderEntryTotals(orderEntries);
-  const completedCount = orderEntries.filter((item) => item.inspectionStatus === "검수완료").length;
-  return [
-    `${orderEntries.length}건`,
-    `${totals.quantity.toLocaleString()}장`,
-    `검수완료 ${completedCount}/${orderEntries.length}`,
-  ].filter(Boolean).join(" · ");
-}
 
 function BasicInfoEditModal({
   open,
@@ -757,24 +564,6 @@ function blurActiveEditableElement() {
   if (activeElement instanceof HTMLElement) {
     activeElement.blur();
   }
-}
-
-function getInitialBasicInfo(workOrder: WorkOrder): BasicInfoState {
-  const parsedSeason = parseSeasonYear(workOrder.season);
-  const category1 = workOrder.category1 || CATEGORY1_OPTIONS[0];
-  const category2Options = getCategory2Options(category1);
-  const category2 = workOrder.category2 || category2Options[0] || "";
-  const category3Options = getCategory3Options(category2);
-  const category3 = workOrder.category3 || category3Options[0] || "";
-
-  return {
-    category1,
-    category2,
-    category3,
-    partner: DEFAULT_PARTNER_OPTION,
-    season: parsedSeason.season || SEASON_OPTIONS[0],
-    year: parsedSeason.year || DEFAULT_BASIC_YEAR,
-  };
 }
 
 function OrderInfoSection({
