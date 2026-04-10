@@ -9,6 +9,7 @@ import {
   PRIORITY_OPTIONS,
   SEASON_OPTIONS,
 } from "@/lib/constants/workorderOptions";
+import { isEditorNumericField } from "@/lib/workorder/detail/detailFields";
 import { sanitizeOrderInspectionStatus } from "@/lib/workorder/workflow";
 import type { OrderEntry, OrderInspectionStatus, WorkflowState, WorkOrder } from "@/types/workorder";
 
@@ -23,12 +24,10 @@ export function toNumber(value: string) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-export function isNumericField(field: string) {
-  return field === "quantity" || field === "unitCost" || field === "laborCost" || field === "lossCost";
-}
+export const isNumericField = isEditorNumericField;
 
 export function normalizeEditingValue(field: string, value: string) {
-  if (!isNumericField(field)) return value;
+  if (!isEditorNumericField(field)) return value;
   const sanitized = value.replace(/[^\d.,-]/g, "");
   const hasMinus = sanitized.startsWith("-");
   const unsigned = sanitized.replace(/-/g, "");

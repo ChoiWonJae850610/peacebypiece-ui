@@ -1,4 +1,5 @@
 import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculations";
+import { isEditorNumericField } from "@/lib/workorder/detail/detailFields";
 import type { OrderEntry } from "@/types/workorder";
 
 type BasicInfoLike = {
@@ -9,9 +10,6 @@ type BasicInfoLike = {
   year: string;
 };
 
-function isNumericField(field: string) {
-  return field === "quantity" || field === "unitCost" || field === "laborCost" || field === "lossCost";
-}
 
 export function formatNumericDisplay(value: string) {
   const normalized = value.trim().replace(/,/g, "");
@@ -22,11 +20,11 @@ export function formatNumericDisplay(value: string) {
 }
 
 export function getEditingInitialValue(field: string, value: string) {
-  return isNumericField(field) ? value.replace(/,/g, "") : value;
+  return isEditorNumericField(field) ? value.replace(/,/g, "") : value;
 }
 
 export function getDisplayValue(field: string, value: string) {
-  return isNumericField(field) ? formatNumericDisplay(value) : value;
+  return isEditorNumericField(field) ? formatNumericDisplay(value) : value;
 }
 
 

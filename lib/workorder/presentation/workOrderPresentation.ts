@@ -1,7 +1,7 @@
 import { EMPTY_DISPLAY, INVENTORY_STATUS_LABEL_PREFIX } from "@/lib/constants/display";
-import { WORKFLOW_STATE_BADGE_TONE } from "@/lib/constants/workorderStates";
 import { getI18n } from "@/lib/i18n";
 import type { WorkOrderListItem } from "@/types/workorder";
+import { WORKFLOW_STATE_BADGE_TONE } from "@/lib/constants/workorderStates";
 import type { WorkflowState } from "@/types/workflow";
 
 const i18n = getI18n();
@@ -19,7 +19,7 @@ export function getWorkOrderState(workflowStateById: Record<string, string>, wor
 }
 
 export function getWorkOrderCardTone(state: WorkflowState) {
-  return state === "completed" ? "bg-stone-200 text-stone-800" : WORKFLOW_STATE_BADGE_TONE[state];
+  return WORKFLOW_STATE_BADGE_TONE[state];
 }
 
 export function getWorkOrderDisplayTitle(workOrder: { title?: string | null; baseTitle?: string | null; revision?: number | null }) {

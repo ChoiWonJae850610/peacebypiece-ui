@@ -1,4 +1,7 @@
-import { INSPECTION_STATUS_TONE_CLASS, WORKFLOW_DESCRIPTION_FALLBACK } from "@/lib/constants/display";
+import {
+  INSPECTION_STATUS_TONE_CLASS,
+  WORKFLOW_DESCRIPTION_FALLBACK,
+} from "@/lib/constants/display";
 import {
   WORKFLOW_STATE_BADGE_TONE,
   WORKFLOW_STATE_DOT_TONE,

@@ -1,5 +1,5 @@
 import type { HistoryTone } from "@/types/workflow";
-import type { OrderInspectionStatusValue } from "@/lib/constants/workorderStates";
+import type { OrderInspectionStatus } from "@/types/workorder";
 
 export const EMPTY_DISPLAY = "-";
 export const INVENTORY_STATUS_LABEL_PREFIX = "재고 상태: ";
@@ -14,7 +14,7 @@ export const HISTORY_TONE_CLASS: Record<HistoryTone, string> = {
   stone: "bg-stone-100 text-stone-700",
 };
 
-export const INSPECTION_STATUS_TONE_CLASS: Record<OrderInspectionStatusValue, string> = {
+export const INSPECTION_STATUS_TONE_CLASS: Record<OrderInspectionStatus, string> = {
   order_pending: "bg-stone-100 text-stone-600",
   inspection_pending: "bg-amber-100 text-amber-700",
   inspection_in_progress: "bg-emerald-100 text-emerald-700",
