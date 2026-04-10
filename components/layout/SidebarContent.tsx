@@ -16,6 +16,7 @@ type Props = {
   onDelete?: (id: string) => void;
   canDelete?: (workflowState: WorkflowState) => boolean;
   canCreate: boolean;
+  canManageListActions?: boolean;
   searchQuery: string;
   onSearchQueryChange: (value: string) => void;
 };
@@ -33,6 +34,7 @@ export default function SidebarContent({
   onDelete,
   canDelete,
   canCreate,
+  canManageListActions = true,
   searchQuery,
   onSearchQueryChange,
 }: Props) {
@@ -96,8 +98,8 @@ export default function SidebarContent({
               onClick={onSelect}
               onReorder={onReorder}
               onDelete={onDelete}
-              canDelete={canDelete}
-              canReorder={Boolean(onReorder)}
+              canDelete={canManageListActions ? canDelete : undefined}
+              canReorder={canManageListActions && Boolean(onReorder)}
             />
           ))}
         </div>

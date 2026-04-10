@@ -17,6 +17,7 @@ import SidebarContent from "@/components/layout/SidebarContent";
 import WorkOrderDetail from "@/components/workorder/WorkOrderDetail";
 import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
 import { APP_VERSION } from "@/lib/constants/app";
+import { isInspectorRole } from "@/lib/constants/roles";
 import { useWorkOrder } from "@/lib/hooks/useWorkOrder";
 
 export default function Home() {
@@ -118,6 +119,8 @@ export default function Home() {
     handlePromoteMemoAttachment,
   } = useWorkOrder();
 
+  const canManageListActions = !isInspectorRole(currentUser);
+
   const [pendingAttachmentDeleteId, setPendingAttachmentDeleteId] = useState<string | null>(null);
   const pendingAttachmentDelete = useMemo(
     () => selectedWorkOrder.attachments.find((item) => item.id === pendingAttachmentDeleteId) ?? null,
@@ -162,6 +165,7 @@ export default function Home() {
           onDelete={handleDeleteWorkOrder}
           canDelete={canDeleteWorkOrder}
           canCreate={canCreateWorkOrder}
+          canManageListActions={canManageListActions}
           searchQuery={searchQuery}
           onSearchQueryChange={setSearchQuery}
         />
@@ -181,6 +185,7 @@ export default function Home() {
               onDelete={handleDeleteWorkOrder}
               canDelete={canDeleteWorkOrder}
               canCreate={canCreateWorkOrder}
+              canManageListActions={canManageListActions}
               searchQuery={searchQuery}
               onSearchQueryChange={setSearchQuery}
             />
