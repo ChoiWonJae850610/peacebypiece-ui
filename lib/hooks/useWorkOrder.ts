@@ -35,8 +35,7 @@ function isUnselectedValue(value: string | undefined | null) {
 }
 
 function isEmptyOrderEntry(entry: NonNullable<WorkOrder["orderEntries"]>[number]) {
-  const factory = String(entry.factory ?? "").trim();
-  return isUnselectedValue(factory) && (Number(entry.quantity) || 0) === 0;
+  return (Number(entry.quantity) || 0) === 0;
 }
 
 function isEmptyMaterialRow(material: WorkOrder["materials"][number]) {

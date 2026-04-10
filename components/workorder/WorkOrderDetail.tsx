@@ -875,14 +875,15 @@ function OrderInfoSection({
                 </div>
               </div>
             ))}
-            <button
-              type="button"
-              onClick={onAdd}
-              disabled={locked}
-              className="pbp-interactive-button flex w-full items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
-            >
-              {locked ? "검토요청 중 잠금" : "+ 발주 추가"}
-            </button>
+            {locked ? null : (
+              <button
+                type="button"
+                onClick={onAdd}
+                className="pbp-interactive-button flex w-full items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+              >
+                + 발주 추가
+              </button>
+            )}
           </div>
           <div className="mt-1 hidden max-w-full overflow-hidden md:block">
             <table className="w-full max-w-full table-fixed text-left">
@@ -930,17 +931,19 @@ function OrderInfoSection({
                   <td className="px-3 py-2 text-center text-[11px] font-semibold text-stone-900 tabular-nums lg:text-[11px]">{totals.lossCost.toLocaleString()}원</td>
                   <td colSpan={2} />
                 </tr>
-                <tr>
-                  <td colSpan={8} className="px-3 pb-2 pt-2">
-                    <button
-                      type="button"
-                      onClick={onAdd}
-                      className="pbp-interactive-button flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
-                    >
-                      + 발주 추가
-                    </button>
-                  </td>
-                </tr>
+                {locked ? null : (
+                  <tr>
+                    <td colSpan={8} className="px-3 pb-2 pt-2">
+                      <button
+                        type="button"
+                        onClick={onAdd}
+                        className="pbp-interactive-button flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+                      >
+                        + 발주 추가
+                      </button>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -1127,14 +1130,15 @@ function MaterialSection({
                 </div>
               </div>
             ))}
-            <button
-              type="button"
-              onClick={onAdd}
-              disabled={locked}
-              className="pbp-interactive-button flex w-full items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
-            >
-              {locked ? "검토요청 중 잠금" : "+ 항목 추가"}
-            </button>
+            {locked ? null : (
+              <button
+                type="button"
+                onClick={onAdd}
+                className="pbp-interactive-button flex w-full items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+              >
+                + 항목 추가
+              </button>
+            )}
           </div>
           <div className="mt-1 hidden max-w-full overflow-hidden md:block">
             <table className="w-full max-w-full table-fixed text-left">
@@ -1175,18 +1179,19 @@ function MaterialSection({
                     </td>
                   </tr>
                 ))}
-                <tr>
-                  <td colSpan={8} className="px-1.5 pb-1 pt-1.5 lg:px-2">
-                    <button
-                      type="button"
-                      onClick={onAdd}
-                      disabled={locked}
-                      className="pbp-interactive-button flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
-                    >
-                      {locked ? "검토요청 중 잠금" : "+ 항목 추가"}
-                    </button>
-                  </td>
-                </tr>
+                {locked ? null : (
+                  <tr>
+                    <td colSpan={8} className="px-1.5 pb-1 pt-1.5 lg:px-2">
+                      <button
+                        type="button"
+                        onClick={onAdd}
+                        className="pbp-interactive-button flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+                      >
+                        + 항목 추가
+                      </button>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -1281,14 +1286,15 @@ function OutsourcingSection({
                 </div>
               </div>
             ))}
-            <button
-              type="button"
-              onClick={onAdd}
-              disabled={locked}
-              className="pbp-interactive-button flex w-full items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
-            >
-              {locked ? "검토요청 중 잠금" : "+ 공정 추가"}
-            </button>
+            {locked ? null : (
+              <button
+                type="button"
+                onClick={onAdd}
+                className="pbp-interactive-button flex w-full items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+              >
+                + 공정 추가
+              </button>
+            )}
           </div>
           <div className="mt-1 hidden max-w-full overflow-hidden md:block">
             <table className="w-full max-w-full table-fixed text-left">
@@ -1327,18 +1333,19 @@ function OutsourcingSection({
                     </td>
                   </tr>
                 ))}
-                <tr>
-                  <td colSpan={7} className="px-1.5 pb-1 pt-1.5 lg:px-2">
-                    <button
-                      type="button"
-                      onClick={onAdd}
-                      disabled={locked}
-                      className="pbp-interactive-button flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
-                    >
-                      {locked ? "검토요청 중 잠금" : "+ 공정 추가"}
-                    </button>
-                  </td>
-                </tr>
+                {locked ? null : (
+                  <tr>
+                    <td colSpan={7} className="px-1.5 pb-1 pt-1.5 lg:px-2">
+                      <button
+                        type="button"
+                        onClick={onAdd}
+                        className="pbp-interactive-button flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+                      >
+                        + 공정 추가
+                      </button>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
