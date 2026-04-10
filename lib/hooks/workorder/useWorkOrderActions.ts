@@ -30,6 +30,89 @@ import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
 import type { RoleType } from "@/types/permission";
 import type { HistoryLog, UserProfile, WorkOrder, WorkflowAction } from "@/types/workorder";
 
+type SaveStatus = "saved" | "dirty" | "saving";
+
+type InventoryChangeInput = {
+  inboundQuantity: number;
+  adjustmentQuantity: number;
+  deductionQuantity: number;
+  memo: string;
+};
+
+type InspectionCompleteInput = {
+  orderEntryId: string;
+  inboundQuantity: number;
+  nextInventoryQuantity: number;
+  memo: string;
+};
+
+type UseWorkOrderActionsParams = {
+  workOrders: WorkOrder[];
+  selectedId: string;
+  selectedWorkOrder: WorkOrder;
+  currentUser: UserProfile;
+  canCreateWorkOrder: boolean;
+  canReorderWorkOrder: boolean;
+  canChangeManager: boolean;
+  isReviewRequestLocked: boolean;
+  pendingWorkflowAction: WorkflowAction | null;
+  setUsers: Dispatch<SetStateAction<UserProfile[]>>;
+  setWorkOrders: Dispatch<SetStateAction<WorkOrder[]>>;
+  setHistoryLogs: Dispatch<SetStateAction<HistoryLog[]>>;
+  setSelectedId: Dispatch<SetStateAction<string>>;
+  setLastSavedAt: Dispatch<SetStateAction<string | null>>;
+  setSaveStatus: Dispatch<SetStateAction<SaveStatus>>;
+  setToastMessage: Dispatch<SetStateAction<string | null>>;
+  setCreateWorkOrderModalOpen: Dispatch<SetStateAction<boolean>>;
+  setInventoryEditorOpen: Dispatch<SetStateAction<boolean>>;
+  setManagerAssignModalOpen: Dispatch<SetStateAction<boolean>>;
+  setPendingWorkflowAction: Dispatch<SetStateAction<WorkflowAction | null>>;
+  setOrderRequestConfirmOpen: Dispatch<SetStateAction<boolean>>;
+};
+
+const ORDER_REQUEST_ACTION_LABEL = WORKFLOW_ACTION_LABELS.requestOrder;
+const REVIEW_REQUEST_ACTION_LABEL = WORKFLOW_ACTION_LABELS.requestReview;
+
+const canDeleteWorkOrder = (workflowState: WorkOrder["workflowState"]) =>
+  workflowState === "draft" || workflowState === "review_requested";
+
+const shouldPruneRowsBeforeWorkflowTransition = (action: WorkflowAction) =>
+  action.label === REVIEW_REQUEST_ACTION_LABEL || action.label === ORDER_REQUEST_ACTION_LABEL;
+
+const requiresOrderRequestConfirmation = (action: WorkflowAction) =>
+  action.label === ORDER_REQUEST_ACTION_LABEL && action.nextState === "in_production";
+
+const shouldOpenInventoryEditor = (action: WorkflowAction) => action.nextState === "in_inspection";
+
+const buildInventoryChanges = ({ inboundQuantity, adjustmentQuantity, deductionQuantity }: InventoryChangeInput) => [
+  ...(inboundQuantity > 0 ? [{ type: "입고" as const, quantity: inboundQuantity }] : []),
+  ...(adjustmentQuantity > 0 ? [{ type: "보정" as const, quantity: adjustmentQuantity }] : []),
+  ...(deductionQuantity > 0 ? [{ type: "차감" as const, quantity: deductionQuantity }] : []),
+];
+
+const applySelectedWorkflowAction = ({
+  workOrder,
+  action,
+}: {
+  workOrder: WorkOrder;
+  action: WorkflowAction;
+}) => {
+  const targetWorkOrder = shouldPruneRowsBeforeWorkflowTransition(action) ? pruneDraftRows(workOrder) : workOrder;
+  return updateWorkflowState([targetWorkOrder], workOrder.id, action)[0] ?? workOrder;
+};
+
+const createWorkflowHistoryLog = ({
+  actorName,
+  workOrderId,
+  previousState,
+  action,
+}: {
+  actorName: string;
+  workOrderId: string;
+  previousState: WorkOrder["workflowState"];
+  action: WorkflowAction;
+}) => createStatusHistoryLog(actorName, workOrderId, previousState, action.nextState, action.label);
+
 export function useWorkOrderActions({
   workOrders,
   selectedId,
@@ -52,29 +135,33 @@ export function useWorkOrderActions({
   setManagerAssignModalOpen,
   setPendingWorkflowAction,
   setOrderRequestConfirmOpen,
-}: {
-  workOrders: WorkOrder[];
-  selectedId: string;
-  selectedWorkOrder: WorkOrder;
-  currentUser: UserProfile;
-  canCreateWorkOrder: boolean;
-  canReorderWorkOrder: boolean;
-  canChangeManager: boolean;
-  isReviewRequestLocked: boolean;
-  pendingWorkflowAction: WorkflowAction | null;
-  setUsers: Dispatch<SetStateAction<UserProfile[]>>;
-  setWorkOrders: Dispatch<SetStateAction<WorkOrder[]>>;
-  setHistoryLogs: Dispatch<SetStateAction<HistoryLog[]>>;
-  setSelectedId: Dispatch<SetStateAction<string>>;
-  setLastSavedAt: Dispatch<SetStateAction<string | null>>;
-  setSaveStatus: Dispatch<SetStateAction<"saved" | "dirty" | "saving">>;
-  setToastMessage: Dispatch<SetStateAction<string | null>>;
-  setCreateWorkOrderModalOpen: Dispatch<SetStateAction<boolean>>;
-  setInventoryEditorOpen: Dispatch<SetStateAction<boolean>>;
-  setManagerAssignModalOpen: Dispatch<SetStateAction<boolean>>;
-  setPendingWorkflowAction: Dispatch<SetStateAction<WorkflowAction | null>>;
-  setOrderRequestConfirmOpen: Dispatch<SetStateAction<boolean>>;
-}) {
+}: UseWorkOrderActionsParams) {
+  const applyWorkflowAction = useCallback(
+    (action: WorkflowAction) => {
+      const previousState = selectedWorkOrder.workflowState;
+
+      setWorkOrders((prev) =>
+        prev.map((item) => (item.id === selectedWorkOrder.id ? applySelectedWorkflowAction({ workOrder: item, action }) : item)),
+      );
+      setHistoryLogs((prev) => [
+        createWorkflowHistoryLog({
+          actorName: currentUser.name,
+          workOrderId: selectedWorkOrder.id,
+          previousState,
+          action,
+        }),
+        ...prev,
+      ]);
+      if (action.label === REVIEW_REQUEST_ACTION_LABEL) {
+        setSaveStatus("dirty");
+      }
+      if (shouldOpenInventoryEditor(action)) {
+        setInventoryEditorOpen(true);
+      }
+    },
+    [currentUser.name, selectedWorkOrder.id, selectedWorkOrder.workflowState, setHistoryLogs, setInventoryEditorOpen, setSaveStatus, setWorkOrders],
+  );
+
   const handleSave = () => {
     setSaveStatus("saving");
     const label = nowLabel();
@@ -97,9 +184,6 @@ export function useWorkOrderActions({
     setLastSavedAt(next?.lastSavedAt ?? null);
     setSaveStatus("saved");
   };
-
-  const canDeleteWorkOrder = (workflowState: WorkOrder["workflowState"]) =>
-    workflowState === "draft" || workflowState === "review_requested";
 
   const handleCreateWorkOrder = (payload?: {
     title: string;
@@ -156,32 +240,8 @@ export function useWorkOrderActions({
     setToastMessage(`리오더 작업지시서 "${getWorkOrderDisplayTitle(nextWorkOrder)}"가 생성되었습니다.`);
   };
 
-  const applyWorkflowAction = (action: WorkflowAction) => {
-    const previousState = selectedWorkOrder.workflowState;
-    const shouldPruneDraftRows =
-      action.label === WORKFLOW_ACTION_LABELS.requestReview || action.label === WORKFLOW_ACTION_LABELS.requestOrder;
-    const targetWorkOrder = shouldPruneDraftRows ? pruneDraftRows(selectedWorkOrder) : selectedWorkOrder;
-
-    setWorkOrders((prev) =>
-      prev.map((item) => {
-        if (item.id !== selectedWorkOrder.id) return item;
-        return updateWorkflowState([targetWorkOrder], selectedWorkOrder.id, action)[0] ?? item;
-      }),
-    );
-    setHistoryLogs((prev) => [
-      createStatusHistoryLog(currentUser.name, selectedWorkOrder.id, previousState, action.nextState, action.label),
-      ...prev,
-    ]);
-    if (action.label === WORKFLOW_ACTION_LABELS.requestReview) {
-      setSaveStatus("dirty");
-    }
-    if (action.nextState === "in_inspection") {
-      setInventoryEditorOpen(true);
-    }
-  };
-
   const handleWorkflowAction = (action: WorkflowAction) => {
-    if (action.label === WORKFLOW_ACTION_LABELS.requestOrder && action.nextState === "in_production") {
+    if (requiresOrderRequestConfirmation(action)) {
       setPendingWorkflowAction(action);
       setOrderRequestConfirmOpen(true);
       return;
@@ -202,23 +262,8 @@ export function useWorkOrderActions({
     setOrderRequestConfirmOpen(false);
   };
 
-  const handleInventoryApply = ({
-    inboundQuantity,
-    adjustmentQuantity,
-    deductionQuantity,
-    memo,
-  }: {
-    inboundQuantity: number;
-    adjustmentQuantity: number;
-    deductionQuantity: number;
-    memo: string;
-  }) => {
-    const changes = [
-      ...(inboundQuantity > 0 ? [{ type: "입고" as const, quantity: inboundQuantity }] : []),
-      ...(adjustmentQuantity > 0 ? [{ type: "보정" as const, quantity: adjustmentQuantity }] : []),
-      ...(deductionQuantity > 0 ? [{ type: "차감" as const, quantity: deductionQuantity }] : []),
-    ];
-
+  const handleInventoryApply = ({ inboundQuantity, adjustmentQuantity, deductionQuantity, memo }: InventoryChangeInput) => {
+    const changes = buildInventoryChanges({ inboundQuantity, adjustmentQuantity, deductionQuantity, memo });
     if (changes.length === 0) return;
 
     setWorkOrders((prev) => applyInventoryAdjustment(prev, selectedWorkOrder.id, { changes }));
@@ -233,13 +278,9 @@ export function useWorkOrderActions({
     inboundQuantity,
     nextInventoryQuantity,
     memo,
-  }: {
-    orderEntryId: string;
-    inboundQuantity: number;
-    nextInventoryQuantity: number;
-    memo: string;
-  }) => {
+  }: InspectionCompleteInput) => {
     const trimmedMemo = memo.trim();
+
     setWorkOrders((prev) =>
       prev.map((item) => {
         if (item.id !== selectedWorkOrder.id) return item;
