@@ -3,7 +3,7 @@ import InlineInfoItem from "@/components/common/ui/InlineInfoItem";
 
 function PencilIcon() {
   return (
-    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-4 w-4">
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-3.5 w-3.5">
       <path d="M13.9 2.6a1.5 1.5 0 0 1 2.1 0l1.4 1.4a1.5 1.5 0 0 1 0 2.1l-8.8 8.8-3.6.7.7-3.6 8.2-8.2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       <path d="m12.5 4 3.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
@@ -117,19 +117,19 @@ export default function WorkOrderHeaderSection({
           </div>
         </div>
       ) : (
-        <>
+        <div className="flex min-w-0 items-start gap-1.5">
           <h2 className="min-w-0 flex-1 break-keep text-2xl font-semibold text-stone-950">{title}</h2>
           {canEditTitle ? (
             <button
               type="button"
               onClick={() => setIsEditingTitle(true)}
-              className="pbp-touch-target pbp-interactive-button inline-flex h-9 w-9 shrink-0 items-center justify-center self-start rounded-full border border-stone-200 bg-white text-stone-600 hover:border-stone-300 hover:bg-stone-50"
+              className="inline-flex shrink-0 items-center justify-center self-start p-0.5 text-stone-400 hover:text-stone-600"
               aria-label="작업지시서명 수정"
             >
               <PencilIcon />
             </button>
           ) : null}
-        </>
+        </div>
       )}
     </div>
   );
