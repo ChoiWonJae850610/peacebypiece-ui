@@ -5,20 +5,10 @@ import BaseModal from "@/components/common/modal/BaseModal";
 import ModalBody from "@/components/common/modal/ModalBody";
 import ModalHeader from "@/components/common/modal/ModalHeader";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
+import { HISTORY_TONE_CLASS } from "@/lib/constants/display";
 import { HISTORY_FILTER_OPTIONS, NOTIFICATION_SETTING_META } from "@/lib/constants/workflow";
 import type { NotificationSettingKey, NotificationSettings, HistoryFilter } from "@/types/workflow";
-import type { HistoryLog, HistoryTone } from "@/types/workorder";
-
-function getHistoryToneClass(tone: HistoryTone) {
-  switch (tone) {
-    case "blue": return "bg-blue-100 text-blue-700";
-    case "violet": return "bg-violet-100 text-violet-700";
-    case "emerald": return "bg-emerald-100 text-emerald-700";
-    case "rose": return "bg-rose-100 text-rose-700";
-    case "amber": return "bg-amber-100 text-amber-700";
-    default: return "bg-stone-100 text-stone-700";
-  }
-}
+import type { HistoryLog } from "@/types/workorder";
 
 function HistoryPreviewItem({ item }: { item: HistoryLog }) {
   const [open, setOpen] = useState(false);
@@ -31,7 +21,7 @@ function HistoryPreviewItem({ item }: { item: HistoryLog }) {
         className={`w-full text-left ${hasDetails ? "cursor-pointer" : "cursor-default"}`}
       >
         <div className="flex items-center justify-between gap-3">
-          <div className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${getHistoryToneClass(item.tone)}`}>{item.action}</div>
+          <div className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${HISTORY_TONE_CLASS[item.tone]}`}>{item.action}</div>
           <div className="flex items-center gap-2 text-[11px] text-stone-500">
             <span>{item.time}</span>
             {hasDetails ? <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-medium text-stone-600">{open ? "접기" : "상세"}</span> : null}

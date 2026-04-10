@@ -1,3 +1,4 @@
+import { INSPECTION_STATUS_TONE_CLASS, WORKFLOW_DESCRIPTION_FALLBACK } from "@/lib/constants/display";
 import {
   WORKFLOW_STATE_BADGE_TONE,
   WORKFLOW_STATE_DOT_TONE,
@@ -30,7 +31,7 @@ export function getStageTextTone(state: WorkflowState | DisplayStage) {
 }
 
 export function getDisplayStageDescription(stage: DisplayStage) {
-  return i18n.workorder.workflowDescriptions[stage] ?? "현재 작업 상태 설명이 준비되지 않았습니다.";
+  return i18n.workorder.workflowDescriptions[stage] ?? WORKFLOW_DESCRIPTION_FALLBACK;
 }
 
 export function getInspectionStatusLabel(status: OrderInspectionStatus) {
@@ -38,14 +39,5 @@ export function getInspectionStatusLabel(status: OrderInspectionStatus) {
 }
 
 export function getInspectionStatusTone(status: OrderInspectionStatus) {
-  switch (status) {
-    case "inspection_completed":
-      return "bg-stone-900 text-white";
-    case "inspection_in_progress":
-      return "bg-emerald-100 text-emerald-700";
-    case "inspection_pending":
-      return "bg-amber-100 text-amber-700";
-    default:
-      return "bg-stone-100 text-stone-600";
-  }
+  return INSPECTION_STATUS_TONE_CLASS[status];
 }
