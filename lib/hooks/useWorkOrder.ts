@@ -290,7 +290,10 @@ export function useWorkOrder() {
 
   const applyWorkflowAction = (action: WorkflowAction) => {
     const previousState = selectedWorkOrder.workflowState;
-    const targetWorkOrder = action.label === WORKFLOW_ACTION_LABELS.requestReview ? pruneDraftRows(selectedWorkOrder) : selectedWorkOrder;
+    const shouldPruneDraftRows =
+      action.label === WORKFLOW_ACTION_LABELS.requestReview ||
+      action.label === WORKFLOW_ACTION_LABELS.requestOrder;
+    const targetWorkOrder = shouldPruneDraftRows ? pruneDraftRows(selectedWorkOrder) : selectedWorkOrder;
 
     setWorkOrders((prev) => prev.map((item) => {
       if (item.id !== selectedWorkOrder.id) return item;
