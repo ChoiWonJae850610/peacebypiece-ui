@@ -5,7 +5,7 @@ import { DEFAULT_SELECTED_WORK_ORDER_ID, MOCK_HISTORY_LOGS, MOCK_WORK_ORDERS } f
 import { DEFAULT_CURRENT_USER_ID, DEFAULT_PERMISSION_TARGET_ID, MOCK_USERS } from "@/lib/data/mock/users";
 import { buildUserRoleState, canCreateWorkOrderByRoles, canUploadOfficialAttachmentsByRoles, isAdminRole, normalizeRoles } from "@/lib/constants/roles";
 import { SECTION_PREFERENCES_STORAGE_KEY } from "@/lib/constants/app";
-import { canDeleteAttachmentByUser, createAttachmentId, getAttachmentType, isOfficialAttachment } from "@/lib/permissions/attachments";
+import { canDeleteAttachmentByUser, isOfficialAttachment } from "@/lib/permissions/attachments";
 import { getDisplayStageFromWorkflowState, VISIBLE_STAGES, WORKFLOW_ACTION_LABELS } from "@/lib/constants/workflow";
 import {
   createCreationHistoryLog,
@@ -22,38 +22,15 @@ import {
   toInventoryLogs,
 } from "@/lib/workorder/history";
 import { addMemoReply, addMemoThread, cloneWorkOrderForReorder, createNewWorkOrder, applyInventoryAdjustment, appendAttachments, appendMemoAttachmentsToReply, appendMemoAttachmentsToThread, promoteAttachmentToOfficial, removeAttachment, renameWorkOrderGroupBaseTitle, updateWorkflowState, updateWorkOrderManager } from "@/lib/workorder/actions";
+import { createMemoAttachments, createOfficialAttachments } from "@/lib/workorder/attachments";
+import { getMemoPayloadInfo, createMemoReplyDraft, createMemoThreadDraft } from "@/lib/workorder/memo";
+import { isUnselectedValue, pruneDraftRows } from "@/lib/workorder/draftRows";
 import { createWorkOrderListItem, calculateWorkOrderCosts } from "@/lib/workorder/selectors";
 import { getWorkOrderDisplayTitle } from "@/lib/utils/workorder";
 import { canEditInventoryForWorkflow, canManageWorkOrderManager, deriveWorkflowStateFromOrderEntries, getAvailableWorkflowActions } from "@/lib/workorder/workflow";
-import type { Attachment, HistoryLog, InventoryLog, MemoAttachmentPayload, MemoReply, MemoThread, UserProfile, WorkOrder, WorkOrderListItem, WorkflowAction } from "@/types/workorder";
+import type { Attachment, HistoryLog, InventoryLog, MemoAttachmentPayload, UserProfile, WorkOrder, WorkOrderListItem, WorkflowAction } from "@/types/workorder";
 import type { RoleType } from "@/types/permission";
 import type { HistoryFilter, NotificationSettingKey, NotificationSettings } from "@/types/workflow";
-
-function isUnselectedValue(value: string | undefined | null) {
-  const normalized = String(value ?? "").trim();
-  return !normalized || normalized === "선택 안함" || normalized === "미정 공장";
-}
-
-function isEmptyOrderEntry(entry: NonNullable<WorkOrder["orderEntries"]>[number]) {
-  return (Number(entry.quantity) || 0) === 0;
-}
-
-function isEmptyMaterialRow(material: WorkOrder["materials"][number]) {
-  return (Number(material.quantity) || 0) === 0;
-}
-
-function isEmptyOutsourcingRow(item: WorkOrder["outsourcing"][number]) {
-  return (Number(item.quantity) || 0) === 0;
-}
-
-function pruneDraftRows(workOrder: WorkOrder): WorkOrder {
-  return {
-    ...workOrder,
-    orderEntries: (workOrder.orderEntries ?? []).filter((entry) => !isEmptyOrderEntry(entry)),
-    materials: (workOrder.materials ?? []).filter((item) => !isEmptyMaterialRow(item)),
-    outsourcing: (workOrder.outsourcing ?? []).filter((item) => !isEmptyOutsourcingRow(item)),
-  };
-}
 
 export function useWorkOrder() {
   const appShellRef = useRef<HTMLDivElement | null>(null);
@@ -465,15 +442,7 @@ export function useWorkOrder() {
     }
     const files = Array.from<File>(event.target.files ?? []);
     if (files.length === 0) return;
-    const nextAttachments: Attachment[] = files.map((file) => ({
-      id: createAttachmentId(file.name),
-      name: file.name,
-      type: getAttachmentType(file),
-      url: URL.createObjectURL(file),
-      scope: "official",
-      ownerId: currentUser.id,
-      ownerName: currentUser.name,
-    }));
+    const nextAttachments = createOfficialAttachments(files, currentUser);
     setWorkOrders((prev) => appendAttachments(prev, selectedWorkOrder.id, nextAttachments));
     setSaveStatus("dirty");
     event.target.value = "";
@@ -495,38 +464,14 @@ export function useWorkOrder() {
   };
 
 
-  const createMemoAttachments = (files: File[], target: { threadId?: string; replyId?: string } = {}): Attachment[] => {
-    return files.map((file): Attachment => ({
-      id: createAttachmentId(file.name),
-      name: file.name,
-      type: getAttachmentType(file),
-      url: URL.createObjectURL(file),
-      scope: "memo" as const,
-      ownerId: currentUser.id,
-      ownerName: currentUser.name,
-      linkedThreadId: target.threadId ?? null,
-      linkedReplyId: target.replyId ?? null,
-    }));
-  };
-
   const handleCreateMemoThread = (content: string, payload?: MemoAttachmentPayload) => {
     const trimmed = content.trim();
-    const selectedAttachmentIds = payload?.selectedAttachmentIds ?? [];
-    const files = payload?.files ?? [];
+    const { selectedAttachmentIds, files } = getMemoPayloadInfo(payload);
     if (!trimmed) return;
 
-    const nextThread: MemoThread = {
-      id: createAttachmentId("memo"),
-      authorId: currentUser.id,
-      authorName: currentUser.name,
-      authorRole: currentUser.role,
-      content: trimmed,
-      createdAt: nowLabel(),
-      attachmentIds: selectedAttachmentIds,
-      replies: [],
-    };
+    const nextThread = createMemoThreadDraft(trimmed, currentUser, selectedAttachmentIds);
 
-    const memoAttachments = createMemoAttachments(files, { threadId: nextThread.id });
+    const memoAttachments = createMemoAttachments(files, currentUser, { threadId: nextThread.id });
 
     setWorkOrders((prev) => {
       const withThread = addMemoThread(prev, selectedWorkOrder.id, nextThread);
@@ -553,21 +498,12 @@ export function useWorkOrder() {
 
   const handleCreateMemoReply = (threadId: string, content: string, payload?: MemoAttachmentPayload) => {
     const trimmed = content.trim();
-    const selectedAttachmentIds = payload?.selectedAttachmentIds ?? [];
-    const files = payload?.files ?? [];
+    const { selectedAttachmentIds, files } = getMemoPayloadInfo(payload);
     if (!trimmed) return;
 
-    const nextReply: MemoReply = {
-      id: createAttachmentId("reply"),
-      authorId: currentUser.id,
-      authorName: currentUser.name,
-      authorRole: currentUser.role,
-      content: trimmed,
-      createdAt: nowLabel(),
-      attachmentIds: selectedAttachmentIds,
-    };
+    const nextReply = createMemoReplyDraft(trimmed, currentUser, selectedAttachmentIds);
 
-    const memoAttachments = createMemoAttachments(files, { threadId, replyId: nextReply.id });
+    const memoAttachments = createMemoAttachments(files, currentUser, { threadId, replyId: nextReply.id });
 
     setWorkOrders((prev) => {
       const withReply = addMemoReply(prev, selectedWorkOrder.id, threadId, nextReply);
