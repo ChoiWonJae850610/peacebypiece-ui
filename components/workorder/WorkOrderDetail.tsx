@@ -1739,6 +1739,7 @@ export default function WorkOrderDetail({
         currentInventoryQuantity={currentInventoryQuantity}
         lastSavedAt={lastSavedAt}
         canChangeManager={canChangeManager}
+        currentUserRole={currentUserRole}
         canRenameTitle={canRenameTitle}
         canEditInventory={canEditInventory}
         onSave={onSave}
