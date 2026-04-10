@@ -41,7 +41,7 @@ export function createNewWorkOrder(nextIndex: number, payload: {
     outsourcing: [],
     attachments: [],
     memoThreads: [],
-    workflowState: "작성중",
+    workflowState: "draft",
     lastSavedAt: payload.createdAt,
   };
 }
@@ -53,7 +53,7 @@ export function updateWorkflowState(workOrders: WorkOrder[], workOrderId: string
     if (action.label === "발주 요청") {
       const nextOrderEntries: OrderEntry[] = (item.orderEntries ?? []).map((entry) => ({
         ...entry,
-        inspectionStatus: entry.inspectionStatus === "검수완료" ? "검수완료" : "검수대기",
+        inspectionStatus: entry.inspectionStatus === "inspection_completed" ? "inspection_completed" : "inspection_pending",
       }));
 
       return {
@@ -194,7 +194,7 @@ function cloneOrderEntries(orderEntries: OrderEntry[] | undefined): OrderEntry[]
   return (orderEntries ?? []).map((entry) => ({
     ...entry,
     id: nextId("order"),
-    inspectionStatus: "발주대기" as const,
+    inspectionStatus: "order_pending" as const,
   }));
 }
 
@@ -295,7 +295,7 @@ export function cloneWorkOrderForReorder(
     manager: payload.managerName,
     createdById: payload.createdById,
     createdByRole: payload.createdByRole,
-    workflowState: "작성중",
+    workflowState: "draft",
     inventoryStatus: sourceWorkOrder.inventoryQuantity > 0 ? "정상" : sourceWorkOrder.inventoryStatus,
     orderEntries: cloneOrderEntries(sourceWorkOrder.orderEntries),
     materials: cloneMaterials(sourceWorkOrder.materials),

@@ -384,7 +384,7 @@ function OrderInspectionModal({
   onApply: (payload: { orderEntryId: string; inboundQuantity: number; nextInventoryQuantity: number; memo: string }) => void;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
-  const pendingEntries = orderEntries.filter((item) => item.inspectionStatus !== "검수완료");
+  const pendingEntries = orderEntries.filter((item) => item.inspectionStatus !== "inspection_completed");
   const availableEntries = pendingEntries.length > 0 ? pendingEntries : orderEntries;
   const [selectedFactory, setSelectedFactory] = useState("");
   const [selectedOrderId, setSelectedOrderId] = useState("");
@@ -489,7 +489,7 @@ function OrderInspectionModal({
               </div>
               <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
                 <div className="text-xs text-stone-500">현재 검수여부</div>
-                <div className={`mt-1 inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${getInspectionStatusTone(selectedEntry.inspectionStatus ?? "발주대기")}`}>{getInspectionStatusLabel(selectedEntry.inspectionStatus ?? "발주대기")}</div>
+                <div className={`mt-1 inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${getInspectionStatusTone(selectedEntry.inspectionStatus ?? "order_pending")}`}>{getInspectionStatusLabel(selectedEntry.inspectionStatus ?? "order_pending")}</div>
               </div>
             </div>
 
@@ -632,13 +632,13 @@ function OrderInfoSection({
                     ["수량", "quantity", item.quantity.toLocaleString(), "decimal"],
                     ["공임비", "laborCost", item.laborCost.toLocaleString(), "decimal"],
                     ["로스비", "lossCost", item.lossCost.toLocaleString(), "decimal"],
-                    ["검수여부", "inspectionStatus", getInspectionStatusLabel(item.inspectionStatus ?? "발주대기"), "text"],
+                    ["검수여부", "inspectionStatus", getInspectionStatusLabel(item.inspectionStatus ?? "order_pending"), "text"],
                   ].map(([label, field, value, inputMode]) => (
                     <div key={`${item.id}-${field}`} className={MOBILE_INFO_ROW_CLASS}>
                       <span className={MOBILE_LABEL_CLASS}>{label}</span>
                       <div className={MOBILE_VALUE_WRAPPER_CLASS}>
                         {field === "inspectionStatus" ? (
-                          <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${getInspectionStatusTone(item.inspectionStatus ?? "발주대기")}`}>{getInspectionStatusLabel(item.inspectionStatus ?? "발주대기")}</span>
+                          <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${getInspectionStatusTone(item.inspectionStatus ?? "order_pending")}`}>{getInspectionStatusLabel(item.inspectionStatus ?? "order_pending")}</span>
                         ) : (
                           <EditableValue
                             section="order"
@@ -707,7 +707,7 @@ function OrderInfoSection({
                     <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                     <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="laborCost" value={item.laborCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                     <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="lossCost" value={item.lossCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
-                    <td className="px-1.5 py-2 text-center align-middle text-[11px] lg:px-2 lg:text-[11px]"><span className={`inline-flex rounded-full px-2 py-1 text-[11px] font-medium lg:text-[11px] ${getInspectionStatusTone(item.inspectionStatus ?? "발주대기")}`}>{getInspectionStatusLabel(item.inspectionStatus ?? "발주대기")}</span></td>
+                    <td className="px-1.5 py-2 text-center align-middle text-[11px] lg:px-2 lg:text-[11px]"><span className={`inline-flex rounded-full px-2 py-1 text-[11px] font-medium lg:text-[11px] ${getInspectionStatusTone(item.inspectionStatus ?? "order_pending")}`}>{getInspectionStatusLabel(item.inspectionStatus ?? "order_pending")}</span></td>
                     <td className="px-1.5 py-2 text-center align-middle lg:px-2">
                       <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || `발주 ${rowIndex + 1}`} 삭제`} disabled={locked} />
                     </td>
@@ -1409,7 +1409,7 @@ export default function WorkOrderDetail({
     memo: string;
   }) => {
     const nextItems = orderItems.map((item) => item.id === orderEntryId
-      ? sanitizeOrderEntry({ ...item, inspectionStatus: "검수완료" }, item, currentWorkflowState)
+      ? sanitizeOrderEntry({ ...item, inspectionStatus: "inspection_completed" }, item, currentWorkflowState)
       : item);
     setOrderItems(nextItems);
     onCompleteInspection({
@@ -1569,7 +1569,7 @@ export default function WorkOrderDetail({
           onCancelEdit={cancelEdit}
           onAdd={addOrderEntry}
           onRemove={removeOrderEntry}
-          canOpenInspectionModal={canEditInventory && (currentWorkflowState === "생산중" || currentWorkflowState === "검수중") && orderItems.some((item) => item.inspectionStatus !== "검수완료")}
+          canOpenInspectionModal={canEditInventory && (currentWorkflowState === "in_production" || currentWorkflowState === "in_inspection") && orderItems.some((item) => item.inspectionStatus !== "inspection_completed")}
           onOpenInspectionModal={handleOpenInspectionModal}
           locked={isReviewRequestLocked}
         />

@@ -9,6 +9,7 @@ import {
   PRIORITY_OPTIONS,
   SEASON_OPTIONS,
 } from "@/lib/constants/workorderOptions";
+import { sanitizeOrderInspectionStatus } from "@/lib/workorder/workflow";
 import type { OrderEntry, OrderInspectionStatus, WorkflowState, WorkOrder } from "@/types/workorder";
 
 export function createId(prefix: string) {
@@ -36,24 +37,14 @@ export function normalizeEditingValue(field: string, value: string) {
 }
 
 export function getDefaultInspectionStatus(workflowState: WorkflowState): OrderInspectionStatus {
-  switch (workflowState) {
-    case "생산중":
-      return "검수대기";
-    case "검수중":
-      return "검수중";
-    case "완료":
-      return "검수완료";
-    default:
-      return "발주대기";
-  }
+  return sanitizeOrderInspectionStatus(undefined, workflowState);
 }
 
 export function sanitizeInspectionStatus(value: string | undefined | null, workflowState: WorkflowState): OrderInspectionStatus {
-  if (value === "발주대기" || value === "검수대기" || value === "검수중" || value === "검수완료") return value;
-  return getDefaultInspectionStatus(workflowState);
+  return sanitizeOrderInspectionStatus(value, workflowState);
 }
 
-export function sanitizeOrderEntry(item: Partial<OrderEntry>, fallback?: Partial<OrderEntry>, workflowState: WorkflowState = "작성중"): OrderEntry {
+export function sanitizeOrderEntry(item: Partial<OrderEntry>, fallback?: Partial<OrderEntry>, workflowState: WorkflowState = "draft"): OrderEntry {
   return {
     id: item.id || fallback?.id || createId("order"),
     type: item.type || fallback?.type || DEFAULT_ORDER_TYPE,

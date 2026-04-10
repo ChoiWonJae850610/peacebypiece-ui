@@ -1,6 +1,7 @@
 import type { Material } from "@/types/material";
 import type { RoleType } from "@/types/permission";
 import type { UserProfile } from "@/types/user";
+import type { OrderInspectionStatusValue } from "@/lib/constants/workorderStates";
 import type { DisplayStage, HistoryCategory, HistoryFilter, HistoryTone, WorkflowAction, WorkflowState } from "@/types/workflow";
 
 export type AttachmentScope = "official" | "memo";
@@ -56,7 +57,7 @@ export type Outsourcing = {
   status: string;
 };
 
-export type OrderInspectionStatus = "발주대기" | "검수대기" | "검수중" | "검수완료";
+export type OrderInspectionStatus = OrderInspectionStatusValue;
 
 export type OrderEntry = {
   id: string;

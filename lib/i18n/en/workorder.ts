@@ -1,0 +1,47 @@
+export const workorderEn = {
+  workflowStates: {
+    draft: "Draft",
+    review_requested: "Review requested",
+    review_approved: "Review approved",
+    order_requested: "Order requested",
+    in_production: "In production",
+    in_inspection: "In inspection",
+    completed: "Completed",
+  },
+  displayStages: {
+    draft: "Draft",
+    review_requested: "Review requested",
+    review_approved: "Review approved",
+    order_requested: "Order requested",
+    inspection: "Inspection",
+    completed: "Completed",
+  },
+  workflowDescriptions: {
+    draft: "Drafting and organizing work order details.",
+    review_requested: "Designer requested manager review.",
+    review_approved: "Review completed and ready for ordering.",
+    order_requested: "Order has been requested and production is underway.",
+    inspection: "Inbound or inspection staff verify quantities and completion.",
+    completed: "Work is complete and only archive management remains.",
+  },
+  inspectionStatuses: {
+    order_pending: "Order pending",
+    inspection_pending: "Inspection pending",
+    inspection_in_progress: "Inspection in progress",
+    inspection_completed: "Inspection completed",
+  },
+  actionLabels: {
+    requestReview: "Request review",
+    cancelReviewRequest: "Cancel request",
+    rejectReview: "Reject",
+    approveReview: "Approve review",
+    requestOrder: "Request order",
+    startInspection: "Start inspection",
+    completeInspection: "Complete inspection",
+  },
+  stageGroups: {
+    making: "Making",
+    production: "Production",
+    inspection: "Inspection",
+  },
+} as const;

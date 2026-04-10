@@ -1,9 +1,9 @@
-import { getStageDotTone, getStageTextTone } from "@/lib/constants/workflow";
+import { getDisplayStageLabel, getStageDotTone, getStageTextTone } from "@/lib/constants/workflow";
 import type { DisplayStage } from "@/types/workflow";
 import type { WorkflowAction } from "@/types/workorder";
 
 function getStageStepFillTone(stage: DisplayStage) {
-  return stage === "완료" ? "bg-stone-900" : getStageDotTone(stage);
+  return stage === "completed" ? "bg-stone-900" : getStageDotTone(stage);
 }
 
 export default function WorkOrderActionSection({
@@ -21,9 +21,9 @@ export default function WorkOrderActionSection({
   const primaryActionIndex = actions.findIndex((action) => !action.label.includes("반려"));
   const doneTrackTone = "bg-stone-400";
   const stageGroups: Array<{ label: string; stages: DisplayStage[] }> = [
-    { label: "제작", stages: ["작성중", "검토요청", "검토완료"] },
-    { label: "생산", stages: ["발주요청"] },
-    { label: "검수", stages: ["검수", "완료"] },
+    { label: "제작", stages: ["draft", "review_requested", "review_approved"] },
+    { label: "생산", stages: ["order_requested"] },
+    { label: "검수", stages: ["inspection", "completed"] },
   ];
   const currentGroupIndex = stageGroups.findIndex((group) => group.stages.includes(currentStage));
   const mobileStageSlots = [-1, 0, 1].map((offset) => {
@@ -47,13 +47,14 @@ export default function WorkOrderActionSection({
               const isPrimary = primaryActionIndex === -1 ? index === 0 : index === primaryActionIndex;
               return (
                 <button
-                  key={`${currentStage}-${action.nextState}-${action.label}-desktop`}
+                  key={`${currentStage}-${action.nextState}-${action.label}`}
                   type="button"
                   onClick={() => onAction(action)}
-                  className={isPrimary
-                    ? "pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-stone-800 active:bg-black"
-                    : "pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200"
-                  }
+                  className={`rounded-xl px-3 py-2 text-xs font-semibold transition ${
+                    isPrimary
+                      ? "bg-stone-900 text-white hover:bg-stone-800"
+                      : "border border-stone-300 bg-white text-stone-700 hover:bg-stone-100"
+                  }`}
                 >
                   {action.label}
                 </button>
@@ -63,19 +64,27 @@ export default function WorkOrderActionSection({
         ) : null}
       </div>
 
-      <div className="mt-3 px-1">
-        <div className="flex flex-wrap items-end gap-x-4 gap-y-1 md:gap-x-5">
-          {stageGroups.map((group, index) => {
-            const isCurrentGroup = index === currentGroupIndex;
+      <div className="mt-3 hidden md:block">
+        <div className="grid grid-cols-6 gap-2">
+          {stages.map((stage, index) => {
+            const isDone = index <= currentIndex;
+            const isCurrent = stage === currentStage;
+            const isCompletedStage = stage === "completed";
             return (
-              <div
-                key={group.label}
-                className={isCurrentGroup
-                  ? "text-base font-semibold leading-none text-stone-900 md:text-lg"
-                  : "text-xs font-medium leading-none text-stone-400 md:text-sm"
-                }
-              >
-                {group.label}
+              <div key={stage} className="relative flex flex-col items-center gap-2 text-center">
+                {index < stages.length - 1 ? (
+                  <div className={`absolute left-1/2 top-3 h-0.5 w-full ${isDone ? doneTrackTone : "bg-stone-200"}`} aria-hidden="true" />
+                ) : null}
+                <div
+                  className={`relative z-10 flex h-6 w-6 items-center justify-center rounded-full border ${
+                    isDone ? `${getStageStepFillTone(stage)} border-transparent` : "border-stone-300 bg-white"
+                  }`}
+                >
+                  <span className={`h-2.5 w-2.5 rounded-full ${isDone ? (isCompletedStage ? "bg-white" : "bg-white/90") : "bg-stone-300"}`} />
+                </div>
+                <div className={`text-xs font-medium ${isCurrent ? getStageTextTone(stage) : "text-stone-500"}`}>
+                  {getDisplayStageLabel(stage)}
+                </div>
               </div>
             );
           })}
@@ -83,127 +92,62 @@ export default function WorkOrderActionSection({
       </div>
 
       <div className="mt-3 md:hidden">
-        <div className="rounded-2xl border border-stone-200 bg-white px-3 py-2.5">
-          <div className="relative mx-auto flex min-h-[5.35rem] w-full max-w-sm items-center">
-            <div className="pointer-events-none absolute left-[16.666%] right-[16.666%] top-[1.55rem] h-0.5 rounded-full bg-stone-200" />
-            {mobileStageSlots.slice(0, -1).map((slot, slotIndex) => {
-              if (!slot) return null;
-              const nextSlot = mobileStageSlots[slotIndex + 1];
-              if (!nextSlot) return null;
-              const connectorTone = slot.index < currentIndex ? doneTrackTone : "bg-stone-200";
-              return (
-                <div
-                  key={`mobile-connector-${slotIndex}`}
-                  className={`pointer-events-none absolute top-[1.55rem] h-0.5 rounded-full ${connectorTone}`}
-                  style={{ left: `${16.666 + slotIndex * 33.333}%`, width: "33.333%" }}
-                />
-              );
-            })}
-            <div className="grid w-full grid-cols-3 gap-2">
-              {mobileStageSlots.map((slot, slotIndex) => {
-                const stage = slot?.stage;
-                const index = slot?.index ?? -1;
-                const isPlaceholder = !slot;
-                const isCurrent = index === currentIndex;
-                const isDone = index >= 0 && index < currentIndex;
-                const isCompletedStage = stage === "완료";
-                const isCompleted = isDone || (isCompletedStage && isCurrent);
-                const isUpcoming = index > currentIndex;
-
-                return (
-                  <div key={stage ? `${stage}-mobile` : `placeholder-${slotIndex}`} className={`min-w-0 ${isPlaceholder ? "opacity-0" : ""}`}>
-                    <div className="flex min-w-0 min-h-[4.4rem] flex-col items-center justify-center text-center">
-                      <div
-                        className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
-                          isCompleted
-                            ? "bg-stone-900 text-white"
-                            : isCurrent
-                              ? `${getStageStepFillTone(stage!)} text-white ring-2 ring-stone-200`
-                              : "bg-stone-200 text-stone-500"
-                        }`}
-                      >
-                        {isPlaceholder ? "" : isCompleted ? "✓" : index + 1}
-                      </div>
-                      <div className={`mt-2 block min-h-[1.5rem] w-full min-w-0 break-keep px-1 text-center text-[11px] leading-4 whitespace-normal ${
-                        isCurrent
-                          ? `font-semibold ${getStageTextTone(stage!)}`
-                          : isUpcoming
-                            ? "text-stone-400"
-                            : "text-stone-600"
-                      }`}>
-                        {stage ?? ""}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-3 hidden pb-1 md:block">
-        <div className="flex w-full items-start overflow-hidden">
-          {stages.map((stage, index) => {
-            const isCurrent = stage === currentStage;
-            const isDone = currentIndex >= 0 && index < currentIndex;
-            const isCompletedStage = stage === "완료";
-            const isCompleted = isDone || (isCompletedStage && isCurrent);
-            const isUpcoming = !isCurrent && !isDone;
-
+        <div className="grid grid-cols-3 gap-2">
+          {mobileStageSlots.map((slot, slotIndex) => {
+            if (!slot) return <div key={`empty-${slotIndex}`} className="h-full rounded-2xl border border-dashed border-transparent" />;
+            const isCurrent = slot.stage === currentStage;
+            const isDone = slot.index <= currentIndex;
+            const isCompletedStage = slot.stage === "completed";
             return (
-              <div key={stage} className="flex min-w-0 flex-1 items-start">
-                <div className="flex min-w-0 w-full flex-col items-center text-center">
-                  <div
-                    className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-semibold ${
-                      isCompleted
-                        ? "bg-stone-900 text-white"
-                        : isCurrent
-                          ? `${getStageStepFillTone(stage)} text-white ring-2 ring-stone-200`
-                          : "bg-stone-200 text-stone-500"
-                    }`}
-                  >
-                    {isCompleted ? "✓" : index + 1}
-                  </div>
-                  <div
-                    className={`mt-1.5 max-w-full overflow-hidden text-ellipsis whitespace-nowrap px-1 text-[11px] leading-4 ${
-                      isCurrent
-                        ? `font-semibold ${getStageTextTone(stage)}`
-                        : isUpcoming
-                          ? "text-stone-500"
-                          : "text-stone-700"
-                    }`}
-                  >
-                    {stage}
-                  </div>
+              <div
+                key={slot.stage}
+                className={`flex min-h-[84px] flex-col items-center justify-center rounded-2xl border px-2 py-3 text-center ${
+                  isCurrent ? "border-stone-900 bg-white shadow-sm" : "border-stone-200 bg-stone-50"
+                }`}
+              >
+                <div
+                  className={`mb-2 flex h-7 w-7 items-center justify-center rounded-full border ${
+                    isDone ? `${getStageStepFillTone(slot.stage)} border-transparent` : "border-stone-300 bg-white"
+                  }`}
+                >
+                  <span className={`h-2.5 w-2.5 rounded-full ${isDone ? (isCompletedStage ? "bg-white" : "bg-white/90") : "bg-stone-300"}`} />
                 </div>
-                {index < stages.length - 1 ? <div className={`mt-3 h-px min-w-0 flex-1 ${index < currentIndex ? doneTrackTone : "bg-stone-300"}`} /> : null}
+                <div className={`text-[11px] font-semibold leading-4 ${isCurrent ? getStageTextTone(slot.stage) : "text-stone-500"}`}>
+                  {getDisplayStageLabel(slot.stage)}
+                </div>
               </div>
             );
           })}
         </div>
+
+        {actions.length > 0 ? (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {actions.map((action, index) => {
+              const isPrimary = primaryActionIndex === -1 ? index === 0 : index === primaryActionIndex;
+              return (
+                <button
+                  key={`${currentStage}-mobile-${action.nextState}-${action.label}`}
+                  type="button"
+                  onClick={() => onAction(action)}
+                  className={`flex-1 rounded-xl px-3 py-2 text-xs font-semibold transition ${
+                    isPrimary
+                      ? "bg-stone-900 text-white hover:bg-stone-800"
+                      : "border border-stone-300 bg-white text-stone-700 hover:bg-stone-100"
+                  }`}
+                >
+                  {action.label}
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
       </div>
 
-      {actions.length > 0 ? (
-        <div className="mt-3 flex flex-wrap gap-2 md:hidden">
-          {actions.map((action, index) => {
-            const isPrimary = primaryActionIndex === -1 ? index === 0 : index === primaryActionIndex;
-            return (
-              <button
-                key={`${currentStage}-${action.nextState}-${action.label}-mobile`}
-                type="button"
-                onClick={() => onAction(action)}
-                className={isPrimary
-                  ? "flex-1 pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-stone-800 active:bg-black sm:flex-none"
-                  : "flex-1 pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200 sm:flex-none"
-                }
-              >
-                {action.label}
-              </button>
-            );
-          })}
-        </div>
-      ) : null}
+      <div className="mt-3 flex items-center gap-2 text-xs text-stone-500">
+        <span>{stageGroups[currentGroupIndex]?.label ?? "진행"}</span>
+        <span>·</span>
+        <span>{getDisplayStageLabel(currentStage)}</span>
+      </div>
     </div>
   );
 }

@@ -31,7 +31,7 @@ const workOrders: WorkOrder[] = [
     inventoryQuantity: 12,
     inventoryStatus: "부족",
     memo: "메인 컬러와 배색 확인 후 생산 요청. 목 시보리 톤은 첨부 이미지를 우선 기준으로 확인합니다.",
-    workflowState: "검토요청",
+    workflowState: "review_requested",
     lastSavedAt: "03-26 21:48",
     materials: [
       { id: "m-1", type: "원단", name: "30수 코튼", vendor: "A텍스타일", quantity: 12, unit: "yd", unitCost: 3500, totalCost: 42000, status: "발주완료" },
@@ -94,13 +94,13 @@ const workOrders: WorkOrder[] = [
     laborCost: 24000,
     lossCost: 9000,
     orderEntries: [
-      { id: "ord-21", type: "메인 생산", factory: "B공장", dueDate: "04/02", quantity: 20, laborCost: 16000, lossCost: 5000, priority: "중간", inspectionStatus: "검수대기" },
-      { id: "ord-22", type: "추가 생산", factory: "워싱랩", dueDate: "04/05", quantity: 10, laborCost: 8000, lossCost: 4000, priority: "중간", inspectionStatus: "검수대기" },
+      { id: "ord-21", type: "메인 생산", factory: "B공장", dueDate: "04/02", quantity: 20, laborCost: 16000, lossCost: 5000, priority: "중간", inspectionStatus: "inspection_pending" },
+      { id: "ord-22", type: "추가 생산", factory: "워싱랩", dueDate: "04/05", quantity: 10, laborCost: 8000, lossCost: 4000, priority: "중간", inspectionStatus: "inspection_pending" },
     ],
     inventoryQuantity: 28,
     inventoryStatus: "정상",
     memo: "워싱 견뢰도 테스트 후 본생산 진행 예정.",
-    workflowState: "생산중",
+    workflowState: "in_production",
     lastSavedAt: "03-26 18:10",
     materials: [
       { id: "m-21", type: "원단", name: "데님 8oz", vendor: "블루텍스", quantity: 18, unit: "yd", unitCost: 4700, totalCost: 84600, status: "입고완료" },
@@ -150,12 +150,12 @@ const workOrders: WorkOrder[] = [
     dueDate: "03/18",
     quantity: 10,
     orderEntries: [
-      { id: "ord-31", type: "메인 생산", factory: "C업체", dueDate: "03/18", quantity: 10, laborCost: 0, lossCost: 0, priority: "낮음", inspectionStatus: "검수완료" },
+      { id: "ord-31", type: "메인 생산", factory: "C업체", dueDate: "03/18", quantity: 10, laborCost: 0, lossCost: 0, priority: "낮음", inspectionStatus: "inspection_completed" },
     ],
     inventoryQuantity: 10,
     inventoryStatus: "정상",
     memo: "완료 후 샘플 보관용 1개 별도 관리.",
-    workflowState: "완료",
+    workflowState: "completed",
     lastSavedAt: "03-26 16:02",
     materials: [
       { id: "m-31", type: "원단", name: "합성피혁", vendor: "가죽랩", quantity: 5, unit: "yd", unitCost: 6800, totalCost: 34000, status: "입고완료" },

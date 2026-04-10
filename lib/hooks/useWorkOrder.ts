@@ -99,7 +99,7 @@ export function useWorkOrder() {
   const canChangeManager = canManageWorkOrderManager(currentRoles, currentWorkflowState);
   const currentDisplayStage = getDisplayStageFromWorkflowState(currentWorkflowState);
   const visibleStages = VISIBLE_STAGES;
-  const isReviewRequestLocked = currentWorkflowState !== "작성중";
+  const isReviewRequestLocked = currentWorkflowState !== "draft";
   const canUploadOfficialAttachments = canUploadOfficialAttachmentsByRoles(currentRoles) && !isReviewRequestLocked;
 
   const workOrderList: WorkOrderListItem[] = useMemo(() => workOrders.map(createWorkOrderListItem), [workOrders]);
@@ -214,7 +214,7 @@ export function useWorkOrder() {
     setSaveStatus("saved");
   };
 
-  const canDeleteWorkOrder = (workflowState: WorkOrder["workflowState"]) => workflowState === "작성중" || workflowState === "검토요청";
+  const canDeleteWorkOrder = (workflowState: WorkOrder["workflowState"]) => workflowState === "draft" || workflowState === "review_requested";
 
   const handleCreateWorkOrder = (payload?: { title: string; category1: string; category2: string; category3: string; season: string }) => {
     if (!canCreateWorkOrder) return;
@@ -283,13 +283,13 @@ export function useWorkOrder() {
     if (action.label === WORKFLOW_ACTION_LABELS.requestReview) {
       setSaveStatus("dirty");
     }
-    if (action.nextState === "검수중") {
+    if (action.nextState === "in_inspection") {
       setInventoryEditorOpen(true);
     }
   };
 
   const handleWorkflowAction = (action: WorkflowAction) => {
-    if (action.label === WORKFLOW_ACTION_LABELS.requestOrder && action.nextState === "생산중") {
+    if (action.label === WORKFLOW_ACTION_LABELS.requestOrder && action.nextState === "in_production") {
       setPendingWorkflowAction(action);
       setOrderRequestConfirmOpen(true);
       return;
@@ -350,7 +350,7 @@ export function useWorkOrder() {
     const trimmedMemo = memo.trim();
     setWorkOrders((prev) => prev.map((item) => {
       if (item.id !== selectedWorkOrder.id) return item;
-      const nextOrderEntries = (item.orderEntries ?? []).map((entry) => entry.id === orderEntryId ? { ...entry, inspectionStatus: "검수완료" as const } : entry);
+      const nextOrderEntries = (item.orderEntries ?? []).map((entry) => entry.id === orderEntryId ? { ...entry, inspectionStatus: "inspection_completed" as const } : entry);
       return {
         ...item,
         orderEntries: nextOrderEntries,

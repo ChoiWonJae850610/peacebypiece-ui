@@ -1,13 +1,12 @@
-export type WorkflowState =
-  | "작성중"
-  | "검토요청"
-  | "검토완료"
-  | "발주요청"
-  | "생산중"
-  | "검수중"
-  | "완료";
+import {
+  DISPLAY_STAGES,
+  WORKFLOW_STATES,
+  type DisplayStageValue,
+  type WorkflowStateValue,
+} from "@/lib/constants/workorderStates";
 
-export type DisplayStage = "작성중" | "검토요청" | "검토완료" | "발주요청" | "검수" | "완료";
+export type WorkflowState = WorkflowStateValue;
+export type DisplayStage = DisplayStageValue;
 
 export type WorkflowAction = {
   label: string;
@@ -18,8 +17,8 @@ export type HistoryCategory = "work" | "inventory" | "attachment";
 export type HistoryTone = "blue" | "violet" | "emerald" | "rose" | "amber" | "stone";
 export type HistoryFilter = "all" | "work" | "inventory" | "attachment";
 
-export const DISPLAY_STAGES: DisplayStage[] = ["작성중", "검토요청", "검토완료", "발주요청", "검수", "완료"];
-
+export const DISPLAY_STAGES_LIST: DisplayStage[] = [...DISPLAY_STAGES];
+export const WORKFLOW_STATES_LIST: WorkflowState[] = [...WORKFLOW_STATES];
 
 export type NotificationSettingKey = "created" | "updated" | "status_changed" | "materials_changed" | "outsourcing_changed" | "stock_changed" | "comment_added";
 

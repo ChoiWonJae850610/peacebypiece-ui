@@ -1,4 +1,8 @@
 import {
+  LEGACY_ORDER_INSPECTION_STATUS_MAP,
+  ORDER_INSPECTION_STATUSES,
+} from "@/lib/constants/workorderStates";
+import {
   canEditInventoryByRoles,
   hasRole,
   isAdminRole,
@@ -16,22 +20,23 @@ export type WorkflowContext = {
   workOrder: WorkOrder;
 };
 
-
 export function getDefaultInspectionStatusForWorkflowState(workflowState: WorkflowState): OrderInspectionStatus {
   switch (workflowState) {
-    case "생산중":
-      return "검수대기";
-    case "검수중":
-      return "검수중";
-    case "완료":
-      return "검수완료";
+    case "in_production":
+      return "inspection_pending";
+    case "in_inspection":
+      return "inspection_in_progress";
+    case "completed":
+      return "inspection_completed";
     default:
-      return "발주대기";
+      return "order_pending";
   }
 }
 
 export function sanitizeOrderInspectionStatus(value: string | undefined | null, workflowState: WorkflowState): OrderInspectionStatus {
-  if (value === "발주대기" || value === "검수대기" || value === "검수중" || value === "검수완료") return value;
+  if (!value) return getDefaultInspectionStatusForWorkflowState(workflowState);
+  if ((ORDER_INSPECTION_STATUSES as readonly string[]).includes(value)) return value as OrderInspectionStatus;
+  if (value in LEGACY_ORDER_INSPECTION_STATUS_MAP) return LEGACY_ORDER_INSPECTION_STATUS_MAP[value as keyof typeof LEGACY_ORDER_INSPECTION_STATUS_MAP];
   return getDefaultInspectionStatusForWorkflowState(workflowState);
 }
 
@@ -39,9 +44,9 @@ export function deriveWorkflowStateFromOrderEntries(baseState: WorkflowState, or
   const entries = orderEntries ?? [];
   if (entries.length === 0) return baseState;
   const statuses = entries.map((item) => sanitizeOrderInspectionStatus(item.inspectionStatus, baseState));
-  if (statuses.every((status) => status === "검수완료")) return "완료";
-  if (statuses.some((status) => status === "검수중" || status === "검수완료")) return "검수중";
-  if (statuses.some((status) => status === "검수대기")) return "생산중";
+  if (statuses.every((status) => status === "inspection_completed")) return "completed";
+  if (statuses.some((status) => status === "inspection_in_progress" || status === "inspection_completed")) return "in_inspection";
+  if (statuses.some((status) => status === "inspection_pending")) return "in_production";
   return baseState;
 }
 
@@ -74,39 +79,36 @@ export function canEditInventoryForWorkflow(currentRoles: RoleType[], _currentWo
 
 export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles, currentUserId, workOrder }: WorkflowContext): WorkflowAction[] {
   switch (currentWorkflowState) {
-    case "작성중": {
+    case "draft": {
       const actions: WorkflowAction[] = [];
       if (canRequestReview({ currentRoles, currentUserId, workOrder })) {
-        actions.push({ label: WORKFLOW_ACTION_LABELS.requestReview, nextState: "검토요청" });
+        actions.push({ label: WORKFLOW_ACTION_LABELS.requestReview, nextState: "review_requested" });
       }
       if (canRequestOrder(currentRoles)) {
-        actions.push({ label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "생산중" });
+        actions.push({ label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "in_production" });
       }
       return actions;
     }
-    case "검토요청": {
+    case "review_requested": {
       if (isAdminRole(currentRoles)) {
         return [
-          { label: WORKFLOW_ACTION_LABELS.rejectReview, nextState: "작성중" },
-          { label: WORKFLOW_ACTION_LABELS.approveReview, nextState: "검토완료" },
+          { label: WORKFLOW_ACTION_LABELS.rejectReview, nextState: "draft" },
+          { label: WORKFLOW_ACTION_LABELS.approveReview, nextState: "review_approved" },
         ];
       }
       if (canRequestReview({ currentRoles, currentUserId, workOrder })) {
-        return [{ label: WORKFLOW_ACTION_LABELS.cancelReviewRequest, nextState: "작성중" }];
+        return [{ label: WORKFLOW_ACTION_LABELS.cancelReviewRequest, nextState: "draft" }];
       }
       return [];
     }
-    case "검토완료":
+    case "review_approved":
       if (canRequestOrder(currentRoles)) {
-        return [{ label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "생산중" }];
+        return [{ label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "in_production" }];
       }
       return [];
-    case "발주요청":
-      return [];
-    case "생산중":
-      return [];
-    case "검수중":
-      return [];
+    case "order_requested":
+    case "in_production":
+    case "in_inspection":
     default:
       return [];
   }

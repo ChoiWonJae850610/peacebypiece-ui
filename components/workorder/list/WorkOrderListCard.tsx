@@ -1,6 +1,7 @@
 "use client";
 
-import { getStageDotTone } from "@/lib/constants/workflow";
+import { REORDERABLE_WORKFLOW_STATES } from "@/lib/constants/workorderStates";
+import { getStageDotTone, getWorkflowStateLabel } from "@/lib/constants/workflow";
 import { getCategoryPath, getWorkOrderCardTone, getWorkOrderStateLabel } from "@/lib/utils/workorder";
 import type { WorkOrderListItem, WorkflowState } from "@/types/workorder";
 
@@ -26,8 +27,9 @@ export default function WorkOrderListCard({
   canReorder = false,
 }: Props) {
   const state = getWorkOrderStateLabel(workflowStateById, workOrder.id) as WorkflowState;
+  const stateLabel = getWorkflowStateLabel(state);
   const active = workOrder.id === selectedId;
-  const canShowReorder = canReorder && ["생산중", "검수중", "완료"].includes(state);
+  const canShowReorder = canReorder && (REORDERABLE_WORKFLOW_STATES as readonly WorkflowState[]).includes(state);
   const canShowDelete = canDelete?.(state) ?? false;
 
   return (
@@ -48,7 +50,7 @@ export default function WorkOrderListCard({
               }`}
             >
               <span className={`h-2 w-2 rounded-full ${active ? "bg-white" : getStageDotTone(state)}`} aria-hidden="true" />
-              {state}
+              {stateLabel}
             </span>
           </div>
           <div className={`mt-2 space-y-0.5 text-xs leading-4 ${active ? "text-stone-200" : "text-stone-500"}`}>

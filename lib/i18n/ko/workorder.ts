@@ -1,0 +1,47 @@
+export const workorderKo = {
+  workflowStates: {
+    draft: "작성중",
+    review_requested: "검토요청",
+    review_approved: "검토완료",
+    order_requested: "발주요청",
+    in_production: "생산중",
+    in_inspection: "검수중",
+    completed: "완료",
+  },
+  displayStages: {
+    draft: "작성중",
+    review_requested: "검토요청",
+    review_approved: "검토완료",
+    order_requested: "발주요청",
+    inspection: "검수",
+    completed: "완료",
+  },
+  workflowDescriptions: {
+    draft: "작업지시 초안을 작성하고 구성 정보를 정리하는 단계입니다.",
+    review_requested: "디자이너가 관리자 검토를 요청한 단계입니다.",
+    review_approved: "관리자 검토가 끝나 발주 진행을 준비하는 단계입니다.",
+    order_requested: "발주 요청이 진행되며 생산 구간에 진입한 단계입니다.",
+    inspection: "입고/검수 담당자가 재고를 반영하고 완료 여부를 확인하는 단계입니다.",
+    completed: "작업이 종료되어 아카이브 관리만 남은 상태입니다.",
+  },
+  inspectionStatuses: {
+    order_pending: "발주대기",
+    inspection_pending: "검수대기",
+    inspection_in_progress: "검수중",
+    inspection_completed: "검수완료",
+  },
+  actionLabels: {
+    requestReview: "검토 요청",
+    cancelReviewRequest: "요청 취소",
+    rejectReview: "반려",
+    approveReview: "검토 완료",
+    requestOrder: "발주 요청",
+    startInspection: "검수 시작",
+    completeInspection: "검수 완료",
+  },
+  stageGroups: {
+    making: "제작",
+    production: "생산",
+    inspection: "검수",
+  },
+} as const;
