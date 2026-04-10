@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { filterHistoryLogs, toInventoryLogs } from "@/lib/workorder/history";
+import { filterHistoryLogs } from "@/lib/workorder/history/filters";
+import { toInventoryLogs } from "@/lib/workorder/history/inventory";
 import { normalizeRoles } from "@/lib/constants/roles";
 import type { HistoryLog, UserProfile } from "@/types/workorder";
 import type { HistoryFilter, NotificationSettingKey, NotificationSettings } from "@/types/workflow";

@@ -4,7 +4,7 @@ import { getPermissionSummary, hasRole } from "@/lib/constants/roles";
 import { LEGACY_STORAGE_KEYS, STORAGE_KEY } from "@/lib/constants/app";
 import { DEFAULT_CURRENT_USER_ID as DEFAULT_CURRENT_USER_ID_VALUE, DEFAULT_PERMISSION_TARGET_ID as DEFAULT_PERMISSION_TARGET_ID_VALUE, MOCK_USERS } from "@/lib/data/mock/users";
 import { DEFAULT_SELECTED_WORK_ORDER_ID, MOCK_HISTORY_LOGS, MOCK_WORK_ORDERS } from "@/lib/data/mock/workorders";
-import { nowLabel } from "@/lib/workorder/history";
+import { nowLabel } from "@/lib/workorder/history/builders";
 
 export function getCurrentTimeLabel() {
   return nowLabel();

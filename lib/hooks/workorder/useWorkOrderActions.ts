@@ -15,7 +15,7 @@ import {
   createTitleRenameHistoryLog,
   createUpdateHistoryLog,
   nowLabel,
-} from "@/lib/workorder/history";
+} from "@/lib/workorder/history/builders";
 import {
   applyInventoryAdjustment,
   cloneWorkOrderForReorder,

@@ -1,5 +1,5 @@
 import { createAttachmentId } from "@/lib/permissions/attachments";
-import { nowLabel } from "@/lib/workorder/history";
+import { nowLabel } from "@/lib/workorder/history/builders";
 import type { MemoReply, MemoThread, UserProfile } from "@/types/workorder";
 
 export function createMemoThreadDraft(
