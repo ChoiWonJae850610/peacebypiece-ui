@@ -101,6 +101,7 @@ export default function Home() {
     handleReorderWorkOrder,
     handleWorkflowAction,
     handleUpdateSelectedWorkOrder,
+    handleRenameWorkOrderTitle,
     handleConfirmOrderRequest,
     handleCloseOrderRequestConfirm,
     handleInventoryApply,
@@ -222,6 +223,7 @@ export default function Home() {
               actions={availableActions}
               onAction={handleWorkflowAction}
               onUpdateWorkOrder={handleUpdateSelectedWorkOrder}
+              onRenameWorkOrderTitle={handleRenameWorkOrderTitle}
               onCompleteInspection={handleCompleteInspection}
             />
             </div>
