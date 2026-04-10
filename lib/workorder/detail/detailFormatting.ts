@@ -1,5 +1,5 @@
 import { getI18n } from "@/lib/i18n";
-import { calculateOrderEntryTotals } from "@/lib/workorder/detailCalculations";
+import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculations";
 import type { OrderEntry, OrderInspectionStatus } from "@/types/workorder";
 
 const i18n = getI18n();

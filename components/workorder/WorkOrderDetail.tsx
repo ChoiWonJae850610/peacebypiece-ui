@@ -9,9 +9,9 @@ import OrderInfoSection from "@/components/workorder/detail/sections/OrderInfoSe
 import ProductionCompositionSection from "@/components/workorder/detail/sections/ProductionCompositionSection";
 import { blurActiveEditableElement, type BasicInfoState, type EditableCell, type EditableSectionKey, type OrderEntryState } from "@/components/workorder/detail/shared/detailEditorShared";
 import { DEFAULT_FACTORY_OPTION, DEFAULT_MATERIAL_TYPE, DEFAULT_MATERIAL_UNIT, DEFAULT_ORDER_TYPE, DEFAULT_OUTSOURCING_PROCESS, DEFAULT_OUTSOURCING_UNIT, FACTORY_OPTIONS, PARTNER_OPTIONS, PRIORITY_OPTIONS } from "@/lib/constants/workorderOptions";
-import { calculateOrderEntryTotals, recalculateMaterial, recalculateOutsourcing } from "@/lib/workorder/detailCalculations";
-import { formatBasicSummary } from "@/lib/workorder/detailFormatting";
-import { appendOption, createId, getInitialBasicInfo, getInitialOrderEntries, sanitizeOrderEntry, sanitizeSelectValue, toNumber } from "@/lib/workorder/detailSanitizers";
+import { calculateOrderEntryTotals, recalculateMaterial, recalculateOutsourcing } from "@/lib/workorder/detail/detailCalculations";
+import { formatBasicSummary } from "@/lib/workorder/detail/detailFormatting";
+import { appendOption, createId, getInitialBasicInfo, getInitialOrderEntries, sanitizeOrderEntry, sanitizeSelectValue, toNumber } from "@/lib/workorder/detail/detailSanitizers";
 import type { DisplayStage } from "@/types/workflow";
 import { getWorkOrderDisplayTitle } from "@/lib/utils/workorder";
 import type { Material, WorkOrder, WorkflowAction, WorkflowState, Outsourcing } from "@/types/workorder";

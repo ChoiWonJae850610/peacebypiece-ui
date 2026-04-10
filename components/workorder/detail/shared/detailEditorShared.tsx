@@ -1,6 +1,6 @@
 import { type KeyboardEvent, type ReactNode } from "react";
-import { getDisplayValue, getEditingInitialValue } from "@/lib/workorder/detailFormatting";
-import { normalizeEditingValue } from "@/lib/workorder/detailSanitizers";
+import { getDisplayValue, getEditingInitialValue } from "@/lib/workorder/detail/detailFormatting";
+import { normalizeEditingValue } from "@/lib/workorder/detail/detailSanitizers";
 import type { OrderEntry } from "@/types/workorder";
 
 export type RowValue = string | number | null | undefined;

@@ -5,7 +5,7 @@ import ModalFooter from "@/components/common/modal/ModalFooter";
 import ModalHeader from "@/components/common/modal/ModalHeader";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import { DEFAULT_FACTORY_OPTION } from "@/lib/constants/workorderOptions";
-import { toNumber } from "@/lib/workorder/detailSanitizers";
+import { toNumber } from "@/lib/workorder/detail/detailSanitizers";
 import type { OrderEntryState } from "@/components/workorder/detail/shared/detailEditorShared";
 
 export default function OrderInspectionModal({

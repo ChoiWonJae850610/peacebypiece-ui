@@ -5,8 +5,8 @@ import ModalFooter from "@/components/common/modal/ModalFooter";
 import ModalHeader from "@/components/common/modal/ModalHeader";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import { CATEGORY1_OPTIONS, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
-import { formatBasicSummary } from "@/lib/workorder/detailFormatting";
-import { getCategory2Options, getCategory3Options } from "@/lib/workorder/detailSanitizers";
+import { formatBasicSummary } from "@/lib/workorder/detail/detailFormatting";
+import { getCategory2Options, getCategory3Options } from "@/lib/workorder/detail/detailSanitizers";
 import type { BasicInfoState } from "@/components/workorder/detail/shared/detailEditorShared";
 
 export default function BasicInfoEditModal({
