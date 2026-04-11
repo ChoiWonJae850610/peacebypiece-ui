@@ -46,15 +46,45 @@ type InspectionCompleteInput = {
   memo: string;
 };
 
-type UseWorkOrderActionsParams = {
+type CreateWorkOrderInput = {
+  nextIndex: number;
+  title?: string;
+  category1?: string;
+  category2?: string;
+  category3?: string;
+  season?: string;
+};
+
+type ChangeManagerInput = {
+  workOrder: WorkOrder;
+  managerId: string;
+  users: UserProfile[];
+  canChangeManager: boolean;
+  isReviewRequestLocked: boolean;
+};
+
+type DeleteWorkOrderInput = {
+  workOrderId: string;
   workOrders: WorkOrder[];
   selectedId: string;
-  selectedWorkOrder: WorkOrder;
+};
+
+type RenameWorkOrderTitleInput = {
+  workOrders: WorkOrder[];
+  workOrder: WorkOrder;
+  nextTitle: string;
+};
+
+type UpdateSelectedWorkOrderInput = {
+  workOrderId: string;
+  patch: Partial<WorkOrder>;
+  isReviewRequestLocked: boolean;
+};
+
+type UseWorkOrderActionsParams = {
   currentUser: UserProfile;
   canCreateWorkOrder: boolean;
   canReorderWorkOrder: boolean;
-  canChangeManager: boolean;
-  isReviewRequestLocked: boolean;
   pendingWorkflowAction: WorkflowAction | null;
   setUsers: Dispatch<SetStateAction<UserProfile[]>>;
   setWorkOrders: Dispatch<SetStateAction<WorkOrder[]>>;
@@ -73,7 +103,7 @@ type UseWorkOrderActionsParams = {
 const ORDER_REQUEST_ACTION_LABEL = WORKFLOW_ACTION_LABELS.requestOrder;
 const REVIEW_REQUEST_ACTION_LABEL = WORKFLOW_ACTION_LABELS.requestReview;
 
-const canDeleteWorkOrder = (workflowState: WorkOrder["workflowState"]) =>
+export const canDeleteWorkOrder = (workflowState: WorkOrder["workflowState"]) =>
   workflowState === "draft" || workflowState === "review_requested";
 
 const shouldPruneRowsBeforeWorkflowTransition = (action: WorkflowAction) =>
@@ -114,14 +144,9 @@ const createWorkflowHistoryLog = ({
 }) => createStatusHistoryLog(actorName, workOrderId, previousState, action.nextState, action.label);
 
 export function useWorkOrderActions({
-  workOrders,
-  selectedId,
-  selectedWorkOrder,
   currentUser,
   canCreateWorkOrder,
   canReorderWorkOrder,
-  canChangeManager,
-  isReviewRequestLocked,
   pendingWorkflowAction,
   setUsers,
   setWorkOrders,
@@ -137,16 +162,16 @@ export function useWorkOrderActions({
   setOrderRequestConfirmOpen,
 }: UseWorkOrderActionsParams) {
   const applyWorkflowAction = useCallback(
-    (action: WorkflowAction) => {
-      const previousState = selectedWorkOrder.workflowState;
+    (workOrder: WorkOrder, action: WorkflowAction) => {
+      const previousState = workOrder.workflowState;
 
       setWorkOrders((prev) =>
-        prev.map((item) => (item.id === selectedWorkOrder.id ? applySelectedWorkflowAction({ workOrder: item, action }) : item)),
+        prev.map((item) => (item.id === workOrder.id ? applySelectedWorkflowAction({ workOrder: item, action }) : item)),
       );
       setHistoryLogs((prev) => [
         createWorkflowHistoryLog({
           actorName: currentUser.name,
-          workOrderId: selectedWorkOrder.id,
+          workOrderId: workOrder.id,
           previousState,
           action,
         }),
@@ -159,225 +184,238 @@ export function useWorkOrderActions({
         setInventoryEditorOpen(true);
       }
     },
-    [currentUser.name, selectedWorkOrder.id, selectedWorkOrder.workflowState, setHistoryLogs, setInventoryEditorOpen, setSaveStatus, setWorkOrders],
+    [currentUser.name, setHistoryLogs, setInventoryEditorOpen, setSaveStatus, setWorkOrders],
   );
 
-  const handleSave = () => {
-    setSaveStatus("saving");
-    const label = nowLabel();
-    setLastSavedAt(label);
-    setWorkOrders((prev) => prev.map((item) => (item.id === selectedWorkOrder.id ? { ...item, lastSavedAt: label } : item)));
-    setHistoryLogs((prev) => [
-      createUpdateHistoryLog(currentUser.name, selectedWorkOrder.id, [
-        { label: "저장", value: `저장 시각 ${label}` },
-        { label: "작업지시서", value: selectedWorkOrder.title },
-      ]),
-      ...prev,
-    ]);
-    setSaveStatus("saved");
-    setToastMessage("저장이 완료되었습니다.");
-  };
-
-  const handleSelectWorkOrder = (id: string) => {
-    setSelectedId(id);
-    const next = workOrders.find((item) => item.id === id);
-    setLastSavedAt(next?.lastSavedAt ?? null);
-    setSaveStatus("saved");
-  };
-
-  const handleCreateWorkOrder = (payload?: {
-    title: string;
-    category1: string;
-    category2: string;
-    category3: string;
-    season: string;
-  }) => {
-    if (!canCreateWorkOrder) return;
-    const newWorkOrder = createNewWorkOrder(workOrders.length + 1, {
-      managerName: currentUser.name,
-      managerId: currentUser.id,
-      managerRole: currentUser.role,
-      createdAt: nowLabel(),
-      title: payload?.title,
-      category1: payload?.category1,
-      category2: payload?.category2,
-      category3: payload?.category3,
-      season: payload?.season,
-    });
-    setWorkOrders((prev) => [newWorkOrder, ...prev]);
-    setSelectedId(newWorkOrder.id);
-    setLastSavedAt(newWorkOrder.lastSavedAt);
-    setSaveStatus("dirty");
-    setHistoryLogs((prev) => [createCreationHistoryLog(currentUser.name, newWorkOrder.id), ...prev]);
-    setCreateWorkOrderModalOpen(false);
-  };
-
-  const handleReorderWorkOrder = (workOrderId: string) => {
-    if (!canReorderWorkOrder) return;
-    const sourceWorkOrder = workOrders.find((item) => item.id === workOrderId);
-    if (!sourceWorkOrder) return;
-
-    const createdAt = nowLabel();
-    const nextWorkOrder = cloneWorkOrderForReorder(workOrders, sourceWorkOrder, {
-      createdAt,
-      createdById: currentUser.id,
-      createdByRole: currentUser.role,
-      managerId: sourceWorkOrder.managerId ?? currentUser.id,
-      managerName: sourceWorkOrder.manager || currentUser.name,
-    });
-
-    setWorkOrders((prev) => [nextWorkOrder, ...prev]);
-    setSelectedId(nextWorkOrder.id);
-    setLastSavedAt(nextWorkOrder.lastSavedAt);
-    setSaveStatus("dirty");
-    setHistoryLogs((prev) => [
-      createReorderHistoryLog(currentUser.name, nextWorkOrder.id, {
-        sourceTitle: getWorkOrderDisplayTitle(sourceWorkOrder),
-        nextTitle: getWorkOrderDisplayTitle(nextWorkOrder),
-      }),
-      ...prev,
-    ]);
-    setToastMessage(`리오더 작업지시서 "${getWorkOrderDisplayTitle(nextWorkOrder)}"가 생성되었습니다.`);
-  };
-
-  const handleWorkflowAction = (action: WorkflowAction) => {
-    if (requiresOrderRequestConfirmation(action)) {
-      setPendingWorkflowAction(action);
-      setOrderRequestConfirmOpen(true);
-      return;
-    }
-
-    applyWorkflowAction(action);
-  };
-
-  const handleConfirmOrderRequest = () => {
-    if (!pendingWorkflowAction) return;
-    applyWorkflowAction(pendingWorkflowAction);
-    setPendingWorkflowAction(null);
-    setOrderRequestConfirmOpen(false);
-  };
-
-  const handleCloseOrderRequestConfirm = () => {
-    setPendingWorkflowAction(null);
-    setOrderRequestConfirmOpen(false);
-  };
-
-  const handleInventoryApply = ({ inboundQuantity, adjustmentQuantity, deductionQuantity, memo }: InventoryChangeInput) => {
-    const changes = buildInventoryChanges({ inboundQuantity, adjustmentQuantity, deductionQuantity, memo });
-    if (changes.length === 0) return;
-
-    setWorkOrders((prev) => applyInventoryAdjustment(prev, selectedWorkOrder.id, { changes }));
-    setHistoryLogs((prev) => [
-      createInventoryHistoryLog(currentUser.name, selectedWorkOrder.id, { changes, memo }),
-      ...prev,
-    ]);
-  };
-
-  const handleCompleteInspection = ({
-    orderEntryId,
-    inboundQuantity,
-    nextInventoryQuantity,
-    memo,
-  }: InspectionCompleteInput) => {
-    const trimmedMemo = memo.trim();
-
-    setWorkOrders((prev) =>
-      prev.map((item) => {
-        if (item.id !== selectedWorkOrder.id) return item;
-        const nextOrderEntries = (item.orderEntries ?? []).map((entry) =>
-          entry.id === orderEntryId ? { ...entry, inspectionStatus: "inspection_completed" as const } : entry,
-        );
-        return {
-          ...item,
-          orderEntries: nextOrderEntries,
-          inventoryQuantity: nextInventoryQuantity,
-          inventoryStatus: nextInventoryQuantity > 0 ? "정상" : "부족",
-        };
-      }),
-    );
-    setHistoryLogs((prev) => [
-      createInspectionCompleteHistoryLog(currentUser.name, selectedWorkOrder.id, {
-        inboundQuantity,
-        nextInventoryQuantity,
-        memo: trimmedMemo,
-      }),
-      ...prev,
-    ]);
-    setSaveStatus("dirty");
-    setToastMessage("검수 완료가 반영되었습니다.");
-  };
-
-  const handleApplyRoles = (userId: string, roles: RoleType[]) => {
-    const nextRoleState = buildUserRoleState(roles);
-    setUsers((prev) => prev.map((user) => (user.id === userId ? { ...user, ...nextRoleState } : user)));
-  };
-
-  const handleOpenManagerAssignModal = () => {
-    if (!canChangeManager || isReviewRequestLocked) return;
-    setManagerAssignModalOpen(true);
-  };
-
-  const handleCloseManagerAssignModal = () => {
-    setManagerAssignModalOpen(false);
-  };
-
-  const handleChangeManager = (managerId: string, users: UserProfile[]) => {
-    if (!canChangeManager || isReviewRequestLocked) return;
-    const nextManager = users.find((user) => user.id === managerId);
-    if (!nextManager) return;
-
-    const previousManagerName = selectedWorkOrder.manager || "-";
-    const previousManagerId = selectedWorkOrder.managerId ?? null;
-    if (previousManagerId === nextManager.id || previousManagerName === nextManager.name) {
-      setManagerAssignModalOpen(false);
-      return;
-    }
-
-    setWorkOrders((prev) =>
-      updateWorkOrderManager(prev, selectedWorkOrder.id, {
-        managerId: nextManager.id,
-        managerName: nextManager.name,
-      }),
-    );
-    setHistoryLogs((prev) => [
-      createManagerChangeHistoryLog(currentUser.name, selectedWorkOrder.id, previousManagerName, nextManager.name),
-      ...prev,
-    ]);
-    setSaveStatus("dirty");
-    setToastMessage("담당자가 변경되었습니다.");
-    setManagerAssignModalOpen(false);
-  };
-
-  const handleDeleteWorkOrder = (workOrderId: string) => {
-    const target = workOrders.find((item) => item.id === workOrderId);
-    if (!target || !canDeleteWorkOrder(target.workflowState) || workOrders.length <= 1) return;
-    if (typeof window !== "undefined") {
-      const ok = window.confirm(`작업지시서 "${target.title}"를 삭제할까요?`);
-      if (!ok) return;
-    }
-
-    const remaining = workOrders.filter((item) => item.id !== workOrderId);
-    const fallbackSelectedId = remaining[0]?.id ?? DEFAULT_SELECTED_WORK_ORDER_ID;
-    setWorkOrders(remaining);
-    setHistoryLogs((prev) => prev.filter((item) => item.workOrderId !== workOrderId));
-    if (selectedId === workOrderId) {
-      setSelectedId(fallbackSelectedId);
-      const fallbackWorkOrder = remaining.find((item) => item.id === fallbackSelectedId) ?? remaining[0];
-      setLastSavedAt(fallbackWorkOrder?.lastSavedAt ?? null);
+  const handleSave = useCallback(
+    (workOrder: WorkOrder) => {
+      setSaveStatus("saving");
+      const label = nowLabel();
+      setLastSavedAt(label);
+      setWorkOrders((prev) => prev.map((item) => (item.id === workOrder.id ? { ...item, lastSavedAt: label } : item)));
+      setHistoryLogs((prev) => [
+        createUpdateHistoryLog(currentUser.name, workOrder.id, [
+          { label: "저장", value: `저장 시각 ${label}` },
+          { label: "작업지시서", value: workOrder.title },
+        ]),
+        ...prev,
+      ]);
       setSaveStatus("saved");
-    }
-    setToastMessage("작업지시서가 삭제되었습니다.");
-  };
+      setToastMessage("저장이 완료되었습니다.");
+    },
+    [currentUser.name, setHistoryLogs, setLastSavedAt, setSaveStatus, setToastMessage, setWorkOrders],
+  );
+
+  const handleCreateWorkOrder = useCallback(
+    (payload?: CreateWorkOrderInput) => {
+      if (!canCreateWorkOrder) return;
+      const nextIndex = payload?.nextIndex ?? 1;
+      const newWorkOrder = createNewWorkOrder(nextIndex, {
+        managerName: currentUser.name,
+        managerId: currentUser.id,
+        managerRole: currentUser.role,
+        createdAt: nowLabel(),
+        title: payload?.title,
+        category1: payload?.category1,
+        category2: payload?.category2,
+        category3: payload?.category3,
+        season: payload?.season,
+      });
+      setWorkOrders((prev) => [newWorkOrder, ...prev]);
+      setSelectedId(newWorkOrder.id);
+      setLastSavedAt(newWorkOrder.lastSavedAt);
+      setHistoryLogs((historyPrev) => [createCreationHistoryLog(currentUser.name, newWorkOrder.id), ...historyPrev]);
+      setSaveStatus("dirty");
+      setCreateWorkOrderModalOpen(false);
+    },
+    [canCreateWorkOrder, currentUser.id, currentUser.name, currentUser.role, setCreateWorkOrderModalOpen, setHistoryLogs, setLastSavedAt, setSaveStatus, setSelectedId, setWorkOrders],
+  );
+
+  const handleReorderWorkOrder = useCallback(
+    (workOrders: WorkOrder[], workOrderId: string) => {
+      if (!canReorderWorkOrder) return;
+      const sourceWorkOrder = workOrders.find((item) => item.id === workOrderId);
+      if (!sourceWorkOrder) return;
+
+      const createdAt = nowLabel();
+      const nextWorkOrder = cloneWorkOrderForReorder(workOrders, sourceWorkOrder, {
+        createdAt,
+        createdById: currentUser.id,
+        createdByRole: currentUser.role,
+        managerId: sourceWorkOrder.managerId ?? currentUser.id,
+        managerName: sourceWorkOrder.manager || currentUser.name,
+      });
+
+      setWorkOrders((prev) => [nextWorkOrder, ...prev]);
+      setSelectedId(nextWorkOrder.id);
+      setLastSavedAt(nextWorkOrder.lastSavedAt);
+      setSaveStatus("dirty");
+      setHistoryLogs((prev) => [
+        createReorderHistoryLog(currentUser.name, nextWorkOrder.id, {
+          sourceTitle: getWorkOrderDisplayTitle(sourceWorkOrder),
+          nextTitle: getWorkOrderDisplayTitle(nextWorkOrder),
+        }),
+        ...prev,
+      ]);
+      setToastMessage(`리오더 작업지시서 "${getWorkOrderDisplayTitle(nextWorkOrder)}"가 생성되었습니다.`);
+    },
+    [canReorderWorkOrder, currentUser.id, currentUser.name, currentUser.role, setHistoryLogs, setLastSavedAt, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
+  );
+
+  const handleWorkflowAction = useCallback(
+    (workOrder: WorkOrder, action: WorkflowAction) => {
+      if (requiresOrderRequestConfirmation(action)) {
+        setPendingWorkflowAction(action);
+        setOrderRequestConfirmOpen(true);
+        return;
+      }
+
+      applyWorkflowAction(workOrder, action);
+    },
+    [applyWorkflowAction, setOrderRequestConfirmOpen, setPendingWorkflowAction],
+  );
+
+  const handleConfirmOrderRequest = useCallback(
+    (workOrder: WorkOrder) => {
+      if (!pendingWorkflowAction) return;
+      applyWorkflowAction(workOrder, pendingWorkflowAction);
+      setPendingWorkflowAction(null);
+      setOrderRequestConfirmOpen(false);
+    },
+    [applyWorkflowAction, pendingWorkflowAction, setOrderRequestConfirmOpen, setPendingWorkflowAction],
+  );
+
+  const handleCloseOrderRequestConfirm = useCallback(() => {
+    setPendingWorkflowAction(null);
+    setOrderRequestConfirmOpen(false);
+  }, [setOrderRequestConfirmOpen, setPendingWorkflowAction]);
+
+  const handleInventoryApply = useCallback(
+    (workOrderId: string, { inboundQuantity, adjustmentQuantity, deductionQuantity, memo }: InventoryChangeInput) => {
+      const changes = buildInventoryChanges({ inboundQuantity, adjustmentQuantity, deductionQuantity, memo });
+      if (changes.length === 0) return;
+
+      setWorkOrders((prev) => applyInventoryAdjustment(prev, workOrderId, { changes }));
+      setHistoryLogs((prev) => [createInventoryHistoryLog(currentUser.name, workOrderId, { changes, memo }), ...prev]);
+    },
+    [currentUser.name, setHistoryLogs, setWorkOrders],
+  );
+
+  const handleCompleteInspection = useCallback(
+    ({ workOrderId, orderEntryId, inboundQuantity, nextInventoryQuantity, memo }: InspectionCompleteInput & { workOrderId: string }) => {
+      const trimmedMemo = memo.trim();
+
+      setWorkOrders((prev) =>
+        prev.map((item) => {
+          if (item.id !== workOrderId) return item;
+          const nextOrderEntries = (item.orderEntries ?? []).map((entry) =>
+            entry.id === orderEntryId ? { ...entry, inspectionStatus: "inspection_completed" as const } : entry,
+          );
+          return {
+            ...item,
+            orderEntries: nextOrderEntries,
+            inventoryQuantity: nextInventoryQuantity,
+            inventoryStatus: nextInventoryQuantity > 0 ? "정상" : "부족",
+          };
+        }),
+      );
+      setHistoryLogs((prev) => [
+        createInspectionCompleteHistoryLog(currentUser.name, workOrderId, {
+          inboundQuantity,
+          nextInventoryQuantity,
+          memo: trimmedMemo,
+        }),
+        ...prev,
+      ]);
+      setSaveStatus("dirty");
+      setToastMessage("검수 완료가 반영되었습니다.");
+    },
+    [currentUser.name, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders],
+  );
+
+  const handleApplyRoles = useCallback(
+    (userId: string, roles: RoleType[]) => {
+      const nextRoleState = buildUserRoleState(roles);
+      setUsers((prev) => prev.map((user) => (user.id === userId ? { ...user, ...nextRoleState } : user)));
+    },
+    [setUsers],
+  );
+
+  const handleOpenManagerAssignModal = useCallback(
+    ({ canChangeManager, isReviewRequestLocked }: Pick<ChangeManagerInput, "canChangeManager" | "isReviewRequestLocked">) => {
+      if (!canChangeManager || isReviewRequestLocked) return;
+      setManagerAssignModalOpen(true);
+    },
+    [setManagerAssignModalOpen],
+  );
+
+  const handleCloseManagerAssignModal = useCallback(() => {
+    setManagerAssignModalOpen(false);
+  }, [setManagerAssignModalOpen]);
+
+  const handleChangeManager = useCallback(
+    ({ workOrder, managerId, users, canChangeManager, isReviewRequestLocked }: ChangeManagerInput) => {
+      if (!canChangeManager || isReviewRequestLocked) return;
+      const nextManager = users.find((user) => user.id === managerId);
+      if (!nextManager) return;
+
+      const previousManagerName = workOrder.manager || "-";
+      const previousManagerId = workOrder.managerId ?? null;
+      if (previousManagerId === nextManager.id || previousManagerName === nextManager.name) {
+        setManagerAssignModalOpen(false);
+        return;
+      }
+
+      setWorkOrders((prev) =>
+        updateWorkOrderManager(prev, workOrder.id, {
+          managerId: nextManager.id,
+          managerName: nextManager.name,
+        }),
+      );
+      setHistoryLogs((prev) => [
+        createManagerChangeHistoryLog(currentUser.name, workOrder.id, previousManagerName, nextManager.name),
+        ...prev,
+      ]);
+      setSaveStatus("dirty");
+      setToastMessage("담당자가 변경되었습니다.");
+      setManagerAssignModalOpen(false);
+    },
+    [currentUser.name, setHistoryLogs, setManagerAssignModalOpen, setSaveStatus, setToastMessage, setWorkOrders],
+  );
+
+  const handleDeleteWorkOrder = useCallback(
+    ({ workOrderId, workOrders, selectedId }: DeleteWorkOrderInput) => {
+      const target = workOrders.find((item) => item.id === workOrderId);
+      if (!target || !canDeleteWorkOrder(target.workflowState) || workOrders.length <= 1) return;
+      if (typeof window !== "undefined") {
+        const ok = window.confirm(`작업지시서 "${target.title}"를 삭제할까요?`);
+        if (!ok) return;
+      }
+
+      const remaining = workOrders.filter((item) => item.id !== workOrderId);
+      const fallbackSelectedId = remaining[0]?.id ?? DEFAULT_SELECTED_WORK_ORDER_ID;
+      setWorkOrders(remaining);
+      setHistoryLogs((prev) => prev.filter((item) => item.workOrderId !== workOrderId));
+      if (selectedId === workOrderId) {
+        setSelectedId(fallbackSelectedId);
+        const fallbackWorkOrder = remaining.find((item) => item.id === fallbackSelectedId) ?? remaining[0];
+        setLastSavedAt(fallbackWorkOrder?.lastSavedAt ?? null);
+        setSaveStatus("saved");
+      }
+      setToastMessage("작업지시서가 삭제되었습니다.");
+    },
+    [setHistoryLogs, setLastSavedAt, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
+  );
 
   const handleRenameWorkOrderTitle = useCallback(
-    (nextTitle: string) => {
+    ({ workOrders, workOrder, nextTitle }: RenameWorkOrderTitleInput) => {
       const trimmedTitle = String(nextTitle ?? "").trim();
       if (!trimmedTitle) return;
 
-      const previousBaseTitle = String(selectedWorkOrder.baseTitle ?? selectedWorkOrder.title ?? "").trim() || "새 작업지시서";
+      const previousBaseTitle = String(workOrder.baseTitle ?? workOrder.title ?? "").trim() || "새 작업지시서";
       if (previousBaseTitle === trimmedTitle) return;
 
-      const renameResult = renameWorkOrderGroupBaseTitle(workOrders, selectedWorkOrder.id, trimmedTitle);
+      const renameResult = renameWorkOrderGroupBaseTitle(workOrders, workOrder.id, trimmedTitle);
       if (renameResult.affectedWorkOrderIds.length === 0 || renameResult.previousBaseTitle === trimmedTitle) return;
 
       setWorkOrders(renameResult.nextWorkOrders);
@@ -398,11 +436,11 @@ export function useWorkOrderActions({
           : "작업지시서명이 변경되었습니다.",
       );
     },
-    [currentUser.name, selectedWorkOrder.id, selectedWorkOrder.baseTitle, selectedWorkOrder.title, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders, workOrders],
+    [currentUser.name, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   const handleUpdateSelectedWorkOrder = useCallback(
-    (patch: Partial<WorkOrder>) => {
+    ({ workOrderId, patch, isReviewRequestLocked }: UpdateSelectedWorkOrderInput) => {
       const hasLockedChanges = Object.keys(patch).some((key) => key !== "memoThreads" && key !== "lastSavedAt");
       if (isReviewRequestLocked && hasLockedChanges) {
         return;
@@ -410,7 +448,7 @@ export function useWorkOrderActions({
 
       setWorkOrders((prev) =>
         prev.map((item) => {
-          if (item.id !== selectedWorkOrder.id) return item;
+          if (item.id !== workOrderId) return item;
           const nextItem = { ...item, ...patch };
           if (patch.orderEntries) {
             nextItem.workflowState = deriveWorkflowStateFromOrderEntries(item.workflowState, patch.orderEntries);
@@ -420,13 +458,11 @@ export function useWorkOrderActions({
       );
       setSaveStatus("dirty");
     },
-    [isReviewRequestLocked, selectedWorkOrder.id, setSaveStatus, setWorkOrders],
+    [setSaveStatus, setWorkOrders],
   );
 
   return {
     handleSave,
-    handleSelectWorkOrder,
-    canDeleteWorkOrder,
     handleCreateWorkOrder,
     handleReorderWorkOrder,
     handleDeleteWorkOrder,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { DEFAULT_SELECTED_WORK_ORDER_ID, MOCK_HISTORY_LOGS, MOCK_WORK_ORDERS } from "@/lib/data/mock/workorders";
 import { DEFAULT_CURRENT_USER_ID, DEFAULT_PERMISSION_TARGET_ID, MOCK_USERS } from "@/lib/data/mock/users";
 import {
@@ -18,11 +18,11 @@ import {
   deriveWorkflowStateFromOrderEntries,
   getAvailableWorkflowActions,
 } from "@/lib/workorder/workflow";
-import { useWorkOrderActions } from "@/lib/hooks/workorder/useWorkOrderActions";
+import { canDeleteWorkOrder, useWorkOrderActions } from "@/lib/hooks/workorder/useWorkOrderActions";
 import { useWorkOrderAttachments } from "@/lib/hooks/workorder/useWorkOrderAttachments";
 import { useWorkOrderHistory } from "@/lib/hooks/workorder/useWorkOrderHistory";
 import { useWorkOrderUIState } from "@/lib/hooks/workorder/useWorkOrderUIState";
-import type { HistoryLog, UserProfile, WorkOrder, WorkOrderListItem } from "@/types/workorder";
+import type { HistoryLog, UserProfile, WorkOrder, WorkOrderListItem, WorkflowAction } from "@/types/workorder";
 
 export function useWorkOrder() {
   const uiState = useWorkOrderUIState();
@@ -129,14 +129,9 @@ export function useWorkOrder() {
   );
 
   const actionState = useWorkOrderActions({
-    workOrders,
-    selectedId,
-    selectedWorkOrder,
     currentUser,
     canCreateWorkOrder,
     canReorderWorkOrder,
-    canChangeManager,
-    isReviewRequestLocked,
     pendingWorkflowAction: uiState.pendingWorkflowAction,
     setUsers,
     setWorkOrders,
@@ -151,6 +146,19 @@ export function useWorkOrder() {
     setPendingWorkflowAction: uiState.setPendingWorkflowAction,
     setOrderRequestConfirmOpen: uiState.setOrderRequestConfirmOpen,
   });
+
+
+
+  const handleSelectWorkOrder = useCallback((id: string) => {
+    setSelectedId(id);
+    const next = workOrders.find((item) => item.id === id);
+    setLastSavedAt(next?.lastSavedAt ?? null);
+    setSaveStatus("saved");
+  }, [workOrders, setLastSavedAt, setSaveStatus]);
+
+  const handleOpenManagerAssignModal = useCallback(() => {
+    actionState.handleOpenManagerAssignModal({ canChangeManager, isReviewRequestLocked });
+  }, [actionState, canChangeManager, isReviewRequestLocked]);
 
   const attachmentState = useWorkOrderAttachments({
     attachmentInputRef: uiState.attachmentInputRef,
@@ -241,23 +249,43 @@ export function useWorkOrder() {
     lastSavedAt,
     availableActions,
     visibleStages,
-    handleSave: actionState.handleSave,
-    handleSelectWorkOrder: actionState.handleSelectWorkOrder,
-    canDeleteWorkOrder: actionState.canDeleteWorkOrder,
-    handleCreateWorkOrder: actionState.handleCreateWorkOrder,
-    handleReorderWorkOrder: actionState.handleReorderWorkOrder,
-    handleDeleteWorkOrder: actionState.handleDeleteWorkOrder,
-    handleWorkflowAction: actionState.handleWorkflowAction,
-    handleUpdateSelectedWorkOrder: actionState.handleUpdateSelectedWorkOrder,
-    handleRenameWorkOrderTitle: actionState.handleRenameWorkOrderTitle,
-    handleConfirmOrderRequest: actionState.handleConfirmOrderRequest,
+    handleSave: () => actionState.handleSave(selectedWorkOrder),
+    handleSelectWorkOrder,
+    canDeleteWorkOrder,
+    handleCreateWorkOrder: (payload?: { title: string; category1: string; category2: string; category3: string; season: string }) =>
+      actionState.handleCreateWorkOrder({ nextIndex: workOrders.length + 1, ...(payload ?? {}) }),
+    handleReorderWorkOrder: (workOrderId: string) => actionState.handleReorderWorkOrder(workOrders, workOrderId),
+    handleDeleteWorkOrder: (workOrderId: string) => actionState.handleDeleteWorkOrder({ workOrderId, workOrders, selectedId }),
+    handleWorkflowAction: (action: WorkflowAction) => actionState.handleWorkflowAction(selectedWorkOrder, action),
+    handleUpdateSelectedWorkOrder: (patch: Partial<WorkOrder>) =>
+      actionState.handleUpdateSelectedWorkOrder({
+        workOrderId: selectedWorkOrder.id,
+        patch,
+        isReviewRequestLocked,
+      }),
+    handleRenameWorkOrderTitle: (nextTitle: string) =>
+      actionState.handleRenameWorkOrderTitle({
+        workOrders,
+        workOrder: selectedWorkOrder,
+        nextTitle,
+      }),
+    handleConfirmOrderRequest: () => actionState.handleConfirmOrderRequest(selectedWorkOrder),
     handleCloseOrderRequestConfirm: actionState.handleCloseOrderRequestConfirm,
-    handleInventoryApply: actionState.handleInventoryApply,
-    handleCompleteInspection: actionState.handleCompleteInspection,
+    handleInventoryApply: (payload: { inboundQuantity: number; adjustmentQuantity: number; deductionQuantity: number; memo: string }) =>
+      actionState.handleInventoryApply(selectedWorkOrder.id, payload),
+    handleCompleteInspection: (payload: { orderEntryId: string; inboundQuantity: number; nextInventoryQuantity: number; memo: string }) =>
+      actionState.handleCompleteInspection({ workOrderId: selectedWorkOrder.id, ...payload }),
     handleApplyRoles: actionState.handleApplyRoles,
-    handleOpenManagerAssignModal: actionState.handleOpenManagerAssignModal,
+    handleOpenManagerAssignModal,
     handleCloseManagerAssignModal: actionState.handleCloseManagerAssignModal,
-    handleChangeManager: (managerId: string) => actionState.handleChangeManager(managerId, users),
+    handleChangeManager: (managerId: string) =>
+      actionState.handleChangeManager({
+        workOrder: selectedWorkOrder,
+        managerId,
+        users,
+        canChangeManager,
+        isReviewRequestLocked,
+      }),
     handleOpenAttachmentPicker: attachmentState.handleOpenAttachmentPicker,
     handleAttachmentFiles: attachmentState.handleAttachmentFiles,
     handleDeleteAttachment: attachmentState.handleDeleteAttachment,
