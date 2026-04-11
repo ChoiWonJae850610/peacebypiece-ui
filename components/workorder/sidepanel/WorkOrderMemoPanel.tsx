@@ -2,10 +2,9 @@
 
 import { useState, type KeyboardEvent } from "react";
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
-import { getI18n } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
 
-const i18n = getI18n();
-const ui = i18n.common.ui;
+
 import CompactAttachmentPicker from "@/components/workorder/sidepanel/CompactAttachmentPicker";
 import MemoAttachmentList from "@/components/workorder/sidepanel/MemoAttachmentList";
 import type { Attachment, MemoAttachmentPayload, MemoThread, RoleType, WorkOrder } from "@/types/workorder";
@@ -25,6 +24,8 @@ function MemoThreadCard({
   onPreviewAttachment: (attachmentId: string) => void;
   onCreateReply: (threadId: string, content: string, payload?: MemoAttachmentPayload) => void;
 }) {
+  const { i18n } = useI18n();
+  const ui = i18n.common.ui;
   const [replyDraft, setReplyDraft] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [replyComposerOpen, setReplyComposerOpen] = useState(false);
@@ -116,6 +117,8 @@ export default function WorkOrderMemoPanel({
   onPromoteMemoAttachment: (attachmentId: string) => void;
   onPreviewAttachment: (attachmentId: string) => void;
 }) {
+  const { i18n } = useI18n();
+  const ui = i18n.common.ui;
   const [threadDraft, setThreadDraft] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const memoThreads = workOrder.memoThreads ?? [];

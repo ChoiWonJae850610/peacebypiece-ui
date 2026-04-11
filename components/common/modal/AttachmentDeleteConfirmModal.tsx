@@ -2,10 +2,9 @@
 
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS, renderModalFooterActions } from "@/components/common/modal/modalActions";
-import { getI18n } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
 
-const i18n = getI18n();
-const ui = i18n.common.ui;
+
 import type { Attachment } from "@/types/workorder";
 
 export default function AttachmentDeleteConfirmModal({
@@ -19,6 +18,9 @@ export default function AttachmentDeleteConfirmModal({
   onClose: () => void;
   onConfirm: () => void;
 }) {
+  const { i18n } = useI18n();
+  const ui = i18n.common.ui;
+
   return (
     <ModalShell
       open={open}

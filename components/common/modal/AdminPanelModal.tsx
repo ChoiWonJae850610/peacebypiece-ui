@@ -7,16 +7,17 @@ import ModalHeader from "@/components/common/modal/ModalHeader";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import { HISTORY_TONE_CLASS } from "@/lib/constants/display";
 import { DETAIL_TOGGLE_TEXT } from "@/lib/constants/uiText";
-import { getI18n } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
 import { HISTORY_FILTER_OPTIONS, NOTIFICATION_SETTING_META } from "@/lib/constants/workflow";
 import { MODAL_EXCEPTION_PRESETS } from "@/components/common/modal/modalPresets";
 import type { NotificationSettingKey, NotificationSettings, HistoryFilter } from "@/types/workflow";
 import type { HistoryLog } from "@/types/workorder";
 
-const i18n = getI18n();
-const ui = i18n.common.ui;
+
 
 function HistoryPreviewItem({ item }: { item: HistoryLog }) {
+  const { i18n } = useI18n();
+  const ui = i18n.common.ui;
   const [open, setOpen] = useState(false);
   const hasDetails = Boolean(item.transition || (item.detailLines && item.detailLines.length > 0));
   return (
@@ -77,6 +78,8 @@ export default function AdminPanelModal({
   historyFilter,
   onHistoryFilterChange,
 }: AdminPanelModalProps) {
+  const { i18n } = useI18n();
+  const ui = i18n.common.ui;
   const dialogRef = useRef<HTMLDivElement | null>(null);
   useModalEnvironment({ open, dialogRef, onClose });
 

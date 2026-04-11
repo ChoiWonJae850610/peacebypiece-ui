@@ -16,3 +16,6 @@ export const DEFAULT_LOCALE: Locale = "ko";
 export function getI18n(locale: Locale = DEFAULT_LOCALE) {
   return I18N_RESOURCES[locale];
 }
+
+export { I18nProvider } from "@/lib/i18n/I18nProvider";
+export { useI18n } from "@/lib/i18n/useI18n";

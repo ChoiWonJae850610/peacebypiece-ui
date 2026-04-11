@@ -3,10 +3,9 @@
 import { useEffect, useState, type ChangeEvent } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { createModalActionHandler, renderModalFooterActions } from "@/components/common/modal/modalActions";
-import { getI18n } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
 
-const i18n = getI18n();
-const ui = i18n.common.ui;
+
 
 export default function AttachmentRequestModal({
   open,
@@ -17,6 +16,8 @@ export default function AttachmentRequestModal({
   onClose: () => void;
   onSubmit: (content: string, files: File[]) => void;
 }) {
+  const { i18n } = useI18n();
+  const ui = i18n.common.ui;
   const [content, setContent] = useState("");
   const [files, setFiles] = useState<File[]>([]);
 

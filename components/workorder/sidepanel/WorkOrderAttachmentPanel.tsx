@@ -2,10 +2,9 @@
 
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
 import { getAttachmentOwnerLabel, getAttachmentPreviewLabel } from "@/lib/permissions/attachments";
-import { getI18n } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
 
-const i18n = getI18n();
-const ui = i18n.common.ui;
+
 import type { Attachment } from "@/types/workorder";
 
 export default function WorkOrderAttachmentPanel({
@@ -25,6 +24,9 @@ export default function WorkOrderAttachmentPanel({
   onDeleteAttachment: (attachmentId: string) => void;
   canDeleteAttachment: (attachment: Attachment | null) => boolean;
 }) {
+  const { i18n } = useI18n();
+  const ui = i18n.common.ui;
+
   if (!canSeeAttachments) return null;
 
   return (
