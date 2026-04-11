@@ -9,7 +9,7 @@ import ProductionCompositionSection from "@/components/workorder/detail/sections
 import { formatBasicSummary } from "@/lib/workorder/detail/detailFormatting";
 import type { DisplayStage } from "@/types/workflow";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
-import type { WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
+import type { RoleType, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
 import { useWorkOrderDetailEditor } from "@/lib/hooks/workorder/useWorkOrderDetailEditor";
 
 export default function WorkOrderDetail({
@@ -56,7 +56,7 @@ export default function WorkOrderDetail({
   lastSavedAt: string | null;
   currentInventoryQuantity: number;
   currentUserName: string;
-  currentUserRole: string;
+  currentUserRole: RoleType;
   canRenameTitle?: boolean;
   canEditInventory: boolean;
   canChangeManager: boolean;

@@ -1,77 +1,8 @@
-export const UI_TEXT = {
-  common: {
-    close: "닫기",
-    cancel: "취소",
-    save: "저장",
-    delete: "삭제",
-    apply: "적용",
-    create: "생성",
-    register: "등록",
-    detail: "상세",
-    collapse: "접기",
-  },
-  modal: {
-    attachmentDelete: {
-      fallbackName: "첨부파일",
-      targetLabel: "삭제 대상",
-      pdfTypeLabel: "PDF",
-      pdfNotice: "문서 파일은 삭제 후 복구할 수 없습니다.",
-      warning: "이 첨부파일을 삭제하시겠습니까? 삭제 후에는 되돌릴 수 없습니다.",
-    },
-    attachmentRequest: {
-      title: "첨부 요청 등록",
-      description: "관리자 검토 후 공식 첨부로 승격할 파일을 메모로 요청합니다.",
-      cancel: "취소",
-      submit: "요청 등록",
-      memoLabel: "요청 메모",
-      memoPlaceholder: "예: 메인 시안 PDF 공식 첨부 승격 요청 / 공장 전달용 최신본입니다.",
-      fileLabel: "파일 첨부",
-      filePicker: "이미지 또는 PDF 선택",
-      noFilesHelp: "파일 없이 요청 메모만 등록할 수도 있습니다.",
-      pdfBadge: "PDF",
-      imageBadge: "IMG",
-    },
-    adminPanel: {
-      title: "관리자 패널",
-      description: "알림 이벤트 ON/OFF와 관리자 전용 히스토리를 한곳에서 점검하는 테스트용 패널입니다.",
-      notificationTitle: "알림 이벤트 설정",
-      notificationDescription: "지금은 상태만 유지하고 실제 발송은 연결하지 않습니다.",
-      testBadge: "테스트용",
-      historyTitle: "히스토리",
-      historySummaryFormat: "summary 형식: 설명 · 사용자",
-      detailSummary: "상세",
-      detailCollapse: "접기",
-      countSuffix: "건",
-      toggleOn: "ON",
-      toggleOff: "OFF",
-    },
-    inventoryLog: {
-      detailSummary: "상세",
-      detailCollapse: "접기",
-    },
-  },
-  memo: {
-    panelTitle: "작업메모",
-    countSuffix: "개",
-    toggleReplyOpen: "댓글",
-    toggleReplyClose: "댓글 닫기",
-    replyPlaceholder: "댓글 입력",
-    threadPlaceholder: "작업 메모 입력",
-    submit: "등록",
-    empty: "등록된 작업 메모가 없습니다.",
-  },
-  attachmentPanel: {
-    title: "공식 첨부파일",
-    addButton: "+ 첨부 추가",
-    deleteTitle: "삭제",
-    deleteAriaSuffix: "삭제",
-    empty: "아직 공식 첨부파일이 없습니다.",
-  },
-  header: {
-    titleEditSave: "저장",
-    titleEditCancel: "취소",
-  },
-} as const;
+import { getI18n } from "@/lib/i18n";
+
+const i18n = getI18n();
+
+export const UI_TEXT = i18n.common.ui;
 
 export const DETAIL_TOGGLE_TEXT = {
   closed: UI_TEXT.common.detail,

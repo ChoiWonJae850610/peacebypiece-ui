@@ -2,7 +2,10 @@
 
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS, renderModalFooterActions } from "@/components/common/modal/modalActions";
-import { UI_TEXT } from "@/lib/constants/uiText";
+import { getI18n } from "@/lib/i18n";
+
+const i18n = getI18n();
+const ui = i18n.common.ui;
 import type { Attachment } from "@/types/workorder";
 
 export default function AttachmentDeleteConfirmModal({
@@ -20,8 +23,8 @@ export default function AttachmentDeleteConfirmModal({
     <ModalShell
       open={open}
       onClose={onClose}
-      title="첨부파일 삭제"
-      description="삭제 전 파일을 한 번 더 확인하세요."
+      title={ui.modal.attachmentDelete.title}
+      description={ui.modal.attachmentDelete.description}
       maxWidthClass="md:max-w-lg"
       footer={renderModalFooterActions({
         layout: "end",
@@ -32,8 +35,8 @@ export default function AttachmentDeleteConfirmModal({
       <div className="space-y-4">
         <div className="overflow-hidden rounded-2xl border border-stone-200 bg-stone-50">
           <div className="border-b border-stone-200 px-4 py-3">
-            <div className="text-xs font-medium text-stone-500">{UI_TEXT.modal.attachmentDelete.targetLabel}</div>
-            <div className="mt-1 break-all text-sm font-semibold text-stone-900">{attachment?.name ?? UI_TEXT.modal.attachmentDelete.fallbackName}</div>
+            <div className="text-xs font-medium text-stone-500">{ui.modal.attachmentDelete.targetLabel}</div>
+            <div className="mt-1 break-all text-sm font-semibold text-stone-900">{attachment?.name ?? ui.modal.attachmentDelete.fallbackName}</div>
           </div>
           <div className="p-4">
             {attachment?.type === "image" ? (
@@ -43,10 +46,10 @@ export default function AttachmentDeleteConfirmModal({
             ) : attachment ? (
               <div className="rounded-2xl border border-stone-200 bg-white p-4">
                 <div className="flex items-center gap-3">
-                  <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-sm font-semibold text-rose-700">{UI_TEXT.modal.attachmentDelete.pdfTypeLabel}</div>
+                  <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-sm font-semibold text-rose-700">{ui.modal.attachmentDelete.pdfTypeLabel}</div>
                   <div className="min-w-0">
                     <div className="truncate text-sm font-semibold text-stone-900">{attachment.name}</div>
-                    <div className="mt-1 text-xs text-stone-500">{UI_TEXT.modal.attachmentDelete.pdfNotice}</div>
+                    <div className="mt-1 text-xs text-stone-500">{ui.modal.attachmentDelete.pdfNotice}</div>
                   </div>
                 </div>
                 <div className="mt-4 overflow-hidden rounded-xl border border-stone-200">
@@ -57,7 +60,7 @@ export default function AttachmentDeleteConfirmModal({
           </div>
         </div>
         <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-4 text-sm text-rose-700">
-          {UI_TEXT.modal.attachmentDelete.warning}
+          {ui.modal.attachmentDelete.warning}
         </div>
       </div>
     </ModalShell>

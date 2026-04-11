@@ -7,6 +7,7 @@ import {
   type EditableSectionKey,
   type OrderEntryState,
 } from "@/components/workorder/detail/shared/detailEditorShared";
+import { MATERIAL_KIND } from "@/lib/constants/workorderDomain";
 import {
   DEFAULT_FACTORY_OPTION,
   DEFAULT_MATERIAL_TYPE,

@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import InlineInfoItem from "@/components/common/ui/InlineInfoItem";
 import { canCreateWorkOrderByRoles } from "@/lib/constants/roles";
+import { getI18n } from "@/lib/i18n";
 import type { RoleType } from "@/types/workorder";
+
+const i18n = getI18n();
+const ui = i18n.common.ui;
 
 function PencilIcon() {
   return (
@@ -110,12 +114,12 @@ export default function WorkOrderHeaderSection({
             onChange={(event) => setTitleDraft(event.target.value)}
             onKeyDown={handleTitleKeyDown}
             className="pbp-field-interaction h-11 w-full rounded-2xl border border-stone-300 bg-white px-3 text-lg font-semibold text-stone-950 outline-none focus:border-stone-400 md:text-2xl"
-            aria-label="작업지시서명 입력"
+            aria-label={ui.header.titleInputAria}
           />
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <button type="button" onClick={saveTitle} className="pbp-interactive-button rounded-xl bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-stone-800">{UI_TEXT.header.titleEditSave}</button>
-            <button type="button" onClick={closeTitleEditor} className="pbp-interactive-button rounded-xl border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100">{UI_TEXT.header.titleEditCancel}</button>
-            <span className="text-[11px] text-stone-500">리오더 계열 전체에 같은 이름이 반영됩니다.</span>
+            <button type="button" onClick={saveTitle} className="pbp-interactive-button rounded-xl bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-stone-800">{ui.header.titleEditSave}</button>
+            <button type="button" onClick={closeTitleEditor} className="pbp-interactive-button rounded-xl border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100">{ui.header.titleEditCancel}</button>
+            <span className="text-[11px] text-stone-500">{ui.header.titleEditHint}</span>
           </div>
         </div>
       ) : (
@@ -126,7 +130,7 @@ export default function WorkOrderHeaderSection({
               type="button"
               onClick={() => setIsEditingTitle(true)}
               className="inline-flex shrink-0 items-center justify-center self-start p-0.5 text-stone-400 hover:text-stone-600"
-              aria-label="작업지시서명 수정"
+              aria-label={ui.header.titleEditAria}
             >
               <PencilIcon />
             </button>

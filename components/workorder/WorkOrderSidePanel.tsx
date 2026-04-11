@@ -2,7 +2,7 @@
 
 import WorkOrderAttachmentPanel from "@/components/workorder/sidepanel/WorkOrderAttachmentPanel";
 import WorkOrderMemoPanel from "@/components/workorder/sidepanel/WorkOrderMemoPanel";
-import type { Attachment, MemoAttachmentPayload, WorkOrder } from "@/types/workorder";
+import type { Attachment, MemoAttachmentPayload, RoleType, WorkOrder } from "@/types/workorder";
 
 export default function WorkOrderSidePanel({
   canSeeAttachments,
@@ -27,7 +27,7 @@ export default function WorkOrderSidePanel({
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;
   canDeleteAttachment: (attachment: Attachment | null) => boolean;
-  currentRole: string;
+  currentRole: RoleType;
   workOrder: WorkOrder;
   currentUserName: string;
   onCreateMemoThread: (content: string, payload?: MemoAttachmentPayload) => void;

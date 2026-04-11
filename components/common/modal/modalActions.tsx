@@ -1,16 +1,18 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-import { UI_TEXT } from "@/lib/constants/uiText";
+import { getI18n } from "@/lib/i18n";
+
+const i18n = getI18n();
 
 export const MODAL_ACTION_LABELS = {
-  cancel: UI_TEXT.common.cancel,
-  close: UI_TEXT.common.close,
-  apply: UI_TEXT.common.apply,
-  create: UI_TEXT.common.create,
-  delete: UI_TEXT.common.delete,
-  completeInspection: "검수 완료",
-  proceedOrderRequest: "발주 요청 진행",
+  cancel: i18n.common.ui.common.cancel,
+  close: i18n.common.ui.common.close,
+  apply: i18n.common.ui.common.apply,
+  create: i18n.common.ui.common.create,
+  delete: i18n.common.ui.common.delete,
+  completeInspection: i18n.common.ui.modalActions.completeInspection,
+  proceedOrderRequest: i18n.common.ui.modalActions.proceedOrderRequest,
 } as const;
 
 type ModalActionTone = "neutral" | "primary" | "danger";

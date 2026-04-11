@@ -8,6 +8,7 @@ import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
 import { APP_VERSION } from "@/lib/constants/app";
 import { isInspectorRole } from "@/lib/constants/roles";
 import type { Attachment, HistoryFilter, InventoryLog, RoleType, UserProfile, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
+import type { NotificationSettingKey } from "@/types/workflow";
 
 type SidebarListProps = ComponentProps<typeof SidebarContent>;
 type DetailProps = ComponentProps<typeof WorkOrderDetail>;
@@ -32,7 +33,7 @@ type BuildWorkspaceViewModelArgs = {
   currentUserId: string;
   permissionTargetUserId: string;
   historyFilter: HistoryFilter;
-  notificationSettings: Record<string, boolean>;
+  notificationSettings: Record<NotificationSettingKey, boolean>;
   searchQuery: string;
   workOrders: SidebarListProps["workOrders"];
   workflowStateById: Record<string, string>;
@@ -82,7 +83,7 @@ type BuildWorkspaceViewModelArgs = {
   onSetCurrentUserId: (next: string) => void;
   onSetSearchQuery: (next: string) => void;
   onSetHistoryFilter: (next: HistoryFilter) => void;
-  onToggleNotificationSetting: (key: string) => void;
+  onToggleNotificationSetting: (key: NotificationSettingKey) => void;
   onSave: () => void;
   onSelectWorkOrder: (id: string) => void;
   onCreateWorkOrder: ModalProps["createWorkOrder"]["onCreate"];

@@ -6,11 +6,15 @@ import ModalBody from "@/components/common/modal/ModalBody";
 import ModalHeader from "@/components/common/modal/ModalHeader";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import { HISTORY_TONE_CLASS } from "@/lib/constants/display";
-import { DETAIL_TOGGLE_TEXT, UI_TEXT } from "@/lib/constants/uiText";
+import { DETAIL_TOGGLE_TEXT } from "@/lib/constants/uiText";
+import { getI18n } from "@/lib/i18n";
 import { HISTORY_FILTER_OPTIONS, NOTIFICATION_SETTING_META } from "@/lib/constants/workflow";
 import { MODAL_EXCEPTION_PRESETS } from "@/components/common/modal/modalPresets";
 import type { NotificationSettingKey, NotificationSettings, HistoryFilter } from "@/types/workflow";
 import type { HistoryLog } from "@/types/workorder";
+
+const i18n = getI18n();
+const ui = i18n.common.ui;
 
 function HistoryPreviewItem({ item }: { item: HistoryLog }) {
   const [open, setOpen] = useState(false);
@@ -80,18 +84,18 @@ export default function AdminPanelModal({
     <BaseModal open={open} onClose={onClose} dialogRef={dialogRef} titleId="admin-panel-modal-title" maxWidthClassName={MODAL_EXCEPTION_PRESETS.adminPanel.maxWidthClass}>
       <ModalHeader
         titleId="admin-panel-modal-title"
-        title={UI_TEXT.modal.adminPanel.title}
-        description={UI_TEXT.modal.adminPanel.description}
+        title={ui.modal.adminPanel.title}
+        description={ui.modal.adminPanel.description}
         onClose={onClose}
       />
       <ModalBody className={MODAL_EXCEPTION_PRESETS.adminPanel.bodyClassName}>
         <section className="rounded-2xl border border-stone-200 bg-white p-3 md:p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <div className="text-sm font-semibold text-stone-900">{UI_TEXT.modal.adminPanel.notificationTitle}</div>
-              <div className="mt-1 text-xs leading-5 text-stone-500">{UI_TEXT.modal.adminPanel.notificationDescription}</div>
+              <div className="text-sm font-semibold text-stone-900">{ui.modal.adminPanel.notificationTitle}</div>
+              <div className="mt-1 text-xs leading-5 text-stone-500">{ui.modal.adminPanel.notificationDescription}</div>
             </div>
-            <span className="rounded-full bg-sky-100 px-2 py-1 text-[11px] font-medium text-sky-700">{UI_TEXT.modal.adminPanel.testBadge}</span>
+            <span className="rounded-full bg-sky-100 px-2 py-1 text-[11px] font-medium text-sky-700">{ui.modal.adminPanel.testBadge}</span>
           </div>
           <div className="mt-3 space-y-2">
             {NOTIFICATION_SETTING_META.map((item) => {
@@ -108,7 +112,7 @@ export default function AdminPanelModal({
                     <div className="text-sm font-medium text-stone-900">{item.label}</div>
                     <div className="mt-1 break-keep text-xs leading-5 text-stone-500">{item.description}</div>
                   </div>
-                  <span className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-medium ${checked ? "bg-emerald-100 text-emerald-700" : "bg-stone-200 text-stone-600"}`}>{checked ? UI_TEXT.modal.adminPanel.toggleOn : UI_TEXT.modal.adminPanel.toggleOff}</span>
+                  <span className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-medium ${checked ? "bg-emerald-100 text-emerald-700" : "bg-stone-200 text-stone-600"}`}>{checked ? ui.modal.adminPanel.toggleOn : ui.modal.adminPanel.toggleOff}</span>
                 </label>
               );
             })}
@@ -118,10 +122,10 @@ export default function AdminPanelModal({
         <section className="rounded-2xl border border-stone-200 bg-white p-3 md:p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h3 className="text-sm font-semibold text-stone-900">{UI_TEXT.modal.adminPanel.historyTitle}</h3>
-              <div className="mt-1 text-xs text-stone-500">{UI_TEXT.modal.adminPanel.historySummaryFormat}</div>
+              <h3 className="text-sm font-semibold text-stone-900">{ui.modal.adminPanel.historyTitle}</h3>
+              <div className="mt-1 text-xs text-stone-500">{ui.modal.adminPanel.historySummaryFormat}</div>
             </div>
-            <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">{`${historyLogs.length}${UI_TEXT.modal.adminPanel.countSuffix}`}</span>
+            <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">{`${historyLogs.length}${ui.modal.adminPanel.countSuffix}`}</span>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {HISTORY_FILTER_OPTIONS.map(([value, label]) => (
