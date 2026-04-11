@@ -1,6 +1,7 @@
 "use client";
 
 import { getAttachmentPreviewLabel, isOfficialAttachment } from "@/lib/permissions/attachments";
+import { useI18n } from "@/lib/i18n";
 import type { Attachment } from "@/types/workorder";
 
 export default function MemoAttachmentList({
@@ -16,6 +17,9 @@ export default function MemoAttachmentList({
   onPromoteMemoAttachment?: (attachmentId: string) => void;
   onPreviewAttachment?: (attachmentId: string) => void;
 }) {
+  const { i18n } = useI18n();
+  const copy = i18n.common.ui.attachmentPanel;
+
   const linkedAttachments = (attachmentIds ?? [])
     .map((attachmentId) => attachmentsById.get(attachmentId))
     .filter((attachment): attachment is Attachment => Boolean(attachment));
@@ -37,7 +41,7 @@ export default function MemoAttachmentList({
               <span className="max-w-[160px] truncate">{attachment.name}</span>
             </button>
             {!isOfficial && canPromoteMemoAttachment && onPromoteMemoAttachment ? (
-              <button type="button" onClick={() => onPromoteMemoAttachment(attachment.id)} className="pbp-interactive-button shrink-0 rounded-full border border-stone-300 bg-white px-1.5 py-0.5 text-[10px] font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200">승격</button>
+              <button type="button" onClick={() => onPromoteMemoAttachment(attachment.id)} className="pbp-interactive-button shrink-0 rounded-full border border-stone-300 bg-white px-1.5 py-0.5 text-[10px] font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200">{copy.promote}</button>
             ) : null}
           </div>
         );

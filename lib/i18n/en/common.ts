@@ -73,6 +73,12 @@ export const commonEn = {
       deleteTitle: "Delete",
       deleteAriaSuffix: "delete",
       empty: "No official attachments yet.",
+      legacyOwnerFallback: "Existing attachment",
+      previewFallback: "File",
+      previewPdf: "PDF",
+      previewImage: "IMG",
+      promote: "Promote",
+      compactAddButton: "Add attachment",
     },
     header: {
       titleEditSave: "Save",

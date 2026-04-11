@@ -1,5 +1,8 @@
 import { hasRole } from "@/lib/constants/roles";
+import { getI18n } from "@/lib/i18n";
 import type { Attachment, AttachmentScope, AttachmentType, UserProfile } from "@/types/workorder";
+
+const i18n = getI18n();
 
 export function getAttachmentScope(attachment: Attachment | null | undefined): AttachmentScope {
   return (attachment?.scope ?? "official") as AttachmentScope;
@@ -25,12 +28,12 @@ export function createAttachmentId(name: string): string {
 }
 
 export function getAttachmentOwnerLabel(attachment: Attachment | null | undefined): string {
-  return attachment?.ownerName?.trim() || "기존 첨부";
+  return attachment?.ownerName?.trim() || i18n.common.ui.attachmentPanel.legacyOwnerFallback;
 }
 
 export function getAttachmentPreviewLabel(attachment: Attachment | null | undefined): string {
-  if (!attachment) return "파일";
-  return attachment.type === "pdf" ? "PDF" : "IMG";
+  if (!attachment) return i18n.common.ui.attachmentPanel.previewFallback;
+  return attachment.type === "pdf" ? i18n.common.ui.attachmentPanel.previewPdf : i18n.common.ui.attachmentPanel.previewImage;
 }
 
 export function canPreviewAttachment(attachment: Attachment | null | undefined): boolean {

@@ -73,6 +73,12 @@ export const commonKo = {
       deleteTitle: "삭제",
       deleteAriaSuffix: "삭제",
       empty: "아직 공식 첨부파일이 없습니다.",
+      legacyOwnerFallback: "기존 첨부",
+      previewFallback: "파일",
+      previewPdf: "PDF",
+      previewImage: "IMG",
+      promote: "승격",
+      compactAddButton: "첨부추가",
     },
     header: {
       titleEditSave: "저장",
