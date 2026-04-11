@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import MaterialSection from "@/components/workorder/detail/sections/MaterialSection";
 import OutsourcingSection from "@/components/workorder/detail/sections/OutsourcingSection";
 import { SectionHeader, type EditableCell, type EditableSectionKey } from "@/components/workorder/detail/shared/detailEditorShared";
@@ -44,19 +45,22 @@ export default function ProductionCompositionSection({
   vendorOptions: readonly string[];
   locked?: boolean;
 }) {
+  const { i18n } = useI18n();
+  const copy = i18n.workorder.ui.sections.productionComposition;
+  const common = i18n.workorder.ui.common;
   const materialCount = materials.length;
   const outsourcingCount = outsourcing.length;
   const materialTotal = materials.reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
   const outsourcingTotal = outsourcing.reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
   const summary = [
-    `원단/부자재 ${materialCount}건`,
-    `외주공정 ${outsourcingCount}건`,
-    `총 ${(materialTotal + outsourcingTotal).toLocaleString()}원`,
+    copy.summaryMaterialCount.replace("{count}", String(materialCount)),
+    copy.summaryOutsourcingCount.replace("{count}", String(outsourcingCount)),
+    copy.summaryTotal.replace("{total}", `${(materialTotal + outsourcingTotal).toLocaleString()}${common.currencySuffix}`),
   ].join(" · ");
 
   return (
     <div className="overflow-hidden rounded-2xl bg-stone-50 p-3 md:p-3.5">
-      <SectionHeader title="생산 구성" summary={summary} open={open} onToggle={onToggle} />
+      <SectionHeader title={copy.title} summary={summary} open={open} onToggle={onToggle} />
       {open ? (
         <div className="mt-3.5 space-y-3.5">
           <MaterialSection

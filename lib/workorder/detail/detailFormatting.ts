@@ -1,3 +1,4 @@
+import { getI18n } from "@/lib/i18n";
 import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculations";
 import { isEditorNumericField } from "@/lib/workorder/detail/detailFields";
 import type { OrderEntry } from "@/types/workorder";
@@ -38,13 +39,16 @@ export function formatBasicSummary(basicInfo: BasicInfoLike) {
 }
 
 export function formatOrderSummary(orderEntries: OrderEntry[]) {
-  if (orderEntries.length === 0) return "등록된 발주 정보가 없습니다.";
+  const i18n = getI18n();
+  const copy = i18n.workorder.ui.formatting;
+  const common = i18n.workorder.ui.common;
+  if (orderEntries.length === 0) return copy.orderSummaryEmpty;
   const totals = calculateOrderEntryTotals(orderEntries);
   const completedCount = orderEntries.filter((item) => item.inspectionStatus === "inspection_completed").length;
   return [
-    `${orderEntries.length}건`,
-    `${totals.quantity.toLocaleString()}장`,
-    `검수완료 ${completedCount}/${orderEntries.length}`,
+    `${orderEntries.length}${common.countSuffix}`,
+    `${totals.quantity.toLocaleString()}${common.quantitySuffix}`,
+    copy.inspectionCompletedFormat.replace("{completed}", String(completedCount)).replace("{total}", String(orderEntries.length)),
   ]
     .filter(Boolean)
     .join(" · ");

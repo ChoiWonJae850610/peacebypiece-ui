@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { getDisplayStageLabel, getStageDotTone, getStageTextTone } from "@/lib/workorder/presentation/statusPresentation";
 import type { DisplayStage } from "@/types/workflow";
 import type { WorkflowAction } from "@/types/workorder";
@@ -17,13 +18,16 @@ export default function WorkOrderActionSection({
   actions: WorkflowAction[];
   onAction: (action: WorkflowAction) => void;
 }) {
+  const { i18n } = useI18n();
+  const copy = i18n.workorder.ui.actionSection;
+  const stageGroupsCopy = i18n.workorder.stageGroups;
   const currentIndex = stages.indexOf(currentStage);
-  const primaryActionIndex = actions.findIndex((action) => !action.label.includes("반려"));
+  const primaryActionIndex = actions.findIndex((action) => !action.label.includes(copy.rejectKeyword));
   const doneTrackTone = "bg-stone-400";
   const stageGroups: Array<{ label: string; stages: DisplayStage[] }> = [
-    { label: "제작", stages: ["draft", "review_requested", "review_approved"] },
-    { label: "생산", stages: ["order_requested"] },
-    { label: "검수", stages: ["inspection", "completed"] },
+    { label: stageGroupsCopy.making, stages: ["draft", "review_requested", "review_approved"] },
+    { label: stageGroupsCopy.production, stages: ["order_requested"] },
+    { label: stageGroupsCopy.inspection, stages: ["inspection", "completed"] },
   ];
   const currentGroupIndex = stageGroups.findIndex((group) => group.stages.includes(currentStage));
   const mobileStageSlots = [-1, 0, 1].map((offset) => {
@@ -39,7 +43,7 @@ export default function WorkOrderActionSection({
     <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-3 md:mt-5 md:p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-xs font-semibold text-stone-900 md:text-sm">진행 단계</div>
+          <div className="text-xs font-semibold text-stone-900 md:text-sm">{copy.title}</div>
         </div>
         {actions.length > 0 ? (
           <div className="hidden flex-wrap justify-end gap-2 md:flex">
@@ -144,7 +148,7 @@ export default function WorkOrderActionSection({
       </div>
 
       <div className="mt-3 flex items-center gap-2 text-xs text-stone-500">
-        <span>{stageGroups[currentGroupIndex]?.label ?? "진행"}</span>
+        <span>{stageGroups[currentGroupIndex]?.label ?? copy.fallbackGroup}</span>
         <span>·</span>
         <span>{getDisplayStageLabel(currentStage)}</span>
       </div>

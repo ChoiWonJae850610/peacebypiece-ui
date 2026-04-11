@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { ORDER_TYPE_OPTIONS } from "@/lib/constants/workorderOptions";
 import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculations";
 import { formatOrderSummary } from "@/lib/workorder/detail/detailFormatting";
@@ -47,6 +48,9 @@ export default function OrderInfoSection({
   locked?: boolean;
   onOpenInspectionModal: () => void;
 }) {
+  const { i18n } = useI18n();
+  const copy = i18n.workorder.ui.sections.orderInfo;
+  const common = i18n.workorder.ui.common;
   const totals = calculateOrderEntryTotals(orderEntries);
   const inspectionButton = canOpenInspectionModal ? (
     <button
@@ -54,13 +58,13 @@ export default function OrderInfoSection({
       onClick={onOpenInspectionModal}
       className="pbp-interactive-button inline-flex items-center justify-center rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
     >
-      검수 진행
+      {copy.inspectionAction}
     </button>
   ) : null;
 
   return (
     <div className="overflow-hidden rounded-2xl bg-stone-50 p-3 md:p-3.5">
-      <SectionHeader title="발주 정보" summary={formatOrderSummary(orderEntries)} open={open} onToggle={onToggle} rightSlot={inspectionButton} />
+      <SectionHeader title={copy.title} summary={formatOrderSummary(orderEntries)} open={open} onToggle={onToggle} rightSlot={inspectionButton} />
       {open ? (
         <>
           <div className="mt-2 space-y-2.5 md:hidden">
@@ -69,20 +73,20 @@ export default function OrderInfoSection({
               <div key={item.id} className="max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-white px-4 py-3">
                 <div className="flex min-w-0 items-start justify-between gap-3">
                   <div className="min-w-0 flex-1 overflow-hidden">
-                    <div className="whitespace-nowrap text-sm font-semibold text-stone-900">{item.factory || `발주 ${index + 1}`}</div>
-                    <div className="mt-1 whitespace-nowrap text-xs text-stone-500">{item.type} · {item.quantity.toLocaleString()}장</div>
+                    <div className="whitespace-nowrap text-sm font-semibold text-stone-900">{item.factory || copy.fallbackItem.replace("{index}", String(index + 1))}</div>
+                    <div className="mt-1 whitespace-nowrap text-xs text-stone-500">{copy.mobileSubtitleFormat.replace("{type}", item.type).replace("{quantity}", `${item.quantity.toLocaleString()}${common.quantitySuffix}`)}</div>
                   </div>
-                  <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || `발주 ${index + 1}`} 삭제`} disabled={locked} />
+                  <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || copy.fallbackItem.replace("{index}", String(index + 1))} ${common.deleteSuffix}` } disabled={locked} />
                 </div>
                 <div className="mt-2 space-y-1.5">
                   {[
-                    ["구분", "type", item.type, "text"],
-                    ["공장", "factory", item.factory, "text"],
-                    ["납기일", "dueDate", item.dueDate, "text"],
-                    ["수량", "quantity", item.quantity.toLocaleString(), "decimal"],
-                    ["공임비", "laborCost", item.laborCost.toLocaleString(), "decimal"],
-                    ["로스비", "lossCost", item.lossCost.toLocaleString(), "decimal"],
-                    ["검수여부", "inspectionStatus", getInspectionStatusLabel(item.inspectionStatus ?? "order_pending"), "text"],
+                    [copy.fields.type, "type", item.type, "text"],
+                    [copy.fields.factory, "factory", item.factory, "text"],
+                    [copy.fields.dueDate, "dueDate", item.dueDate, "text"],
+                    [copy.fields.quantity, "quantity", item.quantity.toLocaleString(), "decimal"],
+                    [copy.fields.laborCost, "laborCost", item.laborCost.toLocaleString(), "decimal"],
+                    [copy.fields.lossCost, "lossCost", item.lossCost.toLocaleString(), "decimal"],
+                    [copy.fields.inspectionStatus, "inspectionStatus", getInspectionStatusLabel(item.inspectionStatus ?? "order_pending"), "text"],
                   ].map(([label, field, value, inputMode]) => (
                     <div key={`${item.id}-${field}`} className={MOBILE_INFO_ROW_CLASS}>
                       <span className={MOBILE_LABEL_CLASS}>{label}</span>
@@ -120,7 +124,7 @@ export default function OrderInfoSection({
                 onClick={onAdd}
                 className="pbp-interactive-button flex w-full items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
               >
-                + 발주 추가
+                {copy.addButton}
               </button>
             )}
           </div>
@@ -138,7 +142,7 @@ export default function OrderInfoSection({
               </colgroup>
               <thead className="text-stone-500">
                 <tr className="border-b border-stone-200">
-                  {["구분", "공장", "납기일", "수량", "공임비", "로스비", "검수여부", ""].map((header, index) => (
+                  {[copy.fields.type, copy.fields.factory, copy.fields.dueDate, copy.fields.quantity, copy.fields.laborCost, copy.fields.lossCost, copy.fields.inspectionStatus, ""].map((header, index) => (
                     <th key={`${header}-${index}`} className={TABLE_HEADER_CELL_CLASS}>
                       <span className="block w-full whitespace-nowrap leading-4">{header}</span>
                     </th>
@@ -156,15 +160,15 @@ export default function OrderInfoSection({
                     <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="lossCost" value={item.lossCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                     <td className="px-1.5 py-2 text-center align-middle text-[11px] lg:px-2 lg:text-[11px]"><span className={`inline-flex rounded-full px-2 py-1 text-[11px] font-medium lg:text-[11px] ${getInspectionStatusTone(item.inspectionStatus ?? "order_pending")}`}>{getInspectionStatusLabel(item.inspectionStatus ?? "order_pending")}</span></td>
                     <td className="px-1.5 py-2 text-center align-middle lg:px-2">
-                      <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || `발주 ${rowIndex + 1}`} 삭제`} disabled={locked} />
+                      <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || copy.fallbackItem.replace("{index}", String(rowIndex + 1))} ${common.deleteSuffix}` } disabled={locked} />
                     </td>
                   </tr>
                 ))}
                 <tr className="bg-stone-50/70">
-                  <td className="px-3 py-2 text-xs font-medium text-stone-500" colSpan={3}>합계</td>
-                  <td className="px-3 py-2 text-center text-[11px] font-semibold text-stone-900 tabular-nums lg:text-[11px]">{totals.quantity.toLocaleString()}장</td>
-                  <td className="px-3 py-2 text-center text-[11px] font-semibold text-stone-900 tabular-nums lg:text-[11px]">{totals.laborCost.toLocaleString()}원</td>
-                  <td className="px-3 py-2 text-center text-[11px] font-semibold text-stone-900 tabular-nums lg:text-[11px]">{totals.lossCost.toLocaleString()}원</td>
+                  <td className="px-3 py-2 text-xs font-medium text-stone-500" colSpan={3}>{copy.totalRow}</td>
+                  <td className="px-3 py-2 text-center text-[11px] font-semibold text-stone-900 tabular-nums lg:text-[11px]">{totals.quantity.toLocaleString()}{common.quantitySuffix}</td>
+                  <td className="px-3 py-2 text-center text-[11px] font-semibold text-stone-900 tabular-nums lg:text-[11px]">{totals.laborCost.toLocaleString()}{common.currencySuffix}</td>
+                  <td className="px-3 py-2 text-center text-[11px] font-semibold text-stone-900 tabular-nums lg:text-[11px]">{totals.lossCost.toLocaleString()}{common.currencySuffix}</td>
                   <td colSpan={2} />
                 </tr>
                 {locked ? null : (
@@ -175,7 +179,7 @@ export default function OrderInfoSection({
                         onClick={onAdd}
                         className="pbp-interactive-button flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
                       >
-                        + 발주 추가
+                        {copy.addButton}
                       </button>
                     </td>
                   </tr>

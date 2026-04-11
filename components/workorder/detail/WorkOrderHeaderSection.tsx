@@ -54,12 +54,14 @@ export default function WorkOrderHeaderSection({
 }: WorkOrderHeaderSectionProps) {
   const { i18n } = useI18n();
   const ui = i18n.common.ui;
+  const copy = i18n.workorder.ui.header;
+  const common = i18n.workorder.ui.common;
   void onSave;
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(title);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const managerValue = managerName || "-";
-  const inventoryValue = `${currentInventoryQuantity.toLocaleString()}장`;
+  const inventoryValue = `${currentInventoryQuantity.toLocaleString()}${common.quantitySuffix}`;
   const summaryValue = summaryText || "-";
   const canEditSummary = !locked && canCreateWorkOrderByRoles([currentUserRole]) && typeof onOpenBasicInfoModal === "function";
   const canEditManager = !locked && canChangeManager;
@@ -151,25 +153,25 @@ export default function WorkOrderHeaderSection({
             {titleEditor}
           </div>
           <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2 text-right">
-            <InlineInfoItem label="담당자" value={managerValue} onClick={canEditManager ? onOpenManagerAssignModal : undefined} />
-            <InlineInfoItem label="현재 재고" value={inventoryValue} onClick={canEditInventory ? onOpenInventoryEditor : undefined} valueClassName="tabular-nums text-stone-900" />
+            <InlineInfoItem label={copy.managerLabel} value={managerValue} onClick={canEditManager ? onOpenManagerAssignModal : undefined} />
+            <InlineInfoItem label={copy.currentInventoryLabel} value={inventoryValue} onClick={canEditInventory ? onOpenInventoryEditor : undefined} valueClassName="tabular-nums text-stone-900" />
           </div>
           <div className="min-w-0">
-            <InlineInfoItem label="분류" value={summaryValue} onClick={canEditSummary ? onOpenBasicInfoModal : undefined} valueClassName="truncate text-stone-800" />
+            <InlineInfoItem label={copy.summaryLabel} value={summaryValue} onClick={canEditSummary ? onOpenBasicInfoModal : undefined} valueClassName="truncate text-stone-800" />
           </div>
-          <div className="text-right text-xs text-stone-400">최근 변경 {lastSavedAt || "-"}</div>
+          <div className="text-right text-xs text-stone-400">{copy.lastUpdatedPrefix} {lastSavedAt || "-"}</div>
         </div>
 
         <div className="flex flex-col gap-2 md:hidden">
           <div className="min-w-0">{titleEditor}</div>
           <div className="min-w-0">
-            <InlineInfoItem label="분류" value={summaryValue} onClick={canEditSummary ? onOpenBasicInfoModal : undefined} valueClassName="truncate text-stone-800" />
+            <InlineInfoItem label={copy.summaryLabel} value={summaryValue} onClick={canEditSummary ? onOpenBasicInfoModal : undefined} valueClassName="truncate text-stone-800" />
           </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <InlineInfoItem label="담당자" value={managerValue} onClick={canEditManager ? onOpenManagerAssignModal : undefined} />
-            <InlineInfoItem label="현재 재고" value={inventoryValue} onClick={canEditInventory ? onOpenInventoryEditor : undefined} valueClassName="tabular-nums text-stone-900" />
+            <InlineInfoItem label={copy.managerLabel} value={managerValue} onClick={canEditManager ? onOpenManagerAssignModal : undefined} />
+            <InlineInfoItem label={copy.currentInventoryLabel} value={inventoryValue} onClick={canEditInventory ? onOpenInventoryEditor : undefined} valueClassName="tabular-nums text-stone-900" />
           </div>
-          <div className="text-xs text-stone-400">최근 변경 {lastSavedAt || "-"}</div>
+          <div className="text-xs text-stone-400">{copy.lastUpdatedPrefix} {lastSavedAt || "-"}</div>
         </div>
       </div>
     </div>

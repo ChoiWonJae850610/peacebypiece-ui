@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { CATEGORY1_OPTIONS, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
@@ -18,6 +19,8 @@ export default function BasicInfoEditModal({
   onClose: () => void;
   onSave: () => void;
 }) {
+  const { i18n } = useI18n();
+  const copy = i18n.workorder.ui.modals.basicInfo;
   const category2Options = getCategory2Options(value.category1);
   const category3Options = getCategory3Options(value.category2);
 
@@ -46,8 +49,8 @@ export default function BasicInfoEditModal({
     <ModalShell
       open={open}
       onClose={onClose}
-      title="기본정보 수정"
-      description="헤더 요약에 표시되는 품목 분류와 시즌 정보를 수정합니다."
+      title={copy.title}
+      description={copy.description}
       maxWidthClass="md:max-w-xl"
       footer={renderModalFooterActions({
         layout: "split",
@@ -57,7 +60,7 @@ export default function BasicInfoEditModal({
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className="rounded-2xl border border-stone-200 bg-white p-3">
-          <div className="text-xs text-stone-500">대분류</div>
+          <div className="text-xs text-stone-500">{copy.category1}</div>
           <select
             value={value.category1}
             onChange={(event) => handleCategory1Change(event.target.value)}
@@ -67,7 +70,7 @@ export default function BasicInfoEditModal({
           </select>
         </label>
         <label className="rounded-2xl border border-stone-200 bg-white p-3">
-          <div className="text-xs text-stone-500">중분류</div>
+          <div className="text-xs text-stone-500">{copy.category2}</div>
           <select
             value={value.category2}
             onChange={(event) => handleCategory2Change(event.target.value)}
@@ -77,7 +80,7 @@ export default function BasicInfoEditModal({
           </select>
         </label>
         <label className="rounded-2xl border border-stone-200 bg-white p-3">
-          <div className="text-xs text-stone-500">소분류</div>
+          <div className="text-xs text-stone-500">{copy.category3}</div>
           <select
             value={value.category3}
             onChange={(event) => onChange({ ...value, category3: event.target.value })}
@@ -88,7 +91,7 @@ export default function BasicInfoEditModal({
         </label>
         <div className="grid grid-cols-2 gap-4 sm:col-span-2">
           <label className="rounded-2xl border border-stone-200 bg-white p-3">
-            <div className="text-xs text-stone-500">시즌</div>
+            <div className="text-xs text-stone-500">{copy.season}</div>
             <select
               value={value.season}
               onChange={(event) => onChange({ ...value, season: event.target.value })}
@@ -98,7 +101,7 @@ export default function BasicInfoEditModal({
             </select>
           </label>
           <label className="rounded-2xl border border-stone-200 bg-white p-3">
-            <div className="text-xs text-stone-500">연도</div>
+            <div className="text-xs text-stone-500">{copy.year}</div>
             <select
               value={value.year}
               onChange={(event) => onChange({ ...value, year: event.target.value })}
@@ -111,7 +114,7 @@ export default function BasicInfoEditModal({
       </div>
 
       <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
-        <div className="text-xs text-stone-500">헤더 요약 미리보기</div>
+        <div className="text-xs text-stone-500">{copy.previewLabel}</div>
         <div className="mt-2 text-sm font-medium text-stone-900">{formatBasicSummary(value)}</div>
       </div>
     </ModalShell>

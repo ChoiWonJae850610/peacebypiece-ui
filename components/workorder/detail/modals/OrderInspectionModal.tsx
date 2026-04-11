@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS, createModalActionHandler, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
@@ -18,6 +19,9 @@ export default function OrderInspectionModal({
   onClose: () => void;
   onApply: (payload: { orderEntryId: string; inboundQuantity: number; nextInventoryQuantity: number; memo: string }) => void;
 }) {
+  const { i18n } = useI18n();
+  const copy = i18n.workorder.ui.modals.inspection;
+  const common = i18n.workorder.ui.common;
   const pendingEntries = orderEntries.filter((item) => item.inspectionStatus !== "inspection_completed");
   const availableEntries = pendingEntries.length > 0 ? pendingEntries : orderEntries;
   const [selectedFactory, setSelectedFactory] = useState("");
@@ -84,8 +88,8 @@ export default function OrderInspectionModal({
     <ModalShell
       open={open}
       onClose={onClose}
-      title="검수 진행"
-      description="공장을 선택한 뒤 실제 검수 반영 수량을 입력하고 메모와 함께 완료 처리합니다."
+      title={copy.title}
+      description={copy.description}
       maxWidthClass="md:max-w-lg"
       footer={renderModalFooterActions({
         layout: "split",
@@ -97,7 +101,7 @@ export default function OrderInspectionModal({
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className="rounded-2xl border border-stone-200 bg-white p-3">
-              <div className="text-xs text-stone-500">공장</div>
+              <div className="text-xs text-stone-500">{copy.factoryLabel}</div>
               <select
                 value={resolvedFactory}
                 onChange={(event) => handleFactoryChange(event.target.value)}
@@ -107,7 +111,7 @@ export default function OrderInspectionModal({
               </select>
             </label>
             <label className="rounded-2xl border border-stone-200 bg-white p-3">
-              <div className="text-xs text-stone-500">발주 유형</div>
+              <div className="text-xs text-stone-500">{copy.orderTypeLabel}</div>
               <select
                 value={selectedEntry.id}
                 onChange={(event) => setSelectedOrderId(event.target.value)}
@@ -115,7 +119,7 @@ export default function OrderInspectionModal({
               >
                 {filteredEntries.map((item) => (
                   <option key={item.id} value={item.id}>
-                    {item.type} · {item.quantity.toLocaleString()}장
+                    {copy.optionFormat.replace("{type}", item.type).replace("{quantity}", `${item.quantity.toLocaleString()}${common.quantitySuffix}`)}
                   </option>
                 ))}
               </select>
@@ -124,11 +128,11 @@ export default function OrderInspectionModal({
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
-              <div className="text-xs text-stone-500">발주 수량</div>
-              <div className="mt-1 text-base font-semibold text-stone-900">{orderedQuantity.toLocaleString()}장</div>
+              <div className="text-xs text-stone-500">{copy.orderedQuantityLabel}</div>
+              <div className="mt-1 text-base font-semibold text-stone-900">{orderedQuantity.toLocaleString()}{common.quantitySuffix}</div>
             </div>
             <label className="rounded-2xl border border-stone-200 bg-white p-3">
-              <div className="text-xs text-stone-500">검수 반영 수량</div>
+              <div className="text-xs text-stone-500">{copy.appliedQuantityLabel}</div>
               <input
                 type="number"
                 min={0}
@@ -140,25 +144,25 @@ export default function OrderInspectionModal({
               />
             </label>
             <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
-              <div className="text-xs text-stone-500">적용 후 재고</div>
-              <div className="mt-1 text-base font-semibold text-stone-900">{nextInventoryQuantity.toLocaleString()}장</div>
+              <div className="text-xs text-stone-500">{copy.nextInventoryLabel}</div>
+              <div className="mt-1 text-base font-semibold text-stone-900">{nextInventoryQuantity.toLocaleString()}{common.quantitySuffix}</div>
             </div>
           </div>
 
           <label className="block rounded-2xl border border-stone-200 bg-white p-3">
-            <div className="text-xs text-stone-500">검수 메모</div>
+            <div className="text-xs text-stone-500">{copy.memoLabel}</div>
             <textarea
               value={inspectionMemo}
               onChange={(event) => setInspectionMemo(event.target.value)}
               rows={4}
-              placeholder="검수 결과나 특이사항을 남겨주세요."
+              placeholder={copy.memoPlaceholder}
               className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 outline-none focus:border-stone-400"
             />
           </label>
         </div>
       ) : (
         <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">
-          검수할 발주 항목이 없습니다.
+          {copy.empty}
         </div>
       )}
     </ModalShell>
