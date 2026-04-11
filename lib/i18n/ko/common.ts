@@ -15,6 +15,10 @@ export const commonKo = {
       detail: "상세",
       collapse: "접기",
     },
+    modalActions: {
+      completeInspection: "검수 완료",
+      proceedOrderRequest: "발주 요청 진행",
+    },
     modal: {
       attachmentDelete: {
         title: "첨부파일 삭제",

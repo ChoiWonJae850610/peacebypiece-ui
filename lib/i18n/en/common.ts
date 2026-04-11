@@ -15,6 +15,10 @@ export const commonEn = {
       detail: "Detail",
       collapse: "Collapse",
     },
+    modalActions: {
+      completeInspection: "Complete inspection",
+      proceedOrderRequest: "Proceed with order request",
+    },
     modal: {
       attachmentDelete: {
         title: "Delete attachment",
