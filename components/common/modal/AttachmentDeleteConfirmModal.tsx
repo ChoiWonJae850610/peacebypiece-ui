@@ -1,6 +1,7 @@
 "use client";
 
 import ModalShell from "@/components/common/modal/ModalShell";
+import { MODAL_ACTION_LABELS, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import type { Attachment } from "@/types/workorder";
 
 export default function AttachmentDeleteConfirmModal({
@@ -21,24 +22,11 @@ export default function AttachmentDeleteConfirmModal({
       title="첨부파일 삭제"
       description="삭제 전 파일을 한 번 더 확인하세요."
       maxWidthClass="md:max-w-lg"
-      footer={(
-        <div className="flex items-center justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="pbp-interactive-button rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200"
-          >
-            취소
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            className="pbp-interactive-button rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700 active:bg-rose-800"
-          >
-            삭제
-          </button>
-        </div>
-      )}
+      footer={renderModalFooterActions({
+        layout: "end",
+        secondary: { label: MODAL_ACTION_LABELS.cancel, onClick: onClose, className: "active:bg-stone-200" },
+        primary: { label: MODAL_ACTION_LABELS.delete, onClick: onConfirm, tone: "danger" },
+      })}
     >
       <div className="space-y-4">
         <div className="overflow-hidden rounded-2xl border border-stone-200 bg-stone-50">

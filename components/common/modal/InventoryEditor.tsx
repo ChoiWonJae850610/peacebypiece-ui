@@ -5,6 +5,7 @@ import BaseModal from "@/components/common/modal/BaseModal";
 import ModalBody from "@/components/common/modal/ModalBody";
 import ModalFooter from "@/components/common/modal/ModalFooter";
 import ModalHeader from "@/components/common/modal/ModalHeader";
+import { MODAL_ACTION_LABELS, createModalActionHandler, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 
 type InventoryMode = "입고" | "차감" | "보정";
@@ -65,6 +66,7 @@ export default function InventoryEditor({
   const parsedAdjustmentQuantity = Number(adjustmentQuantity || 0);
   const parsedDeductionQuantity = Number(deductionQuantity || 0);
   const hasAnyChange = parsedInboundQuantity > 0 || parsedAdjustmentQuantity > 0 || parsedDeductionQuantity > 0;
+  const applyDisabled = getModalActionDisabledState(!hasAnyChange);
 
   const nextStock = useMemo(() => {
     let next = currentStock;
@@ -74,19 +76,24 @@ export default function InventoryEditor({
     return next;
   }, [currentStock, parsedInboundQuantity, parsedAdjustmentQuantity, parsedDeductionQuantity]);
 
-  const handleApply = () => {
-    if (!hasAnyChange) return;
-    if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur();
-    }
-    onApply({
-      inboundQuantity: parsedInboundQuantity,
-      adjustmentQuantity: parsedAdjustmentQuantity,
-      deductionQuantity: parsedDeductionQuantity,
-      memo: memo.trim(),
-    });
-    onClose();
-  };
+  const handleApply = createModalActionHandler({
+    shouldProceed: !applyDisabled,
+    beforeAction: () => {
+      if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    },
+    action: () => {
+      onApply({
+        inboundQuantity: parsedInboundQuantity,
+        adjustmentQuantity: parsedAdjustmentQuantity,
+        deductionQuantity: parsedDeductionQuantity,
+        memo: memo.trim(),
+      });
+    },
+    onClose,
+    closeAfterAction: true,
+  });
 
   return (
     <BaseModal open={open} onClose={onClose} dialogRef={dialogRef} titleId="inventory-editor-title" maxWidthClassName="md:max-w-lg">
@@ -190,23 +197,11 @@ export default function InventoryEditor({
       </ModalBody>
 
       <ModalFooter>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-800"
-          >
-            취소
-          </button>
-          <button
-            type="button"
-            onClick={handleApply}
-            className="flex-1 rounded-2xl bg-stone-900 px-4 py-3 text-sm font-medium text-white disabled:opacity-50"
-            disabled={!hasAnyChange}
-          >
-            적용
-          </button>
-        </div>
+        {renderModalFooterActions({
+          layout: "split",
+          secondary: { label: MODAL_ACTION_LABELS.cancel, onClick: onClose, width: "fill", className: "rounded-2xl text-stone-800" },
+          primary: { label: MODAL_ACTION_LABELS.apply, onClick: handleApply, disabled: applyDisabled, tone: "primary", width: "fill", className: "rounded-2xl disabled:opacity-50" },
+        })}
       </ModalFooter>
     </BaseModal>
   );

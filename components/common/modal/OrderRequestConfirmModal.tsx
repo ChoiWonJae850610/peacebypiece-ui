@@ -1,6 +1,7 @@
 "use client";
 
 import ModalShell from "@/components/common/modal/ModalShell";
+import { MODAL_ACTION_LABELS, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import type { WorkOrder } from "@/types/workorder";
 
 export default function OrderRequestConfirmModal({
@@ -37,24 +38,11 @@ export default function OrderRequestConfirmModal({
       maxWidthClass="md:max-w-2xl"
       overlayClassName="bg-stone-950/55 md:bg-stone-950/50"
       bodyClassName="space-y-4 bg-stone-50 md:space-y-5"
-      footer={(
-        <div className="flex flex-col-reverse gap-2 md:flex-row md:justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-xl border border-stone-300 bg-white px-4 py-2.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
-          >
-            취소
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            className="rounded-xl bg-stone-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-stone-800"
-          >
-            발주 요청 진행
-          </button>
-        </div>
-      )}
+      footer={renderModalFooterActions({
+        layout: "stack-reverse",
+        secondary: { label: MODAL_ACTION_LABELS.cancel, onClick: onClose, className: "transition py-2.5" },
+        primary: { label: MODAL_ACTION_LABELS.proceedOrderRequest, onClick: onConfirm, tone: "primary", className: "transition py-2.5" },
+      })}
     >
         <section className="rounded-2xl border border-stone-200 bg-white p-4">
           <div className="text-sm font-semibold text-stone-900">작업지시서 요약</div>

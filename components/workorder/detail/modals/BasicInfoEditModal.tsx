@@ -1,4 +1,5 @@
 import ModalShell from "@/components/common/modal/ModalShell";
+import { MODAL_ACTION_LABELS, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { CATEGORY1_OPTIONS, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
 import { formatBasicSummary } from "@/lib/workorder/detail/detailFormatting";
 import { getCategory2Options, getCategory3Options } from "@/lib/workorder/detail/detailSanitizers";
@@ -48,24 +49,11 @@ export default function BasicInfoEditModal({
       title="기본정보 수정"
       description="헤더 요약에 표시되는 품목 분류와 시즌 정보를 수정합니다."
       maxWidthClass="md:max-w-xl"
-      footer={(
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="pbp-interactive-button flex-1 rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
-          >
-            취소
-          </button>
-          <button
-            type="button"
-            onClick={onSave}
-            className="pbp-interactive-button flex-1 rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white hover:bg-stone-800 active:bg-black"
-          >
-            적용
-          </button>
-        </div>
-      )}
+      footer={renderModalFooterActions({
+        layout: "split",
+        secondary: { label: MODAL_ACTION_LABELS.cancel, onClick: onClose, width: "fill" },
+        primary: { label: MODAL_ACTION_LABELS.apply, onClick: onSave, tone: "primary", width: "fill" },
+      })}
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className="rounded-2xl border border-stone-200 bg-white p-3">

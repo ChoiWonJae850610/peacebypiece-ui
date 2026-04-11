@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
+import { MODAL_ACTION_LABELS, createModalActionHandler, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { DEFAULT_FACTORY_OPTION } from "@/lib/constants/workorderOptions";
 import { toNumber } from "@/lib/workorder/detail/detailSanitizers";
 import type { OrderEntryState } from "@/components/workorder/detail/shared/detailEditorShared";
@@ -63,16 +64,21 @@ export default function OrderInspectionModal({
   const appliedQuantity = Math.max(0, toNumber(appliedQuantityInput));
   const nextInventoryQuantity = Math.max(0, Number(currentInventoryQuantity) || 0) + appliedQuantity;
 
-  const handleApply = () => {
-    if (!selectedEntry) return;
-    onApply({
-      orderEntryId: selectedEntry.id,
-      inboundQuantity: appliedQuantity,
-      nextInventoryQuantity,
-      memo: inspectionMemo,
-    });
-    onClose();
-  };
+  const submitDisabled = getModalActionDisabledState(!selectedEntry);
+  const handleApply = createModalActionHandler({
+    shouldProceed: !submitDisabled,
+    action: () => {
+      if (!selectedEntry) return;
+      onApply({
+        orderEntryId: selectedEntry.id,
+        inboundQuantity: appliedQuantity,
+        nextInventoryQuantity,
+        memo: inspectionMemo,
+      });
+    },
+    onClose,
+    closeAfterAction: true,
+  });
 
   return (
     <ModalShell
@@ -81,25 +87,11 @@ export default function OrderInspectionModal({
       title="검수 진행"
       description="공장을 선택한 뒤 실제 검수 반영 수량을 입력하고 메모와 함께 완료 처리합니다."
       maxWidthClass="md:max-w-lg"
-      footer={(
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="pbp-interactive-button flex-1 rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
-          >
-            닫기
-          </button>
-          <button
-            type="button"
-            onClick={handleApply}
-            disabled={!selectedEntry}
-            className="pbp-interactive-button flex-1 rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:bg-stone-300"
-          >
-            검수 완료
-          </button>
-        </div>
-      )}
+      footer={renderModalFooterActions({
+        layout: "split",
+        secondary: { label: MODAL_ACTION_LABELS.close, onClick: onClose, width: "fill" },
+        primary: { label: MODAL_ACTION_LABELS.completeInspection, onClick: handleApply, disabled: submitDisabled, tone: "primary", width: "fill" },
+      })}
     >
       {selectedEntry ? (
         <div className="space-y-4">

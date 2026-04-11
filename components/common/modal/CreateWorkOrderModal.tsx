@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
+import { MODAL_ACTION_LABELS, createModalActionHandler, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { DEFAULT_BASIC_YEAR, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
 import { CATEGORY1_OPTIONS, CATEGORY2_OPTIONS_MAP, CATEGORY3_OPTIONS_MAP, DEFAULT_CATEGORY1, DEFAULT_CATEGORY2, DEFAULT_CATEGORY3 } from "@/lib/constants/workorderCategories";
 import { WORKORDER_LABELS } from "@/lib/constants/workorderLabels";
@@ -50,8 +51,13 @@ export default function CreateWorkOrderModal({ open, onClose, onCreate }: Props)
   }, [category2]);
 
   const trimmedTitle = title.trim();
-  const canSubmit = trimmedTitle.length > 0;
+  const submitDisabled = getModalActionDisabledState(trimmedTitle.length === 0);
   const recommendedCategory = useMemo(() => getRecommendedWorkOrderCategory(trimmedTitle), [trimmedTitle]);
+
+  const handleCreate = createModalActionHandler({
+    shouldProceed: !submitDisabled,
+    action: () => onCreate({ title: trimmedTitle, category1, category2, category3, season: `${seasonType} ${seasonYear}`.trim() }),
+  });
 
   const handleApplyRecommendation = () => {
     if (!recommendedCategory) return;
@@ -67,12 +73,11 @@ export default function CreateWorkOrderModal({ open, onClose, onCreate }: Props)
       title={WORKORDER_LABELS.createModalTitle}
       description={WORKORDER_LABELS.createModalDescription}
       maxWidthClass="md:max-w-xl"
-      footer={(
-        <div className="flex items-center justify-end gap-2">
-          <button type="button" onClick={onClose} className="pbp-interactive-button rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100">{WORKORDER_LABELS.cancel}</button>
-          <button type="button" disabled={!canSubmit} onClick={() => onCreate({ title: trimmedTitle, category1, category2, category3, season: `${seasonType} ${seasonYear}`.trim() })} className="pbp-interactive-button rounded-xl bg-stone-900 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-300">{WORKORDER_LABELS.create}</button>
-        </div>
-      )}
+      footer={renderModalFooterActions({
+        layout: "end",
+        secondary: { label: WORKORDER_LABELS.cancel ?? MODAL_ACTION_LABELS.cancel, onClick: onClose },
+        primary: { label: WORKORDER_LABELS.create ?? MODAL_ACTION_LABELS.create, onClick: handleCreate, disabled: submitDisabled, tone: "primary", className: "font-semibold" },
+      })}
     >
       <div className="grid gap-4">
         <label className="grid gap-1.5">
