@@ -5,7 +5,7 @@ import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS, createModalActionHandler, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { DEFAULT_BASIC_YEAR, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
 import { CATEGORY1_OPTIONS, CATEGORY2_OPTIONS_MAP, CATEGORY3_OPTIONS_MAP, DEFAULT_CATEGORY1, DEFAULT_CATEGORY2, DEFAULT_CATEGORY3 } from "@/lib/constants/workorderCategories";
-import { WORKORDER_LABELS } from "@/lib/constants/workorderLabels";
+import { useI18n } from "@/lib/i18n";
 import { getRecommendedWorkOrderCategory } from "@/lib/utils/workorderCategoryRecommend";
 
 type Props = {
@@ -18,6 +18,8 @@ const mobileFieldClassName = "pbp-field-interaction h-11 w-full rounded-xl borde
 const mobileSelectClassName = "pbp-field-interaction h-11 rounded-xl border border-stone-300 bg-white px-3 text-base text-stone-900 outline-none focus:border-stone-500 md:text-sm";
 
 export default function CreateWorkOrderModal({ open, onClose, onCreate }: Props) {
+  const { i18n } = useI18n();
+  const copy = i18n.common.ui.modal.createWorkOrder;
   const [title, setTitle] = useState("");
   const [category1, setCategory1] = useState<string>(DEFAULT_CATEGORY1);
   const category2Options = useMemo(() => CATEGORY2_OPTIONS_MAP[category1] ?? ["미분류"], [category1]);
@@ -70,25 +72,25 @@ export default function CreateWorkOrderModal({ open, onClose, onCreate }: Props)
     <ModalShell
       open={open}
       onClose={onClose}
-      title={WORKORDER_LABELS.createModalTitle}
-      description={WORKORDER_LABELS.createModalDescription}
+      title={copy.title}
+      description={copy.description}
       maxWidthClass="md:max-w-xl"
       footer={renderModalFooterActions({
         layout: "end",
-        secondary: { label: WORKORDER_LABELS.cancel ?? MODAL_ACTION_LABELS.cancel, onClick: onClose },
-        primary: { label: WORKORDER_LABELS.create ?? MODAL_ACTION_LABELS.create, onClick: handleCreate, disabled: submitDisabled, tone: "primary", className: "font-semibold" },
+        secondary: { label: i18n.common.ui.common.cancel ?? MODAL_ACTION_LABELS.cancel, onClick: onClose },
+        primary: { label: i18n.common.ui.common.create ?? MODAL_ACTION_LABELS.create, onClick: handleCreate, disabled: submitDisabled, tone: "primary", className: "font-semibold" },
       })}
     >
       <div className="grid gap-4">
         <label className="grid gap-1.5">
-          <span className="text-sm font-medium text-stone-700">{WORKORDER_LABELS.workOrderTitle}</span>
-          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="예: 코튼 레이어드 반팔" className={mobileFieldClassName} />
+          <span className="text-sm font-medium text-stone-700">{copy.workOrderTitle}</span>
+          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={copy.titlePlaceholder} className={mobileFieldClassName} />
         </label>
         {recommendedCategory ? (
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-3">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div className="min-w-0">
-                <div className="text-sm font-semibold text-emerald-900">{WORKORDER_LABELS.recommendedCategory}</div>
+                <div className="text-sm font-semibold text-emerald-900">{copy.recommendedCategory}</div>
                 <div className="mt-1 text-sm text-emerald-800">
                   {recommendedCategory.category1} / {recommendedCategory.category2} / {recommendedCategory.category3}
                 </div>
@@ -99,26 +101,26 @@ export default function CreateWorkOrderModal({ open, onClose, onCreate }: Props)
                 onClick={handleApplyRecommendation}
                 className="pbp-interactive-button shrink-0 rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm font-medium text-emerald-800 hover:border-emerald-400 hover:bg-emerald-100"
               >
-                {WORKORDER_LABELS.applyRecommendedCategory}
+                {copy.applyRecommendedCategory}
               </button>
             </div>
           </div>
         ) : null}
         <div className="grid gap-4 md:grid-cols-3">
           <label className="grid gap-1.5">
-            <span className="text-sm font-medium text-stone-700">{WORKORDER_LABELS.category1}</span>
+            <span className="text-sm font-medium text-stone-700">{copy.category1}</span>
             <select value={category1} onChange={(e) => setCategory1(e.target.value)} className={mobileSelectClassName}>
               {CATEGORY1_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
           </label>
           <label className="grid gap-1.5">
-            <span className="text-sm font-medium text-stone-700">{WORKORDER_LABELS.category2}</span>
+            <span className="text-sm font-medium text-stone-700">{copy.category2}</span>
             <select value={category2} onChange={(e) => setCategory2(e.target.value)} className={mobileSelectClassName}>
               {category2Options.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
           </label>
           <label className="grid gap-1.5">
-            <span className="text-sm font-medium text-stone-700">{WORKORDER_LABELS.category3}</span>
+            <span className="text-sm font-medium text-stone-700">{copy.category3}</span>
             <select value={category3} onChange={(e) => setCategory3(e.target.value)} className={mobileSelectClassName}>
               {category3Options.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
@@ -126,13 +128,13 @@ export default function CreateWorkOrderModal({ open, onClose, onCreate }: Props)
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <label className="grid gap-1.5">
-            <span className="text-sm font-medium text-stone-700">{WORKORDER_LABELS.season}</span>
+            <span className="text-sm font-medium text-stone-700">{copy.season}</span>
             <select value={seasonType} onChange={(e) => setSeasonType(e.target.value)} className={mobileSelectClassName}>
               {SEASON_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
           </label>
           <label className="grid gap-1.5">
-            <span className="text-sm font-medium text-stone-700">{WORKORDER_LABELS.year}</span>
+            <span className="text-sm font-medium text-stone-700">{copy.year}</span>
             <select value={seasonYear} onChange={(e) => setSeasonYear(e.target.value)} className={mobileSelectClassName}>
               {YEAR_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>

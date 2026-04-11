@@ -56,6 +56,19 @@ export const commonEn = {
         detailSummary: "Detail",
         detailCollapse: "Collapse",
       },
+      createWorkOrder: {
+        title: "Create work order",
+        description: "Enter the basic information to create it in draft status.",
+        workOrderTitle: "Work order name",
+        titlePlaceholder: "Example: Cotton layered short sleeve",
+        recommendedCategory: "Recommended category",
+        applyRecommendedCategory: "Apply recommended category",
+        category1: "Primary category",
+        category2: "Secondary category",
+        category3: "Tertiary category",
+        season: "Season",
+        year: "Year",
+      },
     },
     memo: {
       panelTitle: "Work memo",
@@ -95,6 +108,15 @@ export const commonEn = {
       sidebar: {
         title: "PeacebyPiece",
         workList: "Work list",
+      },
+      sidebarControls: {
+        subtitle: "Work order list",
+        openAdminPanelAria: "Open admin panel",
+        openSettingsAria: "Open settings",
+        searchAria: "Search work orders",
+        searchPlaceholder: "Search by work name, category, factory, or status",
+        create: "Create work order",
+        empty: "No search results.",
       },
       mobileTopBar: {
         title: "PeacebyPiece",

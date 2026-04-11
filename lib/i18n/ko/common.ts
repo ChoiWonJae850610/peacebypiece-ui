@@ -56,6 +56,19 @@ export const commonKo = {
         detailSummary: "상세",
         detailCollapse: "접기",
       },
+      createWorkOrder: {
+        title: "작업지시서 생성",
+        description: "작업지시서 기본 정보를 입력하면 작성중 상태로 생성됩니다.",
+        workOrderTitle: "작업지시서명",
+        titlePlaceholder: "예: 코튼 레이어드 반팔",
+        recommendedCategory: "추천 분류",
+        applyRecommendedCategory: "추천 분류 적용",
+        category1: "대분류",
+        category2: "중분류",
+        category3: "소분류",
+        season: "시즌",
+        year: "연도",
+      },
     },
     memo: {
       panelTitle: "작업메모",
@@ -95,6 +108,15 @@ export const commonKo = {
       sidebar: {
         title: "PeacebyPiece",
         workList: "작업 리스트",
+      },
+      sidebarControls: {
+        subtitle: "작업지시서 목록",
+        openAdminPanelAria: "관리자 패널 열기",
+        openSettingsAria: "환경 설정 열기",
+        searchAria: "작업지시서 검색",
+        searchPlaceholder: "작업명, 분류, 공장, 상태 검색",
+        create: "작업지시서 생성",
+        empty: "검색 결과가 없습니다.",
       },
       mobileTopBar: {
         title: "PeacebyPiece",

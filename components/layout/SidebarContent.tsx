@@ -1,6 +1,7 @@
 "use client";
 
 import WorkOrderListCard from "@/components/workorder/list/WorkOrderListCard";
+import { useI18n } from "@/lib/i18n";
 import type { WorkOrderListItem, WorkflowState } from "@/types/workorder";
 
 type Props = {
@@ -38,20 +39,24 @@ export default function SidebarContent({
   searchQuery,
   onSearchQueryChange,
 }: Props) {
+  const { i18n } = useI18n();
+  const sidebarUi = i18n.common.ui.layout.sidebar;
+  const controlsUi = i18n.common.ui.layout.sidebarControls;
+
   return (
     <div className="flex h-full flex-col">
       <div className="border-b border-stone-200 p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-lg font-semibold leading-6 text-stone-900">PeacebyPiece v{version}</div>
-            <div className="mt-1 text-xs text-stone-500">작업지시서 목록</div>
+            <div className="mt-1 text-xs text-stone-500">{controlsUi.subtitle}</div>
           </div>
           <div className="flex items-center gap-2">
             {onOpenAdminPanel ? (
               <button
                 type="button"
                 onClick={onOpenAdminPanel}
-                aria-label="관리자 패널 열기"
+                aria-label={controlsUi.openAdminPanelAria}
                 className="pbp-interactive-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-sky-200 bg-sky-50 text-base font-medium text-sky-700 shadow-sm hover:border-sky-300 hover:bg-sky-100 active:bg-sky-200"
               >
                 ⚙︎
@@ -60,7 +65,7 @@ export default function SidebarContent({
             <button
               type="button"
               onClick={onOpenSettings}
-            aria-label="환경 설정 열기"
+            aria-label={controlsUi.openSettingsAria}
             className="pbp-interactive-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stone-300 bg-white text-base font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
           >
             ⚙️
@@ -68,12 +73,12 @@ export default function SidebarContent({
           </div>
         </div>
         <label className="mt-3.5 block">
-          <span className="sr-only">작업지시서 검색</span>
+          <span className="sr-only">{controlsUi.searchAria}</span>
           <input
             type="search"
             value={searchQuery}
             onChange={(event) => onSearchQueryChange(event.target.value)}
-            placeholder="작업명, 분류, 공장, 상태 검색"
+            placeholder={controlsUi.searchPlaceholder}
             className="pbp-field-interaction h-11 w-full rounded-xl border border-stone-300 bg-white px-4 text-sm text-stone-900 outline-none placeholder:text-stone-400 focus:border-stone-500 focus:bg-stone-50"
           />
         </label>
@@ -83,7 +88,7 @@ export default function SidebarContent({
             onClick={onCreate}
             className="pbp-touch-target pbp-interactive-button mt-3.5 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white hover:bg-stone-800 active:bg-black"
           >
-            작업지시서 생성
+            {controlsUi.create}
           </button>
         ) : null}
       </div>
@@ -103,7 +108,7 @@ export default function SidebarContent({
             />
           ))}
         </div>
-        {workOrders.length === 0 ? <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">검색 결과가 없습니다.</div> : null}
+        {workOrders.length === 0 ? <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">{controlsUi.empty}</div> : null}
       </div>
     </div>
   );

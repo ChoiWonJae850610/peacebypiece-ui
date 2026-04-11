@@ -1,20 +1,3 @@
-export const WORKORDER_LABELS = {
-  createButton: "작업지시서 생성",
-  createModalTitle: "작업지시서 생성",
-  createModalDescription: "작업지시서 기본 정보를 입력하면 작성중 상태로 생성됩니다.",
-  workOrderTitle: "작업지시서명",
-  category1: "대분류",
-  category2: "중분류",
-  category3: "소분류",
-  season: "시즌",
-  year: "연도",
-  recommendedCategory: "추천 분류",
-  applyRecommendedCategory: "추천 분류 적용",
-  cancel: "취소",
-  create: "생성",
-  dueDate: "납기일",
-} as const;
-
 export const WORKORDER_PDF_LABELS = {
   documentTitle: "작업지시서",
   orderRequestTitle: "발주요청서",
