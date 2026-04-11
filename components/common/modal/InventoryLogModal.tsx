@@ -11,6 +11,7 @@ import { isAdminRole, isDesignerRole } from "@/lib/constants/roles";
 import type { HistoryFilter, HistoryLog, RoleType } from "@/types/workorder";
 import { MODAL_EXCEPTION_PRESETS } from "@/components/common/modal/modalPresets";
 import { DETAIL_TOGGLE_TEXT } from "@/lib/constants/uiText";
+import { useI18n } from "@/lib/i18n";
 
 function HistoryLogItem({ item }: { item: HistoryLog }) {
   const [open, setOpen] = useState(false);
@@ -71,21 +72,23 @@ export default function InventoryLogModal({
   role: RoleType;
   filter: HistoryFilter;
 }) {
+  const { i18n } = useI18n();
+  const copy = i18n.workorder.presentation.inventoryLog;
   const dialogRef = useRef<HTMLDivElement | null>(null);
   useModalEnvironment({ open, dialogRef, onClose });
   const summaryText = useMemo(() => {
     if (isAdminRole([role])) {
-      const filterLabel = HISTORY_FILTER_OPTIONS.find(([key]) => key === filter)?.[1] ?? "전체";
-      return `현재 필터: ${filterLabel}`;
+      const filterLabel = HISTORY_FILTER_OPTIONS.find(([key]) => key === filter)?.[1] ?? copy.defaultFilterLabel;
+      return copy.currentFilterFormat.replace("{filter}", filterLabel);
     }
-    return `현재 보기 권한: ${isDesignerRole([role]) ? "작업/상태/첨부" : "재고/첨부"}`;
-  }, [filter, role]);
+    return isDesignerRole([role]) ? copy.currentRoleDesigner : copy.currentRoleInspector;
+  }, [copy, filter, role]);
 
   return (
     <BaseModal open={open} onClose={onClose} dialogRef={dialogRef} titleId="inventory-log-modal-title" maxWidthClassName={MODAL_EXCEPTION_PRESETS.inventoryLog.maxWidthClass}>
       <ModalHeader
         titleId="inventory-log-modal-title"
-        title="전체 히스토리"
+        title={copy.title}
         description={undefined}
         onClose={onClose}
       />
@@ -98,7 +101,7 @@ export default function InventoryLogModal({
             logs.map((item) => <HistoryLogItem key={item.id} item={item} />)
           ) : (
             <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-sm text-stone-500">
-              표시할 히스토리가 없습니다.
+              {copy.empty}
             </div>
           )}
         </div>

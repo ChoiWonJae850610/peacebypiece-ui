@@ -23,7 +23,8 @@ export function getWorkOrderCardTone(state: WorkflowState) {
 }
 
 export function getWorkOrderDisplayTitle(workOrder: { title?: string | null; baseTitle?: string | null; revision?: number | null }) {
-  const baseTitle = String(workOrder.baseTitle ?? workOrder.title ?? "").trim() || i18n.workorder.workflowStates.draft;
+  const baseTitle = String(workOrder.baseTitle ?? workOrder.title ?? "").trim() || i18n.workorder.presentation.titleDraftFallback;
   const revision = Number(workOrder.revision ?? 1);
-  return revision > 1 ? `${baseTitle} ${revision}차` : baseTitle;
+  const revisionSuffix = i18n.workorder.presentation.revisionSuffixFormat.replace("{revision}", String(revision));
+  return revision > 1 ? `${baseTitle} ${revisionSuffix}` : baseTitle;
 }

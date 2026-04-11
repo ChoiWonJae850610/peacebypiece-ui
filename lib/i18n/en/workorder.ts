@@ -44,6 +44,57 @@ export const workorderEn = {
     production: "Production",
     inspection: "Inspection",
   },
+  presentation: {
+    emptyDisplay: "-",
+    inventoryStatusPrefix: "Inventory status: ",
+    workflowDescriptionFallback: "No description is available for the current work status.",
+    titleDraftFallback: "Draft",
+    revisionSuffixFormat: "Rev {revision}",
+    historyFilters: {
+      all: "All",
+      work: "Work",
+      inventory: "Inventory",
+      attachment: "Attachment",
+    },
+    notificationSettings: {
+      created: {
+        label: "Work order created",
+        description: "Notify when a new work order is created.",
+      },
+      updated: {
+        label: "Basic info updated",
+        description: "Notify when basic information is saved or updated.",
+      },
+      status_changed: {
+        label: "Status changed",
+        description: "Notify when stages such as Draft, Review requested, or Order requested change.",
+      },
+      materials_changed: {
+        label: "Fabric / trim changed",
+        description: "Notify when production composition such as materials, trims, or unit cost changes.",
+      },
+      outsourcing_changed: {
+        label: "Outsourcing changed",
+        description: "Notify when outsourcing processes are added, edited, or removed.",
+      },
+      stock_changed: {
+        label: "Inventory changed",
+        description: "Notify when inventory quantities change through inbound, deduction, or adjustment.",
+      },
+      comment_added: {
+        label: "Memo added",
+        description: "Notify when work memos or replies are added.",
+      },
+    },
+    inventoryLog: {
+      title: "Full history",
+      empty: "No history to display.",
+      currentFilterFormat: "Current filter: {filter}",
+      currentRoleDesigner: "Current view permission: Work / Status / Attachment",
+      currentRoleInspector: "Current view permission: Inventory / Attachment",
+      defaultFilterLabel: "All",
+    },
+  },
   ui: {
     common: {
       countSuffix: "items",

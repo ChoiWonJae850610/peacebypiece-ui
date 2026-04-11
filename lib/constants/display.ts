@@ -1,9 +1,12 @@
 import type { HistoryTone } from "@/types/workflow";
 import type { OrderInspectionStatus } from "@/types/workorder";
+import { getI18n } from "@/lib/i18n";
 
-export const EMPTY_DISPLAY = "-";
-export const INVENTORY_STATUS_LABEL_PREFIX = "재고 상태: ";
-export const WORKFLOW_DESCRIPTION_FALLBACK = "현재 작업 상태 설명이 준비되지 않았습니다.";
+const i18n = getI18n();
+
+export const EMPTY_DISPLAY = i18n.workorder.presentation.emptyDisplay;
+export const INVENTORY_STATUS_LABEL_PREFIX = i18n.workorder.presentation.inventoryStatusPrefix;
+export const WORKFLOW_DESCRIPTION_FALLBACK = i18n.workorder.presentation.workflowDescriptionFallback;
 
 export const HISTORY_TONE_CLASS: Record<HistoryTone, string> = {
   blue: "bg-blue-100 text-blue-700",

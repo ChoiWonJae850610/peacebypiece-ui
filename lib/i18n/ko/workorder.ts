@@ -44,6 +44,57 @@ export const workorderKo = {
     production: "생산",
     inspection: "검수",
   },
+  presentation: {
+    emptyDisplay: "-",
+    inventoryStatusPrefix: "재고 상태: ",
+    workflowDescriptionFallback: "현재 작업 상태 설명이 준비되지 않았습니다.",
+    titleDraftFallback: "작성중",
+    revisionSuffixFormat: "{revision}차",
+    historyFilters: {
+      all: "전체",
+      work: "작업",
+      inventory: "재고",
+      attachment: "첨부",
+    },
+    notificationSettings: {
+      created: {
+        label: "작업지시서 생성",
+        description: "새 작업지시서가 만들어졌을 때 알림 대상에 포함합니다.",
+      },
+      updated: {
+        label: "기본사항 수정",
+        description: "기본 정보 저장/수정 이벤트를 알림 대상으로 둡니다.",
+      },
+      status_changed: {
+        label: "상태 변경",
+        description: "작성중, 검토요청, 발주요청 등 단계 변경 알림입니다.",
+      },
+      materials_changed: {
+        label: "원단/부자재 변경",
+        description: "원단, 부자재, 단가 등 생산구성 변경 알림입니다.",
+      },
+      outsourcing_changed: {
+        label: "외주 공정 변경",
+        description: "외주 공정 추가/수정/삭제 알림입니다.",
+      },
+      stock_changed: {
+        label: "재고 변경",
+        description: "입고, 차감, 보정 같은 재고 수량 변경 알림입니다.",
+      },
+      comment_added: {
+        label: "메모 작성",
+        description: "작업메모와 댓글이 등록되었을 때 알림합니다.",
+      },
+    },
+    inventoryLog: {
+      title: "전체 히스토리",
+      empty: "표시할 히스토리가 없습니다.",
+      currentFilterFormat: "현재 필터: {filter}",
+      currentRoleDesigner: "현재 보기 권한: 작업/상태/첨부",
+      currentRoleInspector: "현재 보기 권한: 재고/첨부",
+      defaultFilterLabel: "전체",
+    },
+  },
   ui: {
     common: {
       countSuffix: "건",

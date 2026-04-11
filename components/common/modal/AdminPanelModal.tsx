@@ -136,7 +136,7 @@ export default function AdminPanelModal({
             ))}
           </div>
           <div className="mt-3 space-y-2">
-            {historyLogs.length > 0 ? historyLogs.map((item) => <HistoryPreviewItem key={item.id} item={item} />) : <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-sm text-stone-500">표시할 히스토리가 없습니다.</div>}
+            {historyLogs.length > 0 ? historyLogs.map((item) => <HistoryPreviewItem key={item.id} item={item} />) : <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-sm text-stone-500">{i18n.workorder.presentation.inventoryLog.empty}</div>}
           </div>
         </section>
       </ModalBody>
