@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { buildUserRoleState } from "@/lib/constants/roles";
 import { createManagerChangeHistoryLog } from "@/lib/workorder/history/builders";
-import { updateWorkOrderManager } from "@/lib/workorder/actions";
+import { updateManagerForWorkOrder } from "@/lib/workorder/actions";
 import type { RoleType } from "@/types/permission";
 import type { ChangeManagerInput } from "./useWorkOrderActionTypes";
 import type { AdminActionBaseParams } from "./useWorkOrderActionTypes";
@@ -51,10 +51,14 @@ export function useWorkOrderAdminActions({
       }
 
       setWorkOrders((prev) =>
-        updateWorkOrderManager(prev, workOrder.id, {
-          managerId: nextManager.id,
-          managerName: nextManager.name,
-        }),
+        prev.map((item) =>
+          item.id === workOrder.id
+            ? updateManagerForWorkOrder(item, {
+                managerId: nextManager.id,
+                managerName: nextManager.name,
+              })
+            : item,
+        ),
       );
       setHistoryLogs((prev) => [
         createManagerChangeHistoryLog(currentUser.name, workOrder.id, previousManagerName, nextManager.name),

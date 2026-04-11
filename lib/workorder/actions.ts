@@ -1,5 +1,6 @@
 import { createAttachmentId } from "@/lib/permissions/attachments";
 import type { Material } from "@/types/material";
+import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
 import type { Attachment, InventoryChange, MemoReply, MemoThread, OrderEntry, RoleType, WorkOrder, WorkflowAction } from "@/types/workorder";
 
 export function createNewWorkOrder(nextIndex: number, payload: {
@@ -46,25 +47,56 @@ export function createNewWorkOrder(nextIndex: number, payload: {
   };
 }
 
+
+export function buildInventoryChanges(payload: {
+  inboundQuantity: number;
+  adjustmentQuantity: number;
+  deductionQuantity: number;
+}) {
+  return [
+    ...(payload.inboundQuantity > 0 ? [{ type: "입고" as const, quantity: payload.inboundQuantity }] : []),
+    ...(payload.adjustmentQuantity > 0 ? [{ type: "보정" as const, quantity: payload.adjustmentQuantity }] : []),
+    ...(payload.deductionQuantity > 0 ? [{ type: "차감" as const, quantity: payload.deductionQuantity }] : []),
+  ];
+}
+
+export function applyWorkflowActionToWorkOrder(workOrder: WorkOrder, action: WorkflowAction): WorkOrder {
+  if (action.label === "발주 요청") {
+    const nextOrderEntries: OrderEntry[] = (workOrder.orderEntries ?? []).map((entry) => ({
+      ...entry,
+      inspectionStatus: entry.inspectionStatus === "inspection_completed" ? "inspection_completed" : "inspection_pending",
+    }));
+
+    return {
+      ...workOrder,
+      workflowState: action.nextState,
+      orderEntries: nextOrderEntries,
+    };
+  }
+
+  return { ...workOrder, workflowState: action.nextState };
+}
+
+export function applyInventoryAdjustmentToWorkOrder(
+  workOrder: WorkOrder,
+  payload: { changes: InventoryChange[] },
+): WorkOrder {
+  let nextInventory = workOrder.inventoryQuantity;
+  for (const change of payload.changes) {
+    if (change.type === "입고") nextInventory += change.quantity;
+    else if (change.type === "차감") nextInventory = Math.max(0, nextInventory - change.quantity);
+    else nextInventory = change.quantity;
+  }
+
+  return {
+    ...workOrder,
+    inventoryQuantity: nextInventory,
+    inventoryStatus: nextInventory > 0 ? "정상" : "부족",
+  };
+}
+
 export function updateWorkflowState(workOrders: WorkOrder[], workOrderId: string, action: WorkflowAction) {
-  return workOrders.map((item) => {
-    if (item.id !== workOrderId) return item;
-
-    if (action.label === "발주 요청") {
-      const nextOrderEntries: OrderEntry[] = (item.orderEntries ?? []).map((entry) => ({
-        ...entry,
-        inspectionStatus: entry.inspectionStatus === "inspection_completed" ? "inspection_completed" : "inspection_pending",
-      }));
-
-      return {
-        ...item,
-        workflowState: action.nextState,
-        orderEntries: nextOrderEntries,
-      };
-    }
-
-    return { ...item, workflowState: action.nextState };
-  });
+  return workOrders.map((item) => (item.id === workOrderId ? applyWorkflowActionToWorkOrder(item, action) : item));
 }
 
 export function applyInventoryAdjustment(
@@ -72,22 +104,7 @@ export function applyInventoryAdjustment(
   workOrderId: string,
   payload: { changes: InventoryChange[] },
 ) {
-  return workOrders.map((item) => {
-    if (item.id !== workOrderId) return item;
-
-    let nextInventory = item.inventoryQuantity;
-    for (const change of payload.changes) {
-      if (change.type === "입고") nextInventory += change.quantity;
-      else if (change.type === "차감") nextInventory = Math.max(0, nextInventory - change.quantity);
-      else nextInventory = change.quantity;
-    }
-
-    return {
-      ...item,
-      inventoryQuantity: nextInventory,
-      inventoryStatus: nextInventory > 0 ? "정상" : "부족",
-    };
-  });
+  return workOrders.map((item) => (item.id === workOrderId ? applyInventoryAdjustmentToWorkOrder(item, payload) : item));
 }
 
 export function appendAttachments(workOrders: WorkOrder[], workOrderId: string, attachments: Attachment[]) {
@@ -176,13 +193,49 @@ export function promoteAttachmentToOfficial(
     : item);
 }
 
+
+
+export function completeInspectionForWorkOrder(
+  workOrder: WorkOrder,
+  payload: { orderEntryId: string; nextInventoryQuantity: number },
+): WorkOrder {
+  const nextOrderEntries = (workOrder.orderEntries ?? []).map((entry) =>
+    entry.id === payload.orderEntryId ? { ...entry, inspectionStatus: "inspection_completed" as const } : entry,
+  );
+
+  return {
+    ...workOrder,
+    orderEntries: nextOrderEntries,
+    inventoryQuantity: payload.nextInventoryQuantity,
+    inventoryStatus: payload.nextInventoryQuantity > 0 ? "정상" : "부족",
+  };
+}
+
+export function patchWorkOrder(
+  workOrder: WorkOrder,
+  patch: Partial<WorkOrder>,
+): WorkOrder {
+  const nextWorkOrder = { ...workOrder, ...patch };
+  if (patch.orderEntries) {
+    nextWorkOrder.workflowState = deriveWorkflowStateFromOrderEntries(workOrder.workflowState, patch.orderEntries);
+  }
+  return nextWorkOrder;
+}
+
+export function updateManagerForWorkOrder(
+  workOrder: WorkOrder,
+  payload: { managerId: string; managerName: string },
+): WorkOrder {
+  return { ...workOrder, managerId: payload.managerId, manager: payload.managerName };
+}
+
 export function updateWorkOrderManager(
   workOrders: WorkOrder[],
   workOrderId: string,
   payload: { managerId: string; managerName: string },
 ) {
   return workOrders.map((item) => item.id === workOrderId
-    ? { ...item, managerId: payload.managerId, manager: payload.managerName }
+    ? updateManagerForWorkOrder(item, payload)
     : item);
 }
 

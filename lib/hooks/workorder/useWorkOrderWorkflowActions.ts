@@ -7,9 +7,14 @@ import {
   createInventoryHistoryLog,
   createStatusHistoryLog,
 } from "@/lib/workorder/history/builders";
-import { applyInventoryAdjustment, updateWorkflowState } from "@/lib/workorder/actions";
+import {
+  applyInventoryAdjustmentToWorkOrder,
+  applyWorkflowActionToWorkOrder,
+  buildInventoryChanges,
+  completeInspectionForWorkOrder,
+  patchWorkOrder,
+} from "@/lib/workorder/actions";
 import { pruneDraftRows } from "@/lib/workorder/draftRows";
-import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
 import type { WorkOrder, WorkflowAction } from "@/types/workorder";
 import type {
   InspectionCompleteInput,
@@ -29,12 +34,6 @@ const requiresOrderRequestConfirmation = (action: WorkflowAction) =>
 
 const shouldOpenInventoryEditor = (action: WorkflowAction) => action.nextState === "in_inspection";
 
-const buildInventoryChanges = ({ inboundQuantity, adjustmentQuantity, deductionQuantity }: InventoryChangeInput) => [
-  ...(inboundQuantity > 0 ? [{ type: "입고" as const, quantity: inboundQuantity }] : []),
-  ...(adjustmentQuantity > 0 ? [{ type: "보정" as const, quantity: adjustmentQuantity }] : []),
-  ...(deductionQuantity > 0 ? [{ type: "차감" as const, quantity: deductionQuantity }] : []),
-];
-
 const applySelectedWorkflowAction = ({
   workOrder,
   action,
@@ -43,7 +42,7 @@ const applySelectedWorkflowAction = ({
   action: WorkflowAction;
 }) => {
   const targetWorkOrder = shouldPruneRowsBeforeWorkflowTransition(action) ? pruneDraftRows(workOrder) : workOrder;
-  return updateWorkflowState([targetWorkOrder], workOrder.id, action)[0] ?? workOrder;
+  return applyWorkflowActionToWorkOrder(targetWorkOrder, action);
 };
 
 const createWorkflowHistoryLog = ({
@@ -138,10 +137,12 @@ export function useWorkOrderWorkflowActions({
 
   const handleInventoryApply = useCallback(
     (workOrderId: string, { inboundQuantity, adjustmentQuantity, deductionQuantity, memo }: InventoryChangeInput) => {
-      const changes = buildInventoryChanges({ inboundQuantity, adjustmentQuantity, deductionQuantity, memo });
+      const changes = buildInventoryChanges({ inboundQuantity, adjustmentQuantity, deductionQuantity });
       if (changes.length === 0) return;
 
-      setWorkOrders((prev) => applyInventoryAdjustment(prev, workOrderId, { changes }));
+      setWorkOrders((prev) =>
+        prev.map((item) => (item.id === workOrderId ? applyInventoryAdjustmentToWorkOrder(item, { changes }) : item)),
+      );
       setHistoryLogs((prev) => [createInventoryHistoryLog(currentUser.name, workOrderId, { changes, memo }), ...prev]);
     },
     [currentUser.name, setHistoryLogs, setWorkOrders],
@@ -152,18 +153,11 @@ export function useWorkOrderWorkflowActions({
       const trimmedMemo = memo.trim();
 
       setWorkOrders((prev) =>
-        prev.map((item) => {
-          if (item.id !== workOrderId) return item;
-          const nextOrderEntries = (item.orderEntries ?? []).map((entry) =>
-            entry.id === orderEntryId ? { ...entry, inspectionStatus: "inspection_completed" as const } : entry,
-          );
-          return {
-            ...item,
-            orderEntries: nextOrderEntries,
-            inventoryQuantity: nextInventoryQuantity,
-            inventoryStatus: nextInventoryQuantity > 0 ? "정상" : "부족",
-          };
-        }),
+        prev.map((item) =>
+          item.id === workOrderId
+            ? completeInspectionForWorkOrder(item, { orderEntryId, nextInventoryQuantity })
+            : item,
+        ),
       );
       setHistoryLogs((prev) => [
         createInspectionCompleteHistoryLog(currentUser.name, workOrderId, {
@@ -186,16 +180,7 @@ export function useWorkOrderWorkflowActions({
         return;
       }
 
-      setWorkOrders((prev) =>
-        prev.map((item) => {
-          if (item.id !== workOrderId) return item;
-          const nextItem = { ...item, ...patch };
-          if (patch.orderEntries) {
-            nextItem.workflowState = deriveWorkflowStateFromOrderEntries(item.workflowState, patch.orderEntries);
-          }
-          return nextItem;
-        }),
-      );
+      setWorkOrders((prev) => prev.map((item) => (item.id === workOrderId ? patchWorkOrder(item, patch) : item)));
       setSaveStatus("dirty");
     },
     [setSaveStatus, setWorkOrders],
