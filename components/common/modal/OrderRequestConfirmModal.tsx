@@ -1,11 +1,6 @@
 "use client";
 
-import { useRef } from "react";
-import BaseModal from "@/components/common/modal/BaseModal";
-import ModalBody from "@/components/common/modal/ModalBody";
-import ModalFooter from "@/components/common/modal/ModalFooter";
-import ModalHeader from "@/components/common/modal/ModalHeader";
-import { useModalEnvironment } from "@/components/common/modal/modalUtils";
+import ModalShell from "@/components/common/modal/ModalShell";
 import type { WorkOrder } from "@/types/workorder";
 
 export default function OrderRequestConfirmModal({
@@ -19,10 +14,6 @@ export default function OrderRequestConfirmModal({
   onClose: () => void;
   onConfirm: () => void;
 }) {
-  const dialogRef = useRef<HTMLDivElement | null>(null);
-
-  useModalEnvironment({ open, dialogRef, onClose });
-
   const officialAttachments = (workOrder.attachments ?? []).filter((attachment) => (attachment.scope ?? "official") === "official");
   const attachmentCount = officialAttachments.length;
   const attachmentSummary = attachmentCount > 0 ? `${attachmentCount}개 첨부됨` : "첨부파일 없음";
@@ -38,22 +29,33 @@ export default function OrderRequestConfirmModal({
   const totalQuantity = orderEntries.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
 
   return (
-    <BaseModal
+    <ModalShell
       open={open}
       onClose={onClose}
-      dialogRef={dialogRef}
-      titleId="order-request-confirm-title"
-      maxWidthClassName="md:max-w-2xl"
+      title="발주 요청 확인"
+      description="발주 요청 시 즉시 생산 단계로 전환됩니다."
+      maxWidthClass="md:max-w-2xl"
       overlayClassName="bg-stone-950/55 md:bg-stone-950/50"
+      bodyClassName="space-y-4 bg-stone-50 md:space-y-5"
+      footer={(
+        <div className="flex flex-col-reverse gap-2 md:flex-row md:justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-xl border border-stone-300 bg-white px-4 py-2.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+          >
+            취소
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="rounded-xl bg-stone-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-stone-800"
+          >
+            발주 요청 진행
+          </button>
+        </div>
+      )}
     >
-      <ModalHeader
-        titleId="order-request-confirm-title"
-        title="발주 요청 확인"
-        description="발주 요청 시 즉시 생산 단계로 전환됩니다."
-        onClose={onClose}
-      />
-
-      <ModalBody className="space-y-4 bg-stone-50 md:space-y-5">
         <section className="rounded-2xl border border-stone-200 bg-white p-4">
           <div className="text-sm font-semibold text-stone-900">작업지시서 요약</div>
           <dl className="mt-3 grid grid-cols-1 gap-3 text-sm text-stone-600 md:grid-cols-2">
@@ -134,26 +136,6 @@ export default function OrderRequestConfirmModal({
             </div>
           )}
         </section>
-      </ModalBody>
-
-      <ModalFooter>
-        <div className="flex flex-col-reverse gap-2 md:flex-row md:justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-xl border border-stone-300 bg-white px-4 py-2.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
-          >
-            취소
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            className="rounded-xl bg-stone-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-stone-800"
-          >
-            발주 요청 진행
-          </button>
-        </div>
-      </ModalFooter>
-    </BaseModal>
+    </ModalShell>
   );
 }
