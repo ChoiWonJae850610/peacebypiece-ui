@@ -1,12 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import BaseModal from "@/components/common/modal/BaseModal";
-import ModalBody from "@/components/common/modal/ModalBody";
-import ModalFooter from "@/components/common/modal/ModalFooter";
-import ModalHeader from "@/components/common/modal/ModalHeader";
+import { useEffect, useMemo, useState } from "react";
+import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS, createModalActionHandler, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
-import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 
 type InventoryMode = "입고" | "차감" | "보정";
 
@@ -49,7 +45,6 @@ export default function InventoryEditor({
   const [adjustmentQuantity, setAdjustmentQuantity] = useState<string>("");
   const [deductionQuantity, setDeductionQuantity] = useState<string>("");
   const [memo, setMemo] = useState("");
-  const dialogRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!open) {
@@ -59,8 +54,6 @@ export default function InventoryEditor({
       setMemo("");
     }
   }, [open]);
-
-  useModalEnvironment({ open, dialogRef, onClose });
 
   const parsedInboundQuantity = Number(inboundQuantity || 0);
   const parsedAdjustmentQuantity = Number(adjustmentQuantity || 0);
@@ -96,81 +89,83 @@ export default function InventoryEditor({
   });
 
   return (
-    <BaseModal open={open} onClose={onClose} dialogRef={dialogRef} titleId="inventory-editor-title" maxWidthClassName="md:max-w-lg">
-      <ModalHeader
-        titleId="inventory-editor-title"
-        title="재고 수정"
-        description={undefined}
-        onClose={onClose}
-      />
-
-      <ModalBody>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
-            <div className="text-xs text-stone-500">현재 재고</div>
-            <div className="mt-1 text-lg font-semibold tabular-nums text-stone-900">{currentStock}장</div>
-          </div>
-          <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-3">
-            <div className="text-xs text-cyan-700">반영 후 예상</div>
-            <div className="mt-1 text-lg font-semibold tabular-nums text-cyan-900">{nextStock}장</div>
-          </div>
+    <ModalShell
+      open={open}
+      onClose={onClose}
+      title="재고 수정"
+      maxWidthClass="md:max-w-lg"
+      footer={renderModalFooterActions({
+        layout: "split",
+        secondary: { label: MODAL_ACTION_LABELS.cancel, onClick: onClose, width: "fill", className: "rounded-2xl text-stone-800" },
+        primary: { label: MODAL_ACTION_LABELS.apply, onClick: handleApply, disabled: applyDisabled, tone: "primary", width: "fill", className: "rounded-2xl disabled:opacity-50" },
+      })}
+    >
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
+          <div className="text-xs text-stone-500">현재 재고</div>
+          <div className="mt-1 text-lg font-semibold tabular-nums text-stone-900">{currentStock}장</div>
         </div>
+        <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-3">
+          <div className="text-xs text-cyan-700">반영 후 예상</div>
+          <div className="mt-1 text-lg font-semibold tabular-nums text-cyan-900">{nextStock}장</div>
+        </div>
+      </div>
 
-        <div className="mt-4 space-y-3">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-stone-700">입고 수량</label>
-              <input
-                type="number"
-                min={0}
-                value={inboundQuantity}
-                onChange={(event) => setInboundQuantity(event.target.value)}
-                placeholder="입고 수량 입력"
-                className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base outline-none transition focus:border-stone-500 md:text-sm"
-              />
-            </div>
-            <div>
-              <label className="mb-2 block text-sm font-medium text-stone-700">보정 수량</label>
-              <input
-                type="number"
-                min={0}
-                value={adjustmentQuantity}
-                onChange={(event) => setAdjustmentQuantity(event.target.value)}
-                placeholder="최종 재고 수량"
-                className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base outline-none transition focus:border-stone-500 md:text-sm"
-              />
-            </div>
-            <div>
-              <label className="mb-2 block text-sm font-medium text-stone-700">차감 수량</label>
-              <input
-                type="number"
-                min={0}
-                value={deductionQuantity}
-                onChange={(event) => setDeductionQuantity(event.target.value)}
-                placeholder="차감 수량 입력"
-                className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base outline-none transition focus:border-stone-500 md:text-sm"
-              />
-            </div>
-          </div>
+      <div className="mt-4 space-y-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
-            <label className="mb-2 block text-sm font-medium text-stone-700">메모</label>
-            <textarea
-              value={memo}
-              onChange={(event) => setMemo(event.target.value)}
-              placeholder="입고 사유, 차감 사유, 보정 메모"
-              rows={3}
+            <label className="mb-2 block text-sm font-medium text-stone-700">입고 수량</label>
+            <input
+              type="number"
+              min={0}
+              value={inboundQuantity}
+              onChange={(event) => setInboundQuantity(event.target.value)}
+              placeholder="입고 수량 입력"
               className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base outline-none transition focus:border-stone-500 md:text-sm"
             />
           </div>
-          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-700">
-            <div>
-              수정자: <span className="font-medium text-stone-900">{currentUserName}</span>
-            </div>
-            <div className="mt-1 text-xs text-stone-500">현재는 로컬 상태 기반 테스트 단계입니다.</div>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-stone-700">보정 수량</label>
+            <input
+              type="number"
+              min={0}
+              value={adjustmentQuantity}
+              onChange={(event) => setAdjustmentQuantity(event.target.value)}
+              placeholder="최종 재고 수량"
+              className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base outline-none transition focus:border-stone-500 md:text-sm"
+            />
+          </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-stone-700">차감 수량</label>
+            <input
+              type="number"
+              min={0}
+              value={deductionQuantity}
+              onChange={(event) => setDeductionQuantity(event.target.value)}
+              placeholder="차감 수량 입력"
+              className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base outline-none transition focus:border-stone-500 md:text-sm"
+            />
           </div>
         </div>
+        <div>
+          <label className="mb-2 block text-sm font-medium text-stone-700">메모</label>
+          <textarea
+            value={memo}
+            onChange={(event) => setMemo(event.target.value)}
+            placeholder="입고 사유, 차감 사유, 보정 메모"
+            rows={3}
+            className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base outline-none transition focus:border-stone-500 md:text-sm"
+          />
+        </div>
+        <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-700">
+          <div>
+            수정자: <span className="font-medium text-stone-900">{currentUserName}</span>
+          </div>
+          <div className="mt-1 text-xs text-stone-500">현재는 로컬 상태 기반 테스트 단계입니다.</div>
+        </div>
+      </div>
 
-        {showRecentLogs ? (
+      {showRecentLogs ? (
         <div className="mt-5 border-t border-stone-200 pt-4">
           <div className="flex items-center justify-between gap-3">
             <div className="text-sm font-semibold text-stone-900">최근 수정</div>
@@ -193,16 +188,7 @@ export default function InventoryEditor({
             )}
           </div>
         </div>
-        ) : null}
-      </ModalBody>
-
-      <ModalFooter>
-        {renderModalFooterActions({
-          layout: "split",
-          secondary: { label: MODAL_ACTION_LABELS.cancel, onClick: onClose, width: "fill", className: "rounded-2xl text-stone-800" },
-          primary: { label: MODAL_ACTION_LABELS.apply, onClick: handleApply, disabled: applyDisabled, tone: "primary", width: "fill", className: "rounded-2xl disabled:opacity-50" },
-        })}
-      </ModalFooter>
-    </BaseModal>
+      ) : null}
+    </ModalShell>
   );
 }

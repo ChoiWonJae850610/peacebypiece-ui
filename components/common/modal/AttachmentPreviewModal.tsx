@@ -6,6 +6,7 @@ import ModalBody from "@/components/common/modal/ModalBody";
 import ModalHeader from "@/components/common/modal/ModalHeader";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import type { Attachment } from "@/types/workorder";
+import { MODAL_EXCEPTION_PRESETS } from "@/components/common/modal/modalPresets";
 
 export default function AttachmentPreviewModal({
   attachment,
@@ -29,12 +30,12 @@ export default function AttachmentPreviewModal({
       onClose={onClose}
       dialogRef={dialogRef}
       titleId="attachment-preview-title"
-      maxWidthClassName="md:max-w-4xl"
-      overlayClassName="bg-black/50"
+      maxWidthClassName={MODAL_EXCEPTION_PRESETS.attachmentPreview.maxWidthClass}
+      overlayClassName={MODAL_EXCEPTION_PRESETS.attachmentPreview.overlayClassName}
     >
       <ModalHeader titleId="attachment-preview-title" title="첨부파일 보기" description={attachment?.name} onClose={onClose} />
 
-      <ModalBody className="bg-stone-50 p-4 md:p-6">
+      <ModalBody className={MODAL_EXCEPTION_PRESETS.attachmentPreview.bodyClassName}>
         {attachment?.type === "image" ? (
           <img
             src={attachment.url}

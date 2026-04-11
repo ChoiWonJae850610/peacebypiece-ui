@@ -7,6 +7,7 @@ import ModalHeader from "@/components/common/modal/ModalHeader";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import { HISTORY_TONE_CLASS } from "@/lib/constants/display";
 import type { HistoryFilter, HistoryLog, RoleType } from "@/types/workorder";
+import { MODAL_EXCEPTION_PRESETS } from "@/components/common/modal/modalPresets";
 
 function HistoryLogItem({ item }: { item: HistoryLog }) {
   const [open, setOpen] = useState(false);
@@ -77,7 +78,7 @@ export default function InventoryLogModal({
   }, [filter, role]);
 
   return (
-    <BaseModal open={open} onClose={onClose} dialogRef={dialogRef} titleId="inventory-log-modal-title" maxWidthClassName="md:max-w-2xl">
+    <BaseModal open={open} onClose={onClose} dialogRef={dialogRef} titleId="inventory-log-modal-title" maxWidthClassName={MODAL_EXCEPTION_PRESETS.inventoryLog.maxWidthClass}>
       <ModalHeader
         titleId="inventory-log-modal-title"
         title="전체 히스토리"

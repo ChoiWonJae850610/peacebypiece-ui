@@ -7,6 +7,7 @@ import ModalHeader from "@/components/common/modal/ModalHeader";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import { HISTORY_TONE_CLASS } from "@/lib/constants/display";
 import { HISTORY_FILTER_OPTIONS, NOTIFICATION_SETTING_META } from "@/lib/constants/workflow";
+import { MODAL_EXCEPTION_PRESETS } from "@/components/common/modal/modalPresets";
 import type { NotificationSettingKey, NotificationSettings, HistoryFilter } from "@/types/workflow";
 import type { HistoryLog } from "@/types/workorder";
 
@@ -75,14 +76,14 @@ export default function AdminPanelModal({
   useModalEnvironment({ open, dialogRef, onClose });
 
   return (
-    <BaseModal open={open} onClose={onClose} dialogRef={dialogRef} titleId="admin-panel-modal-title" maxWidthClassName="md:max-w-3xl">
+    <BaseModal open={open} onClose={onClose} dialogRef={dialogRef} titleId="admin-panel-modal-title" maxWidthClassName={MODAL_EXCEPTION_PRESETS.adminPanel.maxWidthClass}>
       <ModalHeader
         titleId="admin-panel-modal-title"
         title="관리자 패널"
         description="알림 이벤트 ON/OFF와 관리자 전용 히스토리를 한곳에서 점검하는 테스트용 패널입니다."
         onClose={onClose}
       />
-      <ModalBody className="space-y-4 bg-stone-50">
+      <ModalBody className={MODAL_EXCEPTION_PRESETS.adminPanel.bodyClassName}>
         <section className="rounded-2xl border border-stone-200 bg-white p-3 md:p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
