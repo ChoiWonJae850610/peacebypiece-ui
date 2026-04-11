@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { formatRoles, hasRole } from "@/lib/constants/roles";
 import type { UserProfile } from "@/types/user";
+import { useI18n } from "@/lib/i18n";
 
 export default function ManagerAssignModal({
   open,
@@ -20,6 +21,8 @@ export default function ManagerAssignModal({
   currentManagerName: string;
   onSelectManager: (userId: string) => void;
 }) {
+  const { i18n } = useI18n();
+  const copy = i18n.common.ui.modal.managerAssign;
   const managerCandidates = useMemo(
     () => users.filter((user) => hasRole(user, "관리자") || hasRole(user, "디자이너")),
     [users],
@@ -29,12 +32,12 @@ export default function ManagerAssignModal({
     <ModalShell
       open={open}
       onClose={onClose}
-      title="담당자 변경"
-      description="작성중, 검토요청 단계에서만 담당자를 변경할 수 있습니다."
+      title={copy.title}
+      description={copy.description}
       maxWidthClass="md:max-w-lg"
     >
       <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-600">
-        현재 담당자 <span className="ml-1 font-medium text-stone-900">{currentManagerName || "-"}</span>
+        {copy.currentManagerLabel} <span className="ml-1 font-medium text-stone-900">{currentManagerName || "-"}</span>
       </div>
 
       <div className="mt-4 space-y-2">
@@ -56,7 +59,7 @@ export default function ManagerAssignModal({
                 <div className="text-sm font-semibold">{user.name}</div>
                 <div className={selected ? "mt-1 text-xs text-white/75" : "mt-1 text-xs text-stone-500"}>{formatRoles(user.roles, user.role)}</div>
               </div>
-              {selected ? <span className="text-xs font-medium">현재</span> : null}
+              {selected ? <span className="text-xs font-medium">{copy.currentBadge}</span> : null}
             </button>
           );
         })}

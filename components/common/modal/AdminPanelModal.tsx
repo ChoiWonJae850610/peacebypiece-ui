@@ -6,7 +6,6 @@ import ModalBody from "@/components/common/modal/ModalBody";
 import ModalHeader from "@/components/common/modal/ModalHeader";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import { HISTORY_TONE_CLASS } from "@/lib/constants/display";
-import { getDetailToggleText } from "@/lib/constants/uiText";
 import { useI18n } from "@/lib/i18n";
 import { HISTORY_FILTER_OPTIONS, NOTIFICATION_SETTING_META } from "@/lib/constants/workflow";
 import { MODAL_EXCEPTION_PRESETS } from "@/components/common/modal/modalPresets";
@@ -18,6 +17,7 @@ import type { HistoryLog } from "@/types/workorder";
 function HistoryPreviewItem({ item }: { item: HistoryLog }) {
   const { i18n } = useI18n();
   const ui = i18n.common.ui;
+  const common = ui.common;
   const [open, setOpen] = useState(false);
   const hasDetails = Boolean(item.transition || (item.detailLines && item.detailLines.length > 0));
   return (
@@ -31,7 +31,7 @@ function HistoryPreviewItem({ item }: { item: HistoryLog }) {
           <div className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${HISTORY_TONE_CLASS[item.tone]}`}>{item.action}</div>
           <div className="flex items-center gap-2 text-[11px] text-stone-500">
             <span>{item.time}</span>
-            {hasDetails ? <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-medium text-stone-600">{getDetailToggleText(open)}</span> : null}
+            {hasDetails ? <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-medium text-stone-600">{open ? common.collapse : common.detail}</span> : null}
           </div>
         </div>
         <div className="mt-2 text-sm text-stone-700 break-words">{item.summary}</div>

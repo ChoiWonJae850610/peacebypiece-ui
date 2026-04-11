@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { DEFAULT_ROLE, ROLE_DISPLAY_GUIDE, formatRoles, normalizeRoles } from "@/lib/constants/roles";
+import { useI18n } from "@/lib/i18n";
 import type { RoleType, UserProfile } from "@/types/workorder";
 
 type NormalizedRoleOption = {
@@ -72,14 +73,13 @@ export default function PermissionModal({
   onApplyRoles: (userId: string, roles: RoleType[]) => void;
   onCurrentUserChange: (userId: string) => void;
 }) {
+  const { i18n } = useI18n();
+  const copy = i18n.common.ui.modal.permission;
   const selectedUser = users.find((item) => item.id === selectedUserId) ?? users[0];
   const normalizedRoleOptions = useMemo<NormalizedRoleOption[]>(() => {
-    const source = ROLE_DISPLAY_GUIDE;
-    const normalized = source.map((item, index) => normalizeRoleOption(item, index));
+    const normalized = ROLE_DISPLAY_GUIDE.map((item, index) => normalizeRoleOption(item, index));
     const uniqueByRole = new Map<RoleType, NormalizedRoleOption>();
-    normalized.forEach((item) => {
-      uniqueByRole.set(item.role, item);
-    });
+    normalized.forEach((item) => uniqueByRole.set(item.role, item));
     ROLE_DISPLAY_GUIDE.forEach(({ role }) => {
       if (!uniqueByRole.has(role)) {
         uniqueByRole.set(role, ROLE_FALLBACKS[role]);
@@ -102,13 +102,13 @@ export default function PermissionModal({
     <ModalShell
       open={open}
       onClose={onClose}
-      title="환경 설정"
-      description="테스트용 사용자 전환과 다중 권한 변경을 이 화면에서만 조정합니다."
+      title={copy.title}
+      description={copy.description}
       maxWidthClass="md:max-w-2xl"
     >
       <div className="mb-4 rounded-2xl border border-stone-200 bg-stone-50 p-4">
-        <div className="text-sm font-semibold text-stone-900">테스트 화면 기준 사용자</div>
-        <div className="mt-1 text-xs text-stone-500">실제 화면에서 보이는 권한과 액션을 빠르게 확인하기 위한 임시 설정입니다.</div>
+        <div className="text-sm font-semibold text-stone-900">{copy.currentUserSectionTitle}</div>
+        <div className="mt-1 text-xs text-stone-500">{copy.currentUserSectionDescription}</div>
         <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
           {users.map((user) => {
             const active = user.id === currentUserId;
@@ -121,7 +121,7 @@ export default function PermissionModal({
               >
                 <div className="text-sm font-semibold">{user.name}</div>
                 <div className={`mt-1 text-[11px] ${active ? "text-stone-300" : "text-stone-500"}`}>{formatRoles(user.roles, user.role)}</div>
-                {active ? <div className="mt-2 text-[11px] text-stone-200">현재 화면 기준 사용자</div> : null}
+                {active ? <div className="mt-2 text-[11px] text-stone-200">{copy.currentUserBadge}</div> : null}
               </button>
             );
           })}
@@ -144,7 +144,7 @@ export default function PermissionModal({
                 <div className={`mt-1 text-xs ${active ? "text-stone-300" : "text-stone-500"}`}>{formatRoles(user.roles, user.role)}</div>
                 {isCurrent ? (
                   <div className={`mt-2 text-[11px] ${active ? "text-stone-200" : "text-cyan-700"}`}>
-                    현재 선택 사용자
+                    {copy.selectedUserBadge}
                   </div>
                 ) : null}
               </button>
@@ -155,7 +155,7 @@ export default function PermissionModal({
         <div className="min-w-0 rounded-2xl border border-stone-200 bg-stone-50 p-4">
           <div>
             <div className="text-base font-semibold text-stone-900">{selectedUser.name}</div>
-            <div className="mt-1 text-sm text-stone-500">현재 권한: {formatRoles(activeRoles)}</div>
+            <div className="mt-1 text-sm text-stone-500">{copy.currentRolesPrefix}: {formatRoles(activeRoles)}</div>
           </div>
 
           <div className="mt-4 space-y-3">
@@ -182,11 +182,11 @@ export default function PermissionModal({
           </div>
 
           <div className="mt-4 rounded-2xl border border-stone-200 bg-white p-4">
-            <div className="text-sm font-semibold text-stone-900">권한 설명</div>
+            <div className="text-sm font-semibold text-stone-900">{copy.roleGuideTitle}</div>
             <div className="mt-2 space-y-1 text-xs text-stone-500">
-              <div>디자이너: 작업지시 작성, 검토 요청, 발주 요청</div>
-              <div>관리자: 승인, 발주 확정, 역할 지정, 공식 첨부</div>
-              <div>입고/검수: 입고 등록, 검수 완료, 재고 수정</div>
+              <div>{copy.roleGuideDesigner}</div>
+              <div>{copy.roleGuideAdmin}</div>
+              <div>{copy.roleGuideInspector}</div>
             </div>
           </div>
         </div>

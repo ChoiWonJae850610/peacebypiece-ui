@@ -10,10 +10,9 @@ import { HISTORY_FILTER_OPTIONS } from "@/lib/constants/workflow";
 import { isAdminRole, isDesignerRole } from "@/lib/constants/roles";
 import type { HistoryFilter, HistoryLog, RoleType } from "@/types/workorder";
 import { MODAL_EXCEPTION_PRESETS } from "@/components/common/modal/modalPresets";
-import { getDetailToggleText } from "@/lib/constants/uiText";
 import { useI18n } from "@/lib/i18n";
 
-function HistoryLogItem({ item }: { item: HistoryLog }) {
+function HistoryLogItem({ item, detailLabel, collapseLabel }: { item: HistoryLog; detailLabel: string; collapseLabel: string }) {
   const [open, setOpen] = useState(false);
   const hasDetails = Boolean(item.transition || (item.detailLines && item.detailLines.length > 0));
 
@@ -30,7 +29,7 @@ function HistoryLogItem({ item }: { item: HistoryLog }) {
           </div>
           <div className="flex items-center gap-2 text-[11px] text-stone-500">
             <span>{item.time}</span>
-            {hasDetails && <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-medium text-stone-600">{getDetailToggleText(open)}</span>}
+            {hasDetails && <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-medium text-stone-600">{open ? collapseLabel : detailLabel}</span>}
           </div>
         </div>
         <div className="mt-2 text-xs text-stone-500">{item.user}</div>
@@ -74,6 +73,7 @@ export default function InventoryLogModal({
 }) {
   const { i18n } = useI18n();
   const copy = i18n.workorder.presentation.inventoryLog;
+  const common = i18n.common.ui.common;
   const dialogRef = useRef<HTMLDivElement | null>(null);
   useModalEnvironment({ open, dialogRef, onClose });
   const summaryText = useMemo(() => {
@@ -98,7 +98,7 @@ export default function InventoryLogModal({
 
         <div className="space-y-3">
           {logs.length > 0 ? (
-            logs.map((item) => <HistoryLogItem key={item.id} item={item} />)
+            logs.map((item) => <HistoryLogItem key={item.id} item={item} detailLabel={common.detail} collapseLabel={common.collapse} />)
           ) : (
             <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-sm text-stone-500">
               {copy.empty}

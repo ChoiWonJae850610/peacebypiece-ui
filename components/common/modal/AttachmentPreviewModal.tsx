@@ -7,6 +7,7 @@ import ModalHeader from "@/components/common/modal/ModalHeader";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import type { Attachment } from "@/types/workorder";
 import { MODAL_EXCEPTION_PRESETS } from "@/components/common/modal/modalPresets";
+import { useI18n } from "@/lib/i18n";
 
 export default function AttachmentPreviewModal({
   attachment,
@@ -21,6 +22,8 @@ export default function AttachmentPreviewModal({
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const open = attachment !== null;
+  const { i18n } = useI18n();
+  const copy = i18n.common.ui.modal.attachmentPreview;
 
   useModalEnvironment({ open, dialogRef, onClose });
 
@@ -33,7 +36,7 @@ export default function AttachmentPreviewModal({
       maxWidthClassName={MODAL_EXCEPTION_PRESETS.attachmentPreview.maxWidthClass}
       overlayClassName={MODAL_EXCEPTION_PRESETS.attachmentPreview.overlayClassName}
     >
-      <ModalHeader titleId="attachment-preview-title" title="첨부파일 보기" description={attachment?.name} onClose={onClose} />
+      <ModalHeader titleId="attachment-preview-title" title={copy.title} description={attachment?.name} onClose={onClose} />
 
       <ModalBody className={MODAL_EXCEPTION_PRESETS.attachmentPreview.bodyClassName}>
         {attachment?.type === "image" ? (
@@ -44,7 +47,7 @@ export default function AttachmentPreviewModal({
           />
         ) : attachment ? (
           <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
-            <div className="border-b border-stone-200 px-4 py-3 text-sm font-medium text-stone-700">PDF 미리보기</div>
+            <div className="border-b border-stone-200 px-4 py-3 text-sm font-medium text-stone-700">{copy.pdfPreview}</div>
             <iframe
               title={attachment.name}
               src={attachment.url}

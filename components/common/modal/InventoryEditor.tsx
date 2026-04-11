@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { InventoryChangeTypeValue } from "@/lib/constants/workorderDomain";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS, createModalActionHandler, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
+import { useI18n } from "@/lib/i18n";
 
 type InventoryMode = InventoryChangeTypeValue;
 
@@ -42,6 +43,8 @@ export default function InventoryEditor({
     memo: string;
   }) => void;
 }) {
+  const { i18n } = useI18n();
+  const copy = i18n.common.ui.modal.inventoryEditor;
   const [inboundQuantity, setInboundQuantity] = useState<string>("");
   const [adjustmentQuantity, setAdjustmentQuantity] = useState<string>("");
   const [deductionQuantity, setDeductionQuantity] = useState<string>("");
@@ -93,7 +96,7 @@ export default function InventoryEditor({
     <ModalShell
       open={open}
       onClose={onClose}
-      title="재고 수정"
+      title={copy.title}
       maxWidthClass="md:max-w-lg"
       footer={renderModalFooterActions({
         layout: "split",
@@ -103,74 +106,74 @@ export default function InventoryEditor({
     >
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
-          <div className="text-xs text-stone-500">현재 재고</div>
-          <div className="mt-1 text-lg font-semibold tabular-nums text-stone-900">{currentStock}장</div>
+          <div className="text-xs text-stone-500">{copy.currentStockLabel}</div>
+          <div className="mt-1 text-lg font-semibold tabular-nums text-stone-900">{copy.quantityFormat.replace("{count}", String(currentStock))}</div>
         </div>
         <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-3">
-          <div className="text-xs text-cyan-700">반영 후 예상</div>
-          <div className="mt-1 text-lg font-semibold tabular-nums text-cyan-900">{nextStock}장</div>
+          <div className="text-xs text-cyan-700">{copy.nextStockLabel}</div>
+          <div className="mt-1 text-lg font-semibold tabular-nums text-cyan-900">{copy.quantityFormat.replace("{count}", String(nextStock))}</div>
         </div>
       </div>
 
       <div className="mt-4 space-y-3">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
-            <label className="mb-2 block text-sm font-medium text-stone-700">입고 수량</label>
+            <label className="mb-2 block text-sm font-medium text-stone-700">{copy.inboundQuantityLabel}</label>
             <input
               type="number"
               min={0}
               value={inboundQuantity}
               onChange={(event) => setInboundQuantity(event.target.value)}
-              placeholder="입고 수량 입력"
+              placeholder={copy.inboundQuantityPlaceholder}
               className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base outline-none transition focus:border-stone-500 md:text-sm"
             />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium text-stone-700">보정 수량</label>
+            <label className="mb-2 block text-sm font-medium text-stone-700">{copy.adjustmentQuantityLabel}</label>
             <input
               type="number"
               min={0}
               value={adjustmentQuantity}
               onChange={(event) => setAdjustmentQuantity(event.target.value)}
-              placeholder="최종 재고 수량"
+              placeholder={copy.adjustmentQuantityPlaceholder}
               className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base outline-none transition focus:border-stone-500 md:text-sm"
             />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium text-stone-700">차감 수량</label>
+            <label className="mb-2 block text-sm font-medium text-stone-700">{copy.deductionQuantityLabel}</label>
             <input
               type="number"
               min={0}
               value={deductionQuantity}
               onChange={(event) => setDeductionQuantity(event.target.value)}
-              placeholder="차감 수량 입력"
+              placeholder={copy.deductionQuantityPlaceholder}
               className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base outline-none transition focus:border-stone-500 md:text-sm"
             />
           </div>
         </div>
         <div>
-          <label className="mb-2 block text-sm font-medium text-stone-700">메모</label>
+          <label className="mb-2 block text-sm font-medium text-stone-700">{copy.memoLabel}</label>
           <textarea
             value={memo}
             onChange={(event) => setMemo(event.target.value)}
-            placeholder="입고 사유, 차감 사유, 보정 메모"
+            placeholder={copy.memoPlaceholder}
             rows={3}
             className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base outline-none transition focus:border-stone-500 md:text-sm"
           />
         </div>
         <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-700">
           <div>
-            수정자: <span className="font-medium text-stone-900">{currentUserName}</span>
+            {copy.editorLabel}: <span className="font-medium text-stone-900">{currentUserName}</span>
           </div>
-          <div className="mt-1 text-xs text-stone-500">현재는 로컬 상태 기반 테스트 단계입니다.</div>
+          <div className="mt-1 text-xs text-stone-500">{copy.localTestNotice}</div>
         </div>
       </div>
 
       {showRecentLogs ? (
         <div className="mt-5 border-t border-stone-200 pt-4">
           <div className="flex items-center justify-between gap-3">
-            <div className="text-sm font-semibold text-stone-900">최근 수정</div>
-            <span className="text-xs text-stone-500">최근 {Math.min(logs.length, 3)}건</span>
+            <div className="text-sm font-semibold text-stone-900">{copy.recentLogsTitle}</div>
+            <span className="text-xs text-stone-500">{copy.recentLogsCountFormat.replace("{count}", String(Math.min(logs.length, 3)))}</span>
           </div>
           <div className="mt-3 space-y-2">
             {logs.length > 0 ? (
@@ -181,11 +184,11 @@ export default function InventoryEditor({
                     <span className="text-xs text-stone-500">{item.time}</span>
                   </div>
                   <div className="mt-1 text-xs text-stone-500">{item.user}</div>
-                  <div className="mt-1 text-sm text-stone-700">{item.memo || "메모 없음"}</div>
+                  <div className="mt-1 text-sm text-stone-700">{item.memo || copy.noMemo}</div>
                 </div>
               ))
             ) : (
-              <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-3 text-sm text-stone-500">아직 수정 이력이 없습니다.</div>
+              <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-3 text-sm text-stone-500">{copy.emptyLogs}</div>
             )}
           </div>
         </div>
