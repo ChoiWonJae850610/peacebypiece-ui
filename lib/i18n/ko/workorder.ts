@@ -129,6 +129,11 @@ export const workorderKo = {
       compactAddButton: "첨부추가",
     },
     header: {
+      titleInputAria: "작업지시서명",
+      titleEditAria: "작업지시서명 수정",
+      titleEditSave: "이름 저장",
+      titleEditCancel: "취소",
+      titleEditHint: "Enter 저장 / Esc 취소",
       managerLabel: "담당자",
       currentInventoryLabel: "현재 재고",
       summaryLabel: "분류",

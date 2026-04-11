@@ -129,6 +129,11 @@ export const workorderEn = {
       compactAddButton: "Add attachment",
     },
     header: {
+      titleInputAria: "Work order title",
+      titleEditAria: "Edit work order title",
+      titleEditSave: "Save title",
+      titleEditCancel: "Cancel",
+      titleEditHint: "Press Enter to save, Esc to cancel.",
       managerLabel: "Manager",
       currentInventoryLabel: "Current stock",
       summaryLabel: "Category",

@@ -53,7 +53,6 @@ export default function WorkOrderHeaderSection({
   locked = false,
 }: WorkOrderHeaderSectionProps) {
   const { i18n } = useI18n();
-  const ui = i18n.common.ui;
   const copy = i18n.workorder.ui.header;
   const common = i18n.workorder.ui.common;
   void onSave;
@@ -119,12 +118,12 @@ export default function WorkOrderHeaderSection({
             onChange={(event) => setTitleDraft(event.target.value)}
             onKeyDown={handleTitleKeyDown}
             className="pbp-field-interaction h-11 w-full rounded-2xl border border-stone-300 bg-white px-3 text-lg font-semibold text-stone-950 outline-none focus:border-stone-400 md:text-2xl"
-            aria-label={ui.header.titleInputAria}
+            aria-label={copy.titleInputAria}
           />
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <button type="button" onClick={saveTitle} className="pbp-interactive-button rounded-xl bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-stone-800">{ui.header.titleEditSave}</button>
-            <button type="button" onClick={closeTitleEditor} className="pbp-interactive-button rounded-xl border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100">{ui.header.titleEditCancel}</button>
-            <span className="text-[11px] text-stone-500">{ui.header.titleEditHint}</span>
+            <button type="button" onClick={saveTitle} className="pbp-interactive-button rounded-xl bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-stone-800">{copy.titleEditSave}</button>
+            <button type="button" onClick={closeTitleEditor} className="pbp-interactive-button rounded-xl border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100">{copy.titleEditCancel}</button>
+            <span className="text-[11px] text-stone-500">{copy.titleEditHint}</span>
           </div>
         </div>
       ) : (
@@ -135,7 +134,7 @@ export default function WorkOrderHeaderSection({
               type="button"
               onClick={() => setIsEditingTitle(true)}
               className="inline-flex shrink-0 items-center justify-center self-start p-0.5 text-stone-400 hover:text-stone-600"
-              aria-label={ui.header.titleEditAria}
+              aria-label={copy.titleEditAria}
             >
               <PencilIcon />
             </button>

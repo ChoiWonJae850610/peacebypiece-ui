@@ -25,7 +25,7 @@ function MemoThreadCard({
   onCreateReply: (threadId: string, content: string, payload?: MemoAttachmentPayload) => void;
 }) {
   const { i18n } = useI18n();
-  const ui = i18n.common.ui;
+  const ui = i18n.workorder.ui;
   const [replyDraft, setReplyDraft] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [replyComposerOpen, setReplyComposerOpen] = useState(false);
@@ -118,7 +118,7 @@ export default function WorkOrderMemoPanel({
   onPreviewAttachment: (attachmentId: string) => void;
 }) {
   const { i18n } = useI18n();
-  const ui = i18n.common.ui;
+  const ui = i18n.workorder.ui;
   const [threadDraft, setThreadDraft] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const memoThreads = workOrder.memoThreads ?? [];

@@ -17,7 +17,7 @@ export const commonEn = {
     },
     modalActions: {
       completeInspection: "Complete inspection",
-      proceedOrderRequest: "Proceed with order request",
+      proceedOrderRequest: "Proceed order request",
     },
     modal: {
       attachmentDelete: {

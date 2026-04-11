@@ -25,7 +25,7 @@ export default function WorkOrderAttachmentPanel({
   canDeleteAttachment: (attachment: Attachment | null) => boolean;
 }) {
   const { i18n } = useI18n();
-  const ui = i18n.common.ui;
+  const ui = i18n.workorder.ui;
 
   if (!canSeeAttachments) return null;
 
