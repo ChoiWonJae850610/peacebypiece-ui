@@ -14,10 +14,15 @@ export const commonEn = {
       register: "Register",
       detail: "Detail",
       collapse: "Collapse",
+      uncategorized: "Uncategorized",
+      sample: "Sample",
     },
     modalActions: {
       completeInspection: "Complete inspection",
       proceedOrderRequest: "Proceed order request",
+    },
+    layout: {
+      rightPanel: "Right panel",
     },
     modal: {
       attachmentDelete: {

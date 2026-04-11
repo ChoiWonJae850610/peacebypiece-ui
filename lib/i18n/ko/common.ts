@@ -14,10 +14,15 @@ export const commonKo = {
       register: "등록",
       detail: "상세",
       collapse: "접기",
+      uncategorized: "미분류",
+      sample: "샘플",
     },
     modalActions: {
       completeInspection: "검수 완료",
       proceedOrderRequest: "발주 요청 진행",
+    },
+    layout: {
+      rightPanel: "우측 패널",
     },
     modal: {
       attachmentDelete: {

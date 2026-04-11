@@ -22,9 +22,9 @@ export default function CreateWorkOrderModal({ open, onClose, onCreate }: Props)
   const copy = i18n.workorder.ui.modals.createWorkOrder;
   const [title, setTitle] = useState("");
   const [category1, setCategory1] = useState<string>(DEFAULT_CATEGORY1);
-  const category2Options = useMemo(() => CATEGORY2_OPTIONS_MAP[category1] ?? ["미분류"], [category1]);
+  const category2Options = useMemo(() => CATEGORY2_OPTIONS_MAP[category1] ?? [i18n.common.ui.common.uncategorized], [category1]);
   const [category2, setCategory2] = useState<string>(category2Options[0] ?? DEFAULT_CATEGORY2);
-  const category3Options = useMemo(() => CATEGORY3_OPTIONS_MAP[category2] ?? ["미분류"], [category2]);
+  const category3Options = useMemo(() => CATEGORY3_OPTIONS_MAP[category2] ?? [i18n.common.ui.common.uncategorized], [category2]);
   const [category3, setCategory3] = useState<string>(category3Options[0] ?? DEFAULT_CATEGORY3);
   const [seasonType, setSeasonType] = useState<string>(SEASON_OPTIONS[0] ?? "SS");
   const [seasonYear, setSeasonYear] = useState<string>(DEFAULT_BASIC_YEAR);

@@ -1,5 +1,8 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n";
+
+
 type ModalHeaderProps = {
   titleId: string;
   title: string;
@@ -13,6 +16,7 @@ export default function ModalHeader({
   description,
   onClose,
 }: ModalHeaderProps) {
+  const { i18n } = useI18n();
   return (
     <div className="sticky top-0 z-20 shrink-0 border-b border-stone-200 bg-white/95 px-4 pb-3 pt-[max(1rem,env(safe-area-inset-top))] shadow-[0_1px_0_rgba(0,0,0,0.04)] backdrop-blur md:px-6 md:pb-4 md:pt-4">
       <div className="flex items-start justify-between gap-4">
@@ -27,7 +31,7 @@ export default function ModalHeader({
           onClick={onClose}
           className="shrink-0 whitespace-nowrap rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm transition active:scale-[0.97]"
         >
-          닫기
+          {i18n.common.ui.common.close}
         </button>
       </div>
     </div>
