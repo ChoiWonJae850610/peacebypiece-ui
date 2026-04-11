@@ -191,7 +191,7 @@ export function useWorkOrderDetailEditor({
           return recalculateMaterial({ ...item, unitCost: toNumber(nextValue) });
         }
         if (editingCell.field === "type") {
-          return { ...item, type: (nextValue || "원단") as Material["type"] };
+          return { ...item, type: (nextValue || MATERIAL_KIND.fabric) as Material["type"] };
         }
 
         return { ...item, [editingCell.field]: nextValue } as Material;

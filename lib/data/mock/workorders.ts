@@ -1,3 +1,4 @@
+import { INVENTORY_CHANGE_TYPE, MATERIAL_KIND } from "@/lib/constants/workorderDomain";
 import type { HistoryLog, WorkOrder } from "@/types/workorder";
 import type { MockWorkOrderSource } from "@/lib/data/mock/types";
 
@@ -34,10 +35,10 @@ const workOrders: WorkOrder[] = [
     workflowState: "review_requested",
     lastSavedAt: "03-26 21:48",
     materials: [
-      { id: "m-1", type: "원단", name: "30수 코튼", vendor: "A텍스타일", quantity: 12, unit: "yd", unitCost: 3500, totalCost: 42000, status: "발주완료" },
-      { id: "m-2", type: "원단", name: "폴리 안감", vendor: "B원단", quantity: 8, unit: "yd", unitCost: 2200, totalCost: 17600, status: "입고완료" },
-      { id: "m-3", type: "부자재", name: "단추 18mm", vendor: "C부자재", quantity: 40, unit: "개", unitCost: 120, totalCost: 4800, status: "발주완료" },
-      { id: "m-4", type: "부자재", name: "케어라벨", vendor: "라벨랩", quantity: 20, unit: "개", unitCost: 150, totalCost: 3000, status: "준비중" },
+      { id: "m-1", type: MATERIAL_KIND.fabric, name: "30수 코튼", vendor: "A텍스타일", quantity: 12, unit: "yd", unitCost: 3500, totalCost: 42000, status: "발주완료" },
+      { id: "m-2", type: MATERIAL_KIND.fabric, name: "폴리 안감", vendor: "B원단", quantity: 8, unit: "yd", unitCost: 2200, totalCost: 17600, status: "입고완료" },
+      { id: "m-3", type: MATERIAL_KIND.subsidiary, name: "단추 18mm", vendor: "C부자재", quantity: 40, unit: "개", unitCost: 120, totalCost: 4800, status: "발주완료" },
+      { id: "m-4", type: MATERIAL_KIND.subsidiary, name: "케어라벨", vendor: "라벨랩", quantity: 20, unit: "개", unitCost: 150, totalCost: 3000, status: "준비중" },
     ],
     outsourcing: [
       { id: "o-1", process: "재단", vendor: "A공장", quantity: 20, unitType: "장당", unitCost: 1800, totalCost: 36000, status: "진행중" },
@@ -103,8 +104,8 @@ const workOrders: WorkOrder[] = [
     workflowState: "in_production",
     lastSavedAt: "03-26 18:10",
     materials: [
-      { id: "m-21", type: "원단", name: "데님 8oz", vendor: "블루텍스", quantity: 18, unit: "yd", unitCost: 4700, totalCost: 84600, status: "입고완료" },
-      { id: "m-22", type: "부자재", name: "리벳 세트", vendor: "금속랩", quantity: 60, unit: "개", unitCost: 300, totalCost: 18000, status: "발주완료" },
+      { id: "m-21", type: MATERIAL_KIND.fabric, name: "데님 8oz", vendor: "블루텍스", quantity: 18, unit: "yd", unitCost: 4700, totalCost: 84600, status: "입고완료" },
+      { id: "m-22", type: MATERIAL_KIND.subsidiary, name: "리벳 세트", vendor: "금속랩", quantity: 60, unit: "개", unitCost: 300, totalCost: 18000, status: "발주완료" },
     ],
     outsourcing: [
       { id: "o-21", process: "워싱", vendor: "워싱랩", quantity: 30, unitType: "장당", unitCost: 2500, totalCost: 75000, status: "진행중" },
@@ -158,7 +159,7 @@ const workOrders: WorkOrder[] = [
     workflowState: "completed",
     lastSavedAt: "03-26 16:02",
     materials: [
-      { id: "m-31", type: "원단", name: "합성피혁", vendor: "가죽랩", quantity: 5, unit: "yd", unitCost: 6800, totalCost: 34000, status: "입고완료" },
+      { id: "m-31", type: MATERIAL_KIND.fabric, name: "합성피혁", vendor: "가죽랩", quantity: 5, unit: "yd", unitCost: 6800, totalCost: 34000, status: "입고완료" },
     ],
     outsourcing: [
       { id: "o-31", process: "박음질", vendor: "C업체", quantity: 10, unitType: "장당", unitCost: 4000, totalCost: 40000, status: "완료" },
@@ -201,7 +202,7 @@ const historyLogs: HistoryLog[] = [
     id: "h-2",
     workOrderId: "wo-1",
     category: "inventory",
-    action: "입고",
+    action: INVENTORY_CHANGE_TYPE.inbound,
     message: "재고 상태가 변경되었습니다.",
     user: "박관리",
     time: "03-26 20:10",
@@ -273,7 +274,7 @@ const historyLogs: HistoryLog[] = [
     id: "h-6",
     workOrderId: "wo-2",
     category: "inventory",
-    action: "차감",
+    action: INVENTORY_CHANGE_TYPE.deduction,
     message: "재고 상태가 변경되었습니다.",
     user: "이검수",
     time: "03-25 11:00",

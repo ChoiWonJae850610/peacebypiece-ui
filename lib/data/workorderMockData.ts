@@ -2,6 +2,7 @@ import type { Attachment, HistoryFilter, HistoryLog, InventoryLog, WorkOrder, Wo
 import type { PersistedWorkOrderState } from "@/lib/data/mock/types";
 import { getPermissionSummary, hasRole } from "@/lib/constants/roles";
 import { LEGACY_STORAGE_KEYS, STORAGE_KEY } from "@/lib/constants/app";
+import { INVENTORY_CHANGE_TYPE } from "@/lib/constants/workorderDomain";
 import { DEFAULT_CURRENT_USER_ID as DEFAULT_CURRENT_USER_ID_VALUE, DEFAULT_PERMISSION_TARGET_ID as DEFAULT_PERMISSION_TARGET_ID_VALUE, MOCK_USERS } from "@/lib/data/mock/users";
 import { DEFAULT_SELECTED_WORK_ORDER_ID, MOCK_HISTORY_LOGS, MOCK_WORK_ORDERS } from "@/lib/data/mock/workorders";
 import { nowLabel } from "@/lib/workorder/history/builders";
@@ -54,11 +55,11 @@ export function mapHistoryToInventoryLogs(logs: HistoryLog[]): InventoryLog[] {
   return logs
     .filter((log) => log.category === "inventory")
     .map((log) => {
-      const type = log.action.includes("입고")
-        ? "입고"
-        : log.action.includes("보정")
-        ? "보정"
-        : "차감";
+      const type = log.action.includes(INVENTORY_CHANGE_TYPE.inbound)
+        ? INVENTORY_CHANGE_TYPE.inbound
+        : log.action.includes(INVENTORY_CHANGE_TYPE.adjustment)
+        ? INVENTORY_CHANGE_TYPE.adjustment
+        : INVENTORY_CHANGE_TYPE.deduction;
 
       const delta = extractDeltaFromMessage(log.message);
 

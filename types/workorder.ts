@@ -1,6 +1,7 @@
 import type { Material } from "@/types/material";
 import type { RoleType } from "@/types/permission";
 import type { UserProfile } from "@/types/user";
+import type { InventoryChangeTypeValue } from "@/lib/constants/workorderDomain";
 import type { OrderInspectionStatusValue } from "@/lib/constants/workorderStates";
 import type { DisplayStage, HistoryCategory, HistoryFilter, HistoryTone, WorkflowAction, WorkflowState } from "@/types/workflow";
 
@@ -146,7 +147,7 @@ export type HistoryLog = {
 };
 
 export type InventoryChange = {
-  type: "입고" | "차감" | "보정";
+  type: InventoryChangeTypeValue;
   quantity: number;
 };
 

@@ -1,3 +1,4 @@
+import { INVENTORY_CHANGE_TYPE } from "@/lib/constants/workorderDomain";
 import type { HistoryLog, InventoryChange } from "@/types/workorder";
 
 function withActor(summary: string, user: string) {
@@ -103,7 +104,7 @@ export function createInventoryHistoryLog(
   const activeChanges = payload.changes.filter((item) => item.quantity > 0);
   const detailLines = activeChanges.map((item) => ({
     label: item.type,
-    value: item.type === "보정" ? `${item.quantity}장으로 보정` : `${item.quantity}장 반영`,
+    value: item.type === INVENTORY_CHANGE_TYPE.adjustment ? `${item.quantity}장으로 보정` : `${item.quantity}장 반영`,
   }));
 
   return createHistoryLog({
@@ -112,7 +113,7 @@ export function createInventoryHistoryLog(
     user,
     workOrderId,
     category: "inventory",
-    tone: activeChanges.some((item) => item.type === "차감") ? "rose" : activeChanges.some((item) => item.type === "보정") ? "amber" : "emerald",
+    tone: activeChanges.some((item) => item.type === INVENTORY_CHANGE_TYPE.deduction) ? "rose" : activeChanges.some((item) => item.type === INVENTORY_CHANGE_TYPE.adjustment) ? "amber" : "emerald",
     detailLines: [
       ...detailLines,
       ...(payload.memo?.trim() ? [{ label: "메모", value: payload.memo.trim() }] : []),
@@ -133,7 +134,7 @@ export function createInspectionCompleteHistoryLog(
     category: "inventory",
     tone: "emerald",
     detailLines: [
-      { label: "입고", value: `${payload.inboundQuantity}장 반영` },
+      { label: INVENTORY_CHANGE_TYPE.inbound, value: `${payload.inboundQuantity}장 반영` },
       { label: "최종 재고", value: `${payload.nextInventoryQuantity}장` },
       ...(payload.memo?.trim() ? [{ label: "메모", value: payload.memo.trim() }] : []),
     ],

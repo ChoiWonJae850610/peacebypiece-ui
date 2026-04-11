@@ -1,4 +1,6 @@
-export type MaterialKind = "선택 안함" | "원단" | "부자재" | "기타";
+import type { MaterialKindValue } from "@/lib/constants/workorderDomain";
+
+export type MaterialKind = MaterialKindValue;
 
 export type Material = {
   id: string;

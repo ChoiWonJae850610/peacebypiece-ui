@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { InventoryChangeTypeValue } from "@/lib/constants/workorderDomain";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS, createModalActionHandler, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
 
-type InventoryMode = "입고" | "차감" | "보정";
+type InventoryMode = InventoryChangeTypeValue;
 
 type InventoryLog = {
   id: string;
