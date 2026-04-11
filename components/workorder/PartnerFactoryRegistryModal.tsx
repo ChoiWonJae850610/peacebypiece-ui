@@ -24,6 +24,10 @@ export default function PartnerFactoryRegistryModal({
   const [name, setName] = useState("");
   const { i18n } = useI18n();
   const copy = i18n.common.ui.layout.partnerFactoryRegistry;
+  const typeOptionLabels = {
+    거래처: copy.typeOptions.partner,
+    공장: copy.typeOptions.factory,
+  } as const;
 
   useEffect(() => {
     if (!open) return;
@@ -66,7 +70,7 @@ export default function PartnerFactoryRegistryModal({
           >
             {REGISTRY_TYPE_OPTIONS.map((option) => (
               <option key={option} value={option}>
-                {option}
+                {typeOptionLabels[option as RegistryType]}
               </option>
             ))}
           </select>
@@ -84,7 +88,7 @@ export default function PartnerFactoryRegistryModal({
                 handleSave();
               }
             }}
-            placeholder={`${type}${copy.namePlaceholderPrefix}`}
+            placeholder={`${typeOptionLabels[type]}${copy.namePlaceholderPrefix}`}
             className="mt-2 h-11 w-full rounded-xl border border-stone-300 bg-white px-3 text-sm text-stone-900 outline-none transition focus:border-stone-400"
           />
           <p className="mt-2 text-xs text-stone-500">{copy.savedNotice}</p>

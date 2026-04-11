@@ -125,6 +125,10 @@ export const commonKo = {
         typeLabel: "등록 구분",
         nameLabel: "이름",
         namePlaceholderPrefix: "명을 입력하세요",
+        typeOptions: {
+          partner: "거래처",
+          factory: "공장",
+        },
         savedNotice: "저장하면 현재 화면의 선택 목록에 즉시 추가됩니다.",
       },
     },

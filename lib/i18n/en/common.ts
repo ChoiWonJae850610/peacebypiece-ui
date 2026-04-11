@@ -125,6 +125,10 @@ export const commonEn = {
         typeLabel: "Register type",
         nameLabel: "Name",
         namePlaceholderPrefix: " name",
+        typeOptions: {
+          partner: "Partner",
+          factory: "Factory",
+        },
         savedNotice: "After saving, it is added immediately to the current selection list.",
       },
     },
