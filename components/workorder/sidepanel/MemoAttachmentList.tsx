@@ -18,7 +18,7 @@ export default function MemoAttachmentList({
   onPreviewAttachment?: (attachmentId: string) => void;
 }) {
   const { i18n } = useI18n();
-  const copy = i18n.common.ui.attachmentPanel;
+  const copy = i18n.workorder.ui.attachmentPanel;
 
   const linkedAttachments = (attachmentIds ?? [])
     .map((attachmentId) => attachmentsById.get(attachmentId))

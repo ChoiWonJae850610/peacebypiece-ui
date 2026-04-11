@@ -40,8 +40,8 @@ export default function SidebarContent({
   onSearchQueryChange,
 }: Props) {
   const { i18n } = useI18n();
-  const sidebarUi = i18n.common.ui.layout.sidebar;
-  const controlsUi = i18n.common.ui.layout.sidebarControls;
+  const sidebarUi = i18n.workorder.ui.layout.sidebar;
+  const controlsUi = i18n.workorder.ui.layout.sidebarControls;
 
   return (
     <div className="flex h-full flex-col">

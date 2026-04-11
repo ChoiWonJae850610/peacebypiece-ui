@@ -23,7 +23,7 @@ export default function PartnerFactoryRegistryModal({
   const [type, setType] = useState<RegistryType>(initialType);
   const [name, setName] = useState("");
   const { i18n } = useI18n();
-  const copy = i18n.common.ui.layout.partnerFactoryRegistry;
+  const copy = i18n.workorder.ui.layout.partnerFactoryRegistry;
   const typeOptionLabels = {
     거래처: copy.typeOptions.partner,
     공장: copy.typeOptions.factory,

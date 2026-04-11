@@ -28,12 +28,12 @@ export function createAttachmentId(name: string): string {
 }
 
 export function getAttachmentOwnerLabel(attachment: Attachment | null | undefined): string {
-  return attachment?.ownerName?.trim() || i18n.common.ui.attachmentPanel.legacyOwnerFallback;
+  return attachment?.ownerName?.trim() || i18n.workorder.ui.attachmentPanel.legacyOwnerFallback;
 }
 
 export function getAttachmentPreviewLabel(attachment: Attachment | null | undefined): string {
-  if (!attachment) return i18n.common.ui.attachmentPanel.previewFallback;
-  return attachment.type === "pdf" ? i18n.common.ui.attachmentPanel.previewPdf : i18n.common.ui.attachmentPanel.previewImage;
+  if (!attachment) return i18n.workorder.ui.attachmentPanel.previewFallback;
+  return attachment.type === "pdf" ? i18n.workorder.ui.attachmentPanel.previewPdf : i18n.workorder.ui.attachmentPanel.previewImage;
 }
 
 export function canPreviewAttachment(attachment: Attachment | null | undefined): boolean {

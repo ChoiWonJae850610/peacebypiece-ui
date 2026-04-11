@@ -28,7 +28,7 @@ export default function WorkOrderListCard({
   canReorder = false,
 }: Props) {
   const { i18n } = useI18n();
-  const copy = i18n.common.ui.layout.workOrderListCard;
+  const copy = i18n.workorder.ui.layout.workOrderListCard;
   const state = getWorkOrderState(workflowStateById, workOrder.id);
   const stateLabel = getWorkflowStateLabel(state);
   const active = workOrder.id === selectedId;

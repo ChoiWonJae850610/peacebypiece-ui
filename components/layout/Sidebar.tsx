@@ -8,8 +8,8 @@ export default function Sidebar() {
 
   return (
     <aside className="border-r bg-white p-4 md:col-span-3">
-      <h1 className="text-xl font-semibold">{i18n.common.ui.layout.sidebar.title} v{APP_VERSION}</h1>
-      <div className="mt-4 text-sm text-stone-500">{i18n.common.ui.layout.sidebar.workList}</div>
+      <h1 className="text-xl font-semibold">{i18n.workorder.ui.layout.sidebar.title} v{APP_VERSION}</h1>
+      <div className="mt-4 text-sm text-stone-500">{i18n.workorder.ui.layout.sidebar.workList}</div>
     </aside>
   );
 }

@@ -12,7 +12,7 @@ export default function CompactAttachmentPicker({
   onRemoveFile: (index: number) => void;
 }) {
   const { i18n } = useI18n();
-  const copy = i18n.common.ui.attachmentPanel;
+  const copy = i18n.workorder.ui.attachmentPanel;
 
   return (
     <div className="flex items-start gap-2">

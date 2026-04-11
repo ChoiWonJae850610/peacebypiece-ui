@@ -41,7 +41,7 @@ export default function MobileDrawer({
 }: Props) {
   const drawerRef = useRef<HTMLDivElement | null>(null);
   const { i18n } = useI18n();
-  const copy = i18n.common.ui.layout.mobileDrawer;
+  const copy = i18n.workorder.ui.layout.mobileDrawer;
 
   useModalEnvironment({
     open,

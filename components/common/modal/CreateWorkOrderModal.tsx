@@ -19,7 +19,7 @@ const mobileSelectClassName = "pbp-field-interaction h-11 rounded-xl border bord
 
 export default function CreateWorkOrderModal({ open, onClose, onCreate }: Props) {
   const { i18n } = useI18n();
-  const copy = i18n.common.ui.modal.createWorkOrder;
+  const copy = i18n.workorder.ui.modals.createWorkOrder;
   const [title, setTitle] = useState("");
   const [category1, setCategory1] = useState<string>(DEFAULT_CATEGORY1);
   const category2Options = useMemo(() => CATEGORY2_OPTIONS_MAP[category1] ?? ["미분류"], [category1]);

@@ -11,7 +11,7 @@ type Props = {
 
 export default function MobileTopBar({ version, onOpen, onOpenSettings, onOpenAdminPanel }: Props) {
   const { i18n } = useI18n();
-  const copy = i18n.common.ui.layout.mobileTopBar;
+  const copy = i18n.workorder.ui.layout.mobileTopBar;
 
   return (
     <div className="sticky top-0 z-30 border-b border-stone-200 bg-white/95 px-3 py-[max(env(safe-area-inset-top),0.75rem)] backdrop-blur md:hidden">
