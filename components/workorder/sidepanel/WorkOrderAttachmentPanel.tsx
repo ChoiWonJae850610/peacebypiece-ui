@@ -2,6 +2,7 @@
 
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
 import { getAttachmentOwnerLabel, getAttachmentPreviewLabel } from "@/lib/permissions/attachments";
+import { UI_TEXT } from "@/lib/constants/uiText";
 import type { Attachment } from "@/types/workorder";
 
 export default function WorkOrderAttachmentPanel({
@@ -27,10 +28,10 @@ export default function WorkOrderAttachmentPanel({
     <WorkOrderPanelCard>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-sm font-semibold text-stone-900">공식 첨부파일</h3>
+          <h3 className="text-sm font-semibold text-stone-900">{UI_TEXT.attachmentPanel.title}</h3>
         </div>
         {canUploadOfficialAttachments ? (
-          <button type="button" onClick={onOpenAttachmentPicker} className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200">+ 첨부 추가</button>
+          <button type="button" onClick={onOpenAttachmentPicker} className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200">{UI_TEXT.attachmentPanel.addButton}</button>
         ) : null}
       </div>
       {attachments.length > 0 ? (
@@ -44,8 +45,8 @@ export default function WorkOrderAttachmentPanel({
                     type="button"
                     onClick={() => onDeleteAttachment(attachment.id)}
                     className="pbp-interactive-button absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-full border border-stone-300 bg-white text-sm font-semibold text-stone-600 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 active:bg-rose-100"
-                    aria-label={`${attachment.name} 삭제`}
-                    title="삭제"
+                    aria-label={`${attachment.name} ${UI_TEXT.attachmentPanel.deleteAriaSuffix}`}
+                    title={UI_TEXT.attachmentPanel.deleteTitle}
                   >
                     ×
                   </button>
@@ -68,7 +69,7 @@ export default function WorkOrderAttachmentPanel({
           })}
         </div>
       ) : (
-        <div className="mt-3 rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">아직 공식 첨부파일이 없습니다.</div>
+        <div className="mt-3 rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">{UI_TEXT.attachmentPanel.empty}</div>
       )}
     </WorkOrderPanelCard>
   );

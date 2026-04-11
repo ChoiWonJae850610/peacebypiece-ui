@@ -113,8 +113,8 @@ export default function WorkOrderHeaderSection({
             aria-label="작업지시서명 입력"
           />
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <button type="button" onClick={saveTitle} className="pbp-interactive-button rounded-xl bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-stone-800">저장</button>
-            <button type="button" onClick={closeTitleEditor} className="pbp-interactive-button rounded-xl border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100">취소</button>
+            <button type="button" onClick={saveTitle} className="pbp-interactive-button rounded-xl bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-stone-800">{UI_TEXT.header.titleEditSave}</button>
+            <button type="button" onClick={closeTitleEditor} className="pbp-interactive-button rounded-xl border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100">{UI_TEXT.header.titleEditCancel}</button>
             <span className="text-[11px] text-stone-500">리오더 계열 전체에 같은 이름이 반영됩니다.</span>
           </div>
         </div>

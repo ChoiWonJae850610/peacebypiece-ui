@@ -2,6 +2,7 @@
 
 import { useState, type KeyboardEvent } from "react";
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
+import { UI_TEXT } from "@/lib/constants/uiText";
 import CompactAttachmentPicker from "@/components/workorder/sidepanel/CompactAttachmentPicker";
 import MemoAttachmentList from "@/components/workorder/sidepanel/MemoAttachmentList";
 import type { Attachment, MemoAttachmentPayload, MemoThread, WorkOrder } from "@/types/workorder";
@@ -69,7 +70,7 @@ function MemoThreadCard({
             onClick={() => setReplyComposerOpen((prev) => !prev)}
             className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1 text-[11px] font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200"
           >
-            {replyComposerOpen ? "댓글 닫기" : "댓글"}
+            {replyComposerOpen ? UI_TEXT.memo.toggleReplyClose : UI_TEXT.memo.toggleReplyOpen}
           </button>
         </div>
 
@@ -79,12 +80,12 @@ function MemoThreadCard({
               value={replyDraft}
               onChange={(event) => setReplyDraft(event.target.value)}
               onKeyDown={onReplyKeyDown}
-              placeholder="댓글 입력"
+              placeholder={UI_TEXT.memo.replyPlaceholder}
               className="pbp-field-interaction min-h-[36px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-2 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 md:text-sm"
             />
             <div className="mt-2 flex items-start justify-between gap-2">
               <CompactAttachmentPicker uploadedFiles={uploadedFiles} onFilesChange={setUploadedFiles} onRemoveFile={(index) => setUploadedFiles((prev) => prev.filter((_, i) => i !== index))} />
-              <button type="button" onClick={submitReply} className="pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-stone-800 active:bg-black">등록</button>
+              <button type="button" onClick={submitReply} className="pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-stone-800 active:bg-black">{UI_TEXT.memo.submit}</button>
             </div>
           </div>
         ) : null}
@@ -137,8 +138,8 @@ export default function WorkOrderMemoPanel({
   return (
     <WorkOrderPanelCard>
       <div className="flex items-center justify-between gap-3">
-        <h3 className="text-sm font-semibold text-stone-900">작업메모</h3>
-        <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">{memoThreads.length}개</span>
+        <h3 className="text-sm font-semibold text-stone-900">{UI_TEXT.memo.panelTitle}</h3>
+        <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">{`${memoThreads.length}${UI_TEXT.memo.countSuffix}`}</span>
       </div>
       <div className="mt-3 rounded-xl border border-stone-200 bg-stone-50 p-2.5">
         <div className="text-[11px] text-stone-500">{currentUserName} · {currentUserRole}</div>
@@ -146,18 +147,18 @@ export default function WorkOrderMemoPanel({
           value={threadDraft}
           onChange={(event) => setThreadDraft(event.target.value)}
           onKeyDown={onThreadKeyDown}
-          placeholder="작업 메모 입력"
+          placeholder={UI_TEXT.memo.threadPlaceholder}
           className="pbp-field-interaction mt-2 min-h-[38px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-2 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 md:text-sm"
         />
         <div className="mt-2 flex items-start justify-between gap-2">
           <CompactAttachmentPicker uploadedFiles={uploadedFiles} onFilesChange={setUploadedFiles} onRemoveFile={(index) => setUploadedFiles((prev) => prev.filter((_, i) => i !== index))} />
-          <button type="button" onClick={submitThread} className="pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-stone-800 active:bg-black">등록</button>
+          <button type="button" onClick={submitThread} className="pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-stone-800 active:bg-black">{UI_TEXT.memo.submit}</button>
         </div>
       </div>
       <div className="mt-2.5 space-y-2">
         {memoThreads.length > 0 ? memoThreads.map((thread) => (
           <MemoThreadCard key={thread.id} thread={thread} attachmentsById={attachmentsById} canPromoteMemoAttachment={canPromoteMemoAttachment} onPromoteMemoAttachment={onPromoteMemoAttachment} onPreviewAttachment={onPreviewAttachment} onCreateReply={onCreateReply} />
-        )) : <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-5 text-center text-sm text-stone-500">등록된 작업 메모가 없습니다.</div>}
+        )) : <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-5 text-center text-sm text-stone-500">{UI_TEXT.memo.empty}</div>}
       </div>
     </WorkOrderPanelCard>
   );

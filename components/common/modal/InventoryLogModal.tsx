@@ -10,6 +10,7 @@ import { HISTORY_FILTER_OPTIONS } from "@/lib/constants/workflow";
 import { isAdminRole, isDesignerRole } from "@/lib/constants/roles";
 import type { HistoryFilter, HistoryLog, RoleType } from "@/types/workorder";
 import { MODAL_EXCEPTION_PRESETS } from "@/components/common/modal/modalPresets";
+import { DETAIL_TOGGLE_TEXT } from "@/lib/constants/uiText";
 
 function HistoryLogItem({ item }: { item: HistoryLog }) {
   const [open, setOpen] = useState(false);
@@ -28,7 +29,7 @@ function HistoryLogItem({ item }: { item: HistoryLog }) {
           </div>
           <div className="flex items-center gap-2 text-[11px] text-stone-500">
             <span>{item.time}</span>
-            {hasDetails && <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-medium text-stone-600">{open ? "접기" : "상세"}</span>}
+            {hasDetails && <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-medium text-stone-600">{open ? DETAIL_TOGGLE_TEXT.open : DETAIL_TOGGLE_TEXT.closed}</span>}
           </div>
         </div>
         <div className="mt-2 text-xs text-stone-500">{item.user}</div>

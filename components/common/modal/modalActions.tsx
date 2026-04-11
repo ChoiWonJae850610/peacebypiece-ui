@@ -1,12 +1,14 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
+import { UI_TEXT } from "@/lib/constants/uiText";
+
 export const MODAL_ACTION_LABELS = {
-  cancel: "취소",
-  close: "닫기",
-  apply: "적용",
-  create: "생성",
-  delete: "삭제",
+  cancel: UI_TEXT.common.cancel,
+  close: UI_TEXT.common.close,
+  apply: UI_TEXT.common.apply,
+  create: UI_TEXT.common.create,
+  delete: UI_TEXT.common.delete,
   completeInspection: "검수 완료",
   proceedOrderRequest: "발주 요청 진행",
 } as const;

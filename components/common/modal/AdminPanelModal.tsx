@@ -6,6 +6,7 @@ import ModalBody from "@/components/common/modal/ModalBody";
 import ModalHeader from "@/components/common/modal/ModalHeader";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import { HISTORY_TONE_CLASS } from "@/lib/constants/display";
+import { DETAIL_TOGGLE_TEXT, UI_TEXT } from "@/lib/constants/uiText";
 import { HISTORY_FILTER_OPTIONS, NOTIFICATION_SETTING_META } from "@/lib/constants/workflow";
 import { MODAL_EXCEPTION_PRESETS } from "@/components/common/modal/modalPresets";
 import type { NotificationSettingKey, NotificationSettings, HistoryFilter } from "@/types/workflow";
@@ -25,7 +26,7 @@ function HistoryPreviewItem({ item }: { item: HistoryLog }) {
           <div className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${HISTORY_TONE_CLASS[item.tone]}`}>{item.action}</div>
           <div className="flex items-center gap-2 text-[11px] text-stone-500">
             <span>{item.time}</span>
-            {hasDetails ? <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-medium text-stone-600">{open ? "접기" : "상세"}</span> : null}
+            {hasDetails ? <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-medium text-stone-600">{open ? DETAIL_TOGGLE_TEXT.open : DETAIL_TOGGLE_TEXT.closed}</span> : null}
           </div>
         </div>
         <div className="mt-2 text-sm text-stone-700 break-words">{item.summary}</div>
@@ -79,18 +80,18 @@ export default function AdminPanelModal({
     <BaseModal open={open} onClose={onClose} dialogRef={dialogRef} titleId="admin-panel-modal-title" maxWidthClassName={MODAL_EXCEPTION_PRESETS.adminPanel.maxWidthClass}>
       <ModalHeader
         titleId="admin-panel-modal-title"
-        title="관리자 패널"
-        description="알림 이벤트 ON/OFF와 관리자 전용 히스토리를 한곳에서 점검하는 테스트용 패널입니다."
+        title={UI_TEXT.modal.adminPanel.title}
+        description={UI_TEXT.modal.adminPanel.description}
         onClose={onClose}
       />
       <ModalBody className={MODAL_EXCEPTION_PRESETS.adminPanel.bodyClassName}>
         <section className="rounded-2xl border border-stone-200 bg-white p-3 md:p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <div className="text-sm font-semibold text-stone-900">알림 이벤트 설정</div>
-              <div className="mt-1 text-xs leading-5 text-stone-500">지금은 상태만 유지하고 실제 발송은 연결하지 않습니다.</div>
+              <div className="text-sm font-semibold text-stone-900">{UI_TEXT.modal.adminPanel.notificationTitle}</div>
+              <div className="mt-1 text-xs leading-5 text-stone-500">{UI_TEXT.modal.adminPanel.notificationDescription}</div>
             </div>
-            <span className="rounded-full bg-sky-100 px-2 py-1 text-[11px] font-medium text-sky-700">테스트용</span>
+            <span className="rounded-full bg-sky-100 px-2 py-1 text-[11px] font-medium text-sky-700">{UI_TEXT.modal.adminPanel.testBadge}</span>
           </div>
           <div className="mt-3 space-y-2">
             {NOTIFICATION_SETTING_META.map((item) => {
@@ -107,7 +108,7 @@ export default function AdminPanelModal({
                     <div className="text-sm font-medium text-stone-900">{item.label}</div>
                     <div className="mt-1 break-keep text-xs leading-5 text-stone-500">{item.description}</div>
                   </div>
-                  <span className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-medium ${checked ? "bg-emerald-100 text-emerald-700" : "bg-stone-200 text-stone-600"}`}>{checked ? "ON" : "OFF"}</span>
+                  <span className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-medium ${checked ? "bg-emerald-100 text-emerald-700" : "bg-stone-200 text-stone-600"}`}>{checked ? UI_TEXT.modal.adminPanel.toggleOn : UI_TEXT.modal.adminPanel.toggleOff}</span>
                 </label>
               );
             })}
@@ -117,10 +118,10 @@ export default function AdminPanelModal({
         <section className="rounded-2xl border border-stone-200 bg-white p-3 md:p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h3 className="text-sm font-semibold text-stone-900">히스토리</h3>
-              <div className="mt-1 text-xs text-stone-500">summary 형식: 설명 · 사용자</div>
+              <h3 className="text-sm font-semibold text-stone-900">{UI_TEXT.modal.adminPanel.historyTitle}</h3>
+              <div className="mt-1 text-xs text-stone-500">{UI_TEXT.modal.adminPanel.historySummaryFormat}</div>
             </div>
-            <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">{historyLogs.length}건</span>
+            <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">{`${historyLogs.length}${UI_TEXT.modal.adminPanel.countSuffix}`}</span>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {HISTORY_FILTER_OPTIONS.map(([value, label]) => (
