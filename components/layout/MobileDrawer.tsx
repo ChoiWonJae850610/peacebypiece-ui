@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import WorkOrderListCard from "@/components/workorder/list/WorkOrderListCard";
+import { useI18n } from "@/lib/i18n";
 import type { WorkOrderListItem, WorkflowState } from "@/types/workorder";
 
 type Props = {
@@ -39,6 +40,8 @@ export default function MobileDrawer({
   onSearchQueryChange,
 }: Props) {
   const drawerRef = useRef<HTMLDivElement | null>(null);
+  const { i18n } = useI18n();
+  const copy = i18n.common.ui.layout.mobileDrawer;
 
   useModalEnvironment({
     open,
@@ -50,7 +53,7 @@ export default function MobileDrawer({
 
   return (
     <div className="fixed inset-0 z-40 md:hidden" aria-modal="true" role="dialog" aria-labelledby="mobile-drawer-title">
-      <button type="button" aria-label="드로어 닫기" className="absolute inset-0 bg-stone-950/45 pbp-overlay-enter" onClick={onClose} />
+      <button type="button" aria-label={copy.closeOverlayAria} className="absolute inset-0 bg-stone-950/45 pbp-overlay-enter" onClick={onClose} />
       <div
         ref={drawerRef}
         tabIndex={-1}
@@ -59,24 +62,24 @@ export default function MobileDrawer({
         <div className="sticky top-0 z-10 border-b border-stone-200 bg-white/95 px-3 pb-2.5 pt-[max(env(safe-area-inset-top),0.875rem)] backdrop-blur">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <div id="mobile-drawer-title" className="text-sm font-semibold leading-5 text-stone-900">작업 목록</div>
-              <div className="text-[11px] text-stone-500">모바일 드로어</div>
+              <div id="mobile-drawer-title" className="text-sm font-semibold leading-5 text-stone-900">{copy.title}</div>
+              <div className="text-[11px] text-stone-500">{copy.subtitle}</div>
             </div>
             <button
               type="button"
               onClick={onClose}
               className="pbp-touch-target pbp-interactive-button inline-flex h-11 items-center justify-center rounded-xl border border-stone-300 bg-white px-3.5 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
             >
-              닫기
+              {copy.close}
             </button>
           </div>
           <label className="mt-3 block">
-            <span className="sr-only">작업지시서 검색</span>
+            <span className="sr-only">{copy.searchAria}</span>
             <input
               type="search"
               value={searchQuery}
               onChange={(event) => onSearchQueryChange(event.target.value)}
-              placeholder="작업명, 분류, 공장, 상태 검색"
+              placeholder={copy.searchPlaceholder}
               className="pbp-field-interaction h-11 w-full rounded-xl border border-stone-300 bg-white px-4 text-sm text-stone-900 outline-none placeholder:text-stone-400 focus:border-stone-500 focus:bg-stone-50"
             />
           </label>
@@ -89,7 +92,7 @@ export default function MobileDrawer({
               }}
               className="pbp-touch-target pbp-interactive-button mt-3 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white hover:bg-stone-800 active:bg-black"
             >
-              작업지시서 생성
+              {copy.create}
             </button>
           ) : null}
         </div>
@@ -112,7 +115,7 @@ export default function MobileDrawer({
               />
             ))}
           </div>
-          {workOrders.length === 0 ? <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">검색 결과가 없습니다.</div> : null}
+          {workOrders.length === 0 ? <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">{copy.empty}</div> : null}
         </div>
       </div>
     </div>

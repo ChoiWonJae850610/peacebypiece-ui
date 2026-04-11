@@ -1,6 +1,7 @@
 "use client";
 
 import { REORDERABLE_WORKFLOW_STATES } from "@/lib/constants/workorderStates";
+import { useI18n } from "@/lib/i18n";
 import { getStageDotTone, getWorkflowStateLabel } from "@/lib/workorder/presentation/statusPresentation";
 import { getCategoryPath, getWorkOrderCardTone, getWorkOrderState } from "@/lib/workorder/presentation/workOrderPresentation";
 import type { WorkOrderListItem, WorkflowState } from "@/types/workorder";
@@ -26,6 +27,8 @@ export default function WorkOrderListCard({
   canDelete,
   canReorder = false,
 }: Props) {
+  const { i18n } = useI18n();
+  const copy = i18n.common.ui.layout.workOrderListCard;
   const state = getWorkOrderState(workflowStateById, workOrder.id);
   const stateLabel = getWorkflowStateLabel(state);
   const active = workOrder.id === selectedId;
@@ -54,10 +57,10 @@ export default function WorkOrderListCard({
             </span>
           </div>
           <div className={`mt-2 space-y-0.5 text-xs leading-4 ${active ? "text-stone-200" : "text-stone-500"}`}>
-            <div className="truncate">{getCategoryPath(workOrder) || "분류 미지정"}</div>
-            <div className="truncate">공장: {workOrder.vendor ?? "미지정"}</div>
-            <div>납기일: {workOrder.dueDate ?? "미지정"}</div>
-            <div>첨부파일: {workOrder.filesCount ?? 0}개</div>
+            <div className="truncate">{getCategoryPath(workOrder) || copy.uncategorized}</div>
+            <div className="truncate">{copy.vendorLabel}: {workOrder.vendor ?? copy.unspecified}</div>
+            <div>{copy.dueDateLabel}: {workOrder.dueDate ?? copy.unspecified}</div>
+            <div>{copy.attachmentsLabel}: {workOrder.filesCount ?? 0}{copy.countSuffix}</div>
           </div>
         </button>
         <div className="flex shrink-0 items-start gap-1.5">
@@ -71,7 +74,7 @@ export default function WorkOrderListCard({
                   : "border-stone-300 bg-white text-stone-800 hover:border-stone-400 hover:bg-stone-100"
               }`}
             >
-              리오더
+              {copy.reorder}
             </button>
           ) : null}
           {canShowDelete ? (
@@ -84,7 +87,7 @@ export default function WorkOrderListCard({
                   : "border-rose-200 bg-white text-rose-600 hover:border-rose-300 hover:bg-rose-50"
               }`}
             >
-              삭제
+              {copy.delete}
             </button>
           ) : null}
         </div>
