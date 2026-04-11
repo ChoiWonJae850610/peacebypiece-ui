@@ -46,6 +46,7 @@ export const ROLE_TEMPLATES: Record<RoleType, RoleTemplate> = {
   },
 };
 
+export const DEFAULT_ROLE: RoleType = "디자이너";
 export const ROLE_PRIORITY: readonly RoleType[] = ["관리자", "디자이너", "입고/검수"] as const;
 export const WORK_ORDER_CREATOR_ROLES: readonly RoleType[] = ["관리자", "디자이너"] as const;
 export const OFFICIAL_ATTACHMENT_MANAGER_ROLES: readonly RoleType[] = ["관리자"] as const;
@@ -57,7 +58,13 @@ export const ROLE_OPTIONS = Object.values(ROLE_TEMPLATES).map((item) => ({
   description: item.description,
 }));
 
-function isRoleType(value: unknown): value is RoleType {
+export const ROLE_DISPLAY_GUIDE = ROLE_PRIORITY.map((role) => ({
+  role,
+  title: ROLE_TEMPLATES[role].label,
+  description: ROLE_TEMPLATES[role].description,
+}));
+
+export function isRoleType(value: unknown): value is RoleType {
   return value === "디자이너" || value === "관리자" || value === "입고/검수";
 }
 
@@ -68,12 +75,12 @@ export function normalizeRoles(roles?: readonly RoleType[] | null, fallback?: Ro
     ),
   );
   if (next.length > 0) return next;
-  return [fallback ?? "디자이너"];
+  return [fallback ?? DEFAULT_ROLE];
 }
 
 export function getPrimaryRole(roles?: readonly RoleType[] | null, fallback?: RoleType | null): RoleType {
   const normalized = normalizeRoles(roles, fallback);
-  return ROLE_PRIORITY.find((role) => normalized.includes(role)) ?? normalized[0] ?? "디자이너";
+  return ROLE_PRIORITY.find((role) => normalized.includes(role)) ?? normalized[0] ?? DEFAULT_ROLE;
 }
 
 export function getPermissionsFromRoles(roles?: readonly RoleType[] | null, fallback?: RoleType | null): PermissionSet {

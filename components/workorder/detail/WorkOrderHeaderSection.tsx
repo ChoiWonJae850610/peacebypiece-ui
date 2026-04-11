@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import InlineInfoItem from "@/components/common/ui/InlineInfoItem";
+import { canCreateWorkOrderByRoles } from "@/lib/constants/roles";
+import type { RoleType } from "@/types/workorder";
 
 function PencilIcon() {
   return (
@@ -17,7 +19,7 @@ type WorkOrderHeaderSectionProps = {
   currentInventoryQuantity: number;
   lastSavedAt: string | null;
   canChangeManager: boolean;
-  currentUserRole: string;
+  currentUserRole: RoleType;
   canRenameTitle?: boolean;
   canEditInventory: boolean;
   onSave: () => void;
@@ -52,7 +54,7 @@ export default function WorkOrderHeaderSection({
   const managerValue = managerName || "-";
   const inventoryValue = `${currentInventoryQuantity.toLocaleString()}장`;
   const summaryValue = summaryText || "-";
-  const canEditSummary = !locked && (currentUserRole === "관리자" || currentUserRole === "디자이너") && typeof onOpenBasicInfoModal === "function";
+  const canEditSummary = !locked && canCreateWorkOrderByRoles([currentUserRole]) && typeof onOpenBasicInfoModal === "function";
   const canEditManager = !locked && canChangeManager;
   const canEditTitle = canRenameTitle && typeof onRenameTitle === "function";
 

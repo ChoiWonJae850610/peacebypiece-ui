@@ -1,3 +1,4 @@
+import { INVENTORY_CHANGE_TYPE } from "@/lib/constants/workorderDomain";
 import { createAttachmentId } from "@/lib/permissions/attachments";
 import type { Material } from "@/types/material";
 import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
@@ -54,14 +55,14 @@ export function buildInventoryChanges(payload: {
   deductionQuantity: number;
 }) {
   return [
-    ...(payload.inboundQuantity > 0 ? [{ type: "입고" as const, quantity: payload.inboundQuantity }] : []),
-    ...(payload.adjustmentQuantity > 0 ? [{ type: "보정" as const, quantity: payload.adjustmentQuantity }] : []),
-    ...(payload.deductionQuantity > 0 ? [{ type: "차감" as const, quantity: payload.deductionQuantity }] : []),
+    ...(payload.inboundQuantity > 0 ? [{ type: INVENTORY_CHANGE_TYPE.inbound, quantity: payload.inboundQuantity }] : []),
+    ...(payload.adjustmentQuantity > 0 ? [{ type: INVENTORY_CHANGE_TYPE.adjustment, quantity: payload.adjustmentQuantity }] : []),
+    ...(payload.deductionQuantity > 0 ? [{ type: INVENTORY_CHANGE_TYPE.deduction, quantity: payload.deductionQuantity }] : []),
   ];
 }
 
 export function applyWorkflowActionToWorkOrder(workOrder: WorkOrder, action: WorkflowAction): WorkOrder {
-  if (action.label === "발주 요청") {
+  if (action.nextState === "in_production") {
     const nextOrderEntries: OrderEntry[] = (workOrder.orderEntries ?? []).map((entry) => ({
       ...entry,
       inspectionStatus: entry.inspectionStatus === "inspection_completed" ? "inspection_completed" : "inspection_pending",
@@ -83,8 +84,8 @@ export function applyInventoryAdjustmentToWorkOrder(
 ): WorkOrder {
   let nextInventory = workOrder.inventoryQuantity;
   for (const change of payload.changes) {
-    if (change.type === "입고") nextInventory += change.quantity;
-    else if (change.type === "차감") nextInventory = Math.max(0, nextInventory - change.quantity);
+    if (change.type === INVENTORY_CHANGE_TYPE.inbound) nextInventory += change.quantity;
+    else if (change.type === INVENTORY_CHANGE_TYPE.deduction) nextInventory = Math.max(0, nextInventory - change.quantity);
     else nextInventory = change.quantity;
   }
 

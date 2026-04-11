@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
-import { ROLE_OPTIONS, formatRoles, normalizeRoles } from "@/lib/constants/roles";
+import { DEFAULT_ROLE, ROLE_DISPLAY_GUIDE, formatRoles, normalizeRoles } from "@/lib/constants/roles";
 import type { RoleType, UserProfile } from "@/types/workorder";
 
 type NormalizedRoleOption = {
@@ -11,49 +11,21 @@ type NormalizedRoleOption = {
   description: string;
 };
 
-const ROLE_FALLBACKS: Record<RoleType, NormalizedRoleOption> = {
-  디자이너: {
-    role: "디자이너",
-    title: "디자이너",
-    description: "작업지시 작성, 검토 요청, 발주 요청 중심 역할",
-  },
-  관리자: {
-    role: "관리자",
-    title: "관리자",
-    description: "전체 승인과 비용, 권한 관리가 가능한 역할",
-  },
-  "입고/검수": {
-    role: "입고/검수",
-    title: "입고/검수",
-    description: "입고 등록, 검수 완료, 재고 수정 중심 역할",
-  },
-};
-
-function toRoleType(value: unknown): RoleType | null {
-  if (value === "디자이너" || value === "관리자" || value === "입고/검수") {
-    return value;
-  }
-  return null;
-}
+const ROLE_FALLBACKS: Record<RoleType, NormalizedRoleOption> = Object.fromEntries(
+  ROLE_DISPLAY_GUIDE.map((item) => [item.role, item]),
+) as Record<RoleType, NormalizedRoleOption>;
 
 function normalizeRoleOption(item: unknown, index: number): NormalizedRoleOption {
-  if (typeof item === "string") {
-    const normalizedRole = toRoleType(item);
-    if (normalizedRole) {
-      return ROLE_FALLBACKS[normalizedRole];
-    }
-  }
-
   if (item && typeof item === "object") {
     const record = item as Record<string, unknown>;
     const normalizedRole =
-      toRoleType(record.role) ??
-      toRoleType(record.value) ??
-      toRoleType(record.key) ??
-      toRoleType(record.id) ??
-      toRoleType(record.title) ??
-      toRoleType(record.label) ??
-      toRoleType(record.name);
+      (typeof record.role === "string" && record.role in ROLE_FALLBACKS ? (record.role as RoleType) : null) ??
+      (typeof record.value === "string" && record.value in ROLE_FALLBACKS ? (record.value as RoleType) : null) ??
+      (typeof record.key === "string" && record.key in ROLE_FALLBACKS ? (record.key as RoleType) : null) ??
+      (typeof record.id === "string" && record.id in ROLE_FALLBACKS ? (record.id as RoleType) : null) ??
+      (typeof record.title === "string" && record.title in ROLE_FALLBACKS ? (record.title as RoleType) : null) ??
+      (typeof record.label === "string" && record.label in ROLE_FALLBACKS ? (record.label as RoleType) : null) ??
+      (typeof record.name === "string" && record.name in ROLE_FALLBACKS ? (record.name as RoleType) : null);
 
     if (normalizedRole) {
       const fallback = ROLE_FALLBACKS[normalizedRole];
@@ -77,7 +49,7 @@ function normalizeRoleOption(item: unknown, index: number): NormalizedRoleOption
     }
   }
 
-  const fallbackRole = (["디자이너", "관리자", "입고/검수"] as const)[index] ?? "디자이너";
+  const fallbackRole = ROLE_DISPLAY_GUIDE[index]?.role ?? DEFAULT_ROLE;
   return ROLE_FALLBACKS[fallbackRole];
 }
 
@@ -102,13 +74,13 @@ export default function PermissionModal({
 }) {
   const selectedUser = users.find((item) => item.id === selectedUserId) ?? users[0];
   const normalizedRoleOptions = useMemo<NormalizedRoleOption[]>(() => {
-    const source = Array.isArray(ROLE_OPTIONS) ? ROLE_OPTIONS : [];
+    const source = ROLE_DISPLAY_GUIDE;
     const normalized = source.map((item, index) => normalizeRoleOption(item, index));
     const uniqueByRole = new Map<RoleType, NormalizedRoleOption>();
     normalized.forEach((item) => {
       uniqueByRole.set(item.role, item);
     });
-    (["디자이너", "관리자", "입고/검수"] as const).forEach((role) => {
+    ROLE_DISPLAY_GUIDE.forEach(({ role }) => {
       if (!uniqueByRole.has(role)) {
         uniqueByRole.set(role, ROLE_FALLBACKS[role]);
       }

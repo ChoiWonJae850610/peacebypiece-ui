@@ -1,3 +1,4 @@
+import { MATERIAL_KIND } from "@/lib/constants/workorderDomain";
 import { isOfficialAttachment } from "@/lib/permissions/attachments";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import type { WorkOrder, WorkOrderListItem } from "@/types/workorder";
@@ -23,8 +24,8 @@ export function createWorkOrderListItem(workOrder: WorkOrder): WorkOrderListItem
 export function calculateWorkOrderCosts(workOrder: WorkOrder) {
   const materials = workOrder.materials ?? [];
   const outsourcing = workOrder.outsourcing ?? [];
-  const fabricTotal = materials.filter((item) => item.type === "원단").reduce((sum, item) => sum + item.totalCost, 0);
-  const subsidiaryTotal = materials.filter((item) => item.type === "부자재").reduce((sum, item) => sum + item.totalCost, 0);
+  const fabricTotal = materials.filter((item) => item.type === MATERIAL_KIND.fabric).reduce((sum, item) => sum + item.totalCost, 0);
+  const subsidiaryTotal = materials.filter((item) => item.type === MATERIAL_KIND.subsidiary).reduce((sum, item) => sum + item.totalCost, 0);
   const outsourcingTotal = outsourcing.reduce((sum, item) => sum + item.totalCost, 0);
   const orderEntries = workOrder.orderEntries ?? [];
   const quantity = orderEntries.length > 0 ? orderEntries.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0) : workOrder.quantity;

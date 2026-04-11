@@ -6,6 +6,8 @@ import ModalBody from "@/components/common/modal/ModalBody";
 import ModalHeader from "@/components/common/modal/ModalHeader";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import { HISTORY_TONE_CLASS } from "@/lib/constants/display";
+import { HISTORY_FILTER_OPTIONS } from "@/lib/constants/workflow";
+import { isAdminRole, isDesignerRole } from "@/lib/constants/roles";
 import type { HistoryFilter, HistoryLog, RoleType } from "@/types/workorder";
 import { MODAL_EXCEPTION_PRESETS } from "@/components/common/modal/modalPresets";
 
@@ -71,10 +73,11 @@ export default function InventoryLogModal({
   const dialogRef = useRef<HTMLDivElement | null>(null);
   useModalEnvironment({ open, dialogRef, onClose });
   const summaryText = useMemo(() => {
-    if (role === "관리자") {
-      return `현재 필터: ${filter === "all" ? "전체" : filter === "work" ? "작업" : filter === "inventory" ? "재고" : "첨부"}`;
+    if (isAdminRole([role])) {
+      const filterLabel = HISTORY_FILTER_OPTIONS.find(([key]) => key === filter)?.[1] ?? "전체";
+      return `현재 필터: ${filterLabel}`;
     }
-    return `현재 보기 권한: ${role === "디자이너" ? "작업/상태/첨부" : "재고/첨부"}`;
+    return `현재 보기 권한: ${isDesignerRole([role]) ? "작업/상태/첨부" : "재고/첨부"}`;
   }, [filter, role]);
 
   return (

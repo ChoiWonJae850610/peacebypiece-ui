@@ -1,8 +1,9 @@
+import { EMPTY_SELECTION_VALUES } from "@/lib/constants/workorderDomain";
 import type { WorkOrder } from "@/types/workorder";
 
 export function isUnselectedValue(value: string | undefined | null) {
   const normalized = String(value ?? "").trim();
-  return !normalized || normalized === "선택 안함" || normalized === "미정 공장";
+  return !normalized || EMPTY_SELECTION_VALUES.includes(normalized as (typeof EMPTY_SELECTION_VALUES)[number]);
 }
 
 export function isEmptyOrderEntry(entry: NonNullable<WorkOrder["orderEntries"]>[number]) {

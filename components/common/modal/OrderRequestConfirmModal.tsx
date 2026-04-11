@@ -2,6 +2,7 @@
 
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS, renderModalFooterActions } from "@/components/common/modal/modalActions";
+import { ORDER_REQUEST_TABLE_COLUMNS } from "@/lib/constants/workorderDomain";
 import type { WorkOrder } from "@/types/workorder";
 
 export default function OrderRequestConfirmModal({
@@ -83,8 +84,8 @@ export default function OrderRequestConfirmModal({
               </colgroup>
               <thead className="bg-stone-50 text-stone-500">
                 <tr>
-                  {['구분', '공장', '납기일', '수량', '공임비', '로스비'] .map((header) => (
-                    <th key={header} className={`px-3 py-2 font-medium ${header === '수량' || header === '공임비' || header === '로스비' ? 'text-right' : 'text-left'}`}>{header}</th>
+                  {ORDER_REQUEST_TABLE_COLUMNS.map((column) => (
+                    <th key={column.key} className={`px-3 py-2 font-medium ${column.align === 'right' ? 'text-right' : 'text-left'}`}>{column.label}</th>
                   ))}
                 </tr>
               </thead>

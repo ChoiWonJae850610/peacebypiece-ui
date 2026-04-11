@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback } from "react";
-import { WORKFLOW_ACTION_LABELS } from "@/lib/constants/workflow";
 import {
   createInspectionCompleteHistoryLog,
   createInventoryHistoryLog,
@@ -23,14 +22,10 @@ import type {
   UseWorkOrderActionsParams,
 } from "./useWorkOrderActionTypes";
 
-const ORDER_REQUEST_ACTION_LABEL = WORKFLOW_ACTION_LABELS.requestOrder;
-const REVIEW_REQUEST_ACTION_LABEL = WORKFLOW_ACTION_LABELS.requestReview;
-
 const shouldPruneRowsBeforeWorkflowTransition = (action: WorkflowAction) =>
-  action.label === REVIEW_REQUEST_ACTION_LABEL || action.label === ORDER_REQUEST_ACTION_LABEL;
+  action.nextState === "review_requested" || action.nextState === "in_production";
 
-const requiresOrderRequestConfirmation = (action: WorkflowAction) =>
-  action.label === ORDER_REQUEST_ACTION_LABEL && action.nextState === "in_production";
+const requiresOrderRequestConfirmation = (action: WorkflowAction) => action.nextState === "in_production";
 
 const shouldOpenInventoryEditor = (action: WorkflowAction) => action.nextState === "in_inspection";
 
@@ -97,7 +92,7 @@ export function useWorkOrderWorkflowActions({
         }),
         ...prev,
       ]);
-      if (action.label === REVIEW_REQUEST_ACTION_LABEL) {
+      if (action.nextState === "review_requested") {
         setSaveStatus("dirty");
       }
       if (shouldOpenInventoryEditor(action)) {
