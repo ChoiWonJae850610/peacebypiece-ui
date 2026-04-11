@@ -3,12 +3,10 @@
 import { useMemo, useState } from "react";
 import WorkOrderLayout from "@/components/workorder/WorkOrderLayout";
 import WorkOrderOverlay from "@/components/workorder/WorkOrderOverlay";
-import { APP_VERSION } from "@/lib/constants/app";
-import { isInspectorRole } from "@/lib/constants/roles";
 import { useWorkOrder } from "@/lib/hooks/useWorkOrder";
+import { buildWorkspaceViewModel } from "@/lib/workorder/workspace/buildWorkspaceViewModel";
 
 export default function WorkOrderWorkspace() {
-  const version = APP_VERSION;
   const {
     appShellRef,
     attachmentInputRef,
@@ -60,10 +58,7 @@ export default function WorkOrderWorkspace() {
     canChangeManager,
     canSeeProductionSections,
     canSeeCostSections,
-    canEditInventory,
     canOpenInventoryEditor,
-    canSeeInventoryHistorySection,
-    canSeeAttachments,
     currentDisplayStage,
     currentInventoryQuantity,
     filteredHistoryLogs,
@@ -71,7 +66,6 @@ export default function WorkOrderWorkspace() {
     officialAttachments,
     selectedAttachment,
     canDeleteAttachment,
-    outsourcing,
     fabricTotal,
     subsidiaryTotal,
     outsourcingTotal,
@@ -104,9 +98,8 @@ export default function WorkOrderWorkspace() {
     handleCreateMemoThread,
     handleCreateMemoReply,
     handlePromoteMemoAttachment,
+    canSeeAttachments,
   } = useWorkOrder();
-
-  const canManageListActions = !isInspectorRole(currentUser);
 
   const [pendingAttachmentDeleteId, setPendingAttachmentDeleteId] = useState<string | null>(null);
   const pendingAttachmentDelete = useMemo(
@@ -128,182 +121,116 @@ export default function WorkOrderWorkspace() {
     setPendingAttachmentDeleteId(null);
   };
 
-  const sidebarListProps = {
-    version,
-    workOrders,
-    selectedId,
-    workflowStateById,
-    onSelect: handleSelectWorkOrder,
-    onCreate: () => setCreateWorkOrderModalOpen(true),
-    onOpenSettings: () => setPermissionModalOpen(true),
-    onOpenAdminPanel: isAdmin ? () => setAdminPanelModalOpen(true) : undefined,
-    onReorder: handleReorderWorkOrder,
-    onDelete: handleDeleteWorkOrder,
-    canDelete: canDeleteWorkOrder,
-    canCreate: canCreateWorkOrder,
-    canManageListActions,
+  const viewModel = buildWorkspaceViewModel({
+    drawerOpen,
+    basicInfoOpen,
+    materialOpen,
+    outsourcingOpen,
+    inventoryEditorOpen,
+    permissionModalOpen,
+    createWorkOrderModalOpen,
+    adminPanelModalOpen,
+    managerAssignModalOpen,
+    inventoryLogModalOpen,
+    orderRequestConfirmOpen,
+    users,
+    currentUserId,
+    permissionTargetUserId,
+    historyFilter,
+    notificationSettings,
     searchQuery,
-    onSearchQueryChange: setSearchQuery,
-  };
-
-  const detailProps = {
-    workOrder: selectedWorkOrder,
+    workOrders,
+    workflowStateById,
+    selectedId,
+    selectedWorkOrder,
     currentWorkflowState,
-    saveStatus,
-    lastSavedAt,
-    currentInventoryQuantity,
-    currentUserName: currentUser.name,
-    currentUserRole: currentRole,
-    canRenameTitle: isAdmin,
-    canEditInventory: canOpenInventoryEditor,
+    currentUser,
+    currentRole,
+    isAdmin,
+    canCreateWorkOrder,
+    canSeeAttachments,
+    canUploadOfficialAttachments,
+    isReviewRequestLocked,
     canChangeManager,
-    onOpenManagerAssignModal: handleOpenManagerAssignModal,
     canSeeProductionSections,
     canSeeCostSections,
+    canOpenInventoryEditor,
+    currentDisplayStage,
+    currentInventoryQuantity,
+    filteredHistoryLogs,
+    inventoryLogs,
+    officialAttachments,
+    selectedAttachment,
     fabricTotal,
     subsidiaryTotal,
     outsourcingTotal,
     totalCost,
     unitCost,
-    basicInfoOpen,
-    materialOpen,
-    outsourcingOpen,
-    onSave: () => handleSave(),
-    onOpenInventoryEditor: () => setInventoryEditorOpen(true),
-    isReviewRequestLocked,
-    onToggleBasicInfo: () => setBasicInfoOpen((prev) => !prev),
-    onToggleMaterial: () => setMaterialOpen((prev) => !prev),
-    onToggleOutsourcing: () => setOutsourcingOpen((prev) => !prev),
+    saveStatus,
+    lastSavedAt,
+    availableActions,
+    visibleStages,
+    pendingAttachmentDeleteId,
+    pendingAttachmentDelete,
+    canDeleteWorkOrder,
+    canDeleteAttachment,
+    onSetDrawerOpen: setDrawerOpen,
+    onSetBasicInfoOpen: setBasicInfoOpen,
     onSetMaterialOpen: setMaterialOpen,
     onSetOutsourcingOpen: setOutsourcingOpen,
-    visibleStages,
-    currentDisplayStage,
-    actions: availableActions,
-    onAction: handleWorkflowAction,
-    onUpdateWorkOrder: handleUpdateSelectedWorkOrder,
+    onSetInventoryEditorOpen: setInventoryEditorOpen,
+    onSetPermissionModalOpen: setPermissionModalOpen,
+    onSetCreateWorkOrderModalOpen: setCreateWorkOrderModalOpen,
+    onSetAdminPanelModalOpen: setAdminPanelModalOpen,
+    onSetInventoryLogModalOpen: setInventoryLogModalOpen,
+    onSetAttachmentPreviewId: setAttachmentPreviewId,
+    onSetPermissionTargetUserId: setPermissionTargetUserId,
+    onSetCurrentUserId: setCurrentUserId,
+    onSetSearchQuery: setSearchQuery,
+    onSetHistoryFilter: setHistoryFilter,
+    onToggleNotificationSetting: handleToggleNotificationSetting,
+    onSave: handleSave,
+    onSelectWorkOrder: handleSelectWorkOrder,
+    onCreateWorkOrder: handleCreateWorkOrder,
+    onDeleteWorkOrder: handleDeleteWorkOrder,
+    onReorderWorkOrder: handleReorderWorkOrder,
+    onWorkflowAction: handleWorkflowAction,
+    onUpdateSelectedWorkOrder: handleUpdateSelectedWorkOrder,
     onRenameWorkOrderTitle: handleRenameWorkOrderTitle,
+    onConfirmOrderRequest: handleConfirmOrderRequest,
+    onCloseOrderRequestConfirm: handleCloseOrderRequestConfirm,
+    onInventoryApply: handleInventoryApply,
     onCompleteInspection: handleCompleteInspection,
-  };
-
-  const sidePanelProps = {
-    canSeeAttachments,
-    canUploadOfficialAttachments,
-    attachments: officialAttachments,
+    onApplyRoles: handleApplyRoles,
+    onOpenManagerAssignModal: handleOpenManagerAssignModal,
+    onCloseManagerAssignModal: handleCloseManagerAssignModal,
+    onChangeManager: handleChangeManager,
     onOpenAttachmentPicker: handleOpenAttachmentPicker,
-    onPreviewAttachment: setAttachmentPreviewId,
-    onDeleteAttachment: handleRequestDeleteAttachment,
-    canDeleteAttachment,
-    currentRole,
-    workOrder: selectedWorkOrder,
-    currentUserName: currentUser.name,
+    onRequestDeleteAttachment: handleRequestDeleteAttachment,
+    onDeleteAttachment: handleDeleteAttachment,
+    onAttachmentDeleteConfirmClose: handleCloseDeleteAttachmentConfirm,
+    onAttachmentDeleteConfirm: handleConfirmDeleteAttachment,
     onCreateMemoThread: handleCreateMemoThread,
     onCreateMemoReply: handleCreateMemoReply,
-    canPromoteMemoAttachment: canUploadOfficialAttachments,
     onPromoteMemoAttachment: handlePromoteMemoAttachment,
-  };
-
-  const modalProps = {
-    orderRequestConfirm: {
-      open: orderRequestConfirmOpen,
-      workOrder: selectedWorkOrder,
-      onClose: handleCloseOrderRequestConfirm,
-      onConfirm: handleConfirmOrderRequest,
-    },
-    attachmentPreview: {
-      attachment: selectedAttachment,
-      canDelete: canDeleteAttachment(selectedAttachment),
-      onClose: () => setAttachmentPreviewId(null),
-      onDelete: () => selectedAttachment && handleRequestDeleteAttachment(selectedAttachment.id),
-    },
-    attachmentDeleteConfirm: {
-      open: pendingAttachmentDelete !== null,
-      attachment: pendingAttachmentDelete,
-      onClose: handleCloseDeleteAttachmentConfirm,
-      onConfirm: handleConfirmDeleteAttachment,
-    },
-    inventoryLog: {
-      open: inventoryLogModalOpen && isAdmin,
-      onClose: () => setInventoryLogModalOpen(false),
-      logs: filteredHistoryLogs,
-      role: currentRole,
-      filter: historyFilter,
-    },
-    managerAssign: {
-      open: managerAssignModalOpen,
-      onClose: handleCloseManagerAssignModal,
-      users,
-      currentManagerId: selectedWorkOrder.managerId ?? null,
-      currentManagerName: selectedWorkOrder.manager,
-      onSelectManager: handleChangeManager,
-    },
-    inventoryEditor: {
-      open: inventoryEditorOpen,
-      onClose: () => setInventoryEditorOpen(false),
-      currentStock: currentInventoryQuantity,
-      currentUserName: currentUser.name,
-      logs: inventoryLogs,
-      showRecentLogs: isAdmin,
-      onApply: handleInventoryApply,
-    },
-    createWorkOrder: {
-      open: createWorkOrderModalOpen,
-      onClose: () => setCreateWorkOrderModalOpen(false),
-      onCreate: handleCreateWorkOrder,
-    },
-    permission: {
-      open: permissionModalOpen,
-      onClose: () => setPermissionModalOpen(false),
-      users,
-      currentUserId,
-      selectedUserId: permissionTargetUserId,
-      onSelectedUserChange: setPermissionTargetUserId,
-      onApplyRoles: handleApplyRoles,
-      onCurrentUserChange: setCurrentUserId,
-    },
-    adminPanel: {
-      open: adminPanelModalOpen && isAdmin,
-      onClose: () => setAdminPanelModalOpen(false),
-      notificationSettings,
-      onToggleNotificationSetting: handleToggleNotificationSetting,
-      historyLogs: filteredHistoryLogs,
-      historyFilter,
-      onHistoryFilterChange: setHistoryFilter,
-    },
-  };
-
-  const mobileTopBarProps = {
-    version,
-    onOpen: () => setDrawerOpen(true),
-    onOpenSettings: () => setPermissionModalOpen(true),
-    onOpenAdminPanel: isAdmin ? () => setAdminPanelModalOpen(true) : undefined,
-  };
-
-  const mobileDrawerProps = {
-    ...sidebarListProps,
-    open: drawerOpen,
-    onClose: () => setDrawerOpen(false),
-    onReorder: (id: string) => {
-      handleReorderWorkOrder(id);
-      setDrawerOpen(false);
-    },
-  };
+  });
 
   return (
     <>
       <WorkOrderLayout
         appShellRef={appShellRef}
         selectedId={selectedId}
-        sidebarListProps={sidebarListProps}
-        detailProps={detailProps}
-        sidePanelProps={sidePanelProps}
-        mobileTopBarProps={mobileTopBarProps}
-        mobileDrawerProps={mobileDrawerProps}
+        sidebarListProps={viewModel.sidebarListProps}
+        detailProps={viewModel.detailProps}
+        sidePanelProps={viewModel.sidePanelProps}
+        mobileTopBarProps={viewModel.mobileTopBarProps}
+        mobileDrawerProps={viewModel.mobileDrawerProps}
       />
       <WorkOrderOverlay
         attachmentInputRef={attachmentInputRef}
         onAttachmentFilesChange={handleAttachmentFiles}
         toastMessage={toastMessage}
-        modalProps={modalProps}
+        modalProps={viewModel.modalProps}
       />
     </>
   );
