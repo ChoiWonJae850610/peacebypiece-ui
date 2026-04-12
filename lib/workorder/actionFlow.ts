@@ -30,8 +30,10 @@ import { DEFAULT_LOCALE, getI18n } from "@/lib/i18n";
 
 const defaultI18n = getI18n(DEFAULT_LOCALE);
 const defaultActionFlowText = defaultI18n.workorder.actionFlow;
+const defaultHistoryText = defaultI18n.workorder.history;
 
 export type ActionFlowText = typeof defaultActionFlowText;
+export type ActionFlowHistoryText = typeof defaultHistoryText;
 
 export type WorkOrderActionFlowResult = {
   nextWorkOrder: WorkOrder;
@@ -47,6 +49,8 @@ export function buildWorkflowActionResult(payload: {
   workOrder: WorkOrder;
   action: WorkflowAction;
   actorName: string;
+  historyText?: ActionFlowHistoryText;
+  workflowStateLabels?: Record<string, string>;
 }): WorkOrderActionFlowResult {
   const targetWorkOrder = shouldPruneDraftRowsForWorkflowState(payload.action.nextState)
     ? pruneDraftRows(payload.workOrder)
@@ -58,9 +62,10 @@ export function buildWorkflowActionResult(payload: {
       createStatusHistoryLog(
         payload.actorName,
         payload.workOrder.id,
-        payload.workOrder.workflowState,
-        payload.action.nextState,
+        payload.workflowStateLabels?.[payload.workOrder.workflowState] ?? payload.workOrder.workflowState,
+        payload.workflowStateLabels?.[payload.action.nextState] ?? payload.action.nextState,
         payload.action.label,
+        payload.historyText ?? defaultHistoryText,
       ),
     ],
     saveStatus: payload.action.nextState === "review_requested" ? "dirty" : undefined,
@@ -72,6 +77,7 @@ export function buildInventoryApplyResult(payload: {
   workOrder: WorkOrder;
   actorName: string;
   input: InventoryChangeInput;
+  historyText?: ActionFlowHistoryText;
 }): WorkOrderActionFlowResult | null {
   const changes = buildInventoryChanges(payload.input);
   if (changes.length === 0) return null;
@@ -82,7 +88,7 @@ export function buildInventoryApplyResult(payload: {
       createInventoryHistoryLog(payload.actorName, payload.workOrder.id, {
         changes,
         memo: payload.input.memo,
-      }),
+      }, payload.historyText ?? defaultHistoryText),
     ],
   };
 }
@@ -92,6 +98,7 @@ export function buildInspectionCompleteResult(payload: {
   actorName: string;
   input: InspectionCompleteInput;
   text?: ActionFlowText;
+  historyText?: ActionFlowHistoryText;
 }): WorkOrderActionFlowResult {
   const trimmedMemo = payload.input.memo.trim();
 
@@ -105,7 +112,7 @@ export function buildInspectionCompleteResult(payload: {
         inboundQuantity: payload.input.inboundQuantity,
         nextInventoryQuantity: payload.input.nextInventoryQuantity,
         memo: trimmedMemo,
-      }),
+      }, payload.historyText ?? defaultHistoryText),
     ],
     saveStatus: "dirty",
     toastMessage: (payload.text ?? defaultActionFlowText).inspectionCompletedToast,
@@ -127,6 +134,7 @@ export function buildOfficialAttachmentUploadResult(payload: {
   currentUser: UserProfile;
   files: File[];
   text?: ActionFlowText;
+  historyText?: ActionFlowHistoryText;
 }): WorkOrderActionFlowResult | null {
   const result = applyOfficialAttachmentFilesToWorkOrder({
     workOrder: payload.workOrder,
@@ -138,7 +146,7 @@ export function buildOfficialAttachmentUploadResult(payload: {
 
   return {
     nextWorkOrder: result.nextWorkOrder,
-    historyLogs: [createAttachmentUploadHistoryLog(payload.currentUser.name, payload.workOrder.id, result.attachments)],
+    historyLogs: [createAttachmentUploadHistoryLog(payload.currentUser.name, payload.workOrder.id, result.attachments, payload.historyText ?? defaultHistoryText)],
     saveStatus: "dirty",
     toastMessage: (payload.text ?? defaultActionFlowText).officialAttachmentUploadedToast,
   };
@@ -149,6 +157,7 @@ export function buildAttachmentDeleteResult(payload: {
   currentUser: UserProfile;
   attachmentId: string;
   attachmentPreviewId: string | null;
+  historyText?: ActionFlowHistoryText;
 }): WorkOrderActionFlowResult | null {
   const result = deleteAttachmentFromWorkOrder({
     workOrder: payload.workOrder,
@@ -159,7 +168,7 @@ export function buildAttachmentDeleteResult(payload: {
 
   return {
     nextWorkOrder: result.nextWorkOrder,
-    historyLogs: [createAttachmentDeleteHistoryLog(payload.currentUser.name, payload.workOrder.id, result.removedAttachment)],
+    historyLogs: [createAttachmentDeleteHistoryLog(payload.currentUser.name, payload.workOrder.id, result.removedAttachment, payload.historyText ?? defaultHistoryText)],
     saveStatus: "dirty",
     resetAttachmentPreview: result.resetAttachmentPreview,
   };
@@ -171,6 +180,7 @@ export function buildMemoThreadResult(payload: {
   content: string;
   attachmentPayload?: MemoAttachmentPayload;
   text?: ActionFlowText;
+  historyText?: ActionFlowHistoryText;
 }): (WorkOrderActionFlowResult & { trimmed: string }) | null {
   const result = appendMemoThreadToWorkOrder(payload);
   if (!result) return null;
@@ -182,7 +192,7 @@ export function buildMemoThreadResult(payload: {
         action: "thread",
         content: result.trimmed,
         attachmentNames: result.attachmentNames,
-      }),
+      }, payload.historyText ?? defaultHistoryText),
     ],
     saveStatus: "dirty",
     toastMessage:
@@ -200,6 +210,7 @@ export function buildMemoReplyResult(payload: {
   content: string;
   attachmentPayload?: MemoAttachmentPayload;
   text?: ActionFlowText;
+  historyText?: ActionFlowHistoryText;
 }): (WorkOrderActionFlowResult & { trimmed: string }) | null {
   const result = appendMemoReplyToWorkOrder(payload);
   if (!result) return null;
@@ -211,7 +222,7 @@ export function buildMemoReplyResult(payload: {
         action: "reply",
         content: result.trimmed,
         attachmentNames: result.attachmentNames,
-      }),
+      }, payload.historyText ?? defaultHistoryText),
     ],
     saveStatus: "dirty",
     toastMessage:
@@ -227,6 +238,7 @@ export function buildPromoteMemoAttachmentResult(payload: {
   attachmentId: string;
   currentUser: UserProfile;
   text?: ActionFlowText;
+  historyText?: ActionFlowHistoryText;
 }): WorkOrderActionFlowResult | null {
   const targetAttachment = payload.workOrder.attachments.find((item) => item.id === payload.attachmentId);
   if (!targetAttachment || (targetAttachment.scope ?? "official") === "official") return null;
@@ -238,7 +250,7 @@ export function buildPromoteMemoAttachmentResult(payload: {
 
   return {
     nextWorkOrder,
-    historyLogs: [createAttachmentPromoteHistoryLog(payload.currentUser.name, payload.workOrder.id, targetAttachment)],
+    historyLogs: [createAttachmentPromoteHistoryLog(payload.currentUser.name, payload.workOrder.id, targetAttachment, payload.historyText ?? defaultHistoryText)],
     saveStatus: "dirty",
     toastMessage: (payload.text ?? defaultActionFlowText).memoAttachmentPromotedToast,
   };
@@ -250,6 +262,7 @@ export function buildManagerChangeResult(payload: {
   managerId: string;
   managerName: string;
   text?: ActionFlowText;
+  historyText?: ActionFlowHistoryText;
 }): WorkOrderActionFlowResult | null {
   const previousManagerName = payload.workOrder.manager || "-";
   const previousManagerId = payload.workOrder.managerId ?? null;
@@ -261,7 +274,7 @@ export function buildManagerChangeResult(payload: {
       managerName: payload.managerName,
     }),
     historyLogs: [
-      createManagerChangeHistoryLog(payload.actorName, payload.workOrder.id, previousManagerName, payload.managerName),
+      createManagerChangeHistoryLog(payload.actorName, payload.workOrder.id, previousManagerName, payload.managerName, payload.historyText ?? defaultHistoryText),
     ],
     saveStatus: "dirty",
     toastMessage: (payload.text ?? defaultActionFlowText).managerChangedToast,

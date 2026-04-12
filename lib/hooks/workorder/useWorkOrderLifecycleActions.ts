@@ -55,6 +55,7 @@ export function useWorkOrderLifecycleActions({
 }: UseWorkOrderLifecycleActionsParams) {
   const { i18n } = useI18n();
   const lifecycleText = i18n.workorder.lifecycle;
+  const historyText = i18n.workorder.history;
   const handleSave = useCallback(
     (workOrder: WorkOrder) => {
       setSaveStatus("saving");
@@ -63,15 +64,15 @@ export function useWorkOrderLifecycleActions({
       setWorkOrders((prev) => prev.map((item) => (item.id === workOrder.id ? { ...item, lastSavedAt: label } : item)));
       setHistoryLogs((prev) => [
         createUpdateHistoryLog(currentUser.name, workOrder.id, [
-          { label: lifecycleText.saveHistoryLabel, value: lifecycleText.saveHistoryTimeFormat.replace("{time}", label) },
+          { label: lifecycleText.saveHistoryLabel, value: historyText.detailLabels.savedAtFormat.replace("{time}", label) },
           { label: lifecycleText.workOrderLabel, value: workOrder.title },
-        ]),
+        ], historyText),
         ...prev,
       ]);
       setSaveStatus("saved");
       setToastMessage(lifecycleText.saveCompletedToast);
     },
-    [currentUser.name, lifecycleText, setHistoryLogs, setLastSavedAt, setSaveStatus, setToastMessage, setWorkOrders],
+    [currentUser.name, historyText, lifecycleText, setHistoryLogs, setLastSavedAt, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   const handleCreateWorkOrder = useCallback(
@@ -92,12 +93,13 @@ export function useWorkOrderLifecycleActions({
       setWorkOrders((prev) => [newWorkOrder, ...prev]);
       setSelectedId(newWorkOrder.id);
       setLastSavedAt(newWorkOrder.lastSavedAt);
-      setHistoryLogs((historyPrev) => [createCreationHistoryLog(currentUser.name, newWorkOrder.id), ...historyPrev]);
+      setHistoryLogs((historyPrev) => [createCreationHistoryLog(currentUser.name, newWorkOrder.id, historyText), ...historyPrev]);
       setSaveStatus("dirty");
       setCreateWorkOrderModalOpen(false);
     },
     [
       canCreateWorkOrder,
+      historyText,
       currentUser.id,
       currentUser.name,
       currentUser.role,
@@ -133,7 +135,7 @@ export function useWorkOrderLifecycleActions({
         createReorderHistoryLog(currentUser.name, nextWorkOrder.id, {
           sourceTitle: getWorkOrderDisplayTitle(sourceWorkOrder),
           nextTitle: getWorkOrderDisplayTitle(nextWorkOrder),
-        }),
+        }, historyText),
         ...prev,
       ]);
       setToastMessage(lifecycleText.reorderCreatedToastFormat.replace("{title}", getWorkOrderDisplayTitle(nextWorkOrder)));
@@ -143,6 +145,7 @@ export function useWorkOrderLifecycleActions({
       currentUser.id,
       currentUser.name,
       currentUser.role,
+      historyText,
       lifecycleText,
       setHistoryLogs,
       setLastSavedAt,
@@ -195,7 +198,7 @@ export function useWorkOrderLifecycleActions({
             from: renameResult.previousBaseTitle ?? previousBaseTitle,
             to: trimmedTitle,
             appliedToGroup: renameResult.affectedWorkOrderIds.length > 1,
-          }),
+          }, historyText),
         ),
         ...prev,
       ]);
@@ -206,7 +209,7 @@ export function useWorkOrderLifecycleActions({
           : lifecycleText.renameAppliedToast,
       );
     },
-    [currentUser.name, lifecycleText, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders],
+    [currentUser.name, historyText, lifecycleText, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   return {

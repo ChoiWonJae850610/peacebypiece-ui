@@ -19,6 +19,7 @@ export function useWorkOrderAdminActions({
 }: AdminActionBaseParams) {
   const { i18n } = useI18n();
   const actionFlowText = i18n.workorder.actionFlow;
+  const historyText = i18n.workorder.history;
   const handleApplyRoles = useCallback(
     (userId: string, roles: RoleType[]) => {
       const nextRoleState = buildUserRoleState(roles);
@@ -51,6 +52,7 @@ export function useWorkOrderAdminActions({
         managerId: nextManager.id,
         managerName: nextManager.name,
         text: actionFlowText,
+        historyText,
       });
       if (!result) {
         setManagerAssignModalOpen(false);
@@ -69,7 +71,7 @@ export function useWorkOrderAdminActions({
       }
       setManagerAssignModalOpen(false);
     },
-    [actionFlowText, currentUser.name, setHistoryLogs, setManagerAssignModalOpen, setSaveStatus, setToastMessage, setWorkOrders],
+    [actionFlowText, currentUser.name, historyText, setHistoryLogs, setManagerAssignModalOpen, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   return {

@@ -47,6 +47,8 @@ export function useWorkOrderWorkflowActions({
 }: UseWorkOrderWorkflowActionsParams) {
   const { i18n } = useI18n();
   const actionFlowText = i18n.workorder.actionFlow;
+  const historyText = i18n.workorder.history;
+  const workflowStateLabels = i18n.workorder.workflowStates as Record<string, string>;
   const workOrdersRef = useRef(workOrders);
 
   useEffect(() => {
@@ -54,7 +56,7 @@ export function useWorkOrderWorkflowActions({
   }, [workOrders]);
   const applyWorkflowAction = useCallback(
     (workOrder: WorkOrder, action: WorkflowAction) => {
-      const result = buildWorkflowActionResult({ workOrder, action, actorName: currentUser.name });
+      const result = buildWorkflowActionResult({ workOrder, action, actorName: currentUser.name, historyText, workflowStateLabels });
 
       setWorkOrders((prev) => prev.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item)));
       if (result.historyLogs?.length) {
@@ -67,7 +69,7 @@ export function useWorkOrderWorkflowActions({
         setInventoryEditorOpen(true);
       }
     },
-    [currentUser.name, setHistoryLogs, setInventoryEditorOpen, setSaveStatus, setWorkOrders],
+    [currentUser.name, historyText, setHistoryLogs, setInventoryEditorOpen, setSaveStatus, setWorkOrders, workflowStateLabels],
   );
 
   const handleWorkflowAction = useCallback(
@@ -106,6 +108,7 @@ export function useWorkOrderWorkflowActions({
         workOrder: currentWorkOrder,
         actorName: currentUser.name,
         input: { inboundQuantity, adjustmentQuantity, deductionQuantity, memo },
+        historyText,
       });
       if (!result) return;
 
@@ -117,7 +120,7 @@ export function useWorkOrderWorkflowActions({
         setSaveStatus(result.saveStatus);
       }
     },
-    [currentUser.name, setHistoryLogs, setSaveStatus, setWorkOrders],
+    [currentUser.name, historyText, setHistoryLogs, setSaveStatus, setWorkOrders],
   );
 
   const handleCompleteInspection = useCallback(
@@ -129,6 +132,7 @@ export function useWorkOrderWorkflowActions({
         actorName: currentUser.name,
         input: { orderEntryId, inboundQuantity, nextInventoryQuantity, memo },
         text: actionFlowText,
+        historyText,
       });
 
       setWorkOrders((prev) => prev.map((item) => (item.id === workOrderId ? result.nextWorkOrder : item)));
@@ -142,7 +146,7 @@ export function useWorkOrderWorkflowActions({
         setToastMessage(result.toastMessage);
       }
     },
-    [actionFlowText, currentUser.name, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders],
+    [actionFlowText, currentUser.name, historyText, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   const handleUpdateSelectedWorkOrder = useCallback(

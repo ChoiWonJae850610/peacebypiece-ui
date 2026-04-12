@@ -39,6 +39,7 @@ export function useWorkOrderAttachments({
 }) {
   const { i18n } = useI18n();
   const actionFlowText = i18n.workorder.actionFlow;
+  const historyText = i18n.workorder.history;
 
   const handleOpenAttachmentPicker = () => {
     openOfficialAttachmentPicker(attachmentInputRef, canUploadOfficialAttachments);
@@ -56,6 +57,7 @@ export function useWorkOrderAttachments({
       currentUser,
       files,
       text: actionFlowText,
+      historyText,
     });
     event.target.value = "";
     if (!result) return;
@@ -83,6 +85,7 @@ export function useWorkOrderAttachments({
       currentUser,
       attachmentId,
       attachmentPreviewId,
+      historyText,
     });
     if (!result) return;
 
@@ -105,6 +108,7 @@ export function useWorkOrderAttachments({
       content,
       attachmentPayload: payload,
       text: actionFlowText,
+      historyText,
     });
     if (!result) return;
 
@@ -128,6 +132,7 @@ export function useWorkOrderAttachments({
       content,
       attachmentPayload: payload,
       text: actionFlowText,
+      historyText,
     });
     if (!result) return;
 
@@ -151,6 +156,7 @@ export function useWorkOrderAttachments({
       attachmentId,
       currentUser,
       text: actionFlowText,
+      historyText,
     });
     if (!result) return;
 
