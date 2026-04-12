@@ -1,5 +1,12 @@
 import { isEmptySelectionValue } from "@/lib/constants/workorderDomain";
+import type { WorkflowState } from "@/types/workflow";
 import type { WorkOrder } from "@/types/workorder";
+
+export const WORKFLOW_ROW_PRUNE_STATES: readonly WorkflowState[] = ["review_requested", "in_production"];
+
+export function shouldPruneDraftRowsForWorkflowState(nextState: WorkflowState) {
+  return WORKFLOW_ROW_PRUNE_STATES.includes(nextState);
+}
 
 export function isUnselectedValue(value: string | undefined | null) {
   const normalized = String(value ?? "").trim();

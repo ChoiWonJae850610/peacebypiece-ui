@@ -20,7 +20,8 @@ import {
   createMemoHistoryLog,
   createStatusHistoryLog,
 } from "@/lib/workorder/history/builders";
-import { pruneDraftRows } from "@/lib/workorder/draftRows";
+import { pruneDraftRows, shouldPruneDraftRowsForWorkflowState } from "@/lib/workorder/draftRows";
+import { isSameComparableText } from "@/lib/utils/compare";
 import { appendMemoReplyToWorkOrder, appendMemoThreadToWorkOrder } from "@/lib/workorder/memo/memoMutations";
 import type { Attachment, HistoryLog, MemoAttachmentPayload, UserProfile, WorkOrder, WorkflowAction } from "@/types/workorder";
 import type { InventoryChangeInput, InspectionCompleteInput } from "@/lib/hooks/workorder/useWorkOrderActionTypes";
@@ -35,15 +36,13 @@ export type WorkOrderActionFlowResult = {
   resetAttachmentPreview?: boolean;
 };
 
-const shouldPruneRowsBeforeWorkflowTransition = (action: WorkflowAction) =>
-  action.nextState === "review_requested" || action.nextState === "in_production";
 
 export function buildWorkflowActionResult(payload: {
   workOrder: WorkOrder;
   action: WorkflowAction;
   actorName: string;
 }): WorkOrderActionFlowResult {
-  const targetWorkOrder = shouldPruneRowsBeforeWorkflowTransition(payload.action)
+  const targetWorkOrder = shouldPruneDraftRowsForWorkflowState(payload.action.nextState)
     ? pruneDraftRows(payload.workOrder)
     : payload.workOrder;
 
@@ -238,7 +237,7 @@ export function buildManagerChangeResult(payload: {
 }): WorkOrderActionFlowResult | null {
   const previousManagerName = payload.workOrder.manager || "-";
   const previousManagerId = payload.workOrder.managerId ?? null;
-  if (previousManagerId === payload.managerId || previousManagerName === payload.managerName) return null;
+  if (previousManagerId === payload.managerId || isSameComparableText(previousManagerName, payload.managerName)) return null;
 
   return {
     nextWorkOrder: updateManagerForWorkOrder(payload.workOrder, {

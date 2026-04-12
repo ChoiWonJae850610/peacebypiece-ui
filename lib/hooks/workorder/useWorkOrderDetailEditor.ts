@@ -10,10 +10,13 @@ import {
 import { MATERIAL_KIND } from "@/lib/constants/workorderDomain";
 import {
   DEFAULT_FACTORY_OPTION,
+  DEFAULT_MATERIAL_STATUS,
   DEFAULT_MATERIAL_TYPE,
   DEFAULT_MATERIAL_UNIT,
+  DEFAULT_NEW_MATERIAL_NAME,
   DEFAULT_ORDER_TYPE,
   DEFAULT_OUTSOURCING_PROCESS,
+  DEFAULT_OUTSOURCING_STATUS,
   DEFAULT_OUTSOURCING_UNIT,
   FACTORY_OPTIONS,
   PARTNER_OPTIONS,
@@ -285,13 +288,13 @@ export function useWorkOrderDetailEditor({
       recalculateMaterial({
         id: createId("material"),
         type: DEFAULT_MATERIAL_TYPE,
-        name: "새 자재",
+        name: DEFAULT_NEW_MATERIAL_NAME,
         vendor: "",
         quantity: 0,
         unit: DEFAULT_MATERIAL_UNIT,
         unitCost: 0,
         totalCost: 0,
-        status: "준비",
+        status: DEFAULT_MATERIAL_STATUS,
       }),
     ];
     setMaterialItems(nextItems);
@@ -318,7 +321,7 @@ export function useWorkOrderDetailEditor({
         unitType: DEFAULT_OUTSOURCING_UNIT,
         unitCost: 0,
         totalCost: 0,
-        status: "대기",
+        status: DEFAULT_OUTSOURCING_STATUS,
       }),
     ];
     setOutsourcingItems(nextItems);

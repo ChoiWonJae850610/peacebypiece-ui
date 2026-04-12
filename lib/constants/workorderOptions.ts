@@ -26,3 +26,7 @@ export const DEFAULT_BASIC_YEAR = String(currentYear) as string;
 export const DEFAULT_PARTNER_OPTION = PARTNER_OPTIONS[0] as string;
 export const DEFAULT_FACTORY_OPTION = FACTORY_OPTIONS[0] as string;
 export const DEFAULT_REGISTRY_TYPE = REGISTRY_TYPE_OPTIONS[0] as string;
+
+export const DEFAULT_NEW_MATERIAL_NAME = "새 자재" as const;
+export const DEFAULT_MATERIAL_STATUS = "준비" as const;
+export const DEFAULT_OUTSOURCING_STATUS = "대기" as const;

@@ -23,3 +23,23 @@ export const INSPECTION_STATUS_TONE_CLASS: Record<OrderInspectionStatus, string>
   inspection_in_progress: "bg-emerald-100 text-emerald-700",
   inspection_completed: "bg-stone-900 text-white",
 };
+
+export const SELECTABLE_CARD_CLASS = {
+  active: "border-stone-900 bg-stone-900 text-white",
+  inactive: "border-stone-200 bg-white text-stone-900 hover:border-stone-300 hover:bg-stone-50",
+} as const;
+
+export const SELECTABLE_CARD_SUBTEXT_CLASS = {
+  active: "text-stone-300",
+  inactive: "text-stone-500",
+} as const;
+
+export const BOOLEAN_BADGE_CLASS = {
+  on: "bg-emerald-100 text-emerald-700",
+  off: "bg-stone-200 text-stone-600",
+} as const;
+
+export const HISTORY_FILTER_BUTTON_CLASS = {
+  active: "bg-stone-900 text-white hover:bg-stone-800 active:bg-black",
+  inactive: "border border-stone-300 bg-white text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200",
+} as const;

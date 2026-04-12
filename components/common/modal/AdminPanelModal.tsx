@@ -5,7 +5,7 @@ import BaseModal from "@/components/common/modal/BaseModal";
 import ModalBody from "@/components/common/modal/ModalBody";
 import ModalHeader from "@/components/common/modal/ModalHeader";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
-import { HISTORY_TONE_CLASS } from "@/lib/constants/display";
+import { BOOLEAN_BADGE_CLASS, HISTORY_FILTER_BUTTON_CLASS, HISTORY_TONE_CLASS } from "@/lib/constants/display";
 import { useI18n } from "@/lib/i18n";
 import { HISTORY_FILTER_OPTIONS, NOTIFICATION_SETTING_META } from "@/lib/constants/workflow";
 import { MODAL_EXCEPTION_PRESETS } from "@/components/common/modal/modalPresets";
@@ -115,7 +115,7 @@ export default function AdminPanelModal({
                     <div className="text-sm font-medium text-stone-900">{item.label}</div>
                     <div className="mt-1 break-keep text-xs leading-5 text-stone-500">{item.description}</div>
                   </div>
-                  <span className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-medium ${checked ? "bg-emerald-100 text-emerald-700" : "bg-stone-200 text-stone-600"}`}>{checked ? ui.modal.adminPanel.toggleOn : ui.modal.adminPanel.toggleOff}</span>
+                  <span className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-medium ${checked ? BOOLEAN_BADGE_CLASS.on : BOOLEAN_BADGE_CLASS.off}`}>{checked ? ui.modal.adminPanel.toggleOn : ui.modal.adminPanel.toggleOff}</span>
                 </label>
               );
             })}
@@ -132,7 +132,7 @@ export default function AdminPanelModal({
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {HISTORY_FILTER_OPTIONS.map(([value, label]) => (
-              <button key={value} type="button" onClick={() => onHistoryFilterChange(value)} className={`pbp-touch-target pbp-interactive-button rounded-full px-3 py-1 text-xs font-medium ${historyFilter === value ? "bg-stone-900 text-white hover:bg-stone-800 active:bg-black" : "border border-stone-300 bg-white text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200"}`}>{label}</button>
+              <button key={value} type="button" onClick={() => onHistoryFilterChange(value)} className={`pbp-touch-target pbp-interactive-button rounded-full px-3 py-1 text-xs font-medium ${historyFilter === value ? HISTORY_FILTER_BUTTON_CLASS.active : HISTORY_FILTER_BUTTON_CLASS.inactive}`}>{label}</button>
             ))}
           </div>
           <div className="mt-3 space-y-2">

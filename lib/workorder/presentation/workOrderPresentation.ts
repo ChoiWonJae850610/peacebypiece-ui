@@ -1,4 +1,5 @@
 import { EMPTY_DISPLAY, INVENTORY_STATUS_LABEL_PREFIX } from "@/lib/constants/display";
+import { hasDisplayText, joinDisplayParts } from "@/lib/utils/display";
 import { getI18n } from "@/lib/i18n";
 import type { WorkOrderListItem } from "@/types/workorder";
 import { WORKFLOW_STATE_BADGE_TONE } from "@/lib/constants/workorderStates";
@@ -7,11 +8,11 @@ import type { WorkflowState } from "@/types/workflow";
 const i18n = getI18n();
 
 export function getCategoryPath(workOrder: Pick<WorkOrderListItem, "category1" | "category2" | "category3">) {
-  return [workOrder.category1, workOrder.category2, workOrder.category3].filter(Boolean).join(" > ") || EMPTY_DISPLAY;
+  return joinDisplayParts([workOrder.category1, workOrder.category2, workOrder.category3]);
 }
 
 export function getInventoryLabel(status: string | null | undefined) {
-  return `${INVENTORY_STATUS_LABEL_PREFIX}${status && status.trim() ? status : EMPTY_DISPLAY}`;
+  return `${INVENTORY_STATUS_LABEL_PREFIX}${hasDisplayText(status) ? String(status).trim() : EMPTY_DISPLAY}`;
 }
 
 export function getWorkOrderState(workflowStateById: Record<string, string>, workOrderId: string): WorkflowState {

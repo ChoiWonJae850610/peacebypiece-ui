@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { DEFAULT_ROLE, ROLE_DISPLAY_GUIDE, formatRoles, normalizeRoles } from "@/lib/constants/roles";
 import { useI18n } from "@/lib/i18n";
+import { SELECTABLE_CARD_CLASS, SELECTABLE_CARD_SUBTEXT_CLASS } from "@/lib/constants/display";
 import type { RoleType, UserProfile } from "@/types/workorder";
 
 type NormalizedRoleOption = {
@@ -117,10 +118,10 @@ export default function PermissionModal({
                 key={`current-${user.id}`}
                 type="button"
                 onClick={() => onCurrentUserChange(user.id)}
-                className={`rounded-2xl border px-4 py-3 text-left ${active ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white text-stone-900"}`}
+                className={`rounded-2xl border px-4 py-3 text-left ${active ? SELECTABLE_CARD_CLASS.active : SELECTABLE_CARD_CLASS.inactive}`}
               >
                 <div className="text-sm font-semibold">{user.name}</div>
-                <div className={`mt-1 text-[11px] ${active ? "text-stone-300" : "text-stone-500"}`}>{formatRoles(user.roles, user.role)}</div>
+                <div className={`mt-1 text-[11px] ${active ? SELECTABLE_CARD_SUBTEXT_CLASS.active : SELECTABLE_CARD_SUBTEXT_CLASS.inactive}`}>{formatRoles(user.roles, user.role)}</div>
                 {active ? <div className="mt-2 text-[11px] text-stone-200">{copy.currentUserBadge}</div> : null}
               </button>
             );
@@ -138,10 +139,10 @@ export default function PermissionModal({
                 key={user.id}
                 type="button"
                 onClick={() => onSelectedUserChange(user.id)}
-                className={`block w-full rounded-2xl border p-4 text-left ${active ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white"}`}
+                className={`block w-full rounded-2xl border p-4 text-left ${active ? SELECTABLE_CARD_CLASS.active : SELECTABLE_CARD_CLASS.inactive}`}
               >
                 <div className="text-sm font-semibold">{user.name}</div>
-                <div className={`mt-1 text-xs ${active ? "text-stone-300" : "text-stone-500"}`}>{formatRoles(user.roles, user.role)}</div>
+                <div className={`mt-1 text-xs ${active ? SELECTABLE_CARD_SUBTEXT_CLASS.active : SELECTABLE_CARD_SUBTEXT_CLASS.inactive}`}>{formatRoles(user.roles, user.role)}</div>
                 {isCurrent ? (
                   <div className={`mt-2 text-[11px] ${active ? "text-stone-200" : "text-cyan-700"}`}>
                     {copy.selectedUserBadge}
@@ -164,11 +165,11 @@ export default function PermissionModal({
               return (
                 <label
                   key={item.role}
-                  className={`flex w-full cursor-pointer items-start justify-between gap-4 rounded-2xl border px-4 py-4 text-left ${checked ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white text-stone-900"}`}
+                  className={`flex w-full cursor-pointer items-start justify-between gap-4 rounded-2xl border px-4 py-4 text-left ${checked ? SELECTABLE_CARD_CLASS.active : SELECTABLE_CARD_CLASS.inactive}`}
                 >
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-semibold">{item.title}</div>
-                    <div className={`mt-1 text-xs ${checked ? "text-stone-300" : "text-stone-500"}`}>{item.description}</div>
+                    <div className={`mt-1 text-xs ${checked ? SELECTABLE_CARD_SUBTEXT_CLASS.active : SELECTABLE_CARD_SUBTEXT_CLASS.inactive}`}>{item.description}</div>
                   </div>
                   <input
                     type="checkbox"
