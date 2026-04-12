@@ -8,8 +8,14 @@ import {
   normalizeRoles,
 } from "@/lib/constants/roles";
 import { getDisplayStageFromWorkflowState, VISIBLE_STAGES } from "@/lib/constants/workflow";
-import { isOfficialAttachment } from "@/lib/permissions/attachments";
-import { calculateWorkOrderCosts, createWorkOrderListItem } from "@/lib/workorder/selectors";
+import {
+  calculateWorkOrderCosts,
+  createWorkOrderListItem,
+  deriveWorkflowStateById,
+  filterWorkOrderList,
+  getAttachmentById,
+  getOfficialAttachments,
+} from "@/lib/workorder/selectors";
 import {
   canEditInventoryForWorkflow,
   canManageWorkOrderManager,
@@ -50,13 +56,7 @@ export function useWorkOrderDerived({
     [users, permissionTargetUserId],
   );
 
-  const workflowStateById = useMemo(
-    () =>
-      Object.fromEntries(
-        workOrders.map((item) => [item.id, deriveWorkflowStateFromOrderEntries(item.workflowState, item.orderEntries)]),
-      ),
-    [workOrders],
-  );
+  const workflowStateById = useMemo(() => deriveWorkflowStateById(workOrders), [workOrders]);
 
   const currentWorkflowState = useMemo(
     () => deriveWorkflowStateFromOrderEntries(selectedWorkOrder.workflowState, selectedWorkOrder.orderEntries),
@@ -71,21 +71,10 @@ export function useWorkOrderDerived({
 
   const workOrderList: WorkOrderListItem[] = useMemo(() => workOrders.map(createWorkOrderListItem), [workOrders]);
 
-  const filteredWorkOrderList = useMemo(() => {
-    const normalized = searchQuery.trim().toLowerCase();
-    if (!normalized) return workOrderList;
-    return workOrderList.filter((item) => {
-      const fields = [
-        item.title,
-        item.category1,
-        item.category2,
-        item.category3,
-        item.vendor,
-        workflowStateById[item.id] ?? "",
-      ];
-      return fields.some((field) => String(field ?? "").toLowerCase().includes(normalized));
-    });
-  }, [searchQuery, workOrderList, workflowStateById]);
+  const filteredWorkOrderList = useMemo(
+    () => filterWorkOrderList(workOrderList, workflowStateById, searchQuery),
+    [searchQuery, workOrderList, workflowStateById],
+  );
 
   const canSeeProductionSections = currentUser.permissions.canSeeProductionSections;
   const canSeeCostSections = currentUser.permissions.canSeeCostSections;
@@ -96,13 +85,13 @@ export function useWorkOrderDerived({
 
   const currentInventoryQuantity = selectedWorkOrder.inventoryQuantity;
   const officialAttachments = useMemo(
-    () => (selectedWorkOrder.attachments ?? []).filter((item) => isOfficialAttachment(item)),
+    () => getOfficialAttachments(selectedWorkOrder.attachments ?? []),
     [selectedWorkOrder.attachments],
   );
 
   const selectedAttachment = useMemo(
-    () => selectedWorkOrder.attachments.find((item) => item.id === attachmentPreviewId) ?? null,
-    [selectedWorkOrder, attachmentPreviewId],
+    () => getAttachmentById(selectedWorkOrder.attachments ?? [], attachmentPreviewId),
+    [selectedWorkOrder.attachments, attachmentPreviewId],
   );
 
   const { materials, outsourcing, fabricTotal, subsidiaryTotal, outsourcingTotal, totalCost, unitCost } = useMemo(

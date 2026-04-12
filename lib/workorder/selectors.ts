@@ -1,11 +1,11 @@
 import { MATERIAL_KIND } from "@/lib/constants/workorderDomain";
 import { isOfficialAttachment } from "@/lib/permissions/attachments";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
-import type { WorkOrder, WorkOrderListItem } from "@/types/workorder";
-
+import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
+import type { Attachment, WorkOrder, WorkOrderListItem } from "@/types/workorder";
 
 export function createWorkOrderListItem(workOrder: WorkOrder): WorkOrderListItem {
-  const officialAttachments = (workOrder.attachments ?? []).filter(isOfficialAttachment);
+  const officialAttachments = getOfficialAttachments(workOrder.attachments ?? []);
 
   return {
     id: workOrder.id,
@@ -19,6 +19,44 @@ export function createWorkOrderListItem(workOrder: WorkOrder): WorkOrderListItem
     attachments: officialAttachments,
     filesCount: officialAttachments.length,
   };
+}
+
+export function deriveWorkflowStateById(workOrders: WorkOrder[]) {
+  return Object.fromEntries(
+    workOrders.map((item) => [item.id, deriveWorkflowStateFromOrderEntries(item.workflowState, item.orderEntries)]),
+  );
+}
+
+export function filterWorkOrderList(workOrders: WorkOrderListItem[], workflowStateById: Record<string, string>, searchQuery: string) {
+  const normalized = searchQuery.trim().toLowerCase();
+  if (!normalized) {
+    return workOrders;
+  }
+
+  return workOrders.filter((item) => {
+    const fields = [
+      item.title,
+      item.category1,
+      item.category2,
+      item.category3,
+      item.vendor,
+      workflowStateById[item.id] ?? "",
+    ];
+
+    return fields.some((field) => String(field ?? "").toLowerCase().includes(normalized));
+  });
+}
+
+export function getOfficialAttachments(attachments: Attachment[]) {
+  return attachments.filter(isOfficialAttachment);
+}
+
+export function getAttachmentById(attachments: Attachment[], attachmentId: string | null) {
+  if (!attachmentId) {
+    return null;
+  }
+
+  return attachments.find((item) => item.id === attachmentId) ?? null;
 }
 
 export function calculateWorkOrderCosts(workOrder: WorkOrder) {
