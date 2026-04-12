@@ -1,5 +1,6 @@
 import type { WorkorderRepository } from "@/lib/repositories/workorderRepository";
 import {
+  createSeededWorkorderState,
   getDefaultCurrentUserId,
   getDefaultPermissionTargetId,
   getDefaultSelectedId,
@@ -10,6 +11,7 @@ import {
 } from "@/lib/data/workorderMockData";
 
 const mockWorkorderRepository: WorkorderRepository = {
+  createInitialState: createSeededWorkorderState,
   getInitialUsers,
   getInitialWorkOrders,
   getInitialHistoryLogs,

@@ -3,8 +3,8 @@ import type { PersistedWorkOrderState } from "@/lib/data/mock/types";
 import { ROLE, getPermissionSummary, hasRole } from "@/lib/constants/roles";
 import { LEGACY_STORAGE_KEYS, STORAGE_KEY } from "@/lib/constants/app";
 import { INVENTORY_CHANGE_TYPE } from "@/lib/constants/workorderDomain";
-import { DEFAULT_CURRENT_USER_ID as DEFAULT_CURRENT_USER_ID_VALUE, DEFAULT_PERMISSION_TARGET_ID as DEFAULT_PERMISSION_TARGET_ID_VALUE, MOCK_USERS } from "@/lib/data/mock/users";
-import { DEFAULT_SELECTED_WORK_ORDER_ID, MOCK_HISTORY_LOGS, MOCK_WORK_ORDERS } from "@/lib/data/mock/workorders";
+import { DEFAULT_CURRENT_USER_ID as DEFAULT_CURRENT_USER_ID_VALUE, DEFAULT_PERMISSION_TARGET_ID as DEFAULT_PERMISSION_TARGET_ID_VALUE, WORKORDER_SEED_USERS } from "@/lib/data/mock/users";
+import { DEFAULT_SELECTED_WORK_ORDER_ID, WORKORDER_SEED_HISTORY_LOGS, WORKORDER_SEED_WORK_ORDERS } from "@/lib/data/mock/workorders";
 import { nowLabel } from "@/lib/workorder/history/builders";
 
 export function getCurrentTimeLabel() {
@@ -22,7 +22,7 @@ export function loadPersistedPayload() {
   return null;
 }
 
-export const INITIAL_HISTORY_LOGS: Record<string, HistoryLog[]> = MOCK_HISTORY_LOGS.reduce<Record<string, HistoryLog[]>>((acc, log) => {
+export const INITIAL_HISTORY_LOGS: Record<string, HistoryLog[]> = WORKORDER_SEED_HISTORY_LOGS.reduce<Record<string, HistoryLog[]>>((acc, log) => {
   if (!acc[log.workOrderId]) acc[log.workOrderId] = [];
   acc[log.workOrderId].push(log);
   return acc;
@@ -116,21 +116,34 @@ export function createInventoryQuantityMap(orders: WorkOrder[]): Record<string, 
   return Object.fromEntries(orders.map((item) => [item.id, item.inventoryQuantity])) as Record<string, number>;
 }
 
-function cloneMockValue<T>(value: T): T {
+function cloneSeedValue<T>(value: T): T {
   if (typeof structuredClone === "function") return structuredClone(value);
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
-export function getInitialUsers(): UserProfile[] {
-  return cloneMockValue(MOCK_USERS);
+export function getSeedUsers(): UserProfile[] {
+  return cloneSeedValue(WORKORDER_SEED_USERS);
 }
 
+export function getSeedWorkOrders(): WorkOrder[] {
+  return cloneSeedValue(WORKORDER_SEED_WORK_ORDERS);
+}
+
+export function getSeedHistoryLogs(): HistoryLog[] {
+  return cloneSeedValue(WORKORDER_SEED_HISTORY_LOGS);
+}
+
+export function getInitialUsers(): UserProfile[] {
+  return getSeedUsers();
+}
+
+
 export function getInitialWorkOrders(): WorkOrder[] {
-  return cloneMockValue(MOCK_WORK_ORDERS);
+  return getSeedWorkOrders();
 }
 
 export function getInitialHistoryLogs(): HistoryLog[] {
-  return cloneMockValue(MOCK_HISTORY_LOGS);
+  return getSeedHistoryLogs();
 }
 
 export function getDefaultSelectedId(): string {
@@ -146,11 +159,22 @@ export function getDefaultPermissionTargetId(): string {
 }
 
 export function getMockWorkOrders() {
-  return getInitialWorkOrders();
+  return getSeedWorkOrders();
+}
+
+export function createSeededWorkorderState() {
+  return {
+    users: getSeedUsers(),
+    workOrders: getSeedWorkOrders(),
+    historyLogs: getSeedHistoryLogs(),
+    selectedId: getDefaultSelectedId(),
+    currentUserId: getDefaultCurrentUserId(),
+    permissionTargetUserId: getDefaultPermissionTargetId(),
+  };
 }
 
 export function saveWorkOrders(workOrders: WorkOrder[]) {
-  return cloneMockValue(workOrders);
+  return cloneSeedValue(workOrders);
 }
 
 export const INITIAL_WORK_ORDERS: WorkOrder[] = getInitialWorkOrders();

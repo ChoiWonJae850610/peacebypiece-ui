@@ -6,15 +6,16 @@ import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 
 export function useWorkOrderCoreState() {
   const repository = getMockWorkorderRepository();
-  const initialWorkOrders = repository.getInitialWorkOrders();
-  const initialSelectedId = repository.getDefaultSelectedId();
+  const initialState = repository.createInitialState();
+  const initialWorkOrders = initialState.workOrders;
+  const initialSelectedId = initialState.selectedId;
 
-  const [users, setUsers] = useState<UserProfile[]>(() => repository.getInitialUsers());
-  const [currentUserId, setCurrentUserId] = useState(() => repository.getDefaultCurrentUserId());
-  const [permissionTargetUserId, setPermissionTargetUserId] = useState(() => repository.getDefaultPermissionTargetId());
-  const [workOrders, setWorkOrders] = useState<WorkOrder[]>(() => repository.getInitialWorkOrders());
-  const [historyLogs, setHistoryLogs] = useState<HistoryLog[]>(() => repository.getInitialHistoryLogs());
-  const [selectedId, setSelectedId] = useState(() => repository.getDefaultSelectedId());
+  const [users, setUsers] = useState<UserProfile[]>(() => initialState.users);
+  const [currentUserId, setCurrentUserId] = useState(() => initialState.currentUserId);
+  const [permissionTargetUserId, setPermissionTargetUserId] = useState(() => initialState.permissionTargetUserId);
+  const [workOrders, setWorkOrders] = useState<WorkOrder[]>(() => initialState.workOrders);
+  const [historyLogs, setHistoryLogs] = useState<HistoryLog[]>(() => initialState.historyLogs);
+  const [selectedId, setSelectedId] = useState(() => initialState.selectedId);
   const [searchQuery, setSearchQuery] = useState("");
   const [saveStatus, setSaveStatus] = useState<"saved" | "dirty" | "saving">("saved");
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(

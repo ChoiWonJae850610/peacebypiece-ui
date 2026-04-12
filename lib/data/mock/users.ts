@@ -20,12 +20,13 @@ const users: UserProfile[] = [
   },
 ];
 
-export const MOCK_USER_SOURCE: MockUserSource = {
+export const WORKORDER_USER_SEED_SOURCE: MockUserSource = {
   users,
   defaultCurrentUserId: users[0]?.id ?? "",
   defaultPermissionTargetId: users[0]?.id ?? "",
 };
 
-export const MOCK_USERS = MOCK_USER_SOURCE.users;
-export const DEFAULT_CURRENT_USER_ID = MOCK_USER_SOURCE.defaultCurrentUserId;
-export const DEFAULT_PERMISSION_TARGET_ID = MOCK_USER_SOURCE.defaultPermissionTargetId;
+export const WORKORDER_SEED_USERS = WORKORDER_USER_SEED_SOURCE.users;
+export const MOCK_USERS = WORKORDER_SEED_USERS;
+export const DEFAULT_CURRENT_USER_ID = WORKORDER_USER_SEED_SOURCE.defaultCurrentUserId;
+export const DEFAULT_PERMISSION_TARGET_ID = WORKORDER_USER_SEED_SOURCE.defaultPermissionTargetId;

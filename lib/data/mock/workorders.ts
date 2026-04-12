@@ -301,12 +301,14 @@ const historyLogs: HistoryLog[] = [
   },
 ];
 
-export const MOCK_WORK_ORDER_SOURCE: MockWorkOrderSource = {
+export const WORKORDER_SEED_SOURCE: MockWorkOrderSource = {
   workOrders,
   historyLogs,
   defaultSelectedId: workOrders[0]?.id ?? "",
 };
 
-export const MOCK_WORK_ORDERS = MOCK_WORK_ORDER_SOURCE.workOrders;
-export const MOCK_HISTORY_LOGS = MOCK_WORK_ORDER_SOURCE.historyLogs;
-export const DEFAULT_SELECTED_WORK_ORDER_ID = MOCK_WORK_ORDER_SOURCE.defaultSelectedId;
+export const WORKORDER_SEED_WORK_ORDERS = WORKORDER_SEED_SOURCE.workOrders;
+export const MOCK_WORK_ORDERS = WORKORDER_SEED_WORK_ORDERS;
+export const WORKORDER_SEED_HISTORY_LOGS = WORKORDER_SEED_SOURCE.historyLogs;
+export const MOCK_HISTORY_LOGS = WORKORDER_SEED_HISTORY_LOGS;
+export const DEFAULT_SELECTED_WORK_ORDER_ID = WORKORDER_SEED_SOURCE.defaultSelectedId;
