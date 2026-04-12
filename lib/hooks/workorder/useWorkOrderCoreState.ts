@@ -1,26 +1,20 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  getDefaultCurrentUserId,
-  getDefaultPermissionTargetId,
-  getDefaultSelectedId,
-  getInitialHistoryLogs,
-  getInitialUsers,
-  getMockWorkOrders,
-} from "@/lib/data/workorderMockData";
+import { getMockWorkorderRepository } from "@/lib/repositories/mockWorkorderRepository";
 import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 
 export function useWorkOrderCoreState() {
-  const initialWorkOrders = getMockWorkOrders();
-  const initialSelectedId = getDefaultSelectedId();
+  const repository = getMockWorkorderRepository();
+  const initialWorkOrders = repository.getInitialWorkOrders();
+  const initialSelectedId = repository.getDefaultSelectedId();
 
-  const [users, setUsers] = useState<UserProfile[]>(() => getInitialUsers());
-  const [currentUserId, setCurrentUserId] = useState(() => getDefaultCurrentUserId());
-  const [permissionTargetUserId, setPermissionTargetUserId] = useState(() => getDefaultPermissionTargetId());
-  const [workOrders, setWorkOrders] = useState<WorkOrder[]>(() => getMockWorkOrders());
-  const [historyLogs, setHistoryLogs] = useState<HistoryLog[]>(() => getInitialHistoryLogs());
-  const [selectedId, setSelectedId] = useState(() => getDefaultSelectedId());
+  const [users, setUsers] = useState<UserProfile[]>(() => repository.getInitialUsers());
+  const [currentUserId, setCurrentUserId] = useState(() => repository.getDefaultCurrentUserId());
+  const [permissionTargetUserId, setPermissionTargetUserId] = useState(() => repository.getDefaultPermissionTargetId());
+  const [workOrders, setWorkOrders] = useState<WorkOrder[]>(() => repository.getInitialWorkOrders());
+  const [historyLogs, setHistoryLogs] = useState<HistoryLog[]>(() => repository.getInitialHistoryLogs());
+  const [selectedId, setSelectedId] = useState(() => repository.getDefaultSelectedId());
   const [searchQuery, setSearchQuery] = useState("");
   const [saveStatus, setSaveStatus] = useState<"saved" | "dirty" | "saving">("saved");
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(

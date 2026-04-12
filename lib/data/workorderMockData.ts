@@ -1,4 +1,4 @@
-import type { Attachment, HistoryFilter, HistoryLog, InventoryLog, WorkOrder, WorkflowState } from "@/types/workorder";
+import type { Attachment, HistoryFilter, HistoryLog, InventoryLog, UserProfile, WorkOrder, WorkflowState } from "@/types/workorder";
 import type { PersistedWorkOrderState } from "@/lib/data/mock/types";
 import { ROLE, getPermissionSummary, hasRole } from "@/lib/constants/roles";
 import { LEGACY_STORAGE_KEYS, STORAGE_KEY } from "@/lib/constants/app";

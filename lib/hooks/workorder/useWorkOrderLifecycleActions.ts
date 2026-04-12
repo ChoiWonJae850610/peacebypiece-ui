@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { useI18n } from "@/lib/i18n";
-import { getDefaultSelectedId } from "@/lib/data/workorderMockData";
+import { getMockWorkorderRepository } from "@/lib/repositories/mockWorkorderRepository";
 import {
   createCreationHistoryLog,
   createReorderHistoryLog,
@@ -56,6 +56,7 @@ export function useWorkOrderLifecycleActions({
   const { i18n } = useI18n();
   const lifecycleText = i18n.workorder.lifecycle;
   const historyText = i18n.workorder.history;
+  const repository = getMockWorkorderRepository();
   const handleSave = useCallback(
     (workOrder: WorkOrder) => {
       setSaveStatus("saving");
@@ -166,7 +167,7 @@ export function useWorkOrderLifecycleActions({
       }
 
       const remaining = workOrders.filter((item) => item.id !== workOrderId);
-      const fallbackSelectedId = remaining[0]?.id ?? getDefaultSelectedId();
+      const fallbackSelectedId = remaining[0]?.id ?? repository.getDefaultSelectedId();
       setWorkOrders(remaining);
       setHistoryLogs((prev) => prev.filter((item) => item.workOrderId !== workOrderId));
       if (selectedId === workOrderId) {
@@ -177,7 +178,7 @@ export function useWorkOrderLifecycleActions({
       }
       setToastMessage(lifecycleText.deleteCompletedToast);
     },
-    [lifecycleText, setHistoryLogs, setLastSavedAt, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
+    [lifecycleText, repository, setHistoryLogs, setLastSavedAt, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
   );
 
   const handleRenameWorkOrderTitle = useCallback(
