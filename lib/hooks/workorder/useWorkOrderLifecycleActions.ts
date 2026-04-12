@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { useI18n } from "@/lib/i18n";
-import { DEFAULT_SELECTED_WORK_ORDER_ID } from "@/lib/data/mock/workorders";
+import { getDefaultSelectedId } from "@/lib/data/workorderMockData";
 import {
   createCreationHistoryLog,
   createReorderHistoryLog,
@@ -166,7 +166,7 @@ export function useWorkOrderLifecycleActions({
       }
 
       const remaining = workOrders.filter((item) => item.id !== workOrderId);
-      const fallbackSelectedId = remaining[0]?.id ?? DEFAULT_SELECTED_WORK_ORDER_ID;
+      const fallbackSelectedId = remaining[0]?.id ?? getDefaultSelectedId();
       setWorkOrders(remaining);
       setHistoryLogs((prev) => prev.filter((item) => item.workOrderId !== workOrderId));
       if (selectedId === workOrderId) {

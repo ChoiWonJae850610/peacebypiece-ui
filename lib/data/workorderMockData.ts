@@ -116,13 +116,50 @@ export function createInventoryQuantityMap(orders: WorkOrder[]): Record<string, 
   return Object.fromEntries(orders.map((item) => [item.id, item.inventoryQuantity])) as Record<string, number>;
 }
 
-export const INITIAL_WORK_ORDERS: WorkOrder[] = MOCK_WORK_ORDERS;
+function cloneMockValue<T>(value: T): T {
+  if (typeof structuredClone === "function") return structuredClone(value);
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
+export function getInitialUsers(): UserProfile[] {
+  return cloneMockValue(MOCK_USERS);
+}
+
+export function getInitialWorkOrders(): WorkOrder[] {
+  return cloneMockValue(MOCK_WORK_ORDERS);
+}
+
+export function getInitialHistoryLogs(): HistoryLog[] {
+  return cloneMockValue(MOCK_HISTORY_LOGS);
+}
+
+export function getDefaultSelectedId(): string {
+  return DEFAULT_SELECTED_WORK_ORDER_ID;
+}
+
+export function getDefaultCurrentUserId(): string {
+  return DEFAULT_CURRENT_USER_ID_VALUE;
+}
+
+export function getDefaultPermissionTargetId(): string {
+  return DEFAULT_PERMISSION_TARGET_ID_VALUE;
+}
+
+export function getMockWorkOrders() {
+  return getInitialWorkOrders();
+}
+
+export function saveWorkOrders(workOrders: WorkOrder[]) {
+  return cloneMockValue(workOrders);
+}
+
+export const INITIAL_WORK_ORDERS: WorkOrder[] = getInitialWorkOrders();
 
 export function buildPersistedState(payload: PersistedWorkOrderState) {
   return JSON.stringify(payload);
 }
 
-export const DEFAULT_SELECTED_ID = DEFAULT_SELECTED_WORK_ORDER_ID;
-export const DEFAULT_CURRENT_USER_ID = DEFAULT_CURRENT_USER_ID_VALUE;
-export const DEFAULT_PERMISSION_TARGET_ID = DEFAULT_PERMISSION_TARGET_ID_VALUE;
-export { MOCK_USERS as INITIAL_USERS };
+export const DEFAULT_SELECTED_ID = getDefaultSelectedId();
+export const DEFAULT_CURRENT_USER_ID = getDefaultCurrentUserId();
+export const DEFAULT_PERMISSION_TARGET_ID = getDefaultPermissionTargetId();
+export const INITIAL_USERS = getInitialUsers();
