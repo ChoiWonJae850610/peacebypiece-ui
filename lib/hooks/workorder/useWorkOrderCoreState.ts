@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getMockWorkorderRepository } from "@/lib/repositories/mockWorkorderRepository";
 import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 
@@ -21,6 +21,17 @@ export function useWorkOrderCoreState() {
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(
     initialWorkOrders.find((item) => item.id === initialSelectedId)?.lastSavedAt ?? initialWorkOrders[0]?.lastSavedAt ?? null,
   );
+
+  useEffect(() => {
+    repository.persistState({
+      users,
+      workOrders,
+      historyLogs,
+      selectedId,
+      currentUserId,
+      permissionTargetUserId,
+    });
+  }, [currentUserId, historyLogs, permissionTargetUserId, repository, selectedId, users, workOrders]);
 
   const selectedWorkOrder = useMemo(
     () => workOrders.find((item) => item.id === selectedId) ?? workOrders[0],

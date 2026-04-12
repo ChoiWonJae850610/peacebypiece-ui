@@ -1,7 +1,5 @@
 import type { Attachment, HistoryFilter, HistoryLog, InventoryLog, UserProfile, WorkOrder, WorkflowState } from "@/types/workorder";
-import type { PersistedWorkOrderState } from "@/lib/data/mock/types";
 import { ROLE, getPermissionSummary, hasRole } from "@/lib/constants/roles";
-import { LEGACY_STORAGE_KEYS, STORAGE_KEY } from "@/lib/constants/app";
 import { INVENTORY_CHANGE_TYPE } from "@/lib/constants/workorderDomain";
 import { DEFAULT_CURRENT_USER_ID as DEFAULT_CURRENT_USER_ID_VALUE, DEFAULT_PERMISSION_TARGET_ID as DEFAULT_PERMISSION_TARGET_ID_VALUE, WORKORDER_SEED_USERS } from "@/lib/data/mock/users";
 import { DEFAULT_SELECTED_WORK_ORDER_ID, WORKORDER_SEED_HISTORY_LOGS, WORKORDER_SEED_WORK_ORDERS } from "@/lib/data/mock/workorders";
@@ -9,17 +7,6 @@ import { nowLabel } from "@/lib/workorder/history/builders";
 
 export function getCurrentTimeLabel() {
   return nowLabel();
-}
-
-export function loadPersistedPayload() {
-  const storageKeys = [STORAGE_KEY, ...LEGACY_STORAGE_KEYS];
-  for (const key of storageKeys) {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) continue;
-    const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed === "object") return parsed;
-  }
-  return null;
 }
 
 export const INITIAL_HISTORY_LOGS: Record<string, HistoryLog[]> = WORKORDER_SEED_HISTORY_LOGS.reduce<Record<string, HistoryLog[]>>((acc, log) => {
@@ -178,10 +165,6 @@ export function saveWorkOrders(workOrders: WorkOrder[]) {
 }
 
 export const INITIAL_WORK_ORDERS: WorkOrder[] = getInitialWorkOrders();
-
-export function buildPersistedState(payload: PersistedWorkOrderState) {
-  return JSON.stringify(payload);
-}
 
 export const DEFAULT_SELECTED_ID = getDefaultSelectedId();
 export const DEFAULT_CURRENT_USER_ID = getDefaultCurrentUserId();

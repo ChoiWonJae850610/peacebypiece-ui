@@ -1,17 +1,12 @@
-import type { RoleTemplate, RoleType } from "@/types/permission";
-import type { HistoryLog, UserProfile, WorkOrder, WorkflowState } from "@/types/workorder";
-
-export type RolePermissionTemplates = Record<RoleType, RoleTemplate>;
+import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 
 export type PersistedWorkOrderState = {
-  workOrders: WorkOrder[];
-  selectedId: string;
   users: UserProfile[];
+  workOrders: WorkOrder[];
+  historyLogs: HistoryLog[];
+  selectedId: string;
   currentUserId: string;
-  rolePermissionTemplates: RolePermissionTemplates;
-  workflowStateById: Record<string, WorkflowState>;
-  inventoryQuantityById: Record<string, number>;
-  historyLogsById: Record<string, HistoryLog[]>;
+  permissionTargetUserId: string;
 };
 
 export type MockWorkOrderSource = {
