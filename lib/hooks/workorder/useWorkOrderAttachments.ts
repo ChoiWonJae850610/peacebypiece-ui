@@ -1,10 +1,14 @@
 "use client";
 
 import type { ChangeEvent, Dispatch, RefObject, SetStateAction } from "react";
-import { promoteAttachmentToOfficial } from "@/lib/workorder/actions";
-import { applyOfficialAttachmentFiles, canDeleteAttachmentForCurrentUser, deleteWorkOrderAttachment, openOfficialAttachmentPicker } from "@/lib/workorder/attachments/attachmentActions";
-import { createMemoHistoryLog } from "@/lib/workorder/history/builders";
-import { createMemoReply, createMemoThread } from "@/lib/workorder/memo/memoActions";
+import {
+  buildAttachmentDeleteResult,
+  buildMemoReplyResult,
+  buildMemoThreadResult,
+  buildOfficialAttachmentUploadResult,
+  buildPromoteMemoAttachmentResult,
+} from "@/lib/workorder/actionFlow";
+import { canDeleteAttachmentForCurrentUser, openOfficialAttachmentPicker } from "@/lib/workorder/attachments/attachmentActions";
 import type { Attachment, HistoryLog, MemoAttachmentPayload, UserProfile, WorkOrder } from "@/types/workorder";
 
 export function useWorkOrderAttachments({
@@ -37,105 +41,121 @@ export function useWorkOrderAttachments({
   };
 
   const handleAttachmentFiles = (event: ChangeEvent<HTMLInputElement>) => {
-    applyOfficialAttachmentFiles(event, {
-      canUploadOfficialAttachments,
+    if (!canUploadOfficialAttachments) {
+      event.target.value = "";
+      return;
+    }
+
+    const files = Array.from<File>(event.target.files ?? []);
+    const result = buildOfficialAttachmentUploadResult({
+      workOrder: selectedWorkOrder,
       currentUser,
-      selectedWorkOrder,
-      setWorkOrders,
-      setSaveStatus,
+      files,
     });
+    event.target.value = "";
+    if (!result) return;
+
+    setWorkOrders((prev) => prev.map((item) => (item.id === selectedWorkOrder.id ? result.nextWorkOrder : item)));
+    if (result.historyLogs?.length) {
+      setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
+    }
+    if (result.saveStatus) {
+      setSaveStatus(result.saveStatus);
+    }
+    if (result.toastMessage) {
+      setToastMessage(result.toastMessage);
+    }
   };
 
   const handleDeleteAttachment = (attachmentId: string) => {
-    deleteWorkOrderAttachment({
+    const targetAttachment = selectedWorkOrder.attachments.find((item) => item.id === attachmentId) ?? null;
+    if (!canDeleteAttachmentForCurrentUser({ currentUser, attachment: targetAttachment, isReviewRequestLocked })) {
+      return;
+    }
+
+    const result = buildAttachmentDeleteResult({
+      workOrder: selectedWorkOrder,
+      currentUser,
       attachmentId,
       attachmentPreviewId,
-      currentUser,
-      selectedWorkOrder,
-      isReviewRequestLocked,
-      setAttachmentPreviewId,
-      setWorkOrders,
-      setSaveStatus,
-      setHistoryLogs,
     });
+    if (!result) return;
+
+    setWorkOrders((prev) => prev.map((item) => (item.id === selectedWorkOrder.id ? result.nextWorkOrder : item)));
+    if (result.resetAttachmentPreview) {
+      setAttachmentPreviewId(null);
+    }
+    if (result.historyLogs?.length) {
+      setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
+    }
+    if (result.saveStatus) {
+      setSaveStatus(result.saveStatus);
+    }
   };
 
   const handleCreateMemoThread = (content: string, payload?: MemoAttachmentPayload) => {
-    const { trimmed, selectedAttachmentIds, memoAttachments } = createMemoThread({
-      content,
+    const result = buildMemoThreadResult({
+      workOrder: selectedWorkOrder,
       currentUser,
-      selectedWorkOrder,
+      content,
       attachmentPayload: payload,
-      setWorkOrders,
-      setSaveStatus,
-      setHistoryLogs,
     });
-    if (!trimmed) return;
-    setHistoryLogs((prev) => [
-      createMemoHistoryLog(currentUser.name, selectedWorkOrder.id, {
-        action: "thread",
-        content: trimmed,
-        attachmentNames: [
-          ...selectedAttachmentIds
-            .map((attachmentId) => selectedWorkOrder.attachments.find((item) => item.id === attachmentId)?.name)
-            .filter((name): name is string => Boolean(name)),
-          ...memoAttachments.map((attachment) => attachment.name),
-        ],
-      }),
-      ...prev,
-    ]);
-    setToastMessage(
-      memoAttachments.length > 0 || selectedAttachmentIds.length > 0
-        ? "첨부가 포함된 작업 메모가 등록되었습니다."
-        : "작업 메모가 등록되었습니다.",
-    );
+    if (!result) return;
+
+    setWorkOrders((prev) => prev.map((item) => (item.id === selectedWorkOrder.id ? result.nextWorkOrder : item)));
+    if (result.historyLogs?.length) {
+      setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
+    }
+    if (result.saveStatus) {
+      setSaveStatus(result.saveStatus);
+    }
+    if (result.toastMessage) {
+      setToastMessage(result.toastMessage);
+    }
   };
 
   const handleCreateMemoReply = (threadId: string, content: string, payload?: MemoAttachmentPayload) => {
-    const { trimmed, selectedAttachmentIds, memoAttachments } = createMemoReply({
+    const result = buildMemoReplyResult({
+      workOrder: selectedWorkOrder,
+      currentUser,
       threadId,
       content,
-      currentUser,
-      selectedWorkOrder,
       attachmentPayload: payload,
-      setWorkOrders,
-      setSaveStatus,
-      setHistoryLogs,
     });
-    if (!trimmed) return;
-    setHistoryLogs((prev) => [
-      createMemoHistoryLog(currentUser.name, selectedWorkOrder.id, {
-        action: "reply",
-        content: trimmed,
-        attachmentNames: [
-          ...selectedAttachmentIds
-            .map((attachmentId) => selectedWorkOrder.attachments.find((item) => item.id === attachmentId)?.name)
-            .filter((name): name is string => Boolean(name)),
-          ...memoAttachments.map((attachment) => attachment.name),
-        ],
-      }),
-      ...prev,
-    ]);
-    setToastMessage(
-      memoAttachments.length > 0 || selectedAttachmentIds.length > 0
-        ? "첨부가 포함된 메모 댓글이 등록되었습니다."
-        : "메모 댓글이 등록되었습니다.",
-    );
+    if (!result) return;
+
+    setWorkOrders((prev) => prev.map((item) => (item.id === selectedWorkOrder.id ? result.nextWorkOrder : item)));
+    if (result.historyLogs?.length) {
+      setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
+    }
+    if (result.saveStatus) {
+      setSaveStatus(result.saveStatus);
+    }
+    if (result.toastMessage) {
+      setToastMessage(result.toastMessage);
+    }
   };
 
   const handlePromoteMemoAttachment = (attachmentId: string) => {
-    const targetAttachment = selectedWorkOrder.attachments.find((item) => item.id === attachmentId);
-    if (!targetAttachment || (targetAttachment.scope ?? "official") === "official" || !canUploadOfficialAttachments || isReviewRequestLocked) return;
+    if (!canUploadOfficialAttachments || isReviewRequestLocked) return;
 
-    setWorkOrders((prev) =>
-      promoteAttachmentToOfficial(prev, selectedWorkOrder.id, attachmentId, {
-        ownerId: currentUser.id,
-        ownerName: currentUser.name,
-      }),
-    );
+    const result = buildPromoteMemoAttachmentResult({
+      workOrder: selectedWorkOrder,
+      attachmentId,
+      currentUser,
+    });
+    if (!result) return;
 
-    setSaveStatus("dirty");
-    setToastMessage("메모 첨부가 공식 첨부로 승격되었습니다.");
+    setWorkOrders((prev) => prev.map((item) => (item.id === selectedWorkOrder.id ? result.nextWorkOrder : item)));
+    if (result.historyLogs?.length) {
+      setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
+    }
+    if (result.saveStatus) {
+      setSaveStatus(result.saveStatus);
+    }
+    if (result.toastMessage) {
+      setToastMessage(result.toastMessage);
+    }
   };
 
   const canDeleteAttachment = (attachment: Attachment | null) =>

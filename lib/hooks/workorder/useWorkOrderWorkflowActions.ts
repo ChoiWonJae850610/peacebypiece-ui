@@ -1,19 +1,12 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
-  createInspectionCompleteHistoryLog,
-  createInventoryHistoryLog,
-  createStatusHistoryLog,
-} from "@/lib/workorder/history/builders";
-import {
-  applyInventoryAdjustmentToWorkOrder,
-  applyWorkflowActionToWorkOrder,
-  buildInventoryChanges,
-  completeInspectionForWorkOrder,
-  patchWorkOrder,
-} from "@/lib/workorder/actions";
-import { pruneDraftRows } from "@/lib/workorder/draftRows";
+  buildInspectionCompleteResult,
+  buildInventoryApplyResult,
+  buildPatchWorkOrderResult,
+  buildWorkflowActionResult,
+} from "@/lib/workorder/actionFlow";
 import type { WorkOrder, WorkflowAction } from "@/types/workorder";
 import type {
   InspectionCompleteInput,
@@ -22,40 +15,14 @@ import type {
   UseWorkOrderActionsParams,
 } from "./useWorkOrderActionTypes";
 
-const shouldPruneRowsBeforeWorkflowTransition = (action: WorkflowAction) =>
-  action.nextState === "review_requested" || action.nextState === "in_production";
 
 const requiresOrderRequestConfirmation = (action: WorkflowAction) => action.nextState === "in_production";
-
-const shouldOpenInventoryEditor = (action: WorkflowAction) => action.nextState === "in_inspection";
-
-const applySelectedWorkflowAction = ({
-  workOrder,
-  action,
-}: {
-  workOrder: WorkOrder;
-  action: WorkflowAction;
-}) => {
-  const targetWorkOrder = shouldPruneRowsBeforeWorkflowTransition(action) ? pruneDraftRows(workOrder) : workOrder;
-  return applyWorkflowActionToWorkOrder(targetWorkOrder, action);
-};
-
-const createWorkflowHistoryLog = ({
-  actorName,
-  workOrderId,
-  previousState,
-  action,
-}: {
-  actorName: string;
-  workOrderId: string;
-  previousState: WorkOrder["workflowState"];
-  action: WorkflowAction;
-}) => createStatusHistoryLog(actorName, workOrderId, previousState, action.nextState, action.label);
 
 type UseWorkOrderWorkflowActionsParams = Pick<
   UseWorkOrderActionsParams,
   | "currentUser"
   | "pendingWorkflowAction"
+  | "workOrders"
   | "setWorkOrders"
   | "setHistoryLogs"
   | "setSaveStatus"
@@ -75,27 +42,25 @@ export function useWorkOrderWorkflowActions({
   setInventoryEditorOpen,
   setPendingWorkflowAction,
   setOrderRequestConfirmOpen,
+  workOrders,
 }: UseWorkOrderWorkflowActionsParams) {
+  const workOrdersRef = useRef(workOrders);
+
+  useEffect(() => {
+    workOrdersRef.current = workOrders;
+  }, [workOrders]);
   const applyWorkflowAction = useCallback(
     (workOrder: WorkOrder, action: WorkflowAction) => {
-      const previousState = workOrder.workflowState;
+      const result = buildWorkflowActionResult({ workOrder, action, actorName: currentUser.name });
 
-      setWorkOrders((prev) =>
-        prev.map((item) => (item.id === workOrder.id ? applySelectedWorkflowAction({ workOrder: item, action }) : item)),
-      );
-      setHistoryLogs((prev) => [
-        createWorkflowHistoryLog({
-          actorName: currentUser.name,
-          workOrderId: workOrder.id,
-          previousState,
-          action,
-        }),
-        ...prev,
-      ]);
-      if (action.nextState === "review_requested") {
-        setSaveStatus("dirty");
+      setWorkOrders((prev) => prev.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item)));
+      if (result.historyLogs?.length) {
+        setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
       }
-      if (shouldOpenInventoryEditor(action)) {
+      if (result.saveStatus) {
+        setSaveStatus(result.saveStatus);
+      }
+      if (result.openInventoryEditor) {
         setInventoryEditorOpen(true);
       }
     },
@@ -132,38 +97,46 @@ export function useWorkOrderWorkflowActions({
 
   const handleInventoryApply = useCallback(
     (workOrderId: string, { inboundQuantity, adjustmentQuantity, deductionQuantity, memo }: InventoryChangeInput) => {
-      const changes = buildInventoryChanges({ inboundQuantity, adjustmentQuantity, deductionQuantity });
-      if (changes.length === 0) return;
+      const currentWorkOrder = workOrdersRef.current.find((item) => item.id === workOrderId);
+      if (!currentWorkOrder) return;
+      const result = buildInventoryApplyResult({
+        workOrder: currentWorkOrder,
+        actorName: currentUser.name,
+        input: { inboundQuantity, adjustmentQuantity, deductionQuantity, memo },
+      });
+      if (!result) return;
 
-      setWorkOrders((prev) =>
-        prev.map((item) => (item.id === workOrderId ? applyInventoryAdjustmentToWorkOrder(item, { changes }) : item)),
-      );
-      setHistoryLogs((prev) => [createInventoryHistoryLog(currentUser.name, workOrderId, { changes, memo }), ...prev]);
+      setWorkOrders((prev) => prev.map((item) => (item.id === workOrderId ? result.nextWorkOrder : item)));
+      if (result.historyLogs?.length) {
+        setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
+      }
+      if (result.saveStatus) {
+        setSaveStatus(result.saveStatus);
+      }
     },
-    [currentUser.name, setHistoryLogs, setWorkOrders],
+    [currentUser.name, setHistoryLogs, setSaveStatus, setWorkOrders],
   );
 
   const handleCompleteInspection = useCallback(
     ({ workOrderId, orderEntryId, inboundQuantity, nextInventoryQuantity, memo }: InspectionCompleteInput & { workOrderId: string }) => {
-      const trimmedMemo = memo.trim();
+      const currentWorkOrder = workOrdersRef.current.find((item) => item.id === workOrderId);
+      if (!currentWorkOrder) return;
+      const result = buildInspectionCompleteResult({
+        workOrder: currentWorkOrder,
+        actorName: currentUser.name,
+        input: { orderEntryId, inboundQuantity, nextInventoryQuantity, memo },
+      });
 
-      setWorkOrders((prev) =>
-        prev.map((item) =>
-          item.id === workOrderId
-            ? completeInspectionForWorkOrder(item, { orderEntryId, nextInventoryQuantity })
-            : item,
-        ),
-      );
-      setHistoryLogs((prev) => [
-        createInspectionCompleteHistoryLog(currentUser.name, workOrderId, {
-          inboundQuantity,
-          nextInventoryQuantity,
-          memo: trimmedMemo,
-        }),
-        ...prev,
-      ]);
-      setSaveStatus("dirty");
-      setToastMessage("검수 완료가 반영되었습니다.");
+      setWorkOrders((prev) => prev.map((item) => (item.id === workOrderId ? result.nextWorkOrder : item)));
+      if (result.historyLogs?.length) {
+        setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
+      }
+      if (result.saveStatus) {
+        setSaveStatus(result.saveStatus);
+      }
+      if (result.toastMessage) {
+        setToastMessage(result.toastMessage);
+      }
     },
     [currentUser.name, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders],
   );
@@ -175,8 +148,14 @@ export function useWorkOrderWorkflowActions({
         return;
       }
 
-      setWorkOrders((prev) => prev.map((item) => (item.id === workOrderId ? patchWorkOrder(item, patch) : item)));
-      setSaveStatus("dirty");
+      const currentWorkOrder = workOrdersRef.current.find((item) => item.id === workOrderId);
+      if (!currentWorkOrder) return;
+      const result = buildPatchWorkOrderResult({ workOrder: currentWorkOrder, patch });
+
+      setWorkOrders((prev) => prev.map((item) => (item.id === workOrderId ? result.nextWorkOrder : item)));
+      if (result.saveStatus) {
+        setSaveStatus(result.saveStatus);
+      }
     },
     [setSaveStatus, setWorkOrders],
   );

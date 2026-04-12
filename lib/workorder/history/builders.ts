@@ -141,6 +141,47 @@ export function createInspectionCompleteHistoryLog(
   });
 }
 
+
+export function createAttachmentUploadHistoryLog(user: string, workOrderId: string, attachments: { name: string }[]) {
+  return createHistoryLog({
+    action: "공식 첨부 등록",
+    message: "공식 첨부가 등록되었습니다.",
+    user,
+    workOrderId,
+    category: "attachment",
+    tone: "blue",
+    summary: `공식 첨부 ${attachments.length}개 등록 · ${user}`,
+    detailLines: attachments.map((attachment, index) => ({ label: `파일 ${index + 1}`, value: attachment.name })),
+  });
+}
+
+export function createAttachmentDeleteHistoryLog(user: string, workOrderId: string, attachment: { name: string; scope?: string | null }) {
+  return createHistoryLog({
+    action: "첨부 삭제",
+    message: "첨부가 삭제되었습니다.",
+    user,
+    workOrderId,
+    category: "attachment",
+    tone: "rose",
+    detailLines: [
+      { label: "파일", value: attachment.name },
+      { label: "구분", value: attachment.scope === "memo" ? "메모 첨부" : "공식 첨부" },
+    ],
+  });
+}
+
+export function createAttachmentPromoteHistoryLog(user: string, workOrderId: string, attachment: { name: string }) {
+  return createHistoryLog({
+    action: "메모 첨부 승격",
+    message: "메모 첨부가 공식 첨부로 승격되었습니다.",
+    user,
+    workOrderId,
+    category: "attachment",
+    tone: "emerald",
+    detailLines: [{ label: "파일", value: attachment.name }],
+  });
+}
+
 export function createMemoHistoryLog(
   user: string,
   workOrderId: string,

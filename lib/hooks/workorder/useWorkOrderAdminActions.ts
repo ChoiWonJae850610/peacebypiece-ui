@@ -2,8 +2,7 @@
 
 import { useCallback } from "react";
 import { buildUserRoleState } from "@/lib/constants/roles";
-import { createManagerChangeHistoryLog } from "@/lib/workorder/history/builders";
-import { updateManagerForWorkOrder } from "@/lib/workorder/actions";
+import { buildManagerChangeResult } from "@/lib/workorder/actionFlow";
 import type { RoleType } from "@/types/permission";
 import type { ChangeManagerInput } from "./useWorkOrderActionTypes";
 import type { AdminActionBaseParams } from "./useWorkOrderActionTypes";
@@ -43,29 +42,27 @@ export function useWorkOrderAdminActions({
       const nextManager = users.find((user) => user.id === managerId);
       if (!nextManager) return;
 
-      const previousManagerName = workOrder.manager || "-";
-      const previousManagerId = workOrder.managerId ?? null;
-      if (previousManagerId === nextManager.id || previousManagerName === nextManager.name) {
+      const result = buildManagerChangeResult({
+        workOrder,
+        actorName: currentUser.name,
+        managerId: nextManager.id,
+        managerName: nextManager.name,
+      });
+      if (!result) {
         setManagerAssignModalOpen(false);
         return;
       }
 
-      setWorkOrders((prev) =>
-        prev.map((item) =>
-          item.id === workOrder.id
-            ? updateManagerForWorkOrder(item, {
-                managerId: nextManager.id,
-                managerName: nextManager.name,
-              })
-            : item,
-        ),
-      );
-      setHistoryLogs((prev) => [
-        createManagerChangeHistoryLog(currentUser.name, workOrder.id, previousManagerName, nextManager.name),
-        ...prev,
-      ]);
-      setSaveStatus("dirty");
-      setToastMessage("담당자가 변경되었습니다.");
+      setWorkOrders((prev) => prev.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item)));
+      if (result.historyLogs?.length) {
+        setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
+      }
+      if (result.saveStatus) {
+        setSaveStatus(result.saveStatus);
+      }
+      if (result.toastMessage) {
+        setToastMessage(result.toastMessage);
+      }
       setManagerAssignModalOpen(false);
     },
     [currentUser.name, setHistoryLogs, setManagerAssignModalOpen, setSaveStatus, setToastMessage, setWorkOrders],

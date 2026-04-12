@@ -73,6 +73,7 @@ export type UseWorkOrderActionsParams = {
   canCreateWorkOrder: boolean;
   canReorderWorkOrder: boolean;
   pendingWorkflowAction: WorkflowAction | null;
+  workOrders: WorkOrder[];
 } & WorkOrderActionStateSetters;
 
 export type WorkflowStateActionHandlers = {
