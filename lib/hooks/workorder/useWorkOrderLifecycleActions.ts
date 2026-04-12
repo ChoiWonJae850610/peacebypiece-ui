@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { useI18n } from "@/lib/i18n";
-import { getMockWorkorderRepository } from "@/lib/repositories/mockWorkorderRepository";
+import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
 import {
   createCreationHistoryLog,
   createReorderHistoryLog,
@@ -56,7 +56,7 @@ export function useWorkOrderLifecycleActions({
   const { i18n } = useI18n();
   const lifecycleText = i18n.workorder.lifecycle;
   const historyText = i18n.workorder.history;
-  const repository = getMockWorkorderRepository();
+  const repository = useWorkorderRepository();
   const handleSave = useCallback(
     (workOrder: WorkOrder) => {
       setSaveStatus("saving");

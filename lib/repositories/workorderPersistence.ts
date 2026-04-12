@@ -6,7 +6,7 @@ function cloneValue<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
-function getStorageKeys() {
+function getStorageKeys(): string[] {
   return [STORAGE_KEY, ...LEGACY_STORAGE_KEYS];
 }
 
@@ -34,7 +34,6 @@ export function persistWorkorderState(payload: PersistedWorkOrderState) {
 
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   for (const legacyKey of LEGACY_STORAGE_KEYS) {
-    if (legacyKey === STORAGE_KEY) continue;
     window.localStorage.removeItem(legacyKey);
   }
 }

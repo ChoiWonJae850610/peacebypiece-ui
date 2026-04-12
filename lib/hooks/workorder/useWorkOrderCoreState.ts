@@ -1,22 +1,25 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { getMockWorkorderRepository } from "@/lib/repositories/mockWorkorderRepository";
+import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
 import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 import type { AsyncOperationStatus } from "./useWorkOrderActionTypes";
 
 export function useWorkOrderCoreState() {
-  const repository = getMockWorkorderRepository();
-  const initialState = repository.createInitialState();
-  const initialWorkOrders = initialState.workOrders;
-  const initialSelectedId = initialState.selectedId;
+  const repository = useWorkorderRepository();
+  const initialUsers = useMemo(() => repository.getInitialUsers(), [repository]);
+  const initialWorkOrders = useMemo(() => repository.getInitialWorkOrders(), [repository]);
+  const initialHistoryLogs = useMemo(() => repository.getInitialHistoryLogs(), [repository]);
+  const initialSelectedId = useMemo(() => repository.getDefaultSelectedId(), [repository]);
+  const initialCurrentUserId = useMemo(() => repository.getDefaultCurrentUserId(), [repository]);
+  const initialPermissionTargetUserId = useMemo(() => repository.getDefaultPermissionTargetId(), [repository]);
 
-  const [users, setUsers] = useState<UserProfile[]>(() => initialState.users);
-  const [currentUserId, setCurrentUserId] = useState(() => initialState.currentUserId);
-  const [permissionTargetUserId, setPermissionTargetUserId] = useState(() => initialState.permissionTargetUserId);
-  const [workOrders, setWorkOrders] = useState<WorkOrder[]>(() => initialState.workOrders);
-  const [historyLogs, setHistoryLogs] = useState<HistoryLog[]>(() => initialState.historyLogs);
-  const [selectedId, setSelectedId] = useState(() => initialState.selectedId);
+  const [users, setUsers] = useState<UserProfile[]>(initialUsers);
+  const [currentUserId, setCurrentUserId] = useState(initialCurrentUserId);
+  const [permissionTargetUserId, setPermissionTargetUserId] = useState(initialPermissionTargetUserId);
+  const [workOrders, setWorkOrders] = useState<WorkOrder[]>(initialWorkOrders);
+  const [historyLogs, setHistoryLogs] = useState<HistoryLog[]>(initialHistoryLogs);
+  const [selectedId, setSelectedId] = useState(initialSelectedId);
   const [searchQuery, setSearchQuery] = useState("");
   const [repositoryStatus, setRepositoryStatus] = useState<AsyncOperationStatus>("loading");
   const [repositoryError, setRepositoryError] = useState<string | null>(null);
