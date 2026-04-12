@@ -1,0 +1,46 @@
+import type { UserProfile, WorkOrder, WorkOrderListItem } from "@/types/workorder";
+
+export type BuildWorkOrderDerivedStateParams = {
+  users: UserProfile[];
+  currentUser: UserProfile;
+  currentUserId: string;
+  permissionTargetUserId: string;
+  workOrders: WorkOrder[];
+  selectedWorkOrder: WorkOrder;
+  searchQuery: string;
+  attachmentPreviewId: string | null;
+};
+
+export type WorkOrderDerivedState = {
+  currentRoles: string[];
+  currentRole: UserProfile["role"];
+  isAdmin: boolean;
+  canCreateWorkOrder: boolean;
+  canReorderWorkOrder: boolean;
+  permissionTargetUser: UserProfile;
+  workflowStateById: Record<string, string>;
+  currentWorkflowState: WorkOrder["workflowState"];
+  canChangeManager: boolean;
+  currentDisplayStage: string;
+  visibleStages: readonly string[];
+  isReviewRequestLocked: boolean;
+  canUploadOfficialAttachments: boolean;
+  workOrders: WorkOrderListItem[];
+  canSeeProductionSections: boolean;
+  canSeeCostSections: boolean;
+  canEditInventory: boolean;
+  canOpenInventoryEditor: boolean;
+  canSeeInventoryHistorySection: boolean;
+  canSeeAttachments: boolean;
+  currentInventoryQuantity: number;
+  officialAttachments: WorkOrder["attachments"];
+  selectedAttachment: WorkOrder["attachments"][number] | null;
+  materials: NonNullable<WorkOrder["materials"]>;
+  outsourcing: NonNullable<WorkOrder["outsourcing"]>;
+  fabricTotal: number;
+  subsidiaryTotal: number;
+  outsourcingTotal: number;
+  totalCost: number;
+  unitCost: number;
+  availableActions: ReturnType<typeof import("@/lib/workorder/workflow").getAvailableWorkflowActions>;
+};
