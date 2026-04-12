@@ -1,6 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { RoleType } from "@/types/permission";
 import type { HistoryLog, UserProfile, WorkOrder, WorkflowAction } from "@/types/workorder";
+import type { WorkOrderAsyncActionKey } from "@/lib/workorder/actionFlow";
 
 export type SaveStatus = "saved" | "dirty" | "saving";
 export type AsyncOperationStatus = "idle" | "loading" | "ready" | "error";
@@ -54,6 +55,11 @@ export type UpdateSelectedWorkOrderInput = {
   isReviewRequestLocked: boolean;
 };
 
+export type WorkOrderActionRuntimeSetters = {
+  setActionStatus: (actionKey: WorkOrderAsyncActionKey, status: AsyncOperationStatus) => void;
+  setActionError: (actionKey: WorkOrderAsyncActionKey, message: string | null) => void;
+};
+
 export type WorkOrderActionStateSetters = {
   setUsers: Dispatch<SetStateAction<UserProfile[]>>;
   setWorkOrders: Dispatch<SetStateAction<WorkOrder[]>>;
@@ -75,7 +81,7 @@ export type UseWorkOrderActionsParams = {
   canReorderWorkOrder: boolean;
   pendingWorkflowAction: WorkflowAction | null;
   workOrders: WorkOrder[];
-} & WorkOrderActionStateSetters;
+} & WorkOrderActionStateSetters & WorkOrderActionRuntimeSetters;
 
 export type WorkflowStateActionHandlers = {
   applyWorkflowAction: (workOrder: WorkOrder, action: WorkflowAction) => void;

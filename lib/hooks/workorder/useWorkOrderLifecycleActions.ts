@@ -16,6 +16,7 @@ import {
   renameWorkOrderGroupBaseTitle,
 } from "@/lib/workorder/actions";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
+import { executeWorkOrderAsyncAction } from "@/lib/workorder/actionFlow";
 import type { WorkOrder } from "@/types/workorder";
 import type {
   CreateWorkOrderInput,
@@ -39,6 +40,8 @@ type UseWorkOrderLifecycleActionsParams = Pick<
   | "setSaveStatus"
   | "setToastMessage"
   | "setCreateWorkOrderModalOpen"
+  | "setActionStatus"
+  | "setActionError"
 >;
 
 export function useWorkOrderLifecycleActions({
@@ -52,58 +55,100 @@ export function useWorkOrderLifecycleActions({
   setSaveStatus,
   setToastMessage,
   setCreateWorkOrderModalOpen,
+  setActionStatus,
+  setActionError,
 }: UseWorkOrderLifecycleActionsParams) {
   const { i18n } = useI18n();
   const lifecycleText = i18n.workorder.lifecycle;
   const historyText = i18n.workorder.history;
   const repository = useWorkorderRepository();
   const handleSave = useCallback(
-    (workOrder: WorkOrder) => {
+    async (workOrder: WorkOrder, workOrders: WorkOrder[]) => {
       setSaveStatus("saving");
-      const label = nowLabel();
-      setLastSavedAt(label);
-      setWorkOrders((prev) => prev.map((item) => (item.id === workOrder.id ? { ...item, lastSavedAt: label } : item)));
-      setHistoryLogs((prev) => [
-        createUpdateHistoryLog(currentUser.name, workOrder.id, [
-          { label: lifecycleText.saveHistoryLabel, value: historyText.detailLabels.savedAtFormat.replace("{time}", label) },
-          { label: lifecycleText.workOrderLabel, value: workOrder.title },
-        ], historyText),
-        ...prev,
-      ]);
-      setSaveStatus("saved");
-      setToastMessage(lifecycleText.saveCompletedToast);
+
+      try {
+        await executeWorkOrderAsyncAction({
+          actionKey: "save",
+          setActionStatus,
+          setActionError,
+          getErrorMessage: () => lifecycleText.saveFailedToast ?? "Failed to save work order.",
+          task: async () => {
+            const label = nowLabel();
+            const nextWorkOrders = workOrders.map((item) => (item.id === workOrder.id ? { ...item, lastSavedAt: label } : item));
+            await repository.saveWorkOrdersAsync(nextWorkOrders);
+
+            setLastSavedAt(label);
+            setWorkOrders(nextWorkOrders);
+            setHistoryLogs((prev) => [
+              createUpdateHistoryLog(currentUser.name, workOrder.id, [
+                { label: lifecycleText.saveHistoryLabel, value: historyText.detailLabels.savedAtFormat.replace("{time}", label) },
+                { label: lifecycleText.workOrderLabel, value: workOrder.title },
+              ], historyText),
+              ...prev,
+            ]);
+            setSaveStatus("saved");
+            setToastMessage(lifecycleText.saveCompletedToast);
+          },
+        });
+      } catch {
+        setSaveStatus("dirty");
+      }
     },
-    [currentUser.name, historyText, lifecycleText, setHistoryLogs, setLastSavedAt, setSaveStatus, setToastMessage, setWorkOrders],
+    [
+      currentUser.name,
+      historyText,
+      lifecycleText,
+      repository,
+      setActionError,
+      setActionStatus,
+      setHistoryLogs,
+      setLastSavedAt,
+      setSaveStatus,
+      setToastMessage,
+      setWorkOrders,
+    ],
   );
 
   const handleCreateWorkOrder = useCallback(
-    (payload?: CreateWorkOrderInput) => {
+    async (payload?: CreateWorkOrderInput) => {
       if (!canCreateWorkOrder) return;
-      const nextIndex = payload?.nextIndex ?? 1;
-      const newWorkOrder = createNewWorkOrder(nextIndex, {
-        managerName: currentUser.name,
-        managerId: currentUser.id,
-        managerRole: currentUser.role,
-        createdAt: nowLabel(),
-        title: payload?.title,
-        category1: payload?.category1,
-        category2: payload?.category2,
-        category3: payload?.category3,
-        season: payload?.season,
+
+      await executeWorkOrderAsyncAction({
+        actionKey: "create",
+        setActionStatus,
+        setActionError,
+        getErrorMessage: () => lifecycleText.createFailedToast ?? "Failed to create work order.",
+        task: async () => {
+          const nextIndex = payload?.nextIndex ?? 1;
+          const newWorkOrder = createNewWorkOrder(nextIndex, {
+            managerName: currentUser.name,
+            managerId: currentUser.id,
+            managerRole: currentUser.role,
+            createdAt: nowLabel(),
+            title: payload?.title,
+            category1: payload?.category1,
+            category2: payload?.category2,
+            category3: payload?.category3,
+            season: payload?.season,
+          });
+          setWorkOrders((prev) => [newWorkOrder, ...prev]);
+          setSelectedId(newWorkOrder.id);
+          setLastSavedAt(newWorkOrder.lastSavedAt);
+          setHistoryLogs((historyPrev) => [createCreationHistoryLog(currentUser.name, newWorkOrder.id, historyText), ...historyPrev]);
+          setSaveStatus("dirty");
+          setCreateWorkOrderModalOpen(false);
+        },
       });
-      setWorkOrders((prev) => [newWorkOrder, ...prev]);
-      setSelectedId(newWorkOrder.id);
-      setLastSavedAt(newWorkOrder.lastSavedAt);
-      setHistoryLogs((historyPrev) => [createCreationHistoryLog(currentUser.name, newWorkOrder.id, historyText), ...historyPrev]);
-      setSaveStatus("dirty");
-      setCreateWorkOrderModalOpen(false);
     },
     [
       canCreateWorkOrder,
-      historyText,
       currentUser.id,
       currentUser.name,
       currentUser.role,
+      historyText,
+      lifecycleText.createFailedToast,
+      setActionError,
+      setActionStatus,
       setCreateWorkOrderModalOpen,
       setHistoryLogs,
       setLastSavedAt,
@@ -114,32 +159,40 @@ export function useWorkOrderLifecycleActions({
   );
 
   const handleReorderWorkOrder = useCallback(
-    (workOrders: WorkOrder[], workOrderId: string) => {
+    async (workOrders: WorkOrder[], workOrderId: string) => {
       if (!canReorderWorkOrder) return;
       const sourceWorkOrder = workOrders.find((item) => item.id === workOrderId);
       if (!sourceWorkOrder) return;
 
-      const createdAt = nowLabel();
-      const nextWorkOrder = cloneWorkOrderForReorder(workOrders, sourceWorkOrder, {
-        createdAt,
-        createdById: currentUser.id,
-        createdByRole: currentUser.role,
-        managerId: sourceWorkOrder.managerId ?? currentUser.id,
-        managerName: sourceWorkOrder.manager || currentUser.name,
-      });
+      await executeWorkOrderAsyncAction({
+        actionKey: "reorder",
+        setActionStatus,
+        setActionError,
+        getErrorMessage: () => lifecycleText.reorderFailedToast ?? "Failed to create reordered work order.",
+        task: async () => {
+          const createdAt = nowLabel();
+          const nextWorkOrder = cloneWorkOrderForReorder(workOrders, sourceWorkOrder, {
+            createdAt,
+            createdById: currentUser.id,
+            createdByRole: currentUser.role,
+            managerId: sourceWorkOrder.managerId ?? currentUser.id,
+            managerName: sourceWorkOrder.manager || currentUser.name,
+          });
 
-      setWorkOrders((prev) => [nextWorkOrder, ...prev]);
-      setSelectedId(nextWorkOrder.id);
-      setLastSavedAt(nextWorkOrder.lastSavedAt);
-      setSaveStatus("dirty");
-      setHistoryLogs((prev) => [
-        createReorderHistoryLog(currentUser.name, nextWorkOrder.id, {
-          sourceTitle: getWorkOrderDisplayTitle(sourceWorkOrder),
-          nextTitle: getWorkOrderDisplayTitle(nextWorkOrder),
-        }, historyText),
-        ...prev,
-      ]);
-      setToastMessage(lifecycleText.reorderCreatedToastFormat.replace("{title}", getWorkOrderDisplayTitle(nextWorkOrder)));
+          setWorkOrders((prev) => [nextWorkOrder, ...prev]);
+          setSelectedId(nextWorkOrder.id);
+          setLastSavedAt(nextWorkOrder.lastSavedAt);
+          setSaveStatus("dirty");
+          setHistoryLogs((prev) => [
+            createReorderHistoryLog(currentUser.name, nextWorkOrder.id, {
+              sourceTitle: getWorkOrderDisplayTitle(sourceWorkOrder),
+              nextTitle: getWorkOrderDisplayTitle(nextWorkOrder),
+            }, historyText),
+            ...prev,
+          ]);
+          setToastMessage(lifecycleText.reorderCreatedToastFormat.replace("{title}", getWorkOrderDisplayTitle(nextWorkOrder)));
+        },
+      });
     },
     [
       canReorderWorkOrder,
@@ -148,6 +201,8 @@ export function useWorkOrderLifecycleActions({
       currentUser.role,
       historyText,
       lifecycleText,
+      setActionError,
+      setActionStatus,
       setHistoryLogs,
       setLastSavedAt,
       setSaveStatus,
@@ -158,7 +213,7 @@ export function useWorkOrderLifecycleActions({
   );
 
   const handleDeleteWorkOrder = useCallback(
-    ({ workOrderId, workOrders, selectedId }: DeleteWorkOrderInput) => {
+    async ({ workOrderId, workOrders, selectedId }: DeleteWorkOrderInput) => {
       const target = workOrders.find((item) => item.id === workOrderId);
       if (!target || !canDeleteWorkOrder(target.workflowState) || workOrders.length <= 1) return;
       if (typeof window !== "undefined") {
@@ -182,7 +237,7 @@ export function useWorkOrderLifecycleActions({
   );
 
   const handleRenameWorkOrderTitle = useCallback(
-    ({ workOrders, workOrder, nextTitle }: RenameWorkOrderTitleInput) => {
+    async ({ workOrders, workOrder, nextTitle }: RenameWorkOrderTitleInput) => {
       const trimmedTitle = String(nextTitle ?? "").trim();
       if (!trimmedTitle) return;
 
@@ -210,7 +265,7 @@ export function useWorkOrderLifecycleActions({
           : lifecycleText.renameAppliedToast,
       );
     },
-    [currentUser.name, historyText, lifecycleText, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders],
+    [currentUser.name, historyText, lifecycleText, setActionError, setActionStatus, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   return {

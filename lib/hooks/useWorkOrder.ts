@@ -7,10 +7,12 @@ import { useWorkOrderDerived } from "@/lib/hooks/workorder/useWorkOrderDerived";
 import { useWorkOrderAttachments } from "@/lib/hooks/workorder/useWorkOrderAttachments";
 import { useWorkOrderHistory } from "@/lib/hooks/workorder/useWorkOrderHistory";
 import { useWorkOrderUIState } from "@/lib/hooks/workorder/useWorkOrderUIState";
+import { useWorkOrderActionRuntime } from "@/lib/hooks/workorder/useWorkOrderActionRuntime";
 import type { WorkOrder, WorkflowAction } from "@/types/workorder";
 
 export function useWorkOrder() {
   const uiState = useWorkOrderUIState();
+  const actionRuntime = useWorkOrderActionRuntime();
 
   const coreState = useWorkOrderCoreState();
   const derivedState = useWorkOrderDerived({
@@ -49,6 +51,8 @@ export function useWorkOrder() {
     setManagerAssignModalOpen: uiState.setManagerAssignModalOpen,
     setPendingWorkflowAction: uiState.setPendingWorkflowAction,
     setOrderRequestConfirmOpen: uiState.setOrderRequestConfirmOpen,
+    setActionStatus: actionRuntime.setActionStatus,
+    setActionError: actionRuntime.setActionError,
   });
 
 
@@ -112,6 +116,11 @@ export function useWorkOrder() {
     orderRequestConfirmOpen: uiState.orderRequestConfirmOpen,
     pendingWorkflowAction: uiState.pendingWorkflowAction,
     toastMessage: uiState.toastMessage,
+    actionStatusMap: actionRuntime.actionStatusMap,
+    actionErrorMap: actionRuntime.actionErrorMap,
+    activeActionKey: actionRuntime.activeActionKey,
+    hasActionError: actionRuntime.hasActionError,
+    clearActionError: actionRuntime.clearActionError,
     repositoryStatus: coreState.repositoryStatus,
     repositoryError: coreState.repositoryError,
     users: coreState.users,
@@ -161,7 +170,7 @@ export function useWorkOrder() {
     lastSavedAt: coreState.lastSavedAt,
     availableActions: derivedState.availableActions,
     visibleStages: derivedState.visibleStages,
-    handleSave: () => actionState.handleSave(coreState.selectedWorkOrder),
+    handleSave: () => actionState.handleSave(coreState.selectedWorkOrder, coreState.workOrders),
     handleSelectWorkOrder,
     canDeleteWorkOrder,
     handleCreateWorkOrder: (payload?: { title: string; category1: string; category2: string; category3: string; season: string }) =>
