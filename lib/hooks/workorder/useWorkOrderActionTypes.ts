@@ -3,6 +3,7 @@ import type { RoleType } from "@/types/permission";
 import type { HistoryLog, UserProfile, WorkOrder, WorkflowAction } from "@/types/workorder";
 
 export type SaveStatus = "saved" | "dirty" | "saving";
+export type AsyncOperationStatus = "idle" | "loading" | "ready" | "error";
 
 export type InventoryChangeInput = {
   inboundQuantity: number;

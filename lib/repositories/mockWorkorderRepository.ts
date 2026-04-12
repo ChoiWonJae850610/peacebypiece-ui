@@ -28,6 +28,7 @@ function createInitialRepositoryState() {
 
 const mockWorkorderRepository: WorkorderRepository = {
   createInitialState: createInitialRepositoryState,
+  createInitialStateAsync: async () => createInitialRepositoryState(),
   getInitialUsers,
   getInitialWorkOrders,
   getInitialHistoryLogs,
@@ -35,10 +36,15 @@ const mockWorkorderRepository: WorkorderRepository = {
   getDefaultCurrentUserId,
   getDefaultPermissionTargetId,
   loadPersistedState: loadPersistedWorkorderState,
+  loadPersistedStateAsync: async () => loadPersistedWorkorderState(),
   persistState: (payload: PersistedWorkOrderState) => {
     persistWorkorderState(payload);
   },
+  persistStateAsync: async (payload: PersistedWorkOrderState) => {
+    persistWorkorderState(payload);
+  },
   saveWorkOrders,
+  saveWorkOrdersAsync: async (workOrders) => saveWorkOrders(workOrders),
 };
 
 export function getMockWorkorderRepository(): WorkorderRepository {

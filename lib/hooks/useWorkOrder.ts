@@ -112,6 +112,8 @@ export function useWorkOrder() {
     orderRequestConfirmOpen: uiState.orderRequestConfirmOpen,
     pendingWorkflowAction: uiState.pendingWorkflowAction,
     toastMessage: uiState.toastMessage,
+    repositoryStatus: coreState.repositoryStatus,
+    repositoryError: coreState.repositoryError,
     users: coreState.users,
     currentUserId: coreState.currentUserId,
     setCurrentUserId: coreState.setCurrentUserId,
