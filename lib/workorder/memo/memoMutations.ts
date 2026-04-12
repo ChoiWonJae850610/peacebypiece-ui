@@ -1,8 +1,16 @@
-import { createMemoAttachments } from "@/lib/workorder/attachments/attachmentBuilders";
-import { getMemoPayloadInfo } from "@/lib/workorder/memo/memoHistory";
-import { createMemoReplyDraft, createMemoThreadDraft } from "@/lib/workorder/memo/memoDrafts";
 import { addMemoReply, addMemoThread, appendMemoAttachmentsToReply, appendMemoAttachmentsToThread } from "@/lib/workorder/actions";
+import { createMemoAttachments } from "@/lib/workorder/attachments/attachmentBuilders";
+import { buildMemoReplyDraftInput, buildMemoThreadDraftInput } from "@/lib/workorder/memo/memoActions";
 import type { MemoAttachmentPayload, UserProfile, WorkOrder } from "@/types/workorder";
+
+function resolveAttachmentNames(workOrder: WorkOrder, selectedAttachmentIds: string[], createdNames: string[]) {
+  return [
+    ...selectedAttachmentIds
+      .map((attachmentId) => workOrder.attachments.find((item) => item.id === attachmentId)?.name)
+      .filter((name): name is string => Boolean(name)),
+    ...createdNames,
+  ];
+}
 
 export function appendMemoThreadToWorkOrder(payload: {
   workOrder: WorkOrder;
@@ -10,29 +18,28 @@ export function appendMemoThreadToWorkOrder(payload: {
   content: string;
   attachmentPayload?: MemoAttachmentPayload;
 }) {
-  const trimmed = payload.content.trim();
-  const { selectedAttachmentIds, files } = getMemoPayloadInfo(payload.attachmentPayload);
-  if (!trimmed) return null;
+  const draftInput = buildMemoThreadDraftInput(payload);
+  if (!draftInput) return null;
 
-  const nextThread = createMemoThreadDraft(trimmed, payload.currentUser, selectedAttachmentIds);
-  const memoAttachments = createMemoAttachments(files, payload.currentUser, { threadId: nextThread.id });
+  const memoAttachments = createMemoAttachments(draftInput.files, payload.currentUser, { threadId: draftInput.nextThread.id });
+  const withThread = addMemoThread([payload.workOrder], payload.workOrder.id, draftInput.nextThread)[0] ?? payload.workOrder;
+  const nextWorkOrder =
+    memoAttachments.length === 0
+      ? withThread
+      : appendMemoAttachmentsToThread([withThread], payload.workOrder.id, draftInput.nextThread.id, {
+          attachmentIds: memoAttachments.map((item) => item.id),
+          attachments: memoAttachments,
+        })[0] ?? withThread;
 
-  const withThread = addMemoThread([payload.workOrder], payload.workOrder.id, nextThread)[0] ?? payload.workOrder;
-  const nextWorkOrder = memoAttachments.length === 0
-    ? withThread
-    : appendMemoAttachmentsToThread([withThread], payload.workOrder.id, nextThread.id, {
-        attachmentIds: memoAttachments.map((item) => item.id),
-        attachments: memoAttachments,
-      })[0] ?? withThread;
-
-  const attachmentNames = [
-    ...selectedAttachmentIds
-      .map((attachmentId) => payload.workOrder.attachments.find((item) => item.id === attachmentId)?.name)
-      .filter((name): name is string => Boolean(name)),
-    ...memoAttachments.map((attachment) => attachment.name),
-  ];
-
-  return { nextWorkOrder, trimmed, attachmentNames };
+  return {
+    nextWorkOrder,
+    trimmed: draftInput.trimmed,
+    attachmentNames: resolveAttachmentNames(
+      payload.workOrder,
+      draftInput.selectedAttachmentIds,
+      memoAttachments.map((attachment) => attachment.name),
+    ),
+  };
 }
 
 export function appendMemoReplyToWorkOrder(payload: {
@@ -42,27 +49,29 @@ export function appendMemoReplyToWorkOrder(payload: {
   content: string;
   attachmentPayload?: MemoAttachmentPayload;
 }) {
-  const trimmed = payload.content.trim();
-  const { selectedAttachmentIds, files } = getMemoPayloadInfo(payload.attachmentPayload);
-  if (!trimmed) return null;
+  const draftInput = buildMemoReplyDraftInput(payload);
+  if (!draftInput) return null;
 
-  const nextReply = createMemoReplyDraft(trimmed, payload.currentUser, selectedAttachmentIds);
-  const memoAttachments = createMemoAttachments(files, payload.currentUser, { threadId: payload.threadId, replyId: nextReply.id });
+  const memoAttachments = createMemoAttachments(draftInput.files, payload.currentUser, {
+    threadId: payload.threadId,
+    replyId: draftInput.nextReply.id,
+  });
+  const withReply = addMemoReply([payload.workOrder], payload.workOrder.id, payload.threadId, draftInput.nextReply)[0] ?? payload.workOrder;
+  const nextWorkOrder =
+    memoAttachments.length === 0
+      ? withReply
+      : appendMemoAttachmentsToReply([withReply], payload.workOrder.id, payload.threadId, draftInput.nextReply.id, {
+          attachmentIds: memoAttachments.map((item) => item.id),
+          attachments: memoAttachments,
+        })[0] ?? withReply;
 
-  const withReply = addMemoReply([payload.workOrder], payload.workOrder.id, payload.threadId, nextReply)[0] ?? payload.workOrder;
-  const nextWorkOrder = memoAttachments.length === 0
-    ? withReply
-    : appendMemoAttachmentsToReply([withReply], payload.workOrder.id, payload.threadId, nextReply.id, {
-        attachmentIds: memoAttachments.map((item) => item.id),
-        attachments: memoAttachments,
-      })[0] ?? withReply;
-
-  const attachmentNames = [
-    ...selectedAttachmentIds
-      .map((attachmentId) => payload.workOrder.attachments.find((item) => item.id === attachmentId)?.name)
-      .filter((name): name is string => Boolean(name)),
-    ...memoAttachments.map((attachment) => attachment.name),
-  ];
-
-  return { nextWorkOrder, trimmed, attachmentNames };
+  return {
+    nextWorkOrder,
+    trimmed: draftInput.trimmed,
+    attachmentNames: resolveAttachmentNames(
+      payload.workOrder,
+      draftInput.selectedAttachmentIds,
+      memoAttachments.map((attachment) => attachment.name),
+    ),
+  };
 }

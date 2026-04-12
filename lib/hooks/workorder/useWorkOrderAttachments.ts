@@ -9,7 +9,12 @@ import {
   buildOfficialAttachmentUploadResult,
   buildPromoteMemoAttachmentResult,
 } from "@/lib/workorder/actionFlow";
-import { canDeleteAttachmentForCurrentUser, openOfficialAttachmentPicker } from "@/lib/workorder/attachments/attachmentActions";
+import {
+  canDeleteAttachmentForCurrentUser,
+  clearAttachmentInputValue,
+  openOfficialAttachmentPicker,
+  readAttachmentInputFiles,
+} from "@/lib/workorder/attachments/attachmentActions";
 import type { Attachment, HistoryLog, MemoAttachmentPayload, UserProfile, WorkOrder } from "@/types/workorder";
 
 export function useWorkOrderAttachments({
@@ -47,11 +52,11 @@ export function useWorkOrderAttachments({
 
   const handleAttachmentFiles = (event: ChangeEvent<HTMLInputElement>) => {
     if (!canUploadOfficialAttachments) {
-      event.target.value = "";
+      clearAttachmentInputValue(event);
       return;
     }
 
-    const files = Array.from<File>(event.target.files ?? []);
+    const files = readAttachmentInputFiles(event);
     const result = buildOfficialAttachmentUploadResult({
       workOrder: selectedWorkOrder,
       currentUser,
@@ -59,7 +64,7 @@ export function useWorkOrderAttachments({
       text: actionFlowText,
       historyText,
     });
-    event.target.value = "";
+    clearAttachmentInputValue(event);
     if (!result) return;
 
     setWorkOrders((prev) => prev.map((item) => (item.id === selectedWorkOrder.id ? result.nextWorkOrder : item)));
