@@ -1,20 +1,19 @@
+import { DEFAULT_CURRENT_USER_ID, DEFAULT_PERMISSION_TARGET_ID } from "@/lib/data/mock/users";
+import { DEFAULT_SELECTED_WORK_ORDER_ID } from "@/lib/data/mock/workorders";
 import {
-  createSeededWorkorderState,
-  getDefaultCurrentUserId,
-  getDefaultPermissionTargetId,
-  getDefaultSelectedId,
-  getInitialHistoryLogs,
-  getInitialUsers,
-  getInitialWorkOrders,
-  saveWorkOrders,
-} from "@/lib/data/workorderMockData";
+  cloneSavedWorkOrders,
+  createInitialSeededWorkorderState,
+  getSeedHistoryLogs,
+  getSeedUsers,
+  getSeedWorkOrders,
+} from "@/lib/data/mock/seedState";
 import type { PersistedWorkOrderState } from "@/lib/data/mock/types";
 import { loadPersistedWorkorderState, persistWorkorderState } from "@/lib/repositories/workorderPersistence";
 import type { WorkorderRepository } from "@/lib/repositories/workorderRepository";
 
 function createInitialRepositoryState() {
   const persisted = loadPersistedWorkorderState();
-  if (!persisted) return createSeededWorkorderState();
+  if (!persisted) return createInitialSeededWorkorderState();
 
   return {
     users: persisted.users,
@@ -29,12 +28,12 @@ function createInitialRepositoryState() {
 const mockWorkorderRepository: WorkorderRepository = {
   createInitialState: createInitialRepositoryState,
   createInitialStateAsync: async () => createInitialRepositoryState(),
-  getInitialUsers,
-  getInitialWorkOrders,
-  getInitialHistoryLogs,
-  getDefaultSelectedId,
-  getDefaultCurrentUserId,
-  getDefaultPermissionTargetId,
+  getInitialUsers: getSeedUsers,
+  getInitialWorkOrders: getSeedWorkOrders,
+  getInitialHistoryLogs: getSeedHistoryLogs,
+  getDefaultSelectedId: () => DEFAULT_SELECTED_WORK_ORDER_ID,
+  getDefaultCurrentUserId: () => DEFAULT_CURRENT_USER_ID,
+  getDefaultPermissionTargetId: () => DEFAULT_PERMISSION_TARGET_ID,
   loadPersistedState: loadPersistedWorkorderState,
   loadPersistedStateAsync: async () => loadPersistedWorkorderState(),
   persistState: (payload: PersistedWorkOrderState) => {
@@ -43,8 +42,8 @@ const mockWorkorderRepository: WorkorderRepository = {
   persistStateAsync: async (payload: PersistedWorkOrderState) => {
     persistWorkorderState(payload);
   },
-  saveWorkOrders,
-  saveWorkOrdersAsync: async (workOrders) => saveWorkOrders(workOrders),
+  saveWorkOrders: cloneSavedWorkOrders,
+  saveWorkOrdersAsync: async (workOrders) => cloneSavedWorkOrders(workOrders),
 };
 
 export function getMockWorkorderRepository(): WorkorderRepository {

@@ -1,35 +1,9 @@
-import type { Attachment, HistoryFilter, HistoryLog, InventoryLog, UserProfile, WorkOrder, WorkflowState } from "@/types/workorder";
-import { ROLE, getPermissionSummary, hasRole } from "@/lib/constants/roles";
+import type { Attachment, HistoryLog, InventoryLog, WorkOrder, WorkflowState } from "@/types/workorder";
 import { INVENTORY_CHANGE_TYPE } from "@/lib/constants/workorderDomain";
-import { DEFAULT_CURRENT_USER_ID as DEFAULT_CURRENT_USER_ID_VALUE, DEFAULT_PERMISSION_TARGET_ID as DEFAULT_PERMISSION_TARGET_ID_VALUE, WORKORDER_SEED_USERS } from "@/lib/data/mock/users";
-import { DEFAULT_SELECTED_WORK_ORDER_ID, WORKORDER_SEED_HISTORY_LOGS, WORKORDER_SEED_WORK_ORDERS } from "@/lib/data/mock/workorders";
 import { nowLabel } from "@/lib/workorder/history/builders";
 
 export function getCurrentTimeLabel() {
   return nowLabel();
-}
-
-export const INITIAL_HISTORY_LOGS: Record<string, HistoryLog[]> = WORKORDER_SEED_HISTORY_LOGS.reduce<Record<string, HistoryLog[]>>((acc, log) => {
-  if (!acc[log.workOrderId]) acc[log.workOrderId] = [];
-  acc[log.workOrderId].push(log);
-  return acc;
-}, {});
-
-export function getDefaultHistoryFilterByRole(user: Parameters<typeof getPermissionSummary>[0]): HistoryFilter {
-  if (hasRole(user, ROLE.admin)) return "all";
-  if (hasRole(user, ROLE.inspector)) return "inventory";
-  return "work";
-}
-
-export function filterHistoryLogs(logs: HistoryLog[], user: Parameters<typeof getPermissionSummary>[0], filter: HistoryFilter) {
-  const roleFiltered = logs.filter((log) => {
-    if (hasRole(user, ROLE.admin)) return true;
-    if (hasRole(user, ROLE.inspector)) return log.category === "inventory";
-    return log.category === "work";
-  });
-  if (!hasRole(user, ROLE.admin)) return roleFiltered;
-  if (filter === "all") return roleFiltered;
-  return roleFiltered.filter((log) => log.category === filter);
 }
 
 function extractDeltaFromMessage(message: string) {
@@ -45,8 +19,8 @@ export function mapHistoryToInventoryLogs(logs: HistoryLog[]): InventoryLog[] {
       const type = log.action.includes(INVENTORY_CHANGE_TYPE.inbound)
         ? INVENTORY_CHANGE_TYPE.inbound
         : log.action.includes(INVENTORY_CHANGE_TYPE.adjustment)
-        ? INVENTORY_CHANGE_TYPE.adjustment
-        : INVENTORY_CHANGE_TYPE.deduction;
+          ? INVENTORY_CHANGE_TYPE.adjustment
+          : INVENTORY_CHANGE_TYPE.deduction;
 
       const delta = extractDeltaFromMessage(log.message);
 
@@ -102,71 +76,3 @@ export function createWorkflowStateMap(orders: WorkOrder[]): Record<string, Work
 export function createInventoryQuantityMap(orders: WorkOrder[]): Record<string, number> {
   return Object.fromEntries(orders.map((item) => [item.id, item.inventoryQuantity])) as Record<string, number>;
 }
-
-function cloneSeedValue<T>(value: T): T {
-  if (typeof structuredClone === "function") return structuredClone(value);
-  return JSON.parse(JSON.stringify(value)) as T;
-}
-
-export function getSeedUsers(): UserProfile[] {
-  return cloneSeedValue(WORKORDER_SEED_USERS);
-}
-
-export function getSeedWorkOrders(): WorkOrder[] {
-  return cloneSeedValue(WORKORDER_SEED_WORK_ORDERS);
-}
-
-export function getSeedHistoryLogs(): HistoryLog[] {
-  return cloneSeedValue(WORKORDER_SEED_HISTORY_LOGS);
-}
-
-export function getInitialUsers(): UserProfile[] {
-  return getSeedUsers();
-}
-
-
-export function getInitialWorkOrders(): WorkOrder[] {
-  return getSeedWorkOrders();
-}
-
-export function getInitialHistoryLogs(): HistoryLog[] {
-  return getSeedHistoryLogs();
-}
-
-export function getDefaultSelectedId(): string {
-  return DEFAULT_SELECTED_WORK_ORDER_ID;
-}
-
-export function getDefaultCurrentUserId(): string {
-  return DEFAULT_CURRENT_USER_ID_VALUE;
-}
-
-export function getDefaultPermissionTargetId(): string {
-  return DEFAULT_PERMISSION_TARGET_ID_VALUE;
-}
-
-export function getMockWorkOrders() {
-  return getSeedWorkOrders();
-}
-
-export function createSeededWorkorderState() {
-  return {
-    users: getSeedUsers(),
-    workOrders: getSeedWorkOrders(),
-    historyLogs: getSeedHistoryLogs(),
-    selectedId: getDefaultSelectedId(),
-    currentUserId: getDefaultCurrentUserId(),
-    permissionTargetUserId: getDefaultPermissionTargetId(),
-  };
-}
-
-export function saveWorkOrders(workOrders: WorkOrder[]) {
-  return cloneSeedValue(workOrders);
-}
-
-export const INITIAL_WORK_ORDERS: WorkOrder[] = getInitialWorkOrders();
-
-export const DEFAULT_SELECTED_ID = getDefaultSelectedId();
-export const DEFAULT_CURRENT_USER_ID = getDefaultCurrentUserId();
-export const DEFAULT_PERMISSION_TARGET_ID = getDefaultPermissionTargetId();
-export const INITIAL_USERS = getInitialUsers();
