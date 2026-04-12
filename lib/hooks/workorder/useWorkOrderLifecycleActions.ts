@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
+import { useI18n } from "@/lib/i18n";
 import { DEFAULT_SELECTED_WORK_ORDER_ID } from "@/lib/data/mock/workorders";
 import {
   createCreationHistoryLog,
@@ -52,6 +53,8 @@ export function useWorkOrderLifecycleActions({
   setToastMessage,
   setCreateWorkOrderModalOpen,
 }: UseWorkOrderLifecycleActionsParams) {
+  const { i18n } = useI18n();
+  const lifecycleText = i18n.workorder.lifecycle;
   const handleSave = useCallback(
     (workOrder: WorkOrder) => {
       setSaveStatus("saving");
@@ -60,15 +63,15 @@ export function useWorkOrderLifecycleActions({
       setWorkOrders((prev) => prev.map((item) => (item.id === workOrder.id ? { ...item, lastSavedAt: label } : item)));
       setHistoryLogs((prev) => [
         createUpdateHistoryLog(currentUser.name, workOrder.id, [
-          { label: "저장", value: `저장 시각 ${label}` },
-          { label: "작업지시서", value: workOrder.title },
+          { label: lifecycleText.saveHistoryLabel, value: lifecycleText.saveHistoryTimeFormat.replace("{time}", label) },
+          { label: lifecycleText.workOrderLabel, value: workOrder.title },
         ]),
         ...prev,
       ]);
       setSaveStatus("saved");
-      setToastMessage("저장이 완료되었습니다.");
+      setToastMessage(lifecycleText.saveCompletedToast);
     },
-    [currentUser.name, setHistoryLogs, setLastSavedAt, setSaveStatus, setToastMessage, setWorkOrders],
+    [currentUser.name, lifecycleText, setHistoryLogs, setLastSavedAt, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   const handleCreateWorkOrder = useCallback(
@@ -133,13 +136,14 @@ export function useWorkOrderLifecycleActions({
         }),
         ...prev,
       ]);
-      setToastMessage(`리오더 작업지시서 "${getWorkOrderDisplayTitle(nextWorkOrder)}"가 생성되었습니다.`);
+      setToastMessage(lifecycleText.reorderCreatedToastFormat.replace("{title}", getWorkOrderDisplayTitle(nextWorkOrder)));
     },
     [
       canReorderWorkOrder,
       currentUser.id,
       currentUser.name,
       currentUser.role,
+      lifecycleText,
       setHistoryLogs,
       setLastSavedAt,
       setSaveStatus,
@@ -154,7 +158,7 @@ export function useWorkOrderLifecycleActions({
       const target = workOrders.find((item) => item.id === workOrderId);
       if (!target || !canDeleteWorkOrder(target.workflowState) || workOrders.length <= 1) return;
       if (typeof window !== "undefined") {
-        const ok = window.confirm(`작업지시서 "${target.title}"를 삭제할까요?`);
+        const ok = window.confirm(lifecycleText.deleteConfirmFormat.replace("{title}", target.title));
         if (!ok) return;
       }
 
@@ -168,9 +172,9 @@ export function useWorkOrderLifecycleActions({
         setLastSavedAt(fallbackWorkOrder?.lastSavedAt ?? null);
         setSaveStatus("saved");
       }
-      setToastMessage("작업지시서가 삭제되었습니다.");
+      setToastMessage(lifecycleText.deleteCompletedToast);
     },
-    [setHistoryLogs, setLastSavedAt, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
+    [lifecycleText, setHistoryLogs, setLastSavedAt, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
   );
 
   const handleRenameWorkOrderTitle = useCallback(
@@ -178,7 +182,7 @@ export function useWorkOrderLifecycleActions({
       const trimmedTitle = String(nextTitle ?? "").trim();
       if (!trimmedTitle) return;
 
-      const previousBaseTitle = String(workOrder.baseTitle ?? workOrder.title ?? "").trim() || "새 작업지시서";
+      const previousBaseTitle = String(workOrder.baseTitle ?? workOrder.title ?? "").trim() || lifecycleText.newWorkOrderFallbackTitle;
       if (previousBaseTitle === trimmedTitle) return;
 
       const renameResult = renameWorkOrderGroupBaseTitle(workOrders, workOrder.id, trimmedTitle);
@@ -198,11 +202,11 @@ export function useWorkOrderLifecycleActions({
       setSaveStatus("dirty");
       setToastMessage(
         renameResult.affectedWorkOrderIds.length > 1
-          ? "작업지시서명이 리오더 계열 전체에 반영되었습니다."
-          : "작업지시서명이 변경되었습니다.",
+          ? lifecycleText.renameAppliedToSeriesToast
+          : lifecycleText.renameAppliedToast,
       );
     },
-    [currentUser.name, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders],
+    [currentUser.name, lifecycleText, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   return {

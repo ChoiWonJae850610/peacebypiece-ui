@@ -26,6 +26,12 @@ import { appendMemoReplyToWorkOrder, appendMemoThreadToWorkOrder } from "@/lib/w
 import type { Attachment, HistoryLog, MemoAttachmentPayload, UserProfile, WorkOrder, WorkflowAction } from "@/types/workorder";
 import type { InventoryChangeInput, InspectionCompleteInput } from "@/lib/hooks/workorder/useWorkOrderActionTypes";
 import { buildInventoryChanges } from "@/lib/workorder/actions";
+import { DEFAULT_LOCALE, getI18n } from "@/lib/i18n";
+
+const defaultI18n = getI18n(DEFAULT_LOCALE);
+const defaultActionFlowText = defaultI18n.workorder.actionFlow;
+
+export type ActionFlowText = typeof defaultActionFlowText;
 
 export type WorkOrderActionFlowResult = {
   nextWorkOrder: WorkOrder;
@@ -85,6 +91,7 @@ export function buildInspectionCompleteResult(payload: {
   workOrder: WorkOrder;
   actorName: string;
   input: InspectionCompleteInput;
+  text?: ActionFlowText;
 }): WorkOrderActionFlowResult {
   const trimmedMemo = payload.input.memo.trim();
 
@@ -101,7 +108,7 @@ export function buildInspectionCompleteResult(payload: {
       }),
     ],
     saveStatus: "dirty",
-    toastMessage: "검수 완료가 반영되었습니다.",
+    toastMessage: (payload.text ?? defaultActionFlowText).inspectionCompletedToast,
   };
 }
 
@@ -119,6 +126,7 @@ export function buildOfficialAttachmentUploadResult(payload: {
   workOrder: WorkOrder;
   currentUser: UserProfile;
   files: File[];
+  text?: ActionFlowText;
 }): WorkOrderActionFlowResult | null {
   const result = applyOfficialAttachmentFilesToWorkOrder({
     workOrder: payload.workOrder,
@@ -132,7 +140,7 @@ export function buildOfficialAttachmentUploadResult(payload: {
     nextWorkOrder: result.nextWorkOrder,
     historyLogs: [createAttachmentUploadHistoryLog(payload.currentUser.name, payload.workOrder.id, result.attachments)],
     saveStatus: "dirty",
-    toastMessage: result.attachments.length > 1 ? "공식 첨부가 등록되었습니다." : "공식 첨부가 등록되었습니다.",
+    toastMessage: (payload.text ?? defaultActionFlowText).officialAttachmentUploadedToast,
   };
 }
 
@@ -162,6 +170,7 @@ export function buildMemoThreadResult(payload: {
   currentUser: UserProfile;
   content: string;
   attachmentPayload?: MemoAttachmentPayload;
+  text?: ActionFlowText;
 }): (WorkOrderActionFlowResult & { trimmed: string }) | null {
   const result = appendMemoThreadToWorkOrder(payload);
   if (!result) return null;
@@ -177,7 +186,9 @@ export function buildMemoThreadResult(payload: {
     ],
     saveStatus: "dirty",
     toastMessage:
-      result.attachmentNames.length > 0 ? "첨부가 포함된 작업 메모가 등록되었습니다." : "작업 메모가 등록되었습니다.",
+      result.attachmentNames.length > 0
+        ? (payload.text ?? defaultActionFlowText).memoThreadCreatedWithAttachmentToast
+        : (payload.text ?? defaultActionFlowText).memoThreadCreatedToast,
     trimmed: result.trimmed,
   };
 }
@@ -188,6 +199,7 @@ export function buildMemoReplyResult(payload: {
   threadId: string;
   content: string;
   attachmentPayload?: MemoAttachmentPayload;
+  text?: ActionFlowText;
 }): (WorkOrderActionFlowResult & { trimmed: string }) | null {
   const result = appendMemoReplyToWorkOrder(payload);
   if (!result) return null;
@@ -203,7 +215,9 @@ export function buildMemoReplyResult(payload: {
     ],
     saveStatus: "dirty",
     toastMessage:
-      result.attachmentNames.length > 0 ? "첨부가 포함된 메모 댓글이 등록되었습니다." : "메모 댓글이 등록되었습니다.",
+      result.attachmentNames.length > 0
+        ? (payload.text ?? defaultActionFlowText).memoReplyCreatedWithAttachmentToast
+        : (payload.text ?? defaultActionFlowText).memoReplyCreatedToast,
     trimmed: result.trimmed,
   };
 }
@@ -212,6 +226,7 @@ export function buildPromoteMemoAttachmentResult(payload: {
   workOrder: WorkOrder;
   attachmentId: string;
   currentUser: UserProfile;
+  text?: ActionFlowText;
 }): WorkOrderActionFlowResult | null {
   const targetAttachment = payload.workOrder.attachments.find((item) => item.id === payload.attachmentId);
   if (!targetAttachment || (targetAttachment.scope ?? "official") === "official") return null;
@@ -225,7 +240,7 @@ export function buildPromoteMemoAttachmentResult(payload: {
     nextWorkOrder,
     historyLogs: [createAttachmentPromoteHistoryLog(payload.currentUser.name, payload.workOrder.id, targetAttachment)],
     saveStatus: "dirty",
-    toastMessage: "메모 첨부가 공식 첨부로 승격되었습니다.",
+    toastMessage: (payload.text ?? defaultActionFlowText).memoAttachmentPromotedToast,
   };
 }
 
@@ -234,6 +249,7 @@ export function buildManagerChangeResult(payload: {
   actorName: string;
   managerId: string;
   managerName: string;
+  text?: ActionFlowText;
 }): WorkOrderActionFlowResult | null {
   const previousManagerName = payload.workOrder.manager || "-";
   const previousManagerId = payload.workOrder.managerId ?? null;
@@ -248,6 +264,6 @@ export function buildManagerChangeResult(payload: {
       createManagerChangeHistoryLog(payload.actorName, payload.workOrder.id, previousManagerName, payload.managerName),
     ],
     saveStatus: "dirty",
-    toastMessage: "담당자가 변경되었습니다.",
+    toastMessage: (payload.text ?? defaultActionFlowText).managerChangedToast,
   };
 }

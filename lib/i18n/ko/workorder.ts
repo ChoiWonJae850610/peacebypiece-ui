@@ -95,6 +95,29 @@ export const workorderKo = {
       defaultFilterLabel: "전체",
     },
   },
+
+  lifecycle: {
+    saveHistoryLabel: "저장",
+    saveHistoryTimeFormat: "저장 시각 {time}",
+    workOrderLabel: "작업지시서",
+    saveCompletedToast: "저장이 완료되었습니다.",
+    reorderCreatedToastFormat: '리오더 작업지시서 "{title}"가 생성되었습니다.',
+    deleteConfirmFormat: '작업지시서 "{title}"를 삭제할까요?',
+    deleteCompletedToast: "작업지시서가 삭제되었습니다.",
+    newWorkOrderFallbackTitle: "새 작업지시서",
+    renameAppliedToSeriesToast: "작업지시서명이 리오더 계열 전체에 반영되었습니다.",
+    renameAppliedToast: "작업지시서명이 변경되었습니다.",
+  },
+  actionFlow: {
+    inspectionCompletedToast: "검수 완료가 반영되었습니다.",
+    officialAttachmentUploadedToast: "공식 첨부가 등록되었습니다.",
+    memoThreadCreatedToast: "작업 메모가 등록되었습니다.",
+    memoThreadCreatedWithAttachmentToast: "첨부가 포함된 작업 메모가 등록되었습니다.",
+    memoReplyCreatedToast: "메모 댓글이 등록되었습니다.",
+    memoReplyCreatedWithAttachmentToast: "첨부가 포함된 메모 댓글이 등록되었습니다.",
+    memoAttachmentPromotedToast: "메모 첨부가 공식 첨부로 승격되었습니다.",
+    managerChangedToast: "담당자가 변경되었습니다.",
+  },
   ui: {
     common: {
       countSuffix: "건",

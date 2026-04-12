@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
+import { useI18n } from "@/lib/i18n";
 import { buildUserRoleState } from "@/lib/constants/roles";
 import { buildManagerChangeResult } from "@/lib/workorder/actionFlow";
 import type { RoleType } from "@/types/permission";
@@ -16,6 +17,8 @@ export function useWorkOrderAdminActions({
   setToastMessage,
   setManagerAssignModalOpen,
 }: AdminActionBaseParams) {
+  const { i18n } = useI18n();
+  const actionFlowText = i18n.workorder.actionFlow;
   const handleApplyRoles = useCallback(
     (userId: string, roles: RoleType[]) => {
       const nextRoleState = buildUserRoleState(roles);
@@ -47,6 +50,7 @@ export function useWorkOrderAdminActions({
         actorName: currentUser.name,
         managerId: nextManager.id,
         managerName: nextManager.name,
+        text: actionFlowText,
       });
       if (!result) {
         setManagerAssignModalOpen(false);
@@ -65,7 +69,7 @@ export function useWorkOrderAdminActions({
       }
       setManagerAssignModalOpen(false);
     },
-    [currentUser.name, setHistoryLogs, setManagerAssignModalOpen, setSaveStatus, setToastMessage, setWorkOrders],
+    [actionFlowText, currentUser.name, setHistoryLogs, setManagerAssignModalOpen, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   return {

@@ -95,6 +95,29 @@ export const workorderEn = {
       defaultFilterLabel: "All",
     },
   },
+
+  lifecycle: {
+    saveHistoryLabel: "Save",
+    saveHistoryTimeFormat: "Saved at {time}",
+    workOrderLabel: "Work order",
+    saveCompletedToast: "Saved successfully.",
+    reorderCreatedToastFormat: 'Reorder work order "{title}" has been created.',
+    deleteConfirmFormat: 'Delete work order "{title}"?',
+    deleteCompletedToast: "Work order deleted.",
+    newWorkOrderFallbackTitle: "New work order",
+    renameAppliedToSeriesToast: "The work order title has been applied to the entire reorder series.",
+    renameAppliedToast: "The work order title has been changed.",
+  },
+  actionFlow: {
+    inspectionCompletedToast: "Inspection completion has been applied.",
+    officialAttachmentUploadedToast: "Official attachment has been uploaded.",
+    memoThreadCreatedToast: "Work memo has been registered.",
+    memoThreadCreatedWithAttachmentToast: "Work memo with attachment has been registered.",
+    memoReplyCreatedToast: "Memo reply has been registered.",
+    memoReplyCreatedWithAttachmentToast: "Memo reply with attachment has been registered.",
+    memoAttachmentPromotedToast: "Memo attachment has been promoted to an official attachment.",
+    managerChangedToast: "Manager has been changed.",
+  },
   ui: {
     common: {
       countSuffix: "items",

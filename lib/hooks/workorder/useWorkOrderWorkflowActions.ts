@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
+import { useI18n } from "@/lib/i18n";
 import {
   buildInspectionCompleteResult,
   buildInventoryApplyResult,
@@ -44,6 +45,8 @@ export function useWorkOrderWorkflowActions({
   setOrderRequestConfirmOpen,
   workOrders,
 }: UseWorkOrderWorkflowActionsParams) {
+  const { i18n } = useI18n();
+  const actionFlowText = i18n.workorder.actionFlow;
   const workOrdersRef = useRef(workOrders);
 
   useEffect(() => {
@@ -125,6 +128,7 @@ export function useWorkOrderWorkflowActions({
         workOrder: currentWorkOrder,
         actorName: currentUser.name,
         input: { orderEntryId, inboundQuantity, nextInventoryQuantity, memo },
+        text: actionFlowText,
       });
 
       setWorkOrders((prev) => prev.map((item) => (item.id === workOrderId ? result.nextWorkOrder : item)));
@@ -138,7 +142,7 @@ export function useWorkOrderWorkflowActions({
         setToastMessage(result.toastMessage);
       }
     },
-    [currentUser.name, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders],
+    [actionFlowText, currentUser.name, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   const handleUpdateSelectedWorkOrder = useCallback(

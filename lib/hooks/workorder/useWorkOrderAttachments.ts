@@ -1,6 +1,7 @@
 "use client";
 
 import type { ChangeEvent, Dispatch, RefObject, SetStateAction } from "react";
+import { useI18n } from "@/lib/i18n";
 import {
   buildAttachmentDeleteResult,
   buildMemoReplyResult,
@@ -36,6 +37,9 @@ export function useWorkOrderAttachments({
   setSaveStatus: Dispatch<SetStateAction<"saved" | "dirty" | "saving">>;
   setToastMessage: Dispatch<SetStateAction<string | null>>;
 }) {
+  const { i18n } = useI18n();
+  const actionFlowText = i18n.workorder.actionFlow;
+
   const handleOpenAttachmentPicker = () => {
     openOfficialAttachmentPicker(attachmentInputRef, canUploadOfficialAttachments);
   };
@@ -51,6 +55,7 @@ export function useWorkOrderAttachments({
       workOrder: selectedWorkOrder,
       currentUser,
       files,
+      text: actionFlowText,
     });
     event.target.value = "";
     if (!result) return;
@@ -99,6 +104,7 @@ export function useWorkOrderAttachments({
       currentUser,
       content,
       attachmentPayload: payload,
+      text: actionFlowText,
     });
     if (!result) return;
 
@@ -121,6 +127,7 @@ export function useWorkOrderAttachments({
       threadId,
       content,
       attachmentPayload: payload,
+      text: actionFlowText,
     });
     if (!result) return;
 
@@ -143,6 +150,7 @@ export function useWorkOrderAttachments({
       workOrder: selectedWorkOrder,
       attachmentId,
       currentUser,
+      text: actionFlowText,
     });
     if (!result) return;
 
