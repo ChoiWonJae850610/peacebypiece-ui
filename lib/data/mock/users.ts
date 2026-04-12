@@ -1,22 +1,22 @@
 import type { MockUserSource } from "@/lib/data/mock/types";
 import type { UserProfile } from "@/types/user";
-import { buildUserRoleState } from "@/lib/constants/roles";
+import { ROLE, buildUserRoleState } from "@/lib/constants/roles";
 
 const users: UserProfile[] = [
   {
     id: "user-designer",
     name: "김디자이너",
-    ...buildUserRoleState(["디자이너"]),
+    ...buildUserRoleState([ROLE.designer]),
   },
   {
     id: "user-admin",
     name: "박관리",
-    ...buildUserRoleState(["관리자"]),
+    ...buildUserRoleState([ROLE.admin]),
   },
   {
     id: "user-qc",
     name: "이검수",
-    ...buildUserRoleState(["입고/검수"]),
+    ...buildUserRoleState([ROLE.inspector]),
   },
 ];
 

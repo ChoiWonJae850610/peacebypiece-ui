@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
-import { formatRoles, hasRole } from "@/lib/constants/roles";
+import { ROLE, formatRoles, hasRole } from "@/lib/constants/roles";
 import type { UserProfile } from "@/types/user";
 import { useI18n } from "@/lib/i18n";
 import { SELECTABLE_CARD_CLASS, SELECTABLE_CARD_SUBTEXT_CLASS } from "@/lib/constants/display";
@@ -25,7 +25,7 @@ export default function ManagerAssignModal({
   const { i18n } = useI18n();
   const copy = i18n.common.ui.modal.managerAssign;
   const managerCandidates = useMemo(
-    () => users.filter((user) => hasRole(user, "관리자") || hasRole(user, "디자이너")),
+    () => users.filter((user) => hasRole(user, ROLE.admin) || hasRole(user, ROLE.designer)),
     [users],
   );
 

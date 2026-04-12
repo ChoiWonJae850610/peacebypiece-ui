@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { DEFAULT_REGISTRY_TYPE, REGISTRY_TYPE_OPTIONS } from "@/lib/constants/workorderOptions";
+import { REGISTRY_TYPE, type RegistryTypeValue } from "@/lib/constants/workorderDomain";
 import { useI18n } from "@/lib/i18n";
 
-export type RegistryType = "거래처" | "공장";
+export type RegistryType = RegistryTypeValue;
 
 type PartnerFactoryRegistryModalProps = {
   open: boolean;
@@ -25,8 +26,8 @@ export default function PartnerFactoryRegistryModal({
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.layout.partnerFactoryRegistry;
   const typeOptionLabels = {
-    거래처: copy.typeOptions.partner,
-    공장: copy.typeOptions.factory,
+    [REGISTRY_TYPE.partner]: copy.typeOptions.partner,
+    [REGISTRY_TYPE.factory]: copy.typeOptions.factory,
   } as const;
 
   useEffect(() => {

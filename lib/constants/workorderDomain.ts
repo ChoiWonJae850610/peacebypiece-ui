@@ -10,6 +10,36 @@ export const MATERIAL_KIND = {
 
 export type MaterialKindValue = (typeof MATERIAL_KIND)[keyof typeof MATERIAL_KIND];
 
+export const INVENTORY_STATUS = {
+  unchecked: "unchecked",
+  normal: "normal",
+  shortage: "shortage",
+} as const;
+
+export type InventoryStatusValue = (typeof INVENTORY_STATUS)[keyof typeof INVENTORY_STATUS];
+
+export const INVENTORY_STATUS_LABELS: Record<InventoryStatusValue, string> = {
+  [INVENTORY_STATUS.unchecked]: "확인전",
+  [INVENTORY_STATUS.normal]: "정상",
+  [INVENTORY_STATUS.shortage]: "부족",
+};
+
+export const LEGACY_INVENTORY_STATUS_MAP = {
+  확인전: INVENTORY_STATUS.unchecked,
+  정상: INVENTORY_STATUS.normal,
+  부족: INVENTORY_STATUS.shortage,
+} as const;
+
+export function toInventoryStatus(value: unknown): InventoryStatusValue {
+  if (value === INVENTORY_STATUS.unchecked || value === INVENTORY_STATUS.normal || value === INVENTORY_STATUS.shortage) return value;
+  if (typeof value === "string" && value in LEGACY_INVENTORY_STATUS_MAP) return LEGACY_INVENTORY_STATUS_MAP[value as keyof typeof LEGACY_INVENTORY_STATUS_MAP];
+  return INVENTORY_STATUS.unchecked;
+}
+
+export function getInventoryStatusLabel(value: unknown): string {
+  return INVENTORY_STATUS_LABELS[toInventoryStatus(value)];
+}
+
 export const INVENTORY_CHANGE_TYPE = {
   inbound: "입고",
   deduction: "차감",
@@ -23,6 +53,29 @@ export const INVENTORY_CHANGE_LABELS = [
   INVENTORY_CHANGE_TYPE.deduction,
   INVENTORY_CHANGE_TYPE.adjustment,
 ] as const satisfies readonly InventoryChangeTypeValue[];
+
+export const REGISTRY_TYPE = {
+  partner: "partner",
+  factory: "factory",
+} as const;
+
+export type RegistryTypeValue = (typeof REGISTRY_TYPE)[keyof typeof REGISTRY_TYPE];
+
+export const REGISTRY_TYPE_LABELS: Record<RegistryTypeValue, string> = {
+  [REGISTRY_TYPE.partner]: "거래처",
+  [REGISTRY_TYPE.factory]: "공장",
+};
+
+export const LEGACY_REGISTRY_TYPE_MAP = {
+  거래처: REGISTRY_TYPE.partner,
+  공장: REGISTRY_TYPE.factory,
+} as const;
+
+export function toRegistryType(value: unknown): RegistryTypeValue {
+  if (value === REGISTRY_TYPE.partner || value === REGISTRY_TYPE.factory) return value;
+  if (typeof value === "string" && value in LEGACY_REGISTRY_TYPE_MAP) return LEGACY_REGISTRY_TYPE_MAP[value as keyof typeof LEGACY_REGISTRY_TYPE_MAP];
+  return REGISTRY_TYPE.partner;
+}
 
 export const EMPTY_SELECTION_VALUES = [DEFAULT_UNSELECTED_OPTION, DEFAULT_UNASSIGNED_FACTORY_LABEL] as const;
 export type EmptySelectionValue = (typeof EMPTY_SELECTION_VALUES)[number];

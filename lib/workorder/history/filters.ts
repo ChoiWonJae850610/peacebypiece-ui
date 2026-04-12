@@ -1,4 +1,4 @@
-import { hasRole, normalizeRoles } from "@/lib/constants/roles";
+import { ROLE, hasRole, normalizeRoles } from "@/lib/constants/roles";
 import type { HistoryFilter, HistoryLog } from "@/types/workorder";
 import type { RoleType } from "@/types/permission";
 
@@ -14,7 +14,7 @@ export function filterHistoryLogs(
   }
 
   const roles = normalizeRoles(currentRoles);
-  if (hasRole(roles, "디자이너")) {
+  if (hasRole(roles, ROLE.designer)) {
     return scopedHistoryLogs.filter((item) => item.category === "work" || item.category === "attachment");
   }
 

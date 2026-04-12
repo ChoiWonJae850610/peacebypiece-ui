@@ -3,6 +3,7 @@ import {
   ORDER_INSPECTION_STATUSES,
 } from "@/lib/constants/workorderStates";
 import {
+  ROLE,
   canEditInventoryByRoles,
   hasRole,
   isAdminRole,
@@ -74,7 +75,7 @@ export function canCompleteInspection(currentRoles: RoleType[]) {
 }
 
 export function canEditInventoryForWorkflow(currentRoles: RoleType[], _currentWorkflowState: WorkflowState) {
-  return hasRole(currentRoles, "관리자") || canEditInventoryByRoles(currentRoles);
+  return hasRole(currentRoles, ROLE.admin) || canEditInventoryByRoles(currentRoles);
 }
 
 export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles, currentUserId, workOrder }: WorkflowContext): WorkflowAction[] {

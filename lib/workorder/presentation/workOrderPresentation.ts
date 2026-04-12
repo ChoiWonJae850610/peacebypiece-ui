@@ -1,4 +1,5 @@
 import { EMPTY_DISPLAY, INVENTORY_STATUS_LABEL_PREFIX } from "@/lib/constants/display";
+import { getInventoryStatusLabel } from "@/lib/constants/workorderDomain";
 import { hasDisplayText, joinDisplayParts } from "@/lib/utils/display";
 import { getI18n } from "@/lib/i18n";
 import type { WorkOrderListItem } from "@/types/workorder";
@@ -12,7 +13,7 @@ export function getCategoryPath(workOrder: Pick<WorkOrderListItem, "category1" |
 }
 
 export function getInventoryLabel(status: string | null | undefined) {
-  return `${INVENTORY_STATUS_LABEL_PREFIX}${hasDisplayText(status) ? String(status).trim() : EMPTY_DISPLAY}`;
+  return `${INVENTORY_STATUS_LABEL_PREFIX}${hasDisplayText(status) ? getInventoryStatusLabel(status) : EMPTY_DISPLAY}`;
 }
 
 export function getWorkOrderState(workflowStateById: Record<string, string>, workOrderId: string): WorkflowState {

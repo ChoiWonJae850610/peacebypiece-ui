@@ -1,7 +1,7 @@
 import type { Material } from "@/types/material";
 import type { RoleType } from "@/types/permission";
 import type { UserProfile } from "@/types/user";
-import type { InventoryChangeTypeValue } from "@/lib/constants/workorderDomain";
+import type { InventoryChangeTypeValue, InventoryStatusValue } from "@/lib/constants/workorderDomain";
 import type { OrderInspectionStatusValue } from "@/lib/constants/workorderStates";
 import type { DisplayStage, HistoryCategory, HistoryFilter, HistoryTone, WorkflowAction, WorkflowState } from "@/types/workflow";
 
@@ -97,7 +97,7 @@ export type WorkOrder = {
   lossCost?: number;
   orderEntries?: OrderEntry[];
   inventoryQuantity: number;
-  inventoryStatus: string;
+  inventoryStatus: InventoryStatusValue;
   memo: string;
   materials: Material[];
   outsourcing: Outsourcing[];

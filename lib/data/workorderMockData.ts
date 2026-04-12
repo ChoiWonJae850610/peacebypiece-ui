@@ -1,6 +1,6 @@
 import type { Attachment, HistoryFilter, HistoryLog, InventoryLog, WorkOrder, WorkflowState } from "@/types/workorder";
 import type { PersistedWorkOrderState } from "@/lib/data/mock/types";
-import { getPermissionSummary, hasRole } from "@/lib/constants/roles";
+import { ROLE, getPermissionSummary, hasRole } from "@/lib/constants/roles";
 import { LEGACY_STORAGE_KEYS, STORAGE_KEY } from "@/lib/constants/app";
 import { INVENTORY_CHANGE_TYPE } from "@/lib/constants/workorderDomain";
 import { DEFAULT_CURRENT_USER_ID as DEFAULT_CURRENT_USER_ID_VALUE, DEFAULT_PERMISSION_TARGET_ID as DEFAULT_PERMISSION_TARGET_ID_VALUE, MOCK_USERS } from "@/lib/data/mock/users";
@@ -29,18 +29,18 @@ export const INITIAL_HISTORY_LOGS: Record<string, HistoryLog[]> = MOCK_HISTORY_L
 }, {});
 
 export function getDefaultHistoryFilterByRole(user: Parameters<typeof getPermissionSummary>[0]): HistoryFilter {
-  if (hasRole(user, "관리자")) return "all";
-  if (hasRole(user, "입고/검수")) return "inventory";
+  if (hasRole(user, ROLE.admin)) return "all";
+  if (hasRole(user, ROLE.inspector)) return "inventory";
   return "work";
 }
 
 export function filterHistoryLogs(logs: HistoryLog[], user: Parameters<typeof getPermissionSummary>[0], filter: HistoryFilter) {
   const roleFiltered = logs.filter((log) => {
-    if (hasRole(user, "관리자")) return true;
-    if (hasRole(user, "입고/검수")) return log.category === "inventory";
+    if (hasRole(user, ROLE.admin)) return true;
+    if (hasRole(user, ROLE.inspector)) return log.category === "inventory";
     return log.category === "work";
   });
-  if (!hasRole(user, "관리자")) return roleFiltered;
+  if (!hasRole(user, ROLE.admin)) return roleFiltered;
   if (filter === "all") return roleFiltered;
   return roleFiltered.filter((log) => log.category === filter);
 }

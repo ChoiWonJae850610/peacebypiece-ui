@@ -1,4 +1,6 @@
-export type RoleType = "디자이너" | "관리자" | "입고/검수";
+export const ROLE_VALUES = ["designer", "admin", "inspector"] as const;
+
+export type RoleType = (typeof ROLE_VALUES)[number];
 
 export type PermissionSet = {
   canSeeProductionSections: boolean;

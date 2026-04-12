@@ -7,7 +7,7 @@ import {
   type EditableSectionKey,
   type OrderEntryState,
 } from "@/components/workorder/detail/shared/detailEditorShared";
-import { MATERIAL_KIND } from "@/lib/constants/workorderDomain";
+import { MATERIAL_KIND, REGISTRY_TYPE } from "@/lib/constants/workorderDomain";
 import {
   DEFAULT_FACTORY_OPTION,
   DEFAULT_MATERIAL_STATUS,
@@ -73,7 +73,7 @@ export function useWorkOrderDetailEditor({
     return getInitialOrderEntries(workOrder).reduce<string[]>((options, item) => appendOption(options, item.factory), seeded);
   });
   const [registryModalOpen, setRegistryModalOpen] = useState(false);
-  const [registryType, setRegistryType] = useState<RegistryType>("거래처");
+  const [registryType, setRegistryType] = useState<RegistryType>(REGISTRY_TYPE.partner);
   const [basicInfoModalOpen, setBasicInfoModalOpen] = useState(false);
   const [basicInfoDraft, setBasicInfoDraft] = useState<BasicInfoState>(() => getInitialBasicInfo(workOrder));
   const [materialItems, setMaterialItems] = useState<Material[]>(() => (workOrder.materials ?? []).map(recalculateMaterial));
@@ -342,7 +342,7 @@ export function useWorkOrderDetailEditor({
   };
 
   const handleRegistrySave = ({ type, name }: { type: RegistryType; name: string }) => {
-    if (type === "거래처") {
+    if (type === REGISTRY_TYPE.partner) {
       setPartnerOptions((current) => appendOption(current, name));
       setBasicInfo((current) => ({ ...current, partner: name }));
       setBasicInfoDraft((current) => ({ ...current, partner: name }));

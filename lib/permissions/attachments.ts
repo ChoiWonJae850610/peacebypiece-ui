@@ -1,4 +1,4 @@
-import { hasRole } from "@/lib/constants/roles";
+import { ROLE, hasRole } from "@/lib/constants/roles";
 import { getI18n } from "@/lib/i18n";
 import type { Attachment, AttachmentScope, AttachmentType, UserProfile } from "@/types/workorder";
 
@@ -42,6 +42,6 @@ export function canPreviewAttachment(attachment: Attachment | null | undefined):
 
 export function canDeleteAttachmentByUser(user: UserProfile, attachment: Attachment | null): boolean {
   if (!attachment) return false;
-  if (hasRole(user, "관리자")) return true;
+  if (hasRole(user, ROLE.admin)) return true;
   return attachment.ownerId === user.id;
 }

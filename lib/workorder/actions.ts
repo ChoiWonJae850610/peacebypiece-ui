@@ -1,4 +1,4 @@
-import { INVENTORY_CHANGE_TYPE } from "@/lib/constants/workorderDomain";
+import { INVENTORY_CHANGE_TYPE, INVENTORY_STATUS } from "@/lib/constants/workorderDomain";
 import { createAttachmentId } from "@/lib/permissions/attachments";
 import type { Material } from "@/types/material";
 import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
@@ -37,7 +37,7 @@ export function createNewWorkOrder(nextIndex: number, payload: {
     dueDate: "미정",
     quantity: 0,
     inventoryQuantity: 0,
-    inventoryStatus: "확인전",
+    inventoryStatus: INVENTORY_STATUS.unchecked,
     memo: "새 작업지시서가 생성되었습니다.",
     materials: [],
     outsourcing: [],
@@ -92,7 +92,7 @@ export function applyInventoryAdjustmentToWorkOrder(
   return {
     ...workOrder,
     inventoryQuantity: nextInventory,
-    inventoryStatus: nextInventory > 0 ? "정상" : "부족",
+    inventoryStatus: nextInventory > 0 ? INVENTORY_STATUS.normal : INVENTORY_STATUS.shortage,
   };
 }
 
@@ -208,7 +208,7 @@ export function completeInspectionForWorkOrder(
     ...workOrder,
     orderEntries: nextOrderEntries,
     inventoryQuantity: payload.nextInventoryQuantity,
-    inventoryStatus: payload.nextInventoryQuantity > 0 ? "정상" : "부족",
+    inventoryStatus: payload.nextInventoryQuantity > 0 ? INVENTORY_STATUS.normal : INVENTORY_STATUS.shortage,
   };
 }
 
@@ -350,7 +350,7 @@ export function cloneWorkOrderForReorder(
     createdById: payload.createdById,
     createdByRole: payload.createdByRole,
     workflowState: "draft",
-    inventoryStatus: sourceWorkOrder.inventoryQuantity > 0 ? "정상" : sourceWorkOrder.inventoryStatus,
+    inventoryStatus: sourceWorkOrder.inventoryQuantity > 0 ? INVENTORY_STATUS.normal : sourceWorkOrder.inventoryStatus,
     orderEntries: cloneOrderEntries(sourceWorkOrder.orderEntries),
     materials: cloneMaterials(sourceWorkOrder.materials),
     outsourcing: cloneOutsourcingRows(sourceWorkOrder.outsourcing),

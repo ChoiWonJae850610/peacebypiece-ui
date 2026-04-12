@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
-import { DEFAULT_ROLE, ROLE_DISPLAY_GUIDE, formatRoles, normalizeRoles } from "@/lib/constants/roles";
+import { DEFAULT_ROLE, ROLE_DISPLAY_GUIDE, formatRoles, normalizeRoles, toRoleType } from "@/lib/constants/roles";
 import { useI18n } from "@/lib/i18n";
 import { SELECTABLE_CARD_CLASS, SELECTABLE_CARD_SUBTEXT_CLASS } from "@/lib/constants/display";
 import type { RoleType, UserProfile } from "@/types/workorder";
@@ -21,13 +21,13 @@ function normalizeRoleOption(item: unknown, index: number): NormalizedRoleOption
   if (item && typeof item === "object") {
     const record = item as Record<string, unknown>;
     const normalizedRole =
-      (typeof record.role === "string" && record.role in ROLE_FALLBACKS ? (record.role as RoleType) : null) ??
-      (typeof record.value === "string" && record.value in ROLE_FALLBACKS ? (record.value as RoleType) : null) ??
-      (typeof record.key === "string" && record.key in ROLE_FALLBACKS ? (record.key as RoleType) : null) ??
-      (typeof record.id === "string" && record.id in ROLE_FALLBACKS ? (record.id as RoleType) : null) ??
-      (typeof record.title === "string" && record.title in ROLE_FALLBACKS ? (record.title as RoleType) : null) ??
-      (typeof record.label === "string" && record.label in ROLE_FALLBACKS ? (record.label as RoleType) : null) ??
-      (typeof record.name === "string" && record.name in ROLE_FALLBACKS ? (record.name as RoleType) : null);
+      toRoleType(record.role) ??
+      toRoleType(record.value) ??
+      toRoleType(record.key) ??
+      toRoleType(record.id) ??
+      toRoleType(record.title) ??
+      toRoleType(record.label) ??
+      toRoleType(record.name);
 
     if (normalizedRole) {
       const fallback = ROLE_FALLBACKS[normalizedRole];
