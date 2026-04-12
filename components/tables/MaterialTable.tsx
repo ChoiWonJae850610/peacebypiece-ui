@@ -7,7 +7,7 @@ export default function MaterialTable() {
     <div className="mt-4 overflow-x-auto">
       <table className="min-w-[600px] text-sm">
         <tbody>
-          <tr><td>{i18n.workorder.presentation.materials.title}</td><td>{common.sample}</td></tr>
+          <tr><td>{i18n.workorder.ui.sections.material.title}</td><td>{common.sample}</td></tr>
         </tbody>
       </table>
     </div>

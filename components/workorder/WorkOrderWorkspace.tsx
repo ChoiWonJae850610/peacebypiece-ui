@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import WorkOrderLayout from "@/components/workorder/WorkOrderLayout";
 import WorkOrderOverlay from "@/components/workorder/WorkOrderOverlay";
 import { useWorkOrder } from "@/lib/hooks/useWorkOrder";
+import { getPendingAttachmentDelete } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
 import { buildWorkspaceViewModel } from "@/lib/workorder/workspace/buildWorkspaceViewModel";
 
 export default function WorkOrderWorkspace() {
@@ -103,7 +104,7 @@ export default function WorkOrderWorkspace() {
 
   const [pendingAttachmentDeleteId, setPendingAttachmentDeleteId] = useState<string | null>(null);
   const pendingAttachmentDelete = useMemo(
-    () => selectedWorkOrder.attachments.find((item) => item.id === pendingAttachmentDeleteId) ?? null,
+    () => getPendingAttachmentDelete(selectedWorkOrder.attachments, pendingAttachmentDeleteId),
     [selectedWorkOrder.attachments, pendingAttachmentDeleteId],
   );
 
