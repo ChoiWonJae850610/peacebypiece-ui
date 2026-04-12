@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { SECTION_PREFERENCES_STORAGE_KEY } from "@/lib/constants/app";
+import { loadSectionPreferences, persistSectionPreferences } from "@/lib/repositories/uiPreferencePersistence";
 import type { WorkflowAction } from "@/types/workorder";
 
 export function useWorkOrderUIState() {
@@ -24,27 +24,18 @@ export function useWorkOrderUIState() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      const raw = window.localStorage.getItem(SECTION_PREFERENCES_STORAGE_KEY);
-      if (!raw) return;
-      const parsed = JSON.parse(raw) as { basicInfoOpen?: boolean; materialOpen?: boolean; outsourcingOpen?: boolean };
-      setBasicInfoOpen(Boolean(parsed.basicInfoOpen));
-      setMaterialOpen(Boolean(parsed.materialOpen));
-      setOutsourcingOpen(Boolean(parsed.outsourcingOpen));
-    } catch {}
+    const persisted = loadSectionPreferences();
+    setBasicInfoOpen(persisted.basicInfoOpen);
+    setMaterialOpen(persisted.materialOpen);
+    setOutsourcingOpen(persisted.outsourcingOpen);
   }, []);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(
-      SECTION_PREFERENCES_STORAGE_KEY,
-      JSON.stringify({
-        basicInfoOpen,
-        materialOpen,
-        outsourcingOpen,
-      }),
-    );
+    persistSectionPreferences({
+      basicInfoOpen,
+      materialOpen,
+      outsourcingOpen,
+    });
   }, [basicInfoOpen, materialOpen, outsourcingOpen]);
 
   useEffect(() => {
