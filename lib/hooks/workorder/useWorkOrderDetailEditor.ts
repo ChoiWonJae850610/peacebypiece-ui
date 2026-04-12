@@ -7,30 +7,18 @@ import {
   type EditableSectionKey,
   type OrderEntryState,
 } from "@/components/workorder/detail/shared/detailEditorShared";
-import { MATERIAL_KIND, REGISTRY_TYPE } from "@/lib/constants/workorderDomain";
+import { REGISTRY_TYPE } from "@/lib/constants/workorderDomain";
 import {
-  DEFAULT_FACTORY_OPTION,
-  DEFAULT_MATERIAL_STATUS,
-  DEFAULT_MATERIAL_TYPE,
-  DEFAULT_MATERIAL_UNIT,
-  DEFAULT_NEW_MATERIAL_NAME,
-  DEFAULT_ORDER_TYPE,
-  DEFAULT_OUTSOURCING_PROCESS,
-  DEFAULT_OUTSOURCING_STATUS,
-  DEFAULT_OUTSOURCING_UNIT,
   FACTORY_OPTIONS,
   PARTNER_OPTIONS,
-  PRIORITY_OPTIONS,
 } from "@/lib/constants/workorderOptions";
 import { recalculateMaterial, recalculateOutsourcing } from "@/lib/workorder/detail/detailCalculations";
 import {
   appendOption,
-  createId,
   getInitialBasicInfo,
   getInitialOrderEntries,
   sanitizeOrderEntry,
   sanitizeSelectValue,
-  toNumber,
 } from "@/lib/workorder/detail/detailSanitizers";
 import {
   getCanOpenInspectionModal,
@@ -38,6 +26,17 @@ import {
   getProductionSectionOpen,
   getVendorOptions,
 } from "@/lib/workorder/detail/workOrderDetailHelpers";
+import {
+  commitMaterialItemsEdit,
+  commitOrderItemsEdit,
+  commitOutsourcingItemsEdit,
+  createNewMaterialItem,
+  createNewOrderEntry,
+  createNewOutsourcingItem,
+  toMaterialsPatch,
+  toOrderEntriesPatch,
+  toOutsourcingPatch,
+} from "@/lib/hooks/workorder/detailEditor/itemMutations";
 import type { Material, Outsourcing, WorkOrder, WorkflowState } from "@/types/workorder";
 
 type UseWorkOrderDetailEditorParams = {
@@ -130,7 +129,7 @@ export function useWorkOrderDetailEditor({
   const syncOrderEntries = (nextItems: OrderEntryState[], extraPatch: Partial<WorkOrder> = {}) => {
     onUpdateWorkOrder({
       ...extraPatch,
-      orderEntries: nextItems.map((item) => sanitizeOrderEntry(item, undefined, currentWorkflowState)),
+      ...toOrderEntriesPatch(nextItems, currentWorkflowState),
     });
   };
 
@@ -153,72 +152,27 @@ export function useWorkOrderDetailEditor({
     const nextValue = (nextValueOverride ?? editingValue).trim();
 
     if (editingCell.section === "order") {
-      const nextItems = orderItems.map((item) => {
-        if (item.id !== editingCell.rowId) return item;
-
-        if (editingCell.field === "quantity") {
-          return sanitizeOrderEntry({ ...item, quantity: toNumber(nextValue) }, item, currentWorkflowState);
-        }
-        if (editingCell.field === "laborCost") {
-          return sanitizeOrderEntry({ ...item, laborCost: toNumber(nextValue) }, item, currentWorkflowState);
-        }
-        if (editingCell.field === "lossCost") {
-          return sanitizeOrderEntry({ ...item, lossCost: toNumber(nextValue) }, item, currentWorkflowState);
-        }
-        if (editingCell.field === "factory") {
-          return sanitizeOrderEntry({ ...item, factory: sanitizeSelectValue(nextValue, factoryOptions, DEFAULT_FACTORY_OPTION) }, item, currentWorkflowState);
-        }
-        if (editingCell.field === "priority") {
-          return sanitizeOrderEntry({ ...item, priority: nextValue || PRIORITY_OPTIONS[0] }, item, currentWorkflowState);
-        }
-        if (editingCell.field === "type") {
-          return sanitizeOrderEntry({ ...item, type: nextValue || DEFAULT_ORDER_TYPE }, item, currentWorkflowState);
-        }
-        if (editingCell.field === "dueDate") {
-          return sanitizeOrderEntry({ ...item, dueDate: nextValue }, item, currentWorkflowState);
-        }
-
-        return item;
+      const nextItems = commitOrderItemsEdit({
+        orderItems,
+        editingCell,
+        nextValue,
+        currentWorkflowState,
+        factoryOptions,
       });
       setOrderItems(nextItems);
       syncOrderEntries(nextItems);
     }
 
     if (editingCell.section === "material") {
-      const nextItems = materialItems.map((item) => {
-        if (item.id !== editingCell.rowId) return item;
-
-        if (editingCell.field === "quantity") {
-          return recalculateMaterial({ ...item, quantity: toNumber(nextValue) });
-        }
-        if (editingCell.field === "unitCost") {
-          return recalculateMaterial({ ...item, unitCost: toNumber(nextValue) });
-        }
-        if (editingCell.field === "type") {
-          return { ...item, type: (nextValue || MATERIAL_KIND.fabric) as Material["type"] };
-        }
-
-        return { ...item, [editingCell.field]: nextValue } as Material;
-      });
+      const nextItems = commitMaterialItemsEdit({ materialItems, editingCell, nextValue });
       setMaterialItems(nextItems);
-      onUpdateWorkOrder({ materials: nextItems.map((item) => recalculateMaterial(item)) });
+      onUpdateWorkOrder(toMaterialsPatch(nextItems));
     }
 
     if (editingCell.section === "outsourcing") {
-      const nextItems = outsourcingItems.map((item) => {
-        if (item.id !== editingCell.rowId) return item;
-
-        if (editingCell.field === "quantity") {
-          return recalculateOutsourcing({ ...item, quantity: toNumber(nextValue) });
-        }
-        if (editingCell.field === "unitCost") {
-          return recalculateOutsourcing({ ...item, unitCost: toNumber(nextValue) });
-        }
-
-        return { ...item, [editingCell.field]: nextValue } as Outsourcing;
-      });
+      const nextItems = commitOutsourcingItemsEdit({ outsourcingItems, editingCell, nextValue });
       setOutsourcingItems(nextItems);
-      onUpdateWorkOrder({ outsourcing: nextItems.map((item) => recalculateOutsourcing(item)) });
+      onUpdateWorkOrder(toOutsourcingPatch(nextItems));
     }
 
     blurActiveEditableElement();
@@ -228,15 +182,7 @@ export function useWorkOrderDetailEditor({
   const addOrderEntry = () => {
     const nextItems = [
       ...orderItems,
-      sanitizeOrderEntry({
-        id: createId("order"),
-        type: DEFAULT_ORDER_TYPE,
-        factory: DEFAULT_FACTORY_OPTION,
-        dueDate: orderItems[0]?.dueDate || "",
-        quantity: 0,
-        laborCost: 0,
-        lossCost: 0,
-      }, undefined, currentWorkflowState),
+      createNewOrderEntry(orderItems, currentWorkflowState),
     ];
     setOrderItems(nextItems);
     syncOrderEntries(nextItems);
@@ -285,26 +231,16 @@ export function useWorkOrderDetailEditor({
   const addMaterial = () => {
     const nextItems = [
       ...materialItems,
-      recalculateMaterial({
-        id: createId("material"),
-        type: DEFAULT_MATERIAL_TYPE,
-        name: DEFAULT_NEW_MATERIAL_NAME,
-        vendor: "",
-        quantity: 0,
-        unit: DEFAULT_MATERIAL_UNIT,
-        unitCost: 0,
-        totalCost: 0,
-        status: DEFAULT_MATERIAL_STATUS,
-      }),
+      createNewMaterialItem(),
     ];
     setMaterialItems(nextItems);
-    onUpdateWorkOrder({ materials: nextItems.map((item) => recalculateMaterial(item)) });
+    onUpdateWorkOrder(toMaterialsPatch(nextItems));
   };
 
   const removeMaterial = (id: string) => {
     const nextItems = materialItems.filter((item) => item.id !== id);
     setMaterialItems(nextItems);
-    onUpdateWorkOrder({ materials: nextItems.map((item) => recalculateMaterial(item)) });
+    onUpdateWorkOrder(toMaterialsPatch(nextItems));
     if (editingCell?.section === "material" && editingCell.rowId === id) {
       cancelEdit();
     }
@@ -313,25 +249,16 @@ export function useWorkOrderDetailEditor({
   const addOutsourcing = () => {
     const nextItems = [
       ...outsourcingItems,
-      recalculateOutsourcing({
-        id: createId("outsourcing"),
-        process: DEFAULT_OUTSOURCING_PROCESS,
-        vendor: "",
-        quantity: 0,
-        unitType: DEFAULT_OUTSOURCING_UNIT,
-        unitCost: 0,
-        totalCost: 0,
-        status: DEFAULT_OUTSOURCING_STATUS,
-      }),
+      createNewOutsourcingItem(),
     ];
     setOutsourcingItems(nextItems);
-    onUpdateWorkOrder({ outsourcing: nextItems.map((item) => recalculateOutsourcing(item)) });
+    onUpdateWorkOrder(toOutsourcingPatch(nextItems));
   };
 
   const removeOutsourcing = (id: string) => {
     const nextItems = outsourcingItems.filter((item) => item.id !== id);
     setOutsourcingItems(nextItems);
-    onUpdateWorkOrder({ outsourcing: nextItems.map((item) => recalculateOutsourcing(item)) });
+    onUpdateWorkOrder(toOutsourcingPatch(nextItems));
     if (editingCell?.section === "outsourcing" && editingCell.rowId === id) {
       cancelEdit();
     }
