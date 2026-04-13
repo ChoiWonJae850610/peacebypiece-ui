@@ -28,7 +28,7 @@ function buildRuleId(baseKeyword: string, index: number) {
 export function createDefaultRule(index: number): EditableCategoryRule {
   return {
     id: createCategoryRuleId(`custom-rule-${index + 1}`),
-    name: `새 추천 규칙 ${index + 1}`,
+    name: `새 분류 규칙 ${index + 1}`,
     enabled: true,
     priority: (index + 1) * 10,
     keywords: [],
@@ -45,7 +45,7 @@ export function getInitialEditableCategoryRules(): EditableCategoryRule[] {
   return WORKORDER_CATEGORY_KEYWORD_RULES.map((rule, index) => ({
     ...rule,
     id: buildRuleId(rule.keywords[0] ?? `rule-${index + 1}`, index),
-    name: `${rule.keywords[0] ?? "규칙"} 추천 규칙`,
+    name: `${rule.keywords[0] ?? "규칙"} 분류 규칙`,
     enabled: true,
     priority: (index + 1) * 10,
   }));
@@ -128,4 +128,14 @@ export function buildCategoryRuleMatchPreview(title: string, rules: EditableCate
     recommendationLabel: `${recommendation.category1} / ${recommendation.category2} / ${recommendation.category3}`,
     reason: recommendation.reason,
   };
+}
+
+
+export function parseTaggedKeywords(value: string) {
+  const matches = value.match(/#[^\s#]+/g) ?? [];
+  return Array.from(new Set(matches.map((keyword) => keyword.replace(/^#/, "").trim()).filter(Boolean)));
+}
+
+export function buildTaggedKeywordInput(keywords: string[]) {
+  return keywords.map((keyword) => `#${keyword}`).join(" ").trim();
 }

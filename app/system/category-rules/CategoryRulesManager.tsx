@@ -10,14 +10,16 @@ import {
   useState,
 } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
+import { MODAL_INPUT_CLASS, MODAL_SELECT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
-import { MODAL_INPUT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
 import type { EditableCategoryRule } from "@/lib/system/categoryRuleEditor";
 import {
   buildCategoryRuleMatchPreview,
+  buildTaggedKeywordInput,
   createDefaultRule,
   getInitialEditableCategoryRules,
   moveEditableCategoryRule,
+  parseTaggedKeywords,
   reassignEditableCategoryRulePriorities,
   sanitizeEditableCategoryRules,
   sortEditableCategoryRules,
@@ -27,12 +29,18 @@ import {
   createCategoryRuleId,
   getStoredEditableCategoryRules,
 } from "@/lib/system/categoryRuleRuntime";
+import {
+  type CategoryTreeRuntime,
+  getCategory1Options,
+  getCategory2Options,
+  getCategory3Options,
+  getRuntimeCategoryTree,
+  normalizeRecommendationWithTree,
+  persistCategoryTree,
+  removeStoredCategoryTree,
+} from "@/lib/system/categoryTreeRuntime";
 
 export type CategoryRulesManagerText = {
-  priorityBadgeLabel: string;
-  priorityHelpText: string;
-  keywordsHelpText: string;
-  reasonHelpText: string;
   addRule: string;
   deleteRule: string;
   duplicateRule: string;
@@ -40,15 +48,16 @@ export type CategoryRulesManagerText = {
   resetRules: string;
   enabled: string;
   disabled: string;
-  priorityLabel: string;
   keywordsLabel: string;
+  keywordsPlaceholder: string;
   ruleNameLabel: string;
+  ruleNamePlaceholder: string;
   reasonLabel: string;
+  reasonPlaceholder: string;
   recommendationLabel: string;
   testInputLabel: string;
   testInputPlaceholder: string;
   noRuleSelected: string;
-  saveHint: string;
   savedToast: string;
   appliedHint: string;
   resetHint: string;
@@ -64,15 +73,20 @@ export type CategoryRulesManagerText = {
   moveUp: string;
   moveDown: string;
   dragHandleLabel: string;
-  autoPriorityHelpText: string;
   openList: string;
   openTest: string;
   close: string;
   mobileListTitle: string;
-  mobileListSubtitle: string;
   mobileSearchPlaceholder: string;
   testModalTitle: string;
-  testModalDescription: string;
+  categoryValuesButton: string;
+  categoryValuesModalTitle: string;
+  categoryValuesSave: string;
+  categoryValuesReset: string;
+  addCategory1: string;
+  addCategory2: string;
+  addCategory3: string;
+  deleteCategory: string;
 };
 
 export type CategoryRulesManagerHandle = {
@@ -80,18 +94,7 @@ export type CategoryRulesManagerHandle = {
   reset: () => void;
 };
 
-function parseKeywordText(value: string) {
-  return value
-    .split(/[\n,]+/)
-    .map((keyword) => keyword.trim())
-    .filter(Boolean);
-}
-
-function buildKeywordTextareaValue(keywords: string[]) {
-  return keywords.join("\n");
-}
-
-function ChevronMoveButton({
+function HomeChevronButton({
   direction,
   onClick,
   disabled,
@@ -104,7 +107,6 @@ function ChevronMoveButton({
   tone?: "light" | "dark";
   label: string;
 }) {
-  const rotateClass = direction === "up" ? "rotate-180" : "rotate-0";
   const toneClass =
     tone === "dark"
       ? "border-white/20 bg-white/10 text-white hover:bg-white/15"
@@ -116,10 +118,67 @@ function ChevronMoveButton({
       aria-label={label}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex h-8 w-8 items-center justify-center rounded-full border text-sm transition-transform ${toneClass} ${rotateClass} disabled:cursor-not-allowed disabled:opacity-35`}
+      className={`inline-flex h-8 w-8 items-center justify-center rounded-full border text-sm transition ${toneClass} disabled:cursor-not-allowed disabled:opacity-35`}
     >
-      ▾
+      <span className={`block transition-transform ${direction === "up" ? "-rotate-90" : "rotate-90"}`}>▾</span>
     </button>
+  );
+}
+
+function TestResultPanel({
+  preview,
+  text,
+}: {
+  preview: ReturnType<typeof buildCategoryRuleMatchPreview>;
+  text: CategoryRulesManagerText;
+}) {
+  return (
+    <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
+      {preview.matchedRuleId ? (
+        <div className="space-y-2">
+          <div>
+            <span className="font-medium text-stone-900">{text.matchedRuleLabel}:</span> {preview.matchedRuleName}
+          </div>
+          <div>
+            <span className="font-medium text-stone-900">{text.matchedKeywordsLabel}:</span> {preview.matchedKeywords.map((keyword) => `#${keyword}`).join(" ")}
+          </div>
+          <div>
+            <span className="font-medium text-stone-900">{text.recommendationLabel}:</span> {preview.recommendationLabel}
+          </div>
+          <div className="text-stone-600">{preview.reason}</div>
+        </div>
+      ) : (
+        <div className="text-stone-500">{text.noMatch}</div>
+      )}
+    </div>
+  );
+}
+
+type TestModalProps = {
+  open: boolean;
+  onClose: () => void;
+  testTitle: string;
+  onChangeTitle: (value: string) => void;
+  preview: ReturnType<typeof buildCategoryRuleMatchPreview>;
+  text: CategoryRulesManagerText;
+};
+
+function CategoryRuleTestModal({ open, onClose, testTitle, onChangeTitle, preview, text }: TestModalProps) {
+  return (
+    <ModalShell open={open} onClose={onClose} title={text.testModalTitle} maxWidthClass="md:max-w-xl">
+      <div className="grid gap-4">
+        <label className="grid gap-1.5">
+          <span className="text-sm font-medium text-stone-700">{text.testInputLabel}</span>
+          <input
+            value={testTitle}
+            onChange={(event) => onChangeTitle(event.target.value)}
+            placeholder={text.testInputPlaceholder}
+            className={MODAL_INPUT_CLASS}
+          />
+        </label>
+        <TestResultPanel preview={preview} text={text} />
+      </div>
+    </ModalShell>
   );
 }
 
@@ -151,9 +210,7 @@ function MobileCategoryRuleDrawer({
   text,
 }: MobileListDrawerProps) {
   const drawerRef = useRef<HTMLDivElement | null>(null);
-
   useModalEnvironment({ open, dialogRef: drawerRef, onClose });
-
   if (!open) return null;
 
   return (
@@ -166,14 +223,8 @@ function MobileCategoryRuleDrawer({
       >
         <div className="sticky top-0 z-10 border-b border-stone-200 bg-white/95 px-3 pb-2.5 pt-[max(env(safe-area-inset-top),0.875rem)] backdrop-blur">
           <div className="flex items-center justify-between gap-3">
-            <div>
-              <div id="category-rule-mobile-drawer-title" className="text-sm font-semibold leading-5 text-stone-900">{text.mobileListTitle}</div>
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="pbp-touch-target pbp-interactive-button inline-flex h-11 items-center justify-center rounded-xl border border-stone-300 bg-white px-3.5 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
-            >
+            <div id="category-rule-mobile-drawer-title" className="text-sm font-semibold leading-5 text-stone-900">{text.mobileListTitle}</div>
+            <button type="button" onClick={onClose} className="pbp-touch-target inline-flex h-11 items-center justify-center rounded-xl border border-stone-300 bg-white px-3.5 text-sm font-medium text-stone-700">
               {text.close}
             </button>
           </div>
@@ -184,78 +235,36 @@ function MobileCategoryRuleDrawer({
               value={searchQuery}
               onChange={(event) => onSearchQueryChange(event.target.value)}
               placeholder={text.mobileSearchPlaceholder}
-              className="pbp-field-interaction h-11 w-full rounded-xl border border-stone-300 bg-white px-4 text-base text-stone-900 outline-none placeholder:text-stone-400 focus:border-stone-500 focus:bg-stone-50 md:text-sm"
+              className={MODAL_INPUT_CLASS}
             />
           </label>
-          <button
-            type="button"
-            onClick={() => {
-              onAddRule();
-              onClose();
-            }}
-            className="pbp-touch-target pbp-interactive-button mt-3 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white hover:bg-stone-800 active:bg-black"
-          >
+          <button type="button" onClick={onAddRule} className="mt-3 inline-flex h-11 w-full items-center justify-center rounded-xl border border-stone-900 bg-stone-900 px-3.5 text-sm font-semibold text-white">
             {text.addRule}
           </button>
         </div>
-        <div className="pbp-mobile-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3 pb-[calc(env(safe-area-inset-bottom)+0.875rem)]">
-          <div className="flex flex-col gap-3">
+
+        <div className="flex-1 overflow-y-auto px-3 py-3">
+          <div className="space-y-3 pb-4">
             {rules.map((rule, index) => {
-              const isSelected = rule.id === selectedRuleId;
+              const isSelected = selectedRuleId === rule.id;
               return (
-                <div
-                  key={rule.id}
-                  className={[
-                    "rounded-3xl border px-4 py-4 shadow-sm transition",
-                    isSelected ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white text-stone-900",
-                  ].join(" ")}
-                >
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onSelect(rule.id);
-                      onClose();
-                    }}
-                    className="block w-full text-left"
-                  >
+                <div key={rule.id} className={`rounded-3xl border px-4 py-4 shadow-sm ${isSelected ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-stone-50 text-stone-900"}`}>
+                  <button type="button" onClick={() => onSelect(rule.id)} className="block w-full text-left">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 space-y-1">
                         <div className="truncate text-sm font-semibold">{rule.name}</div>
-                        <div className={`text-xs ${isSelected ? "text-stone-200" : "text-stone-500"}`}>
-                          {rule.enabled ? text.enabled : text.disabled}
-                        </div>
+                        <div className={`text-xs ${isSelected ? "text-stone-200" : "text-stone-500"}`}>{rule.enabled ? text.enabled : text.disabled}</div>
                       </div>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      {rule.keywords.length > 0 ? (
-                        rule.keywords.map((keyword, keywordIndex) => (
-                          <span
-                            key={`${rule.id}-${keywordIndex}-${keyword}`}
-                            className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${isSelected ? "bg-white/10 text-white" : "bg-stone-100 text-stone-600"}`}
-                          >
-                            {keyword}
-                          </span>
-                        ))
-                      ) : (
-                        <span className={`text-xs ${isSelected ? "text-stone-200" : "text-stone-500"}`}>{text.noKeywords}</span>
-                      )}
+                      {rule.keywords.length > 0 ? rule.keywords.map((keyword, keywordIndex) => (
+                        <span key={`${rule.id}-${keywordIndex}-${keyword}`} className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${isSelected ? "bg-white/10 text-white" : "bg-white text-stone-600"}`}>#{keyword}</span>
+                      )) : <span className={`text-xs ${isSelected ? "text-stone-200" : "text-stone-500"}`}>{text.noKeywords}</span>}
                     </div>
                   </button>
                   <div className="mt-3 flex items-center justify-end gap-2">
-                    <ChevronMoveButton
-                      direction="up"
-                      onClick={() => onMoveUp(rule.id)}
-                      disabled={index === 0}
-                      tone={isSelected ? "dark" : "light"}
-                      label={text.moveUp}
-                    />
-                    <ChevronMoveButton
-                      direction="down"
-                      onClick={() => onMoveDown(rule.id)}
-                      disabled={index === rules.length - 1}
-                      tone={isSelected ? "dark" : "light"}
-                      label={text.moveDown}
-                    />
+                    <HomeChevronButton direction="up" onClick={() => onMoveUp(rule.id)} disabled={index === 0} tone={isSelected ? "dark" : "light"} label={text.moveUp} />
+                    <HomeChevronButton direction="down" onClick={() => onMoveDown(rule.id)} disabled={index === rules.length - 1} tone={isSelected ? "dark" : "light"} label={text.moveDown} />
                   </div>
                 </div>
               );
@@ -267,63 +276,202 @@ function MobileCategoryRuleDrawer({
   );
 }
 
-type TestModalProps = {
-  open: boolean;
-  onClose: () => void;
-  testTitle: string;
-  onChangeTitle: (value: string) => void;
-  preview: ReturnType<typeof buildCategoryRuleMatchPreview>;
-  text: CategoryRulesManagerText;
-};
-
-function TestResultPanel({
-  preview,
-  text,
-}: {
-  preview: ReturnType<typeof buildCategoryRuleMatchPreview>;
-  text: CategoryRulesManagerText;
-}) {
-  return (
-    <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
-      {preview.matchedRuleId ? (
-        <div className="space-y-2">
-          <div>
-            <span className="font-medium text-stone-900">{text.matchedRuleLabel}:</span> {preview.matchedRuleName}
-          </div>
-          <div>
-            <span className="font-medium text-stone-900">{text.matchedKeywordsLabel}:</span> {preview.matchedKeywords.join(", ")}
-          </div>
-          <div>
-            <span className="font-medium text-stone-900">{text.recommendationLabel}:</span> {preview.recommendationLabel}
-          </div>
-          <div className="text-stone-600">{preview.reason}</div>
-        </div>
-      ) : (
-        <div className="text-stone-500">{text.noMatch}</div>
-      )}
-    </div>
-  );
+function normalizeTreeSelection(tree: CategoryTreeRuntime, currentCategory1: string | null, currentCategory2: string | null) {
+  const category1 = getCategory1Options(tree)[0] ?? "";
+  const nextCategory1 = currentCategory1 && tree[currentCategory1] ? currentCategory1 : category1;
+  const category2 = getCategory2Options(tree, nextCategory1)[0] ?? "";
+  const nextCategory2 = currentCategory2 && tree[nextCategory1]?.[currentCategory2] ? currentCategory2 : category2;
+  return { category1: nextCategory1, category2: nextCategory2 };
 }
 
-function CategoryRuleTestModal({ open, onClose, testTitle, onChangeTitle, preview, text }: TestModalProps) {
+function CategoryValuesModal({
+  open,
+  onClose,
+  tree,
+  onChangeTree,
+  onSave,
+  onReset,
+  text,
+}: {
+  open: boolean;
+  onClose: () => void;
+  tree: CategoryTreeRuntime;
+  onChangeTree: (nextTree: CategoryTreeRuntime) => void;
+  onSave: () => void;
+  onReset: () => void;
+  text: CategoryRulesManagerText;
+}) {
+  const [selectedCategory1, setSelectedCategory1] = useState<string | null>(null);
+  const [selectedCategory2, setSelectedCategory2] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const normalized = normalizeTreeSelection(tree, selectedCategory1, selectedCategory2);
+    setSelectedCategory1(normalized.category1);
+    setSelectedCategory2(normalized.category2);
+  }, [open, tree, selectedCategory1, selectedCategory2]);
+
+  const category1Options = getCategory1Options(tree);
+  const activeCategory1 = selectedCategory1 && tree[selectedCategory1] ? selectedCategory1 : category1Options[0] ?? "";
+  const category2Options = getCategory2Options(tree, activeCategory1);
+  const activeCategory2 = selectedCategory2 && tree[activeCategory1]?.[selectedCategory2] ? selectedCategory2 : category2Options[0] ?? "";
+  const category3Options = getCategory3Options(tree, activeCategory1, activeCategory2);
+
+  function renameCategory1(source: string, nextValue: string) {
+    const trimmed = nextValue.trim();
+    if (!trimmed || trimmed === source) return;
+    const nextTree = Object.fromEntries(Object.entries(tree).map(([key, value]) => [key === source ? trimmed : key, value]));
+    onChangeTree(nextTree);
+    setSelectedCategory1(trimmed);
+  }
+
+  function renameCategory2(source: string, nextValue: string) {
+    const trimmed = nextValue.trim();
+    if (!trimmed || trimmed === source) return;
+    const nextTree = {
+      ...tree,
+      [activeCategory1]: Object.fromEntries(Object.entries(tree[activeCategory1] ?? {}).map(([key, value]) => [key === source ? trimmed : key, value])),
+    };
+    onChangeTree(nextTree);
+    setSelectedCategory2(trimmed);
+  }
+
+  function renameCategory3(source: string, nextValue: string) {
+    const trimmed = nextValue.trim();
+    if (!trimmed || trimmed === source) return;
+    const nextTree = {
+      ...tree,
+      [activeCategory1]: {
+        ...(tree[activeCategory1] ?? {}),
+        [activeCategory2]: (tree[activeCategory1]?.[activeCategory2] ?? []).map((item) => (item === source ? trimmed : item)),
+      },
+    };
+    onChangeTree(nextTree);
+  }
+
+  function addCategory1() {
+    const newName = `새 대분류 ${category1Options.length + 1}`;
+    onChangeTree({ ...tree, [newName]: { "새 중분류": ["새 소분류"] } });
+    setSelectedCategory1(newName);
+    setSelectedCategory2("새 중분류");
+  }
+
+  function addCategory2() {
+    if (!activeCategory1) return;
+    const newName = `새 중분류 ${category2Options.length + 1}`;
+    onChangeTree({ ...tree, [activeCategory1]: { ...(tree[activeCategory1] ?? {}), [newName]: ["새 소분류"] } });
+    setSelectedCategory2(newName);
+  }
+
+  function addCategory3() {
+    if (!activeCategory1 || !activeCategory2) return;
+    const newName = `새 소분류 ${category3Options.length + 1}`;
+    onChangeTree({
+      ...tree,
+      [activeCategory1]: {
+        ...(tree[activeCategory1] ?? {}),
+        [activeCategory2]: [...(tree[activeCategory1]?.[activeCategory2] ?? []), newName],
+      },
+    });
+  }
+
+  function removeCategory1(category1: string) {
+    const entries = Object.entries(tree).filter(([key]) => key !== category1);
+    if (entries.length === 0) return;
+    onChangeTree(Object.fromEntries(entries));
+    setSelectedCategory1(entries[0][0]);
+    setSelectedCategory2(Object.keys(entries[0][1])[0] ?? null);
+  }
+
+  function removeCategory2(category2: string) {
+    const currentMap = tree[activeCategory1] ?? {};
+    const entries = Object.entries(currentMap).filter(([key]) => key !== category2);
+    if (entries.length === 0) return;
+    onChangeTree({ ...tree, [activeCategory1]: Object.fromEntries(entries) });
+    setSelectedCategory2(entries[0][0]);
+  }
+
+  function removeCategory3(category3: string) {
+    const nextList = (tree[activeCategory1]?.[activeCategory2] ?? []).filter((item) => item !== category3);
+    if (nextList.length === 0) return;
+    onChangeTree({
+      ...tree,
+      [activeCategory1]: {
+        ...(tree[activeCategory1] ?? {}),
+        [activeCategory2]: nextList,
+      },
+    });
+  }
+
   return (
     <ModalShell
       open={open}
       onClose={onClose}
-      title={text.testModalTitle}
-      maxWidthClass="md:max-w-xl"
+      title={text.categoryValuesModalTitle}
+      maxWidthClass="md:max-w-5xl"
+      footer={
+        <div className="flex w-full items-center justify-between gap-3">
+          <button type="button" onClick={onReset} className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700">{text.categoryValuesReset}</button>
+          <div className="flex gap-2">
+            <button type="button" onClick={onClose} className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700">{text.close}</button>
+            <button type="button" onClick={onSave} className="inline-flex items-center rounded-full border border-stone-900 bg-stone-900 px-4 py-2 text-sm font-medium text-white">{text.categoryValuesSave}</button>
+          </div>
+        </div>
+      }
     >
-      <div className="grid gap-4">
-        <label className="grid gap-1.5">
-          <span className="text-sm font-medium text-stone-700">{text.testInputLabel}</span>
-          <input
-            value={testTitle}
-            onChange={(event) => onChangeTitle(event.target.value)}
-            placeholder={text.testInputLabel}
-            className={MODAL_INPUT_CLASS}
-          />
-        </label>
-        <TestResultPanel preview={preview} text={text} />
+      <div className="grid gap-4 md:grid-cols-3">
+        <section className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div className="text-sm font-semibold text-stone-900">{text.category1Label}</div>
+            <button type="button" onClick={addCategory1} className="text-sm font-medium text-stone-700">+ {text.addCategory1}</button>
+          </div>
+          <div className="space-y-2">
+            {category1Options.map((category1) => (
+              <div key={category1} className={`rounded-2xl border p-3 ${activeCategory1 === category1 ? "border-stone-900 bg-white" : "border-stone-200 bg-white/70"}`}>
+                <button type="button" onClick={() => { setSelectedCategory1(category1); setSelectedCategory2(getCategory2Options(tree, category1)[0] ?? null); }} className="mb-2 block w-full text-left text-sm font-medium text-stone-900">{category1}</button>
+                <div className="flex gap-2">
+                  <input defaultValue={category1} onBlur={(event) => renameCategory1(category1, event.target.value)} className={`${MODAL_INPUT_CLASS} h-10`} />
+                  <button type="button" onClick={() => removeCategory1(category1)} className="inline-flex h-10 items-center rounded-xl border border-red-200 bg-red-50 px-3 text-sm font-medium text-red-700">{text.deleteCategory}</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div className="text-sm font-semibold text-stone-900">{text.category2Label}</div>
+            <button type="button" onClick={addCategory2} className="text-sm font-medium text-stone-700">+ {text.addCategory2}</button>
+          </div>
+          <div className="space-y-2">
+            {category2Options.map((category2) => (
+              <div key={category2} className={`rounded-2xl border p-3 ${activeCategory2 === category2 ? "border-stone-900 bg-white" : "border-stone-200 bg-white/70"}`}>
+                <button type="button" onClick={() => setSelectedCategory2(category2)} className="mb-2 block w-full text-left text-sm font-medium text-stone-900">{category2}</button>
+                <div className="flex gap-2">
+                  <input defaultValue={category2} onBlur={(event) => renameCategory2(category2, event.target.value)} className={`${MODAL_INPUT_CLASS} h-10`} />
+                  <button type="button" onClick={() => removeCategory2(category2)} className="inline-flex h-10 items-center rounded-xl border border-red-200 bg-red-50 px-3 text-sm font-medium text-red-700">{text.deleteCategory}</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div className="text-sm font-semibold text-stone-900">{text.category3Label}</div>
+            <button type="button" onClick={addCategory3} className="text-sm font-medium text-stone-700">+ {text.addCategory3}</button>
+          </div>
+          <div className="space-y-2">
+            {category3Options.map((category3) => (
+              <div key={category3} className="rounded-2xl border border-stone-200 bg-white/70 p-3">
+                <div className="flex gap-2">
+                  <input defaultValue={category3} onBlur={(event) => renameCategory3(category3, event.target.value)} className={`${MODAL_INPUT_CLASS} h-10`} />
+                  <button type="button" onClick={() => removeCategory3(category3)} className="inline-flex h-10 items-center rounded-xl border border-red-200 bg-red-50 px-3 text-sm font-medium text-red-700">{text.deleteCategory}</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
     </ModalShell>
   );
@@ -333,51 +481,46 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
   function CategoryRulesManager({ text }, ref) {
     const [rules, setRules] = useState<EditableCategoryRule[]>(() => getInitialEditableCategoryRules());
     const [selectedRuleId, setSelectedRuleId] = useState<string | null>(null);
-    const [testTitle, setTestTitle] = useState("데님 자켓 샘플");
+    const [testTitle, setTestTitle] = useState("");
     const [keywordTextByRuleId, setKeywordTextByRuleId] = useState<Record<string, string>>({});
     const [draggingRuleId, setDraggingRuleId] = useState<string | null>(null);
     const [dragOverRuleId, setDragOverRuleId] = useState<string | null>(null);
     const [mobileListOpen, setMobileListOpen] = useState(false);
     const [mobileTestOpen, setMobileTestOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    const [categoryTree, setCategoryTree] = useState<CategoryTreeRuntime>(() => getRuntimeCategoryTree());
+    const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+    const ruleNameInputRef = useRef<HTMLInputElement | null>(null);
 
     useEffect(() => {
       const storedRules = getStoredEditableCategoryRules();
-      if (!storedRules) {
-        const initial = reassignEditableCategoryRulePriorities(sortEditableCategoryRules(getInitialEditableCategoryRules()));
-        setRules(initial);
-        setSelectedRuleId(initial[0]?.id ?? null);
-        return;
-      }
-
-      const normalizedRules = reassignEditableCategoryRulePriorities(sortEditableCategoryRules(storedRules));
+      const sourceRules = storedRules ? reassignEditableCategoryRulePriorities(sortEditableCategoryRules(storedRules)) : reassignEditableCategoryRulePriorities(sortEditableCategoryRules(getInitialEditableCategoryRules()));
+      const normalizedRules = sourceRules.map((rule) => ({
+        ...rule,
+        recommendation: normalizeRecommendationWithTree(rule.recommendation, getRuntimeCategoryTree()),
+      }));
       setRules(normalizedRules);
       setSelectedRuleId(normalizedRules[0]?.id ?? null);
+      setKeywordTextByRuleId(Object.fromEntries(normalizedRules.map((rule) => [rule.id, buildTaggedKeywordInput(rule.keywords)])));
+      setCategoryTree(getRuntimeCategoryTree());
     }, []);
 
     const sortedRules = useMemo(() => sortEditableCategoryRules(rules), [rules]);
     const filteredRules = useMemo(() => {
       const normalized = searchQuery.trim().toLowerCase();
       if (!normalized) return sortedRules;
-      return sortedRules.filter((rule) => {
-        const haystack = [
-          rule.name,
-          ...rule.keywords,
-          rule.recommendation.category1,
-          rule.recommendation.category2,
-          rule.recommendation.category3,
-          rule.recommendation.reason,
-        ]
-          .join(" ")
-          .toLowerCase();
-        return haystack.includes(normalized);
-      });
+      return sortedRules.filter((rule) => [
+        rule.name,
+        ...rule.keywords,
+        rule.recommendation.category1,
+        rule.recommendation.category2,
+        rule.recommendation.category3,
+        rule.recommendation.reason,
+      ].join(" ").toLowerCase().includes(normalized));
     }, [searchQuery, sortedRules]);
 
-    const selectedRule = useMemo(
-      () => sortedRules.find((rule) => rule.id === selectedRuleId) ?? sortedRules[0] ?? null,
-      [selectedRuleId, sortedRules],
-    );
+    const selectedRule = useMemo(() => sortedRules.find((rule) => rule.id === selectedRuleId) ?? sortedRules[0] ?? null, [selectedRuleId, sortedRules]);
+    const preview = useMemo(() => buildCategoryRuleMatchPreview(testTitle, sortedRules), [sortedRules, testTitle]);
 
     useEffect(() => {
       if (!selectedRule && sortedRules[0]) {
@@ -385,41 +528,37 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
       }
     }, [selectedRule, sortedRules]);
 
-    const preview = useMemo(() => buildCategoryRuleMatchPreview(testTitle, sortedRules), [sortedRules, testTitle]);
-
-    useEffect(() => {
-      setKeywordTextByRuleId((current) => {
-        const next: Record<string, string> = {};
-        for (const rule of sortedRules) {
-          next[rule.id] = current[rule.id] ?? buildKeywordTextareaValue(rule.keywords);
-        }
-        return next;
-      });
-    }, [sortedRules]);
-
-    const closeMobileTest = useCallback(() => setMobileTestOpen(false), []);
-    const openMobileTest = useCallback(() => setMobileTestOpen(true), []);
+    function syncKeywordDrafts(nextRules: EditableCategoryRule[]) {
+      setKeywordTextByRuleId(Object.fromEntries(nextRules.map((rule) => [rule.id, buildTaggedKeywordInput(rule.keywords)])));
+    }
 
     function replaceRules(nextRules: EditableCategoryRule[]) {
       setRules(reassignEditableCategoryRulePriorities(nextRules));
     }
 
+    function persistRules(nextRules: EditableCategoryRule[]) {
+      const sanitized = sanitizeEditableCategoryRules(reassignEditableCategoryRulePriorities(nextRules));
+      window.localStorage.setItem(CATEGORY_RULE_STORAGE_KEY, JSON.stringify(sanitized));
+      setRules(sanitized);
+      syncKeywordDrafts(sanitized);
+      setSelectedRuleId((current) => current ?? sanitized[0]?.id ?? null);
+    }
+
     function updateRule(ruleId: string, updater: (rule: EditableCategoryRule) => EditableCategoryRule) {
-      setRules((current) =>
-        current.map((rule) => (rule.id === ruleId ? updater(rule) : rule)),
-      );
+      setRules((current) => current.map((rule) => (rule.id === ruleId ? updater(rule) : rule)));
     }
 
     function handleKeywordTextChange(ruleId: string, value: string) {
       setKeywordTextByRuleId((current) => ({ ...current, [ruleId]: value }));
-      updateRule(ruleId, (rule) => ({ ...rule, keywords: parseKeywordText(value) }));
+      updateRule(ruleId, (rule) => ({ ...rule, keywords: parseTaggedKeywords(value) }));
     }
 
     function handleAddRule() {
-      const nextRule = createDefaultRule(sortedRules.length);
+      const nextRule = normalizeRuleWithTree(createDefaultRule(sortedRules.length), categoryTree);
       const nextRules = [...sortedRules, nextRule];
       replaceRules(nextRules);
       setSelectedRuleId(nextRule.id);
+      requestAnimationFrame(() => ruleNameInputRef.current?.focus());
     }
 
     function handleDuplicateRule() {
@@ -444,27 +583,15 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
       setSelectedRuleId(nextRules[0]?.id ?? null);
     }
 
-    function persistRules(nextRules: EditableCategoryRule[]) {
-      const sanitized = sanitizeEditableCategoryRules(reassignEditableCategoryRulePriorities(nextRules));
-      window.localStorage.setItem(CATEGORY_RULE_STORAGE_KEY, JSON.stringify(sanitized));
-      setRules(sanitized);
-      setKeywordTextByRuleId(
-        Object.fromEntries(sanitized.map((rule) => [rule.id, buildKeywordTextareaValue(rule.keywords)])),
-      );
-      setSelectedRuleId((current) => current ?? sanitized[0]?.id ?? null);
-    }
-
     function handleSave() {
-      persistRules(sortedRules);
+      persistRules(sortedRules.map((rule) => normalizeRuleWithTree(rule, categoryTree)));
     }
 
     function handleReset() {
-      const initial = reassignEditableCategoryRulePriorities(sortEditableCategoryRules(getInitialEditableCategoryRules()));
+      const initial = reassignEditableCategoryRulePriorities(sortEditableCategoryRules(getInitialEditableCategoryRules())).map((rule) => normalizeRuleWithTree(rule, getRuntimeCategoryTree()));
       window.localStorage.removeItem(CATEGORY_RULE_STORAGE_KEY);
       setRules(initial);
-      setKeywordTextByRuleId(
-        Object.fromEntries(initial.map((rule) => [rule.id, buildKeywordTextareaValue(rule.keywords)])),
-      );
+      syncKeywordDrafts(initial);
       setSelectedRuleId(initial[0]?.id ?? null);
     }
 
@@ -478,75 +605,75 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
     function handleMoveById(ruleId: string, direction: "up" | "down") {
       const currentIndex = sortedRules.findIndex((rule) => rule.id === ruleId);
       if (currentIndex < 0) return;
-      const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
-      handleReorder(currentIndex, targetIndex);
+      handleReorder(currentIndex, direction === "up" ? currentIndex - 1 : currentIndex + 1);
     }
 
-    useImperativeHandle(
-      ref,
-      () => ({
-        save: handleSave,
-        reset: handleReset,
-      }),
-      [sortedRules],
-    );
+    const focusRuleTop = useCallback(() => {
+      requestAnimationFrame(() => {
+        ruleNameInputRef.current?.focus();
+        ruleNameInputRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+      });
+    }, []);
+
+    function handleSelectRule(ruleId: string) {
+      setSelectedRuleId(ruleId);
+      setMobileListOpen(false);
+      focusRuleTop();
+    }
+
+    function saveCategoryTree() {
+      persistCategoryTree(categoryTree);
+      const normalizedRules = sortedRules.map((rule) => normalizeRuleWithTree(rule, categoryTree));
+      persistRules(normalizedRules);
+      setCategoryModalOpen(false);
+    }
+
+    function resetCategoryTree() {
+      removeStoredCategoryTree();
+      const defaults = getRuntimeCategoryTree();
+      setCategoryTree(defaults);
+    }
+
+    useImperativeHandle(ref, () => ({ save: handleSave, reset: handleReset }), [sortedRules, categoryTree]);
+
+    const category1Options = getCategory1Options(categoryTree);
+    const currentCategory1 = selectedRule ? normalizeRuleWithTree(selectedRule, categoryTree).recommendation.category1 : category1Options[0] ?? "";
+    const category2Options = getCategory2Options(categoryTree, currentCategory1);
+    const currentCategory2 = selectedRule ? normalizeRuleWithTree(selectedRule, categoryTree).recommendation.category2 : category2Options[0] ?? "";
+    const category3Options = getCategory3Options(categoryTree, currentCategory1, currentCategory2);
 
     return (
       <>
-        <section className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)_380px]">
+        <section className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
           <article className="hidden rounded-3xl border border-stone-200 bg-white p-5 shadow-sm md:block">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div className="space-y-1">
                 <h2 className="text-lg font-semibold text-stone-900">{text.selectedRuleTitle}</h2>
                 <p className="text-sm text-stone-500">{text.listCountLabel.replace("{count}", String(filteredRules.length))}</p>
               </div>
-              <button
-                type="button"
-                onClick={handleAddRule}
-                className="inline-flex items-center rounded-full border border-stone-900 bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800"
-              >
+              <button type="button" onClick={handleAddRule} className="inline-flex items-center rounded-full border border-stone-900 bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800">
                 {text.addRule}
               </button>
             </div>
             <label className="mb-4 block">
               <span className="sr-only">{text.mobileSearchPlaceholder}</span>
-              <input
-                type="search"
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder={text.mobileSearchPlaceholder}
-                className="pbp-field-interaction w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none transition focus:border-stone-500 md:text-sm"
-              />
+              <input type="search" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder={text.mobileSearchPlaceholder} className={MODAL_INPUT_CLASS} />
             </label>
             <div className="flex max-h-[calc(100vh-18rem)] flex-col gap-3 overflow-y-auto pr-1">
               {filteredRules.map((rule) => {
                 const isSelected = rule.id === selectedRule?.id;
                 const isDragging = draggingRuleId === rule.id;
                 const isDropTarget = dragOverRuleId === rule.id && draggingRuleId !== rule.id;
-
                 return (
                   <div
                     key={rule.id}
                     draggable
-                    onDragStart={() => {
-                      setDraggingRuleId(rule.id);
-                      setDragOverRuleId(rule.id);
-                    }}
-                    onDragEnd={() => {
-                      setDraggingRuleId(null);
-                      setDragOverRuleId(null);
-                    }}
-                    onDragOver={(event) => {
-                      event.preventDefault();
-                      if (dragOverRuleId !== rule.id) {
-                        setDragOverRuleId(rule.id);
-                      }
-                    }}
+                    onDragStart={() => { setDraggingRuleId(rule.id); setDragOverRuleId(rule.id); }}
+                    onDragEnd={() => { setDraggingRuleId(null); setDragOverRuleId(null); }}
+                    onDragOver={(event) => { event.preventDefault(); if (dragOverRuleId !== rule.id) setDragOverRuleId(rule.id); }}
                     onDrop={() => {
                       if (!draggingRuleId) return;
-                      const fromIndex = sortedRules.findIndex((entry) => entry.id === draggingRuleId);
-                      const toIndex = sortedRules.findIndex((entry) => entry.id === rule.id);
-                      handleReorder(fromIndex, toIndex);
+                      handleReorder(sortedRules.findIndex((entry) => entry.id === draggingRuleId), sortedRules.findIndex((entry) => entry.id === rule.id));
                       setDraggingRuleId(null);
                       setDragOverRuleId(null);
                     }}
@@ -561,25 +688,14 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 space-y-1">
                           <div className="truncate text-sm font-semibold">{rule.name}</div>
-                          <div className={`text-xs ${isSelected ? "text-stone-200" : "text-stone-500"}`}>
-                            {rule.enabled ? text.enabled : text.disabled}
-                          </div>
+                          <div className={`text-xs ${isSelected ? "text-stone-200" : "text-stone-500"}`}>{rule.enabled ? text.enabled : text.disabled}</div>
                         </div>
                         <span className={`shrink-0 text-xs transition-transform ${isDragging ? "scale-110" : ""} ${isSelected ? "text-stone-200" : "text-stone-400"}`}>⋮⋮</span>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        {rule.keywords.length > 0 ? (
-                          rule.keywords.map((keyword, keywordIndex) => (
-                            <span
-                              key={`${rule.id}-${keywordIndex}-${keyword}`}
-                              className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${isSelected ? "bg-white/10 text-white" : "bg-white text-stone-600"}`}
-                            >
-                              {keyword}
-                            </span>
-                          ))
-                        ) : (
-                          <span className={`text-xs ${isSelected ? "text-stone-200" : "text-stone-500"}`}>{text.noKeywords}</span>
-                        )}
+                        {rule.keywords.length > 0 ? rule.keywords.map((keyword, keywordIndex) => (
+                          <span key={`${rule.id}-${keywordIndex}-${keyword}`} className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${isSelected ? "bg-white/10 text-white" : "bg-white text-stone-600"}`}>#{keyword}</span>
+                        )) : <span className={`text-xs ${isSelected ? "text-stone-200" : "text-stone-500"}`}>{text.noKeywords}</span>}
                       </div>
                     </button>
                   </div>
@@ -590,109 +706,81 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
 
           <div className="flex flex-col gap-6">
             <div className="flex gap-2 md:hidden">
-              <button
-                type="button"
-                onClick={() => setMobileListOpen(true)}
-                className="inline-flex flex-1 items-center justify-center rounded-full border border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700"
-              >
-                {text.openList}
-              </button>
-              <button
-                type="button"
-                onClick={openMobileTest}
-                className="inline-flex flex-1 items-center justify-center rounded-full border border-stone-900 bg-stone-900 px-4 py-3 text-sm font-medium text-white"
-              >
-                {text.openTest}
-              </button>
+              <button type="button" onClick={() => setMobileListOpen(true)} className="inline-flex flex-1 items-center justify-center rounded-full border border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700">{text.openList}</button>
+              <button type="button" onClick={() => setMobileTestOpen(true)} className="inline-flex flex-1 items-center justify-center rounded-full border border-stone-900 bg-stone-900 px-4 py-3 text-sm font-medium text-white">{text.openTest}</button>
             </div>
 
             <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
               {selectedRule ? (
                 <div className="space-y-5">
                   <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={handleDuplicateRule}
-                      className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
-                    >
-                      {text.duplicateRule}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleDeleteRule}
-                      className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100"
-                    >
-                      {text.deleteRule}
-                    </button>
+                    <button type="button" onClick={handleDuplicateRule} className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50">{text.duplicateRule}</button>
+                    <button type="button" onClick={() => setCategoryModalOpen(true)} className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50">{text.categoryValuesButton}</button>
+                    <button type="button" onClick={handleDeleteRule} className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100">{text.deleteRule}</button>
                   </div>
+
                   <label className="space-y-2">
                     <span className="text-sm font-medium text-stone-700">{text.ruleNameLabel}</span>
                     <input
+                      ref={ruleNameInputRef}
                       value={selectedRule.name}
+                      placeholder={text.ruleNamePlaceholder}
                       onChange={(event) => updateRule(selectedRule.id, (rule) => ({ ...rule, name: event.target.value }))}
                       className={MODAL_INPUT_CLASS}
                     />
                   </label>
 
                   <label className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
-                    <input
-                      type="checkbox"
-                      checked={selectedRule.enabled}
-                      onChange={(event) => updateRule(selectedRule.id, (rule) => ({ ...rule, enabled: event.target.checked }))}
-                      className="h-4 w-4 rounded border-stone-300 text-stone-900 focus:ring-stone-500"
-                    />
+                    <input type="checkbox" checked={selectedRule.enabled} onChange={(event) => updateRule(selectedRule.id, (rule) => ({ ...rule, enabled: event.target.checked }))} className="h-4 w-4 rounded border-stone-300 text-stone-900 focus:ring-stone-500" />
                     <span className="text-sm font-medium text-stone-700">{selectedRule.enabled ? text.enabled : text.disabled}</span>
                   </label>
 
                   <label className="space-y-2">
                     <span className="text-sm font-medium text-stone-700">{text.keywordsLabel}</span>
-                    <textarea
-                      value={keywordTextByRuleId[selectedRule.id] ?? buildKeywordTextareaValue(selectedRule.keywords)}
+                    <input
+                      value={keywordTextByRuleId[selectedRule.id] ?? buildTaggedKeywordInput(selectedRule.keywords)}
                       onChange={(event) => handleKeywordTextChange(selectedRule.id, event.target.value)}
-                      rows={6}
-                      className={MODAL_TEXTAREA_CLASS}
+                      placeholder={text.keywordsPlaceholder}
+                      className={MODAL_INPUT_CLASS}
                     />
                   </label>
 
                   <div className="grid gap-4 md:grid-cols-3">
                     <label className="space-y-2">
                       <span className="text-sm font-medium text-stone-700">{text.category1Label}</span>
-                      <input
-                        value={selectedRule.recommendation.category1}
-                        onChange={(event) =>
-                          updateRule(selectedRule.id, (rule) => ({
-                            ...rule,
-                            recommendation: { ...rule.recommendation, category1: event.target.value },
-                          }))
-                        }
-                        className={MODAL_INPUT_CLASS}
-                      />
+                      <select
+                        value={currentCategory1}
+                        onChange={(event) => updateRule(selectedRule.id, (rule) => ({
+                          ...rule,
+                          recommendation: normalizeRecommendationWithTree({ ...rule.recommendation, category1: event.target.value }, categoryTree),
+                        }))}
+                        className={MODAL_SELECT_CLASS}
+                      >
+                        {category1Options.map((option) => <option key={option} value={option}>{option}</option>)}
+                      </select>
                     </label>
                     <label className="space-y-2">
                       <span className="text-sm font-medium text-stone-700">{text.category2Label}</span>
-                      <input
-                        value={selectedRule.recommendation.category2}
-                        onChange={(event) =>
-                          updateRule(selectedRule.id, (rule) => ({
-                            ...rule,
-                            recommendation: { ...rule.recommendation, category2: event.target.value },
-                          }))
-                        }
-                        className={MODAL_INPUT_CLASS}
-                      />
+                      <select
+                        value={currentCategory2}
+                        onChange={(event) => updateRule(selectedRule.id, (rule) => ({
+                          ...rule,
+                          recommendation: normalizeRecommendationWithTree({ ...rule.recommendation, category1: currentCategory1, category2: event.target.value }, categoryTree),
+                        }))}
+                        className={MODAL_SELECT_CLASS}
+                      >
+                        {category2Options.map((option) => <option key={option} value={option}>{option}</option>)}
+                      </select>
                     </label>
                     <label className="space-y-2">
                       <span className="text-sm font-medium text-stone-700">{text.category3Label}</span>
-                      <input
-                        value={selectedRule.recommendation.category3}
-                        onChange={(event) =>
-                          updateRule(selectedRule.id, (rule) => ({
-                            ...rule,
-                            recommendation: { ...rule.recommendation, category3: event.target.value },
-                          }))
-                        }
-                        className={MODAL_INPUT_CLASS}
-                      />
+                      <select
+                        value={normalizeRuleWithTree(selectedRule, categoryTree).recommendation.category3}
+                        onChange={(event) => updateRule(selectedRule.id, (rule) => ({ ...rule, recommendation: { ...normalizeRuleWithTree(rule, categoryTree).recommendation, category3: event.target.value } }))}
+                        className={MODAL_SELECT_CLASS}
+                      >
+                        {category3Options.map((option) => <option key={option} value={option}>{option}</option>)}
+                      </select>
                     </label>
                   </div>
 
@@ -700,38 +788,26 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
                     <span className="text-sm font-medium text-stone-700">{text.reasonLabel}</span>
                     <textarea
                       value={selectedRule.recommendation.reason}
-                      onChange={(event) =>
-                        updateRule(selectedRule.id, (rule) => ({
-                          ...rule,
-                          recommendation: { ...rule.recommendation, reason: event.target.value },
-                        }))
-                      }
+                      placeholder={text.reasonPlaceholder}
+                      onChange={(event) => updateRule(selectedRule.id, (rule) => ({ ...rule, recommendation: { ...rule.recommendation, reason: event.target.value } }))}
                       rows={4}
                       className={MODAL_TEXTAREA_CLASS}
                     />
                   </label>
+
+                  <div className="rounded-3xl border border-stone-200 bg-stone-50 p-4">
+                    <div className="mb-3 text-sm font-semibold text-stone-900">{text.testInputLabel}</div>
+                    <div className="space-y-4">
+                      <input value={testTitle} onChange={(event) => setTestTitle(event.target.value)} placeholder={text.testInputPlaceholder} className={MODAL_INPUT_CLASS} />
+                      <TestResultPanel preview={preview} text={text} />
+                    </div>
+                  </div>
                 </div>
               ) : (
-                <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-10 text-center text-sm text-stone-500">
-                  {text.noRuleSelected}
-                </div>
+                <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-10 text-center text-sm text-stone-500">{text.noRuleSelected}</div>
               )}
             </article>
           </div>
-
-          <article className="hidden rounded-3xl border border-stone-200 bg-white p-5 shadow-sm xl:block">
-            <div className="mb-4 space-y-1">
-              <h2 className="text-lg font-semibold text-stone-900">{text.testInputLabel}</h2>
-            </div>
-            <div className="space-y-4">
-              <input
-                value={testTitle}
-                onChange={(event) => setTestTitle(event.target.value)}
-                className={MODAL_INPUT_CLASS}
-              />
-              <TestResultPanel preview={preview} text={text} />
-            </div>
-          </article>
         </section>
 
         <MobileCategoryRuleDrawer
@@ -739,7 +815,7 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
           onClose={() => setMobileListOpen(false)}
           rules={filteredRules}
           selectedRuleId={selectedRule?.id ?? null}
-          onSelect={setSelectedRuleId}
+          onSelect={handleSelectRule}
           onAddRule={handleAddRule}
           onMoveUp={(ruleId) => handleMoveById(ruleId, "up")}
           onMoveDown={(ruleId) => handleMoveById(ruleId, "down")}
@@ -748,17 +824,27 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
           text={text}
         />
 
-        <CategoryRuleTestModal
-          open={mobileTestOpen}
-          onClose={closeMobileTest}
-          testTitle={testTitle}
-          onChangeTitle={setTestTitle}
-          preview={preview}
+        <CategoryRuleTestModal open={mobileTestOpen} onClose={() => setMobileTestOpen(false)} testTitle={testTitle} onChangeTitle={setTestTitle} preview={preview} text={text} />
+
+        <CategoryValuesModal
+          open={categoryModalOpen}
+          onClose={() => setCategoryModalOpen(false)}
+          tree={categoryTree}
+          onChangeTree={setCategoryTree}
+          onSave={saveCategoryTree}
+          onReset={resetCategoryTree}
           text={text}
         />
       </>
     );
   },
 );
+
+function normalizeRuleWithTree(rule: EditableCategoryRule, tree: CategoryTreeRuntime): EditableCategoryRule {
+  return {
+    ...rule,
+    recommendation: normalizeRecommendationWithTree(rule.recommendation, tree),
+  };
+}
 
 export default CategoryRulesManager;
