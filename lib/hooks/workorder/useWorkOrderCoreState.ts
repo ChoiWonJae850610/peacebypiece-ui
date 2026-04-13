@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
 import { createRepositoryError, type WorkOrderRepositoryError } from "@/lib/repositories/repositoryErrors";
 import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 import type { AsyncOperationStatus } from "./useWorkOrderActionTypes";
+import { createStabilizedWorkOrdersSetter, stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
 
 export function useWorkOrderCoreState() {
   const repository = useWorkorderRepository();
@@ -18,7 +19,7 @@ export function useWorkOrderCoreState() {
   const [users, setUsers] = useState<UserProfile[]>(initialUsers);
   const [currentUserId, setCurrentUserId] = useState(initialCurrentUserId);
   const [permissionTargetUserId, setPermissionTargetUserId] = useState(initialPermissionTargetUserId);
-  const [workOrders, setWorkOrders] = useState<WorkOrder[]>(initialWorkOrders);
+  const [workOrders, setWorkOrdersState] = useState<WorkOrder[]>(stabilizeWorkOrders(initialWorkOrders));
   const [historyLogs, setHistoryLogs] = useState<HistoryLog[]>(initialHistoryLogs);
   const [selectedId, setSelectedId] = useState(initialSelectedId);
   const [searchQuery, setSearchQuery] = useState("");
@@ -42,7 +43,7 @@ export function useWorkOrderCoreState() {
         setUsers(nextState.users);
         setCurrentUserId(nextState.currentUserId);
         setPermissionTargetUserId(nextState.permissionTargetUserId);
-        setWorkOrders(nextState.workOrders);
+        setWorkOrdersState(stabilizeWorkOrders(nextState.workOrders));
         setHistoryLogs(nextState.historyLogs);
         setSelectedId(nextState.selectedId);
         const nextSelected = nextState.workOrders.find((item) => item.id === nextState.selectedId) ?? nextState.workOrders[0];
@@ -75,6 +76,9 @@ export function useWorkOrderCoreState() {
       setRepositoryStatus("error");
     });
   }, [currentUserId, historyLogs, permissionTargetUserId, repository, repositoryStatus, selectedId, users, workOrders]);
+
+
+  const setWorkOrders = useCallback(createStabilizedWorkOrdersSetter(setWorkOrdersState), []);
 
   const selectedWorkOrder = useMemo(
     () => workOrders.find((item) => item.id === selectedId) ?? workOrders[0],
