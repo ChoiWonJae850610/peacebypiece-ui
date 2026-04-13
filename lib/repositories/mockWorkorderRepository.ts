@@ -9,6 +9,7 @@ import {
 } from "@/lib/data/mock/seedState";
 import type { PersistedWorkOrderState } from "@/lib/data/mock/types";
 import { loadPersistedWorkorderState, persistWorkorderState } from "@/lib/repositories/workorderPersistence";
+import { normalizeWorkOrdersReorderIdentity } from "@/lib/workorder/reorder/helpers";
 import type { WorkorderRepository } from "@/lib/repositories/workorderRepository";
 
 function createInitialRepositoryState() {
@@ -17,7 +18,7 @@ function createInitialRepositoryState() {
 
   return {
     users: persisted.users,
-    workOrders: persisted.workOrders,
+    workOrders: normalizeWorkOrdersReorderIdentity(persisted.workOrders),
     historyLogs: persisted.historyLogs,
     selectedId: persisted.selectedId,
     currentUserId: persisted.currentUserId,
@@ -37,13 +38,13 @@ const mockWorkorderRepository: WorkorderRepository = {
   loadPersistedState: loadPersistedWorkorderState,
   loadPersistedStateAsync: async () => loadPersistedWorkorderState(),
   persistState: (payload: PersistedWorkOrderState) => {
-    persistWorkorderState(payload);
+    persistWorkorderState({ ...payload, workOrders: normalizeWorkOrdersReorderIdentity(payload.workOrders) });
   },
   persistStateAsync: async (payload: PersistedWorkOrderState) => {
-    persistWorkorderState(payload);
+    persistWorkorderState({ ...payload, workOrders: normalizeWorkOrdersReorderIdentity(payload.workOrders) });
   },
-  saveWorkOrders: cloneSavedWorkOrders,
-  saveWorkOrdersAsync: async (workOrders) => cloneSavedWorkOrders(workOrders),
+  saveWorkOrders: (workOrders) => cloneSavedWorkOrders(normalizeWorkOrdersReorderIdentity(workOrders)),
+  saveWorkOrdersAsync: async (workOrders) => cloneSavedWorkOrders(normalizeWorkOrdersReorderIdentity(workOrders)),
 };
 
 export function getMockWorkorderRepository(): WorkorderRepository {

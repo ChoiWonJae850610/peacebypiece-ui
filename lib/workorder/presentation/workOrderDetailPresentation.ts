@@ -6,6 +6,7 @@ import OrderInfoSection from "@/components/workorder/detail/sections/OrderInfoSe
 import ProductionCompositionSection from "@/components/workorder/detail/sections/ProductionCompositionSection";
 import { formatBasicSummary } from "@/lib/workorder/detail/detailFormatting";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
+import { getWorkOrderBaseTitle } from "@/lib/workorder/reorder/helpers";
 import type { WorkOrder } from "@/types/workorder";
 
 type HeaderProps = ComponentProps<typeof WorkOrderHeaderSection>;
@@ -143,6 +144,7 @@ export function buildWorkOrderDetailViewModel({
   return {
     headerProps: {
       title: getWorkOrderDisplayTitle(workOrder),
+      editableTitle: getWorkOrderBaseTitle(workOrder),
       summaryText: formatBasicSummary(basicInfo),
       managerName: workOrder.manager || "-",
       currentInventoryQuantity,

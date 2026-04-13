@@ -79,6 +79,8 @@ export type WorkOrder = {
   id: string;
   title: string;
   baseTitle?: string;
+  reorderGroupId?: string;
+  reorderRound?: number;
   revision?: number;
   reorderRootId?: string;
   category1: string;

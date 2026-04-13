@@ -3,6 +3,7 @@ import { getInventoryStatusLabel } from "@/lib/constants/workorderDomain";
 import { hasDisplayText, joinDisplayParts } from "@/lib/utils/display";
 import { getI18n } from "@/lib/i18n";
 import type { WorkOrderListItem } from "@/types/workorder";
+import { buildWorkOrderTitle } from "@/lib/workorder/reorder/helpers";
 import { WORKFLOW_STATE_BADGE_TONE } from "@/lib/constants/workorderStates";
 import type { WorkflowState } from "@/types/workflow";
 
@@ -24,9 +25,11 @@ export function getWorkOrderCardTone(state: WorkflowState) {
   return WORKFLOW_STATE_BADGE_TONE[state];
 }
 
-export function getWorkOrderDisplayTitle(workOrder: { title?: string | null; baseTitle?: string | null; revision?: number | null }) {
-  const baseTitle = String(workOrder.baseTitle ?? workOrder.title ?? "").trim() || i18n.workorder.presentation.titleDraftFallback;
-  const revision = Number(workOrder.revision ?? 1);
-  const revisionSuffix = i18n.workorder.presentation.revisionSuffixFormat.replace("{revision}", String(revision));
-  return revision > 1 ? `${baseTitle} ${revisionSuffix}` : baseTitle;
+export function getWorkOrderDisplayTitle(workOrder: { title?: string | null; baseTitle?: string | null; reorderRound?: number | null; revision?: number | null }) {
+  return buildWorkOrderTitle({
+    title: workOrder.title ?? undefined,
+    baseTitle: workOrder.baseTitle ?? undefined,
+    reorderRound: workOrder.reorderRound ?? undefined,
+    revision: workOrder.revision ?? undefined,
+  });
 }

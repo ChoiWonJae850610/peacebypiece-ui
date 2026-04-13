@@ -1,6 +1,7 @@
 import { INVENTORY_CHANGE_TYPE, INVENTORY_STATUS } from "@/lib/constants/workorderDomain";
 import { createAttachmentId } from "@/lib/permissions/attachments";
 import type { Material } from "@/types/material";
+import { applyReorderIdentity, buildWorkOrderTitle, getNextReorderRound, getWorkOrderBaseTitle, getWorkOrderReorderGroupId, getWorkOrderReorderRound } from "@/lib/workorder/reorder/helpers";
 import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
 import type { Attachment, InventoryChange, MemoReply, MemoThread, OrderEntry, RoleType, WorkOrder, WorkflowAction } from "@/types/workorder";
 
@@ -22,8 +23,8 @@ export function createNewWorkOrder(nextIndex: number, payload: {
     id,
     title,
     baseTitle: title,
-    revision: 1,
-    reorderRootId: id,
+    reorderGroupId: id,
+    reorderRound: 1,
     category1: payload.category1 ?? "의류",
     category2: payload.category2 ?? "미분류",
     category3: payload.category3 ?? "미분류",
@@ -270,28 +271,16 @@ function cloneAttachments(attachments: Attachment[]): Attachment[] {
 }
 
 export function resolveBaseTitle(workOrder: WorkOrder): string {
-  return String(workOrder.baseTitle ?? workOrder.title ?? "").trim() || "새 작업지시서";
+  return getWorkOrderBaseTitle(workOrder);
 }
 
 export function resolveRootId(workOrder: WorkOrder): string {
-  return workOrder.reorderRootId || workOrder.id;
+  return getWorkOrderReorderGroupId(workOrder);
 }
 
 export function resolveDisplayedSourceTitle(workOrder: WorkOrder): string {
-  const baseTitle = resolveBaseTitle(workOrder);
-  const revision = Number(workOrder.revision ?? 1);
-  return revision > 1 ? `${baseTitle} ${revision}차` : baseTitle;
+  return buildWorkOrderTitle(workOrder);
 }
-
-function getNextRevision(workOrders: WorkOrder[], sourceWorkOrder: WorkOrder): number {
-  const rootId = resolveRootId(sourceWorkOrder);
-  return workOrders.reduce((maxValue, item) => {
-    if (resolveRootId(item) !== rootId) return maxValue;
-    const revision = Number(item.revision ?? 1);
-    return revision > maxValue ? revision : maxValue;
-  }, 1) + 1;
-}
-
 
 export function renameWorkOrderGroupBaseTitle(
   workOrders: WorkOrder[],
@@ -308,22 +297,20 @@ export function renameWorkOrderGroupBaseTitle(
     return { nextWorkOrders: workOrders, affectedWorkOrderIds: [], previousBaseTitle: null };
   }
 
-  const rootId = resolveRootId(targetWorkOrder);
+  const reorderGroupId = resolveRootId(targetWorkOrder);
   const previousBaseTitle = resolveBaseTitle(targetWorkOrder);
-  const affectedWorkOrderIds = workOrders.filter((item) => resolveRootId(item) == rootId).map((item) => item.id);
+  const affectedWorkOrderIds = workOrders.filter((item) => resolveRootId(item) === reorderGroupId).map((item) => item.id);
 
   if (affectedWorkOrderIds.length === 0 || previousBaseTitle === trimmedBaseTitle) {
     return { nextWorkOrders: workOrders, affectedWorkOrderIds, previousBaseTitle };
   }
 
   const nextWorkOrders = workOrders.map((item) => {
-    if (resolveRootId(item) !== rootId) return item;
-    const revision = Number(item.revision ?? 1);
-    return {
+    if (resolveRootId(item) !== reorderGroupId) return applyReorderIdentity(item);
+    return applyReorderIdentity({
       ...item,
       baseTitle: trimmedBaseTitle,
-      title: revision > 1 ? `${trimmedBaseTitle} ${revision}차` : trimmedBaseTitle,
-    };
+    });
   });
 
   return { nextWorkOrders, affectedWorkOrderIds, previousBaseTitle };
@@ -335,16 +322,14 @@ export function cloneWorkOrderForReorder(
   payload: { createdAt: string; createdById: string; createdByRole: RoleType; managerId: string | null; managerName: string; },
 ): WorkOrder {
   const baseTitle = resolveBaseTitle(sourceWorkOrder);
-  const revision = getNextRevision(workOrders, sourceWorkOrder);
-  const title = baseTitle;
+  const reorderRound = getNextReorderRound(workOrders, sourceWorkOrder);
 
-  return {
+  return applyReorderIdentity({
     ...sourceWorkOrder,
     id: nextId("wo"),
-    title,
     baseTitle,
-    revision,
-    reorderRootId: resolveRootId(sourceWorkOrder),
+    reorderGroupId: resolveRootId(sourceWorkOrder),
+    reorderRound,
     managerId: payload.managerId,
     manager: payload.managerName,
     createdById: payload.createdById,
@@ -359,5 +344,5 @@ export function cloneWorkOrderForReorder(
     lastSavedAt: payload.createdAt,
     reorderedFromId: sourceWorkOrder.id,
     reorderedFromTitle: resolveDisplayedSourceTitle(sourceWorkOrder),
-  };
+  });
 }

@@ -4,6 +4,7 @@ import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { ORDER_REQUEST_TABLE_COLUMNS } from "@/lib/constants/workorderDomain";
 import { useI18n } from "@/lib/i18n";
+import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import type { WorkOrder } from "@/types/workorder";
 
 export default function OrderRequestConfirmModal({
@@ -53,7 +54,7 @@ export default function OrderRequestConfirmModal({
         <dl className="mt-3 grid grid-cols-1 gap-3 text-sm text-stone-600 md:grid-cols-2">
           <div>
             <dt className="text-xs font-medium text-stone-400">{copy.workOrderNameLabel}</dt>
-            <dd className="mt-1 font-medium text-stone-900">{workOrder.title}</dd>
+            <dd className="mt-1 font-medium text-stone-900">{getWorkOrderDisplayTitle(workOrder)}</dd>
           </div>
           <div>
             <dt className="text-xs font-medium text-stone-400">{copy.managerLabel}</dt>

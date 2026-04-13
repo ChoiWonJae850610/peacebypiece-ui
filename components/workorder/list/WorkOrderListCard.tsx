@@ -3,7 +3,7 @@
 import { REORDERABLE_WORKFLOW_STATES } from "@/lib/constants/workorderStates";
 import { useI18n } from "@/lib/i18n";
 import { getStageDotTone, getWorkflowStateLabel } from "@/lib/workorder/presentation/statusPresentation";
-import { getCategoryPath, getWorkOrderCardTone, getWorkOrderState } from "@/lib/workorder/presentation/workOrderPresentation";
+import { getCategoryPath, getWorkOrderCardTone, getWorkOrderDisplayTitle, getWorkOrderState } from "@/lib/workorder/presentation/workOrderPresentation";
 import type { WorkOrderListItem, WorkflowState } from "@/types/workorder";
 
 type Props = {
@@ -45,7 +45,7 @@ export default function WorkOrderListCard({
     >
       <div className="flex items-start justify-between gap-3">
         <button type="button" onClick={() => onClick(workOrder.id)} className="pbp-touch-target pbp-press-subtle min-w-0 flex-1 text-left">
-          <div className="truncate text-sm font-semibold leading-5">{workOrder.title}</div>
+          <div className="truncate text-sm font-semibold leading-5">{getWorkOrderDisplayTitle(workOrder)}</div>
           <div className="mt-2 flex h-7 items-center">
             <span
               className={`inline-flex h-7 items-center gap-2 rounded-full px-2.5 text-[11px] font-semibold transition-colors duration-150 ease-out ${

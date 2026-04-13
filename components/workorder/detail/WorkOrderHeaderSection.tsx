@@ -19,6 +19,7 @@ function PencilIcon() {
 
 type WorkOrderHeaderSectionProps = {
   title: string;
+  editableTitle?: string;
   summaryText: string;
   managerName: string;
   currentInventoryQuantity: number;
@@ -37,6 +38,7 @@ type WorkOrderHeaderSectionProps = {
 
 export default function WorkOrderHeaderSection({
   title,
+  editableTitle,
   summaryText,
   managerName,
   currentInventoryQuantity,
@@ -57,7 +59,7 @@ export default function WorkOrderHeaderSection({
   const common = i18n.workorder.ui.common;
   void onSave;
   const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [titleDraft, setTitleDraft] = useState(title);
+  const [titleDraft, setTitleDraft] = useState(editableTitle ?? title);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const managerValue = managerName || "-";
   const inventoryValue = `${currentInventoryQuantity.toLocaleString()}${common.quantitySuffix}`;
@@ -67,8 +69,8 @@ export default function WorkOrderHeaderSection({
   const canEditTitle = canRenameTitle && typeof onRenameTitle === "function";
 
   useEffect(() => {
-    setTitleDraft(title);
-  }, [title]);
+    setTitleDraft(editableTitle ?? title);
+  }, [editableTitle, title]);
 
   useEffect(() => {
     if (!isEditingTitle) return;
@@ -80,14 +82,14 @@ export default function WorkOrderHeaderSection({
   }, [isEditingTitle]);
 
   const closeTitleEditor = () => {
-    setTitleDraft(title);
+    setTitleDraft(editableTitle ?? title);
     setIsEditingTitle(false);
   };
 
   const saveTitle = () => {
     const trimmed = titleDraft.trim();
     if (!trimmed) {
-      setTitleDraft(title);
+      setTitleDraft(editableTitle ?? title);
       setIsEditingTitle(false);
       return;
     }

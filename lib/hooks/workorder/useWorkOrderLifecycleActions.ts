@@ -16,6 +16,7 @@ import {
   renameWorkOrderGroupBaseTitle,
 } from "@/lib/workorder/actions";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
+import { getWorkOrderBaseTitle, reindexReorderGroupAfterDeletion } from "@/lib/workorder/reorder/helpers";
 import { createWorkOrderActionFailure, executeWorkOrderAsyncAction } from "@/lib/workorder/actionFlow";
 import type { WorkOrder } from "@/types/workorder";
 import type {
@@ -91,7 +92,7 @@ export function useWorkOrderLifecycleActions({
             setHistoryLogs((prev) => [
               createUpdateHistoryLog(currentUser.name, workOrder.id, [
                 { label: lifecycleText.saveHistoryLabel, value: historyText.detailLabels.savedAtFormat.replace("{time}", label) },
-                { label: lifecycleText.workOrderLabel, value: workOrder.title },
+                { label: lifecycleText.workOrderLabel, value: getWorkOrderDisplayTitle(workOrder) },
               ], historyText),
               ...prev,
             ]);
@@ -240,7 +241,7 @@ export function useWorkOrderLifecycleActions({
       const target = workOrders.find((item) => item.id === workOrderId);
       if (!target || !canDeleteWorkOrder(target.workflowState) || workOrders.length <= 1) return;
       if (typeof window !== "undefined") {
-        const ok = window.confirm(lifecycleText.deleteConfirmFormat.replace("{title}", target.title));
+        const ok = window.confirm(lifecycleText.deleteConfirmFormat.replace("{title}", getWorkOrderDisplayTitle(target)));
         if (!ok) return;
       }
 
@@ -257,7 +258,8 @@ export function useWorkOrderLifecycleActions({
           message: lifecycleText.deleteFailedToast ?? "Failed to delete work order.",
         }),
         task: async () => {
-          const remaining = workOrders.filter((item) => item.id !== workOrderId);
+          const reindexed = reindexReorderGroupAfterDeletion(workOrders, target);
+          const remaining = reindexed.filter((item) => item.id !== workOrderId);
           const fallbackSelectedId = remaining[0]?.id ?? repository.getDefaultSelectedId();
           setWorkOrders(remaining);
           setHistoryLogs((prev) => prev.filter((item) => item.workOrderId !== workOrderId));
@@ -279,7 +281,7 @@ export function useWorkOrderLifecycleActions({
       const trimmedTitle = String(nextTitle ?? "").trim();
       if (!trimmedTitle) return;
 
-      const previousBaseTitle = String(workOrder.baseTitle ?? workOrder.title ?? "").trim() || lifecycleText.newWorkOrderFallbackTitle;
+      const previousBaseTitle = getWorkOrderBaseTitle(workOrder) || lifecycleText.newWorkOrderFallbackTitle;
       if (previousBaseTitle === trimmedTitle) return;
 
       await executeWorkOrderAsyncAction({
