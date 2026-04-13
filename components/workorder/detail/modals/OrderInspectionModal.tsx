@@ -1,6 +1,9 @@
+"use client";
+
 import { useI18n } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
+import { MODAL_INPUT_CLASS, MODAL_SELECT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
 import { MODAL_ACTION_LABELS, createModalActionHandler, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { DEFAULT_FACTORY_OPTION } from "@/lib/constants/workorderOptions";
 import { toNumber } from "@/lib/workorder/detail/detailSanitizers";
@@ -105,7 +108,7 @@ export default function OrderInspectionModal({
               <select
                 value={resolvedFactory}
                 onChange={(event) => handleFactoryChange(event.target.value)}
-                className="mt-2 h-10 w-full rounded-xl border border-stone-300 bg-white px-3 text-sm text-stone-900 outline-none focus:border-stone-400"
+                className={`mt-2 ${MODAL_INPUT_CLASS}`}
               >
                 {factoryOptions.map((option) => <option key={option} value={option}>{option}</option>)}
               </select>
@@ -115,7 +118,7 @@ export default function OrderInspectionModal({
               <select
                 value={selectedEntry.id}
                 onChange={(event) => setSelectedOrderId(event.target.value)}
-                className="mt-2 h-10 w-full rounded-xl border border-stone-300 bg-white px-3 text-sm text-stone-900 outline-none focus:border-stone-400"
+                className={`mt-2 ${MODAL_SELECT_CLASS}`}
               >
                 {filteredEntries.map((item) => (
                   <option key={item.id} value={item.id}>
@@ -140,7 +143,7 @@ export default function OrderInspectionModal({
                 inputMode="numeric"
                 value={appliedQuantityInput}
                 onChange={(event) => setAppliedQuantityInput(event.target.value)}
-                className="mt-2 h-10 w-full rounded-xl border border-stone-300 bg-white px-3 text-sm text-stone-900 outline-none focus:border-stone-400"
+                className={`mt-2 ${MODAL_INPUT_CLASS}`}
               />
             </label>
             <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
@@ -156,7 +159,7 @@ export default function OrderInspectionModal({
               onChange={(event) => setInspectionMemo(event.target.value)}
               rows={4}
               placeholder={copy.memoPlaceholder}
-              className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 outline-none focus:border-stone-400"
+              className={`mt-2 ${MODAL_TEXTAREA_CLASS}`}
             />
           </label>
         </div>

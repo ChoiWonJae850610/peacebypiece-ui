@@ -1,5 +1,6 @@
 import { useI18n } from "@/lib/i18n";
 import ModalShell from "@/components/common/modal/ModalShell";
+import { MODAL_INPUT_CLASS, MODAL_SELECT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
 import { MODAL_ACTION_LABELS, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { CATEGORY1_OPTIONS, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
 import { formatBasicSummary } from "@/lib/workorder/detail/detailFormatting";
@@ -64,7 +65,7 @@ export default function BasicInfoEditModal({
           <select
             value={value.category1}
             onChange={(event) => handleCategory1Change(event.target.value)}
-            className="mt-2 h-10 w-full rounded-xl border border-stone-300 bg-white px-3 text-sm text-stone-900 outline-none focus:border-stone-400"
+            className={`mt-2 ${MODAL_SELECT_CLASS}`}
           >
             {CATEGORY1_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
           </select>
@@ -74,7 +75,7 @@ export default function BasicInfoEditModal({
           <select
             value={value.category2}
             onChange={(event) => handleCategory2Change(event.target.value)}
-            className="mt-2 h-10 w-full rounded-xl border border-stone-300 bg-white px-3 text-sm text-stone-900 outline-none focus:border-stone-400"
+            className={`mt-2 ${MODAL_SELECT_CLASS}`}
           >
             {category2Options.map((option) => <option key={option} value={option}>{option}</option>)}
           </select>
@@ -84,7 +85,7 @@ export default function BasicInfoEditModal({
           <select
             value={value.category3}
             onChange={(event) => onChange({ ...value, category3: event.target.value })}
-            className="mt-2 h-10 w-full rounded-xl border border-stone-300 bg-white px-3 text-sm text-stone-900 outline-none focus:border-stone-400"
+            className={`mt-2 ${MODAL_SELECT_CLASS}`}
           >
             {category3Options.map((option) => <option key={option} value={option}>{option}</option>)}
           </select>
@@ -95,7 +96,7 @@ export default function BasicInfoEditModal({
             <select
               value={value.season}
               onChange={(event) => onChange({ ...value, season: event.target.value })}
-              className="mt-2 h-10 w-full rounded-xl border border-stone-300 bg-white px-3 text-sm text-stone-900 outline-none focus:border-stone-400"
+              className={`mt-2 ${MODAL_SELECT_CLASS}`}
             >
               {SEASON_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
@@ -105,7 +106,7 @@ export default function BasicInfoEditModal({
             <select
               value={value.year}
               onChange={(event) => onChange({ ...value, year: event.target.value })}
-              className="mt-2 h-10 w-full rounded-xl border border-stone-300 bg-white px-3 text-sm text-stone-900 outline-none focus:border-stone-400"
+              className={`mt-2 ${MODAL_SELECT_CLASS}`}
             >
               {YEAR_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>

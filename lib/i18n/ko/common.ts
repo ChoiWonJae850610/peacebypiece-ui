@@ -18,6 +18,11 @@ export const commonKo = {
       uncategorized: "미분류",
       sample: "샘플",
     },
+    roles: {
+      designer: "디자이너",
+      admin: "관리자",
+      inspector: "재고관리",
+    },
     modalActions: {
       completeInspection: "검수 완료",
       proceedOrderRequest: "발주 요청 진행",
@@ -81,7 +86,7 @@ export const commonKo = {
         roleGuideTitle: "권한 설명",
         roleGuideDesigner: "디자이너: 작업지시 작성, 검토 요청, 발주 요청",
         roleGuideAdmin: "관리자: 승인, 발주 확정, 역할 지정, 공식 첨부",
-        roleGuideInspector: "입고/검수: 입고 등록, 검수 완료, 재고 수정",
+        roleGuideInspector: "재고관리: 입고 등록, 검수 완료, 재고 수정",
       },
       managerAssign: {
         title: "담당자 변경",

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
+import { MODAL_INPUT_CLASS, MODAL_SELECT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
 import { MODAL_ACTION_LABELS, createModalActionHandler, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { DEFAULT_BASIC_YEAR, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
 import { CATEGORY1_OPTIONS, CATEGORY2_OPTIONS_MAP, CATEGORY3_OPTIONS_MAP, DEFAULT_CATEGORY1, DEFAULT_CATEGORY2, DEFAULT_CATEGORY3 } from "@/lib/constants/workorderCategories";
@@ -14,8 +15,6 @@ type Props = {
   onCreate: (payload: { title: string; category1: string; category2: string; category3: string; season: string }) => void;
 };
 
-const mobileFieldClassName = "pbp-field-interaction h-11 w-full rounded-xl border border-stone-300 bg-white px-4 text-base text-stone-900 outline-none focus:border-stone-500 md:text-sm";
-const mobileSelectClassName = "pbp-field-interaction h-11 rounded-xl border border-stone-300 bg-white px-3 text-base text-stone-900 outline-none focus:border-stone-500 md:text-sm";
 
 export default function CreateWorkOrderModal({ open, onClose, onCreate }: Props) {
   const { i18n } = useI18n();
@@ -84,7 +83,7 @@ export default function CreateWorkOrderModal({ open, onClose, onCreate }: Props)
       <div className="grid gap-4">
         <label className="grid gap-1.5">
           <span className="text-sm font-medium text-stone-700">{copy.workOrderTitle}</span>
-          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={copy.titlePlaceholder} className={mobileFieldClassName} />
+          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={copy.titlePlaceholder} className={MODAL_INPUT_CLASS} />
         </label>
         {recommendedCategory ? (
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-3">
@@ -109,19 +108,19 @@ export default function CreateWorkOrderModal({ open, onClose, onCreate }: Props)
         <div className="grid gap-4 md:grid-cols-3">
           <label className="grid gap-1.5">
             <span className="text-sm font-medium text-stone-700">{copy.category1}</span>
-            <select value={category1} onChange={(e) => setCategory1(e.target.value)} className={mobileSelectClassName}>
+            <select value={category1} onChange={(e) => setCategory1(e.target.value)} className={MODAL_SELECT_CLASS}>
               {CATEGORY1_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
           </label>
           <label className="grid gap-1.5">
             <span className="text-sm font-medium text-stone-700">{copy.category2}</span>
-            <select value={category2} onChange={(e) => setCategory2(e.target.value)} className={mobileSelectClassName}>
+            <select value={category2} onChange={(e) => setCategory2(e.target.value)} className={MODAL_SELECT_CLASS}>
               {category2Options.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
           </label>
           <label className="grid gap-1.5">
             <span className="text-sm font-medium text-stone-700">{copy.category3}</span>
-            <select value={category3} onChange={(e) => setCategory3(e.target.value)} className={mobileSelectClassName}>
+            <select value={category3} onChange={(e) => setCategory3(e.target.value)} className={MODAL_SELECT_CLASS}>
               {category3Options.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
           </label>
@@ -129,13 +128,13 @@ export default function CreateWorkOrderModal({ open, onClose, onCreate }: Props)
         <div className="grid gap-4 md:grid-cols-2">
           <label className="grid gap-1.5">
             <span className="text-sm font-medium text-stone-700">{copy.season}</span>
-            <select value={seasonType} onChange={(e) => setSeasonType(e.target.value)} className={mobileSelectClassName}>
+            <select value={seasonType} onChange={(e) => setSeasonType(e.target.value)} className={MODAL_SELECT_CLASS}>
               {SEASON_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
           </label>
           <label className="grid gap-1.5">
             <span className="text-sm font-medium text-stone-700">{copy.year}</span>
-            <select value={seasonYear} onChange={(e) => setSeasonYear(e.target.value)} className={mobileSelectClassName}>
+            <select value={seasonYear} onChange={(e) => setSeasonYear(e.target.value)} className={MODAL_SELECT_CLASS}>
               {YEAR_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
           </label>

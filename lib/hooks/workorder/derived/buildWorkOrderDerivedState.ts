@@ -43,8 +43,9 @@ export function buildWorkOrderDerivedState({
   const canChangeManager = canManageWorkOrderManager(currentRoles, currentWorkflowState);
   const currentDisplayStage = getDisplayStageFromWorkflowState(currentWorkflowState);
   const visibleStages = VISIBLE_STAGES;
-  const isReviewRequestLocked = currentWorkflowState !== "draft";
-  const canUploadOfficialAttachments = canUploadOfficialAttachmentsByRoles(currentRoles) && !isReviewRequestLocked;
+  const canEditBeforeApproval = currentWorkflowState === "draft" || (isAdmin && currentWorkflowState === "review_requested");
+  const isReviewRequestLocked = !canEditBeforeApproval;
+  const canUploadOfficialAttachments = canUploadOfficialAttachmentsByRoles(currentRoles) && canEditBeforeApproval;
   const workOrderList = workOrders.map(createWorkOrderListItem);
   const filteredWorkOrderList = filterWorkOrderList(workOrderList, workflowStateById, searchQuery);
   const canSeeProductionSections = currentUser.permissions.canSeeProductionSections;

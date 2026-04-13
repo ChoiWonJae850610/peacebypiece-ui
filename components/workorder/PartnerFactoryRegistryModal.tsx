@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
+import { MODAL_INPUT_CLASS, MODAL_SELECT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
 import { DEFAULT_REGISTRY_TYPE, REGISTRY_TYPE_OPTIONS } from "@/lib/constants/workorderOptions";
 import { REGISTRY_TYPE, type RegistryTypeValue } from "@/lib/constants/workorderDomain";
 import { useI18n } from "@/lib/i18n";
@@ -67,7 +68,7 @@ export default function PartnerFactoryRegistryModal({
           <select
             value={type}
             onChange={(event) => setType(event.target.value as RegistryType)}
-            className="mt-2 h-11 w-full rounded-xl border border-stone-300 bg-white px-3 text-sm text-stone-900 outline-none transition focus:border-stone-400"
+            className={`mt-2 ${MODAL_SELECT_CLASS}`}
           >
             {REGISTRY_TYPE_OPTIONS.map((option) => (
               <option key={option} value={option}>
@@ -90,7 +91,7 @@ export default function PartnerFactoryRegistryModal({
               }
             }}
             placeholder={`${typeOptionLabels[type]}${copy.namePlaceholderPrefix}`}
-            className="mt-2 h-11 w-full rounded-xl border border-stone-300 bg-white px-3 text-sm text-stone-900 outline-none transition focus:border-stone-400"
+            className={`mt-2 ${MODAL_SELECT_CLASS}`}
           />
           <p className="mt-2 text-xs text-stone-500">{copy.savedNotice}</p>
         </div>

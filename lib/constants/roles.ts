@@ -10,13 +10,14 @@ export const ROLE = {
 export const ROLE_LABELS: Record<RoleType, string> = {
   [ROLE.designer]: "디자이너",
   [ROLE.admin]: "관리자",
-  [ROLE.inspector]: "입고/검수",
+  [ROLE.inspector]: "재고관리",
 };
 
 export const LEGACY_ROLE_MAP = {
   디자이너: ROLE.designer,
   관리자: ROLE.admin,
   "입고/검수": ROLE.inspector,
+  "재고관리": ROLE.inspector,
 } as const;
 
 export const ROLE_TEMPLATES: Record<RoleType, RoleTemplate> = {

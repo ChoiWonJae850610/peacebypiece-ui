@@ -66,7 +66,7 @@ export default function WorkOrderHeaderSection({
   const summaryValue = summaryText || "-";
   const canEditSummary = !locked && canCreateWorkOrderByRoles([currentUserRole]) && typeof onOpenBasicInfoModal === "function";
   const canEditManager = !locked && canChangeManager;
-  const canEditTitle = canRenameTitle && typeof onRenameTitle === "function";
+  const canEditTitle = !locked && canRenameTitle && typeof onRenameTitle === "function";
 
   useEffect(() => {
     setTitleDraft(editableTitle ?? title);

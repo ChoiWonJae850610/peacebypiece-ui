@@ -18,6 +18,11 @@ export const commonEn = {
       uncategorized: "Uncategorized",
       sample: "Sample",
     },
+    roles: {
+      designer: "Designer",
+      admin: "Admin",
+      inspector: "Inventory Manager",
+    },
     modalActions: {
       completeInspection: "Complete inspection",
       proceedOrderRequest: "Proceed order request",

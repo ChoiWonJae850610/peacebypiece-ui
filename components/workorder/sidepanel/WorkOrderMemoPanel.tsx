@@ -4,10 +4,13 @@ import { useState, type KeyboardEvent } from "react";
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
 import { useI18n } from "@/lib/i18n";
 
-
 import CompactAttachmentPicker from "@/components/workorder/sidepanel/CompactAttachmentPicker";
 import MemoAttachmentList from "@/components/workorder/sidepanel/MemoAttachmentList";
 import type { Attachment, MemoAttachmentPayload, MemoThread, RoleType, WorkOrder } from "@/types/workorder";
+
+function getRoleDisplayLabel(role: RoleType, i18n: ReturnType<typeof useI18n>["i18n"]) {
+  return i18n.common.ui.roles?.[role] ?? role;
+}
 
 function MemoThreadCard({
   thread,
@@ -53,7 +56,7 @@ function MemoThreadCard({
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="truncate text-sm font-semibold text-stone-900">{thread.authorName}</div>
-          <div className="mt-0.5 text-[11px] text-stone-500">{thread.authorRole} · {thread.createdAt}</div>
+          <div className="mt-0.5 text-[11px] text-stone-500">{getRoleDisplayLabel(thread.authorRole, i18n)} · {thread.createdAt}</div>
         </div>
       </div>
       <div className="mt-2 whitespace-pre-wrap text-sm leading-5 text-stone-700">{thread.content}</div>
@@ -62,7 +65,7 @@ function MemoThreadCard({
       <div className="mt-3 space-y-2 border-t border-stone-200 pt-3">
         {(thread.replies ?? []).length > 0 ? thread.replies.map((reply) => (
           <div key={reply.id} className="pl-3 text-sm text-stone-700">
-            <div className="text-[11px] text-stone-500">ㄴ {reply.authorName} · {reply.authorRole} · {reply.createdAt}</div>
+            <div className="text-[11px] text-stone-500">ㄴ {reply.authorName} · {getRoleDisplayLabel(reply.authorRole, i18n)} · {reply.createdAt}</div>
             <div className="mt-0.5 whitespace-pre-wrap leading-5">{reply.content}</div>
             <MemoAttachmentList attachmentIds={reply.attachmentIds} attachmentsById={attachmentsById} canPromoteMemoAttachment={canPromoteMemoAttachment} onPromoteMemoAttachment={onPromoteMemoAttachment} onPreviewAttachment={onPreviewAttachment} />
           </div>
@@ -148,7 +151,7 @@ export default function WorkOrderMemoPanel({
         <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">{`${memoThreads.length}${ui.memo.countSuffix}`}</span>
       </div>
       <div className="mt-3 rounded-xl border border-stone-200 bg-stone-50 p-2.5">
-        <div className="text-[11px] text-stone-500">{currentUserName} · {currentUserRole}</div>
+        <div className="text-[11px] text-stone-500">{currentUserName} · {getRoleDisplayLabel(currentUserRole, i18n)}</div>
         <textarea
           value={threadDraft}
           onChange={(event) => setThreadDraft(event.target.value)}

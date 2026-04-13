@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ChangeEvent } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
+import { MODAL_INPUT_CLASS, MODAL_SELECT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
 import { createModalActionHandler, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { useI18n } from "@/lib/i18n";
 
@@ -64,7 +65,7 @@ export default function AttachmentRequestModal({
             value={content}
             onChange={(event: ChangeEvent<HTMLTextAreaElement>) => setContent(event.target.value)}
             placeholder={ui.modal.attachmentRequest.memoPlaceholder}
-            className="min-h-[132px] w-full resize-none rounded-2xl border border-stone-200 bg-stone-50 px-3 py-3 text-sm text-stone-800 outline-none transition focus:border-stone-400"
+            className={`min-h-[132px] ${MODAL_TEXTAREA_CLASS} resize-none rounded-2xl border-stone-200 bg-stone-50 py-3 text-stone-800`}
           />
         </div>
 
