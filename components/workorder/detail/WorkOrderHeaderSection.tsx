@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import InlineInfoItem from "@/components/common/ui/InlineInfoItem";
 import { canCreateWorkOrderByRoles } from "@/lib/constants/roles";
 import { useI18n } from "@/lib/i18n";
+import { getRecommendedWorkOrderCategory } from "@/lib/utils/workorderCategoryRecommend";
 import type { RoleType } from "@/types/workorder";
 
 
@@ -65,6 +66,7 @@ export default function WorkOrderHeaderSection({
   const inventoryValue = `${currentInventoryQuantity.toLocaleString()}${common.quantitySuffix}`;
   const summaryValue = summaryText || "-";
   const canEditSummary = !locked && canCreateWorkOrderByRoles([currentUserRole]) && typeof onOpenBasicInfoModal === "function";
+  const recommendedCategory = getRecommendedWorkOrderCategory(titleDraft.trim());
   const canEditManager = !locked && canChangeManager;
   const canEditTitle = !locked && canRenameTitle && typeof onRenameTitle === "function";
 
@@ -127,6 +129,11 @@ export default function WorkOrderHeaderSection({
             <button type="button" onClick={closeTitleEditor} className="pbp-interactive-button rounded-xl border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100">{copy.titleEditCancel}</button>
             <span className="text-[11px] text-stone-500">{copy.titleEditHint}</span>
           </div>
+          {recommendedCategory ? (
+            <div className="mt-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] leading-5 text-emerald-800">
+              {i18n.workorder.ui.modals.createWorkOrder.recommendedCategory}: {recommendedCategory.category1} / {recommendedCategory.category2} / {recommendedCategory.category3}
+            </div>
+          ) : null}
         </div>
       ) : (
         <div className="flex min-w-0 items-start gap-1.5">

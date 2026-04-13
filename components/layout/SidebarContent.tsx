@@ -5,6 +5,7 @@ import { useI18n } from "@/lib/i18n";
 import type { WorkOrderListItem, WorkflowState } from "@/types/workorder";
 
 type Props = {
+  companyName: string;
   version: string;
   workOrders: WorkOrderListItem[];
   selectedId: string;
@@ -23,6 +24,7 @@ type Props = {
 };
 
 export default function SidebarContent({
+  companyName,
   version,
   workOrders,
   selectedId,
@@ -48,8 +50,8 @@ export default function SidebarContent({
       <div className="border-b border-stone-200 p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-lg font-semibold leading-6 text-stone-900">PeacebyPiece v{version}</div>
-            <div className="mt-1 text-xs text-stone-500">{controlsUi.subtitle}</div>
+            <div className="text-lg font-semibold leading-6 text-stone-900">{companyName}</div>
+            <div className="mt-1 flex items-center gap-2 text-xs text-stone-500"><span>{controlsUi.subtitle}</span><span className="text-[10px] leading-none text-stone-400">v{version}</span></div>
           </div>
           <div className="flex items-center gap-2">
             {onOpenAdminPanel ? (

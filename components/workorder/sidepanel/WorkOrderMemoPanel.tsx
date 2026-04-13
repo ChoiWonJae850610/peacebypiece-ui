@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type KeyboardEvent } from "react";
+import { useEffect, useState, type KeyboardEvent } from "react";
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
 import { useI18n } from "@/lib/i18n";
 
@@ -19,6 +19,7 @@ function MemoThreadCard({
   onPromoteMemoAttachment,
   onPreviewAttachment,
   onCreateReply,
+  workOrderId,
 }: {
   thread: MemoThread;
   attachmentsById: Map<string, Attachment>;
@@ -26,12 +27,19 @@ function MemoThreadCard({
   onPromoteMemoAttachment: (attachmentId: string) => void;
   onPreviewAttachment: (attachmentId: string) => void;
   onCreateReply: (threadId: string, content: string, payload?: MemoAttachmentPayload) => void;
+  workOrderId: string;
 }) {
   const { i18n } = useI18n();
   const ui = i18n.workorder.ui;
   const [replyDraft, setReplyDraft] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [replyComposerOpen, setReplyComposerOpen] = useState(false);
+
+  useEffect(() => {
+    setReplyDraft("");
+    setUploadedFiles([]);
+    setReplyComposerOpen(false);
+  }, [thread.id, workOrderId]);
 
   const submitReply = () => {
     if (!replyDraft.trim()) return;
@@ -125,6 +133,11 @@ export default function WorkOrderMemoPanel({
   const [threadDraft, setThreadDraft] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const memoThreads = workOrder.memoThreads ?? [];
+
+  useEffect(() => {
+    setThreadDraft("");
+    setUploadedFiles([]);
+  }, [workOrder.id]);
   const attachmentsById = new Map((workOrder.attachments ?? []).map((attachment) => [attachment.id, attachment]));
 
   const submitThread = () => {
@@ -166,7 +179,7 @@ export default function WorkOrderMemoPanel({
       </div>
       <div className="mt-2.5 space-y-2">
         {memoThreads.length > 0 ? memoThreads.map((thread) => (
-          <MemoThreadCard key={thread.id} thread={thread} attachmentsById={attachmentsById} canPromoteMemoAttachment={canPromoteMemoAttachment} onPromoteMemoAttachment={onPromoteMemoAttachment} onPreviewAttachment={onPreviewAttachment} onCreateReply={onCreateReply} />
+          <MemoThreadCard key={`${workOrder.id}-${thread.id}`} thread={thread} attachmentsById={attachmentsById} canPromoteMemoAttachment={canPromoteMemoAttachment} onPromoteMemoAttachment={onPromoteMemoAttachment} onPreviewAttachment={onPreviewAttachment} onCreateReply={onCreateReply} workOrderId={workOrder.id} />
         )) : <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-5 text-center text-sm text-stone-500">{ui.memo.empty}</div>}
       </div>
     </WorkOrderPanelCard>

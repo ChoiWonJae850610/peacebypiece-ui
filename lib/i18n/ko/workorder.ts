@@ -33,6 +33,7 @@ export const workorderKo = {
   actionLabels: {
     requestReview: "검토 요청",
     cancelReviewRequest: "요청 취소",
+    cancelReviewApproval: "취소",
     rejectReview: "반려",
     approveReview: "검토 완료",
     requestOrder: "발주 요청",

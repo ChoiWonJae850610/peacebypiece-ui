@@ -104,7 +104,10 @@ export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles
     }
     case "review_approved":
       if (canRequestOrder(currentRoles)) {
-        return [{ label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "in_production" }];
+        return [
+          { label: WORKFLOW_ACTION_LABELS.cancelReviewApproval, nextState: "review_requested" },
+          { label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "in_production" },
+        ];
       }
       return [];
     case "order_requested":

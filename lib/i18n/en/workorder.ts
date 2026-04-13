@@ -33,6 +33,7 @@ export const workorderEn = {
   actionLabels: {
     requestReview: "Request review",
     cancelReviewRequest: "Cancel request",
+    cancelReviewApproval: "Cancel",
     rejectReview: "Reject",
     approveReview: "Approve review",
     requestOrder: "Request order",

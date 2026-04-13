@@ -3,13 +3,14 @@
 import { useI18n } from "@/lib/i18n";
 
 type Props = {
+  companyName: string;
   version: string;
   onOpen: () => void;
   onOpenSettings: () => void;
   onOpenAdminPanel?: () => void;
 };
 
-export default function MobileTopBar({ version, onOpen, onOpenSettings, onOpenAdminPanel }: Props) {
+export default function MobileTopBar({ companyName, version, onOpen, onOpenSettings, onOpenAdminPanel }: Props) {
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.layout.mobileTopBar;
 
@@ -17,8 +18,8 @@ export default function MobileTopBar({ version, onOpen, onOpenSettings, onOpenAd
     <div className="sticky top-0 z-30 border-b border-stone-200 bg-white/95 px-3 py-[max(env(safe-area-inset-top),0.75rem)] backdrop-blur md:hidden">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <div className="text-sm font-semibold text-stone-900">{copy.title} v{version}</div>
-          <div className="text-[11px] text-stone-500">{copy.subtitle}</div>
+          <div className="text-sm font-semibold text-stone-900">{companyName}</div>
+          <div className="flex items-center gap-2 text-[11px] text-stone-500"><span>{copy.subtitle}</span><span className="text-[10px] leading-none text-stone-400">v{version}</span></div>
         </div>
         <div className="flex items-center gap-2">
           {onOpenAdminPanel ? (

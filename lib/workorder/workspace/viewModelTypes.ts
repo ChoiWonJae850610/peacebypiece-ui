@@ -159,6 +159,7 @@ export type BaseWorkspaceViewModelArgs = {
 };
 
 export type SidebarViewModelArgs = {
+  companyName: string;
   version: string;
   isAdmin: boolean;
   currentUser: UserProfile;
@@ -234,6 +235,7 @@ export type ModalViewModelArgs = {
 };
 
 export type MobileViewModelArgs = {
+  companyName: string;
   version: string;
   isAdmin: boolean;
   drawerOpen: boolean;

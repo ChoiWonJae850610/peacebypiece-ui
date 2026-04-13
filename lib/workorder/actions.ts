@@ -3,6 +3,7 @@ import { createAttachmentId } from "@/lib/permissions/attachments";
 import type { Material } from "@/types/material";
 import { applyReorderIdentity, buildWorkOrderTitle, getNextReorderRound, getWorkOrderBaseTitle, getWorkOrderReorderGroupId, getWorkOrderReorderRound } from "@/lib/workorder/reorder/helpers";
 import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
+import { shouldApplyRecommendedCategoryOnTitleRename } from "@/lib/utils/workorderCategoryRecommend";
 import type { Attachment, InventoryChange, MemoReply, MemoThread, OrderEntry, RoleType, WorkOrder, WorkflowAction } from "@/types/workorder";
 
 export function createNewWorkOrder(nextIndex: number, payload: {
@@ -307,9 +308,27 @@ export function renameWorkOrderGroupBaseTitle(
 
   const nextWorkOrders = workOrders.map((item) => {
     if (resolveRootId(item) !== reorderGroupId) return applyReorderIdentity(item);
+
+    const categoryRecommendation = shouldApplyRecommendedCategoryOnTitleRename({
+      previousTitle: resolveBaseTitle(item),
+      nextTitle: trimmedBaseTitle,
+      currentCategory: {
+        category1: item.category1,
+        category2: item.category2,
+        category3: item.category3,
+      },
+    });
+
     return applyReorderIdentity({
       ...item,
       baseTitle: trimmedBaseTitle,
+      ...(categoryRecommendation
+        ? {
+            category1: categoryRecommendation.category1,
+            category2: categoryRecommendation.category2,
+            category3: categoryRecommendation.category3,
+          }
+        : {}),
     });
   });
 

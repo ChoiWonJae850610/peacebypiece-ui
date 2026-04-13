@@ -1,13 +1,15 @@
 import { adminEn } from "@/lib/i18n/en/admin";
 import { commonEn } from "@/lib/i18n/en/common";
 import { workorderEn } from "@/lib/i18n/en/workorder";
+import { systemEn } from "@/lib/i18n/en/system";
 import { adminKo } from "@/lib/i18n/ko/admin";
 import { commonKo } from "@/lib/i18n/ko/common";
 import { workorderKo } from "@/lib/i18n/ko/workorder";
+import { systemKo } from "@/lib/i18n/ko/system";
 
 export const I18N_RESOURCES = {
-  ko: { common: commonKo, workorder: workorderKo, admin: adminKo },
-  en: { common: commonEn, workorder: workorderEn, admin: adminEn },
+  ko: { common: commonKo, workorder: workorderKo, admin: adminKo, system: systemKo },
+  en: { common: commonEn, workorder: workorderEn, admin: adminEn, system: systemEn },
 } as const;
 
 export type Locale = keyof typeof I18N_RESOURCES;

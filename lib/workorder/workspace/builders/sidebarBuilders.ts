@@ -2,6 +2,7 @@ import { isInspectorRole } from "@/lib/constants/roles";
 import type { MobileDrawerProps, MobileTopBarProps, MobileViewModelArgs, SidebarListProps, SidebarViewModelArgs } from "@/lib/workorder/workspace/viewModelTypes";
 
 export function buildSidebarListProps({
+  companyName,
   version,
   isAdmin,
   currentUser,
@@ -20,6 +21,7 @@ export function buildSidebarListProps({
   onSetSearchQuery,
 }: SidebarViewModelArgs): SidebarListProps {
   return {
+    companyName,
     version,
     workOrders,
     selectedId,
@@ -39,13 +41,15 @@ export function buildSidebarListProps({
 }
 
 export function buildMobileTopBarProps({
+  companyName,
   version,
   isAdmin,
   onSetDrawerOpen,
   onSetPermissionModalOpen,
   onSetAdminPanelModalOpen,
-}: Pick<MobileViewModelArgs, "version" | "isAdmin" | "onSetDrawerOpen" | "onSetPermissionModalOpen" | "onSetAdminPanelModalOpen">): MobileTopBarProps {
+}: Pick<MobileViewModelArgs, "companyName" | "version" | "isAdmin" | "onSetDrawerOpen" | "onSetPermissionModalOpen" | "onSetAdminPanelModalOpen">): MobileTopBarProps {
   return {
+    companyName,
     version,
     onOpen: () => onSetDrawerOpen(true),
     onOpenSettings: () => onSetPermissionModalOpen(true),
