@@ -2,6 +2,7 @@
 
 import {
   forwardRef,
+  useCallback,
   useEffect,
   useImperativeHandle,
   useMemo,
@@ -10,6 +11,7 @@ import {
 } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
+import { MODAL_INPUT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
 import type { EditableCategoryRule } from "@/lib/system/categoryRuleEditor";
 import {
   buildCategoryRuleMatchPreview,
@@ -89,6 +91,38 @@ function buildKeywordTextareaValue(keywords: string[]) {
   return keywords.join("\n");
 }
 
+function ChevronMoveButton({
+  direction,
+  onClick,
+  disabled,
+  tone = "light",
+  label,
+}: {
+  direction: "up" | "down";
+  onClick: () => void;
+  disabled?: boolean;
+  tone?: "light" | "dark";
+  label: string;
+}) {
+  const rotateClass = direction === "up" ? "rotate-180" : "rotate-0";
+  const toneClass =
+    tone === "dark"
+      ? "border-white/20 bg-white/10 text-white hover:bg-white/15"
+      : "border-stone-200 bg-stone-50 text-stone-600 hover:border-stone-300 hover:bg-stone-100";
+
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      disabled={disabled}
+      className={`inline-flex h-8 w-8 items-center justify-center rounded-full border text-sm transition-transform ${toneClass} ${rotateClass} disabled:cursor-not-allowed disabled:opacity-35`}
+    >
+      ▾
+    </button>
+  );
+}
+
 type MobileListDrawerProps = {
   open: boolean;
   onClose: () => void;
@@ -134,7 +168,6 @@ function MobileCategoryRuleDrawer({
           <div className="flex items-center justify-between gap-3">
             <div>
               <div id="category-rule-mobile-drawer-title" className="text-sm font-semibold leading-5 text-stone-900">{text.mobileListTitle}</div>
-              <div className="text-[11px] text-stone-500">{text.mobileListSubtitle}</div>
             </div>
             <button
               type="button"
@@ -151,7 +184,7 @@ function MobileCategoryRuleDrawer({
               value={searchQuery}
               onChange={(event) => onSearchQueryChange(event.target.value)}
               placeholder={text.mobileSearchPlaceholder}
-              className="pbp-field-interaction h-11 w-full rounded-xl border border-stone-300 bg-white px-4 text-sm text-stone-900 outline-none placeholder:text-stone-400 focus:border-stone-500 focus:bg-stone-50"
+              className="pbp-field-interaction h-11 w-full rounded-xl border border-stone-300 bg-white px-4 text-base text-stone-900 outline-none placeholder:text-stone-400 focus:border-stone-500 focus:bg-stone-50 md:text-sm"
             />
           </label>
           <button
@@ -209,22 +242,20 @@ function MobileCategoryRuleDrawer({
                     </div>
                   </button>
                   <div className="mt-3 flex items-center justify-end gap-2">
-                    <button
-                      type="button"
+                    <ChevronMoveButton
+                      direction="up"
                       onClick={() => onMoveUp(rule.id)}
                       disabled={index === 0}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-stone-300 bg-white text-sm text-stone-700 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      ↑
-                    </button>
-                    <button
-                      type="button"
+                      tone={isSelected ? "dark" : "light"}
+                      label={text.moveUp}
+                    />
+                    <ChevronMoveButton
+                      direction="down"
                       onClick={() => onMoveDown(rule.id)}
                       disabled={index === rules.length - 1}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-stone-300 bg-white text-sm text-stone-700 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      ↓
-                    </button>
+                      tone={isSelected ? "dark" : "light"}
+                      label={text.moveDown}
+                    />
                   </div>
                 </div>
               );
@@ -245,13 +276,41 @@ type TestModalProps = {
   text: CategoryRulesManagerText;
 };
 
+function TestResultPanel({
+  preview,
+  text,
+}: {
+  preview: ReturnType<typeof buildCategoryRuleMatchPreview>;
+  text: CategoryRulesManagerText;
+}) {
+  return (
+    <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
+      {preview.matchedRuleId ? (
+        <div className="space-y-2">
+          <div>
+            <span className="font-medium text-stone-900">{text.matchedRuleLabel}:</span> {preview.matchedRuleName}
+          </div>
+          <div>
+            <span className="font-medium text-stone-900">{text.matchedKeywordsLabel}:</span> {preview.matchedKeywords.join(", ")}
+          </div>
+          <div>
+            <span className="font-medium text-stone-900">{text.recommendationLabel}:</span> {preview.recommendationLabel}
+          </div>
+          <div className="text-stone-600">{preview.reason}</div>
+        </div>
+      ) : (
+        <div className="text-stone-500">{text.noMatch}</div>
+      )}
+    </div>
+  );
+}
+
 function CategoryRuleTestModal({ open, onClose, testTitle, onChangeTitle, preview, text }: TestModalProps) {
   return (
     <ModalShell
       open={open}
       onClose={onClose}
       title={text.testModalTitle}
-      description={text.testModalDescription}
       maxWidthClass="md:max-w-xl"
     >
       <div className="grid gap-4">
@@ -260,28 +319,11 @@ function CategoryRuleTestModal({ open, onClose, testTitle, onChangeTitle, previe
           <input
             value={testTitle}
             onChange={(event) => onChangeTitle(event.target.value)}
-            placeholder={text.testInputPlaceholder}
-            className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-stone-500"
+            placeholder={text.testInputLabel}
+            className={MODAL_INPUT_CLASS}
           />
         </label>
-        <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
-          {preview.matchedRuleId ? (
-            <div className="space-y-2">
-              <div>
-                <span className="font-medium text-stone-900">{text.matchedRuleLabel}:</span> {preview.matchedRuleName}
-              </div>
-              <div>
-                <span className="font-medium text-stone-900">{text.matchedKeywordsLabel}:</span> {preview.matchedKeywords.join(", ")}
-              </div>
-              <div>
-                <span className="font-medium text-stone-900">{text.recommendationLabel}:</span> {preview.recommendationLabel}
-              </div>
-              <div className="text-stone-600">{preview.reason}</div>
-            </div>
-          ) : (
-            <div className="text-stone-500">{text.noMatch}</div>
-          )}
-        </div>
+        <TestResultPanel preview={preview} text={text} />
       </div>
     </ModalShell>
   );
@@ -294,6 +336,7 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
     const [testTitle, setTestTitle] = useState("데님 자켓 샘플");
     const [keywordTextByRuleId, setKeywordTextByRuleId] = useState<Record<string, string>>({});
     const [draggingRuleId, setDraggingRuleId] = useState<string | null>(null);
+    const [dragOverRuleId, setDragOverRuleId] = useState<string | null>(null);
     const [mobileListOpen, setMobileListOpen] = useState(false);
     const [mobileTestOpen, setMobileTestOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
@@ -353,6 +396,9 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
         return next;
       });
     }, [sortedRules]);
+
+    const closeMobileTest = useCallback(() => setMobileTestOpen(false), []);
+    const openMobileTest = useCallback(() => setMobileTestOpen(true), []);
 
     function replaceRules(nextRules: EditableCategoryRule[]) {
       setRules(reassignEditableCategoryRulePriorities(nextRules));
@@ -469,30 +515,46 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder={text.mobileSearchPlaceholder}
-                className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-stone-500"
+                className="pbp-field-interaction w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-900 outline-none transition focus:border-stone-500 md:text-sm"
               />
             </label>
             <div className="flex max-h-[calc(100vh-18rem)] flex-col gap-3 overflow-y-auto pr-1">
-              {filteredRules.map((rule, index) => {
+              {filteredRules.map((rule) => {
                 const isSelected = rule.id === selectedRule?.id;
+                const isDragging = draggingRuleId === rule.id;
+                const isDropTarget = dragOverRuleId === rule.id && draggingRuleId !== rule.id;
+
                 return (
                   <div
                     key={rule.id}
                     draggable
-                    onDragStart={() => setDraggingRuleId(rule.id)}
-                    onDragEnd={() => setDraggingRuleId(null)}
-                    onDragOver={(event) => event.preventDefault()}
+                    onDragStart={() => {
+                      setDraggingRuleId(rule.id);
+                      setDragOverRuleId(rule.id);
+                    }}
+                    onDragEnd={() => {
+                      setDraggingRuleId(null);
+                      setDragOverRuleId(null);
+                    }}
+                    onDragOver={(event) => {
+                      event.preventDefault();
+                      if (dragOverRuleId !== rule.id) {
+                        setDragOverRuleId(rule.id);
+                      }
+                    }}
                     onDrop={() => {
                       if (!draggingRuleId) return;
                       const fromIndex = sortedRules.findIndex((entry) => entry.id === draggingRuleId);
                       const toIndex = sortedRules.findIndex((entry) => entry.id === rule.id);
                       handleReorder(fromIndex, toIndex);
                       setDraggingRuleId(null);
+                      setDragOverRuleId(null);
                     }}
                     className={[
-                      "rounded-3xl border px-4 py-4 shadow-sm transition",
+                      "rounded-3xl border px-4 py-4 shadow-sm transition duration-200",
                       isSelected ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-stone-50 text-stone-900 hover:border-stone-300 hover:bg-white",
-                      draggingRuleId === rule.id ? "opacity-60" : "opacity-100",
+                      isDragging ? "scale-[0.985] opacity-80 shadow-2xl ring-2 ring-stone-300" : "",
+                      isDropTarget ? "border-sky-400 ring-2 ring-sky-200" : "",
                     ].join(" ")}
                   >
                     <button type="button" onClick={() => setSelectedRuleId(rule.id)} className="block w-full text-left">
@@ -503,7 +565,7 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
                             {rule.enabled ? text.enabled : text.disabled}
                           </div>
                         </div>
-                        <span className={`shrink-0 text-xs ${isSelected ? "text-stone-200" : "text-stone-400"}`}>⋮⋮</span>
+                        <span className={`shrink-0 text-xs transition-transform ${isDragging ? "scale-110" : ""} ${isSelected ? "text-stone-200" : "text-stone-400"}`}>⋮⋮</span>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
                         {rule.keywords.length > 0 ? (
@@ -537,7 +599,7 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
               </button>
               <button
                 type="button"
-                onClick={() => setMobileTestOpen(true)}
+                onClick={openMobileTest}
                 className="inline-flex flex-1 items-center justify-center rounded-full border border-stone-900 bg-stone-900 px-4 py-3 text-sm font-medium text-white"
               >
                 {text.openTest}
@@ -568,7 +630,7 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
                     <input
                       value={selectedRule.name}
                       onChange={(event) => updateRule(selectedRule.id, (rule) => ({ ...rule, name: event.target.value }))}
-                      className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-stone-500"
+                      className={MODAL_INPUT_CLASS}
                     />
                   </label>
 
@@ -584,12 +646,11 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
 
                   <label className="space-y-2">
                     <span className="text-sm font-medium text-stone-700">{text.keywordsLabel}</span>
-                    <p className="text-xs leading-5 text-stone-500">{text.keywordsHelpText}</p>
                     <textarea
                       value={keywordTextByRuleId[selectedRule.id] ?? buildKeywordTextareaValue(selectedRule.keywords)}
                       onChange={(event) => handleKeywordTextChange(selectedRule.id, event.target.value)}
                       rows={6}
-                      className="w-full rounded-3xl border border-stone-300 bg-white px-4 py-3 text-sm leading-6 text-stone-900 outline-none transition focus:border-stone-500"
+                      className={MODAL_TEXTAREA_CLASS}
                     />
                   </label>
 
@@ -604,7 +665,7 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
                             recommendation: { ...rule.recommendation, category1: event.target.value },
                           }))
                         }
-                        className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-stone-500"
+                        className={MODAL_INPUT_CLASS}
                       />
                     </label>
                     <label className="space-y-2">
@@ -617,7 +678,7 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
                             recommendation: { ...rule.recommendation, category2: event.target.value },
                           }))
                         }
-                        className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-stone-500"
+                        className={MODAL_INPUT_CLASS}
                       />
                     </label>
                     <label className="space-y-2">
@@ -630,14 +691,13 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
                             recommendation: { ...rule.recommendation, category3: event.target.value },
                           }))
                         }
-                        className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-stone-500"
+                        className={MODAL_INPUT_CLASS}
                       />
                     </label>
                   </div>
 
                   <label className="space-y-2">
                     <span className="text-sm font-medium text-stone-700">{text.reasonLabel}</span>
-                    <p className="text-xs leading-5 text-stone-500">{text.reasonHelpText}</p>
                     <textarea
                       value={selectedRule.recommendation.reason}
                       onChange={(event) =>
@@ -647,7 +707,7 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
                         }))
                       }
                       rows={4}
-                      className="w-full rounded-3xl border border-stone-300 bg-white px-4 py-3 text-sm leading-6 text-stone-900 outline-none transition focus:border-stone-500"
+                      className={MODAL_TEXTAREA_CLASS}
                     />
                   </label>
                 </div>
@@ -662,32 +722,14 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
           <article className="hidden rounded-3xl border border-stone-200 bg-white p-5 shadow-sm xl:block">
             <div className="mb-4 space-y-1">
               <h2 className="text-lg font-semibold text-stone-900">{text.testInputLabel}</h2>
-              <p className="text-sm leading-6 text-stone-600">{text.testInputPlaceholder}</p>
             </div>
             <div className="space-y-4">
               <input
                 value={testTitle}
                 onChange={(event) => setTestTitle(event.target.value)}
-                className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-stone-500"
+                className={MODAL_INPUT_CLASS}
               />
-              <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
-                {preview.matchedRuleId ? (
-                  <div className="space-y-2">
-                    <div>
-                      <span className="font-medium text-stone-900">{text.matchedRuleLabel}:</span> {preview.matchedRuleName}
-                    </div>
-                    <div>
-                      <span className="font-medium text-stone-900">{text.matchedKeywordsLabel}:</span> {preview.matchedKeywords.join(", ")}
-                    </div>
-                    <div>
-                      <span className="font-medium text-stone-900">{text.recommendationLabel}:</span> {preview.recommendationLabel}
-                    </div>
-                    <div className="text-stone-600">{preview.reason}</div>
-                  </div>
-                ) : (
-                  <div className="text-stone-500">{text.noMatch}</div>
-                )}
-              </div>
+              <TestResultPanel preview={preview} text={text} />
             </div>
           </article>
         </section>
@@ -708,7 +750,7 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
 
         <CategoryRuleTestModal
           open={mobileTestOpen}
-          onClose={() => setMobileTestOpen(false)}
+          onClose={closeMobileTest}
           testTitle={testTitle}
           onChangeTitle={setTestTitle}
           preview={preview}
