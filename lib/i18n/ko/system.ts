@@ -4,6 +4,7 @@ export const systemKo = {
   description: "고객사 초대, 고객사별 운영 현황, 작업지시서 추천 규칙을 최고관리자 기준으로 확장하기 위한 기본 화면입니다.",
   versionLabel: "버전",
   moveToWorkspace: "작업지시서 화면으로 이동",
+  openCategoryRules: "추천 규칙 화면 열기",
   cards: {
     companies: {
       title: "고객사 관리",
@@ -31,5 +32,24 @@ export const systemKo = {
     description: "향후 /system 전용 규칙 관리 화면으로 확장할 기본 리스트입니다.",
     keywordsLabel: "키워드",
     recommendationLabel: "추천 분류",
+  },
+  categoryRulePage: {
+    title: "추천 규칙 관리",
+    description: "현재 등록된 작업지시서명 추천 규칙을 우선순위 순서대로 확인하고, 샘플 제목으로 실제 매칭 결과를 점검하는 읽기 전용 화면입니다.",
+    backToSystem: "최고관리자 홈으로 이동",
+    listTitle: "규칙 목록",
+    listDescription: "위에서 아래 순서대로 먼저 매칭된 규칙이 실제 추천에 사용됩니다.",
+    readOnlyBadge: "읽기 전용 1차",
+    detailTitle: "선택 규칙 상세",
+    detailDescription: "첫 번째 규칙을 기준으로 키워드 묶음과 추천 분류 구조를 확인할 수 있습니다. 다음 단계에서 편집 기능을 여기에 확장하면 됩니다.",
+    detailKeywordsLabel: "키워드 묶음",
+    detailRecommendationLabel: "추천 결과",
+    testTitle: "제목 테스트 예시",
+    testDescription: "샘플 제목으로 현재 규칙이 어떤 순서로 잡히는지 미리 확인할 수 있습니다.",
+    testMatchedRuleLabel: "매칭 규칙",
+    testMatchedKeywordsLabel: "잡힌 키워드",
+    testRecommendationLabel: "추천 분류",
+    noMatch: "현재 규칙에서 매칭되는 키워드를 찾지 못했습니다.",
+    testExamples: ["데님 자켓 샘플", "반팔 티셔츠 기본형", "롱슬리브 니트 탑", "플리츠 스커트 샘플"],
   },
 } as const;

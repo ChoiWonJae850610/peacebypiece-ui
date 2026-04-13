@@ -4,6 +4,7 @@ export const systemEn = {
   description: "A base page for expanding customer invitations, tenant operations, and work-order recommendation rules from the super-admin perspective.",
   versionLabel: "Version",
   moveToWorkspace: "Go to workspace",
+  openCategoryRules: "Open recommendation rules",
   cards: {
     companies: {
       title: "Company management",
@@ -31,5 +32,24 @@ export const systemEn = {
     description: "A base list that will later grow into a dedicated /system rule-management screen.",
     keywordsLabel: "Keywords",
     recommendationLabel: "Recommendation",
+  },
+  categoryRulePage: {
+    title: "Recommendation rule management",
+    description: "A read-only view for checking current work-order title rules in priority order and validating actual matches with sample titles.",
+    backToSystem: "Back to system home",
+    listTitle: "Rule list",
+    listDescription: "The first matching rule from top to bottom is used for the final recommendation.",
+    readOnlyBadge: "Read-only v1",
+    detailTitle: "Selected rule detail",
+    detailDescription: "This shows the keyword group and recommendation structure for the first rule. The editable management UI can grow from here next.",
+    detailKeywordsLabel: "Keyword group",
+    detailRecommendationLabel: "Recommendation",
+    testTitle: "Title test examples",
+    testDescription: "Use sample titles to preview which rule currently matches first.",
+    testMatchedRuleLabel: "Matched rule",
+    testMatchedKeywordsLabel: "Matched keywords",
+    testRecommendationLabel: "Recommendation",
+    noMatch: "No keywords from the current rules matched this title.",
+    testExamples: ["Denim jacket sample", "Short sleeve t-shirt basic", "Long sleeve knit top", "Pleated skirt sample"],
   },
 } as const;
