@@ -48,6 +48,11 @@ export function useWorkOrderHistory({
     [scopedHistoryLogs, isAdmin, historyFilter, currentRoles],
   );
 
+  const adminHistoryLogs = useMemo(
+    () => filterHistoryLogs(historyLogs, true, historyFilter, currentRoles),
+    [historyLogs, historyFilter, currentRoles],
+  );
+
   const inventoryLogs = useMemo(() => toInventoryLogs(scopedHistoryLogs), [scopedHistoryLogs]);
 
   const handleToggleNotificationSetting = (key: NotificationSettingKey) => {
@@ -60,6 +65,7 @@ export function useWorkOrderHistory({
     notificationSettings,
     handleToggleNotificationSetting,
     filteredHistoryLogs,
+    adminHistoryLogs,
     inventoryLogs,
   };
 }

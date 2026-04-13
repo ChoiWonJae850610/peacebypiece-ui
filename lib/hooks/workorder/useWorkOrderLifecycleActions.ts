@@ -151,8 +151,9 @@ export function useWorkOrderLifecycleActions({
           setWorkOrders((prev) => [newWorkOrder, ...prev]);
           setSelectedId(newWorkOrder.id);
           setLastSavedAt(newWorkOrder.lastSavedAt);
-          setHistoryLogs((historyPrev) => [createCreationHistoryLog(currentUser.name, newWorkOrder.id, historyText), ...historyPrev]);
+          setHistoryLogs((historyPrev) => [createCreationHistoryLog(currentUser.name, newWorkOrder.id, { title: getWorkOrderDisplayTitle(newWorkOrder) }, historyText), ...historyPrev]);
           setSaveStatus("dirty");
+          setToastMessage(lifecycleText.createCompletedToastFormat.replace("{title}", getWorkOrderDisplayTitle(newWorkOrder)));
           setCreateWorkOrderModalOpen(false);
         },
       });

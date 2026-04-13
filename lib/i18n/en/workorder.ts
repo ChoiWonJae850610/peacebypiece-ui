@@ -109,6 +109,7 @@ export const workorderEn = {
     deleteCompletedToast: "Work order deleted.",
     deleteFailedToast: "Failed to delete work order.",
     newWorkOrderFallbackTitle: "New work order",
+    createCompletedToastFormat: 'Work order "{title}" has been created.',
     createFailedToast: "Failed to create work order.",
     renameAppliedToSeriesToast: "The work order title has been applied to the entire reorder series.",
     renameAppliedToast: "The work order title has been changed.",
@@ -123,6 +124,8 @@ export const workorderEn = {
     memoReplyCreatedWithAttachmentToast: "Memo reply with attachment has been registered.",
     memoAttachmentPromotedToast: "Memo attachment has been promoted to an official attachment.",
     managerChangedToast: "Manager has been changed.",
+    workflowChangedToastFormat: '"{label}" has been applied.',
+    inventoryAppliedToast: "Inventory update has been applied.",
   },
   history: {
     actorSeparator: " · ",

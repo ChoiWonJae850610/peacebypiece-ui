@@ -56,7 +56,7 @@ export function useWorkOrderWorkflowActions({
   }, [workOrders]);
   const applyWorkflowAction = useCallback(
     (workOrder: WorkOrder, action: WorkflowAction) => {
-      const result = buildWorkflowActionResult({ workOrder, action, actorName: currentUser.name, historyText, workflowStateLabels });
+      const result = buildWorkflowActionResult({ workOrder, action, actorName: currentUser.name, text: actionFlowText, historyText, workflowStateLabels });
 
       setWorkOrders((prev) => prev.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item)));
       if (result.historyLogs?.length) {
@@ -68,8 +68,11 @@ export function useWorkOrderWorkflowActions({
       if (result.openInventoryEditor) {
         setInventoryEditorOpen(true);
       }
+      if (result.toastMessage) {
+        setToastMessage(result.toastMessage);
+      }
     },
-    [currentUser.name, historyText, setHistoryLogs, setInventoryEditorOpen, setSaveStatus, setWorkOrders, workflowStateLabels],
+    [actionFlowText, currentUser.name, historyText, setHistoryLogs, setInventoryEditorOpen, setSaveStatus, setToastMessage, setWorkOrders, workflowStateLabels],
   );
 
   const handleWorkflowAction = useCallback(
@@ -108,6 +111,7 @@ export function useWorkOrderWorkflowActions({
         workOrder: currentWorkOrder,
         actorName: currentUser.name,
         input: { inboundQuantity, adjustmentQuantity, deductionQuantity, memo },
+        text: actionFlowText,
         historyText,
       });
       if (!result) return;
@@ -119,8 +123,11 @@ export function useWorkOrderWorkflowActions({
       if (result.saveStatus) {
         setSaveStatus(result.saveStatus);
       }
+      if (result.toastMessage) {
+        setToastMessage(result.toastMessage);
+      }
     },
-    [currentUser.name, historyText, setHistoryLogs, setSaveStatus, setWorkOrders],
+    [actionFlowText, currentUser.name, historyText, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   const handleCompleteInspection = useCallback(

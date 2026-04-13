@@ -22,6 +22,7 @@ export function buildWorkflowActionResult(payload: {
   workOrder: WorkOrder;
   action: WorkflowAction;
   actorName: string;
+  text?: ActionFlowText;
   historyText?: ActionFlowHistoryText;
   workflowStateLabels?: Record<string, string>;
 }): WorkOrderActionFlowResult {
@@ -43,6 +44,7 @@ export function buildWorkflowActionResult(payload: {
     ],
     saveStatus: payload.action.nextState === "review_requested" ? "dirty" : undefined,
     openInventoryEditor: payload.action.nextState === "in_inspection",
+    toastMessage: (payload.text ?? defaultActionFlowText).workflowChangedToastFormat.replace("{label}", payload.action.label),
   };
 }
 
@@ -50,6 +52,7 @@ export function buildInventoryApplyResult(payload: {
   workOrder: WorkOrder;
   actorName: string;
   input: InventoryChangeInput;
+  text?: ActionFlowText;
   historyText?: ActionFlowHistoryText;
 }): WorkOrderActionFlowResult | null {
   const changes = buildInventoryChanges(payload.input);
@@ -58,6 +61,7 @@ export function buildInventoryApplyResult(payload: {
   return {
     nextWorkOrder: applyInventoryAdjustmentToWorkOrder(payload.workOrder, { changes }),
     appliedChanges: changes,
+    toastMessage: (payload.text ?? defaultActionFlowText).inventoryAppliedToast,
     historyLogs: [
       createInventoryHistoryLog(payload.actorName, payload.workOrder.id, {
         changes,

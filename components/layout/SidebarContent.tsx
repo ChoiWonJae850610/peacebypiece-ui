@@ -46,7 +46,7 @@ export default function SidebarContent({
   const controlsUi = i18n.workorder.ui.layout.sidebarControls;
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       <div className="border-b border-stone-200 p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -94,7 +94,7 @@ export default function SidebarContent({
           </button>
         ) : null}
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto p-4">
+      <div className="min-h-0 flex-1 overflow-y-auto p-4 pb-8">
         <div className="space-y-2.5">
           {workOrders.map((workOrder) => (
             <WorkOrderListCard

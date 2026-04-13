@@ -1,7 +1,12 @@
 import { createHistoryLog, defaultHistoryText, type DetailLine, formatTemplate, type HistoryText } from "@/lib/workorder/history/builders/shared";
 import type { HistoryLog } from "@/types/workorder";
 
-export function createCreationHistoryLog(user: string, workOrderId: string, text: HistoryText = defaultHistoryText) {
+export function createCreationHistoryLog(
+  user: string,
+  workOrderId: string,
+  payload: { title?: string } = {},
+  text: HistoryText = defaultHistoryText,
+) {
   return createHistoryLog({
     action: text.actions.created,
     message: text.messages.created,
@@ -9,7 +14,10 @@ export function createCreationHistoryLog(user: string, workOrderId: string, text
     workOrderId,
     category: "work",
     tone: "blue",
-    detailLines: [{ label: text.detailLabels.author, value: user }],
+    detailLines: [
+      ...(payload.title ? [{ label: text.detailLabels.created, value: payload.title }] : []),
+      { label: text.detailLabels.author, value: user },
+    ],
     text,
   });
 }

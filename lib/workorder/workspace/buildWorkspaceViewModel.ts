@@ -147,6 +147,7 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
     selectedWorkOrder: args.selectedWorkOrder,
     currentInventoryQuantity: args.currentInventoryQuantity,
     filteredHistoryLogs: args.filteredHistoryLogs,
+    adminHistoryLogs: args.adminHistoryLogs,
     inventoryLogs: args.inventoryLogs,
     selectedAttachment: args.selectedAttachment,
     pendingAttachmentDelete: args.pendingAttachmentDelete,

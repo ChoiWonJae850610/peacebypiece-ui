@@ -109,6 +109,7 @@ export const workorderKo = {
     deleteCompletedToast: "작업지시서가 삭제되었습니다.",
     deleteFailedToast: "작업지시서 삭제에 실패했습니다.",
     newWorkOrderFallbackTitle: "새 작업지시서",
+    createCompletedToastFormat: '작업지시서 "{title}"가 생성되었습니다.',
     createFailedToast: "작업지시서 생성에 실패했습니다.",
     renameAppliedToSeriesToast: "작업지시서명이 리오더 계열 전체에 반영되었습니다.",
     renameAppliedToast: "작업지시서명이 변경되었습니다.",
@@ -123,6 +124,8 @@ export const workorderKo = {
     memoReplyCreatedWithAttachmentToast: "첨부가 포함된 메모 댓글이 등록되었습니다.",
     memoAttachmentPromotedToast: "메모 첨부가 공식 첨부로 승격되었습니다.",
     managerChangedToast: "담당자가 변경되었습니다.",
+    workflowChangedToastFormat: '"{label}" 처리되었습니다.',
+    inventoryAppliedToast: "재고 수정이 반영되었습니다.",
   },
   history: {
     actorSeparator: " · ",
