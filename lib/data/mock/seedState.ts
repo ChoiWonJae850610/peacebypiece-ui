@@ -1,5 +1,6 @@
-import { DEFAULT_CURRENT_USER_ID, DEFAULT_PERMISSION_TARGET_ID, WORKORDER_SEED_USERS } from "@/lib/data/mock/users";
-import { DEFAULT_SELECTED_WORK_ORDER_ID, WORKORDER_SEED_HISTORY_LOGS, WORKORDER_SEED_WORK_ORDERS } from "@/lib/data/mock/workorders";
+import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
+import { buildUserSeedSource } from "@/lib/data/mock/users";
+import { buildWorkOrderSeedSource } from "@/lib/data/mock/workorders";
 import type { PersistedWorkOrderState } from "@/lib/data/mock/types";
 import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 
@@ -8,26 +9,29 @@ function cloneSeedValue<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
-export function getSeedUsers(): UserProfile[] {
-  return cloneSeedValue(WORKORDER_SEED_USERS);
+export function getSeedUsers(locale: Locale = DEFAULT_LOCALE): UserProfile[] {
+  return cloneSeedValue(buildUserSeedSource(locale).users);
 }
 
-export function getSeedWorkOrders(): WorkOrder[] {
-  return cloneSeedValue(WORKORDER_SEED_WORK_ORDERS);
+export function getSeedWorkOrders(locale: Locale = DEFAULT_LOCALE): WorkOrder[] {
+  return cloneSeedValue(buildWorkOrderSeedSource(locale).workOrders);
 }
 
-export function getSeedHistoryLogs(): HistoryLog[] {
-  return cloneSeedValue(WORKORDER_SEED_HISTORY_LOGS);
+export function getSeedHistoryLogs(locale: Locale = DEFAULT_LOCALE): HistoryLog[] {
+  return cloneSeedValue(buildWorkOrderSeedSource(locale).historyLogs);
 }
 
-export function createInitialSeededWorkorderState(): PersistedWorkOrderState {
+export function createInitialSeededWorkorderState(locale: Locale = DEFAULT_LOCALE): PersistedWorkOrderState {
+  const userSeed = buildUserSeedSource(locale);
+  const workOrderSeed = buildWorkOrderSeedSource(locale);
+
   return {
-    users: getSeedUsers(),
-    workOrders: getSeedWorkOrders(),
-    historyLogs: getSeedHistoryLogs(),
-    selectedId: DEFAULT_SELECTED_WORK_ORDER_ID,
-    currentUserId: DEFAULT_CURRENT_USER_ID,
-    permissionTargetUserId: DEFAULT_PERMISSION_TARGET_ID,
+    users: cloneSeedValue(userSeed.users),
+    workOrders: cloneSeedValue(workOrderSeed.workOrders),
+    historyLogs: cloneSeedValue(workOrderSeed.historyLogs),
+    selectedId: workOrderSeed.defaultSelectedId,
+    currentUserId: userSeed.defaultCurrentUserId,
+    permissionTargetUserId: userSeed.defaultPermissionTargetId,
   };
 }
 

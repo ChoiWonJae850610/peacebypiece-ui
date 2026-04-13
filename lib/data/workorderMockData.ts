@@ -1,5 +1,7 @@
 import type { Attachment, HistoryLog, InventoryLog, WorkOrder, WorkflowState } from "@/types/workorder";
 import { INVENTORY_CHANGE_TYPE } from "@/lib/constants/workorderDomain";
+import { getFixtureI18n } from "@/lib/data/mock/fixtureI18n";
+import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import { nowLabel } from "@/lib/workorder/history/builders";
 
 export function getCurrentTimeLabel() {
@@ -48,14 +50,15 @@ function buildSvgDataUrl(label: string, bg: string, fg: string) {
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
-export function createSampleAttachments(workOrderId: string, count: number): Attachment[] {
+export function createSampleAttachments(workOrderId: string, count: number, locale: Locale = DEFAULT_LOCALE): Attachment[] {
+  const fixture = getFixtureI18n(locale);
   const base: Attachment[] = [
-    { id: `${workOrderId}-att-image-1`, type: "image", name: "front-sample.jpg", url: buildSvgDataUrl("FRONT SAMPLE", "#E7EEF8", "#26415F"), ownerId: "user-designer", ownerName: "김디자이너" },
-    { id: `${workOrderId}-att-pdf-1`, type: "pdf", name: "workorder-sheet.pdf", url: buildSvgDataUrl("PDF", "#FDECEC", "#991B1B"), ownerId: "user-admin", ownerName: "박관리" },
-    { id: `${workOrderId}-att-image-2`, type: "image", name: "detail-note.jpg", url: buildSvgDataUrl("DETAIL NOTE", "#EEF7E9", "#31572C"), ownerId: "user-designer", ownerName: "김디자이너" },
-    { id: `${workOrderId}-att-image-3`, type: "image", name: "color-chip.jpg", url: buildSvgDataUrl("COLOR CHIP", "#FFF4DF", "#9A6700"), ownerId: "user-inspection", ownerName: "이검수" },
-    { id: `${workOrderId}-att-pdf-2`, type: "pdf", name: "spec-sheet.pdf", url: buildSvgDataUrl("SPEC PDF", "#F4EAFE", "#6D28D9"), ownerId: "user-admin", ownerName: "박관리" },
-    { id: `${workOrderId}-att-image-4`, type: "image", name: "back-view.jpg", url: buildSvgDataUrl("BACK VIEW", "#E9F8F8", "#155E75"), ownerId: "user-inspection", ownerName: "이검수" },
+    { id: `${workOrderId}-att-image-1`, type: "image", name: "front-sample.jpg", url: buildSvgDataUrl("FRONT SAMPLE", "#E7EEF8", "#26415F"), ownerId: "user-designer", ownerName: fixture.sampleAttachments.designer },
+    { id: `${workOrderId}-att-pdf-1`, type: "pdf", name: "workorder-sheet.pdf", url: buildSvgDataUrl("PDF", "#FDECEC", "#991B1B"), ownerId: "user-admin", ownerName: fixture.sampleAttachments.admin },
+    { id: `${workOrderId}-att-image-2`, type: "image", name: "detail-note.jpg", url: buildSvgDataUrl("DETAIL NOTE", "#EEF7E9", "#31572C"), ownerId: "user-designer", ownerName: fixture.sampleAttachments.designer },
+    { id: `${workOrderId}-att-image-3`, type: "image", name: "color-chip.jpg", url: buildSvgDataUrl("COLOR CHIP", "#FFF4DF", "#9A6700"), ownerId: "user-inspection", ownerName: fixture.sampleAttachments.inspector },
+    { id: `${workOrderId}-att-pdf-2`, type: "pdf", name: "spec-sheet.pdf", url: buildSvgDataUrl("SPEC PDF", "#F4EAFE", "#6D28D9"), ownerId: "user-admin", ownerName: fixture.sampleAttachments.admin },
+    { id: `${workOrderId}-att-image-4`, type: "image", name: "back-view.jpg", url: buildSvgDataUrl("BACK VIEW", "#E9F8F8", "#155E75"), ownerId: "user-inspection", ownerName: fixture.sampleAttachments.inspector },
   ];
   return base.slice(0, count);
 }
