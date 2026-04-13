@@ -1,12 +1,17 @@
+"use client";
+
 import Link from "next/link";
+import { useRef } from "react";
 import { APP_VERSION } from "@/lib/constants/app";
 import { getI18n } from "@/lib/i18n";
-import CategoryRulesManager from "./CategoryRulesManager";
+import CategoryRulesManager, { type CategoryRulesManagerHandle } from "./CategoryRulesManager";
 
 const i18n = getI18n();
 const system = i18n.system;
 
 export default function SystemCategoryRulesPage() {
+  const managerRef = useRef<CategoryRulesManagerHandle | null>(null);
+
   return (
     <main className="min-h-screen bg-stone-100 px-4 py-6 text-stone-900 md:px-6 md:py-8">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
@@ -20,18 +25,32 @@ export default function SystemCategoryRulesPage() {
             <div className="flex flex-col items-start gap-3 md:items-end">
               <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">{system.versionLabel} v{APP_VERSION}</span>
               <div className="flex flex-wrap gap-2">
-                <Link href="/system" className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50">
+                <Link
+                  href="/system"
+                  className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+                >
                   {system.categoryRulePage.backToSystem}
                 </Link>
-                <Link href="/worker" className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50">
-                  {system.moveToWorkspace}
-                </Link>
+                <button
+                  type="button"
+                  onClick={() => managerRef.current?.reset()}
+                  className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+                >
+                  {system.categoryRulePage.editor.resetRules}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => managerRef.current?.save()}
+                  className="inline-flex items-center rounded-full border border-stone-900 bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800"
+                >
+                  {system.categoryRulePage.editor.saveRules}
+                </button>
               </div>
             </div>
           </div>
         </header>
 
-        <CategoryRulesManager text={system.categoryRulePage.editor} />
+        <CategoryRulesManager ref={managerRef} text={system.categoryRulePage.editor} />
       </div>
     </main>
   );

@@ -58,6 +58,36 @@ export function sortEditableCategoryRules(rules: EditableCategoryRule[]): Editab
   });
 }
 
+
+export function reassignEditableCategoryRulePriorities(rules: EditableCategoryRule[]): EditableCategoryRule[] {
+  return rules.map((rule, index) => ({
+    ...rule,
+    priority: (index + 1) * 10,
+  }));
+}
+
+export function moveEditableCategoryRule(
+  rules: EditableCategoryRule[],
+  fromIndex: number,
+  toIndex: number,
+): EditableCategoryRule[] {
+  if (
+    fromIndex < 0 ||
+    toIndex < 0 ||
+    fromIndex >= rules.length ||
+    toIndex >= rules.length ||
+    fromIndex === toIndex
+  ) {
+    return rules;
+  }
+
+  const nextRules = [...rules];
+  const [movedRule] = nextRules.splice(fromIndex, 1);
+  if (!movedRule) return rules;
+  nextRules.splice(toIndex, 0, movedRule);
+  return reassignEditableCategoryRulePriorities(nextRules);
+}
+
 export function sanitizeEditableCategoryRule(rule: EditableCategoryRule, index: number): EditableCategoryRule {
   return sanitizeStoredCategoryRules([rule])[0] ?? createDefaultRule(index);
 }

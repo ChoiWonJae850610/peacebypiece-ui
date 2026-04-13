@@ -36,7 +36,7 @@ export const systemEn = {
   categoryRulePage: {
     title: "Recommendation rule management",
     description: "A management screen for adding, editing, deleting, enabling, and reprioritizing work-order title recommendation rules.",
-    backToSystem: "Back to system home",
+    backToSystem: "Home",
     listTitle: "Rule list",
     listDescription: "The first matching rule from top to bottom is used for the final recommendation.",
     editor: {
@@ -72,6 +72,10 @@ export const systemEn = {
       category1Label: "Category 1",
       category2Label: "Category 2",
       category3Label: "Category 3",
+      moveUp: "Move up",
+      moveDown: "Move down",
+      dragHandleLabel: "Drag to reorder",
+      autoPriorityHelpText: "Priority is determined automatically by list order. On desktop, drag cards. On mobile, use the up/down buttons. Reordering is saved immediately.",
     },
   },
 } as const;

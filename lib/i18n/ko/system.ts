@@ -36,7 +36,7 @@ export const systemKo = {
   categoryRulePage: {
     title: "추천 규칙 관리",
     description: "작업지시서명 추천 규칙을 최고관리자 기준으로 추가·수정·삭제하고, 활성 상태와 우선순위를 관리할 수 있는 화면입니다.",
-    backToSystem: "최고관리자 홈으로 이동",
+    backToSystem: "홈으로",
     listTitle: "규칙 목록",
     listDescription: "위에서 아래 순서대로 먼저 매칭된 규칙이 실제 추천에 사용됩니다.",
     editor: {
@@ -72,6 +72,10 @@ export const systemKo = {
       category1Label: "대분류",
       category2Label: "중분류",
       category3Label: "소분류",
+      moveUp: "위로 이동",
+      moveDown: "아래로 이동",
+      dragHandleLabel: "드래그로 순서 변경",
+      autoPriorityHelpText: "우선순위는 목록 순서로 자동 결정됩니다. PC에서는 드래그로, 모바일에서는 위아래 버튼으로 위치를 바꾸면 즉시 저장됩니다.",
     },
   },
 } as const;
