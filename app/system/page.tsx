@@ -21,7 +21,6 @@ export default function SystemPage() {
             <div className="space-y-2">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">{system.eyebrow}</p>
               <h1 className="text-2xl font-semibold tracking-tight text-stone-900 md:text-3xl">{system.title}</h1>
-              <p className="max-w-2xl text-sm leading-6 text-stone-600 md:text-base">{system.description}</p>
             </div>
             <div className="flex flex-col items-start gap-3 md:items-end">
               <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">{system.versionLabel} v{APP_VERSION}</span>
@@ -47,8 +46,7 @@ export default function SystemPage() {
               <div className="space-y-3">
                 <span className="inline-flex rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-medium text-stone-600">{card.badge}</span>
                 <h2 className="text-lg font-semibold text-stone-900">{card.title}</h2>
-                <p className="text-sm leading-6 text-stone-600">{card.description}</p>
-              </div>
+                </div>
             </article>
           ))}
         </section>
@@ -57,7 +55,6 @@ export default function SystemPage() {
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
             <div className="mb-4 space-y-1">
               <h2 className="text-lg font-semibold text-stone-900">{system.companySection.title}</h2>
-              <p className="text-sm leading-6 text-stone-600">{system.companySection.description}</p>
             </div>
             <div className="space-y-3">
               {SYSTEM_COMPANY_SUMMARIES.map((company) => (
@@ -78,7 +75,6 @@ export default function SystemPage() {
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
             <div className="mb-4 space-y-1">
               <h2 className="text-lg font-semibold text-stone-900">{system.ruleSection.title}</h2>
-              <p className="text-sm leading-6 text-stone-600">{system.ruleSection.description}</p>
             </div>
             <div className="space-y-3">
               {SYSTEM_CATEGORY_RULE_SUMMARIES.map((rule) => (
