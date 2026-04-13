@@ -8,6 +8,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type KeyboardEvent,
 } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_INPUT_CLASS, MODAL_SELECT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
@@ -120,7 +121,7 @@ function HomeChevronButton({
       disabled={disabled}
       className={`inline-flex h-8 w-8 items-center justify-center rounded-full border text-sm transition ${toneClass} disabled:cursor-not-allowed disabled:opacity-35`}
     >
-      <span className={`block transition-transform ${direction === "up" ? "-rotate-90" : "rotate-90"}`}>▾</span>
+      <span className={`block transition-transform ${direction === "up" ? "rotate-180" : "rotate-0"}`}>▾</span>
     </button>
   );
 }
@@ -317,6 +318,12 @@ function CategoryValuesModal({
   const activeCategory2 = selectedCategory2 && tree[activeCategory1]?.[selectedCategory2] ? selectedCategory2 : category2Options[0] ?? "";
   const category3Options = getCategory3Options(tree, activeCategory1, activeCategory2);
 
+  function blurOnEnter(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    event.currentTarget.blur();
+  }
+
   function renameCategory1(source: string, nextValue: string) {
     const trimmed = nextValue.trim();
     if (!trimmed || trimmed === source) return;
@@ -403,19 +410,37 @@ function CategoryValuesModal({
     });
   }
 
+  function renderRow(value: string, onRename: (nextValue: string) => void, onRemove: () => void) {
+    return (
+      <div key={value} className="flex items-center gap-2">
+        <input
+          defaultValue={value}
+          onBlur={(event) => onRename(event.target.value)}
+          onKeyDown={blurOnEnter}
+          className={`${MODAL_INPUT_CLASS} h-10`}
+        />
+        <button
+          type="button"
+          onClick={onRemove}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-lg font-semibold text-red-700"
+          aria-label={text.deleteCategory}
+        >
+          -
+        </button>
+      </div>
+    );
+  }
+
   return (
     <ModalShell
       open={open}
       onClose={onClose}
       title={text.categoryValuesModalTitle}
-      maxWidthClass="md:max-w-5xl"
+      maxWidthClass="md:max-w-4xl"
       footer={
-        <div className="flex w-full items-center justify-between gap-3">
+        <div className="flex w-full items-center justify-end gap-2">
           <button type="button" onClick={onReset} className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700">{text.categoryValuesReset}</button>
-          <div className="flex gap-2">
-            <button type="button" onClick={onClose} className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700">{text.close}</button>
-            <button type="button" onClick={onSave} className="inline-flex items-center rounded-full border border-stone-900 bg-stone-900 px-4 py-2 text-sm font-medium text-white">{text.categoryValuesSave}</button>
-          </div>
+          <button type="button" onClick={onSave} className="inline-flex items-center rounded-full border border-stone-900 bg-stone-900 px-4 py-2 text-sm font-medium text-white">{text.categoryValuesSave}</button>
         </div>
       }
     >
@@ -423,16 +448,19 @@ function CategoryValuesModal({
         <section className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div className="text-sm font-semibold text-stone-900">{text.category1Label}</div>
-            <button type="button" onClick={addCategory1} className="text-sm font-medium text-stone-700">+ {text.addCategory1}</button>
+            <button type="button" onClick={addCategory1} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-300 bg-white text-lg font-medium text-stone-700">+</button>
           </div>
           <div className="space-y-2">
             {category1Options.map((category1) => (
-              <div key={category1} className={`rounded-2xl border p-3 ${activeCategory1 === category1 ? "border-stone-900 bg-white" : "border-stone-200 bg-white/70"}`}>
-                <button type="button" onClick={() => { setSelectedCategory1(category1); setSelectedCategory2(getCategory2Options(tree, category1)[0] ?? null); }} className="mb-2 block w-full text-left text-sm font-medium text-stone-900">{category1}</button>
-                <div className="flex gap-2">
-                  <input defaultValue={category1} onBlur={(event) => renameCategory1(category1, event.target.value)} className={`${MODAL_INPUT_CLASS} h-10`} />
-                  <button type="button" onClick={() => removeCategory1(category1)} className="inline-flex h-10 items-center rounded-xl border border-red-200 bg-red-50 px-3 text-sm font-medium text-red-700">{text.deleteCategory}</button>
-                </div>
+              <div
+                key={category1}
+                className={`w-full rounded-2xl p-2 transition ${activeCategory1 === category1 ? "bg-white shadow-sm" : "bg-transparent"}`}
+                onClick={() => {
+                  setSelectedCategory1(category1);
+                  setSelectedCategory2(getCategory2Options(tree, category1)[0] ?? null);
+                }}
+              >
+                {renderRow(category1, (nextValue) => renameCategory1(category1, nextValue), () => removeCategory1(category1))}
               </div>
             ))}
           </div>
@@ -441,16 +469,16 @@ function CategoryValuesModal({
         <section className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div className="text-sm font-semibold text-stone-900">{text.category2Label}</div>
-            <button type="button" onClick={addCategory2} className="text-sm font-medium text-stone-700">+ {text.addCategory2}</button>
+            <button type="button" onClick={addCategory2} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-300 bg-white text-lg font-medium text-stone-700">+</button>
           </div>
           <div className="space-y-2">
             {category2Options.map((category2) => (
-              <div key={category2} className={`rounded-2xl border p-3 ${activeCategory2 === category2 ? "border-stone-900 bg-white" : "border-stone-200 bg-white/70"}`}>
-                <button type="button" onClick={() => setSelectedCategory2(category2)} className="mb-2 block w-full text-left text-sm font-medium text-stone-900">{category2}</button>
-                <div className="flex gap-2">
-                  <input defaultValue={category2} onBlur={(event) => renameCategory2(category2, event.target.value)} className={`${MODAL_INPUT_CLASS} h-10`} />
-                  <button type="button" onClick={() => removeCategory2(category2)} className="inline-flex h-10 items-center rounded-xl border border-red-200 bg-red-50 px-3 text-sm font-medium text-red-700">{text.deleteCategory}</button>
-                </div>
+              <div
+                key={category2}
+                className={`w-full rounded-2xl p-2 transition ${activeCategory2 === category2 ? "bg-white shadow-sm" : "bg-transparent"}`}
+                onClick={() => setSelectedCategory2(category2)}
+              >
+                {renderRow(category2, (nextValue) => renameCategory2(category2, nextValue), () => removeCategory2(category2))}
               </div>
             ))}
           </div>
@@ -459,15 +487,12 @@ function CategoryValuesModal({
         <section className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div className="text-sm font-semibold text-stone-900">{text.category3Label}</div>
-            <button type="button" onClick={addCategory3} className="text-sm font-medium text-stone-700">+ {text.addCategory3}</button>
+            <button type="button" onClick={addCategory3} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-300 bg-white text-lg font-medium text-stone-700">+</button>
           </div>
           <div className="space-y-2">
             {category3Options.map((category3) => (
-              <div key={category3} className="rounded-2xl border border-stone-200 bg-white/70 p-3">
-                <div className="flex gap-2">
-                  <input defaultValue={category3} onBlur={(event) => renameCategory3(category3, event.target.value)} className={`${MODAL_INPUT_CLASS} h-10`} />
-                  <button type="button" onClick={() => removeCategory3(category3)} className="inline-flex h-10 items-center rounded-xl border border-red-200 bg-red-50 px-3 text-sm font-medium text-red-700">{text.deleteCategory}</button>
-                </div>
+              <div key={category3} className="rounded-2xl p-2">
+                {renderRow(category3, (nextValue) => renameCategory3(category3, nextValue), () => removeCategory3(category3))}
               </div>
             ))}
           </div>
@@ -558,7 +583,8 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
       const nextRules = [...sortedRules, nextRule];
       replaceRules(nextRules);
       setSelectedRuleId(nextRule.id);
-      requestAnimationFrame(() => ruleNameInputRef.current?.focus());
+      setMobileListOpen(false);
+      focusRuleTop();
     }
 
     function handleDuplicateRule() {
@@ -740,6 +766,11 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
                     <input
                       value={keywordTextByRuleId[selectedRule.id] ?? buildTaggedKeywordInput(selectedRule.keywords)}
                       onChange={(event) => handleKeywordTextChange(selectedRule.id, event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key !== "Enter") return;
+                        event.preventDefault();
+                        event.currentTarget.blur();
+                      }}
                       placeholder={text.keywordsPlaceholder}
                       className={MODAL_INPUT_CLASS}
                     />
