@@ -9,6 +9,15 @@ export type EditableCategoryRuleRuntime = WorkOrderCategoryKeywordRule & {
   priority: number;
 };
 
+export function createCategoryRuleId(prefix = "custom-rule") {
+  const randomId = globalThis.crypto?.randomUUID?.();
+  if (randomId) {
+    return `${prefix}-${randomId}`;
+  }
+
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 function sortRuntimeRules(rules: EditableCategoryRuleRuntime[]) {
   return [...rules].sort((left, right) => {
     if (left.priority !== right.priority) return left.priority - right.priority;
@@ -16,7 +25,7 @@ function sortRuntimeRules(rules: EditableCategoryRuleRuntime[]) {
   });
 }
 
-function sanitizeRuntimeRule(rule: EditableCategoryRuleRuntime, index: number): EditableCategoryRuleRuntime {
+function sanitizeRuntimeRule(rule: EditableCategoryRuleRuntime, index: number, seenIds: Set<string> | null = null): EditableCategoryRuleRuntime {
   const keywords = Array.from(new Set((rule.keywords ?? []).map((keyword) => String(keyword ?? "").trim()).filter(Boolean)));
   const recommendation = rule.recommendation ?? {
     category1: "상의",
@@ -33,7 +42,19 @@ function sanitizeRuntimeRule(rule: EditableCategoryRuleRuntime, index: number): 
       category3: String(recommendation.category3 ?? "").trim() || "반팔",
       reason: String(recommendation.reason ?? "").trim() || "추천 사유를 입력하세요.",
     },
-    id: String(rule.id ?? `custom-rule-${Date.now()}-${index}`),
+    id: (() => {
+      const rawId = String(rule.id ?? "").trim();
+      const nextId = rawId || createCategoryRuleId(`custom-rule-${index + 1}`);
+      if (!seenIds) return nextId;
+      if (!seenIds.has(nextId)) {
+        seenIds.add(nextId);
+        return nextId;
+      }
+
+      const uniqueId = createCategoryRuleId(`custom-rule-${index + 1}`);
+      seenIds.add(uniqueId);
+      return uniqueId;
+    })(),
     name: String(rule.name ?? "").trim() || `추천 규칙 ${index + 1}`,
     enabled: typeof rule.enabled === "boolean" ? rule.enabled : true,
     priority: Number.isFinite(rule.priority) ? rule.priority : (index + 1) * 10,
@@ -41,7 +62,8 @@ function sanitizeRuntimeRule(rule: EditableCategoryRuleRuntime, index: number): 
 }
 
 export function sanitizeStoredCategoryRules(rules: EditableCategoryRuleRuntime[]): EditableCategoryRuleRuntime[] {
-  return sortRuntimeRules(rules.map((rule, index) => sanitizeRuntimeRule(rule, index)));
+  const seenIds = new Set<string>();
+  return sortRuntimeRules(rules.map((rule, index) => sanitizeRuntimeRule(rule, index, seenIds)));
 }
 
 export function toRuntimeCategoryRules(rules: EditableCategoryRuleRuntime[]): WorkOrderCategoryKeywordRule[] {

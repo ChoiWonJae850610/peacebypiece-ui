@@ -9,9 +9,13 @@ import {
   sanitizeEditableCategoryRules,
   sortEditableCategoryRules,
 } from "@/lib/system/categoryRuleEditor";
-import { CATEGORY_RULE_STORAGE_KEY, getStoredEditableCategoryRules } from "@/lib/system/categoryRuleRuntime";
+import { CATEGORY_RULE_STORAGE_KEY, createCategoryRuleId, getStoredEditableCategoryRules } from "@/lib/system/categoryRuleRuntime";
 
 export type CategoryRulesManagerText = {
+  priorityBadgeLabel: string;
+  priorityHelpText: string;
+  keywordsHelpText: string;
+  reasonHelpText: string;
   addRule: string;
   deleteRule: string;
   duplicateRule: string;
@@ -58,6 +62,7 @@ export default function CategoryRulesManager({ text }: { text: CategoryRulesMana
   const [selectedRuleId, setSelectedRuleId] = useState<string | null>(null);
   const [testTitle, setTestTitle] = useState("데님 자켓 샘플");
   const [statusMessage, setStatusMessage] = useState<string>(text.saveHint);
+  const [keywordTextByRuleId, setKeywordTextByRuleId] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const storedRules = getStoredEditableCategoryRules();
@@ -86,8 +91,24 @@ export default function CategoryRulesManager({ text }: { text: CategoryRulesMana
 
   const preview = useMemo(() => buildCategoryRuleMatchPreview(testTitle, sortedRules), [sortedRules, testTitle]);
 
+
+  useEffect(() => {
+    setKeywordTextByRuleId((current) => {
+      const next: Record<string, string> = {};
+      for (const rule of sortedRules) {
+        next[rule.id] = current[rule.id] ?? buildKeywordTextareaValue(rule.keywords);
+      }
+      return next;
+    });
+  }, [sortedRules]);
+
   function updateRule(ruleId: string, updater: (rule: EditableCategoryRule) => EditableCategoryRule) {
     setRules((current) => current.map((rule) => (rule.id === ruleId ? updater(rule) : rule)));
+  }
+
+  function handleKeywordTextChange(ruleId: string, value: string) {
+    setKeywordTextByRuleId((current) => ({ ...current, [ruleId]: value }));
+    updateRule(ruleId, (rule) => ({ ...rule, keywords: parseKeywordText(value) }));
   }
 
   function handleAddRule() {
@@ -102,7 +123,7 @@ export default function CategoryRulesManager({ text }: { text: CategoryRulesMana
     if (!selectedRule) return;
     const clone: EditableCategoryRule = {
       ...selectedRule,
-      id: `${selectedRule.id}-copy-${Date.now()}`,
+      id: createCategoryRuleId(`${selectedRule.id}-copy`),
       name: `${selectedRule.name} 복사본`,
       priority: selectedRule.priority + 1,
     };
@@ -124,6 +145,7 @@ export default function CategoryRulesManager({ text }: { text: CategoryRulesMana
     const sanitized = sanitizeEditableCategoryRules(sortedRules);
     window.localStorage.setItem(CATEGORY_RULE_STORAGE_KEY, JSON.stringify(sanitized));
     setRules(sanitized);
+    setKeywordTextByRuleId(Object.fromEntries(sanitized.map((rule) => [rule.id, buildKeywordTextareaValue(rule.keywords)])));
     setSelectedRuleId((current) => current ?? sanitized[0]?.id ?? null);
     setStatusMessage(text.appliedHint);
   }
@@ -132,6 +154,7 @@ export default function CategoryRulesManager({ text }: { text: CategoryRulesMana
     const initial = sortEditableCategoryRules(getInitialEditableCategoryRules());
     window.localStorage.removeItem(CATEGORY_RULE_STORAGE_KEY);
     setRules(initial);
+    setKeywordTextByRuleId(Object.fromEntries(initial.map((rule) => [rule.id, buildKeywordTextareaValue(rule.keywords)])));
     setSelectedRuleId(initial[0]?.id ?? null);
     setStatusMessage(text.resetHint);
   }
@@ -161,7 +184,7 @@ export default function CategoryRulesManager({ text }: { text: CategoryRulesMana
                 <div className="flex items-start justify-between gap-3">
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${isSelected ? "bg-white/15 text-white" : "bg-white text-stone-600"}`}>P{rule.priority}</span>
+                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${isSelected ? "bg-white/15 text-white" : "bg-white text-stone-600"}`}>{text.priorityBadgeLabel} P{rule.priority}</span>
                       <span className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${isSelected ? "border-white/15 text-white" : "border-stone-300 text-stone-600"}`}>
                         {rule.enabled ? text.enabled : text.disabled}
                       </span>
@@ -173,8 +196,8 @@ export default function CategoryRulesManager({ text }: { text: CategoryRulesMana
                   </div>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {rule.keywords.length > 0 ? rule.keywords.map((keyword) => (
-                    <span key={`${rule.id}-${keyword}`} className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${isSelected ? "bg-white/10 text-white" : "bg-white text-stone-600"}`}>
+                  {rule.keywords.length > 0 ? rule.keywords.map((keyword, keywordIndex) => (
+                    <span key={`${rule.id}-${keywordIndex}-${keyword}`} className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${isSelected ? "bg-white/10 text-white" : "bg-white text-stone-600"}`}>
                       {keyword}
                     </span>
                   )) : <span className={`text-xs ${isSelected ? "text-stone-200" : "text-stone-500"}`}>{text.noKeywords}</span>}
@@ -207,6 +230,7 @@ export default function CategoryRulesManager({ text }: { text: CategoryRulesMana
                 </label>
                 <label className="space-y-2">
                   <span className="text-sm font-medium text-stone-700">{text.priorityLabel}</span>
+                  <p className="text-xs leading-5 text-stone-500">{text.priorityHelpText}</p>
                   <input
                     type="number"
                     value={selectedRule.priority}
@@ -228,9 +252,10 @@ export default function CategoryRulesManager({ text }: { text: CategoryRulesMana
 
               <label className="space-y-2">
                 <span className="text-sm font-medium text-stone-700">{text.keywordsLabel}</span>
+                <p className="text-xs leading-5 text-stone-500">{text.keywordsHelpText}</p>
                 <textarea
-                  value={buildKeywordTextareaValue(selectedRule.keywords)}
-                  onChange={(event) => updateRule(selectedRule.id, (rule) => ({ ...rule, keywords: parseKeywordText(event.target.value) }))}
+                  value={keywordTextByRuleId[selectedRule.id] ?? buildKeywordTextareaValue(selectedRule.keywords)}
+                  onChange={(event) => handleKeywordTextChange(selectedRule.id, event.target.value)}
                   rows={6}
                   className="w-full rounded-3xl border border-stone-300 bg-white px-4 py-3 text-sm leading-6 text-stone-900 outline-none transition focus:border-stone-500"
                 />
@@ -274,6 +299,7 @@ export default function CategoryRulesManager({ text }: { text: CategoryRulesMana
 
               <label className="space-y-2">
                 <span className="text-sm font-medium text-stone-700">{text.reasonLabel}</span>
+                <p className="text-xs leading-5 text-stone-500">{text.reasonHelpText}</p>
                 <textarea
                   value={selectedRule.recommendation.reason}
                   onChange={(event) => updateRule(selectedRule.id, (rule) => ({

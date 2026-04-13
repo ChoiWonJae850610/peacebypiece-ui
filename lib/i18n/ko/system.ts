@@ -40,6 +40,10 @@ export const systemKo = {
     listTitle: "규칙 목록",
     listDescription: "위에서 아래 순서대로 먼저 매칭된 규칙이 실제 추천에 사용됩니다.",
     editor: {
+      priorityBadgeLabel: "우선순위",
+      priorityHelpText: "숫자가 작을수록 먼저 매칭됩니다. 목록의 P30, P40 표시는 우선순위 값을 뜻합니다.",
+      keywordsHelpText: "줄바꿈이나 쉼표로 여러 키워드를 나눠 입력할 수 있습니다.",
+      reasonHelpText: "추천 사유는 관리자용 설명 메모입니다. 왜 이 규칙을 만들었는지 기록해두는 용도입니다.",
       addRule: "규칙 추가",
       deleteRule: "규칙 삭제",
       duplicateRule: "규칙 복제",

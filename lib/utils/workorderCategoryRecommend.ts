@@ -1,4 +1,3 @@
-import { DEFAULT_CATEGORY1, DEFAULT_CATEGORY2, DEFAULT_CATEGORY3 } from "@/lib/constants/workorderCategories";
 import { type WorkOrderCategoryKeywordRule, type WorkOrderCategoryRecommendation } from "@/lib/constants/workorderCategoryKeywords";
 import { getActiveWorkOrderCategoryRules } from "@/lib/system/categoryRuleRuntime";
 
@@ -45,23 +44,8 @@ export function shouldApplyRecommendedCategoryOnTitleRename(payload: {
   nextTitle: string;
   currentCategory: WorkOrderCategoryFields;
 }) {
-  const nextRecommendation = getRecommendedWorkOrderCategory(payload.nextTitle);
-  if (!nextRecommendation) {
-    return null;
-  }
+  void payload.previousTitle;
+  void payload.currentCategory;
 
-  const previousRecommendation = getRecommendedWorkOrderCategory(payload.previousTitle);
-  if (!previousRecommendation) {
-    return isSameWorkOrderCategory(payload.currentCategory, {
-      category1: DEFAULT_CATEGORY1,
-      category2: DEFAULT_CATEGORY2,
-      category3: DEFAULT_CATEGORY3,
-    })
-      ? nextRecommendation
-      : null;
-  }
-
-  return isSameWorkOrderCategory(payload.currentCategory, previousRecommendation)
-    ? nextRecommendation
-    : null;
+  return getRecommendedWorkOrderCategory(payload.nextTitle);
 }

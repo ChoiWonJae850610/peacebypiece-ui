@@ -1,6 +1,7 @@
 import { WORKORDER_CATEGORY_KEYWORD_RULES, type WorkOrderCategoryKeywordRule } from "@/lib/constants/workorderCategoryKeywords";
 import {
   CATEGORY_RULE_STORAGE_KEY,
+  createCategoryRuleId,
   type EditableCategoryRuleRuntime as EditableCategoryRule,
   sanitizeStoredCategoryRules,
   toRuntimeCategoryRules,
@@ -26,7 +27,7 @@ function buildRuleId(baseKeyword: string, index: number) {
 
 export function createDefaultRule(index: number): EditableCategoryRule {
   return {
-    id: `custom-rule-${Date.now()}-${index}`,
+    id: createCategoryRuleId(`custom-rule-${index + 1}`),
     name: `새 추천 규칙 ${index + 1}`,
     enabled: true,
     priority: (index + 1) * 10,

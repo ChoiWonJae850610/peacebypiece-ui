@@ -40,6 +40,10 @@ export const systemEn = {
     listTitle: "Rule list",
     listDescription: "The first matching rule from top to bottom is used for the final recommendation.",
     editor: {
+      priorityBadgeLabel: "Priority",
+      priorityHelpText: "Lower numbers match first. Labels like P30 and P40 simply show the rule priority value.",
+      keywordsHelpText: "You can enter multiple keywords by using line breaks or commas.",
+      reasonHelpText: "Reason is an admin-facing note that explains why this rule exists.",
       addRule: "Add rule",
       deleteRule: "Delete rule",
       duplicateRule: "Duplicate rule",
