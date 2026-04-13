@@ -93,6 +93,7 @@ export type CategoryRulesManagerText = {
 export type CategoryRulesManagerHandle = {
   save: () => void;
   reset: () => void;
+  openCategoryValues: () => void;
 };
 
 function HomeChevronButton({
@@ -123,6 +124,115 @@ function HomeChevronButton({
     >
       <span className={`block transition-transform ${direction === "up" ? "rotate-180" : "rotate-0"}`}>▾</span>
     </button>
+  );
+}
+
+function FooterIconButton({
+  label,
+  onClick,
+  tone = "secondary",
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  tone?: "secondary" | "primary";
+  children: import("react").ReactNode;
+}) {
+  const toneClass = tone === "primary"
+    ? "border-stone-900 bg-stone-900 text-white hover:bg-stone-800"
+    : "border-stone-300 bg-white text-stone-700 hover:bg-stone-50";
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className={`inline-flex h-11 w-11 items-center justify-center rounded-full border transition ${toneClass}`}
+    >
+      <span className="sr-only">{label}</span>
+      {children}
+    </button>
+  );
+}
+
+function ResetIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 4v5h5" />
+      <path d="M20 12a8 8 0 1 1-2.35-5.65L20 9" />
+    </svg>
+  );
+}
+
+function SaveIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 4h11l3 3v13H5z" />
+      <path d="M8 4v6h8V4" />
+      <path d="M9 20v-6h6v6" />
+    </svg>
+  );
+}
+
+type CategoryValueRowProps = {
+  value: string;
+  selected: boolean;
+  onSelect: () => void;
+  onCommit: (nextValue: string) => void;
+  onRemove: () => void;
+  deleteLabel: string;
+};
+
+function CategoryValueRow({ value, selected, onSelect, onCommit, onRemove, deleteLabel }: CategoryValueRowProps) {
+  const [draft, setDraft] = useState(value);
+
+  useEffect(() => {
+    setDraft(value);
+  }, [value]);
+
+  const commit = useCallback(() => {
+    onCommit(draft);
+  }, [draft, onCommit]);
+
+  return (
+    <div
+      onClick={onSelect}
+      className={`flex items-center gap-2 rounded-2xl border p-2 transition ${selected ? "border-stone-900 bg-white shadow-sm ring-1 ring-stone-900/10" : "border-transparent bg-white/60 hover:border-stone-200 hover:bg-white"}`}
+    >
+      <input
+        value={draft}
+        onChange={(event) => setDraft(event.target.value)}
+        onBlur={(event) => {
+          commit();
+          event.currentTarget.blur();
+        }}
+        onClick={(event) => {
+          event.stopPropagation();
+          onSelect();
+        }}
+        onFocus={onSelect}
+        onKeyDown={(event) => {
+          if (event.key !== "Enter") return;
+          event.preventDefault();
+          commit();
+          event.currentTarget.blur();
+        }}
+        className={`${MODAL_INPUT_CLASS} h-10`}
+      />
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          onRemove();
+        }}
+        className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-lg font-semibold text-red-700"
+        aria-label={deleteLabel}
+        title={deleteLabel}
+      >
+        -
+      </button>
+    </div>
   );
 }
 
@@ -308,8 +418,8 @@ function CategoryValuesModal({
   useEffect(() => {
     if (!open) return;
     const normalized = normalizeTreeSelection(tree, selectedCategory1, selectedCategory2);
-    setSelectedCategory1(normalized.category1);
-    setSelectedCategory2(normalized.category2);
+    if (normalized.category1 !== selectedCategory1) setSelectedCategory1(normalized.category1);
+    if (normalized.category2 !== selectedCategory2) setSelectedCategory2(normalized.category2);
   }, [open, tree, selectedCategory1, selectedCategory2]);
 
   const category1Options = getCategory1Options(tree);
@@ -317,12 +427,6 @@ function CategoryValuesModal({
   const category2Options = getCategory2Options(tree, activeCategory1);
   const activeCategory2 = selectedCategory2 && tree[activeCategory1]?.[selectedCategory2] ? selectedCategory2 : category2Options[0] ?? "";
   const category3Options = getCategory3Options(tree, activeCategory1, activeCategory2);
-
-  function blurOnEnter(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key !== "Enter") return;
-    event.preventDefault();
-    event.currentTarget.blur();
-  }
 
   function renameCategory1(source: string, nextValue: string) {
     const trimmed = nextValue.trim();
@@ -410,27 +514,6 @@ function CategoryValuesModal({
     });
   }
 
-  function renderRow(value: string, onRename: (nextValue: string) => void, onRemove: () => void) {
-    return (
-      <div key={value} className="flex items-center gap-2">
-        <input
-          defaultValue={value}
-          onBlur={(event) => onRename(event.target.value)}
-          onKeyDown={blurOnEnter}
-          className={`${MODAL_INPUT_CLASS} h-10`}
-        />
-        <button
-          type="button"
-          onClick={onRemove}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-lg font-semibold text-red-700"
-          aria-label={text.deleteCategory}
-        >
-          -
-        </button>
-      </div>
-    );
-  }
-
   return (
     <ModalShell
       open={open}
@@ -439,61 +522,84 @@ function CategoryValuesModal({
       maxWidthClass="md:max-w-4xl"
       footer={
         <div className="flex w-full items-center justify-end gap-2">
-          <button type="button" onClick={onReset} className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700">{text.categoryValuesReset}</button>
-          <button type="button" onClick={onSave} className="inline-flex items-center rounded-full border border-stone-900 bg-stone-900 px-4 py-2 text-sm font-medium text-white">{text.categoryValuesSave}</button>
+          <FooterIconButton onClick={onReset} label={text.categoryValuesReset}>
+            <ResetIcon />
+          </FooterIconButton>
+          <FooterIconButton onClick={onSave} label={text.categoryValuesSave} tone="primary">
+            <SaveIcon />
+          </FooterIconButton>
         </div>
       }
     >
       <div className="grid gap-4 md:grid-cols-3">
-        <section className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+        <section className="rounded-3xl border border-stone-300 bg-stone-50/90 p-4 shadow-sm ring-1 ring-white/60">
           <div className="mb-3 flex items-center justify-between gap-3">
-            <div className="text-sm font-semibold text-stone-900">{text.category1Label}</div>
+            <div>
+              <div className="text-sm font-semibold text-stone-900">{text.category1Label}</div>
+              <div className="text-xs text-stone-500">선택한 대분류를 기준으로 다음 단계가 연결됩니다.</div>
+            </div>
             <button type="button" onClick={addCategory1} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-300 bg-white text-lg font-medium text-stone-700">+</button>
           </div>
           <div className="space-y-2">
             {category1Options.map((category1) => (
-              <div
+              <CategoryValueRow
                 key={category1}
-                className={`w-full rounded-2xl p-2 transition ${activeCategory1 === category1 ? "bg-white shadow-sm" : "bg-transparent"}`}
-                onClick={() => {
+                value={category1}
+                selected={activeCategory1 === category1}
+                onSelect={() => {
                   setSelectedCategory1(category1);
                   setSelectedCategory2(getCategory2Options(tree, category1)[0] ?? null);
                 }}
-              >
-                {renderRow(category1, (nextValue) => renameCategory1(category1, nextValue), () => removeCategory1(category1))}
-              </div>
+                onCommit={(nextValue) => renameCategory1(category1, nextValue)}
+                onRemove={() => removeCategory1(category1)}
+                deleteLabel={text.deleteCategory}
+              />
             ))}
           </div>
         </section>
 
-        <section className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+        <section className="rounded-3xl border border-blue-200 bg-blue-50/80 p-4 shadow-sm ring-1 ring-blue-100/80">
           <div className="mb-3 flex items-center justify-between gap-3">
-            <div className="text-sm font-semibold text-stone-900">{text.category2Label}</div>
-            <button type="button" onClick={addCategory2} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-300 bg-white text-lg font-medium text-stone-700">+</button>
+            <div>
+              <div className="text-sm font-semibold text-stone-900">{text.category2Label}</div>
+              <div className="text-xs text-stone-500">현재 선택한 대분류에 연결된 중분류만 표시됩니다.</div>
+            </div>
+            <button type="button" onClick={addCategory2} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-blue-300 bg-white text-lg font-medium text-blue-700">+</button>
           </div>
           <div className="space-y-2">
             {category2Options.map((category2) => (
-              <div
+              <CategoryValueRow
                 key={category2}
-                className={`w-full rounded-2xl p-2 transition ${activeCategory2 === category2 ? "bg-white shadow-sm" : "bg-transparent"}`}
-                onClick={() => setSelectedCategory2(category2)}
-              >
-                {renderRow(category2, (nextValue) => renameCategory2(category2, nextValue), () => removeCategory2(category2))}
-              </div>
+                value={category2}
+                selected={activeCategory2 === category2}
+                onSelect={() => setSelectedCategory2(category2)}
+                onCommit={(nextValue) => renameCategory2(category2, nextValue)}
+                onRemove={() => removeCategory2(category2)}
+                deleteLabel={text.deleteCategory}
+              />
             ))}
           </div>
         </section>
 
-        <section className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+        <section className="rounded-3xl border border-emerald-200 bg-emerald-50/80 p-4 shadow-sm ring-1 ring-emerald-100/80">
           <div className="mb-3 flex items-center justify-between gap-3">
-            <div className="text-sm font-semibold text-stone-900">{text.category3Label}</div>
-            <button type="button" onClick={addCategory3} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-300 bg-white text-lg font-medium text-stone-700">+</button>
+            <div>
+              <div className="text-sm font-semibold text-stone-900">{text.category3Label}</div>
+              <div className="text-xs text-stone-500">현재 선택한 중분류에 연결된 소분류만 표시됩니다.</div>
+            </div>
+            <button type="button" onClick={addCategory3} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-emerald-300 bg-white text-lg font-medium text-emerald-700">+</button>
           </div>
           <div className="space-y-2">
             {category3Options.map((category3) => (
-              <div key={category3} className="rounded-2xl p-2">
-                {renderRow(category3, (nextValue) => renameCategory3(category3, nextValue), () => removeCategory3(category3))}
-              </div>
+              <CategoryValueRow
+                key={category3}
+                value={category3}
+                selected={false}
+                onSelect={() => undefined}
+                onCommit={(nextValue) => renameCategory3(category3, nextValue)}
+                onRemove={() => removeCategory3(category3)}
+                deleteLabel={text.deleteCategory}
+              />
             ))}
           </div>
         </section>
@@ -660,7 +766,7 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
       setCategoryTree(defaults);
     }
 
-    useImperativeHandle(ref, () => ({ save: handleSave, reset: handleReset }), [sortedRules, categoryTree]);
+    useImperativeHandle(ref, () => ({ save: handleSave, reset: handleReset, openCategoryValues: () => setCategoryModalOpen(true) }), [sortedRules, categoryTree]);
 
     const category1Options = getCategory1Options(categoryTree);
     const currentCategory1 = selectedRule ? normalizeRuleWithTree(selectedRule, categoryTree).recommendation.category1 : category1Options[0] ?? "";
@@ -741,7 +847,6 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
                 <div className="space-y-5">
                   <div className="flex flex-wrap gap-2">
                     <button type="button" onClick={handleDuplicateRule} className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50">{text.duplicateRule}</button>
-                    <button type="button" onClick={() => setCategoryModalOpen(true)} className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50">{text.categoryValuesButton}</button>
                     <button type="button" onClick={handleDeleteRule} className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100">{text.deleteRule}</button>
                   </div>
 
