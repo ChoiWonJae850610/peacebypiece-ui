@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
+import { createRepositoryError, type WorkOrderRepositoryError } from "@/lib/repositories/repositoryErrors";
 import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 import type { AsyncOperationStatus } from "./useWorkOrderActionTypes";
 
@@ -22,7 +23,7 @@ export function useWorkOrderCoreState() {
   const [selectedId, setSelectedId] = useState(initialSelectedId);
   const [searchQuery, setSearchQuery] = useState("");
   const [repositoryStatus, setRepositoryStatus] = useState<AsyncOperationStatus>("loading");
-  const [repositoryError, setRepositoryError] = useState<string | null>(null);
+  const [repositoryError, setRepositoryError] = useState<WorkOrderRepositoryError | null>(null);
   const [saveStatus, setSaveStatus] = useState<"saved" | "dirty" | "saving">("saved");
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(
     initialWorkOrders.find((item) => item.id === initialSelectedId)?.lastSavedAt ?? initialWorkOrders[0]?.lastSavedAt ?? null,
@@ -50,7 +51,7 @@ export function useWorkOrderCoreState() {
       })
       .catch((error) => {
         if (cancelled) return;
-        setRepositoryError(error instanceof Error ? error.message : "Failed to load workorder repository state.");
+        setRepositoryError(createRepositoryError("initialize", error, "Failed to load workorder repository state."));
         setRepositoryStatus("error");
       });
 
@@ -70,7 +71,7 @@ export function useWorkOrderCoreState() {
       currentUserId,
       permissionTargetUserId,
     }).catch((error) => {
-      setRepositoryError(error instanceof Error ? error.message : "Failed to persist workorder repository state.");
+      setRepositoryError(createRepositoryError("persist", error, "Failed to persist workorder repository state."));
       setRepositoryStatus("error");
     });
   }, [currentUserId, historyLogs, permissionTargetUserId, repository, repositoryStatus, selectedId, users, workOrders]);

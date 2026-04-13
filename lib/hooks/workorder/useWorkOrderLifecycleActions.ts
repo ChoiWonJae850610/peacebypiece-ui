@@ -16,7 +16,7 @@ import {
   renameWorkOrderGroupBaseTitle,
 } from "@/lib/workorder/actions";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
-import { executeWorkOrderAsyncAction } from "@/lib/workorder/actionFlow";
+import { createWorkOrderActionFailure, executeWorkOrderAsyncAction } from "@/lib/workorder/actionFlow";
 import type { WorkOrder } from "@/types/workorder";
 import type {
   CreateWorkOrderInput,
@@ -42,6 +42,7 @@ type UseWorkOrderLifecycleActionsParams = Pick<
   | "setCreateWorkOrderModalOpen"
   | "setActionStatus"
   | "setActionError"
+  | "setActionFailure"
 >;
 
 export function useWorkOrderLifecycleActions({
@@ -57,6 +58,7 @@ export function useWorkOrderLifecycleActions({
   setCreateWorkOrderModalOpen,
   setActionStatus,
   setActionError,
+  setActionFailure,
 }: UseWorkOrderLifecycleActionsParams) {
   const { i18n } = useI18n();
   const lifecycleText = i18n.workorder.lifecycle;
@@ -71,7 +73,14 @@ export function useWorkOrderLifecycleActions({
           actionKey: "save",
           setActionStatus,
           setActionError,
-          getErrorMessage: () => lifecycleText.saveFailedToast ?? "Failed to save work order.",
+          getFailure: (error) => createWorkOrderActionFailure({
+            actionKey: "save",
+            error,
+            kind: "repository",
+            retryable: true,
+            message: lifecycleText.saveFailedToast ?? "Failed to save work order.",
+          }),
+          setActionFailure,
           task: async () => {
             const label = nowLabel();
             const nextWorkOrders = workOrders.map((item) => (item.id === workOrder.id ? { ...item, lastSavedAt: label } : item));
@@ -117,7 +126,14 @@ export function useWorkOrderLifecycleActions({
         actionKey: "create",
         setActionStatus,
         setActionError,
-        getErrorMessage: () => lifecycleText.createFailedToast ?? "Failed to create work order.",
+        getFailure: (error) => createWorkOrderActionFailure({
+          actionKey: "create",
+          error,
+          kind: "repository",
+          retryable: true,
+          message: lifecycleText.createFailedToast ?? "Failed to create work order.",
+        }),
+        setActionFailure,
         task: async () => {
           const nextIndex = payload?.nextIndex ?? 1;
           const newWorkOrder = createNewWorkOrder(nextIndex, {
@@ -168,7 +184,14 @@ export function useWorkOrderLifecycleActions({
         actionKey: "reorder",
         setActionStatus,
         setActionError,
-        getErrorMessage: () => lifecycleText.reorderFailedToast ?? "Failed to create reordered work order.",
+        getFailure: (error) => createWorkOrderActionFailure({
+          actionKey: "reorder",
+          error,
+          kind: "repository",
+          retryable: true,
+          message: lifecycleText.reorderFailedToast ?? "Failed to create reordered work order.",
+        }),
+        setActionFailure,
         task: async () => {
           const createdAt = nowLabel();
           const nextWorkOrder = cloneWorkOrderForReorder(workOrders, sourceWorkOrder, {
@@ -221,19 +244,34 @@ export function useWorkOrderLifecycleActions({
         if (!ok) return;
       }
 
-      const remaining = workOrders.filter((item) => item.id !== workOrderId);
-      const fallbackSelectedId = remaining[0]?.id ?? repository.getDefaultSelectedId();
-      setWorkOrders(remaining);
-      setHistoryLogs((prev) => prev.filter((item) => item.workOrderId !== workOrderId));
-      if (selectedId === workOrderId) {
-        setSelectedId(fallbackSelectedId);
-        const fallbackWorkOrder = remaining.find((item) => item.id === fallbackSelectedId) ?? remaining[0];
-        setLastSavedAt(fallbackWorkOrder?.lastSavedAt ?? null);
-        setSaveStatus("saved");
-      }
-      setToastMessage(lifecycleText.deleteCompletedToast);
+      await executeWorkOrderAsyncAction({
+        actionKey: "delete",
+        setActionStatus,
+        setActionError,
+        setActionFailure,
+        getFailure: (error) => createWorkOrderActionFailure({
+          actionKey: "delete",
+          error,
+          kind: "repository",
+          retryable: true,
+          message: lifecycleText.deleteFailedToast ?? "Failed to delete work order.",
+        }),
+        task: async () => {
+          const remaining = workOrders.filter((item) => item.id !== workOrderId);
+          const fallbackSelectedId = remaining[0]?.id ?? repository.getDefaultSelectedId();
+          setWorkOrders(remaining);
+          setHistoryLogs((prev) => prev.filter((item) => item.workOrderId !== workOrderId));
+          if (selectedId === workOrderId) {
+            setSelectedId(fallbackSelectedId);
+            const fallbackWorkOrder = remaining.find((item) => item.id === fallbackSelectedId) ?? remaining[0];
+            setLastSavedAt(fallbackWorkOrder?.lastSavedAt ?? null);
+            setSaveStatus("saved");
+          }
+          setToastMessage(lifecycleText.deleteCompletedToast);
+        },
+      });
     },
-    [lifecycleText, repository, setHistoryLogs, setLastSavedAt, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
+    [lifecycleText, repository, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setLastSavedAt, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
   );
 
   const handleRenameWorkOrderTitle = useCallback(
@@ -244,28 +282,43 @@ export function useWorkOrderLifecycleActions({
       const previousBaseTitle = String(workOrder.baseTitle ?? workOrder.title ?? "").trim() || lifecycleText.newWorkOrderFallbackTitle;
       if (previousBaseTitle === trimmedTitle) return;
 
-      const renameResult = renameWorkOrderGroupBaseTitle(workOrders, workOrder.id, trimmedTitle);
-      if (renameResult.affectedWorkOrderIds.length === 0 || renameResult.previousBaseTitle === trimmedTitle) return;
+      await executeWorkOrderAsyncAction({
+        actionKey: "rename",
+        setActionStatus,
+        setActionError,
+        setActionFailure,
+        getFailure: (error) => createWorkOrderActionFailure({
+          actionKey: "rename",
+          error,
+          kind: "validation",
+          retryable: false,
+          message: lifecycleText.renameFailedToast ?? "Failed to rename work order.",
+        }),
+        task: async () => {
+          const renameResult = renameWorkOrderGroupBaseTitle(workOrders, workOrder.id, trimmedTitle);
+          if (renameResult.affectedWorkOrderIds.length === 0 || renameResult.previousBaseTitle === trimmedTitle) return;
 
-      setWorkOrders(renameResult.nextWorkOrders);
-      setHistoryLogs((prev) => [
-        ...renameResult.affectedWorkOrderIds.map((workOrderId) =>
-          createTitleRenameHistoryLog(currentUser.name, workOrderId, {
-            from: renameResult.previousBaseTitle ?? previousBaseTitle,
-            to: trimmedTitle,
-            appliedToGroup: renameResult.affectedWorkOrderIds.length > 1,
-          }, historyText),
-        ),
-        ...prev,
-      ]);
-      setSaveStatus("dirty");
-      setToastMessage(
-        renameResult.affectedWorkOrderIds.length > 1
-          ? lifecycleText.renameAppliedToSeriesToast
-          : lifecycleText.renameAppliedToast,
-      );
+          setWorkOrders(renameResult.nextWorkOrders);
+          setHistoryLogs((prev) => [
+            ...renameResult.affectedWorkOrderIds.map((workOrderId) =>
+              createTitleRenameHistoryLog(currentUser.name, workOrderId, {
+                from: renameResult.previousBaseTitle ?? previousBaseTitle,
+                to: trimmedTitle,
+                appliedToGroup: renameResult.affectedWorkOrderIds.length > 1,
+              }, historyText),
+            ),
+            ...prev,
+          ]);
+          setSaveStatus("dirty");
+          setToastMessage(
+            renameResult.affectedWorkOrderIds.length > 1
+              ? lifecycleText.renameAppliedToSeriesToast
+              : lifecycleText.renameAppliedToast,
+          );
+        },
+      });
     },
-    [currentUser.name, historyText, lifecycleText, setActionError, setActionStatus, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders],
+    [currentUser.name, historyText, lifecycleText, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   return {

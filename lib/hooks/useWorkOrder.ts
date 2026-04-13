@@ -53,6 +53,7 @@ export function useWorkOrder() {
     setOrderRequestConfirmOpen: uiState.setOrderRequestConfirmOpen,
     setActionStatus: actionRuntime.setActionStatus,
     setActionError: actionRuntime.setActionError,
+    setActionFailure: actionRuntime.setActionFailure,
   });
 
 
@@ -117,12 +118,16 @@ export function useWorkOrder() {
     pendingWorkflowAction: uiState.pendingWorkflowAction,
     toastMessage: uiState.toastMessage,
     actionStatusMap: actionRuntime.actionStatusMap,
+    actionFailureMap: actionRuntime.actionFailureMap,
     actionErrorMap: actionRuntime.actionErrorMap,
     activeActionKey: actionRuntime.activeActionKey,
     hasActionError: actionRuntime.hasActionError,
+    latestActionFailure: actionRuntime.latestActionFailure,
+    retryableActionKeys: actionRuntime.retryableActionKeys,
     clearActionError: actionRuntime.clearActionError,
     repositoryStatus: coreState.repositoryStatus,
     repositoryError: coreState.repositoryError,
+    repositoryErrorMessage: coreState.repositoryError?.message ?? null,
     users: coreState.users,
     currentUserId: coreState.currentUserId,
     setCurrentUserId: coreState.setCurrentUserId,

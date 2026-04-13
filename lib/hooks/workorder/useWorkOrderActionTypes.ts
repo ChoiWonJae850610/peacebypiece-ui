@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { RoleType } from "@/types/permission";
 import type { HistoryLog, UserProfile, WorkOrder, WorkflowAction } from "@/types/workorder";
-import type { WorkOrderAsyncActionKey } from "@/lib/workorder/actionFlow";
+import type { WorkOrderAsyncActionFailure, WorkOrderAsyncActionKey } from "@/lib/workorder/actionFlow";
 
 export type SaveStatus = "saved" | "dirty" | "saving";
 export type AsyncOperationStatus = "idle" | "loading" | "ready" | "error";
@@ -58,6 +58,7 @@ export type UpdateSelectedWorkOrderInput = {
 export type WorkOrderActionRuntimeSetters = {
   setActionStatus: (actionKey: WorkOrderAsyncActionKey, status: AsyncOperationStatus) => void;
   setActionError: (actionKey: WorkOrderAsyncActionKey, message: string | null) => void;
+  setActionFailure?: (actionKey: WorkOrderAsyncActionKey, failure: WorkOrderAsyncActionFailure | null) => void;
 };
 
 export type WorkOrderActionStateSetters = {
