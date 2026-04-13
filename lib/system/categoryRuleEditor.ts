@@ -1,14 +1,13 @@
 import { WORKORDER_CATEGORY_KEYWORD_RULES, type WorkOrderCategoryKeywordRule } from "@/lib/constants/workorderCategoryKeywords";
+import {
+  CATEGORY_RULE_STORAGE_KEY,
+  type EditableCategoryRuleRuntime as EditableCategoryRule,
+  sanitizeStoredCategoryRules,
+  toRuntimeCategoryRules,
+} from "@/lib/system/categoryRuleRuntime";
 import { findWorkOrderCategoryKeywordRule, getRecommendedWorkOrderCategory } from "@/lib/utils/workorderCategoryRecommend";
-
-export const CATEGORY_RULE_STORAGE_KEY = "peacebypiece.system.categoryRules.v1";
-
-export type EditableCategoryRule = WorkOrderCategoryKeywordRule & {
-  id: string;
-  name: string;
-  enabled: boolean;
-  priority: number;
-};
+export { CATEGORY_RULE_STORAGE_KEY } from "@/lib/system/categoryRuleRuntime";
+export type { EditableCategoryRuleRuntime as EditableCategoryRule } from "@/lib/system/categoryRuleRuntime";
 
 export type CategoryRuleMatchPreview = {
   matchedRuleId: string | null;
@@ -59,31 +58,11 @@ export function sortEditableCategoryRules(rules: EditableCategoryRule[]): Editab
 }
 
 export function sanitizeEditableCategoryRule(rule: EditableCategoryRule, index: number): EditableCategoryRule {
-  const keywords = Array.from(new Set(rule.keywords.map((keyword) => keyword.trim()).filter(Boolean)));
-
-  return {
-    ...rule,
-    id: rule.id || `custom-rule-${Date.now()}-${index}`,
-    name: rule.name.trim() || `추천 규칙 ${index + 1}`,
-    priority: Number.isFinite(rule.priority) ? rule.priority : (index + 1) * 10,
-    keywords,
-    recommendation: {
-      category1: rule.recommendation.category1.trim() || "상의",
-      category2: rule.recommendation.category2.trim() || "티셔츠",
-      category3: rule.recommendation.category3.trim() || "반팔",
-      reason: rule.recommendation.reason.trim() || "추천 사유를 입력하세요.",
-    },
-  };
+  return sanitizeStoredCategoryRules([rule])[0] ?? createDefaultRule(index);
 }
 
 export function sanitizeEditableCategoryRules(rules: EditableCategoryRule[]): EditableCategoryRule[] {
-  return sortEditableCategoryRules(rules.map((rule, index) => sanitizeEditableCategoryRule(rule, index)));
-}
-
-export function toRuntimeCategoryRules(rules: EditableCategoryRule[]): WorkOrderCategoryKeywordRule[] {
-  return sortEditableCategoryRules(rules)
-    .filter((rule) => rule.enabled)
-    .map(({ keywords, recommendation }) => ({ keywords, recommendation }));
+  return sanitizeStoredCategoryRules(rules);
 }
 
 export function buildCategoryRuleMatchPreview(title: string, rules: EditableCategoryRule[]): CategoryRuleMatchPreview {

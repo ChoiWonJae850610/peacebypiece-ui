@@ -4,12 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import type { EditableCategoryRule } from "@/lib/system/categoryRuleEditor";
 import {
   buildCategoryRuleMatchPreview,
-  CATEGORY_RULE_STORAGE_KEY,
   createDefaultRule,
   getInitialEditableCategoryRules,
   sanitizeEditableCategoryRules,
   sortEditableCategoryRules,
 } from "@/lib/system/categoryRuleEditor";
+import { CATEGORY_RULE_STORAGE_KEY, getStoredEditableCategoryRules } from "@/lib/system/categoryRuleRuntime";
 
 export type CategoryRulesManagerText = {
   addRule: string;
@@ -29,6 +29,7 @@ export type CategoryRulesManagerText = {
   noRuleSelected: string;
   saveHint: string;
   savedToast: string;
+  appliedHint: string;
   resetHint: string;
   selectedRuleTitle: string;
   listCountLabel: string;
@@ -59,24 +60,16 @@ export default function CategoryRulesManager({ text }: { text: CategoryRulesMana
   const [statusMessage, setStatusMessage] = useState<string>(text.saveHint);
 
   useEffect(() => {
-    const saved = window.localStorage.getItem(CATEGORY_RULE_STORAGE_KEY);
-    if (!saved) {
+    const storedRules = getStoredEditableCategoryRules();
+    if (!storedRules) {
       const initial = sortEditableCategoryRules(getInitialEditableCategoryRules());
       setRules(initial);
       setSelectedRuleId(initial[0]?.id ?? null);
       return;
     }
 
-    try {
-      const parsed = JSON.parse(saved) as EditableCategoryRule[];
-      const sanitized = sanitizeEditableCategoryRules(parsed);
-      setRules(sanitized);
-      setSelectedRuleId(sanitized[0]?.id ?? null);
-    } catch {
-      const initial = sortEditableCategoryRules(getInitialEditableCategoryRules());
-      setRules(initial);
-      setSelectedRuleId(initial[0]?.id ?? null);
-    }
+    setRules(storedRules);
+    setSelectedRuleId(storedRules[0]?.id ?? null);
   }, []);
 
   const sortedRules = useMemo(() => sortEditableCategoryRules(rules), [rules]);
@@ -132,7 +125,7 @@ export default function CategoryRulesManager({ text }: { text: CategoryRulesMana
     window.localStorage.setItem(CATEGORY_RULE_STORAGE_KEY, JSON.stringify(sanitized));
     setRules(sanitized);
     setSelectedRuleId((current) => current ?? sanitized[0]?.id ?? null);
-    setStatusMessage(text.savedToast);
+    setStatusMessage(text.appliedHint);
   }
 
   function handleReset() {

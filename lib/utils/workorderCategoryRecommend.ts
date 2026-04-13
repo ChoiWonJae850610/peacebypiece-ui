@@ -1,5 +1,6 @@
 import { DEFAULT_CATEGORY1, DEFAULT_CATEGORY2, DEFAULT_CATEGORY3 } from "@/lib/constants/workorderCategories";
-import { WORKORDER_CATEGORY_KEYWORD_RULES, type WorkOrderCategoryKeywordRule, type WorkOrderCategoryRecommendation } from "@/lib/constants/workorderCategoryKeywords";
+import { type WorkOrderCategoryKeywordRule, type WorkOrderCategoryRecommendation } from "@/lib/constants/workorderCategoryKeywords";
+import { getActiveWorkOrderCategoryRules } from "@/lib/system/categoryRuleRuntime";
 
 export function normalizeWorkOrderTitle(title: string) {
   return title.trim().toLowerCase();
@@ -7,17 +8,18 @@ export function normalizeWorkOrderTitle(title: string) {
 
 export function findWorkOrderCategoryKeywordRule(
   title: string,
-  rules: WorkOrderCategoryKeywordRule[] = WORKORDER_CATEGORY_KEYWORD_RULES,
+  rules?: WorkOrderCategoryKeywordRule[],
 ): WorkOrderCategoryKeywordRule | null {
   const normalizedTitle = normalizeWorkOrderTitle(title);
+  const runtimeRules = rules ?? getActiveWorkOrderCategoryRules();
   if (!normalizedTitle) return null;
 
-  return rules.find((rule) => rule.keywords.some((keyword) => normalizedTitle.includes(keyword.toLowerCase()))) ?? null;
+  return runtimeRules.find((rule) => rule.keywords.some((keyword) => normalizedTitle.includes(keyword.toLowerCase()))) ?? null;
 }
 
 export function getRecommendedWorkOrderCategory(
   title: string,
-  rules: WorkOrderCategoryKeywordRule[] = WORKORDER_CATEGORY_KEYWORD_RULES,
+  rules?: WorkOrderCategoryKeywordRule[],
 ): WorkOrderCategoryRecommendation | null {
   return findWorkOrderCategoryKeywordRule(title, rules)?.recommendation ?? null;
 }

@@ -57,6 +57,7 @@ export const systemKo = {
       noRuleSelected: "선택된 규칙이 없습니다.",
       saveHint: "변경 후 규칙 저장을 눌러 현재 브라우저에 저장하세요.",
       savedToast: "규칙 변경사항을 현재 브라우저에 저장했습니다.",
+      appliedHint: "규칙 변경사항을 저장했고, 고객사 작업지시서 추천에도 바로 반영됩니다.",
       resetHint: "기본 추천 규칙으로 되돌렸습니다.",
       selectedRuleTitle: "규칙 목록",
       listCountLabel: "총 {count}개의 규칙",

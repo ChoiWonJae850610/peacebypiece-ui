@@ -57,6 +57,7 @@ export const systemEn = {
       noRuleSelected: "No rule selected.",
       saveHint: "Press Save rules to store changes in this browser.",
       savedToast: "Saved rule changes in this browser.",
+      appliedHint: "Saved the rules, and the workspace recommendation now uses them immediately.",
       resetHint: "Restored the default recommendation rules.",
       selectedRuleTitle: "Rule list",
       listCountLabel: "Total {count} rules",
