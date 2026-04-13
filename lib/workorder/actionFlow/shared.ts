@@ -104,4 +104,5 @@ export type WorkOrderActionFlowResult = {
   toastMessage?: string;
   openInventoryEditor?: boolean;
   resetAttachmentPreview?: boolean;
+  appliedChanges?: import("@/types/workorder").InventoryChange[];
 };

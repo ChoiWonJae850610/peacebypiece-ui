@@ -8,6 +8,7 @@ import {
   buildPatchWorkOrderResult,
   buildWorkflowActionResult,
 } from "@/lib/workorder/actionFlow";
+import { applySharedInspectionComplete, applySharedInventoryAdjustment } from "@/lib/workorder/reorder/inventory";
 import type { WorkOrder, WorkflowAction } from "@/types/workorder";
 import type {
   InspectionCompleteInput,
@@ -15,7 +16,6 @@ import type {
   UpdateSelectedWorkOrderInput,
   UseWorkOrderActionsParams,
 } from "./useWorkOrderActionTypes";
-
 
 const requiresOrderRequestConfirmation = (action: WorkflowAction) => action.nextState === "in_production";
 
@@ -112,7 +112,7 @@ export function useWorkOrderWorkflowActions({
       });
       if (!result) return;
 
-      setWorkOrders((prev) => prev.map((item) => (item.id === workOrderId ? result.nextWorkOrder : item)));
+      setWorkOrders((prev) => applySharedInventoryAdjustment(prev, currentWorkOrder, result.appliedChanges ?? []));
       if (result.historyLogs?.length) {
         setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
       }
@@ -135,7 +135,10 @@ export function useWorkOrderWorkflowActions({
         historyText,
       });
 
-      setWorkOrders((prev) => prev.map((item) => (item.id === workOrderId ? result.nextWorkOrder : item)));
+      setWorkOrders((prev) => applySharedInspectionComplete(prev, currentWorkOrder, {
+        orderEntryId,
+        nextInventoryQuantity,
+      }));
       if (result.historyLogs?.length) {
         setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
       }

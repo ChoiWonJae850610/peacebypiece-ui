@@ -13,6 +13,7 @@ import {
   getAttachmentById,
   getOfficialAttachments,
 } from "@/lib/workorder/selectors";
+import { getSharedInventorySnapshot } from "@/lib/workorder/reorder/inventory";
 import {
   canEditInventoryForWorkflow,
   canManageWorkOrderManager,
@@ -52,7 +53,7 @@ export function buildWorkOrderDerivedState({
   const canOpenInventoryEditor = canEditInventoryForWorkflow(currentRoles, currentWorkflowState);
   const canSeeInventoryHistorySection = currentUser.permissions.canSeeInventoryHistorySection;
   const canSeeAttachments = currentUser.permissions.canSeeAttachments;
-  const currentInventoryQuantity = selectedWorkOrder.inventoryQuantity;
+  const currentInventoryQuantity = getSharedInventorySnapshot(workOrders, selectedWorkOrder).inventoryQuantity;
   const officialAttachments = getOfficialAttachments(selectedWorkOrder.attachments ?? []);
   const selectedAttachment = getAttachmentById(selectedWorkOrder.attachments ?? [], attachmentPreviewId);
   const { materials, outsourcing, fabricTotal, subsidiaryTotal, outsourcingTotal, totalCost, unitCost } = calculateWorkOrderCosts(selectedWorkOrder);

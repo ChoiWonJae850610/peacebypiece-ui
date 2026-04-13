@@ -31,6 +31,7 @@ export function useWorkOrder() {
     selectedWorkOrderId: coreState.selectedWorkOrder.id,
     currentUser: coreState.currentUser,
     isAdmin: derivedState.isAdmin,
+    workOrders: coreState.workOrders,
   });
 
   const actionState = useWorkOrderActions({

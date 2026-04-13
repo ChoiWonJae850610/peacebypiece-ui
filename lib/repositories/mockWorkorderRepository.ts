@@ -10,6 +10,7 @@ import {
 import type { PersistedWorkOrderState } from "@/lib/data/mock/types";
 import { loadPersistedWorkorderState, persistWorkorderState } from "@/lib/repositories/workorderPersistence";
 import { normalizeWorkOrdersReorderIdentity } from "@/lib/workorder/reorder/helpers";
+import { normalizeSharedInventoryByReorderGroup } from "@/lib/workorder/reorder/inventory";
 import type { WorkorderRepository } from "@/lib/repositories/workorderRepository";
 
 function createInitialRepositoryState() {
@@ -18,7 +19,7 @@ function createInitialRepositoryState() {
 
   return {
     users: persisted.users,
-    workOrders: normalizeWorkOrdersReorderIdentity(persisted.workOrders),
+    workOrders: normalizeSharedInventoryByReorderGroup(normalizeWorkOrdersReorderIdentity(persisted.workOrders)),
     historyLogs: persisted.historyLogs,
     selectedId: persisted.selectedId,
     currentUserId: persisted.currentUserId,
@@ -38,13 +39,13 @@ const mockWorkorderRepository: WorkorderRepository = {
   loadPersistedState: loadPersistedWorkorderState,
   loadPersistedStateAsync: async () => loadPersistedWorkorderState(),
   persistState: (payload: PersistedWorkOrderState) => {
-    persistWorkorderState({ ...payload, workOrders: normalizeWorkOrdersReorderIdentity(payload.workOrders) });
+    persistWorkorderState({ ...payload, workOrders: normalizeSharedInventoryByReorderGroup(normalizeWorkOrdersReorderIdentity(payload.workOrders)) });
   },
   persistStateAsync: async (payload: PersistedWorkOrderState) => {
-    persistWorkorderState({ ...payload, workOrders: normalizeWorkOrdersReorderIdentity(payload.workOrders) });
+    persistWorkorderState({ ...payload, workOrders: normalizeSharedInventoryByReorderGroup(normalizeWorkOrdersReorderIdentity(payload.workOrders)) });
   },
-  saveWorkOrders: (workOrders) => cloneSavedWorkOrders(normalizeWorkOrdersReorderIdentity(workOrders)),
-  saveWorkOrdersAsync: async (workOrders) => cloneSavedWorkOrders(normalizeWorkOrdersReorderIdentity(workOrders)),
+  saveWorkOrders: (workOrders) => cloneSavedWorkOrders(normalizeSharedInventoryByReorderGroup(normalizeWorkOrdersReorderIdentity(workOrders))),
+  saveWorkOrdersAsync: async (workOrders) => cloneSavedWorkOrders(normalizeSharedInventoryByReorderGroup(normalizeWorkOrdersReorderIdentity(workOrders))),
 };
 
 export function getMockWorkorderRepository(): WorkorderRepository {

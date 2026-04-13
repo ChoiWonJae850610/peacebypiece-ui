@@ -57,6 +57,7 @@ export function buildInventoryApplyResult(payload: {
 
   return {
     nextWorkOrder: applyInventoryAdjustmentToWorkOrder(payload.workOrder, { changes }),
+    appliedChanges: changes,
     historyLogs: [
       createInventoryHistoryLog(payload.actorName, payload.workOrder.id, {
         changes,
