@@ -10,7 +10,7 @@ import "./globals.css";
 const baseI18n = getI18n(DEFAULT_LOCALE);
 
 export const metadata: Metadata = {
-  title: `${WORKSPACE_COMPANY_NAME} · PeacebyPiece v${APP_VERSION}`,
+  title: "PeaceByPiece",
   description: baseI18n.common.metadataDescription,
 };
 
