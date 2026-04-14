@@ -1,5 +1,4 @@
 import Link from "next/link";
-import PartnerMasterSection from "@/components/admin/PartnerMasterSection";
 import { APP_VERSION } from "@/lib/constants/app";
 import { WORKSPACE_COMPANY_NAME, WORKSPACE_COMPANY_NAME_EN, getAdminWorkspaceTitle } from "@/lib/constants/company";
 import { getI18n } from "@/lib/i18n";
@@ -23,20 +22,26 @@ export default function AdminPage() {
             </div>
             <div className="flex flex-col items-start gap-3 md:items-end">
               <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">v{APP_VERSION}</span>
-              <Link
-                href="/worker"
-                className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
-              >
-                {i18n.common.moveToWorkspace}
-              </Link>
+              <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                <Link
+                  href="/admin/partners"
+                  className="inline-flex items-center rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800"
+                >
+                  거래처/공장 관리
+                </Link>
+                <Link
+                  href="/worker"
+                  className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+                >
+                  {i18n.common.moveToWorkspace}
+                </Link>
+              </div>
             </div>
           </div>
         </header>
 
-        <PartnerMasterSection />
-
         <section className="grid gap-4 md:grid-cols-2">
-          {adminSections.slice(1).map((section) => (
+          {adminSections.map((section) => (
             <article key={section.title} className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
               <div className="space-y-3">
                 <h2 className="text-lg font-semibold text-stone-900">{section.title}</h2>

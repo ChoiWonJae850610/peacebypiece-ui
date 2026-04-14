@@ -263,7 +263,7 @@ export default function PartnerMasterSection() {
                     <span
                       className={[
                         "inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
-                        partner.isActive ? "bg-emerald-100 text-emerald-700" : "bg-stone-200 text-stone-600",
+                        partner.isActive ? "bg-teal-100 text-teal-700" : "bg-stone-200 text-stone-600",
                       ].join(" ")}
                     >
                       {partner.isActive ? "사용중" : "미사용"}

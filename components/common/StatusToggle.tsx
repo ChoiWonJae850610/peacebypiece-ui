@@ -13,14 +13,16 @@ type StatusToggleProps = {
   size?: StatusToggleSize;
 };
 
-const SIZE_CLASS_MAP: Record<StatusToggleSize, { track: string; thumb: string }> = {
+const SIZE_CLASS_MAP: Record<StatusToggleSize, { track: string; thumb: string; translate: string }> = {
   sm: {
-    track: "h-7 min-w-[62px] px-1",
-    thumb: "h-5 min-w-[28px] px-1.5 text-[10px]",
+    track: "h-6 w-12 px-1 text-[10px]",
+    thumb: "h-4 w-4",
+    translate: "translate-x-5",
   },
   md: {
-    track: "h-8 min-w-[72px] px-1",
-    thumb: "h-6 min-w-[34px] px-2 text-[11px]",
+    track: "h-7 w-14 px-1 text-[11px]",
+    thumb: "h-5 w-5",
+    translate: "translate-x-6",
   },
 };
 
@@ -50,24 +52,24 @@ export default function StatusToggle({
       disabled={disabled}
       onClick={handleClick}
       className={[
-        "inline-flex items-center rounded-full border transition",
+        "relative inline-flex shrink-0 items-center rounded-full border transition-colors duration-200 ease-out",
         sizeClass.track,
-        checked
-          ? "border-stone-900 bg-stone-900 text-white"
-          : "border-stone-300 bg-stone-100 text-stone-600",
+        checked ? "border-stone-900 bg-stone-900 text-white" : "border-stone-300 bg-stone-200 text-stone-600",
         disabled ? "cursor-default opacity-70" : "cursor-pointer hover:border-stone-500",
         className,
       ].join(" ")}
     >
-      <span
-        className={[
-          "inline-flex items-center justify-center rounded-full font-semibold transition",
-          sizeClass.thumb,
-          checked ? "bg-white text-stone-900" : "bg-white text-stone-500",
-        ].join(" ")}
-      >
+      <span className="pointer-events-none flex w-full items-center justify-center font-semibold tracking-[0.08em]">
         {checked ? onLabel : offLabel}
       </span>
+      <span
+        aria-hidden="true"
+        className={[
+          "pointer-events-none absolute left-1 top-1/2 -translate-y-1/2 rounded-full bg-white shadow-sm transition-transform duration-200 ease-out",
+          sizeClass.thumb,
+          checked ? sizeClass.translate : "translate-x-0",
+        ].join(" ")}
+      />
     </button>
   );
 }
