@@ -12,7 +12,7 @@ import {
 
 export type CategoryTreeRuntime = Record<string, Record<string, string[]>>;
 
-function cloneDefaultTree(): CategoryTreeRuntime {
+export function getDefaultCategoryTree(): CategoryTreeRuntime {
   return Object.fromEntries(
     Object.entries(CATEGORY_TREE).map(([category1, category2Map]) => [
       category1,
@@ -29,7 +29,7 @@ function unique(values: string[]) {
 
 export function sanitizeCategoryTree(tree: unknown): CategoryTreeRuntime {
   if (!tree || typeof tree !== "object") {
-    return cloneDefaultTree();
+    return getDefaultCategoryTree();
   }
 
   const normalized = Object.fromEntries(
@@ -65,7 +65,7 @@ export function sanitizeCategoryTree(tree: unknown): CategoryTreeRuntime {
       .filter((entry): entry is readonly [string, Record<string, string[]>] => Boolean(entry)),
   );
 
-  return Object.keys(normalized).length > 0 ? normalized : cloneDefaultTree();
+  return Object.keys(normalized).length > 0 ? normalized : getDefaultCategoryTree();
 }
 
 export function getStoredCategoryTree(): CategoryTreeRuntime | null {
@@ -74,7 +74,7 @@ export function getStoredCategoryTree(): CategoryTreeRuntime | null {
 }
 
 export function getRuntimeCategoryTree(): CategoryTreeRuntime {
-  return getStoredCategoryTree() ?? cloneDefaultTree();
+  return getStoredCategoryTree() ?? getDefaultCategoryTree();
 }
 
 export function persistCategoryTree(tree: CategoryTreeRuntime) {

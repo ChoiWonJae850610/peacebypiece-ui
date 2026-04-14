@@ -35,6 +35,7 @@ import {
   getCategory1Options,
   getCategory2Options,
   getCategory3Options,
+  getDefaultCategoryTree,
   getRuntimeCategoryTree,
   normalizeRecommendationWithTree,
   persistCategoryTree,
@@ -65,7 +66,7 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
     const [mobileListOpen, setMobileListOpen] = useState(false);
     const [mobileTestOpen, setMobileTestOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-    const [categoryTree, setCategoryTree] = useState<CategoryTreeRuntime>(() => getRuntimeCategoryTree());
+    const [categoryTree, setCategoryTree] = useState<CategoryTreeRuntime>(() => getDefaultCategoryTree());
     const [categoryModalOpen, setCategoryModalOpen] = useState(false);
     const ruleNameInputRef = useRef<HTMLInputElement | null>(null);
 
