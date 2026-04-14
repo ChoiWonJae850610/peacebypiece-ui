@@ -5,6 +5,7 @@ import { useI18n } from "@/lib/i18n";
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
 import {
   createCreationHistoryLog,
+  createDeletionHistoryLog,
   createReorderHistoryLog,
   createTitleRenameHistoryLog,
   createUpdateHistoryLog,
@@ -263,7 +264,10 @@ export function useWorkOrderLifecycleActions({
           const remaining = reindexed.filter((item) => item.id !== workOrderId);
           const fallbackSelectedId = remaining[0]?.id ?? repository.getDefaultSelectedId();
           setWorkOrders(remaining);
-          setHistoryLogs((prev) => prev.filter((item) => item.workOrderId !== workOrderId));
+          setHistoryLogs((prev) => [
+            createDeletionHistoryLog(currentUser.name, workOrderId, { title: getWorkOrderDisplayTitle(target) }, historyText),
+            ...prev,
+          ]);
           if (selectedId === workOrderId) {
             setSelectedId(fallbackSelectedId);
             const fallbackWorkOrder = remaining.find((item) => item.id === fallbackSelectedId) ?? remaining[0];
@@ -274,7 +278,7 @@ export function useWorkOrderLifecycleActions({
         },
       });
     },
-    [lifecycleText, repository, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setLastSavedAt, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
+    [currentUser.name, historyText, lifecycleText, repository, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setLastSavedAt, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
   );
 
   const handleRenameWorkOrderTitle = useCallback(

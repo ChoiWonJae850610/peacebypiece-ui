@@ -29,7 +29,10 @@ export function filterWorkOrdersByUserScope(workOrders: WorkOrder[], workflowSta
   }
 
   if (isInspectorRole(currentUser)) {
-    return workOrders.filter((item) => (workflowStateById[item.id] ?? item.workflowState) === "in_inspection");
+    return workOrders.filter((item) => {
+      const workflowState = workflowStateById[item.id] ?? item.workflowState;
+      return workflowState === "in_production" || workflowState === "in_inspection";
+    });
   }
 
   return workOrders;

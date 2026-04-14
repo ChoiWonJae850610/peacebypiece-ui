@@ -115,6 +115,27 @@ export function createReorderHistoryLog(
   });
 }
 
+export function createDeletionHistoryLog(
+  user: string,
+  workOrderId: string,
+  payload: { title: string },
+  text: HistoryText = defaultHistoryText,
+) {
+  return createHistoryLog({
+    action: text.actions.deleted,
+    message: text.messages.deleted,
+    user,
+    workOrderId,
+    category: "work",
+    tone: "stone",
+    detailLines: [
+      { label: text.detailLabels.deleted, value: payload.title },
+      { label: text.detailLabels.author, value: user },
+    ],
+    text,
+  });
+}
+
 export function createTitleRenameHistoryLog(
   user: string,
   workOrderId: string,
