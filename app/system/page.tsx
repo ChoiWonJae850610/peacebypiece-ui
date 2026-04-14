@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SYSTEM_CATEGORY_RULE_SUMMARIES, SYSTEM_COMPANY_SUMMARIES } from "@/lib/constants/company";
+import { SAMPLE_SYSTEM_CATEGORY_RULE_SUMMARIES, SAMPLE_SYSTEM_COMPANY_SUMMARIES } from "@/lib/data/sample/system";
 import { APP_VERSION } from "@/lib/constants/app";
 import { getI18n } from "@/lib/i18n";
 
@@ -57,7 +57,7 @@ export default function SystemPage() {
               <h2 className="text-lg font-semibold text-stone-900">{system.companySection.title}</h2>
             </div>
             <div className="space-y-3">
-              {SYSTEM_COMPANY_SUMMARIES.map((company) => (
+              {SAMPLE_SYSTEM_COMPANY_SUMMARIES.map((company) => (
                 <div key={company.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="space-y-1">
@@ -77,7 +77,7 @@ export default function SystemPage() {
               <h2 className="text-lg font-semibold text-stone-900">{system.ruleSection.title}</h2>
             </div>
             <div className="space-y-3">
-              {SYSTEM_CATEGORY_RULE_SUMMARIES.map((rule) => (
+              {SAMPLE_SYSTEM_CATEGORY_RULE_SUMMARIES.map((rule) => (
                 <div key={rule.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-2">

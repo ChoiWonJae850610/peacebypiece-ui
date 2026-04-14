@@ -1,5 +1,6 @@
 import { WORKORDER_CATEGORY_KEYWORD_RULES, type WorkOrderCategoryKeywordRule } from "@/lib/constants/workorderCategoryKeywords";
 import { loadPersistedCategoryRulesJson } from "@/lib/system/categoryPersistence";
+import { DEFAULT_CATEGORY_RULE_RECOMMENDATION, getDefaultCategoryRuleReason, getRuntimeCategoryRuleName } from "@/lib/system/categoryRuleDefaults";
 
 export type EditableCategoryRuleRuntime = WorkOrderCategoryKeywordRule & {
   id: string;
@@ -27,19 +28,17 @@ function sortRuntimeRules(rules: EditableCategoryRuleRuntime[]) {
 function sanitizeRuntimeRule(rule: EditableCategoryRuleRuntime, index: number, seenIds: Set<string> | null = null): EditableCategoryRuleRuntime {
   const keywords = Array.from(new Set((rule.keywords ?? []).map((keyword) => String(keyword ?? "").trim()).filter(Boolean)));
   const recommendation = rule.recommendation ?? {
-    category1: "상의",
-    category2: "티셔츠",
-    category3: "반팔",
-    reason: "추천 사유를 입력하세요.",
+    ...DEFAULT_CATEGORY_RULE_RECOMMENDATION,
+    reason: getDefaultCategoryRuleReason(),
   };
 
   return {
     keywords,
     recommendation: {
-      category1: String(recommendation.category1 ?? "").trim() || "상의",
-      category2: String(recommendation.category2 ?? "").trim() || "티셔츠",
-      category3: String(recommendation.category3 ?? "").trim() || "반팔",
-      reason: String(recommendation.reason ?? "").trim() || "추천 사유를 입력하세요.",
+      category1: String(recommendation.category1 ?? "").trim() || DEFAULT_CATEGORY_RULE_RECOMMENDATION.category1,
+      category2: String(recommendation.category2 ?? "").trim() || DEFAULT_CATEGORY_RULE_RECOMMENDATION.category2,
+      category3: String(recommendation.category3 ?? "").trim() || DEFAULT_CATEGORY_RULE_RECOMMENDATION.category3,
+      reason: String(recommendation.reason ?? "").trim() || getDefaultCategoryRuleReason(),
     },
     id: (() => {
       const rawId = String(rule.id ?? "").trim();
@@ -54,7 +53,7 @@ function sanitizeRuntimeRule(rule: EditableCategoryRuleRuntime, index: number, s
       seenIds.add(uniqueId);
       return uniqueId;
     })(),
-    name: String(rule.name ?? "").trim() || `추천 규칙 ${index + 1}`,
+    name: String(rule.name ?? "").trim() || getRuntimeCategoryRuleName(index),
     enabled: typeof rule.enabled === "boolean" ? rule.enabled : true,
     priority: Number.isFinite(rule.priority) ? rule.priority : (index + 1) * 10,
   };

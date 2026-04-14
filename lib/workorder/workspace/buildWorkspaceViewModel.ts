@@ -1,5 +1,5 @@
 import { APP_VERSION } from "@/lib/constants/app";
-import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
+import { SAMPLE_WORKSPACE_COMPANY_NAME } from "@/lib/data/sample/system";
 import {
   applySidePanelPreviewHandler,
   buildDetailProps,
@@ -13,7 +13,7 @@ import type { BuildWorkspaceViewModelArgs, WorkspaceViewModel } from "@/lib/work
 
 export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): WorkspaceViewModel {
   const version = APP_VERSION;
-  const companyName = WORKSPACE_COMPANY_NAME;
+  const companyName = SAMPLE_WORKSPACE_COMPANY_NAME;
 
   const sidebarListProps = buildSidebarListProps({
     companyName,

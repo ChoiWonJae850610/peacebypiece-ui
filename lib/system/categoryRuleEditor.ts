@@ -6,6 +6,7 @@ import {
   toRuntimeCategoryRules,
 } from "@/lib/system/categoryRuleRuntime";
 import { CATEGORY_RULE_STORAGE_KEY } from "@/lib/system/categoryPersistence";
+import { DEFAULT_CATEGORY_RULE_RECOMMENDATION, getDefaultCategoryRuleReason, getInitialCategoryRuleName } from "@/lib/system/categoryRuleDefaults";
 import { findWorkOrderCategoryKeywordRule, getRecommendedWorkOrderCategory } from "@/lib/utils/workorderCategoryRecommend";
 export { CATEGORY_RULE_STORAGE_KEY } from "@/lib/system/categoryPersistence";
 export type { EditableCategoryRuleRuntime as EditableCategoryRule } from "@/lib/system/categoryRuleRuntime";
@@ -28,15 +29,13 @@ function buildRuleId(baseKeyword: string, index: number) {
 export function createDefaultRule(index: number): EditableCategoryRule {
   return {
     id: createCategoryRuleId(`custom-rule-${index + 1}`),
-    name: `새 분류 규칙 ${index + 1}`,
+    name: getInitialCategoryRuleName(undefined),
     enabled: true,
     priority: (index + 1) * 10,
     keywords: [],
     recommendation: {
-      category1: "상의",
-      category2: "티셔츠",
-      category3: "반팔",
-      reason: "새 규칙에 맞는 추천 사유를 입력하세요.",
+      ...DEFAULT_CATEGORY_RULE_RECOMMENDATION,
+      reason: getDefaultCategoryRuleReason(),
     },
   };
 }
@@ -45,7 +44,7 @@ export function getInitialEditableCategoryRules(): EditableCategoryRule[] {
   return WORKORDER_CATEGORY_KEYWORD_RULES.map((rule, index) => ({
     ...rule,
     id: buildRuleId(rule.keywords[0] ?? `rule-${index + 1}`, index),
-    name: `${rule.keywords[0] ?? "규칙"} 분류 규칙`,
+    name: getInitialCategoryRuleName(rule.keywords[0]),
     enabled: true,
     priority: (index + 1) * 10,
   }));

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { type ReactNode, useRef } from "react";
 import { APP_VERSION } from "@/lib/constants/app";
 import { getI18n } from "@/lib/i18n";
+import { getCategoryRulesManagerText } from "@/lib/system/categoryRuleText";
 import CategoryRulesManager, { type CategoryRulesManagerHandle } from "./CategoryRulesManager";
 
 
@@ -84,6 +85,7 @@ function SettingsIcon() {
 
 const i18n = getI18n();
 const system = i18n.system;
+const categoryRuleText = getCategoryRulesManagerText();
 
 export default function SystemCategoryRulesPage() {
   const managerRef = useRef<CategoryRulesManagerHandle | null>(null);
@@ -121,7 +123,7 @@ export default function SystemCategoryRulesPage() {
           </div>
         </header>
 
-        <CategoryRulesManager ref={managerRef} text={system.categoryRulePage.editor} />
+        <CategoryRulesManager ref={managerRef} text={categoryRuleText} />
       </div>
     </main>
   );

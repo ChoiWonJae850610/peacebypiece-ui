@@ -1,3 +1,5 @@
+import { DEFAULT_LOCALE, getI18n, type Locale } from "@/lib/i18n";
+
 export type CategoryRulesManagerText = {
   addRule: string;
   deleteRule: string;
@@ -55,4 +57,13 @@ export type CategoryRulesManagerText = {
   defaultNewCategory3Name: string;
   duplicateSuffix: string;
   newRuleName: string;
+  defaultReasonText: string;
+  fallbackRuleKeyword: string;
+  initialRuleNameSuffix: string;
+  runtimeRuleName: string;
+  activeStatusLabel: string;
 };
+
+export function getCategoryRulesManagerText(locale: Locale = DEFAULT_LOCALE): CategoryRulesManagerText {
+  return getI18n(locale).system.categoryRulePage.editor;
+}

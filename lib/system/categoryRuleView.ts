@@ -1,5 +1,6 @@
 import { WORKORDER_CATEGORY_KEYWORD_RULES, type WorkOrderCategoryKeywordRule } from "@/lib/constants/workorderCategoryKeywords";
 import { findWorkOrderCategoryKeywordRule, getRecommendedWorkOrderCategory } from "@/lib/utils/workorderCategoryRecommend";
+import { getActiveCategoryRuleStatusLabel, getFallbackCategoryRuleKeyword, getRuntimeCategoryRuleName } from "@/lib/system/categoryRuleDefaults";
 
 export type CategoryRuleViewItem = {
   id: string;
@@ -31,11 +32,11 @@ export function getCategoryRuleViewItems(rules: WorkOrderCategoryKeywordRule[] =
   return rules.map((rule, index) => ({
     id: buildRuleId(rule, index),
     order: index + 1,
-    title: `${rule.keywords[0] ?? "규칙"} 추천 규칙`,
+    title: `${rule.keywords[0] ?? getFallbackCategoryRuleKeyword()} ${getRuntimeCategoryRuleName(index).replace(/\s+\d+$/, "")}`,
     keywords: rule.keywords,
     recommendationLabel: `${rule.recommendation.category1} / ${rule.recommendation.category2} / ${rule.recommendation.category3}`,
     reason: rule.recommendation.reason,
-    statusLabel: "사용중",
+    statusLabel: getActiveCategoryRuleStatusLabel(),
   }));
 }
 
@@ -58,7 +59,7 @@ export function testCategoryRuleTitle(title: string, rules: WorkOrderCategoryKey
 
   return {
     matchedRuleId: buildRuleId(matchedRule, matchedRuleIndex),
-    matchedRuleTitle: `${matchedRule.keywords[0] ?? "규칙"} 추천 규칙`,
+    matchedRuleTitle: `${matchedRule.keywords[0] ?? getFallbackCategoryRuleKeyword()} ${getRuntimeCategoryRuleName(matchedRuleIndex).replace(/\s+\d+$/, "")}`,
     matchedKeywords,
     recommendationLabel: `${recommendation.category1} / ${recommendation.category2} / ${recommendation.category3}`,
     reason: recommendation.reason,
