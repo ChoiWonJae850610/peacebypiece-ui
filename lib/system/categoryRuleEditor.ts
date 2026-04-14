@@ -1,13 +1,13 @@
 import { WORKORDER_CATEGORY_KEYWORD_RULES, type WorkOrderCategoryKeywordRule } from "@/lib/constants/workorderCategoryKeywords";
 import {
-  CATEGORY_RULE_STORAGE_KEY,
   createCategoryRuleId,
   type EditableCategoryRuleRuntime as EditableCategoryRule,
   sanitizeStoredCategoryRules,
   toRuntimeCategoryRules,
 } from "@/lib/system/categoryRuleRuntime";
+import { CATEGORY_RULE_STORAGE_KEY } from "@/lib/system/categoryPersistence";
 import { findWorkOrderCategoryKeywordRule, getRecommendedWorkOrderCategory } from "@/lib/utils/workorderCategoryRecommend";
-export { CATEGORY_RULE_STORAGE_KEY } from "@/lib/system/categoryRuleRuntime";
+export { CATEGORY_RULE_STORAGE_KEY } from "@/lib/system/categoryPersistence";
 export type { EditableCategoryRuleRuntime as EditableCategoryRule } from "@/lib/system/categoryRuleRuntime";
 
 export type CategoryRuleMatchPreview = {

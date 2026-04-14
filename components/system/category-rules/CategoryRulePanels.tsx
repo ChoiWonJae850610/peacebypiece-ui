@@ -188,7 +188,6 @@ export function CategoryRuleTestModal({
   text,
 }: {
   open: boolean;
-  rules: EditableCategoryRule[];
   onClose: () => void;
   testTitle: string;
   onChangeTitle: (value: string) => void;
@@ -323,7 +322,6 @@ export function CategoryValuesModal({
   text,
 }: {
   open: boolean;
-  rules: EditableCategoryRule[];
   onClose: () => void;
   tree: CategoryTreeRuntime;
   onChangeTree: (nextTree: CategoryTreeRuntime) => void;
