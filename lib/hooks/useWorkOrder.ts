@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { canDeleteWorkOrder, useWorkOrderActions } from "@/lib/hooks/workorder/useWorkOrderActions";
 import { useWorkOrderCoreState } from "@/lib/hooks/workorder/useWorkOrderCoreState";
 import { useWorkOrderDerived } from "@/lib/hooks/workorder/useWorkOrderDerived";
@@ -56,6 +56,28 @@ export function useWorkOrder() {
     setActionError: actionRuntime.setActionError,
     setActionFailure: actionRuntime.setActionFailure,
   });
+
+
+  useEffect(() => {
+    if (derivedState.workOrders.length === 0) return;
+    const selectedVisible = derivedState.workOrders.some((item) => item.id === coreState.selectedId);
+    if (selectedVisible) return;
+
+    const nextSelectedId = derivedState.workOrders[0]?.id;
+    if (!nextSelectedId) return;
+    const nextSelectedWorkOrder = coreState.workOrders.find((item) => item.id === nextSelectedId);
+
+    coreState.setSelectedId(nextSelectedId);
+    coreState.setLastSavedAt(nextSelectedWorkOrder?.lastSavedAt ?? null);
+    coreState.setSaveStatus("saved");
+  }, [
+    coreState.selectedId,
+    coreState.setLastSavedAt,
+    coreState.setSaveStatus,
+    coreState.setSelectedId,
+    coreState.workOrders,
+    derivedState.workOrders,
+  ]);
 
 
 

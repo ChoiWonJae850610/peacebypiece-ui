@@ -10,6 +10,7 @@ import {
   createWorkOrderListItem,
   deriveWorkflowStateById,
   filterWorkOrderList,
+  filterWorkOrdersByUserScope,
   getAttachmentById,
   getOfficialAttachments,
 } from "@/lib/workorder/selectors";
@@ -46,7 +47,8 @@ export function buildWorkOrderDerivedState({
   const canEditBeforeApproval = currentWorkflowState === "draft" || (isAdmin && currentWorkflowState === "review_requested");
   const isReviewRequestLocked = !canEditBeforeApproval;
   const canUploadOfficialAttachments = canUploadOfficialAttachmentsByRoles(currentRoles) && canEditBeforeApproval;
-  const workOrderList = workOrders.map(createWorkOrderListItem);
+  const scopedWorkOrders = filterWorkOrdersByUserScope(workOrders, workflowStateById, currentUser);
+  const workOrderList = scopedWorkOrders.map(createWorkOrderListItem);
   const filteredWorkOrderList = filterWorkOrderList(workOrderList, workflowStateById, searchQuery);
   const canSeeProductionSections = currentUser.permissions.canSeeProductionSections;
   const canSeeCostSections = currentUser.permissions.canSeeCostSections;

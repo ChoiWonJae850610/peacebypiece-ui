@@ -1,5 +1,7 @@
 import { isOfficialAttachment } from "@/lib/permissions/attachments";
 import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
+import { isAdminRole, isDesignerRole, isInspectorRole } from "@/lib/constants/roles";
+import type { UserProfile } from "@/types/user";
 import { createWorkOrderListItem } from "@/lib/workorder/mappers/workOrderListItemMapper";
 import { calculateWorkOrderCosts } from "@/lib/workorder/derived/workOrderCostSummary";
 import type { Attachment, WorkOrder, WorkOrderListItem } from "@/types/workorder";
@@ -10,6 +12,27 @@ export function deriveWorkflowStateById(workOrders: WorkOrder[]) {
   return Object.fromEntries(
     workOrders.map((item) => [item.id, deriveWorkflowStateFromOrderEntries(item.workflowState, item.orderEntries)]),
   );
+}
+
+
+export function filterWorkOrdersByUserScope(workOrders: WorkOrder[], workflowStateById: Record<string, string>, currentUser: UserProfile) {
+  if (isAdminRole(currentUser)) {
+    return workOrders;
+  }
+
+  if (isDesignerRole(currentUser)) {
+    return workOrders.filter((item) => {
+      const workflowState = workflowStateById[item.id] ?? item.workflowState;
+      const isOwnedByCurrentUser = item.createdById === currentUser.id || (item.managerId ?? null) === currentUser.id;
+      return isOwnedByCurrentUser && workflowState !== "completed";
+    });
+  }
+
+  if (isInspectorRole(currentUser)) {
+    return workOrders.filter((item) => (workflowStateById[item.id] ?? item.workflowState) === "in_inspection");
+  }
+
+  return workOrders;
 }
 
 export function filterWorkOrderList(workOrders: WorkOrderListItem[], workflowStateById: Record<string, string>, searchQuery: string) {
