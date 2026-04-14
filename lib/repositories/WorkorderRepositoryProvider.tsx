@@ -28,9 +28,11 @@ export function WorkorderRepositoryProvider({
   dbAdapter,
   adapter,
 }: WorkorderRepositoryProviderProps) {
+  const resolvedAdapter = adapter ?? dbAdapter;
+
   const resolvedRepository = useMemo(
-    () => repository ?? createWorkorderRepository({ mode: repositoryMode, adapter: adapter ?? dbAdapter, dbAdapter }),
-    [adapter, dbAdapter, repository, repositoryMode],
+    () => repository ?? createWorkorderRepository({ mode: repositoryMode, adapter: resolvedAdapter }),
+    [repository, repositoryMode, resolvedAdapter],
   );
 
   const repositoryInfo = useMemo(() => resolvedRepository.getRepositoryInfo(), [resolvedRepository]);

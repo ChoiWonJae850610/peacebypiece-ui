@@ -78,22 +78,28 @@ export function CategoryValuesModal({
   }
 
   function addCategory1() {
-    const newName = `새 대분류 ${category1Options.length + 1}`;
-    onChangeTree({ ...tree, [newName]: { "새 중분류": ["새 소분류"] } });
+    const newName = text.newCategory1Name.replace("{count}", String(category1Options.length + 1));
+    onChangeTree({
+      ...tree,
+      [newName]: { [text.defaultNewCategory2Name]: [text.defaultNewCategory3Name] },
+    });
     setSelectedCategory1(newName);
-    setSelectedCategory2("새 중분류");
+    setSelectedCategory2(text.defaultNewCategory2Name);
   }
 
   function addCategory2() {
     if (!activeCategory1) return;
-    const newName = `새 중분류 ${category2Options.length + 1}`;
-    onChangeTree({ ...tree, [activeCategory1]: { ...(tree[activeCategory1] ?? {}), [newName]: ["새 소분류"] } });
+    const newName = text.newCategory2Name.replace("{count}", String(category2Options.length + 1));
+    onChangeTree({
+      ...tree,
+      [activeCategory1]: { ...(tree[activeCategory1] ?? {}), [newName]: [text.defaultNewCategory3Name] },
+    });
     setSelectedCategory2(newName);
   }
 
   function addCategory3() {
     if (!activeCategory1 || !activeCategory2) return;
-    const newName = `새 소분류 ${category3Options.length + 1}`;
+    const newName = text.newCategory3Name.replace("{count}", String(category3Options.length + 1));
     onChangeTree({
       ...tree,
       [activeCategory1]: {
@@ -153,9 +159,9 @@ export function CategoryValuesModal({
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <div className="text-sm font-semibold text-stone-900">{text.category1Label}</div>
-              <div className="text-xs text-stone-500">선택한 대분류를 기준으로 다음 단계가 연결됩니다.</div>
+              <div className="text-xs text-stone-500">{text.category1HelpText}</div>
             </div>
-            <button type="button" onClick={addCategory1} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-300 bg-white text-lg font-medium text-stone-700">+</button>
+            <button type="button" onClick={addCategory1} aria-label={text.addCategory1} title={text.addCategory1} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-300 bg-white text-lg font-medium text-stone-700">+</button>
           </div>
           <div className="space-y-2">
             {category1Options.map((category1) => (
@@ -179,9 +185,9 @@ export function CategoryValuesModal({
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <div className="text-sm font-semibold text-stone-900">{text.category2Label}</div>
-              <div className="text-xs text-stone-500">현재 선택한 대분류에 연결된 중분류만 표시됩니다.</div>
+              <div className="text-xs text-stone-500">{text.category2HelpText}</div>
             </div>
-            <button type="button" onClick={addCategory2} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-blue-300 bg-white text-lg font-medium text-blue-700">+</button>
+            <button type="button" onClick={addCategory2} aria-label={text.addCategory2} title={text.addCategory2} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-blue-300 bg-white text-lg font-medium text-blue-700">+</button>
           </div>
           <div className="space-y-2">
             {category2Options.map((category2) => (
@@ -202,9 +208,9 @@ export function CategoryValuesModal({
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <div className="text-sm font-semibold text-stone-900">{text.category3Label}</div>
-              <div className="text-xs text-stone-500">현재 선택한 중분류에 연결된 소분류만 표시됩니다.</div>
+              <div className="text-xs text-stone-500">{text.category3HelpText}</div>
             </div>
-            <button type="button" onClick={addCategory3} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-emerald-300 bg-white text-lg font-medium text-emerald-700">+</button>
+            <button type="button" onClick={addCategory3} aria-label={text.addCategory3} title={text.addCategory3} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-emerald-300 bg-white text-lg font-medium text-emerald-700">+</button>
           </div>
           <div className="space-y-2">
             {category3Options.map((category3) => (

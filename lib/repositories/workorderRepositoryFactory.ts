@@ -11,11 +11,11 @@ export type CreateWorkorderRepositoryOptions = {
 };
 
 export function createWorkorderRepository(options: CreateWorkorderRepositoryOptions = {}): WorkorderRepository {
-  const fallbackRepository = getMockWorkorderRepository();
   const mode = options.mode ?? getDefaultWorkorderRepositoryMode();
+  const adapter = options.adapter ?? options.dbAdapter;
+  const fallbackRepository = getMockWorkorderRepository(adapter);
 
   if (mode === "db") {
-    const adapter = options.adapter ?? options.dbAdapter;
     if (adapter) {
       return createDbWorkorderRepository(fallbackRepository, adapter);
     }

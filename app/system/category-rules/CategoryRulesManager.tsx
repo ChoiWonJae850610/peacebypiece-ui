@@ -125,7 +125,13 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
     }
 
     function handleAddRule() {
-      const nextRule = normalizeRuleWithTree(createDefaultRule(sortedRules.length), categoryTree);
+      const nextRule = normalizeRuleWithTree(
+        {
+          ...createDefaultRule(sortedRules.length),
+          name: text.newRuleName.replace("{count}", String(sortedRules.length + 1)),
+        },
+        categoryTree,
+      );
       const nextRules = [...sortedRules, nextRule];
       replaceRules(nextRules);
       setSelectedRuleId(nextRule.id);
@@ -140,7 +146,7 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
       const clone: EditableCategoryRule = {
         ...selectedRule,
         id: createCategoryRuleId(`${selectedRule.id}-copy`),
-        name: `${selectedRule.name} 복사본`,
+        name: `${selectedRule.name} ${text.duplicateSuffix}`,
       };
       const nextRules = [...sortedRules];
       nextRules.splice(insertIndex, 0, clone);

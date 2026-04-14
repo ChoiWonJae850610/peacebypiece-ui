@@ -45,4 +45,14 @@ export type CategoryRulesManagerText = {
   addCategory2: string;
   addCategory3: string;
   deleteCategory: string;
+  category1HelpText: string;
+  category2HelpText: string;
+  category3HelpText: string;
+  newCategory1Name: string;
+  newCategory2Name: string;
+  newCategory3Name: string;
+  defaultNewCategory2Name: string;
+  defaultNewCategory3Name: string;
+  duplicateSuffix: string;
+  newRuleName: string;
 };
