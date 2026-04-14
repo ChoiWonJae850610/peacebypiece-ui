@@ -6,16 +6,16 @@ import ModalShell from "@/components/common/modal/ModalShell";
 import {
   buildPartnerDraftFromEntity,
   buildPartnerListViewModel,
+  createDefaultOutsourcingProcessDefinitions,
   createEmptyPartnerDraft,
   DEFAULT_PARTNER_FILTER_STATE,
   formatPartnerDate,
   formatPartnerPhone,
   normalizePartnerDraft,
-  OUTSOURCING_PROCESS_META,
-  PARTNER_FILTER_OPTIONS,
   PARTNER_STATUS_FILTER_OPTIONS,
   PARTNER_TYPE_META,
-  type PartnerFilterType,
+  togglePartnerFilterSelection,
+  type OutsourcingProcessDefinition,
 } from "@/lib/admin/partnerMaster";
 import { mockPartnerRepository } from "@/lib/repositories/mockPartnerRepository";
 import {
@@ -28,12 +28,16 @@ import { formatPhoneNumber } from "@/lib/utils/phoneFormat";
 
 export default function PartnerMasterSection() {
   const [partners, setPartners] = useState<Partner[]>([]);
-  const [selectedType, setSelectedType] = useState<PartnerFilterType>(DEFAULT_PARTNER_FILTER_STATE.selectedType);
+  const [selectedTypes, setSelectedTypes] = useState(DEFAULT_PARTNER_FILTER_STATE.selectedTypes);
   const [selectedStatus, setSelectedStatus] = useState(DEFAULT_PARTNER_FILTER_STATE.status);
   const [searchTerm, setSearchTerm] = useState(DEFAULT_PARTNER_FILTER_STATE.searchTerm);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
   const [editingPartnerId, setEditingPartnerId] = useState<string | null>(null);
   const [draft, setDraft] = useState<PartnerDraft>(createEmptyPartnerDraft());
+  const [processDefinitions, setProcessDefinitions] = useState<OutsourcingProcessDefinition[]>(
+    createDefaultOutsourcingProcessDefinitions(),
+  );
   const [formError, setFormError] = useState<string>("");
 
   useEffect(() => {
@@ -41,8 +45,8 @@ export default function PartnerMasterSection() {
   }, []);
 
   const listViewModel = useMemo(
-    () => buildPartnerListViewModel(partners, { selectedType, status: selectedStatus, searchTerm }),
-    [partners, searchTerm, selectedStatus, selectedType],
+    () => buildPartnerListViewModel(partners, { selectedTypes, status: selectedStatus, searchTerm }, processDefinitions),
+    [partners, processDefinitions, searchTerm, selectedStatus, selectedTypes],
   );
 
   const openCreateModal = useCallback(() => {
@@ -115,6 +119,12 @@ export default function PartnerMasterSection() {
     closeModal();
   };
 
+  const updateProcessDefinition = (type: OutsourcingProcessType, updater: (current: OutsourcingProcessDefinition) => OutsourcingProcessDefinition) => {
+    setProcessDefinitions((current) =>
+      current.map((definition) => (definition.type === type ? updater(definition) : definition)),
+    );
+  };
+
   return (
     <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm md:p-6">
       <div className="flex flex-col gap-4 border-b border-stone-200 pb-5 md:flex-row md:items-end md:justify-between">
@@ -123,18 +133,27 @@ export default function PartnerMasterSection() {
           <div>
             <h2 className="text-xl font-semibold tracking-tight text-stone-900">기준정보 관리 · 거래처/공장 관리</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">
-              공장, 원단, 부자재, 외주 협력사를 하나의 Partner master로 관리한다. 외주 공정은 재단, 나염,
-              자수, 워싱, 후가공 기준으로 연결해 다음 단계 필터링에 바로 쓸 수 있게 준비한다.
+              공장, 원단, 부자재, 외주 협력사를 하나의 Partner master로 관리한다. 거래처는 목록에서 간단히 보고,
+              외주 공정은 별도 관리 모달에서 라벨과 사용 여부를 정리할 수 있다.
             </p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={openCreateModal}
-          className="inline-flex items-center justify-center rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800"
-        >
-          거래처/공장 등록
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsProcessModalOpen(true)}
+            className="inline-flex items-center justify-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+          >
+            외주공정 관리
+          </button>
+          <button
+            type="button"
+            onClick={openCreateModal}
+            className="inline-flex items-center justify-center rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800"
+          >
+            거래처/공장 등록
+          </button>
+        </div>
       </div>
 
       <div className="mt-5 grid gap-3 md:grid-cols-3">
@@ -153,7 +172,7 @@ export default function PartnerMasterSection() {
       </div>
 
       <div className="mt-5 space-y-4 rounded-3xl border border-stone-200 bg-stone-50 p-4">
-        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)_auto] lg:items-start">
           <div className="min-w-0 space-y-2">
             <label htmlFor="partner-search" className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
               검색
@@ -170,19 +189,22 @@ export default function PartnerMasterSection() {
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">유형</p>
             <div className="flex flex-wrap gap-2">
-              {PARTNER_FILTER_OPTIONS.map((item) => (
-                <button
-                  key={item.value}
-                  type="button"
-                  onClick={() => setSelectedType(item.value)}
-                  className={[
-                    "rounded-full px-3 py-1.5 text-sm font-medium transition",
-                    selectedType === item.value ? "bg-stone-900 text-white" : "bg-white text-stone-700 hover:bg-stone-200",
-                  ].join(" ")}
-                >
-                  {item.label}
-                </button>
-              ))}
+              {listViewModel.filterOptions.map((item) => {
+                const isSelected = selectedTypes.includes(item.value);
+                return (
+                  <button
+                    key={item.value}
+                    type="button"
+                    onClick={() => setSelectedTypes((current) => togglePartnerFilterSelection(current, item.value))}
+                    className={[
+                      "rounded-full px-3 py-1.5 text-sm font-medium transition",
+                      isSelected ? "bg-stone-900 text-white" : "bg-white text-stone-700 hover:bg-stone-200",
+                    ].join(" ")}
+                  >
+                    {item.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -218,7 +240,7 @@ export default function PartnerMasterSection() {
       </div>
 
       <div className="mt-5 overflow-hidden rounded-3xl border border-stone-200">
-        <div className="hidden grid-cols-[minmax(0,1.6fr)_minmax(0,1.5fr)_120px_120px_140px] gap-4 bg-stone-50 px-4 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-stone-500 md:grid">
+        <div className="hidden grid-cols-[minmax(0,1.7fr)_minmax(0,1.4fr)_120px_120px_140px] gap-4 bg-stone-50 px-4 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-stone-500 md:grid">
           <span>업체명</span>
           <span>유형</span>
           <span>상태</span>
@@ -231,21 +253,25 @@ export default function PartnerMasterSection() {
           ) : (
             listViewModel.filteredPartners.map((partner) => (
               <article key={partner.id} className={["px-4 py-4", partner.isActive ? "bg-white" : "bg-stone-50/80"].join(" ")}>
-                <div className="flex flex-col gap-3 md:grid md:grid-cols-[minmax(0,1.6fr)_minmax(0,1.5fr)_120px_120px_140px] md:items-center md:gap-4">
+                <div className="flex flex-col gap-3 md:grid md:grid-cols-[minmax(0,1.7fr)_minmax(0,1.4fr)_120px_120px_140px] md:items-center md:gap-4">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="truncate text-sm font-semibold text-stone-900 md:text-base">{partner.name}</p>
-                      {!partner.isActive ? <span className="rounded-full bg-stone-200 px-2 py-0.5 text-[11px] font-medium text-stone-600">미사용</span> : null}
+                      {!partner.isActive ? (
+                        <span className="rounded-full bg-stone-200 px-2 py-0.5 text-[11px] font-medium text-stone-600">미사용</span>
+                      ) : null}
                     </div>
                     <div className="mt-1 space-y-1 text-xs leading-5 text-stone-500">
-                      <p>{partner.contactName || partner.phone ? `${partner.contactName || "대표자 미등록"} · ${formatPartnerPhone(partner.phone) || "연락처 미등록"}` : "대표자/연락처 미등록"}</p>
+                      <p>
+                        {partner.contactName || partner.phone
+                          ? `${partner.contactName || "대표자 미등록"} · ${formatPartnerPhone(partner.phone) || "연락처 미등록"}`
+                          : "대표자 미등록 · 연락처 미등록"}
+                      </p>
                       {partner.email ? <p>{partner.email}</p> : null}
-                      {partner.outsourcingProcessTypes?.length ? (
-                        <p>가능 공정 · {partner.outsourcingProcessTypes.map((type) => OUTSOURCING_PROCESS_META[type].label).join(", ")}</p>
-                      ) : null}
                       <p>{partner.memo || "메모 없음"}</p>
                     </div>
                   </div>
+
                   <div className="flex flex-wrap gap-2">
                     {partner.partnerTypes.map((type) => (
                       <span key={`${partner.id}-${type}`} className={`rounded-full px-2.5 py-1 text-xs font-medium ${PARTNER_TYPE_META[type].tone}`}>
@@ -253,11 +279,15 @@ export default function PartnerMasterSection() {
                       </span>
                     ))}
                     {(partner.outsourcingProcessTypes ?? []).map((type) => (
-                      <span key={`${partner.id}-${type}`} className={`rounded-full px-2.5 py-1 text-xs font-medium ${OUTSOURCING_PROCESS_META[type].tone}`}>
-                        {OUTSOURCING_PROCESS_META[type].label}
+                      <span
+                        key={`${partner.id}-${type}`}
+                        className={`rounded-full px-2.5 py-1 text-xs font-medium ${listViewModel.processMeta[type].tone}`}
+                      >
+                        {listViewModel.processMeta[type].label}
                       </span>
                     ))}
                   </div>
+
                   <div>
                     <span
                       className={[
@@ -368,9 +398,7 @@ export default function PartnerMasterSection() {
               value={draft.phone}
               inputMode="numeric"
               pattern="[0-9]*"
-              onChange={(event) =>
-                setDraft((current) => ({ ...current, phone: formatPhoneNumber(event.target.value) }))
-              }
+              onChange={(event) => setDraft((current) => ({ ...current, phone: formatPhoneNumber(event.target.value) }))}
               placeholder="000-0000-0000"
               className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-stone-500"
             />
@@ -419,33 +447,43 @@ export default function PartnerMasterSection() {
 
         {draft.partnerTypes.includes("outsourcing_vendor") ? (
           <div className="space-y-2">
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-stone-800">수행 가능 외주 공정</p>
-              <p className="text-xs leading-5 text-stone-500">
-                다음 단계에서 공정을 선택하면 이 목록에 포함된 외주처만 노출되도록 연결할 준비 필드다.
-              </p>
+            <div className="flex items-center justify-between gap-3">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-stone-800">외주 공정</p>
+                <p className="text-xs leading-5 text-stone-500">외주처에 해당하는 공정만 선택한다.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsProcessModalOpen(true)}
+                className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:bg-stone-50"
+              >
+                외주공정 관리
+              </button>
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
-              {listViewModel.availableOutsourcingProcessTypes.map((type) => {
-                const checked = draft.outsourcingProcessTypes.includes(type);
-                return (
-                  <label
-                    key={type}
-                    className={[
-                      "flex cursor-pointer items-start gap-3 rounded-2xl border px-4 py-3 text-sm transition",
-                      checked ? "border-stone-900 bg-stone-50" : "border-stone-300 bg-white hover:border-stone-400",
-                    ].join(" ")}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => toggleOutsourcingProcess(type)}
-                      className="mt-1 h-4 w-4 rounded border-stone-300"
-                    />
-                    <span className="font-medium text-stone-800">{OUTSOURCING_PROCESS_META[type].label}</span>
-                  </label>
-                );
-              })}
+              {processDefinitions
+                .filter((definition) => definition.isActive)
+                .sort((a, b) => a.sortOrder - b.sortOrder)
+                .map((definition) => {
+                  const checked = draft.outsourcingProcessTypes.includes(definition.type);
+                  return (
+                    <label
+                      key={definition.type}
+                      className={[
+                        "flex cursor-pointer items-start gap-3 rounded-2xl border px-4 py-3 text-sm transition",
+                        checked ? "border-stone-900 bg-stone-50" : "border-stone-300 bg-white hover:border-stone-400",
+                      ].join(" ")}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleOutsourcingProcess(definition.type)}
+                        className="mt-1 h-4 w-4 rounded border-stone-300"
+                      />
+                      <span className="font-medium text-stone-800">{definition.label}</span>
+                    </label>
+                  );
+                })}
             </div>
           </div>
         ) : null}
@@ -462,6 +500,100 @@ export default function PartnerMasterSection() {
             rows={4}
             className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-stone-500"
           />
+        </div>
+      </ModalShell>
+
+      <ModalShell
+        open={isProcessModalOpen}
+        onClose={() => setIsProcessModalOpen(false)}
+        title="외주공정 관리"
+        description="외주 공정 라벨, 사용 여부, 노출 순서를 관리한다. 현재 단계에서는 기준정보 화면 내부에서 먼저 정리한다."
+        maxWidthClass="md:max-w-3xl"
+        bodyClassName="space-y-4"
+        footer={
+          <div className="flex w-full items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setProcessDefinitions(createDefaultOutsourcingProcessDefinitions())}
+              className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+            >
+              기본값 복원
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsProcessModalOpen(false)}
+              className="rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800"
+            >
+              닫기
+            </button>
+          </div>
+        }
+      >
+        <div className="hidden grid-cols-[120px_minmax(0,1fr)_100px_90px] gap-3 rounded-2xl bg-stone-50 px-4 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-stone-500 md:grid">
+          <span>기본 코드</span>
+          <span>표시명</span>
+          <span>사용 여부</span>
+          <span>순서</span>
+        </div>
+        <div className="space-y-3">
+          {processDefinitions
+            .slice()
+            .sort((a, b) => a.sortOrder - b.sortOrder)
+            .map((definition) => (
+              <div key={definition.type} className="rounded-2xl border border-stone-200 bg-white p-4">
+                <div className="grid gap-3 md:grid-cols-[120px_minmax(0,1fr)_100px_90px] md:items-center">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500 md:hidden">기본 코드</p>
+                    <p className="text-sm font-medium text-stone-700">{definition.type}</p>
+                  </div>
+
+                  <label className="space-y-2">
+                    <span className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500 md:hidden">표시명</span>
+                    <input
+                      value={definition.label}
+                      onChange={(event) =>
+                        updateProcessDefinition(definition.type, (current) => ({ ...current, label: event.target.value }))
+                      }
+                      placeholder="공정명 입력"
+                      className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-stone-500"
+                    />
+                  </label>
+
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500 md:hidden">사용 여부</p>
+                    <div className="flex items-center gap-2">
+                      <StatusToggle
+                        checked={definition.isActive}
+                        onChange={(nextValue) =>
+                          updateProcessDefinition(definition.type, (current) => ({ ...current, isActive: nextValue }))
+                        }
+                        srLabel={`${definition.label} 사용 여부`}
+                        size="sm"
+                      />
+                      <span className={`text-sm font-medium ${definition.isActive ? "text-stone-900" : "text-stone-500"}`}>
+                        {definition.isActive ? "사용중" : "미사용"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <label className="space-y-2">
+                    <span className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500 md:hidden">순서</span>
+                    <input
+                      type="number"
+                      min={1}
+                      value={definition.sortOrder}
+                      onChange={(event) =>
+                        updateProcessDefinition(definition.type, (current) => ({
+                          ...current,
+                          sortOrder: Number(event.target.value) > 0 ? Number(event.target.value) : 1,
+                        }))
+                      }
+                      className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-stone-500"
+                    />
+                  </label>
+                </div>
+              </div>
+            ))}
         </div>
       </ModalShell>
     </section>
