@@ -1,10 +1,9 @@
 export const adminEn = {
-  eyebrow: "PeaceByPiece Admin",
-  title: "Admin base route",
-  description: "This page is the base entry for the admin dashboard, user management, and operations settings. In this phase, only the route structure and page skeleton are prepared.",
+  description:
+    "This page is the starting point for a customer operations workspace that will expand into master data management, user operations, and default settings. In this phase, the customer header and admin layout skeleton are prepared first.",
   sections: [
-    { title: "Stats", description: "Area for status summaries, recent changes, and bottleneck overviews" },
-    { title: "Users", description: "Area to expand into invitation, role updates, and active user management" },
-    { title: "Settings", description: "Area for notifications, defaults, and operations settings" },
+    { title: "Master Data", description: "Area to expand into factories, vendors, outsourcing partners, and process masters" },
+    { title: "Users", description: "Area to expand into invitations, role updates, and active user management" },
+    { title: "Operations Settings", description: "Area for notifications, defaults, and operations settings" },
   ],
 } as const;
