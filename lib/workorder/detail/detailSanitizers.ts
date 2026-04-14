@@ -3,17 +3,21 @@ import {
   DEFAULT_CATEGORY1,
   DEFAULT_CATEGORY2,
   DEFAULT_CATEGORY3,
-  DEFAULT_BASIC_YEAR,
   DEFAULT_FACTORY_OPTION,
   DEFAULT_ORDER_TYPE,
   DEFAULT_PARTNER_OPTION,
   DEFAULT_PRIORITY_OPTION,
-  SEASON_OPTIONS,
 } from "@/lib/constants/workorderOptions";
-import { getCategory2OptionsFromTree, getCategory3OptionsFromTree } from "@/lib/utils/categoryOptions";
 import { isEditorNumericField } from "@/lib/workorder/detail/detailFields";
 import { sanitizeOrderInspectionStatus } from "@/lib/workorder/workflow";
 import type { OrderEntry, OrderInspectionStatus, WorkflowState, WorkOrder } from "@/types/workorder";
+import {
+  appendUniqueOption,
+  buildInitialBasicInfoFromWorkOrder,
+  normalizeCategorySelection,
+  sanitizeOptionValue,
+  type CategoryOptionTree,
+} from "@/lib/workorder/normalizeRules";
 
 export function createId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -83,58 +87,35 @@ export function getInitialOrderEntries(workOrder: WorkOrder): OrderEntry[] {
 }
 
 export function getCategory2Options(category1: string) {
-  return getCategory2OptionsFromTree(CATEGORY_TREE, category1) ?? getCategory2OptionsFromTree(CATEGORY_TREE, DEFAULT_CATEGORY1);
+  const tree = CATEGORY_TREE as CategoryOptionTree;
+  const normalized = normalizeCategorySelection({ category1, category2: "", category3: "" }, tree);
+  return Object.keys(tree[normalized.category1] ?? tree[DEFAULT_CATEGORY1] ?? {});
 }
 
 export function getCategory3Options(category2: string, category1: string = DEFAULT_CATEGORY1) {
-  return getCategory3OptionsFromTree(CATEGORY_TREE, category1, category2)
-    ?? getCategory3OptionsFromTree(CATEGORY_TREE, DEFAULT_CATEGORY1, DEFAULT_CATEGORY2)
-    ?? [DEFAULT_CATEGORY3];
+  const tree = CATEGORY_TREE as CategoryOptionTree;
+  const normalized = normalizeCategorySelection({ category1, category2, category3: "" }, tree);
+  return [...(tree[normalized.category1]?.[normalized.category2] ?? tree[DEFAULT_CATEGORY1]?.[DEFAULT_CATEGORY2] ?? [DEFAULT_CATEGORY3])];
 }
 
+
+
+
+
+
+
+
 export function sanitizeSelectValue(value: string, options: readonly string[], fallback?: string) {
-  if (value && options.includes(value)) return value;
-  return fallback ?? options[0] ?? "";
+  return sanitizeOptionValue(value, options, fallback);
 }
 
 export function appendOption(options: string[], value: string) {
-  const trimmed = value.trim();
-  if (!trimmed) return options;
-  if (options.includes(trimmed)) return options;
-  return [...options, trimmed];
-}
-
-export function parseSeasonYear(value: string) {
-  const trimmed = value.trim();
-  const match = trimmed.match(/^(SS|FW|NOS|ALL)(?:\s+(\d{4}))?$/i);
-  if (match) {
-    return {
-      season: match[1].toUpperCase(),
-      year: match[2] ?? DEFAULT_BASIC_YEAR,
-    };
-  }
-
-  const [first = "", second = ""] = trimmed.split(/\s+/);
-  return {
-    season: first || SEASON_OPTIONS[0],
-    year: second || DEFAULT_BASIC_YEAR,
-  };
+  return appendUniqueOption(options, value);
 }
 
 export function getInitialBasicInfo(workOrder: WorkOrder) {
-  const parsedSeason = parseSeasonYear(workOrder.season);
-  const category1 = workOrder.category1 || DEFAULT_CATEGORY1;
-  const category2Options = getCategory2Options(category1);
-  const category2 = workOrder.category2 || category2Options[0] || "";
-  const category3Options = getCategory3Options(category2, category1);
-  const category3 = workOrder.category3 || category3Options[0] || "";
-
   return {
-    category1,
-    category2,
-    category3,
+    ...buildInitialBasicInfoFromWorkOrder(workOrder),
     partner: DEFAULT_PARTNER_OPTION,
-    season: parsedSeason.season || SEASON_OPTIONS[0],
-    year: parsedSeason.year || DEFAULT_BASIC_YEAR,
   };
 }

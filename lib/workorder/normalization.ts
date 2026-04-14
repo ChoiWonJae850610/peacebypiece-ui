@@ -1,8 +1,4 @@
 import {
-  DEFAULT_WORKORDER_CATEGORY1,
-  DEFAULT_WORKORDER_CATEGORY2,
-  DEFAULT_WORKORDER_CATEGORY3,
-  normalizeStoredCategory,
   normalizeStoredOptionalText,
   normalizeStoredPriority,
   normalizeStoredSeason,
@@ -10,15 +6,20 @@ import {
 import { toInventoryStatus } from "@/lib/constants/workorderDomain";
 import type { WorkOrder } from "@/types/workorder";
 import { normalizeWorkOrderCollectionsForStorage } from "@/lib/workorder/structure";
+import { normalizeCategorySelection } from "@/lib/workorder/normalizeRules";
 
 export function normalizeWorkOrderData(workOrder: WorkOrder): WorkOrder {
   const normalizedCollections = normalizeWorkOrderCollectionsForStorage(workOrder);
 
+  const normalizedCategory = normalizeCategorySelection({
+    category1: normalizedCollections.category1,
+    category2: normalizedCollections.category2,
+    category3: normalizedCollections.category3,
+  });
+
   return {
     ...normalizedCollections,
-    category1: normalizeStoredCategory(normalizedCollections.category1, DEFAULT_WORKORDER_CATEGORY1),
-    category2: normalizeStoredCategory(normalizedCollections.category2, DEFAULT_WORKORDER_CATEGORY2),
-    category3: normalizeStoredCategory(normalizedCollections.category3, DEFAULT_WORKORDER_CATEGORY3),
+    ...normalizedCategory,
     season: normalizeStoredSeason(normalizedCollections.season),
     priority: normalizeStoredPriority(normalizedCollections.priority),
     vendor: normalizeStoredOptionalText(normalizedCollections.vendor),
