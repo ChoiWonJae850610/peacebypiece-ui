@@ -165,6 +165,8 @@ export const workorderEn = {
     },
     detailLabels: {
       author: "Author",
+      title: "Title",
+      identifier: "Reference",
       changed: "Changed",
       memo: "Memo",
       finalInventory: "Final inventory",

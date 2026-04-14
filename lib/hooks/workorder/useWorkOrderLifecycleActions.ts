@@ -92,8 +92,8 @@ export function useWorkOrderLifecycleActions({
             setWorkOrders(nextWorkOrders);
             setHistoryLogs((prev) => [
               createUpdateHistoryLog(currentUser.name, workOrder.id, [
+                { label: historyText.detailLabels.title, value: `[${getWorkOrderDisplayTitle(workOrder)}]` },
                 { label: lifecycleText.saveHistoryLabel, value: historyText.detailLabels.savedAtFormat.replace("{time}", label) },
-                { label: lifecycleText.workOrderLabel, value: getWorkOrderDisplayTitle(workOrder) },
               ], historyText),
               ...prev,
             ]);

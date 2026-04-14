@@ -1,6 +1,27 @@
 import { createHistoryLog, defaultHistoryText, type DetailLine, formatTemplate, type HistoryText } from "@/lib/workorder/history/builders/shared";
 import type { HistoryLog } from "@/types/workorder";
 
+function formatHistoryTitle(title?: string | null) {
+  const normalized = String(title ?? "").trim();
+  return normalized ? `[${normalized}]` : "-";
+}
+
+function formatHistoryIdentifier(workOrderId: string) {
+  const normalized = String(workOrderId ?? "").trim();
+  if (!normalized) return "-";
+  return normalized.length > 12 ? `#${normalized.slice(0, 12)}` : `#${normalized}`;
+}
+
+function buildWorkOrderIdentityDetailLines(
+  workOrderId: string,
+  title: string | undefined,
+  text: HistoryText,
+): DetailLine[] {
+  return [
+    { label: text.detailLabels.title, value: formatHistoryTitle(title) },
+    { label: text.detailLabels.identifier, value: formatHistoryIdentifier(workOrderId) },
+  ];
+}
 export function createCreationHistoryLog(
   user: string,
   workOrderId: string,
@@ -15,7 +36,7 @@ export function createCreationHistoryLog(
     category: "work",
     tone: "blue",
     detailLines: [
-      ...(payload.title ? [{ label: text.detailLabels.created, value: payload.title }] : []),
+      ...buildWorkOrderIdentityDetailLines(workOrderId, payload.title, text),
       { label: text.detailLabels.author, value: user },
     ],
     text,
@@ -108,8 +129,8 @@ export function createReorderHistoryLog(
     category: "work",
     tone: "blue",
     detailLines: [
-      { label: text.detailLabels.original, value: payload.sourceTitle },
-      { label: text.detailLabels.created, value: payload.nextTitle },
+      ...buildWorkOrderIdentityDetailLines(workOrderId, payload.nextTitle, text),
+      { label: text.detailLabels.original, value: formatHistoryTitle(payload.sourceTitle) },
     ],
     text,
   });
@@ -129,7 +150,7 @@ export function createDeletionHistoryLog(
     category: "work",
     tone: "stone",
     detailLines: [
-      { label: text.detailLabels.deleted, value: payload.title },
+      ...buildWorkOrderIdentityDetailLines(workOrderId, payload.title, text),
       { label: text.detailLabels.author, value: user },
     ],
     text,
