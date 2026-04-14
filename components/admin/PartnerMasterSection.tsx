@@ -3,7 +3,14 @@
 import { useEffect, useMemo, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { mockPartnerRepository } from "@/lib/repositories/mockPartnerRepository";
-import { PARTNER_TYPE_VALUES, type Partner, type PartnerDraft, type PartnerType } from "@/types/partner";
+import {
+  OUTSOURCING_PROCESS_TYPE_VALUES,
+  PARTNER_TYPE_VALUES,
+  type OutsourcingProcessType,
+  type Partner,
+  type PartnerDraft,
+  type PartnerType,
+} from "@/types/partner";
 
 const PARTNER_TYPE_META: Record<PartnerType, { label: string; tone: string }> = {
   factory: { label: "공장", tone: "bg-sky-100 text-sky-700" },
@@ -12,10 +19,21 @@ const PARTNER_TYPE_META: Record<PartnerType, { label: string; tone: string }> = 
   outsourcing_vendor: { label: "외주처", tone: "bg-violet-100 text-violet-700" },
 };
 
+const OUTSOURCING_PROCESS_META: Record<OutsourcingProcessType, { label: string }> = {
+  cutting: { label: "재단" },
+  printing: { label: "나염/프린트" },
+  embroidery: { label: "자수" },
+  washing: { label: "워싱" },
+  finishing: { label: "후가공" },
+};
+
 const EMPTY_DRAFT: PartnerDraft = {
   name: "",
   partnerTypes: [],
   isActive: true,
+  contactName: "",
+  phone: "",
+  outsourcingProcessTypes: [],
   memo: "",
 };
 
@@ -30,6 +48,9 @@ function buildDraftFromPartner(partner: Partner): PartnerDraft {
     name: partner.name,
     partnerTypes: [...partner.partnerTypes],
     isActive: partner.isActive,
+    contactName: partner.contactName ?? "",
+    phone: partner.phone ?? "",
+    outsourcingProcessTypes: [...(partner.outsourcingProcessTypes ?? [])],
     memo: partner.memo,
   };
 }
@@ -82,11 +103,25 @@ export default function PartnerMasterSection() {
   };
 
   const toggleType = (type: PartnerType) => {
+    setDraft((current) => {
+      const nextTypes = current.partnerTypes.includes(type)
+        ? current.partnerTypes.filter((item) => item !== type)
+        : [...current.partnerTypes, type];
+
+      return {
+        ...current,
+        partnerTypes: nextTypes,
+        outsourcingProcessTypes: nextTypes.includes("outsourcing_vendor") ? current.outsourcingProcessTypes : [],
+      };
+    });
+  };
+
+  const toggleOutsourcingProcess = (type: OutsourcingProcessType) => {
     setDraft((current) => ({
       ...current,
-      partnerTypes: current.partnerTypes.includes(type)
-        ? current.partnerTypes.filter((item) => item !== type)
-        : [...current.partnerTypes, type],
+      outsourcingProcessTypes: current.outsourcingProcessTypes.includes(type)
+        ? current.outsourcingProcessTypes.filter((item) => item !== type)
+        : [...current.outsourcingProcessTypes, type],
     }));
   };
 
@@ -104,6 +139,9 @@ export default function PartnerMasterSection() {
     const normalizedDraft: PartnerDraft = {
       ...draft,
       name: normalizedName,
+      contactName: draft.contactName.trim(),
+      phone: draft.phone.trim(),
+      outsourcingProcessTypes: draft.partnerTypes.includes("outsourcing_vendor") ? [...draft.outsourcingProcessTypes] : [],
       memo: draft.memo.trim(),
     };
 
@@ -129,8 +167,8 @@ export default function PartnerMasterSection() {
           <div>
             <h2 className="text-xl font-semibold tracking-tight text-stone-900">기준정보 관리 · 거래처/공장 관리</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">
-              공장, 원단 거래처, 부자재 거래처, 외주처를 하나의 Partner master로 먼저 관리한다. 이번 단계에서는
-              목록/등록/수정 구조와 mock repository 연결까지만 반영한다.
+              공장, 원단 거래처, 부자재 거래처, 외주처를 하나의 Partner master로 관리한다. 이번 단계에서는
+              담당자, 연락처, 외주 가능 공정(복수 선택)까지 확장하고 mock repository에 저장한다.
             </p>
           </div>
         </div>
@@ -201,7 +239,13 @@ export default function PartnerMasterSection() {
                 <div className="flex flex-col gap-3 md:grid md:grid-cols-[minmax(0,1.6fr)_minmax(0,1.5fr)_120px_120px_140px] md:items-center md:gap-4">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-stone-900 md:text-base">{partner.name}</p>
-                    <p className="mt-1 text-xs leading-5 text-stone-500">{partner.memo || "메모 없음"}</p>
+                    <div className="mt-1 space-y-1 text-xs leading-5 text-stone-500">
+                      <p>{partner.contactName || partner.phone ? `${partner.contactName || "담당자 미등록"} · ${partner.phone || "연락처 미등록"}` : "담당자/연락처 미등록"}</p>
+                      {partner.outsourcingProcessTypes?.length ? (
+                        <p>가능 공정 · {partner.outsourcingProcessTypes.map((type) => OUTSOURCING_PROCESS_META[type].label).join(", ")}</p>
+                      ) : null}
+                      <p>{partner.memo || "메모 없음"}</p>
+                    </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {partner.partnerTypes.map((type) => (
@@ -237,7 +281,7 @@ export default function PartnerMasterSection() {
         open={isModalOpen}
         onClose={closeModal}
         title={editingPartnerId ? "거래처/공장 수정" : "거래처/공장 등록"}
-        description="Partner master 기준으로 업체명, 유형, 사용 여부를 관리한다."
+        description="Partner master 기준으로 업체명, 유형, 담당자, 연락처, 사용 여부를 관리한다."
         maxWidthClass="md:max-w-2xl"
         bodyClassName="space-y-5"
         footer={
@@ -300,6 +344,68 @@ export default function PartnerMasterSection() {
             })}
           </div>
         </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <label htmlFor="partner-contact-name" className="text-sm font-medium text-stone-800">
+              담당자명
+            </label>
+            <input
+              id="partner-contact-name"
+              value={draft.contactName}
+              onChange={(event) => setDraft((current) => ({ ...current, contactName: event.target.value }))}
+              placeholder="담당자 또는 대표 이름 입력"
+              className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-stone-500"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="partner-phone" className="text-sm font-medium text-stone-800">
+              연락처
+            </label>
+            <input
+              id="partner-phone"
+              type="tel"
+              value={draft.phone}
+              onChange={(event) => setDraft((current) => ({ ...current, phone: event.target.value }))}
+              placeholder="연락처 입력"
+              className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-stone-500"
+            />
+          </div>
+        </div>
+
+        {draft.partnerTypes.includes("outsourcing_vendor") ? (
+          <div className="space-y-2">
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-stone-800">수행 가능 외주 공정</p>
+              <p className="text-xs leading-5 text-stone-500">
+                다음 단계에서 공정을 선택하면 이 목록에 포함된 외주처만 노출되도록 연결할 준비 필드다.
+              </p>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {OUTSOURCING_PROCESS_TYPE_VALUES.map((type) => {
+                const checked = draft.outsourcingProcessTypes.includes(type);
+                return (
+                  <label
+                    key={type}
+                    className={[
+                      "flex cursor-pointer items-start gap-3 rounded-2xl border px-4 py-3 text-sm transition",
+                      checked ? "border-stone-900 bg-stone-50" : "border-stone-300 bg-white hover:border-stone-400",
+                    ].join(" ")}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleOutsourcingProcess(type)}
+                      className="mt-1 h-4 w-4 rounded border-stone-300"
+                    />
+                    <span className="font-medium text-stone-800">{OUTSOURCING_PROCESS_META[type].label}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
 
         <div className="space-y-2">
           <p className="text-sm font-medium text-stone-800">사용 여부</p>

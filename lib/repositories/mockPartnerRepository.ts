@@ -26,7 +26,10 @@ function savePartners(partners: Partner[]): Partner[] {
     .map((partner) => ({
       ...partner,
       partnerTypes: [...new Set(partner.partnerTypes)],
+      outsourcingProcessTypes: [...new Set(partner.outsourcingProcessTypes ?? [])],
       name: partner.name.trim(),
+      contactName: partner.contactName?.trim() ?? "",
+      phone: partner.phone?.trim() ?? "",
       memo: partner.memo.trim(),
     }))
     .sort((a, b) => a.name.localeCompare(b.name, "ko"));
@@ -47,6 +50,9 @@ export const mockPartnerRepository: PartnerRepository = {
       name: draft.name.trim(),
       partnerTypes: [...new Set(draft.partnerTypes)],
       isActive: draft.isActive,
+      contactName: draft.contactName.trim(),
+      phone: draft.phone.trim(),
+      outsourcingProcessTypes: [...new Set(draft.outsourcingProcessTypes)],
       memo: draft.memo.trim(),
       createdAt: now,
       updatedAt: now,
@@ -67,6 +73,9 @@ export const mockPartnerRepository: PartnerRepository = {
       name: draft.name.trim(),
       partnerTypes: [...new Set(draft.partnerTypes)],
       isActive: draft.isActive,
+      contactName: draft.contactName.trim(),
+      phone: draft.phone.trim(),
+      outsourcingProcessTypes: [...new Set(draft.outsourcingProcessTypes)],
       memo: draft.memo.trim(),
       updatedAt: now,
     };
