@@ -110,14 +110,15 @@ export default function AdminPanelModal({
                     <div className="text-sm font-medium text-stone-900">{item.label}</div>
                     <div className="mt-1 break-keep text-xs leading-5 text-stone-500">{item.description}</div>
                   </div>
-                  <StatusToggle
-                    checked={checked}
-                    onChange={() => onToggleNotificationSetting(item.key)}
-                    onLabel={ui.modal.adminPanel.toggleOn}
-                    offLabel={ui.modal.adminPanel.toggleOff}
-                    srLabel={`${item.label} ${checked ? ui.modal.adminPanel.toggleOn : ui.modal.adminPanel.toggleOff}`}
-                    size="sm"
-                  />
+                  <div className="flex items-center gap-2">
+                    <StatusToggle
+                      checked={checked}
+                      onChange={() => onToggleNotificationSetting(item.key)}
+                      srLabel={`${item.label} ${checked ? ui.modal.adminPanel.toggleOn : ui.modal.adminPanel.toggleOff}`}
+                      size="sm"
+                    />
+                    <span className="text-xs font-medium text-stone-600">{checked ? ui.modal.adminPanel.toggleOn : ui.modal.adminPanel.toggleOff}</span>
+                  </div>
                 </div>
               );
             })}

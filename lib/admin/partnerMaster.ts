@@ -6,29 +6,39 @@ import {
   type PartnerDraft,
   type PartnerType,
 } from "@/types/partner";
+import { formatPhoneNumber, normalizePhoneNumber } from "@/lib/utils/phoneFormat";
 
 export type PartnerStatusFilter = "all" | "active" | "inactive";
+export type PartnerFilterType = "all" | PartnerType | OutsourcingProcessType;
 
 export type PartnerListFilterState = {
-  selectedType: PartnerType | "all";
+  selectedType: PartnerFilterType;
   status: PartnerStatusFilter;
   searchTerm: string;
 };
 
-export const PARTNER_TYPE_META: Record<PartnerType, { label: string; tone: string }> = {
-  factory: { label: "공장", tone: "bg-sky-100 text-sky-700" },
-  material_vendor: { label: "원단 거래처", tone: "bg-emerald-100 text-emerald-700" },
-  subsidiary_vendor: { label: "부자재 거래처", tone: "bg-amber-100 text-amber-700" },
-  outsourcing_vendor: { label: "외주처", tone: "bg-violet-100 text-violet-700" },
+export const PARTNER_TYPE_META: Record<PartnerType, { label: string; shortLabel: string; tone: string }> = {
+  factory: { label: "공장", shortLabel: "공장", tone: "bg-sky-100 text-sky-700" },
+  material_vendor: { label: "원단", shortLabel: "원단", tone: "bg-emerald-100 text-emerald-700" },
+  subsidiary_vendor: { label: "부자재", shortLabel: "부자재", tone: "bg-amber-100 text-amber-700" },
+  outsourcing_vendor: { label: "외주", shortLabel: "외주", tone: "bg-violet-100 text-violet-700" },
 };
 
-export const OUTSOURCING_PROCESS_META: Record<OutsourcingProcessType, { label: string }> = {
-  cutting: { label: "재단" },
-  printing: { label: "나염/프린트" },
-  embroidery: { label: "자수" },
-  washing: { label: "워싱" },
-  finishing: { label: "후가공" },
+export const OUTSOURCING_PROCESS_META: Record<OutsourcingProcessType, { label: string; tone: string }> = {
+  cutting: { label: "재단", tone: "bg-indigo-100 text-indigo-700" },
+  printing: { label: "나염", tone: "bg-fuchsia-100 text-fuchsia-700" },
+  embroidery: { label: "자수", tone: "bg-rose-100 text-rose-700" },
+  washing: { label: "워싱", tone: "bg-cyan-100 text-cyan-700" },
+  finishing: { label: "후가공", tone: "bg-slate-200 text-slate-700" },
 };
+
+export const PARTNER_FILTER_OPTIONS: Array<{ value: PartnerFilterType; label: string }> = [
+  { value: "all", label: "전체" },
+  { value: "factory", label: "공장" },
+  { value: "material_vendor", label: "원단" },
+  { value: "subsidiary_vendor", label: "부자재" },
+  ...OUTSOURCING_PROCESS_TYPE_VALUES.map((value) => ({ value, label: OUTSOURCING_PROCESS_META[value].label })),
+];
 
 export const EMPTY_PARTNER_DRAFT: PartnerDraft = {
   name: "",
@@ -67,7 +77,7 @@ export function buildPartnerDraftFromEntity(partner: Partner): PartnerDraft {
     partnerTypes: [...partner.partnerTypes],
     isActive: partner.isActive,
     contactName: partner.contactName ?? "",
-    phone: partner.phone ?? "",
+    phone: formatPhoneNumber(partner.phone ?? ""),
     email: partner.email ?? "",
     outsourcingProcessTypes: [...(partner.outsourcingProcessTypes ?? [])],
     memo: partner.memo,
@@ -82,8 +92,9 @@ export function normalizePartnerDraft(draft: PartnerDraft): PartnerDraft {
     ...draft,
     name: draft.name.trim(),
     partnerTypes: normalizedTypes,
+    isActive: draft.isActive,
     contactName: draft.contactName.trim(),
-    phone: draft.phone.replace(/\D/g, ""),
+    phone: normalizePhoneNumber(draft.phone),
     email: draft.email.trim(),
     outsourcingProcessTypes: isOutsourcingVendor ? Array.from(new Set(draft.outsourcingProcessTypes)) : [],
     memo: draft.memo.trim(),
@@ -96,6 +107,10 @@ export function formatPartnerDate(value: string) {
   return new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
 }
 
+export function formatPartnerPhone(value?: string) {
+  return formatPhoneNumber(value ?? "");
+}
+
 function matchesPartnerSearch(partner: Partner, searchTerm: string) {
   if (!searchTerm) return true;
 
@@ -106,6 +121,7 @@ function matchesPartnerSearch(partner: Partner, searchTerm: string) {
     partner.name,
     partner.contactName ?? "",
     partner.phone ?? "",
+    formatPartnerPhone(partner.phone),
     partner.email ?? "",
     partner.memo,
     ...partner.partnerTypes.map((type) => PARTNER_TYPE_META[type].label),
@@ -117,9 +133,24 @@ function matchesPartnerSearch(partner: Partner, searchTerm: string) {
   return candidateText.includes(normalized);
 }
 
+function isPartnerTypeFilter(value: PartnerFilterType): value is PartnerType {
+  return value !== "all" && (PARTNER_TYPE_VALUES as readonly string[]).includes(value);
+}
+
+function isOutsourcingProcessFilter(value: PartnerFilterType): value is OutsourcingProcessType {
+  return value !== "all" && (OUTSOURCING_PROCESS_TYPE_VALUES as readonly string[]).includes(value);
+}
+
 export function selectFilteredPartners(partners: Partner[], filters: PartnerListFilterState) {
   return partners.filter((partner) => {
-    const matchesType = filters.selectedType === "all" || partner.partnerTypes.includes(filters.selectedType);
+    const matchesType =
+      filters.selectedType === "all"
+        ? true
+        : isPartnerTypeFilter(filters.selectedType)
+          ? partner.partnerTypes.includes(filters.selectedType)
+          : isOutsourcingProcessFilter(filters.selectedType)
+            ? (partner.outsourcingProcessTypes ?? []).includes(filters.selectedType)
+            : true;
     const matchesStatus = filters.status === "all" || (filters.status === "active" ? partner.isActive : !partner.isActive);
     const matchesSearch = matchesPartnerSearch(partner, filters.searchTerm);
     return matchesType && matchesStatus && matchesSearch;
@@ -149,5 +180,6 @@ export function buildPartnerListViewModel(partners: Partner[], filters: PartnerL
     hasSearch: Boolean(filters.searchTerm.trim()),
     availablePartnerTypes: PARTNER_TYPE_VALUES,
     availableOutsourcingProcessTypes: OUTSOURCING_PROCESS_TYPE_VALUES,
+    filterOptions: PARTNER_FILTER_OPTIONS,
   };
 }

@@ -9,10 +9,13 @@ import {
   createEmptyPartnerDraft,
   DEFAULT_PARTNER_FILTER_STATE,
   formatPartnerDate,
+  formatPartnerPhone,
   normalizePartnerDraft,
   OUTSOURCING_PROCESS_META,
+  PARTNER_FILTER_OPTIONS,
   PARTNER_STATUS_FILTER_OPTIONS,
   PARTNER_TYPE_META,
+  type PartnerFilterType,
 } from "@/lib/admin/partnerMaster";
 import { mockPartnerRepository } from "@/lib/repositories/mockPartnerRepository";
 import {
@@ -21,10 +24,11 @@ import {
   type PartnerDraft,
   type PartnerType,
 } from "@/types/partner";
+import { formatPhoneNumber } from "@/lib/utils/phoneFormat";
 
 export default function PartnerMasterSection() {
   const [partners, setPartners] = useState<Partner[]>([]);
-  const [selectedType, setSelectedType] = useState<PartnerType | "all">(DEFAULT_PARTNER_FILTER_STATE.selectedType);
+  const [selectedType, setSelectedType] = useState<PartnerFilterType>(DEFAULT_PARTNER_FILTER_STATE.selectedType);
   const [selectedStatus, setSelectedStatus] = useState(DEFAULT_PARTNER_FILTER_STATE.status);
   const [searchTerm, setSearchTerm] = useState(DEFAULT_PARTNER_FILTER_STATE.searchTerm);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -119,8 +123,8 @@ export default function PartnerMasterSection() {
           <div>
             <h2 className="text-xl font-semibold tracking-tight text-stone-900">기준정보 관리 · 거래처/공장 관리</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">
-              공장, 원단 거래처, 부자재 거래처, 외주처를 하나의 Partner master로 관리한다. 이번 단계에서는
-              대표자, 연락처, 외주 가능 공정(복수 선택)까지 확장하고 mock repository에 저장한다.
+              공장, 원단, 부자재, 외주 협력사를 하나의 Partner master로 관리한다. 외주 공정은 재단, 나염,
+              자수, 워싱, 후가공 기준으로 연결해 다음 단계 필터링에 바로 쓸 수 있게 준비한다.
             </p>
           </div>
         </div>
@@ -166,27 +170,17 @@ export default function PartnerMasterSection() {
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">유형</p>
             <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => setSelectedType("all")}
-                className={[
-                  "rounded-full px-3 py-1.5 text-sm font-medium transition",
-                  selectedType === "all" ? "bg-stone-900 text-white" : "bg-white text-stone-700 hover:bg-stone-200",
-                ].join(" ")}
-              >
-                전체
-              </button>
-              {listViewModel.availablePartnerTypes.map((type) => (
+              {PARTNER_FILTER_OPTIONS.map((item) => (
                 <button
-                  key={type}
+                  key={item.value}
                   type="button"
-                  onClick={() => setSelectedType(type)}
+                  onClick={() => setSelectedType(item.value)}
                   className={[
                     "rounded-full px-3 py-1.5 text-sm font-medium transition",
-                    selectedType === type ? "bg-stone-900 text-white" : "bg-white text-stone-700 hover:bg-stone-200",
+                    selectedType === item.value ? "bg-stone-900 text-white" : "bg-white text-stone-700 hover:bg-stone-200",
                   ].join(" ")}
                 >
-                  {PARTNER_TYPE_META[type].label}
+                  {item.label}
                 </button>
               ))}
             </div>
@@ -244,7 +238,7 @@ export default function PartnerMasterSection() {
                       {!partner.isActive ? <span className="rounded-full bg-stone-200 px-2 py-0.5 text-[11px] font-medium text-stone-600">미사용</span> : null}
                     </div>
                     <div className="mt-1 space-y-1 text-xs leading-5 text-stone-500">
-                      <p>{partner.contactName || partner.phone ? `${partner.contactName || "대표자 미등록"} · ${partner.phone || "연락처 미등록"}` : "대표자/연락처 미등록"}</p>
+                      <p>{partner.contactName || partner.phone ? `${partner.contactName || "대표자 미등록"} · ${formatPartnerPhone(partner.phone) || "연락처 미등록"}` : "대표자/연락처 미등록"}</p>
                       {partner.email ? <p>{partner.email}</p> : null}
                       {partner.outsourcingProcessTypes?.length ? (
                         <p>가능 공정 · {partner.outsourcingProcessTypes.map((type) => OUTSOURCING_PROCESS_META[type].label).join(", ")}</p>
@@ -255,7 +249,12 @@ export default function PartnerMasterSection() {
                   <div className="flex flex-wrap gap-2">
                     {partner.partnerTypes.map((type) => (
                       <span key={`${partner.id}-${type}`} className={`rounded-full px-2.5 py-1 text-xs font-medium ${PARTNER_TYPE_META[type].tone}`}>
-                        {PARTNER_TYPE_META[type].label}
+                        {PARTNER_TYPE_META[type].shortLabel}
+                      </span>
+                    ))}
+                    {(partner.outsourcingProcessTypes ?? []).map((type) => (
+                      <span key={`${partner.id}-${type}`} className={`rounded-full px-2.5 py-1 text-xs font-medium ${OUTSOURCING_PROCESS_META[type].tone}`}>
+                        {OUTSOURCING_PROCESS_META[type].label}
                       </span>
                     ))}
                   </div>
@@ -331,15 +330,16 @@ export default function PartnerMasterSection() {
 
           <div className="space-y-2">
             <p className="text-sm font-medium text-stone-800">사용 여부</p>
-            <div className="flex min-h-[48px] items-center">
+            <div className="flex min-h-[48px] items-center gap-3">
               <StatusToggle
                 checked={draft.isActive}
                 onChange={(nextValue) => setDraft((current) => ({ ...current, isActive: nextValue }))}
-                onLabel="ON"
-                offLabel="OFF"
                 srLabel="거래처 사용 여부"
                 size="sm"
               />
+              <span className={`text-sm font-medium ${draft.isActive ? "text-stone-900" : "text-stone-500"}`}>
+                {draft.isActive ? "사용중" : "미사용"}
+              </span>
             </div>
           </div>
         </div>
@@ -369,9 +369,9 @@ export default function PartnerMasterSection() {
               inputMode="numeric"
               pattern="[0-9]*"
               onChange={(event) =>
-                setDraft((current) => ({ ...current, phone: event.target.value.replace(/\D/g, "") }))
+                setDraft((current) => ({ ...current, phone: formatPhoneNumber(event.target.value) }))
               }
-              placeholder="숫자만 입력"
+              placeholder="000-0000-0000"
               className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-stone-500"
             />
           </div>
@@ -410,7 +410,7 @@ export default function PartnerMasterSection() {
                     onChange={() => toggleType(type)}
                     className="mt-1 h-4 w-4 rounded border-stone-300"
                   />
-                  <span className="font-medium text-stone-800">{PARTNER_TYPE_META[type].label}</span>
+                  <span className="font-medium text-stone-800">{PARTNER_TYPE_META[type].shortLabel}</span>
                 </label>
               );
             })}

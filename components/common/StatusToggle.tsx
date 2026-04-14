@@ -6,8 +6,6 @@ type StatusToggleProps = {
   checked: boolean;
   onChange?: (nextValue: boolean) => void;
   disabled?: boolean;
-  onLabel?: string;
-  offLabel?: string;
   srLabel?: string;
   className?: string;
   size?: StatusToggleSize;
@@ -15,14 +13,14 @@ type StatusToggleProps = {
 
 const SIZE_CLASS_MAP: Record<StatusToggleSize, { track: string; thumb: string; translate: string }> = {
   sm: {
-    track: "h-6 w-12 px-1 text-[10px]",
+    track: "h-6 w-11",
     thumb: "h-4 w-4",
     translate: "translate-x-5",
   },
   md: {
-    track: "h-7 w-14 px-1 text-[11px]",
+    track: "h-7 w-12",
     thumb: "h-5 w-5",
-    translate: "translate-x-6",
+    translate: "translate-x-5",
   },
 };
 
@@ -30,8 +28,6 @@ export default function StatusToggle({
   checked,
   onChange,
   disabled = false,
-  onLabel = "ON",
-  offLabel = "OFF",
   srLabel,
   className = "",
   size = "sm",
@@ -48,20 +44,17 @@ export default function StatusToggle({
       type="button"
       role="switch"
       aria-checked={checked}
-      aria-label={srLabel ?? `${onLabel}/${offLabel}`}
+      aria-label={srLabel ?? "상태 토글"}
       disabled={disabled}
       onClick={handleClick}
       className={[
         "relative inline-flex shrink-0 items-center rounded-full border transition-colors duration-200 ease-out",
         sizeClass.track,
-        checked ? "border-stone-900 bg-stone-900 text-white" : "border-stone-300 bg-stone-200 text-stone-600",
+        checked ? "border-stone-900 bg-stone-900" : "border-stone-300 bg-stone-200",
         disabled ? "cursor-default opacity-70" : "cursor-pointer hover:border-stone-500",
         className,
       ].join(" ")}
     >
-      <span className="pointer-events-none flex w-full items-center justify-center font-semibold tracking-[0.08em]">
-        {checked ? onLabel : offLabel}
-      </span>
       <span
         aria-hidden="true"
         className={[
