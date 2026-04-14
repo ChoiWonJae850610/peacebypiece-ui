@@ -23,6 +23,7 @@ import { stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
 import { normalizeWorkOrderDataList } from "@/lib/workorder/normalization";
 import { normalizeWorkOrderCollectionsForStorage, normalizeWorkOrderCollectionsListForStorage } from "@/lib/workorder/structure";
 import { createFullWorkorderRepositoryCapabilities, createWorkorderRepositoryInfo } from "@/lib/repositories/workorderRepositoryCapabilities";
+import { createMockWorkorderAdapter } from "@/lib/repositories/mockWorkorderAdapter";
 import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 
 function createInitialRepositoryState() {
@@ -84,6 +85,38 @@ function appendHistoryLogsInternal(historyLogs: HistoryLog[]): HistoryLog[] {
   return normalized;
 }
 
+
+
+export const mockWorkorderAdapter = createMockWorkorderAdapter({
+  loadWorkspaceState: getCurrentWorkspaceState,
+  saveWorkspaceState: saveWorkspaceStateInternal,
+  saveWorkspaceSession: saveWorkspaceSessionInternal,
+  createWorkOrder: (workOrder) => {
+    const current = getCurrentWorkspaceState();
+    const normalizedWorkOrder = normalizeWorkOrderCollectionsForStorage(cloneValue(workOrder));
+    saveWorkspaceStateInternal({ ...current, workOrders: [normalizedWorkOrder, ...current.workOrders] });
+    return cloneValue(normalizedWorkOrder);
+  },
+  saveWorkOrder: (workOrder) => {
+    const current = getCurrentWorkspaceState();
+    const normalizedWorkOrder = normalizeWorkOrderCollectionsForStorage(cloneValue(workOrder));
+    saveWorkspaceStateInternal({
+      ...current,
+      workOrders: current.workOrders.map((item) => (item.id === workOrder.id ? normalizedWorkOrder : item)),
+    });
+    return cloneValue(normalizedWorkOrder);
+  },
+  saveWorkOrders: saveWorkOrdersInternal,
+  deleteWorkOrder: (workOrderId) => {
+    const current = getCurrentWorkspaceState();
+    saveWorkspaceStateInternal({ ...current, workOrders: current.workOrders.filter((item) => item.id !== workOrderId) });
+    return workOrderId;
+  },
+  appendHistoryLogs: appendHistoryLogsInternal,
+  saveUsers: saveUsersInternal,
+  savePermissions: saveUsersInternal,
+});
+
 const mockWorkorderRepository: WorkorderRepository = {
   getRepositoryInfo: () => createWorkorderRepositoryInfo("mock", createFullWorkorderRepositoryCapabilities(), true),
   createInitialState: createInitialRepositoryState,
@@ -103,23 +136,18 @@ const mockWorkorderRepository: WorkorderRepository = {
     persistWorkorderState({ ...payload, workOrders: stabilizeWorkOrders(normalizeWorkOrderCollectionsListForStorage(payload.workOrders)) });
   },
   loadWorkspaceState: loadPersistedWorkspaceState,
-  loadWorkspaceStateAsync: async () => loadPersistedWorkspaceState(),
+  loadWorkspaceStateAsync: async () => mockWorkorderAdapter.loadWorkspaceState?.() ?? loadPersistedWorkspaceState(),
   saveWorkspaceState: saveWorkspaceStateInternal,
-  saveWorkspaceStateAsync: async (payload) => saveWorkspaceStateInternal(payload),
+  saveWorkspaceStateAsync: async (payload) => mockWorkorderAdapter.saveWorkspaceState?.(payload) ?? saveWorkspaceStateInternal(payload),
   saveWorkspaceSession: saveWorkspaceSessionInternal,
-  saveWorkspaceSessionAsync: async (payload) => saveWorkspaceSessionInternal(payload),
+  saveWorkspaceSessionAsync: async (payload) => mockWorkorderAdapter.saveWorkspaceSession?.(payload) ?? saveWorkspaceSessionInternal(payload),
   createWorkOrder: (workOrder) => {
     const current = getCurrentWorkspaceState();
     const normalizedWorkOrder = normalizeWorkOrderCollectionsForStorage(cloneValue(workOrder));
     saveWorkspaceStateInternal({ ...current, workOrders: [normalizedWorkOrder, ...current.workOrders] });
     return cloneValue(normalizedWorkOrder);
   },
-  createWorkOrderAsync: async (workOrder) => {
-    const current = getCurrentWorkspaceState();
-    const normalizedWorkOrder = normalizeWorkOrderCollectionsForStorage(cloneValue(workOrder));
-    saveWorkspaceStateInternal({ ...current, workOrders: [normalizedWorkOrder, ...current.workOrders] });
-    return cloneValue(normalizedWorkOrder);
-  },
+  createWorkOrderAsync: async (workOrder) => mockWorkorderAdapter.createWorkOrder?.(workOrder) ?? cloneValue(workOrder),
   saveWorkOrder: (workOrder) => {
     const current = getCurrentWorkspaceState();
     const normalizedWorkOrder = normalizeWorkOrderCollectionsForStorage(cloneValue(workOrder));
@@ -129,33 +157,21 @@ const mockWorkorderRepository: WorkorderRepository = {
     });
     return cloneValue(normalizedWorkOrder);
   },
-  saveWorkOrderAsync: async (workOrder) => {
-    const current = getCurrentWorkspaceState();
-    const normalizedWorkOrder = normalizeWorkOrderCollectionsForStorage(cloneValue(workOrder));
-    saveWorkspaceStateInternal({
-      ...current,
-      workOrders: current.workOrders.map((item) => (item.id === workOrder.id ? normalizedWorkOrder : item)),
-    });
-    return cloneValue(normalizedWorkOrder);
-  },
+  saveWorkOrderAsync: async (workOrder) => mockWorkorderAdapter.saveWorkOrder?.(workOrder) ?? cloneValue(workOrder),
   saveWorkOrders: saveWorkOrdersInternal,
-  saveWorkOrdersAsync: async (workOrders) => saveWorkOrdersInternal(workOrders),
+  saveWorkOrdersAsync: async (workOrders) => mockWorkorderAdapter.saveWorkOrders?.(workOrders) ?? saveWorkOrdersInternal(workOrders),
   deleteWorkOrder: (workOrderId) => {
     const current = getCurrentWorkspaceState();
     saveWorkspaceStateInternal({ ...current, workOrders: current.workOrders.filter((item) => item.id !== workOrderId) });
     return workOrderId;
   },
-  deleteWorkOrderAsync: async (workOrderId) => {
-    const current = getCurrentWorkspaceState();
-    saveWorkspaceStateInternal({ ...current, workOrders: current.workOrders.filter((item) => item.id !== workOrderId) });
-    return workOrderId;
-  },
+  deleteWorkOrderAsync: async (workOrderId) => mockWorkorderAdapter.deleteWorkOrder?.(workOrderId) ?? workOrderId,
   appendHistoryLogs: appendHistoryLogsInternal,
-  appendHistoryLogsAsync: async (historyLogs) => appendHistoryLogsInternal(historyLogs),
+  appendHistoryLogsAsync: async (historyLogs) => mockWorkorderAdapter.appendHistoryLogs?.(historyLogs) ?? appendHistoryLogsInternal(historyLogs),
   saveUsers: saveUsersInternal,
-  saveUsersAsync: async (users) => saveUsersInternal(users),
+  saveUsersAsync: async (users) => mockWorkorderAdapter.saveUsers?.(users) ?? saveUsersInternal(users),
   savePermissions: saveUsersInternal,
-  savePermissionsAsync: async (users) => saveUsersInternal(users),
+  savePermissionsAsync: async (users) => mockWorkorderAdapter.savePermissions?.(users) ?? saveUsersInternal(users),
 };
 
 export function getMockWorkorderRepository(): WorkorderRepository {

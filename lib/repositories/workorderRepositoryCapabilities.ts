@@ -1,4 +1,4 @@
-import type { DbWorkorderAdapter } from "@/lib/repositories/dbWorkorderRepository";
+import type { WorkorderRepositoryAdapter } from "@/lib/repositories/workorderRepositoryAdapter";
 import type { WorkorderRepositoryMode } from "@/lib/repositories/workorderRepositoryMode";
 import type { WorkorderRepositoryCapabilities, WorkorderRepositoryInfo } from "@/lib/repositories/workorderRepository";
 
@@ -17,7 +17,7 @@ export function createFullWorkorderRepositoryCapabilities(): WorkorderRepository
   };
 }
 
-export function createDbWorkorderRepositoryCapabilities(adapter?: DbWorkorderAdapter): WorkorderRepositoryCapabilities {
+export function createAdapterBackedWorkorderRepositoryCapabilities(adapter?: WorkorderRepositoryAdapter): WorkorderRepositoryCapabilities {
   return {
     loadWorkspaceState: Boolean(adapter?.loadWorkspaceState),
     saveWorkspaceState: Boolean(adapter?.saveWorkspaceState),
@@ -43,3 +43,5 @@ export function createWorkorderRepositoryInfo(
     capabilities,
   };
 }
+
+export const createDbWorkorderRepositoryCapabilities = createAdapterBackedWorkorderRepositoryCapabilities;

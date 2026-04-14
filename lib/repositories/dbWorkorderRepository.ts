@@ -1,24 +1,11 @@
-import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 import type {
   InitialWorkorderRepositoryState,
   WorkorderRepository,
-  WorkorderWorkspaceSession,
-  WorkorderWorkspaceState,
 } from "@/lib/repositories/workorderRepository";
+import type { WorkorderRepositoryAdapter } from "@/lib/repositories/workorderRepositoryAdapter";
 import { createDbWorkorderRepositoryCapabilities, createWorkorderRepositoryInfo } from "@/lib/repositories/workorderRepositoryCapabilities";
 
-export type DbWorkorderAdapter = {
-  loadWorkspaceState?(): Promise<WorkorderWorkspaceState | null>;
-  saveWorkspaceState?(payload: WorkorderWorkspaceState): Promise<WorkorderWorkspaceState>;
-  saveWorkspaceSession?(payload: WorkorderWorkspaceSession): Promise<WorkorderWorkspaceSession>;
-  createWorkOrder?(workOrder: WorkOrder): Promise<WorkOrder>;
-  saveWorkOrder?(workOrder: WorkOrder): Promise<WorkOrder>;
-  saveWorkOrders?(workOrders: WorkOrder[]): Promise<WorkOrder[]>;
-  deleteWorkOrder?(workOrderId: string): Promise<string>;
-  appendHistoryLogs?(historyLogs: HistoryLog[]): Promise<HistoryLog[]>;
-  saveUsers?(users: UserProfile[]): Promise<UserProfile[]>;
-  savePermissions?(users: UserProfile[]): Promise<UserProfile[]>;
-};
+export type DbWorkorderAdapter = WorkorderRepositoryAdapter;
 
 function createNotConfiguredError(methodName: string) {
   return new Error(`DB repository adapter is not configured: ${methodName}`);
@@ -26,7 +13,7 @@ function createNotConfiguredError(methodName: string) {
 
 export function createDbWorkorderRepository(
   fallbackRepository: WorkorderRepository,
-  adapter?: DbWorkorderAdapter,
+  adapter?: WorkorderRepositoryAdapter,
 ): WorkorderRepository {
   const capabilities = createDbWorkorderRepositoryCapabilities(adapter);
   return {
@@ -104,31 +91,31 @@ export function createDbWorkorderRepository(
 export function createUnconfiguredDbWorkorderRepository(fallbackRepository: WorkorderRepository): WorkorderRepository {
   const repository = createDbWorkorderRepository(fallbackRepository, {
     loadWorkspaceState: async () => fallbackRepository.loadWorkspaceStateAsync(),
-    saveWorkspaceState: async (payload) => {
+    saveWorkspaceState: async () => {
       throw createNotConfiguredError("saveWorkspaceState");
     },
-    saveWorkspaceSession: async (payload) => {
+    saveWorkspaceSession: async () => {
       throw createNotConfiguredError("saveWorkspaceSession");
     },
-    createWorkOrder: async (workOrder) => {
+    createWorkOrder: async () => {
       throw createNotConfiguredError("createWorkOrder");
     },
-    saveWorkOrder: async (workOrder) => {
+    saveWorkOrder: async () => {
       throw createNotConfiguredError("saveWorkOrder");
     },
-    saveWorkOrders: async (workOrders) => {
+    saveWorkOrders: async () => {
       throw createNotConfiguredError("saveWorkOrders");
     },
-    deleteWorkOrder: async (workOrderId) => {
+    deleteWorkOrder: async () => {
       throw createNotConfiguredError("deleteWorkOrder");
     },
-    appendHistoryLogs: async (historyLogs) => {
+    appendHistoryLogs: async () => {
       throw createNotConfiguredError("appendHistoryLogs");
     },
-    saveUsers: async (users) => {
+    saveUsers: async () => {
       throw createNotConfiguredError("saveUsers");
     },
-    savePermissions: async (users) => {
+    savePermissions: async () => {
       throw createNotConfiguredError("savePermissions");
     },
   });

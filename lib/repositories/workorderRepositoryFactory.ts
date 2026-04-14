@@ -1,11 +1,13 @@
-import { createDbWorkorderRepository, createUnconfiguredDbWorkorderRepository, type DbWorkorderAdapter } from "@/lib/repositories/dbWorkorderRepository";
+import { createDbWorkorderRepository, createUnconfiguredDbWorkorderRepository } from "@/lib/repositories/dbWorkorderRepository";
+import type { WorkorderRepositoryAdapter } from "@/lib/repositories/workorderRepositoryAdapter";
 import { getMockWorkorderRepository } from "@/lib/repositories/mockWorkorderRepository";
 import type { WorkorderRepository } from "@/lib/repositories/workorderRepository";
 import { getDefaultWorkorderRepositoryMode, type WorkorderRepositoryMode } from "@/lib/repositories/workorderRepositoryMode";
 
 export type CreateWorkorderRepositoryOptions = {
   mode?: WorkorderRepositoryMode;
-  dbAdapter?: DbWorkorderAdapter;
+  adapter?: WorkorderRepositoryAdapter;
+  dbAdapter?: WorkorderRepositoryAdapter;
 };
 
 export function createWorkorderRepository(options: CreateWorkorderRepositoryOptions = {}): WorkorderRepository {
@@ -13,8 +15,9 @@ export function createWorkorderRepository(options: CreateWorkorderRepositoryOpti
   const mode = options.mode ?? getDefaultWorkorderRepositoryMode();
 
   if (mode === "db") {
-    if (options.dbAdapter) {
-      return createDbWorkorderRepository(fallbackRepository, options.dbAdapter);
+    const adapter = options.adapter ?? options.dbAdapter;
+    if (adapter) {
+      return createDbWorkorderRepository(fallbackRepository, adapter);
     }
     return createUnconfiguredDbWorkorderRepository(fallbackRepository);
   }

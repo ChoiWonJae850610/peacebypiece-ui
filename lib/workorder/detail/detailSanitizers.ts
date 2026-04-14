@@ -9,7 +9,6 @@ import {
   DEFAULT_PRIORITY_OPTION,
 } from "@/lib/constants/workorderOptions";
 import { isEditorNumericField } from "@/lib/workorder/detail/detailFields";
-import { sanitizeOrderInspectionStatus } from "@/lib/workorder/workflow";
 import type { OrderEntry, OrderInspectionStatus, WorkflowState, WorkOrder } from "@/types/workorder";
 import {
   appendUniqueOption,
@@ -18,6 +17,11 @@ import {
   sanitizeOptionValue,
   type CategoryOptionTree,
 } from "@/lib/workorder/normalizeRules";
+import {
+  buildInitialWorkOrderOrderEntries,
+  sanitizeWorkOrderInspectionStatus,
+  sanitizeWorkOrderOrderEntry,
+} from "@/lib/workorder/workOrderDataRules";
 
 export function createId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -42,48 +46,26 @@ export function normalizeEditingValue(field: string, value: string) {
 }
 
 export function getDefaultInspectionStatus(workflowState: WorkflowState): OrderInspectionStatus {
-  return sanitizeOrderInspectionStatus(undefined, workflowState);
+  return sanitizeWorkOrderInspectionStatus(undefined, workflowState);
 }
 
 export function sanitizeInspectionStatus(value: string | undefined | null, workflowState: WorkflowState): OrderInspectionStatus {
-  return sanitizeOrderInspectionStatus(value, workflowState);
+  return sanitizeWorkOrderInspectionStatus(value, workflowState);
 }
 
 export function sanitizeOrderEntry(item: Partial<OrderEntry>, fallback?: Partial<OrderEntry>, workflowState: WorkflowState = "draft"): OrderEntry {
+  const sanitized = sanitizeWorkOrderOrderEntry(item, fallback, workflowState);
   return {
-    id: item.id || fallback?.id || createId("order"),
-    type: item.type || fallback?.type || DEFAULT_ORDER_TYPE,
-    factory: item.factory || fallback?.factory || DEFAULT_FACTORY_OPTION,
-    dueDate: item.dueDate || fallback?.dueDate || "",
-    quantity: Math.max(0, Number(item.quantity ?? fallback?.quantity) || 0),
-    laborCost: Math.max(0, Number(item.laborCost ?? fallback?.laborCost) || 0),
-    lossCost: Math.max(0, Number(item.lossCost ?? fallback?.lossCost) || 0),
-    priority: item.priority || fallback?.priority || DEFAULT_PRIORITY_OPTION,
-    inspectionStatus: sanitizeInspectionStatus(item.inspectionStatus ?? fallback?.inspectionStatus, workflowState),
+    ...sanitized,
+    id: sanitized.id || item.id || fallback?.id || createId("order"),
   };
 }
 
 export function getInitialOrderEntries(workOrder: WorkOrder): OrderEntry[] {
-  const entries = (workOrder.orderEntries ?? []).map((item) => sanitizeOrderEntry(item, undefined, workOrder.workflowState));
-  if (entries.length > 0) return entries;
-
-  return [
-    sanitizeOrderEntry(
-      {
-        id: `${workOrder.id}-legacy-order`,
-        type: DEFAULT_ORDER_TYPE,
-        factory: workOrder.vendor || DEFAULT_FACTORY_OPTION,
-        dueDate: workOrder.dueDate || "",
-        quantity: Number.isFinite(workOrder.quantity) ? workOrder.quantity : 0,
-        laborCost: Math.max(0, Number(workOrder.laborCost) || 0),
-        lossCost: Math.max(0, Number(workOrder.lossCost) || 0),
-        priority: workOrder.priority || DEFAULT_PRIORITY_OPTION,
-        inspectionStatus: getDefaultInspectionStatus(workOrder.workflowState),
-      },
-      undefined,
-      workOrder.workflowState,
-    ),
-  ];
+  return buildInitialWorkOrderOrderEntries(workOrder).map((item) => ({
+    ...item,
+    id: item.id || createId("order"),
+  }));
 }
 
 export function getCategory2Options(category1: string) {

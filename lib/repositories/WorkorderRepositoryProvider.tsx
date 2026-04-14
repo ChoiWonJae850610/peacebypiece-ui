@@ -4,7 +4,7 @@ import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { createWorkorderRepository } from "@/lib/repositories/workorderRepositoryFactory";
 import type { WorkorderRepository, WorkorderRepositoryInfo } from "@/lib/repositories/workorderRepository";
 import type { WorkorderRepositoryMode } from "@/lib/repositories/workorderRepositoryMode";
-import type { DbWorkorderAdapter } from "@/lib/repositories/dbWorkorderRepository";
+import type { WorkorderRepositoryAdapter } from "@/lib/repositories/workorderRepositoryAdapter";
 
 type WorkorderRepositoryContextValue = {
   repository: WorkorderRepository;
@@ -17,7 +17,8 @@ type WorkorderRepositoryProviderProps = {
   children: ReactNode;
   repository?: WorkorderRepository;
   repositoryMode?: WorkorderRepositoryMode;
-  dbAdapter?: DbWorkorderAdapter;
+  dbAdapter?: WorkorderRepositoryAdapter;
+  adapter?: WorkorderRepositoryAdapter;
 };
 
 export function WorkorderRepositoryProvider({
@@ -25,10 +26,11 @@ export function WorkorderRepositoryProvider({
   repository,
   repositoryMode,
   dbAdapter,
+  adapter,
 }: WorkorderRepositoryProviderProps) {
   const resolvedRepository = useMemo(
-    () => repository ?? createWorkorderRepository({ mode: repositoryMode, dbAdapter }),
-    [dbAdapter, repository, repositoryMode],
+    () => repository ?? createWorkorderRepository({ mode: repositoryMode, adapter: adapter ?? dbAdapter, dbAdapter }),
+    [adapter, dbAdapter, repository, repositoryMode],
   );
 
   const repositoryInfo = useMemo(() => resolvedRepository.getRepositoryInfo(), [resolvedRepository]);
