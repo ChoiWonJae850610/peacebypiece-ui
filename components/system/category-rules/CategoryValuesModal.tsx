@@ -4,15 +4,12 @@ import { useEffect, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import type { CategoryTreeRuntime } from "@/lib/system/categoryTreeRuntime";
 import { getCategory1Options, getCategory2Options, getCategory3Options } from "@/lib/system/categoryTreeRuntime";
+import { getNormalizedCategorySelection } from "@/lib/utils/categoryOptions";
 import type { CategoryRulesManagerText } from "@/lib/system/categoryRuleText";
 import { CategoryValueRow, FooterIconButton, ResetIcon, SaveIcon } from "./CategoryRulePanelShared";
 
 function normalizeTreeSelection(tree: CategoryTreeRuntime, currentCategory1: string | null, currentCategory2: string | null) {
-  const category1 = getCategory1Options(tree)[0] ?? "";
-  const nextCategory1 = currentCategory1 && tree[currentCategory1] ? currentCategory1 : category1;
-  const category2 = getCategory2Options(tree, nextCategory1)[0] ?? "";
-  const nextCategory2 = currentCategory2 && tree[nextCategory1]?.[currentCategory2] ? currentCategory2 : category2;
-  return { category1: nextCategory1, category2: nextCategory2 };
+  return getNormalizedCategorySelection(tree, currentCategory1, currentCategory2);
 }
 
 export function CategoryValuesModal({

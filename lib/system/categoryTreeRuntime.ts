@@ -1,5 +1,10 @@
 import { CATEGORY_TREE } from "@/lib/constants/workorderCategories";
 import {
+  getCategory1OptionsFromTree,
+  getCategory2OptionsFromTree,
+  getCategory3OptionsFromTree,
+} from "@/lib/utils/categoryOptions";
+import {
   loadPersistedCategoryTreeJson,
   persistCategoryTreeState,
   removePersistedCategoryTree,
@@ -81,15 +86,15 @@ export function removeStoredCategoryTree() {
 }
 
 export function getCategory1Options(tree: CategoryTreeRuntime) {
-  return Object.keys(tree);
+  return getCategory1OptionsFromTree(tree);
 }
 
 export function getCategory2Options(tree: CategoryTreeRuntime, category1: string) {
-  return Object.keys(tree[category1] ?? {});
+  return getCategory2OptionsFromTree(tree, category1);
 }
 
 export function getCategory3Options(tree: CategoryTreeRuntime, category1: string, category2: string) {
-  return [...(tree[category1]?.[category2] ?? [])];
+  return getCategory3OptionsFromTree(tree, category1, category2);
 }
 
 export function normalizeRecommendationWithTree(

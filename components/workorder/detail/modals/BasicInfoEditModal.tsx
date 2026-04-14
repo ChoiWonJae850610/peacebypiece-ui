@@ -23,12 +23,12 @@ export default function BasicInfoEditModal({
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.modals.basicInfo;
   const category2Options = getCategory2Options(value.category1);
-  const category3Options = getCategory3Options(value.category2);
+  const category3Options = getCategory3Options(value.category2, value.category1);
 
   const handleCategory1Change = (category1: string) => {
     const nextCategory2Options = getCategory2Options(category1);
     const nextCategory2 = nextCategory2Options[0] ?? "";
-    const nextCategory3Options = getCategory3Options(nextCategory2);
+    const nextCategory3Options = getCategory3Options(nextCategory2, category1);
     onChange({
       ...value,
       category1,
@@ -38,7 +38,7 @@ export default function BasicInfoEditModal({
   };
 
   const handleCategory2Change = (category2: string) => {
-    const nextCategory3Options = getCategory3Options(category2);
+    const nextCategory3Options = getCategory3Options(category2, value.category1);
     onChange({
       ...value,
       category2,

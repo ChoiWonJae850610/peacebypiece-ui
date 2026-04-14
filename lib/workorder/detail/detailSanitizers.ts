@@ -1,7 +1,8 @@
 import {
-  CATEGORY1_OPTIONS,
-  CATEGORY2_OPTIONS_MAP,
-  CATEGORY3_OPTIONS_MAP,
+  CATEGORY_TREE,
+  DEFAULT_CATEGORY1,
+  DEFAULT_CATEGORY2,
+  DEFAULT_CATEGORY3,
   DEFAULT_BASIC_YEAR,
   DEFAULT_FACTORY_OPTION,
   DEFAULT_ORDER_TYPE,
@@ -9,6 +10,7 @@ import {
   DEFAULT_PRIORITY_OPTION,
   SEASON_OPTIONS,
 } from "@/lib/constants/workorderOptions";
+import { getCategory2OptionsFromTree, getCategory3OptionsFromTree } from "@/lib/utils/categoryOptions";
 import { isEditorNumericField } from "@/lib/workorder/detail/detailFields";
 import { sanitizeOrderInspectionStatus } from "@/lib/workorder/workflow";
 import type { OrderEntry, OrderInspectionStatus, WorkflowState, WorkOrder } from "@/types/workorder";
@@ -81,11 +83,13 @@ export function getInitialOrderEntries(workOrder: WorkOrder): OrderEntry[] {
 }
 
 export function getCategory2Options(category1: string) {
-  return CATEGORY2_OPTIONS_MAP[category1] ?? CATEGORY2_OPTIONS_MAP[CATEGORY1_OPTIONS[0]] ?? [];
+  return getCategory2OptionsFromTree(CATEGORY_TREE, category1) ?? getCategory2OptionsFromTree(CATEGORY_TREE, DEFAULT_CATEGORY1);
 }
 
-export function getCategory3Options(category2: string) {
-  return CATEGORY3_OPTIONS_MAP[category2] ?? CATEGORY3_OPTIONS_MAP[getCategory2Options(CATEGORY1_OPTIONS[0])[0] ?? ""] ?? [];
+export function getCategory3Options(category2: string, category1: string = DEFAULT_CATEGORY1) {
+  return getCategory3OptionsFromTree(CATEGORY_TREE, category1, category2)
+    ?? getCategory3OptionsFromTree(CATEGORY_TREE, DEFAULT_CATEGORY1, DEFAULT_CATEGORY2)
+    ?? [DEFAULT_CATEGORY3];
 }
 
 export function sanitizeSelectValue(value: string, options: readonly string[], fallback?: string) {
@@ -119,10 +123,10 @@ export function parseSeasonYear(value: string) {
 
 export function getInitialBasicInfo(workOrder: WorkOrder) {
   const parsedSeason = parseSeasonYear(workOrder.season);
-  const category1 = workOrder.category1 || CATEGORY1_OPTIONS[0];
+  const category1 = workOrder.category1 || DEFAULT_CATEGORY1;
   const category2Options = getCategory2Options(category1);
   const category2 = workOrder.category2 || category2Options[0] || "";
-  const category3Options = getCategory3Options(category2);
+  const category3Options = getCategory3Options(category2, category1);
   const category3 = workOrder.category3 || category3Options[0] || "";
 
   return {
