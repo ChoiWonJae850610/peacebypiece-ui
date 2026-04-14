@@ -12,7 +12,7 @@ import {
   FACTORY_OPTIONS,
   PARTNER_OPTIONS,
 } from "@/lib/constants/workorderOptions";
-import { recalculateMaterial, recalculateOutsourcing } from "@/lib/workorder/detail/detailCalculations";
+import { recalculateOutsourcing } from "@/lib/workorder/detail/detailCalculations";
 import {
   appendOption,
   getInitialBasicInfo,
@@ -27,17 +27,15 @@ import {
   getVendorOptions,
 } from "@/lib/workorder/detail/workOrderDetailHelpers";
 import {
-  commitMaterialItemsEdit,
   commitOrderItemsEdit,
   commitOutsourcingItemsEdit,
-  createNewMaterialItem,
   createNewOrderEntry,
   createNewOutsourcingItem,
-  toMaterialsPatch,
   toOrderEntriesPatch,
   toOutsourcingPatch,
 } from "@/lib/hooks/workorder/detailEditor/itemMutations";
-import type { Material, Outsourcing, WorkOrder, WorkflowState } from "@/types/workorder";
+import { useWorkOrderMaterialsEditor } from "@/lib/hooks/workorder/detailEditor/useWorkOrderMaterialsEditor";
+import type { Outsourcing, WorkOrder, WorkflowState } from "@/types/workorder";
 
 type UseWorkOrderDetailEditorParams = {
   workOrder: WorkOrder;
@@ -75,11 +73,26 @@ export function useWorkOrderDetailEditor({
   const [registryType, setRegistryType] = useState<RegistryType>(REGISTRY_TYPE.partner);
   const [basicInfoModalOpen, setBasicInfoModalOpen] = useState(false);
   const [basicInfoDraft, setBasicInfoDraft] = useState<BasicInfoState>(() => getInitialBasicInfo(workOrder));
-  const [materialItems, setMaterialItems] = useState<Material[]>(() => (workOrder.materials ?? []).map(recalculateMaterial));
   const [outsourcingItems, setOutsourcingItems] = useState<Outsourcing[]>(() => (workOrder.outsourcing ?? []).map(recalculateOutsourcing));
   const [editingCell, setEditingCell] = useState<EditableCell>(null);
   const [editingValue, setEditingValue] = useState("");
   const [inspectionModalOpen, setInspectionModalOpen] = useState(false);
+
+  const {
+    materialItems,
+    commitMaterialEdit,
+    addMaterial,
+    removeMaterial,
+  } = useWorkOrderMaterialsEditor({
+    workOrder,
+    editingCell,
+    onUpdateWorkOrder,
+    cancelEdit: () => {
+      blurActiveEditableElement();
+      setEditingCell(null);
+      setEditingValue("");
+    },
+  });
 
   useEffect(() => {
     setBasicInfo((current) => {
@@ -95,9 +108,6 @@ export function useWorkOrderDetailEditor({
     setFactoryOptions((current) => nextOrderEntries.reduce<string[]>((options, item) => appendOption(options, item.factory), current));
   }, [partnerOptions, workOrder]);
 
-  useEffect(() => {
-    setMaterialItems((workOrder.materials ?? []).map(recalculateMaterial));
-  }, [workOrder.materials]);
 
   useEffect(() => {
     setOutsourcingItems((workOrder.outsourcing ?? []).map(recalculateOutsourcing));
@@ -164,9 +174,7 @@ export function useWorkOrderDetailEditor({
     }
 
     if (editingCell.section === "material") {
-      const nextItems = commitMaterialItemsEdit({ materialItems, editingCell, nextValue });
-      setMaterialItems(nextItems);
-      onUpdateWorkOrder(toMaterialsPatch(nextItems));
+      commitMaterialEdit(nextValue, editingCell);
     }
 
     if (editingCell.section === "outsourcing") {
@@ -226,24 +234,6 @@ export function useWorkOrderDetailEditor({
       nextInventoryQuantity,
       memo,
     });
-  };
-
-  const addMaterial = () => {
-    const nextItems = [
-      ...materialItems,
-      createNewMaterialItem(),
-    ];
-    setMaterialItems(nextItems);
-    onUpdateWorkOrder(toMaterialsPatch(nextItems));
-  };
-
-  const removeMaterial = (id: string) => {
-    const nextItems = materialItems.filter((item) => item.id !== id);
-    setMaterialItems(nextItems);
-    onUpdateWorkOrder(toMaterialsPatch(nextItems));
-    if (editingCell?.section === "material" && editingCell.rowId === id) {
-      cancelEdit();
-    }
   };
 
   const addOutsourcing = () => {
