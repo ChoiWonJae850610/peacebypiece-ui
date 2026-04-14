@@ -1,4 +1,5 @@
 import Link from "next/link";
+import PartnerMasterSection from "@/components/admin/PartnerMasterSection";
 import { APP_VERSION } from "@/lib/constants/app";
 import { WORKSPACE_COMPANY_NAME, WORKSPACE_COMPANY_NAME_EN, getAdminWorkspaceTitle } from "@/lib/constants/company";
 import { getI18n } from "@/lib/i18n";
@@ -32,8 +33,10 @@ export default function AdminPage() {
           </div>
         </header>
 
-        <section className="grid gap-4 md:grid-cols-3">
-          {adminSections.map((section) => (
+        <PartnerMasterSection />
+
+        <section className="grid gap-4 md:grid-cols-2">
+          {adminSections.slice(1).map((section) => (
             <article key={section.title} className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
               <div className="space-y-3">
                 <h2 className="text-lg font-semibold text-stone-900">{section.title}</h2>

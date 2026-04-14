@@ -1,0 +1,49 @@
+import type { Partner } from "@/types/partner";
+
+export const SAMPLE_PARTNERS: Partner[] = [
+  {
+    id: "partner-factory-seoul",
+    name: "서울 메인 봉제공장",
+    partnerTypes: ["factory"],
+    isActive: true,
+    memo: "메인 생산 대응 공장",
+    createdAt: "2026-04-14T09:00:00.000Z",
+    updatedAt: "2026-04-14T09:00:00.000Z",
+  },
+  {
+    id: "partner-material-woori",
+    name: "우리원단",
+    partnerTypes: ["material_vendor"],
+    isActive: true,
+    memo: "니트, 다이마루 원단 중심",
+    createdAt: "2026-04-14T09:10:00.000Z",
+    updatedAt: "2026-04-14T09:10:00.000Z",
+  },
+  {
+    id: "partner-subsidiary-hanbit",
+    name: "한빛부자재",
+    partnerTypes: ["subsidiary_vendor"],
+    isActive: true,
+    memo: "지퍼, 단추, 라벨",
+    createdAt: "2026-04-14T09:20:00.000Z",
+    updatedAt: "2026-04-14T09:20:00.000Z",
+  },
+  {
+    id: "partner-outsourcing-colorup",
+    name: "컬러업 나염",
+    partnerTypes: ["outsourcing_vendor"],
+    isActive: true,
+    memo: "전사, 실크스크린 외주처",
+    createdAt: "2026-04-14T09:30:00.000Z",
+    updatedAt: "2026-04-14T09:30:00.000Z",
+  },
+  {
+    id: "partner-multi-dongin",
+    name: "동인 협력사",
+    partnerTypes: ["factory", "outsourcing_vendor"],
+    isActive: false,
+    memo: "재가동 검토중",
+    createdAt: "2026-04-14T09:40:00.000Z",
+    updatedAt: "2026-04-14T09:40:00.000Z",
+  },
+];
