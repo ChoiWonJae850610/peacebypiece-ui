@@ -85,8 +85,8 @@ export function useWorkOrderLifecycleActions({
           setActionFailure,
           task: async () => {
             const label = nowLabel();
-            const nextWorkOrders = workOrders.map((item) => (item.id === workOrder.id ? { ...item, lastSavedAt: label } : item));
-            await repository.saveWorkOrdersAsync(nextWorkOrders);
+            const nextWorkOrder = await repository.saveWorkOrderAsync({ ...workOrder, lastSavedAt: label });
+            const nextWorkOrders = workOrders.map((item) => (item.id === workOrder.id ? nextWorkOrder : item));
 
             setLastSavedAt(label);
             setWorkOrders(nextWorkOrders);

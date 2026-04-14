@@ -13,3 +13,11 @@ export function loadPersistedWorkorderState(): PersistedWorkOrderState | null {
 export function persistWorkorderState(payload: PersistedWorkOrderState) {
   persistJsonToStorage(STORAGE_KEY, payload, LEGACY_STORAGE_KEYS);
 }
+
+export function loadPersistedWorkspaceState(): PersistedWorkOrderState | null {
+  return loadPersistedWorkorderState();
+}
+
+export function persistWorkspaceState(payload: PersistedWorkOrderState) {
+  persistWorkorderState(payload);
+}
