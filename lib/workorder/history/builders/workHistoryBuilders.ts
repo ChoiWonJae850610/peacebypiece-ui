@@ -6,21 +6,11 @@ function formatHistoryTitle(title?: string | null) {
   return normalized ? `[${normalized}]` : "-";
 }
 
-function formatHistoryIdentifier(workOrderId: string) {
-  const normalized = String(workOrderId ?? "").trim();
-  if (!normalized) return "-";
-  return normalized.length > 12 ? `#${normalized.slice(0, 12)}` : `#${normalized}`;
-}
-
 function buildWorkOrderIdentityDetailLines(
-  workOrderId: string,
   title: string | undefined,
   text: HistoryText,
 ): DetailLine[] {
-  return [
-    { label: text.detailLabels.title, value: formatHistoryTitle(title) },
-    { label: text.detailLabels.identifier, value: formatHistoryIdentifier(workOrderId) },
-  ];
+  return [{ label: text.detailLabels.title, value: formatHistoryTitle(title) }];
 }
 export function createCreationHistoryLog(
   user: string,
@@ -36,7 +26,7 @@ export function createCreationHistoryLog(
     category: "work",
     tone: "blue",
     detailLines: [
-      ...buildWorkOrderIdentityDetailLines(workOrderId, payload.title, text),
+      ...buildWorkOrderIdentityDetailLines(payload.title, text),
       { label: text.detailLabels.author, value: user },
     ],
     text,
@@ -129,7 +119,7 @@ export function createReorderHistoryLog(
     category: "work",
     tone: "blue",
     detailLines: [
-      ...buildWorkOrderIdentityDetailLines(workOrderId, payload.nextTitle, text),
+      ...buildWorkOrderIdentityDetailLines(payload.nextTitle, text),
       { label: text.detailLabels.original, value: formatHistoryTitle(payload.sourceTitle) },
     ],
     text,
@@ -150,7 +140,7 @@ export function createDeletionHistoryLog(
     category: "work",
     tone: "stone",
     detailLines: [
-      ...buildWorkOrderIdentityDetailLines(workOrderId, payload.title, text),
+      ...buildWorkOrderIdentityDetailLines(payload.title, text),
       { label: text.detailLabels.author, value: user },
     ],
     text,

@@ -166,7 +166,6 @@ export const workorderKo = {
     detailLabels: {
       author: "작성자",
       title: "제목",
-      identifier: "식별값",
       changed: "변경",
       memo: "메모",
       finalInventory: "최종 재고",
