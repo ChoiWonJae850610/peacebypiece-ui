@@ -80,9 +80,9 @@ export const LEGACY_REGISTRY_TYPE_MAP = {
   거래처: REGISTRY_TYPE.partner,
   공장: REGISTRY_TYPE.factory,
   원단거래처: REGISTRY_TYPE.materialVendor,
-  원단 거래처: REGISTRY_TYPE.materialVendor,
+  "원단 거래처": REGISTRY_TYPE.materialVendor,
   부자재거래처: REGISTRY_TYPE.subsidiaryVendor,
-  부자재 거래처: REGISTRY_TYPE.subsidiaryVendor,
+  "부자재 거래처": REGISTRY_TYPE.subsidiaryVendor,
 } as const;
 
 export function toRegistryType(value: unknown): RegistryTypeValue {
@@ -94,7 +94,8 @@ export function toRegistryType(value: unknown): RegistryTypeValue {
 }
 
 export function isVendorRegistryType(value: unknown): value is (typeof VENDOR_REGISTRY_TYPES)[number] {
-  return VENDOR_REGISTRY_TYPES.includes(toRegistryType(value));
+  const normalized = toRegistryType(value);
+  return normalized === REGISTRY_TYPE.partner || normalized === REGISTRY_TYPE.materialVendor || normalized === REGISTRY_TYPE.subsidiaryVendor;
 }
 
 export const EMPTY_SELECTION_VALUES = [DEFAULT_UNSELECTED_OPTION, DEFAULT_UNASSIGNED_FACTORY_LABEL] as const;

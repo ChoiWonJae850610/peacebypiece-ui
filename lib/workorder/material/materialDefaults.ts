@@ -12,10 +12,10 @@ export function createDefaultMaterial(overrides: Partial<Material> = {}): Materi
     name: overrides.name || DEFAULT_NEW_MATERIAL_NAME,
     vendor: overrides.vendor || "",
     vendorRef: overrides.vendorRef ?? null,
-    quantity: Number.isFinite(overrides.quantity) ? overrides.quantity : 0,
+    quantity: typeof overrides.quantity === "number" && Number.isFinite(overrides.quantity) ? overrides.quantity : 0,
     unit: overrides.unit || MATERIAL_UNIT.yard,
-    unitCost: Number.isFinite(overrides.unitCost) ? overrides.unitCost : 0,
-    totalCost: Number.isFinite(overrides.totalCost) ? overrides.totalCost : 0,
+    unitCost: typeof overrides.unitCost === "number" && Number.isFinite(overrides.unitCost) ? overrides.unitCost : 0,
+    totalCost: typeof overrides.totalCost === "number" && Number.isFinite(overrides.totalCost) ? overrides.totalCost : 0,
     status: overrides.status || MATERIAL_STATUS.ready,
   });
 }
