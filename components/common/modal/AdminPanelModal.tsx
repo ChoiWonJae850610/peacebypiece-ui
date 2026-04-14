@@ -1,11 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
+import StatusToggle from "@/components/common/StatusToggle";
 import BaseModal from "@/components/common/modal/BaseModal";
 import ModalBody from "@/components/common/modal/ModalBody";
 import ModalHeader from "@/components/common/modal/ModalHeader";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
-import { BOOLEAN_BADGE_CLASS, HISTORY_FILTER_BUTTON_CLASS, HISTORY_TONE_CLASS } from "@/lib/constants/display";
+import { HISTORY_FILTER_BUTTON_CLASS, HISTORY_TONE_CLASS } from "@/lib/constants/display";
 import { useI18n } from "@/lib/i18n";
 import { HISTORY_FILTER_OPTIONS, NOTIFICATION_SETTING_META } from "@/lib/constants/workflow";
 import { MODAL_EXCEPTION_PRESETS } from "@/components/common/modal/modalPresets";
@@ -104,19 +105,19 @@ export default function AdminPanelModal({
             {NOTIFICATION_SETTING_META.map((item) => {
               const checked = notificationSettings[item.key];
               return (
-                <label key={item.key} className="flex cursor-pointer items-start gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-3 py-3 transition hover:border-stone-300 hover:bg-stone-100">
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={() => onToggleNotificationSetting(item.key)}
-                    className="mt-1 h-4 w-4 rounded border-stone-300 text-stone-900 focus:ring-stone-400"
-                  />
+                <div key={item.key} className="flex items-start gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-3 py-3 transition hover:border-stone-300 hover:bg-stone-100">
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium text-stone-900">{item.label}</div>
                     <div className="mt-1 break-keep text-xs leading-5 text-stone-500">{item.description}</div>
                   </div>
-                  <span className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-medium ${checked ? BOOLEAN_BADGE_CLASS.on : BOOLEAN_BADGE_CLASS.off}`}>{checked ? ui.modal.adminPanel.toggleOn : ui.modal.adminPanel.toggleOff}</span>
-                </label>
+                  <StatusToggle
+                    checked={checked}
+                    onChange={() => onToggleNotificationSetting(item.key)}
+                    onLabel={ui.modal.adminPanel.toggleOn}
+                    offLabel={ui.modal.adminPanel.toggleOff}
+                    srLabel={`${item.label} ${checked ? ui.modal.adminPanel.toggleOn : ui.modal.adminPanel.toggleOff}`}
+                  />
+                </div>
               );
             })}
           </div>

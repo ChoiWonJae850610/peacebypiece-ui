@@ -1,96 +1,56 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import StatusToggle from "@/components/common/StatusToggle";
 import ModalShell from "@/components/common/modal/ModalShell";
+import {
+  buildPartnerDraftFromEntity,
+  buildPartnerListViewModel,
+  createEmptyPartnerDraft,
+  DEFAULT_PARTNER_FILTER_STATE,
+  formatPartnerDate,
+  normalizePartnerDraft,
+  OUTSOURCING_PROCESS_META,
+  PARTNER_STATUS_FILTER_OPTIONS,
+  PARTNER_TYPE_META,
+} from "@/lib/admin/partnerMaster";
 import { mockPartnerRepository } from "@/lib/repositories/mockPartnerRepository";
 import {
-  OUTSOURCING_PROCESS_TYPE_VALUES,
-  PARTNER_TYPE_VALUES,
   type OutsourcingProcessType,
   type Partner,
   type PartnerDraft,
   type PartnerType,
 } from "@/types/partner";
 
-const PARTNER_TYPE_META: Record<PartnerType, { label: string; tone: string }> = {
-  factory: { label: "공장", tone: "bg-sky-100 text-sky-700" },
-  material_vendor: { label: "원단 거래처", tone: "bg-emerald-100 text-emerald-700" },
-  subsidiary_vendor: { label: "부자재 거래처", tone: "bg-amber-100 text-amber-700" },
-  outsourcing_vendor: { label: "외주처", tone: "bg-violet-100 text-violet-700" },
-};
-
-const OUTSOURCING_PROCESS_META: Record<OutsourcingProcessType, { label: string }> = {
-  cutting: { label: "재단" },
-  printing: { label: "나염/프린트" },
-  embroidery: { label: "자수" },
-  washing: { label: "워싱" },
-  finishing: { label: "후가공" },
-};
-
-const EMPTY_DRAFT: PartnerDraft = {
-  name: "",
-  partnerTypes: [],
-  isActive: true,
-  contactName: "",
-  phone: "",
-  outsourcingProcessTypes: [],
-  memo: "",
-};
-
-function formatDate(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-  return new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
-}
-
-function buildDraftFromPartner(partner: Partner): PartnerDraft {
-  return {
-    name: partner.name,
-    partnerTypes: [...partner.partnerTypes],
-    isActive: partner.isActive,
-    contactName: partner.contactName ?? "",
-    phone: partner.phone ?? "",
-    outsourcingProcessTypes: [...(partner.outsourcingProcessTypes ?? [])],
-    memo: partner.memo,
-  };
-}
-
 export default function PartnerMasterSection() {
   const [partners, setPartners] = useState<Partner[]>([]);
-  const [selectedType, setSelectedType] = useState<PartnerType | "all">("all");
+  const [selectedType, setSelectedType] = useState<PartnerType | "all">(DEFAULT_PARTNER_FILTER_STATE.selectedType);
+  const [selectedStatus, setSelectedStatus] = useState(DEFAULT_PARTNER_FILTER_STATE.status);
+  const [searchTerm, setSearchTerm] = useState(DEFAULT_PARTNER_FILTER_STATE.searchTerm);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPartnerId, setEditingPartnerId] = useState<string | null>(null);
-  const [draft, setDraft] = useState<PartnerDraft>(EMPTY_DRAFT);
+  const [draft, setDraft] = useState<PartnerDraft>(createEmptyPartnerDraft());
   const [formError, setFormError] = useState<string>("");
 
   useEffect(() => {
     setPartners(mockPartnerRepository.listPartners());
   }, []);
 
-  const filteredPartners = useMemo(() => {
-    if (selectedType === "all") return partners;
-    return partners.filter((partner) => partner.partnerTypes.includes(selectedType));
-  }, [partners, selectedType]);
-
-  const summary = useMemo(() => {
-    const activeCount = partners.filter((partner) => partner.isActive).length;
-    return {
-      total: partners.length,
-      active: activeCount,
-      inactive: partners.length - activeCount,
-    };
-  }, [partners]);
+  const listViewModel = useMemo(
+    () => buildPartnerListViewModel(partners, { selectedType, status: selectedStatus, searchTerm }),
+    [partners, searchTerm, selectedStatus, selectedType],
+  );
 
   const openCreateModal = useCallback(() => {
     setEditingPartnerId(null);
-    setDraft({ ...EMPTY_DRAFT, partnerTypes: [], outsourcingProcessTypes: [] });
+    setDraft(createEmptyPartnerDraft());
     setFormError("");
     setIsModalOpen(true);
   }, []);
 
   const openEditModal = useCallback((partner: Partner) => {
     setEditingPartnerId(partner.id);
-    setDraft(buildDraftFromPartner(partner));
+    setDraft(buildPartnerDraftFromEntity(partner));
     setFormError("");
     setIsModalOpen(true);
   }, []);
@@ -98,7 +58,7 @@ export default function PartnerMasterSection() {
   const closeModal = useCallback(() => {
     setIsModalOpen(false);
     setEditingPartnerId(null);
-    setDraft({ ...EMPTY_DRAFT, partnerTypes: [], outsourcingProcessTypes: [] });
+    setDraft(createEmptyPartnerDraft());
     setFormError("");
   }, []);
 
@@ -126,24 +86,16 @@ export default function PartnerMasterSection() {
   };
 
   const handleSubmit = () => {
-    const normalizedName = draft.name.trim();
-    if (!normalizedName) {
+    const normalizedDraft = normalizePartnerDraft(draft);
+
+    if (!normalizedDraft.name) {
       setFormError("업체명을 입력하세요.");
       return;
     }
-    if (draft.partnerTypes.length === 0) {
+    if (normalizedDraft.partnerTypes.length === 0) {
       setFormError("유형을 하나 이상 선택하세요.");
       return;
     }
-
-    const normalizedDraft: PartnerDraft = {
-      ...draft,
-      name: normalizedName,
-      contactName: draft.contactName.trim(),
-      phone: draft.phone.trim(),
-      outsourcingProcessTypes: draft.partnerTypes.includes("outsourcing_vendor") ? [...draft.outsourcingProcessTypes] : [],
-      memo: draft.memo.trim(),
-    };
 
     const nextPartners = editingPartnerId
       ? (() => {
@@ -168,7 +120,7 @@ export default function PartnerMasterSection() {
             <h2 className="text-xl font-semibold tracking-tight text-stone-900">기준정보 관리 · 거래처/공장 관리</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">
               공장, 원단 거래처, 부자재 거래처, 외주처를 하나의 Partner master로 관리한다. 이번 단계에서는
-              담당자, 연락처, 외주 가능 공정(복수 선택)까지 확장하고 mock repository에 저장한다.
+              대표자, 연락처, 외주 가능 공정(복수 선택)까지 확장하고 mock repository에 저장한다.
             </p>
           </div>
         </div>
@@ -184,42 +136,91 @@ export default function PartnerMasterSection() {
       <div className="mt-5 grid gap-3 md:grid-cols-3">
         <article className="rounded-2xl bg-stone-50 px-4 py-4">
           <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">전체 업체</p>
-          <p className="mt-2 text-2xl font-semibold text-stone-900">{summary.total}</p>
+          <p className="mt-2 text-2xl font-semibold text-stone-900">{listViewModel.summary.total}</p>
         </article>
         <article className="rounded-2xl bg-stone-50 px-4 py-4">
           <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">사용중</p>
-          <p className="mt-2 text-2xl font-semibold text-stone-900">{summary.active}</p>
+          <p className="mt-2 text-2xl font-semibold text-stone-900">{listViewModel.summary.active}</p>
         </article>
         <article className="rounded-2xl bg-stone-50 px-4 py-4">
           <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">미사용</p>
-          <p className="mt-2 text-2xl font-semibold text-stone-900">{summary.inactive}</p>
+          <p className="mt-2 text-2xl font-semibold text-stone-900">{listViewModel.summary.inactive}</p>
         </article>
       </div>
 
-      <div className="mt-5 flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => setSelectedType("all")}
-          className={[
-            "rounded-full px-3 py-1.5 text-sm font-medium transition",
-            selectedType === "all" ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-700 hover:bg-stone-200",
-          ].join(" ")}
-        >
-          전체
-        </button>
-        {PARTNER_TYPE_VALUES.map((type) => (
-          <button
-            key={type}
-            type="button"
-            onClick={() => setSelectedType(type)}
-            className={[
-              "rounded-full px-3 py-1.5 text-sm font-medium transition",
-              selectedType === type ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-700 hover:bg-stone-200",
-            ].join(" ")}
-          >
-            {PARTNER_TYPE_META[type].label}
-          </button>
-        ))}
+      <div className="mt-5 space-y-4 rounded-3xl border border-stone-200 bg-stone-50 p-4">
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
+          <div className="min-w-0 space-y-2">
+            <label htmlFor="partner-search" className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+              검색
+            </label>
+            <input
+              id="partner-search"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="업체명, 대표자, 연락처, 메모, 공정 검색"
+              className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-stone-500"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">유형</p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setSelectedType("all")}
+                className={[
+                  "rounded-full px-3 py-1.5 text-sm font-medium transition",
+                  selectedType === "all" ? "bg-stone-900 text-white" : "bg-white text-stone-700 hover:bg-stone-200",
+                ].join(" ")}
+              >
+                전체
+              </button>
+              {listViewModel.availablePartnerTypes.map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setSelectedType(type)}
+                  className={[
+                    "rounded-full px-3 py-1.5 text-sm font-medium transition",
+                    selectedType === type ? "bg-stone-900 text-white" : "bg-white text-stone-700 hover:bg-stone-200",
+                  ].join(" ")}
+                >
+                  {PARTNER_TYPE_META[type].label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">상태</p>
+            <div className="flex flex-wrap gap-2">
+              {PARTNER_STATUS_FILTER_OPTIONS.map((item) => (
+                <button
+                  key={item.value}
+                  type="button"
+                  onClick={() => setSelectedStatus(item.value)}
+                  className={[
+                    "rounded-full px-3 py-1.5 text-sm font-medium transition",
+                    selectedStatus === item.value ? "bg-stone-900 text-white" : "bg-white text-stone-700 hover:bg-stone-200",
+                  ].join(" ")}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2 text-sm text-stone-600 md:flex-row md:items-center md:justify-between">
+          <p>
+            현재 목록 <span className="font-semibold text-stone-900">{listViewModel.filteredCount}</span>개
+            {listViewModel.hasSearch ? " · 검색 결과 기준" : ""}
+          </p>
+          <p>
+            사용중 {listViewModel.filteredSummary.active} · 미사용 {listViewModel.filteredSummary.inactive}
+          </p>
+        </div>
       </div>
 
       <div className="mt-5 overflow-hidden rounded-3xl border border-stone-200">
@@ -231,14 +232,17 @@ export default function PartnerMasterSection() {
           <span>관리</span>
         </div>
         <div className="divide-y divide-stone-200">
-          {filteredPartners.length === 0 ? (
+          {listViewModel.filteredPartners.length === 0 ? (
             <div className="px-4 py-10 text-sm text-stone-500">선택한 조건에 맞는 거래처/공장이 없다.</div>
           ) : (
-            filteredPartners.map((partner) => (
-              <article key={partner.id} className="px-4 py-4">
+            listViewModel.filteredPartners.map((partner) => (
+              <article key={partner.id} className={["px-4 py-4", partner.isActive ? "bg-white" : "bg-stone-50/80"].join(" ")}>
                 <div className="flex flex-col gap-3 md:grid md:grid-cols-[minmax(0,1.6fr)_minmax(0,1.5fr)_120px_120px_140px] md:items-center md:gap-4">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-stone-900 md:text-base">{partner.name}</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="truncate text-sm font-semibold text-stone-900 md:text-base">{partner.name}</p>
+                      {!partner.isActive ? <span className="rounded-full bg-stone-200 px-2 py-0.5 text-[11px] font-medium text-stone-600">미사용</span> : null}
+                    </div>
                     <div className="mt-1 space-y-1 text-xs leading-5 text-stone-500">
                       <p>{partner.contactName || partner.phone ? `${partner.contactName || "대표자 미등록"} · ${partner.phone || "연락처 미등록"}` : "대표자/연락처 미등록"}</p>
                       {partner.outsourcingProcessTypes?.length ? (
@@ -255,12 +259,15 @@ export default function PartnerMasterSection() {
                     ))}
                   </div>
                   <div>
-                    <span className={[
-                      "inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
-                      partner.isActive ? "bg-emerald-100 text-emerald-700" : "bg-stone-200 text-stone-600",
-                    ].join(" ")}>{partner.isActive ? "사용중" : "미사용"}</span>
+                    <StatusToggle
+                      checked={partner.isActive}
+                      disabled
+                      onLabel="ON"
+                      offLabel="OFF"
+                      srLabel={`${partner.name} 사용 여부`}
+                    />
                   </div>
-                  <p className="text-sm text-stone-600">{formatDate(partner.updatedAt)}</p>
+                  <p className="text-sm text-stone-600">{formatPartnerDate(partner.updatedAt)}</p>
                   <div>
                     <button
                       type="button"
@@ -306,7 +313,7 @@ export default function PartnerMasterSection() {
           </div>
         }
       >
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px]">
           <div className="space-y-2">
             <label htmlFor="partner-name" className="text-sm font-medium text-stone-800">
               업체명
@@ -322,27 +329,14 @@ export default function PartnerMasterSection() {
 
           <div className="space-y-2">
             <p className="text-sm font-medium text-stone-800">사용 여부</p>
-            <div className="flex flex-wrap gap-2 rounded-2xl border border-stone-300 px-3 py-2.5">
-              <button
-                type="button"
-                onClick={() => setDraft((current) => ({ ...current, isActive: true }))}
-                className={[
-                  "rounded-full px-3 py-2 text-sm font-medium transition",
-                  draft.isActive ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-700 hover:bg-stone-200",
-                ].join(" ")}
-              >
-                사용중
-              </button>
-              <button
-                type="button"
-                onClick={() => setDraft((current) => ({ ...current, isActive: false }))}
-                className={[
-                  "rounded-full px-3 py-2 text-sm font-medium transition",
-                  !draft.isActive ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-700 hover:bg-stone-200",
-                ].join(" ")}
-              >
-                미사용
-              </button>
+            <div className="flex min-h-[54px] items-center rounded-2xl border border-stone-300 bg-white px-3 py-2.5">
+              <StatusToggle
+                checked={draft.isActive}
+                onChange={(nextValue) => setDraft((current) => ({ ...current, isActive: nextValue }))}
+                onLabel="ON"
+                offLabel="OFF"
+                srLabel="거래처 사용 여부"
+              />
             </div>
           </div>
         </div>
@@ -379,7 +373,7 @@ export default function PartnerMasterSection() {
         <div className="space-y-2">
           <p className="text-sm font-medium text-stone-800">유형</p>
           <div className="grid gap-2 sm:grid-cols-2">
-            {PARTNER_TYPE_VALUES.map((type) => {
+            {listViewModel.availablePartnerTypes.map((type) => {
               const checked = draft.partnerTypes.includes(type);
               return (
                 <label
@@ -411,7 +405,7 @@ export default function PartnerMasterSection() {
               </p>
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
-              {OUTSOURCING_PROCESS_TYPE_VALUES.map((type) => {
+              {listViewModel.availableOutsourcingProcessTypes.map((type) => {
                 const checked = draft.outsourcingProcessTypes.includes(type);
                 return (
                   <label
