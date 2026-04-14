@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { mockPartnerRepository } from "@/lib/repositories/mockPartnerRepository";
 import {
@@ -81,26 +81,26 @@ export default function PartnerMasterSection() {
     };
   }, [partners]);
 
-  const openCreateModal = () => {
+  const openCreateModal = useCallback(() => {
     setEditingPartnerId(null);
-    setDraft(EMPTY_DRAFT);
+    setDraft({ ...EMPTY_DRAFT, partnerTypes: [], outsourcingProcessTypes: [] });
     setFormError("");
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const openEditModal = (partner: Partner) => {
+  const openEditModal = useCallback((partner: Partner) => {
     setEditingPartnerId(partner.id);
     setDraft(buildDraftFromPartner(partner));
     setFormError("");
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setIsModalOpen(false);
     setEditingPartnerId(null);
-    setDraft(EMPTY_DRAFT);
+    setDraft({ ...EMPTY_DRAFT, partnerTypes: [], outsourcingProcessTypes: [] });
     setFormError("");
-  };
+  }, []);
 
   const toggleType = (type: PartnerType) => {
     setDraft((current) => {
@@ -240,7 +240,7 @@ export default function PartnerMasterSection() {
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-stone-900 md:text-base">{partner.name}</p>
                     <div className="mt-1 space-y-1 text-xs leading-5 text-stone-500">
-                      <p>{partner.contactName || partner.phone ? `${partner.contactName || "담당자 미등록"} · ${partner.phone || "연락처 미등록"}` : "담당자/연락처 미등록"}</p>
+                      <p>{partner.contactName || partner.phone ? `${partner.contactName || "대표자 미등록"} · ${partner.phone || "연락처 미등록"}` : "대표자/연락처 미등록"}</p>
                       {partner.outsourcingProcessTypes?.length ? (
                         <p>가능 공정 · {partner.outsourcingProcessTypes.map((type) => OUTSOURCING_PROCESS_META[type].label).join(", ")}</p>
                       ) : null}
@@ -281,7 +281,7 @@ export default function PartnerMasterSection() {
         open={isModalOpen}
         onClose={closeModal}
         title={editingPartnerId ? "거래처/공장 수정" : "거래처/공장 등록"}
-        description="Partner master 기준으로 업체명, 유형, 담당자, 연락처, 사용 여부를 관리한다."
+        description="Partner master 기준으로 업체명, 대표자, 연락처, 유형, 사용 여부를 관리한다."
         maxWidthClass="md:max-w-2xl"
         bodyClassName="space-y-5"
         footer={
@@ -306,17 +306,74 @@ export default function PartnerMasterSection() {
           </div>
         }
       >
-        <div className="space-y-2">
-          <label htmlFor="partner-name" className="text-sm font-medium text-stone-800">
-            업체명
-          </label>
-          <input
-            id="partner-name"
-            value={draft.name}
-            onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
-            placeholder="업체명 입력"
-            className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-stone-500"
-          />
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <label htmlFor="partner-name" className="text-sm font-medium text-stone-800">
+              업체명
+            </label>
+            <input
+              id="partner-name"
+              value={draft.name}
+              onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
+              placeholder="업체명 입력"
+              className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-stone-500"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-stone-800">사용 여부</p>
+            <div className="flex flex-wrap gap-2 rounded-2xl border border-stone-300 px-3 py-2.5">
+              <button
+                type="button"
+                onClick={() => setDraft((current) => ({ ...current, isActive: true }))}
+                className={[
+                  "rounded-full px-3 py-2 text-sm font-medium transition",
+                  draft.isActive ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-700 hover:bg-stone-200",
+                ].join(" ")}
+              >
+                사용중
+              </button>
+              <button
+                type="button"
+                onClick={() => setDraft((current) => ({ ...current, isActive: false }))}
+                className={[
+                  "rounded-full px-3 py-2 text-sm font-medium transition",
+                  !draft.isActive ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-700 hover:bg-stone-200",
+                ].join(" ")}
+              >
+                미사용
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <label htmlFor="partner-contact-name" className="text-sm font-medium text-stone-800">
+              대표자
+            </label>
+            <input
+              id="partner-contact-name"
+              value={draft.contactName}
+              onChange={(event) => setDraft((current) => ({ ...current, contactName: event.target.value }))}
+              placeholder="대표자 이름 입력"
+              className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-stone-500"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="partner-phone" className="text-sm font-medium text-stone-800">
+              연락처
+            </label>
+            <input
+              id="partner-phone"
+              type="tel"
+              value={draft.phone}
+              onChange={(event) => setDraft((current) => ({ ...current, phone: event.target.value }))}
+              placeholder="연락처 입력"
+              className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-stone-500"
+            />
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -342,35 +399,6 @@ export default function PartnerMasterSection() {
                 </label>
               );
             })}
-          </div>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <label htmlFor="partner-contact-name" className="text-sm font-medium text-stone-800">
-              담당자명
-            </label>
-            <input
-              id="partner-contact-name"
-              value={draft.contactName}
-              onChange={(event) => setDraft((current) => ({ ...current, contactName: event.target.value }))}
-              placeholder="담당자 또는 대표 이름 입력"
-              className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-stone-500"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="partner-phone" className="text-sm font-medium text-stone-800">
-              연락처
-            </label>
-            <input
-              id="partner-phone"
-              type="tel"
-              value={draft.phone}
-              onChange={(event) => setDraft((current) => ({ ...current, phone: event.target.value }))}
-              placeholder="연락처 입력"
-              className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-stone-500"
-            />
           </div>
         </div>
 
@@ -406,32 +434,6 @@ export default function PartnerMasterSection() {
             </div>
           </div>
         ) : null}
-
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-stone-800">사용 여부</p>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => setDraft((current) => ({ ...current, isActive: true }))}
-              className={[
-                "rounded-full px-3 py-2 text-sm font-medium transition",
-                draft.isActive ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-700 hover:bg-stone-200",
-              ].join(" ")}
-            >
-              사용중
-            </button>
-            <button
-              type="button"
-              onClick={() => setDraft((current) => ({ ...current, isActive: false }))}
-              className={[
-                "rounded-full px-3 py-2 text-sm font-medium transition",
-                !draft.isActive ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-700 hover:bg-stone-200",
-              ].join(" ")}
-            >
-              미사용
-            </button>
-          </div>
-        </div>
 
         <div className="space-y-2">
           <label htmlFor="partner-memo" className="text-sm font-medium text-stone-800">
