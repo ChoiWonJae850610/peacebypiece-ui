@@ -64,3 +64,23 @@ export function testCategoryRuleTitle(title: string, rules: WorkOrderCategoryKey
     reason: recommendation.reason,
   };
 }
+
+
+import type { EditableCategoryRule } from "@/lib/system/categoryRuleEditor";
+
+function buildEditableCategoryRuleSearchText(rule: EditableCategoryRule) {
+  return [
+    rule.name,
+    ...rule.keywords,
+    rule.recommendation.category1,
+    rule.recommendation.category2,
+    rule.recommendation.category3,
+    rule.recommendation.reason,
+  ].join(" ").toLowerCase();
+}
+
+export function filterEditableCategoryRules(rules: EditableCategoryRule[], searchQuery: string) {
+  const normalized = searchQuery.trim().toLowerCase();
+  if (!normalized) return rules;
+  return rules.filter((rule) => buildEditableCategoryRuleSearchText(rule).includes(normalized));
+}
