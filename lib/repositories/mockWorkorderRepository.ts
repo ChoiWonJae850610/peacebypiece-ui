@@ -22,6 +22,7 @@ import {
 import { stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
 import { normalizeWorkOrderDataList } from "@/lib/workorder/normalization";
 import { normalizeWorkOrderCollectionsForStorage, normalizeWorkOrderCollectionsListForStorage } from "@/lib/workorder/structure";
+import { createFullWorkorderRepositoryCapabilities, createWorkorderRepositoryInfo } from "@/lib/repositories/workorderRepositoryCapabilities";
 import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 
 function createInitialRepositoryState() {
@@ -84,6 +85,7 @@ function appendHistoryLogsInternal(historyLogs: HistoryLog[]): HistoryLog[] {
 }
 
 const mockWorkorderRepository: WorkorderRepository = {
+  getRepositoryInfo: () => createWorkorderRepositoryInfo("mock", createFullWorkorderRepositoryCapabilities(), true),
   createInitialState: createInitialRepositoryState,
   createInitialStateAsync: async () => createInitialRepositoryState(),
   getInitialUsers: getSeedUsers,

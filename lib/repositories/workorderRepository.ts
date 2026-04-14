@@ -10,9 +10,29 @@ export type WorkorderWorkspaceSession = Pick<
 
 export type InitialWorkorderRepositoryState = WorkorderWorkspaceState;
 
+export type WorkorderRepositoryCapabilities = {
+  loadWorkspaceState: boolean;
+  saveWorkspaceState: boolean;
+  saveWorkspaceSession: boolean;
+  createWorkOrder: boolean;
+  saveWorkOrder: boolean;
+  saveWorkOrders: boolean;
+  deleteWorkOrder: boolean;
+  appendHistoryLogs: boolean;
+  saveUsers: boolean;
+  savePermissions: boolean;
+};
+
+export type WorkorderRepositoryInfo = {
+  mode: "mock" | "db";
+  adapterConfigured: boolean;
+  capabilities: WorkorderRepositoryCapabilities;
+};
+
 export type RepositoryAsyncStatus = "idle" | "loading" | "ready" | "error";
 
 export type WorkorderRepository = {
+  getRepositoryInfo(): WorkorderRepositoryInfo;
   createInitialState(): InitialWorkorderRepositoryState;
   createInitialStateAsync(): Promise<InitialWorkorderRepositoryState>;
   getInitialUsers(): UserProfile[];

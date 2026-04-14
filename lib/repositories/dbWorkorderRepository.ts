@@ -5,6 +5,7 @@ import type {
   WorkorderWorkspaceSession,
   WorkorderWorkspaceState,
 } from "@/lib/repositories/workorderRepository";
+import { createDbWorkorderRepositoryCapabilities, createWorkorderRepositoryInfo } from "@/lib/repositories/workorderRepositoryCapabilities";
 
 export type DbWorkorderAdapter = {
   loadWorkspaceState?(): Promise<WorkorderWorkspaceState | null>;
@@ -27,7 +28,9 @@ export function createDbWorkorderRepository(
   fallbackRepository: WorkorderRepository,
   adapter?: DbWorkorderAdapter,
 ): WorkorderRepository {
+  const capabilities = createDbWorkorderRepositoryCapabilities(adapter);
   return {
+    getRepositoryInfo: () => createWorkorderRepositoryInfo("db", capabilities, Boolean(adapter)),
     createInitialState: (): InitialWorkorderRepositoryState => fallbackRepository.createInitialState(),
     createInitialStateAsync: async (): Promise<InitialWorkorderRepositoryState> => {
       const workspaceState = adapter?.loadWorkspaceState ? await adapter.loadWorkspaceState() : null;

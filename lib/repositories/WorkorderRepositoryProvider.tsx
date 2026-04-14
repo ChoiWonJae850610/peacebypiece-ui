@@ -2,12 +2,13 @@
 
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { createWorkorderRepository } from "@/lib/repositories/workorderRepositoryFactory";
-import type { WorkorderRepository } from "@/lib/repositories/workorderRepository";
+import type { WorkorderRepository, WorkorderRepositoryInfo } from "@/lib/repositories/workorderRepository";
 import type { WorkorderRepositoryMode } from "@/lib/repositories/workorderRepositoryMode";
 import type { DbWorkorderAdapter } from "@/lib/repositories/dbWorkorderRepository";
 
 type WorkorderRepositoryContextValue = {
   repository: WorkorderRepository;
+  repositoryInfo: WorkorderRepositoryInfo;
 };
 
 const WorkorderRepositoryContext = createContext<WorkorderRepositoryContextValue | null>(null);
@@ -30,7 +31,9 @@ export function WorkorderRepositoryProvider({
     [dbAdapter, repository, repositoryMode],
   );
 
-  const value = useMemo<WorkorderRepositoryContextValue>(() => ({ repository: resolvedRepository }), [resolvedRepository]);
+  const repositoryInfo = useMemo(() => resolvedRepository.getRepositoryInfo(), [resolvedRepository]);
+
+  const value = useMemo<WorkorderRepositoryContextValue>(() => ({ repository: resolvedRepository, repositoryInfo }), [repositoryInfo, resolvedRepository]);
 
   return <WorkorderRepositoryContext.Provider value={value}>{children}</WorkorderRepositoryContext.Provider>;
 }
@@ -41,4 +44,12 @@ export function useWorkorderRepository() {
     throw new Error("useWorkorderRepository must be used within WorkorderRepositoryProvider");
   }
   return context.repository;
+}
+
+export function useWorkorderRepositoryInfo() {
+  const context = useContext(WorkorderRepositoryContext);
+  if (!context) {
+    throw new Error("useWorkorderRepositoryInfo must be used within WorkorderRepositoryProvider");
+  }
+  return context.repositoryInfo;
 }
