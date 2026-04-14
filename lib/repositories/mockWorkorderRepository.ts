@@ -20,6 +20,8 @@ import {
   type WorkorderWorkspaceState,
 } from "@/lib/repositories/workorderRepository";
 import { stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
+import { normalizeWorkOrderDataList } from "@/lib/workorder/normalization";
+import { normalizeWorkOrderCollectionsForStorage, normalizeWorkOrderCollectionsListForStorage } from "@/lib/workorder/structure";
 import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 
 function createInitialRepositoryState() {
@@ -28,7 +30,7 @@ function createInitialRepositoryState() {
 
   return {
     users: persisted.users,
-    workOrders: stabilizeWorkOrders(persisted.workOrders),
+    workOrders: stabilizeWorkOrders(normalizeWorkOrderDataList(persisted.workOrders)),
     historyLogs: persisted.historyLogs,
     selectedId: persisted.selectedId,
     currentUserId: persisted.currentUserId,
@@ -48,7 +50,7 @@ function getCurrentWorkspaceState(): WorkorderWorkspaceState {
 function saveWorkspaceStateInternal(payload: WorkorderWorkspaceState): WorkorderWorkspaceState {
   const normalized = {
     ...payload,
-    workOrders: stabilizeWorkOrders(payload.workOrders),
+    workOrders: stabilizeWorkOrders(normalizeWorkOrderCollectionsListForStorage(payload.workOrders)),
   };
   persistWorkspaceState(normalized);
   return cloneValue(normalized);
@@ -61,7 +63,7 @@ function saveWorkspaceSessionInternal(payload: WorkorderWorkspaceSession): Worko
 }
 
 function saveWorkOrdersInternal(workOrders: WorkOrder[]): WorkOrder[] {
-  const normalized = cloneSavedWorkOrders(stabilizeWorkOrders(workOrders));
+  const normalized = cloneSavedWorkOrders(stabilizeWorkOrders(normalizeWorkOrderCollectionsListForStorage(workOrders)));
   const current = getCurrentWorkspaceState();
   saveWorkspaceStateInternal({ ...current, workOrders: normalized });
   return normalized;
@@ -93,10 +95,10 @@ const mockWorkorderRepository: WorkorderRepository = {
   loadPersistedState: loadPersistedWorkorderState,
   loadPersistedStateAsync: async () => loadPersistedWorkorderState(),
   persistState: (payload: PersistedWorkOrderState) => {
-    persistWorkorderState({ ...payload, workOrders: stabilizeWorkOrders(payload.workOrders) });
+    persistWorkorderState({ ...payload, workOrders: stabilizeWorkOrders(normalizeWorkOrderCollectionsListForStorage(payload.workOrders)) });
   },
   persistStateAsync: async (payload: PersistedWorkOrderState) => {
-    persistWorkorderState({ ...payload, workOrders: stabilizeWorkOrders(payload.workOrders) });
+    persistWorkorderState({ ...payload, workOrders: stabilizeWorkOrders(normalizeWorkOrderCollectionsListForStorage(payload.workOrders)) });
   },
   loadWorkspaceState: loadPersistedWorkspaceState,
   loadWorkspaceStateAsync: async () => loadPersistedWorkspaceState(),
@@ -106,29 +108,33 @@ const mockWorkorderRepository: WorkorderRepository = {
   saveWorkspaceSessionAsync: async (payload) => saveWorkspaceSessionInternal(payload),
   createWorkOrder: (workOrder) => {
     const current = getCurrentWorkspaceState();
-    saveWorkspaceStateInternal({ ...current, workOrders: [cloneValue(workOrder), ...current.workOrders] });
-    return cloneValue(workOrder);
+    const normalizedWorkOrder = normalizeWorkOrderCollectionsForStorage(cloneValue(workOrder));
+    saveWorkspaceStateInternal({ ...current, workOrders: [normalizedWorkOrder, ...current.workOrders] });
+    return cloneValue(normalizedWorkOrder);
   },
   createWorkOrderAsync: async (workOrder) => {
     const current = getCurrentWorkspaceState();
-    saveWorkspaceStateInternal({ ...current, workOrders: [cloneValue(workOrder), ...current.workOrders] });
-    return cloneValue(workOrder);
+    const normalizedWorkOrder = normalizeWorkOrderCollectionsForStorage(cloneValue(workOrder));
+    saveWorkspaceStateInternal({ ...current, workOrders: [normalizedWorkOrder, ...current.workOrders] });
+    return cloneValue(normalizedWorkOrder);
   },
   saveWorkOrder: (workOrder) => {
     const current = getCurrentWorkspaceState();
+    const normalizedWorkOrder = normalizeWorkOrderCollectionsForStorage(cloneValue(workOrder));
     saveWorkspaceStateInternal({
       ...current,
-      workOrders: current.workOrders.map((item) => (item.id === workOrder.id ? cloneValue(workOrder) : item)),
+      workOrders: current.workOrders.map((item) => (item.id === workOrder.id ? normalizedWorkOrder : item)),
     });
-    return cloneValue(workOrder);
+    return cloneValue(normalizedWorkOrder);
   },
   saveWorkOrderAsync: async (workOrder) => {
     const current = getCurrentWorkspaceState();
+    const normalizedWorkOrder = normalizeWorkOrderCollectionsForStorage(cloneValue(workOrder));
     saveWorkspaceStateInternal({
       ...current,
-      workOrders: current.workOrders.map((item) => (item.id === workOrder.id ? cloneValue(workOrder) : item)),
+      workOrders: current.workOrders.map((item) => (item.id === workOrder.id ? normalizedWorkOrder : item)),
     });
-    return cloneValue(workOrder);
+    return cloneValue(normalizedWorkOrder);
   },
   saveWorkOrders: saveWorkOrdersInternal,
   saveWorkOrdersAsync: async (workOrders) => saveWorkOrdersInternal(workOrders),

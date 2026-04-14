@@ -6,6 +6,7 @@ import { createRepositoryError, type WorkOrderRepositoryError } from "@/lib/repo
 import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 import type { AsyncOperationStatus } from "./useWorkOrderActionTypes";
 import { createStabilizedWorkOrdersSetter, stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
+import { normalizeWorkOrderDataList } from "@/lib/workorder/normalization";
 
 export function useWorkOrderCoreState() {
   const repository = useWorkorderRepository();
@@ -19,7 +20,7 @@ export function useWorkOrderCoreState() {
   const [users, setUsers] = useState<UserProfile[]>(initialUsers);
   const [currentUserId, setCurrentUserId] = useState(initialCurrentUserId);
   const [permissionTargetUserId, setPermissionTargetUserId] = useState(initialPermissionTargetUserId);
-  const [workOrders, setWorkOrdersState] = useState<WorkOrder[]>(stabilizeWorkOrders(initialWorkOrders));
+  const [workOrders, setWorkOrdersState] = useState<WorkOrder[]>(stabilizeWorkOrders(normalizeWorkOrderDataList(initialWorkOrders)));
   const [historyLogs, setHistoryLogs] = useState<HistoryLog[]>(initialHistoryLogs);
   const [selectedId, setSelectedId] = useState(initialSelectedId);
   const [searchQuery, setSearchQuery] = useState("");
@@ -44,7 +45,7 @@ export function useWorkOrderCoreState() {
         setUsers(nextState.users);
         setCurrentUserId(nextState.currentUserId);
         setPermissionTargetUserId(nextState.permissionTargetUserId);
-        setWorkOrdersState(stabilizeWorkOrders(nextState.workOrders));
+        setWorkOrdersState(stabilizeWorkOrders(normalizeWorkOrderDataList(nextState.workOrders)));
         setHistoryLogs(nextState.historyLogs);
         setSelectedId(nextState.selectedId);
         const nextSelected = nextState.workOrders.find((item) => item.id === nextState.selectedId) ?? nextState.workOrders[0];
