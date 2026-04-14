@@ -1,6 +1,7 @@
-import type { MaterialKindValue } from "@/lib/constants/workorderDomain";
+import type { MaterialStatusValue, MaterialTypeValue, MaterialUnitValue } from "@/lib/constants/material";
 
-export type MaterialKind = MaterialKindValue;
+
+export type MaterialKind = MaterialTypeValue;
 
 export type Material = {
   id: string;
@@ -8,8 +9,8 @@ export type Material = {
   name: string;
   vendor: string;
   quantity: number;
-  unit: string;
+  unit: MaterialUnitValue;
   unitCost: number;
   totalCost: number;
-  status: string;
+  status: MaterialStatusValue;
 };

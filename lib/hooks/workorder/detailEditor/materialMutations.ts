@@ -1,11 +1,7 @@
-import {
-  DEFAULT_MATERIAL_STATUS,
-  DEFAULT_MATERIAL_TYPE,
-  DEFAULT_MATERIAL_UNIT,
-  DEFAULT_NEW_MATERIAL_NAME,
-} from "@/lib/constants/workorderOptions";
+import { MATERIAL_TYPE } from "@/lib/constants/material";
 import { recalculateMaterial } from "@/lib/workorder/detail/detailCalculations";
-import { createId, toNumber } from "@/lib/workorder/detail/detailSanitizers";
+import { toNumber } from "@/lib/workorder/detail/detailSanitizers";
+import { createDefaultMaterial } from "@/lib/workorder/material/materialDefaults";
 import type { EditableCell } from "@/components/workorder/detail/shared/detailEditorShared";
 import type { Material, WorkOrder } from "@/types/workorder";
 
@@ -24,7 +20,7 @@ export function commitMaterialItemsEdit(payload: {
       return recalculateMaterial({ ...item, unitCost: toNumber(payload.nextValue) });
     }
     if (payload.editingCell.field === "type") {
-      return { ...item, type: (payload.nextValue || DEFAULT_MATERIAL_TYPE) as Material["type"] };
+      return { ...item, type: (payload.nextValue || MATERIAL_TYPE.unselected) as Material["type"] };
     }
 
     return { ...item, [payload.editingCell.field]: payload.nextValue } as Material;
@@ -32,17 +28,7 @@ export function commitMaterialItemsEdit(payload: {
 }
 
 export function createNewMaterialItem() {
-  return recalculateMaterial({
-    id: createId("material"),
-    type: DEFAULT_MATERIAL_TYPE,
-    name: DEFAULT_NEW_MATERIAL_NAME,
-    vendor: "",
-    quantity: 0,
-    unit: DEFAULT_MATERIAL_UNIT,
-    unitCost: 0,
-    totalCost: 0,
-    status: DEFAULT_MATERIAL_STATUS,
-  });
+  return createDefaultMaterial();
 }
 
 export function toMaterialsPatch(materialItems: Material[]): Partial<WorkOrder> {

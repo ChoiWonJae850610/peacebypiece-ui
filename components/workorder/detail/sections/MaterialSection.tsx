@@ -1,5 +1,5 @@
 import { useI18n } from "@/lib/i18n";
-import { MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS } from "@/lib/constants/workorderOptions";
+import { MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS } from "@/lib/constants/material";
 import {
   DeleteButton,
   EditableValue,
