@@ -14,8 +14,12 @@ import {
   persistWorkspaceState,
   persistWorkorderState,
 } from "@/lib/repositories/workorderPersistence";
+import {
+  type WorkorderRepository,
+  type WorkorderWorkspaceSession,
+  type WorkorderWorkspaceState,
+} from "@/lib/repositories/workorderRepository";
 import { stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
-import type { WorkorderRepository, WorkorderWorkspaceState } from "@/lib/repositories/workorderRepository";
 import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 
 function createInitialRepositoryState() {
@@ -48,6 +52,12 @@ function saveWorkspaceStateInternal(payload: WorkorderWorkspaceState): Workorder
   };
   persistWorkspaceState(normalized);
   return cloneValue(normalized);
+}
+
+function saveWorkspaceSessionInternal(payload: WorkorderWorkspaceSession): WorkorderWorkspaceSession {
+  const current = getCurrentWorkspaceState();
+  saveWorkspaceStateInternal({ ...current, ...payload });
+  return cloneValue(payload);
 }
 
 function saveWorkOrdersInternal(workOrders: WorkOrder[]): WorkOrder[] {
@@ -92,6 +102,8 @@ const mockWorkorderRepository: WorkorderRepository = {
   loadWorkspaceStateAsync: async () => loadPersistedWorkspaceState(),
   saveWorkspaceState: saveWorkspaceStateInternal,
   saveWorkspaceStateAsync: async (payload) => saveWorkspaceStateInternal(payload),
+  saveWorkspaceSession: saveWorkspaceSessionInternal,
+  saveWorkspaceSessionAsync: async (payload) => saveWorkspaceSessionInternal(payload),
   createWorkOrder: (workOrder) => {
     const current = getCurrentWorkspaceState();
     saveWorkspaceStateInternal({ ...current, workOrders: [cloneValue(workOrder), ...current.workOrders] });

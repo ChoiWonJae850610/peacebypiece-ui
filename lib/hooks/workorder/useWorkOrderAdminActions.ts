@@ -4,6 +4,8 @@ import { useCallback } from "react";
 import { useI18n } from "@/lib/i18n";
 import { buildUserRoleState } from "@/lib/constants/roles";
 import { buildManagerChangeResult } from "@/lib/workorder/actionFlow";
+import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
+import { persistUsersWithPermissions, persistWorkOrdersWithHistory } from "./workorderRepositoryMutations";
 import type { RoleType } from "@/types/permission";
 import type { ChangeManagerInput } from "./useWorkOrderActionTypes";
 import type { AdminActionBaseParams } from "./useWorkOrderActionTypes";
@@ -18,14 +20,19 @@ export function useWorkOrderAdminActions({
   setManagerAssignModalOpen,
 }: AdminActionBaseParams) {
   const { i18n } = useI18n();
+  const repository = useWorkorderRepository();
   const actionFlowText = i18n.workorder.actionFlow;
   const historyText = i18n.workorder.history;
   const handleApplyRoles = useCallback(
     (userId: string, roles: RoleType[]) => {
       const nextRoleState = buildUserRoleState(roles);
-      setUsers((prev) => prev.map((user) => (user.id === userId ? { ...user, ...nextRoleState } : user)));
+      setUsers((prev) => {
+        const nextUsers = prev.map((user) => (user.id === userId ? { ...user, ...nextRoleState } : user));
+        void persistUsersWithPermissions(repository, { users: nextUsers, savePermissions: true });
+        return nextUsers;
+      });
     },
-    [setUsers],
+    [repository, setUsers],
   );
 
   const handleOpenManagerAssignModal = useCallback(
@@ -59,7 +66,11 @@ export function useWorkOrderAdminActions({
         return;
       }
 
-      setWorkOrders((prev) => prev.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item)));
+      setWorkOrders((prev) => {
+        const nextWorkOrders = prev.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item));
+        void persistWorkOrdersWithHistory(repository, { workOrders: nextWorkOrders, historyLogs: result.historyLogs });
+        return nextWorkOrders;
+      });
       if (result.historyLogs?.length) {
         setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
       }
@@ -71,7 +82,7 @@ export function useWorkOrderAdminActions({
       }
       setManagerAssignModalOpen(false);
     },
-    [actionFlowText, currentUser.name, historyText, setHistoryLogs, setManagerAssignModalOpen, setSaveStatus, setToastMessage, setWorkOrders],
+    [actionFlowText, currentUser.name, historyText, repository, setHistoryLogs, setManagerAssignModalOpen, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   return {

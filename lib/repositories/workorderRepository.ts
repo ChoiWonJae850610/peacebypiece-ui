@@ -3,6 +3,11 @@ import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 
 export type WorkorderWorkspaceState = PersistedWorkOrderState;
 
+export type WorkorderWorkspaceSession = Pick<
+  WorkorderWorkspaceState,
+  "selectedId" | "currentUserId" | "permissionTargetUserId"
+>;
+
 export type InitialWorkorderRepositoryState = WorkorderWorkspaceState;
 
 export type RepositoryAsyncStatus = "idle" | "loading" | "ready" | "error";
@@ -24,6 +29,8 @@ export type WorkorderRepository = {
   loadWorkspaceStateAsync(): Promise<WorkorderWorkspaceState | null>;
   saveWorkspaceState(payload: WorkorderWorkspaceState): WorkorderWorkspaceState;
   saveWorkspaceStateAsync(payload: WorkorderWorkspaceState): Promise<WorkorderWorkspaceState>;
+  saveWorkspaceSession(payload: WorkorderWorkspaceSession): WorkorderWorkspaceSession;
+  saveWorkspaceSessionAsync(payload: WorkorderWorkspaceSession): Promise<WorkorderWorkspaceSession>;
   createWorkOrder(workOrder: WorkOrder): WorkOrder;
   createWorkOrderAsync(workOrder: WorkOrder): Promise<WorkOrder>;
   saveWorkOrder(workOrder: WorkOrder): WorkOrder;

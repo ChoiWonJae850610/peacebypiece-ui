@@ -65,19 +65,17 @@ export function useWorkOrderCoreState() {
   useEffect(() => {
     if (repositoryStatus !== "ready") return;
 
-    repository.saveWorkspaceStateAsync({
-      users,
-      workOrders,
-      historyLogs,
-      selectedId,
-      currentUserId,
-      permissionTargetUserId,
-    }).catch((error) => {
-      setRepositoryError(createRepositoryError("persist", error, "Failed to persist workorder workspace state."));
-      setRepositoryStatus("error");
-    });
-  }, [currentUserId, historyLogs, permissionTargetUserId, repository, repositoryStatus, selectedId, users, workOrders]);
-
+    repository
+      .saveWorkspaceSessionAsync({
+        selectedId,
+        currentUserId,
+        permissionTargetUserId,
+      })
+      .catch((error) => {
+        setRepositoryError(createRepositoryError("persist", error, "Failed to persist workorder workspace session."));
+        setRepositoryStatus("error");
+      });
+  }, [currentUserId, permissionTargetUserId, repository, repositoryStatus, selectedId]);
 
   const setWorkOrders = useCallback(createStabilizedWorkOrdersSetter(setWorkOrdersState), []);
 
