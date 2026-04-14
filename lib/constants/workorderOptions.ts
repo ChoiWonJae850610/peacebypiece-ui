@@ -16,6 +16,17 @@ export const ORDER_TYPE_OPTIONS = ["메인 생산", "추가 생산", "샘플", "
 export const PARTNER_OPTIONS = [DEFAULT_UNSELECTED_OPTION, "에이원 트레이딩", "루나텍스타일", "해성어패럴"] as const;
 export const FACTORY_OPTIONS = [DEFAULT_UNSELECTED_OPTION, "한빛팩토리", "동명봉제", "세림공장"] as const;
 export const REGISTRY_TYPE_OPTIONS = [REGISTRY_TYPE.partner, REGISTRY_TYPE.factory] as const;
+export const EXTENDED_REGISTRY_TYPE_OPTIONS = [
+  REGISTRY_TYPE.partner,
+  REGISTRY_TYPE.factory,
+  REGISTRY_TYPE.materialVendor,
+  REGISTRY_TYPE.subsidiaryVendor,
+] as const;
+export const VENDOR_REGISTRY_TYPE_OPTIONS = [
+  REGISTRY_TYPE.partner,
+  REGISTRY_TYPE.materialVendor,
+  REGISTRY_TYPE.subsidiaryVendor,
+] as const;
 
 export const DEFAULT_MATERIAL_TYPE = MATERIAL_TYPE.unselected;
 export const DEFAULT_MATERIAL_UNIT = MATERIAL_UNIT.yard;

@@ -401,6 +401,8 @@ export const workorderEn = {
         typeOptions: {
           partner: "Partner",
           factory: "Factory",
+          materialVendor: "Fabric vendor",
+          subsidiaryVendor: "Subsidiary vendor",
         },
         savedNotice: "After saving, it is added immediately to the current selection list.",
       },

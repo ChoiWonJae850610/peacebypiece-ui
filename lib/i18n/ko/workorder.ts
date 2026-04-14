@@ -401,6 +401,8 @@ export const workorderKo = {
         typeOptions: {
           partner: "거래처",
           factory: "공장",
+          materialVendor: "원단 거래처",
+          subsidiaryVendor: "부자재 거래처",
         },
         savedNotice: "저장하면 현재 화면의 선택 목록에 즉시 추가됩니다.",
       },

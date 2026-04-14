@@ -57,6 +57,8 @@ export const INVENTORY_CHANGE_LABELS = [
 export const REGISTRY_TYPE = {
   partner: "partner",
   factory: "factory",
+  materialVendor: "material_vendor",
+  subsidiaryVendor: "subsidiary_vendor",
 } as const;
 
 export type RegistryTypeValue = (typeof REGISTRY_TYPE)[keyof typeof REGISTRY_TYPE];
@@ -64,17 +66,35 @@ export type RegistryTypeValue = (typeof REGISTRY_TYPE)[keyof typeof REGISTRY_TYP
 export const REGISTRY_TYPE_LABELS: Record<RegistryTypeValue, string> = {
   [REGISTRY_TYPE.partner]: "거래처",
   [REGISTRY_TYPE.factory]: "공장",
+  [REGISTRY_TYPE.materialVendor]: "원단 거래처",
+  [REGISTRY_TYPE.subsidiaryVendor]: "부자재 거래처",
 };
+
+export const VENDOR_REGISTRY_TYPES = [
+  REGISTRY_TYPE.partner,
+  REGISTRY_TYPE.materialVendor,
+  REGISTRY_TYPE.subsidiaryVendor,
+] as const satisfies readonly RegistryTypeValue[];
 
 export const LEGACY_REGISTRY_TYPE_MAP = {
   거래처: REGISTRY_TYPE.partner,
   공장: REGISTRY_TYPE.factory,
+  원단거래처: REGISTRY_TYPE.materialVendor,
+  원단 거래처: REGISTRY_TYPE.materialVendor,
+  부자재거래처: REGISTRY_TYPE.subsidiaryVendor,
+  부자재 거래처: REGISTRY_TYPE.subsidiaryVendor,
 } as const;
 
 export function toRegistryType(value: unknown): RegistryTypeValue {
-  if (value === REGISTRY_TYPE.partner || value === REGISTRY_TYPE.factory) return value;
-  if (typeof value === "string" && value in LEGACY_REGISTRY_TYPE_MAP) return LEGACY_REGISTRY_TYPE_MAP[value as keyof typeof LEGACY_REGISTRY_TYPE_MAP];
+  if (typeof value === "string") {
+    if (Object.values(REGISTRY_TYPE).includes(value as RegistryTypeValue)) return value as RegistryTypeValue;
+    if (value in LEGACY_REGISTRY_TYPE_MAP) return LEGACY_REGISTRY_TYPE_MAP[value as keyof typeof LEGACY_REGISTRY_TYPE_MAP];
+  }
   return REGISTRY_TYPE.partner;
+}
+
+export function isVendorRegistryType(value: unknown): value is (typeof VENDOR_REGISTRY_TYPES)[number] {
+  return VENDOR_REGISTRY_TYPES.includes(toRegistryType(value));
 }
 
 export const EMPTY_SELECTION_VALUES = [DEFAULT_UNSELECTED_OPTION, DEFAULT_UNASSIGNED_FACTORY_LABEL] as const;

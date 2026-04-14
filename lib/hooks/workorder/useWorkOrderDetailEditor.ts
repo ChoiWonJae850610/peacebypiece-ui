@@ -7,7 +7,7 @@ import {
   type EditableSectionKey,
   type OrderEntryState,
 } from "@/components/workorder/detail/shared/detailEditorShared";
-import { REGISTRY_TYPE } from "@/lib/constants/workorderDomain";
+import { isVendorRegistryType, REGISTRY_TYPE } from "@/lib/constants/workorderDomain";
 import {
   FACTORY_OPTIONS,
   PARTNER_OPTIONS,
@@ -259,10 +259,12 @@ export function useWorkOrderDetailEditor({
   };
 
   const handleRegistrySave = ({ type, name }: { type: RegistryType; name: string }) => {
-    if (type === REGISTRY_TYPE.partner) {
+    if (isVendorRegistryType(type)) {
       setPartnerOptions((current) => appendOption(current, name));
-      setBasicInfo((current) => ({ ...current, partner: name }));
-      setBasicInfoDraft((current) => ({ ...current, partner: name }));
+      if (type === REGISTRY_TYPE.partner) {
+        setBasicInfo((current) => ({ ...current, partner: name }));
+        setBasicInfoDraft((current) => ({ ...current, partner: name }));
+      }
       return;
     }
 

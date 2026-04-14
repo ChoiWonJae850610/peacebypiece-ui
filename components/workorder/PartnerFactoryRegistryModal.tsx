@@ -26,10 +26,12 @@ export default function PartnerFactoryRegistryModal({
   const [name, setName] = useState("");
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.layout.partnerFactoryRegistry;
-  const typeOptionLabels = {
+  const typeOptionLabels: Record<RegistryType, string> = {
     [REGISTRY_TYPE.partner]: copy.typeOptions.partner,
     [REGISTRY_TYPE.factory]: copy.typeOptions.factory,
-  } as const;
+    [REGISTRY_TYPE.materialVendor]: copy.typeOptions.materialVendor,
+    [REGISTRY_TYPE.subsidiaryVendor]: copy.typeOptions.subsidiaryVendor,
+  };
 
   useEffect(() => {
     if (!open) return;
