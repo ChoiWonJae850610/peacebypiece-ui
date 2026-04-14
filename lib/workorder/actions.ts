@@ -1,4 +1,13 @@
 import { INVENTORY_CHANGE_TYPE, INVENTORY_STATUS } from "@/lib/constants/workorderDomain";
+import {
+  DEFAULT_WORKORDER_CATEGORY1,
+  DEFAULT_WORKORDER_CATEGORY2,
+  DEFAULT_WORKORDER_CATEGORY3,
+  DEFAULT_WORKORDER_DUE_DATE,
+  DEFAULT_WORKORDER_PRIORITY,
+  DEFAULT_WORKORDER_SEASON,
+  DEFAULT_WORKORDER_VENDOR,
+} from "@/lib/constants/workorderDefaults";
 import { createAttachmentId } from "@/lib/permissions/attachments";
 import type { Material } from "@/types/material";
 import { applyReorderIdentity, buildWorkOrderTitle, getNextReorderRound, getWorkOrderBaseTitle, getWorkOrderReorderGroupId, getWorkOrderReorderRound } from "@/lib/workorder/reorder/helpers";
@@ -26,17 +35,17 @@ export function createNewWorkOrder(nextIndex: number, payload: {
     baseTitle: title,
     reorderGroupId: id,
     reorderRound: 1,
-    category1: payload.category1 ?? "의류",
-    category2: payload.category2 ?? "미분류",
-    category3: payload.category3 ?? "미분류",
-    season: payload.season ?? "ALL",
-    priority: "보통",
-    vendor: "미정",
+    category1: payload.category1 ?? DEFAULT_WORKORDER_CATEGORY1,
+    category2: payload.category2 ?? DEFAULT_WORKORDER_CATEGORY2,
+    category3: payload.category3 ?? DEFAULT_WORKORDER_CATEGORY3,
+    season: payload.season ?? DEFAULT_WORKORDER_SEASON,
+    priority: DEFAULT_WORKORDER_PRIORITY,
+    vendor: DEFAULT_WORKORDER_VENDOR,
     manager: payload.managerName,
     managerId: payload.managerId,
     createdById: payload.managerId,
     createdByRole: payload.managerRole,
-    dueDate: "미정",
+    dueDate: DEFAULT_WORKORDER_DUE_DATE,
     quantity: 0,
     inventoryQuantity: 0,
     inventoryStatus: INVENTORY_STATUS.unchecked,

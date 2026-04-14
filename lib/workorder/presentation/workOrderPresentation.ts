@@ -1,4 +1,5 @@
 import { EMPTY_DISPLAY, INVENTORY_STATUS_LABEL_PREFIX } from "@/lib/constants/display";
+import { DEFAULT_WORKORDER_CATEGORY2, DEFAULT_WORKORDER_CATEGORY3 } from "@/lib/constants/workorderDefaults";
 import { getInventoryStatusLabel } from "@/lib/constants/workorderDomain";
 import { hasDisplayText, joinDisplayParts } from "@/lib/utils/display";
 import { getI18n } from "@/lib/i18n";
@@ -10,7 +11,12 @@ import type { WorkflowState } from "@/types/workflow";
 const i18n = getI18n();
 
 export function getCategoryPath(workOrder: Pick<WorkOrderListItem, "category1" | "category2" | "category3">) {
-  return joinDisplayParts([workOrder.category1, workOrder.category2, workOrder.category3]);
+  const categoryParts = [workOrder.category1, workOrder.category2, workOrder.category3].filter((value, index) => {
+    if (index === 1 && value === DEFAULT_WORKORDER_CATEGORY2) return false;
+    if (index === 2 && value === DEFAULT_WORKORDER_CATEGORY3) return false;
+    return true;
+  });
+  return joinDisplayParts(categoryParts);
 }
 
 export function getInventoryLabel(status: string | null | undefined) {
@@ -32,4 +38,8 @@ export function getWorkOrderDisplayTitle(workOrder: { title?: string | null; bas
     reorderRound: workOrder.reorderRound ?? undefined,
     revision: workOrder.revision ?? undefined,
   });
+}
+
+export function getDisplayValueOrFallback(value: string | null | undefined, fallback: string) {
+  return hasDisplayText(value) ? value : fallback;
 }

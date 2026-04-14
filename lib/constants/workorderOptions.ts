@@ -22,6 +22,7 @@ export const DEFAULT_MATERIAL_UNIT = "yd" as const;
 export const DEFAULT_OUTSOURCING_PROCESS = DEFAULT_UNSELECTED_OPTION;
 export const DEFAULT_OUTSOURCING_UNIT = "개" as const;
 export const DEFAULT_ORDER_TYPE = "메인 생산" as const;
+export const DEFAULT_PRIORITY_OPTION = (PRIORITY_OPTIONS[1] ?? PRIORITY_OPTIONS[0]) as string;
 export const DEFAULT_BASIC_YEAR = String(currentYear) as string;
 export const DEFAULT_PARTNER_OPTION = PARTNER_OPTIONS[0] as string;
 export const DEFAULT_FACTORY_OPTION = FACTORY_OPTIONS[0] as string;

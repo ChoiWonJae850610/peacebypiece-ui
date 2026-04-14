@@ -6,7 +6,7 @@ import {
   DEFAULT_FACTORY_OPTION,
   DEFAULT_ORDER_TYPE,
   DEFAULT_PARTNER_OPTION,
-  PRIORITY_OPTIONS,
+  DEFAULT_PRIORITY_OPTION,
   SEASON_OPTIONS,
 } from "@/lib/constants/workorderOptions";
 import { isEditorNumericField } from "@/lib/workorder/detail/detailFields";
@@ -52,7 +52,7 @@ export function sanitizeOrderEntry(item: Partial<OrderEntry>, fallback?: Partial
     quantity: Math.max(0, Number(item.quantity ?? fallback?.quantity) || 0),
     laborCost: Math.max(0, Number(item.laborCost ?? fallback?.laborCost) || 0),
     lossCost: Math.max(0, Number(item.lossCost ?? fallback?.lossCost) || 0),
-    priority: item.priority || fallback?.priority || PRIORITY_OPTIONS[0],
+    priority: item.priority || fallback?.priority || DEFAULT_PRIORITY_OPTION,
     inspectionStatus: sanitizeInspectionStatus(item.inspectionStatus ?? fallback?.inspectionStatus, workflowState),
   };
 }
@@ -71,7 +71,7 @@ export function getInitialOrderEntries(workOrder: WorkOrder): OrderEntry[] {
         quantity: Number.isFinite(workOrder.quantity) ? workOrder.quantity : 0,
         laborCost: Math.max(0, Number(workOrder.laborCost) || 0),
         lossCost: Math.max(0, Number(workOrder.lossCost) || 0),
-        priority: workOrder.priority || PRIORITY_OPTIONS[0],
+        priority: workOrder.priority || DEFAULT_PRIORITY_OPTION,
         inspectionStatus: getDefaultInspectionStatus(workOrder.workflowState),
       },
       undefined,

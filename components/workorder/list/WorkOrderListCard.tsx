@@ -3,7 +3,7 @@
 import { REORDERABLE_WORKFLOW_STATES } from "@/lib/constants/workorderStates";
 import { useI18n } from "@/lib/i18n";
 import { getStageDotTone, getWorkflowStateLabel } from "@/lib/workorder/presentation/statusPresentation";
-import { getCategoryPath, getWorkOrderCardTone, getWorkOrderDisplayTitle, getWorkOrderState } from "@/lib/workorder/presentation/workOrderPresentation";
+import { getCategoryPath, getDisplayValueOrFallback, getWorkOrderCardTone, getWorkOrderDisplayTitle, getWorkOrderState } from "@/lib/workorder/presentation/workOrderPresentation";
 import type { WorkOrderListItem, WorkflowState } from "@/types/workorder";
 
 type Props = {
@@ -58,8 +58,8 @@ export default function WorkOrderListCard({
           </div>
           <div className={`mt-2 space-y-0.5 text-xs leading-4 ${active ? "text-stone-200" : "text-stone-500"}`}>
             <div className="truncate">{getCategoryPath(workOrder) || copy.uncategorized}</div>
-            <div className="truncate">{copy.vendorLabel}: {workOrder.vendor ?? copy.unspecified}</div>
-            <div>{copy.dueDateLabel}: {workOrder.dueDate ?? copy.unspecified}</div>
+            <div className="truncate">{copy.vendorLabel}: {getDisplayValueOrFallback(workOrder.vendor, copy.unspecified)}</div>
+            <div>{copy.dueDateLabel}: {getDisplayValueOrFallback(workOrder.dueDate, copy.unspecified)}</div>
             <div>{copy.attachmentsLabel}: {workOrder.filesCount ?? 0}{copy.countSuffix}</div>
           </div>
         </button>
