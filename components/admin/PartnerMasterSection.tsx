@@ -158,7 +158,7 @@ export default function PartnerMasterSection() {
               id="partner-search"
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="업체명, 대표자, 연락처, 메모, 공정 검색"
+              placeholder="업체명, 대표자, 연락처, 이메일, 메모, 공정 검색"
               className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-stone-500"
             />
           </div>
@@ -245,6 +245,7 @@ export default function PartnerMasterSection() {
                     </div>
                     <div className="mt-1 space-y-1 text-xs leading-5 text-stone-500">
                       <p>{partner.contactName || partner.phone ? `${partner.contactName || "대표자 미등록"} · ${partner.phone || "연락처 미등록"}` : "대표자/연락처 미등록"}</p>
+                      {partner.email ? <p>{partner.email}</p> : null}
                       {partner.outsourcingProcessTypes?.length ? (
                         <p>가능 공정 · {partner.outsourcingProcessTypes.map((type) => OUTSOURCING_PROCESS_META[type].label).join(", ")}</p>
                       ) : null}
@@ -259,13 +260,14 @@ export default function PartnerMasterSection() {
                     ))}
                   </div>
                   <div>
-                    <StatusToggle
-                      checked={partner.isActive}
-                      disabled
-                      onLabel="ON"
-                      offLabel="OFF"
-                      srLabel={`${partner.name} 사용 여부`}
-                    />
+                    <span
+                      className={[
+                        "inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
+                        partner.isActive ? "bg-emerald-100 text-emerald-700" : "bg-stone-200 text-stone-600",
+                      ].join(" ")}
+                    >
+                      {partner.isActive ? "사용중" : "미사용"}
+                    </span>
                   </div>
                   <p className="text-sm text-stone-600">{formatPartnerDate(partner.updatedAt)}</p>
                   <div>
@@ -313,7 +315,7 @@ export default function PartnerMasterSection() {
           </div>
         }
       >
-        <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px]">
+        <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
           <div className="space-y-2">
             <label htmlFor="partner-name" className="text-sm font-medium text-stone-800">
               업체명
@@ -329,19 +331,20 @@ export default function PartnerMasterSection() {
 
           <div className="space-y-2">
             <p className="text-sm font-medium text-stone-800">사용 여부</p>
-            <div className="flex min-h-[54px] items-center rounded-2xl border border-stone-300 bg-white px-3 py-2.5">
+            <div className="flex min-h-[48px] items-center">
               <StatusToggle
                 checked={draft.isActive}
                 onChange={(nextValue) => setDraft((current) => ({ ...current, isActive: nextValue }))}
                 onLabel="ON"
                 offLabel="OFF"
                 srLabel="거래처 사용 여부"
+                size="sm"
               />
             </div>
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-3">
           <div className="space-y-2">
             <label htmlFor="partner-contact-name" className="text-sm font-medium text-stone-800">
               대표자
@@ -363,8 +366,26 @@ export default function PartnerMasterSection() {
               id="partner-phone"
               type="tel"
               value={draft.phone}
-              onChange={(event) => setDraft((current) => ({ ...current, phone: event.target.value }))}
-              placeholder="연락처 입력"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              onChange={(event) =>
+                setDraft((current) => ({ ...current, phone: event.target.value.replace(/\D/g, "") }))
+              }
+              placeholder="숫자만 입력"
+              className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-stone-500"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="partner-email" className="text-sm font-medium text-stone-800">
+              이메일
+            </label>
+            <input
+              id="partner-email"
+              type="email"
+              value={draft.email}
+              onChange={(event) => setDraft((current) => ({ ...current, email: event.target.value }))}
+              placeholder="이메일 입력"
               className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-stone-500"
             />
           </div>

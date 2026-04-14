@@ -1,5 +1,7 @@
 "use client";
 
+type StatusToggleSize = "sm" | "md";
+
 type StatusToggleProps = {
   checked: boolean;
   onChange?: (nextValue: boolean) => void;
@@ -8,6 +10,18 @@ type StatusToggleProps = {
   offLabel?: string;
   srLabel?: string;
   className?: string;
+  size?: StatusToggleSize;
+};
+
+const SIZE_CLASS_MAP: Record<StatusToggleSize, { track: string; thumb: string }> = {
+  sm: {
+    track: "h-7 min-w-[62px] px-1",
+    thumb: "h-5 min-w-[28px] px-1.5 text-[10px]",
+  },
+  md: {
+    track: "h-8 min-w-[72px] px-1",
+    thumb: "h-6 min-w-[34px] px-2 text-[11px]",
+  },
 };
 
 export default function StatusToggle({
@@ -18,11 +32,14 @@ export default function StatusToggle({
   offLabel = "OFF",
   srLabel,
   className = "",
+  size = "sm",
 }: StatusToggleProps) {
   const handleClick = () => {
     if (disabled || !onChange) return;
     onChange(!checked);
   };
+
+  const sizeClass = SIZE_CLASS_MAP[size];
 
   return (
     <button
@@ -33,7 +50,8 @@ export default function StatusToggle({
       disabled={disabled}
       onClick={handleClick}
       className={[
-        "inline-flex h-9 min-w-[88px] items-center rounded-full border px-1.5 transition",
+        "inline-flex items-center rounded-full border transition",
+        sizeClass.track,
         checked
           ? "border-stone-900 bg-stone-900 text-white"
           : "border-stone-300 bg-stone-100 text-stone-600",
@@ -43,8 +61,9 @@ export default function StatusToggle({
     >
       <span
         className={[
-          "inline-flex h-6 min-w-[40px] items-center justify-center rounded-full px-2 text-[11px] font-semibold transition",
-          checked ? "bg-white text-stone-900 translate-x-0" : "bg-white text-stone-500 translate-x-[calc(100%-2px)]",
+          "inline-flex items-center justify-center rounded-full font-semibold transition",
+          sizeClass.thumb,
+          checked ? "bg-white text-stone-900" : "bg-white text-stone-500",
         ].join(" ")}
       >
         {checked ? onLabel : offLabel}

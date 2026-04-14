@@ -13,6 +13,7 @@ export type Partner = {
   isActive: boolean;
   contactName?: string;
   phone?: string;
+  email?: string;
   outsourcingProcessTypes?: OutsourcingProcessType[];
   memo: string;
   createdAt: string;
@@ -25,6 +26,7 @@ export type PartnerDraft = {
   isActive: boolean;
   contactName: string;
   phone: string;
+  email: string;
   outsourcingProcessTypes: OutsourcingProcessType[];
   memo: string;
 };

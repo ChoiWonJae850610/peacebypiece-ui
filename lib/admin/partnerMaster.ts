@@ -36,6 +36,7 @@ export const EMPTY_PARTNER_DRAFT: PartnerDraft = {
   isActive: true,
   contactName: "",
   phone: "",
+  email: "",
   outsourcingProcessTypes: [],
   memo: "",
 };
@@ -67,6 +68,7 @@ export function buildPartnerDraftFromEntity(partner: Partner): PartnerDraft {
     isActive: partner.isActive,
     contactName: partner.contactName ?? "",
     phone: partner.phone ?? "",
+    email: partner.email ?? "",
     outsourcingProcessTypes: [...(partner.outsourcingProcessTypes ?? [])],
     memo: partner.memo,
   };
@@ -81,7 +83,8 @@ export function normalizePartnerDraft(draft: PartnerDraft): PartnerDraft {
     name: draft.name.trim(),
     partnerTypes: normalizedTypes,
     contactName: draft.contactName.trim(),
-    phone: draft.phone.trim(),
+    phone: draft.phone.replace(/\D/g, ""),
+    email: draft.email.trim(),
     outsourcingProcessTypes: isOutsourcingVendor ? Array.from(new Set(draft.outsourcingProcessTypes)) : [],
     memo: draft.memo.trim(),
   };
@@ -103,6 +106,7 @@ function matchesPartnerSearch(partner: Partner, searchTerm: string) {
     partner.name,
     partner.contactName ?? "",
     partner.phone ?? "",
+    partner.email ?? "",
     partner.memo,
     ...partner.partnerTypes.map((type) => PARTNER_TYPE_META[type].label),
     ...(partner.outsourcingProcessTypes ?? []).map((type) => OUTSOURCING_PROCESS_META[type].label),

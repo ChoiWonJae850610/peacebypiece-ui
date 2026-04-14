@@ -116,6 +116,7 @@ export default function AdminPanelModal({
                     onLabel={ui.modal.adminPanel.toggleOn}
                     offLabel={ui.modal.adminPanel.toggleOff}
                     srLabel={`${item.label} ${checked ? ui.modal.adminPanel.toggleOn : ui.modal.adminPanel.toggleOff}`}
+                    size="sm"
                   />
                 </div>
               );
