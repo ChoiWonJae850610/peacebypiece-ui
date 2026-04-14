@@ -1,6 +1,9 @@
 import { CATEGORY_TREE } from "@/lib/constants/workorderCategories";
-
-export const CATEGORY_TREE_STORAGE_KEY = "peacebypiece.system.categoryTree.v1";
+import {
+  loadPersistedCategoryTreeJson,
+  persistCategoryTreeState,
+  removePersistedCategoryTree,
+} from "@/lib/system/categoryPersistence";
 
 export type CategoryTreeRuntime = Record<string, Record<string, string[]>>;
 
@@ -61,16 +64,8 @@ export function sanitizeCategoryTree(tree: unknown): CategoryTreeRuntime {
 }
 
 export function getStoredCategoryTree(): CategoryTreeRuntime | null {
-  if (typeof window === "undefined" || !window.localStorage) return null;
-
-  const saved = window.localStorage.getItem(CATEGORY_TREE_STORAGE_KEY);
-  if (!saved) return null;
-
-  try {
-    return sanitizeCategoryTree(JSON.parse(saved));
-  } catch {
-    return null;
-  }
+  const stored = loadPersistedCategoryTreeJson();
+  return stored ? sanitizeCategoryTree(stored) : null;
 }
 
 export function getRuntimeCategoryTree(): CategoryTreeRuntime {
@@ -78,13 +73,11 @@ export function getRuntimeCategoryTree(): CategoryTreeRuntime {
 }
 
 export function persistCategoryTree(tree: CategoryTreeRuntime) {
-  if (typeof window === "undefined" || !window.localStorage) return;
-  window.localStorage.setItem(CATEGORY_TREE_STORAGE_KEY, JSON.stringify(sanitizeCategoryTree(tree)));
+  persistCategoryTreeState(tree);
 }
 
 export function removeStoredCategoryTree() {
-  if (typeof window === "undefined" || !window.localStorage) return;
-  window.localStorage.removeItem(CATEGORY_TREE_STORAGE_KEY);
+  removePersistedCategoryTree();
 }
 
 export function getCategory1Options(tree: CategoryTreeRuntime) {

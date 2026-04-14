@@ -25,11 +25,7 @@ import {
   sanitizeEditableCategoryRules,
   sortEditableCategoryRules,
 } from "@/lib/system/categoryRuleEditor";
-import {
-  CATEGORY_RULE_STORAGE_KEY,
-  createCategoryRuleId,
-  getStoredEditableCategoryRules,
-} from "@/lib/system/categoryRuleRuntime";
+import { createCategoryRuleId } from "@/lib/system/categoryRuleRuntime";
 import {
   type CategoryTreeRuntime,
   getCategory1Options,
@@ -37,9 +33,14 @@ import {
   getCategory3Options,
   getRuntimeCategoryTree,
   normalizeRecommendationWithTree,
-  persistCategoryTree,
-  removeStoredCategoryTree,
 } from "@/lib/system/categoryTreeRuntime";
+import {
+  loadPersistedCategorySystemJson,
+  persistCategoryRules,
+  persistCategoryTreeState,
+  removePersistedCategoryRules,
+  removePersistedCategoryTree,
+} from "@/lib/system/categoryPersistence";
 
 export type CategoryRulesManagerText = {
   addRule: string;
@@ -624,16 +625,20 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
     const ruleNameInputRef = useRef<HTMLInputElement | null>(null);
 
     useEffect(() => {
-      const storedRules = getStoredEditableCategoryRules();
-      const sourceRules = storedRules ? reassignEditableCategoryRulePriorities(sortEditableCategoryRules(storedRules)) : reassignEditableCategoryRulePriorities(sortEditableCategoryRules(getInitialEditableCategoryRules()));
+      const persistedState = loadPersistedCategorySystemJson();
+      const runtimeTree = getRuntimeCategoryTree();
+      const storedRules = Array.isArray(persistedState.rules) ? sanitizeEditableCategoryRules(persistedState.rules as EditableCategoryRule[]) : null;
+      const sourceRules = storedRules
+        ? reassignEditableCategoryRulePriorities(sortEditableCategoryRules(storedRules))
+        : reassignEditableCategoryRulePriorities(sortEditableCategoryRules(getInitialEditableCategoryRules()));
       const normalizedRules = sourceRules.map((rule) => ({
         ...rule,
-        recommendation: normalizeRecommendationWithTree(rule.recommendation, getRuntimeCategoryTree()),
+        recommendation: normalizeRecommendationWithTree(rule.recommendation, runtimeTree),
       }));
       setRules(normalizedRules);
       setSelectedRuleId(normalizedRules[0]?.id ?? null);
       setKeywordTextByRuleId(Object.fromEntries(normalizedRules.map((rule) => [rule.id, buildTaggedKeywordInput(rule.keywords)])));
-      setCategoryTree(getRuntimeCategoryTree());
+      setCategoryTree(runtimeTree);
     }, []);
 
     const sortedRules = useMemo(() => sortEditableCategoryRules(rules), [rules]);
@@ -667,9 +672,9 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
       setRules(reassignEditableCategoryRulePriorities(nextRules));
     }
 
-    function persistRules(nextRules: EditableCategoryRule[]) {
+    function persistRulesState(nextRules: EditableCategoryRule[]) {
       const sanitized = sanitizeEditableCategoryRules(reassignEditableCategoryRulePriorities(nextRules));
-      window.localStorage.setItem(CATEGORY_RULE_STORAGE_KEY, JSON.stringify(sanitized));
+      persistCategoryRules(sanitized);
       setRules(sanitized);
       syncKeywordDrafts(sanitized);
       setSelectedRuleId((current) => current ?? sanitized[0]?.id ?? null);
@@ -716,12 +721,12 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
     }
 
     function handleSave() {
-      persistRules(sortedRules.map((rule) => normalizeRuleWithTree(rule, categoryTree)));
+      persistRulesState(sortedRules.map((rule) => normalizeRuleWithTree(rule, categoryTree)));
     }
 
     function handleReset() {
       const initial = reassignEditableCategoryRulePriorities(sortEditableCategoryRules(getInitialEditableCategoryRules())).map((rule) => normalizeRuleWithTree(rule, getRuntimeCategoryTree()));
-      window.localStorage.removeItem(CATEGORY_RULE_STORAGE_KEY);
+      removePersistedCategoryRules();
       setRules(initial);
       syncKeywordDrafts(initial);
       setSelectedRuleId(initial[0]?.id ?? null);
@@ -731,7 +736,7 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
       if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return;
       const movedRules = moveEditableCategoryRule(sortedRules, fromIndex, toIndex);
       replaceRules(movedRules);
-      persistRules(movedRules);
+      persistRulesState(movedRules);
     }
 
     function handleMoveById(ruleId: string, direction: "up" | "down") {
@@ -754,9 +759,9 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
     }
 
     function saveCategoryTree() {
-      persistCategoryTree(categoryTree);
+      persistCategoryTreeState(categoryTree);
       const normalizedRules = sortedRules.map((rule) => normalizeRuleWithTree(rule, categoryTree));
-      persistRules(normalizedRules);
+      persistRulesState(normalizedRules);
       setCategoryModalOpen(false);
     }
 

@@ -1,6 +1,5 @@
 import { WORKORDER_CATEGORY_KEYWORD_RULES, type WorkOrderCategoryKeywordRule } from "@/lib/constants/workorderCategoryKeywords";
-
-export const CATEGORY_RULE_STORAGE_KEY = "peacebypiece.system.categoryRules.v1";
+import { loadPersistedCategoryRulesJson } from "@/lib/system/categoryPersistence";
 
 export type EditableCategoryRuleRuntime = WorkOrderCategoryKeywordRule & {
   id: string;
@@ -72,24 +71,10 @@ export function toRuntimeCategoryRules(rules: EditableCategoryRuleRuntime[]): Wo
     .map(({ keywords, recommendation }) => ({ keywords, recommendation }));
 }
 
-function readStoredCategoryRulesFromStorage(storage: Storage): EditableCategoryRuleRuntime[] | null {
-  const saved = storage.getItem(CATEGORY_RULE_STORAGE_KEY);
-  if (!saved) return null;
-
-  try {
-    const parsed = JSON.parse(saved) as EditableCategoryRuleRuntime[];
-    return sanitizeStoredCategoryRules(parsed);
-  } catch {
-    return null;
-  }
-}
-
 export function getStoredEditableCategoryRules(): EditableCategoryRuleRuntime[] | null {
-  if (typeof window === "undefined" || !window.localStorage) {
-    return null;
-  }
-
-  return readStoredCategoryRulesFromStorage(window.localStorage);
+  const stored = loadPersistedCategoryRulesJson();
+  if (!Array.isArray(stored)) return null;
+  return sanitizeStoredCategoryRules(stored as EditableCategoryRuleRuntime[]);
 }
 
 export function getActiveWorkOrderCategoryRules(): WorkOrderCategoryKeywordRule[] {
