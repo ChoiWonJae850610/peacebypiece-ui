@@ -20,6 +20,7 @@ import {
   PARTNER_STATUS_FILTER_OPTIONS,
   PARTNER_TYPE_META,
   togglePartnerFilterSelection,
+  applyPartnerTypeSelectionPolicy,
   type OutsourcingProcessDefinition,
 } from "@/lib/admin/partnerMaster";
 import { mockPartnerRepository } from "@/lib/repositories/mockPartnerRepository";
@@ -59,7 +60,7 @@ export default function PartnerMasterSection() {
   );
 
   const isOutsourcingEnabled = draft.partnerTypes.includes("outsourcing_vendor");
-  const selectedPrimaryType = draft.partnerTypes.find((type) => type !== "outsourcing_vendor") ?? null;
+  const selectedPrimaryTypes = draft.partnerTypes.filter((type) => type !== "outsourcing_vendor");
   const availableProcessDefinitions = processDefinitions
     .filter((definition) => definition.isActive && !draft.outsourcingProcessTypes.includes(definition.type))
     .sort((a, b) => a.sortOrder - b.sortOrder);
@@ -110,16 +111,12 @@ export default function PartnerMasterSection() {
   }, []);
 
   const setPrimaryType = (type: PartnerType) => {
-    setDraft((current) => {
-      const nextTypes = current.partnerTypes.filter((item) => item === "outsourcing_vendor");
-      if (type !== "outsourcing_vendor") {
-        nextTypes.unshift(type);
-      }
-      return {
-        ...current,
-        partnerTypes: Array.from(new Set(nextTypes)),
-      };
-    });
+    if (type === "outsourcing_vendor") return;
+
+    setDraft((current) => ({
+      ...current,
+      partnerTypes: applyPartnerTypeSelectionPolicy(current.partnerTypes, type),
+    }));
   };
 
   const setOutsourcingEnabled = (enabled: boolean) => {
@@ -518,12 +515,13 @@ export default function PartnerMasterSection() {
             <p className="text-sm font-medium text-stone-800">기본 거래 유형</p>
             <div className="grid gap-2 sm:grid-cols-3">
               {BASE_PARTNER_TYPE_VALUES.map((type) => {
-                const checked = selectedPrimaryType === type;
+                const checked = selectedPrimaryTypes.includes(type);
                 return (
                   <button
                     key={type}
                     type="button"
                     onClick={() => setPrimaryType(type)}
+                    aria-pressed={checked}
                     className={[
                       "rounded-2xl border px-4 py-3 text-sm font-medium transition",
                       checked ? "border-stone-900 bg-stone-900 text-white" : "border-stone-300 bg-white text-stone-800 hover:border-stone-400",
