@@ -4,7 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { loadSectionPreferences, persistSectionPreferences } from "@/lib/repositories/uiPreferencePersistence";
 import type { WorkflowAction } from "@/types/workorder";
 
-export function useWorkOrderUIState() {
+type UseWorkOrderUIStateOptions = {
+  initialAdminPanelOpen?: boolean;
+};
+
+export function useWorkOrderUIState({ initialAdminPanelOpen = false }: UseWorkOrderUIStateOptions = {}) {
   const appShellRef = useRef<HTMLDivElement | null>(null);
   const attachmentInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -17,7 +21,7 @@ export function useWorkOrderUIState() {
   const [createWorkOrderModalOpen, setCreateWorkOrderModalOpen] = useState(false);
   const [managerAssignModalOpen, setManagerAssignModalOpen] = useState(false);
   const [inventoryLogModalOpen, setInventoryLogModalOpen] = useState(false);
-  const [adminPanelModalOpen, setAdminPanelModalOpen] = useState(false);
+  const [adminPanelModalOpen, setAdminPanelModalOpen] = useState(initialAdminPanelOpen);
   const [attachmentPreviewId, setAttachmentPreviewId] = useState<string | null>(null);
   const [orderRequestConfirmOpen, setOrderRequestConfirmOpen] = useState(false);
   const [pendingWorkflowAction, setPendingWorkflowAction] = useState<WorkflowAction | null>(null);

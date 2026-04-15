@@ -30,6 +30,12 @@ export default function AdminPage() {
                   거래처/공장 관리
                 </Link>
                 <Link
+                  href="/worker?adminPanel=open"
+                  className="inline-flex items-center rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800"
+                >
+                  {i18n.common.viewWorkOrderHistory}
+                </Link>
+                <Link
                   href="/worker"
                   className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
                 >

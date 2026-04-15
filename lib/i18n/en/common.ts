@@ -2,6 +2,7 @@ export const commonEn = {
   appName: "PeaceByPiece",
   adminLabel: "Admin",
   moveToWorkspace: "Go to work order workspace",
+  viewWorkOrderHistory: "Open work order history",
   metadataDescription: "Work order workstation",
   comingSoon: "Actual screens and data wiring will be added next.",
   ui: {

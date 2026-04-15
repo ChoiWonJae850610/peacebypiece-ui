@@ -7,7 +7,11 @@ import { useWorkOrder } from "@/lib/hooks/useWorkOrder";
 import { getPendingAttachmentDelete } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
 import { buildWorkspaceViewModel } from "@/lib/workorder/workspace/buildWorkspaceViewModel";
 
-export default function WorkOrderWorkspace() {
+type WorkOrderWorkspaceProps = {
+  initialAdminPanelOpen?: boolean;
+};
+
+export default function WorkOrderWorkspace({ initialAdminPanelOpen = false }: WorkOrderWorkspaceProps) {
   const {
     appShellRef,
     attachmentInputRef,
@@ -101,7 +105,7 @@ export default function WorkOrderWorkspace() {
     handleCreateMemoReply,
     handlePromoteMemoAttachment,
     canSeeAttachments,
-  } = useWorkOrder();
+  } = useWorkOrder({ initialAdminPanelOpen });
 
   const [pendingAttachmentDeleteId, setPendingAttachmentDeleteId] = useState<string | null>(null);
   const pendingAttachmentDelete = useMemo(
