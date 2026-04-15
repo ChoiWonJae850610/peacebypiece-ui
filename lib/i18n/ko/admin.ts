@@ -14,6 +14,18 @@ export const adminKo = {
       title: "알림 이벤트 설정",
       description: "관리자 화면을 벗어나지 않고 알림 이벤트 ON/OFF 상태를 모달에서 관리합니다.",
     },
+  historySection: {
+    title: "히스토리",
+    summary: "summary 형식: 설명 · 사용자",
+    countSuffix: "건",
+  },
+  notificationSection: {
+    title: "알림 이벤트 설정",
+    description: "지금은 상태만 유지하고 실제 발송은 연결하지 않습니다.",
+    badge: "테스트용",
+    toggleOn: "ON",
+    toggleOff: "OFF",
+  },
   partnerMaster: {
     page: {
       title: "거래처/공장 관리",

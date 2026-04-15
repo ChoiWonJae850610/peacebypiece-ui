@@ -179,7 +179,6 @@ export function useWorkOrder() {
     currentDisplayStage: derivedState.currentDisplayStage,
     currentInventoryQuantity: derivedState.currentInventoryQuantity,
     filteredHistoryLogs: historyState.filteredHistoryLogs,
-    adminHistoryLogs: historyState.adminHistoryLogs,
     inventoryLogs: historyState.inventoryLogs,
     officialAttachments: derivedState.officialAttachments,
     selectedAttachment: derivedState.selectedAttachment,

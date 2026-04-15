@@ -6,7 +6,7 @@ import ModalBody from "@/components/common/modal/ModalBody";
 import ModalHeader from "@/components/common/modal/ModalHeader";
 import { MODAL_EXCEPTION_PRESETS } from "@/components/common/modal/modalPresets";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
-import AdminPanelNotificationSection from "@/components/common/modal/adminPanel/AdminPanelNotificationSection";
+import AdminNotificationSettingsSection from "@/components/admin/notification/AdminNotificationSettingsSection";
 import { useI18n } from "@/lib/i18n";
 import type { NotificationSettingKey, NotificationSettings } from "@/types/workflow";
 
@@ -44,7 +44,7 @@ export default function AdminNotificationSettingsModal({
         onClose={onClose}
       />
       <ModalBody className={MODAL_EXCEPTION_PRESETS.adminPanel.bodyClassName}>
-        <AdminPanelNotificationSection
+        <AdminNotificationSettingsSection
           notificationSettings={notificationSettings}
           onToggleNotificationSetting={onToggleNotificationSetting}
         />

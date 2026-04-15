@@ -7,7 +7,7 @@ import { getReorderGroupWorkOrders } from "@/lib/workorder/reorder/inventory";
 import type { WorkOrder } from "@/types/workorder";
 import { normalizeRoles } from "@/lib/constants/roles";
 import type { HistoryLog, UserProfile } from "@/types/workorder";
-import type { HistoryFilter, NotificationSettingKey, NotificationSettings } from "@/types/workflow";
+import type { HistoryFilter } from "@/types/workflow";
 
 export function useWorkOrderHistory({
   historyLogs,
@@ -23,15 +23,6 @@ export function useWorkOrderHistory({
   workOrders: WorkOrder[];
 }) {
   const [historyFilter, setHistoryFilter] = useState<HistoryFilter>("all");
-  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({
-    created: false,
-    updated: false,
-    status_changed: true,
-    materials_changed: false,
-    outsourcing_changed: false,
-    stock_changed: true,
-    comment_added: true,
-  });
 
   const currentRoles = normalizeRoles(currentUser.roles, currentUser.role);
 
@@ -48,24 +39,12 @@ export function useWorkOrderHistory({
     [scopedHistoryLogs, isAdmin, historyFilter, currentRoles],
   );
 
-  const adminHistoryLogs = useMemo(
-    () => filterHistoryLogs(historyLogs, true, historyFilter, currentRoles),
-    [historyLogs, historyFilter, currentRoles],
-  );
-
   const inventoryLogs = useMemo(() => toInventoryLogs(scopedHistoryLogs), [scopedHistoryLogs]);
-
-  const handleToggleNotificationSetting = (key: NotificationSettingKey) => {
-    setNotificationSettings((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
 
   return {
     historyFilter,
     setHistoryFilter,
-    notificationSettings,
-    handleToggleNotificationSetting,
     filteredHistoryLogs,
-    adminHistoryLogs,
     inventoryLogs,
   };
 }

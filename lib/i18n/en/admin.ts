@@ -14,6 +14,18 @@ export const adminEn = {
       title: "Notification Event Settings",
       description: "Manage notification event ON/OFF states in a modal without leaving the admin workspace.",
     },
+  historySection: {
+    title: "History",
+    summary: "Summary format: description · user",
+    countSuffix: " items",
+  },
+  notificationSection: {
+    title: "Notification Event Settings",
+    description: "Only the state is stored for now. Actual delivery is not connected yet.",
+    badge: "Test",
+    toggleOn: "ON",
+    toggleOff: "OFF",
+  },
   partnerMaster: {
     page: {
       title: "Partner / Factory Management",

@@ -1,16 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { buildAdminPanelHistoryPreviewItemViewModel } from "@/lib/workorder/presentation/adminPanelHistoryPresentation";
+import { buildAdminHistoryItemViewModel } from "@/lib/admin/historyPresentation";
 import type { HistoryLog } from "@/types/workorder";
 
-type AdminPanelHistoryPreviewItemProps = {
+type AdminWorkOrderHistoryItemProps = {
   item: HistoryLog;
 };
 
-export default function AdminPanelHistoryPreviewItem({ item }: AdminPanelHistoryPreviewItemProps) {
+export default function AdminWorkOrderHistoryItem({ item }: AdminWorkOrderHistoryItemProps) {
   const [open, setOpen] = useState(false);
-  const viewModel = buildAdminPanelHistoryPreviewItemViewModel(item, open);
+  const viewModel = buildAdminHistoryItemViewModel(item, open);
 
   return (
     <div className="rounded-xl border border-stone-200 bg-stone-50 p-3">

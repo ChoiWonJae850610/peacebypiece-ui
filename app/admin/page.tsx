@@ -1,6 +1,5 @@
 import Link from "next/link";
-import AdminNotificationSettingsButton from "@/components/admin/AdminNotificationSettingsButton";
-import AdminWorkOrderHistoryButton from "@/components/admin/AdminWorkOrderHistoryButton";
+import AdminWorkspaceTools from "@/components/admin/AdminWorkspaceTools";
 import { APP_VERSION } from "@/lib/constants/app";
 import { WORKSPACE_COMPANY_NAME, WORKSPACE_COMPANY_NAME_EN, getAdminWorkspaceTitle } from "@/lib/constants/company";
 import { getI18n } from "@/lib/i18n";
@@ -31,8 +30,7 @@ export default function AdminPage() {
                 >
                   거래처/공장 관리
                 </Link>
-                <AdminWorkOrderHistoryButton />
-                <AdminNotificationSettingsButton />
+                <AdminWorkspaceTools />
                 <Link
                   href="/worker"
                   className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"

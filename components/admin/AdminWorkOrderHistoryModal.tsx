@@ -6,7 +6,7 @@ import ModalBody from "@/components/common/modal/ModalBody";
 import ModalHeader from "@/components/common/modal/ModalHeader";
 import { MODAL_EXCEPTION_PRESETS } from "@/components/common/modal/modalPresets";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
-import AdminPanelHistorySection from "@/components/common/modal/adminPanel/AdminPanelHistorySection";
+import AdminWorkOrderHistorySection from "@/components/admin/history/AdminWorkOrderHistorySection";
 import { useI18n } from "@/lib/i18n";
 import type { HistoryFilter } from "@/types/workflow";
 import type { HistoryLog } from "@/types/workorder";
@@ -47,7 +47,7 @@ export default function AdminWorkOrderHistoryModal({
         onClose={onClose}
       />
       <ModalBody className={MODAL_EXCEPTION_PRESETS.adminPanel.bodyClassName}>
-        <AdminPanelHistorySection
+        <AdminWorkOrderHistorySection
           historyLogs={historyLogs}
           historyFilter={historyFilter}
           onHistoryFilterChange={onHistoryFilterChange}

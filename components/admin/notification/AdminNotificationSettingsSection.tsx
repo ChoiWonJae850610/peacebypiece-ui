@@ -1,32 +1,30 @@
 "use client";
 
 import StatusToggle from "@/components/common/StatusToggle";
+import { NOTIFICATION_SETTING_META } from "@/lib/admin/notificationSettingsMeta";
 import { useI18n } from "@/lib/i18n";
-import { NOTIFICATION_SETTING_META } from "@/lib/constants/workflow";
 import type { NotificationSettingKey, NotificationSettings } from "@/types/workflow";
 
-type AdminPanelNotificationSectionProps = {
+type AdminNotificationSettingsSectionProps = {
   notificationSettings: NotificationSettings;
   onToggleNotificationSetting: (key: NotificationSettingKey) => void;
 };
 
-export default function AdminPanelNotificationSection({
+export default function AdminNotificationSettingsSection({
   notificationSettings,
   onToggleNotificationSetting,
-}: AdminPanelNotificationSectionProps) {
+}: AdminNotificationSettingsSectionProps) {
   const { i18n } = useI18n();
-  const ui = i18n.common.ui;
+  const notificationI18n = i18n.admin.notificationSection;
 
   return (
     <section className="rounded-2xl border border-stone-200 bg-white p-3 md:p-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <div className="text-sm font-semibold text-stone-900">{ui.modal.adminPanel.notificationTitle}</div>
-          <div className="mt-1 text-xs leading-5 text-stone-500">{ui.modal.adminPanel.notificationDescription}</div>
+          <div className="text-sm font-semibold text-stone-900">{notificationI18n.title}</div>
+          <div className="mt-1 text-xs leading-5 text-stone-500">{notificationI18n.description}</div>
         </div>
-        <span className="rounded-full bg-sky-100 px-2 py-1 text-[11px] font-medium text-sky-700">
-          {ui.modal.adminPanel.testBadge}
-        </span>
+        <span className="rounded-full bg-sky-100 px-2 py-1 text-[11px] font-medium text-sky-700">{notificationI18n.badge}</span>
       </div>
       <div className="mt-3 space-y-2">
         {NOTIFICATION_SETTING_META.map((item) => {
@@ -44,11 +42,11 @@ export default function AdminPanelNotificationSection({
                 <StatusToggle
                   checked={checked}
                   onChange={() => onToggleNotificationSetting(item.key)}
-                  srLabel={`${item.label} ${checked ? ui.modal.adminPanel.toggleOn : ui.modal.adminPanel.toggleOff}`}
+                  srLabel={`${item.label} ${checked ? notificationI18n.toggleOn : notificationI18n.toggleOff}`}
                   size="sm"
                 />
                 <span className="text-xs font-medium text-stone-600">
-                  {checked ? ui.modal.adminPanel.toggleOn : ui.modal.adminPanel.toggleOff}
+                  {checked ? notificationI18n.toggleOn : notificationI18n.toggleOff}
                 </span>
               </div>
             </div>
