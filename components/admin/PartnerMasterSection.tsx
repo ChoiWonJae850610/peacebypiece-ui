@@ -25,8 +25,11 @@ import {
   type BasePartnerType,
   type OutsourcingProcessDefinition,
 } from "@/lib/admin/partnerMaster";
-import { createPartnerMasterItem, listPartnerMasterItems, updatePartnerMasterItem } from "@/lib/admin/partnerMasterRepository";
-import { loadPersistedOutsourcingProcesses, persistOutsourcingProcesses } from "@/lib/repositories/outsourcingProcessPersistence";
+import {
+  loadPartnerMasterInitialState,
+  savePartnerMasterItem,
+  savePartnerMasterProcessDefinitions,
+} from "@/lib/admin/partnerMasterPersistence";
 import type { OutsourcingProcessType, Partner, PartnerDraft } from "@/types/partner";
 
 export default function PartnerMasterSection() {
@@ -49,12 +52,13 @@ export default function PartnerMasterSection() {
   const [deletingProcessType, setDeletingProcessType] = useState<OutsourcingProcessType | null>(null);
 
   useEffect(() => {
-    setPartners(listPartnerMasterItems());
-    setProcessDefinitions(loadPersistedOutsourcingProcesses() ?? createDefaultOutsourcingProcessDefinitions());
+    const initialState = loadPartnerMasterInitialState();
+    setPartners(initialState.partners);
+    setProcessDefinitions(initialState.processDefinitions);
   }, []);
 
   useEffect(() => {
-    persistOutsourcingProcesses(processDefinitions);
+    savePartnerMasterProcessDefinitions(processDefinitions);
   }, [processDefinitions]);
 
   const listViewModel = useMemo(
@@ -151,9 +155,7 @@ export default function PartnerMasterSection() {
       return;
     }
 
-    const nextPartners = editingPartnerId
-      ? updatePartnerMasterItem(editingPartnerId, normalizedDraft)
-      : createPartnerMasterItem(normalizedDraft);
+    const nextPartners = savePartnerMasterItem(editingPartnerId, normalizedDraft);
 
     setPartners(nextPartners);
     closeModal();

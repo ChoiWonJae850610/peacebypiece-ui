@@ -1,4 +1,7 @@
-import { PARTNER_STATUS_FILTER_OPTIONS, type PartnerFilterChip, type PartnerStatusFilter } from "@/lib/admin/partnerMaster";
+"use client";
+
+import { type PartnerFilterChip, type PartnerStatusFilter } from "@/lib/admin/partnerMaster";
+import { useI18n } from "@/lib/i18n";
 
 type PartnerMasterFilterOption = {
   value: PartnerFilterChip;
@@ -32,15 +35,23 @@ export default function PartnerMasterFilters({
   activeCount,
   inactiveCount,
 }: PartnerMasterFiltersProps) {
+  const { i18n } = useI18n();
+  const filterText = i18n.admin.partnerMaster.filters;
+  const statusOptions = [
+    { value: "all" as const, label: filterText.statusOptions.all },
+    { value: "active" as const, label: filterText.statusOptions.active },
+    { value: "inactive" as const, label: filterText.statusOptions.inactive },
+  ];
+
   return (
     <>
       <div className="mt-5 grid gap-3 md:grid-cols-3">
         <label className="space-y-2 md:col-span-1">
-          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">검색</span>
+          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">{filterText.searchLabel}</span>
           <input
             value={searchTerm}
             onChange={(event) => onSearchTermChange(event.target.value)}
-            placeholder="업체명, 대표자, 연락처, 메모 검색"
+            placeholder={filterText.searchPlaceholder}
             className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-stone-500"
           />
         </label>
@@ -49,17 +60,14 @@ export default function PartnerMasterFilters({
       <div className="mt-5 space-y-4 rounded-3xl border border-stone-200 bg-stone-50 p-4">
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)_auto] lg:items-start">
           <div className="min-w-0 space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">요약</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">{filterText.summaryLabel}</p>
             <div className="rounded-2xl border border-stone-200 bg-white px-4 py-4 text-sm text-stone-600">
-              <p>
-                검색/필터 결과는 작업지시서 거래처 선택 모달과 동일한 기준으로 노출된다. 기본 유형은 공장/원단/부자재이며,
-                외주는 공정 단위로 별도 관리한다.
-              </p>
+              <p>{filterText.summaryDescription}</p>
             </div>
           </div>
 
           <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">유형</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">{filterText.typeLabel}</p>
             <div className="flex flex-wrap gap-2">
               {filterOptions.map((item) => {
                 const isSelected = selectedTypes.includes(item.value);
@@ -81,9 +89,9 @@ export default function PartnerMasterFilters({
           </div>
 
           <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">상태</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">{filterText.statusLabel}</p>
             <div className="flex flex-wrap gap-2">
-              {PARTNER_STATUS_FILTER_OPTIONS.map((item) => (
+              {statusOptions.map((item) => (
                 <button
                   key={item.value}
                   type="button"
@@ -102,12 +110,11 @@ export default function PartnerMasterFilters({
 
         <div className="flex flex-col gap-2 text-sm text-stone-600 md:flex-row md:items-center md:justify-between">
           <p>
-            현재 목록 <span className="font-semibold text-stone-900">{filteredCount}</span>개
-            {hasSearch ? " · 검색 결과 기준" : ""}
+            {filterText.currentListPrefix} <span className="font-semibold text-stone-900">{filteredCount}</span>
+            {filterText.currentListSuffix}
+            {hasSearch ? filterText.searchResultSuffix : ""}
           </p>
-          <p>
-            사용중 {activeCount} · 미사용 {inactiveCount}
-          </p>
+          <p>{filterText.usageSummary.replace("{active}", String(activeCount)).replace("{inactive}", String(inactiveCount))}</p>
         </div>
       </div>
     </>

@@ -2,6 +2,10 @@ import Link from "next/link";
 import PartnerMasterSection from "@/components/admin/PartnerMasterSection";
 import { APP_VERSION } from "@/lib/constants/app";
 import { WORKSPACE_COMPANY_NAME, WORKSPACE_COMPANY_NAME_EN } from "@/lib/constants/company";
+import { getI18n } from "@/lib/i18n";
+
+const i18n = getI18n();
+const pageText = i18n.admin.partnerMaster.page;
 
 export default function AdminPartnersPage() {
   return (
@@ -11,10 +15,8 @@ export default function AdminPartnersPage() {
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div className="space-y-2">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">{WORKSPACE_COMPANY_NAME_EN}</p>
-              <h1 className="text-2xl font-semibold tracking-tight text-stone-900 md:text-3xl">{WORKSPACE_COMPANY_NAME} · 거래처/공장 관리</h1>
-              <p className="max-w-2xl text-sm leading-6 text-stone-600 md:text-base">
-                거래처의 기본 유형은 공장·원단·부자재로 관리하고, 외주 여부와 공정은 별도 속성으로 연결한다.
-              </p>
+              <h1 className="text-2xl font-semibold tracking-tight text-stone-900 md:text-3xl">{WORKSPACE_COMPANY_NAME} · {pageText.title}</h1>
+              <p className="max-w-2xl text-sm leading-6 text-stone-600 md:text-base">{pageText.description}</p>
             </div>
             <div className="flex flex-col items-start gap-3 md:items-end">
               <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">v{APP_VERSION}</span>
@@ -23,13 +25,13 @@ export default function AdminPartnersPage() {
                   href="/admin"
                   className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
                 >
-                  관리자 메인
+                  {pageText.moveToAdminMain}
                 </Link>
                 <Link
                   href="/worker"
                   className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
                 >
-                  작업 화면 이동
+                  {pageText.moveToWorkspace}
                 </Link>
               </div>
             </div>
