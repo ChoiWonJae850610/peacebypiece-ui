@@ -17,7 +17,9 @@ export type PartnerListFilterState = {
   searchTerm: string;
 };
 
-export const BASE_PARTNER_TYPE_VALUES = PARTNER_TYPE_VALUES.filter((type) => type !== "outsourcing_vendor") as PartnerType[];
+export type BasePartnerType = Exclude<PartnerType, "outsourcing_vendor">;
+
+export const BASE_PARTNER_TYPE_VALUES = PARTNER_TYPE_VALUES.filter((type) => type !== "outsourcing_vendor") as BasePartnerType[];
 
 export type OutsourcingProcessDefinition = {
   type: OutsourcingProcessType;
@@ -65,6 +67,13 @@ export const DEFAULT_PARTNER_FILTER_STATE: PartnerListFilterState = {
   searchTerm: "",
 };
 
+export const PARTNER_MASTER_FORM_ERRORS = {
+  nameRequired: "업체명을 입력하세요.",
+  typeRequired: "유형을 하나 이상 선택하세요.",
+  processNameRequired: "공정명을 입력하세요.",
+  duplicateProcessLabel: "같은 표시명의 외주공정이 이미 있다.",
+} as const;
+
 export function createEmptyPartnerDraft(): PartnerDraft {
   return {
     ...EMPTY_PARTNER_DRAFT,
@@ -104,11 +113,15 @@ export function buildPartnerFilterOptions(definitions: OutsourcingProcessDefinit
 }
 
 
-export function applyPartnerTypeSelectionPolicy(currentTypes: PartnerType[], targetType: PartnerType) {
-  const currentBaseTypes = currentTypes.filter((type) => type !== "outsourcing_vendor");
+export function isBasePartnerType(type: PartnerType): type is BasePartnerType {
+  return type !== "outsourcing_vendor";
+}
+
+export function applyPartnerTypeSelectionPolicy(currentTypes: PartnerType[], targetType: BasePartnerType): PartnerType[] {
+  const currentBaseTypes = currentTypes.filter(isBasePartnerType);
   const hasOutsourcing = currentTypes.includes("outsourcing_vendor");
 
-  let nextBaseTypes: PartnerType[];
+  let nextBaseTypes: BasePartnerType[];
 
   if (targetType === "factory") {
     nextBaseTypes = currentBaseTypes.includes("factory") ? [] : ["factory"];
@@ -129,9 +142,9 @@ export function normalizePartnerTypeSelection(types: PartnerType[]) {
   const uniqueTypes = Array.from(new Set(types));
   const hasFactory = uniqueTypes.includes("factory");
   const hasOutsourcing = uniqueTypes.includes("outsourcing_vendor");
-  const baseTypes = hasFactory
-    ? (["factory"] as PartnerType[])
-    : uniqueTypes.filter((type) => type !== "factory" && type !== "outsourcing_vendor");
+  const baseTypes: BasePartnerType[] = hasFactory
+    ? ["factory"]
+    : uniqueTypes.filter((type): type is BasePartnerType => type !== "factory" && type !== "outsourcing_vendor");
 
   return [
     ...baseTypes,

@@ -17,18 +17,21 @@ import {
   formatPartnerDate,
   formatPartnerPhone,
   normalizePartnerDraft,
+  PARTNER_MASTER_FORM_ERRORS,
   PARTNER_STATUS_FILTER_OPTIONS,
   PARTNER_TYPE_META,
-  togglePartnerFilterSelection,
   applyPartnerTypeSelectionPolicy,
+  isBasePartnerType,
+  togglePartnerFilterSelection,
+  type BasePartnerType,
   type OutsourcingProcessDefinition,
 } from "@/lib/admin/partnerMaster";
-import { mockPartnerRepository } from "@/lib/repositories/mockPartnerRepository";
+import { createPartnerMasterItem, listPartnerMasterItems, updatePartnerMasterItem } from "@/lib/admin/partnerMasterRepository";
+import { loadPersistedOutsourcingProcesses, persistOutsourcingProcesses } from "@/lib/repositories/outsourcingProcessPersistence";
 import {
   type OutsourcingProcessType,
   type Partner,
   type PartnerDraft,
-  type PartnerType,
 } from "@/types/partner";
 import { formatPhoneNumber } from "@/lib/utils/phoneFormat";
 
@@ -49,10 +52,16 @@ export default function PartnerMasterSection() {
   const [formError, setFormError] = useState<string>("");
   const [newProcessLabel, setNewProcessLabel] = useState("");
   const [processFormError, setProcessFormError] = useState("");
+  const [deletingProcessType, setDeletingProcessType] = useState<OutsourcingProcessType | null>(null);
 
   useEffect(() => {
-    setPartners(mockPartnerRepository.listPartners());
+    setPartners(listPartnerMasterItems());
+    setProcessDefinitions(loadPersistedOutsourcingProcesses() ?? createDefaultOutsourcingProcessDefinitions());
   }, []);
+
+  useEffect(() => {
+    persistOutsourcingProcesses(processDefinitions);
+  }, [processDefinitions]);
 
   const listViewModel = useMemo(
     () => buildPartnerListViewModel(partners, { selectedTypes, status: selectedStatus, searchTerm }, processDefinitions),
@@ -60,7 +69,7 @@ export default function PartnerMasterSection() {
   );
 
   const isOutsourcingEnabled = draft.partnerTypes.includes("outsourcing_vendor");
-  const selectedPrimaryTypes = draft.partnerTypes.filter((type) => type !== "outsourcing_vendor");
+  const selectedPrimaryTypes = draft.partnerTypes.filter(isBasePartnerType);
   const availableProcessDefinitions = processDefinitions
     .filter((definition) => definition.isActive && !draft.outsourcingProcessTypes.includes(definition.type))
     .sort((a, b) => a.sortOrder - b.sortOrder);
@@ -110,8 +119,7 @@ export default function PartnerMasterSection() {
     setIsProcessModalOpen(true);
   }, []);
 
-  const setPrimaryType = (type: PartnerType) => {
-    if (type === "outsourcing_vendor") return;
+  const setPrimaryType = (type: BasePartnerType) => {
 
     setDraft((current) => ({
       ...current,
@@ -144,23 +152,17 @@ export default function PartnerMasterSection() {
     const normalizedDraft = normalizePartnerDraft(draft);
 
     if (!normalizedDraft.name) {
-      setFormError("업체명을 입력하세요.");
+      setFormError(PARTNER_MASTER_FORM_ERRORS.nameRequired);
       return;
     }
     if (normalizedDraft.partnerTypes.length === 0) {
-      setFormError("유형을 하나 이상 선택하세요.");
+      setFormError(PARTNER_MASTER_FORM_ERRORS.typeRequired);
       return;
     }
 
     const nextPartners = editingPartnerId
-      ? (() => {
-          mockPartnerRepository.updatePartner(editingPartnerId, normalizedDraft);
-          return mockPartnerRepository.listPartners();
-        })()
-      : (() => {
-          mockPartnerRepository.createPartner(normalizedDraft);
-          return mockPartnerRepository.listPartners();
-        })();
+      ? updatePartnerMasterItem(editingPartnerId, normalizedDraft)
+      : createPartnerMasterItem(normalizedDraft);
 
     setPartners(nextPartners);
     closeModal();
@@ -178,12 +180,12 @@ export default function PartnerMasterSection() {
     const normalizedLabel = newProcessLabel.trim();
 
     if (!normalizedLabel) {
-      setProcessFormError("공정명을 입력하세요.");
+      setProcessFormError(PARTNER_MASTER_FORM_ERRORS.processNameRequired);
       return;
     }
 
     if (processDefinitions.some((definition) => definition.label.trim() === normalizedLabel)) {
-      setProcessFormError("같은 표시명의 외주공정이 이미 있다.");
+      setProcessFormError(PARTNER_MASTER_FORM_ERRORS.duplicateProcessLabel);
       return;
     }
 
@@ -199,20 +201,25 @@ export default function PartnerMasterSection() {
     setProcessDefinitions((current) => moveOutsourcingProcessDefinition(current, type, direction));
   };
 
-  const deleteProcessDefinition = (type: OutsourcingProcessType) => {
-    const targetDefinition = processDefinitions.find((definition) => definition.type === type);
-    if (!targetDefinition) return;
+  const requestDeleteProcessDefinition = (type: OutsourcingProcessType) => {
+    setDeletingProcessType(type);
+  };
 
-    const confirmed = window.confirm(`외주공정 "${targetDefinition.label}"을(를) 삭제할까요?`);
-    if (!confirmed) return;
+  const confirmDeleteProcessDefinition = () => {
+    if (!deletingProcessType) return;
 
-    setProcessDefinitions((current) => removeOutsourcingProcessDefinition(current, type));
+    setProcessDefinitions((current) => removeOutsourcingProcessDefinition(current, deletingProcessType));
     setDraft((current) => ({
       ...current,
-      outsourcingProcessTypes: current.outsourcingProcessTypes.filter((item) => item !== type),
+      outsourcingProcessTypes: current.outsourcingProcessTypes.filter((item) => item !== deletingProcessType),
     }));
-    setSelectedAvailableProcess((current) => (current === type ? null : current));
-    setSelectedAssignedProcess((current) => (current === type ? null : current));
+    setSelectedAvailableProcess((current) => (current === deletingProcessType ? null : current));
+    setSelectedAssignedProcess((current) => (current === deletingProcessType ? null : current));
+    setDeletingProcessType(null);
+  };
+
+  const closeDeleteProcessModal = () => {
+    setDeletingProcessType(null);
   };
 
   return (
@@ -782,7 +789,7 @@ export default function PartnerMasterSection() {
 
                     <button
                       type="button"
-                      onClick={() => deleteProcessDefinition(definition.type)}
+                      onClick={() => requestDeleteProcessDefinition(definition.type)}
                       className="inline-flex items-center justify-center rounded-full border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
                     >
                       삭제
@@ -813,6 +820,35 @@ export default function PartnerMasterSection() {
               </div>
             );
           })}
+        </div>
+      </ModalShell>
+      <ModalShell
+        open={Boolean(deletingProcessType)}
+        onClose={closeDeleteProcessModal}
+        title="외주공정 삭제"
+        description="삭제하면 해당 공정을 사용하는 외주 설정에서도 함께 제거된다."
+        maxWidthClass="md:max-w-lg"
+        footer={
+          <div className="flex w-full items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={closeDeleteProcessModal}
+              className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              onClick={confirmDeleteProcessDefinition}
+              className="rounded-full bg-rose-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-rose-700"
+            >
+              삭제
+            </button>
+          </div>
+        }
+      >
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-4 text-sm text-rose-700">
+          {deletingProcessType ? `외주공정 "${orderedProcessDefinitions.find((definition) => definition.type === deletingProcessType)?.label ?? deletingProcessType}"을(를) 삭제할까요?` : "삭제할 외주공정을 찾을 수 없다."}
         </div>
       </ModalShell>
     </section>

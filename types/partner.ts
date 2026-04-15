@@ -4,7 +4,7 @@ export type PartnerType = (typeof PARTNER_TYPE_VALUES)[number];
 
 export const OUTSOURCING_PROCESS_TYPE_VALUES = ["cutting", "printing", "embroidery", "washing", "finishing"] as const;
 
-export type OutsourcingProcessType = string;
+export type OutsourcingProcessType = (typeof OUTSOURCING_PROCESS_TYPE_VALUES)[number] | (string & {});
 
 export type Partner = {
   id: string;
