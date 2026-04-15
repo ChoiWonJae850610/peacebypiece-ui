@@ -7,11 +7,21 @@ import {
   type EditableSectionKey,
   type OrderEntryState,
 } from "@/components/workorder/detail/shared/detailEditorShared";
+import { ensurePartnerMasterItem, listActivePartnerNamesByTypes } from "@/lib/admin/partnerMasterPersistence";
 import { isVendorRegistryType, REGISTRY_TYPE } from "@/lib/constants/workorderDomain";
 import {
   FACTORY_OPTIONS,
   PARTNER_OPTIONS,
 } from "@/lib/constants/workorderOptions";
+import {
+  commitOrderItemsEdit,
+  commitOutsourcingItemsEdit,
+  createNewOrderEntry,
+  createNewOutsourcingItem,
+  toOrderEntriesPatch,
+  toOutsourcingPatch,
+} from "@/lib/hooks/workorder/detailEditor/itemMutations";
+import { useWorkOrderMaterialsEditor } from "@/lib/hooks/workorder/detailEditor/useWorkOrderMaterialsEditor";
 import { recalculateOutsourcing } from "@/lib/workorder/detail/detailCalculations";
 import {
   appendOption,
@@ -26,15 +36,7 @@ import {
   getProductionSectionOpen,
   getVendorOptions,
 } from "@/lib/workorder/detail/workOrderDetailHelpers";
-import {
-  commitOrderItemsEdit,
-  commitOutsourcingItemsEdit,
-  createNewOrderEntry,
-  createNewOutsourcingItem,
-  toOrderEntriesPatch,
-  toOutsourcingPatch,
-} from "@/lib/hooks/workorder/detailEditor/itemMutations";
-import { useWorkOrderMaterialsEditor } from "@/lib/hooks/workorder/detailEditor/useWorkOrderMaterialsEditor";
+import type { PartnerType } from "@/types/partner";
 import type { Outsourcing, WorkOrder, WorkflowState } from "@/types/workorder";
 
 type UseWorkOrderDetailEditorParams = {
@@ -50,6 +52,28 @@ type UseWorkOrderDetailEditorParams = {
   onCompleteInspection: (payload: { orderEntryId: string; inboundQuantity: number; nextInventoryQuantity: number; memo: string }) => void;
 };
 
+function mergeOptionLists(...sources: readonly string[][]): string[] {
+  return sources.flat().reduce<string[]>((options, value) => appendOption(options, value), []);
+}
+
+function buildSeededPartnerOptions() {
+  return mergeOptionLists(
+    PARTNER_OPTIONS,
+    listActivePartnerNamesByTypes(["material_vendor", "subsidiary_vendor", "outsourcing_vendor"]),
+  );
+}
+
+function buildSeededFactoryOptions() {
+  return mergeOptionLists(FACTORY_OPTIONS, listActivePartnerNamesByTypes(["factory"]));
+}
+
+function mapRegistryTypeToPartnerTypes(type: RegistryType): PartnerType[] {
+  if (type === REGISTRY_TYPE.factory) return ["factory"];
+  if (type === REGISTRY_TYPE.materialVendor) return ["material_vendor"];
+  if (type === REGISTRY_TYPE.subsidiaryVendor) return ["subsidiary_vendor"];
+  return [];
+}
+
 export function useWorkOrderDetailEditor({
   workOrder,
   currentWorkflowState,
@@ -63,11 +87,10 @@ export function useWorkOrderDetailEditor({
   onCompleteInspection,
 }: UseWorkOrderDetailEditorParams) {
   const [basicInfo, setBasicInfo] = useState<BasicInfoState>(() => getInitialBasicInfo(workOrder));
-  const [partnerOptions, setPartnerOptions] = useState<string[]>(() => Array.from(new Set(PARTNER_OPTIONS)));
+  const [partnerOptions, setPartnerOptions] = useState<string[]>(() => buildSeededPartnerOptions());
   const [orderItems, setOrderItems] = useState<OrderEntryState[]>(() => getInitialOrderEntries(workOrder));
   const [factoryOptions, setFactoryOptions] = useState<string[]>(() => {
-    const seeded = Array.from(new Set(FACTORY_OPTIONS));
-    return getInitialOrderEntries(workOrder).reduce<string[]>((options, item) => appendOption(options, item.factory), seeded);
+    return getInitialOrderEntries(workOrder).reduce<string[]>((options, item) => appendOption(options, item.factory), buildSeededFactoryOptions());
   });
   const [registryModalOpen, setRegistryModalOpen] = useState(false);
   const [registryType, setRegistryType] = useState<RegistryType>(REGISTRY_TYPE.partner);
@@ -95,19 +118,22 @@ export function useWorkOrderDetailEditor({
   });
 
   useEffect(() => {
+    const nextPartnerOptions = buildSeededPartnerOptions();
+    const nextOrderEntries = getInitialOrderEntries(workOrder);
+    const nextFactoryOptions = nextOrderEntries.reduce<string[]>((options, item) => appendOption(options, item.factory), buildSeededFactoryOptions());
+
+    setPartnerOptions(nextPartnerOptions);
+    setFactoryOptions(nextFactoryOptions);
     setBasicInfo((current) => {
       const next = getInitialBasicInfo(workOrder);
       return {
         ...next,
-        partner: sanitizeSelectValue(current.partner, partnerOptions, next.partner),
+        partner: sanitizeSelectValue(current.partner, nextPartnerOptions, next.partner),
       };
     });
     setBasicInfoDraft(getInitialBasicInfo(workOrder));
-    const nextOrderEntries = getInitialOrderEntries(workOrder);
     setOrderItems(nextOrderEntries);
-    setFactoryOptions((current) => nextOrderEntries.reduce<string[]>((options, item) => appendOption(options, item.factory), current));
-  }, [partnerOptions, workOrder]);
-
+  }, [workOrder]);
 
   useEffect(() => {
     setOutsourcingItems((workOrder.outsourcing ?? []).map(recalculateOutsourcing));
@@ -259,8 +285,14 @@ export function useWorkOrderDetailEditor({
   };
 
   const handleRegistrySave = ({ type, name }: { type: RegistryType; name: string }) => {
+    const partnerTypes = mapRegistryTypeToPartnerTypes(type);
+    if (partnerTypes.length > 0) {
+      ensurePartnerMasterItem(name, partnerTypes);
+    }
+
     if (isVendorRegistryType(type)) {
-      setPartnerOptions((current) => appendOption(current, name));
+      const nextPartnerOptions = appendOption(buildSeededPartnerOptions(), name);
+      setPartnerOptions(nextPartnerOptions);
       if (type === REGISTRY_TYPE.partner) {
         setBasicInfo((current) => ({ ...current, partner: name }));
         setBasicInfoDraft((current) => ({ ...current, partner: name }));
@@ -268,7 +300,8 @@ export function useWorkOrderDetailEditor({
       return;
     }
 
-    setFactoryOptions((current) => appendOption(current, name));
+    const nextFactoryOptions = appendOption(buildSeededFactoryOptions(), name);
+    setFactoryOptions(nextFactoryOptions);
     const nextItems = orderItems.map((item, index) => (index === 0 ? { ...item, factory: name } : item));
     setOrderItems(nextItems);
     syncOrderEntries(nextItems);
