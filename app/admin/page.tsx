@@ -5,7 +5,7 @@ import { WORKSPACE_COMPANY_NAME, WORKSPACE_COMPANY_NAME_EN, getAdminWorkspaceTit
 import { getI18n } from "@/lib/i18n";
 
 const i18n = getI18n();
-const adminSections = i18n.admin.sections;
+const adminSections = i18n.admin.sections ?? [];
 
 export default function AdminPage() {
   const eyebrow = WORKSPACE_COMPANY_NAME_EN;
@@ -28,7 +28,7 @@ export default function AdminPage() {
                   href="/admin/partners"
                   className="inline-flex items-center rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800"
                 >
-                  거래처/공장 관리
+                  {i18n.admin.partnerMaster.page.title}
                 </Link>
                 <AdminWorkspaceTools />
                 <Link

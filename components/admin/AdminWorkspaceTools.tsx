@@ -14,14 +14,14 @@ export default function AdminWorkspaceTools() {
       <AdminWorkOrderHistoryButton onClick={tools.openHistoryModal} />
       <AdminNotificationSettingsButton onClick={tools.openNotificationModal} />
       <AdminWorkOrderHistoryModal
-        open={tools.openModal === "history"}
+        open={tools.activeModal === "history"}
         onClose={tools.closeModal}
         historyLogs={tools.historyLogs}
         historyFilter={tools.historyFilter}
         onHistoryFilterChange={tools.setHistoryFilter}
       />
       <AdminNotificationSettingsModal
-        open={tools.openModal === "notification"}
+        open={tools.activeModal === "notification"}
         onClose={tools.closeModal}
         notificationSettings={tools.notificationSettings}
         onToggleNotificationSetting={tools.handleToggleNotificationSetting}

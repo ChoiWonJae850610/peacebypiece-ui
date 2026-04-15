@@ -11,7 +11,7 @@ export type AdminWorkspaceModalKey = "history" | "notification" | null;
 
 export function useAdminWorkspaceTools() {
   const coreState = useWorkOrderCoreState();
-  const [openModal, setOpenModal] = useState<AdminWorkspaceModalKey>(null);
+  const [activeModal, setActiveModal] = useState<AdminWorkspaceModalKey>(null);
   const [historyFilter, setHistoryFilter] = useState<HistoryFilter>("all");
   const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>(loadNotificationSettings);
 
@@ -25,7 +25,7 @@ export function useAdminWorkspaceTools() {
     [adminViewer.role, adminViewer.roles],
   );
 
-  const adminHistoryLogs = useMemo(
+  const historyLogs = useMemo(
     () => filterHistoryLogs(coreState.historyLogs, true, historyFilter, currentRoles),
     [coreState.historyLogs, historyFilter, currentRoles],
   );
@@ -34,19 +34,28 @@ export function useAdminWorkspaceTools() {
     persistNotificationSettings(notificationSettings);
   }, [notificationSettings]);
 
+  const openModal = (modal: Exclude<AdminWorkspaceModalKey, null>) => {
+    setActiveModal(modal);
+  };
+
+  const closeModal = () => {
+    setActiveModal(null);
+  };
+
   const handleToggleNotificationSetting = (key: NotificationSettingKey) => {
     setNotificationSettings((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   return {
-    historyLogs: adminHistoryLogs,
+    activeModal,
+    historyLogs,
     historyFilter,
     setHistoryFilter,
     notificationSettings,
     handleToggleNotificationSetting,
     openModal,
-    openHistoryModal: () => setOpenModal("history"),
-    openNotificationModal: () => setOpenModal("notification"),
-    closeModal: () => setOpenModal(null),
+    closeModal,
+    openHistoryModal: () => openModal("history"),
+    openNotificationModal: () => openModal("notification"),
   };
 }
