@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { loadSectionPreferences, persistSectionPreferences } from "@/lib/repositories/uiPreferencePersistence";
 import type { WorkflowAction } from "@/types/workorder";
 
@@ -9,6 +10,9 @@ type UseWorkOrderUIStateOptions = {
 };
 
 export function useWorkOrderUIState({ initialAdminPanelOpen = false }: UseWorkOrderUIStateOptions = {}) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const appShellRef = useRef<HTMLDivElement | null>(null);
   const attachmentInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -41,6 +45,19 @@ export function useWorkOrderUIState({ initialAdminPanelOpen = false }: UseWorkOr
       outsourcingOpen,
     });
   }, [basicInfoOpen, materialOpen, outsourcingOpen]);
+
+
+  useEffect(() => {
+    if (!initialAdminPanelOpen) return;
+    if (!searchParams?.has("adminPanel")) return;
+
+    const nextSearchParams = new URLSearchParams(searchParams.toString());
+    nextSearchParams.delete("adminPanel");
+    const nextQuery = nextSearchParams.toString();
+    const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
+
+    router.replace(nextUrl, { scroll: false });
+  }, [initialAdminPanelOpen, pathname, router, searchParams]);
 
   useEffect(() => {
     if (!toastMessage) return;
