@@ -1,3 +1,4 @@
+import { listActiveMaterialPartnerNames, listActiveOutsourcingPartnerNamesByProcess } from "@/lib/admin/partnerMasterPersistence";
 import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculations";
 import type { Material, Outsourcing, WorkflowState } from "@/types/workorder";
 import type { OrderEntryState } from "@/components/workorder/detail/shared/detailEditorShared";
@@ -10,6 +11,17 @@ export type CostSummaryValues = {
   totalCost: number;
   unitCost: number;
 };
+
+function mergeOptionLists(...sources: ReadonlyArray<ReadonlyArray<string>>): string[] {
+  return sources.flat().reduce<string[]>((options, value) => {
+    const normalized = value.trim();
+    if (!normalized || options.includes(normalized)) {
+      return options;
+    }
+    options.push(normalized);
+    return options;
+  }, []);
+}
 
 export function getCostSummaryValues(params: {
   orderItems: OrderEntryState[];
@@ -46,10 +58,26 @@ export function getProductionSectionOpen(materialOpen: boolean, outsourcingOpen:
   return materialOpen || outsourcingOpen;
 }
 
-export function getVendorOptions(partnerOptions: string[], materialItems: Material[], outsourcingItems: Outsourcing[]): string[] {
-  return Array.from(new Set([
-    ...partnerOptions,
-    ...materialItems.map((item) => item.vendor).filter(Boolean),
-    ...outsourcingItems.map((item) => item.vendor).filter(Boolean),
-  ]));
+export function getMaterialVendorOptionsById(materialItems: Material[]): Record<string, string[]> {
+  return Object.fromEntries(
+    materialItems.map((item) => [
+      item.id,
+      mergeOptionLists(
+        listActiveMaterialPartnerNames(item.type),
+        item.vendor ? [item.vendor] : [],
+      ),
+    ]),
+  );
+}
+
+export function getOutsourcingVendorOptionsById(outsourcingItems: Outsourcing[]): Record<string, string[]> {
+  return Object.fromEntries(
+    outsourcingItems.map((item) => [
+      item.id,
+      mergeOptionLists(
+        listActiveOutsourcingPartnerNamesByProcess(item.process),
+        item.vendor ? [item.vendor] : [],
+      ),
+    ]),
+  );
 }

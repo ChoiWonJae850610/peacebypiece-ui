@@ -33,8 +33,9 @@ import {
 import {
   getCanOpenInspectionModal,
   getCostSummaryValues,
+  getMaterialVendorOptionsById,
+  getOutsourcingVendorOptionsById,
   getProductionSectionOpen,
-  getVendorOptions,
 } from "@/lib/workorder/detail/workOrderDetailHelpers";
 import type { PartnerType } from "@/types/partner";
 import type { Outsourcing, WorkOrder, WorkflowState } from "@/types/workorder";
@@ -52,7 +53,7 @@ type UseWorkOrderDetailEditorParams = {
   onCompleteInspection: (payload: { orderEntryId: string; inboundQuantity: number; nextInventoryQuantity: number; memo: string }) => void;
 };
 
-function mergeOptionLists(...sources: readonly string[][]): string[] {
+function mergeOptionLists(...sources: ReadonlyArray<ReadonlyArray<string>>): string[] {
   return sources.flat().reduce<string[]>((options, value) => appendOption(options, value), []);
 }
 
@@ -157,9 +158,14 @@ export function useWorkOrderDetailEditor({
     [materialOpen, outsourcingOpen],
   );
 
-  const vendorOptions = useMemo(
-    () => getVendorOptions(partnerOptions, materialItems, outsourcingItems),
-    [materialItems, outsourcingItems, partnerOptions],
+  const materialVendorOptionsById = useMemo(
+    () => getMaterialVendorOptionsById(materialItems),
+    [materialItems],
+  );
+
+  const outsourcingVendorOptionsById = useMemo(
+    () => getOutsourcingVendorOptionsById(outsourcingItems),
+    [outsourcingItems],
   );
 
   const syncOrderEntries = (nextItems: OrderEntryState[], extraPatch: Partial<WorkOrder> = {}) => {
@@ -345,7 +351,8 @@ export function useWorkOrderDetailEditor({
     costSummary,
     canOpenInspectionModal,
     productionSectionOpen,
-    vendorOptions,
+    materialVendorOptionsById,
+    outsourcingVendorOptionsById,
     startEdit,
     cancelEdit,
     commitEdit,

@@ -21,18 +21,27 @@ function getCurrentPartners(): Partner[] {
   return persisted ? cloneValue(persisted) : getSeedPartners();
 }
 
+function normalizeSupportedProcesses(partner: Partner) {
+  return [...new Set(partner.supportedProcesses ?? partner.outsourcingProcessTypes ?? [])];
+}
+
 function savePartners(partners: Partner[]): Partner[] {
   const normalized = cloneValue(partners)
-    .map((partner) => ({
-      ...partner,
-      partnerTypes: [...new Set(partner.partnerTypes)],
-      outsourcingProcessTypes: [...new Set(partner.outsourcingProcessTypes ?? [])],
-      name: partner.name.trim(),
-      contactName: partner.contactName?.trim() ?? "",
-      phone: partner.phone?.replace(/\D/g, "") ?? "",
-      email: partner.email?.trim() ?? "",
-      memo: partner.memo.trim(),
-    }))
+    .map((partner) => {
+      const supportedProcesses = normalizeSupportedProcesses(partner);
+
+      return {
+        ...partner,
+        partnerTypes: [...new Set(partner.partnerTypes)],
+        outsourcingProcessTypes: [...supportedProcesses],
+        supportedProcesses: [...supportedProcesses],
+        name: partner.name.trim(),
+        contactName: partner.contactName?.trim() ?? "",
+        phone: partner.phone?.replace(/\D/g, "") ?? "",
+        email: partner.email?.trim() ?? "",
+        memo: partner.memo.trim(),
+      };
+    })
     .sort((a, b) => a.name.localeCompare(b.name, "ko"));
 
   persistPartners(normalized);
@@ -46,6 +55,7 @@ export const mockPartnerRepository: PartnerRepository = {
   listPartnersAsync: async () => getCurrentPartners(),
   createPartner: (draft: PartnerDraft) => {
     const now = new Date().toISOString();
+    const supportedProcesses = [...new Set(draft.supportedProcesses ?? draft.outsourcingProcessTypes)];
     const nextPartner: Partner = {
       id: createPartnerId(),
       name: draft.name.trim(),
@@ -54,7 +64,8 @@ export const mockPartnerRepository: PartnerRepository = {
       contactName: draft.contactName.trim(),
       phone: draft.phone.replace(/\D/g, ""),
       email: draft.email.trim(),
-      outsourcingProcessTypes: [...new Set(draft.outsourcingProcessTypes)],
+      outsourcingProcessTypes: [...supportedProcesses],
+      supportedProcesses: [...supportedProcesses],
       memo: draft.memo.trim(),
       createdAt: now,
       updatedAt: now,
@@ -70,6 +81,7 @@ export const mockPartnerRepository: PartnerRepository = {
     if (!target) {
       throw new Error("Partner not found");
     }
+    const supportedProcesses = [...new Set(draft.supportedProcesses ?? draft.outsourcingProcessTypes)];
     const updatedPartner: Partner = {
       ...target,
       name: draft.name.trim(),
@@ -78,7 +90,8 @@ export const mockPartnerRepository: PartnerRepository = {
       contactName: draft.contactName.trim(),
       phone: draft.phone.replace(/\D/g, ""),
       email: draft.email.trim(),
-      outsourcingProcessTypes: [...new Set(draft.outsourcingProcessTypes)],
+      outsourcingProcessTypes: [...supportedProcesses],
+      supportedProcesses: [...supportedProcesses],
       memo: draft.memo.trim(),
       updatedAt: now,
     };
