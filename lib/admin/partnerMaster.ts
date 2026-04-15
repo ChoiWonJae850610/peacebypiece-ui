@@ -34,7 +34,7 @@ export const PARTNER_TYPE_META: Record<PartnerType, { label: string; shortLabel:
   outsourcing_vendor: { label: "외주", shortLabel: "외주", tone: "bg-violet-100 text-violet-700" },
 };
 
-export const DEFAULT_OUTSOURCING_PROCESS_META: Record<OutsourcingProcessType, { label: string; tone: string }> = {
+export const DEFAULT_OUTSOURCING_PROCESS_META: Record<string, { label: string; tone: string }> = {
   cutting: { label: "재단", tone: "bg-indigo-100 text-indigo-700" },
   printing: { label: "나염", tone: "bg-fuchsia-100 text-fuchsia-700" },
   embroidery: { label: "자수", tone: "bg-rose-100 text-rose-700" },
@@ -84,10 +84,10 @@ export function createDefaultOutsourcingProcessDefinitions(): OutsourcingProcess
 }
 
 export function buildOutsourcingProcessMeta(definitions: OutsourcingProcessDefinition[]) {
-  return definitions.reduce<Record<OutsourcingProcessType, { label: string; tone: string }>>((acc, definition) => {
+  return definitions.reduce<Record<string, { label: string; tone: string }>>((acc, definition) => {
     acc[definition.type] = { label: definition.label, tone: definition.tone };
     return acc;
-  }, {} as Record<OutsourcingProcessType, { label: string; tone: string }>);
+  }, {});
 }
 
 export function buildPartnerFilterOptions(definitions: OutsourcingProcessDefinition[]) {
@@ -182,7 +182,7 @@ export function formatPartnerPhone(value?: string) {
 function matchesPartnerSearch(
   partner: Partner,
   searchTerm: string,
-  processMeta: Record<OutsourcingProcessType, { label: string; tone: string }>,
+  processMeta: Record<string, { label: string; tone: string }>,
 ) {
   if (!searchTerm) return true;
 
@@ -210,7 +210,7 @@ function isPartnerTypeFilter(value: PartnerFilterChip): value is PartnerType {
 }
 
 function isOutsourcingProcessFilter(value: PartnerFilterChip): value is OutsourcingProcessType {
-  return value !== "all" && (OUTSOURCING_PROCESS_TYPE_VALUES as readonly string[]).includes(value);
+  return value !== "all" && !isPartnerTypeFilter(value);
 }
 
 export function togglePartnerFilterSelection(current: PartnerFilterChip[], nextValue: PartnerFilterChip) {
@@ -229,7 +229,7 @@ export function togglePartnerFilterSelection(current: PartnerFilterChip[], nextV
 export function selectFilteredPartners(
   partners: Partner[],
   filters: PartnerListFilterState,
-  processMeta: Record<OutsourcingProcessType, { label: string; tone: string }>,
+  processMeta: Record<string, { label: string; tone: string }>,
 ) {
   return partners.filter((partner) => {
     const matchesType =
@@ -257,6 +257,77 @@ export function buildPartnerSummary(partners: Partner[]) {
     active: activeCount,
     inactive: partners.length - activeCount,
   };
+}
+
+
+export function normalizeOutsourcingProcessDefinitions(definitions: OutsourcingProcessDefinition[]) {
+  return definitions
+    .map((definition, index) => ({
+      ...definition,
+      label: definition.label.trim(),
+      sortOrder: index + 1,
+    }))
+    .filter((definition) => Boolean(definition.label));
+}
+
+export function createOutsourcingProcessTypeKey(label: string) {
+  const normalized = label
+    .trim()
+    .toLocaleLowerCase("en-US")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  return normalized || "outsourcing_process";
+}
+
+export function createOutsourcingProcessDefinition(
+  label: string,
+  currentDefinitions: OutsourcingProcessDefinition[],
+): OutsourcingProcessDefinition {
+  const existingTypes = new Set(currentDefinitions.map((definition) => definition.type));
+  const baseType = createOutsourcingProcessTypeKey(label);
+  let nextType = baseType;
+  let suffix = 2;
+
+  while (existingTypes.has(nextType)) {
+    nextType = `${baseType}_${suffix}`;
+    suffix += 1;
+  }
+
+  return {
+    type: nextType,
+    label: label.trim(),
+    tone: "bg-slate-200 text-slate-700",
+    isActive: true,
+    sortOrder: currentDefinitions.length + 1,
+  };
+}
+
+export function moveOutsourcingProcessDefinition(
+  definitions: OutsourcingProcessDefinition[],
+  type: OutsourcingProcessType,
+  direction: "up" | "down",
+) {
+  const sorted = definitions.slice().sort((a, b) => a.sortOrder - b.sortOrder);
+  const index = sorted.findIndex((definition) => definition.type === type);
+  if (index < 0) return definitions;
+
+  const targetIndex = direction === "up" ? index - 1 : index + 1;
+  if (targetIndex < 0 || targetIndex >= sorted.length) return definitions;
+
+  [sorted[index], sorted[targetIndex]] = [sorted[targetIndex], sorted[index]];
+
+  return sorted.map((definition, orderIndex) => ({
+    ...definition,
+    sortOrder: orderIndex + 1,
+  }));
+}
+
+export function removeOutsourcingProcessDefinition(
+  definitions: OutsourcingProcessDefinition[],
+  type: OutsourcingProcessType,
+) {
+  return normalizeOutsourcingProcessDefinitions(definitions.filter((definition) => definition.type !== type));
 }
 
 export function buildPartnerListViewModel(

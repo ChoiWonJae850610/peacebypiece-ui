@@ -4,12 +4,15 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import StatusToggle from "@/components/common/StatusToggle";
 import ModalShell from "@/components/common/modal/ModalShell";
 import {
-  applyPartnerTypeSelectionPolicy,
   BASE_PARTNER_TYPE_VALUES,
   buildPartnerDraftFromEntity,
   buildPartnerListViewModel,
   createDefaultOutsourcingProcessDefinitions,
   createEmptyPartnerDraft,
+  createOutsourcingProcessDefinition,
+  moveOutsourcingProcessDefinition,
+  normalizeOutsourcingProcessDefinitions,
+  removeOutsourcingProcessDefinition,
   DEFAULT_PARTNER_FILTER_STATE,
   formatPartnerDate,
   formatPartnerPhone,
@@ -43,6 +46,8 @@ export default function PartnerMasterSection() {
   const [selectedAvailableProcess, setSelectedAvailableProcess] = useState<OutsourcingProcessType | null>(null);
   const [selectedAssignedProcess, setSelectedAssignedProcess] = useState<OutsourcingProcessType | null>(null);
   const [formError, setFormError] = useState<string>("");
+  const [newProcessLabel, setNewProcessLabel] = useState("");
+  const [processFormError, setProcessFormError] = useState("");
 
   useEffect(() => {
     setPartners(mockPartnerRepository.listPartners());
@@ -54,12 +59,15 @@ export default function PartnerMasterSection() {
   );
 
   const isOutsourcingEnabled = draft.partnerTypes.includes("outsourcing_vendor");
-  const selectedBaseTypes = draft.partnerTypes.filter((type) => type !== "outsourcing_vendor");
+  const selectedPrimaryType = draft.partnerTypes.find((type) => type !== "outsourcing_vendor") ?? null;
   const availableProcessDefinitions = processDefinitions
     .filter((definition) => definition.isActive && !draft.outsourcingProcessTypes.includes(definition.type))
     .sort((a, b) => a.sortOrder - b.sortOrder);
   const assignedProcessDefinitions = processDefinitions
     .filter((definition) => draft.outsourcingProcessTypes.includes(definition.type))
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+  const orderedProcessDefinitions = processDefinitions
+    .slice()
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
   const openCreateModal = useCallback(() => {
@@ -89,11 +97,29 @@ export default function PartnerMasterSection() {
     setFormError("");
   }, []);
 
+  const closeProcessModal = useCallback(() => {
+    setIsProcessModalOpen(false);
+    setNewProcessLabel("");
+    setProcessFormError("");
+  }, []);
+
+  const openProcessModal = useCallback(() => {
+    setNewProcessLabel("");
+    setProcessFormError("");
+    setIsProcessModalOpen(true);
+  }, []);
+
   const setPrimaryType = (type: PartnerType) => {
-    setDraft((current) => ({
-      ...current,
-      partnerTypes: applyPartnerTypeSelectionPolicy(current.partnerTypes, type),
-    }));
+    setDraft((current) => {
+      const nextTypes = current.partnerTypes.filter((item) => item === "outsourcing_vendor");
+      if (type !== "outsourcing_vendor") {
+        nextTypes.unshift(type);
+      }
+      return {
+        ...current,
+        partnerTypes: Array.from(new Set(nextTypes)),
+      };
+    });
   };
 
   const setOutsourcingEnabled = (enabled: boolean) => {
@@ -105,30 +131,6 @@ export default function PartnerMasterSection() {
       outsourcingProcessTypes: enabled ? current.outsourcingProcessTypes : [],
     }));
     setSelectedAvailableProcess(null);
-    setSelectedAssignedProcess(null);
-  };
-
-  const selectAvailableProcess = (type: OutsourcingProcessType) => {
-    setSelectedAvailableProcess(type);
-    setSelectedAssignedProcess(null);
-  };
-
-  const selectAssignedProcess = (type: OutsourcingProcessType) => {
-    setSelectedAssignedProcess(type);
-    setSelectedAvailableProcess(null);
-  };
-
-  const moveSelectedProcessToAssigned = () => {
-    if (!selectedAvailableProcess) return;
-    toggleOutsourcingProcess(selectedAvailableProcess);
-    setSelectedAssignedProcess(selectedAvailableProcess);
-    setSelectedAvailableProcess(null);
-  };
-
-  const moveSelectedProcessToAvailable = () => {
-    if (!selectedAssignedProcess) return;
-    toggleOutsourcingProcess(selectedAssignedProcess);
-    setSelectedAvailableProcess(selectedAssignedProcess);
     setSelectedAssignedProcess(null);
   };
 
@@ -148,8 +150,8 @@ export default function PartnerMasterSection() {
       setFormError("업체명을 입력하세요.");
       return;
     }
-    if (normalizedDraft.partnerTypes.filter((type) => type !== "outsourcing_vendor").length === 0) {
-      setFormError("기본 거래 유형을 하나 이상 선택하세요.");
+    if (normalizedDraft.partnerTypes.length === 0) {
+      setFormError("유형을 하나 이상 선택하세요.");
       return;
     }
 
@@ -169,8 +171,51 @@ export default function PartnerMasterSection() {
 
   const updateProcessDefinition = (type: OutsourcingProcessType, updater: (current: OutsourcingProcessDefinition) => OutsourcingProcessDefinition) => {
     setProcessDefinitions((current) =>
-      current.map((definition) => (definition.type === type ? updater(definition) : definition)),
+      normalizeOutsourcingProcessDefinitions(
+        current.map((definition) => (definition.type === type ? updater(definition) : definition)),
+      ),
     );
+  };
+
+  const addProcessDefinition = () => {
+    const normalizedLabel = newProcessLabel.trim();
+
+    if (!normalizedLabel) {
+      setProcessFormError("공정명을 입력하세요.");
+      return;
+    }
+
+    if (processDefinitions.some((definition) => definition.label.trim() === normalizedLabel)) {
+      setProcessFormError("같은 표시명의 외주공정이 이미 있다.");
+      return;
+    }
+
+    setProcessDefinitions((current) => [
+      ...normalizeOutsourcingProcessDefinitions(current),
+      createOutsourcingProcessDefinition(normalizedLabel, current),
+    ]);
+    setNewProcessLabel("");
+    setProcessFormError("");
+  };
+
+  const moveProcessDefinition = (type: OutsourcingProcessType, direction: "up" | "down") => {
+    setProcessDefinitions((current) => moveOutsourcingProcessDefinition(current, type, direction));
+  };
+
+  const deleteProcessDefinition = (type: OutsourcingProcessType) => {
+    const targetDefinition = processDefinitions.find((definition) => definition.type === type);
+    if (!targetDefinition) return;
+
+    const confirmed = window.confirm(`외주공정 "${targetDefinition.label}"을(를) 삭제할까요?`);
+    if (!confirmed) return;
+
+    setProcessDefinitions((current) => removeOutsourcingProcessDefinition(current, type));
+    setDraft((current) => ({
+      ...current,
+      outsourcingProcessTypes: current.outsourcingProcessTypes.filter((item) => item !== type),
+    }));
+    setSelectedAvailableProcess((current) => (current === type ? null : current));
+    setSelectedAssignedProcess((current) => (current === type ? null : current));
   };
 
   return (
@@ -188,7 +233,7 @@ export default function PartnerMasterSection() {
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={() => setIsProcessModalOpen(true)}
+            onClick={openProcessModal}
             className="inline-flex items-center justify-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
           >
             외주공정 관리
@@ -473,7 +518,7 @@ export default function PartnerMasterSection() {
             <p className="text-sm font-medium text-stone-800">기본 거래 유형</p>
             <div className="grid gap-2 sm:grid-cols-3">
               {BASE_PARTNER_TYPE_VALUES.map((type) => {
-                const checked = selectedBaseTypes.includes(type);
+                const checked = selectedPrimaryType === type;
                 return (
                   <button
                     key={type}
@@ -516,11 +561,11 @@ export default function PartnerMasterSection() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-stone-800">외주 공정 선택</p>
-                  <p className="text-xs leading-5 text-stone-500">좌측 또는 우측 목록 중 한쪽만 선택한 뒤 화살표로 이동한다.</p>
+                  <p className="text-xs leading-5 text-stone-500">좌측 목록에서 공정을 골라 우측 선택 목록으로 이동한다.</p>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setIsProcessModalOpen(true)}
+                  onClick={openProcessModal}
                   className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:bg-stone-50"
                 >
                   외주공정 관리
@@ -541,7 +586,10 @@ export default function PartnerMasterSection() {
                             <button
                               key={definition.type}
                               type="button"
-                              onClick={() => selectAvailableProcess(definition.type)}
+                              onClick={() => {
+                                setSelectedAvailableProcess(definition.type);
+                                setSelectedAssignedProcess(null);
+                              }}
                               className={[
                                 "flex w-full items-center justify-between rounded-2xl border px-3 py-3 text-left text-sm transition",
                                 selected ? "border-stone-900 bg-white text-stone-900" : "border-transparent bg-white text-stone-700 hover:border-stone-300",
@@ -559,21 +607,31 @@ export default function PartnerMasterSection() {
                 <div className="flex flex-row items-center justify-center gap-2 md:flex-col">
                   <button
                     type="button"
-                    onClick={moveSelectedProcessToAssigned}
+                    onClick={() => {
+                      if (!selectedAvailableProcess) return;
+                      toggleOutsourcingProcess(selectedAvailableProcess);
+                      setSelectedAssignedProcess(selectedAvailableProcess);
+                      setSelectedAvailableProcess(null);
+                    }}
                     disabled={!selectedAvailableProcess}
                     className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition hover:border-stone-300 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-35"
                     aria-label="선택한 공정을 오른쪽으로 추가"
                   >
-                    <span className="block -rotate-90 transition-transform">▾</span>
+                    <span className="block -rotate-90">▾</span>
                   </button>
                   <button
                     type="button"
-                    onClick={moveSelectedProcessToAvailable}
+                    onClick={() => {
+                      if (!selectedAssignedProcess) return;
+                      toggleOutsourcingProcess(selectedAssignedProcess);
+                      setSelectedAvailableProcess(selectedAssignedProcess);
+                      setSelectedAssignedProcess(null);
+                    }}
                     disabled={!selectedAssignedProcess}
                     className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition hover:border-stone-300 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-35"
                     aria-label="선택한 공정을 왼쪽으로 제거"
                   >
-                    <span className="block rotate-90 transition-transform">▾</span>
+                    <span className="block rotate-90">▾</span>
                   </button>
                 </div>
 
@@ -590,7 +648,10 @@ export default function PartnerMasterSection() {
                             <button
                               key={definition.type}
                               type="button"
-                              onClick={() => selectAssignedProcess(definition.type)}
+                              onClick={() => {
+                                setSelectedAssignedProcess(definition.type);
+                                setSelectedAvailableProcess(null);
+                              }}
                               className={[
                                 "flex w-full items-center justify-between rounded-2xl border px-3 py-3 text-left text-sm transition",
                                 selected ? "border-stone-900 bg-white text-stone-900" : "border-transparent bg-white text-stone-700 hover:border-stone-300",
@@ -626,23 +687,27 @@ export default function PartnerMasterSection() {
 
       <ModalShell
         open={isProcessModalOpen}
-        onClose={() => setIsProcessModalOpen(false)}
+        onClose={closeProcessModal}
         title="외주공정 관리"
-        description="외주 공정 라벨, 사용 여부, 노출 순서를 관리한다. 현재 단계에서는 기준정보 화면 내부에서 먼저 정리한다."
+        description="표시명, 사용 여부, 추가/삭제, 위아래 이동만으로 외주공정 목록을 간단하게 관리한다."
         maxWidthClass="md:max-w-3xl"
         bodyClassName="space-y-4"
         footer={
           <div className="flex w-full items-center justify-end gap-2">
             <button
               type="button"
-              onClick={() => setProcessDefinitions(createDefaultOutsourcingProcessDefinitions())}
+              onClick={() => {
+                setProcessDefinitions(createDefaultOutsourcingProcessDefinitions());
+                setNewProcessLabel("");
+                setProcessFormError("");
+              }}
               className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
             >
               기본값 복원
             </button>
             <button
               type="button"
-              onClick={() => setIsProcessModalOpen(false)}
+              onClick={closeProcessModal}
               className="rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800"
             >
               닫기
@@ -650,38 +715,59 @@ export default function PartnerMasterSection() {
           </div>
         }
       >
-        <div className="hidden grid-cols-[120px_minmax(0,1fr)_100px_90px] gap-3 rounded-2xl bg-stone-50 px-4 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-stone-500 md:grid">
-          <span>기본 코드</span>
-          <span>표시명</span>
-          <span>사용 여부</span>
-          <span>순서</span>
+        <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+            <label className="min-w-0 flex-1 space-y-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">새 외주공정</span>
+              <input
+                value={newProcessLabel}
+                onChange={(event) => {
+                  setNewProcessLabel(event.target.value);
+                  if (processFormError) setProcessFormError("");
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    addProcessDefinition();
+                  }
+                }}
+                placeholder="공정명 입력"
+                className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-stone-500"
+              />
+            </label>
+            <button
+              type="button"
+              onClick={addProcessDefinition}
+              className="inline-flex items-center justify-center rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800"
+            >
+              추가
+            </button>
+          </div>
+          {processFormError ? <p className="mt-2 text-sm font-medium text-rose-600">{processFormError}</p> : null}
         </div>
-        <div className="space-y-3">
-          {processDefinitions
-            .slice()
-            .sort((a, b) => a.sortOrder - b.sortOrder)
-            .map((definition) => (
-              <div key={definition.type} className="rounded-2xl border border-stone-200 bg-white p-4">
-                <div className="grid gap-3 md:grid-cols-[120px_minmax(0,1fr)_100px_90px] md:items-center">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500 md:hidden">기본 코드</p>
-                    <p className="text-sm font-medium text-stone-700">{definition.type}</p>
-                  </div>
 
-                  <label className="space-y-2">
-                    <span className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500 md:hidden">표시명</span>
+        <div className="space-y-3">
+          {orderedProcessDefinitions.map((definition, index) => {
+            const isFirst = index === 0;
+            const isLast = index === orderedProcessDefinitions.length - 1;
+
+            return (
+              <div key={definition.type} className="rounded-2xl border border-stone-200 bg-white p-4">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+                  <label className="min-w-0 flex-1 space-y-2">
+                    <span className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">표시명</span>
                     <input
                       value={definition.label}
-                      onChange={(event) =>
-                        updateProcessDefinition(definition.type, (current) => ({ ...current, label: event.target.value }))
-                      }
+                      onChange={(event) => {
+                        updateProcessDefinition(definition.type, (current) => ({ ...current, label: event.target.value }));
+                        if (processFormError) setProcessFormError("");
+                      }}
                       placeholder="공정명 입력"
                       className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-stone-500"
                     />
                   </label>
 
-                  <div className="space-y-2">
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500 md:hidden">사용 여부</p>
+                  <div className="flex flex-wrap items-center gap-3 md:justify-end">
                     <div className="flex items-center gap-2">
                       <StatusToggle
                         checked={definition.isActive}
@@ -695,26 +781,40 @@ export default function PartnerMasterSection() {
                         {definition.isActive ? "사용중" : "미사용"}
                       </span>
                     </div>
-                  </div>
 
-                  <label className="space-y-2">
-                    <span className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500 md:hidden">순서</span>
-                    <input
-                      type="number"
-                      min={1}
-                      value={definition.sortOrder}
-                      onChange={(event) =>
-                        updateProcessDefinition(definition.type, (current) => ({
-                          ...current,
-                          sortOrder: Number(event.target.value) > 0 ? Number(event.target.value) : 1,
-                        }))
-                      }
-                      className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-stone-500"
-                    />
-                  </label>
+                    <button
+                      type="button"
+                      onClick={() => deleteProcessDefinition(definition.type)}
+                      className="inline-flex items-center justify-center rounded-full border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+                    >
+                      삭제
+                    </button>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => moveProcessDefinition(definition.type, "up")}
+                        disabled={isFirst}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition hover:border-stone-300 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-35"
+                        aria-label={`${definition.label} 위로 이동`}
+                      >
+                        <span className="block rotate-180">▾</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveProcessDefinition(definition.type, "down")}
+                        disabled={isLast}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition hover:border-stone-300 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-35"
+                        aria-label={`${definition.label} 아래로 이동`}
+                      >
+                        <span className="block">▾</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
-            ))}
+            );
+          })}
         </div>
       </ModalShell>
     </section>
