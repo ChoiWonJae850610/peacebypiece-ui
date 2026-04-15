@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type RefObject } from "react";
+import { useEffect, useMemo, type RefObject } from "react";
 
 type LockState = {
   count: number;
@@ -27,6 +27,23 @@ const modalLockState: LockState = {
   previousBodyWidth: "",
   previousBodyTouchAction: "",
 };
+
+const modalStack: string[] = [];
+
+function pushModalStack(id: string) {
+  modalStack.push(id);
+}
+
+function removeModalStack(id: string) {
+  const index = modalStack.lastIndexOf(id);
+  if (index >= 0) {
+    modalStack.splice(index, 1);
+  }
+}
+
+function isTopModal(id: string) {
+  return modalStack[modalStack.length - 1] === id;
+}
 
 export function getFocusableElements(container: HTMLElement) {
   return Array.from(
@@ -93,22 +110,29 @@ export function useModalEnvironment({
   dialogRef: RefObject<HTMLElement | null>;
   onClose: () => void;
 }) {
+  const modalId = useMemo(() => `modal-${Math.random().toString(36).slice(2, 11)}`, []);
+
   useEffect(() => {
     if (!open || !dialogRef.current) return;
 
     const dialog = dialogRef.current;
     const previousActive = document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
+    pushModalStack(modalId);
     lockDocumentScroll();
 
     const focusTimer = window.setTimeout(() => {
+      if (!isTopModal(modalId)) return;
       const focusables = getFocusableElements(dialog);
       (focusables[0] ?? dialog).focus();
     }, 24);
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isTopModal(modalId)) return;
+
       if (event.key === "Escape") {
         event.preventDefault();
+        event.stopPropagation();
         onClose();
         return;
       }
@@ -136,15 +160,18 @@ export function useModalEnvironment({
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown, true);
 
     return () => {
       window.clearTimeout(focusTimer);
-      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown, true);
+      removeModalStack(modalId);
       unlockDocumentScroll();
-      previousActive?.focus();
+      if (previousActive && document.contains(previousActive)) {
+        previousActive.focus();
+      }
     };
-  }, [open, dialogRef, onClose]);
+  }, [open, dialogRef, modalId, onClose]);
 }
 
 export const useModalFocusTrap = useModalEnvironment;

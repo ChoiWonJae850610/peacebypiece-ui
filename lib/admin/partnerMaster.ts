@@ -103,6 +103,42 @@ export function buildPartnerFilterOptions(definitions: OutsourcingProcessDefinit
   ];
 }
 
+
+export function applyPartnerTypeSelectionPolicy(currentTypes: PartnerType[], targetType: PartnerType) {
+  const currentBaseTypes = currentTypes.filter((type) => type !== "outsourcing_vendor");
+  const hasOutsourcing = currentTypes.includes("outsourcing_vendor");
+
+  let nextBaseTypes: PartnerType[];
+
+  if (targetType === "factory") {
+    nextBaseTypes = currentBaseTypes.includes("factory") ? [] : ["factory"];
+  } else {
+    const withoutFactory = currentBaseTypes.filter((type) => type !== "factory");
+    nextBaseTypes = withoutFactory.includes(targetType)
+      ? withoutFactory.filter((type) => type !== targetType)
+      : [...withoutFactory, targetType];
+  }
+
+  return [
+    ...nextBaseTypes,
+    ...(hasOutsourcing ? (["outsourcing_vendor"] as PartnerType[]) : []),
+  ];
+}
+
+export function normalizePartnerTypeSelection(types: PartnerType[]) {
+  const uniqueTypes = Array.from(new Set(types));
+  const hasFactory = uniqueTypes.includes("factory");
+  const hasOutsourcing = uniqueTypes.includes("outsourcing_vendor");
+  const baseTypes = hasFactory
+    ? (["factory"] as PartnerType[])
+    : uniqueTypes.filter((type) => type !== "factory" && type !== "outsourcing_vendor");
+
+  return [
+    ...baseTypes,
+    ...(hasOutsourcing ? (["outsourcing_vendor"] as PartnerType[]) : []),
+  ];
+}
+
 export function buildPartnerDraftFromEntity(partner: Partner): PartnerDraft {
   return {
     name: partner.name,
@@ -117,7 +153,7 @@ export function buildPartnerDraftFromEntity(partner: Partner): PartnerDraft {
 }
 
 export function normalizePartnerDraft(draft: PartnerDraft): PartnerDraft {
-  const normalizedTypes = Array.from(new Set(draft.partnerTypes));
+  const normalizedTypes = normalizePartnerTypeSelection(draft.partnerTypes);
   const isOutsourcingVendor = normalizedTypes.includes("outsourcing_vendor");
 
   return {
