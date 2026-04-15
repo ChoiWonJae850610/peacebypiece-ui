@@ -17,6 +17,8 @@ export type PartnerListFilterState = {
   searchTerm: string;
 };
 
+export const BASE_PARTNER_TYPE_VALUES = PARTNER_TYPE_VALUES.filter((type) => type !== "outsourcing_vendor") as PartnerType[];
+
 export type OutsourcingProcessDefinition = {
   type: OutsourcingProcessType;
   label: string;
@@ -243,7 +245,7 @@ export function buildPartnerListViewModel(
     filteredCount: filteredPartners.length,
     filteredSummary,
     hasSearch: Boolean(filters.searchTerm.trim()),
-    availablePartnerTypes: PARTNER_TYPE_VALUES,
+    availablePartnerTypes: BASE_PARTNER_TYPE_VALUES,
     availableOutsourcingProcessTypes,
     filterOptions,
     processMeta,

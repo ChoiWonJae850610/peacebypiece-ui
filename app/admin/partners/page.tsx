@@ -13,7 +13,7 @@ export default function AdminPartnersPage() {
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">{WORKSPACE_COMPANY_NAME_EN}</p>
               <h1 className="text-2xl font-semibold tracking-tight text-stone-900 md:text-3xl">{WORKSPACE_COMPANY_NAME} · 거래처/공장 관리</h1>
               <p className="max-w-2xl text-sm leading-6 text-stone-600 md:text-base">
-                거래처, 공장, 원단 거래처, 부자재 거래처, 외주처를 Partner master 기준으로 관리한다.
+                거래처의 기본 유형은 공장·원단·부자재로 관리하고, 외주 여부와 공정은 별도 속성으로 연결한다.
               </p>
             </div>
             <div className="flex flex-col items-start gap-3 md:items-end">
