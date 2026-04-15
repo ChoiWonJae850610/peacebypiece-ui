@@ -10,6 +10,10 @@ export const adminKo = {
       title: "작지 히스토리",
       description: "관리자 화면을 벗어나지 않고 전체 작업지시서 히스토리를 모달에서 확인합니다.",
     },
+  notificationModal: {
+      title: "알림 이벤트 설정",
+      description: "관리자 화면을 벗어나지 않고 알림 이벤트 ON/OFF 상태를 모달에서 관리합니다.",
+    },
   partnerMaster: {
     page: {
       title: "거래처/공장 관리",

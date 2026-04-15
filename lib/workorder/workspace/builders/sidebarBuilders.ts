@@ -4,7 +4,6 @@ import type { MobileDrawerProps, MobileTopBarProps, MobileViewModelArgs, Sidebar
 export function buildSidebarListProps({
   companyName,
   version,
-  isAdmin,
   currentUser,
   workOrders,
   selectedId,
@@ -15,7 +14,6 @@ export function buildSidebarListProps({
   onSelectWorkOrder,
   onSetCreateWorkOrderModalOpen,
   onSetPermissionModalOpen,
-  onSetAdminPanelModalOpen,
   onReorderWorkOrder,
   onDeleteWorkOrder,
   onSetSearchQuery,
@@ -29,7 +27,6 @@ export function buildSidebarListProps({
     onSelect: onSelectWorkOrder,
     onCreate: () => onSetCreateWorkOrderModalOpen(true),
     onOpenSettings: () => onSetPermissionModalOpen(true),
-    onOpenAdminPanel: isAdmin ? () => onSetAdminPanelModalOpen(true) : undefined,
     onReorder: onReorderWorkOrder,
     onDelete: onDeleteWorkOrder,
     canDelete: canDeleteWorkOrder,
@@ -43,17 +40,14 @@ export function buildSidebarListProps({
 export function buildMobileTopBarProps({
   companyName,
   version,
-  isAdmin,
   onSetDrawerOpen,
   onSetPermissionModalOpen,
-  onSetAdminPanelModalOpen,
-}: Pick<MobileViewModelArgs, "companyName" | "version" | "isAdmin" | "onSetDrawerOpen" | "onSetPermissionModalOpen" | "onSetAdminPanelModalOpen">): MobileTopBarProps {
+}: Pick<MobileViewModelArgs, "companyName" | "version" | "onSetDrawerOpen" | "onSetPermissionModalOpen">): MobileTopBarProps {
   return {
     companyName,
     version,
     onOpen: () => onSetDrawerOpen(true),
     onOpenSettings: () => onSetPermissionModalOpen(true),
-    onOpenAdminPanel: isAdmin ? () => onSetAdminPanelModalOpen(true) : undefined,
   };
 }
 

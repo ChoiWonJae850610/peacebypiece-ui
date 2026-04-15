@@ -17,7 +17,6 @@ export function useWorkOrderUIState() {
   const [createWorkOrderModalOpen, setCreateWorkOrderModalOpen] = useState(false);
   const [managerAssignModalOpen, setManagerAssignModalOpen] = useState(false);
   const [inventoryLogModalOpen, setInventoryLogModalOpen] = useState(false);
-  const [adminPanelModalOpen, setAdminPanelModalOpen] = useState(false);
   const [attachmentPreviewId, setAttachmentPreviewId] = useState<string | null>(null);
   const [orderRequestConfirmOpen, setOrderRequestConfirmOpen] = useState(false);
   const [pendingWorkflowAction, setPendingWorkflowAction] = useState<WorkflowAction | null>(null);
@@ -66,8 +65,6 @@ export function useWorkOrderUIState() {
     setManagerAssignModalOpen,
     inventoryLogModalOpen,
     setInventoryLogModalOpen,
-    adminPanelModalOpen,
-    setAdminPanelModalOpen,
     attachmentPreviewId,
     setAttachmentPreviewId,
     orderRequestConfirmOpen,

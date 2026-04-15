@@ -7,10 +7,9 @@ type Props = {
   version: string;
   onOpen: () => void;
   onOpenSettings: () => void;
-  onOpenAdminPanel?: () => void;
 };
 
-export default function MobileTopBar({ companyName, version, onOpen, onOpenSettings, onOpenAdminPanel }: Props) {
+export default function MobileTopBar({ companyName, version, onOpen, onOpenSettings }: Props) {
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.layout.mobileTopBar;
 
@@ -22,16 +21,6 @@ export default function MobileTopBar({ companyName, version, onOpen, onOpenSetti
           <div className="flex items-center gap-2 text-[11px] text-stone-500"><span>{copy.subtitle}</span><span className="text-[10px] leading-none text-stone-400">v{version}</span></div>
         </div>
         <div className="flex items-center gap-2">
-          {onOpenAdminPanel ? (
-            <button
-              type="button"
-              onClick={onOpenAdminPanel}
-              aria-label={copy.openAdminPanelAria}
-              className="pbp-touch-target pbp-interactive-button inline-flex h-11 w-11 items-center justify-center rounded-xl border border-sky-200 bg-sky-50 text-base font-medium text-sky-700 shadow-sm hover:border-sky-300 hover:bg-sky-100 active:bg-sky-200"
-            >
-              ⚙︎
-            </button>
-          ) : null}
           <button
             type="button"
             onClick={onOpenSettings}

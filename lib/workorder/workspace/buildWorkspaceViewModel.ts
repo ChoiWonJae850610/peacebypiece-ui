@@ -18,7 +18,6 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
   const sidebarListProps = buildSidebarListProps({
     companyName,
     version,
-    isAdmin: args.isAdmin,
     currentUser: args.currentUser,
     workOrders: args.workOrders,
     selectedId: args.selectedId,
@@ -29,7 +28,6 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
     onSelectWorkOrder: args.onSelectWorkOrder,
     onSetCreateWorkOrderModalOpen: args.onSetCreateWorkOrderModalOpen,
     onSetPermissionModalOpen: args.onSetPermissionModalOpen,
-    onSetAdminPanelModalOpen: args.onSetAdminPanelModalOpen,
     onReorderWorkOrder: args.onReorderWorkOrder,
     onDeleteWorkOrder: args.onDeleteWorkOrder,
     onSetSearchQuery: args.onSetSearchQuery,
@@ -37,7 +35,6 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
 
   const detailProps = buildDetailProps({
     version,
-    isAdmin: args.isAdmin,
     currentUser: args.currentUser,
     currentRole: args.currentRole,
     selectedWorkOrder: args.selectedWorkOrder,
@@ -45,6 +42,7 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
     canCreateWorkOrder: args.canCreateWorkOrder,
     canSeeAttachments: args.canSeeAttachments,
     canUploadOfficialAttachments: args.canUploadOfficialAttachments,
+    isAdmin: args.isAdmin,
     isReviewRequestLocked: args.isReviewRequestLocked,
     canChangeManager: args.canChangeManager,
     canSeeProductionSections: args.canSeeProductionSections,
@@ -87,7 +85,6 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
   const sidePanelProps = applySidePanelPreviewHandler(
     buildSidePanelProps({
       version,
-      isAdmin: args.isAdmin,
       currentUser: args.currentUser,
       currentRole: args.currentRole,
       selectedWorkOrder: args.selectedWorkOrder,
@@ -95,6 +92,7 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
       canCreateWorkOrder: args.canCreateWorkOrder,
       canSeeAttachments: args.canSeeAttachments,
       canUploadOfficialAttachments: args.canUploadOfficialAttachments,
+      isAdmin: args.isAdmin,
       isReviewRequestLocked: args.isReviewRequestLocked,
       canChangeManager: args.canChangeManager,
       canSeeProductionSections: args.canSeeProductionSections,
@@ -134,7 +132,6 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
     inventoryEditorOpen: args.inventoryEditorOpen,
     permissionModalOpen: args.permissionModalOpen,
     createWorkOrderModalOpen: args.createWorkOrderModalOpen,
-    adminPanelModalOpen: args.adminPanelModalOpen,
     managerAssignModalOpen: args.managerAssignModalOpen,
     inventoryLogModalOpen: args.inventoryLogModalOpen,
     orderRequestConfirmOpen: args.orderRequestConfirmOpen,
@@ -142,7 +139,6 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
     currentUserId: args.currentUserId,
     permissionTargetUserId: args.permissionTargetUserId,
     historyFilter: args.historyFilter,
-    notificationSettings: args.notificationSettings,
     currentRole: args.currentRole,
     selectedWorkOrder: args.selectedWorkOrder,
     currentInventoryQuantity: args.currentInventoryQuantity,
@@ -154,12 +150,11 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
     onSetInventoryEditorOpen: args.onSetInventoryEditorOpen,
     onSetPermissionModalOpen: args.onSetPermissionModalOpen,
     onSetCreateWorkOrderModalOpen: args.onSetCreateWorkOrderModalOpen,
-    onSetAdminPanelModalOpen: args.onSetAdminPanelModalOpen,
     onSetInventoryLogModalOpen: args.onSetInventoryLogModalOpen,
     onSetAttachmentPreviewId: args.onSetAttachmentPreviewId,
     onSetPermissionTargetUserId: args.onSetPermissionTargetUserId,
     onSetCurrentUserId: args.onSetCurrentUserId,
-    onToggleNotificationSetting: args.onToggleNotificationSetting,
+    onSetHistoryFilter: args.onSetHistoryFilter,
     onCreateWorkOrder: args.onCreateWorkOrder,
     onConfirmOrderRequest: args.onConfirmOrderRequest,
     onCloseOrderRequestConfirm: args.onCloseOrderRequestConfirm,
@@ -175,10 +170,8 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
   const mobileTopBarProps = buildMobileTopBarProps({
     companyName,
     version,
-    isAdmin: args.isAdmin,
     onSetDrawerOpen: args.onSetDrawerOpen,
     onSetPermissionModalOpen: args.onSetPermissionModalOpen,
-    onSetAdminPanelModalOpen: args.onSetAdminPanelModalOpen,
   });
 
   const mobileDrawerProps = buildMobileDrawerProps({

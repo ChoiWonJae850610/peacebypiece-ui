@@ -6,7 +6,6 @@ import WorkOrderDetail from "@/components/workorder/WorkOrderDetail";
 import WorkOrderOverlay from "@/components/workorder/WorkOrderOverlay";
 import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
 import type { Attachment, HistoryFilter, InventoryLog, RoleType, UserProfile, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
-import type { NotificationSettingKey } from "@/types/workflow";
 
 export type SidebarListProps = ComponentProps<typeof SidebarContent>;
 export type DetailProps = ComponentProps<typeof WorkOrderDetail>;
@@ -23,7 +22,6 @@ export type BuildWorkspaceViewModelArgs = {
   inventoryEditorOpen: boolean;
   permissionModalOpen: boolean;
   createWorkOrderModalOpen: boolean;
-  adminPanelModalOpen: boolean;
   managerAssignModalOpen: boolean;
   inventoryLogModalOpen: boolean;
   orderRequestConfirmOpen: boolean;
@@ -31,7 +29,6 @@ export type BuildWorkspaceViewModelArgs = {
   currentUserId: string;
   permissionTargetUserId: string;
   historyFilter: HistoryFilter;
-  notificationSettings: Record<NotificationSettingKey, boolean>;
   searchQuery: string;
   workOrders: SidebarListProps["workOrders"];
   workflowStateById: Record<string, string>;
@@ -74,14 +71,12 @@ export type BuildWorkspaceViewModelArgs = {
   onSetInventoryEditorOpen: (next: boolean) => void;
   onSetPermissionModalOpen: (next: boolean) => void;
   onSetCreateWorkOrderModalOpen: (next: boolean) => void;
-  onSetAdminPanelModalOpen: (next: boolean) => void;
   onSetInventoryLogModalOpen: (next: boolean) => void;
   onSetAttachmentPreviewId: (next: string | null) => void;
   onSetPermissionTargetUserId: (next: string) => void;
   onSetCurrentUserId: (next: string) => void;
   onSetSearchQuery: (next: string) => void;
   onSetHistoryFilter: (next: HistoryFilter) => void;
-  onToggleNotificationSetting: (key: NotificationSettingKey) => void;
   onSave: () => void;
   onSelectWorkOrder: (id: string) => void;
   onCreateWorkOrder: ModalProps["createWorkOrder"]["onCreate"];
@@ -118,7 +113,6 @@ export type WorkspaceViewModel = {
 
 export type BaseWorkspaceViewModelArgs = {
   version: string;
-  isAdmin: boolean;
   currentUser: UserProfile;
   currentRole: RoleType;
   selectedWorkOrder: WorkOrder;
@@ -126,6 +120,7 @@ export type BaseWorkspaceViewModelArgs = {
   canCreateWorkOrder: boolean;
   canSeeAttachments: boolean;
   canUploadOfficialAttachments: boolean;
+  isAdmin: boolean;
   isReviewRequestLocked: boolean;
   canChangeManager: boolean;
   canSeeProductionSections: boolean;
@@ -161,7 +156,6 @@ export type BaseWorkspaceViewModelArgs = {
 export type SidebarViewModelArgs = {
   companyName: string;
   version: string;
-  isAdmin: boolean;
   currentUser: UserProfile;
   workOrders: SidebarListProps["workOrders"];
   selectedId: string;
@@ -172,7 +166,6 @@ export type SidebarViewModelArgs = {
   onSelectWorkOrder: (id: string) => void;
   onSetCreateWorkOrderModalOpen: (next: boolean) => void;
   onSetPermissionModalOpen: (next: boolean) => void;
-  onSetAdminPanelModalOpen: (next: boolean) => void;
   onReorderWorkOrder: (id: string) => void;
   onDeleteWorkOrder: (id: string) => void;
   onSetSearchQuery: (next: string) => void;
@@ -195,7 +188,6 @@ export type ModalViewModelArgs = {
   inventoryEditorOpen: boolean;
   permissionModalOpen: boolean;
   createWorkOrderModalOpen: boolean;
-  adminPanelModalOpen: boolean;
   managerAssignModalOpen: boolean;
   inventoryLogModalOpen: boolean;
   orderRequestConfirmOpen: boolean;
@@ -203,7 +195,6 @@ export type ModalViewModelArgs = {
   currentUserId: string;
   permissionTargetUserId: string;
   historyFilter: HistoryFilter;
-  notificationSettings: Record<NotificationSettingKey, boolean>;
   currentRole: RoleType;
   selectedWorkOrder: WorkOrder;
   currentInventoryQuantity: number;
@@ -215,13 +206,11 @@ export type ModalViewModelArgs = {
   onSetInventoryEditorOpen: (next: boolean) => void;
   onSetPermissionModalOpen: (next: boolean) => void;
   onSetCreateWorkOrderModalOpen: (next: boolean) => void;
-  onSetAdminPanelModalOpen: (next: boolean) => void;
   onSetInventoryLogModalOpen: (next: boolean) => void;
   onSetAttachmentPreviewId: (next: string | null) => void;
   onSetPermissionTargetUserId: (next: string) => void;
   onSetCurrentUserId: (next: string) => void;
   onSetHistoryFilter: (next: HistoryFilter) => void;
-  onToggleNotificationSetting: (key: NotificationSettingKey) => void;
   onCreateWorkOrder: ModalProps["createWorkOrder"]["onCreate"];
   onConfirmOrderRequest: () => void;
   onCloseOrderRequestConfirm: () => void;
@@ -237,11 +226,9 @@ export type ModalViewModelArgs = {
 export type MobileViewModelArgs = {
   companyName: string;
   version: string;
-  isAdmin: boolean;
   drawerOpen: boolean;
   sidebarListProps: SidebarListProps;
   onSetDrawerOpen: (next: boolean) => void;
   onSetPermissionModalOpen: (next: boolean) => void;
-  onSetAdminPanelModalOpen: (next: boolean) => void;
   onReorderWorkOrder: (id: string) => void;
 };

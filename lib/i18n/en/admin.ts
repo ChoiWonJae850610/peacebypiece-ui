@@ -10,6 +10,10 @@ export const adminEn = {
       title: "Work Order History",
       description: "Review the full work order history in a modal without leaving the admin workspace.",
     },
+  notificationModal: {
+      title: "Notification Event Settings",
+      description: "Manage notification event ON/OFF states in a modal without leaving the admin workspace.",
+    },
   partnerMaster: {
     page: {
       title: "Partner / Factory Management",

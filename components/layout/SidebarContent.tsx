@@ -13,7 +13,6 @@ type Props = {
   onSelect: (id: string) => void;
   onCreate: () => void;
   onOpenSettings: () => void;
-  onOpenAdminPanel?: () => void;
   onReorder?: (id: string) => void;
   onDelete?: (id: string) => void;
   canDelete?: (workflowState: WorkflowState) => boolean;
@@ -32,7 +31,6 @@ export default function SidebarContent({
   onSelect,
   onCreate,
   onOpenSettings,
-  onOpenAdminPanel,
   onReorder,
   onDelete,
   canDelete,
@@ -54,16 +52,6 @@ export default function SidebarContent({
             <div className="mt-1 flex items-center gap-2 text-xs text-stone-500"><span>{controlsUi.subtitle}</span><span className="text-[10px] leading-none text-stone-400">v{version}</span></div>
           </div>
           <div className="flex items-center gap-2">
-            {onOpenAdminPanel ? (
-              <button
-                type="button"
-                onClick={onOpenAdminPanel}
-                aria-label={controlsUi.openAdminPanelAria}
-                className="pbp-interactive-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-sky-200 bg-sky-50 text-base font-medium text-sky-700 shadow-sm hover:border-sky-300 hover:bg-sky-100 active:bg-sky-200"
-              >
-                ⚙︎
-              </button>
-            ) : null}
             <button
               type="button"
               onClick={onOpenSettings}
