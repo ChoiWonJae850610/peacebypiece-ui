@@ -7,12 +7,8 @@ import {
   type EditableSectionKey,
   type OrderEntryState,
 } from "@/components/workorder/detail/shared/detailEditorShared";
-import { ensurePartnerMasterItem, listActivePartnerNamesByTypes } from "@/lib/admin/partnerMasterPersistence";
+import { ensurePartnerMasterItem } from "@/lib/admin/partnerMasterPersistence";
 import { isVendorRegistryType, REGISTRY_TYPE } from "@/lib/constants/workorderDomain";
-import {
-  FACTORY_OPTIONS,
-  PARTNER_OPTIONS,
-} from "@/lib/constants/workorderOptions";
 import {
   commitOrderItemsEdit,
   commitOutsourcingItemsEdit,
@@ -28,16 +24,17 @@ import {
   getInitialBasicInfo,
   getInitialOrderEntries,
   sanitizeOrderEntry,
-  sanitizeSelectValue,
 } from "@/lib/workorder/detail/detailSanitizers";
 import {
   getCanOpenInspectionModal,
   getCostSummaryValues,
-  getMaterialVendorOptionsById,
-  getOutsourcingVendorOptionsById,
   getProductionSectionOpen,
 } from "@/lib/workorder/detail/workOrderDetailHelpers";
-import type { PartnerType } from "@/types/partner";
+import {
+  selectFactoryOptions,
+  selectMaterialVendorOptionsById,
+  selectOutsourcingVendorOptionsById,
+} from "@/lib/workorder/detail/detailSelectors";
 import type { Outsourcing, WorkOrder, WorkflowState } from "@/types/workorder";
 
 type UseWorkOrderDetailEditorParams = {
@@ -53,28 +50,6 @@ type UseWorkOrderDetailEditorParams = {
   onCompleteInspection: (payload: { orderEntryId: string; inboundQuantity: number; nextInventoryQuantity: number; memo: string }) => void;
 };
 
-function mergeOptionLists(...sources: ReadonlyArray<ReadonlyArray<string>>): string[] {
-  return sources.flat().reduce<string[]>((options, value) => appendOption(options, value), []);
-}
-
-function buildSeededPartnerOptions() {
-  return mergeOptionLists(
-    PARTNER_OPTIONS,
-    listActivePartnerNamesByTypes(["material_vendor", "subsidiary_vendor", "outsourcing_vendor"]),
-  );
-}
-
-function buildSeededFactoryOptions() {
-  return mergeOptionLists(FACTORY_OPTIONS, listActivePartnerNamesByTypes(["factory"]));
-}
-
-function mapRegistryTypeToPartnerTypes(type: RegistryType): PartnerType[] {
-  if (type === REGISTRY_TYPE.factory) return ["factory"];
-  if (type === REGISTRY_TYPE.materialVendor) return ["material_vendor"];
-  if (type === REGISTRY_TYPE.subsidiaryVendor) return ["subsidiary_vendor"];
-  return [];
-}
-
 export function useWorkOrderDetailEditor({
   workOrder,
   currentWorkflowState,
@@ -88,11 +63,8 @@ export function useWorkOrderDetailEditor({
   onCompleteInspection,
 }: UseWorkOrderDetailEditorParams) {
   const [basicInfo, setBasicInfo] = useState<BasicInfoState>(() => getInitialBasicInfo(workOrder));
-  const [partnerOptions, setPartnerOptions] = useState<string[]>(() => buildSeededPartnerOptions());
   const [orderItems, setOrderItems] = useState<OrderEntryState[]>(() => getInitialOrderEntries(workOrder));
-  const [factoryOptions, setFactoryOptions] = useState<string[]>(() => {
-    return getInitialOrderEntries(workOrder).reduce<string[]>((options, item) => appendOption(options, item.factory), buildSeededFactoryOptions());
-  });
+  const [factoryOptions, setFactoryOptions] = useState<string[]>(() => selectFactoryOptions(getInitialOrderEntries(workOrder)));
   const [registryModalOpen, setRegistryModalOpen] = useState(false);
   const [registryType, setRegistryType] = useState<RegistryType>(REGISTRY_TYPE.partner);
   const [basicInfoModalOpen, setBasicInfoModalOpen] = useState(false);
@@ -119,19 +91,10 @@ export function useWorkOrderDetailEditor({
   });
 
   useEffect(() => {
-    const nextPartnerOptions = buildSeededPartnerOptions();
     const nextOrderEntries = getInitialOrderEntries(workOrder);
-    const nextFactoryOptions = nextOrderEntries.reduce<string[]>((options, item) => appendOption(options, item.factory), buildSeededFactoryOptions());
 
-    setPartnerOptions(nextPartnerOptions);
-    setFactoryOptions(nextFactoryOptions);
-    setBasicInfo((current) => {
-      const next = getInitialBasicInfo(workOrder);
-      return {
-        ...next,
-        partner: sanitizeSelectValue(current.partner, nextPartnerOptions, next.partner),
-      };
-    });
+    setFactoryOptions(selectFactoryOptions(nextOrderEntries));
+    setBasicInfo(getInitialBasicInfo(workOrder));
     setBasicInfoDraft(getInitialBasicInfo(workOrder));
     setOrderItems(nextOrderEntries);
   }, [workOrder]);
@@ -159,12 +122,12 @@ export function useWorkOrderDetailEditor({
   );
 
   const materialVendorOptionsById = useMemo(
-    () => getMaterialVendorOptionsById(materialItems),
+    () => selectMaterialVendorOptionsById(materialItems),
     [materialItems],
   );
 
   const outsourcingVendorOptionsById = useMemo(
-    () => getOutsourcingVendorOptionsById(outsourcingItems),
+    () => selectOutsourcingVendorOptionsById(outsourcingItems),
     [outsourcingItems],
   );
 
@@ -297,8 +260,6 @@ export function useWorkOrderDetailEditor({
     }
 
     if (isVendorRegistryType(type)) {
-      const nextPartnerOptions = appendOption(buildSeededPartnerOptions(), name);
-      setPartnerOptions(nextPartnerOptions);
       if (type === REGISTRY_TYPE.partner) {
         setBasicInfo((current) => ({ ...current, partner: name }));
         setBasicInfoDraft((current) => ({ ...current, partner: name }));
@@ -306,7 +267,7 @@ export function useWorkOrderDetailEditor({
       return;
     }
 
-    const nextFactoryOptions = appendOption(buildSeededFactoryOptions(), name);
+    const nextFactoryOptions = appendOption(selectFactoryOptions(orderItems), name);
     setFactoryOptions(nextFactoryOptions);
     const nextItems = orderItems.map((item, index) => (index === 0 ? { ...item, factory: name } : item));
     setOrderItems(nextItems);
