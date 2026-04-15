@@ -18,7 +18,6 @@ export function buildModalProps({
   selectedWorkOrder,
   currentInventoryQuantity,
   filteredHistoryLogs,
-  adminHistoryLogs,
   inventoryLogs,
   selectedAttachment,
   pendingAttachmentDelete,
@@ -31,7 +30,6 @@ export function buildModalProps({
   onSetAttachmentPreviewId,
   onSetPermissionTargetUserId,
   onSetCurrentUserId,
-  onSetHistoryFilter,
   onToggleNotificationSetting,
   onCreateWorkOrder,
   onConfirmOrderRequest,
@@ -107,9 +105,6 @@ export function buildModalProps({
       onClose: () => onSetAdminPanelModalOpen(false),
       notificationSettings,
       onToggleNotificationSetting,
-      historyLogs: adminHistoryLogs,
-      historyFilter,
-      onHistoryFilterChange: onSetHistoryFilter,
     },
   };
 }

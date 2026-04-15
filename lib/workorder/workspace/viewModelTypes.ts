@@ -52,7 +52,6 @@ export type BuildWorkspaceViewModelArgs = {
   currentDisplayStage: DetailProps["currentDisplayStage"];
   currentInventoryQuantity: number;
   filteredHistoryLogs: ModalProps["inventoryLog"]["logs"];
-  adminHistoryLogs: ModalProps["adminPanel"]["historyLogs"];
   inventoryLogs: InventoryLog[];
   officialAttachments: Attachment[];
   selectedAttachment: Attachment | null;
@@ -209,7 +208,6 @@ export type ModalViewModelArgs = {
   selectedWorkOrder: WorkOrder;
   currentInventoryQuantity: number;
   filteredHistoryLogs: ModalProps["inventoryLog"]["logs"];
-  adminHistoryLogs: ModalProps["adminPanel"]["historyLogs"];
   inventoryLogs: InventoryLog[];
   selectedAttachment: Attachment | null;
   pendingAttachmentDelete: Attachment | null;

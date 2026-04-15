@@ -6,6 +6,10 @@ export const adminEn = {
     { title: "Users", description: "Area to expand into invitations, role updates, and active user management" },
     { title: "Operations Settings", description: "Area for notifications, defaults, and operations settings" },
   ],
+  historyModal: {
+      title: "Work Order History",
+      description: "Review the full work order history in a modal without leaving the admin workspace.",
+    },
   partnerMaster: {
     page: {
       title: "Partner / Factory Management",

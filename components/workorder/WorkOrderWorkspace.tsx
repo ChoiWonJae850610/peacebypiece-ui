@@ -7,11 +7,7 @@ import { useWorkOrder } from "@/lib/hooks/useWorkOrder";
 import { getPendingAttachmentDelete } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
 import { buildWorkspaceViewModel } from "@/lib/workorder/workspace/buildWorkspaceViewModel";
 
-type WorkOrderWorkspaceProps = {
-  initialAdminPanelOpen?: boolean;
-};
-
-export default function WorkOrderWorkspace({ initialAdminPanelOpen = false }: WorkOrderWorkspaceProps) {
+export default function WorkOrderWorkspace() {
   const {
     appShellRef,
     attachmentInputRef,
@@ -67,7 +63,6 @@ export default function WorkOrderWorkspace({ initialAdminPanelOpen = false }: Wo
     currentDisplayStage,
     currentInventoryQuantity,
     filteredHistoryLogs,
-    adminHistoryLogs,
     inventoryLogs,
     officialAttachments,
     selectedAttachment,
@@ -105,7 +100,7 @@ export default function WorkOrderWorkspace({ initialAdminPanelOpen = false }: Wo
     handleCreateMemoReply,
     handlePromoteMemoAttachment,
     canSeeAttachments,
-  } = useWorkOrder({ initialAdminPanelOpen });
+  } = useWorkOrder();
 
   const [pendingAttachmentDeleteId, setPendingAttachmentDeleteId] = useState<string | null>(null);
   const pendingAttachmentDelete = useMemo(
@@ -164,7 +159,6 @@ export default function WorkOrderWorkspace({ initialAdminPanelOpen = false }: Wo
     currentDisplayStage,
     currentInventoryQuantity,
     filteredHistoryLogs,
-    adminHistoryLogs,
     inventoryLogs,
     officialAttachments,
     selectedAttachment,

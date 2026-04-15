@@ -6,6 +6,10 @@ export const adminKo = {
     { title: "사용자", description: "초대, 역할 변경, 활성 사용자 관리 화면으로 확장할 영역" },
     { title: "운영 설정", description: "알림, 기본값, 운영 설정을 정리할 영역" },
   ],
+  historyModal: {
+      title: "작지 히스토리",
+      description: "관리자 화면을 벗어나지 않고 전체 작업지시서 히스토리를 모달에서 확인합니다.",
+    },
   partnerMaster: {
     page: {
       title: "거래처/공장 관리",

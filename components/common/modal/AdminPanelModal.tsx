@@ -6,20 +6,15 @@ import ModalBody from "@/components/common/modal/ModalBody";
 import ModalHeader from "@/components/common/modal/ModalHeader";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import { MODAL_EXCEPTION_PRESETS } from "@/components/common/modal/modalPresets";
-import AdminPanelHistorySection from "@/components/common/modal/adminPanel/AdminPanelHistorySection";
 import AdminPanelNotificationSection from "@/components/common/modal/adminPanel/AdminPanelNotificationSection";
 import { useI18n } from "@/lib/i18n";
-import type { NotificationSettingKey, NotificationSettings, HistoryFilter } from "@/types/workflow";
-import type { HistoryLog } from "@/types/workorder";
+import type { NotificationSettingKey, NotificationSettings } from "@/types/workflow";
 
 type AdminPanelModalProps = {
   open: boolean;
   onClose: () => void;
   notificationSettings: NotificationSettings;
   onToggleNotificationSetting: (key: NotificationSettingKey) => void;
-  historyLogs: HistoryLog[];
-  historyFilter: HistoryFilter;
-  onHistoryFilterChange: (filter: HistoryFilter) => void;
 };
 
 export default function AdminPanelModal({
@@ -27,9 +22,6 @@ export default function AdminPanelModal({
   onClose,
   notificationSettings,
   onToggleNotificationSetting,
-  historyLogs,
-  historyFilter,
-  onHistoryFilterChange,
 }: AdminPanelModalProps) {
   const { i18n } = useI18n();
   const ui = i18n.common.ui;
@@ -55,11 +47,6 @@ export default function AdminPanelModal({
         <AdminPanelNotificationSection
           notificationSettings={notificationSettings}
           onToggleNotificationSetting={onToggleNotificationSetting}
-        />
-        <AdminPanelHistorySection
-          historyLogs={historyLogs}
-          historyFilter={historyFilter}
-          onHistoryFilterChange={onHistoryFilterChange}
         />
       </ModalBody>
     </BaseModal>

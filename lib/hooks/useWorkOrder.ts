@@ -10,12 +10,8 @@ import { useWorkOrderUIState } from "@/lib/hooks/workorder/useWorkOrderUIState";
 import { useWorkOrderActionRuntime } from "@/lib/hooks/workorder/useWorkOrderActionRuntime";
 import type { WorkOrder, WorkflowAction } from "@/types/workorder";
 
-type UseWorkOrderOptions = {
-  initialAdminPanelOpen?: boolean;
-};
-
-export function useWorkOrder({ initialAdminPanelOpen = false }: UseWorkOrderOptions = {}) {
-  const uiState = useWorkOrderUIState({ initialAdminPanelOpen });
+export function useWorkOrder() {
+  const uiState = useWorkOrderUIState();
   const actionRuntime = useWorkOrderActionRuntime();
 
   const coreState = useWorkOrderCoreState();
