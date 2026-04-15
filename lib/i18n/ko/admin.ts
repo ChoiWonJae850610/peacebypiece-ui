@@ -19,6 +19,20 @@ export const adminKo = {
     summary: "요약 형식: 설명 · 사용자",
     countSuffix: "건",
   },
+
+  historyPage: {
+    title: "작지 히스토리",
+    description: "관리자 전용 페이지에서 작업지시서 히스토리를 검색하고 필터링하며 상세 내용을 더 길게 확인합니다.",
+    moveToAdminMain: "관리자 홈",
+    moveToWorkspace: "작업지시서 화면으로 이동",
+    searchLabel: "로그 검색",
+    searchPlaceholder: "작업, 사용자, 시간, 상세 내용을 검색하세요",
+    filterDescription: "필터와 검색을 함께 사용해 전체 작업지시서 히스토리를 빠르게 추적할 수 있습니다.",
+    emptySearch: "검색 조건에 맞는 히스토리가 없습니다.",
+    guideTitle: "화면 안내",
+    guideDescription: "상세를 열면 상태 변경 전후 값과 추가 상세 라인을 함께 볼 수 있습니다.",
+    searchGuide: "검색은 작업, 사용자, 시간, 상세 텍스트를 함께 대상으로 삼습니다.",
+  },
   notificationSection: {
     title: "알림 이벤트 설정",
     description: "현재는 상태 저장만 연결되어 있으며 실제 발송은 아직 연결되지 않았습니다.",

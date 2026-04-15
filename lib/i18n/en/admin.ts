@@ -19,6 +19,20 @@ export const adminEn = {
     summary: "Summary format: description · user",
     countSuffix: " items",
   },
+
+  historyPage: {
+    title: "Work Order History",
+    description: "Use a dedicated admin page to search, filter, and inspect detailed work order history without modal constraints.",
+    moveToAdminMain: "Admin Home",
+    moveToWorkspace: "Open Workspace",
+    searchLabel: "Search logs",
+    searchPlaceholder: "Search by action, user, time, or detail text",
+    filterDescription: "Use filters and search together to trace the full work order history quickly.",
+    emptySearch: "No history matches the current search.",
+    guideTitle: "Screen Guide",
+    guideDescription: "Open details to review transitions and additional detail lines in one place.",
+    searchGuide: "Search scans action, user, time, and detail text together.",
+  },
   notificationSection: {
     title: "Notification Event Settings",
     description: "Only the state is stored for now. Actual delivery is not connected yet.",
