@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { buildAdminHistoryItemViewModel } from "@/lib/admin/historyPresentation";
-import type { HistoryLog } from "@/types/workorder";
+import { buildAdminHistoryItemViewModel } from "@/lib/admin/history/presentation";
+import type { AdminHistoryEvent } from "@/lib/admin/history/types";
 
 type AdminWorkOrderHistoryItemProps = {
-  item: HistoryLog;
+  item: AdminHistoryEvent;
 };
 
 export default function AdminWorkOrderHistoryItem({ item }: AdminWorkOrderHistoryItemProps) {

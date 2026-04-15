@@ -1,14 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { filterAdminHistoryEvents } from "@/lib/admin/history/selectors";
+import type { AdminHistoryFilter } from "@/lib/admin/history/types";
 import { isAdminRole, normalizeRoles } from "@/lib/constants/roles";
 import { useWorkOrderCoreState } from "@/lib/hooks/workorder/useWorkOrderCoreState";
-import { filterHistoryLogs } from "@/lib/workorder/history/filters";
-import type { HistoryFilter } from "@/types/workflow";
 
 export function useAdminHistoryTools() {
   const coreState = useWorkOrderCoreState();
-  const [historyFilter, setHistoryFilter] = useState<HistoryFilter>("all");
+  const [historyFilter, setHistoryFilter] = useState<AdminHistoryFilter>("all");
 
   const adminViewer = useMemo(
     () => coreState.users.find((user) => isAdminRole(user)) ?? coreState.currentUser,
@@ -20,13 +20,13 @@ export function useAdminHistoryTools() {
     [adminViewer.role, adminViewer.roles],
   );
 
-  const historyLogs = useMemo(
-    () => filterHistoryLogs(coreState.historyLogs, true, historyFilter, currentRoles),
+  const historyEvents = useMemo(
+    () => filterAdminHistoryEvents(coreState.historyLogs, historyFilter, currentRoles),
     [coreState.historyLogs, historyFilter, currentRoles],
   );
 
   return {
-    historyLogs,
+    historyEvents,
     historyFilter,
     setHistoryFilter,
   };

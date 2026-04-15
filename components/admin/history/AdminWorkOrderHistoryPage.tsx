@@ -2,38 +2,19 @@
 
 import { useMemo, useState } from "react";
 import AdminWorkOrderHistoryItem from "@/components/admin/history/AdminWorkOrderHistoryItem";
-import { buildAdminHistorySectionViewModel } from "@/lib/admin/historyPresentation";
+import { buildAdminHistorySectionViewModel } from "@/lib/admin/history/presentation";
+import { matchesAdminHistorySearch } from "@/lib/admin/history/selectors";
 import { useAdminHistoryTools } from "@/lib/admin/useAdminHistoryTools";
 import { useI18n } from "@/lib/i18n";
-import type { HistoryLog } from "@/types/workorder";
-
-function matchesHistorySearch(item: HistoryLog, query: string) {
-  const normalizedQuery = query.trim().toLowerCase();
-  if (!normalizedQuery) return true;
-
-  const haystacks = [
-    item.action,
-    item.message,
-    item.user,
-    item.time,
-    item.summary,
-    item.transition?.from,
-    item.transition?.to,
-    ...(item.detailLines ?? []).flatMap((detail) => [detail.label ?? "", detail.value]),
-  ];
-
-  return haystacks.some((value) => value?.toLowerCase().includes(normalizedQuery));
-}
-
 export default function AdminWorkOrderHistoryPage() {
   const { i18n } = useI18n();
   const pageText = i18n.admin.historyPage;
-  const { historyLogs, historyFilter, setHistoryFilter } = useAdminHistoryTools();
+  const { historyEvents, historyFilter, setHistoryFilter } = useAdminHistoryTools();
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredLogs = useMemo(
-    () => historyLogs.filter((item) => matchesHistorySearch(item, searchQuery)),
-    [historyLogs, searchQuery],
+    () => historyEvents.filter((item) => matchesAdminHistorySearch(item, searchQuery)),
+    [historyEvents, searchQuery],
   );
 
   const viewModel = buildAdminHistorySectionViewModel(filteredLogs, historyFilter);
