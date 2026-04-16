@@ -1,9 +1,9 @@
 "use client";
 
 import StatusToggle from "@/components/common/StatusToggle";
-import { NOTIFICATION_SETTING_KEYS } from "@/lib/admin/notificationSettingsMeta";
+import { buildAdminNotificationSettingItems } from "@/lib/admin/notification/presentation";
 import { useI18n } from "@/lib/i18n";
-import type { NotificationSettingKey, NotificationSettings } from "@/types/workflow";
+import type { NotificationSettingKey, NotificationSettings } from "@/lib/admin/notification/types";
 
 type AdminNotificationSettingsSectionProps = {
   notificationSettings: NotificationSettings;
@@ -16,6 +16,7 @@ export default function AdminNotificationSettingsSection({
 }: AdminNotificationSettingsSectionProps) {
   const { i18n } = useI18n();
   const notificationI18n = i18n.admin.notificationSection;
+  const items = buildAdminNotificationSettingItems(notificationSettings);
 
   return (
     <section className="rounded-2xl border border-stone-200 bg-white p-3 md:p-4">
@@ -27,32 +28,26 @@ export default function AdminNotificationSettingsSection({
         <span className="rounded-full bg-sky-100 px-2 py-1 text-[11px] font-medium text-sky-700">{notificationI18n.badge}</span>
       </div>
       <div className="mt-3 space-y-2">
-        {NOTIFICATION_SETTING_KEYS.map((key) => {
-          const checked = notificationSettings[key];
-          const item = i18n.workorder.presentation.notificationSettings[key];
-          return (
-            <div
-              key={key}
-              className="flex items-start gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-3 py-3 transition hover:border-stone-300 hover:bg-stone-100"
-            >
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium text-stone-900">{item.label}</div>
-                <div className="mt-1 break-keep text-xs leading-5 text-stone-500">{item.description}</div>
-              </div>
-              <div className="flex items-center gap-2">
-                <StatusToggle
-                  checked={checked}
-                  onChange={() => onToggleNotificationSetting(key)}
-                  srLabel={`${item.label} ${checked ? notificationI18n.toggleOn : notificationI18n.toggleOff}`}
-                  size="sm"
-                />
-                <span className="text-xs font-medium text-stone-600">
-                  {checked ? notificationI18n.toggleOn : notificationI18n.toggleOff}
-                </span>
-              </div>
+        {items.map((item) => (
+          <div
+            key={item.key}
+            className="flex items-start gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-3 py-3 transition hover:border-stone-300 hover:bg-stone-100"
+          >
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-medium text-stone-900">{item.label}</div>
+              <div className="mt-1 break-keep text-xs leading-5 text-stone-500">{item.description}</div>
             </div>
-          );
-        })}
+            <div className="flex items-center gap-2">
+              <StatusToggle
+                checked={item.checked}
+                onChange={() => onToggleNotificationSetting(item.key)}
+                srLabel={item.srLabel}
+                size="sm"
+              />
+              <span className="text-xs font-medium text-stone-600">{item.stateLabel}</span>
+            </div>
+          </div>
+        ))}
       </div>
     </section>
   );

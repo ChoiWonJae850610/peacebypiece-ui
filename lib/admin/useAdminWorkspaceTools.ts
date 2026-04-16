@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { loadNotificationSettings, persistNotificationSettings } from "@/lib/admin/notificationSettingsPersistence";
-import type { NotificationSettingKey, NotificationSettings } from "@/types/workflow";
+import type { NotificationSettingKey, NotificationSettings } from "@/lib/admin/notification/types";
 
 export type AdminWorkspaceModalKey = "notification" | null;
 

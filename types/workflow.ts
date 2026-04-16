@@ -20,6 +20,4 @@ export type HistoryFilter = "all" | "work" | "inventory" | "attachment";
 export const DISPLAY_STAGES_LIST: DisplayStage[] = [...DISPLAY_STAGES];
 export const WORKFLOW_STATES_LIST: WorkflowState[] = [...WORKFLOW_STATES];
 
-export type NotificationSettingKey = "created" | "updated" | "status_changed" | "materials_changed" | "outsourcing_changed" | "stock_changed" | "comment_added";
-
-export type NotificationSettings = Record<NotificationSettingKey, boolean>;
+export type { NotificationSettingKey, NotificationSettings } from "@/lib/admin/notification/types";

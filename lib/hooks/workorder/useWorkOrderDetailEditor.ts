@@ -30,6 +30,7 @@ import {
   getProductionSectionOpen,
 } from "@/lib/workorder/detail/workOrderDetailHelpers";
 import {
+  mapRegistryTypeToPartnerTypes,
   selectFactoryOptions,
   selectMaterialVendorOptionsById,
   selectOutsourcingVendorOptionsById,
@@ -63,7 +64,6 @@ export function useWorkOrderDetailEditor({
 }: UseWorkOrderDetailEditorParams) {
   const [basicInfo, setBasicInfo] = useState<BasicInfoState>(() => getInitialBasicInfo(workOrder));
   const [orderItems, setOrderItems] = useState<OrderEntryState[]>(() => getInitialOrderEntries(workOrder));
-  const [factoryOptions, setFactoryOptions] = useState<string[]>(() => selectFactoryOptions(getInitialOrderEntries(workOrder)));
   const [registryModalOpen, setRegistryModalOpen] = useState(false);
   const [registryType, setRegistryType] = useState<RegistryType>(REGISTRY_TYPE.partner);
   const [basicInfoModalOpen, setBasicInfoModalOpen] = useState(false);
@@ -92,7 +92,6 @@ export function useWorkOrderDetailEditor({
   useEffect(() => {
     const nextOrderEntries = getInitialOrderEntries(workOrder);
 
-    setFactoryOptions(selectFactoryOptions(nextOrderEntries));
     setBasicInfo(getInitialBasicInfo(workOrder));
     setBasicInfoDraft(getInitialBasicInfo(workOrder));
     setOrderItems(nextOrderEntries);
@@ -119,6 +118,8 @@ export function useWorkOrderDetailEditor({
     () => getProductionSectionOpen(materialOpen, outsourcingOpen),
     [materialOpen, outsourcingOpen],
   );
+
+  const factoryOptions = useMemo(() => selectFactoryOptions(orderItems), [orderItems]);
 
   const materialVendorOptionsById = useMemo(
     () => selectMaterialVendorOptionsById(materialItems),
@@ -266,8 +267,6 @@ export function useWorkOrderDetailEditor({
       return;
     }
 
-    const nextFactoryOptions = appendOption(selectFactoryOptions(orderItems), name);
-    setFactoryOptions(nextFactoryOptions);
     const nextItems = orderItems.map((item, index) => (index === 0 ? { ...item, factory: name } : item));
     setOrderItems(nextItems);
     syncOrderEntries(nextItems);

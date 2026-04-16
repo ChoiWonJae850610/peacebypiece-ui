@@ -34,6 +34,15 @@ export const adminEn = {
     searchGuide: "Search scans action, user, time, and detail text together.",
   },
   notificationSection: {
+    items: {
+      created: { label: "Work order created", description: "Notify when a new work order is created." },
+      updated: { label: "Basic info updated", description: "Notify when basic information is saved or updated." },
+      status_changed: { label: "Status changed", description: "Notify when stages such as Draft, Review requested, or Order requested change." },
+      materials_changed: { label: "Fabric / trim changed", description: "Notify when production composition such as materials, trims, or unit cost changes." },
+      outsourcing_changed: { label: "Outsourcing changed", description: "Notify when outsourcing processes are added, edited, or removed." },
+      stock_changed: { label: "Inventory changed", description: "Notify when inventory quantities change through inbound, deduction, or adjustment." },
+      comment_added: { label: "Memo added", description: "Notify when work memos or replies are added." },
+    },
     title: "Notification Event Settings",
     description: "Only the state is stored for now. Actual delivery is not connected yet.",
     badge: "Test",

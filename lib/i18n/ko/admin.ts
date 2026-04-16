@@ -34,6 +34,15 @@ export const adminKo = {
     searchGuide: "검색은 작업, 사용자, 시간, 상세 텍스트를 함께 대상으로 삼습니다.",
   },
   notificationSection: {
+    items: {
+      created: { label: "작업지시서 생성", description: "새 작업지시서가 만들어졌을 때 알림 대상에 포함합니다." },
+      updated: { label: "기본사항 수정", description: "기본 정보 저장/수정 이벤트를 알림 대상으로 둡니다." },
+      status_changed: { label: "상태 변경", description: "작성중, 검토요청, 발주요청 등 단계 변경 알림입니다." },
+      materials_changed: { label: "원단/부자재 변경", description: "원단, 부자재, 단가 등 생산구성 변경 알림입니다." },
+      outsourcing_changed: { label: "외주 공정 변경", description: "외주 공정 추가/수정/삭제 알림입니다." },
+      stock_changed: { label: "재고 변경", description: "입고, 차감, 보정 같은 재고 수량 변경 알림입니다." },
+      comment_added: { label: "메모 작성", description: "작업메모와 댓글이 등록되었을 때 알림합니다." },
+    },
     title: "알림 이벤트 설정",
     description: "현재는 상태 저장만 연결되어 있으며 실제 발송은 아직 연결되지 않았습니다.",
     badge: "테스트",

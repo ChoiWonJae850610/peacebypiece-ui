@@ -8,7 +8,7 @@ import { MODAL_EXCEPTION_PRESETS } from "@/components/common/modal/modalPresets"
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import AdminNotificationSettingsSection from "@/components/admin/notification/AdminNotificationSettingsSection";
 import { useI18n } from "@/lib/i18n";
-import type { NotificationSettingKey, NotificationSettings } from "@/types/workflow";
+import type { NotificationSettingKey, NotificationSettings } from "@/lib/admin/notification/types";
 
 type AdminNotificationSettingsModalProps = {
   open: boolean;

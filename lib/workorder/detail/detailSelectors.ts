@@ -49,3 +49,17 @@ export function selectOutsourcingVendorOptionsById(outsourcingItems: Outsourcing
     ]),
   );
 }
+
+
+export function mapRegistryTypeToPartnerTypes(type: string) {
+  switch (type) {
+    case "factory":
+      return ["factory"] as const;
+    case "material_vendor":
+      return ["material_vendor"] as const;
+    case "subsidiary_vendor":
+      return ["subsidiary_vendor"] as const;
+    default:
+      return [] as const;
+  }
+}
