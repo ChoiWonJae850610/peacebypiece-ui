@@ -89,14 +89,17 @@ export default function PartnerMasterSection() {
     setIsModalOpen(true);
   }, [resetDraftState]);
 
-  const openEditModal = useCallback((partner: Partner) => {
+  const openEditModal = useCallback((partnerId: string) => {
+    const partner = listViewModel.editablePartnerMap[partnerId];
+    if (!partner) return;
+
     setEditingPartnerId(partner.id);
     setDraft(buildPartnerDraftFromEntity(partner));
     setSelectedAvailableProcess(null);
     setSelectedAssignedProcess(null);
     setFormError("");
     setIsModalOpen(true);
-  }, []);
+  }, [listViewModel.editablePartnerMap]);
 
   const closeModal = useCallback(() => {
     setIsModalOpen(false);
@@ -243,8 +246,7 @@ export default function PartnerMasterSection() {
       />
 
       <PartnerMasterList
-        partners={listViewModel.filteredPartners}
-        processMeta={listViewModel.processMeta}
+        items={listViewModel.items}
         onEditPartner={openEditModal}
       />
 

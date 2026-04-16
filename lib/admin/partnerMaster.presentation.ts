@@ -1,7 +1,45 @@
-import { BASE_PARTNER_TYPE_VALUES } from "@/lib/admin/partnerMaster.constants";
+import { BASE_PARTNER_TYPE_VALUES, DEFAULT_OUTSOURCING_PROCESS_META, PARTNER_TYPE_META } from "@/lib/admin/partnerMaster.constants";
 import { buildOutsourcingProcessMeta, buildPartnerFilterOptions, buildPartnerSummary, selectFilteredPartners } from "@/lib/admin/partnerMaster.filters";
-import type { OutsourcingProcessDefinition, PartnerListFilterState } from "@/lib/admin/partnerMaster.types";
+import { formatPartnerDate, formatPartnerPhone } from "@/lib/admin/partnerMaster.draft";
+import type { OutsourcingProcessDefinition, PartnerListFilterState, PartnerListItemViewModel } from "@/lib/admin/partnerMaster.types";
 import type { Partner } from "@/types/partner";
+
+function buildPartnerListItemViewModel(
+  partner: Partner,
+  processMeta: Record<string, { label: string; tone: string }>,
+): PartnerListItemViewModel {
+  const baseTypeBadges = partner.partnerTypes
+    .filter((type) => type !== "outsourcing_vendor")
+    .map((type) => ({
+      key: `${partner.id}-${type}`,
+      label: PARTNER_TYPE_META[type].shortLabel,
+      tone: PARTNER_TYPE_META[type].tone,
+    }));
+
+  const outsourcingProcessBadges = (partner.outsourcingProcessTypes ?? []).map((type) => {
+    const meta = processMeta[type] ?? DEFAULT_OUTSOURCING_PROCESS_META[type] ?? { label: type, tone: "bg-slate-200 text-slate-700" };
+    return {
+      key: `${partner.id}-${type}`,
+      label: meta.label,
+      tone: meta.tone,
+    };
+  });
+
+  const contactName = partner.contactName?.trim() || "담당자 미등록";
+  const phone = formatPartnerPhone(partner.phone) || "연락처 미등록";
+
+  return {
+    id: partner.id,
+    name: partner.name,
+    isActive: partner.isActive,
+    contactLine: `${contactName} · ${phone}`,
+    email: partner.email?.trim() ?? "",
+    memo: partner.memo || "메모 없음",
+    updatedAtLabel: formatPartnerDate(partner.updatedAt),
+    baseTypeBadges,
+    outsourcingProcessBadges,
+  };
+}
 
 export function buildPartnerListViewModel(
   partners: Partner[],
@@ -17,11 +55,18 @@ export function buildPartnerListViewModel(
     .filter((definition) => definition.isActive)
     .sort((a, b) => a.sortOrder - b.sortOrder)
     .map((definition) => definition.type);
+  const items = filteredPartners.map((partner) => buildPartnerListItemViewModel(partner, processMeta));
+  const editablePartnerMap = filteredPartners.reduce<Record<string, Partner>>((acc, partner) => {
+    acc[partner.id] = partner;
+    return acc;
+  }, {});
 
   return {
     filters,
     summary,
     filteredPartners,
+    items,
+    editablePartnerMap,
     filteredCount: filteredPartners.length,
     filteredSummary,
     hasSearch: Boolean(filters.searchTerm.trim()),

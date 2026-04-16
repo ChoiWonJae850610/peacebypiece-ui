@@ -35,10 +35,24 @@ export type PartnerStatusFilterOption = {
   label: string;
 };
 
+export type PartnerListItemViewModel = {
+  id: string;
+  name: string;
+  isActive: boolean;
+  contactLine: string;
+  email: string;
+  memo: string;
+  updatedAtLabel: string;
+  baseTypeBadges: { key: string; label: string; tone: string }[];
+  outsourcingProcessBadges: { key: string; label: string; tone: string }[];
+};
+
 export type PartnerListViewModel = {
   filters: PartnerListFilterState;
   summary: { total: number; active: number; inactive: number };
   filteredPartners: import("@/types/partner").Partner[];
+  items: PartnerListItemViewModel[];
+  editablePartnerMap: Record<string, import("@/types/partner").Partner>;
   filteredCount: number;
   filteredSummary: { total: number; active: number; inactive: number };
   hasSearch: boolean;

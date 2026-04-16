@@ -12,6 +12,7 @@ import {
   persistOutsourcingProcesses,
 } from "@/lib/repositories/outsourcingProcessPersistence";
 import { MATERIAL_KIND } from "@/lib/constants/workorderDomain";
+import { PARTNER_INACTIVE_SELECTION_POLICY } from "@/lib/admin/partnerMaster.constants";
 import type {
   Partner,
   PartnerCapabilityType,
@@ -97,14 +98,14 @@ export function listActivePartnerNamesByTypes(partnerTypes: readonly PartnerType
   const allowedTypes = new Set(partnerTypes);
 
   return listPartnerMasterItems()
-    .filter((partner) => partner.isActive && partner.partnerTypes.some((type) => allowedTypes.has(type)))
+    .filter((partner) => (PARTNER_INACTIVE_SELECTION_POLICY.includeInWorkOrderOptions ? true : partner.isActive) && partner.partnerTypes.some((type) => allowedTypes.has(type)))
     .map((partner) => normalizePartnerName(partner.name))
     .filter(Boolean);
 }
 
 export function listActivePartnerNamesByCapability(capability: PartnerCapabilityType): string[] {
   return listPartnerMasterItems()
-    .filter((partner) => partner.isActive && getPartnerCapabilityTypes(partner).includes(capability))
+    .filter((partner) => (PARTNER_INACTIVE_SELECTION_POLICY.includeInWorkOrderOptions ? true : partner.isActive) && getPartnerCapabilityTypes(partner).includes(capability))
     .map((partner) => normalizePartnerName(partner.name))
     .filter(Boolean);
 }
@@ -130,7 +131,7 @@ export function listActiveOutsourcingPartnerNamesByProcess(process: string): str
 
   return listPartnerMasterItems()
     .filter((partner) => {
-      if (!partner.isActive) return false;
+      if (!PARTNER_INACTIVE_SELECTION_POLICY.includeInWorkOrderOptions && !partner.isActive) return false;
       if (!getPartnerCapabilityTypes(partner).includes("outsourcing")) return false;
 
       const supportedProcesses = getPartnerSupportedProcesses(partner);

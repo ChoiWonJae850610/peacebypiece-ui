@@ -55,3 +55,9 @@ export const PARTNER_MASTER_FORM_ERRORS = {
 } as const;
 
 export const DEFAULT_OUTSOURCING_PROCESS_TYPES = OUTSOURCING_PROCESS_TYPE_VALUES;
+
+export const PARTNER_INACTIVE_SELECTION_POLICY = {
+  includeInAdminList: true,
+  includeInEditModal: true,
+  includeInWorkOrderOptions: false,
+} as const;
