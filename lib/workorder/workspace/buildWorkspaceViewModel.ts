@@ -30,6 +30,7 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
     onSetPermissionModalOpen: args.onSetPermissionModalOpen,
     onReorderWorkOrder: args.onReorderWorkOrder,
     onDeleteWorkOrder: args.onDeleteWorkOrder,
+    onReworkWorkOrder: args.onReworkWorkOrder,
     onSetSearchQuery: args.onSetSearchQuery,
   });
 
@@ -179,6 +180,7 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
     sidebarListProps,
     onSetDrawerOpen: args.onSetDrawerOpen,
     onReorderWorkOrder: args.onReorderWorkOrder,
+    onReworkWorkOrder: args.onReworkWorkOrder,
   });
 
   return {

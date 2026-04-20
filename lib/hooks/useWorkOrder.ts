@@ -200,6 +200,7 @@ export function useWorkOrder() {
     handleCreateWorkOrder: (payload?: { title: string; category1: string; category2: string; category3: string; season: string }) =>
       actionState.handleCreateWorkOrder({ nextIndex: coreState.workOrders.length + 1, ...(payload ?? {}) }),
     handleReorderWorkOrder: (workOrderId: string) => actionState.handleReorderWorkOrder(coreState.workOrders, workOrderId),
+    handleReworkWorkOrder: (workOrderId: string) => actionState.handleReworkWorkOrder(coreState.workOrders, workOrderId),
     handleDeleteWorkOrder: (workOrderId: string) =>
       actionState.handleDeleteWorkOrder({
         workOrderId,

@@ -16,6 +16,7 @@ export function buildSidebarListProps({
   onSetPermissionModalOpen,
   onReorderWorkOrder,
   onDeleteWorkOrder,
+  onReworkWorkOrder,
   onSetSearchQuery,
 }: SidebarViewModelArgs): SidebarListProps {
   return {
@@ -29,6 +30,7 @@ export function buildSidebarListProps({
     onOpenSettings: () => onSetPermissionModalOpen(true),
     onReorder: onReorderWorkOrder,
     onDelete: onDeleteWorkOrder,
+    onRework: onReworkWorkOrder,
     canDelete: canDeleteWorkOrder,
     canCreate: canCreateWorkOrder,
     canManageListActions: !isInspectorRole(currentUser),
@@ -56,13 +58,18 @@ export function buildMobileDrawerProps({
   sidebarListProps,
   onSetDrawerOpen,
   onReorderWorkOrder,
-}: Pick<MobileViewModelArgs, "drawerOpen" | "sidebarListProps" | "onSetDrawerOpen" | "onReorderWorkOrder">): MobileDrawerProps {
+  onReworkWorkOrder,
+}: Pick<MobileViewModelArgs, "drawerOpen" | "sidebarListProps" | "onSetDrawerOpen" | "onReorderWorkOrder" | "onReworkWorkOrder">): MobileDrawerProps {
   return {
     ...sidebarListProps,
     open: drawerOpen,
     onClose: () => onSetDrawerOpen(false),
     onReorder: (id: string) => {
       onReorderWorkOrder(id);
+      onSetDrawerOpen(false);
+    },
+    onRework: (id: string) => {
+      onReworkWorkOrder(id);
       onSetDrawerOpen(false);
     },
   };

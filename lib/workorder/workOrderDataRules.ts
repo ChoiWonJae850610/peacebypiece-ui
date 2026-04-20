@@ -11,7 +11,7 @@ import {
   isSupportedOrderType,
 } from "@/lib/constants/workorderOptions";
 import { normalizeCategorySelection } from "@/lib/workorder/normalizeRules";
-import { getOrderTypeFromWorkOrderKind, getWorkOrderKindFromOrderType } from "@/lib/workorder/reorder/helpers";
+import { getOrderTypeFromWorkOrderKind } from "@/lib/workorder/reorder/helpers";
 import { sanitizeOrderInspectionStatus } from "@/lib/workorder/workflow";
 import type { OrderEntry, OrderInspectionStatus, WorkflowState, WorkOrder } from "@/types/workorder";
 
@@ -34,14 +34,13 @@ function normalizeWorkOrderKind(
   fallbackTitle?: string | null,
   reorderRound?: number | null,
   displayTitle?: string | null,
-  orderEntryType?: string | null,
+
 ): WorkOrder["workOrderKind"] {
   if (value === "sample" || value === "main" || value === "rework") return value;
   const normalizedTitle = String(displayTitle ?? fallbackTitle ?? "").trim();
   if (normalizedTitle.includes("(불량)")) return "rework";
   if (/\d+차\s*(\(불량\))?$/.test(normalizedTitle)) return "main";
   if (normalizedTitle.includes("(샘플)")) return "sample";
-  if (orderEntryType) return getWorkOrderKindFromOrderType(orderEntryType);
   if (Number(reorderRound ?? 1) > 1) return "main";
   return "sample";
 }
@@ -103,8 +102,7 @@ export function normalizeWorkOrderScalarFields(workOrder: WorkOrder): WorkOrder 
     category3: workOrder.category3,
   });
 
-  const primaryOrderType = workOrder.orderEntries?.[0]?.type ?? null;
-  const workOrderKind = normalizeWorkOrderKind(workOrder.workOrderKind, workOrder.title, workOrder.reorderRound, workOrder.displayTitle, primaryOrderType);
+  const workOrderKind = normalizeWorkOrderKind(workOrder.workOrderKind, workOrder.title, workOrder.reorderRound, workOrder.displayTitle);
 
   return {
     ...workOrder,

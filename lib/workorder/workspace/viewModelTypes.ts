@@ -82,6 +82,7 @@ export type BuildWorkspaceViewModelArgs = {
   onCreateWorkOrder: ModalProps["createWorkOrder"]["onCreate"];
   onDeleteWorkOrder: (id: string) => void;
   onReorderWorkOrder: (id: string) => void;
+  onReworkWorkOrder: (id: string) => void;
   onWorkflowAction: (action: WorkflowAction) => void;
   onUpdateSelectedWorkOrder: (patch: Partial<WorkOrder>) => void;
   onRenameWorkOrderTitle: (nextTitle: string) => void;
@@ -168,6 +169,7 @@ export type SidebarViewModelArgs = {
   onSetPermissionModalOpen: (next: boolean) => void;
   onReorderWorkOrder: (id: string) => void;
   onDeleteWorkOrder: (id: string) => void;
+  onReworkWorkOrder: (id: string) => void;
   onSetSearchQuery: (next: string) => void;
 };
 
@@ -231,4 +233,5 @@ export type MobileViewModelArgs = {
   onSetDrawerOpen: (next: boolean) => void;
   onSetPermissionModalOpen: (next: boolean) => void;
   onReorderWorkOrder: (id: string) => void;
+  onReworkWorkOrder: (id: string) => void;
 };

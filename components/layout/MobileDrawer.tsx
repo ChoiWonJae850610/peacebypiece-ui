@@ -16,6 +16,7 @@ type Props = {
   onCreate: () => void;
   onReorder?: (id: string) => void;
   onDelete?: (id: string) => void;
+  onRework?: (id: string) => void;
   canDelete?: (workflowState: WorkflowState) => boolean;
   canCreate: boolean;
   canManageListActions?: boolean;
@@ -33,6 +34,7 @@ export default function MobileDrawer({
   onCreate,
   onReorder,
   onDelete,
+  onRework,
   canDelete,
   canCreate,
   canManageListActions = true,
@@ -110,6 +112,7 @@ export default function MobileDrawer({
                 }}
                 onReorder={onReorder}
                 onDelete={onDelete}
+              onRework={onRework}
                 canDelete={canManageListActions ? canDelete : undefined}
                 canReorder={canManageListActions && Boolean(onReorder)}
               />

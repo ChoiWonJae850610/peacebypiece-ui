@@ -30,18 +30,13 @@ export function getWorkOrderBaseTitle(workOrder: Partial<ReorderIdentity>): stri
 export function getWorkOrderKind(workOrder: Partial<ReorderIdentity>): WorkOrderTitleKind {
   const rawKind = String(workOrder.workOrderKind ?? "").trim();
   if (rawKind === "sample" || rawKind === "main" || rawKind === "rework") return rawKind;
-
-  const rawTitle = String(workOrder.displayTitle ?? workOrder.title ?? "").trim();
-  if (rawTitle.includes("(불량)")) return "rework";
-  if (/\d+차\s*(\(불량\))?$/.test(rawTitle)) return "main";
-  if (rawTitle.includes(`(${i18n.common.ui.common.sample})`)) return "sample";
-  return Number(workOrder.reorderRound ?? workOrder.revision ?? 1) > 1 ? "main" : "sample";
+  if (Boolean(workOrder.isDefectOrder)) return "rework";
+  return getWorkOrderReorderRound(workOrder) > 1 ? "main" : "sample";
 }
 
 export function isDefectOrder(workOrder: Partial<ReorderIdentity>): boolean {
   if (Boolean(workOrder.isDefectOrder)) return true;
-  const rawTitle = String(workOrder.title ?? workOrder.displayTitle ?? "").trim();
-  return rawTitle.includes("(불량)");
+  return getWorkOrderKind(workOrder) === "rework";
 }
 
 export function getWorkOrderReorderGroupId(workOrder: Partial<ReorderIdentity>): string {
@@ -53,7 +48,6 @@ export function getWorkOrderReorderRound(workOrder: Partial<ReorderIdentity>): n
   const round = Number(rawRound);
   return Number.isFinite(round) && round > 0 ? Math.floor(round) : 1;
 }
-
 
 export function getWorkOrderKindFromOrderType(orderType: string | null | undefined): WorkOrderTitleKind {
   const normalizedType = String(orderType ?? "").trim();
@@ -72,11 +66,12 @@ export function syncOrderEntriesWithWorkOrderKind<T extends Partial<ReorderIdent
   const nextKind = getWorkOrderKind(workOrder);
   const nextOrderType = getOrderTypeFromWorkOrderKind(nextKind);
   const currentRound = getWorkOrderReorderRound(workOrder);
+  const defectOrder = nextKind === "rework" ? Boolean(workOrder.isDefectOrder ?? true) : false;
 
   return {
     ...workOrder,
     workOrderKind: nextKind,
-    isDefectOrder: nextKind === "rework",
+    isDefectOrder: defectOrder,
     reorderRound: currentRound,
     orderEntries: (workOrder.orderEntries ?? []).map((entry) => ({
       ...entry,
@@ -130,7 +125,10 @@ export function applyReorderIdentity<T extends Partial<ReorderIdentity>>(workOrd
 }
 
 export function normalizeWorkOrdersReorderIdentity(workOrders: WorkOrder[]): WorkOrder[] {
-  return workOrders.map((workOrder) => applyReorderIdentity(syncOrderEntriesWithWorkOrderKind(workOrder)));
+  return workOrders.map((workOrder) => applyReorderIdentity(syncOrderEntriesWithWorkOrderKind({
+    ...workOrder,
+    baseTitle: getWorkOrderBaseTitle(workOrder),
+  })));
 }
 
 export function reindexReorderGroupAfterDeletion(workOrders: WorkOrder[], deletedWorkOrder: WorkOrder): WorkOrder[] {

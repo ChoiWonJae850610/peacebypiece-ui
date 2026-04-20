@@ -19,6 +19,7 @@ import {
 } from "@/lib/hooks/workorder/detailEditor/itemMutations";
 import { useWorkOrderMaterialsEditor } from "@/lib/hooks/workorder/detailEditor/useWorkOrderMaterialsEditor";
 import { recalculateOutsourcing } from "@/lib/workorder/detail/detailCalculations";
+import { getWorkOrderKindFromOrderType } from "@/lib/workorder/reorder/helpers";
 import {
   getInitialBasicInfo,
   getInitialOrderEntries,
@@ -165,7 +166,12 @@ export function useWorkOrderDetailEditor({
         factoryOptions,
       });
       setOrderItems(nextItems);
-      syncOrderEntries(nextItems);
+      const nextPrimaryType = nextItems[0]?.type ?? workOrder.orderEntries?.[0]?.type ?? "샘플";
+      const nextWorkOrderKind = getWorkOrderKindFromOrderType(nextPrimaryType);
+      syncOrderEntries(nextItems, {
+        workOrderKind: nextWorkOrderKind,
+        isDefectOrder: nextWorkOrderKind === "rework",
+      });
     }
 
     if (editingCell.section === "material") {

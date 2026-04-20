@@ -1,4 +1,4 @@
-export const APP_VERSION = "0.5.615";
+export const APP_VERSION = "0.5.617";
 
 
 export const STORAGE_KEY = "peacebypiece-storage";

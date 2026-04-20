@@ -10,7 +10,7 @@ import {
 } from "@/lib/constants/workorderDefaults";
 import { createAttachmentId } from "@/lib/permissions/attachments";
 import type { Material } from "@/types/material";
-import { applyReorderIdentity, buildWorkOrderTitle, getNextReorderRound, getOrderTypeFromWorkOrderKind, getWorkOrderBaseTitle, getWorkOrderKindFromOrderType, getWorkOrderReorderGroupId, getWorkOrderReorderRound, syncOrderEntriesWithWorkOrderKind } from "@/lib/workorder/reorder/helpers";
+import { applyReorderIdentity, buildWorkOrderTitle, getNextReorderRound, getOrderTypeFromWorkOrderKind, getWorkOrderBaseTitle, getWorkOrderReorderGroupId, getWorkOrderReorderRound, syncOrderEntriesWithWorkOrderKind } from "@/lib/workorder/reorder/helpers";
 import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
 import { shouldApplyRecommendedCategoryOnTitleRename } from "@/lib/utils/workorderCategoryRecommend";
 import type { Attachment, InventoryChange, MemoReply, MemoThread, OrderEntry, RoleType, WorkOrder, WorkflowAction } from "@/types/workorder";
@@ -228,17 +228,17 @@ export function patchWorkOrder(
   workOrder: WorkOrder,
   patch: Partial<WorkOrder>,
 ): WorkOrder {
-  const requestedOrderType = String(patch.orderEntries?.[0]?.type ?? "").trim();
-  const requestedKind = requestedOrderType
-    ? getWorkOrderKindFromOrderType(requestedOrderType)
-    : (patch.workOrderKind ?? workOrder.workOrderKind ?? "sample");
+  const requestedKind = patch.workOrderKind ?? workOrder.workOrderKind ?? "sample";
   const currentRound = getWorkOrderReorderRound(workOrder);
+  const nextIsDefectOrder = requestedKind === "rework"
+    ? Boolean(patch.isDefectOrder ?? workOrder.isDefectOrder ?? true)
+    : false;
 
   const nextWorkOrder = syncOrderEntriesWithWorkOrderKind({
     ...workOrder,
     ...patch,
     workOrderKind: requestedKind,
-    isDefectOrder: requestedKind === "rework",
+    isDefectOrder: nextIsDefectOrder,
     reorderRound: currentRound,
   });
 
@@ -365,14 +365,11 @@ export function renameWorkOrderGroupBaseTitle(
 export function cloneWorkOrderForReorder(
   workOrders: WorkOrder[],
   sourceWorkOrder: WorkOrder,
-  payload: { createdAt: string; createdById: string; createdByRole: RoleType; managerId: string | null; managerName: string; reorderMode?: "main" | "rework"; },
+  payload: { createdAt: string; createdById: string; createdByRole: RoleType; managerId: string | null; managerName: string; },
 ): WorkOrder {
   const baseTitle = resolveBaseTitle(sourceWorkOrder);
-  const reorderMode = payload.reorderMode ?? "main";
-  const reorderRound = reorderMode === "rework"
-    ? getWorkOrderReorderRound(sourceWorkOrder)
-    : getNextReorderRound(workOrders, sourceWorkOrder);
-  const nextWorkOrderKind = reorderMode === "rework" ? "rework" : "main";
+  const reorderRound = getNextReorderRound(workOrders, sourceWorkOrder);
+  const nextWorkOrderKind = sourceWorkOrder.workOrderKind === "sample" ? "main" : "main";
   const nextOrderType = getOrderTypeFromWorkOrderKind(nextWorkOrderKind);
 
   return applyReorderIdentity(syncOrderEntriesWithWorkOrderKind({
@@ -380,7 +377,7 @@ export function cloneWorkOrderForReorder(
     id: nextId("wo"),
     baseTitle,
     workOrderKind: nextWorkOrderKind,
-    isDefectOrder: reorderMode === "rework",
+    isDefectOrder: false,
     reorderGroupId: resolveRootId(sourceWorkOrder),
     reorderRound,
     managerId: payload.managerId,
@@ -397,5 +394,21 @@ export function cloneWorkOrderForReorder(
     lastSavedAt: payload.createdAt,
     reorderedFromId: sourceWorkOrder.id,
     reorderedFromTitle: resolveDisplayedSourceTitle(sourceWorkOrder),
+  }));
+}
+
+
+export function convertWorkOrderToRework(sourceWorkOrder: WorkOrder): WorkOrder {
+  const currentRound = getWorkOrderReorderRound(sourceWorkOrder);
+  const nextRound = Math.max(1, currentRound - 1);
+
+  return applyReorderIdentity(syncOrderEntriesWithWorkOrderKind({
+    ...sourceWorkOrder,
+    baseTitle: resolveBaseTitle(sourceWorkOrder),
+    workOrderKind: "rework",
+    isDefectOrder: true,
+    reorderRound: nextRound,
+    reorderedFromId: sourceWorkOrder.reorderedFromId ?? sourceWorkOrder.id,
+    reorderedFromTitle: sourceWorkOrder.reorderedFromTitle ?? resolveDisplayedSourceTitle(sourceWorkOrder),
   }));
 }
