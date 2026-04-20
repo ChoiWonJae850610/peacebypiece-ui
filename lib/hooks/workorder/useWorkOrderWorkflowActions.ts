@@ -14,6 +14,7 @@ import { persistWorkOrdersWithHistory } from "./workorderRepositoryMutations";
 import { normalizeWorkOrdersReorderIdentity } from "@/lib/workorder/reorder/helpers";
 import { createWorkOrderKindChangeHistoryLog } from "@/lib/workorder/history/builders";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
+import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import type { WorkOrder, WorkflowAction } from "@/types/workorder";
 import type {
   InspectionCompleteInput,
@@ -198,6 +199,21 @@ export function useWorkOrderWorkflowActions({
 
       const currentWorkOrder = workOrdersRef.current.find((item) => item.id === workOrderId);
       if (!currentWorkOrder) return;
+
+      const nextWorkflowState = currentWorkOrder.workflowState;
+      const orderInfoHubPolicy = deriveOrderInfoHubPolicy({
+        workOrder: currentWorkOrder,
+        currentWorkflowState: nextWorkflowState,
+        currentUserRole: currentUser.role,
+      });
+      const requestedKind = patch.workOrderKind;
+      if (requestedKind) {
+        const requestedOrderType = requestedKind === "rework" ? "재작업" : requestedKind === "main" ? "메인 생산" : "샘플";
+        if (!orderInfoHubPolicy.canChangeKind || !orderInfoHubPolicy.allowedOrderTypes.includes(requestedOrderType)) {
+          setToastMessage(actionFlowText.orderInfoLockedToast ?? null);
+          return;
+        }
+      }
       const result = buildPatchWorkOrderResult({
         workOrder: currentWorkOrder,
         patch,
@@ -231,7 +247,7 @@ export function useWorkOrderWorkflowActions({
         setSaveStatus(result.saveStatus);
       }
     },
-    [currentUser.name, historyText, repository, setHistoryLogs, setSaveStatus, setWorkOrders],
+    [actionFlowText.orderInfoLockedToast, currentUser.name, currentUser.role, historyText, repository, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   return {

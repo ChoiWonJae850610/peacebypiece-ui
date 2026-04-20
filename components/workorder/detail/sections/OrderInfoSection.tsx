@@ -1,4 +1,5 @@
 import { useI18n } from "@/lib/i18n";
+import type { OrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculations";
 import { formatOrderSummary } from "@/lib/workorder/detail/detailFormatting";
 import { getInspectionStatusLabel, getInspectionStatusTone } from "@/lib/workorder/presentation/statusPresentation";
@@ -31,6 +32,7 @@ export default function OrderInfoSection({
   onRemove,
   canOpenInspectionModal,
   locked = false,
+  orderHubPolicy,
   onOpenInspectionModal,
 }: {
   orderEntries: OrderEntryState[];
@@ -47,11 +49,13 @@ export default function OrderInfoSection({
   onRemove: (id: string) => void;
   canOpenInspectionModal: boolean;
   locked?: boolean;
+  orderHubPolicy: OrderInfoHubPolicy;
   onOpenInspectionModal: () => void;
 }) {
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.sections.orderInfo;
   const common = i18n.workorder.ui.common;
+  const hubCopy = copy.hub;
   const totals = calculateOrderEntryTotals(orderEntries);
   const inspectionButton = canOpenInspectionModal ? (
     <button
@@ -68,6 +72,47 @@ export default function OrderInfoSection({
       <SectionHeader title={copy.title} summary={formatOrderSummary(orderEntries)} open={open} onToggle={onToggle} rightSlot={inspectionButton} />
       {open ? (
         <>
+      <div className="mb-3 rounded-2xl border border-stone-200 bg-white p-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-semibold text-stone-900">{hubCopy.title}</span>
+          <span className="inline-flex rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-[11px] font-semibold text-stone-700">
+            {orderHubPolicy.isInitialWorkOrder ? hubCopy.initialBadge : hubCopy.reorderBadge}
+          </span>
+        </div>
+        <div className="mt-3 grid gap-2 md:grid-cols-3">
+          <div className="rounded-xl bg-stone-50 px-3 py-2">
+            <div className="text-[11px] font-semibold text-stone-500">{hubCopy.stateLabel}</div>
+            <div className="mt-1 text-sm font-medium text-stone-800">
+              {orderHubPolicy.stateScope === "draft"
+                ? hubCopy.unlockedDraft
+                : orderHubPolicy.stateScope === "review_requested_admin"
+                  ? hubCopy.unlockedReviewAdmin
+                  : orderHubPolicy.lockedReasonKey === "reviewRequested"
+                    ? hubCopy.lockedReviewRequested
+                    : hubCopy.lockedOrderedOrLater}
+            </div>
+          </div>
+          <div className="rounded-xl bg-stone-50 px-3 py-2">
+            <div className="text-[11px] font-semibold text-stone-500">{hubCopy.kindPolicyLabel}</div>
+            <div className="mt-1 text-sm font-medium text-stone-800">
+              {orderHubPolicy.isInitialWorkOrder ? hubCopy.kindInitial : hubCopy.kindReorder}
+            </div>
+          </div>
+          <div className="rounded-xl bg-stone-50 px-3 py-2">
+            <div className="text-[11px] font-semibold text-stone-500">{hubCopy.scopeLabel}</div>
+            <div className="mt-1 text-sm font-medium text-stone-800">
+              {orderHubPolicy.canEditOrderEntries ? hubCopy.scopeEditable : hubCopy.scopeLocked}
+            </div>
+          </div>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-stone-600">
+          <span className="font-semibold text-stone-500">{hubCopy.impactLabel}</span>
+          <span className="rounded-full bg-stone-100 px-2.5 py-1">{hubCopy.impactTitle}</span>
+          <span className="rounded-full bg-stone-100 px-2.5 py-1">{hubCopy.impactLogs}</span>
+          <span className="rounded-full bg-stone-100 px-2.5 py-1">{hubCopy.impactEntries}</span>
+          <span className="rounded-full bg-stone-100 px-2.5 py-1">{hubCopy.impactAlerts}</span>
+        </div>
+      </div>
           <div className="mt-2 space-y-2.5 md:hidden">
             {inspectionButton ? <div className="pb-0.5">{inspectionButton}</div> : null}
             {orderEntries.map((item, index) => (

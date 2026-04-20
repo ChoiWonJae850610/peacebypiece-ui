@@ -125,6 +125,7 @@ export default function WorkOrderDetail({
   } = useWorkOrderDetailEditor({
     workOrder,
     currentWorkflowState,
+    currentUserRole,
     canEditInventory,
     fabricTotal,
     subsidiaryTotal,
@@ -141,6 +142,7 @@ export default function WorkOrderDetail({
     currentInventoryQuantity,
     lastSavedAt,
     currentUserRole,
+    currentWorkflowState,
     canRenameTitle,
     canEditInventory,
     canChangeManager,

@@ -19,6 +19,7 @@ import {
 } from "@/lib/hooks/workorder/detailEditor/itemMutations";
 import { useWorkOrderMaterialsEditor } from "@/lib/hooks/workorder/detailEditor/useWorkOrderMaterialsEditor";
 import { recalculateOutsourcing } from "@/lib/workorder/detail/detailCalculations";
+import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import { REWORK_TO_MAIN_APPEND_ROUND, getWorkOrderKindFromOrderType } from "@/lib/workorder/reorder/helpers";
 import {
   getInitialBasicInfo,
@@ -37,10 +38,12 @@ import {
   selectOutsourcingVendorOptionsById,
 } from "@/lib/workorder/detail/detailSelectors";
 import type { Outsourcing, WorkOrder, WorkflowState } from "@/types/workorder";
+import type { RoleType } from "@/types/permission";
 
 type UseWorkOrderDetailEditorParams = {
   workOrder: WorkOrder;
   currentWorkflowState: WorkflowState;
+  currentUserRole: RoleType;
   canEditInventory: boolean;
   fabricTotal: number;
   subsidiaryTotal: number;
@@ -54,6 +57,7 @@ type UseWorkOrderDetailEditorParams = {
 export function useWorkOrderDetailEditor({
   workOrder,
   currentWorkflowState,
+  currentUserRole,
   canEditInventory,
   fabricTotal,
   subsidiaryTotal,
@@ -63,6 +67,8 @@ export function useWorkOrderDetailEditor({
   onUpdateWorkOrder,
   onCompleteInspection,
 }: UseWorkOrderDetailEditorParams) {
+  const orderInfoHubPolicy = useMemo(() => deriveOrderInfoHubPolicy({ workOrder, currentWorkflowState, currentUserRole }), [currentUserRole, currentWorkflowState, workOrder]);
+
   const [basicInfo, setBasicInfo] = useState<BasicInfoState>(() => getInitialBasicInfo(workOrder));
   const [orderItems, setOrderItems] = useState<OrderEntryState[]>(() => getInitialOrderEntries(workOrder));
   const [registryModalOpen, setRegistryModalOpen] = useState(false);
@@ -168,6 +174,13 @@ export function useWorkOrderDetailEditor({
       setOrderItems(nextItems);
       const nextPrimaryType = nextItems[0]?.type ?? workOrder.orderEntries?.[0]?.type ?? "샘플";
       const nextWorkOrderKind = getWorkOrderKindFromOrderType(nextPrimaryType);
+      const requestedOrderType = nextPrimaryType as "메인 생산" | "샘플" | "재작업";
+      if (!orderInfoHubPolicy.allowedOrderTypes.includes(requestedOrderType)) {
+        setOrderItems(getInitialOrderEntries(workOrder));
+        blurActiveEditableElement();
+        cancelEdit();
+        return;
+      }
       const isReworkToMain = workOrder.workOrderKind === "rework" && nextWorkOrderKind === "main";
       syncOrderEntries(nextItems, {
         workOrderKind: nextWorkOrderKind,

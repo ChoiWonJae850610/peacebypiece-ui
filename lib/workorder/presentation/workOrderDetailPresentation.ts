@@ -8,6 +8,7 @@ import { formatBasicSummary } from "@/lib/workorder/detail/detailFormatting";
 import { getAvailableOrderTypeOptions } from "@/lib/constants/workorderOptions";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import { getWorkOrderBaseTitle } from "@/lib/workorder/reorder/helpers";
+import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import type { WorkOrder } from "@/types/workorder";
 
 type HeaderProps = ComponentProps<typeof WorkOrderHeaderSection>;
@@ -28,6 +29,7 @@ type BuildWorkOrderDetailViewModelArgs = {
   currentInventoryQuantity: number;
   lastSavedAt: string | null;
   currentUserRole: HeaderProps["currentUserRole"];
+  currentWorkflowState: WorkOrder["workflowState"];
   canRenameTitle: boolean;
   canEditInventory: boolean;
   canChangeManager: boolean;
@@ -97,6 +99,7 @@ export function buildWorkOrderDetailViewModel({
   currentInventoryQuantity,
   lastSavedAt,
   currentUserRole,
+  currentWorkflowState,
   canRenameTitle,
   canEditInventory,
   canChangeManager,
@@ -144,6 +147,8 @@ export function buildWorkOrderDetailViewModel({
   onAddOutsourcing,
   onRemoveOutsourcing,
 }: BuildWorkOrderDetailViewModelArgs): WorkOrderDetailViewModel {
+  const orderInfoHubPolicy = deriveOrderInfoHubPolicy({ workOrder, currentWorkflowState, currentUserRole });
+
   return {
     headerProps: {
       title: getWorkOrderDisplayTitle(workOrder),
@@ -162,6 +167,7 @@ export function buildWorkOrderDetailViewModel({
       onOpenInventoryEditor,
       onRenameTitle: onRenameWorkOrderTitle,
       locked: isReviewRequestLocked,
+      orderHubPolicy: orderInfoHubPolicy,
     },
     actionProps: {
       stages: visibleStages,
@@ -172,7 +178,7 @@ export function buildWorkOrderDetailViewModel({
     orderInfoProps: {
       orderEntries: orderItems,
       factoryOptions,
-      orderTypeOptions: getAvailableOrderTypeOptions({ id: workOrder.id, reorderGroupId: workOrder.reorderGroupId }),
+      orderTypeOptions: getAvailableOrderTypeOptions({ id: workOrder.id, reorderGroupId: workOrder.reorderGroupId }).filter((option) => orderInfoHubPolicy.allowedOrderTypes.includes(option)),
       open: basicInfoOpen,
       onToggle: onToggleBasicInfo,
       editingCell,
@@ -185,6 +191,7 @@ export function buildWorkOrderDetailViewModel({
       canOpenInspectionModal,
       onOpenInspectionModal,
       locked: isReviewRequestLocked,
+      orderHubPolicy: orderInfoHubPolicy,
     },
     productionCompositionProps: {
       materials: materialItems,
@@ -207,6 +214,7 @@ export function buildWorkOrderDetailViewModel({
       materialVendorOptionsById,
       outsourcingVendorOptionsById,
       locked: isReviewRequestLocked,
+      orderHubPolicy: orderInfoHubPolicy,
     },
     costSummaryProps: {
       fabricTotal,
