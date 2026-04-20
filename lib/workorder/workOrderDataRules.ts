@@ -19,6 +19,21 @@ function toNonNegativeNumber(value: unknown, fallback = 0) {
   return Math.max(0, numeric);
 }
 
+
+function normalizeWorkOrderKind(
+  value: WorkOrder["workOrderKind"] | string | undefined | null,
+  fallbackTitle?: string | null,
+  reorderRound?: number | null,
+  displayTitle?: string | null,
+): WorkOrder["workOrderKind"] {
+  if (value === "main" || value === "rework") return value;
+  const normalizedTitle = String(displayTitle ?? fallbackTitle ?? "").trim();
+  if (normalizedTitle.includes("(불량)")) return "rework";
+  if (/\d+차\s*(\(불량\))?$/.test(normalizedTitle)) return "main";
+  if (Number(reorderRound ?? 1) > 1) return "main";
+  return "sample";
+}
+
 export function sanitizeWorkOrderInspectionStatus(
   value: string | undefined | null,
   workflowState: WorkflowState,
@@ -74,9 +89,13 @@ export function normalizeWorkOrderScalarFields(workOrder: WorkOrder): WorkOrder 
     category3: workOrder.category3,
   });
 
+  const workOrderKind = normalizeWorkOrderKind(workOrder.workOrderKind, workOrder.title, workOrder.reorderRound, workOrder.displayTitle);
+
   return {
     ...workOrder,
     ...normalizedCategory,
+    workOrderKind,
+    isDefectOrder: workOrderKind === "rework" ? Boolean(workOrder.isDefectOrder) : false,
     season: normalizeStoredSeason(workOrder.season),
     priority: normalizeStoredPriority(workOrder.priority),
     vendor: normalizeStoredOptionalText(workOrder.vendor),

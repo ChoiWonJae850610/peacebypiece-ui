@@ -31,8 +31,11 @@ export function createNewWorkOrder(nextIndex: number, payload: {
 
   return {
     id,
-    title,
+    title: `${title} (샘플)`,
+    displayTitle: `${title} (샘플)`,
     baseTitle: title,
+    workOrderKind: "sample",
+    isDefectOrder: false,
     reorderGroupId: id,
     reorderRound: 1,
     category1: payload.category1 ?? DEFAULT_WORKORDER_CATEGORY1,
@@ -347,15 +350,20 @@ export function renameWorkOrderGroupBaseTitle(
 export function cloneWorkOrderForReorder(
   workOrders: WorkOrder[],
   sourceWorkOrder: WorkOrder,
-  payload: { createdAt: string; createdById: string; createdByRole: RoleType; managerId: string | null; managerName: string; },
+  payload: { createdAt: string; createdById: string; createdByRole: RoleType; managerId: string | null; managerName: string; reorderMode?: "main" | "rework"; },
 ): WorkOrder {
   const baseTitle = resolveBaseTitle(sourceWorkOrder);
-  const reorderRound = getNextReorderRound(workOrders, sourceWorkOrder);
+  const reorderMode = payload.reorderMode ?? "main";
+  const reorderRound = reorderMode === "rework"
+    ? getWorkOrderReorderRound(sourceWorkOrder)
+    : getNextReorderRound(workOrders, sourceWorkOrder);
 
   return applyReorderIdentity({
     ...sourceWorkOrder,
     id: nextId("wo"),
     baseTitle,
+    workOrderKind: reorderMode === "rework" ? "rework" : "main",
+    isDefectOrder: reorderMode === "rework",
     reorderGroupId: resolveRootId(sourceWorkOrder),
     reorderRound,
     managerId: payload.managerId,

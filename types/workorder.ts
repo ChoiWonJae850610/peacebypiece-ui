@@ -78,7 +78,10 @@ export type WorkOrder = {
   reorderedFromTitle?: string | null;
   id: string;
   title: string;
+  displayTitle?: string;
   baseTitle?: string;
+  workOrderKind?: "sample" | "main" | "rework";
+  isDefectOrder?: boolean;
   reorderGroupId?: string;
   reorderRound?: number;
   revision?: number;

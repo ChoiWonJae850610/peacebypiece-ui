@@ -31,12 +31,18 @@ export function getWorkOrderCardTone(state: WorkflowState) {
   return WORKFLOW_STATE_BADGE_TONE[state];
 }
 
-export function getWorkOrderDisplayTitle(workOrder: { title?: string | null; baseTitle?: string | null; reorderRound?: number | null; revision?: number | null }) {
+export function getWorkOrderDisplayTitle(workOrder: { title?: string | null; displayTitle?: string | null; baseTitle?: string | null; reorderRound?: number | null; revision?: number | null; workOrderKind?: "sample" | "main" | "rework" | null; isDefectOrder?: boolean | null }) {
+  const displayTitle = String(workOrder.displayTitle ?? "").trim();
+  if (displayTitle) return displayTitle;
+
   return buildWorkOrderTitle({
     title: workOrder.title ?? undefined,
+    displayTitle: workOrder.displayTitle ?? undefined,
     baseTitle: workOrder.baseTitle ?? undefined,
     reorderRound: workOrder.reorderRound ?? undefined,
     revision: workOrder.revision ?? undefined,
+    workOrderKind: workOrder.workOrderKind ?? undefined,
+    isDefectOrder: workOrder.isDefectOrder ?? undefined,
   });
 }
 
