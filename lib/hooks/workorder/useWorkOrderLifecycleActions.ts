@@ -18,7 +18,7 @@ import {
   renameWorkOrderGroupBaseTitle,
 } from "@/lib/workorder/actions";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
-import { getWorkOrderBaseTitle, reindexReorderGroupAfterDeletion } from "@/lib/workorder/reorder/helpers";
+import { getWorkOrderBaseTitle, normalizeWorkOrdersReorderIdentity, reindexReorderGroupAfterDeletion } from "@/lib/workorder/reorder/helpers";
 import { createWorkOrderActionFailure, executeWorkOrderAsyncAction } from "@/lib/workorder/actionFlow";
 import { persistWorkOrderWithHistory, persistWorkOrdersWithHistory } from "./workorderRepositoryMutations";
 import type { WorkOrder } from "@/types/workorder";
@@ -189,15 +189,19 @@ export function useWorkOrderLifecycleActions({
             managerName: sourceWorkOrder.manager || currentUser.name,
           });
 
+          const nextWorkOrders = normalizeWorkOrdersReorderIdentity([nextWorkOrder, ...workOrders]);
+          const createdWorkOrder = nextWorkOrders.find((item) => item.id === nextWorkOrder.id) ?? nextWorkOrder;
           const nextHistoryLogs = [
-            createReorderHistoryLog(currentUser.name, nextWorkOrder.id, {
+            createReorderHistoryLog(currentUser.name, createdWorkOrder.id, {
               sourceTitle: getWorkOrderDisplayTitle(sourceWorkOrder),
-              nextTitle: getWorkOrderDisplayTitle(nextWorkOrder),
+              nextTitle: getWorkOrderDisplayTitle(createdWorkOrder),
             }, historyText),
           ];
-          const createdWorkOrder = await repository.createWorkOrderAsync(nextWorkOrder);
-          await repository.appendHistoryLogsAsync(nextHistoryLogs);
-          setWorkOrders((prev) => [createdWorkOrder, ...prev]);
+          await persistWorkOrdersWithHistory(repository, {
+            workOrders: nextWorkOrders,
+            historyLogs: nextHistoryLogs,
+          });
+          setWorkOrders(nextWorkOrders);
           setSelectedId(createdWorkOrder.id);
           setLastSavedAt(createdWorkOrder.lastSavedAt);
           setSaveStatus("dirty");
@@ -232,7 +236,11 @@ export function useWorkOrderLifecycleActions({
         }),
         setActionFailure,
         task: async () => {
-          const nextWorkOrder = convertWorkOrderToRework(sourceWorkOrder);
+          const pendingWorkOrder = convertWorkOrderToRework(sourceWorkOrder);
+          const nextWorkOrders = normalizeWorkOrdersReorderIdentity(
+            workOrders.map((item) => item.id === workOrderId ? pendingWorkOrder : item),
+          );
+          const nextWorkOrder = nextWorkOrders.find((item) => item.id === workOrderId) ?? pendingWorkOrder;
           const detailLabel = `${getWorkOrderDisplayTitle(sourceWorkOrder)} → ${getWorkOrderDisplayTitle(nextWorkOrder)}`;
           const nextHistoryLogs = [
             createUpdateHistoryLog(currentUser.name, nextWorkOrder.id, [
@@ -240,10 +248,10 @@ export function useWorkOrderLifecycleActions({
             ], historyText),
           ];
           await persistWorkOrdersWithHistory(repository, {
-            workOrders: workOrders.map((item) => item.id === workOrderId ? nextWorkOrder : item),
+            workOrders: nextWorkOrders,
             historyLogs: nextHistoryLogs,
           });
-          setWorkOrders((prev) => prev.map((item) => item.id === workOrderId ? nextWorkOrder : item));
+          setWorkOrders(nextWorkOrders);
           setSelectedId(nextWorkOrder.id);
           setLastSavedAt(nextWorkOrder.lastSavedAt);
           setSaveStatus("dirty");

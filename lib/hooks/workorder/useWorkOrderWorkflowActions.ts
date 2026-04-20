@@ -11,6 +11,7 @@ import {
 import { applySharedInspectionComplete, applySharedInventoryAdjustment } from "@/lib/workorder/reorder/inventory";
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
 import { persistWorkOrdersWithHistory } from "./workorderRepositoryMutations";
+import { normalizeWorkOrdersReorderIdentity } from "@/lib/workorder/reorder/helpers";
 import type { WorkOrder, WorkflowAction } from "@/types/workorder";
 import type {
   InspectionCompleteInput,
@@ -196,7 +197,9 @@ export function useWorkOrderWorkflowActions({
       const currentWorkOrder = workOrdersRef.current.find((item) => item.id === workOrderId);
       if (!currentWorkOrder) return;
       const result = buildPatchWorkOrderResult({ workOrder: currentWorkOrder, patch });
-      const nextWorkOrders = workOrdersRef.current.map((item) => (item.id === workOrderId ? result.nextWorkOrder : item));
+      const nextWorkOrders = normalizeWorkOrdersReorderIdentity(
+        workOrdersRef.current.map((item) => (item.id === workOrderId ? result.nextWorkOrder : item)),
+      );
 
       void repository.saveWorkOrdersAsync(nextWorkOrders);
       setWorkOrders(nextWorkOrders);
