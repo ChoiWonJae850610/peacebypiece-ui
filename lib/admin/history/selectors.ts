@@ -31,7 +31,15 @@ export function toAdminHistoryEvent(item: HistoryLog): AdminHistoryEvent {
 }
 
 export function filterAdminHistoryEvents(historyLogs: HistoryLog[], historyFilter: AdminHistoryFilter, currentRoles: RoleType[]): AdminHistoryEvent[] {
-  return filterHistoryLogs(historyLogs, true, historyFilter, currentRoles).map(toAdminHistoryEvent);
+  const seenIds = new Set<string>();
+
+  return filterHistoryLogs(historyLogs, true, historyFilter, currentRoles)
+    .filter((item) => {
+      if (seenIds.has(item.id)) return false;
+      seenIds.add(item.id);
+      return true;
+    })
+    .map(toAdminHistoryEvent);
 }
 
 export function selectAdminHistoryFilterOptions(historyFilter: AdminHistoryFilter): AdminHistoryFilterOption[] {
