@@ -29,8 +29,8 @@ import type {
   UseWorkOrderActionsParams,
 } from "./useWorkOrderActionTypes";
 
-export const canDeleteWorkOrder = (workflowState: WorkOrder["workflowState"]) =>
-  workflowState === "draft" || workflowState === "review_requested";
+export const canDeleteWorkOrder = (_workflowState: WorkOrder["workflowState"]) =>
+  true;
 
 type UseWorkOrderLifecycleActionsParams = Pick<
   UseWorkOrderActionsParams,

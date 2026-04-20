@@ -19,7 +19,7 @@ import {
 } from "@/lib/hooks/workorder/detailEditor/itemMutations";
 import { useWorkOrderMaterialsEditor } from "@/lib/hooks/workorder/detailEditor/useWorkOrderMaterialsEditor";
 import { recalculateOutsourcing } from "@/lib/workorder/detail/detailCalculations";
-import { getWorkOrderKindFromOrderType } from "@/lib/workorder/reorder/helpers";
+import { REWORK_TO_MAIN_APPEND_ROUND, getWorkOrderKindFromOrderType } from "@/lib/workorder/reorder/helpers";
 import {
   getInitialBasicInfo,
   getInitialOrderEntries,
@@ -168,9 +168,11 @@ export function useWorkOrderDetailEditor({
       setOrderItems(nextItems);
       const nextPrimaryType = nextItems[0]?.type ?? workOrder.orderEntries?.[0]?.type ?? "샘플";
       const nextWorkOrderKind = getWorkOrderKindFromOrderType(nextPrimaryType);
+      const isReworkToMain = workOrder.workOrderKind === "rework" && nextWorkOrderKind === "main";
       syncOrderEntries(nextItems, {
         workOrderKind: nextWorkOrderKind,
         isDefectOrder: nextWorkOrderKind === "rework",
+        ...(isReworkToMain ? { reorderRound: REWORK_TO_MAIN_APPEND_ROUND } : {}),
       });
     }
 

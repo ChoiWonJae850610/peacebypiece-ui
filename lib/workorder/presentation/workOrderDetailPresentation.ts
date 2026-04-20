@@ -172,7 +172,7 @@ export function buildWorkOrderDetailViewModel({
     orderInfoProps: {
       orderEntries: orderItems,
       factoryOptions,
-      orderTypeOptions: getAvailableOrderTypeOptions({ workOrderKind: workOrder.workOrderKind, isDefectOrder: workOrder.isDefectOrder }),
+      orderTypeOptions: getAvailableOrderTypeOptions({ id: workOrder.id, reorderGroupId: workOrder.reorderGroupId }),
       open: basicInfoOpen,
       onToggle: onToggleBasicInfo,
       editingCell,

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { REORDERABLE_WORKFLOW_STATES } from "@/lib/constants/workorderStates";
 import { useI18n } from "@/lib/i18n";
 import { getStageDotTone, getWorkflowStateLabel } from "@/lib/workorder/presentation/statusPresentation";
@@ -34,7 +35,29 @@ export default function WorkOrderListCard({
   const stateLabel = getWorkflowStateLabel(state);
   const active = workOrder.id === selectedId;
   const canShowReorder = canReorder && workOrder.workOrderKind !== "rework" && (REORDERABLE_WORKFLOW_STATES as readonly WorkflowState[]).includes(state);
-  const canShowDelete = canDelete?.(state) ?? false;
+  const canShowDelete = Boolean(onDelete) || Boolean(canDelete?.(state));
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [menuOpen]);
 
   return (
     <div
@@ -64,32 +87,55 @@ export default function WorkOrderListCard({
             <div>{copy.attachmentsLabel}: {workOrder.filesCount ?? 0}{copy.countSuffix}</div>
           </div>
         </button>
-        <div className="flex shrink-0 items-start gap-1.5">
-          {canShowReorder ? (
-            <button
-              type="button"
-              onClick={() => onReorder?.(workOrder.id)}
-              className={`pbp-touch-target pbp-interactive-button h-9 rounded-xl border px-3 text-xs font-medium ${
-                active
-                  ? "border-white/20 bg-white/10 text-white hover:bg-white/15"
-                  : "border-stone-300 bg-white text-stone-800 hover:border-stone-400 hover:bg-stone-100"
+        <div className="relative shrink-0" ref={menuRef}>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((prev) => !prev)}
+            className={`pbp-touch-target pbp-interactive-button flex h-9 w-9 items-center justify-center rounded-xl border text-base font-semibold ${
+              active
+                ? "border-white/20 bg-white/10 text-white hover:bg-white/15"
+                : "border-stone-300 bg-white text-stone-800 hover:border-stone-400 hover:bg-stone-100"
+            }`}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+          >
+            …
+          </button>
+          {menuOpen ? (
+            <div
+              className={`absolute right-0 top-11 z-20 min-w-[132px] rounded-xl border p-1 shadow-lg ${
+                active ? "border-stone-700 bg-stone-950 text-white" : "border-stone-200 bg-white text-stone-900"
               }`}
             >
-              {copy.reorder}
-            </button>
-          ) : null}
-          {canShowDelete ? (
-            <button
-              type="button"
-              onClick={() => onDelete?.(workOrder.id)}
-              className={`pbp-touch-target pbp-interactive-button h-9 rounded-xl border px-3 text-xs font-medium ${
-                active
-                  ? "border-white/20 bg-white/10 text-rose-100 hover:bg-white/15"
-                  : "border-stone-300 bg-white text-rose-600 hover:border-rose-300 hover:bg-rose-50"
-              }`}
-            >
-              {copy.delete}
-            </button>
+              {canShowReorder ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onReorder?.(workOrder.id);
+                  }}
+                  className={`flex w-full items-center rounded-lg px-3 py-2 text-left text-sm ${
+                    active ? "hover:bg-white/10" : "hover:bg-stone-100"
+                  }`}
+                >
+                  {copy.reorder}
+                </button>
+              ) : null}
+              {canShowDelete ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onDelete?.(workOrder.id);
+                  }}
+                  className={`flex w-full items-center rounded-lg px-3 py-2 text-left text-sm ${
+                    active ? "text-rose-200 hover:bg-white/10" : "text-rose-600 hover:bg-rose-50"
+                  }`}
+                >
+                  {copy.delete}
+                </button>
+              ) : null}
+            </div>
           ) : null}
         </div>
       </div>

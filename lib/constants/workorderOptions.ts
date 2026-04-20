@@ -51,13 +51,12 @@ export const DEFAULT_OUTSOURCING_STATUS = "대기" as const;
 
 
 export function getAvailableOrderTypeOptions(args: {
-  workOrderKind?: string | null;
-  isDefectOrder?: boolean | null;
+  id?: string | null;
+  reorderGroupId?: string | null;
 }): readonly SupportedOrderType[] {
-  const kind = String(args.workOrderKind ?? "").trim();
-  const isRework = kind === "rework" || Boolean(args.isDefectOrder);
-  const isSample = kind === "sample" && !isRework;
-
-  if (isSample) return ORDER_TYPE_OPTIONS;
+  const currentId = String(args.id ?? "").trim();
+  const reorderGroupId = String(args.reorderGroupId ?? "").trim();
+  const isInitialWorkOrder = Boolean(currentId) && (!reorderGroupId || currentId === reorderGroupId);
+  if (isInitialWorkOrder) return ORDER_TYPE_OPTIONS;
   return ORDER_TYPE_OPTIONS.filter((option) => option !== "샘플");
 }

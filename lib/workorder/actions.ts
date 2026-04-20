@@ -10,7 +10,7 @@ import {
 } from "@/lib/constants/workorderDefaults";
 import { createAttachmentId } from "@/lib/permissions/attachments";
 import type { Material } from "@/types/material";
-import { applyReorderIdentity, buildWorkOrderTitle, getNextReorderRound, getOrderTypeFromWorkOrderKind, getWorkOrderBaseTitle, getWorkOrderReorderGroupId, getWorkOrderReorderRound, syncOrderEntriesWithWorkOrderKind } from "@/lib/workorder/reorder/helpers";
+import { REWORK_TO_MAIN_APPEND_ROUND, applyReorderIdentity, buildWorkOrderTitle, getNextReorderRound, getOrderTypeFromWorkOrderKind, getWorkOrderBaseTitle, getWorkOrderReorderGroupId, getWorkOrderReorderRound, syncOrderEntriesWithWorkOrderKind } from "@/lib/workorder/reorder/helpers";
 import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
 import { shouldApplyRecommendedCategoryOnTitleRename } from "@/lib/utils/workorderCategoryRecommend";
 import type { Attachment, InventoryChange, MemoReply, MemoThread, OrderEntry, RoleType, WorkOrder, WorkflowAction } from "@/types/workorder";
@@ -230,10 +230,10 @@ export function patchWorkOrder(
 ): WorkOrder {
   const requestedKind = patch.workOrderKind ?? workOrder.workOrderKind ?? "sample";
   const currentRound = getWorkOrderReorderRound(workOrder);
-  const isTransitioningToRework = requestedKind === "rework" && workOrder.workOrderKind !== "rework";
-  const nextRound = isTransitioningToRework
-    ? Math.max(1, currentRound - 1)
-    : currentRound;
+  const isTransitioningFromReworkToMain = workOrder.workOrderKind === "rework" && requestedKind === "main";
+  const nextRound = isTransitioningFromReworkToMain
+    ? Math.max(currentRound + 1, REWORK_TO_MAIN_APPEND_ROUND)
+    : Number(patch.reorderRound ?? currentRound);
   const nextIsDefectOrder = requestedKind === "rework"
     ? Boolean(patch.isDefectOrder ?? workOrder.isDefectOrder ?? true)
     : false;
@@ -403,15 +403,12 @@ export function cloneWorkOrderForReorder(
 
 
 export function convertWorkOrderToRework(sourceWorkOrder: WorkOrder): WorkOrder {
-  const currentRound = getWorkOrderReorderRound(sourceWorkOrder);
-  const nextRound = Math.max(1, currentRound - 1);
-
   return applyReorderIdentity(syncOrderEntriesWithWorkOrderKind({
     ...sourceWorkOrder,
     baseTitle: resolveBaseTitle(sourceWorkOrder),
     workOrderKind: "rework",
     isDefectOrder: true,
-    reorderRound: nextRound,
+    reorderRound: getWorkOrderReorderRound(sourceWorkOrder),
     reorderedFromId: sourceWorkOrder.reorderedFromId ?? sourceWorkOrder.id,
     reorderedFromTitle: sourceWorkOrder.reorderedFromTitle ?? resolveDisplayedSourceTitle(sourceWorkOrder),
   }));

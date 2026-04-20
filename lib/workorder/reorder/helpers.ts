@@ -2,6 +2,7 @@ import { getI18n } from "@/lib/i18n";
 import type { WorkOrder } from "@/types/workorder";
 
 const i18n = getI18n();
+export const REWORK_TO_MAIN_APPEND_ROUND = 1_000_000;
 
 export type WorkOrderTitleKind = "sample" | "main" | "rework";
 
@@ -11,6 +12,8 @@ export type ReorderIdentity = Pick<
 > & {
   revision?: number | null;
   reorderRootId?: string | null;
+  reorderedFromId?: string | null;
+  lastSavedAt?: string | null;
 };
 
 function stripLegacyTitleMarkers(title: string): string {
@@ -124,29 +127,97 @@ export function applyReorderIdentity<T extends Partial<ReorderIdentity>>(workOrd
   };
 }
 
+function getStableSequenceValue(workOrder: WorkOrder): number {
+  const parsedLastSavedAt = Date.parse(String(workOrder.lastSavedAt ?? ""));
+  if (Number.isFinite(parsedLastSavedAt)) return parsedLastSavedAt;
+  const numericId = Number(String(workOrder.id ?? "").replace(/\D/g, ""));
+  if (Number.isFinite(numericId) && numericId > 0) return numericId;
+  return 0;
+}
+
+function compareGroupItems(a: WorkOrder, b: WorkOrder): number {
+  const roundDiff = getWorkOrderReorderRound(a) - getWorkOrderReorderRound(b);
+  if (roundDiff !== 0) return roundDiff;
+
+  const kindA = getWorkOrderKind(a);
+  const kindB = getWorkOrderKind(b);
+  const kindRankA = kindA === "main" ? 0 : kindA === "rework" ? 1 : 2;
+  const kindRankB = kindB === "main" ? 0 : kindB === "rework" ? 1 : 2;
+  if (kindRankA !== kindRankB) return kindRankA - kindRankB;
+
+  const timeDiff = getStableSequenceValue(a) - getStableSequenceValue(b);
+  if (timeDiff !== 0) return timeDiff;
+  return String(a.id).localeCompare(String(b.id));
+}
+
+function resequenceReorderGroup(workOrders: WorkOrder[]): WorkOrder[] {
+  const sampleItems = workOrders
+    .filter((item) => getWorkOrderKind(item) === "sample")
+    .sort(compareGroupItems);
+  const productionItems = workOrders
+    .filter((item) => getWorkOrderKind(item) !== "sample")
+    .sort(compareGroupItems);
+
+  let mainRound = 0;
+  const nextProductionItems = productionItems.map((item) => {
+    const kind = getWorkOrderKind(item);
+    if (kind === "rework") {
+      return applyReorderIdentity(syncOrderEntriesWithWorkOrderKind({
+        ...item,
+        workOrderKind: "rework",
+        isDefectOrder: true,
+        reorderRound: Math.max(1, mainRound),
+      }));
+    }
+
+    mainRound += 1;
+    return applyReorderIdentity(syncOrderEntriesWithWorkOrderKind({
+      ...item,
+      workOrderKind: "main",
+      isDefectOrder: false,
+      reorderRound: mainRound,
+    }));
+  });
+
+  const nextSampleItems = sampleItems.map((item) => applyReorderIdentity(syncOrderEntriesWithWorkOrderKind({
+    ...item,
+    workOrderKind: "sample",
+    isDefectOrder: false,
+    reorderRound: 1,
+  })));
+
+  const mapped = new Map<string, WorkOrder>();
+  [...nextSampleItems, ...nextProductionItems].forEach((item) => {
+    mapped.set(item.id, item);
+  });
+
+  return workOrders.map((item) => mapped.get(item.id) ?? applyReorderIdentity(syncOrderEntriesWithWorkOrderKind(item)));
+}
+
 export function normalizeWorkOrdersReorderIdentity(workOrders: WorkOrder[]): WorkOrder[] {
-  return workOrders.map((workOrder) => applyReorderIdentity(syncOrderEntriesWithWorkOrderKind({
+  const normalized = workOrders.map((workOrder) => syncOrderEntriesWithWorkOrderKind({
     ...workOrder,
     baseTitle: getWorkOrderBaseTitle(workOrder),
-  })));
+  }));
+
+  const groups = new Map<string, WorkOrder[]>();
+  normalized.forEach((workOrder) => {
+    const groupId = getWorkOrderReorderGroupId(workOrder);
+    groups.set(groupId, [...(groups.get(groupId) ?? []), workOrder]);
+  });
+
+  const nextById = new Map<string, WorkOrder>();
+  groups.forEach((groupItems) => {
+    resequenceReorderGroup(groupItems).forEach((item) => {
+      nextById.set(item.id, item);
+    });
+  });
+
+  return normalized.map((workOrder) => nextById.get(workOrder.id) ?? applyReorderIdentity(workOrder));
 }
 
 export function reindexReorderGroupAfterDeletion(workOrders: WorkOrder[], deletedWorkOrder: WorkOrder): WorkOrder[] {
-  const reorderGroupId = getWorkOrderReorderGroupId(deletedWorkOrder);
-  const deletedRound = getWorkOrderReorderRound(deletedWorkOrder);
-
-  return workOrders.map((workOrder) => {
-    if (workOrder.id === deletedWorkOrder.id) return workOrder;
-    if (getWorkOrderReorderGroupId(workOrder) !== reorderGroupId) return applyReorderIdentity(workOrder);
-
-    const currentRound = getWorkOrderReorderRound(workOrder);
-    if (currentRound <= deletedRound) return applyReorderIdentity(workOrder);
-
-    return applyReorderIdentity({
-      ...workOrder,
-      reorderRound: currentRound - 1,
-    });
-  });
+  return normalizeWorkOrdersReorderIdentity(workOrders.filter((workOrder) => workOrder.id !== deletedWorkOrder.id));
 }
 
 export function getNextReorderRound(workOrders: WorkOrder[], sourceWorkOrder: WorkOrder): number {
