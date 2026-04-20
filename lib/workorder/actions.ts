@@ -29,10 +29,8 @@ export function createNewWorkOrder(nextIndex: number, payload: {
   const title = String(payload.title ?? `새 작업지시서 ${nextIndex}`).trim() || `새 작업지시서 ${nextIndex}`;
   const id = createAttachmentId("wo");
 
-  return {
+  return applyReorderIdentity({
     id,
-    title: `${title} (샘플)`,
-    displayTitle: `${title} (샘플)`,
     baseTitle: title,
     workOrderKind: "sample",
     isDefectOrder: false,
@@ -59,7 +57,7 @@ export function createNewWorkOrder(nextIndex: number, payload: {
     memoThreads: [],
     workflowState: "draft",
     lastSavedAt: payload.createdAt,
-  };
+  });
 }
 
 

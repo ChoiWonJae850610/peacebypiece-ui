@@ -105,7 +105,7 @@ export function buildWorkOrderSeedSource(locale: Locale = DEFAULT_LOCALE): MockW
       lossCost: 9000,
       orderEntries: [
         { id: "ord-21", type: wo2.orderTypeMain, factory: wo2.vendor, dueDate: "04/02", quantity: 20, laborCost: 16000, lossCost: 5000, priority: wo2.priority, inspectionStatus: "inspection_pending" },
-        { id: "ord-22", type: wo2.orderTypeExtra, factory: wo2.outsourcing.vendorWashing, dueDate: "04/05", quantity: 10, laborCost: 8000, lossCost: 4000, priority: wo2.priority, inspectionStatus: "inspection_pending" },
+        { id: "ord-22", type: wo2.orderTypeMain, factory: wo2.outsourcing.vendorWashing, dueDate: "04/05", quantity: 10, laborCost: 8000, lossCost: 4000, priority: wo2.priority, inspectionStatus: "inspection_pending" },
       ],
       inventoryQuantity: 28,
       inventoryStatus: INVENTORY_STATUS.normal,

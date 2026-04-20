@@ -8,6 +8,7 @@ import {
   DEFAULT_FACTORY_OPTION,
   DEFAULT_ORDER_TYPE,
   DEFAULT_PRIORITY_OPTION,
+  isSupportedOrderType,
 } from "@/lib/constants/workorderOptions";
 import { normalizeCategorySelection } from "@/lib/workorder/normalizeRules";
 import { sanitizeOrderInspectionStatus } from "@/lib/workorder/workflow";
@@ -20,16 +21,24 @@ function toNonNegativeNumber(value: unknown, fallback = 0) {
 }
 
 
+function normalizeOrderEntryType(value: string | undefined | null): string {
+  const normalizedValue = String(value ?? "").trim();
+  if (isSupportedOrderType(normalizedValue)) return normalizedValue;
+  return DEFAULT_ORDER_TYPE;
+}
+
+
 function normalizeWorkOrderKind(
   value: WorkOrder["workOrderKind"] | string | undefined | null,
   fallbackTitle?: string | null,
   reorderRound?: number | null,
   displayTitle?: string | null,
 ): WorkOrder["workOrderKind"] {
-  if (value === "main" || value === "rework") return value;
+  if (value === "sample" || value === "main" || value === "rework") return value;
   const normalizedTitle = String(displayTitle ?? fallbackTitle ?? "").trim();
   if (normalizedTitle.includes("(불량)")) return "rework";
   if (/\d+차\s*(\(불량\))?$/.test(normalizedTitle)) return "main";
+  if (normalizedTitle.includes("(샘플)")) return "sample";
   if (Number(reorderRound ?? 1) > 1) return "main";
   return "sample";
 }
@@ -48,7 +57,7 @@ export function sanitizeWorkOrderOrderEntry(
 ): OrderEntry {
   return {
     id: item.id || fallback?.id || "",
-    type: item.type || fallback?.type || DEFAULT_ORDER_TYPE,
+    type: normalizeOrderEntryType(item.type ?? fallback?.type),
     factory: item.factory || fallback?.factory || DEFAULT_FACTORY_OPTION,
     dueDate: item.dueDate || fallback?.dueDate || "",
     quantity: toNonNegativeNumber(item.quantity ?? fallback?.quantity),

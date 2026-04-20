@@ -11,7 +11,13 @@ export const SEASON_OPTIONS = ["SS", "FW", "NOS", "ALL"] as const;
 const currentYear = new Date().getFullYear();
 export const YEAR_OPTIONS = Array.from({ length: 7 }, (_, index) => String(currentYear - 2 + index));
 export const PRIORITY_OPTIONS = ["긴급", "일반", "여유"] as const;
-export const ORDER_TYPE_OPTIONS = ["메인 생산", "추가 생산", "샘플", "재작업", "긴급"] as const;
+export const ORDER_TYPE_OPTIONS = ["메인 생산", "샘플", "재작업"] as const;
+
+export type SupportedOrderType = (typeof ORDER_TYPE_OPTIONS)[number];
+
+export function isSupportedOrderType(value: string | null | undefined): value is SupportedOrderType {
+  return ORDER_TYPE_OPTIONS.includes(String(value ?? "").trim() as SupportedOrderType);
+}
 
 export const PARTNER_OPTIONS = [DEFAULT_UNSELECTED_OPTION, "에이원 트레이딩", "루나텍스타일", "해성어패럴"] as const;
 export const FACTORY_OPTIONS = [DEFAULT_UNSELECTED_OPTION, "한빛팩토리", "동명봉제", "세림공장"] as const;

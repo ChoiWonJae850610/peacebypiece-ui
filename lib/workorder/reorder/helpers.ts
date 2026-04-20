@@ -16,7 +16,7 @@ export type ReorderIdentity = Pick<
 function stripLegacyTitleMarkers(title: string): string {
   return title
     .replace(/\s*\((샘플|불량)\)\s*/g, " ")
-    .replace(/\s+\d+차\s*$/g, "")
+    .replace(/\s+\d+차\s*(\(불량\))?\s*$/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -29,13 +29,13 @@ export function getWorkOrderBaseTitle(workOrder: Partial<ReorderIdentity>): stri
 
 export function getWorkOrderKind(workOrder: Partial<ReorderIdentity>): WorkOrderTitleKind {
   const rawKind = String(workOrder.workOrderKind ?? "").trim();
-  if (rawKind === "main" || rawKind === "rework") return rawKind;
+  if (rawKind === "sample" || rawKind === "main" || rawKind === "rework") return rawKind;
 
-  const rawTitle = String(workOrder.title ?? workOrder.displayTitle ?? "").trim();
+  const rawTitle = String(workOrder.displayTitle ?? workOrder.title ?? "").trim();
   if (rawTitle.includes("(불량)")) return "rework";
-  if (/\d+차\s*(\(불량\))?$/.test(rawTitle) || getWorkOrderReorderRound(workOrder) > 1) return "main";
+  if (/\d+차\s*(\(불량\))?$/.test(rawTitle)) return "main";
   if (rawTitle.includes(`(${i18n.common.ui.common.sample})`)) return "sample";
-  return "sample";
+  return Number(workOrder.reorderRound ?? workOrder.revision ?? 1) > 1 ? "main" : "sample";
 }
 
 export function isDefectOrder(workOrder: Partial<ReorderIdentity>): boolean {
@@ -125,6 +125,7 @@ export function getNextReorderRound(workOrders: WorkOrder[], sourceWorkOrder: Wo
 
   return workOrders.reduce((maxRound, workOrder) => {
     if (getWorkOrderReorderGroupId(workOrder) !== reorderGroupId) return maxRound;
+    if (getWorkOrderKind(workOrder) === "sample") return maxRound;
     return Math.max(maxRound, getWorkOrderReorderRound(workOrder));
   }, 0) + 1;
 }

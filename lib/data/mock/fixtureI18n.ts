@@ -63,7 +63,7 @@ export const FIXTURE_I18N = {
         vendor: "B공장",
         memo: "워싱 견뢰도 테스트 후 본생산 진행 예정.",
         orderTypeMain: "메인 생산",
-        orderTypeExtra: "추가 생산",
+        orderTypeExtra: "메인 생산",
         materials: {
           denim: "데님 8oz",
           rivet: "리벳 세트",
@@ -240,7 +240,7 @@ export const FIXTURE_I18N = {
         vendor: "Factory B",
         memo: "Proceed with bulk production after the washing fastness test.",
         orderTypeMain: "Main production",
-        orderTypeExtra: "Additional production",
+        orderTypeExtra: "Main production",
         materials: {
           denim: "Denim 8oz",
           rivet: "Rivet set",
