@@ -13,8 +13,10 @@ import {
   createInventoryHistoryLog,
   createManagerChangeHistoryLog,
   createStatusHistoryLog,
+  createWorkOrderKindChangeHistoryLog,
 } from "@/lib/workorder/history/builders";
 import { pruneDraftRows, shouldPruneDraftRowsForWorkflowState } from "@/lib/workorder/draftRows";
+import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import { isSameComparableText } from "@/lib/utils/compare";
 import { defaultActionFlowText, defaultHistoryText, type ActionFlowHistoryText, type ActionFlowText, type WorkOrderActionFlowResult } from "@/lib/workorder/actionFlow/shared";
 
@@ -100,9 +102,29 @@ export function buildInspectionCompleteResult(payload: {
 export function buildPatchWorkOrderResult(payload: {
   workOrder: WorkOrder;
   patch: Partial<WorkOrder>;
+  actorName?: string;
+  historyText?: ActionFlowHistoryText;
 }): WorkOrderActionFlowResult {
+  const nextWorkOrder = patchWorkOrder(payload.workOrder, payload.patch);
+  const hasKindChanged = payload.workOrder.workOrderKind !== nextWorkOrder.workOrderKind
+    || Boolean(payload.workOrder.isDefectOrder) !== Boolean(nextWorkOrder.isDefectOrder)
+    || getWorkOrderDisplayTitle(payload.workOrder) !== getWorkOrderDisplayTitle(nextWorkOrder);
+
   return {
-    nextWorkOrder: patchWorkOrder(payload.workOrder, payload.patch),
+    nextWorkOrder,
+    historyLogs: hasKindChanged && payload.actorName ? [
+      createWorkOrderKindChangeHistoryLog(
+        payload.actorName,
+        payload.workOrder.id,
+        {
+          fromTitle: getWorkOrderDisplayTitle(payload.workOrder),
+          toTitle: getWorkOrderDisplayTitle(nextWorkOrder),
+          fromKind: payload.workOrder.workOrderKind ?? "sample",
+          toKind: nextWorkOrder.workOrderKind ?? "sample",
+        },
+        payload.historyText ?? defaultHistoryText,
+      ),
+    ] : undefined,
     saveStatus: "dirty",
   };
 }

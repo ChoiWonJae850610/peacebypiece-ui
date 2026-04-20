@@ -33,7 +33,7 @@ function HistoryLogItem({ item, detailLabel, collapseLabel }: { item: HistoryLog
           </div>
         </div>
         <div className="mt-2 text-xs text-stone-500">{item.user}</div>
-        <div className="mt-1 text-sm text-stone-700">{item.message}</div>
+        <div className="mt-1 text-sm text-stone-700">{item.summary}</div>
       </button>
 
       {hasDetails && open && (

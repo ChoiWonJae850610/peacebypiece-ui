@@ -192,3 +192,49 @@ export function createManagerChangeHistoryLog(
     text,
   });
 }
+
+
+function getWorkOrderKindLabel(kind: "sample" | "main" | "rework", text: HistoryText) {
+  if (kind === "sample") return text.detailLabels.typeSample;
+  if (kind === "rework") return text.detailLabels.typeRework;
+  return text.detailLabels.typeMain;
+}
+
+export function createWorkOrderKindChangeHistoryLog(
+  user: string,
+  workOrderId: string,
+  payload: {
+    fromTitle: string;
+    toTitle: string;
+    fromKind: "sample" | "main" | "rework";
+    toKind: "sample" | "main" | "rework";
+  },
+  text: HistoryText = defaultHistoryText,
+) {
+  const action = payload.toKind === "rework"
+    ? text.actions.reworkConverted
+    : payload.fromKind === "rework" && payload.toKind === "main"
+      ? text.actions.reworkRestored
+      : text.actions.kindChanged;
+  const message = payload.toKind === "rework"
+    ? text.messages.reworkConverted
+    : payload.fromKind === "rework" && payload.toKind === "main"
+      ? text.messages.reworkRestored
+      : text.messages.kindChanged;
+
+  return createHistoryLog({
+    action,
+    message,
+    user,
+    workOrderId,
+    category: "work",
+    tone: payload.toKind === "rework" ? "violet" : "blue",
+    summary: `${action}: ${formatHistoryTitle(payload.fromTitle)}${text.transitionArrow}${formatHistoryTitle(payload.toTitle)}${text.actorSeparator}${user}`,
+    detailLines: [
+      { label: text.detailLabels.previous, value: formatHistoryTitle(payload.fromTitle) },
+      { label: text.detailLabels.changed, value: formatHistoryTitle(payload.toTitle) },
+      { label: text.detailLabels.type, value: `${getWorkOrderKindLabel(payload.fromKind, text)}${text.transitionArrow}${getWorkOrderKindLabel(payload.toKind, text)}` },
+    ],
+    text,
+  });
+}

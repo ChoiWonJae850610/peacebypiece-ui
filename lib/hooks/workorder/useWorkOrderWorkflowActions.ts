@@ -12,6 +12,8 @@ import { applySharedInspectionComplete, applySharedInventoryAdjustment } from "@
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
 import { persistWorkOrdersWithHistory } from "./workorderRepositoryMutations";
 import { normalizeWorkOrdersReorderIdentity } from "@/lib/workorder/reorder/helpers";
+import { createWorkOrderKindChangeHistoryLog } from "@/lib/workorder/history/builders";
+import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import type { WorkOrder, WorkflowAction } from "@/types/workorder";
 import type {
   InspectionCompleteInput,
@@ -196,18 +198,40 @@ export function useWorkOrderWorkflowActions({
 
       const currentWorkOrder = workOrdersRef.current.find((item) => item.id === workOrderId);
       if (!currentWorkOrder) return;
-      const result = buildPatchWorkOrderResult({ workOrder: currentWorkOrder, patch });
+      const result = buildPatchWorkOrderResult({
+        workOrder: currentWorkOrder,
+        patch,
+        actorName: currentUser.name,
+        historyText,
+      });
       const nextWorkOrders = normalizeWorkOrdersReorderIdentity(
         workOrdersRef.current.map((item) => (item.id === workOrderId ? result.nextWorkOrder : item)),
       );
+      const normalizedNextWorkOrder = nextWorkOrders.find((item) => item.id === workOrderId) ?? result.nextWorkOrder;
+      const nextHistoryLogs = result.historyLogs?.length ? [
+        createWorkOrderKindChangeHistoryLog(
+          currentUser.name,
+          currentWorkOrder.id,
+          {
+            fromTitle: getWorkOrderDisplayTitle(currentWorkOrder),
+            toTitle: getWorkOrderDisplayTitle(normalizedNextWorkOrder),
+            fromKind: currentWorkOrder.workOrderKind ?? "sample",
+            toKind: normalizedNextWorkOrder.workOrderKind ?? "sample",
+          },
+          historyText,
+        ),
+      ] : undefined;
 
-      void repository.saveWorkOrdersAsync(nextWorkOrders);
+      void persistWorkOrdersWithHistory(repository, { workOrders: nextWorkOrders, historyLogs: nextHistoryLogs });
       setWorkOrders(nextWorkOrders);
+      if (nextHistoryLogs?.length) {
+        setHistoryLogs((prev) => [...nextHistoryLogs, ...prev]);
+      }
       if (result.saveStatus) {
         setSaveStatus(result.saveStatus);
       }
     },
-    [repository, setSaveStatus, setWorkOrders],
+    [currentUser.name, historyText, repository, setHistoryLogs, setSaveStatus, setWorkOrders],
   );
 
   return {
