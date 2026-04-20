@@ -7,7 +7,13 @@ export function createWorkOrderListItem(workOrder: WorkOrder): WorkOrderListItem
 
   return {
     id: workOrder.id,
-    title: getWorkOrderDisplayTitle(workOrder),
+    title: workOrder.title,
+    displayTitle: workOrder.displayTitle,
+    baseTitle: workOrder.baseTitle,
+    reorderRound: workOrder.reorderRound,
+    revision: workOrder.revision,
+    workOrderKind: workOrder.workOrderKind,
+    isDefectOrder: workOrder.isDefectOrder,
     category1: workOrder.category1,
     category2: workOrder.category2,
     category3: workOrder.category3,

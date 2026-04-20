@@ -41,8 +41,8 @@ function normalizeWorkOrderKind(
   if (normalizedTitle.includes("(불량)")) return "rework";
   if (/\d+차\s*(\(불량\))?$/.test(normalizedTitle)) return "main";
   if (normalizedTitle.includes("(샘플)")) return "sample";
-  if (Number(reorderRound ?? 1) > 1) return "main";
   if (orderEntryType) return getWorkOrderKindFromOrderType(orderEntryType);
+  if (Number(reorderRound ?? 1) > 1) return "main";
   return "sample";
 }
 

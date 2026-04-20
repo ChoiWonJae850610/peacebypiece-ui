@@ -116,6 +116,12 @@ export type WorkOrderListItem = Pick<
   WorkOrder,
   | "id"
   | "title"
+  | "displayTitle"
+  | "baseTitle"
+  | "reorderRound"
+  | "revision"
+  | "workOrderKind"
+  | "isDefectOrder"
   | "category1"
   | "category2"
   | "category3"

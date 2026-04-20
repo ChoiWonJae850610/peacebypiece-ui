@@ -72,13 +72,12 @@ export function syncOrderEntriesWithWorkOrderKind<T extends Partial<ReorderIdent
   const nextKind = getWorkOrderKind(workOrder);
   const nextOrderType = getOrderTypeFromWorkOrderKind(nextKind);
   const currentRound = getWorkOrderReorderRound(workOrder);
-  const nextRound = nextKind === "sample" ? 1 : currentRound;
 
   return {
     ...workOrder,
     workOrderKind: nextKind,
     isDefectOrder: nextKind === "rework",
-    reorderRound: nextRound,
+    reorderRound: currentRound,
     orderEntries: (workOrder.orderEntries ?? []).map((entry) => ({
       ...entry,
       type: nextOrderType,

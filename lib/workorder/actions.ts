@@ -233,14 +233,13 @@ export function patchWorkOrder(
     ? getWorkOrderKindFromOrderType(requestedOrderType)
     : (patch.workOrderKind ?? workOrder.workOrderKind ?? "sample");
   const currentRound = getWorkOrderReorderRound(workOrder);
-  const nextRound = requestedKind === "sample" ? 1 : currentRound;
 
   const nextWorkOrder = syncOrderEntriesWithWorkOrderKind({
     ...workOrder,
     ...patch,
     workOrderKind: requestedKind,
     isDefectOrder: requestedKind === "rework",
-    reorderRound: nextRound,
+    reorderRound: currentRound,
   });
 
   if (patch.orderEntries) {
