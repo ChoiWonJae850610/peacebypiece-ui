@@ -10,7 +10,7 @@ import {
 } from "@/lib/constants/workorderDefaults";
 import { createAttachmentId } from "@/lib/permissions/attachments";
 import type { Material } from "@/types/material";
-import { applyReorderIdentity, buildWorkOrderTitle, getNextReorderRound, getWorkOrderBaseTitle, getWorkOrderReorderGroupId, getWorkOrderReorderRound } from "@/lib/workorder/reorder/helpers";
+import { applyPrimaryOrderTypeToWorkOrder, applyReorderIdentity, buildWorkOrderTitle, getNextReorderRound, getWorkOrderBaseTitle, getWorkOrderReorderGroupId, getWorkOrderReorderRound } from "@/lib/workorder/reorder/helpers";
 import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
 import { shouldApplyRecommendedCategoryOnTitleRename } from "@/lib/utils/workorderCategoryRecommend";
 import type { Attachment, InventoryChange, MemoReply, MemoThread, OrderEntry, RoleType, WorkOrder, WorkflowAction } from "@/types/workorder";
@@ -228,11 +228,11 @@ export function patchWorkOrder(
   workOrder: WorkOrder,
   patch: Partial<WorkOrder>,
 ): WorkOrder {
-  const nextWorkOrder = { ...workOrder, ...patch };
+  const nextWorkOrder = applyPrimaryOrderTypeToWorkOrder({ ...workOrder, ...patch });
   if (patch.orderEntries) {
-    nextWorkOrder.workflowState = deriveWorkflowStateFromOrderEntries(workOrder.workflowState, patch.orderEntries);
+    nextWorkOrder.workflowState = deriveWorkflowStateFromOrderEntries(workOrder.workflowState, nextWorkOrder.orderEntries ?? patch.orderEntries);
   }
-  return nextWorkOrder;
+  return applyReorderIdentity(nextWorkOrder);
 }
 
 export function updateManagerForWorkOrder(

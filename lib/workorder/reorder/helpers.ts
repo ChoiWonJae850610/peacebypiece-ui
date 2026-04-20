@@ -54,6 +54,40 @@ export function getWorkOrderReorderRound(workOrder: Partial<ReorderIdentity>): n
   return Number.isFinite(round) && round > 0 ? Math.floor(round) : 1;
 }
 
+
+export function getWorkOrderKindFromOrderType(orderType: string | null | undefined): WorkOrderTitleKind {
+  const normalizedType = String(orderType ?? "").trim();
+  if (normalizedType === "샘플") return "sample";
+  if (normalizedType === "재작업") return "rework";
+  return "main";
+}
+
+export function getOrderTypeFromWorkOrderKind(kind: WorkOrderTitleKind | null | undefined): "메인 생산" | "샘플" | "재작업" {
+  if (kind === "sample") return "샘플";
+  if (kind === "rework") return "재작업";
+  return "메인 생산";
+}
+
+export function applyPrimaryOrderTypeToWorkOrder<T extends Partial<ReorderIdentity> & { orderEntries?: Array<{ type?: string | null }> }>(workOrder: T): T {
+  const primaryOrderType = String(workOrder.orderEntries?.[0]?.type ?? "").trim();
+  if (!primaryOrderType) return workOrder;
+
+  const nextKind = getWorkOrderKindFromOrderType(primaryOrderType);
+  const currentRound = getWorkOrderReorderRound(workOrder);
+  const nextRound = nextKind === "sample" ? 1 : currentRound;
+
+  return {
+    ...workOrder,
+    workOrderKind: nextKind,
+    isDefectOrder: nextKind === "rework",
+    reorderRound: nextRound,
+    orderEntries: (workOrder.orderEntries ?? []).map((entry) => ({
+      ...entry,
+      type: primaryOrderType,
+    })),
+  };
+}
+
 export function buildWorkOrderTitle(workOrder: Partial<ReorderIdentity>): string {
   const baseTitle = getWorkOrderBaseTitle(workOrder);
   const kind = getWorkOrderKind(workOrder);
@@ -99,7 +133,7 @@ export function applyReorderIdentity<T extends Partial<ReorderIdentity>>(workOrd
 }
 
 export function normalizeWorkOrdersReorderIdentity(workOrders: WorkOrder[]): WorkOrder[] {
-  return workOrders.map((workOrder) => applyReorderIdentity(workOrder));
+  return workOrders.map((workOrder) => applyReorderIdentity(applyPrimaryOrderTypeToWorkOrder(workOrder)));
 }
 
 export function reindexReorderGroupAfterDeletion(workOrders: WorkOrder[], deletedWorkOrder: WorkOrder): WorkOrder[] {

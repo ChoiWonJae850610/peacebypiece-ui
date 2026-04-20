@@ -11,6 +11,7 @@ import {
   isSupportedOrderType,
 } from "@/lib/constants/workorderOptions";
 import { normalizeCategorySelection } from "@/lib/workorder/normalizeRules";
+import { getOrderTypeFromWorkOrderKind, getWorkOrderKindFromOrderType } from "@/lib/workorder/reorder/helpers";
 import { sanitizeOrderInspectionStatus } from "@/lib/workorder/workflow";
 import type { OrderEntry, OrderInspectionStatus, WorkflowState, WorkOrder } from "@/types/workorder";
 
@@ -33,7 +34,9 @@ function normalizeWorkOrderKind(
   fallbackTitle?: string | null,
   reorderRound?: number | null,
   displayTitle?: string | null,
+  orderEntryType?: string | null,
 ): WorkOrder["workOrderKind"] {
+  if (orderEntryType) return getWorkOrderKindFromOrderType(orderEntryType);
   if (value === "sample" || value === "main" || value === "rework") return value;
   const normalizedTitle = String(displayTitle ?? fallbackTitle ?? "").trim();
   if (normalizedTitle.includes("(불량)")) return "rework";
@@ -72,11 +75,13 @@ export function buildInitialWorkOrderOrderEntries(workOrder: WorkOrder): OrderEn
   const entries = (workOrder.orderEntries ?? []).map((item) => sanitizeWorkOrderOrderEntry(item, undefined, workOrder.workflowState));
   if (entries.length > 0) return entries;
 
+  const defaultOrderType = getOrderTypeFromWorkOrderKind(normalizeWorkOrderKind(workOrder.workOrderKind, workOrder.title, workOrder.reorderRound, workOrder.displayTitle));
+
   return [
     sanitizeWorkOrderOrderEntry(
       {
         id: `${workOrder.id}-legacy-order`,
-        type: DEFAULT_ORDER_TYPE,
+        type: defaultOrderType,
         factory: workOrder.vendor || DEFAULT_FACTORY_OPTION,
         dueDate: workOrder.dueDate || "",
         quantity: Number.isFinite(workOrder.quantity) ? workOrder.quantity : 0,
@@ -98,7 +103,8 @@ export function normalizeWorkOrderScalarFields(workOrder: WorkOrder): WorkOrder 
     category3: workOrder.category3,
   });
 
-  const workOrderKind = normalizeWorkOrderKind(workOrder.workOrderKind, workOrder.title, workOrder.reorderRound, workOrder.displayTitle);
+  const primaryOrderType = workOrder.orderEntries?.[0]?.type ?? null;
+  const workOrderKind = normalizeWorkOrderKind(workOrder.workOrderKind, workOrder.title, workOrder.reorderRound, workOrder.displayTitle, primaryOrderType);
 
   return {
     ...workOrder,
@@ -113,6 +119,7 @@ export function normalizeWorkOrderScalarFields(workOrder: WorkOrder): WorkOrder 
     orderEntries: (workOrder.orderEntries ?? []).map((entry) => ({
       ...sanitizeWorkOrderOrderEntry(entry, undefined, workOrder.workflowState),
       id: entry.id,
+      type: normalizeOrderEntryType(entry.type ?? getOrderTypeFromWorkOrderKind(workOrderKind)),
       dueDate: normalizeStoredOptionalText(entry.dueDate),
       priority: normalizeStoredPriority(entry.priority),
     })),

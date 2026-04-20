@@ -18,7 +18,13 @@ export function commitOrderItemsEdit(payload: {
   currentWorkflowState: WorkflowState;
   factoryOptions: string[];
 }) {
+  const nextType = payload.editingCell.field === "type" ? (payload.nextValue || DEFAULT_ORDER_TYPE) : null;
+
   return payload.orderItems.map((item) => {
+    if (payload.editingCell.field === "type") {
+      return sanitizeOrderEntry({ ...item, type: nextType ?? DEFAULT_ORDER_TYPE }, item, payload.currentWorkflowState);
+    }
+
     if (item.id !== payload.editingCell.rowId) return item;
 
     if (payload.editingCell.field === "quantity") {
@@ -35,9 +41,6 @@ export function commitOrderItemsEdit(payload: {
     }
     if (payload.editingCell.field === "priority") {
       return sanitizeOrderEntry({ ...item, priority: payload.nextValue || PRIORITY_OPTIONS[0] }, item, payload.currentWorkflowState);
-    }
-    if (payload.editingCell.field === "type") {
-      return sanitizeOrderEntry({ ...item, type: payload.nextValue || DEFAULT_ORDER_TYPE }, item, payload.currentWorkflowState);
     }
     if (payload.editingCell.field === "dueDate") {
       return sanitizeOrderEntry({ ...item, dueDate: payload.nextValue }, item, payload.currentWorkflowState);
@@ -69,7 +72,7 @@ export function commitOutsourcingItemsEdit(payload: {
 export function createNewOrderEntry(orderItems: OrderEntryState[], currentWorkflowState: WorkflowState) {
   return sanitizeOrderEntry({
     id: createId("order"),
-    type: DEFAULT_ORDER_TYPE,
+    type: orderItems[0]?.type || DEFAULT_ORDER_TYPE,
     factory: DEFAULT_FACTORY_OPTION,
     dueDate: orderItems[0]?.dueDate || "",
     quantity: 0,
