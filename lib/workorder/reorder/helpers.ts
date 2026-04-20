@@ -68,11 +68,9 @@ export function getOrderTypeFromWorkOrderKind(kind: WorkOrderTitleKind | null | 
   return "메인 생산";
 }
 
-export function applyPrimaryOrderTypeToWorkOrder<T extends Partial<ReorderIdentity> & { orderEntries?: Array<{ type?: string | null }> }>(workOrder: T): T {
-  const primaryOrderType = String(workOrder.orderEntries?.[0]?.type ?? "").trim();
-  if (!primaryOrderType) return workOrder;
-
-  const nextKind = getWorkOrderKindFromOrderType(primaryOrderType);
+export function syncOrderEntriesWithWorkOrderKind<T extends Partial<ReorderIdentity> & { orderEntries?: Array<{ type?: string | null }> }>(workOrder: T): T {
+  const nextKind = getWorkOrderKind(workOrder);
+  const nextOrderType = getOrderTypeFromWorkOrderKind(nextKind);
   const currentRound = getWorkOrderReorderRound(workOrder);
   const nextRound = nextKind === "sample" ? 1 : currentRound;
 
@@ -83,7 +81,7 @@ export function applyPrimaryOrderTypeToWorkOrder<T extends Partial<ReorderIdenti
     reorderRound: nextRound,
     orderEntries: (workOrder.orderEntries ?? []).map((entry) => ({
       ...entry,
-      type: primaryOrderType,
+      type: nextOrderType,
     })),
   };
 }
@@ -133,7 +131,7 @@ export function applyReorderIdentity<T extends Partial<ReorderIdentity>>(workOrd
 }
 
 export function normalizeWorkOrdersReorderIdentity(workOrders: WorkOrder[]): WorkOrder[] {
-  return workOrders.map((workOrder) => applyReorderIdentity(applyPrimaryOrderTypeToWorkOrder(workOrder)));
+  return workOrders.map((workOrder) => applyReorderIdentity(syncOrderEntriesWithWorkOrderKind(workOrder)));
 }
 
 export function reindexReorderGroupAfterDeletion(workOrders: WorkOrder[], deletedWorkOrder: WorkOrder): WorkOrder[] {

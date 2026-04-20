@@ -10,7 +10,7 @@ import {
 } from "@/lib/constants/workorderDefaults";
 import { createAttachmentId } from "@/lib/permissions/attachments";
 import type { Material } from "@/types/material";
-import { applyPrimaryOrderTypeToWorkOrder, applyReorderIdentity, buildWorkOrderTitle, getNextReorderRound, getWorkOrderBaseTitle, getWorkOrderReorderGroupId, getWorkOrderReorderRound } from "@/lib/workorder/reorder/helpers";
+import { applyReorderIdentity, buildWorkOrderTitle, getNextReorderRound, getOrderTypeFromWorkOrderKind, getWorkOrderBaseTitle, getWorkOrderKindFromOrderType, getWorkOrderReorderGroupId, getWorkOrderReorderRound, syncOrderEntriesWithWorkOrderKind } from "@/lib/workorder/reorder/helpers";
 import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
 import { shouldApplyRecommendedCategoryOnTitleRename } from "@/lib/utils/workorderCategoryRecommend";
 import type { Attachment, InventoryChange, MemoReply, MemoThread, OrderEntry, RoleType, WorkOrder, WorkflowAction } from "@/types/workorder";
@@ -228,7 +228,21 @@ export function patchWorkOrder(
   workOrder: WorkOrder,
   patch: Partial<WorkOrder>,
 ): WorkOrder {
-  const nextWorkOrder = applyPrimaryOrderTypeToWorkOrder({ ...workOrder, ...patch });
+  const requestedOrderType = String(patch.orderEntries?.[0]?.type ?? "").trim();
+  const requestedKind = requestedOrderType
+    ? getWorkOrderKindFromOrderType(requestedOrderType)
+    : (patch.workOrderKind ?? workOrder.workOrderKind ?? "sample");
+  const currentRound = getWorkOrderReorderRound(workOrder);
+  const nextRound = requestedKind === "sample" ? 1 : currentRound;
+
+  const nextWorkOrder = syncOrderEntriesWithWorkOrderKind({
+    ...workOrder,
+    ...patch,
+    workOrderKind: requestedKind,
+    isDefectOrder: requestedKind === "rework",
+    reorderRound: nextRound,
+  });
+
   if (patch.orderEntries) {
     nextWorkOrder.workflowState = deriveWorkflowStateFromOrderEntries(workOrder.workflowState, nextWorkOrder.orderEntries ?? patch.orderEntries);
   }
@@ -256,10 +270,14 @@ function nextId(prefix: string) {
   return createAttachmentId(prefix);
 }
 
-function cloneOrderEntries(orderEntries: OrderEntry[] | undefined): OrderEntry[] {
+function cloneOrderEntries(
+  orderEntries: OrderEntry[] | undefined,
+  nextOrderType: ReturnType<typeof getOrderTypeFromWorkOrderKind>,
+): OrderEntry[] {
   return (orderEntries ?? []).map((entry) => ({
     ...entry,
     id: nextId("order"),
+    type: nextOrderType,
     inspectionStatus: "order_pending" as const,
   }));
 }
@@ -355,12 +373,14 @@ export function cloneWorkOrderForReorder(
   const reorderRound = reorderMode === "rework"
     ? getWorkOrderReorderRound(sourceWorkOrder)
     : getNextReorderRound(workOrders, sourceWorkOrder);
+  const nextWorkOrderKind = reorderMode === "rework" ? "rework" : "main";
+  const nextOrderType = getOrderTypeFromWorkOrderKind(nextWorkOrderKind);
 
-  return applyReorderIdentity({
+  return applyReorderIdentity(syncOrderEntriesWithWorkOrderKind({
     ...sourceWorkOrder,
     id: nextId("wo"),
     baseTitle,
-    workOrderKind: reorderMode === "rework" ? "rework" : "main",
+    workOrderKind: nextWorkOrderKind,
     isDefectOrder: reorderMode === "rework",
     reorderGroupId: resolveRootId(sourceWorkOrder),
     reorderRound,
@@ -370,7 +390,7 @@ export function cloneWorkOrderForReorder(
     createdByRole: payload.createdByRole,
     workflowState: "draft",
     inventoryStatus: sourceWorkOrder.inventoryQuantity > 0 ? INVENTORY_STATUS.normal : sourceWorkOrder.inventoryStatus,
-    orderEntries: cloneOrderEntries(sourceWorkOrder.orderEntries),
+    orderEntries: cloneOrderEntries(sourceWorkOrder.orderEntries, nextOrderType),
     materials: cloneMaterials(sourceWorkOrder.materials),
     outsourcing: cloneOutsourcingRows(sourceWorkOrder.outsourcing),
     attachments: cloneAttachments(sourceWorkOrder.attachments),
@@ -378,5 +398,5 @@ export function cloneWorkOrderForReorder(
     lastSavedAt: payload.createdAt,
     reorderedFromId: sourceWorkOrder.id,
     reorderedFromTitle: resolveDisplayedSourceTitle(sourceWorkOrder),
-  });
+  }));
 }
