@@ -48,3 +48,16 @@ export const DEFAULT_REGISTRY_TYPE = REGISTRY_TYPE_OPTIONS[0];
 export { MATERIAL_TYPE_OPTIONS, MATERIAL_UNIT_OPTIONS, DEFAULT_NEW_MATERIAL_NAME };
 export const DEFAULT_MATERIAL_STATUS = MATERIAL_STATUS.ready;
 export const DEFAULT_OUTSOURCING_STATUS = "대기" as const;
+
+
+export function getAvailableOrderTypeOptions(args: {
+  workOrderKind?: string | null;
+  isDefectOrder?: boolean | null;
+}): readonly SupportedOrderType[] {
+  const kind = String(args.workOrderKind ?? "").trim();
+  const isRework = kind === "rework" || Boolean(args.isDefectOrder);
+  const isSample = kind === "sample" && !isRework;
+
+  if (isSample) return ORDER_TYPE_OPTIONS;
+  return ORDER_TYPE_OPTIONS.filter((option) => option !== "샘플");
+}

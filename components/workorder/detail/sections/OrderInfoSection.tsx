@@ -1,5 +1,4 @@
 import { useI18n } from "@/lib/i18n";
-import { ORDER_TYPE_OPTIONS } from "@/lib/constants/workorderOptions";
 import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculations";
 import { formatOrderSummary } from "@/lib/workorder/detail/detailFormatting";
 import { getInspectionStatusLabel, getInspectionStatusTone } from "@/lib/workorder/presentation/statusPresentation";
@@ -20,6 +19,7 @@ import {
 export default function OrderInfoSection({
   orderEntries,
   factoryOptions,
+  orderTypeOptions,
   open,
   onToggle,
   editingCell,
@@ -35,6 +35,7 @@ export default function OrderInfoSection({
 }: {
   orderEntries: OrderEntryState[];
   factoryOptions: readonly string[];
+  orderTypeOptions: readonly string[];
   open: boolean;
   onToggle: () => void;
   editingCell: EditableCell;
@@ -103,7 +104,7 @@ export default function OrderInfoSection({
                             editingValue={editingValue}
                             inputMode={field === "quantity" || field === "laborCost" || field === "lossCost" ? "numeric" : inputMode as "text" | "decimal"}
                             inputType={field === "dueDate" ? "date" : "text"}
-                            options={field === "type" ? ORDER_TYPE_OPTIONS : field === "factory" ? factoryOptions : undefined}
+                            options={field === "type" ? orderTypeOptions : field === "factory" ? factoryOptions : undefined}
                             alignRight
                             compact
                             onStartEdit={onStartEdit}
@@ -152,7 +153,7 @@ export default function OrderInfoSection({
               <tbody>
                 {orderEntries.map((item, rowIndex) => (
                   <tr key={item.id} className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
-                    <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="type" value={item.type} options={ORDER_TYPE_OPTIONS} centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
+                    <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="type" value={item.type} options={orderTypeOptions} centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                     <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="factory" value={item.factory} options={factoryOptions} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                     <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="dueDate" value={item.dueDate} centered editingCell={editingCell} editingValue={editingValue} inputType="date" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                     <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>

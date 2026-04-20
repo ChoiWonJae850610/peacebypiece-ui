@@ -230,6 +230,10 @@ export function patchWorkOrder(
 ): WorkOrder {
   const requestedKind = patch.workOrderKind ?? workOrder.workOrderKind ?? "sample";
   const currentRound = getWorkOrderReorderRound(workOrder);
+  const isTransitioningToRework = requestedKind === "rework" && workOrder.workOrderKind !== "rework";
+  const nextRound = isTransitioningToRework
+    ? Math.max(1, currentRound - 1)
+    : currentRound;
   const nextIsDefectOrder = requestedKind === "rework"
     ? Boolean(patch.isDefectOrder ?? workOrder.isDefectOrder ?? true)
     : false;
@@ -239,7 +243,7 @@ export function patchWorkOrder(
     ...patch,
     workOrderKind: requestedKind,
     isDefectOrder: nextIsDefectOrder,
-    reorderRound: currentRound,
+    reorderRound: nextRound,
   });
 
   if (patch.orderEntries) {

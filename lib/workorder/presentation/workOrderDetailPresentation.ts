@@ -5,6 +5,7 @@ import WorkOrderHeaderSection from "@/components/workorder/detail/WorkOrderHeade
 import OrderInfoSection from "@/components/workorder/detail/sections/OrderInfoSection";
 import ProductionCompositionSection from "@/components/workorder/detail/sections/ProductionCompositionSection";
 import { formatBasicSummary } from "@/lib/workorder/detail/detailFormatting";
+import { getAvailableOrderTypeOptions } from "@/lib/constants/workorderOptions";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import { getWorkOrderBaseTitle } from "@/lib/workorder/reorder/helpers";
 import type { WorkOrder } from "@/types/workorder";
@@ -171,6 +172,7 @@ export function buildWorkOrderDetailViewModel({
     orderInfoProps: {
       orderEntries: orderItems,
       factoryOptions,
+      orderTypeOptions: getAvailableOrderTypeOptions({ workOrderKind: workOrder.workOrderKind, isDefectOrder: workOrder.isDefectOrder }),
       open: basicInfoOpen,
       onToggle: onToggleBasicInfo,
       editingCell,
