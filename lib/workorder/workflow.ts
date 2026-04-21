@@ -66,6 +66,53 @@ export function canRequestOrder(currentRoles: RoleType[]) {
   return isAdminRole(currentRoles);
 }
 
+export function canRequestFactoryOrder(payload: {
+  currentRoles: RoleType[];
+  workOrder: WorkOrder;
+  currentWorkflowState: WorkflowState;
+}) {
+  return isAdminRole(payload.currentRoles)
+    && payload.currentWorkflowState === "review_approved"
+    && !payload.workOrder.factoryOrderRequest;
+}
+
+export function getFactoryOrderRequestValidationMessage(payload: {
+  currentRoles: RoleType[];
+  workOrder: WorkOrder;
+  currentWorkflowState: WorkflowState;
+  factoryName?: string | null;
+  quantity?: number | null;
+  text: {
+    factoryOrderRequiresApprovalToast?: string;
+    factoryOrderAlreadyRequestedToast?: string;
+    factoryOrderFactoryRequiredToast?: string;
+    factoryOrderQuantityRequiredToast?: string;
+    factoryOrderNotAllowedToast?: string;
+  };
+}) {
+  if (!isAdminRole(payload.currentRoles)) {
+    return payload.text.factoryOrderNotAllowedToast ?? null;
+  }
+  if (payload.currentWorkflowState !== "review_approved") {
+    return payload.text.factoryOrderRequiresApprovalToast ?? null;
+  }
+  if (payload.workOrder.factoryOrderRequest) {
+    return payload.text.factoryOrderAlreadyRequestedToast ?? null;
+  }
+
+  const normalizedFactoryName = String(payload.factoryName ?? "").trim();
+  const normalizedQuantity = Math.max(0, Number(payload.quantity) || 0);
+
+  if (!normalizedFactoryName) {
+    return payload.text.factoryOrderFactoryRequiredToast ?? null;
+  }
+  if (normalizedQuantity <= 0) {
+    return payload.text.factoryOrderQuantityRequiredToast ?? null;
+  }
+
+  return null;
+}
+
 export function canStartInspection(currentRoles: RoleType[]) {
   return canEditInventoryByRoles(currentRoles);
 }
@@ -85,9 +132,6 @@ export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles
       if (canRequestReview({ currentRoles, currentUserId, workOrder })) {
         actions.push({ label: WORKFLOW_ACTION_LABELS.requestReview, nextState: "review_requested" });
       }
-      if (canRequestOrder(currentRoles)) {
-        actions.push({ label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "order_requested" });
-      }
       return actions;
     }
     case "review_requested": {
@@ -103,10 +147,12 @@ export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles
       return [];
     }
     case "review_approved":
-      if (canRequestOrder(currentRoles)) {
+      if (isAdminRole(currentRoles)) {
         return [
           { label: WORKFLOW_ACTION_LABELS.cancelReviewApproval, nextState: "review_requested" },
-          { label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "order_requested" },
+          ...(canRequestFactoryOrder({ currentRoles, workOrder, currentWorkflowState })
+            ? [{ label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "order_requested" } satisfies WorkflowAction]
+            : []),
         ];
       }
       return [];

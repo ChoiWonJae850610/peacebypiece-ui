@@ -101,7 +101,11 @@ export const workorderEn = {
     workflowChangedToastFormat: '"{label}" has been applied.',
     inventoryAppliedToast: "Inventory update has been applied.",
     factoryOrderRequestedToast: "Factory order request has been recorded.",
-    factoryOrderAlreadyRequestedToast: "A factory order request has already been registered.",
+    factoryOrderAlreadyRequestedToast: "This work order has already been requested.",
+    factoryOrderRequiresApprovalToast: "You can request an order after review approval.",
+    factoryOrderFactoryRequiredToast: "Please select a factory.",
+    factoryOrderQuantityRequiredToast: "Please enter an order quantity.",
+    factoryOrderNotAllowedToast: "You do not have permission to request this order.",
   },
   history: {
     actorSeparator: " · ",

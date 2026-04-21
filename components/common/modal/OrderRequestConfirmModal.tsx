@@ -53,6 +53,12 @@ export default function OrderRequestConfirmModal({
 
   const normalizedQuantity = Math.max(0, Number(quantityInput.replace(/,/g, "")) || 0);
   const canSubmit = factoryName.trim().length > 0 && normalizedQuantity > 0 && !requested;
+  const requestedSummary = requested
+    ? (copy.requestedSummaryFormat ?? "{factory} / {quantity}장 / {requestedBy}")
+      .replace("{factory}", requested.factoryName)
+      .replace("{quantity}", requested.quantity.toLocaleString())
+      .replace("{requestedBy}", requested.requestedBy)
+    : null;
 
   return (
     <ModalShell
@@ -76,7 +82,7 @@ export default function OrderRequestConfirmModal({
       })}
     >
       <section className="rounded-2xl border border-stone-200 bg-white p-4">
-        <div className="text-sm font-semibold text-stone-900">작업지시서 요약</div>
+        <div className="text-sm font-semibold text-stone-900">{copy.summarySectionTitle ?? "작업지시서 요약"}</div>
         <dl className="mt-3 grid grid-cols-1 gap-3 text-sm text-stone-600 md:grid-cols-2">
           <div>
             <dt className="text-xs font-medium text-stone-400">{copy.workOrderNameLabel}</dt>
@@ -98,22 +104,22 @@ export default function OrderRequestConfirmModal({
       </section>
 
       <section className="rounded-2xl border border-stone-200 bg-white p-4">
-        <div className="text-sm font-semibold text-stone-900">공장 발주</div>
+        <div className="text-sm font-semibold text-stone-900">{copy.orderSectionTitle ?? "공장 발주"}</div>
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           <label className="space-y-1.5">
-            <span className="text-xs font-medium text-stone-500">공장 선택</span>
+            <span className="text-xs font-medium text-stone-500">{copy.factoryFieldLabel ?? "공장 선택"}</span>
             <select
               value={factoryName}
               onChange={(event) => setFactoryName(event.target.value)}
               disabled={Boolean(requested)}
               className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 outline-none focus:border-stone-500 disabled:bg-stone-100 disabled:text-stone-500"
             >
-              <option value="">공장 선택</option>
+              <option value="">{copy.factoryPlaceholder ?? "공장 선택"}</option>
               {factoryOptions.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
           </label>
           <label className="space-y-1.5">
-            <span className="text-xs font-medium text-stone-500">발주 수량</span>
+            <span className="text-xs font-medium text-stone-500">{copy.quantityFieldLabel ?? "발주 수량"}</span>
             <input
               type="number"
               min={0}
@@ -126,8 +132,14 @@ export default function OrderRequestConfirmModal({
           </label>
         </div>
         {requested ? (
-          <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 text-sm text-emerald-800">
-            {`${requested.factoryName} / ${requested.quantity.toLocaleString()}장 / ${requested.requestedBy}`}
+          <div className="mt-3 space-y-2">
+            <div className="inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+              {copy.requestedBadge ?? "발주 완료"}
+            </div>
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 text-sm text-emerald-800">
+              <div className="font-medium">{requestedSummary}</div>
+              <div className="mt-1 text-xs text-emerald-700">{copy.requestedNotice ?? "이미 발주 요청이 기록된 작업입니다. 중복 발주는 허용되지 않습니다."}</div>
+            </div>
           </div>
         ) : null}
       </section>

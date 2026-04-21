@@ -12,11 +12,13 @@ import {
 import { applySharedInspectionComplete, applySharedInventoryAdjustment } from "@/lib/workorder/reorder/inventory";
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
 import { persistWorkOrdersWithHistory } from "./workorderRepositoryMutations";
-import { normalizeWorkOrdersReorderIdentity } from "@/lib/workorder/reorder/helpers";
 import { findPartnerIdByNameAndTypes } from "@/lib/admin/partnerMasterPersistence";
 import { createWorkOrderKindChangeHistoryLog } from "@/lib/workorder/history/builders";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
+import { stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
+import { deriveWorkflowStateFromOrderEntries, getFactoryOrderRequestValidationMessage } from "@/lib/workorder/workflow";
+import { normalizeRoles } from "@/lib/constants/roles";
 import type { FactoryOrderRequest, WorkOrder, WorkflowAction } from "@/types/workorder";
 import type {
   InspectionCompleteInput,
@@ -112,25 +114,39 @@ export function useWorkOrderWorkflowActions({
   );
 
   const handleConfirmOrderRequest = useCallback(
-    (workOrder: WorkOrder, payload: { factoryName: string; quantity: number }) => {
+    async (workOrder: WorkOrder, payload: { factoryName: string; quantity: number }) => {
       if (!pendingWorkflowAction) return;
-      if (workOrder.factoryOrderRequest) {
-        setToastMessage(actionFlowText.factoryOrderAlreadyRequestedToast);
+
+      const currentWorkflowState = deriveWorkflowStateFromOrderEntries(workOrder.workflowState, workOrder.orderEntries);
+      const currentRoles = normalizeRoles(currentUser.roles, currentUser.role);
+      const validationMessage = getFactoryOrderRequestValidationMessage({
+        currentRoles,
+        workOrder,
+        currentWorkflowState,
+        factoryName: payload.factoryName,
+        quantity: payload.quantity,
+        text: actionFlowText,
+      });
+
+      if (validationMessage) {
+        setToastMessage(validationMessage);
         setPendingWorkflowAction(null);
         setOrderRequestConfirmOpen(false);
         return;
       }
 
+      const normalizedFactoryName = payload.factoryName.trim();
+      const normalizedQuantity = Math.max(0, Number(payload.quantity) || 0);
       const requestedAt = new Date().toISOString();
-      const factoryId = findPartnerIdByNameAndTypes(payload.factoryName, ["factory"])
-        ?? `factory:${payload.factoryName.trim().toLocaleLowerCase("ko-KR").replace(/\s+/g, "-")}`;
+      const factoryId = findPartnerIdByNameAndTypes(normalizedFactoryName, ["factory"])
+        ?? `factory:${normalizedFactoryName.toLocaleLowerCase("ko-KR").replace(/\s+/g, "-")}`;
       const result = buildFactoryOrderRequestResult({
         workOrder,
         actorName: currentUser.name,
         input: {
           factoryId,
-          factoryName: payload.factoryName,
-          quantity: Math.max(0, Number(payload.quantity) || 0),
+          factoryName: normalizedFactoryName,
+          quantity: normalizedQuantity,
           requestedAt,
           requestedBy: currentUser.name,
           requestedById: currentUser.id,
@@ -145,8 +161,10 @@ export function useWorkOrderWorkflowActions({
         return;
       }
 
-      const nextWorkOrders = workOrdersRef.current.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item));
-      void persistWorkOrdersWithHistory(repository, {
+      const nextWorkOrders = stabilizeWorkOrders(
+        workOrdersRef.current.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item)),
+      );
+      await persistWorkOrdersWithHistory(repository, {
         workOrders: nextWorkOrders,
         historyLogs: result.historyLogs,
       });
@@ -267,7 +285,7 @@ export function useWorkOrderWorkflowActions({
         actorName: currentUser.name,
         historyText,
       });
-      const nextWorkOrders = normalizeWorkOrdersReorderIdentity(
+      const nextWorkOrders = stabilizeWorkOrders(
         workOrdersRef.current.map((item) => (item.id === workOrderId ? result.nextWorkOrder : item)),
       );
       const normalizedNextWorkOrder = nextWorkOrders.find((item) => item.id === workOrderId) ?? result.nextWorkOrder;
