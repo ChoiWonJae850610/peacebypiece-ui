@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
+import { useMemo } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { MODAL_ACTION_LABELS } from "@/components/common/modal/modalActions";
@@ -9,12 +9,12 @@ import {
   getOrderSubmissionSnapshot,
 } from "@/lib/workorder/orderSubmission";
 import { useI18n } from "@/lib/i18n";
+import { getWorkspaceCompanyName } from "@/lib/constants/company";
 import {
   MATERIAL_KIND,
   ORDER_ENTRY_TARGET_TYPE,
-  ORDER_ENTRY_TARGET_TYPE_LABELS,
 } from "@/lib/constants/workorderDomain";
-import type { Attachment, Material, OrderEntry, WorkOrder } from "@/types/workorder";
+import type { Attachment, Material, OrderEntry, Outsourcing, WorkOrder } from "@/types/workorder";
 
 function formatCurrency(value: number) {
   const numeric = Number(value ?? 0);
@@ -22,6 +22,11 @@ function formatCurrency(value: number) {
     return "-";
   }
   return `${numeric.toLocaleString()}원`;
+}
+
+function formatCurrencyCompact(value: number) {
+  const numeric = Math.max(0, Number(value ?? 0) || 0);
+  return numeric.toLocaleString();
 }
 
 function formatCount(value: number, suffix = "건") {
@@ -40,6 +45,12 @@ function formatQuantity(value: number, suffix?: string) {
   return suffix ? `${numeric.toLocaleString()} ${suffix}` : numeric.toLocaleString();
 }
 
+function formatDateLabel(value?: string | null) {
+  const text = value?.trim();
+  if (!text) return "-";
+  return text;
+}
+
 function sumBy<T>(items: T[], getter: (item: T) => number) {
   return items.reduce((total, item) => total + Math.max(0, Number(getter(item) ?? 0) || 0), 0);
 }
@@ -52,115 +63,165 @@ function getAttachmentTypeBadge(attachment: Attachment) {
   return attachment.type === "image" ? "이미지" : "PDF";
 }
 
-function SummaryStat({ label, value }: { label: string; value: string }) {
+function FieldBox({ label, value, className = "" }: { label: string; value: string; className?: string }) {
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white px-4 py-3">
-      <div className="text-[11px] font-medium text-stone-500">{label}</div>
-      <div className="mt-1 text-sm font-semibold text-stone-900">{value}</div>
+    <div className={`border border-stone-400 bg-white ${className}`.trim()}>
+      <div className="border-b border-stone-300 bg-stone-100 px-2 py-1 text-[11px] font-semibold text-stone-700">{label}</div>
+      <div className="min-h-[42px] px-2 py-2 text-sm font-semibold text-stone-900">{value}</div>
     </div>
   );
 }
 
-function SectionCard({
-  title,
-  badge,
-  children,
+function SummaryTableRow({
+  vendor,
+  name,
+  quantity,
+  unit,
+  unitCost,
+  totalCost,
 }: {
-  title: string;
-  badge?: string;
-  children: ReactNode;
+  vendor: string;
+  name: string;
+  quantity: string;
+  unit: string;
+  unitCost: string;
+  totalCost: string;
 }) {
   return (
-    <section className="rounded-2xl border border-stone-200 bg-white px-4 py-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-      <div className="mb-3 flex items-center justify-between gap-3 border-b border-stone-100 pb-2">
-        <h3 className="text-sm font-semibold text-stone-900">{title}</h3>
-        {badge ? (
-          <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-medium text-stone-600">{badge}</span>
-        ) : null}
+    <tr className="border-b border-stone-200 last:border-b-0">
+      <td className="px-2 py-2 text-center align-top">{vendor}</td>
+      <td className="px-2 py-2 align-top">{name}</td>
+      <td className="px-2 py-2 text-center align-top">{quantity}</td>
+      <td className="px-2 py-2 text-center align-top">{unit}</td>
+      <td className="px-2 py-2 text-right align-top">{unitCost}</td>
+      <td className="px-2 py-2 text-right align-top">{totalCost}</td>
+    </tr>
+  );
+}
+
+function SectionTable({
+  title,
+  columns,
+  children,
+  footerLabel,
+  footerValue,
+  emptyLabel,
+}: {
+  title: string;
+  columns: string[];
+  children: React.ReactNode;
+  footerLabel: string;
+  footerValue: string;
+  emptyLabel: string;
+}) {
+  return (
+    <section className="overflow-hidden border border-stone-400 bg-white">
+      <div className="border-b border-stone-400 bg-stone-100 px-3 py-2 text-sm font-bold text-stone-900">{title}</div>
+      <div className="overflow-x-auto">
+        <table className="min-w-full border-collapse text-xs text-stone-800">
+          <thead>
+            <tr className="border-b border-stone-300 bg-stone-50">
+              {columns.map((column) => (
+                <th key={column} className="px-2 py-2 text-center font-semibold text-stone-700">
+                  {column}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>{children}</tbody>
+          <tfoot>
+            <tr className="border-t border-stone-300 bg-stone-50">
+              <td colSpan={columns.length - 1} className="px-2 py-2 text-right font-semibold text-stone-700">
+                {footerLabel}
+              </td>
+              <td className="px-2 py-2 text-right font-bold text-stone-900">{footerValue}</td>
+            </tr>
+          </tfoot>
+        </table>
       </div>
-      {children}
+      {children ? null : <div className="px-3 py-4 text-center text-sm text-stone-500">{emptyLabel}</div>}
     </section>
   );
 }
 
-function KeyValueRow({ label, value }: { label: string; value: string }) {
+function MaterialTableRows({ materials }: { materials: Material[] }) {
+  if (materials.length === 0) {
+    return (
+      <tr>
+        <td colSpan={6} className="px-3 py-5 text-center text-sm text-stone-500">
+          항목이 없습니다.
+        </td>
+      </tr>
+    );
+  }
+
   return (
-    <div className="flex items-start justify-between gap-3">
-      <span className="text-stone-500">{label}</span>
-      <span className="text-right font-medium text-stone-900">{value}</span>
-    </div>
+    <>
+      {materials.map((material) => (
+        <SummaryTableRow
+          key={material.id}
+          vendor={material.vendor || "-"}
+          name={material.name || "-"}
+          quantity={formatQuantity(material.quantity)}
+          unit={material.unit || "-"}
+          unitCost={formatCurrencyCompact(material.unitCost)}
+          totalCost={formatCurrencyCompact(material.totalCost || material.quantity * material.unitCost)}
+        />
+      ))}
+    </>
   );
 }
 
-function MaterialRow({ material }: { material: Material }) {
-  return (
-    <div className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-3">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-semibold text-stone-900">{material.name || "-"}</div>
-          <div className="mt-1 text-xs text-stone-500">{material.vendor || "-"}</div>
-        </div>
-        <div className="shrink-0 rounded-full bg-white px-2 py-1 text-[11px] font-medium text-stone-600">
-          {material.type || "-"}
-        </div>
-      </div>
+function OutsourcingTableRows({ outsourcingItems }: { outsourcingItems: Outsourcing[] }) {
+  if (outsourcingItems.length === 0) {
+    return (
+      <tr>
+        <td colSpan={5} className="px-3 py-5 text-center text-sm text-stone-500">
+          항목이 없습니다.
+        </td>
+      </tr>
+    );
+  }
 
-      <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2 xl:grid-cols-4">
-        <div>
-          <div className="text-stone-500">수량</div>
-          <div className="mt-0.5 font-medium text-stone-900">{formatQuantity(material.quantity, material.unit || "")}</div>
-        </div>
-        <div>
-          <div className="text-stone-500">단위</div>
-          <div className="mt-0.5 font-medium text-stone-900">{material.unit || "-"}</div>
-        </div>
-        <div>
-          <div className="text-stone-500">단가</div>
-          <div className="mt-0.5 font-medium text-stone-900">{formatCurrency(material.unitCost)}</div>
-        </div>
-        <div>
-          <div className="text-stone-500">소계</div>
-          <div className="mt-0.5 font-semibold text-stone-900">{formatCurrency(material.totalCost)}</div>
-        </div>
-      </div>
-    </div>
+  return (
+    <>
+      {outsourcingItems.map((item) => (
+        <tr key={item.id} className="border-b border-stone-200 last:border-b-0">
+          <td className="px-2 py-2 text-center align-top">{item.vendor || "-"}</td>
+          <td className="px-2 py-2 align-top">{item.process || "-"}</td>
+          <td className="px-2 py-2 text-center align-top">{formatQuantity(item.quantity)}</td>
+          <td className="px-2 py-2 text-right align-top">{formatCurrencyCompact(item.unitCost)}</td>
+          <td className="px-2 py-2 text-right align-top">{formatCurrencyCompact(item.totalCost)}</td>
+        </tr>
+      ))}
+    </>
   );
 }
 
-function FactoryEntryRow({ entry }: { entry: OrderEntry }) {
-  const subtotal = Math.max(0, Number(entry.laborCost ?? 0) || 0) + Math.max(0, Number(entry.lossCost ?? 0) || 0);
+function LaborTableRows({ entries }: { entries: OrderEntry[] }) {
+  if (entries.length === 0) {
+    return (
+      <tr>
+        <td colSpan={6} className="px-3 py-5 text-center text-sm text-stone-500">
+          항목이 없습니다.
+        </td>
+      </tr>
+    );
+  }
 
   return (
-    <div className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-3">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-semibold text-stone-900">{entry.factory?.trim() || "-"}</div>
-          <div className="mt-1 text-xs text-stone-500">납기일 {entry.dueDate?.trim() || "-"}</div>
-        </div>
-        <div className="shrink-0 rounded-full bg-white px-2 py-1 text-[11px] font-medium text-stone-600">
-          {ORDER_ENTRY_TARGET_TYPE_LABELS[entry.targetType] ?? ORDER_ENTRY_TARGET_TYPE_LABELS[ORDER_ENTRY_TARGET_TYPE.factory]}
-        </div>
-      </div>
-
-      <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2 xl:grid-cols-4">
-        <div>
-          <div className="text-stone-500">수량</div>
-          <div className="mt-0.5 font-medium text-stone-900">{formatQuantity(entry.quantity)}</div>
-        </div>
-        <div>
-          <div className="text-stone-500">공임비</div>
-          <div className="mt-0.5 font-medium text-stone-900">{formatCurrency(entry.laborCost)}</div>
-        </div>
-        <div>
-          <div className="text-stone-500">로스비</div>
-          <div className="mt-0.5 font-medium text-stone-900">{formatCurrency(entry.lossCost)}</div>
-        </div>
-        <div>
-          <div className="text-stone-500">소계</div>
-          <div className="mt-0.5 font-semibold text-stone-900">{formatCurrency(subtotal)}</div>
-        </div>
-      </div>
-    </div>
+    <>
+      {entries.map((entry) => (
+        <tr key={entry.id} className="border-b border-stone-200 last:border-b-0">
+          <td className="px-2 py-2 text-center align-top">{entry.factory?.trim() || "-"}</td>
+          <td className="px-2 py-2 align-top">공임</td>
+          <td className="px-2 py-2 text-center align-top">{formatDateLabel(entry.dueDate)}</td>
+          <td className="px-2 py-2 text-center align-top">{formatQuantity(entry.quantity)}</td>
+          <td className="px-2 py-2 text-right align-top">{formatCurrencyCompact(entry.laborCost)}</td>
+          <td className="px-2 py-2 text-right align-top">{formatCurrencyCompact(entry.laborCost * Math.max(1, entry.quantity > 0 ? 1 : 1))}</td>
+        </tr>
+      ))}
+    </>
   );
 }
 
@@ -199,20 +260,24 @@ export default function OrderRequestConfirmModal({
   const attachmentItems = useMemo(() => workOrder.attachments ?? [], [workOrder.attachments]);
   const representativeImage = useMemo(() => getRepresentativeImage(attachmentItems), [attachmentItems]);
 
+  const customerName = getWorkspaceCompanyName();
+  const displayTitle = workOrder.displayTitle || workOrder.title || "-";
+  const styleNumber = workOrder.id || "-";
+
   const factoryQuantityTotal = sumBy(factoryEntries, (entry) => entry.quantity);
   const factoryLaborCostTotal = sumBy(factoryEntries, (entry) => entry.laborCost);
   const factoryLossCostTotal = sumBy(factoryEntries, (entry) => entry.lossCost);
-  const factoryAmountTotal = factoryLaborCostTotal + factoryLossCostTotal;
-
-  const fabricQuantityTotal = sumBy(fabricMaterials, (material) => material.quantity);
   const fabricAmountTotal = sumBy(fabricMaterials, (material) => material.totalCost || material.quantity * material.unitCost);
-
-  const subsidiaryQuantityTotal = sumBy(subsidiaryMaterials, (material) => material.quantity);
   const subsidiaryAmountTotal = sumBy(subsidiaryMaterials, (material) => material.totalCost || material.quantity * material.unitCost);
+  const outsourcingAmountTotal = sumBy(workOrder.outsourcing ?? [], (item) => item.totalCost);
+  const totalAmountWithoutLoss = factoryLaborCostTotal + fabricAmountTotal + subsidiaryAmountTotal + outsourcingAmountTotal;
+  const totalAttachmentCount = attachmentItems.length;
+  const memoLikeText = workOrder.memo?.trim();
 
-  const totalCategoryCount = [factoryEntries.length > 0, fabricMaterials.length > 0, subsidiaryMaterials.length > 0].filter(Boolean).length;
-  const totalAmount = factoryAmountTotal + fabricAmountTotal + subsidiaryAmountTotal;
-  const totalQuantity = factoryQuantityTotal + fabricQuantityTotal + subsidiaryQuantityTotal;
+  const attachmentSummaryLines = attachmentItems.map((attachment) => {
+    const prefix = attachment.scope === "memo" ? "메모" : "첨부";
+    return `${prefix} · ${getAttachmentTypeBadge(attachment)} · ${attachment.name}`;
+  });
 
   return (
     <ModalShell
@@ -220,9 +285,9 @@ export default function OrderRequestConfirmModal({
       onClose={onClose}
       title={copy.title}
       description={copy.description}
-      maxWidthClass="md:max-w-5xl"
+      maxWidthClass="md:max-w-6xl"
       overlayClassName="bg-stone-950/55 md:bg-stone-950/50"
-      bodyClassName="space-y-4 bg-stone-50"
+      bodyClassName="bg-[#f5f2eb]"
       footer={renderModalFooterActions({
         layout: "stack-reverse",
         secondary: { label: MODAL_ACTION_LABELS.cancel, onClick: onClose, className: "transition py-2.5" },
@@ -235,160 +300,163 @@ export default function OrderRequestConfirmModal({
         },
       })}
     >
-      <div className="space-y-4 text-sm text-stone-700">
-        <SectionCard title="발주 요약" badge={requested ? (copy.requestedBadge ?? "발주 완료") : "확인 필요"}>
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-            <SummaryStat label="작업지시서" value={workOrder.displayTitle || workOrder.title || "-"} />
-            <SummaryStat label="대상 카테고리" value={formatCount(totalCategoryCount, "개") } />
-            <SummaryStat label="총 수량" value={formatQuantity(totalQuantity) === "-" ? "0" : formatQuantity(totalQuantity)} />
-            <SummaryStat label="총 금액" value={formatCurrency(totalAmount)} />
-            <SummaryStat label="첨부파일" value={formatCount(attachmentItems.length, "개")} />
-          </div>
-        </SectionCard>
+      <div className="mx-auto w-full max-w-[1040px] rounded-sm border border-stone-500 bg-white text-stone-900 shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
+        <div className="border-b border-stone-400 px-4 py-4 text-center">
+          <div className="text-[28px] font-black tracking-[0.25em] text-stone-900">작 업 지 시 서</div>
+          <div className="mt-2 text-xs font-medium text-stone-500">발주서형 미리보기</div>
+        </div>
 
-        <div className="grid gap-4 xl:grid-cols-[1.45fr_0.95fr]">
-          <div className="space-y-4">
-            <SectionCard title="공장 발주" badge={formatCount(factoryEntries.length)}>
-              <div className="space-y-3">
-                <div className="grid gap-3 rounded-2xl border border-stone-200 bg-stone-50 p-3 text-xs sm:grid-cols-2 xl:grid-cols-4">
-                  <div>
-                    <div className="text-stone-500">공장</div>
-                    <div className="mt-1 font-semibold text-stone-900">{confirmedFactoryName || "-"}</div>
-                  </div>
-                  <div>
-                    <div className="text-stone-500">납기일</div>
-                    <div className="mt-1 font-semibold text-stone-900">{confirmedDueDate || "-"}</div>
-                  </div>
-                  <div>
-                    <div className="text-stone-500">총 수량</div>
-                    <div className="mt-1 font-semibold text-stone-900">{formatQuantity(factoryQuantityTotal)}</div>
-                  </div>
-                  <div>
-                    <div className="text-stone-500">총 금액</div>
-                    <div className="mt-1 font-semibold text-stone-900">{formatCurrency(factoryAmountTotal)}</div>
-                  </div>
-                </div>
+        <div className="grid grid-cols-2 border-b border-stone-400 sm:grid-cols-4 lg:grid-cols-7">
+          <FieldBox label="납기일" value={formatDateLabel(confirmedDueDate)} />
+          <FieldBox label="style no." value={styleNumber} />
+          <FieldBox label="품명" value={displayTitle} />
+          <FieldBox label="공장" value={confirmedFactoryName || "-"} />
+          <FieldBox label="매장" value={customerName} />
+          <FieldBox label="공임" value={formatCurrency(factoryLaborCostTotal)} />
+          <FieldBox label="로스" value={formatCurrency(factoryLossCostTotal)} />
+        </div>
 
-                {factoryEntries.length > 0 ? (
-                  <div className="space-y-2">
-                    {factoryEntries.map((entry) => (
-                      <FactoryEntryRow key={entry.id} entry={entry} />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">
-                    공장 발주 정보가 없습니다.
-                  </div>
-                )}
-              </div>
-            </SectionCard>
+        <div className="grid grid-cols-2 border-b border-stone-400 sm:grid-cols-4 lg:grid-cols-7">
+          <FieldBox label="총합" value={formatCurrency(totalAmountWithoutLoss)} />
+          <FieldBox label="총수량" value={formatQuantity(factoryQuantityTotal || confirmedQuantity)} />
+          <FieldBox label="첨부수" value={formatCount(totalAttachmentCount, "개")} />
+          <FieldBox label="원단합" value={formatCurrency(fabricAmountTotal)} />
+          <FieldBox label="부자재합" value={formatCurrency(subsidiaryAmountTotal)} />
+          <FieldBox label="외주합" value={formatCurrency(outsourcingAmountTotal)} />
+          <FieldBox label="상태" value={requested ? (copy.requestedBadge ?? "발주 완료") : "확인 필요"} />
+        </div>
 
-            <SectionCard title="원단 발주" badge={formatCount(fabricMaterials.length)}>
-              <div className="space-y-3">
-                <div className="grid gap-3 rounded-2xl border border-stone-200 bg-stone-50 p-3 text-xs sm:grid-cols-2 xl:grid-cols-3">
-                  <KeyValueRow label="자재 건수" value={formatCount(fabricMaterials.length)} />
-                  <KeyValueRow label="총 수량" value={formatQuantity(fabricQuantityTotal)} />
-                  <KeyValueRow label="총 금액" value={formatCurrency(fabricAmountTotal)} />
-                </div>
-
-                {fabricMaterials.length > 0 ? (
-                  <div className="space-y-2">
-                    {fabricMaterials.map((material) => (
-                      <MaterialRow key={material.id} material={material} />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">
-                    원단 발주 정보가 없습니다.
-                  </div>
-                )}
-              </div>
-            </SectionCard>
-
-            <SectionCard title="부자재 발주" badge={formatCount(subsidiaryMaterials.length)}>
-              <div className="space-y-3">
-                <div className="grid gap-3 rounded-2xl border border-stone-200 bg-stone-50 p-3 text-xs sm:grid-cols-2 xl:grid-cols-3">
-                  <KeyValueRow label="자재 건수" value={formatCount(subsidiaryMaterials.length)} />
-                  <KeyValueRow label="총 수량" value={formatQuantity(subsidiaryQuantityTotal)} />
-                  <KeyValueRow label="총 금액" value={formatCurrency(subsidiaryAmountTotal)} />
-                </div>
-
-                {subsidiaryMaterials.length > 0 ? (
-                  <div className="space-y-2">
-                    {subsidiaryMaterials.map((material) => (
-                      <MaterialRow key={material.id} material={material} />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">
-                    부자재 발주 정보가 없습니다.
-                  </div>
-                )}
-              </div>
-            </SectionCard>
-          </div>
-
-          <div className="space-y-4">
-            <SectionCard title="대표이미지" badge={representativeImage ? "선택됨" : "없음"}>
+        <div className="grid border-b border-stone-400 lg:grid-cols-[1.5fr_1fr]">
+          <section className="border-b border-stone-400 lg:border-b-0 lg:border-r lg:border-stone-400">
+            <div className="border-b border-stone-300 bg-stone-100 px-3 py-2 text-sm font-bold text-stone-900">&lt; 대표 이미지 &gt;</div>
+            <div className="bg-[#fcfaf5] p-3">
               {representativeImage ? (
-                <div className="space-y-3">
-                  <div className="overflow-hidden rounded-2xl border border-stone-200 bg-stone-100">
-                    <img src={representativeImage.url} alt={representativeImage.name} className="h-56 w-full object-cover" />
-                  </div>
-                  <div className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-3">
-                    <div className="text-xs text-stone-500">대표 첨부파일</div>
-                    <div className="mt-1 truncate text-sm font-semibold text-stone-900">{representativeImage.name}</div>
-                    <div className="mt-1 text-xs text-stone-500">현재는 첫 이미지 기준으로 표시됩니다.</div>
-                  </div>
+                <div className="overflow-hidden border border-stone-300 bg-stone-100">
+                  <img src={representativeImage.url} alt={representativeImage.name} className="h-[420px] w-full object-contain bg-white" />
                 </div>
               ) : (
-                <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-10 text-center text-sm text-stone-500">
-                  표시할 대표이미지가 없습니다.
+                <div className="flex h-[420px] items-center justify-center border border-dashed border-stone-300 bg-white text-sm text-stone-500">
+                  대표 이미지가 없습니다.
                 </div>
               )}
-            </SectionCard>
+            </div>
+          </section>
 
-            <SectionCard title="첨부파일 목록" badge={formatCount(attachmentItems.length, "개")}>
-              {attachmentItems.length > 0 ? (
-                <div className="space-y-2">
-                  {attachmentItems.map((attachment) => {
-                    const isRepresentative = representativeImage?.id === attachment.id;
-                    return (
-                      <div
-                        key={attachment.id}
-                        className={`rounded-2xl border px-3 py-3 ${isRepresentative ? "border-amber-300 bg-amber-50" : "border-stone-200 bg-stone-50"}`}
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0 flex-1">
-                            <div className="truncate text-sm font-medium text-stone-900">{attachment.name}</div>
-                            <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-stone-500">
-                              <span className="rounded-full bg-white px-2 py-0.5 font-medium text-stone-600">{getAttachmentTypeBadge(attachment)}</span>
-                              {isRepresentative ? (
-                                <span className="rounded-full bg-amber-100 px-2 py-0.5 font-medium text-amber-800">대표이미지</span>
-                              ) : null}
-                              <span>{attachment.scope === "memo" ? "메모 첨부" : "공식 첨부"}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+          <section>
+            <div className="border-b border-stone-300 bg-stone-100 px-3 py-2 text-sm font-bold text-stone-900">&lt; 첨부파일 / 요청사항 &gt;</div>
+            <div className="flex min-h-[448px] flex-col">
+              <div className="flex-1 space-y-4 px-3 py-3 text-sm leading-6 text-stone-800">
+                {memoLikeText ? (
+                  <div>
+                    <div className="mb-1 text-xs font-bold tracking-wide text-rose-700">요청사항</div>
+                    <div className="whitespace-pre-wrap">{memoLikeText}</div>
+                  </div>
+                ) : null}
+
+                <div>
+                  <div className="mb-1 text-xs font-bold tracking-wide text-stone-700">첨부파일 목록</div>
+                  {attachmentSummaryLines.length > 0 ? (
+                    <ol className="space-y-1 pl-5">
+                      {attachmentSummaryLines.map((line, index) => (
+                        <li key={`${line}-${index}`} className="list-decimal break-all">
+                          {line}
+                        </li>
+                      ))}
+                    </ol>
+                  ) : (
+                    <div className="text-stone-500">첨부파일이 없습니다.</div>
+                  )}
                 </div>
-              ) : (
-                <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">
-                  첨부파일이 없습니다.
-                </div>
-              )}
-            </SectionCard>
-          </div>
+              </div>
+              <div className="border-t border-stone-300 bg-stone-50 px-3 py-3 text-sm font-semibold text-stone-800">
+                총 첨부파일 수 {formatCount(totalAttachmentCount, "개")}
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div className="space-y-4 bg-[#fcfaf5] p-4">
+          <SectionTable
+            title="원단 내역"
+            columns={["거래처", "자재명", "수량", "단위", "단가", "금액"]}
+            footerLabel="원단 총합"
+            footerValue={formatCurrency(fabricAmountTotal)}
+            emptyLabel="원단 발주 정보가 없습니다."
+          >
+            <MaterialTableRows materials={fabricMaterials} />
+          </SectionTable>
+
+          <SectionTable
+            title="부자재 내역"
+            columns={["거래처", "자재명", "수량", "단위", "단가", "금액"]}
+            footerLabel="부자재 총합"
+            footerValue={formatCurrency(subsidiaryAmountTotal)}
+            emptyLabel="부자재 발주 정보가 없습니다."
+          >
+            <MaterialTableRows materials={subsidiaryMaterials} />
+          </SectionTable>
+
+          <SectionTable
+            title="외주 내역"
+            columns={["외주처", "작업명", "수량", "단가", "금액"]}
+            footerLabel="외주 총합"
+            footerValue={formatCurrency(outsourcingAmountTotal)}
+            emptyLabel="외주 정보가 없습니다."
+          >
+            <OutsourcingTableRows outsourcingItems={workOrder.outsourcing ?? []} />
+          </SectionTable>
+
+          <SectionTable
+            title="공임 내역"
+            columns={["공장", "공임 항목", "납기일", "수량", "단가", "금액"]}
+            footerLabel="공임 총합"
+            footerValue={formatCurrency(factoryLaborCostTotal)}
+            emptyLabel="공임 정보가 없습니다."
+          >
+            <LaborTableRows entries={factoryEntries} />
+          </SectionTable>
+
+          <section className="overflow-hidden border border-stone-400 bg-white">
+            <div className="border-b border-stone-400 bg-stone-100 px-3 py-2 text-sm font-bold text-stone-900">총합 요약 (로스 제외)</div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full border-collapse text-xs text-stone-800">
+                <thead>
+                  <tr className="border-b border-stone-300 bg-stone-50">
+                    {[
+                      "원단 총합",
+                      "부자재 총합",
+                      "외주 총합",
+                      "공임 총합",
+                      "총합 (로스 제외)",
+                      "로스",
+                    ].map((label) => (
+                      <th key={label} className="px-2 py-2 text-center font-semibold text-stone-700">
+                        {label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="px-2 py-3 text-center font-semibold">{formatCurrency(fabricAmountTotal)}</td>
+                    <td className="px-2 py-3 text-center font-semibold">{formatCurrency(subsidiaryAmountTotal)}</td>
+                    <td className="px-2 py-3 text-center font-semibold">{formatCurrency(outsourcingAmountTotal)}</td>
+                    <td className="px-2 py-3 text-center font-semibold">{formatCurrency(factoryLaborCostTotal)}</td>
+                    <td className="px-2 py-3 text-center font-bold text-stone-900">{formatCurrency(totalAmountWithoutLoss)}</td>
+                    <td className="px-2 py-3 text-center font-semibold">{formatCurrency(factoryLossCostTotal)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
         </div>
 
         {requested ? (
-          <div className="text-sm text-emerald-700">
+          <div className="border-t border-stone-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
             {copy.requestedNotice ?? "이미 발주 요청이 기록된 작업입니다. 중복 발주는 허용되지 않습니다."}
           </div>
         ) : (
-          <div className="text-xs text-stone-500">
+          <div className="border-t border-stone-300 bg-stone-50 px-4 py-3 text-xs text-stone-500">
             {copy.confirmNotice ?? "수정이 필요하면 모달을 닫고 발주정보에서 먼저 수정해주세요."}
           </div>
         )}
