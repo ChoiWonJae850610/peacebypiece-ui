@@ -1,4 +1,5 @@
 import type { ComponentProps } from "react";
+import { isDebugFeatureEnabled } from "@/lib/constants/runtimeMode";
 import WorkOrderActionSection from "@/components/workorder/detail/WorkOrderActionSection";
 import WorkOrderCostSummarySection from "@/components/workorder/detail/WorkOrderCostSummarySection";
 import WorkOrderHeaderSection from "@/components/workorder/detail/WorkOrderHeaderSection";
@@ -168,6 +169,7 @@ export function buildWorkOrderDetailViewModel({
       onRenameTitle: onRenameWorkOrderTitle,
       locked: isReviewRequestLocked,
       orderHubPolicy: orderInfoHubPolicy,
+      showDebugPanel: isDebugFeatureEnabled("orderInfoHubPanel"),
     },
     actionProps: {
       stages: visibleStages,

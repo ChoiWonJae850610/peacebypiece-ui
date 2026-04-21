@@ -1,11 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import AdminHistoryDebugPanel from "@/components/debug/AdminHistoryDebugPanel";
 import AdminWorkOrderHistoryItem from "@/components/admin/history/AdminWorkOrderHistoryItem";
 import { buildAdminHistorySectionViewModel } from "@/lib/admin/history/presentation";
 import { matchesAdminHistorySearch } from "@/lib/admin/history/selectors";
 import { useAdminHistoryTools } from "@/lib/admin/useAdminHistoryTools";
 import { useI18n } from "@/lib/i18n";
+import { isDebugFeatureEnabled } from "@/lib/constants/runtimeMode";
 export default function AdminWorkOrderHistoryPage() {
   const { i18n } = useI18n();
   const pageText = i18n.admin.historyPage;
@@ -19,6 +21,7 @@ export default function AdminWorkOrderHistoryPage() {
 
   const viewModel = buildAdminHistorySectionViewModel(filteredLogs, historyFilter);
   const hasSearchQuery = searchQuery.trim().length > 0;
+  const showDebugPanel = isDebugFeatureEnabled("adminHistoryDebugPanel");
 
   return (
     <section className="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(20rem,0.7fr)]">
@@ -72,16 +75,19 @@ export default function AdminWorkOrderHistoryPage() {
         </div>
       </div>
 
-      <aside className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm md:p-5">
-        <div className="space-y-3">
-          <h2 className="text-base font-semibold text-stone-900">{pageText.guideTitle}</h2>
-          <p className="text-sm leading-6 text-stone-600">{pageText.guideDescription}</p>
-          <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-4 text-sm leading-6 text-stone-600">
-            <div>{viewModel.summaryText}</div>
-            <div className="mt-2">{pageText.searchGuide}</div>
+      <div className="grid gap-4">
+        <aside className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm md:p-5">
+          <div className="space-y-3">
+            <h2 className="text-base font-semibold text-stone-900">{pageText.guideTitle}</h2>
+            <p className="text-sm leading-6 text-stone-600">{pageText.guideDescription}</p>
+            <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-4 text-sm leading-6 text-stone-600">
+              <div>{viewModel.summaryText}</div>
+              <div className="mt-2">{pageText.searchGuide}</div>
+            </div>
           </div>
-        </div>
-      </aside>
+        </aside>
+        {showDebugPanel ? <AdminHistoryDebugPanel historyEvents={historyEvents} /> : null}
+      </div>
     </section>
   );
 }
