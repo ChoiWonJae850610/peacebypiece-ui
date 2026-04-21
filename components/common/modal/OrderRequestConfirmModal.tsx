@@ -4,16 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { MODAL_ACTION_LABELS } from "@/components/common/modal/modalActions";
-import {
-  getOrderEntriesByTargetType,
-  getOrderSubmissionSnapshot,
-} from "@/lib/workorder/orderSubmission";
+import { getOrderSubmissionSnapshot } from "@/lib/workorder/orderSubmission";
+import { getOrderRequestDocumentPreview } from "@/lib/workorder/presentation/orderRequestDocumentPresentation";
 import { useI18n } from "@/lib/i18n";
-import {
-  MATERIAL_KIND,
-  ORDER_ENTRY_TARGET_TYPE,
-} from "@/lib/constants/workorderDomain";
-import type { Attachment, Material, OrderEntry, Outsourcing, WorkOrder } from "@/types/workorder";
+import type { Attachment, Material, Outsourcing, WorkOrder } from "@/types/workorder";
 
 function formatCurrency(value: number) {
   const numeric = Number(value ?? 0);
@@ -37,18 +31,11 @@ function formatDateLabel(value?: string | null) {
   return text;
 }
 
-function sumBy<T>(items: T[], getter: (item: T) => number) {
-  return items.reduce((total, item) => total + Math.max(0, Number(getter(item) ?? 0) || 0), 0);
-}
 
-function getRepresentativeImage(attachments: Attachment[]) {
-  return attachments.find((attachment) => attachment.type === "image") ?? null;
-}
 
 function getAttachmentTypeBadge(attachment: Attachment) {
   return attachment.type === "image" ? "이미지" : "PDF";
 }
-
 
 function clampPageIndex(value: number, total: number) {
   if (total <= 0) return 0;
@@ -60,18 +47,6 @@ function getFactoryPageLabel(currentPage: number, totalPages: number) {
   return `${currentPage + 1}/${totalPages}`;
 }
 
-function getFactoryPreviewPages(factoryEntries: OrderEntry[], fallback: { factoryName: string; dueDate: string; quantity: number; laborCost: number; lossCost: number }) {
-  if (factoryEntries.length === 0) {
-    return [fallback];
-  }
-  return factoryEntries.map((entry) => ({
-    factoryName: entry.factory?.trim() || fallback.factoryName,
-    dueDate: entry.dueDate?.trim() || fallback.dueDate,
-    quantity: Number(entry.quantity ?? 0) || 0,
-    laborCost: Number(entry.laborCost ?? 0) || 0,
-    lossCost: Number(entry.lossCost ?? 0) || 0,
-  }));
-}
 
 const TABLE_HEAD_CLASS = "px-3 py-2.5 text-center font-semibold text-stone-700";
 const TABLE_CELL_CLASS = "px-3 py-2.5 text-center align-middle leading-5";
@@ -218,63 +193,26 @@ export default function OrderRequestConfirmModal({
   const confirmedQuantity = requested?.quantity ?? submissionSnapshot.quantity;
   const canSubmit = Boolean(confirmedFactoryName) && Boolean(confirmedDueDate) && confirmedQuantity > 0 && !requested;
 
-  const orderEntriesByTarget = useMemo(() => getOrderEntriesByTargetType(workOrder.orderEntries), [workOrder.orderEntries]);
-  const factoryEntries = orderEntriesByTarget[ORDER_ENTRY_TARGET_TYPE.factory] ?? [];
-
-  const fabricMaterials = useMemo(
-    () => (workOrder.materials ?? []).filter((material) => material.type === MATERIAL_KIND.fabric),
-    [workOrder.materials],
-  );
-  const subsidiaryMaterials = useMemo(
-    () => (workOrder.materials ?? []).filter((material) => material.type === MATERIAL_KIND.subsidiary),
-    [workOrder.materials],
-  );
-
-  const attachmentItems = useMemo(() => workOrder.attachments ?? [], [workOrder.attachments]);
-  const representativeImage = useMemo(() => getRepresentativeImage(attachmentItems), [attachmentItems]);
-
-  const displayTitle = workOrder.displayTitle || workOrder.title || "-";
-
-  const factoryPreviewPages = useMemo(
-    () =>
-      getFactoryPreviewPages(factoryEntries, {
-        factoryName: confirmedFactoryName,
-        dueDate: confirmedDueDate,
-        quantity: confirmedQuantity,
-        laborCost: submissionSnapshot.laborCost,
-        lossCost: submissionSnapshot.lossCost,
-      }),
-    [
-      confirmedDueDate,
-      confirmedFactoryName,
-      confirmedQuantity,
-      factoryEntries,
-      submissionSnapshot.laborCost,
-      submissionSnapshot.lossCost,
-    ],
-  );
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
-  const [requestNote, setRequestNote] = useState("");
 
   useEffect(() => {
     setCurrentPageIndex(0);
-    setRequestNote(workOrder.memo?.trim() ?? "");
-  }, [open, workOrder.id, factoryPreviewPages.length, workOrder.memo]);
+  }, [open, workOrder.id]);
 
-  const totalPageCount = factoryPreviewPages.length;
+  const preview = useMemo(() => getOrderRequestDocumentPreview(workOrder, currentPageIndex), [currentPageIndex, workOrder]);
+  const totalPageCount = preview.pages.length;
   const safePageIndex = clampPageIndex(currentPageIndex, totalPageCount);
-  const currentFactoryPage = factoryPreviewPages[safePageIndex] ?? factoryPreviewPages[0];
-  const currentFactoryName = currentFactoryPage?.factoryName || confirmedFactoryName;
-  const currentDueDate = currentFactoryPage?.dueDate || confirmedDueDate;
-  const currentFactoryQuantity = currentFactoryPage?.quantity || confirmedQuantity;
-  const currentFactoryLaborCost = currentFactoryPage?.laborCost || 0;
-  const currentFactoryLossCost = currentFactoryPage?.lossCost || 0;
-  const fabricAmountTotal = sumBy(fabricMaterials, (material) => material.totalCost || material.quantity * material.unitCost);
-  const subsidiaryAmountTotal = sumBy(subsidiaryMaterials, (material) => material.totalCost || material.quantity * material.unitCost);
-  const outsourcingAmountTotal = sumBy(workOrder.outsourcing ?? [], (item) => item.totalCost);
-  const totalAmountWithoutLoss = currentFactoryLaborCost + fabricAmountTotal + subsidiaryAmountTotal + outsourcingAmountTotal;
-
-  const attachmentSummaryLines = attachmentItems.map((attachment) => ({
+  const currentFactoryPage = preview.currentPage;
+  const currentFactoryName = currentFactoryPage.factoryName || confirmedFactoryName;
+  const currentDueDate = currentFactoryPage.dueDate || confirmedDueDate;
+  const currentFactoryQuantity = currentFactoryPage.quantity || confirmedQuantity;
+  const currentFactoryLaborCost = currentFactoryPage.laborCost || 0;
+  const currentFactoryLossCost = currentFactoryPage.lossCost || 0;
+  const displayTitle = preview.displayTitle;
+  const fabricMaterials = preview.fabricMaterials;
+  const subsidiaryMaterials = preview.subsidiaryMaterials;
+  const representativeImage = preview.representativeImage;
+  const attachmentSummaryLines = preview.visibleAttachments.map((attachment) => ({
     id: attachment.id,
     typeLabel: getAttachmentTypeBadge(attachment),
     scopeLabel: attachment.scope === "memo" ? "메모" : "첨부",
@@ -284,14 +222,14 @@ export default function OrderRequestConfirmModal({
   const firstSummaryItems = [
     { label: "품명", value: displayTitle },
     { label: "공임", value: formatCurrency(currentFactoryLaborCost) },
-    { label: "원가", value: formatCurrency(totalAmountWithoutLoss) },
+    { label: "원가", value: formatCurrency(preview.currentDocumentAmount) },
     { label: "수량", value: formatQuantity(currentFactoryQuantity) },
   ];
 
   const secondSummaryItems = [
-    { label: "원단합", value: formatCurrency(fabricAmountTotal) },
-    { label: "부자재합", value: formatCurrency(subsidiaryAmountTotal) },
-    { label: "외주합", value: formatCurrency(outsourcingAmountTotal) },
+    { label: "원단합", value: formatCurrency(preview.fabricAmountTotal) },
+    { label: "부자재합", value: formatCurrency(preview.subsidiaryAmountTotal) },
+    { label: "외주합", value: formatCurrency(preview.outsourcingAmountTotal) },
     { label: "로스", value: formatCurrency(currentFactoryLossCost) },
   ];
 
@@ -329,6 +267,10 @@ export default function OrderRequestConfirmModal({
                 <div className="max-w-[240px] truncate text-xs font-semibold text-stone-500">{currentFactoryName || "공장 미지정"}</div>
               </div>
               <div className="mt-2 text-lg font-bold text-stone-900">{displayTitle}</div>
+              <div className="mt-2 flex flex-wrap items-center justify-center gap-2 text-[11px] font-semibold">
+                <span className="rounded border border-stone-300 bg-stone-50 px-2 py-0.5 text-stone-600">공장별: 공장 / 납기 / 수량 / 공임 / 로스</span>
+                <span className="rounded border border-stone-300 bg-stone-50 px-2 py-0.5 text-stone-600">공통: 자재 / 외주 / 첨부 / 이미지</span>
+              </div>
             </div>
             <div />
           </div>
@@ -356,13 +298,18 @@ export default function OrderRequestConfirmModal({
           <section>
             <div className="border-b border-stone-300 bg-stone-100 px-3 py-2 text-sm font-bold text-stone-900">첨부파일 / 요청사항</div>
             <div className="flex min-h-[448px] flex-col bg-[#fcfaf5]">
-              <div className="grid flex-1 gap-0 xl:grid-rows-[1.08fr_0.92fr] text-sm leading-6 text-stone-800">
+              <div className="grid flex-1 gap-0 xl:grid-rows-[1.12fr_0.88fr] text-sm leading-6 text-stone-800">
                 <div className="border-b border-stone-200 px-4 py-4 xl:border-b xl:border-stone-200">
-                  <div className="mb-2 text-xs font-bold tracking-wide text-stone-700">첨부파일 목록</div>
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <div className="text-xs font-bold tracking-wide text-stone-700">첨부파일 목록</div>
+                    <span className="rounded border border-stone-300 bg-stone-50 px-2 py-0.5 text-[11px] font-semibold text-stone-600">
+                      공식 첨부 우선
+                    </span>
+                  </div>
                   {attachmentSummaryLines.length > 0 ? (
                     <div className="space-y-2">
                       {attachmentSummaryLines.map((attachment, index) => (
-                        <div key={attachment.id} className="grid grid-cols-[auto_auto_1fr] items-start gap-2 border border-stone-200 bg-white px-3 py-2.5 text-sm">
+                        <div key={attachment.id} className="grid min-h-[48px] grid-cols-[auto_auto_1fr] items-start gap-2 border border-stone-200 bg-white px-3 py-2.5 text-sm">
                           <span className="text-stone-500">{index + 1}.</span>
                           <span className="rounded border border-stone-300 bg-stone-50 px-1.5 py-0.5 text-[11px] font-semibold text-stone-600">
                             {attachment.typeLabel}
@@ -375,18 +322,20 @@ export default function OrderRequestConfirmModal({
                       ))}
                     </div>
                   ) : (
-                    <div className="border border-dashed border-stone-300 bg-white px-3 py-5 text-stone-500">첨부파일이 없습니다.</div>
+                    <div className="border border-dashed border-stone-300 bg-white px-3 py-5 text-stone-500">표시할 첨부파일이 없습니다.</div>
                   )}
                 </div>
 
                 <div className="px-4 py-4">
-                  <div className="mb-2 text-xs font-bold tracking-wide text-rose-700">요청사항</div>
-                  <textarea
-                    value={requestNote}
-                    onChange={(event) => setRequestNote(event.target.value)}
-                    placeholder="요청사항을 입력하세요."
-                    className="min-h-[168px] w-full resize-none border border-stone-300 bg-white px-3 py-3 text-sm leading-6 text-stone-800 outline-none transition placeholder:text-stone-400 focus:border-stone-500"
-                  />
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <div className="text-xs font-bold tracking-wide text-rose-700">요청사항</div>
+                    <span className="rounded border border-rose-200 bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-700">
+                      현재 작지 메모 기준
+                    </span>
+                  </div>
+                  <div className="min-h-[180px] whitespace-pre-wrap border border-stone-300 bg-white px-3 py-3 text-sm leading-6 text-stone-800">
+                    {preview.requestNote || "표시할 요청사항이 없습니다."}
+                  </div>
                 </div>
               </div>
             </div>
@@ -405,7 +354,7 @@ export default function OrderRequestConfirmModal({
               { label: "금액", className: "w-[16%]" },
             ]}
             footerLabel="원단 총합"
-            footerValue={formatCurrency(fabricAmountTotal)}
+            footerValue={formatCurrency(preview.fabricAmountTotal)}
           >
             <MaterialTableRows materials={fabricMaterials} />
           </SectionTable>
@@ -421,7 +370,7 @@ export default function OrderRequestConfirmModal({
               { label: "금액", className: "w-[16%]" },
             ]}
             footerLabel="부자재 총합"
-            footerValue={formatCurrency(subsidiaryAmountTotal)}
+            footerValue={formatCurrency(preview.subsidiaryAmountTotal)}
           >
             <MaterialTableRows materials={subsidiaryMaterials} />
           </SectionTable>
@@ -436,9 +385,9 @@ export default function OrderRequestConfirmModal({
               { label: "금액", className: "w-[17%]" },
             ]}
             footerLabel="외주 총합"
-            footerValue={formatCurrency(outsourcingAmountTotal)}
+            footerValue={formatCurrency(preview.outsourcingAmountTotal)}
           >
-            <OutsourcingTableRows outsourcingItems={workOrder.outsourcing ?? []} />
+            <OutsourcingTableRows outsourcingItems={preview.outsourcingItems} />
           </SectionTable>
         </div>
 
