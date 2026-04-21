@@ -73,6 +73,10 @@ function getFactoryPreviewPages(factoryEntries: OrderEntry[], fallback: { factor
   }));
 }
 
+const TABLE_HEAD_CLASS = "px-3 py-2.5 text-center font-semibold text-stone-700";
+const TABLE_CELL_CLASS = "px-3 py-2.5 text-center align-middle leading-5";
+const TABLE_EMPTY_CLASS = "px-3 py-7 text-center text-sm text-stone-500";
+
 function SummaryLine({
   items,
   className = "",
@@ -84,9 +88,9 @@ function SummaryLine({
     <div className={`border-b border-stone-400 px-4 py-3 ${className}`.trim()}>
       <div className="grid gap-x-5 gap-y-2 text-sm text-stone-800 md:grid-cols-2 xl:grid-cols-4">
         {items.map((item) => (
-          <div key={item.label} className="flex items-baseline gap-2 border-b border-dashed border-stone-200 pb-2 last:border-b-0 md:pb-0 md:border-b-0">
+          <div key={item.label} className="flex min-w-0 items-baseline gap-2 border-b border-dashed border-stone-200 pb-2 last:border-b-0 md:pb-0 md:border-b-0">
             <span className="shrink-0 text-xs font-semibold tracking-wide text-stone-500">{item.label}</span>
-            <span className="min-w-0 flex-1 text-right text-sm font-semibold text-stone-900 break-words">{item.value}</span>
+            <span className="min-w-0 flex-1 break-words text-right text-sm font-semibold text-stone-900">{item.value}</span>
           </div>
         ))}
       </div>
@@ -117,7 +121,7 @@ function SectionTable({
               {columns.map((column) => (
                 <th
                   key={column.label}
-                  className={`px-2 py-2 text-center font-semibold text-stone-700 ${column.className ?? ""}`.trim()}
+                  className={`${TABLE_HEAD_CLASS} ${column.className ?? ""}`.trim()}
                 >
                   {column.label}
                 </th>
@@ -127,10 +131,10 @@ function SectionTable({
           <tbody>{children}</tbody>
           <tfoot>
             <tr className="border-t border-stone-300 bg-stone-50">
-              <td colSpan={columns.length - 1} className="px-2 py-2 text-center font-semibold text-stone-700">
+              <td colSpan={columns.length - 1} className="px-3 py-2.5 text-center font-semibold text-stone-700">
                 {footerLabel}
               </td>
-              <td className="px-2 py-2 text-center font-bold text-stone-900">{footerValue}</td>
+              <td className="px-3 py-2.5 text-center font-bold text-stone-900">{footerValue}</td>
             </tr>
           </tfoot>
         </table>
@@ -143,7 +147,7 @@ function MaterialTableRows({ materials }: { materials: Material[] }) {
   if (materials.length === 0) {
     return (
       <tr>
-        <td colSpan={6} className="px-3 py-5 text-center text-sm text-stone-500">
+        <td colSpan={6} className={TABLE_EMPTY_CLASS}>
           항목이 없습니다.
         </td>
       </tr>
@@ -154,12 +158,12 @@ function MaterialTableRows({ materials }: { materials: Material[] }) {
     <>
       {materials.map((material) => (
         <tr key={material.id} className="border-b border-stone-200 last:border-b-0">
-          <td className="px-2 py-2 text-center align-middle">{material.vendor || "-"}</td>
-          <td className="px-2 py-2 text-center align-middle break-words">{material.name || "-"}</td>
-          <td className="px-2 py-2 text-center align-middle">{formatQuantity(material.quantity)}</td>
-          <td className="px-2 py-2 text-center align-middle">{material.unit || "-"}</td>
-          <td className="px-2 py-2 text-center align-middle">{formatCurrency(material.unitCost)}</td>
-          <td className="px-2 py-2 text-center align-middle">
+          <td className={TABLE_CELL_CLASS}>{material.vendor || "-"}</td>
+          <td className={`${TABLE_CELL_CLASS} break-words`}>{material.name || "-"}</td>
+          <td className={TABLE_CELL_CLASS}>{formatQuantity(material.quantity)}</td>
+          <td className={TABLE_CELL_CLASS}>{material.unit || "-"}</td>
+          <td className={TABLE_CELL_CLASS}>{formatCurrency(material.unitCost)}</td>
+          <td className={TABLE_CELL_CLASS}>
             {formatCurrency(material.totalCost || material.quantity * material.unitCost)}
           </td>
         </tr>
@@ -172,7 +176,7 @@ function OutsourcingTableRows({ outsourcingItems }: { outsourcingItems: Outsourc
   if (outsourcingItems.length === 0) {
     return (
       <tr>
-        <td colSpan={5} className="px-3 py-5 text-center text-sm text-stone-500">
+        <td colSpan={5} className={TABLE_EMPTY_CLASS}>
           항목이 없습니다.
         </td>
       </tr>
@@ -183,11 +187,11 @@ function OutsourcingTableRows({ outsourcingItems }: { outsourcingItems: Outsourc
     <>
       {outsourcingItems.map((item) => (
         <tr key={item.id} className="border-b border-stone-200 last:border-b-0">
-          <td className="px-2 py-2 text-center align-middle">{item.vendor || "-"}</td>
-          <td className="px-2 py-2 text-center align-middle break-words">{item.process || "-"}</td>
-          <td className="px-2 py-2 text-center align-middle">{formatQuantity(item.quantity)}</td>
-          <td className="px-2 py-2 text-center align-middle">{formatCurrency(item.unitCost)}</td>
-          <td className="px-2 py-2 text-center align-middle">{formatCurrency(item.totalCost)}</td>
+          <td className={TABLE_CELL_CLASS}>{item.vendor || "-"}</td>
+          <td className={`${TABLE_CELL_CLASS} break-words`}>{item.process || "-"}</td>
+          <td className={TABLE_CELL_CLASS}>{formatQuantity(item.quantity)}</td>
+          <td className={TABLE_CELL_CLASS}>{formatCurrency(item.unitCost)}</td>
+          <td className={TABLE_CELL_CLASS}>{formatCurrency(item.totalCost)}</td>
         </tr>
       ))}
     </>
@@ -312,8 +316,8 @@ export default function OrderRequestConfirmModal({
         },
       })}
     >
-      <div className="mx-auto w-full max-w-[1040px] rounded-sm border border-stone-500 bg-white text-stone-900 shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
-        <div className="border-b border-stone-400 px-4 py-5">
+      <div className="mx-auto w-full max-w-[1040px] overflow-hidden rounded-sm border border-stone-500 bg-white text-stone-900 shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
+        <div className="border-b border-stone-400 px-5 py-5">
           <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3">
             <div className="min-w-0 pt-1 text-left">
               <div className="text-[11px] font-semibold tracking-wide text-stone-500">납기일</div>
@@ -321,7 +325,7 @@ export default function OrderRequestConfirmModal({
             </div>
             <div className="min-w-0 text-center">
               <div className="flex flex-wrap items-end justify-center gap-x-3 gap-y-1">
-                <div className="text-[26px] font-black tracking-[0.22em] text-stone-900">작 업 지 시 서</div>
+                <div className="text-[25px] font-black tracking-[0.2em] text-stone-900">작 업 지 시 서</div>
                 <div className="max-w-[240px] truncate text-xs font-semibold text-stone-500">{currentFactoryName || "공장 미지정"}</div>
               </div>
               <div className="mt-2 text-lg font-bold text-stone-900">{displayTitle}</div>
@@ -333,10 +337,10 @@ export default function OrderRequestConfirmModal({
         <SummaryLine items={firstSummaryItems} />
         <SummaryLine items={secondSummaryItems} className="bg-stone-50" />
 
-        <div className="grid border-b border-stone-400 lg:grid-cols-[1.45fr_1fr]">
-          <section className="border-b border-stone-400 lg:border-b-0 lg:border-r lg:border-stone-400">
+        <div className="grid border-b border-stone-400 xl:grid-cols-[1.28fr_0.92fr]">
+          <section className="border-b border-stone-400 xl:border-b-0 xl:border-r xl:border-stone-400">
             <div className="border-b border-stone-300 bg-stone-100 px-3 py-2 text-sm font-bold text-stone-900">대표 이미지</div>
-            <div className="bg-[#fcfaf5] p-3">
+            <div className="bg-[#fcfaf5] p-4">
               {representativeImage ? (
                 <div className="overflow-hidden border border-stone-300 bg-stone-100">
                   <img src={representativeImage.url} alt={representativeImage.name} className="h-[420px] w-full object-contain bg-white" />
@@ -351,14 +355,14 @@ export default function OrderRequestConfirmModal({
 
           <section>
             <div className="border-b border-stone-300 bg-stone-100 px-3 py-2 text-sm font-bold text-stone-900">첨부파일 / 요청사항</div>
-            <div className="flex min-h-[448px] flex-col">
-              <div className="flex-1 space-y-5 px-3 py-3 text-sm leading-6 text-stone-800">
-                <div>
+            <div className="flex min-h-[448px] flex-col bg-[#fcfaf5]">
+              <div className="grid flex-1 gap-0 xl:grid-rows-[1.08fr_0.92fr] text-sm leading-6 text-stone-800">
+                <div className="border-b border-stone-200 px-4 py-4 xl:border-b xl:border-stone-200">
                   <div className="mb-2 text-xs font-bold tracking-wide text-stone-700">첨부파일 목록</div>
                   {attachmentSummaryLines.length > 0 ? (
                     <div className="space-y-2">
                       {attachmentSummaryLines.map((attachment, index) => (
-                        <div key={attachment.id} className="grid grid-cols-[auto_auto_1fr] items-start gap-2 border border-stone-200 bg-white px-2 py-2 text-sm">
+                        <div key={attachment.id} className="grid grid-cols-[auto_auto_1fr] items-start gap-2 border border-stone-200 bg-white px-3 py-2.5 text-sm">
                           <span className="text-stone-500">{index + 1}.</span>
                           <span className="rounded border border-stone-300 bg-stone-50 px-1.5 py-0.5 text-[11px] font-semibold text-stone-600">
                             {attachment.typeLabel}
@@ -371,17 +375,17 @@ export default function OrderRequestConfirmModal({
                       ))}
                     </div>
                   ) : (
-                    <div className="border border-dashed border-stone-300 bg-white px-3 py-4 text-stone-500">첨부파일이 없습니다.</div>
+                    <div className="border border-dashed border-stone-300 bg-white px-3 py-5 text-stone-500">첨부파일이 없습니다.</div>
                   )}
                 </div>
 
-                <div>
+                <div className="px-4 py-4">
                   <div className="mb-2 text-xs font-bold tracking-wide text-rose-700">요청사항</div>
                   <textarea
                     value={requestNote}
                     onChange={(event) => setRequestNote(event.target.value)}
                     placeholder="요청사항을 입력하세요."
-                    className="min-h-[148px] w-full resize-none border border-stone-300 bg-white px-3 py-3 text-sm leading-6 text-stone-800 outline-none transition placeholder:text-stone-400 focus:border-stone-500"
+                    className="min-h-[168px] w-full resize-none border border-stone-300 bg-white px-3 py-3 text-sm leading-6 text-stone-800 outline-none transition placeholder:text-stone-400 focus:border-stone-500"
                   />
                 </div>
               </div>
@@ -393,8 +397,8 @@ export default function OrderRequestConfirmModal({
           <SectionTable
             title="원단 내역"
             columns={[
-              { label: "거래처", className: "w-[18%]" },
-              { label: "자재명", className: "w-[28%]" },
+              { label: "거래처", className: "w-[19%]" },
+              { label: "자재명", className: "w-[27%]" },
               { label: "수량", className: "w-[12%]" },
               { label: "단위", className: "w-[10%]" },
               { label: "단가", className: "w-[16%]" },
@@ -409,8 +413,8 @@ export default function OrderRequestConfirmModal({
           <SectionTable
             title="부자재 내역"
             columns={[
-              { label: "거래처", className: "w-[18%]" },
-              { label: "자재명", className: "w-[28%]" },
+              { label: "거래처", className: "w-[19%]" },
+              { label: "자재명", className: "w-[27%]" },
               { label: "수량", className: "w-[12%]" },
               { label: "단위", className: "w-[10%]" },
               { label: "단가", className: "w-[16%]" },
@@ -426,8 +430,8 @@ export default function OrderRequestConfirmModal({
             title="외주 내역"
             columns={[
               { label: "외주처", className: "w-[24%]" },
-              { label: "작업명", className: "w-[28%]" },
-              { label: "수량", className: "w-[14%]" },
+              { label: "작업명", className: "w-[30%]" },
+              { label: "수량", className: "w-[12%]" },
               { label: "단가", className: "w-[17%]" },
               { label: "금액", className: "w-[17%]" },
             ]}
