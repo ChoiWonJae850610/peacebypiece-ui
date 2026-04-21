@@ -8,6 +8,36 @@ import type { AsyncOperationStatus } from "./useWorkOrderActionTypes";
 import { createStabilizedWorkOrdersSetter, stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
 import { normalizeWorkOrderDataList } from "@/lib/workorder/normalization";
 
+const createFallbackWorkOrder = (): WorkOrder => ({
+  id: "",
+  title: "",
+  category1: "",
+  category2: "",
+  category3: "",
+  season: "",
+  priority: "",
+  vendor: "",
+  manager: "",
+  managerId: null,
+  createdById: "",
+  createdByRole: "admin",
+  dueDate: "",
+  quantity: 0,
+  laborCost: 0,
+  lossCost: 0,
+  orderEntries: [],
+  inventoryQuantity: 0,
+  inventoryStatus: "unchecked",
+  memo: "",
+  materials: [],
+  outsourcing: [],
+  attachments: [],
+  memoThreads: [],
+  workflowState: "draft",
+  lastSavedAt: "",
+  factoryOrderRequest: null,
+});
+
 export function useWorkOrderCoreState() {
   const repository = useWorkorderRepository();
   const initialUsers = useMemo(() => repository.getInitialUsers(), [repository]);
@@ -81,7 +111,7 @@ export function useWorkOrderCoreState() {
   const setWorkOrders = useCallback(createStabilizedWorkOrdersSetter(setWorkOrdersState), []);
 
   const selectedWorkOrder = useMemo(
-    () => workOrders.find((item) => item.id === selectedId) ?? workOrders[0],
+    () => workOrders.find((item) => item.id === selectedId) ?? workOrders[0] ?? createFallbackWorkOrder(),
     [workOrders, selectedId],
   );
 

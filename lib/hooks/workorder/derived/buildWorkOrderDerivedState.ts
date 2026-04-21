@@ -50,6 +50,7 @@ export function buildWorkOrderDerivedState({
   const scopedWorkOrders = filterWorkOrdersByUserScope(workOrders, workflowStateById, currentUser);
   const workOrderList = scopedWorkOrders.map(createWorkOrderListItem);
   const filteredWorkOrderList = filterWorkOrderList(workOrderList, workflowStateById, searchQuery);
+  const hasActiveSelection = filteredWorkOrderList.some((item) => item.id === selectedWorkOrder.id);
   const canSeeProductionSections = currentUser.permissions.canSeeProductionSections;
   const canSeeCostSections = currentUser.permissions.canSeeCostSections;
   const canEditInventory = currentUser.permissions.canEditInventory;
@@ -83,6 +84,7 @@ export function buildWorkOrderDerivedState({
     canUploadOfficialAttachments,
     workOrders: filteredWorkOrderList,
     hasVisibleWorkOrders: filteredWorkOrderList.length > 0,
+    hasActiveSelection,
     canSeeProductionSections,
     canSeeCostSections,
     canEditInventory,

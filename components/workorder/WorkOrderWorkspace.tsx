@@ -42,7 +42,7 @@ export default function WorkOrderWorkspace() {
     searchQuery,
     setSearchQuery,
     workOrders,
-    hasVisibleWorkOrders,
+    hasVisibleWorkOrders: renderHasSelection,
     workflowStateById,
     selectedId,
     selectedWorkOrder,
@@ -101,9 +101,11 @@ export default function WorkOrderWorkspace() {
   } = useWorkOrder();
 
   const [pendingAttachmentDeleteId, setPendingAttachmentDeleteId] = useState<string | null>(null);
+  const renderHasSelection = hasVisibleWorkOrders && hasActiveSelection;
+
   const pendingAttachmentDelete = useMemo(
-    () => getPendingAttachmentDelete(selectedWorkOrder.attachments, pendingAttachmentDeleteId),
-    [selectedWorkOrder.attachments, pendingAttachmentDeleteId],
+    () => getPendingAttachmentDelete(renderHasSelection ? selectedWorkOrder.attachments : [], pendingAttachmentDeleteId),
+    [pendingAttachmentDeleteId, renderHasSelection, selectedWorkOrder.attachments],
   );
 
   const handleRequestDeleteAttachment = (attachmentId: string) => {
@@ -137,7 +139,7 @@ export default function WorkOrderWorkspace() {
     historyFilter,
     searchQuery,
     workOrders,
-    hasVisibleWorkOrders,
+    hasVisibleWorkOrders: renderHasSelection,
     workflowStateById,
     selectedId,
     selectedWorkOrder,

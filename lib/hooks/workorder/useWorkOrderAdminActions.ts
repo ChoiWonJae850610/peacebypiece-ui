@@ -36,8 +36,9 @@ export function useWorkOrderAdminActions({
   );
 
   const handleOpenManagerAssignModal = useCallback(
-    ({ canChangeManager, isReviewRequestLocked }: Pick<ChangeManagerInput, "canChangeManager" | "isReviewRequestLocked">) => {
-      if (!canChangeManager || isReviewRequestLocked) return;
+    ({ canChangeManager, isReviewRequestLocked, currentWorkflowState }: Pick<ChangeManagerInput, "canChangeManager" | "isReviewRequestLocked" | "currentWorkflowState">) => {
+      const managerEditLocked = isReviewRequestLocked && currentWorkflowState !== "completed";
+      if (!canChangeManager || managerEditLocked) return;
       setManagerAssignModalOpen(true);
     },
     [setManagerAssignModalOpen],
@@ -48,8 +49,9 @@ export function useWorkOrderAdminActions({
   }, [setManagerAssignModalOpen]);
 
   const handleChangeManager = useCallback(
-    ({ workOrder, managerId, users, canChangeManager, isReviewRequestLocked }: ChangeManagerInput) => {
-      if (!canChangeManager || isReviewRequestLocked) return;
+    ({ workOrder, managerId, users, canChangeManager, isReviewRequestLocked, currentWorkflowState }: ChangeManagerInput) => {
+      const managerEditLocked = isReviewRequestLocked && currentWorkflowState !== "completed";
+      if (!canChangeManager || managerEditLocked) return;
       const nextManager = users.find((user) => user.id === managerId);
       if (!nextManager) return;
 

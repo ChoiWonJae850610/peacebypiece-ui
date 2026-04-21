@@ -35,6 +35,7 @@ export type ChangeManagerInput = {
   users: UserProfile[];
   canChangeManager: boolean;
   isReviewRequestLocked: boolean;
+  currentWorkflowState?: WorkOrder["workflowState"];
 };
 
 export type DeleteWorkOrderInput = {

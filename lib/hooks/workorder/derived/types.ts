@@ -27,6 +27,7 @@ export type WorkOrderDerivedState = {
   canUploadOfficialAttachments: boolean;
   workOrders: WorkOrderListItem[];
   hasVisibleWorkOrders: boolean;
+  hasActiveSelection: boolean;
   canSeeProductionSections: boolean;
   canSeeCostSections: boolean;
   canEditInventory: boolean;

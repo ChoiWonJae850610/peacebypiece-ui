@@ -102,8 +102,9 @@ export function useWorkOrder() {
     actionState.handleOpenManagerAssignModal({
       canChangeManager: derivedState.canChangeManager,
       isReviewRequestLocked: derivedState.isReviewRequestLocked,
+      currentWorkflowState: derivedState.currentWorkflowState,
     });
-  }, [actionState, derivedState.canChangeManager, derivedState.isReviewRequestLocked]);
+  }, [actionState, derivedState.canChangeManager, derivedState.currentWorkflowState, derivedState.isReviewRequestLocked]);
 
   const attachmentState = useWorkOrderAttachments({
     attachmentInputRef: uiState.attachmentInputRef,
@@ -167,6 +168,7 @@ export function useWorkOrder() {
     setSearchQuery: coreState.setSearchQuery,
     workOrders: derivedState.workOrders,
     hasVisibleWorkOrders: derivedState.hasVisibleWorkOrders,
+    hasActiveSelection: derivedState.hasActiveSelection,
     workflowStateById: derivedState.workflowStateById,
     selectedId: coreState.selectedId,
     selectedWorkOrder: coreState.selectedWorkOrder,
@@ -244,6 +246,7 @@ export function useWorkOrder() {
         users: coreState.users,
         canChangeManager: derivedState.canChangeManager,
         isReviewRequestLocked: derivedState.isReviewRequestLocked,
+        currentWorkflowState: derivedState.currentWorkflowState,
       }),
     handleOpenAttachmentPicker: attachmentState.handleOpenAttachmentPicker,
     handleAttachmentFiles: attachmentState.handleAttachmentFiles,
