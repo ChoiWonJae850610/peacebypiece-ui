@@ -114,6 +114,59 @@ function renderSectionTable({
     </section>`;
 }
 
+function renderAttachmentPages(attachments: Attachment[]) {
+  if (attachments.length === 0) {
+    return "";
+  }
+
+  return attachments
+    .map((attachment, index) => {
+      const attachmentNumber = index + 1;
+      const headerHtml = `
+        <div class="appendix-head">
+          <div class="appendix-meta">
+            <div class="meta-label">첨부 문서</div>
+            <div class="meta-value">${attachmentNumber}/${attachments.length}</div>
+          </div>
+          <div class="appendix-title-wrap">
+            <div class="appendix-title">첨 부 파 일</div>
+            <div class="appendix-name">${escapeHtml(attachment.name || `첨부파일 ${attachmentNumber}`)}</div>
+          </div>
+          <div class="appendix-type-badge">${escapeHtml(getAttachmentTypeBadge(attachment))}</div>
+        </div>`;
+
+      if (attachment.type === "image") {
+        return `
+          <article class="print-page appendix-page">
+            ${headerHtml}
+            <div class="appendix-body appendix-image-body">
+              <div class="appendix-viewer image-viewer">
+                <img src="${escapeHtml(attachment.url)}" alt="${escapeHtml(attachment.name || `첨부파일 ${attachmentNumber}`)}" />
+              </div>
+            </div>
+          </article>`;
+      }
+
+      return `
+        <article class="print-page appendix-page pdf-appendix-page">
+          ${headerHtml}
+          <div class="appendix-body appendix-pdf-body">
+            <div class="appendix-viewer pdf-viewer">
+              <iframe
+                class="pdf-frame"
+                src="${escapeHtml(attachment.url)}#toolbar=0&navpanes=0&scrollbar=0&view=FitH"
+                title="${escapeHtml(attachment.name || `첨부파일 ${attachmentNumber}`)}"
+                loading="eager"
+                data-print-frame="pdf-attachment"
+              ></iframe>
+            </div>
+            <div class="appendix-help">브라우저 환경에 따라 PDF 첨부는 기본 PDF 뷰어 렌더링 기준으로 병합 출력됩니다.</div>
+          </div>
+        </article>`;
+    })
+    .join("");
+}
+
 export function buildOrderRequestPrintHtml(workOrder: WorkOrder) {
   const initialPreview = getOrderRequestDocumentPreview(workOrder, 0);
 
@@ -251,6 +304,8 @@ export function buildOrderRequestPrintHtml(workOrder: WorkOrder) {
     })
     .join("");
 
+  const attachmentAppendixHtml = renderAttachmentPages(initialPreview.visibleAttachments);
+
   return `<!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -264,14 +319,15 @@ export function buildOrderRequestPrintHtml(workOrder: WorkOrder) {
     body { background: #f5f2eb; }
     .print-page { width: 190mm; min-height: 277mm; margin: 0 auto 8mm; background: #fff; border: 1px solid #78716c; page-break-after: always; break-after: page; }
     .print-page:last-child { page-break-after: auto; break-after: auto; margin-bottom: 0; }
-    .page-head { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: start; padding: 16px 18px; border-bottom: 1px solid #78716c; }
+    .page-head, .appendix-head { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: start; padding: 16px 18px; border-bottom: 1px solid #78716c; }
     .meta-label { font-size: 11px; font-weight: 700; color: #78716c; }
     .meta-value { margin-top: 6px; font-size: 13px; font-weight: 700; }
-    .title-wrap { text-align: center; }
-    .doc-title { font-size: 24px; font-weight: 900; letter-spacing: 0.28em; }
+    .title-wrap, .appendix-title-wrap { text-align: center; }
+    .doc-title, .appendix-title { font-size: 24px; font-weight: 900; letter-spacing: 0.28em; }
     .factory-name { margin-top: 4px; font-size: 12px; font-weight: 700; color: #78716c; }
-    .work-title { margin-top: 8px; font-size: 18px; font-weight: 700; }
+    .work-title, .appendix-name { margin-top: 8px; font-size: 18px; font-weight: 700; }
     .doc-index { text-align: right; font-size: 11px; color: #78716c; font-weight: 700; padding-top: 2px; }
+    .appendix-type-badge { justify-self: end; align-self: center; border: 1px solid #d6d3d1; background: #fafaf9; color: #57534e; padding: 3px 8px; font-size: 11px; font-weight: 700; }
     .summary-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border-bottom: 1px solid #a8a29e; }
     .summary-item { display: flex; gap: 10px; align-items: center; min-height: 38px; padding: 10px 14px; border-right: 1px solid #e7e5e4; }
     .summary-item:last-child { border-right: 0; }
@@ -305,14 +361,26 @@ export function buildOrderRequestPrintHtml(workOrder: WorkOrder) {
     tfoot td { background: #fafaf9; font-weight: 700; }
     .align-left { text-align: left; word-break: break-word; }
     .empty-cell { padding: 24px 10px; color: #78716c; }
+    .appendix-page { display: flex; flex-direction: column; }
+    .appendix-body { flex: 1 1 auto; padding: 14px; background: #fcfaf5; }
+    .appendix-viewer { height: 100%; border: 1px solid #d6d3d1; background: #fff; overflow: hidden; }
+    .appendix-image-body { min-height: 228mm; }
+    .image-viewer { display: flex; align-items: center; justify-content: center; }
+    .image-viewer img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .appendix-pdf-body { min-height: 228mm; display: flex; flex-direction: column; gap: 8px; }
+    .pdf-viewer { min-height: 0; flex: 1 1 auto; }
+    .pdf-frame { display: block; width: 100%; height: 100%; border: 0; background: #fff; }
+    .appendix-help { font-size: 11px; color: #78716c; text-align: right; }
     @media print {
       body { background: #fff; }
       .print-page { margin: 0 auto; }
+      .appendix-help { display: none; }
     }
   </style>
 </head>
 <body>
 ${documentsHtml}
+${attachmentAppendixHtml}
 <script>
   (function () {
     var printStarted = false;
@@ -372,10 +440,32 @@ ${documentsHtml}
       }));
     }
 
+    function waitForPdfFrames() {
+      var frames = Array.prototype.slice.call(document.querySelectorAll('[data-print-frame="pdf-attachment"]'));
+      if (!frames.length) {
+        return Promise.resolve();
+      }
+
+      return Promise.all(frames.map(function (frame) {
+        return new Promise(function (resolve) {
+          var done = function () {
+            frame.removeEventListener('load', done);
+            frame.removeEventListener('error', done);
+            resolve();
+          };
+
+          frame.addEventListener('load', done, { once: true });
+          frame.addEventListener('error', done, { once: true });
+
+          setTimeout(done, 2400);
+        });
+      }));
+    }
+
     window.addEventListener('afterprint', safeCloseWindow);
     window.addEventListener('load', function () {
-      waitForImages().finally(finalizePrint);
-      setTimeout(finalizePrint, 1800);
+      Promise.all([waitForImages(), waitForPdfFrames()]).finally(finalizePrint);
+      setTimeout(finalizePrint, 3200);
     }, { once: true });
   })();
 </script>
