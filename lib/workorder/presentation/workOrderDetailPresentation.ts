@@ -194,6 +194,7 @@ export function buildWorkOrderDetailViewModel({
       onOpenInspectionModal,
       locked: isReviewRequestLocked,
       orderHubPolicy: orderInfoHubPolicy,
+      showDebugPanel: isDebugFeatureEnabled("orderInfoHubPanel"),
     },
     productionCompositionProps: {
       materials: materialItems,
