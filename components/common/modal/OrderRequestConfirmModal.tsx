@@ -250,10 +250,12 @@ export default function OrderRequestConfirmModal({
     ],
   );
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
+  const [requestNote, setRequestNote] = useState("");
 
   useEffect(() => {
     setCurrentPageIndex(0);
-  }, [open, workOrder.id, factoryPreviewPages.length]);
+    setRequestNote(workOrder.memo?.trim() ?? "");
+  }, [open, workOrder.id, factoryPreviewPages.length, workOrder.memo]);
 
   const totalPageCount = factoryPreviewPages.length;
   const safePageIndex = clampPageIndex(currentPageIndex, totalPageCount);
@@ -267,7 +269,6 @@ export default function OrderRequestConfirmModal({
   const subsidiaryAmountTotal = sumBy(subsidiaryMaterials, (material) => material.totalCost || material.quantity * material.unitCost);
   const outsourcingAmountTotal = sumBy(workOrder.outsourcing ?? [], (item) => item.totalCost);
   const totalAmountWithoutLoss = currentFactoryLaborCost + fabricAmountTotal + subsidiaryAmountTotal + outsourcingAmountTotal;
-  const memoLikeText = workOrder.memo?.trim();
 
   const attachmentSummaryLines = attachmentItems.map((attachment) => ({
     id: attachment.id,
@@ -295,7 +296,7 @@ export default function OrderRequestConfirmModal({
       open={open}
       onClose={onClose}
       title={copy.title}
-      description={copy.description}
+      description={undefined}
       maxWidthClass="md:max-w-6xl"
       overlayClassName="bg-stone-950/55 md:bg-stone-950/50"
       bodyClassName="bg-[#f5f2eb]"
@@ -325,12 +326,7 @@ export default function OrderRequestConfirmModal({
               </div>
               <div className="mt-2 text-lg font-bold text-stone-900">{displayTitle}</div>
             </div>
-            <div className="pt-1 text-right">
-              <div className="text-[11px] font-semibold tracking-wide text-stone-400">문서 상태</div>
-              <div className={`mt-1 text-sm font-semibold ${requested ? "text-emerald-700" : "text-stone-600"}`}>
-                {requested ? (copy.requestedBadge ?? "발주 완료") : "발주 확인"}
-              </div>
-            </div>
+            <div />
           </div>
         </div>
 
@@ -381,9 +377,12 @@ export default function OrderRequestConfirmModal({
 
                 <div>
                   <div className="mb-2 text-xs font-bold tracking-wide text-rose-700">요청사항</div>
-                  <div className="min-h-[148px] border border-stone-300 bg-white px-3 py-3 whitespace-pre-wrap">
-                    {memoLikeText || "요청사항이 없습니다."}
-                  </div>
+                  <textarea
+                    value={requestNote}
+                    onChange={(event) => setRequestNote(event.target.value)}
+                    placeholder="요청사항을 입력하세요."
+                    className="min-h-[148px] w-full resize-none border border-stone-300 bg-white px-3 py-3 text-sm leading-6 text-stone-800 outline-none transition placeholder:text-stone-400 focus:border-stone-500"
+                  />
                 </div>
               </div>
             </div>
@@ -445,33 +444,23 @@ export default function OrderRequestConfirmModal({
               type="button"
               onClick={() => setCurrentPageIndex((prev) => clampPageIndex(prev - 1, totalPageCount))}
               disabled={totalPageCount <= 1 || safePageIndex <= 0}
-              className="inline-flex h-9 min-w-9 items-center justify-center rounded border border-stone-300 px-3 text-sm font-semibold text-stone-700 transition disabled:cursor-not-allowed disabled:border-stone-200 disabled:text-stone-300"
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-300"
               aria-label="이전 페이지"
             >
-              ←
+              <span className="block rotate-90">▾</span>
             </button>
             <div className="text-sm font-semibold text-stone-600">{getFactoryPageLabel(safePageIndex, totalPageCount)}</div>
             <button
               type="button"
               onClick={() => setCurrentPageIndex((prev) => clampPageIndex(prev + 1, totalPageCount))}
               disabled={totalPageCount <= 1 || safePageIndex >= totalPageCount - 1}
-              className="inline-flex h-9 min-w-9 items-center justify-center rounded border border-stone-300 px-3 text-sm font-semibold text-stone-700 transition disabled:cursor-not-allowed disabled:border-stone-200 disabled:text-stone-300"
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-300"
               aria-label="다음 페이지"
             >
-              →
+              <span className="block -rotate-90">▾</span>
             </button>
           </div>
         </div>
-
-        {requested ? (
-          <div className="border-t border-stone-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-            {copy.requestedNotice ?? "이미 발주 요청이 기록된 작업입니다. 중복 발주는 허용되지 않습니다."}
-          </div>
-        ) : (
-          <div className="border-t border-stone-300 bg-stone-50 px-4 py-3 text-xs text-stone-500">
-            {copy.confirmNotice ?? "수정이 필요하면 모달을 닫고 발주정보에서 먼저 수정해주세요."}
-          </div>
-        )}
       </div>
     </ModalShell>
   );
