@@ -35,6 +35,7 @@ type WorkOrderHeaderSectionProps = {
   onOpenInventoryEditor: () => void;
   onRenameTitle?: (nextTitle: string) => void;
   locked?: boolean;
+  managerLocked?: boolean;
 };
 
 export default function WorkOrderHeaderSection({
@@ -54,6 +55,7 @@ export default function WorkOrderHeaderSection({
   onOpenInventoryEditor,
   onRenameTitle,
   locked = false,
+  managerLocked = locked,
 }: WorkOrderHeaderSectionProps) {
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.header;
@@ -67,7 +69,7 @@ export default function WorkOrderHeaderSection({
   const summaryValue = summaryText || "-";
   const canEditSummary = !locked && canCreateWorkOrderByRoles([currentUserRole]) && typeof onOpenBasicInfoModal === "function";
   const recommendedCategory = getRecommendedWorkOrderCategory(titleDraft.trim());
-  const canEditManager = !locked && canChangeManager;
+  const canEditManager = !managerLocked && canChangeManager;
   const canEditTitle = !locked && canRenameTitle && typeof onRenameTitle === "function";
 
   useEffect(() => {

@@ -217,7 +217,8 @@ export default function WorkOrderWorkspace() {
     <>
       <WorkOrderLayout
         appShellRef={appShellRef}
-        selectedId={selectedId}
+        selectedId={renderHasSelection ? selectedId : ""}
+        hasSelection={renderHasSelection}
         sidebarListProps={viewModel.sidebarListProps}
         detailProps={viewModel.detailProps}
         sidePanelProps={viewModel.sidePanelProps}

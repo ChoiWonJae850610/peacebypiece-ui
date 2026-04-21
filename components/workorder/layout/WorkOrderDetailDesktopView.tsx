@@ -7,6 +7,7 @@ import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
 export default function WorkOrderDetailDesktopView({
   appShellRef,
   selectedId,
+  hasSelection,
   sidebarListProps,
   detailProps,
   sidePanelProps,
@@ -15,12 +16,12 @@ export default function WorkOrderDetailDesktopView({
     <DesktopWorkspaceLayout
       appShellRef={appShellRef}
       sidebar={<SidebarContent {...sidebarListProps} />}
-      detail={
+      detail={hasSelection ? (
         <div key={selectedId}>
           <WorkOrderDetail {...detailProps} />
         </div>
-      }
-      sidePanel={<WorkOrderSidePanel {...sidePanelProps} />}
+      ) : null}
+      sidePanel={hasSelection ? <WorkOrderSidePanel {...sidePanelProps} /> : null}
     />
   );
 }

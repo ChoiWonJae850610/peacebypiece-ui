@@ -106,6 +106,7 @@ export function useWorkOrder() {
     });
   }, [actionState, derivedState.canChangeManager, derivedState.currentWorkflowState, derivedState.isReviewRequestLocked]);
 
+
   const attachmentState = useWorkOrderAttachments({
     attachmentInputRef: uiState.attachmentInputRef,
     canUploadOfficialAttachments: derivedState.canUploadOfficialAttachments,

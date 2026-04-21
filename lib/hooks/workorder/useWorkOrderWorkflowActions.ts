@@ -137,6 +137,7 @@ export function useWorkOrderWorkflowActions({
         historyLogs: result.historyLogs,
       });
 
+      setInventoryEditorOpen(false);
       setWorkOrders(nextWorkOrders);
       if (result.historyLogs?.length) {
         setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
@@ -148,7 +149,7 @@ export function useWorkOrderWorkflowActions({
         setToastMessage(result.toastMessage);
       }
     },
-    [actionFlowText, currentUser.name, historyText, repository, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders, workflowStateLabels],
+    [actionFlowText, currentUser.name, historyText, repository, setHistoryLogs, setInventoryEditorOpen, setSaveStatus, setToastMessage, setWorkOrders, workflowStateLabels],
   );
 
   const handleWorkflowAction = useCallback(
@@ -182,7 +183,9 @@ export function useWorkOrderWorkflowActions({
         }
       }
 
-      if (action.nextState === "in_inspection" && workOrder.workflowState === "completed") {
+      const effectiveWorkflowState = deriveWorkflowStateFromOrderEntries(workOrder.workflowState, workOrder.orderEntries);
+
+      if (action.nextState === "in_inspection" && effectiveWorkflowState === "completed") {
         void applyReinspectionAction(workOrder, action);
         return;
       }

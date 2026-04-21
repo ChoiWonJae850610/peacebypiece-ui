@@ -8,6 +8,7 @@ import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
 export default function WorkOrderDetailMobileView({
   appShellRef,
   selectedId,
+  hasSelection,
   detailProps,
   sidePanelProps,
   mobileTopBarProps,
@@ -18,12 +19,12 @@ export default function WorkOrderDetailMobileView({
       appShellRef={appShellRef}
       topBar={<MobileTopBar {...mobileTopBarProps} />}
       drawer={<MobileDrawer {...mobileDrawerProps} />}
-      detail={
+      detail={hasSelection ? (
         <div key={selectedId} className="pbp-mobile-content-switch">
           <WorkOrderDetail {...detailProps} />
         </div>
-      }
-      sidePanel={<WorkOrderSidePanel {...sidePanelProps} />}
+      ) : null}
+      sidePanel={hasSelection ? <WorkOrderSidePanel {...sidePanelProps} /> : null}
     />
   );
 }

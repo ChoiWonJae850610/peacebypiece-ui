@@ -168,6 +168,7 @@ export function buildWorkOrderDetailViewModel({
       onOpenInventoryEditor,
       onRenameTitle: onRenameWorkOrderTitle,
       locked: isReviewRequestLocked,
+      managerLocked: isReviewRequestLocked && currentWorkflowState !== "completed",
       orderHubPolicy: orderInfoHubPolicy,
       showDebugPanel: isDebugFeatureEnabled("orderInfoHubPanel"),
     },

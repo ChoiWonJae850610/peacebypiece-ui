@@ -17,6 +17,7 @@ export type MobileDrawerProps = Omit<ComponentProps<typeof MobileDrawer>, "open"
 export type WorkOrderLayoutViewProps = {
   appShellRef: RefObject<HTMLDivElement | null>;
   selectedId: string;
+  hasSelection: boolean;
   sidebarListProps: SidebarListProps;
   detailProps: DetailProps;
   sidePanelProps: SidePanelProps;
