@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { MODAL_ACTION_LABELS } from "@/components/common/modal/modalActions";
@@ -13,7 +13,7 @@ import {
   MATERIAL_KIND,
   ORDER_ENTRY_TARGET_TYPE,
 } from "@/lib/constants/workorderDomain";
-import type { Attachment, Material, Outsourcing, WorkOrder } from "@/types/workorder";
+import type { Attachment, Material, OrderEntry, Outsourcing, WorkOrder } from "@/types/workorder";
 
 function formatCurrency(value: number) {
   const numeric = Number(value ?? 0);
@@ -47,6 +47,30 @@ function getRepresentativeImage(attachments: Attachment[]) {
 
 function getAttachmentTypeBadge(attachment: Attachment) {
   return attachment.type === "image" ? "이미지" : "PDF";
+}
+
+
+function clampPageIndex(value: number, total: number) {
+  if (total <= 0) return 0;
+  return Math.min(Math.max(0, value), total - 1);
+}
+
+function getFactoryPageLabel(currentPage: number, totalPages: number) {
+  if (totalPages <= 0) return "-/-";
+  return `${currentPage + 1}/${totalPages}`;
+}
+
+function getFactoryPreviewPages(factoryEntries: OrderEntry[], fallback: { factoryName: string; dueDate: string; quantity: number; laborCost: number; lossCost: number }) {
+  if (factoryEntries.length === 0) {
+    return [fallback];
+  }
+  return factoryEntries.map((entry) => ({
+    factoryName: entry.factory?.trim() || fallback.factoryName,
+    dueDate: entry.dueDate?.trim() || fallback.dueDate,
+    quantity: Number(entry.quantity ?? 0) || 0,
+    laborCost: Number(entry.laborCost ?? 0) || 0,
+    lossCost: Number(entry.lossCost ?? 0) || 0,
+  }));
 }
 
 function SummaryLine({
@@ -207,13 +231,42 @@ export default function OrderRequestConfirmModal({
 
   const displayTitle = workOrder.displayTitle || workOrder.title || "-";
 
-  const factoryQuantityTotal = sumBy(factoryEntries, (entry) => entry.quantity);
-  const factoryLaborCostTotal = sumBy(factoryEntries, (entry) => entry.laborCost);
-  const factoryLossCostTotal = sumBy(factoryEntries, (entry) => entry.lossCost);
+  const factoryPreviewPages = useMemo(
+    () =>
+      getFactoryPreviewPages(factoryEntries, {
+        factoryName: confirmedFactoryName,
+        dueDate: confirmedDueDate,
+        quantity: confirmedQuantity,
+        laborCost: submissionSnapshot.laborCost,
+        lossCost: submissionSnapshot.lossCost,
+      }),
+    [
+      confirmedDueDate,
+      confirmedFactoryName,
+      confirmedQuantity,
+      factoryEntries,
+      submissionSnapshot.laborCost,
+      submissionSnapshot.lossCost,
+    ],
+  );
+  const [currentPageIndex, setCurrentPageIndex] = useState(0);
+
+  useEffect(() => {
+    setCurrentPageIndex(0);
+  }, [open, workOrder.id, factoryPreviewPages.length]);
+
+  const totalPageCount = factoryPreviewPages.length;
+  const safePageIndex = clampPageIndex(currentPageIndex, totalPageCount);
+  const currentFactoryPage = factoryPreviewPages[safePageIndex] ?? factoryPreviewPages[0];
+  const currentFactoryName = currentFactoryPage?.factoryName || confirmedFactoryName;
+  const currentDueDate = currentFactoryPage?.dueDate || confirmedDueDate;
+  const currentFactoryQuantity = currentFactoryPage?.quantity || confirmedQuantity;
+  const currentFactoryLaborCost = currentFactoryPage?.laborCost || 0;
+  const currentFactoryLossCost = currentFactoryPage?.lossCost || 0;
   const fabricAmountTotal = sumBy(fabricMaterials, (material) => material.totalCost || material.quantity * material.unitCost);
   const subsidiaryAmountTotal = sumBy(subsidiaryMaterials, (material) => material.totalCost || material.quantity * material.unitCost);
   const outsourcingAmountTotal = sumBy(workOrder.outsourcing ?? [], (item) => item.totalCost);
-  const totalAmountWithoutLoss = factoryLaborCostTotal + fabricAmountTotal + subsidiaryAmountTotal + outsourcingAmountTotal;
+  const totalAmountWithoutLoss = currentFactoryLaborCost + fabricAmountTotal + subsidiaryAmountTotal + outsourcingAmountTotal;
   const memoLikeText = workOrder.memo?.trim();
 
   const attachmentSummaryLines = attachmentItems.map((attachment) => ({
@@ -225,16 +278,16 @@ export default function OrderRequestConfirmModal({
 
   const firstSummaryItems = [
     { label: "품명", value: displayTitle },
-    { label: "공임", value: formatCurrency(factoryLaborCostTotal) },
+    { label: "공임", value: formatCurrency(currentFactoryLaborCost) },
     { label: "원가", value: formatCurrency(totalAmountWithoutLoss) },
-    { label: "수량", value: formatQuantity(factoryQuantityTotal || confirmedQuantity) },
+    { label: "수량", value: formatQuantity(currentFactoryQuantity) },
   ];
 
   const secondSummaryItems = [
     { label: "원단합", value: formatCurrency(fabricAmountTotal) },
     { label: "부자재합", value: formatCurrency(subsidiaryAmountTotal) },
     { label: "외주합", value: formatCurrency(outsourcingAmountTotal) },
-    { label: "로스", value: formatCurrency(factoryLossCostTotal) },
+    { label: "로스", value: formatCurrency(currentFactoryLossCost) },
   ];
 
   return (
@@ -263,12 +316,12 @@ export default function OrderRequestConfirmModal({
           <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3">
             <div className="min-w-0 pt-1 text-left">
               <div className="text-[11px] font-semibold tracking-wide text-stone-500">납기일</div>
-              <div className="mt-1 text-sm font-semibold text-stone-900">{formatDateLabel(confirmedDueDate)}</div>
+              <div className="mt-1 text-sm font-semibold text-stone-900">{formatDateLabel(currentDueDate)}</div>
             </div>
             <div className="min-w-0 text-center">
               <div className="flex flex-wrap items-end justify-center gap-x-3 gap-y-1">
                 <div className="text-[26px] font-black tracking-[0.22em] text-stone-900">작 업 지 시 서</div>
-                <div className="max-w-[240px] truncate text-xs font-semibold text-stone-500">{confirmedFactoryName || "공장 미지정"}</div>
+                <div className="max-w-[240px] truncate text-xs font-semibold text-stone-500">{currentFactoryName || "공장 미지정"}</div>
               </div>
               <div className="mt-2 text-lg font-bold text-stone-900">{displayTitle}</div>
             </div>
@@ -384,6 +437,30 @@ export default function OrderRequestConfirmModal({
           >
             <OutsourcingTableRows outsourcingItems={workOrder.outsourcing ?? []} />
           </SectionTable>
+        </div>
+
+        <div className="border-t border-stone-300 bg-white px-4 py-3">
+          <div className="flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => setCurrentPageIndex((prev) => clampPageIndex(prev - 1, totalPageCount))}
+              disabled={totalPageCount <= 1 || safePageIndex <= 0}
+              className="inline-flex h-9 min-w-9 items-center justify-center rounded border border-stone-300 px-3 text-sm font-semibold text-stone-700 transition disabled:cursor-not-allowed disabled:border-stone-200 disabled:text-stone-300"
+              aria-label="이전 페이지"
+            >
+              ←
+            </button>
+            <div className="text-sm font-semibold text-stone-600">{getFactoryPageLabel(safePageIndex, totalPageCount)}</div>
+            <button
+              type="button"
+              onClick={() => setCurrentPageIndex((prev) => clampPageIndex(prev + 1, totalPageCount))}
+              disabled={totalPageCount <= 1 || safePageIndex >= totalPageCount - 1}
+              className="inline-flex h-9 min-w-9 items-center justify-center rounded border border-stone-300 px-3 text-sm font-semibold text-stone-700 transition disabled:cursor-not-allowed disabled:border-stone-200 disabled:text-stone-300"
+              aria-label="다음 페이지"
+            >
+              →
+            </button>
+          </div>
         </div>
 
         {requested ? (
