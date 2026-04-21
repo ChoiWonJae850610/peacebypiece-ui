@@ -11,9 +11,21 @@ export type OrderRequestDocumentPage = {
   lossCost: number;
 };
 
+export type OrderRequestDocumentUnit = {
+  key: string;
+  index: number;
+  total: number;
+  label: string;
+  factoryName: string;
+  page: OrderRequestDocumentPage;
+  pageBreakPolicy: "factory-document";
+};
+
 export type OrderRequestDocumentPreview = {
   displayTitle: string;
+  documents: OrderRequestDocumentUnit[];
   pages: OrderRequestDocumentPage[];
+  currentDocument: OrderRequestDocumentUnit;
   currentPage: OrderRequestDocumentPage;
   fabricMaterials: Material[];
   subsidiaryMaterials: Material[];
@@ -32,6 +44,11 @@ export type OrderRequestDocumentPreview = {
 function normalizeText(value: unknown) {
   const text = String(value ?? "").trim();
   return text || EMPTY_DISPLAY;
+}
+
+function normalizeOptionalText(value: unknown) {
+  const text = String(value ?? "").trim();
+  return text || "";
 }
 
 function normalizeNumber(value: unknown) {
@@ -69,6 +86,20 @@ function buildFactoryPages(factoryEntries: OrderEntry[], fallback: OrderRequestD
   }));
 }
 
+function buildDocumentUnits(pages: OrderRequestDocumentPage[]) {
+  const total = pages.length;
+
+  return pages.map((page, index) => ({
+    key: `factory-document-${index + 1}-${normalizeOptionalText(page.factoryName) || "empty"}`,
+    index,
+    total,
+    label: `문서 ${index + 1}`,
+    factoryName: page.factoryName,
+    page,
+    pageBreakPolicy: "factory-document" as const,
+  }));
+}
+
 export function getOrderRequestDocumentPreview(workOrder: WorkOrder, pageIndex: number): OrderRequestDocumentPreview {
   const submissionSnapshot = getOrderSubmissionSnapshot(workOrder);
   const requested = workOrder.factoryOrderRequest ?? null;
@@ -84,8 +115,18 @@ export function getOrderRequestDocumentPreview(workOrder: WorkOrder, pageIndex: 
   };
 
   const pages = buildFactoryPages(factoryEntries, fallbackPage);
-  const safePageIndex = Math.min(Math.max(0, pageIndex), pages.length - 1);
-  const currentPage = pages[safePageIndex] ?? fallbackPage;
+  const documents = buildDocumentUnits(pages);
+  const safePageIndex = Math.min(Math.max(0, pageIndex), documents.length - 1);
+  const currentDocument = documents[safePageIndex] ?? documents[0] ?? {
+    key: "factory-document-1-empty",
+    index: 0,
+    total: 1,
+    label: "문서 1",
+    factoryName: fallbackPage.factoryName,
+    page: fallbackPage,
+    pageBreakPolicy: "factory-document" as const,
+  };
+  const currentPage = currentDocument.page;
 
   const materials = workOrder.materials ?? [];
   const fabricMaterials = materials.filter((material) => material.type === MATERIAL_KIND.fabric);
@@ -103,7 +144,9 @@ export function getOrderRequestDocumentPreview(workOrder: WorkOrder, pageIndex: 
 
   return {
     displayTitle: normalizeText(workOrder.displayTitle || workOrder.title),
+    documents,
     pages,
+    currentDocument,
     currentPage,
     fabricMaterials,
     subsidiaryMaterials,

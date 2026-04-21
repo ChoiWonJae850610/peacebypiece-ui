@@ -200,9 +200,10 @@ export default function OrderRequestConfirmModal({
   }, [open, workOrder.id]);
 
   const preview = useMemo(() => getOrderRequestDocumentPreview(workOrder, currentPageIndex), [currentPageIndex, workOrder]);
-  const totalPageCount = preview.pages.length;
+  const totalPageCount = preview.documents.length;
   const safePageIndex = clampPageIndex(currentPageIndex, totalPageCount);
   const currentFactoryPage = preview.currentPage;
+  const currentDocument = preview.currentDocument;
   const currentFactoryName = currentFactoryPage.factoryName || confirmedFactoryName;
   const currentDueDate = currentFactoryPage.dueDate || confirmedDueDate;
   const currentFactoryQuantity = currentFactoryPage.quantity || confirmedQuantity;
@@ -268,9 +269,12 @@ export default function OrderRequestConfirmModal({
               </div>
               <div className="mt-2 text-lg font-bold text-stone-900">{displayTitle}</div>
               <div className="mt-2 flex flex-wrap items-center justify-center gap-2 text-[11px] font-semibold">
+                <span className="rounded border border-stone-300 bg-stone-50 px-2 py-0.5 text-stone-600">공장별 1문서 구조</span>
+                <span className="rounded border border-stone-300 bg-stone-50 px-2 py-0.5 text-stone-600">현재 문서: {currentDocument.label}</span>
                 <span className="rounded border border-stone-300 bg-stone-50 px-2 py-0.5 text-stone-600">공장별: 공장 / 납기 / 수량 / 공임 / 로스</span>
                 <span className="rounded border border-stone-300 bg-stone-50 px-2 py-0.5 text-stone-600">공통: 자재 / 외주 / 첨부 / 이미지</span>
               </div>
+              <div className="mt-2 text-[11px] font-medium text-stone-500">페이지 분리 기준: 공장 1곳당 문서 1개</div>
             </div>
             <div />
           </div>
@@ -342,6 +346,10 @@ export default function OrderRequestConfirmModal({
           </section>
         </div>
 
+        <div className="border-t border-stone-300 bg-stone-50 px-4 py-2.5 text-[11px] font-medium text-stone-600">
+          문서 단위 기준: 현재 보이는 프리뷰 1장은 공장별 발주 문서 1개로 취급됩니다. PDF 단계에서도 동일한 문서 단위로 분리됩니다.
+        </div>
+
         <div className="space-y-4 bg-[#fcfaf5] p-4">
           <SectionTable
             title="원단 내역"
@@ -402,7 +410,10 @@ export default function OrderRequestConfirmModal({
             >
               <span className="block rotate-90">▾</span>
             </button>
-            <div className="text-sm font-semibold text-stone-600">{getFactoryPageLabel(safePageIndex, totalPageCount)}</div>
+            <div className="text-center">
+              <div className="text-sm font-semibold text-stone-600">{getFactoryPageLabel(safePageIndex, totalPageCount)}</div>
+              <div className="mt-1 text-[11px] text-stone-500">{currentDocument.label} · {currentDocument.factoryName || "공장 미지정"}</div>
+            </div>
             <button
               type="button"
               onClick={() => setCurrentPageIndex((prev) => clampPageIndex(prev + 1, totalPageCount))}
