@@ -7,6 +7,7 @@ import { MODAL_ACTION_LABELS } from "@/components/common/modal/modalActions";
 import { getOrderSubmissionSnapshot } from "@/lib/workorder/orderSubmission";
 import { getOrderRequestDocumentPreview } from "@/lib/workorder/presentation/orderRequestDocumentPresentation";
 import { useI18n } from "@/lib/i18n";
+import { isDebugFeatureEnabled } from "@/lib/constants/runtimeMode";
 import type { Attachment, Material, Outsourcing, WorkOrder } from "@/types/workorder";
 
 function formatCurrency(value: number) {
@@ -200,6 +201,7 @@ export default function OrderRequestConfirmModal({
   }, [open, workOrder.id]);
 
   const preview = useMemo(() => getOrderRequestDocumentPreview(workOrder, currentPageIndex), [currentPageIndex, workOrder]);
+  const showOrderRequestDocumentDebug = isDebugFeatureEnabled("orderRequestDocumentDebug");
   const totalPageCount = preview.documents.length;
   const safePageIndex = clampPageIndex(currentPageIndex, totalPageCount);
   const currentFactoryPage = preview.currentPage;
@@ -387,6 +389,15 @@ export default function OrderRequestConfirmModal({
           </SectionTable>
         </div>
 
+        {showOrderRequestDocumentDebug ? (
+          <div className="border-t border-dashed border-amber-300 bg-amber-50/70 px-4 py-3 text-xs text-amber-900">
+            <div className="font-semibold">발주 문서 디버그</div>
+            <div className="mt-1 break-words">
+              {preview.currentDocument.label} · {currentFactoryPage.factoryName || "공장 미지정"} · 납기 {formatDateLabel(currentDueDate)} · 수량 {formatQuantity(currentFactoryQuantity)}
+            </div>
+          </div>
+        ) : null}
+
         <div className="border-t border-stone-300 bg-white px-4 py-3">
           <div className="flex items-center justify-between gap-3">
             <button
@@ -400,7 +411,7 @@ export default function OrderRequestConfirmModal({
             </button>
             <div className="text-center">
               <div className="text-sm font-semibold text-stone-600">{getFactoryPageLabel(safePageIndex, totalPageCount)}</div>
-              <div className="mt-1 text-[11px] text-stone-500">{currentFactoryPage.label} · {currentFactoryPage.factoryName || "공장 미지정"}</div>
+              <div className="mt-1 text-[11px] text-stone-500">{preview.currentDocument.label} · {currentFactoryPage.factoryName || "공장 미지정"}</div>
             </div>
             <button
               type="button"
