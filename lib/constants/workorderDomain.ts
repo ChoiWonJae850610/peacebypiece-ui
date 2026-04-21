@@ -101,6 +101,15 @@ export function isVendorRegistryType(value: unknown): value is (typeof VENDOR_RE
 export const EMPTY_SELECTION_VALUES = [DEFAULT_UNSELECTED_OPTION, DEFAULT_UNASSIGNED_FACTORY_LABEL] as const;
 export type EmptySelectionValue = (typeof EMPTY_SELECTION_VALUES)[number];
 
+export const ORDER_FACTORY_UNSELECTABLE_VALUES = [
+  DEFAULT_UNSELECTED_OPTION,
+  DEFAULT_UNASSIGNED_FACTORY_LABEL,
+  "선택안함",
+  "placeholder",
+  "",
+] as const;
+export type OrderFactoryUnselectableValue = (typeof ORDER_FACTORY_UNSELECTABLE_VALUES)[number];
+
 export const ORDER_REQUEST_TABLE_COLUMNS = [
   { key: "type", label: "구분", align: "left" },
   { key: "factory", label: "공장", align: "left" },

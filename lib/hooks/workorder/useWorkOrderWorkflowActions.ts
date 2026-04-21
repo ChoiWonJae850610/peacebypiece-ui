@@ -17,6 +17,7 @@ import { createWorkOrderKindChangeHistoryLog } from "@/lib/workorder/history/bui
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import { stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
+import { getOrderSubmissionSnapshot } from "@/lib/workorder/orderSubmission";
 import {
   deriveWorkflowStateFromOrderEntries,
   getFactoryOrderRequestValidationMessage,
@@ -129,12 +130,13 @@ export function useWorkOrderWorkflowActions({
       if (requiresOrderRequestConfirmation(action)) {
         const currentWorkflowState = deriveWorkflowStateFromOrderEntries(workOrder.workflowState, workOrder.orderEntries);
         const currentRoles = normalizeRoles(currentUser.roles, currentUser.role);
+        const submissionSnapshot = getOrderSubmissionSnapshot(workOrder);
         const validationMessage = getFactoryOrderRequestValidationMessage({
           currentRoles,
           workOrder,
           currentWorkflowState,
-          factoryName: workOrder.vendor,
-          quantity: workOrder.quantity,
+          factoryName: submissionSnapshot.factoryName,
+          quantity: submissionSnapshot.quantity,
           text: actionFlowText,
         });
         if (validationMessage) {

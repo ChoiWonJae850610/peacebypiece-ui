@@ -13,6 +13,7 @@ import type { Material } from "@/types/material";
 import { REWORK_TO_MAIN_APPEND_ROUND, applyReorderIdentity, buildWorkOrderTitle, getNextReorderRound, getOrderTypeFromWorkOrderKind, getWorkOrderBaseTitle, getWorkOrderReorderGroupId, getWorkOrderReorderRound, syncOrderEntriesWithWorkOrderKind } from "@/lib/workorder/reorder/helpers";
 import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
 import { shouldApplyRecommendedCategoryOnTitleRename } from "@/lib/utils/workorderCategoryRecommend";
+import { syncWorkOrderOrderSnapshot } from "@/lib/workorder/orderSubmission";
 import type { Attachment, FactoryOrderRequest, InventoryChange, MemoReply, MemoThread, OrderEntry, RoleType, WorkOrder, WorkflowAction } from "@/types/workorder";
 
 export function createNewWorkOrder(nextIndex: number, payload: {
@@ -117,7 +118,7 @@ export function requestFactoryOrderForWorkOrder(
     inspectionStatus: entry.inspectionStatus === "inspection_completed" ? "inspection_completed" : "inspection_pending",
   }));
 
-  return {
+  return syncWorkOrderOrderSnapshot({
     ...workOrder,
     workflowState: "in_production",
     orderEntries: nextOrderEntries,
@@ -125,7 +126,7 @@ export function requestFactoryOrderForWorkOrder(
       ...payload,
       requestedById: payload.requestedById ?? null,
     },
-  };
+  }, nextOrderEntries);
 }
 
 export function updateWorkflowState(workOrders: WorkOrder[], workOrderId: string, action: WorkflowAction) {
@@ -258,13 +259,15 @@ export function patchWorkOrder(
     ? Boolean(patch.isDefectOrder ?? workOrder.isDefectOrder ?? true)
     : false;
 
-  const nextWorkOrder = syncOrderEntriesWithWorkOrderKind({
-    ...workOrder,
-    ...patch,
-    workOrderKind: requestedKind,
-    isDefectOrder: nextIsDefectOrder,
-    reorderRound: nextRound,
-  });
+  const nextWorkOrder = syncWorkOrderOrderSnapshot(
+    syncOrderEntriesWithWorkOrderKind({
+      ...workOrder,
+      ...patch,
+      workOrderKind: requestedKind,
+      isDefectOrder: nextIsDefectOrder,
+      reorderRound: nextRound,
+    }),
+  );
 
   if (patch.orderEntries) {
     nextWorkOrder.workflowState = deriveWorkflowStateFromOrderEntries(workOrder.workflowState, nextWorkOrder.orderEntries ?? patch.orderEntries);

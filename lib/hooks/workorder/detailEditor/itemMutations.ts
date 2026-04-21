@@ -8,6 +8,7 @@ import {
 } from "@/lib/constants/workorderOptions";
 import { recalculateOutsourcing } from "@/lib/workorder/detail/detailCalculations";
 import { createId, sanitizeOrderEntry, sanitizeSelectValue, toNumber } from "@/lib/workorder/detail/detailSanitizers";
+import { getOrderSubmissionSnapshotFromSources, getRepresentativeOrderEntry } from "@/lib/workorder/orderSubmission";
 import type { EditableCell, OrderEntryState } from "@/components/workorder/detail/shared/detailEditorShared";
 import type { Outsourcing, WorkflowState, WorkOrder } from "@/types/workorder";
 
@@ -70,11 +71,13 @@ export function commitOutsourcingItemsEdit(payload: {
 }
 
 export function createNewOrderEntry(orderItems: OrderEntryState[], currentWorkflowState: WorkflowState) {
+  const representativeEntry = getRepresentativeOrderEntry(orderItems);
+
   return sanitizeOrderEntry({
     id: createId("order"),
-    type: orderItems[0]?.type || DEFAULT_ORDER_TYPE,
+    type: representativeEntry?.type || DEFAULT_ORDER_TYPE,
     factory: DEFAULT_FACTORY_OPTION,
-    dueDate: orderItems[0]?.dueDate || "",
+    dueDate: representativeEntry?.dueDate || "",
     quantity: 0,
     laborCost: 0,
     lossCost: 0,
@@ -96,17 +99,18 @@ export function createNewOutsourcingItem() {
 
 export function toOrderEntriesPatch(orderItems: OrderEntryState[], currentWorkflowState: WorkflowState): Partial<WorkOrder> {
   const normalizedOrderEntries = orderItems.map((item) => sanitizeOrderEntry(item, undefined, currentWorkflowState));
-  const primaryOrderEntry = normalizedOrderEntries[0];
+  const representativeEntry = getRepresentativeOrderEntry(normalizedOrderEntries);
+  const submissionSnapshot = getOrderSubmissionSnapshotFromSources({ representativeEntry });
 
   return {
     orderEntries: normalizedOrderEntries,
-    ...(primaryOrderEntry ? {
-      vendor: primaryOrderEntry.factory,
-      dueDate: primaryOrderEntry.dueDate,
-      quantity: primaryOrderEntry.quantity,
-      laborCost: primaryOrderEntry.laborCost,
-      lossCost: primaryOrderEntry.lossCost,
-      priority: primaryOrderEntry.priority,
+    ...(representativeEntry ? {
+      vendor: submissionSnapshot.factoryName || DEFAULT_FACTORY_OPTION,
+      dueDate: submissionSnapshot.dueDate,
+      quantity: submissionSnapshot.quantity,
+      laborCost: submissionSnapshot.laborCost,
+      lossCost: submissionSnapshot.lossCost,
+      priority: submissionSnapshot.priority,
     } : {}),
   };
 }

@@ -20,6 +20,7 @@ import {
 import { useWorkOrderMaterialsEditor } from "@/lib/hooks/workorder/detailEditor/useWorkOrderMaterialsEditor";
 import { recalculateOutsourcing } from "@/lib/workorder/detail/detailCalculations";
 import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
+import { getRepresentativeOrderEntry } from "@/lib/workorder/orderSubmission";
 import { REWORK_TO_MAIN_APPEND_ROUND, getWorkOrderKindFromOrderType } from "@/lib/workorder/reorder/helpers";
 import {
   getInitialBasicInfo,
@@ -172,7 +173,7 @@ export function useWorkOrderDetailEditor({
         factoryOptions,
       });
       setOrderItems(nextItems);
-      const nextPrimaryType = nextItems[0]?.type ?? workOrder.orderEntries?.[0]?.type ?? "샘플";
+      const nextPrimaryType = getRepresentativeOrderEntry(nextItems)?.type ?? getRepresentativeOrderEntry(workOrder.orderEntries)?.type ?? "샘플";
       const nextWorkOrderKind = getWorkOrderKindFromOrderType(nextPrimaryType);
       const requestedOrderType = nextPrimaryType as "메인 생산" | "샘플" | "재작업";
       if (!orderInfoHubPolicy.allowedOrderTypes.includes(requestedOrderType)) {

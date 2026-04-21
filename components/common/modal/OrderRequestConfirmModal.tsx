@@ -4,24 +4,9 @@ import { useMemo } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { MODAL_ACTION_LABELS } from "@/components/common/modal/modalActions";
-import { DEFAULT_UNSELECTED_OPTION, isEmptySelectionValue } from "@/lib/constants/workorderDomain";
+import { getOrderSubmissionSnapshot } from "@/lib/workorder/orderSubmission";
 import { useI18n } from "@/lib/i18n";
 import type { WorkOrder } from "@/types/workorder";
-
-function resolveFactoryName(workOrder: WorkOrder) {
-  const factoryName = String(
-    workOrder.factoryOrderRequest?.factoryName
-      ?? workOrder.orderEntries?.[0]?.factory
-      ?? workOrder.vendor
-      ?? "",
-  ).trim();
-
-  if (!factoryName || isEmptySelectionValue(factoryName) || factoryName === DEFAULT_UNSELECTED_OPTION || factoryName === "선택안함") {
-    return "";
-  }
-
-  return factoryName;
-}
 
 export default function OrderRequestConfirmModal({
   open,
@@ -37,9 +22,10 @@ export default function OrderRequestConfirmModal({
   const { i18n } = useI18n();
   const copy = i18n.common.ui.modal.orderRequestConfirm;
   const requested = workOrder.factoryOrderRequest ?? null;
-  const confirmedFactoryName = useMemo(() => resolveFactoryName(workOrder), [workOrder]);
-  const confirmedDueDate = String(workOrder.orderEntries?.[0]?.dueDate ?? workOrder.dueDate ?? "").trim();
-  const confirmedQuantity = Math.max(0, Number(workOrder.orderEntries?.[0]?.quantity ?? workOrder.quantity ?? 0) || 0);
+  const submissionSnapshot = useMemo(() => getOrderSubmissionSnapshot(workOrder), [workOrder]);
+  const confirmedFactoryName = requested?.factoryName?.trim() || submissionSnapshot.factoryName;
+  const confirmedDueDate = submissionSnapshot.dueDate;
+  const confirmedQuantity = requested?.quantity ?? submissionSnapshot.quantity;
   const canSubmit = Boolean(confirmedFactoryName) && Boolean(confirmedDueDate) && confirmedQuantity > 0 && !requested;
 
   return (

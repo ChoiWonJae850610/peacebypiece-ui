@@ -2,7 +2,6 @@ import {
   LEGACY_ORDER_INSPECTION_STATUS_MAP,
   ORDER_INSPECTION_STATUSES,
 } from "@/lib/constants/workorderStates";
-import { isEmptySelectionValue } from "@/lib/constants/workorderDomain";
 import {
   ROLE,
   canEditInventoryByRoles,
@@ -13,6 +12,11 @@ import {
 } from "@/lib/constants/roles";
 import { WORKFLOW_ACTION_LABELS } from "@/lib/constants/workflow";
 import type { RoleType } from "@/types/permission";
+import {
+  getOrderSubmissionSnapshot,
+  hasValidOrderFactoryName,
+  normalizeOrderFactoryName,
+} from "@/lib/workorder/orderSubmission";
 import type { OrderEntry, OrderInspectionStatus, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
 
 export type WorkflowContext = {
@@ -77,29 +81,6 @@ export function canRequestFactoryOrder(payload: {
     && !payload.workOrder.factoryOrderRequest;
 }
 
-function getPrimaryOrderEntry(workOrder: WorkOrder) {
-  return workOrder.orderEntries?.[0] ?? null;
-}
-
-function normalizeFactoryName(value: string | undefined | null) {
-  const normalized = String(value ?? "").trim();
-  if (!normalized || isEmptySelectionValue(normalized)) return "";
-  if (["선택안함", "placeholder"].includes(normalized.toLowerCase?.() ? normalized.toLowerCase() : normalized)) return "";
-  return normalized;
-}
-
-function getComparableOrderSubmissionValues(workOrder: WorkOrder) {
-  const primaryOrderEntry = getPrimaryOrderEntry(workOrder);
-
-  return {
-    factoryName: normalizeFactoryName(primaryOrderEntry?.factory ?? workOrder.vendor ?? ""),
-    dueDate: String(primaryOrderEntry?.dueDate ?? workOrder.dueDate ?? "").trim(),
-    quantity: Number(primaryOrderEntry?.quantity ?? workOrder.quantity ?? 0),
-    laborCost: Number(primaryOrderEntry?.laborCost ?? workOrder.laborCost ?? 0),
-    lossCost: Number(primaryOrderEntry?.lossCost ?? workOrder.lossCost ?? 0),
-  };
-}
-
 function getWorkOrderSubmissionValidationMessage(workOrder: WorkOrder, text: {
   factoryOrderFactoryRequiredToast?: string;
   factoryOrderDueDateRequiredToast?: string;
@@ -107,15 +88,9 @@ function getWorkOrderSubmissionValidationMessage(workOrder: WorkOrder, text: {
   factoryOrderLaborCostInvalidToast?: string;
   factoryOrderLossCostInvalidToast?: string;
 }) {
-  const {
-    factoryName,
-    dueDate,
-    quantity,
-    laborCost,
-    lossCost,
-  } = getComparableOrderSubmissionValues(workOrder);
+  const { factoryName, dueDate, quantity, laborCost, lossCost } = getOrderSubmissionSnapshot(workOrder);
 
-  if (!factoryName) {
+  if (!hasValidOrderFactoryName(factoryName)) {
     return text.factoryOrderFactoryRequiredToast ?? null;
   }
   if (!dueDate) {
@@ -155,7 +130,7 @@ export function getReviewRequestWarningMessage(payload: {
     reviewRequestZeroLossCostWarningToast?: string;
   };
 }) {
-  const { laborCost, lossCost } = getComparableOrderSubmissionValues(payload.workOrder);
+  const { laborCost, lossCost } = getOrderSubmissionSnapshot(payload.workOrder);
   const laborIsZero = Number.isFinite(laborCost) && laborCost === 0;
   const lossIsZero = Number.isFinite(lossCost) && lossCost === 0;
 
@@ -197,8 +172,8 @@ export function getFactoryOrderRequestValidationMessage(payload: {
     return workOrderValidationMessage;
   }
 
-  const comparableValues = getComparableOrderSubmissionValues(payload.workOrder);
-  const normalizedFactoryName = normalizeFactoryName(payload.factoryName ?? comparableValues.factoryName ?? "");
+  const comparableValues = getOrderSubmissionSnapshot(payload.workOrder);
+  const normalizedFactoryName = normalizeOrderFactoryName(payload.factoryName ?? comparableValues.factoryName ?? "");
   const normalizedQuantity = Math.max(0, Number(payload.quantity ?? comparableValues.quantity) || 0);
 
   if (!normalizedFactoryName) {
