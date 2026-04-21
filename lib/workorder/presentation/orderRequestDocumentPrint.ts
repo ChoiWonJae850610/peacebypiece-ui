@@ -314,12 +314,70 @@ export function buildOrderRequestPrintHtml(workOrder: WorkOrder) {
 <body>
 ${documentsHtml}
 <script>
-  window.addEventListener('load', function () {
-    setTimeout(function () {
-      window.focus();
-      window.print();
-    }, 120);
-  });
+  (function () {
+    var printStarted = false;
+    var closeTimer = null;
+
+    function safeCloseWindow() {
+      if (closeTimer) {
+        clearTimeout(closeTimer);
+      }
+      closeTimer = setTimeout(function () {
+        try {
+          window.close();
+        } catch (error) {
+          console.error('[order-request-print] window close failed', error);
+        }
+      }, 80);
+    }
+
+    function finalizePrint() {
+      if (printStarted) {
+        return;
+      }
+      printStarted = true;
+      setTimeout(function () {
+        try {
+          window.focus();
+          window.print();
+        } catch (error) {
+          console.error('[order-request-print] print failed', error);
+        }
+      }, 120);
+    }
+
+    function waitForImages() {
+      var images = Array.prototype.slice.call(document.images || []);
+      if (!images.length) {
+        return Promise.resolve();
+      }
+
+      return Promise.all(images.map(function (image) {
+        if (image.complete) {
+          return Promise.resolve();
+        }
+
+        return new Promise(function (resolve) {
+          var done = function () {
+            image.removeEventListener('load', done);
+            image.removeEventListener('error', done);
+            resolve();
+          };
+
+          image.addEventListener('load', done, { once: true });
+          image.addEventListener('error', done, { once: true });
+
+          setTimeout(done, 1500);
+        });
+      }));
+    }
+
+    window.addEventListener('afterprint', safeCloseWindow);
+    window.addEventListener('load', function () {
+      waitForImages().finally(finalizePrint);
+      setTimeout(finalizePrint, 1800);
+    }, { once: true });
+  })();
 </script>
 </body>
 </html>`;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS } from "@/components/common/modal/modalActions";
@@ -196,10 +196,22 @@ export default function OrderRequestConfirmModal({
   const canSubmit = Boolean(confirmedFactoryName) && Boolean(confirmedDueDate) && confirmedQuantity > 0 && !requested;
 
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
+  const [printFeedback, setPrintFeedback] = useState<string | null>(null);
+  const printWindowRef = useRef<Window | null>(null);
 
   useEffect(() => {
     setCurrentPageIndex(0);
+    setPrintFeedback(null);
   }, [open, workOrder.id]);
+
+  useEffect(() => {
+    return () => {
+      if (printWindowRef.current && !printWindowRef.current.closed) {
+        printWindowRef.current.close();
+      }
+      printWindowRef.current = null;
+    };
+  }, []);
 
   const preview = useMemo(() => getOrderRequestDocumentPreview(workOrder, currentPageIndex), [currentPageIndex, workOrder]);
   const showOrderRequestDocumentDebug = isDebugFeatureEnabled("orderRequestDocumentDebug");
@@ -238,13 +250,35 @@ export default function OrderRequestConfirmModal({
 
   const handlePrintPdf = () => {
     if (typeof window === "undefined") return;
-    const printWindow = window.open("", "_blank", "noopener,noreferrer,width=1024,height=900");
-    if (!printWindow) return;
 
-    const html = buildOrderRequestPrintHtml(workOrder);
-    printWindow.document.open();
-    printWindow.document.write(html);
-    printWindow.document.close();
+    setPrintFeedback(null);
+
+    const printWindow = window.open("", "_blank", "width=1024,height=900");
+    if (!printWindow) {
+      setPrintFeedback("팝업이 차단되어 PDF 창을 열 수 없습니다. 브라우저 팝업 차단을 해제한 뒤 다시 시도해주세요.");
+      return;
+    }
+
+    printWindowRef.current = printWindow;
+
+    try {
+      printWindow.document.open();
+      printWindow.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8" /><title>발주서 준비 중</title><style>html,body{height:100%;margin:0;font-family:Arial,'Noto Sans KR',sans-serif;background:#f5f2eb;color:#1c1917;}body{display:flex;align-items:center;justify-content:center;padding:24px;}div{font-size:14px;font-weight:600;}</style></head><body><div>PDF 문서를 준비하는 중입니다...</div></body></html>`);
+      printWindow.document.close();
+
+      const html = buildOrderRequestPrintHtml(workOrder);
+      printWindow.document.open();
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.focus();
+    } catch (error) {
+      console.error("[order-request-print] failed to render print window", error);
+      setPrintFeedback("PDF 문서를 여는 중 오류가 발생했습니다. 다시 시도해주세요.");
+      if (!printWindow.closed) {
+        printWindow.close();
+      }
+      printWindowRef.current = null;
+    }
   };
 
   return (
@@ -312,6 +346,12 @@ export default function OrderRequestConfirmModal({
 
         <SummaryLine items={firstSummaryItems} />
         <SummaryLine items={secondSummaryItems} className="bg-stone-50" />
+
+        {printFeedback ? (
+          <div className="border-b border-amber-300 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900">
+            {printFeedback}
+          </div>
+        ) : null}
 
         <div className="grid border-b border-stone-400 xl:grid-cols-[1.28fr_0.92fr]">
           <section className="border-b border-stone-400 xl:border-b-0 xl:border-r xl:border-stone-400">
