@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import ModalShell from "@/components/common/ModalShell";
+import ModalShell from "@/components/common/modal/ModalShell";
 import { renderModalFooterActions } from "@/components/common/modal/modalActions";
-import { MODAL_ACTION_LABELS } from "@/lib/constants/modal";
+import { MODAL_ACTION_LABELS } from "@/components/common/modal/modalActions";
 import { DEFAULT_UNSELECTED_OPTION, isEmptySelectionValue } from "@/lib/constants/workorderDomain";
 import { useI18n } from "@/lib/i18n";
 import type { WorkOrder } from "@/types/workorder";
