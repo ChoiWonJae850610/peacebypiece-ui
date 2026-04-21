@@ -169,8 +169,6 @@ export function buildWorkOrderDetailViewModel({
       onRenameTitle: onRenameWorkOrderTitle,
       locked: isReviewRequestLocked,
       managerLocked: isReviewRequestLocked && currentWorkflowState !== "completed",
-      orderHubPolicy: orderInfoHubPolicy,
-      showDebugPanel: isDebugFeatureEnabled("orderInfoHubPanel"),
     },
     actionProps: {
       stages: visibleStages,
@@ -218,7 +216,6 @@ export function buildWorkOrderDetailViewModel({
       materialVendorOptionsById,
       outsourcingVendorOptionsById,
       locked: isReviewRequestLocked,
-      orderHubPolicy: orderInfoHubPolicy,
     },
     costSummaryProps: {
       fabricTotal,

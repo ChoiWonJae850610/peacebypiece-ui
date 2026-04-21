@@ -91,6 +91,7 @@ export const workorderKo = {
     renameFailedToast: "작업지시서명 변경에 실패했습니다.",
   },
   actionFlow: {
+    orderInfoLockedToast: "발주정보 전환 규칙상 변경할 수 없습니다.",
     inspectionCompletedToast: "검수 완료가 반영되었습니다.",
     officialAttachmentUploadedToast: "공식 첨부가 등록되었습니다.",
     memoThreadCreatedToast: "작업 메모가 등록되었습니다.",

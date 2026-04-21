@@ -91,6 +91,7 @@ export const workorderEn = {
     renameFailedToast: "Failed to rename work order.",
   },
   actionFlow: {
+    orderInfoLockedToast: "This change is blocked by the order info transition policy.",
     inspectionCompletedToast: "Inspection completion has been applied.",
     officialAttachmentUploadedToast: "Official attachment has been uploaded.",
     memoThreadCreatedToast: "Work memo has been registered.",
@@ -110,6 +111,8 @@ export const workorderEn = {
     factoryOrderLaborCostInvalidToast: "Labor cost cannot be negative.",
     factoryOrderLossCostInvalidToast: "Loss cost cannot be negative.",
     factoryOrderNotAllowedToast: "You do not have permission to request this order.",
+    reviewApprovalValidationToast: "Please confirm factory, due date, and quantity before approving the review.",
+    reinspectionRequestedToast: "Reinspection request has been applied.",
     reviewRequestZeroCostWarningToast: "Review request applied. Labor cost and loss cost are both 0.",
     reviewRequestZeroLaborCostWarningToast: "Review request applied. Labor cost is 0.",
     reviewRequestZeroLossCostWarningToast: "Review request applied. Loss cost is 0.",
@@ -203,6 +206,10 @@ export const workorderEn = {
       totalPrefix: "Total",
       deleteSuffix: "Delete",
       andMoreFormat: " +{count}",
+    },
+    emptyWorkspace: {
+      title: "No work orders",
+      description: "There are no work orders available for the current role. New work will appear in the list when it is created.",
     },
 
     memo: {
