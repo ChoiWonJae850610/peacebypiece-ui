@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
 import ModalShell from "@/components/common/modal/ModalShell";
-import { renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { MODAL_ACTION_LABELS } from "@/components/common/modal/modalActions";
 import { getOrderSubmissionSnapshot } from "@/lib/workorder/orderSubmission";
 import { getOrderRequestDocumentPreview } from "@/lib/workorder/presentation/orderRequestDocumentPresentation";
+import { buildOrderRequestPrintHtml } from "@/lib/workorder/presentation/orderRequestDocumentPrint";
 import { useI18n } from "@/lib/i18n";
 import { isDebugFeatureEnabled } from "@/lib/constants/runtimeMode";
 import type { Attachment, Material, Outsourcing, WorkOrder } from "@/types/workorder";
@@ -235,6 +236,17 @@ export default function OrderRequestConfirmModal({
     { label: "로스", value: formatCurrency(currentFactoryLossCost) },
   ];
 
+  const handlePrintPdf = () => {
+    if (typeof window === "undefined") return;
+    const printWindow = window.open("", "_blank", "noopener,noreferrer,width=1024,height=900");
+    if (!printWindow) return;
+
+    const html = buildOrderRequestPrintHtml(workOrder);
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
+  };
+
   return (
     <ModalShell
       open={open}
@@ -244,17 +256,41 @@ export default function OrderRequestConfirmModal({
       maxWidthClass="md:max-w-6xl"
       overlayClassName="bg-stone-950/55 md:bg-stone-950/50"
       bodyClassName="bg-[#f5f2eb]"
-      footer={renderModalFooterActions({
-        layout: "stack-reverse",
-        secondary: { label: MODAL_ACTION_LABELS.cancel, onClick: onClose, className: "transition py-2.5" },
-        primary: {
-          label: requested ? (copy.requestedBadge ?? "발주 완료") : MODAL_ACTION_LABELS.proceedOrderRequest,
-          onClick: () => onConfirm({ factoryName: confirmedFactoryName, quantity: confirmedQuantity }),
-          tone: "primary",
-          disabled: !canSubmit,
-          className: "transition py-2.5",
-        },
-      })}
+      footer={
+        <div className="flex flex-col-reverse gap-2 md:flex-row md:justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className={cn(
+              "pbp-interactive-button rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700",
+              "hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100",
+            )}
+          >
+            {MODAL_ACTION_LABELS.cancel}
+          </button>
+          <button
+            type="button"
+            onClick={handlePrintPdf}
+            className={cn(
+              "pbp-interactive-button rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700",
+              "hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100",
+            )}
+          >
+            {i18n.common.ui.modalActions.exportPdf}
+          </button>
+          <button
+            type="button"
+            onClick={() => onConfirm({ factoryName: confirmedFactoryName, quantity: confirmedQuantity })}
+            disabled={!canSubmit}
+            className={cn(
+              "pbp-interactive-button rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white",
+              "hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:bg-stone-300",
+            )}
+          >
+            {requested ? (copy.requestedBadge ?? "발주 완료") : MODAL_ACTION_LABELS.proceedOrderRequest}
+          </button>
+        </div>
+      }
     >
       <div className="mx-auto w-full max-w-[1040px] overflow-hidden rounded-sm border border-stone-500 bg-white text-stone-900 shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
         <div className="border-b border-stone-400 px-5 py-5">

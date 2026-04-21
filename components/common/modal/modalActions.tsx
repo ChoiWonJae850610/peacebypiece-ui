@@ -13,6 +13,7 @@ export const MODAL_ACTION_LABELS = {
   delete: i18n.common.ui.common.delete,
   completeInspection: i18n.common.ui.modalActions.completeInspection,
   proceedOrderRequest: i18n.common.ui.modalActions.proceedOrderRequest,
+  exportPdf: i18n.common.ui.modalActions.exportPdf,
 } as const;
 
 type ModalActionTone = "neutral" | "primary" | "danger";

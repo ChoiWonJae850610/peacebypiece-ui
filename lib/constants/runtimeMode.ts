@@ -7,7 +7,7 @@ export const APP_RUNTIME_MODE: AppRuntimeMode = "development";
 export const DEBUG_FLAGS = {
   orderInfoHubPanel: true,
   adminHistoryDebugPanel: true,
-  orderRequestDocumentDebug: true,
+  orderRequestDocumentDebug: false,
 } as const;
 
 export type DebugFlagKey = keyof typeof DEBUG_FLAGS;

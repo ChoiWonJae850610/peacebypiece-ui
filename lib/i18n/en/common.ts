@@ -27,6 +27,7 @@ export const commonEn = {
     modalActions: {
       completeInspection: "Complete inspection",
       proceedOrderRequest: "Proceed order request",
+      exportPdf: "Export PDF",
     },
     layout: {
       rightPanel: "Right panel",

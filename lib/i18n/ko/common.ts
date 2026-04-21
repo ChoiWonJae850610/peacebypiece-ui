@@ -27,6 +27,7 @@ export const commonKo = {
     modalActions: {
       completeInspection: "검수 완료",
       proceedOrderRequest: "발주 요청 진행",
+      exportPdf: "PDF 출력",
     },
     layout: {
       rightPanel: "우측 패널",
