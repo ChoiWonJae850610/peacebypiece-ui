@@ -6,7 +6,7 @@ import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS } from "@/components/common/modal/modalActions";
 import { getOrderSubmissionSnapshot } from "@/lib/workorder/orderSubmission";
 import { getOrderRequestDocumentPreview } from "@/lib/workorder/presentation/orderRequestDocumentPresentation";
-import { buildOrderRequestPrintHtml } from "@/lib/workorder/presentation/orderRequestDocumentPrint";
+import { buildOrderRequestPrintAttachments, buildOrderRequestPrintHtml } from "@/lib/workorder/presentation/orderRequestDocumentPrint";
 import { useI18n } from "@/lib/i18n";
 import { isDebugFeatureEnabled } from "@/lib/constants/runtimeMode";
 import type { Attachment, Material, Outsourcing, WorkOrder } from "@/types/workorder";
@@ -197,11 +197,13 @@ export default function OrderRequestConfirmModal({
 
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [printFeedback, setPrintFeedback] = useState<string | null>(null);
+  const [isPreparingPrint, setIsPreparingPrint] = useState(false);
   const printWindowRef = useRef<Window | null>(null);
 
   useEffect(() => {
     setCurrentPageIndex(0);
     setPrintFeedback(null);
+    setIsPreparingPrint(false);
   }, [open, workOrder.id]);
 
   useEffect(() => {
@@ -248,14 +250,16 @@ export default function OrderRequestConfirmModal({
     { label: "로스", value: formatCurrency(currentFactoryLossCost) },
   ];
 
-  const handlePrintPdf = () => {
-    if (typeof window === "undefined") return;
+  const handlePrintPdf = async () => {
+    if (typeof window === "undefined" || isPreparingPrint) return;
 
     setPrintFeedback(null);
+    setIsPreparingPrint(true);
 
     const printWindow = window.open("", "_blank", "width=1024,height=900");
     if (!printWindow) {
       setPrintFeedback("팝업이 차단되어 PDF 창을 열 수 없습니다. 브라우저 팝업 차단을 해제한 뒤 다시 시도해주세요.");
+      setIsPreparingPrint(false);
       return;
     }
 
@@ -263,21 +267,24 @@ export default function OrderRequestConfirmModal({
 
     try {
       printWindow.document.open();
-      printWindow.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8" /><title>발주서 준비 중</title><style>html,body{height:100%;margin:0;font-family:Arial,'Noto Sans KR',sans-serif;background:#f5f2eb;color:#1c1917;}body{display:flex;align-items:center;justify-content:center;padding:24px;}div{font-size:14px;font-weight:600;}</style></head><body><div>PDF 문서를 준비하는 중입니다...</div></body></html>`);
+      printWindow.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8" /><title>발주서 준비 중</title><style>html,body{height:100%;margin:0;font-family:Arial,'Noto Sans KR',sans-serif;background:#f5f2eb;color:#1c1917;}body{display:flex;align-items:center;justify-content:center;padding:24px;}div{font-size:14px;font-weight:600;}</style></head><body><div>첨부파일을 포함한 PDF 문서를 준비하는 중입니다...</div></body></html>`);
       printWindow.document.close();
 
-      const html = buildOrderRequestPrintHtml(workOrder);
+      const renderedAttachments = await buildOrderRequestPrintAttachments(preview.visibleAttachments);
+      const html = buildOrderRequestPrintHtml(workOrder, renderedAttachments);
       printWindow.document.open();
       printWindow.document.write(html);
       printWindow.document.close();
       printWindow.focus();
     } catch (error) {
       console.error("[order-request-print] failed to render print window", error);
-      setPrintFeedback("PDF 문서를 여는 중 오류가 발생했습니다. 다시 시도해주세요.");
+      setPrintFeedback("첨부 PDF 렌더링 또는 문서 생성 중 오류가 발생했습니다. 다시 시도해주세요.");
       if (!printWindow.closed) {
         printWindow.close();
       }
       printWindowRef.current = null;
+    } finally {
+      setIsPreparingPrint(false);
     }
   };
 
@@ -295,9 +302,10 @@ export default function OrderRequestConfirmModal({
           <button
             type="button"
             onClick={onClose}
+            disabled={isPreparingPrint}
             className={cn(
               "pbp-interactive-button rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700",
-              "hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100",
+              "hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400",
             )}
           >
             {MODAL_ACTION_LABELS.cancel}
@@ -305,12 +313,13 @@ export default function OrderRequestConfirmModal({
           <button
             type="button"
             onClick={handlePrintPdf}
+            disabled={isPreparingPrint}
             className={cn(
               "pbp-interactive-button rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700",
-              "hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100",
+              "hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400",
             )}
           >
-            {i18n.common.ui.modalActions.exportPdf}
+            {isPreparingPrint ? "PDF 준비 중..." : i18n.common.ui.modalActions.exportPdf}
           </button>
           <button
             type="button"

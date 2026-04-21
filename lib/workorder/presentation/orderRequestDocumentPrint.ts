@@ -1,6 +1,22 @@
 import { getOrderRequestDocumentPreview } from "@/lib/workorder/presentation/orderRequestDocumentPresentation";
 import type { Attachment, Material, Outsourcing, WorkOrder } from "@/types/workorder";
 
+type OrderRequestRenderedAttachmentPage = {
+  attachmentId: string;
+  attachmentName: string;
+  attachmentType: Attachment["type"];
+  pageIndex: number;
+  totalPages: number;
+  imageUrl: string;
+};
+
+type OrderRequestPrintAttachmentRender = {
+  attachmentId: string;
+  attachmentName: string;
+  attachmentType: Attachment["type"];
+  pages: OrderRequestRenderedAttachmentPage[];
+};
+
 function escapeHtml(value: string) {
   return value
     .replaceAll("&", "&amp;")
@@ -27,8 +43,8 @@ function formatDateLabel(value?: string | null) {
   return text || "-";
 }
 
-function getAttachmentTypeBadge(attachment: Attachment) {
-  return attachment.type === "image" ? "이미지" : "PDF";
+function getAttachmentTypeBadge(attachment: { type?: Attachment["type"]; attachmentType?: Attachment["type"] }) {
+  return (attachment.attachmentType ?? attachment.type) === "image" ? "이미지" : "PDF";
 }
 
 function renderSummaryRow(items: Array<{ label: string; value: string }>) {
@@ -114,60 +130,150 @@ function renderSectionTable({
     </section>`;
 }
 
-function renderAttachmentPages(attachments: Attachment[]) {
-  if (attachments.length === 0) {
+function renderAttachmentPages(renderedAttachments: OrderRequestPrintAttachmentRender[]) {
+  if (renderedAttachments.length === 0) {
     return "";
   }
 
-  return attachments
-    .map((attachment, index) => {
-      const attachmentNumber = index + 1;
-      const headerHtml = `
-        <div class="appendix-head">
-          <div class="appendix-meta">
-            <div class="meta-label">첨부 문서</div>
-            <div class="meta-value">${attachmentNumber}/${attachments.length}</div>
-          </div>
-          <div class="appendix-title-wrap">
-            <div class="appendix-title">첨 부 파 일</div>
-            <div class="appendix-name">${escapeHtml(attachment.name || `첨부파일 ${attachmentNumber}`)}</div>
-          </div>
-          <div class="appendix-type-badge">${escapeHtml(getAttachmentTypeBadge(attachment))}</div>
-        </div>`;
+  return renderedAttachments
+    .flatMap((attachment, attachmentIndex) =>
+      attachment.pages.map((page) => {
+        const attachmentNumber = attachmentIndex + 1;
+        const headerHtml = `
+          <div class="appendix-head">
+            <div class="appendix-meta">
+              <div class="meta-label">첨부 문서</div>
+              <div class="meta-value">${attachmentNumber}/${renderedAttachments.length}</div>
+            </div>
+            <div class="appendix-title-wrap">
+              <div class="appendix-title">첨 부 파 일</div>
+              <div class="appendix-name">${escapeHtml(attachment.attachmentName || `첨부파일 ${attachmentNumber}`)}</div>
+              <div class="appendix-page-index">페이지 ${page.pageIndex}/${page.totalPages}</div>
+            </div>
+            <div class="appendix-type-badge">${escapeHtml(getAttachmentTypeBadge(attachment))}</div>
+          </div>`;
 
-      if (attachment.type === "image") {
         return `
           <article class="print-page appendix-page">
             ${headerHtml}
             <div class="appendix-body appendix-image-body">
               <div class="appendix-viewer image-viewer">
-                <img src="${escapeHtml(attachment.url)}" alt="${escapeHtml(attachment.name || `첨부파일 ${attachmentNumber}`)}" />
+                <img src="${escapeHtml(page.imageUrl)}" alt="${escapeHtml(attachment.attachmentName || `첨부파일 ${attachmentNumber}`)} ${page.pageIndex}" />
               </div>
             </div>
           </article>`;
-      }
-
-      return `
-        <article class="print-page appendix-page pdf-appendix-page">
-          ${headerHtml}
-          <div class="appendix-body appendix-pdf-body">
-            <div class="appendix-viewer pdf-viewer">
-              <iframe
-                class="pdf-frame"
-                src="${escapeHtml(attachment.url)}#toolbar=0&navpanes=0&scrollbar=0&view=FitH"
-                title="${escapeHtml(attachment.name || `첨부파일 ${attachmentNumber}`)}"
-                loading="eager"
-                data-print-frame="pdf-attachment"
-              ></iframe>
-            </div>
-            <div class="appendix-help">브라우저 환경에 따라 PDF 첨부는 기본 PDF 뷰어 렌더링 기준으로 병합 출력됩니다.</div>
-          </div>
-        </article>`;
-    })
+      }),
+    )
     .join("");
 }
 
-export function buildOrderRequestPrintHtml(workOrder: WorkOrder) {
+function getCanvasContext(canvas: HTMLCanvasElement) {
+  const context = canvas.getContext("2d", { alpha: false });
+  if (!context) {
+    throw new Error("PDF 캔버스 컨텍스트를 생성할 수 없습니다.");
+  }
+  return context;
+}
+
+async function readAttachmentBytes(url: string) {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`첨부파일을 불러오지 못했습니다. (${response.status})`);
+  }
+  return new Uint8Array(await response.arrayBuffer());
+}
+
+let pdfJsLoadPromise: Promise<typeof import("pdfjs-dist")> | null = null;
+
+async function loadPdfJs() {
+  if (!pdfJsLoadPromise) {
+    pdfJsLoadPromise = import("pdfjs-dist").then((pdfjs) => {
+      if (!pdfjs.GlobalWorkerOptions.workerSrc) {
+        pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.mjs", import.meta.url).toString();
+      }
+      return pdfjs;
+    });
+  }
+
+  return pdfJsLoadPromise;
+}
+
+async function renderPdfAttachmentPages(attachment: Attachment): Promise<OrderRequestRenderedAttachmentPage[]> {
+  const pdfjs = await loadPdfJs();
+  const bytes = await readAttachmentBytes(attachment.url);
+  const loadingTask = pdfjs.getDocument({ data: bytes });
+
+  try {
+    const pdf = await loadingTask.promise;
+    const renderedPages: OrderRequestRenderedAttachmentPage[] = [];
+
+    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+      const page = await pdf.getPage(pageNumber);
+      const baseViewport = page.getViewport({ scale: 1 });
+      const maxWidth = 1200;
+      const scale = Math.min(2, Math.max(1.2, maxWidth / Math.max(baseViewport.width, 1)));
+      const viewport = page.getViewport({ scale });
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.ceil(viewport.width);
+      canvas.height = Math.ceil(viewport.height);
+      const context = getCanvasContext(canvas);
+
+      await page.render({ canvas, canvasContext: context, viewport }).promise;
+
+      renderedPages.push({
+        attachmentId: attachment.id,
+        attachmentName: attachment.name,
+        attachmentType: attachment.type,
+        pageIndex: pageNumber,
+        totalPages: pdf.numPages,
+        imageUrl: canvas.toDataURL("image/png"),
+      });
+
+      canvas.width = 0;
+      canvas.height = 0;
+      page.cleanup();
+    }
+
+    return renderedPages;
+  } finally {
+    await loadingTask.destroy();
+  }
+}
+
+async function renderImageAttachmentPages(attachment: Attachment): Promise<OrderRequestRenderedAttachmentPage[]> {
+  return [
+    {
+      attachmentId: attachment.id,
+      attachmentName: attachment.name,
+      attachmentType: attachment.type,
+      pageIndex: 1,
+      totalPages: 1,
+      imageUrl: attachment.url,
+    },
+  ];
+}
+
+export async function buildOrderRequestPrintAttachments(attachments: Attachment[]) {
+  const renderedAttachments: OrderRequestPrintAttachmentRender[] = [];
+
+  for (const attachment of attachments) {
+    const pages = attachment.type === "pdf" ? await renderPdfAttachmentPages(attachment) : await renderImageAttachmentPages(attachment);
+
+    renderedAttachments.push({
+      attachmentId: attachment.id,
+      attachmentName: attachment.name,
+      attachmentType: attachment.type,
+      pages,
+    });
+  }
+
+  return renderedAttachments;
+}
+
+export function buildOrderRequestPrintHtml(
+  workOrder: WorkOrder,
+  renderedAttachments: OrderRequestPrintAttachmentRender[] = [],
+) {
   const initialPreview = getOrderRequestDocumentPreview(workOrder, 0);
 
   const documentsHtml = initialPreview.documents
@@ -176,7 +282,7 @@ export function buildOrderRequestPrintHtml(workOrder: WorkOrder) {
       const currentPage = preview.currentPage;
       const attachmentSummaryLines = preview.visibleAttachments.map((attachment) => ({
         id: attachment.id,
-        typeLabel: getAttachmentTypeBadge(attachment),
+        typeLabel: getAttachmentTypeBadge({ attachmentType: attachment.type }),
         scopeLabel: attachment.scope === "memo" ? "메모" : "첨부",
         name: attachment.name,
       }));
@@ -304,7 +410,7 @@ export function buildOrderRequestPrintHtml(workOrder: WorkOrder) {
     })
     .join("");
 
-  const attachmentAppendixHtml = renderAttachmentPages(initialPreview.visibleAttachments);
+  const attachmentAppendixHtml = renderAttachmentPages(renderedAttachments);
 
   return `<!DOCTYPE html>
 <html lang="ko">
@@ -326,6 +432,7 @@ export function buildOrderRequestPrintHtml(workOrder: WorkOrder) {
     .doc-title, .appendix-title { font-size: 24px; font-weight: 900; letter-spacing: 0.28em; }
     .factory-name { margin-top: 4px; font-size: 12px; font-weight: 700; color: #78716c; }
     .work-title, .appendix-name { margin-top: 8px; font-size: 18px; font-weight: 700; }
+    .appendix-page-index { margin-top: 6px; font-size: 11px; font-weight: 700; color: #78716c; }
     .doc-index { text-align: right; font-size: 11px; color: #78716c; font-weight: 700; padding-top: 2px; }
     .appendix-type-badge { justify-self: end; align-self: center; border: 1px solid #d6d3d1; background: #fafaf9; color: #57534e; padding: 3px 8px; font-size: 11px; font-weight: 700; }
     .summary-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border-bottom: 1px solid #a8a29e; }
@@ -367,14 +474,9 @@ export function buildOrderRequestPrintHtml(workOrder: WorkOrder) {
     .appendix-image-body { min-height: 228mm; }
     .image-viewer { display: flex; align-items: center; justify-content: center; }
     .image-viewer img { max-width: 100%; max-height: 100%; object-fit: contain; }
-    .appendix-pdf-body { min-height: 228mm; display: flex; flex-direction: column; gap: 8px; }
-    .pdf-viewer { min-height: 0; flex: 1 1 auto; }
-    .pdf-frame { display: block; width: 100%; height: 100%; border: 0; background: #fff; }
-    .appendix-help { font-size: 11px; color: #78716c; text-align: right; }
     @media print {
       body { background: #fff; }
       .print-page { margin: 0 auto; }
-      .appendix-help { display: none; }
     }
   </style>
 </head>
@@ -440,33 +542,22 @@ ${attachmentAppendixHtml}
       }));
     }
 
-    function waitForPdfFrames() {
-      var frames = Array.prototype.slice.call(document.querySelectorAll('[data-print-frame="pdf-attachment"]'));
-      if (!frames.length) {
-        return Promise.resolve();
+    waitForImages()
+      .catch(function (error) {
+        console.error('[order-request-print] resource wait failed', error);
+      })
+      .finally(function () {
+        finalizePrint();
+      });
+
+    window.addEventListener('afterprint', safeCloseWindow, { once: true });
+    window.addEventListener('pagehide', function () {
+      if (closeTimer) {
+        clearTimeout(closeTimer);
       }
+    });
 
-      return Promise.all(frames.map(function (frame) {
-        return new Promise(function (resolve) {
-          var done = function () {
-            frame.removeEventListener('load', done);
-            frame.removeEventListener('error', done);
-            resolve();
-          };
-
-          frame.addEventListener('load', done, { once: true });
-          frame.addEventListener('error', done, { once: true });
-
-          setTimeout(done, 2400);
-        });
-      }));
-    }
-
-    window.addEventListener('afterprint', safeCloseWindow);
-    window.addEventListener('load', function () {
-      Promise.all([waitForImages(), waitForPdfFrames()]).finally(finalizePrint);
-      setTimeout(finalizePrint, 3200);
-    }, { once: true });
+    setTimeout(finalizePrint, 2200);
   })();
 </script>
 </body>
