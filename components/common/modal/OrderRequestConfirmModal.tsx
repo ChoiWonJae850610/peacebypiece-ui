@@ -1,17 +1,26 @@
 "use client";
 
 import { useMemo } from "react";
-import ModalShell from "@/components/common/modal/ModalShell";
-import { MODAL_ACTION_LABELS, renderModalFooterActions } from "@/components/common/modal/modalActions";
-import { ORDER_REQUEST_TABLE_COLUMNS } from "@/lib/constants/workorderDomain";
+import ModalShell from "@/components/common/ModalShell";
+import { renderModalFooterActions } from "@/components/common/modal/modalActions";
+import { MODAL_ACTION_LABELS } from "@/lib/constants/modal";
+import { DEFAULT_UNSELECTED_OPTION, isEmptySelectionValue } from "@/lib/constants/workorderDomain";
 import { useI18n } from "@/lib/i18n";
-import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import type { WorkOrder } from "@/types/workorder";
 
-function getFactoryOptions(workOrder: WorkOrder) {
-  const fromEntries = (workOrder.orderEntries ?? []).map((item) => String(item.factory ?? "").trim()).filter(Boolean);
-  const fromRequest = workOrder.factoryOrderRequest?.factoryName ? [workOrder.factoryOrderRequest.factoryName] : [];
-  return [...new Set([...fromRequest, ...fromEntries])];
+function resolveFactoryName(workOrder: WorkOrder) {
+  const factoryName = String(
+    workOrder.factoryOrderRequest?.factoryName
+      ?? workOrder.orderEntries?.[0]?.factory
+      ?? workOrder.vendor
+      ?? "",
+  ).trim();
+
+  if (!factoryName || isEmptySelectionValue(factoryName) || factoryName === DEFAULT_UNSELECTED_OPTION || factoryName === "선택안함") {
+    return "";
+  }
+
+  return factoryName;
 }
 
 export default function OrderRequestConfirmModal({
@@ -27,32 +36,11 @@ export default function OrderRequestConfirmModal({
 }) {
   const { i18n } = useI18n();
   const copy = i18n.common.ui.modal.orderRequestConfirm;
-  const officialAttachments = (workOrder.attachments ?? []).filter((attachment) => (attachment.scope ?? "official") === "official");
-  const attachmentCount = officialAttachments.length;
-  const attachmentSummary = attachmentCount > 0 ? copy.attachmentCountFormat.replace("{count}", String(attachmentCount)) : copy.noAttachments;
-  const orderEntries = workOrder.orderEntries ?? [{
-    id: `${workOrder.id}-legacy-order`,
-    type: copy.defaultOrderType,
-    factory: workOrder.vendor || "-",
-    dueDate: workOrder.dueDate || "",
-    quantity: workOrder.quantity || 0,
-    laborCost: workOrder.laborCost || 0,
-    lossCost: workOrder.lossCost || 0,
-  }];
-  const totalQuantity = orderEntries.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
-  const primaryOrderEntry = orderEntries[0] ?? null;
-  const factoryOptions = useMemo(() => getFactoryOptions(workOrder), [workOrder]);
   const requested = workOrder.factoryOrderRequest ?? null;
-  const confirmedFactoryName = String(requested?.factoryName ?? primaryOrderEntry?.factory ?? workOrder.vendor ?? factoryOptions[0] ?? "").trim();
-  const confirmedQuantity = Math.max(0, Number(requested?.quantity ?? primaryOrderEntry?.quantity ?? workOrder.quantity ?? totalQuantity) || 0);
-  const confirmedDueDate = String(primaryOrderEntry?.dueDate ?? workOrder.dueDate ?? "").trim();
-  const canSubmit = confirmedFactoryName.length > 0 && confirmedQuantity > 0 && confirmedDueDate.length > 0 && !requested;
-  const requestedSummary = requested
-    ? (copy.requestedSummaryFormat ?? "{factory} / {quantity}장 / {requestedBy}")
-      .replace("{factory}", requested.factoryName)
-      .replace("{quantity}", requested.quantity.toLocaleString())
-      .replace("{requestedBy}", requested.requestedBy)
-    : null;
+  const confirmedFactoryName = useMemo(() => resolveFactoryName(workOrder), [workOrder]);
+  const confirmedDueDate = String(workOrder.orderEntries?.[0]?.dueDate ?? workOrder.dueDate ?? "").trim();
+  const confirmedQuantity = Math.max(0, Number(workOrder.orderEntries?.[0]?.quantity ?? workOrder.quantity ?? 0) || 0);
+  const canSubmit = Boolean(confirmedFactoryName) && Boolean(confirmedDueDate) && confirmedQuantity > 0 && !requested;
 
   return (
     <ModalShell
@@ -60,9 +48,9 @@ export default function OrderRequestConfirmModal({
       onClose={onClose}
       title={copy.title}
       description={copy.description}
-      maxWidthClass="md:max-w-2xl"
+      maxWidthClass="md:max-w-lg"
       overlayClassName="bg-stone-950/55 md:bg-stone-950/50"
-      bodyClassName="space-y-4 bg-stone-50 md:space-y-5"
+      bodyClassName="space-y-4 bg-stone-50"
       footer={renderModalFooterActions({
         layout: "stack-reverse",
         secondary: { label: MODAL_ACTION_LABELS.cancel, onClick: onClose, className: "transition py-2.5" },
@@ -75,119 +63,32 @@ export default function OrderRequestConfirmModal({
         },
       })}
     >
-      <section className="rounded-2xl border border-stone-200 bg-white p-4">
-        <div className="text-sm font-semibold text-stone-900">{copy.summarySectionTitle ?? "작업지시서 요약"}</div>
-        <dl className="mt-3 grid grid-cols-1 gap-3 text-sm text-stone-600 md:grid-cols-2">
-          <div>
-            <dt className="text-xs font-medium text-stone-400">{copy.workOrderNameLabel}</dt>
-            <dd className="mt-1 font-medium text-stone-900">{getWorkOrderDisplayTitle(workOrder)}</dd>
-          </div>
-          <div>
-            <dt className="text-xs font-medium text-stone-400">{copy.managerLabel}</dt>
-            <dd className="mt-1 font-medium text-stone-900">{workOrder.manager || "-"}</dd>
-          </div>
-          <div>
-            <dt className="text-xs font-medium text-stone-400">{copy.orderCountLabel}</dt>
-            <dd className="mt-1 font-medium text-stone-900">{copy.orderCountFormat.replace("{count}", String(orderEntries.length))}</dd>
-          </div>
-          <div>
-            <dt className="text-xs font-medium text-stone-400">{copy.totalQuantityLabel}</dt>
-            <dd className="mt-1 font-medium text-stone-900">{copy.quantityFormat.replace("{count}", totalQuantity.toLocaleString())}</dd>
-          </div>
-        </dl>
-      </section>
+      <div className="space-y-3 text-sm text-stone-700">
+        <div className="flex items-start justify-between gap-4 border-b border-stone-200 pb-2">
+          <span className="text-stone-500">{copy.factoryFieldLabel ?? "공장"}</span>
+          <span className="text-right font-medium text-stone-900">{confirmedFactoryName || "-"}</span>
+        </div>
 
-      <section className="rounded-2xl border border-stone-200 bg-white p-4">
-        <div className="text-sm font-semibold text-stone-900">{copy.confirmSectionTitle ?? copy.orderSectionTitle ?? "발주 확인"}</div>
-        <dl className="mt-3 grid grid-cols-1 gap-3 text-sm text-stone-600 md:grid-cols-2">
-          <div>
-            <dt className="text-xs font-medium text-stone-400">{copy.factoryFieldLabel ?? "공장"}</dt>
-            <dd className="mt-1 font-medium text-stone-900">{confirmedFactoryName || "-"}</dd>
-          </div>
-          <div>
-            <dt className="text-xs font-medium text-stone-400">{copy.dueDateFieldLabel ?? "납기일"}</dt>
-            <dd className="mt-1 font-medium text-stone-900">{confirmedDueDate || "-"}</dd>
-          </div>
-          <div>
-            <dt className="text-xs font-medium text-stone-400">{copy.quantityFieldLabel ?? "발주 수량"}</dt>
-            <dd className="mt-1 font-medium text-stone-900">{copy.quantityFormat.replace("{count}", confirmedQuantity.toLocaleString())}</dd>
-          </div>
-          <div>
-            <dt className="text-xs font-medium text-stone-400">{copy.orderSectionTitle ?? "공장 발주"}</dt>
-            <dd className="mt-1 text-xs text-stone-500">{copy.confirmNotice ?? "수정이 필요하면 모달을 닫고 발주정보에서 먼저 수정해주세요."}</dd>
-          </div>
-        </dl>
+        <div className="flex items-start justify-between gap-4 border-b border-stone-200 pb-2">
+          <span className="text-stone-500">{copy.dueDateFieldLabel ?? "납기일"}</span>
+          <span className="text-right font-medium text-stone-900">{confirmedDueDate || "-"}</span>
+        </div>
+
+        <div className="flex items-start justify-between gap-4 border-b border-stone-200 pb-2">
+          <span className="text-stone-500">{copy.quantityFieldLabel ?? "수량"}</span>
+          <span className="text-right font-medium text-stone-900">{copy.quantityFormat.replace("{count}", confirmedQuantity.toLocaleString())}</span>
+        </div>
+
         {requested ? (
-          <div className="mt-3 space-y-2">
-            <div className="inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-              {copy.requestedBadge ?? "발주 완료"}
-            </div>
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 text-sm text-emerald-800">
-              <div className="font-medium">{requestedSummary}</div>
-              <div className="mt-1 text-xs text-emerald-700">{copy.requestedNotice ?? "이미 발주 요청이 기록된 작업입니다. 중복 발주는 허용되지 않습니다."}</div>
-            </div>
+          <div className="text-sm text-emerald-700">
+            {copy.requestedNotice ?? "이미 발주 요청이 기록된 작업입니다. 중복 발주는 허용되지 않습니다."}
           </div>
-        ) : null}
-      </section>
-
-      <section className="rounded-2xl border border-stone-200 bg-white p-4">
-        <div className="flex items-center justify-between gap-3">
-          <div className="text-sm font-semibold text-stone-900">{copy.orderInfoTitle}</div>
-          <div className="rounded-full bg-stone-100 px-2.5 py-1 text-xs font-medium text-stone-700">{copy.orderInfoCountFormat.replace("{count}", String(orderEntries.length))}</div>
-        </div>
-        <div className="mt-3 overflow-hidden rounded-xl border border-stone-200">
-          <table className="w-full table-fixed text-left text-xs md:text-sm">
-            <colgroup>
-              <col className="w-[18%]" />
-              <col className="w-[18%]" />
-              <col className="w-[16%]" />
-              <col className="w-[12%]" />
-              <col className="w-[14%]" />
-              <col className="w-[14%]" />
-            </colgroup>
-            <thead className="bg-stone-50 text-stone-500">
-              <tr>
-                {ORDER_REQUEST_TABLE_COLUMNS.map((column) => (
-                  <th key={column.key} className={`px-3 py-2 font-medium ${column.align === "right" ? "text-right" : "text-left"}`}>{column.label}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {orderEntries.map((item) => (
-                <tr key={item.id} className="border-t border-stone-200 text-stone-800">
-                  <td className="px-3 py-2">{item.type}</td>
-                  <td className="px-3 py-2">{item.factory || "-"}</td>
-                  <td className="px-3 py-2">{item.dueDate || "-"}</td>
-                  <td className="px-3 py-2 text-right tabular-nums">{copy.quantityFormat.replace("{count}", item.quantity.toLocaleString())}</td>
-                  <td className="px-3 py-2 text-right tabular-nums">{copy.currencyFormat.replace("{amount}", item.laborCost.toLocaleString())}</td>
-                  <td className="px-3 py-2 text-right tabular-nums">{copy.currencyFormat.replace("{amount}", item.lossCost.toLocaleString())}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-stone-200 bg-white p-4">
-        <div className="flex items-center justify-between gap-3">
-          <div className="text-sm font-semibold text-stone-900">{copy.attachmentTitle}</div>
-          <div className="rounded-full bg-stone-100 px-2.5 py-1 text-xs font-medium text-stone-700">{attachmentSummary}</div>
-        </div>
-        {attachmentCount > 0 ? (
-          <ul className="mt-3 space-y-2 text-sm text-stone-700">
-            {officialAttachments.map((attachment) => (
-              <li key={attachment.id} className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2">
-                <div className="font-medium text-stone-900">{attachment.name}</div>
-                <div className="mt-1 text-xs text-stone-500">{attachment.type === "pdf" ? "PDF" : copy.imageType}</div>
-              </li>
-            ))}
-          </ul>
         ) : (
-          <div className="mt-3 rounded-xl border border-dashed border-amber-300 bg-amber-50 px-3 py-3 text-sm text-amber-700">
-            {copy.noAttachmentNotice}
+          <div className="text-xs text-stone-500">
+            {copy.confirmNotice ?? "수정이 필요하면 모달을 닫고 발주정보에서 먼저 수정해주세요."}
           </div>
         )}
-      </section>
+      </div>
     </ModalShell>
   );
 }

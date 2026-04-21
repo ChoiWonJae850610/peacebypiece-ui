@@ -109,6 +109,9 @@ export const workorderEn = {
     factoryOrderLaborCostInvalidToast: "Labor cost cannot be negative.",
     factoryOrderLossCostInvalidToast: "Loss cost cannot be negative.",
     factoryOrderNotAllowedToast: "You do not have permission to request this order.",
+    reviewRequestZeroCostWarningToast: "Review request applied. Labor cost and loss cost are both 0.",
+    reviewRequestZeroLaborCostWarningToast: "Review request applied. Labor cost is 0.",
+    reviewRequestZeroLossCostWarningToast: "Review request applied. Loss cost is 0.",
   },
   history: {
     actorSeparator: " · ",

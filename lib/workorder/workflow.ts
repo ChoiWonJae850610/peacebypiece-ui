@@ -2,6 +2,7 @@ import {
   LEGACY_ORDER_INSPECTION_STATUS_MAP,
   ORDER_INSPECTION_STATUSES,
 } from "@/lib/constants/workorderStates";
+import { isEmptySelectionValue } from "@/lib/constants/workorderDomain";
 import {
   ROLE,
   canEditInventoryByRoles,
@@ -80,11 +81,18 @@ function getPrimaryOrderEntry(workOrder: WorkOrder) {
   return workOrder.orderEntries?.[0] ?? null;
 }
 
+function normalizeFactoryName(value: string | undefined | null) {
+  const normalized = String(value ?? "").trim();
+  if (!normalized || isEmptySelectionValue(normalized)) return "";
+  if (["선택안함", "placeholder"].includes(normalized.toLowerCase?.() ? normalized.toLowerCase() : normalized)) return "";
+  return normalized;
+}
+
 function getComparableOrderSubmissionValues(workOrder: WorkOrder) {
   const primaryOrderEntry = getPrimaryOrderEntry(workOrder);
 
   return {
-    factoryName: String(primaryOrderEntry?.factory ?? workOrder.vendor ?? "").trim(),
+    factoryName: normalizeFactoryName(primaryOrderEntry?.factory ?? workOrder.vendor ?? ""),
     dueDate: String(primaryOrderEntry?.dueDate ?? workOrder.dueDate ?? "").trim(),
     quantity: Number(primaryOrderEntry?.quantity ?? workOrder.quantity ?? 0),
     laborCost: Number(primaryOrderEntry?.laborCost ?? workOrder.laborCost ?? 0),
@@ -139,6 +147,24 @@ export function getReviewRequestValidationMessage(payload: {
   return getWorkOrderSubmissionValidationMessage(payload.workOrder, payload.text);
 }
 
+export function getReviewRequestWarningMessage(payload: {
+  workOrder: WorkOrder;
+  text: {
+    reviewRequestZeroCostWarningToast?: string;
+    reviewRequestZeroLaborCostWarningToast?: string;
+    reviewRequestZeroLossCostWarningToast?: string;
+  };
+}) {
+  const { laborCost, lossCost } = getComparableOrderSubmissionValues(payload.workOrder);
+  const laborIsZero = Number.isFinite(laborCost) && laborCost === 0;
+  const lossIsZero = Number.isFinite(lossCost) && lossCost === 0;
+
+  if (laborIsZero && lossIsZero) return payload.text.reviewRequestZeroCostWarningToast ?? null;
+  if (laborIsZero) return payload.text.reviewRequestZeroLaborCostWarningToast ?? null;
+  if (lossIsZero) return payload.text.reviewRequestZeroLossCostWarningToast ?? null;
+  return null;
+}
+
 export function getFactoryOrderRequestValidationMessage(payload: {
   currentRoles: RoleType[];
   workOrder: WorkOrder;
@@ -171,8 +197,9 @@ export function getFactoryOrderRequestValidationMessage(payload: {
     return workOrderValidationMessage;
   }
 
-  const normalizedFactoryName = String(payload.factoryName ?? "").trim();
-  const normalizedQuantity = Math.max(0, Number(payload.quantity) || 0);
+  const comparableValues = getComparableOrderSubmissionValues(payload.workOrder);
+  const normalizedFactoryName = normalizeFactoryName(payload.factoryName ?? comparableValues.factoryName ?? "");
+  const normalizedQuantity = Math.max(0, Number(payload.quantity ?? comparableValues.quantity) || 0);
 
   if (!normalizedFactoryName) {
     return payload.text.factoryOrderFactoryRequiredToast ?? null;

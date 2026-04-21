@@ -21,6 +21,7 @@ import {
   deriveWorkflowStateFromOrderEntries,
   getFactoryOrderRequestValidationMessage,
   getReviewRequestValidationMessage,
+  getReviewRequestWarningMessage,
 } from "@/lib/workorder/workflow";
 import { normalizeRoles } from "@/lib/constants/roles";
 import type { FactoryOrderRequest, WorkOrder, WorkflowAction } from "@/types/workorder";
@@ -71,7 +72,7 @@ export function useWorkOrderWorkflowActions({
   }, [workOrders]);
 
   const applyWorkflowAction = useCallback(
-    async (workOrder: WorkOrder, action: WorkflowAction) => {
+    async (workOrder: WorkOrder, action: WorkflowAction, toastMessageOverride?: string | null) => {
       const result = buildWorkflowActionResult({
         workOrder,
         action,
@@ -79,6 +80,7 @@ export function useWorkOrderWorkflowActions({
         text: actionFlowText,
         historyText,
         workflowStateLabels,
+        toastMessageOverride: toastMessageOverride ?? undefined,
       });
       const nextWorkOrders = workOrdersRef.current.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item));
 
@@ -106,6 +108,8 @@ export function useWorkOrderWorkflowActions({
 
   const handleWorkflowAction = useCallback(
     (workOrder: WorkOrder, action: WorkflowAction) => {
+      let reviewWarningMessage: string | null = null;
+
       if (action.nextState === "review_requested") {
         const validationMessage = getReviewRequestValidationMessage({
           workOrder,
@@ -115,6 +119,11 @@ export function useWorkOrderWorkflowActions({
           setToastMessage(validationMessage);
           return;
         }
+
+        reviewWarningMessage = getReviewRequestWarningMessage({
+          workOrder,
+          text: actionFlowText,
+        });
       }
 
       if (requiresOrderRequestConfirmation(action)) {
@@ -138,7 +147,7 @@ export function useWorkOrderWorkflowActions({
         return;
       }
 
-      void applyWorkflowAction(workOrder, action);
+      void applyWorkflowAction(workOrder, action, reviewWarningMessage);
     },
     [actionFlowText, applyWorkflowAction, currentUser.role, currentUser.roles, setOrderRequestConfirmOpen, setPendingWorkflowAction, setToastMessage],
   );

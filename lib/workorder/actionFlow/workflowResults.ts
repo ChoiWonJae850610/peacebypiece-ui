@@ -29,6 +29,7 @@ export function buildWorkflowActionResult(payload: {
   text?: ActionFlowText;
   historyText?: ActionFlowHistoryText;
   workflowStateLabels?: Record<string, string>;
+  toastMessageOverride?: string;
 }): WorkOrderActionFlowResult {
   const targetWorkOrder = shouldPruneDraftRowsForWorkflowState(payload.action.nextState)
     ? pruneDraftRows(payload.workOrder)
@@ -48,7 +49,7 @@ export function buildWorkflowActionResult(payload: {
     ],
     saveStatus: payload.action.nextState === "review_requested" ? "dirty" : undefined,
     openInventoryEditor: payload.action.nextState === "in_inspection",
-    toastMessage: (payload.text ?? defaultActionFlowText).workflowChangedToastFormat.replace("{label}", payload.action.label),
+    toastMessage: payload.toastMessageOverride ?? (payload.text ?? defaultActionFlowText).workflowChangedToastFormat.replace("{label}", payload.action.label),
   };
 }
 
