@@ -2,7 +2,11 @@ import { DEFAULT_LOCALE, getI18n } from "@/lib/i18n";
 import type { HistoryLog } from "@/types/workorder";
 
 export const defaultHistoryText = getI18n(DEFAULT_LOCALE).workorder.history;
-export type HistoryText = typeof defaultHistoryText;
+export type HistoryText = typeof defaultHistoryText & {
+  actions: typeof defaultHistoryText.actions & Record<string, string>;
+  messages: typeof defaultHistoryText.messages & Record<string, string>;
+  detailLabels: typeof defaultHistoryText.detailLabels & Record<string, string>;
+};
 export type DetailLine = NonNullable<HistoryLog["detailLines"]>[number];
 
 export function formatTemplate(template: string, values: Record<string, string | number>) {

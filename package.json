@@ -1,6 +1,6 @@
 {
   "name": "peacebypiece-ui",
-  "version": "0.4.29",
+  "version": "0.5.637",
   "private": true,
   "scripts": {
     "dev": "next dev",

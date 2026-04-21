@@ -133,8 +133,8 @@ export function createFactoryOrderRequestHistoryLog(
   text: HistoryText = defaultHistoryText,
 ) {
   return createHistoryLog({
-    action: text.actions.factoryOrderRequested ?? text.actions.statusChanged,
-    message: text.messages.factoryOrderRequested ?? text.messages.statusChanged,
+    action: text.actions.factoryOrderRequested,
+    message: text.messages.factoryOrderRequested,
     user,
     workOrderId,
     category: "work",

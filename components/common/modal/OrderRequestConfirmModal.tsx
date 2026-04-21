@@ -9,7 +9,7 @@ import { getOrderRequestDocumentPreview } from "@/lib/workorder/presentation/ord
 import { buildOrderRequestPrintAttachments, buildOrderRequestPrintHtml } from "@/lib/workorder/presentation/orderRequestDocumentPrint";
 import { useI18n } from "@/lib/i18n";
 import { isDebugFeatureEnabled } from "@/lib/constants/runtimeMode";
-import type { Attachment, Material, Outsourcing, WorkOrder } from "@/types/workorder";
+import type { Material, Outsourcing, WorkOrder } from "@/types/workorder";
 
 function formatCurrency(value: number) {
   const numeric = Number(value ?? 0);
@@ -33,11 +33,6 @@ function formatDateLabel(value?: string | null) {
   return text;
 }
 
-
-
-function getAttachmentTypeBadge(attachment: Attachment) {
-  return attachment.type === "image" ? "이미지" : "PDF";
-}
 
 function clampPageIndex(value: number, total: number) {
   if (total <= 0) return 0;
@@ -196,15 +191,17 @@ export default function OrderRequestConfirmModal({
   const canSubmit = Boolean(confirmedFactoryName) && Boolean(confirmedDueDate) && confirmedQuantity > 0 && !requested;
 
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
+  const [requestNote, setRequestNote] = useState(() => String(workOrder.memo ?? "").trim());
   const [printFeedback, setPrintFeedback] = useState<string | null>(null);
   const [isPreparingPrint, setIsPreparingPrint] = useState(false);
   const printWindowRef = useRef<Window | null>(null);
 
   useEffect(() => {
     setCurrentPageIndex(0);
+    setRequestNote(String(workOrder.memo ?? "").trim());
     setPrintFeedback(null);
     setIsPreparingPrint(false);
-  }, [open, workOrder.id]);
+  }, [open, workOrder.id, workOrder.memo]);
 
   useEffect(() => {
     return () => {
@@ -229,13 +226,6 @@ export default function OrderRequestConfirmModal({
   const fabricMaterials = preview.fabricMaterials;
   const subsidiaryMaterials = preview.subsidiaryMaterials;
   const representativeImage = preview.representativeImage;
-  const attachmentSummaryLines = preview.visibleAttachments.map((attachment) => ({
-    id: attachment.id,
-    typeLabel: getAttachmentTypeBadge(attachment),
-    scopeLabel: attachment.scope === "memo" ? "메모" : "첨부",
-    name: attachment.name,
-  }));
-
   const firstSummaryItems = [
     { label: "품명", value: displayTitle },
     { label: "공임", value: formatCurrency(currentFactoryLaborCost) },
@@ -271,7 +261,7 @@ export default function OrderRequestConfirmModal({
       printWindow.document.close();
 
       const renderedAttachments = await buildOrderRequestPrintAttachments(preview.visibleAttachments);
-      const html = buildOrderRequestPrintHtml(workOrder, renderedAttachments);
+      const html = buildOrderRequestPrintHtml(workOrder, renderedAttachments, { requestNote });
       printWindow.document.open();
       printWindow.document.write(html);
       printWindow.document.close();
@@ -362,64 +352,34 @@ export default function OrderRequestConfirmModal({
           </div>
         ) : null}
 
-        <div className="grid border-b border-stone-400 xl:grid-cols-[1.28fr_0.92fr]">
-          <section className="border-b border-stone-400 xl:border-b-0 xl:border-r xl:border-stone-400">
-            <div className="border-b border-stone-300 bg-stone-100 px-3 py-2 text-sm font-bold text-stone-900">대표 이미지</div>
-            <div className="bg-[#fcfaf5] p-4">
-              {representativeImage ? (
-                <div className="overflow-hidden border border-stone-300 bg-stone-100">
-                  <img src={representativeImage.url} alt={representativeImage.name} className="h-[420px] w-full object-contain bg-white" />
-                </div>
-              ) : (
-                <div className="flex h-[420px] items-center justify-center border border-dashed border-stone-300 bg-white text-sm text-stone-500">
-                  대표 이미지가 없습니다.
-                </div>
-              )}
-            </div>
-          </section>
-
-          <section>
-            <div className="border-b border-stone-300 bg-stone-100 px-3 py-2 text-sm font-bold text-stone-900">첨부파일 / 요청사항</div>
-            <div className="flex min-h-[448px] flex-col bg-[#fcfaf5]">
-              <div className="grid flex-1 gap-0 xl:grid-rows-[1.12fr_0.88fr] text-sm leading-6 text-stone-800">
-                <div className="border-b border-stone-200 px-4 py-4 xl:border-b xl:border-stone-200">
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <div className="text-xs font-bold tracking-wide text-stone-700">첨부파일 목록</div>
-                    <span className="rounded border border-stone-300 bg-stone-50 px-2 py-0.5 text-[11px] font-semibold text-stone-600">
-                      공식 첨부 우선
-                    </span>
+        <div className="border-b border-stone-400 bg-[#fcfaf5] p-4">
+          <section className="overflow-hidden border border-stone-400 bg-white">
+            <div className="border-b border-stone-300 bg-stone-100 px-3 py-2 text-sm font-bold text-stone-900">대표이미지 / 요청사항</div>
+            <div className="grid gap-0 xl:grid-cols-[1.08fr_0.92fr]">
+              <div className="border-b border-stone-300 p-4 xl:border-b-0 xl:border-r">
+                {representativeImage ? (
+                  <div className="overflow-hidden border border-stone-300 bg-stone-100">
+                    <img src={representativeImage.url} alt={representativeImage.name} className="h-[300px] w-full object-contain bg-white" />
                   </div>
-                  {attachmentSummaryLines.length > 0 ? (
-                    <div className="space-y-2">
-                      {attachmentSummaryLines.map((attachment, index) => (
-                        <div key={attachment.id} className="grid min-h-[48px] grid-cols-[auto_auto_1fr] items-start gap-2 border border-stone-200 bg-white px-3 py-2.5 text-sm">
-                          <span className="text-stone-500">{index + 1}.</span>
-                          <span className="rounded border border-stone-300 bg-stone-50 px-1.5 py-0.5 text-[11px] font-semibold text-stone-600">
-                            {attachment.typeLabel}
-                          </span>
-                          <div className="min-w-0 break-all">
-                            <span className="mr-2 text-xs font-semibold text-stone-500">{attachment.scopeLabel}</span>
-                            <span>{attachment.name}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="border border-dashed border-stone-300 bg-white px-3 py-5 text-stone-500">표시할 첨부파일이 없습니다.</div>
-                  )}
-                </div>
-
-                <div className="px-4 py-4">
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <div className="text-xs font-bold tracking-wide text-rose-700">요청사항</div>
-                    <span className="rounded border border-rose-200 bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-700">
-                      현재 작지 메모 기준
-                    </span>
+                ) : (
+                  <div className="flex h-[300px] items-center justify-center border border-dashed border-stone-300 bg-white text-sm text-stone-500">
+                    대표 이미지가 없습니다.
                   </div>
-                  <div className="min-h-[180px] whitespace-pre-wrap border border-stone-300 bg-white px-3 py-3 text-sm leading-6 text-stone-800">
-                    {preview.requestNote || "표시할 요청사항이 없습니다."}
-                  </div>
+                )}
+              </div>
+              <div className="p-4">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <div className="text-xs font-bold tracking-wide text-rose-700">요청사항</div>
+                  <span className="rounded border border-stone-300 bg-stone-50 px-2 py-0.5 text-[11px] font-semibold text-stone-600">
+                    첨부파일은 출력 시 본문 뒤에 이어집니다.
+                  </span>
                 </div>
+                <textarea
+                  value={requestNote}
+                  onChange={(event) => setRequestNote(event.target.value)}
+                  placeholder="요청사항을 입력하세요."
+                  className="min-h-[300px] w-full resize-none border border-stone-300 bg-white px-3 py-3 text-sm leading-6 text-stone-800 outline-none transition focus:border-stone-500"
+                />
               </div>
             </div>
           </section>

@@ -273,6 +273,7 @@ export async function buildOrderRequestPrintAttachments(attachments: Attachment[
 export function buildOrderRequestPrintHtml(
   workOrder: WorkOrder,
   renderedAttachments: OrderRequestPrintAttachmentRender[] = [],
+  options?: { requestNote?: string },
 ) {
   const initialPreview = getOrderRequestDocumentPreview(workOrder, 0);
 
@@ -280,12 +281,6 @@ export function buildOrderRequestPrintHtml(
     .map((documentUnit, index) => {
       const preview = getOrderRequestDocumentPreview(workOrder, index);
       const currentPage = preview.currentPage;
-      const attachmentSummaryLines = preview.visibleAttachments.map((attachment) => ({
-        id: attachment.id,
-        typeLabel: getAttachmentTypeBadge({ attachmentType: attachment.type }),
-        scopeLabel: attachment.scope === "memo" ? "메모" : "첨부",
-        name: attachment.name,
-      }));
 
       const firstSummaryItems = [
         { label: "품명", value: preview.displayTitle },
@@ -331,31 +326,9 @@ export function buildOrderRequestPrintHtml(
               </div>
             </section>
             <section class="hero-section hero-side">
-              <div class="section-head">첨부파일 / 요청사항</div>
-              <div class="hero-side-body">
-                <div class="subsection">
-                  <div class="subsection-head">첨부파일 목록</div>
-                  ${
-                    attachmentSummaryLines.length > 0
-                      ? `<div class="attachment-list">
-                          ${attachmentSummaryLines
-                            .map(
-                              (attachment, attachmentIndex) => `
-                                <div class="attachment-item">
-                                  <span class="attachment-index">${attachmentIndex + 1}.</span>
-                                  <span class="attachment-badge">${escapeHtml(attachment.typeLabel)}</span>
-                                  <span class="attachment-name"><strong>${escapeHtml(attachment.scopeLabel)}</strong> ${escapeHtml(attachment.name)}</span>
-                                </div>`,
-                            )
-                            .join("")}
-                        </div>`
-                      : `<div class="empty-inline">표시할 첨부파일이 없습니다.</div>`
-                  }
-                </div>
-                <div class="subsection request-note-wrap">
-                  <div class="subsection-head">요청사항</div>
-                  <div class="request-note">${escapeHtml(preview.requestNote || "표시할 요청사항이 없습니다.")}</div>
-                </div>
+              <div class="section-head">요청사항</div>
+              <div class="hero-side-body request-only-body">
+                <div class="request-note">${escapeHtml(options?.requestNote?.trim() || preview.requestNote || "표시할 요청사항이 없습니다.")}</div>
               </div>
             </section>
           </div>
@@ -419,64 +392,54 @@ export function buildOrderRequestPrintHtml(
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>발주서 PDF 출력</title>
   <style>
-    @page { size: A4 portrait; margin: 10mm; }
+    @page { size: A4 portrait; margin: 0; }
     * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; font-family: Arial, 'Noto Sans KR', sans-serif; color: #1c1917; }
-    body { background: #f5f2eb; }
-    .print-page { width: 190mm; min-height: 277mm; margin: 0 auto 8mm; background: #fff; border: 1px solid #78716c; page-break-after: always; break-after: page; }
-    .print-page:last-child { page-break-after: auto; break-after: auto; margin-bottom: 0; }
-    .page-head, .appendix-head { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: start; padding: 16px 18px; border-bottom: 1px solid #78716c; }
-    .meta-label { font-size: 11px; font-weight: 700; color: #78716c; }
-    .meta-value { margin-top: 6px; font-size: 13px; font-weight: 700; }
-    .title-wrap, .appendix-title-wrap { text-align: center; }
-    .doc-title, .appendix-title { font-size: 24px; font-weight: 900; letter-spacing: 0.28em; }
-    .factory-name { margin-top: 4px; font-size: 12px; font-weight: 700; color: #78716c; }
-    .work-title, .appendix-name { margin-top: 8px; font-size: 18px; font-weight: 700; }
-    .appendix-page-index { margin-top: 6px; font-size: 11px; font-weight: 700; color: #78716c; }
-    .doc-index { text-align: right; font-size: 11px; color: #78716c; font-weight: 700; padding-top: 2px; }
-    .appendix-type-badge { justify-self: end; align-self: center; border: 1px solid #d6d3d1; background: #fafaf9; color: #57534e; padding: 3px 8px; font-size: 11px; font-weight: 700; }
-    .summary-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border-bottom: 1px solid #a8a29e; }
-    .summary-item { display: flex; gap: 10px; align-items: center; min-height: 38px; padding: 10px 14px; border-right: 1px solid #e7e5e4; }
+    html, body { margin: 0; padding: 0; width: 210mm; font-family: Arial, 'Noto Sans KR', sans-serif; color: #1c1917; background: #fff; }
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .print-page { width: 210mm; height: 297mm; margin: 0; padding: 8mm; background: #fff; border: 0; overflow: hidden; page-break-after: always; break-after: page; display: flex; flex-direction: column; }
+    .print-page:last-child { page-break-after: auto; break-after: auto; }
+    .page-head, .appendix-head { display: grid; grid-template-columns: 28mm 1fr 28mm; gap: 6px; align-items: start; padding: 3.5mm 4mm; border: 1px solid #78716c; border-bottom: 0; }
+    .meta-label { font-size: 10px; font-weight: 700; color: #78716c; }
+    .meta-value { margin-top: 3px; font-size: 12px; font-weight: 700; }
+    .title-wrap, .appendix-title-wrap { text-align: center; min-width: 0; }
+    .doc-title, .appendix-title { font-size: 20px; font-weight: 900; letter-spacing: 0.18em; }
+    .factory-name { margin-top: 2px; font-size: 11px; font-weight: 700; color: #78716c; }
+    .work-title, .appendix-name { margin-top: 4px; font-size: 15px; font-weight: 700; word-break: break-word; }
+    .appendix-page-index { margin-top: 4px; font-size: 10px; font-weight: 700; color: #78716c; }
+    .doc-index { text-align: right; font-size: 10px; color: #78716c; font-weight: 700; padding-top: 1px; }
+    .appendix-type-badge { justify-self: end; align-self: center; border: 1px solid #d6d3d1; background: #fafaf9; color: #57534e; padding: 2px 7px; font-size: 10px; font-weight: 700; }
+    .summary-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid #a8a29e; border-top: 0; }
+    .summary-item { display: flex; gap: 8px; align-items: center; min-height: 10mm; padding: 2.5mm 3.2mm; border-right: 1px solid #e7e5e4; }
     .summary-item:last-child { border-right: 0; }
-    .summary-label { flex: 0 0 auto; font-size: 11px; font-weight: 700; color: #78716c; }
-    .summary-value { flex: 1 1 auto; text-align: right; font-size: 14px; font-weight: 700; word-break: break-word; }
-    .hero-grid { display: grid; grid-template-columns: 1.28fr 0.92fr; border-bottom: 1px solid #78716c; }
-    .hero-section { min-width: 0; }
+    .summary-label { flex: 0 0 auto; font-size: 10px; font-weight: 700; color: #78716c; }
+    .summary-value { flex: 1 1 auto; text-align: right; font-size: 12px; font-weight: 700; word-break: break-word; }
+    .hero-grid { display: grid; grid-template-columns: 1.12fr 0.88fr; border: 1px solid #78716c; border-top: 0; }
+    .hero-section { min-width: 0; background: #fcfaf5; }
     .hero-section:first-child { border-right: 1px solid #78716c; }
-    .section-head { padding: 8px 12px; background: #f5f5f4; border-bottom: 1px solid #d6d3d1; font-size: 13px; font-weight: 700; }
-    .hero-body { padding: 14px; background: #fcfaf5; }
-    .image-frame { height: 112mm; overflow: hidden; border: 1px solid #d6d3d1; background: #f5f5f4; display: flex; align-items: center; justify-content: center; }
-    .image-frame img { max-width: 100%; max-height: 100%; object-fit: contain; background: #fff; }
-    .empty-hero, .empty-inline { border: 1px dashed #d6d3d1; background: #fff; color: #78716c; font-size: 12px; display: flex; align-items: center; justify-content: center; text-align: center; }
-    .empty-hero { height: 112mm; }
-    .hero-side-body { display: grid; grid-template-rows: 1.12fr 0.88fr; min-height: 120mm; background: #fcfaf5; }
-    .subsection { padding: 12px 14px; }
-    .subsection + .subsection { border-top: 1px solid #e7e5e4; }
-    .subsection-head { margin-bottom: 8px; font-size: 11px; font-weight: 800; letter-spacing: .02em; color: #44403c; }
-    .attachment-list { display: grid; gap: 8px; }
-    .attachment-item { display: grid; grid-template-columns: auto auto 1fr; gap: 8px; align-items: start; min-height: 38px; border: 1px solid #e7e5e4; background: #fff; padding: 8px 10px; font-size: 12px; }
-    .attachment-index { color: #78716c; }
-    .attachment-badge { display: inline-block; border: 1px solid #d6d3d1; background: #fafaf9; color: #57534e; padding: 2px 6px; font-size: 10px; font-weight: 700; }
-    .attachment-name { word-break: break-all; }
-    .request-note-wrap { min-height: 0; }
-    .request-note { min-height: 46mm; white-space: pre-wrap; border: 1px solid #d6d3d1; background: #fff; padding: 10px 12px; font-size: 12px; line-height: 1.65; }
-    .table-section { margin: 12px; border: 1px solid #78716c; break-inside: avoid-page; }
-    .table-title { padding: 8px 12px; border-bottom: 1px solid #78716c; background: #f5f5f4; font-size: 13px; font-weight: 700; }
-    table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 11px; }
-    th, td { border-bottom: 1px solid #e7e5e4; padding: 8px 10px; text-align: center; vertical-align: middle; }
+    .section-head { padding: 2.4mm 3.2mm; background: #f5f5f4; border-bottom: 1px solid #d6d3d1; font-size: 11px; font-weight: 700; }
+    .hero-body, .hero-side-body { padding: 3mm; background: #fcfaf5; }
+    .image-frame { height: 63mm; overflow: hidden; border: 1px solid #d6d3d1; background: #f5f5f4; display: flex; align-items: center; justify-content: center; }
+    .image-frame img { width: 100%; height: 100%; object-fit: contain; background: #fff; display: block; }
+    .empty-hero { height: 63mm; border: 1px dashed #d6d3d1; background: #fff; color: #78716c; font-size: 11px; display: flex; align-items: center; justify-content: center; text-align: center; }
+    .request-only-body { display: flex; }
+    .request-note { flex: 1 1 auto; min-height: 63mm; white-space: pre-wrap; border: 1px solid #d6d3d1; background: #fff; padding: 3mm; font-size: 11px; line-height: 1.55; word-break: break-word; }
+    .table-section { margin-top: 3mm; border: 1px solid #78716c; }
+    .table-title { padding: 2.4mm 3.2mm; border-bottom: 1px solid #78716c; background: #f5f5f4; font-size: 11px; font-weight: 700; }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 10px; }
+    th, td { border-bottom: 1px solid #e7e5e4; padding: 2.2mm 2.4mm; text-align: center; vertical-align: middle; }
     thead th { background: #fafaf9; color: #44403c; font-weight: 700; }
     tfoot td { background: #fafaf9; font-weight: 700; }
     .align-left { text-align: left; word-break: break-word; }
-    .empty-cell { padding: 24px 10px; color: #78716c; }
+    .empty-cell { padding: 7mm 2.4mm; color: #78716c; }
     .appendix-page { display: flex; flex-direction: column; }
-    .appendix-body { flex: 1 1 auto; padding: 14px; background: #fcfaf5; }
-    .appendix-viewer { height: 100%; border: 1px solid #d6d3d1; background: #fff; overflow: hidden; }
-    .appendix-image-body { min-height: 228mm; }
+    .appendix-body { flex: 1 1 auto; padding: 4mm 0 0; background: #fff; min-height: 0; }
+    .appendix-viewer { width: 100%; height: 100%; border: 1px solid #d6d3d1; background: #fff; overflow: hidden; }
+    .appendix-image-body { min-height: 0; }
     .image-viewer { display: flex; align-items: center; justify-content: center; }
-    .image-viewer img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .image-viewer img { width: 100%; height: 100%; object-fit: contain; display: block; }
     @media print {
-      body { background: #fff; }
-      .print-page { margin: 0 auto; }
+      html, body { width: 210mm; background: #fff; }
+      .print-page { margin: 0; }
     }
   </style>
 </head>

@@ -37,6 +37,7 @@ export const workorderEn = {
     rejectReview: "Reject",
     approveReview: "Approve review",
     requestOrder: "Request order",
+    requestReinspection: "Request reinspection",
     startInspection: "Start inspection",
     completeInspection: "Complete inspection",
   },
@@ -135,6 +136,7 @@ export const workorderEn = {
       titleRenamed: "Work order title changed",
       managerChanged: "Manager changed",
       factoryOrderRequested: "Factory order requested",
+      reinspectionRequested: "Reinspection requested",
     },
     messages: {
       created: "Created initially.",
@@ -156,6 +158,7 @@ export const workorderEn = {
       titleRenamedSeries: "The work order title has been applied to the entire reorder series.",
       managerChanged: "Manager has been changed.",
       factoryOrderRequested: "Factory order request has been recorded.",
+      reinspectionRequested: "The completed work order has been moved back to inspection.",
     },
     detailLabels: {
       author: "Author",
@@ -189,6 +192,7 @@ export const workorderEn = {
       factory: "Factory",
       quantity: "Quantity",
       requestedAt: "Requested at",
+      reason: "Reason",
     },
   },
   ui: {
