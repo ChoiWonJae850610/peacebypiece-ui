@@ -122,6 +122,19 @@ export function getReviewRequestValidationMessage(payload: {
   return getWorkOrderSubmissionValidationMessage(payload.workOrder, payload.text);
 }
 
+export function getReviewApprovalValidationMessage(payload: {
+  workOrder: WorkOrder;
+  text: {
+    factoryOrderFactoryRequiredToast?: string;
+    factoryOrderDueDateRequiredToast?: string;
+    factoryOrderQuantityRequiredToast?: string;
+    factoryOrderLaborCostInvalidToast?: string;
+    factoryOrderLossCostInvalidToast?: string;
+  };
+}) {
+  return getWorkOrderSubmissionValidationMessage(payload.workOrder, payload.text);
+}
+
 export function getReviewRequestWarningMessage(payload: {
   workOrder: WorkOrder;
   text: {
@@ -227,6 +240,11 @@ export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles
             ? [{ label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "order_requested" } satisfies WorkflowAction]
             : []),
         ];
+      }
+      return [];
+    case "completed":
+      if (isAdminRole(currentRoles)) {
+        return [{ label: WORKFLOW_ACTION_LABELS.requestReinspection, nextState: "in_inspection" }];
       }
       return [];
     case "order_requested":

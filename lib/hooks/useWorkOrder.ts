@@ -59,7 +59,14 @@ export function useWorkOrder() {
 
 
   useEffect(() => {
-    if (derivedState.workOrders.length === 0) return;
+    if (derivedState.workOrders.length === 0) {
+      if (coreState.selectedId !== "") {
+        coreState.setSelectedId("");
+        coreState.setLastSavedAt(null);
+        coreState.setSaveStatus("saved");
+      }
+      return;
+    }
     const selectedVisible = derivedState.workOrders.some((item) => item.id === coreState.selectedId);
     if (selectedVisible) return;
 
@@ -159,6 +166,7 @@ export function useWorkOrder() {
     searchQuery: coreState.searchQuery,
     setSearchQuery: coreState.setSearchQuery,
     workOrders: derivedState.workOrders,
+    hasVisibleWorkOrders: derivedState.hasVisibleWorkOrders,
     workflowStateById: derivedState.workflowStateById,
     selectedId: coreState.selectedId,
     selectedWorkOrder: coreState.selectedWorkOrder,

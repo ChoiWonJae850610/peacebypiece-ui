@@ -148,6 +148,28 @@ export function createFactoryOrderRequestHistoryLog(
   });
 }
 
+export function createReinspectionRequestHistoryLog(
+  user: string,
+  workOrderId: string,
+  payload: { from: string; to: string; reason?: string | null },
+  text: HistoryText = defaultHistoryText,
+) {
+  return createHistoryLog({
+    action: text.actions.reinspectionRequested,
+    message: text.messages.reinspectionRequested,
+    user,
+    workOrderId,
+    category: "work",
+    tone: "emerald",
+    transition: { from: payload.from, to: payload.to },
+    detailLines: [
+      { label: text.detailLabels.changed, value: `${payload.from}${text.transitionArrow}${payload.to}` },
+      ...(payload.reason ? [{ label: text.detailLabels.reason ?? "사유", value: payload.reason }] : []),
+    ],
+    text,
+  });
+}
+
 export function createDeletionHistoryLog(
   user: string,
   workOrderId: string,

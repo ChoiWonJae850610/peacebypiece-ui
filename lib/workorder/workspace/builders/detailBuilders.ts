@@ -2,6 +2,7 @@ import type { DetailProps, DetailViewModelArgs, SidePanelProps, SidePanelViewMod
 
 export function buildDetailProps({
   selectedWorkOrder,
+  hasVisibleWorkOrders,
   currentWorkflowState,
   saveStatus,
   lastSavedAt,
@@ -38,6 +39,7 @@ export function buildDetailProps({
 }: DetailViewModelArgs): DetailProps {
   return {
     workOrder: selectedWorkOrder,
+    isEmpty: !hasVisibleWorkOrders,
     currentWorkflowState,
     saveStatus,
     lastSavedAt,
@@ -77,6 +79,7 @@ export function buildDetailProps({
 }
 
 export function buildSidePanelProps({
+  hasVisibleWorkOrders,
   canSeeAttachments,
   canUploadOfficialAttachments,
   officialAttachments,
@@ -91,6 +94,7 @@ export function buildSidePanelProps({
   onPromoteMemoAttachment,
 }: SidePanelViewModelArgs): SidePanelProps {
   return {
+    isEmpty: !hasVisibleWorkOrders,
     canSeeAttachments,
     canUploadOfficialAttachments,
     attachments: officialAttachments,

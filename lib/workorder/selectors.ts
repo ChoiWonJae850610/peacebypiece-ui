@@ -31,7 +31,7 @@ export function filterWorkOrdersByUserScope(workOrders: WorkOrder[], workflowSta
     return workOrders.filter((item) => {
       const workflowState = workflowStateById[item.id] ?? item.workflowState;
       const isOwnedByCurrentUser = item.createdById === currentUser.id || (item.managerId ?? null) === currentUser.id;
-      return isOwnedByCurrentUser && workflowState !== "completed";
+      return isOwnedByCurrentUser && workflowState === "draft";
     });
   }
 

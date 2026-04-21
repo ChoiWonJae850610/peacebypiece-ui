@@ -88,6 +88,19 @@ export function applyWorkflowActionToWorkOrder(workOrder: WorkOrder, action: Wor
     };
   }
 
+  if (action.nextState === "in_inspection") {
+    const nextOrderEntries: OrderEntry[] = (workOrder.orderEntries ?? []).map((entry) => ({
+      ...entry,
+      inspectionStatus: entry.inspectionStatus === "inspection_completed" ? "inspection_in_progress" : (entry.inspectionStatus ?? "inspection_in_progress"),
+    }));
+
+    return {
+      ...workOrder,
+      workflowState: action.nextState,
+      orderEntries: nextOrderEntries,
+    };
+  }
+
   return { ...workOrder, workflowState: action.nextState };
 }
 

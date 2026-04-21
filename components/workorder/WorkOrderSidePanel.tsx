@@ -5,6 +5,7 @@ import WorkOrderMemoPanel from "@/components/workorder/sidepanel/WorkOrderMemoPa
 import type { Attachment, MemoAttachmentPayload, RoleType, WorkOrder } from "@/types/workorder";
 
 export default function WorkOrderSidePanel({
+  isEmpty = false,
   canSeeAttachments,
   canUploadOfficialAttachments,
   attachments,
@@ -20,6 +21,7 @@ export default function WorkOrderSidePanel({
   canPromoteMemoAttachment,
   onPromoteMemoAttachment,
 }: {
+  isEmpty?: boolean;
   canSeeAttachments: boolean;
   canUploadOfficialAttachments: boolean;
   attachments: Attachment[];
@@ -35,6 +37,10 @@ export default function WorkOrderSidePanel({
   canPromoteMemoAttachment: boolean;
   onPromoteMemoAttachment: (attachmentId: string) => void;
 }) {
+  if (isEmpty) {
+    return null;
+  }
+
   return (
     <div className="space-y-3 md:space-y-4">
       <WorkOrderAttachmentPanel

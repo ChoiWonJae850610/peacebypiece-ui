@@ -31,6 +31,7 @@ export type BuildWorkspaceViewModelArgs = {
   historyFilter: HistoryFilter;
   searchQuery: string;
   workOrders: SidebarListProps["workOrders"];
+  hasVisibleWorkOrders: boolean;
   workflowStateById: Record<string, string>;
   selectedId: string;
   selectedWorkOrder: WorkOrder;
@@ -117,6 +118,7 @@ export type BaseWorkspaceViewModelArgs = {
   currentUser: UserProfile;
   currentRole: RoleType;
   selectedWorkOrder: WorkOrder;
+  hasVisibleWorkOrders: boolean;
   currentWorkflowState: WorkflowState;
   canCreateWorkOrder: boolean;
   canSeeAttachments: boolean;

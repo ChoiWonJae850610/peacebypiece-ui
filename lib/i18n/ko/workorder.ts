@@ -37,6 +37,7 @@ export const workorderKo = {
     rejectReview: "반려",
     approveReview: "검토 완료",
     requestOrder: "발주 요청",
+    requestReinspection: "재검수 요청",
     startInspection: "검수 시작",
     completeInspection: "검수 완료",
   },
@@ -109,6 +110,8 @@ export const workorderKo = {
     factoryOrderLaborCostInvalidToast: "공임비는 음수가 될 수 없습니다.",
     factoryOrderLossCostInvalidToast: "로스비는 음수가 될 수 없습니다.",
     factoryOrderNotAllowedToast: "현재 사용자에게 발주 권한이 없습니다.",
+    reviewApprovalValidationToast: "검토완료 전 공장, 납기일, 수량을 확인해주세요.",
+    reinspectionRequestedToast: "재검수 요청이 반영되었습니다.",
     reviewRequestZeroCostWarningToast: "검토요청이 반영되었습니다. 공임비와 로스비가 모두 0원입니다.",
     reviewRequestZeroLaborCostWarningToast: "검토요청이 반영되었습니다. 공임비가 0원입니다.",
     reviewRequestZeroLossCostWarningToast: "검토요청이 반영되었습니다. 로스비가 0원입니다.",
@@ -135,6 +138,7 @@ export const workorderKo = {
       titleRenamed: "작업지시서명 변경",
       managerChanged: "담당자 변경",
       factoryOrderRequested: "공장 발주 요청",
+      reinspectionRequested: "재검수 요청",
     },
     messages: {
       created: "최초 생성되었습니다.",
@@ -156,6 +160,7 @@ export const workorderKo = {
       titleRenamedSeries: "작업지시서명이 리오더 계열 전체에 반영되었습니다.",
       managerChanged: "담당자가 변경되었습니다.",
       factoryOrderRequested: "공장 발주 요청이 기록되었습니다.",
+      reinspectionRequested: "완료된 작업이 재검수 단계로 되돌려졌습니다.",
     },
     detailLabels: {
       author: "작성자",
@@ -189,6 +194,7 @@ export const workorderKo = {
       factory: "공장",
       quantity: "수량",
       requestedAt: "발주 시각",
+      reason: "사유",
     },
   },
   ui: {
@@ -199,6 +205,10 @@ export const workorderKo = {
       totalPrefix: "총",
       deleteSuffix: "삭제",
       andMoreFormat: "외 {count}개",
+    },
+    emptyWorkspace: {
+      title: "작업이 없습니다",
+      description: "현재 역할에서 처리할 작업지시서가 없습니다. 새 작업이 생기면 목록에 표시됩니다.",
     },
 
     memo: {

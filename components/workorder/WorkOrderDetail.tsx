@@ -1,4 +1,5 @@
 import PartnerFactoryRegistryModal from "@/components/workorder/PartnerFactoryRegistryModal";
+import WorkOrderEmptyState from "@/components/workorder/WorkOrderEmptyState";
 import BasicInfoEditModal from "@/components/workorder/detail/modals/BasicInfoEditModal";
 import OrderInspectionModal from "@/components/workorder/detail/modals/OrderInspectionModal";
 import WorkOrderActionSection from "@/components/workorder/detail/WorkOrderActionSection";
@@ -48,6 +49,7 @@ export default function WorkOrderDetail({
   onUpdateWorkOrder,
   onRenameWorkOrderTitle,
   onCompleteInspection,
+  isEmpty = false,
 }: {
   workOrder: WorkOrder;
   currentWorkflowState: WorkflowState;
@@ -85,7 +87,12 @@ export default function WorkOrderDetail({
   onUpdateWorkOrder: (patch: Partial<WorkOrder>) => void;
   onRenameWorkOrderTitle: (nextTitle: string) => void;
   onCompleteInspection: (payload: { orderEntryId: string; inboundQuantity: number; nextInventoryQuantity: number; memo: string }) => void;
+  isEmpty?: boolean;
 }) {
+  if (isEmpty) {
+    return <WorkOrderEmptyState />;
+  }
+
   const {
     basicInfo,
     orderItems,

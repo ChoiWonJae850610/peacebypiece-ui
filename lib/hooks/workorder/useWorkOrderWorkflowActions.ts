@@ -13,7 +13,7 @@ import { applySharedInspectionComplete, applySharedInventoryAdjustment } from "@
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
 import { persistWorkOrdersWithHistory } from "./workorderRepositoryMutations";
 import { findPartnerIdByNameAndTypes } from "@/lib/admin/partnerMasterPersistence";
-import { createWorkOrderKindChangeHistoryLog } from "@/lib/workorder/history/builders";
+import { createReinspectionRequestHistoryLog, createWorkOrderKindChangeHistoryLog } from "@/lib/workorder/history/builders";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import { stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
@@ -21,6 +21,7 @@ import { getOrderSubmissionSnapshot } from "@/lib/workorder/orderSubmission";
 import {
   deriveWorkflowStateFromOrderEntries,
   getFactoryOrderRequestValidationMessage,
+  getReviewApprovalValidationMessage,
   getReviewRequestValidationMessage,
   getReviewRequestWarningMessage,
 } from "@/lib/workorder/workflow";
@@ -107,6 +108,49 @@ export function useWorkOrderWorkflowActions({
     [actionFlowText, currentUser.name, historyText, repository, setHistoryLogs, setInventoryEditorOpen, setSaveStatus, setToastMessage, setWorkOrders, workflowStateLabels],
   );
 
+  const applyReinspectionAction = useCallback(
+    async (workOrder: WorkOrder, action: WorkflowAction) => {
+      const result = buildWorkflowActionResult({
+        workOrder,
+        action,
+        actorName: currentUser.name,
+        text: actionFlowText,
+        historyText,
+        workflowStateLabels,
+        toastMessageOverride: actionFlowText.reinspectionRequestedToast,
+      });
+      result.historyLogs = [
+        createReinspectionRequestHistoryLog(
+          currentUser.name,
+          workOrder.id,
+          {
+            from: workflowStateLabels[workOrder.workflowState] ?? workOrder.workflowState,
+            to: workflowStateLabels[action.nextState] ?? action.nextState,
+          },
+          historyText,
+        ),
+      ];
+      const nextWorkOrders = workOrdersRef.current.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item));
+
+      await persistWorkOrdersWithHistory(repository, {
+        workOrders: nextWorkOrders,
+        historyLogs: result.historyLogs,
+      });
+
+      setWorkOrders(nextWorkOrders);
+      if (result.historyLogs?.length) {
+        setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
+      }
+      if (result.saveStatus) {
+        setSaveStatus(result.saveStatus);
+      }
+      if (result.toastMessage) {
+        setToastMessage(result.toastMessage);
+      }
+    },
+    [actionFlowText, currentUser.name, historyText, repository, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders, workflowStateLabels],
+  );
+
   const handleWorkflowAction = useCallback(
     (workOrder: WorkOrder, action: WorkflowAction) => {
       let reviewWarningMessage: string | null = null;
@@ -125,6 +169,22 @@ export function useWorkOrderWorkflowActions({
           workOrder,
           text: actionFlowText,
         });
+      }
+
+      if (action.nextState === "review_approved") {
+        const validationMessage = getReviewApprovalValidationMessage({
+          workOrder,
+          text: actionFlowText,
+        });
+        if (validationMessage) {
+          setToastMessage(validationMessage);
+          return;
+        }
+      }
+
+      if (action.nextState === "in_inspection" && workOrder.workflowState === "completed") {
+        void applyReinspectionAction(workOrder, action);
+        return;
       }
 
       if (requiresOrderRequestConfirmation(action)) {
@@ -151,7 +211,7 @@ export function useWorkOrderWorkflowActions({
 
       void applyWorkflowAction(workOrder, action, reviewWarningMessage);
     },
-    [actionFlowText, applyWorkflowAction, currentUser.role, currentUser.roles, setOrderRequestConfirmOpen, setPendingWorkflowAction, setToastMessage],
+    [actionFlowText, applyReinspectionAction, applyWorkflowAction, currentUser.role, currentUser.roles, setOrderRequestConfirmOpen, setPendingWorkflowAction, setToastMessage],
   );
 
   const handleConfirmOrderRequest = useCallback(

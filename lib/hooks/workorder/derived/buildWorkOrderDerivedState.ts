@@ -82,6 +82,7 @@ export function buildWorkOrderDerivedState({
     isReviewRequestLocked,
     canUploadOfficialAttachments,
     workOrders: filteredWorkOrderList,
+    hasVisibleWorkOrders: filteredWorkOrderList.length > 0,
     canSeeProductionSections,
     canSeeCostSections,
     canEditInventory,
