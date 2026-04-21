@@ -112,9 +112,15 @@ export function requestFactoryOrderForWorkOrder(
   workOrder: WorkOrder,
   payload: FactoryOrderRequest,
 ): WorkOrder {
+  const nextOrderEntries: OrderEntry[] = (workOrder.orderEntries ?? []).map((entry) => ({
+    ...entry,
+    inspectionStatus: entry.inspectionStatus === "inspection_completed" ? "inspection_completed" : "inspection_pending",
+  }));
+
   return {
     ...workOrder,
-    workflowState: "order_requested",
+    workflowState: "in_production",
+    orderEntries: nextOrderEntries,
     factoryOrderRequest: {
       ...payload,
       requestedById: payload.requestedById ?? null,

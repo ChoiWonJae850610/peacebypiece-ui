@@ -95,8 +95,19 @@ export function createNewOutsourcingItem() {
 }
 
 export function toOrderEntriesPatch(orderItems: OrderEntryState[], currentWorkflowState: WorkflowState): Partial<WorkOrder> {
+  const normalizedOrderEntries = orderItems.map((item) => sanitizeOrderEntry(item, undefined, currentWorkflowState));
+  const primaryOrderEntry = normalizedOrderEntries[0];
+
   return {
-    orderEntries: orderItems.map((item) => sanitizeOrderEntry(item, undefined, currentWorkflowState)),
+    orderEntries: normalizedOrderEntries,
+    ...(primaryOrderEntry ? {
+      vendor: primaryOrderEntry.factory,
+      dueDate: primaryOrderEntry.dueDate,
+      quantity: primaryOrderEntry.quantity,
+      laborCost: primaryOrderEntry.laborCost,
+      lossCost: primaryOrderEntry.lossCost,
+      priority: primaryOrderEntry.priority,
+    } : {}),
   };
 }
 

@@ -17,7 +17,11 @@ import { createWorkOrderKindChangeHistoryLog } from "@/lib/workorder/history/bui
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import { stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
-import { deriveWorkflowStateFromOrderEntries, getFactoryOrderRequestValidationMessage } from "@/lib/workorder/workflow";
+import {
+  deriveWorkflowStateFromOrderEntries,
+  getFactoryOrderRequestValidationMessage,
+  getReviewRequestValidationMessage,
+} from "@/lib/workorder/workflow";
 import { normalizeRoles } from "@/lib/constants/roles";
 import type { FactoryOrderRequest, WorkOrder, WorkflowAction } from "@/types/workorder";
 import type {
@@ -102,7 +106,33 @@ export function useWorkOrderWorkflowActions({
 
   const handleWorkflowAction = useCallback(
     (workOrder: WorkOrder, action: WorkflowAction) => {
+      if (action.nextState === "review_requested") {
+        const validationMessage = getReviewRequestValidationMessage({
+          workOrder,
+          text: actionFlowText,
+        });
+        if (validationMessage) {
+          setToastMessage(validationMessage);
+          return;
+        }
+      }
+
       if (requiresOrderRequestConfirmation(action)) {
+        const currentWorkflowState = deriveWorkflowStateFromOrderEntries(workOrder.workflowState, workOrder.orderEntries);
+        const currentRoles = normalizeRoles(currentUser.roles, currentUser.role);
+        const validationMessage = getFactoryOrderRequestValidationMessage({
+          currentRoles,
+          workOrder,
+          currentWorkflowState,
+          factoryName: workOrder.vendor,
+          quantity: workOrder.quantity,
+          text: actionFlowText,
+        });
+        if (validationMessage) {
+          setToastMessage(validationMessage);
+          return;
+        }
+
         setPendingWorkflowAction(action);
         setOrderRequestConfirmOpen(true);
         return;
@@ -110,7 +140,7 @@ export function useWorkOrderWorkflowActions({
 
       void applyWorkflowAction(workOrder, action);
     },
-    [applyWorkflowAction, setOrderRequestConfirmOpen, setPendingWorkflowAction],
+    [actionFlowText, applyWorkflowAction, currentUser.role, currentUser.roles, setOrderRequestConfirmOpen, setPendingWorkflowAction, setToastMessage],
   );
 
   const handleConfirmOrderRequest = useCallback(

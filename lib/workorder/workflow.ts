@@ -76,6 +76,69 @@ export function canRequestFactoryOrder(payload: {
     && !payload.workOrder.factoryOrderRequest;
 }
 
+function getPrimaryOrderEntry(workOrder: WorkOrder) {
+  return workOrder.orderEntries?.[0] ?? null;
+}
+
+function getComparableOrderSubmissionValues(workOrder: WorkOrder) {
+  const primaryOrderEntry = getPrimaryOrderEntry(workOrder);
+
+  return {
+    factoryName: String(primaryOrderEntry?.factory ?? workOrder.vendor ?? "").trim(),
+    dueDate: String(primaryOrderEntry?.dueDate ?? workOrder.dueDate ?? "").trim(),
+    quantity: Number(primaryOrderEntry?.quantity ?? workOrder.quantity ?? 0),
+    laborCost: Number(primaryOrderEntry?.laborCost ?? workOrder.laborCost ?? 0),
+    lossCost: Number(primaryOrderEntry?.lossCost ?? workOrder.lossCost ?? 0),
+  };
+}
+
+function getWorkOrderSubmissionValidationMessage(workOrder: WorkOrder, text: {
+  factoryOrderFactoryRequiredToast?: string;
+  factoryOrderDueDateRequiredToast?: string;
+  factoryOrderQuantityRequiredToast?: string;
+  factoryOrderLaborCostInvalidToast?: string;
+  factoryOrderLossCostInvalidToast?: string;
+}) {
+  const {
+    factoryName,
+    dueDate,
+    quantity,
+    laborCost,
+    lossCost,
+  } = getComparableOrderSubmissionValues(workOrder);
+
+  if (!factoryName) {
+    return text.factoryOrderFactoryRequiredToast ?? null;
+  }
+  if (!dueDate) {
+    return text.factoryOrderDueDateRequiredToast ?? null;
+  }
+  if (!Number.isFinite(quantity) || quantity < 1) {
+    return text.factoryOrderQuantityRequiredToast ?? null;
+  }
+  if (!Number.isFinite(laborCost) || laborCost < 0) {
+    return text.factoryOrderLaborCostInvalidToast ?? null;
+  }
+  if (!Number.isFinite(lossCost) || lossCost < 0) {
+    return text.factoryOrderLossCostInvalidToast ?? null;
+  }
+
+  return null;
+}
+
+export function getReviewRequestValidationMessage(payload: {
+  workOrder: WorkOrder;
+  text: {
+    factoryOrderFactoryRequiredToast?: string;
+    factoryOrderDueDateRequiredToast?: string;
+    factoryOrderQuantityRequiredToast?: string;
+    factoryOrderLaborCostInvalidToast?: string;
+    factoryOrderLossCostInvalidToast?: string;
+  };
+}) {
+  return getWorkOrderSubmissionValidationMessage(payload.workOrder, payload.text);
+}
+
 export function getFactoryOrderRequestValidationMessage(payload: {
   currentRoles: RoleType[];
   workOrder: WorkOrder;
@@ -86,7 +149,10 @@ export function getFactoryOrderRequestValidationMessage(payload: {
     factoryOrderRequiresApprovalToast?: string;
     factoryOrderAlreadyRequestedToast?: string;
     factoryOrderFactoryRequiredToast?: string;
+    factoryOrderDueDateRequiredToast?: string;
     factoryOrderQuantityRequiredToast?: string;
+    factoryOrderLaborCostInvalidToast?: string;
+    factoryOrderLossCostInvalidToast?: string;
     factoryOrderNotAllowedToast?: string;
   };
 }) {
@@ -98,6 +164,11 @@ export function getFactoryOrderRequestValidationMessage(payload: {
   }
   if (payload.workOrder.factoryOrderRequest) {
     return payload.text.factoryOrderAlreadyRequestedToast ?? null;
+  }
+
+  const workOrderValidationMessage = getWorkOrderSubmissionValidationMessage(payload.workOrder, payload.text);
+  if (workOrderValidationMessage) {
+    return workOrderValidationMessage;
   }
 
   const normalizedFactoryName = String(payload.factoryName ?? "").trim();

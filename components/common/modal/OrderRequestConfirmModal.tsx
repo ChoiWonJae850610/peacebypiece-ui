@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { ORDER_REQUEST_TABLE_COLUMNS } from "@/lib/constants/workorderDomain";
@@ -40,19 +40,13 @@ export default function OrderRequestConfirmModal({
     lossCost: workOrder.lossCost || 0,
   }];
   const totalQuantity = orderEntries.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+  const primaryOrderEntry = orderEntries[0] ?? null;
   const factoryOptions = useMemo(() => getFactoryOptions(workOrder), [workOrder]);
   const requested = workOrder.factoryOrderRequest ?? null;
-  const [factoryName, setFactoryName] = useState(requested?.factoryName ?? factoryOptions[0] ?? "");
-  const [quantityInput, setQuantityInput] = useState(String(requested?.quantity ?? totalQuantity));
-
-  useEffect(() => {
-    if (!open) return;
-    setFactoryName(requested?.factoryName ?? factoryOptions[0] ?? "");
-    setQuantityInput(String(requested?.quantity ?? totalQuantity));
-  }, [factoryOptions, open, requested?.factoryName, requested?.quantity, totalQuantity]);
-
-  const normalizedQuantity = Math.max(0, Number(quantityInput.replace(/,/g, "")) || 0);
-  const canSubmit = factoryName.trim().length > 0 && normalizedQuantity > 0 && !requested;
+  const confirmedFactoryName = String(requested?.factoryName ?? primaryOrderEntry?.factory ?? workOrder.vendor ?? factoryOptions[0] ?? "").trim();
+  const confirmedQuantity = Math.max(0, Number(requested?.quantity ?? primaryOrderEntry?.quantity ?? workOrder.quantity ?? totalQuantity) || 0);
+  const confirmedDueDate = String(primaryOrderEntry?.dueDate ?? workOrder.dueDate ?? "").trim();
+  const canSubmit = confirmedFactoryName.length > 0 && confirmedQuantity > 0 && confirmedDueDate.length > 0 && !requested;
   const requestedSummary = requested
     ? (copy.requestedSummaryFormat ?? "{factory} / {quantity}장 / {requestedBy}")
       .replace("{factory}", requested.factoryName)
@@ -73,8 +67,8 @@ export default function OrderRequestConfirmModal({
         layout: "stack-reverse",
         secondary: { label: MODAL_ACTION_LABELS.cancel, onClick: onClose, className: "transition py-2.5" },
         primary: {
-          label: requested ? "발주 완료" : MODAL_ACTION_LABELS.proceedOrderRequest,
-          onClick: () => onConfirm({ factoryName: factoryName.trim(), quantity: normalizedQuantity }),
+          label: requested ? (copy.requestedBadge ?? "발주 완료") : MODAL_ACTION_LABELS.proceedOrderRequest,
+          onClick: () => onConfirm({ factoryName: confirmedFactoryName, quantity: confirmedQuantity }),
           tone: "primary",
           disabled: !canSubmit,
           className: "transition py-2.5",
@@ -104,33 +98,25 @@ export default function OrderRequestConfirmModal({
       </section>
 
       <section className="rounded-2xl border border-stone-200 bg-white p-4">
-        <div className="text-sm font-semibold text-stone-900">{copy.orderSectionTitle ?? "공장 발주"}</div>
-        <div className="mt-3 grid gap-3 md:grid-cols-2">
-          <label className="space-y-1.5">
-            <span className="text-xs font-medium text-stone-500">{copy.factoryFieldLabel ?? "공장 선택"}</span>
-            <select
-              value={factoryName}
-              onChange={(event) => setFactoryName(event.target.value)}
-              disabled={Boolean(requested)}
-              className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 outline-none focus:border-stone-500 disabled:bg-stone-100 disabled:text-stone-500"
-            >
-              <option value="">{copy.factoryPlaceholder ?? "공장 선택"}</option>
-              {factoryOptions.map((option) => <option key={option} value={option}>{option}</option>)}
-            </select>
-          </label>
-          <label className="space-y-1.5">
-            <span className="text-xs font-medium text-stone-500">{copy.quantityFieldLabel ?? "발주 수량"}</span>
-            <input
-              type="number"
-              min={0}
-              step={1}
-              value={quantityInput}
-              onChange={(event) => setQuantityInput(event.target.value)}
-              disabled={Boolean(requested)}
-              className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 outline-none focus:border-stone-500 disabled:bg-stone-100 disabled:text-stone-500"
-            />
-          </label>
-        </div>
+        <div className="text-sm font-semibold text-stone-900">{copy.confirmSectionTitle ?? copy.orderSectionTitle ?? "발주 확인"}</div>
+        <dl className="mt-3 grid grid-cols-1 gap-3 text-sm text-stone-600 md:grid-cols-2">
+          <div>
+            <dt className="text-xs font-medium text-stone-400">{copy.factoryFieldLabel ?? "공장"}</dt>
+            <dd className="mt-1 font-medium text-stone-900">{confirmedFactoryName || "-"}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-medium text-stone-400">{copy.dueDateFieldLabel ?? "납기일"}</dt>
+            <dd className="mt-1 font-medium text-stone-900">{confirmedDueDate || "-"}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-medium text-stone-400">{copy.quantityFieldLabel ?? "발주 수량"}</dt>
+            <dd className="mt-1 font-medium text-stone-900">{copy.quantityFormat.replace("{count}", confirmedQuantity.toLocaleString())}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-medium text-stone-400">{copy.orderSectionTitle ?? "공장 발주"}</dt>
+            <dd className="mt-1 text-xs text-stone-500">{copy.confirmNotice ?? "수정이 필요하면 모달을 닫고 발주정보에서 먼저 수정해주세요."}</dd>
+          </div>
+        </dl>
         {requested ? (
           <div className="mt-3 space-y-2">
             <div className="inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">

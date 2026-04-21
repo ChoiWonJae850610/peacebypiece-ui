@@ -104,7 +104,10 @@ export const workorderEn = {
     factoryOrderAlreadyRequestedToast: "This work order has already been requested.",
     factoryOrderRequiresApprovalToast: "You can request an order after review approval.",
     factoryOrderFactoryRequiredToast: "Please select a factory.",
-    factoryOrderQuantityRequiredToast: "Please enter an order quantity.",
+    factoryOrderDueDateRequiredToast: "Please enter a due date.",
+    factoryOrderQuantityRequiredToast: "Quantity must be at least 1.",
+    factoryOrderLaborCostInvalidToast: "Labor cost cannot be negative.",
+    factoryOrderLossCostInvalidToast: "Loss cost cannot be negative.",
     factoryOrderNotAllowedToast: "You do not have permission to request this order.",
   },
   history: {
