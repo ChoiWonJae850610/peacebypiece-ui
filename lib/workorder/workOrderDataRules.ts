@@ -3,7 +3,7 @@ import {
   normalizeStoredPriority,
   normalizeStoredSeason,
 } from "@/lib/constants/workorderDefaults";
-import { toInventoryStatus } from "@/lib/constants/workorderDomain";
+import { ORDER_ENTRY_TARGET_TYPE, toInventoryStatus, toOrderEntryTargetType } from "@/lib/constants/workorderDomain";
 import {
   DEFAULT_FACTORY_OPTION,
   DEFAULT_ORDER_TYPE,
@@ -60,6 +60,7 @@ export function sanitizeWorkOrderOrderEntry(
   return {
     id: item.id || fallback?.id || "",
     type: normalizeOrderEntryType(item.type ?? fallback?.type),
+    targetType: toOrderEntryTargetType(item.targetType ?? fallback?.targetType ?? ORDER_ENTRY_TARGET_TYPE.factory),
     factory: item.factory || fallback?.factory || DEFAULT_FACTORY_OPTION,
     dueDate: item.dueDate || fallback?.dueDate || "",
     quantity: toNonNegativeNumber(item.quantity ?? fallback?.quantity),

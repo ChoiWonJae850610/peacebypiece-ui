@@ -1,4 +1,11 @@
 import { isOfficialAttachment } from "@/lib/permissions/attachments";
+export {
+  getOrderEntriesByTargetType,
+  getOrderEntriesForTargetType,
+  getRepresentativeOrderEntry,
+  getRepresentativeOrderEntryFromWorkOrder,
+  getSubmittableOrderEntries,
+} from "@/lib/workorder/orderSubmission";
 import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
 import { isAdminRole, isDesignerRole, isInspectorRole } from "@/lib/constants/roles";
 import type { UserProfile } from "@/types/user";

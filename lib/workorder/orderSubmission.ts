@@ -1,7 +1,9 @@
 import {
   DEFAULT_UNASSIGNED_FACTORY_LABEL,
   DEFAULT_UNSELECTED_OPTION,
+  ORDER_ENTRY_TARGET_TYPE,
   ORDER_FACTORY_UNSELECTABLE_VALUES,
+  type OrderEntryTargetTypeValue,
   type OrderFactoryUnselectableValue,
 } from "@/lib/constants/workorderDomain";
 import type { OrderEntry, WorkOrder } from "@/types/workorder";
@@ -15,6 +17,8 @@ export type OrderSubmissionSnapshot = {
   lossCost: number;
   priority: string;
 };
+
+export type OrderEntriesByTarget = Record<OrderEntryTargetTypeValue, OrderEntry[]>;
 
 function normalizeText(value: unknown) {
   return String(value ?? "").trim();
@@ -30,12 +34,51 @@ function normalizeComparableSelection(value: unknown) {
   return normalizeText(value).replace(/\s+/g, "").toLocaleLowerCase("ko-KR");
 }
 
-export function getRepresentativeOrderEntry(orderEntries?: OrderEntry[] | null): OrderEntry | null {
-  return orderEntries?.find((entry) => Boolean(entry)) ?? null;
+export function getOrderEntriesByTargetType(orderEntries?: OrderEntry[] | null): OrderEntriesByTarget {
+  const initial: OrderEntriesByTarget = {
+    [ORDER_ENTRY_TARGET_TYPE.factory]: [],
+    [ORDER_ENTRY_TARGET_TYPE.fabric]: [],
+    [ORDER_ENTRY_TARGET_TYPE.subsidiary]: [],
+  };
+
+  for (const entry of orderEntries ?? []) {
+    if (!entry) continue;
+    const targetType = entry.targetType ?? ORDER_ENTRY_TARGET_TYPE.factory;
+    initial[targetType].push(entry);
+  }
+
+  return initial;
 }
 
-export function getRepresentativeOrderEntryFromWorkOrder(workOrder: WorkOrder): OrderEntry | null {
-  return getRepresentativeOrderEntry(workOrder.orderEntries);
+export function getOrderEntriesForTargetType(
+  orderEntries: OrderEntry[] | null | undefined,
+  targetType: OrderEntryTargetTypeValue = ORDER_ENTRY_TARGET_TYPE.factory,
+): OrderEntry[] {
+  return getOrderEntriesByTargetType(orderEntries)[targetType];
+}
+
+export function getRepresentativeOrderEntry(
+  orderEntries?: OrderEntry[] | null,
+  targetType: OrderEntryTargetTypeValue = ORDER_ENTRY_TARGET_TYPE.factory,
+): OrderEntry | null {
+  return getOrderEntriesForTargetType(orderEntries, targetType).find((entry) => Boolean(entry)) ?? null;
+}
+
+export function getRepresentativeOrderEntryFromWorkOrder(
+  workOrder: WorkOrder,
+  targetType: OrderEntryTargetTypeValue = ORDER_ENTRY_TARGET_TYPE.factory,
+): OrderEntry | null {
+  return getRepresentativeOrderEntry(workOrder.orderEntries, targetType);
+}
+
+export function getSubmittableOrderEntries(orderEntries?: OrderEntry[] | null): OrderEntry[] {
+  return (orderEntries ?? []).filter((entry) => {
+    if (!entry) return false;
+    const hasFactoryLikeValue = Boolean(normalizeText(entry.factory));
+    const hasDueDate = Boolean(normalizeText(entry.dueDate));
+    const hasQuantity = normalizeNonNegativeNumber(entry.quantity) > 0;
+    return hasFactoryLikeValue || hasDueDate || hasQuantity;
+  });
 }
 
 export function isOrderFactoryUnselectableValue(value: unknown): value is OrderFactoryUnselectableValue {
@@ -75,7 +118,7 @@ export function getOrderSubmissionSnapshotFromSources(payload: {
 }
 
 export function getOrderSubmissionSnapshot(workOrder: WorkOrder): OrderSubmissionSnapshot {
-  const representativeEntry = getRepresentativeOrderEntryFromWorkOrder(workOrder);
+  const representativeEntry = getRepresentativeOrderEntryFromWorkOrder(workOrder, ORDER_ENTRY_TARGET_TYPE.factory);
   return getOrderSubmissionSnapshotFromSources({
     representativeEntry,
     vendor: workOrder.vendor,
@@ -88,7 +131,7 @@ export function getOrderSubmissionSnapshot(workOrder: WorkOrder): OrderSubmissio
 }
 
 export function syncWorkOrderOrderSnapshot(workOrder: WorkOrder, orderEntries?: OrderEntry[] | null): WorkOrder {
-  const representativeEntry = getRepresentativeOrderEntry(orderEntries ?? workOrder.orderEntries);
+  const representativeEntry = getRepresentativeOrderEntry(orderEntries ?? workOrder.orderEntries, ORDER_ENTRY_TARGET_TYPE.factory);
   if (!representativeEntry) {
     return {
       ...workOrder,

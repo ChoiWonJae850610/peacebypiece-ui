@@ -6,6 +6,7 @@ import {
   DEFAULT_OUTSOURCING_UNIT,
   PRIORITY_OPTIONS,
 } from "@/lib/constants/workorderOptions";
+import { ORDER_ENTRY_TARGET_TYPE } from "@/lib/constants/workorderDomain";
 import { recalculateOutsourcing } from "@/lib/workorder/detail/detailCalculations";
 import { createId, sanitizeOrderEntry, sanitizeSelectValue, toNumber } from "@/lib/workorder/detail/detailSanitizers";
 import { getOrderSubmissionSnapshotFromSources, getRepresentativeOrderEntry } from "@/lib/workorder/orderSubmission";
@@ -76,6 +77,7 @@ export function createNewOrderEntry(orderItems: OrderEntryState[], currentWorkfl
   return sanitizeOrderEntry({
     id: createId("order"),
     type: representativeEntry?.type || DEFAULT_ORDER_TYPE,
+    targetType: representativeEntry?.targetType ?? ORDER_ENTRY_TARGET_TYPE.factory,
     factory: DEFAULT_FACTORY_OPTION,
     dueDate: representativeEntry?.dueDate || "",
     quantity: 0,

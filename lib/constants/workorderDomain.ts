@@ -110,6 +110,38 @@ export const ORDER_FACTORY_UNSELECTABLE_VALUES = [
 ] as const;
 export type OrderFactoryUnselectableValue = (typeof ORDER_FACTORY_UNSELECTABLE_VALUES)[number];
 
+export const ORDER_ENTRY_TARGET_TYPE = {
+  factory: "factory",
+  fabric: "fabric",
+  subsidiary: "subsidiary",
+} as const;
+
+export type OrderEntryTargetTypeValue = (typeof ORDER_ENTRY_TARGET_TYPE)[keyof typeof ORDER_ENTRY_TARGET_TYPE];
+
+export const ORDER_ENTRY_TARGET_TYPE_LABELS: Record<OrderEntryTargetTypeValue, string> = {
+  [ORDER_ENTRY_TARGET_TYPE.factory]: "공장",
+  [ORDER_ENTRY_TARGET_TYPE.fabric]: "원단",
+  [ORDER_ENTRY_TARGET_TYPE.subsidiary]: "부자재",
+};
+
+export const ORDER_ENTRY_TARGET_TYPE_VALUES = Object.values(ORDER_ENTRY_TARGET_TYPE) as OrderEntryTargetTypeValue[];
+
+export function toOrderEntryTargetType(value: unknown): OrderEntryTargetTypeValue {
+  if (typeof value === "string") {
+    const normalized = value.trim();
+    if (ORDER_ENTRY_TARGET_TYPE_VALUES.includes(normalized as OrderEntryTargetTypeValue)) {
+      return normalized as OrderEntryTargetTypeValue;
+    }
+    if (normalized === "원단") return ORDER_ENTRY_TARGET_TYPE.fabric;
+    if (normalized === "부자재") return ORDER_ENTRY_TARGET_TYPE.subsidiary;
+  }
+  return ORDER_ENTRY_TARGET_TYPE.factory;
+}
+
+export function isOrderEntryTargetType(value: unknown): value is OrderEntryTargetTypeValue {
+  return ORDER_ENTRY_TARGET_TYPE_VALUES.includes(String(value ?? "").trim() as OrderEntryTargetTypeValue);
+}
+
 export const ORDER_REQUEST_TABLE_COLUMNS = [
   { key: "type", label: "구분", align: "left" },
   { key: "factory", label: "공장", align: "left" },

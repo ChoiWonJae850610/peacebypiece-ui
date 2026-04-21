@@ -1,7 +1,7 @@
 import type { Material } from "@/types/material";
 import type { RoleType } from "@/types/permission";
 import type { UserProfile } from "@/types/user";
-import type { InventoryChangeTypeValue, InventoryStatusValue } from "@/lib/constants/workorderDomain";
+import type { InventoryChangeTypeValue, InventoryStatusValue, OrderEntryTargetTypeValue } from "@/lib/constants/workorderDomain";
 import type { OrderInspectionStatusValue } from "@/lib/constants/workorderStates";
 import type { DisplayStage, HistoryCategory, HistoryFilter, HistoryTone, WorkflowAction, WorkflowState } from "@/types/workflow";
 
@@ -72,6 +72,7 @@ export type FactoryOrderRequest = {
 export type OrderEntry = {
   id: string;
   type: string;
+  targetType: OrderEntryTargetTypeValue;
   factory: string;
   dueDate: string;
   quantity: number;

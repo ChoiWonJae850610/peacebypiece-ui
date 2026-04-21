@@ -36,7 +36,7 @@ export function buildWorkOrderSeedSource(locale: Locale = DEFAULT_LOCALE): MockW
       laborCost: 18000,
       lossCost: 6000,
       orderEntries: [
-        { id: "ord-1", type: wo1.orderType, factory: wo1.vendor, dueDate: "03/29", quantity: 20, laborCost: 18000, lossCost: 6000, priority: wo1.priority },
+        { id: "ord-1", targetType: "factory", type: wo1.orderType, factory: wo1.vendor, dueDate: "03/29", quantity: 20, laborCost: 18000, lossCost: 6000, priority: wo1.priority },
       ],
       inventoryQuantity: 12,
       inventoryStatus: INVENTORY_STATUS.shortage,
@@ -55,10 +55,14 @@ export function buildWorkOrderSeedSource(locale: Locale = DEFAULT_LOCALE): MockW
         { id: "o-3", process: wo1.outsourcing.print, vendor: wo1.outsourcing.vendorPrint, quantity: 20, unitType: wo1.outsourcing.unitPerPiece, unitCost: 5300, totalCost: 106000, status: wo1.outsourcing.statusWaiting },
       ],
       attachments: [
-        { id: "att-1", name: wo1.attachments.mainSample, type: "image", url: placeholderImage, scope: "official", ownerId: "user-designer", ownerName: users.designer },
-        { id: "att-2", name: wo1.attachments.workorderSheet, type: "pdf", url: placeholderPdf, scope: "official", ownerId: "user-admin", ownerName: users.admin },
-        { id: "att-3", name: wo1.attachments.swatch, type: "image", url: placeholderImage, scope: "memo", linkedThreadId: "memo-1", ownerId: null, ownerName: users.legacyAttachmentOwner },
-        { id: "att-4", name: wo1.attachments.sizeSpec, type: "pdf", url: placeholderPdf, scope: "memo", linkedReplyId: "reply-1", ownerId: null, ownerName: users.legacyAttachmentOwner },
+        { id: "att-1", name: wo1.attachments.mainSample,
+          type: "image", url: placeholderImage, scope: "official", ownerId: "user-designer", ownerName: users.designer },
+        { id: "att-2", name: wo1.attachments.workorderSheet,
+          type: "pdf", url: placeholderPdf, scope: "official", ownerId: "user-admin", ownerName: users.admin },
+        { id: "att-3", name: wo1.attachments.swatch,
+          type: "image", url: placeholderImage, scope: "memo", linkedThreadId: "memo-1", ownerId: null, ownerName: users.legacyAttachmentOwner },
+        { id: "att-4", name: wo1.attachments.sizeSpec,
+          type: "pdf", url: placeholderPdf, scope: "memo", linkedReplyId: "reply-1", ownerId: null, ownerName: users.legacyAttachmentOwner },
       ],
       memoThreads: [
         {
@@ -104,8 +108,8 @@ export function buildWorkOrderSeedSource(locale: Locale = DEFAULT_LOCALE): MockW
       laborCost: 24000,
       lossCost: 9000,
       orderEntries: [
-        { id: "ord-21", type: wo2.orderTypeMain, factory: wo2.vendor, dueDate: "04/02", quantity: 20, laborCost: 16000, lossCost: 5000, priority: wo2.priority, inspectionStatus: "inspection_pending" },
-        { id: "ord-22", type: wo2.orderTypeMain, factory: wo2.outsourcing.vendorWashing, dueDate: "04/05", quantity: 10, laborCost: 8000, lossCost: 4000, priority: wo2.priority, inspectionStatus: "inspection_pending" },
+        { id: "ord-21", targetType: "factory", type: wo2.orderTypeMain, factory: wo2.vendor, dueDate: "04/02", quantity: 20, laborCost: 16000, lossCost: 5000, priority: wo2.priority, inspectionStatus: "inspection_pending" },
+        { id: "ord-22", targetType: "factory", type: wo2.orderTypeMain, factory: wo2.outsourcing.vendorWashing, dueDate: "04/05", quantity: 10, laborCost: 8000, lossCost: 4000, priority: wo2.priority, inspectionStatus: "inspection_pending" },
       ],
       inventoryQuantity: 28,
       inventoryStatus: INVENTORY_STATUS.normal,
@@ -160,7 +164,7 @@ export function buildWorkOrderSeedSource(locale: Locale = DEFAULT_LOCALE): MockW
       dueDate: "03/18",
       quantity: 10,
       orderEntries: [
-        { id: "ord-31", type: wo3.orderType, factory: wo3.vendor, dueDate: "03/18", quantity: 10, laborCost: 0, lossCost: 0, priority: wo3.priority, inspectionStatus: "inspection_completed" },
+        { id: "ord-31", targetType: "factory", type: wo3.orderType, factory: wo3.vendor, dueDate: "03/18", quantity: 10, laborCost: 0, lossCost: 0, priority: wo3.priority, inspectionStatus: "inspection_completed" },
       ],
       inventoryQuantity: 10,
       inventoryStatus: INVENTORY_STATUS.normal,
@@ -174,9 +178,12 @@ export function buildWorkOrderSeedSource(locale: Locale = DEFAULT_LOCALE): MockW
         { id: "o-31", process: wo3.outsourcing.stitching, vendor: wo3.vendor, quantity: 10, unitType: wo3.outsourcing.unitPerPiece, unitCost: 4000, totalCost: 40000, status: wo3.outsourcing.statusCompleted },
       ],
       attachments: [
-        { id: "att-31", name: wo3.attachments.completedImage, type: "image", url: placeholderImage, scope: "official", ownerId: "user-qc", ownerName: users.inspector },
-        { id: "att-32", name: wo3.attachments.checklist, type: "pdf", url: placeholderPdf, scope: "official", ownerId: null, ownerName: users.legacyAttachmentOwner },
-        { id: "att-33", name: wo3.attachments.materialSpec, type: "pdf", url: placeholderPdf, scope: "memo", linkedThreadId: "memo-31", ownerId: null, ownerName: users.legacyAttachmentOwner },
+        { id: "att-31", name: wo3.attachments.completedImage,
+          type: "image", url: placeholderImage, scope: "official", ownerId: "user-qc", ownerName: users.inspector },
+        { id: "att-32", name: wo3.attachments.checklist,
+          type: "pdf", url: placeholderPdf, scope: "official", ownerId: null, ownerName: users.legacyAttachmentOwner },
+        { id: "att-33", name: wo3.attachments.materialSpec,
+          type: "pdf", url: placeholderPdf, scope: "memo", linkedThreadId: "memo-31", ownerId: null, ownerName: users.legacyAttachmentOwner },
       ],
       memoThreads: [
         {

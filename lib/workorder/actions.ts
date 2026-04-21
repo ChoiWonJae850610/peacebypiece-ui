@@ -1,4 +1,4 @@
-import { INVENTORY_CHANGE_TYPE, INVENTORY_STATUS } from "@/lib/constants/workorderDomain";
+import { INVENTORY_CHANGE_TYPE, INVENTORY_STATUS, ORDER_ENTRY_TARGET_TYPE } from "@/lib/constants/workorderDomain";
 import {
   DEFAULT_WORKORDER_CATEGORY1,
   DEFAULT_WORKORDER_CATEGORY2,
@@ -304,6 +304,7 @@ function cloneOrderEntries(
     ...entry,
     id: nextId("order"),
     type: nextOrderType,
+    targetType: entry.targetType ?? ORDER_ENTRY_TARGET_TYPE.factory,
     inspectionStatus: "order_pending" as const,
   }));
 }

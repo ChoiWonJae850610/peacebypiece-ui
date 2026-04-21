@@ -1,5 +1,6 @@
 import type { Material } from "@/types/material";
 import type { Attachment, MemoReply, MemoThread, OrderEntry, Outsourcing, WorkOrder } from "@/types/workorder";
+import { ORDER_ENTRY_TARGET_TYPE, toOrderEntryTargetType } from "@/lib/constants/workorderDomain";
 
 import { buildChildEntityId, dedupeNormalizedStrings } from "@/lib/workorder/normalizeRules";
 
@@ -8,6 +9,7 @@ export function normalizeOrderEntriesForStorage(workOrderId: string, orderEntrie
   return (orderEntries ?? []).map((entry, index) => ({
     ...entry,
     id: String(entry.id ?? "").trim() || buildChildEntityId(workOrderId, "order", index),
+    targetType: toOrderEntryTargetType(entry.targetType ?? ORDER_ENTRY_TARGET_TYPE.factory),
     dueDate: String(entry.dueDate ?? ""),
     priority: String(entry.priority ?? ""),
   }));
