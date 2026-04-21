@@ -1,4 +1,4 @@
-import type { UserProfile, WorkOrder, WorkflowAction } from "@/types/workorder";
+import type { FactoryOrderRequest, UserProfile, WorkOrder, WorkflowAction } from "@/types/workorder";
 import type { InventoryChangeInput, InspectionCompleteInput } from "@/lib/hooks/workorder/useWorkOrderActionTypes";
 import {
   applyInventoryAdjustmentToWorkOrder,
@@ -6,9 +6,11 @@ import {
   buildInventoryChanges,
   completeInspectionForWorkOrder,
   patchWorkOrder,
+  requestFactoryOrderForWorkOrder,
   updateManagerForWorkOrder,
 } from "@/lib/workorder/actions";
 import {
+  createFactoryOrderRequestHistoryLog,
   createInspectionCompleteHistoryLog,
   createInventoryHistoryLog,
   createManagerChangeHistoryLog,
@@ -47,6 +49,29 @@ export function buildWorkflowActionResult(payload: {
     saveStatus: payload.action.nextState === "review_requested" ? "dirty" : undefined,
     openInventoryEditor: payload.action.nextState === "in_inspection",
     toastMessage: (payload.text ?? defaultActionFlowText).workflowChangedToastFormat.replace("{label}", payload.action.label),
+  };
+}
+
+export function buildFactoryOrderRequestResult(payload: {
+  workOrder: WorkOrder;
+  actorName: string;
+  input: FactoryOrderRequest;
+  text?: ActionFlowText;
+  historyText?: ActionFlowHistoryText;
+}): WorkOrderActionFlowResult | null {
+  if (payload.workOrder.factoryOrderRequest) return null;
+
+  return {
+    nextWorkOrder: requestFactoryOrderForWorkOrder(payload.workOrder, payload.input),
+    historyLogs: [
+      createFactoryOrderRequestHistoryLog(payload.actorName, payload.workOrder.id, {
+        factoryName: payload.input.factoryName,
+        quantity: payload.input.quantity,
+        requestedAt: payload.input.requestedAt,
+      }, payload.historyText ?? defaultHistoryText),
+    ],
+    saveStatus: "dirty",
+    toastMessage: (payload.text ?? defaultActionFlowText).factoryOrderRequestedToast,
   };
 }
 

@@ -86,7 +86,7 @@ export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles
         actions.push({ label: WORKFLOW_ACTION_LABELS.requestReview, nextState: "review_requested" });
       }
       if (canRequestOrder(currentRoles)) {
-        actions.push({ label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "in_production" });
+        actions.push({ label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "order_requested" });
       }
       return actions;
     }
@@ -106,7 +106,7 @@ export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles
       if (canRequestOrder(currentRoles)) {
         return [
           { label: WORKFLOW_ACTION_LABELS.cancelReviewApproval, nextState: "review_requested" },
-          { label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "in_production" },
+          { label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "order_requested" },
         ];
       }
       return [];

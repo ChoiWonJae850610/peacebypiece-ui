@@ -103,6 +103,20 @@ export function listActivePartnerNamesByTypes(partnerTypes: readonly PartnerType
     .filter(Boolean);
 }
 
+export function findPartnerIdByNameAndTypes(name: string, partnerTypes: readonly PartnerType[]): string | null {
+  const normalizedName = normalizePartnerName(name);
+  if (!normalizedName) return null;
+
+  const allowedTypes = new Set(partnerTypes);
+  const target = listPartnerMasterItems().find((partner) => {
+    if (!((PARTNER_INACTIVE_SELECTION_POLICY.includeInWorkOrderOptions ? true : partner.isActive))) return false;
+    if (!partner.partnerTypes.some((type) => allowedTypes.has(type))) return false;
+    return normalizePartnerName(partner.name) === normalizedName;
+  });
+
+  return target?.id ?? null;
+}
+
 export function listActivePartnerNamesByCapability(capability: PartnerCapabilityType): string[] {
   return listPartnerMasterItems()
     .filter((partner) => (PARTNER_INACTIVE_SELECTION_POLICY.includeInWorkOrderOptions ? true : partner.isActive) && getPartnerCapabilityTypes(partner).includes(capability))

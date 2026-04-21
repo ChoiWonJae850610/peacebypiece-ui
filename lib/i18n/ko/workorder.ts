@@ -100,6 +100,8 @@ export const workorderKo = {
     managerChangedToast: "담당자가 변경되었습니다.",
     workflowChangedToastFormat: '"{label}" 처리되었습니다.',
     inventoryAppliedToast: "재고 수정이 반영되었습니다.",
+    factoryOrderRequestedToast: "공장 발주 요청이 반영되었습니다.",
+    factoryOrderAlreadyRequestedToast: "이미 공장 발주 요청이 등록되어 있습니다.",
   },
   history: {
     actorSeparator: " · ",
@@ -122,6 +124,7 @@ export const workorderKo = {
       deleted: "작업지시서 삭제",
       titleRenamed: "작업지시서명 변경",
       managerChanged: "담당자 변경",
+      factoryOrderRequested: "공장 발주 요청",
     },
     messages: {
       created: "최초 생성되었습니다.",
@@ -142,6 +145,7 @@ export const workorderKo = {
       titleRenamed: "작업지시서명이 변경되었습니다.",
       titleRenamedSeries: "작업지시서명이 리오더 계열 전체에 반영되었습니다.",
       managerChanged: "담당자가 변경되었습니다.",
+      factoryOrderRequested: "공장 발주 요청이 기록되었습니다.",
     },
     detailLabels: {
       author: "작성자",
@@ -172,6 +176,9 @@ export const workorderKo = {
       quantityAdjustedFormat: "{quantity}장으로 보정",
       quantityCurrentFormat: "{quantity}장",
       savedAtFormat: "저장 시각 {time}",
+      factory: "공장",
+      quantity: "수량",
+      requestedAt: "발주 시각",
     },
   },
   ui: {

@@ -126,6 +126,28 @@ export function createReorderHistoryLog(
   });
 }
 
+export function createFactoryOrderRequestHistoryLog(
+  user: string,
+  workOrderId: string,
+  payload: { factoryName: string; quantity: number; requestedAt: string },
+  text: HistoryText = defaultHistoryText,
+) {
+  return createHistoryLog({
+    action: text.actions.factoryOrderRequested ?? text.actions.statusChanged,
+    message: text.messages.factoryOrderRequested ?? text.messages.statusChanged,
+    user,
+    workOrderId,
+    category: "work",
+    tone: "violet",
+    detailLines: [
+      { label: text.detailLabels.factory ?? "공장", value: payload.factoryName || "-" },
+      { label: text.detailLabels.quantity ?? "수량", value: `${payload.quantity.toLocaleString()}장` },
+      { label: text.detailLabels.requestedAt ?? "발주 시각", value: payload.requestedAt },
+    ],
+    text,
+  });
+}
+
 export function createDeletionHistoryLog(
   user: string,
   workOrderId: string,

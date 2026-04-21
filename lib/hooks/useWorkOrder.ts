@@ -220,7 +220,7 @@ export function useWorkOrder() {
         workOrder: coreState.selectedWorkOrder,
         nextTitle,
       }),
-    handleConfirmOrderRequest: () => actionState.handleConfirmOrderRequest(coreState.selectedWorkOrder),
+    handleConfirmOrderRequest: (payload: { factoryName: string; quantity: number }) => actionState.handleConfirmOrderRequest(coreState.selectedWorkOrder, payload),
     handleCloseOrderRequestConfirm: actionState.handleCloseOrderRequestConfirm,
     handleInventoryApply: (payload: { inboundQuantity: number; adjustmentQuantity: number; deductionQuantity: number; memo: string }) =>
       actionState.handleInventoryApply(coreState.selectedWorkOrder.id, payload),

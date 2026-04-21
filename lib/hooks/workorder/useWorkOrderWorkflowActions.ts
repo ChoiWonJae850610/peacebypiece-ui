@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useI18n } from "@/lib/i18n";
 import {
+  buildFactoryOrderRequestResult,
   buildInspectionCompleteResult,
   buildInventoryApplyResult,
   buildPatchWorkOrderResult,
@@ -12,10 +13,11 @@ import { applySharedInspectionComplete, applySharedInventoryAdjustment } from "@
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
 import { persistWorkOrdersWithHistory } from "./workorderRepositoryMutations";
 import { normalizeWorkOrdersReorderIdentity } from "@/lib/workorder/reorder/helpers";
+import { findPartnerIdByNameAndTypes } from "@/lib/admin/partnerMasterPersistence";
 import { createWorkOrderKindChangeHistoryLog } from "@/lib/workorder/history/builders";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
-import type { WorkOrder, WorkflowAction } from "@/types/workorder";
+import type { FactoryOrderRequest, WorkOrder, WorkflowAction } from "@/types/workorder";
 import type {
   InspectionCompleteInput,
   InventoryChangeInput,
@@ -23,7 +25,7 @@ import type {
   UseWorkOrderActionsParams,
 } from "./useWorkOrderActionTypes";
 
-const requiresOrderRequestConfirmation = (action: WorkflowAction) => action.nextState === "in_production";
+const requiresOrderRequestConfirmation = (action: WorkflowAction) => action.nextState === "order_requested";
 
 type UseWorkOrderWorkflowActionsParams = Pick<
   UseWorkOrderActionsParams,
@@ -110,13 +112,58 @@ export function useWorkOrderWorkflowActions({
   );
 
   const handleConfirmOrderRequest = useCallback(
-    (workOrder: WorkOrder) => {
+    (workOrder: WorkOrder, payload: { factoryName: string; quantity: number }) => {
       if (!pendingWorkflowAction) return;
-      void applyWorkflowAction(workOrder, pendingWorkflowAction);
+      if (workOrder.factoryOrderRequest) {
+        setToastMessage(actionFlowText.factoryOrderAlreadyRequestedToast);
+        setPendingWorkflowAction(null);
+        setOrderRequestConfirmOpen(false);
+        return;
+      }
+
+      const requestedAt = new Date().toISOString();
+      const factoryId = findPartnerIdByNameAndTypes(payload.factoryName, ["factory"])
+        ?? `factory:${payload.factoryName.trim().toLocaleLowerCase("ko-KR").replace(/\s+/g, "-")}`;
+      const result = buildFactoryOrderRequestResult({
+        workOrder,
+        actorName: currentUser.name,
+        input: {
+          factoryId,
+          factoryName: payload.factoryName,
+          quantity: Math.max(0, Number(payload.quantity) || 0),
+          requestedAt,
+          requestedBy: currentUser.name,
+          requestedById: currentUser.id,
+        } satisfies FactoryOrderRequest,
+        text: actionFlowText,
+        historyText,
+      });
+      if (!result) {
+        setToastMessage(actionFlowText.factoryOrderAlreadyRequestedToast);
+        setPendingWorkflowAction(null);
+        setOrderRequestConfirmOpen(false);
+        return;
+      }
+
+      const nextWorkOrders = workOrdersRef.current.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item));
+      void persistWorkOrdersWithHistory(repository, {
+        workOrders: nextWorkOrders,
+        historyLogs: result.historyLogs,
+      });
+      setWorkOrders(nextWorkOrders);
+      if (result.historyLogs?.length) {
+        setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
+      }
+      if (result.saveStatus) {
+        setSaveStatus(result.saveStatus);
+      }
+      if (result.toastMessage) {
+        setToastMessage(result.toastMessage);
+      }
       setPendingWorkflowAction(null);
       setOrderRequestConfirmOpen(false);
     },
-    [applyWorkflowAction, pendingWorkflowAction, setOrderRequestConfirmOpen, setPendingWorkflowAction],
+    [actionFlowText, currentUser.id, currentUser.name, historyText, pendingWorkflowAction, repository, setHistoryLogs, setOrderRequestConfirmOpen, setPendingWorkflowAction, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   const handleCloseOrderRequestConfirm = useCallback(() => {

@@ -13,7 +13,7 @@ import type { Material } from "@/types/material";
 import { REWORK_TO_MAIN_APPEND_ROUND, applyReorderIdentity, buildWorkOrderTitle, getNextReorderRound, getOrderTypeFromWorkOrderKind, getWorkOrderBaseTitle, getWorkOrderReorderGroupId, getWorkOrderReorderRound, syncOrderEntriesWithWorkOrderKind } from "@/lib/workorder/reorder/helpers";
 import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
 import { shouldApplyRecommendedCategoryOnTitleRename } from "@/lib/utils/workorderCategoryRecommend";
-import type { Attachment, InventoryChange, MemoReply, MemoThread, OrderEntry, RoleType, WorkOrder, WorkflowAction } from "@/types/workorder";
+import type { Attachment, FactoryOrderRequest, InventoryChange, MemoReply, MemoThread, OrderEntry, RoleType, WorkOrder, WorkflowAction } from "@/types/workorder";
 
 export function createNewWorkOrder(nextIndex: number, payload: {
   managerName: string;
@@ -105,6 +105,20 @@ export function applyInventoryAdjustmentToWorkOrder(
     ...workOrder,
     inventoryQuantity: nextInventory,
     inventoryStatus: nextInventory > 0 ? INVENTORY_STATUS.normal : INVENTORY_STATUS.shortage,
+  };
+}
+
+export function requestFactoryOrderForWorkOrder(
+  workOrder: WorkOrder,
+  payload: FactoryOrderRequest,
+): WorkOrder {
+  return {
+    ...workOrder,
+    workflowState: "order_requested",
+    factoryOrderRequest: {
+      ...payload,
+      requestedById: payload.requestedById ?? null,
+    },
   };
 }
 

@@ -100,6 +100,8 @@ export const workorderEn = {
     managerChangedToast: "Manager has been changed.",
     workflowChangedToastFormat: '"{label}" has been applied.',
     inventoryAppliedToast: "Inventory update has been applied.",
+    factoryOrderRequestedToast: "Factory order request has been recorded.",
+    factoryOrderAlreadyRequestedToast: "A factory order request has already been registered.",
   },
   history: {
     actorSeparator: " · ",
@@ -122,6 +124,7 @@ export const workorderEn = {
       deleted: "Work order deleted",
       titleRenamed: "Work order title changed",
       managerChanged: "Manager changed",
+      factoryOrderRequested: "Factory order requested",
     },
     messages: {
       created: "Created initially.",
@@ -142,6 +145,7 @@ export const workorderEn = {
       titleRenamed: "Work order title has been changed.",
       titleRenamedSeries: "The work order title has been applied to the entire reorder series.",
       managerChanged: "Manager has been changed.",
+      factoryOrderRequested: "Factory order request has been recorded.",
     },
     detailLabels: {
       author: "Author",
@@ -172,6 +176,9 @@ export const workorderEn = {
       quantityAdjustedFormat: "Adjusted to {quantity} pcs",
       quantityCurrentFormat: "{quantity} pcs",
       savedAtFormat: "Saved at {time}",
+      factory: "Factory",
+      quantity: "Quantity",
+      requestedAt: "Requested at",
     },
   },
   ui: {

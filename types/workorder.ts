@@ -60,6 +60,15 @@ export type Outsourcing = {
 
 export type OrderInspectionStatus = OrderInspectionStatusValue;
 
+export type FactoryOrderRequest = {
+  factoryId: string;
+  factoryName: string;
+  quantity: number;
+  requestedAt: string;
+  requestedBy: string;
+  requestedById?: string | null;
+};
+
 export type OrderEntry = {
   id: string;
   type: string;
@@ -110,6 +119,7 @@ export type WorkOrder = {
   memoThreads: MemoThread[];
   workflowState: WorkflowState;
   lastSavedAt: string;
+  factoryOrderRequest?: FactoryOrderRequest | null;
 };
 
 export type WorkOrderListItem = Pick<
