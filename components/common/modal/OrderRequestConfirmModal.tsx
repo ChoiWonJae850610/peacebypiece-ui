@@ -77,6 +77,12 @@ const TABLE_HEAD_CLASS = "px-3 py-2.5 text-center font-semibold text-stone-700";
 const TABLE_CELL_CLASS = "px-3 py-2.5 text-center align-middle leading-5";
 const TABLE_EMPTY_CLASS = "px-3 py-7 text-center text-sm text-stone-500";
 
+function isAndroidPrintFlow() {
+  if (typeof navigator === "undefined") return false;
+  return /Android/i.test(navigator.userAgent || "");
+}
+
+
 function SummaryLine({
   items,
   className = "",
@@ -274,7 +280,8 @@ export default function OrderRequestConfirmModal({
     setPrintFeedback(null);
     setIsPreparingPrint(true);
 
-    const printWindow = window.open("", "_blank", "width=1024,height=900");
+    const useAndroidPrintFlow = isAndroidPrintFlow();
+    const printWindow = window.open("", "_blank", "noopener=no,width=1024,height=900");
     if (!printWindow) {
       setPrintFeedback("팝업이 차단되어 PDF 창을 열 수 없습니다. 브라우저 팝업 차단을 해제한 뒤 다시 시도해주세요.");
       setIsPreparingPrint(false);
@@ -284,17 +291,30 @@ export default function OrderRequestConfirmModal({
     printWindowRef.current = printWindow;
 
     try {
-      printWindow.document.open();
-      printWindow.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8" /><title>발주서 준비 중</title><style>html,body{height:100%;margin:0;font-family:Arial,'Noto Sans KR',sans-serif;background:#f5f2eb;color:#1c1917;}body{display:flex;align-items:center;justify-content:center;padding:24px;}div{font-size:14px;font-weight:600;}</style></head><body><div>출력용 문서를 준비하는 중입니다...</div></body></html>`);
-      printWindow.document.close();
-
       const html = buildOrderRequestPrintHtml(workOrder, {
         requestNote,
+        autoPrint: !useAndroidPrintFlow,
+        showPrintToolbar: useAndroidPrintFlow,
+        closeAfterPrint: !useAndroidPrintFlow,
       });
-      printWindow.document.open();
-      printWindow.document.write(html);
-      printWindow.document.close();
-      printWindow.focus();
+
+      if (useAndroidPrintFlow) {
+        const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+        const objectUrl = URL.createObjectURL(blob);
+        printWindow.location.replace(objectUrl);
+        setTimeout(() => {
+          URL.revokeObjectURL(objectUrl);
+        }, 60_000);
+        setPrintFeedback("안드로이드 기기에서는 새 창 상단의 ‘인쇄’ 버튼으로 출력해주세요.");
+      } else {
+        printWindow.document.open();
+        printWindow.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8" /><title>발주서 준비 중</title><style>html,body{height:100%;margin:0;font-family:Arial,'Noto Sans KR',sans-serif;background:#f5f2eb;color:#1c1917;}body{display:flex;align-items:center;justify-content:center;padding:24px;}div{font-size:14px;font-weight:600;}</style></head><body><div>출력용 문서를 준비하는 중입니다...</div></body></html>`);
+        printWindow.document.close();
+        printWindow.document.open();
+        printWindow.document.write(html);
+        printWindow.document.close();
+        printWindow.focus();
+      }
     } catch (error) {
       console.error("[order-request-print] failed to render print window", error);
       setPrintFeedback("문서 생성 중 오류가 발생했습니다. 다시 시도해주세요.");
