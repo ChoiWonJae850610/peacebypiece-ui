@@ -5,6 +5,7 @@ import MobileTopBar from "@/components/layout/MobileTopBar";
 import WorkOrderDetail from "@/components/workorder/WorkOrderDetail";
 import WorkOrderOverlay from "@/components/workorder/WorkOrderOverlay";
 import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
+import type { AttachmentPermissionState } from "@/lib/workorder/attachments/attachmentPermissions";
 import type { Attachment, HistoryFilter, InventoryLog, RoleType, UserProfile, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
 
 export type SidebarListProps = ComponentProps<typeof SidebarContent>;
@@ -13,6 +14,7 @@ export type SidePanelProps = ComponentProps<typeof WorkOrderSidePanel>;
 export type MobileTopBarProps = ComponentProps<typeof MobileTopBar>;
 export type MobileDrawerProps = ComponentProps<typeof MobileDrawer>;
 export type ModalProps = ComponentProps<typeof WorkOrderOverlay>["modalProps"];
+export type GetAttachmentPermissions = (attachment: Attachment | null) => AttachmentPermissionState;
 
 export type BuildWorkspaceViewModelArgs = {
   drawerOpen: boolean;
@@ -65,7 +67,7 @@ export type BuildWorkspaceViewModelArgs = {
   visibleStages: DetailProps["visibleStages"];
   pendingAttachmentDelete: Attachment | null;
   canDeleteWorkOrder: SidebarListProps["canDelete"];
-  canDeleteAttachment: SidePanelProps["canDeleteAttachment"];
+  getAttachmentPermissions: GetAttachmentPermissions;
   onSetDrawerOpen: (next: boolean) => void;
   onSetBasicInfoOpen: (updater: (prev: boolean) => boolean) => void;
   onSetMaterialOpen: (next: boolean | ((prev: boolean) => boolean)) => void;
@@ -144,7 +146,7 @@ export type BaseWorkspaceViewModelArgs = {
   lastSavedAt: string | null;
   availableActions: WorkflowAction[];
   visibleStages: DetailProps["visibleStages"];
-  canDeleteAttachment: SidePanelProps["canDeleteAttachment"];
+  getAttachmentPermissions: GetAttachmentPermissions;
   onSave: () => void;
   onWorkflowAction: (action: WorkflowAction) => void;
   onUpdateSelectedWorkOrder: (patch: Partial<WorkOrder>) => void;
@@ -208,7 +210,7 @@ export type ModalViewModelArgs = {
   inventoryLogs: InventoryLog[];
   selectedAttachment: Attachment | null;
   pendingAttachmentDelete: Attachment | null;
-  canDeleteAttachment: SidePanelProps["canDeleteAttachment"];
+  getAttachmentPermissions: GetAttachmentPermissions;
   onSetInventoryEditorOpen: (next: boolean) => void;
   onSetPermissionModalOpen: (next: boolean) => void;
   onSetCreateWorkOrderModalOpen: (next: boolean) => void;

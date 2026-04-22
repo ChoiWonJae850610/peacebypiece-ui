@@ -12,11 +12,13 @@ import { useI18n } from "@/lib/i18n";
 export default function AttachmentPreviewModal({
   attachment,
   canDelete,
+  canDownload,
   onClose,
   onDelete,
 }: {
   attachment: Attachment | null;
   canDelete: boolean;
+  canDownload: boolean;
   onClose: () => void;
   onDelete: () => void;
 }) {
@@ -42,15 +44,17 @@ export default function AttachmentPreviewModal({
         {attachment ? (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-end gap-2">
-              <a
-                href={attachment.url}
-                download={attachment.name}
-                target="_blank"
-                rel="noreferrer"
-                className="pbp-interactive-button inline-flex items-center justify-center rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm transition hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
-              >
-                {copy.download}
-              </a>
+              {canDownload ? (
+                <a
+                  href={attachment.url}
+                  download={attachment.name}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="pbp-interactive-button inline-flex items-center justify-center rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm transition hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+                >
+                  {copy.download}
+                </a>
+              ) : null}
               {canDelete ? (
                 <button
                   type="button"

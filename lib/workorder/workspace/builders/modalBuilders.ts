@@ -19,7 +19,7 @@ export function buildModalProps({
   inventoryLogs,
   selectedAttachment,
   pendingAttachmentDelete,
-  canDeleteAttachment,
+  getAttachmentPermissions,
   onSetInventoryEditorOpen,
   onSetPermissionModalOpen,
   onSetCreateWorkOrderModalOpen,
@@ -27,6 +27,7 @@ export function buildModalProps({
   onSetAttachmentPreviewId,
   onSetPermissionTargetUserId,
   onSetCurrentUserId,
+  onSetHistoryFilter,
   onCreateWorkOrder,
   onConfirmOrderRequest,
   onCloseOrderRequestConfirm,
@@ -38,6 +39,8 @@ export function buildModalProps({
   onAttachmentDeleteConfirmClose,
   onAttachmentDeleteConfirm,
 }: ModalViewModelArgs): ModalProps {
+  const attachmentPermissions = getAttachmentPermissions(selectedAttachment);
+
   return {
     orderRequestConfirm: {
       open: orderRequestConfirmOpen,
@@ -47,7 +50,8 @@ export function buildModalProps({
     },
     attachmentPreview: {
       attachment: selectedAttachment,
-      canDelete: canDeleteAttachment(selectedAttachment),
+      canDelete: attachmentPermissions.canDelete,
+      canDownload: attachmentPermissions.canDownload,
       onClose: () => onSetAttachmentPreviewId(null),
       onDelete: () => selectedAttachment && onRequestDeleteAttachment(selectedAttachment.id),
     },

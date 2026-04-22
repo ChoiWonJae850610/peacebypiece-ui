@@ -5,6 +5,7 @@ import {
   normalizeRoles,
 } from "@/lib/constants/roles";
 import { getDisplayStageFromWorkflowState, VISIBLE_STAGES } from "@/lib/constants/workflow";
+import { getAttachmentCollectionPermissionState } from "@/lib/workorder/attachments/attachmentPermissions";
 import {
   calculateWorkOrderCosts,
   createWorkOrderListItem,
@@ -47,7 +48,13 @@ export function buildWorkOrderDerivedState({
   const visibleStages = VISIBLE_STAGES;
   const canEditBeforeApproval = currentWorkflowState === "draft" || (isAdmin && currentWorkflowState === "review_requested");
   const isReviewRequestLocked = !canEditBeforeApproval;
-  const canUploadOfficialAttachments = canUploadOfficialAttachmentsByRoles(currentRoles) && canEditBeforeApproval;
+  const canSeeAttachments = currentUser.permissions.canSeeAttachments;
+  const attachmentCollectionPermissions = getAttachmentCollectionPermissionState({
+    canSeeAttachments,
+    canManageAttachments: canUploadOfficialAttachmentsByRoles(currentRoles),
+    isReviewRequestLocked,
+  });
+  const canUploadOfficialAttachments = attachmentCollectionPermissions.canUpload;
   const scopedWorkOrders = filterWorkOrdersByUserScope(workOrders, workflowStateById, currentUser);
   const workOrderList = scopedWorkOrders.map(createWorkOrderListItem);
   const filteredWorkOrderList = filterWorkOrderList(workOrderList, workflowStateById, searchQuery);
@@ -57,7 +64,6 @@ export function buildWorkOrderDerivedState({
   const canEditInventory = currentUser.permissions.canEditInventory;
   const canOpenInventoryEditor = canEditInventoryForWorkflow(currentRoles, currentWorkflowState);
   const canSeeInventoryHistorySection = currentUser.permissions.canSeeInventoryHistorySection;
-  const canSeeAttachments = currentUser.permissions.canSeeAttachments;
   const currentInventoryQuantity = getSharedInventorySnapshot(workOrders, selectedWorkOrder).inventoryQuantity;
   const designAttachments = getDesignAttachments(selectedWorkOrder.attachments ?? []);
   const officialAttachments = getOfficialAttachments(selectedWorkOrder.attachments ?? []);

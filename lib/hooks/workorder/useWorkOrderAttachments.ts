@@ -11,6 +11,7 @@ import {
 } from "@/lib/workorder/actionFlow";
 import {
   canDeleteAttachmentForCurrentUser,
+  getAttachmentPermissionsForCurrentUser,
   clearAttachmentInputValue,
   openOfficialAttachmentPicker,
   readAttachmentInputFiles,
@@ -20,6 +21,7 @@ import type { Attachment, AttachmentScope, HistoryLog, MemoAttachmentPayload, Us
 export function useWorkOrderAttachments({
   attachmentInputRef,
   canUploadOfficialAttachments,
+  canSeeAttachments,
   isReviewRequestLocked,
   currentUser,
   selectedWorkOrder,
@@ -32,6 +34,7 @@ export function useWorkOrderAttachments({
 }: {
   attachmentInputRef: RefObject<HTMLInputElement | null>;
   canUploadOfficialAttachments: boolean;
+  canSeeAttachments: boolean;
   isReviewRequestLocked: boolean;
   currentUser: UserProfile;
   selectedWorkOrder: WorkOrder;
@@ -84,7 +87,13 @@ export function useWorkOrderAttachments({
 
   const handleDeleteAttachment = (attachmentId: string) => {
     const targetAttachment = selectedWorkOrder.attachments.find((item) => item.id === attachmentId) ?? null;
-    if (!canDeleteAttachmentForCurrentUser({ currentUser, attachment: targetAttachment, isReviewRequestLocked })) {
+    if (!canDeleteAttachmentForCurrentUser({
+      currentUser,
+      attachment: targetAttachment,
+      canSeeAttachments,
+      canManageAttachments: canUploadOfficialAttachments,
+      isReviewRequestLocked,
+    })) {
       return;
     }
 
@@ -181,7 +190,22 @@ export function useWorkOrderAttachments({
   };
 
   const canDeleteAttachment = (attachment: Attachment | null) =>
-    canDeleteAttachmentForCurrentUser({ currentUser, attachment, isReviewRequestLocked });
+    canDeleteAttachmentForCurrentUser({
+      currentUser,
+      attachment,
+      canSeeAttachments,
+      canManageAttachments: canUploadOfficialAttachments,
+      isReviewRequestLocked,
+    });
+
+  const getAttachmentPermissions = (attachment: Attachment | null) =>
+    getAttachmentPermissionsForCurrentUser({
+      currentUser,
+      attachment,
+      canSeeAttachments,
+      canManageAttachments: canUploadOfficialAttachments,
+      isReviewRequestLocked,
+    });
 
   return {
     handleOpenAttachmentPicker,
@@ -191,5 +215,6 @@ export function useWorkOrderAttachments({
     handleCreateMemoReply,
     handlePromoteMemoAttachment,
     canDeleteAttachment,
+    getAttachmentPermissions,
   };
 }

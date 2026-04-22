@@ -1,3 +1,4 @@
+import { buildAttachmentPanelItems } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
 import type { DetailProps, DetailViewModelArgs, SidePanelProps, SidePanelViewModelArgs } from "@/lib/workorder/workspace/viewModelTypes";
 
 export function buildDetailProps({
@@ -87,7 +88,7 @@ export function buildSidePanelProps({
   currentRole,
   selectedWorkOrder,
   currentUser,
-  canDeleteAttachment,
+  getAttachmentPermissions,
   onOpenAttachmentPicker,
   onRequestDeleteAttachment,
   onCreateMemoThread,
@@ -98,12 +99,11 @@ export function buildSidePanelProps({
     isEmpty: !hasVisibleWorkOrders,
     canSeeAttachments,
     canUploadOfficialAttachments,
-    designAttachments,
-    attachments: officialAttachments,
+    designAttachments: buildAttachmentPanelItems(designAttachments, getAttachmentPermissions),
+    attachments: buildAttachmentPanelItems(officialAttachments, getAttachmentPermissions),
     onOpenAttachmentPicker,
     onPreviewAttachment: () => undefined,
     onDeleteAttachment: onRequestDeleteAttachment,
-    canDeleteAttachment,
     currentRole,
     workOrder: selectedWorkOrder,
     currentUserName: currentUser.name,

@@ -3,7 +3,8 @@
 import WorkOrderAttachmentPanel from "@/components/workorder/sidepanel/WorkOrderAttachmentPanel";
 import WorkOrderMemoPanel from "@/components/workorder/sidepanel/WorkOrderMemoPanel";
 import { useI18n } from "@/lib/i18n";
-import type { Attachment, MemoAttachmentPayload, RoleType, WorkOrder } from "@/types/workorder";
+import type { AttachmentPanelItem } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
+import type { MemoAttachmentPayload, RoleType, WorkOrder } from "@/types/workorder";
 
 export default function WorkOrderSidePanel({
   isEmpty = false,
@@ -14,7 +15,6 @@ export default function WorkOrderSidePanel({
   onOpenAttachmentPicker,
   onPreviewAttachment,
   onDeleteAttachment,
-  canDeleteAttachment,
   currentRole,
   workOrder,
   currentUserName,
@@ -26,12 +26,11 @@ export default function WorkOrderSidePanel({
   isEmpty?: boolean;
   canSeeAttachments: boolean;
   canUploadOfficialAttachments: boolean;
-  designAttachments: Attachment[];
-  attachments: Attachment[];
+  designAttachments: AttachmentPanelItem[];
+  attachments: AttachmentPanelItem[];
   onOpenAttachmentPicker: (scope?: "design" | "official") => void;
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;
-  canDeleteAttachment: (attachment: Attachment | null) => boolean;
   currentRole: RoleType;
   workOrder: WorkOrder;
   currentUserName: string;
@@ -59,7 +58,6 @@ export default function WorkOrderSidePanel({
         onOpenAttachmentPicker={() => onOpenAttachmentPicker("design")}
         onPreviewAttachment={onPreviewAttachment}
         onDeleteAttachment={onDeleteAttachment}
-        canDeleteAttachment={canDeleteAttachment}
       />
 
       <WorkOrderAttachmentPanel
@@ -72,7 +70,6 @@ export default function WorkOrderSidePanel({
         onOpenAttachmentPicker={() => onOpenAttachmentPicker("official")}
         onPreviewAttachment={onPreviewAttachment}
         onDeleteAttachment={onDeleteAttachment}
-        canDeleteAttachment={canDeleteAttachment}
       />
 
       <WorkOrderMemoPanel
