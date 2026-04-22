@@ -1,6 +1,7 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n";
+import { ATTACHMENT_INPUT_ACCEPT } from "@/lib/permissions/attachments";
 
 export default function CompactAttachmentPicker({
   uploadedFiles,
@@ -21,7 +22,7 @@ export default function CompactAttachmentPicker({
         <input
           type="file"
           multiple
-          accept="image/*,.pdf,application/pdf"
+          accept={ATTACHMENT_INPUT_ACCEPT}
           className="sr-only"
           onChange={(event) => onFilesChange([...(uploadedFiles ?? []), ...Array.from<File>(event.target.files ?? [])])}
         />

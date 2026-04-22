@@ -38,7 +38,7 @@ export default function AttachmentPreviewModal({
       maxWidthClassName={MODAL_EXCEPTION_PRESETS.attachmentPreview.maxWidthClass}
       overlayClassName={MODAL_EXCEPTION_PRESETS.attachmentPreview.overlayClassName}
     >
-      <ModalHeader titleId="attachment-preview-title" title={copy.title} description={attachment?.name} onClose={onClose} />
+      <ModalHeader titleId="attachment-preview-title" title={copy.title} description={attachment?.name ?? copy.emptyDescription} onClose={onClose} />
 
       <ModalBody className={MODAL_EXCEPTION_PRESETS.attachmentPreview.bodyClassName}>
         {attachment ? (
@@ -66,7 +66,12 @@ export default function AttachmentPreviewModal({
               ) : null}
             </div>
 
-            {attachment.type === "image" ? (
+            {!attachment.url ? (
+              <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
+                <div className="text-sm font-semibold text-stone-800">{copy.unavailableTitle}</div>
+                <div className="mt-2 text-sm leading-6 text-stone-600">{copy.unavailableDescription}</div>
+              </div>
+            ) : attachment.type === "image" ? (
               <img
                 src={attachment.url}
                 alt={attachment.name}

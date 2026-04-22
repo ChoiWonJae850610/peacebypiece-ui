@@ -20,6 +20,8 @@ export function isMemoAttachment(attachment: Attachment | null | undefined): boo
   return getAttachmentScope(attachment) === "memo";
 }
 
+export const ATTACHMENT_INPUT_ACCEPT = "image/*,.pdf,application/pdf,*/*";
+
 export function getAttachmentType(file: File | { type?: string | null; name?: string | null }): AttachmentType {
   const mimeType = String(file.type ?? "").toLowerCase();
   const fileName = String(file.name ?? "").toLowerCase();
@@ -38,10 +40,17 @@ export function getAttachmentOwnerLabel(attachment: Attachment | null | undefine
 
 export function getAttachmentPreviewLabel(attachment: Attachment | null | undefined): string {
   if (!attachment) return i18n.workorder.ui.attachmentPanel.previewFallback;
-  if (attachment.type === "pdf") return i18n.workorder.ui.attachmentPanel.previewPdf;
-  if (attachment.type === "file") return i18n.workorder.ui.attachmentPanel.previewFile;
-  return i18n.workorder.ui.attachmentPanel.previewImage;
+  return getAttachmentTypeBadgeLabel(attachment);
 }
+
+
+export function getAttachmentTypeBadgeLabel(attachment: Attachment | File | { type?: string | null; name?: string | null } | null | undefined): string {
+  const type = attachment && "type" in attachment ? getAttachmentType(attachment as File | { type?: string | null; name?: string | null }) : "file";
+  if (type === "pdf") return i18n.workorder.ui.attachmentPanel.previewPdf;
+  if (type === "image") return i18n.workorder.ui.attachmentPanel.previewImage;
+  return i18n.workorder.ui.attachmentPanel.previewFile;
+}
+
 
 export function canPreviewAttachment(attachment: Attachment | null | undefined): boolean {
   return Boolean(attachment?.url);

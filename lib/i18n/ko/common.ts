@@ -62,9 +62,12 @@ export const commonKo = {
       },
       attachmentPreview: {
         title: "첨부파일 보기",
+        emptyDescription: "첨부파일",
         pdfPreview: "PDF 미리보기",
         download: "다운로드",
         delete: "삭제",
+        unavailableTitle: "첨부를 불러올 수 없습니다.",
+        unavailableDescription: "현재 첨부 주소를 확인할 수 없습니다. 다운로드 가능 상태인지 먼저 확인해주세요.",
         filePreviewTitle: "파일 미리보기는 지원되지 않습니다.",
         filePreviewDescription: "이 파일 형식은 여기서 바로 열 수 없습니다. 다운로드 버튼으로 파일을 저장해 확인해주세요.",
       },

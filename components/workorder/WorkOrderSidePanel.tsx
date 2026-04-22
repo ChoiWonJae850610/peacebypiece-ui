@@ -49,9 +49,9 @@ export default function WorkOrderSidePanel({
   return (
     <div className="space-y-3 md:space-y-4">
       <WorkOrderAttachmentPanel
-        title="디자인"
-        emptyText="아직 디자인 파일이 없습니다."
-        addButtonLabel="+ 디자인 추가"
+        title={ui.attachmentPanel.designTitle}
+        emptyText={ui.attachmentPanel.designEmpty}
+        addButtonLabel={ui.attachmentPanel.designAddButton}
         canSeeAttachments={canSeeAttachments}
         canUploadOfficialAttachments={canUploadOfficialAttachments}
         attachments={designAttachments}

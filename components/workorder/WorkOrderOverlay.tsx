@@ -1,5 +1,6 @@
 import type { ChangeEventHandler, ComponentProps, RefObject } from "react";
 import ToastMessage from "@/components/common/ToastMessage";
+import { ATTACHMENT_INPUT_ACCEPT } from "@/lib/permissions/attachments";
 import AttachmentDeleteConfirmModal from "@/components/common/modal/AttachmentDeleteConfirmModal";
 import AttachmentPreviewModal from "@/components/common/modal/AttachmentPreviewModal";
 import CreateWorkOrderModal from "@/components/common/modal/CreateWorkOrderModal";
@@ -45,7 +46,7 @@ export default function WorkOrderOverlay({
       <input
         ref={attachmentInputRef}
         type="file"
-        accept="*/*"
+        accept={ATTACHMENT_INPUT_ACCEPT}
         multiple
         className="sr-only"
         onChange={onAttachmentFilesChange}
