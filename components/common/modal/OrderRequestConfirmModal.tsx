@@ -6,7 +6,7 @@ import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS } from "@/components/common/modal/modalActions";
 import { getOrderSubmissionSnapshot } from "@/lib/workorder/orderSubmission";
 import { getOrderRequestDocumentPreview } from "@/lib/workorder/presentation/orderRequestDocumentPresentation";
-import { buildOrderRequestPrintAttachments, buildOrderRequestPrintHtml } from "@/lib/workorder/presentation/orderRequestDocumentPrint";
+import { buildOrderRequestPrintHtml } from "@/lib/workorder/presentation/orderRequestDocumentPrint";
 import { useI18n } from "@/lib/i18n";
 import { isDebugFeatureEnabled } from "@/lib/constants/runtimeMode";
 import type { Material, Outsourcing, WorkOrder } from "@/types/workorder";
@@ -260,18 +260,13 @@ export default function OrderRequestConfirmModal({
       printWindow.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8" /><title>발주서 준비 중</title><style>html,body{height:100%;margin:0;font-family:Arial,'Noto Sans KR',sans-serif;background:#f5f2eb;color:#1c1917;}body{display:flex;align-items:center;justify-content:center;padding:24px;}div{font-size:14px;font-weight:600;}</style></head><body><div>출력용 문서를 준비하는 중입니다...</div></body></html>`);
       printWindow.document.close();
 
-      const printAttachmentBuildResult = await buildOrderRequestPrintAttachments(preview.visibleAttachments);
-      const html = buildOrderRequestPrintHtml(workOrder, printAttachmentBuildResult.renderedAttachments, {
+      const html = buildOrderRequestPrintHtml(workOrder, {
         requestNote,
       });
       printWindow.document.open();
       printWindow.document.write(html);
       printWindow.document.close();
       printWindow.focus();
-
-      if (printAttachmentBuildResult.failures.length > 0) {
-        setPrintFeedback(`일부 첨부파일은 출력 대상에서 제외되었습니다. 제외 ${printAttachmentBuildResult.failures.length}건`);
-      }
     } catch (error) {
       console.error("[order-request-print] failed to render print window", error);
       setPrintFeedback("문서 생성 중 오류가 발생했습니다. 다시 시도해주세요.");
@@ -377,7 +372,7 @@ export default function OrderRequestConfirmModal({
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <div className="text-xs font-bold tracking-wide text-rose-700">요청사항</div>
                   <span className="rounded border border-stone-300 bg-stone-50 px-2 py-0.5 text-[11px] font-semibold text-stone-600">
-                    첨부파일은 출력 시 본문 뒤에 이어집니다.
+대표이미지는 디자인 영역 파일을 우선 사용합니다.
                   </span>
                 </div>
                 <textarea

@@ -12,7 +12,7 @@ export type MemoAttachmentPayload = {
   files?: File[];
 };
 
-export type AttachmentType = "image" | "pdf";
+export type AttachmentType = "image" | "pdf" | "file";
 
 export type Attachment = {
   id: string;

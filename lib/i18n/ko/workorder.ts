@@ -235,6 +235,7 @@ export const workorderKo = {
       legacyOwnerFallback: "기존 첨부",
       previewFallback: "파일",
       previewPdf: "PDF",
+      previewFile: "FILE",
       previewImage: "IMG",
       promote: "승격",
       compactAddButton: "첨부추가",

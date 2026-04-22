@@ -45,7 +45,7 @@ export default function WorkOrderOverlay({
       <input
         ref={attachmentInputRef}
         type="file"
-        accept="image/*,.pdf,application/pdf"
+        accept="*/*"
         multiple
         className="sr-only"
         onChange={onAttachmentFilesChange}

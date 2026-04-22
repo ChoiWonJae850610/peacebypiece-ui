@@ -74,7 +74,7 @@ export default function AttachmentRequestModal({
           <label className="flex cursor-pointer items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-5 text-sm text-stone-600 transition hover:border-stone-400 hover:bg-stone-100">
             <input
               type="file"
-              accept="image/*,.pdf,application/pdf"
+              accept="*/*"
               multiple
               className="sr-only"
               onChange={(event: ChangeEvent<HTMLInputElement>) => setFiles(Array.from(event.target.files ?? []))}
@@ -87,7 +87,7 @@ export default function AttachmentRequestModal({
                 <div key={`${file.name}-${index}`} className="flex items-center justify-between rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs text-stone-700">
                   <span className="truncate">{file.name}</span>
                   <span className="ml-3 shrink-0 rounded-full bg-stone-100 px-2 py-0.5 font-medium text-stone-600">
-                    {file.type.includes("pdf") ? ui.modal.attachmentRequest.pdfBadge : ui.modal.attachmentRequest.imageBadge}
+                    {file.type.startsWith("image/") ? ui.modal.attachmentRequest.imageBadge : file.type.includes("pdf") || file.name.toLowerCase().endsWith(".pdf") ? ui.modal.attachmentRequest.pdfBadge : ui.modal.attachmentRequest.fileBadge}
                   </span>
                 </div>
               ))}

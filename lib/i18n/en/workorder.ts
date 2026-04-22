@@ -235,6 +235,7 @@ export const workorderEn = {
       legacyOwnerFallback: "Existing attachment",
       previewFallback: "File",
       previewPdf: "PDF",
+      previewFile: "FILE",
       previewImage: "IMG",
       promote: "Promote",
       compactAddButton: "Add attachment",

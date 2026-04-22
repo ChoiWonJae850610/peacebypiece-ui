@@ -23,8 +23,9 @@ export function isMemoAttachment(attachment: Attachment | null | undefined): boo
 export function getAttachmentType(file: File | { type?: string | null; name?: string | null }): AttachmentType {
   const mimeType = String(file.type ?? "").toLowerCase();
   const fileName = String(file.name ?? "").toLowerCase();
+  if (mimeType.startsWith("image/")) return "image";
   if (mimeType.includes("pdf") || fileName.endsWith(".pdf")) return "pdf";
-  return "image";
+  return "file";
 }
 
 export function createAttachmentId(name: string): string {
@@ -37,7 +38,9 @@ export function getAttachmentOwnerLabel(attachment: Attachment | null | undefine
 
 export function getAttachmentPreviewLabel(attachment: Attachment | null | undefined): string {
   if (!attachment) return i18n.workorder.ui.attachmentPanel.previewFallback;
-  return attachment.type === "pdf" ? i18n.workorder.ui.attachmentPanel.previewPdf : i18n.workorder.ui.attachmentPanel.previewImage;
+  if (attachment.type === "pdf") return i18n.workorder.ui.attachmentPanel.previewPdf;
+  if (attachment.type === "file") return i18n.workorder.ui.attachmentPanel.previewFile;
+  return i18n.workorder.ui.attachmentPanel.previewImage;
 }
 
 export function canPreviewAttachment(attachment: Attachment | null | undefined): boolean {

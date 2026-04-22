@@ -50,10 +50,11 @@ export const commonKo = {
         memoLabel: "요청 메모",
         memoPlaceholder: "예: 메인 시안 PDF 공식 첨부 승격 요청 / 공장 전달용 최신본입니다.",
         fileLabel: "파일 첨부",
-        filePicker: "이미지 또는 PDF 선택",
+        filePicker: "파일 선택",
         noFilesHelp: "파일 없이 요청 메모만 등록할 수도 있습니다.",
         pdfBadge: "PDF",
         imageBadge: "IMG",
+        fileBadge: "FILE",
       },
       inventoryLog: {
         detailSummary: "상세",
@@ -62,6 +63,10 @@ export const commonKo = {
       attachmentPreview: {
         title: "첨부파일 보기",
         pdfPreview: "PDF 미리보기",
+        download: "다운로드",
+        delete: "삭제",
+        filePreviewTitle: "파일 미리보기는 지원되지 않습니다.",
+        filePreviewDescription: "이 파일 형식은 여기서 바로 열 수 없습니다. 다운로드 버튼으로 파일을 저장해 확인해주세요.",
       },
       permission: {
         title: "환경 설정",

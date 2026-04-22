@@ -1,17 +1,7 @@
 import { getOrderRequestDocumentPreview } from "@/lib/workorder/presentation/orderRequestDocumentPresentation";
-import type { Attachment, Material, Outsourcing, WorkOrder } from "@/types/workorder";
+import type { Material, Outsourcing, WorkOrder } from "@/types/workorder";
 
-export type OrderRequestPrintAttachmentFailure = {
-  attachmentId: string;
-  attachmentName: string;
-  attachmentType: Attachment["type"];
-  errorMessage: string;
-};
 
-export type OrderRequestPrintAttachmentBuildResult = {
-  renderedAttachments: [];
-  failures: OrderRequestPrintAttachmentFailure[];
-};
 
 function escapeHtml(value: string) {
   return value
@@ -110,11 +100,8 @@ function renderSectionTable({ title, head, body, footerLabel, footerValue }: { t
     </section>`;
 }
 
-export async function buildOrderRequestPrintAttachments(_attachments: Attachment[]): Promise<OrderRequestPrintAttachmentBuildResult> {
-  return { renderedAttachments: [], failures: [] };
-}
 
-export function buildOrderRequestPrintHtml(workOrder: WorkOrder, _renderedAttachments: [] = [], options?: { requestNote?: string | null }) {
+export function buildOrderRequestPrintHtml(workOrder: WorkOrder, options?: { requestNote?: string | null }) {
   const initialPreview = getOrderRequestDocumentPreview(workOrder, 0);
 
   const documentsHtml = initialPreview.documents.map((documentUnit, index) => {

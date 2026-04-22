@@ -37,7 +37,6 @@ export type OrderRequestDocumentPreview = {
   currentFactoryCostAmount: number;
   currentDocumentAmount: number;
   representativeImage: Attachment | null;
-  visibleAttachments: Attachment[];
   requestNote: string;
 };
 
@@ -61,10 +60,6 @@ function sumBy<T>(items: T[], getter: (item: T) => number) {
   return items.reduce((total, item) => total + normalizeNumber(getter(item)), 0);
 }
 
-function getDisplayAttachments(attachments: Attachment[]) {
-  const officialAttachments = attachments.filter((attachment) => (attachment.scope ?? "official") === "official");
-  return officialAttachments.length > 0 ? officialAttachments : attachments;
-}
 
 function getRepresentativeImage(allAttachments: Attachment[]) {
   const designImages = allAttachments.filter(
@@ -139,7 +134,6 @@ export function getOrderRequestDocumentPreview(workOrder: WorkOrder, pageIndex: 
   const subsidiaryMaterials = materials.filter((material) => material.type === MATERIAL_KIND.subsidiary);
   const outsourcingItems = workOrder.outsourcing ?? [];
   const attachmentItems = workOrder.attachments ?? [];
-  const visibleAttachments = getDisplayAttachments(attachmentItems);
 
   const fabricAmountTotal = sumBy(fabricMaterials, (material) => material.totalCost || material.quantity * material.unitCost);
   const subsidiaryAmountTotal = sumBy(subsidiaryMaterials, (material) => material.totalCost || material.quantity * material.unitCost);
@@ -164,7 +158,6 @@ export function getOrderRequestDocumentPreview(workOrder: WorkOrder, pageIndex: 
     currentFactoryCostAmount,
     currentDocumentAmount,
     representativeImage: getRepresentativeImage(attachmentItems),
-    visibleAttachments,
     requestNote: String(workOrder.memo ?? "").trim(),
   };
 }

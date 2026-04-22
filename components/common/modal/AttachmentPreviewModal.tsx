@@ -39,24 +39,53 @@ export default function AttachmentPreviewModal({
       <ModalHeader titleId="attachment-preview-title" title={copy.title} description={attachment?.name} onClose={onClose} />
 
       <ModalBody className={MODAL_EXCEPTION_PRESETS.attachmentPreview.bodyClassName}>
-        {attachment?.type === "image" ? (
-          <img
-            src={attachment.url}
-            alt={attachment.name}
-            className="mx-auto max-h-[70dvh] w-auto rounded-2xl border border-stone-200 bg-white object-contain shadow-sm"
-          />
-        ) : attachment ? (
-          <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
-            <div className="border-b border-stone-200 px-4 py-3 text-sm font-medium text-stone-700">{copy.pdfPreview}</div>
-            <iframe
-              title={attachment.name}
-              src={attachment.url}
-              className="h-[65dvh] w-full bg-white md:h-[70dvh]"
-            />
+        {attachment ? (
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <a
+                href={attachment.url}
+                download={attachment.name}
+                target="_blank"
+                rel="noreferrer"
+                className="pbp-interactive-button inline-flex items-center justify-center rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm transition hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+              >
+                {copy.download}
+              </a>
+              {canDelete ? (
+                <button
+                  type="button"
+                  onClick={onDelete}
+                  className="pbp-interactive-button inline-flex items-center justify-center rounded-xl border border-rose-300 bg-white px-4 py-2 text-sm font-medium text-rose-700 shadow-sm transition hover:bg-rose-50 active:bg-rose-100"
+                >
+                  {copy.delete}
+                </button>
+              ) : null}
+            </div>
+
+            {attachment.type === "image" ? (
+              <img
+                src={attachment.url}
+                alt={attachment.name}
+                className="mx-auto max-h-[70dvh] w-auto rounded-2xl border border-stone-200 bg-white object-contain shadow-sm"
+              />
+            ) : attachment.type === "pdf" ? (
+              <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
+                <div className="border-b border-stone-200 px-4 py-3 text-sm font-medium text-stone-700">{copy.pdfPreview}</div>
+                <iframe
+                  title={attachment.name}
+                  src={attachment.url}
+                  className="h-[65dvh] w-full bg-white md:h-[70dvh]"
+                />
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
+                <div className="text-sm font-semibold text-stone-800">{copy.filePreviewTitle}</div>
+                <div className="mt-2 text-sm leading-6 text-stone-600">{copy.filePreviewDescription}</div>
+              </div>
+            )}
           </div>
         ) : null}
       </ModalBody>
-
     </BaseModal>
   );
 }

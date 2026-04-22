@@ -50,10 +50,11 @@ export const commonEn = {
         memoLabel: "Request memo",
         memoPlaceholder: "Example: Request to promote main design PDF as official attachment / Latest version for factory sharing.",
         fileLabel: "Attach file",
-        filePicker: "Select image or PDF",
+        filePicker: "Select file",
         noFilesHelp: "You can register only a memo without files.",
         pdfBadge: "PDF",
         imageBadge: "IMG",
+        fileBadge: "FILE",
       },
       inventoryLog: {
         detailSummary: "Detail",
@@ -62,6 +63,10 @@ export const commonEn = {
       attachmentPreview: {
         title: "Attachment preview",
         pdfPreview: "PDF preview",
+        download: "Download",
+        delete: "Delete",
+        filePreviewTitle: "Preview is not available for this file type.",
+        filePreviewDescription: "This file cannot be opened directly here. Use the download button to review it locally.",
       },
       permission: {
         title: "Environment settings",
