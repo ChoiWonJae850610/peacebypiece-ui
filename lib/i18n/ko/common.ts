@@ -119,6 +119,10 @@ export const commonKo = {
         imageType: "이미지",
         noAttachmentNotice: "첨부파일이 없습니다. 현재 상태로 발주 요청을 진행할 수 있습니다.",
         currencyFormat: "{amount}원",
+        printUnsupportedTitle: "인쇄 지원 불가",
+        printUnsupportedDescription: "삼성 인터넷 브라우저에서는 인쇄가 지원되지 않습니다.",
+        printUnsupportedRecommendation: "Chrome 또는 Edge 브라우저를 사용해주세요.",
+        printUnsupportedVersionFormat: "현재 버전 {version}",
       },
       inventoryEditor: {
         title: "재고 수정",

@@ -43,3 +43,5 @@ export const HISTORY_FILTER_BUTTON_CLASS = {
   active: "bg-stone-900 text-white hover:bg-stone-800 active:bg-black",
   inactive: "border border-stone-300 bg-white text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200",
 } as const;
+
+export const ORDER_REQUEST_PRINT_UNSUPPORTED = i18n.common.ui.modal.orderRequestConfirm;

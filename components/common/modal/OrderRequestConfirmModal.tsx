@@ -36,6 +36,7 @@ import { getOrderSubmissionSnapshot } from "@/lib/workorder/orderSubmission";
 import { getOrderRequestDocumentPreview } from "@/lib/workorder/presentation/orderRequestDocumentPresentation";
 import { buildOrderRequestPrintHtml } from "@/lib/workorder/presentation/orderRequestDocumentPrint";
 import { useI18n } from "@/lib/i18n";
+import { getOrderRequestPrintUnsupportedMessage } from "@/lib/workorder/presentation/workOrderPresentation";
 import { isDebugFeatureEnabled } from "@/lib/constants/runtimeMode";
 import type { Material, Outsourcing, WorkOrder } from "@/types/workorder";
 
@@ -233,7 +234,6 @@ export default function OrderRequestConfirmModal({
   const [printFeedback, setPrintFeedback] = useState<string | null>(null);
   const [isPreparingPrint, setIsPreparingPrint] = useState(false);
   const printWindowRef = useRef<Window | null>(null);
-  const printFrameRef = useRef<HTMLIFrameElement | null>(null);
 
   useEffect(() => {
     setCurrentPageIndex(0);
@@ -247,11 +247,7 @@ export default function OrderRequestConfirmModal({
       if (printWindowRef.current && !printWindowRef.current.closed) {
         printWindowRef.current.close();
       }
-      if (printFrameRef.current) {
-        printFrameRef.current.remove();
-      }
       printWindowRef.current = null;
-      printFrameRef.current = null;
     };
   }, []);
 
@@ -300,51 +296,7 @@ export default function OrderRequestConfirmModal({
       });
 
       if (isSamsungInternet) {
-        if (printFrameRef.current) {
-          printFrameRef.current.remove();
-          printFrameRef.current = null;
-        }
-
-        const frame = document.createElement("iframe");
-        frame.setAttribute("title", "발주서 인쇄 프레임");
-        frame.setAttribute("aria-hidden", "true");
-        frame.style.position = "fixed";
-        frame.style.right = "0";
-        frame.style.bottom = "0";
-        frame.style.width = "1px";
-        frame.style.height = "1px";
-        frame.style.opacity = "0";
-        frame.style.pointerEvents = "none";
-        frame.style.border = "0";
-
-        const cleanupFrame = () => {
-          window.setTimeout(() => {
-            if (printFrameRef.current === frame) {
-              frame.remove();
-              printFrameRef.current = null;
-            }
-          }, 1500);
-        };
-
-        frame.onload = () => {
-          window.setTimeout(() => {
-            try {
-              frame.contentWindow?.focus();
-              frame.contentWindow?.print();
-              setPrintFeedback("삼성 인터넷에서는 현재 화면에서 바로 인쇄 창을 엽니다.");
-            } catch (error) {
-              console.error("[order-request-print] samsung iframe print failed", error);
-              setPrintFeedback("삼성 인터넷 인쇄 호출에 실패했습니다. 다시 시도해주세요.");
-            } finally {
-              cleanupFrame();
-            }
-          }, 700);
-        };
-
-        document.body.appendChild(frame);
-        printFrameRef.current = frame;
-        frame.srcdoc = html;
-        window.addEventListener("afterprint", cleanupFrame, { once: true });
+        setPrintFeedback(getOrderRequestPrintUnsupportedMessage());
         return;
       }
 
@@ -379,11 +331,7 @@ export default function OrderRequestConfirmModal({
       if (printWindowRef.current && !printWindowRef.current.closed) {
         printWindowRef.current.close();
       }
-      if (printFrameRef.current) {
-        printFrameRef.current.remove();
-      }
       printWindowRef.current = null;
-      printFrameRef.current = null;
     } finally {
       setIsPreparingPrint(false);
     }

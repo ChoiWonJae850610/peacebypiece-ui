@@ -1,4 +1,4 @@
-import { EMPTY_DISPLAY, INVENTORY_STATUS_LABEL_PREFIX } from "@/lib/constants/display";
+import { EMPTY_DISPLAY, INVENTORY_STATUS_LABEL_PREFIX, ORDER_REQUEST_PRINT_UNSUPPORTED } from "@/lib/constants/display";
 import { DEFAULT_WORKORDER_CATEGORY2, DEFAULT_WORKORDER_CATEGORY3 } from "@/lib/constants/workorderDefaults";
 import { getInventoryStatusLabel } from "@/lib/constants/workorderDomain";
 import { hasDisplayText, joinDisplayParts } from "@/lib/utils/display";
@@ -7,6 +7,7 @@ import type { WorkOrderListItem } from "@/types/workorder";
 import { buildWorkOrderTitle } from "@/lib/workorder/reorder/helpers";
 import { WORKFLOW_STATE_BADGE_TONE } from "@/lib/constants/workorderStates";
 import type { WorkflowState } from "@/types/workflow";
+import { APP_VERSION } from "@/lib/constants/app";
 
 const i18n = getI18n();
 
@@ -48,4 +49,14 @@ export function getWorkOrderDisplayTitle(workOrder: { title?: string | null; dis
 
 export function getDisplayValueOrFallback(value: string | null | undefined, fallback: string) {
   return hasDisplayText(value) ? value : fallback;
+}
+
+
+export function getOrderRequestPrintUnsupportedMessage(version: string = APP_VERSION) {
+  const versionLabel = ORDER_REQUEST_PRINT_UNSUPPORTED.printUnsupportedVersionFormat.replace("{version}", version);
+  return [
+    ORDER_REQUEST_PRINT_UNSUPPORTED.printUnsupportedDescription,
+    ORDER_REQUEST_PRINT_UNSUPPORTED.printUnsupportedRecommendation,
+    versionLabel,
+  ].join(" ");
 }
