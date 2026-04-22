@@ -8,7 +8,7 @@ type OrderRequestRenderedAttachmentPage = {
   pageIndex: number;
   totalPages: number;
   imageUrl?: string;
-  renderStatus: "ready" | "error";
+  renderStatus?: "ready" | "error";
   errorMessage?: string;
 };
 
@@ -29,6 +29,12 @@ export type OrderRequestPrintAttachmentFailure = {
 export type OrderRequestPrintAttachmentBuildResult = {
   renderedAttachments: OrderRequestPrintAttachmentRender[];
   failures: OrderRequestPrintAttachmentFailure[];
+};
+
+type OrderRequestPrintAttachmentBuildOptions = {
+  attachmentTimeoutMs?: number;
+  pageRenderTimeoutMs?: number;
+  renderTarget?: "desktop" | "mobile";
 };
 
 function escapeHtml(value: string) {
@@ -225,46 +231,123 @@ async function loadPdfJs() {
   return pdfJsLoadPromise;
 }
 
-async function renderPdfAttachmentPages(attachment: Attachment): Promise<OrderRequestRenderedAttachmentPage[]> {
+function createTimeoutError(message: string) {
+  const error = new Error(message);
+  error.name = "TimeoutError";
+  return error;
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number | undefined, onTimeout?: () => void): Promise<T> {
+  if (!timeoutMs || !Number.isFinite(timeoutMs) || timeoutMs <= 0) {
+    return promise;
+  }
+
+  let timer: ReturnType<typeof setTimeout> | null = null;
+
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timer = setTimeout(() => {
+          onTimeout?.();
+          reject(createTimeoutError(`출력 준비 시간이 초과되었습니다. (${Math.ceil(timeoutMs / 1000)}초)`));
+        }, timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timer) {
+      clearTimeout(timer);
+    }
+  }
+}
+
+function getPdfRenderProfile(renderTarget: "desktop" | "mobile" = "desktop") {
+  if (renderTarget === "mobile") {
+    return {
+      maxWidth: 900,
+      minScale: 1,
+      maxScale: 1.35,
+      imageType: "image/jpeg" as const,
+      imageQuality: 0.9,
+    };
+  }
+
+  return {
+    maxWidth: 1200,
+    minScale: 1.2,
+    maxScale: 2,
+    imageType: "image/png" as const,
+    imageQuality: undefined,
+  };
+}
+
+async function renderPdfAttachmentPages(attachment: Attachment, options?: OrderRequestPrintAttachmentBuildOptions): Promise<OrderRequestRenderedAttachmentPage[]> {
   const pdfjs = await loadPdfJs();
   const bytes = await readAttachmentBytes(attachment.url);
   const loadingTask = pdfjs.getDocument({ data: bytes });
+  const renderProfile = getPdfRenderProfile(options?.renderTarget);
 
   try {
-    const pdf = await loadingTask.promise;
+    const pdf = await withTimeout(
+      loadingTask.promise,
+      options?.attachmentTimeoutMs,
+      () => {
+        void loadingTask.destroy();
+      },
+    );
     const renderedPages: OrderRequestRenderedAttachmentPage[] = [];
 
     for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
       const page = await pdf.getPage(pageNumber);
       const baseViewport = page.getViewport({ scale: 1 });
-      const maxWidth = 1200;
-      const scale = Math.min(2, Math.max(1.2, maxWidth / Math.max(baseViewport.width, 1)));
+      const scale = Math.min(
+        renderProfile.maxScale,
+        Math.max(renderProfile.minScale, renderProfile.maxWidth / Math.max(baseViewport.width, 1)),
+      );
       const viewport = page.getViewport({ scale });
       const canvas = document.createElement("canvas");
       canvas.width = Math.ceil(viewport.width);
       canvas.height = Math.ceil(viewport.height);
       const context = getCanvasContext(canvas);
+      context.fillStyle = "#ffffff";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      const renderTask = page.render({ canvas, canvasContext: context, viewport }) as { promise: Promise<void>; cancel?: () => void };
 
-      await page.render({ canvas, canvasContext: context, viewport }).promise;
+      try {
+        await withTimeout(
+          renderTask.promise,
+          options?.pageRenderTimeoutMs,
+          () => {
+            try {
+              renderTask.cancel?.();
+            } catch {
+              // noop
+            }
+          },
+        );
 
-      renderedPages.push({
-        attachmentId: attachment.id,
-        attachmentName: attachment.name,
-        attachmentType: attachment.type,
-        pageIndex: pageNumber,
-        totalPages: pdf.numPages,
-        imageUrl: canvas.toDataURL("image/png"),
-        renderStatus: "ready",
-      });
-
-      canvas.width = 0;
-      canvas.height = 0;
-      page.cleanup();
+        renderedPages.push({
+          attachmentId: attachment.id,
+          attachmentName: attachment.name,
+          attachmentType: attachment.type,
+          pageIndex: pageNumber,
+          totalPages: pdf.numPages,
+          imageUrl: canvas.toDataURL(renderProfile.imageType, renderProfile.imageQuality),
+        });
+      } finally {
+        canvas.width = 0;
+        canvas.height = 0;
+        page.cleanup();
+      }
     }
 
     return renderedPages;
   } finally {
-    await loadingTask.destroy();
+    try {
+      await loadingTask.destroy();
+    } catch {
+      // noop
+    }
   }
 }
 
@@ -277,18 +360,25 @@ async function renderImageAttachmentPages(attachment: Attachment): Promise<Order
       pageIndex: 1,
       totalPages: 1,
       imageUrl: attachment.url,
-      renderStatus: "ready",
     },
   ];
 }
 
-export async function buildOrderRequestPrintAttachments(attachments: Attachment[]): Promise<OrderRequestPrintAttachmentBuildResult> {
+export async function buildOrderRequestPrintAttachments(
+  attachments: Attachment[],
+  options?: OrderRequestPrintAttachmentBuildOptions,
+): Promise<OrderRequestPrintAttachmentBuildResult> {
   const renderedAttachments: OrderRequestPrintAttachmentRender[] = [];
   const failures: OrderRequestPrintAttachmentFailure[] = [];
 
   for (const attachment of attachments) {
     try {
-      const pages = attachment.type === "pdf" ? await renderPdfAttachmentPages(attachment) : await renderImageAttachmentPages(attachment);
+      const pages = await withTimeout(
+        attachment.type === "pdf"
+          ? renderPdfAttachmentPages(attachment, options)
+          : renderImageAttachmentPages(attachment),
+        options?.attachmentTimeoutMs,
+      );
 
       renderedAttachments.push({
         attachmentId: attachment.id,
@@ -315,6 +405,7 @@ export async function buildOrderRequestPrintAttachments(attachments: Attachment[
             attachmentType: attachment.type,
             pageIndex: 1,
             totalPages: 1,
+            imageUrl: undefined,
             renderStatus: "error",
             errorMessage,
           },
@@ -496,15 +587,8 @@ export function buildOrderRequestPrintHtml(
     .appendix-image-body { min-height: 0; }
     .image-viewer { display: flex; align-items: center; justify-content: center; }
     .image-viewer img { width: 100%; height: 100%; object-fit: contain; display: block; }
-    .appendix-error-viewer { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10mm; text-align: center; background: #fafaf9; }
-    .appendix-error-title { font-size: 16px; font-weight: 800; color: #7c2d12; }
-    .appendix-error-message { margin-top: 4mm; max-width: 140mm; font-size: 11px; line-height: 1.7; color: #57534e; word-break: break-word; white-space: pre-wrap; }
-    @media screen {
-      body { display: flex; flex-direction: column; align-items: center; }
-    }
     @media print {
-      html, body { background: #fff; overflow: visible; }
-      .print-page-shell { margin: 0; }
+      html, body { width: 210mm; background: #fff; }
       .print-page { margin: 0; }
     }
   </style>
@@ -566,30 +650,17 @@ ${attachmentAppendixHtml}
           image.addEventListener('load', done, { once: true });
           image.addEventListener('error', done, { once: true });
 
-          setTimeout(done, 2000);
+          setTimeout(done, 1500);
         });
       }));
     }
 
-    function waitForFonts() {
-      if (!document.fonts || !document.fonts.ready) {
-        return Promise.resolve();
-      }
-      return document.fonts.ready.catch(function () {
-        return undefined;
-      });
-    }
-
-    Promise.all([waitForImages(), waitForFonts()])
+    waitForImages()
       .catch(function (error) {
         console.error('[order-request-print] resource wait failed', error);
       })
       .finally(function () {
-        requestAnimationFrame(function () {
-          requestAnimationFrame(function () {
-            finalizePrint();
-          });
-        });
+        finalizePrint();
       });
 
     window.addEventListener('afterprint', safeCloseWindow, { once: true });
