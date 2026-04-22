@@ -1,24 +1,9 @@
 "use client";
 
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
+import { AddButton, DeleteButton } from "@/components/workorder/detail/shared/detailEditorShared";
 import { useI18n } from "@/lib/i18n";
 import type { AttachmentPanelItem } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
-
-function PlusIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-3.5 w-3.5">
-      <path d="M10 4.5v11M4.5 10h11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function MinusIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-3.5 w-3.5">
-      <path d="M4.5 10h11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 export default function WorkOrderAttachmentPanel({
   title,
@@ -52,32 +37,20 @@ export default function WorkOrderAttachmentPanel({
         <div>
           <h3 className="text-sm font-semibold text-stone-900">{title}</h3>
         </div>
-        {canManageAttachments ? (
-          <button
-            type="button"
-            onClick={onOpenAttachmentPicker}
-            className="pbp-interactive-button inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-300 bg-white text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200"
-            aria-label={addButtonLabel}
-            title={addButtonLabel}
-          >
-            <PlusIcon />
-          </button>
-        ) : null}
+        {canManageAttachments ? <AddButton onClick={onOpenAttachmentPicker} srLabel={addButtonLabel} title={addButtonLabel} /> : null}
       </div>
       {attachments.length > 0 ? (
         <div className="mt-2.5 space-y-2">
           {attachments.map((attachment) => (
             <div key={attachment.id} className="relative rounded-2xl border border-stone-200 bg-stone-50 p-3 pr-12">
               {attachment.canDelete ? (
-                <button
-                  type="button"
-                  onClick={() => onDeleteAttachment(attachment.id)}
-                  className="pbp-interactive-button absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full border border-rose-200 bg-white text-rose-600 hover:border-rose-300 hover:bg-rose-50 active:bg-rose-100"
-                  aria-label={`${attachment.name} ${ui.attachmentPanel.deleteAriaSuffix}`}
-                  title={ui.attachmentPanel.deleteTitle}
-                >
-                  <MinusIcon />
-                </button>
+                <div className="absolute right-3 top-3">
+                  <DeleteButton
+                    onClick={() => onDeleteAttachment(attachment.id)}
+                    srLabel={`${attachment.name} ${ui.attachmentPanel.deleteAriaSuffix}`}
+                    title={ui.attachmentPanel.deleteTitle}
+                  />
+                </div>
               ) : null}
               <button
                 type="button"

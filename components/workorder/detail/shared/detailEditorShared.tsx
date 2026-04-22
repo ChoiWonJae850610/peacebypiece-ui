@@ -33,6 +33,14 @@ export const MOBILE_INFO_ROW_CLASS = "grid min-w-0 grid-cols-[minmax(72px,88px)_
 export const MOBILE_LABEL_CLASS = "min-w-0 text-left text-[11px] leading-5 tracking-tight text-stone-500";
 export const MOBILE_VALUE_WRAPPER_CLASS = "flex min-w-0 max-w-full items-center justify-end overflow-hidden text-right";
 
+function AddIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-[12px] w-[12px]">
+      <path d="M10 4.75v10.5M4.75 10h10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function MinusIcon() {
   return (
     <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-[12px] w-[12px]">
@@ -82,17 +90,53 @@ function isEditingCell(editingCell: EditableCell, section: EditableSectionKey, r
   return editingCell?.section === section && editingCell.rowId === rowId && editingCell.field === field;
 }
 
-export function DeleteButton({ onClick, srLabel, disabled = false }: { onClick: () => void; srLabel: string; disabled?: boolean }) {
+function CircleIconButton({
+  onClick,
+  srLabel,
+  disabled = false,
+  tone,
+  title,
+  children,
+}: {
+  onClick: () => void;
+  srLabel: string;
+  disabled?: boolean;
+  tone: "add" | "delete";
+  title?: string;
+  children: ReactNode;
+}) {
+  const toneClass =
+    tone === "delete"
+      ? "border-rose-200 text-rose-600 hover:border-rose-300 hover:bg-rose-50 active:bg-rose-100"
+      : "border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200";
+
   return (
     <button
       type="button"
       onClick={onClick}
       aria-label={srLabel}
+      title={title}
       disabled={disabled}
-      className="pbp-interactive-button inline-flex h-8 w-8 items-center justify-center rounded-full border border-rose-200 bg-white text-base font-semibold text-rose-600 hover:border-rose-300 hover:bg-rose-50 active:bg-rose-100 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
+      className={`pbp-interactive-button inline-flex h-8 w-8 items-center justify-center rounded-full border bg-white ${toneClass} disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400`}
     >
-      -
+      {children}
     </button>
+  );
+}
+
+export function AddButton({ onClick, srLabel, disabled = false, title }: { onClick: () => void; srLabel: string; disabled?: boolean; title?: string }) {
+  return (
+    <CircleIconButton onClick={onClick} srLabel={srLabel} disabled={disabled} title={title} tone="add">
+      +
+    </CircleIconButton>
+  );
+}
+
+export function DeleteButton({ onClick, srLabel, disabled = false, title }: { onClick: () => void; srLabel: string; disabled?: boolean; title?: string }) {
+  return (
+    <CircleIconButton onClick={onClick} srLabel={srLabel} disabled={disabled} title={title} tone="delete">
+      -
+    </CircleIconButton>
   );
 }
 
