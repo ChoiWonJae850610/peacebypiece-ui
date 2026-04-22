@@ -1,24 +1,6 @@
 import { getOrderRequestDocumentPreview } from "@/lib/workorder/presentation/orderRequestDocumentPresentation";
 import type { Attachment, Material, Outsourcing, WorkOrder } from "@/types/workorder";
 
-type OrderRequestRenderedAttachmentPage = {
-  attachmentId: string;
-  attachmentName: string;
-  attachmentType: Attachment["type"];
-  pageIndex: number;
-  totalPages: number;
-  imageUrl?: string;
-  renderStatus: "ready" | "error";
-  errorMessage?: string;
-};
-
-type OrderRequestPrintAttachmentRender = {
-  attachmentId: string;
-  attachmentName: string;
-  attachmentType: Attachment["type"];
-  pages: OrderRequestRenderedAttachmentPage[];
-};
-
 export type OrderRequestPrintAttachmentFailure = {
   attachmentId: string;
   attachmentName: string;
@@ -27,7 +9,7 @@ export type OrderRequestPrintAttachmentFailure = {
 };
 
 export type OrderRequestPrintAttachmentBuildResult = {
-  renderedAttachments: OrderRequestPrintAttachmentRender[];
+  renderedAttachments: [];
   failures: OrderRequestPrintAttachmentFailure[];
 };
 
@@ -55,10 +37,6 @@ function formatQuantity(value: number, suffix?: string) {
 function formatDateLabel(value?: string | null) {
   const text = value?.trim();
   return text || "-";
-}
-
-function getAttachmentTypeBadge(attachment: { type?: Attachment["type"]; attachmentType?: Attachment["type"] }) {
-  return (attachment.attachmentType ?? attachment.type) === "image" ? "이미지" : "PDF";
 }
 
 function renderSummaryRow(items: Array<{ label: string; value: string }>) {
@@ -115,19 +93,7 @@ function renderOutsourcingRows(items: Outsourcing[]) {
     .join("");
 }
 
-function renderSectionTable({
-  title,
-  head,
-  body,
-  footerLabel,
-  footerValue,
-}: {
-  title: string;
-  head: string;
-  body: string;
-  footerLabel: string;
-  footerValue: string;
-}) {
+function renderSectionTable({ title, head, body, footerLabel, footerValue }: { title: string; head: string; body: string; footerLabel: string; footerValue: string; }) {
   return `
     <section class="table-section">
       <div class="table-title">${escapeHtml(title)}</div>
@@ -144,216 +110,31 @@ function renderSectionTable({
     </section>`;
 }
 
-function renderAttachmentPages(renderedAttachments: OrderRequestPrintAttachmentRender[]) {
-  if (renderedAttachments.length === 0) {
-    return "";
-  }
-
-  return renderedAttachments
-    .flatMap((attachment, attachmentIndex) =>
-      attachment.pages.map((page) => {
-        const attachmentNumber = attachmentIndex + 1;
-        const headerHtml = `
-          <div class="appendix-head">
-            <div class="appendix-meta">
-              <div class="meta-label">첨부 문서</div>
-              <div class="meta-value">${attachmentNumber}/${renderedAttachments.length}</div>
-            </div>
-            <div class="appendix-title-wrap">
-              <div class="appendix-title">첨 부 파 일</div>
-              <div class="appendix-name">${escapeHtml(attachment.attachmentName || `첨부파일 ${attachmentNumber}`)}</div>
-              <div class="appendix-page-index">페이지 ${page.pageIndex}/${page.totalPages}</div>
-            </div>
-            <div class="appendix-type-badge">${escapeHtml(getAttachmentTypeBadge(attachment))}</div>
-          </div>`;
-
-        const appendixBodyHtml = page.renderStatus === "error"
-          ? `
-            <div class="appendix-body appendix-image-body">
-              <div class="appendix-viewer appendix-error-viewer">
-                <div class="appendix-error-title">첨부 렌더링 실패</div>
-                <div class="appendix-error-message">${escapeHtml(page.errorMessage || "첨부파일을 출력용 이미지로 변환하지 못했습니다.")}</div>
-              </div>
-            </div>`
-          : `
-            <div class="appendix-body appendix-image-body">
-              <div class="appendix-viewer image-viewer">
-                <img src="${escapeHtml(page.imageUrl || "")}" alt="${escapeHtml(attachment.attachmentName || `첨부파일 ${attachmentNumber}`)} ${page.pageIndex}" />
-              </div>
-            </div>`;
-
-        return `
-          <section class="print-page-shell appendix-page-shell">
-            <article class="print-page appendix-page">
-              ${headerHtml}
-              ${appendixBodyHtml}
-            </article>
-          </section>`;
-      }),
-    )
-    .join("");
+export async function buildOrderRequestPrintAttachments(_attachments: Attachment[]): Promise<OrderRequestPrintAttachmentBuildResult> {
+  return { renderedAttachments: [], failures: [] };
 }
 
-function getCanvasContext(canvas: HTMLCanvasElement) {
-  const context = canvas.getContext("2d", { alpha: false });
-  if (!context) {
-    throw new Error("PDF 캔버스 컨텍스트를 생성할 수 없습니다.");
-  }
-  return context;
-}
-
-async function readAttachmentBytes(url: string) {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`첨부파일을 불러오지 못했습니다. (${response.status})`);
-  }
-  return new Uint8Array(await response.arrayBuffer());
-}
-
-let pdfJsLoadPromise: Promise<typeof import("pdfjs-dist/legacy/build/pdf.mjs")> | null = null;
-
-async function loadPdfJs() {
-  if (!pdfJsLoadPromise) {
-    pdfJsLoadPromise = import("pdfjs-dist/legacy/build/pdf.mjs").then((pdfjs) => {
-      if (!pdfjs.GlobalWorkerOptions.workerSrc) {
-        pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/legacy/build/pdf.worker.mjs", import.meta.url).toString();
-      }
-      return pdfjs;
-    });
-  }
-
-  return pdfJsLoadPromise;
-}
-
-async function renderPdfAttachmentPages(attachment: Attachment): Promise<OrderRequestRenderedAttachmentPage[]> {
-  const pdfjs = await loadPdfJs();
-  const bytes = await readAttachmentBytes(attachment.url);
-  const loadingTask = pdfjs.getDocument({ data: bytes });
-
-  try {
-    const pdf = await loadingTask.promise;
-    const renderedPages: OrderRequestRenderedAttachmentPage[] = [];
-
-    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
-      const page = await pdf.getPage(pageNumber);
-      const baseViewport = page.getViewport({ scale: 1 });
-      const maxWidth = 1200;
-      const scale = Math.min(2, Math.max(1.2, maxWidth / Math.max(baseViewport.width, 1)));
-      const viewport = page.getViewport({ scale });
-      const canvas = document.createElement("canvas");
-      canvas.width = Math.ceil(viewport.width);
-      canvas.height = Math.ceil(viewport.height);
-      const context = getCanvasContext(canvas);
-
-      await page.render({ canvas, canvasContext: context, viewport }).promise;
-
-      renderedPages.push({
-        attachmentId: attachment.id,
-        attachmentName: attachment.name,
-        attachmentType: attachment.type,
-        pageIndex: pageNumber,
-        totalPages: pdf.numPages,
-        imageUrl: canvas.toDataURL("image/png"),
-        renderStatus: "ready",
-      });
-
-      canvas.width = 0;
-      canvas.height = 0;
-      page.cleanup();
-    }
-
-    return renderedPages;
-  } finally {
-    await loadingTask.destroy();
-  }
-}
-
-async function renderImageAttachmentPages(attachment: Attachment): Promise<OrderRequestRenderedAttachmentPage[]> {
-  return [
-    {
-      attachmentId: attachment.id,
-      attachmentName: attachment.name,
-      attachmentType: attachment.type,
-      pageIndex: 1,
-      totalPages: 1,
-      imageUrl: attachment.url,
-      renderStatus: "ready",
-    },
-  ];
-}
-
-export async function buildOrderRequestPrintAttachments(attachments: Attachment[]): Promise<OrderRequestPrintAttachmentBuildResult> {
-  const renderedAttachments: OrderRequestPrintAttachmentRender[] = [];
-  const failures: OrderRequestPrintAttachmentFailure[] = [];
-
-  for (const attachment of attachments) {
-    try {
-      const pages = attachment.type === "pdf" ? await renderPdfAttachmentPages(attachment) : await renderImageAttachmentPages(attachment);
-
-      renderedAttachments.push({
-        attachmentId: attachment.id,
-        attachmentName: attachment.name,
-        attachmentType: attachment.type,
-        pages,
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "첨부파일을 출력용으로 준비하지 못했습니다.";
-      failures.push({
-        attachmentId: attachment.id,
-        attachmentName: attachment.name,
-        attachmentType: attachment.type,
-        errorMessage,
-      });
-      renderedAttachments.push({
-        attachmentId: attachment.id,
-        attachmentName: attachment.name,
-        attachmentType: attachment.type,
-        pages: [
-          {
-            attachmentId: attachment.id,
-            attachmentName: attachment.name,
-            attachmentType: attachment.type,
-            pageIndex: 1,
-            totalPages: 1,
-            renderStatus: "error",
-            errorMessage,
-          },
-        ],
-      });
-    }
-  }
-
-  return { renderedAttachments, failures };
-}
-
-export function buildOrderRequestPrintHtml(
-  workOrder: WorkOrder,
-  renderedAttachments: OrderRequestPrintAttachmentRender[] = [],
-  options?: { requestNote?: string; renderTarget?: "desktop" | "mobile" },
-) {
+export function buildOrderRequestPrintHtml(workOrder: WorkOrder, _renderedAttachments: [] = [], options?: { requestNote?: string | null }) {
   const initialPreview = getOrderRequestDocumentPreview(workOrder, 0);
 
-  const documentsHtml = initialPreview.documents
-    .map((documentUnit, index) => {
-      const preview = getOrderRequestDocumentPreview(workOrder, index);
-      const currentPage = preview.currentPage;
+  const documentsHtml = initialPreview.documents.map((documentUnit, index) => {
+    const preview = getOrderRequestDocumentPreview(workOrder, index);
+    const currentPage = preview.currentPage;
+    const firstSummaryItems = [
+      { label: "품명", value: preview.displayTitle },
+      { label: "공임", value: formatCurrency(currentPage.laborCost) },
+      { label: "원가", value: formatCurrency(preview.currentDocumentAmount) },
+      { label: "수량", value: formatQuantity(currentPage.quantity) },
+    ];
+    const secondSummaryItems = [
+      { label: "원단합", value: formatCurrency(preview.fabricAmountTotal) },
+      { label: "부자재합", value: formatCurrency(preview.subsidiaryAmountTotal) },
+      { label: "외주합", value: formatCurrency(preview.outsourcingAmountTotal) },
+      { label: "로스", value: formatCurrency(currentPage.lossCost) },
+    ];
 
-      const firstSummaryItems = [
-        { label: "품명", value: preview.displayTitle },
-        { label: "공임", value: formatCurrency(currentPage.laborCost) },
-        { label: "원가", value: formatCurrency(preview.currentDocumentAmount) },
-        { label: "수량", value: formatQuantity(currentPage.quantity) },
-      ];
-
-      const secondSummaryItems = [
-        { label: "원단합", value: formatCurrency(preview.fabricAmountTotal) },
-        { label: "부자재합", value: formatCurrency(preview.subsidiaryAmountTotal) },
-        { label: "외주합", value: formatCurrency(preview.outsourcingAmountTotal) },
-        { label: "로스", value: formatCurrency(currentPage.lossCost) },
-      ];
-
-      return `
-        <section class="print-page-shell">
+    return `
+      <section class="print-page-shell">
         <article class="print-page">
           <div class="page-head">
             <div>
@@ -367,19 +148,13 @@ export function buildOrderRequestPrintHtml(
             </div>
             <div class="doc-index">${escapeHtml(documentUnit.label)} / ${documentUnit.total}</div>
           </div>
-
           ${renderSummaryRow(firstSummaryItems)}
           ${renderSummaryRow(secondSummaryItems)}
-
           <div class="hero-grid">
             <section class="hero-section">
               <div class="section-head">대표 이미지</div>
               <div class="hero-body">
-                ${
-                  preview.representativeImage
-                    ? `<div class="image-frame"><img src="${escapeHtml(preview.representativeImage.url)}" alt="${escapeHtml(preview.representativeImage.name)}" /></div>`
-                    : `<div class="empty-hero">대표 이미지가 없습니다.</div>`
-                }
+                ${preview.representativeImage ? `<div class="image-frame"><img src="${escapeHtml(preview.representativeImage.url)}" alt="${escapeHtml(preview.representativeImage.name)}" /></div>` : `<div class="empty-hero">대표 이미지가 없습니다.</div>`}
               </div>
             </section>
             <section class="hero-section hero-side">
@@ -389,219 +164,35 @@ export function buildOrderRequestPrintHtml(
               </div>
             </section>
           </div>
-
-          ${renderSectionTable({
-            title: "원단 내역",
-            head: `
-              <tr>
-                <th style="width:19%">거래처</th>
-                <th style="width:27%">자재명</th>
-                <th style="width:12%">수량</th>
-                <th style="width:10%">단위</th>
-                <th style="width:16%">단가</th>
-                <th style="width:16%">금액</th>
-              </tr>`,
-            body: renderMaterialRows(preview.fabricMaterials),
-            footerLabel: "원단 총합",
-            footerValue: formatCurrency(preview.fabricAmountTotal),
-          })}
-
-          ${renderSectionTable({
-            title: "부자재 내역",
-            head: `
-              <tr>
-                <th style="width:19%">거래처</th>
-                <th style="width:27%">자재명</th>
-                <th style="width:12%">수량</th>
-                <th style="width:10%">단위</th>
-                <th style="width:16%">단가</th>
-                <th style="width:16%">금액</th>
-              </tr>`,
-            body: renderMaterialRows(preview.subsidiaryMaterials),
-            footerLabel: "부자재 총합",
-            footerValue: formatCurrency(preview.subsidiaryAmountTotal),
-          })}
-
-          ${renderSectionTable({
-            title: "외주 내역",
-            head: `
-              <tr>
-                <th style="width:24%">외주처</th>
-                <th style="width:30%">작업명</th>
-                <th style="width:12%">수량</th>
-                <th style="width:17%">단가</th>
-                <th style="width:17%">금액</th>
-              </tr>`,
-            body: renderOutsourcingRows(preview.outsourcingItems),
-            footerLabel: "외주 총합",
-            footerValue: formatCurrency(preview.outsourcingAmountTotal),
-          })}
+          ${renderSectionTable({ title: "원단 내역", head: `
+                <tr>
+                  <th style="width:19%">거래처</th>
+                  <th style="width:27%">자재명</th>
+                  <th style="width:12%">수량</th>
+                  <th style="width:10%">단위</th>
+                  <th style="width:16%">단가</th>
+                  <th style="width:16%">금액</th>
+                </tr>`, body: renderMaterialRows(preview.fabricMaterials), footerLabel: "원단 총합", footerValue: formatCurrency(preview.fabricAmountTotal) })}
+          ${renderSectionTable({ title: "부자재 내역", head: `
+                <tr>
+                  <th style="width:19%">거래처</th>
+                  <th style="width:27%">자재명</th>
+                  <th style="width:12%">수량</th>
+                  <th style="width:10%">단위</th>
+                  <th style="width:16%">단가</th>
+                  <th style="width:16%">금액</th>
+                </tr>`, body: renderMaterialRows(preview.subsidiaryMaterials), footerLabel: "부자재 총합", footerValue: formatCurrency(preview.subsidiaryAmountTotal) })}
+          ${renderSectionTable({ title: "외주 내역", head: `
+                <tr>
+                  <th style="width:24%">외주처</th>
+                  <th style="width:30%">작업명</th>
+                  <th style="width:12%">수량</th>
+                  <th style="width:17%">단가</th>
+                  <th style="width:17%">금액</th>
+                </tr>`, body: renderOutsourcingRows(preview.outsourcingItems), footerLabel: "외주 총합", footerValue: formatCurrency(preview.outsourcingAmountTotal) })}
         </article>
-        </section>`;
-    })
-    .join("");
+      </section>`;
+  }).join("");
 
-  const attachmentAppendixHtml = renderAttachmentPages(renderedAttachments);
-
-  return `<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>발주서 PDF 출력</title>
-  <style>
-    @page { size: A4 portrait; margin: 0; }
-    * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; font-family: Arial, 'Noto Sans KR', sans-serif; color: #1c1917; background: #fff; overflow: visible; }
-    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .print-page-shell { width: 210mm; margin: 0; padding: 0; display: block; page-break-inside: avoid; break-inside: avoid; page-break-after: always; break-after: page; }
-    .print-page-shell:last-child { page-break-after: auto; break-after: auto; }
-    .print-page { width: 210mm; height: 297mm; margin: 0; padding: 8mm; background: #fff; border: 0; overflow: hidden; display: block; }
-    .page-head, .appendix-head { display: grid; grid-template-columns: 28mm 1fr 28mm; gap: 6px; align-items: start; padding: 3.5mm 4mm; border: 1px solid #78716c; border-bottom: 0; }
-    .meta-label { font-size: 10px; font-weight: 700; color: #78716c; }
-    .meta-value { margin-top: 3px; font-size: 12px; font-weight: 700; }
-    .title-wrap, .appendix-title-wrap { text-align: center; min-width: 0; }
-    .doc-title, .appendix-title { font-size: 20px; font-weight: 900; letter-spacing: 0.18em; }
-    .factory-name { margin-top: 2px; font-size: 11px; font-weight: 700; color: #78716c; }
-    .work-title, .appendix-name { margin-top: 4px; font-size: 15px; font-weight: 700; word-break: break-word; }
-    .appendix-page-index { margin-top: 4px; font-size: 10px; font-weight: 700; color: #78716c; }
-    .doc-index { text-align: right; font-size: 10px; color: #78716c; font-weight: 700; padding-top: 1px; }
-    .appendix-type-badge { justify-self: end; align-self: center; border: 1px solid #d6d3d1; background: #fafaf9; color: #57534e; padding: 2px 7px; font-size: 10px; font-weight: 700; }
-    .summary-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid #a8a29e; border-top: 0; }
-    .summary-item { display: flex; gap: 8px; align-items: center; min-height: 10mm; padding: 2.5mm 3.2mm; border-right: 1px solid #e7e5e4; }
-    .summary-item:last-child { border-right: 0; }
-    .summary-label { flex: 0 0 auto; font-size: 10px; font-weight: 700; color: #78716c; }
-    .summary-value { flex: 1 1 auto; text-align: right; font-size: 12px; font-weight: 700; word-break: break-word; }
-    .hero-grid { display: grid; grid-template-columns: 1.12fr 0.88fr; border: 1px solid #78716c; border-top: 0; }
-    .hero-section { min-width: 0; background: #fcfaf5; }
-    .hero-section:first-child { border-right: 1px solid #78716c; }
-    .section-head { padding: 2.4mm 3.2mm; background: #f5f5f4; border-bottom: 1px solid #d6d3d1; font-size: 11px; font-weight: 700; }
-    .hero-body, .hero-side-body { padding: 3mm; background: #fcfaf5; }
-    .image-frame { height: 63mm; overflow: hidden; border: 1px solid #d6d3d1; background: #f5f5f4; display: flex; align-items: center; justify-content: center; }
-    .image-frame img { width: 100%; height: 100%; object-fit: contain; background: #fff; display: block; }
-    .empty-hero { height: 63mm; border: 1px dashed #d6d3d1; background: #fff; color: #78716c; font-size: 11px; display: flex; align-items: center; justify-content: center; text-align: center; }
-    .request-only-body { display: flex; }
-    .request-note { flex: 1 1 auto; min-height: 63mm; white-space: pre-wrap; border: 1px solid #d6d3d1; background: #fff; padding: 3mm; font-size: 11px; line-height: 1.55; word-break: break-word; }
-    .table-section { margin-top: 3mm; border: 1px solid #78716c; }
-    .table-title { padding: 2.4mm 3.2mm; border-bottom: 1px solid #78716c; background: #f5f5f4; font-size: 11px; font-weight: 700; }
-    table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 10px; }
-    th, td { border-bottom: 1px solid #e7e5e4; padding: 2.2mm 2.4mm; text-align: center; vertical-align: middle; }
-    thead th { background: #fafaf9; color: #44403c; font-weight: 700; }
-    tfoot td { background: #fafaf9; font-weight: 700; }
-    .align-left { text-align: left; word-break: break-word; }
-    .empty-cell { padding: 7mm 2.4mm; color: #78716c; }
-    .appendix-page { display: flex; flex-direction: column; }
-    .appendix-body { flex: 1 1 auto; padding: 4mm 0 0; background: #fff; min-height: 0; }
-    .appendix-viewer { width: 100%; height: 100%; border: 1px solid #d6d3d1; background: #fff; overflow: hidden; }
-    .appendix-image-body { min-height: 0; }
-    .image-viewer { display: flex; align-items: center; justify-content: center; }
-    .image-viewer img { width: 100%; height: 100%; object-fit: contain; display: block; }
-    .appendix-error-viewer { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10mm; text-align: center; background: #fafaf9; }
-    .appendix-error-title { font-size: 16px; font-weight: 800; color: #7c2d12; }
-    .appendix-error-message { margin-top: 4mm; max-width: 140mm; font-size: 11px; line-height: 1.7; color: #57534e; word-break: break-word; white-space: pre-wrap; }
-    @media screen {
-      body { display: flex; flex-direction: column; align-items: center; }
-    }
-    @media print {
-      html, body { background: #fff; overflow: visible; }
-      .print-page-shell { margin: 0; }
-      .print-page { margin: 0; }
-    }
-  </style>
-</head>
-<body class="${options?.renderTarget === "mobile" ? "print-mobile" : "print-desktop"}">
-${documentsHtml}
-${attachmentAppendixHtml}
-<script>
-  (function () {
-    var printStarted = false;
-    var closeTimer = null;
-
-    function safeCloseWindow() {
-      if (closeTimer) {
-        clearTimeout(closeTimer);
-      }
-      closeTimer = setTimeout(function () {
-        try {
-          window.close();
-        } catch (error) {
-          console.error('[order-request-print] window close failed', error);
-        }
-      }, 80);
-    }
-
-    function finalizePrint() {
-      if (printStarted) {
-        return;
-      }
-      printStarted = true;
-      setTimeout(function () {
-        try {
-          window.focus();
-          window.print();
-        } catch (error) {
-          console.error('[order-request-print] print failed', error);
-        }
-      }, 120);
-    }
-
-    function waitForImages() {
-      var images = Array.prototype.slice.call(document.images || []);
-      if (!images.length) {
-        return Promise.resolve();
-      }
-
-      return Promise.all(images.map(function (image) {
-        if (image.complete) {
-          return Promise.resolve();
-        }
-
-        return new Promise(function (resolve) {
-          var done = function () {
-            image.removeEventListener('load', done);
-            image.removeEventListener('error', done);
-            resolve();
-          };
-
-          image.addEventListener('load', done, { once: true });
-          image.addEventListener('error', done, { once: true });
-
-          setTimeout(done, 2000);
-        });
-      }));
-    }
-
-    function waitForFonts() {
-      if (!document.fonts || !document.fonts.ready) {
-        return Promise.resolve();
-      }
-      return document.fonts.ready.catch(function () {
-        return undefined;
-      });
-    }
-
-    Promise.all([waitForImages(), waitForFonts()])
-      .catch(function (error) {
-        console.error('[order-request-print] resource wait failed', error);
-      })
-      .finally(function () {
-        requestAnimationFrame(function () {
-          requestAnimationFrame(function () {
-            finalizePrint();
-          });
-        });
-      });
-
-    window.addEventListener('afterprint', safeCloseWindow, { once: true });
-    window.addEventListener('pagehide', function () {
-      if (closeTimer) {
-        clearTimeout(closeTimer);
-      }
-    });
-
-    setTimeout(finalizePrint, 2200);
-  })();
-</script>
-</body>
-</html>`;
+  return `<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>발주서 PDF 출력</title><style>@page{size:A4 portrait;margin:0}*{box-sizing:border-box}html,body{margin:0;padding:0;font-family:Arial,'Noto Sans KR',sans-serif;color:#1c1917;background:#fff;overflow:visible}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.print-page-shell{width:210mm;margin:0;padding:0;display:block;page-break-inside:avoid;break-inside:avoid;page-break-after:always;break-after:page}.print-page-shell:last-child{page-break-after:auto;break-after:auto}.print-page{width:210mm;height:297mm;margin:0;padding:8mm;background:#fff;border:0;overflow:hidden;display:block}.page-head{display:grid;grid-template-columns:30mm 1fr 28mm;align-items:start;gap:4mm;border:1px solid #78716c;padding:3.2mm}.meta-label{font-size:10px;font-weight:700;color:#78716c}.meta-value{margin-top:3px;font-size:12px;font-weight:700}.title-wrap{text-align:center}.doc-title{font-size:19px;font-weight:800;letter-spacing:.18em}.work-title{margin-top:2px;font-size:12px;font-weight:700}.factory-name{margin-top:2px;font-size:11px;font-weight:700;color:#78716c}.doc-index{text-align:right;font-size:10px;color:#78716c;font-weight:700;padding-top:1px}.summary-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid #a8a29e;border-top:0}.summary-item{display:flex;gap:8px;align-items:center;min-height:10mm;padding:2.5mm 3.2mm;border-right:1px solid #e7e5e4}.summary-item:last-child{border-right:0}.summary-label{flex:0 0 auto;font-size:10px;font-weight:700;color:#78716c}.summary-value{flex:1 1 auto;text-align:right;font-size:12px;font-weight:700;word-break:break-word}.hero-grid{display:grid;grid-template-columns:1.12fr .88fr;border:1px solid #78716c;border-top:0}.hero-section{min-width:0;background:#fcfaf5}.hero-section:first-child{border-right:1px solid #78716c}.section-head{padding:2.4mm 3.2mm;background:#f5f5f4;border-bottom:1px solid #d6d3d1;font-size:11px;font-weight:700}.hero-body,.hero-side-body{padding:3mm;background:#fcfaf5}.image-frame{height:63mm;overflow:hidden;border:1px solid #d6d3d1;background:#f5f5f4;display:flex;align-items:center;justify-content:center}.image-frame img{width:100%;height:100%;object-fit:contain;background:#fff;display:block}.empty-hero{height:63mm;border:1px dashed #d6d3d1;background:#fff;color:#78716c;font-size:11px;display:flex;align-items:center;justify-content:center;text-align:center}.request-only-body{display:flex}.request-note{flex:1 1 auto;min-height:63mm;white-space:pre-wrap;border:1px solid #d6d3d1;background:#fff;padding:3mm;font-size:11px;line-height:1.55;word-break:break-word}.table-section{margin-top:3mm;border:1px solid #78716c}.table-title{padding:2.4mm 3.2mm;border-bottom:1px solid #78716c;background:#f5f5f4;font-size:11px;font-weight:700}table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:10px}th,td{border-bottom:1px solid #e7e5e4;padding:2.2mm 2.4mm;text-align:center;vertical-align:middle}thead th{background:#fafaf9;color:#44403c;font-weight:700}tfoot td{background:#fafaf9;font-weight:700}.align-left{text-align:left;word-break:break-word}.empty-cell{padding:7mm 2.4mm;color:#78716c}@media screen{body{display:flex;flex-direction:column;align-items:center}}@media print{html,body{background:#fff;overflow:visible}.print-page-shell{margin:0}.print-page{margin:0}}</style></head><body>${documentsHtml}<script>(function(){var printStarted=false;var closeTimer=null;function safeCloseWindow(){if(closeTimer){clearTimeout(closeTimer)}closeTimer=setTimeout(function(){try{window.close()}catch(error){console.error('[order-request-print] window close failed',error)}},80)}function finalizePrint(){if(printStarted){return}printStarted=true;setTimeout(function(){try{window.focus();window.print()}catch(error){console.error('[order-request-print] print failed',error)}},120)}function waitForImages(){var images=Array.prototype.slice.call(document.images||[]);if(!images.length){return Promise.resolve()}return Promise.all(images.map(function(image){if(image.complete){return Promise.resolve()}return new Promise(function(resolve){var done=function(){image.removeEventListener('load',done);image.removeEventListener('error',done);resolve()};image.addEventListener('load',done,{once:true});image.addEventListener('error',done,{once:true});setTimeout(done,2000)})}))}function waitForFonts(){if(!document.fonts||!document.fonts.ready){return Promise.resolve()}return document.fonts.ready.catch(function(){return undefined})}Promise.all([waitForImages(),waitForFonts()]).catch(function(error){console.error('[order-request-print] resource wait failed',error)}).finally(function(){requestAnimationFrame(function(){requestAnimationFrame(function(){finalizePrint()})})});window.addEventListener('afterprint',safeCloseWindow,{once:true});window.addEventListener('pagehide',function(){if(closeTimer){clearTimeout(closeTimer)}});setTimeout(finalizePrint,2200)})();</script></body></html>`;
 }
