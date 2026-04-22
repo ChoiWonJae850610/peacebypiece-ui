@@ -44,11 +44,11 @@ export const commonKo = {
       },
       attachmentRequest: {
         title: "첨부 요청 등록",
-        description: "관리자 검토 후 공식 첨부로 승격할 파일을 메모로 요청합니다.",
+        description: "관리자 검토 후 첨부 파일로 승격할 파일을 메모로 요청합니다.",
         cancel: "취소",
         submit: "요청 등록",
         memoLabel: "요청 메모",
-        memoPlaceholder: "예: 메인 시안 PDF 공식 첨부 승격 요청 / 공장 전달용 최신본입니다.",
+        memoPlaceholder: "예: 메인 시안 PDF 첨부 파일 승격 요청 / 공장 전달용 최신본입니다.",
         fileLabel: "파일 첨부",
         filePicker: "파일 선택",
         noFilesHelp: "파일 없이 요청 메모만 등록할 수도 있습니다.",
@@ -80,7 +80,7 @@ export const commonKo = {
         currentRolesPrefix: "현재 권한",
         roleGuideTitle: "권한 설명",
         roleGuideDesigner: "디자이너: 작업지시 작성, 검토 요청, 발주 요청",
-        roleGuideAdmin: "관리자: 승인, 발주 확정, 역할 지정, 공식 첨부",
+        roleGuideAdmin: "관리자: 승인, 발주 확정, 역할 지정, 첨부 파일",
         roleGuideInspector: "재고관리: 입고 등록, 검수 완료, 재고 수정",
       },
       managerAssign: {

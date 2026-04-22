@@ -9,6 +9,16 @@ import type { Attachment } from "@/types/workorder";
 import { MODAL_EXCEPTION_PRESETS } from "@/components/common/modal/modalPresets";
 import { useI18n } from "@/lib/i18n";
 
+function DownloadIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+      <path d="M10 3.75v7.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M6.75 8.75 10 12l3.25-3.25" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M4.75 14.25h10.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export default function AttachmentPreviewModal({
   attachment,
   canDownload,
@@ -46,9 +56,11 @@ export default function AttachmentPreviewModal({
                   download={attachment.name}
                   target="_blank"
                   rel="noreferrer"
-                  className="pbp-interactive-button inline-flex items-center justify-center rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm transition hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+                  className="pbp-interactive-button inline-flex h-10 w-10 items-center justify-center rounded-xl border border-stone-300 bg-white text-stone-700 shadow-sm transition hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+                  aria-label={copy.download}
+                  title={copy.download}
                 >
-                  {copy.download}
+                  <DownloadIcon />
                 </a>
               ) : null}
             </div>

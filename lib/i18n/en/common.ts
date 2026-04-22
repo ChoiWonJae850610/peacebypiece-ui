@@ -44,11 +44,11 @@ export const commonEn = {
       },
       attachmentRequest: {
         title: "Register attachment request",
-        description: "Request files via memo for manager review before promoting to official attachments.",
+        description: "Request files via memo for manager review before promoting to attachment files.",
         cancel: "Cancel",
         submit: "Register request",
         memoLabel: "Request memo",
-        memoPlaceholder: "Example: Request to promote main design PDF as official attachment / Latest version for factory sharing.",
+        memoPlaceholder: "Example: Request to promote main design PDF as attachment file / Latest version for factory sharing.",
         fileLabel: "Attach file",
         filePicker: "Select file",
         noFilesHelp: "You can register only a memo without files.",
@@ -80,7 +80,7 @@ export const commonEn = {
         currentRolesPrefix: "Current roles",
         roleGuideTitle: "Role guide",
         roleGuideDesigner: "Designer: create work orders, request review, request orders",
-        roleGuideAdmin: "Admin: approve, confirm orders, assign roles, manage official attachments",
+        roleGuideAdmin: "Admin: approve, confirm orders, assign roles, manage attachment files",
         roleGuideInspector: "Inspection: register inbound, complete inspection, edit stock",
       },
       managerAssign: {

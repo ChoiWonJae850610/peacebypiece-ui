@@ -4,6 +4,34 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS } from "@/components/common/modal/modalActions";
+
+function PrintIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+      <path d="M6 7V4.75h8V7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5.25 15.25h9.5V11.5h-9.5v3.75Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M4.25 8.25h11.5a1 1 0 0 1 1 1v3.25h-2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5.5 9.75h.01" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function ArrowNextIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+      <path d="M4.75 10h9.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="m10.75 6 4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+      <path d="m5 10.25 3.25 3.25L15 6.75" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 import { getOrderSubmissionSnapshot } from "@/lib/workorder/orderSubmission";
 import { getOrderRequestDocumentPreview } from "@/lib/workorder/presentation/orderRequestDocumentPresentation";
 import { buildOrderRequestPrintHtml } from "@/lib/workorder/presentation/orderRequestDocumentPrint";
@@ -289,39 +317,32 @@ export default function OrderRequestConfirmModal({
       overlayClassName="bg-stone-950/55 md:bg-stone-950/50"
       bodyClassName="bg-[#f5f2eb]"
       footer={
-        <div className="flex flex-col-reverse gap-2 md:flex-row md:justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isPreparingPrint}
-            className={cn(
-              "pbp-interactive-button rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700",
-              "hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400",
-            )}
-          >
-            {MODAL_ACTION_LABELS.cancel}
-          </button>
+        <div className="flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={handlePrintPdf}
             disabled={isPreparingPrint}
             className={cn(
-              "pbp-interactive-button rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700",
+              "pbp-interactive-button inline-flex h-11 w-11 items-center justify-center rounded-xl border border-stone-300 bg-white text-stone-700",
               "hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400",
             )}
+            aria-label={isPreparingPrint ? "PDF 준비 중" : i18n.common.ui.modalActions.exportPdf}
+            title={isPreparingPrint ? "PDF 준비 중" : i18n.common.ui.modalActions.exportPdf}
           >
-            {isPreparingPrint ? "PDF 준비 중..." : i18n.common.ui.modalActions.exportPdf}
+            <PrintIcon />
           </button>
           <button
             type="button"
             onClick={() => onConfirm({ factoryName: confirmedFactoryName, quantity: confirmedQuantity })}
             disabled={!canSubmit}
             className={cn(
-              "pbp-interactive-button rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white",
+              "pbp-interactive-button inline-flex h-11 w-11 items-center justify-center rounded-xl bg-stone-900 text-white",
               "hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:bg-stone-300",
             )}
+            aria-label={requested ? (copy.requestedBadge ?? "발주 완료") : MODAL_ACTION_LABELS.proceedOrderRequest}
+            title={requested ? (copy.requestedBadge ?? "발주 완료") : MODAL_ACTION_LABELS.proceedOrderRequest}
           >
-            {requested ? (copy.requestedBadge ?? "발주 완료") : MODAL_ACTION_LABELS.proceedOrderRequest}
+            {requested ? <CheckIcon /> : <ArrowNextIcon />}
           </button>
         </div>
       }

@@ -4,6 +4,14 @@ import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
 import { useI18n } from "@/lib/i18n";
 import type { AttachmentPanelItem } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
 
+function PlusIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-4 w-4">
+      <path d="M10 4.25v11.5M4.25 10h11.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export default function WorkOrderAttachmentPanel({
   title,
   addButtonLabel,
@@ -37,7 +45,15 @@ export default function WorkOrderAttachmentPanel({
           <h3 className="text-sm font-semibold text-stone-900">{title}</h3>
         </div>
         {canManageAttachments ? (
-          <button type="button" onClick={onOpenAttachmentPicker} className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200">{addButtonLabel}</button>
+          <button
+            type="button"
+            onClick={onOpenAttachmentPicker}
+            className="pbp-interactive-button inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-300 bg-white text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200"
+            aria-label={addButtonLabel}
+            title={addButtonLabel}
+          >
+            <PlusIcon />
+          </button>
         ) : null}
       </div>
       {attachments.length > 0 ? (
