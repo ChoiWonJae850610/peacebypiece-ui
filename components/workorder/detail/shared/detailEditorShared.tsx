@@ -74,24 +74,9 @@ function isEditingCell(editingCell: EditableCell, section: EditableSectionKey, r
   return editingCell?.section === section && editingCell.rowId === rowId && editingCell.field === field;
 }
 
-function AddIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-[12px] w-[12px]">
-      <path d="M10 4.75v10.5M4.75 10h10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />      
-    </svg>
-  );
-}
-
-function MinusIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-[12px] w-[12px]">
-      <path d="M4.75 10h10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />      
-    </svg>
-  );
-}
 
 function CircleIconButton({ onClick, srLabel, disabled = false, variant, title, icon }: { onClick: () => void; srLabel: string; disabled?: boolean; variant: "default" | "danger"; title?: string; icon: ReactNode; }) {
-  const baseClassName = "pbp-interactive-button inline-flex h-8 w-8 items-center justify-center rounded-full border bg-white disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400";
+  const baseClassName = "pbp-interactive-button inline-flex h-8 w-8 items-center justify-center rounded-full border bg-white text-[14px] font-normal leading-none disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400";
   const variantClassName = variant === "danger"
     ? "border-rose-200 text-rose-600 hover:border-rose-300 hover:bg-rose-50 active:bg-rose-100"
     : "border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200";
@@ -105,7 +90,7 @@ function CircleIconButton({ onClick, srLabel, disabled = false, variant, title, 
       disabled={disabled}
       className={`${baseClassName} ${variantClassName}`}
     >
-      {icon}
+      <span aria-hidden="true" className="inline-flex translate-y-[-0.5px] items-center justify-center leading-none">{icon}</span>
     </button>
   );
 }
