@@ -2,7 +2,7 @@ import { canDeleteWorkOrderAttachment, getAttachmentPermissionState } from "@/li
 import type { Attachment, UserProfile } from "@/types/workorder";
 import type { ChangeEvent, RefObject } from "react";
 
-export function openOfficialAttachmentPicker(
+export function openAttachmentPickerTrigger(
   attachmentInputRef: RefObject<HTMLInputElement | null>,
   canUploadOfficialAttachments: boolean,
 ) {

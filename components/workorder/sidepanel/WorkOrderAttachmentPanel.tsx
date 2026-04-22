@@ -6,8 +6,8 @@ import type { AttachmentPanelItem } from "@/lib/workorder/presentation/workOrder
 
 function PlusIcon() {
   return (
-    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-[18px] w-[18px]">
-      <path d="M10 4.25v11.5M4.25 10h11.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-[14px] w-[14px]">
+      <path d="M10 4.25v11.5M4.25 10h11.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
     </svg>
   );
 }
@@ -64,7 +64,7 @@ export default function WorkOrderAttachmentPanel({
                 <button
                   type="button"
                   onClick={() => onDeleteAttachment(attachment.id)}
-                  className="pbp-interactive-button absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full border border-rose-200 bg-white text-base font-semibold text-rose-600 hover:border-rose-300 hover:bg-rose-50 active:bg-rose-100"
+                  className="pbp-interactive-button absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full border border-rose-200 bg-white text-[18px] font-semibold leading-none text-rose-600 hover:border-rose-300 hover:bg-rose-50 active:bg-rose-100"
                   aria-label={`${attachment.name} ${ui.attachmentPanel.deleteAriaSuffix}`}
                   title={ui.attachmentPanel.deleteTitle}
                 >

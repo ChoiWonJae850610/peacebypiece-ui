@@ -13,7 +13,7 @@ import {
   canDeleteAttachmentForCurrentUser,
   getAttachmentPermissionsForCurrentUser,
   clearAttachmentInputValue,
-  openOfficialAttachmentPicker,
+  openAttachmentPickerTrigger,
   readAttachmentInputFiles,
 } from "@/lib/workorder/attachments/attachmentActions";
 import type { Attachment, AttachmentScope, HistoryLog, MemoAttachmentPayload, UserProfile, WorkOrder } from "@/types/workorder";
@@ -52,7 +52,7 @@ export function useWorkOrderAttachments({
 
   const handleOpenAttachmentPicker = (scope: AttachmentScope = "official") => {
     setAttachmentPickerScope(scope);
-    openOfficialAttachmentPicker(attachmentInputRef, canUploadOfficialAttachments);
+    openAttachmentPickerTrigger(attachmentInputRef, canUploadOfficialAttachments);
   };
 
   const handleAttachmentFiles = (event: ChangeEvent<HTMLInputElement>) => {
