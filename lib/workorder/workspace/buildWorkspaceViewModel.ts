@@ -15,26 +15,7 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
   const version = APP_VERSION;
   const companyName = getWorkspaceCompanyName();
 
-  const sidebarListProps = buildSidebarListProps({
-    companyName,
-    version,
-    currentUser: args.currentUser,
-    workOrders: args.workOrders,
-    selectedId: args.selectedId,
-    workflowStateById: args.workflowStateById,
-    canDeleteWorkOrder: args.canDeleteWorkOrder,
-    canCreateWorkOrder: args.canCreateWorkOrder,
-    searchQuery: args.searchQuery,
-    onSelectWorkOrder: args.onSelectWorkOrder,
-    onSetCreateWorkOrderModalOpen: args.onSetCreateWorkOrderModalOpen,
-    onSetPermissionModalOpen: args.onSetPermissionModalOpen,
-    onReorderWorkOrder: args.onReorderWorkOrder,
-    onDeleteWorkOrder: args.onDeleteWorkOrder,
-    onReworkWorkOrder: args.onReworkWorkOrder,
-    onSetSearchQuery: args.onSetSearchQuery,
-  });
-
-  const detailProps = buildDetailProps({
+  const baseProps = {
     version,
     currentUser: args.currentUser,
     currentRole: args.currentRole,
@@ -44,6 +25,7 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
     canCreateWorkOrder: args.canCreateWorkOrder,
     canSeeAttachments: args.canSeeAttachments,
     canUploadOfficialAttachments: args.canUploadOfficialAttachments,
+    designAttachments: args.designAttachments,
     isAdmin: args.isAdmin,
     isReviewRequestLocked: args.isReviewRequestLocked,
     canChangeManager: args.canChangeManager,
@@ -71,10 +53,34 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
     onCompleteInspection: args.onCompleteInspection,
     onOpenManagerAssignModal: args.onOpenManagerAssignModal,
     onOpenAttachmentPicker: args.onOpenAttachmentPicker,
+    onOpenDesignAttachmentPicker: args.onOpenDesignAttachmentPicker,
     onRequestDeleteAttachment: args.onRequestDeleteAttachment,
     onCreateMemoThread: args.onCreateMemoThread,
     onCreateMemoReply: args.onCreateMemoReply,
     onPromoteMemoAttachment: args.onPromoteMemoAttachment,
+  };
+
+  const sidebarListProps = buildSidebarListProps({
+    companyName,
+    version,
+    currentUser: args.currentUser,
+    workOrders: args.workOrders,
+    selectedId: args.selectedId,
+    workflowStateById: args.workflowStateById,
+    canDeleteWorkOrder: args.canDeleteWorkOrder,
+    canCreateWorkOrder: args.canCreateWorkOrder,
+    searchQuery: args.searchQuery,
+    onSelectWorkOrder: args.onSelectWorkOrder,
+    onSetCreateWorkOrderModalOpen: args.onSetCreateWorkOrderModalOpen,
+    onSetPermissionModalOpen: args.onSetPermissionModalOpen,
+    onReorderWorkOrder: args.onReorderWorkOrder,
+    onDeleteWorkOrder: args.onDeleteWorkOrder,
+    onReworkWorkOrder: args.onReworkWorkOrder,
+    onSetSearchQuery: args.onSetSearchQuery,
+  });
+
+  const detailProps = buildDetailProps({
+    ...baseProps,
     basicInfoOpen: args.basicInfoOpen,
     materialOpen: args.materialOpen,
     outsourcingOpen: args.outsourcingOpen,
@@ -85,48 +91,7 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
   });
 
   const sidePanelProps = applySidePanelPreviewHandler(
-    buildSidePanelProps({
-      version,
-      currentUser: args.currentUser,
-      currentRole: args.currentRole,
-      selectedWorkOrder: args.selectedWorkOrder,
-      hasVisibleWorkOrders: args.hasVisibleWorkOrders,
-      currentWorkflowState: args.currentWorkflowState,
-      canCreateWorkOrder: args.canCreateWorkOrder,
-      canSeeAttachments: args.canSeeAttachments,
-      canUploadOfficialAttachments: args.canUploadOfficialAttachments,
-      isAdmin: args.isAdmin,
-      isReviewRequestLocked: args.isReviewRequestLocked,
-      canChangeManager: args.canChangeManager,
-      canSeeProductionSections: args.canSeeProductionSections,
-      canSeeCostSections: args.canSeeCostSections,
-      canOpenInventoryEditor: args.canOpenInventoryEditor,
-      currentDisplayStage: args.currentDisplayStage,
-      currentInventoryQuantity: args.currentInventoryQuantity,
-      officialAttachments: args.officialAttachments,
-      selectedAttachment: args.selectedAttachment,
-      fabricTotal: args.fabricTotal,
-      subsidiaryTotal: args.subsidiaryTotal,
-      outsourcingTotal: args.outsourcingTotal,
-      totalCost: args.totalCost,
-      unitCost: args.unitCost,
-      saveStatus: args.saveStatus,
-      lastSavedAt: args.lastSavedAt,
-      availableActions: args.availableActions,
-      visibleStages: args.visibleStages,
-      canDeleteAttachment: args.canDeleteAttachment,
-      onSave: args.onSave,
-      onWorkflowAction: args.onWorkflowAction,
-      onUpdateSelectedWorkOrder: args.onUpdateSelectedWorkOrder,
-      onRenameWorkOrderTitle: args.onRenameWorkOrderTitle,
-      onCompleteInspection: args.onCompleteInspection,
-      onOpenManagerAssignModal: args.onOpenManagerAssignModal,
-      onOpenAttachmentPicker: args.onOpenAttachmentPicker,
-      onRequestDeleteAttachment: args.onRequestDeleteAttachment,
-      onCreateMemoThread: args.onCreateMemoThread,
-      onCreateMemoReply: args.onCreateMemoReply,
-      onPromoteMemoAttachment: args.onPromoteMemoAttachment,
-    }),
+    buildSidePanelProps(baseProps),
     args.onSetAttachmentPreviewId,
   );
 

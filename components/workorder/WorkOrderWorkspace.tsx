@@ -53,6 +53,7 @@ export default function WorkOrderWorkspace() {
     isAdmin,
     canCreateWorkOrder,
     canUploadOfficialAttachments,
+    designAttachments,
     isReviewRequestLocked,
     canChangeManager,
     canSeeProductionSections,
@@ -102,6 +103,7 @@ export default function WorkOrderWorkspace() {
   } = useWorkOrder();
 
   const [pendingAttachmentDeleteId, setPendingAttachmentDeleteId] = useState<string | null>(null);
+  const [attachmentUploadScope, setAttachmentUploadScope] = useState<"design" | "official">("official");
   const renderHasSelection = hasVisibleWorkOrders && hasActiveSelection;
 
   const pendingAttachmentDelete = useMemo(
@@ -151,6 +153,7 @@ export default function WorkOrderWorkspace() {
     canCreateWorkOrder,
     canSeeAttachments,
     canUploadOfficialAttachments,
+    designAttachments,
     isReviewRequestLocked,
     canChangeManager,
     canSeeProductionSections,
@@ -204,7 +207,14 @@ export default function WorkOrderWorkspace() {
     onOpenManagerAssignModal: handleOpenManagerAssignModal,
     onCloseManagerAssignModal: handleCloseManagerAssignModal,
     onChangeManager: handleChangeManager,
-    onOpenAttachmentPicker: handleOpenAttachmentPicker,
+    onOpenAttachmentPicker: () => {
+      setAttachmentUploadScope("official");
+      handleOpenAttachmentPicker();
+    },
+    onOpenDesignAttachmentPicker: () => {
+      setAttachmentUploadScope("design");
+      handleOpenAttachmentPicker();
+    },
     onRequestDeleteAttachment: handleRequestDeleteAttachment,
     onAttachmentDeleteConfirmClose: handleCloseDeleteAttachmentConfirm,
     onAttachmentDeleteConfirm: handleConfirmDeleteAttachment,
@@ -227,7 +237,7 @@ export default function WorkOrderWorkspace() {
       />
       <WorkOrderOverlay
         attachmentInputRef={attachmentInputRef}
-        onAttachmentFilesChange={handleAttachmentFiles}
+        onAttachmentFilesChange={(event) => handleAttachmentFiles(event, attachmentUploadScope)}
         toastMessage={toastMessage}
         modalProps={viewModel.modalProps}
       />

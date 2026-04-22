@@ -4,6 +4,7 @@ import type { ChangeEvent, Dispatch, RefObject, SetStateAction } from "react";
 import { useI18n } from "@/lib/i18n";
 import {
   buildAttachmentDeleteResult,
+  buildDesignAttachmentUploadResult,
   buildMemoReplyResult,
   buildMemoThreadResult,
   buildOfficialAttachmentUploadResult,
@@ -50,20 +51,28 @@ export function useWorkOrderAttachments({
     openOfficialAttachmentPicker(attachmentInputRef, canUploadOfficialAttachments);
   };
 
-  const handleAttachmentFiles = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleAttachmentFiles = (event: ChangeEvent<HTMLInputElement>, scope: "design" | "official" = "official") => {
     if (!canUploadOfficialAttachments) {
       clearAttachmentInputValue(event);
       return;
     }
 
     const files = readAttachmentInputFiles(event);
-    const result = buildOfficialAttachmentUploadResult({
-      workOrder: selectedWorkOrder,
-      currentUser,
-      files,
-      text: actionFlowText,
-      historyText,
-    });
+    const result = scope === "design"
+      ? buildDesignAttachmentUploadResult({
+        workOrder: selectedWorkOrder,
+        currentUser,
+        files,
+        text: actionFlowText,
+        historyText,
+      })
+      : buildOfficialAttachmentUploadResult({
+        workOrder: selectedWorkOrder,
+        currentUser,
+        files,
+        text: actionFlowText,
+        historyText,
+      });
     clearAttachmentInputValue(event);
     if (!result) return;
 

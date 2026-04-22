@@ -12,6 +12,7 @@ import {
   filterWorkOrderList,
   filterWorkOrdersByUserScope,
   getAttachmentById,
+  getDesignAttachments,
   getOfficialAttachments,
 } from "@/lib/workorder/selectors";
 import { getSharedInventorySnapshot } from "@/lib/workorder/reorder/inventory";
@@ -58,6 +59,7 @@ export function buildWorkOrderDerivedState({
   const canSeeInventoryHistorySection = currentUser.permissions.canSeeInventoryHistorySection;
   const canSeeAttachments = currentUser.permissions.canSeeAttachments;
   const currentInventoryQuantity = getSharedInventorySnapshot(workOrders, selectedWorkOrder).inventoryQuantity;
+  const designAttachments = getDesignAttachments(selectedWorkOrder.attachments ?? []);
   const officialAttachments = getOfficialAttachments(selectedWorkOrder.attachments ?? []);
   const selectedAttachment = getAttachmentById(selectedWorkOrder.attachments ?? [], attachmentPreviewId);
   const { materials, outsourcing, fabricTotal, subsidiaryTotal, outsourcingTotal, totalCost, unitCost } = calculateWorkOrderCosts(selectedWorkOrder);
@@ -92,6 +94,7 @@ export function buildWorkOrderDerivedState({
     canSeeInventoryHistorySection,
     canSeeAttachments,
     currentInventoryQuantity,
+    designAttachments,
     officialAttachments,
     selectedAttachment,
     materials,

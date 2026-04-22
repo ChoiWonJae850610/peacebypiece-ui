@@ -67,6 +67,11 @@ function getDisplayAttachments(attachments: Attachment[]) {
 }
 
 function getRepresentativeImage(attachments: Attachment[]) {
+  const designImages = attachments.filter(
+    (attachment) => attachment.type === "image" && attachment.scope === "design",
+  );
+  if (designImages.length > 0) return designImages[0] ?? null;
+
   const officialImages = attachments.filter(
     (attachment) => attachment.type === "image" && (attachment.scope ?? "official") === "official",
   );

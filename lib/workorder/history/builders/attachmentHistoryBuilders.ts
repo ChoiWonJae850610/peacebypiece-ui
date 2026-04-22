@@ -3,7 +3,7 @@ import { createHistoryLog, defaultHistoryText, formatTemplate, type HistoryText 
 export function createAttachmentUploadHistoryLog(
   user: string,
   workOrderId: string,
-  attachments: { name: string }[],
+  attachments: { name: string; scope?: string | null }[],
   text: HistoryText = defaultHistoryText,
 ) {
   return createHistoryLog({
@@ -13,7 +13,7 @@ export function createAttachmentUploadHistoryLog(
     workOrderId,
     category: "attachment",
     tone: "blue",
-    summary: `${formatTemplate(text.detailLabels.summaryOfficialAttachmentCountFormat, { count: attachments.length })}${text.actorSeparator}${user}`,
+    summary: `${formatTemplate((attachments[0]?.scope ?? "official") === "design" ? text.detailLabels.summaryDesignAttachmentCountFormat : text.detailLabels.summaryOfficialAttachmentCountFormat, { count: attachments.length })}${text.actorSeparator}${user}`,
     detailLines: attachments.map((attachment, index) => ({
       label: formatTemplate(text.detailLabels.fileCountFormat, { index: index + 1 }),
       value: attachment.name,
@@ -39,7 +39,7 @@ export function createAttachmentDeleteHistoryLog(
       { label: text.detailLabels.file, value: attachment.name },
       {
         label: text.detailLabels.scope,
-        value: attachment.scope === "memo" ? text.detailLabels.memoAttachment : text.detailLabels.officialAttachment,
+        value: attachment.scope === "memo" ? text.detailLabels.memoAttachment : attachment.scope === "design" ? text.detailLabels.designAttachment : text.detailLabels.officialAttachment,
       },
     ],
     text,

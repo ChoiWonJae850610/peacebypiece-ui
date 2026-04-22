@@ -191,6 +191,7 @@ export function useWorkOrder() {
     currentInventoryQuantity: derivedState.currentInventoryQuantity,
     filteredHistoryLogs: historyState.filteredHistoryLogs,
     inventoryLogs: historyState.inventoryLogs,
+    designAttachments: derivedState.designAttachments,
     officialAttachments: derivedState.officialAttachments,
     selectedAttachment: derivedState.selectedAttachment,
     canDeleteAttachment: attachmentState.canDeleteAttachment,

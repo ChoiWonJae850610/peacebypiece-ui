@@ -42,6 +42,7 @@ export type BuildWorkspaceViewModelArgs = {
   canCreateWorkOrder: boolean;
   canSeeAttachments: boolean;
   canUploadOfficialAttachments: boolean;
+  designAttachments: Attachment[];
   isReviewRequestLocked: boolean;
   canChangeManager: boolean;
   canSeeProductionSections: boolean;
@@ -96,6 +97,7 @@ export type BuildWorkspaceViewModelArgs = {
   onCloseManagerAssignModal: () => void;
   onChangeManager: (managerId: string) => void;
   onOpenAttachmentPicker: () => void;
+  onOpenDesignAttachmentPicker: () => void;
   onRequestDeleteAttachment: (attachmentId: string) => void;
   onAttachmentDeleteConfirmClose: () => void;
   onAttachmentDeleteConfirm: () => void;
@@ -123,6 +125,7 @@ export type BaseWorkspaceViewModelArgs = {
   canCreateWorkOrder: boolean;
   canSeeAttachments: boolean;
   canUploadOfficialAttachments: boolean;
+  designAttachments: Attachment[];
   isAdmin: boolean;
   isReviewRequestLocked: boolean;
   canChangeManager: boolean;
@@ -150,6 +153,7 @@ export type BaseWorkspaceViewModelArgs = {
   onCompleteInspection: DetailProps["onCompleteInspection"];
   onOpenManagerAssignModal: () => void;
   onOpenAttachmentPicker: () => void;
+  onOpenDesignAttachmentPicker: () => void;
   onRequestDeleteAttachment: (attachmentId: string) => void;
   onCreateMemoThread: SidePanelProps["onCreateMemoThread"];
   onCreateMemoReply: SidePanelProps["onCreateMemoReply"];

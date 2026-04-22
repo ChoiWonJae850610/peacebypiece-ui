@@ -12,6 +12,10 @@ export function isOfficialAttachment(attachment: Attachment | null | undefined):
   return getAttachmentScope(attachment) === "official";
 }
 
+export function isDesignAttachment(attachment: Attachment | null | undefined): boolean {
+  return getAttachmentScope(attachment) === "design";
+}
+
 export function isMemoAttachment(attachment: Attachment | null | undefined): boolean {
   return getAttachmentScope(attachment) === "memo";
 }

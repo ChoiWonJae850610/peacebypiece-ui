@@ -1,4 +1,4 @@
-import { isOfficialAttachment } from "@/lib/permissions/attachments";
+import { isDesignAttachment, isOfficialAttachment } from "@/lib/permissions/attachments";
 export {
   getOrderEntriesByTargetType,
   getOrderEntriesForTargetType,
@@ -67,6 +67,10 @@ export function filterWorkOrderList(workOrders: WorkOrderListItem[], workflowSta
 
 export function getOfficialAttachments(attachments: Attachment[]) {
   return attachments.filter(isOfficialAttachment);
+}
+
+export function getDesignAttachments(attachments: Attachment[]) {
+  return attachments.filter(isDesignAttachment);
 }
 
 export function getAttachmentById(attachments: Attachment[], attachmentId: string | null) {

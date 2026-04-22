@@ -377,7 +377,7 @@ export default function OrderRequestConfirmModal({
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <div className="text-xs font-bold tracking-wide text-rose-700">요청사항</div>
                   <span className="rounded border border-stone-300 bg-stone-50 px-2 py-0.5 text-[11px] font-semibold text-stone-600">
-                    첨부파일은 출력 시 본문 뒤에 이어집니다.
+                    대표 이미지는 디자인 영역 파일을 우선 사용합니다.
                   </span>
                 </div>
                 <textarea

@@ -35,6 +35,7 @@ export type WorkOrderDerivedState = {
   canSeeInventoryHistorySection: boolean;
   canSeeAttachments: boolean;
   currentInventoryQuantity: number;
+  designAttachments: WorkOrder["attachments"];
   officialAttachments: WorkOrder["attachments"];
   selectedAttachment: WorkOrder["attachments"][number] | null;
   materials: NonNullable<WorkOrder["materials"]>;

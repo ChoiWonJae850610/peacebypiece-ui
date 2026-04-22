@@ -2,14 +2,14 @@
 
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
 import { getAttachmentOwnerLabel, getAttachmentPreviewLabel } from "@/lib/permissions/attachments";
-import { useI18n } from "@/lib/i18n";
-
-
 import type { Attachment } from "@/types/workorder";
 
 export default function WorkOrderAttachmentPanel({
   canSeeAttachments,
-  canUploadOfficialAttachments,
+  canUploadAttachments,
+  title,
+  emptyText,
+  addButtonLabel,
   attachments,
   onOpenAttachmentPicker,
   onPreviewAttachment,
@@ -17,26 +17,26 @@ export default function WorkOrderAttachmentPanel({
   canDeleteAttachment,
 }: {
   canSeeAttachments: boolean;
-  canUploadOfficialAttachments: boolean;
+  canUploadAttachments: boolean;
+  title: string;
+  emptyText: string;
+  addButtonLabel: string;
   attachments: Attachment[];
   onOpenAttachmentPicker: () => void;
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;
   canDeleteAttachment: (attachment: Attachment | null) => boolean;
 }) {
-  const { i18n } = useI18n();
-  const ui = i18n.workorder.ui;
-
   if (!canSeeAttachments) return null;
 
   return (
     <WorkOrderPanelCard>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-sm font-semibold text-stone-900">{ui.attachmentPanel.title}</h3>
+          <h3 className="text-sm font-semibold text-stone-900">{title}</h3>
         </div>
-        {canUploadOfficialAttachments ? (
-          <button type="button" onClick={onOpenAttachmentPicker} className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200">{ui.attachmentPanel.addButton}</button>
+        {canUploadAttachments ? (
+          <button type="button" onClick={onOpenAttachmentPicker} className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200">{addButtonLabel}</button>
         ) : null}
       </div>
       {attachments.length > 0 ? (
@@ -50,8 +50,8 @@ export default function WorkOrderAttachmentPanel({
                     type="button"
                     onClick={() => onDeleteAttachment(attachment.id)}
                     className="pbp-interactive-button absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-full border border-stone-300 bg-white text-sm font-semibold text-stone-600 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 active:bg-rose-100"
-                    aria-label={`${attachment.name} ${ui.attachmentPanel.deleteAriaSuffix}`}
-                    title={ui.attachmentPanel.deleteTitle}
+                    aria-label={`${attachment.name} 삭제`}
+                    title="삭제"
                   >
                     ×
                   </button>
@@ -74,7 +74,7 @@ export default function WorkOrderAttachmentPanel({
           })}
         </div>
       ) : (
-        <div className="mt-3 rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">{ui.attachmentPanel.empty}</div>
+        <div className="mt-3 rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">{emptyText}</div>
       )}
     </WorkOrderPanelCard>
   );
