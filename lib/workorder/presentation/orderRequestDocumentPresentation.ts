@@ -66,17 +66,18 @@ function getDisplayAttachments(attachments: Attachment[]) {
   return officialAttachments.length > 0 ? officialAttachments : attachments;
 }
 
-function getRepresentativeImage(attachments: Attachment[]) {
-  const designImages = attachments.filter(
+function getRepresentativeImage(allAttachments: Attachment[]) {
+  const designImages = allAttachments.filter(
     (attachment) => attachment.type === "image" && attachment.scope === "design",
   );
   if (designImages.length > 0) return designImages[0] ?? null;
 
-  const officialImages = attachments.filter(
+  const officialImages = allAttachments.filter(
     (attachment) => attachment.type === "image" && (attachment.scope ?? "official") === "official",
   );
   if (officialImages.length > 0) return officialImages[0] ?? null;
-  return attachments.find((attachment) => attachment.type === "image") ?? null;
+
+  return allAttachments.find((attachment) => attachment.type === "image") ?? null;
 }
 
 function buildFactoryPages(factoryEntries: OrderEntry[], fallback: OrderRequestDocumentPage) {
@@ -162,7 +163,7 @@ export function getOrderRequestDocumentPreview(workOrder: WorkOrder, pageIndex: 
     materialAndOutsourcingAmountTotal,
     currentFactoryCostAmount,
     currentDocumentAmount,
-    representativeImage: getRepresentativeImage(visibleAttachments),
+    representativeImage: getRepresentativeImage(attachmentItems),
     visibleAttachments,
     requestNote: String(workOrder.memo ?? "").trim(),
   };

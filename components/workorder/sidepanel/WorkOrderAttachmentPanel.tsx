@@ -2,31 +2,37 @@
 
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
 import { getAttachmentOwnerLabel, getAttachmentPreviewLabel } from "@/lib/permissions/attachments";
+import { useI18n } from "@/lib/i18n";
+
+
 import type { Attachment } from "@/types/workorder";
 
 export default function WorkOrderAttachmentPanel({
-  canSeeAttachments,
-  canUploadAttachments,
   title,
-  emptyText,
   addButtonLabel,
+  emptyText,
+  canSeeAttachments,
+  canUploadOfficialAttachments,
   attachments,
   onOpenAttachmentPicker,
   onPreviewAttachment,
   onDeleteAttachment,
   canDeleteAttachment,
 }: {
-  canSeeAttachments: boolean;
-  canUploadAttachments: boolean;
   title: string;
-  emptyText: string;
   addButtonLabel: string;
+  emptyText: string;
+  canSeeAttachments: boolean;
+  canUploadOfficialAttachments: boolean;
   attachments: Attachment[];
   onOpenAttachmentPicker: () => void;
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;
   canDeleteAttachment: (attachment: Attachment | null) => boolean;
 }) {
+  const { i18n } = useI18n();
+  const ui = i18n.workorder.ui;
+
   if (!canSeeAttachments) return null;
 
   return (
@@ -35,7 +41,7 @@ export default function WorkOrderAttachmentPanel({
         <div>
           <h3 className="text-sm font-semibold text-stone-900">{title}</h3>
         </div>
-        {canUploadAttachments ? (
+        {canUploadOfficialAttachments ? (
           <button type="button" onClick={onOpenAttachmentPicker} className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200">{addButtonLabel}</button>
         ) : null}
       </div>
@@ -50,8 +56,8 @@ export default function WorkOrderAttachmentPanel({
                     type="button"
                     onClick={() => onDeleteAttachment(attachment.id)}
                     className="pbp-interactive-button absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-full border border-stone-300 bg-white text-sm font-semibold text-stone-600 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 active:bg-rose-100"
-                    aria-label={`${attachment.name} 삭제`}
-                    title="삭제"
+                    aria-label={`${attachment.name} ${ui.attachmentPanel.deleteAriaSuffix}`}
+                    title={ui.attachmentPanel.deleteTitle}
                   >
                     ×
                   </button>

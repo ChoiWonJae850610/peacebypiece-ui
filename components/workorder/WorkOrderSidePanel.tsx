@@ -2,6 +2,7 @@
 
 import WorkOrderAttachmentPanel from "@/components/workorder/sidepanel/WorkOrderAttachmentPanel";
 import WorkOrderMemoPanel from "@/components/workorder/sidepanel/WorkOrderMemoPanel";
+import { useI18n } from "@/lib/i18n";
 import type { Attachment, MemoAttachmentPayload, RoleType, WorkOrder } from "@/types/workorder";
 
 export default function WorkOrderSidePanel({
@@ -9,8 +10,7 @@ export default function WorkOrderSidePanel({
   canSeeAttachments,
   canUploadOfficialAttachments,
   designAttachments,
-  officialAttachments,
-  onOpenDesignAttachmentPicker,
+  attachments,
   onOpenAttachmentPicker,
   onPreviewAttachment,
   onDeleteAttachment,
@@ -27,9 +27,8 @@ export default function WorkOrderSidePanel({
   canSeeAttachments: boolean;
   canUploadOfficialAttachments: boolean;
   designAttachments: Attachment[];
-  officialAttachments: Attachment[];
-  onOpenDesignAttachmentPicker: () => void;
-  onOpenAttachmentPicker: () => void;
+  attachments: Attachment[];
+  onOpenAttachmentPicker: (scope?: "design" | "official") => void;
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;
   canDeleteAttachment: (attachment: Attachment | null) => boolean;
@@ -41,6 +40,9 @@ export default function WorkOrderSidePanel({
   canPromoteMemoAttachment: boolean;
   onPromoteMemoAttachment: (attachmentId: string) => void;
 }) {
+  const { i18n } = useI18n();
+  const ui = i18n.workorder.ui;
+
   if (isEmpty) {
     return null;
   }
@@ -48,26 +50,26 @@ export default function WorkOrderSidePanel({
   return (
     <div className="space-y-3 md:space-y-4">
       <WorkOrderAttachmentPanel
-        canSeeAttachments={canSeeAttachments}
-        canUploadAttachments={canUploadOfficialAttachments}
         title="디자인"
         emptyText="아직 디자인 파일이 없습니다."
         addButtonLabel="+ 디자인 추가"
+        canSeeAttachments={canSeeAttachments}
+        canUploadOfficialAttachments={canUploadOfficialAttachments}
         attachments={designAttachments}
-        onOpenAttachmentPicker={onOpenDesignAttachmentPicker}
+        onOpenAttachmentPicker={() => onOpenAttachmentPicker("design")}
         onPreviewAttachment={onPreviewAttachment}
         onDeleteAttachment={onDeleteAttachment}
         canDeleteAttachment={canDeleteAttachment}
       />
 
       <WorkOrderAttachmentPanel
+        title={ui.attachmentPanel.title}
+        emptyText={ui.attachmentPanel.empty}
+        addButtonLabel={ui.attachmentPanel.addButton}
         canSeeAttachments={canSeeAttachments}
-        canUploadAttachments={canUploadOfficialAttachments}
-        title="공식 첨부파일"
-        emptyText="아직 공식 첨부파일이 없습니다."
-        addButtonLabel="+ 첨부 추가"
-        attachments={officialAttachments}
-        onOpenAttachmentPicker={onOpenAttachmentPicker}
+        canUploadOfficialAttachments={canUploadOfficialAttachments}
+        attachments={attachments}
+        onOpenAttachmentPicker={() => onOpenAttachmentPicker("official")}
         onPreviewAttachment={onPreviewAttachment}
         onDeleteAttachment={onDeleteAttachment}
         canDeleteAttachment={canDeleteAttachment}

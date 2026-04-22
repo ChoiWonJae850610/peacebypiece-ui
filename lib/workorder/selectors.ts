@@ -65,12 +65,12 @@ export function filterWorkOrderList(workOrders: WorkOrderListItem[], workflowSta
   });
 }
 
-export function getOfficialAttachments(attachments: Attachment[]) {
-  return attachments.filter(isOfficialAttachment);
-}
-
 export function getDesignAttachments(attachments: Attachment[]) {
   return attachments.filter(isDesignAttachment);
+}
+
+export function getOfficialAttachments(attachments: Attachment[]) {
+  return attachments.filter(isOfficialAttachment);
 }
 
 export function getAttachmentById(attachments: Attachment[], attachmentId: string | null) {

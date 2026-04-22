@@ -1,7 +1,11 @@
 import { createAttachmentId, getAttachmentType } from "@/lib/permissions/attachments";
-import type { Attachment, AttachmentScope, UserProfile } from "@/types/workorder";
+import type { Attachment, UserProfile } from "@/types/workorder";
 
-function createScopedAttachments(files: File[], currentUser: Pick<UserProfile, "id" | "name">, scope: AttachmentScope): Attachment[] {
+function createScopedAttachments(
+  files: File[],
+  currentUser: Pick<UserProfile, "id" | "name">,
+  scope: "design" | "official",
+): Attachment[] {
   return files.map((file): Attachment => ({
     id: createAttachmentId(file.name),
     name: file.name,
@@ -13,12 +17,12 @@ function createScopedAttachments(files: File[], currentUser: Pick<UserProfile, "
   }));
 }
 
-export function createOfficialAttachments(files: File[], currentUser: Pick<UserProfile, "id" | "name">): Attachment[] {
-  return createScopedAttachments(files, currentUser, "official");
-}
-
 export function createDesignAttachments(files: File[], currentUser: Pick<UserProfile, "id" | "name">): Attachment[] {
   return createScopedAttachments(files, currentUser, "design");
+}
+
+export function createOfficialAttachments(files: File[], currentUser: Pick<UserProfile, "id" | "name">): Attachment[] {
+  return createScopedAttachments(files, currentUser, "official");
 }
 
 export function createMemoAttachments(

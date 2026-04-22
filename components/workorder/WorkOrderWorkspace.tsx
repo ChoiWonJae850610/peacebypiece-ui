@@ -53,7 +53,6 @@ export default function WorkOrderWorkspace() {
     isAdmin,
     canCreateWorkOrder,
     canUploadOfficialAttachments,
-    designAttachments,
     isReviewRequestLocked,
     canChangeManager,
     canSeeProductionSections,
@@ -63,6 +62,7 @@ export default function WorkOrderWorkspace() {
     currentInventoryQuantity,
     filteredHistoryLogs,
     inventoryLogs,
+    designAttachments,
     officialAttachments,
     selectedAttachment,
     canDeleteAttachment,
@@ -103,7 +103,6 @@ export default function WorkOrderWorkspace() {
   } = useWorkOrder();
 
   const [pendingAttachmentDeleteId, setPendingAttachmentDeleteId] = useState<string | null>(null);
-  const [attachmentUploadScope, setAttachmentUploadScope] = useState<"design" | "official">("official");
   const renderHasSelection = hasVisibleWorkOrders && hasActiveSelection;
 
   const pendingAttachmentDelete = useMemo(
@@ -153,7 +152,6 @@ export default function WorkOrderWorkspace() {
     canCreateWorkOrder,
     canSeeAttachments,
     canUploadOfficialAttachments,
-    designAttachments,
     isReviewRequestLocked,
     canChangeManager,
     canSeeProductionSections,
@@ -163,6 +161,7 @@ export default function WorkOrderWorkspace() {
     currentInventoryQuantity,
     filteredHistoryLogs,
     inventoryLogs,
+    designAttachments,
     officialAttachments,
     selectedAttachment,
     fabricTotal,
@@ -207,14 +206,7 @@ export default function WorkOrderWorkspace() {
     onOpenManagerAssignModal: handleOpenManagerAssignModal,
     onCloseManagerAssignModal: handleCloseManagerAssignModal,
     onChangeManager: handleChangeManager,
-    onOpenAttachmentPicker: () => {
-      setAttachmentUploadScope("official");
-      handleOpenAttachmentPicker();
-    },
-    onOpenDesignAttachmentPicker: () => {
-      setAttachmentUploadScope("design");
-      handleOpenAttachmentPicker();
-    },
+    onOpenAttachmentPicker: handleOpenAttachmentPicker,
     onRequestDeleteAttachment: handleRequestDeleteAttachment,
     onAttachmentDeleteConfirmClose: handleCloseDeleteAttachmentConfirm,
     onAttachmentDeleteConfirm: handleConfirmDeleteAttachment,
@@ -237,7 +229,7 @@ export default function WorkOrderWorkspace() {
       />
       <WorkOrderOverlay
         attachmentInputRef={attachmentInputRef}
-        onAttachmentFilesChange={(event) => handleAttachmentFiles(event, attachmentUploadScope)}
+        onAttachmentFilesChange={handleAttachmentFiles}
         toastMessage={toastMessage}
         modalProps={viewModel.modalProps}
       />

@@ -1,13 +1,12 @@
 "use client";
 
-import type { ChangeEvent, Dispatch, RefObject, SetStateAction } from "react";
+import { useState, type ChangeEvent, type Dispatch, type RefObject, type SetStateAction } from "react";
 import { useI18n } from "@/lib/i18n";
 import {
   buildAttachmentDeleteResult,
-  buildDesignAttachmentUploadResult,
   buildMemoReplyResult,
   buildMemoThreadResult,
-  buildOfficialAttachmentUploadResult,
+  buildAttachmentUploadResult,
   buildPromoteMemoAttachmentResult,
 } from "@/lib/workorder/actionFlow";
 import {
@@ -16,7 +15,7 @@ import {
   openOfficialAttachmentPicker,
   readAttachmentInputFiles,
 } from "@/lib/workorder/attachments/attachmentActions";
-import type { Attachment, HistoryLog, MemoAttachmentPayload, UserProfile, WorkOrder } from "@/types/workorder";
+import type { Attachment, AttachmentScope, HistoryLog, MemoAttachmentPayload, UserProfile, WorkOrder } from "@/types/workorder";
 
 export function useWorkOrderAttachments({
   attachmentInputRef,
@@ -44,35 +43,30 @@ export function useWorkOrderAttachments({
   setToastMessage: Dispatch<SetStateAction<string | null>>;
 }) {
   const { i18n } = useI18n();
+  const [attachmentPickerScope, setAttachmentPickerScope] = useState<AttachmentScope>("official");
   const actionFlowText = i18n.workorder.actionFlow;
   const historyText = i18n.workorder.history;
 
-  const handleOpenAttachmentPicker = () => {
+  const handleOpenAttachmentPicker = (scope: AttachmentScope = "official") => {
+    setAttachmentPickerScope(scope);
     openOfficialAttachmentPicker(attachmentInputRef, canUploadOfficialAttachments);
   };
 
-  const handleAttachmentFiles = (event: ChangeEvent<HTMLInputElement>, scope: "design" | "official" = "official") => {
+  const handleAttachmentFiles = (event: ChangeEvent<HTMLInputElement>) => {
     if (!canUploadOfficialAttachments) {
       clearAttachmentInputValue(event);
       return;
     }
 
     const files = readAttachmentInputFiles(event);
-    const result = scope === "design"
-      ? buildDesignAttachmentUploadResult({
-        workOrder: selectedWorkOrder,
-        currentUser,
-        files,
-        text: actionFlowText,
-        historyText,
-      })
-      : buildOfficialAttachmentUploadResult({
-        workOrder: selectedWorkOrder,
-        currentUser,
-        files,
-        text: actionFlowText,
-        historyText,
-      });
+    const result = buildAttachmentUploadResult({
+      workOrder: selectedWorkOrder,
+      currentUser,
+      files,
+      scope: attachmentPickerScope === "design" ? "design" : "official",
+      text: actionFlowText as typeof actionFlowText & { designAttachmentUploadedToast?: string },
+      historyText,
+    });
     clearAttachmentInputValue(event);
     if (!result) return;
 

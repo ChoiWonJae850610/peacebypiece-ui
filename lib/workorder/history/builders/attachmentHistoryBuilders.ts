@@ -3,17 +3,18 @@ import { createHistoryLog, defaultHistoryText, formatTemplate, type HistoryText 
 export function createAttachmentUploadHistoryLog(
   user: string,
   workOrderId: string,
-  attachments: { name: string; scope?: string | null }[],
+  attachments: { name: string }[],
+  scope: "design" | "official" = "official",
   text: HistoryText = defaultHistoryText,
 ) {
   return createHistoryLog({
-    action: text.actions.officialAttachmentUploaded,
-    message: text.messages.officialAttachmentUploaded,
+    action: scope === "design" ? (text.actions.designAttachmentUploaded ?? text.actions.officialAttachmentUploaded) : text.actions.officialAttachmentUploaded,
+    message: scope === "design" ? (text.messages.designAttachmentUploaded ?? text.messages.officialAttachmentUploaded) : text.messages.officialAttachmentUploaded,
     user,
     workOrderId,
     category: "attachment",
     tone: "blue",
-    summary: `${formatTemplate((attachments[0]?.scope ?? "official") === "design" ? text.detailLabels.summaryDesignAttachmentCountFormat : text.detailLabels.summaryOfficialAttachmentCountFormat, { count: attachments.length })}${text.actorSeparator}${user}`,
+    summary: `${formatTemplate(scope === "design" ? (text.detailLabels.summaryDesignAttachmentCountFormat ?? text.detailLabels.summaryOfficialAttachmentCountFormat) : text.detailLabels.summaryOfficialAttachmentCountFormat, { count: attachments.length })}${text.actorSeparator}${user}`,
     detailLines: attachments.map((attachment, index) => ({
       label: formatTemplate(text.detailLabels.fileCountFormat, { index: index + 1 }),
       value: attachment.name,
@@ -39,7 +40,7 @@ export function createAttachmentDeleteHistoryLog(
       { label: text.detailLabels.file, value: attachment.name },
       {
         label: text.detailLabels.scope,
-        value: attachment.scope === "memo" ? text.detailLabels.memoAttachment : attachment.scope === "design" ? text.detailLabels.designAttachment : text.detailLabels.officialAttachment,
+        value: attachment.scope === "memo" ? text.detailLabels.memoAttachment : attachment.scope === "design" ? (text.detailLabels.designAttachment ?? text.detailLabels.officialAttachment) : text.detailLabels.officialAttachment,
       },
     ],
     text,

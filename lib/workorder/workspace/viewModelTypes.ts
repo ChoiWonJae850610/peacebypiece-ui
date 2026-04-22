@@ -42,7 +42,6 @@ export type BuildWorkspaceViewModelArgs = {
   canCreateWorkOrder: boolean;
   canSeeAttachments: boolean;
   canUploadOfficialAttachments: boolean;
-  designAttachments: Attachment[];
   isReviewRequestLocked: boolean;
   canChangeManager: boolean;
   canSeeProductionSections: boolean;
@@ -52,6 +51,7 @@ export type BuildWorkspaceViewModelArgs = {
   currentInventoryQuantity: number;
   filteredHistoryLogs: ModalProps["inventoryLog"]["logs"];
   inventoryLogs: InventoryLog[];
+  designAttachments: Attachment[];
   officialAttachments: Attachment[];
   selectedAttachment: Attachment | null;
   outsourcingTotal: number;
@@ -96,8 +96,7 @@ export type BuildWorkspaceViewModelArgs = {
   onOpenManagerAssignModal: () => void;
   onCloseManagerAssignModal: () => void;
   onChangeManager: (managerId: string) => void;
-  onOpenAttachmentPicker: () => void;
-  onOpenDesignAttachmentPicker: () => void;
+  onOpenAttachmentPicker: (scope?: "design" | "official") => void;
   onRequestDeleteAttachment: (attachmentId: string) => void;
   onAttachmentDeleteConfirmClose: () => void;
   onAttachmentDeleteConfirm: () => void;
@@ -125,7 +124,6 @@ export type BaseWorkspaceViewModelArgs = {
   canCreateWorkOrder: boolean;
   canSeeAttachments: boolean;
   canUploadOfficialAttachments: boolean;
-  designAttachments: Attachment[];
   isAdmin: boolean;
   isReviewRequestLocked: boolean;
   canChangeManager: boolean;
@@ -134,6 +132,7 @@ export type BaseWorkspaceViewModelArgs = {
   canOpenInventoryEditor: boolean;
   currentDisplayStage: DetailProps["currentDisplayStage"];
   currentInventoryQuantity: number;
+  designAttachments: Attachment[];
   officialAttachments: Attachment[];
   selectedAttachment: Attachment | null;
   fabricTotal: number;
@@ -152,8 +151,7 @@ export type BaseWorkspaceViewModelArgs = {
   onRenameWorkOrderTitle: (nextTitle: string) => void;
   onCompleteInspection: DetailProps["onCompleteInspection"];
   onOpenManagerAssignModal: () => void;
-  onOpenAttachmentPicker: () => void;
-  onOpenDesignAttachmentPicker: () => void;
+  onOpenAttachmentPicker: (scope?: "design" | "official") => void;
   onRequestDeleteAttachment: (attachmentId: string) => void;
   onCreateMemoThread: SidePanelProps["onCreateMemoThread"];
   onCreateMemoReply: SidePanelProps["onCreateMemoReply"];

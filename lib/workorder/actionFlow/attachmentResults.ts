@@ -12,7 +12,7 @@ import {
 } from "@/lib/workorder/history/builders";
 import { defaultActionFlowText, defaultHistoryText, type ActionFlowHistoryText, type ActionFlowText, type WorkOrderActionFlowResult } from "@/lib/workorder/actionFlow/shared";
 
-function buildScopedAttachmentUploadResult(payload: {
+export function buildAttachmentUploadResult(payload: {
   workOrder: WorkOrder;
   currentUser: UserProfile;
   files: File[];
@@ -22,24 +22,24 @@ function buildScopedAttachmentUploadResult(payload: {
 }): WorkOrderActionFlowResult | null {
   const result = payload.scope === "design"
     ? applyDesignAttachmentFilesToWorkOrder({
-      workOrder: payload.workOrder,
-      currentUser: payload.currentUser,
-      files: payload.files,
-    })
+        workOrder: payload.workOrder,
+        currentUser: payload.currentUser,
+        files: payload.files,
+      })
     : applyOfficialAttachmentFilesToWorkOrder({
-      workOrder: payload.workOrder,
-      currentUser: payload.currentUser,
-      files: payload.files,
-    });
+        workOrder: payload.workOrder,
+        currentUser: payload.currentUser,
+        files: payload.files,
+      });
 
   if (!result || result.attachments.length === 0) return null;
 
   return {
     nextWorkOrder: result.nextWorkOrder,
-    historyLogs: [createAttachmentUploadHistoryLog(payload.currentUser.name, payload.workOrder.id, result.attachments, payload.historyText ?? defaultHistoryText)],
+    historyLogs: [createAttachmentUploadHistoryLog(payload.currentUser.name, payload.workOrder.id, result.attachments, payload.scope, payload.historyText ?? defaultHistoryText)],
     saveStatus: "dirty",
     toastMessage: payload.scope === "design"
-      ? (payload.text ?? defaultActionFlowText).designAttachmentUploadedToast
+      ? ((payload.text ?? defaultActionFlowText) as ActionFlowText & { designAttachmentUploadedToast?: string }).designAttachmentUploadedToast ?? (payload.text ?? defaultActionFlowText).officialAttachmentUploadedToast
       : (payload.text ?? defaultActionFlowText).officialAttachmentUploadedToast,
   };
 }
@@ -51,17 +51,7 @@ export function buildOfficialAttachmentUploadResult(payload: {
   text?: ActionFlowText;
   historyText?: ActionFlowHistoryText;
 }): WorkOrderActionFlowResult | null {
-  return buildScopedAttachmentUploadResult({ ...payload, scope: "official" });
-}
-
-export function buildDesignAttachmentUploadResult(payload: {
-  workOrder: WorkOrder;
-  currentUser: UserProfile;
-  files: File[];
-  text?: ActionFlowText;
-  historyText?: ActionFlowHistoryText;
-}): WorkOrderActionFlowResult | null {
-  return buildScopedAttachmentUploadResult({ ...payload, scope: "design" });
+  return buildAttachmentUploadResult({ ...payload, scope: "official" });
 }
 
 export function buildAttachmentDeleteResult(payload: {

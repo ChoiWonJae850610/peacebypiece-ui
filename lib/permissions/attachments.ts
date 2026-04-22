@@ -8,12 +8,12 @@ export function getAttachmentScope(attachment: Attachment | null | undefined): A
   return (attachment?.scope ?? "official") as AttachmentScope;
 }
 
-export function isOfficialAttachment(attachment: Attachment | null | undefined): boolean {
-  return getAttachmentScope(attachment) === "official";
-}
-
 export function isDesignAttachment(attachment: Attachment | null | undefined): boolean {
   return getAttachmentScope(attachment) === "design";
+}
+
+export function isOfficialAttachment(attachment: Attachment | null | undefined): boolean {
+  return getAttachmentScope(attachment) === "official";
 }
 
 export function isMemoAttachment(attachment: Attachment | null | undefined): boolean {
