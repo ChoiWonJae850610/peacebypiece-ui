@@ -46,56 +46,6 @@ function getFactoryPageLabel(currentPage: number, totalPages: number) {
 
 
 const TABLE_HEAD_CLASS = "px-3 py-2.5 text-center font-semibold text-stone-700";
-
-function getPrintRenderTarget() {
-  if (typeof window === "undefined") {
-    return "desktop" as const;
-  }
-
-  return window.matchMedia("(max-width: 1024px)").matches ? "mobile" as const : "desktop" as const;
-}
-
-function waitForDelay(ms: number) {
-  return new Promise<void>((resolve) => {
-    window.setTimeout(resolve, ms);
-  });
-}
-
-async function waitForPrintWindowAssets(printWindow: Window, timeoutMs = 8000) {
-  const doc = printWindow.document;
-  const images = Array.from(doc.images);
-
-  await Promise.race([
-    Promise.all(
-      images.map(
-        (image) =>
-          new Promise<void>((resolve) => {
-            if (image.complete) {
-              resolve();
-              return;
-            }
-
-            const done = () => resolve();
-            image.addEventListener("load", done, { once: true });
-            image.addEventListener("error", done, { once: true });
-          }),
-      ),
-    ),
-    waitForDelay(timeoutMs),
-  ]);
-
-  if ("fonts" in doc) {
-    try {
-      await Promise.race([doc.fonts.ready, waitForDelay(2000)]);
-    } catch {
-      // noop
-    }
-  }
-
-  await new Promise<void>((resolve) => printWindow.requestAnimationFrame(() => resolve()));
-  await new Promise<void>((resolve) => printWindow.requestAnimationFrame(() => resolve()));
-}
-
 const TABLE_CELL_CLASS = "px-3 py-2.5 text-center align-middle leading-5";
 const TABLE_EMPTY_CLASS = "px-3 py-7 text-center text-sm text-stone-500";
 
@@ -310,19 +260,19 @@ export default function OrderRequestConfirmModal({
       printWindow.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8" /><title>발주서 준비 중</title><style>html,body{height:100%;margin:0;font-family:Arial,'Noto Sans KR',sans-serif;background:#f5f2eb;color:#1c1917;}body{display:flex;align-items:center;justify-content:center;padding:24px;}div{font-size:14px;font-weight:600;}</style></head><body><div>첨부파일을 포함한 PDF 문서를 준비하는 중입니다...</div></body></html>`);
       printWindow.document.close();
 
-      const renderTarget = getPrintRenderTarget();
-      const printAttachmentBuildResult = await buildOrderRequestPrintAttachments(preview.visibleAttachments, {
+      const renderTarget =
+        typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches
+          ? "mobile"
+          : "desktop";
+      const printAttachmentBuildResult = await buildOrderRequestPrintAttachments(preview.visibleAttachments);
+      const html = buildOrderRequestPrintHtml(workOrder, printAttachmentBuildResult.renderedAttachments, {
+        requestNote,
         renderTarget,
-        attachmentTimeoutMs: renderTarget === "mobile" ? 12000 : 20000,
-        pageRenderTimeoutMs: renderTarget === "mobile" ? 8000 : 15000,
       });
-      const html = buildOrderRequestPrintHtml(workOrder, printAttachmentBuildResult.renderedAttachments, { requestNote });
       printWindow.document.open();
       printWindow.document.write(html);
       printWindow.document.close();
-      await waitForPrintWindowAssets(printWindow, renderTarget === "mobile" ? 10000 : 8000);
       printWindow.focus();
-      printWindow.print();
 
       if (printAttachmentBuildResult.failures.length > 0) {
         setPrintFeedback(`일부 첨부파일 렌더링에 실패했습니다. 실패 ${printAttachmentBuildResult.failures.length}건은 오류 안내 페이지로 대체되어 출력됩니다.`);
