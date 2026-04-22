@@ -135,22 +135,63 @@ export function getReviewApprovalValidationMessage(payload: {
   return getWorkOrderSubmissionValidationMessage(payload.workOrder, payload.text);
 }
 
-export function getReviewRequestWarningMessage(payload: {
+type ReviewWorkflowWarningText = {
+  reviewRequestZeroCostWarningToast?: string;
+  reviewRequestZeroLaborCostWarningToast?: string;
+  reviewRequestZeroLossCostWarningToast?: string;
+  reviewApprovalZeroCostWarningToast?: string;
+  reviewApprovalZeroLaborCostWarningToast?: string;
+  reviewApprovalZeroLossCostWarningToast?: string;
+};
+
+function getReviewWorkflowWarningMessage(payload: {
   workOrder: WorkOrder;
-  text: {
-    reviewRequestZeroCostWarningToast?: string;
-    reviewRequestZeroLaborCostWarningToast?: string;
-    reviewRequestZeroLossCostWarningToast?: string;
-  };
+  text: ReviewWorkflowWarningText;
+  mode: "request" | "approval";
 }) {
   const { laborCost, lossCost } = getOrderSubmissionSnapshot(payload.workOrder);
   const laborIsZero = Number.isFinite(laborCost) && laborCost === 0;
   const lossIsZero = Number.isFinite(lossCost) && lossCost === 0;
+  const isApproval = payload.mode === "approval";
 
-  if (laborIsZero && lossIsZero) return payload.text.reviewRequestZeroCostWarningToast ?? null;
-  if (laborIsZero) return payload.text.reviewRequestZeroLaborCostWarningToast ?? null;
-  if (lossIsZero) return payload.text.reviewRequestZeroLossCostWarningToast ?? null;
+  if (laborIsZero && lossIsZero) {
+    return isApproval
+      ? payload.text.reviewApprovalZeroCostWarningToast ?? payload.text.reviewRequestZeroCostWarningToast ?? null
+      : payload.text.reviewRequestZeroCostWarningToast ?? null;
+  }
+  if (laborIsZero) {
+    return isApproval
+      ? payload.text.reviewApprovalZeroLaborCostWarningToast ?? payload.text.reviewRequestZeroLaborCostWarningToast ?? null
+      : payload.text.reviewRequestZeroLaborCostWarningToast ?? null;
+  }
+  if (lossIsZero) {
+    return isApproval
+      ? payload.text.reviewApprovalZeroLossCostWarningToast ?? payload.text.reviewRequestZeroLossCostWarningToast ?? null
+      : payload.text.reviewRequestZeroLossCostWarningToast ?? null;
+  }
   return null;
+}
+
+export function getReviewRequestWarningMessage(payload: {
+  workOrder: WorkOrder;
+  text: ReviewWorkflowWarningText;
+}) {
+  return getReviewWorkflowWarningMessage({
+    workOrder: payload.workOrder,
+    text: payload.text,
+    mode: "request",
+  });
+}
+
+export function getReviewApprovalWarningMessage(payload: {
+  workOrder: WorkOrder;
+  text: ReviewWorkflowWarningText;
+}) {
+  return getReviewWorkflowWarningMessage({
+    workOrder: payload.workOrder,
+    text: payload.text,
+    mode: "approval",
+  });
 }
 
 export function getFactoryOrderRequestValidationMessage(payload: {

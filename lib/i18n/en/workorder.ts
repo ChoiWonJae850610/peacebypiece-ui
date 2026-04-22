@@ -116,6 +116,9 @@ export const workorderEn = {
     reviewRequestZeroCostWarningToast: "Review request applied. Labor cost and loss cost are both 0.",
     reviewRequestZeroLaborCostWarningToast: "Review request applied. Labor cost is 0.",
     reviewRequestZeroLossCostWarningToast: "Review request applied. Loss cost is 0.",
+    reviewApprovalZeroCostWarningToast: "Review approval applied. Labor cost and loss cost are both 0.",
+    reviewApprovalZeroLaborCostWarningToast: "Review approval applied. Labor cost is 0.",
+    reviewApprovalZeroLossCostWarningToast: "Review approval applied. Loss cost is 0.",
   },
   history: {
     actorSeparator: " · ",

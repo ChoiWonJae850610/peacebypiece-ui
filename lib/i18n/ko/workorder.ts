@@ -116,6 +116,9 @@ export const workorderKo = {
     reviewRequestZeroCostWarningToast: "검토요청이 반영되었습니다. 공임비와 로스비가 모두 0원입니다.",
     reviewRequestZeroLaborCostWarningToast: "검토요청이 반영되었습니다. 공임비가 0원입니다.",
     reviewRequestZeroLossCostWarningToast: "검토요청이 반영되었습니다. 로스비가 0원입니다.",
+    reviewApprovalZeroCostWarningToast: "검토완료가 반영되었습니다. 공임비와 로스비가 모두 0원입니다.",
+    reviewApprovalZeroLaborCostWarningToast: "검토완료가 반영되었습니다. 공임비가 0원입니다.",
+    reviewApprovalZeroLossCostWarningToast: "검토완료가 반영되었습니다. 로스비가 0원입니다.",
   },
   history: {
     actorSeparator: " · ",

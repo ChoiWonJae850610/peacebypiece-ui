@@ -22,6 +22,7 @@ import {
   deriveWorkflowStateFromOrderEntries,
   getFactoryOrderRequestValidationMessage,
   getReviewApprovalValidationMessage,
+  getReviewApprovalWarningMessage,
   getReviewRequestValidationMessage,
   getReviewRequestWarningMessage,
 } from "@/lib/workorder/workflow";
@@ -181,6 +182,11 @@ export function useWorkOrderWorkflowActions({
           setToastMessage(validationMessage);
           return;
         }
+
+        reviewWarningMessage = getReviewApprovalWarningMessage({
+          workOrder,
+          text: actionFlowText,
+        });
       }
 
       const effectiveWorkflowState = deriveWorkflowStateFromOrderEntries(workOrder.workflowState, workOrder.orderEntries);

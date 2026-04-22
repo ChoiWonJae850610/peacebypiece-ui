@@ -33,6 +33,14 @@ export const MOBILE_INFO_ROW_CLASS = "grid min-w-0 grid-cols-[minmax(72px,88px)_
 export const MOBILE_LABEL_CLASS = "min-w-0 text-left text-[11px] leading-5 tracking-tight text-stone-500";
 export const MOBILE_VALUE_WRAPPER_CLASS = "flex min-w-0 max-w-full items-center justify-end overflow-hidden text-right";
 
+function MinusIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-[12px] w-[12px]">
+      <path d="M4.75 10h10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function SectionHeader({
   title,
   summary,
@@ -81,7 +89,7 @@ export function DeleteButton({ onClick, srLabel, disabled = false }: { onClick: 
       onClick={onClick}
       aria-label={srLabel}
       disabled={disabled}
-      className="pbp-interactive-button inline-flex h-8 w-8 items-center justify-center rounded-full border border-rose-200 bg-white text-[18px] font-semibold leading-none text-rose-600 hover:border-rose-300 hover:bg-rose-50 active:bg-rose-100 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
+      className="pbp-interactive-button inline-flex h-8 w-8 items-center justify-center rounded-full border border-rose-200 bg-white text-base font-semibold text-rose-600 hover:border-rose-300 hover:bg-rose-50 active:bg-rose-100 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
     >
       -
     </button>
