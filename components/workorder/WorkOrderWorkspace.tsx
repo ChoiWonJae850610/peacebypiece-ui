@@ -5,9 +5,11 @@ import WorkOrderLayout from "@/components/workorder/WorkOrderLayout";
 import WorkOrderOverlay from "@/components/workorder/WorkOrderOverlay";
 import { useWorkOrder } from "@/lib/hooks/useWorkOrder";
 import { getPendingAttachmentDelete } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
+import { useI18n } from "@/lib/i18n";
 import { buildWorkspaceViewModel } from "@/lib/workorder/workspace/buildWorkspaceViewModel";
 
 export default function WorkOrderWorkspace() {
+  const { i18n } = useI18n();
   const {
     appShellRef,
     attachmentInputRef,
@@ -176,6 +178,7 @@ export default function WorkOrderWorkspace() {
     pendingAttachmentDelete,
     canDeleteWorkOrder,
     getAttachmentPermissions,
+    i18n,
     onSetDrawerOpen: setDrawerOpen,
     onSetBasicInfoOpen: setBasicInfoOpen,
     onSetMaterialOpen: setMaterialOpen,

@@ -9,7 +9,7 @@ export default function WorkOrderAttachmentPanel({
   addButtonLabel,
   emptyText,
   canSeeAttachments,
-  canUploadOfficialAttachments,
+  canManageAttachments,
   attachments,
   onOpenAttachmentPicker,
   onPreviewAttachment,
@@ -19,7 +19,7 @@ export default function WorkOrderAttachmentPanel({
   addButtonLabel: string;
   emptyText: string;
   canSeeAttachments: boolean;
-  canUploadOfficialAttachments: boolean;
+  canManageAttachments: boolean;
   attachments: AttachmentPanelItem[];
   onOpenAttachmentPicker: () => void;
   onPreviewAttachment: (attachmentId: string) => void;
@@ -36,7 +36,7 @@ export default function WorkOrderAttachmentPanel({
         <div>
           <h3 className="text-sm font-semibold text-stone-900">{title}</h3>
         </div>
-        {canUploadOfficialAttachments ? (
+        {canManageAttachments ? (
           <button type="button" onClick={onOpenAttachmentPicker} className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200">{addButtonLabel}</button>
         ) : null}
       </div>

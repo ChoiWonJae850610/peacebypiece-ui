@@ -1,12 +1,21 @@
 import { getAttachmentOwnerLabel, getAttachmentPreviewLabel } from "@/lib/permissions/attachments";
-import type { Attachment } from "@/types/workorder";
 import type { AttachmentPermissionState } from "@/lib/workorder/attachments/attachmentPermissions";
+import type { Attachment } from "@/types/workorder";
 
 export type AttachmentPanelItem = Pick<Attachment, "id" | "name" | "type" | "url"> & {
   ownerLabel: string;
   previewLabel: string;
   canDelete: boolean;
   canPreview: boolean;
+};
+
+export type AttachmentPanelSection = {
+  key: "design" | "official";
+  title: string;
+  emptyText: string;
+  addButtonLabel: string;
+  uploadScope: "design" | "official";
+  items: AttachmentPanelItem[];
 };
 
 export function getPendingAttachmentDelete(attachments: Attachment[], pendingAttachmentDeleteId: string | null) {
@@ -35,4 +44,35 @@ export function buildAttachmentPanelItems(
       canPreview: permissions.canPreview,
     };
   });
+}
+
+export function buildAttachmentPanelSections(payload: {
+  designTitle: string;
+  designEmptyText: string;
+  designAddButtonLabel: string;
+  officialTitle: string;
+  officialEmptyText: string;
+  officialAddButtonLabel: string;
+  designAttachments: Attachment[];
+  officialAttachments: Attachment[];
+  getAttachmentPermissions: (attachment: Attachment | null) => AttachmentPermissionState;
+}): AttachmentPanelSection[] {
+  return [
+    {
+      key: "design",
+      title: payload.designTitle,
+      emptyText: payload.designEmptyText,
+      addButtonLabel: payload.designAddButtonLabel,
+      uploadScope: "design",
+      items: buildAttachmentPanelItems(payload.designAttachments, payload.getAttachmentPermissions),
+    },
+    {
+      key: "official",
+      title: payload.officialTitle,
+      emptyText: payload.officialEmptyText,
+      addButtonLabel: payload.officialAddButtonLabel,
+      uploadScope: "official",
+      items: buildAttachmentPanelItems(payload.officialAttachments, payload.getAttachmentPermissions),
+    },
+  ];
 }

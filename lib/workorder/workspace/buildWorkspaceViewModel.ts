@@ -36,6 +36,7 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
 
   const detailProps = buildDetailProps({
     version,
+    i18n: args.i18n,
     currentUser: args.currentUser,
     currentRole: args.currentRole,
     selectedWorkOrder: args.selectedWorkOrder,
@@ -117,6 +118,7 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
       availableActions: args.availableActions,
       visibleStages: args.visibleStages,
       getAttachmentPermissions: args.getAttachmentPermissions,
+      i18n: args.i18n,
       onSave: args.onSave,
       onWorkflowAction: args.onWorkflowAction,
       onUpdateSelectedWorkOrder: args.onUpdateSelectedWorkOrder,

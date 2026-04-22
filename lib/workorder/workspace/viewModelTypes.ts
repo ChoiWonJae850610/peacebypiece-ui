@@ -1,4 +1,5 @@
 import type { ComponentProps } from "react";
+import type { getI18n } from "@/lib/i18n";
 import SidebarContent from "@/components/layout/SidebarContent";
 import MobileDrawer from "@/components/layout/MobileDrawer";
 import MobileTopBar from "@/components/layout/MobileTopBar";
@@ -68,6 +69,7 @@ export type BuildWorkspaceViewModelArgs = {
   pendingAttachmentDelete: Attachment | null;
   canDeleteWorkOrder: SidebarListProps["canDelete"];
   getAttachmentPermissions: GetAttachmentPermissions;
+  i18n: ReturnType<typeof getI18n>;
   onSetDrawerOpen: (next: boolean) => void;
   onSetBasicInfoOpen: (updater: (prev: boolean) => boolean) => void;
   onSetMaterialOpen: (next: boolean | ((prev: boolean) => boolean)) => void;
@@ -147,6 +149,7 @@ export type BaseWorkspaceViewModelArgs = {
   availableActions: WorkflowAction[];
   visibleStages: DetailProps["visibleStages"];
   getAttachmentPermissions: GetAttachmentPermissions;
+  i18n: ReturnType<typeof getI18n>;
   onSave: () => void;
   onWorkflowAction: (action: WorkflowAction) => void;
   onUpdateSelectedWorkOrder: (patch: Partial<WorkOrder>) => void;

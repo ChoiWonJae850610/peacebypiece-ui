@@ -1,4 +1,4 @@
-import { buildAttachmentPanelItems } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
+import { buildAttachmentPanelSections } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
 import type { DetailProps, DetailViewModelArgs, SidePanelProps, SidePanelViewModelArgs } from "@/lib/workorder/workspace/viewModelTypes";
 
 export function buildDetailProps({
@@ -88,6 +88,7 @@ export function buildSidePanelProps({
   currentRole,
   selectedWorkOrder,
   currentUser,
+  i18n,
   getAttachmentPermissions,
   onOpenAttachmentPicker,
   onRequestDeleteAttachment,
@@ -98,9 +99,18 @@ export function buildSidePanelProps({
   return {
     isEmpty: !hasVisibleWorkOrders,
     canSeeAttachments,
-    canUploadOfficialAttachments,
-    designAttachments: buildAttachmentPanelItems(designAttachments, getAttachmentPermissions),
-    attachments: buildAttachmentPanelItems(officialAttachments, getAttachmentPermissions),
+    canManageAttachments: canUploadOfficialAttachments,
+    attachmentSections: buildAttachmentPanelSections({
+      designTitle: i18n.workorder.ui.attachmentPanel.designTitle,
+      designEmptyText: i18n.workorder.ui.attachmentPanel.designEmpty,
+      designAddButtonLabel: i18n.workorder.ui.attachmentPanel.designAddButton,
+      officialTitle: i18n.workorder.ui.attachmentPanel.title,
+      officialEmptyText: i18n.workorder.ui.attachmentPanel.empty,
+      officialAddButtonLabel: i18n.workorder.ui.attachmentPanel.addButton,
+      designAttachments,
+      officialAttachments,
+      getAttachmentPermissions,
+    }),
     onOpenAttachmentPicker,
     onPreviewAttachment: () => undefined,
     onDeleteAttachment: onRequestDeleteAttachment,
