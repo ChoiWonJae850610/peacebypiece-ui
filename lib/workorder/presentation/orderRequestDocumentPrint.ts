@@ -7,7 +7,9 @@ type OrderRequestRenderedAttachmentPage = {
   attachmentType: Attachment["type"];
   pageIndex: number;
   totalPages: number;
-  imageUrl: string;
+  imageUrl?: string;
+  renderStatus: "ready" | "error";
+  errorMessage?: string;
 };
 
 type OrderRequestPrintAttachmentRender = {
@@ -15,6 +17,18 @@ type OrderRequestPrintAttachmentRender = {
   attachmentName: string;
   attachmentType: Attachment["type"];
   pages: OrderRequestRenderedAttachmentPage[];
+};
+
+export type OrderRequestPrintAttachmentFailure = {
+  attachmentId: string;
+  attachmentName: string;
+  attachmentType: Attachment["type"];
+  errorMessage: string;
+};
+
+export type OrderRequestPrintAttachmentBuildResult = {
+  renderedAttachments: OrderRequestPrintAttachmentRender[];
+  failures: OrderRequestPrintAttachmentFailure[];
 };
 
 function escapeHtml(value: string) {
@@ -153,15 +167,28 @@ function renderAttachmentPages(renderedAttachments: OrderRequestPrintAttachmentR
             <div class="appendix-type-badge">${escapeHtml(getAttachmentTypeBadge(attachment))}</div>
           </div>`;
 
-        return `
-          <article class="print-page appendix-page">
-            ${headerHtml}
+        const appendixBodyHtml = page.renderStatus === "error"
+          ? `
+            <div class="appendix-body appendix-image-body">
+              <div class="appendix-viewer appendix-error-viewer">
+                <div class="appendix-error-title">첨부 렌더링 실패</div>
+                <div class="appendix-error-message">${escapeHtml(page.errorMessage || "첨부파일을 출력용 이미지로 변환하지 못했습니다.")}</div>
+              </div>
+            </div>`
+          : `
             <div class="appendix-body appendix-image-body">
               <div class="appendix-viewer image-viewer">
-                <img src="${escapeHtml(page.imageUrl)}" alt="${escapeHtml(attachment.attachmentName || `첨부파일 ${attachmentNumber}`)} ${page.pageIndex}" />
+                <img src="${escapeHtml(page.imageUrl || "")}" alt="${escapeHtml(attachment.attachmentName || `첨부파일 ${attachmentNumber}`)} ${page.pageIndex}" />
               </div>
-            </div>
-          </article>`;
+            </div>`;
+
+        return `
+          <section class="print-page-shell appendix-page-shell">
+            <article class="print-page appendix-page">
+              ${headerHtml}
+              ${appendixBodyHtml}
+            </article>
+          </section>`;
       }),
     )
     .join("");
@@ -227,6 +254,7 @@ async function renderPdfAttachmentPages(attachment: Attachment): Promise<OrderRe
         pageIndex: pageNumber,
         totalPages: pdf.numPages,
         imageUrl: canvas.toDataURL("image/png"),
+        renderStatus: "ready",
       });
 
       canvas.width = 0;
@@ -249,25 +277,53 @@ async function renderImageAttachmentPages(attachment: Attachment): Promise<Order
       pageIndex: 1,
       totalPages: 1,
       imageUrl: attachment.url,
+      renderStatus: "ready",
     },
   ];
 }
 
-export async function buildOrderRequestPrintAttachments(attachments: Attachment[]) {
+export async function buildOrderRequestPrintAttachments(attachments: Attachment[]): Promise<OrderRequestPrintAttachmentBuildResult> {
   const renderedAttachments: OrderRequestPrintAttachmentRender[] = [];
+  const failures: OrderRequestPrintAttachmentFailure[] = [];
 
   for (const attachment of attachments) {
-    const pages = attachment.type === "pdf" ? await renderPdfAttachmentPages(attachment) : await renderImageAttachmentPages(attachment);
+    try {
+      const pages = attachment.type === "pdf" ? await renderPdfAttachmentPages(attachment) : await renderImageAttachmentPages(attachment);
 
-    renderedAttachments.push({
-      attachmentId: attachment.id,
-      attachmentName: attachment.name,
-      attachmentType: attachment.type,
-      pages,
-    });
+      renderedAttachments.push({
+        attachmentId: attachment.id,
+        attachmentName: attachment.name,
+        attachmentType: attachment.type,
+        pages,
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "첨부파일을 출력용으로 준비하지 못했습니다.";
+      failures.push({
+        attachmentId: attachment.id,
+        attachmentName: attachment.name,
+        attachmentType: attachment.type,
+        errorMessage,
+      });
+      renderedAttachments.push({
+        attachmentId: attachment.id,
+        attachmentName: attachment.name,
+        attachmentType: attachment.type,
+        pages: [
+          {
+            attachmentId: attachment.id,
+            attachmentName: attachment.name,
+            attachmentType: attachment.type,
+            pageIndex: 1,
+            totalPages: 1,
+            renderStatus: "error",
+            errorMessage,
+          },
+        ],
+      });
+    }
   }
 
-  return renderedAttachments;
+  return { renderedAttachments, failures };
 }
 
 export function buildOrderRequestPrintHtml(
@@ -297,6 +353,7 @@ export function buildOrderRequestPrintHtml(
       ];
 
       return `
+        <section class="print-page-shell">
         <article class="print-page">
           <div class="page-head">
             <div>
@@ -379,7 +436,8 @@ export function buildOrderRequestPrintHtml(
             footerLabel: "외주 총합",
             footerValue: formatCurrency(preview.outsourcingAmountTotal),
           })}
-        </article>`;
+        </article>
+        </section>`;
     })
     .join("");
 
@@ -394,10 +452,11 @@ export function buildOrderRequestPrintHtml(
   <style>
     @page { size: A4 portrait; margin: 0; }
     * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; width: 210mm; font-family: Arial, 'Noto Sans KR', sans-serif; color: #1c1917; background: #fff; }
+    html, body { margin: 0; padding: 0; font-family: Arial, 'Noto Sans KR', sans-serif; color: #1c1917; background: #fff; overflow: visible; }
     body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .print-page { width: 210mm; height: 297mm; margin: 0; padding: 8mm; background: #fff; border: 0; overflow: hidden; page-break-after: always; break-after: page; display: flex; flex-direction: column; }
-    .print-page:last-child { page-break-after: auto; break-after: auto; }
+    .print-page-shell { width: 210mm; margin: 0; padding: 0; page-break-inside: avoid; break-inside: avoid; page-break-after: always; break-after: page; }
+    .print-page-shell:last-child { page-break-after: auto; break-after: auto; }
+    .print-page { width: 210mm; height: 297mm; min-height: 297mm; margin: 0; padding: 8mm; background: #fff; border: 0; overflow: hidden; display: flex; flex-direction: column; }
     .page-head, .appendix-head { display: grid; grid-template-columns: 28mm 1fr 28mm; gap: 6px; align-items: start; padding: 3.5mm 4mm; border: 1px solid #78716c; border-bottom: 0; }
     .meta-label { font-size: 10px; font-weight: 700; color: #78716c; }
     .meta-value { margin-top: 3px; font-size: 12px; font-weight: 700; }
@@ -437,8 +496,15 @@ export function buildOrderRequestPrintHtml(
     .appendix-image-body { min-height: 0; }
     .image-viewer { display: flex; align-items: center; justify-content: center; }
     .image-viewer img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .appendix-error-viewer { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10mm; text-align: center; background: #fafaf9; }
+    .appendix-error-title { font-size: 16px; font-weight: 800; color: #7c2d12; }
+    .appendix-error-message { margin-top: 4mm; max-width: 140mm; font-size: 11px; line-height: 1.7; color: #57534e; word-break: break-word; white-space: pre-wrap; }
+    @media screen {
+      body { display: flex; flex-direction: column; align-items: center; }
+    }
     @media print {
-      html, body { width: 210mm; background: #fff; }
+      html, body { background: #fff; overflow: visible; }
+      .print-page-shell { margin: 0; }
       .print-page { margin: 0; }
     }
   </style>
@@ -500,17 +566,30 @@ ${attachmentAppendixHtml}
           image.addEventListener('load', done, { once: true });
           image.addEventListener('error', done, { once: true });
 
-          setTimeout(done, 1500);
+          setTimeout(done, 2000);
         });
       }));
     }
 
-    waitForImages()
+    function waitForFonts() {
+      if (!document.fonts || !document.fonts.ready) {
+        return Promise.resolve();
+      }
+      return document.fonts.ready.catch(function () {
+        return undefined;
+      });
+    }
+
+    Promise.all([waitForImages(), waitForFonts()])
       .catch(function (error) {
         console.error('[order-request-print] resource wait failed', error);
       })
       .finally(function () {
-        finalizePrint();
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            finalizePrint();
+          });
+        });
       });
 
     window.addEventListener('afterprint', safeCloseWindow, { once: true });

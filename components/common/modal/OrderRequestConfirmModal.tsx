@@ -260,12 +260,16 @@ export default function OrderRequestConfirmModal({
       printWindow.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8" /><title>발주서 준비 중</title><style>html,body{height:100%;margin:0;font-family:Arial,'Noto Sans KR',sans-serif;background:#f5f2eb;color:#1c1917;}body{display:flex;align-items:center;justify-content:center;padding:24px;}div{font-size:14px;font-weight:600;}</style></head><body><div>첨부파일을 포함한 PDF 문서를 준비하는 중입니다...</div></body></html>`);
       printWindow.document.close();
 
-      const renderedAttachments = await buildOrderRequestPrintAttachments(preview.visibleAttachments);
-      const html = buildOrderRequestPrintHtml(workOrder, renderedAttachments, { requestNote });
+      const printAttachmentBuildResult = await buildOrderRequestPrintAttachments(preview.visibleAttachments);
+      const html = buildOrderRequestPrintHtml(workOrder, printAttachmentBuildResult.renderedAttachments, { requestNote });
       printWindow.document.open();
       printWindow.document.write(html);
       printWindow.document.close();
       printWindow.focus();
+
+      if (printAttachmentBuildResult.failures.length > 0) {
+        setPrintFeedback(`일부 첨부파일 렌더링에 실패했습니다. 실패 ${printAttachmentBuildResult.failures.length}건은 오류 안내 페이지로 대체되어 출력됩니다.`);
+      }
     } catch (error) {
       console.error("[order-request-print] failed to render print window", error);
       setPrintFeedback("첨부 PDF 렌더링 또는 문서 생성 중 오류가 발생했습니다. 다시 시도해주세요.");
