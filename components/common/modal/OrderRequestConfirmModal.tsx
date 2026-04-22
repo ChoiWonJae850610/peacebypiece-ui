@@ -77,9 +77,13 @@ const TABLE_HEAD_CLASS = "px-3 py-2.5 text-center font-semibold text-stone-700";
 const TABLE_CELL_CLASS = "px-3 py-2.5 text-center align-middle leading-5";
 const TABLE_EMPTY_CLASS = "px-3 py-7 text-center text-sm text-stone-500";
 
-function isAndroidPrintFlow() {
-  if (typeof navigator === "undefined") return false;
-  return /Android/i.test(navigator.userAgent || "");
+function getMobilePrintBrowser() {
+  if (typeof navigator === "undefined") return { isAndroid: false, isSamsungInternet: false };
+  const userAgent = navigator.userAgent || "";
+  return {
+    isAndroid: /Android/i.test(userAgent),
+    isSamsungInternet: /SamsungBrowser/i.test(userAgent),
+  };
 }
 
 
@@ -229,6 +233,7 @@ export default function OrderRequestConfirmModal({
   const [printFeedback, setPrintFeedback] = useState<string | null>(null);
   const [isPreparingPrint, setIsPreparingPrint] = useState(false);
   const printWindowRef = useRef<Window | null>(null);
+  const printFrameRef = useRef<HTMLIFrameElement | null>(null);
 
   useEffect(() => {
     setCurrentPageIndex(0);
@@ -242,7 +247,11 @@ export default function OrderRequestConfirmModal({
       if (printWindowRef.current && !printWindowRef.current.closed) {
         printWindowRef.current.close();
       }
+      if (printFrameRef.current) {
+        printFrameRef.current.remove();
+      }
       printWindowRef.current = null;
+      printFrameRef.current = null;
     };
   }, []);
 
@@ -280,25 +289,74 @@ export default function OrderRequestConfirmModal({
     setPrintFeedback(null);
     setIsPreparingPrint(true);
 
-    const useAndroidPrintFlow = isAndroidPrintFlow();
-    const printWindow = window.open("", "_blank", "noopener=no,width=1024,height=900");
-    if (!printWindow) {
-      setPrintFeedback("팝업이 차단되어 PDF 창을 열 수 없습니다. 브라우저 팝업 차단을 해제한 뒤 다시 시도해주세요.");
-      setIsPreparingPrint(false);
-      return;
-    }
-
-    printWindowRef.current = printWindow;
+    const { isAndroid, isSamsungInternet } = getMobilePrintBrowser();
 
     try {
       const html = buildOrderRequestPrintHtml(workOrder, {
         requestNote,
-        autoPrint: !useAndroidPrintFlow,
-        showPrintToolbar: useAndroidPrintFlow,
-        closeAfterPrint: !useAndroidPrintFlow,
+        autoPrint: !isAndroid,
+        showPrintToolbar: isAndroid && !isSamsungInternet,
+        closeAfterPrint: !isAndroid,
       });
 
-      if (useAndroidPrintFlow) {
+      if (isSamsungInternet) {
+        if (printFrameRef.current) {
+          printFrameRef.current.remove();
+          printFrameRef.current = null;
+        }
+
+        const frame = document.createElement("iframe");
+        frame.setAttribute("title", "발주서 인쇄 프레임");
+        frame.setAttribute("aria-hidden", "true");
+        frame.style.position = "fixed";
+        frame.style.right = "0";
+        frame.style.bottom = "0";
+        frame.style.width = "1px";
+        frame.style.height = "1px";
+        frame.style.opacity = "0";
+        frame.style.pointerEvents = "none";
+        frame.style.border = "0";
+
+        const cleanupFrame = () => {
+          window.setTimeout(() => {
+            if (printFrameRef.current === frame) {
+              frame.remove();
+              printFrameRef.current = null;
+            }
+          }, 1500);
+        };
+
+        frame.onload = () => {
+          window.setTimeout(() => {
+            try {
+              frame.contentWindow?.focus();
+              frame.contentWindow?.print();
+              setPrintFeedback("삼성 인터넷에서는 현재 화면에서 바로 인쇄 창을 엽니다.");
+            } catch (error) {
+              console.error("[order-request-print] samsung iframe print failed", error);
+              setPrintFeedback("삼성 인터넷 인쇄 호출에 실패했습니다. 다시 시도해주세요.");
+            } finally {
+              cleanupFrame();
+            }
+          }, 700);
+        };
+
+        document.body.appendChild(frame);
+        printFrameRef.current = frame;
+        frame.srcdoc = html;
+        window.addEventListener("afterprint", cleanupFrame, { once: true });
+        return;
+      }
+
+      const printWindow = window.open("", "_blank", "noopener=no,width=1024,height=900");
+      if (!printWindow) {
+        setPrintFeedback("팝업이 차단되어 PDF 창을 열 수 없습니다. 브라우저 팝업 차단을 해제한 뒤 다시 시도해주세요.");
+        return;
+      }
+
+      printWindowRef.current = printWindow;
+
+      if (isAndroid) {
         const blob = new Blob([html], { type: "text/html;charset=utf-8" });
         const objectUrl = URL.createObjectURL(blob);
         printWindow.location.replace(objectUrl);
@@ -318,10 +376,14 @@ export default function OrderRequestConfirmModal({
     } catch (error) {
       console.error("[order-request-print] failed to render print window", error);
       setPrintFeedback("문서 생성 중 오류가 발생했습니다. 다시 시도해주세요.");
-      if (!printWindow.closed) {
-        printWindow.close();
+      if (printWindowRef.current && !printWindowRef.current.closed) {
+        printWindowRef.current.close();
+      }
+      if (printFrameRef.current) {
+        printFrameRef.current.remove();
       }
       printWindowRef.current = null;
+      printFrameRef.current = null;
     } finally {
       setIsPreparingPrint(false);
     }
