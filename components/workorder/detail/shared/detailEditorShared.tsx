@@ -81,7 +81,7 @@ export function DeleteButton({ onClick, srLabel, disabled = false }: { onClick: 
       onClick={onClick}
       aria-label={srLabel}
       disabled={disabled}
-      className="pbp-interactive-button inline-flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 bg-white text-base font-semibold text-rose-600 hover:border-rose-300 hover:bg-rose-50 active:bg-rose-100 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
+      className="pbp-interactive-button inline-flex h-8 w-8 items-center justify-center rounded-full border border-rose-200 bg-white text-base font-semibold text-rose-600 hover:border-rose-300 hover:bg-rose-50 active:bg-rose-100 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
     >
       -
     </button>
