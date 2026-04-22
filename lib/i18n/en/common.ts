@@ -65,7 +65,6 @@ export const commonEn = {
         emptyDescription: "Attachment",
         pdfPreview: "PDF preview",
         download: "Download",
-        delete: "Delete",
         unavailableTitle: "Attachment is unavailable.",
         unavailableDescription: "The attachment URL is not available right now. Check whether the file can still be downloaded.",
         filePreviewTitle: "Preview is not available for this file type.",

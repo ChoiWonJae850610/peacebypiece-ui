@@ -50,10 +50,8 @@ export function buildModalProps({
     },
     attachmentPreview: {
       attachment: selectedAttachment,
-      canDelete: attachmentPermissions.canDelete,
       canDownload: attachmentPermissions.canDownload,
       onClose: () => onSetAttachmentPreviewId(null),
-      onDelete: () => selectedAttachment && onRequestDeleteAttachment(selectedAttachment.id),
     },
     attachmentDeleteConfirm: {
       open: pendingAttachmentDelete !== null,

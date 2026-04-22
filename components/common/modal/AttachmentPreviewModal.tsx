@@ -11,16 +11,12 @@ import { useI18n } from "@/lib/i18n";
 
 export default function AttachmentPreviewModal({
   attachment,
-  canDelete,
   canDownload,
   onClose,
-  onDelete,
 }: {
   attachment: Attachment | null;
-  canDelete: boolean;
   canDownload: boolean;
   onClose: () => void;
-  onDelete: () => void;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const open = attachment !== null;
@@ -54,15 +50,6 @@ export default function AttachmentPreviewModal({
                 >
                   {copy.download}
                 </a>
-              ) : null}
-              {canDelete ? (
-                <button
-                  type="button"
-                  onClick={onDelete}
-                  className="pbp-interactive-button inline-flex items-center justify-center rounded-xl border border-rose-300 bg-white px-4 py-2 text-sm font-medium text-rose-700 shadow-sm transition hover:bg-rose-50 active:bg-rose-100"
-                >
-                  {copy.delete}
-                </button>
               ) : null}
             </div>
 
