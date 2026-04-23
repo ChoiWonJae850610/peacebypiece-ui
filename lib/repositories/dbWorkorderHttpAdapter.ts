@@ -213,23 +213,17 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
       }
     },
     saveWorkOrders: async (workOrders) => {
-      const savedWorkOrders: WorkOrder[] = [];
-
       try {
-        for (const workOrder of workOrders) {
-          const response = await fetch("/api/workorders", {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-            body: JSON.stringify({ workOrder }),
-          });
+        const response = await fetch("/api/workorders", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ workOrders }),
+        });
 
-          const { workOrder: savedWorkOrder } = await parseResponse<{ workOrder: WorkOrder }>(response);
-          savedWorkOrders.push(savedWorkOrder);
-        }
-
+        const { workOrders: savedWorkOrders } = await parseResponse<{ workOrders: WorkOrder[] }>(response);
         reportDbStatus({ source: "save", connected: true, fallbackActive: false, code: "READY" });
         return savedWorkOrders;
       } catch (error) {

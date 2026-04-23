@@ -22,7 +22,18 @@ export function useDbConnectionStatus() {
       cache: "no-store",
     })
       .then(async (response) => {
-        const body = (await response.json()) as DbConnectionStatus;
+        let body: DbConnectionStatus | null = null;
+
+        try {
+          body = (await response.json()) as DbConnectionStatus;
+        } catch {
+          throw new Error("Failed to parse DB status response.");
+        }
+
+        if (!response.ok || !body) {
+          throw new Error(body?.message ?? "Failed to fetch DB status.");
+        }
+
         if (cancelled) return;
         setDbConnectionStatus(body);
       })

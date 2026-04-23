@@ -315,12 +315,16 @@ export function useWorkOrderLifecycleActions({
           await repository.appendHistoryLogsAsync(nextHistoryLogs);
           setWorkOrders(persistedRemaining);
           setHistoryLogs((prev) => [...nextHistoryLogs, ...prev]);
+
+          const nextSelectedId = selectedId === workOrderId ? fallbackSelectedId : selectedId;
+          const nextSelectedWorkOrder = persistedRemaining.find((item) => item.id === nextSelectedId) ?? persistedRemaining[0] ?? null;
+
           if (selectedId === workOrderId) {
-            setSelectedId(fallbackSelectedId);
-            const fallbackWorkOrder = persistedRemaining.find((item) => item.id === fallbackSelectedId) ?? persistedRemaining[0];
-            setLastSavedAt(fallbackWorkOrder?.lastSavedAt ?? null);
-            setSaveStatus("saved");
+            setSelectedId(nextSelectedId);
           }
+
+          setLastSavedAt(nextSelectedWorkOrder?.lastSavedAt ?? null);
+          setSaveStatus("saved");
           setToastMessage(lifecycleText.deleteCompletedToast);
         },
       });

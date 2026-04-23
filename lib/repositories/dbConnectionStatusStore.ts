@@ -40,11 +40,30 @@ let currentStatus: DbConnectionStatus = DEFAULT_STATUS;
 const listeners = new Set<(status: DbConnectionStatus) => void>();
 
 function shouldPreferIncoming(next: DbConnectionStatus, prev: DbConnectionStatus) {
-  if (next.source === "status-check") return true;
+  if (next.source === "status-check") {
+    return !prev.fallbackActive || prev.source === "status-check";
+  }
+
   if (prev.source === "status-check" && next.connected === prev.connected) {
     return false;
   }
+
   return true;
+}
+
+function mergeWithPreviousStatus(next: DbConnectionStatus, prev: DbConnectionStatus): DbConnectionStatus {
+  if (next.source === "status-check" && prev.fallbackActive && prev.source !== "status-check") {
+    return {
+      ...next,
+      fallbackActive: true,
+      source: prev.source,
+      code: prev.code,
+      message: prev.message,
+      checkedAt: prev.checkedAt ?? next.checkedAt,
+    };
+  }
+
+  return next;
 }
 
 export function getDbConnectionStatus(): DbConnectionStatus {
@@ -56,7 +75,7 @@ export function setDbConnectionStatus(status: DbConnectionStatus) {
     return currentStatus;
   }
 
-  currentStatus = status;
+  currentStatus = mergeWithPreviousStatus(status, currentStatus);
   listeners.forEach((listener) => listener(currentStatus));
   return currentStatus;
 }

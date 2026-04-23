@@ -115,12 +115,26 @@ export async function PATCH(request: Request) {
   }
 
   try {
-    let body: { workOrder?: WorkOrder } | null = null;
+    let body: { workOrder?: WorkOrder; workOrders?: WorkOrder[] } | null = null;
 
     try {
-      body = (await request.json()) as { workOrder?: WorkOrder };
+      body = (await request.json()) as { workOrder?: WorkOrder; workOrders?: WorkOrder[] };
     } catch {
       return NextResponse.json({ message: "Invalid JSON payload.", code: "INVALID_PAYLOAD" }, { status: 400 });
+    }
+
+    if (Array.isArray(body?.workOrders)) {
+      if (body.workOrders.some((item) => !item || typeof item !== "object" || typeof item.id !== "string" || !item.id.trim())) {
+        return NextResponse.json({ message: "Every workOrders item must include workOrder.id.", code: "INVALID_PAYLOAD" }, { status: 400 });
+      }
+
+      const workOrders: WorkOrder[] = [];
+      for (const item of body.workOrders) {
+        workOrders.push(await updateDbWorkOrder(item));
+      }
+
+      logDbRequestOutcome("PATCH", true, "READY", `rows=${workOrders.length}`);
+      return NextResponse.json({ workOrders });
     }
 
     if (!body?.workOrder || typeof body.workOrder !== "object") {
