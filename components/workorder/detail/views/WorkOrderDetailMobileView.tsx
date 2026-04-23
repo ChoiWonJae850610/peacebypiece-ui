@@ -5,17 +5,13 @@ import WorkOrderDetailMobileHeaderSection from "@/components/workorder/detail/se
 import WorkOrderDetailMobileOrderInfoSection from "@/components/workorder/detail/sections/device/WorkOrderDetailMobileOrderInfoSection";
 import WorkOrderDetailMobileProductionCompositionSection from "@/components/workorder/detail/sections/device/WorkOrderDetailMobileProductionCompositionSection";
 import WorkOrderDetailSharedModals from "@/components/workorder/detail/shared/WorkOrderDetailSharedModals";
-import type { ReturnTypeBuildWorkOrderDetailViewModel, ReturnTypeUseWorkOrderDetailEditor } from "@/components/workorder/detail/views/detailViewTypes";
+import type { WorkOrderDetailViewProps } from "@/components/workorder/detail/views/detailViewTypes";
 
 export default function WorkOrderDetailMobileView({
   viewModel,
   editor,
   currentInventoryQuantity,
-}: {
-  viewModel: ReturnTypeBuildWorkOrderDetailViewModel;
-  editor: ReturnTypeUseWorkOrderDetailEditor;
-  currentInventoryQuantity: number;
-}) {
+}: WorkOrderDetailViewProps) {
   return (
     <div className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm">
       <MobileSectionStack>

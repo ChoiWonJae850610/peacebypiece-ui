@@ -5,18 +5,13 @@ import DesktopWorkspaceLayout from "@/components/workorder/detail/layout/Desktop
 import WorkOrderDetailSharedModals from "@/components/workorder/detail/shared/WorkOrderDetailSharedModals";
 import OrderInfoSection from "@/components/workorder/detail/sections/OrderInfoSection";
 import ProductionCompositionSection from "@/components/workorder/detail/sections/ProductionCompositionSection";
-import type { ReturnTypeUseWorkOrderDetailEditor } from "@/components/workorder/detail/views/detailViewTypes";
-import type { ReturnTypeBuildWorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
+import type { WorkOrderDetailViewProps } from "@/components/workorder/detail/views/detailViewTypes";
 
 export default function WorkOrderDetailDesktopView({
   viewModel,
   editor,
   currentInventoryQuantity,
-}: {
-  viewModel: ReturnTypeBuildWorkOrderDetailViewModel;
-  editor: ReturnTypeUseWorkOrderDetailEditor;
-  currentInventoryQuantity: number;
-}) {
+}: WorkOrderDetailViewProps) {
   return (
     <DesktopWorkspaceLayout>
       <WorkOrderHeaderSection {...viewModel.headerProps} />

@@ -17,3 +17,5 @@ export type WorkOrderSidePanelProps = {
   canPromoteMemoAttachment: boolean;
   onPromoteMemoAttachment: (attachmentId: string) => void;
 };
+
+export type WorkOrderSidePanelVariant = "desktop" | "tablet" | "mobile";

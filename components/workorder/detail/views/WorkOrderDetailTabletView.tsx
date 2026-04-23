@@ -5,17 +5,13 @@ import WorkOrderDetailTabletHeaderSection from "@/components/workorder/detail/se
 import WorkOrderDetailTabletOrderInfoSection from "@/components/workorder/detail/sections/device/WorkOrderDetailTabletOrderInfoSection";
 import WorkOrderDetailTabletProductionCompositionSection from "@/components/workorder/detail/sections/device/WorkOrderDetailTabletProductionCompositionSection";
 import WorkOrderDetailSharedModals from "@/components/workorder/detail/shared/WorkOrderDetailSharedModals";
-import type { ReturnTypeBuildWorkOrderDetailViewModel, ReturnTypeUseWorkOrderDetailEditor } from "@/components/workorder/detail/views/detailViewTypes";
+import type { WorkOrderDetailViewProps } from "@/components/workorder/detail/views/detailViewTypes";
 
 export default function WorkOrderDetailTabletView({
   viewModel,
   editor,
   currentInventoryQuantity,
-}: {
-  viewModel: ReturnTypeBuildWorkOrderDetailViewModel;
-  editor: ReturnTypeUseWorkOrderDetailEditor;
-  currentInventoryQuantity: number;
-}) {
+}: WorkOrderDetailViewProps) {
   return (
     <div className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
       <TabletSplitLayout>
