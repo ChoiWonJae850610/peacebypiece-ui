@@ -7,6 +7,7 @@ import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 import type { AsyncOperationStatus } from "./useWorkOrderActionTypes";
 import { createStabilizedWorkOrdersSetter, stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
 import { normalizeWorkOrderDataList } from "@/lib/workorder/normalization";
+import { hasWorkOrderDraftChanges } from "@/lib/workorder/draftState";
 
 const createFallbackWorkOrder = (): WorkOrder => ({
   id: "",
@@ -50,7 +51,9 @@ export function useWorkOrderCoreState() {
   const [users, setUsers] = useState<UserProfile[]>(initialUsers);
   const [currentUserId, setCurrentUserId] = useState(initialCurrentUserId);
   const [permissionTargetUserId, setPermissionTargetUserId] = useState(initialPermissionTargetUserId);
-  const [workOrders, setWorkOrdersState] = useState<WorkOrder[]>(stabilizeWorkOrders(normalizeWorkOrderDataList(initialWorkOrders)));
+  const normalizedInitialWorkOrders = useMemo(() => stabilizeWorkOrders(normalizeWorkOrderDataList(initialWorkOrders)), [initialWorkOrders]);
+  const [workOrders, setWorkOrdersState] = useState<WorkOrder[]>(normalizedInitialWorkOrders);
+  const [persistedWorkOrders, setPersistedWorkOrders] = useState<WorkOrder[]>(normalizedInitialWorkOrders);
   const [historyLogs, setHistoryLogs] = useState<HistoryLog[]>(initialHistoryLogs);
   const [selectedId, setSelectedId] = useState(initialSelectedId);
   const [searchQuery, setSearchQuery] = useState("");
@@ -75,7 +78,9 @@ export function useWorkOrderCoreState() {
         setUsers(nextState.users);
         setCurrentUserId(nextState.currentUserId);
         setPermissionTargetUserId(nextState.permissionTargetUserId);
-        setWorkOrdersState(stabilizeWorkOrders(normalizeWorkOrderDataList(nextState.workOrders)));
+        const normalizedLoadedWorkOrders = stabilizeWorkOrders(normalizeWorkOrderDataList(nextState.workOrders));
+        setWorkOrdersState(normalizedLoadedWorkOrders);
+        setPersistedWorkOrders(normalizedLoadedWorkOrders);
         setHistoryLogs(nextState.historyLogs);
         setSelectedId(nextState.selectedId);
         const nextSelected = nextState.workOrders.find((item) => item.id === nextState.selectedId) ?? nextState.workOrders[0];
@@ -120,6 +125,18 @@ export function useWorkOrderCoreState() {
     [users, currentUserId],
   );
 
+  useEffect(() => {
+    const currentSelectedWorkOrder = workOrders.find((item) => item.id === selectedId) ?? workOrders[0] ?? null;
+    const persistedSelectedWorkOrder = persistedWorkOrders.find((item) => item.id === selectedId) ?? persistedWorkOrders[0] ?? null;
+    const isDirty = hasWorkOrderDraftChanges(currentSelectedWorkOrder, persistedSelectedWorkOrder);
+
+    setSaveStatus((previous) => {
+      if (previous === "saving") return previous;
+      return isDirty ? "dirty" : "saved";
+    });
+    setLastSavedAt(persistedSelectedWorkOrder?.lastSavedAt ?? currentSelectedWorkOrder?.lastSavedAt ?? null);
+  }, [persistedWorkOrders, selectedId, workOrders]);
+
   const permissionTargetUser = useMemo(
     () => users.find((user) => user.id === permissionTargetUserId) ?? users[0],
     [users, permissionTargetUserId],
@@ -135,6 +152,8 @@ export function useWorkOrderCoreState() {
     permissionTargetUser,
     workOrders,
     setWorkOrders,
+    persistedWorkOrders,
+    setPersistedWorkOrders,
     historyLogs,
     setHistoryLogs,
     selectedId,

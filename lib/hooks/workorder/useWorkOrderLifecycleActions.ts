@@ -38,10 +38,12 @@ type UseWorkOrderLifecycleActionsParams = Pick<
   | "canCreateWorkOrder"
   | "canReorderWorkOrder"
   | "setWorkOrders"
+  | "setPersistedWorkOrders"
   | "setHistoryLogs"
   | "setSelectedId"
   | "setLastSavedAt"
   | "setSaveStatus"
+  | "persistedWorkOrders"
   | "setToastMessage"
   | "setCreateWorkOrderModalOpen"
   | "setActionStatus"
@@ -54,10 +56,12 @@ export function useWorkOrderLifecycleActions({
   canCreateWorkOrder,
   canReorderWorkOrder,
   setWorkOrders,
+  setPersistedWorkOrders,
   setHistoryLogs,
   setSelectedId,
   setLastSavedAt,
   setSaveStatus,
+  persistedWorkOrders,
   setToastMessage,
   setCreateWorkOrderModalOpen,
   setActionStatus,
@@ -130,6 +134,7 @@ export function useWorkOrderLifecycleActions({
           });
 
           setWorkOrders((prev) => [createdWorkOrder, ...prev.filter((item) => item.id !== createdWorkOrder.id)]);
+          setPersistedWorkOrders((prev) => [createdWorkOrder, ...prev.filter((item) => item.id !== createdWorkOrder.id)]);
           setSelectedId(createdWorkOrder.id);
           setLastSavedAt(createdWorkOrder.lastSavedAt ?? newWorkOrder.lastSavedAt);
           setHistoryLogs((historyPrev) => [...nextHistoryLogs, ...historyPrev]);
@@ -141,7 +146,7 @@ export function useWorkOrderLifecycleActions({
         },
       });
     },
-    [canCreateWorkOrder, currentUser.id, currentUser.name, currentUser.role, historyText, lifecycleText.createCompletedToastFormat, lifecycleText.createFailedToast, repository, setActionError, setActionFailure, setActionStatus, setCreateWorkOrderModalOpen, setHistoryLogs, setLastSavedAt, setSaveStatus, setSelectedId, setWorkOrders, setToastMessage],
+    [canCreateWorkOrder, currentUser.id, currentUser.name, currentUser.role, historyText, lifecycleText.createCompletedToastFormat, lifecycleText.createFailedToast, repository, setActionError, setActionFailure, setActionStatus, setCreateWorkOrderModalOpen, setHistoryLogs, setLastSavedAt, setPersistedWorkOrders, setSaveStatus, setSelectedId, setWorkOrders, setToastMessage],
   );
 
   const handleReorderWorkOrder = useCallback(
@@ -186,6 +191,7 @@ export function useWorkOrderLifecycleActions({
           });
           const persistedCreatedWorkOrder = persistedWorkOrders.find((item) => item.id === createdWorkOrder.id) ?? createdWorkOrder;
           setWorkOrders(persistedWorkOrders);
+          setPersistedWorkOrders(persistedWorkOrders);
           setSelectedId(persistedCreatedWorkOrder.id);
           setLastSavedAt(persistedCreatedWorkOrder.lastSavedAt);
           setSaveStatus("saved");
@@ -194,7 +200,7 @@ export function useWorkOrderLifecycleActions({
         },
       });
     },
-    [canReorderWorkOrder, currentUser.id, currentUser.name, currentUser.role, historyText, lifecycleText, repository, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setLastSavedAt, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
+    [canReorderWorkOrder, currentUser.id, currentUser.name, currentUser.role, historyText, lifecycleText, repository, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setLastSavedAt, setPersistedWorkOrders, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
   );
 
   const handleReworkWorkOrder = useCallback(
@@ -237,6 +243,7 @@ export function useWorkOrderLifecycleActions({
           });
           const persistedWorkOrder = persistedWorkOrders.find((item) => item.id === nextWorkOrder.id) ?? nextWorkOrder;
           setWorkOrders(persistedWorkOrders);
+          setPersistedWorkOrders(persistedWorkOrders);
           setSelectedId(persistedWorkOrder.id);
           setLastSavedAt(persistedWorkOrder.lastSavedAt);
           setSaveStatus("saved");
@@ -245,7 +252,7 @@ export function useWorkOrderLifecycleActions({
         },
       });
     },
-    [currentUser.name, findChangedWorkOrdersForPersistence, historyText, lifecycleText, repository, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setLastSavedAt, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
+    [currentUser.name, findChangedWorkOrdersForPersistence, historyText, lifecycleText, repository, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setLastSavedAt, setPersistedWorkOrders, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
   );
 
   const handleDeleteWorkOrder = useCallback(
@@ -285,6 +292,7 @@ export function useWorkOrderLifecycleActions({
           const persistedRemaining = remaining.map((item) => persistedRemainingById.get(item.id) ?? item);
           await repository.appendHistoryLogsAsync(nextHistoryLogs);
           setWorkOrders(persistedRemaining);
+          setPersistedWorkOrders(persistedRemaining);
           setHistoryLogs((prev) => [...nextHistoryLogs, ...prev]);
 
           const nextSelectedId = selectedId === workOrderId ? fallbackSelectedId : selectedId;
@@ -304,7 +312,7 @@ export function useWorkOrderLifecycleActions({
         },
       });
     },
-    [currentUser.name, findChangedWorkOrdersForPersistence, historyText, lifecycleText, repository, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setLastSavedAt, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
+    [currentUser.name, findChangedWorkOrdersForPersistence, historyText, lifecycleText, repository, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setLastSavedAt, setPersistedWorkOrders, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
   );
 
   const handleRenameWorkOrderTitle = useCallback(
@@ -328,29 +336,47 @@ export function useWorkOrderLifecycleActions({
           message: lifecycleText.renameFailedToast ?? "Failed to rename work order.",
         }),
         task: async () => {
-          const renameResult = renameWorkOrderGroupBaseTitle(workOrders, workOrder.id, trimmedTitle);
-          if (renameResult.affectedWorkOrderIds.length === 0 || renameResult.previousBaseTitle === trimmedTitle) return;
+          const localRenameResult = renameWorkOrderGroupBaseTitle(workOrders, workOrder.id, trimmedTitle);
+          if (localRenameResult.affectedWorkOrderIds.length === 0 || localRenameResult.previousBaseTitle === trimmedTitle) return;
 
-          const nextHistoryLogs = renameResult.affectedWorkOrderIds.map((workOrderId) =>
+          const persistedRenameResult = renameWorkOrderGroupBaseTitle(persistedWorkOrders, workOrder.id, trimmedTitle);
+          const nextHistoryLogs = localRenameResult.affectedWorkOrderIds.map((workOrderId) =>
             createTitleRenameHistoryLog(currentUser.name, workOrderId, {
-              from: renameResult.previousBaseTitle ?? previousBaseTitle,
+              from: localRenameResult.previousBaseTitle ?? previousBaseTitle,
               to: trimmedTitle,
-              appliedToGroup: renameResult.affectedWorkOrderIds.length > 1,
+              appliedToGroup: localRenameResult.affectedWorkOrderIds.length > 1,
             }, historyText),
           );
 
-          setWorkOrders(renameResult.nextWorkOrders);
+          const persistedChangedWorkOrders = persistedRenameResult.nextWorkOrders.filter((item) =>
+            persistedRenameResult.affectedWorkOrderIds.includes(item.id),
+          );
+          const savedChangedWorkOrders = persistedChangedWorkOrders.length > 0
+            ? await repository.saveWorkOrdersAsync(persistedChangedWorkOrders)
+            : [];
+          if (nextHistoryLogs.length > 0) {
+            await repository.appendHistoryLogsAsync(nextHistoryLogs);
+          }
+
+          const savedById = new Map(savedChangedWorkOrders.map((item) => [item.id, item]));
+          const nextPersistedWorkOrders = persistedRenameResult.nextWorkOrders.map((item) => savedById.get(item.id) ?? item);
+          const nextLocalWorkOrders = localRenameResult.nextWorkOrders.map((item) => {
+            const saved = savedById.get(item.id);
+            return saved ? { ...item, lastSavedAt: saved.lastSavedAt } : item;
+          });
+
+          setPersistedWorkOrders(nextPersistedWorkOrders);
+          setWorkOrders(nextLocalWorkOrders);
           setHistoryLogs((prev) => [...nextHistoryLogs, ...prev]);
-          setSaveStatus("dirty");
           setToastMessage(
-            renameResult.affectedWorkOrderIds.length > 1
+            localRenameResult.affectedWorkOrderIds.length > 1
               ? lifecycleText.renameAppliedToSeriesToast
               : lifecycleText.renameAppliedToast,
           );
         },
       });
     },
-    [currentUser.name, historyText, lifecycleText, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders],
+    [currentUser.name, historyText, lifecycleText, persistedWorkOrders, repository, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setPersistedWorkOrders, setToastMessage, setWorkOrders],
   );
 
   return {

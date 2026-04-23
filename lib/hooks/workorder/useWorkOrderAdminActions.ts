@@ -5,7 +5,7 @@ import { useI18n } from "@/lib/i18n";
 import { buildUserRoleState } from "@/lib/constants/roles";
 import { buildManagerChangeResult } from "@/lib/workorder/actionFlow";
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
-import { persistUsersWithPermissions } from "./workorderRepositoryMutations";
+import { persistUsersWithPermissions, persistWorkOrderWithHistory } from "./workorderRepositoryMutations";
 import type { RoleType } from "@/types/permission";
 import type { ChangeManagerInput } from "./useWorkOrderActionTypes";
 import type { AdminActionBaseParams } from "./useWorkOrderActionTypes";
@@ -14,6 +14,8 @@ export function useWorkOrderAdminActions({
   currentUser,
   setUsers,
   setWorkOrders,
+  persistedWorkOrders,
+  setPersistedWorkOrders,
   setHistoryLogs,
   setSaveStatus,
   setToastMessage,
@@ -68,19 +70,32 @@ export function useWorkOrderAdminActions({
         return;
       }
 
-      setWorkOrders((prev) => prev.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item)));
+      const persistedBaseWorkOrder = persistedWorkOrders.find((item) => item.id === workOrder.id) ?? workOrder;
+      void persistWorkOrderWithHistory(repository, {
+        workOrder: {
+          ...persistedBaseWorkOrder,
+          managerId: result.nextWorkOrder.managerId,
+          manager: result.nextWorkOrder.manager,
+        },
+        historyLogs: result.historyLogs,
+      }).then((persistedWorkOrder) => {
+        setPersistedWorkOrders((prev) => prev.map((item) => (item.id === workOrder.id ? persistedWorkOrder : item)));
+        setWorkOrders((prev) => prev.map((item) => (
+          item.id === workOrder.id
+            ? { ...item, managerId: persistedWorkOrder.managerId, manager: persistedWorkOrder.manager, lastSavedAt: persistedWorkOrder.lastSavedAt }
+            : item
+        )));
+      });
       if (result.historyLogs?.length) {
         setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
-      }
-      if (result.saveStatus) {
-        setSaveStatus(result.saveStatus);
       }
       if (result.toastMessage) {
         setToastMessage(result.toastMessage);
       }
+      setSaveStatus("saved");
       setManagerAssignModalOpen(false);
     },
-    [actionFlowText, currentUser.name, historyText, setHistoryLogs, setManagerAssignModalOpen, setSaveStatus, setToastMessage, setWorkOrders],
+    [actionFlowText, currentUser.name, historyText, persistedWorkOrders, repository, setHistoryLogs, setManagerAssignModalOpen, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   return {

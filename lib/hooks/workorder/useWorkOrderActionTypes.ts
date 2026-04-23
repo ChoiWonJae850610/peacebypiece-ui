@@ -65,6 +65,7 @@ export type WorkOrderActionRuntimeSetters = {
 export type WorkOrderActionStateSetters = {
   setUsers: Dispatch<SetStateAction<UserProfile[]>>;
   setWorkOrders: Dispatch<SetStateAction<WorkOrder[]>>;
+  setPersistedWorkOrders: Dispatch<SetStateAction<WorkOrder[]>>;
   setHistoryLogs: Dispatch<SetStateAction<HistoryLog[]>>;
   setSelectedId: Dispatch<SetStateAction<string>>;
   setLastSavedAt: Dispatch<SetStateAction<string | null>>;
@@ -83,6 +84,7 @@ export type UseWorkOrderActionsParams = {
   canReorderWorkOrder: boolean;
   pendingWorkflowAction: WorkflowAction | null;
   workOrders: WorkOrder[];
+  persistedWorkOrders: WorkOrder[];
   selectedId: string;
 } & WorkOrderActionStateSetters & WorkOrderActionRuntimeSetters;
 
@@ -94,5 +96,5 @@ export type WorkflowStateActionHandlers = {
 
 export type AdminActionBaseParams = Pick<
   UseWorkOrderActionsParams,
-  "currentUser" | "setUsers" | "setWorkOrders" | "setHistoryLogs" | "setSaveStatus" | "setToastMessage" | "setManagerAssignModalOpen"
+  "currentUser" | "setUsers" | "setWorkOrders" | "persistedWorkOrders" | "setPersistedWorkOrders" | "setHistoryLogs" | "setSaveStatus" | "setToastMessage" | "setManagerAssignModalOpen"
 >;
