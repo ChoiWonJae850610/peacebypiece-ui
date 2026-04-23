@@ -413,6 +413,10 @@ export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
   return mapRowToWorkOrder(created);
 }
 
+function isNotFoundWorkOrderError(error: unknown): boolean {
+  return error instanceof Error && /work_orders row not found for id:/i.test(error.message);
+}
+
 export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder> {
   const schema = await loadWorkOrderSchema();
   assertMinimumSchema(schema);
@@ -564,4 +568,26 @@ export async function deleteDbWorkOrder(workOrderId: string): Promise<string> {
   }
 
   return deleted.id;
+}
+
+export async function saveDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder> {
+  try {
+    return await updateDbWorkOrder(workOrder);
+  } catch (error) {
+    if (!isNotFoundWorkOrderError(error)) {
+      throw error;
+    }
+
+    return createDbWorkOrder(workOrder);
+  }
+}
+
+export async function saveDbWorkOrders(workOrders: WorkOrder[]): Promise<WorkOrder[]> {
+  const savedWorkOrders: WorkOrder[] = [];
+
+  for (const workOrder of workOrders) {
+    savedWorkOrders.push(await saveDbWorkOrder(workOrder));
+  }
+
+  return savedWorkOrders;
 }

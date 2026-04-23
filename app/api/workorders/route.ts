@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDatabaseRuntimeErrorCode, getSupportedDatabaseEnvKeys, isDatabaseConfigured } from "@/lib/db/client";
-import { createDbWorkOrder, deleteDbWorkOrder, findAllDbWorkOrders, updateDbWorkOrder } from "@/lib/workorder/repository/dbWorkOrderRepository";
+import { createDbWorkOrder, deleteDbWorkOrder, findAllDbWorkOrders, saveDbWorkOrder, saveDbWorkOrders } from "@/lib/workorder/repository/dbWorkOrderRepository";
 import type { WorkOrder } from "@/types/workorder";
 
 type DbApiErrorCode =
@@ -146,10 +146,7 @@ export async function PATCH(request: Request) {
         return NextResponse.json({ message: "Every workOrders item must include workOrder.id.", code: "INVALID_PAYLOAD" }, { status: 400 });
       }
 
-      const workOrders: WorkOrder[] = [];
-      for (const item of body.workOrders) {
-        workOrders.push(await updateDbWorkOrder(item));
-      }
+      const workOrders = await saveDbWorkOrders(body.workOrders);
 
       logDbRequestOutcome("PATCH", true, "READY", `rows=${workOrders.length}`);
       return NextResponse.json({ workOrders });
@@ -163,7 +160,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ message: "workOrder.id is required.", code: "INVALID_PAYLOAD" }, { status: 400 });
     }
 
-    const workOrder = await updateDbWorkOrder(body.workOrder);
+    const workOrder = await saveDbWorkOrder(body.workOrder);
     logDbRequestOutcome("PATCH", true, "READY", workOrder.id);
     return NextResponse.json({ workOrder });
   } catch (error) {
