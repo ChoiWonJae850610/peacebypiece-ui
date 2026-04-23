@@ -53,7 +53,9 @@ export function filterWorkOrderList(workOrders: WorkOrderListItem[], workflowSta
 
   return workOrders.filter((item) => {
     const fields = [
+      item.displayTitle,
       item.title,
+      item.baseTitle,
       item.category1,
       item.category2,
       item.category3,

@@ -123,7 +123,7 @@ export function applyReorderIdentity<T extends Partial<ReorderIdentity>>(workOrd
     workOrderKind,
     isDefectOrder: defectOrder,
     displayTitle,
-    title: displayTitle,
+    title: baseTitle,
   };
 }
 

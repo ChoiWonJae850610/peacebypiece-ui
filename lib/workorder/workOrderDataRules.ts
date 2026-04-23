@@ -31,16 +31,11 @@ function normalizeOrderEntryType(value: string | undefined | null): string {
 
 function normalizeWorkOrderKind(
   value: WorkOrder["workOrderKind"] | string | undefined | null,
-  fallbackTitle?: string | null,
+  _fallbackTitle?: string | null,
   reorderRound?: number | null,
-  displayTitle?: string | null,
-
+  _displayTitle?: string | null,
 ): WorkOrder["workOrderKind"] {
   if (value === "sample" || value === "main" || value === "rework") return value;
-  const normalizedTitle = String(displayTitle ?? fallbackTitle ?? "").trim();
-  if (normalizedTitle.includes("(불량)")) return "rework";
-  if (/\d+차\s*(\(불량\))?$/.test(normalizedTitle)) return "main";
-  if (normalizedTitle.includes("(샘플)")) return "sample";
   if (Number(reorderRound ?? 1) > 1) return "main";
   return "sample";
 }

@@ -3,6 +3,7 @@ import "server-only";
 import { queryDb } from "@/lib/db/client";
 import { LEGACY_WORKFLOW_STATE_MAP, WORKFLOW_STATES } from "@/lib/constants/workorderStates";
 import type { WorkOrder } from "@/types/workorder";
+import { applyReorderIdentity } from "@/lib/workorder/reorder/helpers";
 
 const WORK_ORDER_TABLE = "work_orders";
 const DEFAULT_WORKFLOW_STATE: WorkOrder["workflowState"] = "draft";
@@ -10,6 +11,12 @@ const DEFAULT_WORKFLOW_STATE: WorkOrder["workflowState"] = "draft";
 const PAYLOAD_COLUMN_CANDIDATES = ["payload", "data", "workorder_payload", "work_order_payload"] as const;
 const WORKFLOW_STATE_COLUMN_CANDIDATES = ["workflow_state", "status", "state"] as const;
 const LAST_SAVED_AT_COLUMN_CANDIDATES = ["last_saved_at", "saved_at"] as const;
+const BASE_TITLE_COLUMN_CANDIDATES = ["base_title"] as const;
+const DISPLAY_TITLE_COLUMN_CANDIDATES = ["display_title"] as const;
+const WORK_ORDER_KIND_COLUMN_CANDIDATES = ["work_order_kind"] as const;
+const REORDER_GROUP_ID_COLUMN_CANDIDATES = ["reorder_group_id"] as const;
+const REORDER_ROUND_COLUMN_CANDIDATES = ["reorder_round"] as const;
+const IS_DEFECT_ORDER_COLUMN_CANDIDATES = ["is_defect_order"] as const;
 const CREATED_AT_COLUMN_CANDIDATES = ["created_at"] as const;
 const UPDATED_AT_COLUMN_CANDIDATES = ["updated_at"] as const;
 const IS_ACTIVE_COLUMN_CANDIDATES = ["is_active"] as const;
@@ -20,6 +27,12 @@ type DbWorkOrderRow = {
   title: string;
   workflow_state: string | null;
   last_saved_at: string | null;
+  base_title: string | null;
+  display_title: string | null;
+  work_order_kind: WorkOrder["workOrderKind"] | null;
+  reorder_group_id: string | null;
+  reorder_round: number | null;
+  is_defect_order: boolean | null;
   payload: WorkOrder | string | null;
   is_active?: boolean | null;
   deleted_at?: string | Date | null;
@@ -40,6 +53,12 @@ type DbWorkOrderSchema = {
   payloadColumnKind: DbPayloadColumnKind | null;
   workflowStateColumn: string | null;
   lastSavedAtColumn: string | null;
+  baseTitleColumn: string | null;
+  displayTitleColumn: string | null;
+  workOrderKindColumn: string | null;
+  reorderGroupIdColumn: string | null;
+  reorderRoundColumn: string | null;
+  isDefectOrderColumn: string | null;
   createdAtColumn: string | null;
   updatedAtColumn: string | null;
   isActiveColumn: string | null;
@@ -116,10 +135,16 @@ function parsePayloadValue(payload: DbWorkOrderRow["payload"]): Partial<WorkOrde
 function mapRowToWorkOrder(row: DbWorkOrderRow): WorkOrder {
   const payload = parsePayloadValue(row.payload);
 
-  return {
+  const hydrated = {
     ...(payload as WorkOrder),
     id: typeof payload.id === "string" ? payload.id : row.id,
     title: typeof payload.title === "string" ? payload.title : row.title,
+    baseTitle: typeof payload.baseTitle === "string" ? payload.baseTitle : (row.base_title ?? undefined),
+    displayTitle: typeof payload.displayTitle === "string" ? payload.displayTitle : (row.display_title ?? undefined),
+    workOrderKind: payload.workOrderKind ?? row.work_order_kind ?? undefined,
+    reorderGroupId: typeof payload.reorderGroupId === "string" ? payload.reorderGroupId : (row.reorder_group_id ?? undefined),
+    reorderRound: typeof payload.reorderRound === "number" ? payload.reorderRound : (typeof row.reorder_round === "number" ? row.reorder_round : undefined),
+    isDefectOrder: typeof payload.isDefectOrder === "boolean" ? payload.isDefectOrder : (typeof row.is_defect_order === "boolean" ? row.is_defect_order : undefined),
     workflowState:
       typeof payload.workflowState === "string"
         ? payload.workflowState
@@ -129,6 +154,8 @@ function mapRowToWorkOrder(row: DbWorkOrderRow): WorkOrder {
         ? payload.lastSavedAt
         : (row.last_saved_at ?? toIsoString(row.updated_at) ?? toIsoString(row.created_at)),
   } satisfies WorkOrder;
+
+  return applyReorderIdentity(hydrated);
 }
 
 function quoteIdentifier(identifier: string): string {
@@ -207,6 +234,12 @@ async function loadWorkOrderSchema(): Promise<DbWorkOrderSchema> {
     payloadColumnKind,
     workflowStateColumn: findFirstMatchingColumn(columnNames, WORKFLOW_STATE_COLUMN_CANDIDATES),
     lastSavedAtColumn: findFirstMatchingColumn(columnNames, LAST_SAVED_AT_COLUMN_CANDIDATES),
+    baseTitleColumn: findFirstMatchingColumn(columnNames, BASE_TITLE_COLUMN_CANDIDATES),
+    displayTitleColumn: findFirstMatchingColumn(columnNames, DISPLAY_TITLE_COLUMN_CANDIDATES),
+    workOrderKindColumn: findFirstMatchingColumn(columnNames, WORK_ORDER_KIND_COLUMN_CANDIDATES),
+    reorderGroupIdColumn: findFirstMatchingColumn(columnNames, REORDER_GROUP_ID_COLUMN_CANDIDATES),
+    reorderRoundColumn: findFirstMatchingColumn(columnNames, REORDER_ROUND_COLUMN_CANDIDATES),
+    isDefectOrderColumn: findFirstMatchingColumn(columnNames, IS_DEFECT_ORDER_COLUMN_CANDIDATES),
     createdAtColumn: findFirstMatchingColumn(columnNames, CREATED_AT_COLUMN_CANDIDATES),
     updatedAtColumn: findFirstMatchingColumn(columnNames, UPDATED_AT_COLUMN_CANDIDATES),
     isActiveColumn: findFirstMatchingColumn(columnNames, IS_ACTIVE_COLUMN_CANDIDATES),
@@ -240,6 +273,12 @@ export async function findAllDbWorkOrders(): Promise<WorkOrder[]> {
         title,
         ${buildAliasSelection(schema.workflowStateColumn, "workflow_state", "NULL")},
         ${buildAliasSelection(schema.lastSavedAtColumn, "last_saved_at", "NULL")},
+        ${buildAliasSelection(schema.baseTitleColumn, "base_title", "NULL")},
+        ${buildAliasSelection(schema.displayTitleColumn, "display_title", "NULL")},
+        ${buildAliasSelection(schema.workOrderKindColumn, "work_order_kind", "NULL")},
+        ${buildAliasSelection(schema.reorderGroupIdColumn, "reorder_group_id", "NULL")},
+        ${buildAliasSelection(schema.reorderRoundColumn, "reorder_round", "NULL")},
+        ${buildAliasSelection(schema.isDefectOrderColumn, "is_defect_order", "NULL")},
         ${buildAliasSelection(schema.payloadColumn, "payload", payloadFallbackSql)},
         ${buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE")},
         ${buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL")},
@@ -277,6 +316,42 @@ export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
     placeholders.push(`$${values.length}`);
   }
 
+  if (schema.baseTitleColumn) {
+    columns.push(schema.baseTitleColumn);
+    values.push(normalizedWorkOrder.baseTitle ?? normalizedWorkOrder.title);
+    placeholders.push(`$${values.length}`);
+  }
+
+  if (schema.displayTitleColumn) {
+    columns.push(schema.displayTitleColumn);
+    values.push(normalizedWorkOrder.displayTitle ?? normalizedWorkOrder.title);
+    placeholders.push(`$${values.length}`);
+  }
+
+  if (schema.workOrderKindColumn) {
+    columns.push(schema.workOrderKindColumn);
+    values.push(normalizedWorkOrder.workOrderKind ?? "sample");
+    placeholders.push(`$${values.length}`);
+  }
+
+  if (schema.reorderGroupIdColumn) {
+    columns.push(schema.reorderGroupIdColumn);
+    values.push(normalizedWorkOrder.reorderGroupId ?? normalizedWorkOrder.id);
+    placeholders.push(`$${values.length}`);
+  }
+
+  if (schema.reorderRoundColumn) {
+    columns.push(schema.reorderRoundColumn);
+    values.push(normalizedWorkOrder.reorderRound ?? 1);
+    placeholders.push(`$${values.length}`);
+  }
+
+  if (schema.isDefectOrderColumn) {
+    columns.push(schema.isDefectOrderColumn);
+    values.push(Boolean(normalizedWorkOrder.isDefectOrder));
+    placeholders.push(`$${values.length}`);
+  }
+
   if (schema.payloadColumn) {
     columns.push(schema.payloadColumn);
     values.push(buildPayloadValue(schema.payloadColumnKind, payload));
@@ -302,6 +377,12 @@ export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
     "title",
     buildAliasSelection(schema.workflowStateColumn, "workflow_state", "NULL"),
     buildAliasSelection(schema.lastSavedAtColumn, "last_saved_at", "NULL"),
+    buildAliasSelection(schema.baseTitleColumn, "base_title", "NULL"),
+    buildAliasSelection(schema.displayTitleColumn, "display_title", "NULL"),
+    buildAliasSelection(schema.workOrderKindColumn, "work_order_kind", "NULL"),
+    buildAliasSelection(schema.reorderGroupIdColumn, "reorder_group_id", "NULL"),
+    buildAliasSelection(schema.reorderRoundColumn, "reorder_round", "NULL"),
+    buildAliasSelection(schema.isDefectOrderColumn, "is_defect_order", "NULL"),
     buildAliasSelection(schema.payloadColumn, "payload", payloadFallbackSql),
     buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE"),
     buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL"),
@@ -352,6 +433,36 @@ export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
     values.push(normalizedWorkOrder.lastSavedAt);
   }
 
+  if (schema.baseTitleColumn) {
+    assignments.push(`${quoteIdentifier(schema.baseTitleColumn)} = $${values.length + 1}`);
+    values.push(normalizedWorkOrder.baseTitle ?? normalizedWorkOrder.title);
+  }
+
+  if (schema.displayTitleColumn) {
+    assignments.push(`${quoteIdentifier(schema.displayTitleColumn)} = $${values.length + 1}`);
+    values.push(normalizedWorkOrder.displayTitle ?? normalizedWorkOrder.title);
+  }
+
+  if (schema.workOrderKindColumn) {
+    assignments.push(`${quoteIdentifier(schema.workOrderKindColumn)} = $${values.length + 1}`);
+    values.push(normalizedWorkOrder.workOrderKind ?? "sample");
+  }
+
+  if (schema.reorderGroupIdColumn) {
+    assignments.push(`${quoteIdentifier(schema.reorderGroupIdColumn)} = $${values.length + 1}`);
+    values.push(normalizedWorkOrder.reorderGroupId ?? normalizedWorkOrder.id);
+  }
+
+  if (schema.reorderRoundColumn) {
+    assignments.push(`${quoteIdentifier(schema.reorderRoundColumn)} = $${values.length + 1}`);
+    values.push(normalizedWorkOrder.reorderRound ?? 1);
+  }
+
+  if (schema.isDefectOrderColumn) {
+    assignments.push(`${quoteIdentifier(schema.isDefectOrderColumn)} = $${values.length + 1}`);
+    values.push(Boolean(normalizedWorkOrder.isDefectOrder));
+  }
+
   if (schema.payloadColumn) {
     assignments.push(`${quoteIdentifier(schema.payloadColumn)} = ${buildPayloadInsertPlaceholder(schema.payloadColumnKind, values.length + 1)}`);
     values.push(buildPayloadValue(schema.payloadColumnKind, payload));
@@ -374,6 +485,12 @@ export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
     "title",
     buildAliasSelection(schema.workflowStateColumn, "workflow_state", "NULL"),
     buildAliasSelection(schema.lastSavedAtColumn, "last_saved_at", "NULL"),
+    buildAliasSelection(schema.baseTitleColumn, "base_title", "NULL"),
+    buildAliasSelection(schema.displayTitleColumn, "display_title", "NULL"),
+    buildAliasSelection(schema.workOrderKindColumn, "work_order_kind", "NULL"),
+    buildAliasSelection(schema.reorderGroupIdColumn, "reorder_group_id", "NULL"),
+    buildAliasSelection(schema.reorderRoundColumn, "reorder_round", "NULL"),
+    buildAliasSelection(schema.isDefectOrderColumn, "is_defect_order", "NULL"),
     buildAliasSelection(schema.payloadColumn, "payload", payloadFallbackSql),
     buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE"),
     buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL"),
