@@ -6,6 +6,12 @@ import type { WorkOrder } from "@/types/workorder";
 const WORK_ORDER_TABLE = "work_orders";
 const DEFAULT_WORKFLOW_STATE: WorkOrder["workflowState"] = "draft";
 
+const PAYLOAD_COLUMN_CANDIDATES = ["payload", "data", "workorder_payload", "work_order_payload"] as const;
+const WORKFLOW_STATE_COLUMN_CANDIDATES = ["workflow_state", "status", "state"] as const;
+const LAST_SAVED_AT_COLUMN_CANDIDATES = ["last_saved_at", "saved_at"] as const;
+const CREATED_AT_COLUMN_CANDIDATES = ["created_at"] as const;
+const UPDATED_AT_COLUMN_CANDIDATES = ["updated_at"] as const;
+
 type DbWorkOrderRow = {
   id: string;
   title: string;
@@ -16,6 +22,16 @@ type DbWorkOrderRow = {
   updated_at?: string | Date | null;
 };
 
+type DbWorkOrderSchema = {
+  payloadColumn: string | null;
+  workflowStateColumn: string | null;
+  lastSavedAtColumn: string | null;
+  createdAtColumn: string | null;
+  updatedAtColumn: string | null;
+  hasIdColumn: boolean;
+  hasTitleColumn: boolean;
+};
+
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -24,24 +40,6 @@ function toIsoString(value: string | Date | null | undefined): string {
   if (!value) return "";
   if (value instanceof Date) return value.toISOString();
   return value;
-}
-
-function mapRowToWorkOrder(row: DbWorkOrderRow): WorkOrder {
-  const payload = isObject(row.payload) ? row.payload : {};
-
-  return {
-    ...(payload as WorkOrder),
-    id: typeof payload.id === "string" ? payload.id : row.id,
-    title: typeof payload.title === "string" ? payload.title : row.title,
-    workflowState:
-      typeof payload.workflowState === "string"
-        ? payload.workflowState
-        : ((row.workflow_state ?? "draft") as WorkOrder["workflowState"]),
-    lastSavedAt:
-      typeof payload.lastSavedAt === "string"
-        ? payload.lastSavedAt
-        : row.last_saved_at ?? toIsoString(row.updated_at) ?? toIsoString(row.created_at),
-  } satisfies WorkOrder;
 }
 
 function normalizeWorkOrderForDb(workOrder: WorkOrder): WorkOrder {
@@ -66,19 +64,101 @@ function serializeWorkOrderPayload(workOrder: WorkOrder): WorkOrder {
   };
 }
 
+function mapRowToWorkOrder(row: DbWorkOrderRow): WorkOrder {
+  const payload = isObject(row.payload) ? row.payload : {};
+
+  return {
+    ...(payload as WorkOrder),
+    id: typeof payload.id === "string" ? payload.id : row.id,
+    title: typeof payload.title === "string" ? payload.title : row.title,
+    workflowState:
+      typeof payload.workflowState === "string"
+        ? payload.workflowState
+        : ((row.workflow_state ?? DEFAULT_WORKFLOW_STATE) as WorkOrder["workflowState"]),
+    lastSavedAt:
+      typeof payload.lastSavedAt === "string"
+        ? payload.lastSavedAt
+        : (row.last_saved_at ?? toIsoString(row.updated_at) ?? toIsoString(row.created_at)),
+  } satisfies WorkOrder;
+}
+
+function quoteIdentifier(identifier: string): string {
+  return `"${identifier.replaceAll('"', '""')}"`;
+}
+
+function findFirstMatchingColumn(columnNames: string[], candidates: readonly string[]): string | null {
+  for (const candidate of candidates) {
+    if (columnNames.includes(candidate)) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
+function buildAliasSelection(columnName: string | null, alias: keyof DbWorkOrderRow, fallbackSql: string): string {
+  if (!columnName) {
+    return `${fallbackSql} AS ${alias}`;
+  }
+
+  return `${quoteIdentifier(columnName)} AS ${alias}`;
+}
+
+async function loadWorkOrderSchema(): Promise<DbWorkOrderSchema> {
+  const result = await queryDb<{ column_name: string }>(
+    `
+      SELECT column_name
+      FROM information_schema.columns
+      WHERE table_schema = current_schema()
+        AND table_name = $1
+    `,
+    [WORK_ORDER_TABLE],
+  );
+
+  const columnNames = result.rows.map((row) => row.column_name);
+
+  if (columnNames.length === 0) {
+    throw new Error(`relation \"${WORK_ORDER_TABLE}\" does not exist`);
+  }
+
+  return {
+    payloadColumn: findFirstMatchingColumn(columnNames, PAYLOAD_COLUMN_CANDIDATES),
+    workflowStateColumn: findFirstMatchingColumn(columnNames, WORKFLOW_STATE_COLUMN_CANDIDATES),
+    lastSavedAtColumn: findFirstMatchingColumn(columnNames, LAST_SAVED_AT_COLUMN_CANDIDATES),
+    createdAtColumn: findFirstMatchingColumn(columnNames, CREATED_AT_COLUMN_CANDIDATES),
+    updatedAtColumn: findFirstMatchingColumn(columnNames, UPDATED_AT_COLUMN_CANDIDATES),
+    hasIdColumn: columnNames.includes("id"),
+    hasTitleColumn: columnNames.includes("title"),
+  };
+}
+
+function assertMinimumSchema(schema: DbWorkOrderSchema) {
+  const missingColumns = [
+    !schema.hasIdColumn ? "id" : null,
+    !schema.hasTitleColumn ? "title" : null,
+  ].filter((value): value is string => Boolean(value));
+
+  if (missingColumns.length > 0) {
+    throw new Error(`work_orders table is missing required columns: ${missingColumns.join(", ")}`);
+  }
+}
+
 export async function findAllDbWorkOrders(): Promise<WorkOrder[]> {
+  const schema = await loadWorkOrderSchema();
+  assertMinimumSchema(schema);
+
   const result = await queryDb<DbWorkOrderRow>(
     `
       SELECT
         id,
         title,
-        workflow_state,
-        last_saved_at,
-        payload,
-        created_at,
-        updated_at
-      FROM ${WORK_ORDER_TABLE}
-      ORDER BY updated_at DESC NULLS LAST, created_at DESC NULLS LAST, id DESC
+        ${buildAliasSelection(schema.workflowStateColumn, "workflow_state", "NULL")},
+        ${buildAliasSelection(schema.lastSavedAtColumn, "last_saved_at", "NULL")},
+        ${buildAliasSelection(schema.payloadColumn, "payload", "NULL::jsonb")},
+        ${buildAliasSelection(schema.createdAtColumn, "created_at", "NULL")},
+        ${buildAliasSelection(schema.updatedAtColumn, "updated_at", "NULL")}
+      FROM ${quoteIdentifier(WORK_ORDER_TABLE)}
+      ORDER BY ${schema.updatedAtColumn ? `${quoteIdentifier(schema.updatedAtColumn)} DESC NULLS LAST, ` : ""}${schema.createdAtColumn ? `${quoteIdentifier(schema.createdAtColumn)} DESC NULLS LAST, ` : ""}id DESC
     `,
   );
 
@@ -86,29 +166,56 @@ export async function findAllDbWorkOrders(): Promise<WorkOrder[]> {
 }
 
 export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder> {
+  const schema = await loadWorkOrderSchema();
+  assertMinimumSchema(schema);
+
   const normalizedWorkOrder = normalizeWorkOrderForDb(workOrder);
   const payload = serializeWorkOrderPayload(normalizedWorkOrder);
 
+  const columns = ["id", "title"];
+  const values: unknown[] = [normalizedWorkOrder.id, normalizedWorkOrder.title];
+  const placeholders = ["$1", "$2"];
+
+  if (schema.workflowStateColumn) {
+    columns.push(schema.workflowStateColumn);
+    values.push(normalizedWorkOrder.workflowState);
+    placeholders.push(`$${values.length}`);
+  }
+
+  if (schema.lastSavedAtColumn) {
+    columns.push(schema.lastSavedAtColumn);
+    values.push(normalizedWorkOrder.lastSavedAt);
+    placeholders.push(`$${values.length}`);
+  }
+
+  if (schema.payloadColumn) {
+    columns.push(schema.payloadColumn);
+    values.push(JSON.stringify(payload));
+    placeholders.push(`$${values.length}::jsonb`);
+  }
+
+  const returningColumns = [
+    "id",
+    "title",
+    buildAliasSelection(schema.workflowStateColumn, "workflow_state", "NULL"),
+    buildAliasSelection(schema.lastSavedAtColumn, "last_saved_at", "NULL"),
+    buildAliasSelection(schema.payloadColumn, "payload", "NULL::jsonb"),
+    buildAliasSelection(schema.createdAtColumn, "created_at", "NULL"),
+    buildAliasSelection(schema.updatedAtColumn, "updated_at", "NULL"),
+  ];
+
   const result = await queryDb<DbWorkOrderRow>(
     `
-      INSERT INTO ${WORK_ORDER_TABLE} (
-        id,
-        title,
-        workflow_state,
-        last_saved_at,
-        payload
+      INSERT INTO ${quoteIdentifier(WORK_ORDER_TABLE)} (
+        ${columns.map(quoteIdentifier).join(", ")}
       )
-      VALUES ($1, $2, $3, $4, $5::jsonb)
+      VALUES (
+        ${placeholders.join(", ")}
+      )
       RETURNING
-        id,
-        title,
-        workflow_state,
-        last_saved_at,
-        payload,
-        created_at,
-        updated_at
+        ${returningColumns.join(",\n        ")}
     `,
-    [normalizedWorkOrder.id, normalizedWorkOrder.title, normalizedWorkOrder.workflowState, normalizedWorkOrder.lastSavedAt, JSON.stringify(payload)],
+    values,
   );
 
   const created = result.rows[0];

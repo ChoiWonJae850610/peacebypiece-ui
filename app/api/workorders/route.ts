@@ -11,6 +11,7 @@ type DbApiErrorPayload = {
     | "DB_CONNECTION_FAILED"
     | "DB_TABLE_MISSING"
     | "DB_SCHEMA_INVALID"
+    | "DB_SCHEMA_UNSUPPORTED"
     | "DB_REQUEST_FAILED"
     | "INVALID_PAYLOAD";
 };
@@ -29,6 +30,10 @@ function createDbErrorResponse(error: unknown, fallbackMessage: string) {
 
   if (/relation .*work_orders.* does not exist/i.test(message)) {
     return NextResponse.json<DbApiErrorPayload>({ message, code: "DB_TABLE_MISSING" }, { status: 503 });
+  }
+
+  if (/work_orders table is missing required columns/i.test(message)) {
+    return NextResponse.json<DbApiErrorPayload>({ message, code: "DB_SCHEMA_UNSUPPORTED" }, { status: 503 });
   }
 
   if (/column .* does not exist/i.test(message) || /invalid input syntax/i.test(message) || /cannot cast/i.test(message)) {

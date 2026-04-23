@@ -15,6 +15,7 @@ const LOCAL_FALLBACK_ERROR_CODES = new Set([
   "DB_CONNECTION_FAILED",
   "DB_TABLE_MISSING",
   "DB_SCHEMA_INVALID",
+  "DB_SCHEMA_UNSUPPORTED",
 ]);
 
 async function parseResponse<T>(response: Response): Promise<T> {
