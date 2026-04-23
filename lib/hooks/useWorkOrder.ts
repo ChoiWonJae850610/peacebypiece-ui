@@ -44,6 +44,7 @@ export function useWorkOrder() {
     selectedId: coreState.selectedId,
     setUsers: coreState.setUsers,
     setWorkOrders: coreState.setWorkOrders,
+    setPersistedWorkOrders: coreState.setPersistedWorkOrders,
     setHistoryLogs: coreState.setHistoryLogs,
     setSelectedId: coreState.setSelectedId,
     setLastSavedAt: coreState.setLastSavedAt,
