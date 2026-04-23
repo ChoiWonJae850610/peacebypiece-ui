@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDatabaseRuntimeErrorCode, isDatabaseConfigured } from "@/lib/db/client";
-import { createDbWorkOrder, findAllDbWorkOrders } from "@/lib/workorder/repository/dbWorkOrderRepository";
+import { createDbWorkOrder, findAllDbWorkOrders, updateDbWorkOrder } from "@/lib/workorder/repository/dbWorkOrderRepository";
 import type { WorkOrder } from "@/types/workorder";
 
 type DbApiErrorPayload = {
@@ -26,6 +26,10 @@ function createDbErrorResponse(error: unknown, fallbackMessage: string) {
 
   if (runtimeCode === "DB_DRIVER_MISSING") {
     return NextResponse.json<DbApiErrorPayload>({ message, code: "DB_DRIVER_MISSING" }, { status: 503 });
+  }
+
+  if (/work_orders row not found for id:/i.test(message)) {
+    return NextResponse.json<DbApiErrorPayload>({ message, code: "DB_REQUEST_FAILED" }, { status: 404 });
   }
 
   if (/relation .*work_orders.* does not exist/i.test(message)) {
@@ -82,5 +86,35 @@ export async function POST(request: Request) {
     return NextResponse.json({ workOrder }, { status: 201 });
   } catch (error) {
     return createDbErrorResponse(error, "Failed to create work order.");
+  }
+}
+
+
+export async function PATCH(request: Request) {
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json({ message: "DATABASE_URL is not configured.", code: "DB_NOT_CONFIGURED" }, { status: 503 });
+  }
+
+  try {
+    let body: { workOrder?: WorkOrder } | null = null;
+
+    try {
+      body = (await request.json()) as { workOrder?: WorkOrder };
+    } catch {
+      return NextResponse.json({ message: "Invalid JSON payload.", code: "INVALID_PAYLOAD" }, { status: 400 });
+    }
+
+    if (!body?.workOrder || typeof body.workOrder !== "object") {
+      return NextResponse.json({ message: "workOrder payload is required.", code: "INVALID_PAYLOAD" }, { status: 400 });
+    }
+
+    if (typeof body.workOrder.id !== "string" || !body.workOrder.id.trim()) {
+      return NextResponse.json({ message: "workOrder.id is required.", code: "INVALID_PAYLOAD" }, { status: 400 });
+    }
+
+    const workOrder = await updateDbWorkOrder(body.workOrder);
+    return NextResponse.json({ workOrder });
+  } catch (error) {
+    return createDbErrorResponse(error, "Failed to save work order.");
   }
 }

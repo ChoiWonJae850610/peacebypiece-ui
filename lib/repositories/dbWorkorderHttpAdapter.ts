@@ -91,7 +91,7 @@ function toStatusCode(error: unknown): DbConnectionStateCode {
 }
 
 function reportDbStatus(params: {
-  source: "workspace-load" | "create";
+  source: "workspace-load" | "create" | "save";
   connected: boolean;
   fallbackActive: boolean;
   code: DbConnectionStateCode;
@@ -189,6 +189,57 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
         return mockWorkorderAdapter.createWorkOrder?.(workOrder) ?? workOrder;
       }
     },
+    saveWorkOrder: async (workOrder) => {
+      try {
+        const response = await fetch("/api/workorders", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ workOrder }),
+        });
+
+        const { workOrder: savedWorkOrder } = await parseResponse<{ workOrder: WorkOrder }>(response);
+        reportDbStatus({ source: "save", connected: true, fallbackActive: false, code: "READY" });
+        return savedWorkOrder;
+      } catch (error) {
+        if (!shouldUseLocalFallback(error)) {
+          throw error;
+        }
+
+        reportDbStatus({ source: "save", connected: false, fallbackActive: true, code: toStatusCode(error), message: error instanceof Error ? error.message : null });
+        return mockWorkorderAdapter.saveWorkOrder?.(workOrder) ?? workOrder;
+      }
+    },
+    saveWorkOrders: async (workOrders) => {
+      const savedWorkOrders: WorkOrder[] = [];
+
+      try {
+        for (const workOrder of workOrders) {
+          const response = await fetch("/api/workorders", {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({ workOrder }),
+          });
+
+          const { workOrder: savedWorkOrder } = await parseResponse<{ workOrder: WorkOrder }>(response);
+          savedWorkOrders.push(savedWorkOrder);
+        }
+
+        reportDbStatus({ source: "save", connected: true, fallbackActive: false, code: "READY" });
+        return savedWorkOrders;
+      } catch (error) {
+        if (!shouldUseLocalFallback(error)) {
+          throw error;
+        }
+
+        reportDbStatus({ source: "save", connected: false, fallbackActive: true, code: toStatusCode(error), message: error instanceof Error ? error.message : null });
+        return mockWorkorderAdapter.saveWorkOrders?.(workOrders) ?? workOrders;
+      }
+    },
   };
 }
-

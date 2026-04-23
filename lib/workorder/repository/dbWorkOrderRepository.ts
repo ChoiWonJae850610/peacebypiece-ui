@@ -294,3 +294,61 @@ export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
 
   return mapRowToWorkOrder(created);
 }
+
+export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder> {
+  const schema = await loadWorkOrderSchema();
+  assertMinimumSchema(schema);
+
+  const normalizedWorkOrder = normalizeWorkOrderForDb(workOrder);
+  const payload = serializeWorkOrderPayload(normalizedWorkOrder);
+
+  const assignments = ["title = $2"];
+  const values: unknown[] = [normalizedWorkOrder.id, normalizedWorkOrder.title];
+
+  if (schema.workflowStateColumn) {
+    assignments.push(`${quoteIdentifier(schema.workflowStateColumn)} = $${values.length + 1}`);
+    values.push(normalizedWorkOrder.workflowState);
+  }
+
+  if (schema.lastSavedAtColumn) {
+    assignments.push(`${quoteIdentifier(schema.lastSavedAtColumn)} = $${values.length + 1}`);
+    values.push(normalizedWorkOrder.lastSavedAt);
+  }
+
+  if (schema.payloadColumn) {
+    assignments.push(`${quoteIdentifier(schema.payloadColumn)} = ${buildPayloadInsertPlaceholder(schema.payloadColumnKind, values.length + 1)}`);
+    values.push(buildPayloadValue(schema.payloadColumnKind, payload));
+  }
+
+  const payloadFallbackSql = schema.payloadColumnKind === "text" ? "NULL::text" : "NULL::jsonb";
+
+  const returningColumns = [
+    "id",
+    "title",
+    buildAliasSelection(schema.workflowStateColumn, "workflow_state", "NULL"),
+    buildAliasSelection(schema.lastSavedAtColumn, "last_saved_at", "NULL"),
+    buildAliasSelection(schema.payloadColumn, "payload", payloadFallbackSql),
+    buildAliasSelection(schema.createdAtColumn, "created_at", "NULL"),
+    buildAliasSelection(schema.updatedAtColumn, "updated_at", "NULL"),
+  ];
+
+  const result = await queryDb<DbWorkOrderRow>(
+    `
+      UPDATE ${quoteIdentifier(WORK_ORDER_TABLE)}
+      SET
+        ${assignments.join(",\n        ")}
+      WHERE id = $1
+      RETURNING
+        ${returningColumns.join(",\n        ")}
+    `,
+    values,
+  );
+
+  const updated = result.rows[0];
+
+  if (!updated) {
+    throw new Error(`work_orders row not found for id: ${normalizedWorkOrder.id}`);
+  }
+
+  return mapRowToWorkOrder(updated);
+}
