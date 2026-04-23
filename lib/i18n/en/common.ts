@@ -119,6 +119,10 @@ export const commonEn = {
         imageType: "Image",
         noAttachmentNotice: "There are no attachments. You can proceed with the order request in the current state.",
         currencyFormat: "{amount}",
+        printUnsupportedTitle: "Printing not supported",
+        printUnsupportedDescription: "Printing is not supported in Samsung Internet.",
+        printUnsupportedRecommendation: "Please use Chrome or Edge.",
+        printUnsupportedVersionFormat: "Current version {version}",
       },
       inventoryEditor: {
         title: "Edit stock",
