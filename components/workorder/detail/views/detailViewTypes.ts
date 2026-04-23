@@ -9,3 +9,6 @@ export type WorkOrderDetailViewProps = {
   editor: WorkOrderDetailEditor;
   currentInventoryQuantity: number;
 };
+
+export type ReturnTypeBuildWorkOrderDetailViewModel = WorkOrderDetailViewModel;
+export type ReturnTypeUseWorkOrderDetailEditor = WorkOrderDetailEditor;
