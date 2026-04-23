@@ -261,6 +261,8 @@ export const workorderEn = {
       title: "Progress",
       fallbackGroup: "Progress",
       rejectKeyword: "Reject",
+      saveDraftLabel: "Save draft",
+      saveDraftHint: "Draft state saves to local state instead of DB.",
     },
     sections: {
       orderInfo: {

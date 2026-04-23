@@ -12,11 +12,13 @@ export default function WorkOrderActionSection({
   currentStage,
   actions,
   onAction,
+  onSave,
 }: {
   stages: DisplayStage[];
   currentStage: DisplayStage;
   actions: WorkflowAction[];
   onAction: (action: WorkflowAction) => void;
+  onSave?: (() => void) | null;
 }) {
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.actionSection;
@@ -37,8 +39,18 @@ export default function WorkOrderActionSection({
         <div className="min-w-0">
           <div className="text-sm font-semibold text-stone-900">{copy.title}</div>
         </div>
-        {actions.length > 0 ? (
+        {actions.length > 0 || (currentStage === "draft" && onSave) ? (
           <div className="flex flex-wrap justify-end gap-2">
+            {currentStage === "draft" && onSave ? (
+              <button
+                type="button"
+                onClick={onSave}
+                className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs font-semibold text-stone-700 transition hover:bg-stone-100"
+                title={copy.saveDraftHint}
+              >
+                {copy.saveDraftLabel}
+              </button>
+            ) : null}
             {actions.map((action, index) => {
               const isPrimary = primaryActionIndex === -1 ? index === 0 : index === primaryActionIndex;
               return (

@@ -11,7 +11,7 @@ import {
 } from "@/lib/workorder/actionFlow";
 import { applySharedInspectionComplete, applySharedInventoryAdjustment } from "@/lib/workorder/reorder/inventory";
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
-import { persistWorkOrdersWithHistory } from "./workorderRepositoryMutations";
+import { persistCreatedWorkOrderWithHistory, persistWorkOrderWithHistory, persistWorkOrdersWithHistory } from "./workorderRepositoryMutations";
 import { findPartnerIdByNameAndTypes } from "@/lib/admin/partnerMasterPersistence";
 import { createReinspectionRequestHistoryLog, createWorkOrderKindChangeHistoryLog } from "@/lib/workorder/history/builders";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
@@ -98,12 +98,16 @@ export function useWorkOrderWorkflowActions({
         workflowStateLabels,
         toastMessageOverride: toastMessageOverride ?? undefined,
       });
-      const nextWorkOrders = workOrdersRef.current.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item));
-
-      const persistedWorkOrders = await persistWorkOrdersWithHistory(repository, {
-        workOrders: nextWorkOrders,
-        historyLogs: result.historyLogs,
-      });
+      const persistedWorkOrder = workOrder.workflowState === "draft" && action.nextState === "review_requested"
+        ? await persistCreatedWorkOrderWithHistory(repository, {
+            workOrder: result.nextWorkOrder,
+            historyLogs: result.historyLogs,
+          })
+        : await persistWorkOrderWithHistory(repository, {
+            workOrder: result.nextWorkOrder,
+            historyLogs: result.historyLogs,
+          });
+      const persistedWorkOrders = workOrdersRef.current.map((item) => (item.id === workOrder.id ? persistedWorkOrder : item));
 
       setWorkOrders(persistedWorkOrders);
       syncSelectedWorkOrderSaveState(persistedWorkOrders);
@@ -142,12 +146,11 @@ export function useWorkOrderWorkflowActions({
           historyText,
         ),
       ];
-      const nextWorkOrders = workOrdersRef.current.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item));
-
-      const persistedWorkOrders = await persistWorkOrdersWithHistory(repository, {
-        workOrders: nextWorkOrders,
+      const persistedWorkOrder = await persistWorkOrderWithHistory(repository, {
+        workOrder: result.nextWorkOrder,
         historyLogs: result.historyLogs,
       });
+      const persistedWorkOrders = workOrdersRef.current.map((item) => (item.id === workOrder.id ? persistedWorkOrder : item));
 
       setInventoryEditorOpen(false);
       setWorkOrders(persistedWorkOrders);
@@ -283,10 +286,11 @@ export function useWorkOrderWorkflowActions({
       const nextWorkOrders = stabilizeWorkOrders(
         workOrdersRef.current.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item)),
       );
-      const persistedWorkOrders = await persistWorkOrdersWithHistory(repository, {
-        workOrders: nextWorkOrders,
+      const nextPersistedWorkOrder = await persistWorkOrderWithHistory(repository, {
+        workOrder: result.nextWorkOrder,
         historyLogs: result.historyLogs,
       });
+      const persistedWorkOrders = nextWorkOrders.map((item) => (item.id === workOrder.id ? nextPersistedWorkOrder : item));
       setWorkOrders(persistedWorkOrders);
       syncSelectedWorkOrderSaveState(persistedWorkOrders);
       if (result.historyLogs?.length) {
@@ -426,17 +430,11 @@ export function useWorkOrderWorkflowActions({
         ),
       ] : undefined;
 
-      void persistWorkOrdersWithHistory(repository, { workOrders: nextWorkOrders, historyLogs: nextHistoryLogs }).then((persistedWorkOrders) => {
-        setWorkOrders(persistedWorkOrders);
-        syncSelectedWorkOrderSaveState(persistedWorkOrders);
-      });
       setWorkOrders(nextWorkOrders);
       if (nextHistoryLogs?.length) {
         setHistoryLogs((prev) => [...nextHistoryLogs, ...prev]);
       }
-      if (result.saveStatus) {
-        setSaveStatus(result.saveStatus);
-      }
+      setSaveStatus("dirty");
     },
     [actionFlowText.orderInfoLockedToast, currentUser.name, currentUser.role, historyText, repository, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders, syncSelectedWorkOrderSaveState],
   );

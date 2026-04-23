@@ -261,6 +261,8 @@ export const workorderKo = {
       title: "진행 단계",
       fallbackGroup: "진행",
       rejectKeyword: "반려",
+      saveDraftLabel: "임시 저장",
+      saveDraftHint: "작성중 단계에서는 DB 대신 로컬 상태로 저장됩니다.",
     },
     sections: {
       orderInfo: {

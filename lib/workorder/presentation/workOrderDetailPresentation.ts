@@ -175,6 +175,7 @@ export function buildWorkOrderDetailViewModel({
       currentStage: currentDisplayStage,
       actions,
       onAction,
+      onSave,
     },
     orderInfoProps: {
       orderEntries: orderItems,

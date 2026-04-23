@@ -94,10 +94,16 @@ export function useWorkOrderLifecycleActions({
                 { label: lifecycleText.saveHistoryLabel, value: historyText.detailLabels.savedAtFormat.replace("{time}", label) },
               ], historyText),
             ];
-            const nextWorkOrder = await persistWorkOrderWithHistory(repository, {
-              workOrder: { ...workOrder, lastSavedAt: label },
-              historyLogs: nextHistoryLogs,
-            });
+            const targetWorkOrder = { ...workOrder, lastSavedAt: label };
+            const nextWorkOrder = workOrder.workflowState === "draft"
+              ? repository.saveWorkOrder(targetWorkOrder)
+              : await persistWorkOrderWithHistory(repository, {
+                  workOrder: targetWorkOrder,
+                  historyLogs: nextHistoryLogs,
+                });
+            if (workOrder.workflowState === "draft" && nextHistoryLogs.length) {
+              repository.appendHistoryLogs(nextHistoryLogs);
+            }
             const nextWorkOrders = workOrders.map((item) => (item.id === workOrder.id ? nextWorkOrder : item));
 
             setLastSavedAt(nextWorkOrder.lastSavedAt ?? label);
@@ -147,31 +153,18 @@ export function useWorkOrderLifecycleActions({
             createCreationHistoryLog(currentUser.name, newWorkOrder.id, { title: getWorkOrderDisplayTitle(newWorkOrder) }, historyText),
           ];
 
-          let createdWorkOrder = newWorkOrder;
-          let usedLocalFallback = false;
-
-          try {
-            const remoteCreatedWorkOrder = await repository.createWorkOrderAsync(newWorkOrder);
-            createdWorkOrder = remoteCreatedWorkOrder ?? newWorkOrder;
-            await repository.appendHistoryLogsAsync(nextHistoryLogs);
-          } catch {
-            usedLocalFallback = true;
-            createdWorkOrder = repository.createWorkOrder(newWorkOrder) ?? newWorkOrder;
-            repository.appendHistoryLogs(nextHistoryLogs);
-          }
+          const createdWorkOrder = repository.createWorkOrder(newWorkOrder) ?? newWorkOrder;
+          repository.appendHistoryLogs(nextHistoryLogs);
 
           setWorkOrders((prev) => [createdWorkOrder, ...prev.filter((item) => item.id !== createdWorkOrder.id)]);
           setSelectedId(createdWorkOrder.id);
           setLastSavedAt(createdWorkOrder.lastSavedAt ?? newWorkOrder.lastSavedAt);
           setHistoryLogs((historyPrev) => [...nextHistoryLogs, ...historyPrev]);
-          setSaveStatus("dirty");
+          setSaveStatus("saved");
           setToastMessage(lifecycleText.createCompletedToastFormat.replace("{title}", getWorkOrderDisplayTitle(createdWorkOrder)));
           setCreateWorkOrderModalOpen(false);
-
-          if (usedLocalFallback) {
-            setActionFailure?.("create", null);
-            setActionError("create", null);
-          }
+          setActionFailure?.("create", null);
+          setActionError("create", null);
         },
       });
     },

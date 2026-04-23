@@ -1,6 +1,22 @@
 import type { WorkorderRepository } from "@/lib/repositories/workorderRepository";
 import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 
+
+
+export async function persistCreatedWorkOrderWithHistory(
+  repository: WorkorderRepository,
+  payload: {
+    workOrder: WorkOrder;
+    historyLogs?: HistoryLog[];
+  },
+) {
+  const nextWorkOrder = await repository.createWorkOrderAsync(payload.workOrder);
+  if (payload.historyLogs?.length) {
+    await repository.appendHistoryLogsAsync(payload.historyLogs);
+  }
+  return nextWorkOrder;
+}
+
 export async function persistWorkOrderWithHistory(
   repository: WorkorderRepository,
   payload: {
