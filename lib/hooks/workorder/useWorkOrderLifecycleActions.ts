@@ -188,7 +188,7 @@ export function useWorkOrderLifecycleActions({
           setWorkOrders(persistedWorkOrders);
           setSelectedId(persistedCreatedWorkOrder.id);
           setLastSavedAt(persistedCreatedWorkOrder.lastSavedAt);
-          setSaveStatus("dirty");
+          setSaveStatus("saved");
           setHistoryLogs((prev) => [...nextHistoryLogs, ...prev]);
           setToastMessage(lifecycleText.reorderCreatedToastFormat.replace("{title}", getWorkOrderDisplayTitle(createdWorkOrder)));
         },
@@ -239,7 +239,7 @@ export function useWorkOrderLifecycleActions({
           setWorkOrders(persistedWorkOrders);
           setSelectedId(persistedWorkOrder.id);
           setLastSavedAt(persistedWorkOrder.lastSavedAt);
-          setSaveStatus("dirty");
+          setSaveStatus("saved");
           setHistoryLogs((prev) => [...nextHistoryLogs, ...prev]);
           setToastMessage(lifecycleText.reworkCompletedToastFormat.replace("{title}", getWorkOrderDisplayTitle(nextWorkOrder)));
         },
@@ -339,11 +339,7 @@ export function useWorkOrderLifecycleActions({
             }, historyText),
           );
 
-          const persistedWorkOrders = await persistWorkOrdersWithHistory(repository, {
-            workOrders: renameResult.nextWorkOrders,
-            historyLogs: nextHistoryLogs,
-          });
-          setWorkOrders(persistedWorkOrders);
+          setWorkOrders(renameResult.nextWorkOrders);
           setHistoryLogs((prev) => [...nextHistoryLogs, ...prev]);
           setSaveStatus("dirty");
           setToastMessage(
@@ -354,7 +350,7 @@ export function useWorkOrderLifecycleActions({
         },
       });
     },
-    [currentUser.name, historyText, lifecycleText, repository, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders],
+    [currentUser.name, historyText, lifecycleText, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   return {

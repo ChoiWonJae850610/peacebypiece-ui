@@ -260,7 +260,7 @@ export const workorderEn = {
       fallbackGroup: "Progress",
       rejectKeyword: "Reject",
       saveDraftLabel: "Save draft",
-      saveDraftHint: "Draft state saves to local state instead of DB.",
+      saveDraftHint: "Input changes and draft save stay local only, and the DB is updated only from workflow action buttons.",
     },
     sections: {
       orderInfo: {

@@ -5,7 +5,7 @@ import { useI18n } from "@/lib/i18n";
 import { buildUserRoleState } from "@/lib/constants/roles";
 import { buildManagerChangeResult } from "@/lib/workorder/actionFlow";
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
-import { persistUsersWithPermissions, persistWorkOrdersWithHistory } from "./workorderRepositoryMutations";
+import { persistUsersWithPermissions } from "./workorderRepositoryMutations";
 import type { RoleType } from "@/types/permission";
 import type { ChangeManagerInput } from "./useWorkOrderActionTypes";
 import type { AdminActionBaseParams } from "./useWorkOrderActionTypes";
@@ -68,11 +68,7 @@ export function useWorkOrderAdminActions({
         return;
       }
 
-      setWorkOrders((prev) => {
-        const nextWorkOrders = prev.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item));
-        void persistWorkOrdersWithHistory(repository, { workOrders: nextWorkOrders, historyLogs: result.historyLogs });
-        return nextWorkOrders;
-      });
+      setWorkOrders((prev) => prev.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item)));
       if (result.historyLogs?.length) {
         setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
       }
@@ -84,7 +80,7 @@ export function useWorkOrderAdminActions({
       }
       setManagerAssignModalOpen(false);
     },
-    [actionFlowText, currentUser.name, historyText, repository, setHistoryLogs, setManagerAssignModalOpen, setSaveStatus, setToastMessage, setWorkOrders],
+    [actionFlowText, currentUser.name, historyText, setHistoryLogs, setManagerAssignModalOpen, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   return {

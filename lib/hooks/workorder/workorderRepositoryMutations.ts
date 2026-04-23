@@ -1,7 +1,14 @@
 import type { WorkorderRepository } from "@/lib/repositories/workorderRepository";
 import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 
+function stampPersistedWorkOrder(workOrder: WorkOrder): WorkOrder {
+  return { ...workOrder, lastSavedAt: new Date().toISOString() };
+}
 
+function stampPersistedWorkOrders(workOrders: WorkOrder[]): WorkOrder[] {
+  const stampedAt = new Date().toISOString();
+  return workOrders.map((workOrder) => ({ ...workOrder, lastSavedAt: stampedAt }));
+}
 
 export async function persistCreatedWorkOrderWithHistory(
   repository: WorkorderRepository,
@@ -10,7 +17,7 @@ export async function persistCreatedWorkOrderWithHistory(
     historyLogs?: HistoryLog[];
   },
 ) {
-  const nextWorkOrder = await repository.createWorkOrderAsync(payload.workOrder);
+  const nextWorkOrder = await repository.createWorkOrderAsync(stampPersistedWorkOrder(payload.workOrder));
   if (payload.historyLogs?.length) {
     await repository.appendHistoryLogsAsync(payload.historyLogs);
   }
@@ -24,7 +31,7 @@ export async function persistWorkOrderWithHistory(
     historyLogs?: HistoryLog[];
   },
 ) {
-  const nextWorkOrder = await repository.saveWorkOrderAsync(payload.workOrder);
+  const nextWorkOrder = await repository.saveWorkOrderAsync(stampPersistedWorkOrder(payload.workOrder));
   if (payload.historyLogs?.length) {
     await repository.appendHistoryLogsAsync(payload.historyLogs);
   }
@@ -38,7 +45,7 @@ export async function persistWorkOrdersWithHistory(
     historyLogs?: HistoryLog[];
   },
 ) {
-  const nextWorkOrders = await repository.saveWorkOrdersAsync(payload.workOrders);
+  const nextWorkOrders = await repository.saveWorkOrdersAsync(stampPersistedWorkOrders(payload.workOrders));
   if (payload.historyLogs?.length) {
     await repository.appendHistoryLogsAsync(payload.historyLogs);
   }

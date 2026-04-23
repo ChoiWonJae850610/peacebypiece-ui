@@ -260,7 +260,7 @@ export const workorderKo = {
       fallbackGroup: "진행",
       rejectKeyword: "반려",
       saveDraftLabel: "임시 저장",
-      saveDraftHint: "작성중 단계에서는 DB 대신 로컬 상태로 저장됩니다.",
+      saveDraftHint: "입력 변경과 임시 저장은 로컬 상태에만 반영되며, 상태 변경 버튼에서만 DB에 저장됩니다.",
     },
     sections: {
       orderInfo: {
