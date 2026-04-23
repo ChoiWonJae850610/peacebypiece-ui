@@ -19,7 +19,11 @@ export function getDbConnectionStatusPresentation(
   if (!status) return null;
 
   const checkedAt = formatCheckedAt(status.checkedAt);
-  const baseTitle = [status.message, checkedAt ? `확인 시각: ${checkedAt}` : null].filter(Boolean).join("\n") || null;
+  const baseTitle = [
+    status.message,
+    status.configSource ? `환경 키: ${status.configSource}` : null,
+    checkedAt ? `확인 시각: ${checkedAt}` : null,
+  ].filter(Boolean).join("\n") || null;
 
   if (status.connected) {
     const label =

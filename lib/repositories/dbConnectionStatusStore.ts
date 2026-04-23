@@ -21,6 +21,7 @@ export type DbConnectionStatus = {
   source: "unknown" | "status-check" | "workspace-load" | "create" | "save" | "delete";
   code: DbConnectionStateCode;
   message: string | null;
+  configSource?: string | null;
   checkedAt: string | null;
 };
 
@@ -33,6 +34,7 @@ const DEFAULT_STATUS: DbConnectionStatus = {
   source: "unknown",
   code: "UNKNOWN",
   message: null,
+  configSource: null,
   checkedAt: null,
 };
 

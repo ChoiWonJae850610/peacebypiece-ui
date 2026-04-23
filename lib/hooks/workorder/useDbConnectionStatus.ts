@@ -48,6 +48,7 @@ export function useDbConnectionStatus() {
           source: "status-check",
           code: "DB_CONNECTION_FAILED",
           message: error instanceof Error ? error.message : "Failed to fetch DB status.",
+          configSource: null,
           checkedAt: new Date().toISOString(),
         });
       });

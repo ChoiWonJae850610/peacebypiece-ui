@@ -40,6 +40,7 @@ export function useWorkOrder() {
     canReorderWorkOrder: derivedState.canReorderWorkOrder,
     pendingWorkflowAction: uiState.pendingWorkflowAction,
     workOrders: coreState.workOrders,
+    selectedId: coreState.selectedId,
     setUsers: coreState.setUsers,
     setWorkOrders: coreState.setWorkOrders,
     setHistoryLogs: coreState.setHistoryLogs,
