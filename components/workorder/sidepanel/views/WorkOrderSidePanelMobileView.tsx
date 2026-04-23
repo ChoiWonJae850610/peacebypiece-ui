@@ -19,7 +19,8 @@ export default function WorkOrderSidePanelMobileView({
   onPromoteMemoAttachment,
 }: WorkOrderSidePanelProps) {
   return (
-    <SidePanelSectionStack compact>
+    <div className="rounded-[24px] border border-stone-200 bg-stone-50/60 p-2.5">
+      <SidePanelSectionStack compact>
       {attachmentSections.map((section) => (
         <WorkOrderAttachmentPanel
           key={section.key}
@@ -32,6 +33,7 @@ export default function WorkOrderSidePanelMobileView({
           onOpenAttachmentPicker={() => onOpenAttachmentPicker(section.uploadScope)}
           onPreviewAttachment={onPreviewAttachment}
           onDeleteAttachment={onDeleteAttachment}
+          variant="mobile"
         />
       ))}
 
@@ -44,7 +46,9 @@ export default function WorkOrderSidePanelMobileView({
         canPromoteMemoAttachment={canPromoteMemoAttachment}
         onPromoteMemoAttachment={onPromoteMemoAttachment}
         onPreviewAttachment={onPreviewAttachment}
+        variant="mobile"
       />
-    </SidePanelSectionStack>
+      </SidePanelSectionStack>
+    </div>
   );
 }

@@ -19,7 +19,8 @@ export default function WorkOrderSidePanelTabletView({
   onPromoteMemoAttachment,
 }: WorkOrderSidePanelProps) {
   return (
-    <SidePanelSectionStack>
+    <div className="grid gap-4">
+      <SidePanelSectionStack>
       {attachmentSections.map((section) => (
         <WorkOrderAttachmentPanel
           key={section.key}
@@ -32,6 +33,7 @@ export default function WorkOrderSidePanelTabletView({
           onOpenAttachmentPicker={() => onOpenAttachmentPicker(section.uploadScope)}
           onPreviewAttachment={onPreviewAttachment}
           onDeleteAttachment={onDeleteAttachment}
+          variant="tablet"
         />
       ))}
 
@@ -44,7 +46,9 @@ export default function WorkOrderSidePanelTabletView({
         canPromoteMemoAttachment={canPromoteMemoAttachment}
         onPromoteMemoAttachment={onPromoteMemoAttachment}
         onPreviewAttachment={onPreviewAttachment}
+        variant="tablet"
       />
-    </SidePanelSectionStack>
+      </SidePanelSectionStack>
+    </div>
   );
 }

@@ -32,6 +32,7 @@ export default function WorkOrderSidePanelDesktopView({
           onOpenAttachmentPicker={() => onOpenAttachmentPicker(section.uploadScope)}
           onPreviewAttachment={onPreviewAttachment}
           onDeleteAttachment={onDeleteAttachment}
+          variant="desktop"
         />
       ))}
 
@@ -44,6 +45,7 @@ export default function WorkOrderSidePanelDesktopView({
         canPromoteMemoAttachment={canPromoteMemoAttachment}
         onPromoteMemoAttachment={onPromoteMemoAttachment}
         onPreviewAttachment={onPreviewAttachment}
+        variant="desktop"
       />
     </SidePanelSectionStack>
   );

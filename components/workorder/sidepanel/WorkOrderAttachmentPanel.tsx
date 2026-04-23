@@ -15,6 +15,7 @@ export default function WorkOrderAttachmentPanel({
   onOpenAttachmentPicker,
   onPreviewAttachment,
   onDeleteAttachment,
+  variant = "desktop",
 }: {
   title: string;
   addButtonLabel: string;
@@ -25,11 +26,15 @@ export default function WorkOrderAttachmentPanel({
   onOpenAttachmentPicker: () => void;
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;
+  variant?: "desktop" | "tablet" | "mobile";
 }) {
   const { i18n } = useI18n();
   const ui = i18n.workorder.ui;
 
   if (!canSeeAttachments) return null;
+
+  const isMobile = variant === "mobile";
+  const isTablet = variant === "tablet";
 
   return (
     <WorkOrderPanelCard>
@@ -40,9 +45,9 @@ export default function WorkOrderAttachmentPanel({
         {canManageAttachments ? <AddButton onClick={onOpenAttachmentPicker} srLabel={addButtonLabel} title={addButtonLabel} /> : null}
       </div>
       {attachments.length > 0 ? (
-        <div className="mt-2.5 space-y-2">
+        <div className={isMobile ? "mt-2.5 space-y-1.5" : "mt-2.5 space-y-2"}>
           {attachments.map((attachment) => (
-            <div key={attachment.id} className="relative rounded-2xl border border-stone-200 bg-stone-50 p-3 pr-12">
+            <div key={attachment.id} className={isMobile ? "relative rounded-2xl border border-stone-200 bg-stone-50 p-2.5 pr-10" : isTablet ? "relative rounded-2xl border border-stone-200 bg-stone-50 p-3 pr-11" : "relative rounded-2xl border border-stone-200 bg-stone-50 p-3 pr-12"}>
               {attachment.canDelete ? (
                 <div className="absolute right-3 top-3">
                   <DeleteButton
@@ -58,7 +63,7 @@ export default function WorkOrderAttachmentPanel({
                 disabled={!attachment.canPreview}
                 className="flex w-full items-center gap-3 text-left disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white">
+                <div className={isMobile ? "flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white" : "flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white"}>
                   {attachment.type === "image" ? (
                     <img src={attachment.url} alt={attachment.name} className="h-full w-full object-cover" />
                   ) : (
@@ -66,8 +71,8 @@ export default function WorkOrderAttachmentPanel({
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="truncate pr-2 text-sm font-medium text-stone-900">{attachment.name}</div>
-                  <div className="mt-1 text-xs text-stone-500">{attachment.ownerLabel}</div>
+                  <div className={isMobile ? "truncate pr-1 text-[13px] font-medium text-stone-900" : "truncate pr-2 text-sm font-medium text-stone-900"}>{attachment.name}</div>
+                  <div className={isMobile ? "mt-0.5 text-[11px] text-stone-500" : "mt-1 text-xs text-stone-500"}>{attachment.ownerLabel}</div>
                 </div>
               </button>
             </div>
