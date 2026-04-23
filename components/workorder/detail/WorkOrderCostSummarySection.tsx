@@ -1,5 +1,6 @@
 import { useI18n } from "@/lib/i18n";
 import SummaryCard from "@/components/common/ui/SummaryCard";
+import DesktopCostSummaryLayout from "@/components/workorder/detail/layout/DesktopCostSummaryLayout";
 import type { Outsourcing } from "@/types/workorder";
 
 type WorkOrderCostSummarySectionProps = {
@@ -27,8 +28,8 @@ export default function WorkOrderCostSummarySection({
   const copy = i18n.workorder.ui.sections.costSummary;
   const common = i18n.workorder.ui.common;
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
-      <SummaryCard title={copy.summaryTitle}>
+    <DesktopCostSummaryLayout
+      left={<SummaryCard title={copy.summaryTitle}>
         <div className="space-y-3 text-sm">
           <div className="flex min-w-0 items-center justify-between gap-4"><span className="text-stone-600">{copy.fabricTotal}</span><span className="font-medium text-stone-900">{fabricTotal.toLocaleString()}{common.currencySuffix}</span></div>
           <div className="flex min-w-0 items-center justify-between gap-4"><span className="text-stone-600">{copy.subsidiaryTotal}</span><span className="font-medium text-stone-900">{subsidiaryTotal.toLocaleString()}{common.currencySuffix}</span></div>
@@ -40,8 +41,8 @@ export default function WorkOrderCostSummarySection({
             <div className="mt-3 flex items-center justify-between gap-4"><span className="text-stone-600">{copy.unitCost}</span><span className="font-medium text-stone-900">{unitCost.toLocaleString()}{common.currencySuffix}</span></div>
           </div>
         </div>
-      </SummaryCard>
-      <SummaryCard title={copy.processTitle}>
+      </SummaryCard>}
+      right={<SummaryCard title={copy.processTitle}>
         <div className="space-y-2 text-sm">
           {outsourcing.length > 0 ? outsourcing.map((item, index) => (
             <div key={`${item.id ?? item.process}-${index}`} className="flex min-w-0 items-center justify-between gap-4">
@@ -50,7 +51,7 @@ export default function WorkOrderCostSummarySection({
             </div>
           )) : <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-sm text-stone-500">{copy.empty}</div>}
         </div>
-      </SummaryCard>
-    </div>
+      </SummaryCard>}
+    />
   );
 }
