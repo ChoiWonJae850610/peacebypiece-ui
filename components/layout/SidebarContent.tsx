@@ -4,6 +4,7 @@ import WorkOrderListCard from "@/components/workorder/list/WorkOrderListCard";
 import { useI18n } from "@/lib/i18n";
 import type { WorkOrderListItem, WorkflowState } from "@/types/workorder";
 import type { DbConnectionStatus } from "@/lib/repositories/dbConnectionStatusStore";
+import { getDbConnectionStatusPresentation } from "@/lib/repositories/dbConnectionStatusPresentation";
 
 type Props = {
   companyName: string;
@@ -48,21 +49,7 @@ export default function SidebarContent({
   const sidebarUi = i18n.workorder.ui.layout.sidebar;
   const controlsUi = i18n.workorder.ui.layout.sidebarControls;
 
-  const dbStatusLabel = !dbConnectionStatus
-    ? null
-    : dbConnectionStatus.connected
-      ? "DB 연결"
-      : dbConnectionStatus.code === "DB_NOT_CONFIGURED"
-        ? "DB ENV 미설정"
-        : dbConnectionStatus.fallbackActive
-          ? "LOCAL FALLBACK"
-          : "DB 미확인";
-
-  const dbStatusTone = !dbConnectionStatus
-    ? "border-stone-200 bg-stone-100 text-stone-500"
-    : dbConnectionStatus.connected
-      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-      : "border-amber-200 bg-amber-50 text-amber-700";
+  const dbStatusPresentation = getDbConnectionStatusPresentation(dbConnectionStatus);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -70,7 +57,7 @@ export default function SidebarContent({
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-lg font-semibold leading-6 text-stone-900">{companyName}</div>
-            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-stone-500"><span>{controlsUi.subtitle}</span><span className="text-[10px] leading-none text-stone-400">v{version}</span>{dbStatusLabel ? <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${dbStatusTone}`}>{dbStatusLabel}</span> : null}</div>
+            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-stone-500"><span>{controlsUi.subtitle}</span><span className="text-[10px] leading-none text-stone-400">v{version}</span>{dbStatusPresentation ? <span title={dbStatusPresentation.title ?? undefined} className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${dbStatusPresentation.toneClass}`}>{dbStatusPresentation.label}</span> : null}</div>
           </div>
           <div className="flex items-center gap-2">
             <button

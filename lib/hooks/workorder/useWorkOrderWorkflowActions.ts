@@ -45,7 +45,9 @@ type UseWorkOrderWorkflowActionsParams = Pick<
   | "setWorkOrders"
   | "setHistoryLogs"
   | "setSaveStatus"
+  | "setLastSavedAt"
   | "setToastMessage"
+  | "selectedId"
   | "setInventoryEditorOpen"
   | "setPendingWorkflowAction"
   | "setOrderRequestConfirmOpen"
@@ -57,7 +59,9 @@ export function useWorkOrderWorkflowActions({
   setWorkOrders,
   setHistoryLogs,
   setSaveStatus,
+  setLastSavedAt,
   setToastMessage,
+  selectedId,
   setInventoryEditorOpen,
   setPendingWorkflowAction,
   setOrderRequestConfirmOpen,
@@ -74,6 +78,15 @@ export function useWorkOrderWorkflowActions({
     workOrdersRef.current = workOrders;
   }, [workOrders]);
 
+  const syncSelectedWorkOrderSaveState = useCallback((nextWorkOrders: WorkOrder[]) => {
+    const nextSelectedWorkOrder = nextWorkOrders.find((item) => item.id === selectedId)
+      ?? nextWorkOrders.find((item) => item.id === workOrdersRef.current[0]?.id)
+      ?? null;
+
+    setLastSavedAt(nextSelectedWorkOrder?.lastSavedAt ?? null);
+    setSaveStatus("saved");
+  }, [selectedId, setLastSavedAt, setSaveStatus]);
+
   const applyWorkflowAction = useCallback(
     async (workOrder: WorkOrder, action: WorkflowAction, toastMessageOverride?: string | null) => {
       const result = buildWorkflowActionResult({
@@ -87,17 +100,15 @@ export function useWorkOrderWorkflowActions({
       });
       const nextWorkOrders = workOrdersRef.current.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item));
 
-      await persistWorkOrdersWithHistory(repository, {
+      const persistedWorkOrders = await persistWorkOrdersWithHistory(repository, {
         workOrders: nextWorkOrders,
         historyLogs: result.historyLogs,
       });
 
-      setWorkOrders(nextWorkOrders);
+      setWorkOrders(persistedWorkOrders);
+      syncSelectedWorkOrderSaveState(persistedWorkOrders);
       if (result.historyLogs?.length) {
         setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
-      }
-      if (result.saveStatus) {
-        setSaveStatus(result.saveStatus);
       }
       if (result.openInventoryEditor) {
         setInventoryEditorOpen(true);
@@ -106,7 +117,7 @@ export function useWorkOrderWorkflowActions({
         setToastMessage(result.toastMessage);
       }
     },
-    [actionFlowText, currentUser.name, historyText, repository, setHistoryLogs, setInventoryEditorOpen, setSaveStatus, setToastMessage, setWorkOrders, workflowStateLabels],
+    [actionFlowText, currentUser.name, historyText, repository, setHistoryLogs, setInventoryEditorOpen, setToastMessage, setWorkOrders, syncSelectedWorkOrderSaveState, workflowStateLabels],
   );
 
   const applyReinspectionAction = useCallback(
@@ -133,24 +144,22 @@ export function useWorkOrderWorkflowActions({
       ];
       const nextWorkOrders = workOrdersRef.current.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item));
 
-      await persistWorkOrdersWithHistory(repository, {
+      const persistedWorkOrders = await persistWorkOrdersWithHistory(repository, {
         workOrders: nextWorkOrders,
         historyLogs: result.historyLogs,
       });
 
       setInventoryEditorOpen(false);
-      setWorkOrders(nextWorkOrders);
+      setWorkOrders(persistedWorkOrders);
+      syncSelectedWorkOrderSaveState(persistedWorkOrders);
       if (result.historyLogs?.length) {
         setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
-      }
-      if (result.saveStatus) {
-        setSaveStatus(result.saveStatus);
       }
       if (result.toastMessage) {
         setToastMessage(result.toastMessage);
       }
     },
-    [actionFlowText, currentUser.name, historyText, repository, setHistoryLogs, setInventoryEditorOpen, setSaveStatus, setToastMessage, setWorkOrders, workflowStateLabels],
+    [actionFlowText, currentUser.name, historyText, repository, setHistoryLogs, setInventoryEditorOpen, setToastMessage, setWorkOrders, syncSelectedWorkOrderSaveState, workflowStateLabels],
   );
 
   const handleWorkflowAction = useCallback(
@@ -274,16 +283,14 @@ export function useWorkOrderWorkflowActions({
       const nextWorkOrders = stabilizeWorkOrders(
         workOrdersRef.current.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item)),
       );
-      await persistWorkOrdersWithHistory(repository, {
+      const persistedWorkOrders = await persistWorkOrdersWithHistory(repository, {
         workOrders: nextWorkOrders,
         historyLogs: result.historyLogs,
       });
-      setWorkOrders(nextWorkOrders);
+      setWorkOrders(persistedWorkOrders);
+      syncSelectedWorkOrderSaveState(persistedWorkOrders);
       if (result.historyLogs?.length) {
         setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
-      }
-      if (result.saveStatus) {
-        setSaveStatus(result.saveStatus);
       }
       if (result.toastMessage) {
         setToastMessage(result.toastMessage);
@@ -291,7 +298,7 @@ export function useWorkOrderWorkflowActions({
       setPendingWorkflowAction(null);
       setOrderRequestConfirmOpen(false);
     },
-    [actionFlowText, currentUser.id, currentUser.name, historyText, pendingWorkflowAction, repository, setHistoryLogs, setOrderRequestConfirmOpen, setPendingWorkflowAction, setSaveStatus, setToastMessage, setWorkOrders],
+    [actionFlowText, currentUser.id, currentUser.name, historyText, pendingWorkflowAction, repository, setHistoryLogs, setOrderRequestConfirmOpen, setPendingWorkflowAction, setToastMessage, setWorkOrders, syncSelectedWorkOrderSaveState],
   );
 
   const handleCloseOrderRequestConfirm = useCallback(() => {
@@ -316,6 +323,9 @@ export function useWorkOrderWorkflowActions({
       void persistWorkOrdersWithHistory(repository, {
         workOrders: nextWorkOrders,
         historyLogs: result.historyLogs,
+      }).then((persistedWorkOrders) => {
+        setWorkOrders(persistedWorkOrders);
+        syncSelectedWorkOrderSaveState(persistedWorkOrders);
       });
       setWorkOrders(nextWorkOrders);
       if (result.historyLogs?.length) {
@@ -328,7 +338,7 @@ export function useWorkOrderWorkflowActions({
         setToastMessage(result.toastMessage);
       }
     },
-    [actionFlowText, currentUser.name, historyText, repository, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders],
+    [actionFlowText, currentUser.name, historyText, repository, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders, syncSelectedWorkOrderSaveState],
   );
 
   const handleCompleteInspection = useCallback(
@@ -350,6 +360,9 @@ export function useWorkOrderWorkflowActions({
       void persistWorkOrdersWithHistory(repository, {
         workOrders: nextWorkOrders,
         historyLogs: result.historyLogs,
+      }).then((persistedWorkOrders) => {
+        setWorkOrders(persistedWorkOrders);
+        syncSelectedWorkOrderSaveState(persistedWorkOrders);
       });
       setWorkOrders(nextWorkOrders);
       if (result.historyLogs?.length) {
@@ -362,7 +375,7 @@ export function useWorkOrderWorkflowActions({
         setToastMessage(result.toastMessage);
       }
     },
-    [actionFlowText, currentUser.name, historyText, repository, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders],
+    [actionFlowText, currentUser.name, historyText, repository, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders, syncSelectedWorkOrderSaveState],
   );
 
   const handleUpdateSelectedWorkOrder = useCallback(
@@ -413,7 +426,10 @@ export function useWorkOrderWorkflowActions({
         ),
       ] : undefined;
 
-      void persistWorkOrdersWithHistory(repository, { workOrders: nextWorkOrders, historyLogs: nextHistoryLogs });
+      void persistWorkOrdersWithHistory(repository, { workOrders: nextWorkOrders, historyLogs: nextHistoryLogs }).then((persistedWorkOrders) => {
+        setWorkOrders(persistedWorkOrders);
+        syncSelectedWorkOrderSaveState(persistedWorkOrders);
+      });
       setWorkOrders(nextWorkOrders);
       if (nextHistoryLogs?.length) {
         setHistoryLogs((prev) => [...nextHistoryLogs, ...prev]);
@@ -422,7 +438,7 @@ export function useWorkOrderWorkflowActions({
         setSaveStatus(result.saveStatus);
       }
     },
-    [actionFlowText.orderInfoLockedToast, currentUser.name, currentUser.role, historyText, repository, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders],
+    [actionFlowText.orderInfoLockedToast, currentUser.name, currentUser.role, historyText, repository, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders, syncSelectedWorkOrderSaveState],
   );
 
   return {
