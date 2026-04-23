@@ -310,6 +310,7 @@ export function useWorkOrderLifecycleActions({
           const nextHistoryLogs = [
             createDeletionHistoryLog(currentUser.name, workOrderId, { title: getWorkOrderDisplayTitle(target) }, historyText),
           ];
+          await repository.deleteWorkOrderAsync(workOrderId);
           const persistedRemaining = await repository.saveWorkOrdersAsync(remaining);
           await repository.appendHistoryLogsAsync(nextHistoryLogs);
           setWorkOrders(persistedRemaining);

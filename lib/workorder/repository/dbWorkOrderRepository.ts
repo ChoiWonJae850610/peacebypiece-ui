@@ -352,3 +352,26 @@ export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
 
   return mapRowToWorkOrder(updated);
 }
+
+
+export async function deleteDbWorkOrder(workOrderId: string): Promise<string> {
+  const schema = await loadWorkOrderSchema();
+  assertMinimumSchema(schema);
+
+  const result = await queryDb<{ id: string }>(
+    `
+      DELETE FROM ${quoteIdentifier(WORK_ORDER_TABLE)}
+      WHERE id = $1
+      RETURNING id
+    `,
+    [workOrderId],
+  );
+
+  const deleted = result.rows[0];
+
+  if (!deleted?.id) {
+    throw new Error(`work_orders row not found for id: ${workOrderId}`);
+  }
+
+  return deleted.id;
+}

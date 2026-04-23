@@ -18,7 +18,7 @@ export type DbConnectionStatus = {
   connected: boolean;
   driverReady: boolean;
   fallbackActive: boolean;
-  source: "unknown" | "status-check" | "workspace-load" | "create" | "save";
+  source: "unknown" | "status-check" | "workspace-load" | "create" | "save" | "delete";
   code: DbConnectionStateCode;
   message: string | null;
   checkedAt: string | null;

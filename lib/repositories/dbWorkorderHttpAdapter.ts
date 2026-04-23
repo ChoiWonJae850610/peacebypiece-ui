@@ -91,7 +91,7 @@ function toStatusCode(error: unknown): DbConnectionStateCode {
 }
 
 function reportDbStatus(params: {
-  source: "workspace-load" | "create" | "save";
+  source: "workspace-load" | "create" | "save" | "delete";
   connected: boolean;
   fallbackActive: boolean;
   code: DbConnectionStateCode;
@@ -239,6 +239,30 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
 
         reportDbStatus({ source: "save", connected: false, fallbackActive: true, code: toStatusCode(error), message: error instanceof Error ? error.message : null });
         return mockWorkorderAdapter.saveWorkOrders?.(workOrders) ?? workOrders;
+      }
+    },
+
+    deleteWorkOrder: async (workOrderId) => {
+      try {
+        const response = await fetch("/api/workorders", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ workOrderId }),
+        });
+
+        const { workOrderId: deletedWorkOrderId } = await parseResponse<{ workOrderId: string }>(response);
+        reportDbStatus({ source: "delete", connected: true, fallbackActive: false, code: "READY" });
+        return deletedWorkOrderId;
+      } catch (error) {
+        if (!shouldUseLocalFallback(error)) {
+          throw error;
+        }
+
+        reportDbStatus({ source: "delete", connected: false, fallbackActive: true, code: toStatusCode(error), message: error instanceof Error ? error.message : null });
+        return mockWorkorderAdapter.deleteWorkOrder?.(workOrderId) ?? workOrderId;
       }
     },
   };
