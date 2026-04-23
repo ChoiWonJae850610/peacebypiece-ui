@@ -20,7 +20,7 @@ import {
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import { getWorkOrderBaseTitle, normalizeWorkOrdersReorderIdentity, reindexReorderGroupAfterDeletion } from "@/lib/workorder/reorder/helpers";
 import { createWorkOrderActionFailure, executeWorkOrderAsyncAction } from "@/lib/workorder/actionFlow";
-import { persistWorkOrderWithHistory, persistWorkOrdersWithHistory } from "./workorderRepositoryMutations";
+import { persistCreatedWorkOrderWithHistory, persistWorkOrderWithHistory, persistWorkOrdersWithHistory } from "./workorderRepositoryMutations";
 import type { WorkOrder } from "@/types/workorder";
 import type {
   CreateWorkOrderInput,
@@ -66,6 +66,14 @@ export function useWorkOrderLifecycleActions({
 }: UseWorkOrderLifecycleActionsParams) {
   const { i18n } = useI18n();
   const lifecycleText = i18n.workorder.lifecycle;
+
+  const findChangedWorkOrdersForPersistence = useCallback((previousWorkOrders: WorkOrder[], nextWorkOrders: WorkOrder[]) => {
+    const previousById = new Map(previousWorkOrders.map((item) => [item.id, item]));
+    return nextWorkOrders.filter((item) => {
+      const previous = previousById.get(item.id);
+      return JSON.stringify(previous) !== JSON.stringify(item);
+    });
+  }, []);
   const historyText = i18n.workorder.history;
   const repository = useWorkorderRepository();
 
@@ -95,15 +103,10 @@ export function useWorkOrderLifecycleActions({
               ], historyText),
             ];
             const targetWorkOrder = { ...workOrder, lastSavedAt: label };
-            const nextWorkOrder = workOrder.workflowState === "draft"
-              ? repository.saveWorkOrder(targetWorkOrder)
-              : await persistWorkOrderWithHistory(repository, {
-                  workOrder: targetWorkOrder,
-                  historyLogs: nextHistoryLogs,
-                });
-            if (workOrder.workflowState === "draft" && nextHistoryLogs.length) {
-              repository.appendHistoryLogs(nextHistoryLogs);
-            }
+            const nextWorkOrder = await persistWorkOrderWithHistory(repository, {
+              workOrder: targetWorkOrder,
+              historyLogs: nextHistoryLogs,
+            });
             const nextWorkOrders = workOrders.map((item) => (item.id === workOrder.id ? nextWorkOrder : item));
 
             setLastSavedAt(nextWorkOrder.lastSavedAt ?? label);
@@ -153,8 +156,10 @@ export function useWorkOrderLifecycleActions({
             createCreationHistoryLog(currentUser.name, newWorkOrder.id, { title: getWorkOrderDisplayTitle(newWorkOrder) }, historyText),
           ];
 
-          const createdWorkOrder = repository.createWorkOrder(newWorkOrder) ?? newWorkOrder;
-          repository.appendHistoryLogs(nextHistoryLogs);
+          const createdWorkOrder = await persistCreatedWorkOrderWithHistory(repository, {
+            workOrder: newWorkOrder,
+            historyLogs: nextHistoryLogs,
+          });
 
           setWorkOrders((prev) => [createdWorkOrder, ...prev.filter((item) => item.id !== createdWorkOrder.id)]);
           setSelectedId(createdWorkOrder.id);
@@ -272,7 +277,7 @@ export function useWorkOrderLifecycleActions({
         },
       });
     },
-    [currentUser.name, historyText, lifecycleText, repository, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setLastSavedAt, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
+    [currentUser.name, findChangedWorkOrdersForPersistence, historyText, lifecycleText, repository, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setLastSavedAt, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
   );
 
   const handleDeleteWorkOrder = useCallback(
@@ -304,9 +309,12 @@ export function useWorkOrderLifecycleActions({
             createDeletionHistoryLog(currentUser.name, workOrderId, { title: getWorkOrderDisplayTitle(target) }, historyText),
           ];
           await repository.deleteWorkOrderAsync(workOrderId);
-          const persistedRemaining = remaining.length > 0
-            ? await repository.saveWorkOrdersAsync(remaining)
+          const changedRemaining = findChangedWorkOrdersForPersistence(workOrders.filter((item) => item.id !== workOrderId), remaining);
+          const persistedChangedRemaining = changedRemaining.length > 0
+            ? await repository.saveWorkOrdersAsync(changedRemaining)
             : [];
+          const persistedRemainingById = new Map(persistedChangedRemaining.map((item) => [item.id, item]));
+          const persistedRemaining = remaining.map((item) => persistedRemainingById.get(item.id) ?? item);
           await repository.appendHistoryLogsAsync(nextHistoryLogs);
           setWorkOrders(persistedRemaining);
           setHistoryLogs((prev) => [...nextHistoryLogs, ...prev]);
@@ -328,7 +336,7 @@ export function useWorkOrderLifecycleActions({
         },
       });
     },
-    [currentUser.name, historyText, lifecycleText, repository, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setLastSavedAt, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
+    [currentUser.name, findChangedWorkOrdersForPersistence, historyText, lifecycleText, repository, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setLastSavedAt, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
   );
 
   const handleRenameWorkOrderTitle = useCallback(

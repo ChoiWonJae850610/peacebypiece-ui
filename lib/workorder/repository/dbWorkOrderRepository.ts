@@ -11,6 +11,8 @@ const WORKFLOW_STATE_COLUMN_CANDIDATES = ["workflow_state", "status", "state"] a
 const LAST_SAVED_AT_COLUMN_CANDIDATES = ["last_saved_at", "saved_at"] as const;
 const CREATED_AT_COLUMN_CANDIDATES = ["created_at"] as const;
 const UPDATED_AT_COLUMN_CANDIDATES = ["updated_at"] as const;
+const IS_ACTIVE_COLUMN_CANDIDATES = ["is_active"] as const;
+const DELETED_AT_COLUMN_CANDIDATES = ["deleted_at"] as const;
 
 type DbWorkOrderRow = {
   id: string;
@@ -18,6 +20,8 @@ type DbWorkOrderRow = {
   workflow_state: string | null;
   last_saved_at: string | null;
   payload: WorkOrder | string | null;
+  is_active?: boolean | null;
+  deleted_at?: string | Date | null;
   created_at?: string | Date | null;
   updated_at?: string | Date | null;
 };
@@ -37,6 +41,8 @@ type DbWorkOrderSchema = {
   lastSavedAtColumn: string | null;
   createdAtColumn: string | null;
   updatedAtColumn: string | null;
+  isActiveColumn: string | null;
+  deletedAtColumn: string | null;
   hasIdColumn: boolean;
   hasTitleColumn: boolean;
 };
@@ -191,6 +197,8 @@ async function loadWorkOrderSchema(): Promise<DbWorkOrderSchema> {
     lastSavedAtColumn: findFirstMatchingColumn(columnNames, LAST_SAVED_AT_COLUMN_CANDIDATES),
     createdAtColumn: findFirstMatchingColumn(columnNames, CREATED_AT_COLUMN_CANDIDATES),
     updatedAtColumn: findFirstMatchingColumn(columnNames, UPDATED_AT_COLUMN_CANDIDATES),
+    isActiveColumn: findFirstMatchingColumn(columnNames, IS_ACTIVE_COLUMN_CANDIDATES),
+    deletedAtColumn: findFirstMatchingColumn(columnNames, DELETED_AT_COLUMN_CANDIDATES),
     hasIdColumn: columnNames.includes("id"),
     hasTitleColumn: columnNames.includes("title"),
   };
@@ -221,9 +229,12 @@ export async function findAllDbWorkOrders(): Promise<WorkOrder[]> {
         ${buildAliasSelection(schema.workflowStateColumn, "workflow_state", "NULL")},
         ${buildAliasSelection(schema.lastSavedAtColumn, "last_saved_at", "NULL")},
         ${buildAliasSelection(schema.payloadColumn, "payload", payloadFallbackSql)},
+        ${buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE")},
+        ${buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL")},
         ${buildAliasSelection(schema.createdAtColumn, "created_at", "NULL")},
         ${buildAliasSelection(schema.updatedAtColumn, "updated_at", "NULL")}
       FROM ${quoteIdentifier(WORK_ORDER_TABLE)}
+      ${schema.isActiveColumn ? `WHERE ${quoteIdentifier(schema.isActiveColumn)} = TRUE` : ""}
       ORDER BY ${schema.updatedAtColumn ? `${quoteIdentifier(schema.updatedAtColumn)} DESC NULLS LAST, ` : ""}${schema.createdAtColumn ? `${quoteIdentifier(schema.createdAtColumn)} DESC NULLS LAST, ` : ""}id DESC
     `,
   );
@@ -260,6 +271,18 @@ export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
     placeholders.push(buildPayloadInsertPlaceholder(schema.payloadColumnKind, values.length));
   }
 
+  if (schema.isActiveColumn) {
+    columns.push(schema.isActiveColumn);
+    values.push(true);
+    placeholders.push(`$${values.length}`);
+  }
+
+  if (schema.deletedAtColumn) {
+    columns.push(schema.deletedAtColumn);
+    values.push(null);
+    placeholders.push(`$${values.length}`);
+  }
+
   const payloadFallbackSql = schema.payloadColumnKind === "text" ? "NULL::text" : "NULL::jsonb";
 
   const returningColumns = [
@@ -268,6 +291,8 @@ export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
     buildAliasSelection(schema.workflowStateColumn, "workflow_state", "NULL"),
     buildAliasSelection(schema.lastSavedAtColumn, "last_saved_at", "NULL"),
     buildAliasSelection(schema.payloadColumn, "payload", payloadFallbackSql),
+    buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE"),
+    buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL"),
     buildAliasSelection(schema.createdAtColumn, "created_at", "NULL"),
     buildAliasSelection(schema.updatedAtColumn, "updated_at", "NULL"),
   ];
@@ -320,6 +345,16 @@ export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
     values.push(buildPayloadValue(schema.payloadColumnKind, payload));
   }
 
+  if (schema.isActiveColumn) {
+    assignments.push(`${quoteIdentifier(schema.isActiveColumn)} = $${values.length + 1}`);
+    values.push(true);
+  }
+
+  if (schema.deletedAtColumn) {
+    assignments.push(`${quoteIdentifier(schema.deletedAtColumn)} = $${values.length + 1}`);
+    values.push(null);
+  }
+
   const payloadFallbackSql = schema.payloadColumnKind === "text" ? "NULL::text" : "NULL::jsonb";
 
   const returningColumns = [
@@ -328,6 +363,8 @@ export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
     buildAliasSelection(schema.workflowStateColumn, "workflow_state", "NULL"),
     buildAliasSelection(schema.lastSavedAtColumn, "last_saved_at", "NULL"),
     buildAliasSelection(schema.payloadColumn, "payload", payloadFallbackSql),
+    buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE"),
+    buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL"),
     buildAliasSelection(schema.createdAtColumn, "created_at", "NULL"),
     buildAliasSelection(schema.updatedAtColumn, "updated_at", "NULL"),
   ];
@@ -357,6 +394,30 @@ export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
 export async function deleteDbWorkOrder(workOrderId: string): Promise<string> {
   const schema = await loadWorkOrderSchema();
   assertMinimumSchema(schema);
+
+  if (schema.isActiveColumn) {
+    const assignments = [`${quoteIdentifier(schema.isActiveColumn)} = FALSE`];
+    if (schema.deletedAtColumn) {
+      assignments.push(`${quoteIdentifier(schema.deletedAtColumn)} = NOW()`);
+    }
+
+    const result = await queryDb<{ id: string }>(
+      `
+        UPDATE ${quoteIdentifier(WORK_ORDER_TABLE)}
+        SET
+          ${assignments.join(",\n          ")}
+        WHERE id = $1
+        RETURNING id
+      `,
+      [workOrderId],
+    );
+
+    const deleted = result.rows[0];
+    if (!deleted?.id) {
+      throw new Error(`work_orders row not found for id: ${workOrderId}`);
+    }
+    return deleted.id;
+  }
 
   const result = await queryDb<{ id: string }>(
     `

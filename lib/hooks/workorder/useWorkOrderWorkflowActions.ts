@@ -11,7 +11,7 @@ import {
 } from "@/lib/workorder/actionFlow";
 import { applySharedInspectionComplete, applySharedInventoryAdjustment } from "@/lib/workorder/reorder/inventory";
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
-import { persistCreatedWorkOrderWithHistory, persistWorkOrderWithHistory, persistWorkOrdersWithHistory } from "./workorderRepositoryMutations";
+import { persistWorkOrderWithHistory, persistWorkOrdersWithHistory } from "./workorderRepositoryMutations";
 import { findPartnerIdByNameAndTypes } from "@/lib/admin/partnerMasterPersistence";
 import { createReinspectionRequestHistoryLog, createWorkOrderKindChangeHistoryLog } from "@/lib/workorder/history/builders";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
@@ -98,15 +98,10 @@ export function useWorkOrderWorkflowActions({
         workflowStateLabels,
         toastMessageOverride: toastMessageOverride ?? undefined,
       });
-      const persistedWorkOrder = workOrder.workflowState === "draft" && action.nextState === "review_requested"
-        ? await persistCreatedWorkOrderWithHistory(repository, {
-            workOrder: result.nextWorkOrder,
-            historyLogs: result.historyLogs,
-          })
-        : await persistWorkOrderWithHistory(repository, {
-            workOrder: result.nextWorkOrder,
-            historyLogs: result.historyLogs,
-          });
+      const persistedWorkOrder = await persistWorkOrderWithHistory(repository, {
+        workOrder: result.nextWorkOrder,
+        historyLogs: result.historyLogs,
+      });
       const persistedWorkOrders = workOrdersRef.current.map((item) => (item.id === workOrder.id ? persistedWorkOrder : item));
 
       setWorkOrders(persistedWorkOrders);
