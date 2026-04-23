@@ -1,13 +1,13 @@
 import PartnerFactoryRegistryModal from "@/components/workorder/PartnerFactoryRegistryModal";
 import BasicInfoEditModal from "@/components/workorder/detail/modals/BasicInfoEditModal";
 import OrderInspectionModal from "@/components/workorder/detail/modals/OrderInspectionModal";
-import type { ReturnTypeUseWorkOrderDetailEditor } from "@/components/workorder/detail/views/detailViewTypes";
+import type { WorkOrderDetailEditor } from "@/components/workorder/detail/views/detailViewTypes";
 
 export default function WorkOrderDetailSharedModals({
   editor,
   currentInventoryQuantity,
 }: {
-  editor: ReturnTypeUseWorkOrderDetailEditor;
+  editor: WorkOrderDetailEditor;
   currentInventoryQuantity: number;
 }) {
   return (

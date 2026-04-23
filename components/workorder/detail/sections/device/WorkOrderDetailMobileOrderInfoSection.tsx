@@ -3,9 +3,9 @@ import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculat
 import { formatOrderSummary } from "@/lib/workorder/detail/detailFormatting";
 import { getInspectionStatusLabel, getInspectionStatusTone } from "@/lib/workorder/presentation/statusPresentation";
 import { DeleteButton, SectionHeader } from "@/components/workorder/detail/shared/detailEditorShared";
-import type { ReturnTypeBuildWorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
+import type { WorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
 
-type OrderInfoProps = ReturnTypeBuildWorkOrderDetailViewModel["orderInfoProps"];
+type OrderInfoProps = WorkOrderDetailViewModel["orderInfoProps"];
 
 export default function WorkOrderDetailMobileOrderInfoSection({
   orderEntries,

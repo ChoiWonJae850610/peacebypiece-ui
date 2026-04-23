@@ -1,8 +1,8 @@
 import { useI18n } from "@/lib/i18n";
 import { getDisplayStageLabel, getStageDotTone } from "@/lib/workorder/presentation/statusPresentation";
-import type { ReturnTypeBuildWorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
+import type { WorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
 
-type ActionProps = ReturnTypeBuildWorkOrderDetailViewModel["actionProps"];
+type ActionProps = WorkOrderDetailViewModel["actionProps"];
 
 export default function WorkOrderDetailMobileActionSection({ stages, currentStage, actions, onAction }: ActionProps) {
   const { i18n } = useI18n();

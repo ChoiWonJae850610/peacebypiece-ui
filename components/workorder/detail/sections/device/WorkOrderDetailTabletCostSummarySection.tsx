@@ -17,7 +17,7 @@ export default function WorkOrderDetailTabletCostSummarySection({
   const common = i18n.workorder.ui.common;
 
   return (
-    <section className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+    <section className="grid gap-4 grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
       <SummaryCard title={copy.summaryTitle}>
         <div className="grid grid-cols-2 gap-3 text-sm">
           {[

@@ -2,9 +2,9 @@ import { useI18n } from "@/lib/i18n";
 import { SectionHeader } from "@/components/workorder/detail/shared/detailEditorShared";
 import WorkOrderDetailTabletMaterialSection from "@/components/workorder/detail/sections/device/WorkOrderDetailTabletMaterialSection";
 import WorkOrderDetailTabletOutsourcingSection from "@/components/workorder/detail/sections/device/WorkOrderDetailTabletOutsourcingSection";
-import type { ReturnTypeBuildWorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
+import type { WorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
 
-type ProductionCompositionProps = ReturnTypeBuildWorkOrderDetailViewModel["productionCompositionProps"];
+type ProductionCompositionProps = WorkOrderDetailViewModel["productionCompositionProps"];
 
 export default function WorkOrderDetailTabletProductionCompositionSection(props: ProductionCompositionProps) {
   const { i18n } = useI18n();

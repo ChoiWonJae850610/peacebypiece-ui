@@ -5,7 +5,7 @@ import type { WorkOrderSidePanelProps } from "@/components/workorder/sidepanel/W
 
 export default function WorkOrderSidePanelTabletView(props: WorkOrderSidePanelProps) {
   return (
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
+    <div className="grid gap-4 grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
       <SidePanelSectionStack>
         <WorkOrderMemoPanel
           workOrder={props.workOrder}

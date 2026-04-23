@@ -1,9 +1,9 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n";
-import type { ReturnTypeBuildWorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
+import type { WorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
 
-type HeaderProps = ReturnTypeBuildWorkOrderDetailViewModel["headerProps"];
+type HeaderProps = WorkOrderDetailViewModel["headerProps"];
 
 export default function WorkOrderDetailTabletHeaderSection({
   title,
