@@ -1,4 +1,4 @@
-export const APP_VERSION = "0.5.76";
+export const APP_VERSION = "0.6.1";
 
 export const STORAGE_KEY = "peacebypiece-storage";
 export const LEGACY_STORAGE_KEYS = [
@@ -9,4 +9,4 @@ export const LEGACY_STORAGE_KEYS = [
 ] as const;
 export const SECTION_PREFERENCES_STORAGE_KEY = "peacebypiece-section-preferences";
 
-export const WORKORDER_REPOSITORY_MODE = "mock" as const;
+export const WORKORDER_REPOSITORY_MODE = "db" as const;
