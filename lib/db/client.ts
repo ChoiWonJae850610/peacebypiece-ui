@@ -32,8 +32,17 @@ async function loadPoolConstructor(): Promise<PgPoolConstructor> {
   return pgModule.Pool;
 }
 
-async function createPool(): Promise<PgPoolLike> {
+export function getDatabaseUrl(): string | null {
   const connectionString = process.env.DATABASE_URL;
+  return typeof connectionString === "string" && connectionString.trim().length > 0 ? connectionString : null;
+}
+
+export function isDatabaseConfigured(): boolean {
+  return getDatabaseUrl() !== null;
+}
+
+async function createPool(): Promise<PgPoolLike> {
+  const connectionString = getDatabaseUrl();
 
   if (!connectionString) {
     throw new Error("DATABASE_URL is not configured.");
