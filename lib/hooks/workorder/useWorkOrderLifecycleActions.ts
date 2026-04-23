@@ -79,48 +79,16 @@ export function useWorkOrderLifecycleActions({
 
   const handleSave = useCallback(
     async (workOrder: WorkOrder, workOrders: WorkOrder[]) => {
-      setSaveStatus("saving");
+      const label = nowLabel();
+      const nextWorkOrder = { ...workOrder, lastSavedAt: label };
+      const nextWorkOrders = workOrders.map((item) => (item.id === workOrder.id ? nextWorkOrder : item));
 
-      try {
-        await executeWorkOrderAsyncAction({
-          actionKey: "save",
-          setActionStatus,
-          setActionError,
-          getFailure: (error) => createWorkOrderActionFailure({
-            actionKey: "save",
-            error,
-            kind: "repository",
-            retryable: true,
-            message: lifecycleText.saveFailedToast ?? "Failed to save work order.",
-          }),
-          setActionFailure,
-          task: async () => {
-            const label = nowLabel();
-            const nextHistoryLogs = [
-              createUpdateHistoryLog(currentUser.name, workOrder.id, [
-                { label: historyText.detailLabels.title, value: `[${getWorkOrderDisplayTitle(workOrder)}]` },
-                { label: lifecycleText.saveHistoryLabel, value: historyText.detailLabels.savedAtFormat.replace("{time}", label) },
-              ], historyText),
-            ];
-            const targetWorkOrder = { ...workOrder, lastSavedAt: label };
-            const nextWorkOrder = await persistWorkOrderWithHistory(repository, {
-              workOrder: targetWorkOrder,
-              historyLogs: nextHistoryLogs,
-            });
-            const nextWorkOrders = workOrders.map((item) => (item.id === workOrder.id ? nextWorkOrder : item));
-
-            setLastSavedAt(nextWorkOrder.lastSavedAt ?? label);
-            setWorkOrders(nextWorkOrders);
-            setHistoryLogs((prev) => [...nextHistoryLogs, ...prev]);
-            setSaveStatus("saved");
-            setToastMessage(lifecycleText.saveCompletedToast);
-          },
-        });
-      } catch {
-        setSaveStatus("dirty");
-      }
+      setLastSavedAt(label);
+      setWorkOrders(nextWorkOrders);
+      setSaveStatus("saved");
+      setToastMessage(lifecycleText.saveCompletedToast);
     },
-    [currentUser.name, historyText, lifecycleText, repository, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setLastSavedAt, setSaveStatus, setToastMessage, setWorkOrders],
+    [lifecycleText.saveCompletedToast, setLastSavedAt, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   const handleCreateWorkOrder = useCallback(

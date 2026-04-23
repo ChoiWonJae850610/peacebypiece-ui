@@ -180,7 +180,7 @@ export function useWorkOrderWorkflowActions({
         });
       }
 
-      if (action.nextState === "review_approved") {
+      if (action.nextState === "review_completed") {
         const validationMessage = getReviewApprovalValidationMessage({
           workOrder,
           text: actionFlowText,
@@ -198,7 +198,7 @@ export function useWorkOrderWorkflowActions({
 
       const effectiveWorkflowState = deriveWorkflowStateFromOrderEntries(workOrder.workflowState, workOrder.orderEntries);
 
-      if (action.nextState === "in_inspection" && effectiveWorkflowState === "completed") {
+      if (action.nextState === "inspection" && effectiveWorkflowState === "completed") {
         void applyReinspectionAction(workOrder, action);
         return;
       }

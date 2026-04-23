@@ -28,12 +28,12 @@ export type WorkflowContext = {
 
 export function getDefaultInspectionStatusForWorkflowState(workflowState: WorkflowState): OrderInspectionStatus {
   switch (workflowState) {
-    case "in_production":
-      return "inspection_pending";
-    case "in_inspection":
+    case "inspection":
       return "inspection_in_progress";
     case "completed":
       return "inspection_completed";
+    case "order_requested":
+      return "inspection_pending";
     default:
       return "order_pending";
   }
@@ -51,8 +51,9 @@ export function deriveWorkflowStateFromOrderEntries(baseState: WorkflowState, or
   if (entries.length === 0) return baseState;
   const statuses = entries.map((item) => sanitizeOrderInspectionStatus(item.inspectionStatus, baseState));
   if (statuses.every((status) => status === "inspection_completed")) return "completed";
-  if (statuses.some((status) => status === "inspection_in_progress" || status === "inspection_completed")) return "in_inspection";
-  if (statuses.some((status) => status === "inspection_pending")) return "in_production";
+  if (statuses.some((status) => status === "inspection_pending" || status === "inspection_in_progress" || status === "inspection_completed")) {
+    return "inspection";
+  }
   return baseState;
 }
 
@@ -77,7 +78,7 @@ export function canRequestFactoryOrder(payload: {
   currentWorkflowState: WorkflowState;
 }) {
   return isAdminRole(payload.currentRoles)
-    && payload.currentWorkflowState === "review_approved"
+    && payload.currentWorkflowState === "review_completed"
     && !payload.workOrder.factoryOrderRequest;
 }
 
@@ -109,29 +110,11 @@ function getWorkOrderSubmissionValidationMessage(workOrder: WorkOrder, text: {
   return null;
 }
 
-export function getReviewRequestValidationMessage(payload: {
-  workOrder: WorkOrder;
-  text: {
-    factoryOrderFactoryRequiredToast?: string;
-    factoryOrderDueDateRequiredToast?: string;
-    factoryOrderQuantityRequiredToast?: string;
-    factoryOrderLaborCostInvalidToast?: string;
-    factoryOrderLossCostInvalidToast?: string;
-  };
-}) {
+export function getReviewRequestValidationMessage(payload: { workOrder: WorkOrder; text: { factoryOrderFactoryRequiredToast?: string; factoryOrderDueDateRequiredToast?: string; factoryOrderQuantityRequiredToast?: string; factoryOrderLaborCostInvalidToast?: string; factoryOrderLossCostInvalidToast?: string; }; }) {
   return getWorkOrderSubmissionValidationMessage(payload.workOrder, payload.text);
 }
 
-export function getReviewApprovalValidationMessage(payload: {
-  workOrder: WorkOrder;
-  text: {
-    factoryOrderFactoryRequiredToast?: string;
-    factoryOrderDueDateRequiredToast?: string;
-    factoryOrderQuantityRequiredToast?: string;
-    factoryOrderLaborCostInvalidToast?: string;
-    factoryOrderLossCostInvalidToast?: string;
-  };
-}) {
+export function getReviewApprovalValidationMessage(payload: { workOrder: WorkOrder; text: { factoryOrderFactoryRequiredToast?: string; factoryOrderDueDateRequiredToast?: string; factoryOrderQuantityRequiredToast?: string; factoryOrderLaborCostInvalidToast?: string; factoryOrderLossCostInvalidToast?: string; }; }) {
   return getWorkOrderSubmissionValidationMessage(payload.workOrder, payload.text);
 }
 
@@ -144,14 +127,10 @@ type ReviewWorkflowWarningText = {
   reviewApprovalZeroLossCostWarningToast?: string;
 };
 
-function getReviewWorkflowWarningMessage(payload: {
-  workOrder: WorkOrder;
-  text: ReviewWorkflowWarningText;
-  mode: "request" | "approval";
-}) {
+function getReviewWorkflowWarningMessage(payload: { workOrder: WorkOrder; text: ReviewWorkflowWarningText; mode: "request" | "approval"; }) {
   const { laborCost, lossCost } = getOrderSubmissionSnapshot(payload.workOrder);
-  const laborIsZero = Number.isFinite(laborCost) && laborCost === 0;
-  const lossIsZero = Number.isFinite(lossCost) && lossCost === 0;
+  const laborIsZero = Number.isFinite(laborCost) && laborCost == 0;
+  const lossIsZero = Number.isFinite(lossCost) && lossCost == 0;
   const isApproval = payload.mode === "approval";
 
   if (laborIsZero && lossIsZero) {
@@ -172,72 +151,47 @@ function getReviewWorkflowWarningMessage(payload: {
   return null;
 }
 
-export function getReviewRequestWarningMessage(payload: {
-  workOrder: WorkOrder;
-  text: ReviewWorkflowWarningText;
-}) {
-  return getReviewWorkflowWarningMessage({
-    workOrder: payload.workOrder,
-    text: payload.text,
-    mode: "request",
-  });
+export function getReviewRequestWarningMessage(payload: { workOrder: WorkOrder; text: ReviewWorkflowWarningText }) {
+  return getReviewWorkflowWarningMessage({ ...payload, mode: "request" });
 }
 
-export function getReviewApprovalWarningMessage(payload: {
-  workOrder: WorkOrder;
-  text: ReviewWorkflowWarningText;
-}) {
-  return getReviewWorkflowWarningMessage({
-    workOrder: payload.workOrder,
-    text: payload.text,
-    mode: "approval",
-  });
+export function getReviewApprovalWarningMessage(payload: { workOrder: WorkOrder; text: ReviewWorkflowWarningText }) {
+  return getReviewWorkflowWarningMessage({ ...payload, mode: "approval" });
 }
 
 export function getFactoryOrderRequestValidationMessage(payload: {
   currentRoles: RoleType[];
   workOrder: WorkOrder;
   currentWorkflowState: WorkflowState;
-  factoryName?: string | null;
-  quantity?: number | null;
+  factoryName: string;
+  quantity: number;
   text: {
-    factoryOrderRequiresApprovalToast?: string;
-    factoryOrderAlreadyRequestedToast?: string;
     factoryOrderFactoryRequiredToast?: string;
-    factoryOrderDueDateRequiredToast?: string;
     factoryOrderQuantityRequiredToast?: string;
-    factoryOrderLaborCostInvalidToast?: string;
-    factoryOrderLossCostInvalidToast?: string;
-    factoryOrderNotAllowedToast?: string;
+    factoryOrderAdminOnlyToast?: string;
+    factoryOrderReviewApprovedOnlyToast?: string;
   };
 }) {
-  if (!isAdminRole(payload.currentRoles)) {
-    return payload.text.factoryOrderNotAllowedToast ?? null;
+  if (!canRequestOrder(payload.currentRoles)) {
+    return payload.text.factoryOrderAdminOnlyToast ?? null;
   }
-  if (payload.currentWorkflowState !== "review_approved") {
-    return payload.text.factoryOrderRequiresApprovalToast ?? null;
+  if (payload.currentWorkflowState !== "review_completed") {
+    return payload.text.factoryOrderReviewApprovedOnlyToast ?? null;
   }
-  if (payload.workOrder.factoryOrderRequest) {
-    return payload.text.factoryOrderAlreadyRequestedToast ?? null;
-  }
-
-  const workOrderValidationMessage = getWorkOrderSubmissionValidationMessage(payload.workOrder, payload.text);
-  if (workOrderValidationMessage) {
-    return workOrderValidationMessage;
-  }
-
-  const comparableValues = getOrderSubmissionSnapshot(payload.workOrder);
-  const normalizedFactoryName = normalizeOrderFactoryName(payload.factoryName ?? comparableValues.factoryName ?? "");
-  const normalizedQuantity = Math.max(0, Number(payload.quantity ?? comparableValues.quantity) || 0);
-
-  if (!normalizedFactoryName) {
+  if (!hasValidOrderFactoryName(payload.factoryName)) {
     return payload.text.factoryOrderFactoryRequiredToast ?? null;
   }
-  if (normalizedQuantity <= 0) {
+  if (!Number.isFinite(payload.quantity) || payload.quantity < 1) {
     return payload.text.factoryOrderQuantityRequiredToast ?? null;
   }
-
   return null;
+}
+
+export function getNormalizedFactoryOrderPayload(payload: { factoryName: string; quantity: number }) {
+  return {
+    factoryName: normalizeOrderFactoryName(payload.factoryName),
+    quantity: Math.max(0, Math.floor(payload.quantity || 0)),
+  };
 }
 
 export function canStartInspection(currentRoles: RoleType[]) {
@@ -265,7 +219,7 @@ export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles
       if (isAdminRole(currentRoles)) {
         return [
           { label: WORKFLOW_ACTION_LABELS.rejectReview, nextState: "draft" },
-          { label: WORKFLOW_ACTION_LABELS.approveReview, nextState: "review_approved" },
+          { label: WORKFLOW_ACTION_LABELS.approveReview, nextState: "review_completed" },
         ];
       }
       if (canRequestReview({ currentRoles, currentUserId, workOrder })) {
@@ -273,7 +227,7 @@ export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles
       }
       return [];
     }
-    case "review_approved":
+    case "review_completed":
       if (isAdminRole(currentRoles)) {
         return [
           { label: WORKFLOW_ACTION_LABELS.cancelReviewApproval, nextState: "review_requested" },
@@ -285,12 +239,11 @@ export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles
       return [];
     case "completed":
       if (isAdminRole(currentRoles)) {
-        return [{ label: WORKFLOW_ACTION_LABELS.requestReinspection, nextState: "in_inspection" }];
+        return [{ label: WORKFLOW_ACTION_LABELS.requestReinspection, nextState: "inspection" }];
       }
       return [];
     case "order_requested":
-    case "in_production":
-    case "in_inspection":
+    case "inspection":
     default:
       return [];
   }

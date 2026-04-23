@@ -27,7 +27,7 @@ export default function WorkOrderActionSection({
   const primaryActionIndex = actions.findIndex((action) => !action.label.includes(copy.rejectKeyword));
   const doneTrackTone = "bg-stone-400";
   const stageGroups: Array<{ label: string; stages: DisplayStage[] }> = [
-    { label: stageGroupsCopy.making, stages: ["draft", "review_requested", "review_approved"] },
+    { label: stageGroupsCopy.making, stages: ["draft", "review_requested", "review_completed"] },
     { label: stageGroupsCopy.production, stages: ["order_requested"] },
     { label: stageGroupsCopy.inspection, stages: ["inspection", "completed"] },
   ];

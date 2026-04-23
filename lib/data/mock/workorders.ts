@@ -114,7 +114,7 @@ export function buildWorkOrderSeedSource(locale: Locale = DEFAULT_LOCALE): MockW
       inventoryQuantity: 28,
       inventoryStatus: INVENTORY_STATUS.normal,
       memo: wo2.memo,
-      workflowState: "in_production",
+      workflowState: "inspection",
       lastSavedAt: "03-26 18:10",
       materials: [
         { id: "m-21", type: MATERIAL_KIND.fabric, name: wo2.materials.denim, vendor: wo2.materials.vendorBlue, quantity: 18, unit: "yd", unitCost: 4700, totalCost: 84600, status: wo2.materials.statusReceived },

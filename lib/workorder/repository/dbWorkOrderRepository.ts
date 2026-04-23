@@ -1,6 +1,7 @@
 import "server-only";
 
 import { queryDb } from "@/lib/db/client";
+import { LEGACY_WORKFLOW_STATE_MAP, WORKFLOW_STATES } from "@/lib/constants/workorderStates";
 import type { WorkOrder } from "@/types/workorder";
 
 const WORK_ORDER_TABLE = "work_orders";
@@ -57,12 +58,23 @@ function toIsoString(value: string | Date | null | undefined): string {
   return value;
 }
 
+function normalizeDbWorkflowState(value: string | null | undefined): WorkOrder["workflowState"] {
+  if (!value) return DEFAULT_WORKFLOW_STATE;
+  if ((WORKFLOW_STATES as readonly string[]).includes(value)) {
+    return value as WorkOrder["workflowState"];
+  }
+  if (value in LEGACY_WORKFLOW_STATE_MAP) {
+    return LEGACY_WORKFLOW_STATE_MAP[value as keyof typeof LEGACY_WORKFLOW_STATE_MAP] as WorkOrder["workflowState"];
+  }
+  return DEFAULT_WORKFLOW_STATE;
+}
+
 function normalizeWorkOrderForDb(workOrder: WorkOrder): WorkOrder {
   const now = new Date().toISOString();
 
   return {
     ...workOrder,
-    workflowState: workOrder.workflowState ?? DEFAULT_WORKFLOW_STATE,
+    workflowState: normalizeDbWorkflowState(workOrder.workflowState),
     lastSavedAt: workOrder.lastSavedAt || now,
   };
 }
@@ -111,7 +123,7 @@ function mapRowToWorkOrder(row: DbWorkOrderRow): WorkOrder {
     workflowState:
       typeof payload.workflowState === "string"
         ? payload.workflowState
-        : ((row.workflow_state ?? DEFAULT_WORKFLOW_STATE) as WorkOrder["workflowState"]),
+        : normalizeDbWorkflowState(row.workflow_state ?? DEFAULT_WORKFLOW_STATE),
     lastSavedAt:
       typeof payload.lastSavedAt === "string"
         ? payload.lastSavedAt

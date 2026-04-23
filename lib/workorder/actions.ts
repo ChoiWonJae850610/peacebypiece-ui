@@ -75,23 +75,10 @@ export function buildInventoryChanges(payload: {
 }
 
 export function applyWorkflowActionToWorkOrder(workOrder: WorkOrder, action: WorkflowAction): WorkOrder {
-  if (action.nextState === "in_production") {
+  if (action.nextState === "inspection") {
     const nextOrderEntries: OrderEntry[] = (workOrder.orderEntries ?? []).map((entry) => ({
       ...entry,
-      inspectionStatus: entry.inspectionStatus === "inspection_completed" ? "inspection_completed" : "inspection_pending",
-    }));
-
-    return {
-      ...workOrder,
-      workflowState: action.nextState,
-      orderEntries: nextOrderEntries,
-    };
-  }
-
-  if (action.nextState === "in_inspection") {
-    const nextOrderEntries: OrderEntry[] = (workOrder.orderEntries ?? []).map((entry) => ({
-      ...entry,
-      inspectionStatus: entry.inspectionStatus === "inspection_completed" ? "inspection_in_progress" : (entry.inspectionStatus ?? "inspection_in_progress"),
+      inspectionStatus: entry.inspectionStatus === "inspection_completed" ? "inspection_completed" : (entry.inspectionStatus ?? "inspection_pending"),
     }));
 
     return {
@@ -133,7 +120,7 @@ export function requestFactoryOrderForWorkOrder(
 
   return syncWorkOrderOrderSnapshot({
     ...workOrder,
-    workflowState: "in_production",
+    workflowState: "order_requested",
     orderEntries: nextOrderEntries,
     factoryOrderRequest: {
       ...payload,
