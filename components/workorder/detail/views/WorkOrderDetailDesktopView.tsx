@@ -1,10 +1,8 @@
-import PartnerFactoryRegistryModal from "@/components/workorder/PartnerFactoryRegistryModal";
-import BasicInfoEditModal from "@/components/workorder/detail/modals/BasicInfoEditModal";
-import OrderInspectionModal from "@/components/workorder/detail/modals/OrderInspectionModal";
 import WorkOrderActionSection from "@/components/workorder/detail/WorkOrderActionSection";
 import WorkOrderCostSummarySection from "@/components/workorder/detail/WorkOrderCostSummarySection";
 import WorkOrderHeaderSection from "@/components/workorder/detail/WorkOrderHeaderSection";
 import DesktopWorkspaceLayout from "@/components/workorder/detail/layout/DesktopWorkspaceLayout";
+import WorkOrderDetailSharedModals from "@/components/workorder/detail/shared/WorkOrderDetailSharedModals";
 import OrderInfoSection from "@/components/workorder/detail/sections/OrderInfoSection";
 import ProductionCompositionSection from "@/components/workorder/detail/sections/ProductionCompositionSection";
 import type { ReturnTypeUseWorkOrderDetailEditor } from "@/components/workorder/detail/views/detailViewTypes";
@@ -36,29 +34,7 @@ export default function WorkOrderDetailDesktopView({
 
         {viewModel.showProductionComposition ? <ProductionCompositionSection {...viewModel.productionCompositionProps} /> : null}
       </div>
-
-      <OrderInspectionModal
-        open={editor.inspectionModalOpen}
-        orderEntries={editor.orderItems}
-        currentInventoryQuantity={currentInventoryQuantity}
-        onClose={editor.handleCloseInspectionModal}
-        onApply={editor.handleApplyInspection}
-      />
-
-      <BasicInfoEditModal
-        open={editor.basicInfoModalOpen}
-        value={editor.basicInfoDraft}
-        onChange={editor.setBasicInfoDraft}
-        onClose={editor.handleCloseBasicInfoModal}
-        onSave={editor.handleSaveBasicInfoModal}
-      />
-
-      <PartnerFactoryRegistryModal
-        open={editor.registryModalOpen}
-        initialType={editor.registryType}
-        onClose={editor.closeRegistryModal}
-        onSave={editor.handleRegistrySave}
-      />
+      <WorkOrderDetailSharedModals editor={editor} currentInventoryQuantity={currentInventoryQuantity} />
     </DesktopWorkspaceLayout>
   );
 }

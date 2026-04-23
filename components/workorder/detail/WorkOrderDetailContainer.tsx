@@ -128,11 +128,11 @@ export default function WorkOrderDetailContainer({
   });
 
   if (deviceType === "mobile") {
-    return <WorkOrderDetailMobileView viewModel={viewModel} />;
+    return <WorkOrderDetailMobileView viewModel={viewModel} editor={editor} currentInventoryQuantity={currentInventoryQuantity} />;
   }
 
   if (deviceType === "tablet") {
-    return <WorkOrderDetailTabletView viewModel={viewModel} />;
+    return <WorkOrderDetailTabletView viewModel={viewModel} editor={editor} currentInventoryQuantity={currentInventoryQuantity} />;
   }
 
   return <WorkOrderDetailDesktopView viewModel={viewModel} editor={editor} currentInventoryQuantity={currentInventoryQuantity} />;
