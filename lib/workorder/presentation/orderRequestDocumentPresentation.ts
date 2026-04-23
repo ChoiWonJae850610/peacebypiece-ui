@@ -1,6 +1,7 @@
 import { EMPTY_DISPLAY } from "@/lib/constants/display";
 import { MATERIAL_KIND, ORDER_ENTRY_TARGET_TYPE } from "@/lib/constants/workorderDomain";
 import { getOrderEntriesByTargetType, getOrderSubmissionSnapshot } from "@/lib/workorder/orderSubmission";
+import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import type { Attachment, Material, OrderEntry, Outsourcing, WorkOrder } from "@/types/workorder";
 
 export type OrderRequestDocumentPage = {
@@ -143,7 +144,7 @@ export function getOrderRequestDocumentPreview(workOrder: WorkOrder, pageIndex: 
   const currentDocumentAmount = materialAndOutsourcingAmountTotal + currentFactoryCostAmount;
 
   return {
-    displayTitle: normalizeText(workOrder.displayTitle || workOrder.title),
+    displayTitle: normalizeText(getWorkOrderDisplayTitle(workOrder)),
     documents,
     pages,
     currentDocument,

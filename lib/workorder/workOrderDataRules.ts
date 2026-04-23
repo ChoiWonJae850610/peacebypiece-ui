@@ -31,9 +31,7 @@ function normalizeOrderEntryType(value: string | undefined | null): string {
 
 function normalizeWorkOrderKind(
   value: WorkOrder["workOrderKind"] | string | undefined | null,
-  _fallbackTitle?: string | null,
   reorderRound?: number | null,
-  _displayTitle?: string | null,
 ): WorkOrder["workOrderKind"] {
   if (value === "sample" || value === "main" || value === "rework") return value;
   if (Number(reorderRound ?? 1) > 1) return "main";
@@ -70,7 +68,7 @@ export function buildInitialWorkOrderOrderEntries(workOrder: WorkOrder): OrderEn
   const entries = (workOrder.orderEntries ?? []).map((item) => sanitizeWorkOrderOrderEntry(item, undefined, workOrder.workflowState));
   if (entries.length > 0) return entries;
 
-  const defaultOrderType = getOrderTypeFromWorkOrderKind(normalizeWorkOrderKind(workOrder.workOrderKind, workOrder.title, workOrder.reorderRound, workOrder.displayTitle));
+  const defaultOrderType = getOrderTypeFromWorkOrderKind(normalizeWorkOrderKind(workOrder.workOrderKind, workOrder.reorderRound));
 
   return [
     sanitizeWorkOrderOrderEntry(
@@ -98,7 +96,7 @@ export function normalizeWorkOrderScalarFields(workOrder: WorkOrder): WorkOrder 
     category3: workOrder.category3,
   });
 
-  const workOrderKind = normalizeWorkOrderKind(workOrder.workOrderKind, workOrder.title, workOrder.reorderRound, workOrder.displayTitle);
+  const workOrderKind = normalizeWorkOrderKind(workOrder.workOrderKind, workOrder.reorderRound);
 
   return {
     ...workOrder,

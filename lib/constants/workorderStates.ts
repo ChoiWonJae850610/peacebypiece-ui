@@ -51,6 +51,22 @@ export function isWorkflowStateAfter(state: WorkflowStateValue, target: Workflow
   return compareWorkflowStates(state, target) > 0;
 }
 
+export function isWorkflowState(state: WorkflowStateValue, target: WorkflowStateValue) {
+  return compareWorkflowStates(state, target) === 0;
+}
+
+export function canEditBeforeOrder(state: WorkflowStateValue, isAdmin = false) {
+  return isWorkflowStateBefore(state, "review_requested") || (isAdmin && isWorkflowState(state, "review_requested"));
+}
+
+export function canEditManagerInWorkflow(state: WorkflowStateValue, isReviewRequestLocked: boolean) {
+  return !isReviewRequestLocked || isWorkflowStateAtLeast(state, "completed");
+}
+
+export function isWorkflowStateInRange(state: WorkflowStateValue, minimum: WorkflowStateValue, maximum: WorkflowStateValue) {
+  return isWorkflowStateAtLeast(state, minimum) && isWorkflowStateEqualOrBefore(state, maximum);
+}
+
 export function isWorkflowStateEqualOrBefore(state: WorkflowStateValue, target: WorkflowStateValue) {
   return compareWorkflowStates(state, target) <= 0;
 }

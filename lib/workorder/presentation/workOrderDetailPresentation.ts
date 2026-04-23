@@ -10,7 +10,7 @@ import { getAvailableOrderTypeOptions } from "@/lib/constants/workorderOptions";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import { getWorkOrderBaseTitle } from "@/lib/workorder/reorder/helpers";
 import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
-import { isWorkflowStateAtLeast } from "@/lib/constants/workorderStates";
+import { canEditManagerInWorkflow } from "@/lib/constants/workorderStates";
 import type { WorkOrder } from "@/types/workorder";
 
 type HeaderProps = ComponentProps<typeof WorkOrderHeaderSection>;
@@ -169,7 +169,7 @@ export function buildWorkOrderDetailViewModel({
       onOpenInventoryEditor,
       onRenameTitle: onRenameWorkOrderTitle,
       locked: isReviewRequestLocked,
-      managerLocked: isReviewRequestLocked && !isWorkflowStateAtLeast(currentWorkflowState, "completed"),
+      managerLocked: !canEditManagerInWorkflow(currentWorkflowState, isReviewRequestLocked),
     },
     actionProps: {
       stages: visibleStages,

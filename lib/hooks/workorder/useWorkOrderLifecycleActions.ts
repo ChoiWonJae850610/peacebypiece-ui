@@ -367,6 +367,9 @@ export function useWorkOrderLifecycleActions({
 
           setPersistedWorkOrders(nextPersistedWorkOrders);
           setWorkOrders(nextLocalWorkOrders);
+          const renamedWorkOrder = nextPersistedWorkOrders.find((item) => item.id === workOrder.id) ?? nextLocalWorkOrders.find((item) => item.id === workOrder.id) ?? null;
+          setLastSavedAt(renamedWorkOrder?.lastSavedAt ?? null);
+          setSaveStatus("saved");
           setHistoryLogs((prev) => [...nextHistoryLogs, ...prev]);
           setToastMessage(
             localRenameResult.affectedWorkOrderIds.length > 1
@@ -376,7 +379,7 @@ export function useWorkOrderLifecycleActions({
         },
       });
     },
-    [currentUser.name, historyText, lifecycleText, persistedWorkOrders, repository, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setPersistedWorkOrders, setToastMessage, setWorkOrders],
+    [currentUser.name, historyText, lifecycleText, persistedWorkOrders, repository, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setLastSavedAt, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   return {

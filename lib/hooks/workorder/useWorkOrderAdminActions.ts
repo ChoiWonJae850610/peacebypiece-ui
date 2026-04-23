@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { useI18n } from "@/lib/i18n";
 import { buildUserRoleState } from "@/lib/constants/roles";
-import { isWorkflowStateAtLeast } from "@/lib/constants/workorderStates";
+import { canEditManagerInWorkflow } from "@/lib/constants/workorderStates";
 import { buildManagerChangeResult } from "@/lib/workorder/actionFlow";
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
 import { persistUsersWithPermissions, persistWorkOrderWithHistory } from "./workorderRepositoryMutations";
@@ -40,8 +40,8 @@ export function useWorkOrderAdminActions({
 
   const handleOpenManagerAssignModal = useCallback(
     ({ canChangeManager, isReviewRequestLocked, currentWorkflowState }: Pick<ChangeManagerInput, "canChangeManager" | "isReviewRequestLocked" | "currentWorkflowState">) => {
-      const managerEditLocked = isReviewRequestLocked && !isWorkflowStateAtLeast(currentWorkflowState ?? "draft", "completed");
-      if (!canChangeManager || managerEditLocked) return;
+      const canEditManager = canEditManagerInWorkflow(currentWorkflowState ?? "draft", isReviewRequestLocked);
+      if (!canChangeManager || !canEditManager) return;
       setManagerAssignModalOpen(true);
     },
     [setManagerAssignModalOpen],
@@ -53,8 +53,8 @@ export function useWorkOrderAdminActions({
 
   const handleChangeManager = useCallback(
     ({ workOrder, managerId, users, canChangeManager, isReviewRequestLocked, currentWorkflowState }: ChangeManagerInput) => {
-      const managerEditLocked = isReviewRequestLocked && !isWorkflowStateAtLeast(currentWorkflowState ?? "draft", "completed");
-      if (!canChangeManager || managerEditLocked) return;
+      const canEditManager = canEditManagerInWorkflow(currentWorkflowState ?? "draft", isReviewRequestLocked);
+      if (!canChangeManager || !canEditManager) return;
       const nextManager = users.find((user) => user.id === managerId);
       if (!nextManager) return;
 
@@ -86,6 +86,7 @@ export function useWorkOrderAdminActions({
             ? { ...item, managerId: persistedWorkOrder.managerId, manager: persistedWorkOrder.manager, lastSavedAt: persistedWorkOrder.lastSavedAt }
             : item
         )));
+        setSaveStatus("saved");
       });
       if (result.historyLogs?.length) {
         setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);

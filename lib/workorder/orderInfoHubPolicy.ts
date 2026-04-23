@@ -1,5 +1,5 @@
 import type { RoleType } from '@/types/permission';
-import { compareWorkflowStates } from '@/lib/constants/workorderStates';
+import { canEditBeforeOrder, isWorkflowState } from '@/lib/constants/workorderStates';
 import type { WorkOrder, WorkflowState } from '@/types/workorder';
 
 export type OrderInfoHubPolicy = {
@@ -26,16 +26,16 @@ export function deriveOrderInfoHubPolicy(args: {
   const reorderGroupId = String(workOrder.reorderGroupId ?? '').trim();
   const isInitialWorkOrder = Boolean(currentId) && (!reorderGroupId || currentId === reorderGroupId);
   const isAdmin = isAdminRole(currentUserRole);
-  const canEditBeforeOrder = compareWorkflowStates(currentWorkflowState, 'review_requested') < 0 || (currentWorkflowState === 'review_requested' && isAdmin);
-  const canChangeKind = canEditBeforeOrder;
-  const stateScope: OrderInfoHubPolicy['stateScope'] = currentWorkflowState === 'draft'
+  const canEditBeforeOrderState = canEditBeforeOrder(currentWorkflowState, isAdmin);
+  const canChangeKind = canEditBeforeOrderState;
+  const stateScope: OrderInfoHubPolicy['stateScope'] = isWorkflowState(currentWorkflowState, 'draft')
     ? 'draft'
-    : currentWorkflowState === 'review_requested' && isAdmin
+    : isWorkflowState(currentWorkflowState, 'review_requested') && isAdmin
       ? 'review_requested_admin'
       : 'locked';
-  const lockedReasonKey = canEditBeforeOrder
+  const lockedReasonKey = canEditBeforeOrderState
     ? null
-    : currentWorkflowState === 'review_requested'
+    : isWorkflowState(currentWorkflowState, 'review_requested')
       ? 'reviewRequested'
       : 'orderedOrLater';
 
@@ -46,8 +46,8 @@ export function deriveOrderInfoHubPolicy(args: {
   return {
     isInitialWorkOrder,
     canChangeKind,
-    canEditOrderEntries: canEditBeforeOrder,
-    canEditBeforeOrder,
+    canEditOrderEntries: canEditBeforeOrderState,
+    canEditBeforeOrder: canEditBeforeOrderState,
     allowedOrderTypes: canChangeKind ? allowedOrderTypes : [workOrder.workOrderKind === 'rework' ? '재작업' : workOrder.workOrderKind === 'main' ? '메인 생산' : '샘플'],
     stateScope,
     lockedReasonKey,
