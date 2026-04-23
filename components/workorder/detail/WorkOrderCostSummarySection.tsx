@@ -3,7 +3,7 @@ import SummaryCard from "@/components/common/ui/SummaryCard";
 import DesktopCostSummaryLayout from "@/components/workorder/detail/layout/DesktopCostSummaryLayout";
 import type { Outsourcing } from "@/types/workorder";
 
-type WorkOrderCostSummarySectionProps = {
+export type WorkOrderCostSummarySectionProps = {
   fabricTotal: number;
   subsidiaryTotal: number;
   outsourcingTotal: number;

@@ -1,5 +1,5 @@
 import MobileSectionStack from "@/components/workorder/detail/layout/MobileSectionStack";
-import WorkOrderCostSummarySection from "@/components/workorder/detail/WorkOrderCostSummarySection";
+import WorkOrderDetailMobileCostSummarySection from "@/components/workorder/detail/sections/device/WorkOrderDetailMobileCostSummarySection";
 import WorkOrderDetailMobileActionSection from "@/components/workorder/detail/sections/device/WorkOrderDetailMobileActionSection";
 import WorkOrderDetailMobileHeaderSection from "@/components/workorder/detail/sections/device/WorkOrderDetailMobileHeaderSection";
 import WorkOrderDetailMobileOrderInfoSection from "@/components/workorder/detail/sections/device/WorkOrderDetailMobileOrderInfoSection";
@@ -21,7 +21,7 @@ export default function WorkOrderDetailMobileView({
       <MobileSectionStack>
         <WorkOrderDetailMobileHeaderSection {...viewModel.headerProps} />
         <WorkOrderDetailMobileActionSection {...viewModel.actionProps} />
-        {viewModel.showCostSummary ? <WorkOrderCostSummarySection {...viewModel.costSummaryProps} /> : null}
+        {viewModel.showCostSummary ? <WorkOrderDetailMobileCostSummarySection {...viewModel.costSummaryProps} /> : null}
         <WorkOrderDetailMobileOrderInfoSection {...viewModel.orderInfoProps} />
         {viewModel.showProductionComposition ? <WorkOrderDetailMobileProductionCompositionSection {...viewModel.productionCompositionProps} /> : null}
       </MobileSectionStack>

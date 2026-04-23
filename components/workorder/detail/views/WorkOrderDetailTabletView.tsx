@@ -1,5 +1,5 @@
 import TabletSplitLayout from "@/components/workorder/detail/layout/TabletSplitLayout";
-import WorkOrderCostSummarySection from "@/components/workorder/detail/WorkOrderCostSummarySection";
+import WorkOrderDetailTabletCostSummarySection from "@/components/workorder/detail/sections/device/WorkOrderDetailTabletCostSummarySection";
 import WorkOrderDetailTabletActionSection from "@/components/workorder/detail/sections/device/WorkOrderDetailTabletActionSection";
 import WorkOrderDetailTabletHeaderSection from "@/components/workorder/detail/sections/device/WorkOrderDetailTabletHeaderSection";
 import WorkOrderDetailTabletOrderInfoSection from "@/components/workorder/detail/sections/device/WorkOrderDetailTabletOrderInfoSection";
@@ -22,7 +22,7 @@ export default function WorkOrderDetailTabletView({
         <WorkOrderDetailTabletHeaderSection {...viewModel.headerProps} />
         <WorkOrderDetailTabletActionSection {...viewModel.actionProps} />
         <WorkOrderDetailTabletOrderInfoSection {...viewModel.orderInfoProps} />
-        {viewModel.showCostSummary ? <WorkOrderCostSummarySection {...viewModel.costSummaryProps} /> : null}
+        {viewModel.showCostSummary ? <WorkOrderDetailTabletCostSummarySection {...viewModel.costSummaryProps} /> : null}
         {viewModel.showProductionComposition ? <WorkOrderDetailTabletProductionCompositionSection {...viewModel.productionCompositionProps} /> : null}
       </TabletSplitLayout>
 
