@@ -76,9 +76,12 @@ export function buildInventoryChanges(payload: {
 
 export function applyWorkflowActionToWorkOrder(workOrder: WorkOrder, action: WorkflowAction): WorkOrder {
   if (action.nextState === "inspection") {
+    const resetForReinspection = action.actionType === "request_reinspection";
     const nextOrderEntries: OrderEntry[] = (workOrder.orderEntries ?? []).map((entry) => ({
       ...entry,
-      inspectionStatus: entry.inspectionStatus === "inspection_completed" ? "inspection_completed" : (entry.inspectionStatus ?? "inspection_pending"),
+      inspectionStatus: resetForReinspection
+        ? "inspection_pending"
+        : (entry.inspectionStatus === "inspection_completed" ? "inspection_completed" : (entry.inspectionStatus ?? "inspection_pending")),
     }));
 
     return {

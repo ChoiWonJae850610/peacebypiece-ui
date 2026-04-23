@@ -28,6 +28,7 @@ export default function WorkOrderActionSection({
   const doneTrackTone = "bg-stone-400";
   const stageGroups: Array<{ label: string; stages: DisplayStage[] }> = [
     { label: stageGroupsCopy.making, stages: ["draft", "review_requested", "review_completed"] },
+    { label: stageGroupsCopy.production, stages: ["request_order"] },
     { label: stageGroupsCopy.inspection, stages: ["inspection", "completed"] },
   ];
   const currentGroupIndex = stageGroups.findIndex((group) => group.stages.includes(currentStage));
