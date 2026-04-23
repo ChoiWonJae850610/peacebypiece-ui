@@ -32,7 +32,7 @@ function createDbErrorResponse(error: unknown, fallbackMessage: string) {
     return NextResponse.json<DbApiErrorPayload>({ message, code: "DB_TABLE_MISSING" }, { status: 503 });
   }
 
-  if (/work_orders table is missing required columns/i.test(message)) {
+  if (/work_orders table is missing required columns/i.test(message) || /Unsupported payload column type/i.test(message)) {
     return NextResponse.json<DbApiErrorPayload>({ message, code: "DB_SCHEMA_UNSUPPORTED" }, { status: 503 });
   }
 
@@ -66,9 +66,15 @@ export async function POST(request: Request) {
   }
 
   try {
-    const body = (await request.json()) as { workOrder?: WorkOrder };
+    let body: { workOrder?: WorkOrder } | null = null;
 
-    if (!body?.workOrder) {
+    try {
+      body = (await request.json()) as { workOrder?: WorkOrder };
+    } catch {
+      return NextResponse.json({ message: "Invalid JSON payload.", code: "INVALID_PAYLOAD" }, { status: 400 });
+    }
+
+    if (!body?.workOrder || typeof body.workOrder !== "object") {
       return NextResponse.json({ message: "workOrder payload is required.", code: "INVALID_PAYLOAD" }, { status: 400 });
     }
 

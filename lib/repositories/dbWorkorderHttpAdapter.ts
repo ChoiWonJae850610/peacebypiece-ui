@@ -19,18 +19,38 @@ const LOCAL_FALLBACK_ERROR_CODES = new Set([
 ]);
 
 async function parseResponse<T>(response: Response): Promise<T> {
-  const body = (await response.json()) as T & DbApiErrorBody;
+  let body: (T & DbApiErrorBody) | null = null;
+
+  try {
+    body = (await response.json()) as T & DbApiErrorBody;
+  } catch (error) {
+    const parseError = new Error("Failed to parse DB response.") as Error & { code?: string; status?: number; cause?: unknown };
+    parseError.code = "DB_RESPONSE_PARSE_FAILED";
+    parseError.status = response.status;
+    parseError.cause = error;
+    throw parseError;
+  }
 
   if (!response.ok) {
-    const error = new Error(body.message ?? "DB request failed.") as Error & { code?: string; status?: number };
-    error.code = body.code;
+    const error = new Error(body?.message ?? "DB request failed.") as Error & { code?: string; status?: number };
+    error.code = body?.code;
     error.status = response.status;
     throw error;
+  }
+
+  if (!body) {
+    const emptyBodyError = new Error("DB response body is empty.") as Error & { code?: string; status?: number };
+    emptyBodyError.code = "DB_EMPTY_RESPONSE";
+    emptyBodyError.status = response.status;
+    throw emptyBodyError;
   }
 
   return body;
 }
 
+function isNetworkErrorMessage(message: string): boolean {
+  return /fetch failed|networkerror|network error|load failed|failed to fetch/i.test(message);
+}
 
 function shouldUseLocalFallback(error: unknown): boolean {
   if (!(error instanceof Error)) return false;
@@ -38,11 +58,16 @@ function shouldUseLocalFallback(error: unknown): boolean {
   const errorWithMeta = error as Error & { code?: string; status?: number };
 
   return (
-    (typeof errorWithMeta.code === "string" && LOCAL_FALLBACK_ERROR_CODES.has(errorWithMeta.code)) ||
+    (typeof errorWithMeta.code === "string" && (
+      LOCAL_FALLBACK_ERROR_CODES.has(errorWithMeta.code) ||
+      errorWithMeta.code === "DB_RESPONSE_PARSE_FAILED" ||
+      errorWithMeta.code === "DB_EMPTY_RESPONSE"
+    )) ||
     errorWithMeta.status === 503 ||
     /DATABASE_URL is not configured/i.test(error.message) ||
     /The 'pg' package is required/i.test(error.message) ||
-    /relation .*work_orders.* does not exist/i.test(error.message)
+    /relation .*work_orders.* does not exist/i.test(error.message) ||
+    isNetworkErrorMessage(error.message)
   );
 }
 

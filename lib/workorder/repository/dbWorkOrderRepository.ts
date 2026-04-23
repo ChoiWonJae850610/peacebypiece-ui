@@ -17,13 +17,22 @@ type DbWorkOrderRow = {
   title: string;
   workflow_state: string | null;
   last_saved_at: string | null;
-  payload: WorkOrder | null;
+  payload: WorkOrder | string | null;
   created_at?: string | Date | null;
   updated_at?: string | Date | null;
 };
 
+type DbColumnInfo = {
+  column_name: string;
+  data_type: string;
+  udt_name: string;
+};
+
+type DbPayloadColumnKind = "json" | "jsonb" | "text";
+
 type DbWorkOrderSchema = {
   payloadColumn: string | null;
+  payloadColumnKind: DbPayloadColumnKind | null;
   workflowStateColumn: string | null;
   lastSavedAtColumn: string | null;
   createdAtColumn: string | null;
@@ -64,8 +73,30 @@ function serializeWorkOrderPayload(workOrder: WorkOrder): WorkOrder {
   };
 }
 
+function parsePayloadValue(payload: DbWorkOrderRow["payload"]): Partial<WorkOrder> {
+  if (isObject(payload)) {
+    return payload as Partial<WorkOrder>;
+  }
+
+  if (typeof payload !== "string") {
+    return {};
+  }
+
+  const trimmed = payload.trim();
+  if (!trimmed) {
+    return {};
+  }
+
+  try {
+    const parsed = JSON.parse(trimmed) as unknown;
+    return isObject(parsed) ? (parsed as Partial<WorkOrder>) : {};
+  } catch {
+    return {};
+  }
+}
+
 function mapRowToWorkOrder(row: DbWorkOrderRow): WorkOrder {
-  const payload = isObject(row.payload) ? row.payload : {};
+  const payload = parsePayloadValue(row.payload);
 
   return {
     ...(payload as WorkOrder),
@@ -104,10 +135,33 @@ function buildAliasSelection(columnName: string | null, alias: keyof DbWorkOrder
   return `${quoteIdentifier(columnName)} AS ${alias}`;
 }
 
+function getPayloadColumnKind(column: DbColumnInfo | undefined): DbPayloadColumnKind | null {
+  if (!column) return null;
+
+  if (column.udt_name === "jsonb") return "jsonb";
+  if (column.udt_name === "json") return "json";
+  if (column.data_type === "text" || column.udt_name === "text" || column.data_type === "character varying" || column.udt_name === "varchar") {
+    return "text";
+  }
+
+  return null;
+}
+
+function buildPayloadInsertPlaceholder(kind: DbPayloadColumnKind | null, placeholderIndex: number): string {
+  if (kind === "jsonb") return `$${placeholderIndex}::jsonb`;
+  if (kind === "json") return `$${placeholderIndex}::json`;
+  return `$${placeholderIndex}`;
+}
+
+function buildPayloadValue(kind: DbPayloadColumnKind | null, payload: WorkOrder): string {
+  const serialized = JSON.stringify(payload);
+  return serialized;
+}
+
 async function loadWorkOrderSchema(): Promise<DbWorkOrderSchema> {
-  const result = await queryDb<{ column_name: string }>(
+  const result = await queryDb<DbColumnInfo>(
     `
-      SELECT column_name
+      SELECT column_name, data_type, udt_name
       FROM information_schema.columns
       WHERE table_schema = current_schema()
         AND table_name = $1
@@ -115,14 +169,24 @@ async function loadWorkOrderSchema(): Promise<DbWorkOrderSchema> {
     [WORK_ORDER_TABLE],
   );
 
-  const columnNames = result.rows.map((row) => row.column_name);
+  const columns = result.rows;
+  const columnNames = columns.map((row) => row.column_name);
 
   if (columnNames.length === 0) {
     throw new Error(`relation \"${WORK_ORDER_TABLE}\" does not exist`);
   }
 
+  const payloadColumn = findFirstMatchingColumn(columnNames, PAYLOAD_COLUMN_CANDIDATES);
+  const payloadColumnInfo = payloadColumn ? columns.find((column) => column.column_name === payloadColumn) : undefined;
+  const payloadColumnKind = getPayloadColumnKind(payloadColumnInfo);
+
+  if (payloadColumn && !payloadColumnKind) {
+    throw new Error(`Unsupported payload column type for ${payloadColumn}: ${payloadColumnInfo?.data_type ?? "unknown"}/${payloadColumnInfo?.udt_name ?? "unknown"}`);
+  }
+
   return {
-    payloadColumn: findFirstMatchingColumn(columnNames, PAYLOAD_COLUMN_CANDIDATES),
+    payloadColumn,
+    payloadColumnKind,
     workflowStateColumn: findFirstMatchingColumn(columnNames, WORKFLOW_STATE_COLUMN_CANDIDATES),
     lastSavedAtColumn: findFirstMatchingColumn(columnNames, LAST_SAVED_AT_COLUMN_CANDIDATES),
     createdAtColumn: findFirstMatchingColumn(columnNames, CREATED_AT_COLUMN_CANDIDATES),
@@ -147,6 +211,8 @@ export async function findAllDbWorkOrders(): Promise<WorkOrder[]> {
   const schema = await loadWorkOrderSchema();
   assertMinimumSchema(schema);
 
+  const payloadFallbackSql = schema.payloadColumnKind === "text" ? "NULL::text" : "NULL::jsonb";
+
   const result = await queryDb<DbWorkOrderRow>(
     `
       SELECT
@@ -154,7 +220,7 @@ export async function findAllDbWorkOrders(): Promise<WorkOrder[]> {
         title,
         ${buildAliasSelection(schema.workflowStateColumn, "workflow_state", "NULL")},
         ${buildAliasSelection(schema.lastSavedAtColumn, "last_saved_at", "NULL")},
-        ${buildAliasSelection(schema.payloadColumn, "payload", "NULL::jsonb")},
+        ${buildAliasSelection(schema.payloadColumn, "payload", payloadFallbackSql)},
         ${buildAliasSelection(schema.createdAtColumn, "created_at", "NULL")},
         ${buildAliasSelection(schema.updatedAtColumn, "updated_at", "NULL")}
       FROM ${quoteIdentifier(WORK_ORDER_TABLE)}
@@ -190,16 +256,18 @@ export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
 
   if (schema.payloadColumn) {
     columns.push(schema.payloadColumn);
-    values.push(JSON.stringify(payload));
-    placeholders.push(`$${values.length}::jsonb`);
+    values.push(buildPayloadValue(schema.payloadColumnKind, payload));
+    placeholders.push(buildPayloadInsertPlaceholder(schema.payloadColumnKind, values.length));
   }
+
+  const payloadFallbackSql = schema.payloadColumnKind === "text" ? "NULL::text" : "NULL::jsonb";
 
   const returningColumns = [
     "id",
     "title",
     buildAliasSelection(schema.workflowStateColumn, "workflow_state", "NULL"),
     buildAliasSelection(schema.lastSavedAtColumn, "last_saved_at", "NULL"),
-    buildAliasSelection(schema.payloadColumn, "payload", "NULL::jsonb"),
+    buildAliasSelection(schema.payloadColumn, "payload", payloadFallbackSql),
     buildAliasSelection(schema.createdAtColumn, "created_at", "NULL"),
     buildAliasSelection(schema.updatedAtColumn, "updated_at", "NULL"),
   ];

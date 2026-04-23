@@ -146,15 +146,32 @@ export function useWorkOrderLifecycleActions({
           const nextHistoryLogs = [
             createCreationHistoryLog(currentUser.name, newWorkOrder.id, { title: getWorkOrderDisplayTitle(newWorkOrder) }, historyText),
           ];
-          const createdWorkOrder = await repository.createWorkOrderAsync(newWorkOrder);
-          await repository.appendHistoryLogsAsync(nextHistoryLogs);
-          setWorkOrders((prev) => [createdWorkOrder, ...prev]);
+
+          let createdWorkOrder = newWorkOrder;
+          let usedLocalFallback = false;
+
+          try {
+            const remoteCreatedWorkOrder = await repository.createWorkOrderAsync(newWorkOrder);
+            createdWorkOrder = remoteCreatedWorkOrder ?? newWorkOrder;
+            await repository.appendHistoryLogsAsync(nextHistoryLogs);
+          } catch {
+            usedLocalFallback = true;
+            createdWorkOrder = repository.createWorkOrder(newWorkOrder) ?? newWorkOrder;
+            repository.appendHistoryLogs(nextHistoryLogs);
+          }
+
+          setWorkOrders((prev) => [createdWorkOrder, ...prev.filter((item) => item.id !== createdWorkOrder.id)]);
           setSelectedId(createdWorkOrder.id);
-          setLastSavedAt(createdWorkOrder.lastSavedAt);
+          setLastSavedAt(createdWorkOrder.lastSavedAt ?? newWorkOrder.lastSavedAt);
           setHistoryLogs((historyPrev) => [...nextHistoryLogs, ...historyPrev]);
           setSaveStatus("dirty");
           setToastMessage(lifecycleText.createCompletedToastFormat.replace("{title}", getWorkOrderDisplayTitle(createdWorkOrder)));
           setCreateWorkOrderModalOpen(false);
+
+          if (usedLocalFallback) {
+            setActionFailure("create", null);
+            setActionError("create", null);
+          }
         },
       });
     },
