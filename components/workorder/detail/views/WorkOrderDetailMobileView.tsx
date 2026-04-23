@@ -3,7 +3,7 @@ import WorkOrderCostSummarySection from "@/components/workorder/detail/WorkOrder
 import WorkOrderDetailMobileActionSection from "@/components/workorder/detail/sections/device/WorkOrderDetailMobileActionSection";
 import WorkOrderDetailMobileHeaderSection from "@/components/workorder/detail/sections/device/WorkOrderDetailMobileHeaderSection";
 import WorkOrderDetailMobileOrderInfoSection from "@/components/workorder/detail/sections/device/WorkOrderDetailMobileOrderInfoSection";
-import DevicePlaceholderSection from "@/components/workorder/detail/sections/shared/DevicePlaceholderSection";
+import WorkOrderDetailMobileProductionCompositionSection from "@/components/workorder/detail/sections/device/WorkOrderDetailMobileProductionCompositionSection";
 import WorkOrderDetailSharedModals from "@/components/workorder/detail/shared/WorkOrderDetailSharedModals";
 import type { ReturnTypeBuildWorkOrderDetailViewModel, ReturnTypeUseWorkOrderDetailEditor } from "@/components/workorder/detail/views/detailViewTypes";
 
@@ -23,7 +23,7 @@ export default function WorkOrderDetailMobileView({
         <WorkOrderDetailMobileActionSection {...viewModel.actionProps} />
         {viewModel.showCostSummary ? <WorkOrderCostSummarySection {...viewModel.costSummaryProps} /> : null}
         <WorkOrderDetailMobileOrderInfoSection {...viewModel.orderInfoProps} />
-        {viewModel.showProductionComposition ? <DevicePlaceholderSection title="생산 구성 영역" compact /> : null}
+        {viewModel.showProductionComposition ? <WorkOrderDetailMobileProductionCompositionSection {...viewModel.productionCompositionProps} /> : null}
       </MobileSectionStack>
 
       <WorkOrderDetailSharedModals editor={editor} currentInventoryQuantity={currentInventoryQuantity} />

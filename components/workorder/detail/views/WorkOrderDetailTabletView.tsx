@@ -3,7 +3,7 @@ import WorkOrderCostSummarySection from "@/components/workorder/detail/WorkOrder
 import WorkOrderDetailTabletActionSection from "@/components/workorder/detail/sections/device/WorkOrderDetailTabletActionSection";
 import WorkOrderDetailTabletHeaderSection from "@/components/workorder/detail/sections/device/WorkOrderDetailTabletHeaderSection";
 import WorkOrderDetailTabletOrderInfoSection from "@/components/workorder/detail/sections/device/WorkOrderDetailTabletOrderInfoSection";
-import DevicePlaceholderSection from "@/components/workorder/detail/sections/shared/DevicePlaceholderSection";
+import WorkOrderDetailTabletProductionCompositionSection from "@/components/workorder/detail/sections/device/WorkOrderDetailTabletProductionCompositionSection";
 import WorkOrderDetailSharedModals from "@/components/workorder/detail/shared/WorkOrderDetailSharedModals";
 import type { ReturnTypeBuildWorkOrderDetailViewModel, ReturnTypeUseWorkOrderDetailEditor } from "@/components/workorder/detail/views/detailViewTypes";
 
@@ -23,7 +23,7 @@ export default function WorkOrderDetailTabletView({
         <WorkOrderDetailTabletActionSection {...viewModel.actionProps} />
         <WorkOrderDetailTabletOrderInfoSection {...viewModel.orderInfoProps} />
         {viewModel.showCostSummary ? <WorkOrderCostSummarySection {...viewModel.costSummaryProps} /> : null}
-        {viewModel.showProductionComposition ? <DevicePlaceholderSection title="생산 구성 영역" /> : null}
+        {viewModel.showProductionComposition ? <WorkOrderDetailTabletProductionCompositionSection {...viewModel.productionCompositionProps} /> : null}
       </TabletSplitLayout>
 
       <WorkOrderDetailSharedModals editor={editor} currentInventoryQuantity={currentInventoryQuantity} />
