@@ -7,8 +7,6 @@ import { useI18n } from "@/lib/i18n";
 import { getRecommendedWorkOrderCategory } from "@/lib/utils/workorderCategoryRecommend";
 import type { RoleType } from "@/types/workorder";
 
-
-
 function PencilIcon() {
   return (
     <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-3.5 w-3.5">
@@ -157,32 +155,16 @@ export default function WorkOrderHeaderSection({
 
   return (
     <div className="border-b border-stone-200 pb-4">
-      <div className="flex flex-col gap-3 md:gap-4">
-        <div className="hidden md:grid md:grid-cols-[minmax(0,1fr)_auto] md:gap-x-6 md:gap-y-2">
-          <div className="min-w-0">
-            {titleEditor}
-          </div>
-          <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2 text-right">
-            <InlineInfoItem label={copy.managerLabel} value={managerValue} onClick={canEditManager ? onOpenManagerAssignModal : undefined} />
-            <InlineInfoItem label={copy.currentInventoryLabel} value={inventoryValue} onClick={canEditInventory ? onOpenInventoryEditor : undefined} valueClassName="tabular-nums text-stone-900" />
-          </div>
-          <div className="min-w-0">
-            <InlineInfoItem label={copy.summaryLabel} value={summaryValue} onClick={canEditSummary ? onOpenBasicInfoModal : undefined} valueClassName="truncate text-stone-800" />
-          </div>
-          <div className="text-right text-xs text-stone-400">{copy.lastUpdatedPrefix} {lastSavedAt || "-"}</div>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-6 gap-y-2">
+        <div className="min-w-0">{titleEditor}</div>
+        <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2 text-right">
+          <InlineInfoItem label={copy.managerLabel} value={managerValue} onClick={canEditManager ? onOpenManagerAssignModal : undefined} />
+          <InlineInfoItem label={copy.currentInventoryLabel} value={inventoryValue} onClick={canEditInventory ? onOpenInventoryEditor : undefined} valueClassName="tabular-nums text-stone-900" />
         </div>
-
-        <div className="flex flex-col gap-2 md:hidden">
-          <div className="min-w-0">{titleEditor}</div>
-          <div className="min-w-0">
-            <InlineInfoItem label={copy.summaryLabel} value={summaryValue} onClick={canEditSummary ? onOpenBasicInfoModal : undefined} valueClassName="truncate text-stone-800" />
-          </div>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <InlineInfoItem label={copy.managerLabel} value={managerValue} onClick={canEditManager ? onOpenManagerAssignModal : undefined} />
-            <InlineInfoItem label={copy.currentInventoryLabel} value={inventoryValue} onClick={canEditInventory ? onOpenInventoryEditor : undefined} valueClassName="tabular-nums text-stone-900" />
-          </div>
-          <div className="text-xs text-stone-400">{copy.lastUpdatedPrefix} {lastSavedAt || "-"}</div>
+        <div className="min-w-0">
+          <InlineInfoItem label={copy.summaryLabel} value={summaryValue} onClick={canEditSummary ? onOpenBasicInfoModal : undefined} valueClassName="truncate text-stone-800" />
         </div>
+        <div className="text-right text-xs text-stone-400">{copy.lastUpdatedPrefix} {lastSavedAt || "-"}</div>
       </div>
     </div>
   );

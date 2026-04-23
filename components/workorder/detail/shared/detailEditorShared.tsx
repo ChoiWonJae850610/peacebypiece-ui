@@ -65,7 +65,7 @@ export function SectionHeader({
           ▾
         </span>
       </button>
-      {rightSlot ? <div className="hidden shrink-0 md:block">{rightSlot}</div> : null}
+      {rightSlot ? <div className="shrink-0">{rightSlot}</div> : null}
     </div>
   );
 }

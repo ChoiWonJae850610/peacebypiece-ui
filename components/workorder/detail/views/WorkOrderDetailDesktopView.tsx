@@ -4,6 +4,7 @@ import OrderInspectionModal from "@/components/workorder/detail/modals/OrderInsp
 import WorkOrderActionSection from "@/components/workorder/detail/WorkOrderActionSection";
 import WorkOrderCostSummarySection from "@/components/workorder/detail/WorkOrderCostSummarySection";
 import WorkOrderHeaderSection from "@/components/workorder/detail/WorkOrderHeaderSection";
+import DesktopWorkspaceLayout from "@/components/workorder/detail/layout/DesktopWorkspaceLayout";
 import OrderInfoSection from "@/components/workorder/detail/sections/OrderInfoSection";
 import ProductionCompositionSection from "@/components/workorder/detail/sections/ProductionCompositionSection";
 import type { ReturnTypeUseWorkOrderDetailEditor } from "@/components/workorder/detail/views/detailViewTypes";
@@ -19,7 +20,7 @@ export default function WorkOrderDetailDesktopView({
   currentInventoryQuantity: number;
 }) {
   return (
-    <div className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
+    <DesktopWorkspaceLayout>
       <WorkOrderHeaderSection {...viewModel.headerProps} />
 
       <WorkOrderActionSection {...viewModel.actionProps} />
@@ -58,6 +59,6 @@ export default function WorkOrderDetailDesktopView({
         onClose={editor.closeRegistryModal}
         onSave={editor.handleRegistrySave}
       />
-    </div>
+    </DesktopWorkspaceLayout>
   );
 }

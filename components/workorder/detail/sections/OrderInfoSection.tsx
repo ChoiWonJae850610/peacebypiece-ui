@@ -7,9 +7,6 @@ import { getInspectionStatusLabel, getInspectionStatusTone } from "@/lib/workord
 import {
   DeleteButton,
   EditableValue,
-  MOBILE_INFO_ROW_CLASS,
-  MOBILE_LABEL_CLASS,
-  MOBILE_VALUE_WRAPPER_CLASS,
   SectionHeader,
   TABLE_BODY_CELL_CLASS,
   TABLE_HEADER_CELL_CLASS,
@@ -70,73 +67,12 @@ export default function OrderInfoSection({
   ) : null;
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-stone-50 p-3 md:p-3.5">
+    <div className="overflow-hidden rounded-2xl bg-stone-50 p-3.5">
       <SectionHeader title={copy.title} summary={formatOrderSummary(orderEntries)} open={open} onToggle={onToggle} rightSlot={inspectionButton} />
       {open ? (
         <>
-{showDebugPanel ? <OrderInfoHubDebugPanel policy={orderHubPolicy} /> : null}
-          <div className="mt-2 space-y-2.5 md:hidden">
-            {inspectionButton ? <div className="pb-0.5">{inspectionButton}</div> : null}
-            {orderEntries.map((item, index) => (
-              <div key={item.id} className="max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-white px-4 py-3">
-                <div className="flex min-w-0 items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1 overflow-hidden">
-                    <div className="whitespace-nowrap text-sm font-semibold text-stone-900">{item.factory || copy.fallbackItem.replace("{index}", String(index + 1))}</div>
-                    <div className="mt-1 whitespace-nowrap text-xs text-stone-500">{copy.mobileSubtitleFormat.replace("{type}", item.type).replace("{quantity}", `${item.quantity.toLocaleString()}${common.quantitySuffix}`)}</div>
-                  </div>
-                  <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || copy.fallbackItem.replace("{index}", String(index + 1))} ${common.deleteSuffix}` } disabled={locked} />
-                </div>
-                <div className="mt-2 space-y-1.5">
-                  {[
-                    [copy.fields.type, "type", item.type, "text"],
-                    [copy.fields.factory, "factory", item.factory, "text"],
-                    [copy.fields.dueDate, "dueDate", item.dueDate, "text"],
-                    [copy.fields.quantity, "quantity", item.quantity.toLocaleString(), "decimal"],
-                    [copy.fields.laborCost, "laborCost", item.laborCost.toLocaleString(), "decimal"],
-                    [copy.fields.lossCost, "lossCost", item.lossCost.toLocaleString(), "decimal"],
-                    [copy.fields.inspectionStatus, "inspectionStatus", getInspectionStatusLabel(item.inspectionStatus ?? "order_pending"), "text"],
-                  ].map(([label, field, value, inputMode]) => (
-                    <div key={`${item.id}-${field}`} className={MOBILE_INFO_ROW_CLASS}>
-                      <span className={MOBILE_LABEL_CLASS}>{label}</span>
-                      <div className={MOBILE_VALUE_WRAPPER_CLASS}>
-                        {field === "inspectionStatus" ? (
-                          <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${getInspectionStatusTone(item.inspectionStatus ?? "order_pending")}`}>{getInspectionStatusLabel(item.inspectionStatus ?? "order_pending")}</span>
-                        ) : (
-                          <EditableValue
-                            section="order"
-                            rowId={item.id}
-                            field={String(field)}
-                            value={String(value)}
-                            editingCell={editingCell}
-                            editingValue={editingValue}
-                            inputMode={field === "quantity" || field === "laborCost" || field === "lossCost" ? "numeric" : inputMode as "text" | "decimal"}
-                            inputType={field === "dueDate" ? "date" : "text"}
-                            options={field === "type" ? orderTypeOptions : field === "factory" ? factoryOptions : undefined}
-                            alignRight
-                            compact
-                            onStartEdit={onStartEdit}
-                            onCommit={onCommitEdit}
-                            onCancel={onCancelEdit}
-                            disabled={locked}
-                          />
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-            {locked ? null : (
-              <button
-                type="button"
-                onClick={onAdd}
-                className="pbp-interactive-button flex w-full items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
-              >
-                {copy.addButton}
-              </button>
-            )}
-          </div>
-          <div className="mt-1 hidden max-w-full overflow-hidden md:block">
+          {showDebugPanel ? <OrderInfoHubDebugPanel policy={orderHubPolicy} /> : null}
+          <div className="mt-1 max-w-full overflow-hidden">
             <table className="w-full max-w-full table-fixed text-left">
               <colgroup>
                 <col className="w-[13%]" />
@@ -166,9 +102,9 @@ export default function OrderInfoSection({
                     <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                     <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="laborCost" value={item.laborCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                     <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="lossCost" value={item.lossCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
-                    <td className="px-1.5 py-2 text-center align-middle text-[11px] lg:px-2 lg:text-[11px]"><span className={`inline-flex rounded-full px-2 py-1 text-[11px] font-medium lg:text-[11px] ${getInspectionStatusTone(item.inspectionStatus ?? "order_pending")}`}>{getInspectionStatusLabel(item.inspectionStatus ?? "order_pending")}</span></td>
+                    <td className="px-3 py-2 text-center align-middle text-[11px] lg:text-[11px]"><span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium ${getInspectionStatusTone(item.inspectionStatus ?? "order_pending")}`}>{getInspectionStatusLabel(item.inspectionStatus ?? "order_pending")}</span></td>
                     <td className="px-1.5 py-2 text-center align-middle lg:px-2">
-                      <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || copy.fallbackItem.replace("{index}", String(rowIndex + 1))} ${common.deleteSuffix}` } disabled={locked} />
+                      <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || copy.fallbackItem.replace("{index}", String(rowIndex + 1))} ${common.deleteSuffix}`} disabled={locked} />
                     </td>
                   </tr>
                 ))}
