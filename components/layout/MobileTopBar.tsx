@@ -1,24 +1,40 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n";
+import type { DbConnectionStatus } from "@/lib/repositories/dbConnectionStatusStore";
 
 type Props = {
   companyName: string;
   version: string;
   onOpen: () => void;
   onOpenSettings: () => void;
+  dbConnectionStatus?: DbConnectionStatus;
 };
 
-export default function MobileTopBar({ companyName, version, onOpen, onOpenSettings }: Props) {
+export default function MobileTopBar({ companyName, version, onOpen, onOpenSettings, dbConnectionStatus }: Props) {
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.layout.mobileTopBar;
+
+  const dbStatusLabel = !dbConnectionStatus
+    ? null
+    : dbConnectionStatus.connected
+      ? "DB 연결"
+      : dbConnectionStatus.fallbackActive
+        ? "LOCAL FALLBACK"
+        : "DB 미확인";
+
+  const dbStatusTone = !dbConnectionStatus
+    ? "border-stone-200 bg-stone-100 text-stone-500"
+    : dbConnectionStatus.connected
+      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      : "border-amber-200 bg-amber-50 text-amber-700";
 
   return (
     <div className="sticky top-0 z-30 border-b border-stone-200 bg-white/95 px-3 py-[max(env(safe-area-inset-top),0.75rem)] backdrop-blur md:hidden">
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="text-sm font-semibold text-stone-900">{companyName}</div>
-          <div className="flex items-center gap-2 text-[11px] text-stone-500"><span>{copy.subtitle}</span><span className="text-[10px] leading-none text-stone-400">v{version}</span></div>
+          <div className="flex flex-wrap items-center gap-2 text-[11px] text-stone-500"><span>{copy.subtitle}</span><span className="text-[10px] leading-none text-stone-400">v{version}</span>{dbStatusLabel ? <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${dbStatusTone}`}>{dbStatusLabel}</span> : null}</div>
         </div>
         <div className="flex items-center gap-2">
           <button

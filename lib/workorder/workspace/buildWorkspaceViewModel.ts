@@ -32,6 +32,7 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
     onDeleteWorkOrder: args.onDeleteWorkOrder,
     onReworkWorkOrder: args.onReworkWorkOrder,
     onSetSearchQuery: args.onSetSearchQuery,
+    dbConnectionStatus: args.dbConnectionStatus,
   });
 
   const detailProps = buildDetailProps({
@@ -179,6 +180,7 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
     version,
     onSetDrawerOpen: args.onSetDrawerOpen,
     onSetPermissionModalOpen: args.onSetPermissionModalOpen,
+    dbConnectionStatus: args.dbConnectionStatus,
   });
 
   const mobileDrawerProps = buildMobileDrawerProps({

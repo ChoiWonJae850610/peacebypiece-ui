@@ -2,6 +2,7 @@ import { createInitialSeededWorkorderState } from "@/lib/data/mock/seedState";
 import { mockWorkorderAdapter } from "@/lib/repositories/mockWorkorderRepository";
 import { loadPersistedWorkspaceState } from "@/lib/repositories/workorderPersistence";
 import type { WorkorderRepositoryAdapter } from "@/lib/repositories/workorderRepositoryAdapter";
+import { setDbConnectionStatus, type DbConnectionStateCode } from "@/lib/repositories/dbConnectionStatusStore";
 import type { WorkOrder } from "@/types/workorder";
 
 type DbApiErrorBody = {
@@ -71,6 +72,48 @@ function shouldUseLocalFallback(error: unknown): boolean {
   );
 }
 
+
+function toStatusCode(error: unknown): DbConnectionStateCode {
+  if (!(error instanceof Error)) return "UNKNOWN";
+
+  const errorWithMeta = error as Error & { code?: string };
+  if (typeof errorWithMeta.code === "string") {
+    return errorWithMeta.code as DbConnectionStateCode;
+  }
+
+  if (/DATABASE_URL is not configured/i.test(error.message)) return "DB_NOT_CONFIGURED";
+  if (/The 'pg' package is required/i.test(error.message)) return "DB_DRIVER_MISSING";
+  if (/relation .*work_orders.* does not exist/i.test(error.message)) return "DB_TABLE_MISSING";
+  if (/Unsupported payload column type/i.test(error.message)) return "DB_SCHEMA_UNSUPPORTED";
+  if (/column .* does not exist/i.test(error.message) || /invalid input syntax/i.test(error.message) || /cannot cast/i.test(error.message)) return "DB_SCHEMA_INVALID";
+  if (isNetworkErrorMessage(error.message)) return "DB_CONNECTION_FAILED";
+  return "DB_REQUEST_FAILED";
+}
+
+function reportDbStatus(params: {
+  source: "workspace-load" | "create";
+  connected: boolean;
+  fallbackActive: boolean;
+  code: DbConnectionStateCode;
+  message?: string | null;
+}) {
+  setDbConnectionStatus({
+    mode: "db",
+    configured: params.code !== "DB_NOT_CONFIGURED",
+    connected: params.connected,
+    driverReady: params.code !== "DB_DRIVER_MISSING",
+    fallbackActive: params.fallbackActive,
+    source: params.source,
+    code: params.code,
+    message: params.message ?? null,
+    checkedAt: new Date().toISOString(),
+  });
+
+  if (process.env.NODE_ENV !== "production" && params.fallbackActive) {
+    console.warn(`[db fallback] ${params.source}: ${params.code}${params.message ? ` - ${params.message}` : ""}`);
+  }
+}
+
 function loadLocalWorkspaceState() {
   return mockWorkorderAdapter.loadWorkspaceState?.() ?? createInitialSeededWorkorderState();
 }
@@ -104,6 +147,8 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
           seededState.selectedId,
         );
 
+        reportDbStatus({ source: "workspace-load", connected: true, fallbackActive: false, code: "READY" });
+
         return {
           users: persistedState?.users ?? seededState.users,
           historyLogs: persistedState?.historyLogs ?? seededState.historyLogs,
@@ -117,6 +162,7 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
           throw error;
         }
 
+        reportDbStatus({ source: "workspace-load", connected: false, fallbackActive: true, code: toStatusCode(error), message: error instanceof Error ? error.message : null });
         return loadLocalWorkspaceState();
       }
     },
@@ -132,12 +178,14 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
         });
 
         const { workOrder: createdWorkOrder } = await parseResponse<{ workOrder: WorkOrder }>(response);
+        reportDbStatus({ source: "create", connected: true, fallbackActive: false, code: "READY" });
         return createdWorkOrder;
       } catch (error) {
         if (!shouldUseLocalFallback(error)) {
           throw error;
         }
 
+        reportDbStatus({ source: "create", connected: false, fallbackActive: true, code: toStatusCode(error), message: error instanceof Error ? error.message : null });
         return mockWorkorderAdapter.createWorkOrder?.(workOrder) ?? workOrder;
       }
     },

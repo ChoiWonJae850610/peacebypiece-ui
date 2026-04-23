@@ -18,6 +18,7 @@ export function buildSidebarListProps({
   onDeleteWorkOrder,
   onReworkWorkOrder,
   onSetSearchQuery,
+  dbConnectionStatus,
 }: SidebarViewModelArgs): SidebarListProps {
   return {
     companyName,
@@ -36,6 +37,7 @@ export function buildSidebarListProps({
     canManageListActions: !isInspectorRole(currentUser),
     searchQuery,
     onSearchQueryChange: onSetSearchQuery,
+    dbConnectionStatus,
   };
 }
 
@@ -44,12 +46,14 @@ export function buildMobileTopBarProps({
   version,
   onSetDrawerOpen,
   onSetPermissionModalOpen,
-}: Pick<MobileViewModelArgs, "companyName" | "version" | "onSetDrawerOpen" | "onSetPermissionModalOpen">): MobileTopBarProps {
+  dbConnectionStatus,
+}: Pick<MobileViewModelArgs, "companyName" | "version" | "onSetDrawerOpen" | "onSetPermissionModalOpen" | "dbConnectionStatus">): MobileTopBarProps {
   return {
     companyName,
     version,
     onOpen: () => onSetDrawerOpen(true),
     onOpenSettings: () => onSetPermissionModalOpen(true),
+    dbConnectionStatus,
   };
 }
 

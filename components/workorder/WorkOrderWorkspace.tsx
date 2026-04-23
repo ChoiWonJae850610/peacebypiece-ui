@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import WorkOrderLayout from "@/components/workorder/WorkOrderLayout";
 import WorkOrderOverlay from "@/components/workorder/WorkOrderOverlay";
 import { useWorkOrder } from "@/lib/hooks/useWorkOrder";
+import { useDbConnectionStatus } from "@/lib/hooks/workorder/useDbConnectionStatus";
 import { getPendingAttachmentDelete } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
 import { useI18n } from "@/lib/i18n";
 import { buildWorkspaceViewModel } from "@/lib/workorder/workspace/buildWorkspaceViewModel";
@@ -104,6 +105,7 @@ export default function WorkOrderWorkspace() {
     canSeeAttachments,
   } = useWorkOrder();
 
+  const dbConnectionStatus = useDbConnectionStatus();
   const [pendingAttachmentDeleteId, setPendingAttachmentDeleteId] = useState<string | null>(null);
   const renderHasSelection = hasVisibleWorkOrders && hasActiveSelection;
 
@@ -191,6 +193,7 @@ export default function WorkOrderWorkspace() {
     onSetPermissionTargetUserId: setPermissionTargetUserId,
     onSetCurrentUserId: setCurrentUserId,
     onSetSearchQuery: setSearchQuery,
+    dbConnectionStatus,
     onSetHistoryFilter: setHistoryFilter,
     onSave: handleSave,
     onSelectWorkOrder: handleSelectWorkOrder,

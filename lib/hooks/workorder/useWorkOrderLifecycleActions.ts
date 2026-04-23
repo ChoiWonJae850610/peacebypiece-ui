@@ -169,7 +169,7 @@ export function useWorkOrderLifecycleActions({
           setCreateWorkOrderModalOpen(false);
 
           if (usedLocalFallback) {
-            setActionFailure("create", null);
+            setActionFailure?.("create", null);
             setActionError("create", null);
           }
         },
