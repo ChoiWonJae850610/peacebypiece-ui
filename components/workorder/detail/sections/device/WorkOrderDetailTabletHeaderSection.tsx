@@ -28,7 +28,7 @@ export default function WorkOrderDetailTabletHeaderSection({
 
   return (
     <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-      <div className="grid gap-4 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+      <div className="grid gap-4 grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <div className="min-w-0">
           <h2 className="break-keep text-2xl font-semibold text-stone-950">{title}</h2>
           <button

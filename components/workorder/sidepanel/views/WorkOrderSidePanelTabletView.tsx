@@ -1,6 +1,6 @@
 import SidePanelSectionStack from "@/components/workorder/sidepanel/layout/SidePanelSectionStack";
-import WorkOrderAttachmentPanel from "@/components/workorder/sidepanel/WorkOrderAttachmentPanel";
 import WorkOrderMemoPanel from "@/components/workorder/sidepanel/WorkOrderMemoPanel";
+import WorkOrderSidePanelAttachmentSections from "@/components/workorder/sidepanel/shared/WorkOrderSidePanelAttachmentSections";
 import type { WorkOrderSidePanelProps } from "@/components/workorder/sidepanel/WorkOrderSidePanel.types";
 
 export default function WorkOrderSidePanelTabletView(props: WorkOrderSidePanelProps) {
@@ -21,21 +21,15 @@ export default function WorkOrderSidePanelTabletView(props: WorkOrderSidePanelPr
       </SidePanelSectionStack>
 
       <SidePanelSectionStack>
-        {props.attachmentSections.map((section) => (
-          <WorkOrderAttachmentPanel
-            key={section.key}
-            title={section.title}
-            emptyText={section.emptyText}
-            addButtonLabel={section.addButtonLabel}
-            canSeeAttachments={props.canSeeAttachments}
-            canManageAttachments={props.canManageAttachments}
-            attachments={section.items}
-            onOpenAttachmentPicker={() => props.onOpenAttachmentPicker(section.uploadScope)}
-            onPreviewAttachment={props.onPreviewAttachment}
-            onDeleteAttachment={props.onDeleteAttachment}
-            variant="tablet"
-          />
-        ))}
+        <WorkOrderSidePanelAttachmentSections
+          attachmentSections={props.attachmentSections}
+          canSeeAttachments={props.canSeeAttachments}
+          canManageAttachments={props.canManageAttachments}
+          onOpenAttachmentPicker={props.onOpenAttachmentPicker}
+          onPreviewAttachment={props.onPreviewAttachment}
+          onDeleteAttachment={props.onDeleteAttachment}
+          variant="tablet"
+        />
       </SidePanelSectionStack>
     </div>
   );

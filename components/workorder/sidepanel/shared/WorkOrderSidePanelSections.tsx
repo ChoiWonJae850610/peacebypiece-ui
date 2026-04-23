@@ -1,5 +1,5 @@
-import WorkOrderAttachmentPanel from "@/components/workorder/sidepanel/WorkOrderAttachmentPanel";
 import WorkOrderMemoPanel from "@/components/workorder/sidepanel/WorkOrderMemoPanel";
+import WorkOrderSidePanelAttachmentSections from "@/components/workorder/sidepanel/shared/WorkOrderSidePanelAttachmentSections";
 import type { WorkOrderSidePanelProps, WorkOrderSidePanelVariant } from "@/components/workorder/sidepanel/WorkOrderSidePanel.types";
 
 type WorkOrderSidePanelSectionsProps = WorkOrderSidePanelProps & {
@@ -24,21 +24,17 @@ export default function WorkOrderSidePanelSections({
   variant,
   memoFirst = false,
 }: WorkOrderSidePanelSectionsProps) {
-  const attachmentPanels = attachmentSections.map((section) => (
-    <WorkOrderAttachmentPanel
-      key={section.key}
-      title={section.title}
-      emptyText={section.emptyText}
-      addButtonLabel={section.addButtonLabel}
+  const attachmentPanels = (
+    <WorkOrderSidePanelAttachmentSections
+      attachmentSections={attachmentSections}
       canSeeAttachments={canSeeAttachments}
       canManageAttachments={canManageAttachments}
-      attachments={section.items}
-      onOpenAttachmentPicker={() => onOpenAttachmentPicker(section.uploadScope)}
+      onOpenAttachmentPicker={onOpenAttachmentPicker}
       onPreviewAttachment={onPreviewAttachment}
       onDeleteAttachment={onDeleteAttachment}
       variant={variant}
     />
-  ));
+  );
 
   const memoPanel = (
     <WorkOrderMemoPanel
