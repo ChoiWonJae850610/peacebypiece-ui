@@ -127,13 +127,19 @@ export default function WorkOrderDetailContainer({
     onRemoveOutsourcing: editor.removeOutsourcing,
   });
 
+  const detailViewProps = {
+    viewModel,
+    editor,
+    currentInventoryQuantity,
+  };
+
   if (deviceType === "mobile") {
-    return <WorkOrderDetailMobileView viewModel={viewModel} editor={editor} currentInventoryQuantity={currentInventoryQuantity} />;
+    return <WorkOrderDetailMobileView {...detailViewProps} />;
   }
 
   if (deviceType === "tablet") {
-    return <WorkOrderDetailTabletView viewModel={viewModel} editor={editor} currentInventoryQuantity={currentInventoryQuantity} />;
+    return <WorkOrderDetailTabletView {...detailViewProps} />;
   }
 
-  return <WorkOrderDetailDesktopView viewModel={viewModel} editor={editor} currentInventoryQuantity={currentInventoryQuantity} />;
+  return <WorkOrderDetailDesktopView {...detailViewProps} />;
 }
