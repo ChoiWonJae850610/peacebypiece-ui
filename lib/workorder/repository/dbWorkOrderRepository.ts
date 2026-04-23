@@ -4,6 +4,7 @@ import { queryDb } from "@/lib/db/client";
 import type { WorkOrder } from "@/types/workorder";
 
 const WORK_ORDER_TABLE = "work_orders";
+const DEFAULT_WORKFLOW_STATE: WorkOrder["workflowState"] = "draft";
 
 type DbWorkOrderRow = {
   id: string;
@@ -43,13 +44,25 @@ function mapRowToWorkOrder(row: DbWorkOrderRow): WorkOrder {
   } satisfies WorkOrder;
 }
 
-function serializeWorkOrderPayload(workOrder: WorkOrder): WorkOrder {
+function normalizeWorkOrderForDb(workOrder: WorkOrder): WorkOrder {
+  const now = new Date().toISOString();
+
   return {
     ...workOrder,
-    id: workOrder.id,
-    title: workOrder.title,
-    workflowState: workOrder.workflowState,
-    lastSavedAt: workOrder.lastSavedAt,
+    workflowState: workOrder.workflowState ?? DEFAULT_WORKFLOW_STATE,
+    lastSavedAt: workOrder.lastSavedAt || now,
+  };
+}
+
+function serializeWorkOrderPayload(workOrder: WorkOrder): WorkOrder {
+  const normalizedWorkOrder = normalizeWorkOrderForDb(workOrder);
+
+  return {
+    ...normalizedWorkOrder,
+    id: normalizedWorkOrder.id,
+    title: normalizedWorkOrder.title,
+    workflowState: normalizedWorkOrder.workflowState,
+    lastSavedAt: normalizedWorkOrder.lastSavedAt,
   };
 }
 
@@ -73,7 +86,8 @@ export async function findAllDbWorkOrders(): Promise<WorkOrder[]> {
 }
 
 export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder> {
-  const payload = serializeWorkOrderPayload(workOrder);
+  const normalizedWorkOrder = normalizeWorkOrderForDb(workOrder);
+  const payload = serializeWorkOrderPayload(normalizedWorkOrder);
 
   const result = await queryDb<DbWorkOrderRow>(
     `
@@ -94,7 +108,7 @@ export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
         created_at,
         updated_at
     `,
-    [workOrder.id, workOrder.title, workOrder.workflowState, workOrder.lastSavedAt, JSON.stringify(payload)],
+    [normalizedWorkOrder.id, normalizedWorkOrder.title, normalizedWorkOrder.workflowState, normalizedWorkOrder.lastSavedAt, JSON.stringify(payload)],
   );
 
   const created = result.rows[0];

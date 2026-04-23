@@ -41,6 +41,26 @@ export function isDatabaseConfigured(): boolean {
   return getDatabaseUrl() !== null;
 }
 
+export type DatabaseRuntimeErrorCode =
+  | "DB_NOT_CONFIGURED"
+  | "DB_DRIVER_MISSING"
+  | "DB_CONNECTION_FAILED"
+  | "DB_UNKNOWN_ERROR";
+
+export function getDatabaseRuntimeErrorCode(error: unknown): DatabaseRuntimeErrorCode {
+  if (!(error instanceof Error)) return "DB_UNKNOWN_ERROR";
+
+  if (/DATABASE_URL is not configured/i.test(error.message)) {
+    return "DB_NOT_CONFIGURED";
+  }
+
+  if (/The 'pg' package is required/i.test(error.message) || /Cannot find package 'pg'/i.test(error.message)) {
+    return "DB_DRIVER_MISSING";
+  }
+
+  return "DB_CONNECTION_FAILED";
+}
+
 async function createPool(): Promise<PgPoolLike> {
   const connectionString = getDatabaseUrl();
 

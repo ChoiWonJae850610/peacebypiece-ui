@@ -9,6 +9,14 @@ type DbApiErrorBody = {
   code?: string;
 };
 
+const LOCAL_FALLBACK_ERROR_CODES = new Set([
+  "DB_NOT_CONFIGURED",
+  "DB_DRIVER_MISSING",
+  "DB_CONNECTION_FAILED",
+  "DB_TABLE_MISSING",
+  "DB_SCHEMA_INVALID",
+]);
+
 async function parseResponse<T>(response: Response): Promise<T> {
   const body = (await response.json()) as T & DbApiErrorBody;
 
@@ -27,7 +35,14 @@ function shouldUseLocalFallback(error: unknown): boolean {
   if (!(error instanceof Error)) return false;
 
   const errorWithMeta = error as Error & { code?: string; status?: number };
-  return errorWithMeta.code === "DB_NOT_CONFIGURED" || errorWithMeta.status === 503 || /DATABASE_URL is not configured/i.test(error.message);
+
+  return (
+    (typeof errorWithMeta.code === "string" && LOCAL_FALLBACK_ERROR_CODES.has(errorWithMeta.code)) ||
+    errorWithMeta.status === 503 ||
+    /DATABASE_URL is not configured/i.test(error.message) ||
+    /The 'pg' package is required/i.test(error.message) ||
+    /relation .*work_orders.* does not exist/i.test(error.message)
+  );
 }
 
 function loadLocalWorkspaceState() {
