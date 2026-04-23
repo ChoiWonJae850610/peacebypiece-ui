@@ -26,6 +26,35 @@ export type WorkflowStateValue = (typeof WORKFLOW_STATES)[number];
 export type DisplayStageValue = (typeof DISPLAY_STAGES)[number];
 export type OrderInspectionStatusValue = (typeof ORDER_INSPECTION_STATUSES)[number];
 
+
+export const STATUS_ORDER: Record<WorkflowStateValue, number> = {
+  draft: 0,
+  review_requested: 1,
+  review_completed: 2,
+  inspection: 3,
+  completed: 4,
+};
+
+export function compareWorkflowStates(left: WorkflowStateValue, right: WorkflowStateValue) {
+  return STATUS_ORDER[left] - STATUS_ORDER[right];
+}
+
+export function isWorkflowStateAtLeast(state: WorkflowStateValue, minimum: WorkflowStateValue) {
+  return compareWorkflowStates(state, minimum) >= 0;
+}
+
+export function isWorkflowStateBefore(state: WorkflowStateValue, target: WorkflowStateValue) {
+  return compareWorkflowStates(state, target) < 0;
+}
+
+export function isWorkflowStateAfter(state: WorkflowStateValue, target: WorkflowStateValue) {
+  return compareWorkflowStates(state, target) > 0;
+}
+
+export function isWorkflowStateEqualOrBefore(state: WorkflowStateValue, target: WorkflowStateValue) {
+  return compareWorkflowStates(state, target) <= 0;
+}
+
 export const WORKFLOW_STATE_TO_STAGE: Record<WorkflowStateValue, DisplayStageValue> = {
   draft: "draft",
   review_requested: "review_requested",

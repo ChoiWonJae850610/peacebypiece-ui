@@ -11,6 +11,7 @@ import {
   normalizeRoles,
 } from "@/lib/constants/roles";
 import { WORKFLOW_ACTION_LABELS } from "@/lib/constants/workflow";
+import { isWorkflowStateAtLeast } from "@/lib/constants/workorderStates";
 import type { RoleType } from "@/types/permission";
 import {
   getOrderSubmissionSnapshot,
@@ -76,7 +77,7 @@ export function canRequestFactoryOrder(payload: {
   currentWorkflowState: WorkflowState;
 }) {
   return isAdminRole(payload.currentRoles)
-    && payload.currentWorkflowState === "review_completed"
+    && isWorkflowStateAtLeast(payload.currentWorkflowState, "review_completed")
     && !payload.workOrder.factoryOrderRequest;
 }
 
@@ -173,7 +174,7 @@ export function getFactoryOrderRequestValidationMessage(payload: {
   if (!canRequestOrder(payload.currentRoles)) {
     return payload.text.factoryOrderAdminOnlyToast ?? null;
   }
-  if (payload.currentWorkflowState !== "review_completed") {
+  if (!isWorkflowStateAtLeast(payload.currentWorkflowState, "review_completed") || payload.currentWorkflowState === "review_requested") {
     return payload.text.factoryOrderReviewApprovedOnlyToast ?? null;
   }
   if (!hasValidOrderFactoryName(payload.factoryName)) {

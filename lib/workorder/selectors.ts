@@ -8,6 +8,7 @@ export {
 } from "@/lib/workorder/orderSubmission";
 import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
 import { isAdminRole, isDesignerRole, isInspectorRole } from "@/lib/constants/roles";
+import { compareWorkflowStates } from "@/lib/constants/workorderStates";
 import type { UserProfile } from "@/types/user";
 import { createWorkOrderListItem } from "@/lib/workorder/mappers/workOrderListItemMapper";
 import { calculateWorkOrderCosts } from "@/lib/workorder/derived/workOrderCostSummary";
@@ -31,14 +32,14 @@ export function filterWorkOrdersByUserScope(workOrders: WorkOrder[], workflowSta
     return workOrders.filter((item) => {
       const workflowState = workflowStateById[item.id] ?? item.workflowState;
       const isOwnedByCurrentUser = item.createdById === currentUser.id || (item.managerId ?? null) === currentUser.id;
-      return isOwnedByCurrentUser && workflowState === "draft";
+      return isOwnedByCurrentUser && compareWorkflowStates(workflowState as WorkOrder["workflowState"], "review_requested") < 0;
     });
   }
 
   if (isInspectorRole(currentUser)) {
     return workOrders.filter((item) => {
       const workflowState = workflowStateById[item.id] ?? item.workflowState;
-      return workflowState === "inspection";
+      return compareWorkflowStates(workflowState as WorkOrder["workflowState"], "inspection") >= 0 && compareWorkflowStates(workflowState as WorkOrder["workflowState"], "completed") <= 0;
     });
   }
 

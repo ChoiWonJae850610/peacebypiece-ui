@@ -1,4 +1,5 @@
 import type { RoleType } from '@/types/permission';
+import { compareWorkflowStates } from '@/lib/constants/workorderStates';
 import type { WorkOrder, WorkflowState } from '@/types/workorder';
 
 export type OrderInfoHubPolicy = {
@@ -25,7 +26,7 @@ export function deriveOrderInfoHubPolicy(args: {
   const reorderGroupId = String(workOrder.reorderGroupId ?? '').trim();
   const isInitialWorkOrder = Boolean(currentId) && (!reorderGroupId || currentId === reorderGroupId);
   const isAdmin = isAdminRole(currentUserRole);
-  const canEditBeforeOrder = currentWorkflowState === 'draft' || (currentWorkflowState === 'review_requested' && isAdmin);
+  const canEditBeforeOrder = compareWorkflowStates(currentWorkflowState, 'review_requested') < 0 || (currentWorkflowState === 'review_requested' && isAdmin);
   const canChangeKind = canEditBeforeOrder;
   const stateScope: OrderInfoHubPolicy['stateScope'] = currentWorkflowState === 'draft'
     ? 'draft'

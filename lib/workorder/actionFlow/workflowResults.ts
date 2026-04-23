@@ -21,6 +21,7 @@ import { pruneDraftRows, shouldPruneDraftRowsForWorkflowState } from "@/lib/work
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import { isSameComparableText } from "@/lib/utils/compare";
 import { defaultActionFlowText, defaultHistoryText, type ActionFlowHistoryText, type ActionFlowText, type WorkOrderActionFlowResult } from "@/lib/workorder/actionFlow/shared";
+import { isWorkflowStateBefore } from "@/lib/constants/workorderStates";
 
 export function buildWorkflowActionResult(payload: {
   workOrder: WorkOrder;
@@ -48,7 +49,7 @@ export function buildWorkflowActionResult(payload: {
       ),
     ],
     saveStatus: payload.action.nextState === "review_requested" ? "dirty" : undefined,
-    openInventoryEditor: payload.action.nextState === "inspection" && payload.workOrder.workflowState !== "completed",
+    openInventoryEditor: payload.action.nextState === "inspection" && isWorkflowStateBefore(payload.workOrder.workflowState, "completed"),
     toastMessage: payload.toastMessageOverride ?? (payload.text ?? defaultActionFlowText).workflowChangedToastFormat.replace("{label}", payload.action.label),
   };
 }

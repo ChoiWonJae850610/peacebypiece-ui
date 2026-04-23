@@ -2,7 +2,13 @@ import {
   DISPLAY_STAGES,
   INVENTORY_EDITABLE_STATES,
   MANAGER_ASSIGNABLE_STATES,
+  STATUS_ORDER,
   WORKFLOW_STATE_TO_STAGE,
+  compareWorkflowStates,
+  isWorkflowStateAfter,
+  isWorkflowStateAtLeast,
+  isWorkflowStateBefore,
+  isWorkflowStateEqualOrBefore,
 } from "@/lib/constants/workorderStates";
 import { getI18n } from "@/lib/i18n";
 import {
@@ -19,7 +25,16 @@ const i18n = getI18n();
 const presentation = i18n.workorder.presentation;
 
 export const VISIBLE_STAGES: DisplayStage[] = [...DISPLAY_STAGES];
-export { MANAGER_ASSIGNABLE_STATES, INVENTORY_EDITABLE_STATES };
+export {
+  MANAGER_ASSIGNABLE_STATES,
+  INVENTORY_EDITABLE_STATES,
+  STATUS_ORDER,
+  compareWorkflowStates,
+  isWorkflowStateAfter,
+  isWorkflowStateAtLeast,
+  isWorkflowStateBefore,
+  isWorkflowStateEqualOrBefore,
+};
 
 export const WORKFLOW_ACTION_LABELS = i18n.workorder.actionLabels;
 
