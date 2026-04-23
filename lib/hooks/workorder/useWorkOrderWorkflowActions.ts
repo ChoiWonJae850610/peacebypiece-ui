@@ -35,7 +35,7 @@ import type {
   UseWorkOrderActionsParams,
 } from "./useWorkOrderActionTypes";
 
-const requiresOrderRequestConfirmation = (action: WorkflowAction) => action.nextState === "order_requested";
+const requiresOrderRequestConfirmation = (action: WorkflowAction) => action.actionType === "request_order";
 
 type UseWorkOrderWorkflowActionsParams = Pick<
   UseWorkOrderActionsParams,

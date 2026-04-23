@@ -28,7 +28,6 @@ export default function WorkOrderActionSection({
   const doneTrackTone = "bg-stone-400";
   const stageGroups: Array<{ label: string; stages: DisplayStage[] }> = [
     { label: stageGroupsCopy.making, stages: ["draft", "review_requested", "review_completed"] },
-    { label: stageGroupsCopy.production, stages: ["order_requested"] },
     { label: stageGroupsCopy.inspection, stages: ["inspection", "completed"] },
   ];
   const currentGroupIndex = stageGroups.findIndex((group) => group.stages.includes(currentStage));
@@ -73,7 +72,7 @@ export default function WorkOrderActionSection({
       </div>
 
       <div className="mt-3">
-        <div className="grid grid-cols-6 gap-2">
+        <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${stages.length}, minmax(0, 1fr))` }}>
           {stages.map((stage, index) => {
             const isDone = index <= currentIndex;
             const isCurrent = stage === currentStage;

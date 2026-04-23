@@ -32,8 +32,6 @@ export function getDefaultInspectionStatusForWorkflowState(workflowState: Workfl
       return "inspection_in_progress";
     case "completed":
       return "inspection_completed";
-    case "order_requested":
-      return "inspection_pending";
     default:
       return "order_pending";
   }
@@ -211,38 +209,37 @@ export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles
     case "draft": {
       const actions: WorkflowAction[] = [];
       if (canRequestReview({ currentRoles, currentUserId, workOrder })) {
-        actions.push({ label: WORKFLOW_ACTION_LABELS.requestReview, nextState: "review_requested" });
+        actions.push({ label: WORKFLOW_ACTION_LABELS.requestReview, nextState: "review_requested", actionType: "request_review" });
       }
       return actions;
     }
     case "review_requested": {
       if (isAdminRole(currentRoles)) {
         return [
-          { label: WORKFLOW_ACTION_LABELS.rejectReview, nextState: "draft" },
-          { label: WORKFLOW_ACTION_LABELS.approveReview, nextState: "review_completed" },
+          { label: WORKFLOW_ACTION_LABELS.rejectReview, nextState: "draft", actionType: "reject_review" },
+          { label: WORKFLOW_ACTION_LABELS.approveReview, nextState: "review_completed", actionType: "approve_review" },
         ];
       }
       if (canRequestReview({ currentRoles, currentUserId, workOrder })) {
-        return [{ label: WORKFLOW_ACTION_LABELS.cancelReviewRequest, nextState: "draft" }];
+        return [{ label: WORKFLOW_ACTION_LABELS.cancelReviewRequest, nextState: "draft", actionType: "cancel_review_request" }];
       }
       return [];
     }
     case "review_completed":
       if (isAdminRole(currentRoles)) {
         return [
-          { label: WORKFLOW_ACTION_LABELS.cancelReviewApproval, nextState: "review_requested" },
+          { label: WORKFLOW_ACTION_LABELS.cancelReviewApproval, nextState: "review_requested", actionType: "cancel_review_request" },
           ...(canRequestFactoryOrder({ currentRoles, workOrder, currentWorkflowState })
-            ? [{ label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "order_requested" } satisfies WorkflowAction]
+            ? [{ label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "inspection", actionType: "request_order" } satisfies WorkflowAction]
             : []),
         ];
       }
       return [];
     case "completed":
       if (isAdminRole(currentRoles)) {
-        return [{ label: WORKFLOW_ACTION_LABELS.requestReinspection, nextState: "inspection" }];
+        return [{ label: WORKFLOW_ACTION_LABELS.requestReinspection, nextState: "inspection", actionType: "request_reinspection" }];
       }
       return [];
-    case "order_requested":
     case "inspection":
     default:
       return [];

@@ -2,7 +2,7 @@ import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculat
 import type { WorkflowState } from "@/types/workorder";
 import type { OrderEntryState } from "@/components/workorder/detail/shared/detailEditorShared";
 
-const INSPECTION_MODAL_WORKFLOW_STATES: WorkflowState[] = ["order_requested", "inspection"];
+const INSPECTION_MODAL_WORKFLOW_STATES: WorkflowState[] = ["inspection"];
 
 export type CostSummaryValues = {
   laborCost: number;

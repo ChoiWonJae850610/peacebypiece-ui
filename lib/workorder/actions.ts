@@ -120,7 +120,7 @@ export function requestFactoryOrderForWorkOrder(
 
   return syncWorkOrderOrderSnapshot({
     ...workOrder,
-    workflowState: "order_requested",
+    workflowState: "inspection",
     orderEntries: nextOrderEntries,
     factoryOrderRequest: {
       ...payload,
@@ -239,6 +239,7 @@ export function completeInspectionForWorkOrder(
 
   return {
     ...workOrder,
+    workflowState: deriveWorkflowStateFromOrderEntries("inspection", nextOrderEntries),
     orderEntries: nextOrderEntries,
     inventoryQuantity: payload.nextInventoryQuantity,
     inventoryStatus: payload.nextInventoryQuantity > 0 ? INVENTORY_STATUS.normal : INVENTORY_STATUS.shortage,

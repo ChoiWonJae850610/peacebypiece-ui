@@ -2,7 +2,6 @@ export const WORKFLOW_STATES = [
   "draft",
   "review_requested",
   "review_completed",
-  "order_requested",
   "inspection",
   "completed",
 ] as const;
@@ -11,7 +10,6 @@ export const DISPLAY_STAGES = [
   "draft",
   "review_requested",
   "review_completed",
-  "order_requested",
   "inspection",
   "completed",
 ] as const;
@@ -31,7 +29,6 @@ export const WORKFLOW_STATE_TO_STAGE: Record<WorkflowStateValue, DisplayStageVal
   draft: "draft",
   review_requested: "review_requested",
   review_completed: "review_completed",
-  order_requested: "order_requested",
   inspection: "inspection",
   completed: "completed",
 };
@@ -40,7 +37,6 @@ export const WORKFLOW_STATE_BADGE_TONE: Record<WorkflowStateValue | DisplayStage
   draft: "bg-stone-100 text-stone-700",
   review_requested: "bg-violet-100 text-violet-700",
   review_completed: "bg-fuchsia-100 text-fuchsia-700",
-  order_requested: "bg-amber-100 text-amber-700",
   inspection: "bg-emerald-100 text-emerald-700",
   completed: "bg-stone-900 text-white",
 };
@@ -49,7 +45,6 @@ export const WORKFLOW_STATE_DOT_TONE: Record<WorkflowStateValue | DisplayStageVa
   draft: "bg-stone-500",
   review_requested: "bg-violet-500",
   review_completed: "bg-fuchsia-500",
-  order_requested: "bg-amber-500",
   inspection: "bg-emerald-500",
   completed: "bg-white",
 };
@@ -58,7 +53,6 @@ export const WORKFLOW_STATE_TEXT_TONE: Record<WorkflowStateValue | DisplayStageV
   draft: "text-stone-700",
   review_requested: "text-violet-700",
   review_completed: "text-fuchsia-700",
-  order_requested: "text-amber-700",
   inspection: "text-emerald-700",
   completed: "text-stone-900",
 };
@@ -82,11 +76,12 @@ export const LEGACY_WORKFLOW_STATE_MAP = {
   "작성중": "draft",
   "검토요청": "review_requested",
   "검토완료": "review_completed",
-  "발주요청": "order_requested",
+  "발주요청": "inspection",
   "생산중": "inspection",
   "검수중": "inspection",
   "완료": "completed",
   review_approved: "review_completed",
+  order_requested: "inspection",
   in_production: "inspection",
   in_inspection: "inspection",
 } as const;
@@ -95,7 +90,7 @@ export const LEGACY_DISPLAY_STAGE_MAP = {
   "작성중": "draft",
   "검토요청": "review_requested",
   "검토완료": "review_completed",
-  "발주요청": "order_requested",
+  "발주요청": "inspection",
   "검수": "inspection",
   "완료": "completed",
   review_approved: "review_completed",

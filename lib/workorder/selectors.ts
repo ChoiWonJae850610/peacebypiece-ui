@@ -38,7 +38,7 @@ export function filterWorkOrdersByUserScope(workOrders: WorkOrder[], workflowSta
   if (isInspectorRole(currentUser)) {
     return workOrders.filter((item) => {
       const workflowState = workflowStateById[item.id] ?? item.workflowState;
-      return workflowState === "order_requested" || workflowState === "inspection";
+      return workflowState === "inspection";
     });
   }
 
