@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getDatabaseRuntimeErrorCode, isDatabaseConfigured } from "@/lib/db/client";
+import { getDatabaseRuntimeErrorCode, getSupportedDatabaseEnvKeys, isDatabaseConfigured } from "@/lib/db/client";
 import { createDbWorkOrder, deleteDbWorkOrder, findAllDbWorkOrders, updateDbWorkOrder } from "@/lib/workorder/repository/dbWorkOrderRepository";
 import type { WorkOrder } from "@/types/workorder";
 
@@ -18,11 +18,29 @@ type DbApiErrorPayload = {
   code: DbApiErrorCode;
 };
 
+const DATABASE_ENV_HELP = `Expected one of: ${getSupportedDatabaseEnvKeys().join(", ")}`;
+const DB_API_LOG_THROTTLE_MS = 5000;
+const lastDbApiLogByKey = new Map<string, number>();
+
+function createDbNotConfiguredPayload() {
+  return { message: `Database connection string is not configured. ${DATABASE_ENV_HELP}`, code: "DB_NOT_CONFIGURED" as const };
+}
+
 function logDbRequestOutcome(method: "GET" | "POST" | "PATCH" | "DELETE", ok: boolean, code: string, details?: string | null) {
   if (process.env.NODE_ENV === "production") return;
+
   const suffix = details ? ` - ${details}` : "";
   const prefix = ok ? "[db api]" : "[db api error]";
-  console[ok ? "info" : "warn"](`${prefix} ${method} ${code}${suffix}`);
+  const logMessage = `${prefix} ${method} ${code}${suffix}`;
+  const now = Date.now();
+  const lastLoggedAt = lastDbApiLogByKey.get(logMessage) ?? 0;
+
+  if (now - lastLoggedAt < DB_API_LOG_THROTTLE_MS) {
+    return;
+  }
+
+  lastDbApiLogByKey.set(logMessage, now);
+  console[ok ? "info" : "warn"](logMessage);
 }
 
 function resolveDbErrorPayload(error: unknown, fallbackMessage: string): { status: number; payload: DbApiErrorPayload } {
@@ -67,7 +85,7 @@ function createDbErrorResponse(error: unknown, fallbackMessage: string) {
 
 export async function GET() {
   if (!isDatabaseConfigured()) {
-    return NextResponse.json({ message: "DATABASE_URL is not configured.", code: "DB_NOT_CONFIGURED" }, { status: 503 });
+    return NextResponse.json(createDbNotConfiguredPayload(), { status: 503 });
   }
 
   try {
@@ -83,7 +101,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   if (!isDatabaseConfigured()) {
-    return NextResponse.json({ message: "DATABASE_URL is not configured.", code: "DB_NOT_CONFIGURED" }, { status: 503 });
+    return NextResponse.json(createDbNotConfiguredPayload(), { status: 503 });
   }
 
   try {
@@ -111,7 +129,7 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   if (!isDatabaseConfigured()) {
-    return NextResponse.json({ message: "DATABASE_URL is not configured.", code: "DB_NOT_CONFIGURED" }, { status: 503 });
+    return NextResponse.json(createDbNotConfiguredPayload(), { status: 503 });
   }
 
   try {
@@ -157,7 +175,7 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   if (!isDatabaseConfigured()) {
-    return NextResponse.json({ message: "DATABASE_URL is not configured.", code: "DB_NOT_CONFIGURED" }, { status: 503 });
+    return NextResponse.json(createDbNotConfiguredPayload(), { status: 503 });
   }
 
   try {

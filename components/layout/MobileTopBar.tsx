@@ -19,9 +19,11 @@ export default function MobileTopBar({ companyName, version, onOpen, onOpenSetti
     ? null
     : dbConnectionStatus.connected
       ? "DB 연결"
-      : dbConnectionStatus.fallbackActive
-        ? "LOCAL FALLBACK"
-        : "DB 미확인";
+      : dbConnectionStatus.code === "DB_NOT_CONFIGURED"
+        ? "DB ENV 미설정"
+        : dbConnectionStatus.fallbackActive
+          ? "LOCAL FALLBACK"
+          : "DB 미확인";
 
   const dbStatusTone = !dbConnectionStatus
     ? "border-stone-200 bg-stone-100 text-stone-500"

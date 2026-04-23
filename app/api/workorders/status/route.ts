@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { getDatabaseRuntimeErrorCode, isDatabaseConfigured, queryDb } from "@/lib/db/client";
+import { getDatabaseConfigSource, getDatabaseRuntimeErrorCode, getSupportedDatabaseEnvKeys, isDatabaseConfigured, queryDb } from "@/lib/db/client";
+
+const DATABASE_ENV_HELP = `Expected one of: ${getSupportedDatabaseEnvKeys().join(", ")}`;
 
 type DbStatusPayload = {
   mode: "db";
@@ -15,6 +17,7 @@ type DbStatusPayload = {
     | "DB_CONNECTION_FAILED"
     | "DB_UNKNOWN_ERROR";
   message: string | null;
+  configSource?: string | null;
   checkedAt: string;
 };
 
@@ -30,7 +33,8 @@ export async function GET() {
       fallbackActive: true,
       source: "status-check",
       code: "DB_NOT_CONFIGURED",
-      message: "DATABASE_URL is not configured.",
+      message: `Database connection string is not configured. ${DATABASE_ENV_HELP}`,
+      configSource: null,
       checkedAt,
     });
   }
@@ -47,6 +51,7 @@ export async function GET() {
       source: "status-check",
       code: "READY",
       message: null,
+      configSource: getDatabaseConfigSource(),
       checkedAt,
     });
   } catch (error) {
@@ -62,6 +67,7 @@ export async function GET() {
       source: "status-check",
       code: runtimeCode,
       message,
+      configSource: getDatabaseConfigSource(),
       checkedAt,
     });
   }

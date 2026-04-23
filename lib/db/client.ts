@@ -32,9 +32,37 @@ async function loadPoolConstructor(): Promise<PgPoolConstructor> {
   return pgModule.Pool;
 }
 
+const DATABASE_URL_ENV_KEYS = [
+  "DATABASE_URL",
+  "POSTGRES_URL",
+  "POSTGRES_PRISMA_URL",
+  "POSTGRES_URL_NON_POOLING",
+  "NEON_DATABASE_URL",
+] as const;
+
+type DatabaseUrlEnvKey = (typeof DATABASE_URL_ENV_KEYS)[number];
+
+export function getDatabaseConfigSource(): DatabaseUrlEnvKey | null {
+  for (const envKey of DATABASE_URL_ENV_KEYS) {
+    const value = process.env[envKey];
+    if (typeof value === "string" && value.trim().length > 0) {
+      return envKey;
+    }
+  }
+
+  return null;
+}
+
 export function getDatabaseUrl(): string | null {
-  const connectionString = process.env.DATABASE_URL;
+  const envKey = getDatabaseConfigSource();
+  if (!envKey) return null;
+
+  const connectionString = process.env[envKey];
   return typeof connectionString === "string" && connectionString.trim().length > 0 ? connectionString : null;
+}
+
+export function getSupportedDatabaseEnvKeys(): readonly DatabaseUrlEnvKey[] {
+  return DATABASE_URL_ENV_KEYS;
 }
 
 export function isDatabaseConfigured(): boolean {
@@ -50,7 +78,7 @@ export type DatabaseRuntimeErrorCode =
 export function getDatabaseRuntimeErrorCode(error: unknown): DatabaseRuntimeErrorCode {
   if (!(error instanceof Error)) return "DB_UNKNOWN_ERROR";
 
-  if (/DATABASE_URL is not configured/i.test(error.message)) {
+  if (/DATABASE_URL is not configured|No supported database env var is configured/i.test(error.message)) {
     return "DB_NOT_CONFIGURED";
   }
 
@@ -65,7 +93,7 @@ async function createPool(): Promise<PgPoolLike> {
   const connectionString = getDatabaseUrl();
 
   if (!connectionString) {
-    throw new Error("DATABASE_URL is not configured.");
+    throw new Error(`No supported database env var is configured. Expected one of: ${DATABASE_URL_ENV_KEYS.join(", ")}.`);
   }
 
   const Pool = await loadPoolConstructor();

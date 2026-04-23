@@ -19,6 +19,9 @@ const LOCAL_FALLBACK_ERROR_CODES = new Set([
   "DB_SCHEMA_UNSUPPORTED",
 ]);
 
+const LOG_THROTTLE_MS = 5000;
+const lastFallbackLogByKey = new Map<string, number>();
+
 async function parseResponse<T>(response: Response): Promise<T> {
   let body: (T & DbApiErrorBody) | null = null;
 
@@ -65,7 +68,7 @@ function shouldUseLocalFallback(error: unknown): boolean {
       errorWithMeta.code === "DB_EMPTY_RESPONSE"
     )) ||
     errorWithMeta.status === 503 ||
-    /DATABASE_URL is not configured/i.test(error.message) ||
+    /DATABASE_URL is not configured|No supported database env var is configured/i.test(error.message) ||
     /The 'pg' package is required/i.test(error.message) ||
     /relation .*work_orders.* does not exist/i.test(error.message) ||
     isNetworkErrorMessage(error.message)
@@ -81,7 +84,7 @@ function toStatusCode(error: unknown): DbConnectionStateCode {
     return errorWithMeta.code as DbConnectionStateCode;
   }
 
-  if (/DATABASE_URL is not configured/i.test(error.message)) return "DB_NOT_CONFIGURED";
+  if (/DATABASE_URL is not configured|No supported database env var is configured/i.test(error.message)) return "DB_NOT_CONFIGURED";
   if (/The 'pg' package is required/i.test(error.message)) return "DB_DRIVER_MISSING";
   if (/relation .*work_orders.* does not exist/i.test(error.message)) return "DB_TABLE_MISSING";
   if (/Unsupported payload column type/i.test(error.message)) return "DB_SCHEMA_UNSUPPORTED";
@@ -110,7 +113,14 @@ function reportDbStatus(params: {
   });
 
   if (process.env.NODE_ENV !== "production" && params.fallbackActive) {
-    console.warn(`[db fallback] ${params.source}: ${params.code}${params.message ? ` - ${params.message}` : ""}`);
+    const logKey = `${params.source}:${params.code}:${params.message ?? ""}`;
+    const now = Date.now();
+    const lastLoggedAt = lastFallbackLogByKey.get(logKey) ?? 0;
+
+    if (now - lastLoggedAt >= LOG_THROTTLE_MS) {
+      lastFallbackLogByKey.set(logKey, now);
+      console.warn(`[db fallback] ${params.source}: ${params.code}${params.message ? ` - ${params.message}` : ""}`);
+    }
   }
 }
 
