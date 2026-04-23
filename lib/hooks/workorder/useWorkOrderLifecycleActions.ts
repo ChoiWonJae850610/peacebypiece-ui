@@ -285,7 +285,7 @@ export function useWorkOrderLifecycleActions({
   const handleDeleteWorkOrder = useCallback(
     async ({ workOrderId, workOrders, selectedId }: DeleteWorkOrderInput) => {
       const target = workOrders.find((item) => item.id === workOrderId);
-      if (!target || !canDeleteWorkOrder(target.workflowState) || workOrders.length <= 1) return;
+      if (!target || !canDeleteWorkOrder(target.workflowState)) return;
       if (typeof window !== "undefined") {
         const ok = window.confirm(lifecycleText.deleteConfirmFormat.replace("{title}", getWorkOrderDisplayTitle(target)));
         if (!ok) return;
@@ -306,12 +306,14 @@ export function useWorkOrderLifecycleActions({
         task: async () => {
           const reindexed = reindexReorderGroupAfterDeletion(workOrders, target);
           const remaining = reindexed.filter((item) => item.id !== workOrderId);
-          const fallbackSelectedId = remaining[0]?.id ?? repository.getDefaultSelectedId();
+          const fallbackSelectedId = remaining[0]?.id ?? "";
           const nextHistoryLogs = [
             createDeletionHistoryLog(currentUser.name, workOrderId, { title: getWorkOrderDisplayTitle(target) }, historyText),
           ];
           await repository.deleteWorkOrderAsync(workOrderId);
-          const persistedRemaining = await repository.saveWorkOrdersAsync(remaining);
+          const persistedRemaining = remaining.length > 0
+            ? await repository.saveWorkOrdersAsync(remaining)
+            : [];
           await repository.appendHistoryLogsAsync(nextHistoryLogs);
           setWorkOrders(persistedRemaining);
           setHistoryLogs((prev) => [...nextHistoryLogs, ...prev]);
@@ -323,7 +325,11 @@ export function useWorkOrderLifecycleActions({
             setSelectedId(nextSelectedId);
           }
 
-          setLastSavedAt(nextSelectedWorkOrder?.lastSavedAt ?? null);
+          if (!nextSelectedWorkOrder) {
+            setLastSavedAt(null);
+          } else {
+            setLastSavedAt(nextSelectedWorkOrder.lastSavedAt ?? null);
+          }
           setSaveStatus("saved");
           setToastMessage(lifecycleText.deleteCompletedToast);
         },
