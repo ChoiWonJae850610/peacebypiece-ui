@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { useI18n } from "@/lib/i18n";
 import { buildUserRoleState } from "@/lib/constants/roles";
-import { canEditManagerInWorkflow } from "@/lib/constants/workorderStates";
+import { canEditManagerInWorkflow, isWorkflowStateReviewLocked } from "@/lib/constants/workorderStates";
 import { buildManagerChangeResult } from "@/lib/workorder/actionFlow";
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
 import { persistUsersWithPermissions, persistWorkOrderWithHistory } from "./workorderRepositoryMutations";
@@ -40,7 +40,8 @@ export function useWorkOrderAdminActions({
 
   const handleOpenManagerAssignModal = useCallback(
     ({ canChangeManager, isReviewRequestLocked, currentWorkflowState }: Pick<ChangeManagerInput, "canChangeManager" | "isReviewRequestLocked" | "currentWorkflowState">) => {
-      const canEditManager = canEditManagerInWorkflow(currentWorkflowState ?? "draft", isReviewRequestLocked);
+      const reviewLocked = isReviewRequestLocked ?? isWorkflowStateReviewLocked(currentWorkflowState ?? "draft", true);
+      const canEditManager = canEditManagerInWorkflow(currentWorkflowState ?? "draft", reviewLocked);
       if (!canChangeManager || !canEditManager) return;
       setManagerAssignModalOpen(true);
     },
@@ -53,7 +54,8 @@ export function useWorkOrderAdminActions({
 
   const handleChangeManager = useCallback(
     ({ workOrder, managerId, users, canChangeManager, isReviewRequestLocked, currentWorkflowState }: ChangeManagerInput) => {
-      const canEditManager = canEditManagerInWorkflow(currentWorkflowState ?? "draft", isReviewRequestLocked);
+      const reviewLocked = isReviewRequestLocked ?? isWorkflowStateReviewLocked(currentWorkflowState ?? "draft", true);
+      const canEditManager = canEditManagerInWorkflow(currentWorkflowState ?? "draft", reviewLocked);
       if (!canChangeManager || !canEditManager) return;
       const nextManager = users.find((user) => user.id === managerId);
       if (!nextManager) return;

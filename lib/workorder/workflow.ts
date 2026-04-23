@@ -11,7 +11,7 @@ import {
   normalizeRoles,
 } from "@/lib/constants/roles";
 import { WORKFLOW_ACTION_LABELS } from "@/lib/constants/workflow";
-import { isWorkflowState, isWorkflowStateAtLeast } from "@/lib/constants/workorderStates";
+import { canReinspectInWorkflow, canRequestFactoryOrderInWorkflow, isWorkflowStateAtLeast } from "@/lib/constants/workorderStates";
 import type { RoleType } from "@/types/permission";
 import {
   getOrderSubmissionSnapshot,
@@ -174,7 +174,7 @@ export function getFactoryOrderRequestValidationMessage(payload: {
   if (!canRequestOrder(payload.currentRoles)) {
     return payload.text.factoryOrderAdminOnlyToast ?? null;
   }
-  if (!isWorkflowStateAtLeast(payload.currentWorkflowState, "review_completed") || isWorkflowState(payload.currentWorkflowState, "review_requested")) {
+  if (!canRequestFactoryOrderInWorkflow(payload.currentWorkflowState)) {
     return payload.text.factoryOrderReviewApprovedOnlyToast ?? null;
   }
   if (!hasValidOrderFactoryName(payload.factoryName)) {
@@ -237,7 +237,7 @@ export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles
       }
       return [];
     case "completed":
-      if (isAdminRole(currentRoles)) {
+      if (isAdminRole(currentRoles) && canReinspectInWorkflow(currentWorkflowState)) {
         return [{ label: WORKFLOW_ACTION_LABELS.requestReinspection, nextState: "inspection", actionType: "request_reinspection" }];
       }
       return [];

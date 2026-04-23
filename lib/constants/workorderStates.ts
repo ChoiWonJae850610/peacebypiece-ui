@@ -55,12 +55,44 @@ export function isWorkflowState(state: WorkflowStateValue, target: WorkflowState
   return compareWorkflowStates(state, target) === 0;
 }
 
+export function isWorkflowStateOneOf(state: WorkflowStateValue, targets: readonly WorkflowStateValue[]) {
+  return targets.some((target) => isWorkflowState(state, target));
+}
+
 export function canEditBeforeOrder(state: WorkflowStateValue, isAdmin = false) {
   return isWorkflowStateBefore(state, "review_requested") || (isAdmin && isWorkflowState(state, "review_requested"));
 }
 
-export function canEditManagerInWorkflow(state: WorkflowStateValue, isReviewRequestLocked: boolean) {
-  return !isReviewRequestLocked || isWorkflowStateAtLeast(state, "completed");
+export function isWorkflowStateReviewLocked(state: WorkflowStateValue, isAdmin = false) {
+  return !canEditBeforeOrder(state, isAdmin);
+}
+
+export function canEditManagerInWorkflow(state: WorkflowStateValue, isReviewRequestLocked?: boolean) {
+  const effectiveLocked = isReviewRequestLocked ?? isWorkflowStateReviewLocked(state, true);
+  return !effectiveLocked || isWorkflowStateAtLeast(state, "completed");
+}
+
+export function canRequestFactoryOrderInWorkflow(state: WorkflowStateValue) {
+  return isWorkflowStateAtLeast(state, "review_completed") && !isWorkflowState(state, "review_requested");
+}
+
+export function canReinspectInWorkflow(state: WorkflowStateValue) {
+  return isWorkflowState(state, "completed");
+}
+
+export function canOpenInspectionModalInWorkflow(state: WorkflowStateValue) {
+  return isWorkflowState(state, "inspection");
+}
+
+export function getWorkflowStateScope(state: WorkflowStateValue, isAdmin = false): "draft" | "review_requested_admin" | "locked" {
+  if (isWorkflowState(state, "draft")) return "draft";
+  if (isAdmin && isWorkflowState(state, "review_requested")) return "review_requested_admin";
+  return "locked";
+}
+
+export function getWorkflowLockedReasonKey(state: WorkflowStateValue, isAdmin = false): "reviewRequested" | "orderedOrLater" | null {
+  if (!isWorkflowStateReviewLocked(state, isAdmin)) return null;
+  return isWorkflowState(state, "review_requested") ? "reviewRequested" : "orderedOrLater";
 }
 
 export function isWorkflowStateInRange(state: WorkflowStateValue, minimum: WorkflowStateValue, maximum: WorkflowStateValue) {

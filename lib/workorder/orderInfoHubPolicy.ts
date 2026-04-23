@@ -1,5 +1,5 @@
 import type { RoleType } from '@/types/permission';
-import { canEditBeforeOrder, isWorkflowState } from '@/lib/constants/workorderStates';
+import { canEditBeforeOrder, getWorkflowLockedReasonKey, getWorkflowStateScope } from '@/lib/constants/workorderStates';
 import type { WorkOrder, WorkflowState } from '@/types/workorder';
 
 export type OrderInfoHubPolicy = {
@@ -28,16 +28,8 @@ export function deriveOrderInfoHubPolicy(args: {
   const isAdmin = isAdminRole(currentUserRole);
   const canEditBeforeOrderState = canEditBeforeOrder(currentWorkflowState, isAdmin);
   const canChangeKind = canEditBeforeOrderState;
-  const stateScope: OrderInfoHubPolicy['stateScope'] = isWorkflowState(currentWorkflowState, 'draft')
-    ? 'draft'
-    : isWorkflowState(currentWorkflowState, 'review_requested') && isAdmin
-      ? 'review_requested_admin'
-      : 'locked';
-  const lockedReasonKey = canEditBeforeOrderState
-    ? null
-    : isWorkflowState(currentWorkflowState, 'review_requested')
-      ? 'reviewRequested'
-      : 'orderedOrLater';
+  const stateScope: OrderInfoHubPolicy['stateScope'] = getWorkflowStateScope(currentWorkflowState, isAdmin);
+  const lockedReasonKey = getWorkflowLockedReasonKey(currentWorkflowState, isAdmin);
 
   const allowedOrderTypes = (isInitialWorkOrder
     ? ['메인 생산', '샘플', '재작업']

@@ -5,7 +5,7 @@ import {
   normalizeRoles,
 } from "@/lib/constants/roles";
 import { getDisplayStageFromWorkflowState, VISIBLE_STAGES } from "@/lib/constants/workflow";
-import { canEditBeforeOrder } from "@/lib/constants/workorderStates";
+import { canEditBeforeOrder, isWorkflowStateReviewLocked } from "@/lib/constants/workorderStates";
 import { getAttachmentCollectionPermissionState } from "@/lib/workorder/attachments/attachmentPermissions";
 import {
   calculateWorkOrderCosts,
@@ -48,7 +48,7 @@ export function buildWorkOrderDerivedState({
   const currentDisplayStage = getDisplayStageFromWorkflowState(currentWorkflowState);
   const visibleStages = VISIBLE_STAGES;
   const canEditBeforeApproval = canEditBeforeOrder(currentWorkflowState, isAdmin);
-  const isReviewRequestLocked = !canEditBeforeApproval;
+  const isReviewRequestLocked = isWorkflowStateReviewLocked(currentWorkflowState, isAdmin);
   const canSeeAttachments = currentUser.permissions.canSeeAttachments;
   const attachmentCollectionPermissions = getAttachmentCollectionPermissionState({
     canSeeAttachments,

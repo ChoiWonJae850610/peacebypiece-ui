@@ -27,6 +27,7 @@ import {
   getReviewRequestWarningMessage,
 } from "@/lib/workorder/workflow";
 import { normalizeRoles } from "@/lib/constants/roles";
+import { canReinspectInWorkflow, isWorkflowState } from "@/lib/constants/workorderStates";
 import type { FactoryOrderRequest, WorkOrder, WorkflowAction } from "@/types/workorder";
 import type {
   InspectionCompleteInput,
@@ -168,7 +169,7 @@ export function useWorkOrderWorkflowActions({
     (workOrder: WorkOrder, action: WorkflowAction) => {
       let reviewWarningMessage: string | null = null;
 
-      if (action.nextState === "review_requested") {
+      if (isWorkflowState(action.nextState, "review_requested")) {
         const validationMessage = getReviewRequestValidationMessage({
           workOrder,
           text: actionFlowText,
@@ -184,7 +185,7 @@ export function useWorkOrderWorkflowActions({
         });
       }
 
-      if (action.nextState === "review_completed") {
+      if (isWorkflowState(action.nextState, "review_completed")) {
         const validationMessage = getReviewApprovalValidationMessage({
           workOrder,
           text: actionFlowText,
@@ -202,7 +203,7 @@ export function useWorkOrderWorkflowActions({
 
       const effectiveWorkflowState = deriveWorkflowStateFromOrderEntries(workOrder.workflowState, workOrder.orderEntries);
 
-      if (action.nextState === "inspection" && effectiveWorkflowState === "completed") {
+      if (isWorkflowState(action.nextState, "inspection") && canReinspectInWorkflow(effectiveWorkflowState)) {
         void applyReinspectionAction(workOrder, action);
         return;
       }

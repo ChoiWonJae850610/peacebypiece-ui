@@ -1,8 +1,7 @@
 import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculations";
+import { canOpenInspectionModalInWorkflow } from "@/lib/constants/workorderStates";
 import type { WorkflowState } from "@/types/workorder";
 import type { OrderEntryState } from "@/components/workorder/detail/shared/detailEditorShared";
-
-const INSPECTION_MODAL_WORKFLOW_STATES: WorkflowState[] = ["inspection"];
 
 export type CostSummaryValues = {
   laborCost: number;
@@ -38,7 +37,7 @@ export function getCanOpenInspectionModal(params: {
   const { canEditInventory, currentWorkflowState, orderItems } = params;
 
   return canEditInventory
-    && INSPECTION_MODAL_WORKFLOW_STATES.includes(currentWorkflowState)
+    && canOpenInspectionModalInWorkflow(currentWorkflowState)
     && orderItems.some((item) => item.inspectionStatus !== "inspection_completed");
 }
 

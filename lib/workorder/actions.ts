@@ -1,4 +1,5 @@
 import { INVENTORY_CHANGE_TYPE, INVENTORY_STATUS, ORDER_ENTRY_TARGET_TYPE } from "@/lib/constants/workorderDomain";
+import { isWorkflowState } from "@/lib/constants/workorderStates";
 import {
   DEFAULT_WORKORDER_CATEGORY1,
   DEFAULT_WORKORDER_CATEGORY2,
@@ -75,7 +76,7 @@ export function buildInventoryChanges(payload: {
 }
 
 export function applyWorkflowActionToWorkOrder(workOrder: WorkOrder, action: WorkflowAction): WorkOrder {
-  if (action.nextState === "inspection") {
+  if (isWorkflowState(action.nextState, "inspection")) {
     const resetForReinspection = action.actionType === "request_reinspection";
     const nextOrderEntries: OrderEntry[] = (workOrder.orderEntries ?? []).map((entry) => ({
       ...entry,
