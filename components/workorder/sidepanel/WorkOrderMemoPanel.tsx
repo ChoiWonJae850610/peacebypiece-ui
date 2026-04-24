@@ -82,15 +82,36 @@ function MemoInputField({ value, disabled, placeholder, submitLabel, onChange, o
   );
 }
 
+function MemoPencilIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-3 w-3">
+      <path d="M13.9 2.6a1.5 1.5 0 0 1 2.1 0l1.4 1.4a1.5 1.5 0 0 1 0 2.1l-8.8 8.8-3.6.7.7-3.6 8.2-8.2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="m12.5 4 3.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function MemoItemActions({ canMutate, editLabel, deleteAriaLabel, onEdit, onDelete }: { canMutate: boolean; editLabel: string; deleteAriaLabel: string; onEdit: () => void; onDelete: () => void }) {
   if (!canMutate) return null;
   return (
     <div className="flex shrink-0 items-center gap-1">
-      <button type="button" onClick={onEdit} className="pbp-interactive-button rounded-full border border-stone-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-stone-600 hover:bg-stone-100 active:bg-stone-200">
-        {editLabel}
+      <button
+        type="button"
+        onClick={onEdit}
+        aria-label={editLabel}
+        title={editLabel}
+        className="pbp-interactive-button inline-flex h-5 w-5 items-center justify-center rounded-full border border-amber-300 bg-white text-amber-600 hover:border-amber-400 hover:bg-amber-50 active:bg-amber-100"
+      >
+        <MemoPencilIcon />
       </button>
-      <button type="button" onClick={onDelete} aria-label={deleteAriaLabel} className="pbp-interactive-button inline-flex h-5 w-5 items-center justify-center rounded-full border border-red-200 bg-white text-[12px] font-semibold leading-none text-red-500 hover:bg-red-50 active:bg-red-100">
-        ×
+      <button
+        type="button"
+        onClick={onDelete}
+        aria-label={deleteAriaLabel}
+        title={deleteAriaLabel}
+        className="pbp-interactive-button inline-flex h-5 w-5 items-center justify-center rounded-full border border-red-200 bg-white text-[13px] font-semibold leading-none text-red-500 hover:bg-red-50 active:bg-red-100"
+      >
+        -
       </button>
     </div>
   );
@@ -141,7 +162,7 @@ function MemoThreadCard({
   }, [thread.id, thread.content, workOrderId]);
 
   const canMutateAuthor = (authorId: string) => canEditMemo && (isAdminRole(currentUserRole) || authorId === currentUserId);
-  const isThreadDeleted = isDeletedMemoItem(thread);
+  const isThreadDeleted = isDeletedMemoItem(thread, ui.memo.deleted);
   const canMutateThread = canMutateAuthor(thread.authorId) && !isThreadDeleted;
 
   const submitReply = () => {
