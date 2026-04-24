@@ -1,4 +1,4 @@
-import type { FactoryOrderRequest, UserProfile, WorkOrder, WorkflowAction } from "@/types/workorder";
+import type { FactoryOrderRequest, UserProfile, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
 import type { InventoryChangeInput, InspectionCompleteInput } from "@/lib/hooks/workorder/useWorkOrderActionTypes";
 import {
   applyInventoryAdjustmentToWorkOrder,
@@ -23,6 +23,8 @@ import { getWorkOrderKind } from "@/lib/workorder/reorder/helpers";
 import { isSameComparableText } from "@/lib/utils/compare";
 import { defaultActionFlowText, defaultHistoryText, type ActionFlowHistoryText, type ActionFlowText, type WorkOrderActionFlowResult } from "@/lib/workorder/actionFlow/shared";
 import { canOpenInspectionModalInWorkflow, isWorkflowStateBefore, isWorkflowStateReviewLocked } from "@/lib/constants/workorderStates";
+import { ROLE, isAdminRole } from "@/lib/constants/roles";
+import type { RoleType } from "@/types/permission";
 
 export function buildWorkflowActionResult(payload: {
   workOrder: WorkOrder;
@@ -157,26 +159,59 @@ export function buildPatchWorkOrderResult(payload: {
   };
 }
 
+export function getWorkflowStateAfterManagerChange(payload: {
+  currentWorkflowState: WorkflowState;
+  nextManagerRole: RoleType;
+}): WorkflowState {
+  if (isAdminRole([payload.nextManagerRole]) && (payload.currentWorkflowState === "review_requested" || payload.currentWorkflowState === "rejected")) {
+    return "draft";
+  }
+  return payload.currentWorkflowState;
+}
+
 export function buildManagerChangeResult(payload: {
   workOrder: WorkOrder;
   actorName: string;
   managerId: string;
   managerName: string;
+  managerRole?: RoleType;
   text?: ActionFlowText;
   historyText?: ActionFlowHistoryText;
+  workflowStateLabels?: Record<string, string>;
 }): WorkOrderActionFlowResult | null {
   const previousManagerName = payload.workOrder.manager || "-";
   const previousManagerId = payload.workOrder.managerId ?? null;
   if (previousManagerId === payload.managerId || isSameComparableText(previousManagerName, payload.managerName)) return null;
 
-  return {
-    nextWorkOrder: updateManagerForWorkOrder(payload.workOrder, {
+  const nextWorkflowState = getWorkflowStateAfterManagerChange({
+    currentWorkflowState: payload.workOrder.workflowState,
+    nextManagerRole: payload.managerRole ?? ROLE.designer,
+  });
+  const nextWorkOrder = {
+    ...updateManagerForWorkOrder(payload.workOrder, {
       managerId: payload.managerId,
       managerName: payload.managerName,
     }),
-    historyLogs: [
-      createManagerChangeHistoryLog(payload.actorName, payload.workOrder.id, previousManagerName, payload.managerName, payload.historyText ?? defaultHistoryText),
-    ],
+    workflowState: nextWorkflowState,
+  };
+  const historyLogs = [
+    createManagerChangeHistoryLog(payload.actorName, payload.workOrder.id, previousManagerName, payload.managerName, payload.historyText ?? defaultHistoryText),
+  ];
+
+  if (nextWorkflowState !== payload.workOrder.workflowState) {
+    historyLogs.push(createStatusHistoryLog(
+      payload.actorName,
+      payload.workOrder.id,
+      payload.workflowStateLabels?.[payload.workOrder.workflowState] ?? payload.workOrder.workflowState,
+      payload.workflowStateLabels?.[nextWorkflowState] ?? nextWorkflowState,
+      payload.text?.managerChangedToast ?? defaultActionFlowText.managerChangedToast,
+      payload.historyText ?? defaultHistoryText,
+    ));
+  }
+
+  return {
+    nextWorkOrder,
+    historyLogs,
     saveStatus: "dirty",
     toastMessage: (payload.text ?? defaultActionFlowText).managerChangedToast,
   };

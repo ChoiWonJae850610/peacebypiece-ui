@@ -26,6 +26,7 @@ export function useWorkOrderAdminActions({
   const repository = useWorkorderRepository();
   const actionFlowText = i18n.workorder.actionFlow;
   const historyText = i18n.workorder.history;
+  const workflowStateLabels = i18n.workorder.workflowStates as Record<string, string>;
   const handleApplyRoles = useCallback(
     (userId: string, roles: RoleType[]) => {
       const nextRoleState = buildUserRoleState(roles);
@@ -65,7 +66,9 @@ export function useWorkOrderAdminActions({
         actorName: currentUser.name,
         managerId: nextManager.id,
         managerName: nextManager.name,
+        managerRole: nextManager.role,
         text: actionFlowText,
+        workflowStateLabels,
         historyText,
       });
       if (!result) {
@@ -80,13 +83,14 @@ export function useWorkOrderAdminActions({
           ...persistedBaseWorkOrder,
           managerId: result.nextWorkOrder.managerId,
           manager: result.nextWorkOrder.manager,
+          workflowState: result.nextWorkOrder.workflowState,
         },
         historyLogs: result.historyLogs,
       }).then((persistedWorkOrder) => {
         setPersistedWorkOrders((prev) => replaceWorkOrderById(prev, workOrder.id, persistedWorkOrder));
         setWorkOrders((prev) => prev.map((item) => (
           item.id === workOrder.id
-            ? { ...item, managerId: persistedWorkOrder.managerId, manager: persistedWorkOrder.manager, lastSavedAt: persistedWorkOrder.lastSavedAt }
+            ? { ...item, managerId: persistedWorkOrder.managerId, manager: persistedWorkOrder.manager, workflowState: persistedWorkOrder.workflowState, lastSavedAt: persistedWorkOrder.lastSavedAt }
             : item
         )));
         setSaveStatus("saved");
@@ -99,7 +103,7 @@ export function useWorkOrderAdminActions({
       }
       setManagerAssignModalOpen(false);
     },
-    [actionFlowText, currentUser.name, historyText, persistedWorkOrders, repository, setHistoryLogs, setManagerAssignModalOpen, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders],
+    [actionFlowText, currentUser.name, historyText, persistedWorkOrders, repository, setHistoryLogs, setManagerAssignModalOpen, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders, workflowStateLabels],
   );
 
   return {
