@@ -105,7 +105,7 @@ export function useWorkOrderLifecycleActions({
         }),
         task: async () => {
           setSaveStatus("saving");
-          const persistedWorkOrder = await persistWorkOrderWithHistory(repository, { workOrder });
+          const persistedWorkOrder = await persistWorkOrderWithHistory(repository, { workOrder, stampUpdatedAt: false });
           const persistedWorkOrders = replaceWorkOrderById(workOrders, workOrder.id, persistedWorkOrder);
 
           setWorkOrders(persistedWorkOrders);

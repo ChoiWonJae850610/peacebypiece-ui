@@ -83,7 +83,7 @@ function MemoThreadCard({
               onChange={(event) => setReplyDraft(event.target.value)}
               onKeyDown={onReplyKeyDown}
               placeholder={ui.memo.replyPlaceholder}
-              className="pbp-field-interaction min-h-[36px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-2 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 md:text-sm"
+              className="pbp-field-interaction min-h-[32px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-2 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 md:text-sm"
             />
             <div className={isMobile ? "mt-2" : "mt-2 flex justify-end"}>
               <button type="button" onClick={submitReply} className={isMobile ? "pbp-interactive-button w-full rounded-full bg-stone-900 px-3 py-2 text-xs font-semibold text-white hover:bg-stone-800 active:bg-black" : "pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-stone-800 active:bg-black"}>{ui.memo.submit}</button>
@@ -150,7 +150,7 @@ export default function WorkOrderMemoPanel({
           onChange={(event) => setThreadDraft(event.target.value)}
           onKeyDown={onThreadKeyDown}
           placeholder={ui.memo.threadPlaceholder}
-          className={isMobile ? "pbp-field-interaction mt-2 min-h-[72px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-2 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50" : "pbp-field-interaction mt-2 min-h-[38px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-2 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 md:text-sm"}
+          className={isMobile ? "pbp-field-interaction mt-2 min-h-[48px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-2 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50" : "pbp-field-interaction mt-2 min-h-[32px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-2 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 md:text-sm"}
         />
         <div className={isMobile ? "mt-2" : "mt-2 flex justify-end"}>
           <button type="button" onClick={submitThread} className={isMobile ? "pbp-interactive-button w-full rounded-full bg-stone-900 px-3 py-2 text-xs font-semibold text-white hover:bg-stone-800 active:bg-black" : "pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-stone-800 active:bg-black"}>{ui.memo.submit}</button>

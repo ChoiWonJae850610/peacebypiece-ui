@@ -47,7 +47,7 @@ export function buildDetailProps({
     currentInventoryQuantity,
     currentUserName: currentUser.name,
     currentUserRole: currentRole,
-    canRenameTitle: isAdmin,
+    canRenameTitle: isAdmin || currentWorkflowState === "draft",
     canEditInventory: canOpenInventoryEditor,
     canChangeManager,
     onOpenManagerAssignModal,

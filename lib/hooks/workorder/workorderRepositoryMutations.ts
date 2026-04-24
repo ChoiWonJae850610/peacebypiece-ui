@@ -51,9 +51,10 @@ export async function persistWorkOrderWithHistory(
   payload: {
     workOrder: WorkOrder;
     historyLogs?: HistoryLog[];
+    stampUpdatedAt?: boolean;
   },
 ) {
-  const nextWorkOrder = await repository.saveWorkOrderAsync(stampPersistedWorkOrder(payload.workOrder));
+  const nextWorkOrder = await repository.saveWorkOrderAsync(payload.stampUpdatedAt === false ? payload.workOrder : stampPersistedWorkOrder(payload.workOrder));
   if (payload.historyLogs?.length) {
     await repository.appendHistoryLogsAsync(payload.historyLogs);
   }
