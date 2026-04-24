@@ -1,107 +1,137 @@
-import "server-only";
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { NodeHttpHandler } from "@smithy/node-http-handler";
-import https from "node:https";
-import { getR2Config, type R2Config } from "@/lib/storage/r2/r2Config";
+import { Readable } from "stream";
 
-export type R2ObjectPutInput = {
+// ================================
+// [R2 Client]
+// ================================
+
+type R2BodyInput = Buffer | Uint8Array | ArrayBuffer;
+
+type PutR2ObjectInput = {
   key: string;
-  body: Buffer | Uint8Array | ArrayBuffer;
+  body: R2BodyInput;
   contentType?: string | null;
 };
 
-export type R2ObjectGetOutput = {
-  body: ArrayBuffer;
-  contentType: string | null;
-  contentLength: string | null;
+type GetR2ObjectInput =
+  | string
+  | {
+      key: string;
+    };
+
+type R2ObjectResult = {
+  body: Buffer;
+  contentType: string;
+  contentLength: number;
 };
 
-function requireR2Config(): R2Config {
-  const config = getR2Config();
-  if (!config) throw new Error("R2 storage is not configured.");
-  return config;
-}
+let cachedClient: S3Client | null = null;
 
 function normalizeEndpoint(endpoint: string): string {
-  const value = endpoint.trim();
+  const value = endpoint.trim().replace(/\/+$/, "");
+
   if (!value || value.includes("<") || value.includes(">")) {
-    throw new Error("Invalid R2 endpoint. Remove placeholder brackets from R2_ENDPOINT.");
+    throw new Error("R2_INVALID_ENDPOINT");
   }
 
-  const url = new URL(value.replace(/\/+$/, ""));
-  if (url.pathname && url.pathname !== "/") {
-    throw new Error("Invalid R2 endpoint. Use account endpoint only, not a bucket or object URL.");
+  if (!value.startsWith("https://")) {
+    throw new Error("R2_INVALID_ENDPOINT");
   }
 
-  return url.toString().replace(/\/+$/, "");
+  return value;
 }
 
 function cleanStorageKey(key: string): string {
   const value = key.replace(/^\/+/, "").trim();
+
   if (!value || value.includes("<") || value.includes(">")) {
-    throw new Error("Invalid R2 storage key.");
+    throw new Error("R2_INVALID_STORAGE_KEY");
   }
+
   return value;
 }
 
-function toBodyBuffer(body: Buffer | Uint8Array | ArrayBuffer): Buffer {
-  if (Buffer.isBuffer(body)) return body;
-  if (body instanceof ArrayBuffer) return Buffer.from(body);
-  return Buffer.from(body.buffer, body.byteOffset, body.byteLength);
-}
+function getR2Config() {
+  const endpoint = process.env.R2_ENDPOINT;
+  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+  const bucketName = process.env.R2_BUCKET_NAME;
 
-function copyBytesToArrayBuffer(bytes: Uint8Array): ArrayBuffer {
-  const output = new ArrayBuffer(bytes.byteLength);
-  new Uint8Array(output).set(bytes);
-  return output;
-}
-
-async function arrayBufferFromBody(body: unknown): Promise<ArrayBuffer> {
-  if (body instanceof Uint8Array) {
-    return copyBytesToArrayBuffer(body);
+  if (!endpoint || !accessKeyId || !secretAccessKey || !bucketName) {
+    throw new Error("R2_NOT_CONFIGURED");
   }
 
-  if (body && typeof body === "object" && "transformToByteArray" in body) {
-    const bytes = await (body as { transformToByteArray: () => Promise<Uint8Array> }).transformToByteArray();
-    return copyBytesToArrayBuffer(bytes);
-  }
-
-  if (body && typeof body === "object" && "arrayBuffer" in body) {
-    return (body as { arrayBuffer: () => Promise<ArrayBuffer> }).arrayBuffer();
-  }
-
-  throw new Error("Unsupported R2 response body.");
+  return {
+    endpoint: normalizeEndpoint(endpoint),
+    accessKeyId,
+    secretAccessKey,
+    bucketName,
+  };
 }
 
-function createR2Client(config: R2Config): S3Client {
-  const endpoint = normalizeEndpoint(config.endpoint);
-  const endpointHost = new URL(endpoint).hostname;
+function createR2Client(): S3Client {
+  if (cachedClient) return cachedClient;
 
-  return new S3Client({
+  const config = getR2Config();
+
+  cachedClient = new S3Client({
     region: "auto",
-    endpoint,
+    endpoint: config.endpoint,
     forcePathStyle: true,
-    maxAttempts: 1,
-    requestHandler: new NodeHttpHandler({
-      httpsAgent: new https.Agent({
-        keepAlive: false,
-        minVersion: "TLSv1.2",
-        servername: endpointHost,
-      }),
-    }),
     credentials: {
       accessKeyId: config.accessKeyId,
       secretAccessKey: config.secretAccessKey,
     },
   });
+
+  return cachedClient;
 }
 
-export async function putR2Object(input: R2ObjectPutInput): Promise<void> {
-  const config = requireR2Config();
+function toBuffer(body: R2BodyInput): Buffer {
+  if (Buffer.isBuffer(body)) return body;
+  if (body instanceof ArrayBuffer) return Buffer.from(body);
+  return Buffer.from(body.buffer, body.byteOffset, body.byteLength);
+}
+
+async function streamToBuffer(body: unknown): Promise<Buffer> {
+  if (!body) return Buffer.alloc(0);
+
+  if (Buffer.isBuffer(body)) return body;
+
+  if (body instanceof Uint8Array) {
+    return Buffer.from(body.buffer, body.byteOffset, body.byteLength);
+  }
+
+  if (body instanceof Readable) {
+    const chunks: Buffer[] = [];
+    for await (const chunk of body) {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    }
+    return Buffer.concat(chunks);
+  }
+
+  if (typeof (body as { transformToByteArray?: () => Promise<Uint8Array> }).transformToByteArray === "function") {
+    const bytes = await (body as { transformToByteArray: () => Promise<Uint8Array> }).transformToByteArray();
+    return Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  }
+
+  throw new Error("R2_INVALID_OBJECT_BODY");
+}
+
+// ================================
+// [Public helpers]
+// ================================
+
+export function createAttachmentFileProxyUrl(key: string): string {
+  const cleanKey = cleanStorageKey(key);
+  return `/api/workorders/attachments/file?key=${encodeURIComponent(cleanKey)}`;
+}
+
+export async function putR2Object(input: PutR2ObjectInput): Promise<{ ok: true; key: string }> {
+  const config = getR2Config();
+  const client = createR2Client();
   const key = cleanStorageKey(input.key);
-  const body = toBodyBuffer(input.body);
-  const contentType = input.contentType ?? "application/octet-stream";
-  const client = createR2Client(config);
+  const body = toBuffer(input.body);
 
   try {
     await client.send(
@@ -109,49 +139,67 @@ export async function putR2Object(input: R2ObjectPutInput): Promise<void> {
         Bucket: config.bucketName,
         Key: key,
         Body: body,
-        ContentType: contentType,
-      }),
+        ContentType: input.contentType || "application/octet-stream",
+      })
     );
-  } catch (error) {
+
+    return { ok: true, key };
+  } catch (error: any) {
     console.error("[R2_UPLOAD_ERROR]", {
       bucketName: config.bucketName,
       key,
-      endpoint: normalizeEndpoint(config.endpoint),
-      message: error instanceof Error ? error.message : String(error),
+      endpoint: config.endpoint,
+      message: error?.message,
+      code: error?.code,
+      name: error?.name,
     });
+
     throw error;
   }
 }
 
-export async function getR2Object(key: string): Promise<R2ObjectGetOutput> {
-  const config = requireR2Config();
-  const cleanKey = cleanStorageKey(key);
-  const client = createR2Client(config);
+export async function getR2Object(input: GetR2ObjectInput): Promise<R2ObjectResult> {
+  const config = getR2Config();
+  const client = createR2Client();
+  const key = cleanStorageKey(typeof input === "string" ? input : input.key);
 
   try {
-    const response = await client.send(
+    const result = await client.send(
       new GetObjectCommand({
         Bucket: config.bucketName,
-        Key: cleanKey,
-      }),
+        Key: key,
+      })
     );
 
+    const body = await streamToBuffer(result.Body);
+
     return {
-      body: await arrayBufferFromBody(response.Body),
-      contentType: response.ContentType ?? null,
-      contentLength: response.ContentLength == null ? null : String(response.ContentLength),
+      body,
+      contentType: result.ContentType || "application/octet-stream",
+      contentLength: Number(result.ContentLength || body.byteLength),
     };
-  } catch (error) {
-    console.error("[R2_DOWNLOAD_ERROR]", {
+  } catch (error: any) {
+    console.error("[R2_GET_ERROR]", {
       bucketName: config.bucketName,
-      key: cleanKey,
-      endpoint: normalizeEndpoint(config.endpoint),
-      message: error instanceof Error ? error.message : String(error),
+      key,
+      endpoint: config.endpoint,
+      message: error?.message,
+      code: error?.code,
+      name: error?.name,
     });
+
     throw error;
   }
 }
 
-export function createAttachmentFileProxyUrl(storageKey: string): string {
-  return `/api/workorders/attachments/file?key=${encodeURIComponent(storageKey)}`;
+export async function uploadToR2(params: {
+  key: string;
+  body: R2BodyInput;
+  contentType: string;
+}): Promise<{ ok: true; key: string }> {
+  return putR2Object({
+    key: params.key,
+    body: params.body,
+    contentType: params.contentType,
+  });
 }
