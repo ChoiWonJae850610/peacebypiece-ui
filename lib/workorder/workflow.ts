@@ -1,24 +1,25 @@
 import {
   LEGACY_ORDER_INSPECTION_STATUS_MAP,
-  canReinspectInWorkflow,
   canRequestFactoryOrderInWorkflow,
   getDefaultOrderInspectionStatusForWorkflowState,
   isOrderInspectionActive,
   isOrderInspectionCompleted,
   isOrderInspectionStatus,
-  isWorkflowStateAtLeast,
 } from "@/lib/constants/workorderStates";
 import {
   ROLE,
   canEditInventoryByRoles,
   hasRole,
   isAdminRole,
-  isDesignerRole,
-  normalizeRoles,
 } from "@/lib/constants/roles";
-import { WORKFLOW_ACTION_LABELS } from "@/lib/constants/workflow";
 import type { RoleType } from "@/types/permission";
 import type { UserProfile } from "@/types/user";
+import {
+  canRequestFactoryOrderByPolicy,
+  canRequestReviewByPolicy,
+  getAvailableWorkflowActionsByPolicy,
+  getReviewApprovalCancelNextStateByPolicy,
+} from "@/lib/workorder/workflowPolicy";
 import {
   getOrderSubmissionSnapshot,
   hasValidOrderFactoryName,
@@ -60,11 +61,8 @@ export function canManageWorkOrderManager(currentRoles: RoleType[], _currentWork
   return isAdminRole(currentRoles);
 }
 
-export function canRequestReview({ currentRoles, currentUserId, workOrder }: Pick<WorkflowContext, "currentRoles" | "currentUserId" | "workOrder">) {
-  const roles = normalizeRoles(currentRoles);
-  const createdByCurrentUser = workOrder.createdById === currentUserId;
-  const assignedManagerIsCurrentUser = (workOrder.managerId ?? null) === currentUserId;
-  return isDesignerRole(roles) && (createdByCurrentUser || assignedManagerIsCurrentUser);
+export function canRequestReview(payload: Pick<WorkflowContext, "currentRoles" | "currentUserId" | "workOrder">) {
+  return canRequestReviewByPolicy(payload);
 }
 
 export function canRequestOrder(currentRoles: RoleType[]) {
@@ -76,8 +74,7 @@ export function canRequestFactoryOrder(payload: {
   workOrder: WorkOrder;
   currentWorkflowState: WorkflowState;
 }) {
-  return isAdminRole(payload.currentRoles)
-    && isWorkflowStateAtLeast(payload.currentWorkflowState, "review_completed");
+  return canRequestFactoryOrderByPolicy(payload);
 }
 
 function getWorkOrderSubmissionValidationMessage(workOrder: WorkOrder, text: {
@@ -205,64 +202,9 @@ export function canEditInventoryForWorkflow(currentRoles: RoleType[], _currentWo
 }
 
 export function getReviewApprovalCancelNextState(workOrder: WorkOrder, users: UserProfile[] = []): WorkflowState {
-  const assignedUser = users.find((user) => user.id === workOrder.managerId);
-  const assignedRole = assignedUser?.role ?? workOrder.createdByRole;
-
-  if (assignedRole === ROLE.designer) return "review_requested";
-  return "draft";
+  return getReviewApprovalCancelNextStateByPolicy(workOrder, users);
 }
 
-export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles, currentUserId, workOrder, users }: WorkflowContext): WorkflowAction[] {
-  switch (currentWorkflowState) {
-    case "draft": {
-      const actions: WorkflowAction[] = [];
-      if (isAdminRole(currentRoles)) {
-        actions.push({ label: WORKFLOW_ACTION_LABELS.approveReview, nextState: "review_completed", actionType: "approve_review" });
-      }
-      if (canRequestReview({ currentRoles, currentUserId, workOrder })) {
-        actions.push({ label: WORKFLOW_ACTION_LABELS.requestReview, nextState: "review_requested", actionType: "request_review" });
-      }
-      return actions;
-    }
-    case "review_requested": {
-      if (isAdminRole(currentRoles)) {
-        return [
-          { label: WORKFLOW_ACTION_LABELS.rejectReview, nextState: "rejected", actionType: "reject_review" },
-          { label: WORKFLOW_ACTION_LABELS.approveReview, nextState: "review_completed", actionType: "approve_review" },
-        ];
-      }
-      if (canRequestReview({ currentRoles, currentUserId, workOrder })) {
-        return [{ label: WORKFLOW_ACTION_LABELS.cancelReviewRequest, nextState: "draft", actionType: "cancel_review_request" }];
-      }
-      return [];
-    }
-    case "rejected": {
-      const actions: WorkflowAction[] = [];
-      if (isAdminRole(currentRoles)) {
-        actions.push({ label: WORKFLOW_ACTION_LABELS.approveReview, nextState: "review_completed", actionType: "approve_review" });
-      }
-      if (canRequestReview({ currentRoles, currentUserId, workOrder })) {
-        actions.push({ label: WORKFLOW_ACTION_LABELS.requestReview, nextState: "review_requested", actionType: "request_review" });
-      }
-      return actions;
-    }
-    case "review_completed":
-      if (isAdminRole(currentRoles)) {
-        return [
-          { label: WORKFLOW_ACTION_LABELS.cancelReviewApproval, nextState: getReviewApprovalCancelNextState(workOrder, users), actionType: "cancel_review_approval" },
-          ...(canRequestFactoryOrder({ currentRoles, workOrder, currentWorkflowState })
-            ? [{ label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "inspection", actionType: "request_order" } satisfies WorkflowAction]
-            : []),
-        ];
-      }
-      return [];
-    case "completed":
-      if (isAdminRole(currentRoles) && canReinspectInWorkflow(currentWorkflowState)) {
-        return [{ label: WORKFLOW_ACTION_LABELS.requestReinspection, nextState: "inspection", actionType: "request_reinspection" }];
-      }
-      return [];
-    case "inspection":
-    default:
-      return [];
-  }
+export function getAvailableWorkflowActions(context: WorkflowContext): WorkflowAction[] {
+  return getAvailableWorkflowActionsByPolicy(context);
 }

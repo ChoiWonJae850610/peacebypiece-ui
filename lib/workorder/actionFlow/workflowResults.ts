@@ -23,7 +23,8 @@ import { getWorkOrderKind } from "@/lib/workorder/reorder/helpers";
 import { isSameComparableText } from "@/lib/utils/compare";
 import { defaultActionFlowText, defaultHistoryText, type ActionFlowHistoryText, type ActionFlowText, type WorkOrderActionFlowResult } from "@/lib/workorder/actionFlow/shared";
 import { canOpenInspectionModalInWorkflow, isWorkflowStateBefore, isWorkflowStateReviewLocked } from "@/lib/constants/workorderStates";
-import { ROLE, isAdminRole } from "@/lib/constants/roles";
+import { ROLE } from "@/lib/constants/roles";
+import { getWorkflowStateAfterManagerChangeByPolicy } from "@/lib/workorder/workflowPolicy";
 import type { RoleType } from "@/types/permission";
 
 export function buildWorkflowActionResult(payload: {
@@ -161,10 +162,7 @@ export function getWorkflowStateAfterManagerChange(payload: {
   currentWorkflowState: WorkflowState;
   nextManagerRole: RoleType;
 }): WorkflowState {
-  if (isAdminRole([payload.nextManagerRole]) && (payload.currentWorkflowState === "review_requested" || payload.currentWorkflowState === "rejected")) {
-    return "draft";
-  }
-  return payload.currentWorkflowState;
+  return getWorkflowStateAfterManagerChangeByPolicy(payload);
 }
 
 export function buildManagerChangeResult(payload: {
