@@ -184,15 +184,22 @@ export function useWorkOrderAttachments({
 
   const handleDeleteMemoThread = (threadId: string) => {
     const targetThread = (selectedWorkOrder.memoThreads ?? []).find((thread) => thread.id === threadId);
-    if (!targetThread || !canMutateMemoItem(targetThread.authorId)) return;
+    if (!targetThread || targetThread.deletedAt || !canMutateMemoItem(targetThread.authorId)) return;
 
-    const hasReplies = (targetThread.replies ?? []).length > 0;
+    const deletedAt = new Date().toISOString();
+    const hasVisibleReplies = (targetThread.replies ?? []).some((reply) => reply.isVisible !== false);
     setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
       ? {
           ...item,
-          memoThreads: hasReplies
-            ? (item.memoThreads ?? []).map((thread) => thread.id === threadId ? { ...thread, content: "", attachmentIds: [], deletedAt: new Date().toISOString() } : thread)
-            : (item.memoThreads ?? []).filter((thread) => thread.id !== threadId),
+          memoThreads: (item.memoThreads ?? []).map((thread) => {
+            if (thread.id !== threadId) return thread;
+            return {
+              ...thread,
+              attachmentIds: [],
+              deletedAt,
+              isVisible: hasVisibleReplies,
+            };
+          }),
         }
       : item));
     setSaveStatus("dirty");
@@ -218,14 +225,27 @@ export function useWorkOrderAttachments({
   const handleDeleteMemoReply = (threadId: string, replyId: string) => {
     const targetThread = (selectedWorkOrder.memoThreads ?? []).find((thread) => thread.id === threadId);
     const targetReply = targetThread?.replies?.find((reply) => reply.id === replyId);
-    if (!targetReply || !canMutateMemoItem(targetReply.authorId)) return;
+    if (!targetReply || targetReply.deletedAt || !canMutateMemoItem(targetReply.authorId)) return;
 
+    const deletedAt = new Date().toISOString();
     setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
       ? {
           ...item,
-          memoThreads: (item.memoThreads ?? []).map((thread) => thread.id === threadId
-            ? { ...thread, replies: (thread.replies ?? []).filter((reply) => reply.id !== replyId) }
-            : thread),
+          memoThreads: (item.memoThreads ?? []).map((thread) => {
+            if (thread.id !== threadId) return thread;
+
+            const nextReplies = (thread.replies ?? []).map((reply) => reply.id === replyId
+              ? { ...reply, attachmentIds: [], deletedAt, isVisible: false }
+              : reply);
+            const hasVisibleReplies = nextReplies.some((reply) => reply.isVisible !== false);
+            const shouldHideDeletedThread = Boolean(thread.deletedAt) && !hasVisibleReplies;
+
+            return {
+              ...thread,
+              isVisible: shouldHideDeletedThread ? false : thread.isVisible,
+              replies: nextReplies,
+            };
+          }),
         }
       : item));
     setSaveStatus("dirty");

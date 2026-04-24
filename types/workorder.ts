@@ -30,6 +30,7 @@ export type MemoReply = {
   createdAt: string;
   attachmentIds?: string[];
   deletedAt?: string | null;
+  isVisible?: boolean | null;
 };
 
 export type MemoThread = {
@@ -41,6 +42,7 @@ export type MemoThread = {
   createdAt: string;
   attachmentIds?: string[];
   deletedAt?: string | null;
+  isVisible?: boolean | null;
   replies: MemoReply[];
 };
 

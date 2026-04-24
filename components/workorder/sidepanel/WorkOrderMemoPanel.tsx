@@ -3,7 +3,7 @@
 import { useEffect, useState, type KeyboardEvent } from "react";
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
 import { useI18n } from "@/lib/i18n";
-import { getMemoDisplayContent, isDeletedMemoItem } from "@/lib/workorder/presentation/memoPresentation";
+import { getMemoDisplayContent, getVisibleMemoReplies, getVisibleMemoThreads, isDeletedMemoItem } from "@/lib/workorder/presentation/memoPresentation";
 import type { MemoReply, MemoThread, RoleType, WorkOrder } from "@/types/workorder";
 
 const MEMO_MAX_LENGTH = 50;
@@ -238,7 +238,7 @@ function MemoThreadCard({
       )}
 
       <div className="mt-3 space-y-2 border-t border-stone-200 pt-3">
-        {(thread.replies ?? []).length > 0 ? thread.replies.map((reply) => {
+        {getVisibleMemoReplies(thread.replies ?? []).length > 0 ? getVisibleMemoReplies(thread.replies ?? []).map((reply) => {
           const isEditingReply = editingReplyId === reply.id;
           return (
             <div key={reply.id} className="pl-3 text-stone-700">
@@ -318,7 +318,7 @@ export default function WorkOrderMemoPanel({
   const isMobile = variant === "mobile";
   const isTablet = variant === "tablet";
   const [threadDraft, setThreadDraft] = useState("");
-  const memoThreads = workOrder.memoThreads ?? [];
+  const memoThreads = getVisibleMemoThreads(workOrder.memoThreads ?? []);
 
   useEffect(() => {
     setThreadDraft("");
