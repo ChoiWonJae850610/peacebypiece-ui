@@ -1,4 +1,4 @@
-import type { UserProfile, WorkOrder } from "@/types/workorder";
+import type { Attachment, UserProfile, WorkOrder } from "@/types/workorder";
 import {
   applyDesignAttachmentFilesToWorkOrder,
   applyOfficialAttachmentFilesToWorkOrder,
@@ -9,6 +9,7 @@ import {
   createAttachmentUploadHistoryLog,
 } from "@/lib/workorder/history/builders";
 import { defaultActionFlowText, defaultHistoryText, type ActionFlowHistoryText, type ActionFlowText, type WorkOrderActionFlowResult } from "@/lib/workorder/actionFlow/shared";
+import { appendAttachments } from "@/lib/workorder/actions";
 
 export function buildAttachmentUploadResult(payload: {
   workOrder: WorkOrder;
@@ -35,6 +36,28 @@ export function buildAttachmentUploadResult(payload: {
   return {
     nextWorkOrder: result.nextWorkOrder,
     historyLogs: [createAttachmentUploadHistoryLog(payload.currentUser.name, payload.workOrder.id, result.attachments, payload.scope, payload.historyText ?? defaultHistoryText)],
+    saveStatus: "dirty",
+    toastMessage: payload.scope === "design"
+      ? ((payload.text ?? defaultActionFlowText) as ActionFlowText & { designAttachmentUploadedToast?: string }).designAttachmentUploadedToast ?? (payload.text ?? defaultActionFlowText).officialAttachmentUploadedToast
+      : (payload.text ?? defaultActionFlowText).officialAttachmentUploadedToast,
+  };
+}
+
+export function buildPersistedAttachmentUploadResult(payload: {
+  workOrder: WorkOrder;
+  currentUser: UserProfile;
+  attachments: Attachment[];
+  scope: "design" | "official";
+  text?: ActionFlowText;
+  historyText?: ActionFlowHistoryText;
+}): WorkOrderActionFlowResult | null {
+  if (payload.attachments.length === 0) return null;
+
+  const nextWorkOrder = appendAttachments([payload.workOrder], payload.workOrder.id, payload.attachments)[0] ?? payload.workOrder;
+
+  return {
+    nextWorkOrder,
+    historyLogs: [createAttachmentUploadHistoryLog(payload.currentUser.name, payload.workOrder.id, payload.attachments, payload.scope, payload.historyText ?? defaultHistoryText)],
     saveStatus: "dirty",
     toastMessage: payload.scope === "design"
       ? ((payload.text ?? defaultActionFlowText) as ActionFlowText & { designAttachmentUploadedToast?: string }).designAttachmentUploadedToast ?? (payload.text ?? defaultActionFlowText).officialAttachmentUploadedToast

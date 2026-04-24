@@ -12,6 +12,7 @@ import type {
   WorkOrderMemoReplyDbRecord,
   WorkOrderMemoThreadDbRecord,
 } from "@/lib/workorder/persistence/attachmentMemoTypes";
+import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
 import {
   inferAttachmentTypeFromMime,
   normalizeAttachmentScope,
@@ -40,7 +41,7 @@ function mapAttachmentRow(row: AttachmentRow): Attachment {
     id: row.id,
     name: row.original_name,
     type: inferAttachmentTypeFromMime(row.mime_type, row.original_name),
-    url: row.storage_key,
+    url: createAttachmentFileProxyUrl(row.storage_key),
     scope: normalizeAttachmentScope(row.attachment_type),
     ownerId: row.uploaded_by,
     ownerName: row.uploaded_by,

@@ -6,7 +6,7 @@ import {
   buildAttachmentDeleteResult,
   buildMemoReplyResult,
   buildMemoThreadResult,
-  buildAttachmentUploadResult,
+  buildPersistedAttachmentUploadResult,
 } from "@/lib/workorder/actionFlow";
 import {
   canDeleteAttachmentForCurrentUser,
@@ -15,6 +15,7 @@ import {
   openAttachmentPickerTrigger,
   readAttachmentInputFiles,
 } from "@/lib/workorder/attachments/attachmentActions";
+import { uploadWorkOrderAttachmentFiles } from "@/lib/workorder/attachments/attachmentUploadApiClient";
 import type { Attachment, AttachmentScope, HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 
 export function useWorkOrderAttachments({
@@ -56,22 +57,40 @@ export function useWorkOrderAttachments({
     openAttachmentPickerTrigger(attachmentInputRef, canEditSideDraftContent && canUploadOfficialAttachments);
   };
 
-  const handleAttachmentFiles = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleAttachmentFiles = async (event: ChangeEvent<HTMLInputElement>) => {
     if (!canEditSideDraftContent || !canUploadOfficialAttachments) {
       clearAttachmentInputValue(event);
       return;
     }
 
     const files = readAttachmentInputFiles(event);
-    const result = buildAttachmentUploadResult({
+    const scope = attachmentPickerScope === "design" ? "design" : "official";
+    clearAttachmentInputValue(event);
+    if (files.length === 0) return;
+
+    setSaveStatus("saving");
+    const uploadResult = await uploadWorkOrderAttachmentFiles({
       workOrder: selectedWorkOrder,
       currentUser,
       files,
-      scope: attachmentPickerScope === "design" ? "design" : "official",
+      scope,
+    });
+
+    if (uploadResult.error || uploadResult.attachments.length === 0) {
+      setSaveStatus("dirty");
+      setToastMessage(uploadResult.message ?? uploadResult.error ?? "첨부파일 업로드에 실패했습니다.");
+      return;
+    }
+
+    const result = buildPersistedAttachmentUploadResult({
+      workOrder: selectedWorkOrder,
+      currentUser,
+      attachments: uploadResult.attachments,
+      scope,
       text: actionFlowText as typeof actionFlowText & { designAttachmentUploadedToast?: string },
       historyText,
     });
-    clearAttachmentInputValue(event);
+
     if (!result) return;
 
     setWorkOrders((prev) => prev.map((item) => (item.id === selectedWorkOrder.id ? result.nextWorkOrder : item)));

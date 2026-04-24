@@ -12,7 +12,7 @@ export const ATTACHMENT_MEMO_DB_PREPARATION_STATUS = {
   codeStructureReady: true,
   sqlExecuted: true,
   dbAdapterConnected: true,
-  r2StorageConnected: false,
+  r2StorageConnected: true,
 } as const;
 
 export const ATTACHMENT_MEMO_DB_IMPACT_SCOPE = [
@@ -26,7 +26,8 @@ export const ATTACHMENT_MEMO_DB_IMPACT_SCOPE = [
 
 export const ATTACHMENT_MEMO_DB_SQL_PLANNING_NOTES = [
   "파일 원본은 DB에 저장하지 않고 R2에 저장한다.",
-  "DB에는 storage_key, url, content_type, file_size 같은 metadata만 저장한다.",
+  "DB에는 storage_key, original_name, mime_type, size_bytes 같은 metadata만 저장한다.",
+  "첨부 미리보기와 다운로드는 비공개 R2 객체를 API proxy로 읽는다.",
   "삭제는 물리 삭제 대신 deleted_at과 is_visible로 처리한다.",
   "표시 여부 판단은 presentation 계층에서 처리한다.",
   "첨부와 메모는 WorkOrder draft 저장 정책을 유지한 뒤 버튼 action에서 저장한다.",
