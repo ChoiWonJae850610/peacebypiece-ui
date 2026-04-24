@@ -7,6 +7,7 @@ import { canEditManagerInWorkflow, isWorkflowStateReviewLocked } from "@/lib/con
 import { buildManagerChangeResult } from "@/lib/workorder/actionFlow";
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
 import { persistUsersWithPermissions, persistWorkOrderWithHistory, replaceWorkOrderById } from "./workorderRepositoryMutations";
+import { mergeImmediateDbFields } from "@/lib/workorder/storagePolicy";
 import type { RoleType } from "@/types/permission";
 import type { ChangeManagerInput } from "./useWorkOrderActionTypes";
 import type { AdminActionBaseParams } from "./useWorkOrderActionTypes";
@@ -77,14 +78,14 @@ export function useWorkOrderAdminActions({
       }
 
       const persistedBaseWorkOrder = persistedWorkOrders.find((item) => item.id === workOrder.id) ?? workOrder;
+      const nextPersistableWorkOrder = mergeImmediateDbFields(persistedBaseWorkOrder, result.nextWorkOrder, [
+        "managerId",
+        "manager",
+        "workflowState",
+      ]);
       setSaveStatus("saving");
       void persistWorkOrderWithHistory(repository, {
-        workOrder: {
-          ...persistedBaseWorkOrder,
-          managerId: result.nextWorkOrder.managerId,
-          manager: result.nextWorkOrder.manager,
-          workflowState: result.nextWorkOrder.workflowState,
-        },
+        workOrder: nextPersistableWorkOrder,
         historyLogs: result.historyLogs,
       }).then((persistedWorkOrder) => {
         setPersistedWorkOrders((prev) => replaceWorkOrderById(prev, workOrder.id, persistedWorkOrder));
