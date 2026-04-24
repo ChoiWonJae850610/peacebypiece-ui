@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
-import { isR2Configured } from "@/lib/storage/r2/r2Config";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
 import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
 import { inferAttachmentTypeFromMime } from "@/lib/workorder/persistence/attachmentMemoTypes";
@@ -72,10 +71,6 @@ function createUploadAttachment(input: {
 }
 
 export async function POST(request: NextRequest) {
-  if (!isR2Configured()) {
-    return NextResponse.json({ attachments: [], error: "R2_NOT_CONFIGURED" }, { status: 503 });
-  }
-
   try {
     const payload = (await request.json().catch(() => null)) as CompleteUploadRequest | null;
     const workOrderId = readText(payload?.workOrderId);
