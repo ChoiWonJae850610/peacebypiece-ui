@@ -7,6 +7,7 @@ import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from 
 import { inferAttachmentTypeFromMime } from "@/lib/workorder/persistence/attachmentMemoTypes";
 import type { Attachment, AttachmentScope } from "@/types/workorder";
 
+export const runtime = "nodejs";
 function isWritableRepository(repository: AttachmentMemoRepository): repository is AttachmentMemoWritableRepository {
   return "createAttachment" in repository;
 }
