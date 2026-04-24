@@ -2,7 +2,6 @@
 
 import { useEffect, useState, type KeyboardEvent } from "react";
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
-import { CollapseToggleButton } from "@/components/workorder/detail/shared/detailEditorShared";
 import { useI18n } from "@/lib/i18n";
 import type { MemoThread, RoleType, WorkOrder } from "@/types/workorder";
 
@@ -167,13 +166,15 @@ export default function WorkOrderMemoPanel({
               ? `${composerExpanded ? "h-[76px]" : "h-[34px]"} pbp-field-interaction w-full resize-none rounded-lg border border-stone-200 bg-white py-1.5 pl-2.5 pr-10 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-400`
               : `${composerExpanded ? "h-[74px]" : "h-[32px]"} pbp-field-interaction w-full resize-none rounded-lg border border-stone-200 bg-white py-1.5 pl-2.5 pr-10 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-400 md:text-sm`}
           />
-          <div className="absolute right-1.5 top-1/2 -translate-y-1/2">
-            <CollapseToggleButton
-              open={composerExpanded}
-              onToggle={() => setComposerExpanded((prev) => !prev)}
-              label={composerExpanded ? ui.memo.toggleReplyClose : ui.memo.toggleReplyOpen}
-            />
-          </div>
+          <button
+            type="button"
+            onClick={() => setComposerExpanded((prev) => !prev)}
+            aria-label={composerExpanded ? ui.memo.toggleReplyClose : ui.memo.toggleReplyOpen}
+            aria-expanded={composerExpanded}
+            className="pbp-interactive-button absolute right-2 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-stone-500 hover:bg-stone-100 hover:text-stone-700 active:bg-stone-200"
+          >
+            <span aria-hidden="true" className={`inline-flex text-[13px] leading-none transition-transform ${composerExpanded ? "rotate-180" : "rotate-0"}`}>▾</span>
+          </button>
         </div>
         <div className={isMobile ? "mt-2" : "mt-2 flex justify-end"}>
           <button type="button" onClick={submitThread} disabled={!canEditMemo || !threadDraft.trim()} className={isMobile ? "pbp-interactive-button w-full rounded-full bg-stone-900 px-3 py-2 text-xs font-semibold text-white hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:opacity-50" : "pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:opacity-50"}>{ui.memo.submit}</button>
