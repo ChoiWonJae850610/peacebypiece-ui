@@ -1,17 +1,10 @@
-import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { createHmac, createHash } from "crypto";
+import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { Readable } from "stream";
 
 // ================================
 // [R2 Client]
 // ================================
-
-type R2BodyInput = Buffer | Uint8Array | ArrayBuffer;
-
-type PutR2ObjectInput = {
-  key: string;
-  body: R2BodyInput;
-  contentType?: string | null;
-};
 
 type GetR2ObjectInput =
   | string
@@ -23,6 +16,20 @@ type R2ObjectResult = {
   body: Buffer;
   contentType: string;
   contentLength: number;
+};
+
+export type CreateR2PresignedPutUrlInput = {
+  key: string;
+  contentType?: string | null;
+  expiresInSeconds?: number;
+};
+
+export type R2PresignedPutUrlResult = {
+  key: string;
+  url: string;
+  method: "PUT";
+  headers: Record<string, string>;
+  expiresInSeconds: number;
 };
 
 let cachedClient: S3Client | null = null;
@@ -52,7 +59,8 @@ function cleanStorageKey(key: string): string {
 }
 
 function getR2Config() {
-  const endpoint = process.env.R2_ENDPOINT;
+  const accountId = process.env.R2_ACCOUNT_ID;
+  const endpoint = process.env.R2_ENDPOINT || (accountId ? `https://${accountId}.r2.cloudflarestorage.com` : null);
   const accessKeyId = process.env.R2_ACCESS_KEY_ID;
   const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
   const bucketName = process.env.R2_BUCKET_NAME;
@@ -87,35 +95,66 @@ function createR2Client(): S3Client {
   return cachedClient;
 }
 
-function toBuffer(body: R2BodyInput): Buffer {
-  if (Buffer.isBuffer(body)) return body;
-  if (body instanceof ArrayBuffer) return Buffer.from(body);
-  return Buffer.from(body.buffer, body.byteOffset, body.byteLength);
-}
+function streamToBuffer(body: unknown): Promise<Buffer> {
+  if (!body) return Promise.resolve(Buffer.alloc(0));
 
-async function streamToBuffer(body: unknown): Promise<Buffer> {
-  if (!body) return Buffer.alloc(0);
-
-  if (Buffer.isBuffer(body)) return body;
+  if (Buffer.isBuffer(body)) return Promise.resolve(body);
 
   if (body instanceof Uint8Array) {
-    return Buffer.from(body.buffer, body.byteOffset, body.byteLength);
+    return Promise.resolve(Buffer.from(body.buffer, body.byteOffset, body.byteLength));
   }
 
   if (body instanceof Readable) {
-    const chunks: Buffer[] = [];
-    for await (const chunk of body) {
-      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-    }
-    return Buffer.concat(chunks);
+    return new Promise((resolve, reject) => {
+      const chunks: Buffer[] = [];
+      body.on("data", (chunk) => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
+      body.on("error", reject);
+      body.on("end", () => resolve(Buffer.concat(chunks)));
+    });
   }
 
   if (typeof (body as { transformToByteArray?: () => Promise<Uint8Array> }).transformToByteArray === "function") {
-    const bytes = await (body as { transformToByteArray: () => Promise<Uint8Array> }).transformToByteArray();
-    return Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    return (body as { transformToByteArray: () => Promise<Uint8Array> }).transformToByteArray().then((bytes) => Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength));
   }
 
   throw new Error("R2_INVALID_OBJECT_BODY");
+}
+
+function encodeStoragePath(value: string): string {
+  return value
+    .split("/")
+    .map((part) => encodeURIComponent(part))
+    .join("/");
+}
+
+function formatAmzDate(date: Date): { amzDate: string; dateStamp: string } {
+  const iso = date.toISOString().replace(/[:-]|\.\d{3}/g, "");
+  return {
+    amzDate: iso,
+    dateStamp: iso.slice(0, 8),
+  };
+}
+
+function hmac(key: Buffer | string, value: string): Buffer {
+  return createHmac("sha256", key).update(value, "utf8").digest();
+}
+
+function hash(value: string): string {
+  return createHash("sha256").update(value, "utf8").digest("hex");
+}
+
+function getSigningKey(secretAccessKey: string, dateStamp: string): Buffer {
+  const dateKey = hmac(`AWS4${secretAccessKey}`, dateStamp);
+  const dateRegionKey = hmac(dateKey, "auto");
+  const dateRegionServiceKey = hmac(dateRegionKey, "s3");
+  return hmac(dateRegionServiceKey, "aws4_request");
+}
+
+function buildCanonicalQuery(params: Record<string, string>): string {
+  return Object.keys(params)
+    .sort()
+    .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+    .join("&");
 }
 
 // ================================
@@ -127,35 +166,53 @@ export function createAttachmentFileProxyUrl(key: string): string {
   return `/api/workorders/attachments/file?key=${encodeURIComponent(cleanKey)}`;
 }
 
-export async function putR2Object(input: PutR2ObjectInput): Promise<{ ok: true; key: string }> {
+export function createR2PresignedPutUrl(input: CreateR2PresignedPutUrlInput): R2PresignedPutUrlResult {
   const config = getR2Config();
-  const client = createR2Client();
   const key = cleanStorageKey(input.key);
-  const body = toBuffer(input.body);
+  const contentType = input.contentType || "application/octet-stream";
+  const expiresInSeconds = Math.min(Math.max(input.expiresInSeconds ?? 900, 60), 3600);
+  const now = new Date();
+  const { amzDate, dateStamp } = formatAmzDate(now);
+  const endpoint = new URL(config.endpoint);
+  const host = endpoint.host;
+  const credentialScope = `${dateStamp}/auto/s3/aws4_request`;
+  const signedHeaders = "content-type;host";
+  const canonicalUri = `/${encodeStoragePath(config.bucketName)}/${encodeStoragePath(key)}`;
+  const queryParams: Record<string, string> = {
+    "X-Amz-Algorithm": "AWS4-HMAC-SHA256",
+    "X-Amz-Credential": `${config.accessKeyId}/${credentialScope}`,
+    "X-Amz-Date": amzDate,
+    "X-Amz-Expires": String(expiresInSeconds),
+    "X-Amz-SignedHeaders": signedHeaders,
+  };
+  const canonicalQueryString = buildCanonicalQuery(queryParams);
+  const canonicalHeaders = `content-type:${contentType}\nhost:${host}\n`;
+  const canonicalRequest = [
+    "PUT",
+    canonicalUri,
+    canonicalQueryString,
+    canonicalHeaders,
+    signedHeaders,
+    "UNSIGNED-PAYLOAD",
+  ].join("\n");
+  const stringToSign = [
+    "AWS4-HMAC-SHA256",
+    amzDate,
+    credentialScope,
+    hash(canonicalRequest),
+  ].join("\n");
+  const signature = createHmac("sha256", getSigningKey(config.secretAccessKey, dateStamp)).update(stringToSign, "utf8").digest("hex");
+  const url = `${config.endpoint}${canonicalUri}?${canonicalQueryString}&X-Amz-Signature=${signature}`;
 
-  try {
-    await client.send(
-      new PutObjectCommand({
-        Bucket: config.bucketName,
-        Key: key,
-        Body: body,
-        ContentType: input.contentType || "application/octet-stream",
-      })
-    );
-
-    return { ok: true, key };
-  } catch (error: any) {
-    console.error("[R2_UPLOAD_ERROR]", {
-      bucketName: config.bucketName,
-      key,
-      endpoint: config.endpoint,
-      message: error?.message,
-      code: error?.code,
-      name: error?.name,
-    });
-
-    throw error;
-  }
+  return {
+    key,
+    url,
+    method: "PUT",
+    headers: {
+      "Content-Type": contentType,
+    },
+    expiresInSeconds,
+  };
 }
 
 export async function getR2Object(input: GetR2ObjectInput): Promise<R2ObjectResult> {
@@ -190,16 +247,4 @@ export async function getR2Object(input: GetR2ObjectInput): Promise<R2ObjectResu
 
     throw error;
   }
-}
-
-export async function uploadToR2(params: {
-  key: string;
-  body: R2BodyInput;
-  contentType: string;
-}): Promise<{ ok: true; key: string }> {
-  return putR2Object({
-    key: params.key,
-    body: params.body,
-    contentType: params.contentType,
-  });
 }
