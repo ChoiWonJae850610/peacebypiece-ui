@@ -81,6 +81,7 @@ export function buildWorkOrderDerivedState({
     currentRoles,
     currentUserId,
     workOrder: selectedWorkOrder,
+    users,
   });
 
   return {

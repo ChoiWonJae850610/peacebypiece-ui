@@ -18,6 +18,7 @@ import {
 } from "@/lib/constants/roles";
 import { WORKFLOW_ACTION_LABELS } from "@/lib/constants/workflow";
 import type { RoleType } from "@/types/permission";
+import type { UserProfile } from "@/types/user";
 import {
   getOrderSubmissionSnapshot,
   hasValidOrderFactoryName,
@@ -30,6 +31,7 @@ export type WorkflowContext = {
   currentRoles: RoleType[];
   currentUserId: string;
   workOrder: WorkOrder;
+  users?: UserProfile[];
 };
 
 export function getDefaultInspectionStatusForWorkflowState(workflowState: WorkflowState): OrderInspectionStatus {
@@ -203,7 +205,15 @@ export function canEditInventoryForWorkflow(currentRoles: RoleType[], _currentWo
   return hasRole(currentRoles, ROLE.admin) || canEditInventoryByRoles(currentRoles);
 }
 
-export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles, currentUserId, workOrder }: WorkflowContext): WorkflowAction[] {
+export function getReviewApprovalCancelNextState(workOrder: WorkOrder, users: UserProfile[] = []): WorkflowState {
+  const assignedUser = users.find((user) => user.id === workOrder.managerId);
+  const assignedRole = assignedUser?.role ?? workOrder.createdByRole;
+
+  if (assignedRole === ROLE.designer) return "review_requested";
+  return "draft";
+}
+
+export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles, currentUserId, workOrder, users }: WorkflowContext): WorkflowAction[] {
   switch (currentWorkflowState) {
     case "draft": {
       const actions: WorkflowAction[] = [];
@@ -236,7 +246,7 @@ export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles
     case "review_completed":
       if (isAdminRole(currentRoles)) {
         return [
-          { label: WORKFLOW_ACTION_LABELS.cancelReviewApproval, nextState: "draft", actionType: "cancel_review_approval" },
+          { label: WORKFLOW_ACTION_LABELS.cancelReviewApproval, nextState: getReviewApprovalCancelNextState(workOrder, users), actionType: "cancel_review_approval" },
           ...(canRequestFactoryOrder({ currentRoles, workOrder, currentWorkflowState })
             ? [{ label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "inspection", actionType: "request_order" } satisfies WorkflowAction]
             : []),
