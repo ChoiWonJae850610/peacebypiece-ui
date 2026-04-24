@@ -3,15 +3,10 @@
 import { useEffect, useState, type KeyboardEvent } from "react";
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
 import { useI18n } from "@/lib/i18n";
+import { getMemoDisplayContent, isDeletedMemoItem } from "@/lib/workorder/presentation/memoPresentation";
 import type { MemoReply, MemoThread, RoleType, WorkOrder } from "@/types/workorder";
 
 const MEMO_MAX_LENGTH = 50;
-const DELETED_MEMO_CONTENT = "삭제된 메모입니다.";
-
-function isDeletedMemoContent(content: string) {
-  return content.trim() === DELETED_MEMO_CONTENT;
-}
-
 function getRoleDisplayLabel(role: RoleType, i18n: ReturnType<typeof useI18n>["i18n"]) {
   return i18n.common.ui.roles?.[role] ?? role;
 }
@@ -32,10 +27,11 @@ type MemoInputFieldProps = {
   onChange: (value: string) => void;
   onSubmit: () => void;
   onCancel?: () => void;
+  cancelLabel?: string;
   isMobile?: boolean;
 };
 
-function MemoInputField({ value, disabled, placeholder, submitLabel, onChange, onSubmit, onCancel, isMobile = false }: MemoInputFieldProps) {
+function MemoInputField({ value, disabled, placeholder, submitLabel, onChange, onSubmit, onCancel, cancelLabel, isMobile = false }: MemoInputFieldProps) {
   const trimmed = value.trim();
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -68,7 +64,7 @@ function MemoInputField({ value, disabled, placeholder, submitLabel, onChange, o
         <span className="mr-auto text-[10px] font-medium text-stone-400">{`${value.length} / ${MEMO_MAX_LENGTH}`}</span>
         {onCancel ? (
           <button type="button" onClick={onCancel} className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1.5 text-[11px] font-semibold text-stone-700 hover:bg-stone-100 active:bg-stone-200">
-            취소
+            {cancelLabel}
           </button>
         ) : null}
         <button
@@ -86,14 +82,14 @@ function MemoInputField({ value, disabled, placeholder, submitLabel, onChange, o
   );
 }
 
-function MemoItemActions({ canMutate, onEdit, onDelete }: { canMutate: boolean; onEdit: () => void; onDelete: () => void }) {
+function MemoItemActions({ canMutate, editLabel, deleteAriaLabel, onEdit, onDelete }: { canMutate: boolean; editLabel: string; deleteAriaLabel: string; onEdit: () => void; onDelete: () => void }) {
   if (!canMutate) return null;
   return (
     <div className="flex shrink-0 items-center gap-1">
       <button type="button" onClick={onEdit} className="pbp-interactive-button rounded-full border border-stone-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-stone-600 hover:bg-stone-100 active:bg-stone-200">
-        수정
+        {editLabel}
       </button>
-      <button type="button" onClick={onDelete} aria-label="메모 삭제" className="pbp-interactive-button inline-flex h-5 w-5 items-center justify-center rounded-full border border-red-200 bg-white text-[12px] font-semibold leading-none text-red-500 hover:bg-red-50 active:bg-red-100">
+      <button type="button" onClick={onDelete} aria-label={deleteAriaLabel} className="pbp-interactive-button inline-flex h-5 w-5 items-center justify-center rounded-full border border-red-200 bg-white text-[12px] font-semibold leading-none text-red-500 hover:bg-red-50 active:bg-red-100">
         ×
       </button>
     </div>
@@ -145,7 +141,7 @@ function MemoThreadCard({
   }, [thread.id, thread.content, workOrderId]);
 
   const canMutateAuthor = (authorId: string) => canEditMemo && (isAdminRole(currentUserRole) || authorId === currentUserId);
-  const isThreadDeleted = isDeletedMemoContent(thread.content);
+  const isThreadDeleted = isDeletedMemoItem(thread);
   const canMutateThread = canMutateAuthor(thread.authorId) && !isThreadDeleted;
 
   const submitReply = () => {
@@ -186,6 +182,8 @@ function MemoThreadCard({
         </div>
         <MemoItemActions
           canMutate={canMutateThread}
+          editLabel={ui.memo.edit}
+          deleteAriaLabel={ui.memo.deleteAria}
           onEdit={() => {
             setEditingThread(true);
             setThreadEditDraft(normalizeMemoInput(thread.content));
@@ -200,7 +198,8 @@ function MemoThreadCard({
             value={threadEditDraft}
             disabled={!canMutateThread}
             placeholder={ui.memo.threadPlaceholder}
-            submitLabel="저장"
+            submitLabel={ui.memo.save}
+            cancelLabel={ui.memo.cancel}
             onChange={setThreadEditDraft}
             onSubmit={submitThreadEdit}
             onCancel={() => {
@@ -214,7 +213,7 @@ function MemoThreadCard({
         <div className={isMobile
           ? `mt-2 whitespace-pre-wrap text-[12px] leading-5 ${isThreadDeleted ? "italic text-stone-400" : "text-stone-700"}`
           : `mt-2 whitespace-pre-wrap text-[13px] leading-5 ${isThreadDeleted ? "italic text-stone-400" : "text-stone-700"}`
-        }>{thread.content}</div>
+        }>{getMemoDisplayContent(thread, ui.memo.deleted)}</div>
       )}
 
       <div className="mt-3 space-y-2 border-t border-stone-200 pt-3">
@@ -224,7 +223,7 @@ function MemoThreadCard({
             <div key={reply.id} className="pl-3 text-stone-700">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 text-[11px] text-stone-500">ㄴ {reply.authorName} · {getRoleDisplayLabel(reply.authorRole, i18n)} · {reply.createdAt}</div>
-                <MemoItemActions canMutate={canMutateAuthor(reply.authorId)} onEdit={() => startReplyEdit(reply)} onDelete={() => onDeleteReply(thread.id, reply.id)} />
+                <MemoItemActions canMutate={canMutateAuthor(reply.authorId)} editLabel={ui.memo.edit} deleteAriaLabel={ui.memo.deleteAria} onEdit={() => startReplyEdit(reply)} onDelete={() => onDeleteReply(thread.id, reply.id)} />
               </div>
               {isEditingReply ? (
                 <div className="mt-1.5 rounded-xl border border-stone-200 bg-stone-50 p-2">
@@ -232,7 +231,8 @@ function MemoThreadCard({
                     value={replyEditDraft}
                     disabled={!canMutateAuthor(reply.authorId)}
                     placeholder={ui.memo.replyPlaceholder}
-                    submitLabel="저장"
+                    submitLabel={ui.memo.save}
+            cancelLabel={ui.memo.cancel}
                     onChange={setReplyEditDraft}
                     onSubmit={() => submitReplyEdit(reply.id)}
                     onCancel={() => {

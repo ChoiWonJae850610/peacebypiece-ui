@@ -222,6 +222,11 @@ export const workorderEn = {
       replyPlaceholder: "Enter reply",
       threadPlaceholder: "Enter work memo",
       submit: "Register",
+      deleted: "Deleted memo.",
+      edit: "Edit",
+      save: "Save",
+      cancel: "Cancel",
+      deleteAria: "Delete memo",
       empty: "No work memos have been registered.",
     },
     attachmentPanel: {

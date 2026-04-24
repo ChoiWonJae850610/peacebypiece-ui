@@ -29,6 +29,7 @@ export type MemoReply = {
   content: string;
   createdAt: string;
   attachmentIds?: string[];
+  deletedAt?: string | null;
 };
 
 export type MemoThread = {
@@ -39,6 +40,7 @@ export type MemoThread = {
   content: string;
   createdAt: string;
   attachmentIds?: string[];
+  deletedAt?: string | null;
   replies: MemoReply[];
 };
 

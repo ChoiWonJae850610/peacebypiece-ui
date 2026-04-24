@@ -105,12 +105,16 @@ export function useWorkOrderLifecycleActions({
         }),
         task: async () => {
           setSaveStatus("saving");
-          const persistedWorkOrder = await persistWorkOrderWithHistory(repository, { workOrder });
-          const persistedWorkOrders = replaceWorkOrderById(workOrders, workOrder.id, persistedWorkOrder);
+          const previousPersistedWorkOrder = persistedWorkOrders.find((item) => item.id === workOrder.id) ?? workOrder;
+          const locallySavedWorkOrder = {
+            ...workOrder,
+            lastSavedAt: previousPersistedWorkOrder.lastSavedAt,
+          };
+          const locallySavedWorkOrders = replaceWorkOrderById(workOrders, workOrder.id, locallySavedWorkOrder);
 
-          setWorkOrders(persistedWorkOrders);
-          setPersistedWorkOrders(persistedWorkOrders);
-          setLastSavedAt(persistedWorkOrder.lastSavedAt ?? null);
+          setWorkOrders(locallySavedWorkOrders);
+          setPersistedWorkOrders(locallySavedWorkOrders);
+          setLastSavedAt(previousPersistedWorkOrder.lastSavedAt ?? null);
           setSaveStatus("saved");
           setToastMessage(lifecycleText.saveCompletedToast);
           setActionFailure?.("save", null);
@@ -118,7 +122,7 @@ export function useWorkOrderLifecycleActions({
         },
       });
     },
-    [lifecycleText.saveCompletedToast, lifecycleText.saveFailedToast, repository, setActionError, setActionFailure, setActionStatus, setLastSavedAt, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders],
+    [lifecycleText.saveCompletedToast, lifecycleText.saveFailedToast, persistedWorkOrders, setActionError, setActionFailure, setActionStatus, setLastSavedAt, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   const handleCreateWorkOrder = useCallback(

@@ -222,6 +222,11 @@ export const workorderKo = {
       replyPlaceholder: "댓글 입력",
       threadPlaceholder: "작업 메모 입력",
       submit: "등록",
+      deleted: "삭제된 메모입니다.",
+      edit: "수정",
+      save: "저장",
+      cancel: "취소",
+      deleteAria: "메모 삭제",
       empty: "등록된 작업 메모가 없습니다.",
     },
     attachmentPanel: {
