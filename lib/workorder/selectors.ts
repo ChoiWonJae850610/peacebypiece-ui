@@ -38,8 +38,8 @@ export function filterWorkOrdersByUserScope(workOrders: WorkOrder[], workflowSta
 
   if (isInspectorRole(currentUser)) {
     return workOrders.filter((item) => {
-      const workflowState = workflowStateById[item.id] ?? item.workflowState;
-      return isWorkflowStateInRange(workflowState as WorkOrder["workflowState"], "inspection", "completed") && !isWorkflowState(workflowState, "completed");
+      const workflowState = (workflowStateById[item.id] ?? item.workflowState) as WorkOrder["workflowState"];
+      return isWorkflowStateInRange(workflowState, "inspection", "completed") && !isWorkflowState(workflowState, "completed");
     });
   }
 

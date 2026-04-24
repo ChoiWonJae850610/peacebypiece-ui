@@ -6,6 +6,11 @@ import { useI18n } from "@/lib/i18n";
 import type { MemoReply, MemoThread, RoleType, WorkOrder } from "@/types/workorder";
 
 const MEMO_MAX_LENGTH = 50;
+const DELETED_MEMO_CONTENT = "삭제된 메모입니다.";
+
+function isDeletedMemoContent(content: string) {
+  return content.trim() === DELETED_MEMO_CONTENT;
+}
 
 function getRoleDisplayLabel(role: RoleType, i18n: ReturnType<typeof useI18n>["i18n"]) {
   return i18n.common.ui.roles?.[role] ?? role;
@@ -140,10 +145,12 @@ function MemoThreadCard({
   }, [thread.id, thread.content, workOrderId]);
 
   const canMutateAuthor = (authorId: string) => canEditMemo && (isAdminRole(currentUserRole) || authorId === currentUserId);
+  const isThreadDeleted = isDeletedMemoContent(thread.content);
+  const canMutateThread = canMutateAuthor(thread.authorId) && !isThreadDeleted;
 
   const submitReply = () => {
     const nextContent = replyDraft.trim();
-    if (!canEditMemo || !nextContent) return;
+    if (!canEditMemo || isThreadDeleted || !nextContent) return;
     onCreateReply(thread.id, nextContent);
     if (typeof document !== "undefined" && document.activeElement instanceof HTMLTextAreaElement) document.activeElement.blur();
     setReplyDraft("");
@@ -152,7 +159,7 @@ function MemoThreadCard({
 
   const submitThreadEdit = () => {
     const nextContent = threadEditDraft.trim();
-    if (!canMutateAuthor(thread.authorId) || !nextContent) return;
+    if (!canMutateThread || !nextContent) return;
     onUpdateThread(thread.id, nextContent);
     setEditingThread(false);
   };
@@ -178,7 +185,7 @@ function MemoThreadCard({
           <div className="mt-0.5 text-[11px] text-stone-500">{getRoleDisplayLabel(thread.authorRole, i18n)} · {thread.createdAt}</div>
         </div>
         <MemoItemActions
-          canMutate={canMutateAuthor(thread.authorId)}
+          canMutate={canMutateThread}
           onEdit={() => {
             setEditingThread(true);
             setThreadEditDraft(normalizeMemoInput(thread.content));
@@ -191,7 +198,7 @@ function MemoThreadCard({
         <div className="mt-2 rounded-xl border border-stone-200 bg-stone-50 p-2">
           <MemoInputField
             value={threadEditDraft}
-            disabled={!canMutateAuthor(thread.authorId)}
+            disabled={!canMutateThread}
             placeholder={ui.memo.threadPlaceholder}
             submitLabel="저장"
             onChange={setThreadEditDraft}
@@ -204,7 +211,10 @@ function MemoThreadCard({
           />
         </div>
       ) : (
-        <div className={isMobile ? "mt-2 whitespace-pre-wrap text-[12px] leading-5 text-stone-700" : "mt-2 whitespace-pre-wrap text-[13px] leading-5 text-stone-700"}>{thread.content}</div>
+        <div className={isMobile
+          ? `mt-2 whitespace-pre-wrap text-[12px] leading-5 ${isThreadDeleted ? "italic text-stone-400" : "text-stone-700"}`
+          : `mt-2 whitespace-pre-wrap text-[13px] leading-5 ${isThreadDeleted ? "italic text-stone-400" : "text-stone-700"}`
+        }>{thread.content}</div>
       )}
 
       <div className="mt-3 space-y-2 border-t border-stone-200 pt-3">
@@ -240,14 +250,14 @@ function MemoThreadCard({
         }) : null}
 
         <div className="flex items-center justify-between gap-2 pt-1">
-          <button type="button" onClick={() => setReplyComposerOpen((prev) => !prev)} disabled={!canEditMemo} className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1 text-[11px] font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200 disabled:cursor-not-allowed disabled:opacity-50">
+          <button type="button" onClick={() => setReplyComposerOpen((prev) => !prev)} disabled={!canEditMemo || isThreadDeleted} className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1 text-[11px] font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200 disabled:cursor-not-allowed disabled:opacity-50">
             {replyComposerOpen ? ui.memo.toggleReplyClose : ui.memo.toggleReplyOpen}
           </button>
         </div>
 
         {replyComposerOpen ? (
           <div className="rounded-xl border border-stone-200 bg-stone-50 p-2.5">
-            <MemoInputField value={replyDraft} disabled={!canEditMemo} placeholder={ui.memo.replyPlaceholder} submitLabel={ui.memo.submit} onChange={setReplyDraft} onSubmit={submitReply} isMobile={isMobile} />
+            <MemoInputField value={replyDraft} disabled={!canEditMemo || isThreadDeleted} placeholder={ui.memo.replyPlaceholder} submitLabel={ui.memo.submit} onChange={setReplyDraft} onSubmit={submitReply} isMobile={isMobile} />
           </div>
         ) : null}
       </div>

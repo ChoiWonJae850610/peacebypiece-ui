@@ -17,6 +17,8 @@ import {
 } from "@/lib/workorder/attachments/attachmentActions";
 import type { Attachment, AttachmentScope, HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 
+const DELETED_MEMO_CONTENT = "삭제된 메모입니다.";
+
 export function useWorkOrderAttachments({
   attachmentInputRef,
   canEditSideDraftContent,
@@ -174,7 +176,7 @@ export function useWorkOrderAttachments({
   const handleUpdateMemoThread = (threadId: string, content: string) => {
     const nextContent = content.trim();
     const targetThread = (selectedWorkOrder.memoThreads ?? []).find((thread) => thread.id === threadId);
-    if (!targetThread || !nextContent || !canMutateMemoItem(targetThread.authorId)) return;
+    if (!targetThread || targetThread.content === DELETED_MEMO_CONTENT || !nextContent || !canMutateMemoItem(targetThread.authorId)) return;
 
     setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
       ? { ...item, memoThreads: (item.memoThreads ?? []).map((thread) => thread.id === threadId ? { ...thread, content: nextContent } : thread) }
@@ -186,8 +188,14 @@ export function useWorkOrderAttachments({
     const targetThread = (selectedWorkOrder.memoThreads ?? []).find((thread) => thread.id === threadId);
     if (!targetThread || !canMutateMemoItem(targetThread.authorId)) return;
 
+    const hasReplies = (targetThread.replies ?? []).length > 0;
     setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
-      ? { ...item, memoThreads: (item.memoThreads ?? []).filter((thread) => thread.id !== threadId) }
+      ? {
+          ...item,
+          memoThreads: hasReplies
+            ? (item.memoThreads ?? []).map((thread) => thread.id === threadId ? { ...thread, content: DELETED_MEMO_CONTENT, attachmentIds: [] } : thread)
+            : (item.memoThreads ?? []).filter((thread) => thread.id !== threadId),
+        }
       : item));
     setSaveStatus("dirty");
   };
