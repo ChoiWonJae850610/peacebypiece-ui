@@ -5,6 +5,7 @@ export const workorderEn = {
     review_completed: "Review completed",
     inspection: "Inspection",
     completed: "Completed",
+    rejected: "Rejected",
   },
   displayStages: {
     draft: "Draft",
@@ -21,6 +22,7 @@ export const workorderEn = {
     request_order: "After review completion, the order request is confirmed and handed off to inspection.",
     inspection: "After the order request, inbound or inspection staff verify quantities and completion.",
     completed: "Work is complete and only archive management remains.",
+    rejected: "Rejected by the manager and returned for designer editing.",
   },
   inspectionStatuses: {
     order_pending: "Order pending",
@@ -33,6 +35,7 @@ export const workorderEn = {
     cancelReviewRequest: "Cancel request",
     cancelReviewApproval: "Cancel",
     rejectReview: "Reject",
+    restoreRejectedDraft: "Edit again",
     approveReview: "Approve review",
     requestOrder: "Request order",
     requestReinspection: "Request reinspection",

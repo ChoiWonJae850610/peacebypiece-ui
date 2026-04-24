@@ -4,6 +4,7 @@ export const WORKFLOW_STATES = [
   "review_completed",
   "inspection",
   "completed",
+  "rejected",
 ] as const;
 
 export const DISPLAY_STAGES = [
@@ -82,6 +83,7 @@ export function getDisplayOrderInspectionStatus(status: OrderInspectionStatusVal
 
 export const STATUS_ORDER: Record<WorkflowStateValue, number> = {
   draft: 0,
+  rejected: 0,
   review_requested: 1,
   review_completed: 2,
   inspection: 3,
@@ -113,7 +115,7 @@ export function isWorkflowStateOneOf(state: WorkflowStateValue, targets: readonl
 }
 
 export function canEditBeforeOrder(state: WorkflowStateValue, isAdmin = false) {
-  return isWorkflowStateBefore(state, "review_requested") || (isAdmin && isWorkflowState(state, "review_requested"));
+  return isWorkflowStateBefore(state, "review_requested") || isWorkflowState(state, "rejected") || (isAdmin && isWorkflowState(state, "review_requested"));
 }
 
 export function isWorkflowStateReviewLocked(state: WorkflowStateValue, isAdmin = false) {
@@ -138,7 +140,7 @@ export function canOpenInspectionModalInWorkflow(state: WorkflowStateValue) {
 }
 
 export function getWorkflowStateScope(state: WorkflowStateValue, isAdmin = false): "draft" | "review_requested_admin" | "locked" {
-  if (isWorkflowState(state, "draft")) return "draft";
+  if (isWorkflowState(state, "draft") || isWorkflowState(state, "rejected")) return "draft";
   if (isAdmin && isWorkflowState(state, "review_requested")) return "review_requested_admin";
   return "locked";
 }
@@ -162,6 +164,7 @@ export const WORKFLOW_STATE_TO_STAGE: Record<WorkflowStateValue, DisplayStageVal
   review_completed: "review_completed",
   inspection: "inspection",
   completed: "completed",
+  rejected: "draft",
 };
 
 export const WORKFLOW_STATE_BADGE_TONE: Record<WorkflowStateValue | DisplayStageValue, string> = {
@@ -171,6 +174,7 @@ export const WORKFLOW_STATE_BADGE_TONE: Record<WorkflowStateValue | DisplayStage
   request_order: "bg-amber-100 text-amber-700",
   inspection: "bg-emerald-100 text-emerald-700",
   completed: "bg-stone-900 text-white",
+  rejected: "bg-rose-100 text-rose-700",
 };
 
 export const WORKFLOW_STATE_DOT_TONE: Record<WorkflowStateValue | DisplayStageValue, string> = {
@@ -180,6 +184,7 @@ export const WORKFLOW_STATE_DOT_TONE: Record<WorkflowStateValue | DisplayStageVa
   request_order: "bg-amber-500",
   inspection: "bg-emerald-500",
   completed: "bg-white",
+  rejected: "bg-rose-500",
 };
 
 export const WORKFLOW_STATE_TEXT_TONE: Record<WorkflowStateValue | DisplayStageValue, string> = {
@@ -189,12 +194,13 @@ export const WORKFLOW_STATE_TEXT_TONE: Record<WorkflowStateValue | DisplayStageV
   request_order: "text-amber-700",
   inspection: "text-emerald-700",
   completed: "text-stone-900",
+  rejected: "text-rose-700",
 };
 
-export const MANAGER_ASSIGNABLE_STATES = ["draft", "review_requested"] as const;
+export const MANAGER_ASSIGNABLE_STATES = ["draft", "rejected", "review_requested"] as const;
 export const INVENTORY_EDITABLE_STATES = ["inspection", "completed"] as const;
 export const REORDERABLE_WORKFLOW_STATES = ["inspection", "completed"] as const;
-export const DELETABLE_WORKFLOW_STATES = ["draft", "review_requested"] as const;
+export const DELETABLE_WORKFLOW_STATES = ["draft", "rejected", "review_requested"] as const;
 
 export const WORKFLOW_ACTION_LABEL_KEYS = {
   requestReview: "requestReview",
@@ -210,6 +216,7 @@ export const LEGACY_WORKFLOW_STATE_MAP = {
   "작성중": "draft",
   "검토요청": "review_requested",
   "검토완료": "review_completed",
+  "반려": "rejected",
   "발주요청": "inspection",
   "생산중": "inspection",
   "검수중": "inspection",
@@ -224,6 +231,7 @@ export const LEGACY_DISPLAY_STAGE_MAP = {
   "작성중": "draft",
   "검토요청": "review_requested",
   "검토완료": "review_completed",
+  "반려": "draft",
   "발주요청": "request_order",
   "검수": "inspection",
   "완료": "completed",

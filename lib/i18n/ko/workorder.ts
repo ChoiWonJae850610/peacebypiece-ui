@@ -5,6 +5,7 @@ export const workorderKo = {
     review_completed: "검토완료",
     inspection: "검수",
     completed: "완료",
+    rejected: "반려",
   },
   displayStages: {
     draft: "작성중",
@@ -21,6 +22,7 @@ export const workorderKo = {
     request_order: "검토 완료 후 실제 발주 요청을 확정하고 검수 단계로 넘기는 단계입니다.",
     inspection: "발주 요청 이후 입고/검수 담당자가 재고를 반영하고 완료 여부를 확인하는 단계입니다.",
     completed: "작업이 종료되어 아카이브 관리만 남은 상태입니다.",
+    rejected: "관리자가 반려하여 디자이너가 다시 수정할 수 있는 단계입니다.",
   },
   inspectionStatuses: {
     order_pending: "발주대기",
@@ -33,6 +35,7 @@ export const workorderKo = {
     cancelReviewRequest: "요청 취소",
     cancelReviewApproval: "취소",
     rejectReview: "반려",
+    restoreRejectedDraft: "수정하기",
     approveReview: "검토 완료",
     requestOrder: "발주 요청",
     requestReinspection: "재검수 요청",

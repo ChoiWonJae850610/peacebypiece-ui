@@ -207,6 +207,9 @@ export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles
   switch (currentWorkflowState) {
     case "draft": {
       const actions: WorkflowAction[] = [];
+      if (isAdminRole(currentRoles)) {
+        actions.push({ label: WORKFLOW_ACTION_LABELS.approveReview, nextState: "review_completed", actionType: "approve_review" });
+      }
       if (canRequestReview({ currentRoles, currentUserId, workOrder })) {
         actions.push({ label: WORKFLOW_ACTION_LABELS.requestReview, nextState: "review_requested", actionType: "request_review" });
       }
@@ -215,7 +218,7 @@ export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles
     case "review_requested": {
       if (isAdminRole(currentRoles)) {
         return [
-          { label: WORKFLOW_ACTION_LABELS.rejectReview, nextState: "draft", actionType: "reject_review" },
+          { label: WORKFLOW_ACTION_LABELS.rejectReview, nextState: "rejected", actionType: "reject_review" },
           { label: WORKFLOW_ACTION_LABELS.approveReview, nextState: "review_completed", actionType: "approve_review" },
         ];
       }
@@ -224,10 +227,16 @@ export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles
       }
       return [];
     }
+    case "rejected": {
+      if (canRequestReview({ currentRoles, currentUserId, workOrder })) {
+        return [{ label: WORKFLOW_ACTION_LABELS.restoreRejectedDraft, nextState: "draft", actionType: "restore_rejected_draft" }];
+      }
+      return [];
+    }
     case "review_completed":
       if (isAdminRole(currentRoles)) {
         return [
-          { label: WORKFLOW_ACTION_LABELS.cancelReviewApproval, nextState: "review_requested", actionType: "cancel_review_request" },
+          { label: WORKFLOW_ACTION_LABELS.cancelReviewApproval, nextState: "draft", actionType: "cancel_review_approval" },
           ...(canRequestFactoryOrder({ currentRoles, workOrder, currentWorkflowState })
             ? [{ label: WORKFLOW_ACTION_LABELS.requestOrder, nextState: "inspection", actionType: "request_order" } satisfies WorkflowAction]
             : []),
