@@ -1,3 +1,4 @@
+import { isOrderInspectionCompleted } from "@/lib/constants/workorderStates";
 import { getI18n } from "@/lib/i18n";
 import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculations";
 import { isEditorNumericField } from "@/lib/workorder/detail/detailFields";
@@ -44,7 +45,7 @@ export function formatOrderSummary(orderEntries: OrderEntry[]) {
   const common = i18n.workorder.ui.common;
   if (orderEntries.length === 0) return copy.orderSummaryEmpty;
   const totals = calculateOrderEntryTotals(orderEntries);
-  const completedCount = orderEntries.filter((item) => item.inspectionStatus === "inspection_completed").length;
+  const completedCount = orderEntries.filter((item) => isOrderInspectionCompleted(item.inspectionStatus)).length;
   return [
     `${orderEntries.length}${common.countSuffix}`,
     `${totals.quantity.toLocaleString()}${common.quantitySuffix}`,

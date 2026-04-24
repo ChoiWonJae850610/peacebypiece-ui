@@ -22,9 +22,62 @@ export const ORDER_INSPECTION_STATUSES = [
   "inspection_completed",
 ] as const;
 
+export const ORDER_INSPECTION_STATUS = {
+  orderPending: "order_pending",
+  inspectionPending: "inspection_pending",
+  inspectionInProgress: "inspection_in_progress",
+  inspectionCompleted: "inspection_completed",
+} as const;
+
 export type WorkflowStateValue = (typeof WORKFLOW_STATES)[number];
 export type DisplayStageValue = (typeof DISPLAY_STAGES)[number];
 export type OrderInspectionStatusValue = (typeof ORDER_INSPECTION_STATUSES)[number];
+
+export function isOrderInspectionStatus(value: string | null | undefined): value is OrderInspectionStatusValue {
+  return Boolean(value) && (ORDER_INSPECTION_STATUSES as readonly string[]).includes(value as string);
+}
+
+export function isOrderInspectionCompleted(status: OrderInspectionStatusValue | null | undefined) {
+  return status === ORDER_INSPECTION_STATUS.inspectionCompleted;
+}
+
+export function isOrderInspectionPending(status: OrderInspectionStatusValue | null | undefined) {
+  return status === ORDER_INSPECTION_STATUS.inspectionPending;
+}
+
+export function isOrderInspectionInProgress(status: OrderInspectionStatusValue | null | undefined) {
+  return status === ORDER_INSPECTION_STATUS.inspectionInProgress;
+}
+
+export function isOrderInspectionActive(status: OrderInspectionStatusValue | null | undefined) {
+  return isOrderInspectionPending(status) || isOrderInspectionInProgress(status) || isOrderInspectionCompleted(status);
+}
+
+export function getDefaultOrderInspectionStatusForWorkflowState(workflowState: WorkflowStateValue): OrderInspectionStatusValue {
+  if (workflowState === "inspection") return ORDER_INSPECTION_STATUS.inspectionInProgress;
+  if (workflowState === "completed") return ORDER_INSPECTION_STATUS.inspectionCompleted;
+  return ORDER_INSPECTION_STATUS.orderPending;
+}
+
+export function getOrderInspectionStatusForOrderRequest(status: OrderInspectionStatusValue | null | undefined): OrderInspectionStatusValue {
+  return isOrderInspectionCompleted(status) ? ORDER_INSPECTION_STATUS.inspectionCompleted : ORDER_INSPECTION_STATUS.inspectionPending;
+}
+
+export function getOrderInspectionStatusForReinspection(): OrderInspectionStatusValue {
+  return ORDER_INSPECTION_STATUS.inspectionPending;
+}
+
+export function getOrderInspectionStatusForNewOrderEntry(): OrderInspectionStatusValue {
+  return ORDER_INSPECTION_STATUS.orderPending;
+}
+
+export function getOrderInspectionStatusForCompletion(): OrderInspectionStatusValue {
+  return ORDER_INSPECTION_STATUS.inspectionCompleted;
+}
+
+export function getDisplayOrderInspectionStatus(status: OrderInspectionStatusValue | null | undefined): OrderInspectionStatusValue {
+  return status ?? ORDER_INSPECTION_STATUS.orderPending;
+}
 
 
 export const STATUS_ORDER: Record<WorkflowStateValue, number> = {

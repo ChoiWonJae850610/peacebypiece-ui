@@ -50,8 +50,8 @@ export default function WorkOrderDetailTabletOrderInfoSection({
                   <div className="text-base font-semibold text-stone-900">{item.factory || copy.fallbackItem.replace("{index}", String(index + 1))}</div>
                   <div className="mt-1 text-sm text-stone-500">{item.type} · {item.dueDate || "-"}</div>
                 </div>
-                <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium ${getInspectionStatusTone(item.inspectionStatus ?? "order_pending")}`}>
-                  {getInspectionStatusLabel(item.inspectionStatus ?? "order_pending")}
+                <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium ${getInspectionStatusTone(item.inspectionStatus)}`}>
+                  {getInspectionStatusLabel(item.inspectionStatus)}
                 </span>
               </div>
 

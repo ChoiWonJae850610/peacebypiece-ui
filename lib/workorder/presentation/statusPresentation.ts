@@ -6,6 +6,7 @@ import {
   WORKFLOW_STATE_BADGE_TONE,
   WORKFLOW_STATE_DOT_TONE,
   WORKFLOW_STATE_TEXT_TONE,
+  getDisplayOrderInspectionStatus,
 } from "@/lib/constants/workorderStates";
 import { getI18n } from "@/lib/i18n";
 import type { DisplayStage, WorkflowState } from "@/types/workflow";
@@ -37,10 +38,10 @@ export function getDisplayStageDescription(stage: DisplayStage) {
   return i18n.workorder.workflowDescriptions[stage] ?? WORKFLOW_DESCRIPTION_FALLBACK;
 }
 
-export function getInspectionStatusLabel(status: OrderInspectionStatus) {
-  return i18n.workorder.inspectionStatuses[status];
+export function getInspectionStatusLabel(status: OrderInspectionStatus | null | undefined) {
+  return i18n.workorder.inspectionStatuses[getDisplayOrderInspectionStatus(status)];
 }
 
-export function getInspectionStatusTone(status: OrderInspectionStatus) {
-  return INSPECTION_STATUS_TONE_CLASS[status];
+export function getInspectionStatusTone(status: OrderInspectionStatus | null | undefined) {
+  return INSPECTION_STATUS_TONE_CLASS[getDisplayOrderInspectionStatus(status)];
 }

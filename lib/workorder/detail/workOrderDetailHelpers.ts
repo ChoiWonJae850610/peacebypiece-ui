@@ -1,5 +1,5 @@
 import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculations";
-import { canOpenInspectionModalInWorkflow } from "@/lib/constants/workorderStates";
+import { canOpenInspectionModalInWorkflow, isOrderInspectionCompleted } from "@/lib/constants/workorderStates";
 import type { WorkflowState } from "@/types/workorder";
 import type { OrderEntryState } from "@/components/workorder/detail/shared/detailEditorShared";
 
@@ -38,7 +38,7 @@ export function getCanOpenInspectionModal(params: {
 
   return canEditInventory
     && canOpenInspectionModalInWorkflow(currentWorkflowState)
-    && orderItems.some((item) => item.inspectionStatus !== "inspection_completed");
+    && orderItems.some((item) => !isOrderInspectionCompleted(item.inspectionStatus));
 }
 
 export function getProductionSectionOpen(materialOpen: boolean, outsourcingOpen: boolean): boolean {

@@ -9,6 +9,7 @@ import {
 } from "@/components/workorder/detail/shared/detailEditorShared";
 import { ensurePartnerMasterItem } from "@/lib/admin/partnerMasterPersistence";
 import { isVendorRegistryType, REGISTRY_TYPE } from "@/lib/constants/workorderDomain";
+import { getOrderInspectionStatusForCompletion } from "@/lib/constants/workorderStates";
 import {
   commitOrderItemsEdit,
   commitOutsourcingItemsEdit,
@@ -242,7 +243,7 @@ export function useWorkOrderDetailEditor({
     memo: string;
   }) => {
     const nextItems = orderItems.map((item) => item.id === orderEntryId
-      ? sanitizeOrderEntry({ ...item, inspectionStatus: "inspection_completed" }, item, currentWorkflowState)
+      ? sanitizeOrderEntry({ ...item, inspectionStatus: getOrderInspectionStatusForCompletion() }, item, currentWorkflowState)
       : item);
     setOrderItems(nextItems);
     onCompleteInspection({

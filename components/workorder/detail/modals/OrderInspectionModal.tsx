@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_INPUT_CLASS, MODAL_SELECT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
 import { MODAL_ACTION_LABELS, createModalActionHandler, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
+import { isOrderInspectionCompleted } from "@/lib/constants/workorderStates";
 import { DEFAULT_FACTORY_OPTION } from "@/lib/constants/workorderOptions";
 import { toNumber } from "@/lib/workorder/detail/detailSanitizers";
 import type { OrderEntryState } from "@/components/workorder/detail/shared/detailEditorShared";
@@ -25,7 +26,7 @@ export default function OrderInspectionModal({
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.modals.inspection;
   const common = i18n.workorder.ui.common;
-  const pendingEntries = orderEntries.filter((item) => item.inspectionStatus !== "inspection_completed");
+  const pendingEntries = orderEntries.filter((item) => !isOrderInspectionCompleted(item.inspectionStatus));
   const availableEntries = pendingEntries.length > 0 ? pendingEntries : orderEntries;
   const [selectedFactory, setSelectedFactory] = useState("");
   const [selectedOrderId, setSelectedOrderId] = useState("");

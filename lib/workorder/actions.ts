@@ -1,5 +1,11 @@
 import { INVENTORY_CHANGE_TYPE, INVENTORY_STATUS, ORDER_ENTRY_TARGET_TYPE } from "@/lib/constants/workorderDomain";
-import { isWorkflowState } from "@/lib/constants/workorderStates";
+import {
+  getOrderInspectionStatusForCompletion,
+  getOrderInspectionStatusForNewOrderEntry,
+  getOrderInspectionStatusForOrderRequest,
+  getOrderInspectionStatusForReinspection,
+  isWorkflowState,
+} from "@/lib/constants/workorderStates";
 import {
   DEFAULT_WORKORDER_CATEGORY1,
   DEFAULT_WORKORDER_CATEGORY2,
@@ -81,8 +87,8 @@ export function applyWorkflowActionToWorkOrder(workOrder: WorkOrder, action: Wor
     const nextOrderEntries: OrderEntry[] = (workOrder.orderEntries ?? []).map((entry) => ({
       ...entry,
       inspectionStatus: resetForReinspection
-        ? "inspection_pending"
-        : (entry.inspectionStatus === "inspection_completed" ? "inspection_completed" : (entry.inspectionStatus ?? "inspection_pending")),
+        ? getOrderInspectionStatusForReinspection()
+        : getOrderInspectionStatusForOrderRequest(entry.inspectionStatus),
     }));
 
     return {
@@ -119,7 +125,7 @@ export function requestFactoryOrderForWorkOrder(
 ): WorkOrder {
   const nextOrderEntries: OrderEntry[] = (workOrder.orderEntries ?? []).map((entry) => ({
     ...entry,
-    inspectionStatus: entry.inspectionStatus === "inspection_completed" ? "inspection_completed" : "inspection_pending",
+    inspectionStatus: getOrderInspectionStatusForOrderRequest(entry.inspectionStatus),
   }));
 
   return syncWorkOrderOrderSnapshot({
@@ -238,7 +244,7 @@ export function completeInspectionForWorkOrder(
   payload: { orderEntryId: string; nextInventoryQuantity: number },
 ): WorkOrder {
   const nextOrderEntries = (workOrder.orderEntries ?? []).map((entry) =>
-    entry.id === payload.orderEntryId ? { ...entry, inspectionStatus: "inspection_completed" as const } : entry,
+    entry.id === payload.orderEntryId ? { ...entry, inspectionStatus: getOrderInspectionStatusForCompletion() } : entry,
   );
 
   return {
@@ -310,7 +316,7 @@ function cloneOrderEntries(
     id: nextId("order"),
     type: nextOrderType,
     targetType: entry.targetType ?? ORDER_ENTRY_TARGET_TYPE.factory,
-    inspectionStatus: "order_pending" as const,
+    inspectionStatus: getOrderInspectionStatusForNewOrderEntry(),
   }));
 }
 

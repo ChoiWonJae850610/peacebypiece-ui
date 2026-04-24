@@ -1,6 +1,12 @@
 import {
   LEGACY_ORDER_INSPECTION_STATUS_MAP,
-  ORDER_INSPECTION_STATUSES,
+  canReinspectInWorkflow,
+  canRequestFactoryOrderInWorkflow,
+  getDefaultOrderInspectionStatusForWorkflowState,
+  isOrderInspectionActive,
+  isOrderInspectionCompleted,
+  isOrderInspectionStatus,
+  isWorkflowStateAtLeast,
 } from "@/lib/constants/workorderStates";
 import {
   ROLE,
@@ -11,7 +17,6 @@ import {
   normalizeRoles,
 } from "@/lib/constants/roles";
 import { WORKFLOW_ACTION_LABELS } from "@/lib/constants/workflow";
-import { canReinspectInWorkflow, canRequestFactoryOrderInWorkflow, isWorkflowStateAtLeast } from "@/lib/constants/workorderStates";
 import type { RoleType } from "@/types/permission";
 import {
   getOrderSubmissionSnapshot,
@@ -28,19 +33,12 @@ export type WorkflowContext = {
 };
 
 export function getDefaultInspectionStatusForWorkflowState(workflowState: WorkflowState): OrderInspectionStatus {
-  switch (workflowState) {
-    case "inspection":
-      return "inspection_in_progress";
-    case "completed":
-      return "inspection_completed";
-    default:
-      return "order_pending";
-  }
+  return getDefaultOrderInspectionStatusForWorkflowState(workflowState);
 }
 
 export function sanitizeOrderInspectionStatus(value: string | undefined | null, workflowState: WorkflowState): OrderInspectionStatus {
   if (!value) return getDefaultInspectionStatusForWorkflowState(workflowState);
-  if ((ORDER_INSPECTION_STATUSES as readonly string[]).includes(value)) return value as OrderInspectionStatus;
+  if (isOrderInspectionStatus(value)) return value;
   if (value in LEGACY_ORDER_INSPECTION_STATUS_MAP) return LEGACY_ORDER_INSPECTION_STATUS_MAP[value as keyof typeof LEGACY_ORDER_INSPECTION_STATUS_MAP];
   return getDefaultInspectionStatusForWorkflowState(workflowState);
 }
@@ -49,8 +47,8 @@ export function deriveWorkflowStateFromOrderEntries(baseState: WorkflowState, or
   const entries = orderEntries ?? [];
   if (entries.length === 0) return baseState;
   const statuses = entries.map((item) => sanitizeOrderInspectionStatus(item.inspectionStatus, baseState));
-  if (statuses.every((status) => status === "inspection_completed")) return "completed";
-  if (statuses.some((status) => status === "inspection_pending" || status === "inspection_in_progress" || status === "inspection_completed")) {
+  if (statuses.every(isOrderInspectionCompleted)) return "completed";
+  if (statuses.some(isOrderInspectionActive)) {
     return "inspection";
   }
   return baseState;
