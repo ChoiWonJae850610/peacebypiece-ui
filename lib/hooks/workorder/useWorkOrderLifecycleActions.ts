@@ -83,16 +83,34 @@ export function useWorkOrderLifecycleActions({
 
   const handleSave = useCallback(
     async (workOrder: WorkOrder, workOrders: WorkOrder[]) => {
-      const label = nowLabel();
-      const nextWorkOrder = { ...workOrder, lastSavedAt: label };
-      const nextWorkOrders = workOrders.map((item) => (item.id === workOrder.id ? nextWorkOrder : item));
+      await executeWorkOrderAsyncAction({
+        actionKey: "save",
+        setActionStatus,
+        setActionError,
+        setActionFailure,
+        getFailure: (error) => createWorkOrderActionFailure({
+          actionKey: "save",
+          error,
+          kind: "repository",
+          retryable: true,
+          message: lifecycleText.saveFailedToast ?? "Failed to save work order.",
+        }),
+        task: async () => {
+          setSaveStatus("saving");
+          const persistedWorkOrder = await persistWorkOrderWithHistory(repository, { workOrder });
+          const persistedWorkOrders = workOrders.map((item) => (item.id === workOrder.id ? persistedWorkOrder : item));
 
-      setLastSavedAt(label);
-      setWorkOrders(nextWorkOrders);
-      setSaveStatus("saved");
-      setToastMessage(lifecycleText.saveCompletedToast);
+          setWorkOrders(persistedWorkOrders);
+          setPersistedWorkOrders(persistedWorkOrders);
+          setLastSavedAt(persistedWorkOrder.lastSavedAt ?? null);
+          setSaveStatus("saved");
+          setToastMessage(lifecycleText.saveCompletedToast);
+          setActionFailure?.("save", null);
+          setActionError("save", null);
+        },
+      });
     },
-    [lifecycleText.saveCompletedToast, setLastSavedAt, setSaveStatus, setToastMessage, setWorkOrders],
+    [lifecycleText.saveCompletedToast, lifecycleText.saveFailedToast, repository, setActionError, setActionFailure, setActionStatus, setLastSavedAt, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders],
   );
 
   const handleCreateWorkOrder = useCallback(

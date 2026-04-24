@@ -74,6 +74,7 @@ export function useWorkOrderAdminActions({
       }
 
       const persistedBaseWorkOrder = persistedWorkOrders.find((item) => item.id === workOrder.id) ?? workOrder;
+      setSaveStatus("saving");
       void persistWorkOrderWithHistory(repository, {
         workOrder: {
           ...persistedBaseWorkOrder,
@@ -96,7 +97,6 @@ export function useWorkOrderAdminActions({
       if (result.toastMessage) {
         setToastMessage(result.toastMessage);
       }
-      setSaveStatus("saved");
       setManagerAssignModalOpen(false);
     },
     [actionFlowText, currentUser.name, historyText, persistedWorkOrders, repository, setHistoryLogs, setManagerAssignModalOpen, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders],
