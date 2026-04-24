@@ -104,6 +104,10 @@ export default function WorkOrderWorkspace() {
     handleDeleteAttachment,
     handleCreateMemoThread,
     handleCreateMemoReply,
+    handleUpdateMemoThread,
+    handleDeleteMemoThread,
+    handleUpdateMemoReply,
+    handleDeleteMemoReply,
     canSeeAttachments,
   } = useWorkOrder();
 
@@ -223,6 +227,10 @@ export default function WorkOrderWorkspace() {
     onAttachmentDeleteConfirm: handleConfirmDeleteAttachment,
     onCreateMemoThread: handleCreateMemoThread,
     onCreateMemoReply: handleCreateMemoReply,
+    onUpdateMemoThread: handleUpdateMemoThread,
+    onDeleteMemoThread: handleDeleteMemoThread,
+    onUpdateMemoReply: handleUpdateMemoReply,
+    onDeleteMemoReply: handleDeleteMemoReply,
   });
 
   return (

@@ -166,6 +166,65 @@ export function useWorkOrderAttachments({
     }
   };
 
+  const canMutateMemoItem = (authorId: string) => {
+    const isAdmin = currentUser.role === "admin" || currentUser.roles?.includes("admin");
+    return canEditSideDraftContent && (isAdmin || authorId === currentUser.id);
+  };
+
+  const handleUpdateMemoThread = (threadId: string, content: string) => {
+    const nextContent = content.trim();
+    const targetThread = (selectedWorkOrder.memoThreads ?? []).find((thread) => thread.id === threadId);
+    if (!targetThread || !nextContent || !canMutateMemoItem(targetThread.authorId)) return;
+
+    setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
+      ? { ...item, memoThreads: (item.memoThreads ?? []).map((thread) => thread.id === threadId ? { ...thread, content: nextContent } : thread) }
+      : item));
+    setSaveStatus("dirty");
+  };
+
+  const handleDeleteMemoThread = (threadId: string) => {
+    const targetThread = (selectedWorkOrder.memoThreads ?? []).find((thread) => thread.id === threadId);
+    if (!targetThread || !canMutateMemoItem(targetThread.authorId)) return;
+
+    setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
+      ? { ...item, memoThreads: (item.memoThreads ?? []).filter((thread) => thread.id !== threadId) }
+      : item));
+    setSaveStatus("dirty");
+  };
+
+  const handleUpdateMemoReply = (threadId: string, replyId: string, content: string) => {
+    const nextContent = content.trim();
+    const targetThread = (selectedWorkOrder.memoThreads ?? []).find((thread) => thread.id === threadId);
+    const targetReply = targetThread?.replies?.find((reply) => reply.id === replyId);
+    if (!targetReply || !nextContent || !canMutateMemoItem(targetReply.authorId)) return;
+
+    setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
+      ? {
+          ...item,
+          memoThreads: (item.memoThreads ?? []).map((thread) => thread.id === threadId
+            ? { ...thread, replies: (thread.replies ?? []).map((reply) => reply.id === replyId ? { ...reply, content: nextContent } : reply) }
+            : thread),
+        }
+      : item));
+    setSaveStatus("dirty");
+  };
+
+  const handleDeleteMemoReply = (threadId: string, replyId: string) => {
+    const targetThread = (selectedWorkOrder.memoThreads ?? []).find((thread) => thread.id === threadId);
+    const targetReply = targetThread?.replies?.find((reply) => reply.id === replyId);
+    if (!targetReply || !canMutateMemoItem(targetReply.authorId)) return;
+
+    setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
+      ? {
+          ...item,
+          memoThreads: (item.memoThreads ?? []).map((thread) => thread.id === threadId
+            ? { ...thread, replies: (thread.replies ?? []).filter((reply) => reply.id !== replyId) }
+            : thread),
+        }
+      : item));
+    setSaveStatus("dirty");
+  };
+
   const canDeleteAttachment = (attachment: Attachment | null) =>
     canDeleteAttachmentForCurrentUser({
       currentUser,
@@ -190,6 +249,10 @@ export function useWorkOrderAttachments({
     handleDeleteAttachment,
     handleCreateMemoThread,
     handleCreateMemoReply,
+    handleUpdateMemoThread,
+    handleDeleteMemoThread,
+    handleUpdateMemoReply,
+    handleDeleteMemoReply,
     canDeleteAttachment,
     getAttachmentPermissions,
   };

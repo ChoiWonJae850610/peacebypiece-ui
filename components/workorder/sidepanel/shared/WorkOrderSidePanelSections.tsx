@@ -18,8 +18,13 @@ export default function WorkOrderSidePanelSections({
   currentRole,
   workOrder,
   currentUserName,
+  currentUserId,
   onCreateMemoThread,
   onCreateMemoReply,
+  onUpdateMemoThread,
+  onDeleteMemoThread,
+  onUpdateMemoReply,
+  onDeleteMemoReply,
   variant,
   memoFirst = false,
 }: WorkOrderSidePanelSectionsProps) {
@@ -38,10 +43,15 @@ export default function WorkOrderSidePanelSections({
   const memoPanel = (
     <WorkOrderMemoPanel
       workOrder={workOrder}
+      currentUserId={currentUserId}
       currentUserName={currentUserName}
       currentUserRole={currentRole}
       onCreateThread={onCreateMemoThread}
       onCreateReply={onCreateMemoReply}
+      onUpdateThread={onUpdateMemoThread}
+      onDeleteThread={onDeleteMemoThread}
+      onUpdateReply={onUpdateMemoReply}
+      onDeleteReply={onDeleteMemoReply}
       canEditMemo={canEditMemo}
       variant={variant}
     />

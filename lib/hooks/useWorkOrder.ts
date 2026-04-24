@@ -273,5 +273,9 @@ export function useWorkOrder() {
     handleDeleteAttachment: attachmentState.handleDeleteAttachment,
     handleCreateMemoThread: attachmentState.handleCreateMemoThread,
     handleCreateMemoReply: attachmentState.handleCreateMemoReply,
+    handleUpdateMemoThread: attachmentState.handleUpdateMemoThread,
+    handleDeleteMemoThread: attachmentState.handleDeleteMemoThread,
+    handleUpdateMemoReply: attachmentState.handleUpdateMemoReply,
+    handleDeleteMemoReply: attachmentState.handleDeleteMemoReply,
   };
 }

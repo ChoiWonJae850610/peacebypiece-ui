@@ -111,6 +111,10 @@ export type BuildWorkspaceViewModelArgs = {
   onAttachmentDeleteConfirm: () => void;
   onCreateMemoThread: SidePanelProps["onCreateMemoThread"];
   onCreateMemoReply: SidePanelProps["onCreateMemoReply"];
+  onUpdateMemoThread: SidePanelProps["onUpdateMemoThread"];
+  onDeleteMemoThread: SidePanelProps["onDeleteMemoThread"];
+  onUpdateMemoReply: SidePanelProps["onUpdateMemoReply"];
+  onDeleteMemoReply: SidePanelProps["onDeleteMemoReply"];
 };
 
 export type WorkspaceViewModel = {
@@ -167,6 +171,10 @@ export type BaseWorkspaceViewModelArgs = {
   onRequestDeleteAttachment: (attachmentId: string) => void;
   onCreateMemoThread: SidePanelProps["onCreateMemoThread"];
   onCreateMemoReply: SidePanelProps["onCreateMemoReply"];
+  onUpdateMemoThread: SidePanelProps["onUpdateMemoThread"];
+  onDeleteMemoThread: SidePanelProps["onDeleteMemoThread"];
+  onUpdateMemoReply: SidePanelProps["onUpdateMemoReply"];
+  onDeleteMemoReply: SidePanelProps["onDeleteMemoReply"];
 };
 
 export type SidebarViewModelArgs = {

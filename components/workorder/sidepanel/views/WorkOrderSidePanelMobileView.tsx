@@ -16,10 +16,15 @@ export default function WorkOrderSidePanelMobileView(props: WorkOrderSidePanelPr
         <WorkOrderSidePanelMobileAccordionSection title={memoTitle} defaultOpen collapseLabel={collapseLabel}>
           <WorkOrderMemoPanel
             workOrder={props.workOrder}
+            currentUserId={props.currentUserId}
             currentUserName={props.currentUserName}
             currentUserRole={props.currentRole}
             onCreateThread={props.onCreateMemoThread}
             onCreateReply={props.onCreateMemoReply}
+            onUpdateThread={props.onUpdateMemoThread}
+            onDeleteThread={props.onDeleteMemoThread}
+            onUpdateReply={props.onUpdateMemoReply}
+            onDeleteReply={props.onDeleteMemoReply}
             canEditMemo={props.canEditMemo}
             variant="mobile"
           />

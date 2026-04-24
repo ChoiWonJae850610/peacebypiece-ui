@@ -13,8 +13,13 @@ export type WorkOrderSidePanelProps = {
   currentRole: RoleType;
   workOrder: WorkOrder;
   currentUserName: string;
+  currentUserId: string;
   onCreateMemoThread: (content: string) => void;
   onCreateMemoReply: (threadId: string, content: string) => void;
+  onUpdateMemoThread: (threadId: string, content: string) => void;
+  onDeleteMemoThread: (threadId: string) => void;
+  onUpdateMemoReply: (threadId: string, replyId: string, content: string) => void;
+  onDeleteMemoReply: (threadId: string, replyId: string) => void;
 };
 
 export type WorkOrderSidePanelVariant = "desktop" | "tablet" | "mobile";

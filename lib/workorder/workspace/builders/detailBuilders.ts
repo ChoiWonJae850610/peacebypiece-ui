@@ -96,6 +96,10 @@ export function buildSidePanelProps({
   onRequestDeleteAttachment,
   onCreateMemoThread,
   onCreateMemoReply,
+  onUpdateMemoThread,
+  onDeleteMemoThread,
+  onUpdateMemoReply,
+  onDeleteMemoReply,
 }: SidePanelViewModelArgs): SidePanelProps {
   return {
     isEmpty: !hasVisibleWorkOrders,
@@ -119,8 +123,13 @@ export function buildSidePanelProps({
     currentRole,
     workOrder: selectedWorkOrder,
     currentUserName: currentUser.name,
+    currentUserId: currentUser.id,
     onCreateMemoThread,
     onCreateMemoReply,
+    onUpdateMemoThread,
+    onDeleteMemoThread,
+    onUpdateMemoReply,
+    onDeleteMemoReply,
   };
 }
 
