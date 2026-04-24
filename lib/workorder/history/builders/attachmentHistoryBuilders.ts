@@ -40,27 +40,10 @@ export function createAttachmentDeleteHistoryLog(
       { label: text.detailLabels.file, value: attachment.name },
       {
         label: text.detailLabels.scope,
-        value: attachment.scope === "memo" ? text.detailLabels.memoAttachment : attachment.scope === "design" ? text.detailLabels.designAttachment : text.detailLabels.officialAttachment,
+        value: attachment.scope === "design" ? text.detailLabels.designAttachment : text.detailLabels.officialAttachment,
       },
     ],
     text,
   });
 }
 
-export function createAttachmentPromoteHistoryLog(
-  user: string,
-  workOrderId: string,
-  attachment: { name: string },
-  text: HistoryText = defaultHistoryText,
-) {
-  return createHistoryLog({
-    action: text.actions.memoAttachmentPromoted,
-    message: text.messages.memoAttachmentPromoted,
-    user,
-    workOrderId,
-    category: "attachment",
-    tone: "emerald",
-    detailLines: [{ label: text.detailLabels.file, value: attachment.name }],
-    text,
-  });
-}

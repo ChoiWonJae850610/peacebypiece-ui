@@ -94,7 +94,6 @@ export function buildSidePanelProps({
   onRequestDeleteAttachment,
   onCreateMemoThread,
   onCreateMemoReply,
-  onPromoteMemoAttachment,
 }: SidePanelViewModelArgs): SidePanelProps {
   return {
     isEmpty: !hasVisibleWorkOrders,
@@ -119,8 +118,6 @@ export function buildSidePanelProps({
     currentUserName: currentUser.name,
     onCreateMemoThread,
     onCreateMemoReply,
-    canPromoteMemoAttachment: canUploadOfficialAttachments,
-    onPromoteMemoAttachment,
   };
 }
 

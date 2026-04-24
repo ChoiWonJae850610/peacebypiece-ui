@@ -77,7 +77,6 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
     onRequestDeleteAttachment: args.onRequestDeleteAttachment,
     onCreateMemoThread: args.onCreateMemoThread,
     onCreateMemoReply: args.onCreateMemoReply,
-    onPromoteMemoAttachment: args.onPromoteMemoAttachment,
     basicInfoOpen: args.basicInfoOpen,
     materialOpen: args.materialOpen,
     outsourcingOpen: args.outsourcingOpen,
@@ -130,7 +129,6 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
       onRequestDeleteAttachment: args.onRequestDeleteAttachment,
       onCreateMemoThread: args.onCreateMemoThread,
       onCreateMemoReply: args.onCreateMemoReply,
-      onPromoteMemoAttachment: args.onPromoteMemoAttachment,
     }),
     args.onSetAttachmentPreviewId,
   );

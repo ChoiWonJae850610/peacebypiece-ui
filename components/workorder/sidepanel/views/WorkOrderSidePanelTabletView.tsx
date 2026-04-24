@@ -13,9 +13,6 @@ export default function WorkOrderSidePanelTabletView(props: WorkOrderSidePanelPr
           currentUserRole={props.currentRole}
           onCreateThread={props.onCreateMemoThread}
           onCreateReply={props.onCreateMemoReply}
-          canPromoteMemoAttachment={props.canPromoteMemoAttachment}
-          onPromoteMemoAttachment={props.onPromoteMemoAttachment}
-          onPreviewAttachment={props.onPreviewAttachment}
           variant="tablet"
         />
       </SidePanelSectionStack>

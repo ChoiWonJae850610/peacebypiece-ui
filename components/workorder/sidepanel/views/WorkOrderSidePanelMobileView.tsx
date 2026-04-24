@@ -20,9 +20,6 @@ export default function WorkOrderSidePanelMobileView(props: WorkOrderSidePanelPr
             currentUserRole={props.currentRole}
             onCreateThread={props.onCreateMemoThread}
             onCreateReply={props.onCreateMemoReply}
-            canPromoteMemoAttachment={props.canPromoteMemoAttachment}
-            onPromoteMemoAttachment={props.onPromoteMemoAttachment}
-            onPreviewAttachment={props.onPreviewAttachment}
             variant="mobile"
           />
         </WorkOrderSidePanelMobileAccordionSection>

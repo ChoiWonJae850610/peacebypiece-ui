@@ -59,10 +59,6 @@ export function buildWorkOrderSeedSource(locale: Locale = DEFAULT_LOCALE): MockW
           type: "image", url: placeholderImage, scope: "official", ownerId: "user-designer", ownerName: users.designer },
         { id: "att-2", name: wo1.attachments.workorderSheet,
           type: "pdf", url: placeholderPdf, scope: "official", ownerId: "user-admin", ownerName: users.admin },
-        { id: "att-3", name: wo1.attachments.swatch,
-          type: "image", url: placeholderImage, scope: "memo", linkedThreadId: "memo-1", ownerId: null, ownerName: users.legacyAttachmentOwner },
-        { id: "att-4", name: wo1.attachments.sizeSpec,
-          type: "pdf", url: placeholderPdf, scope: "memo", linkedReplyId: "reply-1", ownerId: null, ownerName: users.legacyAttachmentOwner },
       ],
       memoThreads: [
         {
@@ -72,7 +68,7 @@ export function buildWorkOrderSeedSource(locale: Locale = DEFAULT_LOCALE): MockW
           authorRole: ROLE.designer,
           content: wo1.memoThread.content,
           createdAt: "03-26 19:20",
-          attachmentIds: ["att-3"],
+          attachmentIds: [],
           replies: [
             {
               id: "reply-1",
@@ -81,7 +77,7 @@ export function buildWorkOrderSeedSource(locale: Locale = DEFAULT_LOCALE): MockW
               authorRole: ROLE.admin,
               content: wo1.memoThread.reply,
               createdAt: "03-26 19:42",
-              attachmentIds: ["att-4"],
+              attachmentIds: [],
             },
           ],
         },
@@ -182,8 +178,6 @@ export function buildWorkOrderSeedSource(locale: Locale = DEFAULT_LOCALE): MockW
           type: "image", url: placeholderImage, scope: "official", ownerId: "user-qc", ownerName: users.inspector },
         { id: "att-32", name: wo3.attachments.checklist,
           type: "pdf", url: placeholderPdf, scope: "official", ownerId: null, ownerName: users.legacyAttachmentOwner },
-        { id: "att-33", name: wo3.attachments.materialSpec,
-          type: "pdf", url: placeholderPdf, scope: "memo", linkedThreadId: "memo-31", ownerId: null, ownerName: users.legacyAttachmentOwner },
       ],
       memoThreads: [
         {
@@ -193,7 +187,7 @@ export function buildWorkOrderSeedSource(locale: Locale = DEFAULT_LOCALE): MockW
           authorRole: ROLE.inspector,
           content: wo3.memoThread.content,
           createdAt: "03-24 15:30",
-          attachmentIds: ["att-33"],
+          attachmentIds: [],
           replies: [],
         },
       ],

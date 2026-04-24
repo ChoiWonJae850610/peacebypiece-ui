@@ -7,7 +7,6 @@ import {
   buildMemoReplyResult,
   buildMemoThreadResult,
   buildAttachmentUploadResult,
-  buildPromoteMemoAttachmentResult,
 } from "@/lib/workorder/actionFlow";
 import {
   canDeleteAttachmentForCurrentUser,
@@ -16,7 +15,7 @@ import {
   openAttachmentPickerTrigger,
   readAttachmentInputFiles,
 } from "@/lib/workorder/attachments/attachmentActions";
-import type { Attachment, AttachmentScope, HistoryLog, MemoAttachmentPayload, UserProfile, WorkOrder } from "@/types/workorder";
+import type { Attachment, AttachmentScope, HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 
 export function useWorkOrderAttachments({
   attachmentInputRef,
@@ -118,12 +117,11 @@ export function useWorkOrderAttachments({
     }
   };
 
-  const handleCreateMemoThread = (content: string, payload?: MemoAttachmentPayload) => {
+  const handleCreateMemoThread = (content: string) => {
     const result = buildMemoThreadResult({
       workOrder: selectedWorkOrder,
       currentUser,
       content,
-      attachmentPayload: payload,
       text: actionFlowText,
       historyText,
     });
@@ -141,37 +139,12 @@ export function useWorkOrderAttachments({
     }
   };
 
-  const handleCreateMemoReply = (threadId: string, content: string, payload?: MemoAttachmentPayload) => {
+  const handleCreateMemoReply = (threadId: string, content: string) => {
     const result = buildMemoReplyResult({
       workOrder: selectedWorkOrder,
       currentUser,
       threadId,
       content,
-      attachmentPayload: payload,
-      text: actionFlowText,
-      historyText,
-    });
-    if (!result) return;
-
-    setWorkOrders((prev) => prev.map((item) => (item.id === selectedWorkOrder.id ? result.nextWorkOrder : item)));
-    if (result.historyLogs?.length) {
-      setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
-    }
-    if (result.saveStatus) {
-      setSaveStatus(result.saveStatus);
-    }
-    if (result.toastMessage) {
-      setToastMessage(result.toastMessage);
-    }
-  };
-
-  const handlePromoteMemoAttachment = (attachmentId: string) => {
-    if (!canUploadOfficialAttachments || isReviewRequestLocked) return;
-
-    const result = buildPromoteMemoAttachmentResult({
-      workOrder: selectedWorkOrder,
-      attachmentId,
-      currentUser,
       text: actionFlowText,
       historyText,
     });
@@ -213,7 +186,6 @@ export function useWorkOrderAttachments({
     handleDeleteAttachment,
     handleCreateMemoThread,
     handleCreateMemoReply,
-    handlePromoteMemoAttachment,
     canDeleteAttachment,
     getAttachmentPermissions,
   };

@@ -3,10 +3,7 @@
 import { useEffect, useState, type KeyboardEvent } from "react";
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
 import { useI18n } from "@/lib/i18n";
-
-import CompactAttachmentPicker from "@/components/workorder/sidepanel/CompactAttachmentPicker";
-import MemoAttachmentList from "@/components/workorder/sidepanel/MemoAttachmentList";
-import type { Attachment, MemoAttachmentPayload, MemoThread, RoleType, WorkOrder } from "@/types/workorder";
+import type { MemoThread, RoleType, WorkOrder } from "@/types/workorder";
 
 function getRoleDisplayLabel(role: RoleType, i18n: ReturnType<typeof useI18n>["i18n"]) {
   return i18n.common.ui.roles?.[role] ?? role;
@@ -14,20 +11,12 @@ function getRoleDisplayLabel(role: RoleType, i18n: ReturnType<typeof useI18n>["i
 
 function MemoThreadCard({
   thread,
-  attachmentsById,
-  canPromoteMemoAttachment,
-  onPromoteMemoAttachment,
-  onPreviewAttachment,
   onCreateReply,
   workOrderId,
   variant = "desktop",
 }: {
   thread: MemoThread;
-  attachmentsById: Map<string, Attachment>;
-  canPromoteMemoAttachment: boolean;
-  onPromoteMemoAttachment: (attachmentId: string) => void;
-  onPreviewAttachment: (attachmentId: string) => void;
-  onCreateReply: (threadId: string, content: string, payload?: MemoAttachmentPayload) => void;
+  onCreateReply: (threadId: string, content: string) => void;
   workOrderId: string;
   variant?: "desktop" | "tablet" | "mobile";
 }) {
@@ -35,23 +24,20 @@ function MemoThreadCard({
   const ui = i18n.workorder.ui;
   const isMobile = variant === "mobile";
   const [replyDraft, setReplyDraft] = useState("");
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [replyComposerOpen, setReplyComposerOpen] = useState(false);
 
   useEffect(() => {
     setReplyDraft("");
-    setUploadedFiles([]);
     setReplyComposerOpen(false);
   }, [thread.id, workOrderId]);
 
   const submitReply = () => {
     if (!replyDraft.trim()) return;
-    onCreateReply(thread.id, replyDraft, { files: uploadedFiles });
+    onCreateReply(thread.id, replyDraft);
     if (typeof document !== "undefined" && document.activeElement instanceof HTMLTextAreaElement) {
       document.activeElement.blur();
     }
     setReplyDraft("");
-    setUploadedFiles([]);
     setReplyComposerOpen(false);
   };
 
@@ -71,14 +57,12 @@ function MemoThreadCard({
         </div>
       </div>
       <div className={isMobile ? "mt-2 whitespace-pre-wrap text-[13px] leading-5 text-stone-700" : "mt-2 whitespace-pre-wrap text-sm leading-5 text-stone-700"}>{thread.content}</div>
-      <MemoAttachmentList attachmentIds={thread.attachmentIds} attachmentsById={attachmentsById} canPromoteMemoAttachment={canPromoteMemoAttachment} onPromoteMemoAttachment={onPromoteMemoAttachment} onPreviewAttachment={onPreviewAttachment} />
 
       <div className="mt-3 space-y-2 border-t border-stone-200 pt-3">
         {(thread.replies ?? []).length > 0 ? thread.replies.map((reply) => (
           <div key={reply.id} className="pl-3 text-sm text-stone-700">
             <div className="text-[11px] text-stone-500">ㄴ {reply.authorName} · {getRoleDisplayLabel(reply.authorRole, i18n)} · {reply.createdAt}</div>
             <div className="mt-0.5 whitespace-pre-wrap leading-5">{reply.content}</div>
-            <MemoAttachmentList attachmentIds={reply.attachmentIds} attachmentsById={attachmentsById} canPromoteMemoAttachment={canPromoteMemoAttachment} onPromoteMemoAttachment={onPromoteMemoAttachment} onPreviewAttachment={onPreviewAttachment} />
           </div>
         )) : null}
 
@@ -101,8 +85,7 @@ function MemoThreadCard({
               placeholder={ui.memo.replyPlaceholder}
               className="pbp-field-interaction min-h-[36px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-2 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 md:text-sm"
             />
-            <div className={isMobile ? "mt-2 space-y-2" : "mt-2 flex items-start justify-between gap-2"}>
-              <CompactAttachmentPicker uploadedFiles={uploadedFiles} onFilesChange={setUploadedFiles} onRemoveFile={(index) => setUploadedFiles((prev) => prev.filter((_, i) => i !== index))} />
+            <div className={isMobile ? "mt-2" : "mt-2 flex justify-end"}>
               <button type="button" onClick={submitReply} className={isMobile ? "pbp-interactive-button w-full rounded-full bg-stone-900 px-3 py-2 text-xs font-semibold text-white hover:bg-stone-800 active:bg-black" : "pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-stone-800 active:bg-black"}>{ui.memo.submit}</button>
             </div>
           </div>
@@ -118,19 +101,13 @@ export default function WorkOrderMemoPanel({
   currentUserRole,
   onCreateThread,
   onCreateReply,
-  canPromoteMemoAttachment,
-  onPromoteMemoAttachment,
-  onPreviewAttachment,
   variant = "desktop",
 }: {
   workOrder: WorkOrder;
   currentUserName: string;
   currentUserRole: RoleType;
-  onCreateThread: (content: string, payload?: MemoAttachmentPayload) => void;
-  onCreateReply: (threadId: string, content: string, payload?: MemoAttachmentPayload) => void;
-  canPromoteMemoAttachment: boolean;
-  onPromoteMemoAttachment: (attachmentId: string) => void;
-  onPreviewAttachment: (attachmentId: string) => void;
+  onCreateThread: (content: string) => void;
+  onCreateReply: (threadId: string, content: string) => void;
   variant?: "desktop" | "tablet" | "mobile";
 }) {
   const { i18n } = useI18n();
@@ -138,23 +115,19 @@ export default function WorkOrderMemoPanel({
   const isMobile = variant === "mobile";
   const isTablet = variant === "tablet";
   const [threadDraft, setThreadDraft] = useState("");
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const memoThreads = workOrder.memoThreads ?? [];
 
   useEffect(() => {
     setThreadDraft("");
-    setUploadedFiles([]);
   }, [workOrder.id]);
-  const attachmentsById = new Map((workOrder.attachments ?? []).map((attachment) => [attachment.id, attachment]));
 
   const submitThread = () => {
     if (!threadDraft.trim()) return;
-    onCreateThread(threadDraft, { files: uploadedFiles });
+    onCreateThread(threadDraft);
     if (typeof document !== "undefined" && document.activeElement instanceof HTMLTextAreaElement) {
       document.activeElement.blur();
     }
     setThreadDraft("");
-    setUploadedFiles([]);
   };
 
   const onThreadKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -179,14 +152,13 @@ export default function WorkOrderMemoPanel({
           placeholder={ui.memo.threadPlaceholder}
           className={isMobile ? "pbp-field-interaction mt-2 min-h-[72px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-2 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50" : "pbp-field-interaction mt-2 min-h-[38px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-2 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 md:text-sm"}
         />
-        <div className={isMobile ? "mt-2 space-y-2" : "mt-2 flex items-start justify-between gap-2"}>
-          <CompactAttachmentPicker uploadedFiles={uploadedFiles} onFilesChange={setUploadedFiles} onRemoveFile={(index) => setUploadedFiles((prev) => prev.filter((_, i) => i !== index))} />
+        <div className={isMobile ? "mt-2" : "mt-2 flex justify-end"}>
           <button type="button" onClick={submitThread} className={isMobile ? "pbp-interactive-button w-full rounded-full bg-stone-900 px-3 py-2 text-xs font-semibold text-white hover:bg-stone-800 active:bg-black" : "pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-stone-800 active:bg-black"}>{ui.memo.submit}</button>
         </div>
       </div>
       <div className={isMobile ? "mt-2.5 space-y-1.5" : "mt-2.5 space-y-2"}>
         {memoThreads.length > 0 ? memoThreads.map((thread) => (
-          <MemoThreadCard key={`${workOrder.id}-${thread.id}`} thread={thread} attachmentsById={attachmentsById} canPromoteMemoAttachment={canPromoteMemoAttachment} onPromoteMemoAttachment={onPromoteMemoAttachment} onPreviewAttachment={onPreviewAttachment} onCreateReply={onCreateReply} workOrderId={workOrder.id} variant={variant} />
+          <MemoThreadCard key={`${workOrder.id}-${thread.id}`} thread={thread} onCreateReply={onCreateReply} workOrderId={workOrder.id} variant={variant} />
         )) : <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-5 text-center text-sm text-stone-500">{ui.memo.empty}</div>}
       </div>
     </WorkOrderPanelCard>

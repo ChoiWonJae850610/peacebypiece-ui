@@ -1,8 +1,6 @@
-import type { MemoAttachmentPayload } from "@/types/workorder";
-
-export function getMemoPayloadInfo(payload?: MemoAttachmentPayload) {
+export function getMemoPayloadInfo() {
   return {
-    selectedAttachmentIds: payload?.selectedAttachmentIds ?? [],
-    files: payload?.files ?? [],
+    selectedAttachmentIds: [],
+    files: [],
   };
 }

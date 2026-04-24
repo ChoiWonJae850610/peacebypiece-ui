@@ -68,7 +68,7 @@ export const ROLE_TEMPLATES: Record<RoleType, RoleTemplate> = {
 export const DEFAULT_ROLE: RoleType = ROLE.designer;
 export const ROLE_PRIORITY: readonly RoleType[] = [ROLE.admin, ROLE.designer, ROLE.inspector] as const;
 export const WORK_ORDER_CREATOR_ROLES: readonly RoleType[] = [ROLE.admin, ROLE.designer] as const;
-export const OFFICIAL_ATTACHMENT_MANAGER_ROLES: readonly RoleType[] = [ROLE.admin] as const;
+export const OFFICIAL_ATTACHMENT_MANAGER_ROLES: readonly RoleType[] = [ROLE.admin, ROLE.designer] as const;
 export const INVENTORY_EDITOR_ROLES: readonly RoleType[] = [ROLE.admin, ROLE.inspector] as const;
 
 export const ROLE_OPTIONS = Object.values(ROLE_TEMPLATES).map((item) => ({

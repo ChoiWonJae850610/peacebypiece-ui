@@ -1,4 +1,4 @@
-import { createHistoryLog, defaultHistoryText, type DetailLine, formatTemplate, type HistoryText } from "@/lib/workorder/history/builders/shared";
+import { createHistoryLog, defaultHistoryText, type DetailLine, type HistoryText } from "@/lib/workorder/history/builders/shared";
 import type { HistoryLog } from "@/types/workorder";
 
 function formatHistoryTitle(title?: string | null) {
@@ -75,17 +75,12 @@ export function createStatusHistoryLog(
 export function createMemoHistoryLog(
   user: string,
   workOrderId: string,
-  payload: { action: "thread" | "reply"; content: string; attachmentNames?: string[] },
+  payload: { action: "thread" | "reply"; content: string },
   text: HistoryText = defaultHistoryText,
 ) {
   const action = payload.action === "thread" ? text.actions.memoThreadCreated : text.actions.memoReplyCreated;
   const trimmedContent = payload.content.trim();
-  const attachmentNames = payload.attachmentNames?.filter(Boolean) ?? [];
-
-  const summary =
-    attachmentNames.length > 0
-      ? `${action}(${formatTemplate(text.detailLabels.summaryMemoAttachmentCountFormat, { count: attachmentNames.length })})${text.actorSeparator}${user}`
-      : `${action}${text.actorSeparator}${user}`;
+  const summary = ``;
 
   return createHistoryLog({
     action,
@@ -97,9 +92,6 @@ export function createMemoHistoryLog(
     summary,
     detailLines: [
       { label: text.detailLabels.content, value: trimmedContent },
-      ...(attachmentNames.length > 0
-        ? [{ label: formatTemplate(text.detailLabels.attachmentCountFormat, { count: attachmentNames.length }), value: attachmentNames.join(", ") }]
-        : []),
     ],
     text,
   });

@@ -2,7 +2,7 @@ import type { Material } from "@/types/material";
 import type { Attachment, MemoReply, MemoThread, OrderEntry, Outsourcing, WorkOrder } from "@/types/workorder";
 import { ORDER_ENTRY_TARGET_TYPE, toOrderEntryTargetType } from "@/lib/constants/workorderDomain";
 
-import { buildChildEntityId, dedupeNormalizedStrings } from "@/lib/workorder/normalizeRules";
+import { buildChildEntityId } from "@/lib/workorder/normalizeRules";
 
 
 export function normalizeOrderEntriesForStorage(workOrderId: string, orderEntries: OrderEntry[] | undefined): OrderEntry[] {
@@ -30,50 +30,42 @@ export function normalizeOutsourcingForStorage(workOrderId: string, rows: Outsou
 }
 
 export function normalizeAttachmentsForStorage(workOrderId: string, attachments: Attachment[] | undefined): Attachment[] {
-  return (attachments ?? []).map((attachment, index) => {
-    const linkedThreadId = String(attachment.linkedThreadId ?? "").trim() || null;
-    const linkedReplyId = String(attachment.linkedReplyId ?? "").trim() || null;
-    const inferredScope: Attachment["scope"] = attachment.scope ?? (linkedThreadId || linkedReplyId ? "memo" : "official");
-
-    return {
+  return (attachments ?? [])
+    .filter((attachment) => String(attachment.scope ?? "official") !== "memo")
+    .map((attachment, index) => ({
       ...attachment,
       id: String(attachment.id ?? "").trim() || buildChildEntityId(workOrderId, "att", index),
-      scope: inferredScope,
-      linkedThreadId: inferredScope === "memo" ? linkedThreadId : null,
-      linkedReplyId: inferredScope === "memo" ? linkedReplyId : null,
+      scope: attachment.scope === "design" ? "design" : "official",
+      linkedThreadId: null,
+      linkedReplyId: null,
       ownerId: attachment.ownerId ?? null,
       ownerName: attachment.ownerName ?? null,
-    };
-  });
+    }));
 }
 
 export function normalizeMemoRepliesForStorage(
   workOrderId: string,
   threadId: string,
   replies: MemoReply[] | undefined,
-  attachmentIds: Set<string>,
 ): MemoReply[] {
   return (replies ?? []).map((reply, index) => ({
     ...reply,
     id: String(reply.id ?? "").trim() || buildChildEntityId(`${workOrderId}-${threadId}`, "reply", index),
-    attachmentIds: dedupeNormalizedStrings((reply.attachmentIds ?? []).filter((attachmentId) => attachmentIds.has(String(attachmentId ?? "").trim()))),
+    attachmentIds: [],
   }));
 }
 
 export function normalizeMemoThreadsForStorage(
   workOrderId: string,
   memoThreads: MemoThread[] | undefined,
-  attachments: Attachment[],
 ): MemoThread[] {
-  const attachmentIds = new Set(attachments.map((attachment) => attachment.id));
-
   return (memoThreads ?? []).map((thread, index) => {
     const threadId = String(thread.id ?? "").trim() || buildChildEntityId(workOrderId, "memo", index);
     return {
       ...thread,
       id: threadId,
-      attachmentIds: dedupeNormalizedStrings((thread.attachmentIds ?? []).filter((attachmentId) => attachmentIds.has(String(attachmentId ?? "").trim()))),
-      replies: normalizeMemoRepliesForStorage(workOrderId, threadId, thread.replies, attachmentIds),
+      attachmentIds: [],
+      replies: normalizeMemoRepliesForStorage(workOrderId, threadId, thread.replies),
     };
   });
 }
@@ -87,7 +79,7 @@ export function normalizeWorkOrderCollectionsForStorage(workOrder: WorkOrder): W
     materials: normalizeMaterialsForStorage(workOrder.id, workOrder.materials),
     outsourcing: normalizeOutsourcingForStorage(workOrder.id, workOrder.outsourcing),
     attachments,
-    memoThreads: normalizeMemoThreadsForStorage(workOrder.id, workOrder.memoThreads, attachments),
+    memoThreads: normalizeMemoThreadsForStorage(workOrder.id, workOrder.memoThreads),
   };
 }
 

@@ -260,6 +260,5 @@ export function useWorkOrder() {
     handleDeleteAttachment: attachmentState.handleDeleteAttachment,
     handleCreateMemoThread: attachmentState.handleCreateMemoThread,
     handleCreateMemoReply: attachmentState.handleCreateMemoReply,
-    handlePromoteMemoAttachment: attachmentState.handlePromoteMemoAttachment,
   };
 }

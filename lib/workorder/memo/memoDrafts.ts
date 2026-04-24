@@ -5,7 +5,6 @@ import type { MemoReply, MemoThread, UserProfile } from "@/types/workorder";
 export function createMemoThreadDraft(
   content: string,
   currentUser: Pick<UserProfile, "id" | "name" | "role">,
-  selectedAttachmentIds: string[] = [],
 ): MemoThread {
   return {
     id: createAttachmentId("memo"),
@@ -14,7 +13,7 @@ export function createMemoThreadDraft(
     authorRole: currentUser.role,
     content,
     createdAt: nowLabel(),
-    attachmentIds: selectedAttachmentIds,
+    attachmentIds: [],
     replies: [],
   };
 }
@@ -22,7 +21,6 @@ export function createMemoThreadDraft(
 export function createMemoReplyDraft(
   content: string,
   currentUser: Pick<UserProfile, "id" | "name" | "role">,
-  selectedAttachmentIds: string[] = [],
 ): MemoReply {
   return {
     id: createAttachmentId("reply"),
@@ -31,6 +29,6 @@ export function createMemoReplyDraft(
     authorRole: currentUser.role,
     content,
     createdAt: nowLabel(),
-    attachmentIds: selectedAttachmentIds,
+    attachmentIds: [],
   };
 }

@@ -179,66 +179,6 @@ export function addMemoReply(workOrders: WorkOrder[], workOrderId: string, threa
   });
 }
 
-export function appendMemoAttachmentsToThread(
-  workOrders: WorkOrder[],
-  workOrderId: string,
-  threadId: string,
-  payload: { attachmentIds: string[]; attachments: Attachment[] },
-) {
-  return workOrders.map((item) => {
-    if (item.id !== workOrderId) return item;
-    return {
-      ...item,
-      attachments: [...item.attachments, ...payload.attachments],
-      memoThreads: (item.memoThreads ?? []).map((thread) => thread.id === threadId
-        ? { ...thread, attachmentIds: [...(thread.attachmentIds ?? []), ...payload.attachmentIds] }
-        : thread),
-    };
-  });
-}
-
-export function appendMemoAttachmentsToReply(
-  workOrders: WorkOrder[],
-  workOrderId: string,
-  threadId: string,
-  replyId: string,
-  payload: { attachmentIds: string[]; attachments: Attachment[] },
-) {
-  return workOrders.map((item) => {
-    if (item.id !== workOrderId) return item;
-    return {
-      ...item,
-      attachments: [...item.attachments, ...payload.attachments],
-      memoThreads: (item.memoThreads ?? []).map((thread) => thread.id === threadId
-        ? {
-            ...thread,
-            replies: (thread.replies ?? []).map((reply) => reply.id === replyId
-              ? { ...reply, attachmentIds: [...(reply.attachmentIds ?? []), ...payload.attachmentIds] }
-              : reply),
-          }
-        : thread),
-    };
-  });
-}
-
-export function promoteAttachmentToOfficial(
-  workOrders: WorkOrder[],
-  workOrderId: string,
-  attachmentId: string,
-  payload: { ownerId: string; ownerName: string },
-): WorkOrder[] {
-  return workOrders.map((item): WorkOrder => item.id === workOrderId
-    ? {
-        ...item,
-        attachments: item.attachments.map((attachment): Attachment => attachment.id === attachmentId
-          ? { ...attachment, scope: "official" as const, ownerId: payload.ownerId, ownerName: payload.ownerName }
-          : attachment),
-      }
-    : item);
-}
-
-
-
 export function completeInspectionForWorkOrder(
   workOrder: WorkOrder,
   payload: { orderEntryId: string; nextInventoryQuantity: number },

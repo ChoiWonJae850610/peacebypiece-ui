@@ -1,5 +1,5 @@
 import type { AttachmentPanelSection } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
-import type { MemoAttachmentPayload, RoleType, WorkOrder } from "@/types/workorder";
+import type { RoleType, WorkOrder } from "@/types/workorder";
 
 export type WorkOrderSidePanelProps = {
   isEmpty?: boolean;
@@ -12,10 +12,8 @@ export type WorkOrderSidePanelProps = {
   currentRole: RoleType;
   workOrder: WorkOrder;
   currentUserName: string;
-  onCreateMemoThread: (content: string, payload?: MemoAttachmentPayload) => void;
-  onCreateMemoReply: (threadId: string, content: string, payload?: MemoAttachmentPayload) => void;
-  canPromoteMemoAttachment: boolean;
-  onPromoteMemoAttachment: (attachmentId: string) => void;
+  onCreateMemoThread: (content: string) => void;
+  onCreateMemoReply: (threadId: string, content: string) => void;
 };
 
 export type WorkOrderSidePanelVariant = "desktop" | "tablet" | "mobile";

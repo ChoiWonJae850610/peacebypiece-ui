@@ -19,8 +19,6 @@ export default function WorkOrderSidePanelSections({
   currentUserName,
   onCreateMemoThread,
   onCreateMemoReply,
-  canPromoteMemoAttachment,
-  onPromoteMemoAttachment,
   variant,
   memoFirst = false,
 }: WorkOrderSidePanelSectionsProps) {
@@ -43,9 +41,6 @@ export default function WorkOrderSidePanelSections({
       currentUserRole={currentRole}
       onCreateThread={onCreateMemoThread}
       onCreateReply={onCreateMemoReply}
-      canPromoteMemoAttachment={canPromoteMemoAttachment}
-      onPromoteMemoAttachment={onPromoteMemoAttachment}
-      onPreviewAttachment={onPreviewAttachment}
       variant={variant}
     />
   );
