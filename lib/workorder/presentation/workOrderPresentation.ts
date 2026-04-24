@@ -33,9 +33,6 @@ export function getWorkOrderCardTone(state: WorkflowState) {
 }
 
 export function getWorkOrderDisplayTitle(workOrder: { title?: string | null; displayTitle?: string | null; baseTitle?: string | null; reorderRound?: number | null; revision?: number | null; workOrderKind?: "sample" | "main" | "rework" | null; isDefectOrder?: boolean | null }) {
-  const displayTitle = String(workOrder.displayTitle ?? "").trim();
-  if (displayTitle) return displayTitle;
-
   return buildWorkOrderTitle({
     title: workOrder.title ?? undefined,
     displayTitle: workOrder.displayTitle ?? undefined,

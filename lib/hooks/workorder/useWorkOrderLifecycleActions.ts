@@ -18,7 +18,7 @@ import {
   renameWorkOrderGroupBaseTitle,
 } from "@/lib/workorder/actions";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
-import { getWorkOrderBaseTitle, normalizeWorkOrdersReorderIdentity, reindexReorderGroupAfterDeletion } from "@/lib/workorder/reorder/helpers";
+import { getWorkOrderBaseTitle, canReorderWorkOrder as canCreateReorderFromWorkOrder, normalizeWorkOrdersReorderIdentity, reindexReorderGroupAfterDeletion } from "@/lib/workorder/reorder/helpers";
 import { createWorkOrderActionFailure, executeWorkOrderAsyncAction } from "@/lib/workorder/actionFlow";
 import { persistCreatedWorkOrderWithHistory, persistWorkOrderWithHistory, persistWorkOrdersWithHistory } from "./workorderRepositoryMutations";
 import type { WorkOrder } from "@/types/workorder";
@@ -153,7 +153,7 @@ export function useWorkOrderLifecycleActions({
     async (workOrders: WorkOrder[], workOrderId: string) => {
       if (!canReorderWorkOrder) return;
       const sourceWorkOrder = workOrders.find((item) => item.id === workOrderId);
-      if (!sourceWorkOrder || sourceWorkOrder.workOrderKind === "rework") return;
+      if (!sourceWorkOrder || !canCreateReorderFromWorkOrder(sourceWorkOrder)) return;
 
       await executeWorkOrderAsyncAction({
         actionKey: "reorder",
@@ -206,7 +206,7 @@ export function useWorkOrderLifecycleActions({
   const handleReworkWorkOrder = useCallback(
     async (workOrders: WorkOrder[], workOrderId: string) => {
       const sourceWorkOrder = workOrders.find((item) => item.id === workOrderId);
-      if (!sourceWorkOrder || sourceWorkOrder.workOrderKind === "rework") return;
+      if (!sourceWorkOrder || !canCreateReorderFromWorkOrder(sourceWorkOrder)) return;
 
       if (typeof window !== "undefined") {
         const ok = window.confirm(lifecycleText.reworkConfirmFormat.replace("{title}", getWorkOrderDisplayTitle(sourceWorkOrder)));

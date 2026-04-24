@@ -1,6 +1,7 @@
 import type { RoleType } from '@/types/permission';
 import { canEditBeforeOrder, getWorkflowLockedReasonKey, getWorkflowStateScope } from '@/lib/constants/workorderStates';
 import type { WorkOrder, WorkflowState } from '@/types/workorder';
+import { getWorkOrderOrderType } from '@/lib/workorder/reorder/helpers';
 
 export type OrderInfoHubPolicy = {
   isInitialWorkOrder: boolean;
@@ -40,7 +41,7 @@ export function deriveOrderInfoHubPolicy(args: {
     canChangeKind,
     canEditOrderEntries: canEditBeforeOrderState,
     canEditBeforeOrder: canEditBeforeOrderState,
-    allowedOrderTypes: canChangeKind ? allowedOrderTypes : [workOrder.workOrderKind === 'rework' ? '재작업' : workOrder.workOrderKind === 'main' ? '메인 생산' : '샘플'],
+    allowedOrderTypes: canChangeKind ? allowedOrderTypes : [getWorkOrderOrderType(workOrder)],
     stateScope,
     lockedReasonKey,
   };

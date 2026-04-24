@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { REORDERABLE_WORKFLOW_STATES } from "@/lib/constants/workorderStates";
+import { REORDERABLE_WORKFLOW_STATES, isWorkflowStateOneOf } from "@/lib/constants/workorderStates";
+import { canReorderWorkOrder } from "@/lib/workorder/reorder/helpers";
 import { useI18n } from "@/lib/i18n";
 import { getStageDotTone, getWorkflowStateLabel } from "@/lib/workorder/presentation/statusPresentation";
 import { getCategoryPath, getDisplayValueOrFallback, getWorkOrderCardTone, getWorkOrderDisplayTitle, getWorkOrderState } from "@/lib/workorder/presentation/workOrderPresentation";
@@ -34,7 +35,7 @@ export default function WorkOrderListCard({
   const state = getWorkOrderState(workflowStateById, workOrder.id);
   const stateLabel = getWorkflowStateLabel(state);
   const active = workOrder.id === selectedId;
-  const canShowReorder = canReorder && workOrder.workOrderKind !== "rework" && (REORDERABLE_WORKFLOW_STATES as readonly WorkflowState[]).includes(state);
+  const canShowReorder = canReorder && canReorderWorkOrder(workOrder) && isWorkflowStateOneOf(state, REORDERABLE_WORKFLOW_STATES);
   const canShowDelete = Boolean(onDelete) || Boolean(canDelete?.(state));
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);

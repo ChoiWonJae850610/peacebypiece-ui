@@ -90,9 +90,10 @@ function normalizeDbWorkflowState(value: string | null | undefined): WorkOrder["
 
 function normalizeWorkOrderForDb(workOrder: WorkOrder): WorkOrder {
   const now = new Date().toISOString();
+  const normalizedIdentity = applyReorderIdentity(workOrder);
 
   return {
-    ...workOrder,
+    ...normalizedIdentity,
     workflowState: normalizeDbWorkflowState(workOrder.workflowState),
     lastSavedAt: workOrder.lastSavedAt || now,
   };

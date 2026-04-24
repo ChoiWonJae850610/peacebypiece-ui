@@ -21,7 +21,7 @@ import { useWorkOrderMaterialsEditor } from "@/lib/hooks/workorder/detailEditor/
 import { recalculateOutsourcing } from "@/lib/workorder/detail/detailCalculations";
 import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import { getRepresentativeOrderEntry } from "@/lib/workorder/orderSubmission";
-import { REWORK_TO_MAIN_APPEND_ROUND, getWorkOrderKindFromOrderType } from "@/lib/workorder/reorder/helpers";
+import { REWORK_TO_MAIN_APPEND_ROUND, getWorkOrderKindFromOrderType, isReworkToMainTransition, isWorkOrderKind } from "@/lib/workorder/reorder/helpers";
 import {
   getInitialBasicInfo,
   getInitialOrderEntries,
@@ -182,10 +182,10 @@ export function useWorkOrderDetailEditor({
         cancelEdit();
         return;
       }
-      const isReworkToMain = workOrder.workOrderKind === "rework" && nextWorkOrderKind === "main";
+      const isReworkToMain = isReworkToMainTransition(workOrder.workOrderKind, nextWorkOrderKind);
       syncOrderEntries(nextItems, {
         workOrderKind: nextWorkOrderKind,
-        isDefectOrder: nextWorkOrderKind === "rework",
+        isDefectOrder: isWorkOrderKind(nextWorkOrderKind, "rework"),
         ...(isReworkToMain ? { reorderRound: REWORK_TO_MAIN_APPEND_ROUND } : {}),
       });
     }

@@ -11,7 +11,7 @@ import {
   isSupportedOrderType,
 } from "@/lib/constants/workorderOptions";
 import { normalizeCategorySelection } from "@/lib/workorder/normalizeRules";
-import { getOrderTypeFromWorkOrderKind } from "@/lib/workorder/reorder/helpers";
+import { getOrderTypeFromWorkOrderKind, isWorkOrderKind, normalizeWorkOrderKind as normalizeStructuredWorkOrderKind } from "@/lib/workorder/reorder/helpers";
 import { sanitizeOrderInspectionStatus } from "@/lib/workorder/workflow";
 import type { OrderEntry, OrderInspectionStatus, WorkflowState, WorkOrder } from "@/types/workorder";
 
@@ -29,13 +29,12 @@ function normalizeOrderEntryType(value: string | undefined | null): string {
 }
 
 
-function normalizeWorkOrderKind(
+function normalizeWorkOrderKindFromStored(
   value: WorkOrder["workOrderKind"] | string | undefined | null,
   reorderRound?: number | null,
 ): WorkOrder["workOrderKind"] {
-  if (value === "sample" || value === "main" || value === "rework") return value;
-  if (Number(reorderRound ?? 1) > 1) return "main";
-  return "sample";
+  const fallback = Number(reorderRound ?? 1) > 1 ? "main" : "sample";
+  return normalizeStructuredWorkOrderKind(value, fallback);
 }
 
 export function sanitizeWorkOrderInspectionStatus(
@@ -68,7 +67,7 @@ export function buildInitialWorkOrderOrderEntries(workOrder: WorkOrder): OrderEn
   const entries = (workOrder.orderEntries ?? []).map((item) => sanitizeWorkOrderOrderEntry(item, undefined, workOrder.workflowState));
   if (entries.length > 0) return entries;
 
-  const defaultOrderType = getOrderTypeFromWorkOrderKind(normalizeWorkOrderKind(workOrder.workOrderKind, workOrder.reorderRound));
+  const defaultOrderType = getOrderTypeFromWorkOrderKind(normalizeWorkOrderKindFromStored(workOrder.workOrderKind, workOrder.reorderRound));
 
   return [
     sanitizeWorkOrderOrderEntry(
@@ -96,13 +95,13 @@ export function normalizeWorkOrderScalarFields(workOrder: WorkOrder): WorkOrder 
     category3: workOrder.category3,
   });
 
-  const workOrderKind = normalizeWorkOrderKind(workOrder.workOrderKind, workOrder.reorderRound);
+  const workOrderKind = normalizeWorkOrderKindFromStored(workOrder.workOrderKind, workOrder.reorderRound);
 
   return {
     ...workOrder,
     ...normalizedCategory,
     workOrderKind,
-    isDefectOrder: workOrderKind === "rework" ? Boolean(workOrder.isDefectOrder) : false,
+    isDefectOrder: isWorkOrderKind(workOrderKind, "rework") ? Boolean(workOrder.isDefectOrder) : false,
     season: normalizeStoredSeason(workOrder.season),
     priority: normalizeStoredPriority(workOrder.priority),
     vendor: normalizeStoredOptionalText(workOrder.vendor),

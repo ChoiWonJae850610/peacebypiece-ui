@@ -19,6 +19,7 @@ import {
 } from "@/lib/workorder/history/builders";
 import { pruneDraftRows, shouldPruneDraftRowsForWorkflowState } from "@/lib/workorder/draftRows";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
+import { getWorkOrderKind } from "@/lib/workorder/reorder/helpers";
 import { isSameComparableText } from "@/lib/utils/compare";
 import { defaultActionFlowText, defaultHistoryText, type ActionFlowHistoryText, type ActionFlowText, type WorkOrderActionFlowResult } from "@/lib/workorder/actionFlow/shared";
 import { canOpenInspectionModalInWorkflow, isWorkflowStateBefore, isWorkflowStateReviewLocked } from "@/lib/constants/workorderStates";
@@ -133,7 +134,7 @@ export function buildPatchWorkOrderResult(payload: {
   historyText?: ActionFlowHistoryText;
 }): WorkOrderActionFlowResult {
   const nextWorkOrder = patchWorkOrder(payload.workOrder, payload.patch);
-  const hasKindChanged = payload.workOrder.workOrderKind !== nextWorkOrder.workOrderKind
+  const hasKindChanged = getWorkOrderKind(payload.workOrder) !== getWorkOrderKind(nextWorkOrder)
     || Boolean(payload.workOrder.isDefectOrder) !== Boolean(nextWorkOrder.isDefectOrder)
     || getWorkOrderDisplayTitle(payload.workOrder) !== getWorkOrderDisplayTitle(nextWorkOrder);
 
@@ -146,8 +147,8 @@ export function buildPatchWorkOrderResult(payload: {
         {
           fromTitle: getWorkOrderDisplayTitle(payload.workOrder),
           toTitle: getWorkOrderDisplayTitle(nextWorkOrder),
-          fromKind: payload.workOrder.workOrderKind ?? "sample",
-          toKind: nextWorkOrder.workOrderKind ?? "sample",
+          fromKind: getWorkOrderKind(payload.workOrder),
+          toKind: getWorkOrderKind(nextWorkOrder),
         },
         payload.historyText ?? defaultHistoryText,
       ),

@@ -5,6 +5,7 @@ const i18n = getI18n();
 export const REWORK_TO_MAIN_APPEND_ROUND = 1_000_000;
 
 export type WorkOrderTitleKind = "sample" | "main" | "rework";
+export type WorkOrderOrderType = "메인 생산" | "샘플" | "재작업";
 
 export type ReorderIdentity = Pick<
   WorkOrder,
@@ -25,21 +26,35 @@ function stripLegacyTitleMarkers(title: string): string {
 }
 
 export function getWorkOrderBaseTitle(workOrder: Partial<ReorderIdentity>): string {
-  const rawTitle = String(workOrder.baseTitle ?? workOrder.title ?? "").trim();
-  const normalizedTitle = stripLegacyTitleMarkers(rawTitle);
-  return normalizedTitle || i18n.workorder.presentation.titleDraftFallback;
+  const structuredBaseTitle = String(workOrder.baseTitle ?? "").trim();
+  if (structuredBaseTitle) return structuredBaseTitle;
+
+  const legacyTitleFallback = stripLegacyTitleMarkers(String(workOrder.title ?? "").trim());
+  return legacyTitleFallback || i18n.workorder.presentation.titleDraftFallback;
 }
 
-export function getWorkOrderKind(workOrder: Partial<ReorderIdentity>): WorkOrderTitleKind {
-  const rawKind = String(workOrder.workOrderKind ?? "").trim();
+export function isWorkOrderKind(value: string | null | undefined, target: WorkOrderTitleKind): boolean {
+  return String(value ?? "").trim() === target;
+}
+
+export function normalizeWorkOrderKind(value: string | null | undefined, fallback: WorkOrderTitleKind = "sample"): WorkOrderTitleKind {
+  const rawKind = String(value ?? "").trim();
   if (rawKind === "sample" || rawKind === "main" || rawKind === "rework") return rawKind;
+  return fallback;
+}
+
+export function inferWorkOrderKindFromIdentity(workOrder: Partial<ReorderIdentity>): WorkOrderTitleKind {
   if (Boolean(workOrder.isDefectOrder)) return "rework";
   return getWorkOrderReorderRound(workOrder) > 1 ? "main" : "sample";
 }
 
+export function getWorkOrderKind(workOrder: Partial<ReorderIdentity>): WorkOrderTitleKind {
+  return normalizeWorkOrderKind(workOrder.workOrderKind, inferWorkOrderKindFromIdentity(workOrder));
+}
+
 export function isDefectOrder(workOrder: Partial<ReorderIdentity>): boolean {
   if (Boolean(workOrder.isDefectOrder)) return true;
-  return getWorkOrderKind(workOrder) === "rework";
+  return isWorkOrderKind(getWorkOrderKind(workOrder), "rework");
 }
 
 export function getWorkOrderReorderGroupId(workOrder: Partial<ReorderIdentity>): string {
@@ -59,17 +74,29 @@ export function getWorkOrderKindFromOrderType(orderType: string | null | undefin
   return "main";
 }
 
-export function getOrderTypeFromWorkOrderKind(kind: WorkOrderTitleKind | null | undefined): "메인 생산" | "샘플" | "재작업" {
-  if (kind === "sample") return "샘플";
-  if (kind === "rework") return "재작업";
+export function getOrderTypeFromWorkOrderKind(kind: WorkOrderTitleKind | null | undefined): WorkOrderOrderType {
+  if (isWorkOrderKind(kind ?? null, "sample")) return "샘플";
+  if (isWorkOrderKind(kind ?? null, "rework")) return "재작업";
   return "메인 생산";
+}
+
+export function getWorkOrderOrderType(workOrder: Partial<ReorderIdentity>): WorkOrderOrderType {
+  return getOrderTypeFromWorkOrderKind(getWorkOrderKind(workOrder));
+}
+
+export function canReorderWorkOrder(workOrder: Partial<ReorderIdentity>): boolean {
+  return !isWorkOrderKind(getWorkOrderKind(workOrder), "rework");
+}
+
+export function isReworkToMainTransition(currentKind: WorkOrderTitleKind | null | undefined, nextKind: WorkOrderTitleKind | null | undefined): boolean {
+  return isWorkOrderKind(currentKind ?? null, "rework") && isWorkOrderKind(nextKind ?? null, "main");
 }
 
 export function syncOrderEntriesWithWorkOrderKind<T extends Partial<ReorderIdentity> & { orderEntries?: Array<{ type?: string | null }> }>(workOrder: T): T {
   const nextKind = getWorkOrderKind(workOrder);
   const nextOrderType = getOrderTypeFromWorkOrderKind(nextKind);
   const currentRound = getWorkOrderReorderRound(workOrder);
-  const defectOrder = nextKind === "rework" ? Boolean(workOrder.isDefectOrder ?? true) : false;
+  const defectOrder = isWorkOrderKind(nextKind, "rework") ? Boolean(workOrder.isDefectOrder ?? true) : false;
 
   return {
     ...workOrder,
@@ -88,12 +115,12 @@ export function buildWorkOrderTitle(workOrder: Partial<ReorderIdentity>): string
   const kind = getWorkOrderKind(workOrder);
   const round = getWorkOrderReorderRound(workOrder);
 
-  if (kind === "sample") {
+  if (isWorkOrderKind(kind, "sample")) {
     return `${baseTitle} (${i18n.common.ui.common.sample})`;
   }
 
   const roundSuffix = i18n.workorder.presentation.revisionSuffixFormat.replace("{revision}", String(round));
-  if (kind === "rework" && isDefectOrder(workOrder)) {
+  if (isWorkOrderKind(kind, "rework") && isDefectOrder(workOrder)) {
     return `${baseTitle} ${roundSuffix} (불량)`;
   }
 
@@ -105,7 +132,7 @@ export function applyReorderIdentity<T extends Partial<ReorderIdentity>>(workOrd
   const reorderGroupId = getWorkOrderReorderGroupId(workOrder);
   const reorderRound = getWorkOrderReorderRound(workOrder);
   const workOrderKind = getWorkOrderKind(workOrder);
-  const defectOrder = workOrderKind === "rework" ? isDefectOrder(workOrder) : false;
+  const defectOrder = isWorkOrderKind(workOrderKind, "rework") ? isDefectOrder(workOrder) : false;
   const displayTitle = buildWorkOrderTitle({
     ...workOrder,
     baseTitle,
@@ -141,8 +168,8 @@ function compareGroupItems(a: WorkOrder, b: WorkOrder): number {
 
   const kindA = getWorkOrderKind(a);
   const kindB = getWorkOrderKind(b);
-  const kindRankA = kindA === "main" ? 0 : kindA === "rework" ? 1 : 2;
-  const kindRankB = kindB === "main" ? 0 : kindB === "rework" ? 1 : 2;
+  const kindRankA = isWorkOrderKind(kindA, "main") ? 0 : isWorkOrderKind(kindA, "rework") ? 1 : 2;
+  const kindRankB = isWorkOrderKind(kindB, "main") ? 0 : isWorkOrderKind(kindB, "rework") ? 1 : 2;
   if (kindRankA !== kindRankB) return kindRankA - kindRankB;
 
   const timeDiff = getStableSequenceValue(a) - getStableSequenceValue(b);
@@ -152,16 +179,16 @@ function compareGroupItems(a: WorkOrder, b: WorkOrder): number {
 
 function resequenceReorderGroup(workOrders: WorkOrder[]): WorkOrder[] {
   const sampleItems = workOrders
-    .filter((item) => getWorkOrderKind(item) === "sample")
+    .filter((item) => isWorkOrderKind(getWorkOrderKind(item), "sample"))
     .sort(compareGroupItems);
   const productionItems = workOrders
-    .filter((item) => getWorkOrderKind(item) !== "sample")
+    .filter((item) => !isWorkOrderKind(getWorkOrderKind(item), "sample"))
     .sort(compareGroupItems);
 
   let mainRound = 0;
   const nextProductionItems = productionItems.map((item) => {
     const kind = getWorkOrderKind(item);
-    if (kind === "rework") {
+    if (isWorkOrderKind(kind, "rework")) {
       return applyReorderIdentity(syncOrderEntriesWithWorkOrderKind({
         ...item,
         workOrderKind: "rework",
@@ -225,7 +252,7 @@ export function getNextReorderRound(workOrders: WorkOrder[], sourceWorkOrder: Wo
 
   return workOrders.reduce((maxRound, workOrder) => {
     if (getWorkOrderReorderGroupId(workOrder) !== reorderGroupId) return maxRound;
-    if (getWorkOrderKind(workOrder) === "sample") return maxRound;
+    if (isWorkOrderKind(getWorkOrderKind(workOrder), "sample")) return maxRound;
     return Math.max(maxRound, getWorkOrderReorderRound(workOrder));
   }, 0) + 1;
 }

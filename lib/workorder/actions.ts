@@ -11,7 +11,7 @@ import {
 } from "@/lib/constants/workorderDefaults";
 import { createAttachmentId } from "@/lib/permissions/attachments";
 import type { Material } from "@/types/material";
-import { REWORK_TO_MAIN_APPEND_ROUND, applyReorderIdentity, buildWorkOrderTitle, getNextReorderRound, getOrderTypeFromWorkOrderKind, getWorkOrderBaseTitle, getWorkOrderReorderGroupId, getWorkOrderReorderRound, syncOrderEntriesWithWorkOrderKind } from "@/lib/workorder/reorder/helpers";
+import { REWORK_TO_MAIN_APPEND_ROUND, applyReorderIdentity, buildWorkOrderTitle, getNextReorderRound, getOrderTypeFromWorkOrderKind, getWorkOrderBaseTitle, getWorkOrderKind, getWorkOrderReorderGroupId, getWorkOrderReorderRound, isReworkToMainTransition, isWorkOrderKind, syncOrderEntriesWithWorkOrderKind } from "@/lib/workorder/reorder/helpers";
 import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
 import { shouldApplyRecommendedCategoryOnTitleRename } from "@/lib/utils/workorderCategoryRecommend";
 import { syncWorkOrderOrderSnapshot } from "@/lib/workorder/orderSubmission";
@@ -256,11 +256,11 @@ export function patchWorkOrder(
 ): WorkOrder {
   const requestedKind = patch.workOrderKind ?? workOrder.workOrderKind ?? "sample";
   const currentRound = getWorkOrderReorderRound(workOrder);
-  const isTransitioningFromReworkToMain = workOrder.workOrderKind === "rework" && requestedKind === "main";
+  const isTransitioningFromReworkToMain = isReworkToMainTransition(workOrder.workOrderKind, requestedKind);
   const nextRound = isTransitioningFromReworkToMain
     ? Math.max(currentRound + 1, REWORK_TO_MAIN_APPEND_ROUND)
     : Number(patch.reorderRound ?? currentRound);
-  const nextIsDefectOrder = requestedKind === "rework"
+  const nextIsDefectOrder = isWorkOrderKind(requestedKind, "rework")
     ? Boolean(patch.isDefectOrder ?? workOrder.isDefectOrder ?? true)
     : false;
 
@@ -402,7 +402,7 @@ export function cloneWorkOrderForReorder(
 ): WorkOrder {
   const baseTitle = resolveBaseTitle(sourceWorkOrder);
   const reorderRound = getNextReorderRound(workOrders, sourceWorkOrder);
-  const nextWorkOrderKind = sourceWorkOrder.workOrderKind === "sample" ? "main" : "main";
+  const nextWorkOrderKind = getWorkOrderKind({ ...sourceWorkOrder, workOrderKind: "main" });
   const nextOrderType = getOrderTypeFromWorkOrderKind(nextWorkOrderKind);
 
   return applyReorderIdentity(syncOrderEntriesWithWorkOrderKind({

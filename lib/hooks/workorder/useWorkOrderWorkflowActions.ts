@@ -15,6 +15,7 @@ import { persistWorkOrderWithHistory, persistWorkOrdersWithHistory } from "./wor
 import { findPartnerIdByNameAndTypes } from "@/lib/admin/partnerMasterPersistence";
 import { createReinspectionRequestHistoryLog, createWorkOrderKindChangeHistoryLog } from "@/lib/workorder/history/builders";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
+import { getOrderTypeFromWorkOrderKind } from "@/lib/workorder/reorder/helpers";
 import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import { stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
 import { getOrderSubmissionSnapshot } from "@/lib/workorder/orderSubmission";
@@ -403,7 +404,7 @@ export function useWorkOrderWorkflowActions({
       });
       const requestedKind = patch.workOrderKind;
       if (requestedKind) {
-        const requestedOrderType = requestedKind === "rework" ? "재작업" : requestedKind === "main" ? "메인 생산" : "샘플";
+        const requestedOrderType = getOrderTypeFromWorkOrderKind(requestedKind);
         if (!orderInfoHubPolicy.canChangeKind || !orderInfoHubPolicy.allowedOrderTypes.includes(requestedOrderType)) {
           setToastMessage(actionFlowText.orderInfoLockedToast ?? null);
           return;
