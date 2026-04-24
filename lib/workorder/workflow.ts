@@ -239,7 +239,7 @@ export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles
     }
     case "rejected": {
       if (canRequestReview({ currentRoles, currentUserId, workOrder })) {
-        return [{ label: WORKFLOW_ACTION_LABELS.restoreRejectedDraft, nextState: "draft", actionType: "restore_rejected_draft" }];
+        return [{ label: WORKFLOW_ACTION_LABELS.requestReview, nextState: "review_requested", actionType: "request_review" }];
       }
       return [];
     }

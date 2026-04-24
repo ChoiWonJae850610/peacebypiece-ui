@@ -35,7 +35,6 @@ export const workorderKo = {
     cancelReviewRequest: "요청 취소",
     cancelReviewApproval: "취소",
     rejectReview: "반려",
-    restoreRejectedDraft: "수정하기",
     approveReview: "검토 완료",
     requestOrder: "발주 요청",
     requestReinspection: "재검수 요청",

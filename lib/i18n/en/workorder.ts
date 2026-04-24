@@ -35,7 +35,6 @@ export const workorderEn = {
     cancelReviewRequest: "Cancel request",
     cancelReviewApproval: "Cancel",
     rejectReview: "Reject",
-    restoreRejectedDraft: "Edit again",
     approveReview: "Approve review",
     requestOrder: "Request order",
     requestReinspection: "Request reinspection",
