@@ -19,7 +19,7 @@ import {
   toOutsourcingPatch,
 } from "@/lib/hooks/workorder/detailEditor/itemMutations";
 import { useWorkOrderMaterialsEditor } from "@/lib/hooks/workorder/detailEditor/useWorkOrderMaterialsEditor";
-import { usePartnerFactoryOptions } from "@/lib/hooks/partners/usePartnerFactoryOptions";
+import { usePartnerWorkOrderOptions } from "@/lib/hooks/partners/usePartnerWorkOrderOptions";
 import { recalculateOutsourcing } from "@/lib/workorder/detail/detailCalculations";
 import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import { getRepresentativeOrderEntry } from "@/lib/workorder/orderSubmission";
@@ -83,7 +83,7 @@ export function useWorkOrderDetailEditor({
   const [editingValue, setEditingValue] = useState("");
   const [inspectionModalOpen, setInspectionModalOpen] = useState(false);
 
-  const partnerFactoryOptions = usePartnerFactoryOptions();
+  const partnerWorkOrderOptions = usePartnerWorkOrderOptions();
 
   const {
     materialItems,
@@ -131,16 +131,16 @@ export function useWorkOrderDetailEditor({
     [materialOpen, outsourcingOpen],
   );
 
-  const factoryOptions = useMemo(() => selectFactoryOptions(orderItems, partnerFactoryOptions), [orderItems, partnerFactoryOptions]);
+  const factoryOptions = useMemo(() => selectFactoryOptions(orderItems, partnerWorkOrderOptions.factoryOptions), [orderItems, partnerWorkOrderOptions.factoryOptions]);
 
   const materialVendorOptionsById = useMemo(
-    () => selectMaterialVendorOptionsById(materialItems),
-    [materialItems],
+    () => selectMaterialVendorOptionsById(materialItems, partnerWorkOrderOptions.materialVendorOptions),
+    [materialItems, partnerWorkOrderOptions.materialVendorOptions],
   );
 
   const outsourcingVendorOptionsById = useMemo(
-    () => selectOutsourcingVendorOptionsById(outsourcingItems),
-    [outsourcingItems],
+    () => selectOutsourcingVendorOptionsById(outsourcingItems, partnerWorkOrderOptions.outsourcingVendorOptions),
+    [outsourcingItems, partnerWorkOrderOptions.outsourcingVendorOptions],
   );
 
   const syncOrderEntries = (nextItems: OrderEntryState[], extraPatch: Partial<WorkOrder> = {}) => {

@@ -1,4 +1,5 @@
 import { FACTORY_OPTIONS } from "@/lib/constants/workorderOptions";
+import { MATERIAL_KIND } from "@/lib/constants/workorderDomain";
 import {
   listActiveMaterialPartnerNames,
   listActiveOutsourcingPartnerNamesByProcess,
@@ -26,24 +27,43 @@ export function selectFactoryOptions(orderItems: OrderEntryState[], partnerFacto
   );
 }
 
-export function selectMaterialVendorOptionsById(materialItems: Material[]): Record<string, string[]> {
+export type PartnerMaterialVendorOptions = {
+  fabric?: readonly string[];
+  subsidiary?: readonly string[];
+};
+
+function selectPartnerMaterialVendorOptions(materialType: string, partnerMaterialVendorOptions: PartnerMaterialVendorOptions = {}): readonly string[] {
+  if (materialType === MATERIAL_KIND.fabric) return partnerMaterialVendorOptions.fabric ?? [];
+  if (materialType === MATERIAL_KIND.subsidiary) return partnerMaterialVendorOptions.subsidiary ?? [];
+  return mergeOptionLists(partnerMaterialVendorOptions.fabric ?? [], partnerMaterialVendorOptions.subsidiary ?? []);
+}
+
+export function selectMaterialVendorOptionsById(
+  materialItems: Material[],
+  partnerMaterialVendorOptions: PartnerMaterialVendorOptions = {},
+): Record<string, string[]> {
   return Object.fromEntries(
     materialItems.map((item) => [
       item.id,
       mergeOptionLists(
         listActiveMaterialPartnerNames(item.type),
+        selectPartnerMaterialVendorOptions(item.type, partnerMaterialVendorOptions),
         item.vendor ? [item.vendor] : [],
       ),
     ]),
   );
 }
 
-export function selectOutsourcingVendorOptionsById(outsourcingItems: Outsourcing[]): Record<string, string[]> {
+export function selectOutsourcingVendorOptionsById(
+  outsourcingItems: Outsourcing[],
+  partnerOutsourcingVendorOptions: readonly string[] = [],
+): Record<string, string[]> {
   return Object.fromEntries(
     outsourcingItems.map((item) => [
       item.id,
       mergeOptionLists(
         listActiveOutsourcingPartnerNamesByProcess(item.process),
+        partnerOutsourcingVendorOptions,
         item.vendor ? [item.vendor] : [],
       ),
     ]),
