@@ -13,6 +13,14 @@ function mergeOptionLists(...sources: ReadonlyArray<ReadonlyArray<string>>): str
   return sources.flat().reduce<string[]>((options, value) => appendOption(options, value), []);
 }
 
+function hasPartnerOptions(options: readonly string[] | undefined): boolean {
+  return Array.isArray(options) && options.length > 0;
+}
+
+function selectDbOptionsOrFallback(partnerOptions: readonly string[] | undefined, fallbackOptions: readonly string[]): string[] {
+  return hasPartnerOptions(partnerOptions) ? mergeOptionLists(partnerOptions ?? []) : mergeOptionLists(fallbackOptions);
+}
+
 export function selectSeededFactoryOptions() {
   return mergeOptionLists(
     FACTORY_OPTIONS,
@@ -21,9 +29,13 @@ export function selectSeededFactoryOptions() {
 }
 
 export function selectFactoryOptions(orderItems: OrderEntryState[], partnerFactoryOptions: readonly string[] = []): string[] {
+  if (hasPartnerOptions(partnerFactoryOptions)) {
+    return mergeOptionLists(partnerFactoryOptions);
+  }
+
   return orderItems.reduce<string[]>(
     (options, item) => appendOption(options, item.factory),
-    mergeOptionLists(selectSeededFactoryOptions(), partnerFactoryOptions),
+    selectSeededFactoryOptions(),
   );
 }
 
@@ -38,6 +50,13 @@ function selectPartnerMaterialVendorOptions(materialType: string, partnerMateria
   return mergeOptionLists(partnerMaterialVendorOptions.fabric ?? [], partnerMaterialVendorOptions.subsidiary ?? []);
 }
 
+function selectSeededMaterialVendorOptions(materialType: string, currentVendor: string | undefined): string[] {
+  return mergeOptionLists(
+    listActiveMaterialPartnerNames(materialType),
+    currentVendor ? [currentVendor] : [],
+  );
+}
+
 export function selectMaterialVendorOptionsById(
   materialItems: Material[],
   partnerMaterialVendorOptions: PartnerMaterialVendorOptions = {},
@@ -45,10 +64,9 @@ export function selectMaterialVendorOptionsById(
   return Object.fromEntries(
     materialItems.map((item) => [
       item.id,
-      mergeOptionLists(
-        listActiveMaterialPartnerNames(item.type),
+      selectDbOptionsOrFallback(
         selectPartnerMaterialVendorOptions(item.type, partnerMaterialVendorOptions),
-        item.vendor ? [item.vendor] : [],
+        selectSeededMaterialVendorOptions(item.type, item.vendor),
       ),
     ]),
   );
@@ -61,15 +79,16 @@ export function selectOutsourcingVendorOptionsById(
   return Object.fromEntries(
     outsourcingItems.map((item) => [
       item.id,
-      mergeOptionLists(
-        listActiveOutsourcingPartnerNamesByProcess(item.process),
+      selectDbOptionsOrFallback(
         partnerOutsourcingVendorOptions,
-        item.vendor ? [item.vendor] : [],
+        mergeOptionLists(
+          listActiveOutsourcingPartnerNamesByProcess(item.process),
+          item.vendor ? [item.vendor] : [],
+        ),
       ),
     ]),
   );
 }
-
 
 export function mapRegistryTypeToPartnerTypes(type: string) {
   switch (type) {

@@ -14,6 +14,7 @@ export const PARTNER_DB_NEXT_VERSION_SEQUENCE = [
   { version: "0.6.4331", goal: "Partner master legacy mock repository import 보정" },
   { version: "0.6.434", goal: "원단 / 부자재 / 외주처 선택 연결" },
   { version: "0.6.435", goal: "Partner 관리 화면 1차" },
+  { version: "0.6.436", goal: "Attachment / Memo DB 연결 준비" },
 ] as const;
 
 export const PARTNER_DB_PREPARATION_STATUS: PartnerDbPreparationStatus = {
