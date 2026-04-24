@@ -8,7 +8,7 @@ export {
 } from "@/lib/workorder/orderSubmission";
 import { deriveWorkflowStateFromOrderEntries } from "@/lib/workorder/workflow";
 import { isAdminRole, isDesignerRole, isInspectorRole } from "@/lib/constants/roles";
-import { canEditBeforeOrder, isWorkflowStateInRange } from "@/lib/constants/workorderStates";
+import { canEditBeforeOrder, isWorkflowState, isWorkflowStateAtLeast, isWorkflowStateInRange } from "@/lib/constants/workorderStates";
 import type { UserProfile } from "@/types/user";
 import { createWorkOrderListItem } from "@/lib/workorder/mappers/workOrderListItemMapper";
 import { calculateWorkOrderCosts } from "@/lib/workorder/derived/workOrderCostSummary";
@@ -39,11 +39,15 @@ export function filterWorkOrdersByUserScope(workOrders: WorkOrder[], workflowSta
   if (isInspectorRole(currentUser)) {
     return workOrders.filter((item) => {
       const workflowState = workflowStateById[item.id] ?? item.workflowState;
-      return isWorkflowStateInRange(workflowState as WorkOrder["workflowState"], "inspection", "completed");
+      return isWorkflowStateInRange(workflowState as WorkOrder["workflowState"], "inspection", "completed") && !isWorkflowState(workflowState, "completed");
     });
   }
 
   return workOrders;
+}
+
+export function isWorkOrderSideDraftEditable(workflowState: WorkOrder["workflowState"]) {
+  return !isWorkflowStateAtLeast(workflowState, "review_completed");
 }
 
 export function filterWorkOrderList(workOrders: WorkOrderListItem[], workflowStateById: Record<string, string>, searchQuery: string) {

@@ -17,7 +17,7 @@ export function getAttachmentCollectionPermissionState(payload: {
   isReviewRequestLocked: boolean;
 }): AttachmentCollectionPermissionState {
   return {
-    canUpload: payload.canSeeAttachments && payload.canManageAttachments && !payload.isReviewRequestLocked,
+    canUpload: payload.canSeeAttachments && payload.canManageAttachments,
   };
 }
 
@@ -39,7 +39,7 @@ export function getAttachmentPermissionState(payload: {
     ...collectionPermissions,
     canPreview: canAccessAttachment,
     canDownload: canAccessAttachment,
-    canDelete: payload.canSeeAttachments && !payload.isReviewRequestLocked && canDeleteAttachmentByUser(payload.currentUser, payload.attachment),
+    canDelete: payload.canSeeAttachments && canDeleteAttachmentByUser(payload.currentUser, payload.attachment),
   };
 }
 

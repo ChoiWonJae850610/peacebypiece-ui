@@ -10,6 +10,7 @@ type WorkOrderSidePanelSectionsProps = WorkOrderSidePanelProps & {
 export default function WorkOrderSidePanelSections({
   canSeeAttachments,
   canManageAttachments,
+  canEditMemo,
   attachmentSections,
   onOpenAttachmentPicker,
   onPreviewAttachment,
@@ -41,6 +42,7 @@ export default function WorkOrderSidePanelSections({
       currentUserRole={currentRole}
       onCreateThread={onCreateMemoThread}
       onCreateReply={onCreateMemoReply}
+      canEditMemo={canEditMemo}
       variant={variant}
     />
   );

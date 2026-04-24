@@ -13,24 +13,6 @@ import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import { canEditManagerInWorkflow } from "@/lib/constants/workorderStates";
 import type { WorkOrder } from "@/types/workorder";
 
-const KST_DATE_TIME_FORMATTER = new Intl.DateTimeFormat("ko-KR", {
-  timeZone: "Asia/Seoul",
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: false,
-});
-
-export function formatWorkOrderLastSavedAtKst(value: string | null): string | null {
-  if (!value) return null;
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return value;
-  const parts = Object.fromEntries(KST_DATE_TIME_FORMATTER.formatToParts(parsed).map((part) => [part.type, part.value]));
-  return [parts.year, parts.month, parts.day].join("-") + " " + [parts.hour, parts.minute].join(":");
-}
-
 type HeaderProps = ComponentProps<typeof WorkOrderHeaderSection>;
 type ActionProps = ComponentProps<typeof WorkOrderActionSection>;
 type CostSummaryProps = ComponentProps<typeof WorkOrderCostSummarySection>;
@@ -176,7 +158,7 @@ export function buildWorkOrderDetailViewModel({
       summaryText: formatBasicSummary(basicInfo),
       managerName: workOrder.manager || "-",
       currentInventoryQuantity,
-      lastSavedAt: formatWorkOrderLastSavedAtKst(lastSavedAt),
+      lastSavedAt,
       canChangeManager,
       currentUserRole,
       canRenameTitle,

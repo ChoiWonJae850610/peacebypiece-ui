@@ -5,7 +5,7 @@ import {
   normalizeRoles,
 } from "@/lib/constants/roles";
 import { getDisplayStageFromWorkflowState, VISIBLE_STAGES } from "@/lib/constants/workflow";
-import { canEditBeforeOrder, isWorkflowStateReviewLocked } from "@/lib/constants/workorderStates";
+import { isWorkflowStateReviewLocked } from "@/lib/constants/workorderStates";
 import { getAttachmentCollectionPermissionState } from "@/lib/workorder/attachments/attachmentPermissions";
 import {
   calculateWorkOrderCosts,
@@ -16,6 +16,7 @@ import {
   getAttachmentById,
   getDesignAttachments,
   getOfficialAttachments,
+  isWorkOrderSideDraftEditable,
 } from "@/lib/workorder/selectors";
 import { getSharedInventorySnapshot } from "@/lib/workorder/reorder/inventory";
 import {
@@ -47,13 +48,13 @@ export function buildWorkOrderDerivedState({
   const canChangeManager = canManageWorkOrderManager(currentRoles, currentWorkflowState);
   const currentDisplayStage = getDisplayStageFromWorkflowState(currentWorkflowState);
   const visibleStages = VISIBLE_STAGES;
-  const canEditBeforeApproval = canEditBeforeOrder(currentWorkflowState, isAdmin);
   const isReviewRequestLocked = isWorkflowStateReviewLocked(currentWorkflowState, isAdmin);
+  const canEditSideDraftContent = isWorkOrderSideDraftEditable(currentWorkflowState);
   const canSeeAttachments = currentUser.permissions.canSeeAttachments;
   const attachmentCollectionPermissions = getAttachmentCollectionPermissionState({
     canSeeAttachments,
     canManageAttachments: canUploadOfficialAttachmentsByRoles(currentRoles),
-    isReviewRequestLocked,
+    isReviewRequestLocked: !canEditSideDraftContent,
   });
   const canUploadOfficialAttachments = attachmentCollectionPermissions.canUpload;
   const scopedWorkOrders = filterWorkOrdersByUserScope(workOrders, workflowStateById, currentUser);
@@ -90,6 +91,7 @@ export function buildWorkOrderDerivedState({
     currentDisplayStage,
     visibleStages,
     isReviewRequestLocked,
+    canEditSideDraftContent,
     canUploadOfficialAttachments,
     workOrders: filteredWorkOrderList,
     hasVisibleWorkOrders: filteredWorkOrderList.length > 0,

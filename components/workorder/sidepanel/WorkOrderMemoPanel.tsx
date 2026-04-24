@@ -12,11 +12,13 @@ function getRoleDisplayLabel(role: RoleType, i18n: ReturnType<typeof useI18n>["i
 function MemoThreadCard({
   thread,
   onCreateReply,
+  canEditMemo,
   workOrderId,
   variant = "desktop",
 }: {
   thread: MemoThread;
   onCreateReply: (threadId: string, content: string) => void;
+  canEditMemo: boolean;
   workOrderId: string;
   variant?: "desktop" | "tablet" | "mobile";
 }) {
@@ -32,7 +34,7 @@ function MemoThreadCard({
   }, [thread.id, workOrderId]);
 
   const submitReply = () => {
-    if (!replyDraft.trim()) return;
+    if (!canEditMemo || !replyDraft.trim()) return;
     onCreateReply(thread.id, replyDraft);
     if (typeof document !== "undefined" && document.activeElement instanceof HTMLTextAreaElement) {
       document.activeElement.blur();
@@ -70,7 +72,8 @@ function MemoThreadCard({
           <button
             type="button"
             onClick={() => setReplyComposerOpen((prev) => !prev)}
-            className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1 text-[11px] font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200"
+            disabled={!canEditMemo}
+            className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1 text-[11px] font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {replyComposerOpen ? ui.memo.toggleReplyClose : ui.memo.toggleReplyOpen}
           </button>
@@ -80,13 +83,14 @@ function MemoThreadCard({
           <div className="rounded-xl border border-stone-200 bg-stone-50 p-2.5">
             <textarea
               value={replyDraft}
+              disabled={!canEditMemo}
               onChange={(event) => setReplyDraft(event.target.value)}
               onKeyDown={onReplyKeyDown}
               placeholder={ui.memo.replyPlaceholder}
-              className="pbp-field-interaction min-h-[32px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-2 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 md:text-sm"
+              className="pbp-field-interaction min-h-[36px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-400 md:text-sm"
             />
             <div className={isMobile ? "mt-2" : "mt-2 flex justify-end"}>
-              <button type="button" onClick={submitReply} className={isMobile ? "pbp-interactive-button w-full rounded-full bg-stone-900 px-3 py-2 text-xs font-semibold text-white hover:bg-stone-800 active:bg-black" : "pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-stone-800 active:bg-black"}>{ui.memo.submit}</button>
+              <button type="button" onClick={submitReply} disabled={!canEditMemo || !replyDraft.trim()} className={isMobile ? "pbp-interactive-button w-full rounded-full bg-stone-900 px-3 py-2 text-xs font-semibold text-white hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:opacity-50" : "pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:opacity-50"}>{ui.memo.submit}</button>
             </div>
           </div>
         ) : null}
@@ -101,6 +105,7 @@ export default function WorkOrderMemoPanel({
   currentUserRole,
   onCreateThread,
   onCreateReply,
+  canEditMemo,
   variant = "desktop",
 }: {
   workOrder: WorkOrder;
@@ -108,6 +113,7 @@ export default function WorkOrderMemoPanel({
   currentUserRole: RoleType;
   onCreateThread: (content: string) => void;
   onCreateReply: (threadId: string, content: string) => void;
+  canEditMemo: boolean;
   variant?: "desktop" | "tablet" | "mobile";
 }) {
   const { i18n } = useI18n();
@@ -122,7 +128,7 @@ export default function WorkOrderMemoPanel({
   }, [workOrder.id]);
 
   const submitThread = () => {
-    if (!threadDraft.trim()) return;
+    if (!canEditMemo || !threadDraft.trim()) return;
     onCreateThread(threadDraft);
     if (typeof document !== "undefined" && document.activeElement instanceof HTMLTextAreaElement) {
       document.activeElement.blur();
@@ -147,18 +153,19 @@ export default function WorkOrderMemoPanel({
         <div className="text-[11px] text-stone-500">{currentUserName} · {getRoleDisplayLabel(currentUserRole, i18n)}</div>
         <textarea
           value={threadDraft}
+          disabled={!canEditMemo}
           onChange={(event) => setThreadDraft(event.target.value)}
           onKeyDown={onThreadKeyDown}
           placeholder={ui.memo.threadPlaceholder}
-          className={isMobile ? "pbp-field-interaction mt-2 min-h-[48px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-2 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50" : "pbp-field-interaction mt-2 min-h-[32px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-2 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 md:text-sm"}
+          className={isMobile ? "pbp-field-interaction mt-2 min-h-[34px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-400" : "pbp-field-interaction mt-2 min-h-[28px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-400 md:text-sm"}
         />
         <div className={isMobile ? "mt-2" : "mt-2 flex justify-end"}>
-          <button type="button" onClick={submitThread} className={isMobile ? "pbp-interactive-button w-full rounded-full bg-stone-900 px-3 py-2 text-xs font-semibold text-white hover:bg-stone-800 active:bg-black" : "pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-stone-800 active:bg-black"}>{ui.memo.submit}</button>
+          <button type="button" onClick={submitThread} disabled={!canEditMemo || !threadDraft.trim()} className={isMobile ? "pbp-interactive-button w-full rounded-full bg-stone-900 px-3 py-2 text-xs font-semibold text-white hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:opacity-50" : "pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:opacity-50"}>{ui.memo.submit}</button>
         </div>
       </div>
       <div className={isMobile ? "mt-2.5 space-y-1.5" : "mt-2.5 space-y-2"}>
         {memoThreads.length > 0 ? memoThreads.map((thread) => (
-          <MemoThreadCard key={`${workOrder.id}-${thread.id}`} thread={thread} onCreateReply={onCreateReply} workOrderId={workOrder.id} variant={variant} />
+          <MemoThreadCard key={`${workOrder.id}-${thread.id}`} thread={thread} onCreateReply={onCreateReply} workOrderId={workOrder.id} variant={variant} canEditMemo={canEditMemo} />
         )) : <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-5 text-center text-sm text-stone-500">{ui.memo.empty}</div>}
       </div>
     </WorkOrderPanelCard>

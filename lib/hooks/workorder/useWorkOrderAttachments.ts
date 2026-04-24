@@ -19,6 +19,7 @@ import type { Attachment, AttachmentScope, HistoryLog, UserProfile, WorkOrder } 
 
 export function useWorkOrderAttachments({
   attachmentInputRef,
+  canEditSideDraftContent,
   canUploadOfficialAttachments,
   canSeeAttachments,
   isReviewRequestLocked,
@@ -32,6 +33,7 @@ export function useWorkOrderAttachments({
   setToastMessage,
 }: {
   attachmentInputRef: RefObject<HTMLInputElement | null>;
+  canEditSideDraftContent: boolean;
   canUploadOfficialAttachments: boolean;
   canSeeAttachments: boolean;
   isReviewRequestLocked: boolean;
@@ -51,11 +53,11 @@ export function useWorkOrderAttachments({
 
   const handleOpenAttachmentPicker = (scope: AttachmentScope = "official") => {
     setAttachmentPickerScope(scope);
-    openAttachmentPickerTrigger(attachmentInputRef, canUploadOfficialAttachments);
+    openAttachmentPickerTrigger(attachmentInputRef, canEditSideDraftContent && canUploadOfficialAttachments);
   };
 
   const handleAttachmentFiles = (event: ChangeEvent<HTMLInputElement>) => {
-    if (!canUploadOfficialAttachments) {
+    if (!canEditSideDraftContent || !canUploadOfficialAttachments) {
       clearAttachmentInputValue(event);
       return;
     }
@@ -91,7 +93,7 @@ export function useWorkOrderAttachments({
       attachment: targetAttachment,
       canSeeAttachments,
       canManageAttachments: canUploadOfficialAttachments,
-      isReviewRequestLocked,
+      isReviewRequestLocked: !canEditSideDraftContent,
     })) {
       return;
     }
@@ -118,6 +120,7 @@ export function useWorkOrderAttachments({
   };
 
   const handleCreateMemoThread = (content: string) => {
+    if (!canEditSideDraftContent) return;
     const result = buildMemoThreadResult({
       workOrder: selectedWorkOrder,
       currentUser,
@@ -140,6 +143,7 @@ export function useWorkOrderAttachments({
   };
 
   const handleCreateMemoReply = (threadId: string, content: string) => {
+    if (!canEditSideDraftContent) return;
     const result = buildMemoReplyResult({
       workOrder: selectedWorkOrder,
       currentUser,
@@ -168,7 +172,7 @@ export function useWorkOrderAttachments({
       attachment,
       canSeeAttachments,
       canManageAttachments: canUploadOfficialAttachments,
-      isReviewRequestLocked,
+      isReviewRequestLocked: !canEditSideDraftContent,
     });
 
   const getAttachmentPermissions = (attachment: Attachment | null) =>
@@ -177,7 +181,7 @@ export function useWorkOrderAttachments({
       attachment,
       canSeeAttachments,
       canManageAttachments: canUploadOfficialAttachments,
-      isReviewRequestLocked,
+      isReviewRequestLocked: !canEditSideDraftContent,
     });
 
   return {

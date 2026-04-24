@@ -112,6 +112,7 @@ export function useWorkOrder() {
 
   const attachmentState = useWorkOrderAttachments({
     attachmentInputRef: uiState.attachmentInputRef,
+    canEditSideDraftContent: derivedState.canEditSideDraftContent,
     canUploadOfficialAttachments: derivedState.canUploadOfficialAttachments,
     canSeeAttachments: derivedState.canSeeAttachments,
     isReviewRequestLocked: derivedState.isReviewRequestLocked,
@@ -182,6 +183,7 @@ export function useWorkOrder() {
     currentRole: derivedState.currentRole,
     isAdmin: derivedState.isAdmin,
     canCreateWorkOrder: derivedState.canCreateWorkOrder,
+    canEditSideDraftContent: derivedState.canEditSideDraftContent,
     canUploadOfficialAttachments: derivedState.canUploadOfficialAttachments,
     canSeeAttachments: derivedState.canSeeAttachments,
     isReviewRequestLocked: derivedState.isReviewRequestLocked,

@@ -24,6 +24,7 @@ export type WorkOrderDerivedState = {
   currentDisplayStage: string;
   visibleStages: readonly string[];
   isReviewRequestLocked: boolean;
+  canEditSideDraftContent: boolean;
   canUploadOfficialAttachments: boolean;
   workOrders: WorkOrderListItem[];
   hasVisibleWorkOrders: boolean;

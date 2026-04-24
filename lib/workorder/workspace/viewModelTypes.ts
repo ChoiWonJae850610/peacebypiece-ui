@@ -47,6 +47,7 @@ export type BuildWorkspaceViewModelArgs = {
   canSeeAttachments: boolean;
   canUploadOfficialAttachments: boolean;
   isReviewRequestLocked: boolean;
+  canEditSideDraftContent: boolean;
   canChangeManager: boolean;
   canSeeProductionSections: boolean;
   canSeeCostSections: boolean;
@@ -131,6 +132,7 @@ export type BaseWorkspaceViewModelArgs = {
   canUploadOfficialAttachments: boolean;
   isAdmin: boolean;
   isReviewRequestLocked: boolean;
+  canEditSideDraftContent: boolean;
   canChangeManager: boolean;
   canSeeProductionSections: boolean;
   canSeeCostSections: boolean;
