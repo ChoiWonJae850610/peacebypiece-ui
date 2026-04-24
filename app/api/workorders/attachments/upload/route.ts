@@ -70,6 +70,15 @@ export async function POST(request: NextRequest) {
       const storageKey = createWorkOrderAttachmentStorageKey({ workOrderId, scope, originalName: file.name });
       const buffer = Buffer.from(await file.arrayBuffer());
 
+      console.info("[ATTACHMENT_UPLOAD_START]", {
+        workOrderId,
+        scope,
+        storageKey,
+        fileName: file.name,
+        fileSize: file.size,
+        contentType: file.type || "application/octet-stream",
+      });
+
       await putR2Object({
         key: storageKey,
         body: buffer,
@@ -107,6 +116,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ attachments });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Attachment upload failed.";
+    console.error("[ATTACHMENT_UPLOAD_FAILED]", { message, error });
     return NextResponse.json({ attachments: [], error: "ATTACHMENT_UPLOAD_FAILED", message }, { status: 500 });
   }
 }
