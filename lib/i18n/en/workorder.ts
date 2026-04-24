@@ -208,6 +208,10 @@ export const workorderEn = {
     emptyWorkspace: {
       title: "No work orders",
       description: "There are no work orders available for the current role. New work will appear in the list when it is created.",
+      detailTitle: "Select a work order",
+      detailDescription: "Select a work order from the list to show details in the center panel.",
+      sideTitle: "No work order selected",
+      sideDescription: "Attachments, design files, and memos will appear here after selection.",
     },
 
     memo: {
@@ -227,8 +231,8 @@ export const workorderEn = {
       designAddButton: "Add design",
       deleteTitle: "Delete",
       deleteAriaSuffix: "delete",
-      empty: "No attachment files yet.",
-      designEmpty: "No design files yet.",
+      empty: "No registered attachments.",
+      designEmpty: "No registered design.",
       legacyOwnerFallback: "Existing attachment",
       previewFallback: "File",
       previewPdf: "PDF",

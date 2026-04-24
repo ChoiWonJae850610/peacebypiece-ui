@@ -208,6 +208,10 @@ export const workorderKo = {
     emptyWorkspace: {
       title: "작업이 없습니다",
       description: "현재 역할에서 처리할 작업지시서가 없습니다. 새 작업이 생기면 목록에 표시됩니다.",
+      detailTitle: "작업지시서를 선택하세요",
+      detailDescription: "목록에서 작업지시서를 선택하면 가운데 패널에 상세 정보가 표시됩니다.",
+      sideTitle: "선택된 작업지시서가 없습니다",
+      sideDescription: "작업지시서를 선택하면 첨부, 디자인, 메모 정보가 표시됩니다.",
     },
 
     memo: {
@@ -227,8 +231,8 @@ export const workorderKo = {
       designAddButton: "디자인 추가",
       deleteTitle: "삭제",
       deleteAriaSuffix: "삭제",
-      empty: "아직 첨부 파일이 없습니다.",
-      designEmpty: "아직 디자인 파일이 없습니다.",
+      empty: "등록된 첨부 파일이 없습니다.",
+      designEmpty: "등록된 디자인이 없습니다.",
       legacyOwnerFallback: "기존 첨부",
       previewFallback: "파일",
       previewPdf: "PDF",

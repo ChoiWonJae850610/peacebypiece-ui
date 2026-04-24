@@ -1,6 +1,7 @@
 import MobileDrawer from "@/components/layout/MobileDrawer";
 import MobileTopBar from "@/components/layout/MobileTopBar";
 import WorkOrderDetail from "@/components/workorder/WorkOrderDetail";
+import WorkOrderEmptyState from "@/components/workorder/WorkOrderEmptyState";
 import MobileSectionStack from "@/components/workorder/layout/MobileSectionStack";
 import type { WorkOrderLayoutViewProps } from "@/components/workorder/layout/types";
 import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
@@ -23,8 +24,8 @@ export default function WorkOrderDetailMobileView({
         <div key={selectedId} className="pbp-mobile-content-switch">
           <WorkOrderDetail {...detailProps} />
         </div>
-      ) : null}
-      sidePanel={hasSelection ? <WorkOrderSidePanel {...sidePanelProps} /> : null}
+      ) : <WorkOrderEmptyState variant="detail" />}
+      sidePanel={hasSelection ? <WorkOrderSidePanel {...sidePanelProps} /> : <WorkOrderEmptyState variant="side" />}
     />
   );
 }
