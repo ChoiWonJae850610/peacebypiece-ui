@@ -25,6 +25,7 @@ import {
   type BasePartnerType,
   type OutsourcingProcessDefinition,
 } from "@/lib/admin/partnerMaster";
+import { fetchPartnerMasterItemsFromApi, savePartnerMasterItemToApi } from "@/lib/admin/partnerMasterApiClient";
 import {
   loadPartnerMasterInitialState,
   savePartnerMasterItem,
@@ -50,11 +51,28 @@ export default function PartnerMasterSection() {
   const [newProcessLabel, setNewProcessLabel] = useState("");
   const [processFormError, setProcessFormError] = useState("");
   const [deletingProcessType, setDeletingProcessType] = useState<OutsourcingProcessType | null>(null);
+  const [repositoryStatus, setRepositoryStatus] = useState("저장소 확인 중");
 
   useEffect(() => {
+    let isMounted = true;
     const initialState = loadPartnerMasterInitialState();
     setPartners(initialState.partners);
     setProcessDefinitions(initialState.processDefinitions);
+
+    fetchPartnerMasterItemsFromApi()
+      .then((payload) => {
+        if (!isMounted) return;
+        setPartners(payload.partners);
+        setRepositoryStatus(payload.repository?.mode === "db" ? "DB 연결" : "mock 저장소");
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setRepositoryStatus("local fallback");
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -158,10 +176,18 @@ export default function PartnerMasterSection() {
       return;
     }
 
-    const nextPartners = savePartnerMasterItem(editingPartnerId, normalizedDraft);
-
-    setPartners(nextPartners);
-    closeModal();
+    savePartnerMasterItemToApi(editingPartnerId, normalizedDraft)
+      .then((payload) => {
+        setPartners(payload.partners);
+        setRepositoryStatus(payload.repository?.mode === "db" ? "DB 연결" : "mock 저장소");
+        closeModal();
+      })
+      .catch(() => {
+        const nextPartners = savePartnerMasterItem(editingPartnerId, normalizedDraft);
+        setPartners(nextPartners);
+        setRepositoryStatus("local fallback");
+        closeModal();
+      });
   }, [closeModal, draft, editingPartnerId]);
 
   const updateProcessDefinition = useCallback(
@@ -230,6 +256,10 @@ export default function PartnerMasterSection() {
   return (
     <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm md:p-6">
       <PartnerMasterHeader onOpenCreateModal={openCreateModal} onOpenProcessModal={openProcessModal} />
+
+      <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-xs text-stone-500">
+        Partner 저장소 상태: {repositoryStatus}
+      </div>
 
       <PartnerMasterFilters
         searchTerm={searchTerm}
