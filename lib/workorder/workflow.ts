@@ -237,10 +237,14 @@ export function getAvailableWorkflowActions({ currentWorkflowState, currentRoles
       return [];
     }
     case "rejected": {
-      if (canRequestReview({ currentRoles, currentUserId, workOrder })) {
-        return [{ label: WORKFLOW_ACTION_LABELS.requestReview, nextState: "review_requested", actionType: "request_review" }];
+      const actions: WorkflowAction[] = [];
+      if (isAdminRole(currentRoles)) {
+        actions.push({ label: WORKFLOW_ACTION_LABELS.approveReview, nextState: "review_completed", actionType: "approve_review" });
       }
-      return [];
+      if (canRequestReview({ currentRoles, currentUserId, workOrder })) {
+        actions.push({ label: WORKFLOW_ACTION_LABELS.requestReview, nextState: "review_requested", actionType: "request_review" });
+      }
+      return actions;
     }
     case "review_completed":
       if (isAdminRole(currentRoles)) {
