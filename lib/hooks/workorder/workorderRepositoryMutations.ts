@@ -10,6 +10,28 @@ function stampPersistedWorkOrders(workOrders: WorkOrder[]): WorkOrder[] {
   return workOrders.map((workOrder) => ({ ...workOrder, lastSavedAt: stampedAt }));
 }
 
+export function replaceWorkOrderById(workOrders: WorkOrder[], workOrderId: string, nextWorkOrder: WorkOrder): WorkOrder[] {
+  return workOrders.map((item) => (item.id === workOrderId ? nextWorkOrder : item));
+}
+
+export function upsertWorkOrderAtStart(workOrders: WorkOrder[], nextWorkOrder: WorkOrder): WorkOrder[] {
+  return [nextWorkOrder, ...workOrders.filter((item) => item.id !== nextWorkOrder.id)];
+}
+
+export function mergeSavedWorkOrders(workOrders: WorkOrder[], savedWorkOrders: WorkOrder[]): WorkOrder[] {
+  if (savedWorkOrders.length === 0) return workOrders;
+  const savedById = new Map(savedWorkOrders.map((item) => [item.id, item]));
+  return workOrders.map((item) => savedById.get(item.id) ?? item);
+}
+
+export function getSelectedWorkOrderForSaveState(workOrders: WorkOrder[], selectedId: string): WorkOrder | null {
+  return workOrders.find((item) => item.id === selectedId) ?? workOrders[0] ?? null;
+}
+
+export function getLastSavedAtForWorkOrder(workOrders: WorkOrder[], workOrderId: string): string | null {
+  return workOrders.find((item) => item.id === workOrderId)?.lastSavedAt ?? null;
+}
+
 export async function persistCreatedWorkOrderWithHistory(
   repository: WorkorderRepository,
   payload: {

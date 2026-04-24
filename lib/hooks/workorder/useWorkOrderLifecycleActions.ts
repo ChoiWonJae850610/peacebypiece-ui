@@ -20,7 +20,15 @@ import {
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import { getWorkOrderBaseTitle, canReorderWorkOrder as canCreateReorderFromWorkOrder, normalizeWorkOrdersReorderIdentity, reindexReorderGroupAfterDeletion } from "@/lib/workorder/reorder/helpers";
 import { createWorkOrderActionFailure, executeWorkOrderAsyncAction } from "@/lib/workorder/actionFlow";
-import { persistCreatedWorkOrderWithHistory, persistWorkOrderWithHistory, persistWorkOrdersWithHistory } from "./workorderRepositoryMutations";
+import {
+  getLastSavedAtForWorkOrder,
+  mergeSavedWorkOrders,
+  persistCreatedWorkOrderWithHistory,
+  persistWorkOrderWithHistory,
+  persistWorkOrdersWithHistory,
+  replaceWorkOrderById,
+  upsertWorkOrderAtStart,
+} from "./workorderRepositoryMutations";
 import type { WorkOrder } from "@/types/workorder";
 import type {
   CreateWorkOrderInput,
@@ -98,7 +106,7 @@ export function useWorkOrderLifecycleActions({
         task: async () => {
           setSaveStatus("saving");
           const persistedWorkOrder = await persistWorkOrderWithHistory(repository, { workOrder });
-          const persistedWorkOrders = workOrders.map((item) => (item.id === workOrder.id ? persistedWorkOrder : item));
+          const persistedWorkOrders = replaceWorkOrderById(workOrders, workOrder.id, persistedWorkOrder);
 
           setWorkOrders(persistedWorkOrders);
           setPersistedWorkOrders(persistedWorkOrders);
@@ -151,8 +159,8 @@ export function useWorkOrderLifecycleActions({
             historyLogs: nextHistoryLogs,
           });
 
-          setWorkOrders((prev) => [createdWorkOrder, ...prev.filter((item) => item.id !== createdWorkOrder.id)]);
-          setPersistedWorkOrders((prev) => [createdWorkOrder, ...prev.filter((item) => item.id !== createdWorkOrder.id)]);
+          setWorkOrders((prev) => upsertWorkOrderAtStart(prev, createdWorkOrder));
+          setPersistedWorkOrders((prev) => upsertWorkOrderAtStart(prev, createdWorkOrder));
           setSelectedId(createdWorkOrder.id);
           setLastSavedAt(createdWorkOrder.lastSavedAt ?? newWorkOrder.lastSavedAt);
           setHistoryLogs((historyPrev) => [...nextHistoryLogs, ...historyPrev]);
@@ -306,25 +314,18 @@ export function useWorkOrderLifecycleActions({
           const persistedChangedRemaining = changedRemaining.length > 0
             ? await repository.saveWorkOrdersAsync(changedRemaining)
             : [];
-          const persistedRemainingById = new Map(persistedChangedRemaining.map((item) => [item.id, item]));
-          const persistedRemaining = remaining.map((item) => persistedRemainingById.get(item.id) ?? item);
+          const persistedRemaining = mergeSavedWorkOrders(remaining, persistedChangedRemaining);
           await repository.appendHistoryLogsAsync(nextHistoryLogs);
           setWorkOrders(persistedRemaining);
           setPersistedWorkOrders(persistedRemaining);
           setHistoryLogs((prev) => [...nextHistoryLogs, ...prev]);
 
           const nextSelectedId = selectedId === workOrderId ? fallbackSelectedId : selectedId;
-          const nextSelectedWorkOrder = persistedRemaining.find((item) => item.id === nextSelectedId) ?? persistedRemaining[0] ?? null;
-
           if (selectedId === workOrderId) {
             setSelectedId(nextSelectedId);
           }
 
-          if (!nextSelectedWorkOrder) {
-            setLastSavedAt(null);
-          } else {
-            setLastSavedAt(nextSelectedWorkOrder.lastSavedAt ?? null);
-          }
+          setLastSavedAt(getLastSavedAtForWorkOrder(persistedRemaining, nextSelectedId));
           setSaveStatus("saved");
           setToastMessage(lifecycleText.deleteCompletedToast);
         },
@@ -376,12 +377,8 @@ export function useWorkOrderLifecycleActions({
             await repository.appendHistoryLogsAsync(nextHistoryLogs);
           }
 
-          const savedById = new Map(savedChangedWorkOrders.map((item) => [item.id, item]));
-          const nextPersistedWorkOrders = persistedRenameResult.nextWorkOrders.map((item) => savedById.get(item.id) ?? item);
-          const nextLocalWorkOrders = localRenameResult.nextWorkOrders.map((item) => {
-            const saved = savedById.get(item.id);
-            return saved ? { ...item, lastSavedAt: saved.lastSavedAt } : item;
-          });
+          const nextPersistedWorkOrders = mergeSavedWorkOrders(persistedRenameResult.nextWorkOrders, savedChangedWorkOrders);
+          const nextLocalWorkOrders = mergeSavedWorkOrders(localRenameResult.nextWorkOrders, savedChangedWorkOrders);
 
           setPersistedWorkOrders(nextPersistedWorkOrders);
           setWorkOrders(nextLocalWorkOrders);

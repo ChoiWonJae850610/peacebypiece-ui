@@ -11,7 +11,12 @@ import {
 } from "@/lib/workorder/actionFlow";
 import { applySharedInspectionComplete, applySharedInventoryAdjustment } from "@/lib/workorder/reorder/inventory";
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
-import { persistWorkOrderWithHistory, persistWorkOrdersWithHistory } from "./workorderRepositoryMutations";
+import {
+  getSelectedWorkOrderForSaveState,
+  persistWorkOrderWithHistory,
+  persistWorkOrdersWithHistory,
+  replaceWorkOrderById,
+} from "./workorderRepositoryMutations";
 import { findPartnerIdByNameAndTypes } from "@/lib/admin/partnerMasterPersistence";
 import { createReinspectionRequestHistoryLog, createWorkOrderKindChangeHistoryLog } from "@/lib/workorder/history/builders";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
@@ -83,9 +88,7 @@ export function useWorkOrderWorkflowActions({
   }, [workOrders]);
 
   const syncSelectedWorkOrderSaveState = useCallback((nextWorkOrders: WorkOrder[]) => {
-    const nextSelectedWorkOrder = nextWorkOrders.find((item) => item.id === selectedId)
-      ?? nextWorkOrders.find((item) => item.id === workOrdersRef.current[0]?.id)
-      ?? null;
+    const nextSelectedWorkOrder = getSelectedWorkOrderForSaveState(nextWorkOrders, selectedId);
 
     setLastSavedAt(nextSelectedWorkOrder?.lastSavedAt ?? null);
     setSaveStatus("saved");
@@ -107,7 +110,7 @@ export function useWorkOrderWorkflowActions({
         workOrder: result.nextWorkOrder,
         historyLogs: result.historyLogs,
       });
-      const persistedWorkOrders = workOrdersRef.current.map((item) => (item.id === workOrder.id ? persistedWorkOrder : item));
+      const persistedWorkOrders = replaceWorkOrderById(workOrdersRef.current, workOrder.id, persistedWorkOrder);
 
       setWorkOrders(persistedWorkOrders);
       setPersistedWorkOrders(persistedWorkOrders);
@@ -152,7 +155,7 @@ export function useWorkOrderWorkflowActions({
         workOrder: result.nextWorkOrder,
         historyLogs: result.historyLogs,
       });
-      const persistedWorkOrders = workOrdersRef.current.map((item) => (item.id === workOrder.id ? persistedWorkOrder : item));
+      const persistedWorkOrders = replaceWorkOrderById(workOrdersRef.current, workOrder.id, persistedWorkOrder);
 
       setInventoryEditorOpen(false);
       setWorkOrders(persistedWorkOrders);
@@ -294,7 +297,7 @@ export function useWorkOrderWorkflowActions({
         workOrder: result.nextWorkOrder,
         historyLogs: result.historyLogs,
       });
-      const persistedWorkOrders = nextWorkOrders.map((item) => (item.id === workOrder.id ? nextPersistedWorkOrder : item));
+      const persistedWorkOrders = replaceWorkOrderById(nextWorkOrders, workOrder.id, nextPersistedWorkOrder);
       setWorkOrders(persistedWorkOrders);
       setPersistedWorkOrders(persistedWorkOrders);
       syncSelectedWorkOrderSaveState(persistedWorkOrders);

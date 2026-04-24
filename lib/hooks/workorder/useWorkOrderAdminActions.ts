@@ -6,7 +6,7 @@ import { buildUserRoleState } from "@/lib/constants/roles";
 import { canEditManagerInWorkflow, isWorkflowStateReviewLocked } from "@/lib/constants/workorderStates";
 import { buildManagerChangeResult } from "@/lib/workorder/actionFlow";
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
-import { persistUsersWithPermissions, persistWorkOrderWithHistory } from "./workorderRepositoryMutations";
+import { persistUsersWithPermissions, persistWorkOrderWithHistory, replaceWorkOrderById } from "./workorderRepositoryMutations";
 import type { RoleType } from "@/types/permission";
 import type { ChangeManagerInput } from "./useWorkOrderActionTypes";
 import type { AdminActionBaseParams } from "./useWorkOrderActionTypes";
@@ -83,7 +83,7 @@ export function useWorkOrderAdminActions({
         },
         historyLogs: result.historyLogs,
       }).then((persistedWorkOrder) => {
-        setPersistedWorkOrders((prev) => prev.map((item) => (item.id === workOrder.id ? persistedWorkOrder : item)));
+        setPersistedWorkOrders((prev) => replaceWorkOrderById(prev, workOrder.id, persistedWorkOrder));
         setWorkOrders((prev) => prev.map((item) => (
           item.id === workOrder.id
             ? { ...item, managerId: persistedWorkOrder.managerId, manager: persistedWorkOrder.manager, lastSavedAt: persistedWorkOrder.lastSavedAt }
