@@ -116,7 +116,7 @@ export function useWorkOrderCoreState() {
   const setWorkOrders = useCallback(createStabilizedWorkOrdersSetter(setWorkOrdersState), []);
 
   const selectedWorkOrder = useMemo(
-    () => workOrders.find((item) => item.id === selectedId) ?? workOrders[0] ?? createFallbackWorkOrder(),
+    () => (selectedId ? workOrders.find((item) => item.id === selectedId) : null) ?? createFallbackWorkOrder(),
     [workOrders, selectedId],
   );
 
@@ -126,8 +126,8 @@ export function useWorkOrderCoreState() {
   );
 
   useEffect(() => {
-    const currentSelectedWorkOrder = workOrders.find((item) => item.id === selectedId) ?? workOrders[0] ?? null;
-    const persistedSelectedWorkOrder = persistedWorkOrders.find((item) => item.id === selectedId) ?? persistedWorkOrders[0] ?? null;
+    const currentSelectedWorkOrder = selectedId ? workOrders.find((item) => item.id === selectedId) ?? null : null;
+    const persistedSelectedWorkOrder = selectedId ? persistedWorkOrders.find((item) => item.id === selectedId) ?? null : null;
     const isDirty = hasWorkOrderDraftChanges(currentSelectedWorkOrder, persistedSelectedWorkOrder);
 
     setSaveStatus((previous) => {

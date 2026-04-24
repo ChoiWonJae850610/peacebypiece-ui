@@ -33,6 +33,28 @@ export const MOBILE_INFO_ROW_CLASS = "grid min-w-0 grid-cols-[minmax(72px,88px)_
 export const MOBILE_LABEL_CLASS = "min-w-0 text-left text-[11px] leading-5 tracking-tight text-stone-500";
 export const MOBILE_VALUE_WRAPPER_CLASS = "flex min-w-0 max-w-full items-center justify-end overflow-hidden text-right";
 
+export function CollapseToggleButton({
+  open,
+  onToggle,
+  label,
+}: {
+  open: boolean;
+  onToggle: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-label={label}
+      aria-expanded={open}
+      className="pbp-touch-target pbp-interactive-button inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-white text-sm text-stone-600 shadow-sm transition-colors hover:border-stone-300 hover:bg-stone-50 active:bg-stone-100"
+    >
+      <span aria-hidden="true" className={`inline-flex transition-transform ${open ? "rotate-180" : "rotate-0"}`}>▾</span>
+    </button>
+  );
+}
+
 export function SectionHeader({
   title,
   summary,
@@ -52,20 +74,17 @@ export function SectionHeader({
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className="pbp-touch-target pbp-interactive-button flex min-w-0 flex-1 items-start justify-between gap-3 rounded-xl px-0.5 py-0.5 text-left hover:bg-transparent active:bg-transparent"
+        className="pbp-touch-target pbp-interactive-button min-w-0 flex-1 rounded-xl px-0.5 py-0.5 text-left hover:bg-transparent active:bg-transparent"
       >
-        <div className="min-w-0 flex-1 overflow-hidden">
+        <div className="min-w-0 overflow-hidden">
           <div className="text-sm font-semibold leading-5 text-stone-900">{title}</div>
           <div className="mt-0.5 block min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-[11px] leading-4 text-stone-500 md:text-xs">{summary}</div>
         </div>
-        <span
-          aria-hidden="true"
-          className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition-transform ${open ? "rotate-180" : "rotate-0"}`}
-        >
-          ▾
-        </span>
       </button>
-      {rightSlot ? <div className="shrink-0">{rightSlot}</div> : null}
+      <div className="flex shrink-0 items-center gap-2">
+        {rightSlot ? <div className="shrink-0">{rightSlot}</div> : null}
+        <CollapseToggleButton open={open} onToggle={onToggle} label={`${title} 열기/접기`} />
+      </div>
     </div>
   );
 }

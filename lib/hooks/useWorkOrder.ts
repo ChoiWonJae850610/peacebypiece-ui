@@ -70,15 +70,17 @@ export function useWorkOrder() {
       }
       return;
     }
+    if (coreState.selectedId === "") {
+      coreState.setLastSavedAt(null);
+      coreState.setSaveStatus("saved");
+      return;
+    }
+
     const selectedVisible = derivedState.workOrders.some((item) => item.id === coreState.selectedId);
     if (selectedVisible) return;
 
-    const nextSelectedId = derivedState.workOrders[0]?.id;
-    if (!nextSelectedId) return;
-    const nextSelectedWorkOrder = coreState.workOrders.find((item) => item.id === nextSelectedId);
-
-    coreState.setSelectedId(nextSelectedId);
-    coreState.setLastSavedAt(nextSelectedWorkOrder?.lastSavedAt ?? null);
+    coreState.setSelectedId("");
+    coreState.setLastSavedAt(null);
     coreState.setSaveStatus("saved");
   }, [
     coreState.selectedId,
@@ -93,12 +95,19 @@ export function useWorkOrder() {
 
   const handleSelectWorkOrder = useCallback(
     (id: string) => {
+      if (coreState.selectedId === id) {
+        coreState.setSelectedId("");
+        coreState.setLastSavedAt(null);
+        coreState.setSaveStatus("saved");
+        return;
+      }
+
       coreState.setSelectedId(id);
       const next = coreState.workOrders.find((item) => item.id === id);
       coreState.setLastSavedAt(next?.lastSavedAt ?? null);
       coreState.setSaveStatus("saved");
     },
-    [coreState.setLastSavedAt, coreState.setSaveStatus, coreState.setSelectedId, coreState.workOrders],
+    [coreState.selectedId, coreState.setLastSavedAt, coreState.setSaveStatus, coreState.setSelectedId, coreState.workOrders],
   );
 
   const handleOpenManagerAssignModal = useCallback(() => {
