@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getR2Object } from "@/lib/storage/r2/r2Client";
 import { isR2Configured } from "@/lib/storage/r2/r2Config";
+import { createR2WorkerFileUrl, isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
 
 export const runtime = "nodejs";
 
@@ -20,13 +21,23 @@ function createReadableStream(body: Buffer | Uint8Array | ArrayBuffer): Readable
 }
 
 export async function GET(request: NextRequest) {
-  if (!isR2Configured()) {
-    return NextResponse.json({ error: "R2_NOT_CONFIGURED" }, { status: 503 });
-  }
-
   const key = request.nextUrl.searchParams.get("key")?.trim() ?? "";
   if (!key || !isSafeStorageKey(key)) {
     return NextResponse.json({ error: "INVALID_STORAGE_KEY" }, { status: 400 });
+  }
+
+  if (isR2WorkerUploadConfigured()) {
+    try {
+      const workerFile = createR2WorkerFileUrl({ key });
+      return NextResponse.redirect(workerFile.url, { status: 307 });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Worker file URL creation failed.";
+      return NextResponse.json({ error: "WORKER_FILE_URL_CREATE_FAILED", message }, { status: 500 });
+    }
+  }
+
+  if (!isR2Configured()) {
+    return NextResponse.json({ error: "R2_NOT_CONFIGURED" }, { status: 503 });
   }
 
   try {
