@@ -1,5 +1,5 @@
 import { mapPartnerEntityToStorageRecord, mapPartnerStorageRecordsToEntities, normalizePartnerStorageRecords } from "@/lib/admin/partnerMaster.storage";
-import { mockPartnerRepository } from "@/lib/repositories/mockPartnerRepository";
+import { mockPartnerRepository } from "@/lib/partners/mockPartnerRepository";
 import { persistPartners } from "@/lib/repositories/partnerPersistence";
 import type { Partner, PartnerDraft } from "@/types/partner";
 
