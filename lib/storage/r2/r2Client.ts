@@ -1,5 +1,7 @@
 import "server-only";
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { NodeHttpHandler } from "@smithy/node-http-handler";
+import https from "node:https";
 import { getR2Config, type R2Config } from "@/lib/storage/r2/r2Config";
 
 export type R2ObjectPutInput = {
@@ -72,10 +74,21 @@ async function arrayBufferFromBody(body: unknown): Promise<ArrayBuffer> {
 }
 
 function createR2Client(config: R2Config): S3Client {
+  const endpoint = normalizeEndpoint(config.endpoint);
+  const endpointHost = new URL(endpoint).hostname;
+
   return new S3Client({
     region: "auto",
-    endpoint: normalizeEndpoint(config.endpoint),
+    endpoint,
     forcePathStyle: true,
+    maxAttempts: 1,
+    requestHandler: new NodeHttpHandler({
+      httpsAgent: new https.Agent({
+        keepAlive: false,
+        minVersion: "TLSv1.2",
+        servername: endpointHost,
+      }),
+    }),
     credentials: {
       accessKeyId: config.accessKeyId,
       secretAccessKey: config.secretAccessKey,
