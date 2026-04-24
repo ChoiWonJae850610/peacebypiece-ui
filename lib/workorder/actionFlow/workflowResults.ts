@@ -64,8 +64,6 @@ export function buildFactoryOrderRequestResult(payload: {
   text?: ActionFlowText;
   historyText?: ActionFlowHistoryText;
 }): WorkOrderActionFlowResult | null {
-  if (payload.workOrder.factoryOrderRequest) return null;
-
   return {
     nextWorkOrder: requestFactoryOrderForWorkOrder(payload.workOrder, payload.input),
     historyLogs: [

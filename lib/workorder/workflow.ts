@@ -77,8 +77,7 @@ export function canRequestFactoryOrder(payload: {
   currentWorkflowState: WorkflowState;
 }) {
   return isAdminRole(payload.currentRoles)
-    && isWorkflowStateAtLeast(payload.currentWorkflowState, "review_completed")
-    && !payload.workOrder.factoryOrderRequest;
+    && isWorkflowStateAtLeast(payload.currentWorkflowState, "review_completed");
 }
 
 function getWorkOrderSubmissionValidationMessage(workOrder: WorkOrder, text: {

@@ -364,6 +364,7 @@ export function cloneWorkOrderForReorder(
     createdById: payload.createdById,
     createdByRole: payload.createdByRole,
     workflowState: "draft",
+    factoryOrderRequest: null,
     inventoryStatus: sourceWorkOrder.inventoryQuantity > 0 ? INVENTORY_STATUS.normal : sourceWorkOrder.inventoryStatus,
     orderEntries: cloneOrderEntries(sourceWorkOrder.orderEntries, nextOrderType),
     materials: cloneMaterials(sourceWorkOrder.materials),
