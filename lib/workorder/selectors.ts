@@ -50,6 +50,19 @@ export function isWorkOrderSideDraftEditable(workflowState: WorkOrder["workflowS
   return !isWorkflowStateAtLeast(workflowState, "review_completed");
 }
 
+export function canEditWorkOrderAttachments(workflowState: WorkOrder["workflowState"], canSeeAttachments: boolean, canManageAttachments: boolean) {
+  return canSeeAttachments && canManageAttachments && isWorkOrderSideDraftEditable(workflowState);
+}
+
+export function canEditWorkOrderMemo(workflowState: WorkOrder["workflowState"]) {
+  return isWorkOrderSideDraftEditable(workflowState);
+}
+
+export function canRenameWorkOrderTitle(currentUser: UserProfile, workflowState: WorkOrder["workflowState"]) {
+  if (isAdminRole(currentUser)) return true;
+  return isDesignerRole(currentUser) && canEditBeforeOrder(workflowState);
+}
+
 export function filterWorkOrderList(workOrders: WorkOrderListItem[], workflowStateById: Record<string, string>, searchQuery: string) {
   const normalized = searchQuery.trim().toLowerCase();
   if (!normalized) {

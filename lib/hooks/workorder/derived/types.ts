@@ -26,6 +26,8 @@ export type WorkOrderDerivedState = {
   isReviewRequestLocked: boolean;
   canEditSideDraftContent: boolean;
   canUploadOfficialAttachments: boolean;
+  canEditMemo: boolean;
+  canRenameTitle: boolean;
   workOrders: WorkOrderListItem[];
   hasVisibleWorkOrders: boolean;
   hasActiveSelection: boolean;

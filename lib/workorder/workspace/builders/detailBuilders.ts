@@ -1,3 +1,4 @@
+import { formatRecentKstDateTime } from "@/lib/workorder/presentation/dateTimePresentation";
 import { buildAttachmentPanelSections } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
 import type { DetailProps, DetailViewModelArgs, SidePanelProps, SidePanelViewModelArgs } from "@/lib/workorder/workspace/viewModelTypes";
 
@@ -23,7 +24,7 @@ export function buildDetailProps({
   basicInfoOpen,
   materialOpen,
   outsourcingOpen,
-  isAdmin,
+  canRenameTitle,
   isReviewRequestLocked,
   visibleStages,
   availableActions,
@@ -43,11 +44,11 @@ export function buildDetailProps({
     isEmpty: !hasVisibleWorkOrders,
     currentWorkflowState,
     saveStatus,
-    lastSavedAt,
+    lastSavedAt: formatRecentKstDateTime(lastSavedAt),
     currentInventoryQuantity,
     currentUserName: currentUser.name,
     currentUserRole: currentRole,
-    canRenameTitle: isAdmin,
+    canRenameTitle,
     canEditInventory: canOpenInventoryEditor,
     canChangeManager,
     onOpenManagerAssignModal,
@@ -83,7 +84,7 @@ export function buildSidePanelProps({
   hasVisibleWorkOrders,
   canSeeAttachments,
   canUploadOfficialAttachments,
-  canEditSideDraftContent,
+  canEditMemo,
   designAttachments,
   officialAttachments,
   currentRole,
@@ -100,7 +101,7 @@ export function buildSidePanelProps({
     isEmpty: !hasVisibleWorkOrders,
     canSeeAttachments,
     canManageAttachments: canUploadOfficialAttachments,
-    canEditMemo: canEditSideDraftContent,
+    canEditMemo,
     attachmentSections: buildAttachmentPanelSections({
       designTitle: i18n.workorder.ui.attachmentPanel.designTitle,
       designEmptyText: i18n.workorder.ui.attachmentPanel.designEmpty,

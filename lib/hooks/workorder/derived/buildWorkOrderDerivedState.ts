@@ -16,6 +16,9 @@ import {
   getAttachmentById,
   getDesignAttachments,
   getOfficialAttachments,
+  canEditWorkOrderAttachments,
+  canEditWorkOrderMemo,
+  canRenameWorkOrderTitle,
   isWorkOrderSideDraftEditable,
 } from "@/lib/workorder/selectors";
 import { getSharedInventorySnapshot } from "@/lib/workorder/reorder/inventory";
@@ -50,13 +53,15 @@ export function buildWorkOrderDerivedState({
   const visibleStages = VISIBLE_STAGES;
   const isReviewRequestLocked = isWorkflowStateReviewLocked(currentWorkflowState, isAdmin);
   const canEditSideDraftContent = isWorkOrderSideDraftEditable(currentWorkflowState);
+  const canEditMemo = canEditWorkOrderMemo(currentWorkflowState);
+  const canRenameTitle = canRenameWorkOrderTitle(currentUser, currentWorkflowState);
   const canSeeAttachments = currentUser.permissions.canSeeAttachments;
   const attachmentCollectionPermissions = getAttachmentCollectionPermissionState({
     canSeeAttachments,
     canManageAttachments: canUploadOfficialAttachmentsByRoles(currentRoles),
     isReviewRequestLocked: !canEditSideDraftContent,
   });
-  const canUploadOfficialAttachments = attachmentCollectionPermissions.canUpload;
+  const canUploadOfficialAttachments = canEditWorkOrderAttachments(currentWorkflowState, canSeeAttachments, attachmentCollectionPermissions.canUpload);
   const scopedWorkOrders = filterWorkOrdersByUserScope(workOrders, workflowStateById, currentUser);
   const workOrderList = scopedWorkOrders.map(createWorkOrderListItem);
   const filteredWorkOrderList = filterWorkOrderList(workOrderList, workflowStateById, searchQuery);
@@ -93,6 +98,8 @@ export function buildWorkOrderDerivedState({
     isReviewRequestLocked,
     canEditSideDraftContent,
     canUploadOfficialAttachments,
+    canEditMemo,
+    canRenameTitle,
     workOrders: filteredWorkOrderList,
     hasVisibleWorkOrders: filteredWorkOrderList.length > 0,
     hasActiveSelection,

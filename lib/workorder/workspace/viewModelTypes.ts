@@ -46,6 +46,8 @@ export type BuildWorkspaceViewModelArgs = {
   canCreateWorkOrder: boolean;
   canSeeAttachments: boolean;
   canUploadOfficialAttachments: boolean;
+  canEditMemo: boolean;
+  canRenameTitle: boolean;
   isReviewRequestLocked: boolean;
   canEditSideDraftContent: boolean;
   canChangeManager: boolean;
@@ -130,6 +132,8 @@ export type BaseWorkspaceViewModelArgs = {
   canCreateWorkOrder: boolean;
   canSeeAttachments: boolean;
   canUploadOfficialAttachments: boolean;
+  canEditMemo: boolean;
+  canRenameTitle: boolean;
   isAdmin: boolean;
   isReviewRequestLocked: boolean;
   canEditSideDraftContent: boolean;

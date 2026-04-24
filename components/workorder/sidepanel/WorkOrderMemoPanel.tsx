@@ -82,12 +82,13 @@ function MemoThreadCard({
         {replyComposerOpen ? (
           <div className="rounded-xl border border-stone-200 bg-stone-50 p-2.5">
             <textarea
+              rows={1}
               value={replyDraft}
               disabled={!canEditMemo}
               onChange={(event) => setReplyDraft(event.target.value)}
               onKeyDown={onReplyKeyDown}
               placeholder={ui.memo.replyPlaceholder}
-              className="pbp-field-interaction min-h-[36px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-400 md:text-sm"
+              className="pbp-field-interaction h-[32px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-400 md:text-sm"
             />
             <div className={isMobile ? "mt-2" : "mt-2 flex justify-end"}>
               <button type="button" onClick={submitReply} disabled={!canEditMemo || !replyDraft.trim()} className={isMobile ? "pbp-interactive-button w-full rounded-full bg-stone-900 px-3 py-2 text-xs font-semibold text-white hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:opacity-50" : "pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:opacity-50"}>{ui.memo.submit}</button>
@@ -152,12 +153,13 @@ export default function WorkOrderMemoPanel({
       <div className={isMobile ? "mt-2.5 rounded-xl border border-stone-200 bg-stone-50 p-2" : isTablet ? "mt-3 rounded-xl border border-stone-200 bg-stone-50 p-2.5" : "mt-3 rounded-xl border border-stone-200 bg-stone-50 p-2.5"}>
         <div className="text-[11px] text-stone-500">{currentUserName} · {getRoleDisplayLabel(currentUserRole, i18n)}</div>
         <textarea
+          rows={1}
           value={threadDraft}
           disabled={!canEditMemo}
           onChange={(event) => setThreadDraft(event.target.value)}
           onKeyDown={onThreadKeyDown}
           placeholder={ui.memo.threadPlaceholder}
-          className={isMobile ? "pbp-field-interaction mt-2 min-h-[34px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-400" : "pbp-field-interaction mt-2 min-h-[28px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-400 md:text-sm"}
+          className={isMobile ? "pbp-field-interaction mt-2 h-[34px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-400" : "pbp-field-interaction mt-2 h-[32px] w-full resize-none rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-400 md:text-sm"}
         />
         <div className={isMobile ? "mt-2" : "mt-2 flex justify-end"}>
           <button type="button" onClick={submitThread} disabled={!canEditMemo || !threadDraft.trim()} className={isMobile ? "pbp-interactive-button w-full rounded-full bg-stone-900 px-3 py-2 text-xs font-semibold text-white hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:opacity-50" : "pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:opacity-50"}>{ui.memo.submit}</button>
