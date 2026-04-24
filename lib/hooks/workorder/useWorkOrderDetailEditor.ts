@@ -19,6 +19,7 @@ import {
   toOutsourcingPatch,
 } from "@/lib/hooks/workorder/detailEditor/itemMutations";
 import { useWorkOrderMaterialsEditor } from "@/lib/hooks/workorder/detailEditor/useWorkOrderMaterialsEditor";
+import { usePartnerFactoryOptions } from "@/lib/hooks/partners/usePartnerFactoryOptions";
 import { recalculateOutsourcing } from "@/lib/workorder/detail/detailCalculations";
 import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import { getRepresentativeOrderEntry } from "@/lib/workorder/orderSubmission";
@@ -82,6 +83,8 @@ export function useWorkOrderDetailEditor({
   const [editingValue, setEditingValue] = useState("");
   const [inspectionModalOpen, setInspectionModalOpen] = useState(false);
 
+  const partnerFactoryOptions = usePartnerFactoryOptions();
+
   const {
     materialItems,
     commitMaterialEdit,
@@ -128,7 +131,7 @@ export function useWorkOrderDetailEditor({
     [materialOpen, outsourcingOpen],
   );
 
-  const factoryOptions = useMemo(() => selectFactoryOptions(orderItems), [orderItems]);
+  const factoryOptions = useMemo(() => selectFactoryOptions(orderItems, partnerFactoryOptions), [orderItems, partnerFactoryOptions]);
 
   const materialVendorOptionsById = useMemo(
     () => selectMaterialVendorOptionsById(materialItems),

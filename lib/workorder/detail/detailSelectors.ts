@@ -19,10 +19,10 @@ export function selectSeededFactoryOptions() {
   );
 }
 
-export function selectFactoryOptions(orderItems: OrderEntryState[]): string[] {
+export function selectFactoryOptions(orderItems: OrderEntryState[], partnerFactoryOptions: readonly string[] = []): string[] {
   return orderItems.reduce<string[]>(
     (options, item) => appendOption(options, item.factory),
-    selectSeededFactoryOptions(),
+    mergeOptionLists(selectSeededFactoryOptions(), partnerFactoryOptions),
   );
 }
 
