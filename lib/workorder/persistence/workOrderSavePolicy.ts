@@ -5,6 +5,9 @@ export type WorkOrderSaveTarget =
   | "memo"
   | "design"
   | "attachment"
+  | "workOrderTitle"
+  | "assignee"
+  | "inventory"
   | "factory"
   | "material"
   | "subsidiary"
@@ -15,6 +18,9 @@ export const WORK_ORDER_SAVE_POLICY: Record<WorkOrderSaveTarget, WorkOrderSaveTi
   memo: "immediate",
   design: "immediate",
   attachment: "immediate",
+  workOrderTitle: "immediate",
+  assignee: "immediate",
+  inventory: "immediate",
   factory: "action",
   material: "action",
   subsidiary: "action",

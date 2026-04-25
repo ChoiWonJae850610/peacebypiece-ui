@@ -5,6 +5,8 @@ const CORS_HEADERS = {
   "Access-Control-Max-Age": "3600",
 };
 
+const TEXT_ENCODER = new TextEncoder();
+
 function json(data, init = {}) {
   return new Response(JSON.stringify(data), {
     ...init,
@@ -15,8 +17,79 @@ function json(data, init = {}) {
     },
   });
 }
+
 function isSafeStorageKey(key) {
   return /^workorders\/[^/]+\/(design|attachments|memos)\/[^/]+$/i.test(key) && !key.includes("..") && !key.startsWith("/");
+}
+
+function readSecret(env) {
+  return env.R2_WORKER_UPLOAD_SECRET || env.WORKER_UPLOAD_SECRET || env.WORKER_SECRET || "";
+}
+
+function readExpires(url) {
+  const value = Number(url.searchParams.get("expires") || "0");
+  return Number.isFinite(value) ? value : 0;
+}
+
+function readContentType(url) {
+  return url.searchParams.get("contentType") || "application/octet-stream";
+}
+
+function createSignaturePayload(method, key, contentType, expires) {
+  if (method === "PUT") return ["PUT", key, contentType || "application/octet-stream", String(expires)].join("\n");
+  if (method === "DELETE") return ["DELETE", key, String(expires)].join("\n");
+  return ["GET", key, String(expires)].join("\n");
+}
+
+function toHex(buffer) {
+  return [...new Uint8Array(buffer)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function safeEqual(a, b) {
+  if (typeof a !== "string" || typeof b !== "string" || a.length !== b.length) return false;
+  let diff = 0;
+  for (let index = 0; index < a.length; index += 1) {
+    diff |= a.charCodeAt(index) ^ b.charCodeAt(index);
+  }
+  return diff === 0;
+}
+
+async function createExpectedSignature({ secret, method, key, contentType, expires }) {
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw",
+    TEXT_ENCODER.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const payload = createSignaturePayload(method, key, contentType, expires);
+  const signature = await crypto.subtle.sign("HMAC", cryptoKey, TEXT_ENCODER.encode(payload));
+  return toHex(signature);
+}
+
+async function verifyRequest({ request, env, url, key, contentType }) {
+  const secret = readSecret(env);
+  if (!secret) return { ok: false, status: 503, error: "WORKER_SECRET_NOT_CONFIGURED" };
+
+  const expires = readExpires(url);
+  const signature = url.searchParams.get("signature") || "";
+  if (!expires || Math.floor(Date.now() / 1000) > expires) {
+    return { ok: false, status: 401, error: "WORKER_URL_EXPIRED" };
+  }
+  if (!signature) return { ok: false, status: 401, error: "WORKER_SIGNATURE_REQUIRED" };
+
+  const expected = await createExpectedSignature({
+    secret,
+    method: request.method,
+    key,
+    contentType,
+    expires,
+  });
+
+  if (!safeEqual(signature, expected)) {
+    return { ok: false, status: 401, error: "WORKER_SIGNATURE_INVALID" };
+  }
+  return { ok: true };
 }
 
 function createFileHeaders(object) {
@@ -46,10 +119,15 @@ export default {
 
     const url = new URL(request.url);
     const key = url.searchParams.get("key") || "";
-    const contentType = url.searchParams.get("contentType") || "application/octet-stream";
+    const contentType = readContentType(url);
 
     if (!key || !isSafeStorageKey(key)) {
       return json({ error: "INVALID_WORKER_FILE_REQUEST" }, { status: 400 });
+    }
+
+    const verification = await verifyRequest({ request, env, url, key, contentType });
+    if (!verification.ok) {
+      return json({ error: verification.error }, { status: verification.status });
     }
 
     if (request.method === "PUT") {

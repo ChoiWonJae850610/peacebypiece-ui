@@ -280,7 +280,7 @@ export function useWorkOrderAttachments({
     try {
       await deleteMemoInDb({ memoId: threadId, target: "thread" });
       const deletedAt = new Date().toISOString();
-      const hasVisibleReplies = (targetThread.replies ?? []).some((reply) => reply.isVisible !== false);
+      const hasVisibleReplies = (targetThread.replies ?? []).some((reply) => reply.isVisible !== false && !reply.deletedAt);
       setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
         ? {
             ...item,
@@ -344,10 +344,12 @@ export function useWorkOrderAttachments({
             memoThreads: (item.memoThreads ?? []).map((thread) => {
               if (thread.id !== threadId) return thread;
 
-              const nextReplies = (thread.replies ?? []).map((reply) => reply.id === replyId
-                ? { ...reply, content: "삭제된 댓글입니다.", attachmentIds: [], deletedAt, isVisible: true }
-                : reply);
-              const hasVisibleReplies = nextReplies.some((reply) => reply.isVisible !== false);
+              const nextReplies = (thread.replies ?? [])
+                .map((reply) => reply.id === replyId
+                  ? { ...reply, attachmentIds: [], deletedAt, isVisible: false }
+                  : reply)
+                .filter((reply) => reply.isVisible !== false && !reply.deletedAt);
+              const hasVisibleReplies = nextReplies.length > 0;
               const shouldHideDeletedThread = Boolean(thread.deletedAt) && !hasVisibleReplies;
 
               return {

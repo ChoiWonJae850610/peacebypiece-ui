@@ -53,19 +53,24 @@ function mapAttachmentRow(row: AttachmentRow): Attachment {
   };
 }
 
+function isActiveMemoRow(row: Pick<MemoRow, "is_active" | "deleted_at">): boolean {
+  return row.is_active !== false && !row.deleted_at;
+}
+
 function mapMemoThreadRow(row: MemoRow, replies: MemoReply[]): MemoThread {
   const authorName = row.author_id ?? "시스템";
   const hasVisibleReplies = replies.some((reply) => reply.isVisible !== false);
+  const isDeletedThread = Boolean(row.deleted_at);
 
   return {
     id: row.id,
     authorId: row.author_id ?? "system",
     authorName,
     authorRole: "admin",
-    content: row.body,
+    content: isDeletedThread && hasVisibleReplies ? "삭제된 메모입니다." : row.body,
     createdAt: toIsoString(row.created_at),
     deletedAt: row.deleted_at,
-    isVisible: row.is_active !== false || hasVisibleReplies,
+    isVisible: isActiveMemoRow(row) || hasVisibleReplies,
     replies,
   };
 }
@@ -81,7 +86,7 @@ function mapMemoReplyRow(row: MemoRow): MemoReply {
     content: row.body,
     createdAt: toIsoString(row.created_at),
     deletedAt: row.deleted_at,
-    isVisible: row.is_active,
+    isVisible: isActiveMemoRow(row),
   };
 }
 
@@ -99,12 +104,15 @@ function mapMemoRows(rows: MemoRow[]): MemoThread[] {
     }
   }
 
-  return threadRows.map((thread) => {
-    const replies = (replyRowsByParentId.get(thread.id) ?? []).map(mapMemoReplyRow);
-    return mapMemoThreadRow(thread, replies);
-  });
+  return threadRows
+    .map((thread) => {
+      const replies = (replyRowsByParentId.get(thread.id) ?? [])
+        .map(mapMemoReplyRow)
+        .filter((reply) => reply.isVisible !== false);
+      return mapMemoThreadRow(thread, replies);
+    })
+    .filter((thread) => thread.isVisible !== false);
 }
-
 function mapAttachmentInput(input: CreateAttachmentRecordInput) {
   return {
     order_id: input.order_id,
@@ -198,14 +206,16 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
              FROM memos
             WHERE order_id = $1
               AND (
-                is_active = true
-                OR (parent_id IS NULL AND EXISTS (
+                (parent_id IS NULL AND is_active = true AND deleted_at IS NULL)
+                OR (parent_id IS NULL AND deleted_at IS NOT NULL AND EXISTS (
                   SELECT 1
                     FROM memos child
                    WHERE child.parent_id = memos.id
                      AND child.order_id = $1
+                     AND child.is_active = true
+                     AND child.deleted_at IS NULL
                 ))
-                OR (parent_id IS NOT NULL AND deleted_at IS NOT NULL)
+                OR (parent_id IS NOT NULL AND is_active = true AND deleted_at IS NULL)
               )
             ORDER BY created_at ASC`,
           [workOrderId],
@@ -375,11 +385,23 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
       await queryDb(
         `UPDATE memos
             SET is_active = CASE
-                  WHEN EXISTS (SELECT 1 FROM memos child WHERE child.parent_id = memos.id) THEN true
+                  WHEN EXISTS (
+                    SELECT 1
+                      FROM memos child
+                     WHERE child.parent_id = memos.id
+                       AND child.is_active = true
+                       AND child.deleted_at IS NULL
+                  ) THEN true
                   ELSE false
                 END,
                 body = CASE
-                  WHEN EXISTS (SELECT 1 FROM memos child WHERE child.parent_id = memos.id) THEN '삭제된 메모입니다.'
+                  WHEN EXISTS (
+                    SELECT 1
+                      FROM memos child
+                     WHERE child.parent_id = memos.id
+                       AND child.is_active = true
+                       AND child.deleted_at IS NULL
+                  ) THEN '삭제된 메모입니다.'
                   ELSE body
                 END,
                 deleted_at = COALESCE(deleted_at, now()),
@@ -391,13 +413,33 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
     },
     softDeleteMemoReply: async (replyId) => {
       await queryDb(
-        `UPDATE memos
-            SET is_active = true,
-                body = '삭제된 댓글입니다.',
-                deleted_at = COALESCE(deleted_at, now()),
-                updated_at = now()
-          WHERE id = $1
-            AND parent_id IS NOT NULL`,
+        `WITH deleted_reply AS (
+           UPDATE memos
+              SET is_active = false,
+                  deleted_at = COALESCE(deleted_at, now()),
+                  updated_at = now()
+            WHERE id = $1
+              AND parent_id IS NOT NULL
+            RETURNING parent_id
+         )
+         UPDATE memos parent
+            SET is_active = CASE
+                  WHEN parent.deleted_at IS NOT NULL
+                   AND NOT EXISTS (
+                    SELECT 1
+                      FROM memos child
+                     WHERE child.parent_id = parent.id
+                       AND child.is_active = true
+                       AND child.deleted_at IS NULL
+                  ) THEN false
+                  ELSE parent.is_active
+                END,
+                updated_at = CASE
+                  WHEN parent.deleted_at IS NOT NULL THEN now()
+                  ELSE parent.updated_at
+                END
+           FROM deleted_reply
+          WHERE parent.id = deleted_reply.parent_id`,
         [replyId],
       );
     },
