@@ -28,12 +28,16 @@ export default function WorkOrderAttachmentPanel({
   onOpenAttachmentPicker: () => void;
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;
-  onSetPrimaryDesignAttachment: (attachmentId: string) => void;
+  onSetPrimaryDesignAttachment?: (attachmentId: string) => void;
   variant?: "desktop" | "tablet" | "mobile";
 }) {
   const { i18n } = useI18n();
   const ui = i18n.workorder.ui;
   const attachmentPolicyText = WORK_ORDER_ATTACHMENT_POLICY.messages;
+  const handleSetPrimaryDesignAttachment = (attachmentId: string) => {
+    if (typeof onSetPrimaryDesignAttachment !== "function") return;
+    onSetPrimaryDesignAttachment(attachmentId);
+  };
 
   if (!canSeeAttachments) return null;
 
@@ -55,8 +59,8 @@ export default function WorkOrderAttachmentPanel({
               {attachment.canSetPrimary ? (
                 <button
                   type="button"
-                  onClick={() => onSetPrimaryDesignAttachment(attachment.id)}
-                  className={`absolute left-3 top-3 rounded-full border px-2 py-0.5 text-[11px] font-bold ${attachment.isPrimary ? "border-amber-500 bg-amber-100 text-amber-900" : "border-stone-300 bg-white text-stone-600 hover:border-stone-400"}`}
+                  onClick={() => handleSetPrimaryDesignAttachment(attachment.id)}
+                  className={`${isMobile ? "left-9 top-9 h-5 w-5 text-[11px]" : "left-11 top-11 h-6 w-6 text-xs"} absolute z-10 flex items-center justify-center rounded-full border font-bold shadow-sm ${attachment.isPrimary ? "border-amber-500 bg-amber-100 text-amber-900" : "border-stone-300 bg-white text-stone-600 hover:border-stone-400 hover:bg-stone-50"}`}
                   title={attachment.isPrimary ? attachmentPolicyText.primaryTitle : attachmentPolicyText.primaryActionTitle}
                   aria-label={attachment.isPrimary ? `${attachment.name} ${attachmentPolicyText.primaryTitle}` : `${attachment.name} ${attachmentPolicyText.primaryActionTitle}`}
                 >

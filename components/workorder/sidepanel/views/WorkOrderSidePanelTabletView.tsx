@@ -31,6 +31,7 @@ export default function WorkOrderSidePanelTabletView(props: WorkOrderSidePanelPr
           onOpenAttachmentPicker={props.onOpenAttachmentPicker}
           onPreviewAttachment={props.onPreviewAttachment}
           onDeleteAttachment={props.onDeleteAttachment}
+          onSetPrimaryDesignAttachment={props.onSetPrimaryDesignAttachment}
           variant="tablet"
         />
       </SidePanelSectionStack>
