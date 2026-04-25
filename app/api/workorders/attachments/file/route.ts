@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getR2Object } from "@/lib/storage/r2/r2Client";
 import { isR2Configured } from "@/lib/storage/r2/r2Config";
 import { isSupportedWorkOrderAttachmentStorageKey } from "@/lib/storage/r2/r2Keys";
+import { getCachedR2Url, setCachedR2Url } from "@/lib/storage/r2/r2UrlCache";
 import { createR2WorkerFileUrl, isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
 
 export const runtime = "nodejs";
@@ -29,8 +30,20 @@ export async function GET(request: NextRequest) {
 
   if (isR2WorkerUploadConfigured()) {
     try {
+      const cachedUrl = getCachedR2Url({ purpose: "file", key });
+      if (cachedUrl) {
+        return NextResponse.redirect(cachedUrl, { status: 307 });
+      }
+
       const workerFile = createR2WorkerFileUrl({ key });
-      return NextResponse.redirect(workerFile.url, { status: 307 });
+      const cachedWorkerUrl = setCachedR2Url({
+        purpose: "file",
+        key,
+        url: workerFile.url,
+        expiresInSeconds: workerFile.expiresInSeconds,
+      });
+
+      return NextResponse.redirect(cachedWorkerUrl, { status: 307 });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Worker file URL creation failed.";
       return NextResponse.json({ error: "WORKER_FILE_URL_CREATE_FAILED", message }, { status: 500 });
@@ -46,7 +59,7 @@ export async function GET(request: NextRequest) {
     const headers = new Headers();
     if (object.contentType) headers.set("content-type", object.contentType);
     if (object.contentLength) headers.set("content-length", String(object.contentLength));
-    headers.set("cache-control", "private, max-age=300");
+    headers.set("cache-control", "private, max-age=300, stale-while-revalidate=60");
 
     return new NextResponse(createReadableStream(object.body), { status: 200, headers });
   } catch (error) {
