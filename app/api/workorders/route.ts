@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getDatabaseRuntimeErrorCode, getSupportedDatabaseEnvKeys, isDatabaseConfigured } from "@/lib/db/client";
 import { createDbWorkOrder, deleteDbWorkOrder, findAllDbWorkOrders, saveDbWorkOrder, saveDbWorkOrders } from "@/lib/workorder/repository/dbWorkOrderRepository";
-import type { WorkOrder } from "@/types/workorder";
+import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
+import type { Attachment, MemoThread, WorkOrder } from "@/types/workorder";
 
 type DbApiErrorCode =
   | "DB_NOT_CONFIGURED"
@@ -78,6 +79,69 @@ function resolveDbErrorPayload(error: unknown, fallbackMessage: string): { statu
   return { status: 500, payload: { message, code: "DB_REQUEST_FAILED" } };
 }
 
+function mergeAttachments(payloadAttachments: Attachment[] | undefined, dbAttachments: Attachment[]): Attachment[] {
+  const merged = new Map<string, Attachment>();
+
+  for (const attachment of payloadAttachments ?? []) {
+    merged.set(attachment.id, attachment);
+  }
+
+  for (const attachment of dbAttachments) {
+    merged.set(attachment.id, attachment);
+  }
+
+  return Array.from(merged.values());
+}
+
+function mergeMemoThreads(payloadThreads: MemoThread[] | undefined, dbThreads: MemoThread[]): MemoThread[] {
+  const merged = new Map<string, MemoThread>();
+
+  for (const thread of payloadThreads ?? []) {
+    merged.set(thread.id, thread);
+  }
+
+  for (const thread of dbThreads) {
+    merged.set(thread.id, thread);
+  }
+
+  return Array.from(merged.values());
+}
+
+async function hydrateWorkOrdersWithAttachmentMemoSnapshots(workOrders: WorkOrder[]): Promise<WorkOrder[]> {
+  if (workOrders.length === 0) return workOrders;
+
+  try {
+    const repository = await createAttachmentMemoRepository();
+    const info = repository.getRepositoryInfo();
+
+    if (info.mode === "db" && !info.adapterConfigured) {
+      return workOrders;
+    }
+
+    const snapshots = await Promise.all(
+      workOrders.map((workOrder) => repository.listSnapshotByWorkOrderId(workOrder.id)),
+    );
+
+    return workOrders.map((workOrder, index) => {
+      const snapshot = snapshots[index];
+      if (!snapshot) return workOrder;
+
+      return {
+        ...workOrder,
+        attachments: mergeAttachments(workOrder.attachments, snapshot.attachments),
+        memoThreads: mergeMemoThreads(workOrder.memoThreads, snapshot.memoThreads),
+      };
+    });
+  } catch (error) {
+    if (process.env.NODE_ENV !== "production") {
+      const message = error instanceof Error ? error.message : "Attachment snapshot hydration failed.";
+      console.warn("[attachment hydration] " + message);
+    }
+
+    return workOrders;
+  }
+}
+
 function createDbErrorResponse(error: unknown, fallbackMessage: string) {
   const resolved = resolveDbErrorPayload(error, fallbackMessage);
   return NextResponse.json<DbApiErrorPayload>(resolved.payload, { status: resolved.status });
@@ -89,7 +153,7 @@ export async function GET() {
   }
 
   try {
-    const workOrders = await findAllDbWorkOrders();
+    const workOrders = await hydrateWorkOrdersWithAttachmentMemoSnapshots(await findAllDbWorkOrders());
     logDbRequestOutcome("GET", true, "READY", `rows=${workOrders.length}`);
     return NextResponse.json({ workOrders });
   } catch (error) {
