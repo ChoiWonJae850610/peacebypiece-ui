@@ -16,6 +16,7 @@ export function isOfficialAttachment(attachment: Attachment | null | undefined):
   return getAttachmentScope(attachment) === "attachment";
 }
 
+
 export const ATTACHMENT_INPUT_ACCEPT = "image/*,.pdf,application/pdf,*/*";
 
 export function getAttachmentType(file: File | { type?: string | null; name?: string | null }): AttachmentType {

@@ -17,6 +17,7 @@ import {
   getDesignAttachments,
   getOfficialAttachments,
   canEditWorkOrderAttachments,
+  canEditWorkOrderMemo,
   canRenameWorkOrderTitle,
   isWorkOrderSideDraftEditable,
 } from "@/lib/workorder/selectors";
@@ -52,6 +53,7 @@ export function buildWorkOrderDerivedState({
   const visibleStages = VISIBLE_STAGES;
   const isReviewRequestLocked = isWorkflowStateReviewLocked(currentWorkflowState, isAdmin);
   const canEditSideDraftContent = isWorkOrderSideDraftEditable(currentWorkflowState);
+  const canEditMemo = canEditWorkOrderMemo(currentWorkflowState);
   const canRenameTitle = canRenameWorkOrderTitle(currentUser, currentWorkflowState);
   const canSeeAttachments = currentUser.permissions.canSeeAttachments;
   const attachmentCollectionPermissions = getAttachmentCollectionPermissionState({
@@ -97,6 +99,7 @@ export function buildWorkOrderDerivedState({
     isReviewRequestLocked,
     canEditSideDraftContent,
     canUploadOfficialAttachments,
+    canEditMemo,
     canRenameTitle,
     workOrders: filteredWorkOrderList,
     hasVisibleWorkOrders: filteredWorkOrderList.length > 0,

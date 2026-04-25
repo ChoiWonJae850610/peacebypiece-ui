@@ -84,6 +84,7 @@ export function buildSidePanelProps({
   hasVisibleWorkOrders,
   canSeeAttachments,
   canUploadOfficialAttachments,
+  canEditMemo,
   designAttachments,
   officialAttachments,
   currentRole,
@@ -93,12 +94,19 @@ export function buildSidePanelProps({
   getAttachmentPermissions,
   onOpenAttachmentPicker,
   onRequestDeleteAttachment,
+  onCreateMemoThread,
+  onCreateMemoReply,
+  onUpdateMemoThread,
+  onDeleteMemoThread,
+  onUpdateMemoReply,
+  onDeleteMemoReply,
 }: SidePanelViewModelArgs): SidePanelProps {
   return {
     isEmpty: !hasVisibleWorkOrders,
     canSeeAttachments,
     canManageAttachments: canUploadOfficialAttachments,
-      attachmentSections: buildAttachmentPanelSections({
+    canEditMemo,
+    attachmentSections: buildAttachmentPanelSections({
       designTitle: i18n.workorder.ui.attachmentPanel.designTitle,
       designEmptyText: i18n.workorder.ui.attachmentPanel.designEmpty,
       designAddButtonLabel: i18n.workorder.ui.attachmentPanel.designAddButton,
@@ -107,7 +115,7 @@ export function buildSidePanelProps({
       officialAddButtonLabel: i18n.workorder.ui.attachmentPanel.addButton,
       designAttachments,
       officialAttachments,
-          getAttachmentPermissions,
+      getAttachmentPermissions,
     }),
     onOpenAttachmentPicker,
     onPreviewAttachment: () => undefined,
@@ -116,6 +124,12 @@ export function buildSidePanelProps({
     workOrder: selectedWorkOrder,
     currentUserName: currentUser.name,
     currentUserId: currentUser.id,
+    onCreateMemoThread,
+    onCreateMemoReply,
+    onUpdateMemoThread,
+    onDeleteMemoThread,
+    onUpdateMemoReply,
+    onDeleteMemoReply,
   };
 }
 

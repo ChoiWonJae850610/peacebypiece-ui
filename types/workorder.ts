@@ -5,7 +5,7 @@ import type { InventoryChangeTypeValue, InventoryStatusValue, OrderEntryTargetTy
 import type { OrderInspectionStatusValue } from "@/lib/constants/workorderStates";
 import type { DisplayStage, HistoryCategory, HistoryFilter, HistoryTone, WorkflowAction, WorkflowState } from "@/types/workflow";
 
-export type AttachmentScope = "design" | "attachment";
+export type AttachmentScope = "design" | "attachment" | "memo";
 
 export type AttachmentType = "image" | "pdf" | "file";
 

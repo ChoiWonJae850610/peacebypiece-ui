@@ -52,22 +52,19 @@ export function useWorkOrderAttachments({
   const actionFlowText = i18n.workorder.actionFlow;
   const historyText = i18n.workorder.history;
 
-  const canUploadAttachmentScope = (_scope: AttachmentScope) => canEditSideDraftContent && canUploadOfficialAttachments;
-
   const handleOpenAttachmentPicker = (scope: AttachmentScope = "attachment") => {
-    if (!canUploadAttachmentScope(scope)) return;
     setAttachmentPickerScope(scope);
-    openAttachmentPickerTrigger(attachmentInputRef, true);
+    openAttachmentPickerTrigger(attachmentInputRef, canEditSideDraftContent && canUploadOfficialAttachments);
   };
 
   const handleAttachmentFiles = async (event: ChangeEvent<HTMLInputElement>) => {
-    const scope = attachmentPickerScope === "design" ? "design" : "attachment";
-    if (!canUploadAttachmentScope(scope)) {
+    if (!canEditSideDraftContent || !canUploadOfficialAttachments) {
       clearAttachmentInputValue(event);
       return;
     }
 
     const files = readAttachmentInputFiles(event);
+    const scope = attachmentPickerScope === "design" ? "design" : "attachment";
     clearAttachmentInputValue(event);
     if (files.length === 0) return;
 

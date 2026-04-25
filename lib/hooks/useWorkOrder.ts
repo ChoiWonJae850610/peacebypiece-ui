@@ -194,6 +194,7 @@ export function useWorkOrder() {
     canCreateWorkOrder: derivedState.canCreateWorkOrder,
     canEditSideDraftContent: derivedState.canEditSideDraftContent,
     canUploadOfficialAttachments: derivedState.canUploadOfficialAttachments,
+    canEditMemo: derivedState.canEditMemo,
     canRenameTitle: derivedState.canRenameTitle,
     canSeeAttachments: derivedState.canSeeAttachments,
     isReviewRequestLocked: derivedState.isReviewRequestLocked,

@@ -1,11 +1,10 @@
-import type { AttachmentScope } from "@/types/workorder";
 import { createHistoryLog, defaultHistoryText, formatTemplate, type HistoryText } from "@/lib/workorder/history/builders/shared";
 
 export function createAttachmentUploadHistoryLog(
   user: string,
   workOrderId: string,
   attachments: { name: string }[],
-  scope: AttachmentScope = "attachment",
+  scope: "design" | "attachment" = "attachment",
   text: HistoryText = defaultHistoryText,
 ) {
   return createHistoryLog({

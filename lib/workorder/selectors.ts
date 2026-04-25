@@ -93,7 +93,6 @@ export function getOfficialAttachments(attachments: Attachment[]) {
   return attachments.filter(isOfficialAttachment);
 }
 
-
 export function getAttachmentById(attachments: Attachment[], attachmentId: string | null) {
   if (!attachmentId) {
     return null;

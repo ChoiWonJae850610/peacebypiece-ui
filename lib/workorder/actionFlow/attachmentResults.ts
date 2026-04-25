@@ -1,4 +1,4 @@
-import type { Attachment, AttachmentScope, UserProfile, WorkOrder } from "@/types/workorder";
+import type { Attachment, UserProfile, WorkOrder } from "@/types/workorder";
 import {
   applyDesignAttachmentFilesToWorkOrder,
   applyOfficialAttachmentFilesToWorkOrder,
@@ -15,7 +15,7 @@ export function buildAttachmentUploadResult(payload: {
   workOrder: WorkOrder;
   currentUser: UserProfile;
   files: File[];
-  scope: AttachmentScope;
+  scope: "design" | "attachment";
   text?: ActionFlowText;
   historyText?: ActionFlowHistoryText;
 }): WorkOrderActionFlowResult | null {
@@ -47,7 +47,7 @@ export function buildPersistedAttachmentUploadResult(payload: {
   workOrder: WorkOrder;
   currentUser: UserProfile;
   attachments: Attachment[];
-  scope: AttachmentScope;
+  scope: "design" | "attachment";
   text?: ActionFlowText;
   historyText?: ActionFlowHistoryText;
 }): WorkOrderActionFlowResult | null {

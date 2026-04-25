@@ -8,7 +8,7 @@ import WorkOrderOverlay from "@/components/workorder/WorkOrderOverlay";
 import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
 import type { AttachmentPermissionState } from "@/lib/workorder/attachments/attachmentPermissions";
 import type { DbConnectionStatus } from "@/lib/repositories/dbConnectionStatusStore";
-import type { Attachment, AttachmentScope, HistoryFilter, InventoryLog, RoleType, UserProfile, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
+import type { Attachment, HistoryFilter, InventoryLog, RoleType, UserProfile, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
 
 export type SidebarListProps = ComponentProps<typeof SidebarContent>;
 export type DetailProps = ComponentProps<typeof WorkOrderDetail>;
@@ -46,6 +46,7 @@ export type BuildWorkspaceViewModelArgs = {
   canCreateWorkOrder: boolean;
   canSeeAttachments: boolean;
   canUploadOfficialAttachments: boolean;
+  canEditMemo: boolean;
   canRenameTitle: boolean;
   isReviewRequestLocked: boolean;
   canEditSideDraftContent: boolean;
@@ -104,10 +105,16 @@ export type BuildWorkspaceViewModelArgs = {
   onOpenManagerAssignModal: () => void;
   onCloseManagerAssignModal: () => void;
   onChangeManager: (managerId: string) => void;
-  onOpenAttachmentPicker: (scope?: AttachmentScope) => void;
+  onOpenAttachmentPicker: (scope?: "design" | "attachment") => void;
   onRequestDeleteAttachment: (attachmentId: string) => void;
   onAttachmentDeleteConfirmClose: () => void;
   onAttachmentDeleteConfirm: () => void;
+  onCreateMemoThread: SidePanelProps["onCreateMemoThread"];
+  onCreateMemoReply: SidePanelProps["onCreateMemoReply"];
+  onUpdateMemoThread: SidePanelProps["onUpdateMemoThread"];
+  onDeleteMemoThread: SidePanelProps["onDeleteMemoThread"];
+  onUpdateMemoReply: SidePanelProps["onUpdateMemoReply"];
+  onDeleteMemoReply: SidePanelProps["onDeleteMemoReply"];
 };
 
 export type WorkspaceViewModel = {
@@ -129,6 +136,7 @@ export type BaseWorkspaceViewModelArgs = {
   canCreateWorkOrder: boolean;
   canSeeAttachments: boolean;
   canUploadOfficialAttachments: boolean;
+  canEditMemo: boolean;
   canRenameTitle: boolean;
   isAdmin: boolean;
   isReviewRequestLocked: boolean;
@@ -159,8 +167,14 @@ export type BaseWorkspaceViewModelArgs = {
   onRenameWorkOrderTitle: (nextTitle: string) => void;
   onCompleteInspection: DetailProps["onCompleteInspection"];
   onOpenManagerAssignModal: () => void;
-  onOpenAttachmentPicker: (scope?: AttachmentScope) => void;
+  onOpenAttachmentPicker: (scope?: "design" | "attachment") => void;
   onRequestDeleteAttachment: (attachmentId: string) => void;
+  onCreateMemoThread: SidePanelProps["onCreateMemoThread"];
+  onCreateMemoReply: SidePanelProps["onCreateMemoReply"];
+  onUpdateMemoThread: SidePanelProps["onUpdateMemoThread"];
+  onDeleteMemoThread: SidePanelProps["onDeleteMemoThread"];
+  onUpdateMemoReply: SidePanelProps["onUpdateMemoReply"];
+  onDeleteMemoReply: SidePanelProps["onDeleteMemoReply"];
 };
 
 export type SidebarViewModelArgs = {

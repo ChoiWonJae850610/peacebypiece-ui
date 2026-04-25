@@ -1,20 +1,34 @@
+import WorkOrderMemoPanel from "@/components/workorder/sidepanel/WorkOrderMemoPanel";
 import WorkOrderSidePanelAttachmentSections from "@/components/workorder/sidepanel/shared/WorkOrderSidePanelAttachmentSections";
 import type { WorkOrderSidePanelProps, WorkOrderSidePanelVariant } from "@/components/workorder/sidepanel/WorkOrderSidePanel.types";
 
 type WorkOrderSidePanelSectionsProps = WorkOrderSidePanelProps & {
   variant: WorkOrderSidePanelVariant;
+  memoFirst?: boolean;
 };
 
 export default function WorkOrderSidePanelSections({
   canSeeAttachments,
   canManageAttachments,
+  canEditMemo,
   attachmentSections,
   onOpenAttachmentPicker,
   onPreviewAttachment,
   onDeleteAttachment,
+  currentRole,
+  workOrder,
+  currentUserName,
+  currentUserId,
+  onCreateMemoThread,
+  onCreateMemoReply,
+  onUpdateMemoThread,
+  onDeleteMemoThread,
+  onUpdateMemoReply,
+  onDeleteMemoReply,
   variant,
+  memoFirst = false,
 }: WorkOrderSidePanelSectionsProps) {
-  return (
+  const attachmentPanels = (
     <WorkOrderSidePanelAttachmentSections
       attachmentSections={attachmentSections}
       canSeeAttachments={canSeeAttachments}
@@ -24,5 +38,34 @@ export default function WorkOrderSidePanelSections({
       onDeleteAttachment={onDeleteAttachment}
       variant={variant}
     />
+  );
+
+  const memoPanel = (
+    <WorkOrderMemoPanel
+      workOrder={workOrder}
+      currentUserId={currentUserId}
+      currentUserName={currentUserName}
+      currentUserRole={currentRole}
+      onCreateThread={onCreateMemoThread}
+      onCreateReply={onCreateMemoReply}
+      onUpdateThread={onUpdateMemoThread}
+      onDeleteThread={onDeleteMemoThread}
+      onUpdateReply={onUpdateMemoReply}
+      onDeleteReply={onDeleteMemoReply}
+      canEditMemo={canEditMemo}
+      variant={variant}
+    />
+  );
+
+  return memoFirst ? (
+    <>
+      {memoPanel}
+      {attachmentPanels}
+    </>
+  ) : (
+    <>
+      {attachmentPanels}
+      {memoPanel}
+    </>
   );
 }
