@@ -127,6 +127,10 @@ async function hydrateWorkOrdersWithAttachmentMemoSnapshots(workOrders: WorkOrde
     return workOrders;
   }
 }
+async function hydrateWorkOrderWithAttachmentMemoSnapshot(workOrder: WorkOrder): Promise<WorkOrder> {
+  const [hydrated] = await hydrateWorkOrdersWithAttachmentMemoSnapshots([workOrder]);
+  return hydrated ?? workOrder;
+}
 
 function createDbErrorResponse(error: unknown, fallbackMessage: string) {
   const resolved = resolveDbErrorPayload(error, fallbackMessage);
@@ -167,7 +171,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "workOrder payload is required.", code: "INVALID_PAYLOAD" }, { status: 400 });
     }
 
-    const workOrder = await createDbWorkOrder(body.workOrder);
+    const workOrder = await hydrateWorkOrderWithAttachmentMemoSnapshot(await createDbWorkOrder(body.workOrder));
     logDbRequestOutcome("POST", true, "READY", workOrder.id);
     return NextResponse.json({ workOrder }, { status: 201 });
   } catch (error) {
@@ -196,7 +200,7 @@ export async function PATCH(request: Request) {
         return NextResponse.json({ message: "Every workOrders item must include workOrder.id.", code: "INVALID_PAYLOAD" }, { status: 400 });
       }
 
-      const workOrders = await saveDbWorkOrders(body.workOrders);
+      const workOrders = await hydrateWorkOrdersWithAttachmentMemoSnapshots(await saveDbWorkOrders(body.workOrders));
 
       logDbRequestOutcome("PATCH", true, "READY", `rows=${workOrders.length}`);
       return NextResponse.json({ workOrders });
@@ -210,7 +214,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ message: "workOrder.id is required.", code: "INVALID_PAYLOAD" }, { status: 400 });
     }
 
-    const workOrder = await saveDbWorkOrder(body.workOrder);
+    const workOrder = await hydrateWorkOrderWithAttachmentMemoSnapshot(await saveDbWorkOrder(body.workOrder));
     logDbRequestOutcome("PATCH", true, "READY", workOrder.id);
     return NextResponse.json({ workOrder });
   } catch (error) {

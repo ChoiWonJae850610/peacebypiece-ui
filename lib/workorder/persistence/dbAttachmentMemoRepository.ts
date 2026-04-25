@@ -15,6 +15,7 @@ import type {
 import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
 import {
   inferAttachmentTypeFromMime,
+  normalizeAttachmentKindForDb,
   normalizeAttachmentScope,
 } from "@/lib/workorder/persistence/attachmentMemoTypes";
 import type {
@@ -67,7 +68,7 @@ function mapMemoRow(row: MemoRow): MemoThread {
 function mapAttachmentInput(input: CreateAttachmentRecordInput) {
   return {
     work_order_id: input.work_order_id,
-    attachment_type: normalizeAttachmentScope(input.attachment.scope),
+    attachment_type: normalizeAttachmentKindForDb(input.attachment.scope),
     storage_key: input.storage_key ?? input.attachment.url,
     original_name: input.attachment.name,
     mime_type: input.content_type ?? null,

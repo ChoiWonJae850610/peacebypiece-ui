@@ -9,7 +9,7 @@ export const ATTACHMENT_STORAGE_PROVIDER_VALUES = ["r2", "external", "local_mock
 
 export type AttachmentStorageProvider = (typeof ATTACHMENT_STORAGE_PROVIDER_VALUES)[number];
 
-export type WorkOrderAttachmentKind = AttachmentScope;
+export type WorkOrderAttachmentKind = "design" | "official" | "memo";
 
 export type WorkOrderAttachmentDbRecord = {
   id: string;
@@ -88,4 +88,10 @@ export function normalizeAttachmentScope(value: string | null | undefined): Atta
   if (value === "design") return "design";
   if (value === "memo") return "memo";
   return "attachment";
+}
+
+export function normalizeAttachmentKindForDb(value: AttachmentScope | string | null | undefined): WorkOrderAttachmentKind {
+  if (value === "design") return "design";
+  if (value === "memo") return "memo";
+  return "official";
 }
