@@ -308,3 +308,53 @@ export async function deleteR2Object(input: GetR2ObjectInput): Promise<void> {
     throw error;
   }
 }
+
+export async function deleteR2ObjectWithPresignedRequest(input: GetR2ObjectInput): Promise<void> {
+  const config = getR2Config();
+  const key = cleanStorageKey(typeof input === "string" ? input : input.key);
+  const now = new Date();
+  const { amzDate, dateStamp } = formatAmzDate(now);
+  const endpoint = new URL(config.endpoint);
+  const host = endpoint.host;
+  const credentialScope = `${dateStamp}/auto/s3/aws4_request`;
+  const signedHeaders = "host";
+  const canonicalUri = `/${encodeStoragePath(config.bucketName)}/${encodeStoragePath(key)}`;
+  const queryParams: Record<string, string> = {
+    "X-Amz-Algorithm": "AWS4-HMAC-SHA256",
+    "X-Amz-Credential": `${config.accessKeyId}/${credentialScope}`,
+    "X-Amz-Date": amzDate,
+    "X-Amz-Expires": "300",
+    "X-Amz-SignedHeaders": signedHeaders,
+  };
+  const canonicalQueryString = buildCanonicalQuery(queryParams);
+  const canonicalHeaders = `host:${host}\n`;
+  const canonicalRequest = [
+    "DELETE",
+    canonicalUri,
+    canonicalQueryString,
+    canonicalHeaders,
+    signedHeaders,
+    "UNSIGNED-PAYLOAD",
+  ].join("\n");
+  const stringToSign = [
+    "AWS4-HMAC-SHA256",
+    amzDate,
+    credentialScope,
+    hash(canonicalRequest),
+  ].join("\n");
+  const signature = createHmac("sha256", getSigningKey(config.secretAccessKey, dateStamp)).update(stringToSign, "utf8").digest("hex");
+  const url = `${config.endpoint}${canonicalUri}?${canonicalQueryString}&X-Amz-Signature=${signature}`;
+
+  const response = await fetch(url, { method: "DELETE" });
+  if (!response.ok) {
+    const message = await response.text().catch(() => "");
+    console.error("[R2_PRESIGNED_DELETE_ERROR]", {
+      bucketName: config.bucketName,
+      key,
+      endpoint: config.endpoint,
+      status: response.status,
+      message,
+    });
+    throw new Error(message || `R2_PRESIGNED_DELETE_FAILED_${response.status}`);
+  }
+}

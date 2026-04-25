@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { deleteR2Object } from "@/lib/storage/r2/r2Client";
+import { deleteR2Object, deleteR2ObjectWithPresignedRequest } from "@/lib/storage/r2/r2Client";
 import { deleteR2ObjectViaWorker, isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
 import { isSupportedWorkOrderAttachmentStorageKey } from "@/lib/storage/r2/r2Keys";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
@@ -11,6 +11,8 @@ type AttachmentDeleteRequest = {
   attachmentId?: unknown;
 };
 
+type StorageDeleteMode = "worker" | "presigned" | "sdk" | "skipped";
+
 function isWritableRepository(repository: AttachmentMemoRepository): repository is AttachmentMemoWritableRepository {
   return "softDeleteAttachment" in repository && "getAttachmentById" in repository;
 }
@@ -19,14 +21,41 @@ function readText(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
 }
 
-async function deleteStorageObject(key: string): Promise<"worker" | "sdk"> {
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error || "UNKNOWN_ERROR");
+}
+
+function isWorkerDeleteUnsupported(error: unknown): boolean {
+  const message = getErrorMessage(error);
+  return /METHOD_NOT_ALLOWED|405|DELETE.*not allowed/i.test(message);
+}
+
+async function tryDeleteWithSdk(key: string): Promise<StorageDeleteMode> {
+  try {
+    await deleteR2Object({ key });
+    return "sdk";
+  } catch (sdkError) {
+    console.warn("[ATTACHMENT_DELETE_SDK_FALLBACK_FAILED]", { key, message: getErrorMessage(sdkError) });
+    await deleteR2ObjectWithPresignedRequest({ key });
+    return "presigned";
+  }
+}
+
+async function deleteStorageObject(key: string): Promise<StorageDeleteMode> {
   if (isR2WorkerUploadConfigured()) {
-    await deleteR2ObjectViaWorker({ key });
-    return "worker";
+    try {
+      await deleteR2ObjectViaWorker({ key });
+      return "worker";
+    } catch (workerError) {
+      console.warn("[ATTACHMENT_DELETE_WORKER_FAILED]", {
+        key,
+        message: getErrorMessage(workerError),
+        fallback: isWorkerDeleteUnsupported(workerError) ? "sdk-or-presigned" : "sdk-or-presigned",
+      });
+    }
   }
 
-  await deleteR2Object({ key });
-  return "sdk";
+  return tryDeleteWithSdk(key);
 }
 
 export async function POST(request: NextRequest) {
@@ -48,7 +77,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_NOT_FOUND" }, { status: 404 });
     }
 
-    let storageDeleteMode: "worker" | "sdk" | "skipped" = "skipped";
+    let storageDeleteMode: StorageDeleteMode = "skipped";
     if (target.storage_key && isSupportedWorkOrderAttachmentStorageKey(target.storage_key)) {
       storageDeleteMode = await deleteStorageObject(target.storage_key);
     }
@@ -60,7 +89,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ attachmentId: deleted.id, storageDeleteMode });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Attachment delete failed.";
+    const message = getErrorMessage(error) || "Attachment delete failed.";
     console.error("[ATTACHMENT_DELETE_FAILED]", { message, error });
     return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_DELETE_FAILED", message }, { status: 500 });
   }

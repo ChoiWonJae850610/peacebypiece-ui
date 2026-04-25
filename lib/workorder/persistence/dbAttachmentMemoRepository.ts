@@ -196,6 +196,8 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                   updated_at
              FROM memos
             WHERE order_id = $1
+              AND is_active = true
+              AND deleted_at IS NULL
             ORDER BY created_at ASC`,
           [workOrderId],
         ),

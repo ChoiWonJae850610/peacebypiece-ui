@@ -73,6 +73,22 @@ function mapReply(row: WorkOrderMemoReplyDbRecord, authorName: string, authorRol
   return mapMemoBase(row, authorName, authorRole);
 }
 
+
+export async function GET(request: NextRequest) {
+  try {
+    const orderId = readText(request.nextUrl.searchParams.get("orderId"));
+    if (!orderId) return NextResponse.json({ error: "ORDER_ID_REQUIRED" }, { status: 400 });
+
+    const repository = await createAttachmentMemoRepository();
+    const snapshot = await repository.listSnapshotByWorkOrderId(orderId);
+    return NextResponse.json({ orderId, memoThreads: snapshot.memoThreads });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Memo loading failed.";
+    console.error("[MEMO_LOAD_FAILED]", { message, error });
+    return NextResponse.json({ error: "MEMO_LOAD_FAILED", message }, { status: 500 });
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const payload = (await request.json().catch(() => null)) as MemoCreateRequest | null;

@@ -3,12 +3,70 @@ import { mockWorkorderAdapter } from "@/lib/repositories/mockWorkorderRepository
 import { loadPersistedWorkspaceState } from "@/lib/repositories/workorderPersistence";
 import type { WorkorderRepositoryAdapter } from "@/lib/repositories/workorderRepositoryAdapter";
 import { setDbConnectionStatus, type DbConnectionStateCode } from "@/lib/repositories/dbConnectionStatusStore";
-import type { WorkOrder } from "@/types/workorder";
+import type { MemoThread, WorkOrder } from "@/types/workorder";
 
 type DbApiErrorBody = {
   message?: string;
   code?: string;
 };
+
+
+type MemoLoadResponse = {
+  memoThreads?: MemoThread[];
+  error?: string;
+  message?: string;
+};
+
+function mergeMemoThreads(payloadThreads: MemoThread[] | undefined, dbThreads: MemoThread[] | undefined): MemoThread[] {
+  const merged = new Map<string, MemoThread>();
+
+  for (const thread of payloadThreads ?? []) {
+    merged.set(thread.id, thread);
+  }
+
+  for (const thread of dbThreads ?? []) {
+    merged.set(thread.id, thread);
+  }
+
+  return Array.from(merged.values());
+}
+
+async function loadMemoThreadsForWorkOrder(workOrderId: string): Promise<MemoThread[] | null> {
+  const response = await fetch(`/api/workorders/memos?orderId=${encodeURIComponent(workOrderId)}`, {
+    method: "GET",
+    headers: { Accept: "application/json" },
+    cache: "no-store",
+  });
+
+  const result = await parseResponse<MemoLoadResponse>(response);
+  return result.memoThreads ?? [];
+}
+
+async function hydrateWorkOrdersWithMemoThreads(workOrders: WorkOrder[]): Promise<WorkOrder[]> {
+  if (workOrders.length === 0) return workOrders;
+
+  const memoSnapshots = await Promise.all(
+    workOrders.map(async (workOrder) => {
+      try {
+        return await loadMemoThreadsForWorkOrder(workOrder.id);
+      } catch (error) {
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("[memo hydration]", workOrder.id, error instanceof Error ? error.message : error);
+        }
+        return null;
+      }
+    }),
+  );
+
+  return workOrders.map((workOrder, index) => {
+    const memoThreads = memoSnapshots[index];
+    if (!memoThreads) return workOrder;
+    return {
+      ...workOrder,
+      memoThreads: mergeMemoThreads(workOrder.memoThreads, memoThreads),
+    };
+  });
+}
 
 const LOCAL_FALLBACK_ERROR_CODES = new Set([
   "DB_NOT_CONFIGURED",
@@ -148,7 +206,8 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
           cache: "no-store",
         });
 
-        const { workOrders } = await parseResponse<{ workOrders: WorkOrder[] }>(response);
+        const { workOrders: loadedWorkOrders } = await parseResponse<{ workOrders: WorkOrder[] }>(response);
+        const workOrders = await hydrateWorkOrdersWithMemoThreads(loadedWorkOrders);
         const seededState = createInitialSeededWorkorderState();
         const persistedState = loadPersistedWorkspaceState();
         const selectedId = resolveSelectedId(
