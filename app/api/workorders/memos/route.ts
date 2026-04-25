@@ -18,6 +18,16 @@ type MemoCreateRequest = {
   content?: unknown;
 };
 
+type MemoUpdateRequest = {
+  memoId?: unknown;
+  content?: unknown;
+};
+
+type MemoDeleteRequest = {
+  target?: unknown;
+  memoId?: unknown;
+};
+
 function isWritableRepository(repository: AttachmentMemoRepository): repository is AttachmentMemoWritableRepository {
   return "createMemoThread" in repository && "createMemoReply" in repository;
 }
@@ -118,5 +128,57 @@ export async function POST(request: NextRequest) {
     const message = error instanceof Error ? error.message : "Memo creation failed.";
     console.error("[MEMO_CREATE_FAILED]", { message, error });
     return NextResponse.json({ error: "MEMO_CREATE_FAILED", message }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const payload = (await request.json().catch(() => null)) as MemoUpdateRequest | null;
+    const memoId = readText(payload?.memoId);
+    const content = readText(payload?.content);
+
+    if (!memoId) return NextResponse.json({ error: "MEMO_ID_REQUIRED" }, { status: 400 });
+    if (!content) return NextResponse.json({ error: "MEMO_CONTENT_REQUIRED" }, { status: 400 });
+
+    const repository = await createAttachmentMemoRepository();
+    if (!isWritableRepository(repository)) {
+      return NextResponse.json({ error: "MEMO_REPOSITORY_WRITE_UNSUPPORTED" }, { status: 503 });
+    }
+
+    const updated = await repository.updateMemo(memoId, content);
+    if (!updated) return NextResponse.json({ error: "MEMO_NOT_FOUND" }, { status: 404 });
+
+    return NextResponse.json({ memo: mapMemoBase(updated, updated.author_id ?? "시스템", "admin") });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Memo update failed.";
+    console.error("[MEMO_UPDATE_FAILED]", { message, error });
+    return NextResponse.json({ error: "MEMO_UPDATE_FAILED", message }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const payload = (await request.json().catch(() => null)) as MemoDeleteRequest | null;
+    const target = normalizeTarget(payload?.target);
+    const memoId = readText(payload?.memoId);
+
+    if (!memoId) return NextResponse.json({ error: "MEMO_ID_REQUIRED" }, { status: 400 });
+
+    const repository = await createAttachmentMemoRepository();
+    if (!isWritableRepository(repository)) {
+      return NextResponse.json({ error: "MEMO_REPOSITORY_WRITE_UNSUPPORTED" }, { status: 503 });
+    }
+
+    if (target === "reply") {
+      await repository.softDeleteMemoReply(memoId);
+    } else {
+      await repository.softDeleteMemoThread(memoId);
+    }
+
+    return NextResponse.json({ memoId });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Memo delete failed.";
+    console.error("[MEMO_DELETE_FAILED]", { message, error });
+    return NextResponse.json({ error: "MEMO_DELETE_FAILED", message }, { status: 500 });
   }
 }

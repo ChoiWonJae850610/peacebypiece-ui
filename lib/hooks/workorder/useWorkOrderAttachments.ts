@@ -17,7 +17,7 @@ import {
 } from "@/lib/workorder/attachments/attachmentActions";
 import { deleteWorkOrderAttachmentInDb } from "@/lib/workorder/attachments/attachmentDeleteApiClient";
 import { uploadWorkOrderAttachmentFiles } from "@/lib/workorder/attachments/attachmentUploadApiClient";
-import { createMemoReplyInDb, createMemoThreadInDb } from "@/lib/workorder/memo/memoApiClient";
+import { createMemoReplyInDb, createMemoThreadInDb, deleteMemoInDb, updateMemoInDb } from "@/lib/workorder/memo/memoApiClient";
 import type { Attachment, AttachmentScope, HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 
 export function useWorkOrderAttachments({
@@ -253,84 +253,116 @@ export function useWorkOrderAttachments({
     return canEditSideDraftContent && (isAdmin || authorId === currentUser.id);
   };
 
-  const handleUpdateMemoThread = (threadId: string, content: string) => {
+  const handleUpdateMemoThread = async (threadId: string, content: string) => {
     const nextContent = content.trim();
     const targetThread = (selectedWorkOrder.memoThreads ?? []).find((thread) => thread.id === threadId);
     if (!targetThread || targetThread.deletedAt || !nextContent || !canMutateMemoItem(targetThread.authorId)) return;
 
-    setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
-      ? { ...item, memoThreads: (item.memoThreads ?? []).map((thread) => thread.id === threadId ? { ...thread, content: nextContent } : thread) }
-      : item));
-    setSaveStatus("dirty");
+    setSaveStatus("saving");
+    try {
+      await updateMemoInDb({ memoId: threadId, content: nextContent });
+      setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
+        ? { ...item, memoThreads: (item.memoThreads ?? []).map((thread) => thread.id === threadId ? { ...thread, content: nextContent } : thread) }
+        : item));
+      setSaveStatus("saved");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "메모 수정에 실패했습니다.";
+      setSaveStatus("dirty");
+      setToastMessage(message);
+    }
   };
 
-  const handleDeleteMemoThread = (threadId: string) => {
+  const handleDeleteMemoThread = async (threadId: string) => {
     const targetThread = (selectedWorkOrder.memoThreads ?? []).find((thread) => thread.id === threadId);
     if (!targetThread || targetThread.deletedAt || !canMutateMemoItem(targetThread.authorId)) return;
 
-    const deletedAt = new Date().toISOString();
-    const hasVisibleReplies = (targetThread.replies ?? []).some((reply) => reply.isVisible !== false);
-    setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
-      ? {
-          ...item,
-          memoThreads: (item.memoThreads ?? []).map((thread) => {
-            if (thread.id !== threadId) return thread;
-            return {
-              ...thread,
-              attachmentIds: [],
-              deletedAt,
-              isVisible: hasVisibleReplies,
-            };
-          }),
-        }
-      : item));
-    setSaveStatus("dirty");
+    setSaveStatus("saving");
+    try {
+      await deleteMemoInDb({ memoId: threadId, target: "thread" });
+      const deletedAt = new Date().toISOString();
+      const hasVisibleReplies = (targetThread.replies ?? []).some((reply) => reply.isVisible !== false);
+      setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
+        ? {
+            ...item,
+            memoThreads: (item.memoThreads ?? []).map((thread) => {
+              if (thread.id !== threadId) return thread;
+              return {
+                ...thread,
+                attachmentIds: [],
+                deletedAt,
+                isVisible: hasVisibleReplies,
+              };
+            }),
+          }
+        : item));
+      setSaveStatus("saved");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "메모 삭제에 실패했습니다.";
+      setSaveStatus("dirty");
+      setToastMessage(message);
+    }
   };
 
-  const handleUpdateMemoReply = (threadId: string, replyId: string, content: string) => {
+  const handleUpdateMemoReply = async (threadId: string, replyId: string, content: string) => {
     const nextContent = content.trim();
     const targetThread = (selectedWorkOrder.memoThreads ?? []).find((thread) => thread.id === threadId);
     const targetReply = targetThread?.replies?.find((reply) => reply.id === replyId);
     if (!targetReply || !nextContent || !canMutateMemoItem(targetReply.authorId)) return;
 
-    setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
-      ? {
-          ...item,
-          memoThreads: (item.memoThreads ?? []).map((thread) => thread.id === threadId
-            ? { ...thread, replies: (thread.replies ?? []).map((reply) => reply.id === replyId ? { ...reply, content: nextContent } : reply) }
-            : thread),
-        }
-      : item));
-    setSaveStatus("dirty");
+    setSaveStatus("saving");
+    try {
+      await updateMemoInDb({ memoId: replyId, content: nextContent });
+      setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
+        ? {
+            ...item,
+            memoThreads: (item.memoThreads ?? []).map((thread) => thread.id === threadId
+              ? { ...thread, replies: (thread.replies ?? []).map((reply) => reply.id === replyId ? { ...reply, content: nextContent } : reply) }
+              : thread),
+          }
+        : item));
+      setSaveStatus("saved");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "댓글 수정에 실패했습니다.";
+      setSaveStatus("dirty");
+      setToastMessage(message);
+    }
   };
 
-  const handleDeleteMemoReply = (threadId: string, replyId: string) => {
+  const handleDeleteMemoReply = async (threadId: string, replyId: string) => {
     const targetThread = (selectedWorkOrder.memoThreads ?? []).find((thread) => thread.id === threadId);
     const targetReply = targetThread?.replies?.find((reply) => reply.id === replyId);
     if (!targetReply || targetReply.deletedAt || !canMutateMemoItem(targetReply.authorId)) return;
 
-    const deletedAt = new Date().toISOString();
-    setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
-      ? {
-          ...item,
-          memoThreads: (item.memoThreads ?? []).map((thread) => {
-            if (thread.id !== threadId) return thread;
+    setSaveStatus("saving");
+    try {
+      await deleteMemoInDb({ memoId: replyId, target: "reply" });
+      const deletedAt = new Date().toISOString();
+      setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
+        ? {
+            ...item,
+            memoThreads: (item.memoThreads ?? []).map((thread) => {
+              if (thread.id !== threadId) return thread;
 
-            const nextReplies = (thread.replies ?? []).map((reply) => reply.id === replyId
-              ? { ...reply, attachmentIds: [], deletedAt, isVisible: false }
-              : reply);
-            const hasVisibleReplies = nextReplies.some((reply) => reply.isVisible !== false);
-            const shouldHideDeletedThread = Boolean(thread.deletedAt) && !hasVisibleReplies;
+              const nextReplies = (thread.replies ?? []).map((reply) => reply.id === replyId
+                ? { ...reply, attachmentIds: [], deletedAt, isVisible: false }
+                : reply);
+              const hasVisibleReplies = nextReplies.some((reply) => reply.isVisible !== false);
+              const shouldHideDeletedThread = Boolean(thread.deletedAt) && !hasVisibleReplies;
 
-            return {
-              ...thread,
-              isVisible: shouldHideDeletedThread ? false : thread.isVisible,
-              replies: nextReplies,
-            };
-          }),
-        }
-      : item));
-    setSaveStatus("dirty");
+              return {
+                ...thread,
+                isVisible: shouldHideDeletedThread ? false : thread.isVisible,
+                replies: nextReplies,
+              };
+            }),
+          }
+        : item));
+      setSaveStatus("saved");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "댓글 삭제에 실패했습니다.";
+      setSaveStatus("dirty");
+      setToastMessage(message);
+    }
   };
 
   const canDeleteAttachment = (attachment: Attachment | null) =>

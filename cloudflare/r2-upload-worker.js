@@ -1,6 +1,6 @@
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, PUT, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, PUT, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
   "Access-Control-Max-Age": "3600",
 };
@@ -35,7 +35,7 @@ export default {
       return new Response(null, { status: 204, headers: CORS_HEADERS });
     }
 
-    if (request.method !== "PUT" && request.method !== "GET") {
+    if (request.method !== "PUT" && request.method !== "GET" && request.method !== "DELETE") {
       return json({ error: "METHOD_NOT_ALLOWED" }, { status: 405 });
     }
 
@@ -57,6 +57,11 @@ export default {
         httpMetadata: { contentType },
       });
 
+      return json({ ok: true, key });
+    }
+
+    if (request.method === "DELETE") {
+      await bucket.delete(key);
       return json({ ok: true, key });
     }
 

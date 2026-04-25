@@ -3,6 +3,8 @@ import type { MemoReply, MemoThread, UserProfile, WorkOrder } from "@/types/work
 export type MemoPersistApiResult = {
   thread?: MemoThread;
   reply?: MemoReply;
+  memo?: MemoThread | MemoReply;
+  memoId?: string;
   error?: string;
   message?: string;
 };
@@ -65,4 +67,34 @@ export async function createMemoReplyInDb(payload: {
   const result = await persistMemo({ ...payload, target: "reply" });
   if (!result.reply) throw new Error("MEMO_REPLY_RESPONSE_MISSING");
   return result.reply;
+}
+
+export async function updateMemoInDb(payload: { memoId: string; content: string }): Promise<void> {
+  const response = await fetch("/api/workorders/memos", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ memoId: payload.memoId, content: payload.content }),
+  });
+  const result = await readJson<MemoPersistApiResult>(response, { error: "INVALID_MEMO_RESPONSE" });
+  if (!response.ok) {
+    throw new Error(result.message || result.error || "MEMO_UPDATE_FAILED");
+  }
+}
+
+export async function deleteMemoInDb(payload: { memoId: string; target: MemoPersistTarget }): Promise<void> {
+  const response = await fetch("/api/workorders/memos", {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ memoId: payload.memoId, target: payload.target }),
+  });
+  const result = await readJson<MemoPersistApiResult>(response, { error: "INVALID_MEMO_RESPONSE" });
+  if (!response.ok) {
+    throw new Error(result.message || result.error || "MEMO_DELETE_FAILED");
+  }
 }

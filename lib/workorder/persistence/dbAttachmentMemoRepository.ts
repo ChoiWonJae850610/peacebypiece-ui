@@ -283,6 +283,28 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
         thread_id: input.thread_id,
       };
     },
+
+    getAttachmentById: async (attachmentId) => {
+      const result = await queryDb<AttachmentRow>(
+        `SELECT id,
+                order_id,
+                type,
+                storage_key,
+                original_name,
+                mime_type,
+                size_bytes,
+                author_id,
+                is_active,
+                deleted_at,
+                created_at
+           FROM attachments
+          WHERE id = $1
+          LIMIT 1`,
+        [attachmentId],
+      );
+
+      return result.rows[0] ?? null;
+    },
     replaceMemoThreads: async (workOrderId, memoThreads) => {
       await queryDb("DELETE FROM memos WHERE order_id = $1", [workOrderId]);
 
@@ -315,11 +337,35 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
 
       return result.rows[0] ?? null;
     },
+
+    updateMemo: async (memoId, body) => {
+      const result = await queryDb<MemoRow>(
+        `UPDATE memos
+            SET body = $2,
+                updated_at = now()
+          WHERE id = $1
+            AND is_active = true
+            AND deleted_at IS NULL
+          RETURNING id,
+                    order_id,
+                    parent_id,
+                    body,
+                    author_id,
+                    is_active,
+                    deleted_at,
+                    created_at,
+                    updated_at`,
+        [memoId, body],
+      );
+
+      return result.rows[0] ?? null;
+    },
     softDeleteMemoThread: async (threadId) => {
       await queryDb(
         `UPDATE memos
             SET is_active = false,
-                deleted_at = COALESCE(deleted_at, now())
+                deleted_at = COALESCE(deleted_at, now()),
+                updated_at = now()
           WHERE id = $1`,
         [threadId],
       );
@@ -328,7 +374,8 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
       await queryDb(
         `UPDATE memos
             SET is_active = false,
-                deleted_at = COALESCE(deleted_at, now())
+                deleted_at = COALESCE(deleted_at, now()),
+                updated_at = now()
           WHERE id = $1`,
         [replyId],
       );

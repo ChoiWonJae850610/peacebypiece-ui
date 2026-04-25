@@ -5,6 +5,7 @@ import type {
   CreateMemoReplyRecordInput,
   CreateMemoThreadRecordInput,
   WorkOrderAttachmentDbRecord,
+  WorkOrderMemoDbRecord,
   WorkOrderMemoReplyDbRecord,
   WorkOrderMemoThreadDbRecord,
 } from "@/lib/workorder/persistence/attachmentMemoTypes";
@@ -24,7 +25,9 @@ export type AttachmentMemoWritableRepository = AttachmentMemoRepository & {
   createAttachment: (input: CreateAttachmentRecordInput) => Promise<WorkOrderAttachmentDbRecord>;
   createMemoThread: (input: CreateMemoThreadRecordInput) => Promise<WorkOrderMemoThreadDbRecord>;
   createMemoReply: (input: CreateMemoReplyRecordInput) => Promise<WorkOrderMemoReplyDbRecord>;
+  getAttachmentById: (attachmentId: string) => Promise<WorkOrderAttachmentDbRecord | null>;
   softDeleteAttachment: (attachmentId: string) => Promise<WorkOrderAttachmentDbRecord | null>;
+  updateMemo: (memoId: string, body: string) => Promise<WorkOrderMemoDbRecord | null>;
   softDeleteMemoThread: (threadId: string) => Promise<void>;
   softDeleteMemoReply: (replyId: string) => Promise<void>;
   replaceMemoThreads?: (workOrderId: string, memoThreads: MemoThread[]) => Promise<void>;
