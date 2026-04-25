@@ -56,15 +56,15 @@ function resolveDbErrorPayload(error: unknown, fallbackMessage: string): { statu
     return { status: 503, payload: { message, code: "DB_DRIVER_MISSING" } };
   }
 
-  if (/work_orders row not found for id:/i.test(message)) {
+  if (/orders row not found for id:/i.test(message)) {
     return { status: 404, payload: { message, code: "DB_REQUEST_FAILED" } };
   }
 
-  if (/relation .*work_orders.* does not exist/i.test(message)) {
+  if (/relation .*orders.* does not exist/i.test(message)) {
     return { status: 503, payload: { message, code: "DB_TABLE_MISSING" } };
   }
 
-  if (/work_orders table is missing required columns/i.test(message) || /Unsupported payload column type/i.test(message)) {
+  if (/orders table is missing required columns/i.test(message) || /Unsupported payload column type/i.test(message)) {
     return { status: 503, payload: { message, code: "DB_SCHEMA_UNSUPPORTED" } };
   }
 
@@ -127,6 +127,18 @@ async function hydrateWorkOrdersWithAttachmentMemoSnapshots(workOrders: WorkOrde
     return workOrders;
   }
 }
+
+async function replaceWorkOrderMemoThreads(workOrder: WorkOrder): Promise<void> {
+  const repository = await createAttachmentMemoRepository();
+  const info = repository.getRepositoryInfo();
+
+  if (info.mode !== "db" || !info.adapterConfigured || !("replaceMemoThreads" in repository) || typeof repository.replaceMemoThreads !== "function") {
+    return;
+  }
+
+  await repository.replaceMemoThreads(workOrder.id, workOrder.memoThreads ?? []);
+}
+
 async function hydrateWorkOrderWithAttachmentMemoSnapshot(workOrder: WorkOrder): Promise<WorkOrder> {
   const [hydrated] = await hydrateWorkOrdersWithAttachmentMemoSnapshots([workOrder]);
   return hydrated ?? workOrder;
@@ -171,7 +183,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "workOrder payload is required.", code: "INVALID_PAYLOAD" }, { status: 400 });
     }
 
-    const workOrder = await hydrateWorkOrderWithAttachmentMemoSnapshot(await createDbWorkOrder(body.workOrder));
+    const createdWorkOrder = await createDbWorkOrder(body.workOrder);
+    await replaceWorkOrderMemoThreads(body.workOrder);
+    const workOrder = await hydrateWorkOrderWithAttachmentMemoSnapshot(createdWorkOrder);
     logDbRequestOutcome("POST", true, "READY", workOrder.id);
     return NextResponse.json({ workOrder }, { status: 201 });
   } catch (error) {
@@ -200,7 +214,9 @@ export async function PATCH(request: Request) {
         return NextResponse.json({ message: "Every workOrders item must include workOrder.id.", code: "INVALID_PAYLOAD" }, { status: 400 });
       }
 
-      const workOrders = await hydrateWorkOrdersWithAttachmentMemoSnapshots(await saveDbWorkOrders(body.workOrders));
+      const savedWorkOrders = await saveDbWorkOrders(body.workOrders);
+      await Promise.all(body.workOrders.map((workOrder) => replaceWorkOrderMemoThreads(workOrder)));
+      const workOrders = await hydrateWorkOrdersWithAttachmentMemoSnapshots(savedWorkOrders);
 
       logDbRequestOutcome("PATCH", true, "READY", `rows=${workOrders.length}`);
       return NextResponse.json({ workOrders });
@@ -214,7 +230,9 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ message: "workOrder.id is required.", code: "INVALID_PAYLOAD" }, { status: 400 });
     }
 
-    const workOrder = await hydrateWorkOrderWithAttachmentMemoSnapshot(await saveDbWorkOrder(body.workOrder));
+    const savedWorkOrder = await saveDbWorkOrder(body.workOrder);
+    await replaceWorkOrderMemoThreads(body.workOrder);
+    const workOrder = await hydrateWorkOrderWithAttachmentMemoSnapshot(savedWorkOrder);
     logDbRequestOutcome("PATCH", true, "READY", workOrder.id);
     return NextResponse.json({ workOrder });
   } catch (error) {

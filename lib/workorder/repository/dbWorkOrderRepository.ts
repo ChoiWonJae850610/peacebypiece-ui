@@ -5,7 +5,7 @@ import { LEGACY_WORKFLOW_STATE_MAP, WORKFLOW_STATES } from "@/lib/constants/work
 import type { WorkOrder } from "@/types/workorder";
 import { applyReorderIdentity } from "@/lib/workorder/reorder/helpers";
 
-const WORK_ORDER_TABLE = "work_orders";
+const WORK_ORDER_TABLE = "orders";
 const DEFAULT_WORKFLOW_STATE: WorkOrder["workflowState"] = "draft";
 
 const PAYLOAD_COLUMN_CANDIDATES = ["payload", "data", "workorder_payload", "work_order_payload"] as const;
@@ -109,6 +109,7 @@ function serializeWorkOrderPayload(workOrder: WorkOrder): WorkOrder {
     workflowState: normalizedWorkOrder.workflowState,
     lastSavedAt: normalizedWorkOrder.lastSavedAt,
     attachments: [],
+    memoThreads: [],
   };
 }
 
@@ -258,7 +259,7 @@ function assertMinimumSchema(schema: DbWorkOrderSchema) {
   ].filter((value): value is string => Boolean(value));
 
   if (missingColumns.length > 0) {
-    throw new Error(`work_orders table is missing required columns: ${missingColumns.join(", ")}`);
+    throw new Error(`orders table is missing required columns: ${missingColumns.join(", ")}`);
   }
 }
 
@@ -416,7 +417,7 @@ export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
 }
 
 function isNotFoundWorkOrderError(error: unknown): boolean {
-  return error instanceof Error && /work_orders row not found for id:/i.test(error.message);
+  return error instanceof Error && /orders row not found for id:/i.test(error.message);
 }
 
 export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder> {
@@ -519,7 +520,7 @@ export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
   const updated = result.rows[0];
 
   if (!updated) {
-    throw new Error(`work_orders row not found for id: ${normalizedWorkOrder.id}`);
+    throw new Error(`orders row not found for id: ${normalizedWorkOrder.id}`);
   }
 
   return mapRowToWorkOrder(updated);
@@ -549,7 +550,7 @@ export async function deleteDbWorkOrder(workOrderId: string): Promise<string> {
 
     const deleted = result.rows[0];
     if (!deleted?.id) {
-      throw new Error(`work_orders row not found for id: ${workOrderId}`);
+      throw new Error(`orders row not found for id: ${workOrderId}`);
     }
     return deleted.id;
   }
@@ -566,7 +567,7 @@ export async function deleteDbWorkOrder(workOrderId: string): Promise<string> {
   const deleted = result.rows[0];
 
   if (!deleted?.id) {
-    throw new Error(`work_orders row not found for id: ${workOrderId}`);
+    throw new Error(`orders row not found for id: ${workOrderId}`);
   }
 
   return deleted.id;

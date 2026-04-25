@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
         ownerName,
       };
       const created = await repository.createAttachment({
-        work_order_id: workOrderId,
+        order_id: workOrderId,
         attachment: provisionalAttachment,
         storage_provider: "r2",
         storage_key: target.storageKey,

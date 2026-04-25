@@ -1,3 +1,4 @@
+import type { MemoThread } from "@/types/workorder";
 import type {
   AttachmentMemoSnapshot,
   CreateAttachmentRecordInput,
@@ -26,4 +27,5 @@ export type AttachmentMemoWritableRepository = AttachmentMemoRepository & {
   softDeleteAttachment: (attachmentId: string) => Promise<void>;
   softDeleteMemoThread: (threadId: string) => Promise<void>;
   softDeleteMemoReply: (replyId: string) => Promise<void>;
+  replaceMemoThreads?: (workOrderId: string, memoThreads: MemoThread[]) => Promise<void>;
 };

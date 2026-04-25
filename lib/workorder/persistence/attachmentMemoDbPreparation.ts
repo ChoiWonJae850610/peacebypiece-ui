@@ -31,6 +31,6 @@ export const ATTACHMENT_MEMO_DB_SQL_PLANNING_NOTES = [
   "삭제는 물리 삭제 대신 deleted_at과 is_visible로 처리한다.",
   "표시 여부 판단은 presentation 계층에서 처리한다.",
   "첨부와 메모는 WorkOrder draft 저장 정책을 유지한 뒤 버튼 action에서 저장한다.",
-  "0.6.437 SQL 기준 테이블명은 workorder_attachments, workorder_memos이다.",
+  "0.6.44044 SQL 기준 테이블명은 attachments, memos이다.",
   "기존 attachments 테이블은 초기 실험용 테이블로 유지하되 신규 repository에서는 사용하지 않는다.",
 ] as const;
