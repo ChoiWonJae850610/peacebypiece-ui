@@ -1,6 +1,6 @@
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, PUT, DELETE, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
   "Access-Control-Max-Age": "3600",
 };
@@ -56,6 +56,12 @@ function readContentType(url) {
   return url.searchParams.get("contentType") || "application/octet-stream";
 }
 
+function getEffectiveMethod(request, url) {
+  const action = (url.searchParams.get("action") || "").toLowerCase();
+  if (request.method === "POST" && action === "delete") return "DELETE";
+  return request.method;
+}
+
 function createSignaturePayload(method, key, contentType, expires) {
   if (method === "PUT") return ["PUT", key, contentType || "application/octet-stream", String(expires)].join("\n");
   if (method === "DELETE") return ["DELETE", key, String(expires)].join("\n");
@@ -88,7 +94,7 @@ async function createExpectedSignature({ secret, method, key, contentType, expir
   return toHex(signature);
 }
 
-async function verifyRequest({ request, env, url, key, contentType }) {
+async function verifyRequest({ env, url, method, key, contentType }) {
   const secret = readSecret(env);
   if (!secret) return { ok: false, status: 503, error: "WORKER_SECRET_NOT_CONFIGURED" };
 
@@ -101,7 +107,7 @@ async function verifyRequest({ request, env, url, key, contentType }) {
 
   const expected = await createExpectedSignature({
     secret,
-    method: request.method,
+    method,
     key,
     contentType,
     expires,
@@ -129,7 +135,9 @@ export default {
       return new Response(null, { status: 204, headers: CORS_HEADERS });
     }
 
-    if (request.method !== "PUT" && request.method !== "GET" && request.method !== "DELETE") {
+    const url = new URL(request.url);
+    const effectiveMethod = getEffectiveMethod(request, url);
+    if (effectiveMethod !== "PUT" && effectiveMethod !== "GET" && effectiveMethod !== "DELETE") {
       return json({ error: "METHOD_NOT_ALLOWED" }, { status: 405 });
     }
 
@@ -138,7 +146,6 @@ export default {
       return json({ error: "WORKER_BUCKET_NOT_CONFIGURED" }, { status: 503 });
     }
 
-    const url = new URL(request.url);
     const key = url.searchParams.get("key") || "";
     const contentType = readContentType(url);
 
@@ -146,12 +153,12 @@ export default {
       return json({ error: "INVALID_WORKER_FILE_REQUEST" }, { status: 400 });
     }
 
-    const verification = await verifyRequest({ request, env, url, key, contentType });
+    const verification = await verifyRequest({ env, url, method: effectiveMethod, key, contentType });
     if (!verification.ok) {
       return json({ error: verification.error }, { status: verification.status });
     }
 
-    if (request.method === "PUT") {
+    if (effectiveMethod === "PUT") {
       const contentLength = Number(request.headers.get("Content-Length") || "0");
       if (!isAllowedWorkerFile({ key, contentType, size: contentLength })) {
         return json({ error: "WORKER_FILE_POLICY_REJECTED" }, { status: 400 });
@@ -161,12 +168,12 @@ export default {
         httpMetadata: { contentType },
       });
 
-      return json({ ok: true, key });
+      return json({ ok: true, key, method: "PUT" });
     }
 
-    if (request.method === "DELETE") {
+    if (effectiveMethod === "DELETE") {
       await bucket.delete(key);
-      return json({ ok: true, key });
+      return json({ ok: true, key, method: "DELETE" });
     }
 
     const object = await bucket.get(key);

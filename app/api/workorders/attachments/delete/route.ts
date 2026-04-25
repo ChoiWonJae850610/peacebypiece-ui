@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { deleteR2Object, deleteR2ObjectWithPresignedRequest } from "@/lib/storage/r2/r2Client";
 import { deleteR2ObjectViaWorker, isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
 import { isSupportedWorkOrderAttachmentStorageKey } from "@/lib/storage/r2/r2Keys";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
@@ -11,7 +10,7 @@ type AttachmentDeleteRequest = {
   attachmentId?: unknown;
 };
 
-type StorageDeleteMode = "worker" | "presigned" | "sdk" | "skipped";
+type StorageDeleteMode = "worker" | "skipped";
 
 function isWritableRepository(repository: AttachmentMemoRepository): repository is AttachmentMemoWritableRepository {
   return "softDeleteAttachment" in repository && "getAttachmentById" in repository;
@@ -25,37 +24,24 @@ function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error || "UNKNOWN_ERROR");
 }
 
-function isWorkerDeleteUnsupported(error: unknown): boolean {
-  const message = getErrorMessage(error);
-  return /METHOD_NOT_ALLOWED|405|DELETE.*not allowed/i.test(message);
+function createDeleteFailureResponse(input: { attachmentId: string; message: string }) {
+  return NextResponse.json(
+    {
+      attachmentId: input.attachmentId,
+      error: "ATTACHMENT_STORAGE_DELETE_FAILED",
+      message: input.message,
+    },
+    { status: 502 },
+  );
 }
 
-async function tryDeleteWithSdk(key: string): Promise<StorageDeleteMode> {
-  try {
-    await deleteR2Object({ key });
-    return "sdk";
-  } catch (sdkError) {
-    console.warn("[ATTACHMENT_DELETE_SDK_FALLBACK_FAILED]", { key, message: getErrorMessage(sdkError) });
-    await deleteR2ObjectWithPresignedRequest({ key });
-    return "presigned";
-  }
-}
-
-async function deleteStorageObject(key: string): Promise<StorageDeleteMode> {
-  if (isR2WorkerUploadConfigured()) {
-    try {
-      await deleteR2ObjectViaWorker({ key });
-      return "worker";
-    } catch (workerError) {
-      console.warn("[ATTACHMENT_DELETE_WORKER_FAILED]", {
-        key,
-        message: getErrorMessage(workerError),
-        fallback: isWorkerDeleteUnsupported(workerError) ? "sdk-or-presigned" : "sdk-or-presigned",
-      });
-    }
+async function deleteStorageObjectWithWorker(key: string): Promise<StorageDeleteMode> {
+  if (!isR2WorkerUploadConfigured()) {
+    throw new Error("R2_WORKER_UPLOAD_NOT_CONFIGURED");
   }
 
-  return tryDeleteWithSdk(key);
+  await deleteR2ObjectViaWorker({ key });
+  return "worker";
 }
 
 export async function POST(request: NextRequest) {
@@ -77,27 +63,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_NOT_FOUND" }, { status: 404 });
     }
 
+    let storageDeleteMode: StorageDeleteMode = "skipped";
+    if (target.storage_key && isSupportedWorkOrderAttachmentStorageKey(target.storage_key)) {
+      try {
+        storageDeleteMode = await deleteStorageObjectWithWorker(target.storage_key);
+      } catch (storageError) {
+        const message = getErrorMessage(storageError);
+        console.warn("[ATTACHMENT_DELETE_WORKER_REQUIRED_FAILED]", {
+          attachmentId,
+          key: target.storage_key,
+          message,
+        });
+        return createDeleteFailureResponse({ attachmentId, message });
+      }
+    }
+
     const deleted = await repository.softDeleteAttachment(attachmentId);
     if (!deleted) {
       return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_NOT_FOUND" }, { status: 404 });
     }
 
-    let storageDeleteMode: StorageDeleteMode = "skipped";
-    let storageDeleteWarning: string | null = null;
-    if (target.storage_key && isSupportedWorkOrderAttachmentStorageKey(target.storage_key)) {
-      try {
-        storageDeleteMode = await deleteStorageObject(target.storage_key);
-      } catch (storageError) {
-        storageDeleteWarning = getErrorMessage(storageError);
-        console.warn("[ATTACHMENT_DELETE_STORAGE_DEFERRED]", {
-          attachmentId,
-          key: target.storage_key,
-          message: storageDeleteWarning,
-        });
-      }
-    }
-
-    return NextResponse.json({ attachmentId: deleted.id, storageDeleteMode, storageDeleteWarning });
+    return NextResponse.json({ attachmentId: deleted.id, storageDeleteMode });
   } catch (error) {
     const message = getErrorMessage(error) || "Attachment delete failed.";
     console.error("[ATTACHMENT_DELETE_FAILED]", { message, error });
