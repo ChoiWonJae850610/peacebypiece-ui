@@ -77,17 +77,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_NOT_FOUND" }, { status: 404 });
     }
 
-    let storageDeleteMode: StorageDeleteMode = "skipped";
-    if (target.storage_key && isSupportedWorkOrderAttachmentStorageKey(target.storage_key)) {
-      storageDeleteMode = await deleteStorageObject(target.storage_key);
-    }
-
     const deleted = await repository.softDeleteAttachment(attachmentId);
     if (!deleted) {
       return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_NOT_FOUND" }, { status: 404 });
     }
 
-    return NextResponse.json({ attachmentId: deleted.id, storageDeleteMode });
+    let storageDeleteMode: StorageDeleteMode = "skipped";
+    let storageDeleteWarning: string | null = null;
+    if (target.storage_key && isSupportedWorkOrderAttachmentStorageKey(target.storage_key)) {
+      try {
+        storageDeleteMode = await deleteStorageObject(target.storage_key);
+      } catch (storageError) {
+        storageDeleteWarning = getErrorMessage(storageError);
+        console.warn("[ATTACHMENT_DELETE_STORAGE_DEFERRED]", {
+          attachmentId,
+          key: target.storage_key,
+          message: storageDeleteWarning,
+        });
+      }
+    }
+
+    return NextResponse.json({ attachmentId: deleted.id, storageDeleteMode, storageDeleteWarning });
   } catch (error) {
     const message = getErrorMessage(error) || "Attachment delete failed.";
     console.error("[ATTACHMENT_DELETE_FAILED]", { message, error });

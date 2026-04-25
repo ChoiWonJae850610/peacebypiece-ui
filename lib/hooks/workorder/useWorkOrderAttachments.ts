@@ -288,6 +288,7 @@ export function useWorkOrderAttachments({
               if (thread.id !== threadId) return thread;
               return {
                 ...thread,
+                content: hasVisibleReplies ? "삭제된 메모입니다." : thread.content,
                 attachmentIds: [],
                 deletedAt,
                 isVisible: hasVisibleReplies,
@@ -344,7 +345,7 @@ export function useWorkOrderAttachments({
               if (thread.id !== threadId) return thread;
 
               const nextReplies = (thread.replies ?? []).map((reply) => reply.id === replyId
-                ? { ...reply, attachmentIds: [], deletedAt, isVisible: false }
+                ? { ...reply, content: "삭제된 댓글입니다.", attachmentIds: [], deletedAt, isVisible: true }
                 : reply);
               const hasVisibleReplies = nextReplies.some((reply) => reply.isVisible !== false);
               const shouldHideDeletedThread = Boolean(thread.deletedAt) && !hasVisibleReplies;
