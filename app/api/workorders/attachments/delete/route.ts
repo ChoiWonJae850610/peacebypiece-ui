@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { deleteR2ObjectViaWorker, isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
+import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
 import { isSupportedWorkOrderAttachmentStorageKey } from "@/lib/storage/r2/r2Keys";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
 import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
@@ -81,6 +82,10 @@ export async function POST(request: NextRequest) {
     const deleted = await repository.softDeleteAttachment(attachmentId);
     if (!deleted) {
       return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_NOT_FOUND" }, { status: 404 });
+    }
+
+    if (target.storage_key) {
+      deleteCachedR2UrlsByKey(target.storage_key);
     }
 
     return NextResponse.json({ attachmentId: deleted.id, storageDeleteMode });

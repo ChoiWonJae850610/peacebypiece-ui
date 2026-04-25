@@ -22,6 +22,13 @@ function createReadableStream(body: Buffer | Uint8Array | ArrayBuffer): Readable
   });
 }
 
+function createWorkerRedirectResponse(url: string, cacheState: "HIT" | "MISS"): NextResponse {
+  const response = NextResponse.redirect(url, { status: 307 });
+  response.headers.set("cache-control", "no-store");
+  response.headers.set("x-r2-url-cache", cacheState);
+  return response;
+}
+
 export async function GET(request: NextRequest) {
   const key = request.nextUrl.searchParams.get("key")?.trim() ?? "";
   if (!key || !isSafeStorageKey(key)) {
@@ -32,7 +39,7 @@ export async function GET(request: NextRequest) {
     try {
       const cachedUrl = getCachedR2Url({ purpose: "file", key });
       if (cachedUrl) {
-        return NextResponse.redirect(cachedUrl, { status: 307 });
+        return createWorkerRedirectResponse(cachedUrl, "HIT");
       }
 
       const workerFile = createR2WorkerFileUrl({ key });
@@ -43,7 +50,7 @@ export async function GET(request: NextRequest) {
         expiresInSeconds: workerFile.expiresInSeconds,
       });
 
-      return NextResponse.redirect(cachedWorkerUrl, { status: 307 });
+      return createWorkerRedirectResponse(cachedWorkerUrl, "MISS");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Worker file URL creation failed.";
       return NextResponse.json({ error: "WORKER_FILE_URL_CREATE_FAILED", message }, { status: 500 });
