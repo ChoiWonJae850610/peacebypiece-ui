@@ -15,6 +15,7 @@ import {
   openAttachmentPickerTrigger,
   readAttachmentInputFiles,
 } from "@/lib/workorder/attachments/attachmentActions";
+import { deleteWorkOrderAttachmentInDb } from "@/lib/workorder/attachments/attachmentDeleteApiClient";
 import { uploadWorkOrderAttachmentFiles } from "@/lib/workorder/attachments/attachmentUploadApiClient";
 import { createMemoReplyInDb, createMemoThreadInDb } from "@/lib/workorder/memo/memoApiClient";
 import type { Attachment, AttachmentScope, HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
@@ -106,7 +107,7 @@ export function useWorkOrderAttachments({
     }
   };
 
-  const handleDeleteAttachment = (attachmentId: string) => {
+  const handleDeleteAttachment = async (attachmentId: string) => {
     const targetAttachment = selectedWorkOrder.attachments.find((item) => item.id === attachmentId) ?? null;
     if (!canDeleteAttachmentForCurrentUser({
       currentUser,
@@ -118,27 +119,36 @@ export function useWorkOrderAttachments({
       return;
     }
 
-    const result = buildAttachmentDeleteResult({
-      workOrder: selectedWorkOrder,
-      currentUser,
-      attachmentId,
-      attachmentPreviewId,
-      historyText,
-    });
-    if (!result) return;
+    setSaveStatus("saving");
 
-    setWorkOrders((prev) => prev.map((item) => (item.id === selectedWorkOrder.id ? result.nextWorkOrder : item)));
-    if (result.resetAttachmentPreview) {
-      setAttachmentPreviewId(null);
-    }
-    if (result.historyLogs?.length) {
-      setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
-    }
-    if (result.saveStatus) {
-      setSaveStatus(result.saveStatus);
+    try {
+      await deleteWorkOrderAttachmentInDb(attachmentId);
+      const result = buildAttachmentDeleteResult({
+        workOrder: selectedWorkOrder,
+        currentUser,
+        attachmentId,
+        attachmentPreviewId,
+        historyText,
+      });
+      if (!result) {
+        setSaveStatus("saved");
+        return;
+      }
+
+      setWorkOrders((prev) => prev.map((item) => (item.id === selectedWorkOrder.id ? result.nextWorkOrder : item)));
+      if (result.resetAttachmentPreview) {
+        setAttachmentPreviewId(null);
+      }
+      if (result.historyLogs?.length) {
+        setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
+      }
+      setSaveStatus("saved");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "첨부파일 삭제에 실패했습니다.";
+      setSaveStatus("dirty");
+      setToastMessage(message);
     }
   };
-
   const handleCreateMemoThread = async (content: string) => {
     if (!canEditSideDraftContent) return;
     setSaveStatus("saving");

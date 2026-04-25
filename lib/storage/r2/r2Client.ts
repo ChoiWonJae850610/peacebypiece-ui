@@ -1,5 +1,5 @@
 import { createHmac, createHash } from "crypto";
-import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { Readable } from "stream";
 
 // ================================
@@ -271,6 +271,32 @@ export async function getR2Object(input: GetR2ObjectInput): Promise<R2ObjectResu
     };
   } catch (error: any) {
     console.error("[R2_GET_ERROR]", {
+      bucketName: config.bucketName,
+      key,
+      endpoint: config.endpoint,
+      message: error?.message,
+      code: error?.code,
+      name: error?.name,
+    });
+
+    throw error;
+  }
+}
+
+export async function deleteR2Object(input: GetR2ObjectInput): Promise<void> {
+  const config = getR2Config();
+  const client = createR2Client();
+  const key = cleanStorageKey(typeof input === "string" ? input : input.key);
+
+  try {
+    await client.send(
+      new DeleteObjectCommand({
+        Bucket: config.bucketName,
+        Key: key,
+      })
+    );
+  } catch (error: any) {
+    console.error("[R2_DELETE_ERROR]", {
       bucketName: config.bucketName,
       key,
       endpoint: config.endpoint,

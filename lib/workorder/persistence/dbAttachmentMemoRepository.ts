@@ -294,13 +294,26 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
       }
     },
     softDeleteAttachment: async (attachmentId) => {
-      await queryDb(
+      const result = await queryDb<AttachmentRow>(
         `UPDATE attachments
             SET is_active = false,
                 deleted_at = COALESCE(deleted_at, now())
-          WHERE id = $1`,
+          WHERE id = $1
+          RETURNING id,
+                    order_id,
+                    type,
+                    storage_key,
+                    original_name,
+                    mime_type,
+                    size_bytes,
+                    author_id,
+                    is_active,
+                    deleted_at,
+                    created_at`,
         [attachmentId],
       );
+
+      return result.rows[0] ?? null;
     },
     softDeleteMemoThread: async (threadId) => {
       await queryDb(
