@@ -56,9 +56,9 @@ export function buildWorkOrderSeedSource(locale: Locale = DEFAULT_LOCALE): MockW
       ],
       attachments: [
         { id: "att-1", name: wo1.attachments.mainSample,
-          type: "image", url: placeholderImage, scope: "official", ownerId: "user-designer", ownerName: users.designer },
+          type: "image", url: placeholderImage, scope: "attachment", ownerId: "user-designer", ownerName: users.designer },
         { id: "att-2", name: wo1.attachments.workorderSheet,
-          type: "pdf", url: placeholderPdf, scope: "official", ownerId: "user-admin", ownerName: users.admin },
+          type: "pdf", url: placeholderPdf, scope: "attachment", ownerId: "user-admin", ownerName: users.admin },
       ],
       memoThreads: [
         {
@@ -175,9 +175,9 @@ export function buildWorkOrderSeedSource(locale: Locale = DEFAULT_LOCALE): MockW
       ],
       attachments: [
         { id: "att-31", name: wo3.attachments.completedImage,
-          type: "image", url: placeholderImage, scope: "official", ownerId: "user-qc", ownerName: users.inspector },
+          type: "image", url: placeholderImage, scope: "attachment", ownerId: "user-qc", ownerName: users.inspector },
         { id: "att-32", name: wo3.attachments.checklist,
-          type: "pdf", url: placeholderPdf, scope: "official", ownerId: null, ownerName: users.legacyAttachmentOwner },
+          type: "pdf", url: placeholderPdf, scope: "attachment", ownerId: null, ownerName: users.legacyAttachmentOwner },
       ],
       memoThreads: [
         {

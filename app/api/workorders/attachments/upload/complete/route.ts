@@ -32,7 +32,7 @@ function readText(value: unknown): string | null {
 }
 
 function normalizeScope(value: unknown): AttachmentScope {
-  return value === "design" ? "design" : "official";
+  return value === "design" ? "design" : value === "memo" ? "memo" : "attachment";
 }
 
 function normalizeUploadTarget(input: CompleteUploadTargetInput) {

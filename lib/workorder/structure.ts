@@ -31,11 +31,11 @@ export function normalizeOutsourcingForStorage(workOrderId: string, rows: Outsou
 
 export function normalizeAttachmentsForStorage(workOrderId: string, attachments: Attachment[] | undefined): Attachment[] {
   return (attachments ?? [])
-    .filter((attachment) => String(attachment.scope ?? "official") !== "memo")
+    .filter((attachment) => String(attachment.scope ?? "attachment") !== "memo")
     .map((attachment, index) => ({
       ...attachment,
       id: String(attachment.id ?? "").trim() || buildChildEntityId(workOrderId, "att", index),
-      scope: attachment.scope === "design" ? "design" : "official",
+      scope: attachment.scope === "design" ? "design" : "attachment",
       linkedThreadId: null,
       linkedReplyId: null,
       ownerId: attachment.ownerId ?? null,

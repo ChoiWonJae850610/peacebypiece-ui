@@ -69,7 +69,7 @@ export function getRepresentativeImage(allAttachments: Attachment[]) {
   if (designImages.length > 0) return designImages[0] ?? null;
 
   const officialImages = allAttachments.filter(
-    (attachment) => attachment.type === "image" && (attachment.scope ?? "official") === "official",
+    (attachment) => attachment.type === "image" && (attachment.scope ?? "attachment") === "attachment",
   );
   if (officialImages.length > 0) return officialImages[0] ?? null;
 

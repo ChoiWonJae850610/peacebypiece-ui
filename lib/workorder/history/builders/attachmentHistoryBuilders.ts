@@ -4,7 +4,7 @@ export function createAttachmentUploadHistoryLog(
   user: string,
   workOrderId: string,
   attachments: { name: string }[],
-  scope: "design" | "official" = "official",
+  scope: "design" | "attachment" = "attachment",
   text: HistoryText = defaultHistoryText,
 ) {
   return createHistoryLog({

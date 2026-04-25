@@ -15,7 +15,7 @@ export function buildAttachmentUploadResult(payload: {
   workOrder: WorkOrder;
   currentUser: UserProfile;
   files: File[];
-  scope: "design" | "official";
+  scope: "design" | "attachment";
   text?: ActionFlowText;
   historyText?: ActionFlowHistoryText;
 }): WorkOrderActionFlowResult | null {
@@ -47,7 +47,7 @@ export function buildPersistedAttachmentUploadResult(payload: {
   workOrder: WorkOrder;
   currentUser: UserProfile;
   attachments: Attachment[];
-  scope: "design" | "official";
+  scope: "design" | "attachment";
   text?: ActionFlowText;
   historyText?: ActionFlowHistoryText;
 }): WorkOrderActionFlowResult | null {
@@ -72,7 +72,7 @@ export function buildOfficialAttachmentUploadResult(payload: {
   text?: ActionFlowText;
   historyText?: ActionFlowHistoryText;
 }): WorkOrderActionFlowResult | null {
-  return buildAttachmentUploadResult({ ...payload, scope: "official" });
+  return buildAttachmentUploadResult({ ...payload, scope: "attachment" });
 }
 
 export function buildAttachmentDeleteResult(payload: {

@@ -10,11 +10,11 @@ export type AttachmentPanelItem = Pick<Attachment, "id" | "name" | "type" | "url
 };
 
 export type AttachmentPanelSection = {
-  key: "design" | "official";
+  key: "design" | "attachment";
   title: string;
   emptyText: string;
   addButtonLabel: string;
-  uploadScope: "design" | "official";
+  uploadScope: "design" | "attachment";
   items: AttachmentPanelItem[];
 };
 
@@ -67,11 +67,11 @@ export function buildAttachmentPanelSections(payload: {
       items: buildAttachmentPanelItems(payload.designAttachments, payload.getAttachmentPermissions),
     },
     {
-      key: "official",
+      key: "attachment",
       title: payload.officialTitle,
       emptyText: payload.officialEmptyText,
       addButtonLabel: payload.officialAddButtonLabel,
-      uploadScope: "official",
+      uploadScope: "attachment",
       items: buildAttachmentPanelItems(payload.officialAttachments, payload.getAttachmentPermissions),
     },
   ];

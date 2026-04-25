@@ -48,11 +48,11 @@ export function useWorkOrderAttachments({
   setToastMessage: Dispatch<SetStateAction<string | null>>;
 }) {
   const { i18n } = useI18n();
-  const [attachmentPickerScope, setAttachmentPickerScope] = useState<AttachmentScope>("official");
+  const [attachmentPickerScope, setAttachmentPickerScope] = useState<AttachmentScope>("attachment");
   const actionFlowText = i18n.workorder.actionFlow;
   const historyText = i18n.workorder.history;
 
-  const handleOpenAttachmentPicker = (scope: AttachmentScope = "official") => {
+  const handleOpenAttachmentPicker = (scope: AttachmentScope = "attachment") => {
     setAttachmentPickerScope(scope);
     openAttachmentPickerTrigger(attachmentInputRef, canEditSideDraftContent && canUploadOfficialAttachments);
   };
@@ -64,7 +64,7 @@ export function useWorkOrderAttachments({
     }
 
     const files = readAttachmentInputFiles(event);
-    const scope = attachmentPickerScope === "design" ? "design" : "official";
+    const scope = attachmentPickerScope === "design" ? "design" : "attachment";
     clearAttachmentInputValue(event);
     if (files.length === 0) return;
 

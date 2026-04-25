@@ -19,11 +19,13 @@ function sanitizeSegment(value: string): string {
 }
 
 function normalizeAttachmentScope(value: AttachmentScope | null | undefined): AttachmentScope {
-  return value === "design" ? "design" : "official";
+  return value === "design" ? "design" : value === "memo" ? "memo" : "attachment";
 }
 
-function getAttachmentStorageDirectory(scope: AttachmentScope): "design" | "attachments" {
-  return scope === "design" ? "design" : "attachments";
+function getAttachmentStorageDirectory(scope: AttachmentScope): "design" | "attachments" | "memos" {
+  if (scope === "design") return "design";
+  if (scope === "memo") return "memos";
+  return "attachments";
 }
 
 export function createWorkOrderAttachmentStorageKey(input: {
@@ -45,7 +47,7 @@ export function isLegacyOfficialAttachmentStorageKey(key: string): boolean {
 }
 
 export function isCurrentWorkOrderAttachmentStorageKey(key: string): boolean {
-  return /^workorders\/[^/]+\/(design|attachments)\/[^/]+$/i.test(key.trim());
+  return /^workorders\/[^/]+\/(design|attachments|memos)\/[^/]+$/i.test(key.trim());
 }
 
 export function isSupportedWorkOrderAttachmentStorageKey(key: string): boolean {

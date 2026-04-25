@@ -7,7 +7,7 @@ export type WorkOrderSidePanelProps = {
   canManageAttachments: boolean;
   canEditMemo: boolean;
   attachmentSections: AttachmentPanelSection[];
-  onOpenAttachmentPicker: (scope?: "design" | "official") => void;
+  onOpenAttachmentPicker: (scope?: "design" | "attachment") => void;
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;
   currentRole: RoleType;

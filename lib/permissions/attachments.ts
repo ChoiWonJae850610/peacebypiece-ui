@@ -5,7 +5,7 @@ import type { Attachment, AttachmentScope, AttachmentType, UserProfile } from "@
 const i18n = getI18n();
 
 export function getAttachmentScope(attachment: Attachment | null | undefined): AttachmentScope {
-  return (attachment?.scope ?? "official") as AttachmentScope;
+  return (attachment?.scope ?? "attachment") as AttachmentScope;
 }
 
 export function isDesignAttachment(attachment: Attachment | null | undefined): boolean {
@@ -13,7 +13,7 @@ export function isDesignAttachment(attachment: Attachment | null | undefined): b
 }
 
 export function isOfficialAttachment(attachment: Attachment | null | undefined): boolean {
-  return getAttachmentScope(attachment) === "official";
+  return getAttachmentScope(attachment) === "attachment";
 }
 
 

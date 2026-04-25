@@ -4,7 +4,7 @@ import type { Attachment, UserProfile } from "@/types/workorder";
 function createScopedAttachments(
   files: File[],
   currentUser: Pick<UserProfile, "id" | "name">,
-  scope: "design" | "official",
+  scope: "design" | "attachment",
 ): Attachment[] {
   return files.map((file): Attachment => ({
     id: createAttachmentId(file.name),
@@ -22,6 +22,6 @@ export function createDesignAttachments(files: File[], currentUser: Pick<UserPro
 }
 
 export function createOfficialAttachments(files: File[], currentUser: Pick<UserProfile, "id" | "name">): Attachment[] {
-  return createScopedAttachments(files, currentUser, "official");
+  return createScopedAttachments(files, currentUser, "attachment");
 }
 

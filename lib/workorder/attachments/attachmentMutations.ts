@@ -6,7 +6,7 @@ function applyScopedAttachmentFilesToWorkOrder(payload: {
   workOrder: WorkOrder;
   currentUser: UserProfile;
   files: File[];
-  scope: "design" | "official";
+  scope: "design" | "attachment";
 }) {
   if (payload.files.length === 0) return null;
 
@@ -31,7 +31,7 @@ export function applyOfficialAttachmentFilesToWorkOrder(payload: {
   currentUser: UserProfile;
   files: File[];
 }) {
-  return applyScopedAttachmentFilesToWorkOrder({ ...payload, scope: "official" });
+  return applyScopedAttachmentFilesToWorkOrder({ ...payload, scope: "attachment" });
 }
 
 export function deleteAttachmentFromWorkOrder(payload: {
