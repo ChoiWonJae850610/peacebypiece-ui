@@ -1,5 +1,6 @@
 import "server-only";
 import { randomUUID } from "crypto";
+import type { AttachmentScope } from "@/types/workorder";
 
 const SAFE_EXTENSION_PATTERN = /^[a-z0-9]{1,12}$/i;
 
@@ -17,15 +18,36 @@ function sanitizeSegment(value: string): string {
     .slice(0, 80) || "item";
 }
 
+function normalizeAttachmentScope(value: AttachmentScope | null | undefined): AttachmentScope {
+  return value === "design" ? "design" : "official";
+}
+
+function getAttachmentStorageDirectory(scope: AttachmentScope): "design" | "attachments" {
+  return scope === "design" ? "design" : "attachments";
+}
+
 export function createWorkOrderAttachmentStorageKey(input: {
   workOrderId: string;
-  scope: "official" | "design";
+  scope: AttachmentScope;
   originalName: string;
 }): string {
   const workOrderId = sanitizeSegment(input.workOrderId);
-  const scope = input.scope === "design" ? "design" : "official";
+  const scope = normalizeAttachmentScope(input.scope);
+  const directory = getAttachmentStorageDirectory(scope);
   const extension = getFileExtension(input.originalName);
   const id = randomUUID();
 
-  return `workorders/${workOrderId}/attachments/${scope}/${id}${extension}`;
+  return `workorders/${workOrderId}/${directory}/${id}${extension}`;
+}
+
+export function isLegacyOfficialAttachmentStorageKey(key: string): boolean {
+  return /^workorders\/[^/]+\/attachments\/official\/[^/]+$/i.test(key.trim());
+}
+
+export function isCurrentWorkOrderAttachmentStorageKey(key: string): boolean {
+  return /^workorders\/[^/]+\/(design|attachments)\/[^/]+$/i.test(key.trim());
+}
+
+export function isSupportedWorkOrderAttachmentStorageKey(key: string): boolean {
+  return isCurrentWorkOrderAttachmentStorageKey(key) || isLegacyOfficialAttachmentStorageKey(key);
 }

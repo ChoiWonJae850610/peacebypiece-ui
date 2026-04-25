@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
+import { isSupportedWorkOrderAttachmentStorageKey } from "@/lib/storage/r2/r2Keys";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
 import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
 import { inferAttachmentTypeFromMime } from "@/lib/workorder/persistence/attachmentMemoTypes";
@@ -40,7 +41,7 @@ function normalizeUploadTarget(input: CompleteUploadTargetInput) {
   const contentType = readText(input.contentType);
   const fileSize = typeof input.fileSize === "number" && Number.isFinite(input.fileSize) ? input.fileSize : null;
 
-  if (!storageKey || !fileName) return null;
+  if (!storageKey || !fileName || !isSupportedWorkOrderAttachmentStorageKey(storageKey)) return null;
 
   return {
     storageKey,
