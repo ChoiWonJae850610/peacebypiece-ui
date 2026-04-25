@@ -57,7 +57,6 @@ export default function WorkOrderWorkspace() {
     canCreateWorkOrder,
     canEditSideDraftContent,
     canUploadOfficialAttachments,
-    canEditMemo,
     canRenameTitle,
     isReviewRequestLocked,
     canChangeManager,
@@ -70,7 +69,6 @@ export default function WorkOrderWorkspace() {
     inventoryLogs,
     designAttachments,
     officialAttachments,
-    memoAttachments,
     selectedAttachment,
     getAttachmentPermissions,
     fabricTotal,
@@ -103,12 +101,6 @@ export default function WorkOrderWorkspace() {
     handleOpenAttachmentPicker,
     handleAttachmentFiles,
     handleDeleteAttachment,
-    handleCreateMemoThread,
-    handleCreateMemoReply,
-    handleUpdateMemoThread,
-    handleDeleteMemoThread,
-    handleUpdateMemoReply,
-    handleDeleteMemoReply,
     canSeeAttachments,
   } = useWorkOrder();
 
@@ -164,7 +156,6 @@ export default function WorkOrderWorkspace() {
     canSeeAttachments,
     canEditSideDraftContent,
     canUploadOfficialAttachments,
-    canEditMemo,
     canRenameTitle,
     isReviewRequestLocked,
     canChangeManager,
@@ -177,7 +168,6 @@ export default function WorkOrderWorkspace() {
     inventoryLogs,
     designAttachments,
     officialAttachments,
-    memoAttachments,
     selectedAttachment,
     fabricTotal,
     subsidiaryTotal,
@@ -227,12 +217,6 @@ export default function WorkOrderWorkspace() {
     onRequestDeleteAttachment: handleRequestDeleteAttachment,
     onAttachmentDeleteConfirmClose: handleCloseDeleteAttachmentConfirm,
     onAttachmentDeleteConfirm: handleConfirmDeleteAttachment,
-    onCreateMemoThread: handleCreateMemoThread,
-    onCreateMemoReply: handleCreateMemoReply,
-    onUpdateMemoThread: handleUpdateMemoThread,
-    onDeleteMemoThread: handleDeleteMemoThread,
-    onUpdateMemoReply: handleUpdateMemoReply,
-    onDeleteMemoReply: handleDeleteMemoReply,
   });
 
   return (

@@ -1,4 +1,4 @@
-import { isDesignAttachment, isMemoAttachment, isOfficialAttachment } from "@/lib/permissions/attachments";
+import { isDesignAttachment, isOfficialAttachment } from "@/lib/permissions/attachments";
 export {
   getOrderEntriesByTargetType,
   getOrderEntriesForTargetType,
@@ -93,9 +93,6 @@ export function getOfficialAttachments(attachments: Attachment[]) {
   return attachments.filter(isOfficialAttachment);
 }
 
-export function getMemoAttachments(attachments: Attachment[]) {
-  return attachments.filter(isMemoAttachment);
-}
 
 export function getAttachmentById(attachments: Attachment[], attachmentId: string | null) {
   if (!attachmentId) {

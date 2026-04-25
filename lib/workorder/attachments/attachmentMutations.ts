@@ -1,5 +1,5 @@
 import { appendAttachments, removeAttachment } from "@/lib/workorder/actions";
-import { createDesignAttachments, createMemoAttachments, createOfficialAttachments } from "@/lib/workorder/attachments/attachmentBuilders";
+import { createDesignAttachments, createOfficialAttachments } from "@/lib/workorder/attachments/attachmentBuilders";
 import type { Attachment, AttachmentScope, UserProfile, WorkOrder } from "@/types/workorder";
 
 function applyScopedAttachmentFilesToWorkOrder(payload: {
@@ -12,9 +12,7 @@ function applyScopedAttachmentFilesToWorkOrder(payload: {
 
   const attachments = payload.scope === "design"
     ? createDesignAttachments(payload.files, payload.currentUser)
-    : payload.scope === "memo"
-      ? createMemoAttachments(payload.files, payload.currentUser)
-      : createOfficialAttachments(payload.files, payload.currentUser);
+    : createOfficialAttachments(payload.files, payload.currentUser);
   const nextWorkOrder = appendAttachments([payload.workOrder], payload.workOrder.id, attachments)[0] ?? payload.workOrder;
 
   return { nextWorkOrder, attachments };

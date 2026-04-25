@@ -26,7 +26,6 @@ export type WorkOrderDerivedState = {
   isReviewRequestLocked: boolean;
   canEditSideDraftContent: boolean;
   canUploadOfficialAttachments: boolean;
-  canEditMemo: boolean;
   canRenameTitle: boolean;
   workOrders: WorkOrderListItem[];
   hasVisibleWorkOrders: boolean;
@@ -40,7 +39,6 @@ export type WorkOrderDerivedState = {
   currentInventoryQuantity: number;
   designAttachments: WorkOrder["attachments"];
   officialAttachments: WorkOrder["attachments"];
-  memoAttachments: WorkOrder["attachments"];
   selectedAttachment: WorkOrder["attachments"][number] | null;
   materials: NonNullable<WorkOrder["materials"]>;
   outsourcing: NonNullable<WorkOrder["outsourcing"]>;

@@ -52,7 +52,7 @@ export function useWorkOrderAttachments({
   const actionFlowText = i18n.workorder.actionFlow;
   const historyText = i18n.workorder.history;
 
-  const canUploadAttachmentScope = (scope: AttachmentScope) => canEditSideDraftContent && (scope === "memo" ? canEditMemo : canUploadOfficialAttachments);
+  const canUploadAttachmentScope = (_scope: AttachmentScope) => canEditSideDraftContent && canUploadOfficialAttachments;
 
   const handleOpenAttachmentPicker = (scope: AttachmentScope = "attachment") => {
     if (!canUploadAttachmentScope(scope)) return;
@@ -61,7 +61,7 @@ export function useWorkOrderAttachments({
   };
 
   const handleAttachmentFiles = async (event: ChangeEvent<HTMLInputElement>) => {
-    const scope = attachmentPickerScope === "design" ? "design" : attachmentPickerScope === "memo" ? "memo" : "attachment";
+    const scope = attachmentPickerScope === "design" ? "design" : "attachment";
     if (!canUploadAttachmentScope(scope)) {
       clearAttachmentInputValue(event);
       return;

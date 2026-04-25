@@ -10,11 +10,11 @@ export type AttachmentPanelItem = Pick<Attachment, "id" | "name" | "type" | "url
 };
 
 export type AttachmentPanelSection = {
-  key: "design" | "attachment" | "memo";
+  key: "design" | "attachment";
   title: string;
   emptyText: string;
   addButtonLabel: string;
-  uploadScope: "design" | "attachment" | "memo";
+  uploadScope: "design" | "attachment";
   items: AttachmentPanelItem[];
 };
 
@@ -53,12 +53,8 @@ export function buildAttachmentPanelSections(payload: {
   officialTitle: string;
   officialEmptyText: string;
   officialAddButtonLabel: string;
-  memoTitle: string;
-  memoEmptyText: string;
-  memoAddButtonLabel: string;
   designAttachments: Attachment[];
   officialAttachments: Attachment[];
-  memoAttachments: Attachment[];
   getAttachmentPermissions: (attachment: Attachment | null) => AttachmentPermissionState;
 }): AttachmentPanelSection[] {
   return [
@@ -77,14 +73,6 @@ export function buildAttachmentPanelSections(payload: {
       addButtonLabel: payload.officialAddButtonLabel,
       uploadScope: "attachment",
       items: buildAttachmentPanelItems(payload.officialAttachments, payload.getAttachmentPermissions),
-    },
-    {
-      key: "memo",
-      title: payload.memoTitle,
-      emptyText: payload.memoEmptyText,
-      addButtonLabel: payload.memoAddButtonLabel,
-      uploadScope: "memo",
-      items: buildAttachmentPanelItems(payload.memoAttachments, payload.getAttachmentPermissions),
     },
   ];
 }

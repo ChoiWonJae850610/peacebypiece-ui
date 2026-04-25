@@ -16,9 +16,7 @@ import {
   getAttachmentById,
   getDesignAttachments,
   getOfficialAttachments,
-  getMemoAttachments,
   canEditWorkOrderAttachments,
-  canEditWorkOrderMemo,
   canRenameWorkOrderTitle,
   isWorkOrderSideDraftEditable,
 } from "@/lib/workorder/selectors";
@@ -54,7 +52,6 @@ export function buildWorkOrderDerivedState({
   const visibleStages = VISIBLE_STAGES;
   const isReviewRequestLocked = isWorkflowStateReviewLocked(currentWorkflowState, isAdmin);
   const canEditSideDraftContent = isWorkOrderSideDraftEditable(currentWorkflowState);
-  const canEditMemo = canEditWorkOrderMemo(currentWorkflowState);
   const canRenameTitle = canRenameWorkOrderTitle(currentUser, currentWorkflowState);
   const canSeeAttachments = currentUser.permissions.canSeeAttachments;
   const attachmentCollectionPermissions = getAttachmentCollectionPermissionState({
@@ -75,7 +72,6 @@ export function buildWorkOrderDerivedState({
   const currentInventoryQuantity = getSharedInventorySnapshot(workOrders, selectedWorkOrder).inventoryQuantity;
   const designAttachments = getDesignAttachments(selectedWorkOrder.attachments ?? []);
   const officialAttachments = getOfficialAttachments(selectedWorkOrder.attachments ?? []);
-  const memoAttachments = getMemoAttachments(selectedWorkOrder.attachments ?? []);
   const selectedAttachment = getAttachmentById(selectedWorkOrder.attachments ?? [], attachmentPreviewId);
   const { materials, outsourcing, fabricTotal, subsidiaryTotal, outsourcingTotal, totalCost, unitCost } = calculateWorkOrderCosts(selectedWorkOrder);
   const availableActions = getAvailableWorkflowActions({
@@ -101,7 +97,6 @@ export function buildWorkOrderDerivedState({
     isReviewRequestLocked,
     canEditSideDraftContent,
     canUploadOfficialAttachments,
-    canEditMemo,
     canRenameTitle,
     workOrders: filteredWorkOrderList,
     hasVisibleWorkOrders: filteredWorkOrderList.length > 0,
@@ -115,7 +110,6 @@ export function buildWorkOrderDerivedState({
     currentInventoryQuantity,
     designAttachments,
     officialAttachments,
-    memoAttachments,
     selectedAttachment,
     materials,
     outsourcing,

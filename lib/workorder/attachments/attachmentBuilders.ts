@@ -25,7 +25,3 @@ export function createOfficialAttachments(files: File[], currentUser: Pick<UserP
   return createScopedAttachments(files, currentUser, "attachment");
 }
 
-export function createMemoAttachments(files: File[], currentUser: Pick<UserProfile, "id" | "name">): Attachment[] {
-  return createScopedAttachments(files, currentUser, "memo");
-}
-
