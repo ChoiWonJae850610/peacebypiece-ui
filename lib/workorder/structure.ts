@@ -29,8 +29,15 @@ export function normalizeOutsourcingForStorage(workOrderId: string, rows: Outsou
   }));
 }
 
-export function normalizeAttachmentsForStorage(_workOrderId: string, _attachments: Attachment[] | undefined): Attachment[] {
-  return [];
+export function normalizeAttachmentsForStorage(workOrderId: string, attachments: Attachment[] | undefined): Attachment[] {
+  return (attachments ?? []).map((attachment, index) => ({
+    ...attachment,
+    id: String(attachment.id ?? "").trim() || buildChildEntityId(workOrderId, "att", index),
+    name: String(attachment.name ?? ""),
+    type: attachment.type ?? "file",
+    url: String(attachment.url ?? ""),
+    scope: attachment.scope ?? "attachment",
+  }));
 }
 
 export function normalizeMemoRepliesForStorage(

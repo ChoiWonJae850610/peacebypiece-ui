@@ -108,6 +108,7 @@ function serializeWorkOrderPayload(workOrder: WorkOrder): WorkOrder {
     title: normalizedWorkOrder.title,
     workflowState: normalizedWorkOrder.workflowState,
     lastSavedAt: normalizedWorkOrder.lastSavedAt,
+    attachments: [],
   };
 }
 
