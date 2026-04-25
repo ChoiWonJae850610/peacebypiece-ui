@@ -14,6 +14,10 @@ export type Attachment = {
   name: string;
   type: AttachmentType;
   url: string;
+  storageKey?: string | null;
+  thumbnailKey?: string | null;
+  thumbnailUrl?: string | null;
+  previewUrl?: string | null;
   scope?: AttachmentScope;
   ownerId?: string | null;
   ownerName?: string | null;

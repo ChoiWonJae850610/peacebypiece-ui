@@ -84,7 +84,7 @@ export default function WorkOrderAttachmentPanel({
               >
                 <div className={isMobile ? "flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white" : "flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white"}>
                   {attachment.type === "image" ? (
-                    <img src={attachment.url} alt={attachment.name} className="h-full w-full object-cover" />
+                    <img src={attachment.thumbnailUrl} alt={attachment.name} className="h-full w-full object-cover" />
                   ) : (
                     <span className="text-xs font-semibold text-rose-700">{attachment.previewLabel}</span>
                   )}

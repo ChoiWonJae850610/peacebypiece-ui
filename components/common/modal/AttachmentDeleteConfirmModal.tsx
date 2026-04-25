@@ -3,6 +3,7 @@
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { useI18n } from "@/lib/i18n";
+import { getAttachmentPreviewUrl, getAttachmentThumbnailUrl } from "@/lib/permissions/attachments";
 
 
 import type { Attachment } from "@/types/workorder";
@@ -20,6 +21,8 @@ export default function AttachmentDeleteConfirmModal({
 }) {
   const { i18n } = useI18n();
   const ui = i18n.common.ui;
+  const previewUrl = getAttachmentPreviewUrl(attachment);
+  const thumbnailUrl = getAttachmentThumbnailUrl(attachment);
 
   return (
     <ModalShell
@@ -43,7 +46,7 @@ export default function AttachmentDeleteConfirmModal({
           <div className="p-4">
             {attachment?.type === "image" ? (
               <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white">
-                <img src={attachment.url} alt={attachment.name} className="max-h-[340px] w-full object-contain bg-stone-100" />
+                <img src={thumbnailUrl} alt={attachment.name} className="max-h-[340px] w-full object-contain bg-stone-100" />
               </div>
             ) : attachment ? (
               <div className="rounded-2xl border border-stone-200 bg-white p-4">
@@ -55,7 +58,7 @@ export default function AttachmentDeleteConfirmModal({
                   </div>
                 </div>
                 <div className="mt-4 overflow-hidden rounded-xl border border-stone-200">
-                  <iframe title={attachment.name} src={attachment.url} className="h-[240px] w-full bg-stone-50" />
+                  <iframe title={attachment.name} src={previewUrl} className="h-[240px] w-full bg-stone-50" />
                 </div>
               </div>
             ) : null}

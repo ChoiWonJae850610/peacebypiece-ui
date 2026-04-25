@@ -1,8 +1,10 @@
-import { getAttachmentOwnerLabel, getAttachmentPreviewLabel } from "@/lib/permissions/attachments";
+import { getAttachmentOwnerLabel, getAttachmentPreviewLabel, getAttachmentPreviewUrl, getAttachmentThumbnailUrl } from "@/lib/permissions/attachments";
 import type { AttachmentPermissionState } from "@/lib/workorder/attachments/attachmentPermissions";
 import type { Attachment } from "@/types/workorder";
 
 export type AttachmentPanelItem = Pick<Attachment, "id" | "name" | "type" | "url" | "scope" | "isPrimary"> & {
+  thumbnailUrl: string;
+  previewUrl: string;
   ownerLabel: string;
   previewLabel: string;
   canDelete: boolean;
@@ -39,6 +41,8 @@ export function buildAttachmentPanelItems(
       name: attachment.name,
       type: attachment.type,
       url: attachment.url,
+      thumbnailUrl: getAttachmentThumbnailUrl(attachment),
+      previewUrl: getAttachmentPreviewUrl(attachment),
       scope: attachment.scope,
       isPrimary: attachment.isPrimary === true,
       ownerLabel: getAttachmentOwnerLabel(attachment),

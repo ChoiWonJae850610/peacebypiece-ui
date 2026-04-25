@@ -36,6 +36,10 @@ export function normalizeAttachmentsForStorage(workOrderId: string, attachments:
     name: String(attachment.name ?? ""),
     type: attachment.type ?? "file",
     url: String(attachment.url ?? ""),
+    storageKey: attachment.storageKey ?? null,
+    thumbnailKey: attachment.thumbnailKey ?? null,
+    thumbnailUrl: attachment.thumbnailUrl ?? null,
+    previewUrl: attachment.previewUrl ?? String(attachment.url ?? ""),
     scope: attachment.scope ?? "attachment",
   }));
 }

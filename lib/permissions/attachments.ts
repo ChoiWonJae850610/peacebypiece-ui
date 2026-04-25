@@ -49,8 +49,20 @@ export function getAttachmentTypeBadgeLabel(attachment: Attachment | File | { ty
 }
 
 
+function normalizeAttachmentUrl(value: string | null | undefined): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+export function getAttachmentPreviewUrl(attachment: Attachment | null | undefined): string {
+  return normalizeAttachmentUrl(attachment?.previewUrl) || normalizeAttachmentUrl(attachment?.url);
+}
+
+export function getAttachmentThumbnailUrl(attachment: Attachment | null | undefined): string {
+  return normalizeAttachmentUrl(attachment?.thumbnailUrl) || getAttachmentPreviewUrl(attachment);
+}
+
 export function canPreviewAttachment(attachment: Attachment | null | undefined): boolean {
-  return Boolean(attachment?.url);
+  return Boolean(getAttachmentPreviewUrl(attachment));
 }
 
 export function canDeleteAttachmentByUser(user: UserProfile, attachment: Attachment | null): boolean {
