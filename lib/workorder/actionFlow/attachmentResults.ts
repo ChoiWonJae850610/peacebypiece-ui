@@ -58,7 +58,7 @@ export function buildPersistedAttachmentUploadResult(payload: {
   return {
     nextWorkOrder,
     historyLogs: [createAttachmentUploadHistoryLog(payload.currentUser.name, payload.workOrder.id, payload.attachments, payload.scope, payload.historyText ?? defaultHistoryText)],
-    saveStatus: "dirty",
+    saveStatus: "saved",
     toastMessage: payload.scope === "design"
       ? ((payload.text ?? defaultActionFlowText) as ActionFlowText & { designAttachmentUploadedToast?: string }).designAttachmentUploadedToast ?? (payload.text ?? defaultActionFlowText).officialAttachmentUploadedToast
       : (payload.text ?? defaultActionFlowText).officialAttachmentUploadedToast,

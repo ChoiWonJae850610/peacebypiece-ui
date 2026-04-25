@@ -1,5 +1,5 @@
 import { createHmac, createHash } from "crypto";
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { Readable } from "stream";
 
 // ================================
@@ -16,6 +16,12 @@ type R2ObjectResult = {
   body: Buffer;
   contentType: string;
   contentLength: number;
+};
+
+export type PutR2ObjectInput = {
+  key: string;
+  body: Buffer | Uint8Array;
+  contentType?: string | null;
 };
 
 export type CreateR2PresignedPutUrlInput = {
@@ -213,6 +219,34 @@ export function createR2PresignedPutUrl(input: CreateR2PresignedPutUrlInput): R2
     },
     expiresInSeconds,
   };
+}
+
+export async function putR2Object(input: PutR2ObjectInput): Promise<void> {
+  const config = getR2Config();
+  const client = createR2Client();
+  const key = cleanStorageKey(input.key);
+
+  try {
+    await client.send(
+      new PutObjectCommand({
+        Bucket: config.bucketName,
+        Key: key,
+        Body: input.body,
+        ContentType: input.contentType || "application/octet-stream",
+      })
+    );
+  } catch (error: any) {
+    console.error("[R2_PUT_ERROR]", {
+      bucketName: config.bucketName,
+      key,
+      endpoint: config.endpoint,
+      message: error?.message,
+      code: error?.code,
+      name: error?.name,
+    });
+
+    throw error;
+  }
 }
 
 export async function getR2Object(input: GetR2ObjectInput): Promise<R2ObjectResult> {

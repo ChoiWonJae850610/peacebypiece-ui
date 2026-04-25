@@ -56,16 +56,34 @@ async function prepareWorkOrderAttachmentUploads(payload: {
   return Array.isArray(result.uploadTargets) ? result.uploadTargets : [];
 }
 
+async function uploadFileThroughServerFallback(file: File, target: AttachmentUploadTarget): Promise<void> {
+  const formData = new FormData();
+  formData.set("storageKey", target.storageKey);
+  formData.set("file", file);
+
+  const response = await fetch("/api/workorders/attachments/upload/direct", {
+    method: "POST",
+    body: formData,
+  });
+  const result = await readJson<{ error?: string; message?: string }>(response, { error: "INVALID_SERVER_UPLOAD_RESPONSE" });
+
+  if (!response.ok) {
+    throw new Error(result.message || result.error || `ATTACHMENT_SERVER_UPLOAD_FAILED:${response.status}`);
+  }
+}
+
 async function putFileToUploadTarget(file: File, target: AttachmentUploadTarget): Promise<void> {
   const response = await fetch(target.uploadUrl, {
     method: target.method,
     headers: target.headers,
     body: file,
-  });
+  }).catch(() => null);
 
-  if (!response.ok) {
-    throw new Error(`ATTACHMENT_DIRECT_UPLOAD_FAILED:${response.status}`);
+  if (response?.ok) {
+    return;
   }
+
+  await uploadFileThroughServerFallback(file, target);
 }
 
 async function completeWorkOrderAttachmentUploads(payload: {

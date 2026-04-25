@@ -16,6 +16,7 @@ import {
   readAttachmentInputFiles,
 } from "@/lib/workorder/attachments/attachmentActions";
 import { uploadWorkOrderAttachmentFiles } from "@/lib/workorder/attachments/attachmentUploadApiClient";
+import { createMemoReplyInDb, createMemoThreadInDb } from "@/lib/workorder/memo/memoApiClient";
 import type { Attachment, AttachmentScope, HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 
 export function useWorkOrderAttachments({
@@ -138,50 +139,102 @@ export function useWorkOrderAttachments({
     }
   };
 
-  const handleCreateMemoThread = (content: string) => {
+  const handleCreateMemoThread = async (content: string) => {
     if (!canEditSideDraftContent) return;
-    const result = buildMemoThreadResult({
-      workOrder: selectedWorkOrder,
-      currentUser,
-      content,
-      text: actionFlowText,
-      historyText,
-    });
-    if (!result) return;
+    setSaveStatus("saving");
 
-    setWorkOrders((prev) => prev.map((item) => (item.id === selectedWorkOrder.id ? result.nextWorkOrder : item)));
-    if (result.historyLogs?.length) {
-      setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
-    }
-    if (result.saveStatus) {
-      setSaveStatus(result.saveStatus);
-    }
-    if (result.toastMessage) {
-      setToastMessage(result.toastMessage);
+    try {
+      const createdThread = await createMemoThreadInDb({
+        workOrder: selectedWorkOrder,
+        currentUser,
+        content,
+      });
+      const result = buildMemoThreadResult({
+        workOrder: selectedWorkOrder,
+        currentUser,
+        content: createdThread.content,
+        text: actionFlowText,
+        historyText,
+      });
+      if (!result) {
+        setSaveStatus("saved");
+        return;
+      }
+
+      const nextWorkOrder = {
+        ...result.nextWorkOrder,
+        memoThreads: (result.nextWorkOrder.memoThreads ?? []).map((thread) =>
+          thread.content === createdThread.content && thread.authorId === createdThread.authorId
+            ? { ...createdThread, replies: createdThread.replies ?? [] }
+            : thread,
+        ),
+      };
+
+      setWorkOrders((prev) => prev.map((item) => (item.id === selectedWorkOrder.id ? nextWorkOrder : item)));
+      if (result.historyLogs?.length) {
+        setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
+      }
+      setSaveStatus("saved");
+      if (result.toastMessage) {
+        setToastMessage(result.toastMessage);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "메모 저장에 실패했습니다.";
+      setSaveStatus("dirty");
+      setToastMessage(message);
     }
   };
 
-  const handleCreateMemoReply = (threadId: string, content: string) => {
+  const handleCreateMemoReply = async (threadId: string, content: string) => {
     if (!canEditSideDraftContent) return;
-    const result = buildMemoReplyResult({
-      workOrder: selectedWorkOrder,
-      currentUser,
-      threadId,
-      content,
-      text: actionFlowText,
-      historyText,
-    });
-    if (!result) return;
+    setSaveStatus("saving");
 
-    setWorkOrders((prev) => prev.map((item) => (item.id === selectedWorkOrder.id ? result.nextWorkOrder : item)));
-    if (result.historyLogs?.length) {
-      setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
-    }
-    if (result.saveStatus) {
-      setSaveStatus(result.saveStatus);
-    }
-    if (result.toastMessage) {
-      setToastMessage(result.toastMessage);
+    try {
+      const createdReply = await createMemoReplyInDb({
+        workOrder: selectedWorkOrder,
+        currentUser,
+        threadId,
+        content,
+      });
+      const result = buildMemoReplyResult({
+        workOrder: selectedWorkOrder,
+        currentUser,
+        threadId,
+        content: createdReply.content,
+        text: actionFlowText,
+        historyText,
+      });
+      if (!result) {
+        setSaveStatus("saved");
+        return;
+      }
+
+      const nextWorkOrder = {
+        ...result.nextWorkOrder,
+        memoThreads: (result.nextWorkOrder.memoThreads ?? []).map((thread) =>
+          thread.id === threadId
+            ? {
+                ...thread,
+                replies: (thread.replies ?? []).map((reply) =>
+                  reply.content === createdReply.content && reply.authorId === createdReply.authorId ? createdReply : reply,
+                ),
+              }
+            : thread,
+        ),
+      };
+
+      setWorkOrders((prev) => prev.map((item) => (item.id === selectedWorkOrder.id ? nextWorkOrder : item)));
+      if (result.historyLogs?.length) {
+        setHistoryLogs((prev) => [...result.historyLogs!, ...prev]);
+      }
+      setSaveStatus("saved");
+      if (result.toastMessage) {
+        setToastMessage(result.toastMessage);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "댓글 저장에 실패했습니다.";
+      setSaveStatus("dirty");
+      setToastMessage(message);
     }
   };
 
