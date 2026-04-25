@@ -18,11 +18,15 @@ function sanitizeSegment(value: string): string {
     .slice(0, 80) || "item";
 }
 
-function normalizeAttachmentScope(value: AttachmentScope | null | undefined): AttachmentScope {
+function normalizeStorageKey(value: string): string {
+  return value.replace(/^\/+/, "").trim();
+}
+
+export function normalizeAttachmentScopeForStorage(value: AttachmentScope | null | undefined): AttachmentScope {
   return value === "design" ? "design" : value === "memo" ? "memo" : "attachment";
 }
 
-function getAttachmentStorageDirectory(scope: AttachmentScope): "design" | "attachments" | "memos" {
+export function getAttachmentStorageDirectory(scope: AttachmentScope): "design" | "attachments" | "memos" {
   if (scope === "design") return "design";
   if (scope === "memo") return "memos";
   return "attachments";
@@ -34,7 +38,7 @@ export function createWorkOrderAttachmentStorageKey(input: {
   originalName: string;
 }): string {
   const workOrderId = sanitizeSegment(input.workOrderId);
-  const scope = normalizeAttachmentScope(input.scope);
+  const scope = normalizeAttachmentScopeForStorage(input.scope);
   const directory = getAttachmentStorageDirectory(scope);
   const extension = getFileExtension(input.originalName);
   const id = randomUUID();
@@ -43,7 +47,26 @@ export function createWorkOrderAttachmentStorageKey(input: {
 }
 
 export function isCurrentWorkOrderAttachmentStorageKey(key: string): boolean {
-  return /^workorders\/[^/]+\/(design|attachments|memos)\/[^/]+$/i.test(key.trim());
+  return /^workorders\/[^/]+\/(design|attachments|memos)\/[^/]+$/i.test(normalizeStorageKey(key));
+}
+
+export function isWorkOrderAttachmentStorageKeyForScope(input: {
+  key: string;
+  workOrderId: string;
+  scope: AttachmentScope;
+}): boolean {
+  const workOrderId = sanitizeSegment(input.workOrderId);
+  const scope = normalizeAttachmentScopeForStorage(input.scope);
+  const directory = getAttachmentStorageDirectory(scope);
+  const segments = normalizeStorageKey(input.key).split("/");
+
+  return (
+    segments.length === 4 &&
+    segments[0] === "workorders" &&
+    segments[1] === workOrderId &&
+    segments[2] === directory &&
+    segments[3].length > 0
+  );
 }
 
 export function isSupportedWorkOrderAttachmentStorageKey(key: string): boolean {

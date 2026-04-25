@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
-import { isSupportedWorkOrderAttachmentStorageKey } from "@/lib/storage/r2/r2Keys";
+import { isSupportedWorkOrderAttachmentStorageKey, isWorkOrderAttachmentStorageKeyForScope } from "@/lib/storage/r2/r2Keys";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
 import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
 import { inferAttachmentTypeFromMime } from "@/lib/workorder/persistence/attachmentMemoTypes";
@@ -35,13 +35,14 @@ function normalizeScope(value: unknown): AttachmentScope {
   return value === "design" ? "design" : value === "memo" ? "memo" : "attachment";
 }
 
-function normalizeUploadTarget(input: CompleteUploadTargetInput) {
+function normalizeUploadTarget(input: CompleteUploadTargetInput, context: { workOrderId: string; scope: AttachmentScope }) {
   const storageKey = readText(input.storageKey);
   const fileName = readText(input.fileName);
   const contentType = readText(input.contentType);
   const fileSize = typeof input.fileSize === "number" && Number.isFinite(input.fileSize) ? input.fileSize : null;
 
   if (!storageKey || !fileName || !isSupportedWorkOrderAttachmentStorageKey(storageKey)) return null;
+  if (!isWorkOrderAttachmentStorageKeyForScope({ key: storageKey, workOrderId: context.workOrderId, scope: context.scope })) return null;
 
   return {
     storageKey,
@@ -78,13 +79,15 @@ export async function POST(request: NextRequest) {
     const ownerId = readText(payload?.ownerId);
     const ownerName = readText(payload?.ownerName);
     const scope = normalizeScope(payload?.scope);
-    const uploadTargets = Array.isArray(payload?.uploadTargets)
-      ? payload.uploadTargets.map((item) => normalizeUploadTarget(item as CompleteUploadTargetInput)).filter((item): item is NonNullable<ReturnType<typeof normalizeUploadTarget>> => item !== null)
-      : [];
+    const rawUploadTargets = Array.isArray(payload?.uploadTargets) ? payload.uploadTargets : [];
 
     if (!workOrderId) {
       return NextResponse.json({ attachments: [], error: "WORK_ORDER_ID_REQUIRED" }, { status: 400 });
     }
+
+    const uploadTargets = rawUploadTargets
+      .map((item) => normalizeUploadTarget(item as CompleteUploadTargetInput, { workOrderId, scope }))
+      .filter((item): item is NonNullable<ReturnType<typeof normalizeUploadTarget>> => item !== null);
 
     if (uploadTargets.length === 0) {
       return NextResponse.json({ attachments: [], error: "UPLOAD_TARGETS_REQUIRED" }, { status: 400 });

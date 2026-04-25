@@ -15,9 +15,8 @@ function json(data, init = {}) {
     },
   });
 }
-
 function isSafeStorageKey(key) {
-  return key.startsWith("workorders/") && !key.includes("..") && !key.startsWith("/");
+  return /^workorders\/[^/]+\/(design|attachments|memos)\/[^/]+$/i.test(key) && !key.includes("..") && !key.startsWith("/");
 }
 
 function createFileHeaders(object) {

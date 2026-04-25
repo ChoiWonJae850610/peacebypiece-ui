@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getR2Object } from "@/lib/storage/r2/r2Client";
 import { isR2Configured } from "@/lib/storage/r2/r2Config";
+import { isSupportedWorkOrderAttachmentStorageKey } from "@/lib/storage/r2/r2Keys";
 import { createR2WorkerFileUrl, isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
 
 export const runtime = "nodejs";
 
 function isSafeStorageKey(value: string): boolean {
-  return value.startsWith("workorders/") && !value.includes("..") && !value.startsWith("/");
+  return isSupportedWorkOrderAttachmentStorageKey(value) && value.startsWith("workorders/") && !value.includes("..") && !value.startsWith("/");
 }
 
 function createReadableStream(body: Buffer | Uint8Array | ArrayBuffer): ReadableStream<Uint8Array> {
