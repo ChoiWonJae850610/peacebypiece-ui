@@ -16,6 +16,7 @@ import {
   getAttachmentById,
   getDesignAttachments,
   getOfficialAttachments,
+  getMemoAttachments,
   canEditWorkOrderAttachments,
   canEditWorkOrderMemo,
   canRenameWorkOrderTitle,
@@ -74,6 +75,7 @@ export function buildWorkOrderDerivedState({
   const currentInventoryQuantity = getSharedInventorySnapshot(workOrders, selectedWorkOrder).inventoryQuantity;
   const designAttachments = getDesignAttachments(selectedWorkOrder.attachments ?? []);
   const officialAttachments = getOfficialAttachments(selectedWorkOrder.attachments ?? []);
+  const memoAttachments = getMemoAttachments(selectedWorkOrder.attachments ?? []);
   const selectedAttachment = getAttachmentById(selectedWorkOrder.attachments ?? [], attachmentPreviewId);
   const { materials, outsourcing, fabricTotal, subsidiaryTotal, outsourcingTotal, totalCost, unitCost } = calculateWorkOrderCosts(selectedWorkOrder);
   const availableActions = getAvailableWorkflowActions({
@@ -113,6 +115,7 @@ export function buildWorkOrderDerivedState({
     currentInventoryQuantity,
     designAttachments,
     officialAttachments,
+    memoAttachments,
     selectedAttachment,
     materials,
     outsourcing,

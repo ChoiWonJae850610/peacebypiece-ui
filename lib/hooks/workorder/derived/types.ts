@@ -40,6 +40,7 @@ export type WorkOrderDerivedState = {
   currentInventoryQuantity: number;
   designAttachments: WorkOrder["attachments"];
   officialAttachments: WorkOrder["attachments"];
+  memoAttachments: WorkOrder["attachments"];
   selectedAttachment: WorkOrder["attachments"][number] | null;
   materials: NonNullable<WorkOrder["materials"]>;
   outsourcing: NonNullable<WorkOrder["outsourcing"]>;

@@ -210,6 +210,7 @@ export function useWorkOrder() {
     inventoryLogs: historyState.inventoryLogs,
     designAttachments: derivedState.designAttachments,
     officialAttachments: derivedState.officialAttachments,
+    memoAttachments: derivedState.memoAttachments,
     selectedAttachment: derivedState.selectedAttachment,
     canDeleteAttachment: attachmentState.canDeleteAttachment,
     getAttachmentPermissions: attachmentState.getAttachmentPermissions,

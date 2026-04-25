@@ -1,5 +1,5 @@
 import type { AttachmentPanelSection } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
-import type { RoleType, WorkOrder } from "@/types/workorder";
+import type { AttachmentScope, RoleType, WorkOrder } from "@/types/workorder";
 
 export type WorkOrderSidePanelProps = {
   isEmpty?: boolean;
@@ -7,7 +7,7 @@ export type WorkOrderSidePanelProps = {
   canManageAttachments: boolean;
   canEditMemo: boolean;
   attachmentSections: AttachmentPanelSection[];
-  onOpenAttachmentPicker: (scope?: "design" | "attachment") => void;
+  onOpenAttachmentPicker: (scope?: AttachmentScope) => void;
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;
   currentRole: RoleType;

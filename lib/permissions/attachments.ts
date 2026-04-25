@@ -16,6 +16,10 @@ export function isOfficialAttachment(attachment: Attachment | null | undefined):
   return getAttachmentScope(attachment) === "attachment";
 }
 
+export function isMemoAttachment(attachment: Attachment | null | undefined): boolean {
+  return getAttachmentScope(attachment) === "memo";
+}
+
 
 export const ATTACHMENT_INPUT_ACCEPT = "image/*,.pdf,application/pdf,*/*";
 

@@ -8,7 +8,7 @@ import WorkOrderOverlay from "@/components/workorder/WorkOrderOverlay";
 import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
 import type { AttachmentPermissionState } from "@/lib/workorder/attachments/attachmentPermissions";
 import type { DbConnectionStatus } from "@/lib/repositories/dbConnectionStatusStore";
-import type { Attachment, HistoryFilter, InventoryLog, RoleType, UserProfile, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
+import type { Attachment, AttachmentScope, HistoryFilter, InventoryLog, RoleType, UserProfile, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
 
 export type SidebarListProps = ComponentProps<typeof SidebarContent>;
 export type DetailProps = ComponentProps<typeof WorkOrderDetail>;
@@ -60,6 +60,7 @@ export type BuildWorkspaceViewModelArgs = {
   inventoryLogs: InventoryLog[];
   designAttachments: Attachment[];
   officialAttachments: Attachment[];
+  memoAttachments: Attachment[];
   selectedAttachment: Attachment | null;
   outsourcingTotal: number;
   fabricTotal: number;
@@ -105,7 +106,7 @@ export type BuildWorkspaceViewModelArgs = {
   onOpenManagerAssignModal: () => void;
   onCloseManagerAssignModal: () => void;
   onChangeManager: (managerId: string) => void;
-  onOpenAttachmentPicker: (scope?: "design" | "attachment") => void;
+  onOpenAttachmentPicker: (scope?: AttachmentScope) => void;
   onRequestDeleteAttachment: (attachmentId: string) => void;
   onAttachmentDeleteConfirmClose: () => void;
   onAttachmentDeleteConfirm: () => void;
@@ -149,6 +150,7 @@ export type BaseWorkspaceViewModelArgs = {
   currentInventoryQuantity: number;
   designAttachments: Attachment[];
   officialAttachments: Attachment[];
+  memoAttachments: Attachment[];
   selectedAttachment: Attachment | null;
   fabricTotal: number;
   subsidiaryTotal: number;
@@ -167,7 +169,7 @@ export type BaseWorkspaceViewModelArgs = {
   onRenameWorkOrderTitle: (nextTitle: string) => void;
   onCompleteInspection: DetailProps["onCompleteInspection"];
   onOpenManagerAssignModal: () => void;
-  onOpenAttachmentPicker: (scope?: "design" | "attachment") => void;
+  onOpenAttachmentPicker: (scope?: AttachmentScope) => void;
   onRequestDeleteAttachment: (attachmentId: string) => void;
   onCreateMemoThread: SidePanelProps["onCreateMemoThread"];
   onCreateMemoReply: SidePanelProps["onCreateMemoReply"];
