@@ -78,6 +78,7 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
     onOpenManagerAssignModal: args.onOpenManagerAssignModal,
     onOpenAttachmentPicker: args.onOpenAttachmentPicker,
     onRequestDeleteAttachment: args.onRequestDeleteAttachment,
+      onSetPrimaryDesignAttachment: args.onSetPrimaryDesignAttachment,
     onCreateMemoThread: args.onCreateMemoThread,
     onCreateMemoReply: args.onCreateMemoReply,
       onUpdateMemoThread: args.onUpdateMemoThread,

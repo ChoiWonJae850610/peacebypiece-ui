@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
 import { isSupportedWorkOrderAttachmentStorageKey, isWorkOrderAttachmentStorageKeyForScope } from "@/lib/storage/r2/r2Keys";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
+import { normalizeAttachmentUploadScope, validateAttachmentFile, validateAttachmentFileCount } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
 import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
 import { inferAttachmentTypeFromMime } from "@/lib/workorder/persistence/attachmentMemoTypes";
 import type { Attachment, AttachmentScope } from "@/types/workorder";
@@ -32,7 +33,7 @@ function readText(value: unknown): string | null {
 }
 
 function normalizeScope(value: unknown): AttachmentScope {
-  return value === "design" ? "design" : value === "memo" ? "memo" : "attachment";
+  return normalizeAttachmentUploadScope(value);
 }
 
 function normalizeUploadTarget(input: CompleteUploadTargetInput, context: { workOrderId: string; scope: AttachmentScope }) {
@@ -60,6 +61,7 @@ function createUploadAttachment(input: {
   ownerId: string | null;
   ownerName: string | null;
   storageKey: string;
+  isPrimary?: boolean | null;
 }): Attachment {
   return {
     id: input.id,
@@ -69,6 +71,7 @@ function createUploadAttachment(input: {
     scope: input.scope,
     ownerId: input.ownerId,
     ownerName: input.ownerName,
+    isPrimary: input.isPrimary === true,
   };
 }
 
@@ -96,6 +99,24 @@ export async function POST(request: NextRequest) {
     const repository = await createAttachmentMemoRepository();
     if (!isWritableRepository(repository)) {
       return NextResponse.json({ attachments: [], error: "ATTACHMENT_REPOSITORY_WRITE_UNSUPPORTED" }, { status: 503 });
+    }
+
+    const currentCount = await repository.countActiveAttachmentsByWorkOrderId(workOrderId);
+    const countValidation = validateAttachmentFileCount({ currentCount, incomingCount: uploadTargets.length });
+    if (!countValidation.ok) {
+      return NextResponse.json({ attachments: [], error: countValidation.error, message: countValidation.message }, { status: 400 });
+    }
+
+    for (const target of uploadTargets) {
+      const fileValidation = validateAttachmentFile({
+        scope: normalizeAttachmentUploadScope(scope),
+        fileName: target.fileName,
+        contentType: target.contentType || "application/octet-stream",
+        fileSize: target.fileSize ?? 0,
+      });
+      if (!fileValidation.ok) {
+        return NextResponse.json({ attachments: [], error: fileValidation.error, message: fileValidation.message }, { status: 400 });
+      }
     }
 
     const attachments: Attachment[] = [];
@@ -127,6 +148,7 @@ export async function POST(request: NextRequest) {
         ownerId,
         ownerName,
         storageKey: target.storageKey,
+        isPrimary: created.is_primary,
       }));
     }
 

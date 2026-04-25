@@ -3,6 +3,7 @@
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
 import { AddButton, DeleteButton } from "@/components/workorder/detail/shared/detailEditorShared";
 import { useI18n } from "@/lib/i18n";
+import { WORK_ORDER_ATTACHMENT_POLICY } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
 import type { AttachmentPanelItem } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
 
 export default function WorkOrderAttachmentPanel({
@@ -15,6 +16,7 @@ export default function WorkOrderAttachmentPanel({
   onOpenAttachmentPicker,
   onPreviewAttachment,
   onDeleteAttachment,
+  onSetPrimaryDesignAttachment,
   variant = "desktop",
 }: {
   title: string;
@@ -26,10 +28,12 @@ export default function WorkOrderAttachmentPanel({
   onOpenAttachmentPicker: () => void;
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;
+  onSetPrimaryDesignAttachment: (attachmentId: string) => void;
   variant?: "desktop" | "tablet" | "mobile";
 }) {
   const { i18n } = useI18n();
   const ui = i18n.workorder.ui;
+  const attachmentPolicyText = WORK_ORDER_ATTACHMENT_POLICY.messages;
 
   if (!canSeeAttachments) return null;
 
@@ -48,6 +52,17 @@ export default function WorkOrderAttachmentPanel({
         <div className={isMobile ? "mt-2.5 space-y-1.5" : "mt-2.5 space-y-2"}>
           {attachments.map((attachment) => (
             <div key={attachment.id} className={isMobile ? "relative rounded-2xl border border-stone-200 bg-stone-50 p-2.5 pr-10" : isTablet ? "relative rounded-2xl border border-stone-200 bg-stone-50 p-3 pr-11" : "relative rounded-2xl border border-stone-200 bg-stone-50 p-3 pr-12"}>
+              {attachment.canSetPrimary ? (
+                <button
+                  type="button"
+                  onClick={() => onSetPrimaryDesignAttachment(attachment.id)}
+                  className={`absolute left-3 top-3 rounded-full border px-2 py-0.5 text-[11px] font-bold ${attachment.isPrimary ? "border-amber-500 bg-amber-100 text-amber-900" : "border-stone-300 bg-white text-stone-600 hover:border-stone-400"}`}
+                  title={attachment.isPrimary ? attachmentPolicyText.primaryTitle : attachmentPolicyText.primaryActionTitle}
+                  aria-label={attachment.isPrimary ? `${attachment.name} ${attachmentPolicyText.primaryTitle}` : `${attachment.name} ${attachmentPolicyText.primaryActionTitle}`}
+                >
+                  {attachment.isPrimary ? attachmentPolicyText.primaryBadge : attachmentPolicyText.primaryAction}
+                </button>
+              ) : null}
               {attachment.canDelete ? (
                 <div className="absolute right-3 top-3">
                   <DeleteButton

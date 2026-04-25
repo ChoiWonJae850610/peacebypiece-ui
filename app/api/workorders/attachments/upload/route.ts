@@ -3,6 +3,9 @@ import { createR2PresignedPutUrl } from "@/lib/storage/r2/r2Client";
 import { isR2Configured } from "@/lib/storage/r2/r2Config";
 import { createWorkOrderAttachmentStorageKey } from "@/lib/storage/r2/r2Keys";
 import { createR2WorkerUploadUrl, isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
+import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
+import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
+import { validateAttachmentFile, validateAttachmentFileCount, normalizeAttachmentUploadScope } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
 import type { AttachmentScope } from "@/types/workorder";
 
 export const runtime = "nodejs";
@@ -10,12 +13,16 @@ export const runtime = "nodejs";
 type PrepareUploadFileInput = { name?: unknown; type?: unknown; size?: unknown };
 type PrepareUploadRequest = { workOrderId?: unknown; scope?: unknown; files?: unknown };
 
+function isWritableRepository(repository: AttachmentMemoRepository): repository is AttachmentMemoWritableRepository {
+  return "countActiveAttachmentsByWorkOrderId" in repository;
+}
+
 function readText(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
 }
 
 function normalizeScope(value: unknown): AttachmentScope {
-  return value === "design" ? "design" : value === "memo" ? "memo" : "attachment";
+  return normalizeAttachmentUploadScope(value);
 }
 
 function normalizeFile(input: PrepareUploadFileInput) {
@@ -59,6 +66,27 @@ export async function POST(request: NextRequest) {
 
     if (!workOrderId) return NextResponse.json({ uploadTargets: [], error: "WORK_ORDER_ID_REQUIRED" }, { status: 400 });
     if (files.length === 0) return NextResponse.json({ uploadTargets: [], error: "FILES_REQUIRED" }, { status: 400 });
+
+    const repository = await createAttachmentMemoRepository();
+    if (isWritableRepository(repository)) {
+      const currentCount = await repository.countActiveAttachmentsByWorkOrderId(workOrderId);
+      const countValidation = validateAttachmentFileCount({ currentCount, incomingCount: files.length });
+      if (!countValidation.ok) {
+        return NextResponse.json({ uploadTargets: [], error: countValidation.error, message: countValidation.message }, { status: 400 });
+      }
+    }
+
+    for (const file of files) {
+      const validation = validateAttachmentFile({
+        scope: normalizeAttachmentUploadScope(scope),
+        fileName: file.name,
+        contentType: file.type,
+        fileSize: file.size,
+      });
+      if (!validation.ok) {
+        return NextResponse.json({ uploadTargets: [], error: validation.error, message: validation.message }, { status: 400 });
+      }
+    }
 
     return NextResponse.json({ uploadTargets: files.map((file) => createUploadTarget({ workOrderId, scope, file })) });
   } catch (error) {

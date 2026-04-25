@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { putR2Object } from "@/lib/storage/r2/r2Client";
 import { isSupportedWorkOrderAttachmentStorageKey } from "@/lib/storage/r2/r2Keys";
+import { validateAttachmentFile, type WorkOrderAttachmentUploadScope } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
 
 export const runtime = "nodejs";
 
 function readText(value: FormDataEntryValue | null): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+function getScopeFromStorageKey(storageKey: string): WorkOrderAttachmentUploadScope {
+  return storageKey.includes("/design/") ? "design" : "attachment";
 }
 
 export async function POST(request: NextRequest) {
@@ -20,6 +25,16 @@ export async function POST(request: NextRequest) {
 
     if (!(file instanceof File) || file.size <= 0) {
       return NextResponse.json({ error: "FILE_REQUIRED" }, { status: 400 });
+    }
+
+    const validation = validateAttachmentFile({
+      scope: getScopeFromStorageKey(storageKey),
+      fileName: file.name,
+      contentType: file.type || "application/octet-stream",
+      fileSize: file.size,
+    });
+    if (!validation.ok) {
+      return NextResponse.json({ error: validation.error, message: validation.message }, { status: 400 });
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());

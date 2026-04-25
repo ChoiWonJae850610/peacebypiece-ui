@@ -50,6 +50,7 @@ function mapAttachmentRow(row: AttachmentRow): Attachment {
     scope: normalizeAttachmentScope(row.type),
     ownerId: row.author_id,
     ownerName: row.author_id,
+    isPrimary: row.is_primary === true,
   };
 }
 
@@ -122,6 +123,7 @@ function mapAttachmentInput(input: CreateAttachmentRecordInput) {
     mime_type: input.content_type ?? null,
     size_bytes: toNumberOrNull(input.file_size),
     author_id: input.attachment.ownerId ?? input.attachment.ownerName ?? null,
+    is_primary: input.is_primary ?? input.attachment.isPrimary ?? false,
   };
 }
 
@@ -183,6 +185,7 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                   mime_type,
                   size_bytes,
                   author_id,
+                  is_primary,
                   is_active,
                   deleted_at,
                   created_at
@@ -239,9 +242,10 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
            original_name,
            mime_type,
            size_bytes,
-           author_id
+           author_id,
+           is_primary
          )
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
          RETURNING id,
                    order_id,
                    type,
@@ -250,10 +254,11 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                    mime_type,
                    size_bytes,
                    author_id,
+                   is_primary,
                    is_active,
                    deleted_at,
                    created_at`,
-        [attachmentId, next.order_id, next.type, next.storage_key, next.original_name, next.mime_type, next.size_bytes, next.author_id],
+        [attachmentId, next.order_id, next.type, next.storage_key, next.original_name, next.mime_type, next.size_bytes, next.author_id, next.is_primary],
       );
 
       const [created] = result.rows;
@@ -315,12 +320,82 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                 mime_type,
                 size_bytes,
                 author_id,
+                is_primary,
                 is_active,
                 deleted_at,
                 created_at
            FROM attachments
           WHERE id = $1
           LIMIT 1`,
+        [attachmentId],
+      );
+
+      return result.rows[0] ?? null;
+    },
+    countActiveAttachmentsByWorkOrderId: async (workOrderId) => {
+      const result = await queryDb<{ count: string }>(
+        `SELECT COUNT(*)::text AS count
+           FROM attachments
+          WHERE order_id = $1
+            AND is_active = true
+            AND deleted_at IS NULL`,
+        [workOrderId],
+      );
+
+      return Number(result.rows[0]?.count ?? 0);
+    },
+    setPrimaryDesignAttachment: async ({ workOrderId, attachmentId }) => {
+      const target = await queryDb<AttachmentRow>(
+        `SELECT id,
+                order_id,
+                type,
+                storage_key,
+                original_name,
+                mime_type,
+                size_bytes,
+                author_id,
+                is_primary,
+                is_active,
+                deleted_at,
+                created_at
+           FROM attachments
+          WHERE id = $1
+            AND order_id = $2
+            AND type = 'design'
+            AND is_active = true
+            AND deleted_at IS NULL
+          LIMIT 1`,
+        [attachmentId, workOrderId],
+      );
+
+      if (!target.rows[0]) return null;
+
+      await queryDb(
+        `UPDATE attachments
+            SET is_primary = false
+          WHERE order_id = $1
+            AND type = 'design'
+            AND is_active = true
+            AND deleted_at IS NULL`,
+        [workOrderId],
+      );
+
+      const result = await queryDb<AttachmentRow>(
+        `UPDATE attachments
+            SET is_primary = true
+          WHERE id = $1
+          RETURNING id,
+                    order_id,
+                    type,
+                    storage_key,
+                    original_name,
+                    mime_type,
+                    size_bytes,
+                    author_id,
+                    is_primary,
+                    is_active,
+                    deleted_at,
+                    created_at`,
         [attachmentId],
       );
 
@@ -350,6 +425,7 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                     mime_type,
                     size_bytes,
                     author_id,
+                    is_primary,
                     is_active,
                     deleted_at,
                     created_at`,

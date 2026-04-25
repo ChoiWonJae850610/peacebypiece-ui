@@ -19,6 +19,7 @@ export type Attachment = {
   ownerName?: string | null;
   linkedThreadId?: string | null;
   linkedReplyId?: string | null;
+  isPrimary?: boolean | null;
 };
 
 export type MemoReply = {

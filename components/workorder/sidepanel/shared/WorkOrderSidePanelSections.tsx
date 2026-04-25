@@ -15,6 +15,7 @@ export default function WorkOrderSidePanelSections({
   onOpenAttachmentPicker,
   onPreviewAttachment,
   onDeleteAttachment,
+  onSetPrimaryDesignAttachment,
   currentRole,
   workOrder,
   currentUserName,
@@ -36,6 +37,7 @@ export default function WorkOrderSidePanelSections({
       onOpenAttachmentPicker={onOpenAttachmentPicker}
       onPreviewAttachment={onPreviewAttachment}
       onDeleteAttachment={onDeleteAttachment}
+      onSetPrimaryDesignAttachment={onSetPrimaryDesignAttachment}
       variant={variant}
     />
   );

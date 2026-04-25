@@ -2,11 +2,12 @@ import { getAttachmentOwnerLabel, getAttachmentPreviewLabel } from "@/lib/permis
 import type { AttachmentPermissionState } from "@/lib/workorder/attachments/attachmentPermissions";
 import type { Attachment } from "@/types/workorder";
 
-export type AttachmentPanelItem = Pick<Attachment, "id" | "name" | "type" | "url"> & {
+export type AttachmentPanelItem = Pick<Attachment, "id" | "name" | "type" | "url" | "scope" | "isPrimary"> & {
   ownerLabel: string;
   previewLabel: string;
   canDelete: boolean;
   canPreview: boolean;
+  canSetPrimary: boolean;
 };
 
 export type AttachmentPanelSection = {
@@ -38,10 +39,13 @@ export function buildAttachmentPanelItems(
       name: attachment.name,
       type: attachment.type,
       url: attachment.url,
+      scope: attachment.scope,
+      isPrimary: attachment.isPrimary === true,
       ownerLabel: getAttachmentOwnerLabel(attachment),
       previewLabel: getAttachmentPreviewLabel(attachment),
       canDelete: permissions.canDelete,
       canPreview: permissions.canPreview,
+      canSetPrimary: attachment.scope === "design" && attachment.type === "image" && permissions.canDelete,
     };
   });
 }

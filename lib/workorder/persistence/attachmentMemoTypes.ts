@@ -23,6 +23,7 @@ export type WorkOrderAttachmentDbRecord = {
   is_active: boolean;
   deleted_at: string | null;
   created_at: string;
+  is_primary?: boolean | null;
 };
 
 export type WorkOrderMemoDbRecord = {
@@ -55,6 +56,7 @@ export type CreateAttachmentRecordInput = {
   storage_key?: string | null;
   content_type?: string | null;
   file_size?: number | null;
+  is_primary?: boolean | null;
 };
 
 export type CreateMemoThreadRecordInput = {
@@ -78,7 +80,7 @@ export function inferAttachmentTypeFromMime(mimeType: string | null, fallbackNam
   const normalizedMime = mimeType?.toLowerCase() ?? "";
   const normalizedName = fallbackName.toLowerCase();
 
-  if (normalizedMime.startsWith("image/") || /\.(png|jpe?g|gif|webp|svg)$/i.test(normalizedName)) return "image";
+  if (normalizedMime.startsWith("image/") || /\.(png|jpe?g|gif|webp)$/i.test(normalizedName)) return "image";
   if (normalizedMime === "application/pdf" || normalizedName.endsWith(".pdf")) return "pdf";
 
   return "file";

@@ -107,6 +107,7 @@ export type BuildWorkspaceViewModelArgs = {
   onChangeManager: (managerId: string) => void;
   onOpenAttachmentPicker: (scope?: "design" | "attachment") => void;
   onRequestDeleteAttachment: (attachmentId: string) => void;
+  onSetPrimaryDesignAttachment: (attachmentId: string) => void;
   onAttachmentDeleteConfirmClose: () => void;
   onAttachmentDeleteConfirm: () => void;
   onCreateMemoThread: SidePanelProps["onCreateMemoThread"];
@@ -169,6 +170,7 @@ export type BaseWorkspaceViewModelArgs = {
   onOpenManagerAssignModal: () => void;
   onOpenAttachmentPicker: (scope?: "design" | "attachment") => void;
   onRequestDeleteAttachment: (attachmentId: string) => void;
+  onSetPrimaryDesignAttachment: (attachmentId: string) => void;
   onCreateMemoThread: SidePanelProps["onCreateMemoThread"];
   onCreateMemoReply: SidePanelProps["onCreateMemoReply"];
   onUpdateMemoThread: SidePanelProps["onUpdateMemoThread"];

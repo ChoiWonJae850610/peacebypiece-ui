@@ -271,6 +271,7 @@ export function useWorkOrder() {
     handleOpenAttachmentPicker: attachmentState.handleOpenAttachmentPicker,
     handleAttachmentFiles: attachmentState.handleAttachmentFiles,
     handleDeleteAttachment: attachmentState.handleDeleteAttachment,
+    handleSetPrimaryDesignAttachment: attachmentState.handleSetPrimaryDesignAttachment,
     handleCreateMemoThread: attachmentState.handleCreateMemoThread,
     handleCreateMemoReply: attachmentState.handleCreateMemoReply,
     handleUpdateMemoThread: attachmentState.handleUpdateMemoThread,

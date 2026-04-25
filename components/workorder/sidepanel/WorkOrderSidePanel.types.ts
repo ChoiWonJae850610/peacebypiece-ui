@@ -10,6 +10,7 @@ export type WorkOrderSidePanelProps = {
   onOpenAttachmentPicker: (scope?: "design" | "attachment") => void;
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;
+  onSetPrimaryDesignAttachment: (attachmentId: string) => void;
   currentRole: RoleType;
   workOrder: WorkOrder;
   currentUserName: string;

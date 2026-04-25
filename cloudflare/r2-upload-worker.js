@@ -7,6 +7,27 @@ const CORS_HEADERS = {
 
 const TEXT_ENCODER = new TextEncoder();
 
+const ATTACHMENT_POLICY = {
+  maxFileSizeBytes: 10 * 1024 * 1024,
+  allowedMimeTypes: {
+    design: ["image/jpeg", "image/png", "image/webp"],
+    attachment: ["image/jpeg", "image/png", "image/webp", "application/pdf"],
+    memos: ["image/jpeg", "image/png", "image/webp", "application/pdf"],
+  },
+};
+
+function getScopeFromKey(key) {
+  if (key.includes("/design/")) return "design";
+  if (key.includes("/memos/")) return "memos";
+  return "attachment";
+}
+
+function isAllowedWorkerFile({ key, contentType, size }) {
+  const scope = getScopeFromKey(key);
+  const allowedTypes = ATTACHMENT_POLICY.allowedMimeTypes[scope] || ATTACHMENT_POLICY.allowedMimeTypes.attachment;
+  return allowedTypes.includes(String(contentType || "").toLowerCase()) && size <= ATTACHMENT_POLICY.maxFileSizeBytes;
+}
+
 function json(data, init = {}) {
   return new Response(JSON.stringify(data), {
     ...init,
@@ -131,6 +152,11 @@ export default {
     }
 
     if (request.method === "PUT") {
+      const contentLength = Number(request.headers.get("Content-Length") || "0");
+      if (!isAllowedWorkerFile({ key, contentType, size: contentLength })) {
+        return json({ error: "WORKER_FILE_POLICY_REJECTED" }, { status: 400 });
+      }
+
       await bucket.put(key, request.body, {
         httpMetadata: { contentType },
       });

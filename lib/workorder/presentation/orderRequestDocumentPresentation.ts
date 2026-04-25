@@ -63,6 +63,11 @@ function sumBy<T>(items: T[], getter: (item: T) => number) {
 
 
 export function getRepresentativeImage(allAttachments: Attachment[]) {
+  const primaryDesignImage = allAttachments.find(
+    (attachment) => attachment.type === "image" && attachment.scope === "design" && attachment.isPrimary === true,
+  );
+  if (primaryDesignImage) return primaryDesignImage;
+
   const designImages = allAttachments.filter(
     (attachment) => attachment.type === "image" && attachment.scope === "design",
   );

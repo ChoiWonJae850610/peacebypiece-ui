@@ -9,6 +9,7 @@ type WorkOrderSidePanelAttachmentSectionsProps = Pick<
   | "onOpenAttachmentPicker"
   | "onPreviewAttachment"
   | "onDeleteAttachment"
+  | "onSetPrimaryDesignAttachment"
 > & {
   variant: WorkOrderSidePanelVariant;
 };
@@ -20,6 +21,7 @@ export default function WorkOrderSidePanelAttachmentSections({
   onOpenAttachmentPicker,
   onPreviewAttachment,
   onDeleteAttachment,
+  onSetPrimaryDesignAttachment,
   variant,
 }: WorkOrderSidePanelAttachmentSectionsProps) {
   return attachmentSections.map((section) => (
@@ -34,6 +36,7 @@ export default function WorkOrderSidePanelAttachmentSections({
       onOpenAttachmentPicker={() => onOpenAttachmentPicker(section.uploadScope)}
       onPreviewAttachment={onPreviewAttachment}
       onDeleteAttachment={onDeleteAttachment}
+      onSetPrimaryDesignAttachment={onSetPrimaryDesignAttachment}
       variant={variant}
     />
   ));

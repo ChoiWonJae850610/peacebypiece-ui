@@ -10,6 +10,7 @@ type WorkOrderSidePanelMobileAttachmentSectionsProps = Pick<
   | "onOpenAttachmentPicker"
   | "onPreviewAttachment"
   | "onDeleteAttachment"
+  | "onSetPrimaryDesignAttachment"
 > & {
   collapseLabel: string;
 };
@@ -21,6 +22,7 @@ export default function WorkOrderSidePanelMobileAttachmentSections({
   onOpenAttachmentPicker,
   onPreviewAttachment,
   onDeleteAttachment,
+  onSetPrimaryDesignAttachment,
   collapseLabel,
 }: WorkOrderSidePanelMobileAttachmentSectionsProps) {
   const attachmentCount = attachmentSections.reduce((sum, section) => sum + section.items.length, 0);
@@ -43,6 +45,7 @@ export default function WorkOrderSidePanelMobileAttachmentSections({
         onOpenAttachmentPicker={() => onOpenAttachmentPicker(section.uploadScope)}
         onPreviewAttachment={onPreviewAttachment}
         onDeleteAttachment={onDeleteAttachment}
+        onSetPrimaryDesignAttachment={onSetPrimaryDesignAttachment}
         variant="mobile"
       />
     </WorkOrderSidePanelMobileAccordionSection>

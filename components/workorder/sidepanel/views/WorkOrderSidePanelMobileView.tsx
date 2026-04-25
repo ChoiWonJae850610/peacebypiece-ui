@@ -37,6 +37,7 @@ export default function WorkOrderSidePanelMobileView(props: WorkOrderSidePanelPr
           onOpenAttachmentPicker={props.onOpenAttachmentPicker}
           onPreviewAttachment={props.onPreviewAttachment}
           onDeleteAttachment={props.onDeleteAttachment}
+          onSetPrimaryDesignAttachment={props.onSetPrimaryDesignAttachment}
           collapseLabel={collapseLabel}
         />
       </SidePanelSectionStack>

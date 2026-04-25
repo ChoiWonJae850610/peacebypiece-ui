@@ -16,7 +16,9 @@ import {
   readAttachmentInputFiles,
 } from "@/lib/workorder/attachments/attachmentActions";
 import { deleteWorkOrderAttachmentInDb } from "@/lib/workorder/attachments/attachmentDeleteApiClient";
+import { setPrimaryDesignAttachmentInDb } from "@/lib/workorder/attachments/attachmentPrimaryApiClient";
 import { uploadWorkOrderAttachmentFiles } from "@/lib/workorder/attachments/attachmentUploadApiClient";
+import { WORK_ORDER_ATTACHMENT_POLICY } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
 import { createMemoReplyInDb, createMemoThreadInDb, deleteMemoInDb, updateMemoInDb } from "@/lib/workorder/memo/memoApiClient";
 import type { Attachment, AttachmentScope, HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 
@@ -368,6 +370,32 @@ export function useWorkOrderAttachments({
     }
   };
 
+
+  const handleSetPrimaryDesignAttachment = async (attachmentId: string) => {
+    const targetAttachment = selectedWorkOrder.attachments.find((item) => item.id === attachmentId) ?? null;
+    if (!targetAttachment || targetAttachment.scope !== "design" || targetAttachment.type !== "image") return;
+    if (!canEditSideDraftContent || !canUploadOfficialAttachments) return;
+
+    setSaveStatus("saving");
+    try {
+      await setPrimaryDesignAttachmentInDb({ workOrderId: selectedWorkOrder.id, attachmentId });
+      setWorkOrders((prev) => prev.map((item) => item.id === selectedWorkOrder.id
+        ? {
+            ...item,
+            attachments: (item.attachments ?? []).map((attachment) => attachment.scope === "design"
+              ? { ...attachment, isPrimary: attachment.id === attachmentId }
+              : attachment),
+          }
+        : item));
+      setSaveStatus("saved");
+      setToastMessage(WORK_ORDER_ATTACHMENT_POLICY.messages.primarySetToast);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : WORK_ORDER_ATTACHMENT_POLICY.messages.primarySetFailed;
+      setSaveStatus("dirty");
+      setToastMessage(message);
+    }
+  };
+
   const canDeleteAttachment = (attachment: Attachment | null) =>
     canDeleteAttachmentForCurrentUser({
       currentUser,
@@ -390,6 +418,7 @@ export function useWorkOrderAttachments({
     handleOpenAttachmentPicker,
     handleAttachmentFiles,
     handleDeleteAttachment,
+    handleSetPrimaryDesignAttachment,
     handleCreateMemoThread,
     handleCreateMemoReply,
     handleUpdateMemoThread,

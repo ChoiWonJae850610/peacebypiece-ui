@@ -1,3 +1,4 @@
+import { validateAttachmentFile, validateAttachmentFileCount, normalizeAttachmentUploadScope } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
 import type { Attachment, AttachmentScope, UserProfile, WorkOrder } from "@/types/workorder";
 
 export type AttachmentUploadApiResult = {
@@ -28,7 +29,7 @@ async function readJson<T>(response: Response, fallback: T): Promise<T> {
 }
 
 async function prepareWorkOrderAttachmentUploads(payload: {
-  workOrder: Pick<WorkOrder, "id">;
+  workOrder: Pick<WorkOrder, "id" | "attachments">;
   files: File[];
   scope: AttachmentScope;
 }): Promise<AttachmentUploadTarget[]> {
@@ -87,7 +88,7 @@ async function putFileToUploadTarget(file: File, target: AttachmentUploadTarget)
 }
 
 async function completeWorkOrderAttachmentUploads(payload: {
-  workOrder: Pick<WorkOrder, "id">;
+  workOrder: Pick<WorkOrder, "id" | "attachments">;
   currentUser: Pick<UserProfile, "id" | "name">;
   scope: AttachmentScope;
   uploadTargets: AttachmentUploadTarget[];
@@ -120,12 +121,40 @@ async function completeWorkOrderAttachmentUploads(payload: {
 }
 
 export async function uploadWorkOrderAttachmentFiles(payload: {
-  workOrder: Pick<WorkOrder, "id">;
+  workOrder: Pick<WorkOrder, "id" | "attachments">;
   currentUser: Pick<UserProfile, "id" | "name">;
   files: File[];
   scope: AttachmentScope;
 }): Promise<AttachmentUploadApiResult> {
   try {
+    const countValidation = validateAttachmentFileCount({
+      currentCount: payload.workOrder.attachments?.length ?? 0,
+      incomingCount: payload.files.length,
+    });
+    if (!countValidation.ok) {
+      return {
+        attachments: [],
+        error: countValidation.error,
+        message: countValidation.message,
+      };
+    }
+
+    for (const file of payload.files) {
+      const fileValidation = validateAttachmentFile({
+        scope: normalizeAttachmentUploadScope(payload.scope),
+        fileName: file.name,
+        contentType: file.type || "application/octet-stream",
+        fileSize: file.size,
+      });
+      if (!fileValidation.ok) {
+        return {
+          attachments: [],
+          error: fileValidation.error,
+          message: fileValidation.message,
+        };
+      }
+    }
+
     const uploadTargets = await prepareWorkOrderAttachmentUploads({
       workOrder: payload.workOrder,
       files: payload.files,
