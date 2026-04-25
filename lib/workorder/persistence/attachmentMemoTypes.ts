@@ -85,5 +85,7 @@ export function inferAttachmentTypeFromMime(mimeType: string | null, fallbackNam
 }
 
 export function normalizeAttachmentScope(value: string | null | undefined): AttachmentScope {
-  return value === "design" ? "design" : value === "memo" ? "memo" : "attachment";
+  if (value === "design") return "design";
+  if (value === "memo") return "memo";
+  return "attachment";
 }

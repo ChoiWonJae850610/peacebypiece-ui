@@ -42,14 +42,10 @@ export function createWorkOrderAttachmentStorageKey(input: {
   return `workorders/${workOrderId}/${directory}/${id}${extension}`;
 }
 
-export function isLegacyOfficialAttachmentStorageKey(key: string): boolean {
-  return /^workorders\/[^/]+\/attachments\/official\/[^/]+$/i.test(key.trim());
-}
-
 export function isCurrentWorkOrderAttachmentStorageKey(key: string): boolean {
   return /^workorders\/[^/]+\/(design|attachments|memos)\/[^/]+$/i.test(key.trim());
 }
 
 export function isSupportedWorkOrderAttachmentStorageKey(key: string): boolean {
-  return isCurrentWorkOrderAttachmentStorageKey(key) || isLegacyOfficialAttachmentStorageKey(key);
+  return isCurrentWorkOrderAttachmentStorageKey(key);
 }

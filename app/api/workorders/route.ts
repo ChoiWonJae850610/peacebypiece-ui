@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getDatabaseRuntimeErrorCode, getSupportedDatabaseEnvKeys, isDatabaseConfigured } from "@/lib/db/client";
 import { createDbWorkOrder, deleteDbWorkOrder, findAllDbWorkOrders, saveDbWorkOrder, saveDbWorkOrders } from "@/lib/workorder/repository/dbWorkOrderRepository";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
-import type { Attachment, MemoThread, WorkOrder } from "@/types/workorder";
+import type { MemoThread, WorkOrder } from "@/types/workorder";
 
 type DbApiErrorCode =
   | "DB_NOT_CONFIGURED"
@@ -79,20 +79,6 @@ function resolveDbErrorPayload(error: unknown, fallbackMessage: string): { statu
   return { status: 500, payload: { message, code: "DB_REQUEST_FAILED" } };
 }
 
-function mergeAttachments(payloadAttachments: Attachment[] | undefined, dbAttachments: Attachment[]): Attachment[] {
-  const merged = new Map<string, Attachment>();
-
-  for (const attachment of payloadAttachments ?? []) {
-    merged.set(attachment.id, attachment);
-  }
-
-  for (const attachment of dbAttachments) {
-    merged.set(attachment.id, attachment);
-  }
-
-  return Array.from(merged.values());
-}
-
 function mergeMemoThreads(payloadThreads: MemoThread[] | undefined, dbThreads: MemoThread[]): MemoThread[] {
   const merged = new Map<string, MemoThread>();
 
@@ -128,7 +114,7 @@ async function hydrateWorkOrdersWithAttachmentMemoSnapshots(workOrders: WorkOrde
 
       return {
         ...workOrder,
-        attachments: mergeAttachments(workOrder.attachments, snapshot.attachments),
+        attachments: snapshot.attachments,
         memoThreads: mergeMemoThreads(workOrder.memoThreads, snapshot.memoThreads),
       };
     });

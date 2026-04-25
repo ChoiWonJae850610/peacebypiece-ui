@@ -29,18 +29,8 @@ export function normalizeOutsourcingForStorage(workOrderId: string, rows: Outsou
   }));
 }
 
-export function normalizeAttachmentsForStorage(workOrderId: string, attachments: Attachment[] | undefined): Attachment[] {
-  return (attachments ?? [])
-    .filter((attachment) => String(attachment.scope ?? "attachment") !== "memo")
-    .map((attachment, index) => ({
-      ...attachment,
-      id: String(attachment.id ?? "").trim() || buildChildEntityId(workOrderId, "att", index),
-      scope: attachment.scope === "design" ? "design" : "attachment",
-      linkedThreadId: null,
-      linkedReplyId: null,
-      ownerId: attachment.ownerId ?? null,
-      ownerName: attachment.ownerName ?? null,
-    }));
+export function normalizeAttachmentsForStorage(_workOrderId: string, _attachments: Attachment[] | undefined): Attachment[] {
+  return [];
 }
 
 export function normalizeMemoRepliesForStorage(
