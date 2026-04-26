@@ -98,6 +98,7 @@ export type WorkOrder = {
   isDefectOrder?: boolean;
   reorderGroupId?: string;
   reorderRound?: number;
+  parentSpecSheetId?: string | null;
   revision?: number;
   reorderRootId?: string;
   category1: string;

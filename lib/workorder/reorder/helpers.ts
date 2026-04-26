@@ -9,7 +9,7 @@ export type WorkOrderOrderType = "메인 생산" | "샘플" | "재작업";
 
 export type ReorderIdentity = Pick<
   WorkOrder,
-  "id" | "title" | "displayTitle" | "baseTitle" | "reorderGroupId" | "reorderRound" | "workOrderKind" | "isDefectOrder"
+  "id" | "title" | "displayTitle" | "baseTitle" | "reorderGroupId" | "reorderRound" | "parentSpecSheetId" | "workOrderKind" | "isDefectOrder"
 > & {
   revision?: number | null;
   reorderRootId?: string | null;
@@ -45,7 +45,7 @@ export function normalizeWorkOrderKind(value: string | null | undefined, fallbac
 
 export function inferWorkOrderKindFromIdentity(workOrder: Partial<ReorderIdentity>): WorkOrderTitleKind {
   if (Boolean(workOrder.isDefectOrder)) return "rework";
-  return getWorkOrderReorderRound(workOrder) > 1 ? "main" : "sample";
+  return getWorkOrderReorderRound(workOrder) > 0 ? "main" : "sample";
 }
 
 export function getWorkOrderKind(workOrder: Partial<ReorderIdentity>): WorkOrderTitleKind {
@@ -62,9 +62,9 @@ export function getWorkOrderReorderGroupId(workOrder: Partial<ReorderIdentity>):
 }
 
 export function getWorkOrderReorderRound(workOrder: Partial<ReorderIdentity>): number {
-  const rawRound = workOrder.reorderRound ?? workOrder.revision ?? 1;
+  const rawRound = workOrder.reorderRound ?? workOrder.revision ?? 0;
   const round = Number(rawRound);
-  return Number.isFinite(round) && round > 0 ? Math.floor(round) : 1;
+  return Number.isFinite(round) && round >= 0 ? Math.floor(round) : 0;
 }
 
 export function getWorkOrderKindFromOrderType(orderType: string | null | undefined): WorkOrderTitleKind {
@@ -127,10 +127,11 @@ export function buildWorkOrderTitle(workOrder: Partial<ReorderIdentity>): string
   return `${baseTitle} ${roundSuffix}`;
 }
 
-export function applyReorderIdentity<T extends Partial<ReorderIdentity>>(workOrder: T): T & Pick<WorkOrder, "baseTitle" | "reorderGroupId" | "reorderRound" | "workOrderKind" | "isDefectOrder" | "displayTitle" | "title"> {
+export function applyReorderIdentity<T extends Partial<ReorderIdentity>>(workOrder: T): T & Pick<WorkOrder, "baseTitle" | "reorderGroupId" | "reorderRound" | "parentSpecSheetId" | "workOrderKind" | "isDefectOrder" | "displayTitle" | "title"> {
   const baseTitle = getWorkOrderBaseTitle(workOrder);
   const reorderGroupId = getWorkOrderReorderGroupId(workOrder);
   const reorderRound = getWorkOrderReorderRound(workOrder);
+  const parentSpecSheetId = typeof workOrder.parentSpecSheetId === "string" ? workOrder.parentSpecSheetId : null;
   const workOrderKind = getWorkOrderKind(workOrder);
   const defectOrder = isWorkOrderKind(workOrderKind, "rework") ? isDefectOrder(workOrder) : false;
   const displayTitle = buildWorkOrderTitle({
@@ -138,6 +139,7 @@ export function applyReorderIdentity<T extends Partial<ReorderIdentity>>(workOrd
     baseTitle,
     reorderGroupId,
     reorderRound,
+    parentSpecSheetId,
     workOrderKind,
     isDefectOrder: defectOrder,
   });
@@ -147,6 +149,7 @@ export function applyReorderIdentity<T extends Partial<ReorderIdentity>>(workOrd
     baseTitle,
     reorderGroupId,
     reorderRound,
+    parentSpecSheetId,
     workOrderKind,
     isDefectOrder: defectOrder,
     displayTitle,
@@ -210,7 +213,7 @@ function resequenceReorderGroup(workOrders: WorkOrder[]): WorkOrder[] {
     ...item,
     workOrderKind: "sample",
     isDefectOrder: false,
-    reorderRound: 1,
+    reorderRound: 0,
   })));
 
   const mapped = new Map<string, WorkOrder>();
