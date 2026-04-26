@@ -178,7 +178,7 @@ export async function syncDbFactoryOrdersForSpecSheet(workOrder: WorkOrder): Pro
     await queryDb(
       `
         ${schema.isActiveColumn
-          ? `UPDATE ${quoteIdentifier(FACTORY_ORDER_TABLE)} SET ${quoteIdentifier(schema.isActiveColumn)} = FALSE${schema.deletedAtColumn ? `, ${quoteIdentifier(schema.deletedAtColumn)} = NOW()` : ""} WHERE ${quoteIdentifier(specSheetIdColumn)} = $1`
+          ? `UPDATE ${quoteIdentifier(FACTORY_ORDER_TABLE)} SET ${quoteIdentifier(schema.isActiveColumn)} = FALSE${schema.deletedAtColumn ? `, ${quoteIdentifier(schema.deletedAtColumn)} = COALESCE(${quoteIdentifier(schema.deletedAtColumn)}, NOW())` : ""}${schema.updatedAtColumn ? `, ${quoteIdentifier(schema.updatedAtColumn)} = NOW()` : ""} WHERE ${quoteIdentifier(specSheetIdColumn)} = $1 AND ${quoteIdentifier(schema.isActiveColumn)} = TRUE`
           : `DELETE FROM ${quoteIdentifier(FACTORY_ORDER_TABLE)} WHERE ${quoteIdentifier(specSheetIdColumn)} = $1`}
       `,
       [workOrder.id],
@@ -279,7 +279,7 @@ export async function syncDbFactoryOrdersForSpecSheet(workOrder: WorkOrder): Pro
   await queryDb(
     `
       ${schema.isActiveColumn
-        ? `UPDATE ${quoteIdentifier(FACTORY_ORDER_TABLE)} SET ${quoteIdentifier(schema.isActiveColumn)} = FALSE${schema.deletedAtColumn ? `, ${quoteIdentifier(schema.deletedAtColumn)} = NOW()` : ""} WHERE ${quoteIdentifier(specSheetIdColumn)} = $1 AND NOT (id = ANY($2::text[]))`
+        ? `UPDATE ${quoteIdentifier(FACTORY_ORDER_TABLE)} SET ${quoteIdentifier(schema.isActiveColumn)} = FALSE${schema.deletedAtColumn ? `, ${quoteIdentifier(schema.deletedAtColumn)} = COALESCE(${quoteIdentifier(schema.deletedAtColumn)}, NOW())` : ""}${schema.updatedAtColumn ? `, ${quoteIdentifier(schema.updatedAtColumn)} = NOW()` : ""} WHERE ${quoteIdentifier(specSheetIdColumn)} = $1 AND ${quoteIdentifier(schema.isActiveColumn)} = TRUE AND NOT (id = ANY($2::text[]))`
         : `DELETE FROM ${quoteIdentifier(FACTORY_ORDER_TABLE)} WHERE ${quoteIdentifier(specSheetIdColumn)} = $1 AND NOT (id = ANY($2::text[]))`}
     `,
     inactiveParams,

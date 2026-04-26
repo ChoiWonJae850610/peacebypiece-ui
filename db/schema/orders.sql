@@ -29,3 +29,9 @@ CREATE INDEX IF NOT EXISTS orders_factory_partner_idx
 
 CREATE INDEX IF NOT EXISTS orders_active_idx
   ON orders (is_active, updated_at DESC, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS orders_source_order_entry_idx
+  ON orders (source_order_entry_id);
+
+CREATE INDEX IF NOT EXISTS orders_spec_sheet_active_idx
+  ON orders (spec_sheet_id, is_active);
