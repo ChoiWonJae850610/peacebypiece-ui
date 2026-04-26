@@ -12,8 +12,8 @@ const NAME_COLUMN_CANDIDATES = ["name", "material_name"] as const;
 const VENDOR_COLUMN_CANDIDATES = ["vendor", "vendor_name"] as const;
 const QUANTITY_COLUMN_CANDIDATES = ["quantity"] as const;
 const UNIT_COLUMN_CANDIDATES = ["unit"] as const;
-const UNIT_COST_COLUMN_CANDIDATES = ["unit_cost", "unitCost"] as const;
-const TOTAL_COST_COLUMN_CANDIDATES = ["total_cost", "totalCost"] as const;
+const UNIT_COST_COLUMN_CANDIDATES = ["unit_cost", "unit_price", "unitCost", "unitPrice"] as const;
+const TOTAL_COST_COLUMN_CANDIDATES = ["total_cost", "total_price", "totalCost", "totalPrice"] as const;
 const STATUS_COLUMN_CANDIDATES = ["status"] as const;
 const PAYLOAD_COLUMN_CANDIDATES = ["payload", "data"] as const;
 const IS_ACTIVE_COLUMN_CANDIDATES = ["is_active"] as const;
@@ -67,8 +67,21 @@ function normalizeNumber(value: unknown): number {
   return Math.max(0, numeric);
 }
 
+function calculateMaterialTotalCost(material: Material): number {
+  return normalizeNumber(material.quantity) * normalizeNumber(material.unitCost);
+}
+
+function normalizeMaterialForDb(material: Material): Material {
+  return {
+    ...material,
+    quantity: normalizeNumber(material.quantity),
+    unitCost: normalizeNumber(material.unitCost),
+    totalCost: calculateMaterialTotalCost(material),
+  };
+}
+
 function toMaterialRows(workOrder: WorkOrder): Material[] {
-  return (workOrder.materials ?? []).filter((material) => {
+  return (workOrder.materials ?? []).map(normalizeMaterialForDb).filter((material) => {
     if (!material) return false;
     return Boolean(
       normalizeText(material.type) ||
@@ -208,7 +221,7 @@ export async function syncDbSpecSheetMaterialsForSpecSheet(workOrder: WorkOrder)
 
     if (schema.totalCostColumn) {
       columns.push(schema.totalCostColumn);
-      values.push(normalizeNumber(material.totalCost));
+      values.push(calculateMaterialTotalCost(material));
       placeholders.push(`$${values.length}`);
     }
 
@@ -220,7 +233,7 @@ export async function syncDbSpecSheetMaterialsForSpecSheet(workOrder: WorkOrder)
 
     if (schema.payloadColumn) {
       columns.push(schema.payloadColumn);
-      values.push(JSON.stringify(material));
+      values.push(JSON.stringify(normalizeMaterialForDb(material)));
       placeholders.push(`$${values.length}::jsonb`);
     }
 
