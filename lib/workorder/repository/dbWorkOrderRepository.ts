@@ -8,7 +8,7 @@ import { syncDbFactoryOrdersForSpecSheet } from "@/lib/workorder/repository/dbFa
 import { syncDbSpecSheetMaterialsForSpecSheet } from "@/lib/workorder/repository/dbSpecSheetMaterialRepository";
 import { syncDbSpecSheetOutsourcingForSpecSheet } from "@/lib/workorder/repository/dbSpecSheetOutsourcingRepository";
 
-const WORK_ORDER_TABLE = "spec_sheets";
+const SPEC_SHEET_TABLE = "spec_sheets";
 const DEFAULT_WORKFLOW_STATE: WorkOrder["workflowState"] = "draft";
 
 const PAYLOAD_COLUMN_CANDIDATES = ["payload", "data", "workorder_payload", "work_order_payload"] as const;
@@ -24,7 +24,7 @@ const UPDATED_AT_COLUMN_CANDIDATES = ["updated_at"] as const;
 const IS_ACTIVE_COLUMN_CANDIDATES = ["is_active"] as const;
 const DELETED_AT_COLUMN_CANDIDATES = ["deleted_at"] as const;
 
-type DbWorkOrderRow = {
+type DbSpecSheetRow = {
   id: string;
   title: string;
   workflow_state: string | null;
@@ -49,7 +49,7 @@ type DbColumnInfo = {
 
 type DbPayloadColumnKind = "json" | "jsonb" | "text";
 
-type DbWorkOrderSchema = {
+type DbSpecSheetSchema = {
   payloadColumn: string | null;
   payloadColumnKind: DbPayloadColumnKind | null;
   workflowStateColumn: string | null;
@@ -122,7 +122,7 @@ function serializeWorkOrderPayload(workOrder: WorkOrder): WorkOrder {
   };
 }
 
-function parsePayloadValue(payload: DbWorkOrderRow["payload"]): Partial<WorkOrder> {
+function parsePayloadValue(payload: DbSpecSheetRow["payload"]): Partial<WorkOrder> {
   if (isObject(payload)) {
     return payload as Partial<WorkOrder>;
   }
@@ -144,7 +144,7 @@ function parsePayloadValue(payload: DbWorkOrderRow["payload"]): Partial<WorkOrde
   }
 }
 
-function mapRowToWorkOrder(row: DbWorkOrderRow): WorkOrder {
+function mapSpecSheetRowToWorkOrder(row: DbSpecSheetRow): WorkOrder {
   const payload = parsePayloadValue(row.payload);
 
   const hydrated = {
@@ -183,7 +183,7 @@ function findFirstMatchingColumn(columnNames: string[], candidates: readonly str
   return null;
 }
 
-function buildAliasSelection(columnName: string | null, alias: keyof DbWorkOrderRow, fallbackSql: string): string {
+function buildAliasSelection(columnName: string | null, alias: keyof DbSpecSheetRow, fallbackSql: string): string {
   if (!columnName) {
     return `${fallbackSql} AS ${alias}`;
   }
@@ -214,7 +214,7 @@ function buildPayloadValue(kind: DbPayloadColumnKind | null, payload: WorkOrder)
   return serialized;
 }
 
-async function loadWorkOrderSchema(): Promise<DbWorkOrderSchema> {
+async function loadSpecSheetSchema(): Promise<DbSpecSheetSchema> {
   const result = await queryDb<DbColumnInfo>(
     `
       SELECT column_name, data_type, udt_name
@@ -222,14 +222,14 @@ async function loadWorkOrderSchema(): Promise<DbWorkOrderSchema> {
       WHERE table_schema = current_schema()
         AND table_name = $1
     `,
-    [WORK_ORDER_TABLE],
+    [SPEC_SHEET_TABLE],
   );
 
   const columns = result.rows;
   const columnNames = columns.map((row) => row.column_name);
 
   if (columnNames.length === 0) {
-    throw new Error(`relation \"${WORK_ORDER_TABLE}\" does not exist`);
+    throw new Error(`relation \"${SPEC_SHEET_TABLE}\" does not exist`);
   }
 
   const payloadColumn = findFirstMatchingColumn(columnNames, PAYLOAD_COLUMN_CANDIDATES);
@@ -259,7 +259,7 @@ async function loadWorkOrderSchema(): Promise<DbWorkOrderSchema> {
   };
 }
 
-function assertMinimumSchema(schema: DbWorkOrderSchema) {
+function assertMinimumSpecSheetSchema(schema: DbSpecSheetSchema) {
   const missingColumns = [
     !schema.hasIdColumn ? "id" : null,
     !schema.hasTitleColumn ? "title" : null,
@@ -271,12 +271,12 @@ function assertMinimumSchema(schema: DbWorkOrderSchema) {
 }
 
 export async function findAllDbWorkOrders(): Promise<WorkOrder[]> {
-  const schema = await loadWorkOrderSchema();
-  assertMinimumSchema(schema);
+  const schema = await loadSpecSheetSchema();
+  assertMinimumSpecSheetSchema(schema);
 
   const payloadFallbackSql = schema.payloadColumnKind === "text" ? "NULL::text" : "NULL::jsonb";
 
-  const result = await queryDb<DbWorkOrderRow>(
+  const result = await queryDb<DbSpecSheetRow>(
     `
       SELECT
         id,
@@ -293,18 +293,18 @@ export async function findAllDbWorkOrders(): Promise<WorkOrder[]> {
         ${buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL")},
         ${buildAliasSelection(schema.createdAtColumn, "created_at", "NULL")},
         ${buildAliasSelection(schema.updatedAtColumn, "updated_at", "NULL")}
-      FROM ${quoteIdentifier(WORK_ORDER_TABLE)}
+      FROM ${quoteIdentifier(SPEC_SHEET_TABLE)}
       ${schema.isActiveColumn ? `WHERE ${quoteIdentifier(schema.isActiveColumn)} = TRUE` : ""}
       ORDER BY ${schema.updatedAtColumn ? `${quoteIdentifier(schema.updatedAtColumn)} DESC NULLS LAST, ` : ""}${schema.createdAtColumn ? `${quoteIdentifier(schema.createdAtColumn)} DESC NULLS LAST, ` : ""}id DESC
     `,
   );
 
-  return result.rows.map(mapRowToWorkOrder);
+  return result.rows.map(mapSpecSheetRowToWorkOrder);
 }
 
 export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder> {
-  const schema = await loadWorkOrderSchema();
-  assertMinimumSchema(schema);
+  const schema = await loadSpecSheetSchema();
+  assertMinimumSpecSheetSchema(schema);
 
   const normalizedWorkOrder = normalizeWorkOrderForDb(workOrder);
   const payload = serializeWorkOrderPayload(normalizedWorkOrder);
@@ -392,9 +392,9 @@ export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
     buildAliasSelection(schema.updatedAtColumn, "updated_at", "NULL"),
   ];
 
-  const result = await queryDb<DbWorkOrderRow>(
+  const result = await queryDb<DbSpecSheetRow>(
     `
-      INSERT INTO ${quoteIdentifier(WORK_ORDER_TABLE)} (
+      INSERT INTO ${quoteIdentifier(SPEC_SHEET_TABLE)} (
         ${columns.map(quoteIdentifier).join(", ")}
       )
       VALUES (
@@ -412,7 +412,7 @@ export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
     throw new Error("Failed to create work order in DB.");
   }
 
-  const mapped = mapRowToWorkOrder(created);
+  const mapped = mapSpecSheetRowToWorkOrder(created);
   await syncDbFactoryOrdersForSpecSheet(mapped);
   await syncDbSpecSheetMaterialsForSpecSheet(mapped);
   await syncDbSpecSheetOutsourcingForSpecSheet(mapped);
@@ -424,8 +424,8 @@ function isNotFoundWorkOrderError(error: unknown): boolean {
 }
 
 export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder> {
-  const schema = await loadWorkOrderSchema();
-  assertMinimumSchema(schema);
+  const schema = await loadSpecSheetSchema();
+  assertMinimumSpecSheetSchema(schema);
 
   const normalizedWorkOrder = normalizeWorkOrderForDb(workOrder);
   const payload = serializeWorkOrderPayload(normalizedWorkOrder);
@@ -502,9 +502,9 @@ export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
     buildAliasSelection(schema.updatedAtColumn, "updated_at", "NULL"),
   ];
 
-  const result = await queryDb<DbWorkOrderRow>(
+  const result = await queryDb<DbSpecSheetRow>(
     `
-      UPDATE ${quoteIdentifier(WORK_ORDER_TABLE)}
+      UPDATE ${quoteIdentifier(SPEC_SHEET_TABLE)}
       SET
         ${assignments.join(",\n        ")}
       WHERE id = $1
@@ -520,7 +520,7 @@ export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
     throw new Error(`spec_sheets row not found for id: ${normalizedWorkOrder.id}`);
   }
 
-  const mapped = mapRowToWorkOrder(updated);
+  const mapped = mapSpecSheetRowToWorkOrder(updated);
   await syncDbFactoryOrdersForSpecSheet(mapped);
   await syncDbSpecSheetMaterialsForSpecSheet(mapped);
   await syncDbSpecSheetOutsourcingForSpecSheet(mapped);
@@ -529,8 +529,8 @@ export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
 
 
 export async function deleteDbWorkOrder(workOrderId: string): Promise<string> {
-  const schema = await loadWorkOrderSchema();
-  assertMinimumSchema(schema);
+  const schema = await loadSpecSheetSchema();
+  assertMinimumSpecSheetSchema(schema);
 
   if (schema.isActiveColumn) {
     const assignments = [`${quoteIdentifier(schema.isActiveColumn)} = FALSE`];
@@ -540,7 +540,7 @@ export async function deleteDbWorkOrder(workOrderId: string): Promise<string> {
 
     const result = await queryDb<{ id: string }>(
       `
-        UPDATE ${quoteIdentifier(WORK_ORDER_TABLE)}
+        UPDATE ${quoteIdentifier(SPEC_SHEET_TABLE)}
         SET
           ${assignments.join(",\n          ")}
         WHERE id = $1
@@ -558,7 +558,7 @@ export async function deleteDbWorkOrder(workOrderId: string): Promise<string> {
 
   const result = await queryDb<{ id: string }>(
     `
-      DELETE FROM ${quoteIdentifier(WORK_ORDER_TABLE)}
+      DELETE FROM ${quoteIdentifier(SPEC_SHEET_TABLE)}
       WHERE id = $1
       RETURNING id
     `,

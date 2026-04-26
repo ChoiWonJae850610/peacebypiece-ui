@@ -14,7 +14,7 @@ type DbColumnInfo = {
 };
 
 const DATABASE_ENV_HELP = `Expected one of: ${getSupportedDatabaseEnvKeys().join(", ")}`;
-const WORK_ORDER_TABLE = "spec_sheets";
+const SPEC_SHEET_TABLE = "spec_sheets";
 const PAYLOAD_COLUMN_CANDIDATES = ["payload", "data", "workorder_payload", "work_order_payload"] as const;
 
 type DbStatusPayload = {
@@ -46,7 +46,7 @@ async function inspectWorkOrdersTable() {
       WHERE table_schema = current_schema()
         AND table_name = $1
     `,
-    [WORK_ORDER_TABLE],
+    [SPEC_SHEET_TABLE],
   );
 
   const columns = result.rows;
@@ -55,7 +55,7 @@ async function inspectWorkOrdersTable() {
   if (columnNames.length === 0) {
     return {
       code: "DB_TABLE_MISSING" as const,
-      message: `${WORK_ORDER_TABLE} table does not exist in the current schema.`,
+      message: `${SPEC_SHEET_TABLE} table does not exist in the current schema.`,
     };
   }
 
@@ -63,7 +63,7 @@ async function inspectWorkOrdersTable() {
   if (missingRequired.length > 0) {
     return {
       code: "DB_SCHEMA_UNSUPPORTED" as const,
-      message: `${WORK_ORDER_TABLE} table is missing required columns: ${missingRequired.join(", ")}`,
+      message: `${SPEC_SHEET_TABLE} table is missing required columns: ${missingRequired.join(", ")}`,
     };
   }
 
@@ -71,7 +71,7 @@ async function inspectWorkOrdersTable() {
   if (!payloadColumn) {
     return {
       code: "DB_SCHEMA_UNSUPPORTED" as const,
-      message: `${WORK_ORDER_TABLE} table is missing a supported payload column. Expected one of: ${PAYLOAD_COLUMN_CANDIDATES.join(", ")}`,
+      message: `${SPEC_SHEET_TABLE} table is missing a supported payload column. Expected one of: ${PAYLOAD_COLUMN_CANDIDATES.join(", ")}`,
     };
   }
 
