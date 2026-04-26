@@ -4,6 +4,7 @@ import { queryDb } from "@/lib/db/client";
 import { LEGACY_WORKFLOW_STATE_MAP, WORKFLOW_STATES } from "@/lib/constants/workorderStates";
 import type { WorkOrder } from "@/types/workorder";
 import { applyReorderIdentity } from "@/lib/workorder/reorder/helpers";
+import { syncDbFactoryOrdersForSpecSheet } from "@/lib/workorder/repository/dbFactoryOrderRepository";
 
 const WORK_ORDER_TABLE = "spec_sheets";
 const DEFAULT_WORKFLOW_STATE: WorkOrder["workflowState"] = "draft";
@@ -409,7 +410,9 @@ export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
     throw new Error("Failed to create work order in DB.");
   }
 
-  return mapRowToWorkOrder(created);
+  const mapped = mapRowToWorkOrder(created);
+  await syncDbFactoryOrdersForSpecSheet(mapped);
+  return mapped;
 }
 
 function isNotFoundWorkOrderError(error: unknown): boolean {
@@ -513,7 +516,9 @@ export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
     throw new Error(`spec_sheets row not found for id: ${normalizedWorkOrder.id}`);
   }
 
-  return mapRowToWorkOrder(updated);
+  const mapped = mapRowToWorkOrder(updated);
+  await syncDbFactoryOrdersForSpecSheet(mapped);
+  return mapped;
 }
 
 
