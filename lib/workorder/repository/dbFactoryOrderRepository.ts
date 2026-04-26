@@ -13,6 +13,8 @@ const FACTORY_NAME_COLUMN_CANDIDATES = ["factory_name", "factory"] as const;
 const QUANTITY_COLUMN_CANDIDATES = ["quantity"] as const;
 const DUE_DATE_COLUMN_CANDIDATES = ["due_date"] as const;
 const STATUS_COLUMN_CANDIDATES = ["status", "workflow_state", "state"] as const;
+const LABOR_COST_COLUMN_CANDIDATES = ["labor_cost", "laborCost"] as const;
+const LOSS_COST_COLUMN_CANDIDATES = ["loss_cost", "lossCost"] as const;
 const IS_ACTIVE_COLUMN_CANDIDATES = ["is_active"] as const;
 const DELETED_AT_COLUMN_CANDIDATES = ["deleted_at"] as const;
 const CREATED_AT_COLUMN_CANDIDATES = ["created_at"] as const;
@@ -42,6 +44,8 @@ type DbFactoryOrderSchema = {
   dueDateColumn: string | null;
   dueDateColumnKind: "date" | "text" | null;
   statusColumn: string | null;
+  laborCostColumn: string | null;
+  lossCostColumn: string | null;
   isActiveColumn: string | null;
   deletedAtColumn: string | null;
   createdAtColumn: string | null;
@@ -121,6 +125,8 @@ async function loadFactoryOrderSchema(): Promise<DbFactoryOrderSchema> {
       dueDateColumn: null,
       dueDateColumnKind: null,
       statusColumn: null,
+      laborCostColumn: null,
+      lossCostColumn: null,
       isActiveColumn: null,
       deletedAtColumn: null,
       createdAtColumn: null,
@@ -143,6 +149,8 @@ async function loadFactoryOrderSchema(): Promise<DbFactoryOrderSchema> {
     dueDateColumn,
     dueDateColumnKind,
     statusColumn: findFirstMatchingColumn(columnNames, STATUS_COLUMN_CANDIDATES),
+    laborCostColumn: findFirstMatchingColumn(columnNames, LABOR_COST_COLUMN_CANDIDATES),
+    lossCostColumn: findFirstMatchingColumn(columnNames, LOSS_COST_COLUMN_CANDIDATES),
     isActiveColumn: findFirstMatchingColumn(columnNames, IS_ACTIVE_COLUMN_CANDIDATES),
     deletedAtColumn: findFirstMatchingColumn(columnNames, DELETED_AT_COLUMN_CANDIDATES),
     createdAtColumn: findFirstMatchingColumn(columnNames, CREATED_AT_COLUMN_CANDIDATES),
@@ -217,6 +225,18 @@ export async function syncDbFactoryOrdersForSpecSheet(workOrder: WorkOrder): Pro
     if (schema.statusColumn) {
       columns.push(schema.statusColumn);
       values.push(resolveFactoryOrderStatus(workOrder, entry));
+      placeholders.push(`$${values.length}`);
+    }
+
+    if (schema.laborCostColumn) {
+      columns.push(schema.laborCostColumn);
+      values.push(normalizeQuantity(entry.laborCost));
+      placeholders.push(`$${values.length}`);
+    }
+
+    if (schema.lossCostColumn) {
+      columns.push(schema.lossCostColumn);
+      values.push(normalizeQuantity(entry.lossCost));
       placeholders.push(`$${values.length}`);
     }
 
