@@ -6,6 +6,7 @@ import type { WorkOrder } from "@/types/workorder";
 import { applyReorderIdentity } from "@/lib/workorder/reorder/helpers";
 import { syncDbFactoryOrdersForSpecSheet } from "@/lib/workorder/repository/dbFactoryOrderRepository";
 import { syncDbSpecSheetMaterialsForSpecSheet } from "@/lib/workorder/repository/dbSpecSheetMaterialRepository";
+import { syncDbSpecSheetOutsourcingForSpecSheet } from "@/lib/workorder/repository/dbSpecSheetOutsourcingRepository";
 
 const WORK_ORDER_TABLE = "spec_sheets";
 const DEFAULT_WORKFLOW_STATE: WorkOrder["workflowState"] = "draft";
@@ -414,6 +415,7 @@ export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
   const mapped = mapRowToWorkOrder(created);
   await syncDbFactoryOrdersForSpecSheet(mapped);
   await syncDbSpecSheetMaterialsForSpecSheet(mapped);
+  await syncDbSpecSheetOutsourcingForSpecSheet(mapped);
   return mapped;
 }
 
@@ -521,6 +523,7 @@ export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
   const mapped = mapRowToWorkOrder(updated);
   await syncDbFactoryOrdersForSpecSheet(mapped);
   await syncDbSpecSheetMaterialsForSpecSheet(mapped);
+  await syncDbSpecSheetOutsourcingForSpecSheet(mapped);
   return mapped;
 }
 
