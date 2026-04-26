@@ -99,27 +99,40 @@ function normalizeWorkOrderForDb(workOrder: WorkOrder): WorkOrder {
   };
 }
 
-function serializeWorkOrderPayload(workOrder: WorkOrder): WorkOrder {
+function serializeWorkOrderPayload(workOrder: WorkOrder): Partial<WorkOrder> {
   const normalizedWorkOrder = normalizeWorkOrderForDb(workOrder);
-  const payload = { ...normalizedWorkOrder };
+  const {
+    id: _id,
+    title: _title,
+    baseTitle: _baseTitle,
+    displayTitle: _displayTitle,
+    workOrderKind: _workOrderKind,
+    reorderGroupId: _reorderGroupId,
+    reorderRound: _reorderRound,
+    parentSpecSheetId: _parentSpecSheetId,
+    isDefectOrder: _isDefectOrder,
+    workflowState: _workflowState,
+    lastSavedAt: _lastSavedAt,
+    attachments: _attachments,
+    memoThreads: _memoThreads,
+    ...payload
+  } = normalizedWorkOrder;
 
-  delete payload.baseTitle;
-  delete payload.displayTitle;
-  delete payload.workOrderKind;
-  delete payload.reorderGroupId;
-  delete payload.reorderRound;
-  delete payload.parentSpecSheetId;
-  delete payload.isDefectOrder;
+  void _id;
+  void _title;
+  void _baseTitle;
+  void _displayTitle;
+  void _workOrderKind;
+  void _reorderGroupId;
+  void _reorderRound;
+  void _parentSpecSheetId;
+  void _isDefectOrder;
+  void _workflowState;
+  void _lastSavedAt;
+  void _attachments;
+  void _memoThreads;
 
-  return {
-    ...payload,
-    id: normalizedWorkOrder.id,
-    title: normalizedWorkOrder.title,
-    workflowState: normalizedWorkOrder.workflowState,
-    lastSavedAt: normalizedWorkOrder.lastSavedAt,
-    attachments: [],
-    memoThreads: [],
-  };
+  return payload;
 }
 
 function parsePayloadValue(payload: DbSpecSheetRow["payload"]): Partial<WorkOrder> {
@@ -157,13 +170,14 @@ function mapSpecSheetRowToWorkOrder(row: DbSpecSheetRow): WorkOrder {
     parentSpecSheetId: row.parent_spec_sheet_id ?? (typeof payload.parentSpecSheetId === "string" ? payload.parentSpecSheetId : undefined),
     isDefectOrder: typeof row.is_rework === "boolean" ? row.is_rework : (typeof payload.isDefectOrder === "boolean" ? payload.isDefectOrder : undefined),
     workflowState:
-      typeof payload.workflowState === "string"
-        ? payload.workflowState
-        : normalizeDbWorkflowState(row.workflow_state ?? DEFAULT_WORKFLOW_STATE),
+      row.workflow_state !== null && row.workflow_state !== undefined
+        ? normalizeDbWorkflowState(row.workflow_state)
+        : (typeof payload.workflowState === "string" ? payload.workflowState : DEFAULT_WORKFLOW_STATE),
     lastSavedAt:
-      typeof payload.lastSavedAt === "string"
-        ? payload.lastSavedAt
-        : (row.last_saved_at ?? toIsoString(row.updated_at) ?? toIsoString(row.created_at)),
+      row.last_saved_at ??
+      toIsoString(row.updated_at) ??
+      toIsoString(row.created_at) ??
+      (typeof payload.lastSavedAt === "string" ? payload.lastSavedAt : ""),
   } satisfies WorkOrder;
 
   return applyReorderIdentity(hydrated);
@@ -209,7 +223,7 @@ function buildPayloadInsertPlaceholder(kind: DbPayloadColumnKind | null, placeho
   return `$${placeholderIndex}`;
 }
 
-function buildPayloadValue(kind: DbPayloadColumnKind | null, payload: WorkOrder): string {
+function buildPayloadValue(kind: DbPayloadColumnKind | null, payload: Partial<WorkOrder>): string {
   const serialized = JSON.stringify(payload);
   return serialized;
 }
