@@ -56,15 +56,15 @@ function resolveDbErrorPayload(error: unknown, fallbackMessage: string): { statu
     return { status: 503, payload: { message, code: "DB_DRIVER_MISSING" } };
   }
 
-  if (/orders row not found for id:/i.test(message)) {
+  if (/spec_sheets row not found for id:/i.test(message)) {
     return { status: 404, payload: { message, code: "DB_REQUEST_FAILED" } };
   }
 
-  if (/relation .*orders.* does not exist/i.test(message)) {
+  if (/relation .*spec_sheets.* does not exist/i.test(message)) {
     return { status: 503, payload: { message, code: "DB_TABLE_MISSING" } };
   }
 
-  if (/orders table is missing required columns/i.test(message) || /Unsupported payload column type/i.test(message)) {
+  if (/spec_sheets table is missing required columns/i.test(message) || /Unsupported payload column type/i.test(message)) {
     return { status: 503, payload: { message, code: "DB_SCHEMA_UNSUPPORTED" } };
   }
 

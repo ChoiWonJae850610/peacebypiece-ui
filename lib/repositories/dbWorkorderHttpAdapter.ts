@@ -128,7 +128,7 @@ function shouldUseLocalFallback(error: unknown): boolean {
     errorWithMeta.status === 503 ||
     /DATABASE_URL is not configured|No supported database env var is configured/i.test(error.message) ||
     /The 'pg' package is required/i.test(error.message) ||
-    /relation .*orders.* does not exist/i.test(error.message) ||
+    /relation .*spec_sheets.* does not exist/i.test(error.message) ||
     isNetworkErrorMessage(error.message)
   );
 }
@@ -144,7 +144,7 @@ function toStatusCode(error: unknown): DbConnectionStateCode {
 
   if (/DATABASE_URL is not configured|No supported database env var is configured/i.test(error.message)) return "DB_NOT_CONFIGURED";
   if (/The 'pg' package is required/i.test(error.message)) return "DB_DRIVER_MISSING";
-  if (/relation .*orders.* does not exist/i.test(error.message)) return "DB_TABLE_MISSING";
+  if (/relation .*spec_sheets.* does not exist/i.test(error.message)) return "DB_TABLE_MISSING";
   if (/Unsupported payload column type/i.test(error.message)) return "DB_SCHEMA_UNSUPPORTED";
   if (/column .* does not exist/i.test(error.message) || /invalid input syntax/i.test(error.message) || /cannot cast/i.test(error.message)) return "DB_SCHEMA_INVALID";
   if (isNetworkErrorMessage(error.message)) return "DB_CONNECTION_FAILED";

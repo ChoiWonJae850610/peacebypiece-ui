@@ -14,7 +14,7 @@ type DbColumnInfo = {
 };
 
 const DATABASE_ENV_HELP = `Expected one of: ${getSupportedDatabaseEnvKeys().join(", ")}`;
-const WORK_ORDER_TABLE = "orders";
+const WORK_ORDER_TABLE = "spec_sheets";
 const PAYLOAD_COLUMN_CANDIDATES = ["payload", "data", "workorder_payload", "work_order_payload"] as const;
 
 type DbStatusPayload = {
