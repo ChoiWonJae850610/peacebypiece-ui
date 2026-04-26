@@ -11,6 +11,9 @@ BEGIN;
 -- FK / index / dependent constraints are removed by CASCADE.
 -- =========================================
 
+DROP TABLE IF EXISTS material_allocations CASCADE;
+DROP TABLE IF EXISTS material_order_lines CASCADE;
+DROP TABLE IF EXISTS material_orders CASCADE;
 
 DROP TABLE IF EXISTS memos CASCADE;
 DROP TABLE IF EXISTS attachments CASCADE;
