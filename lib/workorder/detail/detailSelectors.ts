@@ -1,4 +1,4 @@
-import { FACTORY_OPTIONS } from "@/lib/constants/workorderOptions";
+import { FACTORY_OPTIONS, OUTSOURCING_PROCESS_OPTIONS } from "@/lib/constants/workorderOptions";
 import { MATERIAL_KIND } from "@/lib/constants/workorderDomain";
 import {
   listActiveMaterialPartnerNames,
@@ -70,6 +70,11 @@ export function selectMaterialVendorOptionsById(
       ),
     ]),
   );
+}
+
+
+export function selectOutsourcingProcessOptions(partnerOutsourcingProcessOptions: readonly string[] = []): string[] {
+  return selectDbOptionsOrFallback(partnerOutsourcingProcessOptions, OUTSOURCING_PROCESS_OPTIONS);
 }
 
 export function selectOutsourcingVendorOptionsById(

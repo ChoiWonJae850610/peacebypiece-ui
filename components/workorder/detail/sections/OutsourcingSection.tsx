@@ -1,5 +1,5 @@
 import { useI18n } from "@/lib/i18n";
-import { OUTSOURCING_PROCESS_OPTIONS, OUTSOURCING_UNIT_OPTIONS } from "@/lib/constants/workorderOptions";
+import { OUTSOURCING_UNIT_OPTIONS } from "@/lib/constants/workorderOptions";
 import {
   DeleteButton,
   EditableValue,
@@ -24,6 +24,7 @@ export default function OutsourcingSection({
   onAdd,
   onRemove,
   vendorOptionsById,
+  processOptions,
   locked = false,
 }: {
   outsourcing: Outsourcing[];
@@ -37,6 +38,7 @@ export default function OutsourcingSection({
   onAdd: () => void;
   onRemove: (id: string) => void;
   vendorOptionsById: Record<string, string[]>;
+  processOptions: string[];
   locked?: boolean;
 }) {
   const { i18n } = useI18n();
@@ -75,7 +77,7 @@ export default function OutsourcingSection({
             <tbody>
               {outsourcing.map((item, rowIndex) => (
                 <tr key={item.id} className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
-                  <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} options={OUTSOURCING_PROCESS_OPTIONS} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
+                  <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} options={processOptions} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                   <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="vendor" value={item.vendor} options={vendorOptionsById[item.id] ?? []} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                   <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="decimal" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                   <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="unitType" value={item.unitType} options={OUTSOURCING_UNIT_OPTIONS} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>

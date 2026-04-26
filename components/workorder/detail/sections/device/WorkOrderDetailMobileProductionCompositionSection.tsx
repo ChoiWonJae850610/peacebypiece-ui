@@ -51,6 +51,7 @@ export default function WorkOrderDetailMobileProductionCompositionSection(props:
             onAdd={props.onAddOutsourcing}
             onRemove={props.onRemoveOutsourcing}
             vendorOptionsById={props.outsourcingVendorOptionsById}
+            processOptions={props.outsourcingProcessOptions}
             locked={props.locked}
           />
         </div>

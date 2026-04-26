@@ -1,5 +1,5 @@
 import { useI18n } from "@/lib/i18n";
-import { OUTSOURCING_PROCESS_OPTIONS, OUTSOURCING_UNIT_OPTIONS } from "@/lib/constants/workorderOptions";
+import { OUTSOURCING_UNIT_OPTIONS } from "@/lib/constants/workorderOptions";
 import { AddButton, DeleteButton, EditableValue, SectionHeader, type EditableCell, type EditableSectionKey } from "@/components/workorder/detail/shared/detailEditorShared";
 import type { Outsourcing } from "@/types/workorder";
 
@@ -15,6 +15,7 @@ type Props = {
   onAdd: () => void;
   onRemove: (id: string) => void;
   vendorOptionsById: Record<string, string[]>;
+  processOptions: string[];
   locked?: boolean;
 };
 
@@ -30,6 +31,7 @@ export default function WorkOrderDetailMobileOutsourcingSection({
   onAdd,
   onRemove,
   vendorOptionsById,
+  processOptions,
   locked = false,
 }: Props) {
   const { i18n } = useI18n();
@@ -50,7 +52,7 @@ export default function WorkOrderDetailMobileOutsourcingSection({
             <article key={item.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-3.5">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} options={OUTSOURCING_PROCESS_OPTIONS} editingCell={editingCell} editingValue={editingValue} wrapText onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
+                  <EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} options={processOptions} editingCell={editingCell} editingValue={editingValue} wrapText onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
                   <div className="mt-1 text-xs text-stone-500">{copy.fallbackItem.replace("{index}", String(index + 1))}</div>
                 </div>
                 {!locked ? <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.process || copy.fallbackItem.replace("{index}", String(index + 1))} ${common.deleteSuffix}`} /> : null}

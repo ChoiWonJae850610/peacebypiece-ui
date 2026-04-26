@@ -141,6 +141,7 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
       }
       if (options.activeOnly) {
         conditions.push("pi.is_active = true");
+        conditions.push("p.is_active = true");
       }
 
       const result = await queryDb<PartnerItemRow>(

@@ -57,6 +57,7 @@ type BuildWorkOrderDetailViewModelArgs = {
   outsourcingItems: ProductionCompositionProps["outsourcing"];
   materialVendorOptionsById: ProductionCompositionProps["materialVendorOptionsById"];
   outsourcingVendorOptionsById: ProductionCompositionProps["outsourcingVendorOptionsById"];
+  outsourcingProcessOptions: ProductionCompositionProps["outsourcingProcessOptions"];
   costSummary: {
     laborCost: number;
     lossCost: number;
@@ -127,6 +128,7 @@ export function buildWorkOrderDetailViewModel({
   outsourcingItems,
   materialVendorOptionsById,
   outsourcingVendorOptionsById,
+  outsourcingProcessOptions,
   costSummary,
   onSave,
   onOpenBasicInfoModal,
@@ -217,6 +219,7 @@ export function buildWorkOrderDetailViewModel({
       onRemoveOutsourcing,
       materialVendorOptionsById,
       outsourcingVendorOptionsById,
+      outsourcingProcessOptions,
       locked: isReviewRequestLocked,
     },
     costSummaryProps: {

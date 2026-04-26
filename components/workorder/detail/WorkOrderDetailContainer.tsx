@@ -100,6 +100,7 @@ export default function WorkOrderDetailContainer({
     outsourcingItems: editor.outsourcingItems,
     materialVendorOptionsById: editor.materialVendorOptionsById,
     outsourcingVendorOptionsById: editor.outsourcingVendorOptionsById,
+    outsourcingProcessOptions: editor.outsourcingProcessOptions,
     costSummary: editor.costSummary,
     onSave,
     onOpenBasicInfoModal: editor.handleOpenBasicInfoModal,

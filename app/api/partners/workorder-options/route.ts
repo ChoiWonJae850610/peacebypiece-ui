@@ -9,6 +9,7 @@ type WorkOrderPartnerOptions = {
     subsidiary: string[];
   };
   outsourcingVendorOptions: string[];
+  outsourcingProcessOptions: string[];
   partnerItemOptions: {
     labor: string[];
     fabric: string[];
@@ -24,6 +25,7 @@ const EMPTY_OPTIONS: WorkOrderPartnerOptions = {
     subsidiary: [],
   },
   outsourcingVendorOptions: [],
+  outsourcingProcessOptions: [],
   partnerItemOptions: {
     labor: [],
     fabric: [],
@@ -46,6 +48,7 @@ function buildPartnerOptions(partners: PartnerDbRecord[], partnerItems: PartnerI
       subsidiary: [],
     },
     outsourcingVendorOptions: [],
+    outsourcingProcessOptions: [],
     partnerItemOptions: {
       labor: [],
       fabric: [],
@@ -54,26 +57,36 @@ function buildPartnerOptions(partners: PartnerDbRecord[], partnerItems: PartnerI
     },
   };
 
-  for (const partner of partners) {
-    if (!partner.is_active) continue;
-
-    if (partner.type === "factory") {
-      options.factoryOptions = appendUnique(options.factoryOptions, partner.name);
-    }
-    if (partner.type === "fabric") {
-      options.materialVendorOptions.fabric = appendUnique(options.materialVendorOptions.fabric, partner.name);
-    }
-    if (partner.type === "subsidiary") {
-      options.materialVendorOptions.subsidiary = appendUnique(options.materialVendorOptions.subsidiary, partner.name);
-    }
-    if (partner.type === "outsourcing") {
-      options.outsourcingVendorOptions = appendUnique(options.outsourcingVendorOptions, partner.name);
-    }
-  }
+  const activePartnerNames = new Map(partners.filter((partner) => partner.is_active).map((partner) => [partner.id, partner.name]));
 
   for (const item of partnerItems) {
     if (!item.is_active) continue;
-    options.partnerItemOptions[item.category] = appendUnique(options.partnerItemOptions[item.category], item.name);
+
+    const partnerName = item.partner_name ?? activePartnerNames.get(item.partner_id) ?? null;
+
+    if (item.category === "labor") {
+      options.factoryOptions = appendUnique(options.factoryOptions, partnerName);
+      options.partnerItemOptions.labor = appendUnique(options.partnerItemOptions.labor, partnerName);
+      continue;
+    }
+
+    if (item.category === "fabric") {
+      options.materialVendorOptions.fabric = appendUnique(options.materialVendorOptions.fabric, partnerName);
+      options.partnerItemOptions.fabric = appendUnique(options.partnerItemOptions.fabric, item.name);
+      continue;
+    }
+
+    if (item.category === "subsidiary") {
+      options.materialVendorOptions.subsidiary = appendUnique(options.materialVendorOptions.subsidiary, partnerName);
+      options.partnerItemOptions.subsidiary = appendUnique(options.partnerItemOptions.subsidiary, item.name);
+      continue;
+    }
+
+    if (item.category === "outsourcing") {
+      options.outsourcingVendorOptions = appendUnique(options.outsourcingVendorOptions, partnerName);
+      options.outsourcingProcessOptions = appendUnique(options.outsourcingProcessOptions, item.outsourcing_process_name ?? item.name);
+      options.partnerItemOptions.outsourcing = appendUnique(options.partnerItemOptions.outsourcing, item.name);
+    }
   }
 
   return options;

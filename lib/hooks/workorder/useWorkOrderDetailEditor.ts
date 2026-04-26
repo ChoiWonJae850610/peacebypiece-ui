@@ -38,6 +38,7 @@ import {
   mapRegistryTypeToPartnerTypes,
   selectFactoryOptions,
   selectMaterialVendorOptionsById,
+  selectOutsourcingProcessOptions,
   selectOutsourcingVendorOptionsById,
 } from "@/lib/workorder/detail/detailSelectors";
 import type { Outsourcing, WorkOrder, WorkflowState } from "@/types/workorder";
@@ -136,6 +137,11 @@ export function useWorkOrderDetailEditor({
   const materialVendorOptionsById = useMemo(
     () => selectMaterialVendorOptionsById(materialItems, partnerWorkOrderOptions.materialVendorOptions),
     [materialItems, partnerWorkOrderOptions.materialVendorOptions],
+  );
+
+  const outsourcingProcessOptions = useMemo(
+    () => selectOutsourcingProcessOptions(partnerWorkOrderOptions.outsourcingProcessOptions),
+    [partnerWorkOrderOptions.outsourcingProcessOptions],
   );
 
   const outsourcingVendorOptionsById = useMemo(
@@ -338,6 +344,7 @@ export function useWorkOrderDetailEditor({
     productionSectionOpen,
     materialVendorOptionsById,
     outsourcingVendorOptionsById,
+    outsourcingProcessOptions,
     startEdit,
     cancelEdit,
     commitEdit,

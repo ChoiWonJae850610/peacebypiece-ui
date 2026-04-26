@@ -24,6 +24,7 @@ export default function ProductionCompositionSection({
   onRemoveOutsourcing,
   materialVendorOptionsById,
   outsourcingVendorOptionsById,
+  outsourcingProcessOptions,
   locked = false,
 }: {
   materials: Material[];
@@ -45,6 +46,7 @@ export default function ProductionCompositionSection({
   onRemoveOutsourcing: (id: string) => void;
   materialVendorOptionsById: Record<string, string[]>;
   outsourcingVendorOptionsById: Record<string, string[]>;
+  outsourcingProcessOptions: string[];
   locked?: boolean;
 }) {
   const { i18n } = useI18n();
@@ -91,6 +93,7 @@ export default function ProductionCompositionSection({
             onAdd={onAddOutsourcing}
             onRemove={onRemoveOutsourcing}
             vendorOptionsById={outsourcingVendorOptionsById}
+            processOptions={outsourcingProcessOptions}
             locked={locked}
           />
         </div>

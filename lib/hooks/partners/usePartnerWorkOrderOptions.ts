@@ -9,6 +9,7 @@ export type PartnerWorkOrderOptions = {
     subsidiary: string[];
   };
   outsourcingVendorOptions: string[];
+  outsourcingProcessOptions: string[];
   partnerItemOptions: {
     labor: string[];
     fabric: string[];
@@ -24,6 +25,7 @@ const EMPTY_OPTIONS: PartnerWorkOrderOptions = {
     subsidiary: [],
   },
   outsourcingVendorOptions: [],
+  outsourcingProcessOptions: [],
   partnerItemOptions: {
     labor: [],
     fabric: [],
@@ -57,6 +59,7 @@ function normalizeWorkOrderOptions(response: Partial<PartnerWorkOrderOptions>): 
       subsidiary: normalizeOptionList(response.materialVendorOptions?.subsidiary),
     },
     outsourcingVendorOptions: normalizeOptionList(response.outsourcingVendorOptions),
+    outsourcingProcessOptions: normalizeOptionList(response.outsourcingProcessOptions),
     partnerItemOptions: {
       labor: normalizeOptionList(response.partnerItemOptions?.labor),
       fabric: normalizeOptionList(response.partnerItemOptions?.fabric),
