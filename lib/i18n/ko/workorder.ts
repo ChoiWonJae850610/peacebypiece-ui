@@ -103,6 +103,7 @@ export const workorderKo = {
     factoryOrderAlreadyRequestedToast: "이미 발주된 작업입니다.",
     factoryOrderRequiresApprovalToast: "검토 완료 후 발주할 수 있습니다.",
     factoryOrderFactoryRequiredToast: "공장을 선택해주세요.",
+    factoryOrderFactoryInvalidToast: "공장을 다시 선택하세요. 등록된 공장 id를 확인할 수 없습니다.",
     factoryOrderDueDateRequiredToast: "납기일을 입력해주세요.",
     factoryOrderQuantityRequiredToast: "수량은 1 이상이어야 합니다.",
     factoryOrderLaborCostInvalidToast: "공임비는 음수가 될 수 없습니다.",

@@ -44,6 +44,41 @@ import type {
 
 const requiresOrderRequestConfirmation = (action: WorkflowAction) => action.actionType === "request_order";
 
+type FactoryPartnerApiItem = {
+  id?: unknown;
+  name?: unknown;
+  type?: unknown;
+  is_active?: unknown;
+};
+
+function normalizePartnerLookupText(value: unknown): string {
+  return String(value ?? "").trim();
+}
+
+function isSamePartnerName(left: unknown, right: unknown): boolean {
+  return normalizePartnerLookupText(left).toLocaleLowerCase("ko-KR") === normalizePartnerLookupText(right).toLocaleLowerCase("ko-KR");
+}
+
+async function resolveActiveFactoryPartnerIdByName(factoryName: string): Promise<string | null> {
+  try {
+    const response = await fetch("/api/partners/factories", { cache: "no-store" });
+    if (response.ok) {
+      const payload = (await response.json()) as { partners?: FactoryPartnerApiItem[] };
+      const target = (payload.partners ?? []).find((partner) => {
+        if (partner.is_active === false) return false;
+        return isSamePartnerName(partner.name, factoryName);
+      });
+
+      const apiPartnerId = normalizePartnerLookupText(target?.id);
+      if (apiPartnerId) return apiPartnerId;
+    }
+  } catch {
+    // DB API가 비활성화된 mock 환경에서는 local partner master를 fallback으로 사용한다.
+  }
+
+  return findPartnerIdByNameAndTypes(factoryName, ["factory"]);
+}
+
 type UseWorkOrderWorkflowActionsParams = Pick<
   UseWorkOrderActionsParams,
   | "currentUser"
@@ -266,8 +301,13 @@ export function useWorkOrderWorkflowActions({
       const normalizedFactoryName = payload.factoryName.trim();
       const normalizedQuantity = Math.max(0, Number(payload.quantity) || 0);
       const requestedAt = new Date().toISOString();
-      const factoryId = findPartnerIdByNameAndTypes(normalizedFactoryName, ["factory"])
-        ?? `factory:${normalizedFactoryName.toLocaleLowerCase("ko-KR").replace(/\s+/g, "-")}`;
+      const factoryId = await resolveActiveFactoryPartnerIdByName(normalizedFactoryName);
+      if (!factoryId) {
+        setToastMessage(actionFlowText.factoryOrderFactoryInvalidToast ?? actionFlowText.factoryOrderFactoryRequiredToast);
+        setPendingWorkflowAction(null);
+        setOrderRequestConfirmOpen(false);
+        return;
+      }
       const result = buildFactoryOrderRequestResult({
         workOrder,
         actorName: currentUser.name,

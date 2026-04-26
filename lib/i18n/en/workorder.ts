@@ -103,6 +103,7 @@ export const workorderEn = {
     factoryOrderAlreadyRequestedToast: "This work order has already been requested.",
     factoryOrderRequiresApprovalToast: "You can request an order after review approval.",
     factoryOrderFactoryRequiredToast: "Please select a factory.",
+    factoryOrderFactoryInvalidToast: "Please select the factory again. The registered factory id could not be verified.",
     factoryOrderDueDateRequiredToast: "Please enter a due date.",
     factoryOrderQuantityRequiredToast: "Quantity must be at least 1.",
     factoryOrderLaborCostInvalidToast: "Labor cost cannot be negative.",

@@ -73,6 +73,42 @@ function normalizeQuantity(value: unknown): number {
   return Math.max(0, Math.trunc(numeric));
 }
 
+type FactoryPartnerResolution = {
+  id: string;
+  name: string;
+};
+
+async function resolveActiveFactoryPartnerByIdOrName(payload: { factoryId?: string | null; factoryName?: string | null }): Promise<FactoryPartnerResolution | null> {
+  const factoryId = normalizeText(payload.factoryId);
+  const factoryName = normalizeText(payload.factoryName);
+
+  if (!factoryId && !factoryName) return null;
+
+  const conditions: string[] = ["p.is_active = true", "pi.is_active = true", "pi.item_type = 'factory'"];
+  const params: unknown[] = [];
+
+  if (factoryId) {
+    params.push(factoryId);
+    conditions.push(`p.id = $${params.length}`);
+  }
+
+  if (factoryName) {
+    params.push(factoryName);
+    conditions.push(`p.name = $${params.length}`);
+  }
+
+  const result = await queryDb<FactoryPartnerResolution>(
+    `SELECT p.id, p.name
+     FROM partners p
+     INNER JOIN partner_items pi ON pi.partner_id = p.id
+     WHERE ${conditions.join(" AND ")}
+     LIMIT 1`,
+    params,
+  );
+
+  return result.rows[0] ?? null;
+}
+
 function normalizeDateValue(value: unknown, kind: DbFactoryOrderSchema["dueDateColumnKind"]): string | null {
   const text = normalizeText(value);
   if (!text) return null;
@@ -173,6 +209,16 @@ export async function syncDbFactoryOrdersForSpecSheet(workOrder: WorkOrder): Pro
   const specSheetIdColumn = schema.specSheetIdColumn!;
   const entries = toFactoryOrderEntries(workOrder);
   const activeIds = entries.map((entry, index) => buildFactoryOrderId(workOrder.id, entry, index));
+  const requestedFactory = workOrder.factoryOrderRequest
+    ? await resolveActiveFactoryPartnerByIdOrName({
+        factoryId: workOrder.factoryOrderRequest.factoryId,
+        factoryName: workOrder.factoryOrderRequest.factoryName,
+      })
+    : null;
+
+  if (workOrder.factoryOrderRequest && !requestedFactory) {
+    throw new Error("FACTORY_PARTNER_ID_NOT_FOUND");
+  }
 
   if (entries.length === 0) {
     await queryDb(
@@ -200,13 +246,13 @@ export async function syncDbFactoryOrdersForSpecSheet(workOrder: WorkOrder): Pro
 
     if (schema.factoryPartnerIdColumn) {
       columns.push(schema.factoryPartnerIdColumn);
-      values.push(workOrder.factoryOrderRequest?.factoryId ?? null);
+      values.push(requestedFactory?.id ?? null);
       placeholders.push(`$${values.length}`);
     }
 
     if (schema.factoryNameColumn) {
       columns.push(schema.factoryNameColumn);
-      values.push(normalizeText(entry.factory) || normalizeText(workOrder.factoryOrderRequest?.factoryName) || null);
+      values.push(normalizeText(entry.factory) || requestedFactory?.name || normalizeText(workOrder.factoryOrderRequest?.factoryName) || null);
       placeholders.push(`$${values.length}`);
     }
 
