@@ -77,7 +77,7 @@ function renderOutsourcingRows(items: Outsourcing[]) {
           <td class="align-left">${escapeHtml(item.process || "-")}</td>
           <td>${escapeHtml(formatQuantity(item.quantity))}</td>
           <td>${escapeHtml(formatCurrency(item.unitCost))}</td>
-          <td>${escapeHtml(formatCurrency(item.totalCost))}</td>
+          <td>${escapeHtml(formatCurrency(item.totalCost || item.quantity * item.unitCost))}</td>
         </tr>`,
     )
     .join("");
