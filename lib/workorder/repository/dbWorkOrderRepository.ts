@@ -99,8 +99,14 @@ function normalizeWorkOrderForDb(workOrder: WorkOrder): WorkOrder {
 function serializeWorkOrderPayload(workOrder: WorkOrder): WorkOrder {
   const normalizedWorkOrder = normalizeWorkOrderForDb(workOrder);
   const payload = { ...normalizedWorkOrder };
+
   delete payload.baseTitle;
   delete payload.displayTitle;
+  delete payload.workOrderKind;
+  delete payload.reorderGroupId;
+  delete payload.reorderRound;
+  delete payload.parentSpecSheetId;
+  delete payload.isDefectOrder;
 
   return {
     ...payload,
@@ -140,13 +146,13 @@ function mapRowToWorkOrder(row: DbWorkOrderRow): WorkOrder {
 
   const hydrated = {
     ...(payload as WorkOrder),
-    id: typeof payload.id === "string" ? payload.id : row.id,
-    title: typeof payload.title === "string" ? payload.title : row.title,
-    workOrderKind: payload.workOrderKind ?? row.work_order_kind ?? undefined,
-    reorderGroupId: typeof payload.reorderGroupId === "string" ? payload.reorderGroupId : (row.reorder_group_id ?? undefined),
-    reorderRound: typeof payload.reorderRound === "number" ? payload.reorderRound : (typeof row.reorder_round === "number" ? row.reorder_round : undefined),
-    parentSpecSheetId: typeof payload.parentSpecSheetId === "string" ? payload.parentSpecSheetId : (row.parent_spec_sheet_id ?? undefined),
-    isDefectOrder: typeof payload.isDefectOrder === "boolean" ? payload.isDefectOrder : (typeof row.is_rework === "boolean" ? row.is_rework : undefined),
+    id: row.id,
+    title: row.title,
+    workOrderKind: row.work_order_kind ?? payload.workOrderKind ?? undefined,
+    reorderGroupId: row.reorder_group_id ?? (typeof payload.reorderGroupId === "string" ? payload.reorderGroupId : undefined),
+    reorderRound: typeof row.reorder_round === "number" ? row.reorder_round : (typeof payload.reorderRound === "number" ? payload.reorderRound : undefined),
+    parentSpecSheetId: row.parent_spec_sheet_id ?? (typeof payload.parentSpecSheetId === "string" ? payload.parentSpecSheetId : undefined),
+    isDefectOrder: typeof row.is_rework === "boolean" ? row.is_rework : (typeof payload.isDefectOrder === "boolean" ? payload.isDefectOrder : undefined),
     workflowState:
       typeof payload.workflowState === "string"
         ? payload.workflowState
