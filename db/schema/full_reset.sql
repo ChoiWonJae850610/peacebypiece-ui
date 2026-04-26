@@ -244,6 +244,107 @@ CREATE TABLE memos (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
+
+-- ================================
+-- material_orders
+-- 원단/부자재 발주서 헤더
+-- ================================
+CREATE TABLE material_orders (
+  id text PRIMARY KEY,
+  company_id text NOT NULL,
+  company_name text NOT NULL,
+  order_no text,
+  vendor_partner_id text REFERENCES partners(id) ON DELETE SET NULL,
+  status text NOT NULL DEFAULT 'draft',
+  order_date date,
+  expected_received_date date,
+  received_date date,
+  memo text,
+  created_by_id text,
+  created_by_name text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+
+  CONSTRAINT material_orders_status_check
+    CHECK (status IN ('draft', 'requested', 'ordered', 'partially_received', 'received', 'cancelled'))
+);
+
+CREATE INDEX idx_material_orders_company_id ON material_orders(company_id);
+CREATE INDEX idx_material_orders_vendor_partner_id ON material_orders(vendor_partner_id);
+CREATE INDEX idx_material_orders_status ON material_orders(status);
+
+
+-- ================================
+-- material_order_lines
+-- 원단/부자재 발주 상세
+-- ================================
+CREATE TABLE material_order_lines (
+  id text PRIMARY KEY,
+  company_id text NOT NULL,
+  company_name text NOT NULL,
+  material_order_id text NOT NULL REFERENCES material_orders(id) ON DELETE CASCADE,
+  spec_sheet_id text REFERENCES spec_sheets(id) ON DELETE SET NULL,
+  spec_sheet_material_id text REFERENCES spec_sheet_materials(id) ON DELETE SET NULL,
+  partner_item_id text REFERENCES partner_items(id) ON DELETE SET NULL,
+  material_type text NOT NULL,
+  name text NOT NULL,
+  unit text,
+  ordered_quantity numeric(14, 2) NOT NULL DEFAULT 0,
+  received_quantity numeric(14, 2) NOT NULL DEFAULT 0,
+  unit_cost numeric(14, 2) NOT NULL DEFAULT 0,
+  total_cost numeric(14, 2) NOT NULL DEFAULT 0,
+  memo text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+
+  CONSTRAINT material_order_lines_type_check
+    CHECK (material_type IN ('fabric', 'subsidiary'))
+);
+
+CREATE INDEX idx_material_order_lines_company_id ON material_order_lines(company_id);
+CREATE INDEX idx_material_order_lines_order_id ON material_order_lines(material_order_id);
+CREATE INDEX idx_material_order_lines_spec_sheet_id ON material_order_lines(spec_sheet_id);
+CREATE INDEX idx_material_order_lines_material_id ON material_order_lines(spec_sheet_material_id);
+CREATE INDEX idx_material_order_lines_partner_item_id ON material_order_lines(partner_item_id);
+
+
+-- ================================
+-- material_allocations
+-- 재고를 작지에 할당한 기록
+-- ================================
+CREATE TABLE material_allocations (
+  id text PRIMARY KEY,
+  company_id text NOT NULL,
+  company_name text NOT NULL,
+  material_stock_id text REFERENCES material_stocks(id) ON DELETE SET NULL,
+  material_order_line_id text REFERENCES material_order_lines(id) ON DELETE SET NULL,
+  spec_sheet_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
+  spec_sheet_material_id text REFERENCES spec_sheet_materials(id) ON DELETE SET NULL,
+  material_type text NOT NULL,
+  name text NOT NULL,
+  unit text,
+  allocated_quantity numeric(14, 2) NOT NULL DEFAULT 0,
+  memo text,
+  allocated_by_id text,
+  allocated_by_name text,
+  allocated_at timestamptz NOT NULL DEFAULT now(),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+
+  CONSTRAINT material_allocations_type_check
+    CHECK (material_type IN ('fabric', 'subsidiary'))
+);
+
+CREATE INDEX idx_material_allocations_company_id ON material_allocations(company_id);
+CREATE INDEX idx_material_allocations_stock_id ON material_allocations(material_stock_id);
+CREATE INDEX idx_material_allocations_order_line_id ON material_allocations(material_order_line_id);
+CREATE INDEX idx_material_allocations_spec_sheet_id ON material_allocations(spec_sheet_id);
+CREATE INDEX idx_material_allocations_material_id ON material_allocations(spec_sheet_material_id);
+
+
+
+
+
 -- =========================================
 -- 9) UNITS SEED DATA
 -- 기준: lib/partners/mockPartnerRepository.ts MOCK_UNITS
