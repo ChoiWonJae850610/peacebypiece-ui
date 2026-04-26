@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS spec_sheet_outsourcing_lines (
   process text,
   vendor text,
   quantity numeric NOT NULL DEFAULT 0,
-  unit_type text,
+  unit text,
   unit_cost numeric NOT NULL DEFAULT 0,
   total_cost numeric NOT NULL DEFAULT 0,
   status text,

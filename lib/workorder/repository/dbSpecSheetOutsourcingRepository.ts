@@ -10,9 +10,9 @@ const SOURCE_OUTSOURCING_ID_COLUMN_CANDIDATES = ["source_outsourcing_id", "outso
 const PROCESS_COLUMN_CANDIDATES = ["process", "process_type", "outsourcing_process"] as const;
 const VENDOR_COLUMN_CANDIDATES = ["vendor", "vendor_name"] as const;
 const QUANTITY_COLUMN_CANDIDATES = ["quantity"] as const;
-const UNIT_TYPE_COLUMN_CANDIDATES = ["unit_type", "unit", "unitType"] as const;
-const UNIT_COST_COLUMN_CANDIDATES = ["unit_cost", "unit_price", "unitCost", "unitPrice"] as const;
-const TOTAL_COST_COLUMN_CANDIDATES = ["total_cost", "total_price", "totalCost", "totalPrice"] as const;
+const UNIT_COLUMN_CANDIDATES = ["unit"] as const;
+const UNIT_COST_COLUMN_CANDIDATES = ["unit_cost"] as const;
+const TOTAL_COST_COLUMN_CANDIDATES = ["total_cost"] as const;
 const STATUS_COLUMN_CANDIDATES = ["status"] as const;
 const PAYLOAD_COLUMN_CANDIDATES = ["payload", "data"] as const;
 const IS_ACTIVE_COLUMN_CANDIDATES = ["is_active"] as const;
@@ -34,7 +34,7 @@ type DbSpecSheetOutsourcingSchema = {
   processColumn: string | null;
   vendorColumn: string | null;
   quantityColumn: string | null;
-  unitTypeColumn: string | null;
+  unitColumn: string | null;
   unitCostColumn: string | null;
   totalCostColumn: string | null;
   statusColumn: string | null;
@@ -117,7 +117,7 @@ async function loadSpecSheetOutsourcingSchema(): Promise<DbSpecSheetOutsourcingS
       processColumn: null,
       vendorColumn: null,
       quantityColumn: null,
-      unitTypeColumn: null,
+      unitColumn: null,
       unitCostColumn: null,
       totalCostColumn: null,
       statusColumn: null,
@@ -137,7 +137,7 @@ async function loadSpecSheetOutsourcingSchema(): Promise<DbSpecSheetOutsourcingS
     processColumn: findFirstMatchingColumn(columnNames, PROCESS_COLUMN_CANDIDATES),
     vendorColumn: findFirstMatchingColumn(columnNames, VENDOR_COLUMN_CANDIDATES),
     quantityColumn: findFirstMatchingColumn(columnNames, QUANTITY_COLUMN_CANDIDATES),
-    unitTypeColumn: findFirstMatchingColumn(columnNames, UNIT_TYPE_COLUMN_CANDIDATES),
+    unitColumn: findFirstMatchingColumn(columnNames, UNIT_COLUMN_CANDIDATES),
     unitCostColumn: findFirstMatchingColumn(columnNames, UNIT_COST_COLUMN_CANDIDATES),
     totalCostColumn: findFirstMatchingColumn(columnNames, TOTAL_COST_COLUMN_CANDIDATES),
     statusColumn: findFirstMatchingColumn(columnNames, STATUS_COLUMN_CANDIDATES),
@@ -207,8 +207,8 @@ export async function syncDbSpecSheetOutsourcingForSpecSheet(workOrder: WorkOrde
       placeholders.push(`$${values.length}`);
     }
 
-    if (schema.unitTypeColumn) {
-      columns.push(schema.unitTypeColumn);
+    if (schema.unitColumn) {
+      columns.push(schema.unitColumn);
       values.push(normalizeText(item.unitType) || null);
       placeholders.push(`$${values.length}`);
     }
