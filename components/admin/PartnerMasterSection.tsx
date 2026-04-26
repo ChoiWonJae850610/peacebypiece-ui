@@ -25,7 +25,7 @@ import {
   type BasePartnerType,
   type OutsourcingProcessDefinition,
 } from "@/lib/admin/partnerMaster";
-import { fetchPartnerMasterItemsFromApi, savePartnerMasterItemToApi } from "@/lib/admin/partnerMasterApiClient";
+import { fetchPartnerMasterItemsFromApi, savePartnerMasterItemToApi, savePartnerMasterProcessesToApi } from "@/lib/admin/partnerMasterApiClient";
 import {
   loadPartnerMasterInitialState,
   savePartnerMasterItem,
@@ -63,6 +63,7 @@ export default function PartnerMasterSection() {
       .then((payload) => {
         if (!isMounted) return;
         setPartners(payload.partners);
+        if (payload.processDefinitions) setProcessDefinitions(payload.processDefinitions);
         setRepositoryStatus(payload.repository?.mode === "db" ? "DB 연결" : "mock 저장소");
       })
       .catch(() => {
@@ -136,6 +137,19 @@ export default function PartnerMasterSection() {
     setIsProcessModalOpen(true);
   }, []);
 
+
+  const persistProcessDefinitions = useCallback((nextDefinitions: OutsourcingProcessDefinition[]) => {
+    savePartnerMasterProcessesToApi(nextDefinitions)
+      .then((payload) => {
+        if (payload.processDefinitions) setProcessDefinitions(payload.processDefinitions);
+        if (payload.partners) setPartners(payload.partners);
+        setRepositoryStatus(payload.repository?.mode === "db" ? "DB 연결" : "mock 저장소");
+      })
+      .catch(() => {
+        setRepositoryStatus("local fallback");
+      });
+  }, []);
+
   const setPrimaryType = useCallback((type: BasePartnerType) => {
     setDraft((current) => ({
       ...current,
@@ -179,6 +193,7 @@ export default function PartnerMasterSection() {
     savePartnerMasterItemToApi(editingPartnerId, normalizedDraft)
       .then((payload) => {
         setPartners(payload.partners);
+        if (payload.processDefinitions) setProcessDefinitions(payload.processDefinitions);
         setRepositoryStatus(payload.repository?.mode === "db" ? "DB 연결" : "mock 저장소");
         closeModal();
       })
@@ -192,13 +207,15 @@ export default function PartnerMasterSection() {
 
   const updateProcessDefinition = useCallback(
     (type: OutsourcingProcessType, updater: (current: OutsourcingProcessDefinition) => OutsourcingProcessDefinition) => {
-      setProcessDefinitions((current) =>
-        normalizeOutsourcingProcessDefinitions(
+      setProcessDefinitions((current) => {
+        const nextDefinitions = normalizeOutsourcingProcessDefinitions(
           current.map((definition) => (definition.type === type ? updater(definition) : definition)),
-        ),
-      );
+        );
+        persistProcessDefinitions(nextDefinitions);
+        return nextDefinitions;
+      });
     },
-    [],
+    [persistProcessDefinitions],
   );
 
   const addProcessDefinition = useCallback(() => {
@@ -214,17 +231,25 @@ export default function PartnerMasterSection() {
       return;
     }
 
-    setProcessDefinitions((current) => [
-      ...normalizeOutsourcingProcessDefinitions(current),
-      createOutsourcingProcessDefinition(normalizedLabel, current),
-    ]);
+    setProcessDefinitions((current) => {
+      const nextDefinitions = [
+        ...normalizeOutsourcingProcessDefinitions(current),
+        createOutsourcingProcessDefinition(normalizedLabel, current),
+      ];
+      persistProcessDefinitions(nextDefinitions);
+      return nextDefinitions;
+    });
     setNewProcessLabel("");
     setProcessFormError("");
-  }, [newProcessLabel, processDefinitions]);
+  }, [newProcessLabel, persistProcessDefinitions, processDefinitions]);
 
   const moveProcessDefinition = useCallback((type: OutsourcingProcessType, direction: "up" | "down") => {
-    setProcessDefinitions((current) => moveOutsourcingProcessDefinition(current, type, direction));
-  }, []);
+    setProcessDefinitions((current) => {
+      const nextDefinitions = moveOutsourcingProcessDefinition(current, type, direction);
+      persistProcessDefinitions(nextDefinitions);
+      return nextDefinitions;
+    });
+  }, [persistProcessDefinitions]);
 
   const requestDeleteProcessDefinition = useCallback((type: OutsourcingProcessType) => {
     setDeletingProcessType(type);
@@ -233,7 +258,11 @@ export default function PartnerMasterSection() {
   const confirmDeleteProcessDefinition = useCallback(() => {
     if (!deletingProcessType) return;
 
-    setProcessDefinitions((current) => removeOutsourcingProcessDefinition(current, deletingProcessType));
+    setProcessDefinitions((current) => {
+      const nextDefinitions = removeOutsourcingProcessDefinition(current, deletingProcessType);
+      persistProcessDefinitions(nextDefinitions);
+      return nextDefinitions;
+    });
     setDraft((current) => ({
       ...current,
       outsourcingProcessTypes: current.outsourcingProcessTypes.filter((item) => item !== deletingProcessType),
@@ -241,17 +270,19 @@ export default function PartnerMasterSection() {
     setSelectedAvailableProcess((current) => (current === deletingProcessType ? null : current));
     setSelectedAssignedProcess((current) => (current === deletingProcessType ? null : current));
     setDeletingProcessType(null);
-  }, [deletingProcessType]);
+  }, [deletingProcessType, persistProcessDefinitions]);
 
   const closeDeleteProcessModal = useCallback(() => {
     setDeletingProcessType(null);
   }, []);
 
   const resetProcessDefinitions = useCallback(() => {
-    setProcessDefinitions(createDefaultOutsourcingProcessDefinitions());
+    const nextDefinitions = createDefaultOutsourcingProcessDefinitions();
+    setProcessDefinitions(nextDefinitions);
+    persistProcessDefinitions(nextDefinitions);
     setNewProcessLabel("");
     setProcessFormError("");
-  }, []);
+  }, [persistProcessDefinitions]);
 
   return (
     <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm md:p-6">

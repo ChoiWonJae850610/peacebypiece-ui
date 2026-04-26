@@ -47,7 +47,7 @@ function matchesPartnerSearch(
     partner.email ?? "",
     partner.memo,
     ...partner.partnerTypes.map((type) => PARTNER_TYPE_META[type].label),
-    ...(partner.outsourcingProcessTypes ?? []).map((type) => processMeta[type]?.label ?? DEFAULT_OUTSOURCING_PROCESS_META[type].label),
+    ...(partner.outsourcingProcessTypes ?? []).map((type) => processMeta[type]?.label ?? DEFAULT_OUTSOURCING_PROCESS_META[type]?.label ?? String(type)),
   ]
     .join(" ")
     .toLocaleLowerCase("ko-KR");

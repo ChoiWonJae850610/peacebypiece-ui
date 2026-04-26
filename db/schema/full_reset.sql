@@ -277,8 +277,8 @@ INSERT INTO outsourcing_processes (id, name, sort_order) VALUES
 CREATE INDEX units_active_idx
   ON units (is_active, sort_order, name);
 
-CREATE INDEX partners_type_active_idx
-  ON partners (type, is_active, name);
+CREATE INDEX partners_active_name_idx
+  ON partners (is_active, name);
 
 CREATE INDEX partners_company_idx
   ON partners (company_id);
@@ -286,11 +286,11 @@ CREATE INDEX partners_company_idx
 CREATE INDEX partner_items_partner_id_idx
   ON partner_items (partner_id);
 
-CREATE INDEX partner_items_category_idx
-  ON partner_items (category, is_active);
+CREATE INDEX partner_items_type_active_idx
+  ON partner_items (item_type, is_active);
 
-CREATE INDEX partner_items_unit_id_idx
-  ON partner_items (unit_id);
+CREATE INDEX partner_items_outsourcing_process_id_idx
+  ON partner_items (outsourcing_process_id);
 
 CREATE INDEX spec_sheets_updated_at_idx
   ON spec_sheets (updated_at DESC, created_at DESC);

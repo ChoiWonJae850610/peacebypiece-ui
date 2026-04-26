@@ -29,8 +29,10 @@ export type PartnerDbRecord = {
   company_id: string | null;
   name: string;
   type: PartnerDbType;
+  contact_person?: string | null;
   contact: string | null;
   email: string | null;
+  memo?: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -59,12 +61,25 @@ export type PartnerItemRecord = {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  outsourcing_process_id?: string | null;
 };
 
 export type PartnerItemWithRelations = PartnerItemRecord & {
   partner_name: string | null;
   unit_name: string | null;
   unit_code: string | null;
+  outsourcing_process_name?: string | null;
+};
+
+export type OutsourcingProcessRecord = {
+  id: string;
+  company_id: string | null;
+  name: string;
+  memo: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 };
 
 export type PartnerDbPreparationStatus = {

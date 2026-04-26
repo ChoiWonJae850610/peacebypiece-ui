@@ -16,19 +16,11 @@ export function isBasePartnerType(type: PartnerType): type is BasePartnerType {
 }
 
 export function applyPartnerTypeSelectionPolicy(currentTypes: PartnerType[], targetType: BasePartnerType): PartnerType[] {
-  const currentBaseTypes = currentTypes.filter(isBasePartnerType);
   const hasOutsourcing = currentTypes.includes("outsourcing_vendor");
-
-  let nextBaseTypes: BasePartnerType[];
-
-  if (targetType === "factory") {
-    nextBaseTypes = currentBaseTypes.includes("factory") ? [] : ["factory"];
-  } else {
-    const withoutFactory = currentBaseTypes.filter((type) => type !== "factory");
-    nextBaseTypes = withoutFactory.includes(targetType)
-      ? withoutFactory.filter((type) => type !== targetType)
-      : [...withoutFactory, targetType];
-  }
+  const currentBaseTypes = currentTypes.filter(isBasePartnerType);
+  const nextBaseTypes = currentBaseTypes.includes(targetType)
+    ? currentBaseTypes.filter((type) => type !== targetType)
+    : [...currentBaseTypes, targetType];
 
   return [
     ...nextBaseTypes,
@@ -38,11 +30,8 @@ export function applyPartnerTypeSelectionPolicy(currentTypes: PartnerType[], tar
 
 export function normalizePartnerTypeSelection(types: PartnerType[]) {
   const uniqueTypes = Array.from(new Set(types));
-  const hasFactory = uniqueTypes.includes("factory");
   const hasOutsourcing = uniqueTypes.includes("outsourcing_vendor");
-  const baseTypes: BasePartnerType[] = hasFactory
-    ? ["factory"]
-    : uniqueTypes.filter((type): type is BasePartnerType => type !== "factory" && type !== "outsourcing_vendor");
+  const baseTypes = uniqueTypes.filter(isBasePartnerType);
 
   return [
     ...baseTypes,

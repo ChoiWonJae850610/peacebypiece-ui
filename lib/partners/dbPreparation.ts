@@ -2,8 +2,9 @@ import type { PartnerDbPreparationStatus } from "@/lib/partners/types";
 
 export const PARTNER_DB_TABLE_SEQUENCE = [
   "partners",
-  "units",
   "partner_items",
+  "outsourcing_processes",
+  "units",
 ] as const;
 
 export const PARTNER_DB_NEXT_VERSION_SEQUENCE = [
