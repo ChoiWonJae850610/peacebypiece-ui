@@ -1,5 +1,7 @@
 CREATE TABLE IF NOT EXISTS spec_sheet_materials (
   id text PRIMARY KEY,
+  company_id text,
+  company_name text,
   spec_sheet_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
   material_type text,
   name text,
@@ -27,6 +29,11 @@ CREATE INDEX IF NOT EXISTS spec_sheet_materials_active_idx
 
 CREATE TABLE IF NOT EXISTS material_stocks (
   id text PRIMARY KEY,
+  company_id text,
+  company_name text,
+  source_order_line_id text,
+  available_quantity numeric(14, 2) NOT NULL DEFAULT 0,
+  reserved_quantity numeric(14, 2) NOT NULL DEFAULT 0,
   material_type text,
   name text,
   vendor text,

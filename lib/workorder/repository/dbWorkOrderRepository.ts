@@ -1,6 +1,7 @@
 import "server-only";
 
 import { queryDb } from "@/lib/db/client";
+import { getWorkspaceCompanyContext } from "@/lib/constants/company";
 import { LEGACY_WORKFLOW_STATE_MAP, WORKFLOW_STATES } from "@/lib/constants/workorderStates";
 import type { WorkOrder } from "@/types/workorder";
 import { applyReorderIdentity } from "@/lib/workorder/reorder/helpers";
@@ -11,6 +12,8 @@ import { syncDbSpecSheetOutsourcingForSpecSheet } from "@/lib/workorder/reposito
 const SPEC_SHEET_TABLE = "spec_sheets";
 const DEFAULT_WORKFLOW_STATE: WorkOrder["workflowState"] = "draft";
 
+const COMPANY_ID_COLUMN_CANDIDATES = ["company_id"] as const;
+const COMPANY_NAME_COLUMN_CANDIDATES = ["company_name"] as const;
 const PAYLOAD_COLUMN_CANDIDATES = ["payload", "data", "workorder_payload", "work_order_payload"] as const;
 const WORKFLOW_STATE_COLUMN_CANDIDATES = ["workflow_state", "status", "state"] as const;
 const LAST_SAVED_AT_COLUMN_CANDIDATES = ["last_saved_at", "saved_at"] as const;
@@ -50,6 +53,8 @@ type DbColumnInfo = {
 type DbPayloadColumnKind = "json" | "jsonb" | "text";
 
 type DbSpecSheetSchema = {
+  companyIdColumn: string | null;
+  companyNameColumn: string | null;
   payloadColumn: string | null;
   payloadColumnKind: DbPayloadColumnKind | null;
   workflowStateColumn: string | null;
@@ -255,6 +260,8 @@ async function loadSpecSheetSchema(): Promise<DbSpecSheetSchema> {
   }
 
   return {
+    companyIdColumn: findFirstMatchingColumn(columnNames, COMPANY_ID_COLUMN_CANDIDATES),
+    companyNameColumn: findFirstMatchingColumn(columnNames, COMPANY_NAME_COLUMN_CANDIDATES),
     payloadColumn,
     payloadColumnKind,
     workflowStateColumn: findFirstMatchingColumn(columnNames, WORKFLOW_STATE_COLUMN_CANDIDATES),
@@ -326,6 +333,19 @@ export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
   const columns = ["id", "title"];
   const values: unknown[] = [normalizedWorkOrder.id, normalizedWorkOrder.title];
   const placeholders = ["$1", "$2"];
+  const company = getWorkspaceCompanyContext();
+
+  if (schema.companyIdColumn) {
+    columns.push(schema.companyIdColumn);
+    values.push(company.companyId);
+    placeholders.push(`$${values.length}`);
+  }
+
+  if (schema.companyNameColumn) {
+    columns.push(schema.companyNameColumn);
+    values.push(company.companyName);
+    placeholders.push(`$${values.length}`);
+  }
 
   if (schema.workflowStateColumn) {
     columns.push(schema.workflowStateColumn);
@@ -446,6 +466,17 @@ export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
 
   const assignments = ["title = $2"];
   const values: unknown[] = [normalizedWorkOrder.id, normalizedWorkOrder.title];
+  const company = getWorkspaceCompanyContext();
+
+  if (schema.companyIdColumn) {
+    assignments.push(`${quoteIdentifier(schema.companyIdColumn)} = $${values.length + 1}`);
+    values.push(company.companyId);
+  }
+
+  if (schema.companyNameColumn) {
+    assignments.push(`${quoteIdentifier(schema.companyNameColumn)} = $${values.length + 1}`);
+    values.push(company.companyName);
+  }
 
   if (schema.workflowStateColumn) {
     assignments.push(`${quoteIdentifier(schema.workflowStateColumn)} = $${values.length + 1}`);

@@ -48,6 +48,7 @@ CREATE TABLE units (
 CREATE TABLE outsourcing_processes (
   id text PRIMARY KEY,
   company_id text,
+  company_name text,
   name text NOT NULL,
   memo text,
   sort_order integer NOT NULL DEFAULT 0,
@@ -64,6 +65,7 @@ CREATE TABLE outsourcing_processes (
 CREATE TABLE partners (
   id text PRIMARY KEY,
   company_id text,
+  company_name text,
   name text NOT NULL,
   contact_person text,
   contact text,
@@ -81,6 +83,8 @@ CREATE TABLE partners (
 -- ================================
 CREATE TABLE partner_items (
   id text PRIMARY KEY,
+  company_id text,
+  company_name text,
   partner_id text NOT NULL REFERENCES partners(id) ON DELETE CASCADE,
   item_type text NOT NULL,
   item_name text,
@@ -103,6 +107,8 @@ CREATE TABLE partner_items (
 
 CREATE TABLE spec_sheets (
   id text PRIMARY KEY,
+  company_id text,
+  company_name text,
   title text NOT NULL,
   status text NOT NULL DEFAULT 'draft',
   work_order_kind text,
@@ -123,6 +129,8 @@ CREATE TABLE spec_sheets (
 
 CREATE TABLE orders (
   id text PRIMARY KEY,
+  company_id text,
+  company_name text,
   spec_sheet_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
   source_order_entry_id text,
   factory_partner_id text REFERENCES partners(id) ON DELETE SET NULL,
@@ -144,6 +152,8 @@ CREATE TABLE orders (
 
 CREATE TABLE spec_sheet_materials (
   id text PRIMARY KEY,
+  company_id text,
+  company_name text,
   spec_sheet_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
   source_material_id text,
   material_type text,
@@ -163,6 +173,11 @@ CREATE TABLE spec_sheet_materials (
 
 CREATE TABLE material_stocks (
   id text PRIMARY KEY,
+  company_id text,
+  company_name text,
+  source_order_line_id text,
+  available_quantity numeric(14, 2) NOT NULL DEFAULT 0,
+  reserved_quantity numeric(14, 2) NOT NULL DEFAULT 0,
   material_type text,
   name text,
   vendor text,
@@ -186,6 +201,8 @@ CREATE TABLE material_stocks (
 
 CREATE TABLE spec_sheet_outsourcing_lines (
   id text PRIMARY KEY,
+  company_id text,
+  company_name text,
   spec_sheet_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
   source_outsourcing_id text,
   process text,
@@ -210,6 +227,8 @@ CREATE TABLE spec_sheet_outsourcing_lines (
 
 CREATE TABLE attachments (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  company_id text,
+  company_name text,
   order_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
   type text NOT NULL DEFAULT 'file',
   storage_key text NOT NULL,
@@ -234,6 +253,8 @@ CREATE TABLE attachments (
 
 CREATE TABLE memos (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  company_id text,
+  company_name text,
   order_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
   parent_id text REFERENCES memos(id) ON DELETE CASCADE,
   body text NOT NULL,
@@ -364,12 +385,12 @@ VALUES
   ('mock-unit-case', 'case', '건', 'service', true, 100);
 
 
-INSERT INTO outsourcing_processes (id, name, sort_order) VALUES
-('process-cutting', '재단', 10),
-('process-printing', '나염', 20),
-('process-embroidery', '자수', 30),
-('process-washing', '워싱', 40),
-('process-finishing', '후가공', 50);
+INSERT INTO outsourcing_processes (id, company_id, company_name, name, sort_order) VALUES
+('process-cutting', 'company-sample-customer', '샘플 고객사', '재단', 10),
+('process-printing', 'company-sample-customer', '샘플 고객사', '나염', 20),
+('process-embroidery', 'company-sample-customer', '샘플 고객사', '자수', 30),
+('process-washing', 'company-sample-customer', '샘플 고객사', '워싱', 40),
+('process-finishing', 'company-sample-customer', '샘플 고객사', '후가공', 50);
 
 -- =========================================
 -- 10) INDEXES

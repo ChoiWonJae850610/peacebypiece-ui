@@ -1,5 +1,7 @@
 CREATE TABLE IF NOT EXISTS orders (
   id text PRIMARY KEY,
+  company_id text,
+  company_name text,
   spec_sheet_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
   source_order_entry_id text,
   factory_partner_id text,

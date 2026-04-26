@@ -1,5 +1,7 @@
 CREATE TABLE IF NOT EXISTS spec_sheet_outsourcing_lines (
   id text PRIMARY KEY,
+  company_id text,
+  company_name text,
   spec_sheet_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
   source_outsourcing_id text,
   process text,

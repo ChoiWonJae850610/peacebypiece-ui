@@ -27,6 +27,7 @@ export type UnitCategory = (typeof UNIT_CATEGORY_VALUES)[number] | (string & {})
 export type PartnerDbRecord = {
   id: string;
   company_id: string | null;
+  company_name?: string | null;
   name: string;
   type: PartnerDbType;
   contact_person?: string | null;
@@ -74,6 +75,7 @@ export type PartnerItemWithRelations = PartnerItemRecord & {
 export type OutsourcingProcessRecord = {
   id: string;
   company_id: string | null;
+  company_name?: string | null;
   name: string;
   memo: string | null;
   sort_order: number;

@@ -1,11 +1,14 @@
 import "server-only";
 
 import { queryDb } from "@/lib/db/client";
+import { getWorkspaceCompanyContext } from "@/lib/constants/company";
 import type { Material } from "@/types/material";
 import type { WorkOrder } from "@/types/workorder";
 
 const SPEC_SHEET_MATERIAL_TABLE = "spec_sheet_materials";
 
+const COMPANY_ID_COLUMN_CANDIDATES = ["company_id"] as const;
+const COMPANY_NAME_COLUMN_CANDIDATES = ["company_name"] as const;
 const SPEC_SHEET_ID_COLUMN_CANDIDATES = ["spec_sheet_id", "work_order_id"] as const;
 const MATERIAL_TYPE_COLUMN_CANDIDATES = ["material_type", "type"] as const;
 const NAME_COLUMN_CANDIDATES = ["name", "material_name"] as const;
@@ -30,6 +33,8 @@ type DbColumnInfo = {
 type DbSpecSheetMaterialSchema = {
   hasTable: boolean;
   hasIdColumn: boolean;
+  companyIdColumn: string | null;
+  companyNameColumn: string | null;
   specSheetIdColumn: string | null;
   materialTypeColumn: string | null;
   nameColumn: string | null;
@@ -112,6 +117,8 @@ async function loadSpecSheetMaterialSchema(): Promise<DbSpecSheetMaterialSchema>
     return {
       hasTable: false,
       hasIdColumn: false,
+      companyIdColumn: null,
+      companyNameColumn: null,
       specSheetIdColumn: null,
       materialTypeColumn: null,
       nameColumn: null,
@@ -132,6 +139,8 @@ async function loadSpecSheetMaterialSchema(): Promise<DbSpecSheetMaterialSchema>
   return {
     hasTable: true,
     hasIdColumn: columnNames.includes("id"),
+    companyIdColumn: findFirstMatchingColumn(columnNames, COMPANY_ID_COLUMN_CANDIDATES),
+    companyNameColumn: findFirstMatchingColumn(columnNames, COMPANY_NAME_COLUMN_CANDIDATES),
     specSheetIdColumn: findFirstMatchingColumn(columnNames, SPEC_SHEET_ID_COLUMN_CANDIDATES),
     materialTypeColumn: findFirstMatchingColumn(columnNames, MATERIAL_TYPE_COLUMN_CANDIDATES),
     nameColumn: findFirstMatchingColumn(columnNames, NAME_COLUMN_CANDIDATES),
@@ -182,6 +191,19 @@ export async function syncDbSpecSheetMaterialsForSpecSheet(workOrder: WorkOrder)
     const columns = ["id", specSheetIdColumn];
     const values: unknown[] = [id, workOrder.id];
     const placeholders = ["$1", "$2"];
+    const company = getWorkspaceCompanyContext();
+
+    if (schema.companyIdColumn) {
+      columns.push(schema.companyIdColumn);
+      values.push(company.companyId);
+      placeholders.push(`$${values.length}`);
+    }
+
+    if (schema.companyNameColumn) {
+      columns.push(schema.companyNameColumn);
+      values.push(company.companyName);
+      placeholders.push(`$${values.length}`);
+    }
 
     if (schema.materialTypeColumn) {
       columns.push(schema.materialTypeColumn);

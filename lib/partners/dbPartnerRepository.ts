@@ -2,6 +2,7 @@ import "server-only";
 
 import { randomUUID } from "crypto";
 import { queryDb, isDatabaseConfigured } from "@/lib/db/client";
+import { getWorkspaceCompanyContext } from "@/lib/constants/company";
 import type { DbQueryResultRow } from "@/lib/db/client";
 import type {
   OutsourcingProcessRecord,
@@ -92,6 +93,7 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
         `SELECT
            p.id,
            p.company_id,
+           p.company_name,
            p.name,
            COALESCE(
              MIN(pi.item_type) FILTER (WHERE pi.item_type = 'factory'),
@@ -174,7 +176,7 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
     },
     listOutsourcingProcesses: async (activeOnly = false) => {
       const result = await queryDb<OutsourcingProcessRow>(
-        `SELECT id, company_id, name, memo, sort_order, is_active, created_at, updated_at
+        `SELECT id, company_id, company_name, name, memo, sort_order, is_active, created_at, updated_at
          FROM outsourcing_processes
          ${activeOnly ? "WHERE is_active = true" : ""}
          ORDER BY sort_order ASC, name ASC`,
@@ -185,12 +187,13 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
     createPartner: async (input) => {
       const id = randomUUID();
       const result = await queryDb<PartnerRow>(
-        `INSERT INTO partners (id, company_id, name, contact_person, contact, email, memo, is_active)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-         RETURNING id, company_id, name, 'factory'::text AS type, contact_person, contact, email, memo, is_active, created_at, updated_at`,
+        `INSERT INTO partners (id, company_id, company_name, name, contact_person, contact, email, memo, is_active)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         RETURNING id, company_id, company_name, name, 'factory'::text AS type, contact_person, contact, email, memo, is_active, created_at, updated_at`,
         [
           id,
-          input.company_id ?? null,
+          input.company_id ?? getWorkspaceCompanyContext().companyId,
+          input.company_name ?? getWorkspaceCompanyContext().companyName,
           input.name.trim(),
           input.contact_person ?? null,
           input.contact ?? null,
@@ -206,7 +209,7 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
     },
     updatePartner: async (partnerId, input) => {
       const current = await queryDb<PartnerRow>(
-        `SELECT id, company_id, name, 'factory'::text AS type, contact_person, contact, email, memo, is_active, created_at, updated_at
+        `SELECT id, company_id, company_name, name, 'factory'::text AS type, contact_person, contact, email, memo, is_active, created_at, updated_at
          FROM partners
          WHERE id = $1`,
         [partnerId],
@@ -216,6 +219,7 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
 
       const next = {
         company_id: input.company_id === undefined ? target.company_id : input.company_id,
+        company_name: input.company_name === undefined ? target.company_name ?? getWorkspaceCompanyContext().companyName : input.company_name,
         name: input.name === undefined ? target.name : input.name.trim(),
         contact_person: input.contact_person === undefined ? target.contact_person ?? null : input.contact_person,
         contact: input.contact === undefined ? target.contact : input.contact,
@@ -227,16 +231,17 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
       const result = await queryDb<PartnerRow>(
         `UPDATE partners
          SET company_id = $2,
-             name = $3,
-             contact_person = $4,
-             contact = $5,
-             email = $6,
-             memo = $7,
-             is_active = $8,
+             company_name = $3,
+             name = $4,
+             contact_person = $5,
+             contact = $6,
+             email = $7,
+             memo = $8,
+             is_active = $9,
              updated_at = now()
          WHERE id = $1
-         RETURNING id, company_id, name, 'factory'::text AS type, contact_person, contact, email, memo, is_active, created_at, updated_at`,
-        [partnerId, next.company_id, next.name, next.contact_person, next.contact, next.email, next.memo, next.is_active],
+         RETURNING id, company_id, company_name, name, 'factory'::text AS type, contact_person, contact, email, memo, is_active, created_at, updated_at`,
+        [partnerId, next.company_id, next.company_name, next.name, next.contact_person, next.contact, next.email, next.memo, next.is_active],
       );
 
       const [updated] = result.rows;
@@ -247,11 +252,13 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
       const id = randomUUID();
       const itemType = mapCategoryToDbItemType(input.category);
       const result = await queryDb<PartnerItemBaseRow>(
-        `INSERT INTO partner_items (id, partner_id, item_type, item_name, outsourcing_process_id, unit, unit_cost, memo, is_active)
-         VALUES ($1, $2, $3, $4, $5, NULL, $6, $7, $8)
+        `INSERT INTO partner_items (id, company_id, company_name, partner_id, item_type, item_name, outsourcing_process_id, unit, unit_cost, memo, is_active)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, NULL, $8, $9, $10)
          RETURNING id, partner_id, item_type AS category, item_name AS name, NULL::text AS unit_id, COALESCE(unit_cost, 0) AS unit_price, 'KRW'::text AS currency, memo, is_active, created_at, updated_at, outsourcing_process_id`,
         [
           id,
+          getWorkspaceCompanyContext().companyId,
+          getWorkspaceCompanyContext().companyName,
           input.partner_id,
           itemType,
           input.name.trim(),
@@ -277,10 +284,12 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
       for (const item of items) {
         const itemType = mapCategoryToDbItemType(item.category);
         await queryDb(
-          `INSERT INTO partner_items (id, partner_id, item_type, item_name, outsourcing_process_id, unit, unit_cost, memo, is_active)
-           VALUES ($1, $2, $3, $4, $5, NULL, 0, $6, $7)`,
+          `INSERT INTO partner_items (id, company_id, company_name, partner_id, item_type, item_name, outsourcing_process_id, unit, unit_cost, memo, is_active)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, NULL, 0, $8, $9)`,
           [
             randomUUID(),
+            getWorkspaceCompanyContext().companyId,
+            getWorkspaceCompanyContext().companyName,
             partnerId,
             itemType,
             item.name.trim(),
@@ -294,16 +303,17 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
     replaceOutsourcingProcesses: async (items) => {
       for (const item of items) {
         await queryDb(
-          `INSERT INTO outsourcing_processes (id, company_id, name, memo, sort_order, is_active)
-           VALUES ($1, $2, $3, $4, $5, $6)
+          `INSERT INTO outsourcing_processes (id, company_id, company_name, name, memo, sort_order, is_active)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)
            ON CONFLICT (id) DO UPDATE
            SET company_id = EXCLUDED.company_id,
+               company_name = EXCLUDED.company_name,
                name = EXCLUDED.name,
                memo = EXCLUDED.memo,
                sort_order = EXCLUDED.sort_order,
                is_active = EXCLUDED.is_active,
                updated_at = now()`,
-          [item.id, item.company_id ?? null, item.name.trim(), item.memo ?? null, item.sort_order, item.is_active],
+          [item.id, item.company_id ?? getWorkspaceCompanyContext().companyId, item.company_name ?? getWorkspaceCompanyContext().companyName, item.name.trim(), item.memo ?? null, item.sort_order, item.is_active],
         );
       }
 

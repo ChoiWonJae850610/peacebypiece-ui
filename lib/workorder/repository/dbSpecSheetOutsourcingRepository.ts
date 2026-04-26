@@ -1,10 +1,13 @@
 import "server-only";
 
 import { queryDb } from "@/lib/db/client";
+import { getWorkspaceCompanyContext } from "@/lib/constants/company";
 import type { Outsourcing, WorkOrder } from "@/types/workorder";
 
 const SPEC_SHEET_OUTSOURCING_TABLE = "spec_sheet_outsourcing_lines";
 
+const COMPANY_ID_COLUMN_CANDIDATES = ["company_id"] as const;
+const COMPANY_NAME_COLUMN_CANDIDATES = ["company_name"] as const;
 const SPEC_SHEET_ID_COLUMN_CANDIDATES = ["spec_sheet_id", "work_order_id"] as const;
 const SOURCE_OUTSOURCING_ID_COLUMN_CANDIDATES = ["source_outsourcing_id", "outsourcing_id"] as const;
 const PROCESS_COLUMN_CANDIDATES = ["process", "process_type", "outsourcing_process"] as const;
@@ -29,6 +32,8 @@ type DbColumnInfo = {
 type DbSpecSheetOutsourcingSchema = {
   hasTable: boolean;
   hasIdColumn: boolean;
+  companyIdColumn: string | null;
+  companyNameColumn: string | null;
   specSheetIdColumn: string | null;
   sourceOutsourcingIdColumn: string | null;
   processColumn: string | null;
@@ -112,6 +117,8 @@ async function loadSpecSheetOutsourcingSchema(): Promise<DbSpecSheetOutsourcingS
     return {
       hasTable: false,
       hasIdColumn: false,
+      companyIdColumn: null,
+      companyNameColumn: null,
       specSheetIdColumn: null,
       sourceOutsourcingIdColumn: null,
       processColumn: null,
@@ -132,6 +139,8 @@ async function loadSpecSheetOutsourcingSchema(): Promise<DbSpecSheetOutsourcingS
   return {
     hasTable: true,
     hasIdColumn: columnNames.includes("id"),
+    companyIdColumn: findFirstMatchingColumn(columnNames, COMPANY_ID_COLUMN_CANDIDATES),
+    companyNameColumn: findFirstMatchingColumn(columnNames, COMPANY_NAME_COLUMN_CANDIDATES),
     specSheetIdColumn: findFirstMatchingColumn(columnNames, SPEC_SHEET_ID_COLUMN_CANDIDATES),
     sourceOutsourcingIdColumn: findFirstMatchingColumn(columnNames, SOURCE_OUTSOURCING_ID_COLUMN_CANDIDATES),
     processColumn: findFirstMatchingColumn(columnNames, PROCESS_COLUMN_CANDIDATES),
@@ -182,6 +191,19 @@ export async function syncDbSpecSheetOutsourcingForSpecSheet(workOrder: WorkOrde
     const columns = ["id", specSheetIdColumn];
     const values: unknown[] = [id, workOrder.id];
     const placeholders = ["$1", "$2"];
+    const company = getWorkspaceCompanyContext();
+
+    if (schema.companyIdColumn) {
+      columns.push(schema.companyIdColumn);
+      values.push(company.companyId);
+      placeholders.push(`$${values.length}`);
+    }
+
+    if (schema.companyNameColumn) {
+      columns.push(schema.companyNameColumn);
+      values.push(company.companyName);
+      placeholders.push(`$${values.length}`);
+    }
 
     if (schema.sourceOutsourcingIdColumn) {
       columns.push(schema.sourceOutsourcingIdColumn);

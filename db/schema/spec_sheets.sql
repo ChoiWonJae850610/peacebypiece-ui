@@ -1,5 +1,7 @@
 CREATE TABLE IF NOT EXISTS spec_sheets (
   id text PRIMARY KEY,
+  company_id text,
+  company_name text,
   title text NOT NULL,
   status text NOT NULL DEFAULT 'draft',
   work_order_kind text,
