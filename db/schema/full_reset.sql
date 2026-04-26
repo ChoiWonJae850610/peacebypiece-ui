@@ -11,6 +11,7 @@ BEGIN;
 -- FK / index / dependent constraints are removed by CASCADE.
 -- =========================================
 
+
 DROP TABLE IF EXISTS memos CASCADE;
 DROP TABLE IF EXISTS attachments CASCADE;
 DROP TABLE IF EXISTS spec_sheet_outsourcing_lines CASCADE;
@@ -19,8 +20,11 @@ DROP TABLE IF EXISTS spec_sheet_materials CASCADE;
 DROP TABLE IF EXISTS orders CASCADE;
 DROP TABLE IF EXISTS partner_items CASCADE;
 DROP TABLE IF EXISTS partners CASCADE;
+DROP TABLE IF EXISTS outsourcing_processes CASCADE;
 DROP TABLE IF EXISTS units CASCADE;
 DROP TABLE IF EXISTS spec_sheets CASCADE;
+
+
 
 -- =========================================
 -- 2) MASTER TABLES
@@ -37,30 +41,59 @@ CREATE TABLE units (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE partners (
-  id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+-- ================================
+-- outsourcing_processes
+-- 관리자가 외주 공정관리 모달에서 관리
+-- ================================
+CREATE TABLE outsourcing_processes (
+  id text PRIMARY KEY,
   company_id text,
   name text NOT NULL,
-  type text NOT NULL,
-  contact text,
-  email text,
+  memo text,
+  sort_order integer NOT NULL DEFAULT 0,
   is_active boolean NOT NULL DEFAULT true,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE partner_items (
-  id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  partner_id text NOT NULL REFERENCES partners(id) ON DELETE CASCADE,
-  category text NOT NULL,
+-- ================================
+-- partners
+-- 업체 기본정보만 저장
+-- type 단일값 의존 금지
+-- ================================
+CREATE TABLE partners (
+  id text PRIMARY KEY,
+  company_id text,
   name text NOT NULL,
-  unit_id text REFERENCES units(id) ON DELETE SET NULL,
-  unit_price numeric NOT NULL DEFAULT 0,
-  currency text NOT NULL DEFAULT 'KRW',
+  contact_person text,
+  contact text,
+  email text,
   memo text,
   is_active boolean NOT NULL DEFAULT true,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- ================================
+-- partner_items
+-- 업체 역할/취급항목 다중 저장
+-- item_type: factory / fabric / subsidiary / outsourcing
+-- ================================
+CREATE TABLE partner_items (
+  id text PRIMARY KEY,
+  partner_id text NOT NULL REFERENCES partners(id) ON DELETE CASCADE,
+  item_type text NOT NULL,
+  item_name text,
+  outsourcing_process_id text REFERENCES outsourcing_processes(id) ON DELETE SET NULL,
+  unit text,
+  unit_cost numeric(14, 2) NOT NULL DEFAULT 0,
+  memo text,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+
+  CONSTRAINT partner_items_type_check
+    CHECK (item_type IN ('factory', 'fabric', 'subsidiary', 'outsourcing'))
 );
 
 -- =========================================
@@ -228,6 +261,14 @@ VALUES
   ('mock-unit-box', 'box', '박스', 'bundle', true, 80),
   ('mock-unit-process', 'process', '공정', 'service', true, 90),
   ('mock-unit-case', 'case', '건', 'service', true, 100);
+
+
+INSERT INTO outsourcing_processes (id, name, sort_order) VALUES
+('process-cutting', '재단', 10),
+('process-printing', '나염', 20),
+('process-embroidery', '자수', 30),
+('process-washing', '워싱', 40),
+('process-finishing', '후가공', 50);
 
 -- =========================================
 -- 10) INDEXES
