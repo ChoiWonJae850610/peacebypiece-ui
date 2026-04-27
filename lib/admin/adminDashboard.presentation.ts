@@ -42,7 +42,7 @@ export const ADMIN_NAVIGATION_ITEMS: AdminNavigationItem[] = [
   { label: "기준정보", href: "/admin/partners", icon: "◇" },
   { label: "파일/용량", href: "/admin/files", icon: "◫" },
   { label: "단위 관리", href: "/admin/units", icon: "㎝" },
-  { label: "환경설정", href: null, icon: "⚙" },
+  { label: "환경설정", href: "/admin/settings", icon: "⚙" },
 ];
 
 export const ADMIN_DASHBOARD_SECTIONS: AdminDashboardSection[] = [
@@ -143,3 +143,87 @@ export const ADMIN_STANDARD_GROUPS: AdminStandardGroup[] = [
   { label: "거래처 분류", description: "공장, 원단, 부자재, 외주처 분류 기준을 거래처 관리와 연결합니다.", icon: "◇", href: "/admin/partners", statusLabel: "이동" },
   { label: "기본값 복원", description: "초기 운영 기준값으로 되돌리는 관리 액션 영역입니다.", icon: "↺", href: null, statusLabel: "준비중" },
 ];
+
+export type AdminSettingsSummaryCard = {
+  label: string;
+  value: string;
+  badge: string;
+  description: string;
+  accent: string;
+};
+
+export type AdminSettingsGroup = {
+  label: string;
+  description: string;
+  icon: string;
+  statusLabel: string;
+};
+
+export type AdminThemeOption = {
+  label: string;
+  value: string;
+  className: string;
+  description: string;
+};
+
+export type AdminLanguageOption = {
+  label: string;
+  value: string;
+  statusLabel: string;
+};
+
+export type AdminPolicyPreviewItem = {
+  label: string;
+  value: string;
+  statusLabel: string;
+};
+
+export const ADMIN_SETTINGS_SUMMARY_CARDS: AdminSettingsSummaryCard[] = [
+  { label: "테마", value: "Blue", badge: "기본", description: "고객사별 관리자 화면 색상 기준", accent: "bg-blue-50 text-blue-700" },
+  { label: "언어", value: "한국어", badge: "현재", description: "관리자 화면 기본 표시 언어", accent: "bg-emerald-50 text-emerald-700" },
+  { label: "파일 정책", value: "15일", badge: "보관", description: "휴지통 보관 및 purge 기준", accent: "bg-amber-50 text-amber-700" },
+  { label: "알림", value: "ON", badge: "운영", description: "검토/발주/용량 알림 정책", accent: "bg-violet-50 text-violet-700" },
+];
+
+export const ADMIN_SETTINGS_GROUPS: AdminSettingsGroup[] = [
+  { label: "테마 설정", description: "고객사별 accent color, 화면 밀도, 다크모드 적용 여부를 관리합니다.", icon: "◉", statusLabel: "UI" },
+  { label: "언어 설정", description: "한국어/영어 표시 기준과 향후 다국어 확장 기준을 분리합니다.", icon: "文", statusLabel: "i18n" },
+  { label: "파일 정책", description: "소프트 삭제, 휴지통 포함, 자동 삭제 기간, 용량 경고 기준을 저장합니다.", icon: "◫", statusLabel: "정책" },
+  { label: "알림 정책", description: "검토 요청, 발주 준비, 용량 초과, 백업 상태 알림 기준을 관리합니다.", icon: "◌", statusLabel: "알림" },
+];
+
+export const ADMIN_THEME_OPTIONS: AdminThemeOption[] = [
+  { label: "Blue", value: "blue", className: "bg-blue-500", description: "기본 관리자 색상" },
+  { label: "Emerald", value: "emerald", className: "bg-emerald-500", description: "차분한 운영 색상" },
+  { label: "Violet", value: "violet", className: "bg-violet-500", description: "브랜드 강조 색상" },
+  { label: "Amber", value: "amber", className: "bg-amber-400", description: "경고/주의 강조 색상" },
+  { label: "Slate", value: "slate", className: "bg-slate-500", description: "무채색 운영 색상" },
+];
+
+export const ADMIN_LANGUAGE_OPTIONS: AdminLanguageOption[] = [
+  { label: "한국어", value: "ko", statusLabel: "현재" },
+  { label: "English", value: "en", statusLabel: "준비" },
+  { label: "日本語", value: "ja", statusLabel: "준비" },
+  { label: "Français", value: "fr", statusLabel: "준비" },
+];
+
+export const ADMIN_FILE_POLICY_PREVIEW_ITEMS: AdminPolicyPreviewItem[] = [
+  { label: "소프트 삭제", value: "사용", statusLabel: "ON" },
+  { label: "휴지통 포함", value: "사용량 계산 포함", statusLabel: "ON" },
+  { label: "자동 삭제 기간", value: "15일", statusLabel: "기본" },
+  { label: "용량 경고 기준", value: "80%", statusLabel: "경고" },
+];
+
+export const ADMIN_NOTIFICATION_POLICY_PREVIEW_ITEMS: AdminPolicyPreviewItem[] = [
+  { label: "검토 요청", value: "관리자 알림", statusLabel: "ON" },
+  { label: "발주 준비", value: "담당자 알림", statusLabel: "ON" },
+  { label: "용량 초과", value: "관리자 알림", statusLabel: "ON" },
+  { label: "백업 상태", value: "시스템 알림", statusLabel: "준비" },
+];
+
+export const ADMIN_SETTINGS_STORAGE_PLAN = [
+  "company_settings 테이블에서 고객사별 테마, 언어, 화면 밀도 값을 관리",
+  "company_file_policies 테이블에서 저장 용량, 휴지통, purge 기준을 관리",
+  "company_notification_policies 테이블에서 이벤트별 알림 사용 여부를 관리",
+  "화면은 presentation 데이터를 먼저 사용하고 DB 연결 시 repository/adapter 계층으로 교체",
+] as const;
