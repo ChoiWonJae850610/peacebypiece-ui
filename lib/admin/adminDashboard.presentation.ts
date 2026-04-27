@@ -35,9 +35,57 @@ export const ADMIN_SUMMARY_CARDS: AdminSummaryCard[] = [
   { label: "첨부파일 사용량", value: "0GB / 5GB", href: "/admin/files", description: "저장소 사용 현황", accent: "bg-emerald-50 text-emerald-700" },
 ];
 
+
+export type AdminDashboardPeriod = {
+  label: string;
+  active: boolean;
+};
+
+export type AdminDashboardStagePoint = {
+  label: string;
+  value: number;
+};
+
+export type AdminDashboardInsightItem = {
+  label: string;
+  value: string;
+  description: string;
+};
+
+export const ADMIN_DASHBOARD_PERIODS: AdminDashboardPeriod[] = [
+  { label: "오늘", active: false },
+  { label: "이번주", active: false },
+  { label: "이번달", active: true },
+];
+
+export const ADMIN_DASHBOARD_STAGE_FLOW: AdminDashboardStagePoint[] = [
+  { label: "작성", value: 0 },
+  { label: "검토", value: 0 },
+  { label: "발주", value: 0 },
+  { label: "입고", value: 0 },
+  { label: "완료", value: 0 },
+];
+
+export const ADMIN_DASHBOARD_DISTRIBUTION: AdminDashboardStagePoint[] = [
+  { label: "작업중", value: 0 },
+  { label: "검토대기", value: 0 },
+  { label: "입고대기", value: 0 },
+  { label: "완료", value: 0 },
+];
+
+export const ADMIN_DASHBOARD_INSIGHT_ITEMS: AdminDashboardInsightItem[] = [
+  { label: "오늘 생성", value: "0", description: "오늘 새로 등록된 작지" },
+  { label: "검토 지연", value: "0", description: "관리자 확인이 늦어진 작지" },
+  { label: "입고 지연", value: "0", description: "발주 이후 검수가 필요한 작지" },
+];
+
+export function getAdminDashboardMaxStageValue(): number {
+  return Math.max(1, ...ADMIN_DASHBOARD_STAGE_FLOW.map((item) => item.value));
+}
+
 export const ADMIN_NAVIGATION_ITEMS: AdminNavigationItem[] = [
   { label: "대시보드", href: "/admin", icon: "⌂" },
-  { label: "작지 화면", href: "/worker", icon: "□" },
+  { label: "작지 화면", href: "/worker", icon: "▣" },
   { label: "히스토리", href: "/admin/history", icon: "◷" },
   { label: "통계", href: "/admin/dashboard", icon: "▥" },
   { label: "기준정보", href: "/admin/partners", icon: "▦" },

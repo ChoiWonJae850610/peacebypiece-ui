@@ -9,7 +9,7 @@ type AdminSidebarProps = {
 
 export default function AdminSidebar({ companyName, appVersion, navigationItems }: AdminSidebarProps) {
   return (
-    <aside className="min-w-0 rounded-[32px] border border-stone-200 bg-white p-4 shadow-sm lg:sticky lg:top-6 lg:h-[calc(100vh-48px)] lg:w-72 lg:shrink-0">
+    <aside className="min-w-0 rounded-[32px] border border-stone-200 bg-white p-4 shadow-sm lg:sticky lg:top-5 lg:h-[calc(100vh-40px)] lg:w-72 lg:shrink-0">
       <div className="rounded-[24px] bg-stone-950 p-5 text-white">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
