@@ -74,6 +74,12 @@ export type AdminStoragePolicyItem = {
   description: string;
 };
 
+export type AdminStoragePolicySettings = {
+  softDeleteEnabled: boolean;
+  includeTrashInUsage: boolean;
+  purgeAfterDays: 1 | 5 | 15 | 30;
+};
+
 export type AdminFileActionStatus = "empty-selection" | "pending-api" | "success" | "error";
 
 export type AdminPurgeWorkerActionResult = AdminFileActionResult & {
@@ -100,4 +106,5 @@ export type AdminFileManagementSnapshot = {
   attachments: AdminManagedFileItem[];
   trashItems: AdminTrashFileItem[];
   storagePolicies: AdminStoragePolicyItem[];
+  policySettings: AdminStoragePolicySettings;
 };

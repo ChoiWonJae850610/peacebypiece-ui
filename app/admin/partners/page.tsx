@@ -22,9 +22,11 @@ export default function AdminPartnersPage() {
               <div className="flex flex-wrap items-center gap-2 md:justify-end">
                 <Link
                   href="/admin"
-                  className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+                  aria-label="관리자 메인"
+                  title="관리자 메인"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 bg-white text-base font-medium text-stone-700 transition hover:bg-stone-50"
                 >
-                  {pageText.moveToAdminMain}
+                  ⌂
                 </Link>
                 <Link
                   href="/worker"

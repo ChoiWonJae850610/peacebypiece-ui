@@ -8,13 +8,14 @@ import FileTrashSection from "@/components/admin/files/FileTrashSection";
 import { requestMoveAttachmentsToTrash, requestPurgeTrashItems, requestRestoreTrashItems, requestRunPurgeWorker } from "@/lib/admin/adminFiles.actions";
 import { getAdminFileManagementSnapshot } from "@/lib/admin/adminFiles.adapter";
 import { sortAdminManagedFiles } from "@/lib/admin/adminFiles.presentation";
-import type { AdminFileManagementSnapshot, AdminFileSortKey, AdminFileTabKey } from "@/lib/admin/adminFiles.types";
+import type { AdminFileManagementSnapshot, AdminFileSortKey, AdminFileTabKey, AdminStoragePolicySettings } from "@/lib/admin/adminFiles.types";
 import { APP_VERSION } from "@/lib/constants/app";
 import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
 
 export default function AdminFilesPage() {
   const placeholderSnapshot = useMemo(() => getAdminFileManagementSnapshot(), []);
   const [snapshot, setSnapshot] = useState<AdminFileManagementSnapshot>(placeholderSnapshot);
+  const [policySettings, setPolicySettings] = useState<AdminStoragePolicySettings>(placeholderSnapshot.policySettings);
   const [isLoadingSnapshot, setIsLoadingSnapshot] = useState(false);
   const [activeTab, setActiveTab] = useState<AdminFileTabKey>("attachments");
   const [fileSortKey, setFileSortKey] = useState<AdminFileSortKey>("latest");
@@ -23,37 +24,30 @@ export default function AdminFilesPage() {
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [isPurgeWorkerRunning, setIsPurgeWorkerRunning] = useState(false);
 
+  async function refreshSnapshot() {
+    setIsLoadingSnapshot(true);
+    try {
+      const response = await fetch(`/api/admin/files/snapshot?t=${Date.now()}`, { method: "GET", cache: "no-store" });
+      const payload = (await response.json().catch(() => null)) as { snapshot?: AdminFileManagementSnapshot; message?: string } | null;
+
+      if (payload?.snapshot) {
+        setSnapshot(payload.snapshot);
+        setPolicySettings(payload.snapshot.policySettings);
+      }
+
+      if (!response.ok && payload?.message) {
+        setActionMessage(`파일 목록 DB 조회 실패: ${payload.message}`);
+      }
+    } catch (error) {
+      setActionMessage(error instanceof Error ? `파일 목록 DB 조회 실패: ${error.message}` : "파일 목록 DB 조회 실패");
+    } finally {
+      setIsLoadingSnapshot(false);
+    }
+  }
 
   useEffect(() => {
-    let isMounted = true;
-
-    async function loadSnapshot() {
-      setIsLoadingSnapshot(true);
-      try {
-        const response = await fetch("/api/admin/files/snapshot", { method: "GET" });
-        const payload = (await response.json().catch(() => null)) as { snapshot?: AdminFileManagementSnapshot; message?: string } | null;
-        if (!isMounted) return;
-
-        if (payload?.snapshot) {
-          setSnapshot(payload.snapshot);
-        }
-
-        if (!response.ok && payload?.message) {
-          setActionMessage(`파일 목록 DB 조회 실패: ${payload.message}`);
-        }
-      } catch (error) {
-        if (!isMounted) return;
-        setActionMessage(error instanceof Error ? `파일 목록 DB 조회 실패: ${error.message}` : "파일 목록 DB 조회 실패");
-      } finally {
-        if (isMounted) setIsLoadingSnapshot(false);
-      }
-    }
-
-    loadSnapshot();
-
-    return () => {
-      isMounted = false;
-    };
+    refreshSnapshot();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const sortedAttachments = useMemo(() => sortAdminManagedFiles(snapshot.attachments, fileSortKey), [fileSortKey, snapshot.attachments]);
@@ -78,25 +72,37 @@ export default function AdminFilesPage() {
   async function handleMoveAttachmentToTrash() {
     const result = await requestMoveAttachmentsToTrash(selectedAttachments);
     setActionMessage(result.message);
-    if (result.ok) setSelectedAttachmentIds([]);
+    if (result.ok) {
+      setSelectedAttachmentIds([]);
+      await refreshSnapshot();
+    }
   }
 
   async function handleRestoreTrashItem() {
     const result = await requestRestoreTrashItems(selectedTrashItems);
     setActionMessage(result.message);
-    if (result.ok) setSelectedTrashItemIds([]);
+    if (result.ok) {
+      setSelectedTrashItemIds([]);
+      await refreshSnapshot();
+    }
   }
 
   async function handlePurgeTrashItem() {
     const result = await requestPurgeTrashItems(selectedTrashItems);
     setActionMessage(result.message);
-    if (result.ok) setSelectedTrashItemIds([]);
+    if (result.ok) {
+      setSelectedTrashItemIds([]);
+      await refreshSnapshot();
+    }
   }
 
   async function handleRunPurgeWorker(dryRun: boolean) {
     setIsPurgeWorkerRunning(true);
     const result = await requestRunPurgeWorker(dryRun);
     setActionMessage(result.message);
+    if (result.ok) {
+      await refreshSnapshot();
+    }
     setIsPurgeWorkerRunning(false);
   }
 
@@ -119,14 +125,25 @@ export default function AdminFilesPage() {
                 <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">v{APP_VERSION}</span>
                 <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">{isLoadingSnapshot ? "DB 조회 중" : snapshot.dataSourceLabel}</span>
               </div>
-              <Link href="/admin" className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50">
-                관리자 메인으로 이동
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link href="/admin" aria-label="관리자 메인" title="관리자 메인" className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 bg-white text-base font-medium text-stone-700 transition hover:bg-stone-50">
+                  ⌂
+                </Link>
+                <button type="button" onClick={refreshSnapshot} aria-label="새로고침" title="새로고침" disabled={isLoadingSnapshot} className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 bg-white text-base font-medium text-stone-700 transition hover:bg-stone-50 disabled:text-stone-400">
+                  ↻
+                </button>
+              </div>
             </div>
           </div>
         </header>
 
-        <FileStorageSummary usageCards={snapshot.usageCards} usageSummary={snapshot.usageSummary} policyItems={snapshot.storagePolicies} />
+        <FileStorageSummary
+          usageCards={snapshot.usageCards}
+          usageSummary={snapshot.usageSummary}
+          policyItems={snapshot.storagePolicies}
+          policySettings={policySettings}
+          onChangePolicySettings={setPolicySettings}
+        />
 
         <section className="rounded-3xl border border-stone-200 bg-white p-2 shadow-sm">
           <div className="grid gap-2 md:grid-cols-3">
@@ -169,8 +186,7 @@ export default function AdminFilesPage() {
           <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
             <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-stone-900">용량 추가 요청</h2>
-                <p className="mt-2 text-sm leading-6 text-stone-500">고객사별 첨부파일 사용량을 기준으로 추가 용량 요청과 과금 정책을 연결할 영역입니다.</p>
+                <h2 className="text-lg font-semibold text-stone-900">용량 관리</h2>
               </div>
               <div className="flex flex-wrap gap-2">
                 <button type="button" onClick={() => handleRunPurgeWorker(true)} disabled={isPurgeWorkerRunning} className="w-fit rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50 disabled:text-stone-400">
@@ -181,8 +197,10 @@ export default function AdminFilesPage() {
                 </button>
               </div>
             </div>
-            <div className="mt-4 rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-4 text-xs leading-5 text-stone-500">
-              실제 사용량 집계는 attachments의 활성 파일과 휴지통 보관 파일을 합산하고, R2 실제 삭제 이후에만 차감하는 구조로 연결합니다. 실제삭제 실행은 purge_after_at이 지난 항목만 대상으로 합니다.
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+              <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">소프트 삭제: {policySettings.softDeleteEnabled ? "ON" : "OFF"}</div>
+              <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">휴지통 포함: {policySettings.includeTrashInUsage ? "ON" : "OFF"}</div>
+              <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">실제 삭제 기간: {policySettings.purgeAfterDays}일</div>
             </div>
           </section>
         ) : null}

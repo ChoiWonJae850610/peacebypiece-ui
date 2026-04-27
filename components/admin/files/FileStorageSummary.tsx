@@ -1,12 +1,30 @@
-import type { AdminFileUsageCard, AdminStoragePolicyItem, AdminStorageUsageSummary } from "@/lib/admin/adminFiles.types";
+import type { AdminFileUsageCard, AdminStoragePolicyItem, AdminStoragePolicySettings, AdminStorageUsageSummary } from "@/lib/admin/adminFiles.types";
 
 type FileStorageSummaryProps = {
   usageCards: AdminFileUsageCard[];
   usageSummary: AdminStorageUsageSummary;
   policyItems: AdminStoragePolicyItem[];
+  policySettings: AdminStoragePolicySettings;
+  onChangePolicySettings: (next: AdminStoragePolicySettings) => void;
 };
 
-export default function FileStorageSummary({ usageCards, usageSummary, policyItems }: FileStorageSummaryProps) {
+const PURGE_DAY_OPTIONS: AdminStoragePolicySettings["purgeAfterDays"][] = [1, 5, 15, 30];
+
+function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange: (next: boolean) => void; label: string }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      aria-pressed={checked}
+      className={`inline-flex h-8 w-16 items-center rounded-full border px-1 transition ${checked ? "border-stone-900 bg-stone-900" : "border-stone-300 bg-stone-200"}`}
+    >
+      <span className="sr-only">{label}</span>
+      <span className={`h-6 w-6 rounded-full bg-white shadow-sm transition ${checked ? "translate-x-8" : "translate-x-0"}`} />
+    </button>
+  );
+}
+
+export default function FileStorageSummary({ usageCards, usageSummary, policySettings, onChangePolicySettings }: FileStorageSummaryProps) {
   const isWarning = usageSummary.statusTone === "warning";
 
   return (
@@ -25,7 +43,6 @@ export default function FileStorageSummary({ usageCards, usageSummary, policyIte
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-stone-900">용량 사용량</h2>
-            <p className="mt-2 text-sm leading-6 text-stone-500">현재 사용량은 휴지통 보관 파일까지 포함해 계산합니다.</p>
           </div>
           <span className={`w-fit rounded-full px-3 py-1 text-xs font-medium ${isWarning ? "bg-amber-100 text-amber-800" : "bg-stone-100 text-stone-500"}`}>
             {usageSummary.statusLabel}
@@ -39,7 +56,6 @@ export default function FileStorageSummary({ usageCards, usageSummary, policyIte
           <div className="mt-3 h-3 overflow-hidden rounded-full bg-stone-100">
             <div className="h-full rounded-full bg-stone-800" style={{ width: `${usageSummary.usagePercent}%` }} />
           </div>
-          <p className="mt-2 text-xs leading-5 text-stone-500">80% 이상부터 용량 추가 요청 또는 첨부파일 정리를 안내하는 구조로 연결합니다.</p>
         </div>
       </section>
 
@@ -47,18 +63,55 @@ export default function FileStorageSummary({ usageCards, usageSummary, policyIte
         <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-stone-900">용량 / 휴지통 정책</h2>
-            <p className="mt-2 text-sm leading-6 text-stone-500">첨부파일 삭제는 즉시 원본 삭제가 아니라 복구 가능한 보관 상태로 전환합니다.</p>
           </div>
-          <span className="w-fit rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-500">DB 연결 예정</span>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
-          {policyItems.map((item) => (
-            <article key={item.label} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-              <p className="text-xs font-medium text-stone-500">{item.label}</p>
-              <p className="mt-2 text-base font-semibold text-stone-900">{item.value}</p>
-              <p className="mt-2 text-xs leading-5 text-stone-500">{item.description}</p>
-            </article>
-          ))}
+          <article className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-medium text-stone-500">삭제 방식</p>
+                <p className="mt-2 text-base font-semibold text-stone-900">소프트 삭제</p>
+              </div>
+              <ToggleSwitch
+                checked={policySettings.softDeleteEnabled}
+                label="소프트 삭제"
+                onChange={(softDeleteEnabled) => onChangePolicySettings({ ...policySettings, softDeleteEnabled })}
+              />
+            </div>
+          </article>
+
+          <article className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-medium text-stone-500">용량 계산</p>
+                <p className="mt-2 text-base font-semibold text-stone-900">휴지통 포함</p>
+              </div>
+              <ToggleSwitch
+                checked={policySettings.includeTrashInUsage}
+                label="휴지통 포함"
+                onChange={(includeTrashInUsage) => onChangePolicySettings({ ...policySettings, includeTrashInUsage })}
+              />
+            </div>
+          </article>
+
+          <article className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+            <p className="text-xs font-medium text-stone-500">실제 삭제 기간</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {PURGE_DAY_OPTIONS.map((days) => {
+                const isSelected = policySettings.purgeAfterDays === days;
+                return (
+                  <button
+                    key={days}
+                    type="button"
+                    onClick={() => onChangePolicySettings({ ...policySettings, purgeAfterDays: days })}
+                    className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${isSelected ? "border-stone-900 bg-stone-900 text-white" : "border-stone-300 bg-white text-stone-600 hover:bg-stone-100"}`}
+                  >
+                    {days}일
+                  </button>
+                );
+              })}
+            </div>
+          </article>
         </div>
       </section>
     </div>

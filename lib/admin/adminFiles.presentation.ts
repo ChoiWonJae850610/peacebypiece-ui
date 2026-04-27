@@ -4,6 +4,7 @@ import type {
   AdminFileUsageCard,
   AdminManagedFileItem,
   AdminStoragePolicyItem,
+  AdminStoragePolicySettings,
   AdminStorageUsageSummary,
   AdminTrashFileItem,
 } from "@/lib/admin/adminFiles.types";
@@ -150,6 +151,13 @@ export const ADMIN_FILE_TRASH_PLACEHOLDERS: AdminTrashFileItem[] = [
     lastPurgeError: null,
   },
 ];
+
+
+export const ADMIN_STORAGE_POLICY_SETTINGS: AdminStoragePolicySettings = {
+  softDeleteEnabled: true,
+  includeTrashInUsage: true,
+  purgeAfterDays: 30,
+};
 
 export const ADMIN_STORAGE_POLICY_ITEMS: AdminStoragePolicyItem[] = [
   {

@@ -322,10 +322,12 @@ export async function listPurgeReadyAttachmentTrashItems(limit = 50): Promise<Ad
             thumbnail_key,
             purge_after_at
        FROM attachment_trash_items
-      WHERE purge_status IN ('pending', 'purge_requested')
-        AND restored_at IS NULL
+      WHERE restored_at IS NULL
         AND purged_at IS NULL
-        AND purge_after_at <= now()
+        AND (
+          purge_status = 'purge_requested'
+          OR (purge_status = 'pending' AND purge_after_at <= now())
+        )
       ORDER BY purge_after_at ASC
       LIMIT $1`,
     [safeLimit],

@@ -62,6 +62,15 @@ export default function SidebarContent({
           <div className="flex items-center gap-2">
             <button
               type="button"
+              onClick={() => window.location.reload()}
+              aria-label="새로고침"
+              title="새로고침"
+              className="pbp-interactive-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stone-300 bg-white text-base font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+            >
+              ↻
+            </button>
+            <button
+              type="button"
               onClick={onOpenSettings}
             aria-label={controlsUi.openSettingsAria}
             className="pbp-interactive-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stone-300 bg-white text-base font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
