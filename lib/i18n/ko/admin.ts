@@ -98,6 +98,8 @@ export const adminKo = {
       memoMissing: "메모 없음",
       active: "사용",
       inactive: "미사용",
+      noBaseType: "기본 유형 없음",
+      typeMissing: "유형 정보 없음",
       edit: "수정",
     },
     form: {

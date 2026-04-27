@@ -98,6 +98,8 @@ export const adminEn = {
       memoMissing: "No memo",
       active: "Active",
       inactive: "Inactive",
+      noBaseType: "No base type",
+      typeMissing: "No type information",
       edit: "Edit",
     },
     form: {

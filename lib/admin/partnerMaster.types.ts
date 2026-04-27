@@ -47,6 +47,9 @@ export type PartnerListItemViewModel = {
   baseTypeBadges: { key: string; label: string; tone: string }[];
   outsourcingProcessBadges: { key: string; label: string; tone: string }[];
   outsourcingProcessLabel: string;
+  hasBaseTypes: boolean;
+  hasOutsourcingProcesses: boolean;
+  typeDisplayLabel: string;
 };
 
 export type PartnerListViewModel = {

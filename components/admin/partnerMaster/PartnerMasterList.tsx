@@ -44,17 +44,21 @@ export default function PartnerMasterList({ items, onEditPartner }: PartnerMaste
                 <p className="text-sm text-stone-600">{item.phone}</p>
                 <p className="min-w-0 truncate text-sm text-stone-600">{item.email}</p>
 
-                <div className="min-w-0 space-y-1.5">
-                  <div className="flex flex-wrap gap-1.5">
-                    {item.baseTypeBadges.map((badge) => (
-                      <span key={badge.key} className={`rounded-full px-2.5 py-1 text-xs font-medium ${badge.tone}`}>
-                        {badge.label}
-                      </span>
-                    ))}
+                <div className="min-w-0 space-y-1.5" aria-label={item.typeDisplayLabel || listText.typeMissing}>
+                  <div className="flex min-h-7 flex-wrap items-center gap-1.5">
+                    {item.hasBaseTypes ? (
+                      item.baseTypeBadges.map((badge) => (
+                        <span key={badge.key} className={`rounded-full px-2.5 py-1 text-xs font-medium ${badge.tone}`}>
+                          {badge.label}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-xs text-stone-400">{listText.noBaseType}</span>
+                    )}
                   </div>
-                  {item.outsourcingProcessLabel ? (
-                    <div className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
-                      {item.outsourcingProcessLabel}
+                  {item.hasOutsourcingProcesses ? (
+                    <div className="max-w-full rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium leading-5 text-slate-600">
+                      <span className="block truncate">{item.outsourcingProcessLabel}</span>
                     </div>
                   ) : null}
                 </div>
