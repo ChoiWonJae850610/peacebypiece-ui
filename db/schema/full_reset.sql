@@ -550,7 +550,7 @@ CREATE INDEX attachments_admin_active_list_idx
 
 CREATE UNIQUE INDEX attachment_trash_items_pending_attachment_unique_idx
   ON attachment_trash_items (attachment_id)
-  WHERE purge_status = 'pending' AND restored_at IS NULL AND purged_at IS NULL;
+  WHERE purge_status IN ('pending', 'purge_requested') AND restored_at IS NULL AND purged_at IS NULL;
 
 CREATE INDEX attachment_trash_items_attachment_idx
   ON attachment_trash_items (attachment_id);

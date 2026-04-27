@@ -1,4 +1,4 @@
-import type { AdminFileActionResult, AdminManagedFileItem, AdminTrashFileItem } from "@/lib/admin/adminFiles.types";
+import type { AdminFileActionResult, AdminManagedFileItem, AdminPurgeWorkerActionResult, AdminTrashFileItem } from "@/lib/admin/adminFiles.types";
 
 function createResult(input: { ok: boolean; status: AdminFileActionResult["status"]; message: string }): AdminFileActionResult {
   return input;
@@ -31,6 +31,15 @@ type TrashApiResponse = {
   ok: boolean;
   requestedCount: number;
   affectedCount: number;
+};
+
+type PurgeWorkerApiResponse = {
+  ok: boolean;
+  dryRun: boolean;
+  candidateCount: number;
+  purgedCount: number;
+  failedCount: number;
+  items?: unknown[];
 };
 
 export async function requestMoveAttachmentsToTrash(items: AdminManagedFileItem[]): Promise<AdminFileActionResult> {
@@ -97,7 +106,7 @@ export async function requestPurgeTrashItems(items: AdminTrashFileItem[]): Promi
     return createResult({
       ok: result.ok,
       status: result.ok ? "success" : "error",
-      message: `${result.affectedCount}/${result.requestedCount}개 파일을 영구삭제 요청 상태로 변경했습니다. R2 실제 삭제는 별도 정리 작업에서 처리됩니다.`,
+      message: `${result.affectedCount}/${result.requestedCount}개 파일을 영구삭제 요청 상태로 변경했습니다. R2 실제 삭제는 purge worker에서 처리됩니다.`,
     });
   } catch (error) {
     return createResult({
@@ -105,5 +114,40 @@ export async function requestPurgeTrashItems(items: AdminTrashFileItem[]): Promi
       status: "error",
       message: error instanceof Error ? error.message : "영구삭제 요청에 실패했습니다.",
     });
+  }
+}
+
+export async function requestRunPurgeWorker(dryRun: boolean): Promise<AdminPurgeWorkerActionResult> {
+  try {
+    const response = await fetch(`/api/admin/files/trash/purge-worker?dryRun=${dryRun ? "true" : "false"}&limit=50`, { method: "POST" });
+    const payload = (await response.json().catch(() => null)) as (PurgeWorkerApiResponse & { message?: string; error?: string }) | null;
+
+    if (!response.ok || !payload?.ok) {
+      throw new Error(payload?.message || payload?.error || `PURGE_WORKER_FAILED_${response.status}`);
+    }
+
+    const message = dryRun
+      ? `dryRun 결과: 실제 삭제 가능 후보 ${payload.candidateCount}개를 확인했습니다.`
+      : `실제 삭제 결과: 후보 ${payload.candidateCount}개 중 ${payload.purgedCount}개 삭제 완료, ${payload.failedCount}개 실패.`;
+
+    return {
+      ok: true,
+      status: payload.failedCount > 0 ? "error" : "success",
+      message,
+      dryRun: payload.dryRun,
+      candidateCount: payload.candidateCount,
+      purgedCount: payload.purgedCount,
+      failedCount: payload.failedCount,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      status: "error",
+      message: error instanceof Error ? error.message : "purge worker 실행에 실패했습니다.",
+      dryRun,
+      candidateCount: 0,
+      purgedCount: 0,
+      failedCount: 0,
+    };
   }
 }

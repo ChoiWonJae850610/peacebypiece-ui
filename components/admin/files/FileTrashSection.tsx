@@ -37,7 +37,7 @@ export default function FileTrashSection({ items, selectedItemIds, onToggleItem,
         {items.map((item) => {
           const isSelected = selectedItemIds.includes(item.id);
           return (
-            <button key={item.id} type="button" onClick={() => onToggleItem(item.id)} className={`grid w-full gap-3 p-4 text-left transition md:grid-cols-[0.4fr_1.1fr_1.2fr_0.7fr_0.8fr_0.8fr_0.7fr] md:items-center ${isSelected ? "bg-stone-100" : "bg-white hover:bg-stone-50"}`}>
+            <button key={item.id} type="button" onClick={() => onToggleItem(item.id)} className={`grid w-full gap-3 p-4 text-left transition md:grid-cols-[0.4fr_1.0fr_1.1fr_0.6fr_0.8fr_0.7fr_0.7fr_0.8fr] md:items-center ${isSelected ? "bg-stone-100" : "bg-white hover:bg-stone-50"}`}>
               <span className={`flex h-5 w-5 items-center justify-center rounded border text-xs ${isSelected ? "border-stone-900 bg-stone-900 text-white" : "border-stone-300 bg-white text-transparent"}`}>✓</span>
               <div>
                 <p className="text-xs text-stone-400">작지명</p>
@@ -52,6 +52,7 @@ export default function FileTrashSection({ items, selectedItemIds, onToggleItem,
               <div><p className="text-xs text-stone-400">삭제자</p><p className="mt-1 text-sm text-stone-700">{item.deletedBy}</p></div>
               <div><p className="text-xs text-stone-400">삭제일</p><p className="mt-1 text-sm text-stone-700">{item.deletedAt}</p></div>
               <div><p className="text-xs text-stone-400">복구 가능</p><p className="mt-1 text-sm font-medium text-stone-900">{item.restoreLabel}</p></div>
+              <div><p className="text-xs text-stone-400">삭제 상태</p><span className={`mt-1 inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${item.purgeStatus === "failed" ? "bg-red-50 text-red-600" : item.purgeStatus === "purge_requested" ? "bg-amber-50 text-amber-700" : item.isPurgeReady ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-500"}`}>{item.purgeStatusLabel}</span>{item.lastPurgeError ? <p className="mt-1 line-clamp-2 text-xs text-red-500">{item.lastPurgeError}</p> : null}</div>
             </button>
           );
         })}

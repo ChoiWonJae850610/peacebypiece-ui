@@ -124,6 +124,10 @@ export const ADMIN_FILE_TRASH_PLACEHOLDERS: AdminTrashFileItem[] = [
     restoreDaysLeft: 27,
     restoreLabel: "D-27",
     deleteReason: "중복 첨부 정리",
+    purgeStatus: "pending",
+    purgeStatusLabel: "복구 가능",
+    isPurgeReady: false,
+    lastPurgeError: null,
   },
   {
     id: "sample-trash-2",
@@ -140,6 +144,10 @@ export const ADMIN_FILE_TRASH_PLACEHOLDERS: AdminTrashFileItem[] = [
     restoreDaysLeft: 23,
     restoreLabel: "D-23",
     deleteReason: "최신 이미지로 교체",
+    purgeStatus: "pending",
+    purgeStatusLabel: "복구 가능",
+    isPurgeReady: false,
+    lastPurgeError: null,
   },
 ];
 
@@ -157,7 +165,7 @@ export const ADMIN_STORAGE_POLICY_ITEMS: AdminStoragePolicyItem[] = [
   {
     label: "실제 삭제",
     value: "30일 이후",
-    description: "purge_after_at 이후 /api/admin/files/trash/purge-worker가 R2 원본과 썸네일 삭제",
+    description: "purge_after_at 이후 dryRun 검토 후 /api/admin/files/trash/purge-worker가 R2 원본과 썸네일 삭제",
   },
 ];
 

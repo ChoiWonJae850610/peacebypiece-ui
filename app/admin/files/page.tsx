@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import FileListSection from "@/components/admin/files/FileListSection";
 import FileStorageSummary from "@/components/admin/files/FileStorageSummary";
 import FileTrashSection from "@/components/admin/files/FileTrashSection";
-import { requestMoveAttachmentsToTrash, requestPurgeTrashItems, requestRestoreTrashItems } from "@/lib/admin/adminFiles.actions";
+import { requestMoveAttachmentsToTrash, requestPurgeTrashItems, requestRestoreTrashItems, requestRunPurgeWorker } from "@/lib/admin/adminFiles.actions";
 import { getAdminFileManagementSnapshot } from "@/lib/admin/adminFiles.adapter";
 import { sortAdminManagedFiles } from "@/lib/admin/adminFiles.presentation";
 import type { AdminFileManagementSnapshot, AdminFileSortKey, AdminFileTabKey } from "@/lib/admin/adminFiles.types";
@@ -21,6 +21,7 @@ export default function AdminFilesPage() {
   const [selectedAttachmentIds, setSelectedAttachmentIds] = useState<string[]>([]);
   const [selectedTrashItemIds, setSelectedTrashItemIds] = useState<string[]>([]);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [isPurgeWorkerRunning, setIsPurgeWorkerRunning] = useState(false);
 
 
   useEffect(() => {
@@ -90,6 +91,13 @@ export default function AdminFilesPage() {
     const result = await requestPurgeTrashItems(selectedTrashItems);
     setActionMessage(result.message);
     if (result.ok) setSelectedTrashItemIds([]);
+  }
+
+  async function handleRunPurgeWorker(dryRun: boolean) {
+    setIsPurgeWorkerRunning(true);
+    const result = await requestRunPurgeWorker(dryRun);
+    setActionMessage(result.message);
+    setIsPurgeWorkerRunning(false);
   }
 
   function handleChangeTab(tabKey: AdminFileTabKey) {
@@ -164,12 +172,17 @@ export default function AdminFilesPage() {
                 <h2 className="text-lg font-semibold text-stone-900">용량 추가 요청</h2>
                 <p className="mt-2 text-sm leading-6 text-stone-500">고객사별 첨부파일 사용량을 기준으로 추가 용량 요청과 과금 정책을 연결할 영역입니다.</p>
               </div>
-              <button type="button" className="w-fit rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-400" disabled>
-                요청 기능 예정
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" onClick={() => handleRunPurgeWorker(true)} disabled={isPurgeWorkerRunning} className="w-fit rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50 disabled:text-stone-400">
+                  실제삭제 후보 확인
+                </button>
+                <button type="button" onClick={() => handleRunPurgeWorker(false)} disabled={isPurgeWorkerRunning} className="w-fit rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:text-stone-400">
+                  R2 실제삭제 실행
+                </button>
+              </div>
             </div>
             <div className="mt-4 rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-4 text-xs leading-5 text-stone-500">
-              실제 사용량 집계는 attachments의 활성 파일과 휴지통 보관 파일을 합산하고, R2 실제 삭제 이후에만 차감하는 구조로 연결합니다.
+              실제 사용량 집계는 attachments의 활성 파일과 휴지통 보관 파일을 합산하고, R2 실제 삭제 이후에만 차감하는 구조로 연결합니다. 실제삭제 실행은 purge_after_at이 지난 항목만 대상으로 합니다.
             </div>
           </section>
         ) : null}

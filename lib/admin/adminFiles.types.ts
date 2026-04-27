@@ -24,6 +24,8 @@ export type AdminFileTabItem = {
 
 export type AdminFileStatus = "active" | "trashed" | "purged";
 
+export type AdminTrashPurgeStatus = "pending" | "purge_requested" | "purged" | "failed" | "restored";
+
 export type AdminFileSortKey = "latest" | "size" | "workorder";
 
 export type AdminManagedFileItem = {
@@ -60,6 +62,10 @@ export type AdminTrashFileItem = {
   restoreDaysLeft: number;
   restoreLabel: string;
   deleteReason: string;
+  purgeStatus: AdminTrashPurgeStatus;
+  purgeStatusLabel: string;
+  isPurgeReady: boolean;
+  lastPurgeError: string | null;
 };
 
 export type AdminStoragePolicyItem = {
@@ -69,6 +75,13 @@ export type AdminStoragePolicyItem = {
 };
 
 export type AdminFileActionStatus = "empty-selection" | "pending-api" | "success" | "error";
+
+export type AdminPurgeWorkerActionResult = AdminFileActionResult & {
+  dryRun: boolean;
+  candidateCount: number;
+  purgedCount: number;
+  failedCount: number;
+};
 
 export type AdminFileActionResult = {
   ok: boolean;

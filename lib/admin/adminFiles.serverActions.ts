@@ -91,7 +91,7 @@ export async function requestPurgeAttachmentTrashItems(input: AdminTrashDbAction
      ), marked_trash AS (
        UPDATE attachment_trash_items
           SET purge_status = 'purge_requested',
-              purged_at = COALESCE(purged_at, now()),
+              purge_after_at = COALESCE(purge_after_at, now()),
               updated_at = now()
         WHERE id IN (SELECT id FROM target_trash)
         RETURNING id
@@ -121,6 +121,9 @@ type AdminAttachmentRow = DbQueryResultRow & {
   deleted_by: string | null;
   delete_reason: string | null;
   purge_after_at: string | Date | null;
+  purge_status: string | null;
+  purge_attempt_count: string | number | null;
+  last_purge_error: string | null;
 };
 
 type AdminTrashRow = DbQueryResultRow & {
@@ -135,6 +138,9 @@ type AdminTrashRow = DbQueryResultRow & {
   deleted_by: string | null;
   delete_reason: string | null;
   purge_after_at: string | Date | null;
+  purge_status: string | null;
+  purge_attempt_count: string | number | null;
+  last_purge_error: string | null;
 };
 
 function toNumber(value: string | number | null | undefined): number {
@@ -167,6 +173,21 @@ function getFileType(mimeType: string | null | undefined): string {
   if (mimeType?.includes("pdf")) return "PDF";
   if (mimeType?.startsWith("image/")) return "이미지";
   return "기타";
+}
+
+function getPurgeStatusLabel(status: string | null | undefined, errorMessage: string | null | undefined): string {
+  if (status === "purge_requested") return "영구삭제 요청";
+  if (status === "purged") return "삭제 완료";
+  if (status === "restored") return "복구 완료";
+  if (errorMessage) return "삭제 실패";
+  return "복구 가능";
+}
+
+function isPurgeReady(value: string | Date | null | undefined): boolean {
+  if (!value) return false;
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return false;
+  return date.getTime() <= Date.now();
 }
 
 function getRestoreDaysLeft(value: string | Date | null | undefined): number {
@@ -210,10 +231,13 @@ export async function listAdminFileManagementRows() {
               t.deleted_at,
               t.deleted_by,
               t.delete_reason,
-              t.purge_after_at
+              t.purge_after_at,
+              t.purge_status,
+              t.purge_attempt_count,
+              t.last_purge_error
          FROM attachment_trash_items t
          LEFT JOIN spec_sheets s ON s.id = t.order_id
-        WHERE t.purge_status = 'pending'
+        WHERE t.purge_status IN ('pending', 'purge_requested')
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
         ORDER BY t.deleted_at DESC
@@ -263,6 +287,10 @@ export async function listAdminFileManagementRows() {
       restoreDaysLeft,
       restoreLabel: `D-${restoreDaysLeft}`,
       deleteReason: row.delete_reason || "삭제 사유 없음",
+      purgeStatus: (row.last_purge_error ? "failed" : row.purge_status || "pending") as "pending" | "purge_requested" | "purged" | "failed" | "restored",
+      purgeStatusLabel: getPurgeStatusLabel(row.purge_status, row.last_purge_error),
+      isPurgeReady: isPurgeReady(row.purge_after_at),
+      lastPurgeError: row.last_purge_error,
     };
   });
 
