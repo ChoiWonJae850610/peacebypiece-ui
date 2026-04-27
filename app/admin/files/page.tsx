@@ -6,10 +6,9 @@ import FileStorageSummary from "@/components/admin/files/FileStorageSummary";
 import FileTrashSection from "@/components/admin/files/FileTrashSection";
 import AdminShell from "@/components/admin/layout/AdminShell";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
-import { requestMoveAttachmentsToTrash, requestPurgeTrashItems, requestRestoreTrashItems, requestRunPurgeWorker } from "@/lib/admin/adminFiles.actions";
+import { runMoveAttachmentsToTrashFlow, runPurgeTrashItemsFlow, runPurgeWorkerFlow, runRestoreTrashItemsFlow, runUpdateFilePolicySettingsFlow } from "@/lib/admin/adminFiles.actionFlow";
 import { getAdminFileManagementSnapshot } from "@/lib/admin/adminFiles.adapter";
 import {
-  buildAdminFilePolicyUpdateInput,
   buildAdminSelectAllIds,
   buildAdminStoragePolicyBadges,
   getAdminFilePolicySourceLabel,
@@ -85,7 +84,7 @@ export default function AdminFilesPage() {
   }
 
   async function handleMoveAttachmentToTrash() {
-    const result = await requestMoveAttachmentsToTrash(selectedAttachments);
+    const result = await runMoveAttachmentsToTrashFlow(selectedAttachments);
     setActionMessage(result.message);
     if (result.ok) {
       setSelectedAttachmentIds([]);
@@ -94,7 +93,7 @@ export default function AdminFilesPage() {
   }
 
   async function handleRestoreTrashItem() {
-    const result = await requestRestoreTrashItems(selectedTrashItems);
+    const result = await runRestoreTrashItemsFlow(selectedTrashItems);
     setActionMessage(result.message);
     if (result.ok) {
       setSelectedTrashItemIds([]);
@@ -103,7 +102,7 @@ export default function AdminFilesPage() {
   }
 
   async function handlePurgeTrashItem() {
-    const result = await requestPurgeTrashItems(selectedTrashItems);
+    const result = await runPurgeTrashItemsFlow(selectedTrashItems);
     setActionMessage(result.message);
     if (result.ok) {
       setSelectedTrashItemIds([]);
@@ -119,24 +118,13 @@ export default function AdminFilesPage() {
     setActionMessage(null);
 
     try {
-      const response = await fetch("/api/admin/companies/current", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(buildAdminFilePolicyUpdateInput(nextPolicySettings)),
-      });
-      const payload = (await response.json().catch(() => null)) as { message?: string } | null;
-
-      if (!response.ok) {
+      const result = await runUpdateFilePolicySettingsFlow(nextPolicySettings);
+      setActionMessage(result.message);
+      if (!result.ok) {
         setPolicySettings(previousPolicySettings);
-        setActionMessage(payload?.message ? `파일 정책 저장 실패: ${payload.message}` : "파일 정책 저장 실패");
         return;
       }
-
-      setActionMessage("파일/용량 정책을 저장했습니다.");
       await refreshSnapshot();
-    } catch (error) {
-      setPolicySettings(previousPolicySettings);
-      setActionMessage(error instanceof Error ? `파일 정책 저장 실패: ${error.message}` : "파일 정책 저장 실패");
     } finally {
       setIsSavingPolicy(false);
     }
@@ -144,7 +132,7 @@ export default function AdminFilesPage() {
 
   async function handleRunPurgeWorker(dryRun: boolean) {
     setIsPurgeWorkerRunning(true);
-    const result = await requestRunPurgeWorker(dryRun);
+    const result = await runPurgeWorkerFlow(dryRun);
     setActionMessage(result.message);
     if (result.ok) {
       await refreshSnapshot();

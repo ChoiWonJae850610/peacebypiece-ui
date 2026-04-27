@@ -6,11 +6,11 @@ import {
   ADMIN_LANGUAGE_OPTIONS,
   ADMIN_RETENTION_DAY_OPTIONS,
   ADMIN_THEME_OPTIONS,
-  buildCompanySettingsUpdateInput,
   getAdminSettingsSaveLabel,
   getAdminSettingsUpdatedAtLabel,
   type AdminSettingSaveState,
 } from "@/lib/admin/adminSettings.presentation";
+import { runSaveCompanySettingsFlow } from "@/lib/admin/adminSettings.actionFlow";
 import type { CompanySettings } from "@/lib/admin/companySettings.types";
 
 type AdminCompanySettingsFormProps = {
@@ -46,24 +46,15 @@ export default function AdminCompanySettingsForm({ initialSettings }: AdminCompa
     setSaveState("saving");
     setErrorMessage(null);
 
-    try {
-      const response = await fetch("/api/admin/companies/current", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(buildCompanySettingsUpdateInput(draft)),
-      });
-      const payload = (await response.json()) as { ok?: boolean; settings?: CompanySettings; message?: string };
-
-      if (!response.ok || payload.ok === false || !payload.settings) {
-        throw new Error(payload.message || "환경설정을 저장하지 못했습니다.");
-      }
-
-      setDraft(payload.settings);
-      setSaveState("saved");
-    } catch (error) {
+    const result = await runSaveCompanySettingsFlow(draft);
+    if (!result.ok || !result.settings) {
       setSaveState("error");
-      setErrorMessage(error instanceof Error ? error.message : "환경설정을 저장하지 못했습니다.");
+      setErrorMessage(result.message || "환경설정을 저장하지 못했습니다.");
+      return;
     }
+
+    setDraft(result.settings);
+    setSaveState("saved");
   }
 
   return (
