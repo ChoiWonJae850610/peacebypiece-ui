@@ -1,0 +1,246 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { AdminCard } from "@/components/admin/layout/AdminCard";
+import type { CompanySettings, CompanySettingsUpdateInput } from "@/lib/admin/companySettings.types";
+
+const THEME_OPTIONS = [
+  { label: "Blue", value: "blue", swatchClassName: "bg-blue-500", description: "기본 관리자 색상" },
+  { label: "Emerald", value: "emerald", swatchClassName: "bg-emerald-500", description: "차분한 운영 색상" },
+  { label: "Violet", value: "violet", swatchClassName: "bg-violet-500", description: "브랜드 강조 색상" },
+  { label: "Stone", value: "stone", swatchClassName: "bg-stone-500", description: "무채색 운영 색상" },
+] as const;
+
+const LANGUAGE_OPTIONS = [
+  { label: "한국어", value: "ko" },
+  { label: "English", value: "en" },
+] as const;
+
+const RETENTION_DAY_OPTIONS = [1, 5, 15, 30] as const;
+
+type AdminCompanySettingsFormProps = {
+  initialSettings: CompanySettings;
+};
+
+type SaveState = "idle" | "saving" | "saved" | "error";
+
+function ToggleRow({ label, description, checked, onChange }: { label: string; description: string; checked: boolean; onChange: (checked: boolean) => void }) {
+  return (
+    <label className="flex cursor-pointer items-center justify-between gap-4 rounded-3xl border border-stone-200 bg-white px-4 py-3">
+      <span className="min-w-0">
+        <span className="block text-sm font-semibold text-stone-900">{label}</span>
+        <span className="mt-1 block text-xs leading-5 text-stone-500">{description}</span>
+      </span>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+        className="h-5 w-5 shrink-0 rounded border-stone-300 text-stone-900 accent-stone-900"
+      />
+    </label>
+  );
+}
+
+function toUpdateInput(settings: CompanySettings): CompanySettingsUpdateInput {
+  return {
+    ui: settings.ui,
+    filePolicy: settings.filePolicy,
+    notificationPolicy: settings.notificationPolicy,
+  };
+}
+
+export default function AdminCompanySettingsForm({ initialSettings }: AdminCompanySettingsFormProps) {
+  const [draft, setDraft] = useState<CompanySettings>(initialSettings);
+  const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const saveLabel = useMemo(() => {
+    if (saveState === "saving") return "저장 중";
+    if (saveState === "saved") return "저장됨";
+    if (saveState === "error") return "다시 저장";
+    return "설정 저장";
+  }, [saveState]);
+
+  async function handleSave() {
+    setSaveState("saving");
+    setErrorMessage(null);
+
+    try {
+      const response = await fetch("/api/admin/companies/current", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(toUpdateInput(draft)),
+      });
+      const payload = (await response.json()) as { ok?: boolean; settings?: CompanySettings; message?: string };
+
+      if (!response.ok || payload.ok === false || !payload.settings) {
+        throw new Error(payload.message || "환경설정을 저장하지 못했습니다.");
+      }
+
+      setDraft(payload.settings);
+      setSaveState("saved");
+    } catch (error) {
+      setSaveState("error");
+      setErrorMessage(error instanceof Error ? error.message : "환경설정을 저장하지 못했습니다.");
+    }
+  }
+
+  return (
+    <div className="grid gap-5">
+      <AdminCard>
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">SAVE SETTINGS</p>
+            <h2 className="mt-2 text-lg font-semibold text-stone-950">고객사 환경설정 저장</h2>
+            <p className="mt-2 text-sm leading-6 text-stone-500">변경한 테마, 언어, 파일 정책, 알림 정책을 company_settings 테이블에 저장합니다.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {draft.updatedAt ? <span className="rounded-full bg-stone-100 px-3 py-2 text-xs font-semibold text-stone-500">최근 저장 {new Date(draft.updatedAt).toLocaleString("ko-KR")}</span> : null}
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saveState === "saving"}
+              className="rounded-2xl bg-stone-950 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {saveLabel}
+            </button>
+          </div>
+        </div>
+        {errorMessage ? <p className="mt-4 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">{errorMessage}</p> : null}
+      </AdminCard>
+
+      <section className="grid gap-5 xl:grid-cols-[1fr_360px]">
+        <AdminCard>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">THEME</p>
+          <h2 className="mt-2 text-lg font-semibold text-stone-950">테마 색상</h2>
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
+            {THEME_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setDraft((current) => ({ ...current, ui: { ...current.ui, themeColor: option.value } }))}
+                className={`flex items-center gap-3 rounded-3xl border px-4 py-3 text-left transition ${draft.ui.themeColor === option.value ? "border-stone-900 bg-stone-50" : "border-stone-200 bg-white hover:border-stone-300"}`}
+              >
+                <span className={`h-9 w-9 rounded-2xl shadow-sm ring-1 ring-white ${option.swatchClassName}`} />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold text-stone-900">{option.label}</span>
+                  <span className="mt-1 block text-xs text-stone-500">{option.description}</span>
+                </span>
+                {draft.ui.themeColor === option.value ? <span className="rounded-full bg-stone-950 px-3 py-1 text-xs font-semibold text-white">현재</span> : null}
+              </button>
+            ))}
+          </div>
+        </AdminCard>
+
+        <AdminCard>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">LANGUAGE</p>
+          <h2 className="mt-2 text-lg font-semibold text-stone-950">언어 설정</h2>
+          <div className="mt-5 grid gap-3">
+            {LANGUAGE_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setDraft((current) => ({ ...current, ui: { ...current.ui, language: option.value } }))}
+                className={`flex items-center justify-between rounded-3xl border px-4 py-3 text-sm ${draft.ui.language === option.value ? "border-stone-900 bg-stone-50" : "border-stone-200 bg-white hover:border-stone-300"}`}
+              >
+                <span className="font-semibold text-stone-900">{option.label}</span>
+                <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-500">{draft.ui.language === option.value ? "현재" : "선택"}</span>
+              </button>
+            ))}
+          </div>
+          <ToggleRow
+            label="컴팩트 모드"
+            description="관리자 화면의 여백을 줄여 정보 밀도를 높입니다."
+            checked={draft.ui.compactMode}
+            onChange={(checked) => setDraft((current) => ({ ...current, ui: { ...current.ui, compactMode: checked } }))}
+          />
+        </AdminCard>
+      </section>
+
+      <section className="grid gap-5 xl:grid-cols-2">
+        <AdminCard>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">FILE POLICY</p>
+          <h2 className="mt-2 text-lg font-semibold text-stone-950">파일 보관 정책</h2>
+          <div className="mt-5 grid gap-3">
+            <ToggleRow
+              label="소프트 삭제"
+              description="파일 삭제 시 즉시 물리 삭제하지 않고 휴지통 상태로 보관합니다."
+              checked={draft.filePolicy.softDeleteEnabled}
+              onChange={(checked) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, softDeleteEnabled: checked } }))}
+            />
+            <ToggleRow
+              label="휴지통 용량 포함"
+              description="휴지통 보관 파일도 고객사 사용량에 포함합니다."
+              checked={draft.filePolicy.includeTrashInUsage}
+              onChange={(checked) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, includeTrashInUsage: checked } }))}
+            />
+            <label className="grid gap-2 rounded-3xl border border-stone-200 bg-white px-4 py-3 text-sm">
+              <span className="font-semibold text-stone-900">삭제 보관 기간</span>
+              <select
+                value={draft.filePolicy.trashRetentionDays}
+                onChange={(event) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, trashRetentionDays: Number(event.target.value) } }))}
+                className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm outline-none focus:border-stone-400"
+              >
+                {RETENTION_DAY_OPTIONS.map((days) => (
+                  <option key={days} value={days}>{days}일</option>
+                ))}
+              </select>
+            </label>
+            <label className="grid gap-2 rounded-3xl border border-stone-200 bg-white px-4 py-3 text-sm">
+              <span className="font-semibold text-stone-900">기본 용량(GB)</span>
+              <input
+                type="number"
+                min={1}
+                value={draft.filePolicy.storageLimitGb}
+                onChange={(event) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, storageLimitGb: Number(event.target.value) } }))}
+                className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm outline-none focus:border-stone-400"
+              />
+            </label>
+            <label className="grid gap-2 rounded-3xl border border-stone-200 bg-white px-4 py-3 text-sm">
+              <span className="font-semibold text-stone-900">용량 경고 기준(%)</span>
+              <input
+                type="number"
+                min={1}
+                max={100}
+                value={draft.filePolicy.warningThresholdPercent}
+                onChange={(event) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, warningThresholdPercent: Number(event.target.value) } }))}
+                className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm outline-none focus:border-stone-400"
+              />
+            </label>
+          </div>
+        </AdminCard>
+
+        <AdminCard>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">NOTIFICATION POLICY</p>
+          <h2 className="mt-2 text-lg font-semibold text-stone-950">알림 정책</h2>
+          <div className="mt-5 grid gap-3">
+            <ToggleRow
+              label="검토 요청"
+              description="디자이너가 검토요청을 보냈을 때 관리자 알림 대상으로 사용합니다."
+              checked={draft.notificationPolicy.reviewRequestEnabled}
+              onChange={(checked) => setDraft((current) => ({ ...current, notificationPolicy: { ...current.notificationPolicy, reviewRequestEnabled: checked } }))}
+            />
+            <ToggleRow
+              label="발주 준비"
+              description="발주 가능 상태가 되었을 때 담당자 알림 대상으로 사용합니다."
+              checked={draft.notificationPolicy.orderReadyEnabled}
+              onChange={(checked) => setDraft((current) => ({ ...current, notificationPolicy: { ...current.notificationPolicy, orderReadyEnabled: checked } }))}
+            />
+            <ToggleRow
+              label="용량 경고"
+              description="파일 사용량이 경고 기준에 도달했을 때 알림 대상으로 사용합니다."
+              checked={draft.notificationPolicy.storageWarningEnabled}
+              onChange={(checked) => setDraft((current) => ({ ...current, notificationPolicy: { ...current.notificationPolicy, storageWarningEnabled: checked } }))}
+            />
+            <ToggleRow
+              label="삭제 처리 결과"
+              description="purge 실행 결과를 관리자 알림 대상으로 사용합니다."
+              checked={draft.notificationPolicy.purgeResultEnabled}
+              onChange={(checked) => setDraft((current) => ({ ...current, notificationPolicy: { ...current.notificationPolicy, purgeResultEnabled: checked } }))}
+            />
+          </div>
+        </AdminCard>
+      </section>
+    </div>
+  );
+}

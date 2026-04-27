@@ -30,6 +30,12 @@ export type CompanySettings = {
   updatedAt?: string | null;
 };
 
+export type CompanySettingsUpdateInput = {
+  ui?: Partial<CompanyUiSettings>;
+  filePolicy?: Partial<CompanyFilePolicySettings>;
+  notificationPolicy?: Partial<CompanyNotificationPolicySettings>;
+};
+
 export type AdminCompanySummary = {
   id: string;
   name: string;
