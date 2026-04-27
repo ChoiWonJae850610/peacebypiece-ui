@@ -157,6 +157,7 @@ function formatDate(value: string | Date | null | undefined): string {
 }
 
 function formatBytes(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes < 0) return "0B";
   if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1)}GB`;
   if (bytes >= 1024 ** 2) return `${Math.round(bytes / 1024 ** 2)}MB`;
   if (bytes >= 1024) return `${Math.round(bytes / 1024)}KB`;

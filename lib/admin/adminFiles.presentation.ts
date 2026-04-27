@@ -177,12 +177,17 @@ export const ADMIN_STORAGE_POLICY_ITEMS: AdminStoragePolicyItem[] = [
   },
 ];
 
-export function normalizeAdminFilePolicySettings(filePolicy: { softDeleteEnabled: boolean; includeTrashInUsage: boolean; trashRetentionDays: number }): AdminStoragePolicySettings {
-  const purgeAfterDays = [1, 5, 15, 30].includes(filePolicy.trashRetentionDays) ? filePolicy.trashRetentionDays : 15;
+function readBoolean(value: unknown, fallback: boolean): boolean {
+  return typeof value === "boolean" ? value : fallback;
+}
+
+export function normalizeAdminFilePolicySettings(filePolicy: { softDeleteEnabled?: unknown; includeTrashInUsage?: unknown; trashRetentionDays?: unknown }): AdminStoragePolicySettings {
+  const parsedDays = Math.trunc(Number(filePolicy.trashRetentionDays));
+  const purgeAfterDays = [1, 5, 15, 30].includes(parsedDays) ? parsedDays : 15;
 
   return {
-    softDeleteEnabled: filePolicy.softDeleteEnabled,
-    includeTrashInUsage: filePolicy.includeTrashInUsage,
+    softDeleteEnabled: readBoolean(filePolicy.softDeleteEnabled, true),
+    includeTrashInUsage: readBoolean(filePolicy.includeTrashInUsage, true),
     purgeAfterDays: purgeAfterDays as AdminStoragePolicySettings["purgeAfterDays"],
   };
 }

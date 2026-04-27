@@ -72,7 +72,13 @@ function normalizePercent(value: unknown, fallback: number): number {
 }
 
 function normalizeBoolean(value: unknown, fallback: boolean): boolean {
-  return typeof value === "boolean" ? value : fallback;
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === "true" || normalized === "t" || normalized === "1") return true;
+    if (normalized === "false" || normalized === "f" || normalized === "0") return false;
+  }
+  return fallback;
 }
 
 function normalizeUiSettings(input: CompanySettingsUpdateInput["ui"] | undefined, fallback: CompanyUiSettings): CompanyUiSettings {
@@ -126,20 +132,20 @@ function mapSettingsRow(row: CompanySettingsRow): CompanySettings {
     ui: {
       themeColor: isThemeColor(row.theme_color) ? row.theme_color : fallback.ui.themeColor,
       language: isLanguage(row.language) ? row.language : fallback.ui.language,
-      compactMode: row.compact_mode ?? fallback.ui.compactMode,
+      compactMode: normalizeBoolean(row.compact_mode, fallback.ui.compactMode),
     },
     filePolicy: {
-      softDeleteEnabled: row.soft_delete_enabled ?? fallback.filePolicy.softDeleteEnabled,
-      includeTrashInUsage: row.include_trash_in_usage ?? fallback.filePolicy.includeTrashInUsage,
-      trashRetentionDays: row.trash_retention_days ?? fallback.filePolicy.trashRetentionDays,
-      storageLimitGb: row.storage_limit_gb ?? fallback.filePolicy.storageLimitGb,
-      warningThresholdPercent: row.warning_threshold_percent ?? fallback.filePolicy.warningThresholdPercent,
+      softDeleteEnabled: normalizeBoolean(row.soft_delete_enabled, fallback.filePolicy.softDeleteEnabled),
+      includeTrashInUsage: normalizeBoolean(row.include_trash_in_usage, fallback.filePolicy.includeTrashInUsage),
+      trashRetentionDays: normalizeRetentionDays(row.trash_retention_days, fallback.filePolicy.trashRetentionDays),
+      storageLimitGb: normalizePositiveInteger(row.storage_limit_gb, fallback.filePolicy.storageLimitGb),
+      warningThresholdPercent: normalizePercent(row.warning_threshold_percent, fallback.filePolicy.warningThresholdPercent),
     },
     notificationPolicy: {
-      reviewRequestEnabled: row.review_request_enabled ?? fallback.notificationPolicy.reviewRequestEnabled,
-      orderReadyEnabled: row.order_ready_enabled ?? fallback.notificationPolicy.orderReadyEnabled,
-      storageWarningEnabled: row.storage_warning_enabled ?? fallback.notificationPolicy.storageWarningEnabled,
-      purgeResultEnabled: row.purge_result_enabled ?? fallback.notificationPolicy.purgeResultEnabled,
+      reviewRequestEnabled: normalizeBoolean(row.review_request_enabled, fallback.notificationPolicy.reviewRequestEnabled),
+      orderReadyEnabled: normalizeBoolean(row.order_ready_enabled, fallback.notificationPolicy.orderReadyEnabled),
+      storageWarningEnabled: normalizeBoolean(row.storage_warning_enabled, fallback.notificationPolicy.storageWarningEnabled),
+      purgeResultEnabled: normalizeBoolean(row.purge_result_enabled, fallback.notificationPolicy.purgeResultEnabled),
     },
     updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at,
   };

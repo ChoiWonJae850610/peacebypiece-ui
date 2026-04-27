@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 function readLimit(request: NextRequest): number {
   const value = request.nextUrl.searchParams.get("limit");
   const parsed = Number(value ?? 50);
-  return Number.isFinite(parsed) ? parsed : 50;
+  return Number.isFinite(parsed) ? Math.min(Math.max(Math.trunc(parsed), 1), 200) : 50;
 }
 
 function getErrorMessage(error: unknown): string {

@@ -15,6 +15,7 @@ function getErrorMessage(error: unknown): string {
 }
 
 function formatBytes(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes < 0) return "0B";
   if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1)}GB`;
   if (bytes >= 1024 ** 2) return `${Math.round(bytes / 1024 ** 2)}MB`;
   if (bytes >= 1024) return `${Math.round(bytes / 1024)}KB`;
@@ -22,10 +23,14 @@ function formatBytes(bytes: number): string {
 }
 
 function buildUsageSummary(activeBytes: number, trashBytes: number, filePolicy: CompanyFilePolicySettings): AdminStorageUsageSummary {
-  const usedBytes = activeBytes + (filePolicy.includeTrashInUsage ? trashBytes : 0);
-  const limitBytes = Math.max(1, filePolicy.storageLimitGb) * BYTES_PER_GB;
+  const safeActiveBytes = Number.isFinite(activeBytes) ? Math.max(0, activeBytes) : 0;
+  const safeTrashBytes = Number.isFinite(trashBytes) ? Math.max(0, trashBytes) : 0;
+  const storageLimitGb = Number.isFinite(filePolicy.storageLimitGb) ? Math.max(1, filePolicy.storageLimitGb) : 1;
+  const warningThresholdPercent = Number.isFinite(filePolicy.warningThresholdPercent) ? Math.min(100, Math.max(1, filePolicy.warningThresholdPercent)) : 80;
+  const usedBytes = safeActiveBytes + (filePolicy.includeTrashInUsage ? safeTrashBytes : 0);
+  const limitBytes = storageLimitGb * BYTES_PER_GB;
   const usagePercent = Math.min(100, Math.round((usedBytes / limitBytes) * 100));
-  const statusTone = usagePercent >= filePolicy.warningThresholdPercent ? "warning" : "normal";
+  const statusTone = usagePercent >= warningThresholdPercent ? "warning" : "normal";
 
   return {
     usedBytes,
