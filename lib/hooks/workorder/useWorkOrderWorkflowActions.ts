@@ -303,7 +303,7 @@ export function useWorkOrderWorkflowActions({
       const requestedAt = new Date().toISOString();
       const factoryId = await resolveActiveFactoryPartnerIdByName(normalizedFactoryName);
       if (!factoryId) {
-        setToastMessage(actionFlowText.factoryOrderFactoryInvalidToast ?? actionFlowText.factoryOrderFactoryRequiredToast);
+        setToastMessage(actionFlowText.factoryOrderFactoryInvalidToast);
         setPendingWorkflowAction(null);
         setOrderRequestConfirmOpen(false);
         return;

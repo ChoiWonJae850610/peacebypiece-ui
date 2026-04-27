@@ -56,7 +56,7 @@ function isPartnerTypeFilter(value: PartnerFilterChip): value is PartnerType {
   return value !== "all" && (PARTNER_TYPE_VALUES as readonly string[]).includes(value);
 }
 
-export function togglePartnerFilterSelection(current: PartnerFilterChip[], nextValue: PartnerFilterChip) {
+export function togglePartnerFilterSelection(current: PartnerFilterChip[], nextValue: PartnerFilterChip): PartnerFilterChip[] {
   if (nextValue === "all") {
     return ["all"];
   }
