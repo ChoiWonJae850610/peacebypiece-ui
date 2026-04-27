@@ -20,7 +20,6 @@ type PartnerProcessManagementModalProps = {
     updater: (current: OutsourcingProcessDefinition) => OutsourcingProcessDefinition,
   ) => void;
   onRequestDelete: (type: OutsourcingProcessType) => void;
-  onMove: (type: OutsourcingProcessType, direction: "up" | "down") => void;
   onClearProcessFormError: () => void;
 };
 
@@ -35,7 +34,6 @@ export default function PartnerProcessManagementModal({
   onAddProcessDefinition,
   onUpdateProcessDefinition,
   onRequestDelete,
-  onMove,
   onClearProcessFormError,
 }: PartnerProcessManagementModalProps) {
   const { i18n } = useI18n();
@@ -100,11 +98,7 @@ export default function PartnerProcessManagementModal({
       </div>
 
       <div className="space-y-3">
-        {orderedProcessDefinitions.map((definition, index) => {
-          const isFirst = index == 0;
-          const isLast = index === orderedProcessDefinitions.length - 1;
-
-          return (
+        {orderedProcessDefinitions.map((definition) => (
             <div key={definition.type} className="rounded-2xl border border-stone-200 bg-white p-4">
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
                 <label className="min-w-0 flex-1 space-y-2">
@@ -140,32 +134,10 @@ export default function PartnerProcessManagementModal({
                   >
                     {processText.delete}
                   </button>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => onMove(definition.type, "up")}
-                      disabled={isFirst}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition hover:border-stone-300 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-35"
-                      aria-label={`${definition.label}${processText.moveUpSuffix}`}
-                    >
-                      <span className="block rotate-180">▾</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onMove(definition.type, "down")}
-                      disabled={isLast}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition hover:border-stone-300 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-35"
-                      aria-label={`${definition.label}${processText.moveDownSuffix}`}
-                    >
-                      <span className="block">▾</span>
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>
-          );
-        })}
+        ))}
       </div>
     </ModalShell>
   );

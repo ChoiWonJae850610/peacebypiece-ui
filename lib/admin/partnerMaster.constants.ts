@@ -7,7 +7,7 @@ import type {
   PartnerTypeMeta,
 } from "@/lib/admin/partnerMaster.types";
 
-export const BASE_PARTNER_TYPE_VALUES = PARTNER_TYPE_VALUES.filter((type) => type !== "outsourcing_vendor") as BasePartnerType[];
+export const BASE_PARTNER_TYPE_VALUES = [...PARTNER_TYPE_VALUES] as BasePartnerType[];
 
 export const PARTNER_TYPE_META: Record<PartnerType, PartnerTypeMeta> = {
   factory: { label: "공장", shortLabel: "공장", tone: "bg-sky-100 text-sky-700" },

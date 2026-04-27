@@ -16,7 +16,6 @@ import {
   createOutsourcingProcessDefinition,
   DEFAULT_PARTNER_FILTER_STATE,
   isBasePartnerType,
-  moveOutsourcingProcessDefinition,
   normalizeOutsourcingProcessDefinitions,
   normalizePartnerDraft,
   PARTNER_MASTER_FORM_ERRORS,
@@ -151,20 +150,14 @@ export default function PartnerMasterSection() {
   }, []);
 
   const setPrimaryType = useCallback((type: BasePartnerType) => {
-    setDraft((current) => ({
-      ...current,
-      partnerTypes: applyPartnerTypeSelectionPolicy(current.partnerTypes, type),
-    }));
-  }, []);
-
-  const setOutsourcingEnabled = useCallback((enabled: boolean) => {
-    setDraft((current) => ({
-      ...current,
-      partnerTypes: enabled
-        ? Array.from(new Set([...current.partnerTypes.filter((item) => item !== "outsourcing_vendor"), "outsourcing_vendor"]))
-        : current.partnerTypes.filter((item) => item !== "outsourcing_vendor"),
-      outsourcingProcessTypes: enabled ? current.outsourcingProcessTypes : [],
-    }));
+    setDraft((current) => {
+      const nextPartnerTypes = applyPartnerTypeSelectionPolicy(current.partnerTypes, type);
+      return {
+        ...current,
+        partnerTypes: nextPartnerTypes,
+        outsourcingProcessTypes: nextPartnerTypes.includes("outsourcing_vendor") ? current.outsourcingProcessTypes : [],
+      };
+    });
     setSelectedAvailableProcess(null);
     setSelectedAssignedProcess(null);
   }, []);
@@ -243,14 +236,6 @@ export default function PartnerMasterSection() {
     setProcessFormError("");
   }, [newProcessLabel, persistProcessDefinitions, processDefinitions]);
 
-  const moveProcessDefinition = useCallback((type: OutsourcingProcessType, direction: "up" | "down") => {
-    setProcessDefinitions((current) => {
-      const nextDefinitions = moveOutsourcingProcessDefinition(current, type, direction);
-      persistProcessDefinitions(nextDefinitions);
-      return nextDefinitions;
-    });
-  }, [persistProcessDefinitions]);
-
   const requestDeleteProcessDefinition = useCallback((type: OutsourcingProcessType) => {
     setDeletingProcessType(type);
   }, []);
@@ -320,7 +305,6 @@ export default function PartnerMasterSection() {
         onSubmit={handleSubmit}
         onDraftChange={setDraft}
         onSetPrimaryType={setPrimaryType}
-        onSetOutsourcingEnabled={setOutsourcingEnabled}
         onToggleOutsourcingProcess={toggleOutsourcingProcess}
         onOpenProcessModal={openProcessModal}
         onSelectAvailableProcess={setSelectedAvailableProcess}
@@ -338,7 +322,6 @@ export default function PartnerMasterSection() {
         onAddProcessDefinition={addProcessDefinition}
         onUpdateProcessDefinition={updateProcessDefinition}
         onRequestDelete={requestDeleteProcessDefinition}
-        onMove={moveProcessDefinition}
         onClearProcessFormError={() => setProcessFormError("")}
       />
 

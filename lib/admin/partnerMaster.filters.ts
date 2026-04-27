@@ -7,7 +7,7 @@ import type {
   PartnerListFilterState,
 } from "@/lib/admin/partnerMaster.types";
 import { formatPartnerPhone } from "@/lib/admin/partnerMaster.draft";
-import { PARTNER_TYPE_VALUES, type OutsourcingProcessType, type Partner, type PartnerType } from "@/types/partner";
+import { PARTNER_TYPE_VALUES, type Partner, type PartnerType } from "@/types/partner";
 
 export function buildOutsourcingProcessMeta(definitions: OutsourcingProcessDefinition[]) {
   return definitions.reduce<Record<string, OutsourcingProcessMeta>>((acc, definition) => {
@@ -16,16 +16,13 @@ export function buildOutsourcingProcessMeta(definitions: OutsourcingProcessDefin
   }, {});
 }
 
-export function buildPartnerFilterOptions(definitions: OutsourcingProcessDefinition[]): PartnerFilterOption[] {
+export function buildPartnerFilterOptions(_definitions: OutsourcingProcessDefinition[]): PartnerFilterOption[] {
   return [
     { value: "all", label: "전체" },
     { value: "factory", label: "공장" },
     { value: "material_vendor", label: "원단" },
     { value: "subsidiary_vendor", label: "부자재" },
-    ...definitions
-      .filter((definition) => definition.isActive)
-      .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map((definition) => ({ value: definition.type, label: definition.label })),
+    { value: "outsourcing_vendor", label: "외주" },
   ];
 }
 
@@ -59,10 +56,6 @@ function isPartnerTypeFilter(value: PartnerFilterChip): value is PartnerType {
   return value !== "all" && (PARTNER_TYPE_VALUES as readonly string[]).includes(value);
 }
 
-function isOutsourcingProcessFilter(value: PartnerFilterChip): value is OutsourcingProcessType {
-  return value !== "all" && !isPartnerTypeFilter(value);
-}
-
 export function togglePartnerFilterSelection(current: PartnerFilterChip[], nextValue: PartnerFilterChip) {
   if (nextValue === "all") {
     return ["all"];
@@ -87,9 +80,6 @@ export function selectFilteredPartners(
       filters.selectedTypes.some((selectedType) => {
         if (isPartnerTypeFilter(selectedType)) {
           return partner.partnerTypes.includes(selectedType);
-        }
-        if (isOutsourcingProcessFilter(selectedType)) {
-          return (partner.outsourcingProcessTypes ?? []).includes(selectedType);
         }
         return false;
       });

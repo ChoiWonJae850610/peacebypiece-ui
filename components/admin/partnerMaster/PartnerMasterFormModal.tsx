@@ -27,7 +27,6 @@ type PartnerMasterFormModalProps = {
   onSubmit: () => void;
   onDraftChange: (updater: (current: PartnerDraft) => PartnerDraft) => void;
   onSetPrimaryType: (type: BasePartnerType) => void;
-  onSetOutsourcingEnabled: (enabled: boolean) => void;
   onToggleOutsourcingProcess: (type: OutsourcingProcessType) => void;
   onOpenProcessModal: () => void;
   onSelectAvailableProcess: (type: OutsourcingProcessType | null) => void;
@@ -49,7 +48,6 @@ export default function PartnerMasterFormModal({
   onSubmit,
   onDraftChange,
   onSetPrimaryType,
-  onSetOutsourcingEnabled,
   onToggleOutsourcingProcess,
   onOpenProcessModal,
   onSelectAvailableProcess,
@@ -157,7 +155,7 @@ export default function PartnerMasterFormModal({
       <div className="space-y-3">
         <div className="space-y-2">
           <p className="text-sm font-medium text-stone-800">{formText.labels.baseTypes}</p>
-          <div className="grid gap-2 sm:grid-cols-3">
+          <div className="grid gap-2 sm:grid-cols-4">
             {BASE_PARTNER_TYPE_VALUES.map((type) => {
               const checked = selectedPrimaryTypes.includes(type);
               return (
@@ -175,18 +173,6 @@ export default function PartnerMasterFormModal({
                 </button>
               );
             })}
-          </div>
-        </div>
-
-        <div className="space-y-2 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-medium text-stone-800">{formText.labels.outsourcing}</p>
-            <div className="flex items-center gap-3">
-              <StatusToggle checked={isOutsourcingEnabled} onChange={onSetOutsourcingEnabled} srLabel={formText.outsourcingSrLabel} size="sm" />
-              <span className={`text-sm font-medium ${isOutsourcingEnabled ? "text-stone-900" : "text-stone-500"}`}>
-                {isOutsourcingEnabled ? formText.outsourcingActive : formText.outsourcingInactive}
-              </span>
-            </div>
           </div>
         </div>
 

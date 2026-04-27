@@ -12,31 +12,19 @@ export function createEmptyPartnerDraft(): PartnerDraft {
 }
 
 export function isBasePartnerType(type: PartnerType): type is BasePartnerType {
-  return type !== "outsourcing_vendor";
+  return true;
 }
 
 export function applyPartnerTypeSelectionPolicy(currentTypes: PartnerType[], targetType: BasePartnerType): PartnerType[] {
-  const hasOutsourcing = currentTypes.includes("outsourcing_vendor");
-  const currentBaseTypes = currentTypes.filter(isBasePartnerType);
-  const nextBaseTypes = currentBaseTypes.includes(targetType)
-    ? currentBaseTypes.filter((type) => type !== targetType)
-    : [...currentBaseTypes, targetType];
+  const nextTypes = currentTypes.includes(targetType)
+    ? currentTypes.filter((type) => type !== targetType)
+    : [...currentTypes, targetType];
 
-  return [
-    ...nextBaseTypes,
-    ...(hasOutsourcing ? (["outsourcing_vendor"] as PartnerType[]) : []),
-  ];
+  return normalizePartnerTypeSelection(nextTypes);
 }
 
 export function normalizePartnerTypeSelection(types: PartnerType[]) {
-  const uniqueTypes = Array.from(new Set(types));
-  const hasOutsourcing = uniqueTypes.includes("outsourcing_vendor");
-  const baseTypes = uniqueTypes.filter(isBasePartnerType);
-
-  return [
-    ...baseTypes,
-    ...(hasOutsourcing ? (["outsourcing_vendor"] as PartnerType[]) : []),
-  ];
+  return Array.from(new Set(types));
 }
 
 export function buildPartnerDraftFromEntity(partner: Partner): PartnerDraft {

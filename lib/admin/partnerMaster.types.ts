@@ -4,7 +4,7 @@ import type {
 } from "@/types/partner";
 
 export type PartnerStatusFilter = "all" | "active" | "inactive";
-export type PartnerFilterChip = "all" | PartnerType | OutsourcingProcessType;
+export type PartnerFilterChip = "all" | PartnerType;
 
 export type PartnerListFilterState = {
   selectedTypes: PartnerFilterChip[];
@@ -12,7 +12,7 @@ export type PartnerListFilterState = {
   searchTerm: string;
 };
 
-export type BasePartnerType = Exclude<PartnerType, "outsourcing_vendor">;
+export type BasePartnerType = PartnerType;
 
 export type OutsourcingProcessDefinition = {
   type: OutsourcingProcessType;

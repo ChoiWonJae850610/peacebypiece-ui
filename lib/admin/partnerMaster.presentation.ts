@@ -28,7 +28,7 @@ function buildPartnerListItemViewModel(
   const contactName = partner.contactName?.trim() || "-";
   const phone = formatPartnerPhone(partner.phone) || "-";
   const outsourcingProcessNames = outsourcingProcessBadges.map((badge) => badge.label);
-  const outsourcingProcessLabel = outsourcingProcessNames.length > 0 ? `[${outsourcingProcessNames.join(", ")}]` : "";
+  const outsourcingProcessLabel = outsourcingProcessNames.length > 0 ? outsourcingProcessNames.join(", ") : "";
   const baseTypeNames = baseTypeBadges.map((badge) => badge.label);
   const typeDisplayLabel = [
     baseTypeNames.length > 0 ? baseTypeNames.join(" · ") : "",
