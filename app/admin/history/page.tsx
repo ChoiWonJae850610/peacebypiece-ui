@@ -15,7 +15,6 @@ export default function AdminHistoryPage() {
       appVersion={APP_VERSION}
       navigationItems={getAdminNavigationItems("/admin/history")}
       title={`${WORKSPACE_COMPANY_NAME} · ${pageText.title}`}
-      description={pageText.description}
     >
       <AdminWorkOrderHistoryPage />
     </AdminShell>
