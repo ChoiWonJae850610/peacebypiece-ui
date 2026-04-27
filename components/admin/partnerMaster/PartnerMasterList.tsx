@@ -5,11 +5,12 @@ import { useI18n } from "@/lib/i18n";
 
 type PartnerMasterListProps = {
   items: PartnerListItemViewModel[];
+  isLoading?: boolean;
   onEditPartner: (partnerId: string) => void;
   className?: string;
 };
 
-export default function PartnerMasterList({ items, onEditPartner, className = "mt-5" }: PartnerMasterListProps) {
+export default function PartnerMasterList({ items, isLoading = false, onEditPartner, className = "mt-5" }: PartnerMasterListProps) {
   const { i18n } = useI18n();
   const listText = i18n.admin.partnerMaster.list;
 
@@ -25,8 +26,10 @@ export default function PartnerMasterList({ items, onEditPartner, className = "m
         <span>{listText.columns.actions}</span>
       </div>
       <div className="min-h-0 flex-1 divide-y divide-stone-200 overflow-y-auto">
-        {items.length === 0 ? (
-          <div className="flex min-h-[320px] h-full items-center justify-center px-4 py-10 text-center text-sm font-medium text-stone-500">{listText.empty}</div>
+        {isLoading ? (
+          <div className="flex h-full min-h-[320px] items-center justify-center px-4 py-10 text-center text-sm font-medium text-stone-400">거래처 목록을 불러오는 중입니다.</div>
+        ) : items.length === 0 ? (
+          <div className="flex h-full min-h-[320px] items-center justify-center px-4 py-10 text-center text-sm font-medium text-stone-500">{listText.empty}</div>
         ) : (
           items.map((item) => (
             <article key={item.id} className={["px-4 py-4", item.isActive ? "bg-white" : "bg-stone-50/80"].join(" ")}>

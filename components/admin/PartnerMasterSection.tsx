@@ -45,6 +45,7 @@ export default function PartnerMasterSection() {
   const [selectedInactiveProcessDefinition, setSelectedInactiveProcessDefinition] = useState<OutsourcingProcessType | null>(null);
   const [selectedActiveProcessDefinition, setSelectedActiveProcessDefinition] = useState<OutsourcingProcessType | null>(null);
   const [formError, setFormError] = useState("");
+  const [isLoadingPartners, setIsLoadingPartners] = useState(true);
   const [newProcessLabel, setNewProcessLabel] = useState("");
   const [processFormError, setProcessFormError] = useState("");
   const [, setRepositoryStatus] = useState("저장소 확인 중");
@@ -52,17 +53,21 @@ export default function PartnerMasterSection() {
   useEffect(() => {
     let isMounted = true;
 
+    setIsLoadingPartners(true);
+
     fetchPartnerMasterItemsFromApi()
       .then((payload) => {
         if (!isMounted) return;
         setPartners(payload.partners);
         if (payload.processDefinitions) setProcessDefinitions(payload.processDefinitions);
         setRepositoryStatus(payload.repository?.mode === "db" ? "DB 연결" : "mock 저장소");
+        setIsLoadingPartners(false);
       })
       .catch(() => {
         if (!isMounted) return;
         setPartners([]);
         setRepositoryStatus("DB 연결 실패");
+        setIsLoadingPartners(false);
       });
 
     return () => {
@@ -275,6 +280,7 @@ export default function PartnerMasterSection() {
       <PartnerMasterList
         className="mt-5 min-h-0 flex-1"
         items={listViewModel.items}
+        isLoading={isLoadingPartners}
         onEditPartner={openEditModal}
       />
 
