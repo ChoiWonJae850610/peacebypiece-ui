@@ -36,7 +36,7 @@ export const ADMIN_SUMMARY_CARDS: AdminSummaryCard[] = [
 ];
 
 export const ADMIN_NAVIGATION_ITEMS: AdminNavigationItem[] = [
-  { label: "대시보드", href: "/admin", icon: "⌂", active: true },
+  { label: "대시보드", href: "/admin", icon: "⌂" },
   { label: "작지 화면", href: "/worker", icon: "▣" },
   { label: "히스토리", href: "/admin/history", icon: "↺" },
   { label: "통계", href: "/admin/dashboard", icon: "◒" },
@@ -86,6 +86,30 @@ export const ADMIN_DASHBOARD_SECTIONS: AdminDashboardSection[] = [
     ],
   },
 ];
+
+
+export type AdminQuickMenuItem = {
+  title: string;
+  description: string;
+};
+
+export const ADMIN_DASHBOARD_PRIMARY_SECTION_COUNT = 4;
+
+export const ADMIN_QUICK_MENU_ITEMS: AdminQuickMenuItem[] = [
+  { title: "검토 대기 작지", description: "검토요청 이후 관리자 확인이 필요한 작지를 먼저 확인합니다." },
+  { title: "파일 사용량", description: "휴지통, purge 후보, 저장소 사용량을 함께 확인합니다." },
+  { title: "기준정보", description: "거래처, 공장, 외주공정, 단위 기준을 운영 전에 정리합니다." },
+];
+
+export const ADMIN_SETTINGS_ROADMAP_ITEMS = [
+  "테마 색상 / 화면 밀도",
+  "언어 설정 / 표기 기준",
+  "파일 보관 정책 / 알림 정책",
+] as const;
+
+export function getAdminDashboardPrimarySections(): AdminDashboardSection[] {
+  return ADMIN_DASHBOARD_SECTIONS.slice(0, ADMIN_DASHBOARD_PRIMARY_SECTION_COUNT);
+}
 
 export const ADMIN_STAT_SUMMARIES: AdminSummaryCard[] = [
   { label: "전체 작지", value: "0", href: "/worker" },
