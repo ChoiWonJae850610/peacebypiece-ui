@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import FileListSection from "@/components/admin/files/FileListSection";
 import FileStorageSummary from "@/components/admin/files/FileStorageSummary";
 import FileTrashSection from "@/components/admin/files/FileTrashSection";
+import { requestMoveAttachmentToTrash, requestPurgeTrashItem, requestRestoreTrashItem } from "@/lib/admin/adminFiles.actions";
 import { getAdminFileManagementSnapshot } from "@/lib/admin/adminFiles.adapter";
 import type { AdminFileTabKey } from "@/lib/admin/adminFiles.types";
 import { APP_VERSION } from "@/lib/constants/app";
@@ -15,6 +16,30 @@ export default function AdminFilesPage() {
   const [activeTab, setActiveTab] = useState<AdminFileTabKey>("attachments");
   const [selectedAttachmentId, setSelectedAttachmentId] = useState<string | null>(null);
   const [selectedTrashItemId, setSelectedTrashItemId] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
+
+  const selectedAttachment = snapshot.attachments.find((item) => item.id === selectedAttachmentId) ?? null;
+  const selectedTrashItem = snapshot.trashItems.find((item) => item.id === selectedTrashItemId) ?? null;
+
+  function handleMoveAttachmentToTrash() {
+    const result = requestMoveAttachmentToTrash(selectedAttachment);
+    setActionMessage(result.message);
+  }
+
+  function handleRestoreTrashItem() {
+    const result = requestRestoreTrashItem(selectedTrashItem);
+    setActionMessage(result.message);
+  }
+
+  function handlePurgeTrashItem() {
+    const result = requestPurgeTrashItem(selectedTrashItem);
+    setActionMessage(result.message);
+  }
+
+  function handleChangeTab(tabKey: AdminFileTabKey) {
+    setActiveTab(tabKey);
+    setActionMessage(null);
+  }
 
   return (
     <main className="min-h-screen bg-stone-100 px-4 py-6 text-stone-900 md:px-6 md:py-8">
@@ -44,7 +69,7 @@ export default function AdminFilesPage() {
                 <button
                   key={tab.key}
                   type="button"
-                  onClick={() => setActiveTab(tab.key)}
+                  onClick={() => handleChangeTab(tab.key)}
                   className={`rounded-2xl border px-4 py-3 text-left transition ${
                     isActive ? "border-stone-400 bg-stone-900 text-white" : "border-stone-200 bg-white text-stone-700 hover:bg-stone-50"
                   }`}
@@ -57,10 +82,20 @@ export default function AdminFilesPage() {
           </div>
         </section>
 
+        {actionMessage ? <section className="rounded-3xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">{actionMessage}</section> : null}
+
         {activeTab === "attachments" ? (
-          <FileListSection items={snapshot.attachments} selectedItemId={selectedAttachmentId} onSelectItem={setSelectedAttachmentId} />
+          <FileListSection items={snapshot.attachments} selectedItemId={selectedAttachmentId} onSelectItem={setSelectedAttachmentId} onMoveToTrash={handleMoveAttachmentToTrash} />
         ) : null}
-        {activeTab === "trash" ? <FileTrashSection items={snapshot.trashItems} selectedItemId={selectedTrashItemId} onSelectItem={setSelectedTrashItemId} /> : null}
+        {activeTab === "trash" ? (
+          <FileTrashSection
+            items={snapshot.trashItems}
+            selectedItemId={selectedTrashItemId}
+            onSelectItem={setSelectedTrashItemId}
+            onRestore={handleRestoreTrashItem}
+            onPurge={handlePurgeTrashItem}
+          />
+        ) : null}
         {activeTab === "storage" ? (
           <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
             <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">

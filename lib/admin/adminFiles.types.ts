@@ -52,6 +52,14 @@ export type AdminStoragePolicyItem = {
   description: string;
 };
 
+export type AdminFileActionStatus = "pending-api" | "success" | "error";
+
+export type AdminFileActionResult = {
+  ok: boolean;
+  status: AdminFileActionStatus;
+  message: string;
+};
+
 export type AdminFileManagementSnapshot = {
   usageCards: AdminFileUsageCard[];
   tabs: AdminFileTabItem[];

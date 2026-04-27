@@ -4,9 +4,12 @@ type FileListSectionProps = {
   items: AdminManagedFileItem[];
   selectedItemId: string | null;
   onSelectItem: (itemId: string) => void;
+  onMoveToTrash: () => void;
 };
 
-export default function FileListSection({ items, selectedItemId, onSelectItem }: FileListSectionProps) {
+export default function FileListSection({ items, selectedItemId, onSelectItem, onMoveToTrash }: FileListSectionProps) {
+  const hasSelection = selectedItemId !== null;
+
   return (
     <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
       <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
@@ -14,7 +17,21 @@ export default function FileListSection({ items, selectedItemId, onSelectItem }:
           <h2 className="text-lg font-semibold text-stone-900">첨부파일 목록</h2>
           <p className="mt-2 text-sm leading-6 text-stone-500">작지명, 파일명, 유형, 용량, 등록자를 기준으로 확인합니다.</p>
         </div>
-        <span className="w-fit rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-500">조회 연결 예정</span>
+        <div className="flex flex-wrap gap-2">
+          <span className="w-fit rounded-full bg-stone-100 px-3 py-2 text-xs font-medium text-stone-500">조회 연결 예정</span>
+          <button
+            type="button"
+            onClick={onMoveToTrash}
+            disabled={!hasSelection}
+            className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+              hasSelection
+                ? "border-red-200 bg-white text-red-600 hover:bg-red-50"
+                : "border-stone-200 bg-stone-50 text-stone-400"
+            }`}
+          >
+            삭제(휴지통 이동)
+          </button>
+        </div>
       </div>
 
       <div className="mt-4 overflow-hidden rounded-2xl border border-stone-200">

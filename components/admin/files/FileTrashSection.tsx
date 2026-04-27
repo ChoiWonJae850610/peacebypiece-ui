@@ -4,9 +4,11 @@ type FileTrashSectionProps = {
   items: AdminTrashFileItem[];
   selectedItemId: string | null;
   onSelectItem: (itemId: string) => void;
+  onRestore: () => void;
+  onPurge: () => void;
 };
 
-export default function FileTrashSection({ items, selectedItemId, onSelectItem }: FileTrashSectionProps) {
+export default function FileTrashSection({ items, selectedItemId, onSelectItem, onRestore, onPurge }: FileTrashSectionProps) {
   const hasSelection = selectedItemId !== null;
 
   return (
@@ -17,11 +19,29 @@ export default function FileTrashSection({ items, selectedItemId, onSelectItem }
           <p className="mt-2 text-sm leading-6 text-stone-500">삭제 요청된 첨부파일은 실제 삭제 전까지 복구 가능한 상태로 보관합니다.</p>
         </div>
         <div className="flex gap-2">
-          <button type="button" className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-400" disabled={!hasSelection}>
-            복구 예정
+          <button
+            type="button"
+            onClick={onRestore}
+            className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+              hasSelection
+                ? "border-stone-300 bg-white text-stone-700 hover:bg-stone-50"
+                : "border-stone-200 bg-stone-50 text-stone-400"
+            }`}
+            disabled={!hasSelection}
+          >
+            복구
           </button>
-          <button type="button" className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-400" disabled={!hasSelection}>
-            영구 삭제 예정
+          <button
+            type="button"
+            onClick={onPurge}
+            className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+              hasSelection
+                ? "border-red-200 bg-white text-red-600 hover:bg-red-50"
+                : "border-stone-200 bg-stone-50 text-stone-400"
+            }`}
+            disabled={!hasSelection}
+          >
+            영구 삭제
           </button>
         </div>
       </div>
