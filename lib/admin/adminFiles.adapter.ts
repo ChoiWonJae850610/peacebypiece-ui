@@ -10,6 +10,8 @@ import type { AdminFileManagementSnapshot } from "@/lib/admin/adminFiles.types";
 
 export function getAdminFileManagementSnapshot(): AdminFileManagementSnapshot {
   return {
+    dataSource: "placeholder",
+    dataSourceLabel: "샘플 데이터",
     usageCards: ADMIN_FILE_USAGE_CARDS,
     usageSummary: ADMIN_FILE_USAGE_SUMMARY,
     tabs: ADMIN_FILE_TABS,

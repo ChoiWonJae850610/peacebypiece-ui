@@ -541,6 +541,10 @@ CREATE INDEX attachments_primary_design_idx
   ON attachments (order_id, type, is_primary)
   WHERE is_active = true AND deleted_at IS NULL;
 
+CREATE INDEX attachments_admin_active_list_idx
+  ON attachments (created_at DESC)
+  WHERE is_active = true AND deleted_at IS NULL;
+
 CREATE UNIQUE INDEX attachment_trash_items_pending_attachment_unique_idx
   ON attachment_trash_items (attachment_id)
   WHERE purge_status = 'pending' AND restored_at IS NULL AND purged_at IS NULL;
@@ -553,6 +557,14 @@ CREATE INDEX attachment_trash_items_order_idx
 
 CREATE INDEX attachment_trash_items_purge_idx
   ON attachment_trash_items (purge_status, purge_after_at);
+
+CREATE INDEX attachment_trash_items_purge_candidate_idx
+  ON attachment_trash_items (purge_after_at ASC)
+  WHERE restored_at IS NULL AND purged_at IS NULL AND purge_status IN ('pending', 'purge_requested');
+
+CREATE INDEX attachment_trash_items_pending_list_idx
+  ON attachment_trash_items (deleted_at DESC)
+  WHERE restored_at IS NULL AND purged_at IS NULL AND purge_status = 'pending';
 
 CREATE INDEX attachment_trash_items_company_deleted_idx
   ON attachment_trash_items (company_id, deleted_at DESC);

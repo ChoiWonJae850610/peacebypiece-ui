@@ -33,14 +33,34 @@ type TrashApiResponse = {
   affectedCount: number;
 };
 
-export function requestMoveAttachmentsToTrash(items: AdminManagedFileItem[]): AdminFileActionResult {
+export async function requestMoveAttachmentsToTrash(items: AdminManagedFileItem[]): Promise<AdminFileActionResult> {
   if (items.length === 0) return createEmptySelectionResult("휴지통으로 이동");
 
-  return createResult({
-    ok: false,
-    status: "pending-api",
-    message: `${items.length}개 파일은 휴지통 이동 대상으로 선택되었습니다. 관리자 파일 목록에서의 일괄 삭제 API는 다음 단계에서 연결하고, 작지 첨부/디자인 삭제는 이미 soft delete + 휴지통 기록 방식으로 처리합니다.`,
-  });
+  try {
+    const results = await Promise.allSettled(
+      items.map((item) =>
+        postJson<{ attachmentId: string | null; trashMode?: string }>("/api/workorders/attachments/delete", {
+          attachmentId: item.id,
+          deletedBy: "admin",
+          deleteReason: "관리자 파일/용량 관리에서 휴지통 이동",
+        }),
+      ),
+    );
+
+    const successCount = results.filter((result) => result.status === "fulfilled").length;
+
+    return createResult({
+      ok: successCount > 0,
+      status: successCount === items.length ? "success" : "error",
+      message: `${successCount}/${items.length}개 파일을 휴지통으로 이동했습니다. attachments soft delete와 attachment_trash_items 기록을 사용합니다.`,
+    });
+  } catch (error) {
+    return createResult({
+      ok: false,
+      status: "error",
+      message: error instanceof Error ? error.message : "휴지통 이동 요청에 실패했습니다.",
+    });
+  }
 }
 
 export async function requestRestoreTrashItems(items: AdminTrashFileItem[]): Promise<AdminFileActionResult> {

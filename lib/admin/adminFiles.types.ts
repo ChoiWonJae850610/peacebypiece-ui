@@ -76,7 +76,11 @@ export type AdminFileActionResult = {
   message: string;
 };
 
+export type AdminFileDataSource = "db" | "placeholder";
+
 export type AdminFileManagementSnapshot = {
+  dataSource: AdminFileDataSource;
+  dataSourceLabel: string;
   usageCards: AdminFileUsageCard[];
   usageSummary: AdminStorageUsageSummary;
   tabs: AdminFileTabItem[];

@@ -106,3 +106,208 @@ export async function requestPurgeAttachmentTrashItems(input: AdminTrashDbAction
     affectedCount: readCount(result.rows[0]),
   };
 }
+
+type AdminAttachmentRow = DbQueryResultRow & {
+  id: string;
+  order_id: string | null;
+  workorder_title: string | null;
+  original_name: string | null;
+  mime_type: string | null;
+  size_bytes: string | number | null;
+  type: string | null;
+  author_id: string | null;
+  created_at: string | Date | null;
+  deleted_at: string | Date | null;
+  deleted_by: string | null;
+  delete_reason: string | null;
+  purge_after_at: string | Date | null;
+};
+
+type AdminTrashRow = DbQueryResultRow & {
+  id: string;
+  attachment_id: string;
+  order_id: string | null;
+  workorder_title: string | null;
+  original_name: string | null;
+  mime_type: string | null;
+  size_bytes: string | number | null;
+  deleted_at: string | Date | null;
+  deleted_by: string | null;
+  delete_reason: string | null;
+  purge_after_at: string | Date | null;
+};
+
+function toNumber(value: string | number | null | undefined): number {
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  const parsed = Number(value ?? 0);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function formatDate(value: string | Date | null | undefined): string {
+  if (!value) return "-";
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toISOString().slice(0, 10);
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1)}GB`;
+  if (bytes >= 1024 ** 2) return `${Math.round(bytes / 1024 ** 2)}MB`;
+  if (bytes >= 1024) return `${Math.round(bytes / 1024)}KB`;
+  return `${bytes}B`;
+}
+
+function getFileIcon(mimeType: string | null | undefined, fileName: string): string {
+  if (mimeType?.includes("pdf") || fileName.toLowerCase().endsWith(".pdf")) return "PDF";
+  if (mimeType?.startsWith("image/")) return "IMG";
+  return "FILE";
+}
+
+function getFileType(mimeType: string | null | undefined): string {
+  if (mimeType?.includes("pdf")) return "PDF";
+  if (mimeType?.startsWith("image/")) return "이미지";
+  return "기타";
+}
+
+function getRestoreDaysLeft(value: string | Date | null | undefined): number {
+  if (!value) return 0;
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return 0;
+  return Math.max(0, Math.ceil((date.getTime() - Date.now()) / 86400000));
+}
+
+export async function listAdminFileManagementRows() {
+  const [attachmentsResult, trashResult] = await Promise.all([
+    queryDb<AdminAttachmentRow>(
+      `SELECT a.id,
+              a.order_id,
+              COALESCE(s.title, '작지명 없음') AS workorder_title,
+              a.original_name,
+              a.mime_type,
+              a.size_bytes,
+              a.type,
+              a.author_id,
+              a.created_at,
+              a.deleted_at,
+              a.deleted_by,
+              a.delete_reason,
+              a.purge_after_at
+         FROM attachments a
+         LEFT JOIN spec_sheets s ON s.id = a.order_id
+        WHERE a.deleted_at IS NULL
+          AND COALESCE(a.is_active, true) = true
+        ORDER BY a.created_at DESC
+        LIMIT 100`,
+    ),
+    queryDb<AdminTrashRow>(
+      `SELECT t.id,
+              t.attachment_id,
+              t.order_id,
+              COALESCE(s.title, '작지명 없음') AS workorder_title,
+              t.original_name,
+              t.mime_type,
+              t.size_bytes,
+              t.deleted_at,
+              t.deleted_by,
+              t.delete_reason,
+              t.purge_after_at
+         FROM attachment_trash_items t
+         LEFT JOIN spec_sheets s ON s.id = t.order_id
+        WHERE t.purge_status = 'pending'
+          AND t.restored_at IS NULL
+          AND t.purged_at IS NULL
+        ORDER BY t.deleted_at DESC
+        LIMIT 100`,
+    ),
+  ]);
+
+  const attachments = attachmentsResult.rows.map((row) => {
+    const fileName = row.original_name || "파일명 없음";
+    const sizeBytes = toNumber(row.size_bytes);
+    return {
+      id: row.id,
+      workorderId: row.order_id || "",
+      workorderTitle: row.workorder_title || "작지명 없음",
+      fileName,
+      fileType: getFileType(row.mime_type),
+      fileIcon: getFileIcon(row.mime_type, fileName),
+      fileSizeBytes: sizeBytes,
+      fileSizeLabel: formatBytes(sizeBytes),
+      uploadedAt: formatDate(row.created_at),
+      uploadedBy: row.author_id || "미지정",
+      status: "active" as const,
+      statusLabel: "사용중",
+      deletedAt: row.deleted_at ? formatDate(row.deleted_at) : null,
+      deletedBy: row.deleted_by,
+      deleteReason: row.delete_reason,
+      purgeAfterAt: row.purge_after_at ? formatDate(row.purge_after_at) : null,
+    };
+  });
+
+  const trashItems = trashResult.rows.map((row) => {
+    const fileName = row.original_name || "파일명 없음";
+    const sizeBytes = toNumber(row.size_bytes);
+    const restoreDaysLeft = getRestoreDaysLeft(row.purge_after_at);
+    return {
+      id: row.id,
+      attachmentId: row.attachment_id,
+      workorderId: row.order_id || "",
+      workorderTitle: row.workorder_title || "작지명 없음",
+      fileName,
+      fileIcon: getFileIcon(row.mime_type, fileName),
+      fileSizeBytes: sizeBytes,
+      fileSizeLabel: formatBytes(sizeBytes),
+      deletedAt: formatDate(row.deleted_at),
+      deletedBy: row.deleted_by || "미지정",
+      purgeAfterAt: formatDate(row.purge_after_at),
+      restoreDaysLeft,
+      restoreLabel: `D-${restoreDaysLeft}`,
+      deleteReason: row.delete_reason || "삭제 사유 없음",
+    };
+  });
+
+  return { attachments, trashItems };
+}
+
+type PurgeCandidateRow = DbQueryResultRow & {
+  id: string;
+  attachment_id: string;
+  storage_key: string | null;
+  thumbnail_key: string | null;
+  purge_after_at: string | Date | null;
+};
+
+export type AdminPurgeCandidate = {
+  trashItemId: string;
+  attachmentId: string;
+  storageKey: string | null;
+  thumbnailKey: string | null;
+  purgeAfterAt: string;
+};
+
+export async function listPurgeReadyAttachmentTrashItems(limit = 50): Promise<AdminPurgeCandidate[]> {
+  const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 200);
+  const result = await queryDb<PurgeCandidateRow>(
+    `SELECT id,
+            attachment_id,
+            storage_key,
+            thumbnail_key,
+            purge_after_at
+       FROM attachment_trash_items
+      WHERE purge_status IN ('pending', 'purge_requested')
+        AND restored_at IS NULL
+        AND purged_at IS NULL
+        AND purge_after_at <= now()
+      ORDER BY purge_after_at ASC
+      LIMIT $1`,
+    [safeLimit],
+  );
+
+  return result.rows.map((row) => ({
+    trashItemId: row.id,
+    attachmentId: row.attachment_id,
+    storageKey: row.storage_key,
+    thumbnailKey: row.thumbnail_key,
+    purgeAfterAt: formatDate(row.purge_after_at),
+  }));
+}

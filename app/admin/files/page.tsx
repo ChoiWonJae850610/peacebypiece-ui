@@ -1,24 +1,59 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import FileListSection from "@/components/admin/files/FileListSection";
 import FileStorageSummary from "@/components/admin/files/FileStorageSummary";
 import FileTrashSection from "@/components/admin/files/FileTrashSection";
 import { requestMoveAttachmentsToTrash, requestPurgeTrashItems, requestRestoreTrashItems } from "@/lib/admin/adminFiles.actions";
 import { getAdminFileManagementSnapshot } from "@/lib/admin/adminFiles.adapter";
 import { sortAdminManagedFiles } from "@/lib/admin/adminFiles.presentation";
-import type { AdminFileSortKey, AdminFileTabKey } from "@/lib/admin/adminFiles.types";
+import type { AdminFileManagementSnapshot, AdminFileSortKey, AdminFileTabKey } from "@/lib/admin/adminFiles.types";
 import { APP_VERSION } from "@/lib/constants/app";
 import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
 
 export default function AdminFilesPage() {
-  const snapshot = useMemo(() => getAdminFileManagementSnapshot(), []);
+  const placeholderSnapshot = useMemo(() => getAdminFileManagementSnapshot(), []);
+  const [snapshot, setSnapshot] = useState<AdminFileManagementSnapshot>(placeholderSnapshot);
+  const [isLoadingSnapshot, setIsLoadingSnapshot] = useState(false);
   const [activeTab, setActiveTab] = useState<AdminFileTabKey>("attachments");
   const [fileSortKey, setFileSortKey] = useState<AdminFileSortKey>("latest");
   const [selectedAttachmentIds, setSelectedAttachmentIds] = useState<string[]>([]);
   const [selectedTrashItemIds, setSelectedTrashItemIds] = useState<string[]>([]);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadSnapshot() {
+      setIsLoadingSnapshot(true);
+      try {
+        const response = await fetch("/api/admin/files/snapshot", { method: "GET" });
+        const payload = (await response.json().catch(() => null)) as { snapshot?: AdminFileManagementSnapshot; message?: string } | null;
+        if (!isMounted) return;
+
+        if (payload?.snapshot) {
+          setSnapshot(payload.snapshot);
+        }
+
+        if (!response.ok && payload?.message) {
+          setActionMessage(`파일 목록 DB 조회 실패: ${payload.message}`);
+        }
+      } catch (error) {
+        if (!isMounted) return;
+        setActionMessage(error instanceof Error ? `파일 목록 DB 조회 실패: ${error.message}` : "파일 목록 DB 조회 실패");
+      } finally {
+        if (isMounted) setIsLoadingSnapshot(false);
+      }
+    }
+
+    loadSnapshot();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const sortedAttachments = useMemo(() => sortAdminManagedFiles(snapshot.attachments, fileSortKey), [fileSortKey, snapshot.attachments]);
   const selectedAttachments = snapshot.attachments.filter((item) => selectedAttachmentIds.includes(item.id));
@@ -39,9 +74,10 @@ export default function AdminFilesPage() {
     setActionMessage(null);
   }
 
-  function handleMoveAttachmentToTrash() {
-    const result = requestMoveAttachmentsToTrash(selectedAttachments);
+  async function handleMoveAttachmentToTrash() {
+    const result = await requestMoveAttachmentsToTrash(selectedAttachments);
     setActionMessage(result.message);
+    if (result.ok) setSelectedAttachmentIds([]);
   }
 
   async function handleRestoreTrashItem() {
@@ -71,7 +107,10 @@ export default function AdminFilesPage() {
               <h1 className="text-2xl font-semibold tracking-tight text-stone-900 md:text-3xl">파일 / 용량 관리</h1>
             </div>
             <div className="flex flex-col items-start gap-3 md:items-end">
-              <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">v{APP_VERSION}</span>
+              <div className="flex flex-wrap gap-2 md:justify-end">
+                <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">v{APP_VERSION}</span>
+                <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">{isLoadingSnapshot ? "DB 조회 중" : snapshot.dataSourceLabel}</span>
+              </div>
               <Link href="/admin" className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50">
                 관리자 메인으로 이동
               </Link>
