@@ -81,9 +81,10 @@ export async function GET() {
   const fallbackSnapshot = getAdminFileManagementSnapshot();
 
   try {
-    const [rows, company] = await Promise.all([listAdminFileManagementRows(), getCurrentAdminCompany()]);
+    const company = await getCurrentAdminCompany();
     const settings = await getCompanySettings(company.id);
     const policySettings = buildPolicySettings(settings.filePolicy);
+    const rows = await listAdminFileManagementRows(settings.filePolicy.trashRetentionDays);
     const activeBytes = rows.attachments.reduce((total, item) => total + item.fileSizeBytes, 0);
     const trashBytes = rows.trashItems.reduce((total, item) => total + item.fileSizeBytes, 0);
 

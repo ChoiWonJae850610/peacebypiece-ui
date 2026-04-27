@@ -197,7 +197,8 @@ function getRestoreDaysLeft(value: string | Date | null | undefined): number {
   return Math.max(0, Math.ceil((date.getTime() - Date.now()) / 86400000));
 }
 
-export async function listAdminFileManagementRows() {
+export async function listAdminFileManagementRows(trashRetentionDays = 30) {
+  const safeTrashRetentionDays = [1, 5, 15, 30].includes(trashRetentionDays) ? trashRetentionDays : 30;
   const [attachmentsResult, trashResult] = await Promise.all([
     queryDb<AdminAttachmentRow>(
       `SELECT a.id,
@@ -231,7 +232,7 @@ export async function listAdminFileManagementRows() {
               t.deleted_at,
               t.deleted_by,
               t.delete_reason,
-              t.purge_after_at,
+              (COALESCE(t.deleted_at, now()) + ($1::integer * interval '1 day')) AS purge_after_at,
               t.purge_status,
               t.purge_attempt_count,
               t.last_purge_error
@@ -242,6 +243,7 @@ export async function listAdminFileManagementRows() {
           AND t.purged_at IS NULL
         ORDER BY t.deleted_at DESC
         LIMIT 100`,
+      [safeTrashRetentionDays],
     ),
   ]);
 
@@ -313,24 +315,25 @@ export type AdminPurgeCandidate = {
   purgeAfterAt: string;
 };
 
-export async function listPurgeReadyAttachmentTrashItems(limit = 50): Promise<AdminPurgeCandidate[]> {
+export async function listPurgeReadyAttachmentTrashItems(limit = 50, trashRetentionDays = 30): Promise<AdminPurgeCandidate[]> {
   const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 200);
+  const safeTrashRetentionDays = [1, 5, 15, 30].includes(trashRetentionDays) ? trashRetentionDays : 30;
   const result = await queryDb<PurgeCandidateRow>(
     `SELECT id,
             attachment_id,
             storage_key,
             thumbnail_key,
-            purge_after_at
+            (COALESCE(deleted_at, now()) + ($2::integer * interval '1 day')) AS purge_after_at
        FROM attachment_trash_items
       WHERE restored_at IS NULL
         AND purged_at IS NULL
         AND (
           purge_status = 'purge_requested'
-          OR (purge_status = 'pending' AND purge_after_at <= now())
+          OR (purge_status = 'pending' AND (COALESCE(deleted_at, now()) + ($2::integer * interval '1 day')) <= now())
         )
       ORDER BY purge_after_at ASC
       LIMIT $1`,
-    [safeLimit],
+    [safeLimit, safeTrashRetentionDays],
   );
 
   return result.rows.map((row) => ({
@@ -378,6 +381,46 @@ export async function markAttachmentTrashItemsPurged(input: AdminTrashDbActionIn
 
   return {
     requestedCount: trashItemIds.length,
+    affectedCount: readCount(result.rows[0]),
+  };
+}
+
+export async function markAttachmentTrashItemsPurgedByAttachmentIds(input: { attachmentIds: string[]; actorId?: string | null }): Promise<AdminTrashDbActionResult> {
+  const attachmentIds = normalizeIds(input.attachmentIds);
+  if (attachmentIds.length === 0) return { requestedCount: 0, affectedCount: 0 };
+
+  const result = await queryDb<CountRow>(
+    `WITH target_trash AS (
+       SELECT id, attachment_id
+         FROM attachment_trash_items
+        WHERE attachment_id = ANY($1::text[])
+          AND purge_status IN ('pending', 'purge_requested')
+          AND restored_at IS NULL
+          AND purged_at IS NULL
+     ), marked_attachments AS (
+       UPDATE attachments
+          SET is_active = false,
+              purge_after_at = COALESCE(purge_after_at, now()),
+              updated_at = now()
+        WHERE id IN (SELECT attachment_id FROM target_trash)
+        RETURNING id
+     ), marked_trash AS (
+       UPDATE attachment_trash_items
+          SET purged_at = now(),
+              purge_status = 'purged',
+              last_purge_attempt_at = now(),
+              last_purge_error = NULL,
+              updated_at = now()
+        WHERE id IN (SELECT id FROM target_trash)
+        RETURNING id
+     )
+     SELECT COUNT(*)::text AS affected_count
+       FROM marked_trash`,
+    [attachmentIds],
+  );
+
+  return {
+    requestedCount: attachmentIds.length,
     affectedCount: readCount(result.rows[0]),
   };
 }

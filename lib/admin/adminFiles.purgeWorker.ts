@@ -7,6 +7,7 @@ import {
   type AdminPurgeCandidate,
 } from "@/lib/admin/adminFiles.serverActions";
 import { deleteR2Object } from "@/lib/storage/r2/r2Client";
+import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/companySettings.repository";
 
 export type AdminFilePurgeWorkerInput = {
   limit?: number;
@@ -74,7 +75,9 @@ async function purgeCandidate(candidate: AdminPurgeCandidate): Promise<AdminFile
 
 export async function runAdminFilePurgeWorker(input: AdminFilePurgeWorkerInput = {}): Promise<AdminFilePurgeWorkerResult> {
   const dryRun = input.dryRun ?? true;
-  const candidates = await listPurgeReadyAttachmentTrashItems(input.limit ?? 50);
+  const company = await getCurrentAdminCompany();
+  const settings = await getCompanySettings(company.id);
+  const candidates = await listPurgeReadyAttachmentTrashItems(input.limit ?? 50, settings.filePolicy.trashRetentionDays);
 
   if (dryRun) {
     return {

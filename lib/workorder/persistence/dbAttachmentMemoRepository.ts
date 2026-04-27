@@ -421,6 +421,7 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
     softDeleteAttachment: async (input) => {
       const deletedBy = input.deletedBy ?? null;
       const deleteReason = input.deleteReason ?? null;
+      const trashRetentionDays = Number.isFinite(Number(input.trashRetentionDays)) ? Math.max(0, Math.trunc(Number(input.trashRetentionDays))) : 30;
       const result = await queryDb<AttachmentRow>(
         `WITH updated_attachment AS (
            UPDATE attachments
@@ -428,7 +429,7 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                   deleted_at = COALESCE(deleted_at, now()),
                   deleted_by = COALESCE($2, deleted_by),
                   delete_reason = COALESCE($3, delete_reason),
-                  purge_after_at = COALESCE(purge_after_at, now() + interval '30 days'),
+                  purge_after_at = COALESCE(purge_after_at, now() + ($4::integer * interval '1 day')),
                   updated_at = now()
             WHERE id = $1
               AND is_active = true
@@ -479,7 +480,7 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                   deleted_by,
                   delete_reason,
                   COALESCE(deleted_at, now()),
-                  COALESCE(purge_after_at, now() + interval '30 days')
+                  COALESCE(purge_after_at, now() + ($4::integer * interval '1 day'))
              FROM updated_attachment
            ON CONFLICT DO NOTHING
            RETURNING attachment_id
@@ -497,7 +498,7 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                 deleted_at,
                 created_at
            FROM updated_attachment`,
-        [input.attachmentId, deletedBy, deleteReason],
+        [input.attachmentId, deletedBy, deleteReason, trashRetentionDays],
       );
 
       return result.rows[0] ?? null;

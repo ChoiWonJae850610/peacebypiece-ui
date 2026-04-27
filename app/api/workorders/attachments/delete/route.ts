@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { markAttachmentTrashItemsPurgedByAttachmentIds } from "@/lib/admin/adminFiles.serverActions";
+import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/companySettings.repository";
 import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
+import { deleteR2Object } from "@/lib/storage/r2/r2Client";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
 import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
 
@@ -42,10 +45,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_NOT_FOUND" }, { status: 404 });
     }
 
+    const company = await getCurrentAdminCompany();
+    const settings = await getCompanySettings(company.id);
+    const trashRetentionDays = settings.filePolicy.trashRetentionDays;
+    const softDeleteEnabled = settings.filePolicy.softDeleteEnabled;
+
     const deleted = await repository.softDeleteAttachment({
       attachmentId,
       deletedBy: readText(payload?.deletedBy),
       deleteReason: readText(payload?.deleteReason),
+      trashRetentionDays: softDeleteEnabled ? trashRetentionDays : 0,
     });
 
     if (!deleted) {
@@ -56,14 +65,22 @@ export async function POST(request: NextRequest) {
       deleteCachedR2UrlsByKey(target.storage_key);
     }
 
+    if (!softDeleteEnabled) {
+      if (target.storage_key) {
+        await deleteR2Object({ key: target.storage_key });
+      }
+      await markAttachmentTrashItemsPurgedByAttachmentIds({ attachmentIds: [attachmentId], actorId: readText(payload?.deletedBy) ?? "attachment-delete-api" });
+    }
+
     return NextResponse.json({
       attachmentId: deleted.id,
-      trashMode: "soft-delete",
-      storageDeleteMode: "deferred",
+      trashMode: softDeleteEnabled ? "soft-delete" : "immediate-delete",
+      storageDeleteMode: softDeleteEnabled ? "deferred" : "immediate",
+      trashRetentionDays: softDeleteEnabled ? trashRetentionDays : 0,
     });
   } catch (error) {
     const message = getErrorMessage(error) || "Attachment delete failed.";
-    console.error("[ATTACHMENT_TRASH_MOVE_FAILED]", { message, error });
-    return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_TRASH_MOVE_FAILED", message }, { status: 500 });
+    console.error("[ATTACHMENT_DELETE_FAILED]", { message, error });
+    return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_DELETE_FAILED", message }, { status: 500 });
   }
 }

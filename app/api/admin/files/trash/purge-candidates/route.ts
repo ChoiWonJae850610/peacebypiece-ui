@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listPurgeReadyAttachmentTrashItems } from "@/lib/admin/adminFiles.serverActions";
+import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/companySettings.repository";
 
 export const runtime = "nodejs";
 
@@ -15,7 +16,9 @@ function getErrorMessage(error: unknown): string {
 
 export async function GET(request: NextRequest) {
   try {
-    const candidates = await listPurgeReadyAttachmentTrashItems(readLimit(request));
+    const company = await getCurrentAdminCompany();
+    const settings = await getCompanySettings(company.id);
+    const candidates = await listPurgeReadyAttachmentTrashItems(readLimit(request), settings.filePolicy.trashRetentionDays);
 
     return NextResponse.json({
       ok: true,
