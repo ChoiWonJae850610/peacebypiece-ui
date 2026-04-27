@@ -1,11 +1,14 @@
-import type { AdminFileUsageCard, AdminStoragePolicyItem } from "@/lib/admin/adminFiles.types";
+import type { AdminFileUsageCard, AdminStoragePolicyItem, AdminStorageUsageSummary } from "@/lib/admin/adminFiles.types";
 
 type FileStorageSummaryProps = {
   usageCards: AdminFileUsageCard[];
+  usageSummary: AdminStorageUsageSummary;
   policyItems: AdminStoragePolicyItem[];
 };
 
-export default function FileStorageSummary({ usageCards, policyItems }: FileStorageSummaryProps) {
+export default function FileStorageSummary({ usageCards, usageSummary, policyItems }: FileStorageSummaryProps) {
+  const isWarning = usageSummary.statusTone === "warning";
+
   return (
     <div className="space-y-4">
       <section className="grid gap-3 md:grid-cols-4">
@@ -16,6 +19,28 @@ export default function FileStorageSummary({ usageCards, policyItems }: FileStor
             <p className="mt-2 text-xs leading-5 text-stone-500">{card.description}</p>
           </article>
         ))}
+      </section>
+
+      <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-stone-900">용량 사용량</h2>
+            <p className="mt-2 text-sm leading-6 text-stone-500">현재 사용량은 휴지통 보관 파일까지 포함해 계산합니다.</p>
+          </div>
+          <span className={`w-fit rounded-full px-3 py-1 text-xs font-medium ${isWarning ? "bg-amber-100 text-amber-800" : "bg-stone-100 text-stone-500"}`}>
+            {usageSummary.statusLabel}
+          </span>
+        </div>
+        <div className="mt-5">
+          <div className="flex items-center justify-between text-sm">
+            <span className="font-medium text-stone-700">{usageSummary.usedLabel} 사용</span>
+            <span className="text-stone-500">{usageSummary.usagePercent}% / {usageSummary.limitLabel}</span>
+          </div>
+          <div className="mt-3 h-3 overflow-hidden rounded-full bg-stone-100">
+            <div className="h-full rounded-full bg-stone-800" style={{ width: `${usageSummary.usagePercent}%` }} />
+          </div>
+          <p className="mt-2 text-xs leading-5 text-stone-500">80% 이상부터 용량 추가 요청 또는 첨부파일 정리를 안내하는 구조로 연결합니다.</p>
+        </div>
       </section>
 
       <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">

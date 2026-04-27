@@ -5,34 +5,52 @@ import { useMemo, useState } from "react";
 import FileListSection from "@/components/admin/files/FileListSection";
 import FileStorageSummary from "@/components/admin/files/FileStorageSummary";
 import FileTrashSection from "@/components/admin/files/FileTrashSection";
-import { requestMoveAttachmentToTrash, requestPurgeTrashItem, requestRestoreTrashItem } from "@/lib/admin/adminFiles.actions";
+import { requestMoveAttachmentsToTrash, requestPurgeTrashItems, requestRestoreTrashItems } from "@/lib/admin/adminFiles.actions";
 import { getAdminFileManagementSnapshot } from "@/lib/admin/adminFiles.adapter";
-import type { AdminFileTabKey } from "@/lib/admin/adminFiles.types";
+import { sortAdminManagedFiles } from "@/lib/admin/adminFiles.presentation";
+import type { AdminFileSortKey, AdminFileTabKey } from "@/lib/admin/adminFiles.types";
 import { APP_VERSION } from "@/lib/constants/app";
 import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
 
 export default function AdminFilesPage() {
   const snapshot = useMemo(() => getAdminFileManagementSnapshot(), []);
   const [activeTab, setActiveTab] = useState<AdminFileTabKey>("attachments");
-  const [selectedAttachmentId, setSelectedAttachmentId] = useState<string | null>(null);
-  const [selectedTrashItemId, setSelectedTrashItemId] = useState<string | null>(null);
+  const [fileSortKey, setFileSortKey] = useState<AdminFileSortKey>("latest");
+  const [selectedAttachmentIds, setSelectedAttachmentIds] = useState<string[]>([]);
+  const [selectedTrashItemIds, setSelectedTrashItemIds] = useState<string[]>([]);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
-  const selectedAttachment = snapshot.attachments.find((item) => item.id === selectedAttachmentId) ?? null;
-  const selectedTrashItem = snapshot.trashItems.find((item) => item.id === selectedTrashItemId) ?? null;
+  const sortedAttachments = useMemo(() => sortAdminManagedFiles(snapshot.attachments, fileSortKey), [fileSortKey, snapshot.attachments]);
+  const selectedAttachments = snapshot.attachments.filter((item) => selectedAttachmentIds.includes(item.id));
+  const selectedTrashItems = snapshot.trashItems.filter((item) => selectedTrashItemIds.includes(item.id));
+
+  function toggleId(targetId: string, currentIds: string[], setIds: (ids: string[]) => void) {
+    setIds(currentIds.includes(targetId) ? currentIds.filter((id) => id !== targetId) : [...currentIds, targetId]);
+    setActionMessage(null);
+  }
+
+  function handleToggleAllAttachments() {
+    setSelectedAttachmentIds(selectedAttachmentIds.length === sortedAttachments.length ? [] : sortedAttachments.map((item) => item.id));
+    setActionMessage(null);
+  }
+
+  function handleToggleAllTrashItems() {
+    setSelectedTrashItemIds(selectedTrashItemIds.length === snapshot.trashItems.length ? [] : snapshot.trashItems.map((item) => item.id));
+    setActionMessage(null);
+  }
 
   function handleMoveAttachmentToTrash() {
-    const result = requestMoveAttachmentToTrash(selectedAttachment);
+    const result = requestMoveAttachmentsToTrash(selectedAttachments);
     setActionMessage(result.message);
   }
 
   function handleRestoreTrashItem() {
-    const result = requestRestoreTrashItem(selectedTrashItem);
+    const result = requestRestoreTrashItems(selectedTrashItems);
     setActionMessage(result.message);
   }
 
   function handlePurgeTrashItem() {
-    const result = requestPurgeTrashItem(selectedTrashItem);
+    const result = requestPurgeTrashItems(selectedTrashItems);
     setActionMessage(result.message);
   }
 
@@ -59,21 +77,14 @@ export default function AdminFilesPage() {
           </div>
         </header>
 
-        <FileStorageSummary usageCards={snapshot.usageCards} policyItems={snapshot.storagePolicies} />
+        <FileStorageSummary usageCards={snapshot.usageCards} usageSummary={snapshot.usageSummary} policyItems={snapshot.storagePolicies} />
 
         <section className="rounded-3xl border border-stone-200 bg-white p-2 shadow-sm">
           <div className="grid gap-2 md:grid-cols-3">
             {snapshot.tabs.map((tab) => {
               const isActive = activeTab === tab.key;
               return (
-                <button
-                  key={tab.key}
-                  type="button"
-                  onClick={() => handleChangeTab(tab.key)}
-                  className={`rounded-2xl border px-4 py-3 text-left transition ${
-                    isActive ? "border-stone-400 bg-stone-900 text-white" : "border-stone-200 bg-white text-stone-700 hover:bg-stone-50"
-                  }`}
-                >
+                <button key={tab.key} type="button" onClick={() => handleChangeTab(tab.key)} className={`rounded-2xl border px-4 py-3 text-left transition ${isActive ? "border-stone-400 bg-stone-900 text-white" : "border-stone-200 bg-white text-stone-700 hover:bg-stone-50"}`}>
                   <span className="block text-sm font-semibold">{tab.label}</span>
                   <span className={`mt-1 block text-xs leading-5 ${isActive ? "text-stone-300" : "text-stone-500"}`}>{tab.description}</span>
                 </button>
@@ -85,13 +96,22 @@ export default function AdminFilesPage() {
         {actionMessage ? <section className="rounded-3xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">{actionMessage}</section> : null}
 
         {activeTab === "attachments" ? (
-          <FileListSection items={snapshot.attachments} selectedItemId={selectedAttachmentId} onSelectItem={setSelectedAttachmentId} onMoveToTrash={handleMoveAttachmentToTrash} />
+          <FileListSection
+            items={sortedAttachments}
+            selectedItemIds={selectedAttachmentIds}
+            sortKey={fileSortKey}
+            onChangeSort={setFileSortKey}
+            onToggleItem={(itemId) => toggleId(itemId, selectedAttachmentIds, setSelectedAttachmentIds)}
+            onToggleAll={handleToggleAllAttachments}
+            onMoveToTrash={handleMoveAttachmentToTrash}
+          />
         ) : null}
         {activeTab === "trash" ? (
           <FileTrashSection
             items={snapshot.trashItems}
-            selectedItemId={selectedTrashItemId}
-            onSelectItem={setSelectedTrashItemId}
+            selectedItemIds={selectedTrashItemIds}
+            onToggleItem={(itemId) => toggleId(itemId, selectedTrashItemIds, setSelectedTrashItemIds)}
+            onToggleAll={handleToggleAllTrashItems}
             onRestore={handleRestoreTrashItem}
             onPurge={handlePurgeTrashItem}
           />

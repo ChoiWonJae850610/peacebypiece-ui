@@ -4,6 +4,16 @@ export type AdminFileUsageCard = {
   description: string;
 };
 
+export type AdminStorageUsageSummary = {
+  usedBytes: number;
+  limitBytes: number;
+  usedLabel: string;
+  limitLabel: string;
+  usagePercent: number;
+  statusLabel: string;
+  statusTone: "normal" | "warning";
+};
+
 export type AdminFileTabKey = "attachments" | "trash" | "storage";
 
 export type AdminFileTabItem = {
@@ -14,12 +24,15 @@ export type AdminFileTabItem = {
 
 export type AdminFileStatus = "active" | "trashed" | "purged";
 
+export type AdminFileSortKey = "latest" | "size" | "workorder";
+
 export type AdminManagedFileItem = {
   id: string;
   workorderId: string;
   workorderTitle: string;
   fileName: string;
   fileType: string;
+  fileIcon: string;
   fileSizeBytes: number;
   fileSizeLabel: string;
   uploadedAt: string;
@@ -38,11 +51,14 @@ export type AdminTrashFileItem = {
   workorderId: string;
   workorderTitle: string;
   fileName: string;
+  fileIcon: string;
   fileSizeBytes: number;
   fileSizeLabel: string;
   deletedAt: string;
   deletedBy: string;
   purgeAfterAt: string;
+  restoreDaysLeft: number;
+  restoreLabel: string;
   deleteReason: string;
 };
 
@@ -62,6 +78,7 @@ export type AdminFileActionResult = {
 
 export type AdminFileManagementSnapshot = {
   usageCards: AdminFileUsageCard[];
+  usageSummary: AdminStorageUsageSummary;
   tabs: AdminFileTabItem[];
   attachments: AdminManagedFileItem[];
   trashItems: AdminTrashFileItem[];
