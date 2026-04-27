@@ -14,11 +14,11 @@ type PartnerProcessManagementModalProps = {
   selectedInactiveProcess: OutsourcingProcessType | null;
   selectedActiveProcess: OutsourcingProcessType | null;
   onClose: () => void;
+  onSave: () => void;
   onResetDefaults: () => void;
   onNewProcessLabelChange: (value: string) => void;
   onAddProcessDefinition: () => void;
   onSetProcessActive: (type: OutsourcingProcessType, isActive: boolean) => void;
-  onRequestDelete: (type: OutsourcingProcessType) => void;
   onClearProcessFormError: () => void;
   onSelectInactiveProcess: (type: OutsourcingProcessType | null) => void;
   onSelectActiveProcess: (type: OutsourcingProcessType | null) => void;
@@ -72,11 +72,11 @@ export default function PartnerProcessManagementModal({
   selectedInactiveProcess,
   selectedActiveProcess,
   onClose,
+  onSave,
   onResetDefaults,
   onNewProcessLabelChange,
   onAddProcessDefinition,
   onSetProcessActive,
-  onRequestDelete,
   onClearProcessFormError,
   onSelectInactiveProcess,
   onSelectActiveProcess,
@@ -103,10 +103,10 @@ export default function PartnerProcessManagementModal({
           </button>
           <button
             type="button"
-            onClick={onClose}
+            onClick={onSave}
             className="rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800"
           >
-            {processText.close}
+            {processText.save}
           </button>
         </div>
       }
@@ -199,19 +199,6 @@ export default function PartnerProcessManagementModal({
             }}
           />
         </div>
-      </div>
-
-      <div className="flex flex-wrap justify-end gap-2">
-        {[...inactiveProcessDefinitions, ...activeProcessDefinitions].map((definition) => (
-          <button
-            key={definition.type}
-            type="button"
-            onClick={() => onRequestDelete(definition.type)}
-            className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-600 transition hover:bg-stone-50"
-          >
-            {definition.label} {processText.delete}
-          </button>
-        ))}
       </div>
     </ModalShell>
   );

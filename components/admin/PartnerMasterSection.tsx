@@ -5,7 +5,6 @@ import PartnerMasterFilters from "@/components/admin/partnerMaster/PartnerMaster
 import PartnerMasterFormModal from "@/components/admin/partnerMaster/PartnerMasterFormModal";
 import PartnerMasterHeader from "@/components/admin/partnerMaster/PartnerMasterHeader";
 import PartnerMasterList from "@/components/admin/partnerMaster/PartnerMasterList";
-import PartnerProcessDeleteModal from "@/components/admin/partnerMaster/PartnerProcessDeleteModal";
 import PartnerProcessManagementModal from "@/components/admin/partnerMaster/PartnerProcessManagementModal";
 import {
   applyPartnerTypeSelectionPolicy,
@@ -19,7 +18,6 @@ import {
   normalizeOutsourcingProcessDefinitions,
   normalizePartnerDraft,
   PARTNER_MASTER_FORM_ERRORS,
-  removeOutsourcingProcessDefinition,
   togglePartnerFilterSelection,
   type BasePartnerType,
   type OutsourcingProcessDefinition,
@@ -44,6 +42,9 @@ export default function PartnerMasterSection() {
   const [processDefinitions, setProcessDefinitions] = useState<OutsourcingProcessDefinition[]>(
     createDefaultOutsourcingProcessDefinitions(),
   );
+  const [processDraftDefinitions, setProcessDraftDefinitions] = useState<OutsourcingProcessDefinition[]>(
+    createDefaultOutsourcingProcessDefinitions(),
+  );
   const [selectedAvailableProcess, setSelectedAvailableProcess] = useState<OutsourcingProcessType | null>(null);
   const [selectedAssignedProcess, setSelectedAssignedProcess] = useState<OutsourcingProcessType | null>(null);
   const [selectedInactiveProcessDefinition, setSelectedInactiveProcessDefinition] = useState<OutsourcingProcessType | null>(null);
@@ -51,7 +52,6 @@ export default function PartnerMasterSection() {
   const [formError, setFormError] = useState("");
   const [newProcessLabel, setNewProcessLabel] = useState("");
   const [processFormError, setProcessFormError] = useState("");
-  const [deletingProcessType, setDeletingProcessType] = useState<OutsourcingProcessType | null>(null);
   const [, setRepositoryStatus] = useState("저장소 확인 중");
 
   useEffect(() => {
@@ -96,10 +96,8 @@ export default function PartnerMasterSection() {
     .sort((a, b) => a.label.localeCompare(b.label, "ko-KR"));
   const sortProcessesByLabel = (items: OutsourcingProcessDefinition[]) =>
     items.slice().sort((a, b) => a.label.localeCompare(b.label, "ko-KR"));
-  const activeProcessDefinitions = sortProcessesByLabel(processDefinitions.filter((definition) => definition.isActive));
-  const inactiveProcessDefinitions = sortProcessesByLabel(processDefinitions.filter((definition) => !definition.isActive));
-  const orderedProcessDefinitions = sortProcessesByLabel(processDefinitions);
-
+  const activeProcessDefinitions = sortProcessesByLabel(processDraftDefinitions.filter((definition) => definition.isActive));
+  const inactiveProcessDefinitions = sortProcessesByLabel(processDraftDefinitions.filter((definition) => !definition.isActive));
   const resetDraftState = useCallback(() => {
     setEditingPartnerId(null);
     setDraft(createEmptyPartnerDraft());
@@ -136,13 +134,17 @@ export default function PartnerMasterSection() {
     setProcessFormError("");
     setSelectedInactiveProcessDefinition(null);
     setSelectedActiveProcessDefinition(null);
-  }, []);
+    setProcessDraftDefinitions(processDefinitions);
+  }, [processDefinitions]);
 
   const openProcessModal = useCallback(() => {
+    setProcessDraftDefinitions(processDefinitions);
     setNewProcessLabel("");
     setProcessFormError("");
+    setSelectedInactiveProcessDefinition(null);
+    setSelectedActiveProcessDefinition(null);
     setIsProcessModalOpen(true);
-  }, []);
+  }, [processDefinitions]);
 
 
   const persistProcessDefinitions = useCallback((nextDefinitions: OutsourcingProcessDefinition[]) => {
@@ -208,15 +210,13 @@ export default function PartnerMasterSection() {
 
   const updateProcessDefinition = useCallback(
     (type: OutsourcingProcessType, updater: (current: OutsourcingProcessDefinition) => OutsourcingProcessDefinition) => {
-      setProcessDefinitions((current) => {
-        const nextDefinitions = normalizeOutsourcingProcessDefinitions(
+      setProcessDraftDefinitions((current) =>
+        normalizeOutsourcingProcessDefinitions(
           current.map((definition) => (definition.type === type ? updater(definition) : definition)),
-        );
-        persistProcessDefinitions(nextDefinitions);
-        return nextDefinitions;
-      });
+        ),
+      );
     },
-    [persistProcessDefinitions],
+    [],
   );
 
   const addProcessDefinition = useCallback(() => {
@@ -227,71 +227,45 @@ export default function PartnerMasterSection() {
       return;
     }
 
-    if (processDefinitions.some((definition) => definition.label.trim() === normalizedLabel)) {
+    if (processDraftDefinitions.some((definition) => definition.label.trim() === normalizedLabel)) {
       setProcessFormError(PARTNER_MASTER_FORM_ERRORS.duplicateProcessLabel);
       return;
     }
 
-    setProcessDefinitions((current) => {
-      const nextDefinitions = [
-        ...normalizeOutsourcingProcessDefinitions(current),
-        createOutsourcingProcessDefinition(normalizedLabel, current),
-      ];
-      persistProcessDefinitions(nextDefinitions);
-      return nextDefinitions;
-    });
+    setProcessDraftDefinitions((current) => [
+      ...normalizeOutsourcingProcessDefinitions(current),
+      createOutsourcingProcessDefinition(normalizedLabel, current),
+    ]);
     setNewProcessLabel("");
     setProcessFormError("");
-  }, [newProcessLabel, persistProcessDefinitions, processDefinitions]);
+  }, [newProcessLabel, processDraftDefinitions]);
 
   const setProcessDefinitionActive = useCallback(
     (type: OutsourcingProcessType, isActive: boolean) => {
-      setProcessDefinitions((current) => {
-        const nextDefinitions = normalizeOutsourcingProcessDefinitions(
-          current.map((definition) => (definition.type === type ? { ...definition, isActive } : definition)),
-        );
-        persistProcessDefinitions(nextDefinitions);
-        return nextDefinitions;
-      });
+      updateProcessDefinition(type, (definition) => ({ ...definition, isActive }));
     },
-    [persistProcessDefinitions],
+    [updateProcessDefinition],
   );
-
-  const requestDeleteProcessDefinition = useCallback((type: OutsourcingProcessType) => {
-    setDeletingProcessType(type);
-  }, []);
-
-  const confirmDeleteProcessDefinition = useCallback(() => {
-    if (!deletingProcessType) return;
-
-    setProcessDefinitions((current) => {
-      const nextDefinitions = removeOutsourcingProcessDefinition(current, deletingProcessType);
-      persistProcessDefinitions(nextDefinitions);
-      return nextDefinitions;
-    });
-    setDraft((current) => ({
-      ...current,
-      outsourcingProcessTypes: current.outsourcingProcessTypes.filter((item) => item !== deletingProcessType),
-    }));
-    setSelectedAvailableProcess((current) => (current === deletingProcessType ? null : current));
-    setSelectedAssignedProcess((current) => (current === deletingProcessType ? null : current));
-    setDeletingProcessType(null);
-  }, [deletingProcessType, persistProcessDefinitions]);
-
-  const closeDeleteProcessModal = useCallback(() => {
-    setDeletingProcessType(null);
-  }, []);
 
   const resetProcessDefinitions = useCallback(() => {
     const nextDefinitions = createDefaultOutsourcingProcessDefinitions();
-    setProcessDefinitions(nextDefinitions);
-    persistProcessDefinitions(nextDefinitions);
+    setProcessDraftDefinitions(nextDefinitions);
     setNewProcessLabel("");
     setProcessFormError("");
     setSelectedInactiveProcessDefinition(null);
     setSelectedActiveProcessDefinition(null);
-  }, [persistProcessDefinitions]);
+  }, []);
 
+  const saveProcessDefinitions = useCallback(() => {
+    const nextDefinitions = normalizeOutsourcingProcessDefinitions(processDraftDefinitions);
+    setProcessDefinitions(nextDefinitions);
+    persistProcessDefinitions(nextDefinitions);
+    setIsProcessModalOpen(false);
+    setNewProcessLabel("");
+    setProcessFormError("");
+    setSelectedInactiveProcessDefinition(null);
+    setSelectedActiveProcessDefinition(null);
+  }, [persistProcessDefinitions, processDraftDefinitions]);
   return (
     <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm md:p-6">
       <PartnerMasterHeader onOpenCreateModal={openCreateModal} onOpenProcessModal={openProcessModal} />
@@ -343,22 +317,16 @@ export default function PartnerMasterSection() {
         selectedInactiveProcess={selectedInactiveProcessDefinition}
         selectedActiveProcess={selectedActiveProcessDefinition}
         onClose={closeProcessModal}
+        onSave={saveProcessDefinitions}
         onResetDefaults={resetProcessDefinitions}
         onNewProcessLabelChange={setNewProcessLabel}
         onAddProcessDefinition={addProcessDefinition}
         onSetProcessActive={setProcessDefinitionActive}
-        onRequestDelete={requestDeleteProcessDefinition}
         onClearProcessFormError={() => setProcessFormError("")}
         onSelectInactiveProcess={setSelectedInactiveProcessDefinition}
         onSelectActiveProcess={setSelectedActiveProcessDefinition}
       />
 
-      <PartnerProcessDeleteModal
-        deletingProcessType={deletingProcessType}
-        orderedProcessDefinitions={orderedProcessDefinitions}
-        onClose={closeDeleteProcessModal}
-        onConfirm={confirmDeleteProcessDefinition}
-      />
     </section>
   );
 }

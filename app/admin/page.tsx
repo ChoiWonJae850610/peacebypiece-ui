@@ -1,14 +1,14 @@
 import Link from "next/link";
 import AdminWorkspaceTools from "@/components/admin/AdminWorkspaceTools";
 import { APP_VERSION } from "@/lib/constants/app";
-import { WORKSPACE_COMPANY_NAME, WORKSPACE_COMPANY_NAME_EN, getAdminWorkspaceTitle } from "@/lib/constants/company";
+import { WORKSPACE_COMPANY_NAME, getAdminWorkspaceTitle } from "@/lib/constants/company";
 import { getI18n } from "@/lib/i18n";
 
 const i18n = getI18n();
 const adminSections = i18n.admin.sections ?? [];
 
 export default function AdminPage() {
-  const eyebrow = WORKSPACE_COMPANY_NAME_EN;
+  const eyebrow = WORKSPACE_COMPANY_NAME;
   const title = getAdminWorkspaceTitle(WORKSPACE_COMPANY_NAME);
 
   return (

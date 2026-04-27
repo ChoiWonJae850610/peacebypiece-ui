@@ -24,6 +24,7 @@ DROP TABLE IF EXISTS orders CASCADE;
 DROP TABLE IF EXISTS partner_items CASCADE;
 DROP TABLE IF EXISTS partners CASCADE;
 DROP TABLE IF EXISTS outsourcing_processes CASCADE;
+DROP TABLE IF EXISTS companies CASCADE;
 DROP TABLE IF EXISTS units CASCADE;
 DROP TABLE IF EXISTS spec_sheets CASCADE;
 
@@ -32,6 +33,15 @@ DROP TABLE IF EXISTS spec_sheets CASCADE;
 -- =========================================
 -- 2) MASTER TABLES
 -- =========================================
+
+CREATE TABLE companies (
+  id text PRIMARY KEY,
+  name text NOT NULL,
+  memo text,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
 
 CREATE TABLE units (
   id text PRIMARY KEY,
@@ -374,6 +384,14 @@ CREATE INDEX idx_material_allocations_material_id ON material_allocations(spec_s
 -- 기준: lib/partners/mockPartnerRepository.ts MOCK_UNITS
 -- =========================================
 
+INSERT INTO companies (id, name, memo, is_active) VALUES
+  ('company-sample-customer', '샘플 고객사', '기본 샘플 고객사', true)
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name,
+  memo = EXCLUDED.memo,
+  is_active = EXCLUDED.is_active,
+  updated_at = now();
+
 INSERT INTO units (id, code, name, category, is_active, sort_order)
 VALUES
   ('mock-unit-piece', 'piece', '개', 'count', true, 10),
@@ -398,6 +416,9 @@ INSERT INTO outsourcing_processes (id, company_id, company_name, name, sort_orde
 -- =========================================
 -- 10) INDEXES
 -- =========================================
+
+CREATE INDEX companies_active_name_idx
+  ON companies (is_active, name);
 
 CREATE INDEX units_active_idx
   ON units (is_active, sort_order, name);
