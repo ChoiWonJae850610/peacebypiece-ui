@@ -15,7 +15,6 @@ export default function AdminPartnersPage() {
       appVersion={APP_VERSION}
       navigationItems={getAdminNavigationItems("/admin/partners")}
       title={pageText.title}
-      description="거래처, 공장, 원단, 부자재, 외주처 기준정보를 한 화면에서 검색하고 관리합니다."
     >
       <PartnerMasterSection />
     </AdminShell>

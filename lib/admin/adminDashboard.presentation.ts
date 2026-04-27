@@ -85,12 +85,12 @@ export function getAdminDashboardMaxStageValue(): number {
 
 export const ADMIN_NAVIGATION_ITEMS: AdminNavigationItem[] = [
   { label: "대시보드", href: "/admin", icon: "⌂" },
-  { label: "작지 화면", href: "/worker", icon: "▣" },
+  { label: "작업지시서", href: "/worker", icon: "▣" },
+  { label: "거래처 관리", href: "/admin/partners", icon: "▥" },
+  { label: "저장소 관리", href: "/admin/files", icon: "▤" },
+  { label: "기준 관리", href: "/admin/units", icon: "▦" },
+  { label: "통계정보", href: "/admin/dashboard", icon: "▧" },
   { label: "히스토리", href: "/admin/history", icon: "◷" },
-  { label: "통계", href: "/admin/dashboard", icon: "▥" },
-  { label: "기준정보", href: "/admin/partners", icon: "▦" },
-  { label: "파일/용량", href: "/admin/files", icon: "▤" },
-  { label: "단위 관리", href: "/admin/units", icon: "㎝" },
   { label: "환경설정", href: "/admin/settings", icon: "⚙" },
 ];
 

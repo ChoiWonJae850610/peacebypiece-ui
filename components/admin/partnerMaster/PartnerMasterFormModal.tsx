@@ -68,7 +68,6 @@ export default function PartnerMasterFormModal({
       open={open}
       onClose={onClose}
       title={editingPartnerId ? formText.editTitle : formText.createTitle}
-      description="거래처 기본 정보, 분류, 외주공정 정보를 한 화면에서 정리합니다."
       maxWidthClass="md:max-w-2xl"
       footer={
         <div className="flex w-full items-center justify-between gap-3">
@@ -92,7 +91,7 @@ export default function PartnerMasterFormModal({
         </div>
       }
     >
-      <AdminModalSection title="기본 정보" description="관리 화면과 작지 화면에서 공통으로 쓰이는 거래처 기본값입니다.">
+      <AdminModalSection title="기본 정보">
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
         <div className="space-y-2">
           <label htmlFor="partner-name" className={adminModalLabelClassName}>{formText.labels.name}</label>
@@ -161,7 +160,7 @@ export default function PartnerMasterFormModal({
       </div>
       </AdminModalSection>
 
-      <AdminModalSection title="분류와 외주공정" description="거래처 유형을 선택하고 외주공정이 필요한 경우 배정합니다.">
+      <AdminModalSection title="분류와 외주공정">
       <div className="space-y-3">
         <div className="space-y-2">
           <p className={adminModalLabelClassName}>{formText.labels.baseTypes}</p>
@@ -296,7 +295,7 @@ export default function PartnerMasterFormModal({
       </div>
       </AdminModalSection>
 
-      <AdminModalSection title="메모" description="내부 관리용 참고 내용을 입력합니다.">
+      <AdminModalSection title="메모">
       <div className="space-y-2">
         <label htmlFor="partner-memo" className={adminModalLabelClassName}>{formText.labels.memo}</label>
         <textarea

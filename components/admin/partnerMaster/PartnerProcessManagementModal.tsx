@@ -96,7 +96,6 @@ export default function PartnerProcessManagementModal({
       open={open}
       onClose={onClose}
       title={processText.title}
-      description={processText.description}
       maxWidthClass="md:max-w-3xl"
       footer={
         <div className="flex w-full items-center justify-end gap-2">
@@ -117,7 +116,7 @@ export default function PartnerProcessManagementModal({
         </div>
       }
     >
-      <AdminModalSection title="외주공정 추가" description="새 공정명을 입력한 뒤 추가 버튼으로 목록에 반영합니다.">
+      <AdminModalSection title="외주공정 추가">
         <div className="flex flex-col gap-3 md:flex-row md:items-end">
           <label className="min-w-0 flex-1 space-y-2">
             <span className={adminModalLabelClassName}>{processText.newProcessLabel}</span>
@@ -148,7 +147,7 @@ export default function PartnerProcessManagementModal({
         {processFormError ? <p className="mt-2 text-sm font-medium text-rose-600">{processFormError}</p> : null}
       </AdminModalSection>
 
-      <AdminModalSection title="외주공정 사용 여부" description="좌우 목록에서 공정을 선택한 뒤 이동 버튼으로 사용 상태를 변경합니다.">
+      <AdminModalSection title="외주공정 사용 여부">
       <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_72px_minmax(0,1fr)] md:items-center">
         <div className="space-y-2">
           <p className="text-sm font-medium text-stone-800">미사용 외주공정</p>

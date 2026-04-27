@@ -16,7 +16,6 @@ export default function PartnerMasterHeader({ onOpenProcessModal, onOpenCreateMo
       <div className="min-w-0 space-y-2">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">MASTER DATA</p>
         <h2 className="text-xl font-semibold tracking-tight text-stone-950 md:text-2xl">{headerText.title}</h2>
-        <p className="max-w-2xl text-sm leading-6 text-stone-500">거래처, 공장, 원단, 부자재, 외주처 정보를 같은 기준으로 정리합니다.</p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <button

@@ -6,14 +6,15 @@ import { useI18n } from "@/lib/i18n";
 type PartnerMasterListProps = {
   items: PartnerListItemViewModel[];
   onEditPartner: (partnerId: string) => void;
+  className?: string;
 };
 
-export default function PartnerMasterList({ items, onEditPartner }: PartnerMasterListProps) {
+export default function PartnerMasterList({ items, onEditPartner, className = "mt-5" }: PartnerMasterListProps) {
   const { i18n } = useI18n();
   const listText = i18n.admin.partnerMaster.list;
 
   return (
-    <div className="mt-5 overflow-hidden rounded-[28px] border border-stone-200 bg-white shadow-sm">
+    <div className={`${className} flex flex-col overflow-hidden rounded-[28px] border border-stone-200 bg-white shadow-sm`}>
       <div className="hidden grid-cols-[minmax(0,1.3fr)_minmax(0,0.9fr)_minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,1.4fr)_100px_100px] gap-4 bg-stone-50/80 px-4 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-stone-500 md:grid">
         <span>{listText.columns.name}</span>
         <span>{listText.columns.contact}</span>
@@ -23,7 +24,7 @@ export default function PartnerMasterList({ items, onEditPartner }: PartnerMaste
         <span>{listText.columns.status}</span>
         <span>{listText.columns.actions}</span>
       </div>
-      <div className="divide-y divide-stone-200">
+      <div className="min-h-0 flex-1 divide-y divide-stone-200 overflow-y-auto">
         {items.length === 0 ? (
           <div className="px-4 py-10 text-sm text-stone-500">{listText.empty}</div>
         ) : (

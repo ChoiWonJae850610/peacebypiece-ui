@@ -23,11 +23,6 @@ import {
   type OutsourcingProcessDefinition,
 } from "@/lib/admin/partnerMaster";
 import { fetchPartnerMasterItemsFromApi, savePartnerMasterItemToApi, savePartnerMasterProcessesToApi } from "@/lib/admin/partnerMasterApiClient";
-import {
-  loadPartnerMasterInitialState,
-  savePartnerMasterItem,
-  savePartnerMasterProcessDefinitions,
-} from "@/lib/admin/partnerMasterPersistence";
 import type { OutsourcingProcessType, Partner, PartnerDraft } from "@/types/partner";
 
 export default function PartnerMasterSection() {
@@ -56,9 +51,6 @@ export default function PartnerMasterSection() {
 
   useEffect(() => {
     let isMounted = true;
-    const initialState = loadPartnerMasterInitialState();
-    setPartners(initialState.partners);
-    setProcessDefinitions(initialState.processDefinitions);
 
     fetchPartnerMasterItemsFromApi()
       .then((payload) => {
@@ -69,17 +61,14 @@ export default function PartnerMasterSection() {
       })
       .catch(() => {
         if (!isMounted) return;
-        setRepositoryStatus("local fallback");
+        setPartners([]);
+        setRepositoryStatus("DB 연결 실패");
       });
 
     return () => {
       isMounted = false;
     };
   }, []);
-
-  useEffect(() => {
-    savePartnerMasterProcessDefinitions(processDefinitions);
-  }, [processDefinitions]);
 
   const listViewModel = useMemo(
     () => buildPartnerListViewModel(partners, { selectedTypes, status: selectedStatus, searchTerm }, processDefinitions),
@@ -155,7 +144,7 @@ export default function PartnerMasterSection() {
         setRepositoryStatus(payload.repository?.mode === "db" ? "DB 연결" : "mock 저장소");
       })
       .catch(() => {
-        setRepositoryStatus("local fallback");
+        setRepositoryStatus("DB 연결 실패");
       });
   }, []);
 
@@ -201,10 +190,7 @@ export default function PartnerMasterSection() {
         closeModal();
       })
       .catch(() => {
-        const nextPartners = savePartnerMasterItem(editingPartnerId, normalizedDraft);
-        setPartners(nextPartners);
-        setRepositoryStatus("local fallback");
-        closeModal();
+        setFormError("저장에 실패했습니다. DB 연결 상태를 확인하세요.");
       });
   }, [closeModal, draft, editingPartnerId]);
 
@@ -267,7 +253,7 @@ export default function PartnerMasterSection() {
     setSelectedActiveProcessDefinition(null);
   }, [persistProcessDefinitions, processDraftDefinitions]);
   return (
-    <section className="rounded-[32px] border border-stone-200 bg-white/95 p-5 shadow-sm backdrop-blur md:p-6">
+    <section className="flex min-h-0 flex-1 flex-col rounded-[32px] border border-stone-200 bg-white/95 p-5 shadow-sm backdrop-blur md:p-6">
       <PartnerMasterHeader onOpenCreateModal={openCreateModal} onOpenProcessModal={openProcessModal} />
 
       <PartnerMasterFilters
@@ -282,25 +268,8 @@ export default function PartnerMasterSection() {
         hasSearch={listViewModel.hasSearch}
       />
 
-      <div className="mt-5 grid gap-3 md:grid-cols-3">
-        <div className="rounded-3xl border border-blue-100 bg-blue-50/70 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-500">TOTAL</p>
-          <p className="mt-2 text-2xl font-semibold text-blue-950">{listViewModel.filteredCount}</p>
-          <p className="mt-1 text-xs text-blue-700">현재 조건 기준 거래처</p>
-        </div>
-        <div className="rounded-3xl border border-emerald-100 bg-emerald-50/70 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-500">FILTER</p>
-          <p className="mt-2 text-2xl font-semibold text-emerald-950">{selectedTypes.length}</p>
-          <p className="mt-1 text-xs text-emerald-700">선택된 유형 필터</p>
-        </div>
-        <div className="rounded-3xl border border-violet-100 bg-violet-50/70 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-violet-500">STATUS</p>
-          <p className="mt-2 text-2xl font-semibold text-violet-950">{selectedStatus === "all" ? "전체" : selectedStatus === "active" ? "사용중" : "미사용"}</p>
-          <p className="mt-1 text-xs text-violet-700">현재 상태 조건</p>
-        </div>
-      </div>
-
       <PartnerMasterList
+        className="mt-5 min-h-0 flex-1"
         items={listViewModel.items}
         onEditPartner={openEditModal}
       />
