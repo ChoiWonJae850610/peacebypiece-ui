@@ -29,86 +29,64 @@ export type AdminDashboardSection = {
 };
 
 export const ADMIN_SUMMARY_CARDS: AdminSummaryCard[] = [
-  { label: "진행 중 작지", value: "0", href: "/worker", description: "현재 운영 중인 전체 작업지시서", accent: "bg-blue-50 text-blue-700" },
-  { label: "검토 대기", value: "0", href: "/worker", description: "관리자 확인이 필요한 작지", accent: "bg-amber-50 text-amber-700" },
-  { label: "발주 준비", value: "0", href: "/worker", description: "발주 액션 전 점검 대상", accent: "bg-violet-50 text-violet-700" },
-  { label: "첨부파일 사용량", value: "0GB / 5GB", href: "/admin/files", description: "고객사 저장소 사용 현황", accent: "bg-emerald-50 text-emerald-700" },
+  { label: "작업중인 작지", value: "0", href: "/worker", description: "발주 전 작업 대상", accent: "bg-blue-50 text-blue-700" },
+  { label: "검토 대기", value: "0", href: "/worker", description: "관리자 확인 필요", accent: "bg-amber-50 text-amber-700" },
+  { label: "입고 대기", value: "0", href: "/worker", description: "발주 이후 검수 전", accent: "bg-violet-50 text-violet-700" },
+  { label: "첨부파일 사용량", value: "0GB / 5GB", href: "/admin/files", description: "저장소 사용 현황", accent: "bg-emerald-50 text-emerald-700" },
 ];
 
 export const ADMIN_NAVIGATION_ITEMS: AdminNavigationItem[] = [
   { label: "대시보드", href: "/admin", icon: "⌂" },
-  { label: "작지 화면", href: "/worker", icon: "▣" },
-  { label: "히스토리", href: "/admin/history", icon: "↺" },
-  { label: "통계", href: "/admin/dashboard", icon: "◒" },
-  { label: "기준정보", href: "/admin/partners", icon: "◇" },
-  { label: "파일/용량", href: "/admin/files", icon: "◫" },
+  { label: "작지 화면", href: "/worker", icon: "□" },
+  { label: "히스토리", href: "/admin/history", icon: "◷" },
+  { label: "통계", href: "/admin/dashboard", icon: "▥" },
+  { label: "기준정보", href: "/admin/partners", icon: "▦" },
+  { label: "파일/용량", href: "/admin/files", icon: "▤" },
   { label: "단위 관리", href: "/admin/units", icon: "㎝" },
   { label: "환경설정", href: "/admin/settings", icon: "⚙" },
 ];
 
 export const ADMIN_DASHBOARD_SECTIONS: AdminDashboardSection[] = [
   {
-    title: "통계 / 대시보드",
+    title: "작지 운영",
     items: [
-      { label: "통계 화면", description: "작지, 거래처, 생산 흐름, 첨부파일 사용량 지표 확인", href: "/admin/dashboard", icon: "◒" },
-      { label: "운영 현황", description: "검토 대기, 발주 준비, 완료 흐름을 요약해서 확인", href: "/admin/dashboard", icon: "▦" },
+      { label: "검토 대기 작지", description: "관리자 확인이 필요한 작지를 확인", href: "/worker", icon: "✓" },
+      { label: "작업중인 작지", description: "발주 전 단계의 작업 흐름 확인", href: "/worker", icon: "□" },
+      { label: "작지 히스토리", description: "상태 변경과 주요 작업 기록 확인", href: "/admin/history", icon: "◷" },
     ],
   },
   {
-    title: "작업 관리",
+    title: "운영 기준",
     items: [
-      { label: "작지 워크스페이스", description: "현재 작업지시서 목록과 상세 화면으로 이동", href: "/worker", icon: "▣" },
-      { label: "작지 히스토리", description: "상태 변경과 주요 작업 기록 확인", href: "/admin/history", icon: "↺" },
-      { label: "검토 대기 작지", description: "검토가 필요한 작업지시서 확인", href: "/worker", icon: "✓" },
-    ],
-  },
-  {
-    title: "기준정보 관리",
-    items: [
-      { label: "거래처 / 공장 관리", description: "공장, 원단, 부자재, 외주처 정보를 통합 관리", href: "/admin/partners", icon: "◇" },
-      { label: "단위 관리", description: "원단, 부자재, 생산 수량에 사용할 단위 기준 관리", href: "/admin/units", icon: "㎝" },
-    ],
-  },
-  {
-    title: "파일 / 용량 관리",
-    items: [
-      { label: "첨부파일 목록", description: "작지별 첨부파일과 대표 이미지 확인", href: "/admin/files", icon: "▤" },
-      { label: "휴지통", description: "소프트 삭제된 첨부파일 복원 또는 보관 상태 확인", href: "/admin/files", icon: "♲" },
-      { label: "용량 사용량", description: "첨부파일 저장소 사용량과 추가 요청 관리", href: "/admin/files", icon: "◫" },
-    ],
-  },
-  {
-    title: "사용자 관리",
-    items: [
-      { label: "사용자 목록", description: "고객사 사용자와 활성 상태 확인", href: null, icon: "○" },
-      { label: "초대 / 권한", description: "사용자 초대와 역할 변경 관리", href: null, icon: "+" },
-      { label: "운영 로그", description: "관리자 작업 이력 확인", href: null, icon: "≡" },
+      { label: "거래처 / 공장 관리", description: "공장, 원단, 부자재, 외주처 정보 관리", href: "/admin/partners", icon: "▦" },
+      { label: "단위 관리", description: "원단, 부자재, 생산 수량 단위 기준 관리", href: "/admin/units", icon: "㎝" },
+      { label: "환경설정", description: "파일 정책과 알림 이벤트 설정 관리", href: "/admin/settings", icon: "⚙" },
     ],
   },
 ];
 
+export const ADMIN_DASHBOARD_PRIMARY_SECTION_COUNT = 2;
 
-export type AdminQuickMenuItem = {
+export type AdminDashboardStatusPanel = {
   title: string;
-  description: string;
+  items: AdminDashboardItem[];
 };
 
-export const ADMIN_DASHBOARD_PRIMARY_SECTION_COUNT = 4;
-
-export const ADMIN_QUICK_MENU_ITEMS: AdminQuickMenuItem[] = [
-  { title: "검토 대기 작지", description: "검토요청 이후 관리자 확인이 필요한 작지를 먼저 확인합니다." },
-  { title: "파일 사용량", description: "휴지통, purge 후보, 저장소 사용량을 함께 확인합니다." },
-  { title: "기준정보", description: "거래처, 공장, 외주공정, 단위 기준을 운영 전에 정리합니다." },
-];
-
-export const ADMIN_SETTINGS_ROADMAP_ITEMS = [
-  "테마 색상 / 화면 밀도",
-  "언어 설정 / 표기 기준",
-  "파일 보관 정책 / 알림 정책",
-] as const;
+export const ADMIN_DASHBOARD_STATUS_PANEL: AdminDashboardStatusPanel = {
+  title: "파일 / 시스템 상태",
+  items: [
+    { label: "파일/용량 관리", description: "첨부파일 사용량, 휴지통, purge 상태 확인", href: "/admin/files", icon: "▤" },
+    { label: "통계 화면", description: "작지, 거래처, 파일 사용량 지표 확인", href: "/admin/dashboard", icon: "▥" },
+    { label: "알림 설정", description: "검토, 발주, 용량 이벤트 기준 설정", href: "/admin/settings", icon: "⚙" },
+  ],
+};
 
 export function getAdminDashboardPrimarySections(): AdminDashboardSection[] {
   return ADMIN_DASHBOARD_SECTIONS.slice(0, ADMIN_DASHBOARD_PRIMARY_SECTION_COUNT);
+}
+
+export function getAdminDashboardStatusPanel(): AdminDashboardStatusPanel {
+  return ADMIN_DASHBOARD_STATUS_PANEL;
 }
 
 export const ADMIN_STAT_SUMMARIES: AdminSummaryCard[] = [
@@ -213,7 +191,7 @@ export const ADMIN_SETTINGS_SUMMARY_CARDS: AdminSettingsSummaryCard[] = [
 export const ADMIN_SETTINGS_GROUPS: AdminSettingsGroup[] = [
   { label: "테마 설정", description: "고객사별 accent color, 화면 밀도, 다크모드 적용 여부를 관리합니다.", icon: "◉", statusLabel: "UI" },
   { label: "언어 설정", description: "한국어/영어 표시 기준과 향후 다국어 확장 기준을 분리합니다.", icon: "文", statusLabel: "i18n" },
-  { label: "파일 정책", description: "소프트 삭제, 휴지통 포함, 자동 삭제 기간, 용량 경고 기준을 저장합니다.", icon: "◫", statusLabel: "정책" },
+  { label: "파일 정책", description: "소프트 삭제, 휴지통 포함, 자동 삭제 기간, 용량 경고 기준을 저장합니다.", icon: "▤", statusLabel: "정책" },
   { label: "알림 정책", description: "검토 요청, 발주 준비, 용량 초과, 백업 상태 알림 기준을 관리합니다.", icon: "◌", statusLabel: "알림" },
 ];
 
@@ -238,17 +216,3 @@ export const ADMIN_FILE_POLICY_PREVIEW_ITEMS: AdminPolicyPreviewItem[] = [
   { label: "자동 삭제 기간", value: "15일", statusLabel: "기본" },
   { label: "용량 경고 기준", value: "80%", statusLabel: "경고" },
 ];
-
-export const ADMIN_NOTIFICATION_POLICY_PREVIEW_ITEMS: AdminPolicyPreviewItem[] = [
-  { label: "검토 요청", value: "관리자 알림", statusLabel: "ON" },
-  { label: "발주 준비", value: "담당자 알림", statusLabel: "ON" },
-  { label: "용량 초과", value: "관리자 알림", statusLabel: "ON" },
-  { label: "백업 상태", value: "시스템 알림", statusLabel: "준비" },
-];
-
-export const ADMIN_SETTINGS_STORAGE_PLAN = [
-  "company_settings 테이블에서 고객사별 테마, 언어, 화면 밀도 값을 관리",
-  "company_file_policies 테이블에서 저장 용량, 휴지통, purge 기준을 관리",
-  "company_notification_policies 테이블에서 이벤트별 알림 사용 여부를 관리",
-  "화면은 presentation 데이터를 먼저 사용하고 DB 연결 시 repository/adapter 계층으로 교체",
-] as const;
