@@ -1,10 +1,11 @@
-import { ADMIN_STORAGE_POLICY_ITEMS, type AdminFileUsageCard } from "@/lib/admin/adminFiles.presentation";
+import type { AdminFileUsageCard, AdminStoragePolicyItem } from "@/lib/admin/adminFiles.types";
 
 type FileStorageSummaryProps = {
   usageCards: AdminFileUsageCard[];
+  policyItems: AdminStoragePolicyItem[];
 };
 
-export default function FileStorageSummary({ usageCards }: FileStorageSummaryProps) {
+export default function FileStorageSummary({ usageCards, policyItems }: FileStorageSummaryProps) {
   return (
     <div className="space-y-4">
       <section className="grid gap-3 md:grid-cols-4">
@@ -26,7 +27,7 @@ export default function FileStorageSummary({ usageCards }: FileStorageSummaryPro
           <span className="w-fit rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-500">DB 연결 예정</span>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
-          {ADMIN_STORAGE_POLICY_ITEMS.map((item) => (
+          {policyItems.map((item) => (
             <article key={item.label} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
               <p className="text-xs font-medium text-stone-500">{item.label}</p>
               <p className="mt-2 text-base font-semibold text-stone-900">{item.value}</p>

@@ -1,44 +1,12 @@
-export type AdminFileUsageCard = {
-  label: string;
-  value: string;
-  description: string;
-};
+import type {
+  AdminFileTabItem,
+  AdminFileUsageCard,
+  AdminManagedFileItem,
+  AdminStoragePolicyItem,
+  AdminTrashFileItem,
+} from "@/lib/admin/adminFiles.types";
 
-export type AdminFileTabKey = "attachments" | "trash" | "storage";
-
-export type AdminFileTabItem = {
-  key: AdminFileTabKey;
-  label: string;
-  description: string;
-};
-
-export type AdminManagedFileItem = {
-  id: string;
-  workorderTitle: string;
-  fileName: string;
-  fileType: string;
-  fileSizeLabel: string;
-  uploadedAt: string;
-  uploadedBy: string;
-  statusLabel: string;
-};
-
-export type AdminTrashFileItem = {
-  id: string;
-  workorderTitle: string;
-  fileName: string;
-  fileSizeLabel: string;
-  deletedAt: string;
-  deletedBy: string;
-  purgeAfterAt: string;
-  deleteReason: string;
-};
-
-export type AdminStoragePolicyItem = {
-  label: string;
-  value: string;
-  description: string;
-};
+export type { AdminFileTabKey } from "@/lib/admin/adminFiles.types";
 
 export const ADMIN_FILE_USAGE_CARDS: AdminFileUsageCard[] = [
   { label: "전체 사용량", value: "0GB / 5GB", description: "현재 고객사 첨부파일 저장소 기준" },
@@ -68,21 +36,31 @@ export const ADMIN_FILE_TABS: AdminFileTabItem[] = [
 export const ADMIN_FILE_LIST_PLACEHOLDERS: AdminManagedFileItem[] = [
   {
     id: "sample-attachment-1",
+    workorderId: "sample-workorder-1",
     workorderTitle: "샘플 작지",
     fileName: "design-reference.png",
     fileType: "이미지",
+    fileSizeBytes: 0,
     fileSizeLabel: "0MB",
     uploadedAt: "DB 연결 예정",
     uploadedBy: "관리자",
+    status: "active",
     statusLabel: "사용중",
+    deletedAt: null,
+    deletedBy: null,
+    deleteReason: null,
+    purgeAfterAt: null,
   },
 ];
 
 export const ADMIN_FILE_TRASH_PLACEHOLDERS: AdminTrashFileItem[] = [
   {
     id: "sample-trash-1",
+    attachmentId: "sample-attachment-2",
+    workorderId: "sample-workorder-1",
     workorderTitle: "샘플 작지",
     fileName: "removed-reference.pdf",
+    fileSizeBytes: 0,
     fileSizeLabel: "0MB",
     deletedAt: "DB 연결 예정",
     deletedBy: "관리자",

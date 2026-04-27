@@ -1,22 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import FileListSection from "@/components/admin/files/FileListSection";
 import FileStorageSummary from "@/components/admin/files/FileStorageSummary";
 import FileTrashSection from "@/components/admin/files/FileTrashSection";
-import {
-  ADMIN_FILE_LIST_PLACEHOLDERS,
-  ADMIN_FILE_TABS,
-  ADMIN_FILE_TRASH_PLACEHOLDERS,
-  ADMIN_FILE_USAGE_CARDS,
-  type AdminFileTabKey,
-} from "@/lib/admin/adminFiles.presentation";
+import { getAdminFileManagementSnapshot } from "@/lib/admin/adminFiles.adapter";
+import type { AdminFileTabKey } from "@/lib/admin/adminFiles.types";
 import { APP_VERSION } from "@/lib/constants/app";
 import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
 
 export default function AdminFilesPage() {
+  const snapshot = useMemo(() => getAdminFileManagementSnapshot(), []);
   const [activeTab, setActiveTab] = useState<AdminFileTabKey>("attachments");
+  const [selectedAttachmentId, setSelectedAttachmentId] = useState<string | null>(null);
+  const [selectedTrashItemId, setSelectedTrashItemId] = useState<string | null>(null);
 
   return (
     <main className="min-h-screen bg-stone-100 px-4 py-6 text-stone-900 md:px-6 md:py-8">
@@ -36,11 +34,11 @@ export default function AdminFilesPage() {
           </div>
         </header>
 
-        <FileStorageSummary usageCards={ADMIN_FILE_USAGE_CARDS} />
+        <FileStorageSummary usageCards={snapshot.usageCards} policyItems={snapshot.storagePolicies} />
 
         <section className="rounded-3xl border border-stone-200 bg-white p-2 shadow-sm">
           <div className="grid gap-2 md:grid-cols-3">
-            {ADMIN_FILE_TABS.map((tab) => {
+            {snapshot.tabs.map((tab) => {
               const isActive = activeTab === tab.key;
               return (
                 <button
@@ -59,8 +57,10 @@ export default function AdminFilesPage() {
           </div>
         </section>
 
-        {activeTab === "attachments" ? <FileListSection items={ADMIN_FILE_LIST_PLACEHOLDERS} /> : null}
-        {activeTab === "trash" ? <FileTrashSection items={ADMIN_FILE_TRASH_PLACEHOLDERS} /> : null}
+        {activeTab === "attachments" ? (
+          <FileListSection items={snapshot.attachments} selectedItemId={selectedAttachmentId} onSelectItem={setSelectedAttachmentId} />
+        ) : null}
+        {activeTab === "trash" ? <FileTrashSection items={snapshot.trashItems} selectedItemId={selectedTrashItemId} onSelectItem={setSelectedTrashItemId} /> : null}
         {activeTab === "storage" ? (
           <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
             <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
