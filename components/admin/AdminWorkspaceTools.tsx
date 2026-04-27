@@ -2,7 +2,6 @@
 
 import AdminNotificationSettingsButton from "@/components/admin/AdminNotificationSettingsButton";
 import AdminNotificationSettingsModal from "@/components/admin/AdminNotificationSettingsModal";
-import AdminWorkOrderHistoryButton from "@/components/admin/AdminWorkOrderHistoryButton";
 import { useAdminWorkspaceTools } from "@/lib/admin/useAdminWorkspaceTools";
 
 export default function AdminWorkspaceTools() {
@@ -10,7 +9,6 @@ export default function AdminWorkspaceTools() {
 
   return (
     <>
-      <AdminWorkOrderHistoryButton />
       <AdminNotificationSettingsButton onClick={tools.openNotificationModal} />
       <AdminNotificationSettingsModal
         open={tools.activeModal === "notification"}

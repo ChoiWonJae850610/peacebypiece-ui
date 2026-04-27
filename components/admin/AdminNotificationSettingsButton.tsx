@@ -13,9 +13,11 @@ export default function AdminNotificationSettingsButton({ onClick }: AdminNotifi
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+      aria-label={i18n.admin.notificationModal.title}
+      title={i18n.admin.notificationModal.title}
+      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 bg-white text-base font-medium text-stone-700 transition hover:bg-stone-50"
     >
-      {i18n.admin.notificationModal.title}
+      <span aria-hidden="true">🔔</span>
     </button>
   );
 }
