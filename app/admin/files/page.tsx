@@ -1,9 +1,23 @@
+"use client";
+
 import Link from "next/link";
-import { ADMIN_FILE_MANAGEMENT_ITEMS, ADMIN_FILE_TRASH_POLICY_ITEMS, ADMIN_FILE_USAGE_CARDS } from "@/lib/admin/adminFiles.presentation";
+import { useState } from "react";
+import FileListSection from "@/components/admin/files/FileListSection";
+import FileStorageSummary from "@/components/admin/files/FileStorageSummary";
+import FileTrashSection from "@/components/admin/files/FileTrashSection";
+import {
+  ADMIN_FILE_LIST_PLACEHOLDERS,
+  ADMIN_FILE_TABS,
+  ADMIN_FILE_TRASH_PLACEHOLDERS,
+  ADMIN_FILE_USAGE_CARDS,
+  type AdminFileTabKey,
+} from "@/lib/admin/adminFiles.presentation";
 import { APP_VERSION } from "@/lib/constants/app";
 import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
 
 export default function AdminFilesPage() {
+  const [activeTab, setActiveTab] = useState<AdminFileTabKey>("attachments");
+
   return (
     <main className="min-h-screen bg-stone-100 px-4 py-6 text-stone-900 md:px-6 md:py-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
@@ -22,50 +36,47 @@ export default function AdminFilesPage() {
           </div>
         </header>
 
-        <section className="grid gap-3 md:grid-cols-4">
-          {ADMIN_FILE_USAGE_CARDS.map((card) => (
-            <article key={card.label} className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-              <p className="text-xs font-medium text-stone-500">{card.label}</p>
-              <p className="mt-3 text-2xl font-semibold tracking-tight text-stone-900">{card.value}</p>
-              <p className="mt-2 text-xs leading-5 text-stone-500">{card.description}</p>
-            </article>
-          ))}
+        <FileStorageSummary usageCards={ADMIN_FILE_USAGE_CARDS} />
+
+        <section className="rounded-3xl border border-stone-200 bg-white p-2 shadow-sm">
+          <div className="grid gap-2 md:grid-cols-3">
+            {ADMIN_FILE_TABS.map((tab) => {
+              const isActive = activeTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`rounded-2xl border px-4 py-3 text-left transition ${
+                    isActive ? "border-stone-400 bg-stone-900 text-white" : "border-stone-200 bg-white text-stone-700 hover:bg-stone-50"
+                  }`}
+                >
+                  <span className="block text-sm font-semibold">{tab.label}</span>
+                  <span className={`mt-1 block text-xs leading-5 ${isActive ? "text-stone-300" : "text-stone-500"}`}>{tab.description}</span>
+                </button>
+              );
+            })}
+          </div>
         </section>
 
-        <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-          <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-stone-900">휴지통 정책</h2>
-              <p className="mt-2 text-sm leading-6 text-stone-500">첨부파일 삭제는 즉시 원본 삭제가 아니라 복구 가능한 보관 상태로 전환합니다.</p>
+        {activeTab === "attachments" ? <FileListSection items={ADMIN_FILE_LIST_PLACEHOLDERS} /> : null}
+        {activeTab === "trash" ? <FileTrashSection items={ADMIN_FILE_TRASH_PLACEHOLDERS} /> : null}
+        {activeTab === "storage" ? (
+          <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+            <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-stone-900">용량 추가 요청</h2>
+                <p className="mt-2 text-sm leading-6 text-stone-500">고객사별 첨부파일 사용량을 기준으로 추가 용량 요청과 과금 정책을 연결할 영역입니다.</p>
+              </div>
+              <button type="button" className="w-fit rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-400" disabled>
+                요청 기능 예정
+              </button>
             </div>
-            <span className="w-fit rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-500">DB 구조 추가 완료</span>
-          </div>
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
-            {ADMIN_FILE_TRASH_POLICY_ITEMS.map((item) => (
-              <article key={item.label} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-                <p className="text-xs font-medium text-stone-500">{item.label}</p>
-                <p className="mt-2 text-base font-semibold text-stone-900">{item.value}</p>
-                <p className="mt-2 text-xs leading-5 text-stone-500">{item.description}</p>
-              </article>
-            ))}
-          </div>
-
-        </section>
-
-        <section className="grid gap-4 md:grid-cols-3">
-          {ADMIN_FILE_MANAGEMENT_ITEMS.map((item) => (
-            <article key={item.title} className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-              <div className="flex items-start justify-between gap-3">
-                <h2 className="text-lg font-semibold text-stone-900">{item.title}</h2>
-                <span className="shrink-0 rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-500">준비중</span>
-              </div>
-              <p className="mt-3 text-sm leading-6 text-stone-500">{item.description}</p>
-              <div className="mt-5 rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-4 text-xs text-stone-400">
-                {item.status}
-              </div>
-            </article>
-          ))}
-        </section>
+            <div className="mt-4 rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-4 text-xs leading-5 text-stone-500">
+              실제 사용량 집계는 attachments의 활성 파일과 휴지통 보관 파일을 합산하고, R2 실제 삭제 이후에만 차감하는 구조로 연결합니다.
+            </div>
+          </section>
+        ) : null}
       </div>
     </main>
   );
