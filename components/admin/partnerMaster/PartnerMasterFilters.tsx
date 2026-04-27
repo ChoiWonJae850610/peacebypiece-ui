@@ -40,7 +40,7 @@ export default function PartnerMasterFilters({
   ];
 
   return (
-    <div className="mt-5 space-y-4 rounded-3xl border border-stone-200 bg-stone-50 p-4">
+    <div className="mt-5 space-y-4 rounded-[28px] border border-stone-200 bg-stone-50/80 p-4">
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end">
         <label className="space-y-2">
           <span className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">{filterText.searchLabel}</span>
@@ -48,7 +48,7 @@ export default function PartnerMasterFilters({
             value={searchTerm}
             onChange={(event) => onSearchTermChange(event.target.value)}
             placeholder={filterText.searchPlaceholder}
-            className="h-9 w-full rounded-2xl border border-stone-300 bg-white px-4 text-sm outline-none transition focus:border-stone-500"
+            className="h-10 w-full rounded-2xl border border-stone-200 bg-white px-4 text-sm outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
           />
         </label>
 
@@ -64,7 +64,7 @@ export default function PartnerMasterFilters({
                   onClick={() => onToggleType(item.value)}
                   className={[
                     "inline-flex h-9 items-center rounded-full px-3 text-sm font-medium transition",
-                    isSelected ? "bg-stone-900 text-white" : "bg-white text-stone-700 hover:bg-stone-200",
+                    isSelected ? "bg-blue-600 text-white shadow-sm" : "border border-stone-200 bg-white text-stone-700 hover:bg-stone-100",
                   ].join(" ")}
                 >
                   {item.label}
@@ -84,7 +84,7 @@ export default function PartnerMasterFilters({
                 onClick={() => onStatusChange(item.value)}
                 className={[
                   "inline-flex h-9 items-center rounded-full px-3 text-sm font-medium transition",
-                  selectedStatus === item.value ? "bg-stone-900 text-white" : "bg-white text-stone-700 hover:bg-stone-200",
+                  selectedStatus === item.value ? "bg-blue-600 text-white shadow-sm" : "border border-stone-200 bg-white text-stone-700 hover:bg-stone-100",
                 ].join(" ")}
               >
                 {item.label}

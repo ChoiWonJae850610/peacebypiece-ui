@@ -267,7 +267,7 @@ export default function PartnerMasterSection() {
     setSelectedActiveProcessDefinition(null);
   }, [persistProcessDefinitions, processDraftDefinitions]);
   return (
-    <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm md:p-6">
+    <section className="rounded-[32px] border border-stone-200 bg-white/95 p-5 shadow-sm backdrop-blur md:p-6">
       <PartnerMasterHeader onOpenCreateModal={openCreateModal} onOpenProcessModal={openProcessModal} />
 
       <PartnerMasterFilters
@@ -281,6 +281,24 @@ export default function PartnerMasterSection() {
         filteredCount={listViewModel.filteredCount}
         hasSearch={listViewModel.hasSearch}
       />
+
+      <div className="mt-5 grid gap-3 md:grid-cols-3">
+        <div className="rounded-3xl border border-blue-100 bg-blue-50/70 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-500">TOTAL</p>
+          <p className="mt-2 text-2xl font-semibold text-blue-950">{listViewModel.filteredCount}</p>
+          <p className="mt-1 text-xs text-blue-700">현재 조건 기준 거래처</p>
+        </div>
+        <div className="rounded-3xl border border-emerald-100 bg-emerald-50/70 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-500">FILTER</p>
+          <p className="mt-2 text-2xl font-semibold text-emerald-950">{selectedTypes.length}</p>
+          <p className="mt-1 text-xs text-emerald-700">선택된 유형 필터</p>
+        </div>
+        <div className="rounded-3xl border border-violet-100 bg-violet-50/70 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-violet-500">STATUS</p>
+          <p className="mt-2 text-2xl font-semibold text-violet-950">{selectedStatus === "all" ? "전체" : selectedStatus === "active" ? "사용중" : "미사용"}</p>
+          <p className="mt-1 text-xs text-violet-700">현재 상태 조건</p>
+        </div>
+      </div>
 
       <PartnerMasterList
         items={listViewModel.items}
