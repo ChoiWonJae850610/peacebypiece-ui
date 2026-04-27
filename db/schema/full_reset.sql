@@ -553,6 +553,12 @@ CREATE INDEX attachment_trash_items_purge_idx
 CREATE INDEX attachment_trash_items_company_deleted_idx
   ON attachment_trash_items (company_id, deleted_at DESC);
 
+CREATE INDEX IF NOT EXISTS idx_attachments_deleted_at
+ON attachments(deleted_at);
+
+CREATE INDEX IF NOT EXISTS idx_attachments_purge_after
+ON attachments(purge_after_at);
+
 CREATE INDEX memos_order_idx
   ON memos (order_id);
 
