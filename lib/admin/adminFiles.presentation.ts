@@ -157,7 +157,7 @@ export const ADMIN_STORAGE_POLICY_ITEMS: AdminStoragePolicyItem[] = [
   {
     label: "실제 삭제",
     value: "30일 이후",
-    description: "purge_after_at 이후 별도 정리 작업에서 R2 원본과 썸네일 삭제",
+    description: "purge_after_at 이후 /api/admin/files/trash/purge-worker가 R2 원본과 썸네일 삭제",
   },
 ];
 

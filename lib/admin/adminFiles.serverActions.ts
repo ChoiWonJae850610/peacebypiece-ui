@@ -311,3 +311,60 @@ export async function listPurgeReadyAttachmentTrashItems(limit = 50): Promise<Ad
     purgeAfterAt: formatDate(row.purge_after_at),
   }));
 }
+
+export async function markAttachmentTrashItemsPurged(input: AdminTrashDbActionInput): Promise<AdminTrashDbActionResult> {
+  const trashItemIds = normalizeIds(input.trashItemIds);
+  if (trashItemIds.length === 0) return { requestedCount: 0, affectedCount: 0 };
+
+  const result = await queryDb<CountRow>(
+    `WITH target_trash AS (
+       SELECT id, attachment_id
+         FROM attachment_trash_items
+        WHERE id = ANY($1::text[])
+          AND purge_status IN ('pending', 'purge_requested')
+          AND restored_at IS NULL
+          AND purged_at IS NULL
+     ), marked_attachments AS (
+       UPDATE attachments
+          SET is_active = false,
+              purge_after_at = COALESCE(purge_after_at, now()),
+              updated_at = now()
+        WHERE id IN (SELECT attachment_id FROM target_trash)
+        RETURNING id
+     ), marked_trash AS (
+       UPDATE attachment_trash_items
+          SET purged_at = now(),
+              purge_status = 'purged',
+              last_purge_attempt_at = now(),
+              last_purge_error = NULL,
+              updated_at = now()
+        WHERE id IN (SELECT id FROM target_trash)
+        RETURNING id
+     )
+     SELECT COUNT(*)::text AS affected_count
+       FROM marked_trash`,
+    [trashItemIds],
+  );
+
+  return {
+    requestedCount: trashItemIds.length,
+    affectedCount: readCount(result.rows[0]),
+  };
+}
+
+export async function markAttachmentTrashItemPurgeFailed(input: { trashItemId: string; errorMessage: string }): Promise<void> {
+  const trashItemId = input.trashItemId.trim();
+  if (!trashItemId) return;
+
+  await queryDb(
+    `UPDATE attachment_trash_items
+        SET purge_attempt_count = COALESCE(purge_attempt_count, 0) + 1,
+            last_purge_attempt_at = now(),
+            last_purge_error = LEFT($2, 1000),
+            updated_at = now()
+      WHERE id = $1
+        AND restored_at IS NULL
+        AND purged_at IS NULL`,
+    [trashItemId, input.errorMessage],
+  );
+}

@@ -288,6 +288,9 @@ CREATE TABLE attachment_trash_items (
   restored_by text,
   purged_at timestamptz,
   purge_status text NOT NULL DEFAULT 'pending',
+  purge_attempt_count integer NOT NULL DEFAULT 0,
+  last_purge_attempt_at timestamptz,
+  last_purge_error text,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
@@ -566,8 +569,11 @@ CREATE INDEX attachment_trash_items_pending_list_idx
   ON attachment_trash_items (deleted_at DESC)
   WHERE restored_at IS NULL AND purged_at IS NULL AND purge_status = 'pending';
 
-CREATE INDEX attachment_trash_items_company_deleted_idx
-  ON attachment_trash_items (company_id, deleted_at DESC);
+CREATE INDEX attachment_trash_items_purge_retry_idx
+  ON attachment_trash_items (purge_attempt_count, last_purge_attempt_at)
+  WHERE purged_at IS NULL AND restored_at IS NULL;
+
+
 
 CREATE INDEX IF NOT EXISTS idx_attachments_deleted_at
 ON attachments(deleted_at);
