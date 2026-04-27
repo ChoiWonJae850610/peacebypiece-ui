@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { markAttachmentTrashItemsPurgedByAttachmentIds } from "@/lib/admin/adminFiles.serverActions";
 import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/companySettings.repository";
 import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
-import { deleteR2Object } from "@/lib/storage/r2/r2Client";
+import { deleteR2ObjectViaWorker } from "@/lib/storage/r2/r2WorkerUpload";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
 import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
 
@@ -50,6 +50,23 @@ export async function POST(request: NextRequest) {
     const trashRetentionDays = settings.filePolicy.trashRetentionDays;
     const softDeleteEnabled = settings.filePolicy.softDeleteEnabled;
 
+    const deleteKeys = Array.from(
+      new Set(
+        [target.storage_key, target.thumbnail_key].filter((key): key is string => typeof key === "string" && key.trim().length > 0),
+      ),
+    );
+
+    if (!softDeleteEnabled) {
+      for (const key of deleteKeys) {
+        await deleteR2ObjectViaWorker({ key });
+        deleteCachedR2UrlsByKey(key);
+      }
+    } else {
+      for (const key of deleteKeys) {
+        deleteCachedR2UrlsByKey(key);
+      }
+    }
+
     const deleted = await repository.softDeleteAttachment({
       attachmentId,
       deletedBy: readText(payload?.deletedBy),
@@ -61,14 +78,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_NOT_FOUND" }, { status: 404 });
     }
 
-    if (target.storage_key) {
-      deleteCachedR2UrlsByKey(target.storage_key);
-    }
-
     if (!softDeleteEnabled) {
-      if (target.storage_key) {
-        await deleteR2Object({ key: target.storage_key });
-      }
       await markAttachmentTrashItemsPurgedByAttachmentIds({ attachmentIds: [attachmentId], actorId: readText(payload?.deletedBy) ?? "attachment-delete-api" });
     }
 

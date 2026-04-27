@@ -16,6 +16,7 @@ export type WorkOrderAttachmentDbRecord = {
   order_id: string;
   type: WorkOrderAttachmentKind;
   storage_key: string;
+  thumbnail_key?: string | null;
   original_name: string;
   mime_type: string | null;
   size_bytes: number | null;
