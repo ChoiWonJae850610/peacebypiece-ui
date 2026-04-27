@@ -8,14 +8,14 @@ async function readJson<T>(response: Response, fallback: T): Promise<T> {
   return (await response.json().catch(() => fallback)) as T;
 }
 
-export async function deleteWorkOrderAttachmentInDb(attachmentId: string): Promise<string> {
+export async function deleteWorkOrderAttachmentInDb(input: { attachmentId: string; deletedBy?: string | null; deleteReason?: string | null }): Promise<string> {
   const response = await fetch("/api/workorders/attachments/delete", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    body: JSON.stringify({ attachmentId }),
+    body: JSON.stringify(input),
   });
 
   const result = await readJson<AttachmentDeleteApiResult>(response, { attachmentId: null, error: "INVALID_ATTACHMENT_DELETE_RESPONSE" });

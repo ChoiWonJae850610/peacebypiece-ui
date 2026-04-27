@@ -124,7 +124,11 @@ export function useWorkOrderAttachments({
     setSaveStatus("saving");
 
     try {
-      await deleteWorkOrderAttachmentInDb(attachmentId);
+      await deleteWorkOrderAttachmentInDb({
+        attachmentId,
+        deletedBy: currentUser.name,
+        deleteReason: targetAttachment?.scope === "design" ? "작지 디자인 삭제" : "작지 첨부 삭제",
+      });
       const result = buildAttachmentDeleteResult({
         workOrder: selectedWorkOrder,
         currentUser,

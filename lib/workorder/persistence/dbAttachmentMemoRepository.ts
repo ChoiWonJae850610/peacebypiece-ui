@@ -418,25 +418,86 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
         }
       }
     },
-    softDeleteAttachment: async (attachmentId) => {
+    softDeleteAttachment: async (input) => {
+      const deletedBy = input.deletedBy ?? null;
+      const deleteReason = input.deleteReason ?? null;
       const result = await queryDb<AttachmentRow>(
-        `UPDATE attachments
-            SET is_active = false,
-                deleted_at = COALESCE(deleted_at, now())
-          WHERE id = $1
-          RETURNING id,
-                    order_id,
-                    type,
-                    storage_key,
-                    original_name,
-                    mime_type,
-                    size_bytes,
-                    author_id,
-                    is_primary,
-                    is_active,
-                    deleted_at,
-                    created_at`,
-        [attachmentId],
+        `WITH updated_attachment AS (
+           UPDATE attachments
+              SET is_active = false,
+                  deleted_at = COALESCE(deleted_at, now()),
+                  deleted_by = COALESCE($2, deleted_by),
+                  delete_reason = COALESCE($3, delete_reason),
+                  purge_after_at = COALESCE(purge_after_at, now() + interval '30 days'),
+                  updated_at = now()
+            WHERE id = $1
+              AND is_active = true
+              AND deleted_at IS NULL
+            RETURNING id,
+                      company_id,
+                      company_name,
+                      order_id,
+                      type,
+                      storage_key,
+                      thumbnail_key,
+                      original_name,
+                      mime_type,
+                      size_bytes,
+                      author_id,
+                      is_primary,
+                      is_active,
+                      deleted_at,
+                      deleted_by,
+                      delete_reason,
+                      purge_after_at,
+                      created_at
+         ), inserted_trash AS (
+           INSERT INTO attachment_trash_items (
+             company_id,
+             company_name,
+             attachment_id,
+             order_id,
+             storage_key,
+             thumbnail_key,
+             original_name,
+             mime_type,
+             size_bytes,
+             deleted_by,
+             delete_reason,
+             deleted_at,
+             purge_after_at
+           )
+           SELECT company_id,
+                  company_name,
+                  id,
+                  order_id,
+                  storage_key,
+                  thumbnail_key,
+                  original_name,
+                  mime_type,
+                  COALESCE(size_bytes, 0),
+                  deleted_by,
+                  delete_reason,
+                  COALESCE(deleted_at, now()),
+                  COALESCE(purge_after_at, now() + interval '30 days')
+             FROM updated_attachment
+           ON CONFLICT DO NOTHING
+           RETURNING attachment_id
+         )
+         SELECT id,
+                order_id,
+                type,
+                storage_key,
+                original_name,
+                mime_type,
+                size_bytes,
+                author_id,
+                is_primary,
+                is_active,
+                deleted_at,
+                created_at
+           FROM updated_attachment`,
+        [input.attachmentId, deletedBy, deleteReason],
       );
 
       return result.rows[0] ?? null;
