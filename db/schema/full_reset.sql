@@ -6,6 +6,8 @@
 
 BEGIN;
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- =========================================
 -- 1) DROP TABLES
 -- FK / index / dependent constraints are removed by CASCADE.
@@ -248,7 +250,7 @@ CREATE TABLE attachments (
   storage_key text NOT NULL,
   original_name text NOT NULL,
   mime_type text,
-  size_bytes integer,
+  size_bytes bigint,
   author_id text,
   is_primary boolean NOT NULL DEFAULT false,
   thumbnail_key text,
@@ -279,7 +281,7 @@ CREATE TABLE attachment_trash_items (
   thumbnail_key text,
   original_name text NOT NULL,
   mime_type text,
-  size_bytes integer NOT NULL DEFAULT 0,
+  size_bytes bigint NOT NULL DEFAULT 0,
   deleted_by text,
   delete_reason text,
   deleted_at timestamptz NOT NULL DEFAULT now(),
@@ -291,6 +293,8 @@ CREATE TABLE attachment_trash_items (
   purge_attempt_count integer NOT NULL DEFAULT 0,
   last_purge_attempt_at timestamptz,
   last_purge_error text,
+  CONSTRAINT attachment_trash_items_purge_status_check
+    CHECK (purge_status IN ('pending', 'restored', 'purge_requested', 'purged', 'failed')),
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
@@ -558,6 +562,9 @@ CREATE INDEX attachment_trash_items_attachment_idx
 CREATE INDEX attachment_trash_items_order_idx
   ON attachment_trash_items (order_id);
 
+CREATE INDEX attachment_trash_items_company_idx
+  ON attachment_trash_items (company_id, deleted_at DESC);
+
 CREATE INDEX attachment_trash_items_purge_idx
   ON attachment_trash_items (purge_status, purge_after_at);
 
@@ -568,6 +575,10 @@ CREATE INDEX attachment_trash_items_purge_candidate_idx
 CREATE INDEX attachment_trash_items_pending_list_idx
   ON attachment_trash_items (deleted_at DESC)
   WHERE restored_at IS NULL AND purged_at IS NULL AND purge_status = 'pending';
+
+CREATE INDEX attachment_trash_items_admin_status_list_idx
+  ON attachment_trash_items (purge_status, deleted_at DESC)
+  WHERE restored_at IS NULL AND purged_at IS NULL;
 
 CREATE INDEX attachment_trash_items_purge_retry_idx
   ON attachment_trash_items (purge_attempt_count, last_purge_attempt_at)
@@ -580,6 +591,14 @@ ON attachments(deleted_at);
 
 CREATE INDEX IF NOT EXISTS idx_attachments_purge_after
 ON attachments(purge_after_at);
+
+CREATE INDEX IF NOT EXISTS idx_attachments_deleted_purge_after
+ON attachments(purge_after_at)
+WHERE deleted_at IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_attachments_company_active
+ON attachments(company_id, created_at DESC)
+WHERE is_active = true AND deleted_at IS NULL;
 
 CREATE INDEX memos_order_idx
   ON memos (order_id);
