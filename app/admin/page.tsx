@@ -1,83 +1,77 @@
-import Link from "next/link";
-import AdminWorkspaceTools from "@/components/admin/AdminWorkspaceTools";
-import { ADMIN_DASHBOARD_SECTIONS, ADMIN_SUMMARY_CARDS, type AdminDashboardItem } from "@/lib/admin/adminDashboard.presentation";
+import AdminShell from "@/components/admin/layout/AdminShell";
+import { AdminActionTile, AdminCard, AdminStatCard } from "@/components/admin/layout/AdminCard";
+import { ADMIN_DASHBOARD_SECTIONS, ADMIN_NAVIGATION_ITEMS, ADMIN_SUMMARY_CARDS } from "@/lib/admin/adminDashboard.presentation";
 import { APP_VERSION } from "@/lib/constants/app";
 import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
 
-function DashboardItem({ item }: { item: AdminDashboardItem }) {
-  const className = "group rounded-2xl border border-stone-200 bg-white p-4 text-left transition hover:border-stone-300 hover:bg-stone-50";
-  const content = (
-    <>
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="text-sm font-semibold text-stone-900">{item.label}</h3>
-        <span className="text-xs text-stone-400">{item.href ? "이동" : "준비중"}</span>
-      </div>
-      <p className="mt-2 text-xs leading-5 text-stone-500">{item.description}</p>
-    </>
-  );
-
-  if (!item.href) {
-    return <div className={className}>{content}</div>;
-  }
-
-  return (
-    <Link href={item.href} className={className}>
-      {content}
-    </Link>
-  );
-}
-
 export default function AdminPage() {
+  const primarySections = ADMIN_DASHBOARD_SECTIONS.slice(0, 4);
+
   return (
-    <main className="min-h-screen bg-stone-100 px-4 py-6 text-stone-900 md:px-6 md:py-8">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-        <header className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">{WORKSPACE_COMPANY_NAME}</p>
-              <h1 className="text-2xl font-semibold tracking-tight text-stone-900 md:text-3xl">관리자 운영 화면</h1>
-            </div>
-            <div className="flex items-center gap-2 md:justify-end">
-              <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">v{APP_VERSION}</span>
-              <AdminWorkspaceTools />
-            </div>
-          </div>
-        </header>
+    <AdminShell
+      companyName={WORKSPACE_COMPANY_NAME}
+      appVersion={APP_VERSION}
+      navigationItems={ADMIN_NAVIGATION_ITEMS}
+      title="관리자 운영 화면"
+      description="작지 운영, 기준정보, 파일/용량, 통계 현황을 한 화면에서 확인하고 필요한 관리 화면으로 진입합니다."
+    >
+      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {ADMIN_SUMMARY_CARDS.map((card) => (
+          <AdminStatCard key={card.label} label={card.label} value={card.value} description={card.description} href={card.href} accent={card.accent} />
+        ))}
+      </section>
 
-        <section className="grid gap-3 md:grid-cols-4">
-          {ADMIN_SUMMARY_CARDS.map((card) => {
-            const content = (
-              <div className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm transition hover:border-stone-300 hover:bg-stone-50">
-                <p className="text-xs font-medium text-stone-500">{card.label}</p>
-                <p className="mt-3 text-2xl font-semibold tracking-tight text-stone-900">{card.value}</p>
+      <section className="grid gap-5 xl:grid-cols-[1fr_360px]">
+        <div className="grid gap-5">
+          {primarySections.map((section) => (
+            <AdminCard key={section.title}>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold tracking-tight text-stone-950">{section.title}</h2>
+                  <p className="mt-1 text-xs text-stone-500">주요 관리 기능으로 바로 이동합니다.</p>
+                </div>
+                <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-500">{section.items.length}개</span>
               </div>
-            );
-
-            if (!card.href) {
-              return <div key={card.label}>{content}</div>;
-            }
-
-            return (
-              <Link key={card.label} href={card.href}>
-                {content}
-              </Link>
-            );
-          })}
-        </section>
-
-        <section className="grid gap-4 md:grid-cols-2">
-          {ADMIN_DASHBOARD_SECTIONS.map((section) => (
-            <article key={section.title} className="rounded-3xl border border-stone-200 bg-stone-50 p-5 shadow-sm">
-              <h2 className="text-lg font-semibold text-stone-900">{section.title}</h2>
-              <div className="mt-4 grid gap-3">
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
                 {section.items.map((item) => (
-                  <DashboardItem key={item.label} item={item} />
+                  <AdminActionTile key={item.label} label={item.label} description={item.description} href={item.href} icon={item.icon} statusLabel={item.statusLabel} />
                 ))}
               </div>
-            </article>
+            </AdminCard>
           ))}
-        </section>
-      </div>
-    </main>
+        </div>
+
+        <aside className="grid content-start gap-5">
+          <AdminCard className="bg-stone-950 text-white">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">QUICK MENU</p>
+            <h2 className="mt-3 text-xl font-semibold">오늘 확인할 운영 항목</h2>
+            <div className="mt-5 grid gap-3 text-sm">
+              <div className="rounded-3xl bg-white/10 p-4">
+                <p className="font-semibold">검토 대기 작지</p>
+                <p className="mt-1 text-xs leading-5 text-stone-300">검토요청 이후 관리자 확인이 필요한 작지를 먼저 확인합니다.</p>
+              </div>
+              <div className="rounded-3xl bg-white/10 p-4">
+                <p className="font-semibold">파일 사용량</p>
+                <p className="mt-1 text-xs leading-5 text-stone-300">휴지통, purge 후보, 저장소 사용량을 함께 확인합니다.</p>
+              </div>
+              <div className="rounded-3xl bg-white/10 p-4">
+                <p className="font-semibold">기준정보</p>
+                <p className="mt-1 text-xs leading-5 text-stone-300">거래처, 공장, 외주공정, 단위 기준을 운영 전에 정리합니다.</p>
+              </div>
+            </div>
+          </AdminCard>
+
+          <AdminCard>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">SETTINGS ROADMAP</p>
+            <h2 className="mt-3 text-lg font-semibold text-stone-950">환경설정 분리 예정</h2>
+            <div className="mt-4 grid gap-2 text-xs text-stone-500">
+              <p className="rounded-2xl bg-stone-50 px-3 py-2">테마 색상 / 화면 밀도</p>
+              <p className="rounded-2xl bg-stone-50 px-3 py-2">언어 설정 / 표기 기준</p>
+              <p className="rounded-2xl bg-stone-50 px-3 py-2">파일 보관 정책 / 알림 정책</p>
+            </div>
+          </AdminCard>
+        </aside>
+      </section>
+    </AdminShell>
   );
 }
