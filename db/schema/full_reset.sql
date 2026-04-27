@@ -16,6 +16,7 @@ DROP TABLE IF EXISTS material_order_lines CASCADE;
 DROP TABLE IF EXISTS material_orders CASCADE;
 
 DROP TABLE IF EXISTS memos CASCADE;
+DROP TABLE IF EXISTS attachment_trash_items CASCADE;
 DROP TABLE IF EXISTS attachments CASCADE;
 DROP TABLE IF EXISTS spec_sheet_outsourcing_lines CASCADE;
 DROP TABLE IF EXISTS material_stocks CASCADE;
@@ -255,12 +256,44 @@ CREATE TABLE attachments (
   preview_url text,
   is_active boolean NOT NULL DEFAULT true,
   deleted_at timestamptz,
+  deleted_by text,
+  delete_reason text,
+  purge_after_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
 -- =========================================
--- 8) MEMOS
+-- 8) ATTACHMENT TRASH ITEMS
+-- 소프트 삭제된 첨부파일의 휴지통 보관/복구/실제 삭제 예약 정보를 저장합니다.
+-- 휴지통 보관 중인 파일은 R2에서 즉시 삭제하지 않으므로 사용량 계산에 계속 포함합니다.
+-- =========================================
+
+CREATE TABLE attachment_trash_items (
+  id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  company_id text,
+  company_name text,
+  attachment_id text NOT NULL REFERENCES attachments(id) ON DELETE CASCADE,
+  order_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
+  storage_key text NOT NULL,
+  thumbnail_key text,
+  original_name text NOT NULL,
+  mime_type text,
+  size_bytes integer NOT NULL DEFAULT 0,
+  deleted_by text,
+  delete_reason text,
+  deleted_at timestamptz NOT NULL DEFAULT now(),
+  purge_after_at timestamptz NOT NULL DEFAULT (now() + interval '30 days'),
+  restored_at timestamptz,
+  restored_by text,
+  purged_at timestamptz,
+  purge_status text NOT NULL DEFAULT 'pending',
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- =========================================
+-- 9) MEMOS
 -- Current code uses order_id / parent_id / body / author_id.
 -- =========================================
 
@@ -507,6 +540,18 @@ CREATE INDEX attachments_storage_key_idx
 CREATE INDEX attachments_primary_design_idx
   ON attachments (order_id, type, is_primary)
   WHERE is_active = true AND deleted_at IS NULL;
+
+CREATE INDEX attachment_trash_items_attachment_idx
+  ON attachment_trash_items (attachment_id);
+
+CREATE INDEX attachment_trash_items_order_idx
+  ON attachment_trash_items (order_id);
+
+CREATE INDEX attachment_trash_items_purge_idx
+  ON attachment_trash_items (purge_status, purge_after_at);
+
+CREATE INDEX attachment_trash_items_company_deleted_idx
+  ON attachment_trash_items (company_id, deleted_at DESC);
 
 CREATE INDEX memos_order_idx
   ON memos (order_id);
