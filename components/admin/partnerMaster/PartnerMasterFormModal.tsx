@@ -1,7 +1,14 @@
 "use client";
 
 import StatusToggle from "@/components/common/StatusToggle";
-import ModalShell from "@/components/common/modal/ModalShell";
+import {
+  AdminModal,
+  AdminModalSection,
+  adminModalInputClassName,
+  adminModalLabelClassName,
+  adminModalPrimaryButtonClassName,
+  adminModalSecondaryButtonClassName,
+} from "@/components/admin/layout/AdminModal";
 import {
   BASE_PARTNER_TYPE_VALUES,
   PARTNER_TYPE_META,
@@ -57,12 +64,12 @@ export default function PartnerMasterFormModal({
   const formText = i18n.admin.partnerMaster.form;
 
   return (
-    <ModalShell
+    <AdminModal
       open={open}
       onClose={onClose}
       title={editingPartnerId ? formText.editTitle : formText.createTitle}
+      description="거래처 기본 정보, 분류, 외주공정 정보를 한 화면에서 정리합니다."
       maxWidthClass="md:max-w-2xl"
-      bodyClassName="space-y-5"
       footer={
         <div className="flex w-full items-center justify-between gap-3">
           <p className="text-xs text-rose-600">{formError}</p>
@@ -70,14 +77,14 @@ export default function PartnerMasterFormModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+              className={adminModalSecondaryButtonClassName}
             >
               {formText.cancel}
             </button>
             <button
               type="button"
               onClick={onSubmit}
-              className="rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800"
+              className={adminModalPrimaryButtonClassName}
             >
               {formText.save}
             </button>
@@ -85,20 +92,21 @@ export default function PartnerMasterFormModal({
         </div>
       }
     >
+      <AdminModalSection title="기본 정보" description="관리 화면과 작지 화면에서 공통으로 쓰이는 거래처 기본값입니다.">
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
         <div className="space-y-2">
-          <label htmlFor="partner-name" className="text-sm font-medium text-stone-800">{formText.labels.name}</label>
+          <label htmlFor="partner-name" className={adminModalLabelClassName}>{formText.labels.name}</label>
           <input
             id="partner-name"
             value={draft.name}
             onChange={(event) => onDraftChange((current) => ({ ...current, name: event.target.value }))}
             placeholder={formText.placeholders.name}
-            className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-stone-500"
+            className={adminModalInputClassName}
           />
         </div>
 
         <div className="space-y-2">
-          <p className="text-sm font-medium text-stone-800">{formText.labels.active}</p>
+          <p className={adminModalLabelClassName}>{formText.labels.active}</p>
           <div className="flex min-h-[48px] items-center gap-3">
             <StatusToggle
               checked={draft.isActive}
@@ -115,18 +123,18 @@ export default function PartnerMasterFormModal({
 
       <div className="grid gap-4 md:grid-cols-3">
         <div className="space-y-2">
-          <label htmlFor="partner-contact-name" className="text-sm font-medium text-stone-800">{formText.labels.contactName}</label>
+          <label htmlFor="partner-contact-name" className={adminModalLabelClassName}>{formText.labels.contactName}</label>
           <input
             id="partner-contact-name"
             value={draft.contactName}
             onChange={(event) => onDraftChange((current) => ({ ...current, contactName: event.target.value }))}
             placeholder={formText.placeholders.contactName}
-            className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-stone-500"
+            className={adminModalInputClassName}
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="partner-phone" className="text-sm font-medium text-stone-800">{formText.labels.phone}</label>
+          <label htmlFor="partner-phone" className={adminModalLabelClassName}>{formText.labels.phone}</label>
           <input
             id="partner-phone"
             type="tel"
@@ -135,26 +143,28 @@ export default function PartnerMasterFormModal({
             pattern="[0-9]*"
             onChange={(event) => onDraftChange((current) => ({ ...current, phone: formatPhoneNumber(event.target.value) }))}
             placeholder={formText.placeholders.phone}
-            className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-stone-500"
+            className={adminModalInputClassName}
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="partner-email" className="text-sm font-medium text-stone-800">{formText.labels.email}</label>
+          <label htmlFor="partner-email" className={adminModalLabelClassName}>{formText.labels.email}</label>
           <input
             id="partner-email"
             type="email"
             value={draft.email}
             onChange={(event) => onDraftChange((current) => ({ ...current, email: event.target.value }))}
             placeholder={formText.placeholders.email}
-            className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-stone-500"
+            className={adminModalInputClassName}
           />
         </div>
       </div>
+      </AdminModalSection>
 
+      <AdminModalSection title="분류와 외주공정" description="거래처 유형을 선택하고 외주공정이 필요한 경우 배정합니다.">
       <div className="space-y-3">
         <div className="space-y-2">
-          <p className="text-sm font-medium text-stone-800">{formText.labels.baseTypes}</p>
+          <p className={adminModalLabelClassName}>{formText.labels.baseTypes}</p>
           <div className="grid gap-2 sm:grid-cols-4">
             {BASE_PARTNER_TYPE_VALUES.map((type) => {
               const checked = selectedPrimaryTypes.includes(type);
@@ -166,7 +176,7 @@ export default function PartnerMasterFormModal({
                   aria-pressed={checked}
                   className={[
                     "rounded-2xl border px-4 py-3 text-sm font-medium transition",
-                    checked ? "border-stone-900 bg-stone-900 text-white" : "border-stone-300 bg-white text-stone-800 hover:border-stone-400",
+                    checked ? "border-sky-300 bg-sky-50 text-sky-900 shadow-sm" : "border-stone-200 bg-white text-stone-700 hover:border-stone-300",
                   ].join(" ")}
                 >
                   {PARTNER_TYPE_META[type].shortLabel}
@@ -183,7 +193,7 @@ export default function PartnerMasterFormModal({
               <button
                 type="button"
                 onClick={onOpenProcessModal}
-                className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:bg-stone-50"
+                className="rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-300 hover:bg-stone-50"
               >
                 {formText.manageProcesses}
               </button>
@@ -208,7 +218,7 @@ export default function PartnerMasterFormModal({
                             }}
                             className={[
                               "flex w-full items-center justify-between rounded-2xl border px-3 py-3 text-left text-sm transition",
-                              isSelected ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white text-stone-700 hover:border-stone-300",
+                              isSelected ? "border-sky-300 bg-sky-50 text-sky-900 shadow-sm" : "border-stone-200 bg-white text-stone-700 hover:border-stone-300",
                             ].join(" ")}
                           >
                             <span className="font-medium">{definition.label}</span>
@@ -269,7 +279,7 @@ export default function PartnerMasterFormModal({
                             }}
                             className={[
                               "flex w-full items-center justify-between rounded-2xl border px-3 py-3 text-left text-sm transition",
-                              isSelected ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white text-stone-700 hover:border-stone-300",
+                              isSelected ? "border-sky-300 bg-sky-50 text-sky-900 shadow-sm" : "border-stone-200 bg-white text-stone-700 hover:border-stone-300",
                             ].join(" ")}
                           >
                             <span className="font-medium">{definition.label}</span>
@@ -284,18 +294,21 @@ export default function PartnerMasterFormModal({
           </div>
         ) : null}
       </div>
+      </AdminModalSection>
 
+      <AdminModalSection title="메모" description="내부 관리용 참고 내용을 입력합니다.">
       <div className="space-y-2">
-        <label htmlFor="partner-memo" className="text-sm font-medium text-stone-800">{formText.labels.memo}</label>
+        <label htmlFor="partner-memo" className={adminModalLabelClassName}>{formText.labels.memo}</label>
         <textarea
           id="partner-memo"
           value={draft.memo}
           onChange={(event) => onDraftChange((current) => ({ ...current, memo: event.target.value }))}
           rows={4}
           placeholder={formText.placeholders.memo}
-          className="w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm outline-none transition focus:border-stone-500"
+          className={adminModalInputClassName}
         />
       </div>
-    </ModalShell>
+      </AdminModalSection>
+    </AdminModal>
   );
 }

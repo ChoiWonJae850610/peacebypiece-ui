@@ -1,6 +1,6 @@
 "use client";
 
-import ModalShell from "@/components/common/modal/ModalShell";
+import { AdminModal, AdminModalSection, adminModalDangerButtonClassName, adminModalSecondaryButtonClassName } from "@/components/admin/layout/AdminModal";
 import { buildDeleteOutsourcingProcessConfirmCopy } from "@/lib/admin/partnerMasterConfirm";
 import type { OutsourcingProcessDefinition } from "@/lib/admin/partnerMaster";
 import { useI18n } from "@/lib/i18n";
@@ -26,7 +26,7 @@ export default function PartnerProcessDeleteModal({
   const confirmCopy = buildDeleteOutsourcingProcessConfirmCopy(deletingLabel, i18n.admin.partnerMaster.confirm);
 
   return (
-    <ModalShell
+    <AdminModal
       open={Boolean(deletingProcessType)}
       onClose={onClose}
       title={confirmCopy.title}
@@ -37,21 +37,21 @@ export default function PartnerProcessDeleteModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+            className={adminModalSecondaryButtonClassName}
           >
             {confirmCopy.cancelLabel}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="rounded-full bg-rose-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-rose-700"
+            className={adminModalDangerButtonClassName}
           >
             {confirmCopy.confirmLabel}
           </button>
         </div>
       }
     >
-      <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-4 text-sm text-rose-700">{confirmCopy.body}</div>
-    </ModalShell>
+      <AdminModalSection className="border-rose-100 bg-rose-50 text-sm leading-6 text-rose-700">{confirmCopy.body}</AdminModalSection>
+    </AdminModal>
   );
 }

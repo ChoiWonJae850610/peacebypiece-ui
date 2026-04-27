@@ -1,6 +1,13 @@
 "use client";
 
-import ModalShell from "@/components/common/modal/ModalShell";
+import {
+  AdminModal,
+  AdminModalSection,
+  adminModalInputClassName,
+  adminModalLabelClassName,
+  adminModalPrimaryButtonClassName,
+  adminModalSecondaryButtonClassName,
+} from "@/components/admin/layout/AdminModal";
 import { type OutsourcingProcessDefinition } from "@/lib/admin/partnerMaster";
 import { useI18n } from "@/lib/i18n";
 import type { OutsourcingProcessType } from "@/types/partner";
@@ -36,7 +43,7 @@ function ProcessListBox({
   onSelect: (type: OutsourcingProcessType | null) => void;
 }) {
   return (
-    <div className="h-[240px] rounded-2xl border border-stone-200 bg-stone-50 p-2">
+    <div className="h-[240px] rounded-3xl border border-stone-200 bg-stone-50/70 p-2">
       <div className="h-full space-y-2 overflow-auto pr-1">
         {items.length === 0 ? (
           <div className="flex h-full items-center justify-center px-3 text-center text-sm text-stone-400">{emptyLabel}</div>
@@ -50,7 +57,7 @@ function ProcessListBox({
                 onClick={() => onSelect(definition.type)}
                 className={[
                   "flex w-full items-center justify-between rounded-2xl border px-3 py-3 text-left text-sm transition",
-                  isSelected ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white text-stone-700 hover:border-stone-300",
+                  isSelected ? "border-sky-300 bg-sky-50 text-sky-900 shadow-sm" : "border-stone-200 bg-white text-stone-700 hover:border-stone-300",
                 ].join(" ")}
               >
                 <span className="font-medium">{definition.label}</span>
@@ -85,36 +92,35 @@ export default function PartnerProcessManagementModal({
   const processText = i18n.admin.partnerMaster.processManagement;
 
   return (
-    <ModalShell
+    <AdminModal
       open={open}
       onClose={onClose}
       title={processText.title}
       description={processText.description}
       maxWidthClass="md:max-w-3xl"
-      bodyClassName="space-y-4"
       footer={
         <div className="flex w-full items-center justify-end gap-2">
           <button
             type="button"
             onClick={onResetDefaults}
-            className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+            className={adminModalSecondaryButtonClassName}
           >
             {processText.resetDefaults}
           </button>
           <button
             type="button"
             onClick={onSave}
-            className="rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800"
+            className={adminModalPrimaryButtonClassName}
           >
             {processText.save}
           </button>
         </div>
       }
     >
-      <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
+      <AdminModalSection title="외주공정 추가" description="새 공정명을 입력한 뒤 추가 버튼으로 목록에 반영합니다.">
         <div className="flex flex-col gap-3 md:flex-row md:items-end">
           <label className="min-w-0 flex-1 space-y-2">
-            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">{processText.newProcessLabel}</span>
+            <span className={adminModalLabelClassName}>{processText.newProcessLabel}</span>
             <input
               value={newProcessLabel}
               onChange={(event) => {
@@ -128,20 +134,21 @@ export default function PartnerProcessManagementModal({
                 }
               }}
               placeholder={processText.newProcessPlaceholder}
-              className="h-11 w-full rounded-2xl border border-stone-300 bg-white px-4 text-sm outline-none transition focus:border-stone-500"
+              className={`h-11 ${adminModalInputClassName}`}
             />
           </label>
           <button
             type="button"
             onClick={onAddProcessDefinition}
-            className="inline-flex h-11 items-center justify-center rounded-full bg-stone-900 px-4 text-sm font-medium text-white transition hover:bg-stone-800"
+            className="inline-flex h-11 items-center justify-center rounded-full bg-stone-950 px-4 text-sm font-medium text-white transition hover:bg-stone-800"
           >
             {processText.add}
           </button>
         </div>
         {processFormError ? <p className="mt-2 text-sm font-medium text-rose-600">{processFormError}</p> : null}
-      </div>
+      </AdminModalSection>
 
+      <AdminModalSection title="외주공정 사용 여부" description="좌우 목록에서 공정을 선택한 뒤 이동 버튼으로 사용 상태를 변경합니다.">
       <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_72px_minmax(0,1fr)] md:items-center">
         <div className="space-y-2">
           <p className="text-sm font-medium text-stone-800">미사용 외주공정</p>
@@ -200,6 +207,7 @@ export default function PartnerProcessManagementModal({
           />
         </div>
       </div>
-    </ModalShell>
+      </AdminModalSection>
+    </AdminModal>
   );
 }

@@ -19,19 +19,19 @@ export default function AdminNotificationSettingsSection({
   const items = buildAdminNotificationSettingItems(notificationSettings);
 
   return (
-    <section className="rounded-2xl border border-stone-200 bg-white p-3 md:p-4">
+    <section className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm md:p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="text-sm font-semibold text-stone-900">{notificationI18n.title}</div>
           <div className="mt-1 text-xs leading-5 text-stone-500">{notificationI18n.description}</div>
         </div>
-        <span className="rounded-full bg-sky-100 px-2 py-1 text-[11px] font-medium text-sky-700">{notificationI18n.badge}</span>
+        <span className="rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-medium text-sky-700">{notificationI18n.badge}</span>
       </div>
       <div className="mt-3 space-y-2">
         {items.map((item) => (
           <div
             key={item.key}
-            className="flex items-start gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-3 py-3 transition hover:border-stone-300 hover:bg-stone-100"
+            className="flex items-start gap-3 rounded-2xl border border-stone-200 bg-stone-50/70 px-3 py-3 transition hover:border-stone-300 hover:bg-white"
           >
             <div className="min-w-0 flex-1">
               <div className="text-sm font-medium text-stone-900">{item.label}</div>

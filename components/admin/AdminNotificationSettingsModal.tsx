@@ -1,11 +1,6 @@
 "use client";
 
-import { useRef } from "react";
-import BaseModal from "@/components/common/modal/BaseModal";
-import ModalBody from "@/components/common/modal/ModalBody";
-import ModalHeader from "@/components/common/modal/ModalHeader";
-import { MODAL_EXCEPTION_PRESETS } from "@/components/common/modal/modalPresets";
-import { useModalEnvironment } from "@/components/common/modal/modalUtils";
+import { AdminModal } from "@/components/admin/layout/AdminModal";
 import AdminNotificationSettingsSection from "@/components/admin/notification/AdminNotificationSettingsSection";
 import { useI18n } from "@/lib/i18n";
 import type { NotificationSettingKey, NotificationSettings } from "@/lib/admin/notification/types";
@@ -25,30 +20,18 @@ export default function AdminNotificationSettingsModal({
 }: AdminNotificationSettingsModalProps) {
   const { i18n } = useI18n();
   const notificationModalText = i18n.admin.notificationModal;
-  const dialogRef = useRef<HTMLDivElement | null>(null);
-
-  useModalEnvironment({ open, dialogRef, onClose });
-
   return (
-    <BaseModal
+    <AdminModal
       open={open}
       onClose={onClose}
-      dialogRef={dialogRef}
-      titleId="admin-notification-settings-modal-title"
-      maxWidthClassName={MODAL_EXCEPTION_PRESETS.adminPanel.maxWidthClass}
+      title={notificationModalText.title}
+      description={notificationModalText.description}
+      maxWidthClass="md:max-w-2xl"
     >
-      <ModalHeader
-        titleId="admin-notification-settings-modal-title"
-        title={notificationModalText.title}
-        description={notificationModalText.description}
-        onClose={onClose}
-      />
-      <ModalBody className={MODAL_EXCEPTION_PRESETS.adminPanel.bodyClassName}>
         <AdminNotificationSettingsSection
           notificationSettings={notificationSettings}
           onToggleNotificationSetting={onToggleNotificationSetting}
         />
-      </ModalBody>
-    </BaseModal>
+    </AdminModal>
   );
 }
