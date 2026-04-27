@@ -9,6 +9,7 @@ type FileStorageSummaryProps = {
   policySettings: AdminStoragePolicySettings;
   onChangePolicySettings: (next: AdminStoragePolicySettings) => void;
   isSavingPolicy?: boolean;
+  policySourceLabel?: string;
 };
 
 function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange: (next: boolean) => void; label: string }) {
@@ -25,7 +26,7 @@ function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange
   );
 }
 
-export default function FileStorageSummary({ usageCards, usageSummary, policyItems, policySettings, onChangePolicySettings, isSavingPolicy = false }: FileStorageSummaryProps) {
+export default function FileStorageSummary({ usageCards, usageSummary, policyItems, policySettings, onChangePolicySettings, isSavingPolicy = false, policySourceLabel = "company_settings 기준" }: FileStorageSummaryProps) {
   const isWarning = usageSummary.statusTone === "warning";
 
   return (
@@ -67,11 +68,12 @@ export default function FileStorageSummary({ usageCards, usageSummary, policyIte
 
       <section className="rounded-[32px] border border-stone-200 bg-white p-5 shadow-sm">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">POLICY</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">POLICY QUICK EDIT</p>
           <div className="mt-2 flex items-center justify-between gap-3">
-            <h2 className="text-xl font-semibold tracking-tight text-stone-950">용량 / 휴지통 정책</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-stone-950">파일 정책 빠른 수정</h2>
             {isSavingPolicy ? <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">저장 중</span> : null}
           </div>
+          <p className="mt-2 text-xs leading-5 text-stone-500">정책 원본: {policySourceLabel}. 전체 정책 관리는 환경설정 화면에서 조정합니다.</p>
         </div>
 
         <div className="mt-5 grid gap-3">
@@ -79,7 +81,7 @@ export default function FileStorageSummary({ usageCards, usageSummary, policyIte
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold text-stone-500">삭제 방식</p>
-                <p className="mt-2 text-base font-semibold text-stone-950">소프트 삭제</p>
+                <p className="mt-2 text-base font-semibold text-stone-950">{policySettings.softDeleteEnabled ? "소프트 삭제" : "즉시 삭제"}</p>
               </div>
               <ToggleSwitch checked={policySettings.softDeleteEnabled} label="소프트 삭제" onChange={(softDeleteEnabled) => onChangePolicySettings({ ...policySettings, softDeleteEnabled })} />
             </div>
@@ -89,7 +91,7 @@ export default function FileStorageSummary({ usageCards, usageSummary, policyIte
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold text-stone-500">용량 계산</p>
-                <p className="mt-2 text-base font-semibold text-stone-950">휴지통 포함</p>
+                <p className="mt-2 text-base font-semibold text-stone-950">{policySettings.includeTrashInUsage ? "휴지통 포함" : "사용중 파일만"}</p>
               </div>
               <ToggleSwitch checked={policySettings.includeTrashInUsage} label="휴지통 포함" onChange={(includeTrashInUsage) => onChangePolicySettings({ ...policySettings, includeTrashInUsage })} />
             </div>
@@ -112,11 +114,16 @@ export default function FileStorageSummary({ usageCards, usageSummary, policyIte
 
         <div className="mt-4 grid gap-2">
           {policyItems.map((item) => (
-            <div key={item.label} className="rounded-2xl bg-stone-50 px-3 py-2 text-xs text-stone-500">
+            <div key={item.label} className="rounded-2xl bg-stone-50 px-3 py-2 text-xs leading-5 text-stone-500">
               <span className="font-semibold text-stone-700">{item.label}</span> · {item.value}
+              <span className="block">{item.description}</span>
             </div>
           ))}
         </div>
+
+        <a href="/admin/settings" className="mt-4 inline-flex w-full items-center justify-center rounded-2xl border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-50">
+          환경설정에서 전체 정책 관리
+        </a>
       </section>
     </div>
   );

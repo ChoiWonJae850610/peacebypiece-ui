@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { getAdminFileManagementSnapshot } from "@/lib/admin/adminFiles.adapter";
+import { buildAdminStoragePolicyItems, normalizeAdminFilePolicySettings } from "@/lib/admin/adminFiles.presentation";
 import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/companySettings.repository";
 import { listAdminFileManagementRows } from "@/lib/admin/adminFiles.serverActions";
-import type { AdminFileUsageCard, AdminStoragePolicyItem, AdminStoragePolicySettings, AdminStorageUsageSummary } from "@/lib/admin/adminFiles.types";
+import type { AdminFileUsageCard, AdminStorageUsageSummary } from "@/lib/admin/adminFiles.types";
 import type { CompanyFilePolicySettings } from "@/lib/admin/companySettings.types";
 
 export const runtime = "nodejs";
@@ -18,36 +19,6 @@ function formatBytes(bytes: number): string {
   if (bytes >= 1024 ** 2) return `${Math.round(bytes / 1024 ** 2)}MB`;
   if (bytes >= 1024) return `${Math.round(bytes / 1024)}KB`;
   return `${bytes}B`;
-}
-
-function buildPolicySettings(filePolicy: CompanyFilePolicySettings): AdminStoragePolicySettings {
-  const purgeAfterDays = [1, 5, 15, 30].includes(filePolicy.trashRetentionDays) ? filePolicy.trashRetentionDays : 15;
-
-  return {
-    softDeleteEnabled: filePolicy.softDeleteEnabled,
-    includeTrashInUsage: filePolicy.includeTrashInUsage,
-    purgeAfterDays: purgeAfterDays as AdminStoragePolicySettings["purgeAfterDays"],
-  };
-}
-
-function buildStoragePolicyItems(policySettings: AdminStoragePolicySettings): AdminStoragePolicyItem[] {
-  return [
-    {
-      label: "삭제 방식",
-      value: policySettings.softDeleteEnabled ? "소프트 삭제" : "즉시 삭제",
-      description: policySettings.softDeleteEnabled ? "삭제 시 휴지통으로 이동하고 복구 가능 기간을 둡니다." : "삭제 액션 시 실제 삭제 흐름으로 바로 연결합니다.",
-    },
-    {
-      label: "용량 계산",
-      value: policySettings.includeTrashInUsage ? "휴지통 포함" : "사용중 파일만",
-      description: policySettings.includeTrashInUsage ? "R2 원본이 실제 삭제되기 전까지 휴지통 파일도 사용량에 포함합니다." : "휴지통 파일은 사용량 합산에서 제외합니다.",
-    },
-    {
-      label: "실제 삭제",
-      value: `${policySettings.purgeAfterDays}일 이후`,
-      description: "purge_after_at 이후 dryRun 검토 후 실제 삭제 작업을 실행합니다.",
-    },
-  ];
 }
 
 function buildUsageSummary(activeBytes: number, trashBytes: number, filePolicy: CompanyFilePolicySettings): AdminStorageUsageSummary {
@@ -83,7 +54,7 @@ export async function GET() {
   try {
     const company = await getCurrentAdminCompany();
     const settings = await getCompanySettings(company.id);
-    const policySettings = buildPolicySettings(settings.filePolicy);
+    const policySettings = normalizeAdminFilePolicySettings(settings.filePolicy);
     const rows = await listAdminFileManagementRows(settings.filePolicy.trashRetentionDays);
     const activeBytes = rows.attachments.reduce((total, item) => total + item.fileSizeBytes, 0);
     const trashBytes = rows.trashItems.reduce((total, item) => total + item.fileSizeBytes, 0);
@@ -98,7 +69,7 @@ export async function GET() {
         trashItems: rows.trashItems,
         usageSummary: buildUsageSummary(activeBytes, trashBytes, settings.filePolicy),
         usageCards: buildUsageCards(rows.attachments.length, rows.trashItems.length, activeBytes, trashBytes, settings.filePolicy),
-        storagePolicies: buildStoragePolicyItems(policySettings),
+        storagePolicies: buildAdminStoragePolicyItems(policySettings),
         policySettings,
       },
     });

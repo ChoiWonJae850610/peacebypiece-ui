@@ -177,6 +177,36 @@ export const ADMIN_STORAGE_POLICY_ITEMS: AdminStoragePolicyItem[] = [
   },
 ];
 
+export function normalizeAdminFilePolicySettings(filePolicy: { softDeleteEnabled: boolean; includeTrashInUsage: boolean; trashRetentionDays: number }): AdminStoragePolicySettings {
+  const purgeAfterDays = [1, 5, 15, 30].includes(filePolicy.trashRetentionDays) ? filePolicy.trashRetentionDays : 15;
+
+  return {
+    softDeleteEnabled: filePolicy.softDeleteEnabled,
+    includeTrashInUsage: filePolicy.includeTrashInUsage,
+    purgeAfterDays: purgeAfterDays as AdminStoragePolicySettings["purgeAfterDays"],
+  };
+}
+
+export function buildAdminStoragePolicyItems(policySettings: AdminStoragePolicySettings): AdminStoragePolicyItem[] {
+  return [
+    {
+      label: "삭제 방식",
+      value: policySettings.softDeleteEnabled ? "소프트 삭제" : "즉시 삭제",
+      description: policySettings.softDeleteEnabled ? "삭제 시 휴지통으로 이동하고 복구 가능 기간을 둡니다." : "삭제 액션 시 R2 실제 삭제 흐름으로 바로 연결합니다.",
+    },
+    {
+      label: "용량 계산",
+      value: policySettings.includeTrashInUsage ? "휴지통 포함" : "사용중 파일만",
+      description: policySettings.includeTrashInUsage ? "R2 원본이 실제 삭제되기 전까지 휴지통 파일도 사용량에 포함합니다." : "휴지통 파일은 사용량 합산에서 제외합니다.",
+    },
+    {
+      label: "실제 삭제",
+      value: `${policySettings.purgeAfterDays}일 이후`,
+      description: "company_settings.trash_retention_days 기준으로 purge 후보를 계산합니다.",
+    },
+  ];
+}
+
 export function sortAdminManagedFiles(items: AdminManagedFileItem[], sortKey: AdminFileSortKey): AdminManagedFileItem[] {
   return [...items].sort((a, b) => {
     if (sortKey === "size") {

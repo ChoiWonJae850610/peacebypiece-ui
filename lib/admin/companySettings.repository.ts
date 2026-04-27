@@ -108,9 +108,7 @@ function normalizeNotificationPolicySettings(
   };
 }
 
-function normalizeSettingsInput(companyId: string, input: CompanySettingsUpdateInput): CompanySettings {
-  const fallback = buildDefaultCompanySettings(companyId);
-
+function normalizeSettingsInput(companyId: string, input: CompanySettingsUpdateInput, fallback: CompanySettings): CompanySettings {
   return {
     companyId,
     ui: normalizeUiSettings(input.ui, fallback.ui),
@@ -197,7 +195,8 @@ export async function getCompanySettings(companyId: string): Promise<CompanySett
 }
 
 export async function updateCompanySettings(companyId: string, input: CompanySettingsUpdateInput): Promise<CompanySettings> {
-  const normalized = normalizeSettingsInput(companyId, input);
+  const currentSettings = await getCompanySettings(companyId);
+  const normalized = normalizeSettingsInput(companyId, input, currentSettings);
   const result = await queryDb<CompanySettingsRow>(
     `INSERT INTO company_settings (
         company_id,

@@ -92,7 +92,7 @@ export default function AdminCompanySettingsForm({ initialSettings }: AdminCompa
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">SAVE SETTINGS</p>
             <h2 className="mt-2 text-lg font-semibold text-stone-950">고객사 환경설정 저장</h2>
-            <p className="mt-2 text-sm leading-6 text-stone-500">변경한 테마, 언어, 파일 정책, 알림 정책을 company_settings 테이블에 저장합니다.</p>
+            <p className="mt-2 text-sm leading-6 text-stone-500">변경한 테마, 언어, 파일 정책, 알림 정책을 company_settings 테이블에 저장합니다. 파일/용량 관리 화면의 빠른 수정도 같은 기준을 사용합니다.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {draft.updatedAt ? <span className="rounded-full bg-stone-100 px-3 py-2 text-xs font-semibold text-stone-500">최근 저장 {new Date(draft.updatedAt).toLocaleString("ko-KR")}</span> : null}
@@ -160,7 +160,8 @@ export default function AdminCompanySettingsForm({ initialSettings }: AdminCompa
       <section className="grid gap-5 xl:grid-cols-2">
         <AdminCard>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">FILE POLICY</p>
-          <h2 className="mt-2 text-lg font-semibold text-stone-950">파일 보관 정책</h2>
+          <h2 className="mt-2 text-lg font-semibold text-stone-950">파일 정책 관리</h2>
+          <p className="mt-2 text-sm leading-6 text-stone-500">정책 원본은 company_settings입니다. 파일/용량 관리 화면은 이 값을 표시하고 일부 항목만 빠르게 수정합니다.</p>
           <div className="mt-5 grid gap-3">
             <ToggleRow
               label="소프트 삭제"

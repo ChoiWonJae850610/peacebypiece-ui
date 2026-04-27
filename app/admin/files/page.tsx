@@ -159,7 +159,7 @@ export default function AdminFilesPage() {
       appVersion={APP_VERSION}
       navigationItems={FILE_ADMIN_NAVIGATION_ITEMS}
       title="파일 / 용량 관리"
-      description="첨부파일 사용량, 휴지통, 실제 삭제 후보를 한 화면에서 확인하고 운영 정책을 조정합니다."
+      description="첨부파일 사용량, 휴지통, 실제 삭제 후보를 확인하고 company_settings 기준 파일 정책을 빠르게 수정합니다."
     >
       <FileStorageSummary
         usageCards={snapshot.usageCards}
@@ -168,6 +168,7 @@ export default function AdminFilesPage() {
         policySettings={policySettings}
         onChangePolicySettings={handleChangePolicySettings}
         isSavingPolicy={isSavingPolicy}
+        policySourceLabel={snapshot.dataSource === "db" ? "company_settings DB" : "샘플 정책"}
       />
 
       <AdminCard className="p-2">
@@ -235,10 +236,11 @@ export default function AdminFilesPage() {
               </button>
             </div>
           </div>
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
-            <div className="rounded-3xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">소프트 삭제: {policySettings.softDeleteEnabled ? "ON" : "OFF"}</div>
-            <div className="rounded-3xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">휴지통 포함: {policySettings.includeTrashInUsage ? "ON" : "OFF"}</div>
+          <div className="mt-4 grid gap-3 md:grid-cols-4">
+            <div className="rounded-3xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">삭제 방식: {policySettings.softDeleteEnabled ? "소프트 삭제" : "즉시 삭제"}</div>
+            <div className="rounded-3xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">용량 계산: {policySettings.includeTrashInUsage ? "휴지통 포함" : "사용중 파일만"}</div>
             <div className="rounded-3xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">실제 삭제 기간: {policySettings.purgeAfterDays}일</div>
+            <a href="/admin/settings" className="rounded-3xl border border-stone-300 bg-white p-4 text-sm font-semibold text-stone-700 transition hover:bg-stone-50">환경설정에서 전체 정책 관리</a>
           </div>
         </AdminCard>
       ) : null}
