@@ -20,6 +20,5 @@ export function getAdminFileManagementSnapshot(): AdminFileManagementSnapshot {
     trashItems: ADMIN_FILE_TRASH_PLACEHOLDERS,
     storagePolicies: ADMIN_STORAGE_POLICY_ITEMS,
     policySettings: ADMIN_STORAGE_POLICY_SETTINGS,
-  ADMIN_STORAGE_POLICY_SETTINGS,
   };
 }

@@ -104,3 +104,10 @@ export const ADMIN_UNIT_PLACEHOLDERS = [
   { label: "수량", examples: "개, 장, 벌, set" },
   { label: "무게", examples: "kg, g" },
 ] as const;
+
+export function getAdminNavigationItems(activeHref: string): AdminNavigationItem[] {
+  return ADMIN_NAVIGATION_ITEMS.map((item) => ({
+    ...item,
+    active: item.href === activeHref,
+  }));
+}
