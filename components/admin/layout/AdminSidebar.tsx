@@ -8,7 +8,7 @@ type AdminSidebarProps = {
 
 export default function AdminSidebar({ companyName, navigationItems }: AdminSidebarProps) {
   return (
-    <aside className="rounded-[32px] border border-stone-200 bg-white p-4 shadow-sm lg:sticky lg:top-6 lg:h-[calc(100vh-48px)] lg:w-72 lg:shrink-0">
+    <aside className="min-w-0 rounded-[32px] border border-stone-200 bg-white p-4 shadow-sm lg:sticky lg:top-6 lg:h-[calc(100vh-48px)] lg:w-72 lg:shrink-0">
       <div className="rounded-[24px] bg-stone-950 p-5 text-white">
         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-400">CUSTOMER NAME</p>
         <p className="mt-2 truncate text-lg font-semibold">{companyName}</p>
@@ -24,7 +24,7 @@ export default function AdminSidebar({ companyName, navigationItems }: AdminSide
           const content = (
             <>
               <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-base shadow-sm ring-1 ring-stone-200">{item.icon}</span>
-              <span>{item.label}</span>
+              <span className="min-w-0 truncate">{item.label}</span>
             </>
           );
 

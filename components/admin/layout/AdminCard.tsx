@@ -7,7 +7,7 @@ type AdminCardProps = {
 };
 
 export function AdminCard({ children, className = "" }: AdminCardProps) {
-  return <section className={`rounded-[28px] border border-stone-200 bg-white p-5 shadow-sm ${className}`}>{children}</section>;
+  return <section className={`min-w-0 rounded-[28px] border border-stone-200 bg-white p-5 shadow-sm ${className}`}>{children}</section>;
 }
 
 type AdminStatCardProps = {
@@ -37,7 +37,7 @@ export function AdminStatCard({ label, value, description, href, accent = "bg-st
   }
 
   return (
-    <Link href={href} className="block h-full">
+    <Link href={href} className="block h-full min-w-0">
       {content}
     </Link>
   );
@@ -70,7 +70,7 @@ export function AdminActionTile({ label, description, icon, href, statusLabel = 
   }
 
   return (
-    <Link href={href} className="block">
+    <Link href={href} className="block min-w-0">
       {content}
     </Link>
   );

@@ -38,6 +38,7 @@ export const ADMIN_SUMMARY_CARDS: AdminSummaryCard[] = [
 export const ADMIN_NAVIGATION_ITEMS: AdminNavigationItem[] = [
   { label: "대시보드", href: "/admin", icon: "⌂", active: true },
   { label: "작지 화면", href: "/worker", icon: "▣" },
+  { label: "히스토리", href: "/admin/history", icon: "↺" },
   { label: "통계", href: "/admin/dashboard", icon: "◒" },
   { label: "기준정보", href: "/admin/partners", icon: "◇" },
   { label: "파일/용량", href: "/admin/files", icon: "◫" },
