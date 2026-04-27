@@ -39,12 +39,14 @@ export type PartnerListItemViewModel = {
   id: string;
   name: string;
   isActive: boolean;
-  contactLine: string;
+  contactName: string;
+  phone: string;
   email: string;
   memo: string;
   updatedAtLabel: string;
   baseTypeBadges: { key: string; label: string; tone: string }[];
   outsourcingProcessBadges: { key: string; label: string; tone: string }[];
+  outsourcingProcessLabel: string;
 };
 
 export type PartnerListViewModel = {

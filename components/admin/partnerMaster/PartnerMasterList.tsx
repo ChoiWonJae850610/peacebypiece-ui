@@ -14,11 +14,13 @@ export default function PartnerMasterList({ items, onEditPartner }: PartnerMaste
 
   return (
     <div className="mt-5 overflow-hidden rounded-3xl border border-stone-200">
-      <div className="hidden grid-cols-[minmax(0,1.7fr)_minmax(0,1.4fr)_120px_120px_140px] gap-4 bg-stone-50 px-4 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-stone-500 md:grid">
+      <div className="hidden grid-cols-[minmax(0,1.3fr)_minmax(0,0.9fr)_minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,1.4fr)_100px_100px] gap-4 bg-stone-50 px-4 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-stone-500 md:grid">
         <span>{listText.columns.name}</span>
+        <span>{listText.columns.contact}</span>
+        <span>{listText.columns.phone}</span>
+        <span>{listText.columns.email}</span>
         <span>{listText.columns.type}</span>
         <span>{listText.columns.status}</span>
-        <span>{listText.columns.updatedAt}</span>
         <span>{listText.columns.actions}</span>
       </div>
       <div className="divide-y divide-stone-200">
@@ -27,7 +29,7 @@ export default function PartnerMasterList({ items, onEditPartner }: PartnerMaste
         ) : (
           items.map((item) => (
             <article key={item.id} className={["px-4 py-4", item.isActive ? "bg-white" : "bg-stone-50/80"].join(" ")}>
-              <div className="flex flex-col gap-3 md:grid md:grid-cols-[minmax(0,1.7fr)_minmax(0,1.4fr)_120px_120px_140px] md:items-center md:gap-4">
+              <div className="flex flex-col gap-3 md:grid md:grid-cols-[minmax(0,1.3fr)_minmax(0,0.9fr)_minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,1.4fr)_100px_100px] md:items-center md:gap-4">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="truncate text-sm font-semibold text-stone-900 md:text-base">{item.name}</p>
@@ -35,24 +37,26 @@ export default function PartnerMasterList({ items, onEditPartner }: PartnerMaste
                       <span className="rounded-full bg-stone-200 px-2 py-0.5 text-[11px] font-medium text-stone-600">{listText.inactiveBadge}</span>
                     ) : null}
                   </div>
-                  <div className="mt-1 space-y-1 text-xs leading-5 text-stone-500">
-                    <p>{item.contactLine}</p>
-                    {item.email ? <p>{item.email}</p> : null}
-                    <p>{item.memo}</p>
-                  </div>
+                  {item.memo ? <p className="mt-1 truncate text-xs text-stone-500">{item.memo}</p> : null}
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                  {item.baseTypeBadges.map((badge) => (
-                    <span key={badge.key} className={`rounded-full px-2.5 py-1 text-xs font-medium ${badge.tone}`}>
-                      {badge.label}
-                    </span>
-                  ))}
-                  {item.outsourcingProcessBadges.map((badge) => (
-                    <span key={badge.key} className={`rounded-full px-2.5 py-1 text-xs font-medium ${badge.tone}`}>
-                      {badge.label}
-                    </span>
-                  ))}
+                <p className="text-sm text-stone-600">{item.contactName}</p>
+                <p className="text-sm text-stone-600">{item.phone}</p>
+                <p className="min-w-0 truncate text-sm text-stone-600">{item.email}</p>
+
+                <div className="min-w-0 space-y-1.5">
+                  <div className="flex flex-wrap gap-1.5">
+                    {item.baseTypeBadges.map((badge) => (
+                      <span key={badge.key} className={`rounded-full px-2.5 py-1 text-xs font-medium ${badge.tone}`}>
+                        {badge.label}
+                      </span>
+                    ))}
+                  </div>
+                  {item.outsourcingProcessLabel ? (
+                    <div className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
+                      {item.outsourcingProcessLabel}
+                    </div>
+                  ) : null}
                 </div>
 
                 <div>
@@ -65,7 +69,6 @@ export default function PartnerMasterList({ items, onEditPartner }: PartnerMaste
                     {item.isActive ? listText.active : listText.inactive}
                   </span>
                 </div>
-                <p className="text-sm text-stone-600">{item.updatedAtLabel}</p>
                 <div>
                   <button
                     type="button"

@@ -51,7 +51,7 @@ export default function PartnerMasterSection() {
   const [newProcessLabel, setNewProcessLabel] = useState("");
   const [processFormError, setProcessFormError] = useState("");
   const [deletingProcessType, setDeletingProcessType] = useState<OutsourcingProcessType | null>(null);
-  const [repositoryStatus, setRepositoryStatus] = useState("저장소 확인 중");
+  const [, setRepositoryStatus] = useState("저장소 확인 중");
 
   useEffect(() => {
     let isMounted = true;
@@ -288,10 +288,6 @@ export default function PartnerMasterSection() {
     <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm md:p-6">
       <PartnerMasterHeader onOpenCreateModal={openCreateModal} onOpenProcessModal={openProcessModal} />
 
-      <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-xs text-stone-500">
-        Partner 저장소 상태: {repositoryStatus}
-      </div>
-
       <PartnerMasterFilters
         searchTerm={searchTerm}
         onSearchTermChange={setSearchTerm}
@@ -302,8 +298,6 @@ export default function PartnerMasterSection() {
         onStatusChange={setSelectedStatus}
         filteredCount={listViewModel.filteredCount}
         hasSearch={listViewModel.hasSearch}
-        activeCount={listViewModel.filteredSummary.active}
-        inactiveCount={listViewModel.filteredSummary.inactive}
       />
 
       <PartnerMasterList

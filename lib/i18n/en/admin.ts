@@ -83,6 +83,9 @@ export const adminEn = {
     list: {
       columns: {
         name: "Name",
+        contact: "Contact",
+        phone: "Phone",
+        email: "Email",
         type: "Type",
         status: "Status",
         updatedAt: "Updated",

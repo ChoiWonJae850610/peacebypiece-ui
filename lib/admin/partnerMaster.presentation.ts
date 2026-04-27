@@ -25,19 +25,24 @@ function buildPartnerListItemViewModel(
     };
   });
 
-  const contactName = partner.contactName?.trim() || "담당자 미등록";
-  const phone = formatPartnerPhone(partner.phone) || "연락처 미등록";
+  const contactName = partner.contactName?.trim() || "-";
+  const phone = formatPartnerPhone(partner.phone) || "-";
+  const outsourcingProcessLabel = outsourcingProcessBadges.length > 0
+    ? `[${outsourcingProcessBadges.map((badge) => badge.label).join(", ")}]`
+    : "";
 
   return {
     id: partner.id,
     name: partner.name,
     isActive: partner.isActive,
-    contactLine: `${contactName} · ${phone}`,
-    email: partner.email?.trim() ?? "",
-    memo: partner.memo || "메모 없음",
+    contactName,
+    phone,
+    email: partner.email?.trim() || "-",
+    memo: partner.memo || "",
     updatedAtLabel: formatPartnerDate(partner.updatedAt),
     baseTypeBadges,
     outsourcingProcessBadges,
+    outsourcingProcessLabel,
   };
 }
 

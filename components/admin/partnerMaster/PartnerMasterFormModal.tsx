@@ -63,7 +63,6 @@ export default function PartnerMasterFormModal({
       open={open}
       onClose={onClose}
       title={editingPartnerId ? formText.editTitle : formText.createTitle}
-      description={formText.description}
       maxWidthClass="md:max-w-2xl"
       bodyClassName="space-y-5"
       footer={
@@ -181,10 +180,7 @@ export default function PartnerMasterFormModal({
 
         <div className="space-y-2 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4">
           <div className="flex items-center justify-between gap-3">
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-stone-800">{formText.labels.outsourcing}</p>
-              <p className="text-xs leading-5 text-stone-500">{formText.outsourcingDescription}</p>
-            </div>
+            <p className="text-sm font-medium text-stone-800">{formText.labels.outsourcing}</p>
             <div className="flex items-center gap-3">
               <StatusToggle checked={isOutsourcingEnabled} onChange={onSetOutsourcingEnabled} srLabel={formText.outsourcingSrLabel} size="sm" />
               <span className={`text-sm font-medium ${isOutsourcingEnabled ? "text-stone-900" : "text-stone-500"}`}>
@@ -197,10 +193,7 @@ export default function PartnerMasterFormModal({
         {isOutsourcingEnabled ? (
           <div className="space-y-3 rounded-2xl border border-stone-200 bg-white p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-stone-800">{formText.labels.outsourcingProcesses}</p>
-                <p className="text-xs leading-5 text-stone-500">{formText.outsourcingProcessDescription}</p>
-              </div>
+              <p className="text-sm font-medium text-stone-800">{formText.labels.outsourcingProcesses}</p>
               <button
                 type="button"
                 onClick={onOpenProcessModal}

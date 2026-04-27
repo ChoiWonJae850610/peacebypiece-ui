@@ -15,10 +15,7 @@ export default function PartnerMasterHeader({ onOpenProcessModal, onOpenCreateMo
     <div className="flex flex-col gap-4 border-b border-stone-200 pb-5 md:flex-row md:items-end md:justify-between">
       <div className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">{headerText.eyebrow}</p>
-        <div>
-          <h2 className="text-xl font-semibold tracking-tight text-stone-900">{headerText.title}</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">{headerText.description}</p>
-        </div>
+        <h2 className="text-xl font-semibold tracking-tight text-stone-900">{headerText.title}</h2>
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <button

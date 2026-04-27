@@ -82,7 +82,10 @@ export const adminKo = {
     },
     list: {
       columns: {
-        name: "이름",
+        name: "업체명",
+        contact: "담당자명",
+        phone: "연락처",
+        email: "이메일",
         type: "유형",
         status: "상태",
         updatedAt: "수정일",
