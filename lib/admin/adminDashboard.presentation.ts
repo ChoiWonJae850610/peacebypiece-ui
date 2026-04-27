@@ -21,7 +21,7 @@ export const ADMIN_SUMMARY_CARDS: AdminSummaryCard[] = [
   { label: "진행 중 작지", value: "0", href: "/worker" },
   { label: "검토 대기", value: "0", href: "/worker" },
   { label: "발주 준비", value: "0", href: "/worker" },
-  { label: "첨부파일 사용량", value: "0GB / 5GB", href: "/admin/dashboard" },
+  { label: "첨부파일 사용량", value: "0GB / 5GB", href: "/admin/files" },
 ];
 
 export const ADMIN_DASHBOARD_SECTIONS: AdminDashboardSection[] = [
@@ -50,9 +50,9 @@ export const ADMIN_DASHBOARD_SECTIONS: AdminDashboardSection[] = [
   {
     title: "파일 / 용량 관리",
     items: [
-      { label: "첨부파일 목록", description: "작지별 첨부파일과 대표 이미지 확인", href: "/admin/dashboard" },
-      { label: "휴지통", description: "소프트 삭제된 첨부파일 복원 또는 보관 상태 확인", href: "/admin/dashboard" },
-      { label: "용량 사용량", description: "첨부파일 저장소 사용량과 추가 요청 관리", href: "/admin/dashboard" },
+      { label: "첨부파일 목록", description: "작지별 첨부파일과 대표 이미지 확인", href: "/admin/files" },
+      { label: "휴지통", description: "소프트 삭제된 첨부파일 복원 또는 보관 상태 확인", href: "/admin/files" },
+      { label: "용량 사용량", description: "첨부파일 저장소 사용량과 추가 요청 관리", href: "/admin/files" },
     ],
   },
   {
