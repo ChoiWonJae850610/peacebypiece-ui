@@ -8,7 +8,16 @@ import AdminShell from "@/components/admin/layout/AdminShell";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
 import { requestMoveAttachmentsToTrash, requestPurgeTrashItems, requestRestoreTrashItems, requestRunPurgeWorker } from "@/lib/admin/adminFiles.actions";
 import { getAdminFileManagementSnapshot } from "@/lib/admin/adminFiles.adapter";
-import { sortAdminManagedFiles } from "@/lib/admin/adminFiles.presentation";
+import {
+  buildAdminFilePolicyUpdateInput,
+  buildAdminSelectAllIds,
+  buildAdminStoragePolicyBadges,
+  getAdminFilePolicySourceLabel,
+  selectAdminManagedFilesByIds,
+  selectAdminTrashItemsByIds,
+  sortAdminManagedFiles,
+  toggleAdminSelectedId,
+} from "@/lib/admin/adminFiles.presentation";
 import type { AdminFileManagementSnapshot, AdminFileSortKey, AdminFileTabKey, AdminStoragePolicySettings } from "@/lib/admin/adminFiles.types";
 import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
 import { APP_VERSION } from "@/lib/constants/app";
@@ -56,21 +65,22 @@ export default function AdminFilesPage() {
   }, []);
 
   const sortedAttachments = useMemo(() => sortAdminManagedFiles(snapshot.attachments, fileSortKey), [fileSortKey, snapshot.attachments]);
-  const selectedAttachments = snapshot.attachments.filter((item) => selectedAttachmentIds.includes(item.id));
-  const selectedTrashItems = snapshot.trashItems.filter((item) => selectedTrashItemIds.includes(item.id));
+  const selectedAttachments = useMemo(() => selectAdminManagedFilesByIds(snapshot.attachments, selectedAttachmentIds), [selectedAttachmentIds, snapshot.attachments]);
+  const selectedTrashItems = useMemo(() => selectAdminTrashItemsByIds(snapshot.trashItems, selectedTrashItemIds), [selectedTrashItemIds, snapshot.trashItems]);
+  const storagePolicyBadges = useMemo(() => buildAdminStoragePolicyBadges(policySettings), [policySettings]);
 
   function toggleId(targetId: string, currentIds: string[], setIds: (ids: string[]) => void) {
-    setIds(currentIds.includes(targetId) ? currentIds.filter((id) => id !== targetId) : [...currentIds, targetId]);
+    setIds(toggleAdminSelectedId(currentIds, targetId));
     setActionMessage(null);
   }
 
   function handleToggleAllAttachments() {
-    setSelectedAttachmentIds(selectedAttachmentIds.length === sortedAttachments.length ? [] : sortedAttachments.map((item) => item.id));
+    setSelectedAttachmentIds(buildAdminSelectAllIds(sortedAttachments, selectedAttachmentIds));
     setActionMessage(null);
   }
 
   function handleToggleAllTrashItems() {
-    setSelectedTrashItemIds(selectedTrashItemIds.length === snapshot.trashItems.length ? [] : snapshot.trashItems.map((item) => item.id));
+    setSelectedTrashItemIds(buildAdminSelectAllIds(snapshot.trashItems, selectedTrashItemIds));
     setActionMessage(null);
   }
 
@@ -112,13 +122,7 @@ export default function AdminFilesPage() {
       const response = await fetch("/api/admin/companies/current", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          filePolicy: {
-            softDeleteEnabled: nextPolicySettings.softDeleteEnabled,
-            includeTrashInUsage: nextPolicySettings.includeTrashInUsage,
-            trashRetentionDays: nextPolicySettings.purgeAfterDays,
-          },
-        }),
+        body: JSON.stringify(buildAdminFilePolicyUpdateInput(nextPolicySettings)),
       });
       const payload = (await response.json().catch(() => null)) as { message?: string } | null;
 
@@ -168,7 +172,7 @@ export default function AdminFilesPage() {
         policySettings={policySettings}
         onChangePolicySettings={handleChangePolicySettings}
         isSavingPolicy={isSavingPolicy}
-        policySourceLabel={snapshot.dataSource === "db" ? "company_settings DB" : "샘플 정책"}
+        policySourceLabel={getAdminFilePolicySourceLabel(snapshot.dataSource)}
       />
 
       <AdminCard className="p-2">
@@ -237,9 +241,11 @@ export default function AdminFilesPage() {
             </div>
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-4">
-            <div className="rounded-3xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">삭제 방식: {policySettings.softDeleteEnabled ? "소프트 삭제" : "즉시 삭제"}</div>
-            <div className="rounded-3xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">용량 계산: {policySettings.includeTrashInUsage ? "휴지통 포함" : "사용중 파일만"}</div>
-            <div className="rounded-3xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">실제 삭제 기간: {policySettings.purgeAfterDays}일</div>
+            {storagePolicyBadges.map((item) => (
+              <div key={item.label} className="rounded-3xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
+                {item.label}: {item.value}
+              </div>
+            ))}
             <a href="/admin/settings" className="rounded-3xl border border-stone-300 bg-white p-4 text-sm font-semibold text-stone-700 transition hover:bg-stone-50">환경설정에서 전체 정책 관리</a>
           </div>
         </AdminCard>

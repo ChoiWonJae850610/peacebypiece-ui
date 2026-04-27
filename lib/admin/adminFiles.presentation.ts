@@ -1,4 +1,5 @@
 import type {
+  AdminFileDataSource,
   AdminFileSortKey,
   AdminFileTabItem,
   AdminFileUsageCard,
@@ -222,4 +223,46 @@ export function sortAdminManagedFiles(items: AdminManagedFileItem[], sortKey: Ad
     }
     return b.uploadedAt.localeCompare(a.uploadedAt);
   });
+}
+
+export function selectAdminManagedFilesByIds(items: AdminManagedFileItem[], selectedIds: string[]): AdminManagedFileItem[] {
+  if (selectedIds.length === 0) return [];
+  const selectedIdSet = new Set(selectedIds);
+  return items.filter((item) => selectedIdSet.has(item.id));
+}
+
+export function selectAdminTrashItemsByIds(items: AdminTrashFileItem[], selectedIds: string[]): AdminTrashFileItem[] {
+  if (selectedIds.length === 0) return [];
+  const selectedIdSet = new Set(selectedIds);
+  return items.filter((item) => selectedIdSet.has(item.id));
+}
+
+export function toggleAdminSelectedId(currentIds: string[], targetId: string): string[] {
+  return currentIds.includes(targetId) ? currentIds.filter((id) => id !== targetId) : [...currentIds, targetId];
+}
+
+export function buildAdminSelectAllIds<T extends { id: string }>(items: T[], currentIds: string[]): string[] {
+  return currentIds.length === items.length ? [] : items.map((item) => item.id);
+}
+
+export function getAdminFilePolicySourceLabel(dataSource: AdminFileDataSource): string {
+  return dataSource === "db" ? "company_settings DB" : "샘플 정책";
+}
+
+export function buildAdminFilePolicyUpdateInput(policySettings: AdminStoragePolicySettings) {
+  return {
+    filePolicy: {
+      softDeleteEnabled: policySettings.softDeleteEnabled,
+      includeTrashInUsage: policySettings.includeTrashInUsage,
+      trashRetentionDays: policySettings.purgeAfterDays,
+    },
+  };
+}
+
+export function buildAdminStoragePolicyBadges(policySettings: AdminStoragePolicySettings): { label: string; value: string }[] {
+  return [
+    { label: "삭제 방식", value: policySettings.softDeleteEnabled ? "소프트 삭제" : "즉시 삭제" },
+    { label: "용량 계산", value: policySettings.includeTrashInUsage ? "휴지통 포함" : "사용중 파일만" },
+    { label: "실제 삭제 기간", value: `${policySettings.purgeAfterDays}일` },
+  ];
 }

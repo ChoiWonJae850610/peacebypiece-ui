@@ -1,28 +1,21 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
-import type { CompanySettings, CompanySettingsUpdateInput } from "@/lib/admin/companySettings.types";
-
-const THEME_OPTIONS = [
-  { label: "Blue", value: "blue", swatchClassName: "bg-blue-500", description: "기본 관리자 색상" },
-  { label: "Emerald", value: "emerald", swatchClassName: "bg-emerald-500", description: "차분한 운영 색상" },
-  { label: "Violet", value: "violet", swatchClassName: "bg-violet-500", description: "브랜드 강조 색상" },
-  { label: "Stone", value: "stone", swatchClassName: "bg-stone-500", description: "무채색 운영 색상" },
-] as const;
-
-const LANGUAGE_OPTIONS = [
-  { label: "한국어", value: "ko" },
-  { label: "English", value: "en" },
-] as const;
-
-const RETENTION_DAY_OPTIONS = [1, 5, 15, 30] as const;
+import {
+  ADMIN_LANGUAGE_OPTIONS,
+  ADMIN_RETENTION_DAY_OPTIONS,
+  ADMIN_THEME_OPTIONS,
+  buildCompanySettingsUpdateInput,
+  getAdminSettingsSaveLabel,
+  getAdminSettingsUpdatedAtLabel,
+  type AdminSettingSaveState,
+} from "@/lib/admin/adminSettings.presentation";
+import type { CompanySettings } from "@/lib/admin/companySettings.types";
 
 type AdminCompanySettingsFormProps = {
   initialSettings: CompanySettings;
 };
-
-type SaveState = "idle" | "saving" | "saved" | "error";
 
 function ToggleRow({ label, description, checked, onChange }: { label: string; description: string; checked: boolean; onChange: (checked: boolean) => void }) {
   return (
@@ -41,25 +34,13 @@ function ToggleRow({ label, description, checked, onChange }: { label: string; d
   );
 }
 
-function toUpdateInput(settings: CompanySettings): CompanySettingsUpdateInput {
-  return {
-    ui: settings.ui,
-    filePolicy: settings.filePolicy,
-    notificationPolicy: settings.notificationPolicy,
-  };
-}
-
 export default function AdminCompanySettingsForm({ initialSettings }: AdminCompanySettingsFormProps) {
   const [draft, setDraft] = useState<CompanySettings>(initialSettings);
-  const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [saveState, setSaveState] = useState<AdminSettingSaveState>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const saveLabel = useMemo(() => {
-    if (saveState === "saving") return "저장 중";
-    if (saveState === "saved") return "저장됨";
-    if (saveState === "error") return "다시 저장";
-    return "설정 저장";
-  }, [saveState]);
+  const saveLabel = getAdminSettingsSaveLabel(saveState);
+  const updatedAtLabel = getAdminSettingsUpdatedAtLabel(draft.updatedAt);
 
   async function handleSave() {
     setSaveState("saving");
@@ -69,7 +50,7 @@ export default function AdminCompanySettingsForm({ initialSettings }: AdminCompa
       const response = await fetch("/api/admin/companies/current", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(toUpdateInput(draft)),
+        body: JSON.stringify(buildCompanySettingsUpdateInput(draft)),
       });
       const payload = (await response.json()) as { ok?: boolean; settings?: CompanySettings; message?: string };
 
@@ -95,7 +76,7 @@ export default function AdminCompanySettingsForm({ initialSettings }: AdminCompa
             <p className="mt-2 text-sm leading-6 text-stone-500">변경한 테마, 언어, 파일 정책, 알림 정책을 company_settings 테이블에 저장합니다. 파일/용량 관리 화면의 빠른 수정도 같은 기준을 사용합니다.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            {draft.updatedAt ? <span className="rounded-full bg-stone-100 px-3 py-2 text-xs font-semibold text-stone-500">최근 저장 {new Date(draft.updatedAt).toLocaleString("ko-KR")}</span> : null}
+            {updatedAtLabel ? <span className="rounded-full bg-stone-100 px-3 py-2 text-xs font-semibold text-stone-500">{updatedAtLabel}</span> : null}
             <button
               type="button"
               onClick={handleSave}
@@ -114,7 +95,7 @@ export default function AdminCompanySettingsForm({ initialSettings }: AdminCompa
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">THEME</p>
           <h2 className="mt-2 text-lg font-semibold text-stone-950">테마 색상</h2>
           <div className="mt-5 grid gap-3 md:grid-cols-2">
-            {THEME_OPTIONS.map((option) => (
+            {ADMIN_THEME_OPTIONS.map((option) => (
               <button
                 key={option.value}
                 type="button"
@@ -136,7 +117,7 @@ export default function AdminCompanySettingsForm({ initialSettings }: AdminCompa
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">LANGUAGE</p>
           <h2 className="mt-2 text-lg font-semibold text-stone-950">언어 설정</h2>
           <div className="mt-5 grid gap-3">
-            {LANGUAGE_OPTIONS.map((option) => (
+            {ADMIN_LANGUAGE_OPTIONS.map((option) => (
               <button
                 key={option.value}
                 type="button"
@@ -182,7 +163,7 @@ export default function AdminCompanySettingsForm({ initialSettings }: AdminCompa
                 onChange={(event) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, trashRetentionDays: Number(event.target.value) } }))}
                 className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm outline-none focus:border-stone-400"
               >
-                {RETENTION_DAY_OPTIONS.map((days) => (
+                {ADMIN_RETENTION_DAY_OPTIONS.map((days) => (
                   <option key={days} value={days}>{days}일</option>
                 ))}
               </select>
