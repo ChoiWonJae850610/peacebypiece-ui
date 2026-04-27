@@ -68,7 +68,7 @@ export type AdminStoragePolicyItem = {
   description: string;
 };
 
-export type AdminFileActionStatus = "pending-api" | "success" | "error";
+export type AdminFileActionStatus = "empty-selection" | "pending-api" | "success" | "error";
 
 export type AdminFileActionResult = {
   ok: boolean;

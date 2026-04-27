@@ -541,8 +541,9 @@ CREATE INDEX attachments_primary_design_idx
   ON attachments (order_id, type, is_primary)
   WHERE is_active = true AND deleted_at IS NULL;
 
-CREATE UNIQUE INDEX attachment_trash_items_attachment_unique_idx
-  ON attachment_trash_items (attachment_id);
+CREATE UNIQUE INDEX attachment_trash_items_pending_attachment_unique_idx
+  ON attachment_trash_items (attachment_id)
+  WHERE purge_status = 'pending' AND restored_at IS NULL AND purged_at IS NULL;
 
 CREATE INDEX attachment_trash_items_attachment_idx
   ON attachment_trash_items (attachment_id);

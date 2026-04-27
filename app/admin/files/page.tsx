@@ -44,14 +44,16 @@ export default function AdminFilesPage() {
     setActionMessage(result.message);
   }
 
-  function handleRestoreTrashItem() {
-    const result = requestRestoreTrashItems(selectedTrashItems);
+  async function handleRestoreTrashItem() {
+    const result = await requestRestoreTrashItems(selectedTrashItems);
     setActionMessage(result.message);
+    if (result.ok) setSelectedTrashItemIds([]);
   }
 
-  function handlePurgeTrashItem() {
-    const result = requestPurgeTrashItems(selectedTrashItems);
+  async function handlePurgeTrashItem() {
+    const result = await requestPurgeTrashItems(selectedTrashItems);
     setActionMessage(result.message);
+    if (result.ok) setSelectedTrashItemIds([]);
   }
 
   function handleChangeTab(tabKey: AdminFileTabKey) {
