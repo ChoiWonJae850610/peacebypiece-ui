@@ -8,6 +8,7 @@ type FileStorageSummaryProps = {
   policyItems: AdminStoragePolicyItem[];
   policySettings: AdminStoragePolicySettings;
   onChangePolicySettings: (next: AdminStoragePolicySettings) => void;
+  isSavingPolicy?: boolean;
 };
 
 function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange: (next: boolean) => void; label: string }) {
@@ -24,7 +25,7 @@ function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange
   );
 }
 
-export default function FileStorageSummary({ usageCards, usageSummary, policyItems, policySettings, onChangePolicySettings }: FileStorageSummaryProps) {
+export default function FileStorageSummary({ usageCards, usageSummary, policyItems, policySettings, onChangePolicySettings, isSavingPolicy = false }: FileStorageSummaryProps) {
   const isWarning = usageSummary.statusTone === "warning";
 
   return (
@@ -67,7 +68,10 @@ export default function FileStorageSummary({ usageCards, usageSummary, policyIte
       <section className="rounded-[32px] border border-stone-200 bg-white p-5 shadow-sm">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">POLICY</p>
-          <h2 className="mt-2 text-xl font-semibold tracking-tight text-stone-950">용량 / 휴지통 정책</h2>
+          <div className="mt-2 flex items-center justify-between gap-3">
+            <h2 className="text-xl font-semibold tracking-tight text-stone-950">용량 / 휴지통 정책</h2>
+            {isSavingPolicy ? <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">저장 중</span> : null}
+          </div>
         </div>
 
         <div className="mt-5 grid gap-3">

@@ -25,7 +25,7 @@ export const ADMIN_FILE_USAGE_CARDS: AdminFileUsageCard[] = [
   { label: "전체 사용량", value: "2.0GB / 5GB", description: "휴지통 보관 파일 포함" },
   { label: "첨부파일", value: "3개", description: "작지에 연결된 이미지, PDF, 기타 파일" },
   { label: "휴지통", value: "2개", description: "소프트 삭제 후 보관 중인 파일" },
-  { label: "복구 가능 기간", value: "30일", description: "purge_after_at 기준" },
+  { label: "복구 가능 기간", value: "15일", description: "company_settings.trash_retention_days 기준" },
 ];
 
 export const ADMIN_FILE_TABS: AdminFileTabItem[] = [
@@ -156,7 +156,7 @@ export const ADMIN_FILE_TRASH_PLACEHOLDERS: AdminTrashFileItem[] = [
 export const ADMIN_STORAGE_POLICY_SETTINGS: AdminStoragePolicySettings = {
   softDeleteEnabled: true,
   includeTrashInUsage: true,
-  purgeAfterDays: 30,
+  purgeAfterDays: 15,
 };
 
 export const ADMIN_STORAGE_POLICY_ITEMS: AdminStoragePolicyItem[] = [
@@ -172,7 +172,7 @@ export const ADMIN_STORAGE_POLICY_ITEMS: AdminStoragePolicyItem[] = [
   },
   {
     label: "실제 삭제",
-    value: "30일 이후",
+    value: "15일 이후",
     description: "purge_after_at 이후 dryRun 검토 후 /api/admin/files/trash/purge-worker가 R2 원본과 썸네일 삭제",
   },
 ];

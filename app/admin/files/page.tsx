@@ -27,6 +27,7 @@ export default function AdminFilesPage() {
   const [selectedTrashItemIds, setSelectedTrashItemIds] = useState<string[]>([]);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [isPurgeWorkerRunning, setIsPurgeWorkerRunning] = useState(false);
+  const [isSavingPolicy, setIsSavingPolicy] = useState(false);
 
   async function refreshSnapshot() {
     setIsLoadingSnapshot(true);
@@ -100,6 +101,43 @@ export default function AdminFilesPage() {
     }
   }
 
+
+  async function handleChangePolicySettings(nextPolicySettings: AdminStoragePolicySettings) {
+    const previousPolicySettings = policySettings;
+    setPolicySettings(nextPolicySettings);
+    setIsSavingPolicy(true);
+    setActionMessage(null);
+
+    try {
+      const response = await fetch("/api/admin/companies/current", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filePolicy: {
+            softDeleteEnabled: nextPolicySettings.softDeleteEnabled,
+            includeTrashInUsage: nextPolicySettings.includeTrashInUsage,
+            trashRetentionDays: nextPolicySettings.purgeAfterDays,
+          },
+        }),
+      });
+      const payload = (await response.json().catch(() => null)) as { message?: string } | null;
+
+      if (!response.ok) {
+        setPolicySettings(previousPolicySettings);
+        setActionMessage(payload?.message ? `파일 정책 저장 실패: ${payload.message}` : "파일 정책 저장 실패");
+        return;
+      }
+
+      setActionMessage("파일/용량 정책을 저장했습니다.");
+      await refreshSnapshot();
+    } catch (error) {
+      setPolicySettings(previousPolicySettings);
+      setActionMessage(error instanceof Error ? `파일 정책 저장 실패: ${error.message}` : "파일 정책 저장 실패");
+    } finally {
+      setIsSavingPolicy(false);
+    }
+  }
+
   async function handleRunPurgeWorker(dryRun: boolean) {
     setIsPurgeWorkerRunning(true);
     const result = await requestRunPurgeWorker(dryRun);
@@ -128,7 +166,8 @@ export default function AdminFilesPage() {
         usageSummary={snapshot.usageSummary}
         policyItems={snapshot.storagePolicies}
         policySettings={policySettings}
-        onChangePolicySettings={setPolicySettings}
+        onChangePolicySettings={handleChangePolicySettings}
+        isSavingPolicy={isSavingPolicy}
       />
 
       <AdminCard className="p-2">
