@@ -50,6 +50,7 @@ export const DEFAULT_PARTNER_FILTER_STATE: PartnerListFilterState = {
 export const PARTNER_MASTER_FORM_ERRORS = {
   nameRequired: "업체명을 입력하세요.",
   typeRequired: "유형을 하나 이상 선택하세요.",
+  emailInvalid: "올바른 이메일 형식으로 입력하세요.",
   processNameRequired: "공정명을 입력하세요.",
   duplicateProcessLabel: "같은 표시명의 외주공정이 이미 있다.",
 } as const;

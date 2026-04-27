@@ -151,6 +151,8 @@ export default function PartnerMasterFormModal({
           <input
             id="partner-email"
             type="email"
+            inputMode="email"
+            pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
             value={draft.email}
             onChange={(event) => onDraftChange((current) => ({ ...current, email: event.target.value }))}
             placeholder={formText.placeholders.email}
@@ -160,7 +162,7 @@ export default function PartnerMasterFormModal({
       </div>
       </AdminModalSection>
 
-      <AdminModalSection title="분류와 외주공정">
+      <AdminModalSection title="분류">
       <div className="space-y-3">
         <div className="space-y-2">
           <p className={adminModalLabelClassName}>{formText.labels.baseTypes}</p>

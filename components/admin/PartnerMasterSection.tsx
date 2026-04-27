@@ -181,6 +181,10 @@ export default function PartnerMasterSection() {
       setFormError(PARTNER_MASTER_FORM_ERRORS.typeRequired);
       return;
     }
+    if (normalizedDraft.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedDraft.email)) {
+      setFormError(PARTNER_MASTER_FORM_ERRORS.emailInvalid);
+      return;
+    }
 
     savePartnerMasterItemToApi(editingPartnerId, normalizedDraft)
       .then((payload) => {

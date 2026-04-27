@@ -26,7 +26,7 @@ export default function PartnerMasterList({ items, onEditPartner, className = "m
       </div>
       <div className="min-h-0 flex-1 divide-y divide-stone-200 overflow-y-auto">
         {items.length === 0 ? (
-          <div className="px-4 py-10 text-sm text-stone-500">{listText.empty}</div>
+          <div className="flex min-h-[320px] h-full items-center justify-center px-4 py-10 text-center text-sm font-medium text-stone-500">{listText.empty}</div>
         ) : (
           items.map((item) => (
             <article key={item.id} className={["px-4 py-4", item.isActive ? "bg-white" : "bg-stone-50/80"].join(" ")}>

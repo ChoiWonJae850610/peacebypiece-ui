@@ -52,7 +52,7 @@ export const adminKo = {
   partnerMaster: {
     page: {
       title: "거래처 / 공장 관리",
-      description: "기본 거래 유형은 공장, 원단, 부자재로 관리하고 외주 여부와 공정 연결은 별도 속성으로 관리합니다.",
+      description: "",
       moveToAdminMain: "관리자 홈",
       moveToWorkspace: "작업지시서 화면으로 이동",
     },
@@ -91,7 +91,7 @@ export const adminKo = {
         updatedAt: "수정일",
         actions: "작업",
       },
-      empty: "선택한 필터에 맞는 거래처가 없습니다.",
+      empty: "선택한 거래처가 없습니다.",
       inactiveBadge: "미사용",
       contactMissing: "담당자 없음",
       phoneMissing: "연락처 없음",
@@ -105,7 +105,7 @@ export const adminKo = {
     form: {
       createTitle: "거래처 / 공장 추가",
       editTitle: "거래처 / 공장 수정",
-      description: "거래처 마스터에서 이름, 담당자, 연락처, 기본 거래 유형, 외주 설정을 관리합니다.",
+      description: "",
       cancel: "취소",
       save: "저장",
       labels: {
@@ -114,7 +114,7 @@ export const adminKo = {
         contactName: "담당자명",
         phone: "연락처",
         email: "이메일",
-        baseTypes: "기본 거래 유형",
+        baseTypes: "분류",
         outsourcing: "외주 여부",
         outsourcingProcesses: "외주 공정",
         memo: "메모",
@@ -142,7 +142,7 @@ export const adminKo = {
     },
     processManagement: {
       title: "외주 공정 관리",
-      description: "외주 공정을 추가하고, 좌우 이동 후 저장 버튼을 눌러 사용중/미사용 상태를 반영합니다.",
+      description: "",
       resetDefaults: "기본값 복원",
       close: "닫기",
       save: "저장",
