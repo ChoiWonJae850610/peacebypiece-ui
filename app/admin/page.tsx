@@ -12,6 +12,13 @@ const summaryCards = [
 
 const dashboardSections = [
   {
+    title: "통계 / 대시보드",
+    items: [
+      { label: "통계 화면", description: "작지, 거래처, 생산 흐름, 첨부파일 사용량 지표 확인", href: null },
+      { label: "운영 현황", description: "검토 대기, 발주 준비, 완료 흐름을 요약해서 확인", href: null },
+    ],
+  },
+  {
     title: "작업 관리",
     items: [
       { label: "작지 워크스페이스", description: "현재 작업지시서 목록과 상세 화면으로 이동", href: "/worker" },
@@ -23,8 +30,7 @@ const dashboardSections = [
     title: "기준정보 관리",
     items: [
       { label: "거래처 / 공장 관리", description: "공장, 원단, 부자재, 외주처 정보 관리", href: "/admin/partners" },
-      { label: "외주공정 관리", description: "거래처와 연결할 외주공정 기준 관리", href: "/admin/partners" },
-      { label: "원단 / 부자재 거래처", description: "작업지시서 선택 기준으로 사용할 거래처 관리", href: "/admin/partners" },
+      { label: "단위 관리", description: "원단, 부자재, 생산 수량에 사용할 단위 기준 관리", href: null },
     ],
   },
   {
