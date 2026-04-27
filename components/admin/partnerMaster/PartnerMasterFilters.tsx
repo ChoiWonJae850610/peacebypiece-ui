@@ -48,7 +48,7 @@ export default function PartnerMasterFilters({
             value={searchTerm}
             onChange={(event) => onSearchTermChange(event.target.value)}
             placeholder={filterText.searchPlaceholder}
-            className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-stone-500"
+            className="h-9 w-full rounded-2xl border border-stone-300 bg-white px-4 text-sm outline-none transition focus:border-stone-500"
           />
         </label>
 
@@ -63,7 +63,7 @@ export default function PartnerMasterFilters({
                   type="button"
                   onClick={() => onToggleType(item.value)}
                   className={[
-                    "rounded-full px-3 py-1.5 text-sm font-medium transition",
+                    "inline-flex h-9 items-center rounded-full px-3 text-sm font-medium transition",
                     isSelected ? "bg-stone-900 text-white" : "bg-white text-stone-700 hover:bg-stone-200",
                   ].join(" ")}
                 >
@@ -83,7 +83,7 @@ export default function PartnerMasterFilters({
                 type="button"
                 onClick={() => onStatusChange(item.value)}
                 className={[
-                  "rounded-full px-3 py-1.5 text-sm font-medium transition",
+                  "inline-flex h-9 items-center rounded-full px-3 text-sm font-medium transition",
                   selectedStatus === item.value ? "bg-stone-900 text-white" : "bg-white text-stone-700 hover:bg-stone-200",
                 ].join(" ")}
               >

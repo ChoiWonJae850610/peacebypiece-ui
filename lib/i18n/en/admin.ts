@@ -142,7 +142,7 @@ export const adminEn = {
     },
     processManagement: {
       title: "Manage Outsourcing Processes",
-      description: "Keep the outsourcing process list simple with label edits, active toggles, add/remove, and up/down ordering.",
+      description: "Add outsourcing processes and manage active/inactive status with left/right movement.",
       resetDefaults: "Reset Defaults",
       close: "Close",
       newProcessLabel: "New outsourcing process",

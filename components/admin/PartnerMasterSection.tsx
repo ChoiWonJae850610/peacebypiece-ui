@@ -46,6 +46,8 @@ export default function PartnerMasterSection() {
   );
   const [selectedAvailableProcess, setSelectedAvailableProcess] = useState<OutsourcingProcessType | null>(null);
   const [selectedAssignedProcess, setSelectedAssignedProcess] = useState<OutsourcingProcessType | null>(null);
+  const [selectedInactiveProcessDefinition, setSelectedInactiveProcessDefinition] = useState<OutsourcingProcessType | null>(null);
+  const [selectedActiveProcessDefinition, setSelectedActiveProcessDefinition] = useState<OutsourcingProcessType | null>(null);
   const [formError, setFormError] = useState("");
   const [newProcessLabel, setNewProcessLabel] = useState("");
   const [processFormError, setProcessFormError] = useState("");
@@ -88,11 +90,15 @@ export default function PartnerMasterSection() {
   const selectedPrimaryTypes = draft.partnerTypes.filter(isBasePartnerType);
   const availableProcessDefinitions = processDefinitions
     .filter((definition) => definition.isActive && !draft.outsourcingProcessTypes.includes(definition.type))
-    .sort((a, b) => a.sortOrder - b.sortOrder);
+    .sort((a, b) => a.label.localeCompare(b.label, "ko-KR"));
   const assignedProcessDefinitions = processDefinitions
     .filter((definition) => draft.outsourcingProcessTypes.includes(definition.type))
-    .sort((a, b) => a.sortOrder - b.sortOrder);
-  const orderedProcessDefinitions = processDefinitions.slice().sort((a, b) => a.sortOrder - b.sortOrder);
+    .sort((a, b) => a.label.localeCompare(b.label, "ko-KR"));
+  const sortProcessesByLabel = (items: OutsourcingProcessDefinition[]) =>
+    items.slice().sort((a, b) => a.label.localeCompare(b.label, "ko-KR"));
+  const activeProcessDefinitions = sortProcessesByLabel(processDefinitions.filter((definition) => definition.isActive));
+  const inactiveProcessDefinitions = sortProcessesByLabel(processDefinitions.filter((definition) => !definition.isActive));
+  const orderedProcessDefinitions = sortProcessesByLabel(processDefinitions);
 
   const resetDraftState = useCallback(() => {
     setEditingPartnerId(null);
@@ -128,6 +134,8 @@ export default function PartnerMasterSection() {
     setIsProcessModalOpen(false);
     setNewProcessLabel("");
     setProcessFormError("");
+    setSelectedInactiveProcessDefinition(null);
+    setSelectedActiveProcessDefinition(null);
   }, []);
 
   const openProcessModal = useCallback(() => {
@@ -236,6 +244,19 @@ export default function PartnerMasterSection() {
     setProcessFormError("");
   }, [newProcessLabel, persistProcessDefinitions, processDefinitions]);
 
+  const setProcessDefinitionActive = useCallback(
+    (type: OutsourcingProcessType, isActive: boolean) => {
+      setProcessDefinitions((current) => {
+        const nextDefinitions = normalizeOutsourcingProcessDefinitions(
+          current.map((definition) => (definition.type === type ? { ...definition, isActive } : definition)),
+        );
+        persistProcessDefinitions(nextDefinitions);
+        return nextDefinitions;
+      });
+    },
+    [persistProcessDefinitions],
+  );
+
   const requestDeleteProcessDefinition = useCallback((type: OutsourcingProcessType) => {
     setDeletingProcessType(type);
   }, []);
@@ -267,6 +288,8 @@ export default function PartnerMasterSection() {
     persistProcessDefinitions(nextDefinitions);
     setNewProcessLabel("");
     setProcessFormError("");
+    setSelectedInactiveProcessDefinition(null);
+    setSelectedActiveProcessDefinition(null);
   }, [persistProcessDefinitions]);
 
   return (
@@ -315,14 +338,19 @@ export default function PartnerMasterSection() {
         open={isProcessModalOpen}
         newProcessLabel={newProcessLabel}
         processFormError={processFormError}
-        orderedProcessDefinitions={orderedProcessDefinitions}
+        inactiveProcessDefinitions={inactiveProcessDefinitions}
+        activeProcessDefinitions={activeProcessDefinitions}
+        selectedInactiveProcess={selectedInactiveProcessDefinition}
+        selectedActiveProcess={selectedActiveProcessDefinition}
         onClose={closeProcessModal}
         onResetDefaults={resetProcessDefinitions}
         onNewProcessLabelChange={setNewProcessLabel}
         onAddProcessDefinition={addProcessDefinition}
-        onUpdateProcessDefinition={updateProcessDefinition}
+        onSetProcessActive={setProcessDefinitionActive}
         onRequestDelete={requestDeleteProcessDefinition}
         onClearProcessFormError={() => setProcessFormError("")}
+        onSelectInactiveProcess={setSelectedInactiveProcessDefinition}
+        onSelectActiveProcess={setSelectedActiveProcessDefinition}
       />
 
       <PartnerProcessDeleteModal

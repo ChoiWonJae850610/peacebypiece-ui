@@ -191,10 +191,10 @@ export default function PartnerMasterFormModal({
 
             <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_72px_minmax(0,1fr)] md:items-center">
               <div className="space-y-2">
-                <div className="rounded-2xl border border-stone-200 bg-stone-50 p-2">
-                  <div className="max-h-[220px] space-y-2 overflow-auto pr-1">
+                <div className="h-[220px] rounded-2xl border border-stone-200 bg-stone-50 p-2">
+                  <div className="h-full space-y-2 overflow-auto pr-1">
                     {availableProcessDefinitions.length === 0 ? (
-                      <div className="flex h-full min-h-[200px] items-center justify-center px-3 text-center text-sm text-stone-400">{formText.noAvailableProcesses}</div>
+                      <div className="flex h-full items-center justify-center px-3 text-center text-sm text-stone-400">{formText.noAvailableProcesses}</div>
                     ) : (
                       availableProcessDefinitions.map((definition) => {
                         const isSelected = selectedAvailableProcess === definition.type;
@@ -252,10 +252,10 @@ export default function PartnerMasterFormModal({
               </div>
 
               <div className="space-y-2">
-                <div className="rounded-2xl border border-stone-200 bg-stone-50 p-2">
-                  <div className="max-h-[220px] space-y-2 overflow-auto pr-1">
+                <div className="h-[220px] rounded-2xl border border-stone-200 bg-stone-50 p-2">
+                  <div className="h-full space-y-2 overflow-auto pr-1">
                     {assignedProcessDefinitions.length === 0 ? (
-                      <div className="flex h-full min-h-[200px] items-center justify-center px-3 text-center text-sm text-stone-400">{formText.noAssignedProcesses}</div>
+                      <div className="flex h-full items-center justify-center px-3 text-center text-sm text-stone-400">{formText.noAssignedProcesses}</div>
                     ) : (
                       assignedProcessDefinitions.map((definition) => {
                         const isSelected = selectedAssignedProcess === definition.type;

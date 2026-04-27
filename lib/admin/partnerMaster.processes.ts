@@ -14,12 +14,13 @@ export function createDefaultOutsourcingProcessDefinitions(): OutsourcingProcess
 
 export function normalizeOutsourcingProcessDefinitions(definitions: OutsourcingProcessDefinition[]) {
   return definitions
-    .map((definition, index) => ({
+    .map((definition) => ({
       ...definition,
       label: definition.label.trim(),
-      sortOrder: index + 1,
     }))
-    .filter((definition) => Boolean(definition.label));
+    .filter((definition) => Boolean(definition.label))
+    .sort((a, b) => a.label.localeCompare(b.label, "ko-KR"))
+    .map((definition, index) => ({ ...definition, sortOrder: index + 1 }));
 }
 
 export function createOutsourcingProcessTypeKey(label: string) {
@@ -50,7 +51,7 @@ export function createOutsourcingProcessDefinition(
     type: nextType,
     label: label.trim(),
     tone: "bg-slate-200 text-slate-700",
-    isActive: true,
+    isActive: false,
     sortOrder: currentDefinitions.length + 1,
   };
 }

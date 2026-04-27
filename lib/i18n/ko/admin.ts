@@ -142,7 +142,7 @@ export const adminKo = {
     },
     processManagement: {
       title: "외주 공정 관리",
-      description: "외주 공정 목록을 라벨 수정, 사용 토글, 추가/삭제, 위아래 순서 이동 중심으로 단순하게 관리합니다.",
+      description: "외주 공정을 추가하고, 좌우 이동으로 사용중/미사용 상태를 관리합니다.",
       resetDefaults: "기본값 복원",
       close: "닫기",
       newProcessLabel: "새 외주 공정",
