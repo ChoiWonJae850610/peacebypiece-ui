@@ -135,7 +135,7 @@ export default function FileStorageSummary({
 
   return (
     <section className="shrink-0 rounded-[28px] border border-stone-200 bg-stone-50 p-3">
-      <div className="h-[320px] overflow-hidden rounded-[26px] bg-stone-950 p-5 text-white">
+      <div className="h-[390px] overflow-hidden rounded-[26px] bg-stone-950 p-5 text-white">
         <div className="mb-2 flex items-center justify-between gap-3">
           <div className="flex flex-wrap gap-2">
             {TREND_PERIODS.map((period) => {
@@ -164,7 +164,7 @@ export default function FileStorageSummary({
           </button>
         </div>
 
-        <div className="grid h-[262px] gap-3 lg:grid-cols-[1fr_1fr]">
+        <div className="grid h-[310px] gap-3 lg:grid-cols-[1fr_1fr]">
           <div className="flex min-h-0 flex-col justify-between">
             <div>
               <div className="flex items-start justify-between gap-3">
@@ -183,9 +183,9 @@ export default function FileStorageSummary({
               </div>
             </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="mt-4 grid grid-cols-2 gap-2">
               {summaryItems.map((item) => (
-                <div key={item.label} className="rounded-2xl bg-white/10 px-3 py-3">
+                <div key={item.label} className="rounded-2xl bg-white/10 px-3 py-3.5">
                   <p className="text-[10px] font-semibold text-stone-300">{item.label}</p>
                   <p className="mt-1 text-sm font-semibold text-white">{item.value}</p>
                 </div>

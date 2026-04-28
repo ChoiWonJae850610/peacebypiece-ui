@@ -35,7 +35,7 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
       </div>
 
       <div className="mt-2.5 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[24px] border border-stone-200">
-        <div className="hidden grid-cols-[0.38fr_1.08fr_0.82fr_1.72fr_0.68fr_0.72fr] gap-3 bg-stone-50 px-4 py-2 text-xs font-semibold text-stone-500 md:grid">
+        <div className="hidden grid-cols-[0.38fr_1.08fr_0.82fr_1.72fr_0.68fr_0.72fr] gap-3 bg-stone-50 px-4 py-2 text-[11px] font-semibold text-stone-500 md:grid">
           <span>선택</span>
           <span>작지명</span>
           <span>생성일자</span>
@@ -50,19 +50,19 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
           {items.map((item) => {
             const isSelected = selectedItemIds.includes(item.id);
             return (
-              <button key={item.id} type="button" onClick={() => onToggleItem(item.id)} className={`grid w-full gap-3 px-4 py-2.5 text-left text-sm transition md:grid-cols-[0.38fr_1.08fr_0.82fr_1.72fr_0.68fr_0.72fr] md:items-center ${isSelected ? "bg-stone-100" : "bg-white hover:bg-stone-50"}`}>
+              <button key={item.id} type="button" onClick={() => onToggleItem(item.id)} className={`grid w-full gap-3 px-4 py-2 text-left text-xs transition md:grid-cols-[0.38fr_1.08fr_0.82fr_1.72fr_0.68fr_0.72fr] md:items-center ${isSelected ? "bg-stone-100" : "bg-white hover:bg-stone-50"}`}>
                 <span className={`flex h-5 w-5 items-center justify-center rounded border text-xs ${isSelected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-300 bg-white text-transparent"}`}>✓</span>
                 <div className="min-w-0">
                   <p className="text-xs text-stone-400 md:hidden">작지명</p>
                   <p className="truncate font-semibold text-stone-950">{item.workorderTitle}</p>
                 </div>
-                <p className="text-stone-600">{item.uploadedAt}</p>
+                <p className="text-[12px] text-stone-600">{item.uploadedAt}</p>
                 <div className="min-w-0">
                   <p className="text-xs text-stone-400 md:hidden">파일명</p>
-                  <p className="truncate text-stone-700">{item.fileName}</p>
+                  <p className="truncate text-[12px] text-stone-700">{item.fileName}</p>
                 </div>
-                <p className="text-stone-600">{item.fileType}</p>
-                <p className="text-stone-600">{item.fileSizeLabel}</p>
+                <p className="text-[12px] text-stone-600">{item.fileType}</p>
+                <p className="text-[12px] text-stone-600">{item.fileSizeLabel}</p>
               </button>
             );
           })}

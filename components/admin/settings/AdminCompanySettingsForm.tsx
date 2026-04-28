@@ -41,6 +41,19 @@ function SaveStateBadge({ saveState }: { saveState: AdminSettingSaveState }) {
   return <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white">설정</span>;
 }
 
+function HeaderRefreshButton() {
+  return (
+    <button
+      type="button"
+      aria-label="환경설정 정보 새로고침"
+      title="환경설정 정보 새로고침"
+      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white transition hover:bg-white/15"
+    >
+      <span aria-hidden="true">↻</span>
+    </button>
+  );
+}
+
 export default function AdminCompanySettingsForm({ initialSettings, companyName = "샘플 고객사" }: AdminCompanySettingsFormProps) {
   const [draft, setDraft] = useState<CompanySettings>(initialSettings);
   const [saveState, setSaveState] = useState<AdminSettingSaveState>("idle");
@@ -73,11 +86,15 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
           <div className="flex items-start justify-between gap-3">
             <div>
               <h2 className="text-2xl font-semibold tracking-tight">{companyName}</h2>
-              <p className="mt-2 text-xs font-semibold text-stone-400">요금제: 기본요금제 · {companyDate.updatedAt}</p>
+              <p className="mt-2 text-xs font-semibold text-stone-400">요금제: 기본요금제</p>
+              <p className="mt-1 text-xs font-semibold text-stone-400">{companyDate.updatedAt}</p>
             </div>
-            <SaveStateBadge saveState={saveState} />
+            <div className="flex shrink-0 items-center gap-2">
+              <HeaderRefreshButton />
+              <SaveStateBadge saveState={saveState} />
+            </div>
           </div>
-          <div className="mt-5 grid gap-2.5 sm:grid-cols-4">
+          <div className="mt-6 grid gap-2.5 sm:grid-cols-4">
             <div className="rounded-2xl bg-white/10 px-3 py-3">
               <p className="text-[11px] font-semibold text-stone-400">운영 상태</p>
               <p className="mt-2 text-sm font-semibold text-white">DB 연결</p>

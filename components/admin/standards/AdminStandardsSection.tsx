@@ -216,7 +216,7 @@ export default function AdminStandardsSection() {
           type="button"
           onClick={action.onClick}
           disabled={!action.onClick}
-          className="flex min-h-[104px] items-center justify-between gap-4 rounded-3xl border border-stone-200 bg-stone-50 px-5 py-4 text-left transition enabled:hover:border-stone-300 enabled:hover:bg-white disabled:cursor-default disabled:opacity-70"
+          className="flex min-h-[96px] items-center justify-between gap-4 rounded-3xl border border-stone-200 bg-stone-50 px-5 py-3.5 text-left transition enabled:hover:border-stone-300 enabled:hover:bg-white disabled:cursor-default disabled:opacity-70"
         >
           <span className="min-w-0">
             <span className="block text-base font-semibold text-stone-950">{action.title}</span>
@@ -229,13 +229,13 @@ export default function AdminStandardsSection() {
   );
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col gap-4">
-      <div className="rounded-[28px] border border-stone-200 bg-white p-5 shadow-sm">
-        <h2 className="text-lg font-semibold text-stone-950">정책 관리</h2>
+    <section className="flex min-h-0 flex-1 flex-col gap-3">
+      <div className="flex min-h-0 flex-1 flex-col rounded-[28px] border border-stone-200 bg-white p-4 shadow-sm">
+        <h2 className="shrink-0 text-lg font-semibold text-stone-950">정책 관리</h2>
         <div className="mt-3">{renderActionGrid(policyActions)}</div>
       </div>
-      <div className="rounded-[28px] border border-stone-200 bg-white p-5 shadow-sm">
-        <h2 className="text-lg font-semibold text-stone-950">기준 관리</h2>
+      <div className="flex min-h-0 flex-1 flex-col rounded-[28px] border border-stone-200 bg-white p-4 shadow-sm">
+        <h2 className="shrink-0 text-lg font-semibold text-stone-950">기준 관리</h2>
         <div className="mt-3">{renderActionGrid(standardActions)}</div>
       </div>
 
