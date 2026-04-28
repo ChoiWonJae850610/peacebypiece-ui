@@ -1,6 +1,5 @@
 "use client";
 
-import StatusToggle from "@/components/common/StatusToggle";
 import { buildAdminNotificationSettingItems } from "@/lib/admin/notification/presentation";
 import type { NotificationSettingKey, NotificationSettings } from "@/lib/admin/notification/types";
 
@@ -26,14 +25,21 @@ export default function AdminNotificationSettingsSection({
             <div className="min-w-0 flex-1">
               <div className="text-sm font-medium text-stone-900">{item.label}</div>
             </div>
-            <div className="flex items-center gap-2">
-              <StatusToggle
-                checked={item.checked}
-                onChange={() => onToggleNotificationSetting(item.key)}
-                srLabel={item.srLabel}
-                size="sm"
-              />
-              <span className="text-xs font-medium text-stone-600">{item.stateLabel}</span>
+            <div className="grid w-[144px] grid-cols-2 gap-1.5">
+              <button
+                type="button"
+                onClick={() => !item.checked && onToggleNotificationSetting(item.key)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${item.checked ? "border-emerald-200 bg-emerald-100 text-emerald-800" : "border-stone-200 bg-white text-stone-400 hover:bg-stone-50"}`}
+              >
+                사용
+              </button>
+              <button
+                type="button"
+                onClick={() => item.checked && onToggleNotificationSetting(item.key)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${!item.checked ? "border-stone-900 bg-stone-950 text-white" : "border-stone-200 bg-white text-stone-400 hover:bg-stone-50"}`}
+              >
+                미사용
+              </button>
             </div>
           </div>
         ))}

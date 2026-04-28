@@ -1,0 +1,160 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { AdminModal } from "@/components/admin/layout/AdminModal";
+import { ADMIN_RETENTION_DAY_OPTIONS } from "@/lib/admin/adminSettings.presentation";
+import { runSaveCompanySettingsFlow } from "@/lib/admin/adminSettings.actionFlow";
+import { buildDefaultCompanySettings } from "@/lib/admin/companySettings.defaults";
+import type { CompanySettings } from "@/lib/admin/companySettings.types";
+import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
+
+type AdminFilePolicySettingsModalProps = {
+  open: boolean;
+  onClose: () => void;
+};
+
+function ToggleButtonGroup({ label, activeLabel, inactiveLabel, checked, onChange }: { label: string; activeLabel: string; inactiveLabel: string; checked: boolean; onChange: (next: boolean) => void }) {
+  return (
+    <div className="rounded-3xl border border-stone-200 bg-white p-3">
+      <p className="text-sm font-semibold text-stone-950">{label}</p>
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => onChange(true)}
+          className={`rounded-2xl border px-3 py-2 text-sm font-semibold transition ${checked ? "border-emerald-200 bg-emerald-100 text-emerald-800" : "border-stone-200 bg-stone-50 text-stone-500 hover:bg-white"}`}
+        >
+          {activeLabel}
+        </button>
+        <button
+          type="button"
+          onClick={() => onChange(false)}
+          className={`rounded-2xl border px-3 py-2 text-sm font-semibold transition ${!checked ? "border-stone-900 bg-stone-950 text-white" : "border-stone-200 bg-stone-50 text-stone-500 hover:bg-white"}`}
+        >
+          {inactiveLabel}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFilePolicySettingsModalProps) {
+  const [draft, setDraft] = useState<CompanySettings>(() => buildDefaultCompanySettings(WORKSPACE_COMPANY_ID));
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    let isMounted = true;
+    setLoading(true);
+    setErrorMessage(null);
+
+    fetch("/api/admin/companies/current", { method: "GET", cache: "no-store" })
+      .then((response) => response.json())
+      .then((payload: { settings?: CompanySettings; message?: string }) => {
+        if (!isMounted) return;
+        if (payload.settings) setDraft(payload.settings);
+        else if (payload.message) setErrorMessage(payload.message);
+      })
+      .catch((error) => {
+        if (!isMounted) return;
+        setErrorMessage(error instanceof Error ? error.message : "파일 정책을 불러오지 못했습니다.");
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [open]);
+
+  async function handleSave() {
+    setSaving(true);
+    setErrorMessage(null);
+    const result = await runSaveCompanySettingsFlow(draft);
+    setSaving(false);
+    if (!result.ok || !result.settings) {
+      setErrorMessage(result.message || "파일 정책을 저장하지 못했습니다.");
+      return;
+    }
+    setDraft(result.settings);
+    onClose();
+  }
+
+  return (
+    <AdminModal open={open} onClose={onClose} title="파일 정책 관리" maxWidthClass="md:max-w-2xl">
+      <div className="grid gap-3">
+        {loading ? <p className="rounded-3xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm font-semibold text-stone-500">불러오는 중</p> : null}
+        {errorMessage ? <p className="rounded-3xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{errorMessage}</p> : null}
+
+        <ToggleButtonGroup
+          label="삭제 방식"
+          activeLabel="휴지통"
+          inactiveLabel="즉시 삭제"
+          checked={draft.filePolicy.softDeleteEnabled}
+          onChange={(softDeleteEnabled) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, softDeleteEnabled } }))}
+        />
+        <ToggleButtonGroup
+          label="용량 계산"
+          activeLabel="휴지통 포함"
+          inactiveLabel="사용중만"
+          checked={draft.filePolicy.includeTrashInUsage}
+          onChange={(includeTrashInUsage) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, includeTrashInUsage } }))}
+        />
+
+        <div className="rounded-3xl border border-stone-200 bg-white p-3">
+          <p className="text-sm font-semibold text-stone-950">실제 삭제 기간</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {ADMIN_RETENTION_DAY_OPTIONS.map((days) => {
+              const selected = draft.filePolicy.trashRetentionDays === days;
+              return (
+                <button
+                  key={days}
+                  type="button"
+                  onClick={() => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, trashRetentionDays: days } }))}
+                  className={`rounded-full border px-3 py-2 text-sm font-semibold transition ${selected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-200 bg-stone-50 text-stone-600 hover:bg-white"}`}
+                >
+                  {days}일
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2">
+          <label className="grid gap-2 rounded-3xl border border-stone-200 bg-white p-3 text-sm">
+            <span className="font-semibold text-stone-900">기본 용량(GB)</span>
+            <input
+              type="number"
+              min={1}
+              value={draft.filePolicy.storageLimitGb}
+              onChange={(event) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, storageLimitGb: Number(event.target.value) } }))}
+              className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm outline-none focus:border-stone-400"
+            />
+          </label>
+          <label className="grid gap-2 rounded-3xl border border-stone-200 bg-white p-3 text-sm">
+            <span className="font-semibold text-stone-900">용량 경고 기준(%)</span>
+            <input
+              type="number"
+              min={1}
+              max={100}
+              value={draft.filePolicy.warningThresholdPercent}
+              onChange={(event) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, warningThresholdPercent: Number(event.target.value) } }))}
+              className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm outline-none focus:border-stone-400"
+            />
+          </label>
+        </div>
+      </div>
+
+      <div className="mt-5 flex justify-end gap-2 border-t border-stone-100 pt-4">
+        <button type="button" onClick={onClose} className="rounded-2xl border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-600 hover:bg-stone-50">
+          취소
+        </button>
+        <button type="button" onClick={handleSave} disabled={saving || loading} className="rounded-2xl bg-stone-950 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-800 disabled:opacity-50">
+          {saving ? "저장 중" : "저장"}
+        </button>
+      </div>
+    </AdminModal>
+  );
+}

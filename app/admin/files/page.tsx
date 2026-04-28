@@ -5,7 +5,7 @@ import FileListSection from "@/components/admin/files/FileListSection";
 import FileStorageSummary from "@/components/admin/files/FileStorageSummary";
 import FileTrashSection from "@/components/admin/files/FileTrashSection";
 import AdminShell from "@/components/admin/layout/AdminShell";
-import { runMoveAttachmentsToTrashFlow, runPurgeTrashItemsFlow, runPurgeWorkerFlow, runRestoreTrashItemsFlow, runUpdateFilePolicySettingsFlow } from "@/lib/admin/adminFiles.actionFlow";
+import { runMoveAttachmentsToTrashFlow, runPurgeTrashItemsFlow, runPurgeWorkerFlow, runRestoreTrashItemsFlow } from "@/lib/admin/adminFiles.actionFlow";
 import { getAdminFileManagementSnapshot } from "@/lib/admin/adminFiles.adapter";
 import {
   buildAdminSelectAllIds,
@@ -14,7 +14,7 @@ import {
   sortAdminManagedFiles,
   toggleAdminSelectedId,
 } from "@/lib/admin/adminFiles.presentation";
-import type { AdminFileManagementSnapshot, AdminFileSortKey, AdminFileTabKey, AdminStoragePolicySettings } from "@/lib/admin/adminFiles.types";
+import type { AdminFileManagementSnapshot, AdminFileSortKey, AdminFileTabKey } from "@/lib/admin/adminFiles.types";
 import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
 import { APP_VERSION } from "@/lib/constants/app";
 import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
@@ -24,7 +24,6 @@ const FILE_ADMIN_NAVIGATION_ITEMS = getAdminNavigationItems("/admin/files");
 export default function AdminFilesPage() {
   const placeholderSnapshot = useMemo(() => getAdminFileManagementSnapshot(), []);
   const [snapshot, setSnapshot] = useState<AdminFileManagementSnapshot>(placeholderSnapshot);
-  const [policySettings, setPolicySettings] = useState<AdminStoragePolicySettings>(placeholderSnapshot.policySettings);
   const [isLoadingSnapshot, setIsLoadingSnapshot] = useState(false);
   const [activeTab, setActiveTab] = useState<AdminFileTabKey>("attachments");
   const [fileSortKey, setFileSortKey] = useState<AdminFileSortKey>("latest");
@@ -32,7 +31,6 @@ export default function AdminFilesPage() {
   const [selectedTrashItemIds, setSelectedTrashItemIds] = useState<string[]>([]);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [isPurgeWorkerRunning, setIsPurgeWorkerRunning] = useState(false);
-  const [isSavingPolicy, setIsSavingPolicy] = useState(false);
 
   async function refreshSnapshot() {
     setIsLoadingSnapshot(true);
@@ -42,7 +40,6 @@ export default function AdminFilesPage() {
 
       if (payload?.snapshot) {
         setSnapshot(payload.snapshot);
-        setPolicySettings(payload.snapshot.policySettings);
       }
 
       if (!response.ok && payload?.message) {
@@ -106,25 +103,6 @@ export default function AdminFilesPage() {
     }
   }
 
-  async function handleChangePolicySettings(nextPolicySettings: AdminStoragePolicySettings) {
-    const previousPolicySettings = policySettings;
-    setPolicySettings(nextPolicySettings);
-    setIsSavingPolicy(true);
-    setActionMessage(null);
-
-    try {
-      const result = await runUpdateFilePolicySettingsFlow(nextPolicySettings);
-      setActionMessage(result.message);
-      if (!result.ok) {
-        setPolicySettings(previousPolicySettings);
-        return;
-      }
-      await refreshSnapshot();
-    } finally {
-      setIsSavingPolicy(false);
-    }
-  }
-
   async function handleRunPurgeWorker(dryRun: boolean) {
     setIsPurgeWorkerRunning(true);
     const result = await runPurgeWorkerFlow(dryRun);
@@ -151,9 +129,6 @@ export default function AdminFilesPage() {
         <FileStorageSummary
           usageCards={snapshot.usageCards}
           usageSummary={snapshot.usageSummary}
-          policySettings={policySettings}
-          onChangePolicySettings={handleChangePolicySettings}
-          isSavingPolicy={isSavingPolicy}
           recentUploadTrend={snapshot.recentUploadTrend}
         />
 

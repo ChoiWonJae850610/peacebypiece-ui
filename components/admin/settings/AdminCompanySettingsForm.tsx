@@ -123,58 +123,7 @@ export default function AdminCompanySettingsForm({ initialSettings }: AdminCompa
         </AdminCard>
       </section>
 
-      <section className="grid gap-5 xl:grid-cols-2">
-        <AdminCard>
-          <h2 className="text-lg font-semibold text-stone-950">파일 정책 관리</h2>
-          <div className="mt-5 grid gap-3">
-            <ToggleRow
-              label="소프트 삭제"
-              description="파일 삭제 시 즉시 물리 삭제하지 않고 휴지통 상태로 보관합니다."
-              checked={draft.filePolicy.softDeleteEnabled}
-              onChange={(checked) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, softDeleteEnabled: checked } }))}
-            />
-            <ToggleRow
-              label="휴지통 용량 포함"
-              description="휴지통 보관 파일도 고객사 사용량에 포함합니다."
-              checked={draft.filePolicy.includeTrashInUsage}
-              onChange={(checked) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, includeTrashInUsage: checked } }))}
-            />
-            <label className="grid gap-2 rounded-3xl border border-stone-200 bg-white px-4 py-3 text-sm">
-              <span className="font-semibold text-stone-900">삭제 보관 기간</span>
-              <select
-                value={draft.filePolicy.trashRetentionDays}
-                onChange={(event) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, trashRetentionDays: Number(event.target.value) } }))}
-                className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm outline-none focus:border-stone-400"
-              >
-                {ADMIN_RETENTION_DAY_OPTIONS.map((days) => (
-                  <option key={days} value={days}>{days}일</option>
-                ))}
-              </select>
-            </label>
-            <label className="grid gap-2 rounded-3xl border border-stone-200 bg-white px-4 py-3 text-sm">
-              <span className="font-semibold text-stone-900">기본 용량(GB)</span>
-              <input
-                type="number"
-                min={1}
-                value={draft.filePolicy.storageLimitGb}
-                onChange={(event) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, storageLimitGb: Number(event.target.value) } }))}
-                className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm outline-none focus:border-stone-400"
-              />
-            </label>
-            <label className="grid gap-2 rounded-3xl border border-stone-200 bg-white px-4 py-3 text-sm">
-              <span className="font-semibold text-stone-900">용량 경고 기준(%)</span>
-              <input
-                type="number"
-                min={1}
-                max={100}
-                value={draft.filePolicy.warningThresholdPercent}
-                onChange={(event) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, warningThresholdPercent: Number(event.target.value) } }))}
-                className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm outline-none focus:border-stone-400"
-              />
-            </label>
-          </div>
-        </AdminCard>
-
+      <section className="grid gap-5">
         <AdminCard>
           <h2 className="text-lg font-semibold text-stone-950">알림 정책</h2>
           <div className="mt-5 grid gap-3">

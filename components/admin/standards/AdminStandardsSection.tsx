@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import AdminNotificationSettingsModal from "@/components/admin/AdminNotificationSettingsModal";
 import PartnerProcessManagementModal from "@/components/admin/partnerMaster/PartnerProcessManagementModal";
 import AdminItemCategoryManagementModal from "@/components/admin/standards/AdminItemCategoryManagementModal";
+import AdminFilePolicySettingsModal from "@/components/admin/standards/AdminFilePolicySettingsModal";
 import AdminUnitManagementModal from "@/components/admin/standards/AdminUnitManagementModal";
 import {
   createDefaultOutsourcingProcessDefinitions,
@@ -20,7 +21,7 @@ import { useAdminWorkspaceTools } from "@/lib/admin/useAdminWorkspaceTools";
 import type { OutsourcingProcessType } from "@/types/partner";
 
 type StandardAction = {
-  key: "units" | "processes" | "items" | "logs";
+  key: "items" | "units" | "processes" | "logs" | "filePolicy";
   title: string;
   statusLabel: string;
   onClick?: () => void;
@@ -39,6 +40,7 @@ export default function AdminStandardsSection() {
   const [isUnitModalOpen, setIsUnitModalOpen] = useState(false);
   const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
   const [isItemCategoryModalOpen, setIsItemCategoryModalOpen] = useState(false);
+  const [isFilePolicyModalOpen, setIsFilePolicyModalOpen] = useState(false);
   const [newProcessLabel, setNewProcessLabel] = useState("");
   const [processFormError, setProcessFormError] = useState("");
   const [standardFormError, setStandardFormError] = useState("");
@@ -196,6 +198,7 @@ export default function AdminStandardsSection() {
     { key: "units", title: "단위 표준", statusLabel: "관리", onClick: () => setIsUnitModalOpen(true) },
     { key: "processes", title: "외주 공정", statusLabel: "관리", onClick: openProcessModal },
     { key: "logs", title: "로그 이벤트", statusLabel: "관리", onClick: notificationTools.openNotificationModal },
+    { key: "filePolicy", title: "파일 정책", statusLabel: "관리", onClick: () => setIsFilePolicyModalOpen(true) },
   ];
 
   return (
@@ -206,17 +209,17 @@ export default function AdminStandardsSection() {
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-4">
+      <div className="mt-4 grid gap-2 md:grid-cols-5">
         {actions.map((action) => (
           <button
             key={action.key}
             type="button"
             onClick={action.onClick}
             disabled={!action.onClick}
-            className="flex items-center justify-between rounded-3xl border border-stone-200 bg-stone-50/70 px-4 py-4 text-left transition enabled:hover:border-stone-300 enabled:hover:bg-white disabled:cursor-default disabled:opacity-70"
+            className="flex items-center justify-between gap-2 rounded-2xl border border-stone-200 bg-stone-50/70 px-3 py-3 text-left transition enabled:hover:border-stone-300 enabled:hover:bg-white disabled:cursor-default disabled:opacity-70"
           >
             <span className="text-sm font-semibold text-stone-950">{action.title}</span>
-            <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-stone-500 shadow-sm">{action.statusLabel}</span>
+            <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-500 shadow-sm">{action.statusLabel}</span>
           </button>
         ))}
       </div>
@@ -237,6 +240,12 @@ export default function AdminStandardsSection() {
         error={standardFormError}
         onClose={() => setIsItemCategoryModalOpen(false)}
         onSave={saveItemCategoryDefinitions}
+      />
+
+
+      <AdminFilePolicySettingsModal
+        open={isFilePolicyModalOpen}
+        onClose={() => setIsFilePolicyModalOpen(false)}
       />
 
       <AdminNotificationSettingsModal
