@@ -16,9 +16,9 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
   const allSelected = items.length > 0 && selectedItemIds.length === items.length;
 
   return (
-    <section className="flex h-full min-h-0 flex-col rounded-[28px] border border-stone-200 bg-white p-4 shadow-sm">
+    <section className="flex h-full min-h-0 flex-col rounded-[28px] border border-stone-200 bg-white p-3.5 shadow-sm">
       <div className="flex shrink-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <h2 className="text-xl font-semibold tracking-tight text-stone-950">첨부파일 목록</h2>
+        <h2 className="text-lg font-semibold tracking-tight text-stone-950">첨부파일 목록</h2>
         <div className="flex flex-wrap gap-2">
           <select value={sortKey} onChange={(event) => onChangeSort(event.target.value as AdminFileSortKey)} className="rounded-full border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-700 shadow-sm">
             {ADMIN_FILE_SORT_OPTIONS.map((option) => (
@@ -34,8 +34,8 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
         </div>
       </div>
 
-      <div className="mt-3 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[24px] border border-stone-200">
-        <div className="hidden grid-cols-[0.38fr_1.08fr_0.82fr_1.72fr_0.68fr_0.72fr] gap-3 bg-stone-50 px-4 py-2.5 text-xs font-semibold text-stone-500 md:grid">
+      <div className="mt-2.5 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[24px] border border-stone-200">
+        <div className="hidden grid-cols-[0.38fr_1.08fr_0.82fr_1.72fr_0.68fr_0.72fr] gap-3 bg-stone-50 px-4 py-2 text-xs font-semibold text-stone-500 md:grid">
           <span>선택</span>
           <span>작지명</span>
           <span>생성일자</span>
@@ -50,7 +50,7 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
           {items.map((item) => {
             const isSelected = selectedItemIds.includes(item.id);
             return (
-              <button key={item.id} type="button" onClick={() => onToggleItem(item.id)} className={`grid w-full gap-3 px-4 py-3 text-left text-sm transition md:grid-cols-[0.38fr_1.08fr_0.82fr_1.72fr_0.68fr_0.72fr] md:items-center ${isSelected ? "bg-stone-100" : "bg-white hover:bg-stone-50"}`}>
+              <button key={item.id} type="button" onClick={() => onToggleItem(item.id)} className={`grid w-full gap-3 px-4 py-2.5 text-left text-sm transition md:grid-cols-[0.38fr_1.08fr_0.82fr_1.72fr_0.68fr_0.72fr] md:items-center ${isSelected ? "bg-stone-100" : "bg-white hover:bg-stone-50"}`}>
                 <span className={`flex h-5 w-5 items-center justify-center rounded border text-xs ${isSelected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-300 bg-white text-transparent"}`}>✓</span>
                 <div className="min-w-0">
                   <p className="text-xs text-stone-400 md:hidden">작지명</p>

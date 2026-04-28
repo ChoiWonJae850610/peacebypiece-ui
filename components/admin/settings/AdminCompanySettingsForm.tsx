@@ -67,9 +67,9 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
   const companyDate = formatCompanyDateLabel(draft.updatedAt);
 
   return (
-    <AdminCard className="shrink-0">
+    <AdminCard className="shrink-0 p-4">
       <div className="grid gap-3 lg:grid-cols-[1.35fr_0.85fr]">
-        <section className="rounded-[28px] bg-stone-950 p-5 text-white">
+        <section className="rounded-[28px] bg-stone-950 p-4 text-white">
           <div className="flex items-start justify-between gap-3">
             <div>
               <h2 className="text-2xl font-semibold tracking-tight">{companyName}</h2>
@@ -77,20 +77,20 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
             </div>
             <SaveStateBadge saveState={saveState} />
           </div>
-          <div className="mt-6 grid gap-3 sm:grid-cols-4">
-            <div className="rounded-2xl bg-white/10 px-3 py-4">
+          <div className="mt-5 grid gap-2.5 sm:grid-cols-4">
+            <div className="rounded-2xl bg-white/10 px-3 py-3">
               <p className="text-[11px] font-semibold text-stone-400">운영 상태</p>
               <p className="mt-2 text-sm font-semibold text-white">DB 연결</p>
             </div>
-            <div className="rounded-2xl bg-white/10 px-3 py-4">
+            <div className="rounded-2xl bg-white/10 px-3 py-3">
               <p className="text-[11px] font-semibold text-stone-400">가입일</p>
               <p className="mt-2 text-sm font-semibold text-white">{companyDate.joinedAt}</p>
             </div>
-            <div className="rounded-2xl bg-white/10 px-3 py-4">
+            <div className="rounded-2xl bg-white/10 px-3 py-3">
               <p className="text-[11px] font-semibold text-stone-400">사용 기간</p>
               <p className="mt-2 text-sm font-semibold text-white">{companyDate.age}</p>
             </div>
-            <div className="rounded-2xl bg-white/10 px-3 py-4">
+            <div className="rounded-2xl bg-white/10 px-3 py-3">
               <p className="text-[11px] font-semibold text-stone-400">회원</p>
               <p className="mt-2 text-sm font-semibold text-white">관리자 1명</p>
             </div>
@@ -98,7 +98,7 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
         </section>
 
         <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-          <div className="rounded-[28px] border border-stone-200 bg-stone-50 p-4">
+          <div className="rounded-[28px] border border-stone-200 bg-stone-50 p-3.5">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold text-stone-950">화면 테마</p>
@@ -121,7 +121,7 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-stone-200 bg-stone-50 p-4">
+          <div className="rounded-[28px] border border-stone-200 bg-stone-50 p-3.5">
             <div>
               <p className="text-sm font-semibold text-stone-950">언어 설정</p>
               <p className="mt-1 text-xs font-semibold text-stone-500">현재 {currentLanguage.label}</p>

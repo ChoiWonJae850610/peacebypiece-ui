@@ -27,7 +27,7 @@ function MiniUsageChart({ points: trendPoints = [] }: { points?: AdminRecentUplo
   const values = trendPoints.length > 0 ? trendPoints.map((point) => point.value) : [0, 0, 0, 0, 0, 0, 0];
   const max = Math.max(1, ...values);
   const chartWidth = 190;
-  const chartHeight = 48;
+  const chartHeight = 54;
   const step = values.length > 1 ? (chartWidth - 18) / (values.length - 1) : 0;
   const chartPoints = values
     .map((value, index) => {
@@ -43,7 +43,7 @@ function MiniUsageChart({ points: trendPoints = [] }: { points?: AdminRecentUplo
         <span>첨부량</span>
         <span>건수</span>
       </div>
-      <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="mt-1 h-[48px] w-full" aria-hidden="true">
+      <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="mt-1 h-[54px] w-full" aria-hidden="true">
         <polyline points={chartPoints} fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-white" />
         {values.map((value, index) => {
           const x = 9 + index * step;
@@ -72,7 +72,7 @@ function DonutChart({ items = [] }: { items?: AdminFileTypeDistributionItem[] })
         <span>{total}개</span>
       </div>
       <div className="mt-1 flex items-center gap-3">
-        <svg viewBox="0 0 72 72" className="h-[52px] w-[52px] shrink-0 -rotate-90" aria-hidden="true">
+        <svg viewBox="0 0 72 72" className="h-[58px] w-[58px] shrink-0 -rotate-90" aria-hidden="true">
           <circle cx="36" cy="36" r={radius} fill="none" stroke="rgba(255,255,255,0.16)" strokeWidth="11" />
           {total > 0
             ? normalizedItems.map((item, index) => {
@@ -135,7 +135,7 @@ export default function FileStorageSummary({
 
   return (
     <section className="shrink-0 rounded-[28px] border border-stone-200 bg-stone-50 p-3">
-      <div className="h-[300px] overflow-hidden rounded-[26px] bg-stone-950 p-4 text-white">
+      <div className="h-[320px] overflow-hidden rounded-[26px] bg-stone-950 p-5 text-white">
         <div className="mb-2 flex items-center justify-between gap-3">
           <div className="flex flex-wrap gap-2">
             {TREND_PERIODS.map((period) => {
@@ -164,7 +164,7 @@ export default function FileStorageSummary({
           </button>
         </div>
 
-        <div className="grid h-[246px] gap-3 lg:grid-cols-[1fr_1fr]">
+        <div className="grid h-[262px] gap-3 lg:grid-cols-[1fr_1fr]">
           <div className="flex min-h-0 flex-col justify-between">
             <div>
               <div className="flex items-start justify-between gap-3">
@@ -185,7 +185,7 @@ export default function FileStorageSummary({
 
             <div className="mt-3 grid grid-cols-2 gap-2">
               {summaryItems.map((item) => (
-                <div key={item.label} className="rounded-2xl bg-white/10 px-3 py-2.5">
+                <div key={item.label} className="rounded-2xl bg-white/10 px-3 py-3">
                   <p className="text-[10px] font-semibold text-stone-300">{item.label}</p>
                   <p className="mt-1 text-sm font-semibold text-white">{item.value}</p>
                 </div>

@@ -17,7 +17,7 @@ function SidebarIcon({ type, active }: SidebarIconProps) {
   const fillClassName = active ? "fill-stone-950" : "fill-stone-500";
   const baseProps = {
     viewBox: "0 0 24 24",
-    className: `h-4 w-4 ${strokeClassName}`,
+    className: `h-[18px] w-[18px] ${strokeClassName}`,
     fill: "none",
     stroke: "currentColor",
     strokeWidth: "1.8",
@@ -125,15 +125,15 @@ export default function AdminSidebar({ companyName, appVersion, navigationItems 
         ) : null}
       </div>
 
-      <nav className="mt-5 grid min-h-0 gap-2 overflow-y-auto" aria-label="관리자 메뉴">
+      <nav className="mt-6 flex min-h-0 flex-1 flex-col justify-between gap-3 overflow-y-auto pb-1" aria-label="관리자 메뉴">
         {navigationItems.map((item) => {
-          const itemClassName = `flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium transition ${
+          const itemClassName = `flex items-center gap-3 rounded-2xl px-3.5 py-3.5 text-[15px] font-medium transition ${
             item.active ? "bg-stone-100 text-stone-950" : "text-stone-600 hover:bg-stone-50 hover:text-stone-950"
           }`;
 
           const content = (
             <>
-              <span className={["flex h-9 w-9 items-center justify-center rounded-2xl shadow-sm ring-1 transition", item.active ? "bg-stone-950 ring-stone-950 [&_svg]:stroke-white" : "bg-white ring-stone-200"].join(" ") }>
+              <span className={["flex h-10 w-10 items-center justify-center rounded-2xl shadow-sm ring-1 transition", item.active ? "bg-stone-950 ring-stone-950 [&_svg]:stroke-white" : "bg-white ring-stone-200"].join(" ") }>
                 <SidebarIcon type={item.icon} active={item.active} />
               </span>
               <span className="min-w-0 truncate">{item.label}</span>

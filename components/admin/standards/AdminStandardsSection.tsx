@@ -216,11 +216,11 @@ export default function AdminStandardsSection() {
           type="button"
           onClick={action.onClick}
           disabled={!action.onClick}
-          className="flex min-h-[128px] items-center justify-between gap-4 rounded-3xl border border-stone-200 bg-stone-50 px-6 py-5 text-left transition enabled:hover:border-stone-300 enabled:hover:bg-white disabled:cursor-default disabled:opacity-70"
+          className="flex min-h-[104px] items-center justify-between gap-4 rounded-3xl border border-stone-200 bg-stone-50 px-5 py-4 text-left transition enabled:hover:border-stone-300 enabled:hover:bg-white disabled:cursor-default disabled:opacity-70"
         >
           <span className="min-w-0">
             <span className="block text-base font-semibold text-stone-950">{action.title}</span>
-            <span className="mt-2 block text-xs font-semibold leading-5 text-stone-500">{action.description}</span>
+            <span className="mt-1.5 block text-xs font-semibold leading-5 text-stone-500">{action.description}</span>
           </span>
           <span className="shrink-0 rounded-full bg-white px-5 py-2 text-xs font-semibold text-stone-600 shadow-sm">{action.statusLabel}</span>
         </button>
@@ -230,13 +230,13 @@ export default function AdminStandardsSection() {
 
   return (
     <section className="flex min-h-0 flex-1 flex-col gap-4">
-      <div className="rounded-[28px] border border-stone-200 bg-white p-6 shadow-sm">
+      <div className="rounded-[28px] border border-stone-200 bg-white p-5 shadow-sm">
         <h2 className="text-lg font-semibold text-stone-950">정책 관리</h2>
-        <div className="mt-4">{renderActionGrid(policyActions)}</div>
+        <div className="mt-3">{renderActionGrid(policyActions)}</div>
       </div>
-      <div className="rounded-[28px] border border-stone-200 bg-white p-6 shadow-sm">
+      <div className="rounded-[28px] border border-stone-200 bg-white p-5 shadow-sm">
         <h2 className="text-lg font-semibold text-stone-950">기준 관리</h2>
-        <div className="mt-4">{renderActionGrid(standardActions)}</div>
+        <div className="mt-3">{renderActionGrid(standardActions)}</div>
       </div>
 
       <AdminUnitManagementModal
