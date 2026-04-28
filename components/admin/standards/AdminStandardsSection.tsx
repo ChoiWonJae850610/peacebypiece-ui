@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import PartnerProcessManagementModal from "@/components/admin/partnerMaster/PartnerProcessManagementModal";
+import AdminItemCategoryManagementModal from "@/components/admin/standards/AdminItemCategoryManagementModal";
 import {
   createDefaultOutsourcingProcessDefinitions,
   createOutsourcingProcessDefinition,
@@ -27,6 +28,7 @@ export default function AdminStandardsSection() {
   const [processDefinitions, setProcessDefinitions] = useState<OutsourcingProcessDefinition[]>(createDefaultOutsourcingProcessDefinitions());
   const [processDraftDefinitions, setProcessDraftDefinitions] = useState<OutsourcingProcessDefinition[]>(createDefaultOutsourcingProcessDefinitions());
   const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
+  const [isItemCategoryModalOpen, setIsItemCategoryModalOpen] = useState(false);
   const [newProcessLabel, setNewProcessLabel] = useState("");
   const [processFormError, setProcessFormError] = useState("");
   const [selectedInactiveProcessDefinition, setSelectedInactiveProcessDefinition] = useState<OutsourcingProcessType | null>(null);
@@ -143,7 +145,7 @@ export default function AdminStandardsSection() {
   const actions: StandardAction[] = [
     { key: "units", title: "단위 관리", statusLabel: "준비중" },
     { key: "processes", title: "외주공정 기준", statusLabel: "관리", onClick: openProcessModal },
-    { key: "items", title: "품목 관리", statusLabel: "다음 단계" },
+    { key: "items", title: "품목 관리", statusLabel: "관리", onClick: () => setIsItemCategoryModalOpen(true) },
   ];
 
   return (
@@ -168,6 +170,11 @@ export default function AdminStandardsSection() {
           </button>
         ))}
       </div>
+
+      <AdminItemCategoryManagementModal
+        open={isItemCategoryModalOpen}
+        onClose={() => setIsItemCategoryModalOpen(false)}
+      />
 
       <PartnerProcessManagementModal
         open={isProcessModalOpen}
