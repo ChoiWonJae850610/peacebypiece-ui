@@ -35,7 +35,6 @@ type PartnerMasterFormModalProps = {
   onDraftChange: (updater: (current: PartnerDraft) => PartnerDraft) => void;
   onSetPrimaryType: (type: BasePartnerType) => void;
   onToggleOutsourcingProcess: (type: OutsourcingProcessType) => void;
-  onOpenProcessModal: () => void;
   onSelectAvailableProcess: (type: OutsourcingProcessType | null) => void;
   onSelectAssignedProcess: (type: OutsourcingProcessType | null) => void;
 };
@@ -56,7 +55,6 @@ export default function PartnerMasterFormModal({
   onDraftChange,
   onSetPrimaryType,
   onToggleOutsourcingProcess,
-  onOpenProcessModal,
   onSelectAvailableProcess,
   onSelectAssignedProcess,
 }: PartnerMasterFormModalProps) {
@@ -191,13 +189,6 @@ export default function PartnerMasterFormModal({
           <div className="space-y-3 rounded-2xl border border-stone-200 bg-white p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm font-medium text-stone-800">{formText.labels.outsourcingProcesses}</p>
-              <button
-                type="button"
-                onClick={onOpenProcessModal}
-                className="rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-300 hover:bg-stone-50"
-              >
-                {formText.manageProcesses}
-              </button>
             </div>
 
             <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_72px_minmax(0,1fr)] md:items-center">

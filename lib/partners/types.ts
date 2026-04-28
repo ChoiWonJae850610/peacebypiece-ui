@@ -41,6 +41,7 @@ export type PartnerDbRecord = {
 
 export type PartnerUnitRecord = {
   id: string;
+  company_id: string | null;
   code: string;
   name: string;
   category: UnitCategory | null;

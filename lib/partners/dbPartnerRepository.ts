@@ -121,7 +121,7 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
     },
     listUnits: async (activeOnly = false) => {
       const result = await queryDb<UnitRow>(
-        `SELECT id, code, name, category, is_active, sort_order, created_at, updated_at
+        `SELECT id, company_id, code, name, category, is_active, sort_order, created_at, updated_at
          FROM units
          ${activeOnly ? "WHERE is_active = true" : ""}
          ORDER BY sort_order ASC, name ASC`,

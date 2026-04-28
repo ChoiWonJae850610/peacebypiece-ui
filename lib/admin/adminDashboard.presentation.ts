@@ -179,20 +179,12 @@ export type AdminStandardGroup = {
   statusLabel: string;
 };
 
-export const ADMIN_STANDARD_SUMMARY_CARDS: AdminStandardSummaryCard[] = [
-  { label: "단위", value: "3", badge: "사용중", description: "길이, 수량, 무게 단위 기준", accent: "bg-blue-50 text-blue-700" },
-  { label: "코드", value: "4", badge: "정리", description: "상태, 분류, 공정, 파일 코드 기준", accent: "bg-violet-50 text-violet-700" },
-  { label: "품목", value: "3", badge: "기본", description: "원단, 부자재, 완제품 품목 기준", accent: "bg-emerald-50 text-emerald-700" },
-  { label: "미사용", value: "0", badge: "대기", description: "비활성 기준값 검토 영역", accent: "bg-stone-100 text-stone-600" },
-];
+export const ADMIN_STANDARD_SUMMARY_CARDS: AdminStandardSummaryCard[] = [];
 
 export const ADMIN_STANDARD_GROUPS: AdminStandardGroup[] = [
-  { label: "단위 관리", description: "원단 길이, 부자재 수량, 생산 수량에 사용할 단위 기준을 관리합니다.", icon: "㎝", href: "/admin/units", statusLabel: "현재" },
-  { label: "코드 관리", description: "상태 코드, 분류 코드, 공정 코드처럼 화면 공통으로 쓰는 값을 정리합니다.", icon: "#", href: null, statusLabel: "준비중" },
-  { label: "품목 관리", description: "원단, 부자재, 완제품 품목명을 운영 기준에 맞게 관리합니다.", icon: "▤", href: null, statusLabel: "준비중" },
-  { label: "외주공정 기준", description: "나염, 자수, 워싱, 후가공 등 외주공정 선택 기준을 관리합니다.", icon: "⇄", href: "/admin/partners", statusLabel: "이동" },
-  { label: "거래처 분류", description: "공장, 원단, 부자재, 외주처 분류 기준을 거래처 관리와 연결합니다.", icon: "◇", href: "/admin/partners", statusLabel: "이동" },
-  { label: "기본값 복원", description: "초기 운영 기준값으로 되돌리는 관리 액션 영역입니다.", icon: "↺", href: null, statusLabel: "준비중" },
+  { label: "단위 관리", description: "고객사별 원단, 부자재, 생산 수량 단위 기준을 관리합니다.", icon: "㎝", href: null, statusLabel: "관리" },
+  { label: "외주공정 기준", description: "나염, 자수, 워싱, 후가공 등 외주공정 선택 기준을 관리합니다.", icon: "⇄", href: null, statusLabel: "관리" },
+  { label: "품목 관리", description: "작지 생성의 대분류, 중분류, 소분류 품목 기준을 관리합니다.", icon: "▤", href: null, statusLabel: "준비중" },
 ];
 
 export type AdminSettingsSummaryCard = {

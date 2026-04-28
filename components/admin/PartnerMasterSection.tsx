@@ -5,7 +5,6 @@ import PartnerMasterFilters from "@/components/admin/partnerMaster/PartnerMaster
 import PartnerMasterFormModal from "@/components/admin/partnerMaster/PartnerMasterFormModal";
 import PartnerMasterHeader from "@/components/admin/partnerMaster/PartnerMasterHeader";
 import PartnerMasterList from "@/components/admin/partnerMaster/PartnerMasterList";
-import PartnerProcessManagementModal from "@/components/admin/partnerMaster/PartnerProcessManagementModal";
 import {
   applyPartnerTypeSelectionPolicy,
   buildPartnerDraftFromEntity,
@@ -263,7 +262,7 @@ export default function PartnerMasterSection() {
   }, [persistProcessDefinitions, processDraftDefinitions]);
   return (
     <section className="flex min-h-0 flex-1 flex-col rounded-[32px] border border-stone-200 bg-white/95 p-5 shadow-sm backdrop-blur md:p-6">
-      <PartnerMasterHeader onOpenCreateModal={openCreateModal} onOpenProcessModal={openProcessModal} />
+      <PartnerMasterHeader onOpenCreateModal={openCreateModal} />
 
       <PartnerMasterFilters
         searchTerm={searchTerm}
@@ -300,30 +299,9 @@ export default function PartnerMasterSection() {
         onDraftChange={setDraft}
         onSetPrimaryType={setPrimaryType}
         onToggleOutsourcingProcess={toggleOutsourcingProcess}
-        onOpenProcessModal={openProcessModal}
         onSelectAvailableProcess={setSelectedAvailableProcess}
         onSelectAssignedProcess={setSelectedAssignedProcess}
       />
-
-      <PartnerProcessManagementModal
-        open={isProcessModalOpen}
-        newProcessLabel={newProcessLabel}
-        processFormError={processFormError}
-        inactiveProcessDefinitions={inactiveProcessDefinitions}
-        activeProcessDefinitions={activeProcessDefinitions}
-        selectedInactiveProcess={selectedInactiveProcessDefinition}
-        selectedActiveProcess={selectedActiveProcessDefinition}
-        onClose={closeProcessModal}
-        onSave={saveProcessDefinitions}
-        onResetDefaults={resetProcessDefinitions}
-        onNewProcessLabelChange={setNewProcessLabel}
-        onAddProcessDefinition={addProcessDefinition}
-        onSetProcessActive={setProcessDefinitionActive}
-        onClearProcessFormError={() => setProcessFormError("")}
-        onSelectInactiveProcess={setSelectedInactiveProcessDefinition}
-        onSelectActiveProcess={setSelectedActiveProcessDefinition}
-      />
-
     </section>
   );
 }

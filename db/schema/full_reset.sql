@@ -78,13 +78,15 @@ CREATE TABLE company_settings (
 
 CREATE TABLE units (
   id text PRIMARY KEY,
-  code text NOT NULL UNIQUE,
+  company_id text,
+  code text NOT NULL,
   name text NOT NULL,
   category text,
   is_active boolean NOT NULL DEFAULT true,
   sort_order integer NOT NULL DEFAULT 0,
   created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT units_company_code_unique UNIQUE (company_id, code)
 );
 
 -- ================================
@@ -466,18 +468,18 @@ INSERT INTO company_settings (company_id) VALUES
   ('company-sample-customer')
 ON CONFLICT (company_id) DO NOTHING;
 
-INSERT INTO units (id, code, name, category, is_active, sort_order)
+INSERT INTO units (id, company_id, code, name, category, is_active, sort_order)
 VALUES
-  ('mock-unit-piece', 'piece', '개', 'count', true, 10),
-  ('mock-unit-sheet', 'sheet', '장', 'count', true, 20),
-  ('mock-unit-set', 'set', '세트', 'count', true, 30),
-  ('mock-unit-yard', 'yard', '야드', 'length', true, 40),
-  ('mock-unit-meter', 'meter', '미터', 'length', true, 50),
-  ('mock-unit-roll', 'roll', '롤', 'bundle', true, 60),
-  ('mock-unit-pack', 'pack', '팩', 'bundle', true, 70),
-  ('mock-unit-box', 'box', '박스', 'bundle', true, 80),
-  ('mock-unit-process', 'process', '공정', 'service', true, 90),
-  ('mock-unit-case', 'case', '건', 'service', true, 100);
+  ('mock-unit-piece', 'company-sample-customer', 'piece', '개', 'count', true, 10),
+  ('mock-unit-sheet', 'company-sample-customer', 'sheet', '장', 'count', true, 20),
+  ('mock-unit-set', 'company-sample-customer', 'set', '세트', 'count', true, 30),
+  ('mock-unit-yard', 'company-sample-customer', 'yard', '야드', 'length', true, 40),
+  ('mock-unit-meter', 'company-sample-customer', 'meter', '미터', 'length', true, 50),
+  ('mock-unit-roll', 'company-sample-customer', 'roll', '롤', 'bundle', true, 60),
+  ('mock-unit-pack', 'company-sample-customer', 'pack', '팩', 'bundle', true, 70),
+  ('mock-unit-box', 'company-sample-customer', 'box', '박스', 'bundle', true, 80),
+  ('mock-unit-process', 'company-sample-customer', 'process', '공정', 'service', true, 90),
+  ('mock-unit-case', 'company-sample-customer', 'case', '건', 'service', true, 100);
 
 
 INSERT INTO outsourcing_processes (id, company_id, company_name, name, sort_order) VALUES
@@ -496,6 +498,9 @@ CREATE INDEX companies_active_name_idx
 
 CREATE INDEX company_settings_company_idx
   ON company_settings (company_id);
+
+CREATE INDEX units_company_active_idx
+  ON units (company_id, is_active, sort_order, name);
 
 CREATE INDEX units_active_idx
   ON units (is_active, sort_order, name);
