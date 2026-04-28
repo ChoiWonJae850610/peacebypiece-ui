@@ -15,6 +15,7 @@ export default function AdminWorkspaceTools() {
         onClose={tools.closeModal}
         notificationSettings={tools.notificationSettings}
         onToggleNotificationSetting={tools.handleToggleNotificationSetting}
+        onResetNotificationSettings={tools.resetNotificationSettings}
       />
     </>
   );

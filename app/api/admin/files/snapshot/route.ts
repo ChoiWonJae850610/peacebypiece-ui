@@ -80,10 +80,19 @@ function isWithinTrendPeriod(uploadedAt: string, period: AdminFileTrendPeriod): 
   return uploadedDate >= start;
 }
 
-function normalizeFileTypeLabel(fileType: string): string {
-  const normalized = fileType.trim().toLowerCase();
-  if (normalized.includes("pdf")) return "PDF";
-  if (["png", "jpg", "jpeg", "gif", "webp", "image"].some((token) => normalized.includes(token))) return "이미지";
+function normalizeFileTypeLabel(fileType: string, fileName = ""): string {
+  const source = `${fileType || ""} ${fileName || ""}`.trim().toLowerCase();
+  const extension = fileName.includes(".") ? fileName.split(".").pop()?.toLowerCase() ?? "" : "";
+
+  if (source.includes("pdf") || extension === "pdf") return "PDF";
+  if (
+    source.includes("image") ||
+    source.includes("design") ||
+    ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "heic", "heif"].includes(extension)
+  ) {
+    return "이미지";
+  }
+
   return "기타";
 }
 
@@ -96,7 +105,7 @@ function buildFileTypeDistribution(items: AdminManagedFileItem[], period: AdminF
   ]);
 
   filteredItems.forEach((item) => {
-    const label = normalizeFileTypeLabel(item.fileType || item.fileName);
+    const label = normalizeFileTypeLabel(item.fileType, item.fileName);
     counts.set(label, (counts.get(label) ?? 0) + 1);
   });
 

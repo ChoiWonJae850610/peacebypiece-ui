@@ -2,11 +2,9 @@
 
 import { useState } from "react";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
-import { AdminModal } from "@/components/admin/layout/AdminModal";
 import {
   ADMIN_LANGUAGE_OPTIONS,
   ADMIN_THEME_OPTIONS,
-  getAdminSettingsSaveLabel,
   getAdminSettingsUpdatedAtLabel,
   type AdminSettingSaveState,
 } from "@/lib/admin/adminSettings.presentation";
@@ -18,60 +16,29 @@ type AdminCompanySettingsFormProps = {
   companyName?: string;
 };
 
-type SettingsModalKey = "theme" | "language" | "notification" | null;
-
-type SettingsCard = {
-  key: "theme" | "language" | "notification";
-  title: string;
-  summary: string;
-  onClick: () => void;
-};
-
 function formatCompanyAgeLabel(updatedAt?: string | null) {
-  if (!updatedAt) return "운영 정보 준비중";
-  const date = new Date(updatedAt);
-  if (Number.isNaN(date.getTime())) return "운영 정보 준비중";
-  return getAdminSettingsUpdatedAtLabel(updatedAt)?.replace("최근 저장 ", "최근 설정 ") ?? "운영 정보 준비중";
+  if (!updatedAt) return "설정 정보 준비중";
+  return getAdminSettingsUpdatedAtLabel(updatedAt)?.replace("최근 저장 ", "최근 설정 ") ?? "설정 정보 준비중";
 }
 
-function ToggleButtonGroup({ label, activeLabel, inactiveLabel, checked, onChange }: { label: string; activeLabel: string; inactiveLabel: string; checked: boolean; onChange: (checked: boolean) => void }) {
-  return (
-    <div className="rounded-3xl border border-stone-200 bg-white p-3">
-      <p className="text-sm font-semibold text-stone-950">{label}</p>
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          onClick={() => onChange(true)}
-          className={`rounded-2xl border px-3 py-2 text-sm font-semibold transition ${checked ? "border-emerald-200 bg-emerald-100 text-emerald-800" : "border-stone-200 bg-stone-50 text-stone-500 hover:bg-white"}`}
-        >
-          {activeLabel}
-        </button>
-        <button
-          type="button"
-          onClick={() => onChange(false)}
-          className={`rounded-2xl border px-3 py-2 text-sm font-semibold transition ${!checked ? "border-stone-900 bg-stone-950 text-white" : "border-stone-200 bg-stone-50 text-stone-500 hover:bg-white"}`}
-        >
-          {inactiveLabel}
-        </button>
-      </div>
-    </div>
-  );
+function SaveStateBadge({ saveState }: { saveState: AdminSettingSaveState }) {
+  if (saveState === "saving") return <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-500">저장 중</span>;
+  if (saveState === "saved") return <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">저장됨</span>;
+  if (saveState === "error") return <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">저장 실패</span>;
+  return <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white">설정</span>;
 }
 
 export default function AdminCompanySettingsForm({ initialSettings, companyName = "샘플 고객사" }: AdminCompanySettingsFormProps) {
   const [draft, setDraft] = useState<CompanySettings>(initialSettings);
   const [saveState, setSaveState] = useState<AdminSettingSaveState>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [activeModal, setActiveModal] = useState<SettingsModalKey>(null);
 
-  const saveLabel = getAdminSettingsSaveLabel(saveState);
-  const updatedAtLabel = getAdminSettingsUpdatedAtLabel(draft.updatedAt);
-
-  async function handleSave(closeAfterSave = true) {
+  async function saveNextSettings(nextSettings: CompanySettings) {
+    setDraft(nextSettings);
     setSaveState("saving");
     setErrorMessage(null);
 
-    const result = await runSaveCompanySettingsFlow(draft);
+    const result = await runSaveCompanySettingsFlow(nextSettings);
     if (!result.ok || !result.settings) {
       setSaveState("error");
       setErrorMessage(result.message || "환경설정을 저장하지 못했습니다.");
@@ -80,125 +47,86 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
 
     setDraft(result.settings);
     setSaveState("saved");
-    if (closeAfterSave) setActiveModal(null);
   }
 
-  const cards: SettingsCard[] = [
-    { key: "theme", title: "화면 테마", summary: ADMIN_THEME_OPTIONS.find((option) => option.value === draft.ui.themeColor)?.label ?? draft.ui.themeColor, onClick: () => setActiveModal("theme") },
-    { key: "language", title: "언어 설정", summary: ADMIN_LANGUAGE_OPTIONS.find((option) => option.value === draft.ui.language)?.label ?? draft.ui.language, onClick: () => setActiveModal("language") },
-    {
-      key: "notification",
-      title: "알림 정책",
-      summary: `${[
-        draft.notificationPolicy.reviewRequestEnabled,
-        draft.notificationPolicy.orderReadyEnabled,
-        draft.notificationPolicy.storageWarningEnabled,
-        draft.notificationPolicy.purgeResultEnabled,
-      ].filter(Boolean).length}개 사용`,
-      onClick: () => setActiveModal("notification"),
-    },
-  ];
+  const currentTheme = ADMIN_THEME_OPTIONS.find((option) => option.value === draft.ui.themeColor) ?? ADMIN_THEME_OPTIONS[0];
+  const currentLanguage = ADMIN_LANGUAGE_OPTIONS.find((option) => option.value === draft.ui.language) ?? ADMIN_LANGUAGE_OPTIONS[0];
 
   return (
-    <>
-      <AdminCard>
-        <div className="grid gap-3 md:grid-cols-3">
-          <div className="rounded-3xl bg-stone-950 px-4 py-4 text-white">
-            <p className="text-xs font-semibold text-stone-400">고객사</p>
-            <p className="mt-2 text-lg font-semibold">{companyName}</p>
+    <AdminCard className="shrink-0">
+      <div className="grid gap-3 lg:grid-cols-[1.35fr_0.85fr]">
+        <section className="rounded-[28px] bg-stone-950 p-5 text-white">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.18em] text-stone-400">PeacebyPiece</p>
+              <h2 className="mt-3 text-2xl font-semibold tracking-tight">{companyName}</h2>
+            </div>
+            <SaveStateBadge saveState={saveState} />
           </div>
-          <div className="rounded-3xl border border-stone-200 bg-stone-50 px-4 py-4">
-            <p className="text-xs font-semibold text-stone-500">설정 상태</p>
-            <p className="mt-2 text-sm font-semibold text-stone-950">{formatCompanyAgeLabel(draft.updatedAt)}</p>
+          <div className="mt-5 grid gap-2 sm:grid-cols-3">
+            <div className="rounded-2xl bg-white/10 px-3 py-3">
+              <p className="text-[11px] font-semibold text-stone-400">운영 상태</p>
+              <p className="mt-2 text-sm font-semibold text-white">DB 연결</p>
+            </div>
+            <div className="rounded-2xl bg-white/10 px-3 py-3">
+              <p className="text-[11px] font-semibold text-stone-400">설정 기준</p>
+              <p className="mt-2 text-sm font-semibold text-white">고객사별</p>
+            </div>
+            <div className="rounded-2xl bg-white/10 px-3 py-3">
+              <p className="text-[11px] font-semibold text-stone-400">회원</p>
+              <p className="mt-2 text-sm font-semibold text-white">관리자 1명</p>
+            </div>
           </div>
-          <div className="rounded-3xl border border-stone-200 bg-stone-50 px-4 py-4">
-            <p className="text-xs font-semibold text-stone-500">회원</p>
-            <p className="mt-2 text-sm font-semibold text-stone-950">관리자 1명 · 디자이너 준비중</p>
+          <p className="mt-4 text-xs font-semibold text-stone-400">{formatCompanyAgeLabel(draft.updatedAt)}</p>
+        </section>
+
+        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+          <div className="rounded-[28px] border border-stone-200 bg-stone-50 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold text-stone-950">화면 테마</p>
+                <p className="mt-1 text-xs font-semibold text-stone-500">현재 {currentTheme.label}</p>
+              </div>
+              <span className={`h-8 w-8 rounded-2xl shadow-sm ring-1 ring-white ${currentTheme.swatchClassName}`} />
+            </div>
+            <div className="mt-3 grid grid-cols-4 gap-2">
+              {ADMIN_THEME_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  title={option.label}
+                  onClick={() => saveNextSettings({ ...draft, ui: { ...draft.ui, themeColor: option.value } })}
+                  className={`h-9 rounded-2xl border transition ${draft.ui.themeColor === option.value ? "border-stone-950 bg-white" : "border-stone-200 bg-white/70 hover:bg-white"}`}
+                >
+                  <span className={`mx-auto block h-5 w-5 rounded-full ${option.swatchClassName}`} />
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
-      </AdminCard>
 
-      <AdminCard>
-        <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-3">
-          {cards.map((card) => (
-            <button
-              key={card.key}
-              type="button"
-              onClick={card.onClick}
-              className="flex min-h-[84px] items-center justify-between gap-3 rounded-3xl border border-stone-200 bg-stone-50 px-4 py-4 text-left transition hover:border-stone-300 hover:bg-white"
-            >
-              <span>
-                <span className="block text-sm font-semibold text-stone-950">{card.title}</span>
-                <span className="mt-2 block text-xs font-semibold text-stone-500">{card.summary}</span>
-              </span>
-              <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-stone-500 shadow-sm">관리</span>
-            </button>
-          ))}
-        </div>
-        {errorMessage ? <p className="mt-4 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">{errorMessage}</p> : null}
-        {updatedAtLabel ? <p className="mt-3 text-right text-xs font-semibold text-stone-400">{updatedAtLabel}</p> : null}
-      </AdminCard>
-
-      <AdminModal open={activeModal === "theme"} onClose={() => setActiveModal(null)} title="화면 테마" maxWidthClass="md:max-w-2xl">
-        <div className="grid gap-3 md:grid-cols-2">
-          {ADMIN_THEME_OPTIONS.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => setDraft((current) => ({ ...current, ui: { ...current.ui, themeColor: option.value } }))}
-              className={`flex items-center gap-3 rounded-3xl border px-4 py-3 text-left transition ${draft.ui.themeColor === option.value ? "border-stone-900 bg-stone-50" : "border-stone-200 bg-white hover:border-stone-300"}`}
-            >
-              <span className={`h-9 w-9 rounded-2xl shadow-sm ring-1 ring-white ${option.swatchClassName}`} />
-              <span className="min-w-0 flex-1 text-sm font-semibold text-stone-900">{option.label}</span>
-              {draft.ui.themeColor === option.value ? <span className="rounded-full bg-stone-950 px-3 py-1 text-xs font-semibold text-white">현재</span> : null}
-            </button>
-          ))}
-        </div>
-        <div className="mt-5 flex justify-end gap-2 border-t border-stone-100 pt-4">
-          <button type="button" onClick={() => setActiveModal(null)} className="rounded-2xl border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-600 hover:bg-stone-50">취소</button>
-          <button type="button" onClick={() => handleSave()} disabled={saveState === "saving"} className="rounded-2xl bg-stone-950 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-800 disabled:opacity-50">{saveLabel}</button>
-        </div>
-      </AdminModal>
-
-      <AdminModal open={activeModal === "language"} onClose={() => setActiveModal(null)} title="언어 설정" maxWidthClass="md:max-w-xl">
-        <div className="grid gap-3">
-          {ADMIN_LANGUAGE_OPTIONS.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => setDraft((current) => ({ ...current, ui: { ...current.ui, language: option.value } }))}
-              className={`flex items-center justify-between rounded-3xl border px-4 py-3 text-sm ${draft.ui.language === option.value ? "border-stone-900 bg-stone-50" : "border-stone-200 bg-white hover:border-stone-300"}`}
-            >
-              <span className="font-semibold text-stone-900">{option.label}</span>
-              <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-500">{draft.ui.language === option.value ? "현재" : "선택"}</span>
-            </button>
-          ))}
-          <ToggleButtonGroup
-            label="컴팩트 모드"
-            activeLabel="사용"
-            inactiveLabel="미사용"
-            checked={draft.ui.compactMode}
-            onChange={(checked) => setDraft((current) => ({ ...current, ui: { ...current.ui, compactMode: checked } }))}
-          />
-        </div>
-        <div className="mt-5 flex justify-end gap-2 border-t border-stone-100 pt-4">
-          <button type="button" onClick={() => setActiveModal(null)} className="rounded-2xl border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-600 hover:bg-stone-50">취소</button>
-          <button type="button" onClick={() => handleSave()} disabled={saveState === "saving"} className="rounded-2xl bg-stone-950 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-800 disabled:opacity-50">{saveLabel}</button>
-        </div>
-      </AdminModal>
-
-      <AdminModal open={activeModal === "notification"} onClose={() => setActiveModal(null)} title="알림 정책" maxWidthClass="md:max-w-2xl">
-        <div className="grid gap-3 md:grid-cols-2">
-          <ToggleButtonGroup label="검토 요청" activeLabel="사용" inactiveLabel="미사용" checked={draft.notificationPolicy.reviewRequestEnabled} onChange={(checked) => setDraft((current) => ({ ...current, notificationPolicy: { ...current.notificationPolicy, reviewRequestEnabled: checked } }))} />
-          <ToggleButtonGroup label="발주 준비" activeLabel="사용" inactiveLabel="미사용" checked={draft.notificationPolicy.orderReadyEnabled} onChange={(checked) => setDraft((current) => ({ ...current, notificationPolicy: { ...current.notificationPolicy, orderReadyEnabled: checked } }))} />
-          <ToggleButtonGroup label="용량 경고" activeLabel="사용" inactiveLabel="미사용" checked={draft.notificationPolicy.storageWarningEnabled} onChange={(checked) => setDraft((current) => ({ ...current, notificationPolicy: { ...current.notificationPolicy, storageWarningEnabled: checked } }))} />
-          <ToggleButtonGroup label="삭제 처리 결과" activeLabel="사용" inactiveLabel="미사용" checked={draft.notificationPolicy.purgeResultEnabled} onChange={(checked) => setDraft((current) => ({ ...current, notificationPolicy: { ...current.notificationPolicy, purgeResultEnabled: checked } }))} />
-        </div>
-        <div className="mt-5 flex justify-end gap-2 border-t border-stone-100 pt-4">
-          <button type="button" onClick={() => setActiveModal(null)} className="rounded-2xl border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-600 hover:bg-stone-50">취소</button>
-          <button type="button" onClick={() => handleSave()} disabled={saveState === "saving"} className="rounded-2xl bg-stone-950 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-800 disabled:opacity-50">{saveLabel}</button>
-        </div>
-      </AdminModal>
-    </>
+          <div className="rounded-[28px] border border-stone-200 bg-stone-50 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold text-stone-950">언어 설정</p>
+                <p className="mt-1 text-xs font-semibold text-stone-500">현재 {currentLanguage.label}</p>
+              </div>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {ADMIN_LANGUAGE_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => saveNextSettings({ ...draft, ui: { ...draft.ui, language: option.value } })}
+                  className={`rounded-2xl border px-3 py-2 text-sm font-semibold transition ${draft.ui.language === option.value ? "border-stone-950 bg-stone-950 text-white" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"}`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+      </div>
+      {errorMessage ? <p className="mt-4 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">{errorMessage}</p> : null}
+    </AdminCard>
   );
 }

@@ -34,10 +34,15 @@ export function useAdminWorkspaceTools() {
     setNotificationSettings((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const resetNotificationSettings = () => {
+    setNotificationSettings(DEFAULT_NOTIFICATION_SETTINGS);
+  };
+
   return {
     activeModal,
     notificationSettings,
     handleToggleNotificationSetting,
+    resetNotificationSettings,
     openModal,
     closeModal,
     openNotificationModal: () => openModal("notification"),

@@ -29,8 +29,8 @@ export default async function AdminSettingsPage() {
       title="환경설정"
     >
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1">
-        <AdminStandardsSection />
         <AdminCompanySettingsForm initialSettings={settings} companyName={companyName} />
+        <AdminStandardsSection />
       </div>
     </AdminShell>
   );

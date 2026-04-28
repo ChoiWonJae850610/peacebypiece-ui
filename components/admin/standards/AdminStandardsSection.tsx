@@ -21,7 +21,7 @@ import { useAdminWorkspaceTools } from "@/lib/admin/useAdminWorkspaceTools";
 import type { OutsourcingProcessType } from "@/types/partner";
 
 type StandardAction = {
-  key: "items" | "units" | "processes" | "logs" | "filePolicy";
+  key: "items" | "units" | "processes" | "logs" | "filePolicy" | "notifications";
   title: string;
   statusLabel: string;
   onClick?: () => void;
@@ -33,6 +33,7 @@ function sortProcessesByLabel(items: OutsourcingProcessDefinition[]) {
 
 export default function AdminStandardsSection() {
   const notificationTools = useAdminWorkspaceTools();
+  const [notificationModalTitle, setNotificationModalTitle] = useState("로그 이벤트");
   const [processDefinitions, setProcessDefinitions] = useState<OutsourcingProcessDefinition[]>(createDefaultOutsourcingProcessDefinitions());
   const [processDraftDefinitions, setProcessDraftDefinitions] = useState<OutsourcingProcessDefinition[]>(createDefaultOutsourcingProcessDefinitions());
   const [unitDefinitions, setUnitDefinitions] = useState<AdminUnitDefinition[]>(createDefaultUnitDefinitions());
@@ -193,29 +194,60 @@ export default function AdminStandardsSection() {
     setSelectedActiveProcessDefinition(null);
   }, []);
 
-  const actions: StandardAction[] = [
-    { key: "items", title: "생산품 유형", statusLabel: "관리", onClick: () => setIsItemCategoryModalOpen(true) },
-    { key: "units", title: "단위 표준", statusLabel: "관리", onClick: () => setIsUnitModalOpen(true) },
-    { key: "processes", title: "외주 공정", statusLabel: "관리", onClick: openProcessModal },
-    { key: "logs", title: "로그 이벤트", statusLabel: "관리", onClick: notificationTools.openNotificationModal },
-    { key: "filePolicy", title: "파일 정책", statusLabel: "관리", onClick: () => setIsFilePolicyModalOpen(true) },
+  const policyActions: StandardAction[] = [
+    {
+      key: "notifications",
+      title: "알림 정책",
+      statusLabel: "관리",
+      onClick: () => {
+        setNotificationModalTitle("알림 정책");
+        notificationTools.openNotificationModal();
+      },
+    },
+    {
+      key: "logs",
+      title: "로그 이벤트",
+      statusLabel: "관리",
+      onClick: () => {
+        setNotificationModalTitle("로그 이벤트");
+        notificationTools.openNotificationModal();
+      },
+    },
+    { key: "filePolicy", title: "저장 정책", statusLabel: "관리", onClick: () => setIsFilePolicyModalOpen(true) },
   ];
 
+  const standardActions: StandardAction[] = [
+    { key: "items", title: "생산품 유형", statusLabel: "관리", onClick: () => setIsItemCategoryModalOpen(true) },
+    { key: "units", title: "단위 표준", statusLabel: "관리", onClick: () => setIsUnitModalOpen(true) },
+    { key: "processes", title: "외주 공정 유형", statusLabel: "관리", onClick: openProcessModal },
+  ];
+
+  const renderActionGrid = (actions: StandardAction[]) => (
+    <div className="grid gap-3 md:grid-cols-3">
+      {actions.map((action) => (
+        <button
+          key={action.key}
+          type="button"
+          onClick={action.onClick}
+          disabled={!action.onClick}
+          className="flex min-h-[74px] items-center justify-between gap-3 rounded-3xl border border-stone-200 bg-stone-50 px-4 py-4 text-left transition enabled:hover:border-stone-300 enabled:hover:bg-white disabled:cursor-default disabled:opacity-70"
+        >
+          <span className="text-sm font-semibold text-stone-950">{action.title}</span>
+          <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-stone-500 shadow-sm">{action.statusLabel}</span>
+        </button>
+      ))}
+    </div>
+  );
+
   return (
-    <section className="rounded-[28px] border border-stone-200 bg-white p-5 shadow-sm">
-      <div className="grid gap-3 md:grid-cols-4">
-        {actions.map((action) => (
-          <button
-            key={action.key}
-            type="button"
-            onClick={action.onClick}
-            disabled={!action.onClick}
-            className="flex min-h-[84px] items-center justify-between gap-3 rounded-3xl border border-stone-200 bg-stone-50 px-4 py-4 text-left transition enabled:hover:border-stone-300 enabled:hover:bg-white disabled:cursor-default disabled:opacity-70"
-          >
-            <span className="text-sm font-semibold text-stone-950">{action.title}</span>
-            <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-stone-500 shadow-sm">{action.statusLabel}</span>
-          </button>
-        ))}
+    <section className="grid gap-4 lg:grid-cols-2">
+      <div className="rounded-[28px] border border-stone-200 bg-white p-5 shadow-sm">
+        <h2 className="text-lg font-semibold text-stone-950">정책 관리</h2>
+        <div className="mt-4">{renderActionGrid(policyActions)}</div>
+      </div>
+      <div className="rounded-[28px] border border-stone-200 bg-white p-5 shadow-sm">
+        <h2 className="text-lg font-semibold text-stone-950">기준 관리</h2>
+        <div className="mt-4">{renderActionGrid(standardActions)}</div>
       </div>
 
       <AdminUnitManagementModal
@@ -247,8 +279,9 @@ export default function AdminStandardsSection() {
         onClose={notificationTools.closeModal}
         notificationSettings={notificationTools.notificationSettings}
         onToggleNotificationSetting={notificationTools.handleToggleNotificationSetting}
-        title="로그 이벤트"
+        title={notificationModalTitle}
         description=""
+        onResetNotificationSettings={notificationTools.resetNotificationSettings}
       />
 
       <PartnerProcessManagementModal

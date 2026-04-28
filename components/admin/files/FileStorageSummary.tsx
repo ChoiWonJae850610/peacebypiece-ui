@@ -38,12 +38,12 @@ function MiniUsageChart({ points: trendPoints = [] }: { points?: AdminRecentUplo
     .join(" ");
 
   return (
-    <div className="rounded-[24px] bg-white/10 p-4">
+    <div className="min-h-0 rounded-[24px] bg-white/10 p-3">
       <div className="flex items-center justify-between text-[11px] font-semibold text-stone-300">
         <span>첨부량</span>
         <span>건수</span>
       </div>
-      <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="mt-2 h-[74px] w-full" aria-hidden="true">
+      <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="mt-1 h-[64px] w-full" aria-hidden="true">
         <polyline points={chartPoints} fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-white" />
         {values.map((value, index) => {
           const x = 10 + index * step;
@@ -67,13 +67,13 @@ function DonutChart({ items = [] }: { items?: AdminFileTypeDistributionItem[] })
   let offset = 0;
 
   return (
-    <div className="rounded-[24px] bg-white/10 p-4">
+    <div className="min-h-0 rounded-[24px] bg-white/10 p-3">
       <div className="flex items-center justify-between text-[11px] font-semibold text-stone-300">
         <span>파일 유형</span>
         <span>{total}개</span>
       </div>
-      <div className="mt-3 flex items-center gap-4">
-        <svg viewBox="0 0 80 80" className="h-[82px] w-[82px] shrink-0 -rotate-90" aria-hidden="true">
+      <div className="mt-2 flex items-center gap-3">
+        <svg viewBox="0 0 80 80" className="h-[66px] w-[66px] shrink-0 -rotate-90" aria-hidden="true">
           <circle cx="40" cy="40" r={radius} fill="none" stroke="rgba(255,255,255,0.16)" strokeWidth="12" />
           {total > 0
             ? normalizedItems.map((item, index) => {
@@ -99,7 +99,7 @@ function DonutChart({ items = [] }: { items?: AdminFileTypeDistributionItem[] })
               })
             : null}
         </svg>
-        <div className="min-w-0 flex-1 space-y-2">
+        <div className="min-w-0 flex-1 space-y-1.5">
           {normalizedItems.map((item) => (
             <div key={item.label} className="flex items-center justify-between gap-2 text-xs">
               <span className="font-semibold text-stone-300">{item.label}</span>
@@ -135,9 +135,9 @@ export default function FileStorageSummary({
   ];
 
   return (
-    <section className="shrink-0 rounded-[28px] border border-stone-200 bg-stone-50 p-4">
-      <div className="rounded-[26px] bg-stone-950 p-5 text-white">
-        <div className="mb-4 flex items-center justify-between gap-3">
+    <section className="shrink-0 rounded-[28px] border border-stone-200 bg-stone-50 p-3">
+      <div className="h-[280px] overflow-hidden rounded-[26px] bg-stone-950 p-4 text-white">
+        <div className="mb-3 flex items-center justify-between gap-3">
           <div className="flex flex-wrap gap-2">
             {TREND_PERIODS.map((period) => {
               const isActive = recentUploadTrendPeriod === period;
@@ -165,8 +165,8 @@ export default function FileStorageSummary({
           </button>
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-[1fr_1fr]">
-          <div className="flex min-h-[240px] flex-col justify-between">
+        <div className="grid h-[224px] gap-4 lg:grid-cols-[1fr_1fr]">
+          <div className="flex min-h-0 flex-col justify-between">
             <div>
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -175,7 +175,7 @@ export default function FileStorageSummary({
                 </div>
                 <span className={`rounded-full px-3 py-1 text-xs font-semibold ${isWarning ? "bg-amber-100 text-amber-900" : "bg-white/10 text-white"}`}>{usageSummary.statusLabel}</span>
               </div>
-              <div className="mt-4 flex items-center justify-between gap-3 text-xs text-stone-300">
+              <div className="mt-3 flex items-center justify-between gap-3 text-xs text-stone-300">
                 <span>{usageSummary.usagePercent}%</span>
                 <span>{usageSummary.limitLabel}</span>
               </div>
@@ -184,17 +184,17 @@ export default function FileStorageSummary({
               </div>
             </div>
 
-            <div className="mt-5 grid grid-cols-2 gap-2">
+            <div className="mt-3 grid grid-cols-2 gap-2">
               {summaryItems.map((item) => (
                 <div key={item.label} className="rounded-2xl bg-white/10 px-3 py-3">
                   <p className="text-[11px] font-semibold text-stone-300">{item.label}</p>
-                  <p className="mt-2 text-base font-semibold text-white">{item.value}</p>
+                  <p className="mt-1.5 text-base font-semibold text-white">{item.value}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-1">
+          <div className="grid min-h-0 grid-rows-2 gap-3">
             <MiniUsageChart points={recentUploadTrend} />
             <DonutChart items={fileTypeDistribution} />
           </div>
