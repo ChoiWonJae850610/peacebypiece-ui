@@ -186,7 +186,7 @@ export default function FileStorageSummary({
               </div>
             </div>
 
-            <div className="relative flex min-h-0 flex-col justify-end pt-[50px]">
+            <div className="relative flex min-h-0 flex-col justify-end pt-[56px]">
               <button
                 type="button"
                 onClick={onRefresh}
@@ -197,7 +197,7 @@ export default function FileStorageSummary({
               >
                 <span aria-hidden="true">↻</span>
               </button>
-              <div className="grid h-[164px] grid-rows-2 gap-3">
+              <div className="grid h-[164px] grid-rows-2 gap-3 translate-y-[22px]">
                 <MiniUsageChart points={recentUploadTrend} />
                 <DonutChart items={fileTypeDistribution} />
               </div>
