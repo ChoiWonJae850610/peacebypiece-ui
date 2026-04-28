@@ -4,9 +4,17 @@ export type AdminFileUsageCard = {
   description: string;
 };
 
+export type AdminFileTrendPeriod = 7 | 15 | 30;
+
 export type AdminRecentUploadTrendPoint = {
   label: string;
   value: number;
+};
+
+export type AdminFileTypeDistributionItem = {
+  label: string;
+  value: number;
+  percent: number;
 };
 
 export type AdminStorageUsageSummary = {
@@ -113,4 +121,6 @@ export type AdminFileManagementSnapshot = {
   storagePolicies: AdminStoragePolicyItem[];
   policySettings: AdminStoragePolicySettings;
   recentUploadTrend: AdminRecentUploadTrendPoint[];
+  recentUploadTrendPeriod: AdminFileTrendPeriod;
+  fileTypeDistribution: AdminFileTypeDistributionItem[];
 };

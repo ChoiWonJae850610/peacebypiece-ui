@@ -14,7 +14,7 @@ import {
   sortAdminManagedFiles,
   toggleAdminSelectedId,
 } from "@/lib/admin/adminFiles.presentation";
-import type { AdminFileManagementSnapshot, AdminFileSortKey, AdminFileTabKey } from "@/lib/admin/adminFiles.types";
+import type { AdminFileManagementSnapshot, AdminFileSortKey, AdminFileTabKey, AdminFileTrendPeriod } from "@/lib/admin/adminFiles.types";
 import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
 import { APP_VERSION } from "@/lib/constants/app";
 import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
@@ -26,6 +26,7 @@ export default function AdminFilesPage() {
   const [snapshot, setSnapshot] = useState<AdminFileManagementSnapshot>(placeholderSnapshot);
   const [isLoadingSnapshot, setIsLoadingSnapshot] = useState(false);
   const [activeTab, setActiveTab] = useState<AdminFileTabKey>("attachments");
+  const [trendPeriod, setTrendPeriod] = useState<AdminFileTrendPeriod>(7);
   const [fileSortKey, setFileSortKey] = useState<AdminFileSortKey>("latest");
   const [selectedAttachmentIds, setSelectedAttachmentIds] = useState<string[]>([]);
   const [selectedTrashItemIds, setSelectedTrashItemIds] = useState<string[]>([]);
@@ -35,7 +36,7 @@ export default function AdminFilesPage() {
   async function refreshSnapshot() {
     setIsLoadingSnapshot(true);
     try {
-      const response = await fetch(`/api/admin/files/snapshot?t=${Date.now()}`, { method: "GET", cache: "no-store" });
+      const response = await fetch(`/api/admin/files/snapshot?period=${trendPeriod}&t=${Date.now()}`, { method: "GET", cache: "no-store" });
       const payload = (await response.json().catch(() => null)) as { snapshot?: AdminFileManagementSnapshot; message?: string } | null;
 
       if (payload?.snapshot) {
@@ -55,7 +56,7 @@ export default function AdminFilesPage() {
   useEffect(() => {
     refreshSnapshot();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [trendPeriod]);
 
   const sortedAttachments = useMemo(() => sortAdminManagedFiles(snapshot.attachments, fileSortKey), [fileSortKey, snapshot.attachments]);
   const selectedAttachments = useMemo(() => selectAdminManagedFilesByIds(snapshot.attachments, selectedAttachmentIds), [selectedAttachmentIds, snapshot.attachments]);
@@ -130,6 +131,11 @@ export default function AdminFilesPage() {
           usageCards={snapshot.usageCards}
           usageSummary={snapshot.usageSummary}
           recentUploadTrend={snapshot.recentUploadTrend}
+          recentUploadTrendPeriod={trendPeriod}
+          fileTypeDistribution={snapshot.fileTypeDistribution}
+          isRefreshing={isLoadingSnapshot}
+          onChangeTrendPeriod={setTrendPeriod}
+          onRefresh={refreshSnapshot}
         />
 
         <div className="mt-4 flex shrink-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -144,11 +150,7 @@ export default function AdminFilesPage() {
             })}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <button type="button" onClick={refreshSnapshot} aria-label="새로고침" title="새로고침" disabled={isLoadingSnapshot} className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 bg-white text-lg font-semibold text-stone-700 transition hover:bg-stone-50 disabled:text-stone-400">
-              <span aria-hidden="true">↻</span>
-            </button>
-          </div>
+
         </div>
 
         {actionMessage ? (

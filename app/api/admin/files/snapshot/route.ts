@@ -3,7 +3,7 @@ import { getAdminFileManagementSnapshot } from "@/lib/admin/adminFiles.adapter";
 import { buildAdminStoragePolicyItems, normalizeAdminFilePolicySettings } from "@/lib/admin/adminFiles.presentation";
 import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/companySettings.repository";
 import { listAdminFileManagementRows } from "@/lib/admin/adminFiles.serverActions";
-import type { AdminFileUsageCard, AdminRecentUploadTrendPoint, AdminStorageUsageSummary } from "@/lib/admin/adminFiles.types";
+import type { AdminFileTrendPeriod, AdminFileTypeDistributionItem, AdminFileUsageCard, AdminRecentUploadTrendPoint, AdminManagedFileItem, AdminStorageUsageSummary } from "@/lib/admin/adminFiles.types";
 import type { CompanyFilePolicySettings } from "@/lib/admin/companySettings.types";
 
 export const runtime = "nodejs";
@@ -43,15 +43,22 @@ function buildUsageSummary(activeBytes: number, trashBytes: number, filePolicy: 
   };
 }
 
-function buildRecentUploadTrend(uploadedDates: string[]): AdminRecentUploadTrendPoint[] {
+function normalizeTrendPeriod(value: string | null): AdminFileTrendPeriod {
+  if (value === "15") return 15;
+  if (value === "30") return 30;
+  return 7;
+}
+
+function buildRecentUploadTrend(uploadedDates: string[], period: AdminFileTrendPeriod): AdminRecentUploadTrendPoint[] {
   const today = new Date();
-  const days = Array.from({ length: 7 }, (_, index) => {
+  const days = Array.from({ length: period }, (_, index) => {
     const date = new Date(today);
-    date.setDate(today.getDate() - (6 - index));
+    date.setDate(today.getDate() - (period - 1 - index));
     const key = date.toISOString().slice(0, 10);
+    const remaining = period - 1 - index;
     return {
       key,
-      label: index === 6 ? "오늘" : index === 5 ? "어제" : `${6 - index}일전`,
+      label: remaining === 0 ? "오늘" : remaining === 1 ? "어제" : `${remaining}일전`,
       value: 0,
     };
   });
@@ -64,6 +71,43 @@ function buildRecentUploadTrend(uploadedDates: string[]): AdminRecentUploadTrend
   return days.map(({ label, value }) => ({ label, value }));
 }
 
+function isWithinTrendPeriod(uploadedAt: string, period: AdminFileTrendPeriod): boolean {
+  const uploadedDate = new Date(uploadedAt);
+  if (Number.isNaN(uploadedDate.getTime())) return false;
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - (period - 1));
+  return uploadedDate >= start;
+}
+
+function normalizeFileTypeLabel(fileType: string): string {
+  const normalized = fileType.trim().toLowerCase();
+  if (normalized.includes("pdf")) return "PDF";
+  if (["png", "jpg", "jpeg", "gif", "webp", "image"].some((token) => normalized.includes(token))) return "이미지";
+  return "기타";
+}
+
+function buildFileTypeDistribution(items: AdminManagedFileItem[], period: AdminFileTrendPeriod): AdminFileTypeDistributionItem[] {
+  const filteredItems = items.filter((item) => isWithinTrendPeriod(item.uploadedAt, period));
+  const counts = new Map<string, number>([
+    ["PDF", 0],
+    ["이미지", 0],
+    ["기타", 0],
+  ]);
+
+  filteredItems.forEach((item) => {
+    const label = normalizeFileTypeLabel(item.fileType || item.fileName);
+    counts.set(label, (counts.get(label) ?? 0) + 1);
+  });
+
+  const total = Math.max(1, filteredItems.length);
+  return Array.from(counts.entries()).map(([label, value]) => ({
+    label,
+    value,
+    percent: Math.round((value / total) * 100),
+  }));
+}
+
 function buildUsageCards(activeCount: number, trashCount: number, activeBytes: number, trashBytes: number, filePolicy: CompanyFilePolicySettings): AdminFileUsageCard[] {
   const summary = buildUsageSummary(activeBytes, trashBytes, filePolicy);
   return [
@@ -74,8 +118,10 @@ function buildUsageCards(activeCount: number, trashCount: number, activeBytes: n
   ];
 }
 
-export async function GET() {
-  const fallbackSnapshot = getAdminFileManagementSnapshot();
+export async function GET(request: Request) {
+  const requestUrl = new URL(request.url);
+  const trendPeriod = normalizeTrendPeriod(requestUrl.searchParams.get("period"));
+  const fallbackSnapshot = { ...getAdminFileManagementSnapshot(), recentUploadTrendPeriod: trendPeriod };
 
   try {
     const company = await getCurrentAdminCompany();
@@ -97,7 +143,9 @@ export async function GET() {
         usageCards: buildUsageCards(rows.attachments.length, rows.trashItems.length, activeBytes, trashBytes, settings.filePolicy),
         storagePolicies: buildAdminStoragePolicyItems(policySettings),
         policySettings,
-        recentUploadTrend: buildRecentUploadTrend(rows.attachments.map((item) => item.uploadedAt)),
+        recentUploadTrend: buildRecentUploadTrend(rows.attachments.map((item) => item.uploadedAt), trendPeriod),
+        recentUploadTrendPeriod: trendPeriod,
+        fileTypeDistribution: buildFileTypeDistribution(rows.attachments, trendPeriod),
       },
     });
   } catch (error) {

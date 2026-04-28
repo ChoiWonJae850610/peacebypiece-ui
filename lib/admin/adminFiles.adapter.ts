@@ -40,5 +40,11 @@ export function getAdminFileManagementSnapshot(): AdminFileManagementSnapshot {
       { label: "어제", value: 0 },
       { label: "오늘", value: 0 },
     ],
+    recentUploadTrendPeriod: 7,
+    fileTypeDistribution: [
+      { label: "PDF", value: 0, percent: 0 },
+      { label: "이미지", value: 0, percent: 0 },
+      { label: "기타", value: 0, percent: 0 },
+    ],
   };
 }
