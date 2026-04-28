@@ -73,24 +73,24 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
           <div className="flex items-start justify-between gap-3">
             <div>
               <h2 className="text-2xl font-semibold tracking-tight">{companyName}</h2>
-              <p className="mt-2 text-xs font-semibold text-stone-400">{companyDate.updatedAt}</p>
+              <p className="mt-2 text-xs font-semibold text-stone-400">요금제: 기본요금제 · {companyDate.updatedAt}</p>
             </div>
             <SaveStateBadge saveState={saveState} />
           </div>
-          <div className="mt-5 grid gap-2 sm:grid-cols-4">
-            <div className="rounded-2xl bg-white/10 px-3 py-3">
+          <div className="mt-6 grid gap-3 sm:grid-cols-4">
+            <div className="rounded-2xl bg-white/10 px-3 py-4">
               <p className="text-[11px] font-semibold text-stone-400">운영 상태</p>
               <p className="mt-2 text-sm font-semibold text-white">DB 연결</p>
             </div>
-            <div className="rounded-2xl bg-white/10 px-3 py-3">
+            <div className="rounded-2xl bg-white/10 px-3 py-4">
               <p className="text-[11px] font-semibold text-stone-400">가입일</p>
               <p className="mt-2 text-sm font-semibold text-white">{companyDate.joinedAt}</p>
             </div>
-            <div className="rounded-2xl bg-white/10 px-3 py-3">
+            <div className="rounded-2xl bg-white/10 px-3 py-4">
               <p className="text-[11px] font-semibold text-stone-400">사용 기간</p>
               <p className="mt-2 text-sm font-semibold text-white">{companyDate.age}</p>
             </div>
-            <div className="rounded-2xl bg-white/10 px-3 py-3">
+            <div className="rounded-2xl bg-white/10 px-3 py-4">
               <p className="text-[11px] font-semibold text-stone-400">회원</p>
               <p className="mt-2 text-sm font-semibold text-white">관리자 1명</p>
             </div>

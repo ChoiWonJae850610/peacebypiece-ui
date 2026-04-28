@@ -84,25 +84,24 @@ function normalizeFileTypeLabel(fileType: string, fileName = ""): string {
   const source = `${fileType || ""} ${fileName || ""}`.trim().toLowerCase();
   const extension = fileName.includes(".") ? fileName.split(".").pop()?.toLowerCase() ?? "" : "";
 
-  if (source.includes("pdf") || extension === "pdf") return "PDF";
   if (
     source.includes("image") ||
     source.includes("img") ||
     source.includes("design") ||
-    ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "heic", "heif"].includes(extension)
+    source.includes("디자인") ||
+    ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "heic", "heif", "ai", "psd"].includes(extension)
   ) {
-    return "이미지";
+    return "디자인";
   }
 
-  return "기타";
+  return "문서";
 }
 
 function buildFileTypeDistribution(items: AdminManagedFileItem[], period: AdminFileTrendPeriod): AdminFileTypeDistributionItem[] {
   const filteredItems = items.filter((item) => isWithinTrendPeriod(item.uploadedAt, period));
   const counts = new Map<string, number>([
-    ["PDF", 0],
-    ["이미지", 0],
-    ["기타", 0],
+    ["문서", 0],
+    ["디자인", 0],
   ]);
 
   filteredItems.forEach((item) => {

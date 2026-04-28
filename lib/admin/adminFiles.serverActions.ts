@@ -170,10 +170,12 @@ function getFileIcon(mimeType: string | null | undefined, fileName: string): str
   return "FILE";
 }
 
-function getFileType(mimeType: string | null | undefined): string {
-  if (mimeType?.includes("pdf")) return "PDF";
-  if (mimeType?.startsWith("image/")) return "이미지";
-  return "기타";
+function getFileType(mimeType: string | null | undefined, fileName = ""): string {
+  const lowerName = fileName.toLowerCase();
+  const extension = lowerName.includes(".") ? lowerName.split(".").pop() ?? "" : "";
+  if (mimeType?.includes("pdf") || extension === "pdf" || ["doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "hwp"].includes(extension)) return "문서";
+  if (mimeType?.startsWith("image/") || ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "heic", "heif", "ai", "psd"].includes(extension)) return "디자인";
+  return "문서";
 }
 
 function getPurgeStatusLabel(status: string | null | undefined, errorMessage: string | null | undefined): string {
@@ -256,7 +258,7 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
       workorderId: row.order_id || "",
       workorderTitle: row.workorder_title || "작지명 없음",
       fileName,
-      fileType: getFileType(row.mime_type),
+      fileType: getFileType(row.mime_type, fileName),
       fileIcon: getFileIcon(row.mime_type, fileName),
       fileSizeBytes: sizeBytes,
       fileSizeLabel: formatBytes(sizeBytes),
