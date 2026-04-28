@@ -1,8 +1,5 @@
 import {
-  ADMIN_FILE_LIST_PLACEHOLDERS,
   ADMIN_FILE_TABS,
-  ADMIN_FILE_TRASH_PLACEHOLDERS,
-  ADMIN_FILE_USAGE_CARDS,
   ADMIN_FILE_USAGE_SUMMARY,
   ADMIN_STORAGE_POLICY_SETTINGS,
   buildAdminStoragePolicyItems,
@@ -10,14 +7,28 @@ import {
 import type { AdminFileManagementSnapshot } from "@/lib/admin/adminFiles.types";
 
 export function getAdminFileManagementSnapshot(): AdminFileManagementSnapshot {
+  const usageSummary = {
+    ...ADMIN_FILE_USAGE_SUMMARY,
+    usedBytes: 0,
+    usedLabel: "0B",
+    usagePercent: 0,
+    statusLabel: "정상" as const,
+    statusTone: "normal" as const,
+  };
+
   return {
-    dataSource: "placeholder",
-    dataSourceLabel: "샘플 데이터",
-    usageCards: ADMIN_FILE_USAGE_CARDS,
-    usageSummary: ADMIN_FILE_USAGE_SUMMARY,
+    dataSource: "db",
+    dataSourceLabel: "DB 대기",
+    usageCards: [
+      { label: "전체 사용량", value: `${usageSummary.usedLabel} / ${usageSummary.limitLabel}`, description: "" },
+      { label: "첨부파일", value: "0개", description: "" },
+      { label: "휴지통", value: "0개", description: "" },
+      { label: "복구 가능 기간", value: `${ADMIN_STORAGE_POLICY_SETTINGS.purgeAfterDays}일`, description: "" },
+    ],
+    usageSummary,
     tabs: ADMIN_FILE_TABS,
-    attachments: ADMIN_FILE_LIST_PLACEHOLDERS,
-    trashItems: ADMIN_FILE_TRASH_PLACEHOLDERS,
+    attachments: [],
+    trashItems: [],
     storagePolicies: buildAdminStoragePolicyItems(ADMIN_STORAGE_POLICY_SETTINGS),
     policySettings: ADMIN_STORAGE_POLICY_SETTINGS,
   };

@@ -9,8 +9,6 @@ import { runMoveAttachmentsToTrashFlow, runPurgeTrashItemsFlow, runPurgeWorkerFl
 import { getAdminFileManagementSnapshot } from "@/lib/admin/adminFiles.adapter";
 import {
   buildAdminSelectAllIds,
-  buildAdminStoragePolicyBadges,
-  getAdminFilePolicySourceLabel,
   selectAdminManagedFilesByIds,
   selectAdminTrashItemsByIds,
   sortAdminManagedFiles,
@@ -65,7 +63,6 @@ export default function AdminFilesPage() {
   const sortedAttachments = useMemo(() => sortAdminManagedFiles(snapshot.attachments, fileSortKey), [fileSortKey, snapshot.attachments]);
   const selectedAttachments = useMemo(() => selectAdminManagedFilesByIds(snapshot.attachments, selectedAttachmentIds), [selectedAttachmentIds, snapshot.attachments]);
   const selectedTrashItems = useMemo(() => selectAdminTrashItemsByIds(snapshot.trashItems, selectedTrashItemIds), [selectedTrashItemIds, snapshot.trashItems]);
-  const storagePolicyBadges = useMemo(() => buildAdminStoragePolicyBadges(policySettings), [policySettings]);
 
   function toggleId(targetId: string, currentIds: string[], setIds: (ids: string[]) => void) {
     setIds(toggleAdminSelectedId(currentIds, targetId));
@@ -150,15 +147,13 @@ export default function AdminFilesPage() {
       navigationItems={FILE_ADMIN_NAVIGATION_ITEMS}
       title="저장소 관리"
     >
-      <section className="flex min-h-0 flex-1 flex-col rounded-[32px] border border-stone-200 bg-white p-5 shadow-sm">
+      <section className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[32px] border border-stone-200 bg-white p-5 shadow-sm">
         <FileStorageSummary
           usageCards={snapshot.usageCards}
           usageSummary={snapshot.usageSummary}
-          policyItems={snapshot.storagePolicies}
           policySettings={policySettings}
           onChangePolicySettings={handleChangePolicySettings}
           isSavingPolicy={isSavingPolicy}
-          policySourceLabel={getAdminFilePolicySourceLabel(snapshot.dataSource)}
         />
 
         <div className="mt-4 flex shrink-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -174,17 +169,17 @@ export default function AdminFilesPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-stone-50 px-3 py-2 text-xs font-semibold text-stone-600 ring-1 ring-stone-200">{isLoadingSnapshot ? "DB 조회 중" : snapshot.dataSourceLabel}</span>
-            <span className="rounded-full bg-stone-50 px-3 py-2 text-xs font-semibold text-stone-500 ring-1 ring-stone-200">첨부 {selectedAttachmentIds.length}개 선택</span>
-            <span className="rounded-full bg-stone-50 px-3 py-2 text-xs font-semibold text-stone-500 ring-1 ring-stone-200">휴지통 {selectedTrashItemIds.length}개 선택</span>
-            <button type="button" onClick={refreshSnapshot} aria-label="새로고침" title="새로고침" disabled={isLoadingSnapshot} className="inline-flex items-center justify-center gap-2 rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-50 disabled:text-stone-400">
+            <button type="button" onClick={refreshSnapshot} aria-label="새로고침" title="새로고침" disabled={isLoadingSnapshot} className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 bg-white text-lg font-semibold text-stone-700 transition hover:bg-stone-50 disabled:text-stone-400">
               <span aria-hidden="true">↻</span>
-              새로고침
             </button>
           </div>
         </div>
 
-        {actionMessage ? <section className="mt-3 shrink-0 rounded-[24px] border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900">{actionMessage}</section> : null}
+        {actionMessage ? (
+          <section className="pointer-events-none absolute bottom-5 right-5 z-10 max-w-md rounded-2xl bg-stone-950 px-4 py-3 text-sm font-semibold text-white shadow-xl">
+            {actionMessage}
+          </section>
+        ) : null}
 
         <div className="mt-4 min-h-0 flex-1 overflow-hidden">
           {activeTab === "attachments" ? (
@@ -224,14 +219,7 @@ export default function AdminFilesPage() {
                   </button>
                 </div>
               </div>
-              <div className="mt-4 grid shrink-0 gap-3 md:grid-cols-4">
-                {storagePolicyBadges.map((item) => (
-                  <div key={item.label} className="rounded-3xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
-                    {item.label}: {item.value}
-                  </div>
-                ))}
-                <a href="/admin/settings" className="rounded-3xl border border-stone-300 bg-white p-4 text-sm font-semibold text-stone-700 transition hover:bg-stone-50">전체 정책 관리</a>
-              </div>
+
             </section>
           ) : null}
         </div>

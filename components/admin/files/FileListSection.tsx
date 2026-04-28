@@ -49,7 +49,7 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
         </div>
         <div className="min-h-0 flex-1 divide-y divide-stone-200 overflow-y-auto">
           {items.length === 0 ? (
-            <div className="bg-white px-4 py-10 text-center text-sm text-stone-500">표시할 첨부파일이 없습니다.</div>
+            <div className="flex min-h-full items-center justify-center bg-white px-4 py-10 text-center text-sm text-stone-500">표시할 첨부파일이 없습니다.</div>
           ) : null}
           {items.map((item) => {
             const isSelected = selectedItemIds.includes(item.id);
