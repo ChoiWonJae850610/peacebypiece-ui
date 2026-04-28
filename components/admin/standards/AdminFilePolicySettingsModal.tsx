@@ -100,7 +100,7 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
         </div>
       }
     >
-      <div className="grid min-h-[430px] gap-3 rounded-3xl border border-stone-200 bg-white p-4 shadow-sm">
+      <div className="grid gap-3 rounded-3xl border border-stone-200 bg-white p-4 shadow-sm">
         {errorMessage ? <p className="rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">{errorMessage}</p> : null}
 
         <ToggleButtonGroup
@@ -110,17 +110,9 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
           checked={draft.filePolicy.softDeleteEnabled}
           onChange={(softDeleteEnabled) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, softDeleteEnabled } }))}
         />
-        <ToggleButtonGroup
-          label="용량 계산"
-          activeLabel="휴지통 포함"
-          inactiveLabel="사용중만"
-          checked={draft.filePolicy.includeTrashInUsage}
-          onChange={(includeTrashInUsage) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, includeTrashInUsage } }))}
-        />
-
         <div className="rounded-3xl border border-stone-200 bg-stone-50 p-3">
           <p className="text-sm font-semibold text-stone-950">실제 삭제 기간</p>
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-3 grid grid-cols-4 gap-2">
             {ADMIN_RETENTION_DAY_OPTIONS.map((days) => {
               const selected = draft.filePolicy.trashRetentionDays === days;
               return (
@@ -128,7 +120,7 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
                   key={days}
                   type="button"
                   onClick={() => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, trashRetentionDays: days } }))}
-                  className={`rounded-full border px-3 py-2 text-sm font-semibold transition ${selected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"}`}
+                  className={`w-full rounded-full border px-3 py-2 text-sm font-semibold transition ${selected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"}`}
                 >
                   {days}일
                 </button>
@@ -137,29 +129,17 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
           </div>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2">
-          <label className="grid gap-2 rounded-3xl border border-stone-200 bg-stone-50 p-3 text-sm">
-            <span className="font-semibold text-stone-900">기본 용량(GB)</span>
-            <input
-              type="number"
-              min={1}
-              value={draft.filePolicy.storageLimitGb}
-              onChange={(event) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, storageLimitGb: Number(event.target.value) } }))}
-              className="rounded-2xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400"
-            />
-          </label>
-          <label className="grid gap-2 rounded-3xl border border-stone-200 bg-stone-50 p-3 text-sm">
-            <span className="font-semibold text-stone-900">용량 경고 기준(%)</span>
-            <input
-              type="number"
-              min={1}
-              max={100}
-              value={draft.filePolicy.warningThresholdPercent}
-              onChange={(event) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, warningThresholdPercent: Number(event.target.value) } }))}
-              className="rounded-2xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400"
-            />
-          </label>
-        </div>
+        <label className="grid gap-2 rounded-3xl border border-stone-200 bg-stone-50 p-3 text-sm">
+          <span className="font-semibold text-stone-900">용량 경고 기준(%)</span>
+          <input
+            type="number"
+            min={1}
+            max={100}
+            value={draft.filePolicy.warningThresholdPercent}
+            onChange={(event) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, warningThresholdPercent: Number(event.target.value) } }))}
+            className="rounded-2xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400"
+          />
+        </label>
       </div>
     </AdminModal>
   );
