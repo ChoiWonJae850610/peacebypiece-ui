@@ -16,14 +16,14 @@ export const ADMIN_FILE_USAGE_SUMMARY: AdminStorageUsageSummary = {
   usedBytes: 2147483648,
   limitBytes: 5368709120,
   usedLabel: "2.0GB",
-  limitLabel: "5GB",
+  limitLabel: "5.0GB",
   usagePercent: 40,
   statusLabel: "정상",
   statusTone: "normal",
 };
 
 export const ADMIN_FILE_USAGE_CARDS: AdminFileUsageCard[] = [
-  { label: "전체 사용량", value: "2.0GB / 5GB", description: "휴지통 보관 파일 포함" },
+  { label: "전체 사용량", value: "2.0GB / 5.0GB", description: "휴지통 보관 파일 포함" },
   { label: "첨부파일", value: "3개", description: "작지에 연결된 이미지, PDF, 기타 파일" },
   { label: "휴지통", value: "2개", description: "소프트 삭제 후 보관 중인 파일" },
   { label: "복구 가능 기간", value: "15일", description: "company_settings.trash_retention_days 기준" },

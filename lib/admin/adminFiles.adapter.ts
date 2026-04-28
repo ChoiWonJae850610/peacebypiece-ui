@@ -31,5 +31,14 @@ export function getAdminFileManagementSnapshot(): AdminFileManagementSnapshot {
     trashItems: [],
     storagePolicies: buildAdminStoragePolicyItems(ADMIN_STORAGE_POLICY_SETTINGS),
     policySettings: ADMIN_STORAGE_POLICY_SETTINGS,
+    recentUploadTrend: [
+      { label: "6일전", value: 0 },
+      { label: "5일전", value: 0 },
+      { label: "4일전", value: 0 },
+      { label: "3일전", value: 0 },
+      { label: "2일전", value: 0 },
+      { label: "어제", value: 0 },
+      { label: "오늘", value: 0 },
+    ],
   };
 }

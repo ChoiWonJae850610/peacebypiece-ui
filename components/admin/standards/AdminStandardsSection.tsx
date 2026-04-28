@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import AdminNotificationSettingsModal from "@/components/admin/AdminNotificationSettingsModal";
 import PartnerProcessManagementModal from "@/components/admin/partnerMaster/PartnerProcessManagementModal";
 import AdminItemCategoryManagementModal from "@/components/admin/standards/AdminItemCategoryManagementModal";
 import AdminUnitManagementModal from "@/components/admin/standards/AdminUnitManagementModal";
@@ -15,10 +16,11 @@ import { createDefaultItemCategoryDefinitions, createDefaultUnitDefinitions } fr
 import { fetchPartnerMasterItemsFromApi, savePartnerMasterProcessesToApi } from "@/lib/admin/partnerMasterApiClient";
 import { fetchAdminStandardsFromApi, saveAdminItemCategoriesToApi, saveAdminUnitsToApi } from "@/lib/admin/standardsApiClient";
 import type { AdminItemCategoryDefinition, AdminUnitDefinition } from "@/lib/admin/standards.types";
+import { useAdminWorkspaceTools } from "@/lib/admin/useAdminWorkspaceTools";
 import type { OutsourcingProcessType } from "@/types/partner";
 
 type StandardAction = {
-  key: "units" | "processes" | "items";
+  key: "units" | "processes" | "items" | "logs";
   title: string;
   statusLabel: string;
   onClick?: () => void;
@@ -29,6 +31,7 @@ function sortProcessesByLabel(items: OutsourcingProcessDefinition[]) {
 }
 
 export default function AdminStandardsSection() {
+  const notificationTools = useAdminWorkspaceTools();
   const [processDefinitions, setProcessDefinitions] = useState<OutsourcingProcessDefinition[]>(createDefaultOutsourcingProcessDefinitions());
   const [processDraftDefinitions, setProcessDraftDefinitions] = useState<OutsourcingProcessDefinition[]>(createDefaultOutsourcingProcessDefinitions());
   const [unitDefinitions, setUnitDefinitions] = useState<AdminUnitDefinition[]>(createDefaultUnitDefinitions());
@@ -192,6 +195,7 @@ export default function AdminStandardsSection() {
     { key: "items", title: "생산품 유형", statusLabel: "관리", onClick: () => setIsItemCategoryModalOpen(true) },
     { key: "units", title: "단위 표준", statusLabel: "관리", onClick: () => setIsUnitModalOpen(true) },
     { key: "processes", title: "외주 공정", statusLabel: "관리", onClick: openProcessModal },
+    { key: "logs", title: "로그 이벤트", statusLabel: "관리", onClick: notificationTools.openNotificationModal },
   ];
 
   return (
@@ -202,7 +206,7 @@ export default function AdminStandardsSection() {
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-3">
+      <div className="mt-4 grid gap-3 md:grid-cols-4">
         {actions.map((action) => (
           <button
             key={action.key}
@@ -233,6 +237,15 @@ export default function AdminStandardsSection() {
         error={standardFormError}
         onClose={() => setIsItemCategoryModalOpen(false)}
         onSave={saveItemCategoryDefinitions}
+      />
+
+      <AdminNotificationSettingsModal
+        open={notificationTools.activeModal === "notification"}
+        onClose={notificationTools.closeModal}
+        notificationSettings={notificationTools.notificationSettings}
+        onToggleNotificationSetting={notificationTools.handleToggleNotificationSetting}
+        title="로그 이벤트"
+        description=""
       />
 
       <PartnerProcessManagementModal

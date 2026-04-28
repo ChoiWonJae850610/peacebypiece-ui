@@ -4,6 +4,11 @@ export type AdminFileUsageCard = {
   description: string;
 };
 
+export type AdminRecentUploadTrendPoint = {
+  label: string;
+  value: number;
+};
+
 export type AdminStorageUsageSummary = {
   usedBytes: number;
   limitBytes: number;
@@ -107,4 +112,5 @@ export type AdminFileManagementSnapshot = {
   trashItems: AdminTrashFileItem[];
   storagePolicies: AdminStoragePolicyItem[];
   policySettings: AdminStoragePolicySettings;
+  recentUploadTrend: AdminRecentUploadTrendPoint[];
 };

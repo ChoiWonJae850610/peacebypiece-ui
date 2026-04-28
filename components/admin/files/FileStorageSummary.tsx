@@ -1,7 +1,6 @@
-import type { AdminFileUsageCard, AdminStoragePolicySettings, AdminStorageUsageSummary } from "@/lib/admin/adminFiles.types";
+import type { AdminFileUsageCard, AdminRecentUploadTrendPoint, AdminStoragePolicySettings, AdminStorageUsageSummary } from "@/lib/admin/adminFiles.types";
 
 const PURGE_DAY_OPTIONS: AdminStoragePolicySettings["purgeAfterDays"][] = [1, 5, 15, 30];
-const MINI_CHART_POINTS = [12, 18, 10, 24, 20, 32, 26];
 
 type FileStorageSummaryProps = {
   usageCards: AdminFileUsageCard[];
@@ -9,6 +8,7 @@ type FileStorageSummaryProps = {
   policySettings: AdminStoragePolicySettings;
   onChangePolicySettings: (next: AdminStoragePolicySettings) => void;
   isSavingPolicy?: boolean;
+  recentUploadTrend?: AdminRecentUploadTrendPoint[];
 };
 
 function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange: (next: boolean) => void; label: string }) {
@@ -25,9 +25,10 @@ function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange
   );
 }
 
-function MiniUsageChart() {
-  const max = Math.max(...MINI_CHART_POINTS);
-  const points = MINI_CHART_POINTS.map((value, index) => {
+function MiniUsageChart({ points: trendPoints = [] }: { points?: AdminRecentUploadTrendPoint[] }) {
+  const values = trendPoints.length > 0 ? trendPoints.map((point) => point.value) : [0, 0, 0, 0, 0, 0, 0];
+  const max = Math.max(1, ...values);
+  const chartPoints = values.map((value, index) => {
     const x = 8 + index * 18;
     const y = 48 - (value / max) * 34;
     return `${x},${y}`;
@@ -40,8 +41,8 @@ function MiniUsageChart() {
         <span>7일</span>
       </div>
       <svg viewBox="0 0 124 56" className="mt-2 h-14 w-full" aria-hidden="true">
-        <polyline points={points} fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-white" />
-        {MINI_CHART_POINTS.map((value, index) => {
+        <polyline points={chartPoints} fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-white" />
+        {values.map((value, index) => {
           const x = 8 + index * 18;
           const y = 48 - (value / max) * 34;
           return <circle key={`${value}-${index}`} cx={x} cy={y} r="2.5" className="fill-white" />;
@@ -51,7 +52,7 @@ function MiniUsageChart() {
   );
 }
 
-export default function FileStorageSummary({ usageCards, usageSummary, policySettings, onChangePolicySettings, isSavingPolicy = false }: FileStorageSummaryProps) {
+export default function FileStorageSummary({ usageCards, usageSummary, policySettings, onChangePolicySettings, isSavingPolicy = false, recentUploadTrend = [] }: FileStorageSummaryProps) {
   const isWarning = usageSummary.statusTone === "warning";
 
   return (
@@ -72,7 +73,7 @@ export default function FileStorageSummary({ usageCards, usageSummary, policySet
             <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-white/15">
               <div className={`h-full rounded-full ${isWarning ? "bg-amber-300" : "bg-white"}`} style={{ width: `${usageSummary.usagePercent}%` }} />
             </div>
-            <MiniUsageChart />
+            <MiniUsageChart points={recentUploadTrend} />
           </div>
 
           <div className="grid grid-cols-2 gap-2">

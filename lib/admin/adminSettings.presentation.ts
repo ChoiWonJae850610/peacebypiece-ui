@@ -48,9 +48,20 @@ export function buildCompanySettingsUpdateInput(settings: CompanySettings): Comp
   };
 }
 
+function padDatePart(value: number): string {
+  return String(value).padStart(2, "0");
+}
+
 export function getAdminSettingsUpdatedAtLabel(updatedAt?: string | null): string | null {
   if (!updatedAt) return null;
   const date = new Date(updatedAt);
   if (Number.isNaN(date.getTime())) return null;
-  return `최근 저장 ${date.toLocaleString("ko-KR")}`;
+
+  const year = date.getUTCFullYear();
+  const month = padDatePart(date.getUTCMonth() + 1);
+  const day = padDatePart(date.getUTCDate());
+  const hours = padDatePart(date.getUTCHours());
+  const minutes = padDatePart(date.getUTCMinutes());
+
+  return `최근 저장 ${year}.${month}.${day} ${hours}:${minutes}`;
 }

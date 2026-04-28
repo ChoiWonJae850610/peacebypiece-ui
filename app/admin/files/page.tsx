@@ -154,6 +154,7 @@ export default function AdminFilesPage() {
           policySettings={policySettings}
           onChangePolicySettings={handleChangePolicySettings}
           isSavingPolicy={isSavingPolicy}
+          recentUploadTrend={snapshot.recentUploadTrend}
         />
 
         <div className="mt-4 flex shrink-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">

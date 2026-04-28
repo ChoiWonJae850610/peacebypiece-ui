@@ -10,6 +10,8 @@ type AdminNotificationSettingsModalProps = {
   onClose: () => void;
   notificationSettings: NotificationSettings;
   onToggleNotificationSetting: (key: NotificationSettingKey) => void;
+  title?: string;
+  description?: string;
 };
 
 export default function AdminNotificationSettingsModal({
@@ -17,6 +19,8 @@ export default function AdminNotificationSettingsModal({
   onClose,
   notificationSettings,
   onToggleNotificationSetting,
+  title,
+  description,
 }: AdminNotificationSettingsModalProps) {
   const { i18n } = useI18n();
   const notificationModalText = i18n.admin.notificationModal;
@@ -24,14 +28,14 @@ export default function AdminNotificationSettingsModal({
     <AdminModal
       open={open}
       onClose={onClose}
-      title={notificationModalText.title}
-      description={notificationModalText.description}
+      title={title || notificationModalText.title}
+      description={description ?? notificationModalText.description}
       maxWidthClass="md:max-w-2xl"
     >
-        <AdminNotificationSettingsSection
-          notificationSettings={notificationSettings}
-          onToggleNotificationSetting={onToggleNotificationSetting}
-        />
+      <AdminNotificationSettingsSection
+        notificationSettings={notificationSettings}
+        onToggleNotificationSetting={onToggleNotificationSetting}
+      />
     </AdminModal>
   );
 }

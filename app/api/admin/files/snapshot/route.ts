@@ -3,7 +3,7 @@ import { getAdminFileManagementSnapshot } from "@/lib/admin/adminFiles.adapter";
 import { buildAdminStoragePolicyItems, normalizeAdminFilePolicySettings } from "@/lib/admin/adminFiles.presentation";
 import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/companySettings.repository";
 import { listAdminFileManagementRows } from "@/lib/admin/adminFiles.serverActions";
-import type { AdminFileUsageCard, AdminStorageUsageSummary } from "@/lib/admin/adminFiles.types";
+import type { AdminFileUsageCard, AdminRecentUploadTrendPoint, AdminStorageUsageSummary } from "@/lib/admin/adminFiles.types";
 import type { CompanyFilePolicySettings } from "@/lib/admin/companySettings.types";
 
 export const runtime = "nodejs";
@@ -43,6 +43,27 @@ function buildUsageSummary(activeBytes: number, trashBytes: number, filePolicy: 
   };
 }
 
+function buildRecentUploadTrend(uploadedDates: string[]): AdminRecentUploadTrendPoint[] {
+  const today = new Date();
+  const days = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(today);
+    date.setDate(today.getDate() - (6 - index));
+    const key = date.toISOString().slice(0, 10);
+    return {
+      key,
+      label: index === 6 ? "오늘" : index === 5 ? "어제" : `${6 - index}일전`,
+      value: 0,
+    };
+  });
+
+  uploadedDates.forEach((uploadedAt) => {
+    const target = days.find((day) => day.key === uploadedAt.slice(0, 10));
+    if (target) target.value += 1;
+  });
+
+  return days.map(({ label, value }) => ({ label, value }));
+}
+
 function buildUsageCards(activeCount: number, trashCount: number, activeBytes: number, trashBytes: number, filePolicy: CompanyFilePolicySettings): AdminFileUsageCard[] {
   const summary = buildUsageSummary(activeBytes, trashBytes, filePolicy);
   return [
@@ -76,6 +97,7 @@ export async function GET() {
         usageCards: buildUsageCards(rows.attachments.length, rows.trashItems.length, activeBytes, trashBytes, settings.filePolicy),
         storagePolicies: buildAdminStoragePolicyItems(policySettings),
         policySettings,
+        recentUploadTrend: buildRecentUploadTrend(rows.attachments.map((item) => item.uploadedAt)),
       },
     });
   } catch (error) {
