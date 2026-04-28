@@ -16,7 +16,7 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
   const allSelected = items.length > 0 && selectedItemIds.length === items.length;
 
   return (
-    <section className="rounded-[32px] border border-stone-200 bg-white p-5 shadow-sm">
+    <section className="flex h-full min-h-0 flex-col rounded-[28px] border border-stone-200 bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">ATTACHMENTS</p>
@@ -37,7 +37,7 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
         </div>
       </div>
 
-      <div className="mt-5 overflow-hidden rounded-[28px] border border-stone-200">
+      <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[24px] border border-stone-200">
         <div className="hidden grid-cols-[0.4fr_1.2fr_1.4fr_0.7fr_0.7fr_0.8fr_0.8fr] gap-3 bg-stone-50 px-4 py-3 text-xs font-semibold text-stone-500 md:grid">
           <span>선택</span>
           <span>작지명</span>
@@ -47,7 +47,7 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
           <span>등록자</span>
           <span>상태</span>
         </div>
-        <div className="divide-y divide-stone-200">
+        <div className="min-h-0 flex-1 divide-y divide-stone-200 overflow-y-auto">
           {items.length === 0 ? (
             <div className="bg-white px-4 py-10 text-center text-sm text-stone-500">표시할 첨부파일이 없습니다.</div>
           ) : null}
