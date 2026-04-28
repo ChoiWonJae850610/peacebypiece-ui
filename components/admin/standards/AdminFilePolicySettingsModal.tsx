@@ -101,9 +101,7 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
       }
     >
       <div className="grid min-h-[430px] gap-3 rounded-3xl border border-stone-200 bg-white p-4 shadow-sm">
-        <div className="min-h-9">
-          {loading ? <p className="rounded-2xl bg-stone-50 px-3 py-2 text-sm font-semibold text-stone-500">불러오는 중</p> : errorMessage ? <p className="rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">{errorMessage}</p> : null}
-        </div>
+        {errorMessage ? <p className="rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">{errorMessage}</p> : null}
 
         <ToggleButtonGroup
           label="삭제 방식"

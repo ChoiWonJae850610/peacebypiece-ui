@@ -27,12 +27,12 @@ function MiniUsageChart({ points: trendPoints = [] }: { points?: AdminRecentUplo
   const values = trendPoints.length > 0 ? trendPoints.map((point) => point.value) : [0, 0, 0, 0, 0, 0, 0];
   const max = Math.max(1, ...values);
   const chartWidth = 190;
-  const chartHeight = 44;
+  const chartHeight = 38;
   const step = values.length > 1 ? (chartWidth - 18) / (values.length - 1) : 0;
   const chartPoints = values
     .map((value, index) => {
       const x = 9 + index * step;
-      const y = chartHeight - 8 - (value / max) * 30;
+      const y = chartHeight - 7 - (value / max) * 25;
       return `${x},${y}`;
     })
     .join(" ");
@@ -43,11 +43,11 @@ function MiniUsageChart({ points: trendPoints = [] }: { points?: AdminRecentUplo
         <span>첨부량</span>
         <span>건수</span>
       </div>
-      <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="mt-1 h-[44px] w-full" aria-hidden="true">
+      <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="mt-0.5 h-[38px] w-full" aria-hidden="true">
         <polyline points={chartPoints} fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-white" />
         {values.map((value, index) => {
           const x = 9 + index * step;
-          const y = chartHeight - 8 - (value / max) * 30;
+          const y = chartHeight - 7 - (value / max) * 25;
           return <circle key={`${value}-${index}`} cx={x} cy={y} r="2.2" className="fill-white" />;
         })}
       </svg>
@@ -71,8 +71,8 @@ function DonutChart({ items = [] }: { items?: AdminFileTypeDistributionItem[] })
         <span>파일 유형</span>
         <span>{total}개</span>
       </div>
-      <div className="mt-1 flex items-center gap-3">
-        <svg viewBox="0 0 72 72" className="h-[48px] w-[48px] shrink-0 -rotate-90" aria-hidden="true">
+      <div className="mt-0.5 flex items-center gap-3">
+        <svg viewBox="0 0 72 72" className="h-[42px] w-[42px] shrink-0 -rotate-90" aria-hidden="true">
           <circle cx="36" cy="36" r={radius} fill="none" stroke="rgba(255,255,255,0.16)" strokeWidth="11" />
           {total > 0
             ? normalizedItems.map((item, index) => {
@@ -135,7 +135,7 @@ export default function FileStorageSummary({
 
   return (
     <section className="shrink-0 rounded-[28px] border border-stone-200 bg-stone-50 p-3">
-      <div className="h-[330px] overflow-hidden rounded-[26px] bg-stone-950 p-5 text-white">
+      <div className="h-[300px] overflow-hidden rounded-[26px] bg-stone-950 p-5 text-white">
         <div className="mb-2 flex items-center justify-between gap-3">
           <div className="flex flex-wrap gap-2">
             {TREND_PERIODS.map((period) => {
@@ -164,7 +164,7 @@ export default function FileStorageSummary({
           </button>
         </div>
 
-        <div className="grid h-[250px] gap-3 lg:grid-cols-[1fr_1fr]">
+        <div className="grid h-[218px] gap-3 lg:grid-cols-[1fr_1fr]">
           <div className="flex min-h-0 flex-col">
             <div>
               <div className="flex items-start justify-between gap-3">
@@ -185,7 +185,7 @@ export default function FileStorageSummary({
 
             <div className="mt-3 grid grid-cols-2 gap-2">
               {summaryItems.map((item) => (
-                <div key={item.label} className="rounded-2xl bg-white/10 px-3 py-3">
+                <div key={item.label} className="rounded-2xl bg-white/10 px-3 py-2.5">
                   <p className="text-[10px] font-semibold text-stone-300">{item.label}</p>
                   <p className="mt-1 text-sm font-semibold text-white">{item.value}</p>
                 </div>
@@ -193,7 +193,7 @@ export default function FileStorageSummary({
             </div>
           </div>
 
-          <div className="grid min-h-0 grid-rows-2 gap-2">
+          <div className="grid h-[186px] self-end grid-rows-2 gap-2">
             <MiniUsageChart points={recentUploadTrend} />
             <DonutChart items={fileTypeDistribution} />
           </div>
