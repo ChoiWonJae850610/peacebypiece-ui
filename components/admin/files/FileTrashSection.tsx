@@ -21,23 +21,23 @@ export default function FileTrashSection({ items, selectedItemIds, onToggleItem,
 
   return (
     <section className="flex h-full min-h-0 flex-col rounded-[28px] border border-stone-200 bg-white p-3.5 shadow-sm">
-      <div className="flex shrink-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <h2 className="text-lg font-semibold tracking-tight text-stone-950">휴지통</h2>
-        <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={onToggleAll} className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-700 shadow-sm hover:bg-stone-50">
+      <div className="flex shrink-0 flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <h2 className="text-base font-semibold tracking-tight text-stone-950">휴지통</h2>
+        <div className="flex flex-wrap gap-1.5">
+          <button type="button" onClick={onToggleAll} className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm hover:bg-stone-50">
             {allSelected ? "전체 해제" : "전체 선택"}
           </button>
-          <button type="button" onClick={onRestore} className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${hasSelection ? "border-stone-300 bg-white text-stone-700 shadow-sm hover:bg-stone-50" : "border-stone-200 bg-stone-50 text-stone-400"}`} disabled={!hasSelection}>
+          <button type="button" onClick={onRestore} className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${hasSelection ? "border-stone-300 bg-white text-stone-700 shadow-sm hover:bg-stone-50" : "border-stone-200 bg-stone-50 text-stone-400"}`} disabled={!hasSelection}>
             복구 {hasSelection ? selectedItemIds.length : ""}
           </button>
-          <button type="button" onClick={onPurge} className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${hasSelection ? "border-red-200 bg-white text-red-600 shadow-sm hover:bg-red-50" : "border-stone-200 bg-stone-50 text-stone-400"}`} disabled={!hasSelection}>
+          <button type="button" onClick={onPurge} className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${hasSelection ? "border-red-200 bg-white text-red-600 shadow-sm hover:bg-red-50" : "border-stone-200 bg-stone-50 text-stone-400"}`} disabled={!hasSelection}>
             영구 삭제 {hasSelection ? selectedItemIds.length : ""}
           </button>
         </div>
       </div>
 
       <div className="mt-2.5 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[24px] border border-stone-200">
-        <div className="hidden grid-cols-[0.38fr_1.08fr_0.82fr_1.72fr_0.68fr_0.72fr] gap-3 bg-stone-50 px-4 py-2 text-[11px] font-semibold text-stone-500 md:grid">
+        <div className="hidden grid-cols-[0.38fr_1.08fr_0.82fr_1.72fr_0.68fr_0.72fr] gap-3 bg-stone-50 px-4 py-1.5 text-[10px] font-semibold text-stone-500 md:grid">
           <span>선택</span>
           <span>작지명</span>
           <span>삭제일자</span>
@@ -52,19 +52,19 @@ export default function FileTrashSection({ items, selectedItemIds, onToggleItem,
           {items.map((item) => {
             const isSelected = selectedItemIds.includes(item.id);
             return (
-              <button key={item.id} type="button" onClick={() => onToggleItem(item.id)} className={`grid w-full gap-3 px-4 py-2 text-left text-xs transition md:grid-cols-[0.38fr_1.08fr_0.82fr_1.72fr_0.68fr_0.72fr] md:items-center ${isSelected ? "bg-stone-100" : "bg-white hover:bg-stone-50"}`}>
-                <span className={`flex h-5 w-5 items-center justify-center rounded border text-xs ${isSelected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-300 bg-white text-transparent"}`}>✓</span>
+              <button key={item.id} type="button" onClick={() => onToggleItem(item.id)} className={`grid w-full gap-3 px-4 py-1.5 text-left text-[11px] transition md:grid-cols-[0.38fr_1.08fr_0.82fr_1.72fr_0.68fr_0.72fr] md:items-center ${isSelected ? "bg-stone-100" : "bg-white hover:bg-stone-50"}`}>
+                <span className={`flex h-4 w-4 items-center justify-center rounded border text-[10px] ${isSelected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-300 bg-white text-transparent"}`}>✓</span>
                 <div className="min-w-0">
-                  <p className="text-xs text-stone-400 md:hidden">작지명</p>
+                  <p className="text-[10px] text-stone-400 md:hidden">작지명</p>
                   <p className="truncate font-semibold text-stone-950">{item.workorderTitle}</p>
                 </div>
-                <p className="text-[12px] text-stone-600">{item.deletedAt}</p>
+                <p className="text-[11px] text-stone-600">{item.deletedAt}</p>
                 <div className="min-w-0">
-                  <p className="text-xs text-stone-400 md:hidden">파일명</p>
-                  <p className="truncate text-[12px] text-stone-700">{item.fileName}</p>
+                  <p className="text-[10px] text-stone-400 md:hidden">파일명</p>
+                  <p className="truncate text-[11px] text-stone-700">{item.fileName}</p>
                 </div>
-                <p className="text-[12px] text-stone-600">{getTrashFileType(item)}</p>
-                <p className="text-[12px] text-stone-600">{item.fileSizeLabel}</p>
+                <p className="text-[11px] text-stone-600">{getTrashFileType(item)}</p>
+                <p className="text-[11px] text-stone-600">{item.fileSizeLabel}</p>
               </button>
             );
           })}
