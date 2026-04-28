@@ -137,7 +137,7 @@ export default function FileStorageSummary({
 
   return (
     <section className="shrink-0 rounded-[28px] border border-stone-200 bg-stone-50 p-3">
-      <div className="relative h-[294px] overflow-hidden rounded-[26px] bg-stone-950 p-5 text-white">
+      <div className="relative h-[314px] overflow-hidden rounded-[26px] bg-stone-950 p-5 text-white">
         <div className="flex h-full min-h-0 flex-col">
           <div className="flex shrink-0 items-center justify-between gap-3">
             <div className="flex flex-wrap gap-2">
@@ -157,7 +157,7 @@ export default function FileStorageSummary({
             </div>
           </div>
 
-          <div className="mt-4 grid min-h-0 flex-1 gap-3 lg:grid-cols-[1fr_1fr]">
+          <div className="mt-4 grid h-[220px] min-h-0 gap-3 lg:grid-cols-[1fr_1fr]">
             <div className="flex min-h-0 flex-col">
               <div className="shrink-0">
                 <div className="flex items-start justify-between gap-3">
