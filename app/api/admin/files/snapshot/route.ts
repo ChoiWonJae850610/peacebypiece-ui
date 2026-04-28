@@ -87,6 +87,7 @@ function normalizeFileTypeLabel(fileType: string, fileName = ""): string {
   if (source.includes("pdf") || extension === "pdf") return "PDF";
   if (
     source.includes("image") ||
+    source.includes("img") ||
     source.includes("design") ||
     ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "heic", "heif"].includes(extension)
   ) {

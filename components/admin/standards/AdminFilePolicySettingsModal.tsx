@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AdminModal } from "@/components/admin/layout/AdminModal";
+import { AdminModal, adminModalPrimaryButtonClassName, adminModalSecondaryButtonClassName } from "@/components/admin/layout/AdminModal";
 import { ADMIN_RETENTION_DAY_OPTIONS } from "@/lib/admin/adminSettings.presentation";
 import { runSaveCompanySettingsFlow } from "@/lib/admin/adminSettings.actionFlow";
 import { buildDefaultCompanySettings } from "@/lib/admin/companySettings.defaults";
@@ -16,21 +16,14 @@ type AdminFilePolicySettingsModalProps = {
 function ToggleButtonGroup({ label, activeLabel, inactiveLabel, checked, onChange }: { label: string; activeLabel: string; inactiveLabel: string; checked: boolean; onChange: (next: boolean) => void }) {
   return (
     <div className="rounded-3xl border border-stone-200 bg-white p-3">
-      <p className="text-sm font-semibold text-stone-950">{label}</p>
-      <div className="mt-3 grid grid-cols-2 gap-2">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-semibold text-stone-950">{label}</p>
         <button
           type="button"
-          onClick={() => onChange(true)}
-          className={`rounded-2xl border px-3 py-2 text-sm font-semibold transition ${checked ? "border-emerald-200 bg-emerald-100 text-emerald-800" : "border-stone-200 bg-stone-50 text-stone-500 hover:bg-white"}`}
+          onClick={() => onChange(!checked)}
+          className={`min-w-[96px] rounded-full border px-3 py-1.5 text-xs font-semibold transition ${checked ? "border-emerald-200 bg-emerald-100 text-emerald-800" : "border-stone-900 bg-stone-950 text-white"}`}
         >
-          {activeLabel}
-        </button>
-        <button
-          type="button"
-          onClick={() => onChange(false)}
-          className={`rounded-2xl border px-3 py-2 text-sm font-semibold transition ${!checked ? "border-stone-900 bg-stone-950 text-white" : "border-stone-200 bg-stone-50 text-stone-500 hover:bg-white"}`}
-        >
-          {inactiveLabel}
+          {checked ? activeLabel : inactiveLabel}
         </button>
       </div>
     </div>
@@ -38,7 +31,8 @@ function ToggleButtonGroup({ label, activeLabel, inactiveLabel, checked, onChang
 }
 
 export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFilePolicySettingsModalProps) {
-  const [draft, setDraft] = useState<CompanySettings>(() => buildDefaultCompanySettings(WORKSPACE_COMPANY_ID));
+  const defaultSettings = buildDefaultCompanySettings(WORKSPACE_COMPANY_ID);
+  const [draft, setDraft] = useState<CompanySettings>(() => defaultSettings);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -69,6 +63,13 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
     };
   }, [open]);
 
+  function handleReset() {
+    setDraft((current) => ({
+      ...current,
+      filePolicy: { ...defaultSettings.filePolicy },
+    }));
+  }
+
   async function handleSave() {
     setSaving(true);
     setErrorMessage(null);
@@ -83,10 +84,25 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
   }
 
   return (
-    <AdminModal open={open} onClose={onClose} title="파일 정책 관리" maxWidthClass="md:max-w-2xl">
-      <div className="grid gap-3">
-        {loading ? <p className="rounded-3xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm font-semibold text-stone-500">불러오는 중</p> : null}
-        {errorMessage ? <p className="rounded-3xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{errorMessage}</p> : null}
+    <AdminModal
+      open={open}
+      onClose={onClose}
+      title="파일 정책 관리"
+      maxWidthClass="md:max-w-2xl"
+      footer={
+        <div className="flex items-center justify-between gap-3">
+          <button type="button" onClick={handleReset} className={adminModalSecondaryButtonClassName}>
+            기본값 복원
+          </button>
+          <button type="button" onClick={handleSave} disabled={saving || loading} className={adminModalPrimaryButtonClassName}>
+            {saving ? "저장 중" : "저장"}
+          </button>
+        </div>
+      }
+    >
+      <div className="grid gap-3 rounded-3xl border border-stone-200 bg-white p-4 shadow-sm">
+        {loading ? <p className="rounded-2xl bg-stone-50 px-3 py-2 text-sm font-semibold text-stone-500">불러오는 중</p> : null}
+        {errorMessage ? <p className="rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">{errorMessage}</p> : null}
 
         <ToggleButtonGroup
           label="삭제 방식"
@@ -103,7 +119,7 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
           onChange={(includeTrashInUsage) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, includeTrashInUsage } }))}
         />
 
-        <div className="rounded-3xl border border-stone-200 bg-white p-3">
+        <div className="rounded-3xl border border-stone-200 bg-stone-50 p-3">
           <p className="text-sm font-semibold text-stone-950">실제 삭제 기간</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {ADMIN_RETENTION_DAY_OPTIONS.map((days) => {
@@ -113,7 +129,7 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
                   key={days}
                   type="button"
                   onClick={() => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, trashRetentionDays: days } }))}
-                  className={`rounded-full border px-3 py-2 text-sm font-semibold transition ${selected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-200 bg-stone-50 text-stone-600 hover:bg-white"}`}
+                  className={`rounded-full border px-3 py-2 text-sm font-semibold transition ${selected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"}`}
                 >
                   {days}일
                 </button>
@@ -123,17 +139,17 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
         </div>
 
         <div className="grid gap-3 md:grid-cols-2">
-          <label className="grid gap-2 rounded-3xl border border-stone-200 bg-white p-3 text-sm">
+          <label className="grid gap-2 rounded-3xl border border-stone-200 bg-stone-50 p-3 text-sm">
             <span className="font-semibold text-stone-900">기본 용량(GB)</span>
             <input
               type="number"
               min={1}
               value={draft.filePolicy.storageLimitGb}
               onChange={(event) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, storageLimitGb: Number(event.target.value) } }))}
-              className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm outline-none focus:border-stone-400"
+              className="rounded-2xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400"
             />
           </label>
-          <label className="grid gap-2 rounded-3xl border border-stone-200 bg-white p-3 text-sm">
+          <label className="grid gap-2 rounded-3xl border border-stone-200 bg-stone-50 p-3 text-sm">
             <span className="font-semibold text-stone-900">용량 경고 기준(%)</span>
             <input
               type="number"
@@ -141,19 +157,10 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
               max={100}
               value={draft.filePolicy.warningThresholdPercent}
               onChange={(event) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, warningThresholdPercent: Number(event.target.value) } }))}
-              className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm outline-none focus:border-stone-400"
+              className="rounded-2xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400"
             />
           </label>
         </div>
-      </div>
-
-      <div className="mt-5 flex justify-end gap-2 border-t border-stone-100 pt-4">
-        <button type="button" onClick={onClose} className="rounded-2xl border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-600 hover:bg-stone-50">
-          취소
-        </button>
-        <button type="button" onClick={handleSave} disabled={saving || loading} className="rounded-2xl bg-stone-950 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-800 disabled:opacity-50">
-          {saving ? "저장 중" : "저장"}
-        </button>
       </div>
     </AdminModal>
   );

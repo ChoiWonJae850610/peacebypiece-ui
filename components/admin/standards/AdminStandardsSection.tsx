@@ -5,6 +5,7 @@ import AdminNotificationSettingsModal from "@/components/admin/AdminNotification
 import PartnerProcessManagementModal from "@/components/admin/partnerMaster/PartnerProcessManagementModal";
 import AdminItemCategoryManagementModal from "@/components/admin/standards/AdminItemCategoryManagementModal";
 import AdminFilePolicySettingsModal from "@/components/admin/standards/AdminFilePolicySettingsModal";
+import AdminNotificationPolicySettingsModal from "@/components/admin/standards/AdminNotificationPolicySettingsModal";
 import AdminUnitManagementModal from "@/components/admin/standards/AdminUnitManagementModal";
 import {
   createDefaultOutsourcingProcessDefinitions,
@@ -23,6 +24,7 @@ import type { OutsourcingProcessType } from "@/types/partner";
 type StandardAction = {
   key: "items" | "units" | "processes" | "logs" | "filePolicy" | "notifications";
   title: string;
+  description: string;
   statusLabel: string;
   onClick?: () => void;
 };
@@ -33,7 +35,6 @@ function sortProcessesByLabel(items: OutsourcingProcessDefinition[]) {
 
 export default function AdminStandardsSection() {
   const notificationTools = useAdminWorkspaceTools();
-  const [notificationModalTitle, setNotificationModalTitle] = useState("로그 이벤트");
   const [processDefinitions, setProcessDefinitions] = useState<OutsourcingProcessDefinition[]>(createDefaultOutsourcingProcessDefinitions());
   const [processDraftDefinitions, setProcessDraftDefinitions] = useState<OutsourcingProcessDefinition[]>(createDefaultOutsourcingProcessDefinitions());
   const [unitDefinitions, setUnitDefinitions] = useState<AdminUnitDefinition[]>(createDefaultUnitDefinitions());
@@ -42,6 +43,7 @@ export default function AdminStandardsSection() {
   const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
   const [isItemCategoryModalOpen, setIsItemCategoryModalOpen] = useState(false);
   const [isFilePolicyModalOpen, setIsFilePolicyModalOpen] = useState(false);
+  const [isNotificationPolicyModalOpen, setIsNotificationPolicyModalOpen] = useState(false);
   const [newProcessLabel, setNewProcessLabel] = useState("");
   const [processFormError, setProcessFormError] = useState("");
   const [standardFormError, setStandardFormError] = useState("");
@@ -195,31 +197,15 @@ export default function AdminStandardsSection() {
   }, []);
 
   const policyActions: StandardAction[] = [
-    {
-      key: "notifications",
-      title: "알림 정책",
-      statusLabel: "관리",
-      onClick: () => {
-        setNotificationModalTitle("알림 정책");
-        notificationTools.openNotificationModal();
-      },
-    },
-    {
-      key: "logs",
-      title: "로그 이벤트",
-      statusLabel: "관리",
-      onClick: () => {
-        setNotificationModalTitle("로그 이벤트");
-        notificationTools.openNotificationModal();
-      },
-    },
-    { key: "filePolicy", title: "저장 정책", statusLabel: "관리", onClick: () => setIsFilePolicyModalOpen(true) },
+    { key: "notifications", title: "알림 정책", description: "검토·발주·용량·삭제 결과", statusLabel: "관리", onClick: () => setIsNotificationPolicyModalOpen(true) },
+    { key: "logs", title: "로그 이벤트", description: "작업지시서 변경 기록 이벤트", statusLabel: "관리", onClick: notificationTools.openNotificationModal },
+    { key: "filePolicy", title: "저장 정책", description: "용량·휴지통·실제삭제 기준", statusLabel: "관리", onClick: () => setIsFilePolicyModalOpen(true) },
   ];
 
   const standardActions: StandardAction[] = [
-    { key: "items", title: "생산품 유형", statusLabel: "관리", onClick: () => setIsItemCategoryModalOpen(true) },
-    { key: "units", title: "단위 표준", statusLabel: "관리", onClick: () => setIsUnitModalOpen(true) },
-    { key: "processes", title: "외주 공정 유형", statusLabel: "관리", onClick: openProcessModal },
+    { key: "items", title: "생산품 유형", description: `${itemCategoryDefinitions.filter((item) => item.is_active).length}개 사용중`, statusLabel: "관리", onClick: () => setIsItemCategoryModalOpen(true) },
+    { key: "units", title: "단위 표준", description: `${unitDefinitions.filter((unit) => unit.is_active).length}개 사용중`, statusLabel: "관리", onClick: () => setIsUnitModalOpen(true) },
+    { key: "processes", title: "외주 공정 유형", description: `${activeProcessDefinitions.length}개 사용중`, statusLabel: "관리", onClick: openProcessModal },
   ];
 
   const renderActionGrid = (actions: StandardAction[]) => (
@@ -230,17 +216,20 @@ export default function AdminStandardsSection() {
           type="button"
           onClick={action.onClick}
           disabled={!action.onClick}
-          className="flex min-h-[74px] items-center justify-between gap-3 rounded-3xl border border-stone-200 bg-stone-50 px-4 py-4 text-left transition enabled:hover:border-stone-300 enabled:hover:bg-white disabled:cursor-default disabled:opacity-70"
+          className="flex min-h-[108px] items-center justify-between gap-4 rounded-3xl border border-stone-200 bg-stone-50 px-5 py-4 text-left transition enabled:hover:border-stone-300 enabled:hover:bg-white disabled:cursor-default disabled:opacity-70"
         >
-          <span className="text-sm font-semibold text-stone-950">{action.title}</span>
-          <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-stone-500 shadow-sm">{action.statusLabel}</span>
+          <span className="min-w-0">
+            <span className="block text-base font-semibold text-stone-950">{action.title}</span>
+            <span className="mt-2 block text-xs font-semibold leading-5 text-stone-500">{action.description}</span>
+          </span>
+          <span className="shrink-0 rounded-full bg-white px-4 py-2 text-xs font-semibold text-stone-600 shadow-sm">{action.statusLabel}</span>
         </button>
       ))}
     </div>
   );
 
   return (
-    <section className="grid gap-4 lg:grid-cols-2">
+    <section className="flex min-h-0 flex-1 flex-col gap-4">
       <div className="rounded-[28px] border border-stone-200 bg-white p-5 shadow-sm">
         <h2 className="text-lg font-semibold text-stone-950">정책 관리</h2>
         <div className="mt-4">{renderActionGrid(policyActions)}</div>
@@ -268,10 +257,14 @@ export default function AdminStandardsSection() {
         onSave={saveItemCategoryDefinitions}
       />
 
-
       <AdminFilePolicySettingsModal
         open={isFilePolicyModalOpen}
         onClose={() => setIsFilePolicyModalOpen(false)}
+      />
+
+      <AdminNotificationPolicySettingsModal
+        open={isNotificationPolicyModalOpen}
+        onClose={() => setIsNotificationPolicyModalOpen(false)}
       />
 
       <AdminNotificationSettingsModal
@@ -279,7 +272,7 @@ export default function AdminStandardsSection() {
         onClose={notificationTools.closeModal}
         notificationSettings={notificationTools.notificationSettings}
         onToggleNotificationSetting={notificationTools.handleToggleNotificationSetting}
-        title={notificationModalTitle}
+        title="로그 이벤트"
         description=""
         onResetNotificationSettings={notificationTools.resetNotificationSettings}
       />

@@ -16,9 +16,22 @@ type AdminCompanySettingsFormProps = {
   companyName?: string;
 };
 
-function formatCompanyAgeLabel(updatedAt?: string | null) {
-  if (!updatedAt) return "설정 정보 준비중";
-  return getAdminSettingsUpdatedAtLabel(updatedAt)?.replace("최근 저장 ", "최근 설정 ") ?? "설정 정보 준비중";
+function formatCompanyDateLabel(updatedAt?: string | null) {
+  if (!updatedAt) return { joinedAt: "가입일 준비중", age: "D+0", updatedAt: "최근 설정 준비중" };
+  const parsed = new Date(updatedAt);
+  if (Number.isNaN(parsed.getTime())) return { joinedAt: "가입일 준비중", age: "D+0", updatedAt: "최근 설정 준비중" };
+  const start = new Date(parsed);
+  start.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const ageDays = Math.max(0, Math.floor((today.getTime() - start.getTime()) / 86400000));
+  const joinedAt = `${parsed.getFullYear()}.${String(parsed.getMonth() + 1).padStart(2, "0")}.${String(parsed.getDate()).padStart(2, "0")}`;
+
+  return {
+    joinedAt,
+    age: `D+${ageDays}`,
+    updatedAt: getAdminSettingsUpdatedAtLabel(updatedAt)?.replace("최근 저장 ", "최근 설정 ") ?? "최근 설정 준비중",
+  };
 }
 
 function SaveStateBadge({ saveState }: { saveState: AdminSettingSaveState }) {
@@ -51,6 +64,7 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
 
   const currentTheme = ADMIN_THEME_OPTIONS.find((option) => option.value === draft.ui.themeColor) ?? ADMIN_THEME_OPTIONS[0];
   const currentLanguage = ADMIN_LANGUAGE_OPTIONS.find((option) => option.value === draft.ui.language) ?? ADMIN_LANGUAGE_OPTIONS[0];
+  const companyDate = formatCompanyDateLabel(draft.updatedAt);
 
   return (
     <AdminCard className="shrink-0">
@@ -58,26 +72,29 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
         <section className="rounded-[28px] bg-stone-950 p-5 text-white">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold tracking-[0.18em] text-stone-400">PeacebyPiece</p>
-              <h2 className="mt-3 text-2xl font-semibold tracking-tight">{companyName}</h2>
+              <h2 className="text-2xl font-semibold tracking-tight">{companyName}</h2>
+              <p className="mt-2 text-xs font-semibold text-stone-400">{companyDate.updatedAt}</p>
             </div>
             <SaveStateBadge saveState={saveState} />
           </div>
-          <div className="mt-5 grid gap-2 sm:grid-cols-3">
+          <div className="mt-5 grid gap-2 sm:grid-cols-4">
             <div className="rounded-2xl bg-white/10 px-3 py-3">
               <p className="text-[11px] font-semibold text-stone-400">운영 상태</p>
               <p className="mt-2 text-sm font-semibold text-white">DB 연결</p>
             </div>
             <div className="rounded-2xl bg-white/10 px-3 py-3">
-              <p className="text-[11px] font-semibold text-stone-400">설정 기준</p>
-              <p className="mt-2 text-sm font-semibold text-white">고객사별</p>
+              <p className="text-[11px] font-semibold text-stone-400">가입일</p>
+              <p className="mt-2 text-sm font-semibold text-white">{companyDate.joinedAt}</p>
+            </div>
+            <div className="rounded-2xl bg-white/10 px-3 py-3">
+              <p className="text-[11px] font-semibold text-stone-400">사용 기간</p>
+              <p className="mt-2 text-sm font-semibold text-white">{companyDate.age}</p>
             </div>
             <div className="rounded-2xl bg-white/10 px-3 py-3">
               <p className="text-[11px] font-semibold text-stone-400">회원</p>
               <p className="mt-2 text-sm font-semibold text-white">관리자 1명</p>
             </div>
           </div>
-          <p className="mt-4 text-xs font-semibold text-stone-400">{formatCompanyAgeLabel(draft.updatedAt)}</p>
         </section>
 
         <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
@@ -105,11 +122,9 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
           </div>
 
           <div className="rounded-[28px] border border-stone-200 bg-stone-50 p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-sm font-semibold text-stone-950">언어 설정</p>
-                <p className="mt-1 text-xs font-semibold text-stone-500">현재 {currentLanguage.label}</p>
-              </div>
+            <div>
+              <p className="text-sm font-semibold text-stone-950">언어 설정</p>
+              <p className="mt-1 text-xs font-semibold text-stone-500">현재 {currentLanguage.label}</p>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2">
               {ADMIN_LANGUAGE_OPTIONS.map((option) => (
