@@ -5,7 +5,7 @@ import FileListSection from "@/components/admin/files/FileListSection";
 import FileStorageSummary from "@/components/admin/files/FileStorageSummary";
 import FileTrashSection from "@/components/admin/files/FileTrashSection";
 import AdminShell from "@/components/admin/layout/AdminShell";
-import { runMoveAttachmentsToTrashFlow, runPurgeTrashItemsFlow, runPurgeWorkerFlow, runRestoreTrashItemsFlow } from "@/lib/admin/adminFiles.actionFlow";
+import { runMoveAttachmentsToTrashFlow, runPurgeTrashItemsFlow, runRestoreTrashItemsFlow } from "@/lib/admin/adminFiles.actionFlow";
 import { getAdminFileManagementSnapshot } from "@/lib/admin/adminFiles.adapter";
 import {
   buildAdminSelectAllIds,
@@ -31,7 +31,6 @@ export default function AdminFilesPage() {
   const [selectedAttachmentIds, setSelectedAttachmentIds] = useState<string[]>([]);
   const [selectedTrashItemIds, setSelectedTrashItemIds] = useState<string[]>([]);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
-  const [isPurgeWorkerRunning, setIsPurgeWorkerRunning] = useState(false);
 
   async function refreshSnapshot() {
     setIsLoadingSnapshot(true);
@@ -104,16 +103,6 @@ export default function AdminFilesPage() {
     }
   }
 
-  async function handleRunPurgeWorker(dryRun: boolean) {
-    setIsPurgeWorkerRunning(true);
-    const result = await runPurgeWorkerFlow(dryRun);
-    setActionMessage(result.message);
-    if (result.ok) {
-      await refreshSnapshot();
-    }
-    setIsPurgeWorkerRunning(false);
-  }
-
   function handleChangeTab(tabKey: AdminFileTabKey) {
     setActiveTab(tabKey);
     setActionMessage(null);
@@ -140,7 +129,7 @@ export default function AdminFilesPage() {
 
         <div className="mt-4 flex shrink-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap gap-2">
-            {snapshot.tabs.map((tab) => {
+            {snapshot.tabs.filter((tab) => tab.key !== "storage").map((tab) => {
               const isActive = activeTab === tab.key;
               return (
                 <button key={tab.key} type="button" onClick={() => handleChangeTab(tab.key)} className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${isActive ? "border-stone-950 bg-stone-950 text-white" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"}`}>
@@ -180,24 +169,6 @@ export default function AdminFilesPage() {
               onRestore={handleRestoreTrashItem}
               onPurge={handlePurgeTrashItem}
             />
-          ) : null}
-          {activeTab === "storage" ? (
-            <section className="flex h-full min-h-0 flex-col rounded-[28px] border border-stone-200 bg-white p-4 shadow-sm">
-              <div className="flex shrink-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-stone-950">용량 관리</h2>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button type="button" onClick={() => handleRunPurgeWorker(true)} disabled={isPurgeWorkerRunning} className="w-fit rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-50 disabled:text-stone-400">
-                    실제삭제 후보 확인
-                  </button>
-                  <button type="button" onClick={() => handleRunPurgeWorker(false)} disabled={isPurgeWorkerRunning} className="w-fit rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:text-stone-400">
-                    R2 실제삭제 실행
-                  </button>
-                </div>
-              </div>
-
-            </section>
           ) : null}
         </div>
       </section>

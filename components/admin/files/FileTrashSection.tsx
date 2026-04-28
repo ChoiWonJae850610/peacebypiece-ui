@@ -9,17 +9,20 @@ type FileTrashSectionProps = {
   onPurge: () => void;
 };
 
+function getTrashFileType(item: AdminTrashFileItem) {
+  if (item.fileIcon === "PDF") return "문서";
+  if (item.fileIcon === "IMG") return "디자인";
+  return "기타";
+}
+
 export default function FileTrashSection({ items, selectedItemIds, onToggleItem, onToggleAll, onRestore, onPurge }: FileTrashSectionProps) {
   const hasSelection = selectedItemIds.length > 0;
   const allSelected = items.length > 0 && selectedItemIds.length === items.length;
 
   return (
-    <section className="flex h-full min-h-0 flex-col rounded-[28px] border border-stone-200 bg-white p-4 shadow-sm">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">TRASH</p>
-          <h2 className="mt-2 text-xl font-semibold tracking-tight text-stone-950">휴지통</h2>
-        </div>
+    <section className="flex h-full min-h-0 flex-col rounded-[28px] border border-stone-200 bg-white p-3.5 shadow-sm">
+      <div className="flex shrink-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <h2 className="text-lg font-semibold tracking-tight text-stone-950">휴지통</h2>
         <div className="flex flex-wrap gap-2">
           <button type="button" onClick={onToggleAll} className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-700 shadow-sm hover:bg-stone-50">
             {allSelected ? "전체 해제" : "전체 선택"}
@@ -33,32 +36,39 @@ export default function FileTrashSection({ items, selectedItemIds, onToggleItem,
         </div>
       </div>
 
-      <div className="mt-4 min-h-0 flex-1 divide-y divide-stone-200 overflow-y-auto rounded-[24px] border border-stone-200">
-        {items.length === 0 ? (
-          <div className="flex min-h-full items-center justify-center bg-white px-4 py-10 text-center text-sm text-stone-500">휴지통에 보관 중인 파일이 없습니다.</div>
-        ) : null}
-        {items.map((item) => {
-          const isSelected = selectedItemIds.includes(item.id);
-          return (
-            <button key={item.id} type="button" onClick={() => onToggleItem(item.id)} className={`grid w-full gap-3 p-4 text-left transition md:grid-cols-[0.4fr_1.0fr_1.1fr_0.6fr_0.8fr_0.7fr_0.7fr_0.8fr] md:items-center ${isSelected ? "bg-stone-100" : "bg-white hover:bg-stone-50"}`}>
-              <span className={`flex h-5 w-5 items-center justify-center rounded border text-xs ${isSelected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-300 bg-white text-transparent"}`}>✓</span>
-              <div>
-                <p className="text-xs text-stone-400">작지명</p>
-                <p className="mt-1 text-sm font-semibold text-stone-950">{item.workorderTitle}</p>
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs text-stone-400">파일명</p>
-                <p className="mt-1 truncate text-sm text-stone-700"><span className="mr-2 rounded bg-stone-100 px-1.5 py-0.5 text-[10px] font-semibold text-stone-500">{item.fileIcon}</span>{item.fileName}</p>
-                <p className="mt-1 text-xs text-stone-400">{item.deleteReason}</p>
-              </div>
-              <div><p className="text-xs text-stone-400">용량</p><p className="mt-1 text-sm text-stone-700">{item.fileSizeLabel}</p></div>
-              <div><p className="text-xs text-stone-400">삭제자</p><p className="mt-1 text-sm text-stone-700">{item.deletedBy}</p></div>
-              <div><p className="text-xs text-stone-400">삭제일</p><p className="mt-1 text-sm text-stone-700">{item.deletedAt}</p></div>
-              <div><p className="text-xs text-stone-400">복구 가능</p><p className="mt-1 text-sm font-semibold text-stone-950">{item.restoreLabel}</p></div>
-              <div><p className="text-xs text-stone-400">삭제 상태</p><span className={`mt-1 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${item.purgeStatus === "failed" ? "bg-red-50 text-red-600" : item.purgeStatus === "purge_requested" ? "bg-amber-50 text-amber-700" : item.isPurgeReady ? "bg-stone-950 text-white" : "bg-stone-100 text-stone-500"}`}>{item.purgeStatusLabel}</span>{item.lastPurgeError ? <p className="mt-1 line-clamp-2 text-xs text-red-500">{item.lastPurgeError}</p> : null}</div>
-            </button>
-          );
-        })}
+      <div className="mt-2.5 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[24px] border border-stone-200">
+        <div className="hidden grid-cols-[0.38fr_1.08fr_0.82fr_1.72fr_0.68fr_0.72fr] gap-3 bg-stone-50 px-4 py-2 text-[11px] font-semibold text-stone-500 md:grid">
+          <span>선택</span>
+          <span>작지명</span>
+          <span>삭제일자</span>
+          <span>파일명</span>
+          <span>유형</span>
+          <span>용량</span>
+        </div>
+        <div className="min-h-0 flex-1 divide-y divide-stone-200 overflow-y-auto">
+          {items.length === 0 ? (
+            <div className="flex min-h-full items-center justify-center bg-white px-4 py-10 text-center text-sm text-stone-500">휴지통에 보관 중인 파일이 없습니다.</div>
+          ) : null}
+          {items.map((item) => {
+            const isSelected = selectedItemIds.includes(item.id);
+            return (
+              <button key={item.id} type="button" onClick={() => onToggleItem(item.id)} className={`grid w-full gap-3 px-4 py-2 text-left text-xs transition md:grid-cols-[0.38fr_1.08fr_0.82fr_1.72fr_0.68fr_0.72fr] md:items-center ${isSelected ? "bg-stone-100" : "bg-white hover:bg-stone-50"}`}>
+                <span className={`flex h-5 w-5 items-center justify-center rounded border text-xs ${isSelected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-300 bg-white text-transparent"}`}>✓</span>
+                <div className="min-w-0">
+                  <p className="text-xs text-stone-400 md:hidden">작지명</p>
+                  <p className="truncate font-semibold text-stone-950">{item.workorderTitle}</p>
+                </div>
+                <p className="text-[12px] text-stone-600">{item.deletedAt}</p>
+                <div className="min-w-0">
+                  <p className="text-xs text-stone-400 md:hidden">파일명</p>
+                  <p className="truncate text-[12px] text-stone-700">{item.fileName}</p>
+                </div>
+                <p className="text-[12px] text-stone-600">{getTrashFileType(item)}</p>
+                <p className="text-[12px] text-stone-600">{item.fileSizeLabel}</p>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

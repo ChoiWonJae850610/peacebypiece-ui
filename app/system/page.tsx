@@ -1,4 +1,5 @@
 import Link from "next/link";
+import SystemStoragePurgeButton from "@/components/system/storage/SystemStoragePurgeButton";
 import { SAMPLE_SYSTEM_CATEGORY_RULE_SUMMARIES, SAMPLE_SYSTEM_COMPANY_SUMMARIES } from "@/lib/data/sample/system";
 import { APP_VERSION } from "@/lib/constants/app";
 import { getI18n } from "@/lib/i18n";
@@ -36,6 +37,7 @@ export default function SystemPage() {
               >
                 {system.openCategoryRules}
               </Link>
+              <SystemStoragePurgeButton />
             </div>
           </div>
         </header>

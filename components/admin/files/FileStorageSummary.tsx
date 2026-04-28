@@ -27,30 +27,30 @@ function MiniUsageChart({ points: trendPoints = [] }: { points?: AdminRecentUplo
   const values = trendPoints.length > 0 ? trendPoints.map((point) => point.value) : [0, 0, 0, 0, 0, 0, 0];
   const max = Math.max(1, ...values);
   const chartWidth = 190;
-  const chartHeight = 48;
+  const chartHeight = 44;
   const step = values.length > 1 ? (chartWidth - 18) / (values.length - 1) : 0;
   const chartPoints = values
     .map((value, index) => {
       const x = 9 + index * step;
-      const y = chartHeight - 10 - (value / max) * 28;
+      const y = chartHeight - 9 - (value / max) * 26;
       return `${x},${y}`;
     })
     .join(" ");
 
   return (
-    <div className="flex h-full min-h-0 flex-col rounded-[20px] bg-white/10 px-3 py-2.5">
-      <div className="flex items-center justify-between text-[10px] font-semibold text-stone-300">
+    <div className="flex h-full min-h-0 flex-col rounded-[20px] bg-white/10 px-3 py-3">
+      <div className="flex shrink-0 items-center justify-between text-[10px] font-semibold text-stone-300">
         <span>첨부량</span>
         <span>건수</span>
       </div>
-      <div className="flex min-h-0 flex-1 items-center pt-1">
-        <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="h-[44px] w-full" aria-hidden="true">
-        <polyline points={chartPoints} fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-white" />
-        {values.map((value, index) => {
-          const x = 9 + index * step;
-          const y = chartHeight - 10 - (value / max) * 28;
-          return <circle key={`${value}-${index}`} cx={x} cy={y} r="2.2" className="fill-white" />;
-        })}
+      <div className="flex min-h-0 flex-1 items-center justify-center pt-1.5">
+        <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="h-[42px] w-full" aria-hidden="true">
+          <polyline points={chartPoints} fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-white" />
+          {values.map((value, index) => {
+            const x = 9 + index * step;
+            const y = chartHeight - 9 - (value / max) * 26;
+            return <circle key={`${value}-${index}`} cx={x} cy={y} r="2.2" className="fill-white" />;
+          })}
         </svg>
       </div>
     </div>
@@ -68,8 +68,8 @@ function DonutChart({ items = [] }: { items?: AdminFileTypeDistributionItem[] })
   let offset = 0;
 
   return (
-    <div className="flex h-full min-h-0 flex-col rounded-[20px] bg-white/10 px-3 py-2.5">
-      <div className="flex items-center justify-between text-[10px] font-semibold text-stone-300">
+    <div className="flex h-full min-h-0 flex-col rounded-[20px] bg-white/10 px-3 py-3">
+      <div className="flex shrink-0 items-center justify-between text-[10px] font-semibold text-stone-300">
         <span>파일 유형</span>
         <span>{total}개</span>
       </div>
@@ -100,7 +100,7 @@ function DonutChart({ items = [] }: { items?: AdminFileTypeDistributionItem[] })
               })
             : null}
         </svg>
-        <div className="min-w-0 flex-1 space-y-1">
+        <div className="min-w-0 flex-1 space-y-1.5">
           {normalizedItems.map((item) => (
             <div key={item.label} className="flex items-center justify-between gap-2 text-[11px]">
               <span className="font-semibold text-stone-300">{item.label}</span>
@@ -137,68 +137,71 @@ export default function FileStorageSummary({
 
   return (
     <section className="shrink-0 rounded-[28px] border border-stone-200 bg-stone-50 p-3">
-      <div className="relative h-[276px] overflow-hidden rounded-[26px] bg-stone-950 p-5 text-white">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-2">
-            {TREND_PERIODS.map((period) => {
-              const isActive = recentUploadTrendPeriod === period;
-              return (
-                <button
-                  key={period}
-                  type="button"
-                  onClick={() => onChangeTrendPeriod(period)}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold transition ${isActive ? "bg-white text-stone-950" : "bg-white/10 text-stone-300 hover:bg-white/15"}`}
-                >
-                  {period}일
-                </button>
-              );
-            })}
-          </div>
-
-        </div>
-        <button
-          type="button"
-          onClick={onRefresh}
-          aria-label="저장소 데이터 새로고침"
-          title="저장소 데이터 새로고침"
-          disabled={isRefreshing}
-          className="absolute right-5 top-[68px] inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white transition hover:bg-white/15 disabled:text-stone-500"
-        >
-          <span aria-hidden="true">↻</span>
-        </button>
-
-        <div className="grid h-[196px] gap-3 lg:grid-cols-[1fr_1fr]">
-          <div className="flex min-h-0 flex-col">
-            <div>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-2xl font-semibold tracking-tight">{usageSummary.usedLabel}</p>
-                  <p className="mt-1.5 text-[11px] font-semibold text-stone-300">사용량</p>
-                </div>
-                <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${isWarning ? "bg-amber-100 text-amber-900" : "bg-white/10 text-white"}`}>{usageSummary.statusLabel}</span>
-              </div>
-              <div className="mt-2 flex items-center justify-between gap-3 text-[11px] text-stone-300">
-                <span>{usageSummary.usagePercent}%</span>
-                <span>{usageSummary.limitLabel}</span>
-              </div>
-              <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-white/15">
-                <div className={`h-full rounded-full ${isWarning ? "bg-amber-300" : "bg-white"}`} style={{ width: `${usageSummary.usagePercent}%` }} />
-              </div>
-            </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              {summaryItems.map((item) => (
-                <div key={item.label} className="flex h-[44px] flex-col justify-center rounded-2xl bg-white/10 px-3">
-                  <p className="text-[10px] font-semibold text-stone-300">{item.label}</p>
-                  <p className="mt-1 text-sm font-semibold text-white">{item.value}</p>
-                </div>
-              ))}
+      <div className="relative h-[294px] overflow-hidden rounded-[26px] bg-stone-950 p-5 text-white">
+        <div className="flex h-full min-h-0 flex-col">
+          <div className="flex shrink-0 items-center justify-between gap-3">
+            <div className="flex flex-wrap gap-2">
+              {TREND_PERIODS.map((period) => {
+                const isActive = recentUploadTrendPeriod === period;
+                return (
+                  <button
+                    key={period}
+                    type="button"
+                    onClick={() => onChangeTrendPeriod(period)}
+                    className={`rounded-full px-3 py-1 text-xs font-semibold transition ${isActive ? "bg-white text-stone-950" : "bg-white/10 text-stone-300 hover:bg-white/15"}`}
+                  >
+                    {period}일
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          <div className="grid h-full grid-rows-2 gap-3">
-            <MiniUsageChart points={recentUploadTrend} />
-            <DonutChart items={fileTypeDistribution} />
+          <div className="mt-4 grid min-h-0 flex-1 gap-3 lg:grid-cols-[1fr_1fr]">
+            <div className="flex min-h-0 flex-col">
+              <div className="shrink-0">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-2xl font-semibold tracking-tight">{usageSummary.usedLabel}</p>
+                    <p className="mt-1.5 text-[11px] font-semibold text-stone-300">사용량</p>
+                  </div>
+                  <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${isWarning ? "bg-amber-100 text-amber-900" : "bg-white/10 text-white"}`}>{usageSummary.statusLabel}</span>
+                </div>
+                <div className="mt-2 flex items-center justify-between gap-3 text-[11px] text-stone-300">
+                  <span>{usageSummary.usagePercent}%</span>
+                  <span>{usageSummary.limitLabel}</span>
+                </div>
+                <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-white/15">
+                  <div className={`h-full rounded-full ${isWarning ? "bg-amber-300" : "bg-white"}`} style={{ width: `${usageSummary.usagePercent}%` }} />
+                </div>
+              </div>
+
+              <div className="mt-4 grid flex-1 grid-cols-2 gap-2.5">
+                {summaryItems.map((item) => (
+                  <div key={item.label} className="flex min-h-[56px] flex-col justify-center rounded-2xl bg-white/10 px-3 py-2.5">
+                    <p className="text-[10px] font-semibold text-stone-300">{item.label}</p>
+                    <p className="mt-1.5 text-sm font-semibold text-white">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="relative flex min-h-0 flex-col justify-end pt-[50px]">
+              <button
+                type="button"
+                onClick={onRefresh}
+                aria-label="저장소 데이터 새로고침"
+                title="저장소 데이터 새로고침"
+                disabled={isRefreshing}
+                className="absolute right-0 top-0 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white transition hover:bg-white/15 disabled:text-stone-500"
+              >
+                <span aria-hidden="true">↻</span>
+              </button>
+              <div className="grid h-[148px] grid-rows-2 gap-3">
+                <MiniUsageChart points={recentUploadTrend} />
+                <DonutChart items={fileTypeDistribution} />
+              </div>
+            </div>
           </div>
         </div>
       </div>
