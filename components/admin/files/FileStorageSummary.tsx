@@ -38,13 +38,13 @@ function MiniUsageChart({ points: trendPoints = [] }: { points?: AdminRecentUplo
     .join(" ");
 
   return (
-    <div className="flex h-full min-h-0 flex-col rounded-[20px] bg-white/10 px-3 py-2">
+    <div className="flex h-full min-h-0 flex-col rounded-[20px] bg-white/10 px-3 py-2.5">
       <div className="flex items-center justify-between text-[10px] font-semibold text-stone-300">
         <span>첨부량</span>
         <span>건수</span>
       </div>
-      <div className="flex min-h-0 flex-1 items-center">
-        <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="h-[42px] w-full" aria-hidden="true">
+      <div className="flex min-h-0 flex-1 items-center pt-1">
+        <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="h-[44px] w-full" aria-hidden="true">
         <polyline points={chartPoints} fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-white" />
         {values.map((value, index) => {
           const x = 9 + index * step;
@@ -68,13 +68,13 @@ function DonutChart({ items = [] }: { items?: AdminFileTypeDistributionItem[] })
   let offset = 0;
 
   return (
-    <div className="flex h-full min-h-0 flex-col rounded-[20px] bg-white/10 px-3 py-2">
+    <div className="flex h-full min-h-0 flex-col rounded-[20px] bg-white/10 px-3 py-2.5">
       <div className="flex items-center justify-between text-[10px] font-semibold text-stone-300">
         <span>파일 유형</span>
         <span>{total}개</span>
       </div>
-      <div className="flex min-h-0 flex-1 items-center gap-3 pt-1">
-        <svg viewBox="0 0 72 72" className="h-[42px] w-[42px] shrink-0 -rotate-90" aria-hidden="true">
+      <div className="flex min-h-0 flex-1 items-center gap-3 pt-1.5">
+        <svg viewBox="0 0 72 72" className="h-[44px] w-[44px] shrink-0 -rotate-90" aria-hidden="true">
           <circle cx="36" cy="36" r={radius} fill="none" stroke="rgba(255,255,255,0.16)" strokeWidth="11" />
           {total > 0
             ? normalizedItems.map((item, index) => {
@@ -137,8 +137,8 @@ export default function FileStorageSummary({
 
   return (
     <section className="shrink-0 rounded-[28px] border border-stone-200 bg-stone-50 p-3">
-      <div className="relative h-[260px] overflow-hidden rounded-[26px] bg-stone-950 p-5 text-white">
-        <div className="mb-2 flex items-center justify-between gap-3">
+      <div className="relative h-[276px] overflow-hidden rounded-[26px] bg-stone-950 p-5 text-white">
+        <div className="mb-3 flex items-center justify-between gap-3">
           <div className="flex flex-wrap gap-2">
             {TREND_PERIODS.map((period) => {
               const isActive = recentUploadTrendPeriod === period;
@@ -162,13 +162,13 @@ export default function FileStorageSummary({
           aria-label="저장소 데이터 새로고침"
           title="저장소 데이터 새로고침"
           disabled={isRefreshing}
-          className="absolute right-5 top-[52px] inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white transition hover:bg-white/15 disabled:text-stone-500"
+          className="absolute right-5 top-[68px] inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white transition hover:bg-white/15 disabled:text-stone-500"
         >
           <span aria-hidden="true">↻</span>
         </button>
 
-        <div className="grid h-[176px] gap-3 lg:grid-cols-[1fr_1fr]">
-          <div className="flex min-h-0 flex-col justify-between">
+        <div className="grid h-[196px] gap-3 lg:grid-cols-[1fr_1fr]">
+          <div className="flex min-h-0 flex-col">
             <div>
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -186,9 +186,9 @@ export default function FileStorageSummary({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="mt-4 grid grid-cols-2 gap-2">
               {summaryItems.map((item) => (
-                <div key={item.label} className="rounded-2xl bg-white/10 px-3 py-2">
+                <div key={item.label} className="flex h-[44px] flex-col justify-center rounded-2xl bg-white/10 px-3">
                   <p className="text-[10px] font-semibold text-stone-300">{item.label}</p>
                   <p className="mt-1 text-sm font-semibold text-white">{item.value}</p>
                 </div>
@@ -196,7 +196,7 @@ export default function FileStorageSummary({
             </div>
           </div>
 
-          <div className="grid h-[142px] self-end grid-rows-2 gap-2">
+          <div className="grid h-full grid-rows-2 gap-3">
             <MiniUsageChart points={recentUploadTrend} />
             <DonutChart items={fileTypeDistribution} />
           </div>
