@@ -203,23 +203,17 @@ export default function AdminStandardsSection() {
 
   return (
     <section className="rounded-[28px] border border-stone-200 bg-white p-5 shadow-sm">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-stone-950">기준 설정</h2>
-        </div>
-      </div>
-
-      <div className="mt-4 grid gap-2 md:grid-cols-5">
+      <div className="grid gap-3 md:grid-cols-4">
         {actions.map((action) => (
           <button
             key={action.key}
             type="button"
             onClick={action.onClick}
             disabled={!action.onClick}
-            className="flex items-center justify-between gap-2 rounded-2xl border border-stone-200 bg-stone-50/70 px-3 py-3 text-left transition enabled:hover:border-stone-300 enabled:hover:bg-white disabled:cursor-default disabled:opacity-70"
+            className="flex min-h-[84px] items-center justify-between gap-3 rounded-3xl border border-stone-200 bg-stone-50 px-4 py-4 text-left transition enabled:hover:border-stone-300 enabled:hover:bg-white disabled:cursor-default disabled:opacity-70"
           >
             <span className="text-sm font-semibold text-stone-950">{action.title}</span>
-            <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-500 shadow-sm">{action.statusLabel}</span>
+            <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-stone-500 shadow-sm">{action.statusLabel}</span>
           </button>
         ))}
       </div>
