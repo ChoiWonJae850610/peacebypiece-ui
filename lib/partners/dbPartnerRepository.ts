@@ -123,8 +123,10 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
       const result = await queryDb<UnitRow>(
         `SELECT id, company_id, code, name, category, is_active, sort_order, created_at, updated_at
          FROM units
-         ${activeOnly ? "WHERE is_active = true" : ""}
+         WHERE (company_id = $1 OR company_id IS NULL)
+         ${activeOnly ? "AND is_active = true" : ""}
          ORDER BY sort_order ASC, name ASC`,
+        [getWorkspaceCompanyContext().companyId],
       );
 
       return result.rows;

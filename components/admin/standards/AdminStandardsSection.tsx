@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import PartnerProcessManagementModal from "@/components/admin/partnerMaster/PartnerProcessManagementModal";
 import AdminItemCategoryManagementModal from "@/components/admin/standards/AdminItemCategoryManagementModal";
+import AdminUnitManagementModal from "@/components/admin/standards/AdminUnitManagementModal";
 import {
   createDefaultOutsourcingProcessDefinitions,
   createOutsourcingProcessDefinition,
@@ -10,7 +11,10 @@ import {
   PARTNER_MASTER_FORM_ERRORS,
   type OutsourcingProcessDefinition,
 } from "@/lib/admin/partnerMaster";
+import { createDefaultItemCategoryDefinitions, createDefaultUnitDefinitions } from "@/lib/admin/standards.defaults";
 import { fetchPartnerMasterItemsFromApi, savePartnerMasterProcessesToApi } from "@/lib/admin/partnerMasterApiClient";
+import { fetchAdminStandardsFromApi, saveAdminItemCategoriesToApi, saveAdminUnitsToApi } from "@/lib/admin/standardsApiClient";
+import type { AdminItemCategoryDefinition, AdminUnitDefinition } from "@/lib/admin/standards.types";
 import type { OutsourcingProcessType } from "@/types/partner";
 
 type StandardAction = {
@@ -27,10 +31,16 @@ function sortProcessesByLabel(items: OutsourcingProcessDefinition[]) {
 export default function AdminStandardsSection() {
   const [processDefinitions, setProcessDefinitions] = useState<OutsourcingProcessDefinition[]>(createDefaultOutsourcingProcessDefinitions());
   const [processDraftDefinitions, setProcessDraftDefinitions] = useState<OutsourcingProcessDefinition[]>(createDefaultOutsourcingProcessDefinitions());
+  const [unitDefinitions, setUnitDefinitions] = useState<AdminUnitDefinition[]>(createDefaultUnitDefinitions());
+  const [itemCategoryDefinitions, setItemCategoryDefinitions] = useState<AdminItemCategoryDefinition[]>(createDefaultItemCategoryDefinitions());
+  const [isUnitModalOpen, setIsUnitModalOpen] = useState(false);
   const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
   const [isItemCategoryModalOpen, setIsItemCategoryModalOpen] = useState(false);
   const [newProcessLabel, setNewProcessLabel] = useState("");
   const [processFormError, setProcessFormError] = useState("");
+  const [standardFormError, setStandardFormError] = useState("");
+  const [isSavingUnits, setIsSavingUnits] = useState(false);
+  const [isSavingItemCategories, setIsSavingItemCategories] = useState(false);
   const [selectedInactiveProcessDefinition, setSelectedInactiveProcessDefinition] = useState<OutsourcingProcessType | null>(null);
   const [selectedActiveProcessDefinition, setSelectedActiveProcessDefinition] = useState<OutsourcingProcessType | null>(null);
 
@@ -49,6 +59,18 @@ export default function AdminStandardsSection() {
         if (!isMounted) return;
         setProcessDefinitions([]);
         setProcessDraftDefinitions([]);
+      });
+
+    fetchAdminStandardsFromApi()
+      .then((payload) => {
+        if (!isMounted) return;
+        setUnitDefinitions(payload.units.length > 0 ? payload.units : createDefaultUnitDefinitions());
+        setItemCategoryDefinitions(payload.itemCategories.length > 0 ? payload.itemCategories : createDefaultItemCategoryDefinitions());
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setUnitDefinitions(createDefaultUnitDefinitions());
+        setItemCategoryDefinitions(createDefaultItemCategoryDefinitions());
       });
 
     return () => {
@@ -133,6 +155,30 @@ export default function AdminStandardsSection() {
     setSelectedActiveProcessDefinition(null);
   }, [processDraftDefinitions]);
 
+  const saveUnitDefinitions = useCallback((nextUnits: AdminUnitDefinition[]) => {
+    setIsSavingUnits(true);
+    setStandardFormError("");
+    saveAdminUnitsToApi(nextUnits)
+      .then((payload) => {
+        setUnitDefinitions(payload.units.length > 0 ? payload.units : nextUnits);
+        setIsUnitModalOpen(false);
+      })
+      .catch(() => setStandardFormError("단위 저장에 실패했습니다. DB 연결 상태를 확인하세요."))
+      .finally(() => setIsSavingUnits(false));
+  }, []);
+
+  const saveItemCategoryDefinitions = useCallback((nextCategories: AdminItemCategoryDefinition[]) => {
+    setIsSavingItemCategories(true);
+    setStandardFormError("");
+    saveAdminItemCategoriesToApi(nextCategories)
+      .then((payload) => {
+        setItemCategoryDefinitions(payload.itemCategories.length > 0 ? payload.itemCategories : nextCategories);
+        setIsItemCategoryModalOpen(false);
+      })
+      .catch(() => setStandardFormError("품목 저장에 실패했습니다. DB 연결 상태를 확인하세요."))
+      .finally(() => setIsSavingItemCategories(false));
+  }, []);
+
   const resetProcessDefinitions = useCallback(() => {
     const nextDefinitions = createDefaultOutsourcingProcessDefinitions();
     setProcessDraftDefinitions(nextDefinitions);
@@ -143,7 +189,7 @@ export default function AdminStandardsSection() {
   }, []);
 
   const actions: StandardAction[] = [
-    { key: "units", title: "단위 관리", statusLabel: "준비중" },
+    { key: "units", title: "단위 관리", statusLabel: "관리", onClick: () => setIsUnitModalOpen(true) },
     { key: "processes", title: "외주공정 기준", statusLabel: "관리", onClick: openProcessModal },
     { key: "items", title: "품목 관리", statusLabel: "관리", onClick: () => setIsItemCategoryModalOpen(true) },
   ];
@@ -171,9 +217,22 @@ export default function AdminStandardsSection() {
         ))}
       </div>
 
+      <AdminUnitManagementModal
+        open={isUnitModalOpen}
+        units={unitDefinitions}
+        saving={isSavingUnits}
+        error={standardFormError}
+        onClose={() => setIsUnitModalOpen(false)}
+        onSave={saveUnitDefinitions}
+      />
+
       <AdminItemCategoryManagementModal
         open={isItemCategoryModalOpen}
+        categories={itemCategoryDefinitions}
+        saving={isSavingItemCategories}
+        error={standardFormError}
         onClose={() => setIsItemCategoryModalOpen(false)}
+        onSave={saveItemCategoryDefinitions}
       />
 
       <PartnerProcessManagementModal

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AdminModal,
   AdminModalSection,
@@ -8,66 +8,48 @@ import {
   adminModalPrimaryButtonClassName,
   adminModalSecondaryButtonClassName,
 } from "@/components/admin/layout/AdminModal";
-import { CATEGORY_TREE } from "@/lib/constants/workorderCategories";
-
-type CategoryLevel = 1 | 2 | 3;
-
-type CategoryNode = {
-  id: string;
-  label: string;
-  isActive: boolean;
-  parentId?: string;
-};
+import { createDefaultItemCategoryDefinitions } from "@/lib/admin/standards.defaults";
+import type { AdminItemCategoryDefinition, AdminItemCategoryLevel } from "@/lib/admin/standards.types";
 
 type CategoryDraft = {
-  level1: CategoryNode[];
-  level2: CategoryNode[];
-  level3: CategoryNode[];
+  level1: AdminItemCategoryDefinition[];
+  level2: AdminItemCategoryDefinition[];
+  level3: AdminItemCategoryDefinition[];
 };
 
 type Props = {
   open: boolean;
+  categories: AdminItemCategoryDefinition[];
+  saving?: boolean;
+  error?: string;
   onClose: () => void;
+  onSave: (categories: AdminItemCategoryDefinition[]) => void;
 };
 
-function createInitialCategoryDraft(): CategoryDraft {
-  const level1: CategoryNode[] = [];
-  const level2: CategoryNode[] = [];
-  const level3: CategoryNode[] = [];
+function createCategoryDraft(items: AdminItemCategoryDefinition[]): CategoryDraft {
+  const sortItems = (a: AdminItemCategoryDefinition, b: AdminItemCategoryDefinition) => a.sort_order - b.sort_order || a.name.localeCompare(b.name, "ko-KR");
+  return {
+    level1: items.filter((item) => item.level === 1).sort(sortItems),
+    level2: items.filter((item) => item.level === 2).sort(sortItems),
+    level3: items.filter((item) => item.level === 3).sort(sortItems),
+  };
+}
 
-  Object.entries(CATEGORY_TREE).forEach(([category1, category2Map]) => {
-    const level1Id = `level1:${category1}`;
-    level1.push({ id: level1Id, label: category1, isActive: true });
-
-    Object.entries(category2Map).forEach(([category2, category3Items]) => {
-      const level2Id = `level2:${category1}:${category2}`;
-      level2.push({ id: level2Id, label: category2, isActive: true, parentId: level1Id });
-
-      category3Items.forEach((category3) => {
-        level3.push({
-          id: `level3:${category1}:${category2}:${category3}`,
-          label: category3,
-          isActive: true,
-          parentId: level2Id,
-        });
-      });
-    });
-  });
-
-  return { level1, level2, level3 };
+function flattenDraft(draft: CategoryDraft): AdminItemCategoryDefinition[] {
+  return [...draft.level1, ...draft.level2, ...draft.level3];
 }
 
 function normalizeCategoryLabel(value: string) {
   return value.trim().replace(/\s+/g, " ");
 }
 
-function createCategoryId(level: CategoryLevel, parentId: string | undefined, label: string) {
-  return parentId ? `level${level}:${parentId}:${label}` : `level${level}:${label}`;
+function createCategoryId(level: AdminItemCategoryLevel, parentId: string | undefined | null, label: string) {
+  return parentId ? `category:${level}:${parentId}:${label}:${Date.now()}` : `category:${level}:${label}:${Date.now()}`;
 }
 
 function getInitialSelection(draft: CategoryDraft) {
   const level1Id = draft.level1[0]?.id ?? null;
-  const level2Id = draft.level2.find((item) => item.parentId === level1Id)?.id ?? null;
+  const level2Id = draft.level2.find((item) => item.parent_id === level1Id)?.id ?? null;
   return { level1Id, level2Id };
 }
 
@@ -80,7 +62,7 @@ function CategoryList({
   onToggleActive,
 }: {
   title: string;
-  items: CategoryNode[];
+  items: AdminItemCategoryDefinition[];
   selectedId: string | null;
   emptyLabel: string;
   onSelect: (id: string) => void;
@@ -109,20 +91,20 @@ function CategoryList({
                     isSelected ? "border-stone-950 bg-white text-stone-950 shadow-sm" : "border-stone-200 bg-white text-stone-700 hover:border-stone-300",
                   ].join(" ")}
                 >
-                  <span className="min-w-0 truncate font-medium">{item.label}</span>
+                  <span className="min-w-0 truncate font-medium">{item.name}</span>
                   <span
                     onClick={(event) => {
                       event.stopPropagation();
-                      onToggleActive(item.id, !item.isActive);
+                      onToggleActive(item.id, !item.is_active);
                     }}
                     className={[
                       "shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold",
-                      item.isActive ? "bg-emerald-100 text-emerald-700" : "bg-stone-100 text-stone-500",
+                      item.is_active ? "bg-emerald-100 text-emerald-700" : "bg-stone-100 text-stone-500",
                     ].join(" ")}
                     role="switch"
-                    aria-checked={item.isActive}
+                    aria-checked={item.is_active}
                   >
-                    {item.isActive ? "사용" : "미사용"}
+                    {item.is_active ? "사용" : "미사용"}
                   </span>
                 </button>
               );
@@ -134,9 +116,9 @@ function CategoryList({
   );
 }
 
-export default function AdminItemCategoryManagementModal({ open, onClose }: Props) {
-  const [draft, setDraft] = useState<CategoryDraft>(() => createInitialCategoryDraft());
-  const initialSelection = useMemo(() => getInitialSelection(createInitialCategoryDraft()), []);
+export default function AdminItemCategoryManagementModal({ open, categories, saving = false, error = "", onClose, onSave }: Props) {
+  const [draft, setDraft] = useState<CategoryDraft>(() => createCategoryDraft(categories));
+  const initialSelection = useMemo(() => getInitialSelection(createCategoryDraft(categories)), [categories]);
   const [selectedLevel1Id, setSelectedLevel1Id] = useState<string | null>(initialSelection.level1Id);
   const [selectedLevel2Id, setSelectedLevel2Id] = useState<string | null>(initialSelection.level2Id);
   const [newLevel1Label, setNewLevel1Label] = useState("");
@@ -144,20 +126,33 @@ export default function AdminItemCategoryManagementModal({ open, onClose }: Prop
   const [newLevel3Label, setNewLevel3Label] = useState("");
   const [formError, setFormError] = useState("");
 
-  const level2Items = useMemo(() => draft.level2.filter((item) => item.parentId === selectedLevel1Id), [draft.level2, selectedLevel1Id]);
-  const level3Items = useMemo(() => draft.level3.filter((item) => item.parentId === selectedLevel2Id), [draft.level3, selectedLevel2Id]);
+  useEffect(() => {
+    if (!open) return;
+    const nextDraft = createCategoryDraft(categories);
+    const nextSelection = getInitialSelection(nextDraft);
+    setDraft(nextDraft);
+    setSelectedLevel1Id(nextSelection.level1Id);
+    setSelectedLevel2Id(nextSelection.level2Id);
+    setNewLevel1Label("");
+    setNewLevel2Label("");
+    setNewLevel3Label("");
+    setFormError("");
+  }, [open, categories]);
 
-  const updateNodeActive = (level: CategoryLevel, id: string, isActive: boolean) => {
+  const level2Items = useMemo(() => draft.level2.filter((item) => item.parent_id === selectedLevel1Id), [draft.level2, selectedLevel1Id]);
+  const level3Items = useMemo(() => draft.level3.filter((item) => item.parent_id === selectedLevel2Id), [draft.level3, selectedLevel2Id]);
+
+  const updateNodeActive = (level: AdminItemCategoryLevel, id: string, isActive: boolean) => {
     const key = `level${level}` as keyof CategoryDraft;
     setDraft((current) => ({
       ...current,
-      [key]: current[key].map((item) => (item.id === id ? { ...item, isActive } : item)),
+      [key]: current[key].map((item) => (item.id === id ? { ...item, is_active: isActive } : item)),
     }));
   };
 
-  const addCategory = (level: CategoryLevel) => {
+  const addCategory = (level: AdminItemCategoryLevel) => {
     const label = normalizeCategoryLabel(level === 1 ? newLevel1Label : level === 2 ? newLevel2Label : newLevel3Label);
-    const parentId = level === 1 ? undefined : level === 2 ? selectedLevel1Id ?? undefined : selectedLevel2Id ?? undefined;
+    const parentId = level === 1 ? null : level === 2 ? selectedLevel1Id : selectedLevel2Id;
 
     if (!label) {
       setFormError("추가할 품목명을 입력하세요.");
@@ -169,12 +164,19 @@ export default function AdminItemCategoryManagementModal({ open, onClose }: Prop
     }
 
     const key = `level${level}` as keyof CategoryDraft;
-    if (draft[key].some((item) => item.parentId === parentId && item.label === label)) {
+    if (draft[key].some((item) => item.parent_id === parentId && item.name === label)) {
       setFormError("이미 등록된 품목명입니다.");
       return;
     }
 
-    const nextItem: CategoryNode = { id: createCategoryId(level, parentId, label), label, isActive: true, parentId };
+    const nextItem: AdminItemCategoryDefinition = {
+      id: createCategoryId(level, parentId, label),
+      level,
+      parent_id: parentId,
+      name: label,
+      is_active: true,
+      sort_order: (draft[key].filter((item) => item.parent_id === parentId).length + 1) * 10,
+    };
     setDraft((current) => ({ ...current, [key]: [...current[key], nextItem] }));
     setFormError("");
 
@@ -191,7 +193,7 @@ export default function AdminItemCategoryManagementModal({ open, onClose }: Prop
   };
 
   const resetDraft = () => {
-    const nextDraft = createInitialCategoryDraft();
+    const nextDraft = createCategoryDraft(createDefaultItemCategoryDefinitions());
     const nextSelection = getInitialSelection(nextDraft);
     setDraft(nextDraft);
     setSelectedLevel1Id(nextSelection.level1Id);
@@ -211,7 +213,7 @@ export default function AdminItemCategoryManagementModal({ open, onClose }: Prop
       footer={
         <div className="flex w-full items-center justify-between gap-2">
           <button type="button" onClick={resetDraft} className={adminModalSecondaryButtonClassName}>기본값 복원</button>
-          <button type="button" onClick={onClose} className={adminModalPrimaryButtonClassName}>저장</button>
+          <button type="button" onClick={() => onSave(flattenDraft(draft))} disabled={saving} className={adminModalPrimaryButtonClassName}>{saving ? "저장 중" : "저장"}</button>
         </div>
       }
     >
@@ -230,12 +232,12 @@ export default function AdminItemCategoryManagementModal({ open, onClose }: Prop
             <button type="button" onClick={() => addCategory(3)} className="h-11 rounded-full bg-stone-950 px-4 text-sm font-semibold text-white">추가</button>
           </div>
         </div>
-        {formError ? <p className="mt-2 text-sm font-semibold text-rose-600">{formError}</p> : null}
+        {formError || error ? <p className="mt-2 text-sm font-semibold text-rose-600">{formError || error}</p> : null}
       </AdminModalSection>
 
       <AdminModalSection title="품목 사용 여부">
         <div className="grid gap-4 md:grid-cols-3">
-          <CategoryList title="1차 품목" items={draft.level1} selectedId={selectedLevel1Id} emptyLabel="1차 품목이 없습니다." onSelect={(id) => { setSelectedLevel1Id(id); setSelectedLevel2Id(draft.level2.find((item) => item.parentId === id)?.id ?? null); }} onToggleActive={(id, isActive) => updateNodeActive(1, id, isActive)} />
+          <CategoryList title="1차 품목" items={draft.level1} selectedId={selectedLevel1Id} emptyLabel="1차 품목이 없습니다." onSelect={(id) => { setSelectedLevel1Id(id); setSelectedLevel2Id(draft.level2.find((item) => item.parent_id === id)?.id ?? null); }} onToggleActive={(id, isActive) => updateNodeActive(1, id, isActive)} />
           <CategoryList title="2차 품목" items={level2Items} selectedId={selectedLevel2Id} emptyLabel="선택한 1차 품목의 2차 품목이 없습니다." onSelect={setSelectedLevel2Id} onToggleActive={(id, isActive) => updateNodeActive(2, id, isActive)} />
           <CategoryList title="3차 품목" items={level3Items} selectedId={null} emptyLabel="선택한 2차 품목의 3차 품목이 없습니다." onSelect={() => undefined} onToggleActive={(id, isActive) => updateNodeActive(3, id, isActive)} />
         </div>
