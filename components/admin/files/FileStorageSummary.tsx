@@ -38,13 +38,13 @@ function MiniUsageChart({ points: trendPoints = [] }: { points?: AdminRecentUplo
     .join(" ");
 
   return (
-    <div className="flex h-full min-h-0 flex-col rounded-[20px] bg-white/10 px-3 py-3">
+    <div className="flex h-full min-h-0 flex-col rounded-[20px] bg-white/10 px-3 py-3.5">
       <div className="flex shrink-0 items-center justify-between text-[10px] font-semibold text-stone-300">
         <span>첨부량</span>
         <span>건수</span>
       </div>
-      <div className="flex min-h-0 flex-1 items-center justify-center pt-1.5">
-        <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="h-[42px] w-full" aria-hidden="true">
+      <div className="flex min-h-0 flex-1 items-center justify-center pt-2">
+        <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="h-[46px] w-full" aria-hidden="true">
           <polyline points={chartPoints} fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-white" />
           {values.map((value, index) => {
             const x = 9 + index * step;
@@ -68,13 +68,13 @@ function DonutChart({ items = [] }: { items?: AdminFileTypeDistributionItem[] })
   let offset = 0;
 
   return (
-    <div className="flex h-full min-h-0 flex-col rounded-[20px] bg-white/10 px-3 py-3">
+    <div className="flex h-full min-h-0 flex-col rounded-[20px] bg-white/10 px-3 py-3.5">
       <div className="flex shrink-0 items-center justify-between text-[10px] font-semibold text-stone-300">
         <span>파일 유형</span>
         <span>{total}개</span>
       </div>
-      <div className="flex min-h-0 flex-1 items-center gap-3 pt-1.5">
-        <svg viewBox="0 0 72 72" className="h-[44px] w-[44px] shrink-0 -rotate-90" aria-hidden="true">
+      <div className="flex min-h-0 flex-1 items-center gap-3 pt-2">
+        <svg viewBox="0 0 72 72" className="h-[48px] w-[48px] shrink-0 -rotate-90" aria-hidden="true">
           <circle cx="36" cy="36" r={radius} fill="none" stroke="rgba(255,255,255,0.16)" strokeWidth="11" />
           {total > 0
             ? normalizedItems.map((item, index) => {
@@ -197,7 +197,7 @@ export default function FileStorageSummary({
               >
                 <span aria-hidden="true">↻</span>
               </button>
-              <div className="grid h-[148px] grid-rows-2 gap-3">
+              <div className="grid h-[164px] grid-rows-2 gap-3">
                 <MiniUsageChart points={recentUploadTrend} />
                 <DonutChart items={fileTypeDistribution} />
               </div>
