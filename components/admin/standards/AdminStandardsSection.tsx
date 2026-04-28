@@ -15,7 +15,6 @@ import type { OutsourcingProcessType } from "@/types/partner";
 type StandardAction = {
   key: "units" | "processes" | "items";
   title: string;
-  description: string;
   statusLabel: string;
   onClick?: () => void;
 };
@@ -142,53 +141,30 @@ export default function AdminStandardsSection() {
   }, []);
 
   const actions: StandardAction[] = [
-    {
-      key: "units",
-      title: "단위 관리",
-      description: "고객사별 원단, 부자재, 생산 수량 단위를 관리합니다.",
-      statusLabel: "SQL 준비",
-    },
-    {
-      key: "processes",
-      title: "외주공정 기준",
-      description: "나염, 자수, 워싱, 후가공 등 외주공정 사용 여부를 관리합니다.",
-      statusLabel: "관리",
-      onClick: openProcessModal,
-    },
-    {
-      key: "items",
-      title: "품목 관리",
-      description: "작지 생성의 대분류, 중분류, 소분류 기준을 관리합니다.",
-      statusLabel: "다음 단계",
-    },
+    { key: "units", title: "단위 관리", statusLabel: "준비중" },
+    { key: "processes", title: "외주공정 기준", statusLabel: "관리", onClick: openProcessModal },
+    { key: "items", title: "품목 관리", statusLabel: "다음 단계" },
   ];
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col rounded-[32px] border border-stone-200 bg-white/95 p-5 shadow-sm backdrop-blur md:p-6">
-      <div className="flex flex-col gap-3 border-b border-stone-200 pb-5 md:flex-row md:items-end md:justify-between">
+    <section className="rounded-[28px] border border-stone-200 bg-white p-5 shadow-sm">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">MASTER DATA</p>
-          <h2 className="mt-2 text-xl font-semibold tracking-tight text-stone-950 md:text-2xl">기준 관리</h2>
+          <h2 className="text-lg font-semibold text-stone-950">기준 설정</h2>
         </div>
       </div>
 
-      <div className="grid min-h-0 flex-1 gap-4 py-5 md:grid-cols-3">
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
         {actions.map((action) => (
           <button
             key={action.key}
             type="button"
             onClick={action.onClick}
             disabled={!action.onClick}
-            className="flex min-h-[180px] flex-col justify-between rounded-[28px] border border-stone-200 bg-stone-50/70 p-5 text-left transition enabled:hover:-translate-y-0.5 enabled:hover:border-stone-300 enabled:hover:bg-white enabled:hover:shadow-sm disabled:cursor-default"
+            className="flex items-center justify-between rounded-3xl border border-stone-200 bg-stone-50/70 px-4 py-4 text-left transition enabled:hover:border-stone-300 enabled:hover:bg-white disabled:cursor-default disabled:opacity-70"
           >
-            <div>
-              <div className="flex items-start justify-between gap-3">
-                <h3 className="text-lg font-semibold text-stone-950">{action.title}</h3>
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-stone-500 shadow-sm">{action.statusLabel}</span>
-              </div>
-              <p className="mt-4 text-sm leading-6 text-stone-500">{action.description}</p>
-            </div>
-            <span className="mt-8 text-sm font-semibold text-stone-900">{action.onClick ? "열기" : "준비중"}</span>
+            <span className="text-sm font-semibold text-stone-950">{action.title}</span>
+            <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-stone-500 shadow-sm">{action.statusLabel}</span>
           </button>
         ))}
       </div>

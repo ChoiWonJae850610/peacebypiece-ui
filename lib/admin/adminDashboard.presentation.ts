@@ -88,7 +88,6 @@ export const ADMIN_NAVIGATION_ITEMS: AdminNavigationItem[] = [
   { label: "작업지시서", href: "/worker", icon: "workorder" },
   { label: "거래처 관리", href: "/admin/partners", icon: "partners" },
   { label: "저장소 관리", href: "/admin/files", icon: "storage" },
-  { label: "기준 관리", href: "/admin/units", icon: "standards" },
   { label: "통계정보", href: "/admin/dashboard", icon: "statistics" },
   { label: "히스토리", href: "/admin/history", icon: "history" },
   { label: "환경설정", href: "/admin/settings", icon: "settings" },
@@ -107,7 +106,7 @@ export const ADMIN_DASHBOARD_SECTIONS: AdminDashboardSection[] = [
     title: "운영 기준",
     items: [
       { label: "거래처 / 공장 관리", description: "공장, 원단, 부자재, 외주처 정보 관리", href: "/admin/partners", icon: "▦" },
-      { label: "단위 관리", description: "원단, 부자재, 생산 수량 단위 기준 관리", href: "/admin/units", icon: "㎝" },
+      { label: "환경설정", description: "파일 정책, 알림, 기준 설정 관리", href: "/admin/settings", icon: "⚙" },
       { label: "환경설정", description: "파일 정책과 알림 이벤트 설정 관리", href: "/admin/settings", icon: "⚙" },
     ],
   },
