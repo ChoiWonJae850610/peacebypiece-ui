@@ -22,7 +22,6 @@ function ToggleRow({ label, description, checked, onChange }: { label: string; d
     <label className="flex cursor-pointer items-center justify-between gap-4 rounded-3xl border border-stone-200 bg-white px-4 py-3">
       <span className="min-w-0">
         <span className="block text-sm font-semibold text-stone-900">{label}</span>
-        <span className="mt-1 block text-xs leading-5 text-stone-500">{description}</span>
       </span>
       <input
         type="checkbox"
@@ -62,9 +61,7 @@ export default function AdminCompanySettingsForm({ initialSettings }: AdminCompa
       <AdminCard>
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">SAVE SETTINGS</p>
-            <h2 className="mt-2 text-lg font-semibold text-stone-950">고객사 환경설정 저장</h2>
-            <p className="mt-2 text-sm leading-6 text-stone-500">변경한 테마, 언어, 파일 정책, 알림 정책을 company_settings 테이블에 저장합니다. 파일/용량 관리 화면의 빠른 수정도 같은 기준을 사용합니다.</p>
+            <h2 className="text-lg font-semibold text-stone-950">고객사 환경설정 저장</h2>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {updatedAtLabel ? <span className="rounded-full bg-stone-100 px-3 py-2 text-xs font-semibold text-stone-500">{updatedAtLabel}</span> : null}
@@ -83,8 +80,7 @@ export default function AdminCompanySettingsForm({ initialSettings }: AdminCompa
 
       <section className="grid gap-5 xl:grid-cols-[1fr_360px]">
         <AdminCard>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">THEME</p>
-          <h2 className="mt-2 text-lg font-semibold text-stone-950">테마 색상</h2>
+          <h2 className="text-lg font-semibold text-stone-950">테마 색상</h2>
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             {ADMIN_THEME_OPTIONS.map((option) => (
               <button
@@ -96,7 +92,6 @@ export default function AdminCompanySettingsForm({ initialSettings }: AdminCompa
                 <span className={`h-9 w-9 rounded-2xl shadow-sm ring-1 ring-white ${option.swatchClassName}`} />
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-semibold text-stone-900">{option.label}</span>
-                  <span className="mt-1 block text-xs text-stone-500">{option.description}</span>
                 </span>
                 {draft.ui.themeColor === option.value ? <span className="rounded-full bg-stone-950 px-3 py-1 text-xs font-semibold text-white">현재</span> : null}
               </button>
@@ -105,8 +100,7 @@ export default function AdminCompanySettingsForm({ initialSettings }: AdminCompa
         </AdminCard>
 
         <AdminCard>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">LANGUAGE</p>
-          <h2 className="mt-2 text-lg font-semibold text-stone-950">언어 설정</h2>
+          <h2 className="text-lg font-semibold text-stone-950">언어 설정</h2>
           <div className="mt-5 grid gap-3">
             {ADMIN_LANGUAGE_OPTIONS.map((option) => (
               <button
@@ -131,9 +125,7 @@ export default function AdminCompanySettingsForm({ initialSettings }: AdminCompa
 
       <section className="grid gap-5 xl:grid-cols-2">
         <AdminCard>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">FILE POLICY</p>
-          <h2 className="mt-2 text-lg font-semibold text-stone-950">파일 정책 관리</h2>
-          <p className="mt-2 text-sm leading-6 text-stone-500">정책 원본은 company_settings입니다. 파일/용량 관리 화면은 이 값을 표시하고 일부 항목만 빠르게 수정합니다.</p>
+          <h2 className="text-lg font-semibold text-stone-950">파일 정책 관리</h2>
           <div className="mt-5 grid gap-3">
             <ToggleRow
               label="소프트 삭제"
@@ -184,8 +176,7 @@ export default function AdminCompanySettingsForm({ initialSettings }: AdminCompa
         </AdminCard>
 
         <AdminCard>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">NOTIFICATION POLICY</p>
-          <h2 className="mt-2 text-lg font-semibold text-stone-950">알림 정책</h2>
+          <h2 className="text-lg font-semibold text-stone-950">알림 정책</h2>
           <div className="mt-5 grid gap-3">
             <ToggleRow
               label="검토 요청"

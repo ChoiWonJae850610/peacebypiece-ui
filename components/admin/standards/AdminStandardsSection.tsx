@@ -189,9 +189,9 @@ export default function AdminStandardsSection() {
   }, []);
 
   const actions: StandardAction[] = [
-    { key: "units", title: "단위 관리", statusLabel: "관리", onClick: () => setIsUnitModalOpen(true) },
-    { key: "processes", title: "외주공정 기준", statusLabel: "관리", onClick: openProcessModal },
-    { key: "items", title: "품목 관리", statusLabel: "관리", onClick: () => setIsItemCategoryModalOpen(true) },
+    { key: "items", title: "생산품 유형", statusLabel: "관리", onClick: () => setIsItemCategoryModalOpen(true) },
+    { key: "units", title: "단위 표준", statusLabel: "관리", onClick: () => setIsUnitModalOpen(true) },
+    { key: "processes", title: "외주 공정", statusLabel: "관리", onClick: openProcessModal },
   ];
 
   return (

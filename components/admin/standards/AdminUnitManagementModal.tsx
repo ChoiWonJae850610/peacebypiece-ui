@@ -79,7 +79,7 @@ export default function AdminUnitManagementModal({ open, units, saving = false, 
     <AdminModal
       open={open}
       onClose={onClose}
-      title="단위 관리"
+      title="단위 표준"
       maxWidthClass="md:max-w-3xl"
       footer={
         <div className="flex w-full items-center justify-between gap-2">

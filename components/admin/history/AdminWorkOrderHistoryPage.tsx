@@ -26,7 +26,6 @@ export default function AdminWorkOrderHistoryPage() {
       <div className="flex shrink-0 flex-col gap-4 border-b border-stone-200 pb-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="space-y-1">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-400">HISTORY</p>
             <h2 className="text-xl font-semibold text-stone-900">{viewModel.title}</h2>
           </div>
           <div className="rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">

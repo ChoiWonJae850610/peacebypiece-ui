@@ -98,7 +98,7 @@ export default function PartnerProcessManagementModal({
       title={processText.title}
       maxWidthClass="md:max-w-3xl"
       footer={
-        <div className="flex w-full items-center justify-end gap-2">
+        <div className="flex w-full items-center justify-between gap-2">
           <button
             type="button"
             onClick={onResetDefaults}
@@ -119,7 +119,6 @@ export default function PartnerProcessManagementModal({
       <AdminModalSection title="외주공정 추가">
         <div className="flex flex-col gap-3 md:flex-row md:items-end">
           <label className="min-w-0 flex-1 space-y-2">
-            <span className={adminModalLabelClassName}>{processText.newProcessLabel}</span>
             <input
               value={newProcessLabel}
               onChange={(event) => {

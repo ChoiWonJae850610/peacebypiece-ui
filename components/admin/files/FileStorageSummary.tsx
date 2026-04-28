@@ -61,7 +61,6 @@ export default function FileStorageSummary({ usageCards, usageSummary, policySet
           <div className="rounded-[24px] bg-stone-950 p-4 text-white">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-400">STORAGE</p>
                 <p className="mt-2 text-2xl font-semibold tracking-tight">{usageSummary.usedLabel}</p>
               </div>
               <span className={`rounded-full px-3 py-1 text-xs font-semibold ${isWarning ? "bg-amber-100 text-amber-900" : "bg-white/10 text-white"}`}>{usageSummary.statusLabel}</span>

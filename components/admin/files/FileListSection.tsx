@@ -19,8 +19,7 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
     <section className="flex h-full min-h-0 flex-col rounded-[28px] border border-stone-200 bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">ATTACHMENTS</p>
-          <h2 className="mt-2 text-xl font-semibold tracking-tight text-stone-950">첨부파일 목록</h2>
+          <h2 className="text-xl font-semibold tracking-tight text-stone-950">첨부파일 목록</h2>
         </div>
         <div className="flex flex-wrap gap-2">
           <select value={sortKey} onChange={(event) => onChangeSort(event.target.value as AdminFileSortKey)} className="rounded-full border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-700 shadow-sm">

@@ -11,7 +11,6 @@ export default function AdminDashboardPage() {
       appVersion={APP_VERSION}
       navigationItems={getAdminNavigationItems("/admin/dashboard")}
       title="통계 / 대시보드"
-      description="작지, 거래처, 파일 사용량, 최근 활동을 관리자 화면과 동일한 구조로 확인합니다."
     >
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {ADMIN_STAT_SUMMARIES.map((item) => (
@@ -24,9 +23,7 @@ export default function AdminDashboardPage() {
           <AdminCard key={item.title} className="min-h-[220px]">
             <div className="flex h-full flex-col">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">DASHBOARD</p>
-                <h2 className="mt-2 text-lg font-semibold text-stone-950">{item.title}</h2>
-                <p className="mt-3 text-sm leading-6 text-stone-500">{item.description}</p>
+                <h2 className="text-lg font-semibold text-stone-950">{item.title}</h2>
               </div>
               <div className="mt-auto pt-6">
                 <div className="rounded-3xl border border-dashed border-stone-300 bg-stone-50 px-4 py-5 text-sm text-stone-400">

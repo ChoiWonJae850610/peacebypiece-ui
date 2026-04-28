@@ -25,8 +25,7 @@ export default function AdminPage() {
       <AdminCard className="flex flex-1 flex-col overflow-hidden lg:min-h-0">
         <div className="flex flex-col gap-4 border-b border-stone-100 pb-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-400">OPERATION DASHBOARD</p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-stone-950">운영 통계</h2>
+            <h2 className="text-2xl font-semibold tracking-tight text-stone-950">운영 통계</h2>
           </div>
           <div className="flex shrink-0 flex-wrap gap-2">
             {ADMIN_DASHBOARD_PERIODS.map((period) => (

@@ -146,7 +146,7 @@ export const adminKo = {
       resetDefaults: "기본값 복원",
       close: "닫기",
       save: "저장",
-      newProcessLabel: "새 외주 공정",
+      newProcessLabel: "외주 공정명",
       newProcessPlaceholder: "공정명을 입력하세요",
       add: "추가",
       displayName: "라벨",

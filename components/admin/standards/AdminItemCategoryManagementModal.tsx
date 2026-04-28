@@ -208,7 +208,7 @@ export default function AdminItemCategoryManagementModal({ open, categories, sav
     <AdminModal
       open={open}
       onClose={onClose}
-      title="품목 관리"
+      title="생산품 유형"
       maxWidthClass="md:max-w-5xl"
       footer={
         <div className="flex w-full items-center justify-between gap-2">
@@ -219,17 +219,17 @@ export default function AdminItemCategoryManagementModal({ open, categories, sav
     >
       <AdminModalSection title="품목 추가">
         <div className="grid gap-3 md:grid-cols-3">
-          <div className="flex gap-2">
-            <input value={newLevel1Label} onChange={(event) => { setNewLevel1Label(event.target.value); if (formError) setFormError(""); }} placeholder="1차 품목 추가" className={`h-11 ${adminModalInputClassName}`} />
-            <button type="button" onClick={() => addCategory(1)} className="h-11 rounded-full bg-stone-950 px-4 text-sm font-semibold text-white">추가</button>
+          <div className="flex min-w-0 gap-2">
+            <input value={newLevel1Label} onChange={(event) => { setNewLevel1Label(event.target.value); if (formError) setFormError(""); }} placeholder="1차 품목 추가" className={`h-11 min-w-0 flex-1 ${adminModalInputClassName}`} />
+            <button type="button" onClick={() => addCategory(1)} className="h-11 shrink-0 whitespace-nowrap rounded-full bg-stone-950 px-5 text-sm font-semibold text-white">추가</button>
           </div>
-          <div className="flex gap-2">
-            <input value={newLevel2Label} onChange={(event) => { setNewLevel2Label(event.target.value); if (formError) setFormError(""); }} placeholder="선택한 1차 안에 2차 추가" className={`h-11 ${adminModalInputClassName}`} />
-            <button type="button" onClick={() => addCategory(2)} className="h-11 rounded-full bg-stone-950 px-4 text-sm font-semibold text-white">추가</button>
+          <div className="flex min-w-0 gap-2">
+            <input value={newLevel2Label} onChange={(event) => { setNewLevel2Label(event.target.value); if (formError) setFormError(""); }} placeholder="선택한 1차 안에 2차 추가" className={`h-11 min-w-0 flex-1 ${adminModalInputClassName}`} />
+            <button type="button" onClick={() => addCategory(2)} className="h-11 shrink-0 whitespace-nowrap rounded-full bg-stone-950 px-5 text-sm font-semibold text-white">추가</button>
           </div>
-          <div className="flex gap-2">
-            <input value={newLevel3Label} onChange={(event) => { setNewLevel3Label(event.target.value); if (formError) setFormError(""); }} placeholder="선택한 2차 안에 3차 추가" className={`h-11 ${adminModalInputClassName}`} />
-            <button type="button" onClick={() => addCategory(3)} className="h-11 rounded-full bg-stone-950 px-4 text-sm font-semibold text-white">추가</button>
+          <div className="flex min-w-0 gap-2">
+            <input value={newLevel3Label} onChange={(event) => { setNewLevel3Label(event.target.value); if (formError) setFormError(""); }} placeholder="선택한 2차 안에 3차 추가" className={`h-11 min-w-0 flex-1 ${adminModalInputClassName}`} />
+            <button type="button" onClick={() => addCategory(3)} className="h-11 shrink-0 whitespace-nowrap rounded-full bg-stone-950 px-5 text-sm font-semibold text-white">추가</button>
           </div>
         </div>
         {formError || error ? <p className="mt-2 text-sm font-semibold text-rose-600">{formError || error}</p> : null}

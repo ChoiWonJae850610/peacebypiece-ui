@@ -207,8 +207,7 @@ export default function AdminFilesPage() {
             <section className="flex h-full min-h-0 flex-col rounded-[28px] border border-stone-200 bg-white p-4 shadow-sm">
               <div className="flex shrink-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">PURGE WORKER</p>
-                  <h2 className="mt-2 text-lg font-semibold text-stone-950">용량 관리</h2>
+                  <h2 className="text-lg font-semibold text-stone-950">용량 관리</h2>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button type="button" onClick={() => handleRunPurgeWorker(true)} disabled={isPurgeWorkerRunning} className="w-fit rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-50 disabled:text-stone-400">
