@@ -1,6 +1,7 @@
 import { AdminCard } from "@/components/admin/layout/AdminCard";
 import type { AdminDbCompletionSummary, AdminDbScreenAuditStatus } from "@/lib/admin/dbCompletionAudit";
 import { getAdminDbCompletionStatusLabel } from "@/lib/admin/dbCompletionAudit";
+import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminDbConnectionAuditPanelProps = {
   summary: AdminDbCompletionSummary;
@@ -14,12 +15,13 @@ function getStatusClassName(status: AdminDbScreenAuditStatus): string {
 }
 
 export default function AdminDbConnectionAuditPanel({ summary }: AdminDbConnectionAuditPanelProps) {
+  const t = useAdminTranslation();
   return (
     <AdminCard className="mt-5">
       <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-stone-950">DB 연결 점검</h2>
-          <p className="mt-1 text-xs text-stone-500">관리자 화면별 실제 DB 조회/저장 경계와 fallback 상태입니다.</p>
+          <h2 className="text-lg font-semibold text-stone-950">{t("dbConnectionAudit.title", "DB 연결 점검")}</h2>
+          <p className="mt-1 text-xs text-stone-500">{t("dbConnectionAudit.description", "관리자 화면별 실제 DB 조회/저장 경계와 fallback 상태입니다.")}</p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs font-semibold text-stone-500">
           <span className="rounded-full bg-stone-100 px-3 py-1.5">workorder={summary.repositoryModes.workorder}</span>
@@ -42,19 +44,19 @@ export default function AdminDbConnectionAuditPanel({ summary }: AdminDbConnecti
             </div>
             <dl className="mt-3 grid gap-2 text-xs text-stone-500 lg:grid-cols-2">
               <div>
-                <dt className="font-semibold text-stone-700">조회</dt>
+                <dt className="font-semibold text-stone-700">{t("dbConnectionAudit.read", "조회")}</dt>
                 <dd className="mt-1">{item.readSource}</dd>
               </div>
               <div>
-                <dt className="font-semibold text-stone-700">저장</dt>
+                <dt className="font-semibold text-stone-700">{t("dbConnectionAudit.write", "저장")}</dt>
                 <dd className="mt-1">{item.writeSource}</dd>
               </div>
               <div>
-                <dt className="font-semibold text-stone-700">fallback</dt>
+                <dt className="font-semibold text-stone-700">{t("dbConnectionAudit.fallback", "fallback")}</dt>
                 <dd className="mt-1">{item.fallback}</dd>
               </div>
               <div>
-                <dt className="font-semibold text-stone-700">다음 확인</dt>
+                <dt className="font-semibold text-stone-700">{t("dbConnectionAudit.nextCheck", "다음 확인")}</dt>
                 <dd className="mt-1">{item.nextCheck}</dd>
               </div>
             </dl>

@@ -6,6 +6,32 @@ export const adminKo = {
     { title: "사용자", description: "초대, 권한 변경, 사용자 활성 상태 관리 영역" },
     { title: "운영 설정", description: "알림, 기본값, 운영 설정을 다루는 영역" },
   ],
+  common: {
+    loadingList: "목록을 불러오는 중입니다.",
+  },
+  filesPage: {
+    title: "저장소 관리",
+    snapshotLoadFailed: "파일 목록 DB 조회 실패",
+    snapshotLoadFailedWithMessage: "파일 목록 DB 조회 실패: {message}",
+  },
+  auditSummary: {
+    title: "관리자 점검",
+    closedDescription: "대시보드는 운영 통계를 우선 표시하고, DB/구조 점검은 필요할 때만 펼쳐 확인합니다.",
+    open: "점검 펼치기",
+    close: "점검 닫기",
+  },
+  completionAudit: {
+    title: "관리자 완료 검증",
+    description: "관리자 영역을 WorkOrder 리팩토링 전 마감 가능한 상태인지 점검합니다.",
+  },
+  dbConnectionAudit: {
+    title: "DB 연결 점검",
+    description: "관리자 화면별 실제 DB 조회/저장 경계와 fallback 상태입니다.",
+    read: "조회",
+    write: "저장",
+    fallback: "fallback",
+    nextCheck: "다음 확인",
+  },
   historyModal: {
     title: "작업지시서 히스토리",
     description: "관리자 화면을 벗어나지 않고 전체 작업지시서 히스토리를 모달에서 확인합니다.",

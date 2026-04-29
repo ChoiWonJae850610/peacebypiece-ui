@@ -6,6 +6,32 @@ export const adminEn = {
     { title: "Users", description: "Area to expand into invitations, role updates, and active user management" },
     { title: "Operations Settings", description: "Area for notifications, defaults, and operations settings" },
   ],
+  common: {
+    loadingList: "Loading list.",
+  },
+  filesPage: {
+    title: "Storage",
+    snapshotLoadFailed: "Failed to load file list from DB",
+    snapshotLoadFailedWithMessage: "Failed to load file list from DB: {message}",
+  },
+  auditSummary: {
+    title: "Admin Audit",
+    closedDescription: "The dashboard prioritizes operating metrics, while DB and structure checks stay collapsed until needed.",
+    open: "Open audit",
+    close: "Close audit",
+  },
+  completionAudit: {
+    title: "Admin Completion Audit",
+    description: "Checks whether the admin area can be closed before the WorkOrder refactor.",
+  },
+  dbConnectionAudit: {
+    title: "DB Connection Audit",
+    description: "Actual DB read/write boundaries and fallback status by admin screen.",
+    read: "Read",
+    write: "Write",
+    fallback: "fallback",
+    nextCheck: "Next check",
+  },
   historyModal: {
       title: "Work Order History",
       description: "Review the full work order history in a modal without leaving the admin workspace.",

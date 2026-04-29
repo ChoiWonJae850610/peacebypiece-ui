@@ -1,6 +1,7 @@
 import { AdminCard } from "@/components/admin/layout/AdminCard";
 import type { AdminCompletionAuditStatus, AdminCompletionAuditSummary } from "@/lib/admin/completionAudit";
 import { getAdminCompletionAuditStatusLabel } from "@/lib/admin/completionAudit";
+import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminCompletionAuditPanelProps = {
   summary: AdminCompletionAuditSummary;
@@ -13,17 +14,18 @@ function getStatusClassName(status: AdminCompletionAuditStatus): string {
 }
 
 export default function AdminCompletionAuditPanel({ summary }: AdminCompletionAuditPanelProps) {
+  const t = useAdminTranslation();
   return (
     <AdminCard className="mt-5">
       <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-lg font-semibold text-stone-950">관리자 완료 검증</h2>
+            <h2 className="text-lg font-semibold text-stone-950">{t("completionAudit.title", "관리자 완료 검증")}</h2>
             <span className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${getStatusClassName(summary.overallStatus)}`}>
               {getAdminCompletionAuditStatusLabel(summary.overallStatus)}
             </span>
           </div>
-          <p className="mt-1 text-xs text-stone-500">관리자 영역을 WorkOrder 리팩토링 전 마감 가능한 상태인지 점검합니다.</p>
+          <p className="mt-1 text-xs text-stone-500">{t("completionAudit.description", "관리자 영역을 WorkOrder 리팩토링 전 마감 가능한 상태인지 점검합니다.")}</p>
         </div>
         <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-stone-500 lg:grid-cols-4">
           <span className="rounded-full bg-stone-100 px-3 py-1.5">domain {summary.readyDomainCount}/{summary.totalDomainCount}</span>
