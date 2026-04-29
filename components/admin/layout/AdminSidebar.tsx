@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import type { AdminNavigationItem } from "@/lib/admin/adminDashboard.presentation";
+import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminSidebarProps = {
   companyName: string;
@@ -105,6 +108,7 @@ function SidebarIcon({ type, active }: SidebarIconProps) {
 }
 
 export default function AdminSidebar({ companyName, appVersion, navigationItems }: AdminSidebarProps) {
+  const t = useAdminTranslation();
   const showDbStatus = process.env.NODE_ENV !== "production";
 
   return (
@@ -120,7 +124,7 @@ export default function AdminSidebar({ companyName, appVersion, navigationItems 
         {showDbStatus ? (
           <div className="mt-3 inline-flex w-fit items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-semibold text-emerald-100">
             <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_0_3px_rgba(52,211,153,0.18)]" aria-hidden="true" />
-            DB 연결
+            {t("navigation.dbConnected", "DB 연결")}
           </div>
         ) : null}
       </div>
@@ -136,7 +140,7 @@ export default function AdminSidebar({ companyName, appVersion, navigationItems 
               <span className={["flex h-10 w-10 items-center justify-center rounded-2xl shadow-sm ring-1 transition", item.active ? "bg-[var(--admin-theme-surface)] ring-[var(--admin-theme-surface)] [&_svg]:stroke-white" : "bg-white ring-stone-200"].join(" ") }>
                 <SidebarIcon type={item.icon} active={item.active} />
               </span>
-              <span className="min-w-0 truncate">{item.label}</span>
+              <span className="min-w-0 truncate">{item.translationKey ? t(`navigation.${item.translationKey}`, item.label) : item.label}</span>
             </>
           );
 

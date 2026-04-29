@@ -1,3 +1,5 @@
+"use client";
+
 import type {
   AdminFileTrendPeriod,
   AdminFileTypeDistributionItem,
@@ -5,6 +7,7 @@ import type {
   AdminRecentUploadTrendPoint,
   AdminStorageUsageSummary,
 } from "@/lib/admin/adminFiles.types";
+import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type FileStorageSummaryProps = {
   usageCards: AdminFileUsageCard[];
@@ -24,6 +27,7 @@ function findCardValue(cards: AdminFileUsageCard[], labelIncludes: string, fallb
 }
 
 function MiniUsageChart({ points: trendPoints = [] }: { points?: AdminRecentUploadTrendPoint[] }) {
+  const t = useAdminTranslation();
   const values = trendPoints.length > 0 ? trendPoints.map((point) => point.value) : [0, 0, 0, 0, 0, 0, 0];
   const max = Math.max(1, ...values);
   const chartWidth = 190;
@@ -40,8 +44,8 @@ function MiniUsageChart({ points: trendPoints = [] }: { points?: AdminRecentUplo
   return (
     <div className="flex h-full min-h-0 flex-col rounded-[20px] bg-white/10 px-3 py-3.5">
       <div className="flex shrink-0 items-center justify-between text-[10px] font-semibold text-stone-300">
-        <span>첨부량</span>
-        <span>건수</span>
+        <span>{t("filesSummary.uploadAmount", "첨부량")}</span>
+        <span>{t("filesSummary.count", "건수")}</span>
       </div>
       <div className="flex min-h-0 flex-1 items-center justify-center pt-2">
         <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="h-[46px] w-full" aria-hidden="true">
@@ -58,9 +62,10 @@ function MiniUsageChart({ points: trendPoints = [] }: { points?: AdminRecentUplo
 }
 
 function DonutChart({ items = [] }: { items?: AdminFileTypeDistributionItem[] }) {
+  const t = useAdminTranslation();
   const normalizedItems = items.length > 0 ? items : [
-    { label: "문서", value: 0, percent: 0 },
-    { label: "디자인", value: 0, percent: 0 },
+    { label: t("filesSummary.documents", "문서"), value: 0, percent: 0 },
+    { label: t("filesSummary.designs", "디자인"), value: 0, percent: 0 },
   ];
   const total = normalizedItems.reduce((sum, item) => sum + item.value, 0);
   const radius = 24;
@@ -70,8 +75,8 @@ function DonutChart({ items = [] }: { items?: AdminFileTypeDistributionItem[] })
   return (
     <div className="flex h-full min-h-0 flex-col rounded-[20px] bg-white/10 px-3 py-3.5">
       <div className="flex shrink-0 items-center justify-between text-[10px] font-semibold text-stone-300">
-        <span>파일 유형</span>
-        <span>{total}개</span>
+        <span>{t("filesSummary.fileType", "파일 유형")}</span>
+        <span>{total}{t("filesSummary.countSuffix", "개")}</span>
       </div>
       <div className="flex min-h-0 flex-1 items-center gap-3 pt-2">
         <svg viewBox="0 0 72 72" className="h-[48px] w-[48px] shrink-0 -rotate-90" aria-hidden="true">
@@ -123,16 +128,17 @@ export default function FileStorageSummary({
   onChangeTrendPeriod,
   onRefresh,
 }: FileStorageSummaryProps) {
+  const t = useAdminTranslation();
   const isWarning = usageSummary.statusTone === "warning";
   const attachmentCount = findCardValue(usageCards, "첨부", "0개");
   const trashCount = findCardValue(usageCards, "휴지", "0개");
   const retentionDays = findCardValue(usageCards, "복구", "-");
 
   const summaryItems = [
-    { label: "전체 사용량", value: `${usageSummary.usedLabel} / ${usageSummary.limitLabel}` },
-    { label: "첨부파일", value: attachmentCount },
-    { label: "휴지통", value: trashCount },
-    { label: "복구 기간", value: retentionDays },
+    { label: t("filesSummary.totalUsage", "전체 사용량"), value: `${usageSummary.usedLabel} / ${usageSummary.limitLabel}` },
+    { label: t("filesSummary.attachments", "첨부파일"), value: attachmentCount },
+    { label: t("filesSummary.trash", "휴지통"), value: trashCount },
+    { label: t("filesSummary.retentionPeriod", "복구 기간"), value: retentionDays },
   ];
 
   return (
@@ -150,7 +156,7 @@ export default function FileStorageSummary({
                     onClick={() => onChangeTrendPeriod(period)}
                     className={`rounded-full px-3 py-1 text-xs font-semibold transition ${isActive ? "bg-white text-stone-950" : "bg-white/10 text-stone-300 hover:bg-white/15"}`}
                   >
-                    {period}일
+                    {t(`filesSummary.periods.${period}`, `${period}일`)}
                   </button>
                 );
               })}
@@ -163,7 +169,7 @@ export default function FileStorageSummary({
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-2xl font-semibold tracking-tight">{usageSummary.usedLabel}</p>
-                    <p className="mt-1.5 text-[11px] font-semibold text-stone-300">사용량</p>
+                    <p className="mt-1.5 text-[11px] font-semibold text-stone-300">{t("filesSummary.usage", "사용량")}</p>
                   </div>
                   <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${isWarning ? "bg-amber-100 text-amber-900" : "bg-white/10 text-white"}`}>{usageSummary.statusLabel}</span>
                 </div>
@@ -190,8 +196,8 @@ export default function FileStorageSummary({
               <button
                 type="button"
                 onClick={onRefresh}
-                aria-label="저장소 데이터 새로고침"
-                title="저장소 데이터 새로고침"
+                aria-label={t("filesSummary.refreshLabel", "저장소 데이터 새로고침")}
+                title={t("filesSummary.refreshLabel", "저장소 데이터 새로고침")}
                 disabled={isRefreshing}
                 className="absolute right-0 top-0 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white transition hover:bg-white/15 disabled:text-stone-500"
               >

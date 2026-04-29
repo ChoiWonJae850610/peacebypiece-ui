@@ -19,6 +19,11 @@ export const adminEn = {
     summary: "Summary format: description · user",
     countSuffix: " items",
   },
+  navigation: { dashboard: "Dashboard", workorder: "Work Orders", partners: "Partners", storage: "Storage", statistics: "Statistics", history: "History", settings: "Settings", dbConnected: "DB connected" },
+  operationsDashboard: { title: "Operations", sourceDb: "Operational status from DB", sourceNotConfigured: "No database connection is configured, so values are shown as zero.", sourceError: "Database lookup failed, so values are shown as zero.", periodAria: "Dashboard period selector", periods: { today: "Today", week: "This week", month: "This month" }, statusFlowTitle: "Status flow", statusDistributionTitle: "Status distribution", todayCheckTitle: "Today check", countSuffix: " items" },
+  filesSummary: { periods: { 7: "7 days", 15: "15 days", 30: "30 days" }, uploadAmount: "Uploads", count: "Count", fileType: "File type", countSuffix: "items", totalUsage: "Total usage", attachments: "Attachments", trash: "Trash", retentionPeriod: "Retention", usage: "Usage", refreshLabel: "Refresh storage data", documents: "Documents", designs: "Designs" },
+  filesList: { title: "Attachments", sort: { latest: "Newest", size: "By size", workorder: "By work order" }, selectAll: "Select all", clearAll: "Clear all", delete: "Delete", restore: "Restore", purge: "Permanently delete", empty: "No attachments to display.", trashEmpty: "No files are currently in trash.", columns: { select: "Select", workorder: "Work order", createdAt: "Created", deletedAt: "Deleted", fileName: "File name", type: "Type", size: "Size" }, fileTypes: { document: "Document", design: "Design", other: "Other" } },
+  trashPage: { title: "Trash" },
 
   historyPage: {
     title: "Work Order History",

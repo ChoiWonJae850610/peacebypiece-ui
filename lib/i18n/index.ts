@@ -21,3 +21,5 @@ export function getI18n(locale: Locale = DEFAULT_LOCALE) {
 
 export { I18nProvider } from "@/lib/i18n/I18nProvider";
 export { useI18n } from "@/lib/i18n/useI18n";
+
+export { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";

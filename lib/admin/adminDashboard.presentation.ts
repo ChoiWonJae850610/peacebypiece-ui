@@ -20,6 +20,7 @@ export type AdminNavigationItem = {
   label: string;
   href: AdminDashboardRoute;
   icon: string;
+  translationKey?: "dashboard" | "workorder" | "partners" | "storage" | "statistics" | "history" | "settings";
   active?: boolean;
 };
 
@@ -84,13 +85,13 @@ export function getAdminDashboardMaxStageValue(): number {
 }
 
 export const ADMIN_NAVIGATION_ITEMS: AdminNavigationItem[] = [
-  { label: "대시보드", href: "/admin", icon: "dashboard" },
-  { label: "작업지시서", href: "/worker", icon: "workorder" },
-  { label: "거래처 관리", href: "/admin/partners", icon: "partners" },
-  { label: "저장소 관리", href: "/admin/files", icon: "storage" },
-  { label: "통계정보", href: "/admin/dashboard", icon: "statistics" },
-  { label: "히스토리", href: "/admin/history", icon: "history" },
-  { label: "환경설정", href: "/admin/settings", icon: "settings" },
+  { label: "대시보드", href: "/admin", icon: "dashboard", translationKey: "dashboard" },
+  { label: "작업지시서", href: "/worker", icon: "workorder", translationKey: "workorder" },
+  { label: "거래처 관리", href: "/admin/partners", icon: "partners", translationKey: "partners" },
+  { label: "저장소 관리", href: "/admin/files", icon: "storage", translationKey: "storage" },
+  { label: "통계정보", href: "/admin/dashboard", icon: "statistics", translationKey: "statistics" },
+  { label: "히스토리", href: "/admin/history", icon: "history", translationKey: "history" },
+  { label: "환경설정", href: "/admin/settings", icon: "settings", translationKey: "settings" },
 ];
 
 export const ADMIN_DASHBOARD_SECTIONS: AdminDashboardSection[] = [
