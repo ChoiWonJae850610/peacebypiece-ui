@@ -9,6 +9,7 @@ import {
   type AdminStatChartPoint,
   type AdminSummaryCard,
 } from "@/lib/admin/adminDashboard.presentation";
+import { getAdminCompanyId } from "@/lib/admin/companyScope";
 import { isDatabaseConfigured, queryDb, type DbQueryResultRow } from "@/lib/db/client";
 
 export type AdminStatsSnapshot = {
@@ -91,40 +92,51 @@ export async function getAdminStatsSnapshot(): Promise<AdminStatsSnapshot> {
   if (!isDatabaseConfigured()) return buildFallbackStats();
 
   try {
+    const companyId = getAdminCompanyId();
     const [workordersResult, completedResult, partnersResult, partnerTypesResult, fileUsageResult] = await Promise.all([
       queryDb<StatusCountRow>(
         `SELECT COALESCE(status, 'draft') AS status,
                 COUNT(*)::text AS count_value
            FROM spec_sheets
-          WHERE deleted_at IS NULL
+          WHERE company_id = $1
+            AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true
           GROUP BY COALESCE(status, 'draft')`,
+        [companyId],
       ),
       queryDb<CountRow>(
         `SELECT COUNT(*)::text AS count_value
            FROM spec_sheets
-          WHERE deleted_at IS NULL
+          WHERE company_id = $1
+            AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true
             AND status = 'completed'
             AND updated_at >= date_trunc('month', now())`,
+        [companyId],
       ),
       queryDb<CountRow>(
         `SELECT COUNT(*)::text AS count_value
            FROM partners
-          WHERE COALESCE(is_active, true) = true`,
+          WHERE company_id = $1
+            AND COALESCE(is_active, true) = true`,
+        [companyId],
       ),
       queryDb<PartnerTypeCountRow>(
         `SELECT item_type,
                 COUNT(DISTINCT partner_id)::text AS count_value
            FROM partner_items
-          WHERE COALESCE(is_active, true) = true
+          WHERE company_id = $1
+            AND COALESCE(is_active, true) = true
           GROUP BY item_type`,
+        [companyId],
       ),
       queryDb<FileUsageRow>(
         `SELECT COALESCE(SUM(COALESCE(size_bytes, 0)), 0)::text AS total_size_bytes,
                 COUNT(*) FILTER (WHERE deleted_at IS NULL AND COALESCE(is_active, true) = true)::text AS active_count,
                 COUNT(*) FILTER (WHERE deleted_at IS NOT NULL OR COALESCE(is_active, true) = false)::text AS trash_count
-           FROM attachments`,
+           FROM attachments
+          WHERE company_id = $1`,
+        [companyId],
       ),
     ]);
 

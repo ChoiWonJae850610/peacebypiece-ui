@@ -96,7 +96,7 @@ CREATE TABLE company_settings (
 
 CREATE TABLE units (
   id text PRIMARY KEY,
-  company_id text,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   code text NOT NULL,
   name text NOT NULL,
   category text,
@@ -114,7 +114,7 @@ CREATE TABLE units (
 -- ================================
 CREATE TABLE item_categories (
   id text PRIMARY KEY,
-  company_id text,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   parent_id text REFERENCES item_categories(id) ON DELETE CASCADE,
   level integer NOT NULL,
   name text NOT NULL,
@@ -132,7 +132,7 @@ CREATE TABLE item_categories (
 -- ================================
 CREATE TABLE outsourcing_processes (
   id text PRIMARY KEY,
-  company_id text,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   company_name text,
   name text NOT NULL,
   memo text,
@@ -149,7 +149,7 @@ CREATE TABLE outsourcing_processes (
 -- ================================
 CREATE TABLE partners (
   id text PRIMARY KEY,
-  company_id text,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   company_name text,
   name text NOT NULL,
   contact_person text,
@@ -168,7 +168,7 @@ CREATE TABLE partners (
 -- ================================
 CREATE TABLE partner_items (
   id text PRIMARY KEY,
-  company_id text,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   company_name text,
   partner_id text NOT NULL REFERENCES partners(id) ON DELETE CASCADE,
   item_type text NOT NULL,
@@ -192,7 +192,7 @@ CREATE TABLE partner_items (
 
 CREATE TABLE spec_sheets (
   id text PRIMARY KEY,
-  company_id text,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   company_name text,
   title text NOT NULL,
   status text NOT NULL DEFAULT 'draft',
@@ -214,7 +214,7 @@ CREATE TABLE spec_sheets (
 
 CREATE TABLE orders (
   id text PRIMARY KEY,
-  company_id text,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   company_name text,
   spec_sheet_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
   source_order_entry_id text,
@@ -237,7 +237,7 @@ CREATE TABLE orders (
 
 CREATE TABLE spec_sheet_materials (
   id text PRIMARY KEY,
-  company_id text,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   company_name text,
   spec_sheet_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
   source_material_id text,
@@ -258,7 +258,7 @@ CREATE TABLE spec_sheet_materials (
 
 CREATE TABLE material_stocks (
   id text PRIMARY KEY,
-  company_id text,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   company_name text,
   source_order_line_id text,
   available_quantity numeric(14, 2) NOT NULL DEFAULT 0,
@@ -286,7 +286,7 @@ CREATE TABLE material_stocks (
 
 CREATE TABLE spec_sheet_outsourcing_lines (
   id text PRIMARY KEY,
-  company_id text,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   company_name text,
   spec_sheet_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
   source_outsourcing_id text,
@@ -312,7 +312,7 @@ CREATE TABLE spec_sheet_outsourcing_lines (
 
 CREATE TABLE attachments (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  company_id text,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   company_name text,
   order_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
   type text NOT NULL DEFAULT 'file',
@@ -342,7 +342,7 @@ CREATE TABLE attachments (
 
 CREATE TABLE attachment_trash_items (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  company_id text,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   company_name text,
   attachment_id text NOT NULL REFERENCES attachments(id) ON DELETE CASCADE,
   order_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
@@ -375,7 +375,7 @@ CREATE TABLE attachment_trash_items (
 
 CREATE TABLE memos (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  company_id text,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   company_name text,
   order_id text NOT NULL REFERENCES spec_sheets(id) ON DELETE CASCADE,
   parent_id text REFERENCES memos(id) ON DELETE CASCADE,
@@ -395,7 +395,7 @@ CREATE TABLE memos (
 
 CREATE TABLE history_logs (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  company_id text NOT NULL,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   user_id text,
   action_type text NOT NULL,
   target_type text NOT NULL,
@@ -424,7 +424,7 @@ CREATE TABLE history_logs (
 -- ================================
 CREATE TABLE material_orders (
   id text PRIMARY KEY,
-  company_id text NOT NULL,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   company_name text NOT NULL,
   order_no text,
   vendor_partner_id text REFERENCES partners(id) ON DELETE SET NULL,
@@ -453,7 +453,7 @@ CREATE INDEX idx_material_orders_status ON material_orders(status);
 -- ================================
 CREATE TABLE material_order_lines (
   id text PRIMARY KEY,
-  company_id text NOT NULL,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   company_name text NOT NULL,
   material_order_id text NOT NULL REFERENCES material_orders(id) ON DELETE CASCADE,
   spec_sheet_id text REFERENCES spec_sheets(id) ON DELETE SET NULL,
@@ -487,7 +487,7 @@ CREATE INDEX idx_material_order_lines_partner_item_id ON material_order_lines(pa
 -- ================================
 CREATE TABLE material_allocations (
   id text PRIMARY KEY,
-  company_id text NOT NULL,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   company_name text NOT NULL,
   material_stock_id text REFERENCES material_stocks(id) ON DELETE SET NULL,
   material_order_line_id text REFERENCES material_order_lines(id) ON DELETE SET NULL,
@@ -658,6 +658,9 @@ CREATE INDEX item_categories_parent_idx
 CREATE INDEX partners_active_name_idx
   ON partners (is_active, name);
 
+CREATE INDEX outsourcing_processes_company_active_idx
+  ON outsourcing_processes (company_id, is_active, sort_order, name);
+
 CREATE INDEX partners_company_idx
   ON partners (company_id);
 
@@ -685,6 +688,9 @@ CREATE INDEX spec_sheets_parent_idx
 CREATE INDEX orders_spec_sheet_idx
   ON orders (spec_sheet_id);
 
+CREATE INDEX orders_company_spec_sheet_idx
+  ON orders (company_id, spec_sheet_id);
+
 CREATE INDEX orders_factory_partner_idx
   ON orders (factory_partner_id);
 
@@ -699,6 +705,9 @@ CREATE INDEX orders_spec_sheet_active_idx
 
 CREATE INDEX spec_sheet_materials_spec_sheet_idx
   ON spec_sheet_materials (spec_sheet_id);
+
+CREATE INDEX spec_sheet_materials_company_spec_sheet_idx
+  ON spec_sheet_materials (company_id, spec_sheet_id);
 
 CREATE INDEX spec_sheet_materials_type_idx
   ON spec_sheet_materials (material_type);
@@ -720,6 +729,9 @@ CREATE INDEX material_stocks_active_idx
 
 CREATE INDEX spec_sheet_outsourcing_lines_spec_sheet_idx
   ON spec_sheet_outsourcing_lines (spec_sheet_id);
+
+CREATE INDEX spec_sheet_outsourcing_lines_company_spec_sheet_idx
+  ON spec_sheet_outsourcing_lines (company_id, spec_sheet_id);
 
 CREATE INDEX spec_sheet_outsourcing_lines_process_idx
   ON spec_sheet_outsourcing_lines (process);
@@ -794,6 +806,9 @@ WHERE is_active = true AND deleted_at IS NULL;
 
 CREATE INDEX memos_order_idx
   ON memos (order_id);
+
+CREATE INDEX memos_company_order_idx
+  ON memos (company_id, order_id);
 
 CREATE INDEX memos_parent_idx
   ON memos (parent_id);

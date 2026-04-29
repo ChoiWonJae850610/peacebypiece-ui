@@ -1,7 +1,7 @@
 import "server-only";
 
 import { queryDb } from "@/lib/db/client";
-import { getWorkspaceCompanyContext } from "@/lib/constants/company";
+import { getAdminCompanyId, getAdminCompanyScope } from "@/lib/admin/companyScope";
 import { LEGACY_WORKFLOW_STATE_MAP, WORKFLOW_STATES } from "@/lib/constants/workorderStates";
 import type { WorkOrder } from "@/types/workorder";
 import { applyReorderIdentity } from "@/lib/workorder/reorder/helpers";
@@ -315,9 +315,11 @@ export async function findAllDbWorkOrders(): Promise<WorkOrder[]> {
         ${buildAliasSelection(schema.createdAtColumn, "created_at", "NULL")},
         ${buildAliasSelection(schema.updatedAtColumn, "updated_at", "NULL")}
       FROM ${quoteIdentifier(SPEC_SHEET_TABLE)}
-      ${schema.isActiveColumn ? `WHERE ${quoteIdentifier(schema.isActiveColumn)} = TRUE` : ""}
+      ${schema.companyIdColumn ? `WHERE ${quoteIdentifier(schema.companyIdColumn)} = $1` : schema.isActiveColumn ? `WHERE ${quoteIdentifier(schema.isActiveColumn)} = TRUE` : ""}
+      ${schema.companyIdColumn && schema.isActiveColumn ? `AND ${quoteIdentifier(schema.isActiveColumn)} = TRUE` : ""}
       ORDER BY ${schema.updatedAtColumn ? `${quoteIdentifier(schema.updatedAtColumn)} DESC NULLS LAST, ` : ""}${schema.createdAtColumn ? `${quoteIdentifier(schema.createdAtColumn)} DESC NULLS LAST, ` : ""}id DESC
     `,
+    schema.companyIdColumn ? [getAdminCompanyId()] : undefined,
   );
 
   return result.rows.map(mapSpecSheetRowToWorkOrder);
@@ -333,7 +335,7 @@ export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
   const columns = ["id", "title"];
   const values: unknown[] = [normalizedWorkOrder.id, normalizedWorkOrder.title];
   const placeholders = ["$1", "$2"];
-  const company = getWorkspaceCompanyContext();
+  const company = getAdminCompanyScope();
 
   if (schema.companyIdColumn) {
     columns.push(schema.companyIdColumn);
@@ -466,7 +468,7 @@ export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
 
   const assignments = ["title = $2"];
   const values: unknown[] = [normalizedWorkOrder.id, normalizedWorkOrder.title];
-  const company = getWorkspaceCompanyContext();
+  const company = getAdminCompanyScope();
 
   if (schema.companyIdColumn) {
     assignments.push(`${quoteIdentifier(schema.companyIdColumn)} = $${values.length + 1}`);

@@ -2,6 +2,7 @@ import "server-only";
 
 import { randomUUID } from "crypto";
 import { queryDb, isDatabaseConfigured } from "@/lib/db/client";
+import { getAdminCompanyScope } from "@/lib/admin/companyScope";
 import { getWorkspaceCompanyContext } from "@/lib/constants/company";
 import type { DbQueryResultRow } from "@/lib/db/client";
 import type {
@@ -78,8 +79,9 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
   return {
     getRepositoryInfo: getDbPartnerRepositoryInfo,
     listPartners: async (options: ListPartnersOptions = {}) => {
-      const params: unknown[] = [];
-      const conditions: string[] = [];
+      const scope = getAdminCompanyScope();
+      const params: unknown[] = [scope.companyId];
+      const conditions: string[] = [`p.company_id = $1`];
 
       if (options.type) {
         params.push(options.type);
@@ -132,8 +134,9 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
       return result.rows;
     },
     listPartnerItems: async (options: ListPartnerItemsOptions = {}) => {
-      const params: unknown[] = [];
-      const conditions: string[] = [];
+      const scope = getAdminCompanyScope();
+      const params: unknown[] = [scope.companyId];
+      const conditions: string[] = [`pi.company_id = $1`, `p.company_id = $1`];
 
       if (options.partnerId) {
         params.push(options.partnerId);
@@ -177,11 +180,14 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
       return result.rows.map(normalizePartnerItem);
     },
     listOutsourcingProcesses: async (activeOnly = false) => {
+      const scope = getAdminCompanyScope();
       const result = await queryDb<OutsourcingProcessRow>(
         `SELECT id, company_id, company_name, name, memo, sort_order, is_active, created_at, updated_at
          FROM outsourcing_processes
-         ${activeOnly ? "WHERE is_active = true" : ""}
+         WHERE company_id = $1
+         ${activeOnly ? "AND is_active = true" : ""}
          ORDER BY sort_order ASC, name ASC`,
+        [scope.companyId],
       );
 
       return result.rows;
