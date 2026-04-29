@@ -16,6 +16,13 @@ export type AdminHistoryFilterOption = {
   className: string;
 };
 
+function toAdminHistoryTimestamp(value: string): AdminHistoryEvent["timestamp"] {
+  return {
+    iso: value,
+    display: value,
+  };
+}
+
 export function toAdminHistoryEvent(item: HistoryLog): AdminHistoryEvent {
   return {
     id: item.id,
@@ -27,21 +34,36 @@ export function toAdminHistoryEvent(item: HistoryLog): AdminHistoryEvent {
     occurredAt: item.time,
     tone: item.tone,
     summary: item.summary,
+    actor: {
+      id: null,
+      name: item.user || "system",
+    },
+    target: {
+      type: "workorder",
+      id: item.workOrderId || null,
+      label: item.workOrderId || null,
+    },
+    timestamp: toAdminHistoryTimestamp(item.time),
     detailLines: item.detailLines,
     transition: item.transition,
   };
 }
 
-export function filterAdminHistoryEvents(historyLogs: HistoryLog[], historyFilter: AdminHistoryFilter, currentRoles: RoleType[]): AdminHistoryEvent[] {
+export function dedupeAdminHistoryEvents<T extends { id: string }>(items: T[]): T[] {
   const seenIds = new Set<string>();
+  return items.filter((item) => {
+    if (seenIds.has(item.id)) return false;
+    seenIds.add(item.id);
+    return true;
+  });
+}
 
-  return filterHistoryLogs(historyLogs, true, historyFilter, currentRoles)
-    .filter((item) => {
-      if (seenIds.has(item.id)) return false;
-      seenIds.add(item.id);
-      return true;
-    })
-    .map(toAdminHistoryEvent);
+export function selectAdminHistoryEventsByCategory(items: AdminHistoryEvent[], historyFilter: AdminHistoryFilter): AdminHistoryEvent[] {
+  return dedupeAdminHistoryEvents(items).filter((item) => historyFilter === "all" || item.category === historyFilter);
+}
+
+export function filterAdminHistoryEvents(historyLogs: HistoryLog[], historyFilter: AdminHistoryFilter, currentRoles: RoleType[]): AdminHistoryEvent[] {
+  return dedupeAdminHistoryEvents(filterHistoryLogs(historyLogs, true, historyFilter, currentRoles).map(toAdminHistoryEvent));
 }
 
 export function selectAdminHistoryFilterOptions(historyFilter: AdminHistoryFilter): AdminHistoryFilterOption[] {
@@ -70,7 +92,13 @@ export function matchesAdminHistorySearch(item: AdminHistoryEvent, query: string
   const haystacks = [
     item.action,
     item.message,
+    item.actor.name,
+    item.actor.email ?? "",
     item.actorName,
+    item.target.type,
+    item.target.id ?? "",
+    item.target.label ?? "",
+    item.timestamp.display,
     item.occurredAt,
     item.summary,
     item.transition?.from,
@@ -97,7 +125,7 @@ function parseAdminHistoryDate(value: string): Date | null {
 export function matchesAdminHistoryDateFilter(item: AdminHistoryEvent, dateFilter: AdminHistoryDateFilter, now = new Date()) {
   if (dateFilter === "all") return true;
 
-  const occurredAt = parseAdminHistoryDate(item.occurredAt);
+  const occurredAt = parseAdminHistoryDate(item.timestamp.iso || item.occurredAt);
   if (!occurredAt) return true;
 
   const diff = now.getTime() - occurredAt.getTime();
@@ -109,7 +137,7 @@ export function matchesAdminHistoryDateFilter(item: AdminHistoryEvent, dateFilte
 }
 
 export function selectAdminHistoryUserOptions(items: AdminHistoryEvent[]): AdminHistorySelectOption[] {
-  const users = Array.from(new Set(items.map((item) => item.actorName).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+  const users = Array.from(new Set(items.map((item) => item.actor.name || item.actorName).filter(Boolean))).sort((a, b) => a.localeCompare(b));
   return [ADMIN_HISTORY_USER_ALL_OPTION, ...users.map((user) => ({ value: user, label: user }))];
 }
 
@@ -122,7 +150,7 @@ export function filterAdminHistoryPageEvents(payload: {
   return payload.items.filter((item) => {
     if (!matchesAdminHistorySearch(item, payload.searchQuery)) return false;
     if (!matchesAdminHistoryDateFilter(item, payload.dateFilter)) return false;
-    if (payload.userFilter !== "all" && item.actorName !== payload.userFilter) return false;
+    if (payload.userFilter !== "all" && (item.actor.name || item.actorName) !== payload.userFilter) return false;
     return true;
   });
 }

@@ -5,6 +5,23 @@ export type AdminHistoryTone = "blue" | "violet" | "emerald" | "rose" | "amber" 
 export type AdminHistoryFilter = "all" | AdminHistoryCategory;
 export type AdminHistoryDateFilter = "all" | "today" | "week" | "month";
 
+export type AdminHistoryActor = {
+  id: string | null;
+  name: string;
+  email?: string | null;
+};
+
+export type AdminHistoryTarget = {
+  type: string;
+  id: string | null;
+  label?: string | null;
+};
+
+export type AdminHistoryTimestamp = {
+  iso: string;
+  display: string;
+};
+
 export type AdminHistoryEvent = {
   id: string;
   workOrderId: string;
@@ -15,6 +32,9 @@ export type AdminHistoryEvent = {
   occurredAt: string;
   tone: AdminHistoryTone;
   summary: string;
+  actor: AdminHistoryActor;
+  target: AdminHistoryTarget;
+  timestamp: AdminHistoryTimestamp;
   detailLines?: HistoryDetailLine[];
   transition?: HistoryTransition | null;
 };

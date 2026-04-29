@@ -65,10 +65,15 @@ function toAdminHistoryTone(actionType: string | null): import("@/lib/admin/hist
   return "stone";
 }
 
-function formatAdminHistoryTime(value: unknown): string {
-  if (value instanceof Date) return value.toISOString().slice(0, 16).replace("T", " ");
-  if (typeof value === "string") return value.slice(0, 16).replace("T", " ");
+function formatAdminHistoryIso(value: unknown): string {
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === "string") return value;
   return "";
+}
+
+function formatAdminHistoryTime(value: unknown): string {
+  const isoValue = formatAdminHistoryIso(value);
+  return isoValue ? isoValue.slice(0, 16).replace("T", " ") : "";
 }
 
 function normalizeDbMetadata(value: unknown): Record<string, unknown> {
@@ -89,6 +94,7 @@ export async function listAdminHistoryEvents(): Promise<import("@/lib/admin/hist
       metadata: Record<string, unknown> | null;
       created_at: string | Date | null;
       user_name: string | null;
+      user_email: string | null;
     }>(
       `SELECT h.id,
               h.action_type,
@@ -97,7 +103,8 @@ export async function listAdminHistoryEvents(): Promise<import("@/lib/admin/hist
               h.message,
               h.metadata,
               h.created_at,
-              COALESCE(u.name, u.email, h.user_id, 'system') AS user_name
+              COALESCE(u.name, u.email, h.user_id, 'system') AS user_name,
+              u.email AS user_email
          FROM history_logs h
          LEFT JOIN users u ON u.id = h.user_id
         WHERE h.company_id = $1
@@ -118,6 +125,20 @@ export async function listAdminHistoryEvents(): Promise<import("@/lib/admin/hist
         occurredAt: formatAdminHistoryTime(row.created_at),
         tone: toAdminHistoryTone(row.action_type),
         summary: row.message ?? "",
+        actor: {
+          id: null,
+          name: row.user_name ?? "system",
+          email: row.user_email ?? null,
+        },
+        target: {
+          type: row.target_type ?? "unknown",
+          id: row.target_id ?? null,
+          label: row.target_id ?? null,
+        },
+        timestamp: {
+          iso: formatAdminHistoryIso(row.created_at),
+          display: formatAdminHistoryTime(row.created_at),
+        },
         detailLines: Object.entries(metadata).map(([label, value]) => ({ label, value: String(value) })),
         transition: typeof metadata.from === "string" && typeof metadata.to === "string" ? { from: metadata.from, to: metadata.to } : null,
       };
