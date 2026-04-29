@@ -1,5 +1,5 @@
 import { AdminCard, AdminStatCard } from "@/components/admin/layout/AdminCard";
-import type { AdminStatsSnapshot } from "@/lib/admin/adminStats.repository";
+import type { AdminStatsSnapshot } from "@/lib/admin/stats/types";
 import { buildAdminStatsDashboardViewModel } from "@/lib/admin/stats/presentation";
 import type { getI18n } from "@/lib/i18n";
 

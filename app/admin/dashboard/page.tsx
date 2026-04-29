@@ -1,7 +1,7 @@
 import AdminStatsDashboard from "@/components/admin/dashboard/AdminStatsDashboard";
 import AdminShell from "@/components/admin/layout/AdminShell";
 import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
-import { getAdminStatsSnapshot } from "@/lib/admin/adminStats.repository";
+import { getAdminStatsSnapshot } from "@/lib/admin/stats/repository";
 import { APP_VERSION } from "@/lib/constants/app";
 import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
 import { getI18n } from "@/lib/i18n";

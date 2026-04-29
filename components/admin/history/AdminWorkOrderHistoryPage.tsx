@@ -8,8 +8,8 @@ import {
   filterAdminHistoryPageEvents,
   selectAdminHistoryUserOptions,
 } from "@/lib/admin/history/selectors";
-import type { AdminHistoryDateFilter } from "@/lib/admin/history/types";
-import { useAdminHistoryTools } from "@/lib/admin/useAdminHistoryTools";
+import type { AdminHistoryDateFilter, AdminHistoryFilter } from "@/lib/admin/history/types";
+import { applyAdminHistoryFilterAction } from "@/lib/admin/history/actionFlow";
 import { useI18n } from "@/lib/i18n";
 
 function RefreshIcon() {
@@ -28,7 +28,11 @@ type AdminWorkOrderHistoryPageProps = {
 export default function AdminWorkOrderHistoryPage({ initialHistoryEvents = [] }: AdminWorkOrderHistoryPageProps) {
   const { i18n } = useI18n();
   const pageText = i18n.admin.historyPage;
-  const { historyEvents, historyFilter, setHistoryFilter } = useAdminHistoryTools(initialHistoryEvents);
+  const [historyFilter, setHistoryFilter] = useState<AdminHistoryFilter>("all");
+  const historyEvents = useMemo(
+    () => applyAdminHistoryFilterAction({ events: initialHistoryEvents, filter: historyFilter }),
+    [initialHistoryEvents, historyFilter],
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [dateFilter, setDateFilter] = useState<AdminHistoryDateFilter>("all");
   const [userFilter, setUserFilter] = useState("all");

@@ -12,31 +12,37 @@ export const ADMIN_LEGACY_PATH_AUDIT_ITEMS: AdminLegacyPathAuditItem[] = [
     legacyPath: "lib/admin/adminFiles.*",
     standardPath: "lib/admin/files/*",
     status: "internal-implementation",
-    reason: "files 도메인 wrapper가 기존 구현을 재수출하므로 0.6.6419 범위에서는 유지",
+    reason: "files 도메인 wrapper가 기존 구현을 재수출하므로 0.6.6420 범위에서는 유지",
   },
   {
     legacyPath: "lib/admin/partnerMaster.*",
     standardPath: "lib/admin/partner/*",
     status: "removed",
-    reason: "import trace 결과 직접 참조가 없어 0.6.6419에서 alias 제거 완료",
+    reason: "import trace 결과 직접 참조가 없어 0.6.6420에서 alias 제거 완료",
   },
   {
     legacyPath: "lib/admin/adminSettings.*",
     standardPath: "lib/admin/settings/*",
     status: "removed",
-    reason: "import trace 결과 직접 참조가 없어 0.6.6419에서 alias 제거 완료",
+    reason: "import trace 결과 직접 참조가 없어 0.6.6420에서 alias 제거 완료",
   },
   {
     legacyPath: "lib/admin/companySettings.*",
     standardPath: "lib/admin/settings/company*",
     status: "removed",
-    reason: "import trace 결과 직접 참조가 없어 0.6.6419에서 alias 제거 완료",
+    reason: "import trace 결과 직접 참조가 없어 0.6.6420에서 alias 제거 완료",
   },
   {
     legacyPath: "lib/admin/standards.*",
     standardPath: "lib/admin/settings/standards*",
     status: "removed",
-    reason: "import trace 결과 직접 참조가 없어 0.6.6419에서 alias 제거 완료",
+    reason: "import trace 결과 직접 참조가 없어 0.6.6420에서 alias 제거 완료",
+  },
+  {
+    legacyPath: "lib/admin/useAdminHistoryTools.ts",
+    standardPath: "lib/admin/history/actionFlow.ts",
+    status: "removed",
+    reason: "히스토리 필터 처리를 history/actionFlow로 이동하고 0.6.6420에서 legacy hook 제거 완료",
   },
   {
     legacyPath: "lib/admin/companyScope.ts",
@@ -51,4 +57,4 @@ export function selectAdminLegacyPathAuditItems(status?: AdminLegacyPathStatus):
   return ADMIN_LEGACY_PATH_AUDIT_ITEMS.filter((item) => item.status === status);
 }
 
-export const ADMIN_LEGACY_IMPLEMENTATION_MIGRATION_VERSION = "0.6.6419" as const;
+export const ADMIN_LEGACY_IMPLEMENTATION_MIGRATION_VERSION = "0.6.6420" as const;

@@ -1,10 +1,6 @@
 import "server-only";
 
-import {
-  type AdminFileUsagePoint,
-  type AdminStatChartPoint,
-  type AdminSummaryCard,
-} from "@/lib/admin/adminDashboard.presentation";
+import type { AdminStatsSnapshot, AdminStatsSourceState } from "@/lib/admin/stats/types";
 import { getAdminCompanyId } from "@/lib/admin/settings/companyScope";
 import {
   buildAdminFileUsagePoints,
@@ -20,16 +16,6 @@ import {
 } from "@/lib/admin/stats/selectors";
 import { isDatabaseConfigured, queryDb } from "@/lib/db/client";
 
-export type AdminStatsSourceState = "db" | "not_configured" | "error";
-
-export type AdminStatsSnapshot = {
-  summaries: AdminSummaryCard[];
-  workorderFlow: AdminStatChartPoint[];
-  partnerDistribution: AdminStatChartPoint[];
-  fileUsagePoints: AdminFileUsagePoint[];
-  sourceState: AdminStatsSourceState;
-  sourceLabel: "DB" | "DB 미설정" | "조회 실패";
-};
 
 function buildEmptyStats(sourceState: Exclude<AdminStatsSourceState, "db">): AdminStatsSnapshot {
   const { points: fileUsagePoints, fileUsageLabel } = buildAdminFileUsagePoints(undefined);

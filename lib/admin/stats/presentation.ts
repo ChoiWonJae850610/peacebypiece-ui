@@ -1,5 +1,5 @@
 import type { AdminFileUsagePoint, AdminStatChartPoint } from "@/lib/admin/adminDashboard.presentation";
-import type { AdminStatsSourceState } from "@/lib/admin/adminStats.repository";
+import type { AdminStatsSourceState } from "@/lib/admin/stats/types";
 
 export type AdminStatsDashboardViewModel = {
   sourceDescription: string;

@@ -19,7 +19,7 @@ export type AdminDomainAuditItem = {
 
 export const ADMIN_ROUTE_AUDIT_ITEMS: AdminRouteAuditItem[] = [
   { key: "stats", routePath: "app/admin/dashboard/page.tsx", uiPath: "components/admin/dashboard", legacyPaths: ["lib/admin/adminDashboard.presentation.ts", "lib/admin/adminStats.repository.ts"] },
-  { key: "history", routePath: "app/admin/history/page.tsx", uiPath: "components/admin/history", legacyPaths: ["lib/admin/historyPresentation.ts", "lib/admin/useAdminHistoryTools.ts"] },
+  { key: "history", routePath: "app/admin/history/page.tsx", uiPath: "components/admin/history", legacyPaths: ["lib/admin/historyPresentation.ts"] },
   { key: "files", routePath: "app/admin/files/page.tsx", uiPath: "components/admin/files", legacyPaths: ["lib/admin/adminFiles.*"] },
   { key: "partner", routePath: "app/admin/partners/page.tsx", uiPath: "components/admin/partnerMaster", legacyPaths: [] },
   { key: "settings", routePath: "app/admin/settings/page.tsx", uiPath: "components/admin/settings", legacyPaths: [] },
@@ -27,8 +27,8 @@ export const ADMIN_ROUTE_AUDIT_ITEMS: AdminRouteAuditItem[] = [
 
 const DOMAIN_READY_LAYER_MINIMUMS: Record<AdminDomainKey, AdminDomainLayerKey[]> = {
   common: ["types", "ui"],
-  stats: ["selector", "presentation", "repository"],
-  history: ["types", "selector", "presentation", "repository"],
+  stats: ["types", "selector", "actionFlow", "presentation", "repository"],
+  history: ["types", "selector", "actionFlow", "presentation", "repository"],
   files: ["types", "selector", "actionFlow", "presentation", "adapter"],
   partner: ["types", "selector", "actionFlow", "presentation", "repository"],
   settings: ["types", "selector", "actionFlow", "presentation", "repository"],
