@@ -1,5 +1,6 @@
 "use client";
 
+import AdminFilterBar from "@/components/admin/common/AdminFilterBar";
 import { type PartnerFilterChip, type PartnerStatusFilter } from "@/lib/admin/partner";
 import { useI18n } from "@/lib/i18n";
 
@@ -40,7 +41,7 @@ export default function PartnerMasterFilters({
   ];
 
   return (
-    <div className="mt-5 space-y-4 rounded-[28px] border border-[var(--admin-theme-border)] bg-[var(--admin-theme-soft)] p-4 transition-colors">
+    <AdminFilterBar className="mt-5 block space-y-4 border-[var(--admin-theme-border)] bg-[var(--admin-theme-soft)] transition-colors">
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end">
         <label className="space-y-2">
           <span className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">{filterText.searchLabel}</span>
@@ -99,6 +100,6 @@ export default function PartnerMasterFilters({
         {filterText.currentListSuffix}
         {hasSearch ? filterText.searchResultSuffix : ""}
       </p>
-    </div>
+    </AdminFilterBar>
   );
 }
