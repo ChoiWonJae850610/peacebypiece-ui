@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { buildDefaultCompanySettings } from "@/lib/admin/companySettings.defaults";
+import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
 import { getCurrentAdminCompany, getCompanySettings, updateCompanySettings } from "@/lib/admin/companySettings.repository";
 import type { CompanySettingsUpdateInput } from "@/lib/admin/companySettings.types";
 import { WORKSPACE_COMPANY_ID, WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
@@ -39,6 +40,18 @@ export async function PUT(request: Request) {
     const body = await readSettingsUpdateInput(request);
     const company = await getCurrentAdminCompany();
     const settings = await updateCompanySettings(company.id, body);
+    await createAdminHistoryLogSafe({
+      company_id: company.id,
+      user_id: "admin",
+      action_type: "SETTINGS_CHANGED",
+      target_type: "settings",
+      target_id: company.id,
+      message: "환경설정 변경",
+      metadata: {
+        companyId: company.id,
+        updatedSections: Object.keys(body),
+      },
+    });
     return NextResponse.json({ ok: true, company, settings });
   } catch (error) {
     const message = getErrorMessage(error);

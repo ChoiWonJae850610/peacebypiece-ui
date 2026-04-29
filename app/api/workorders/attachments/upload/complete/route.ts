@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
 import { isSupportedWorkOrderAttachmentStorageKey, isWorkOrderAttachmentStorageKeyForScope } from "@/lib/storage/r2/r2Keys";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
+import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
+import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 import { normalizeAttachmentUploadScope, validateAttachmentFile, validateAttachmentFileCount } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
 import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
 import { inferAttachmentTypeFromMime } from "@/lib/workorder/persistence/attachmentMemoTypes";
@@ -159,6 +161,22 @@ export async function POST(request: NextRequest) {
         isPrimary: created.is_primary,
       }));
     }
+
+    await Promise.all(attachments.map((attachment) => createAdminHistoryLogSafe({
+      company_id: WORKSPACE_COMPANY_ID,
+      user_id: ownerId,
+      action_type: "FILE_UPLOADED",
+      target_type: "file",
+      target_id: attachment.id,
+      message: `${attachment.name} 업로드`,
+      metadata: {
+        workOrderId,
+        attachmentId: attachment.id,
+        fileName: attachment.name,
+        scope: attachment.scope,
+        ownerName,
+      },
+    })));
 
     return NextResponse.json({ attachments });
   } catch (error) {

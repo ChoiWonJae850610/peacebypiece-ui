@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { markAttachmentTrashItemsPurgedByAttachmentIds } from "@/lib/admin/adminFiles.serverActions";
+import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
 import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/companySettings.repository";
 import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
 import { deleteR2ObjectViaWorker } from "@/lib/storage/r2/r2WorkerUpload";
@@ -81,6 +82,23 @@ export async function POST(request: NextRequest) {
     if (!softDeleteEnabled) {
       await markAttachmentTrashItemsPurgedByAttachmentIds({ attachmentIds: [attachmentId], actorId: readText(payload?.deletedBy) ?? "attachment-delete-api" });
     }
+
+    await createAdminHistoryLogSafe({
+      company_id: company.id,
+      user_id: readText(payload?.deletedBy),
+      action_type: "FILE_DELETED",
+      target_type: "file",
+      target_id: deleted.id,
+      message: `${target.original_name || target.storage_key || deleted.id} 삭제`,
+      metadata: {
+        attachmentId: deleted.id,
+        workOrderId: target.order_id,
+        fileName: target.original_name ?? null,
+        storageKey: target.storage_key ?? null,
+        trashMode: softDeleteEnabled ? "soft-delete" : "immediate-delete",
+        deleteReason: readText(payload?.deleteReason),
+      },
+    });
 
     return NextResponse.json({
       attachmentId: deleted.id,

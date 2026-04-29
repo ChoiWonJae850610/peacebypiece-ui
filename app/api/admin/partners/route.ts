@@ -8,6 +8,8 @@ import {
   mapPartnerDbRecordsToAdminPartners,
 } from "@/lib/admin/partnerMasterDbMapper";
 import { createDefaultOutsourcingProcessDefinitions } from "@/lib/admin/partnerMaster.processes";
+import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
+import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 import { createPartnerRepository } from "@/lib/partners/partnerAdapter";
 import type { OutsourcingProcessDefinition } from "@/lib/admin/partnerMaster.types";
 import type { PartnerRepository, PartnerWritableRepository } from "@/lib/partners/partnerRepository";
@@ -18,6 +20,26 @@ type PartnerMasterRequestBody = {
   draft?: PartnerDraft;
   processDefinitions?: OutsourcingProcessDefinition[];
 };
+
+
+async function writePartnerHistory(input: {
+  action: "created" | "updated" | "processes";
+  partnerId?: string | null;
+  partnerName?: string | null;
+  processCount?: number;
+}): Promise<void> {
+  await createAdminHistoryLogSafe({
+    company_id: WORKSPACE_COMPANY_ID,
+    user_id: "admin",
+    action_type: "PARTNER_UPDATED",
+    target_type: "partner",
+    target_id: input.partnerId ?? null,
+    message: input.action === "processes"
+      ? `외주 공정 유형 ${input.processCount ?? 0}개 저장`
+      : `${input.partnerName || "거래처"} ${input.action === "created" ? "등록" : "수정"}`,
+    metadata: input,
+  });
+}
 
 async function buildPartnerMasterResponse(repository?: PartnerRepository) {
   const targetRepository = repository ?? (await createPartnerRepository());
@@ -79,6 +101,7 @@ export async function POST(request: NextRequest) {
     }
 
     const created = await repository.createPartner(buildPartnerDbCreateInput(draft));
+    await writePartnerHistory({ action: "created", partnerId: created.id, partnerName: draft.name });
     if (repository.replacePartnerRoleItems) {
       await repository.replacePartnerRoleItems(created.id, buildPartnerRoleItemsFromDraft(draft));
     }
@@ -103,6 +126,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     await repository.updatePartner(partnerId, buildPartnerDbUpdateInput(draft));
+    await writePartnerHistory({ action: "updated", partnerId, partnerName: draft.name });
     if (repository.replacePartnerRoleItems) {
       await repository.replacePartnerRoleItems(partnerId, buildPartnerRoleItemsFromDraft(draft));
     }
@@ -127,6 +151,7 @@ export async function PUT(request: NextRequest) {
     }
 
     await repository.replaceOutsourcingProcesses(buildOutsourcingProcessDbInputs(processDefinitions));
+    await writePartnerHistory({ action: "processes", processCount: processDefinitions.length });
 
     return NextResponse.json(await buildPartnerMasterResponse(repository));
   } catch {

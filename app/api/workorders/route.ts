@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getDatabaseRuntimeErrorCode, getSupportedDatabaseEnvKeys, isDatabaseConfigured } from "@/lib/db/client";
 import { createDbWorkOrder, deleteDbWorkOrder, findAllDbWorkOrders, saveDbWorkOrder, saveDbWorkOrders } from "@/lib/workorder/repository/dbWorkOrderRepository";
+import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
+import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
 import type { MemoThread, WorkOrder } from "@/types/workorder";
 
@@ -91,6 +93,50 @@ function mergeMemoThreads(payloadThreads: MemoThread[] | undefined, dbThreads: M
   }
 
   return Array.from(merged.values());
+}
+
+
+function buildWorkOrderMap(workOrders: WorkOrder[]): Map<string, WorkOrder> {
+  return new Map(workOrders.map((workOrder) => [workOrder.id, workOrder]));
+}
+
+async function writeWorkOrderCreatedHistory(workOrder: WorkOrder): Promise<void> {
+  await createAdminHistoryLogSafe({
+    company_id: WORKSPACE_COMPANY_ID,
+    user_id: workOrder.createdById ?? null,
+    action_type: "WORKORDER_CREATED",
+    target_type: "workorder",
+    target_id: workOrder.id,
+    message: `${workOrder.title || "작업지시서"} 생성`,
+    metadata: {
+      workOrderId: workOrder.id,
+      title: workOrder.title,
+      workflowState: workOrder.workflowState,
+      managerId: workOrder.managerId ?? null,
+      managerName: workOrder.manager ?? null,
+    },
+  });
+}
+
+async function writeWorkOrderStatusChangeHistory(previous: WorkOrder | undefined, next: WorkOrder): Promise<void> {
+  if (!previous || previous.workflowState === next.workflowState) return;
+
+  await createAdminHistoryLogSafe({
+    company_id: WORKSPACE_COMPANY_ID,
+    user_id: next.managerId ?? previous.managerId ?? null,
+    action_type: "STATUS_CHANGED",
+    target_type: "workorder",
+    target_id: next.id,
+    message: `${next.title || "작업지시서"} 상태 변경: ${previous.workflowState} → ${next.workflowState}`,
+    metadata: {
+      workOrderId: next.id,
+      title: next.title,
+      from: previous.workflowState,
+      to: next.workflowState,
+      managerId: next.managerId ?? null,
+      managerName: next.manager ?? null,
+    },
+  });
 }
 
 async function hydrateWorkOrdersWithAttachmentMemoSnapshots(workOrders: WorkOrder[]): Promise<WorkOrder[]> {
@@ -186,6 +232,7 @@ export async function POST(request: Request) {
     const createdWorkOrder = await createDbWorkOrder(body.workOrder);
     await replaceWorkOrderMemoThreads(body.workOrder);
     const workOrder = await hydrateWorkOrderWithAttachmentMemoSnapshot(createdWorkOrder);
+    await writeWorkOrderCreatedHistory(workOrder);
     logDbRequestOutcome("POST", true, "READY", workOrder.id);
     return NextResponse.json({ workOrder }, { status: 201 });
   } catch (error) {
@@ -214,9 +261,11 @@ export async function PATCH(request: Request) {
         return NextResponse.json({ message: "Every workOrders item must include workOrder.id.", code: "INVALID_PAYLOAD" }, { status: 400 });
       }
 
+      const previousWorkOrderMap = buildWorkOrderMap(await findAllDbWorkOrders());
       const savedWorkOrders = await saveDbWorkOrders(body.workOrders);
       await Promise.all(body.workOrders.map((workOrder) => replaceWorkOrderMemoThreads(workOrder)));
       const workOrders = await hydrateWorkOrdersWithAttachmentMemoSnapshots(savedWorkOrders);
+      await Promise.all(workOrders.map((workOrder) => writeWorkOrderStatusChangeHistory(previousWorkOrderMap.get(workOrder.id), workOrder)));
 
       logDbRequestOutcome("PATCH", true, "READY", `rows=${workOrders.length}`);
       return NextResponse.json({ workOrders });
@@ -230,9 +279,11 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ message: "workOrder.id is required.", code: "INVALID_PAYLOAD" }, { status: 400 });
     }
 
+    const previousWorkOrderMap = buildWorkOrderMap(await findAllDbWorkOrders());
     const savedWorkOrder = await saveDbWorkOrder(body.workOrder);
     await replaceWorkOrderMemoThreads(body.workOrder);
     const workOrder = await hydrateWorkOrderWithAttachmentMemoSnapshot(savedWorkOrder);
+    await writeWorkOrderStatusChangeHistory(previousWorkOrderMap.get(workOrder.id), workOrder);
     logDbRequestOutcome("PATCH", true, "READY", workOrder.id);
     return NextResponse.json({ workOrder });
   } catch (error) {
