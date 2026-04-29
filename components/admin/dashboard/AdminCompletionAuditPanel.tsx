@@ -35,6 +35,20 @@ export default function AdminCompletionAuditPanel({ summary }: AdminCompletionAu
         </div>
       </div>
 
+      <div className="mt-4 rounded-2xl border border-stone-100 bg-white px-4 py-3">
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">{t("completionAudit.decision", "완료 판정")}</p>
+            <h3 className="mt-1 text-base font-semibold text-stone-950">{summary.decisionLabel}</h3>
+            <p className="mt-1 text-xs leading-5 text-stone-500">{summary.decisionSummary}</p>
+          </div>
+          <span className={`w-fit shrink-0 rounded-full px-3 py-1 text-xs font-semibold ring-1 ${getStatusClassName(summary.overallStatus)}`}>
+            {getAdminCompletionAuditStatusLabel(summary.overallStatus)}
+          </span>
+        </div>
+        <p className="mt-3 rounded-xl bg-stone-50 px-3 py-2 text-xs leading-5 text-stone-500">{summary.nextScope}</p>
+      </div>
+
       <div className="mt-4 grid gap-3 lg:grid-cols-2">
         {summary.items.map((item) => (
           <article key={item.key} className="rounded-2xl border border-stone-100 bg-stone-50/70 px-4 py-3">

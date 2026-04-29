@@ -3,6 +3,7 @@ import { getAdminDbCompletionSummary, type AdminDbScreenAuditStatus } from "@/li
 import { buildAdminDomainAuditItems, getAdminLegacyPathAuditItems } from "@/lib/admin/structureAudit";
 
 export type AdminCompletionAuditStatus = "complete" | "watch" | "blocked";
+export type AdminCompletionDecision = "close-admin-v1" | "continue-admin-hardening" | "blocked";
 
 export type AdminCompletionAuditItem = {
   key: "structure" | "legacy" | "db" | "ui" | "i18n";
@@ -14,6 +15,10 @@ export type AdminCompletionAuditItem = {
 
 export type AdminCompletionAuditSummary = {
   overallStatus: AdminCompletionAuditStatus;
+  decision: AdminCompletionDecision;
+  decisionLabel: string;
+  decisionSummary: string;
+  nextScope: string;
   readyDomainCount: number;
   totalDomainCount: number;
   removedLegacyCount: number;
@@ -33,6 +38,33 @@ function toCompletionStatus(hasBlockedIssue: boolean, hasWatchIssue: boolean): A
 
 function isDbWatchStatus(status: AdminDbScreenAuditStatus): boolean {
   return status === "db-prepared" || status === "fallback-guarded";
+}
+
+function getCompletionDecision(status: AdminCompletionAuditStatus): Pick<AdminCompletionAuditSummary, "decision" | "decisionLabel" | "decisionSummary" | "nextScope"> {
+  if (status === "blocked") {
+    return {
+      decision: "blocked",
+      decisionLabel: "관리자 마감 보류",
+      decisionSummary: "차단 항목이 있어 WorkOrder 화면 정리로 넘어가기 전 수정이 필요합니다.",
+      nextScope: "차단 항목 해소 후 관리자 완료 판정을 다시 실행합니다.",
+    };
+  }
+
+  if (status === "watch") {
+    return {
+      decision: "close-admin-v1",
+      decisionLabel: "관리자 1차 완료",
+      decisionSummary: "차단 항목은 없고, DB fallback/i18n 2차 점검 항목만 남아 WorkOrder PC 화면 통일로 넘어갈 수 있습니다.",
+      nextScope: "0.7.0부터 WorkOrder PC 레이아웃 통일을 진행하고, 관리자 잔여 점검은 회귀 점검 항목으로 유지합니다.",
+    };
+  }
+
+  return {
+    decision: "close-admin-v1",
+    decisionLabel: "관리자 완료",
+    decisionSummary: "관리자 영역의 구조, UI, DB 상태, legacy 정리 기준이 마감 가능한 상태입니다.",
+    nextScope: "0.7.0부터 WorkOrder PC 레이아웃 통일을 진행합니다.",
+  };
 }
 
 export function getAdminCompletionAuditSummary(): AdminCompletionAuditSummary {
@@ -82,8 +114,8 @@ export function getAdminCompletionAuditSummary(): AdminCompletionAuditSummary {
       key: "i18n",
       label: "관리자 i18n",
       status: "watch",
-      summary: "1차 분리 완료",
-      detail: "기준관리/정책관리 중심으로 분리했고, 전체 관리자 문구의 2차 분리는 추후 점검 대상입니다.",
+      summary: "1차 분리 완료 · 2차 점검 유지",
+      detail: "운영 중 보이는 주요 문구는 1차 분리했고, 전체 관리자 문구의 2차 분리는 WorkOrder 전환 후 회귀 점검 대상으로 남깁니다.",
     },
   ];
 
@@ -91,9 +123,11 @@ export function getAdminCompletionAuditSummary(): AdminCompletionAuditSummary {
     items.some((item) => item.status === "blocked"),
     items.some((item) => item.status === "watch"),
   );
+  const decision = getCompletionDecision(overallStatus);
 
   return {
     overallStatus,
+    ...decision,
     readyDomainCount,
     totalDomainCount: domainAuditItems.length,
     removedLegacyCount,

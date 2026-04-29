@@ -28,8 +28,11 @@ export default function AdminAuditSummarySection({ dbCompletionSummary, completi
               <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-stone-500 ring-1 ring-stone-200">
                 {getAdminCompletionAuditStatusLabel(completionAuditSummary.overallStatus)}
               </span>
+              <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-100">
+                {completionAuditSummary.decisionLabel}
+              </span>
             </div>
-            <p className="mt-1 text-xs leading-5 text-stone-500">{t("auditSummary.closedDescription", "대시보드는 운영 통계를 우선 표시하고, DB/구조 점검은 필요할 때만 펼쳐 확인합니다.")}</p>
+            <p className="mt-1 text-xs leading-5 text-stone-500">{completionAuditSummary.decisionSummary}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-stone-500">
             <span className="rounded-full bg-white px-3 py-1.5 ring-1 ring-stone-200">DB {completionAuditSummary.dbConnectedCount}+{completionAuditSummary.dbWatchCount}</span>

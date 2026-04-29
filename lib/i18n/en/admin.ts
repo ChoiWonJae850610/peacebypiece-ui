@@ -23,6 +23,7 @@ export const adminEn = {
   completionAudit: {
     title: "Admin Completion Audit",
     description: "Checks whether the admin area can be closed before the WorkOrder refactor.",
+    decision: "Completion decision",
   },
   dbConnectionAudit: {
     title: "DB Connection Audit",

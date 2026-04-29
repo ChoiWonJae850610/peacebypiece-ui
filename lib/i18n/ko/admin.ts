@@ -23,6 +23,7 @@ export const adminKo = {
   completionAudit: {
     title: "관리자 완료 검증",
     description: "관리자 영역을 WorkOrder 리팩토링 전 마감 가능한 상태인지 점검합니다.",
+    decision: "완료 판정",
   },
   dbConnectionAudit: {
     title: "DB 연결 점검",
