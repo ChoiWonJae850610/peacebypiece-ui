@@ -124,7 +124,7 @@ export default function AdminSidebar({ companyName, appVersion, navigationItems 
         {showDbStatus ? (
           <div className="mt-3 inline-flex w-fit items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-semibold text-emerald-100">
             <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_0_3px_rgba(52,211,153,0.18)]" aria-hidden="true" />
-            {t("navigation.dbConnected", "DB 연결")}
+            {t("navigation.dbConnected", "DB 상태 점검")}
           </div>
         ) : null}
       </div>

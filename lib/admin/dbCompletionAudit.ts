@@ -8,13 +8,15 @@ const SUPPORTED_DATABASE_ENV_KEYS = [
   "NEON_DATABASE_URL",
 ] as const;
 
-export type AdminDbScreenAuditStatus = "db-connected" | "db-prepared" | "fallback-guarded" | "not-applicable";
+export type AdminDbScreenAuditStatus = "db-connected" | "db-prepared" | "fallback-guarded" | "mock-only" | "not-applicable";
+export type AdminDbScreenAuditSourceType = "actual-db" | "db-with-fallback" | "db-prepared-fallback" | "mock-only" | "not-applicable";
 
 export type AdminDbScreenAuditItem = {
   key: "operations" | "stats" | "history" | "files" | "partner" | "settings";
   screen: string;
   routePath: string;
   status: AdminDbScreenAuditStatus;
+  sourceType: AdminDbScreenAuditSourceType;
   readSource: string;
   writeSource: string;
   fallback: string;
@@ -36,7 +38,8 @@ export const ADMIN_DB_SCREEN_AUDIT_ITEMS: readonly AdminDbScreenAuditItem[] = [
     key: "operations",
     screen: "관리자 메인 운영 대시보드",
     routePath: "app/admin/page.tsx",
-    status: "db-connected",
+    status: "fallback-guarded",
+    sourceType: "db-with-fallback",
     readSource: "lib/admin/adminOperations.repository.ts → spec_sheets/orders 조회",
     writeSource: "읽기 전용",
     fallback: "DB 미설정/조회 실패 시 0건 snapshot",
@@ -46,7 +49,8 @@ export const ADMIN_DB_SCREEN_AUDIT_ITEMS: readonly AdminDbScreenAuditItem[] = [
     key: "stats",
     screen: "대시보드 통계",
     routePath: "app/admin/dashboard/page.tsx",
-    status: "db-connected",
+    status: "fallback-guarded",
+    sourceType: "db-with-fallback",
     readSource: "lib/admin/stats/repository.ts → spec_sheets/partners/partner_items/attachments 조회",
     writeSource: "읽기 전용",
     fallback: "DB 미설정/조회 실패 시 빈 통계 snapshot",
@@ -56,7 +60,8 @@ export const ADMIN_DB_SCREEN_AUDIT_ITEMS: readonly AdminDbScreenAuditItem[] = [
     key: "history",
     screen: "히스토리",
     routePath: "app/admin/history/page.tsx",
-    status: "db-connected",
+    status: "fallback-guarded",
+    sourceType: "db-with-fallback",
     readSource: "lib/admin/history/repository.ts → history_logs 조회",
     writeSource: "createAdminHistoryLogSafe",
     fallback: "DB 미설정/조회 실패 시 빈 목록",
@@ -67,6 +72,7 @@ export const ADMIN_DB_SCREEN_AUDIT_ITEMS: readonly AdminDbScreenAuditItem[] = [
     screen: "저장소 관리",
     routePath: "app/admin/files/page.tsx",
     status: "db-prepared",
+    sourceType: "db-prepared-fallback",
     readSource: "app/api/admin/files/snapshot/route.ts → attachments/company_settings 조회",
     writeSource: "admin file server actions",
     fallback: "조회 실패 시 기본 snapshot 반환",
@@ -77,6 +83,7 @@ export const ADMIN_DB_SCREEN_AUDIT_ITEMS: readonly AdminDbScreenAuditItem[] = [
     screen: "거래처/공장 관리",
     routePath: "app/admin/partners/page.tsx",
     status: "db-prepared",
+    sourceType: "db-prepared-fallback",
     readSource: "app/api/admin/partners/route.ts → createPartnerRepository(db)",
     writeSource: "PartnerWritableRepository create/update/replace methods",
     fallback: "API 실패 시 빈 목록. mode가 mock이면 mockPartnerRepository 사용 가능",
@@ -86,7 +93,8 @@ export const ADMIN_DB_SCREEN_AUDIT_ITEMS: readonly AdminDbScreenAuditItem[] = [
     key: "settings",
     screen: "환경설정/기준정보",
     routePath: "app/admin/settings/page.tsx, app/admin/units/page.tsx",
-    status: "db-connected",
+    status: "fallback-guarded",
+    sourceType: "db-with-fallback",
     readSource: "companyRepository/standardsRepository → companies/company_settings/units/item_categories 조회",
     writeSource: "updateCompanySettings / replaceAdminStandards",
     fallback: "DB 미설정 시 기본 회사 설정/기준정보 반환",
@@ -109,6 +117,15 @@ export function getAdminDbCompletionSummary(): AdminDbCompletionSummary {
 export function getAdminDbCompletionStatusLabel(status: AdminDbScreenAuditStatus): string {
   if (status === "db-connected") return "DB 연결";
   if (status === "db-prepared") return "DB 준비";
-  if (status === "fallback-guarded") return "fallback 보호";
+  if (status === "fallback-guarded") return "DB+fallback";
+  if (status === "mock-only") return "mock only";
+  return "대상 아님";
+}
+
+export function getAdminDbSourceTypeLabel(sourceType: AdminDbScreenAuditSourceType): string {
+  if (sourceType === "actual-db") return "실제 DB 조회/저장";
+  if (sourceType === "db-with-fallback") return "실제 DB 조회 + fallback 보호";
+  if (sourceType === "db-prepared-fallback") return "DB 준비 + fallback";
+  if (sourceType === "mock-only") return "mock only";
   return "대상 아님";
 }
