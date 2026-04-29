@@ -207,4 +207,13 @@ export const adminEn = {
       deleteProcessMissing: "The process to delete could not be found.",
     },
   },
+  standards: {
+    common: { resetDefaults: "Reset defaults", save: "Save", saving: "Saving", add: "Add", active: "Active", inactive: "Inactive", manage: "Manage", inUseSuffix: " active" },
+    section: { policyTitle: "Policy Management", standardTitle: "Standards Management", saveProcessFailed: "Save failed. Check the database connection.", saveUnitFailed: "Unit save failed. Check the database connection.", saveItemFailed: "Item save failed. Check the database connection.", logEventsTitle: "Log Events" },
+    actions: { notifications: { title: "Notification Policy", description: "Review, order, storage, and purge results" }, logs: { title: "Log Events", description: "Work order change record events" }, filePolicy: { title: "Storage Policy", description: "Capacity, trash, and purge rules" }, items: { title: "Product Types" }, units: { title: "Unit Standards" }, processes: { title: "Outsourcing Process Types" } },
+    units: { title: "Unit Standards", addTitle: "Add Unit", usageTitle: "Unit Usage", nameRequired: "Enter a unit name and code.", duplicate: "This unit is already registered.", namePlaceholder: "Unit name, e.g. piece", codePlaceholder: "Code, e.g. piece" },
+    itemCategories: { title: "Product Types", addTitle: "Add Product Type", usageTitle: "Product Type Usage", countSuffix: "items", active: "Active", inactive: "Inactive", nameRequired: "Enter an item name to add.", selectLevel1: "Select a level 1 item first.", selectLevel2: "Select a level 2 item first.", duplicate: "This item name is already registered.", level1Placeholder: "Add level 1 item", level2Placeholder: "Add level 2 under selected level 1", level3Placeholder: "Add level 3 under selected level 2", level1Title: "Level 1", level2Title: "Level 2", level3Title: "Level 3", level1Empty: "No level 1 items.", level2Empty: "No level 2 items under the selected level 1.", level3Empty: "No level 3 items under the selected level 2." },
+    notificationPolicy: { title: "Notification Policy", loadFailed: "Could not load notification policy.", saveFailed: "Could not save notification policy.", items: { reviewRequestEnabled: "Review request", orderReadyEnabled: "Order ready", storageWarningEnabled: "Storage warning", purgeResultEnabled: "Purge result" } },
+    filePolicy: { title: "File Policy", loadFailed: "Could not load file policy.", saveFailed: "Could not save file policy.", deleteMode: "Delete mode", softDelete: "Trash", hardDelete: "Immediate delete", retentionDays: "Retention period", warningThreshold: "Storage warning threshold (%)", daySuffix: "days" },
+  },
 } as const;

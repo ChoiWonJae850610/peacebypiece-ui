@@ -207,4 +207,13 @@ export const adminKo = {
       deleteProcessMissing: "삭제할 공정을 찾을 수 없습니다.",
     },
   },
+  standards: {
+    common: { resetDefaults: "기본값 복원", save: "저장", saving: "저장 중", add: "추가", active: "사용", inactive: "미사용", manage: "관리", inUseSuffix: "개 사용중" },
+    section: { policyTitle: "정책 관리", standardTitle: "기준 관리", saveProcessFailed: "저장에 실패했습니다. DB 연결 상태를 확인하세요.", saveUnitFailed: "단위 저장에 실패했습니다. DB 연결 상태를 확인하세요.", saveItemFailed: "품목 저장에 실패했습니다. DB 연결 상태를 확인하세요.", logEventsTitle: "로그 이벤트" },
+    actions: { notifications: { title: "알림 정책", description: "검토·발주·용량·삭제 결과" }, logs: { title: "로그 이벤트", description: "작업지시서 변경 기록 이벤트" }, filePolicy: { title: "저장 정책", description: "용량·휴지통·실제삭제 기준" }, items: { title: "생산품 유형" }, units: { title: "단위 표준" }, processes: { title: "외주 공정 유형" } },
+    units: { title: "단위 표준", addTitle: "단위 추가", usageTitle: "단위 사용 여부", nameRequired: "단위명과 코드를 입력하세요.", duplicate: "이미 등록된 단위입니다.", namePlaceholder: "단위명 예: 개", codePlaceholder: "코드 예: piece" },
+    itemCategories: { title: "생산품 유형", addTitle: "품목 추가", usageTitle: "품목 사용 여부", countSuffix: "개", active: "사용", inactive: "미사용", nameRequired: "추가할 품목명을 입력하세요.", selectLevel1: "1차 품목을 먼저 선택하세요.", selectLevel2: "2차 품목을 먼저 선택하세요.", duplicate: "이미 등록된 품목명입니다.", level1Placeholder: "1차 품목 추가", level2Placeholder: "선택한 1차 안에 2차 추가", level3Placeholder: "선택한 2차 안에 3차 추가", level1Title: "1차 품목", level2Title: "2차 품목", level3Title: "3차 품목", level1Empty: "1차 품목이 없습니다.", level2Empty: "선택한 1차 품목의 2차 품목이 없습니다.", level3Empty: "선택한 2차 품목의 3차 품목이 없습니다." },
+    notificationPolicy: { title: "알림 정책", loadFailed: "알림 정책을 불러오지 못했습니다.", saveFailed: "알림 정책을 저장하지 못했습니다.", items: { reviewRequestEnabled: "검토 요청", orderReadyEnabled: "발주 준비", storageWarningEnabled: "용량 경고", purgeResultEnabled: "삭제 결과" } },
+    filePolicy: { title: "파일 정책 관리", loadFailed: "파일 정책을 불러오지 못했습니다.", saveFailed: "파일 정책을 저장하지 못했습니다.", deleteMode: "삭제 방식", softDelete: "휴지통", hardDelete: "즉시 삭제", retentionDays: "실제 삭제 기간", warningThreshold: "용량 경고 기준(%)", daySuffix: "일" },
+  },
 } as const;

@@ -10,6 +10,7 @@ import {
 } from "@/components/admin/layout/AdminModal";
 import { createDefaultUnitDefinitions } from "@/lib/admin/settings/standardsDefaults";
 import type { AdminUnitDefinition } from "@/lib/admin/settings/standardsTypes";
+import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type Props = {
   open: boolean;
@@ -29,6 +30,7 @@ function createUnitId(code: string) {
 }
 
 export default function AdminUnitManagementModal({ open, units, saving = false, error = "", onClose, onSave }: Props) {
+  const t = useAdminTranslation();
   const [draft, setDraft] = useState<AdminUnitDefinition[]>(units);
   const [newName, setNewName] = useState("");
   const [newCode, setNewCode] = useState("");
@@ -48,11 +50,11 @@ export default function AdminUnitManagementModal({ open, units, saving = false, 
     const name = normalizeLabel(newName);
     const code = normalizeLabel(newCode).toLowerCase();
     if (!name || !code) {
-      setFormError("단위명과 코드를 입력하세요.");
+      setFormError(t("standards.units.nameRequired", "단위명과 코드를 입력하세요."));
       return;
     }
     if (draft.some((unit) => unit.code === code || unit.name === name)) {
-      setFormError("이미 등록된 단위입니다.");
+      setFormError(t("standards.units.duplicate", "이미 등록된 단위입니다."));
       return;
     }
     setDraft((current) => [
@@ -79,25 +81,25 @@ export default function AdminUnitManagementModal({ open, units, saving = false, 
     <AdminModal
       open={open}
       onClose={onClose}
-      title="단위 표준"
+      title={t("standards.units.title", "단위 표준")}
       maxWidthClass="md:max-w-3xl"
       footer={
         <div className="flex w-full items-center justify-between gap-2">
-          <button type="button" onClick={resetDraft} className={adminModalSecondaryButtonClassName}>기본값 복원</button>
-          <button type="button" onClick={() => onSave(draft)} disabled={saving} className={adminModalPrimaryButtonClassName}>{saving ? "저장 중" : "저장"}</button>
+          <button type="button" onClick={resetDraft} className={adminModalSecondaryButtonClassName}>{t("standards.common.resetDefaults", "기본값 복원")}</button>
+          <button type="button" onClick={() => onSave(draft)} disabled={saving} className={adminModalPrimaryButtonClassName}>{saving ? t("standards.common.saving", "저장 중") : t("standards.common.save", "저장")}</button>
         </div>
       }
     >
-      <AdminModalSection title="단위 추가">
+      <AdminModalSection title={t("standards.units.addTitle", "단위 추가")}>
         <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
-          <input value={newName} onChange={(event) => { setNewName(event.target.value); if (formError) setFormError(""); }} placeholder="단위명 예: 개" className={`h-11 ${adminModalInputClassName}`} />
-          <input value={newCode} onChange={(event) => { setNewCode(event.target.value); if (formError) setFormError(""); }} placeholder="코드 예: piece" className={`h-11 ${adminModalInputClassName}`} />
-          <button type="button" onClick={addUnit} className="h-11 rounded-full bg-stone-950 px-5 text-sm font-semibold text-white">추가</button>
+          <input value={newName} onChange={(event) => { setNewName(event.target.value); if (formError) setFormError(""); }} placeholder={t("standards.units.namePlaceholder", "단위명 예: 개")} className={`h-11 ${adminModalInputClassName}`} />
+          <input value={newCode} onChange={(event) => { setNewCode(event.target.value); if (formError) setFormError(""); }} placeholder={t("standards.units.codePlaceholder", "코드 예: piece")} className={`h-11 ${adminModalInputClassName}`} />
+          <button type="button" onClick={addUnit} className="h-11 rounded-full bg-stone-950 px-5 text-sm font-semibold text-white">{t("standards.common.add", "추가")}</button>
         </div>
         {formError || error ? <p className="mt-2 text-sm font-semibold text-rose-600">{formError || error}</p> : null}
       </AdminModalSection>
 
-      <AdminModalSection title="단위 사용 여부">
+      <AdminModalSection title={t("standards.units.usageTitle", "단위 사용 여부")}>
         <div className="h-[360px] rounded-3xl border border-stone-200 bg-stone-50/70 p-2">
           <div className="h-full space-y-2 overflow-auto pr-1">
             {sortedDraft.map((unit) => (
@@ -111,7 +113,7 @@ export default function AdminUnitManagementModal({ open, units, saving = false, 
                   <span className="block font-semibold text-stone-950">{unit.name}</span>
                   <span className="block text-xs text-stone-400">{unit.code}</span>
                 </span>
-                <span className={["rounded-full px-2.5 py-1 text-xs font-semibold", unit.is_active ? "bg-emerald-100 text-emerald-700" : "bg-stone-100 text-stone-500"].join(" ")}>{unit.is_active ? "사용" : "미사용"}</span>
+                <span className={["rounded-full px-2.5 py-1 text-xs font-semibold", unit.is_active ? "bg-emerald-100 text-emerald-700" : "bg-stone-100 text-stone-500"].join(" ")}>{unit.is_active ? t("standards.common.active", "사용") : t("standards.common.inactive", "미사용")}</span>
               </button>
             ))}
           </div>

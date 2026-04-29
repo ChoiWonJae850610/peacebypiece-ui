@@ -10,6 +10,7 @@ import {
 } from "@/components/admin/layout/AdminModal";
 import { createDefaultItemCategoryDefinitions } from "@/lib/admin/settings/standardsDefaults";
 import type { AdminItemCategoryDefinition, AdminItemCategoryLevel } from "@/lib/admin/settings/standardsTypes";
+import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type CategoryDraft = {
   level1: AdminItemCategoryDefinition[];
@@ -60,6 +61,9 @@ function CategoryList({
   emptyLabel,
   onSelect,
   onToggleActive,
+  countSuffix,
+  activeLabel,
+  inactiveLabel,
 }: {
   title: string;
   items: AdminItemCategoryDefinition[];
@@ -67,12 +71,15 @@ function CategoryList({
   emptyLabel: string;
   onSelect: (id: string) => void;
   onToggleActive: (id: string, isActive: boolean) => void;
+  countSuffix: string;
+  activeLabel: string;
+  inactiveLabel: string;
 }) {
   return (
     <div className="min-h-0 space-y-2">
       <div className="flex items-center justify-between">
         <p className="text-sm font-semibold text-stone-900">{title}</p>
-        <span className="rounded-full bg-stone-100 px-2.5 py-1 text-xs font-semibold text-stone-500">{items.length}개</span>
+        <span className="rounded-full bg-stone-100 px-2.5 py-1 text-xs font-semibold text-stone-500">{items.length}{countSuffix}</span>
       </div>
       <div className="h-[250px] rounded-3xl border border-stone-200 bg-stone-50/70 p-2">
         <div className="h-full space-y-2 overflow-auto pr-1">
@@ -104,7 +111,7 @@ function CategoryList({
                     role="switch"
                     aria-checked={item.is_active}
                   >
-                    {item.is_active ? "사용" : "미사용"}
+                    {item.is_active ? activeLabel : inactiveLabel}
                   </span>
                 </button>
               );
@@ -117,6 +124,7 @@ function CategoryList({
 }
 
 export default function AdminItemCategoryManagementModal({ open, categories, saving = false, error = "", onClose, onSave }: Props) {
+  const t = useAdminTranslation();
   const [draft, setDraft] = useState<CategoryDraft>(() => createCategoryDraft(categories));
   const initialSelection = useMemo(() => getInitialSelection(createCategoryDraft(categories)), [categories]);
   const [selectedLevel1Id, setSelectedLevel1Id] = useState<string | null>(initialSelection.level1Id);
@@ -155,17 +163,17 @@ export default function AdminItemCategoryManagementModal({ open, categories, sav
     const parentId = level === 1 ? null : level === 2 ? selectedLevel1Id : selectedLevel2Id;
 
     if (!label) {
-      setFormError("추가할 품목명을 입력하세요.");
+      setFormError(t("standards.itemCategories.nameRequired", "추가할 품목명을 입력하세요."));
       return;
     }
     if (level > 1 && !parentId) {
-      setFormError(level === 2 ? "1차 품목을 먼저 선택하세요." : "2차 품목을 먼저 선택하세요.");
+      setFormError(level === 2 ? t("standards.itemCategories.selectLevel1", "1차 품목을 먼저 선택하세요.") : t("standards.itemCategories.selectLevel2", "2차 품목을 먼저 선택하세요."));
       return;
     }
 
     const key = `level${level}` as keyof CategoryDraft;
     if (draft[key].some((item) => item.parent_id === parentId && item.name === label)) {
-      setFormError("이미 등록된 품목명입니다.");
+      setFormError(t("standards.itemCategories.duplicate", "이미 등록된 품목명입니다."));
       return;
     }
 
@@ -208,38 +216,38 @@ export default function AdminItemCategoryManagementModal({ open, categories, sav
     <AdminModal
       open={open}
       onClose={onClose}
-      title="생산품 유형"
+      title={t("standards.itemCategories.title", "생산품 유형")}
       maxWidthClass="md:max-w-5xl"
       footer={
         <div className="flex w-full items-center justify-between gap-2">
-          <button type="button" onClick={resetDraft} className={adminModalSecondaryButtonClassName}>기본값 복원</button>
-          <button type="button" onClick={() => onSave(flattenDraft(draft))} disabled={saving} className={adminModalPrimaryButtonClassName}>{saving ? "저장 중" : "저장"}</button>
+          <button type="button" onClick={resetDraft} className={adminModalSecondaryButtonClassName}>{t("standards.common.resetDefaults", "기본값 복원")}</button>
+          <button type="button" onClick={() => onSave(flattenDraft(draft))} disabled={saving} className={adminModalPrimaryButtonClassName}>{saving ? t("standards.common.saving", "저장 중") : t("standards.common.save", "저장")}</button>
         </div>
       }
     >
-      <AdminModalSection title="품목 추가">
+      <AdminModalSection title={t("standards.itemCategories.addTitle", "품목 추가")}>
         <div className="grid gap-3 md:grid-cols-3">
           <div className="flex min-w-0 gap-2">
-            <input value={newLevel1Label} onChange={(event) => { setNewLevel1Label(event.target.value); if (formError) setFormError(""); }} placeholder="1차 품목 추가" className={`h-11 min-w-0 flex-1 ${adminModalInputClassName}`} />
-            <button type="button" onClick={() => addCategory(1)} className="h-11 shrink-0 whitespace-nowrap rounded-full bg-stone-950 px-5 text-sm font-semibold text-white">추가</button>
+            <input value={newLevel1Label} onChange={(event) => { setNewLevel1Label(event.target.value); if (formError) setFormError(""); }} placeholder={t("standards.itemCategories.level1Placeholder", "1차 품목 추가")} className={`h-11 min-w-0 flex-1 ${adminModalInputClassName}`} />
+            <button type="button" onClick={() => addCategory(1)} className="h-11 shrink-0 whitespace-nowrap rounded-full bg-stone-950 px-5 text-sm font-semibold text-white">{t("standards.common.add", "추가")}</button>
           </div>
           <div className="flex min-w-0 gap-2">
-            <input value={newLevel2Label} onChange={(event) => { setNewLevel2Label(event.target.value); if (formError) setFormError(""); }} placeholder="선택한 1차 안에 2차 추가" className={`h-11 min-w-0 flex-1 ${adminModalInputClassName}`} />
-            <button type="button" onClick={() => addCategory(2)} className="h-11 shrink-0 whitespace-nowrap rounded-full bg-stone-950 px-5 text-sm font-semibold text-white">추가</button>
+            <input value={newLevel2Label} onChange={(event) => { setNewLevel2Label(event.target.value); if (formError) setFormError(""); }} placeholder={t("standards.itemCategories.level2Placeholder", "선택한 1차 안에 2차 추가")} className={`h-11 min-w-0 flex-1 ${adminModalInputClassName}`} />
+            <button type="button" onClick={() => addCategory(2)} className="h-11 shrink-0 whitespace-nowrap rounded-full bg-stone-950 px-5 text-sm font-semibold text-white">{t("standards.common.add", "추가")}</button>
           </div>
           <div className="flex min-w-0 gap-2">
-            <input value={newLevel3Label} onChange={(event) => { setNewLevel3Label(event.target.value); if (formError) setFormError(""); }} placeholder="선택한 2차 안에 3차 추가" className={`h-11 min-w-0 flex-1 ${adminModalInputClassName}`} />
-            <button type="button" onClick={() => addCategory(3)} className="h-11 shrink-0 whitespace-nowrap rounded-full bg-stone-950 px-5 text-sm font-semibold text-white">추가</button>
+            <input value={newLevel3Label} onChange={(event) => { setNewLevel3Label(event.target.value); if (formError) setFormError(""); }} placeholder={t("standards.itemCategories.level3Placeholder", "선택한 2차 안에 3차 추가")} className={`h-11 min-w-0 flex-1 ${adminModalInputClassName}`} />
+            <button type="button" onClick={() => addCategory(3)} className="h-11 shrink-0 whitespace-nowrap rounded-full bg-stone-950 px-5 text-sm font-semibold text-white">{t("standards.common.add", "추가")}</button>
           </div>
         </div>
         {formError || error ? <p className="mt-2 text-sm font-semibold text-rose-600">{formError || error}</p> : null}
       </AdminModalSection>
 
-      <AdminModalSection title="품목 사용 여부">
+      <AdminModalSection title={t("standards.itemCategories.usageTitle", "품목 사용 여부")}>
         <div className="grid gap-4 md:grid-cols-3">
-          <CategoryList title="1차 품목" items={draft.level1} selectedId={selectedLevel1Id} emptyLabel="1차 품목이 없습니다." onSelect={(id) => { setSelectedLevel1Id(id); setSelectedLevel2Id(draft.level2.find((item) => item.parent_id === id)?.id ?? null); }} onToggleActive={(id, isActive) => updateNodeActive(1, id, isActive)} />
-          <CategoryList title="2차 품목" items={level2Items} selectedId={selectedLevel2Id} emptyLabel="선택한 1차 품목의 2차 품목이 없습니다." onSelect={setSelectedLevel2Id} onToggleActive={(id, isActive) => updateNodeActive(2, id, isActive)} />
-          <CategoryList title="3차 품목" items={level3Items} selectedId={null} emptyLabel="선택한 2차 품목의 3차 품목이 없습니다." onSelect={() => undefined} onToggleActive={(id, isActive) => updateNodeActive(3, id, isActive)} />
+          <CategoryList title={t("standards.itemCategories.level1Title", "1차 품목")} items={draft.level1} selectedId={selectedLevel1Id} emptyLabel={t("standards.itemCategories.level1Empty", "1차 품목이 없습니다.")} countSuffix={t("standards.itemCategories.countSuffix", "개")} activeLabel={t("standards.itemCategories.active", "사용")} inactiveLabel={t("standards.itemCategories.inactive", "미사용")} onSelect={(id) => { setSelectedLevel1Id(id); setSelectedLevel2Id(draft.level2.find((item) => item.parent_id === id)?.id ?? null); }} onToggleActive={(id, isActive) => updateNodeActive(1, id, isActive)} />
+          <CategoryList title={t("standards.itemCategories.level2Title", "2차 품목")} items={level2Items} selectedId={selectedLevel2Id} emptyLabel={t("standards.itemCategories.level2Empty", "선택한 1차 품목의 2차 품목이 없습니다.")} countSuffix={t("standards.itemCategories.countSuffix", "개")} activeLabel={t("standards.itemCategories.active", "사용")} inactiveLabel={t("standards.itemCategories.inactive", "미사용")} onSelect={setSelectedLevel2Id} onToggleActive={(id, isActive) => updateNodeActive(2, id, isActive)} />
+          <CategoryList title={t("standards.itemCategories.level3Title", "3차 품목")} items={level3Items} selectedId={null} emptyLabel={t("standards.itemCategories.level3Empty", "선택한 2차 품목의 3차 품목이 없습니다.")} countSuffix={t("standards.itemCategories.countSuffix", "개")} activeLabel={t("standards.itemCategories.active", "사용")} inactiveLabel={t("standards.itemCategories.inactive", "미사용")} onSelect={() => undefined} onToggleActive={(id, isActive) => updateNodeActive(3, id, isActive)} />
         </div>
       </AdminModalSection>
     </AdminModal>

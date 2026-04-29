@@ -6,6 +6,7 @@ import { runSaveCompanySettingsFlow } from "@/lib/admin/settings/actionFlow";
 import { buildDefaultCompanySettings } from "@/lib/admin/settings/companyDefaults";
 import type { CompanySettings } from "@/lib/admin/settings/companyTypes";
 import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
+import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminNotificationPolicySettingsModalProps = {
   open: boolean;
@@ -14,15 +15,17 @@ type AdminNotificationPolicySettingsModalProps = {
 
 const POLICY_ITEMS: Array<{
   key: keyof CompanySettings["notificationPolicy"];
-  label: string;
+  labelPath: string;
+  fallback: string;
 }> = [
-  { key: "reviewRequestEnabled", label: "검토 요청" },
-  { key: "orderReadyEnabled", label: "발주 준비" },
-  { key: "storageWarningEnabled", label: "용량 경고" },
-  { key: "purgeResultEnabled", label: "삭제 결과" },
+  { key: "reviewRequestEnabled", labelPath: "standards.notificationPolicy.items.reviewRequestEnabled", fallback: "검토 요청" },
+  { key: "orderReadyEnabled", labelPath: "standards.notificationPolicy.items.orderReadyEnabled", fallback: "발주 준비" },
+  { key: "storageWarningEnabled", labelPath: "standards.notificationPolicy.items.storageWarningEnabled", fallback: "용량 경고" },
+  { key: "purgeResultEnabled", labelPath: "standards.notificationPolicy.items.purgeResultEnabled", fallback: "삭제 결과" },
 ];
 
 export default function AdminNotificationPolicySettingsModal({ open, onClose }: AdminNotificationPolicySettingsModalProps) {
+  const t = useAdminTranslation();
   const defaultSettings = buildDefaultCompanySettings(WORKSPACE_COMPANY_ID);
   const [draft, setDraft] = useState<CompanySettings>(() => defaultSettings);
   const [loading, setLoading] = useState(false);
@@ -44,7 +47,7 @@ export default function AdminNotificationPolicySettingsModal({ open, onClose }: 
       })
       .catch((error) => {
         if (!isMounted) return;
-        setErrorMessage(error instanceof Error ? error.message : "알림 정책을 불러오지 못했습니다.");
+        setErrorMessage(error instanceof Error ? error.message : t("standards.notificationPolicy.loadFailed", "알림 정책을 불러오지 못했습니다."));
       })
       .finally(() => {
         if (isMounted) setLoading(false);
@@ -68,7 +71,7 @@ export default function AdminNotificationPolicySettingsModal({ open, onClose }: 
     const result = await runSaveCompanySettingsFlow(draft);
     setSaving(false);
     if (!result.ok || !result.settings) {
-      setErrorMessage(result.message || "알림 정책을 저장하지 못했습니다.");
+      setErrorMessage(result.message || t("standards.notificationPolicy.saveFailed", "알림 정책을 저장하지 못했습니다."));
       return;
     }
     setDraft(result.settings);
@@ -79,15 +82,15 @@ export default function AdminNotificationPolicySettingsModal({ open, onClose }: 
     <AdminModal
       open={open}
       onClose={onClose}
-      title="알림 정책"
+      title={t("standards.notificationPolicy.title", "알림 정책")}
       maxWidthClass="md:max-w-2xl"
       footer={
         <div className="flex items-center justify-between gap-3">
           <button type="button" onClick={handleReset} className={adminModalSecondaryButtonClassName}>
-            기본값 복원
+            {t("standards.common.resetDefaults", "기본값 복원")}
           </button>
           <button type="button" onClick={handleSave} disabled={saving || loading} className={adminModalPrimaryButtonClassName}>
-            {saving ? "저장 중" : "저장"}
+            {saving ? t("standards.common.saving", "저장 중") : t("standards.common.save", "저장")}
           </button>
         </div>
       }
@@ -98,7 +101,7 @@ export default function AdminNotificationPolicySettingsModal({ open, onClose }: 
           const checked = draft.notificationPolicy[item.key];
           return (
             <div key={item.key} className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50/70 px-3 py-3">
-              <span className="min-w-0 flex-1 text-sm font-medium text-stone-900">{item.label}</span>
+              <span className="min-w-0 flex-1 text-sm font-medium text-stone-900">{t(item.labelPath, item.fallback)}</span>
               <button
                 type="button"
                 onClick={() =>
@@ -112,7 +115,7 @@ export default function AdminNotificationPolicySettingsModal({ open, onClose }: 
                 }
                 className={`min-w-[88px] rounded-full border px-3 py-1.5 text-xs font-semibold transition ${checked ? "border-emerald-200 bg-emerald-100 text-emerald-800" : "border-stone-900 bg-stone-950 text-white"}`}
               >
-                {checked ? "사용" : "미사용"}
+                {checked ? t("standards.common.active", "사용") : t("standards.common.inactive", "미사용")}
               </button>
             </div>
           );

@@ -20,6 +20,7 @@ import { fetchAdminStandardsFromApi, saveAdminItemCategoriesToApi, saveAdminUnit
 import type { AdminItemCategoryDefinition, AdminUnitDefinition } from "@/lib/admin/settings/standardsTypes";
 import { useAdminWorkspaceTools } from "@/lib/admin/useAdminWorkspaceTools";
 import type { OutsourcingProcessType } from "@/types/partner";
+import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type StandardAction = {
   key: "items" | "units" | "processes" | "logs" | "filePolicy" | "notifications";
@@ -35,6 +36,7 @@ function sortProcessesByLabel(items: OutsourcingProcessDefinition[]) {
 
 export default function AdminStandardsSection() {
   const notificationTools = useAdminWorkspaceTools();
+  const t = useAdminTranslation();
   const [processDefinitions, setProcessDefinitions] = useState<OutsourcingProcessDefinition[]>(createDefaultOutsourcingProcessDefinitions());
   const [processDraftDefinitions, setProcessDraftDefinitions] = useState<OutsourcingProcessDefinition[]>(createDefaultOutsourcingProcessDefinitions());
   const [unitDefinitions, setUnitDefinitions] = useState<AdminUnitDefinition[]>(createDefaultUnitDefinitions());
@@ -153,7 +155,7 @@ export default function AdminStandardsSection() {
         if (payload.processDefinitions) setProcessDefinitions(payload.processDefinitions);
       })
       .catch(() => {
-        setProcessFormError("저장에 실패했습니다. DB 연결 상태를 확인하세요.");
+        setProcessFormError(t("standards.section.saveProcessFailed", "저장에 실패했습니다. DB 연결 상태를 확인하세요."));
         return;
       });
     setIsProcessModalOpen(false);
@@ -161,7 +163,7 @@ export default function AdminStandardsSection() {
     setProcessFormError("");
     setSelectedInactiveProcessDefinition(null);
     setSelectedActiveProcessDefinition(null);
-  }, [processDraftDefinitions]);
+  }, [processDraftDefinitions, t]);
 
   const saveUnitDefinitions = useCallback((nextUnits: AdminUnitDefinition[]) => {
     setIsSavingUnits(true);
@@ -171,9 +173,9 @@ export default function AdminStandardsSection() {
         setUnitDefinitions(payload.units.length > 0 ? payload.units : nextUnits);
         setIsUnitModalOpen(false);
       })
-      .catch(() => setStandardFormError("단위 저장에 실패했습니다. DB 연결 상태를 확인하세요."))
+      .catch(() => setStandardFormError(t("standards.section.saveUnitFailed", "단위 저장에 실패했습니다. DB 연결 상태를 확인하세요.")))
       .finally(() => setIsSavingUnits(false));
-  }, []);
+  }, [t]);
 
   const saveItemCategoryDefinitions = useCallback((nextCategories: AdminItemCategoryDefinition[]) => {
     setIsSavingItemCategories(true);
@@ -183,9 +185,9 @@ export default function AdminStandardsSection() {
         setItemCategoryDefinitions(payload.itemCategories.length > 0 ? payload.itemCategories : nextCategories);
         setIsItemCategoryModalOpen(false);
       })
-      .catch(() => setStandardFormError("품목 저장에 실패했습니다. DB 연결 상태를 확인하세요."))
+      .catch(() => setStandardFormError(t("standards.section.saveItemFailed", "품목 저장에 실패했습니다. DB 연결 상태를 확인하세요.")))
       .finally(() => setIsSavingItemCategories(false));
-  }, []);
+  }, [t]);
 
   const resetProcessDefinitions = useCallback(() => {
     const nextDefinitions = createDefaultOutsourcingProcessDefinitions();
@@ -197,15 +199,15 @@ export default function AdminStandardsSection() {
   }, []);
 
   const policyActions: StandardAction[] = [
-    { key: "notifications", title: "알림 정책", description: "검토·발주·용량·삭제 결과", statusLabel: "관리", onClick: () => setIsNotificationPolicyModalOpen(true) },
-    { key: "logs", title: "로그 이벤트", description: "작업지시서 변경 기록 이벤트", statusLabel: "관리", onClick: notificationTools.openNotificationModal },
-    { key: "filePolicy", title: "저장 정책", description: "용량·휴지통·실제삭제 기준", statusLabel: "관리", onClick: () => setIsFilePolicyModalOpen(true) },
+    { key: "notifications", title: t("standards.actions.notifications.title", "알림 정책"), description: t("standards.actions.notifications.description", "검토·발주·용량·삭제 결과"), statusLabel: t("standards.common.manage", "관리"), onClick: () => setIsNotificationPolicyModalOpen(true) },
+    { key: "logs", title: t("standards.actions.logs.title", "로그 이벤트"), description: t("standards.actions.logs.description", "작업지시서 변경 기록 이벤트"), statusLabel: t("standards.common.manage", "관리"), onClick: notificationTools.openNotificationModal },
+    { key: "filePolicy", title: t("standards.actions.filePolicy.title", "저장 정책"), description: t("standards.actions.filePolicy.description", "용량·휴지통·실제삭제 기준"), statusLabel: t("standards.common.manage", "관리"), onClick: () => setIsFilePolicyModalOpen(true) },
   ];
 
   const standardActions: StandardAction[] = [
-    { key: "items", title: "생산품 유형", description: `${itemCategoryDefinitions.filter((item) => item.is_active).length}개 사용중`, statusLabel: "관리", onClick: () => setIsItemCategoryModalOpen(true) },
-    { key: "units", title: "단위 표준", description: `${unitDefinitions.filter((unit) => unit.is_active).length}개 사용중`, statusLabel: "관리", onClick: () => setIsUnitModalOpen(true) },
-    { key: "processes", title: "외주 공정 유형", description: `${activeProcessDefinitions.length}개 사용중`, statusLabel: "관리", onClick: openProcessModal },
+    { key: "items", title: t("standards.actions.items.title", "생산품 유형"), description: `${itemCategoryDefinitions.filter((item) => item.is_active).length}${t("standards.common.inUseSuffix", "개 사용중")}`, statusLabel: t("standards.common.manage", "관리"), onClick: () => setIsItemCategoryModalOpen(true) },
+    { key: "units", title: t("standards.actions.units.title", "단위 표준"), description: `${unitDefinitions.filter((unit) => unit.is_active).length}${t("standards.common.inUseSuffix", "개 사용중")}`, statusLabel: t("standards.common.manage", "관리"), onClick: () => setIsUnitModalOpen(true) },
+    { key: "processes", title: t("standards.actions.processes.title", "외주 공정 유형"), description: `${activeProcessDefinitions.length}${t("standards.common.inUseSuffix", "개 사용중")}`, statusLabel: t("standards.common.manage", "관리"), onClick: openProcessModal },
   ];
 
   const renderActionGrid = (actions: StandardAction[]) => (
@@ -231,11 +233,11 @@ export default function AdminStandardsSection() {
   return (
     <section className="flex min-h-0 flex-1 flex-col gap-3">
       <div className="flex min-h-0 flex-1 flex-col rounded-[28px] border border-stone-200 bg-white p-4 shadow-sm">
-        <h2 className="shrink-0 text-lg font-semibold text-stone-950">정책 관리</h2>
+        <h2 className="shrink-0 text-lg font-semibold text-stone-950">{t("standards.section.policyTitle", "정책 관리")}</h2>
         <div className="mt-3">{renderActionGrid(policyActions)}</div>
       </div>
       <div className="flex min-h-0 flex-1 flex-col rounded-[28px] border border-stone-200 bg-white p-4 shadow-sm">
-        <h2 className="shrink-0 text-lg font-semibold text-stone-950">기준 관리</h2>
+        <h2 className="shrink-0 text-lg font-semibold text-stone-950">{t("standards.section.standardTitle", "기준 관리")}</h2>
         <div className="mt-3">{renderActionGrid(standardActions)}</div>
       </div>
 
@@ -272,7 +274,7 @@ export default function AdminStandardsSection() {
         onClose={notificationTools.closeModal}
         notificationSettings={notificationTools.notificationSettings}
         onToggleNotificationSetting={notificationTools.handleToggleNotificationSetting}
-        title="로그 이벤트"
+        title={t("standards.section.logEventsTitle", "로그 이벤트")}
         description=""
         onResetNotificationSettings={notificationTools.resetNotificationSettings}
       />

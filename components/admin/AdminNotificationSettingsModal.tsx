@@ -2,7 +2,7 @@
 
 import { AdminModal, adminModalPrimaryButtonClassName, adminModalSecondaryButtonClassName } from "@/components/admin/layout/AdminModal";
 import AdminNotificationSettingsSection from "@/components/admin/notification/AdminNotificationSettingsSection";
-import { useI18n } from "@/lib/i18n";
+import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import type { NotificationSettingKey, NotificationSettings } from "@/lib/admin/notification/types";
 
 type AdminNotificationSettingsModalProps = {
@@ -24,14 +24,13 @@ export default function AdminNotificationSettingsModal({
   title,
   description,
 }: AdminNotificationSettingsModalProps) {
-  const { i18n } = useI18n();
-  const notificationModalText = i18n.admin.notificationModal;
+  const t = useAdminTranslation();
   return (
     <AdminModal
       open={open}
       onClose={onClose}
-      title={title || notificationModalText.title}
-      description={description ?? notificationModalText.description}
+      title={title || t("notificationModal.title", "알림 이벤트 설정")}
+      description={description ?? t("notificationModal.description", "관리자 화면을 벗어나지 않고 알림 이벤트 ON/OFF 상태를 모달에서 관리합니다.")}
       maxWidthClass="md:max-w-2xl"
       footer={
         <div className="flex items-center justify-between gap-3">
@@ -40,10 +39,10 @@ export default function AdminNotificationSettingsModal({
             onClick={onResetNotificationSettings}
             className={adminModalSecondaryButtonClassName}
           >
-            기본값 복원
+            {t("standards.common.resetDefaults", "기본값 복원")}
           </button>
           <button type="button" onClick={onClose} className={adminModalPrimaryButtonClassName}>
-            저장
+            {t("standards.common.save", "저장")}
           </button>
         </div>
       }

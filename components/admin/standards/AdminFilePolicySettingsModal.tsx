@@ -7,6 +7,7 @@ import { runSaveCompanySettingsFlow } from "@/lib/admin/settings/actionFlow";
 import { buildDefaultCompanySettings } from "@/lib/admin/settings/companyDefaults";
 import type { CompanySettings } from "@/lib/admin/settings/companyTypes";
 import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
+import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminFilePolicySettingsModalProps = {
   open: boolean;
@@ -31,6 +32,7 @@ function ToggleButtonGroup({ label, activeLabel, inactiveLabel, checked, onChang
 }
 
 export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFilePolicySettingsModalProps) {
+  const t = useAdminTranslation();
   const defaultSettings = buildDefaultCompanySettings(WORKSPACE_COMPANY_ID);
   const [draft, setDraft] = useState<CompanySettings>(() => defaultSettings);
   const [loading, setLoading] = useState(false);
@@ -52,7 +54,7 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
       })
       .catch((error) => {
         if (!isMounted) return;
-        setErrorMessage(error instanceof Error ? error.message : "파일 정책을 불러오지 못했습니다.");
+        setErrorMessage(error instanceof Error ? error.message : t("standards.filePolicy.loadFailed", "파일 정책을 불러오지 못했습니다."));
       })
       .finally(() => {
         if (isMounted) setLoading(false);
@@ -76,7 +78,7 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
     const result = await runSaveCompanySettingsFlow(draft);
     setSaving(false);
     if (!result.ok || !result.settings) {
-      setErrorMessage(result.message || "파일 정책을 저장하지 못했습니다.");
+      setErrorMessage(result.message || t("standards.filePolicy.saveFailed", "파일 정책을 저장하지 못했습니다."));
       return;
     }
     setDraft(result.settings);
@@ -87,15 +89,15 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
     <AdminModal
       open={open}
       onClose={onClose}
-      title="파일 정책 관리"
+      title={t("standards.filePolicy.title", "파일 정책 관리")}
       maxWidthClass="md:max-w-2xl"
       footer={
         <div className="flex items-center justify-between gap-3">
           <button type="button" onClick={handleReset} className={adminModalSecondaryButtonClassName}>
-            기본값 복원
+            {t("standards.common.resetDefaults", "기본값 복원")}
           </button>
           <button type="button" onClick={handleSave} disabled={saving || loading} className={adminModalPrimaryButtonClassName}>
-            {saving ? "저장 중" : "저장"}
+            {saving ? t("standards.common.saving", "저장 중") : t("standards.common.save", "저장")}
           </button>
         </div>
       }
@@ -104,14 +106,14 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
         {errorMessage ? <p className="rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">{errorMessage}</p> : null}
 
         <ToggleButtonGroup
-          label="삭제 방식"
-          activeLabel="휴지통"
-          inactiveLabel="즉시 삭제"
+          label={t("standards.filePolicy.deleteMode", "삭제 방식")}
+          activeLabel={t("standards.filePolicy.softDelete", "휴지통")}
+          inactiveLabel={t("standards.filePolicy.hardDelete", "즉시 삭제")}
           checked={draft.filePolicy.softDeleteEnabled}
           onChange={(softDeleteEnabled) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, softDeleteEnabled } }))}
         />
         <div className="rounded-3xl border border-stone-200 bg-stone-50 p-3">
-          <p className="text-sm font-semibold text-stone-950">실제 삭제 기간</p>
+          <p className="text-sm font-semibold text-stone-950">{t("standards.filePolicy.retentionDays", "실제 삭제 기간")}</p>
           <div className="mt-3 grid grid-cols-4 gap-2">
             {ADMIN_RETENTION_DAY_OPTIONS.map((days) => {
               const selected = draft.filePolicy.trashRetentionDays === days;
@@ -122,7 +124,7 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
                   onClick={() => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, trashRetentionDays: days } }))}
                   className={`w-full rounded-full border px-3 py-2 text-sm font-semibold transition ${selected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"}`}
                 >
-                  {days}일
+                  {days}{t("standards.filePolicy.daySuffix", "일")}
                 </button>
               );
             })}
@@ -130,7 +132,7 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
         </div>
 
         <label className="grid gap-2 rounded-3xl border border-stone-200 bg-stone-50 p-3 text-sm">
-          <span className="font-semibold text-stone-900">용량 경고 기준(%)</span>
+          <span className="font-semibold text-stone-900">{t("standards.filePolicy.warningThreshold", "용량 경고 기준(%)")}</span>
           <input
             type="number"
             min={1}
