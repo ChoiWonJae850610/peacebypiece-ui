@@ -47,7 +47,7 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
       </div>
 
       <div className="grid min-h-0 flex-1 gap-6 overflow-y-auto overflow-x-hidden py-6 pr-1 xl:grid-cols-[1.35fr_0.65fr]">
-        <section className="flex min-h-[360px] flex-col rounded-[28px] border border-stone-100 bg-stone-50/70 p-5">
+        <section className="flex min-h-[360px] flex-col rounded-[24px] border border-stone-100 bg-stone-50/70 p-5">
           <div className="flex items-center justify-between gap-3">
             <h3 className="text-base font-semibold text-stone-950">{t("operationsDashboard.statusFlowTitle", "상태 흐름")}</h3>
             <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-stone-500 ring-1 ring-stone-200">
@@ -74,7 +74,7 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
         </section>
 
         <section className="grid min-h-[360px] grid-rows-[auto_1fr] gap-4 overflow-y-auto overflow-x-hidden pr-1">
-          <div className="rounded-[28px] border border-stone-100 bg-white p-5 shadow-sm">
+          <div className="rounded-[24px] border border-stone-100 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-base font-semibold text-stone-950">{t("operationsDashboard.statusDistributionTitle", "상태 분포")}</h3>
               <span className="text-xs font-semibold text-stone-400">{totalDistributionValue}{t("operationsDashboard.countSuffix", "건")}</span>
@@ -97,7 +97,7 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
             </div>
           </div>
 
-          <div className="min-h-0 rounded-[28px] border border-stone-100 bg-[var(--admin-theme-surface)] p-5 text-[var(--admin-theme-text-on-surface)] transition-colors shadow-sm">
+          <div className="min-h-0 rounded-[24px] border border-stone-100 bg-[var(--admin-theme-surface)] p-5 text-[var(--admin-theme-text-on-surface)] transition-colors shadow-sm">
             <h3 className="text-base font-semibold">{t("operationsDashboard.todayCheckTitle", "오늘 체크")}</h3>
             <div className="mt-4 grid gap-3">
               {snapshot.insights.map((item) => (

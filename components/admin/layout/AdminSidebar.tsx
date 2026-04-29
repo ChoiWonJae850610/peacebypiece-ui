@@ -112,8 +112,8 @@ export default function AdminSidebar({ companyName, appVersion, navigationItems 
   const showDbStatus = process.env.NODE_ENV !== "production";
 
   return (
-    <aside className="flex min-w-0 flex-col rounded-[32px] border border-stone-200 bg-white p-4 shadow-sm lg:h-full lg:w-72 lg:shrink-0">
-      <div className="rounded-[24px] bg-[var(--admin-theme-surface)] p-5 text-[var(--admin-theme-text-on-surface)] transition-colors">
+    <aside className="flex min-w-0 flex-col rounded-[30px] border border-stone-200 bg-white p-4 shadow-sm lg:h-full lg:w-[268px] lg:shrink-0">
+      <div className="rounded-[24px] bg-[var(--admin-theme-surface)] p-4 text-[var(--admin-theme-text-on-surface)] transition-colors">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">PeacebyPiece</p>
@@ -129,15 +129,15 @@ export default function AdminSidebar({ companyName, appVersion, navigationItems 
         ) : null}
       </div>
 
-      <nav className="mt-6 flex min-h-0 flex-1 flex-col justify-between gap-3 overflow-y-auto pb-1" aria-label="관리자 메뉴">
+      <nav className="mt-5 flex min-h-0 flex-1 flex-col justify-between gap-2.5 overflow-y-auto pb-1" aria-label="관리자 메뉴">
         {navigationItems.map((item) => {
-          const itemClassName = `flex items-center gap-3 rounded-2xl px-3.5 py-3.5 text-[15px] font-medium transition ${
+          const itemClassName = `flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium transition ${
             item.active ? "bg-stone-100 text-stone-950" : "text-stone-600 hover:bg-stone-50 hover:text-stone-950"
           }`;
 
           const content = (
             <>
-              <span className={["flex h-10 w-10 items-center justify-center rounded-2xl shadow-sm ring-1 transition", item.active ? "bg-[var(--admin-theme-surface)] ring-[var(--admin-theme-surface)] [&_svg]:stroke-white" : "bg-white ring-stone-200"].join(" ") }>
+              <span className={["flex h-9 w-9 items-center justify-center rounded-2xl shadow-sm ring-1 transition", item.active ? "bg-[var(--admin-theme-surface)] ring-[var(--admin-theme-surface)] [&_svg]:stroke-white" : "bg-white ring-stone-200"].join(" ") }>
                 <SidebarIcon type={item.icon} active={item.active} />
               </span>
               <span className="min-w-0 truncate">{item.translationKey ? t(`navigation.${item.translationKey}`, item.label) : item.label}</span>

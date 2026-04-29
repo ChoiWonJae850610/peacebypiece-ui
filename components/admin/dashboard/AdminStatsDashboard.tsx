@@ -35,7 +35,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
             <span className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--admin-theme-text-on-surface)]">{pageText.currentMonth}</span>
           </div>
 
-          <div className="relative mt-5 flex min-h-0 flex-1 items-end gap-4 rounded-[24px] border border-stone-100 bg-stone-50/70 px-5 pb-5 pt-7">
+          <div className="relative mt-5 flex min-h-0 flex-1 items-end gap-4 rounded-[22px] border border-stone-100 bg-stone-50/70 px-5 pb-5 pt-7">
             {viewModel.totalFlowValue === 0 ? (
               <div className="absolute inset-x-5 top-5 rounded-2xl border border-dashed border-stone-300 bg-white/75 px-4 py-3 text-center text-xs font-semibold text-stone-500">
                 {pageText.emptyFlowLabel}

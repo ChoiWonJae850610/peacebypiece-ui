@@ -21,14 +21,14 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
   const summary = getTopbarSummary(title, description);
 
   return (
-    <header className="rounded-[32px] border border-stone-200 bg-white/95 p-5 shadow-sm backdrop-blur">
+    <header className="rounded-[30px] border border-stone-200 bg-white/95 px-5 py-4 shadow-sm backdrop-blur">
       <div className="flex min-w-0 flex-col gap-2">
         {summary ? (
           <div className="flex">
             <span className="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-500">{summary}</span>
           </div>
         ) : null}
-        <h1 className="text-2xl font-semibold tracking-tight text-stone-950 md:text-3xl">{title}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-stone-950">{title}</h1>
       </div>
     </header>
   );

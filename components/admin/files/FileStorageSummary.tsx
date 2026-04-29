@@ -143,7 +143,7 @@ export default function FileStorageSummary({
   ];
 
   return (
-    <section className="shrink-0 rounded-[28px] border border-stone-200 bg-white p-4 shadow-sm">
+    <section className="shrink-0 rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm">
       <AdminActionBar
         title={t("filesSummary.title", "저장소 사용 현황")}
         description={t("filesSummary.description", "첨부파일 사용량, 최근 업로드, 파일 유형을 같은 기준으로 확인합니다.")}
@@ -176,7 +176,7 @@ export default function FileStorageSummary({
       </AdminActionBar>
 
       <div className="mt-4 grid gap-3 xl:grid-cols-[1fr_0.92fr]">
-        <div className="rounded-[24px] border border-stone-200 bg-stone-50/70 p-4">
+        <div className="rounded-[22px] border border-stone-200 bg-stone-50/70 p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-2xl font-semibold tracking-tight text-stone-950">{usageSummary.usedLabel}</p>

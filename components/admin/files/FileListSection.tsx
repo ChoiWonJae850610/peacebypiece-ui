@@ -24,7 +24,7 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
   const allSelected = items.length > 0 && selectedItemIds.length === items.length;
 
   return (
-    <section className="flex h-full min-h-0 flex-col rounded-[28px] border border-stone-200 bg-white p-3.5 shadow-sm">
+    <section className="flex h-full min-h-0 flex-col rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm">
       <AdminActionBar title={t("filesList.title", "첨부파일 목록")}>
         <select value={sortKey} onChange={(event) => onChangeSort(event.target.value as AdminFileSortKey)} className="rounded-full border border-stone-300 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-700 shadow-sm">
           {ADMIN_FILE_SORT_OPTIONS.map((option) => (
@@ -40,7 +40,7 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
       </AdminActionBar>
 
       <AdminTable
-        className="mt-2.5"
+        className="mt-3"
         items={items}
         getRowKey={(item) => item.id}
         emptyLabel={t("filesList.empty", "표시할 첨부파일이 없습니다.")}

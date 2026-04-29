@@ -120,7 +120,7 @@ export default function AdminFilesPage() {
       navigationItems={FILE_ADMIN_NAVIGATION_ITEMS}
       title={t("filesPage.title", "저장소 관리")}
     >
-      <section className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[32px] border border-stone-200 bg-white p-5 shadow-sm">
+      <section className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[30px] border border-stone-200 bg-white p-5 shadow-sm">
         <FileStorageSummary
           usageCards={snapshot.usageCards}
           usageSummary={snapshot.usageSummary}
@@ -132,7 +132,7 @@ export default function AdminFilesPage() {
           onRefresh={refreshSnapshot}
         />
 
-        <AdminFilterBar className="mt-4 shrink-0 bg-white">
+        <AdminFilterBar className="mt-4 shrink-0">
           {snapshot.tabs.filter((tab) => tab.key !== "storage").map((tab) => {
             const isActive = activeTab === tab.key;
             return (

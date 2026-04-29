@@ -26,11 +26,11 @@ export default function AdminTable<TItem>({
   onRowClick,
 }: AdminTableProps<TItem>) {
   const gridStyle = gridTemplateColumns ? { gridTemplateColumns } : undefined;
-  const baseRowClassName = "grid w-full gap-3 px-4 py-1.5 text-left text-[11px] md:items-center";
+  const baseRowClassName = "grid w-full gap-3 px-4 py-2 text-left text-[11px] md:items-center";
 
   return (
-    <div className={["flex min-h-0 flex-1 flex-col overflow-hidden rounded-[24px] border border-stone-200", className].filter(Boolean).join(" ")}>
-      <div className="hidden gap-3 bg-stone-50 px-4 py-1.5 text-[10px] font-semibold text-stone-500 md:grid" style={gridStyle}>
+    <div className={["flex min-h-0 flex-1 flex-col overflow-hidden rounded-[22px] border border-stone-200 bg-white", className].filter(Boolean).join(" ")}>
+      <div className="hidden gap-3 bg-stone-50 px-4 py-2 text-[10px] font-semibold text-stone-500 md:grid" style={gridStyle}>
         {columns.map((column) => (
           <span key={column.key} className={column.headerClassName}>{column.label}</span>
         ))}

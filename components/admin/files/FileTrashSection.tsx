@@ -28,7 +28,7 @@ export default function FileTrashSection({ items, selectedItemIds, onToggleItem,
   const allSelected = items.length > 0 && selectedItemIds.length === items.length;
 
   return (
-    <section className="flex h-full min-h-0 flex-col rounded-[28px] border border-stone-200 bg-white p-3.5 shadow-sm">
+    <section className="flex h-full min-h-0 flex-col rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm">
       <AdminActionBar title={t("trashPage.title", "휴지통")}>
         <button type="button" onClick={onToggleAll} className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm hover:bg-stone-50">
           {allSelected ? t("filesList.clearAll", "전체 해제") : t("filesList.selectAll", "전체 선택")}
@@ -42,7 +42,7 @@ export default function FileTrashSection({ items, selectedItemIds, onToggleItem,
       </AdminActionBar>
 
       <AdminTable
-        className="mt-2.5"
+        className="mt-3"
         items={items}
         getRowKey={(item) => item.id}
         emptyLabel={t("filesList.trashEmpty", "휴지통에 보관 중인 파일이 없습니다.")}
