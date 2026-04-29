@@ -1,4 +1,4 @@
-import AdminCompletionAuditPanel from "@/components/admin/dashboard/AdminCompletionAuditPanel";
+import AdminAuditSummarySection from "@/components/admin/dashboard/AdminAuditSummarySection";
 import AdminOperationsDashboard from "@/components/admin/dashboard/AdminOperationsDashboard";
 import AdminShell from "@/components/admin/layout/AdminShell";
 import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
@@ -22,8 +22,8 @@ export default async function AdminPage() {
       navigationItems={getAdminNavigationItems("/admin")}
       title={pageText.dashboard}
     >
-      <AdminOperationsDashboard snapshots={snapshots} dbCompletionSummary={dbCompletionSummary} />
-      <AdminCompletionAuditPanel summary={completionAuditSummary} />
+      <AdminOperationsDashboard snapshots={snapshots} />
+      <AdminAuditSummarySection dbCompletionSummary={dbCompletionSummary} completionAuditSummary={completionAuditSummary} />
     </AdminShell>
   );
 }
