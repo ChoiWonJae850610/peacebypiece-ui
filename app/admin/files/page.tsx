@@ -9,11 +9,12 @@ import { runMoveAttachmentsToTrashFlow, runPurgeTrashItemsFlow, runRestoreTrashI
 import { getAdminFileManagementSnapshot } from "@/lib/admin/files/adapter";
 import {
   buildAdminSelectAllIds,
+  selectActiveAdminManagedFiles,
   selectAdminManagedFilesByIds,
   selectAdminTrashItemsByIds,
   sortAdminManagedFiles,
   toggleAdminSelectedId,
-} from "@/lib/admin/files/presentation";
+} from "@/lib/admin/files/selectors";
 import type { AdminFileManagementSnapshot, AdminFileSortKey, AdminFileTabKey, AdminFileTrendPeriod } from "@/lib/admin/files/types";
 import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
 import { APP_VERSION } from "@/lib/constants/app";
@@ -57,8 +58,9 @@ export default function AdminFilesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trendPeriod]);
 
-  const sortedAttachments = useMemo(() => sortAdminManagedFiles(snapshot.attachments, fileSortKey), [fileSortKey, snapshot.attachments]);
-  const selectedAttachments = useMemo(() => selectAdminManagedFilesByIds(snapshot.attachments, selectedAttachmentIds), [selectedAttachmentIds, snapshot.attachments]);
+  const activeAttachments = useMemo(() => selectActiveAdminManagedFiles(snapshot.attachments), [snapshot.attachments]);
+  const sortedAttachments = useMemo(() => sortAdminManagedFiles(activeAttachments, fileSortKey), [activeAttachments, fileSortKey]);
+  const selectedAttachments = useMemo(() => selectAdminManagedFilesByIds(activeAttachments, selectedAttachmentIds), [activeAttachments, selectedAttachmentIds]);
   const selectedTrashItems = useMemo(() => selectAdminTrashItemsByIds(snapshot.trashItems, selectedTrashItemIds), [selectedTrashItemIds, snapshot.trashItems]);
 
   function toggleId(targetId: string, currentIds: string[], setIds: (ids: string[]) => void) {

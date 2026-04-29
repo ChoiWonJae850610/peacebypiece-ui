@@ -35,7 +35,15 @@ export type AdminFileTabItem = {
   description: string;
 };
 
-export type AdminFileStatus = "active" | "trashed" | "purged";
+export const ADMIN_FILE_LIFECYCLE_STATUS = {
+  ACTIVE: "ACTIVE",
+  DELETED: "DELETED",
+  TEMP: "TEMP",
+} as const;
+
+export type AdminFileLifecycleStatus = (typeof ADMIN_FILE_LIFECYCLE_STATUS)[keyof typeof ADMIN_FILE_LIFECYCLE_STATUS];
+
+export type AdminFileStatus = "active" | "trashed" | "purged" | "temp" | AdminFileLifecycleStatus;
 
 export type AdminTrashPurgeStatus = "pending" | "purge_requested" | "purged" | "failed" | "restored";
 
