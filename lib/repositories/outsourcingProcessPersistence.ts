@@ -1,5 +1,5 @@
 import { loadJsonFromStorage, persistJsonToStorage } from "@/lib/repositories/browserStorage";
-import type { OutsourcingProcessDefinition } from "@/lib/admin/partnerMaster";
+import type { OutsourcingProcessDefinition } from "@/lib/admin/partner";
 
 export const OUTSOURCING_PROCESS_STORAGE_KEY = "peacebypiece-outsourcing-processes";
 

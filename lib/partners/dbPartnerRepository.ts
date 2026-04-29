@@ -2,7 +2,7 @@ import "server-only";
 
 import { randomUUID } from "crypto";
 import { queryDb, isDatabaseConfigured } from "@/lib/db/client";
-import { getAdminCompanyScope } from "@/lib/admin/companyScope";
+import { getAdminCompanyScope } from "@/lib/admin/settings/companyScope";
 import { getWorkspaceCompanyContext } from "@/lib/constants/company";
 import type { DbQueryResultRow } from "@/lib/db/client";
 import type {

@@ -1,7 +1,7 @@
 import "server-only";
 
 import { queryDb } from "@/lib/db/client";
-import { getAdminCompanyId, getAdminCompanyScope } from "@/lib/admin/companyScope";
+import { getAdminCompanyId, getAdminCompanyScope } from "@/lib/admin/settings/companyScope";
 import { LEGACY_WORKFLOW_STATE_MAP, WORKFLOW_STATES } from "@/lib/constants/workorderStates";
 import type { WorkOrder } from "@/types/workorder";
 import { applyReorderIdentity } from "@/lib/workorder/reorder/helpers";

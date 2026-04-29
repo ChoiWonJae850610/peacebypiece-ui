@@ -1,4 +1,5 @@
 import { ADMIN_DOMAIN_STRUCTURE, type AdminDomainKey, type AdminDomainLayerKey } from "@/lib/admin/domainRegistry";
+import { ADMIN_LEGACY_PATH_AUDIT_ITEMS, type AdminLegacyPathAuditItem } from "@/lib/admin/legacyPathAudit";
 
 export type AdminRouteAuditItem = {
   key: AdminDomainKey;
@@ -57,4 +58,12 @@ export function buildAdminDomainAuditItems(): AdminDomainAuditItem[] {
 
 export function getAdminLegacyCleanupCandidates(): string[] {
   return ADMIN_ROUTE_AUDIT_ITEMS.flatMap((item) => item.legacyPaths);
+}
+
+export function getAdminLegacyPathAuditItems(): AdminLegacyPathAuditItem[] {
+  return ADMIN_LEGACY_PATH_AUDIT_ITEMS;
+}
+
+export function getAdminLegacyDeleteCandidates(): AdminLegacyPathAuditItem[] {
+  return ADMIN_LEGACY_PATH_AUDIT_ITEMS.filter((item) => item.status === "delete-candidate");
 }
