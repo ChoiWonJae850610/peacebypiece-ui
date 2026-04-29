@@ -1,5 +1,6 @@
 import { AdminCard } from "@/components/admin/layout/AdminCard";
 import type { AdminDbCompletionSummary, AdminDbScreenAuditStatus } from "@/lib/admin/dbCompletionAudit";
+import { getAdminDbCompletionStatusLabel } from "@/lib/admin/dbCompletionAudit";
 
 type AdminDbConnectionAuditPanelProps = {
   summary: AdminDbCompletionSummary;
@@ -10,13 +11,6 @@ function getStatusClassName(status: AdminDbScreenAuditStatus): string {
   if (status === "db-prepared") return "bg-amber-50 text-amber-700 ring-amber-100";
   if (status === "fallback-guarded") return "bg-sky-50 text-sky-700 ring-sky-100";
   return "bg-stone-100 text-stone-500 ring-stone-200";
-}
-
-function getStatusLabel(status: AdminDbScreenAuditStatus): string {
-  if (status === "db-connected") return "DB 연결";
-  if (status === "db-prepared") return "DB 준비";
-  if (status === "fallback-guarded") return "fallback 보호";
-  return "대상 아님";
 }
 
 export default function AdminDbConnectionAuditPanel({ summary }: AdminDbConnectionAuditPanelProps) {
@@ -43,6 +37,7 @@ export default function AdminDbConnectionAuditPanel({ summary }: AdminDbConnecti
                 <p className="mt-1 truncate text-xs text-stone-400">{item.routePath}</p>
               </div>
               <span className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ring-1 ${getStatusClassName(item.status)}`}>
+                {getAdminDbCompletionStatusLabel(item.status)}
               </span>
             </div>
             <dl className="mt-3 grid gap-2 text-xs text-stone-500 lg:grid-cols-2">
