@@ -5,9 +5,14 @@ import { AdminCard } from "@/components/admin/layout/AdminCard";
 import {
   ADMIN_LANGUAGE_OPTIONS,
   ADMIN_THEME_OPTIONS,
-  getAdminSettingsUpdatedAtLabel,
   type AdminSettingSaveState,
 } from "@/lib/admin/settings/presentation";
+import {
+  getAdminSettingsDateLabels,
+  getSelectedAdminLanguage,
+  getSelectedAdminTheme,
+  withAdminSettingsUiDraft,
+} from "@/lib/admin/settings/selectors";
 import { runSaveCompanySettingsFlow } from "@/lib/admin/settings/actionFlow";
 import type { CompanySettings } from "@/lib/admin/settings/companyTypes";
 import { persistAdminTheme } from "@/lib/admin/theme";
@@ -17,24 +22,6 @@ type AdminCompanySettingsFormProps = {
   initialSettings: CompanySettings;
   companyName?: string;
 };
-
-function formatCompanyDateLabel(updatedAt: string | null | undefined, text: ReturnType<typeof useI18n>["i18n"]["admin"]["settingsForm"]) {
-  if (!updatedAt) return { joinedAt: text.joinedPending, age: "D+0", updatedAt: text.updatedPending };
-  const parsed = new Date(updatedAt);
-  if (Number.isNaN(parsed.getTime())) return { joinedAt: text.joinedPending, age: "D+0", updatedAt: text.updatedPending };
-  const start = new Date(parsed);
-  start.setHours(0, 0, 0, 0);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const ageDays = Math.max(0, Math.floor((today.getTime() - start.getTime()) / 86400000));
-  const joinedAt = `${parsed.getFullYear()}.${String(parsed.getMonth() + 1).padStart(2, "0")}.${String(parsed.getDate()).padStart(2, "0")}`;
-
-  return {
-    joinedAt,
-    age: `D+${ageDays}`,
-    updatedAt: getAdminSettingsUpdatedAtLabel(updatedAt)?.replace("최근 저장 ", text.updatedPrefix) ?? text.updatedPending,
-  };
-}
 
 function SaveStateBadge({ saveState, labels }: { saveState: AdminSettingSaveState; labels: ReturnType<typeof useI18n>["i18n"]["admin"]["settingsForm"]["badges"] }) {
   if (saveState === "saving") return <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-500">{labels.saving}</span>;
@@ -85,9 +72,9 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
     setSaveState("saved");
   }
 
-  const currentTheme = ADMIN_THEME_OPTIONS.find((option) => option.value === draft.ui.themeColor) ?? ADMIN_THEME_OPTIONS[0];
-  const currentLanguage = ADMIN_LANGUAGE_OPTIONS.find((option) => option.value === draft.ui.language) ?? ADMIN_LANGUAGE_OPTIONS[0];
-  const companyDate = formatCompanyDateLabel(draft.updatedAt, text);
+  const currentTheme = getSelectedAdminTheme(draft);
+  const currentLanguage = getSelectedAdminLanguage(draft);
+  const companyDate = getAdminSettingsDateLabels(draft.updatedAt, text);
 
   return (
     <AdminCard className="shrink-0 p-4">
@@ -139,7 +126,7 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
                   key={option.value}
                   type="button"
                   title={option.label}
-                  onClick={() => saveNextSettings({ ...draft, ui: { ...draft.ui, themeColor: option.value } })}
+                  onClick={() => saveNextSettings(withAdminSettingsUiDraft(draft, { themeColor: option.value }))}
                   className={`h-9 rounded-2xl border transition ${draft.ui.themeColor === option.value ? "border-stone-950 bg-white" : "border-stone-200 bg-white/70 hover:bg-white"}`}
                 >
                   <span className={`mx-auto block h-5 w-5 rounded-full ${option.swatchClassName}`} />
@@ -158,7 +145,7 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
                 <button
                   key={option.value}
                   type="button"
-                  onClick={() => saveNextSettings({ ...draft, ui: { ...draft.ui, language: option.value } })}
+                  onClick={() => saveNextSettings(withAdminSettingsUiDraft(draft, { language: option.value }))}
                   className={`rounded-2xl border px-3 py-2 text-sm font-semibold transition ${draft.ui.language === option.value ? "border-[var(--admin-theme-surface)] bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"}`}
                 >
                   {option.label}

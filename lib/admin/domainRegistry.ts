@@ -14,7 +14,7 @@ export const ADMIN_DOMAIN_STRUCTURE: AdminDomainStructureItem[] = [
   { key: "history", label: "히스토리", basePath: "lib/admin/history", layers: ["types", "selector", "presentation", "repository"] },
   { key: "files", label: "저장소 관리", basePath: "lib/admin/files", layers: ["types", "selector", "actionFlow", "presentation", "adapter"] },
   { key: "partner", label: "협력업체 관리", basePath: "lib/admin/partner", layers: ["types", "selector", "actionFlow", "presentation", "repository"] },
-  { key: "settings", label: "환경설정", basePath: "lib/admin/settings", layers: ["types", "actionFlow", "presentation", "repository"] },
+  { key: "settings", label: "환경설정", basePath: "lib/admin/settings", layers: ["types", "selector", "actionFlow", "presentation", "repository"] },
 ];
 
 export function getAdminDomainStructureItem(key: AdminDomainKey): AdminDomainStructureItem | undefined {
