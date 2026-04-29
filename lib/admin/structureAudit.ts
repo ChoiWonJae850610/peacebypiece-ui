@@ -78,4 +78,6 @@ export function getAdminLegacyDeleteCandidates(): AdminLegacyPathAuditItem[] {
 }
 
 export { getAdminDbIntegrationPoints, getAdminDbIntegrationPoint } from "@/lib/admin/dbIntegration";
+export { getAdminDbCompletionSummary } from "@/lib/admin/dbCompletionAudit";
 export type { AdminDbIntegrationPoint, AdminDbConnectionState } from "@/lib/admin/dbIntegration";
+export type { AdminDbCompletionSummary, AdminDbScreenAuditItem, AdminDbScreenAuditStatus } from "@/lib/admin/dbCompletionAudit";

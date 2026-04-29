@@ -1,19 +1,21 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
+import AdminDbConnectionAuditPanel from "@/components/admin/dashboard/AdminDbConnectionAuditPanel";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
+import type { AdminDbCompletionSummary } from "@/lib/admin/dbCompletionAudit";
 import {
   ADMIN_DASHBOARD_PERIOD_OPTIONS,
   type AdminDashboardPeriod,
   type AdminOperationalDashboardSnapshots,
 } from "@/lib/admin/adminOperations.types";
+import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminOperationsDashboardProps = {
   snapshots: AdminOperationalDashboardSnapshots;
+  dbCompletionSummary: AdminDbCompletionSummary;
 };
-
-export default function AdminOperationsDashboard({ snapshots }: AdminOperationsDashboardProps) {
+export default function AdminOperationsDashboard({ snapshots, dbCompletionSummary }: AdminOperationsDashboardProps) {
   const t = useAdminTranslation();
   const [selectedPeriod, setSelectedPeriod] = useState<AdminDashboardPeriod>("month");
   const snapshot = snapshots[selectedPeriod];
@@ -21,6 +23,7 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
   const totalDistributionValue = useMemo(() => snapshot.statusDistribution.reduce((sum, item) => sum + item.value, 0), [snapshot.statusDistribution]);
 
   return (
+    <>
     <AdminCard className="flex flex-1 flex-col overflow-hidden lg:min-h-0">
       <div className="flex flex-col gap-4 border-b border-stone-100 pb-5 lg:flex-row lg:items-center lg:justify-between">
         <div>
@@ -115,5 +118,7 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
         </section>
       </div>
     </AdminCard>
+      <AdminDbConnectionAuditPanel summary={dbCompletionSummary} />
+    </>
   );
 }
