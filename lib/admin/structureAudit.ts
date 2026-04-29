@@ -1,4 +1,5 @@
 import { ADMIN_DOMAIN_STRUCTURE, type AdminDomainKey, type AdminDomainLayerKey } from "@/lib/admin/domainRegistry";
+import { getAdminDbIntegrationPoint } from "@/lib/admin/dbIntegration";
 import { ADMIN_LEGACY_PATH_AUDIT_ITEMS, type AdminLegacyPathAuditItem } from "@/lib/admin/legacyPathAudit";
 
 export type AdminRouteAuditItem = {
@@ -34,6 +35,13 @@ const DOMAIN_READY_LAYER_MINIMUMS: Record<AdminDomainKey, AdminDomainLayerKey[]>
   settings: ["types", "selector", "actionFlow", "presentation", "repository"],
 };
 
+function getDomainDbNote(domainKey: AdminDomainKey): string {
+  if (domainKey === "common") return "db 영향 없음";
+
+  const dbPoint = getAdminDbIntegrationPoint(domainKey);
+  return dbPoint ? `db=${dbPoint.state}; tables=${dbPoint.tables.join(",")}` : "db 영향 없음";
+}
+
 export function buildAdminDomainAuditItems(): AdminDomainAuditItem[] {
   return ADMIN_DOMAIN_STRUCTURE.map((domain) => {
     const requiredLayers = DOMAIN_READY_LAYER_MINIMUMS[domain.key];
@@ -43,6 +51,7 @@ export function buildAdminDomainAuditItems(): AdminDomainAuditItem[] {
       route ? `route=${route.routePath}` : "route 없음",
       route ? `ui=${route.uiPath}` : "ui 없음",
       missingLayers.length ? `누락 계층=${missingLayers.join(", ")}` : "필수 계층 충족",
+      getDomainDbNote(domain.key),
     ];
 
     return {
@@ -67,3 +76,6 @@ export function getAdminLegacyPathAuditItems(): AdminLegacyPathAuditItem[] {
 export function getAdminLegacyDeleteCandidates(): AdminLegacyPathAuditItem[] {
   return ADMIN_LEGACY_PATH_AUDIT_ITEMS.filter((item) => item.status === "removed");
 }
+
+export { getAdminDbIntegrationPoints, getAdminDbIntegrationPoint } from "@/lib/admin/dbIntegration";
+export type { AdminDbIntegrationPoint, AdminDbConnectionState } from "@/lib/admin/dbIntegration";
