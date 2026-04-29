@@ -289,10 +289,10 @@ export const ADMIN_STAT_FILE_USAGE_POINTS: AdminFileUsagePoint[] = [
   { label: "휴지통", value: 3, limit: 20, valueLabel: "3개" },
 ];
 
-export function getAdminStatMaxFlowValue(): number {
-  return Math.max(1, ...ADMIN_STAT_WORKORDER_FLOW.map((item) => item.value));
+export function getAdminStatMaxFlowValue(points: readonly AdminStatChartPoint[] = ADMIN_STAT_WORKORDER_FLOW): number {
+  return Math.max(1, ...points.map((item) => item.value));
 }
 
-export function getAdminStatTotalPartnerCount(): number {
-  return ADMIN_STAT_PARTNER_DISTRIBUTION.reduce((sum, item) => sum + item.value, 0);
+export function getAdminStatTotalPartnerCount(points: readonly AdminStatChartPoint[] = ADMIN_STAT_PARTNER_DISTRIBUTION): number {
+  return points.reduce((sum, item) => sum + item.value, 0);
 }
