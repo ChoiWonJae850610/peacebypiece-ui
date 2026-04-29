@@ -27,25 +27,25 @@ export const ADMIN_FILE_USAGE_LABELS = {
 export const ADMIN_STAT_SUMMARY_TEXT = {
   totalWorkorders: {
     label: "전체 작지",
-    href: "/worker",
+    href: null,
     description: "DB 기준 전체 작업 수",
     accent: "bg-blue-50 text-blue-700",
   },
   partnerCount: {
     label: "거래처 수",
-    href: "/admin/partners",
+    href: null,
     description: "활성 거래처 수",
     accent: "bg-emerald-50 text-emerald-700",
   },
   fileUsage: {
     label: "파일 사용량",
-    href: "/admin/files",
+    href: null,
     description: "현재 첨부파일 사용량",
     accent: "bg-violet-50 text-violet-700",
   },
   completedThisMonth: {
     label: "완료 작지",
-    href: "/worker",
+    href: null,
     description: "이번달 완료 처리",
     accent: "bg-stone-100 text-stone-700",
   },

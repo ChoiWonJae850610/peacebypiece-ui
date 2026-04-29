@@ -43,15 +43,13 @@ export const adminEn = {
   dashboardPage: {
     title: "Statistics",
     description: "Work orders · partners · file usage",
-    workorderFlowEyebrow: "WORKORDER FLOW",
     workorderFlowTitle: "Work order flow",
     dbSourceDescription: "Status volume based on DB data",
-    mockSourceDescription: "Status volume based on mock data",
+    dbNotConfiguredDescription: "No database connection is configured, so real data is shown as zero.",
+    dbErrorDescription: "Database lookup failed, so real data is shown as zero.",
     currentMonth: "This month",
-    partnersEyebrow: "PARTNERS",
     partnersTitle: "Partner distribution",
     partnerCountSuffix: "items",
-    fileUsageEyebrow: "FILE USAGE",
     fileUsageTitle: "File usage",
   },
   settingsForm: {

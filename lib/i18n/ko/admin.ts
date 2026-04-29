@@ -43,15 +43,13 @@ export const adminKo = {
   dashboardPage: {
     title: "통계정보",
     description: "작지 · 거래처 · 파일 사용량",
-    workorderFlowEyebrow: "WORKORDER FLOW",
     workorderFlowTitle: "작지 흐름",
     dbSourceDescription: "DB 기준 상태별 작업량",
-    mockSourceDescription: "mock 데이터 기준 상태별 작업량",
+    dbNotConfiguredDescription: "DB 연결 설정이 없어 실제 데이터 0건으로 표시됩니다.",
+    dbErrorDescription: "DB 조회 실패로 실제 데이터 0건으로 표시됩니다.",
     currentMonth: "이번달",
-    partnersEyebrow: "PARTNERS",
     partnersTitle: "거래처 분포",
     partnerCountSuffix: "개",
-    fileUsageEyebrow: "FILE USAGE",
     fileUsageTitle: "파일 사용량",
   },
   settingsForm: {

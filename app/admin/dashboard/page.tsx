@@ -15,6 +15,12 @@ export default async function AdminDashboardPage() {
   const stats = await getAdminStatsSnapshot();
   const maxFlowValue = getAdminStatMaxFlowValue(stats.workorderFlow);
   const totalPartnerCount = getAdminStatTotalPartnerCount(stats.partnerDistribution);
+  const sourceDescription =
+    stats.sourceState === "db"
+      ? pageText.dbSourceDescription
+      : stats.sourceState === "not_configured"
+        ? pageText.dbNotConfiguredDescription
+        : pageText.dbErrorDescription;
 
   return (
     <AdminShell
@@ -34,18 +40,18 @@ export default async function AdminDashboardPage() {
         <AdminCard className="flex min-h-0 flex-col overflow-hidden">
           <div className="flex items-start justify-between gap-3 border-b border-stone-100 pb-4">
             <div>
-                <h2 className="mt-2 text-lg font-semibold text-stone-950">{pageText.workorderFlowTitle}</h2>
-              <p className="mt-1 text-xs text-stone-500">{stats.sourceState === "db" ? pageText.dbSourceDescription : stats.sourceState === "not_configured" ? "DB 연결 설정이 없어 실제 데이터 0건으로 표시됩니다." : "DB 조회 실패로 실제 데이터 0건으로 표시됩니다."}</p>
+              <h2 className="text-lg font-semibold text-stone-950">{pageText.workorderFlowTitle}</h2>
+              <p className="mt-1 text-xs text-stone-500">{sourceDescription}</p>
             </div>
             <span className="rounded-full bg-stone-950 px-3 py-1.5 text-xs font-semibold text-white">{pageText.currentMonth}</span>
           </div>
 
-          <div className="mt-5 flex min-h-0 flex-1 items-end gap-4 rounded-[24px] border border-stone-100 bg-stone-50/70 px-5 pb-5 pt-8">
+          <div className="mt-5 flex min-h-0 flex-1 items-end gap-4 rounded-[24px] border border-stone-100 bg-stone-50/70 px-5 pb-5 pt-7">
             {stats.workorderFlow.map((item) => {
               const height = Math.max(8, Math.round((item.value / maxFlowValue) * 100));
               return (
                 <div key={item.label} className="flex min-w-0 flex-1 flex-col items-center justify-end gap-3">
-                  <div className="flex h-52 w-full items-end justify-center border-b border-stone-200">
+                  <div className="flex h-48 w-full items-end justify-center border-b border-stone-200">
                     <div className="w-full max-w-14 rounded-t-3xl bg-stone-950 shadow-sm" style={{ height: `${height}%` }} aria-label={`${item.label} ${item.value}건`} />
                   </div>
                   <div className="text-center">
@@ -58,11 +64,11 @@ export default async function AdminDashboardPage() {
           </div>
         </AdminCard>
 
-        <div className="grid min-h-0 gap-5 overflow-hidden">
+        <div className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-5 overflow-hidden">
           <AdminCard className="min-h-0">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h2 className="mt-2 text-lg font-semibold text-stone-950">{pageText.partnersTitle}</h2>
+                <h2 className="text-lg font-semibold text-stone-950">{pageText.partnersTitle}</h2>
               </div>
               <span className="text-xs font-semibold text-stone-400">{totalPartnerCount}{pageText.partnerCountSuffix}</span>
             </div>
@@ -84,14 +90,13 @@ export default async function AdminDashboardPage() {
             </div>
           </AdminCard>
 
-          <AdminCard className="min-h-0">
+          <AdminCard className="flex min-h-0 flex-col overflow-hidden">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h2 className="mt-2 text-lg font-semibold text-stone-950">{pageText.fileUsageTitle}</h2>
+                <h2 className="text-lg font-semibold text-stone-950">{pageText.fileUsageTitle}</h2>
               </div>
-              <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-500">{stats.sourceLabel}</span>
             </div>
-            <div className="mt-5 grid gap-3">
+            <div className="mt-4 grid min-h-0 gap-2 overflow-y-auto pr-1">
               {stats.fileUsagePoints.map((item) => {
                 const width = item.limit > 0 ? Math.min(100, Math.round((item.value / item.limit) * 100)) : 0;
                 return (
