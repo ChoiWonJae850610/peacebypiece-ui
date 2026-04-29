@@ -21,8 +21,8 @@ export const ADMIN_ROUTE_AUDIT_ITEMS: AdminRouteAuditItem[] = [
   { key: "stats", routePath: "app/admin/dashboard/page.tsx", uiPath: "components/admin/dashboard", legacyPaths: ["lib/admin/adminDashboard.presentation.ts", "lib/admin/adminStats.repository.ts"] },
   { key: "history", routePath: "app/admin/history/page.tsx", uiPath: "components/admin/history", legacyPaths: ["lib/admin/historyPresentation.ts", "lib/admin/useAdminHistoryTools.ts"] },
   { key: "files", routePath: "app/admin/files/page.tsx", uiPath: "components/admin/files", legacyPaths: ["lib/admin/adminFiles.*"] },
-  { key: "partner", routePath: "app/admin/partners/page.tsx", uiPath: "components/admin/partnerMaster", legacyPaths: ["lib/admin/partnerMaster.*"] },
-  { key: "settings", routePath: "app/admin/settings/page.tsx", uiPath: "components/admin/settings", legacyPaths: ["lib/admin/adminSettings.*", "lib/admin/companySettings.*", "lib/admin/standards.*"] },
+  { key: "partner", routePath: "app/admin/partners/page.tsx", uiPath: "components/admin/partnerMaster", legacyPaths: [] },
+  { key: "settings", routePath: "app/admin/settings/page.tsx", uiPath: "components/admin/settings", legacyPaths: [] },
 ];
 
 const DOMAIN_READY_LAYER_MINIMUMS: Record<AdminDomainKey, AdminDomainLayerKey[]> = {
@@ -65,5 +65,5 @@ export function getAdminLegacyPathAuditItems(): AdminLegacyPathAuditItem[] {
 }
 
 export function getAdminLegacyDeleteCandidates(): AdminLegacyPathAuditItem[] {
-  return ADMIN_LEGACY_PATH_AUDIT_ITEMS.filter((item) => item.status === "delete-candidate");
+  return ADMIN_LEGACY_PATH_AUDIT_ITEMS.filter((item) => item.status === "removed");
 }
