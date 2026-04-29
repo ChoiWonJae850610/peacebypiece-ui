@@ -1,5 +1,6 @@
 "use client";
 
+import AdminActionBar from "@/components/admin/common/AdminActionBar";
 import type { AdminTrashFileItem } from "@/lib/admin/files/types";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
@@ -25,9 +26,7 @@ export default function FileTrashSection({ items, selectedItemIds, onToggleItem,
 
   return (
     <section className="flex h-full min-h-0 flex-col rounded-[28px] border border-stone-200 bg-white p-3.5 shadow-sm">
-      <div className="flex shrink-0 flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <h2 className="text-base font-semibold tracking-tight text-stone-950">{t("trashPage.title", "휴지통")}</h2>
-        <div className="flex flex-wrap gap-1.5">
+      <AdminActionBar title={t("trashPage.title", "휴지통")}>
           <button type="button" onClick={onToggleAll} className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm hover:bg-stone-50">
             {allSelected ? t("filesList.clearAll", "전체 해제") : t("filesList.selectAll", "전체 선택")}
           </button>
@@ -37,8 +36,7 @@ export default function FileTrashSection({ items, selectedItemIds, onToggleItem,
           <button type="button" onClick={onPurge} className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${hasSelection ? "border-red-200 bg-white text-red-600 shadow-sm hover:bg-red-50" : "border-stone-200 bg-stone-50 text-stone-400"}`} disabled={!hasSelection}>
             {t("filesList.purge", "영구 삭제")} {hasSelection ? selectedItemIds.length : ""}
           </button>
-        </div>
-      </div>
+      </AdminActionBar>
 
       <div className="mt-2.5 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[24px] border border-stone-200">
         <div className="hidden grid-cols-[0.38fr_1.08fr_0.82fr_1.72fr_0.68fr_0.72fr] gap-3 bg-stone-50 px-4 py-1.5 text-[10px] font-semibold text-stone-500 md:grid">

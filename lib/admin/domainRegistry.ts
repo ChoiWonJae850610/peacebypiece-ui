@@ -1,6 +1,6 @@
-export type AdminDomainKey = "stats" | "history" | "files" | "partner" | "settings";
+export type AdminDomainKey = "common" | "stats" | "history" | "files" | "partner" | "settings";
 
-export type AdminDomainLayerKey = "types" | "selector" | "actionFlow" | "presentation" | "repository" | "adapter";
+export type AdminDomainLayerKey = "types" | "ui" | "selector" | "actionFlow" | "presentation" | "repository" | "adapter";
 
 export type AdminDomainStructureItem = {
   key: AdminDomainKey;
@@ -10,6 +10,7 @@ export type AdminDomainStructureItem = {
 };
 
 export const ADMIN_DOMAIN_STRUCTURE: AdminDomainStructureItem[] = [
+  { key: "common", label: "관리자 공통 레이어", basePath: "lib/admin/common", layers: ["types", "ui"] },
   { key: "stats", label: "통계정보", basePath: "lib/admin/stats", layers: ["types", "selector", "presentation", "repository"] },
   { key: "history", label: "히스토리", basePath: "lib/admin/history", layers: ["types", "selector", "presentation", "repository"] },
   { key: "files", label: "저장소 관리", basePath: "lib/admin/files", layers: ["types", "selector", "actionFlow", "presentation", "adapter"] },
