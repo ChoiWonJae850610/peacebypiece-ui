@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import AdminFilterBar from "@/components/admin/common/AdminFilterBar";
 import FileListSection from "@/components/admin/files/FileListSection";
 import FileStorageSummary from "@/components/admin/files/FileStorageSummary";
 import FileTrashSection from "@/components/admin/files/FileTrashSection";
@@ -129,20 +130,16 @@ export default function AdminFilesPage() {
           onRefresh={refreshSnapshot}
         />
 
-        <div className="mt-4 flex shrink-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="flex flex-wrap gap-2">
-            {snapshot.tabs.filter((tab) => tab.key !== "storage").map((tab) => {
-              const isActive = activeTab === tab.key;
-              return (
-                <button key={tab.key} type="button" onClick={() => handleChangeTab(tab.key)} className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${isActive ? "border-[var(--admin-theme-surface)] bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"}`}>
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-
-
-        </div>
+        <AdminFilterBar className="mt-4 shrink-0 bg-white">
+          {snapshot.tabs.filter((tab) => tab.key !== "storage").map((tab) => {
+            const isActive = activeTab === tab.key;
+            return (
+              <button key={tab.key} type="button" onClick={() => handleChangeTab(tab.key)} className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${isActive ? "border-[var(--admin-theme-surface)] bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "border-stone-300 bg-white text-stone-700 shadow-sm hover:bg-stone-50"}`}>
+                {tab.label}
+              </button>
+            );
+          })}
+        </AdminFilterBar>
 
         {actionMessage ? (
           <section className="pointer-events-none absolute bottom-5 right-5 z-10 max-w-md rounded-2xl bg-[var(--admin-theme-surface)] px-4 py-3 text-sm font-semibold text-[var(--admin-theme-text-on-surface)] shadow-xl">

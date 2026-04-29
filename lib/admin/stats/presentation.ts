@@ -4,6 +4,7 @@ import type { AdminStatsSourceState } from "@/lib/admin/stats/types";
 export type AdminStatsDashboardViewModel = {
   sourceDescription: string;
   maxFlowValue: number;
+  totalFlowValue: number;
   totalPartnerCount: number;
   workorderBars: AdminStatsBarViewModel[];
   partnerBars: AdminStatsRatioViewModel[];
@@ -19,6 +20,7 @@ export type AdminStatsText = {
 export type AdminStatsBarViewModel = AdminStatChartPoint & {
   heightPercent: number;
   ariaLabel: string;
+  isEmpty: boolean;
 };
 
 export type AdminStatsRatioViewModel = AdminFileUsagePoint & {
@@ -52,16 +54,19 @@ export function buildAdminStatsDashboardViewModel(payload: {
   fileUsagePoints: readonly AdminFileUsagePoint[];
 }): AdminStatsDashboardViewModel {
   const maxFlowValue = getAdminStatsMaxValue(payload.workorderFlow);
+  const totalFlowValue = getAdminStatsTotalValue(payload.workorderFlow);
   const totalPartnerCount = getAdminStatsTotalValue(payload.partnerDistribution);
 
   return {
     sourceDescription: getAdminStatsSourceDescription(payload.sourceState, payload.text),
     maxFlowValue,
+    totalFlowValue,
     totalPartnerCount,
     workorderBars: payload.workorderFlow.map((item) => ({
       ...item,
-      heightPercent: getAdminStatsPercent(item.value, maxFlowValue, 8),
+      heightPercent: item.value > 0 ? getAdminStatsPercent(item.value, maxFlowValue, 12) : 0,
       ariaLabel: `${item.label} ${item.value}건`,
+      isEmpty: item.value <= 0,
     })),
     partnerBars: payload.partnerDistribution.map((item) => ({
       ...item,

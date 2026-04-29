@@ -35,11 +35,20 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
             <span className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--admin-theme-text-on-surface)]">{pageText.currentMonth}</span>
           </div>
 
-          <div className="mt-5 flex min-h-0 flex-1 items-end gap-4 rounded-[24px] border border-stone-100 bg-stone-50/70 px-5 pb-5 pt-7">
+          <div className="relative mt-5 flex min-h-0 flex-1 items-end gap-4 rounded-[24px] border border-stone-100 bg-stone-50/70 px-5 pb-5 pt-7">
+            {viewModel.totalFlowValue === 0 ? (
+              <div className="absolute inset-x-5 top-5 rounded-2xl border border-dashed border-stone-300 bg-white/75 px-4 py-3 text-center text-xs font-semibold text-stone-500">
+                {pageText.emptyFlowLabel}
+              </div>
+            ) : null}
             {viewModel.workorderBars.map((item) => (
               <div key={item.label} className="flex min-w-0 flex-1 flex-col items-center justify-end gap-3">
                 <div className="flex h-48 w-full items-end justify-center border-b border-stone-200">
-                  <div className="w-full max-w-14 rounded-t-3xl bg-[var(--admin-theme-surface)] shadow-sm" style={{ height: `${item.heightPercent}%` }} aria-label={item.ariaLabel} />
+                  <div
+                    className={`w-full max-w-14 rounded-t-3xl shadow-sm transition ${item.isEmpty ? "bg-stone-200" : "bg-[var(--admin-theme-surface)]"}`}
+                    style={{ height: `${item.heightPercent}%` }}
+                    aria-label={item.ariaLabel}
+                  />
                 </div>
                 <div className="text-center">
                   <p className="text-base font-semibold text-stone-950">{item.value}</p>

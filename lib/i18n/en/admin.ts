@@ -58,6 +58,7 @@ export const adminEn = {
     partnersTitle: "Partner Distribution",
     partnerCountSuffix: "items",
     fileUsageTitle: "File usage",
+    emptyFlowLabel: "No work order status data for this month.",
   },
   settingsForm: {
     title: "Settings",

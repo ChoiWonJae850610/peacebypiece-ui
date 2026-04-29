@@ -1,5 +1,6 @@
 "use client";
 
+import AdminActionBar from "@/components/admin/common/AdminActionBar";
 import type {
   AdminFileTrendPeriod,
   AdminFileTypeDistributionItem,
@@ -42,18 +43,18 @@ function MiniUsageChart({ points: trendPoints = [] }: { points?: AdminRecentUplo
     .join(" ");
 
   return (
-    <div className="flex h-full min-h-0 flex-col rounded-[20px] bg-white/10 px-3 py-3.5">
-      <div className="flex shrink-0 items-center justify-between text-[10px] font-semibold text-stone-300">
+    <div className="flex h-full min-h-0 flex-col rounded-[20px] border border-stone-200 bg-white px-3 py-3.5">
+      <div className="flex shrink-0 items-center justify-between text-[10px] font-semibold text-stone-500">
         <span>{t("filesSummary.uploadAmount", "첨부량")}</span>
         <span>{t("filesSummary.count", "건수")}</span>
       </div>
-      <div className="flex min-h-0 flex-1 items-center justify-center pt-2">
+      <div className="flex min-h-0 flex-1 items-center justify-center pt-2 text-[var(--admin-theme-surface)]">
         <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="h-[46px] w-full" aria-hidden="true">
-          <polyline points={chartPoints} fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-white" />
+          <polyline points={chartPoints} fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
           {values.map((value, index) => {
             const x = 9 + index * step;
             const y = chartHeight - 9 - (value / max) * 26;
-            return <circle key={`${value}-${index}`} cx={x} cy={y} r="2.2" className="fill-white" />;
+            return <circle key={`${value}-${index}`} cx={x} cy={y} r="2.2" fill="currentColor" />;
           })}
         </svg>
       </div>
@@ -73,14 +74,14 @@ function DonutChart({ items = [] }: { items?: AdminFileTypeDistributionItem[] })
   let offset = 0;
 
   return (
-    <div className="flex h-full min-h-0 flex-col rounded-[20px] bg-white/10 px-3 py-3.5">
-      <div className="flex shrink-0 items-center justify-between text-[10px] font-semibold text-stone-300">
+    <div className="flex h-full min-h-0 flex-col rounded-[20px] border border-stone-200 bg-white px-3 py-3.5">
+      <div className="flex shrink-0 items-center justify-between text-[10px] font-semibold text-stone-500">
         <span>{t("filesSummary.fileType", "파일 유형")}</span>
         <span>{total}{t("filesSummary.countSuffix", "개")}</span>
       </div>
       <div className="flex min-h-0 flex-1 items-center gap-3 pt-2">
         <svg viewBox="0 0 72 72" className="h-[48px] w-[48px] shrink-0 -rotate-90" aria-hidden="true">
-          <circle cx="36" cy="36" r={radius} fill="none" stroke="rgba(255,255,255,0.16)" strokeWidth="11" />
+          <circle cx="36" cy="36" r={radius} fill="none" stroke="rgb(231 229 228)" strokeWidth="11" />
           {total > 0
             ? normalizedItems.map((item, index) => {
                 const dash = (item.value / total) * circumference;
@@ -99,7 +100,7 @@ function DonutChart({ items = [] }: { items?: AdminFileTypeDistributionItem[] })
                     strokeDasharray={strokeDasharray}
                     strokeDashoffset={strokeDashoffset}
                     strokeLinecap="round"
-                    className={index === 0 ? "text-white" : index === 1 ? "text-stone-400" : "text-stone-600"}
+                    className={index === 0 ? "text-[var(--admin-theme-surface)]" : index === 1 ? "text-stone-400" : "text-stone-300"}
                   />
                 );
               })
@@ -108,8 +109,8 @@ function DonutChart({ items = [] }: { items?: AdminFileTypeDistributionItem[] })
         <div className="min-w-0 flex-1 space-y-1.5">
           {normalizedItems.map((item) => (
             <div key={item.label} className="flex items-center justify-between gap-2 text-[11px]">
-              <span className="font-semibold text-stone-300">{item.label}</span>
-              <span className="font-semibold text-white">{item.percent}%</span>
+              <span className="font-semibold text-stone-500">{item.label}</span>
+              <span className="font-semibold text-stone-950">{item.percent}%</span>
             </div>
           ))}
         </div>
@@ -142,73 +143,68 @@ export default function FileStorageSummary({
   ];
 
   return (
-    <section className="shrink-0 rounded-[28px] border border-stone-200 bg-stone-50 p-3">
-      <div className="relative h-[314px] overflow-hidden rounded-[26px] bg-[var(--admin-theme-surface)] p-5 text-[var(--admin-theme-text-on-surface)] transition-colors">
-        <div className="flex h-full min-h-0 flex-col">
-          <div className="flex shrink-0 items-center justify-between gap-3">
-            <div className="flex flex-wrap gap-2">
-              {TREND_PERIODS.map((period) => {
-                const isActive = recentUploadTrendPeriod === period;
-                return (
-                  <button
-                    key={period}
-                    type="button"
-                    onClick={() => onChangeTrendPeriod(period)}
-                    className={`rounded-full px-3 py-1 text-xs font-semibold transition ${isActive ? "bg-white text-stone-950" : "bg-white/10 text-stone-300 hover:bg-white/15"}`}
-                  >
-                    {t(`filesSummary.periods.${period}`, `${period}일`)}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="mt-4 grid h-[220px] min-h-0 gap-3 lg:grid-cols-[1fr_1fr]">
-            <div className="flex min-h-0 flex-col">
-              <div className="shrink-0">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-2xl font-semibold tracking-tight">{usageSummary.usedLabel}</p>
-                    <p className="mt-1.5 text-[11px] font-semibold text-stone-300">{t("filesSummary.usage", "사용량")}</p>
-                  </div>
-                  <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${isWarning ? "bg-amber-100 text-amber-900" : "bg-white/10 text-white"}`}>{usageSummary.statusLabel}</span>
-                </div>
-                <div className="mt-2 flex items-center justify-between gap-3 text-[11px] text-stone-300">
-                  <span>{usageSummary.usagePercent}%</span>
-                  <span>{usageSummary.limitLabel}</span>
-                </div>
-                <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-white/15">
-                  <div className={`h-full rounded-full ${isWarning ? "bg-amber-300" : "bg-white"}`} style={{ width: `${usageSummary.usagePercent}%` }} />
-                </div>
-              </div>
-
-              <div className="mt-4 grid flex-1 grid-cols-2 gap-2.5">
-                {summaryItems.map((item) => (
-                  <div key={item.label} className="flex min-h-[56px] flex-col justify-center rounded-2xl bg-white/10 px-3 py-2.5">
-                    <p className="text-[10px] font-semibold text-stone-300">{item.label}</p>
-                    <p className="mt-1.5 text-sm font-semibold text-white">{item.value}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="relative flex min-h-0 flex-col justify-end pt-[56px]">
+    <section className="shrink-0 rounded-[28px] border border-stone-200 bg-white p-4 shadow-sm">
+      <AdminActionBar
+        title={t("filesSummary.title", "저장소 사용 현황")}
+        description={t("filesSummary.description", "첨부파일 사용량, 최근 업로드, 파일 유형을 같은 기준으로 확인합니다.")}
+      >
+        <div className="flex flex-wrap gap-1.5">
+          {TREND_PERIODS.map((period) => {
+            const isActive = recentUploadTrendPeriod === period;
+            return (
               <button
+                key={period}
                 type="button"
-                onClick={onRefresh}
-                aria-label={t("filesSummary.refreshLabel", "저장소 데이터 새로고침")}
-                title={t("filesSummary.refreshLabel", "저장소 데이터 새로고침")}
-                disabled={isRefreshing}
-                className="absolute right-0 top-0 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white transition hover:bg-white/15 disabled:text-stone-500"
+                onClick={() => onChangeTrendPeriod(period)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${isActive ? "border-[var(--admin-theme-surface)] bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "border-stone-300 bg-white text-stone-700 shadow-sm hover:bg-stone-50"}`}
               >
-                <span aria-hidden="true">↻</span>
+                {t(`filesSummary.periods.${period}`, `${period}일`)}
               </button>
-              <div className="grid h-[164px] grid-rows-2 gap-3 translate-y-[22px]">
-                <MiniUsageChart points={recentUploadTrend} />
-                <DonutChart items={fileTypeDistribution} />
-              </div>
+            );
+          })}
+          <button
+            type="button"
+            onClick={onRefresh}
+            aria-label={t("filesSummary.refreshLabel", "저장소 데이터 새로고침")}
+            title={t("filesSummary.refreshLabel", "저장소 데이터 새로고침")}
+            disabled={isRefreshing}
+            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-stone-300 bg-white text-sm font-semibold text-stone-700 shadow-sm transition hover:bg-stone-50 disabled:text-stone-400"
+          >
+            <span aria-hidden="true">↻</span>
+          </button>
+        </div>
+      </AdminActionBar>
+
+      <div className="mt-4 grid gap-3 xl:grid-cols-[1fr_0.92fr]">
+        <div className="rounded-[24px] border border-stone-200 bg-stone-50/70 p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-2xl font-semibold tracking-tight text-stone-950">{usageSummary.usedLabel}</p>
+              <p className="mt-1.5 text-[11px] font-semibold text-stone-500">{t("filesSummary.usage", "사용량")}</p>
             </div>
+            <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${isWarning ? "bg-amber-100 text-amber-900" : "bg-stone-950 text-white"}`}>{usageSummary.statusLabel}</span>
           </div>
+          <div className="mt-3 flex items-center justify-between gap-3 text-[11px] font-medium text-stone-500">
+            <span>{usageSummary.usagePercent}%</span>
+            <span>{usageSummary.limitLabel}</span>
+          </div>
+          <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-white">
+            <div className={`h-full rounded-full ${isWarning ? "bg-amber-400" : "bg-[var(--admin-theme-surface)]"}`} style={{ width: `${usageSummary.usagePercent}%` }} />
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-2.5">
+            {summaryItems.map((item) => (
+              <div key={item.label} className="flex min-h-[62px] flex-col justify-center rounded-2xl border border-stone-200 bg-white px-3 py-2.5">
+                <p className="text-[10px] font-semibold text-stone-500">{item.label}</p>
+                <p className="mt-1.5 text-sm font-semibold text-stone-950">{item.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-1">
+          <MiniUsageChart points={recentUploadTrend} />
+          <DonutChart items={fileTypeDistribution} />
         </div>
       </div>
     </section>
