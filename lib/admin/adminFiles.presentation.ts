@@ -24,7 +24,7 @@ export const ADMIN_FILE_USAGE_SUMMARY: AdminStorageUsageSummary = {
 
 export const ADMIN_FILE_USAGE_CARDS: AdminFileUsageCard[] = [
   { label: "전체 사용량", value: "2.0GB / 5.0GB", description: "휴지통 보관 파일 포함" },
-  { label: "첨부파일", value: "3개", description: "작지에 연결된 이미지, PDF, 기타 파일" },
+  { label: "첨부파일", value: "3개", description: "작업지시서에 연결된 이미지, PDF, 기타 파일" },
   { label: "휴지통", value: "2개", description: "소프트 삭제 후 보관 중인 파일" },
   { label: "복구 가능 기간", value: "15일", description: "company_settings.trash_retention_days 기준" },
 ];
@@ -33,7 +33,7 @@ export const ADMIN_FILE_TABS: AdminFileTabItem[] = [
   {
     key: "attachments",
     label: "첨부파일 목록",
-    description: "작지명, 파일명, 파일 유형, 용량, 등록자를 함께 확인",
+    description: "작업지시서명, 파일명, 파일 유형, 용량, 등록자를 함께 확인",
   },
   {
     key: "trash",
@@ -50,14 +50,14 @@ export const ADMIN_FILE_TABS: AdminFileTabItem[] = [
 export const ADMIN_FILE_SORT_OPTIONS: { key: AdminFileSortKey; label: string }[] = [
   { key: "latest", label: "최신순" },
   { key: "size", label: "용량순" },
-  { key: "workorder", label: "작지명순" },
+  { key: "workorder", label: "작업지시서명순" },
 ];
 
 export const ADMIN_FILE_LIST_PLACEHOLDERS: AdminManagedFileItem[] = [
   {
     id: "sample-attachment-1",
     workorderId: "sample-workorder-1",
-    workorderTitle: "샘플 작지 A",
+    workorderTitle: "샘플 작업지시서 A",
     fileName: "design-reference.png",
     fileType: "이미지",
     fileIcon: "IMG",
@@ -75,7 +75,7 @@ export const ADMIN_FILE_LIST_PLACEHOLDERS: AdminManagedFileItem[] = [
   {
     id: "sample-attachment-2",
     workorderId: "sample-workorder-2",
-    workorderTitle: "샘플 작지 B",
+    workorderTitle: "샘플 작업지시서 B",
     fileName: "production-note.pdf",
     fileType: "PDF",
     fileIcon: "PDF",
@@ -93,7 +93,7 @@ export const ADMIN_FILE_LIST_PLACEHOLDERS: AdminManagedFileItem[] = [
   {
     id: "sample-attachment-3",
     workorderId: "sample-workorder-3",
-    workorderTitle: "샘플 작지 C",
+    workorderTitle: "샘플 작업지시서 C",
     fileName: "factory-reference.xlsx",
     fileType: "기타",
     fileIcon: "FILE",
@@ -115,7 +115,7 @@ export const ADMIN_FILE_TRASH_PLACEHOLDERS: AdminTrashFileItem[] = [
     id: "sample-trash-1",
     attachmentId: "sample-attachment-4",
     workorderId: "sample-workorder-1",
-    workorderTitle: "샘플 작지 A",
+    workorderTitle: "샘플 작업지시서 A",
     fileName: "removed-reference.pdf",
     fileIcon: "PDF",
     fileSizeBytes: 5242880,
@@ -135,7 +135,7 @@ export const ADMIN_FILE_TRASH_PLACEHOLDERS: AdminTrashFileItem[] = [
     id: "sample-trash-2",
     attachmentId: "sample-attachment-5",
     workorderId: "sample-workorder-2",
-    workorderTitle: "샘플 작지 B",
+    workorderTitle: "샘플 작업지시서 B",
     fileName: "old-detail-image.jpg",
     fileIcon: "IMG",
     fileSizeBytes: 9437184,

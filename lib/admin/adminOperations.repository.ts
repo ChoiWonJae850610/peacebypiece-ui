@@ -82,9 +82,9 @@ function emptySnapshot(period: AdminDashboardPeriod, sourceState: AdminOperation
     statusFlow: ADMIN_WORKORDER_FLOW_BUCKETS.map((bucket) => ({ label: bucket.label, value: 0 })),
     statusDistribution: ADMIN_DASHBOARD_STATUS_DISTRIBUTION_BUCKETS.map((bucket) => ({ label: bucket.label, value: 0 })),
     insights: [
-      { label: "오늘 생성", value: "0", description: "선택 기간에 새로 등록된 작지" },
-      { label: "검토 지연", value: "0", description: "검토요청 후 24시간이 지난 작지" },
-      { label: "입고 지연", value: "0", description: "납기일 0시 기준 24시간이 지난 입고대기 작지" },
+      { label: "오늘 생성", value: "0", description: "선택 기간에 새로 등록된 작업지시서" },
+      { label: "검토 지연", value: "0", description: "검토요청 후 24시간이 지난 작업지시서" },
+      { label: "입고 지연", value: "0", description: "납기일 0시 기준 24시간이 지난 입고대기 작업지시서" },
     ],
     sourceState,
   };
@@ -139,9 +139,9 @@ function buildSnapshot(period: AdminDashboardPeriod, workorders: WorkorderRow[],
       value: countByStatuses(workorders, bucket.statuses, period, now),
     })),
     insights: [
-      { label: period === "today" ? "오늘 생성" : "기간 내 생성", value: String(createdCount), description: "선택 기간에 새로 등록된 작지" },
-      { label: "검토 지연", value: String(reviewDelayedCount), description: "검토요청 후 24시간이 지난 작지" },
-      { label: "입고 지연", value: String(inboundDelayedCount), description: "납기일 0시 기준 24시간이 지난 입고대기 작지" },
+      { label: period === "today" ? "오늘 생성" : "기간 내 생성", value: String(createdCount), description: "선택 기간에 새로 등록된 작업지시서" },
+      { label: "검토 지연", value: String(reviewDelayedCount), description: "검토요청 후 24시간이 지난 작업지시서" },
+      { label: "입고 지연", value: String(inboundDelayedCount), description: "납기일 0시 기준 24시간이 지난 입고대기 작업지시서" },
     ],
     sourceState: "db",
   };

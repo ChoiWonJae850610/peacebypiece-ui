@@ -36,7 +36,7 @@ async function writePartnerHistory(input: {
     target_id: input.partnerId ?? null,
     message: input.action === "processes"
       ? `외주 공정 유형 ${input.processCount ?? 0}개 저장`
-      : `${input.partnerName || "거래처"} ${input.action === "created" ? "등록" : "수정"}`,
+      : `${input.partnerName || "협력업체"} ${input.action === "created" ? "등록" : "수정"}`,
     metadata: input,
   });
 }

@@ -27,7 +27,7 @@ export default function PartnerMasterList({ items, isLoading = false, onEditPart
       </div>
       <div className="min-h-0 flex-1 divide-y divide-stone-200 overflow-y-auto">
         {isLoading ? (
-          <div className="flex h-full min-h-[320px] items-center justify-center px-4 py-10 text-center text-sm font-medium text-stone-400">거래처 목록을 불러오는 중입니다.</div>
+          <div className="flex h-full min-h-[320px] items-center justify-center px-4 py-10 text-center text-sm font-medium text-stone-400">협력업체 목록을 불러오는 중입니다.</div>
         ) : items.length === 0 ? (
           <div className="flex h-full min-h-[320px] items-center justify-center px-4 py-10 text-center text-sm font-medium text-stone-500">{listText.empty}</div>
         ) : (

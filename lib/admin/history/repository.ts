@@ -119,7 +119,7 @@ export async function listAdminHistoryEvents(): Promise<import("@/lib/admin/hist
         tone: toAdminHistoryTone(row.action_type),
         summary: row.message ?? "",
         detailLines: Object.entries(metadata).map(([label, value]) => ({ label, value: String(value) })),
-        transition: null,
+        transition: typeof metadata.from === "string" && typeof metadata.to === "string" ? { from: metadata.from, to: metadata.to } : null,
       };
     });
   } catch (error) {

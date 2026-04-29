@@ -23,6 +23,6 @@ export const HISTORY_LOG_ACTION_LABELS: Record<HistoryLogActionType, string> = {
   STATUS_CHANGED: "상태 변경",
   FILE_UPLOADED: "파일 업로드",
   FILE_DELETED: "파일 삭제",
-  PARTNER_UPDATED: "거래처 수정",
+  PARTNER_UPDATED: "협력업체 수정",
   SETTINGS_CHANGED: "환경설정 변경",
 };

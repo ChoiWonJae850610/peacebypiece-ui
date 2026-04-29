@@ -30,7 +30,7 @@ export type AdminDashboardSection = {
 };
 
 export const ADMIN_SUMMARY_CARDS: AdminSummaryCard[] = [
-  { label: "작업중인 작지", value: "0", href: "/worker", description: "발주 전 작업 대상", accent: "bg-blue-50 text-blue-700" },
+  { label: "작업중인 작업지시서", value: "0", href: "/worker", description: "발주 전 작업 대상", accent: "bg-blue-50 text-blue-700" },
   { label: "검토 대기", value: "0", href: "/worker", description: "관리자 확인 필요", accent: "bg-amber-50 text-amber-700" },
   { label: "입고 대기", value: "0", href: "/worker", description: "발주 이후 검수 전", accent: "bg-violet-50 text-violet-700" },
   { label: "첨부파일 사용량", value: "0GB / 5GB", href: "/admin/files", description: "저장소 사용 현황", accent: "bg-emerald-50 text-emerald-700" },
@@ -75,9 +75,9 @@ export const ADMIN_DASHBOARD_DISTRIBUTION: AdminDashboardStagePoint[] = [
 ];
 
 export const ADMIN_DASHBOARD_INSIGHT_ITEMS: AdminDashboardInsightItem[] = [
-  { label: "오늘 생성", value: "0", description: "오늘 새로 등록된 작지" },
-  { label: "검토 지연", value: "0", description: "관리자 확인이 늦어진 작지" },
-  { label: "입고 지연", value: "0", description: "발주 이후 검수가 필요한 작지" },
+  { label: "오늘 생성", value: "0", description: "오늘 새로 등록된 작업지시서" },
+  { label: "검토 지연", value: "0", description: "관리자 확인이 늦어진 작업지시서" },
+  { label: "입고 지연", value: "0", description: "발주 이후 검수가 필요한 작업지시서" },
 ];
 
 export function getAdminDashboardMaxStageValue(): number {
@@ -87,7 +87,7 @@ export function getAdminDashboardMaxStageValue(): number {
 export const ADMIN_NAVIGATION_ITEMS: AdminNavigationItem[] = [
   { label: "대시보드", href: "/admin", icon: "dashboard", translationKey: "dashboard" },
   { label: "작업지시서", href: "/worker", icon: "workorder", translationKey: "workorder" },
-  { label: "거래처 관리", href: "/admin/partners", icon: "partners", translationKey: "partners" },
+  { label: "협력업체 관리", href: "/admin/partners", icon: "partners", translationKey: "partners" },
   { label: "저장소 관리", href: "/admin/files", icon: "storage", translationKey: "storage" },
   { label: "통계정보", href: "/admin/dashboard", icon: "statistics", translationKey: "statistics" },
   { label: "히스토리", href: "/admin/history", icon: "history", translationKey: "history" },
@@ -96,17 +96,17 @@ export const ADMIN_NAVIGATION_ITEMS: AdminNavigationItem[] = [
 
 export const ADMIN_DASHBOARD_SECTIONS: AdminDashboardSection[] = [
   {
-    title: "작지 운영",
+    title: "작업지시서 운영",
     items: [
-      { label: "검토 대기 작지", description: "관리자 확인이 필요한 작지를 확인", href: "/worker", icon: "✓" },
-      { label: "작업중인 작지", description: "발주 전 단계의 작업 흐름 확인", href: "/worker", icon: "□" },
-      { label: "작지 히스토리", description: "상태 변경과 주요 작업 기록 확인", href: "/admin/history", icon: "◷" },
+      { label: "검토 대기 작업지시서", description: "관리자 확인이 필요한 작업지시서를 확인", href: "/worker", icon: "✓" },
+      { label: "작업중인 작업지시서", description: "발주 전 단계의 작업 흐름 확인", href: "/worker", icon: "□" },
+      { label: "작업지시서 히스토리", description: "상태 변경과 주요 작업 기록 확인", href: "/admin/history", icon: "◷" },
     ],
   },
   {
     title: "운영 기준",
     items: [
-      { label: "거래처 / 공장 관리", description: "공장, 원단, 부자재, 외주처 정보 관리", href: "/admin/partners", icon: "▦" },
+      { label: "협력업체 관리", description: "공장, 원단, 부자재, 외주처 정보 관리", href: "/admin/partners", icon: "▦" },
       { label: "환경설정", description: "파일 정책, 알림, 기준 설정 관리", href: "/admin/settings", icon: "⚙" },
       { label: "환경설정", description: "파일 정책과 알림 이벤트 설정 관리", href: "/admin/settings", icon: "⚙" },
     ],
@@ -124,7 +124,7 @@ export const ADMIN_DASHBOARD_STATUS_PANEL: AdminDashboardStatusPanel = {
   title: "파일 / 시스템 상태",
   items: [
     { label: "파일/용량 관리", description: "첨부파일 사용량, 휴지통, purge 상태 확인", href: "/admin/files", icon: "▤" },
-    { label: "통계 화면", description: "작지, 거래처, 파일 사용량 지표 확인", href: "/admin/dashboard", icon: "▥" },
+    { label: "통계 화면", description: "작업지시서, 협력업체, 파일 사용량 지표 확인", href: "/admin/dashboard", icon: "▥" },
     { label: "알림 설정", description: "검토, 발주, 용량 이벤트 기준 설정", href: "/admin/settings", icon: "⚙" },
   ],
 };
@@ -138,15 +138,15 @@ export function getAdminDashboardStatusPanel(): AdminDashboardStatusPanel {
 }
 
 export const ADMIN_STAT_SUMMARIES: AdminSummaryCard[] = [
-  { label: "전체 작지", value: "37", href: "/worker", description: "mock 기준 전체 작업 수", accent: "bg-blue-50 text-blue-700" },
-  { label: "거래처 수", value: "35", href: "/admin/partners", description: "공장/원단/부자재/외주 합계", accent: "bg-emerald-50 text-emerald-700" },
+  { label: "전체 작업지시서", value: "37", href: "/worker", description: "mock 기준 전체 작업 수", accent: "bg-blue-50 text-blue-700" },
+  { label: "협력업체 수", value: "35", href: "/admin/partners", description: "공장/원단/부자재/외주 합계", accent: "bg-emerald-50 text-emerald-700" },
   { label: "파일 사용량", value: "9MB", href: "/admin/files", description: "현재 첨부파일 사용량", accent: "bg-violet-50 text-violet-700" },
-  { label: "완료 작지", value: "9", href: "/worker", description: "이번달 완료 처리", accent: "bg-stone-100 text-stone-700" },
+  { label: "완료된 작업지시서", value: "9", href: "/worker", description: "이번달 완료 처리", accent: "bg-stone-100 text-stone-700" },
 ];
 
 export const ADMIN_DASHBOARD_PLACEHOLDERS = [
-  { title: "작지 흐름", description: "작성중, 검토 대기, 발주 준비, 완료 상태별 집계 영역" },
-  { title: "거래처 운영", description: "공장, 원단, 부자재, 외주처 사용 현황 집계 영역" },
+  { title: "작업지시서 현황", description: "작성중, 검토 대기, 발주 준비, 완료 상태별 집계 영역" },
+  { title: "협력업체 운영", description: "공장, 원단, 부자재, 외주처 사용 현황 집계 영역" },
   { title: "파일 / 용량", description: "첨부파일 사용량, 휴지통 보관량, 용량 추가 요청 진입 영역" },
 ] as const;
 
@@ -184,7 +184,7 @@ export const ADMIN_STANDARD_SUMMARY_CARDS: AdminStandardSummaryCard[] = [];
 export const ADMIN_STANDARD_GROUPS: AdminStandardGroup[] = [
   { label: "단위 관리", description: "고객사별 원단, 부자재, 생산 수량 단위 기준을 관리합니다.", icon: "㎝", href: null, statusLabel: "관리" },
   { label: "외주공정 기준", description: "나염, 자수, 워싱, 후가공 등 외주공정 선택 기준을 관리합니다.", icon: "⇄", href: null, statusLabel: "관리" },
-  { label: "품목 관리", description: "작지 생성의 대분류, 중분류, 소분류 품목 기준을 관리합니다.", icon: "▤", href: null, statusLabel: "준비중" },
+  { label: "품목 관리", description: "작업지시서 생성의 대분류, 중분류, 소분류 품목 기준을 관리합니다.", icon: "▤", href: null, statusLabel: "준비중" },
 ];
 
 export type AdminSettingsSummaryCard = {
