@@ -17,6 +17,7 @@ DROP TABLE IF EXISTS material_allocations CASCADE;
 DROP TABLE IF EXISTS material_order_lines CASCADE;
 DROP TABLE IF EXISTS material_orders CASCADE;
 
+DROP TABLE IF EXISTS history_logs CASCADE;
 DROP TABLE IF EXISTS memos CASCADE;
 DROP TABLE IF EXISTS attachment_trash_items CASCADE;
 DROP TABLE IF EXISTS attachments CASCADE;
@@ -368,6 +369,36 @@ CREATE TABLE memos (
   deleted_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+
+-- =========================================
+-- 10) HISTORY LOGS
+-- 관리자 히스토리 이벤트 저장소
+-- =========================================
+
+CREATE TABLE history_logs (
+  id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  company_id text NOT NULL,
+  user_id text,
+  action_type text NOT NULL,
+  target_type text NOT NULL,
+  target_id text,
+  message text NOT NULL,
+  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at timestamptz NOT NULL DEFAULT now(),
+
+  CONSTRAINT history_logs_action_type_check
+    CHECK (action_type IN (
+      'WORKORDER_CREATED',
+      'STATUS_CHANGED',
+      'FILE_UPLOADED',
+      'FILE_DELETED',
+      'PARTNER_UPDATED',
+      'SETTINGS_CHANGED'
+    )),
+  CONSTRAINT history_logs_target_type_check
+    CHECK (target_type IN ('workorder', 'file', 'partner', 'settings'))
 );
 
 
@@ -734,5 +765,17 @@ CREATE INDEX memos_parent_idx
 
 CREATE INDEX memos_order_active_idx
   ON memos (order_id, is_active, created_at ASC);
+
+CREATE INDEX history_logs_company_created_idx
+  ON history_logs (company_id, created_at DESC);
+
+CREATE INDEX history_logs_company_action_idx
+  ON history_logs (company_id, action_type, created_at DESC);
+
+CREATE INDEX history_logs_company_target_idx
+  ON history_logs (company_id, target_type, target_id, created_at DESC);
+
+CREATE INDEX history_logs_user_idx
+  ON history_logs (user_id, created_at DESC);
 
 COMMIT;

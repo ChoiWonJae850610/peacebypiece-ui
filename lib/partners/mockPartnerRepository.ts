@@ -45,9 +45,10 @@ const MOCK_UNITS: PartnerUnitRecord[] = [
   ["case", "건", "service", 100],
 ].map(([code, name, category, sortOrder]) => ({
   id: `mock-unit-${code}`,
+  company_id: null,
   code: String(code),
   name: String(name),
-  category: String(category),
+  category: String(category) as PartnerUnitRecord["category"],
   is_active: true,
   sort_order: Number(sortOrder),
   created_at: now,
