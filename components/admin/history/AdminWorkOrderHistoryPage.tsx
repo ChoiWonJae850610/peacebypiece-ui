@@ -3,52 +3,14 @@
 import { useMemo, useState } from "react";
 import AdminWorkOrderHistoryItem from "@/components/admin/history/AdminWorkOrderHistoryItem";
 import { buildAdminHistorySectionViewModel } from "@/lib/admin/history/presentation";
-import { matchesAdminHistorySearch } from "@/lib/admin/history/selectors";
-import type { AdminHistoryEvent } from "@/lib/admin/history/types";
+import {
+  ADMIN_HISTORY_DATE_FILTER_OPTIONS,
+  filterAdminHistoryPageEvents,
+  selectAdminHistoryUserOptions,
+} from "@/lib/admin/history/selectors";
+import type { AdminHistoryDateFilter } from "@/lib/admin/history/types";
 import { useAdminHistoryTools } from "@/lib/admin/useAdminHistoryTools";
 import { useI18n } from "@/lib/i18n";
-
-type DateFilter = "all" | "today" | "week" | "month";
-
-type SelectOption = {
-  value: string;
-  label: string;
-};
-
-const DATE_FILTER_OPTIONS: { value: DateFilter; label: string }[] = [
-  { value: "all", label: "전체 날짜" },
-  { value: "today", label: "오늘" },
-  { value: "week", label: "최근 7일" },
-  { value: "month", label: "최근 30일" },
-];
-
-function parseHistoryDate(value: string): Date | null {
-  const normalized = value.replace(/\./g, "-").replace(/\s+/g, "T");
-  const parsed = new Date(normalized);
-  if (Number.isNaN(parsed.getTime())) return null;
-  return parsed;
-}
-
-function matchesDateFilter(item: AdminHistoryEvent, dateFilter: DateFilter, now = new Date()) {
-  if (dateFilter === "all") return true;
-
-  const occurredAt = parseHistoryDate(item.occurredAt);
-  if (!occurredAt) return true;
-
-  const diff = now.getTime() - occurredAt.getTime();
-  const oneDay = 24 * 60 * 60 * 1000;
-
-  if (dateFilter === "today") return occurredAt.toDateString() === now.toDateString();
-  if (dateFilter === "week") return diff >= 0 && diff <= oneDay * 7;
-  if (dateFilter === "month") return diff >= 0 && diff <= oneDay * 30;
-
-  return true;
-}
-
-function buildUserOptions(items: AdminHistoryEvent[]): SelectOption[] {
-  const users = Array.from(new Set(items.map((item) => item.actorName).filter(Boolean))).sort((a, b) => a.localeCompare(b));
-  return [{ value: "all", label: "전체 사용자" }, ...users.map((user) => ({ value: user, label: user }))];
-}
 
 function RefreshIcon() {
   return (
@@ -64,20 +26,19 @@ export default function AdminWorkOrderHistoryPage() {
   const pageText = i18n.admin.historyPage;
   const { historyEvents, historyFilter, setHistoryFilter } = useAdminHistoryTools();
   const [searchQuery, setSearchQuery] = useState("");
-  const [dateFilter, setDateFilter] = useState<DateFilter>("all");
+  const [dateFilter, setDateFilter] = useState<AdminHistoryDateFilter>("all");
   const [userFilter, setUserFilter] = useState("all");
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const userOptions = useMemo(() => buildUserOptions(historyEvents), [historyEvents]);
+  const userOptions = useMemo(() => selectAdminHistoryUserOptions(historyEvents), [historyEvents]);
 
   const filteredLogs = useMemo(
-    () =>
-      historyEvents.filter((item) => {
-        if (!matchesAdminHistorySearch(item, searchQuery)) return false;
-        if (!matchesDateFilter(item, dateFilter)) return false;
-        if (userFilter !== "all" && item.actorName !== userFilter) return false;
-        return true;
-      }),
+    () => filterAdminHistoryPageEvents({
+      items: historyEvents,
+      searchQuery,
+      dateFilter,
+      userFilter,
+    }),
     [dateFilter, historyEvents, refreshKey, searchQuery, userFilter],
   );
 
@@ -111,10 +72,10 @@ export default function AdminWorkOrderHistoryPage() {
                 <span className="text-xs font-semibold text-stone-700">날짜</span>
                 <select
                   value={dateFilter}
-                  onChange={(event) => setDateFilter(event.target.value as DateFilter)}
+                  onChange={(event) => setDateFilter(event.target.value as AdminHistoryDateFilter)}
                   className="h-10 w-full rounded-2xl border border-stone-200 bg-white px-3 text-sm font-medium text-stone-700 outline-none transition focus:border-stone-400"
                 >
-                  {DATE_FILTER_OPTIONS.map((option) => (
+                  {ADMIN_HISTORY_DATE_FILTER_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
