@@ -137,10 +137,10 @@ export function getAdminDashboardStatusPanel(): AdminDashboardStatusPanel {
 }
 
 export const ADMIN_STAT_SUMMARIES: AdminSummaryCard[] = [
-  { label: "전체 작지", value: "0", href: "/worker" },
-  { label: "검토 대기", value: "0", href: "/worker" },
-  { label: "완료 작지", value: "0", href: "/worker" },
-  { label: "첨부파일 사용량", value: "0GB / 5GB", href: null },
+  { label: "전체 작지", value: "37", href: "/worker", description: "mock 기준 전체 작업 수", accent: "bg-blue-50 text-blue-700" },
+  { label: "거래처 수", value: "35", href: "/admin/partners", description: "공장/원단/부자재/외주 합계", accent: "bg-emerald-50 text-emerald-700" },
+  { label: "파일 사용량", value: "9MB", href: "/admin/files", description: "현재 첨부파일 사용량", accent: "bg-violet-50 text-violet-700" },
+  { label: "완료 작지", value: "9", href: "/worker", description: "이번달 완료 처리", accent: "bg-stone-100 text-stone-700" },
 ];
 
 export const ADMIN_DASHBOARD_PLACEHOLDERS = [
@@ -255,3 +255,44 @@ export const ADMIN_FILE_POLICY_PREVIEW_ITEMS: AdminPolicyPreviewItem[] = [
   { label: "자동 삭제 기간", value: "15일", statusLabel: "기본" },
   { label: "용량 경고 기준", value: "80%", statusLabel: "경고" },
 ];
+
+export type AdminStatChartPoint = {
+  label: string;
+  value: number;
+};
+
+export type AdminFileUsagePoint = {
+  label: string;
+  value: number;
+  limit: number;
+  valueLabel: string;
+};
+
+export const ADMIN_STAT_WORKORDER_FLOW: AdminStatChartPoint[] = [
+  { label: "작성", value: 12 },
+  { label: "검토", value: 8 },
+  { label: "발주", value: 5 },
+  { label: "입고", value: 3 },
+  { label: "완료", value: 9 },
+];
+
+export const ADMIN_STAT_PARTNER_DISTRIBUTION: AdminStatChartPoint[] = [
+  { label: "공장", value: 14 },
+  { label: "원단", value: 9 },
+  { label: "부자재", value: 7 },
+  { label: "외주", value: 5 },
+];
+
+export const ADMIN_STAT_FILE_USAGE_POINTS: AdminFileUsagePoint[] = [
+  { label: "전체 사용량", value: 9, limit: 5000, valueLabel: "9MB / 5.0GB" },
+  { label: "첨부파일", value: 7, limit: 20, valueLabel: "7개" },
+  { label: "휴지통", value: 3, limit: 20, valueLabel: "3개" },
+];
+
+export function getAdminStatMaxFlowValue(): number {
+  return Math.max(1, ...ADMIN_STAT_WORKORDER_FLOW.map((item) => item.value));
+}
+
+export function getAdminStatTotalPartnerCount(): number {
+  return ADMIN_STAT_PARTNER_DISTRIBUTION.reduce((sum, item) => sum + item.value, 0);
+}
