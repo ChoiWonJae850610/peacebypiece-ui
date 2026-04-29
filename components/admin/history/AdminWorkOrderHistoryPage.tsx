@@ -21,10 +21,14 @@ function RefreshIcon() {
   );
 }
 
-export default function AdminWorkOrderHistoryPage() {
+type AdminWorkOrderHistoryPageProps = {
+  initialHistoryEvents?: import("@/lib/admin/history/types").AdminHistoryEvent[];
+};
+
+export default function AdminWorkOrderHistoryPage({ initialHistoryEvents = [] }: AdminWorkOrderHistoryPageProps) {
   const { i18n } = useI18n();
   const pageText = i18n.admin.historyPage;
-  const { historyEvents, historyFilter, setHistoryFilter } = useAdminHistoryTools();
+  const { historyEvents, historyFilter, setHistoryFilter } = useAdminHistoryTools(initialHistoryEvents);
   const [searchQuery, setSearchQuery] = useState("");
   const [dateFilter, setDateFilter] = useState<AdminHistoryDateFilter>("all");
   const [userFilter, setUserFilter] = useState("all");

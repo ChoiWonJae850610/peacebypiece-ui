@@ -26,7 +26,7 @@ export default async function AdminDashboardPage() {
     >
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {stats.summaries.map((item) => (
-          <AdminStatCard key={item.label} label={item.label} value={item.value} description={item.description} href={item.href} accent={item.accent} />
+          <AdminStatCard key={item.label} label={item.label} value={item.value} description={item.description} href={null} accent={item.accent} />
         ))}
       </section>
 
@@ -34,9 +34,8 @@ export default async function AdminDashboardPage() {
         <AdminCard className="flex min-h-0 flex-col overflow-hidden">
           <div className="flex items-start justify-between gap-3 border-b border-stone-100 pb-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">{pageText.workorderFlowEyebrow}</p>
-              <h2 className="mt-2 text-lg font-semibold text-stone-950">{pageText.workorderFlowTitle}</h2>
-              <p className="mt-1 text-xs text-stone-500">{stats.sourceLabel === "DB" ? pageText.dbSourceDescription : pageText.mockSourceDescription}</p>
+                <h2 className="mt-2 text-lg font-semibold text-stone-950">{pageText.workorderFlowTitle}</h2>
+              <p className="mt-1 text-xs text-stone-500">{stats.sourceState === "db" ? pageText.dbSourceDescription : stats.sourceState === "not_configured" ? "DB 연결 설정이 없어 실제 데이터 0건으로 표시됩니다." : "DB 조회 실패로 실제 데이터 0건으로 표시됩니다."}</p>
             </div>
             <span className="rounded-full bg-stone-950 px-3 py-1.5 text-xs font-semibold text-white">{pageText.currentMonth}</span>
           </div>
@@ -63,7 +62,6 @@ export default async function AdminDashboardPage() {
           <AdminCard className="min-h-0">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">{pageText.partnersEyebrow}</p>
                 <h2 className="mt-2 text-lg font-semibold text-stone-950">{pageText.partnersTitle}</h2>
               </div>
               <span className="text-xs font-semibold text-stone-400">{totalPartnerCount}{pageText.partnerCountSuffix}</span>
@@ -89,7 +87,6 @@ export default async function AdminDashboardPage() {
           <AdminCard className="min-h-0">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">{pageText.fileUsageEyebrow}</p>
                 <h2 className="mt-2 text-lg font-semibold text-stone-950">{pageText.fileUsageTitle}</h2>
               </div>
               <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-500">{stats.sourceLabel}</span>

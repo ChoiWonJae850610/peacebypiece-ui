@@ -1,10 +1,6 @@
 import "server-only";
 
 import {
-  ADMIN_STAT_FILE_USAGE_POINTS,
-  ADMIN_STAT_PARTNER_DISTRIBUTION,
-  ADMIN_STAT_SUMMARIES,
-  ADMIN_STAT_WORKORDER_FLOW,
   type AdminFileUsagePoint,
   type AdminStatChartPoint,
   type AdminSummaryCard,
@@ -24,26 +20,37 @@ import {
 } from "@/lib/admin/stats/selectors";
 import { isDatabaseConfigured, queryDb } from "@/lib/db/client";
 
+export type AdminStatsSourceState = "db" | "not_configured" | "error";
+
 export type AdminStatsSnapshot = {
   summaries: AdminSummaryCard[];
   workorderFlow: AdminStatChartPoint[];
   partnerDistribution: AdminStatChartPoint[];
   fileUsagePoints: AdminFileUsagePoint[];
-  sourceLabel: "DB" | "mock";
+  sourceState: AdminStatsSourceState;
+  sourceLabel: "DB" | "DB 미설정" | "조회 실패";
 };
 
-function buildFallbackStats(): AdminStatsSnapshot {
+function buildEmptyStats(sourceState: Exclude<AdminStatsSourceState, "db">): AdminStatsSnapshot {
+  const { points: fileUsagePoints, fileUsageLabel } = buildAdminFileUsagePoints(undefined);
+
   return {
-    summaries: ADMIN_STAT_SUMMARIES,
-    workorderFlow: ADMIN_STAT_WORKORDER_FLOW,
-    partnerDistribution: ADMIN_STAT_PARTNER_DISTRIBUTION,
-    fileUsagePoints: ADMIN_STAT_FILE_USAGE_POINTS,
-    sourceLabel: "mock",
+    summaries: buildAdminSummaryCards({
+      totalWorkorders: 0,
+      partnerCount: 0,
+      fileUsageLabel,
+      completedThisMonth: 0,
+    }),
+    workorderFlow: buildAdminWorkorderFlow([]),
+    partnerDistribution: buildAdminPartnerDistribution([]),
+    fileUsagePoints,
+    sourceState,
+    sourceLabel: sourceState === "not_configured" ? "DB 미설정" : "조회 실패",
   };
 }
 
 export async function getAdminStatsSnapshot(): Promise<AdminStatsSnapshot> {
-  if (!isDatabaseConfigured()) return buildFallbackStats();
+  if (!isDatabaseConfigured()) return buildEmptyStats("not_configured");
 
   try {
     const companyId = getAdminCompanyId();
@@ -113,10 +120,11 @@ export async function getAdminStatsSnapshot(): Promise<AdminStatsSnapshot> {
       workorderFlow,
       partnerDistribution,
       fileUsagePoints,
+      sourceState: "db",
       sourceLabel: "DB",
     };
   } catch (error) {
-    console.warn("[admin-stats] failed to load DB stats. Falling back to mock stats.", error);
-    return buildFallbackStats();
+    console.warn("[admin-stats] failed to load DB stats. Mock fallback is disabled.", error);
+    return buildEmptyStats("error");
   }
 }

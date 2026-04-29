@@ -19,8 +19,10 @@ type AdminStatCardProps = {
 };
 
 export function AdminStatCard({ label, value, description, href, accent = "bg-stone-100 text-stone-700" }: AdminStatCardProps) {
+  const interactiveClassName = href ? "h-full transition hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-md" : "h-full";
+
   const content = (
-    <AdminCard className="h-full transition hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-md">
+    <AdminCard className={interactiveClassName}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{label}</p>
