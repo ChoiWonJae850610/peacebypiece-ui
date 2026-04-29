@@ -10,16 +10,17 @@ import {
 } from "@/lib/admin/adminSettings.presentation";
 import { runSaveCompanySettingsFlow } from "@/lib/admin/adminSettings.actionFlow";
 import type { CompanySettings } from "@/lib/admin/companySettings.types";
+import { useI18n } from "@/lib/i18n";
 
 type AdminCompanySettingsFormProps = {
   initialSettings: CompanySettings;
   companyName?: string;
 };
 
-function formatCompanyDateLabel(updatedAt?: string | null) {
-  if (!updatedAt) return { joinedAt: "가입일 준비중", age: "D+0", updatedAt: "최근 설정 준비중" };
+function formatCompanyDateLabel(updatedAt: string | null | undefined, text: ReturnType<typeof useI18n>["i18n"]["admin"]["settingsForm"]) {
+  if (!updatedAt) return { joinedAt: text.joinedPending, age: "D+0", updatedAt: text.updatedPending };
   const parsed = new Date(updatedAt);
-  if (Number.isNaN(parsed.getTime())) return { joinedAt: "가입일 준비중", age: "D+0", updatedAt: "최근 설정 준비중" };
+  if (Number.isNaN(parsed.getTime())) return { joinedAt: text.joinedPending, age: "D+0", updatedAt: text.updatedPending };
   const start = new Date(parsed);
   start.setHours(0, 0, 0, 0);
   const today = new Date();
@@ -30,23 +31,23 @@ function formatCompanyDateLabel(updatedAt?: string | null) {
   return {
     joinedAt,
     age: `D+${ageDays}`,
-    updatedAt: getAdminSettingsUpdatedAtLabel(updatedAt)?.replace("최근 저장 ", "최근 설정 ") ?? "최근 설정 준비중",
+    updatedAt: getAdminSettingsUpdatedAtLabel(updatedAt)?.replace("최근 저장 ", text.updatedPrefix) ?? text.updatedPending,
   };
 }
 
-function SaveStateBadge({ saveState }: { saveState: AdminSettingSaveState }) {
-  if (saveState === "saving") return <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-500">저장 중</span>;
-  if (saveState === "saved") return <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">저장됨</span>;
-  if (saveState === "error") return <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">저장 실패</span>;
-  return <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white">설정</span>;
+function SaveStateBadge({ saveState, labels }: { saveState: AdminSettingSaveState; labels: ReturnType<typeof useI18n>["i18n"]["admin"]["settingsForm"]["badges"] }) {
+  if (saveState === "saving") return <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-500">{labels.saving}</span>;
+  if (saveState === "saved") return <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">{labels.saved}</span>;
+  if (saveState === "error") return <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">{labels.error}</span>;
+  return <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white">{labels.idle}</span>;
 }
 
-function HeaderRefreshButton() {
+function HeaderRefreshButton({ label }: { label: string }) {
   return (
     <button
       type="button"
-      aria-label="환경설정 정보 새로고침"
-      title="환경설정 정보 새로고침"
+      aria-label={label}
+      title={label}
       className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white transition hover:bg-white/15"
     >
       <span aria-hidden="true">↻</span>
@@ -55,11 +56,16 @@ function HeaderRefreshButton() {
 }
 
 export default function AdminCompanySettingsForm({ initialSettings, companyName = "샘플 고객사" }: AdminCompanySettingsFormProps) {
+  const { i18n, setLocale } = useI18n();
+  const text = i18n.admin.settingsForm;
   const [draft, setDraft] = useState<CompanySettings>(initialSettings);
   const [saveState, setSaveState] = useState<AdminSettingSaveState>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   async function saveNextSettings(nextSettings: CompanySettings) {
+    if (nextSettings.ui.language !== draft.ui.language) {
+      setLocale(nextSettings.ui.language);
+    }
     setDraft(nextSettings);
     setSaveState("saving");
     setErrorMessage(null);
@@ -67,7 +73,7 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
     const result = await runSaveCompanySettingsFlow(nextSettings);
     if (!result.ok || !result.settings) {
       setSaveState("error");
-      setErrorMessage(result.message || "환경설정을 저장하지 못했습니다.");
+      setErrorMessage(result.message || text.saveFailed);
       return;
     }
 
@@ -77,7 +83,7 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
 
   const currentTheme = ADMIN_THEME_OPTIONS.find((option) => option.value === draft.ui.themeColor) ?? ADMIN_THEME_OPTIONS[0];
   const currentLanguage = ADMIN_LANGUAGE_OPTIONS.find((option) => option.value === draft.ui.language) ?? ADMIN_LANGUAGE_OPTIONS[0];
-  const companyDate = formatCompanyDateLabel(draft.updatedAt);
+  const companyDate = formatCompanyDateLabel(draft.updatedAt, text);
 
   return (
     <AdminCard className="shrink-0 p-4">
@@ -86,30 +92,30 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
           <div className="flex items-start justify-between gap-3">
             <div>
               <h2 className="text-2xl font-semibold tracking-tight">{companyName}</h2>
-              <p className="mt-2 text-xs font-semibold text-stone-400">요금제: 기본요금제</p>
+              <p className="mt-2 text-xs font-semibold text-stone-400">{text.planLabel}</p>
               <p className="mt-1 text-xs font-semibold text-stone-400">{companyDate.updatedAt}</p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              <HeaderRefreshButton />
-              <SaveStateBadge saveState={saveState} />
+              <HeaderRefreshButton label={text.refreshLabel} />
+              <SaveStateBadge saveState={saveState} labels={text.badges} />
             </div>
           </div>
           <div className="mt-6 grid gap-2.5 sm:grid-cols-4">
             <div className="rounded-2xl bg-white/10 px-3 py-3">
-              <p className="text-[11px] font-semibold text-stone-400">운영 상태</p>
-              <p className="mt-2 text-sm font-semibold text-white">DB 연결</p>
+              <p className="text-[11px] font-semibold text-stone-400">{text.summaryCards.status}</p>
+              <p className="mt-2 text-sm font-semibold text-white">{text.summaryCards.statusValue}</p>
             </div>
             <div className="rounded-2xl bg-white/10 px-3 py-3">
-              <p className="text-[11px] font-semibold text-stone-400">가입일</p>
+              <p className="text-[11px] font-semibold text-stone-400">{text.summaryCards.joinedAt}</p>
               <p className="mt-2 text-sm font-semibold text-white">{companyDate.joinedAt}</p>
             </div>
             <div className="rounded-2xl bg-white/10 px-3 py-3">
-              <p className="text-[11px] font-semibold text-stone-400">사용 기간</p>
+              <p className="text-[11px] font-semibold text-stone-400">{text.summaryCards.age}</p>
               <p className="mt-2 text-sm font-semibold text-white">{companyDate.age}</p>
             </div>
             <div className="rounded-2xl bg-white/10 px-3 py-3">
-              <p className="text-[11px] font-semibold text-stone-400">회원</p>
-              <p className="mt-2 text-sm font-semibold text-white">관리자 1명</p>
+              <p className="text-[11px] font-semibold text-stone-400">{text.summaryCards.members}</p>
+              <p className="mt-2 text-sm font-semibold text-white">{text.summaryCards.memberValue}</p>
             </div>
           </div>
         </section>
@@ -118,8 +124,8 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
           <div className="rounded-[28px] border border-stone-200 bg-stone-50 p-3.5">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-semibold text-stone-950">화면 테마</p>
-                <p className="mt-1 text-xs font-semibold text-stone-500">현재 {currentTheme.label}</p>
+                <p className="text-sm font-semibold text-stone-950">{text.themeTitle}</p>
+                <p className="mt-1 text-xs font-semibold text-stone-500">{text.themeCurrentPrefix}{currentTheme.label}</p>
               </div>
               <span className={`h-8 w-8 rounded-2xl shadow-sm ring-1 ring-white ${currentTheme.swatchClassName}`} />
             </div>
@@ -140,8 +146,8 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
 
           <div className="rounded-[28px] border border-stone-200 bg-stone-50 p-3.5">
             <div>
-              <p className="text-sm font-semibold text-stone-950">언어 설정</p>
-              <p className="mt-1 text-xs font-semibold text-stone-500">현재 {currentLanguage.label}</p>
+              <p className="text-sm font-semibold text-stone-950">{text.languageTitle}</p>
+              <p className="mt-1 text-xs font-semibold text-stone-500">{text.languageCurrentPrefix}{currentLanguage.label}</p>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2">
               {ADMIN_LANGUAGE_OPTIONS.map((option) => (

@@ -7,6 +7,7 @@ import { getCurrentAdminCompany, getCompanySettings } from "@/lib/admin/companyS
 import type { CompanySettings } from "@/lib/admin/companySettings.types";
 import { APP_VERSION } from "@/lib/constants/app";
 import { WORKSPACE_COMPANY_ID, WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
+import { getI18n } from "@/lib/i18n";
 
 async function getInitialSettings(): Promise<{ companyName: string; settings: CompanySettings }> {
   try {
@@ -19,6 +20,7 @@ async function getInitialSettings(): Promise<{ companyName: string; settings: Co
 }
 
 export default async function AdminSettingsPage() {
+  const pageText = getI18n().admin.settingsForm;
   const { companyName, settings } = await getInitialSettings();
 
   return (
@@ -26,7 +28,7 @@ export default async function AdminSettingsPage() {
       companyName={companyName}
       appVersion={APP_VERSION}
       navigationItems={getAdminNavigationItems("/admin/settings")}
-      title="환경설정"
+      title={pageText.title}
     >
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1">
         <AdminCompanySettingsForm initialSettings={settings} companyName={companyName} />

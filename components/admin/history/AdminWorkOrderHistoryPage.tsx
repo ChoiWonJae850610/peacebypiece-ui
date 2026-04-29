@@ -30,7 +30,17 @@ export default function AdminWorkOrderHistoryPage() {
   const [userFilter, setUserFilter] = useState("all");
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const userOptions = useMemo(() => selectAdminHistoryUserOptions(historyEvents), [historyEvents]);
+  const dateOptions = useMemo(
+    () => ADMIN_HISTORY_DATE_FILTER_OPTIONS.map((option) => ({
+      ...option,
+      label: pageText.dateFilters[option.value] ?? option.label,
+    })),
+    [pageText],
+  );
+  const userOptions = useMemo(
+    () => selectAdminHistoryUserOptions(historyEvents).map((option) => (option.value === "all" ? { ...option, label: pageText.allUsers } : option)),
+    [historyEvents, pageText],
+  );
 
   const filteredLogs = useMemo(
     () => filterAdminHistoryPageEvents({
@@ -52,8 +62,8 @@ export default function AdminWorkOrderHistoryPage() {
           <div className="min-w-0 flex-1 space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold text-stone-950">히스토리 검색</h2>
-                <p className="mt-1 text-xs text-stone-500">날짜, 이벤트 타입, 사용자 기준으로 작업 기록을 확인합니다.</p>
+                <h2 className="text-lg font-semibold text-stone-950">{pageText.searchBoxTitle}</h2>
+                <p className="mt-1 text-xs text-stone-500">{pageText.searchBoxDescription}</p>
               </div>
               <span className="hidden rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600 sm:inline-flex">{viewModel.countText}</span>
             </div>
@@ -69,19 +79,19 @@ export default function AdminWorkOrderHistoryPage() {
                 />
               </label>
               <label className="space-y-1.5">
-                <span className="text-xs font-semibold text-stone-700">날짜</span>
+                <span className="text-xs font-semibold text-stone-700">{pageText.dateLabel}</span>
                 <select
                   value={dateFilter}
                   onChange={(event) => setDateFilter(event.target.value as AdminHistoryDateFilter)}
                   className="h-10 w-full rounded-2xl border border-stone-200 bg-white px-3 text-sm font-medium text-stone-700 outline-none transition focus:border-stone-400"
                 >
-                  {ADMIN_HISTORY_DATE_FILTER_OPTIONS.map((option) => (
+                  {dateOptions.map((option) => (
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
               </label>
               <label className="space-y-1.5">
-                <span className="text-xs font-semibold text-stone-700">사용자</span>
+                <span className="text-xs font-semibold text-stone-700">{pageText.userLabel}</span>
                 <select
                   value={userFilter}
                   onChange={(event) => setUserFilter(event.target.value)}
@@ -109,8 +119,8 @@ export default function AdminWorkOrderHistoryPage() {
               type="button"
               onClick={() => setRefreshKey((value) => value + 1)}
               className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 shadow-sm transition hover:border-stone-300 hover:bg-stone-50"
-              aria-label="히스토리 새로고침"
-              title="히스토리 새로고침"
+              aria-label={pageText.refreshLabel}
+              title={pageText.refreshLabel}
             >
               <RefreshIcon />
             </button>
