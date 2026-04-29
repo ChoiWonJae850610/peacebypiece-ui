@@ -47,9 +47,11 @@ export default function AdminAuditSummarySection({ dbCompletionSummary, completi
       </AdminCard>
 
       {open ? (
-        <div className="mt-4">
-          <AdminDbConnectionAuditPanel summary={dbCompletionSummary} />
-          <AdminCompletionAuditPanel summary={completionAuditSummary} />
+        <div className="mt-4 max-h-[70vh] overflow-y-auto overscroll-contain pr-1">
+          <div className="grid gap-4">
+            <AdminDbConnectionAuditPanel summary={dbCompletionSummary} />
+            <AdminCompletionAuditPanel summary={completionAuditSummary} />
+          </div>
         </div>
       ) : null}
     </div>

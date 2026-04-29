@@ -23,8 +23,8 @@ export default function AdminShell({ companyName, appVersion, navigationItems, t
           <AdminSidebar companyName={companyName} appVersion={appVersion} navigationItems={navigationItems} />
           <div className="flex min-w-0 flex-1 flex-col gap-5 overflow-hidden">
             <AdminTopbar title={title} description={description} />
-            <div className="min-h-0 flex-1 overflow-hidden">
-              <div className="flex h-full min-h-0 flex-col gap-5 overflow-hidden">{children}</div>
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+              <div className="flex min-h-full flex-col gap-5 pb-2">{children}</div>
             </div>
           </div>
         </div>

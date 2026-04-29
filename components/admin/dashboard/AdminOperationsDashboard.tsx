@@ -20,7 +20,7 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
   const totalDistributionValue = useMemo(() => snapshot.statusDistribution.reduce((sum, item) => sum + item.value, 0), [snapshot.statusDistribution]);
 
   return (
-    <AdminCard className="flex flex-1 flex-col overflow-hidden lg:min-h-0">
+    <AdminCard className="flex min-h-[560px] shrink-0 flex-col overflow-hidden lg:min-h-[620px]">
       <div className="flex flex-col gap-4 border-b border-stone-100 pb-5 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h2 className="text-2xl font-semibold tracking-tight text-stone-950">{t("operationsDashboard.title", "운영 통계")}</h2>
@@ -46,8 +46,8 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
         </div>
       </div>
 
-      <div className="grid flex-1 gap-6 overflow-hidden py-6 xl:grid-cols-[1.35fr_0.65fr]">
-        <section className="flex min-h-0 flex-col rounded-[28px] border border-stone-100 bg-stone-50/70 p-5">
+      <div className="grid min-h-0 flex-1 gap-6 overflow-y-auto overflow-x-hidden py-6 pr-1 xl:grid-cols-[1.35fr_0.65fr]">
+        <section className="flex min-h-[360px] flex-col rounded-[28px] border border-stone-100 bg-stone-50/70 p-5">
           <div className="flex items-center justify-between gap-3">
             <h3 className="text-base font-semibold text-stone-950">{t("operationsDashboard.statusFlowTitle", "상태 흐름")}</h3>
             <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-stone-500 ring-1 ring-stone-200">
@@ -73,7 +73,7 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
           </div>
         </section>
 
-        <section className="grid min-h-0 grid-rows-[auto_1fr] gap-4 overflow-hidden">
+        <section className="grid min-h-[360px] grid-rows-[auto_1fr] gap-4 overflow-y-auto overflow-x-hidden pr-1">
           <div className="rounded-[28px] border border-stone-100 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-base font-semibold text-stone-950">{t("operationsDashboard.statusDistributionTitle", "상태 분포")}</h3>
