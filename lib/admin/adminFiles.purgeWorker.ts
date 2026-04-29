@@ -7,7 +7,7 @@ import {
   type AdminPurgeCandidate,
 } from "@/lib/admin/adminFiles.serverActions";
 import { deleteR2ObjectViaWorker } from "@/lib/storage/r2/r2WorkerUpload";
-import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/companySettings.repository";
+import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/settings/companyRepository";
 
 export type AdminFilePurgeWorkerInput = {
   limit?: number;

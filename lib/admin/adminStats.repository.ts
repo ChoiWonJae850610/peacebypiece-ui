@@ -5,7 +5,7 @@ import {
   type AdminStatChartPoint,
   type AdminSummaryCard,
 } from "@/lib/admin/adminDashboard.presentation";
-import { getAdminCompanyId } from "@/lib/admin/companyScope";
+import { getAdminCompanyId } from "@/lib/admin/settings/companyScope";
 import {
   buildAdminFileUsagePoints,
   buildAdminPartnerDistribution,

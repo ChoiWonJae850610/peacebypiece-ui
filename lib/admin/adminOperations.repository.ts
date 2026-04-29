@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getAdminCompanyId } from "@/lib/admin/companyScope";
+import { getAdminCompanyId } from "@/lib/admin/settings/companyScope";
 import { ADMIN_WORKORDER_FLOW_BUCKETS } from "@/lib/constants/adminStats";
 import { isDatabaseConfigured, queryDb, type DbQueryResultRow } from "@/lib/db/client";
 

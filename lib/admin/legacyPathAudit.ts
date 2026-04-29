@@ -50,3 +50,6 @@ export function selectAdminLegacyPathAuditItems(status?: AdminLegacyPathStatus):
   if (!status) return ADMIN_LEGACY_PATH_AUDIT_ITEMS;
   return ADMIN_LEGACY_PATH_AUDIT_ITEMS.filter((item) => item.status === status);
 }
+
+
+export const ADMIN_LEGACY_IMPLEMENTATION_MIGRATION_VERSION = "0.6.6418" as const;

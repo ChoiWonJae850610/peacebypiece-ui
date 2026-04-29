@@ -1,4 +1,4 @@
-import type { CompanyThemeColor } from "@/lib/admin/companySettings.types";
+import type { CompanyThemeColor } from "@/lib/admin/settings/companyTypes";
 
 export const ADMIN_THEME_STORAGE_KEY = "peacebypiece.admin.theme";
 export const ADMIN_THEME_CHANGE_EVENT = "peacebypiece:admin-theme-change";
