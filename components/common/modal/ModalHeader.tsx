@@ -29,7 +29,7 @@ export default function ModalHeader({
         <button
           type="button"
           onClick={onClose}
-          className="shrink-0 whitespace-nowrap rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm transition active:scale-[0.97]"
+          className="inline-flex min-h-9 shrink-0 items-center justify-center whitespace-nowrap rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm transition active:scale-[0.97]"
         >
           {i18n.common.ui.common.close}
         </button>

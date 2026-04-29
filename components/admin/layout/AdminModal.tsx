@@ -22,7 +22,7 @@ export function AdminModal({
   description,
   maxWidthClass = "md:max-w-3xl",
   footer,
-  bodyClassName = "space-y-4 bg-stone-50/60",
+  bodyClassName = "space-y-4 bg-stone-50/60 [scrollbar-gutter:stable]",
 }: AdminModalProps) {
   return (
     <ModalShell
@@ -33,7 +33,7 @@ export function AdminModal({
       maxWidthClass={maxWidthClass}
       bodyClassName={bodyClassName}
       footerClassName="border-t border-stone-200 bg-white/95 px-5 py-4"
-      panelClassName="overflow-hidden rounded-[28px] border border-stone-200 bg-white shadow-2xl shadow-stone-950/10"
+      panelClassName="overflow-hidden rounded-[28px] border border-stone-200 bg-white shadow-2xl shadow-stone-950/10 md:min-h-[360px]"
       overlayClassName="bg-stone-950/35 backdrop-blur-sm"
       footer={footer}
     >
@@ -68,8 +68,8 @@ export const adminModalInputClassName =
 
 export const adminModalLabelClassName = "text-xs font-semibold uppercase tracking-[0.14em] text-stone-500";
 export const adminModalSecondaryButtonClassName =
-  "rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:border-stone-300 hover:bg-stone-50";
+  "inline-flex min-h-9 items-center justify-center rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:border-stone-300 hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50";
 export const adminModalPrimaryButtonClassName =
-  "rounded-full bg-stone-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800";
+  "inline-flex min-h-9 items-center justify-center rounded-full bg-stone-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-50";
 export const adminModalDangerButtonClassName =
-  "rounded-full bg-rose-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-rose-600";
+  "inline-flex min-h-9 items-center justify-center rounded-full bg-rose-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-50";

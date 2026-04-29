@@ -92,7 +92,7 @@ export default function AdminNotificationPolicySettingsModal({ open, onClose }: 
         </div>
       }
     >
-      <div className="grid min-h-[252px] gap-2 rounded-3xl border border-stone-200 bg-white p-4 shadow-sm">
+      <div className="grid min-h-[252px] content-start gap-2 rounded-3xl border border-stone-200 bg-white p-4 shadow-sm">
         {errorMessage ? <p className="rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">{errorMessage}</p> : null}
         {POLICY_ITEMS.map((item) => {
           const checked = draft.notificationPolicy[item.key];

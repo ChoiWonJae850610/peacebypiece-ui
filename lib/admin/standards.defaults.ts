@@ -28,9 +28,10 @@ export function createDefaultItemCategoryDefinitions(companyId = WORKSPACE_COMPA
     let level2Order = 10;
     Object.entries(category2Map).forEach(([category2, category3Items]) => {
       const level2Id = `category:${category1}:${category2}`;
+      const category3List = category3Items as readonly string[];
       rows.push({ id: level2Id, company_id: companyId, level: 2, parent_id: level1Id, name: category2, is_active: true, sort_order: level2Order });
 
-      category3Items.forEach((category3, index) => {
+      category3List.forEach((category3, index) => {
         rows.push({
           id: `category:${category1}:${category2}:${category3}`,
           company_id: companyId,
