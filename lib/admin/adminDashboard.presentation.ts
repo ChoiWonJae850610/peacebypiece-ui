@@ -108,7 +108,6 @@ export const ADMIN_DASHBOARD_SECTIONS: AdminDashboardSection[] = [
     items: [
       { label: "협력업체 관리", description: "공장, 원단, 부자재, 외주처 정보 관리", href: "/admin/partners", icon: "▦" },
       { label: "환경설정", description: "파일 정책, 알림, 기준 설정 관리", href: "/admin/settings", icon: "⚙" },
-      { label: "환경설정", description: "파일 정책과 알림 이벤트 설정 관리", href: "/admin/settings", icon: "⚙" },
     ],
   },
 ];
