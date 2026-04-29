@@ -1,9 +1,7 @@
 "use client";
 
 import WorkOrderEmptyState from "@/components/workorder/WorkOrderEmptyState";
-import WorkOrderDetailDesktopView from "@/components/workorder/detail/views/WorkOrderDetailDesktopView";
-import WorkOrderDetailMobileView from "@/components/workorder/detail/views/WorkOrderDetailMobileView";
-import WorkOrderDetailTabletView from "@/components/workorder/detail/views/WorkOrderDetailTabletView";
+import WorkOrderDetailViewSwitch from "@/components/workorder/detail/views/WorkOrderDetailViewSwitch";
 import type { WorkOrderDetailProps } from "@/components/workorder/detail/WorkOrderDetail.types";
 import { useWorkOrderDeviceType } from "@/components/workorder/layout/useWorkOrderDeviceType";
 import { useWorkOrderDetailEditor } from "@/lib/hooks/workorder/useWorkOrderDetailEditor";
@@ -134,13 +132,5 @@ export default function WorkOrderDetailContainer({
     currentInventoryQuantity,
   };
 
-  if (deviceType === "mobile") {
-    return <WorkOrderDetailMobileView {...detailViewProps} />;
-  }
-
-  if (deviceType === "tablet") {
-    return <WorkOrderDetailTabletView {...detailViewProps} />;
-  }
-
-  return <WorkOrderDetailDesktopView {...detailViewProps} />;
+  return <WorkOrderDetailViewSwitch deviceType={deviceType} {...detailViewProps} />;
 }
