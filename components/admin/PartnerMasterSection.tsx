@@ -4,23 +4,32 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import PartnerMasterFilters from "@/components/admin/partnerMaster/PartnerMasterFilters";
 import PartnerMasterFormModal from "@/components/admin/partnerMaster/PartnerMasterFormModal";
 import PartnerMasterHeader from "@/components/admin/partnerMaster/PartnerMasterHeader";
+import PartnerProcessManagementModal from "@/components/admin/partnerMaster/PartnerProcessManagementModal";
 import PartnerMasterList from "@/components/admin/partnerMaster/PartnerMasterList";
 import {
-  applyPartnerTypeSelectionPolicy,
+  applyPartnerPrimaryTypeToDraft,
   buildPartnerDraftFromEntity,
   buildPartnerListViewModel,
   createDefaultOutsourcingProcessDefinitions,
   createEmptyPartnerDraft,
   createOutsourcingProcessDefinition,
   DEFAULT_PARTNER_FILTER_STATE,
-  isBasePartnerType,
+  resetOutsourcingProcessDefinitionDraft,
+  selectActiveOutsourcingProcessDefinitions,
+  selectAssignedOutsourcingProcessDefinitions,
+  selectAvailableOutsourcingProcessDefinitions,
+  selectInactiveOutsourcingProcessDefinitions,
+  selectIsOutsourcingEnabled,
+  selectPartnerDraftPrimaryTypes,
+  setOutsourcingProcessDefinitionActive,
+  togglePartnerDraftOutsourcingProcess,
   normalizeOutsourcingProcessDefinitions,
   normalizePartnerDraft,
   PARTNER_MASTER_FORM_ERRORS,
   togglePartnerFilterSelection,
   type BasePartnerType,
   type OutsourcingProcessDefinition,
-} from "@/lib/admin/partnerMaster";
+} from "@/lib/admin/partner";
 import { fetchPartnerMasterItemsFromApi, savePartnerMasterItemToApi, savePartnerMasterProcessesToApi } from "@/lib/admin/partnerMasterApiClient";
 import type { OutsourcingProcessType, Partner, PartnerDraft } from "@/types/partner";
 
@@ -79,18 +88,12 @@ export default function PartnerMasterSection() {
     [partners, processDefinitions, searchTerm, selectedStatus, selectedTypes],
   );
 
-  const isOutsourcingEnabled = draft.partnerTypes.includes("outsourcing_vendor");
-  const selectedPrimaryTypes = draft.partnerTypes.filter(isBasePartnerType);
-  const availableProcessDefinitions = processDefinitions
-    .filter((definition) => definition.isActive && !draft.outsourcingProcessTypes.includes(definition.type))
-    .sort((a, b) => a.label.localeCompare(b.label, "ko-KR"));
-  const assignedProcessDefinitions = processDefinitions
-    .filter((definition) => draft.outsourcingProcessTypes.includes(definition.type))
-    .sort((a, b) => a.label.localeCompare(b.label, "ko-KR"));
-  const sortProcessesByLabel = (items: OutsourcingProcessDefinition[]) =>
-    items.slice().sort((a, b) => a.label.localeCompare(b.label, "ko-KR"));
-  const activeProcessDefinitions = sortProcessesByLabel(processDraftDefinitions.filter((definition) => definition.isActive));
-  const inactiveProcessDefinitions = sortProcessesByLabel(processDraftDefinitions.filter((definition) => !definition.isActive));
+  const isOutsourcingEnabled = selectIsOutsourcingEnabled(draft);
+  const selectedPrimaryTypes = selectPartnerDraftPrimaryTypes(draft);
+  const availableProcessDefinitions = selectAvailableOutsourcingProcessDefinitions(draft, processDefinitions);
+  const assignedProcessDefinitions = selectAssignedOutsourcingProcessDefinitions(draft, processDefinitions);
+  const activeProcessDefinitions = selectActiveOutsourcingProcessDefinitions(processDraftDefinitions);
+  const inactiveProcessDefinitions = selectInactiveOutsourcingProcessDefinitions(processDraftDefinitions);
   const resetDraftState = useCallback(() => {
     setEditingPartnerId(null);
     setDraft(createEmptyPartnerDraft());
@@ -153,25 +156,13 @@ export default function PartnerMasterSection() {
   }, []);
 
   const setPrimaryType = useCallback((type: BasePartnerType) => {
-    setDraft((current) => {
-      const nextPartnerTypes = applyPartnerTypeSelectionPolicy(current.partnerTypes, type);
-      return {
-        ...current,
-        partnerTypes: nextPartnerTypes,
-        outsourcingProcessTypes: nextPartnerTypes.includes("outsourcing_vendor") ? current.outsourcingProcessTypes : [],
-      };
-    });
+    setDraft((current) => applyPartnerPrimaryTypeToDraft(current, type));
     setSelectedAvailableProcess(null);
     setSelectedAssignedProcess(null);
   }, []);
 
   const toggleOutsourcingProcess = useCallback((type: OutsourcingProcessType) => {
-    setDraft((current) => ({
-      ...current,
-      outsourcingProcessTypes: current.outsourcingProcessTypes.includes(type)
-        ? current.outsourcingProcessTypes.filter((item) => item !== type)
-        : [...current.outsourcingProcessTypes, type],
-    }));
+    setDraft((current) => togglePartnerDraftOutsourcingProcess(current, type));
   }, []);
 
   const handleSubmit = useCallback(() => {
@@ -236,13 +227,13 @@ export default function PartnerMasterSection() {
 
   const setProcessDefinitionActive = useCallback(
     (type: OutsourcingProcessType, isActive: boolean) => {
-      updateProcessDefinition(type, (definition) => ({ ...definition, isActive }));
+      setProcessDraftDefinitions((current) => setOutsourcingProcessDefinitionActive(current, type, isActive));
     },
-    [updateProcessDefinition],
+    [],
   );
 
   const resetProcessDefinitions = useCallback(() => {
-    const nextDefinitions = createDefaultOutsourcingProcessDefinitions();
+    const nextDefinitions = resetOutsourcingProcessDefinitionDraft();
     setProcessDraftDefinitions(nextDefinitions);
     setNewProcessLabel("");
     setProcessFormError("");
@@ -262,7 +253,7 @@ export default function PartnerMasterSection() {
   }, [persistProcessDefinitions, processDraftDefinitions]);
   return (
     <section className="flex min-h-0 flex-1 flex-col rounded-[32px] border border-stone-200 bg-white/95 p-5 shadow-sm backdrop-blur md:p-6">
-      <PartnerMasterHeader onOpenCreateModal={openCreateModal} />
+      <PartnerMasterHeader onOpenCreateModal={openCreateModal} onOpenProcessModal={openProcessModal} />
 
       <PartnerMasterFilters
         searchTerm={searchTerm}
@@ -281,6 +272,25 @@ export default function PartnerMasterSection() {
         items={listViewModel.items}
         isLoading={isLoadingPartners}
         onEditPartner={openEditModal}
+      />
+
+      <PartnerProcessManagementModal
+        open={isProcessModalOpen}
+        newProcessLabel={newProcessLabel}
+        processFormError={processFormError}
+        inactiveProcessDefinitions={inactiveProcessDefinitions}
+        activeProcessDefinitions={activeProcessDefinitions}
+        selectedInactiveProcess={selectedInactiveProcessDefinition}
+        selectedActiveProcess={selectedActiveProcessDefinition}
+        onClose={closeProcessModal}
+        onSave={saveProcessDefinitions}
+        onResetDefaults={resetProcessDefinitions}
+        onNewProcessLabelChange={setNewProcessLabel}
+        onAddProcessDefinition={addProcessDefinition}
+        onSetProcessActive={setProcessDefinitionActive}
+        onClearProcessFormError={() => setProcessFormError("")}
+        onSelectInactiveProcess={setSelectedInactiveProcessDefinition}
+        onSelectActiveProcess={setSelectedActiveProcessDefinition}
       />
 
       <PartnerMasterFormModal
