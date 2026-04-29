@@ -17,7 +17,7 @@ import {
   persistWorkOrdersWithHistory,
   replaceWorkOrderById,
 } from "./workorderRepositoryMutations";
-import { findPartnerIdByNameAndTypes } from "@/lib/admin/partnerMasterPersistence";
+import { findPartnerIdByNameAndTypes } from "@/lib/admin/partner/persistence";
 import { createReinspectionRequestHistoryLog, createWorkOrderKindChangeHistoryLog } from "@/lib/workorder/history/builders";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import { getOrderTypeFromWorkOrderKind } from "@/lib/workorder/reorder/helpers";

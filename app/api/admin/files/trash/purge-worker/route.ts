@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { runAdminFilePurgeWorker } from "@/lib/admin/adminFiles.purgeWorker";
+import { runAdminFilePurgeWorker } from "@/lib/admin/files/purgeWorker";
 
 export const runtime = "nodejs";
 

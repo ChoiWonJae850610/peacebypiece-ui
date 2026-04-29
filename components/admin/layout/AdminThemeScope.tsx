@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
-import type { CompanyThemeColor } from "@/lib/admin/companySettings.types";
+import type { CompanyThemeColor } from "@/lib/admin/settings/companyTypes";
 import {
   ADMIN_THEME_CHANGE_EVENT,
   ADMIN_THEME_STORAGE_KEY,

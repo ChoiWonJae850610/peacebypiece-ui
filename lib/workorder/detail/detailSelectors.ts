@@ -4,7 +4,7 @@ import {
   listActiveMaterialPartnerNames,
   listActiveOutsourcingPartnerNamesByProcess,
   listActivePartnerNamesByTypes,
-} from "@/lib/admin/partnerMasterPersistence";
+} from "@/lib/admin/partner/persistence";
 import { appendOption } from "@/lib/workorder/detail/detailSanitizers";
 import type { Material, Outsourcing } from "@/types/workorder";
 import type { OrderEntryState } from "@/components/workorder/detail/shared/detailEditorShared";

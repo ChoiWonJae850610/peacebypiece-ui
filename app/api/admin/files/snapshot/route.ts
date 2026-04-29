@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { getAdminFileManagementSnapshot } from "@/lib/admin/adminFiles.adapter";
-import { buildAdminStoragePolicyItems, normalizeAdminFilePolicySettings } from "@/lib/admin/adminFiles.presentation";
-import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/companySettings.repository";
-import { listAdminFileManagementRows } from "@/lib/admin/adminFiles.serverActions";
-import type { AdminFileTrendPeriod, AdminFileTypeDistributionItem, AdminFileUsageCard, AdminRecentUploadTrendPoint, AdminManagedFileItem, AdminStorageUsageSummary } from "@/lib/admin/adminFiles.types";
-import type { CompanyFilePolicySettings } from "@/lib/admin/companySettings.types";
+import { getAdminFileManagementSnapshot } from "@/lib/admin/files/adapter";
+import { buildAdminStoragePolicyItems, normalizeAdminFilePolicySettings } from "@/lib/admin/files/presentation";
+import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/settings/companyRepository";
+import { listAdminFileManagementRows } from "@/lib/admin/files/serverActions";
+import type { AdminFileTrendPeriod, AdminFileTypeDistributionItem, AdminFileUsageCard, AdminRecentUploadTrendPoint, AdminManagedFileItem, AdminStorageUsageSummary } from "@/lib/admin/files/types";
+import type { CompanyFilePolicySettings } from "@/lib/admin/settings/companyTypes";
 
 export const runtime = "nodejs";
 

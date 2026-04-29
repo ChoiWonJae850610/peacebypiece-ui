@@ -4,3 +4,8 @@ export * from "@/lib/admin/settings/presentation";
 export * from "@/lib/admin/settings/companyDefaults";
 export * from "@/lib/admin/settings/companyRepository";
 export * from "@/lib/admin/settings/companyTypes";
+export * from "@/lib/admin/settings/standardsDefaults";
+export * from "@/lib/admin/settings/standardsRepository";
+export * from "@/lib/admin/settings/standardsTypes";
+export * from "@/lib/admin/settings/standardsApiClient";
+export * from "@/lib/admin/settings/companyScope";

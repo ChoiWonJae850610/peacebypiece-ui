@@ -1,5 +1,5 @@
-import { isBasePartnerType } from "@/lib/admin/partnerMaster.draft";
-import type { OutsourcingProcessDefinition } from "@/lib/admin/partnerMaster.types";
+import { isBasePartnerType } from "@/lib/admin/partner/draft";
+import type { OutsourcingProcessDefinition } from "@/lib/admin/partner/types";
 import type { OutsourcingProcessType, PartnerDraft } from "@/types/partner";
 
 function sortProcessesByLabel(items: OutsourcingProcessDefinition[]) {

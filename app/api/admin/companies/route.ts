@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { listAdminCompanies } from "@/lib/admin/companySettings.repository";
+import { listAdminCompanies } from "@/lib/admin/settings/companyRepository";
 
 export async function GET() {
   try {

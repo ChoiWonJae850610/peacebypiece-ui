@@ -1,6 +1,6 @@
 "use client";
 
-import { type PartnerFilterChip, type PartnerStatusFilter } from "@/lib/admin/partnerMaster";
+import { type PartnerFilterChip, type PartnerStatusFilter } from "@/lib/admin/partner";
 import { useI18n } from "@/lib/i18n";
 
 type PartnerMasterFilterOption = {

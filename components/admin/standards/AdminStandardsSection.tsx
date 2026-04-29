@@ -13,11 +13,11 @@ import {
   normalizeOutsourcingProcessDefinitions,
   PARTNER_MASTER_FORM_ERRORS,
   type OutsourcingProcessDefinition,
-} from "@/lib/admin/partnerMaster";
-import { createDefaultItemCategoryDefinitions, createDefaultUnitDefinitions } from "@/lib/admin/standards.defaults";
-import { fetchPartnerMasterItemsFromApi, savePartnerMasterProcessesToApi } from "@/lib/admin/partnerMasterApiClient";
-import { fetchAdminStandardsFromApi, saveAdminItemCategoriesToApi, saveAdminUnitsToApi } from "@/lib/admin/standardsApiClient";
-import type { AdminItemCategoryDefinition, AdminUnitDefinition } from "@/lib/admin/standards.types";
+} from "@/lib/admin/partner";
+import { createDefaultItemCategoryDefinitions, createDefaultUnitDefinitions } from "@/lib/admin/settings/standardsDefaults";
+import { fetchPartnerMasterItemsFromApi, savePartnerMasterProcessesToApi } from "@/lib/admin/partner/apiClient";
+import { fetchAdminStandardsFromApi, saveAdminItemCategoriesToApi, saveAdminUnitsToApi } from "@/lib/admin/settings/standardsApiClient";
+import type { AdminItemCategoryDefinition, AdminUnitDefinition } from "@/lib/admin/settings/standardsTypes";
 import { useAdminWorkspaceTools } from "@/lib/admin/useAdminWorkspaceTools";
 import type { OutsourcingProcessType } from "@/types/partner";
 

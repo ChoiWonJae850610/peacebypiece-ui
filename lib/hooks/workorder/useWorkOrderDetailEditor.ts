@@ -7,7 +7,7 @@ import {
   type EditableSectionKey,
   type OrderEntryState,
 } from "@/components/workorder/detail/shared/detailEditorShared";
-import { ensurePartnerMasterItem } from "@/lib/admin/partnerMasterPersistence";
+import { ensurePartnerMasterItem } from "@/lib/admin/partner/persistence";
 import { isVendorRegistryType, REGISTRY_TYPE } from "@/lib/constants/workorderDomain";
 import { getOrderInspectionStatusForCompletion } from "@/lib/constants/workorderStates";
 import {

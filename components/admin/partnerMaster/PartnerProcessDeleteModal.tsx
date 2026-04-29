@@ -1,8 +1,8 @@
 "use client";
 
 import { AdminModal, AdminModalSection, adminModalDangerButtonClassName, adminModalSecondaryButtonClassName } from "@/components/admin/layout/AdminModal";
-import { buildDeleteOutsourcingProcessConfirmCopy } from "@/lib/admin/partnerMasterConfirm";
-import type { OutsourcingProcessDefinition } from "@/lib/admin/partnerMaster";
+import { buildDeleteOutsourcingProcessConfirmCopy } from "@/lib/admin/partner/confirm";
+import type { OutsourcingProcessDefinition } from "@/lib/admin/partner";
 import { useI18n } from "@/lib/i18n";
 import type { OutsourcingProcessType } from "@/types/partner";
 

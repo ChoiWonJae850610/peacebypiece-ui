@@ -6,8 +6,8 @@ import { MODAL_INPUT_CLASS, MODAL_SELECT_CLASS } from "@/components/common/modal
 import { MODAL_ACTION_LABELS, createModalActionHandler, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { DEFAULT_BASIC_YEAR, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
 import { CATEGORY1_OPTIONS, CATEGORY2_OPTIONS_MAP, CATEGORY3_OPTIONS_MAP, DEFAULT_CATEGORY1, DEFAULT_CATEGORY2, DEFAULT_CATEGORY3 } from "@/lib/constants/workorderCategories";
-import { fetchAdminStandardsFromApi } from "@/lib/admin/standardsApiClient";
-import type { AdminItemCategoryDefinition } from "@/lib/admin/standards.types";
+import { fetchAdminStandardsFromApi } from "@/lib/admin/settings/standardsApiClient";
+import type { AdminItemCategoryDefinition } from "@/lib/admin/settings/standardsTypes";
 import { useI18n } from "@/lib/i18n";
 import { getRecommendedWorkOrderCategory } from "@/lib/utils/workorderCategoryRecommend";
 

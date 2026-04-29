@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { buildDefaultCompanySettings } from "@/lib/admin/companySettings.defaults";
+import { buildDefaultCompanySettings } from "@/lib/admin/settings/companyDefaults";
 import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
-import { getCurrentAdminCompany, getCompanySettings, updateCompanySettings } from "@/lib/admin/companySettings.repository";
-import type { CompanySettingsUpdateInput } from "@/lib/admin/companySettings.types";
+import { getCurrentAdminCompany, getCompanySettings, updateCompanySettings } from "@/lib/admin/settings/companyRepository";
+import type { CompanySettingsUpdateInput } from "@/lib/admin/settings/companyTypes";
 import { WORKSPACE_COMPANY_ID, WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
 
 export const runtime = "nodejs";

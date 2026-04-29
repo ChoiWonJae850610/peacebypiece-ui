@@ -14,7 +14,7 @@ import {
   PARTNER_TYPE_META,
   type BasePartnerType,
   type OutsourcingProcessDefinition,
-} from "@/lib/admin/partnerMaster";
+} from "@/lib/admin/partner";
 import { useI18n } from "@/lib/i18n";
 import { formatPhoneNumber } from "@/lib/utils/phoneFormat";
 import type { OutsourcingProcessType, PartnerDraft } from "@/types/partner";

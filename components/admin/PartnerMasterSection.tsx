@@ -30,7 +30,7 @@ import {
   type BasePartnerType,
   type OutsourcingProcessDefinition,
 } from "@/lib/admin/partner";
-import { fetchPartnerMasterItemsFromApi, savePartnerMasterItemToApi, savePartnerMasterProcessesToApi } from "@/lib/admin/partnerMasterApiClient";
+import { fetchPartnerMasterItemsFromApi, savePartnerMasterItemToApi, savePartnerMasterProcessesToApi } from "@/lib/admin/partner/apiClient";
 import type { OutsourcingProcessType, Partner, PartnerDraft } from "@/types/partner";
 
 export default function PartnerMasterSection() {

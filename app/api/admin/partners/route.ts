@@ -6,12 +6,12 @@ import {
   buildPartnerRoleItemsFromDraft,
   mapOutsourcingProcessRecordsToDefinitions,
   mapPartnerDbRecordsToAdminPartners,
-} from "@/lib/admin/partnerMasterDbMapper";
-import { createDefaultOutsourcingProcessDefinitions } from "@/lib/admin/partnerMaster.processes";
+} from "@/lib/admin/partner/dbMapper";
+import { createDefaultOutsourcingProcessDefinitions } from "@/lib/admin/partner/processes";
 import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
 import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 import { createPartnerRepository } from "@/lib/partners/partnerAdapter";
-import type { OutsourcingProcessDefinition } from "@/lib/admin/partnerMaster.types";
+import type { OutsourcingProcessDefinition } from "@/lib/admin/partner/types";
 import type { PartnerRepository, PartnerWritableRepository } from "@/lib/partners/partnerRepository";
 import type { PartnerDraft } from "@/types/partner";
 

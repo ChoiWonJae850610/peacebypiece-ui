@@ -8,7 +8,7 @@ import {
   adminModalPrimaryButtonClassName,
   adminModalSecondaryButtonClassName,
 } from "@/components/admin/layout/AdminModal";
-import { type OutsourcingProcessDefinition } from "@/lib/admin/partnerMaster";
+import { type OutsourcingProcessDefinition } from "@/lib/admin/partner";
 import { useI18n } from "@/lib/i18n";
 import type { OutsourcingProcessType } from "@/types/partner";
 

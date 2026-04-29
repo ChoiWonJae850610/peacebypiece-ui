@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { listPurgeReadyAttachmentTrashItems } from "@/lib/admin/adminFiles.serverActions";
-import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/companySettings.repository";
+import { listPurgeReadyAttachmentTrashItems } from "@/lib/admin/files/serverActions";
+import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/settings/companyRepository";
 
 export const runtime = "nodejs";
 

@@ -8,8 +8,8 @@ import {
   adminModalPrimaryButtonClassName,
   adminModalSecondaryButtonClassName,
 } from "@/components/admin/layout/AdminModal";
-import { createDefaultItemCategoryDefinitions } from "@/lib/admin/standards.defaults";
-import type { AdminItemCategoryDefinition, AdminItemCategoryLevel } from "@/lib/admin/standards.types";
+import { createDefaultItemCategoryDefinitions } from "@/lib/admin/settings/standardsDefaults";
+import type { AdminItemCategoryDefinition, AdminItemCategoryLevel } from "@/lib/admin/settings/standardsTypes";
 
 type CategoryDraft = {
   level1: AdminItemCategoryDefinition[];

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminStandards, replaceAdminStandards } from "@/lib/admin/standards.repository";
-import type { AdminStandardsPayload } from "@/lib/admin/standards.types";
+import { getAdminStandards, replaceAdminStandards } from "@/lib/admin/settings/standardsRepository";
+import type { AdminStandardsPayload } from "@/lib/admin/settings/standardsTypes";
 
 function isRequestBody(value: unknown): value is Partial<AdminStandardsPayload> {
   return typeof value === "object" && value !== null;

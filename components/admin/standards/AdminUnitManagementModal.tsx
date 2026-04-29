@@ -8,8 +8,8 @@ import {
   adminModalPrimaryButtonClassName,
   adminModalSecondaryButtonClassName,
 } from "@/components/admin/layout/AdminModal";
-import { createDefaultUnitDefinitions } from "@/lib/admin/standards.defaults";
-import type { AdminUnitDefinition } from "@/lib/admin/standards.types";
+import { createDefaultUnitDefinitions } from "@/lib/admin/settings/standardsDefaults";
+import type { AdminUnitDefinition } from "@/lib/admin/settings/standardsTypes";
 
 type Props = {
   open: boolean;

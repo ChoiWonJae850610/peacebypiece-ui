@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requestPurgeAttachmentTrashItems } from "@/lib/admin/adminFiles.serverActions";
+import { requestPurgeAttachmentTrashItems } from "@/lib/admin/files/serverActions";
 
 export const runtime = "nodejs";
 

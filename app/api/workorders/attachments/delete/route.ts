@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { markAttachmentTrashItemsPurgedByAttachmentIds } from "@/lib/admin/adminFiles.serverActions";
+import { markAttachmentTrashItemsPurgedByAttachmentIds } from "@/lib/admin/files/serverActions";
 import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
-import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/companySettings.repository";
+import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/settings/companyRepository";
 import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
 import { deleteR2ObjectViaWorker } from "@/lib/storage/r2/r2WorkerUpload";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
