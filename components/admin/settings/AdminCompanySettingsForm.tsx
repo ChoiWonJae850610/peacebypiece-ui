@@ -10,6 +10,7 @@ import {
 } from "@/lib/admin/adminSettings.presentation";
 import { runSaveCompanySettingsFlow } from "@/lib/admin/adminSettings.actionFlow";
 import type { CompanySettings } from "@/lib/admin/companySettings.types";
+import { persistAdminTheme } from "@/lib/admin/theme";
 import { useI18n } from "@/lib/i18n";
 
 type AdminCompanySettingsFormProps = {
@@ -48,7 +49,7 @@ function HeaderRefreshButton({ label }: { label: string }) {
       type="button"
       aria-label={label}
       title={label}
-      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white transition hover:bg-white/15"
+      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-[var(--admin-theme-text-on-surface)] transition hover:bg-white/15"
     >
       <span aria-hidden="true">↻</span>
     </button>
@@ -65,6 +66,9 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
   async function saveNextSettings(nextSettings: CompanySettings) {
     if (nextSettings.ui.language !== draft.ui.language) {
       setLocale(nextSettings.ui.language);
+    }
+    if (nextSettings.ui.themeColor !== draft.ui.themeColor) {
+      persistAdminTheme(nextSettings.ui.themeColor);
     }
     setDraft(nextSettings);
     setSaveState("saving");
@@ -88,12 +92,12 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
   return (
     <AdminCard className="shrink-0 p-4">
       <div className="grid gap-3 lg:grid-cols-[1.35fr_0.85fr]">
-        <section className="rounded-[28px] bg-stone-950 p-4 text-white">
+        <section className="rounded-[28px] bg-[var(--admin-theme-surface)] p-4 text-[var(--admin-theme-text-on-surface)] transition-colors">
           <div className="flex items-start justify-between gap-3">
             <div>
               <h2 className="text-2xl font-semibold tracking-tight">{companyName}</h2>
-              <p className="mt-2 text-xs font-semibold text-stone-400">{text.planLabel}</p>
-              <p className="mt-1 text-xs font-semibold text-stone-400">{companyDate.updatedAt}</p>
+              <p className="mt-2 text-xs font-semibold text-[var(--admin-theme-muted-on-surface)]">{text.planLabel}</p>
+              <p className="mt-1 text-xs font-semibold text-[var(--admin-theme-muted-on-surface)]">{companyDate.updatedAt}</p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
               <HeaderRefreshButton label={text.refreshLabel} />
@@ -102,19 +106,19 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
           </div>
           <div className="mt-6 grid gap-2.5 sm:grid-cols-4">
             <div className="rounded-2xl bg-white/10 px-3 py-3">
-              <p className="text-[11px] font-semibold text-stone-400">{text.summaryCards.status}</p>
+              <p className="text-[11px] font-semibold text-[var(--admin-theme-muted-on-surface)]">{text.summaryCards.status}</p>
               <p className="mt-2 text-sm font-semibold text-white">{text.summaryCards.statusValue}</p>
             </div>
             <div className="rounded-2xl bg-white/10 px-3 py-3">
-              <p className="text-[11px] font-semibold text-stone-400">{text.summaryCards.joinedAt}</p>
+              <p className="text-[11px] font-semibold text-[var(--admin-theme-muted-on-surface)]">{text.summaryCards.joinedAt}</p>
               <p className="mt-2 text-sm font-semibold text-white">{companyDate.joinedAt}</p>
             </div>
             <div className="rounded-2xl bg-white/10 px-3 py-3">
-              <p className="text-[11px] font-semibold text-stone-400">{text.summaryCards.age}</p>
+              <p className="text-[11px] font-semibold text-[var(--admin-theme-muted-on-surface)]">{text.summaryCards.age}</p>
               <p className="mt-2 text-sm font-semibold text-white">{companyDate.age}</p>
             </div>
             <div className="rounded-2xl bg-white/10 px-3 py-3">
-              <p className="text-[11px] font-semibold text-stone-400">{text.summaryCards.members}</p>
+              <p className="text-[11px] font-semibold text-[var(--admin-theme-muted-on-surface)]">{text.summaryCards.members}</p>
               <p className="mt-2 text-sm font-semibold text-white">{text.summaryCards.memberValue}</p>
             </div>
           </div>
@@ -155,7 +159,7 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
                   key={option.value}
                   type="button"
                   onClick={() => saveNextSettings({ ...draft, ui: { ...draft.ui, language: option.value } })}
-                  className={`rounded-2xl border px-3 py-2 text-sm font-semibold transition ${draft.ui.language === option.value ? "border-stone-950 bg-stone-950 text-white" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"}`}
+                  className={`rounded-2xl border px-3 py-2 text-sm font-semibold transition ${draft.ui.language === option.value ? "border-[var(--admin-theme-surface)] bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"}`}
                 >
                   {option.label}
                 </button>

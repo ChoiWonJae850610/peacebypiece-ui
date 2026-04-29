@@ -137,7 +137,7 @@ export default function FileStorageSummary({
 
   return (
     <section className="shrink-0 rounded-[28px] border border-stone-200 bg-stone-50 p-3">
-      <div className="relative h-[314px] overflow-hidden rounded-[26px] bg-stone-950 p-5 text-white">
+      <div className="relative h-[314px] overflow-hidden rounded-[26px] bg-[var(--admin-theme-surface)] p-5 text-[var(--admin-theme-text-on-surface)] transition-colors">
         <div className="flex h-full min-h-0 flex-col">
           <div className="flex shrink-0 items-center justify-between gap-3">
             <div className="flex flex-wrap gap-2">

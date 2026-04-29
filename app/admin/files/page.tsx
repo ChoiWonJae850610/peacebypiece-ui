@@ -132,7 +132,7 @@ export default function AdminFilesPage() {
             {snapshot.tabs.filter((tab) => tab.key !== "storage").map((tab) => {
               const isActive = activeTab === tab.key;
               return (
-                <button key={tab.key} type="button" onClick={() => handleChangeTab(tab.key)} className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${isActive ? "border-stone-950 bg-stone-950 text-white" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"}`}>
+                <button key={tab.key} type="button" onClick={() => handleChangeTab(tab.key)} className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${isActive ? "border-[var(--admin-theme-surface)] bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"}`}>
                   {tab.label}
                 </button>
               );
@@ -143,7 +143,7 @@ export default function AdminFilesPage() {
         </div>
 
         {actionMessage ? (
-          <section className="pointer-events-none absolute bottom-5 right-5 z-10 max-w-md rounded-2xl bg-stone-950 px-4 py-3 text-sm font-semibold text-white shadow-xl">
+          <section className="pointer-events-none absolute bottom-5 right-5 z-10 max-w-md rounded-2xl bg-[var(--admin-theme-surface)] px-4 py-3 text-sm font-semibold text-[var(--admin-theme-text-on-surface)] shadow-xl">
             {actionMessage}
           </section>
         ) : null}

@@ -35,7 +35,7 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
                 key={period.value}
                 type="button"
                 onClick={() => setSelectedPeriod(period.value)}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${selected ? "bg-stone-950 text-white" : "bg-stone-100 text-stone-500 hover:bg-stone-200"}`}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${selected ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "bg-stone-100 text-stone-500 hover:bg-stone-200"}`}
                 aria-pressed={selected}
               >
                 {period.label}
@@ -60,7 +60,7 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
               return (
                 <div key={stage.label} className="flex min-w-0 flex-1 flex-col items-center justify-end gap-3">
                   <div className="flex h-full min-h-44 w-full items-end justify-center">
-                    <div className="w-full max-w-16 rounded-t-3xl bg-stone-950/85 shadow-sm" style={{ height: `${height}%` }} aria-label={`${stage.label} ${stage.value}건`} />
+                    <div className="w-full max-w-16 rounded-t-3xl bg-[var(--admin-theme-surface)] shadow-sm" style={{ height: `${height}%` }} aria-label={`${stage.label} ${stage.value}건`} />
                   </div>
                   <div className="text-center">
                     <p className="text-lg font-semibold text-stone-950">{stage.value}</p>
@@ -88,7 +88,7 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
                       <span>{item.value}건</span>
                     </div>
                     <div className="mt-2 h-2 rounded-full bg-stone-100">
-                      <div className="h-2 rounded-full bg-stone-950" style={{ width: `${width}%` }} />
+                      <div className="h-2 rounded-full bg-[var(--admin-theme-surface)]" style={{ width: `${width}%` }} />
                     </div>
                   </div>
                 );
@@ -96,7 +96,7 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
             </div>
           </div>
 
-          <div className="min-h-0 rounded-[28px] border border-stone-100 bg-stone-950 p-5 text-white shadow-sm">
+          <div className="min-h-0 rounded-[28px] border border-stone-100 bg-[var(--admin-theme-surface)] p-5 text-[var(--admin-theme-text-on-surface)] transition-colors shadow-sm">
             <h3 className="text-base font-semibold">오늘 체크</h3>
             <div className="mt-4 grid gap-3">
               {snapshot.insights.map((item) => (

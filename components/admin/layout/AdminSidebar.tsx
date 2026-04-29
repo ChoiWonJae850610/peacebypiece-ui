@@ -109,7 +109,7 @@ export default function AdminSidebar({ companyName, appVersion, navigationItems 
 
   return (
     <aside className="flex min-w-0 flex-col rounded-[32px] border border-stone-200 bg-white p-4 shadow-sm lg:h-full lg:w-72 lg:shrink-0">
-      <div className="rounded-[24px] bg-stone-950 p-5 text-white">
+      <div className="rounded-[24px] bg-[var(--admin-theme-surface)] p-5 text-[var(--admin-theme-text-on-surface)] transition-colors">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">PeacebyPiece</p>
@@ -133,7 +133,7 @@ export default function AdminSidebar({ companyName, appVersion, navigationItems 
 
           const content = (
             <>
-              <span className={["flex h-10 w-10 items-center justify-center rounded-2xl shadow-sm ring-1 transition", item.active ? "bg-stone-950 ring-stone-950 [&_svg]:stroke-white" : "bg-white ring-stone-200"].join(" ") }>
+              <span className={["flex h-10 w-10 items-center justify-center rounded-2xl shadow-sm ring-1 transition", item.active ? "bg-[var(--admin-theme-surface)] ring-[var(--admin-theme-surface)] [&_svg]:stroke-white" : "bg-white ring-stone-200"].join(" ") }>
                 <SidebarIcon type={item.icon} active={item.active} />
               </span>
               <span className="min-w-0 truncate">{item.label}</span>

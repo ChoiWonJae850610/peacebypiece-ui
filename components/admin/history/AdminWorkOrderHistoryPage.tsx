@@ -61,7 +61,7 @@ export default function AdminWorkOrderHistoryPage({ initialHistoryEvents = [] }:
 
   return (
     <section className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
-      <div className="shrink-0 rounded-[28px] border border-stone-200 bg-white p-4 shadow-sm">
+      <div className="shrink-0 rounded-[28px] border border-[var(--admin-theme-border)] bg-[var(--admin-theme-soft)] p-4 shadow-sm transition-colors">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0 flex-1 space-y-3">
             <div className="flex items-center justify-between gap-3">
@@ -79,7 +79,7 @@ export default function AdminWorkOrderHistoryPage({ initialHistoryEvents = [] }:
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   placeholder={pageText.searchPlaceholder}
-                  className="h-10 w-full rounded-2xl border border-stone-200 bg-white px-3 text-sm text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-stone-400"
+                  className="h-10 w-full rounded-2xl border border-stone-200 bg-white px-3 text-sm text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-[var(--admin-theme-border)] focus:ring-4 focus:ring-[var(--admin-theme-ring)]"
                 />
               </label>
               <label className="space-y-1.5">
@@ -87,7 +87,7 @@ export default function AdminWorkOrderHistoryPage({ initialHistoryEvents = [] }:
                 <select
                   value={dateFilter}
                   onChange={(event) => setDateFilter(event.target.value as AdminHistoryDateFilter)}
-                  className="h-10 w-full rounded-2xl border border-stone-200 bg-white px-3 text-sm font-medium text-stone-700 outline-none transition focus:border-stone-400"
+                  className="h-10 w-full rounded-2xl border border-stone-200 bg-white px-3 text-sm font-medium text-stone-700 outline-none transition focus:border-[var(--admin-theme-border)] focus:ring-4 focus:ring-[var(--admin-theme-ring)]"
                 >
                   {dateOptions.map((option) => (
                     <option key={option.value} value={option.value}>{option.label}</option>
@@ -99,7 +99,7 @@ export default function AdminWorkOrderHistoryPage({ initialHistoryEvents = [] }:
                 <select
                   value={userFilter}
                   onChange={(event) => setUserFilter(event.target.value)}
-                  className="h-10 w-full rounded-2xl border border-stone-200 bg-white px-3 text-sm font-medium text-stone-700 outline-none transition focus:border-stone-400"
+                  className="h-10 w-full rounded-2xl border border-stone-200 bg-white px-3 text-sm font-medium text-stone-700 outline-none transition focus:border-[var(--admin-theme-border)] focus:ring-4 focus:ring-[var(--admin-theme-ring)]"
                 >
                   {userOptions.map((option) => (
                     <option key={option.value} value={option.value}>{option.label}</option>
@@ -114,7 +114,7 @@ export default function AdminWorkOrderHistoryPage({ initialHistoryEvents = [] }:
                 key={item.value}
                 type="button"
                 onClick={() => setHistoryFilter(item.value)}
-                className={`h-9 rounded-full px-3 text-xs font-semibold transition ${item.className}`}
+                className={`h-9 rounded-full px-3 text-xs font-semibold transition ${item.value === historyFilter ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : item.className}`}
               >
                 {item.label}
               </button>

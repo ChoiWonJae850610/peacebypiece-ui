@@ -19,7 +19,7 @@ export default function PartnerMasterHeader({ onOpenCreateModal }: PartnerMaster
         <button
           type="button"
           onClick={onOpenCreateModal}
-          className="inline-flex h-10 items-center justify-center rounded-full bg-stone-950 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-stone-800"
+          className="inline-flex h-10 items-center justify-center rounded-full bg-[var(--admin-theme-surface)] px-4 text-sm font-semibold text-[var(--admin-theme-text-on-surface)] shadow-sm transition hover:bg-[var(--admin-theme-surface-hover)]"
         >
           + {headerText.createPartner}
         </button>

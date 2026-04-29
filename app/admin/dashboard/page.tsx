@@ -43,7 +43,7 @@ export default async function AdminDashboardPage() {
               <h2 className="text-lg font-semibold text-stone-950">{pageText.workorderFlowTitle}</h2>
               <p className="mt-1 text-xs text-stone-500">{sourceDescription}</p>
             </div>
-            <span className="rounded-full bg-stone-950 px-3 py-1.5 text-xs font-semibold text-white">{pageText.currentMonth}</span>
+            <span className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--admin-theme-text-on-surface)]">{pageText.currentMonth}</span>
           </div>
 
           <div className="mt-5 flex min-h-0 flex-1 items-end gap-4 rounded-[24px] border border-stone-100 bg-stone-50/70 px-5 pb-5 pt-7">
@@ -52,7 +52,7 @@ export default async function AdminDashboardPage() {
               return (
                 <div key={item.label} className="flex min-w-0 flex-1 flex-col items-center justify-end gap-3">
                   <div className="flex h-48 w-full items-end justify-center border-b border-stone-200">
-                    <div className="w-full max-w-14 rounded-t-3xl bg-stone-950 shadow-sm" style={{ height: `${height}%` }} aria-label={`${item.label} ${item.value}건`} />
+                    <div className="w-full max-w-14 rounded-t-3xl bg-[var(--admin-theme-surface)] shadow-sm" style={{ height: `${height}%` }} aria-label={`${item.label} ${item.value}건`} />
                   </div>
                   <div className="text-center">
                     <p className="text-base font-semibold text-stone-950">{item.value}</p>
@@ -82,7 +82,7 @@ export default async function AdminDashboardPage() {
                       <span>{item.value}{pageText.partnerCountSuffix}</span>
                     </div>
                     <div className="mt-2 h-2 rounded-full bg-stone-100">
-                      <div className="h-2 rounded-full bg-stone-950" style={{ width: `${width}%` }} />
+                      <div className="h-2 rounded-full bg-[var(--admin-theme-surface)]" style={{ width: `${width}%` }} />
                     </div>
                   </div>
                 );
@@ -106,7 +106,7 @@ export default async function AdminDashboardPage() {
                       <span>{item.valueLabel}</span>
                     </div>
                     <div className="mt-3 h-2 rounded-full bg-white">
-                      <div className="h-2 rounded-full bg-stone-950" style={{ width: `${width}%` }} />
+                      <div className="h-2 rounded-full bg-[var(--admin-theme-surface)]" style={{ width: `${width}%` }} />
                     </div>
                   </div>
                 );
