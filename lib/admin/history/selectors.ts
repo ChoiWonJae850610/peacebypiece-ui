@@ -1,4 +1,6 @@
 import { HISTORY_FILTER_BUTTON_CLASS, HISTORY_TONE_CLASS } from "@/lib/constants/display";
+import { ADMIN_HISTORY_DATE_MS, ADMIN_HISTORY_USER_ALL_OPTION } from "@/lib/constants/adminHistory";
+export { ADMIN_HISTORY_DATE_FILTER_OPTIONS } from "@/lib/constants/adminHistory";
 import { getI18n } from "@/lib/i18n";
 import { filterHistoryLogs } from "@/lib/workorder/history/filters";
 import type { RoleType } from "@/types/permission";
@@ -85,13 +87,6 @@ export type AdminHistorySelectOption = {
   label: string;
 };
 
-export const ADMIN_HISTORY_DATE_FILTER_OPTIONS: { value: AdminHistoryDateFilter; label: string }[] = [
-  { value: "all", label: "전체 날짜" },
-  { value: "today", label: "오늘" },
-  { value: "week", label: "최근 7일" },
-  { value: "month", label: "최근 30일" },
-];
-
 function parseAdminHistoryDate(value: string): Date | null {
   const normalized = value.replace(/\./g, "-").replace(/\s+/g, "T");
   const parsed = new Date(normalized);
@@ -106,18 +101,16 @@ export function matchesAdminHistoryDateFilter(item: AdminHistoryEvent, dateFilte
   if (!occurredAt) return true;
 
   const diff = now.getTime() - occurredAt.getTime();
-  const oneDay = 24 * 60 * 60 * 1000;
-
   if (dateFilter === "today") return occurredAt.toDateString() === now.toDateString();
-  if (dateFilter === "week") return diff >= 0 && diff <= oneDay * 7;
-  if (dateFilter === "month") return diff >= 0 && diff <= oneDay * 30;
+  if (dateFilter === "week") return diff >= 0 && diff <= ADMIN_HISTORY_DATE_MS * 7;
+  if (dateFilter === "month") return diff >= 0 && diff <= ADMIN_HISTORY_DATE_MS * 30;
 
   return true;
 }
 
 export function selectAdminHistoryUserOptions(items: AdminHistoryEvent[]): AdminHistorySelectOption[] {
   const users = Array.from(new Set(items.map((item) => item.actorName).filter(Boolean))).sort((a, b) => a.localeCompare(b));
-  return [{ value: "all", label: "전체 사용자" }, ...users.map((user) => ({ value: user, label: user }))];
+  return [ADMIN_HISTORY_USER_ALL_OPTION, ...users.map((user) => ({ value: user, label: user }))];
 }
 
 export function filterAdminHistoryPageEvents(payload: {
