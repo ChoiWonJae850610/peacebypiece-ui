@@ -1,7 +1,7 @@
 "use client";
 
-import { ADMIN_FILE_SORT_OPTIONS } from "@/lib/admin/adminFiles.presentation";
-import type { AdminFileSortKey, AdminManagedFileItem } from "@/lib/admin/adminFiles.types";
+import { ADMIN_FILE_SORT_OPTIONS } from "@/lib/admin/files/presentation";
+import type { AdminFileSortKey, AdminManagedFileItem } from "@/lib/admin/files/types";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type FileListSectionProps = {

@@ -7,9 +7,9 @@ import {
   ADMIN_THEME_OPTIONS,
   getAdminSettingsUpdatedAtLabel,
   type AdminSettingSaveState,
-} from "@/lib/admin/adminSettings.presentation";
-import { runSaveCompanySettingsFlow } from "@/lib/admin/adminSettings.actionFlow";
-import type { CompanySettings } from "@/lib/admin/companySettings.types";
+} from "@/lib/admin/settings/presentation";
+import { runSaveCompanySettingsFlow } from "@/lib/admin/settings/actionFlow";
+import type { CompanySettings } from "@/lib/admin/settings/companyTypes";
 import { persistAdminTheme } from "@/lib/admin/theme";
 import { useI18n } from "@/lib/i18n";
 

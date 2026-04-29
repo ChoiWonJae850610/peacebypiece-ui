@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { AdminModal, adminModalPrimaryButtonClassName, adminModalSecondaryButtonClassName } from "@/components/admin/layout/AdminModal";
-import { runSaveCompanySettingsFlow } from "@/lib/admin/adminSettings.actionFlow";
-import { buildDefaultCompanySettings } from "@/lib/admin/companySettings.defaults";
-import type { CompanySettings } from "@/lib/admin/companySettings.types";
+import { runSaveCompanySettingsFlow } from "@/lib/admin/settings/actionFlow";
+import { buildDefaultCompanySettings } from "@/lib/admin/settings/companyDefaults";
+import type { CompanySettings } from "@/lib/admin/settings/companyTypes";
 import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 
 type AdminNotificationPolicySettingsModalProps = {

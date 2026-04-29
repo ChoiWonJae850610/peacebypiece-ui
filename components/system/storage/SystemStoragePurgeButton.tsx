@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { runPurgeWorkerFlow } from "@/lib/admin/adminFiles.actionFlow";
+import { runPurgeWorkerFlow } from "@/lib/admin/files/actionFlow";
 
 export default function SystemStoragePurgeButton() {
   const [isOpen, setIsOpen] = useState(false);

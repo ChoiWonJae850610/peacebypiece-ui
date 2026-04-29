@@ -1,6 +1,6 @@
 "use client";
 
-import type { AdminTrashFileItem } from "@/lib/admin/adminFiles.types";
+import type { AdminTrashFileItem } from "@/lib/admin/files/types";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type FileTrashSectionProps = {

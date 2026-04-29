@@ -5,16 +5,16 @@ import FileListSection from "@/components/admin/files/FileListSection";
 import FileStorageSummary from "@/components/admin/files/FileStorageSummary";
 import FileTrashSection from "@/components/admin/files/FileTrashSection";
 import AdminShell from "@/components/admin/layout/AdminShell";
-import { runMoveAttachmentsToTrashFlow, runPurgeTrashItemsFlow, runRestoreTrashItemsFlow } from "@/lib/admin/adminFiles.actionFlow";
-import { getAdminFileManagementSnapshot } from "@/lib/admin/adminFiles.adapter";
+import { runMoveAttachmentsToTrashFlow, runPurgeTrashItemsFlow, runRestoreTrashItemsFlow } from "@/lib/admin/files/actionFlow";
+import { getAdminFileManagementSnapshot } from "@/lib/admin/files/adapter";
 import {
   buildAdminSelectAllIds,
   selectAdminManagedFilesByIds,
   selectAdminTrashItemsByIds,
   sortAdminManagedFiles,
   toggleAdminSelectedId,
-} from "@/lib/admin/adminFiles.presentation";
-import type { AdminFileManagementSnapshot, AdminFileSortKey, AdminFileTabKey, AdminFileTrendPeriod } from "@/lib/admin/adminFiles.types";
+} from "@/lib/admin/files/presentation";
+import type { AdminFileManagementSnapshot, AdminFileSortKey, AdminFileTabKey, AdminFileTrendPeriod } from "@/lib/admin/files/types";
 import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
 import { APP_VERSION } from "@/lib/constants/app";
 import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";

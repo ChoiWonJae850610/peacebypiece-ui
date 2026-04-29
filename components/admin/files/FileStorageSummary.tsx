@@ -6,7 +6,7 @@ import type {
   AdminFileUsageCard,
   AdminRecentUploadTrendPoint,
   AdminStorageUsageSummary,
-} from "@/lib/admin/adminFiles.types";
+} from "@/lib/admin/files/types";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type FileStorageSummaryProps = {
