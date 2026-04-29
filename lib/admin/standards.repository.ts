@@ -4,7 +4,7 @@ import { randomUUID } from "crypto";
 import { isDatabaseConfigured, queryDb, type DbQueryResultRow } from "@/lib/db/client";
 import { getWorkspaceCompanyContext } from "@/lib/constants/company";
 import { createDefaultItemCategoryDefinitions, createDefaultUnitDefinitions } from "@/lib/admin/standards.defaults";
-import type { AdminItemCategoryDefinition, AdminStandardsPayload, AdminUnitDefinition } from "@/lib/admin/standards.types";
+import type { AdminItemCategoryDefinition, AdminItemCategoryLevel, AdminStandardsPayload, AdminUnitDefinition } from "@/lib/admin/standards.types";
 
 type UnitRow = AdminUnitDefinition & DbQueryResultRow;
 type ItemCategoryRow = AdminItemCategoryDefinition & DbQueryResultRow;
@@ -100,18 +100,26 @@ function normalizeIncomingUnits(items: AdminUnitDefinition[]): AdminUnitDefiniti
     .filter((item) => item.code.length > 0 && item.name.length > 0);
 }
 
+function normalizeItemCategoryLevel(level: AdminItemCategoryDefinition["level"]): AdminItemCategoryLevel {
+  return level === 2 || level === 3 ? level : 1;
+}
+
 function normalizeIncomingCategories(items: AdminItemCategoryDefinition[]): AdminItemCategoryDefinition[] {
   const companyId = getWorkspaceCompanyContext().companyId;
   return items
-    .map((item, index) => ({
-      id: item.id?.trim() || randomUUID(),
-      company_id: companyId,
-      parent_id: item.level === 1 ? null : item.parent_id ?? null,
-      level: item.level === 2 || item.level === 3 ? item.level : 1,
-      name: item.name.trim(),
-      is_active: item.is_active !== false,
-      sort_order: Number.isFinite(item.sort_order) ? item.sort_order : (index + 1) * 10,
-    }))
+    .map((item, index): AdminItemCategoryDefinition => {
+      const level = normalizeItemCategoryLevel(item.level);
+
+      return {
+        id: item.id?.trim() || randomUUID(),
+        company_id: companyId,
+        parent_id: level === 1 ? null : item.parent_id ?? null,
+        level,
+        name: item.name.trim(),
+        is_active: item.is_active !== false,
+        sort_order: Number.isFinite(item.sort_order) ? item.sort_order : (index + 1) * 10,
+      };
+    })
     .filter((item) => item.name.length > 0);
 }
 
