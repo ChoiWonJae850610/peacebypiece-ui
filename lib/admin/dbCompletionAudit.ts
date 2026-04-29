@@ -1,5 +1,12 @@
 import { PARTNER_REPOSITORY_MODE, WORKORDER_REPOSITORY_MODE, ATTACHMENT_MEMO_REPOSITORY_MODE } from "@/lib/constants/app";
-import { getSupportedDatabaseEnvKeys } from "@/lib/db/client";
+
+const SUPPORTED_DATABASE_ENV_KEYS = [
+  "DATABASE_URL",
+  "POSTGRES_URL",
+  "POSTGRES_PRISMA_URL",
+  "POSTGRES_URL_NON_POOLING",
+  "NEON_DATABASE_URL",
+] as const;
 
 export type AdminDbScreenAuditStatus = "db-connected" | "db-prepared" | "fallback-guarded" | "not-applicable";
 
@@ -94,7 +101,7 @@ export function getAdminDbCompletionSummary(): AdminDbCompletionSummary {
       partner: PARTNER_REPOSITORY_MODE,
       attachmentMemo: ATTACHMENT_MEMO_REPOSITORY_MODE,
     },
-    supportedEnvKeys: getSupportedDatabaseEnvKeys(),
+    supportedEnvKeys: SUPPORTED_DATABASE_ENV_KEYS,
     items: ADMIN_DB_SCREEN_AUDIT_ITEMS,
   };
 }
