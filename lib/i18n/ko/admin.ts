@@ -102,6 +102,24 @@ export const adminKo = {
     languageTitle: "언어 설정",
     languageCurrentPrefix: "현재 ",
   },
+  userAccessPreview: {
+    title: "사용자/권한 테스트 구조",
+    description: "실제 로그인 연결 전까지 DB 사용자 구조와 현재 권한 policy가 맞는지 환경설정에서 확인하는 준비 패널입니다.",
+    sourceStates: { "db-prepared": "DB 구조 준비", "mock-adapter": "mock 사용자 기준" },
+    userCountLabel: "테스트 사용자",
+    testUsersTitle: "역할별 테스트 계정",
+    readOnlyBadge: "읽기 전용",
+    permissionLabels: { canAssignRoles: "권한관리", canEditInventory: "재고수정", canSeeCostSections: "원가조회" },
+    checklistTitle: "전환 체크리스트",
+    checklist: {
+      "users-table": "users 테이블 SQL 준비",
+      "company-users-table": "company_users 역할 연결 SQL 준비",
+      "role-policy": "중앙 role / permission policy 연결",
+      "login-adapter": "실제 로그인 adapter 연결",
+    },
+    status: { ready: "준비", pending: "대기" },
+    nextStep: "다음 단계에서는 이 구조를 실제 조회 repository와 관리자 권한 변경 모달로 연결합니다.",
+  },
   notificationSection: {
     items: {
       created: { label: "작업지시서 생성", description: "새 작업지시서가 만들어졌을 때 알림 대상에 포함합니다." },

@@ -102,6 +102,24 @@ export const adminEn = {
     languageTitle: "Language",
     languageCurrentPrefix: "Current ",
   },
+  userAccessPreview: {
+    title: "User / Permission Test Structure",
+    description: "A preparation panel for checking whether the DB user structure and current permission policy match before real login is connected.",
+    sourceStates: { "db-prepared": "DB structure prepared", "mock-adapter": "Mock user source" },
+    userCountLabel: "Test users",
+    testUsersTitle: "Role test accounts",
+    readOnlyBadge: "Read only",
+    permissionLabels: { canAssignRoles: "Role admin", canEditInventory: "Inventory edit", canSeeCostSections: "Cost view" },
+    checklistTitle: "Migration checklist",
+    checklist: {
+      "users-table": "users table SQL prepared",
+      "company-users-table": "company_users role mapping SQL prepared",
+      "role-policy": "Central role / permission policy connected",
+      "login-adapter": "Real login adapter connected",
+    },
+    status: { ready: "Ready", pending: "Pending" },
+    nextStep: "Next, connect this structure to the real read repository and admin role management modal.",
+  },
   notificationSection: {
     items: {
       created: { label: "Work order created", description: "Notify when a new work order is created." },
