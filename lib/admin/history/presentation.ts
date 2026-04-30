@@ -22,6 +22,13 @@ const HIDDEN_DETAIL_LABELS = new Set([
   "target_type",
   "userId",
   "user_id",
+  "id",
+  "uuid",
+  "metadata",
+  "debug",
+  "payload",
+  "updatedSection",
+  "updated_section",
 ]);
 
 export type AdminHistoryDetailLineViewModel = {
@@ -45,7 +52,6 @@ export type AdminHistoryItemViewModel = {
 export type AdminHistorySectionViewModel = {
   title: string;
   summaryText: string;
-  countText: string;
   filterOptions: ReturnType<typeof selectAdminHistoryFilterOptions>;
   items: AdminHistoryEvent[];
   emptyText: string;
@@ -102,7 +108,6 @@ function buildAdminHistorySummary(item: AdminHistoryEvent, translations: AdminI1
     return `${displayHistoryStatus(item.transition.from, translations)} → ${displayHistoryStatus(item.transition.to, translations)}`;
   }
 
-  if (item.message || item.summary) return displayHistoryValue(item.message || item.summary, translations);
 
   return displayHistoryTargetType(item.target.type, translations);
 }
@@ -146,12 +151,15 @@ export function buildAdminHistoryItemViewModel(item: AdminHistoryEvent, open: bo
   };
 }
 
-export function buildAdminHistorySectionViewModel(historyLogs: AdminHistoryEvent[], historyFilter: AdminHistoryFilter): AdminHistorySectionViewModel {
+export function buildAdminHistorySectionViewModel(
+  historyLogs: AdminHistoryEvent[],
+  historyFilter: AdminHistoryFilter,
+  translations: AdminI18n = adminI18n,
+): AdminHistorySectionViewModel {
   return {
-    title: adminI18n.historySection.title,
-    summaryText: adminI18n.historySection.summary,
-    countText: `${historyLogs.length}${adminI18n.historySection.countSuffix}`,
-    filterOptions: selectAdminHistoryFilterOptions(historyFilter),
+    title: translations.historySection.title,
+    summaryText: translations.historySection.summary,
+    filterOptions: selectAdminHistoryFilterOptions(historyFilter, translations),
     items: historyLogs,
     emptyText: i18n.workorder.presentation.inventoryLog.empty,
   };

@@ -60,7 +60,7 @@ export default function AdminWorkOrderHistoryPage({ initialHistoryEvents = [] }:
     [dateFilter, historyEvents, refreshKey, searchQuery, userFilter],
   );
 
-  const viewModel = buildAdminHistorySectionViewModel(filteredLogs, historyFilter);
+  const viewModel = buildAdminHistorySectionViewModel(filteredLogs, historyFilter, i18n.admin);
   const hasSearchQuery = searchQuery.trim().length > 0 || dateFilter !== "all" || userFilter !== "all" || historyFilter !== "all";
 
   return (

@@ -76,6 +76,7 @@ export const adminKo = {
     userLabel: "사용자",
     refreshLabel: "히스토리 새로고침",
     dateFilters: { all: "전체 날짜", today: "오늘", week: "최근 7일", month: "최근 30일" },
+    filters: { all: "전체", work: "작업", inventory: "재고", attachment: "첨부" },
     allUsers: "전체 사용자",
     actions: { WORKORDER_CREATED: "작업지시서 생성", STATUS_CHANGED: "상태 변경", FILE_UPLOADED: "파일 업로드", FILE_DELETED: "파일 삭제", PARTNER_UPDATED: "협력업체 수정", SETTINGS_CHANGED: "환경설정 변경", PARTNER_CREATED: "협력업체 등록", PARTNER_DELETED: "협력업체 삭제" },
     status: { draft: "작성중", review_requested: "검토요청", review_completed: "검토완료", inspection: "입고대기", completed: "완료", rejected: "반려", pending: "대기", active: "사용", inactive: "미사용" },

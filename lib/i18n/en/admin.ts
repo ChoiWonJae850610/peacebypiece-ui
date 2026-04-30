@@ -97,6 +97,7 @@ export const adminEn = {
     userLabel: "User",
     refreshLabel: "Refresh history",
     dateFilters: { all: "All dates", today: "Today", week: "Last 7 days", month: "Last 30 days" },
+    filters: { all: "All", work: "Work", inventory: "Inventory", attachment: "Files" },
     allUsers: "All users",
     actions: { WORKORDER_CREATED: "Work Order Created", STATUS_CHANGED: "Status Changed", FILE_UPLOADED: "File Uploaded", FILE_DELETED: "File Deleted", PARTNER_UPDATED: "Partner Updated", SETTINGS_CHANGED: "Settings Changed", PARTNER_CREATED: "Partner Created", PARTNER_DELETED: "Partner Deleted" },
     status: { draft: "Draft", review_requested: "Review Requested", review_completed: "Review Completed", inspection: "Inbound Pending", completed: "Completed", rejected: "Rejected", pending: "Pending", active: "Active", inactive: "Inactive" },

@@ -8,7 +8,7 @@ import type { HistoryLog } from "@/types/workorder";
 import type { AdminHistoryDateFilter, AdminHistoryEvent, AdminHistoryFilter } from "@/lib/admin/history/types";
 
 const i18n = getI18n();
-const presentation = i18n.workorder.presentation;
+const defaultAdminText = i18n.admin;
 
 export type AdminHistoryFilterOption = {
   value: AdminHistoryFilter;
@@ -21,6 +21,22 @@ function toAdminHistoryTimestamp(value: string): AdminHistoryEvent["timestamp"] 
     iso: value,
     display: value,
   };
+}
+
+const ADMIN_HISTORY_ALLOWED_ACTIONS = new Set([
+  "WORKORDER_CREATED",
+  "STATUS_CHANGED",
+  "FILE_UPLOADED",
+  "FILE_DELETED",
+  "PARTNER_CREATED",
+  "PARTNER_UPDATED",
+  "PARTNER_DELETED",
+]);
+
+const ADMIN_HISTORY_SYSTEM_TARGETS = new Set(["settings", "system", "debug"]);
+
+function normalizeAdminHistoryAction(value: string): string {
+  return value.trim().toUpperCase();
 }
 
 export function toAdminHistoryEvent(item: HistoryLog): AdminHistoryEvent {
@@ -60,8 +76,13 @@ export function dedupeAdminHistoryEvents<T extends { id: string }>(items: T[]): 
 
 export function isAdminHistoryDisplayable(item: AdminHistoryEvent): boolean {
   const actorName = (item.actor.name || item.actorName || "").toLowerCase();
-  const action = item.action.toUpperCase();
-  if (actorName === "system" && (item.target.type === "settings" || action === "SETTINGS_CHANGED")) return false;
+  const action = normalizeAdminHistoryAction(item.action);
+  const targetType = String(item.target.type || "").toLowerCase();
+
+  if (!ADMIN_HISTORY_ALLOWED_ACTIONS.has(action)) return false;
+  if (ADMIN_HISTORY_SYSTEM_TARGETS.has(targetType)) return false;
+  if (actorName === "system" && (targetType === "settings" || action === "SETTINGS_CHANGED")) return false;
+
   return true;
 }
 
@@ -78,12 +99,16 @@ export function filterAdminHistoryEvents(historyLogs: HistoryLog[], historyFilte
   );
 }
 
-export function selectAdminHistoryFilterOptions(historyFilter: AdminHistoryFilter): AdminHistoryFilterOption[] {
+export function selectAdminHistoryFilterOptions(
+  historyFilter: AdminHistoryFilter,
+  translations: typeof defaultAdminText = defaultAdminText,
+): AdminHistoryFilterOption[] {
+  const filterLabels = translations.historyPage.filters ?? defaultAdminText.historyPage.filters;
   const filterOptions: readonly [AdminHistoryFilter, string][] = [
-    ["all", presentation.historyFilters.all],
-    ["work", presentation.historyFilters.work],
-    ["inventory", presentation.historyFilters.inventory],
-    ["attachment", presentation.historyFilters.attachment],
+    ["all", filterLabels.all],
+    ["work", filterLabels.work],
+    ["inventory", filterLabels.inventory],
+    ["attachment", filterLabels.attachment],
   ] as const;
 
   return filterOptions.map(([value, label]) => ({
@@ -115,7 +140,11 @@ export function matchesAdminHistorySearch(item: AdminHistoryEvent, query: string
     item.summary,
     item.transition?.from,
     item.transition?.to,
-    ...(item.detailLines ?? []).flatMap((detail) => [detail.label ?? "", detail.value]),
+    ...(item.detailLines ?? []).flatMap((detail) => {
+      const label = (detail.label ?? "").toLowerCase();
+      if (label.endsWith("id") || label.includes("company") || label.includes("raw")) return [];
+      return [detail.label ?? "", detail.value];
+    }),
   ];
 
   return haystacks.some((value) => value?.toLowerCase().includes(normalizedQuery));
