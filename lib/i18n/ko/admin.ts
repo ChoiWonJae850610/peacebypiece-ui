@@ -8,6 +8,9 @@ export const adminKo = {
   ],
   common: {
     loadingList: "목록을 불러오는 중입니다.",
+    summary: "요약",
+    move: "이동",
+    preparing: "준비중",
   },
   filesPage: {
     title: "저장소 관리",
@@ -73,6 +76,16 @@ export const adminKo = {
     allUsers: "전체 사용자",
     actions: { WORKORDER_CREATED: "작업지시서 생성", STATUS_CHANGED: "상태 변경", FILE_UPLOADED: "파일 업로드", FILE_DELETED: "파일 삭제", PARTNER_UPDATED: "협력업체 수정", SETTINGS_CHANGED: "환경설정 변경" },
     status: { draft: "작성중", review_requested: "검토요청", review_completed: "검토완료", inspection: "입고대기", completed: "완료", rejected: "반려" },
+  },
+  topbar: {
+    summaries: {
+      adminMain: "운영 통계 · 상태 흐름 · 오늘 체크",
+      storage: "첨부파일 · 휴지통 · 용량 관리",
+      partners: "협력업체 · 공장 · 외주처",
+      dashboard: "작업지시서 · 협력업체 · 파일 사용량",
+      settings: "기준 설정 · 저장 정책 · 로그 이벤트",
+      history: "상태 변경 · 주요 작업 기록",
+    },
   },
   dashboardPage: {
     title: "통계정보",
@@ -199,6 +212,7 @@ export const adminKo = {
       noBaseType: "기본 유형 없음",
       typeMissing: "유형 정보 없음",
       edit: "수정",
+      loading: "협력업체 목록을 불러오는 중입니다.",
     },
     form: {
       createTitle: "협력업체 추가",
@@ -206,6 +220,7 @@ export const adminKo = {
       description: "",
       cancel: "취소",
       save: "저장",
+      sections: { basic: "기본 정보", category: "분류", memo: "메모" },
       labels: {
         name: "이름",
         active: "사용 여부",
@@ -254,6 +269,14 @@ export const adminKo = {
       usageSrLabelSuffix: " 사용 상태",
       moveUpSuffix: " 위로 이동",
       moveDownSuffix: " 아래로 이동",
+      addSectionTitle: "외주공정 추가",
+      usageSectionTitle: "외주공정 사용 여부",
+      inactiveListTitle: "미사용 외주공정",
+      activeListTitle: "사용중 외주공정",
+      inactiveEmpty: "미사용 외주공정이 없습니다.",
+      activeEmpty: "사용중 외주공정이 없습니다.",
+      activateSelected: "선택한 외주공정을 사용중으로 변경",
+      deactivateSelected: "선택한 외주공정을 미사용으로 변경",
     },
     confirm: {
       deleteProcessTitle: "외주 공정 삭제",

@@ -8,6 +8,9 @@ export const adminEn = {
   ],
   common: {
     loadingList: "Loading list.",
+    summary: "Summary",
+    move: "Go",
+    preparing: "Preparing",
   },
   filesPage: {
     title: "Storage",
@@ -73,6 +76,16 @@ export const adminEn = {
     allUsers: "All users",
     actions: { WORKORDER_CREATED: "Work Order Created", STATUS_CHANGED: "Status Changed", FILE_UPLOADED: "File Uploaded", FILE_DELETED: "File Deleted", PARTNER_UPDATED: "Partner Updated", SETTINGS_CHANGED: "Settings Changed" },
     status: { draft: "Draft", review_requested: "Review Requested", review_completed: "Review Completed", inspection: "Inbound Pending", completed: "Completed", rejected: "Rejected" },
+  },
+  topbar: {
+    summaries: {
+      adminMain: "Operations, status flow, and today checks",
+      storage: "Attachments, trash, and storage usage",
+      partners: "Partners, factories, and outsourcing vendors",
+      dashboard: "Work orders, partners, and file usage",
+      settings: "Standards, storage policy, and log events",
+      history: "Status changes and key activity records",
+    },
   },
   dashboardPage: {
     title: "Statistics",
@@ -199,6 +212,7 @@ export const adminEn = {
       noBaseType: "No base type",
       typeMissing: "No type information",
       edit: "Edit",
+      loading: "Loading partner list.",
     },
     form: {
       createTitle: "Add Partner / Factory",
@@ -206,6 +220,7 @@ export const adminEn = {
       description: "Manage partner name, contact, phone, primary trade type, and outsourcing settings in the partner master.",
       cancel: "Cancel",
       save: "Save",
+      sections: { basic: "Basic Information", category: "Category", memo: "Memo" },
       labels: {
         name: "Name",
         active: "Usage",
@@ -254,6 +269,14 @@ export const adminEn = {
       usageSrLabelSuffix: " active status",
       moveUpSuffix: " move up",
       moveDownSuffix: " move down",
+      addSectionTitle: "Add Outsourcing Process",
+      usageSectionTitle: "Outsourcing Process Usage",
+      inactiveListTitle: "Inactive outsourcing processes",
+      activeListTitle: "Active outsourcing processes",
+      inactiveEmpty: "No inactive outsourcing processes.",
+      activeEmpty: "No active outsourcing processes.",
+      activateSelected: "Mark selected outsourcing process as active",
+      deactivateSelected: "Mark selected outsourcing process as inactive",
     },
     confirm: {
       deleteProcessTitle: "Delete Outsourcing Process",

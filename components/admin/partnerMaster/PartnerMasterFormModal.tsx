@@ -89,7 +89,7 @@ export default function PartnerMasterFormModal({
         </div>
       }
     >
-      <AdminModalSection title="기본 정보">
+      <AdminModalSection title={formText.sections.basic}>
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
         <div className="space-y-2">
           <label htmlFor="partner-name" className={adminModalLabelClassName}>{formText.labels.name}</label>
@@ -160,7 +160,7 @@ export default function PartnerMasterFormModal({
       </div>
       </AdminModalSection>
 
-      <AdminModalSection title="분류">
+      <AdminModalSection title={formText.sections.category}>
       <div className="space-y-3">
         <div className="space-y-2">
           <p className={adminModalLabelClassName}>{formText.labels.baseTypes}</p>
@@ -288,7 +288,7 @@ export default function PartnerMasterFormModal({
       </div>
       </AdminModalSection>
 
-      <AdminModalSection title="메모">
+      <AdminModalSection title={formText.sections.memo}>
       <div className="space-y-2">
         <label htmlFor="partner-memo" className={adminModalLabelClassName}>{formText.labels.memo}</label>
         <textarea

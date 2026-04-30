@@ -22,7 +22,7 @@ export default function PartnerMasterList({ items, isLoading = false, onEditPart
       className={`${className} rounded-[28px] bg-white shadow-sm`}
       items={items}
       isLoading={isLoading}
-      loadingLabel="협력업체 목록을 불러오는 중입니다."
+      loadingLabel={listText.loading}
       emptyLabel={listText.empty}
       getRowKey={(item) => item.id}
       gridTemplateColumns={PARTNER_TABLE_GRID}

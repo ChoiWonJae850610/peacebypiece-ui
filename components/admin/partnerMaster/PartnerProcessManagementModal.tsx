@@ -4,7 +4,6 @@ import {
   AdminModal,
   AdminModalSection,
   adminModalInputClassName,
-  adminModalLabelClassName,
   adminModalPrimaryButtonClassName,
   adminModalSecondaryButtonClassName,
 } from "@/components/admin/layout/AdminModal";
@@ -116,7 +115,7 @@ export default function PartnerProcessManagementModal({
         </div>
       }
     >
-      <AdminModalSection title="외주공정 추가">
+      <AdminModalSection title={processText.addSectionTitle}>
         <div className="flex flex-col gap-3 md:flex-row md:items-end">
           <label className="min-w-0 flex-1 space-y-2">
             <input
@@ -146,14 +145,14 @@ export default function PartnerProcessManagementModal({
         {processFormError ? <p className="mt-2 text-sm font-medium text-rose-600">{processFormError}</p> : null}
       </AdminModalSection>
 
-      <AdminModalSection title="외주공정 사용 여부">
+      <AdminModalSection title={processText.usageSectionTitle}>
       <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_72px_minmax(0,1fr)] md:items-center">
         <div className="space-y-2">
-          <p className="text-sm font-medium text-stone-800">미사용 외주공정</p>
+          <p className="text-sm font-medium text-stone-800">{processText.inactiveListTitle}</p>
           <ProcessListBox
             items={inactiveProcessDefinitions}
             selectedType={selectedInactiveProcess}
-            emptyLabel="미사용 외주공정이 없습니다."
+            emptyLabel={processText.inactiveEmpty}
             onSelect={(type) => {
               onSelectInactiveProcess(type);
               onSelectActiveProcess(null);
@@ -172,7 +171,7 @@ export default function PartnerProcessManagementModal({
             }}
             disabled={!selectedInactiveProcess}
             className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition hover:border-stone-300 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-35"
-            aria-label="선택한 외주공정을 사용중으로 변경"
+            aria-label={processText.activateSelected}
           >
             <span className="block -rotate-90">▾</span>
           </button>
@@ -186,18 +185,18 @@ export default function PartnerProcessManagementModal({
             }}
             disabled={!selectedActiveProcess}
             className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition hover:border-stone-300 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-35"
-            aria-label="선택한 외주공정을 미사용으로 변경"
+            aria-label={processText.deactivateSelected}
           >
             <span className="block rotate-90">▾</span>
           </button>
         </div>
 
         <div className="space-y-2">
-          <p className="text-sm font-medium text-stone-800">사용중 외주공정</p>
+          <p className="text-sm font-medium text-stone-800">{processText.activeListTitle}</p>
           <ProcessListBox
             items={activeProcessDefinitions}
             selectedType={selectedActiveProcess}
-            emptyLabel="사용중 외주공정이 없습니다."
+            emptyLabel={processText.activeEmpty}
             onSelect={(type) => {
               onSelectActiveProcess(type);
               onSelectInactiveProcess(null);
