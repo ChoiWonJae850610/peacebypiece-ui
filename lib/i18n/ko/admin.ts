@@ -313,7 +313,7 @@ export const adminKo = {
       totalWorkorders: { label: "전체 작업지시서", description: "DB 기준 전체 작업지시서 수" },
       partnerCount: { label: "협력업체 수", description: "활성 협력업체 수" },
       fileUsage: { label: "파일 사용량", description: "현재 첨부파일 사용량" },
-      completedThisMonth: { label: "완료된 작업지시서", description: "이번달 완료 처리" }
+      completedInPeriod: { label: "완료된 작업지시서", description: "선택 기간 안에 완료 처리된 작업" }
     },
     countSuffix: "개",
     flowCountSuffix: "건",
@@ -323,8 +323,7 @@ export const adminKo = {
       reviewWaiting: { label: "검토대기", description: "발주 전 관리자 확인이 필요한 작업" },
       inspectionWaiting: { label: "검수대기", description: "입고 후 검수 처리가 필요한 작업" },
       inboundDelayed: { label: "입고지연", description: "입고대기 상태가 24시간 이상 지속된 작업" },
-      reworkCount: { label: "불량 발생", description: "불량/재작업으로 표시된 작업" },
-      factoryCount: { label: "공장별 통계", description: "활성 공장 연결 수" }
+      defectCount: { label: "불량", description: "불량/재작업으로 표시된 작업" }
     }
   },
   standards: {

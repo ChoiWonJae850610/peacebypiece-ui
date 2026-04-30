@@ -334,7 +334,7 @@ export const adminEn = {
       totalWorkorders: { label: "Total work orders", description: "Total work orders from DB" },
       partnerCount: { label: "Partners", description: "Active partner count" },
       fileUsage: { label: "File usage", description: "Current attachment usage" },
-      completedThisMonth: { label: "Completed work orders", description: "Completed this month" }
+      completedInPeriod: { label: "Completed work orders", description: "Completed within the selected period" }
     },
     countSuffix: "items",
     flowCountSuffix: "items",
@@ -344,8 +344,7 @@ export const adminEn = {
       reviewWaiting: { label: "Review waiting", description: "Work before order that needs admin review" },
       inspectionWaiting: { label: "Inspection waiting", description: "Work that needs inbound inspection" },
       inboundDelayed: { label: "Inbound delayed", description: "Inspection status lasting more than 24 hours" },
-      reworkCount: { label: "Defects", description: "Work marked as rework or defect" },
-      factoryCount: { label: "Factory stats", description: "Active factory connection count" }
+      defectCount: { label: "Defects", description: "Work marked as rework or defect" }
     }
   },
   standards: {

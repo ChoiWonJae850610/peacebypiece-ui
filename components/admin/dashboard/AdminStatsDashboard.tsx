@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { AdminCard, AdminStatCard } from "@/components/admin/layout/AdminCard";
 import type { AdminStatsSnapshot } from "@/lib/admin/stats/types";
 import { buildAdminStatsDashboardViewModel } from "@/lib/admin/stats/presentation";
@@ -77,16 +79,18 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
       <section className="flex flex-wrap items-center gap-2 rounded-[24px] border border-stone-100 bg-white p-3 shadow-sm">
         <span className="px-2 text-xs font-semibold text-stone-500">{pageText.periodTitle}</span>
         {stats.periodOptions.map((item) => (
-          <span
+          <Link
             key={item.key}
-            className={`rounded-full px-3 py-1.5 text-xs font-semibold ${item.active ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "bg-stone-50 text-stone-500"}`}
+            href={item.href}
+            aria-current={item.active ? "page" : undefined}
+            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${item.active ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "bg-stone-50 text-stone-500 hover:bg-stone-100"}`}
           >
             {item.label}
-          </span>
+          </Link>
         ))}
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {viewModel.keyMetrics.map((item) => (
           <AdminCard key={item.key ?? item.label} className="px-4 py-4">
             <p className="text-xs font-semibold text-stone-500">{item.label}</p>
@@ -103,7 +107,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
               <h2 className="text-lg font-semibold text-stone-950">{pageText.workorderFlowTitle}</h2>
               <p className="mt-1 text-xs text-stone-500">{viewModel.sourceDescription}</p>
             </div>
-            <span className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--admin-theme-text-on-surface)]">{pageText.currentMonth}</span>
+            <span className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--admin-theme-text-on-surface)]">{stats.periodOptions.find((item) => item.active)?.label ?? pageText.currentMonth}</span>
           </div>
 
           <div className="relative mt-5 flex min-h-0 flex-1 items-end gap-4 rounded-[22px] border border-stone-100 bg-stone-50/70 px-5 pb-5 pt-7">

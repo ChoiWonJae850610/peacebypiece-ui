@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { AdminStatsSnapshot, AdminStatsSourceState } from "@/lib/admin/stats/types";
+import type { AdminStatsPeriodKey, AdminStatsSnapshot, AdminStatsSourceState } from "@/lib/admin/stats/types";
 import { getAdminCompanyId } from "@/lib/admin/settings/companyScope";
 import {
   buildAdminAttachmentTrashCards,
@@ -12,6 +12,7 @@ import {
   buildAdminRoundDistribution,
   buildAdminSummaryCards,
   buildAdminWorkorderFlow,
+  normalizeAdminStatsPeriod,
   readAdminCount,
   toAdminStatNumber,
   type AdminCategoryCountRow as CategoryCountRow,
@@ -23,30 +24,40 @@ import {
 } from "@/lib/admin/stats/selectors";
 import { isDatabaseConfigured, queryDb } from "@/lib/db/client";
 
-function buildEmptyStats(sourceState: Exclude<AdminStatsSourceState, "db">): AdminStatsSnapshot {
+function getAdminStatsPeriodWhereClause(period: AdminStatsPeriodKey): string {
+  if (period === "7d") return "AND updated_at >= now() - interval '7 days'";
+  if (period === "15d") return "AND updated_at >= now() - interval '15 days'";
+  if (period === "monthly") return "AND updated_at >= date_trunc('month', now())";
+  return "AND updated_at >= now() - interval '30 days'";
+}
+
+function buildEmptyStats(sourceState: Exclude<AdminStatsSourceState, "db">, selectedPeriod: AdminStatsPeriodKey): AdminStatsSnapshot {
   const { points: fileUsagePoints, fileUsageLabel, activeFileCount, trashFileCount } = buildAdminFileUsagePoints(undefined);
 
   return {
-    summaries: buildAdminSummaryCards({ totalWorkorders: 0, partnerCount: 0, fileUsageLabel, completedThisMonth: 0 }),
+    summaries: buildAdminSummaryCards({ totalWorkorders: 0, partnerCount: 0, fileUsageLabel, completedInPeriod: 0 }),
     workorderFlow: buildAdminWorkorderFlow([]),
     partnerDistribution: buildAdminPartnerDistribution([]),
     fileUsagePoints,
-    keyMetrics: buildAdminKeyMetrics({ reviewWaiting: 0, inspectionWaiting: 0, inboundDelayed: 0, reworkCount: 0, factoryCount: 0 }),
+    keyMetrics: buildAdminKeyMetrics({ reviewWaiting: 0, inspectionWaiting: 0, inboundDelayed: 0, defectCount: 0 }),
     productionRoundDistribution: buildAdminRoundDistribution([]),
     productionCategoryDistribution: buildAdminCategoryDistribution([]),
     attachmentTrashCards: buildAdminAttachmentTrashCards(activeFileCount, trashFileCount),
-    periodOptions: buildAdminPeriodOptions(),
+    periodOptions: buildAdminPeriodOptions(selectedPeriod),
+    selectedPeriod,
     sourceState,
     sourceLabel: sourceState === "not_configured" ? "DB 미설정" : "조회 실패",
   };
 }
 
-export async function getAdminStatsSnapshot(): Promise<AdminStatsSnapshot> {
-  if (!isDatabaseConfigured()) return buildEmptyStats("not_configured");
+export async function getAdminStatsSnapshot(periodValue?: string | string[]): Promise<AdminStatsSnapshot> {
+  const selectedPeriod = normalizeAdminStatsPeriod(periodValue);
+  const periodWhereClause = getAdminStatsPeriodWhereClause(selectedPeriod);
+  if (!isDatabaseConfigured()) return buildEmptyStats("not_configured", selectedPeriod);
 
   try {
     const companyId = getAdminCompanyId();
-    const [workordersResult, completedResult, partnersResult, partnerTypesResult, fileUsageResult, reviewWaitingResult, inspectionWaitingResult, inboundDelayedResult, reworkResult, factoryResult, roundResult, categoryResult] = await Promise.all([
+    const [workordersResult, completedResult, partnersResult, partnerTypesResult, fileUsageResult, reviewWaitingResult, inspectionWaitingResult, inboundDelayedResult, defectResult, roundResult, categoryResult] = await Promise.all([
       queryDb<StatusCountRow>(
         `SELECT COALESCE(status, 'draft') AS status,
                 COUNT(*)::text AS count_value
@@ -54,6 +65,7 @@ export async function getAdminStatsSnapshot(): Promise<AdminStatsSnapshot> {
           WHERE company_id = $1
             AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true
+            ${periodWhereClause}
           GROUP BY COALESCE(status, 'draft')`,
         [companyId],
       ),
@@ -64,7 +76,7 @@ export async function getAdminStatsSnapshot(): Promise<AdminStatsSnapshot> {
             AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true
             AND status = 'completed'
-            AND updated_at >= date_trunc('month', now())`,
+            ${periodWhereClause}`,
         [companyId],
       ),
       queryDb<CountRow>(
@@ -97,16 +109,8 @@ export async function getAdminStatsSnapshot(): Promise<AdminStatsSnapshot> {
           WHERE company_id = $1
             AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true
-            AND status = 'review_requested'`,
-        [companyId],
-      ),
-      queryDb<CountRow>(
-        `SELECT COUNT(*)::text AS count_value
-           FROM spec_sheets
-          WHERE company_id = $1
-            AND deleted_at IS NULL
-            AND COALESCE(is_active, true) = true
-            AND status = 'inspection'`,
+            AND status = 'review_requested'
+            ${periodWhereClause}`,
         [companyId],
       ),
       queryDb<CountRow>(
@@ -116,7 +120,7 @@ export async function getAdminStatsSnapshot(): Promise<AdminStatsSnapshot> {
             AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true
             AND status = 'inspection'
-            AND updated_at < now() - interval '1 day'`,
+            ${periodWhereClause}`,
         [companyId],
       ),
       queryDb<CountRow>(
@@ -125,15 +129,19 @@ export async function getAdminStatsSnapshot(): Promise<AdminStatsSnapshot> {
           WHERE company_id = $1
             AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true
-            AND COALESCE(is_rework, false) = true`,
+            AND status = 'inspection'
+            AND updated_at < now() - interval '1 day'
+            ${periodWhereClause}`,
         [companyId],
       ),
       queryDb<CountRow>(
-        `SELECT COUNT(DISTINCT partner_id)::text AS count_value
-           FROM partner_items
+        `SELECT COUNT(*)::text AS count_value
+           FROM spec_sheets
           WHERE company_id = $1
+            AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true
-            AND item_type = 'factory'`,
+            AND COALESCE(is_rework, false) = true
+            ${periodWhereClause}`,
         [companyId],
       ),
       queryDb<RoundCountRow>(
@@ -147,6 +155,7 @@ export async function getAdminStatsSnapshot(): Promise<AdminStatsSnapshot> {
           WHERE company_id = $1
             AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true
+            ${periodWhereClause}
           GROUP BY 1
           ORDER BY 1`,
         [companyId],
@@ -158,6 +167,7 @@ export async function getAdminStatsSnapshot(): Promise<AdminStatsSnapshot> {
           WHERE company_id = $1
             AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true
+            ${periodWhereClause}
           GROUP BY 1
           ORDER BY COUNT(*) DESC
           LIMIT 6`,
@@ -167,12 +177,12 @@ export async function getAdminStatsSnapshot(): Promise<AdminStatsSnapshot> {
 
     const statusRows = workordersResult.rows;
     const totalWorkorders = statusRows.reduce((sum, row) => sum + toAdminStatNumber(row.count_value), 0);
-    const completedThisMonth = readAdminCount(completedResult.rows[0]);
+    const completedInPeriod = readAdminCount(completedResult.rows[0]);
     const partnerCount = readAdminCount(partnersResult.rows[0]);
     const workorderFlow = buildAdminWorkorderFlow(statusRows);
     const partnerDistribution = buildAdminPartnerDistribution(partnerTypesResult.rows);
     const { points: fileUsagePoints, fileUsageLabel, activeFileCount, trashFileCount } = buildAdminFileUsagePoints(fileUsageResult.rows[0]);
-    const summaries = buildAdminSummaryCards({ totalWorkorders, partnerCount, fileUsageLabel, completedThisMonth });
+    const summaries = buildAdminSummaryCards({ totalWorkorders, partnerCount, fileUsageLabel, completedInPeriod });
 
     return {
       summaries,
@@ -183,18 +193,18 @@ export async function getAdminStatsSnapshot(): Promise<AdminStatsSnapshot> {
         reviewWaiting: readAdminCount(reviewWaitingResult.rows[0]),
         inspectionWaiting: readAdminCount(inspectionWaitingResult.rows[0]),
         inboundDelayed: readAdminCount(inboundDelayedResult.rows[0]),
-        reworkCount: readAdminCount(reworkResult.rows[0]),
-        factoryCount: readAdminCount(factoryResult.rows[0]),
+        defectCount: readAdminCount(defectResult.rows[0]),
       }),
       productionRoundDistribution: buildAdminRoundDistribution(roundResult.rows),
       productionCategoryDistribution: buildAdminCategoryDistribution(categoryResult.rows),
       attachmentTrashCards: buildAdminAttachmentTrashCards(activeFileCount, trashFileCount),
-      periodOptions: buildAdminPeriodOptions(),
+      periodOptions: buildAdminPeriodOptions(selectedPeriod),
+      selectedPeriod,
       sourceState: "db",
       sourceLabel: "DB",
     };
   } catch (error) {
     console.warn("[admin-stats] failed to load DB stats. Mock fallback is disabled.", error);
-    return buildEmptyStats("error");
+    return buildEmptyStats("error", selectedPeriod);
   }
 }

@@ -1,6 +1,6 @@
 import type { DbQueryResultRow } from "@/lib/db/client";
 import type { AdminFileUsagePoint, AdminStatChartPoint, AdminSummaryCard } from "@/lib/admin/adminDashboard.presentation";
-import type { AdminStatsMetric, AdminStatsRatioPoint } from "@/lib/admin/stats/types";
+import type { AdminStatsMetric, AdminStatsPeriodKey, AdminStatsRatioPoint } from "@/lib/admin/stats/types";
 import {
   ADMIN_ATTACHMENT_COUNT_LIMIT,
   ADMIN_FILE_LIMIT_BYTES,
@@ -75,32 +75,36 @@ export function buildAdminFileUsagePoints(row: AdminFileUsageRow | undefined): {
   };
 }
 
-export function buildAdminSummaryCards(payload: { totalWorkorders: number; partnerCount: number; fileUsageLabel: string; completedThisMonth: number }): AdminSummaryCard[] {
+export function buildAdminSummaryCards(payload: { totalWorkorders: number; partnerCount: number; fileUsageLabel: string; completedInPeriod: number }): AdminSummaryCard[] {
   return [
     { ...adminStatsText.summaries.totalWorkorders, value: formatAdminStatInteger(payload.totalWorkorders), href: null, accent: "bg-blue-50 text-blue-700" },
     { ...adminStatsText.summaries.partnerCount, value: formatAdminStatInteger(payload.partnerCount), href: null, accent: "bg-emerald-50 text-emerald-700" },
     { ...adminStatsText.summaries.fileUsage, value: payload.fileUsageLabel, href: null, accent: "bg-violet-50 text-violet-700" },
-    { ...adminStatsText.summaries.completedThisMonth, value: formatAdminStatInteger(payload.completedThisMonth), href: null, accent: "bg-stone-100 text-stone-700" },
+    { ...adminStatsText.summaries.completedInPeriod, value: formatAdminStatInteger(payload.completedInPeriod), href: null, accent: "bg-stone-100 text-stone-700" },
   ];
 }
 
-export function buildAdminKeyMetrics(payload: { reviewWaiting: number; inspectionWaiting: number; inboundDelayed: number; reworkCount: number; factoryCount: number }): AdminStatsMetric[] {
+export function buildAdminKeyMetrics(payload: { reviewWaiting: number; inspectionWaiting: number; inboundDelayed: number; defectCount: number }): AdminStatsMetric[] {
   return [
     { key: "reviewWaiting", label: adminStatsText.metrics.reviewWaiting.label, value: payload.reviewWaiting, description: adminStatsText.metrics.reviewWaiting.description },
     { key: "inspectionWaiting", label: adminStatsText.metrics.inspectionWaiting.label, value: payload.inspectionWaiting, description: adminStatsText.metrics.inspectionWaiting.description },
     { key: "inboundDelayed", label: adminStatsText.metrics.inboundDelayed.label, value: payload.inboundDelayed, description: adminStatsText.metrics.inboundDelayed.description },
-    { key: "reworkCount", label: adminStatsText.metrics.reworkCount.label, value: payload.reworkCount, description: adminStatsText.metrics.reworkCount.description },
-    { key: "factoryCount", label: adminStatsText.metrics.factoryCount.label, value: payload.factoryCount, description: adminStatsText.metrics.factoryCount.description },
+    { key: "defectCount", label: adminStatsText.metrics.defectCount.label, value: payload.defectCount, description: adminStatsText.metrics.defectCount.description },
   ];
 }
 
-export function buildAdminPeriodOptions() {
+export function normalizeAdminStatsPeriod(value: string | string[] | undefined): AdminStatsPeriodKey {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+  if (rawValue === "7d" || rawValue === "15d" || rawValue === "30d" || rawValue === "monthly") return rawValue;
+  return "30d";
+}
+
+export function buildAdminPeriodOptions(selectedPeriod: AdminStatsPeriodKey) {
   return [
-    { key: "7d" as const, label: adminStatsText.periods.sevenDays, active: false },
-    { key: "15d" as const, label: adminStatsText.periods.fifteenDays, active: false },
-    { key: "30d" as const, label: adminStatsText.periods.thirtyDays, active: true },
-    { key: "monthly" as const, label: adminStatsText.periods.monthly, active: false },
-    { key: "custom" as const, label: adminStatsText.periods.custom, active: false },
+    { key: "7d" as const, label: adminStatsText.periods.sevenDays, href: "/admin/dashboard?period=7d", active: selectedPeriod === "7d" },
+    { key: "15d" as const, label: adminStatsText.periods.fifteenDays, href: "/admin/dashboard?period=15d", active: selectedPeriod === "15d" },
+    { key: "30d" as const, label: adminStatsText.periods.thirtyDays, href: "/admin/dashboard?period=30d", active: selectedPeriod === "30d" },
+    { key: "monthly" as const, label: adminStatsText.periods.monthly, href: "/admin/dashboard?period=monthly", active: selectedPeriod === "monthly" },
   ];
 }
 

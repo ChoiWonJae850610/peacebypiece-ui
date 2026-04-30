@@ -4,7 +4,7 @@ export type AdminStatsSourceState = "db" | "not_configured" | "error";
 
 export type AdminStatsPeriodKey = "7d" | "15d" | "30d" | "monthly" | "custom";
 
-export type AdminStatsMetricKey = "reviewWaiting" | "inspectionWaiting" | "inboundDelayed" | "reworkCount" | "factoryCount";
+export type AdminStatsMetricKey = "reviewWaiting" | "inspectionWaiting" | "inboundDelayed" | "defectCount";
 
 export type AdminStatsMetric = {
   key: AdminStatsMetricKey;
@@ -26,7 +26,8 @@ export type AdminStatsSnapshot = {
   productionRoundDistribution: AdminStatsRatioPoint[];
   productionCategoryDistribution: AdminStatsRatioPoint[];
   attachmentTrashCards: AdminStatsRatioPoint[];
-  periodOptions: { key: AdminStatsPeriodKey; label: string; active: boolean }[];
+  periodOptions: { key: AdminStatsPeriodKey; label: string; active: boolean; href: string }[];
+  selectedPeriod: AdminStatsPeriodKey;
   sourceState: AdminStatsSourceState;
   sourceLabel: "DB" | "DB 미설정" | "조회 실패";
 };
