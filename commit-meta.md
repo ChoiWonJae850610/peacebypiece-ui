@@ -1,30 +1,31 @@
-Version
-0.9.28 → 0.9.29
+Version : 0.9.30 → 0.9.31
 
-Summary
-관리자 대시보드를 오늘의 작업과 우선 처리 항목 중심으로 재구성
+Summary : 산출물 메타 문서 규칙 복구 및 버전 동기화
 
-Description
-관리자 메인 대시보드에서 기존 통계 중심 구성을 축소하고, 검토대기/검수대기 작업을 바로 확인할 수 있는 오늘의 작업 리스트와 우선 처리 카드 구조를 적용했습니다. DB 조회 snapshot에 오늘 표시용 작업 목록을 추가하고, 대시보드 문구를 i18n으로 정리했습니다.
+Description :
+- 모바일 최소 응답 모드에서 누락되거나 잘못 작성된 commit-meta.md 산출물 규칙을 복구했습니다.
+- commit-meta.md의 Version, Summary, Description, 수정 파일 목록 등 파싱 대상 항목에 콜론(:) 토큰을 포함하도록 형식을 고정했습니다.
+- 이전 작업 내용으로 남아 있던 0.9.28 → 0.9.29 메타 정보를 0.9.30 → 0.9.31 기준으로 교체했습니다.
+- APP_VERSION 값을 0.9.31로 동기화했습니다.
+- npm 빌드는 요청에 따라 실행하지 않았습니다.
 
-수정 파일 목록
-- lib/constants/app.ts: APP_VERSION을 0.9.29로 갱신.
-- lib/admin/adminOperations.types.ts: 대시보드 snapshot에 todayTasks 타입 추가.
-- lib/admin/adminOperations.repository.ts: 작업지시서 제목과 납기 정보를 조회해 오늘의 작업 리스트, 검토대기/검수대기/입고지연 핵심 지표 생성.
-- components/admin/dashboard/AdminOperationsDashboard.tsx: 기존 통계 중심 화면을 오늘의 작업 리스트, 우선 처리 카드, 축소형 상태 분포/흐름 구조로 재배치.
-- lib/i18n/ko/admin.ts: 운영 대시보드 신규 문구와 상태/납기/우선 처리 라벨 추가.
-- lib/i18n/en/admin.ts: 운영 대시보드 신규 영문 문구와 상태/납기/우선 처리 라벨 추가.
-- commit-meta.md: 이번 작업 상세 기록 갱신.
+수정 파일 목록 :
+- lib/constants/app.ts : APP_VERSION 값을 0.9.31로 갱신했습니다.
+- commit-meta.md : 모바일 최소 응답 모드용 산출물 메타 문서를 콜론 기반 파싱 형식으로 재작성했습니다.
 
-작업 상세 내용
-- 대시보드 기본 선택 기간을 오늘로 변경.
-- 검토대기, 검수대기, 발주대기 작업을 오늘의 작업 리스트에 표시.
-- 작업 카드에 상태, 우선 처리 라벨, 납기 표시를 추가.
-- 기존 상태 흐름 그래프는 우측 하단 축소형으로 유지.
-- 상태 분포는 보조 정보로 축소 유지.
-- 관리자 메인 설명 문구를 운영 통계가 아닌 오늘의 작업 중심으로 변경.
+추가 파일 목록 :
+- 없음
 
-검증
-- 첨부 zip에 node_modules가 없어 npm run build는 즉시 실행되지 않았습니다.
-- npm ci 설치를 시도했으나 실행 환경 시간 제한으로 완료하지 못했습니다.
+삭제 파일 목록 :
+- 없음
+
+작업 상세 :
+- commit-meta.md의 모든 주요 섹션명을 `키 : 값` 또는 `키 :` 형식으로 통일했습니다.
+- Summary, Description, 수정 파일 목록, 추가 파일 목록, 삭제 파일 목록 항목을 반드시 포함하도록 정리했습니다.
+- 상세 작업 내용은 zip 내부 commit-meta.md에서 확인 가능하도록 유지했습니다.
 - package.json 및 package-lock.json은 수정하지 않았습니다.
+
+검증 :
+- npm 빌드는 사용자 요청에 따라 실행하지 않았습니다.
+- commit-meta.md 파일 존재 여부와 콜론 기반 섹션 형식을 확인했습니다.
+- APP_VERSION 값이 0.9.31로 반영된 것을 확인했습니다.
