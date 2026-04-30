@@ -21,11 +21,33 @@ export type SystemOperationItem = {
   statusLabel: string;
 };
 
+export type SystemInviteStatus = "draft" | "sent" | "accepted" | "expired";
+
+export type SystemInviteAction = {
+  id: string;
+  label: string;
+  tone: "primary" | "secondary" | "danger";
+};
+
 export type SystemInviteSummary = {
   id: string;
   companyName: string;
   inviteeName: string;
+  email: string;
   roleLabel: string;
+  status: SystemInviteStatus;
   statusLabel: string;
   expiresAtLabel: string;
+  tokenPreview: string;
+  inviteUrlLabel: string;
+  requestedByLabel: string;
+  acceptedAtLabel: string | null;
+  actions: SystemInviteAction[];
+};
+
+export type SystemInviteFlowStep = {
+  id: string;
+  title: string;
+  description: string;
+  statusLabel: string;
 };
