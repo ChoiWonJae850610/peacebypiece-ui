@@ -294,6 +294,19 @@ export const adminEn = {
       deleteProcessMissing: "The process to delete could not be found.",
     },
   },
+  statsUi: {
+    flowBuckets: { writing: "Writing", review: "Review", order: "Order", inbound: "Inbound", completed: "Completed" },
+    partnerBuckets: { factory: "Factory", fabric: "Fabric", subsidiary: "Subsidiary", outsourcing: "Outsourcing" },
+    fileUsage: { total: "Total usage", active: "Attachments", trash: "Trash", quotaLabel: "5.0GB" },
+    summaries: {
+      totalWorkorders: { label: "Total work orders", description: "Total work orders from DB" },
+      partnerCount: { label: "Partners", description: "Active partner count" },
+      fileUsage: { label: "File usage", description: "Current attachment usage" },
+      completedThisMonth: { label: "Completed work orders", description: "Completed this month" }
+    },
+    countSuffix: "items",
+    flowCountSuffix: "items"
+  },
   standards: {
     common: { resetDefaults: "Reset defaults", save: "Save", saving: "Saving", add: "Add", active: "Active", inactive: "Inactive", manage: "Manage", inUseSuffix: " active" },
     section: { policyTitle: "Policy Management", standardTitle: "Standards Management", saveProcessFailed: "Save failed. Check the database connection.", saveUnitFailed: "Unit save failed. Check the database connection.", saveItemFailed: "Item save failed. Check the database connection.", logEventsTitle: "Log Events" },

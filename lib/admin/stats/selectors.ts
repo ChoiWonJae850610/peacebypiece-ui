@@ -3,12 +3,13 @@ import type { AdminFileUsagePoint, AdminStatChartPoint, AdminSummaryCard } from 
 import {
   ADMIN_ATTACHMENT_COUNT_LIMIT,
   ADMIN_FILE_LIMIT_BYTES,
-  ADMIN_FILE_USAGE_LABELS,
   ADMIN_PARTNER_DISTRIBUTION_BUCKETS,
-  ADMIN_STAT_SUMMARY_TEXT,
   ADMIN_TRASH_COUNT_LIMIT,
   ADMIN_WORKORDER_FLOW_BUCKETS,
 } from "@/lib/constants/adminStats";
+import { getI18n } from "@/lib/i18n";
+
+const adminStatsText = getI18n().admin.statsUi;
 
 export type AdminCountRow = DbQueryResultRow & {
   count_value: string | number | null;
@@ -66,14 +67,14 @@ export function selectAdminPartnerCount(rows: AdminPartnerTypeCountRow[], itemTy
 
 export function buildAdminWorkorderFlow(rows: AdminStatusCountRow[]): AdminStatChartPoint[] {
   return ADMIN_WORKORDER_FLOW_BUCKETS.map((bucket) => ({
-    label: bucket.label,
+    label: adminStatsText.flowBuckets[bucket.labelKey],
     value: selectAdminStatusCount(rows, bucket.statuses),
   }));
 }
 
 export function buildAdminPartnerDistribution(rows: AdminPartnerTypeCountRow[]): AdminStatChartPoint[] {
   return ADMIN_PARTNER_DISTRIBUTION_BUCKETS.map((bucket) => ({
-    label: bucket.label,
+    label: adminStatsText.partnerBuckets[bucket.labelKey],
     value: selectAdminPartnerCount(rows, bucket.itemTypes),
   }));
 }
@@ -85,14 +86,14 @@ export function buildAdminFileUsagePoints(row: AdminFileUsageRow | undefined): {
   const totalSizeBytes = toAdminStatNumber(row?.total_size_bytes);
   const activeFileCount = toAdminStatNumber(row?.active_count);
   const trashFileCount = toAdminStatNumber(row?.trash_count);
-  const fileUsageLabel = `${formatAdminBytes(totalSizeBytes)} / ${ADMIN_FILE_USAGE_LABELS.quotaLabel}`;
+  const fileUsageLabel = `${formatAdminBytes(totalSizeBytes)} / ${adminStatsText.fileUsage.quotaLabel}`;
 
   return {
     fileUsageLabel,
     points: [
-      { label: ADMIN_FILE_USAGE_LABELS.total, value: Math.round(totalSizeBytes / (1024 * 1024)), limit: Math.round(ADMIN_FILE_LIMIT_BYTES / (1024 * 1024)), valueLabel: fileUsageLabel },
-      { label: ADMIN_FILE_USAGE_LABELS.active, value: activeFileCount, limit: ADMIN_ATTACHMENT_COUNT_LIMIT, valueLabel: `${formatAdminStatInteger(activeFileCount)}개` },
-      { label: ADMIN_FILE_USAGE_LABELS.trash, value: trashFileCount, limit: ADMIN_TRASH_COUNT_LIMIT, valueLabel: `${formatAdminStatInteger(trashFileCount)}개` },
+      { label: adminStatsText.fileUsage.total, value: Math.round(totalSizeBytes / (1024 * 1024)), limit: Math.round(ADMIN_FILE_LIMIT_BYTES / (1024 * 1024)), valueLabel: fileUsageLabel },
+      { label: adminStatsText.fileUsage.active, value: activeFileCount, limit: ADMIN_ATTACHMENT_COUNT_LIMIT, valueLabel: `${formatAdminStatInteger(activeFileCount)}${adminStatsText.countSuffix}` },
+      { label: adminStatsText.fileUsage.trash, value: trashFileCount, limit: ADMIN_TRASH_COUNT_LIMIT, valueLabel: `${formatAdminStatInteger(trashFileCount)}${adminStatsText.countSuffix}` },
     ],
   };
 }
@@ -104,9 +105,9 @@ export function buildAdminSummaryCards(payload: {
   completedThisMonth: number;
 }): AdminSummaryCard[] {
   return [
-    { ...ADMIN_STAT_SUMMARY_TEXT.totalWorkorders, value: formatAdminStatInteger(payload.totalWorkorders) },
-    { ...ADMIN_STAT_SUMMARY_TEXT.partnerCount, value: formatAdminStatInteger(payload.partnerCount) },
-    { ...ADMIN_STAT_SUMMARY_TEXT.fileUsage, value: payload.fileUsageLabel },
-    { ...ADMIN_STAT_SUMMARY_TEXT.completedThisMonth, value: formatAdminStatInteger(payload.completedThisMonth) },
+    { ...adminStatsText.summaries.totalWorkorders, value: formatAdminStatInteger(payload.totalWorkorders), href: null, accent: "bg-blue-50 text-blue-700" },
+    { ...adminStatsText.summaries.partnerCount, value: formatAdminStatInteger(payload.partnerCount), href: null, accent: "bg-emerald-50 text-emerald-700" },
+    { ...adminStatsText.summaries.fileUsage, value: payload.fileUsageLabel, href: null, accent: "bg-violet-50 text-violet-700" },
+    { ...adminStatsText.summaries.completedThisMonth, value: formatAdminStatInteger(payload.completedThisMonth), href: null, accent: "bg-stone-100 text-stone-700" },
   ];
 }

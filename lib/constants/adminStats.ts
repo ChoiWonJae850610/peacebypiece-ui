@@ -3,18 +3,18 @@ export const ADMIN_ATTACHMENT_COUNT_LIMIT = 20;
 export const ADMIN_TRASH_COUNT_LIMIT = 20;
 
 export const ADMIN_WORKORDER_FLOW_BUCKETS = [
-  { label: "작성", statuses: ["draft", "rejected"] },
-  { label: "검토", statuses: ["review_requested"] },
-  { label: "발주", statuses: ["review_completed"] },
-  { label: "입고", statuses: ["inspection"] },
-  { label: "완료", statuses: ["completed"] },
+  { labelKey: "writing", statuses: ["draft", "rejected"] },
+  { labelKey: "review", statuses: ["review_requested"] },
+  { labelKey: "order", statuses: ["review_completed"] },
+  { labelKey: "inbound", statuses: ["inspection"] },
+  { labelKey: "completed", statuses: ["completed"] },
 ] as const;
 
 export const ADMIN_PARTNER_DISTRIBUTION_BUCKETS = [
-  { label: "공장", itemTypes: ["factory"] },
-  { label: "원단", itemTypes: ["fabric"] },
-  { label: "부자재", itemTypes: ["subsidiary"] },
-  { label: "외주", itemTypes: ["outsourcing"] },
+  { labelKey: "factory", itemTypes: ["factory"] },
+  { labelKey: "fabric", itemTypes: ["fabric"] },
+  { labelKey: "subsidiary", itemTypes: ["subsidiary"] },
+  { labelKey: "outsourcing", itemTypes: ["outsourcing"] },
 ] as const;
 
 export const ADMIN_FILE_USAGE_LABELS = {

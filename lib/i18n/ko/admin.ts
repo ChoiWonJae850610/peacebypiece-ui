@@ -53,7 +53,7 @@ export const adminKo = {
     countSuffix: "건",
   },
   navigation: { dashboard: "대시보드", workorder: "작업지시서", partners: "협력업체 관리", storage: "저장소 관리", statistics: "통계정보", history: "히스토리", settings: "환경설정", dbConnected: "DB 상태 점검" },
-  operationsDashboard: { title: "운영 통계", sourceDb: "DB 기준 운영 현황", sourceNotConfigured: "DB 연결 설정이 없어 0건으로 표시됩니다.", sourceError: "DB 조회 실패로 0건으로 표시됩니다.", periodAria: "대시보드 기간 선택", periods: { today: "오늘", week: "이번주", month: "이번달" }, statusFlowTitle: "상태 흐름", statusDistributionTitle: "상태 분포", todayCheckTitle: "오늘 체크", countSuffix: "건" },
+  operationsDashboard: { title: "운영 통계", sourceDb: "DB 기준 운영 현황", sourceNotConfigured: "DB 연결 설정이 없어 0건으로 표시됩니다.", sourceError: "DB 조회 실패로 0건으로 표시됩니다.", periodAria: "대시보드 기간 선택", periods: { today: "오늘", week: "이번주", month: "이번달" }, statusFlowTitle: "상태 흐름", statusDistributionTitle: "상태 분포", todayCheckTitle: "오늘 체크", countSuffix: "건", statusDistribution: { working: "작업중", reviewWaiting: "검토대기", inboundWaiting: "입고대기", completed: "완료" }, insights: { createdToday: "오늘 생성", createdInPeriod: "기간 내 생성", createdDescription: "선택 기간에 새로 등록된 작업지시서", reviewDelayed: "검토 지연", reviewDelayedDescription: "검토요청 후 24시간이 지난 작업지시서", inboundDelayed: "입고 지연", inboundDelayedDescription: "납기일 0시 기준 24시간이 지난 입고대기 작업지시서" } },
   filesSummary: { periods: { 7: "7일", 15: "15일", 30: "30일" }, uploadAmount: "첨부량", count: "건수", fileType: "파일 유형", countSuffix: "개", totalUsage: "전체 사용량", attachments: "첨부파일", trash: "휴지통", retentionPeriod: "보관 기간", usage: "사용량", refreshLabel: "저장소 데이터 새로고침", documents: "문서", designs: "디자인" },
   filesList: { title: "첨부파일 목록", sort: { latest: "최신순", size: "용량순", workorder: "작업지시서명순" }, selectAll: "전체 선택", clearAll: "전체 해제", delete: "삭제", restore: "복구", purge: "영구 삭제", empty: "표시할 첨부파일이 없습니다.", trashEmpty: "휴지통에 보관 중인 파일이 없습니다.", columns: { select: "선택", workorder: "작업지시서명", createdAt: "생성일자", deletedAt: "삭제일자", fileName: "파일명", type: "유형", size: "용량" }, fileTypes: { document: "문서", design: "디자인", other: "기타" } },
   trashPage: { title: "휴지통" },
@@ -293,6 +293,19 @@ export const adminKo = {
       deleteProcessBody: '외주 공정 "{label}"을 삭제하시겠습니까?',
       deleteProcessMissing: "삭제할 공정을 찾을 수 없습니다.",
     },
+  },
+  statsUi: {
+    flowBuckets: { writing: "작성", review: "검토", order: "발주", inbound: "입고", completed: "완료" },
+    partnerBuckets: { factory: "공장", fabric: "원단", subsidiary: "부자재", outsourcing: "외주" },
+    fileUsage: { total: "전체 사용량", active: "첨부파일", trash: "휴지통", quotaLabel: "5.0GB" },
+    summaries: {
+      totalWorkorders: { label: "전체 작업지시서", description: "DB 기준 전체 작업지시서 수" },
+      partnerCount: { label: "협력업체 수", description: "활성 협력업체 수" },
+      fileUsage: { label: "파일 사용량", description: "현재 첨부파일 사용량" },
+      completedThisMonth: { label: "완료된 작업지시서", description: "이번달 완료 처리" }
+    },
+    countSuffix: "개",
+    flowCountSuffix: "건"
   },
   standards: {
     common: { resetDefaults: "기본값 복원", save: "저장", saving: "저장 중", add: "추가", active: "사용", inactive: "미사용", manage: "관리", inUseSuffix: "개 사용중" },

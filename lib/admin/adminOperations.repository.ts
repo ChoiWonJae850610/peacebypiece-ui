@@ -3,6 +3,7 @@ import "server-only";
 import { getAdminCompanyId } from "@/lib/admin/settings/companyScope";
 import { ADMIN_WORKORDER_FLOW_BUCKETS } from "@/lib/constants/adminStats";
 import { isDatabaseConfigured, queryDb, type DbQueryResultRow } from "@/lib/db/client";
+import { getI18n } from "@/lib/i18n";
 
 import {
   ADMIN_DASHBOARD_PERIOD_OPTIONS,
@@ -13,11 +14,14 @@ import {
 
 export { ADMIN_DASHBOARD_PERIOD_OPTIONS };
 
+const adminOpsText = getI18n().admin.operationsDashboard;
+const adminStatsText = getI18n().admin.statsUi;
+
 const ADMIN_DASHBOARD_STATUS_DISTRIBUTION_BUCKETS = [
-  { label: "작업중", statuses: ["draft", "rejected"] },
-  { label: "검토대기", statuses: ["review_requested"] },
-  { label: "입고대기", statuses: ["inspection", "review_completed"] },
-  { label: "완료", statuses: ["completed"] },
+  { labelKey: "working", statuses: ["draft", "rejected"] },
+  { labelKey: "reviewWaiting", statuses: ["review_requested"] },
+  { labelKey: "inboundWaiting", statuses: ["inspection", "review_completed"] },
+  { labelKey: "completed", statuses: ["completed"] },
 ] as const;
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
@@ -79,12 +83,12 @@ function countByStatuses(rows: WorkorderRow[], statuses: readonly string[], peri
 function emptySnapshot(period: AdminDashboardPeriod, sourceState: AdminOperationalDashboardSnapshot["sourceState"]): AdminOperationalDashboardSnapshot {
   return {
     period,
-    statusFlow: ADMIN_WORKORDER_FLOW_BUCKETS.map((bucket) => ({ label: bucket.label, value: 0 })),
-    statusDistribution: ADMIN_DASHBOARD_STATUS_DISTRIBUTION_BUCKETS.map((bucket) => ({ label: bucket.label, value: 0 })),
+    statusFlow: ADMIN_WORKORDER_FLOW_BUCKETS.map((bucket) => ({ label: adminStatsText.flowBuckets[bucket.labelKey], value: 0 })),
+    statusDistribution: ADMIN_DASHBOARD_STATUS_DISTRIBUTION_BUCKETS.map((bucket) => ({ label: adminOpsText.statusDistribution[bucket.labelKey], value: 0 })),
     insights: [
-      { label: "오늘 생성", value: "0", description: "선택 기간에 새로 등록된 작업지시서" },
-      { label: "검토 지연", value: "0", description: "검토요청 후 24시간이 지난 작업지시서" },
-      { label: "입고 지연", value: "0", description: "납기일 0시 기준 24시간이 지난 입고대기 작업지시서" },
+      { label: adminOpsText.insights.createdToday, value: "0", description: adminOpsText.insights.createdDescription },
+      { label: adminOpsText.insights.reviewDelayed, value: "0", description: adminOpsText.insights.reviewDelayedDescription },
+      { label: adminOpsText.insights.inboundDelayed, value: "0", description: adminOpsText.insights.inboundDelayedDescription },
     ],
     sourceState,
   };
@@ -139,9 +143,9 @@ function buildSnapshot(period: AdminDashboardPeriod, workorders: WorkorderRow[],
       value: countByStatuses(workorders, bucket.statuses, period, now),
     })),
     insights: [
-      { label: period === "today" ? "오늘 생성" : "기간 내 생성", value: String(createdCount), description: "선택 기간에 새로 등록된 작업지시서" },
-      { label: "검토 지연", value: String(reviewDelayedCount), description: "검토요청 후 24시간이 지난 작업지시서" },
-      { label: "입고 지연", value: String(inboundDelayedCount), description: "납기일 0시 기준 24시간이 지난 입고대기 작업지시서" },
+      { label: period === "today" ? adminOpsText.insights.createdToday : adminOpsText.insights.createdInPeriod, value: String(createdCount), description: adminOpsText.insights.createdDescription },
+      { label: adminOpsText.insights.reviewDelayed, value: String(reviewDelayedCount), description: adminOpsText.insights.reviewDelayedDescription },
+      { label: adminOpsText.insights.inboundDelayed, value: String(inboundDelayedCount), description: adminOpsText.insights.inboundDelayedDescription },
     ],
     sourceState: "db",
   };
