@@ -133,14 +133,23 @@ export default function AdminFilesPage() {
         />
 
         <AdminFilterBar className="mt-4 shrink-0">
-          {snapshot.tabs.filter((tab) => tab.key !== "storage").map((tab) => {
-            const isActive = activeTab === tab.key;
-            return (
-              <button key={tab.key} type="button" onClick={() => handleChangeTab(tab.key)} className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${isActive ? "border-[var(--admin-theme-surface)] bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "border-stone-300 bg-white text-stone-700 shadow-sm hover:bg-stone-50"}`}>
-                {tab.label}
-              </button>
-            );
-          })}
+          <div role="tablist" aria-label={t("filesPage.tabGroupLabel", "저장소 파일 상태")} className="inline-flex rounded-full border border-stone-200 bg-stone-50 p-1 shadow-sm">
+            {snapshot.tabs.filter((tab) => tab.key !== "storage").map((tab) => {
+              const isActive = activeTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => handleChangeTab(tab.key)}
+                  className={`rounded-full px-4 py-2 text-sm font-semibold transition ${isActive ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)] shadow-sm" : "text-stone-600 hover:bg-white hover:text-stone-950"}`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
         </AdminFilterBar>
 
         {actionMessage ? (
@@ -149,7 +158,7 @@ export default function AdminFilesPage() {
           </section>
         ) : null}
 
-        <div className="mt-4 min-h-[420px] flex-1 overflow-hidden">
+        <div className="mt-4 h-[520px] min-h-[420px] flex-1 overflow-hidden">
           {activeTab === "attachments" ? (
             <FileListSection
               items={sortedAttachments}

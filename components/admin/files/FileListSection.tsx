@@ -40,7 +40,7 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
       </AdminActionBar>
 
       <AdminTable
-        className="mt-3"
+        className="mt-3 min-h-0 flex-1"
         items={items}
         getRowKey={(item) => item.id}
         emptyLabel={t("filesList.empty", "표시할 첨부파일이 없습니다.")}

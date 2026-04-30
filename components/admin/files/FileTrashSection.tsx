@@ -42,7 +42,7 @@ export default function FileTrashSection({ items, selectedItemIds, onToggleItem,
       </AdminActionBar>
 
       <AdminTable
-        className="mt-3"
+        className="mt-3 min-h-0 flex-1"
         items={items}
         getRowKey={(item) => item.id}
         emptyLabel={t("filesList.trashEmpty", "휴지통에 보관 중인 파일이 없습니다.")}
