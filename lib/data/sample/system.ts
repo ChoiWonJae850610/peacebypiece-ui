@@ -1,4 +1,4 @@
-import type { SystemCategoryRuleSummary, SystemCompanySummary, SystemInviteFlowStep, SystemInviteSummary, SystemOperationItem } from "@/lib/data/domain/system";
+import type { SystemCategoryRuleSummary, SystemCompanySummary, SystemInviteFlowStep, SystemInternalInviteSummary, SystemInviteSummary, SystemOperationItem } from "@/lib/data/domain/system";
 
 export const SAMPLE_WORKSPACE_COMPANY_NAME = "샘플 고객사";
 
@@ -152,5 +152,44 @@ export const SAMPLE_SYSTEM_INVITE_SUMMARIES: SystemInviteSummary[] = [
     actions: [
       { id: "view", label: "고객사 보기", tone: "secondary" },
     ],
+  },
+];
+
+export const SAMPLE_SYSTEM_INTERNAL_INVITE_SUMMARIES: SystemInternalInviteSummary[] = [
+  {
+    id: "internal-invite-apm-designer",
+    companyName: "APM 스튜디오",
+    inviterName: "김대표",
+    inviteeName: "최디자이너",
+    email: "designer@apm-studio.kr",
+    roleLabel: "디자이너",
+    statusLabel: "초대 발송",
+    expiresAtLabel: "D-3",
+    connectionLabel: "company_users 연결 대기",
+    policyLabel: "작업지시서 작성/검토요청 가능",
+  },
+  {
+    id: "internal-invite-apm-inspector",
+    companyName: "APM 스튜디오",
+    inviterName: "김대표",
+    inviteeName: "정검수",
+    email: "inspection@apm-studio.kr",
+    roleLabel: "검수자",
+    statusLabel: "수락 완료",
+    expiresAtLabel: "완료",
+    connectionLabel: "company_users 연결 완료",
+    policyLabel: "검수 단계 확인/완료 처리 가능",
+  },
+  {
+    id: "internal-invite-ddm-designer",
+    companyName: "동대문 랩",
+    inviterName: "이실장",
+    inviteeName: "한디자이너",
+    email: "design@ddm-lab.kr",
+    roleLabel: "디자이너",
+    statusLabel: "초안",
+    expiresAtLabel: "미설정",
+    connectionLabel: "초대 생성 전",
+    policyLabel: "역할 확정 후 권한 테스트 예정",
   },
 ];

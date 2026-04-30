@@ -39,6 +39,16 @@ export const systemKo = {
     flowTitle: "초대/승인 플로우",
     flowDescription: "초대 생성부터 수락, 만료 처리까지 시스템 관리자가 추적해야 할 단계입니다.",
   },
+  internalInviteSection: {
+    title: "고객사 내부 사용자 초대",
+    description: "고객사 관리자가 디자이너와 검수자를 초대하고 company_users 연결 및 역할 권한을 확인할 영역입니다.",
+    inviterLabel: "초대한 관리자",
+    inviteeLabel: "초대 대상",
+    roleLabel: "역할",
+    expiresAtLabel: "만료",
+    connectionLabel: "연결 상태",
+    policyLabel: "권한 기준",
+  },
   companySection: {
     title: "고객사 목록 미리보기",
     description: "최고관리자가 직접 관리할 고객사 샘플 목록입니다.",

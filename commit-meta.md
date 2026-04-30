@@ -1,34 +1,25 @@
-# Commit Meta
+# commit-meta
 
 ## Version
-0.9.0 → 0.9.1
+0.9.1 → 0.9.2
 
 ## Summary
-고객사 초대/승인 플로우 UI 기준 정리
+고객사 내부 사용자 초대 미리보기 추가
 
 ## Description
-/system 홈 화면에 고객사 관리자 초대 생성, 발송, 수락, 만료 처리 흐름을 표시하는 초대/승인 플로우 영역을 추가하고 초대 상태 카드의 관리 정보를 확장함.
+시스템 관리자 화면에 고객사 관리자가 디자이너와 검수자를 초대하는 내부 사용자 초대 상태 미리보기 영역을 추가하고, 관련 샘플 데이터와 i18n 문구를 분리했습니다. APP_VERSION을 0.9.2로 갱신했습니다.
 
 ## 수정 파일 목록
-- lib/constants/app.ts: APP_VERSION을 0.9.1로 갱신.
-- lib/data/domain/system.ts: 시스템 초대 상태, 액션, 플로우 단계 타입 추가.
-- lib/data/sample/system.ts: 초대/승인 플로우 단계와 확장된 초대 상태 샘플 데이터 추가.
-- lib/i18n/ko/system.ts: 초대 토큰, 링크, 요청자, 수락 일시, 플로우 문구 추가.
-- lib/i18n/en/system.ts: 동일 시스템 초대 문구 영문 동기화.
-- app/system/page.tsx: /system 홈에 초대/승인 플로우 섹션과 확장 초대 상태 카드 UI 반영.
-- commit-meta.md: 모바일 최소 응답용 작업 상세 기록 갱신.
-
-## 추가 파일 목록
-없음
-
-## 삭제 파일 목록
-없음
+- lib/constants/app.ts: APP_VERSION을 0.9.2로 갱신.
+- lib/data/domain/system.ts: 고객사 내부 사용자 초대 요약 타입 추가.
+- lib/data/sample/system.ts: 디자이너/검수자 내부 초대 샘플 데이터 추가.
+- lib/i18n/ko/system.ts: 내부 사용자 초대 섹션 한글 문구 추가.
+- lib/i18n/en/system.ts: 내부 사용자 초대 섹션 영문 문구 추가.
+- app/system/page.tsx: /system 화면에 내부 사용자 초대 상태 미리보기 섹션 추가.
 
 ## 작업 상세 내용
-- 0.9.1 목표인 고객사 초대/승인 플로우의 기준 화면을 /system에 추가함.
-- 초대 생성, 초대 발송, 초대 수락, 만료/재발송 단계를 별도 카드로 표시함.
-- 초대 상태 카드에 이메일, 토큰 미리보기, 초대 링크 상태, 요청자, 수락 일시, 만료 상태를 표시함.
-- 초대 상태별 버튼 액션 표시 기준을 샘플 데이터로 분리함.
-- 실제 DB 저장/발송 로직은 추가하지 않았고, 다음 단계에서 route/repository 연결 대상으로 남김.
-- 작업지시서 권한/상태/actionFlow, package.json, package-lock.json은 수정하지 않음.
-- node_modules 부재로 로컬 빌드 검증은 수행하지 못함.
+- 0.9.2 목표인 고객사 관리자의 디자이너/검수자 초대 흐름을 /system 화면에서 확인할 수 있도록 샘플 기반 섹션을 추가했습니다.
+- company_users 연결 상태와 역할별 권한 기준을 표시하도록 데이터 필드를 분리했습니다.
+- 기능 실행 로직이나 실제 인증/초대 발송 로직은 추가하지 않았습니다.
+- UI에서 DB를 직접 호출하지 않았습니다.
+- package.json 및 package-lock.json은 수정하지 않았습니다.

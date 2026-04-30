@@ -39,6 +39,16 @@ export const systemEn = {
     flowTitle: "Invitation/approval flow",
     flowDescription: "Steps for system admins to track invitation creation, acceptance, expiration, and resend handling.",
   },
+  internalInviteSection: {
+    title: "Customer internal user invites",
+    description: "A system preview for customer admins inviting designers and inspectors, then verifying company_users links and role permissions.",
+    inviterLabel: "Inviting admin",
+    inviteeLabel: "Invitee",
+    roleLabel: "Role",
+    expiresAtLabel: "Expires",
+    connectionLabel: "Connection status",
+    policyLabel: "Permission policy",
+  },
   companySection: {
     title: "Company preview",
     description: "Sample company list for direct super-admin management.",

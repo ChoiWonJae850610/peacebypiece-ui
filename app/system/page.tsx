@@ -4,6 +4,7 @@ import {
   SAMPLE_SYSTEM_CATEGORY_RULE_SUMMARIES,
   SAMPLE_SYSTEM_COMPANY_SUMMARIES,
   SAMPLE_SYSTEM_INVITE_FLOW_STEPS,
+  SAMPLE_SYSTEM_INTERNAL_INVITE_SUMMARIES,
   SAMPLE_SYSTEM_INVITE_SUMMARIES,
   SAMPLE_SYSTEM_OPERATION_ITEMS,
 } from "@/lib/data/sample/system";
@@ -167,6 +168,51 @@ export default function SystemPage() {
                       </button>
                     ))}
                   </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+          <div className="mb-4 space-y-1">
+            <h2 className="text-lg font-semibold text-stone-900">{system.internalInviteSection.title}</h2>
+            <p className="text-sm leading-6 text-stone-600">{system.internalInviteSection.description}</p>
+          </div>
+          <div className="grid gap-4 lg:grid-cols-3">
+            {SAMPLE_SYSTEM_INTERNAL_INVITE_SUMMARIES.map((invite) => (
+              <article key={invite.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+                <div className="flex h-full flex-col gap-3">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0 space-y-1">
+                      <div className="text-base font-semibold text-stone-900">{invite.companyName}</div>
+                      <div className="text-sm text-stone-600">{system.internalInviteSection.inviterLabel}: {invite.inviterName}</div>
+                      <div className="truncate text-sm text-stone-500">{invite.email}</div>
+                    </div>
+                    <span className="rounded-full border border-stone-300 bg-white px-2.5 py-1 text-[11px] font-medium text-stone-600">{invite.statusLabel}</span>
+                  </div>
+                  <dl className="space-y-2 text-sm text-stone-600">
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-stone-500">{system.internalInviteSection.inviteeLabel}</dt>
+                      <dd className="font-medium text-stone-700">{invite.inviteeName}</dd>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-stone-500">{system.internalInviteSection.roleLabel}</dt>
+                      <dd className="font-medium text-stone-700">{invite.roleLabel}</dd>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-stone-500">{system.internalInviteSection.expiresAtLabel}</dt>
+                      <dd className="font-medium text-stone-700">{invite.expiresAtLabel}</dd>
+                    </div>
+                    <div className="rounded-2xl border border-stone-200 bg-white p-3">
+                      <dt className="mb-1 text-stone-500">{system.internalInviteSection.connectionLabel}</dt>
+                      <dd className="font-medium text-stone-700">{invite.connectionLabel}</dd>
+                    </div>
+                    <div className="rounded-2xl border border-stone-200 bg-white p-3">
+                      <dt className="mb-1 text-stone-500">{system.internalInviteSection.policyLabel}</dt>
+                      <dd className="font-medium text-stone-700">{invite.policyLabel}</dd>
+                    </div>
+                  </dl>
                 </div>
               </article>
             ))}

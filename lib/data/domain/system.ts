@@ -51,3 +51,16 @@ export type SystemInviteFlowStep = {
   description: string;
   statusLabel: string;
 };
+
+export type SystemInternalInviteSummary = {
+  id: string;
+  companyName: string;
+  inviterName: string;
+  inviteeName: string;
+  email: string;
+  roleLabel: string;
+  statusLabel: string;
+  expiresAtLabel: string;
+  connectionLabel: string;
+  policyLabel: string;
+};
