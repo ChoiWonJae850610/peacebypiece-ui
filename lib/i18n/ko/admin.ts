@@ -97,7 +97,7 @@ export const adminKo = {
   },
   dashboardPage: {
     title: "통계정보",
-    description: "작업지시서 · 협력업체 · 파일 사용량",
+    description: "기간별 작업 · 협력업체 · 파일 사용량 · 생산 단계 통계",
     workorderFlowTitle: "작업지시서 현황",
     dbSourceDescription: "DB 기준 상태별 작업량",
     dbNotConfiguredDescription: "DB 연결 설정이 없어 실제 데이터 0건으로 표시됩니다.",
@@ -107,6 +107,13 @@ export const adminKo = {
     partnerCountSuffix: "개",
     fileUsageTitle: "파일 사용량",
     emptyFlowLabel: "이번달 작업지시서 상태 데이터가 없습니다.",
+    periodTitle: "기간",
+    keyMetricsTitle: "핵심 지표",
+    partnerDonutTitle: "협력업체 분포",
+    fileDonutTitle: "파일 사용량",
+    attachmentTrashTitle: "첨부 / 휴지통",
+    productionRoundTitle: "생산 단계 비율",
+    categoryDistributionTitle: "단계별 카테고리 분포",
   },
   settingsForm: {
     title: "환경설정",
@@ -306,7 +313,16 @@ export const adminKo = {
       completedThisMonth: { label: "완료된 작업지시서", description: "이번달 완료 처리" }
     },
     countSuffix: "개",
-    flowCountSuffix: "건"
+    flowCountSuffix: "건",
+    unknownLabel: "분류 미지정",
+    periods: { sevenDays: "7일", fifteenDays: "15일", thirtyDays: "30일", monthly: "월별", custom: "직접 선택" },
+    metrics: {
+      reviewWaiting: { label: "검토대기", description: "발주 전 관리자 확인이 필요한 작업" },
+      inspectionWaiting: { label: "검수대기", description: "입고 후 검수 처리가 필요한 작업" },
+      inboundDelayed: { label: "입고지연", description: "입고대기 상태가 24시간 이상 지속된 작업" },
+      reworkCount: { label: "불량 발생", description: "불량/재작업으로 표시된 작업" },
+      factoryCount: { label: "공장별 통계", description: "활성 공장 연결 수" }
+    }
   },
   standards: {
     common: { resetDefaults: "기본값 복원", save: "저장", saving: "저장 중", add: "추가", active: "사용", inactive: "미사용", manage: "관리", inUseSuffix: "개 사용중" },

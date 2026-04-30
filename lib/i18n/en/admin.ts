@@ -97,7 +97,7 @@ export const adminEn = {
   },
   dashboardPage: {
     title: "Statistics",
-    description: "Work orders · partners · file usage",
+    description: "Period work · partners · file usage · production stage statistics",
     workorderFlowTitle: "Work Order Status",
     dbSourceDescription: "Status volume based on DB data",
     dbNotConfiguredDescription: "No database connection is configured, so real data is shown as zero.",
@@ -107,6 +107,13 @@ export const adminEn = {
     partnerCountSuffix: "items",
     fileUsageTitle: "File usage",
     emptyFlowLabel: "No work order status data for this month.",
+    periodTitle: "Period",
+    keyMetricsTitle: "Key metrics",
+    partnerDonutTitle: "Partner distribution",
+    fileDonutTitle: "File usage",
+    attachmentTrashTitle: "Attachments / Trash",
+    productionRoundTitle: "Production round ratio",
+    categoryDistributionTitle: "Category distribution by stage",
   },
   settingsForm: {
     title: "Settings",
@@ -306,7 +313,16 @@ export const adminEn = {
       completedThisMonth: { label: "Completed work orders", description: "Completed this month" }
     },
     countSuffix: "items",
-    flowCountSuffix: "items"
+    flowCountSuffix: "items",
+    unknownLabel: "Uncategorized",
+    periods: { sevenDays: "7 days", fifteenDays: "15 days", thirtyDays: "30 days", monthly: "Monthly", custom: "Custom" },
+    metrics: {
+      reviewWaiting: { label: "Review waiting", description: "Work before order that needs admin review" },
+      inspectionWaiting: { label: "Inspection waiting", description: "Work that needs inbound inspection" },
+      inboundDelayed: { label: "Inbound delayed", description: "Inspection status lasting more than 24 hours" },
+      reworkCount: { label: "Defects", description: "Work marked as rework or defect" },
+      factoryCount: { label: "Factory stats", description: "Active factory connection count" }
+    }
   },
   standards: {
     common: { resetDefaults: "Reset defaults", save: "Save", saving: "Saving", add: "Add", active: "Active", inactive: "Inactive", manage: "Manage", inUseSuffix: " active" },
