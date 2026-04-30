@@ -83,8 +83,8 @@ function countByStatuses(rows: WorkorderRow[], statuses: readonly string[], peri
 function emptySnapshot(period: AdminDashboardPeriod, sourceState: AdminOperationalDashboardSnapshot["sourceState"]): AdminOperationalDashboardSnapshot {
   return {
     period,
-    statusFlow: ADMIN_WORKORDER_FLOW_BUCKETS.map((bucket) => ({ label: adminStatsText.flowBuckets[bucket.labelKey], value: 0 })),
-    statusDistribution: ADMIN_DASHBOARD_STATUS_DISTRIBUTION_BUCKETS.map((bucket) => ({ label: adminOpsText.statusDistribution[bucket.labelKey], value: 0 })),
+    statusFlow: ADMIN_WORKORDER_FLOW_BUCKETS.map((bucket) => ({ id: bucket.labelKey, label: adminStatsText.flowBuckets[bucket.labelKey], value: 0 })),
+    statusDistribution: ADMIN_DASHBOARD_STATUS_DISTRIBUTION_BUCKETS.map((bucket) => ({ id: bucket.labelKey, label: adminOpsText.statusDistribution[bucket.labelKey], value: 0 })),
     insights: [
       { label: adminOpsText.insights.createdToday, value: "0", description: adminOpsText.insights.createdDescription },
       { label: adminOpsText.insights.reviewDelayed, value: "0", description: adminOpsText.insights.reviewDelayedDescription },
@@ -135,11 +135,13 @@ function buildSnapshot(period: AdminDashboardPeriod, workorders: WorkorderRow[],
   return {
     period,
     statusFlow: ADMIN_WORKORDER_FLOW_BUCKETS.map((bucket) => ({
-      label: bucket.label,
+      id: bucket.labelKey,
+      label: adminStatsText.flowBuckets[bucket.labelKey],
       value: countByStatuses(workorders, bucket.statuses, period, now),
     })),
     statusDistribution: ADMIN_DASHBOARD_STATUS_DISTRIBUTION_BUCKETS.map((bucket) => ({
-      label: bucket.label,
+      id: bucket.labelKey,
+      label: adminOpsText.statusDistribution[bucket.labelKey],
       value: countByStatuses(workorders, bucket.statuses, period, now),
     })),
     insights: [

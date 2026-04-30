@@ -6,6 +6,7 @@ export type AdminDashboardPeriodOption = {
 };
 
 export type AdminDashboardPoint = {
+  id: string;
   label: string;
   value: number;
 };

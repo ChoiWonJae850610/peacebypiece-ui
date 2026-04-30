@@ -59,7 +59,7 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
             {snapshot.statusFlow.map((stage) => {
               const height = Math.max(8, Math.round((stage.value / maxStageValue) * 100));
               return (
-                <div key={stage.label} className="flex min-w-0 flex-1 flex-col items-center justify-end gap-3">
+                <div key={stage.id} className="flex min-w-0 flex-1 flex-col items-center justify-end gap-3">
                   <div className="flex h-full min-h-44 w-full items-end justify-center">
                     <div className="w-full max-w-16 rounded-t-3xl bg-[var(--admin-theme-surface)] shadow-sm" style={{ height: `${height}%` }} aria-label={`${stage.label} ${stage.value}건`} />
                   </div>
@@ -83,7 +83,7 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
               {snapshot.statusDistribution.map((item) => {
                 const width = totalDistributionValue > 0 ? Math.round((item.value / totalDistributionValue) * 100) : 0;
                 return (
-                  <div key={item.label}>
+                  <div key={item.id}>
                     <div className="flex items-center justify-between text-xs font-semibold text-stone-600">
                       <span>{item.label}</span>
                       <span>{item.value}{t("operationsDashboard.countSuffix", "건")}</span>
@@ -100,8 +100,8 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
           <div className="min-h-0 rounded-[24px] border border-stone-100 bg-[var(--admin-theme-surface)] p-5 text-[var(--admin-theme-text-on-surface)] transition-colors shadow-sm">
             <h3 className="text-base font-semibold">{t("operationsDashboard.todayCheckTitle", "오늘 체크")}</h3>
             <div className="mt-4 grid gap-3">
-              {snapshot.insights.map((item) => (
-                <div key={item.label} className="rounded-2xl bg-white/10 px-4 py-3">
+              {snapshot.insights.map((item, index) => (
+                <div key={`${item.label}-${index}`} className="rounded-2xl bg-white/10 px-4 py-3">
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-sm font-semibold">{item.label}</span>
                     <span className="text-sm font-semibold">{item.value}</span>
