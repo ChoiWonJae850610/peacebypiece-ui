@@ -19,7 +19,7 @@ export type AdminDbScreenAuditItem = {
   sourceType: AdminDbScreenAuditSourceType;
   readSource: string;
   writeSource: string;
-  fallback: string;
+  alternateDisplay: string;
   nextCheck: string;
 };
 
@@ -42,7 +42,7 @@ export const ADMIN_DB_SCREEN_AUDIT_ITEMS: readonly AdminDbScreenAuditItem[] = [
     sourceType: "db-with-fallback",
     readSource: "작업지시서와 발주 데이터를 기준으로 조회",
     writeSource: "읽기 전용",
-    fallback: "DB 미설정/조회 실패 시 빈 운영 통계 표시",
+    alternateDisplay: "조회가 불안정한 경우 빈 운영 통계로 안전하게 표시",
     nextCheck: "실제 작업지시서 상태와 납기일 기준 통계 값 확인",
   },
   {
@@ -53,7 +53,7 @@ export const ADMIN_DB_SCREEN_AUDIT_ITEMS: readonly AdminDbScreenAuditItem[] = [
     sourceType: "db-with-fallback",
     readSource: "작업지시서, 협력업체, 첨부파일 데이터를 기준으로 조회",
     writeSource: "읽기 전용",
-    fallback: "DB 미설정/조회 실패 시 빈 통계 표시",
+    alternateDisplay: "조회가 불안정한 경우 빈 통계로 안전하게 표시",
     nextCheck: "협력업체 유형과 첨부 용량 집계 기준 확인",
   },
   {
@@ -64,7 +64,7 @@ export const ADMIN_DB_SCREEN_AUDIT_ITEMS: readonly AdminDbScreenAuditItem[] = [
     sourceType: "db-with-fallback",
     readSource: "작업 기록 데이터를 기준으로 조회",
     writeSource: "주요 작업 후 히스토리 기록",
-    fallback: "DB 미설정/조회 실패 시 빈 목록 표시",
+    alternateDisplay: "조회가 불안정한 경우 빈 목록으로 안전하게 표시",
     nextCheck: "작업지시서, 파일, 설정 변경 시 기록 누락 여부 확인",
   },
   {
@@ -75,7 +75,7 @@ export const ADMIN_DB_SCREEN_AUDIT_ITEMS: readonly AdminDbScreenAuditItem[] = [
     sourceType: "db-prepared-fallback",
     readSource: "첨부파일과 회사 저장소 설정을 기준으로 조회",
     writeSource: "파일 삭제, 복구, 영구삭제 작업",
-    fallback: "조회 실패 시 기본 저장소 현황 표시",
+    alternateDisplay: "조회가 불안정한 경우 기본 저장소 현황으로 안전하게 표시",
     nextCheck: "실제 파일 삭제, 복구, 영구삭제 흐름 확인",
   },
   {
@@ -86,7 +86,7 @@ export const ADMIN_DB_SCREEN_AUDIT_ITEMS: readonly AdminDbScreenAuditItem[] = [
     sourceType: "db-prepared-fallback",
     readSource: "협력업체와 외주공정 데이터를 기준으로 조회",
     writeSource: "협력업체 등록, 수정, 외주공정 저장",
-    fallback: "조회 실패 시 빈 협력업체 목록 표시",
+    alternateDisplay: "조회가 불안정한 경우 빈 협력업체 목록으로 안전하게 표시",
     nextCheck: "등록, 수정, 외주공정 저장 흐름 확인",
   },
   {
@@ -97,7 +97,7 @@ export const ADMIN_DB_SCREEN_AUDIT_ITEMS: readonly AdminDbScreenAuditItem[] = [
     sourceType: "db-with-fallback",
     readSource: "회사 설정, 기준정보, 단위, 품목분류를 기준으로 조회",
     writeSource: "환경설정과 기준정보 저장",
-    fallback: "DB 미설정 시 기본 회사 설정/기준정보 표시",
+    alternateDisplay: "회사 설정을 불러오지 못하면 기본 운영 설정으로 안전하게 표시",
     nextCheck: "회사별 데이터 분리와 초기 기준정보 동기화 확인",
   },
 ] as const;
@@ -115,17 +115,17 @@ export function getAdminDbCompletionSummary(): AdminDbCompletionSummary {
 }
 
 export function getAdminDbCompletionStatusLabel(status: AdminDbScreenAuditStatus): string {
-  if (status === "db-connected") return "DB 연결";
-  if (status === "db-prepared") return "DB 준비";
-  if (status === "fallback-guarded") return "DB 조회 보호";
-  if (status === "mock-only") return "테스트 데이터";
+  if (status === "db-connected") return "실제 데이터 사용";
+  if (status === "db-prepared") return "데이터 연결 준비";
+  if (status === "fallback-guarded") return "안전 표시 보호";
+  if (status === "mock-only") return "샘플 데이터";
   return "대상 아님";
 }
 
 export function getAdminDbSourceTypeLabel(sourceType: AdminDbScreenAuditSourceType): string {
-  if (sourceType === "actual-db") return "실제 DB 조회/저장";
-  if (sourceType === "db-with-fallback") return "실제 DB 조회 + 대체 표시 보호";
-  if (sourceType === "db-prepared-fallback") return "DB 준비 + 대체 표시";
-  if (sourceType === "mock-only") return "테스트 데이터";
+  if (sourceType === "actual-db") return "실제 데이터 조회/저장";
+  if (sourceType === "db-with-fallback") return "실제 데이터 조회 + 안전 표시";
+  if (sourceType === "db-prepared-fallback") return "데이터 연결 준비 + 안전 표시";
+  if (sourceType === "mock-only") return "샘플 데이터";
   return "대상 아님";
 }

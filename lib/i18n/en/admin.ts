@@ -29,12 +29,13 @@ export const adminEn = {
     decision: "Completion decision",
   },
   dbConnectionAudit: {
-    title: "DB Connection Audit",
-    description: "Actual DB read/write boundaries and substitute data status by admin screen.",
+    title: "Data connection audit",
+    description: "Actual data read/write boundaries and safe display status by admin screen.",
     read: "Read",
     write: "Write",
-    fallback: "Substitute data",
+    alternateDisplay: "Safe display",
     nextCheck: "Next check",
+    repository: { workorder: "Work orders", partner: "Partners", attachmentMemo: "Memos/attachments" },
   },
   historyModal: {
       title: "Work Order History",
@@ -119,8 +120,8 @@ export const adminEn = {
     title: "User / Permission Test Structure",
     description: "A preparation panel for checking whether the DB user structure and current permission policy match before real login is connected.",
     sourceStates: { "db-connected": "Live user query", "db-prepared": "User structure prepared", "mock-adapter": "Test user source", "mock-fallback": "Temporary user source" },
-    userCountLabel: "Test users",
-    testUsersTitle: "Role test accounts",
+    userCountLabel: "Users",
+    testUsersTitle: "Users by role",
     readOnlyBadge: "Read only",
     manageRolesButton: "Manage roles",
     roleModal: {

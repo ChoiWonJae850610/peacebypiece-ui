@@ -9,7 +9,7 @@ type AdminDbConnectionAuditPanelProps = {
 
 
 function getRepositoryModeLabel(mode: string): string {
-  return mode === "db" ? "실제 DB" : "테스트 데이터";
+  return mode === "db" ? "실제 데이터" : "샘플 데이터";
 }
 
 function getStatusClassName(status: AdminDbScreenAuditStatus): string {
@@ -26,13 +26,13 @@ export default function AdminDbConnectionAuditPanel({ summary }: AdminDbConnecti
     <AdminCard className="mt-5">
       <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-stone-950">{t("dbConnectionAudit.title", "DB 연결 점검")}</h2>
-          <p className="mt-1 text-xs text-stone-500">{t("dbConnectionAudit.description", "관리자 화면별 실제 DB 조회/저장 경계와 대체 데이터 사용 상태입니다.")}</p>
+          <h2 className="text-lg font-semibold text-stone-950">{t("dbConnectionAudit.title", "데이터 연결 점검")}</h2>
+          <p className="mt-1 text-xs text-stone-500">{t("dbConnectionAudit.description", "관리자 화면별 실제 데이터 조회/저장 경계와 안전 표시 상태입니다.")}</p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs font-semibold text-stone-500">
-          <span className="rounded-full bg-stone-100 px-3 py-1.5">작업지시서 {getRepositoryModeLabel(summary.repositoryModes.workorder)}</span>
-          <span className="rounded-full bg-stone-100 px-3 py-1.5">협력업체 {getRepositoryModeLabel(summary.repositoryModes.partner)}</span>
-          <span className="rounded-full bg-stone-100 px-3 py-1.5">메모/첨부 {getRepositoryModeLabel(summary.repositoryModes.attachmentMemo)}</span>
+          <span className="rounded-full bg-stone-100 px-3 py-1.5">{t("dbConnectionAudit.repository.workorder", "작업지시서")} {getRepositoryModeLabel(summary.repositoryModes.workorder)}</span>
+          <span className="rounded-full bg-stone-100 px-3 py-1.5">{t("dbConnectionAudit.repository.partner", "협력업체")} {getRepositoryModeLabel(summary.repositoryModes.partner)}</span>
+          <span className="rounded-full bg-stone-100 px-3 py-1.5">{t("dbConnectionAudit.repository.attachmentMemo", "메모/첨부")} {getRepositoryModeLabel(summary.repositoryModes.attachmentMemo)}</span>
         </div>
       </div>
 
@@ -63,8 +63,8 @@ export default function AdminDbConnectionAuditPanel({ summary }: AdminDbConnecti
                 <dd className="mt-1">{item.writeSource}</dd>
               </div>
               <div>
-                <dt className="font-semibold text-stone-700">{t("dbConnectionAudit.fallback", "대체 데이터")}</dt>
-                <dd className="mt-1">{item.fallback}</dd>
+                <dt className="font-semibold text-stone-700">{t("dbConnectionAudit.alternateDisplay", "안전 표시")}</dt>
+                <dd className="mt-1">{item.alternateDisplay}</dd>
               </div>
               <div>
                 <dt className="font-semibold text-stone-700">{t("dbConnectionAudit.nextCheck", "다음 확인")}</dt>

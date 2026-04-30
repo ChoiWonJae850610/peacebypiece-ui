@@ -56,7 +56,6 @@ export default function PartnerMasterSection() {
   const [isLoadingPartners, setIsLoadingPartners] = useState(true);
   const [newProcessLabel, setNewProcessLabel] = useState("");
   const [processFormError, setProcessFormError] = useState("");
-  const [, setRepositoryStatus] = useState("저장소 확인 중");
 
   useEffect(() => {
     let isMounted = true;
@@ -68,13 +67,11 @@ export default function PartnerMasterSection() {
         if (!isMounted) return;
         setPartners(payload.partners);
         if (payload.processDefinitions) setProcessDefinitions(payload.processDefinitions);
-        setRepositoryStatus(payload.repository?.mode === "db" ? "DB 연결" : "mock 저장소");
         setIsLoadingPartners(false);
       })
       .catch(() => {
         if (!isMounted) return;
         setPartners([]);
-        setRepositoryStatus("DB 연결 실패");
         setIsLoadingPartners(false);
       });
 
@@ -148,10 +145,8 @@ export default function PartnerMasterSection() {
       .then((payload) => {
         if (payload.processDefinitions) setProcessDefinitions(payload.processDefinitions);
         if (payload.partners) setPartners(payload.partners);
-        setRepositoryStatus(payload.repository?.mode === "db" ? "DB 연결" : "mock 저장소");
       })
       .catch(() => {
-        setRepositoryStatus("DB 연결 실패");
       });
   }, []);
 
@@ -185,7 +180,6 @@ export default function PartnerMasterSection() {
       .then((payload) => {
         setPartners(payload.partners);
         if (payload.processDefinitions) setProcessDefinitions(payload.processDefinitions);
-        setRepositoryStatus(payload.repository?.mode === "db" ? "DB 연결" : "mock 저장소");
         closeModal();
       })
       .catch(() => {

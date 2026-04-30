@@ -1,33 +1,27 @@
-# Version
-0.9.3 → 0.9.4
+Version
+- 0.9.4 → 0.9.5
 
-# Summary
-관리자 i18n 잔여 문구 정리 2차
+Summary
+- 관리자 화면의 mock/fallback 노출 문구를 고객사 관리자용 표현으로 정리
 
-# Description
-관리자 상단 요약, 공통 카드 라벨, 협력업체 관리 모달과 목록의 직접 표시 문구를 admin i18n 리소스로 이동하고 앱 버전을 0.9.4로 갱신했습니다.
+Description
+- 관리자 DB 점검 패널과 사용자/권한 패널에서 개발자용 용어가 화면에 직접 노출되지 않도록 표시 문구를 정리했다.
+- DB/fallback/mock 계열의 내부 상태값은 타입과 내부 판정값으로 유지하고, 화면 표시 라벨은 실제 데이터/안전 표시/샘플 데이터 기준으로 바꿨다.
+- 협력업체 관리 섹션의 미사용 repositoryStatus 상태와 mock 저장소 문구를 제거했다.
+- APP_VERSION을 0.9.5로 동기화했다.
 
-# 수정 파일 목록
-- lib/constants/app.ts: APP_VERSION을 0.9.4로 갱신했습니다.
-- lib/i18n/ko/admin.ts: 관리자 공통/상단/협력업체 모달 문구 키를 추가했습니다.
-- lib/i18n/en/admin.ts: ko/admin.ts와 동일한 i18n 키를 영문 리소스로 동기화했습니다.
-- components/admin/layout/AdminTopbar.tsx: 상단 요약 문구를 i18n 기반으로 전환했습니다.
-- components/admin/layout/AdminCard.tsx: 요약/이동/준비중 라벨을 i18n 기반으로 전환했습니다.
-- components/admin/partnerMaster/PartnerProcessManagementModal.tsx: 외주공정 관리 모달의 직접 문구를 i18n 기반으로 전환했습니다.
-- components/admin/partnerMaster/PartnerMasterFormModal.tsx: 협력업체 등록/수정 모달 섹션명을 i18n 기반으로 전환했습니다.
-- components/admin/partnerMaster/PartnerMasterList.tsx: 협력업체 목록 로딩 문구를 i18n 기반으로 전환했습니다.
+수정 파일 목록
+- lib/constants/app.ts: APP_VERSION을 0.9.5로 갱신.
+- lib/admin/dbCompletionAudit.ts: DB 점검 항목의 fallback 표시 필드를 alternateDisplay로 바꾸고 화면용 라벨을 고객사 관리자용 표현으로 정리.
+- components/admin/dashboard/AdminDbConnectionAuditPanel.tsx: 점검 패널의 저장소/안전 표시 문구를 i18n과 고객용 라벨 기준으로 연결.
+- lib/i18n/ko/admin.ts: 데이터 연결 점검, 안전 표시, 사용자/권한 패널 문구를 운영 화면 표현으로 정리.
+- lib/i18n/en/admin.ts: 동일 i18n 키의 영문 문구 동기화.
+- lib/admin/completionAudit.ts: 관리자 완료 점검 문구의 fallback 표현을 안전 표시 표현으로 변경.
+- components/admin/PartnerMasterSection.tsx: 화면에 쓰이지 않는 저장소 상태 state와 mock 저장소 문구 제거.
 
-# 추가 파일 목록
-- 없음
-
-# 삭제 파일 목록
-- 없음
-
-# 작업 상세 내용
-- 기능 변경 없이 관리자 화면에 남아 있던 직접 표시 문구를 기존 admin i18n 구조에 흡수했습니다.
-- 새 화면/새 의존성 추가 없음.
-- package.json 및 package-lock.json 수정 없음.
-- node_modules가 포함되지 않은 압축 원본이라 빌드 검증은 수행하지 못했습니다.
-
-# 다음 권장 작업
-0.9.5 — mock/fallback 노출 정책 정리
+작업 상세 내용
+- 기능 변경 없음.
+- UI 구조 변경 없음.
+- package.json / package-lock.json 수정 없음.
+- 관리자 화면에 직접 보일 수 있는 mock/fallback 계열 표현을 1차 정리.
+- 아직 repository 내부 타입명과 API payload 상태값에는 mock/fallback 코드가 남아 있으며, 다음 단계에서 실제 제거 가능 범위와 내부 코드명 정리를 별도로 판단해야 함.

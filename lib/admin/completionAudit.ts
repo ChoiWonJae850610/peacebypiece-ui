@@ -54,7 +54,7 @@ function getCompletionDecision(status: AdminCompletionAuditStatus): Pick<AdminCo
     return {
       decision: "close-admin-v1",
       decisionLabel: "관리자 1차 완료",
-      decisionSummary: "차단 항목은 없고, DB fallback/i18n 2차 점검 항목만 남아 WorkOrder PC 화면 통일로 넘어갈 수 있습니다.",
+      decisionSummary: "차단 항목은 없고, 안전 표시/i18n 2차 점검 항목만 남아 WorkOrder PC 화면 통일로 넘어갈 수 있습니다.",
       nextScope: "0.7.0부터 WorkOrder PC 레이아웃 통일을 진행하고, 관리자 잔여 점검은 회귀 점검 항목으로 유지합니다.",
     };
   }
@@ -100,8 +100,8 @@ export function getAdminCompletionAuditSummary(): AdminCompletionAuditSummary {
       key: "db",
       label: "DB 연결 상태",
       status: dbWatchCount > 0 ? "watch" : "complete",
-      summary: `연결 ${dbConnectedCount}개 · 준비/fallback ${dbWatchCount}개`,
-      detail: "모든 화면이 DB 전용 상태는 아니며, 일부는 DB 준비 또는 fallback 보호 상태입니다.",
+      summary: `연결 ${dbConnectedCount}개 · 준비/안전 표시 ${dbWatchCount}개`,
+      detail: "모든 화면이 DB 전용 상태는 아니며, 일부는 DB 준비 또는 안전 표시 보호 상태입니다.",
     },
     {
       key: "ui",
