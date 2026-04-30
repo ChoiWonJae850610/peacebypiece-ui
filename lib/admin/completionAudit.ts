@@ -1,5 +1,6 @@
 import { ADMIN_DOMAIN_STRUCTURE, type AdminDomainKey } from "@/lib/admin/domainRegistry";
 import { getAdminDbCompletionSummary, type AdminDbScreenAuditStatus } from "@/lib/admin/dbCompletionAudit";
+import { getAdminFinalAuditSummary } from "@/lib/admin/finalAdminAudit";
 import { formatAdminMockAuditSummary, getAdminMockAuditSummary } from "@/lib/admin/mockDataAudit";
 import { buildAdminDomainAuditItems, getAdminLegacyPathAuditItems } from "@/lib/admin/structureAudit";
 
@@ -12,7 +13,7 @@ export type AdminCompletionAuditStatusPresentation = {
 export type AdminCompletionDecision = "close-admin-v1" | "continue-admin-hardening" | "blocked";
 
 export type AdminCompletionAuditItem = {
-  key: "structure" | "legacy" | "db" | "ui" | "i18n" | "mock";
+  key: "structure" | "legacy" | "db" | "ui" | "i18n" | "mock" | "finalAudit";
   label: string;
   status: AdminCompletionAuditStatus;
   summary: string;
@@ -33,6 +34,8 @@ export type AdminCompletionAuditSummary = {
   dbWatchCount: number;
   mockRemoveReadyCount: number;
   mockRetainedCount: number;
+  finalAuditWatchCount: number;
+  finalAuditTotalCount: number;
   items: readonly AdminCompletionAuditItem[];
 };
 
@@ -90,6 +93,7 @@ export function getAdminCompletionAuditSummary(): AdminCompletionAuditSummary {
   );
   const mockAuditSummary = getAdminMockAuditSummary();
   const mockRetainedCount = mockAuditSummary.seedRetainedCount + mockAuditSummary.fallbackRetainedCount;
+  const finalAuditSummary = getAdminFinalAuditSummary();
 
   const items: AdminCompletionAuditItem[] = [
     {
@@ -129,10 +133,17 @@ export function getAdminCompletionAuditSummary(): AdminCompletionAuditSummary {
     },
     {
       key: "mock",
-      label: "mock/seed 정리",
+      label: "샘플/초기값 정리",
       status: mockAuditSummary.blockedCount > 0 ? "blocked" : mockRetainedCount > 0 ? "watch" : "complete",
       summary: formatAdminMockAuditSummary(mockAuditSummary),
-      detail: "고객사 관리자 화면에서 제거할 mock, 신규 회사 초기값으로 유지할 seed, 로그인 전환 전까지 필요한 fallback을 구분합니다.",
+      detail: "고객사 관리자 화면에서 제거할 샘플 표시, 신규 회사 초기값으로 유지할 기준값, 로그인 전환 전까지 필요한 대체 데이터를 구분합니다.",
+    },
+    {
+      key: "finalAudit",
+      label: "마감 전 전체 감사",
+      status: finalAuditSummary.watchCount > 0 ? "watch" : "complete",
+      summary: `점검 유지 ${finalAuditSummary.watchCount}개 · 통과 ${finalAuditSummary.passedCount}개`,
+      detail: finalAuditSummary.items.map((item) => `${item.label}: ${item.summary}`).join(" / "),
     },
   ];
 
@@ -153,6 +164,8 @@ export function getAdminCompletionAuditSummary(): AdminCompletionAuditSummary {
     dbWatchCount,
     mockRemoveReadyCount: mockAuditSummary.removeReadyCount,
     mockRetainedCount,
+    finalAuditWatchCount: finalAuditSummary.watchCount,
+    finalAuditTotalCount: finalAuditSummary.totalCount,
     items,
   };
 }

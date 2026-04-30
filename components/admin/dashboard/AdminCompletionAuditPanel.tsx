@@ -23,12 +23,13 @@ export default function AdminCompletionAuditPanel({ summary }: AdminCompletionAu
           </div>
           <p className="mt-1 text-xs text-stone-500">{t("completionAudit.description", "관리자 영역을 WorkOrder 리팩토링 전 마감 가능한 상태인지 점검합니다.")}</p>
         </div>
-        <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-stone-500 lg:grid-cols-4">
-          <span className="rounded-full bg-stone-100 px-3 py-1.5">domain {summary.readyDomainCount}/{summary.totalDomainCount}</span>
-          <span className="rounded-full bg-stone-100 px-3 py-1.5">legacy removed {summary.removedLegacyCount}</span>
-          <span className="rounded-full bg-stone-100 px-3 py-1.5">legacy kept {summary.retainedLegacyCount}</span>
-          <span className="rounded-full bg-stone-100 px-3 py-1.5">db {summary.dbConnectedCount}+{summary.dbWatchCount}</span>
-          <span className="rounded-full bg-stone-100 px-3 py-1.5">mock {summary.mockRemoveReadyCount}/{summary.mockRetainedCount}</span>
+        <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-stone-500 lg:grid-cols-3">
+          <span className="rounded-full bg-stone-100 px-3 py-1.5">{t("completionAudit.chips.domain", "구조")} {summary.readyDomainCount}/{summary.totalDomainCount}</span>
+          <span className="rounded-full bg-stone-100 px-3 py-1.5">{t("completionAudit.chips.legacyRemoved", "이전 경로 제거")} {summary.removedLegacyCount}</span>
+          <span className="rounded-full bg-stone-100 px-3 py-1.5">{t("completionAudit.chips.legacyKept", "이전 경로 유지")} {summary.retainedLegacyCount}</span>
+          <span className="rounded-full bg-stone-100 px-3 py-1.5">{t("completionAudit.chips.db", "데이터")} {summary.dbConnectedCount}+{summary.dbWatchCount}</span>
+          <span className="rounded-full bg-stone-100 px-3 py-1.5">{t("completionAudit.chips.sample", "샘플")} {summary.mockRemoveReadyCount}/{summary.mockRetainedCount}</span>
+          <span className="rounded-full bg-stone-100 px-3 py-1.5">{t("completionAudit.chips.finalAudit", "마감점검")} {summary.finalAuditWatchCount}/{summary.finalAuditTotalCount}</span>
         </div>
       </div>
 

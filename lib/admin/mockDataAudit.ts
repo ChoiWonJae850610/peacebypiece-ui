@@ -22,7 +22,7 @@ const ADMIN_MOCK_AUDIT_ITEMS: readonly AdminMockAuditItem[] = [
     key: "system-sample-page",
     label: "시스템 관리자 샘플 화면",
     status: "seed-retained",
-    summary: "seed 유지",
+    summary: "초기값 유지",
     detail: "/system 화면은 고객사 생성/초대 플로우 구현 전까지 샘플 운영 데이터가 필요합니다.",
     nextAction: "시스템 관리자 실제 DB 플로우 도입 후 샘플 데이터를 별도 seed로 분리합니다.",
   },
@@ -30,17 +30,17 @@ const ADMIN_MOCK_AUDIT_ITEMS: readonly AdminMockAuditItem[] = [
     key: "settings-user-access-preview",
     label: "환경설정 권한 미리보기",
     status: "fallback-retained",
-    summary: "fallback 유지",
+    summary: "대체 데이터 유지",
     detail: "로그인 adapter 전환 전까지 권한 버튼과 중앙 policy 결과를 확인할 테스트 사용자가 필요합니다.",
-    nextAction: "실제 사용자 조회가 안정화되면 WORKORDER_SEED_USERS fallback 사용 범위를 제거합니다.",
+    nextAction: "실제 사용자 조회가 안정화되면 테스트 사용자 대체 데이터 사용 범위를 제거합니다.",
   },
   {
     key: "partner-master-defaults",
     label: "협력업체 기준 기본값",
     status: "seed-retained",
     summary: "기본값 유지",
-    detail: "외주 공정, 단위, 품목 기본값은 신규 회사 초기 설정을 위한 seed 후보입니다.",
-    nextAction: "mock 명칭 대신 company default seed로 명확히 분리합니다.",
+    detail: "외주 공정, 단위, 품목 기본값은 신규 회사 초기 설정을 위한 초기값 후보입니다.",
+    nextAction: "샘플 명칭 대신 회사 기본 초기값으로 명확히 분리합니다.",
   },
   {
     key: "admin-dashboard-empty-state",
@@ -56,7 +56,7 @@ const ADMIN_MOCK_AUDIT_ITEMS: readonly AdminMockAuditItem[] = [
     status: "fallback-retained",
     summary: "테스트 전용 유지",
     detail: "작업지시서 DB 전환이 완전히 끝나기 전까지 로컬 개발/회귀 테스트용 fixture는 필요합니다.",
-    nextAction: "고객 화면에는 노출하지 않고 테스트/seed 경로로만 격리합니다.",
+    nextAction: "고객 화면에는 노출하지 않고 테스트/초기값 경로로만 격리합니다.",
   },
 ];
 
@@ -73,5 +73,5 @@ export function getAdminMockAuditSummary(): AdminMockAuditSummary {
 }
 
 export function formatAdminMockAuditSummary(summary: AdminMockAuditSummary): string {
-  return `제거 가능 ${summary.removeReadyCount}개 · seed 유지 ${summary.seedRetainedCount}개 · fallback 유지 ${summary.fallbackRetainedCount}개`;
+  return `제거 가능 ${summary.removeReadyCount}개 · 초기값 유지 ${summary.seedRetainedCount}개 · 대체 데이터 유지 ${summary.fallbackRetainedCount}개`;
 }

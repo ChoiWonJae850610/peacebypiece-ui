@@ -21,11 +21,13 @@ export const adminEn = {
     title: "Admin Audit",
     closedDescription: "The dashboard prioritizes operating metrics, while DB and structure checks stay collapsed until needed.",
     open: "Open audit",
+    chips: { db: "Data", domain: "Structure", sample: "Samples", finalAudit: "Final check" },
     close: "Close audit",
   },
   completionAudit: {
     title: "Admin Completion Audit",
     description: "Checks whether the admin area can be closed before the WorkOrder refactor.",
+    chips: { domain: "Structure", legacyRemoved: "Legacy removed", legacyKept: "Legacy kept", db: "Data", sample: "Samples", finalAudit: "Final check" },
     decision: "Completion decision",
   },
   dbConnectionAudit: {

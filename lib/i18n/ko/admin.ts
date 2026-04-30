@@ -21,11 +21,13 @@ export const adminKo = {
     title: "관리자 점검",
     closedDescription: "대시보드는 운영 통계를 우선 표시하고, DB/구조 점검은 필요할 때만 펼쳐 확인합니다.",
     open: "점검 펼치기",
+    chips: { db: "데이터", domain: "구조", sample: "샘플", finalAudit: "마감점검" },
     close: "점검 닫기",
   },
   completionAudit: {
     title: "관리자 완료 검증",
     description: "관리자 영역을 WorkOrder 리팩토링 전 마감 가능한 상태인지 점검합니다.",
+    chips: { domain: "구조", legacyRemoved: "이전 경로 제거", legacyKept: "이전 경로 유지", db: "데이터", sample: "샘플", finalAudit: "마감점검" },
     decision: "완료 판정",
   },
   dbConnectionAudit: {
