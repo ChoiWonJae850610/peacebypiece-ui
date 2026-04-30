@@ -27,10 +27,10 @@ export const adminEn = {
   },
   dbConnectionAudit: {
     title: "DB Connection Audit",
-    description: "Actual DB read/write boundaries and fallback status by admin screen.",
+    description: "Actual DB read/write boundaries and substitute data status by admin screen.",
     read: "Read",
     write: "Write",
-    fallback: "fallback",
+    fallback: "Substitute data",
     nextCheck: "Next check",
   },
   historyModal: {
@@ -105,7 +105,7 @@ export const adminEn = {
   userAccessPreview: {
     title: "User / Permission Test Structure",
     description: "A preparation panel for checking whether the DB user structure and current permission policy match before real login is connected.",
-    sourceStates: { "db-connected": "DB query", "db-prepared": "DB structure prepared", "mock-adapter": "Mock user source", "mock-fallback": "Fallback" },
+    sourceStates: { "db-connected": "Live user query", "db-prepared": "User structure prepared", "mock-adapter": "Test user source", "mock-fallback": "Temporary user source" },
     userCountLabel: "Test users",
     testUsersTitle: "Role test accounts",
     readOnlyBadge: "Read only",
@@ -129,7 +129,7 @@ export const adminEn = {
       "login-adapter": "Real login adapter connected",
     },
     status: { ready: "Ready", pending: "Pending" },
-    nextStep: "Next, connect this structure to the real read repository and admin role management modal.",
+    nextStep: "Next, connect this structure to the role management modal and real login flow.",
   },
   notificationSection: {
     items: {

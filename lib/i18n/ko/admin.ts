@@ -27,10 +27,10 @@ export const adminKo = {
   },
   dbConnectionAudit: {
     title: "DB 연결 점검",
-    description: "관리자 화면별 실제 DB 조회/저장 경계와 fallback 상태입니다.",
+    description: "관리자 화면별 실제 DB 조회/저장 경계와 대체 데이터 사용 상태입니다.",
     read: "조회",
     write: "저장",
-    fallback: "fallback",
+    fallback: "대체 데이터",
     nextCheck: "다음 확인",
   },
   historyModal: {
@@ -105,7 +105,7 @@ export const adminKo = {
   userAccessPreview: {
     title: "사용자/권한 테스트 구조",
     description: "실제 로그인 연결 전까지 DB 사용자 구조와 현재 권한 policy가 맞는지 환경설정에서 확인하는 준비 패널입니다.",
-    sourceStates: { "db-connected": "DB 조회", "db-prepared": "DB 구조 준비", "mock-adapter": "mock 사용자 기준", "mock-fallback": "fallback" },
+    sourceStates: { "db-connected": "실제 사용자 조회", "db-prepared": "사용자 구조 준비", "mock-adapter": "테스트 사용자 기준", "mock-fallback": "임시 사용자 기준" },
     userCountLabel: "테스트 사용자",
     testUsersTitle: "역할별 테스트 계정",
     readOnlyBadge: "읽기 전용",
@@ -129,7 +129,7 @@ export const adminKo = {
       "login-adapter": "실제 로그인 adapter 연결",
     },
     status: { ready: "준비", pending: "대기" },
-    nextStep: "다음 단계에서는 관리자 권한 변경 모달과 실제 로그인 adapter를 연결합니다.",
+    nextStep: "다음 단계에서는 관리자 권한 변경 모달과 실제 로그인 연결 구조를 정리합니다.",
   },
   notificationSection: {
     items: {
