@@ -1,4 +1,4 @@
-import { PARTNER_REPOSITORY_MODE, WORKORDER_REPOSITORY_MODE, ATTACHMENT_MEMO_REPOSITORY_MODE } from "@/lib/constants/app";
+import { ATTACHMENT_MEMO_REPOSITORY_MODE, PARTNER_REPOSITORY_MODE, WORKORDER_REPOSITORY_MODE } from "@/lib/constants/app";
 
 const SUPPORTED_DATABASE_ENV_KEYS = [
   "DATABASE_URL",
@@ -10,6 +10,14 @@ const SUPPORTED_DATABASE_ENV_KEYS = [
 
 export type AdminDbScreenAuditStatus = "db-connected" | "db-prepared" | "fallback-guarded" | "mock-only" | "not-applicable";
 export type AdminDbScreenAuditSourceType = "actual-db" | "db-with-fallback" | "db-prepared-fallback" | "mock-only" | "not-applicable";
+export type AdminRepositoryMode = typeof WORKORDER_REPOSITORY_MODE | typeof PARTNER_REPOSITORY_MODE | typeof ATTACHMENT_MEMO_REPOSITORY_MODE;
+export type AdminStatusTone = "success" | "warning" | "info" | "muted";
+
+export type AdminStatusPresentation = {
+  label: string;
+  tone: AdminStatusTone;
+  className: string;
+};
 
 export type AdminDbScreenAuditItem = {
   key: "operations" | "stats" | "history" | "files" | "partner" | "settings";
@@ -102,6 +110,22 @@ export const ADMIN_DB_SCREEN_AUDIT_ITEMS: readonly AdminDbScreenAuditItem[] = [
   },
 ] as const;
 
+const ADMIN_DB_STATUS_PRESENTATION: Record<AdminDbScreenAuditStatus, AdminStatusPresentation> = {
+  "db-connected": { label: "실제 데이터 사용", tone: "success", className: "bg-emerald-50 text-emerald-700 ring-emerald-100" },
+  "db-prepared": { label: "데이터 연결 준비", tone: "warning", className: "bg-amber-50 text-amber-700 ring-amber-100" },
+  "fallback-guarded": { label: "안전 표시 보호", tone: "info", className: "bg-sky-50 text-sky-700 ring-sky-100" },
+  "mock-only": { label: "샘플 데이터", tone: "muted", className: "bg-stone-100 text-stone-600 ring-stone-200" },
+  "not-applicable": { label: "대상 아님", tone: "muted", className: "bg-stone-100 text-stone-500 ring-stone-200" },
+};
+
+const ADMIN_DB_SOURCE_TYPE_LABELS: Record<AdminDbScreenAuditSourceType, string> = {
+  "actual-db": "실제 데이터 조회/저장",
+  "db-with-fallback": "실제 데이터 조회 + 안전 표시",
+  "db-prepared-fallback": "데이터 연결 준비 + 안전 표시",
+  "mock-only": "샘플 데이터",
+  "not-applicable": "대상 아님",
+};
+
 export function getAdminDbCompletionSummary(): AdminDbCompletionSummary {
   return {
     repositoryModes: {
@@ -114,18 +138,18 @@ export function getAdminDbCompletionSummary(): AdminDbCompletionSummary {
   };
 }
 
+export function getAdminRepositoryModeLabel(mode: AdminRepositoryMode): string {
+  return mode === "db" ? "실제 데이터" : "샘플 데이터";
+}
+
+export function getAdminDbCompletionStatusPresentation(status: AdminDbScreenAuditStatus): AdminStatusPresentation {
+  return ADMIN_DB_STATUS_PRESENTATION[status];
+}
+
 export function getAdminDbCompletionStatusLabel(status: AdminDbScreenAuditStatus): string {
-  if (status === "db-connected") return "실제 데이터 사용";
-  if (status === "db-prepared") return "데이터 연결 준비";
-  if (status === "fallback-guarded") return "안전 표시 보호";
-  if (status === "mock-only") return "샘플 데이터";
-  return "대상 아님";
+  return getAdminDbCompletionStatusPresentation(status).label;
 }
 
 export function getAdminDbSourceTypeLabel(sourceType: AdminDbScreenAuditSourceType): string {
-  if (sourceType === "actual-db") return "실제 데이터 조회/저장";
-  if (sourceType === "db-with-fallback") return "실제 데이터 조회 + 안전 표시";
-  if (sourceType === "db-prepared-fallback") return "데이터 연결 준비 + 안전 표시";
-  if (sourceType === "mock-only") return "샘플 데이터";
-  return "대상 아님";
+  return ADMIN_DB_SOURCE_TYPE_LABELS[sourceType];
 }

@@ -3,6 +3,11 @@ import { getAdminDbCompletionSummary, type AdminDbScreenAuditStatus } from "@/li
 import { buildAdminDomainAuditItems, getAdminLegacyPathAuditItems } from "@/lib/admin/structureAudit";
 
 export type AdminCompletionAuditStatus = "complete" | "watch" | "blocked";
+
+export type AdminCompletionAuditStatusPresentation = {
+  label: string;
+  className: string;
+};
 export type AdminCompletionDecision = "close-admin-v1" | "continue-admin-hardening" | "blocked";
 
 export type AdminCompletionAuditItem = {
@@ -138,8 +143,16 @@ export function getAdminCompletionAuditSummary(): AdminCompletionAuditSummary {
   };
 }
 
+const ADMIN_COMPLETION_AUDIT_STATUS_PRESENTATION: Record<AdminCompletionAuditStatus, AdminCompletionAuditStatusPresentation> = {
+  complete: { label: "완료", className: "bg-emerald-50 text-emerald-700 ring-emerald-100" },
+  watch: { label: "점검", className: "bg-amber-50 text-amber-700 ring-amber-100" },
+  blocked: { label: "차단", className: "bg-rose-50 text-rose-700 ring-rose-100" },
+};
+
+export function getAdminCompletionAuditStatusPresentation(status: AdminCompletionAuditStatus): AdminCompletionAuditStatusPresentation {
+  return ADMIN_COMPLETION_AUDIT_STATUS_PRESENTATION[status];
+}
+
 export function getAdminCompletionAuditStatusLabel(status: AdminCompletionAuditStatus): string {
-  if (status === "complete") return "완료";
-  if (status === "watch") return "점검";
-  return "차단";
+  return getAdminCompletionAuditStatusPresentation(status).label;
 }
