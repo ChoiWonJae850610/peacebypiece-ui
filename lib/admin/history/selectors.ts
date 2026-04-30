@@ -133,8 +133,6 @@ export function matchesAdminHistorySearch(item: AdminHistoryEvent, query: string
     item.actor.email ?? "",
     item.actorName,
     item.target.type,
-    item.target.id ?? "",
-    item.target.label ?? "",
     item.timestamp.display,
     item.occurredAt,
     item.summary,
@@ -142,7 +140,7 @@ export function matchesAdminHistorySearch(item: AdminHistoryEvent, query: string
     item.transition?.to,
     ...(item.detailLines ?? []).flatMap((detail) => {
       const label = (detail.label ?? "").toLowerCase();
-      if (label.endsWith("id") || label.includes("company") || label.includes("raw")) return [];
+      if (label.endsWith("id") || label.includes("company") || label.includes("raw") || label.includes("target") || label.includes("user") || label === "id") return [];
       return [detail.label ?? "", detail.value];
     }),
   ];

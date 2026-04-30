@@ -116,7 +116,7 @@ export const adminEn = {
     allUsers: "All users",
     actions: { WORKORDER_CREATED: "Work Order Created", STATUS_CHANGED: "Status Changed", FILE_UPLOADED: "File Uploaded", FILE_DELETED: "File Deleted", PARTNER_UPDATED: "Partner Updated", SETTINGS_CHANGED: "Settings Changed", PARTNER_CREATED: "Partner Created", PARTNER_DELETED: "Partner Deleted" },
     status: { draft: "Draft", review_requested: "Review Requested", review_completed: "Review Completed", inspection: "Inbound Pending", completed: "Completed", rejected: "Rejected", pending: "Pending", active: "Active", inactive: "Inactive" },
-    detailLabels: { status: "Status", from: "Before", to: "After", actor: "Actor", user: "User", role: "Role", target: "Target", workOrderId: "Work Order", fileName: "File Name", partnerName: "Partner", source: "Data Source", type: "Type", memo: "Memo", message: "Message" },
+    detailLabels: { status: "Status", from: "Before", to: "After", actor: "Actor", user: "User", role: "Role", target: "Target", workOrderId: "Work Order", fileName: "File Name", partnerName: "Partner", source: "Data Source", type: "Type", memo: "Memo", message: "Message", name: "Name", title: "Title", quantity: "Quantity", reason: "Reason" },
     targetTypes: { workorder: "Work Order", partner: "Partner", file: "File", settings: "Settings", user: "User" },
     systemActor: "System",
     summaries: { WORKORDER_CREATED: "Work order created", STATUS_CHANGED: "Status changed", FILE_UPLOADED: "File uploaded", FILE_DELETED: "File deleted", PARTNER_UPDATED: "Partner updated", SETTINGS_CHANGED: "Settings changed", PARTNER_CREATED: "Partner created", PARTNER_DELETED: "Partner deleted" },

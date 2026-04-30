@@ -22,6 +22,12 @@ const HIDDEN_DETAIL_LABELS = new Set([
   "target_type",
   "userId",
   "user_id",
+  "workOrderId",
+  "work_order_id",
+  "attachmentId",
+  "attachment_id",
+  "fileId",
+  "file_id",
   "id",
   "uuid",
   "metadata",
@@ -29,6 +35,32 @@ const HIDDEN_DETAIL_LABELS = new Set([
   "payload",
   "updatedSection",
   "updated_section",
+  "createdAt",
+  "created_at",
+  "updatedAt",
+  "updated_at",
+]);
+
+const DISPLAY_DETAIL_LABELS = new Set([
+  "status",
+  "from",
+  "to",
+  "actor",
+  "user",
+  "role",
+  "target",
+  "fileName",
+  "file_name",
+  "partnerName",
+  "partner_name",
+  "source",
+  "type",
+  "memo",
+  "message",
+  "name",
+  "title",
+  "quantity",
+  "reason",
 ]);
 
 export type AdminHistoryDetailLineViewModel = {
@@ -76,10 +108,27 @@ function displayHistoryTargetType(value: string, translations: AdminI18n): strin
   return targetTypeMap?.[value] ?? targetTypeMap?.[normalizeHistoryToken(value)] ?? value;
 }
 
+function isDisplayableHistoryDetailLabel(label: string | null | undefined): boolean {
+  if (!label) return false;
+  const normalized = normalizeHistoryToken(label);
+  if (HIDDEN_DETAIL_LABELS.has(label) || HIDDEN_DETAIL_LABELS.has(normalized)) return false;
+  return DISPLAY_DETAIL_LABELS.has(label) || DISPLAY_DETAIL_LABELS.has(normalized);
+}
+
 function displayHistoryDetailLabel(label: string | null | undefined, translations: AdminI18n): string | null {
-  if (!label || HIDDEN_DETAIL_LABELS.has(label) || HIDDEN_DETAIL_LABELS.has(normalizeHistoryToken(label))) return null;
+  if (!isDisplayableHistoryDetailLabel(label)) return null;
   const labelMap = translations.historyPage.detailLabels as Record<string, string> | undefined;
   return labelMap?.[label] ?? labelMap?.[normalizeHistoryToken(label)] ?? label;
+}
+
+function isTechnicalHistoryValue(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) return true;
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmed)) return true;
+  if (/^(company|partner|workorder|attachment|file|user)[-_][a-z0-9_-]+$/i.test(trimmed)) return true;
+  if (trimmed === "[object Object]") return true;
+  if ((trimmed.startsWith("{") && trimmed.endsWith("}")) || (trimmed.startsWith("[") && trimmed.endsWith("]"))) return true;
+  return false;
 }
 
 function displayHistoryValue(value: string, translations: AdminI18n): string {
@@ -108,6 +157,8 @@ function buildAdminHistorySummary(item: AdminHistoryEvent, translations: AdminI1
     return `${displayHistoryStatus(item.transition.from, translations)} → ${displayHistoryStatus(item.transition.to, translations)}`;
   }
 
+  if (item.summary && !isTechnicalHistoryValue(item.summary)) return displayHistoryValue(item.summary, translations);
+  if (item.message && !isTechnicalHistoryValue(item.message)) return displayHistoryValue(item.message, translations);
 
   return displayHistoryTargetType(item.target.type, translations);
 }
@@ -115,12 +166,15 @@ function buildAdminHistorySummary(item: AdminHistoryEvent, translations: AdminI1
 function buildDetailLineViewModel(itemId: string, detailLines: AdminHistoryEvent["detailLines"], translations: AdminI18n): AdminHistoryDetailLineViewModel[] {
   return (detailLines ?? []).flatMap((detail, index) => {
     const label = displayHistoryDetailLabel(detail.label, translations);
-    if (detail.label && !label) return [];
+    if (!label) return [];
+
+    const value = displayHistoryValue(detail.value, translations);
+    if (isTechnicalHistoryValue(value)) return [];
 
     return [{
       key: `${itemId}-detail-${index}`,
       label,
-      value: displayHistoryValue(detail.value, translations),
+      value,
     }];
   });
 }
