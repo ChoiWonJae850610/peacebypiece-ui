@@ -231,7 +231,7 @@ export const adminEn = {
       searchLabel: "Search",
       searchPlaceholder: "Search by name, contact, phone, memo, or outsourcing process",
       summaryLabel: "Summary",
-      summaryDescription: "Search and filter results use the same criteria as the work order partner picker. Primary types are factory, fabric, and subsidiary, while outsourcing is managed separately by process.",
+      summaryDescription: "Partner records are master data used directly in work orders, so keep active vendors clean and operationally selectable.",
       typeLabel: "Type",
       statusLabel: "Status",
       statusOptions: {

@@ -1,4 +1,4 @@
-import { DEFAULT_OUTSOURCING_PROCESS_META, DEFAULT_OUTSOURCING_PROCESS_TYPES } from "@/lib/admin/partner/constants";
+import { DEFAULT_OUTSOURCING_PROCESS_META, DEFAULT_OUTSOURCING_PROCESS_TYPES, PARTNER_MASTER_FIELD_LIMITS } from "@/lib/admin/partner/constants";
 import type { OutsourcingProcessDefinition } from "@/lib/admin/partner/types";
 import type { OutsourcingProcessType } from "@/types/partner";
 
@@ -16,7 +16,7 @@ export function normalizeOutsourcingProcessDefinitions(definitions: OutsourcingP
   return definitions
     .map((definition) => ({
       ...definition,
-      label: definition.label.trim(),
+      label: definition.label.trim().slice(0, PARTNER_MASTER_FIELD_LIMITS.outsourcingProcessLabel),
     }))
     .filter((definition) => Boolean(definition.label))
     .sort((a, b) => a.label.localeCompare(b.label, "ko-KR"))
@@ -38,7 +38,8 @@ export function createOutsourcingProcessDefinition(
   currentDefinitions: OutsourcingProcessDefinition[],
 ): OutsourcingProcessDefinition {
   const existingTypes = new Set(currentDefinitions.map((definition) => definition.type));
-  const baseType = createOutsourcingProcessTypeKey(label);
+  const normalizedLabel = label.trim().slice(0, PARTNER_MASTER_FIELD_LIMITS.outsourcingProcessLabel);
+  const baseType = createOutsourcingProcessTypeKey(normalizedLabel);
   let nextType = baseType;
   let suffix = 2;
 
@@ -49,7 +50,7 @@ export function createOutsourcingProcessDefinition(
 
   return {
     type: nextType,
-    label: label.trim(),
+    label: normalizedLabel,
     tone: "bg-slate-200 text-slate-700",
     isActive: false,
     sortOrder: currentDefinitions.length + 1,

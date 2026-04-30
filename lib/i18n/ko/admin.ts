@@ -197,7 +197,7 @@ export const adminKo = {
       searchLabel: "검색",
       searchPlaceholder: "이름, 담당자, 연락처, 메모, 외주공정 검색",
       summaryLabel: "요약",
-      summaryDescription: "검색과 필터 기준은 작업지시서 협력업체 선택기와 동일합니다. 기본 유형은 공장, 원단, 부자재이며 외주는 공정으로 별도 관리합니다.",
+      summaryDescription: "협력업체 정보는 작업지시서에서 바로 선택되는 기준정보이므로 사용 중인 거래처만 안정적으로 관리합니다.",
       typeLabel: "유형",
       statusLabel: "사용 상태",
       statusOptions: {

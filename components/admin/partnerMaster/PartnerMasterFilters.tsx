@@ -42,7 +42,7 @@ export default function PartnerMasterFilters({
 
   return (
     <AdminFilterBar className="mt-5 block space-y-5 border-[var(--admin-theme-border)] bg-[var(--admin-theme-soft)] transition-colors">
-      <div className="grid gap-5 xl:grid-cols-[minmax(260px,0.9fr)_minmax(360px,1.4fr)_minmax(220px,0.7fr)] xl:items-start">
+      <div className="grid gap-y-5 gap-x-8 xl:grid-cols-[minmax(260px,0.9fr)_minmax(360px,1.4fr)_minmax(220px,0.7fr)] xl:items-start">
         <label className="space-y-2">
           <span className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">{filterText.searchLabel}</span>
           <input

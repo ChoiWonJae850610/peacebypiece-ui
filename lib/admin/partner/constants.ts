@@ -47,6 +47,14 @@ export const DEFAULT_PARTNER_FILTER_STATE: PartnerListFilterState = {
   searchTerm: "",
 };
 
+export const PARTNER_MASTER_FIELD_LIMITS = {
+  name: 40,
+  contactName: 24,
+  email: 80,
+  memo: 160,
+  outsourcingProcessLabel: 18,
+} as const;
+
 export const PARTNER_MASTER_FORM_ERRORS = {
   nameRequired: "업체명을 입력하세요.",
   typeRequired: "유형을 하나 이상 선택하세요.",

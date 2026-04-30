@@ -7,7 +7,7 @@ import {
   adminModalPrimaryButtonClassName,
   adminModalSecondaryButtonClassName,
 } from "@/components/admin/layout/AdminModal";
-import { type OutsourcingProcessDefinition } from "@/lib/admin/partner";
+import { PARTNER_MASTER_FIELD_LIMITS, type OutsourcingProcessDefinition } from "@/lib/admin/partner";
 import { useI18n } from "@/lib/i18n";
 import type { OutsourcingProcessType } from "@/types/partner";
 
@@ -59,7 +59,7 @@ function ProcessListBox({
                   isSelected ? "border-sky-300 bg-sky-50 text-sky-900 shadow-sm" : "border-stone-200 bg-white text-stone-700 hover:border-stone-300",
                 ].join(" ")}
               >
-                <span className="font-medium">{definition.label}</span>
+                <span className="min-w-0 max-w-full truncate font-medium" title={definition.label}>{definition.label}</span>
               </button>
             );
           })
@@ -120,6 +120,7 @@ export default function PartnerProcessManagementModal({
           <label className="min-w-0 flex-1 space-y-2">
             <input
               value={newProcessLabel}
+              maxLength={PARTNER_MASTER_FIELD_LIMITS.outsourcingProcessLabel}
               onChange={(event) => {
                 onNewProcessLabelChange(event.target.value);
                 if (processFormError) onClearProcessFormError();

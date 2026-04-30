@@ -12,6 +12,7 @@ import {
 import {
   BASE_PARTNER_TYPE_VALUES,
   PARTNER_TYPE_META,
+  PARTNER_MASTER_FIELD_LIMITS,
   type BasePartnerType,
   type OutsourcingProcessDefinition,
 } from "@/lib/admin/partner";
@@ -96,6 +97,7 @@ export default function PartnerMasterFormModal({
           <input
             id="partner-name"
             value={draft.name}
+            maxLength={PARTNER_MASTER_FIELD_LIMITS.name}
             onChange={(event) => onDraftChange((current) => ({ ...current, name: event.target.value }))}
             placeholder={formText.placeholders.name}
             className={adminModalInputClassName}
@@ -124,6 +126,7 @@ export default function PartnerMasterFormModal({
           <input
             id="partner-contact-name"
             value={draft.contactName}
+            maxLength={PARTNER_MASTER_FIELD_LIMITS.contactName}
             onChange={(event) => onDraftChange((current) => ({ ...current, contactName: event.target.value }))}
             placeholder={formText.placeholders.contactName}
             className={adminModalInputClassName}
@@ -152,6 +155,7 @@ export default function PartnerMasterFormModal({
             inputMode="email"
             pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
             value={draft.email}
+            maxLength={PARTNER_MASTER_FIELD_LIMITS.email}
             onChange={(event) => onDraftChange((current) => ({ ...current, email: event.target.value }))}
             placeholder={formText.placeholders.email}
             className={adminModalInputClassName}
@@ -213,7 +217,7 @@ export default function PartnerMasterFormModal({
                               isSelected ? "border-sky-300 bg-sky-50 text-sky-900 shadow-sm" : "border-stone-200 bg-white text-stone-700 hover:border-stone-300",
                             ].join(" ")}
                           >
-                            <span className="font-medium">{definition.label}</span>
+                            <span className="min-w-0 max-w-full truncate font-medium" title={definition.label}>{definition.label}</span>
                           </button>
                         );
                       })
@@ -274,7 +278,7 @@ export default function PartnerMasterFormModal({
                               isSelected ? "border-sky-300 bg-sky-50 text-sky-900 shadow-sm" : "border-stone-200 bg-white text-stone-700 hover:border-stone-300",
                             ].join(" ")}
                           >
-                            <span className="font-medium">{definition.label}</span>
+                            <span className="min-w-0 max-w-full truncate font-medium" title={definition.label}>{definition.label}</span>
                           </button>
                         );
                       })
@@ -294,6 +298,7 @@ export default function PartnerMasterFormModal({
         <textarea
           id="partner-memo"
           value={draft.memo}
+          maxLength={PARTNER_MASTER_FIELD_LIMITS.memo}
           onChange={(event) => onDraftChange((current) => ({ ...current, memo: event.target.value }))}
           rows={4}
           placeholder={formText.placeholders.memo}

@@ -1,5 +1,5 @@
 import { formatPhoneNumber, normalizePhoneNumber } from "@/lib/utils/phoneFormat";
-import { EMPTY_PARTNER_DRAFT } from "@/lib/admin/partner/constants";
+import { EMPTY_PARTNER_DRAFT, PARTNER_MASTER_FIELD_LIMITS } from "@/lib/admin/partner/constants";
 import type { BasePartnerType } from "@/lib/admin/partner/types";
 import type { Partner, PartnerDraft, PartnerType } from "@/types/partner";
 
@@ -27,6 +27,10 @@ export function normalizePartnerTypeSelection(types: PartnerType[]) {
   return Array.from(new Set(types));
 }
 
+function normalizePartnerTextField(value: string, maxLength: number) {
+  return value.trim().slice(0, maxLength);
+}
+
 export function buildPartnerDraftFromEntity(partner: Partner): PartnerDraft {
   return {
     name: partner.name,
@@ -46,14 +50,14 @@ export function normalizePartnerDraft(draft: PartnerDraft): PartnerDraft {
 
   return {
     ...draft,
-    name: draft.name.trim(),
+    name: normalizePartnerTextField(draft.name, PARTNER_MASTER_FIELD_LIMITS.name),
     partnerTypes: normalizedTypes,
     isActive: draft.isActive,
-    contactName: draft.contactName.trim(),
+    contactName: normalizePartnerTextField(draft.contactName, PARTNER_MASTER_FIELD_LIMITS.contactName),
     phone: normalizePhoneNumber(draft.phone),
-    email: draft.email.trim(),
+    email: normalizePartnerTextField(draft.email, PARTNER_MASTER_FIELD_LIMITS.email),
     outsourcingProcessTypes: isOutsourcingVendor ? Array.from(new Set(draft.outsourcingProcessTypes)) : [],
-    memo: draft.memo.trim(),
+    memo: normalizePartnerTextField(draft.memo, PARTNER_MASTER_FIELD_LIMITS.memo),
   };
 }
 
