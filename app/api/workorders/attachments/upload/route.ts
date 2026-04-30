@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createR2PresignedPutUrl } from "@/lib/storage/r2/r2Client";
 import { isR2Configured } from "@/lib/storage/r2/r2Config";
 import { createWorkOrderAttachmentStorageKey } from "@/lib/storage/r2/r2Keys";
+import { createWorkOrderAttachmentThumbnailKey, isImageContentType } from "@/lib/storage/r2/r2ThumbnailKeys";
 import { createR2WorkerUploadUrl, isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
 import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
@@ -38,6 +39,14 @@ function createUploadTarget(input: { workOrderId: string; scope: AttachmentScope
   const upload = isR2WorkerUploadConfigured()
     ? createR2WorkerUploadUrl({ key: storageKey, contentType: input.file.type })
     : createR2PresignedPutUrl({ key: storageKey, contentType: input.file.type });
+  const thumbnailStorageKey = isImageContentType(input.file.type)
+    ? createWorkOrderAttachmentThumbnailKey({ workOrderId: input.workOrderId, scope: input.scope })
+    : null;
+  const thumbnailUpload = thumbnailStorageKey
+    ? isR2WorkerUploadConfigured()
+      ? createR2WorkerUploadUrl({ key: thumbnailStorageKey, contentType: "image/webp" })
+      : createR2PresignedPutUrl({ key: thumbnailStorageKey, contentType: "image/webp" })
+    : null;
 
   return {
     storageKey,
@@ -45,6 +54,9 @@ function createUploadTarget(input: { workOrderId: string; scope: AttachmentScope
     contentType: input.file.type,
     fileSize: input.file.size,
     uploadUrl: upload.url,
+    thumbnailStorageKey,
+    thumbnailUploadUrl: thumbnailUpload?.url ?? null,
+    thumbnailContentType: thumbnailStorageKey ? "image/webp" : null,
     method: upload.method,
     headers: upload.headers,
     expiresInSeconds: upload.expiresInSeconds,

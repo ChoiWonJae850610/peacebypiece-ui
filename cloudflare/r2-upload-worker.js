@@ -17,8 +17,8 @@ const ATTACHMENT_POLICY = {
 };
 
 function getScopeFromKey(key) {
-  if (key.includes("/design/")) return "design";
-  if (key.includes("/memos/")) return "memos";
+  if (key.includes("/design/") || key.includes("/thumbnails/design/")) return "design";
+  if (key.includes("/memos/") || key.includes("/thumbnails/memos/")) return "memos";
   return "attachment";
 }
 
@@ -40,7 +40,10 @@ function json(data, init = {}) {
 }
 
 function isSafeStorageKey(key) {
-  return /^workorders\/[^/]+\/(design|attachments|memos)\/[^/]+$/i.test(key) && !key.includes("..") && !key.startsWith("/");
+  return (
+    /^workorders\/[^/]+\/(design|attachments|memos)\/[^/]+$/i.test(key) ||
+    /^workorders\/[^/]+\/thumbnails\/(design|attachments|memos)\/[^/]+\.webp$/i.test(key)
+  ) && !key.includes("..") && !key.startsWith("/");
 }
 
 function readSecret(env) {

@@ -1,3 +1,4 @@
+import { createAttachmentThumbnailFile } from "@/lib/workorder/attachments/attachmentThumbnails";
 import { validateAttachmentFile, validateAttachmentFileCount, normalizeAttachmentUploadScope } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
 import type { Attachment, AttachmentScope, UserProfile, WorkOrder } from "@/types/workorder";
 
@@ -7,12 +8,15 @@ export type AttachmentUploadApiResult = {
   message?: string;
 };
 
-type AttachmentUploadTarget = {
+export type AttachmentUploadTarget = {
   storageKey: string;
   fileName: string;
   contentType: string;
   fileSize: number;
   uploadUrl: string;
+  thumbnailStorageKey?: string | null;
+  thumbnailUploadUrl?: string | null;
+  thumbnailContentType?: string | null;
   method: "PUT";
   headers: Record<string, string>;
   expiresInSeconds: number;
@@ -57,7 +61,7 @@ async function prepareWorkOrderAttachmentUploads(payload: {
   return Array.isArray(result.uploadTargets) ? result.uploadTargets : [];
 }
 
-async function uploadFileThroughServerFallback(file: File, target: AttachmentUploadTarget): Promise<void> {
+async function uploadFileThroughServerFallback(file: File, target: Pick<AttachmentUploadTarget, "storageKey">): Promise<void> {
   const formData = new FormData();
   formData.set("storageKey", target.storageKey);
   formData.set("file", file);
@@ -73,7 +77,7 @@ async function uploadFileThroughServerFallback(file: File, target: AttachmentUpl
   }
 }
 
-async function putFileToUploadTarget(file: File, target: AttachmentUploadTarget): Promise<void> {
+async function putBlobToUploadUrl(file: File, target: Pick<AttachmentUploadTarget, "uploadUrl" | "method" | "headers" | "storageKey">): Promise<void> {
   const response = await fetch(target.uploadUrl, {
     method: target.method,
     headers: target.headers,
@@ -108,6 +112,7 @@ async function completeWorkOrderAttachmentUploads(payload: {
         fileName: target.fileName,
         contentType: target.contentType,
         fileSize: target.fileSize,
+        thumbnailStorageKey: target.thumbnailStorageKey ?? null,
       })),
     }),
   });
@@ -169,7 +174,19 @@ export async function uploadWorkOrderAttachmentFiles(payload: {
     }
 
     for (let index = 0; index < payload.files.length; index += 1) {
-      await putFileToUploadTarget(payload.files[index], uploadTargets[index]);
+      const file = payload.files[index];
+      const target = uploadTargets[index];
+      await putBlobToUploadUrl(file, target);
+
+      const thumbnailFile = await createAttachmentThumbnailFile(file, target);
+      if (thumbnailFile && target.thumbnailStorageKey && target.thumbnailUploadUrl) {
+        await putBlobToUploadUrl(thumbnailFile, {
+          storageKey: target.thumbnailStorageKey,
+          uploadUrl: target.thumbnailUploadUrl,
+          method: target.method,
+          headers: { "Content-Type": target.thumbnailContentType || "image/webp" },
+        });
+      }
     }
 
     const attachments = await completeWorkOrderAttachmentUploads({

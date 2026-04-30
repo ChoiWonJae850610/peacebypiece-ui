@@ -49,8 +49,8 @@ function mapAttachmentRow(row: AttachmentRow): Attachment {
     type: inferAttachmentTypeFromMime(row.mime_type, row.original_name),
     url: createAttachmentFileProxyUrl(row.storage_key),
     storageKey: row.storage_key,
-    thumbnailKey: null,
-    thumbnailUrl: null,
+    thumbnailKey: row.thumbnail_key ?? null,
+    thumbnailUrl: row.thumbnail_key ? createAttachmentFileProxyUrl(row.thumbnail_key) : null,
     previewUrl: createAttachmentFileProxyUrl(row.storage_key),
     scope: normalizeAttachmentScope(row.type),
     ownerId: row.author_id,
@@ -124,6 +124,7 @@ function mapAttachmentInput(input: CreateAttachmentRecordInput) {
     order_id: input.order_id,
     type: normalizeAttachmentKindForDb(input.attachment.scope),
     storage_key: input.storage_key ?? input.attachment.url,
+    thumbnail_key: input.attachment.thumbnailKey ?? null,
     original_name: input.attachment.name,
     mime_type: input.content_type ?? null,
     size_bytes: toNumberOrNull(input.file_size),
@@ -246,17 +247,19 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
            order_id,
            type,
            storage_key,
+           thumbnail_key,
            original_name,
            mime_type,
            size_bytes,
            author_id,
            is_primary
          )
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
          RETURNING id,
                    order_id,
                    type,
                    storage_key,
+                   thumbnail_key,
                    original_name,
                    mime_type,
                    size_bytes,
@@ -265,7 +268,7 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                    is_active,
                    deleted_at,
                    created_at`,
-        [attachmentId, getWorkspaceCompanyContext().companyId, getWorkspaceCompanyContext().companyName, next.order_id, next.type, next.storage_key, next.original_name, next.mime_type, next.size_bytes, next.author_id, next.is_primary],
+        [attachmentId, getWorkspaceCompanyContext().companyId, getWorkspaceCompanyContext().companyName, next.order_id, next.type, next.storage_key, next.thumbnail_key, next.original_name, next.mime_type, next.size_bytes, next.author_id, next.is_primary],
       );
 
       const [created] = result.rows;

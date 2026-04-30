@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
 import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
 import { isSupportedWorkOrderAttachmentStorageKey, isWorkOrderAttachmentStorageKeyForScope } from "@/lib/storage/r2/r2Keys";
+import { isImageContentType, isWorkOrderAttachmentThumbnailKeyForScope } from "@/lib/storage/r2/r2ThumbnailKeys";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
 import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
 import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
@@ -17,6 +18,7 @@ type CompleteUploadTargetInput = {
   fileName?: unknown;
   contentType?: unknown;
   fileSize?: unknown;
+  thumbnailStorageKey?: unknown;
 };
 
 type CompleteUploadRequest = {
@@ -44,15 +46,18 @@ function normalizeUploadTarget(input: CompleteUploadTargetInput, context: { work
   const fileName = readText(input.fileName);
   const contentType = readText(input.contentType);
   const fileSize = typeof input.fileSize === "number" && Number.isFinite(input.fileSize) ? input.fileSize : null;
+  const thumbnailStorageKey = readText(input.thumbnailStorageKey);
 
   if (!storageKey || !fileName || !isSupportedWorkOrderAttachmentStorageKey(storageKey)) return null;
   if (!isWorkOrderAttachmentStorageKeyForScope({ key: storageKey, workOrderId: context.workOrderId, scope: context.scope })) return null;
+  if (thumbnailStorageKey && !isWorkOrderAttachmentThumbnailKeyForScope({ key: thumbnailStorageKey, workOrderId: context.workOrderId, scope: context.scope })) return null;
 
   return {
     storageKey,
     fileName,
     contentType,
     fileSize,
+    thumbnailStorageKey: thumbnailStorageKey && isImageContentType(contentType) ? thumbnailStorageKey : null,
   };
 }
 
@@ -64,6 +69,7 @@ function createUploadAttachment(input: {
   ownerId: string | null;
   ownerName: string | null;
   storageKey: string;
+  thumbnailKey?: string | null;
   isPrimary?: boolean | null;
 }): Attachment {
   return {
@@ -72,8 +78,8 @@ function createUploadAttachment(input: {
     type: inferAttachmentTypeFromMime(input.contentType, input.fileName),
     url: createAttachmentFileProxyUrl(input.storageKey),
     storageKey: input.storageKey,
-    thumbnailKey: null,
-    thumbnailUrl: null,
+    thumbnailKey: input.thumbnailKey ?? null,
+    thumbnailUrl: input.thumbnailKey ? createAttachmentFileProxyUrl(input.thumbnailKey) : null,
     previewUrl: createAttachmentFileProxyUrl(input.storageKey),
     scope: input.scope,
     ownerId: input.ownerId,
@@ -137,8 +143,8 @@ export async function POST(request: NextRequest) {
         type: inferAttachmentTypeFromMime(target.contentType, target.fileName),
         url: target.storageKey,
         storageKey: target.storageKey,
-        thumbnailKey: null,
-        thumbnailUrl: null,
+        thumbnailKey: target.thumbnailStorageKey,
+        thumbnailUrl: target.thumbnailStorageKey ? createAttachmentFileProxyUrl(target.thumbnailStorageKey) : null,
         previewUrl: target.storageKey,
         scope,
         ownerId,
@@ -161,6 +167,7 @@ export async function POST(request: NextRequest) {
         ownerId,
         ownerName,
         storageKey: target.storageKey,
+        thumbnailKey: target.thumbnailStorageKey,
         isPrimary: created.is_primary,
       }));
     }

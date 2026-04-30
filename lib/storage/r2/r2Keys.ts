@@ -70,5 +70,9 @@ export function isWorkOrderAttachmentStorageKeyForScope(input: {
 }
 
 export function isSupportedWorkOrderAttachmentStorageKey(key: string): boolean {
-  return isCurrentWorkOrderAttachmentStorageKey(key);
+  const normalized = normalizeStorageKey(key);
+  return (
+    isCurrentWorkOrderAttachmentStorageKey(normalized) ||
+    /^workorders\/[^/]+\/thumbnails\/(design|attachments|memos)\/[^/]+\.webp$/i.test(normalized)
+  );
 }
