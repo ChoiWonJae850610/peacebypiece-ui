@@ -73,7 +73,6 @@ export default function AdminWorkOrderHistoryPage({ initialHistoryEvents = [] }:
                 <h2 className="text-lg font-semibold text-stone-950">{pageText.searchBoxTitle}</h2>
                 <p className="mt-1 text-xs text-stone-500">{pageText.searchBoxDescription}</p>
               </div>
-              <span className="hidden rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600 sm:inline-flex">{viewModel.countText}</span>
             </div>
             <div className="grid gap-2 md:grid-cols-[minmax(0,1.3fr)_0.75fr_0.75fr]">
               <label className="space-y-1.5">

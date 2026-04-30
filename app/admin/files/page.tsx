@@ -149,7 +149,7 @@ export default function AdminFilesPage() {
           </section>
         ) : null}
 
-        <div className="mt-4 min-h-0 flex-1 overflow-hidden">
+        <div className="mt-4 min-h-[420px] flex-1 overflow-hidden">
           {activeTab === "attachments" ? (
             <FileListSection
               items={sortedAttachments}

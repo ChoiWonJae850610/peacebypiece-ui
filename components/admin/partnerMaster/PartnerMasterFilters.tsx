@@ -41,8 +41,8 @@ export default function PartnerMasterFilters({
   ];
 
   return (
-    <AdminFilterBar className="mt-5 block space-y-4 border-[var(--admin-theme-border)] bg-[var(--admin-theme-soft)] transition-colors">
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end">
+    <AdminFilterBar className="mt-5 block space-y-5 border-[var(--admin-theme-border)] bg-[var(--admin-theme-soft)] transition-colors">
+      <div className="grid gap-4 lg:grid-cols-[minmax(240px,1fr)_minmax(280px,1.1fr)_auto] lg:items-end">
         <label className="space-y-2">
           <span className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">{filterText.searchLabel}</span>
           <input
@@ -55,7 +55,7 @@ export default function PartnerMasterFilters({
 
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">{filterText.typeLabel}</p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2.5">
             {filterOptions.map((item) => {
               const isSelected = selectedTypes.includes(item.value);
               return (
@@ -77,7 +77,7 @@ export default function PartnerMasterFilters({
 
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">{filterText.statusLabel}</p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2.5">
             {statusOptions.map((item) => (
               <button
                 key={item.value}

@@ -247,7 +247,7 @@ export default function PartnerMasterSection() {
   }, [persistProcessDefinitions, processDraftDefinitions]);
   return (
     <section className="flex min-h-0 flex-1 flex-col rounded-[32px] border border-stone-200 bg-white/95 p-5 shadow-sm backdrop-blur md:p-6">
-      <PartnerMasterHeader onOpenCreateModal={openCreateModal} onOpenProcessModal={openProcessModal} />
+      <PartnerMasterHeader onOpenCreateModal={openCreateModal} />
 
       <PartnerMasterFilters
         searchTerm={searchTerm}

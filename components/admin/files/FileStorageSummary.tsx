@@ -133,13 +133,13 @@ export default function FileStorageSummary({
   const isWarning = usageSummary.statusTone === "warning";
   const attachmentCount = findCardValue(usageCards, "첨부", "0개");
   const trashCount = findCardValue(usageCards, "휴지", "0개");
-  const retentionDays = findCardValue(usageCards, "복구", "-");
+  const retentionDays = findCardValue(usageCards, "보관", findCardValue(usageCards, "복구", "-"));
 
   const summaryItems = [
     { label: t("filesSummary.totalUsage", "전체 사용량"), value: `${usageSummary.usedLabel} / ${usageSummary.limitLabel}` },
     { label: t("filesSummary.attachments", "첨부파일"), value: attachmentCount },
     { label: t("filesSummary.trash", "휴지통"), value: trashCount },
-    { label: t("filesSummary.retentionPeriod", "복구 기간"), value: retentionDays },
+    { label: t("filesSummary.retentionPeriod", "보관 기간"), value: retentionDays },
   ];
 
   return (
@@ -175,7 +175,7 @@ export default function FileStorageSummary({
         </div>
       </AdminActionBar>
 
-      <div className="mt-4 grid gap-3 xl:grid-cols-[1fr_0.92fr]">
+      <div className="mt-4 grid gap-3 xl:grid-cols-[minmax(0,0.82fr)_minmax(360px,1.18fr)]">
         <div className="rounded-[22px] border border-stone-200 bg-stone-50/70 p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -202,7 +202,7 @@ export default function FileStorageSummary({
           </div>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-1">
+        <div className="grid min-h-[170px] gap-3 md:grid-cols-2">
           <MiniUsageChart points={recentUploadTrend} />
           <DonutChart items={fileTypeDistribution} />
         </div>

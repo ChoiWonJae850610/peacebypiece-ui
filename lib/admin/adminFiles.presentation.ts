@@ -26,7 +26,7 @@ export const ADMIN_FILE_USAGE_CARDS: AdminFileUsageCard[] = [
   { label: "전체 사용량", value: "2.0GB / 5.0GB", description: "휴지통 보관 파일 포함" },
   { label: "첨부파일", value: "3개", description: "작업지시서에 연결된 이미지, PDF, 기타 파일" },
   { label: "휴지통", value: "2개", description: "소프트 삭제 후 보관 중인 파일" },
-  { label: "복구 가능 기간", value: "15일", description: "company_settings.trash_retention_days 기준" },
+  { label: "보관 기간", value: "15일", description: "company_settings.trash_retention_days 기준" },
 ];
 
 export const ADMIN_FILE_TABS: AdminFileTabItem[] = [
@@ -38,7 +38,7 @@ export const ADMIN_FILE_TABS: AdminFileTabItem[] = [
   {
     key: "trash",
     label: "휴지통",
-    description: "삭제 요청된 파일의 복구 가능 상태 확인",
+    description: "삭제 요청된 파일의 보관 상태 확인",
   },
   {
     key: "storage",
@@ -198,7 +198,7 @@ export function buildAdminStoragePolicyItems(policySettings: AdminStoragePolicyS
     {
       label: "삭제 방식",
       value: policySettings.softDeleteEnabled ? "소프트 삭제" : "즉시 삭제",
-      description: policySettings.softDeleteEnabled ? "삭제 시 휴지통으로 이동하고 복구 가능 기간을 둡니다." : "삭제 액션 시 R2 실제 삭제 흐름으로 바로 연결합니다.",
+      description: policySettings.softDeleteEnabled ? "삭제 시 휴지통으로 이동하고 보관 기간을 둡니다." : "삭제 액션 시 R2 실제 삭제 흐름으로 바로 연결합니다.",
     },
     {
       label: "용량 계산",
