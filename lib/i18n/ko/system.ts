@@ -22,6 +22,15 @@ export const systemKo = {
       badge: "우선순위 높음",
     },
   },
+  operationsSection: {
+    title: "시스템 운영 준비",
+    description: "고객사 생성, 요금제, 시스템 관리자 권한처럼 /system 라우트에서 우선 분리해야 할 운영 영역입니다.",
+  },
+  inviteSection: {
+    title: "고객사 초대 상태",
+    description: "시스템 관리자가 고객사 관리자 초대를 생성하고 수락 상태를 추적할 영역입니다.",
+    inviteeLabel: "초대 대상",
+  },
   companySection: {
     title: "고객사 목록 미리보기",
     description: "최고관리자가 직접 관리할 고객사 샘플 목록입니다.",

@@ -1,6 +1,11 @@
 import Link from "next/link";
 import SystemStoragePurgeButton from "@/components/system/storage/SystemStoragePurgeButton";
-import { SAMPLE_SYSTEM_CATEGORY_RULE_SUMMARIES, SAMPLE_SYSTEM_COMPANY_SUMMARIES } from "@/lib/data/sample/system";
+import {
+  SAMPLE_SYSTEM_CATEGORY_RULE_SUMMARIES,
+  SAMPLE_SYSTEM_COMPANY_SUMMARIES,
+  SAMPLE_SYSTEM_INVITE_SUMMARIES,
+  SAMPLE_SYSTEM_OPERATION_ITEMS,
+} from "@/lib/data/sample/system";
 import { APP_VERSION } from "@/lib/constants/app";
 import { getI18n } from "@/lib/i18n";
 
@@ -22,6 +27,7 @@ export default function SystemPage() {
             <div className="space-y-2">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">{system.eyebrow}</p>
               <h1 className="text-2xl font-semibold tracking-tight text-stone-900 md:text-3xl">{system.title}</h1>
+              <p className="max-w-2xl text-sm leading-6 text-stone-600">{system.description}</p>
             </div>
             <div className="flex flex-col items-start gap-3 md:items-end">
               <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">{system.versionLabel} v{APP_VERSION}</span>
@@ -48,15 +54,60 @@ export default function SystemPage() {
               <div className="space-y-3">
                 <span className="inline-flex rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-medium text-stone-600">{card.badge}</span>
                 <h2 className="text-lg font-semibold text-stone-900">{card.title}</h2>
-                </div>
+                <p className="text-sm leading-6 text-stone-600">{card.description}</p>
+              </div>
             </article>
           ))}
+        </section>
+
+        <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]">
+          <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+            <div className="mb-4 space-y-1">
+              <h2 className="text-lg font-semibold text-stone-900">{system.operationsSection.title}</h2>
+              <p className="text-sm leading-6 text-stone-600">{system.operationsSection.description}</p>
+            </div>
+            <div className="space-y-3">
+              {SAMPLE_SYSTEM_OPERATION_ITEMS.map((item) => (
+                <div key={item.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0 space-y-1">
+                      <div className="text-base font-semibold text-stone-900">{item.title}</div>
+                      <div className="text-sm leading-6 text-stone-600">{item.description}</div>
+                    </div>
+                    <span className="rounded-full border border-stone-300 bg-white px-2.5 py-1 text-[11px] font-medium text-stone-600">{item.statusLabel}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+            <div className="mb-4 space-y-1">
+              <h2 className="text-lg font-semibold text-stone-900">{system.inviteSection.title}</h2>
+              <p className="text-sm leading-6 text-stone-600">{system.inviteSection.description}</p>
+            </div>
+            <div className="space-y-3">
+              {SAMPLE_SYSTEM_INVITE_SUMMARIES.map((invite) => (
+                <div key={invite.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="text-base font-semibold text-stone-900">{invite.companyName}</div>
+                      <div className="text-sm text-stone-600">{system.inviteSection.inviteeLabel}: {invite.inviteeName}</div>
+                      <div className="text-sm text-stone-500">{invite.roleLabel} · {invite.expiresAtLabel}</div>
+                    </div>
+                    <span className="rounded-full border border-stone-300 bg-white px-2.5 py-1 text-[11px] font-medium text-stone-600">{invite.statusLabel}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </article>
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
             <div className="mb-4 space-y-1">
               <h2 className="text-lg font-semibold text-stone-900">{system.companySection.title}</h2>
+              <p className="text-sm leading-6 text-stone-600">{system.companySection.description}</p>
             </div>
             <div className="space-y-3">
               {SAMPLE_SYSTEM_COMPANY_SUMMARIES.map((company) => (
@@ -77,6 +128,7 @@ export default function SystemPage() {
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
             <div className="mb-4 space-y-1">
               <h2 className="text-lg font-semibold text-stone-900">{system.ruleSection.title}</h2>
+              <p className="text-sm leading-6 text-stone-600">{system.ruleSection.description}</p>
             </div>
             <div className="space-y-3">
               {SAMPLE_SYSTEM_CATEGORY_RULE_SUMMARIES.map((rule) => (

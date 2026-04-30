@@ -13,3 +13,19 @@ export type SystemCategoryRuleSummary = {
   recommendation: string;
   statusLabel: string;
 };
+
+export type SystemOperationItem = {
+  id: string;
+  title: string;
+  description: string;
+  statusLabel: string;
+};
+
+export type SystemInviteSummary = {
+  id: string;
+  companyName: string;
+  inviteeName: string;
+  roleLabel: string;
+  statusLabel: string;
+  expiresAtLabel: string;
+};

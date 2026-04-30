@@ -1,4 +1,4 @@
-import type { SystemCategoryRuleSummary, SystemCompanySummary } from "@/lib/data/domain/system";
+import type { SystemCategoryRuleSummary, SystemCompanySummary, SystemInviteSummary, SystemOperationItem } from "@/lib/data/domain/system";
 
 export const SAMPLE_WORKSPACE_COMPANY_NAME = "샘플 고객사";
 
@@ -47,5 +47,45 @@ export const SAMPLE_SYSTEM_CATEGORY_RULE_SUMMARIES: SystemCategoryRuleSummary[] 
     keywordSummary: "플리츠, 주름스커트, pleats",
     recommendation: "하의 / 스커트 / 플리츠",
     statusLabel: "검토중",
+  },
+];
+
+export const SAMPLE_SYSTEM_OPERATION_ITEMS: SystemOperationItem[] = [
+  {
+    id: "operation-company-approval",
+    title: "고객사 승인/생성",
+    description: "신규 고객사 신청을 확인하고 회사 기본 정보와 고객사 관리자 계정을 생성할 영역입니다.",
+    statusLabel: "준비중",
+  },
+  {
+    id: "operation-plan-storage",
+    title: "요금제/용량 관리",
+    description: "고객사별 저장소 사용량, 기본 제공 용량, 추가 용량 요청을 연결할 영역입니다.",
+    statusLabel: "설계 필요",
+  },
+  {
+    id: "operation-system-admin",
+    title: "시스템 관리자 권한",
+    description: "시스템 관리자와 고객사 관리자의 접근 범위를 분리하고 감사 로그를 남길 영역입니다.",
+    statusLabel: "정책 준비",
+  },
+];
+
+export const SAMPLE_SYSTEM_INVITE_SUMMARIES: SystemInviteSummary[] = [
+  {
+    id: "invite-apm-admin",
+    companyName: "APM 스튜디오",
+    inviteeName: "김대표",
+    roleLabel: "고객사 관리자",
+    statusLabel: "수락 대기",
+    expiresAtLabel: "D-5",
+  },
+  {
+    id: "invite-dongdaemun-admin",
+    companyName: "동대문 랩",
+    inviteeName: "이실장",
+    roleLabel: "고객사 관리자",
+    statusLabel: "발송 전",
+    expiresAtLabel: "미설정",
   },
 ];

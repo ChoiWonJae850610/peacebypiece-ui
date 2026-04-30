@@ -22,6 +22,15 @@ export const systemEn = {
       badge: "High priority",
     },
   },
+  operationsSection: {
+    title: "System operations setup",
+    description: "Operational areas to separate first in the /system route, including company creation, plans, storage, and system-admin permissions.",
+  },
+  inviteSection: {
+    title: "Company invitation status",
+    description: "Area for system admins to create tenant-admin invitations and track acceptance status.",
+    inviteeLabel: "Invitee",
+  },
   companySection: {
     title: "Company preview",
     description: "Sample company list for direct super-admin management.",
