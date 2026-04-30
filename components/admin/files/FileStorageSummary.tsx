@@ -23,21 +23,28 @@ type FileStorageSummaryProps = {
 
 const TREND_PERIODS: AdminFileTrendPeriod[] = [7, 15, 30];
 
-function findCardValue(cards: AdminFileUsageCard[], labelIncludes: string, fallback = "-") {
-  return cards.find((card) => card.label.includes(labelIncludes))?.value ?? fallback;
+function getUsageCardValue(cards: AdminFileUsageCard[], index: number, fallback = "-") {
+  return cards[index]?.value ?? fallback;
+}
+
+function translateFileTypeLabel(label: string, t: ReturnType<typeof useAdminTranslation>) {
+  const normalizedLabel = label.trim().toLowerCase();
+  if (label === "문서" || normalizedLabel === "document" || normalizedLabel === "documents") return t("filesSummary.documents", "문서");
+  if (label === "디자인" || normalizedLabel === "design" || normalizedLabel === "designs") return t("filesSummary.designs", "디자인");
+  return t("filesSummary.others", "기타");
 }
 
 function MiniUsageChart({ points: trendPoints = [] }: { points?: AdminRecentUploadTrendPoint[] }) {
   const t = useAdminTranslation();
   const values = trendPoints.length > 0 ? trendPoints.map((point) => point.value) : [0, 0, 0, 0, 0, 0, 0];
   const max = Math.max(1, ...values);
-  const chartWidth = 260;
-  const chartHeight = 72;
+  const chartWidth = 340;
+  const chartHeight = 104;
   const step = values.length > 1 ? (chartWidth - 18) / (values.length - 1) : 0;
   const chartPoints = values
     .map((value, index) => {
       const x = 9 + index * step;
-      const y = chartHeight - 10 - (value / max) * 50;
+      const y = chartHeight - 12 - (value / max) * 74;
       return `${x},${y}`;
     })
     .join(" ");
@@ -49,11 +56,11 @@ function MiniUsageChart({ points: trendPoints = [] }: { points?: AdminRecentUplo
         <span>{t("filesSummary.count", "건수")}</span>
       </div>
       <div className="flex min-h-0 flex-1 items-center justify-center pt-2 text-[var(--admin-theme-surface)]">
-        <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="h-[82px] w-full" aria-hidden="true">
+        <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="h-[122px] w-full" aria-hidden="true">
           <polyline points={chartPoints} fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
           {values.map((value, index) => {
             const x = 9 + index * step;
-            const y = chartHeight - 10 - (value / max) * 50;
+            const y = chartHeight - 12 - (value / max) * 74;
             return <circle key={`${value}-${index}`} cx={x} cy={y} r="2.2" fill="currentColor" />;
           })}
         </svg>
@@ -64,12 +71,12 @@ function MiniUsageChart({ points: trendPoints = [] }: { points?: AdminRecentUplo
 
 function DonutChart({ items = [] }: { items?: AdminFileTypeDistributionItem[] }) {
   const t = useAdminTranslation();
-  const normalizedItems = items.length > 0 ? items : [
+  const normalizedItems = (items.length > 0 ? items : [
     { label: t("filesSummary.documents", "문서"), value: 0, percent: 0 },
     { label: t("filesSummary.designs", "디자인"), value: 0, percent: 0 },
-  ];
+  ]).map((item) => ({ ...item, label: translateFileTypeLabel(item.label, t) }));
   const total = normalizedItems.reduce((sum, item) => sum + item.value, 0);
-  const radius = 29;
+  const radius = 34;
   const circumference = 2 * Math.PI * radius;
   let offset = 0;
 
@@ -80,7 +87,7 @@ function DonutChart({ items = [] }: { items?: AdminFileTypeDistributionItem[] })
         <span>{total}{t("filesSummary.countSuffix", "개")}</span>
       </div>
       <div className="flex min-h-0 flex-1 items-center gap-3 pt-2">
-        <svg viewBox="0 0 72 72" className="h-[66px] w-[66px] shrink-0 -rotate-90" aria-hidden="true">
+        <svg viewBox="0 0 72 72" className="h-[104px] w-[104px] shrink-0 -rotate-90" aria-hidden="true">
           <circle cx="36" cy="36" r={radius} fill="none" stroke="rgb(231 229 228)" strokeWidth="10" />
           {total > 0
             ? normalizedItems.map((item, index) => {
@@ -132,9 +139,9 @@ export default function FileStorageSummary({
   const t = useAdminTranslation();
   const isCaution = usageSummary.statusTone === "caution";
   const isDanger = usageSummary.statusTone === "danger";
-  const attachmentCount = findCardValue(usageCards, "첨부", "0개");
-  const trashCount = findCardValue(usageCards, "휴지", "0개");
-  const retentionDays = findCardValue(usageCards, "보관", findCardValue(usageCards, "복구", "-"));
+  const attachmentCount = getUsageCardValue(usageCards, 1, "0개");
+  const trashCount = getUsageCardValue(usageCards, 2, "0개");
+  const retentionDays = getUsageCardValue(usageCards, 3, "-");
 
   const summaryItems = [
     { label: t("filesSummary.totalUsage", "전체 사용량"), value: `${usageSummary.usedLabel} / ${usageSummary.limitLabel}` },
@@ -176,7 +183,7 @@ export default function FileStorageSummary({
         </div>
       </AdminActionBar>
 
-      <div className="mt-4 grid gap-3 xl:grid-cols-[minmax(0,0.72fr)_minmax(420px,1.28fr)]">
+      <div className="mt-4 grid gap-3 xl:grid-cols-[minmax(0,0.62fr)_minmax(520px,1.38fr)]">
         <div className="rounded-[22px] border border-stone-200 bg-stone-50/70 p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -203,7 +210,7 @@ export default function FileStorageSummary({
           </div>
         </div>
 
-        <div className="grid min-h-[220px] gap-3 md:grid-cols-2">
+        <div className="grid min-h-[270px] gap-4 md:grid-cols-2">
           <MiniUsageChart points={recentUploadTrend} />
           <DonutChart items={fileTypeDistribution} />
         </div>

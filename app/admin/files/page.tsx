@@ -24,6 +24,12 @@ import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
 
 const FILE_ADMIN_NAVIGATION_ITEMS = getAdminNavigationItems("/admin/files");
 
+function getFileTabLabel(tabKey: AdminFileTabKey, fallback: string, t: ReturnType<typeof useAdminTranslation>) {
+  if (tabKey === "attachments") return t("filesPage.tabs.attachments", fallback);
+  if (tabKey === "trash") return t("filesPage.tabs.trash", fallback);
+  return t("filesPage.tabs.storage", fallback);
+}
+
 export default function AdminFilesPage() {
   const t = useAdminTranslation();
   const placeholderSnapshot = useMemo(() => getAdminFileManagementSnapshot(), []);
@@ -145,7 +151,7 @@ export default function AdminFilesPage() {
                   onClick={() => handleChangeTab(tab.key)}
                   className={`rounded-full px-4 py-2 text-sm font-semibold transition ${isActive ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)] shadow-sm" : "text-stone-600 hover:bg-white hover:text-stone-950"}`}
                 >
-                  {tab.label}
+                  {getFileTabLabel(tab.key, tab.label, t)}
                 </button>
               );
             })}
