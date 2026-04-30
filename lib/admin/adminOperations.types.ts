@@ -17,11 +17,20 @@ export type AdminDashboardInsight = {
   description: string;
 };
 
+export type AdminDashboardTodayTask = {
+  id: string;
+  title: string;
+  statusLabel: string;
+  dueLabel: string;
+  priorityLabel: string;
+};
+
 export type AdminOperationalDashboardSnapshot = {
   period: AdminDashboardPeriod;
   statusFlow: AdminDashboardPoint[];
   statusDistribution: AdminDashboardPoint[];
   insights: AdminDashboardInsight[];
+  todayTasks: AdminDashboardTodayTask[];
   sourceState: "db" | "not_configured" | "error";
 };
 

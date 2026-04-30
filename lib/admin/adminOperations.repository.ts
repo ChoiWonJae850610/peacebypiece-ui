@@ -80,22 +80,43 @@ function countByStatuses(rows: WorkorderRow[], statuses: readonly string[], peri
   return rows.filter((row) => statuses.includes(row.status ?? "") && isWithinPeriod(row.created_at, period, now)).length;
 }
 
+function formatDueLabel(value: unknown, now: Date): string {
+  const dueDate = parseDueDateAtStartOfDay(value, now);
+  const today = startOfToday(now);
+  if (!dueDate) return adminOpsText.todayTasks.duePending;
+  const diffDays = Math.round((dueDate.getTime() - today.getTime()) / ONE_DAY_MS);
+  if (diffDays < 0) return adminOpsText.todayTasks.overdue;
+  if (diffDays === 0) return adminOpsText.todayTasks.dueToday;
+  if (diffDays === 1) return adminOpsText.todayTasks.dueTomorrow;
+  return adminOpsText.todayTasks.dueAfter.replace("{days}", String(diffDays));
+}
+
+function getStatusLabel(status: string | null): string {
+  if (status === "review_requested") return adminOpsText.todayTasks.status.reviewRequested;
+  if (status === "inspection") return adminOpsText.todayTasks.status.inspection;
+  if (status === "review_completed") return adminOpsText.todayTasks.status.reviewCompleted;
+  if (status === "rejected") return adminOpsText.todayTasks.status.rejected;
+  return adminOpsText.todayTasks.status.draft;
+}
+
 function emptySnapshot(period: AdminDashboardPeriod, sourceState: AdminOperationalDashboardSnapshot["sourceState"]): AdminOperationalDashboardSnapshot {
   return {
     period,
     statusFlow: ADMIN_WORKORDER_FLOW_BUCKETS.map((bucket) => ({ id: bucket.labelKey, label: adminStatsText.flowBuckets[bucket.labelKey], value: 0 })),
     statusDistribution: ADMIN_DASHBOARD_STATUS_DISTRIBUTION_BUCKETS.map((bucket) => ({ id: bucket.labelKey, label: adminOpsText.statusDistribution[bucket.labelKey], value: 0 })),
     insights: [
-      { label: adminOpsText.insights.createdToday, value: "0", description: adminOpsText.insights.createdDescription },
-      { label: adminOpsText.insights.reviewDelayed, value: "0", description: adminOpsText.insights.reviewDelayedDescription },
+      { label: adminOpsText.insights.reviewWaiting, value: "0", description: adminOpsText.insights.reviewWaitingDescription },
+      { label: adminOpsText.insights.inspectionWaiting, value: "0", description: adminOpsText.insights.inspectionWaitingDescription },
       { label: adminOpsText.insights.inboundDelayed, value: "0", description: adminOpsText.insights.inboundDelayedDescription },
     ],
+    todayTasks: [],
     sourceState,
   };
 }
 
 type WorkorderRow = DbQueryResultRow & {
   id: string;
+  title: string;
   status: string | null;
   created_at: string | Date | null;
   updated_at: string | Date | null;
@@ -108,14 +129,8 @@ type OrderDueRow = DbQueryResultRow & {
 
 function buildSnapshot(period: AdminDashboardPeriod, workorders: WorkorderRow[], orders: OrderDueRow[], now = new Date()): AdminOperationalDashboardSnapshot {
   const workorderStatusById = new Map(workorders.map((row) => [row.id, row.status ?? ""]));
-  const todayStart = startOfToday(now);
-  const reviewDelayCutoff = new Date(now.getTime() - ONE_DAY_MS);
+  const orderDueByWorkorderId = new Map(orders.map((row) => [row.spec_sheet_id ?? "", row.due_date]));
   const selectedPeriodStart = getPeriodStart(period, now);
-
-  const reviewDelayedCount = workorders.filter((row) => {
-    const updatedAt = parseDate(row.updated_at);
-    return row.status === "review_requested" && Boolean(updatedAt) && updatedAt! <= reviewDelayCutoff && updatedAt! >= selectedPeriodStart;
-  }).length;
 
   const inboundDelayedCount = orders.filter((row) => {
     if (!row.spec_sheet_id) return false;
@@ -127,10 +142,21 @@ function buildSnapshot(period: AdminDashboardPeriod, workorders: WorkorderRow[],
     return delayedAt <= now && dueDate >= selectedPeriodStart;
   }).length;
 
-  const createdCount = workorders.filter((row) => {
-    const createdAt = parseDate(row.created_at);
-    return Boolean(createdAt) && createdAt! >= (period === "today" ? todayStart : selectedPeriodStart) && createdAt! <= now;
-  }).length;
+  const reviewWaitingCount = workorders.filter((row) => row.status === "review_requested").length;
+  const inspectionWaitingCount = workorders.filter((row) => row.status === "inspection" || row.status === "review_completed").length;
+  const todayTasks = workorders
+    .filter((row) => row.status === "review_requested" || row.status === "inspection" || row.status === "review_completed")
+    .map((row) => ({
+      id: row.id,
+      title: row.title,
+      statusLabel: getStatusLabel(row.status),
+      dueLabel: formatDueLabel(orderDueByWorkorderId.get(row.id), now),
+      priorityLabel: row.status === "review_requested" ? adminOpsText.todayTasks.priority.review : row.status === "inspection" ? adminOpsText.todayTasks.priority.inspection : adminOpsText.todayTasks.priority.order,
+      updatedAt: parseDate(row.updated_at)?.getTime() ?? 0,
+    }))
+    .sort((a, b) => b.updatedAt - a.updatedAt)
+    .slice(0, 6)
+    .map(({ updatedAt, ...task }) => task);
 
   return {
     period,
@@ -145,10 +171,11 @@ function buildSnapshot(period: AdminDashboardPeriod, workorders: WorkorderRow[],
       value: countByStatuses(workorders, bucket.statuses, period, now),
     })),
     insights: [
-      { label: period === "today" ? adminOpsText.insights.createdToday : adminOpsText.insights.createdInPeriod, value: String(createdCount), description: adminOpsText.insights.createdDescription },
-      { label: adminOpsText.insights.reviewDelayed, value: String(reviewDelayedCount), description: adminOpsText.insights.reviewDelayedDescription },
+      { label: adminOpsText.insights.reviewWaiting, value: String(reviewWaitingCount), description: adminOpsText.insights.reviewWaitingDescription },
+      { label: adminOpsText.insights.inspectionWaiting, value: String(inspectionWaitingCount), description: adminOpsText.insights.inspectionWaitingDescription },
       { label: adminOpsText.insights.inboundDelayed, value: String(inboundDelayedCount), description: adminOpsText.insights.inboundDelayedDescription },
     ],
+    todayTasks,
     sourceState: "db",
   };
 }
@@ -166,7 +193,7 @@ export async function getAdminOperationalDashboardSnapshots(): Promise<AdminOper
     const companyId = getAdminCompanyId();
     const [workordersResult, ordersResult] = await Promise.all([
       queryDb<WorkorderRow>(
-        `SELECT id, status, created_at, updated_at
+        `SELECT id, title, status, created_at, updated_at
            FROM spec_sheets
           WHERE company_id = $1
             AND deleted_at IS NULL

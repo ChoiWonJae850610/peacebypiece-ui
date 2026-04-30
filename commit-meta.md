@@ -1,28 +1,30 @@
-Version: 0.9.28
+Version
+0.9.28 → 0.9.29
 
-Summary: 환경설정 파일 정책 UX 정리
+Summary
+관리자 대시보드를 오늘의 작업과 우선 처리 항목 중심으로 재구성
 
-Description:
-- 파일 정책 모달에서 삭제 방식, 휴지통 용량 포함 여부, 보관기간, 기본 용량 한도, 용량 상태 기준을 한 화면에서 관리하도록 정리했다.
-- 용량 상태를 정상 / 주의 / 위험 기준으로 미리 확인할 수 있는 표시 영역을 추가했다.
-- 저장소 정책 표시에서 실제삭제 중심 문구를 보관기간 중심 문구로 조정했다.
-- APP_VERSION을 0.9.28로 동기화했다.
+Description
+관리자 메인 대시보드에서 기존 통계 중심 구성을 축소하고, 검토대기/검수대기 작업을 바로 확인할 수 있는 오늘의 작업 리스트와 우선 처리 카드 구조를 적용했습니다. DB 조회 snapshot에 오늘 표시용 작업 목록을 추가하고, 대시보드 문구를 i18n으로 정리했습니다.
 
-수정 파일 목록:
-- lib/constants/app.ts: APP_VERSION을 0.9.28로 변경했다.
-- lib/admin/settings/presentation.ts: 파일 정책 draft 정규화와 용량 상태 preview presentation helper를 추가했다.
-- components/admin/standards/AdminFilePolicySettingsModal.tsx: 파일 정책 모달 UX를 삭제 방식, 보관기간, 용량 기준 중심으로 재구성했다.
-- lib/admin/adminFiles.presentation.ts: 저장소 정책 표시 문구를 보관기간 기준으로 정리했다.
-- lib/i18n/ko/admin.ts: 파일 정책 관련 한국어 i18n 키를 추가했다.
-- lib/i18n/en/admin.ts: 파일 정책 관련 영어 i18n 키를 추가했다.
+수정 파일 목록
+- lib/constants/app.ts: APP_VERSION을 0.9.29로 갱신.
+- lib/admin/adminOperations.types.ts: 대시보드 snapshot에 todayTasks 타입 추가.
+- lib/admin/adminOperations.repository.ts: 작업지시서 제목과 납기 정보를 조회해 오늘의 작업 리스트, 검토대기/검수대기/입고지연 핵심 지표 생성.
+- components/admin/dashboard/AdminOperationsDashboard.tsx: 기존 통계 중심 화면을 오늘의 작업 리스트, 우선 처리 카드, 축소형 상태 분포/흐름 구조로 재배치.
+- lib/i18n/ko/admin.ts: 운영 대시보드 신규 문구와 상태/납기/우선 처리 라벨 추가.
+- lib/i18n/en/admin.ts: 운영 대시보드 신규 영문 문구와 상태/납기/우선 처리 라벨 추가.
+- commit-meta.md: 이번 작업 상세 기록 갱신.
 
-작업 상세 내용:
-- 즉시삭제/휴지통 전환 설명을 명확히 분리했다.
-- 휴지통 포함 용량 계산 toggle을 정책 모달에 노출했다.
-- 휴지통 파일 보관기간 선택 영역을 실제 삭제 후보 산정 기준으로 설명했다.
-- 기본 용량 한도와 경고 기준 입력값을 presentation helper에서 안전 범위로 정규화했다.
-- 정상 / 주의 / 위험 상태 기준을 warningThresholdPercent 기반으로 표시했다.
+작업 상세 내용
+- 대시보드 기본 선택 기간을 오늘로 변경.
+- 검토대기, 검수대기, 발주대기 작업을 오늘의 작업 리스트에 표시.
+- 작업 카드에 상태, 우선 처리 라벨, 납기 표시를 추가.
+- 기존 상태 흐름 그래프는 우측 하단 축소형으로 유지.
+- 상태 분포는 보조 정보로 축소 유지.
+- 관리자 메인 설명 문구를 운영 통계가 아닌 오늘의 작업 중심으로 변경.
 
-검증:
-- 현재 압축파일에는 node_modules가 포함되어 있지 않아 로컬 npm run build는 실행 완료하지 못했다.
-- 변경 범위 내 TypeScript import/export 및 JSX 구조는 정적으로 점검했다.
+검증
+- 첨부 zip에 node_modules가 없어 npm run build는 즉시 실행되지 않았습니다.
+- npm ci 설치를 시도했으나 실행 환경 시간 제한으로 완료하지 못했습니다.
+- package.json 및 package-lock.json은 수정하지 않았습니다.
