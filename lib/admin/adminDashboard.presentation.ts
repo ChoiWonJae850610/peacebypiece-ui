@@ -230,7 +230,7 @@ export const ADMIN_SETTINGS_SUMMARY_CARDS: AdminSettingsSummaryCard[] = [
 export const ADMIN_SETTINGS_GROUPS: AdminSettingsGroup[] = [
   { label: "테마 설정", description: "고객사별 accent color, 화면 밀도, 다크모드 적용 여부를 관리합니다.", icon: "◉", statusLabel: "UI" },
   { label: "언어 설정", description: "한국어/영어 표시 기준과 향후 다국어 확장 기준을 분리합니다.", icon: "文", statusLabel: "i18n" },
-  { label: "파일 정책", description: "소프트 삭제, 휴지통 포함, 자동 삭제 기간, 용량 경고 기준을 저장합니다.", icon: "▤", statusLabel: "정책" },
+  { label: "파일 정책", description: "소프트 삭제, 휴지통 포함, 자동 삭제 기간, 용량 상태 기준을 저장합니다.", icon: "▤", statusLabel: "정책" },
   { label: "알림 정책", description: "검토 요청, 발주 준비, 용량 초과, 백업 상태 알림 기준을 관리합니다.", icon: "◌", statusLabel: "알림" },
 ];
 
@@ -253,7 +253,7 @@ export const ADMIN_FILE_POLICY_PREVIEW_ITEMS: AdminPolicyPreviewItem[] = [
   { label: "소프트 삭제", value: "사용", statusLabel: "ON" },
   { label: "휴지통 포함", value: "사용량 계산 포함", statusLabel: "ON" },
   { label: "자동 삭제 기간", value: "15일", statusLabel: "기본" },
-  { label: "용량 경고 기준", value: "80%", statusLabel: "경고" },
+  { label: "용량 상태 기준", value: "80%", statusLabel: "경고" },
 ];
 
 export type AdminStatChartPoint = {

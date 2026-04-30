@@ -130,7 +130,8 @@ export default function FileStorageSummary({
   onRefresh,
 }: FileStorageSummaryProps) {
   const t = useAdminTranslation();
-  const isWarning = usageSummary.statusTone === "warning";
+  const isCaution = usageSummary.statusTone === "caution";
+  const isDanger = usageSummary.statusTone === "danger";
   const attachmentCount = findCardValue(usageCards, "첨부", "0개");
   const trashCount = findCardValue(usageCards, "휴지", "0개");
   const retentionDays = findCardValue(usageCards, "보관", findCardValue(usageCards, "복구", "-"));
@@ -182,14 +183,14 @@ export default function FileStorageSummary({
               <p className="text-2xl font-semibold tracking-tight text-stone-950">{usageSummary.usedLabel}</p>
               <p className="mt-1.5 text-[11px] font-semibold text-stone-500">{t("filesSummary.usage", "사용량")}</p>
             </div>
-            <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${isWarning ? "bg-amber-100 text-amber-900" : "bg-stone-950 text-white"}`}>{usageSummary.statusLabel}</span>
+            <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${isDanger ? "bg-red-100 text-red-700" : isCaution ? "bg-amber-100 text-amber-900" : "bg-stone-950 text-white"}`}>{usageSummary.statusLabel}</span>
           </div>
           <div className="mt-3 flex items-center justify-between gap-3 text-[11px] font-medium text-stone-500">
             <span>{usageSummary.usagePercent}%</span>
             <span>{usageSummary.limitLabel}</span>
           </div>
           <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-white">
-            <div className={`h-full rounded-full ${isWarning ? "bg-amber-400" : "bg-[var(--admin-theme-surface)]"}`} style={{ width: `${usageSummary.usagePercent}%` }} />
+            <div className={`h-full rounded-full ${isDanger ? "bg-red-500" : isCaution ? "bg-amber-400" : "bg-[var(--admin-theme-surface)]"}`} style={{ width: `${usageSummary.usagePercent}%` }} />
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-2.5">

@@ -301,6 +301,6 @@ export const adminKo = {
     units: { title: "단위 표준", addTitle: "단위 추가", usageTitle: "단위 사용 여부", nameRequired: "단위명과 코드를 입력하세요.", duplicate: "이미 등록된 단위입니다.", namePlaceholder: "단위명 예: 개", codePlaceholder: "코드 예: piece" },
     itemCategories: { title: "생산품 유형", addTitle: "품목 추가", usageTitle: "품목 사용 여부", countSuffix: "개", active: "사용", inactive: "미사용", nameRequired: "추가할 품목명을 입력하세요.", selectLevel1: "1차 품목을 먼저 선택하세요.", selectLevel2: "2차 품목을 먼저 선택하세요.", duplicate: "이미 등록된 품목명입니다.", level1Placeholder: "1차 품목 추가", level2Placeholder: "선택한 1차 안에 2차 추가", level3Placeholder: "선택한 2차 안에 3차 추가", level1Title: "1차 품목", level2Title: "2차 품목", level3Title: "3차 품목", level1Empty: "1차 품목이 없습니다.", level2Empty: "선택한 1차 품목의 2차 품목이 없습니다.", level3Empty: "선택한 2차 품목의 3차 품목이 없습니다." },
     notificationPolicy: { title: "알림 정책", loadFailed: "알림 정책을 불러오지 못했습니다.", saveFailed: "알림 정책을 저장하지 못했습니다.", items: { reviewRequestEnabled: "검토 요청", orderReadyEnabled: "발주 준비", storageWarningEnabled: "용량 경고", purgeResultEnabled: "삭제 결과" } },
-    filePolicy: { title: "파일 정책 관리", loadFailed: "파일 정책을 불러오지 못했습니다.", saveFailed: "파일 정책을 저장하지 못했습니다.", deleteMode: "삭제 방식", softDelete: "휴지통", hardDelete: "즉시 삭제", retentionDays: "실제 삭제 기간", warningThreshold: "용량 경고 기준(%)", daySuffix: "일" },
+    filePolicy: { title: "파일 정책 관리", loadFailed: "파일 정책을 불러오지 못했습니다.", saveFailed: "파일 정책을 저장하지 못했습니다.", deleteMode: "삭제 방식", softDelete: "휴지통", hardDelete: "즉시삭제", retentionDays: "파일 보관 기간", warningThreshold: "용량 상태 기준(%)", daySuffix: "일" },
   },
 } as const;

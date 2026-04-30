@@ -197,7 +197,7 @@ export function buildAdminStoragePolicyItems(policySettings: AdminStoragePolicyS
   return [
     {
       label: "삭제 방식",
-      value: policySettings.softDeleteEnabled ? "소프트 삭제" : "즉시 삭제",
+      value: policySettings.softDeleteEnabled ? "소프트 삭제" : "즉시삭제",
       description: policySettings.softDeleteEnabled ? "삭제 시 휴지통으로 이동하고 보관 기간을 둡니다." : "삭제 액션 시 R2 실제 삭제 흐름으로 바로 연결합니다.",
     },
     {
@@ -261,8 +261,8 @@ export function buildAdminFilePolicyUpdateInput(policySettings: AdminStoragePoli
 
 export function buildAdminStoragePolicyBadges(policySettings: AdminStoragePolicySettings): { label: string; value: string }[] {
   return [
-    { label: "삭제 방식", value: policySettings.softDeleteEnabled ? "소프트 삭제" : "즉시 삭제" },
+    { label: "삭제 방식", value: policySettings.softDeleteEnabled ? "소프트 삭제" : "즉시삭제" },
     { label: "용량 계산", value: policySettings.includeTrashInUsage ? "휴지통 포함" : "사용중 파일만" },
-    { label: "실제 삭제 기간", value: `${policySettings.purgeAfterDays}일` },
+    { label: "파일 보관 기간", value: `${policySettings.purgeAfterDays}일` },
   ];
 }

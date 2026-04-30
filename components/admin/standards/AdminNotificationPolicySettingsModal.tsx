@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import StatusToggle from "@/components/common/StatusToggle";
 import { AdminModal, adminModalPrimaryButtonClassName, adminModalSecondaryButtonClassName } from "@/components/admin/layout/AdminModal";
 import { runSaveCompanySettingsFlow } from "@/lib/admin/settings/actionFlow";
 import { buildDefaultCompanySettings } from "@/lib/admin/settings/companyDefaults";
@@ -56,7 +57,7 @@ export default function AdminNotificationPolicySettingsModal({ open, onClose }: 
     return () => {
       isMounted = false;
     };
-  }, [open]);
+  }, [open, t]);
 
   function handleReset() {
     setDraft((current) => ({
@@ -102,21 +103,23 @@ export default function AdminNotificationPolicySettingsModal({ open, onClose }: 
           return (
             <div key={item.key} className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50/70 px-3 py-3">
               <span className="min-w-0 flex-1 text-sm font-medium text-stone-900">{t(item.labelPath, item.fallback)}</span>
-              <button
-                type="button"
-                onClick={() =>
-                  setDraft((current) => ({
+              <div className="flex items-center gap-2">
+                <span className={`text-xs font-semibold ${checked ? "text-stone-900" : "text-stone-500"}`}>
+                  {checked ? t("standards.common.active", "사용") : t("standards.common.inactive", "미사용")}
+                </span>
+                <StatusToggle
+                  checked={checked}
+                  onChange={(nextValue) => setDraft((current) => ({
                     ...current,
                     notificationPolicy: {
                       ...current.notificationPolicy,
-                      [item.key]: !current.notificationPolicy[item.key],
+                      [item.key]: nextValue,
                     },
-                  }))
-                }
-                className={`min-w-[88px] rounded-full border px-3 py-1.5 text-xs font-semibold transition ${checked ? "border-emerald-200 bg-emerald-100 text-emerald-800" : "border-stone-900 bg-stone-950 text-white"}`}
-              >
-                {checked ? t("standards.common.active", "사용") : t("standards.common.inactive", "미사용")}
-              </button>
+                  }))}
+                  srLabel={t(item.labelPath, item.fallback)}
+                  size="sm"
+                />
+              </div>
             </div>
           );
         })}

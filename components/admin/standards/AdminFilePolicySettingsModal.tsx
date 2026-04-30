@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import StatusToggle from "@/components/common/StatusToggle";
 import { AdminModal, adminModalPrimaryButtonClassName, adminModalSecondaryButtonClassName } from "@/components/admin/layout/AdminModal";
 import { ADMIN_RETENTION_DAY_OPTIONS } from "@/lib/admin/settings/presentation";
 import { runSaveCompanySettingsFlow } from "@/lib/admin/settings/actionFlow";
@@ -18,14 +19,11 @@ function ToggleButtonGroup({ label, activeLabel, inactiveLabel, checked, onChang
   return (
     <div className="rounded-3xl border border-stone-200 bg-white p-3">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-semibold text-stone-950">{label}</p>
-        <button
-          type="button"
-          onClick={() => onChange(!checked)}
-          className={`min-w-[96px] rounded-full border px-3 py-1.5 text-xs font-semibold transition ${checked ? "border-emerald-200 bg-emerald-100 text-emerald-800" : "border-stone-900 bg-stone-950 text-white"}`}
-        >
-          {checked ? activeLabel : inactiveLabel}
-        </button>
+        <div>
+          <p className="text-sm font-semibold text-stone-950">{label}</p>
+          <p className="mt-1 text-xs font-semibold text-stone-500">{checked ? activeLabel : inactiveLabel}</p>
+        </div>
+        <StatusToggle checked={checked} onChange={onChange} srLabel={label} size="sm" />
       </div>
     </div>
   );
@@ -63,7 +61,7 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
     return () => {
       isMounted = false;
     };
-  }, [open]);
+  }, [open, t]);
 
   function handleReset() {
     setDraft((current) => ({
@@ -108,21 +106,30 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
         <ToggleButtonGroup
           label={t("standards.filePolicy.deleteMode", "삭제 방식")}
           activeLabel={t("standards.filePolicy.softDelete", "휴지통")}
-          inactiveLabel={t("standards.filePolicy.hardDelete", "즉시 삭제")}
+          inactiveLabel={t("standards.filePolicy.hardDelete", "즉시삭제")}
           checked={draft.filePolicy.softDeleteEnabled}
-          onChange={(softDeleteEnabled) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, softDeleteEnabled } }))}
+          onChange={(softDeleteEnabled) => setDraft((current) => ({
+            ...current,
+            filePolicy: {
+              ...current.filePolicy,
+              softDeleteEnabled,
+              trashRetentionDays: softDeleteEnabled ? current.filePolicy.trashRetentionDays || 5 : current.filePolicy.trashRetentionDays,
+            },
+          }))}
         />
         <div className="rounded-3xl border border-stone-200 bg-stone-50 p-3">
-          <p className="text-sm font-semibold text-stone-950">{t("standards.filePolicy.retentionDays", "실제 삭제 기간")}</p>
+          <p className="text-sm font-semibold text-stone-950">{t("standards.filePolicy.retentionDays", "파일 보관 기간")}</p>
           <div className="mt-3 grid grid-cols-4 gap-2">
             {ADMIN_RETENTION_DAY_OPTIONS.map((days) => {
               const selected = draft.filePolicy.trashRetentionDays === days;
+              const disabled = !draft.filePolicy.softDeleteEnabled;
               return (
                 <button
                   key={days}
                   type="button"
+                  disabled={disabled}
                   onClick={() => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, trashRetentionDays: days } }))}
-                  className={`w-full rounded-full border px-3 py-2 text-sm font-semibold transition ${selected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"}`}
+                  className={`w-full rounded-full border px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400 ${selected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"}`}
                 >
                   {days}{t("standards.filePolicy.daySuffix", "일")}
                 </button>
@@ -132,7 +139,7 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
         </div>
 
         <label className="grid gap-2 rounded-3xl border border-stone-200 bg-stone-50 p-3 text-sm">
-          <span className="font-semibold text-stone-900">{t("standards.filePolicy.warningThreshold", "용량 경고 기준(%)")}</span>
+          <span className="font-semibold text-stone-900">{t("standards.filePolicy.warningThreshold", "용량 상태 기준(%)")}</span>
           <input
             type="number"
             min={1}

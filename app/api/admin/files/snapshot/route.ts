@@ -30,7 +30,8 @@ function buildUsageSummary(activeBytes: number, trashBytes: number, filePolicy: 
   const usedBytes = safeActiveBytes + (filePolicy.includeTrashInUsage ? safeTrashBytes : 0);
   const limitBytes = storageLimitGb * BYTES_PER_GB;
   const usagePercent = Math.min(100, Math.round((usedBytes / limitBytes) * 100));
-  const statusTone = usagePercent >= warningThresholdPercent ? "warning" : "normal";
+  const statusTone = usagePercent >= 100 ? "danger" : usagePercent >= warningThresholdPercent ? "caution" : "normal";
+  const statusLabel = statusTone === "danger" ? "위험" : statusTone === "caution" ? "주의" : "정상";
 
   return {
     usedBytes,
@@ -38,7 +39,7 @@ function buildUsageSummary(activeBytes: number, trashBytes: number, filePolicy: 
     usedLabel: formatBytes(usedBytes),
     limitLabel: formatBytes(limitBytes),
     usagePercent,
-    statusLabel: statusTone === "warning" ? "주의" : "정상",
+    statusLabel,
     statusTone,
   };
 }

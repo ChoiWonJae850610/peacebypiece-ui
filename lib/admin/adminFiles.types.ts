@@ -24,7 +24,7 @@ export type AdminStorageUsageSummary = {
   limitLabel: string;
   usagePercent: number;
   statusLabel: string;
-  statusTone: "normal" | "warning";
+  statusTone: "normal" | "caution" | "danger";
 };
 
 export type AdminFileTabKey = "attachments" | "trash" | "storage";
