@@ -105,7 +105,7 @@ export const adminKo = {
   userAccessPreview: {
     title: "사용자/권한 테스트 구조",
     description: "실제 로그인 연결 전까지 DB 사용자 구조와 현재 권한 policy가 맞는지 환경설정에서 확인하는 준비 패널입니다.",
-    sourceStates: { "db-prepared": "DB 구조 준비", "mock-adapter": "mock 사용자 기준" },
+    sourceStates: { "db-connected": "DB 조회", "db-prepared": "DB 구조 준비", "mock-adapter": "mock 사용자 기준", "mock-fallback": "fallback" },
     userCountLabel: "테스트 사용자",
     testUsersTitle: "역할별 테스트 계정",
     readOnlyBadge: "읽기 전용",
@@ -115,10 +115,11 @@ export const adminKo = {
       "users-table": "users 테이블 SQL 준비",
       "company-users-table": "company_users 역할 연결 SQL 준비",
       "role-policy": "중앙 role / permission policy 연결",
+      "db-user-query": "사용자/역할 실제 DB 조회",
       "login-adapter": "실제 로그인 adapter 연결",
     },
     status: { ready: "준비", pending: "대기" },
-    nextStep: "다음 단계에서는 이 구조를 실제 조회 repository와 관리자 권한 변경 모달로 연결합니다.",
+    nextStep: "다음 단계에서는 관리자 권한 변경 모달과 실제 로그인 adapter를 연결합니다.",
   },
   notificationSection: {
     items: {

@@ -105,7 +105,7 @@ export const adminEn = {
   userAccessPreview: {
     title: "User / Permission Test Structure",
     description: "A preparation panel for checking whether the DB user structure and current permission policy match before real login is connected.",
-    sourceStates: { "db-prepared": "DB structure prepared", "mock-adapter": "Mock user source" },
+    sourceStates: { "db-connected": "DB query", "db-prepared": "DB structure prepared", "mock-adapter": "Mock user source", "mock-fallback": "Fallback" },
     userCountLabel: "Test users",
     testUsersTitle: "Role test accounts",
     readOnlyBadge: "Read only",
@@ -115,6 +115,7 @@ export const adminEn = {
       "users-table": "users table SQL prepared",
       "company-users-table": "company_users role mapping SQL prepared",
       "role-policy": "Central role / permission policy connected",
+      "db-user-query": "Query users and roles from DB",
       "login-adapter": "Real login adapter connected",
     },
     status: { ready: "Ready", pending: "Pending" },

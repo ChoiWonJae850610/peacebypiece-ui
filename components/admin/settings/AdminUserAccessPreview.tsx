@@ -1,6 +1,7 @@
 import { AdminCard } from "@/components/admin/layout/AdminCard";
-import { buildAdminUserAccessViewModel } from "@/lib/admin/settings/userAccessPresentation";
+import { buildAdminUserAccessViewModel, type AdminUserAccessSourceState } from "@/lib/admin/settings/userAccessPresentation";
 import { getI18n } from "@/lib/i18n";
+import type { UserProfile } from "@/types/user";
 
 function PermissionFlag({ active, label }: { active: boolean; label: string }) {
   return (
@@ -10,9 +11,14 @@ function PermissionFlag({ active, label }: { active: boolean; label: string }) {
   );
 }
 
-export default function AdminUserAccessPreview() {
+type AdminUserAccessPreviewProps = {
+  users?: readonly UserProfile[];
+  sourceState?: AdminUserAccessSourceState;
+};
+
+export default function AdminUserAccessPreview({ users, sourceState }: AdminUserAccessPreviewProps) {
   const text = getI18n().admin.userAccessPreview;
-  const viewModel = buildAdminUserAccessViewModel();
+  const viewModel = buildAdminUserAccessViewModel(users, sourceState);
 
   return (
     <AdminCard className="shrink-0 p-4">

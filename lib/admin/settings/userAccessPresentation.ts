@@ -2,7 +2,7 @@ import { ROLE_DISPLAY_GUIDE, formatRoles } from "@/lib/constants/roles";
 import { WORKORDER_SEED_USERS } from "@/lib/data/mock/users";
 import type { UserProfile } from "@/types/user";
 
-export type AdminUserAccessSourceState = "db-prepared" | "mock-adapter";
+export type AdminUserAccessSourceState = "db-connected" | "db-prepared" | "mock-adapter" | "mock-fallback";
 
 export type AdminUserAccessChecklistItem = {
   id: string;
@@ -24,9 +24,12 @@ export type AdminUserAccessViewModel = {
   checklist: AdminUserAccessChecklistItem[];
 };
 
-export function buildAdminUserAccessViewModel(users: readonly UserProfile[] = WORKORDER_SEED_USERS): AdminUserAccessViewModel {
+export function buildAdminUserAccessViewModel(
+  users: readonly UserProfile[] = WORKORDER_SEED_USERS,
+  sourceState: AdminUserAccessSourceState = "mock-adapter",
+): AdminUserAccessViewModel {
   return {
-    sourceState: "mock-adapter",
+    sourceState,
     userCount: users.length,
     users: users.map((user) => ({
       id: user.id,
@@ -41,6 +44,7 @@ export function buildAdminUserAccessViewModel(users: readonly UserProfile[] = WO
       { id: "users-table", done: true },
       { id: "company-users-table", done: true },
       { id: "role-policy", done: true },
+      { id: "db-user-query", done: sourceState === "db-connected" },
       { id: "login-adapter", done: false },
     ],
   };
