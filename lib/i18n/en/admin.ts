@@ -109,6 +109,16 @@ export const adminEn = {
     userCountLabel: "Test users",
     testUsersTitle: "Role test accounts",
     readOnlyBadge: "Read only",
+    manageRolesButton: "Manage roles",
+    roleModal: {
+      title: "User Role Management",
+      description: "A test modal for checking role-based permissions from Settings before real login is connected.",
+      sectionTitle: "Role change test",
+      sectionDescription: "Changing a role recalculates permission badges through the central role policy. This step only validates the screen and does not save to DB yet.",
+      previewBadge: "Permission preview",
+      resetButton: "Reset",
+      closeButton: "Confirm",
+    },
     permissionLabels: { canAssignRoles: "Role admin", canEditInventory: "Inventory edit", canSeeCostSections: "Cost view" },
     checklistTitle: "Migration checklist",
     checklist: {

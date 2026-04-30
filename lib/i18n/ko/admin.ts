@@ -109,6 +109,16 @@ export const adminKo = {
     userCountLabel: "테스트 사용자",
     testUsersTitle: "역할별 테스트 계정",
     readOnlyBadge: "읽기 전용",
+    manageRolesButton: "권한 관리",
+    roleModal: {
+      title: "사용자 권한 관리",
+      description: "실제 로그인 전환 전까지 환경설정에서 역할별 권한 결과를 점검하는 테스트 모달입니다.",
+      sectionTitle: "역할 변경 테스트",
+      sectionDescription: "역할 버튼을 바꾸면 중앙 role policy 기준으로 권한 뱃지가 즉시 재계산됩니다. 현재 단계에서는 DB 저장 없이 화면 검증만 수행합니다.",
+      previewBadge: "권한 미리보기",
+      resetButton: "초기값 복원",
+      closeButton: "확인",
+    },
     permissionLabels: { canAssignRoles: "권한관리", canEditInventory: "재고수정", canSeeCostSections: "원가조회" },
     checklistTitle: "전환 체크리스트",
     checklist: {

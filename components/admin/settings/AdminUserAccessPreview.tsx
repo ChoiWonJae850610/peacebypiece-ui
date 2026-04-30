@@ -1,4 +1,15 @@
+"use client";
+
+import { useMemo, useState } from "react";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
+import {
+  AdminModal,
+  AdminModalSection,
+  adminModalPrimaryButtonClassName,
+  adminModalSecondaryButtonClassName,
+} from "@/components/admin/layout/AdminModal";
+import { buildUserRoleState, ROLE_OPTIONS } from "@/lib/constants/roles";
+import type { RoleType } from "@/types/permission";
 import { buildAdminUserAccessViewModel, type AdminUserAccessSourceState } from "@/lib/admin/settings/userAccessPresentation";
 import { getI18n } from "@/lib/i18n";
 import type { UserProfile } from "@/types/user";
@@ -16,9 +27,23 @@ type AdminUserAccessPreviewProps = {
   sourceState?: AdminUserAccessSourceState;
 };
 
+function applyRoleToUser(user: UserProfile, role: RoleType): UserProfile {
+  return {
+    ...user,
+    ...buildUserRoleState([role]),
+  };
+}
+
 export default function AdminUserAccessPreview({ users, sourceState }: AdminUserAccessPreviewProps) {
   const text = getI18n().admin.userAccessPreview;
-  const viewModel = buildAdminUserAccessViewModel(users, sourceState);
+  const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
+  const [workingUsers, setWorkingUsers] = useState<readonly UserProfile[]>(users ?? []);
+  const effectiveUsers = workingUsers.length > 0 ? workingUsers : users;
+  const viewModel = useMemo(() => buildAdminUserAccessViewModel(effectiveUsers, sourceState), [effectiveUsers, sourceState]);
+
+  const handleRoleChange = (userId: string, role: RoleType) => {
+    setWorkingUsers((current) => (current.length > 0 ? current : users ?? []).map((user) => (user.id === userId ? applyRoleToUser(user, role) : user)));
+  };
 
   return (
     <AdminCard className="shrink-0 p-4">
@@ -30,9 +55,14 @@ export default function AdminUserAccessPreview({ users, sourceState }: AdminUser
           </div>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-500">{text.description}</p>
         </div>
-        <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-right">
-          <p className="text-xs font-semibold text-stone-500">{text.userCountLabel}</p>
-          <p className="mt-1 text-2xl font-semibold text-stone-950">{viewModel.userCount}</p>
+        <div className="flex flex-col items-stretch gap-2 sm:flex-row lg:flex-col lg:items-end">
+          <button type="button" className={adminModalPrimaryButtonClassName} onClick={() => setIsRoleModalOpen(true)}>
+            {text.manageRolesButton}
+          </button>
+          <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-right">
+            <p className="text-xs font-semibold text-stone-500">{text.userCountLabel}</p>
+            <p className="mt-1 text-2xl font-semibold text-stone-950">{viewModel.userCount}</p>
+          </div>
         </div>
       </div>
 
@@ -40,7 +70,7 @@ export default function AdminUserAccessPreview({ users, sourceState }: AdminUser
         <section className="rounded-3xl border border-stone-200 bg-stone-50 p-3.5">
           <div className="flex items-center justify-between gap-3">
             <h3 className="text-sm font-semibold text-stone-950">{text.testUsersTitle}</h3>
-            <span className="text-xs font-semibold text-stone-400">{text.readOnlyBadge}</span>
+            <span className="text-xs font-semibold text-stone-400">{text.roleModal.previewBadge}</span>
           </div>
           <div className="mt-3 grid gap-2">
             {viewModel.users.map((user) => (
@@ -81,6 +111,59 @@ export default function AdminUserAccessPreview({ users, sourceState }: AdminUser
           </div>
         </section>
       </div>
+
+      <AdminModal
+        open={isRoleModalOpen}
+        title={text.roleModal.title}
+        description={text.roleModal.description}
+        onClose={() => setIsRoleModalOpen(false)}
+        maxWidthClass="md:max-w-4xl"
+        footer={
+          <div className="flex flex-wrap justify-end gap-2">
+            <button type="button" className={adminModalSecondaryButtonClassName} onClick={() => setWorkingUsers(users ?? [])}>
+              {text.roleModal.resetButton}
+            </button>
+            <button type="button" className={adminModalPrimaryButtonClassName} onClick={() => setIsRoleModalOpen(false)}>
+              {text.roleModal.closeButton}
+            </button>
+          </div>
+        }
+      >
+        <AdminModalSection title={text.roleModal.sectionTitle} description={text.roleModal.sectionDescription}>
+          <div className="grid gap-3">
+            {viewModel.users.map((user) => {
+              const sourceUser = (effectiveUsers ?? []).find((item) => item.id === user.id);
+              return (
+                <div key={user.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-stone-950">{user.name}</p>
+                      <p className="mt-1 text-xs font-semibold text-stone-500">{user.roleSummary}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {ROLE_OPTIONS.map((option) => {
+                        const active = sourceUser?.role === option.role;
+                        return (
+                          <button
+                            key={`${user.id}-${option.role}`}
+                            type="button"
+                            className={`rounded-full border px-3 py-2 text-xs font-semibold transition ${
+                              active ? "border-stone-950 bg-stone-950 text-white" : "border-stone-200 bg-white text-stone-600 hover:border-stone-300"
+                            }`}
+                            onClick={() => handleRoleChange(user.id, option.role)}
+                          >
+                            {option.title}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </AdminModalSection>
+      </AdminModal>
     </AdminCard>
   );
 }
