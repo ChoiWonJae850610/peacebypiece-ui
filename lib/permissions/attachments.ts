@@ -55,8 +55,28 @@ export function getAttachmentPreviewUrl(attachment: Attachment | null | undefine
   return normalizeAttachmentUrl(attachment?.previewUrl) || normalizeAttachmentUrl(attachment?.url);
 }
 
+function createAttachmentFileRouteUrl(input: { key?: string | null; download?: boolean; fileName?: string | null }): string {
+  const key = normalizeAttachmentUrl(input.key);
+  if (!key) return "";
+
+  const params = new URLSearchParams({ key });
+  if (input.download) params.set("download", "1");
+  const fileName = normalizeAttachmentUrl(input.fileName);
+  if (fileName) params.set("name", fileName);
+
+  return `/api/workorders/attachments/file?${params.toString()}`;
+}
+
 export function getAttachmentThumbnailUrl(attachment: Attachment | null | undefined): string {
   return normalizeAttachmentUrl(attachment?.thumbnailUrl) || getAttachmentPreviewUrl(attachment);
+}
+
+export function getAttachmentDownloadUrl(attachment: Attachment | null | undefined): string {
+  return createAttachmentFileRouteUrl({ key: attachment?.storageKey ?? attachment?.url, download: true, fileName: attachment?.name });
+}
+
+export function canDownloadAttachment(attachment: Attachment | null | undefined): boolean {
+  return Boolean(getAttachmentDownloadUrl(attachment));
 }
 
 export function canPreviewAttachment(attachment: Attachment | null | undefined): boolean {

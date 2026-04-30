@@ -8,7 +8,7 @@ import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import type { Attachment } from "@/types/workorder";
 import { MODAL_EXCEPTION_PRESETS } from "@/components/common/modal/modalPresets";
 import { useI18n } from "@/lib/i18n";
-import { getAttachmentPreviewUrl } from "@/lib/permissions/attachments";
+import { getAttachmentDownloadUrl, getAttachmentPreviewUrl } from "@/lib/permissions/attachments";
 
 function DownloadIcon() {
   return (
@@ -34,6 +34,7 @@ export default function AttachmentPreviewModal({
   const { i18n } = useI18n();
   const copy = i18n.common.ui.modal.attachmentPreview;
   const previewUrl = getAttachmentPreviewUrl(attachment);
+  const downloadUrl = getAttachmentDownloadUrl(attachment);
 
   useModalEnvironment({ open, dialogRef, onClose });
 
@@ -54,7 +55,7 @@ export default function AttachmentPreviewModal({
             <div className="flex flex-wrap items-center justify-end gap-2">
               {canDownload ? (
                 <a
-                  href={previewUrl}
+                  href={downloadUrl || previewUrl}
                   download={attachment.name}
                   target="_blank"
                   rel="noreferrer"

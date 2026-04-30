@@ -29,13 +29,27 @@ function createWorkerRedirectResponse(url: string, cacheState: R2UrlCacheState):
   return response;
 }
 
+function sanitizeDownloadFileName(value: string | null): string {
+  const normalized = typeof value === "string" ? value.trim() : "";
+  const safeName = normalized.replace(/[\\/\r\n\0"]/g, "_");
+  return safeName || "attachment";
+}
+
+function createContentDisposition(fileName: string): string {
+  const fallback = fileName.replace(/[^\x20-\x7E]/g, "_");
+  return `attachment; filename="${fallback}"; filename*=UTF-8''${encodeURIComponent(fileName)}`;
+}
+
 export async function GET(request: NextRequest) {
   const key = request.nextUrl.searchParams.get("key")?.trim() ?? "";
+  const isDownloadRequest = request.nextUrl.searchParams.get("download") === "1";
+  const downloadName = sanitizeDownloadFileName(request.nextUrl.searchParams.get("name"));
+
   if (!key || !isSafeStorageKey(key)) {
     return NextResponse.json({ error: "INVALID_STORAGE_KEY" }, { status: 400 });
   }
 
-  if (isR2WorkerUploadConfigured()) {
+  if (isR2WorkerUploadConfigured() && !isDownloadRequest) {
     try {
       const cachedWorkerUrl = getOrSetCachedR2Url({
         purpose: "file",
@@ -59,7 +73,10 @@ export async function GET(request: NextRequest) {
     const headers = new Headers();
     if (object.contentType) headers.set("content-type", object.contentType);
     if (object.contentLength) headers.set("content-length", String(object.contentLength));
-    headers.set("cache-control", "private, max-age=300, stale-while-revalidate=60");
+    headers.set("cache-control", isDownloadRequest ? "no-store" : "private, max-age=300, stale-while-revalidate=60");
+    if (isDownloadRequest) {
+      headers.set("content-disposition", createContentDisposition(downloadName));
+    }
 
     return new NextResponse(createReadableStream(object.body), { status: 200, headers });
   } catch (error) {
