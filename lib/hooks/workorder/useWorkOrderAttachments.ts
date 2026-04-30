@@ -18,7 +18,7 @@ import {
 import { deleteWorkOrderAttachmentInDb } from "@/lib/workorder/attachments/attachmentDeleteApiClient";
 import { setPrimaryDesignAttachmentInDb } from "@/lib/workorder/attachments/attachmentPrimaryApiClient";
 import { uploadWorkOrderAttachmentFiles } from "@/lib/workorder/attachments/attachmentUploadApiClient";
-import { WORK_ORDER_ATTACHMENT_POLICY } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
+import { getAttachmentInputAccept, WORK_ORDER_ATTACHMENT_POLICY } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
 import { createMemoReplyInDb, createMemoThreadInDb, deleteMemoInDb, updateMemoInDb } from "@/lib/workorder/memo/memoApiClient";
 import type { Attachment, AttachmentScope, HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 
@@ -57,8 +57,13 @@ export function useWorkOrderAttachments({
   const historyText = i18n.workorder.history;
 
   const handleOpenAttachmentPicker = (scope: AttachmentScope = "attachment") => {
-    setAttachmentPickerScope(scope);
-    openAttachmentPickerTrigger(attachmentInputRef, canEditSideDraftContent && canUploadOfficialAttachments);
+    const normalizedScope = scope === "design" ? "design" : "attachment";
+    setAttachmentPickerScope(normalizedScope);
+    openAttachmentPickerTrigger(
+      attachmentInputRef,
+      canEditSideDraftContent && canUploadOfficialAttachments,
+      getAttachmentInputAccept(normalizedScope),
+    );
   };
 
   const handleAttachmentFiles = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -419,6 +424,7 @@ export function useWorkOrderAttachments({
     });
 
   return {
+    attachmentInputAccept: getAttachmentInputAccept(attachmentPickerScope === "design" ? "design" : "attachment"),
     handleOpenAttachmentPicker,
     handleAttachmentFiles,
     handleDeleteAttachment,

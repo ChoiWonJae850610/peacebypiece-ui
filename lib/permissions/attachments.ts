@@ -17,8 +17,6 @@ export function isOfficialAttachment(attachment: Attachment | null | undefined):
 }
 
 
-export const ATTACHMENT_INPUT_ACCEPT = "image/jpeg,image/png,image/webp,application/pdf,.jpg,.jpeg,.png,.webp,.pdf";
-
 export function getAttachmentType(file: File | { type?: string | null; name?: string | null }): AttachmentType {
   const mimeType = String(file.type ?? "").toLowerCase();
   const fileName = String(file.name ?? "").toLowerCase();

@@ -14,6 +14,7 @@ export default function WorkOrderWorkspace() {
   const {
     appShellRef,
     attachmentInputRef,
+    attachmentInputAccept,
     drawerOpen,
     setDrawerOpen,
     basicInfoOpen,
@@ -249,6 +250,7 @@ export default function WorkOrderWorkspace() {
       />
       <WorkOrderOverlay
         attachmentInputRef={attachmentInputRef}
+        attachmentInputAccept={attachmentInputAccept}
         onAttachmentFilesChange={handleAttachmentFiles}
         toastMessage={toastMessage}
         modalProps={viewModel.modalProps}

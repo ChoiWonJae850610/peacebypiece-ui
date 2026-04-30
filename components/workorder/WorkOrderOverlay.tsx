@@ -1,6 +1,5 @@
 import type { ChangeEventHandler, ComponentProps, RefObject } from "react";
 import ToastMessage from "@/components/common/ToastMessage";
-import { ATTACHMENT_INPUT_ACCEPT } from "@/lib/permissions/attachments";
 import AttachmentDeleteConfirmModal from "@/components/common/modal/AttachmentDeleteConfirmModal";
 import AttachmentPreviewModal from "@/components/common/modal/AttachmentPreviewModal";
 import CreateWorkOrderModal from "@/components/common/modal/CreateWorkOrderModal";
@@ -12,6 +11,7 @@ import PermissionModal from "@/components/common/modal/PermissionModal";
 
 type WorkOrderOverlayProps = {
   attachmentInputRef: RefObject<HTMLInputElement | null>;
+  attachmentInputAccept: string;
   onAttachmentFilesChange: ChangeEventHandler<HTMLInputElement>;
   toastMessage: ComponentProps<typeof ToastMessage>["message"];
   modalProps: {
@@ -28,6 +28,7 @@ type WorkOrderOverlayProps = {
 
 export default function WorkOrderOverlay({
   attachmentInputRef,
+  attachmentInputAccept,
   onAttachmentFilesChange,
   toastMessage,
   modalProps,
@@ -46,7 +47,7 @@ export default function WorkOrderOverlay({
       <input
         ref={attachmentInputRef}
         type="file"
-        accept={ATTACHMENT_INPUT_ACCEPT}
+        accept={attachmentInputAccept}
         multiple
         className="sr-only"
         onChange={onAttachmentFilesChange}

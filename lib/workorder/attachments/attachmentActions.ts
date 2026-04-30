@@ -5,8 +5,10 @@ import type { ChangeEvent, RefObject } from "react";
 export function openAttachmentPickerTrigger(
   attachmentInputRef: RefObject<HTMLInputElement | null>,
   canUploadOfficialAttachments: boolean,
+  accept?: string,
 ) {
   if (!canUploadOfficialAttachments) return;
+  if (accept) attachmentInputRef.current?.setAttribute("accept", accept);
   attachmentInputRef.current?.click();
 }
 

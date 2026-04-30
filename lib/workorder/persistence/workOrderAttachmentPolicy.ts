@@ -16,6 +16,10 @@ export const WORK_ORDER_ATTACHMENT_POLICY = {
     design: ["jpg", "jpeg", "png", "webp"],
     attachment: ["jpg", "jpeg", "png", "webp", "pdf"],
   },
+  inputAccept: {
+    design: "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp",
+    attachment: "image/jpeg,image/png,image/webp,application/pdf,.jpg,.jpeg,.png,.webp,.pdf",
+  },
   messages: {
     maxFilesExceeded: "파일은 디자인과 첨부를 합쳐 최대 20개까지 등록할 수 있습니다.",
     invalidFileType: "허용되지 않는 파일 형식입니다. 디자인은 JPG/PNG/WEBP, 첨부는 JPG/PNG/WEBP/PDF만 등록할 수 있습니다.",
@@ -31,6 +35,10 @@ export const WORK_ORDER_ATTACHMENT_POLICY = {
 
 export function normalizeAttachmentUploadScope(value: unknown): WorkOrderAttachmentUploadScope {
   return value === "design" ? "design" : "attachment";
+}
+
+export function getAttachmentInputAccept(scope: WorkOrderAttachmentUploadScope): string {
+  return WORK_ORDER_ATTACHMENT_POLICY.inputAccept[scope];
 }
 
 export function getAttachmentFileExtension(fileName: string): string {
@@ -62,6 +70,14 @@ export function validateAttachmentFile(input: {
     return {
       ok: false,
       error: "ATTACHMENT_FILE_TYPE_NOT_ALLOWED",
+      message: WORK_ORDER_ATTACHMENT_POLICY.messages.invalidFileType,
+    };
+  }
+
+  if (!Number.isFinite(input.fileSize) || input.fileSize <= 0) {
+    return {
+      ok: false,
+      error: "ATTACHMENT_FILE_EMPTY",
       message: WORK_ORDER_ATTACHMENT_POLICY.messages.invalidFileType,
     };
   }

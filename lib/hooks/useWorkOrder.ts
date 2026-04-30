@@ -138,6 +138,7 @@ export function useWorkOrder() {
   return {
     appShellRef: uiState.appShellRef,
     attachmentInputRef: uiState.attachmentInputRef,
+    attachmentInputAccept: attachmentState.attachmentInputAccept,
     drawerOpen: uiState.drawerOpen,
     setDrawerOpen: uiState.setDrawerOpen,
     basicInfoOpen: uiState.basicInfoOpen,
