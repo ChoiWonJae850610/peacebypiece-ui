@@ -49,7 +49,7 @@ export const adminKo = {
   },
   historySection: {
     title: "히스토리",
-    summary: "요약 형식: 설명 · 사용자",
+    summary: "관리자에게 필요한 주요 작업 기록만 표시합니다.",
     countSuffix: "건",
   },
   navigation: { dashboard: "대시보드", workorder: "작업지시서", partners: "협력업체 관리", storage: "저장소 관리", statistics: "통계정보", history: "히스토리", settings: "환경설정", dbConnected: "DB 상태 점검" },
@@ -82,6 +82,7 @@ export const adminKo = {
     detailLabels: { status: "상태", from: "변경 전", to: "변경 후", actor: "작업자", user: "사용자", role: "역할", target: "대상", workOrderId: "작업지시서", fileName: "파일명", partnerName: "협력업체", source: "데이터 기준", type: "유형", memo: "메모", message: "내용" },
     targetTypes: { workorder: "작업지시서", partner: "협력업체", file: "파일", settings: "환경설정", user: "사용자" },
     systemActor: "시스템",
+    summaries: { WORKORDER_CREATED: "작업지시서 생성됨", STATUS_CHANGED: "상태 변경됨", FILE_UPLOADED: "첨부파일 등록됨", FILE_DELETED: "첨부파일 삭제됨", PARTNER_UPDATED: "협력업체 수정됨", SETTINGS_CHANGED: "환경설정 변경됨", PARTNER_CREATED: "협력업체 등록됨", PARTNER_DELETED: "협력업체 삭제됨" },
     unknownLabel: "확인 필요",
   },
   topbar: {

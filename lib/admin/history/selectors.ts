@@ -58,12 +58,24 @@ export function dedupeAdminHistoryEvents<T extends { id: string }>(items: T[]): 
   });
 }
 
+export function isAdminHistoryDisplayable(item: AdminHistoryEvent): boolean {
+  const actorName = (item.actor.name || item.actorName || "").toLowerCase();
+  const action = item.action.toUpperCase();
+  if (actorName === "system" && (item.target.type === "settings" || action === "SETTINGS_CHANGED")) return false;
+  return true;
+}
+
 export function selectAdminHistoryEventsByCategory(items: AdminHistoryEvent[], historyFilter: AdminHistoryFilter): AdminHistoryEvent[] {
-  return dedupeAdminHistoryEvents(items).filter((item) => historyFilter === "all" || item.category === historyFilter);
+  return dedupeAdminHistoryEvents(items)
+    .filter(isAdminHistoryDisplayable)
+    .filter((item) => historyFilter === "all" || item.category === historyFilter);
 }
 
 export function filterAdminHistoryEvents(historyLogs: HistoryLog[], historyFilter: AdminHistoryFilter, currentRoles: RoleType[]): AdminHistoryEvent[] {
-  return dedupeAdminHistoryEvents(filterHistoryLogs(historyLogs, true, historyFilter, currentRoles).map(toAdminHistoryEvent));
+  return selectAdminHistoryEventsByCategory(
+    dedupeAdminHistoryEvents(filterHistoryLogs(historyLogs, true, historyFilter, currentRoles).map(toAdminHistoryEvent)),
+    historyFilter,
+  );
 }
 
 export function selectAdminHistoryFilterOptions(historyFilter: AdminHistoryFilter): AdminHistoryFilterOption[] {
@@ -109,7 +121,6 @@ export function matchesAdminHistorySearch(item: AdminHistoryEvent, query: string
   return haystacks.some((value) => value?.toLowerCase().includes(normalizedQuery));
 }
 
-
 export type AdminHistorySelectOption = {
   value: string;
   label: string;
@@ -137,7 +148,7 @@ export function matchesAdminHistoryDateFilter(item: AdminHistoryEvent, dateFilte
 }
 
 export function selectAdminHistoryUserOptions(items: AdminHistoryEvent[]): AdminHistorySelectOption[] {
-  const users = Array.from(new Set(items.map((item) => item.actor.name || item.actorName).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+  const users = Array.from(new Set(items.filter(isAdminHistoryDisplayable).map((item) => item.actor.name || item.actorName).filter(Boolean))).sort((a, b) => a.localeCompare(b));
   return [ADMIN_HISTORY_USER_ALL_OPTION, ...users.map((user) => ({ value: user, label: user }))];
 }
 
@@ -148,6 +159,7 @@ export function filterAdminHistoryPageEvents(payload: {
   userFilter: string;
 }) {
   return payload.items.filter((item) => {
+    if (!isAdminHistoryDisplayable(item)) return false;
     if (!matchesAdminHistorySearch(item, payload.searchQuery)) return false;
     if (!matchesAdminHistoryDateFilter(item, payload.dateFilter)) return false;
     if (payload.userFilter !== "all" && (item.actor.name || item.actorName) !== payload.userFilter) return false;

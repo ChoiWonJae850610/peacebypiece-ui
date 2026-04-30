@@ -49,7 +49,7 @@ export const adminEn = {
     },
   historySection: {
     title: "History",
-    summary: "Summary format: description · user",
+    summary: "Shows only admin-relevant operational history.",
     countSuffix: " items",
   },
   navigation: { dashboard: "Dashboard", workorder: "Work Orders", partners: "Partners", storage: "Storage", statistics: "Statistics", history: "History", settings: "Settings", dbConnected: "DB status audit" },
@@ -82,6 +82,7 @@ export const adminEn = {
     detailLabels: { status: "Status", from: "Before", to: "After", actor: "Actor", user: "User", role: "Role", target: "Target", workOrderId: "Work Order", fileName: "File Name", partnerName: "Partner", source: "Data Source", type: "Type", memo: "Memo", message: "Message" },
     targetTypes: { workorder: "Work Order", partner: "Partner", file: "File", settings: "Settings", user: "User" },
     systemActor: "System",
+    summaries: { WORKORDER_CREATED: "Work order created", STATUS_CHANGED: "Status changed", FILE_UPLOADED: "File uploaded", FILE_DELETED: "File deleted", PARTNER_UPDATED: "Partner updated", SETTINGS_CHANGED: "Settings changed", PARTNER_CREATED: "Partner created", PARTNER_DELETED: "Partner deleted" },
     unknownLabel: "Needs Review",
   },
   topbar: {

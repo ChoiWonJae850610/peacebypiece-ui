@@ -7,6 +7,23 @@ const adminI18n = i18n.admin;
 const commonUi = i18n.common.ui;
 type AdminI18n = ReturnType<typeof getI18n>["admin"];
 
+const HIDDEN_DETAIL_LABELS = new Set([
+  "companyId",
+  "company_id",
+  "partnerId",
+  "partner_id",
+  "rawAction",
+  "raw_action",
+  "actionType",
+  "action_type",
+  "targetId",
+  "target_id",
+  "targetType",
+  "target_type",
+  "userId",
+  "user_id",
+]);
+
 export type AdminHistoryDetailLineViewModel = {
   key: string;
   label: string | null;
@@ -54,7 +71,7 @@ function displayHistoryTargetType(value: string, translations: AdminI18n): strin
 }
 
 function displayHistoryDetailLabel(label: string | null | undefined, translations: AdminI18n): string | null {
-  if (!label) return null;
+  if (!label || HIDDEN_DETAIL_LABELS.has(label) || HIDDEN_DETAIL_LABELS.has(normalizeHistoryToken(label))) return null;
   const labelMap = translations.historyPage.detailLabels as Record<string, string> | undefined;
   return labelMap?.[label] ?? labelMap?.[normalizeHistoryToken(label)] ?? label;
 }
@@ -76,12 +93,31 @@ function displayHistoryValue(value: string, translations: AdminI18n): string {
   return result.replaceAll("system", translations.historyPage.systemActor ?? "system");
 }
 
+function buildAdminHistorySummary(item: AdminHistoryEvent, translations: AdminI18n): string {
+  const summaries = translations.historyPage.summaries as Record<string, string> | undefined;
+  const actionSummary = summaries?.[item.action] ?? summaries?.[item.action.toUpperCase()];
+  if (actionSummary) return actionSummary;
+
+  if (item.transition) {
+    return `${displayHistoryStatus(item.transition.from, translations)} → ${displayHistoryStatus(item.transition.to, translations)}`;
+  }
+
+  if (item.message || item.summary) return displayHistoryValue(item.message || item.summary, translations);
+
+  return displayHistoryTargetType(item.target.type, translations);
+}
+
 function buildDetailLineViewModel(itemId: string, detailLines: AdminHistoryEvent["detailLines"], translations: AdminI18n): AdminHistoryDetailLineViewModel[] {
-  return (detailLines ?? []).map((detail, index) => ({
-    key: `${itemId}-detail-${index}`,
-    label: displayHistoryDetailLabel(detail.label, translations),
-    value: displayHistoryValue(detail.value, translations),
-  }));
+  return (detailLines ?? []).flatMap((detail, index) => {
+    const label = displayHistoryDetailLabel(detail.label, translations);
+    if (detail.label && !label) return [];
+
+    return [{
+      key: `${itemId}-detail-${index}`,
+      label,
+      value: displayHistoryValue(detail.value, translations),
+    }];
+  });
 }
 
 function buildTransitionViewModel(item: AdminHistoryEvent, translations: AdminI18n): AdminHistoryEvent["transition"] {
@@ -93,18 +129,20 @@ function buildTransitionViewModel(item: AdminHistoryEvent, translations: AdminI1
 }
 
 export function buildAdminHistoryItemViewModel(item: AdminHistoryEvent, open: boolean, translations: AdminI18n = adminI18n): AdminHistoryItemViewModel {
-  const hasDetails = Boolean(item.transition || (item.detailLines && item.detailLines.length > 0));
+  const detailLines = buildDetailLineViewModel(item.id, item.detailLines, translations);
+  const transition = buildTransitionViewModel(item, translations);
+  const hasDetails = Boolean(transition || detailLines.length > 0);
 
   return {
     id: item.id,
     action: displayHistoryAction(item.action, translations),
     actionToneClass: getAdminHistoryToneClass(item.tone),
     time: item.occurredAt,
-    summary: displayHistoryValue(item.summary, translations),
+    summary: buildAdminHistorySummary(item, translations),
     hasDetails,
     detailToggleLabel: hasDetails ? (open ? commonUi.common.collapse : commonUi.common.detail) : null,
-    transition: buildTransitionViewModel(item, translations),
-    detailLines: buildDetailLineViewModel(item.id, item.detailLines, translations),
+    transition,
+    detailLines,
   };
 }
 
