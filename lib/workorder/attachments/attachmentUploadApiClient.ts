@@ -28,6 +28,15 @@ type AttachmentUploadPrepareResult = {
   message?: string;
 };
 
+function markThumbnailUnavailable(target: AttachmentUploadTarget): AttachmentUploadTarget {
+  return {
+    ...target,
+    thumbnailStorageKey: null,
+    thumbnailUploadUrl: null,
+    thumbnailContentType: null,
+  };
+}
+
 async function readJson<T>(response: Response, fallback: T): Promise<T> {
   return (await response.json().catch(() => fallback)) as T;
 }
@@ -173,27 +182,37 @@ export async function uploadWorkOrderAttachmentFiles(payload: {
       };
     }
 
+    const completedUploadTargets: AttachmentUploadTarget[] = [];
+
     for (let index = 0; index < payload.files.length; index += 1) {
       const file = payload.files[index];
       const target = uploadTargets[index];
       await putBlobToUploadUrl(file, target);
 
-      const thumbnailFile = await createAttachmentThumbnailFile(file, target);
-      if (thumbnailFile && target.thumbnailStorageKey && target.thumbnailUploadUrl) {
-        await putBlobToUploadUrl(thumbnailFile, {
-          storageKey: target.thumbnailStorageKey,
-          uploadUrl: target.thumbnailUploadUrl,
-          method: target.method,
-          headers: { "Content-Type": target.thumbnailContentType || "image/webp" },
-        });
+      let completedTarget = target;
+      try {
+        const thumbnailFile = await createAttachmentThumbnailFile(file, target);
+        if (thumbnailFile && target.thumbnailStorageKey && target.thumbnailUploadUrl) {
+          await putBlobToUploadUrl(thumbnailFile, {
+            storageKey: target.thumbnailStorageKey,
+            uploadUrl: target.thumbnailUploadUrl,
+            method: target.method,
+            headers: { "Content-Type": target.thumbnailContentType || "image/webp" },
+          });
+        }
+      } catch (thumbnailError) {
+        console.warn("[ATTACHMENT_THUMBNAIL_UPLOAD_SKIPPED]", thumbnailError);
+        completedTarget = markThumbnailUnavailable(target);
       }
+
+      completedUploadTargets.push(completedTarget);
     }
 
     const attachments = await completeWorkOrderAttachmentUploads({
       workOrder: payload.workOrder,
       currentUser: payload.currentUser,
       scope: payload.scope,
-      uploadTargets,
+      uploadTargets: completedUploadTargets,
     });
 
     return { attachments };

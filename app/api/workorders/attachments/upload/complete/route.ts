@@ -136,6 +136,7 @@ export async function POST(request: NextRequest) {
 
     for (const target of uploadTargets) {
       deleteCachedR2UrlsByKey(target.storageKey);
+      if (target.thumbnailStorageKey) deleteCachedR2UrlsByKey(target.thumbnailStorageKey);
 
       const provisionalAttachment: Attachment = {
         id: target.storageKey,

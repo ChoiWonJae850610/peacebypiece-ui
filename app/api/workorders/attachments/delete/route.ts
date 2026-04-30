@@ -95,6 +95,7 @@ export async function POST(request: NextRequest) {
         workOrderId: target.order_id,
         fileName: target.original_name ?? null,
         storageKey: target.storage_key ?? null,
+        thumbnailKey: target.thumbnail_key ?? null,
         trashMode: softDeleteEnabled ? "soft-delete" : "immediate-delete",
         deleteReason: readText(payload?.deleteReason),
       },
