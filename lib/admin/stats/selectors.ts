@@ -110,8 +110,8 @@ export function buildAdminPeriodOptions(selectedPeriod: AdminStatsPeriodKey) {
 }
 
 export function buildAdminRoundDistribution(rows: AdminRoundCountRow[]): AdminStatsRatioPoint[] {
-  const fallback = ["1차", "2차", "3차"];
-  const normalized = rows.map((row) => ({ label: row.round_label || adminStatsText.unknownLabel, value: toAdminStatNumber(row.count_value) }));
+  const fallback = [adminStatsText.productionRounds.first, adminStatsText.productionRounds.second, adminStatsText.productionRounds.thirdOrMore];
+  const normalized = rows.map((row) => ({ label: row.round_label === "1차" ? adminStatsText.productionRounds.first : row.round_label === "2차" ? adminStatsText.productionRounds.second : row.round_label === "3차 이상" ? adminStatsText.productionRounds.thirdOrMore : row.round_label || adminStatsText.unknownLabel, value: toAdminStatNumber(row.count_value) }));
   return normalized.length > 0 ? normalized : fallback.map((label) => ({ label, value: 0 }));
 }
 

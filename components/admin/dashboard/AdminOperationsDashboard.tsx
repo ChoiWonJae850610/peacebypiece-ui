@@ -136,7 +136,7 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
                 return (
                   <div key={stage.id} className="flex min-w-0 flex-1 flex-col items-center justify-end gap-2">
                     <div className="flex h-full w-full items-end justify-center">
-                      <div className="w-full max-w-10 rounded-t-2xl bg-[var(--admin-theme-surface)] shadow-sm" style={{ height: `${height}%` }} aria-label={`${stage.label} ${stage.value}건`} />
+                      <div className="w-full max-w-10 rounded-t-2xl bg-[var(--admin-theme-surface)] shadow-sm" style={{ height: `${height}%` }} aria-label={`${stage.label} ${stage.value}${t("common.countUnit", "건")}`} />
                     </div>
                     <div className="text-center">
                       <p className="text-sm font-semibold text-stone-950">{stage.value}</p>

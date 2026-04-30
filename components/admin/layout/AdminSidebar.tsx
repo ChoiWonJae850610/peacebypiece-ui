@@ -129,7 +129,7 @@ export default function AdminSidebar({ companyName, appVersion, navigationItems 
         ) : null}
       </div>
 
-      <nav className="mt-5 flex min-h-0 flex-1 flex-col justify-between gap-2.5 overflow-y-auto pb-1" aria-label="관리자 메뉴">
+      <nav className="mt-5 flex min-h-0 flex-1 flex-col justify-between gap-2.5 overflow-y-auto pb-1" aria-label={t("common.adminMenu", "관리자 메뉴")}>
         {navigationItems.map((item) => {
           const itemClassName = `flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium transition ${
             item.active ? "bg-stone-100 text-stone-950" : "text-stone-600 hover:bg-stone-50 hover:text-stone-950"

@@ -11,6 +11,8 @@ export const adminEn = {
     summary: "Summary",
     move: "Go",
     preparing: "Preparing",
+    adminMenu: "Admin menu",
+    countUnit: "items",
   },
   filesPage: {
     title: "Storage",
@@ -90,7 +92,7 @@ export const adminEn = {
       priority: { review: "Review needed", inspection: "Inspection needed", order: "Order check" },
     },
   },
-  filesSummary: { title: "Storage usage", description: "Review attachment usage, recent uploads, and file types using the same storage basis.", periods: { 7: "7 days", 15: "15 days", 30: "30 days" }, uploadAmount: "Uploads", count: "Count", fileType: "File type", countSuffix: "items", totalUsage: "Total usage", attachments: "Attachments", trash: "Trash", retentionPeriod: "Storage period", usage: "Usage", refreshLabel: "Refresh storage data", documents: "Documents", designs: "Designs", others: "Other" },
+  filesSummary: { title: "Storage usage", description: "Review attachment usage, recent uploads, and file types using the same storage basis.", periods: { 7: "7 days", 15: "15 days", 30: "30 days" }, uploadAmount: "Uploads", count: "Count", fileType: "File type", countSuffix: "items", totalUsage: "Total usage", attachments: "Attachments", trash: "Trash", retentionPeriod: "Storage period", usage: "Usage", refreshLabel: "Refresh storage data", documents: "Documents", designs: "Designs", others: "Other", statuses: { normal: "Normal", caution: "Caution", danger: "Risk" }, units: { count: "items", day: "days" } },
   filesList: { title: "Attachments", sort: { latest: "Newest", size: "By size", workorder: "By work order" }, selectAll: "Select all", clearAll: "Clear all", delete: "Delete", restore: "Restore", purge: "Permanently delete", empty: "No attachments to display.", trashEmpty: "No files are currently in trash.", columns: { select: "Select", workorder: "Work order", createdAt: "Created", deletedAt: "Deleted", fileName: "File name", type: "Type", size: "Size" }, fileTypes: { document: "Document", design: "Design", other: "Other" } },
   trashPage: { title: "Trash" },
 
@@ -355,6 +357,7 @@ export const adminEn = {
     countSuffix: "items",
     flowCountSuffix: "items",
     unknownLabel: "Uncategorized",
+    productionRounds: { first: "Round 1", second: "Round 2", thirdOrMore: "Round 3+" },
     periods: { sevenDays: "7 days", fifteenDays: "15 days", thirtyDays: "30 days", monthly: "Monthly", custom: "Custom" },
     metrics: {
       reviewWaiting: { label: "Review waiting", description: "Work before order that needs admin review" },

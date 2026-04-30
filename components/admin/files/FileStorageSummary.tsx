@@ -27,6 +27,18 @@ function getUsageCardValue(cards: AdminFileUsageCard[], index: number, fallback 
   return cards[index]?.value ?? fallback;
 }
 
+function translateStorageValue(value: string, t: ReturnType<typeof useAdminTranslation>) {
+  if (value.endsWith("개")) return value.replace("개", t("filesSummary.units.count", "개"));
+  if (value.endsWith("일")) return value.replace("일", t("filesSummary.units.day", "일"));
+  return value;
+}
+
+function translateStorageStatus(tone: AdminStorageUsageSummary["statusTone"], fallback: string, t: ReturnType<typeof useAdminTranslation>) {
+  if (tone === "danger") return t("filesSummary.statuses.danger", fallback);
+  if (tone === "caution") return t("filesSummary.statuses.caution", fallback);
+  return t("filesSummary.statuses.normal", fallback);
+}
+
 function translateFileTypeLabel(label: string, t: ReturnType<typeof useAdminTranslation>) {
   const normalizedLabel = label.trim().toLowerCase();
   if (label === "문서" || normalizedLabel === "document" || normalizedLabel === "documents") return t("filesSummary.documents", "문서");
@@ -139,9 +151,10 @@ export default function FileStorageSummary({
   const t = useAdminTranslation();
   const isCaution = usageSummary.statusTone === "caution";
   const isDanger = usageSummary.statusTone === "danger";
-  const attachmentCount = getUsageCardValue(usageCards, 1, "0개");
-  const trashCount = getUsageCardValue(usageCards, 2, "0개");
-  const retentionDays = getUsageCardValue(usageCards, 3, "-");
+  const attachmentCount = translateStorageValue(getUsageCardValue(usageCards, 1, "0개"), t);
+  const trashCount = translateStorageValue(getUsageCardValue(usageCards, 2, "0개"), t);
+  const retentionDays = translateStorageValue(getUsageCardValue(usageCards, 3, "-"), t);
+  const statusLabel = translateStorageStatus(usageSummary.statusTone, usageSummary.statusLabel, t);
 
   const summaryItems = [
     { label: t("filesSummary.totalUsage", "전체 사용량"), value: `${usageSummary.usedLabel} / ${usageSummary.limitLabel}` },
@@ -190,7 +203,7 @@ export default function FileStorageSummary({
               <p className="text-2xl font-semibold tracking-tight text-stone-950">{usageSummary.usedLabel}</p>
               <p className="mt-1.5 text-[11px] font-semibold text-stone-500">{t("filesSummary.usage", "사용량")}</p>
             </div>
-            <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${isDanger ? "bg-red-100 text-red-700" : isCaution ? "bg-amber-100 text-amber-900" : "bg-stone-950 text-white"}`}>{usageSummary.statusLabel}</span>
+            <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${isDanger ? "bg-red-100 text-red-700" : isCaution ? "bg-amber-100 text-amber-900" : "bg-stone-950 text-white"}`}>{statusLabel}</span>
           </div>
           <div className="mt-3 flex items-center justify-between gap-3 text-[11px] font-medium text-stone-500">
             <span>{usageSummary.usagePercent}%</span>
