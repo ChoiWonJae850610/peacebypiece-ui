@@ -1,21 +1,18 @@
-Version: 0.9.24
+Version: 0.9.25
 
-Summary: 협력업체 관리 UI 정리
+Summary:
+관리자 화면 i18n 누락 문구 보완 및 APP_VERSION 0.9.25 동기화
 
 Description:
-- 협력업체 관리 상단에서 외주 공정 관리 모달을 바로 열 수 있도록 연결했습니다.
-- 상단 도움말 문구를 i18n 문구 기준으로 표시했습니다.
-- 검색 / 유형 / 상태 필터 영역의 간격과 입력 높이를 정리했습니다.
-- 협력업체 목록의 컬럼 폭과 ellipsis 처리를 보완했습니다.
-- 외주공정 표시 영역의 최대 길이를 제한해 목록 행이 과도하게 늘어나지 않도록 조정했습니다.
-- APP_VERSION을 0.9.24로 동기화했습니다.
+히스토리, 저장소, 협력업체, 환경설정, 대시보드 범위에서 0.9.24 기준 미비된 관리자 i18n 키를 보완했다. 저장소 탭 그룹, 저장소 사용 현황 제목/설명, 협력업체 저장 실패 문구를 ko/en i18n에 추가했고, 일부 직접 노출 문구를 i18n 또는 i18n 상수 기준으로 정리했다. package.json 및 package-lock.json은 수정하지 않았다.
 
 수정 파일 목록:
-- lib/constants/app.ts: APP_VERSION을 0.9.24로 변경
-- components/admin/PartnerMasterSection.tsx: 외주 공정 관리 버튼 연결 및 상단 도움말 표시 추가
-- components/admin/partnerMaster/PartnerMasterHeader.tsx: 외주 공정 관리 버튼 추가
-- components/admin/partnerMaster/PartnerMasterFilters.tsx: 검색 / 유형 / 상태 필터 간격과 입력 높이 정리
-- components/admin/partnerMaster/PartnerMasterList.tsx: 컬럼 폭, ellipsis, 외주공정 표시 길이 정리
+- lib/constants/app.ts: APP_VERSION을 0.9.25로 동기화.
+- lib/i18n/ko/admin.ts: 저장소 탭/요약 문구와 협력업체 저장 실패 문구 i18n 키 추가.
+- lib/i18n/en/admin.ts: ko/admin.ts와 대응되는 영문 i18n 키 추가.
+- components/admin/common/AdminTable.tsx: 로딩 기본 문구를 i18n 상수 기준으로 연결.
+- components/admin/notification/AdminNotificationSettingsSection.tsx: 알림 사용/미사용 토글 문구를 i18n hook 기준으로 연결.
+- components/admin/PartnerMasterSection.tsx: 협력업체 저장 실패 문구를 partnerMaster i18n 문구로 연결.
 
 추가 파일 목록:
 - 없음
@@ -24,13 +21,9 @@ Description:
 - 없음
 
 작업 상세 내용:
-- 0.9.23 미비점 중 협력업체 화면에서 외주 공정 관리 모달 진입 버튼이 실제 화면에 노출되지 않는 문제를 보완했습니다.
-- 0.9.24 목표 범위인 협력업체 UI 마무리 중 상단 도움말, 필터 간격, 목록 truncation, 외주공정 길이 제한을 반영했습니다.
-- package.json / package-lock.json은 수정하지 않았습니다.
-
-이번 작업 진행 판단:
-- 0.9.24 협력업체 UI 정리 범위는 반영 완료했습니다.
-- 현재 실행 환경에 Next 실행 파일이 없어 로컬 빌드 검증은 완료하지 못했습니다.
-
-다음 작업 권장 버전:
-- 0.9.25 — i18n 전면 적용
+- 0.9.24 압축파일을 기준으로 다시 작업했다.
+- 이전 응답에서 파일 생성이 완료되지 않았던 0.9.25 작업을 현재 첨부 zip 기준으로 재수행했다.
+- 저장소 관리 화면에서 사용 중인 filesPage.tabGroupLabel, filesSummary.title, filesSummary.description 키를 ko/en에 추가했다.
+- 협력업체 저장 실패 문구를 하드코딩 문자열 대신 partnerMaster.form.saveFailed로 연결했다.
+- 알림 설정 섹션의 사용/미사용 토글 표시를 notificationSection.toggleOn/toggleOff 기준으로 연결했다.
+- npm run build는 node_modules가 없는 압축파일 환경에서 next 실행 파일을 찾을 수 없어 완료하지 못했다.

@@ -2,6 +2,7 @@
 
 import { buildAdminNotificationSettingItems } from "@/lib/admin/notification/presentation";
 import type { NotificationSettingKey, NotificationSettings } from "@/lib/admin/notification/types";
+import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminNotificationSettingsSectionProps = {
   notificationSettings: NotificationSettings;
@@ -12,6 +13,7 @@ export default function AdminNotificationSettingsSection({
   notificationSettings,
   onToggleNotificationSetting,
 }: AdminNotificationSettingsSectionProps) {
+  const t = useAdminTranslation();
   const items = buildAdminNotificationSettingItems(notificationSettings);
 
   return (
@@ -30,7 +32,7 @@ export default function AdminNotificationSettingsSection({
               onClick={() => onToggleNotificationSetting(item.key)}
               className={`min-w-[88px] rounded-full border px-3 py-1.5 text-xs font-semibold transition ${item.checked ? "border-emerald-200 bg-emerald-100 text-emerald-800" : "border-stone-900 bg-stone-950 text-white"}`}
             >
-              {item.checked ? "사용" : "미사용"}
+              {item.checked ? t("notificationSection.toggleOn", "ON") : t("notificationSection.toggleOff", "OFF")}
             </button>
           </div>
         ))}

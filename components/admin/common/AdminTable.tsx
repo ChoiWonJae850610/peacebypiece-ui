@@ -1,4 +1,5 @@
 import type { AdminTableColumn } from "@/lib/admin/common/types";
+import { adminKo } from "@/lib/i18n/ko/admin";
 
 type AdminTableProps<TItem> = {
   items: TItem[];
@@ -19,7 +20,7 @@ export default function AdminTable<TItem>({
   getRowKey,
   emptyLabel,
   isLoading = false,
-  loadingLabel = "목록을 불러오는 중입니다.",
+  loadingLabel = adminKo.common.loadingList,
   className = "",
   gridTemplateColumns,
   rowClassName,

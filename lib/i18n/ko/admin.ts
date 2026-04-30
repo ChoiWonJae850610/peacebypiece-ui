@@ -14,6 +14,7 @@ export const adminKo = {
   },
   filesPage: {
     title: "저장소 관리",
+    tabGroupLabel: "저장소 파일 상태",
     snapshotLoadFailed: "파일 목록 DB 조회 실패",
     snapshotLoadFailedWithMessage: "파일 목록 DB 조회 실패: {message}",
   },
@@ -54,7 +55,7 @@ export const adminKo = {
   },
   navigation: { dashboard: "대시보드", workorder: "작업지시서", partners: "협력업체 관리", storage: "저장소 관리", statistics: "통계정보", history: "히스토리", settings: "환경설정", dbConnected: "DB 상태 점검" },
   operationsDashboard: { title: "운영 통계", sourceDb: "DB 기준 운영 현황", sourceNotConfigured: "DB 연결 설정이 없어 0건으로 표시됩니다.", sourceError: "DB 조회 실패로 0건으로 표시됩니다.", periodAria: "대시보드 기간 선택", periods: { today: "오늘", week: "이번주", month: "이번달" }, statusFlowTitle: "상태 흐름", statusDistributionTitle: "상태 분포", todayCheckTitle: "오늘 체크", countSuffix: "건", statusDistribution: { working: "작업중", reviewWaiting: "검토대기", inboundWaiting: "입고대기", completed: "완료" }, insights: { createdToday: "오늘 생성", createdInPeriod: "기간 내 생성", createdDescription: "선택 기간에 새로 등록된 작업지시서", reviewDelayed: "검토 지연", reviewDelayedDescription: "검토요청 후 24시간이 지난 작업지시서", inboundDelayed: "입고 지연", inboundDelayedDescription: "납기일 0시 기준 24시간이 지난 입고대기 작업지시서" } },
-  filesSummary: { periods: { 7: "7일", 15: "15일", 30: "30일" }, uploadAmount: "첨부량", count: "건수", fileType: "파일 유형", countSuffix: "개", totalUsage: "전체 사용량", attachments: "첨부파일", trash: "휴지통", retentionPeriod: "보관 기간", usage: "사용량", refreshLabel: "저장소 데이터 새로고침", documents: "문서", designs: "디자인" },
+  filesSummary: { title: "저장소 사용 현황", description: "첨부파일 사용량, 최근 업로드, 파일 유형을 같은 기준으로 확인합니다.", periods: { 7: "7일", 15: "15일", 30: "30일" }, uploadAmount: "첨부량", count: "건수", fileType: "파일 유형", countSuffix: "개", totalUsage: "전체 사용량", attachments: "첨부파일", trash: "휴지통", retentionPeriod: "보관 기간", usage: "사용량", refreshLabel: "저장소 데이터 새로고침", documents: "문서", designs: "디자인" },
   filesList: { title: "첨부파일 목록", sort: { latest: "최신순", size: "용량순", workorder: "작업지시서명순" }, selectAll: "전체 선택", clearAll: "전체 해제", delete: "삭제", restore: "복구", purge: "영구 삭제", empty: "표시할 첨부파일이 없습니다.", trashEmpty: "휴지통에 보관 중인 파일이 없습니다.", columns: { select: "선택", workorder: "작업지시서명", createdAt: "생성일자", deletedAt: "삭제일자", fileName: "파일명", type: "유형", size: "용량" }, fileTypes: { document: "문서", design: "디자인", other: "기타" } },
   trashPage: { title: "휴지통" },
 
@@ -258,6 +259,7 @@ export const adminKo = {
       usageActive: "사용",
       usageInactive: "미사용",
       usageSrLabel: "협력업체 사용 상태",
+      saveFailed: "저장에 실패했습니다. DB 연결 상태를 확인하세요.",
       outsourcingDescription: "이 협력업체가 외주처라면 공정을 연결해 작업지시서에서 바로 필터링할 수 있게 합니다.",
       outsourcingActive: "외주 사용",
       outsourcingInactive: "외주 미사용",

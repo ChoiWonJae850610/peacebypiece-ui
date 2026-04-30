@@ -14,6 +14,7 @@ export const adminEn = {
   },
   filesPage: {
     title: "Storage",
+    tabGroupLabel: "Storage file status",
     snapshotLoadFailed: "Failed to load file list from DB",
     snapshotLoadFailedWithMessage: "Failed to load file list from DB: {message}",
   },
@@ -75,7 +76,7 @@ export const adminEn = {
       inboundDelayedDescription: "Inbound-waiting work orders more than 24 hours after the due date starts",
     },
   },
-  filesSummary: { periods: { 7: "7 days", 15: "15 days", 30: "30 days" }, uploadAmount: "Uploads", count: "Count", fileType: "File type", countSuffix: "items", totalUsage: "Total usage", attachments: "Attachments", trash: "Trash", retentionPeriod: "Storage period", usage: "Usage", refreshLabel: "Refresh storage data", documents: "Documents", designs: "Designs" },
+  filesSummary: { title: "Storage usage", description: "Review attachment usage, recent uploads, and file types using the same storage basis.", periods: { 7: "7 days", 15: "15 days", 30: "30 days" }, uploadAmount: "Uploads", count: "Count", fileType: "File type", countSuffix: "items", totalUsage: "Total usage", attachments: "Attachments", trash: "Trash", retentionPeriod: "Storage period", usage: "Usage", refreshLabel: "Refresh storage data", documents: "Documents", designs: "Designs" },
   filesList: { title: "Attachments", sort: { latest: "Newest", size: "By size", workorder: "By work order" }, selectAll: "Select all", clearAll: "Clear all", delete: "Delete", restore: "Restore", purge: "Permanently delete", empty: "No attachments to display.", trashEmpty: "No files are currently in trash.", columns: { select: "Select", workorder: "Work order", createdAt: "Created", deletedAt: "Deleted", fileName: "File name", type: "Type", size: "Size" }, fileTypes: { document: "Document", design: "Design", other: "Other" } },
   trashPage: { title: "Trash" },
 
@@ -279,6 +280,7 @@ export const adminEn = {
       usageActive: "Active",
       usageInactive: "Inactive",
       usageSrLabel: "Partner active status",
+      saveFailed: "Could not save. Check the database connection.",
       outsourcingDescription: "If this partner is an outsourcing vendor, connect processes so work orders can filter it directly.",
       outsourcingActive: "Outsourcing enabled",
       outsourcingInactive: "Outsourcing disabled",

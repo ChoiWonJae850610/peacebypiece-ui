@@ -186,9 +186,9 @@ export default function PartnerMasterSection() {
         closeModal();
       })
       .catch(() => {
-        setFormError("저장에 실패했습니다. DB 연결 상태를 확인하세요.");
+        setFormError(partnerText.form.saveFailed);
       });
-  }, [closeModal, draft, editingPartnerId]);
+  }, [closeModal, draft, editingPartnerId, partnerText.form.saveFailed]);
 
   const updateProcessDefinition = useCallback(
     (type: OutsourcingProcessType, updater: (current: OutsourcingProcessDefinition) => OutsourcingProcessDefinition) => {
