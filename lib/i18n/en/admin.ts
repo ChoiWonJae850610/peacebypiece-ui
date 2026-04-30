@@ -75,8 +75,12 @@ export const adminEn = {
     refreshLabel: "Refresh history",
     dateFilters: { all: "All dates", today: "Today", week: "Last 7 days", month: "Last 30 days" },
     allUsers: "All users",
-    actions: { WORKORDER_CREATED: "Work Order Created", STATUS_CHANGED: "Status Changed", FILE_UPLOADED: "File Uploaded", FILE_DELETED: "File Deleted", PARTNER_UPDATED: "Partner Updated", SETTINGS_CHANGED: "Settings Changed" },
-    status: { draft: "Draft", review_requested: "Review Requested", review_completed: "Review Completed", inspection: "Inbound Pending", completed: "Completed", rejected: "Rejected" },
+    actions: { WORKORDER_CREATED: "Work Order Created", STATUS_CHANGED: "Status Changed", FILE_UPLOADED: "File Uploaded", FILE_DELETED: "File Deleted", PARTNER_UPDATED: "Partner Updated", SETTINGS_CHANGED: "Settings Changed", PARTNER_CREATED: "Partner Created", PARTNER_DELETED: "Partner Deleted" },
+    status: { draft: "Draft", review_requested: "Review Requested", review_completed: "Review Completed", inspection: "Inbound Pending", completed: "Completed", rejected: "Rejected", pending: "Pending", active: "Active", inactive: "Inactive" },
+    detailLabels: { status: "Status", from: "Before", to: "After", actor: "Actor", user: "User", role: "Role", target: "Target", workOrderId: "Work Order", fileName: "File Name", partnerName: "Partner", source: "Data Source", type: "Type", memo: "Memo", message: "Message" },
+    targetTypes: { workorder: "Work Order", partner: "Partner", file: "File", settings: "Settings", user: "User" },
+    systemActor: "System",
+    unknownLabel: "Needs Review",
   },
   topbar: {
     summaries: {

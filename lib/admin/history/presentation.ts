@@ -34,18 +34,33 @@ export type AdminHistorySectionViewModel = {
   emptyText: string;
 };
 
+function normalizeHistoryToken(value: string): string {
+  return value.trim().replace(/[\s-]+/g, "_").toLowerCase();
+}
+
 function displayHistoryAction(action: string, translations: AdminI18n): string {
   const actionMap = translations.historyPage.actions as Record<string, string> | undefined;
-  return actionMap?.[action] ?? action;
+  return actionMap?.[action] ?? actionMap?.[action.toUpperCase()] ?? action;
 }
 
 function displayHistoryStatus(value: string, translations: AdminI18n): string {
   const statusMap = translations.historyPage.status as Record<string, string> | undefined;
-  return statusMap?.[value] ?? value;
+  return statusMap?.[value] ?? statusMap?.[normalizeHistoryToken(value)] ?? value;
 }
 
-function displayHistorySummary(summary: string, translations: AdminI18n): string {
-  let result = summary;
+function displayHistoryTargetType(value: string, translations: AdminI18n): string {
+  const targetTypeMap = translations.historyPage.targetTypes as Record<string, string> | undefined;
+  return targetTypeMap?.[value] ?? targetTypeMap?.[normalizeHistoryToken(value)] ?? value;
+}
+
+function displayHistoryDetailLabel(label: string | null | undefined, translations: AdminI18n): string | null {
+  if (!label) return null;
+  const labelMap = translations.historyPage.detailLabels as Record<string, string> | undefined;
+  return labelMap?.[label] ?? labelMap?.[normalizeHistoryToken(label)] ?? label;
+}
+
+function displayHistoryValue(value: string, translations: AdminI18n): string {
+  let result = value;
   const actionMap = translations.historyPage.actions as Record<string, string> | undefined;
   Object.entries(actionMap ?? {}).forEach(([code, label]) => {
     result = result.replaceAll(code, label);
@@ -54,14 +69,18 @@ function displayHistorySummary(summary: string, translations: AdminI18n): string
   Object.entries(statusMap ?? {}).forEach(([code, label]) => {
     result = result.replaceAll(code, label);
   });
-  return result;
+  const targetTypeMap = translations.historyPage.targetTypes as Record<string, string> | undefined;
+  Object.entries(targetTypeMap ?? {}).forEach(([code, label]) => {
+    result = result.replaceAll(code, label);
+  });
+  return result.replaceAll("system", translations.historyPage.systemActor ?? "system");
 }
 
 function buildDetailLineViewModel(itemId: string, detailLines: AdminHistoryEvent["detailLines"], translations: AdminI18n): AdminHistoryDetailLineViewModel[] {
   return (detailLines ?? []).map((detail, index) => ({
     key: `${itemId}-detail-${index}`,
-    label: detail.label ?? null,
-    value: displayHistorySummary(detail.value, translations),
+    label: displayHistoryDetailLabel(detail.label, translations),
+    value: displayHistoryValue(detail.value, translations),
   }));
 }
 
@@ -81,7 +100,7 @@ export function buildAdminHistoryItemViewModel(item: AdminHistoryEvent, open: bo
     action: displayHistoryAction(item.action, translations),
     actionToneClass: getAdminHistoryToneClass(item.tone),
     time: item.occurredAt,
-    summary: displayHistorySummary(item.summary, translations),
+    summary: displayHistoryValue(item.summary, translations),
     hasDetails,
     detailToggleLabel: hasDetails ? (open ? commonUi.common.collapse : commonUi.common.detail) : null,
     transition: buildTransitionViewModel(item, translations),

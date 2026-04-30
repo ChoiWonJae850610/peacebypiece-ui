@@ -75,8 +75,12 @@ export const adminKo = {
     refreshLabel: "히스토리 새로고침",
     dateFilters: { all: "전체 날짜", today: "오늘", week: "최근 7일", month: "최근 30일" },
     allUsers: "전체 사용자",
-    actions: { WORKORDER_CREATED: "작업지시서 생성", STATUS_CHANGED: "상태 변경", FILE_UPLOADED: "파일 업로드", FILE_DELETED: "파일 삭제", PARTNER_UPDATED: "협력업체 수정", SETTINGS_CHANGED: "환경설정 변경" },
-    status: { draft: "작성중", review_requested: "검토요청", review_completed: "검토완료", inspection: "입고대기", completed: "완료", rejected: "반려" },
+    actions: { WORKORDER_CREATED: "작업지시서 생성", STATUS_CHANGED: "상태 변경", FILE_UPLOADED: "파일 업로드", FILE_DELETED: "파일 삭제", PARTNER_UPDATED: "협력업체 수정", SETTINGS_CHANGED: "환경설정 변경", PARTNER_CREATED: "협력업체 등록", PARTNER_DELETED: "협력업체 삭제" },
+    status: { draft: "작성중", review_requested: "검토요청", review_completed: "검토완료", inspection: "입고대기", completed: "완료", rejected: "반려", pending: "대기", active: "사용", inactive: "미사용" },
+    detailLabels: { status: "상태", from: "변경 전", to: "변경 후", actor: "작업자", user: "사용자", role: "역할", target: "대상", workOrderId: "작업지시서", fileName: "파일명", partnerName: "협력업체", source: "데이터 기준", type: "유형", memo: "메모", message: "내용" },
+    targetTypes: { workorder: "작업지시서", partner: "협력업체", file: "파일", settings: "환경설정", user: "사용자" },
+    systemActor: "시스템",
+    unknownLabel: "확인 필요",
   },
   topbar: {
     summaries: {
