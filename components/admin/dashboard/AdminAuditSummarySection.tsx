@@ -37,6 +37,7 @@ export default function AdminAuditSummarySection({ dbCompletionSummary, completi
           <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-stone-500">
             <span className="rounded-full bg-white px-3 py-1.5 ring-1 ring-stone-200">DB {completionAuditSummary.dbConnectedCount}+{completionAuditSummary.dbWatchCount}</span>
             <span className="rounded-full bg-white px-3 py-1.5 ring-1 ring-stone-200">domain {completionAuditSummary.readyDomainCount}/{completionAuditSummary.totalDomainCount}</span>
+            <span className="rounded-full bg-white px-3 py-1.5 ring-1 ring-stone-200">mock {completionAuditSummary.mockRemoveReadyCount}/{completionAuditSummary.mockRetainedCount}</span>
             <button
               type="button"
               onClick={() => setOpen((value) => !value)}

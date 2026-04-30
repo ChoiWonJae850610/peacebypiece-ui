@@ -1,5 +1,6 @@
 import { ADMIN_DOMAIN_STRUCTURE, type AdminDomainKey } from "@/lib/admin/domainRegistry";
 import { getAdminDbCompletionSummary, type AdminDbScreenAuditStatus } from "@/lib/admin/dbCompletionAudit";
+import { formatAdminMockAuditSummary, getAdminMockAuditSummary } from "@/lib/admin/mockDataAudit";
 import { buildAdminDomainAuditItems, getAdminLegacyPathAuditItems } from "@/lib/admin/structureAudit";
 
 export type AdminCompletionAuditStatus = "complete" | "watch" | "blocked";
@@ -11,7 +12,7 @@ export type AdminCompletionAuditStatusPresentation = {
 export type AdminCompletionDecision = "close-admin-v1" | "continue-admin-hardening" | "blocked";
 
 export type AdminCompletionAuditItem = {
-  key: "structure" | "legacy" | "db" | "ui" | "i18n";
+  key: "structure" | "legacy" | "db" | "ui" | "i18n" | "mock";
   label: string;
   status: AdminCompletionAuditStatus;
   summary: string;
@@ -30,6 +31,8 @@ export type AdminCompletionAuditSummary = {
   retainedLegacyCount: number;
   dbConnectedCount: number;
   dbWatchCount: number;
+  mockRemoveReadyCount: number;
+  mockRetainedCount: number;
   items: readonly AdminCompletionAuditItem[];
 };
 
@@ -59,8 +62,8 @@ function getCompletionDecision(status: AdminCompletionAuditStatus): Pick<AdminCo
     return {
       decision: "close-admin-v1",
       decisionLabel: "관리자 1차 완료",
-      decisionSummary: "차단 항목은 없고, 안전 표시/i18n 2차 점검 항목만 남아 WorkOrder PC 화면 통일로 넘어갈 수 있습니다.",
-      nextScope: "0.7.0부터 WorkOrder PC 레이아웃 통일을 진행하고, 관리자 잔여 점검은 회귀 점검 항목으로 유지합니다.",
+      decisionSummary: "차단 항목은 없고, 안전 표시/i18n/mock 정리 점검 항목만 남아 WorkOrder PC 화면 통일로 넘어갈 수 있습니다.",
+      nextScope: "WorkOrder/사용자 전환을 진행하면서 관리자 잔여 점검은 회귀 점검 항목으로 유지합니다.",
     };
   }
 
@@ -68,7 +71,7 @@ function getCompletionDecision(status: AdminCompletionAuditStatus): Pick<AdminCo
     decision: "close-admin-v1",
     decisionLabel: "관리자 완료",
     decisionSummary: "관리자 영역의 구조, UI, DB 상태, legacy 정리 기준이 마감 가능한 상태입니다.",
-    nextScope: "0.7.0부터 WorkOrder PC 레이아웃 통일을 진행합니다.",
+    nextScope: "다음 구조 작업으로 넘어갈 수 있습니다.",
   };
 }
 
@@ -85,6 +88,8 @@ export function getAdminCompletionAuditSummary(): AdminCompletionAuditSummary {
   const unstabilizedUiDomains = ADMIN_DOMAIN_STRUCTURE.filter(
     (domain) => domain.key !== "common" && !UI_STABILIZED_ADMIN_DOMAINS.includes(domain.key),
   );
+  const mockAuditSummary = getAdminMockAuditSummary();
+  const mockRetainedCount = mockAuditSummary.seedRetainedCount + mockAuditSummary.fallbackRetainedCount;
 
   const items: AdminCompletionAuditItem[] = [
     {
@@ -122,6 +127,13 @@ export function getAdminCompletionAuditSummary(): AdminCompletionAuditSummary {
       summary: "1차 분리 완료 · 2차 점검 유지",
       detail: "운영 중 보이는 주요 문구는 1차 분리했고, 전체 관리자 문구의 2차 분리는 WorkOrder 전환 후 회귀 점검 대상으로 남깁니다.",
     },
+    {
+      key: "mock",
+      label: "mock/seed 정리",
+      status: mockAuditSummary.blockedCount > 0 ? "blocked" : mockRetainedCount > 0 ? "watch" : "complete",
+      summary: formatAdminMockAuditSummary(mockAuditSummary),
+      detail: "고객사 관리자 화면에서 제거할 mock, 신규 회사 초기값으로 유지할 seed, 로그인 전환 전까지 필요한 fallback을 구분합니다.",
+    },
   ];
 
   const overallStatus = toCompletionStatus(
@@ -139,6 +151,8 @@ export function getAdminCompletionAuditSummary(): AdminCompletionAuditSummary {
     retainedLegacyCount,
     dbConnectedCount,
     dbWatchCount,
+    mockRemoveReadyCount: mockAuditSummary.removeReadyCount,
+    mockRetainedCount,
     items,
   };
 }

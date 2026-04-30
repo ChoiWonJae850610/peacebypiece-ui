@@ -28,6 +28,7 @@ export default function AdminCompletionAuditPanel({ summary }: AdminCompletionAu
           <span className="rounded-full bg-stone-100 px-3 py-1.5">legacy removed {summary.removedLegacyCount}</span>
           <span className="rounded-full bg-stone-100 px-3 py-1.5">legacy kept {summary.retainedLegacyCount}</span>
           <span className="rounded-full bg-stone-100 px-3 py-1.5">db {summary.dbConnectedCount}+{summary.dbWatchCount}</span>
+          <span className="rounded-full bg-stone-100 px-3 py-1.5">mock {summary.mockRemoveReadyCount}/{summary.mockRetainedCount}</span>
         </div>
       </div>
 
