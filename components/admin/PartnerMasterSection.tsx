@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useI18n } from "@/lib/i18n";
 import PartnerMasterFilters from "@/components/admin/partnerMaster/PartnerMasterFilters";
 import PartnerMasterFormModal from "@/components/admin/partnerMaster/PartnerMasterFormModal";
 import PartnerMasterHeader from "@/components/admin/partnerMaster/PartnerMasterHeader";
@@ -34,6 +35,8 @@ import { fetchPartnerMasterItemsFromApi, savePartnerMasterItemToApi, savePartner
 import type { OutsourcingProcessType, Partner, PartnerDraft } from "@/types/partner";
 
 export default function PartnerMasterSection() {
+  const { i18n } = useI18n();
+  const partnerText = i18n.admin.partnerMaster;
   const [partners, setPartners] = useState<Partner[]>([]);
   const [selectedTypes, setSelectedTypes] = useState(DEFAULT_PARTNER_FILTER_STATE.selectedTypes);
   const [selectedStatus, setSelectedStatus] = useState(DEFAULT_PARTNER_FILTER_STATE.status);
@@ -247,7 +250,11 @@ export default function PartnerMasterSection() {
   }, [persistProcessDefinitions, processDraftDefinitions]);
   return (
     <section className="flex min-h-0 flex-1 flex-col rounded-[32px] border border-stone-200 bg-white/95 p-5 shadow-sm backdrop-blur md:p-6">
-      <PartnerMasterHeader onOpenCreateModal={openCreateModal} />
+      <PartnerMasterHeader onOpenCreateModal={openCreateModal} onOpenProcessModal={openProcessModal} />
+
+      <div className="mt-5 rounded-3xl border border-sky-100 bg-sky-50/70 px-4 py-3 text-sm leading-6 text-sky-900">
+        {partnerText.filters.summaryDescription}
+      </div>
 
       <PartnerMasterFilters
         searchTerm={searchTerm}

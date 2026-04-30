@@ -42,20 +42,20 @@ export default function PartnerMasterFilters({
 
   return (
     <AdminFilterBar className="mt-5 block space-y-5 border-[var(--admin-theme-border)] bg-[var(--admin-theme-soft)] transition-colors">
-      <div className="grid gap-4 lg:grid-cols-[minmax(240px,1fr)_minmax(280px,1.1fr)_auto] lg:items-end">
+      <div className="grid gap-5 xl:grid-cols-[minmax(260px,0.9fr)_minmax(360px,1.4fr)_minmax(220px,0.7fr)] xl:items-start">
         <label className="space-y-2">
           <span className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">{filterText.searchLabel}</span>
           <input
             value={searchTerm}
             onChange={(event) => onSearchTermChange(event.target.value)}
             placeholder={filterText.searchPlaceholder}
-            className="h-10 w-full rounded-2xl border border-stone-200 bg-white px-4 text-sm outline-none transition focus:border-[var(--admin-theme-border)] focus:ring-4 focus:ring-[var(--admin-theme-ring)]"
+            className="h-11 w-full rounded-2xl border border-stone-200 bg-white px-4 text-sm outline-none transition focus:border-[var(--admin-theme-border)] focus:ring-4 focus:ring-[var(--admin-theme-ring)]"
           />
         </label>
 
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">{filterText.typeLabel}</p>
-          <div className="flex flex-wrap gap-2.5">
+          <div className="flex flex-wrap gap-2">
             {filterOptions.map((item) => {
               const isSelected = selectedTypes.includes(item.value);
               return (
@@ -77,7 +77,7 @@ export default function PartnerMasterFilters({
 
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">{filterText.statusLabel}</p>
-          <div className="flex flex-wrap gap-2.5">
+          <div className="flex flex-wrap gap-2">
             {statusOptions.map((item) => (
               <button
                 key={item.value}

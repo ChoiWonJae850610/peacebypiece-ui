@@ -11,7 +11,7 @@ type PartnerMasterListProps = {
   className?: string;
 };
 
-const PARTNER_TABLE_GRID = "minmax(0,1.25fr) minmax(0,0.82fr) minmax(0,0.9fr) minmax(0,1.25fr) minmax(0,1.25fr) 92px 88px";
+const PARTNER_TABLE_GRID = "minmax(0,1.18fr) minmax(0,0.72fr) minmax(0,0.82fr) minmax(0,1.02fr) minmax(0,1.08fr) 78px 78px";
 
 export default function PartnerMasterList({ items, isLoading = false, onEditPartner, className = "mt-5" }: PartnerMasterListProps) {
   const { i18n } = useI18n();
@@ -26,7 +26,7 @@ export default function PartnerMasterList({ items, isLoading = false, onEditPart
       emptyLabel={listText.empty}
       getRowKey={(item) => item.id}
       gridTemplateColumns={PARTNER_TABLE_GRID}
-      rowClassName={(item) => ["px-4 py-4 md:gap-4", item.isActive ? "bg-white" : "bg-stone-50/80"].join(" ")}
+      rowClassName={(item) => ["px-4 py-4 md:gap-3", item.isActive ? "bg-white" : "bg-stone-50/80"].join(" ")}
       columns={[
         {
           key: "name",
@@ -43,9 +43,9 @@ export default function PartnerMasterList({ items, isLoading = false, onEditPart
             </div>
           ),
         },
-        { key: "contact", label: listText.columns.contact, render: (item) => <p className="min-w-0 truncate text-sm text-stone-600" title={item.contactName}>{item.contactName}</p> },
-        { key: "phone", label: listText.columns.phone, render: (item) => <p className="min-w-0 truncate text-sm text-stone-600" title={item.phone}>{item.phone}</p> },
-        { key: "email", label: listText.columns.email, render: (item) => <p className="min-w-0 truncate text-sm text-stone-600" title={item.email}>{item.email}</p> },
+        { key: "contact", label: listText.columns.contact, className: "min-w-0", render: (item) => <p className="min-w-0 truncate text-sm text-stone-600" title={item.contactName}>{item.contactName}</p> },
+        { key: "phone", label: listText.columns.phone, className: "min-w-0", render: (item) => <p className="min-w-0 truncate text-sm text-stone-600" title={item.phone}>{item.phone}</p> },
+        { key: "email", label: listText.columns.email, className: "min-w-0", render: (item) => <p className="min-w-0 truncate text-sm text-stone-600" title={item.email}>{item.email}</p> },
         {
           key: "type",
           label: listText.columns.type,
@@ -64,7 +64,7 @@ export default function PartnerMasterList({ items, isLoading = false, onEditPart
               </div>
               {item.hasOutsourcingProcesses ? (
                 <div className="max-w-full rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium leading-5 text-slate-600">
-                  <span className="block max-w-[220px] truncate" title={item.outsourcingProcessLabel}>{item.outsourcingProcessLabel}</span>
+                  <span className="block max-w-[160px] truncate" title={item.outsourcingProcessLabel}>{item.outsourcingProcessLabel}</span>
                 </div>
               ) : null}
             </div>
