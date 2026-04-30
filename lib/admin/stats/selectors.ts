@@ -18,6 +18,7 @@ export type AdminPartnerTypeCountRow = DbQueryResultRow & { item_type: string | 
 export type AdminFileUsageRow = DbQueryResultRow & { total_size_bytes: string | number | null; active_count: string | number | null; trash_count: string | number | null };
 export type AdminRoundCountRow = DbQueryResultRow & { round_label: string | null; count_value: string | number | null };
 export type AdminCategoryCountRow = DbQueryResultRow & { category_label: string | null; count_value: string | number | null };
+export type AdminFactoryProductionCountRow = DbQueryResultRow & { factory_label: string | null; count_value: string | number | null };
 
 export function toAdminStatNumber(value: string | number | null | undefined): number {
   if (typeof value === "number") return Number.isFinite(value) ? value : 0;
@@ -119,6 +120,13 @@ export function buildAdminCategoryDistribution(rows: AdminCategoryCountRow[]): A
   return normalized.length > 0 ? normalized : [{ label: adminStatsText.unknownLabel, value: 0 }];
 }
 
+
+export function buildAdminFactoryProductionDistribution(rows: AdminFactoryProductionCountRow[]): AdminStatsRatioPoint[] {
+  const normalized = rows
+    .map((row) => ({ label: row.factory_label || adminStatsText.unknownLabel, value: toAdminStatNumber(row.count_value) }))
+    .filter((item) => item.label !== adminStatsText.unknownLabel || item.value > 0);
+  return normalized.length > 0 ? normalized : [{ label: adminStatsText.unknownLabel, value: 0 }];
+}
 export function buildAdminAttachmentTrashCards(activeFileCount: number, trashFileCount: number): AdminStatsRatioPoint[] {
   return [
     { label: adminStatsText.fileUsage.active, value: activeFileCount, valueLabel: `${formatAdminStatInteger(activeFileCount)}${adminStatsText.countSuffix}` },

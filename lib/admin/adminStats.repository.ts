@@ -6,6 +6,7 @@ import {
   buildAdminAttachmentTrashCards,
   buildAdminCategoryDistribution,
   buildAdminFileUsagePoints,
+  buildAdminFactoryProductionDistribution,
   buildAdminKeyMetrics,
   buildAdminPartnerDistribution,
   buildAdminPeriodOptions,
@@ -18,6 +19,7 @@ import {
   type AdminCategoryCountRow as CategoryCountRow,
   type AdminCountRow as CountRow,
   type AdminFileUsageRow as FileUsageRow,
+  type AdminFactoryProductionCountRow as FactoryProductionCountRow,
   type AdminPartnerTypeCountRow as PartnerTypeCountRow,
   type AdminRoundCountRow as RoundCountRow,
   type AdminStatusCountRow as StatusCountRow,
@@ -41,6 +43,7 @@ function buildEmptyStats(sourceState: Exclude<AdminStatsSourceState, "db">, sele
     fileUsagePoints,
     keyMetrics: buildAdminKeyMetrics({ reviewWaiting: 0, inspectionWaiting: 0, inboundDelayed: 0, defectCount: 0 }),
     productionRoundDistribution: buildAdminRoundDistribution([]),
+    factoryProductionDistribution: buildAdminFactoryProductionDistribution([]),
     productionCategoryDistribution: buildAdminCategoryDistribution([]),
     attachmentTrashCards: buildAdminAttachmentTrashCards(activeFileCount, trashFileCount),
     periodOptions: buildAdminPeriodOptions(selectedPeriod),
@@ -57,7 +60,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[]): Pr
 
   try {
     const companyId = getAdminCompanyId();
-    const [workordersResult, completedResult, partnersResult, partnerTypesResult, fileUsageResult, reviewWaitingResult, inspectionWaitingResult, inboundDelayedResult, defectResult, roundResult, categoryResult] = await Promise.all([
+    const [workordersResult, completedResult, partnersResult, partnerTypesResult, fileUsageResult, reviewWaitingResult, inspectionWaitingResult, inboundDelayedResult, defectResult, roundResult, factoryProductionResult, categoryResult] = await Promise.all([
       queryDb<StatusCountRow>(
         `SELECT COALESCE(status, 'draft') AS status,
                 COUNT(*)::text AS count_value
@@ -160,6 +163,19 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[]): Pr
           ORDER BY 1`,
         [companyId],
       ),
+      queryDb<FactoryProductionCountRow>(
+        `SELECT COALESCE(NULLIF(factory_name, ''), '공장 미지정') AS factory_label,
+                COUNT(*)::text AS count_value
+           FROM orders
+          WHERE company_id = $1
+            AND deleted_at IS NULL
+            AND COALESCE(is_active, true) = true
+            ${periodWhereClause}
+          GROUP BY 1
+          ORDER BY COUNT(*) DESC
+          LIMIT 6`,
+        [companyId],
+      ),
       queryDb<CategoryCountRow>(
         `SELECT COALESCE(NULLIF(payload->>'categoryLabel', ''), NULLIF(payload->>'category', ''), NULLIF(payload->>'itemCategory', ''), '분류 미지정') AS category_label,
                 COUNT(*)::text AS count_value
@@ -196,6 +212,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[]): Pr
         defectCount: readAdminCount(defectResult.rows[0]),
       }),
       productionRoundDistribution: buildAdminRoundDistribution(roundResult.rows),
+      factoryProductionDistribution: buildAdminFactoryProductionDistribution(factoryProductionResult.rows),
       productionCategoryDistribution: buildAdminCategoryDistribution(categoryResult.rows),
       attachmentTrashCards: buildAdminAttachmentTrashCards(activeFileCount, trashFileCount),
       periodOptions: buildAdminPeriodOptions(selectedPeriod),

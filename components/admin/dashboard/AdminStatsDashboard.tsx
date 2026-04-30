@@ -64,6 +64,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     fileUsagePoints: stats.fileUsagePoints,
     keyMetrics: stats.keyMetrics,
     productionRoundDistribution: stats.productionRoundDistribution,
+    factoryProductionDistribution: stats.factoryProductionDistribution,
     productionCategoryDistribution: stats.productionCategoryDistribution,
     attachmentTrashCards: stats.attachmentTrashCards,
   });
@@ -147,7 +148,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         </div>
       </section>
 
-      <section className="grid gap-5 xl:grid-cols-3">
+      <section className="grid gap-5 xl:grid-cols-4">
         <AdminCard>
           <h2 className="text-lg font-semibold text-stone-950">{pageText.attachmentTrashTitle}</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -162,10 +163,17 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
 
         <AdminCard>
           <h2 className="text-lg font-semibold text-stone-950">{pageText.productionRoundTitle}</h2>
+          <div className="mt-5">
+            <AdminStatsDonut segments={viewModel.roundDonut} total={viewModel.totalRoundCount} suffix={pageText.workorderCountSuffix} />
+          </div>
+        </AdminCard>
+
+        <AdminCard>
+          <h2 className="text-lg font-semibold text-stone-950">{pageText.factoryProductionTitle}</h2>
           <div className="mt-5 grid gap-3">
-            {viewModel.roundBars.map((item) => (
+            {viewModel.factoryProductionBars.map((item) => (
               <div key={item.label}>
-                <div className="flex items-center justify-between text-xs font-semibold text-stone-600"><span>{item.label}</span><span>{item.value}</span></div>
+                <div className="flex items-center justify-between text-xs font-semibold text-stone-600"><span className="truncate pr-2">{item.label}</span><span>{item.value}</span></div>
                 <div className="mt-2 h-2 rounded-full bg-stone-100"><div className="h-2 rounded-full bg-[var(--admin-theme-surface)]" style={{ width: `${item.widthPercent}%` }} /></div>
               </div>
             ))}

@@ -24,6 +24,7 @@ export type AdminStatsSnapshot = {
   fileUsagePoints: AdminFileUsagePoint[];
   keyMetrics: AdminStatsMetric[];
   productionRoundDistribution: AdminStatsRatioPoint[];
+  factoryProductionDistribution: AdminStatsRatioPoint[];
   productionCategoryDistribution: AdminStatsRatioPoint[];
   attachmentTrashCards: AdminStatsRatioPoint[];
   periodOptions: { key: AdminStatsPeriodKey; label: string; active: boolean; href: string }[];

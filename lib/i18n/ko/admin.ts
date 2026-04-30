@@ -107,6 +107,7 @@ export const adminKo = {
     currentMonth: "이번달",
     partnersTitle: "협력업체 분포",
     partnerCountSuffix: "개",
+    workorderCountSuffix: "건",
     fileUsageTitle: "파일 사용량",
     emptyFlowLabel: "이번달 작업지시서 상태 데이터가 없습니다.",
     periodTitle: "기간",
@@ -115,6 +116,7 @@ export const adminKo = {
     fileDonutTitle: "파일 사용량",
     attachmentTrashTitle: "첨부 / 휴지통",
     productionRoundTitle: "생산 단계 비율",
+    factoryProductionTitle: "공장별 제작 통계",
     categoryDistributionTitle: "단계별 카테고리 분포",
   },
   settingsForm: {

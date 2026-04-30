@@ -8,12 +8,15 @@ export type AdminStatsDashboardViewModel = {
   totalPartnerCount: number;
   totalRoundCount: number;
   totalCategoryCount: number;
+  totalFactoryProductionCount: number;
   workorderBars: AdminStatsBarViewModel[];
   partnerBars: AdminStatsRatioViewModel[];
   fileUsageBars: AdminStatsRatioViewModel[];
   partnerDonut: AdminStatsDonutSegment[];
   fileUsageDonut: AdminStatsDonutSegment[];
   roundBars: AdminStatsRatioViewModel[];
+  roundDonut: AdminStatsDonutSegment[];
+  factoryProductionBars: AdminStatsRatioViewModel[];
   categoryBars: AdminStatsRatioViewModel[];
   attachmentTrashCards: AdminStatsNumberCardViewModel[];
   keyMetrics: AdminStatsNumberCardViewModel[];
@@ -68,6 +71,7 @@ export function buildAdminStatsDashboardViewModel(payload: {
   fileUsagePoints: readonly AdminFileUsagePoint[];
   keyMetrics: readonly AdminStatsMetric[];
   productionRoundDistribution: readonly AdminStatsRatioPoint[];
+  factoryProductionDistribution: readonly AdminStatsRatioPoint[];
   productionCategoryDistribution: readonly AdminStatsRatioPoint[];
   attachmentTrashCards: readonly AdminStatsRatioPoint[];
 }): AdminStatsDashboardViewModel {
@@ -76,6 +80,7 @@ export function buildAdminStatsDashboardViewModel(payload: {
   const totalPartnerCount = getAdminStatsTotalValue(payload.partnerDistribution);
   const totalRoundCount = getAdminStatsTotalValue(payload.productionRoundDistribution);
   const totalCategoryCount = getAdminStatsTotalValue(payload.productionCategoryDistribution);
+  const totalFactoryProductionCount = getAdminStatsTotalValue(payload.factoryProductionDistribution);
 
   return {
     sourceDescription: getAdminStatsSourceDescription(payload.sourceState, payload.text),
@@ -84,12 +89,15 @@ export function buildAdminStatsDashboardViewModel(payload: {
     totalPartnerCount,
     totalRoundCount,
     totalCategoryCount,
+    totalFactoryProductionCount,
     workorderBars: payload.workorderFlow.map((item) => ({ ...item, heightPercent: item.value > 0 ? getAdminStatsPercent(item.value, maxFlowValue, 12) : 0, ariaLabel: `${item.label} ${item.value}건`, isEmpty: item.value <= 0 })),
     partnerBars: payload.partnerDistribution.map((item) => ({ ...item, limit: totalPartnerCount, valueLabel: `${item.value}`, widthPercent: getAdminStatsPercent(item.value, totalPartnerCount) })),
     fileUsageBars: payload.fileUsagePoints.map((item) => ({ ...item, widthPercent: getAdminStatsPercent(item.value, item.limit) })),
     partnerDonut: buildAdminDonutSegments(payload.partnerDistribution),
     fileUsageDonut: buildAdminDonutSegments(payload.fileUsagePoints.map((item) => ({ label: item.label, value: item.value }))),
-    roundBars: payload.productionRoundDistribution.map((item) => ({ ...item, limit: totalRoundCount, valueLabel: `${item.value}`, widthPercent: getAdminStatsPercent(item.value, totalRoundCount) })),
+    roundBars: payload.productionRoundDistribution.map((item) => ({ ...item, limit: totalRoundCount, valueLabel: String(item.value), widthPercent: getAdminStatsPercent(item.value, totalRoundCount) })),
+    roundDonut: buildAdminDonutSegments(payload.productionRoundDistribution),
+    factoryProductionBars: payload.factoryProductionDistribution.map((item) => ({ ...item, limit: totalFactoryProductionCount, valueLabel: String(item.value), widthPercent: getAdminStatsPercent(item.value, totalFactoryProductionCount) })),
     categoryBars: payload.productionCategoryDistribution.map((item) => ({ ...item, limit: totalCategoryCount, valueLabel: `${item.value}`, widthPercent: getAdminStatsPercent(item.value, totalCategoryCount) })),
     attachmentTrashCards: payload.attachmentTrashCards.map((item) => ({ label: item.label, value: item.valueLabel ?? `${item.value}` })),
     keyMetrics: payload.keyMetrics.map((item) => ({ key: item.key, label: item.label, value: `${item.value}`, description: item.description })),

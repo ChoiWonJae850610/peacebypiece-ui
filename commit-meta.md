@@ -1,37 +1,30 @@
-Version: 0.9.26
+Version: 0.9.27
 
-Summary:
-관리자 통계정보 화면에 기간 선택과 핵심 운영 지표 1차 구조를 반영했습니다.
+Summary: 관리자 통계 구조 2차 반영
 
 Description:
-- 통계정보 페이지에서 7일 / 15일 / 30일 / 월별 기간을 선택할 수 있도록 query 기반 기간 옵션을 연결했습니다.
-- 선택한 기간 기준으로 작업지시서 현황, 완료 건수, 검토대기, 검수대기, 입고지연, 불량 지표가 계산되도록 DB 조회 범위를 정리했습니다.
-- 핵심 지표를 검토대기 / 검수대기 / 입고지연 / 불량 4개로 정리하고 기존 공장별 통계 지표는 0.9.27 범위로 분리했습니다.
-- 통계 카드의 완료 설명을 "이번달" 고정 표현에서 선택 기간 기준 표현으로 바꿨습니다.
-- APP_VERSION을 0.9.26으로 동기화했습니다.
+- 관리자 통계 화면에 공장별 제작 통계 영역을 추가했다.
+- 생산 단계 비율을 막대형 표시에서 도넛형 표시로 전환했다.
+- 통계 조회 데이터에 orders 기준 공장별 제작 건수 집계를 추가했다.
+- 통계 ViewModel에 공장별 제작 비율과 생산 단계 도넛 데이터를 연결했다.
+- 관리자 통계 i18n 문구와 APP_VERSION을 0.9.27로 동기화했다.
+- package.json / package-lock.json은 수정하지 않았다.
+- 현재 실행 환경에 node_modules가 없어 로컬 build 검증은 완료하지 못했다.
 
 수정 파일 목록:
-- app/admin/dashboard/page.tsx: searchParams의 period 값을 읽어 통계 repository에 전달하도록 변경.
-- components/admin/dashboard/AdminStatsDashboard.tsx: 기간 옵션을 링크형 선택 UI로 변경하고 핵심 지표 카드 그리드를 4개 기준으로 정리.
-- lib/admin/adminStats.repository.ts: 선택 기간별 DB 조회 조건을 적용하고 4개 핵심 지표 중심으로 snapshot 생성.
-- lib/admin/stats/selectors.ts: 기간 정규화, 기간 옵션 생성, 완료/핵심 지표 selector 문구 구조 정리.
-- lib/admin/stats/types.ts: 핵심 지표 타입을 검토대기/검수대기/입고지연/불량 기준으로 정리하고 selectedPeriod 추가.
-- lib/constants/app.ts: APP_VERSION을 0.9.26으로 변경.
-- lib/i18n/ko/admin.ts: 통계 요약/핵심 지표 한국어 문구를 선택 기간 기준으로 정리.
-- lib/i18n/en/admin.ts: 통계 요약/핵심 지표 영어 문구를 선택 기간 기준으로 정리.
+- lib/constants/app.ts: APP_VERSION을 0.9.27로 갱신
+- lib/admin/stats/types.ts: 통계 스냅샷에 factoryProductionDistribution 추가
+- lib/admin/stats/selectors.ts: 공장별 제작 통계 row 타입과 변환 selector 추가
+- lib/admin/stats/presentation.ts: 생산 단계 도넛 및 공장별 제작 막대 ViewModel 추가
+- lib/admin/adminStats.repository.ts: orders 기준 공장별 제작 통계 DB 조회 추가
+- components/admin/dashboard/AdminStatsDashboard.tsx: 생산 단계 도넛 표시 및 공장별 제작 통계 카드 추가
+- lib/i18n/ko/admin.ts: 관리자 통계 한국어 문구 추가
+- lib/i18n/en/admin.ts: 관리자 통계 영어 문구 추가
+- commit-meta.md: 이번 작업 메타데이터 갱신
 
-추가 파일 목록:
-- 없음
-
-삭제 파일 목록:
-- 없음
-
-검증:
-- npm run build 실행 시 현재 압축파일에 node_modules가 포함되어 있지 않아 next 명령을 찾지 못해 로컬 빌드 검증은 수행되지 않았습니다.
-- package.json / package-lock.json은 수정하지 않았습니다.
-
-다음 작업 권장 버전:
-0.9.27 — 통계 구조 2차
-- 공장별 통계
-- 제작 단계 비율
-- 도넛 그래프 구조 정리
+작업 상세 내용:
+1. 기존 0.9.26 통계 구조를 유지하면서 0.9.27 범위만 추가했다.
+2. 공장별 제작 통계는 orders.factory_name을 기준으로 상위 6개를 집계한다.
+3. 생산 단계 비율은 기존 productionRoundDistribution 데이터를 그대로 사용하되 도넛 컴포넌트로 표시한다.
+4. DB 미설정/조회 실패 시에도 공장별 제작 통계가 빈 값으로 안정적으로 표시되도록 fallback을 추가했다.
+5. i18n 문구는 dashboardPage 내부에 workorderCountSuffix, factoryProductionTitle을 추가했다.

@@ -128,6 +128,7 @@ export const adminEn = {
     currentMonth: "This month",
     partnersTitle: "Partner Distribution",
     partnerCountSuffix: "items",
+    workorderCountSuffix: "orders",
     fileUsageTitle: "File usage",
     emptyFlowLabel: "No work order status data for this month.",
     periodTitle: "Period",
@@ -136,6 +137,7 @@ export const adminEn = {
     fileDonutTitle: "File usage",
     attachmentTrashTitle: "Attachments / Trash",
     productionRoundTitle: "Production round ratio",
+    factoryProductionTitle: "Production by factory",
     categoryDistributionTitle: "Category distribution by stage",
   },
   settingsForm: {
