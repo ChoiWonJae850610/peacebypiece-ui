@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getR2Object } from "@/lib/storage/r2/r2Client";
 import { isR2Configured } from "@/lib/storage/r2/r2Config";
 import { isSupportedWorkOrderAttachmentStorageKey } from "@/lib/storage/r2/r2Keys";
-import { getCachedR2Url, setCachedR2Url } from "@/lib/storage/r2/r2UrlCache";
+import { getOrSetCachedR2Url, type R2UrlCacheState } from "@/lib/storage/r2/r2UrlCache";
 import { createR2WorkerFileUrl, isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
 
 export const runtime = "nodejs";
@@ -22,7 +22,7 @@ function createReadableStream(body: Buffer | Uint8Array | ArrayBuffer): Readable
   });
 }
 
-function createWorkerRedirectResponse(url: string, cacheState: "HIT" | "MISS"): NextResponse {
+function createWorkerRedirectResponse(url: string, cacheState: R2UrlCacheState): NextResponse {
   const response = NextResponse.redirect(url, { status: 307 });
   response.headers.set("cache-control", "no-store");
   response.headers.set("x-r2-url-cache", cacheState);
@@ -37,20 +37,13 @@ export async function GET(request: NextRequest) {
 
   if (isR2WorkerUploadConfigured()) {
     try {
-      const cachedUrl = getCachedR2Url({ purpose: "file", key });
-      if (cachedUrl) {
-        return createWorkerRedirectResponse(cachedUrl, "HIT");
-      }
-
-      const workerFile = createR2WorkerFileUrl({ key });
-      const cachedWorkerUrl = setCachedR2Url({
+      const cachedWorkerUrl = getOrSetCachedR2Url({
         purpose: "file",
         key,
-        url: workerFile.url,
-        expiresInSeconds: workerFile.expiresInSeconds,
+        createUrl: () => createR2WorkerFileUrl({ key }),
       });
 
-      return createWorkerRedirectResponse(cachedWorkerUrl, "MISS");
+      return createWorkerRedirectResponse(cachedWorkerUrl.url, cachedWorkerUrl.cacheState);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Worker file URL creation failed.";
       return NextResponse.json({ error: "WORKER_FILE_URL_CREATE_FAILED", message }, { status: 500 });

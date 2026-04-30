@@ -7,6 +7,7 @@ import {
   type AdminPurgeCandidate,
 } from "@/lib/admin/adminFiles.serverActions";
 import { deleteR2ObjectViaWorker } from "@/lib/storage/r2/r2WorkerUpload";
+import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
 import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/settings/companyRepository";
 
 export type AdminFilePurgeWorkerInput = {
@@ -47,6 +48,7 @@ async function purgeCandidate(candidate: AdminPurgeCandidate): Promise<AdminFile
   try {
     for (const key of keys) {
       await deleteR2ObjectViaWorker({ key });
+      deleteCachedR2UrlsByKey(key);
     }
 
     await markAttachmentTrashItemsPurged({ trashItemIds: [candidate.trashItemId], actorId: "purge-worker" });

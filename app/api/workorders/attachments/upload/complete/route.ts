@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
+import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
 import { isSupportedWorkOrderAttachmentStorageKey, isWorkOrderAttachmentStorageKeyForScope } from "@/lib/storage/r2/r2Keys";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
 import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
@@ -128,6 +129,8 @@ export async function POST(request: NextRequest) {
     const attachments: Attachment[] = [];
 
     for (const target of uploadTargets) {
+      deleteCachedR2UrlsByKey(target.storageKey);
+
       const provisionalAttachment: Attachment = {
         id: target.storageKey,
         name: target.fileName,
