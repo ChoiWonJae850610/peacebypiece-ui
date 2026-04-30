@@ -1,4 +1,5 @@
 import type {
+  CompanyFilePolicySettings,
   CompanyLanguage,
   CompanySettings,
   CompanySettingsUpdateInput,
@@ -6,6 +7,7 @@ import type {
 } from "@/lib/admin/settings/companyTypes";
 
 export type AdminSettingSaveState = "idle" | "saving" | "saved" | "error";
+export type AdminStorageStatusTone = "normal" | "caution" | "danger";
 
 export type AdminThemeOption = {
   label: string;
@@ -17,6 +19,12 @@ export type AdminThemeOption = {
 export type AdminLanguageOption = {
   label: string;
   value: CompanyLanguage;
+};
+
+export type AdminStorageStatusPreview = {
+  tone: AdminStorageStatusTone;
+  label: string;
+  description: string;
 };
 
 export const ADMIN_THEME_OPTIONS: AdminThemeOption[] = [
@@ -64,4 +72,30 @@ export function getAdminSettingsUpdatedAtLabel(updatedAt?: string | null): strin
   const minutes = padDatePart(date.getUTCMinutes());
 
   return `최근 저장 ${year}.${month}.${day} ${hours}:${minutes}`;
+}
+
+export function normalizeAdminFilePolicyDraft(filePolicy: CompanyFilePolicySettings): CompanyFilePolicySettings {
+  const retentionDays = ADMIN_RETENTION_DAY_OPTIONS.includes(filePolicy.trashRetentionDays as (typeof ADMIN_RETENTION_DAY_OPTIONS)[number])
+    ? filePolicy.trashRetentionDays
+    : 15;
+  const storageLimitGb = Number.isFinite(filePolicy.storageLimitGb) ? Math.max(1, Math.min(999, Math.trunc(filePolicy.storageLimitGb))) : 5;
+  const warningThresholdPercent = Number.isFinite(filePolicy.warningThresholdPercent)
+    ? Math.max(1, Math.min(99, Math.trunc(filePolicy.warningThresholdPercent)))
+    : 80;
+
+  return {
+    ...filePolicy,
+    trashRetentionDays: retentionDays,
+    storageLimitGb,
+    warningThresholdPercent,
+  };
+}
+
+export function buildAdminStorageStatusPreview(filePolicy: CompanyFilePolicySettings): AdminStorageStatusPreview[] {
+  const warning = normalizeAdminFilePolicyDraft(filePolicy).warningThresholdPercent;
+  return [
+    { tone: "normal", label: "정상", description: `${warning}% 미만 사용` },
+    { tone: "caution", label: "주의", description: `${warning}% 이상 사용` },
+    { tone: "danger", label: "위험", description: "100% 이상 또는 한도 초과" },
+  ];
 }

@@ -172,9 +172,9 @@ export const ADMIN_STORAGE_POLICY_ITEMS: AdminStoragePolicyItem[] = [
     description: "R2 원본이 실제 삭제되기 전까지 휴지통 파일도 사용량에 포함",
   },
   {
-    label: "실제 삭제",
-    value: "15일 이후",
-    description: "purge_after_at 이후 dryRun 검토 후 /api/admin/files/trash/purge-worker가 R2 원본과 썸네일 삭제",
+    label: "보관기간",
+    value: "15일",
+    description: "휴지통 파일이 실제 삭제 후보가 되기 전까지 보관되는 기간",
   },
 ];
 
@@ -206,9 +206,9 @@ export function buildAdminStoragePolicyItems(policySettings: AdminStoragePolicyS
       description: policySettings.includeTrashInUsage ? "R2 원본이 실제 삭제되기 전까지 휴지통 파일도 사용량에 포함합니다." : "휴지통 파일은 사용량 합산에서 제외합니다.",
     },
     {
-      label: "실제 삭제",
-      value: `${policySettings.purgeAfterDays}일 이후`,
-      description: "company_settings.trash_retention_days 기준으로 purge 후보를 계산합니다.",
+      label: "보관기간",
+      value: `${policySettings.purgeAfterDays}일`,
+      description: "company_settings.trash_retention_days 기준으로 실제 삭제 후보가 되는 시점을 계산합니다.",
     },
   ];
 }
