@@ -1,19 +1,17 @@
 # Commit Meta
 
 ## Version
-0.8.0 → 0.8.1
+0.8.1 → 0.8.2
 
 ## Summary
-관리자 환경설정 권한 관리 모달 추가
+실제 사용자 계정 전환 테스트 연결
 
 ## Description
-관리자 환경설정의 사용자/권한 테스트 패널에 권한 관리 모달을 추가하고 역할 변경 시 중앙 role policy 기준으로 권한 미리보기가 재계산되도록 정리함.
+작업지시서 DB 로드 시 관리자 사용자/권한 조회 API를 함께 사용해 실제 사용자 목록이 있으면 작업지시서 권한 테스트 사용자로 반영되도록 연결함.
 
 ## 수정 파일 목록
-- lib/constants/app.ts: APP_VERSION을 0.8.1로 갱신.
-- components/admin/settings/AdminUserAccessPreview.tsx: 사용자/권한 패널을 클라이언트 상호작용 구조로 전환하고 권한 관리 모달 및 역할 변경 미리보기 추가.
-- lib/i18n/ko/admin.ts: 권한 관리 모달 관련 한글 문구 추가.
-- lib/i18n/en/admin.ts: 권한 관리 모달 관련 영문 문구 동기화.
+- lib/constants/app.ts: APP_VERSION을 0.8.2로 갱신.
+- lib/repositories/dbWorkorderHttpAdapter.ts: 작업지시서 DB 로드 시 사용자/권한 API를 조회하고 현재 사용자/권한 테스트 대상을 실제 사용자 목록 기준으로 보정.
 - commit-meta.md: 모바일 최소 응답용 작업 상세 기록 갱신.
 
 ## 추가 파일 목록
@@ -23,8 +21,8 @@
 없음
 
 ## 작업 상세 내용
-- 환경설정의 사용자/권한 테스트 구조에서 권한 관리 버튼을 제공함.
-- 모달 안에서 사용자별 역할을 관리자/디자이너/재고관리 기준으로 변경 테스트할 수 있게 함.
-- 역할 변경 결과는 buildUserRoleState를 통해 중앙 role policy 기준으로 권한 뱃지에 즉시 반영되도록 구성함.
-- 현재 단계는 로그인/DB 저장 전환 전 검증용이므로 DB 저장 로직은 추가하지 않음.
-- package.json 및 package-lock.json은 수정하지 않음.
+- /api/admin/settings/users 응답을 작업지시서 workspace 로드 단계에서 함께 조회하도록 추가함.
+- DB 사용자 목록이 있으면 persisted/mock 사용자보다 우선 적용함.
+- 저장되어 있던 currentUserId 또는 permissionTargetUserId가 실제 사용자 목록에 없으면 첫 번째 실제 사용자로 안전하게 보정함.
+- 사용자 API 조회 실패 시 기존 persisted/mock fallback 흐름을 그대로 유지함.
+- UI, 권한 policy, actionFlow, package.json, package-lock.json은 수정하지 않음.

@@ -3,7 +3,7 @@ import { mockWorkorderAdapter } from "@/lib/repositories/mockWorkorderRepository
 import { loadPersistedWorkspaceState } from "@/lib/repositories/workorderPersistence";
 import type { WorkorderRepositoryAdapter } from "@/lib/repositories/workorderRepositoryAdapter";
 import { setDbConnectionStatus, type DbConnectionStateCode } from "@/lib/repositories/dbConnectionStatusStore";
-import type { MemoThread, WorkOrder } from "@/types/workorder";
+import type { MemoThread, UserProfile, WorkOrder } from "@/types/workorder";
 
 type DbApiErrorBody = {
   message?: string;
@@ -16,6 +16,40 @@ type MemoLoadResponse = {
   error?: string;
   message?: string;
 };
+
+type UserAccessResponse = {
+  ok?: boolean;
+  users?: UserProfile[];
+  sourceState?: string;
+  error?: string;
+  message?: string;
+};
+
+async function loadUserProfilesForWorkspace(): Promise<UserProfile[] | null> {
+  try {
+    const response = await fetch("/api/admin/settings/users", {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    });
+
+    const result = await parseResponse<UserAccessResponse>(response);
+    return Array.isArray(result.users) && result.users.length > 0 ? result.users : null;
+  } catch (error) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("[user access hydration]", error instanceof Error ? error.message : error);
+    }
+    return null;
+  }
+}
+
+function resolveUserId(users: UserProfile[], persistedUserId: string | null | undefined, defaultUserId: string) {
+  if (persistedUserId && users.some((user) => user.id === persistedUserId)) {
+    return persistedUserId;
+  }
+
+  return users[0]?.id ?? defaultUserId;
+}
 
 function mergeMemoThreads(payloadThreads: MemoThread[] | undefined, dbThreads: MemoThread[] | undefined): MemoThread[] {
   const merged = new Map<string, MemoThread>();
@@ -210,19 +244,23 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
         const workOrders = await hydrateWorkOrdersWithMemoThreads(loadedWorkOrders);
         const seededState = createInitialSeededWorkorderState();
         const persistedState = loadPersistedWorkspaceState();
+        const dbUsers = await loadUserProfilesForWorkspace();
+        const users = dbUsers ?? persistedState?.users ?? seededState.users;
         const selectedId = resolveSelectedId(
           workOrders,
           persistedState?.selectedId,
           seededState.selectedId,
         );
+        const currentUserId = resolveUserId(users, persistedState?.currentUserId, seededState.currentUserId);
+        const permissionTargetUserId = resolveUserId(users, persistedState?.permissionTargetUserId, currentUserId);
 
         reportDbStatus({ source: "workspace-load", connected: true, fallbackActive: false, code: "READY" });
 
         return {
-          users: persistedState?.users ?? seededState.users,
+          users,
           historyLogs: persistedState?.historyLogs ?? seededState.historyLogs,
-          currentUserId: persistedState?.currentUserId ?? seededState.currentUserId,
-          permissionTargetUserId: persistedState?.permissionTargetUserId ?? seededState.permissionTargetUserId,
+          currentUserId,
+          permissionTargetUserId,
           selectedId,
           workOrders,
         };
