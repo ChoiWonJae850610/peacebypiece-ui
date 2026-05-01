@@ -1,22 +1,21 @@
-Version : 0.9.40
+Version : 0.9.41
 
-Summary : 협력업체 관리 UI 마감 보완
+Summary : 관리자 i18n 잔여 정리
 
 Description :
-- 협력업체 유형 라벨을 i18n 기반으로 연결해 영어 전환 시 공장/원단/부자재/외주 버튼과 목록 뱃지가 함께 전환되도록 보완
-- 협력업체 필터 옵션과 목록 표시 모델이 정적 한글 라벨에 의존하지 않도록 조정
-- 협력업체 추가/수정 모달의 분류 버튼도 i18n 라벨을 사용하도록 정리
-- APP_VERSION을 0.9.40으로 동기화
+- 관리자 환경설정 화면의 샘플 고객사명 fallback을 i18n 키로 분리했습니다.
+- 파일 정책 모달의 용량 상태 라벨과 설명을 i18n 키 기반으로 표시하도록 정리했습니다.
+- 용량 상태 preview selector에서 한글 문구를 직접 반환하지 않도록 정리했습니다.
+- APP_VERSION을 0.9.41로 동기화했습니다.
 
 수정 파일 목록 :
-- lib/constants/app.ts : APP_VERSION을 0.9.40으로 갱신
-- components/admin/PartnerMasterSection.tsx : 협력업체 유형 번역 라벨을 목록 view model 생성 흐름에 전달
-- components/admin/partnerMaster/PartnerMasterFormModal.tsx : 협력업체 분류 버튼 라벨을 i18n 기반으로 표시
-- lib/admin/partner/types.ts : 협력업체 유형 번역 라벨 맵 타입과 badge type 정보를 추가
-- lib/admin/partner/filters.ts : 협력업체 필터 옵션을 번역 라벨 기반으로 생성
-- lib/admin/partner/presentation.ts : 협력업체 목록 뱃지를 번역 라벨 기반으로 생성
-- lib/i18n/ko/admin.ts : 협력업체 유형 라벨 키를 한국어 i18n에 추가
-- lib/i18n/en/admin.ts : 협력업체 유형 라벨 키를 영어 i18n에 추가
+- lib/constants/app.ts : APP_VERSION을 0.9.41로 변경
+- components/admin/settings/AdminCompanySettingsForm.tsx : 샘플 고객사 fallback을 i18n 텍스트로 변경
+- components/admin/standards/AdminFilePolicySettingsModal.tsx : 용량 상태 라벨/설명을 i18n 경로로 출력
+- lib/admin/settings/presentation.ts : 용량 상태 preview가 tone/임계값 중심 데이터를 반환하도록 변경
+- lib/i18n/ko/admin.ts : 샘플 고객사명 및 용량 상태 i18n 키 추가
+- lib/i18n/en/admin.ts : 샘플 고객사명 및 용량 상태 i18n 키 추가
+- commit-meta.md : 0.9.41 작업 메타데이터 갱신
 
 추가 파일 목록 :
 - 없음
@@ -25,6 +24,7 @@ Description :
 - 없음
 
 작업 상세 :
-- 협력업체 관리 화면에서 유형 필터, 목록 뱃지, 추가/수정 모달 분류 버튼이 PARTNER_TYPE_META의 고정 한글 라벨만 사용하던 부분을 i18n 라벨로 보완했다.
-- 외주공정 관리 모달 컴포넌트는 환경설정 기준관리 화면에서 재사용 중이므로 삭제하지 않았다.
-- npm 빌드는 이번 요청 범위에 포함되지 않아 실행하지 않았다.
+- 환경설정 영어 전환 시 샘플 고객사명이 한글 fallback으로 남는 문제를 줄였습니다.
+- 파일 정책 모달에서 정상/주의/위험 및 임계값 설명이 언어별 문구로 표시되도록 정리했습니다.
+- 모바일 최소 응답 규칙에 맞춰 상세 작업 내용은 commit-meta.md에 포함했습니다.
+- npm build는 요청되지 않아 실행하지 않았습니다.

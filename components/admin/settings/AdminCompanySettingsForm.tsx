@@ -43,9 +43,10 @@ function HeaderRefreshButton({ label }: { label: string }) {
   );
 }
 
-export default function AdminCompanySettingsForm({ initialSettings, companyName = "샘플 고객사" }: AdminCompanySettingsFormProps) {
+export default function AdminCompanySettingsForm({ initialSettings, companyName }: AdminCompanySettingsFormProps) {
   const { i18n, setLocale } = useI18n();
   const text = i18n.admin.settingsForm;
+  const displayCompanyName = companyName ?? text.sampleCompanyName;
   const [draft, setDraft] = useState<CompanySettings>(initialSettings);
   const [saveState, setSaveState] = useState<AdminSettingSaveState>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -82,7 +83,7 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
         <section className="rounded-[28px] bg-[var(--admin-theme-surface)] p-4 text-[var(--admin-theme-text-on-surface)] transition-colors">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h2 className="text-2xl font-semibold tracking-tight">{companyName}</h2>
+              <h2 className="text-2xl font-semibold tracking-tight">{displayCompanyName}</h2>
               <p className="mt-2 text-xs font-semibold text-[var(--admin-theme-muted-on-surface)]">{text.planLabel}</p>
               <p className="mt-1 text-xs font-semibold text-[var(--admin-theme-muted-on-surface)]">{companyDate.updatedAt}</p>
             </div>

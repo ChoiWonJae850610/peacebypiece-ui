@@ -203,8 +203,18 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
           <div className="mt-3 grid gap-2 md:grid-cols-3">
             {storageStatusPreview.map((item) => (
               <div key={item.tone} className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2.5">
-                <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${item.tone === "danger" ? "bg-red-100 text-red-700" : item.tone === "caution" ? "bg-amber-100 text-amber-900" : "bg-stone-950 text-white"}`}>{item.label}</span>
-                <p className="mt-2 text-xs font-semibold leading-5 text-stone-500">{item.description}</p>
+                <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${item.tone === "danger" ? "bg-red-100 text-red-700" : item.tone === "caution" ? "bg-amber-100 text-amber-900" : "bg-stone-950 text-white"}`}>{t(`standards.filePolicy.storageStatusLabels.${item.tone}`, item.label)}</span>
+                <p className="mt-2 text-xs font-semibold leading-5 text-stone-500">
+                  {t(
+                    `standards.filePolicy.storageStatusDescriptions.${item.tone}`,
+                    item.description,
+                    item.tone === "normal"
+                      ? { caution: storageThresholdPolicy.cautionThresholdPercent }
+                      : item.tone === "caution"
+                        ? { caution: storageThresholdPolicy.cautionThresholdPercent, danger: storageThresholdPolicy.dangerThresholdPercent }
+                        : { danger: storageThresholdPolicy.dangerThresholdPercent },
+                  )}
+                </p>
               </div>
             ))}
           </div>

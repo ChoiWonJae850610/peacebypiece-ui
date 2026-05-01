@@ -105,8 +105,8 @@ export function buildAdminStorageThresholdPolicy(filePolicy: CompanyFilePolicySe
 export function buildAdminStorageStatusPreview(filePolicy: CompanyFilePolicySettings): AdminStorageStatusPreview[] {
   const { cautionThresholdPercent, dangerThresholdPercent } = buildAdminStorageThresholdPolicy(filePolicy);
   return [
-    { tone: "normal", label: "정상", description: `${cautionThresholdPercent}% 미만 사용` },
-    { tone: "caution", label: "주의", description: `${cautionThresholdPercent}% 이상 ${dangerThresholdPercent}% 미만 사용` },
-    { tone: "danger", label: "위험", description: `${dangerThresholdPercent}% 이상 또는 한도 초과` },
+    { tone: "normal", label: "normal", description: `` },
+    { tone: "caution", label: "caution", description: `:` },
+    { tone: "danger", label: "danger", description: `` },
   ];
 }
