@@ -1,13 +1,13 @@
-Version : 0.9.test03
-Summary : test: delete auto patch smoke file
+Version : 0.9.test05
+Summary : test: temp file should not block valid patch
 Description :
-01/02에서 사용한 테스트 파일을 삭제합니다.
+임시 다운로드 파일이 남아 있어도 필수 파일이 모두 있으면 정상 진행해야 합니다.
 
 수정 파일 목록 :
 - 없음
 
 추가 파일 목록 :
-- 없음
+- docs/auto-patch-test-temp-ok.md
 
 삭제 파일 목록 :
-- docs/auto-patch-test-success.md
+- 없음
