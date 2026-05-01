@@ -182,7 +182,7 @@ export default function PartnerMasterFormModal({
                     checked ? "border-sky-300 bg-sky-50 text-sky-900 shadow-sm" : "border-stone-200 bg-white text-stone-700 hover:border-stone-300",
                   ].join(" ")}
                 >
-                  {PARTNER_TYPE_META[type].shortLabel}
+                  {formText.typeLabels?.[type] ?? PARTNER_TYPE_META[type].shortLabel}
                 </button>
               );
             })}

@@ -200,6 +200,13 @@ export const adminKo = {
       manageProcesses: "외주 공정 관리",
       createPartner: "협력업체 추가",
     },
+    typeLabels: {
+      all: "전체",
+      factory: "공장",
+      material_vendor: "원단",
+      subsidiary_vendor: "부자재",
+      outsourcing_vendor: "외주",
+    },
     filters: {
       searchLabel: "검색",
       searchPlaceholder: "이름, 담당자, 연락처, 메모, 외주공정 검색",
@@ -247,6 +254,12 @@ export const adminKo = {
       cancel: "취소",
       save: "저장",
       sections: { basic: "기본 정보", category: "분류", memo: "메모" },
+      typeLabels: {
+        factory: "공장",
+        material_vendor: "원단",
+        subsidiary_vendor: "부자재",
+        outsourcing_vendor: "외주",
+      },
       labels: {
         name: "이름",
         active: "사용 여부",

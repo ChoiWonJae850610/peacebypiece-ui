@@ -1,18 +1,20 @@
 import { BASE_PARTNER_TYPE_VALUES, DEFAULT_OUTSOURCING_PROCESS_META, PARTNER_TYPE_META } from "@/lib/admin/partner/constants";
 import { buildOutsourcingProcessMeta, buildPartnerFilterOptions, buildPartnerSummary, selectFilteredPartners } from "@/lib/admin/partner/filters";
 import { formatPartnerDate, formatPartnerPhone } from "@/lib/admin/partner/draft";
-import type { OutsourcingProcessDefinition, PartnerListFilterState, PartnerListItemViewModel } from "@/lib/admin/partner/types";
+import type { OutsourcingProcessDefinition, PartnerListFilterState, PartnerListItemViewModel, PartnerTypeLabelMap } from "@/lib/admin/partner/types";
 import type { Partner } from "@/types/partner";
 
 function buildPartnerListItemViewModel(
   partner: Partner,
   processMeta: Record<string, { label: string; tone: string }>,
+  typeLabels: PartnerTypeLabelMap = {},
 ): PartnerListItemViewModel {
   const baseTypeBadges = partner.partnerTypes
     .filter((type) => type !== "outsourcing_vendor")
     .map((type) => ({
-      key: `${partner.id}-${type}`,
-      label: PARTNER_TYPE_META[type].shortLabel,
+      key: `-`,
+      type,
+      label: typeLabels[type] ?? PARTNER_TYPE_META[type].shortLabel,
       tone: PARTNER_TYPE_META[type].tone,
     }));
 
@@ -59,9 +61,10 @@ export function buildPartnerListViewModel(
   partners: Partner[],
   filters: PartnerListFilterState,
   definitions: OutsourcingProcessDefinition[],
+  typeLabels: PartnerTypeLabelMap = {},
 ) {
   const processMeta = buildOutsourcingProcessMeta(definitions);
-  const filterOptions = buildPartnerFilterOptions(definitions);
+  const filterOptions = buildPartnerFilterOptions(definitions, typeLabels);
   const filteredPartners = selectFilteredPartners(partners, filters, processMeta);
   const summary = buildPartnerSummary(partners);
   const filteredSummary = buildPartnerSummary(filteredPartners);
@@ -69,7 +72,7 @@ export function buildPartnerListViewModel(
     .filter((definition) => definition.isActive)
     .sort((a, b) => a.sortOrder - b.sortOrder)
     .map((definition) => definition.type);
-  const items = filteredPartners.map((partner) => buildPartnerListItemViewModel(partner, processMeta));
+  const items = filteredPartners.map((partner) => buildPartnerListItemViewModel(partner, processMeta, typeLabels));
   const editablePartnerMap = filteredPartners.reduce<Record<string, Partner>>((acc, partner) => {
     acc[partner.id] = partner;
     return acc;

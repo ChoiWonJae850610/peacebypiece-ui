@@ -68,9 +68,11 @@ export default function PartnerMasterSection() {
     };
   }, []);
 
+  const typeLabels = partnerText.typeLabels;
+
   const listViewModel = useMemo(
-    () => buildPartnerListViewModel(partners, { selectedTypes, status: selectedStatus, searchTerm }, processDefinitions),
-    [partners, processDefinitions, searchTerm, selectedStatus, selectedTypes],
+    () => buildPartnerListViewModel(partners, { selectedTypes, status: selectedStatus, searchTerm }, processDefinitions, typeLabels),
+    [partners, processDefinitions, searchTerm, selectedStatus, selectedTypes, typeLabels],
   );
 
   const isOutsourcingEnabled = selectIsOutsourcingEnabled(draft);

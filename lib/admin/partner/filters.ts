@@ -5,6 +5,7 @@ import type {
   PartnerFilterChip,
   PartnerFilterOption,
   PartnerListFilterState,
+  PartnerTypeLabelMap,
 } from "@/lib/admin/partner/types";
 import { formatPartnerPhone } from "@/lib/admin/partner/draft";
 import { PARTNER_TYPE_VALUES, type Partner, type PartnerType } from "@/types/partner";
@@ -16,13 +17,13 @@ export function buildOutsourcingProcessMeta(definitions: OutsourcingProcessDefin
   }, {});
 }
 
-export function buildPartnerFilterOptions(_definitions: OutsourcingProcessDefinition[]): PartnerFilterOption[] {
+export function buildPartnerFilterOptions(_definitions: OutsourcingProcessDefinition[], labels: PartnerTypeLabelMap = {}): PartnerFilterOption[] {
   return [
-    { value: "all", label: "전체" },
-    { value: "factory", label: "공장" },
-    { value: "material_vendor", label: "원단" },
-    { value: "subsidiary_vendor", label: "부자재" },
-    { value: "outsourcing_vendor", label: "외주" },
+    { value: "all", label: labels.all ?? "전체" },
+    { value: "factory", label: labels.factory ?? PARTNER_TYPE_META.factory.shortLabel },
+    { value: "material_vendor", label: labels.material_vendor ?? PARTNER_TYPE_META.material_vendor.shortLabel },
+    { value: "subsidiary_vendor", label: labels.subsidiary_vendor ?? PARTNER_TYPE_META.subsidiary_vendor.shortLabel },
+    { value: "outsourcing_vendor", label: labels.outsourcing_vendor ?? PARTNER_TYPE_META.outsourcing_vendor.shortLabel },
   ];
 }
 

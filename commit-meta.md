@@ -1,17 +1,22 @@
-Version : 0.9.39
+Version : 0.9.40
 
-Summary : 빌드 검증 재시도 기준 정리 및 버전 동기화
+Summary : 협력업체 관리 UI 마감 보완
 
 Description :
-- 0.9.38 기준 소스에서 이전 TypeScript 오류 수정 상태를 재확인
-- lib/admin/history/presentation.ts의 null label index 접근 방지 로직 유지 확인
-- APP_VERSION 값을 0.9.39로 동기화
-- npm ci 의존성 설치가 제한 시간 내 완료되지 않아 next build 최종 완료 로그는 생성하지 못함
-- package.json / package-lock.json은 수정하지 않음
+- 협력업체 유형 라벨을 i18n 기반으로 연결해 영어 전환 시 공장/원단/부자재/외주 버튼과 목록 뱃지가 함께 전환되도록 보완
+- 협력업체 필터 옵션과 목록 표시 모델이 정적 한글 라벨에 의존하지 않도록 조정
+- 협력업체 추가/수정 모달의 분류 버튼도 i18n 라벨을 사용하도록 정리
+- APP_VERSION을 0.9.40으로 동기화
 
 수정 파일 목록 :
-- lib/constants/app.ts : APP_VERSION 0.9.39 반영
-- commit-meta.md : 0.9.39 작업 메타 정보와 빌드 검증 시도 결과 기록
+- lib/constants/app.ts : APP_VERSION을 0.9.40으로 갱신
+- components/admin/PartnerMasterSection.tsx : 협력업체 유형 번역 라벨을 목록 view model 생성 흐름에 전달
+- components/admin/partnerMaster/PartnerMasterFormModal.tsx : 협력업체 분류 버튼 라벨을 i18n 기반으로 표시
+- lib/admin/partner/types.ts : 협력업체 유형 번역 라벨 맵 타입과 badge type 정보를 추가
+- lib/admin/partner/filters.ts : 협력업체 필터 옵션을 번역 라벨 기반으로 생성
+- lib/admin/partner/presentation.ts : 협력업체 목록 뱃지를 번역 라벨 기반으로 생성
+- lib/i18n/ko/admin.ts : 협력업체 유형 라벨 키를 한국어 i18n에 추가
+- lib/i18n/en/admin.ts : 협력업체 유형 라벨 키를 영어 i18n에 추가
 
 추가 파일 목록 :
 - 없음
@@ -20,7 +25,6 @@ Description :
 - 없음
 
 작업 상세 :
-- 0.9.38에서 발생했던 lib/admin/history/presentation.ts의 TypeScript null index 오류 수정 상태를 확인함
-- displayHistoryDetailLabel 함수가 label null/undefined를 먼저 차단하고 normalizedLabel을 별도 string 값으로 만든 뒤 labelMap에 접근하는 구조임을 확인함
-- node_modules가 압축파일에 포함되어 있지 않아 npm run build 실행 전 npm ci가 필요했으나 설치가 제한 시간 내 완료되지 않음
-- npm 빌드 최종 통과 여부는 로컬 환경에서 npm ci 완료 후 npm run build로 재확인 필요
+- 협력업체 관리 화면에서 유형 필터, 목록 뱃지, 추가/수정 모달 분류 버튼이 PARTNER_TYPE_META의 고정 한글 라벨만 사용하던 부분을 i18n 라벨로 보완했다.
+- 외주공정 관리 모달 컴포넌트는 환경설정 기준관리 화면에서 재사용 중이므로 삭제하지 않았다.
+- npm 빌드는 이번 요청 범위에 포함되지 않아 실행하지 않았다.

@@ -23,6 +23,7 @@ export type OutsourcingProcessDefinition = {
 };
 
 export type PartnerTypeMeta = { label: string; shortLabel: string; tone: string };
+export type PartnerTypeLabelMap = Partial<Record<PartnerType, string>> & { all?: string };
 export type OutsourcingProcessMeta = { label: string; tone: string };
 
 export type PartnerFilterOption = {
@@ -44,7 +45,7 @@ export type PartnerListItemViewModel = {
   email: string;
   memo: string;
   updatedAtLabel: string;
-  baseTypeBadges: { key: string; label: string; tone: string }[];
+  baseTypeBadges: { key: string; type: PartnerType; label: string; tone: string }[];
   outsourcingProcessBadges: { key: string; label: string; tone: string }[];
   outsourcingProcessLabel: string;
   hasBaseTypes: boolean;

@@ -247,6 +247,13 @@ export const adminEn = {
       manageProcesses: "Manage Outsourcing Processes",
       createPartner: "Add Partner / Factory",
     },
+    typeLabels: {
+      all: "All",
+      factory: "Factory",
+      material_vendor: "Fabric",
+      subsidiary_vendor: "Subsidiary",
+      outsourcing_vendor: "Outsourcing",
+    },
     filters: {
       searchLabel: "Search",
       searchPlaceholder: "Search by name, contact, phone, memo, or outsourcing process",
@@ -294,6 +301,12 @@ export const adminEn = {
       cancel: "Cancel",
       save: "Save",
       sections: { basic: "Basic Information", category: "Category", memo: "Memo" },
+      typeLabels: {
+        factory: "Factory",
+        material_vendor: "Fabric",
+        subsidiary_vendor: "Subsidiary",
+        outsourcing_vendor: "Outsourcing",
+      },
       labels: {
         name: "Name",
         active: "Usage",
