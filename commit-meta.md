@@ -1,21 +1,22 @@
-Version : 0.9.37
+Version : 0.9.38
 
-Summary : 대시보드 실무형 작업 카드 보강
+Summary : 환경설정 정책 마감 및 빌드 타입 오류 수정
 
 Description :
-- 운영 대시보드의 오늘의 작업 목록을 검토대기와 검수대기 중심 카드 구조로 보강
-- 작업 카드에 첨부 미리보기, 첨부 개수, 공장, 수량, 최근 업데이트 정보를 추가
-- 작업지시서 화면으로 이동하는 액션 버튼을 추가
-- 대시보드 작업 카드에 필요한 한글/영문 i18n 문구를 추가
-- APP_VERSION 값을 0.9.37로 동기화
+- 히스토리 표시 로직에서 null 라벨을 index key로 사용하던 TypeScript 오류 수정
+- 삭제 방식이 즉시삭제일 때 삭제 파일 보관 기간 선택 영역이 보이지 않도록 정리
+- 삭제 파일 보관 기간 명칭과 안내 문구를 한글/영문 i18n에 반영
+- 용량 상태 기준을 정상/주의/위험 단계로 보여주도록 표시 정책 보강
+- APP_VERSION 값을 0.9.38로 동기화
+- npm 빌드는 의존성 설치 단계가 제한 시간 내 완료되지 않아 최종 실행 완료는 못함
 
 수정 파일 목록 :
-- components/admin/dashboard/AdminOperationsDashboard.tsx : 오늘의 작업 카드 UI에 미리보기, 첨부 수, 공장, 수량, 업데이트, 이동 버튼 추가
-- lib/admin/adminOperations.repository.ts : 대시보드 작업 데이터에 공장명, 수량, 첨부 요약, 썸네일, 이동 링크, 업데이트 표시값 추가
-- lib/admin/adminOperations.types.ts : 오늘의 작업 카드 표시 데이터 타입 확장
-- lib/i18n/ko/admin.ts : 대시보드 작업 카드용 한글 문구 추가
-- lib/i18n/en/admin.ts : 대시보드 작업 카드용 영문 문구 추가
-- lib/constants/app.ts : APP_VERSION 0.9.37 반영
+- lib/admin/history/presentation.ts : detail label이 null일 때 index 접근이 발생하지 않도록 normalized label 처리 보강
+- lib/admin/settings/presentation.ts : 용량 상태 기준 preview를 정상/주의/위험 단계로 계산하는 표시 정책 추가
+- components/admin/standards/AdminFilePolicySettingsModal.tsx : 즉시삭제 선택 시 삭제 파일 보관 기간 선택 버튼 숨김 처리 및 용량 위험 기준 안내 추가
+- lib/i18n/ko/admin.ts : 파일 정책 문구를 삭제 파일 보관 기간/용량 주의 기준 중심으로 보완
+- lib/i18n/en/admin.ts : 파일 정책 영문 문구를 삭제 파일 보관 기간/용량 주의 기준 중심으로 보완
+- lib/constants/app.ts : APP_VERSION 0.9.38 반영
 - commit-meta.md : 이번 작업 메타 정보 갱신
 
 추가 파일 목록 :
@@ -25,8 +26,10 @@ Description :
 - 없음
 
 작업 상세 :
-- 대시보드가 단순 숫자 중심으로 보이던 부분을 작업지시서 처리에 필요한 목록형 카드 중심으로 조정
-- 각 작업 카드에서 상태, 우선 처리 사유, 첨부 현황, 공장, 수량, 납기 정보를 한 번에 확인할 수 있도록 정리
-- 첨부 썸네일 또는 preview URL이 있으면 카드 좌측에 미리보기로 표시하고, 없으면 미리보기 placeholder를 표시
-- 작업지시서 이동 링크는 workOrderId 쿼리 기준으로 생성해 이후 작업지시서 화면 연동 보강이 가능하도록 구성
-- DB 미설정/조회 실패 상태에서는 기존처럼 빈 작업 목록과 0건 지표를 유지
+- 빌드 로그의 ./lib/admin/history/presentation.ts:121 오류를 기준으로 label 값이 null 또는 undefined인 경우를 먼저 차단하도록 수정
+- isDisplayableHistoryDetailLabel 통과 이후에도 TypeScript가 label을 string으로 좁히지 못하는 문제를 명시 조건으로 해결
+- 저장 정책 모달에서 삭제 방식이 즉시삭제이면 보관기간 버튼을 disabled로 남기지 않고 별도 안내 문구만 표시하도록 변경
+- 휴지통 삭제 방식으로 전환할 때 기본 보관기간 fallback을 5일로 맞춤
+- 용량 상태 preview를 warningThresholdPercent 기준의 정상/주의/위험 구간 설명으로 정리
+- 위험 기준은 현재 DB 스키마 변경 없이 주의 기준보다 10% 높은 표시 기준으로 계산
+- npm ci가 제한 시간 내 완료되지 않아 node_modules 생성과 npm run build 최종 확인은 완료하지 못함

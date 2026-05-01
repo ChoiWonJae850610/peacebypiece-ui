@@ -116,9 +116,10 @@ function isDisplayableHistoryDetailLabel(label: string | null | undefined): bool
 }
 
 function displayHistoryDetailLabel(label: string | null | undefined, translations: AdminI18n): string | null {
-  if (!isDisplayableHistoryDetailLabel(label)) return null;
+  if (!isDisplayableHistoryDetailLabel(label) || !label) return null;
+  const normalizedLabel = normalizeHistoryToken(label);
   const labelMap = translations.historyPage.detailLabels as Record<string, string> | undefined;
-  return labelMap?.[label] ?? labelMap?.[normalizeHistoryToken(label)] ?? label;
+  return labelMap?.[label] ?? labelMap?.[normalizedLabel] ?? label;
 }
 
 function isTechnicalHistoryValue(value: string): boolean {

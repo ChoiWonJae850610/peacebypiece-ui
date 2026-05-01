@@ -6,6 +6,7 @@ import { AdminModal, adminModalPrimaryButtonClassName, adminModalSecondaryButton
 import {
   ADMIN_RETENTION_DAY_OPTIONS,
   buildAdminStorageStatusPreview,
+  buildAdminStorageThresholdPolicy,
   normalizeAdminFilePolicyDraft,
 } from "@/lib/admin/settings/presentation";
 import { runSaveCompanySettingsFlow } from "@/lib/admin/settings/actionFlow";
@@ -69,6 +70,7 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
   }, [open, t]);
 
   const storageStatusPreview = useMemo(() => buildAdminStorageStatusPreview(draft.filePolicy), [draft.filePolicy]);
+  const storageThresholdPolicy = useMemo(() => buildAdminStorageThresholdPolicy(draft.filePolicy), [draft.filePolicy]);
 
   function handleReset() {
     setDraft((current) => ({
@@ -123,7 +125,7 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
               filePolicy: normalizeAdminFilePolicyDraft({
                 ...current.filePolicy,
                 softDeleteEnabled,
-                trashRetentionDays: softDeleteEnabled ? current.filePolicy.trashRetentionDays || 15 : current.filePolicy.trashRetentionDays,
+                trashRetentionDays: softDeleteEnabled ? current.filePolicy.trashRetentionDays || 5 : current.filePolicy.trashRetentionDays,
               }),
             }))}
           />
@@ -145,23 +147,27 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
             </div>
             {!draft.filePolicy.softDeleteEnabled ? <span className="rounded-full bg-stone-200 px-3 py-1 text-xs font-semibold text-stone-500">{t("standards.filePolicy.disabled", "비활성")}</span> : null}
           </div>
-          <div className="mt-3 grid grid-cols-4 gap-2">
-            {ADMIN_RETENTION_DAY_OPTIONS.map((days) => {
-              const selected = draft.filePolicy.trashRetentionDays === days;
-              const disabled = !draft.filePolicy.softDeleteEnabled;
-              return (
-                <button
-                  key={days}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => setDraft((current) => ({ ...current, filePolicy: normalizeAdminFilePolicyDraft({ ...current.filePolicy, trashRetentionDays: days }) }))}
-                  className={`w-full rounded-full border px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400 ${selected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"}`}
-                >
-                  {days}{t("standards.filePolicy.daySuffix", "일")}
-                </button>
-              );
-            })}
-          </div>
+          {draft.filePolicy.softDeleteEnabled ? (
+            <div className="mt-3 grid grid-cols-4 gap-2">
+              {ADMIN_RETENTION_DAY_OPTIONS.map((days) => {
+                const selected = draft.filePolicy.trashRetentionDays === days;
+                return (
+                  <button
+                    key={days}
+                    type="button"
+                    onClick={() => setDraft((current) => ({ ...current, filePolicy: normalizeAdminFilePolicyDraft({ ...current.filePolicy, trashRetentionDays: days }) }))}
+                    className={`w-full rounded-full border px-3 py-2 text-sm font-semibold transition ${selected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"}`}
+                  >
+                    {days}{t("standards.filePolicy.daySuffix", "일")}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="mt-3 rounded-2xl border border-stone-200 bg-white px-3 py-2 text-sm font-semibold text-stone-500">
+              {t("standards.filePolicy.retentionDisabledDescription", "즉시삭제 방식에서는 삭제 파일 보관 기간을 선택하지 않습니다.")}
+            </p>
+          )}
         </div>
 
         <div className="grid gap-3 md:grid-cols-2">
@@ -177,7 +183,7 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
             />
           </label>
           <label className="grid gap-2 rounded-3xl border border-stone-200 bg-stone-50 p-3 text-sm">
-            <span className="font-semibold text-stone-900">{t("standards.filePolicy.warningThreshold", "용량 상태 기준(%)")}</span>
+            <span className="font-semibold text-stone-900">{t("standards.filePolicy.warningThreshold", "용량 주의 기준(%)")}</span>
             <input
               type="number"
               min={1}
@@ -186,6 +192,9 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
               onChange={(event) => setDraft((current) => ({ ...current, filePolicy: normalizeAdminFilePolicyDraft({ ...current.filePolicy, warningThresholdPercent: Number(event.target.value) }) }))}
               className="rounded-2xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400"
             />
+            <span className="text-xs font-semibold leading-5 text-stone-500">
+              {t("standards.filePolicy.dangerThresholdDescription", "위험 기준은 주의 기준보다 10% 높게 계산됩니다.")} {storageThresholdPolicy.dangerThresholdPercent}%
+            </span>
           </label>
         </div>
 

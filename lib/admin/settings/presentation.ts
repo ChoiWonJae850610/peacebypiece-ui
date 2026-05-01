@@ -27,6 +27,11 @@ export type AdminStorageStatusPreview = {
   description: string;
 };
 
+export type AdminStorageThresholdPolicy = {
+  cautionThresholdPercent: number;
+  dangerThresholdPercent: number;
+};
+
 export const ADMIN_THEME_OPTIONS: AdminThemeOption[] = [
   { label: "Blue", value: "blue", swatchClassName: "bg-blue-500", description: "기본 관리자 색상" },
   { label: "Emerald", value: "emerald", swatchClassName: "bg-emerald-500", description: "차분한 운영 색상" },
@@ -91,11 +96,17 @@ export function normalizeAdminFilePolicyDraft(filePolicy: CompanyFilePolicySetti
   };
 }
 
+export function buildAdminStorageThresholdPolicy(filePolicy: CompanyFilePolicySettings): AdminStorageThresholdPolicy {
+  const cautionThresholdPercent = normalizeAdminFilePolicyDraft(filePolicy).warningThresholdPercent;
+  const dangerThresholdPercent = Math.min(100, Math.max(cautionThresholdPercent + 1, cautionThresholdPercent + 10));
+  return { cautionThresholdPercent, dangerThresholdPercent };
+}
+
 export function buildAdminStorageStatusPreview(filePolicy: CompanyFilePolicySettings): AdminStorageStatusPreview[] {
-  const warning = normalizeAdminFilePolicyDraft(filePolicy).warningThresholdPercent;
+  const { cautionThresholdPercent, dangerThresholdPercent } = buildAdminStorageThresholdPolicy(filePolicy);
   return [
-    { tone: "normal", label: "정상", description: `${warning}% 미만 사용` },
-    { tone: "caution", label: "주의", description: `${warning}% 이상 사용` },
-    { tone: "danger", label: "위험", description: "100% 이상 또는 한도 초과" },
+    { tone: "normal", label: "정상", description: `${cautionThresholdPercent}% 미만 사용` },
+    { tone: "caution", label: "주의", description: `${cautionThresholdPercent}% 이상 ${dangerThresholdPercent}% 미만 사용` },
+    { tone: "danger", label: "위험", description: `${dangerThresholdPercent}% 이상 또는 한도 초과` },
   ];
 }
