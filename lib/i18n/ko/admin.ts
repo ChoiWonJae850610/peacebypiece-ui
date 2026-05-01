@@ -121,6 +121,10 @@ export const adminKo = {
     productionRoundTitle: "생산 단계 비율",
     factoryProductionTitle: "공장별 제작 통계",
     categoryDistributionTitle: "단계별 카테고리 분포",
+    cumulativeNoticeTitle: "누적 기준",
+    cumulativeNoticeDescription: "삭제되기 전 생성된 생산 단계 기록까지 통계 축으로 보존할 수 있도록 누적 보기를 분리했습니다.",
+    monthlyNoticeTitle: "월별 기준",
+    monthlyNoticeDescription: "선택한 월의 완료·지연·불량 흐름을 운영 지표로 확인하는 영역입니다.",
   },
   settingsForm: {
     title: "환경설정",
@@ -324,7 +328,7 @@ export const adminKo = {
     flowCountSuffix: "건",
     unknownLabel: "분류 미지정",
     productionRounds: { first: "1차", second: "2차", thirdOrMore: "3차 이상" },
-    periods: { sevenDays: "7일", fifteenDays: "15일", thirtyDays: "30일", monthly: "월별", custom: "직접 선택" },
+    periods: { sevenDays: "7일", fifteenDays: "15일", thirtyDays: "30일", monthly: "이번달", all: "누적", custom: "직접 선택" },
     metrics: {
       reviewWaiting: { label: "검토대기", description: "발주 전 관리자 확인이 필요한 작업" },
       inspectionWaiting: { label: "검수대기", description: "입고 후 검수 처리가 필요한 작업" },

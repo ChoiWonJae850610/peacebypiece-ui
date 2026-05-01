@@ -90,6 +90,7 @@ function translateStatsLabel(label: string, t: ReturnType<typeof useAdminTransla
     "30일": t("statsUi.periods.thirtyDays", label),
     "월별": t("statsUi.periods.monthly", label),
     "이번달": t("dashboardPage.currentMonth", label),
+    "누적": t("statsUi.periods.all", label),
   };
   return map[label] ?? label;
 }
@@ -146,6 +147,17 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
             {translateStatsLabel(item.label, t)}
           </Link>
         ))}
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-2">
+        <AdminCard className="px-4 py-4">
+          <p className="text-xs font-semibold text-stone-500">{pt("monthlyNoticeTitle", pageText.monthlyNoticeTitle)}</p>
+          <p className="mt-2 text-sm leading-6 text-stone-600">{pt("monthlyNoticeDescription", pageText.monthlyNoticeDescription)}</p>
+        </AdminCard>
+        <AdminCard className="px-4 py-4">
+          <p className="text-xs font-semibold text-stone-500">{pt("cumulativeNoticeTitle", pageText.cumulativeNoticeTitle)}</p>
+          <p className="mt-2 text-sm leading-6 text-stone-600">{pt("cumulativeNoticeDescription", pageText.cumulativeNoticeDescription)}</p>
+        </AdminCard>
       </section>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">

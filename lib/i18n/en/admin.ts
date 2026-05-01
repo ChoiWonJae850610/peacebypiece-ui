@@ -155,6 +155,10 @@ export const adminEn = {
     productionRoundTitle: "Production round ratio",
     factoryProductionTitle: "Production by factory",
     categoryDistributionTitle: "Category distribution by stage",
+    cumulativeNoticeTitle: "Cumulative basis",
+    cumulativeNoticeDescription: "Cumulative view is separated so production round records can remain useful as a statistics axis even after work items are removed later.",
+    monthlyNoticeTitle: "Monthly basis",
+    monthlyNoticeDescription: "Review completed, delayed inbound, and defect flows are shown as operational indicators for the selected month.",
   },
   settingsForm: {
     title: "Settings",
@@ -358,7 +362,7 @@ export const adminEn = {
     flowCountSuffix: "items",
     unknownLabel: "Uncategorized",
     productionRounds: { first: "Round 1", second: "Round 2", thirdOrMore: "Round 3+" },
-    periods: { sevenDays: "7 days", fifteenDays: "15 days", thirtyDays: "30 days", monthly: "Monthly", custom: "Custom" },
+    periods: { sevenDays: "7 days", fifteenDays: "15 days", thirtyDays: "30 days", monthly: "This month", all: "Cumulative", custom: "Custom" },
     metrics: {
       reviewWaiting: { label: "Review waiting", description: "Work before order that needs admin review" },
       inspectionWaiting: { label: "Inspection waiting", description: "Work that needs inbound inspection" },

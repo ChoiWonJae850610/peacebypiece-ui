@@ -27,6 +27,7 @@ import {
 import { isDatabaseConfigured, queryDb } from "@/lib/db/client";
 
 function getAdminStatsPeriodWhereClause(period: AdminStatsPeriodKey): string {
+  if (period === "all") return "";
   if (period === "7d") return "AND updated_at >= now() - interval '7 days'";
   if (period === "15d") return "AND updated_at >= now() - interval '15 days'";
   if (period === "monthly") return "AND updated_at >= date_trunc('month', now())";

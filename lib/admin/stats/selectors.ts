@@ -96,7 +96,7 @@ export function buildAdminKeyMetrics(payload: { reviewWaiting: number; inspectio
 
 export function normalizeAdminStatsPeriod(value: string | string[] | undefined): AdminStatsPeriodKey {
   const rawValue = Array.isArray(value) ? value[0] : value;
-  if (rawValue === "7d" || rawValue === "15d" || rawValue === "30d" || rawValue === "monthly") return rawValue;
+  if (rawValue === "7d" || rawValue === "15d" || rawValue === "30d" || rawValue === "monthly" || rawValue === "all") return rawValue;
   return "30d";
 }
 
@@ -106,6 +106,7 @@ export function buildAdminPeriodOptions(selectedPeriod: AdminStatsPeriodKey) {
     { key: "15d" as const, label: adminStatsText.periods.fifteenDays, href: "/admin/dashboard?period=15d", active: selectedPeriod === "15d" },
     { key: "30d" as const, label: adminStatsText.periods.thirtyDays, href: "/admin/dashboard?period=30d", active: selectedPeriod === "30d" },
     { key: "monthly" as const, label: adminStatsText.periods.monthly, href: "/admin/dashboard?period=monthly", active: selectedPeriod === "monthly" },
+    { key: "all" as const, label: adminStatsText.periods.all, href: "/admin/dashboard?period=all", active: selectedPeriod === "all" },
   ];
 }
 

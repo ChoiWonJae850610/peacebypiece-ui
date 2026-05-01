@@ -2,7 +2,7 @@ import type { AdminFileUsagePoint, AdminStatChartPoint, AdminSummaryCard } from 
 
 export type AdminStatsSourceState = "db" | "not_configured" | "error";
 
-export type AdminStatsPeriodKey = "7d" | "15d" | "30d" | "monthly" | "custom";
+export type AdminStatsPeriodKey = "7d" | "15d" | "30d" | "monthly" | "all" | "custom";
 
 export type AdminStatsMetricKey = "reviewWaiting" | "inspectionWaiting" | "inboundDelayed" | "defectCount";
 
