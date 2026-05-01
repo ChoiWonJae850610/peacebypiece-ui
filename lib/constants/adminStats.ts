@@ -50,3 +50,17 @@ export const ADMIN_STAT_SUMMARY_TEXT = {
     accent: "bg-stone-100 text-stone-700",
   },
 } as const;
+
+export const ADMIN_STATS_EVENT_TYPES = [
+  "WORKORDER_CREATED",
+  "STATUS_CHANGED",
+  "INSPECTION_COMPLETED",
+  "DEFECT_REPORTED",
+  "INBOUND_DELAYED",
+] as const;
+
+export const ADMIN_STATS_RETAINED_ROUND_METADATA_KEYS = [
+  "reorderRound",
+  "round",
+  "productionRound",
+] as const;

@@ -1,30 +1,26 @@
-Version : 0.9.42
+Version : 0.9.43
 
-Summary : 히스토리 로그 정책 고정
+Summary : 통계 이벤트 보존 구조 추가
 
 Description :
-- 관리자 히스토리에 노출할 로그 액션과 대상 타입을 중앙 상수로 분리했습니다.
-- 히스토리 목록 조회 단계에서 허용된 이벤트 타입과 대상 타입만 가져오도록 제한했습니다.
-- 화면 selector에서도 동일한 중앙 정책을 사용해 DB 조회 결과와 화면 필터 기준이 어긋나지 않도록 정리했습니다.
-- 환경설정/시스템/디버그성 로그가 운영자용 히스토리에 섞이지 않도록 표시 정책을 강화했습니다.
+- 관리자 통계가 현재 활성 데이터만 보지 않도록 누적 이벤트 테이블 패치를 추가했습니다.
+- 삭제된 작업지시서의 제작 차수와 공장별 불량/입고지연 통계를 보존할 수 있는 DB 구조를 추가했습니다.
+- 통계 이벤트 타입과 제작 차수 메타데이터 키를 중앙 상수로 분리했습니다.
+- APP_VERSION을 0.9.43으로 갱신했습니다.
 
 수정 파일 목록 :
-- lib/constants/app.ts : APP_VERSION을 0.9.42로 갱신했습니다.
-- lib/constants/history.ts : 관리자 히스토리 노출 허용 액션/대상 타입과 판별 함수를 추가했습니다.
-- lib/admin/history/selectors.ts : 히스토리 화면 표시 여부 판단을 중앙 history 정책 함수 기준으로 변경했습니다.
-- lib/admin/history/repository.ts : DB 조회 단계에서 허용 로그 액션/대상 타입만 조회하고, 결과 매핑도 중앙 정책으로 재검증하도록 변경했습니다.
+- lib/constants/app.ts : APP_VERSION을 0.9.43으로 갱신했습니다.
+- lib/constants/adminStats.ts : 관리자 통계 이벤트 타입과 제작 차수 보존 메타데이터 키 상수를 추가했습니다.
 
 추가 파일 목록 :
-- 없음
+- db/schema/patch_0_9_43_admin_stats_events.sql : 관리자 통계 누적 이벤트 테이블과 인덱스 생성 패치를 추가했습니다.
 
 삭제 파일 목록 :
 - 없음
 
 작업 상세 :
-- 0.9.41 기준 압축파일을 실제로 해제한 뒤 히스토리 관련 계층을 확인했습니다.
-- 기존 selector 내부에 흩어져 있던 히스토리 허용 액션 목록을 lib/constants/history.ts로 이동했습니다.
-- HISTORY_LOG_ACTION_TYPES에는 PARTNER_CREATED, PARTNER_DELETED를 포함해 DB 타입과 화면 i18n의 이벤트 목록을 맞췄습니다.
-- ADMIN_VISIBLE_HISTORY_LOG_ACTION_TYPES와 ADMIN_VISIBLE_HISTORY_LOG_TARGET_TYPES를 별도로 두어 운영자 히스토리에 보여줄 범위를 명확히 했습니다.
-- repository 조회 SQL에서 settings/system 제외 조건 대신 중앙 허용 목록 기반 조건을 사용하도록 변경했습니다.
-- 화면 selector도 같은 허용 정책을 사용하므로 DB 결과와 mock/historyLogs 결과가 같은 기준으로 필터링됩니다.
-- npm 빌드는 별도 요청이 없고 현재 작업 흐름이 모바일 최소 응답이므로 수행하지 않았습니다.
+- 0.9.42 압축파일을 실제로 해제한 뒤 통계 관련 파일과 DB 스키마 파일을 확인했습니다.
+- 기존 통계 화면은 현재 spec_sheets, orders, attachments 중심으로 계산되어 삭제된 1차/2차/3차 작업지시서의 통계 보존에 한계가 있었습니다.
+- admin_stats_events 테이블을 추가해 작업지시서 생성, 상태 변경, 검수 완료, 불량, 입고지연 이벤트를 누적 저장할 수 있게 했습니다.
+- production_round, production_round_label, factory_partner_id, factory_name, due_date, inspected_at, is_defect, is_inbound_delayed 컬럼을 두어 이후 공장별/차수별 통계 조회 확장에 사용할 수 있게 했습니다.
+- 이번 버전은 DB 구조 보강 중심이며, 화면 조회 로직을 admin_stats_events 기준으로 전환하는 작업은 다음 버전에서 진행하는 것이 안전합니다.
