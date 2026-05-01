@@ -9,7 +9,11 @@ import { getPendingAttachmentDelete } from "@/lib/workorder/presentation/workOrd
 import { useI18n } from "@/lib/i18n";
 import { buildWorkspaceViewModel } from "@/lib/workorder/workspace/buildWorkspaceViewModel";
 
-export default function WorkOrderWorkspace() {
+type WorkOrderWorkspaceProps = {
+  initialWorkOrderId?: string | null;
+};
+
+export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOrderWorkspaceProps) {
   const { i18n } = useI18n();
   const {
     appShellRef,
@@ -111,7 +115,7 @@ export default function WorkOrderWorkspace() {
     handleUpdateMemoReply,
     handleDeleteMemoReply,
     canSeeAttachments,
-  } = useWorkOrder();
+  } = useWorkOrder({ initialWorkOrderId });
 
   const dbConnectionStatus = useDbConnectionStatus();
   const [pendingAttachmentDeleteId, setPendingAttachmentDeleteId] = useState<string | null>(null);

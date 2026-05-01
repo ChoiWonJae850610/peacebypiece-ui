@@ -10,11 +10,15 @@ import { useWorkOrderUIState } from "@/lib/hooks/workorder/useWorkOrderUIState";
 import { useWorkOrderActionRuntime } from "@/lib/hooks/workorder/useWorkOrderActionRuntime";
 import type { WorkOrder, WorkflowAction } from "@/types/workorder";
 
-export function useWorkOrder() {
+type UseWorkOrderOptions = {
+  initialWorkOrderId?: string | null;
+};
+
+export function useWorkOrder(options: UseWorkOrderOptions = {}) {
   const uiState = useWorkOrderUIState();
   const actionRuntime = useWorkOrderActionRuntime();
 
-  const coreState = useWorkOrderCoreState();
+  const coreState = useWorkOrderCoreState({ initialWorkOrderId: options.initialWorkOrderId ?? null });
   const derivedState = useWorkOrderDerived({
     users: coreState.users,
     currentUser: coreState.currentUser,
