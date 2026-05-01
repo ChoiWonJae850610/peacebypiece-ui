@@ -31,6 +31,7 @@ function matchesPartnerSearch(
   partner: Partner,
   searchTerm: string,
   processMeta: Record<string, OutsourcingProcessMeta>,
+  labels: PartnerTypeLabelMap = {},
 ) {
   if (!searchTerm) return true;
 
@@ -44,7 +45,7 @@ function matchesPartnerSearch(
     formatPartnerPhone(partner.phone),
     partner.email ?? "",
     partner.memo,
-    ...partner.partnerTypes.map((type) => PARTNER_TYPE_META[type].label),
+    ...partner.partnerTypes.flatMap((type) => [labels[type] ?? PARTNER_TYPE_META[type].label, PARTNER_TYPE_META[type].label]),
     ...(partner.outsourcingProcessTypes ?? []).map((type) => processMeta[type]?.label ?? DEFAULT_OUTSOURCING_PROCESS_META[type]?.label ?? String(type)),
   ]
     .join(" ")
@@ -74,6 +75,7 @@ export function selectFilteredPartners(
   partners: Partner[],
   filters: PartnerListFilterState,
   processMeta: Record<string, OutsourcingProcessMeta>,
+  labels: PartnerTypeLabelMap = {},
 ) {
   return partners.filter((partner) => {
     const matchesType =
@@ -86,7 +88,7 @@ export function selectFilteredPartners(
       });
 
     const matchesStatus = filters.status === "all" || (filters.status === "active" ? partner.isActive : !partner.isActive);
-    const matchesSearch = matchesPartnerSearch(partner, filters.searchTerm, processMeta);
+    const matchesSearch = matchesPartnerSearch(partner, filters.searchTerm, processMeta, labels);
     return matchesType && matchesStatus && matchesSearch;
   });
 }

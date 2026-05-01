@@ -7,6 +7,20 @@ type AdminDbConnectionAuditPanelProps = {
   summary: AdminDbCompletionSummary;
 };
 
+type AdminT = ReturnType<typeof useAdminTranslation>;
+
+function translateRepositoryMode(mode: string, t: AdminT) {
+  return t(`dbConnectionAudit.repositoryModes.${mode}`, getAdminRepositoryModeLabel(mode as Parameters<typeof getAdminRepositoryModeLabel>[0]));
+}
+
+function translateSourceType(sourceType: string, t: AdminT) {
+  return t(`dbConnectionAudit.sourceTypes.${sourceType}`, getAdminDbSourceTypeLabel(sourceType as Parameters<typeof getAdminDbSourceTypeLabel>[0]));
+}
+
+function translateStatusLabel(status: string, fallback: string, t: AdminT) {
+  return t(`dbConnectionAudit.statuses.${status}`, fallback);
+}
+
 export default function AdminDbConnectionAuditPanel({ summary }: AdminDbConnectionAuditPanelProps) {
   const t = useAdminTranslation();
   return (
@@ -17,9 +31,9 @@ export default function AdminDbConnectionAuditPanel({ summary }: AdminDbConnecti
           <p className="mt-1 text-xs text-stone-500">{t("dbConnectionAudit.description", "관리자 화면별 실제 데이터 조회/저장 경계와 안전 표시 상태입니다.")}</p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs font-semibold text-stone-500">
-          <span className="rounded-full bg-stone-100 px-3 py-1.5">{t("dbConnectionAudit.repository.workorder", "작업지시서")} {getAdminRepositoryModeLabel(summary.repositoryModes.workorder)}</span>
-          <span className="rounded-full bg-stone-100 px-3 py-1.5">{t("dbConnectionAudit.repository.partner", "협력업체")} {getAdminRepositoryModeLabel(summary.repositoryModes.partner)}</span>
-          <span className="rounded-full bg-stone-100 px-3 py-1.5">{t("dbConnectionAudit.repository.attachmentMemo", "메모/첨부")} {getAdminRepositoryModeLabel(summary.repositoryModes.attachmentMemo)}</span>
+          <span className="rounded-full bg-stone-100 px-3 py-1.5">{t("dbConnectionAudit.repository.workorder", "작업지시서")} {translateRepositoryMode(summary.repositoryModes.workorder, t)}</span>
+          <span className="rounded-full bg-stone-100 px-3 py-1.5">{t("dbConnectionAudit.repository.partner", "협력업체")} {translateRepositoryMode(summary.repositoryModes.partner, t)}</span>
+          <span className="rounded-full bg-stone-100 px-3 py-1.5">{t("dbConnectionAudit.repository.attachmentMemo", "메모/첨부")} {translateRepositoryMode(summary.repositoryModes.attachmentMemo, t)}</span>
         </div>
       </div>
 
@@ -36,10 +50,10 @@ export default function AdminDbConnectionAuditPanel({ summary }: AdminDbConnecti
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <span className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ring-1 ${statusPresentation.className}`}>
-                    {statusPresentation.label}
+                    {translateStatusLabel(item.status, statusPresentation.label, t)}
                   </span>
                   <span className="w-fit rounded-full bg-white px-3 py-1 text-xs font-semibold text-stone-600 ring-1 ring-stone-200">
-                    {getAdminDbSourceTypeLabel(item.sourceType)}
+                    {translateSourceType(item.sourceType, t)}
                   </span>
                 </div>
               </div>

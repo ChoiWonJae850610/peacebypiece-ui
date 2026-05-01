@@ -42,6 +42,9 @@ export const adminKo = {
     alternateDisplay: "안전 표시",
     nextCheck: "다음 확인",
     repository: { workorder: "작업지시서", partner: "협력업체", attachmentMemo: "메모/첨부" },
+    repositoryModes: { db: "실제 데이터", mock: "샘플 데이터" },
+    statuses: { "db-connected": "실제 데이터 사용", "db-prepared": "데이터 연결 준비", "fallback-guarded": "안전 표시 보호", "mock-only": "샘플 데이터", "not-applicable": "대상 아님" },
+    sourceTypes: { "actual-db": "실제 데이터 조회/저장", "db-with-fallback": "실제 데이터 조회 + 안전 표시", "db-prepared-fallback": "데이터 연결 준비 + 안전 표시", "mock-only": "샘플 데이터", "not-applicable": "대상 아님" },
   },
   historyModal: {
     title: "작업지시서 히스토리",

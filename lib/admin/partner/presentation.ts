@@ -65,7 +65,7 @@ export function buildPartnerListViewModel(
 ) {
   const processMeta = buildOutsourcingProcessMeta(definitions);
   const filterOptions = buildPartnerFilterOptions(definitions, typeLabels);
-  const filteredPartners = selectFilteredPartners(partners, filters, processMeta);
+  const filteredPartners = selectFilteredPartners(partners, filters, processMeta, typeLabels);
   const summary = buildPartnerSummary(partners);
   const filteredSummary = buildPartnerSummary(filteredPartners);
   const availableOutsourcingProcessTypes = definitions

@@ -42,6 +42,9 @@ export const adminEn = {
     alternateDisplay: "Safe display",
     nextCheck: "Next check",
     repository: { workorder: "Work orders", partner: "Partners", attachmentMemo: "Memos/attachments" },
+    repositoryModes: { db: "Live data", mock: "Sample data" },
+    statuses: { "db-connected": "Live data", "db-prepared": "DB prepared", "fallback-guarded": "Safe display protected", "mock-only": "Sample data", "not-applicable": "N/A" },
+    sourceTypes: { "actual-db": "Live DB read/write", "db-with-fallback": "Live DB + safe display", "db-prepared-fallback": "DB prepared + safe display", "mock-only": "Sample data", "not-applicable": "N/A" },
   },
   historyModal: {
       title: "Work Order History",
