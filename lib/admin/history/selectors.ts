@@ -1,5 +1,6 @@
 import { HISTORY_FILTER_BUTTON_CLASS, HISTORY_TONE_CLASS } from "@/lib/constants/display";
 import { ADMIN_HISTORY_DATE_MS, ADMIN_HISTORY_USER_ALL_OPTION } from "@/lib/constants/adminHistory";
+import { isAdminVisibleHistoryLogAction, isAdminVisibleHistoryLogTarget } from "@/lib/constants/history";
 export { ADMIN_HISTORY_DATE_FILTER_OPTIONS } from "@/lib/constants/adminHistory";
 import { getI18n } from "@/lib/i18n";
 import { filterHistoryLogs } from "@/lib/workorder/history/filters";
@@ -23,20 +24,12 @@ function toAdminHistoryTimestamp(value: string): AdminHistoryEvent["timestamp"] 
   };
 }
 
-const ADMIN_HISTORY_ALLOWED_ACTIONS = new Set([
-  "WORKORDER_CREATED",
-  "STATUS_CHANGED",
-  "FILE_UPLOADED",
-  "FILE_DELETED",
-  "PARTNER_CREATED",
-  "PARTNER_UPDATED",
-  "PARTNER_DELETED",
-]);
-
-const ADMIN_HISTORY_SYSTEM_TARGETS = new Set(["settings", "system", "debug"]);
-
 function normalizeAdminHistoryAction(value: string): string {
   return value.trim().toUpperCase();
+}
+
+function normalizeAdminHistoryTarget(value: string): string {
+  return value.trim().toLowerCase();
 }
 
 export function toAdminHistoryEvent(item: HistoryLog): AdminHistoryEvent {
@@ -79,9 +72,9 @@ export function isAdminHistoryDisplayable(item: AdminHistoryEvent): boolean {
   const action = normalizeAdminHistoryAction(item.action);
   const targetType = String(item.target.type || "").toLowerCase();
 
-  if (!ADMIN_HISTORY_ALLOWED_ACTIONS.has(action)) return false;
-  if (ADMIN_HISTORY_SYSTEM_TARGETS.has(targetType)) return false;
-  if (actorName === "system" && (targetType === "settings" || action === "SETTINGS_CHANGED")) return false;
+  if (!isAdminVisibleHistoryLogAction(action)) return false;
+  if (!isAdminVisibleHistoryLogTarget(normalizeAdminHistoryTarget(targetType))) return false;
+  if (actorName === "system") return false;
 
   return true;
 }

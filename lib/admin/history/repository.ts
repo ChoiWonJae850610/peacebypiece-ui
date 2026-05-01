@@ -3,6 +3,7 @@ import "server-only";
 import { randomUUID } from "crypto";
 import { isDatabaseConfigured, queryDb } from "@/lib/db/client";
 import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
+import { ADMIN_VISIBLE_HISTORY_LOG_ACTION_TYPES, ADMIN_VISIBLE_HISTORY_LOG_TARGET_TYPES, isAdminVisibleHistoryLogAction, isAdminVisibleHistoryLogTarget } from "@/lib/constants/history";
 import type { CreateAdminHistoryLogInput } from "@/lib/admin/history/dbTypes";
 import type { AdminHistoryEvent } from "@/lib/admin/history/types";
 
@@ -56,6 +57,14 @@ function toAdminHistoryCategory(targetType: string | null): AdminHistoryEvent["c
   if (targetType === "file") return "attachment";
   if (targetType === "partner") return "inventory";
   return "work";
+}
+
+function normalizeDbActionType(value: string | null): string {
+  return String(value || "").trim().toUpperCase();
+}
+
+function normalizeDbTargetType(value: string | null): string {
+  return String(value || "").trim().toLowerCase();
 }
 
 function toAdminHistoryTone(actionType: string | null): AdminHistoryEvent["tone"] {
@@ -173,27 +182,31 @@ export async function listAdminHistoryEvents(): Promise<AdminHistoryEvent[]> {
          FROM history_logs h
          LEFT JOIN users u ON u.id = h.user_id
         WHERE h.company_id = $1
-          AND COALESCE(h.target_type, '') <> 'settings'
-          AND COALESCE(h.target_type, '') <> 'system'
+          AND h.action_type = ANY($2::text[])
+          AND h.target_type = ANY($3::text[])
         ORDER BY h.created_at DESC
         LIMIT 200`,
-      [WORKSPACE_COMPANY_ID],
+      [WORKSPACE_COMPANY_ID, ADMIN_VISIBLE_HISTORY_LOG_ACTION_TYPES, ADMIN_VISIBLE_HISTORY_LOG_TARGET_TYPES],
     );
 
-    return result.rows.map((row) => {
+    return result.rows.flatMap((row) => {
+      const actionType = normalizeDbActionType(row.action_type);
+      const targetType = normalizeDbTargetType(row.target_type);
+      if (!isAdminVisibleHistoryLogAction(actionType) || !isAdminVisibleHistoryLogTarget(targetType)) return [];
+
       const metadata = normalizeDbMetadata(row.metadata);
       const from = formatMetadataValue(metadata.from);
       const to = formatMetadataValue(metadata.to);
       const targetLabel = buildTargetLabel(metadata, row.message);
       return {
         id: row.id,
-        workOrderId: row.target_type === "workorder" ? row.target_id ?? "" : "",
-        category: toAdminHistoryCategory(row.target_type),
-        action: String(row.action_type ?? "LOG"),
+        workOrderId: targetType === "workorder" ? row.target_id ?? "" : "",
+        category: toAdminHistoryCategory(targetType),
+        action: actionType,
         message: row.message ?? "",
         actorName: row.user_name ?? "system",
         occurredAt: formatAdminHistoryTime(row.created_at),
-        tone: toAdminHistoryTone(row.action_type),
+        tone: toAdminHistoryTone(actionType),
         summary: row.message ?? "",
         actor: {
           id: null,
@@ -201,7 +214,7 @@ export async function listAdminHistoryEvents(): Promise<AdminHistoryEvent[]> {
           email: row.user_email ?? null,
         },
         target: {
-          type: row.target_type ?? "unknown",
+          type: targetType,
           id: null,
           label: targetLabel,
         },
