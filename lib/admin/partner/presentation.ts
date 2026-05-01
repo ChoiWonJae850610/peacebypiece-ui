@@ -12,7 +12,7 @@ function buildPartnerListItemViewModel(
   const baseTypeBadges = partner.partnerTypes
     .filter((type) => type !== "outsourcing_vendor")
     .map((type) => ({
-      key: `-`,
+      key: `${partner.id}-${type}`,
       type,
       label: typeLabels[type] ?? PARTNER_TYPE_META[type].shortLabel,
       tone: PARTNER_TYPE_META[type].tone,
