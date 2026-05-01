@@ -1,6 +1,6 @@
 Version : 0.9.99
 
-Summary : patch pipeline test
+Summary : patch pipeline test2
 
 Description :
 test patch system working
