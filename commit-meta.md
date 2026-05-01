@@ -1,23 +1,17 @@
-Version : 0.9.38
+Version : 0.9.39
 
-Summary : 환경설정 정책 마감 및 빌드 타입 오류 수정
+Summary : 빌드 검증 재시도 기준 정리 및 버전 동기화
 
 Description :
-- 히스토리 표시 로직에서 null 라벨을 index key로 사용하던 TypeScript 오류 수정
-- 삭제 방식이 즉시삭제일 때 삭제 파일 보관 기간 선택 영역이 보이지 않도록 정리
-- 삭제 파일 보관 기간 명칭과 안내 문구를 한글/영문 i18n에 반영
-- 용량 상태 기준을 정상/주의/위험 단계로 보여주도록 표시 정책 보강
-- APP_VERSION 값을 0.9.38로 동기화
-- npm 빌드는 의존성 설치 단계가 제한 시간 내 완료되지 않아 최종 실행 완료는 못함
+- 0.9.38 기준 소스에서 이전 TypeScript 오류 수정 상태를 재확인
+- lib/admin/history/presentation.ts의 null label index 접근 방지 로직 유지 확인
+- APP_VERSION 값을 0.9.39로 동기화
+- npm ci 의존성 설치가 제한 시간 내 완료되지 않아 next build 최종 완료 로그는 생성하지 못함
+- package.json / package-lock.json은 수정하지 않음
 
 수정 파일 목록 :
-- lib/admin/history/presentation.ts : detail label이 null일 때 index 접근이 발생하지 않도록 normalized label 처리 보강
-- lib/admin/settings/presentation.ts : 용량 상태 기준 preview를 정상/주의/위험 단계로 계산하는 표시 정책 추가
-- components/admin/standards/AdminFilePolicySettingsModal.tsx : 즉시삭제 선택 시 삭제 파일 보관 기간 선택 버튼 숨김 처리 및 용량 위험 기준 안내 추가
-- lib/i18n/ko/admin.ts : 파일 정책 문구를 삭제 파일 보관 기간/용량 주의 기준 중심으로 보완
-- lib/i18n/en/admin.ts : 파일 정책 영문 문구를 삭제 파일 보관 기간/용량 주의 기준 중심으로 보완
-- lib/constants/app.ts : APP_VERSION 0.9.38 반영
-- commit-meta.md : 이번 작업 메타 정보 갱신
+- lib/constants/app.ts : APP_VERSION 0.9.39 반영
+- commit-meta.md : 0.9.39 작업 메타 정보와 빌드 검증 시도 결과 기록
 
 추가 파일 목록 :
 - 없음
@@ -26,10 +20,7 @@ Description :
 - 없음
 
 작업 상세 :
-- 빌드 로그의 ./lib/admin/history/presentation.ts:121 오류를 기준으로 label 값이 null 또는 undefined인 경우를 먼저 차단하도록 수정
-- isDisplayableHistoryDetailLabel 통과 이후에도 TypeScript가 label을 string으로 좁히지 못하는 문제를 명시 조건으로 해결
-- 저장 정책 모달에서 삭제 방식이 즉시삭제이면 보관기간 버튼을 disabled로 남기지 않고 별도 안내 문구만 표시하도록 변경
-- 휴지통 삭제 방식으로 전환할 때 기본 보관기간 fallback을 5일로 맞춤
-- 용량 상태 preview를 warningThresholdPercent 기준의 정상/주의/위험 구간 설명으로 정리
-- 위험 기준은 현재 DB 스키마 변경 없이 주의 기준보다 10% 높은 표시 기준으로 계산
-- npm ci가 제한 시간 내 완료되지 않아 node_modules 생성과 npm run build 최종 확인은 완료하지 못함
+- 0.9.38에서 발생했던 lib/admin/history/presentation.ts의 TypeScript null index 오류 수정 상태를 확인함
+- displayHistoryDetailLabel 함수가 label null/undefined를 먼저 차단하고 normalizedLabel을 별도 string 값으로 만든 뒤 labelMap에 접근하는 구조임을 확인함
+- node_modules가 압축파일에 포함되어 있지 않아 npm run build 실행 전 npm ci가 필요했으나 설치가 제한 시간 내 완료되지 않음
+- npm 빌드 최종 통과 여부는 로컬 환경에서 npm ci 완료 후 npm run build로 재확인 필요
