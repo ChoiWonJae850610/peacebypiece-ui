@@ -125,11 +125,41 @@ type WorkorderRow = DbQueryResultRow & {
 type OrderDueRow = DbQueryResultRow & {
   spec_sheet_id: string | null;
   due_date: string | Date | null;
+  factory_name: string | null;
+  quantity: number | string | null;
 };
 
-function buildSnapshot(period: AdminDashboardPeriod, workorders: WorkorderRow[], orders: OrderDueRow[], now = new Date()): AdminOperationalDashboardSnapshot {
+type AttachmentSummaryRow = DbQueryResultRow & {
+  order_id: string | null;
+  attachment_count: number | string | null;
+  thumbnail_url: string | null;
+  preview_url: string | null;
+};
+
+function formatQuantityLabel(value: unknown): string {
+  const quantity = typeof value === "number" ? value : typeof value === "string" ? Number(value) : 0;
+  if (!Number.isFinite(quantity) || quantity <= 0) return adminOpsText.todayTasks.quantityPending;
+  return adminOpsText.todayTasks.quantityValue.replace("{count}", String(quantity));
+}
+
+function formatUpdatedLabel(value: unknown, now: Date): string {
+  const date = parseDate(value);
+  if (!date) return adminOpsText.todayTasks.updatedPending;
+  const diffMs = Math.max(0, now.getTime() - date.getTime());
+  const diffMinutes = Math.floor(diffMs / (60 * 1000));
+  if (diffMinutes < 60) return adminOpsText.todayTasks.updatedMinutes.replace("{minutes}", String(Math.max(1, diffMinutes)));
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return adminOpsText.todayTasks.updatedHours.replace("{hours}", String(diffHours));
+  const diffDays = Math.floor(diffHours / 24);
+  return adminOpsText.todayTasks.updatedDays.replace("{days}", String(diffDays));
+}
+
+function buildSnapshot(period: AdminDashboardPeriod, workorders: WorkorderRow[], orders: OrderDueRow[], attachments: AttachmentSummaryRow[], now = new Date()): AdminOperationalDashboardSnapshot {
   const workorderStatusById = new Map(workorders.map((row) => [row.id, row.status ?? ""]));
   const orderDueByWorkorderId = new Map(orders.map((row) => [row.spec_sheet_id ?? "", row.due_date]));
+  const orderFactoryByWorkorderId = new Map(orders.map((row) => [row.spec_sheet_id ?? "", row.factory_name]));
+  const orderQuantityByWorkorderId = new Map(orders.map((row) => [row.spec_sheet_id ?? "", row.quantity]));
+  const attachmentByWorkorderId = new Map(attachments.map((row) => [row.order_id ?? "", row]));
   const selectedPeriodStart = getPeriodStart(period, now);
 
   const inboundDelayedCount = orders.filter((row) => {
@@ -146,14 +176,23 @@ function buildSnapshot(period: AdminDashboardPeriod, workorders: WorkorderRow[],
   const inspectionWaitingCount = workorders.filter((row) => row.status === "inspection" || row.status === "review_completed").length;
   const todayTasks = workorders
     .filter((row) => row.status === "review_requested" || row.status === "inspection" || row.status === "review_completed")
-    .map((row) => ({
-      id: row.id,
-      title: row.title,
-      statusLabel: getStatusLabel(row.status),
-      dueLabel: formatDueLabel(orderDueByWorkorderId.get(row.id), now),
-      priorityLabel: row.status === "review_requested" ? adminOpsText.todayTasks.priority.review : row.status === "inspection" ? adminOpsText.todayTasks.priority.inspection : adminOpsText.todayTasks.priority.order,
-      updatedAt: parseDate(row.updated_at)?.getTime() ?? 0,
-    }))
+    .map((row) => {
+      const attachment = attachmentByWorkorderId.get(row.id);
+      return {
+        id: row.id,
+        title: row.title,
+        statusLabel: getStatusLabel(row.status),
+        dueLabel: formatDueLabel(orderDueByWorkorderId.get(row.id), now),
+        priorityLabel: row.status === "review_requested" ? adminOpsText.todayTasks.priority.review : row.status === "inspection" ? adminOpsText.todayTasks.priority.inspection : adminOpsText.todayTasks.priority.order,
+        factoryName: orderFactoryByWorkorderId.get(row.id) || adminOpsText.todayTasks.factoryPending,
+        quantityLabel: formatQuantityLabel(orderQuantityByWorkorderId.get(row.id)),
+        attachmentCount: Number(attachment?.attachment_count ?? 0),
+        thumbnailUrl: attachment?.thumbnail_url ?? attachment?.preview_url ?? null,
+        updatedLabel: formatUpdatedLabel(row.updated_at, now),
+        actionHref: `/?workOrderId=${encodeURIComponent(row.id)}`,
+        updatedAt: parseDate(row.updated_at)?.getTime() ?? 0,
+      };
+    })
     .sort((a, b) => b.updatedAt - a.updatedAt)
     .slice(0, 6)
     .map(({ updatedAt, ...task }) => task);
@@ -191,7 +230,7 @@ export async function getAdminOperationalDashboardSnapshots(): Promise<AdminOper
 
   try {
     const companyId = getAdminCompanyId();
-    const [workordersResult, ordersResult] = await Promise.all([
+    const [workordersResult, ordersResult, attachmentsResult] = await Promise.all([
       queryDb<WorkorderRow>(
         `SELECT id, title, status, created_at, updated_at
            FROM spec_sheets
@@ -201,19 +240,31 @@ export async function getAdminOperationalDashboardSnapshots(): Promise<AdminOper
         [companyId],
       ),
       queryDb<OrderDueRow>(
-        `SELECT spec_sheet_id, due_date
+        `SELECT spec_sheet_id, due_date, factory_name, quantity
            FROM orders
           WHERE company_id = $1
             AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true`,
         [companyId],
       ),
+      queryDb<AttachmentSummaryRow>(
+        `SELECT order_id,
+                COUNT(*) AS attachment_count,
+                MAX(thumbnail_url) FILTER (WHERE thumbnail_url IS NOT NULL AND thumbnail_url <> '') AS thumbnail_url,
+                MAX(preview_url) FILTER (WHERE preview_url IS NOT NULL AND preview_url <> '') AS preview_url
+           FROM attachments
+          WHERE company_id = $1
+            AND deleted_at IS NULL
+            AND COALESCE(is_active, true) = true
+          GROUP BY order_id`,
+        [companyId],
+      ),
     ]);
 
     return {
-      today: buildSnapshot("today", workordersResult.rows, ordersResult.rows),
-      week: buildSnapshot("week", workordersResult.rows, ordersResult.rows),
-      month: buildSnapshot("month", workordersResult.rows, ordersResult.rows),
+      today: buildSnapshot("today", workordersResult.rows, ordersResult.rows, attachmentsResult.rows),
+      week: buildSnapshot("week", workordersResult.rows, ordersResult.rows, attachmentsResult.rows),
+      month: buildSnapshot("month", workordersResult.rows, ordersResult.rows, attachmentsResult.rows),
     };
   } catch (error) {
     if (process.env.NODE_ENV !== "production") {

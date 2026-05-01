@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
 import {
@@ -48,7 +49,7 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
       </div>
 
       <div className="grid min-h-0 flex-1 gap-5 overflow-y-auto overflow-x-hidden py-6 pr-1 xl:grid-cols-[1.25fr_0.75fr]">
-        <section className="flex min-h-[360px] flex-col rounded-[24px] border border-stone-100 bg-stone-50/70 p-5">
+        <section className="flex min-h-[420px] flex-col rounded-[24px] border border-stone-100 bg-stone-50/70 p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h3 className="text-base font-semibold text-stone-950">{t("operationsDashboard.todayWorkTitle", "오늘의 작업")}</h3>
@@ -62,19 +63,42 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
           <div className="mt-5 grid gap-3">
             {snapshot.todayTasks.length > 0 ? (
               snapshot.todayTasks.map((task) => (
-                <div key={task.id} className="grid gap-3 rounded-2xl border border-stone-100 bg-white p-4 shadow-sm sm:grid-cols-[1fr_auto] sm:items-center">
+                <article key={task.id} className="grid gap-4 rounded-2xl border border-stone-100 bg-white p-4 shadow-sm sm:grid-cols-[72px_1fr_auto] sm:items-center">
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-stone-100 text-[11px] font-semibold text-stone-400 ring-1 ring-stone-200">
+                    {task.thumbnailUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={task.thumbnailUrl} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <span>{t("operationsDashboard.previewEmpty", "미리보기")}</span>
+                    )}
+                  </div>
+
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-semibold text-stone-600">{task.statusLabel}</span>
                       <span className="rounded-full bg-[var(--admin-theme-surface)] px-2.5 py-1 text-[11px] font-semibold text-[var(--admin-theme-text-on-surface)]">{task.priorityLabel}</span>
+                      <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-500 ring-1 ring-stone-200">
+                        {t("operationsDashboard.attachmentLabel", "첨부")} {task.attachmentCount}{t("operationsDashboard.countSuffix", "건")}
+                      </span>
                     </div>
                     <p className="mt-2 truncate text-sm font-semibold text-stone-950">{task.title}</p>
+                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium text-stone-500">
+                      <span>{t("operationsDashboard.factoryLabel", "공장")} : {task.factoryName}</span>
+                      <span>{t("operationsDashboard.quantityLabel", "수량")} : {task.quantityLabel}</span>
+                      <span>{t("operationsDashboard.updatedLabel", "업데이트")} : {task.updatedLabel}</span>
+                    </div>
                   </div>
-                  <div className="text-left sm:text-right">
-                    <p className="text-xs font-semibold text-stone-500">{t("operationsDashboard.dueLabel", "납기")}</p>
-                    <p className="mt-1 text-sm font-semibold text-stone-900">{task.dueLabel}</p>
+
+                  <div className="flex flex-col gap-2 text-left sm:items-end sm:text-right">
+                    <div>
+                      <p className="text-xs font-semibold text-stone-500">{t("operationsDashboard.dueLabel", "납기")}</p>
+                      <p className="mt-1 text-sm font-semibold text-stone-900">{task.dueLabel}</p>
+                    </div>
+                    <Link href={task.actionHref} className="inline-flex items-center justify-center rounded-full bg-stone-950 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-stone-800">
+                      {t("operationsDashboard.openWorkorder", "작업지시서 열기")}
+                    </Link>
                   </div>
-                </div>
+                </article>
               ))
             ) : (
               <div className="rounded-2xl border border-dashed border-stone-200 bg-white p-6 text-center text-sm font-medium text-stone-500">

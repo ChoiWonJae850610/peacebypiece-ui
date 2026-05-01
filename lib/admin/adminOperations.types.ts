@@ -23,6 +23,12 @@ export type AdminDashboardTodayTask = {
   statusLabel: string;
   dueLabel: string;
   priorityLabel: string;
+  factoryName: string;
+  quantityLabel: string;
+  attachmentCount: number;
+  thumbnailUrl: string | null;
+  updatedLabel: string;
+  actionHref: string;
 };
 
 export type AdminOperationalDashboardSnapshot = {
