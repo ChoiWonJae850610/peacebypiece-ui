@@ -30,9 +30,10 @@ export const ADMIN_REGRESSION_ROUTES: AdminRegressionRouteItem[] = [
     label: "거래처/공장관리",
     href: "/admin/partners",
     description: "거래처, 공장, 원단, 부자재, 외주 기준정보 관리 진입점입니다.",
-    status: "needs_component_restore",
-    statusLabel: "컴포넌트 복원 필요",
-    nextAction: "PartnerMasterSection JSX 무결성 확인 후 본 기능 화면으로 재연결합니다.",
+    status: "stable",
+    statusLabel: "read-only 복원",
+    apiPath: "/api/admin/partners",
+    nextAction: "0.9.100에서 read-only 거래처/공장관리 화면으로 복원했습니다. 생성/수정/외주공정 저장 action은 별도 버전에서 판단합니다.",
   },
   {
     id: "invites",
