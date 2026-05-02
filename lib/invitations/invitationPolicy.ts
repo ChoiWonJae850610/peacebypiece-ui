@@ -92,6 +92,10 @@ export function evaluateInvitationPolicy(
     if (!SYSTEM_ALLOWED_ROLES.includes(input.recipientRole)) {
       reasons.push("system_invitation_allows_company_admin_only");
     }
+
+    if (input.permissionPreset !== "company_admin") {
+      reasons.push("system_invitation_requires_company_admin_preset");
+    }
   }
 
   if (input.scope === "company_to_member") {
@@ -105,6 +109,13 @@ export function evaluateInvitationPolicy(
 
     if (!COMPANY_ALLOWED_ROLES.includes(input.recipientRole)) {
       reasons.push("company_invitation_role_not_allowed");
+    }
+
+    if (
+      input.permissionPreset !== "custom" &&
+      input.permissionPreset !== input.recipientRole
+    ) {
+      reasons.push("permission_preset_role_mismatch");
     }
   }
 

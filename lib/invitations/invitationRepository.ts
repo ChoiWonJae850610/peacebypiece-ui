@@ -22,6 +22,10 @@ function createInviteUrl(rawToken: string): string {
   return `/invite/${rawToken}`;
 }
 
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
 function createInvitationRecord(
   draft: InvitationDraft,
   tokenHash: string,
@@ -31,7 +35,7 @@ function createInvitationRecord(
   return {
     id: randomUUID(),
     companyId: draft.companyId,
-    recipientEmail: draft.recipientEmail.trim().toLowerCase(),
+    recipientEmail: normalizeEmail(draft.recipientEmail),
     recipientRole: draft.recipientRole,
     permissionPreset: draft.permissionPreset,
     scope: draft.scope,
@@ -50,7 +54,9 @@ function createInvitationRecord(
 
 export function createInvitationRepository(): InvitationRepository {
   return {
-    async createInvitation(draft: InvitationDraft): Promise<InvitationCreateResult> {
+    async createInvitation(
+      draft: InvitationDraft,
+    ): Promise<InvitationCreateResult> {
       const rawToken = createRawInvitationToken();
       const tokenHash = createTokenHash(rawToken);
       const invitation = createInvitationRecord(draft, tokenHash);

@@ -1,14 +1,17 @@
-Version : 0.9.79
-Base Version : 0.9.78
-Target Version : 0.9.79
-Summary : 고객관리자 콘솔 링크 안정화
-Description : 고객관리자 콘솔의 실제 route 링크와 API 확인 경로를 단순화하고, app/admin/page.tsx와 app/admin/invites/page.tsx의 반환부를 안정화했습니다. 기존 작업지시서, 거래처, 저장소, 히스토리, 설정 링크는 유지하고 앱 버전을 0.9.79로 갱신했습니다.
+Version : 0.9.80
+Base Version : 0.9.79
+Target Version : 0.9.80
+Summary : invitation API 타입 안정화
+Description : invitation API의 route handler, policy, repository, types를 정리해 Promise generic 누락, draft/record 필드 불일치, createdBySystemUserId/acceptedUserId 누락 가능성을 보완했습니다. raw token 1회 반환 정책은 유지하고 앱 버전을 0.9.80으로 갱신했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- app/admin/page.tsx
-- app/admin/invites/page.tsx
-- lib/admin/adminConsoleLinks.ts
+- app/api/invitations/route.ts
+- lib/invitations/invitationTypes.ts
+- lib/invitations/invitationPolicy.ts
+- lib/invitations/invitationRepository.ts
+- lib/invitations/api/invitationRouteHandlers.ts
+- lib/invitations/index.ts
 추가 파일 목록 :
-- docs/admin/admin_console_link_check.md
+- docs/invitations/invitation_api_type_check.md
 삭제 파일 목록 :
 - 없음

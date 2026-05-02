@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import {
   evaluateInvitationPolicy,
   getDefaultInvitationExpiresAt,
+  INVITATION_TOKEN_RAW_VALUE_POLICY,
 } from "../invitationPolicy";
 import { invitationRepository } from "../invitationRepository";
 import type {
@@ -24,12 +25,24 @@ interface CreateInvitationRequestBody {
   createdBySystemUserId?: string | null;
 }
 
+function resolvePermissionPreset(
+  recipientRole: InvitationRecipientRole,
+  permissionPreset?: InvitationPermissionPreset | null,
+): InvitationPermissionPreset {
+  if (permissionPreset) {
+    return permissionPreset;
+  }
+
+  return recipientRole === "admin" ? "company_admin" : recipientRole;
+}
+
 function toInvitationDraft(body: CreateInvitationRequestBody): InvitationDraft {
   const scope = body.scope ?? "company_to_member";
   const recipientRole = body.recipientRole ?? "viewer";
-  const permissionPreset =
-    body.permissionPreset ??
-    (recipientRole === "admin" ? "company_admin" : recipientRole);
+  const permissionPreset = resolvePermissionPreset(
+    recipientRole,
+    body.permissionPreset,
+  );
 
   return {
     companyId: body.companyId ?? body.inviterCompanyId ?? "",
@@ -120,7 +133,7 @@ export async function handleCreateInvitation(request: Request) {
         invitation: result.invitation,
         rawToken: result.rawToken,
         inviteUrl: result.inviteUrl,
-        tokenPolicy: "raw token is returned only once and must never be stored in DB",
+        tokenPolicy: INVITATION_TOKEN_RAW_VALUE_POLICY,
       },
       { status: 201 },
     );
