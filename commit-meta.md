@@ -1,15 +1,14 @@
-Version : 0.9.83
-Base Version : 0.9.82
-Target Version : 0.9.83
-Summary : invitation DB 저장 연결
-Description : invitation repository mode를 db로 전환하고, DB invitation repository에서 invitations 테이블 insert/list/revoke를 처리하도록 연결했습니다. raw token은 DB에 저장하지 않고 token_hash만 저장하며, pending 중복 초대는 409 응답으로 변환했습니다.
+Version : 0.9.84
+Base Version : 0.9.83
+Target Version : 0.9.84
+Summary : 초대 수락 페이지 skeleton 추가
+Description : /invite/[token] route와 초대 수락 skeleton 화면을 추가했습니다. URL token은 마스킹해 표시하고 ready, invalid, expired, revoked, accepted 상태 카드를 준비했습니다. 실제 token 검증 API, 인증, 회원가입 연결은 포함하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/invitations/invitationRepositoryMode.ts
-- lib/invitations/dbInvitationRepository.ts
-- lib/invitations/invitationRepository.ts
-- lib/invitations/api/invitationRouteHandlers.ts
 추가 파일 목록 :
-- docs/invitations/invitation_db_repository_connection.md
+- app/invite/[token]/page.tsx
+- components/invitations/InviteAcceptSkeleton.tsx
+- lib/invitations/invitationAcceptanceSkeleton.ts
+- docs/invitations/invitation_accept_page_skeleton.md
 삭제 파일 목록 :
 - 없음
