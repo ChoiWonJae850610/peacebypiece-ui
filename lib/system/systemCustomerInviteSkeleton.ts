@@ -19,30 +19,30 @@ export const SYSTEM_CUSTOMER_INVITE_STEPS: SystemCustomerInviteStep[] = [
   {
     id: "select-company",
     title: "고객사 선택",
-    description: "기존 고객사를 선택하거나 고객사 생성 흐름과 연결할 준비 영역입니다.",
+    description: "기존 고객사를 선택하거나 고객사 ID를 직접 입력해 초대 링크를 생성합니다.",
     status: "ready",
-    statusLabel: "skeleton",
+    statusLabel: "연결됨",
   },
   {
     id: "admin-email",
     title: "고객관리자 이메일 입력",
-    description: "이메일 발송 전 단계에서는 입력값과 초대 링크 생성 정책만 먼저 고정합니다.",
+    description: "고객사 관리자에게 전달할 초대 링크의 수신 이메일을 입력합니다.",
     status: "ready",
-    statusLabel: "skeleton",
+    statusLabel: "연결됨",
   },
   {
     id: "link-create",
     title: "초대 링크 생성",
-    description: "0.9.63 초대 링크 생성 API와 연결될 액션 자리입니다.",
-    status: "planned",
-    statusLabel: "API 예정",
+    description: "POST /api/invitations를 호출해 system_to_company_admin 초대 링크를 생성합니다.",
+    status: "ready",
+    statusLabel: "API",
   },
   {
     id: "qr",
     title: "QR 표시",
-    description: "초대 링크를 QR로 보여주는 표현 영역입니다. 라이브러리 추가 여부는 별도 승인 후 판단합니다.",
-    status: "locked",
-    statusLabel: "후순위",
+    description: "생성된 초대 링크를 QR preview 영역에 표시합니다.",
+    status: "ready",
+    statusLabel: "preview",
   },
 ];
 
@@ -50,7 +50,7 @@ export const SYSTEM_CUSTOMER_INVITE_FIELDS: SystemCustomerInviteField[] = [
   {
     id: "company",
     label: "고객사",
-    value: "샘플 고객사",
+    value: "company-sample-customer",
     description: "system_to_company_admin 초대에는 company_id가 반드시 필요합니다.",
   },
   {
@@ -60,10 +60,10 @@ export const SYSTEM_CUSTOMER_INVITE_FIELDS: SystemCustomerInviteField[] = [
     description: "시스템관리자 초대는 1차에서 고객관리자 역할만 허용합니다.",
   },
   {
-    id: "expires",
-    label: "만료 정책",
-    value: "7일",
-    description: "초대 링크는 기본 7일 만료 정책을 사용합니다.",
+    id: "scope",
+    label: "초대 범위",
+    value: "system_to_company_admin",
+    description: "고객사 내부 멤버 초대와 구분되는 시스템관리자 초대 scope입니다.",
   },
   {
     id: "token",
@@ -75,7 +75,7 @@ export const SYSTEM_CUSTOMER_INVITE_FIELDS: SystemCustomerInviteField[] = [
 
 export const SYSTEM_CUSTOMER_INVITE_POLICY_NOTES = [
   "이메일 발송은 아직 연결하지 않습니다.",
-  "초대 링크 생성 API 연결 전까지는 버튼을 비활성 skeleton으로 유지합니다.",
+  "고객사 생성 자동화는 아직 연결하지 않습니다.",
   "시스템관리자는 고객사 내부 company_users에 넣지 않습니다.",
   "QR은 초대 링크를 시각화하는 방식이며 별도 초대 정책이 아닙니다.",
 ] as const;

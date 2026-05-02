@@ -50,10 +50,10 @@ export const SYSTEM_REGRESSION_ROUTES: SystemRegressionRouteItem[] = [
     label: "고객 초대",
     href: "/system/invites",
     description: "시스템관리자가 고객사 관리자를 초대하는 진입점입니다.",
-    status: "needs_component_restore",
-    statusLabel: "컴포넌트 복원 필요",
+    status: "stable",
+    statusLabel: "UI 재연결",
     apiPath: "/api/invitations?companyId=company-sample-customer",
-    nextAction: "SystemCustomerInviteSkeleton JSX 무결성 확인 후 본 UI를 재연결합니다.",
+    nextAction: "0.9.104에서 시스템 고객 초대 UI 본 화면을 재연결했습니다. 이메일 발송, 고객사 생성 자동화, 인증/회원가입 연결은 별도 버전에서 진행합니다.",
   },
   {
     id: "billing",
