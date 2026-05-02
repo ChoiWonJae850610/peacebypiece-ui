@@ -1,16 +1,16 @@
-Version : 0.9.85
-Base Version : 0.9.84
-Target Version : 0.9.85
-Summary : 초대 수락 API skeleton 추가
-Description : raw token을 sha256 hash로 변환해 invitations.token_hash를 조회하고, pending/expired/revoked/accepted 상태를 판단하는 초대 수락 API skeleton을 추가했습니다. POST 요청에서는 만료되지 않은 pending 초대를 accepted 처리합니다. 실제 회원가입, 로그인, user 생성은 포함하지 않았습니다.
+Version : 0.9.86
+Base Version : 0.9.85
+Target Version : 0.9.86
+Summary : company user repository DB 조회 연결
+Description : 시스템관리자 고객사 조회를 위한 company/user repository 타입과 DB repository를 추가하고, /api/system/companies route를 실제 DB 조회 handler로 연결했습니다. 고객사 목록, 고객사 상세, company_users, role_permissions 조회만 포함하며 생성/수정/삭제와 인증 연결은 포함하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/invitations/index.ts
+- app/api/system/companies/route.ts
 추가 파일 목록 :
-- app/api/invitations/accept/route.ts
-- lib/invitations/invitationAcceptanceTypes.ts
-- lib/invitations/invitationAcceptanceRepository.ts
-- lib/invitations/api/invitationAcceptanceRouteHandlers.ts
-- docs/invitations/invitation_accept_api_skeleton.md
+- lib/companies/companyTypes.ts
+- lib/companies/companyRepository.ts
+- lib/companies/api/companyRouteHandlers.ts
+- lib/companies/index.ts
+- docs/companies/company_user_repository_db_connection.md
 삭제 파일 목록 :
 - 없음
