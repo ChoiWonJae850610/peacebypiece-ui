@@ -1,13 +1,3 @@
-export type SystemConsoleTabId =
-  | "overview"
-  | "companies"
-  | "invites"
-  | "plans"
-  | "stats"
-  | "logs"
-  | "storage"
-  | "categoryRules";
-
 export type SystemConsoleTabStatus =
   | "current"
   | "linked"
@@ -15,176 +5,85 @@ export type SystemConsoleTabStatus =
   | "planned"
   | "legacy";
 
-export type SystemConsoleTab = {
-  id: SystemConsoleTabId;
+export interface SystemConsoleLink {
+  id: string;
   label: string;
   description: string;
-  statusLabel: string;
   status: SystemConsoleTabStatus;
+  statusLabel: string;
   href?: string;
   apiPath?: string;
-};
+}
 
-export type SystemConsolePlaceholder = {
-  id: Exclude<SystemConsoleTabId, "overview" | "storage" | "categoryRules">;
-  title: string;
-  description: string;
-  items: string[];
-  href?: string;
-  apiPath?: string;
-  actionLabel: string;
-};
-
-export const SYSTEM_CONSOLE_TABS: SystemConsoleTab[] = [
+export const SYSTEM_CONSOLE_LINKS: SystemConsoleLink[] = [
   {
     id: "overview",
     label: "전체 현황",
     description: "시스템관리자 콘솔의 현재 운영 상태를 확인합니다.",
-    statusLabel: "현재 화면",
     status: "current",
+    statusLabel: "현재",
     href: "/system",
   },
   {
     id: "companies",
     label: "고객사 관리",
-    description: "고객사, 고객사 관리자, 사용 상태를 관리할 영역입니다.",
-    statusLabel: "API 준비",
+    description: "고객사 목록과 고객사 상태를 확인할 API skeleton입니다.",
     status: "api",
+    statusLabel: "API",
     apiPath: "/api/system/companies",
   },
   {
     id: "invites",
     label: "고객 초대",
-    description: "시스템관리자가 고객사 관리자를 초대할 영역입니다.",
-    statusLabel: "화면 연결",
+    description: "시스템관리자가 고객사 관리자를 초대하는 화면입니다.",
     status: "linked",
+    statusLabel: "화면",
     href: "/system/invites",
   },
   {
-    id: "plans",
+    id: "billing",
     label: "요금제·용량",
-    description: "고객별 요금제와 저장 용량 override를 관리할 영역입니다.",
-    statusLabel: "화면 연결",
+    description: "고객별 요금제와 저장용량 override 화면입니다.",
     status: "linked",
+    statusLabel: "화면",
     href: "/system/billing",
-  },
-  {
-    id: "stats",
-    label: "통계",
-    description: "고객사, 저장용량, 초대, 요금제 통계를 확인할 영역입니다.",
-    statusLabel: "API 준비",
-    status: "api",
-    apiPath: "/api/system/stats",
-  },
-  {
-    id: "logs",
-    label: "시스템 로그",
-    description: "시스템관리자 작업 이력과 운영 이벤트를 확인할 영역입니다.",
-    statusLabel: "후순위",
-    status: "planned",
-  },
-  {
-    id: "storage",
-    label: "스토리지",
-    description: "첨부파일 저장소 정리 기능을 유지합니다.",
-    statusLabel: "기존 기능",
-    status: "legacy",
-    apiPath: "/api/system/storage-usage?companyId=company-sample-customer",
-  },
-  {
-    id: "categoryRules",
-    label: "카테고리 규칙",
-    description: "작업지시서 카테고리 추천 규칙 관리 기능을 유지합니다.",
-    statusLabel: "기존 기능",
-    status: "legacy",
-    href: "/system/category-rules",
-  },
-];
-
-export const SYSTEM_CONSOLE_PLACEHOLDERS: SystemConsolePlaceholder[] = [
-  {
-    id: "companies",
-    title: "고객사 관리",
-    description:
-      "SaaS형 테넌트 구조를 위한 고객사 목록, 관리자, 사용 상태 관리 API의 자리입니다.",
-    items: ["고객사 목록", "고객사 관리자", "사용/중지 상태", "고객별 기본 설정"],
-    apiPath: "/api/system/companies",
-    actionLabel: "고객사 API 확인",
-  },
-  {
-    id: "invites",
-    title: "고객 초대",
-    description:
-      "이메일 발송 전 단계로 고객사 관리자 초대 링크와 QR 초대 흐름을 붙일 화면입니다.",
-    items: ["고객사 관리자 초대", "초대 링크 생성", "만료일", "수락 상태"],
-    href: "/system/invites",
-    actionLabel: "고객 초대 화면 열기",
-  },
-  {
-    id: "plans",
-    title: "요금제·용량",
-    description:
-      "시스템관리자가 고객별 요금제와 저장용량 override를 조정할 화면입니다.",
-    items: ["기본 요금제", "저장용량 한도", "사용자 수 한도", "고객별 override"],
-    href: "/system/billing",
-    actionLabel: "요금제·용량 화면 열기",
-  },
-  {
-    id: "stats",
-    title: "통계",
-    description: "시스템 전체 운영 지표와 고객사별 사용량을 볼 API의 자리입니다.",
-    items: ["고객사 수", "활성 고객사", "저장용량", "초대 수락 현황"],
-    apiPath: "/api/system/stats",
-    actionLabel: "시스템 통계 API 확인",
-  },
-  {
-    id: "logs",
-    title: "시스템 로그",
-    description:
-      "시스템관리자의 주요 작업 이력을 audit log로 연결할 화면의 자리입니다.",
-    items: ["고객사 변경", "요금제 변경", "용량 변경", "초대 링크 생성"],
-    actionLabel: "후순위 작업",
-  },
-];
-
-export const SYSTEM_CONSOLE_QUICK_LINKS = [
-  {
-    id: "system-invites",
-    label: "고객 초대",
-    href: "/system/invites",
-    description: "고객사 관리자 초대 링크/QR skeleton",
-  },
-  {
-    id: "system-billing",
-    label: "요금제·용량",
-    href: "/system/billing",
-    description: "고객별 plan과 override skeleton",
   },
   {
     id: "category-rules",
     label: "카테고리 규칙",
+    description: "기존 카테고리 추천 규칙 관리 화면입니다.",
+    status: "legacy",
+    statusLabel: "기존",
     href: "/system/category-rules",
-    description: "기존 카테고리 추천 규칙 관리",
   },
-] as const;
+  {
+    id: "stats",
+    label: "통계",
+    description: "시스템 통계 summary API skeleton입니다.",
+    status: "api",
+    statusLabel: "API",
+    apiPath: "/api/system/stats",
+  },
+  {
+    id: "storage-usage",
+    label: "저장공간 사용량",
+    description: "고객사별 저장공간 사용량 API skeleton입니다.",
+    status: "api",
+    statusLabel: "API",
+    apiPath: "/api/system/storage-usage?companyId=company-sample-customer",
+  },
+  {
+    id: "logs",
+    label: "시스템 로그",
+    description: "시스템관리자 감사 로그 화면으로 확장할 예정입니다.",
+    status: "planned",
+    statusLabel: "예정",
+  },
+];
 
-export const SYSTEM_CONSOLE_API_LINKS = [
-  {
-    id: "companies-api",
-    label: "고객사 API",
-    path: "/api/system/companies",
-    description: "고객사 목록 skeleton",
-  },
-  {
-    id: "stats-api",
-    label: "시스템 통계 API",
-    path: "/api/system/stats",
-    description: "시스템 통계 summary skeleton",
-  },
-  {
-    id: "storage-usage-api",
-    label: "저장공간 사용량 API",
-    path: "/api/system/storage-usage?companyId=company-sample-customer",
-    description: "고객사별 storage usage skeleton",
-  },
+export const SYSTEM_CONSOLE_POLICY_NOTES = [
+  "화면 링크는 실제 route 기준으로만 유지합니다.",
+  "API 항목은 code block으로 표시하고 자동 호출하지 않습니다.",
+  "스토리지 정리 기존 기능은 콘솔 하단에서 유지합니다.",
+  "고객사/통계/스토리지 API는 skeleton 상태입니다.",
 ] as const;

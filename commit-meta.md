@@ -1,23 +1,16 @@
-Version : 0.9.77
-Base Version : 0.9.76
-Target Version : 0.9.77
-Summary : 콘솔 및 초대 화면 TSX 무결성 복구
-Description : GitHub master에서 확인된 app/admin/page.tsx, app/system/page.tsx, system/admin invite page, billing page, 주요 skeleton 컴포넌트의 깨진 return/JSX 손상 파일을 정상 TSX 구조로 복구하고 앱 버전을 0.9.77로 갱신했습니다. package.json, package-lock.json, .env.local은 수정하지 않았습니다.
+Version : 0.9.78
+Base Version : 0.9.77
+Target Version : 0.9.78
+Summary : 시스템관리자 콘솔 링크 안정화
+Description : 0.9.77 빌드 통과 상태를 기준으로 시스템관리자 콘솔의 실제 route 링크와 API 확인 경로를 단순화하고, system page/invites/billing page의 반환부를 안정화했습니다. 기존 스토리지 정리 기능은 유지하고 앱 버전을 0.9.78로 갱신했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- app/admin/page.tsx
 - app/system/page.tsx
-- app/admin/invites/page.tsx
 - app/system/invites/page.tsx
 - app/system/billing/page.tsx
-- lib/admin/adminConsoleLinks.ts
-- lib/system/systemConsoleShell.ts
 - components/system/SystemConsoleShell.tsx
-- components/invitations/InvitationQrPreview.tsx
-- components/admin/invitations/CompanyMemberInviteSkeleton.tsx
-- components/system/invitations/SystemCustomerInviteSkeleton.tsx
-- components/system/billing/SystemCompanyPlanSkeleton.tsx
+- lib/system/systemConsoleShell.ts
 추가 파일 목록 :
-- 없음
+- docs/system/system_console_link_check.md
 삭제 파일 목록 :
 - 없음
