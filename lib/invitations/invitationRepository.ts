@@ -1,6 +1,8 @@
 import { createHash, randomBytes, randomUUID } from "crypto";
 
+import { createDbInvitationRepositorySkeleton } from "./dbInvitationRepository";
 import { getDefaultInvitationExpiresAt } from "./invitationPolicy";
+import { INVITATION_REPOSITORY_MODE } from "./invitationRepositoryMode";
 import type {
   InvitationCreateResult,
   InvitationDraft,
@@ -52,7 +54,7 @@ function createInvitationRecord(
   };
 }
 
-export function createInvitationRepository(): InvitationRepository {
+export function createMemoryInvitationRepository(): InvitationRepository {
   return {
     async createInvitation(
       draft: InvitationDraft,
@@ -100,6 +102,16 @@ export function createInvitationRepository(): InvitationRepository {
       return updated;
     },
   };
+}
+
+export function createInvitationRepository(
+  mode = INVITATION_REPOSITORY_MODE,
+): InvitationRepository {
+  if (mode === "db") {
+    return createDbInvitationRepositorySkeleton();
+  }
+
+  return createMemoryInvitationRepository();
 }
 
 export const invitationRepository = createInvitationRepository();
