@@ -1,11 +1,18 @@
-Version : 0.9.47
-Summary : 첨부파일 다운로드 API를 Worker redirect 방식으로 전환
-Description : /api/workorders/attachments/file 요청에서 Worker가 설정된 경우 미리보기와 다운로드 모두 R2 SDK GetObject 서버 스트림 대신 Worker 서명 URL로 307 redirect 하도록 수정했습니다. download=1 요청은 Worker URL에 download/name 파라미터를 전달하고, Worker GET 응답에서 Content-Disposition을 내려 파일 다운로드 동작을 안정화했습니다. Worker 미설정 환경에서는 기존 R2 SDK fallback을 유지했습니다. APP_VERSION을 0.9.47로 증가했습니다.
+Version :
+0.9.48
+
+Summary :
+작업지시서 API route 처리 로직 분리
+
+Description :
+app/api/workorders/route.ts에 직접 들어 있던 DB 오류 처리, 메모 스냅샷 병합, 히스토리 기록, GET/POST/PATCH/DELETE 처리 로직을 lib/workorder/api/workOrderRouteHandlers.ts로 분리했다. route.ts는 Next route handler 위임만 담당하도록 축소했다. API 응답 포맷과 DB 저장 흐름은 변경하지 않았다.
+
 수정 파일 목록 :
-- app/api/workorders/attachments/file/route.ts
-- cloudflare/r2-upload-worker.js
+- app/api/workorders/route.ts
 - lib/constants/app.ts
+
 추가 파일 목록 :
-- 없음
+- lib/workorder/api/workOrderRouteHandlers.ts
+
 삭제 파일 목록 :
-- 없음
+없음
