@@ -33,6 +33,14 @@ export const SYSTEM_CONSOLE_LINKS: SystemConsoleLink[] = [
     href: "/system/companies",
   },
   {
+    id: "permissions",
+    label: "권한 관리",
+    description: "permission catalog와 role permission map을 확인하는 read-only 화면입니다.",
+    status: "linked",
+    statusLabel: "화면",
+    href: "/system/permissions",
+  },
+  {
     id: "invites",
     label: "고객 초대",
     description: "고객사 관리자 초대 화면입니다.",
