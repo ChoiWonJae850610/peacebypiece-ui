@@ -1,16 +1,17 @@
-Version : 0.9.86
-Base Version : 0.9.85
-Target Version : 0.9.86
-Summary : company user repository DB 조회 연결
-Description : 시스템관리자 고객사 조회를 위한 company/user repository 타입과 DB repository를 추가하고, /api/system/companies route를 실제 DB 조회 handler로 연결했습니다. 고객사 목록, 고객사 상세, company_users, role_permissions 조회만 포함하며 생성/수정/삭제와 인증 연결은 포함하지 않았습니다.
+Version : 0.9.87
+Base Version : 0.9.86
+Target Version : 0.9.87
+Summary : permission policy DB 권한 연결 준비
+Description : DB의 permission_catalog, role_permissions, company_user_permissions를 읽어 권한 계산에 사용할 수 있는 permission 타입, policy, repository, system permissions API를 추가했습니다. 기존 작업지시서 workflow 권한 동작은 변경하지 않고 앱 버전을 0.9.87로 갱신했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- app/api/system/companies/route.ts
 추가 파일 목록 :
-- lib/companies/companyTypes.ts
-- lib/companies/companyRepository.ts
-- lib/companies/api/companyRouteHandlers.ts
-- lib/companies/index.ts
-- docs/companies/company_user_repository_db_connection.md
+- app/api/system/permissions/route.ts
+- lib/permissions/permissionTypes.ts
+- lib/permissions/permissionPolicy.ts
+- lib/permissions/permissionRepository.ts
+- lib/permissions/api/permissionRouteHandlers.ts
+- lib/permissions/index.ts
+- docs/permissions/permission_policy_db_connection.md
 삭제 파일 목록 :
 - 없음
