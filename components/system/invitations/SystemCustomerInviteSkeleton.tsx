@@ -1,6 +1,8 @@
 import Link from "next/link";
 
+import InvitationQrPreview from "@/components/invitations/InvitationQrPreview";
 import { APP_VERSION } from "@/lib/constants/app";
+import { SYSTEM_CUSTOMER_INVITE_QR_PREVIEW } from "@/lib/invitations/invitationQrPreview";
 import {
   SYSTEM_CUSTOMER_INVITE_FIELDS,
   SYSTEM_CUSTOMER_INVITE_POLICY_NOTES,
@@ -166,6 +168,8 @@ export default function SystemCustomerInviteSkeleton() {
             </ul>
           </aside>
         </section>
+
+        <InvitationQrPreview model={SYSTEM_CUSTOMER_INVITE_QR_PREVIEW} />
       </div>
     </main>
   );

@@ -1,15 +1,14 @@
-Version : 0.9.63
-Base Version : 0.9.62
-Target Version : 0.9.63
-Summary : 초대 링크 생성 API skeleton 추가
-Description : 초대 링크 생성과 목록 조회를 위한 얇은 API route, invitation route handler, in-memory repository skeleton, raw token 1회 반환 및 token_hash 생성 흐름을 추가하고 앱 버전을 0.9.63으로 갱신했습니다. 실제 DB 저장, 이메일 발송, QR UI는 포함하지 않았습니다.
+Version : 0.9.64
+Base Version : 0.9.63
+Target Version : 0.9.64
+Summary : QR 초대 UI skeleton 추가
+Description : 외부 QR 라이브러리를 추가하지 않고 초대 링크 QR 미리보기 공통 컴포넌트와 QR preview 모델을 추가했습니다. 시스템관리자 고객 초대 화면과 고객관리자 멤버 초대 화면에 QR 표시 영역을 연결하고 앱 버전을 0.9.64로 갱신했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/invitations/invitationTypes.ts
-- lib/invitations/index.ts
+- components/system/invitations/SystemCustomerInviteSkeleton.tsx
+- components/admin/invitations/CompanyMemberInviteSkeleton.tsx
 추가 파일 목록 :
-- app/api/invitations/route.ts
-- lib/invitations/invitationRepository.ts
-- lib/invitations/api/invitationRouteHandlers.ts
+- components/invitations/InvitationQrPreview.tsx
+- lib/invitations/invitationQrPreview.ts
 삭제 파일 목록 :
 - 없음

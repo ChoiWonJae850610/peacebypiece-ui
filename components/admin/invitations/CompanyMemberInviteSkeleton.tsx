@@ -1,6 +1,8 @@
 import Link from "next/link";
 
+import InvitationQrPreview from "@/components/invitations/InvitationQrPreview";
 import { APP_VERSION } from "@/lib/constants/app";
+import { COMPANY_MEMBER_INVITE_QR_PREVIEW } from "@/lib/invitations/invitationQrPreview";
 import {
   COMPANY_MEMBER_INVITE_FORM_FIELDS,
   COMPANY_MEMBER_INVITE_POLICY_NOTES,
@@ -163,6 +165,8 @@ export default function CompanyMemberInviteSkeleton() {
             </div>
           </aside>
         </section>
+
+        <InvitationQrPreview model={COMPANY_MEMBER_INVITE_QR_PREVIEW} />
       </div>
     </main>
   );
