@@ -18,17 +18,17 @@ export const ADMIN_CONSOLE_PRIMARY_LINKS: AdminConsoleLinkItem[] = [
   {
     id: "workorders",
     label: "작업지시서",
-    description: "작업지시서 목록과 업무 화면으로 이동합니다.",
+    description: "작업지시서 업무 화면으로 이동합니다.",
     status: "legacy",
-    statusLabel: "기존 기능",
-    href: "/worker",
+    statusLabel: "기존",
+    href: "/",
   },
   {
     id: "partners",
     label: "거래처/공장관리",
     description: "공장, 원단, 부자재, 외주처 기준정보를 관리합니다.",
     status: "legacy",
-    statusLabel: "기존 기능",
+    statusLabel: "기존",
     href: "/admin/partners",
   },
   {
@@ -37,15 +37,15 @@ export const ADMIN_CONSOLE_PRIMARY_LINKS: AdminConsoleLinkItem[] = [
     description:
       "고객관리자가 디자이너, 검수담당자, 재고담당자를 초대하는 화면입니다.",
     status: "linked",
-    statusLabel: "화면 연결",
+    statusLabel: "화면",
     href: "/admin/invites",
   },
   {
     id: "stats",
     label: "통계",
-    description: "고객관리자 통계 summary API와 연결될 영역입니다.",
+    description: "고객관리자 통계 summary API skeleton입니다.",
     status: "api",
-    statusLabel: "API 준비",
+    statusLabel: "API",
     apiPath: "/api/admin/stats?companyId=company-sample-customer",
   },
 ];
@@ -56,7 +56,7 @@ export const ADMIN_CONSOLE_SECONDARY_LINKS: AdminConsoleLinkItem[] = [
     label: "저장소 관리",
     description: "첨부파일, 휴지통, 용량 사용량을 관리합니다.",
     status: "legacy",
-    statusLabel: "기존 기능",
+    statusLabel: "기존",
     href: "/admin/files",
   },
   {
@@ -64,7 +64,7 @@ export const ADMIN_CONSOLE_SECONDARY_LINKS: AdminConsoleLinkItem[] = [
     label: "히스토리",
     description: "작업지시서와 운영 변경 이력을 확인합니다.",
     status: "legacy",
-    statusLabel: "기존 기능",
+    statusLabel: "기존",
     href: "/admin/history",
   },
   {
@@ -72,7 +72,7 @@ export const ADMIN_CONSOLE_SECONDARY_LINKS: AdminConsoleLinkItem[] = [
     label: "환경설정",
     description: "고객사별 화면, 파일, 알림 정책을 관리합니다.",
     status: "legacy",
-    statusLabel: "기존 기능",
+    statusLabel: "기존",
     href: "/admin/settings",
   },
   {
@@ -80,7 +80,7 @@ export const ADMIN_CONSOLE_SECONDARY_LINKS: AdminConsoleLinkItem[] = [
     label: "멤버 관리",
     description: "초대 수락 이후 멤버 권한 관리 화면으로 확장할 영역입니다.",
     status: "planned",
-    statusLabel: "후순위",
+    statusLabel: "예정",
   },
 ];
 
@@ -90,7 +90,7 @@ export const ADMIN_CONSOLE_API_LINKS: AdminConsoleLinkItem[] = [
     label: "고객관리자 통계 API",
     description: "고객사별 작업량, 상태, 저장공간 통계 skeleton입니다.",
     status: "api",
-    statusLabel: "API 준비",
+    statusLabel: "API",
     apiPath: "/api/admin/stats?companyId=company-sample-customer",
   },
   {
@@ -98,7 +98,7 @@ export const ADMIN_CONSOLE_API_LINKS: AdminConsoleLinkItem[] = [
     label: "초대 API",
     description: "초대 링크 생성과 목록 조회 skeleton입니다.",
     status: "api",
-    statusLabel: "API 준비",
+    statusLabel: "API",
     apiPath: "/api/invitations?companyId=company-sample-customer",
   },
 ];

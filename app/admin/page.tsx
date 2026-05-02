@@ -65,20 +65,17 @@ export default function AdminPage() {
     <main className="min-h-screen bg-stone-50 px-4 py-6 text-stone-900 sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
         <header className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-            <div className="space-y-3">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
                 ADMIN CONSOLE
               </p>
-              <div className="space-y-2">
-                <h1 className="text-2xl font-semibold text-stone-950">
-                  고객관리자 콘솔
-                </h1>
-                <p className="max-w-3xl text-sm leading-6 text-stone-600">
-                  작업지시서, 거래처/공장관리, 멤버 초대, 통계, 저장소 관리로 이동하는 고객관리자 메뉴 허브입니다.
-                  새로 추가된 초대/통계 skeleton과 기존 운영 화면을 같은 진입점에서 확인할 수 있게 정리했습니다.
-                </p>
-              </div>
+              <h1 className="mt-3 text-2xl font-semibold text-stone-950">
+                고객관리자 콘솔
+              </h1>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">
+                작업지시서, 거래처/공장관리, 멤버 초대, 저장소, 히스토리, 환경설정으로 이동하는 고객관리자 메뉴 허브입니다.
+              </p>
             </div>
 
             <div className="flex flex-wrap gap-2 text-xs font-medium">
@@ -118,7 +115,7 @@ export default function AdminPage() {
           </div>
 
           <div className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold text-stone-950">API 연결 준비</h2>
+            <h2 className="text-lg font-semibold text-stone-950">API 확인 경로</h2>
             <div className="mt-4 grid gap-3">
               {ADMIN_CONSOLE_API_LINKS.map((item) => (
                 <AdminConsoleCard key={item.id} item={item} />
