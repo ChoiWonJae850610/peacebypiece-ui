@@ -1,13 +1,15 @@
-Version : 0.9.67
-Base Version : 0.9.66
-Target Version : 0.9.67
-Summary : 시스템관리자 고객별 요금제 수정 UI skeleton 추가
-Description : 시스템관리자가 고객사별 plan을 선택하고 저장용량, 멤버 수, 가격 override를 조정하는 /system/billing 화면 skeleton과 표시 모델을 추가하고 앱 버전을 0.9.67로 갱신했습니다. 실제 결제 자동화, 저장공간 집계 API, 업로드 제한 정책은 포함하지 않았습니다.
+Version : 0.9.68
+Base Version : 0.9.67
+Target Version : 0.9.68
+Summary : 스토리지 사용량 집계 API skeleton 추가
+Description : 시스템관리자 고객별 저장공간 사용량 조회와 snapshot 생성을 위한 얇은 API route, route handler, repository skeleton, 설계 문서를 추가하고 앱 버전을 0.9.68로 갱신했습니다. R2 실시간 집계, 업로드 차단, 결제 자동화는 포함하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
+- lib/billing/index.ts
 추가 파일 목록 :
-- app/system/billing/page.tsx
-- components/system/billing/SystemCompanyPlanSkeleton.tsx
-- lib/system/systemCompanyPlanSkeleton.ts
+- app/api/system/storage-usage/route.ts
+- lib/billing/storageUsageRepository.ts
+- lib/billing/api/storageUsageRouteHandlers.ts
+- docs/billing/storage_usage_api_skeleton.md
 삭제 파일 목록 :
 - 없음
