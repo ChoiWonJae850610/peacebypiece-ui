@@ -68,7 +68,7 @@ export default function WorkOrderDetailContainer({
   };
 
   const permissionModel: WorkOrderDetailPermissionModel = {
-    canRenameTitle,
+    canRenameTitle: canRenameTitle ?? false,
     canEditInventory,
     canChangeManager,
     canSeeProductionSections,
@@ -137,7 +137,7 @@ export default function WorkOrderDetailContainer({
     lastSavedAt: persistenceModel.lastSavedAt,
     currentUserRole: identityModel.currentUserRole,
     currentWorkflowState: workflowModel.currentWorkflowState,
-    canRenameTitle: permissionModel.canRenameTitle,
+    canRenameTitle: permissionModel.canRenameTitle ?? false,
     canEditInventory: permissionModel.canEditInventory,
     canChangeManager: permissionModel.canChangeManager,
     isReviewRequestLocked: permissionModel.isReviewRequestLocked,
@@ -196,5 +196,5 @@ export default function WorkOrderDetailContainer({
     currentInventoryQuantity,
   };
 
-  return <WorkOrderDetailViewSwitch deviceType={deviceType} {...detailViewProps} />;
+  return <WorkOrderDetailViewSwitch {...detailViewProps} deviceType={deviceType} />;
 }

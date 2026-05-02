@@ -1,14 +1,12 @@
-Version : 0.9.71
-Base Version : 0.9.70
-Target Version : 0.9.71
-Summary : 시스템관리자 통계 항목 보완
-Description : 시스템관리자 통계용 metric 정의, 고객사 수, 활성 고객사 수, 전체 저장용량, 고객사별 저장용량, 요금제별 고객 수, 초대 발송/수락 현황 skeleton을 stats repository에 추가하고 앱 버전을 0.9.71로 갱신했습니다. 실제 DB 통계 쿼리, 차트 UI, 결제 자동화 통계는 포함하지 않았습니다.
+Version : 0.9.72
+Base Version : 0.9.71
+Target Version : 0.9.72
+Summary : 작업지시서 상세 컨테이너 빌드 오류 수정
+Description : WorkOrderDetailContainer에서 optional canRenameTitle 값이 상세 view model의 boolean 필드로 전달되며 발생하던 TypeScript 빌드 오류를 기본값 보정으로 수정하고 앱 버전을 0.9.72로 갱신했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/stats/statsRepository.ts
-- lib/stats/index.ts
+- components/workorder/detail/WorkOrderDetailContainer.tsx
 추가 파일 목록 :
-- lib/stats/systemStatsMetrics.ts
-- docs/stats/system_stats_metrics.md
+- 없음
 삭제 파일 목록 :
 - 없음
