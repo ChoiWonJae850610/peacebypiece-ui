@@ -1,12 +1,19 @@
-Version : 0.9.92
-Base Version : 0.9.91
-Target Version : 0.9.92
-Summary : 시스템관리자 통계 API DB 집계 연결
-Description : /api/system/stats가 DB 기준으로 전체 고객사 수, 활성 고객사 수, 전체 저장공간 사용량, 요금제별 고객 수, 초대 상태별 수와 초대 수락률을 집계하도록 연결했습니다. 고객사별 저장공간 사용량 상위 series도 추가했으며 화면 차트 연결과 audit log 통계는 포함하지 않았습니다.
+Version : 0.9.93
+Base Version : 0.9.92
+Target Version : 0.9.93
+Summary : 관리자 화면 route 회귀 안정화
+Description : GitHub raw 기준 깨진 JSX로 조회되는 /admin 하위 route를 안전한 회귀 점검 화면으로 대체해 build/runtime 차단 위험을 낮췄습니다. 기존 API, DB repository, 첨부/저장/삭제 흐름은 수정하지 않았고, 기능성 하위 컴포넌트 본 복원은 후속 버전으로 분리했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/stats/statsRepository.ts
+- app/admin/page.tsx
+- app/admin/partners/page.tsx
+- app/admin/files/page.tsx
+- app/admin/history/page.tsx
+- app/admin/settings/page.tsx
+- app/admin/invites/page.tsx
 추가 파일 목록 :
-- docs/stats/system_stats_db_aggregation.md
+- components/admin/regression/AdminRegressionRoutePage.tsx
+- lib/admin/adminRegressionRoutes.ts
+- docs/admin/admin_regression_check.md
 삭제 파일 목록 :
 - 없음

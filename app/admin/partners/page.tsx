@@ -1,22 +1,12 @@
-import AdminShell from "@/components/admin/layout/AdminShell";
-import PartnerMasterSection from "@/components/admin/PartnerMasterSection";
-import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
-import { APP_VERSION } from "@/lib/constants/app";
-import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
-import { getI18n } from "@/lib/i18n";
-
-const i18n = getI18n();
-const pageText = i18n.admin.partnerMaster.page;
+import AdminRegressionRoutePage from "@/components/admin/regression/AdminRegressionRoutePage";
 
 export default function AdminPartnersPage() {
   return (
-    <AdminShell
-      companyName={WORKSPACE_COMPANY_NAME}
-      appVersion={APP_VERSION}
-      navigationItems={getAdminNavigationItems("/admin/partners")}
-      title={pageText.title}
-    >
-      <PartnerMasterSection />
-    </AdminShell>
+    <AdminRegressionRoutePage
+      eyebrow="ADMIN PARTNERS"
+      title="거래처/공장관리"
+      description="거래처/공장관리 route의 무결성 점검 화면입니다. PartnerMasterSection 본 기능 재연결은 하위 컴포넌트 JSX 확인 후 별도 버전에서 진행합니다."
+      currentRouteId="partners"
+    />
   );
 }

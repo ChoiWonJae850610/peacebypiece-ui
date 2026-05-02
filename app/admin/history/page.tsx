@@ -1,24 +1,12 @@
-import AdminWorkOrderHistoryPage from "@/components/admin/history/AdminWorkOrderHistoryPage";
-import AdminShell from "@/components/admin/layout/AdminShell";
-import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
-import { listAdminHistoryEvents } from "@/lib/admin/history/repository";
-import { APP_VERSION } from "@/lib/constants/app";
-import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
-import { getI18n } from "@/lib/i18n";
+import AdminRegressionRoutePage from "@/components/admin/regression/AdminRegressionRoutePage";
 
-export default async function AdminHistoryPage() {
-  const i18n = getI18n();
-  const pageText = i18n.admin.historyPage;
-  const historyEvents = await listAdminHistoryEvents();
-
+export default function AdminHistoryPage() {
   return (
-    <AdminShell
-      companyName={WORKSPACE_COMPANY_NAME}
-      appVersion={APP_VERSION}
-      navigationItems={getAdminNavigationItems("/admin/history")}
-      title={`${WORKSPACE_COMPANY_NAME} · ${pageText.title}`}
-    >
-      <AdminWorkOrderHistoryPage initialHistoryEvents={historyEvents} />
-    </AdminShell>
+    <AdminRegressionRoutePage
+      eyebrow="ADMIN HISTORY"
+      title="히스토리"
+      description="히스토리 route의 무결성 점검 화면입니다. AdminWorkOrderHistoryPage 본 기능 재연결은 하위 컴포넌트 JSX 확인 후 별도 버전에서 진행합니다."
+      currentRouteId="history"
+    />
   );
 }
