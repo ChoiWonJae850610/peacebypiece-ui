@@ -56,6 +56,16 @@ export const SYSTEM_REGRESSION_ROUTES: SystemRegressionRouteItem[] = [
     nextAction: "0.9.113에서 /system/storage-usage read-only 화면을 추가했습니다. R2 실시간 inventory 조회와 snapshot 생성 action은 별도 버전에서 판단합니다.",
   },
   {
+    id: "stats",
+    label: "시스템 통계 상세",
+    href: "/system/stats",
+    description: "시스템 통계 count, ratio, series를 확인하는 read-only 화면입니다.",
+    status: "stable",
+    statusLabel: "read-only 추가",
+    apiPath: "/api/system/stats",
+    nextAction: "0.9.114에서 /system/stats read-only 화면을 추가했습니다. chart library 추가와 통계 고도화는 별도 버전에서 판단합니다.",
+  },
+  {
     id: "invites",
     label: "고객 초대",
     href: "/system/invites",
@@ -83,16 +93,6 @@ export const SYSTEM_REGRESSION_ROUTES: SystemRegressionRouteItem[] = [
     status: "stable",
     statusLabel: "UI 재연결",
     nextAction: "0.9.103에서 기존 CategoryRulesManager 본 화면을 재연결했습니다. DB 저장 구조 변경은 별도 버전에서 판단합니다.",
-  },
-  {
-    id: "stats",
-    label: "시스템 통계 API",
-    href: "/api/system/stats",
-    description: "시스템관리자 통계 DB 집계 API입니다.",
-    status: "api",
-    statusLabel: "API",
-    apiPath: "/api/system/stats",
-    nextAction: "시스템 통계 화면 차트 연결은 후속 버전에서 진행합니다.",
   },
 ];
 

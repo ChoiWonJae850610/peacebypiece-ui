@@ -49,6 +49,14 @@ export const SYSTEM_CONSOLE_LINKS: SystemConsoleLink[] = [
     href: "/system/storage-usage",
   },
   {
+    id: "stats",
+    label: "시스템 통계 상세",
+    description: "시스템 통계 count, ratio, series를 확인하는 read-only 화면입니다.",
+    status: "linked",
+    statusLabel: "화면",
+    href: "/system/stats",
+  },
+  {
     id: "invites",
     label: "고객 초대",
     description: "고객사 관리자 초대 화면입니다.",
@@ -71,14 +79,6 @@ export const SYSTEM_CONSOLE_LINKS: SystemConsoleLink[] = [
     status: "linked",
     statusLabel: "화면",
     href: "/system/category-rules",
-  },
-  {
-    id: "stats",
-    label: "시스템 통계 API",
-    description: "시스템 통계 DB 집계 API입니다.",
-    status: "api",
-    statusLabel: "API",
-    apiPath: "/api/system/stats",
   },
 ];
 
