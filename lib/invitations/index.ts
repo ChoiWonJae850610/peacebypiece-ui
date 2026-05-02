@@ -1,4 +1,6 @@
 export * from "./dbInvitationRepository";
+export * from "./invitationAcceptanceRepository";
+export * from "./invitationAcceptanceTypes";
 export * from "./invitationClient";
 export * from "./invitationPolicy";
 export * from "./invitationQrPreview";
