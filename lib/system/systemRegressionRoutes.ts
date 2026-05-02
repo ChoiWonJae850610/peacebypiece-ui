@@ -60,10 +60,10 @@ export const SYSTEM_REGRESSION_ROUTES: SystemRegressionRouteItem[] = [
     label: "요금제·용량",
     href: "/system/billing",
     description: "고객사별 요금제, 저장공간, 멤버 수를 확인하는 진입점입니다.",
-    status: "needs_component_restore",
-    statusLabel: "컴포넌트 복원 필요",
+    status: "stable",
+    statusLabel: "UI 재연결",
     apiPath: "/api/system/billing",
-    nextAction: "SystemCompanyPlanSkeleton JSX 무결성 확인 후 본 UI를 재연결합니다.",
+    nextAction: "0.9.105에서 시스템 요금제·용량 UI 본 화면을 재연결했습니다. 저장 action과 결제 자동화는 별도 버전에서 판단합니다.",
   },
   {
     id: "category-rules",
