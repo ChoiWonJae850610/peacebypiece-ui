@@ -69,14 +69,18 @@ function toBadRequestResponse(reasons: string[]) {
 }
 
 function toErrorResponse(error: unknown) {
+  const message =
+    error instanceof Error ? error.message : "Unknown invitation route error";
+
+  const status = message === "PENDING_INVITATION_ALREADY_EXISTS" ? 409 : 500;
+
   return NextResponse.json(
     {
       ok: false,
-      error: "INVITATION_ROUTE_ERROR",
-      message:
-        error instanceof Error ? error.message : "Unknown invitation route error",
+      error: status === 409 ? message : "INVITATION_ROUTE_ERROR",
+      message,
     },
-    { status: 500 },
+    { status },
   );
 }
 

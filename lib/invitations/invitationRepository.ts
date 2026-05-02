@@ -1,6 +1,6 @@
 import { createHash, randomBytes, randomUUID } from "crypto";
 
-import { createDbInvitationRepositorySkeleton } from "./dbInvitationRepository";
+import { createDbInvitationRepository } from "./dbInvitationRepository";
 import { getDefaultInvitationExpiresAt } from "./invitationPolicy";
 import { INVITATION_REPOSITORY_MODE } from "./invitationRepositoryMode";
 import type {
@@ -108,7 +108,7 @@ export function createInvitationRepository(
   mode = INVITATION_REPOSITORY_MODE,
 ): InvitationRepository {
   if (mode === "db") {
-    return createDbInvitationRepositorySkeleton();
+    return createDbInvitationRepository();
   }
 
   return createMemoryInvitationRepository();
