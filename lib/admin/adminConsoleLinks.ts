@@ -34,7 +34,8 @@ export const ADMIN_CONSOLE_PRIMARY_LINKS: AdminConsoleLinkItem[] = [
   {
     id: "member-invites",
     label: "멤버 초대",
-    description: "고객관리자가 디자이너, 검수담당자, 재고담당자를 초대하는 화면입니다.",
+    description:
+      "고객관리자가 디자이너, 검수담당자, 재고담당자를 초대하는 화면입니다.",
     status: "linked",
     statusLabel: "화면 연결",
     href: "/admin/invites",

@@ -75,7 +75,7 @@ export default function SystemCustomerInviteSkeleton() {
           <div className="flex flex-col gap-2 border-b border-stone-100 pb-4">
             <h2 className="text-lg font-semibold text-stone-950">초대 생성 흐름</h2>
             <p className="text-sm leading-6 text-stone-600">
-              0.9.63 초대 링크 생성 API와 연결하기 전까지 입력, 정책, 결과 영역만 고정합니다.
+              초대 링크 생성 API와 연결하기 전까지 입력, 정책, 결과 영역을 고정합니다.
             </p>
           </div>
 
@@ -108,68 +108,19 @@ export default function SystemCustomerInviteSkeleton() {
           </div>
         </section>
 
-        <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold text-stone-950">초대 링크 생성 영역</h2>
-            <div className="mt-4 grid gap-3">
-              <label className="grid gap-1 text-sm font-medium text-stone-700">
-                고객사
-                <input
-                  value="샘플 고객사"
-                  readOnly
-                  className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-500"
-                />
-              </label>
-              <label className="grid gap-1 text-sm font-medium text-stone-700">
-                고객관리자 이메일
-                <input
-                  value="admin@example.com"
-                  readOnly
-                  className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-500"
-                />
-              </label>
-              <label className="grid gap-1 text-sm font-medium text-stone-700">
-                초대 링크
-                <input
-                  value="API 연결 후 생성 응답에서 1회 표시"
-                  readOnly
-                  className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-500"
-                />
-              </label>
-            </div>
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button
-                type="button"
-                disabled
-                className="rounded-xl border border-stone-200 bg-stone-100 px-4 py-2 text-sm font-semibold text-stone-400"
-              >
-                초대 링크 생성 준비중
-              </button>
-              <button
-                type="button"
-                disabled
-                className="rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-400"
-              >
-                QR 표시 준비중
-              </button>
-            </div>
-          </div>
-
-          <aside className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold text-stone-950">정책 메모</h2>
-            <ul className="mt-4 space-y-3">
-              {SYSTEM_CUSTOMER_INVITE_POLICY_NOTES.map((note) => (
-                <li key={note} className="flex gap-2 text-sm leading-6 text-stone-600">
-                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-stone-400" />
-                  <span>{note}</span>
-                </li>
-              ))}
-            </ul>
-          </aside>
-        </section>
-
         <InvitationQrPreview model={SYSTEM_CUSTOMER_INVITE_QR_PREVIEW} />
+
+        <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+          <h2 className="text-lg font-semibold text-stone-950">정책 메모</h2>
+          <ul className="mt-4 space-y-3">
+            {SYSTEM_CUSTOMER_INVITE_POLICY_NOTES.map((note) => (
+              <li key={note} className="flex gap-2 text-sm leading-6 text-stone-600">
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-stone-400" />
+                <span>{note}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
       </div>
     </main>
   );

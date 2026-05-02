@@ -114,7 +114,7 @@ export default function SystemCompanyPlanSkeleton() {
                 요금제 수정 준비 영역
               </h2>
               <p className="text-sm leading-6 text-stone-600">
-                0.9.66 SQL의 company_plan_assignments와 연결될 입력 영역입니다.
+                company_plan_assignments와 연결될 입력 영역입니다.
               </p>
             </div>
 

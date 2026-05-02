@@ -61,7 +61,7 @@ export default function CompanyMemberInviteSkeleton() {
           <div className="flex flex-col gap-2 border-b border-stone-100 pb-4">
             <h2 className="text-lg font-semibold text-stone-950">역할 / 권한 preset</h2>
             <p className="text-sm leading-6 text-stone-600">
-              0.9.63 초대 링크 생성 API와 연결될 role 및 permission preset 선택 영역입니다.
+              초대 링크 생성 API와 연결될 role 및 permission preset 선택 영역입니다.
             </p>
           </div>
 
@@ -97,76 +97,21 @@ export default function CompanyMemberInviteSkeleton() {
           </div>
         </section>
 
-        <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold text-stone-950">초대 링크 생성 준비 영역</h2>
-            <div className="mt-4 grid gap-3">
-              <label className="grid gap-1 text-sm font-medium text-stone-700">
-                이메일
-                <input
-                  value="member@example.com"
-                  readOnly
-                  className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-500"
-                />
-              </label>
-              <label className="grid gap-1 text-sm font-medium text-stone-700">
-                역할
-                <select
-                  value="designer"
-                  disabled
-                  className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-500"
-                >
-                  {COMPANY_MEMBER_INVITE_ROLE_OPTIONS.map((option) => (
-                    <option key={option.role} value={option.role}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="grid gap-1 text-sm font-medium text-stone-700">
-                초대 링크
-                <input
-                  value="API 연결 후 생성 응답에서 1회 표시"
-                  readOnly
-                  className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-500"
-                />
-              </label>
-            </div>
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button
-                type="button"
-                disabled
-                className="rounded-xl border border-stone-200 bg-stone-100 px-4 py-2 text-sm font-semibold text-stone-400"
-              >
-                멤버 초대 링크 생성 준비중
-              </button>
-              <button
-                type="button"
-                disabled
-                className="rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-400"
-              >
-                링크 복사 준비중
-              </button>
-            </div>
-          </div>
-
-          <aside className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold text-stone-950">초대 정책</h2>
-            <div className="mt-4 space-y-3">
-              {COMPANY_MEMBER_INVITE_POLICY_NOTES.map((note) => (
-                <article key={note.title} className="rounded-2xl bg-stone-50 p-3">
-                  <h3 className="text-sm font-semibold text-stone-900">{note.title}</h3>
-                  <p className="mt-1 text-xs leading-5 text-stone-600">
-                    {note.description}
-                  </p>
-                </article>
-              ))}
-            </div>
-          </aside>
-        </section>
-
         <InvitationQrPreview model={COMPANY_MEMBER_INVITE_QR_PREVIEW} />
+
+        <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+          <h2 className="text-lg font-semibold text-stone-950">초대 정책</h2>
+          <div className="mt-4 space-y-3">
+            {COMPANY_MEMBER_INVITE_POLICY_NOTES.map((note) => (
+              <article key={note.title} className="rounded-2xl bg-stone-50 p-3">
+                <h3 className="text-sm font-semibold text-stone-900">{note.title}</h3>
+                <p className="mt-1 text-xs leading-5 text-stone-600">
+                  {note.description}
+                </p>
+              </article>
+            ))}
+          </div>
+        </section>
       </div>
     </main>
   );
