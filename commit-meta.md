@@ -1,24 +1,18 @@
 Version :
-0.9.49
-
-Base Version :
-0.9.48
-
-Target Version :
-0.9.49
+0.9.50
 
 Summary :
-첨부파일 다운로드 route 처리 로직 분리
+useWorkOrder 반환값 그룹화 1차
 
 Description :
-app/api/workorders/attachments/file/route.ts에 있던 첨부파일 조회, Worker redirect URL 생성, 다운로드 파일명 처리, R2 SDK fallback 응답 생성 로직을 lib/workorder/attachments/attachmentFileRoute.ts로 분리했다. route 파일은 Next.js GET 요청을 handler로 위임하는 역할만 하도록 축소했다. 기존 업로드, 삭제, 화면 표시 로직은 변경하지 않았다.
+useWorkOrder의 기존 flat 반환값은 유지하면서 ui, runtime, repository, identity, history, selection, permissions, attachments, memo, production, cost, persistence, workflow, actions 그룹 반환값을 추가했다. 기존 WorkOrderWorkspace 호출부와 화면 동작은 변경하지 않고, 다음 단계에서 workspace 조립부를 그룹 기반으로 전환할 수 있는 기반만 추가했다. APP_VERSION을 0.9.50으로 갱신했다.
 
 수정 파일 목록 :
-- app/api/workorders/attachments/file/route.ts
+- lib/hooks/useWorkOrder.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- lib/workorder/attachments/attachmentFileRoute.ts
+없음
 
 삭제 파일 목록 :
 없음

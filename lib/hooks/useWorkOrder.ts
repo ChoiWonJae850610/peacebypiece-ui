@@ -1,7 +1,11 @@
 "use client";
 
 import { useCallback, useEffect } from "react";
-import { canDeleteWorkOrder, useWorkOrderActions } from "@/lib/hooks/workorder/useWorkOrderActions";
+
+import {
+  canDeleteWorkOrder,
+  useWorkOrderActions,
+} from "@/lib/hooks/workorder/useWorkOrderActions";
 import { useWorkOrderCoreState } from "@/lib/hooks/workorder/useWorkOrderCoreState";
 import { useWorkOrderDerived } from "@/lib/hooks/workorder/useWorkOrderDerived";
 import { useWorkOrderAttachments } from "@/lib/hooks/workorder/useWorkOrderAttachments";
@@ -18,7 +22,10 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
   const uiState = useWorkOrderUIState();
   const actionRuntime = useWorkOrderActionRuntime();
 
-  const coreState = useWorkOrderCoreState({ initialWorkOrderId: options.initialWorkOrderId ?? null });
+  const coreState = useWorkOrderCoreState({
+    initialWorkOrderId: options.initialWorkOrderId ?? null,
+  });
+
   const derivedState = useWorkOrderDerived({
     users: coreState.users,
     currentUser: coreState.currentUser,
@@ -64,7 +71,6 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     setActionFailure: actionRuntime.setActionFailure,
   });
 
-
   useEffect(() => {
     if (derivedState.workOrders.length === 0) {
       if (coreState.selectedId !== "") {
@@ -74,6 +80,7 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
       }
       return;
     }
+
     if (coreState.selectedId === "") {
       coreState.setLastSavedAt(null);
       coreState.setSaveStatus("saved");
@@ -95,8 +102,6 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     derivedState.workOrders,
   ]);
 
-
-
   const handleSelectWorkOrder = useCallback(
     (id: string) => {
       if (coreState.selectedId === id) {
@@ -111,7 +116,13 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
       coreState.setLastSavedAt(next?.lastSavedAt ?? null);
       coreState.setSaveStatus("saved");
     },
-    [coreState.selectedId, coreState.setLastSavedAt, coreState.setSaveStatus, coreState.setSelectedId, coreState.workOrders],
+    [
+      coreState.selectedId,
+      coreState.setLastSavedAt,
+      coreState.setSaveStatus,
+      coreState.setSelectedId,
+      coreState.workOrders,
+    ],
   );
 
   const handleOpenManagerAssignModal = useCallback(() => {
@@ -120,8 +131,12 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
       isReviewRequestLocked: derivedState.isReviewRequestLocked,
       currentWorkflowState: derivedState.currentWorkflowState,
     });
-  }, [actionState, derivedState.canChangeManager, derivedState.currentWorkflowState, derivedState.isReviewRequestLocked]);
-
+  }, [
+    actionState,
+    derivedState.canChangeManager,
+    derivedState.currentWorkflowState,
+    derivedState.isReviewRequestLocked,
+  ]);
 
   const attachmentState = useWorkOrderAttachments({
     attachmentInputRef: uiState.attachmentInputRef,
@@ -139,10 +154,9 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     setToastMessage: uiState.setToastMessage,
   });
 
-  return {
+  const ui = {
     appShellRef: uiState.appShellRef,
     attachmentInputRef: uiState.attachmentInputRef,
-    attachmentInputAccept: attachmentState.attachmentInputAccept,
     drawerOpen: uiState.drawerOpen,
     setDrawerOpen: uiState.setDrawerOpen,
     basicInfoOpen: uiState.basicInfoOpen,
@@ -166,6 +180,9 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     orderRequestConfirmOpen: uiState.orderRequestConfirmOpen,
     pendingWorkflowAction: uiState.pendingWorkflowAction,
     toastMessage: uiState.toastMessage,
+  };
+
+  const runtime = {
     actionStatusMap: actionRuntime.actionStatusMap,
     actionFailureMap: actionRuntime.actionFailureMap,
     actionErrorMap: actionRuntime.actionErrorMap,
@@ -174,16 +191,33 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     latestActionFailure: actionRuntime.latestActionFailure,
     retryableActionKeys: actionRuntime.retryableActionKeys,
     clearActionError: actionRuntime.clearActionError,
+  };
+
+  const repository = {
     repositoryStatus: coreState.repositoryStatus,
     repositoryError: coreState.repositoryError,
     repositoryErrorMessage: coreState.repositoryError?.message ?? null,
+  };
+
+  const identity = {
     users: coreState.users,
     currentUserId: coreState.currentUserId,
     setCurrentUserId: coreState.setCurrentUserId,
     permissionTargetUserId: derivedState.permissionTargetUser?.id ?? coreState.users[0]?.id ?? "",
     setPermissionTargetUserId: coreState.setPermissionTargetUserId,
+    currentUser: coreState.currentUser,
+    currentRole: derivedState.currentRole,
+    isAdmin: derivedState.isAdmin,
+  };
+
+  const history = {
     historyFilter: historyState.historyFilter,
     setHistoryFilter: historyState.setHistoryFilter,
+    filteredHistoryLogs: historyState.filteredHistoryLogs,
+    inventoryLogs: historyState.inventoryLogs,
+  };
+
+  const selection = {
     searchQuery: coreState.searchQuery,
     setSearchQuery: coreState.setSearchQuery,
     workOrders: derivedState.workOrders,
@@ -193,9 +227,11 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     selectedId: coreState.selectedId,
     selectedWorkOrder: coreState.selectedWorkOrder,
     currentWorkflowState: derivedState.currentWorkflowState,
-    currentUser: coreState.currentUser,
-    currentRole: derivedState.currentRole,
-    isAdmin: derivedState.isAdmin,
+    currentDisplayStage: derivedState.currentDisplayStage,
+    currentInventoryQuantity: derivedState.currentInventoryQuantity,
+  };
+
+  const permissions = {
     canCreateWorkOrder: derivedState.canCreateWorkOrder,
     canEditSideDraftContent: derivedState.canEditSideDraftContent,
     canUploadOfficialAttachments: derivedState.canUploadOfficialAttachments,
@@ -209,40 +245,80 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     canEditInventory: derivedState.canEditInventory,
     canOpenInventoryEditor: derivedState.canOpenInventoryEditor,
     canSeeInventoryHistorySection: derivedState.canSeeInventoryHistorySection,
-    currentDisplayStage: derivedState.currentDisplayStage,
-    currentInventoryQuantity: derivedState.currentInventoryQuantity,
-    filteredHistoryLogs: historyState.filteredHistoryLogs,
-    inventoryLogs: historyState.inventoryLogs,
+  };
+
+  const attachments = {
+    attachmentInputAccept: attachmentState.attachmentInputAccept,
     designAttachments: derivedState.designAttachments,
     officialAttachments: derivedState.officialAttachments,
     selectedAttachment: derivedState.selectedAttachment,
     canDeleteAttachment: attachmentState.canDeleteAttachment,
     getAttachmentPermissions: attachmentState.getAttachmentPermissions,
+    handleOpenAttachmentPicker: attachmentState.handleOpenAttachmentPicker,
+    handleAttachmentFiles: attachmentState.handleAttachmentFiles,
+    handleDeleteAttachment: attachmentState.handleDeleteAttachment,
+    handleSetPrimaryDesignAttachment: attachmentState.handleSetPrimaryDesignAttachment,
+  };
+
+  const memo = {
+    handleCreateMemoThread: attachmentState.handleCreateMemoThread,
+    handleCreateMemoReply: attachmentState.handleCreateMemoReply,
+    handleUpdateMemoThread: attachmentState.handleUpdateMemoThread,
+    handleDeleteMemoThread: attachmentState.handleDeleteMemoThread,
+    handleUpdateMemoReply: attachmentState.handleUpdateMemoReply,
+    handleDeleteMemoReply: attachmentState.handleDeleteMemoReply,
+  };
+
+  const production = {
     materials: derivedState.materials,
     outsourcing: derivedState.outsourcing,
+  };
+
+  const cost = {
     fabricTotal: derivedState.fabricTotal,
     subsidiaryTotal: derivedState.subsidiaryTotal,
     outsourcingTotal: derivedState.outsourcingTotal,
     totalCost: derivedState.totalCost,
     unitCost: derivedState.unitCost,
+  };
+
+  const persistence = {
     saveStatus: coreState.saveStatus,
     lastSavedAt: coreState.lastSavedAt,
+  };
+
+  const workflow = {
     availableActions: derivedState.availableActions,
     visibleStages: derivedState.visibleStages,
+  };
+
+  const actions = {
     handleSave: () => actionState.handleSave(coreState.selectedWorkOrder, coreState.workOrders),
     handleSelectWorkOrder,
     canDeleteWorkOrder,
-    handleCreateWorkOrder: (payload?: { title: string; category1: string; category2: string; category3: string; season: string }) =>
-      actionState.handleCreateWorkOrder({ nextIndex: coreState.workOrders.length + 1, ...(payload ?? {}) }),
-    handleReorderWorkOrder: (workOrderId: string) => actionState.handleReorderWorkOrder(coreState.workOrders, workOrderId),
-    handleReworkWorkOrder: (workOrderId: string) => actionState.handleReworkWorkOrder(coreState.workOrders, workOrderId),
+    handleCreateWorkOrder: (payload?: {
+      title: string;
+      category1: string;
+      category2: string;
+      category3: string;
+      season: string;
+    }) =>
+      actionState.handleCreateWorkOrder({
+        nextIndex: coreState.workOrders.length + 1,
+        ...(payload ?? {}),
+      }),
+    handleReorderWorkOrder: (workOrderId: string) =>
+      actionState.handleReorderWorkOrder(coreState.workOrders, workOrderId),
+    handleReworkWorkOrder: (workOrderId: string) =>
+      actionState.handleReworkWorkOrder(coreState.workOrders, workOrderId),
     handleDeleteWorkOrder: (workOrderId: string) =>
       actionState.handleDeleteWorkOrder({
         workOrderId,
         workOrders: coreState.workOrders,
         selectedId: coreState.selectedId,
       }),
-    handleWorkflowAction: (action: WorkflowAction) => actionState.handleWorkflowAction(coreState.selectedWorkOrder, action),
+    handleWorkflowAction: (action: WorkflowAction) =>
+      actionState.handleWorkflowAction(coreState.selectedWorkOrder, action),
     handleUpdateSelectedWorkOrder: (patch: Partial<WorkOrder>) =>
       actionState.handleUpdateSelectedWorkOrder({
         workOrderId: coreState.selectedWorkOrder.id,
@@ -255,12 +331,25 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
         workOrder: coreState.selectedWorkOrder,
         nextTitle,
       }),
-    handleConfirmOrderRequest: (payload: { factoryName: string; quantity: number }) => actionState.handleConfirmOrderRequest(coreState.selectedWorkOrder, payload),
+    handleConfirmOrderRequest: (payload: { factoryName: string; quantity: number }) =>
+      actionState.handleConfirmOrderRequest(coreState.selectedWorkOrder, payload),
     handleCloseOrderRequestConfirm: actionState.handleCloseOrderRequestConfirm,
-    handleInventoryApply: (payload: { inboundQuantity: number; adjustmentQuantity: number; deductionQuantity: number; memo: string }) =>
-      actionState.handleInventoryApply(coreState.selectedWorkOrder.id, payload),
-    handleCompleteInspection: (payload: { orderEntryId: string; inboundQuantity: number; nextInventoryQuantity: number; memo: string }) =>
-      actionState.handleCompleteInspection({ workOrderId: coreState.selectedWorkOrder.id, ...payload }),
+    handleInventoryApply: (payload: {
+      inboundQuantity: number;
+      adjustmentQuantity: number;
+      deductionQuantity: number;
+      memo: string;
+    }) => actionState.handleInventoryApply(coreState.selectedWorkOrder.id, payload),
+    handleCompleteInspection: (payload: {
+      orderEntryId: string;
+      inboundQuantity: number;
+      nextInventoryQuantity: number;
+      memo: string;
+    }) =>
+      actionState.handleCompleteInspection({
+        workOrderId: coreState.selectedWorkOrder.id,
+        ...payload,
+      }),
     handleApplyRoles: actionState.handleApplyRoles,
     handleOpenManagerAssignModal,
     handleCloseManagerAssignModal: actionState.handleCloseManagerAssignModal,
@@ -273,15 +362,140 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
         isReviewRequestLocked: derivedState.isReviewRequestLocked,
         currentWorkflowState: derivedState.currentWorkflowState,
       }),
-    handleOpenAttachmentPicker: attachmentState.handleOpenAttachmentPicker,
-    handleAttachmentFiles: attachmentState.handleAttachmentFiles,
-    handleDeleteAttachment: attachmentState.handleDeleteAttachment,
-    handleSetPrimaryDesignAttachment: attachmentState.handleSetPrimaryDesignAttachment,
-    handleCreateMemoThread: attachmentState.handleCreateMemoThread,
-    handleCreateMemoReply: attachmentState.handleCreateMemoReply,
-    handleUpdateMemoThread: attachmentState.handleUpdateMemoThread,
-    handleDeleteMemoThread: attachmentState.handleDeleteMemoThread,
-    handleUpdateMemoReply: attachmentState.handleUpdateMemoReply,
-    handleDeleteMemoReply: attachmentState.handleDeleteMemoReply,
+  };
+
+  return {
+    ui,
+    runtime,
+    repository,
+    identity,
+    history,
+    selection,
+    permissions,
+    attachments,
+    memo,
+    production,
+    cost,
+    persistence,
+    workflow,
+    actions,
+
+    appShellRef: ui.appShellRef,
+    attachmentInputRef: ui.attachmentInputRef,
+    attachmentInputAccept: attachments.attachmentInputAccept,
+    drawerOpen: ui.drawerOpen,
+    setDrawerOpen: ui.setDrawerOpen,
+    basicInfoOpen: ui.basicInfoOpen,
+    setBasicInfoOpen: ui.setBasicInfoOpen,
+    materialOpen: ui.materialOpen,
+    setMaterialOpen: ui.setMaterialOpen,
+    outsourcingOpen: ui.outsourcingOpen,
+    setOutsourcingOpen: ui.setOutsourcingOpen,
+    inventoryEditorOpen: ui.inventoryEditorOpen,
+    setInventoryEditorOpen: ui.setInventoryEditorOpen,
+    permissionModalOpen: ui.permissionModalOpen,
+    setPermissionModalOpen: ui.setPermissionModalOpen,
+    createWorkOrderModalOpen: ui.createWorkOrderModalOpen,
+    setCreateWorkOrderModalOpen: ui.setCreateWorkOrderModalOpen,
+    managerAssignModalOpen: ui.managerAssignModalOpen,
+    setManagerAssignModalOpen: ui.setManagerAssignModalOpen,
+    inventoryLogModalOpen: ui.inventoryLogModalOpen,
+    setInventoryLogModalOpen: ui.setInventoryLogModalOpen,
+    attachmentPreviewId: ui.attachmentPreviewId,
+    setAttachmentPreviewId: ui.setAttachmentPreviewId,
+    orderRequestConfirmOpen: ui.orderRequestConfirmOpen,
+    pendingWorkflowAction: ui.pendingWorkflowAction,
+    toastMessage: ui.toastMessage,
+    actionStatusMap: runtime.actionStatusMap,
+    actionFailureMap: runtime.actionFailureMap,
+    actionErrorMap: runtime.actionErrorMap,
+    activeActionKey: runtime.activeActionKey,
+    hasActionError: runtime.hasActionError,
+    latestActionFailure: runtime.latestActionFailure,
+    retryableActionKeys: runtime.retryableActionKeys,
+    clearActionError: runtime.clearActionError,
+    repositoryStatus: repository.repositoryStatus,
+    repositoryError: repository.repositoryError,
+    repositoryErrorMessage: repository.repositoryErrorMessage,
+    users: identity.users,
+    currentUserId: identity.currentUserId,
+    setCurrentUserId: identity.setCurrentUserId,
+    permissionTargetUserId: identity.permissionTargetUserId,
+    setPermissionTargetUserId: identity.setPermissionTargetUserId,
+    historyFilter: history.historyFilter,
+    setHistoryFilter: history.setHistoryFilter,
+    searchQuery: selection.searchQuery,
+    setSearchQuery: selection.setSearchQuery,
+    workOrders: selection.workOrders,
+    hasVisibleWorkOrders: selection.hasVisibleWorkOrders,
+    hasActiveSelection: selection.hasActiveSelection,
+    workflowStateById: selection.workflowStateById,
+    selectedId: selection.selectedId,
+    selectedWorkOrder: selection.selectedWorkOrder,
+    currentWorkflowState: selection.currentWorkflowState,
+    currentUser: identity.currentUser,
+    currentRole: identity.currentRole,
+    isAdmin: identity.isAdmin,
+    canCreateWorkOrder: permissions.canCreateWorkOrder,
+    canEditSideDraftContent: permissions.canEditSideDraftContent,
+    canUploadOfficialAttachments: permissions.canUploadOfficialAttachments,
+    canEditMemo: permissions.canEditMemo,
+    canRenameTitle: permissions.canRenameTitle,
+    canSeeAttachments: permissions.canSeeAttachments,
+    isReviewRequestLocked: permissions.isReviewRequestLocked,
+    canChangeManager: permissions.canChangeManager,
+    canSeeProductionSections: permissions.canSeeProductionSections,
+    canSeeCostSections: permissions.canSeeCostSections,
+    canEditInventory: permissions.canEditInventory,
+    canOpenInventoryEditor: permissions.canOpenInventoryEditor,
+    canSeeInventoryHistorySection: permissions.canSeeInventoryHistorySection,
+    currentDisplayStage: selection.currentDisplayStage,
+    currentInventoryQuantity: selection.currentInventoryQuantity,
+    filteredHistoryLogs: history.filteredHistoryLogs,
+    inventoryLogs: history.inventoryLogs,
+    designAttachments: attachments.designAttachments,
+    officialAttachments: attachments.officialAttachments,
+    selectedAttachment: attachments.selectedAttachment,
+    canDeleteAttachment: attachments.canDeleteAttachment,
+    getAttachmentPermissions: attachments.getAttachmentPermissions,
+    materials: production.materials,
+    outsourcing: production.outsourcing,
+    fabricTotal: cost.fabricTotal,
+    subsidiaryTotal: cost.subsidiaryTotal,
+    outsourcingTotal: cost.outsourcingTotal,
+    totalCost: cost.totalCost,
+    unitCost: cost.unitCost,
+    saveStatus: persistence.saveStatus,
+    lastSavedAt: persistence.lastSavedAt,
+    availableActions: workflow.availableActions,
+    visibleStages: workflow.visibleStages,
+    handleSave: actions.handleSave,
+    handleSelectWorkOrder: actions.handleSelectWorkOrder,
+    canDeleteWorkOrder: actions.canDeleteWorkOrder,
+    handleCreateWorkOrder: actions.handleCreateWorkOrder,
+    handleReorderWorkOrder: actions.handleReorderWorkOrder,
+    handleReworkWorkOrder: actions.handleReworkWorkOrder,
+    handleDeleteWorkOrder: actions.handleDeleteWorkOrder,
+    handleWorkflowAction: actions.handleWorkflowAction,
+    handleUpdateSelectedWorkOrder: actions.handleUpdateSelectedWorkOrder,
+    handleRenameWorkOrderTitle: actions.handleRenameWorkOrderTitle,
+    handleConfirmOrderRequest: actions.handleConfirmOrderRequest,
+    handleCloseOrderRequestConfirm: actions.handleCloseOrderRequestConfirm,
+    handleInventoryApply: actions.handleInventoryApply,
+    handleCompleteInspection: actions.handleCompleteInspection,
+    handleApplyRoles: actions.handleApplyRoles,
+    handleOpenManagerAssignModal: actions.handleOpenManagerAssignModal,
+    handleCloseManagerAssignModal: actions.handleCloseManagerAssignModal,
+    handleChangeManager: actions.handleChangeManager,
+    handleOpenAttachmentPicker: attachments.handleOpenAttachmentPicker,
+    handleAttachmentFiles: attachments.handleAttachmentFiles,
+    handleDeleteAttachment: attachments.handleDeleteAttachment,
+    handleSetPrimaryDesignAttachment: attachments.handleSetPrimaryDesignAttachment,
+    handleCreateMemoThread: memo.handleCreateMemoThread,
+    handleCreateMemoReply: memo.handleCreateMemoReply,
+    handleUpdateMemoThread: memo.handleUpdateMemoThread,
+    handleDeleteMemoThread: memo.handleDeleteMemoThread,
+    handleUpdateMemoReply: memo.handleUpdateMemoReply,
+    handleDeleteMemoReply: memo.handleDeleteMemoReply,
   };
 }
