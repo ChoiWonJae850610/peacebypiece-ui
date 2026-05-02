@@ -1,15 +1,12 @@
-Version : 0.9.111
-Base Version : 0.9.110
-Target Version : 0.9.111
-Summary : 시스템 권한 관리 read-only 화면 추가
-Description : /system/permissions route와 SystemPermissionsReadOnlyPage를 추가해 기존 GET /api/system/permissions API 기반 permission catalog와 role permission map을 read-only로 표시했습니다. 검색과 카테고리 필터는 client state로만 처리하며 권한 부여, role 변경, permission 저장 action, permission repository/API, DB schema 변경은 포함하지 않았습니다.
+Version : 0.9.112
+Base Version : 0.9.111
+Target Version : 0.9.112
+Summary : 권한 정책 export 빌드 에러 수정
+Description : 0.9.111 적용 후 lib/permissions/permissionRepository.ts에서 import하는 resolvePermissions가 permissionPolicy.ts에 export되지 않아 발생한 Next.js build/runtime 에러를 수정했습니다. permissionPolicy.ts에 PermissionResolutionInput 타입과 resolvePermissions() export를 추가해 role permission과 explicit permission을 중복 제거 후 반환하도록 했으며 permission repository, API 응답 포맷, DB schema 변경은 포함하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/system/systemConsoleShell.ts
-- lib/system/systemRegressionRoutes.ts
+- lib/permissions/permissionPolicy.ts
 추가 파일 목록 :
-- app/system/permissions/page.tsx
-- components/system/permissions/SystemPermissionsReadOnlyPage.tsx
-- docs/system/system_permissions_readonly.md
+- docs/system/system_permissions_export_fix.md
 삭제 파일 목록 :
 - 없음

@@ -71,6 +71,12 @@ export type PermissionInput = {
   permissions?: readonly (Permission | string)[] | null;
 };
 
+export interface PermissionResolutionInput {
+  role?: PermissionRole | string | null;
+  rolePermissions?: readonly string[] | null;
+  explicitPermissions?: readonly string[] | null;
+}
+
 export function isPermission(value: string): value is Permission {
   return (PERMISSIONS as readonly string[]).includes(value);
 }
@@ -86,6 +92,15 @@ export function normalizePermissions(input: PermissionInput): readonly Permissio
   );
 
   return Array.from(new Set<Permission>([...basePermissions, ...explicitPermissions]));
+}
+
+export function resolvePermissions(
+  input: PermissionResolutionInput,
+): string[] {
+  const rolePermissions = input.rolePermissions ?? [];
+  const explicitPermissions = input.explicitPermissions ?? [];
+
+  return Array.from(new Set<string>([...rolePermissions, ...explicitPermissions])).sort();
 }
 
 export function hasPermission(input: PermissionInput, permission: Permission): boolean {
