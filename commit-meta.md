@@ -1,12 +1,11 @@
-Version : 0.9.55
-Base Version : 0.9.54
-Target Version : 0.9.55
-Summary : 권한 policy 모델 1차 추가
-Description : 단일 role 기반 구조를 확장할 수 있도록 권한 코드, 기본 role별 권한 프로필, 권한 판정 유틸을 lib/permissions 계층에 추가했다. 기존 화면/API 동작에는 연결하지 않고 다음 단계 권한 확장을 위한 기반만 준비했다.
+Version : 0.9.56
+Base Version : 0.9.55
+Target Version : 0.9.56
+Summary : 고객사 사용자 권한 DB 설계 문서 추가
+Description : SaaS형 테넌트 구조를 기준으로 companies, users, company_users, role, permission, 초대, 요금제, 용량 흐름의 DB 설계 기준을 문서화하고 앱 버전을 0.9.56으로 갱신했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
 추가 파일 목록 :
-- lib/permissions/permissionPolicy.ts
-- lib/permissions/index.ts
+- db/schema/tenant_user_permission_design.md
 삭제 파일 목록 :
 - 없음
