@@ -1,7 +1,14 @@
 -- =========================================
 -- PeaceByPiece full DB reset schema
--- 기준: 현재 코드에서 실제 사용하는 테이블/컬럼명 기준
--- 주의: 실행하면 아래 전체 업무 테이블의 기존 데이터가 모두 삭제됩니다.
+-- Version: 0.9.73
+--
+-- 기준:
+-- - 현재 코드에서 실제 사용하는 업무 테이블/컬럼 유지
+-- - 0.9.56~0.9.71에서 추가한 SaaS 기반 구조 반영
+--
+-- 주의:
+-- - 실행하면 아래 전체 업무 테이블의 기존 데이터가 모두 삭제됩니다.
+-- - 운영 DB에는 직접 실행하지 말고 백업 후 개발/초기화 용도로만 사용합니다.
 -- =========================================
 
 BEGIN;
@@ -9,13 +16,36 @@ BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- =========================================
--- 1) DROP TABLES
+-- 1) DROP VIEWS
+-- =========================================
+
+DROP VIEW IF EXISTS latest_storage_usage_snapshots CASCADE;
+DROP VIEW IF EXISTS expired_pending_invitations CASCADE;
+
+-- =========================================
+-- 2) DROP TABLES
 -- FK / index / dependent constraints are removed by CASCADE.
 -- =========================================
 
 DROP TABLE IF EXISTS material_allocations CASCADE;
 DROP TABLE IF EXISTS material_order_lines CASCADE;
 DROP TABLE IF EXISTS material_orders CASCADE;
+
+DROP TABLE IF EXISTS system_user_permissions CASCADE;
+DROP TABLE IF EXISTS system_permission_catalog CASCADE;
+DROP TABLE IF EXISTS system_users CASCADE;
+
+DROP TABLE IF EXISTS storage_usage_snapshots CASCADE;
+DROP TABLE IF EXISTS company_plan_assignments CASCADE;
+DROP TABLE IF EXISTS plans CASCADE;
+
+DROP TABLE IF EXISTS invitations CASCADE;
+
+DROP TABLE IF EXISTS company_user_permissions CASCADE;
+DROP TABLE IF EXISTS role_permissions CASCADE;
+DROP TABLE IF EXISTS permission_catalog CASCADE;
+DROP TABLE IF EXISTS role_catalog CASCADE;
+DROP TABLE IF EXISTS company_users CASCADE;
 
 DROP TABLE IF EXISTS history_logs CASCADE;
 DROP TABLE IF EXISTS memos CASCADE;
@@ -35,10 +65,68 @@ DROP TABLE IF EXISTS item_categories CASCADE;
 DROP TABLE IF EXISTS units CASCADE;
 DROP TABLE IF EXISTS spec_sheets CASCADE;
 
+-- =========================================
+-- 3) DROP TYPES
+-- =========================================
 
+DROP TYPE IF EXISTS invitation_status CASCADE;
+DROP TYPE IF EXISTS invitation_scope CASCADE;
+DROP TYPE IF EXISTS invitation_permission_preset CASCADE;
+DROP TYPE IF EXISTS plan_status CASCADE;
+DROP TYPE IF EXISTS billing_cycle CASCADE;
+DROP TYPE IF EXISTS company_plan_assignment_status CASCADE;
+DROP TYPE IF EXISTS storage_usage_snapshot_source CASCADE;
 
 -- =========================================
--- 2) MASTER TABLES
+-- 4) TYPES
+-- =========================================
+
+CREATE TYPE invitation_status AS ENUM (
+  'pending',
+  'accepted',
+  'expired',
+  'revoked'
+);
+
+CREATE TYPE invitation_scope AS ENUM (
+  'system_to_company_admin',
+  'company_to_member'
+);
+
+CREATE TYPE invitation_permission_preset AS ENUM (
+  'company_admin',
+  'designer',
+  'inspector',
+  'inventory_manager',
+  'viewer',
+  'custom'
+);
+
+CREATE TYPE plan_status AS ENUM (
+  'draft',
+  'active',
+  'archived'
+);
+
+CREATE TYPE billing_cycle AS ENUM (
+  'monthly',
+  'yearly'
+);
+
+CREATE TYPE company_plan_assignment_status AS ENUM (
+  'active',
+  'scheduled',
+  'expired'
+);
+
+CREATE TYPE storage_usage_snapshot_source AS ENUM (
+  'db_attachment_metadata',
+  'r2_inventory',
+  'manual'
+);
+
+-- =========================================
+-- 5) MASTER TABLES
 -- =========================================
 
 CREATE TABLE companies (
@@ -46,6 +134,15 @@ CREATE TABLE companies (
   name text NOT NULL,
   memo text,
   is_active boolean NOT NULL DEFAULT true,
+
+  business_name text,
+  business_registration_number text,
+  owner_user_id text,
+  default_plan_id text,
+  storage_limit_bytes bigint,
+  member_limit integer,
+  billing_status text NOT NULL DEFAULT 'trial',
+
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
@@ -60,9 +157,91 @@ CREATE TABLE users (
   last_login_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT users_role_check CHECK (
+    role IN ('admin', 'designer', 'inspector', 'inventory_manager', 'viewer', 'system')
+  )
+);
 
-  CONSTRAINT users_role_check
-    CHECK (role IN ('admin', 'designer', 'inspector', 'system'))
+CREATE TABLE company_users (
+  id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  role text NOT NULL,
+  is_active boolean NOT NULL DEFAULT true,
+  display_name text,
+  joined_at timestamptz,
+  invited_by_user_id text REFERENCES users(id),
+  last_active_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT company_users_company_user_role_unique UNIQUE (company_id, user_id, role)
+);
+
+CREATE TABLE role_catalog (
+  role text PRIMARY KEY,
+  label text NOT NULL,
+  description text,
+  is_system boolean NOT NULL DEFAULT false,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE permission_catalog (
+  permission_key text PRIMARY KEY,
+  label text NOT NULL,
+  description text,
+  category text NOT NULL DEFAULT 'general',
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE role_permissions (
+  role text NOT NULL REFERENCES role_catalog(role) ON DELETE CASCADE,
+  permission_key text NOT NULL REFERENCES permission_catalog(permission_key) ON DELETE CASCADE,
+  is_enabled boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (role, permission_key)
+);
+
+CREATE TABLE company_user_permissions (
+  company_user_id text NOT NULL REFERENCES company_users(id) ON DELETE CASCADE,
+  permission_key text NOT NULL REFERENCES permission_catalog(permission_key) ON DELETE CASCADE,
+  is_enabled boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (company_user_id, permission_key)
+);
+
+CREATE TABLE system_users (
+  id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  email text NOT NULL,
+  name text NOT NULL,
+  role text NOT NULL DEFAULT 'system_admin',
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE system_permission_catalog (
+  permission_key text PRIMARY KEY,
+  label text NOT NULL,
+  description text,
+  category text NOT NULL DEFAULT 'system',
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE system_user_permissions (
+  system_user_id text NOT NULL REFERENCES system_users(id) ON DELETE CASCADE,
+  permission_key text NOT NULL REFERENCES system_permission_catalog(permission_key) ON DELETE CASCADE,
+  is_enabled boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (system_user_id, permission_key)
 );
 
 CREATE TABLE company_settings (
@@ -81,17 +260,11 @@ CREATE TABLE company_settings (
   purge_result_enabled boolean NOT NULL DEFAULT true,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-
-  CONSTRAINT company_settings_theme_color_check
-    CHECK (theme_color IN ('blue', 'emerald', 'violet', 'stone')),
-  CONSTRAINT company_settings_language_check
-    CHECK (language IN ('ko', 'en')),
-  CONSTRAINT company_settings_trash_retention_days_check
-    CHECK (trash_retention_days IN (1, 5, 15, 30)),
-  CONSTRAINT company_settings_storage_limit_gb_check
-    CHECK (storage_limit_gb > 0),
-  CONSTRAINT company_settings_warning_threshold_percent_check
-    CHECK (warning_threshold_percent BETWEEN 1 AND 100)
+  CONSTRAINT company_settings_theme_color_check CHECK (theme_color IN ('blue', 'emerald', 'violet', 'stone')),
+  CONSTRAINT company_settings_language_check CHECK (language IN ('ko', 'en')),
+  CONSTRAINT company_settings_trash_retention_days_check CHECK (trash_retention_days IN (1, 5, 15, 30)),
+  CONSTRAINT company_settings_storage_limit_gb_check CHECK (storage_limit_gb > 0),
+  CONSTRAINT company_settings_warning_threshold_percent_check CHECK (warning_threshold_percent BETWEEN 1 AND 100)
 );
 
 CREATE TABLE units (
@@ -107,11 +280,6 @@ CREATE TABLE units (
   CONSTRAINT units_company_code_unique UNIQUE (company_id, code)
 );
 
-
--- ================================
--- item_categories
--- 고객사별 작지 생성 대/중/소분류 기준
--- ================================
 CREATE TABLE item_categories (
   id text PRIMARY KEY,
   company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
@@ -126,10 +294,6 @@ CREATE TABLE item_categories (
   CONSTRAINT item_categories_company_parent_name_unique UNIQUE (company_id, parent_id, name)
 );
 
--- ================================
--- outsourcing_processes
--- 관리자가 외주 공정관리 모달에서 관리
--- ================================
 CREATE TABLE outsourcing_processes (
   id text PRIMARY KEY,
   company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
@@ -142,11 +306,6 @@ CREATE TABLE outsourcing_processes (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
--- ================================
--- partners
--- 업체 기본정보만 저장
--- type 단일값 의존 금지
--- ================================
 CREATE TABLE partners (
   id text PRIMARY KEY,
   company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
@@ -161,11 +320,6 @@ CREATE TABLE partners (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
--- ================================
--- partner_items
--- 업체 역할/취급항목 다중 저장
--- item_type: factory / fabric / subsidiary / outsourcing
--- ================================
 CREATE TABLE partner_items (
   id text PRIMARY KEY,
   company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
@@ -180,14 +334,11 @@ CREATE TABLE partner_items (
   is_active boolean NOT NULL DEFAULT true,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-
-  CONSTRAINT partner_items_type_check
-    CHECK (item_type IN ('factory', 'fabric', 'subsidiary', 'outsourcing'))
+  CONSTRAINT partner_items_type_check CHECK (item_type IN ('factory', 'fabric', 'subsidiary', 'outsourcing'))
 );
 
 -- =========================================
--- 3) CORE SPEC SHEET TABLE
--- payload is still included because the current code reads/writes it.
+-- 6) CORE WORKORDER TABLES
 -- =========================================
 
 CREATE TABLE spec_sheets (
@@ -208,10 +359,6 @@ CREATE TABLE spec_sheets (
   deleted_at timestamp without time zone
 );
 
--- =========================================
--- 4) FACTORY ORDERS
--- =========================================
-
 CREATE TABLE orders (
   id text PRIMARY KEY,
   company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
@@ -230,10 +377,6 @@ CREATE TABLE orders (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
-
--- =========================================
--- 5) MATERIALS
--- =========================================
 
 CREATE TABLE spec_sheet_materials (
   id text PRIMARY KEY,
@@ -280,10 +423,6 @@ CREATE TABLE material_stocks (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
--- =========================================
--- 6) OUTSOURCING
--- =========================================
-
 CREATE TABLE spec_sheet_outsourcing_lines (
   id text PRIMARY KEY,
   company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
@@ -305,9 +444,7 @@ CREATE TABLE spec_sheet_outsourcing_lines (
 );
 
 -- =========================================
--- 7) ATTACHMENTS
--- Current code uses order_id/storage_key/original_name/mime_type/size_bytes/type/is_primary.
--- Thumbnail columns are included for the thumbnail strategy.
+-- 7) ATTACHMENTS / MEMOS / HISTORY
 -- =========================================
 
 CREATE TABLE attachments (
@@ -334,12 +471,6 @@ CREATE TABLE attachments (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
--- =========================================
--- 8) ATTACHMENT TRASH ITEMS
--- 소프트 삭제된 첨부파일의 휴지통 보관/복구/실제 삭제 예약 정보를 저장합니다.
--- 휴지통 보관 중인 파일은 R2에서 즉시 삭제하지 않으므로 사용량 계산에 계속 포함합니다.
--- =========================================
-
 CREATE TABLE attachment_trash_items (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
   company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
@@ -362,16 +493,12 @@ CREATE TABLE attachment_trash_items (
   purge_attempt_count integer NOT NULL DEFAULT 0,
   last_purge_attempt_at timestamptz,
   last_purge_error text,
-  CONSTRAINT attachment_trash_items_purge_status_check
-    CHECK (purge_status IN ('pending', 'restored', 'purge_requested', 'purged', 'failed')),
+  CONSTRAINT attachment_trash_items_purge_status_check CHECK (
+    purge_status IN ('pending', 'restored', 'purge_requested', 'purged', 'failed')
+  ),
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
-
--- =========================================
--- 9) MEMOS
--- Current code uses order_id / parent_id / body / author_id.
--- =========================================
 
 CREATE TABLE memos (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
@@ -387,12 +514,6 @@ CREATE TABLE memos (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-
--- =========================================
--- 10) HISTORY LOGS
--- 관리자 히스토리 이벤트 저장소
--- =========================================
-
 CREATE TABLE history_logs (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
   company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
@@ -403,25 +524,25 @@ CREATE TABLE history_logs (
   message text NOT NULL,
   metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
   created_at timestamptz NOT NULL DEFAULT now(),
-
-  CONSTRAINT history_logs_action_type_check
-    CHECK (action_type IN (
+  CONSTRAINT history_logs_action_type_check CHECK (
+    action_type IN (
       'WORKORDER_CREATED',
       'STATUS_CHANGED',
       'FILE_UPLOADED',
       'FILE_DELETED',
       'PARTNER_UPDATED',
       'SETTINGS_CHANGED'
-    )),
-  CONSTRAINT history_logs_target_type_check
-    CHECK (target_type IN ('workorder', 'file', 'partner', 'settings'))
+    )
+  ),
+  CONSTRAINT history_logs_target_type_check CHECK (
+    target_type IN ('workorder', 'file', 'partner', 'settings')
+  )
 );
 
+-- =========================================
+-- 8) MATERIAL ORDER / ALLOCATION
+-- =========================================
 
--- ================================
--- material_orders
--- 원단/부자재 발주서 헤더
--- ================================
 CREATE TABLE material_orders (
   id text PRIMARY KEY,
   company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
@@ -437,20 +558,11 @@ CREATE TABLE material_orders (
   created_by_name text,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-
-  CONSTRAINT material_orders_status_check
-    CHECK (status IN ('draft', 'requested', 'ordered', 'partially_received', 'received', 'cancelled'))
+  CONSTRAINT material_orders_status_check CHECK (
+    status IN ('draft', 'requested', 'ordered', 'partially_received', 'received', 'cancelled')
+  )
 );
 
-CREATE INDEX idx_material_orders_company_id ON material_orders(company_id);
-CREATE INDEX idx_material_orders_vendor_partner_id ON material_orders(vendor_partner_id);
-CREATE INDEX idx_material_orders_status ON material_orders(status);
-
-
--- ================================
--- material_order_lines
--- 원단/부자재 발주 상세
--- ================================
 CREATE TABLE material_order_lines (
   id text PRIMARY KEY,
   company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
@@ -469,22 +581,9 @@ CREATE TABLE material_order_lines (
   memo text,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-
-  CONSTRAINT material_order_lines_type_check
-    CHECK (material_type IN ('fabric', 'subsidiary'))
+  CONSTRAINT material_order_lines_type_check CHECK (material_type IN ('fabric', 'subsidiary'))
 );
 
-CREATE INDEX idx_material_order_lines_company_id ON material_order_lines(company_id);
-CREATE INDEX idx_material_order_lines_order_id ON material_order_lines(material_order_id);
-CREATE INDEX idx_material_order_lines_spec_sheet_id ON material_order_lines(spec_sheet_id);
-CREATE INDEX idx_material_order_lines_material_id ON material_order_lines(spec_sheet_material_id);
-CREATE INDEX idx_material_order_lines_partner_item_id ON material_order_lines(partner_item_id);
-
-
--- ================================
--- material_allocations
--- 재고를 작지에 할당한 기록
--- ================================
 CREATE TABLE material_allocations (
   id text PRIMARY KEY,
   company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
@@ -503,49 +602,251 @@ CREATE TABLE material_allocations (
   allocated_at timestamptz NOT NULL DEFAULT now(),
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-
-  CONSTRAINT material_allocations_type_check
-    CHECK (material_type IN ('fabric', 'subsidiary'))
+  CONSTRAINT material_allocations_type_check CHECK (material_type IN ('fabric', 'subsidiary'))
 );
 
-CREATE INDEX idx_material_allocations_company_id ON material_allocations(company_id);
-CREATE INDEX idx_material_allocations_stock_id ON material_allocations(material_stock_id);
-CREATE INDEX idx_material_allocations_order_line_id ON material_allocations(material_order_line_id);
-CREATE INDEX idx_material_allocations_spec_sheet_id ON material_allocations(spec_sheet_id);
-CREATE INDEX idx_material_allocations_material_id ON material_allocations(spec_sheet_material_id);
-
-
-
-
-
 -- =========================================
--- 9) UNITS SEED DATA
--- 기준: lib/partners/mockPartnerRepository.ts MOCK_UNITS
+-- 9) INVITATIONS
 -- =========================================
 
-INSERT INTO companies (id, name, memo, is_active) VALUES
-  ('company-sample-customer', '샘플 고객사', '기본 샘플 고객사', true)
-ON CONFLICT (id) DO UPDATE SET
-  name = EXCLUDED.name,
-  memo = EXCLUDED.memo,
-  is_active = EXCLUDED.is_active,
-  updated_at = now();
+CREATE TABLE invitations (
+  id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  scope invitation_scope NOT NULL,
+  recipient_email text NOT NULL,
+  recipient_role text NOT NULL,
+  permission_preset invitation_permission_preset NOT NULL DEFAULT 'viewer',
+  token_hash text NOT NULL,
+  status invitation_status NOT NULL DEFAULT 'pending',
+  expires_at timestamptz NOT NULL,
+  accepted_at timestamptz,
+  revoked_at timestamptz,
+  created_by_user_id text REFERENCES users(id),
+  created_by_system_user_id text REFERENCES system_users(id),
+  accepted_user_id text REFERENCES users(id),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT invitations_recipient_email_not_empty CHECK (length(trim(recipient_email)) > 0),
+  CONSTRAINT invitations_token_hash_not_empty CHECK (length(trim(token_hash)) > 0),
+  CONSTRAINT invitations_expires_after_created CHECK (expires_at > created_at),
+  CONSTRAINT invitations_acceptance_consistency CHECK (
+    (status = 'accepted' AND accepted_at IS NOT NULL) OR (status <> 'accepted')
+  ),
+  CONSTRAINT invitations_revocation_consistency CHECK (
+    (status = 'revoked' AND revoked_at IS NOT NULL) OR (status <> 'revoked')
+  ),
+  CONSTRAINT invitations_creator_consistency CHECK (
+    (scope = 'system_to_company_admin' AND created_by_system_user_id IS NOT NULL)
+    OR
+    (scope = 'company_to_member' AND created_by_user_id IS NOT NULL)
+  ),
+  CONSTRAINT invitations_scope_role_consistency CHECK (
+    (
+      scope = 'system_to_company_admin'
+      AND recipient_role = 'admin'
+      AND permission_preset = 'company_admin'
+    )
+    OR
+    (
+      scope = 'company_to_member'
+      AND recipient_role IN ('designer', 'inspector', 'inventory_manager', 'viewer')
+    )
+  )
+);
 
-INSERT INTO company_settings (company_id) VALUES
-  ('company-sample-customer')
-ON CONFLICT (company_id) DO NOTHING;
+-- =========================================
+-- 10) PLAN / STORAGE
+-- =========================================
 
-INSERT INTO users (id, company_id, email, name, role, is_active) VALUES
+CREATE TABLE plans (
+  id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  code text NOT NULL,
+  name text NOT NULL,
+  status plan_status NOT NULL DEFAULT 'draft',
+  billing_cycle billing_cycle NOT NULL DEFAULT 'monthly',
+  price_krw integer NOT NULL DEFAULT 0,
+  included_storage_bytes bigint NOT NULL DEFAULT 0,
+  max_storage_bytes bigint,
+  allow_storage_override boolean NOT NULL DEFAULT true,
+  included_members integer NOT NULL DEFAULT 1,
+  max_members integer,
+  allow_member_override boolean NOT NULL DEFAULT true,
+  workorder_limit_enabled boolean NOT NULL DEFAULT false,
+  inventory_enabled boolean NOT NULL DEFAULT true,
+  system_stats_enabled boolean NOT NULL DEFAULT false,
+  advanced_stats_enabled boolean NOT NULL DEFAULT false,
+  invitation_enabled boolean NOT NULL DEFAULT true,
+  storage_management_enabled boolean NOT NULL DEFAULT true,
+  memo text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT plans_code_not_empty CHECK (length(trim(code)) > 0),
+  CONSTRAINT plans_name_not_empty CHECK (length(trim(name)) > 0),
+  CONSTRAINT plans_price_non_negative CHECK (price_krw >= 0),
+  CONSTRAINT plans_included_storage_non_negative CHECK (included_storage_bytes >= 0),
+  CONSTRAINT plans_max_storage_non_negative CHECK (max_storage_bytes IS NULL OR max_storage_bytes >= 0),
+  CONSTRAINT plans_storage_range_valid CHECK (max_storage_bytes IS NULL OR max_storage_bytes >= included_storage_bytes),
+  CONSTRAINT plans_included_members_non_negative CHECK (included_members >= 0),
+  CONSTRAINT plans_max_members_non_negative CHECK (max_members IS NULL OR max_members >= 0),
+  CONSTRAINT plans_member_range_valid CHECK (max_members IS NULL OR max_members >= included_members)
+);
+
+CREATE TABLE company_plan_assignments (
+  id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  plan_id text NOT NULL REFERENCES plans(id) ON DELETE RESTRICT,
+  status company_plan_assignment_status NOT NULL DEFAULT 'active',
+  override_storage_limit_bytes bigint,
+  override_member_limit integer,
+  override_price_krw integer,
+  override_memo text,
+  starts_at timestamptz NOT NULL DEFAULT now(),
+  ends_at timestamptz,
+  created_by_system_user_id text REFERENCES system_users(id),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT company_plan_override_storage_non_negative CHECK (
+    override_storage_limit_bytes IS NULL OR override_storage_limit_bytes >= 0
+  ),
+  CONSTRAINT company_plan_override_member_non_negative CHECK (
+    override_member_limit IS NULL OR override_member_limit >= 0
+  ),
+  CONSTRAINT company_plan_override_price_non_negative CHECK (
+    override_price_krw IS NULL OR override_price_krw >= 0
+  ),
+  CONSTRAINT company_plan_period_valid CHECK (ends_at IS NULL OR ends_at > starts_at)
+);
+
+CREATE TABLE storage_usage_snapshots (
+  id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  used_bytes bigint NOT NULL DEFAULT 0,
+  attachment_count integer NOT NULL DEFAULT 0,
+  source storage_usage_snapshot_source NOT NULL DEFAULT 'db_attachment_metadata',
+  measured_at timestamptz NOT NULL DEFAULT now(),
+  memo text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT storage_usage_used_bytes_non_negative CHECK (used_bytes >= 0),
+  CONSTRAINT storage_usage_attachment_count_non_negative CHECK (attachment_count >= 0)
+);
+
+-- =========================================
+-- 11) VIEWS
+-- =========================================
+
+CREATE OR REPLACE VIEW expired_pending_invitations AS
+SELECT *
+FROM invitations
+WHERE status = 'pending'
+  AND expires_at <= now();
+
+CREATE OR REPLACE VIEW latest_storage_usage_snapshots AS
+SELECT DISTINCT ON (company_id)
+  id,
+  company_id,
+  used_bytes,
+  attachment_count,
+  source,
+  measured_at,
+  memo,
+  created_at
+FROM storage_usage_snapshots
+ORDER BY company_id, measured_at DESC, created_at DESC;
+
+-- =========================================
+-- 12) SEED DATA
+-- =========================================
+
+INSERT INTO companies (id, name, memo, is_active)
+VALUES ('company-sample-customer', '샘플 고객사', '기본 샘플 고객사', true);
+
+INSERT INTO company_settings (company_id)
+VALUES ('company-sample-customer');
+
+INSERT INTO users (id, company_id, email, name, role, is_active)
+VALUES
   ('user-sample-admin', 'company-sample-customer', 'admin@example.com', '샘플 관리자', 'admin', true),
   ('user-sample-designer', 'company-sample-customer', 'designer@example.com', '샘플 디자이너', 'designer', true),
-  ('user-sample-inspector', 'company-sample-customer', 'inspector@example.com', '샘플 검수담당자', 'inspector', true)
-ON CONFLICT (id) DO UPDATE SET
-  company_id = EXCLUDED.company_id,
-  email = EXCLUDED.email,
-  name = EXCLUDED.name,
-  role = EXCLUDED.role,
-  is_active = EXCLUDED.is_active,
-  updated_at = now();
+  ('user-sample-inspector', 'company-sample-customer', 'inspector@example.com', '샘플 검수담당자', 'inspector', true);
+
+INSERT INTO company_users (id, company_id, user_id, role, is_active, display_name)
+VALUES
+  ('company-user-sample-admin', 'company-sample-customer', 'user-sample-admin', 'admin', true, '샘플 관리자'),
+  ('company-user-sample-designer', 'company-sample-customer', 'user-sample-designer', 'designer', true, '샘플 디자이너'),
+  ('company-user-sample-inspector', 'company-sample-customer', 'user-sample-inspector', 'inspector', true, '샘플 검수담당자');
+
+INSERT INTO role_catalog (role, label, description, is_system, is_active)
+VALUES
+  ('admin', '관리자', '고객사 내부 관리자 역할', false, true),
+  ('designer', '디자이너', '작업지시서 작성 및 검토요청 역할', false, true),
+  ('inspector', '검수담당자', '생산 및 검수 확인 역할', false, true),
+  ('inventory_manager', '재고담당자', '재고 관리 역할', false, true),
+  ('viewer', '조회자', '읽기 중심 역할', false, true);
+
+INSERT INTO permission_catalog (permission_key, label, description, category, is_active)
+VALUES
+  ('workorder.create', '작업지시서 생성', '작업지시서를 생성할 수 있다.', 'workorder', true),
+  ('workorder.edit', '작업지시서 수정', '작업지시서 기본 정보를 수정할 수 있다.', 'workorder', true),
+  ('workorder.request_review', '검토요청', '작업지시서 검토요청을 할 수 있다.', 'workorder', true),
+  ('workorder.skip_review', '검토 생략', '검토요청 없이 다음 단계로 진행할 수 있다.', 'workorder', true),
+  ('workorder.request_order', '발주요청', '발주요청 액션을 실행할 수 있다.', 'workorder', true),
+  ('workorder.inspect', '검수', '검수 단계의 확인 액션을 실행할 수 있다.', 'workorder', true),
+  ('workorder.complete', '완료', '작업지시서를 완료 처리할 수 있다.', 'workorder', true),
+  ('inventory.manage', '재고 관리', '재고 데이터를 관리할 수 있다.', 'inventory', true),
+  ('partner.manage', '거래처 관리', '거래처/공장/외주처 기준정보를 관리할 수 있다.', 'partner', true),
+  ('member.invite', '멤버 초대', '고객사 멤버를 초대할 수 있다.', 'member', true),
+  ('billing.manage', '요금제 관리', '고객사 요금제와 과금 관련 설정을 관리할 수 있다.', 'billing', true),
+  ('storage.manage', '저장공간 관리', '고객사 저장공간 정책과 삭제 요청을 관리할 수 있다.', 'storage', true),
+  ('stats.view', '통계 조회', '고객사 통계를 조회할 수 있다.', 'stats', true),
+  ('system.audit.view', '시스템 감사 로그 조회', '시스템관리자 감사 로그를 조회할 수 있다.', 'system', true);
+
+INSERT INTO role_permissions (role, permission_key, is_enabled)
+VALUES
+  ('admin', 'workorder.create', true),
+  ('admin', 'workorder.edit', true),
+  ('admin', 'workorder.request_review', true),
+  ('admin', 'workorder.skip_review', true),
+  ('admin', 'workorder.request_order', true),
+  ('admin', 'workorder.inspect', true),
+  ('admin', 'workorder.complete', true),
+  ('admin', 'inventory.manage', true),
+  ('admin', 'partner.manage', true),
+  ('admin', 'member.invite', true),
+  ('admin', 'billing.manage', false),
+  ('admin', 'storage.manage', true),
+  ('admin', 'stats.view', true),
+  ('designer', 'workorder.create', true),
+  ('designer', 'workorder.edit', true),
+  ('designer', 'workorder.request_review', true),
+  ('designer', 'workorder.skip_review', false),
+  ('designer', 'workorder.request_order', false),
+  ('designer', 'workorder.inspect', false),
+  ('designer', 'workorder.complete', false),
+  ('designer', 'inventory.manage', false),
+  ('designer', 'partner.manage', false),
+  ('designer', 'member.invite', false),
+  ('designer', 'storage.manage', false),
+  ('designer', 'stats.view', false),
+  ('inspector', 'workorder.inspect', true),
+  ('inspector', 'workorder.complete', true),
+  ('inventory_manager', 'inventory.manage', true),
+  ('viewer', 'stats.view', true);
+
+INSERT INTO system_users (id, email, name, role, is_active)
+VALUES ('system-user-sample-admin', 'system@example.com', '샘플 시스템관리자', 'system_admin', true);
+
+INSERT INTO system_permission_catalog (permission_key, label, description, category, is_active)
+VALUES
+  ('system.company.manage', '고객사 관리', '시스템관리자가 고객사를 관리할 수 있다.', 'company', true),
+  ('system.company.invite_admin', '고객관리자 초대', '시스템관리자가 고객사 관리자를 초대할 수 있다.', 'invite', true),
+  ('system.plan.manage', '요금제 관리', '시스템관리자가 고객사 요금제와 용량 정책을 관리할 수 있다.', 'billing', true),
+  ('system.storage.manage', '저장공간 관리', '시스템관리자가 고객사 저장공간 정책을 관리할 수 있다.', 'storage', true),
+  ('system.stats.view', '시스템 통계 조회', '시스템관리자가 전체 통계를 조회할 수 있다.', 'stats', true),
+  ('system.audit.view', '감사 로그 조회', '시스템관리자가 감사 로그를 조회할 수 있다.', 'audit', true);
+
+INSERT INTO system_user_permissions (system_user_id, permission_key, is_enabled)
+SELECT 'system-user-sample-admin', permission_key, true
+FROM system_permission_catalog;
 
 INSERT INTO units (id, company_id, code, name, category, is_active, sort_order)
 VALUES
@@ -560,301 +861,283 @@ VALUES
   ('mock-unit-process', 'company-sample-customer', 'process', '공정', 'service', true, 90),
   ('mock-unit-case', 'company-sample-customer', 'case', '건', 'service', true, 100);
 
-
-
--- =========================================
--- 9-1) ITEM CATEGORY SEED DATA
--- 작지 생성 대분류 / 중분류 / 소분류 기본값
--- =========================================
-
-INSERT INTO item_categories (id, company_id, parent_id, level, name, is_active, sort_order) VALUES
+INSERT INTO item_categories (id, company_id, parent_id, level, name, is_active, sort_order)
+VALUES
   ('category:상의', 'company-sample-customer', NULL, 1, '상의', true, 10),
   ('category:상의:티셔츠', 'company-sample-customer', 'category:상의', 2, '티셔츠', true, 10),
   ('category:상의:티셔츠:반팔', 'company-sample-customer', 'category:상의:티셔츠', 3, '반팔', true, 10),
-  ('category:상의:티셔츠:긴팔', 'company-sample-customer', 'category:상의:티셔츠', 3, '긴팔', true, 20),
-  ('category:상의:티셔츠:오버핏', 'company-sample-customer', 'category:상의:티셔츠', 3, '오버핏', true, 30),
-  ('category:상의:셔츠', 'company-sample-customer', 'category:상의', 2, '셔츠', true, 20),
-  ('category:상의:셔츠:베이직', 'company-sample-customer', 'category:상의:셔츠', 3, '베이직', true, 10),
-  ('category:상의:셔츠:오버핏', 'company-sample-customer', 'category:상의:셔츠', 3, '오버핏', true, 20),
-  ('category:상의:셔츠:크롭', 'company-sample-customer', 'category:상의:셔츠', 3, '크롭', true, 30),
-  ('category:상의:니트', 'company-sample-customer', 'category:상의', 2, '니트', true, 30),
-  ('category:상의:니트:라운드', 'company-sample-customer', 'category:상의:니트', 3, '라운드', true, 10),
-  ('category:상의:니트:가디건', 'company-sample-customer', 'category:상의:니트', 3, '가디건', true, 20),
-  ('category:상의:니트:베스트', 'company-sample-customer', 'category:상의:니트', 3, '베스트', true, 30),
   ('category:하의', 'company-sample-customer', NULL, 1, '하의', true, 20),
   ('category:하의:팬츠', 'company-sample-customer', 'category:하의', 2, '팬츠', true, 10),
   ('category:하의:팬츠:슬랙스', 'company-sample-customer', 'category:하의:팬츠', 3, '슬랙스', true, 10),
-  ('category:하의:팬츠:와이드', 'company-sample-customer', 'category:하의:팬츠', 3, '와이드', true, 20),
-  ('category:하의:팬츠:조거', 'company-sample-customer', 'category:하의:팬츠', 3, '조거', true, 30),
-  ('category:하의:스커트', 'company-sample-customer', 'category:하의', 2, '스커트', true, 20),
-  ('category:하의:스커트:미니', 'company-sample-customer', 'category:하의:스커트', 3, '미니', true, 10),
-  ('category:하의:스커트:미디', 'company-sample-customer', 'category:하의:스커트', 3, '미디', true, 20),
-  ('category:하의:스커트:롱', 'company-sample-customer', 'category:하의:스커트', 3, '롱', true, 30),
-  ('category:하의:데님', 'company-sample-customer', 'category:하의', 2, '데님', true, 30),
-  ('category:하의:데님:스트레이트', 'company-sample-customer', 'category:하의:데님', 3, '스트레이트', true, 10),
-  ('category:하의:데님:와이드', 'company-sample-customer', 'category:하의:데님', 3, '와이드', true, 20),
-  ('category:하의:데님:부츠컷', 'company-sample-customer', 'category:하의:데님', 3, '부츠컷', true, 30),
   ('category:아우터', 'company-sample-customer', NULL, 1, '아우터', true, 30),
   ('category:아우터:자켓', 'company-sample-customer', 'category:아우터', 2, '자켓', true, 10),
-  ('category:아우터:자켓:테일러드', 'company-sample-customer', 'category:아우터:자켓', 3, '테일러드', true, 10),
-  ('category:아우터:자켓:트위드', 'company-sample-customer', 'category:아우터:자켓', 3, '트위드', true, 20),
-  ('category:아우터:자켓:크롭', 'company-sample-customer', 'category:아우터:자켓', 3, '크롭', true, 30),
-  ('category:아우터:코트', 'company-sample-customer', 'category:아우터', 2, '코트', true, 20),
-  ('category:아우터:코트:롱', 'company-sample-customer', 'category:아우터:코트', 3, '롱', true, 10),
-  ('category:아우터:코트:하프', 'company-sample-customer', 'category:아우터:코트', 3, '하프', true, 20),
-  ('category:아우터:코트:트렌치', 'company-sample-customer', 'category:아우터:코트', 3, '트렌치', true, 30),
-  ('category:아우터:점퍼', 'company-sample-customer', 'category:아우터', 2, '점퍼', true, 30),
-  ('category:아우터:점퍼:바람막이', 'company-sample-customer', 'category:아우터:점퍼', 3, '바람막이', true, 10),
-  ('category:아우터:점퍼:패딩', 'company-sample-customer', 'category:아우터:점퍼', 3, '패딩', true, 20),
-  ('category:아우터:점퍼:블루종', 'company-sample-customer', 'category:아우터:점퍼', 3, '블루종', true, 30)
-ON CONFLICT (id) DO UPDATE SET
-  company_id = EXCLUDED.company_id,
-  parent_id = EXCLUDED.parent_id,
-  level = EXCLUDED.level,
-  name = EXCLUDED.name,
-  is_active = EXCLUDED.is_active,
-  sort_order = EXCLUDED.sort_order,
-  updated_at = now();
+  ('category:아우터:자켓:테일러드', 'company-sample-customer', 'category:아우터:자켓', 3, '테일러드', true, 10);
 
+INSERT INTO outsourcing_processes (id, company_id, company_name, name, sort_order)
+VALUES
+  ('process-cutting', 'company-sample-customer', '샘플 고객사', '재단', 10),
+  ('process-printing', 'company-sample-customer', '샘플 고객사', '나염', 20),
+  ('process-embroidery', 'company-sample-customer', '샘플 고객사', '자수', 30),
+  ('process-washing', 'company-sample-customer', '샘플 고객사', '워싱', 40),
+  ('process-finishing', 'company-sample-customer', '샘플 고객사', '후가공', 50);
 
-INSERT INTO outsourcing_processes (id, company_id, company_name, name, sort_order) VALUES
-('process-cutting', 'company-sample-customer', '샘플 고객사', '재단', 10),
-('process-printing', 'company-sample-customer', '샘플 고객사', '나염', 20),
-('process-embroidery', 'company-sample-customer', '샘플 고객사', '자수', 30),
-('process-washing', 'company-sample-customer', '샘플 고객사', '워싱', 40),
-('process-finishing', 'company-sample-customer', '샘플 고객사', '후가공', 50);
+INSERT INTO plans (
+  id,
+  code,
+  name,
+  status,
+  billing_cycle,
+  price_krw,
+  included_storage_bytes,
+  max_storage_bytes,
+  allow_storage_override,
+  included_members,
+  max_members,
+  allow_member_override,
+  workorder_limit_enabled,
+  inventory_enabled,
+  system_stats_enabled,
+  advanced_stats_enabled,
+  invitation_enabled,
+  storage_management_enabled,
+  memo
+)
+VALUES
+  (
+    'plan-starter',
+    'starter',
+    'Starter',
+    'draft',
+    'monthly',
+    29000,
+    5368709120,
+    53687091200,
+    true,
+    3,
+    15,
+    true,
+    false,
+    true,
+    false,
+    false,
+    true,
+    true,
+    '초기 소규모 고객사 기준 요금제 초안'
+  ),
+  (
+    'plan-team',
+    'team',
+    'Team',
+    'draft',
+    'monthly',
+    79000,
+    53687091200,
+    214748364800,
+    true,
+    15,
+    50,
+    true,
+    false,
+    true,
+    false,
+    true,
+    true,
+    true,
+    '팀 단위 운영 고객사 기준 요금제 초안'
+  ),
+  (
+    'plan-business',
+    'business',
+    'Business',
+    'draft',
+    'monthly',
+    199000,
+    214748364800,
+    NULL,
+    true,
+    50,
+    NULL,
+    true,
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    '대용량/다인원 고객사 기준 요금제 초안'
+  );
+
+INSERT INTO company_plan_assignments (
+  id,
+  company_id,
+  plan_id,
+  status,
+  starts_at
+)
+VALUES (
+  'company-plan-sample-team',
+  'company-sample-customer',
+  'plan-team',
+  'active',
+  now()
+);
+
+INSERT INTO storage_usage_snapshots (
+  id,
+  company_id,
+  used_bytes,
+  attachment_count,
+  source,
+  memo
+)
+VALUES (
+  'storage-snapshot-sample-initial',
+  'company-sample-customer',
+  0,
+  0,
+  'db_attachment_metadata',
+  'full reset 초기 snapshot'
+);
 
 -- =========================================
--- 10) INDEXES
+-- 13) INDEXES
 -- =========================================
 
-CREATE INDEX companies_active_name_idx
-  ON companies (is_active, name);
-
-CREATE INDEX company_settings_company_idx
-  ON company_settings (company_id);
-
-CREATE UNIQUE INDEX users_company_email_unique
-  ON users (company_id, lower(email))
-  WHERE email IS NOT NULL;
-
-CREATE INDEX users_company_active_idx
-  ON users (company_id, is_active, role, name);
-
-CREATE INDEX units_company_active_idx
-  ON units (company_id, is_active, sort_order, name);
-
-CREATE INDEX units_active_idx
-  ON units (is_active, sort_order, name);
-
-
-CREATE INDEX item_categories_company_level_idx
-  ON item_categories (company_id, level, sort_order, name);
-
-CREATE INDEX item_categories_parent_idx
-  ON item_categories (parent_id, sort_order, name);
-
-
-CREATE INDEX partners_active_name_idx
-  ON partners (is_active, name);
-
-CREATE INDEX outsourcing_processes_company_active_idx
-  ON outsourcing_processes (company_id, is_active, sort_order, name);
-
-CREATE INDEX partners_company_idx
-  ON partners (company_id);
-
-CREATE INDEX partner_items_partner_id_idx
-  ON partner_items (partner_id);
-
-CREATE INDEX partner_items_type_active_idx
-  ON partner_items (item_type, is_active);
-
-CREATE INDEX partner_items_outsourcing_process_id_idx
-  ON partner_items (outsourcing_process_id);
-
-CREATE INDEX spec_sheets_updated_at_idx
-  ON spec_sheets (updated_at DESC, created_at DESC);
-
-CREATE INDEX spec_sheets_reorder_group_idx
-  ON spec_sheets (reorder_group_id, reorder_round);
-
-CREATE INDEX spec_sheets_active_idx
-  ON spec_sheets (is_active, updated_at DESC);
-
-CREATE INDEX spec_sheets_parent_idx
-  ON spec_sheets (parent_spec_sheet_id);
-
-CREATE INDEX orders_spec_sheet_idx
-  ON orders (spec_sheet_id);
-
-CREATE INDEX orders_company_spec_sheet_idx
-  ON orders (company_id, spec_sheet_id);
-
-CREATE INDEX orders_factory_partner_idx
-  ON orders (factory_partner_id);
-
-CREATE INDEX orders_active_idx
-  ON orders (is_active, updated_at DESC, created_at DESC);
-
-CREATE INDEX orders_source_order_entry_idx
-  ON orders (source_order_entry_id);
-
-CREATE INDEX orders_spec_sheet_active_idx
-  ON orders (spec_sheet_id, is_active);
-
-CREATE INDEX spec_sheet_materials_spec_sheet_idx
-  ON spec_sheet_materials (spec_sheet_id);
-
-CREATE INDEX spec_sheet_materials_company_spec_sheet_idx
-  ON spec_sheet_materials (company_id, spec_sheet_id);
-
-CREATE INDEX spec_sheet_materials_type_idx
-  ON spec_sheet_materials (material_type);
-
-CREATE INDEX spec_sheet_materials_active_idx
-  ON spec_sheet_materials (is_active, updated_at DESC, created_at DESC);
-
-CREATE INDEX material_stocks_source_spec_sheet_idx
-  ON material_stocks (source_spec_sheet_id);
-
-CREATE INDEX material_stocks_source_material_idx
-  ON material_stocks (source_spec_sheet_material_id);
-
-CREATE INDEX material_stocks_type_idx
-  ON material_stocks (material_type);
-
-CREATE INDEX material_stocks_active_idx
-  ON material_stocks (is_active, updated_at DESC, created_at DESC);
-
-CREATE INDEX spec_sheet_outsourcing_lines_spec_sheet_idx
-  ON spec_sheet_outsourcing_lines (spec_sheet_id);
-
-CREATE INDEX spec_sheet_outsourcing_lines_company_spec_sheet_idx
-  ON spec_sheet_outsourcing_lines (company_id, spec_sheet_id);
-
-CREATE INDEX spec_sheet_outsourcing_lines_process_idx
-  ON spec_sheet_outsourcing_lines (process);
-
-CREATE INDEX spec_sheet_outsourcing_lines_active_idx
-  ON spec_sheet_outsourcing_lines (is_active, updated_at DESC, created_at DESC);
-
-CREATE INDEX attachments_order_idx
-  ON attachments (order_id);
-
-CREATE INDEX attachments_order_type_active_idx
-  ON attachments (order_id, type, is_active, created_at ASC);
-
-CREATE INDEX attachments_storage_key_idx
-  ON attachments (storage_key);
-
-CREATE INDEX attachments_primary_design_idx
-  ON attachments (order_id, type, is_primary)
-  WHERE is_active = true AND deleted_at IS NULL;
-
-CREATE INDEX attachments_admin_active_list_idx
-  ON attachments (created_at DESC)
-  WHERE is_active = true AND deleted_at IS NULL;
-
-CREATE UNIQUE INDEX attachment_trash_items_pending_attachment_unique_idx
-  ON attachment_trash_items (attachment_id)
-  WHERE purge_status IN ('pending', 'purge_requested') AND restored_at IS NULL AND purged_at IS NULL;
-
-CREATE INDEX attachment_trash_items_attachment_idx
-  ON attachment_trash_items (attachment_id);
-
-CREATE INDEX attachment_trash_items_order_idx
-  ON attachment_trash_items (order_id);
-
-CREATE INDEX attachment_trash_items_company_idx
-  ON attachment_trash_items (company_id, deleted_at DESC);
-
-CREATE INDEX attachment_trash_items_purge_idx
-  ON attachment_trash_items (purge_status, purge_after_at);
-
-CREATE INDEX attachment_trash_items_purge_candidate_idx
-  ON attachment_trash_items (purge_after_at ASC)
-  WHERE restored_at IS NULL AND purged_at IS NULL AND purge_status IN ('pending', 'purge_requested');
-
-CREATE INDEX attachment_trash_items_pending_list_idx
-  ON attachment_trash_items (deleted_at DESC)
-  WHERE restored_at IS NULL AND purged_at IS NULL AND purge_status = 'pending';
-
-CREATE INDEX attachment_trash_items_admin_status_list_idx
-  ON attachment_trash_items (purge_status, deleted_at DESC)
-  WHERE restored_at IS NULL AND purged_at IS NULL;
-
-CREATE INDEX attachment_trash_items_purge_retry_idx
-  ON attachment_trash_items (purge_attempt_count, last_purge_attempt_at)
-  WHERE purged_at IS NULL AND restored_at IS NULL;
-
-
-
-CREATE INDEX IF NOT EXISTS idx_attachments_deleted_at
-ON attachments(deleted_at);
-
-CREATE INDEX IF NOT EXISTS idx_attachments_purge_after
-ON attachments(purge_after_at);
-
-CREATE INDEX IF NOT EXISTS idx_attachments_deleted_purge_after
-ON attachments(purge_after_at)
-WHERE deleted_at IS NOT NULL;
-
-CREATE INDEX IF NOT EXISTS idx_attachments_company_active
-ON attachments(company_id, created_at DESC)
-WHERE is_active = true AND deleted_at IS NULL;
-
-CREATE INDEX memos_order_idx
-  ON memos (order_id);
-
-CREATE INDEX memos_company_order_idx
-  ON memos (company_id, order_id);
-
-CREATE INDEX memos_parent_idx
-  ON memos (parent_id);
-
-CREATE INDEX memos_order_active_idx
-  ON memos (order_id, is_active, created_at ASC);
-
-CREATE INDEX history_logs_company_created_idx
-  ON history_logs (company_id, created_at DESC);
-
-CREATE INDEX history_logs_company_action_idx
-  ON history_logs (company_id, action_type, created_at DESC);
-
-CREATE INDEX history_logs_company_target_idx
-  ON history_logs (company_id, target_type, target_id, created_at DESC);
-
-CREATE INDEX history_logs_user_idx
-  ON history_logs (user_id, created_at DESC);
-
-
-CREATE INDEX IF NOT EXISTS spec_sheets_company_status_updated_idx
-  ON spec_sheets (company_id, status, updated_at DESC)
-  WHERE deleted_at IS NULL AND COALESCE(is_active, true) = true;
-
-CREATE INDEX IF NOT EXISTS orders_company_status_due_idx
-  ON orders (company_id, status, due_date)
-  WHERE deleted_at IS NULL AND COALESCE(is_active, true) = true;
-
-CREATE INDEX IF NOT EXISTS partners_company_active_name_idx
-  ON partners (company_id, is_active, name);
-
-CREATE INDEX IF NOT EXISTS partner_items_company_type_active_idx
-  ON partner_items (company_id, item_type, is_active);
-
-CREATE INDEX IF NOT EXISTS attachments_company_type_created_idx
-  ON attachments (company_id, type, created_at DESC)
-  WHERE deleted_at IS NULL AND COALESCE(is_active, true) = true;
-
-CREATE INDEX IF NOT EXISTS attachment_trash_items_company_status_deleted_idx
-  ON attachment_trash_items (company_id, purge_status, deleted_at DESC)
-  WHERE restored_at IS NULL AND purged_at IS NULL;
-
-CREATE INDEX IF NOT EXISTS history_logs_company_created_idx
-  ON history_logs (company_id, created_at DESC);
-
-CREATE INDEX IF NOT EXISTS history_logs_company_action_created_idx
-  ON history_logs (company_id, action_type, created_at DESC);
+CREATE INDEX companies_active_name_idx ON companies (is_active, name);
+CREATE INDEX company_settings_company_idx ON company_settings (company_id);
+CREATE UNIQUE INDEX users_company_email_unique ON users (company_id, lower(email)) WHERE email IS NOT NULL;
+CREATE INDEX users_company_active_idx ON users (company_id, is_active, role, name);
+
+CREATE INDEX company_users_company_id_idx ON company_users (company_id);
+CREATE INDEX company_users_user_id_idx ON company_users (user_id);
+CREATE INDEX company_users_role_idx ON company_users (role);
+CREATE INDEX role_permissions_permission_key_idx ON role_permissions (permission_key);
+CREATE INDEX company_user_permissions_permission_key_idx ON company_user_permissions (permission_key);
+CREATE UNIQUE INDEX system_users_email_unique_idx ON system_users (lower(email));
+
+CREATE INDEX units_company_active_idx ON units (company_id, is_active, sort_order, name);
+CREATE INDEX units_active_idx ON units (is_active, sort_order, name);
+CREATE INDEX item_categories_company_level_idx ON item_categories (company_id, level, sort_order, name);
+CREATE INDEX item_categories_parent_idx ON item_categories (parent_id, sort_order, name);
+
+CREATE INDEX partners_active_name_idx ON partners (is_active, name);
+CREATE INDEX outsourcing_processes_company_active_idx ON outsourcing_processes (company_id, is_active, sort_order, name);
+CREATE INDEX partners_company_idx ON partners (company_id);
+CREATE INDEX partner_items_partner_id_idx ON partner_items (partner_id);
+CREATE INDEX partner_items_type_active_idx ON partner_items (item_type, is_active);
+CREATE INDEX partner_items_outsourcing_process_id_idx ON partner_items (outsourcing_process_id);
+CREATE INDEX partner_items_company_type_active_idx ON partner_items (company_id, item_type, is_active);
+
+CREATE INDEX spec_sheets_updated_at_idx ON spec_sheets (updated_at DESC, created_at DESC);
+CREATE INDEX spec_sheets_reorder_group_idx ON spec_sheets (reorder_group_id, reorder_round);
+CREATE INDEX spec_sheets_active_idx ON spec_sheets (is_active, updated_at DESC);
+CREATE INDEX spec_sheets_parent_idx ON spec_sheets (parent_spec_sheet_id);
+CREATE INDEX spec_sheets_company_status_updated_idx ON spec_sheets (company_id, status, updated_at DESC) WHERE deleted_at IS NULL AND COALESCE(is_active, true) = true;
+
+CREATE INDEX orders_spec_sheet_idx ON orders (spec_sheet_id);
+CREATE INDEX orders_company_spec_sheet_idx ON orders (company_id, spec_sheet_id);
+CREATE INDEX orders_factory_partner_idx ON orders (factory_partner_id);
+CREATE INDEX orders_active_idx ON orders (is_active, updated_at DESC, created_at DESC);
+CREATE INDEX orders_source_order_entry_idx ON orders (source_order_entry_id);
+CREATE INDEX orders_spec_sheet_active_idx ON orders (spec_sheet_id, is_active);
+CREATE INDEX orders_company_status_due_idx ON orders (company_id, status, due_date) WHERE deleted_at IS NULL AND COALESCE(is_active, true) = true;
+
+CREATE INDEX spec_sheet_materials_spec_sheet_idx ON spec_sheet_materials (spec_sheet_id);
+CREATE INDEX spec_sheet_materials_company_spec_sheet_idx ON spec_sheet_materials (company_id, spec_sheet_id);
+CREATE INDEX spec_sheet_materials_type_idx ON spec_sheet_materials (material_type);
+CREATE INDEX spec_sheet_materials_active_idx ON spec_sheet_materials (is_active, updated_at DESC, created_at DESC);
+
+CREATE INDEX material_stocks_source_spec_sheet_idx ON material_stocks (source_spec_sheet_id);
+CREATE INDEX material_stocks_source_material_idx ON material_stocks (source_spec_sheet_material_id);
+CREATE INDEX material_stocks_type_idx ON material_stocks (material_type);
+CREATE INDEX material_stocks_active_idx ON material_stocks (is_active, updated_at DESC, created_at DESC);
+
+CREATE INDEX spec_sheet_outsourcing_lines_spec_sheet_idx ON spec_sheet_outsourcing_lines (spec_sheet_id);
+CREATE INDEX spec_sheet_outsourcing_lines_company_spec_sheet_idx ON spec_sheet_outsourcing_lines (company_id, spec_sheet_id);
+CREATE INDEX spec_sheet_outsourcing_lines_process_idx ON spec_sheet_outsourcing_lines (process);
+CREATE INDEX spec_sheet_outsourcing_lines_active_idx ON spec_sheet_outsourcing_lines (is_active, updated_at DESC, created_at DESC);
+
+CREATE INDEX attachments_order_idx ON attachments (order_id);
+CREATE INDEX attachments_order_type_active_idx ON attachments (order_id, type, is_active, created_at ASC);
+CREATE INDEX attachments_storage_key_idx ON attachments (storage_key);
+CREATE INDEX attachments_primary_design_idx ON attachments (order_id, type, is_primary) WHERE is_active = true AND deleted_at IS NULL;
+CREATE INDEX attachments_admin_active_list_idx ON attachments (created_at DESC) WHERE is_active = true AND deleted_at IS NULL;
+CREATE INDEX attachments_deleted_at_idx ON attachments(deleted_at);
+CREATE INDEX attachments_purge_after_idx ON attachments(purge_after_at);
+CREATE INDEX attachments_deleted_purge_after_idx ON attachments(purge_after_at) WHERE deleted_at IS NOT NULL;
+CREATE INDEX attachments_company_active_idx ON attachments(company_id, created_at DESC) WHERE is_active = true AND deleted_at IS NULL;
+CREATE INDEX attachments_company_type_created_idx ON attachments (company_id, type, created_at DESC) WHERE deleted_at IS NULL AND COALESCE(is_active, true) = true;
+
+CREATE UNIQUE INDEX attachment_trash_items_pending_attachment_unique_idx ON attachment_trash_items (attachment_id) WHERE purge_status IN ('pending', 'purge_requested') AND restored_at IS NULL AND purged_at IS NULL;
+CREATE INDEX attachment_trash_items_attachment_idx ON attachment_trash_items (attachment_id);
+CREATE INDEX attachment_trash_items_order_idx ON attachment_trash_items (order_id);
+CREATE INDEX attachment_trash_items_company_idx ON attachment_trash_items (company_id, deleted_at DESC);
+CREATE INDEX attachment_trash_items_purge_idx ON attachment_trash_items (purge_status, purge_after_at);
+CREATE INDEX attachment_trash_items_purge_candidate_idx ON attachment_trash_items (purge_after_at ASC) WHERE restored_at IS NULL AND purged_at IS NULL AND purge_status IN ('pending', 'purge_requested');
+CREATE INDEX attachment_trash_items_pending_list_idx ON attachment_trash_items (deleted_at DESC) WHERE restored_at IS NULL AND purged_at IS NULL AND purge_status = 'pending';
+CREATE INDEX attachment_trash_items_admin_status_list_idx ON attachment_trash_items (purge_status, deleted_at DESC) WHERE restored_at IS NULL AND purged_at IS NULL;
+CREATE INDEX attachment_trash_items_purge_retry_idx ON attachment_trash_items (purge_attempt_count, last_purge_attempt_at) WHERE purged_at IS NULL AND restored_at IS NULL;
+CREATE INDEX attachment_trash_items_company_status_deleted_idx ON attachment_trash_items (company_id, purge_status, deleted_at DESC) WHERE restored_at IS NULL AND purged_at IS NULL;
+
+CREATE INDEX memos_order_idx ON memos (order_id);
+CREATE INDEX memos_company_order_idx ON memos (company_id, order_id);
+CREATE INDEX memos_parent_idx ON memos (parent_id);
+CREATE INDEX memos_order_active_idx ON memos (order_id, is_active, created_at ASC);
+
+CREATE INDEX history_logs_company_created_idx ON history_logs (company_id, created_at DESC);
+CREATE INDEX history_logs_company_action_idx ON history_logs (company_id, action_type, created_at DESC);
+CREATE INDEX history_logs_company_target_idx ON history_logs (company_id, target_type, target_id, created_at DESC);
+CREATE INDEX history_logs_user_idx ON history_logs (user_id, created_at DESC);
+
+CREATE INDEX material_orders_company_id_idx ON material_orders(company_id);
+CREATE INDEX material_orders_vendor_partner_id_idx ON material_orders(vendor_partner_id);
+CREATE INDEX material_orders_status_idx ON material_orders(status);
+CREATE INDEX material_order_lines_company_id_idx ON material_order_lines(company_id);
+CREATE INDEX material_order_lines_order_id_idx ON material_order_lines(material_order_id);
+CREATE INDEX material_order_lines_spec_sheet_id_idx ON material_order_lines(spec_sheet_id);
+CREATE INDEX material_order_lines_material_id_idx ON material_order_lines(spec_sheet_material_id);
+CREATE INDEX material_order_lines_partner_item_id_idx ON material_order_lines(partner_item_id);
+CREATE INDEX material_allocations_company_id_idx ON material_allocations(company_id);
+CREATE INDEX material_allocations_stock_id_idx ON material_allocations(material_stock_id);
+CREATE INDEX material_allocations_order_line_id_idx ON material_allocations(material_order_line_id);
+CREATE INDEX material_allocations_spec_sheet_id_idx ON material_allocations(spec_sheet_id);
+CREATE INDEX material_allocations_material_id_idx ON material_allocations(spec_sheet_material_id);
+
+CREATE UNIQUE INDEX invitations_token_hash_unique_idx ON invitations (token_hash);
+CREATE INDEX invitations_company_id_idx ON invitations (company_id);
+CREATE INDEX invitations_status_idx ON invitations (status);
+CREATE INDEX invitations_scope_idx ON invitations (scope);
+CREATE INDEX invitations_recipient_email_idx ON invitations (lower(recipient_email));
+CREATE INDEX invitations_expires_at_idx ON invitations (expires_at);
+CREATE INDEX invitations_created_by_user_id_idx ON invitations (created_by_user_id);
+CREATE INDEX invitations_created_by_system_user_id_idx ON invitations (created_by_system_user_id);
+CREATE UNIQUE INDEX invitations_pending_unique_idx
+  ON invitations (company_id, lower(recipient_email), recipient_role)
+  WHERE status = 'pending';
+
+CREATE UNIQUE INDEX plans_code_unique_idx ON plans (lower(code));
+CREATE INDEX plans_status_idx ON plans (status);
+CREATE INDEX plans_billing_cycle_idx ON plans (billing_cycle);
+CREATE INDEX company_plan_assignments_company_id_idx ON company_plan_assignments (company_id);
+CREATE INDEX company_plan_assignments_plan_id_idx ON company_plan_assignments (plan_id);
+CREATE INDEX company_plan_assignments_status_idx ON company_plan_assignments (status);
+CREATE INDEX company_plan_assignments_starts_at_idx ON company_plan_assignments (starts_at);
+CREATE UNIQUE INDEX company_plan_assignments_one_active_per_company_idx
+  ON company_plan_assignments (company_id)
+  WHERE status = 'active';
+
+CREATE INDEX storage_usage_snapshots_company_id_idx ON storage_usage_snapshots (company_id);
+CREATE INDEX storage_usage_snapshots_measured_at_idx ON storage_usage_snapshots (measured_at DESC);
+CREATE INDEX storage_usage_snapshots_company_measured_at_idx ON storage_usage_snapshots (company_id, measured_at DESC);
+
+-- =========================================
+-- 14) COMMENTS
+-- =========================================
+
+COMMENT ON TABLE invitations IS '초대 링크 기반 초대 테이블. raw token은 저장하지 않고 token_hash만 저장한다.';
+COMMENT ON COLUMN invitations.token_hash IS '초대 raw token의 hash. raw token은 DB에 저장하지 않는다.';
+COMMENT ON TABLE plans IS '요금제 원본 정의. 결제 자동화가 아니라 운영자가 적용할 plan 정책 기준이다.';
+COMMENT ON TABLE company_plan_assignments IS '고객사별 적용 요금제. storage/member/price override를 허용한다.';
+COMMENT ON TABLE storage_usage_snapshots IS '고객사별 저장공간 사용량 snapshot. 1차는 DB attachment metadata 기준 집계를 권장한다.';
 
 COMMIT;
