@@ -46,6 +46,16 @@ export const SYSTEM_REGRESSION_ROUTES: SystemRegressionRouteItem[] = [
     nextAction: "0.9.111에서 /system/permissions read-only 화면을 추가했습니다. 권한 부여/role 변경 action은 별도 버전에서 판단합니다.",
   },
   {
+    id: "storage-usage",
+    label: "저장공간 사용량",
+    href: "/system/storage-usage",
+    description: "고객사별 저장공간 사용량과 첨부파일 수를 확인하는 read-only 화면입니다.",
+    status: "stable",
+    statusLabel: "read-only 추가",
+    apiPath: "/api/system/storage-usage?companyId=company-sample-customer",
+    nextAction: "0.9.113에서 /system/storage-usage read-only 화면을 추가했습니다. R2 실시간 inventory 조회와 snapshot 생성 action은 별도 버전에서 판단합니다.",
+  },
+  {
     id: "invites",
     label: "고객 초대",
     href: "/system/invites",
@@ -83,16 +93,6 @@ export const SYSTEM_REGRESSION_ROUTES: SystemRegressionRouteItem[] = [
     statusLabel: "API",
     apiPath: "/api/system/stats",
     nextAction: "시스템 통계 화면 차트 연결은 후속 버전에서 진행합니다.",
-  },
-  {
-    id: "storage-usage",
-    label: "저장공간 사용량 API",
-    href: "/api/system/storage-usage?companyId=company-sample-customer",
-    description: "고객사별 저장공간 사용량과 snapshot 생성 API입니다.",
-    status: "api",
-    statusLabel: "API",
-    apiPath: "/api/system/storage-usage?companyId=company-sample-customer",
-    nextAction: "R2 실시간 inventory 조회는 연결하지 않고 DB metadata 기준을 유지합니다.",
   },
 ];
 

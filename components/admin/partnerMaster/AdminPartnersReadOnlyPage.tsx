@@ -16,8 +16,9 @@ import {
   type PartnerStatusFilter,
 } from "@/lib/admin/partner";
 import { fetchPartnerMasterItemsFromApi } from "@/lib/admin/partner/apiClient";
-import { useI18n } from "@/lib/i18n";
 import type { Partner } from "@/types/partner";
+
+const PARTNER_TYPE_LABELS = {};
 
 function EmptyState({ label }: { label: string }) {
   return (
@@ -121,9 +122,6 @@ function PartnerReadOnlyTable({ items }: { items: PartnerListItemViewModel[] }) 
 }
 
 export default function AdminPartnersReadOnlyPage() {
-  const { i18n } = useI18n();
-  const partnerText = i18n.admin.partnerMaster;
-
   const [partners, setPartners] = useState<Partner[]>([]);
   const [processDefinitions, setProcessDefinitions] = useState<
     OutsourcingProcessDefinition[]
@@ -186,10 +184,9 @@ export default function AdminPartnersReadOnlyPage() {
         partners,
         { selectedTypes, status: selectedStatus, searchTerm },
         processDefinitions,
-        partnerText.typeLabels,
+        PARTNER_TYPE_LABELS,
       ),
     [
-      partnerText.typeLabels,
       partners,
       processDefinitions,
       searchTerm,

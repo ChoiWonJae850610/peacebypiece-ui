@@ -41,6 +41,14 @@ export const SYSTEM_CONSOLE_LINKS: SystemConsoleLink[] = [
     href: "/system/permissions",
   },
   {
+    id: "storage-usage",
+    label: "저장공간 사용량",
+    description: "고객사별 저장공간 사용량을 확인하는 read-only 화면입니다.",
+    status: "linked",
+    statusLabel: "화면",
+    href: "/system/storage-usage",
+  },
+  {
     id: "invites",
     label: "고객 초대",
     description: "고객사 관리자 초대 화면입니다.",
@@ -71,14 +79,6 @@ export const SYSTEM_CONSOLE_LINKS: SystemConsoleLink[] = [
     status: "api",
     statusLabel: "API",
     apiPath: "/api/system/stats",
-  },
-  {
-    id: "storage-usage",
-    label: "저장공간 API",
-    description: "고객사별 저장공간 사용량 API입니다.",
-    status: "api",
-    statusLabel: "API",
-    apiPath: "/api/system/storage-usage?companyId=company-sample-customer",
   },
 ];
 
