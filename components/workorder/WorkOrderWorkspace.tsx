@@ -1,12 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
+
 import WorkOrderLayout from "@/components/workorder/WorkOrderLayout";
 import WorkOrderOverlay from "@/components/workorder/WorkOrderOverlay";
 import { useWorkOrder } from "@/lib/hooks/useWorkOrder";
 import { useDbConnectionStatus } from "@/lib/hooks/workorder/useDbConnectionStatus";
 import { getPendingAttachmentDelete } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
+
 import { useI18n } from "@/lib/i18n";
+
 import { buildWorkspaceViewModel } from "@/lib/workorder/workspace/buildWorkspaceViewModel";
 
 type WorkOrderWorkspaceProps = {
@@ -15,115 +18,35 @@ type WorkOrderWorkspaceProps = {
 
 export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOrderWorkspaceProps) {
   const { i18n } = useI18n();
-  const {
-    appShellRef,
-    attachmentInputRef,
-    attachmentInputAccept,
-    drawerOpen,
-    setDrawerOpen,
-    basicInfoOpen,
-    setBasicInfoOpen,
-    materialOpen,
-    setMaterialOpen,
-    outsourcingOpen,
-    setOutsourcingOpen,
-    inventoryEditorOpen,
-    setInventoryEditorOpen,
-    permissionModalOpen,
-    setPermissionModalOpen,
-    createWorkOrderModalOpen,
-    setCreateWorkOrderModalOpen,
-    managerAssignModalOpen,
-    inventoryLogModalOpen,
-    setInventoryLogModalOpen,
-    attachmentPreviewId,
-    setAttachmentPreviewId,
-    orderRequestConfirmOpen,
-    toastMessage,
-    users,
-    currentUserId,
-    setCurrentUserId,
-    permissionTargetUserId,
-    setPermissionTargetUserId,
-    historyFilter,
-    setHistoryFilter,
-    searchQuery,
-    setSearchQuery,
-    workOrders,
-    hasVisibleWorkOrders,
-    hasActiveSelection,
-    workflowStateById,
-    selectedId,
-    selectedWorkOrder,
-    currentWorkflowState,
-    currentUser,
-    currentRole,
-    isAdmin,
-    canCreateWorkOrder,
-    canEditSideDraftContent,
-    canUploadOfficialAttachments,
-    canEditMemo,
-    canRenameTitle,
-    isReviewRequestLocked,
-    canChangeManager,
-    canSeeProductionSections,
-    canSeeCostSections,
-    canOpenInventoryEditor,
-    currentDisplayStage,
-    currentInventoryQuantity,
-    filteredHistoryLogs,
-    inventoryLogs,
-    designAttachments,
-    officialAttachments,
-    selectedAttachment,
-    getAttachmentPermissions,
-    fabricTotal,
-    subsidiaryTotal,
-    outsourcingTotal,
-    totalCost,
-    unitCost,
-    saveStatus,
-    lastSavedAt,
-    availableActions,
-    visibleStages,
-    handleSave,
-    handleSelectWorkOrder,
-    canDeleteWorkOrder,
-    handleCreateWorkOrder,
-    handleDeleteWorkOrder,
-    handleReorderWorkOrder,
-    handleReworkWorkOrder,
-    handleWorkflowAction,
-    handleUpdateSelectedWorkOrder,
-    handleRenameWorkOrderTitle,
-    handleConfirmOrderRequest,
-    handleCloseOrderRequestConfirm,
-    handleInventoryApply,
-    handleCompleteInspection,
-    handleApplyRoles,
-    handleOpenManagerAssignModal,
-    handleCloseManagerAssignModal,
-    handleChangeManager,
-    handleOpenAttachmentPicker,
-    handleAttachmentFiles,
-    handleDeleteAttachment,
-    handleSetPrimaryDesignAttachment,
-    handleCreateMemoThread,
-    handleCreateMemoReply,
-    handleUpdateMemoThread,
-    handleDeleteMemoThread,
-    handleUpdateMemoReply,
-    handleDeleteMemoReply,
-    canSeeAttachments,
-  } = useWorkOrder({ initialWorkOrderId });
-
+  const workOrder = useWorkOrder({ initialWorkOrderId });
   const dbConnectionStatus = useDbConnectionStatus();
+
+  const {
+    ui,
+    identity,
+    history,
+    selection,
+    permissions,
+    attachments,
+    memo,
+    production,
+    cost,
+    persistence,
+    workflow,
+    actions,
+  } = workOrder;
+
   const [pendingAttachmentDeleteId, setPendingAttachmentDeleteId] = useState<string | null>(null);
-  const renderHasSelection = hasVisibleWorkOrders && hasActiveSelection;
+
+  const renderHasSelection = selection.hasVisibleWorkOrders && selection.hasActiveSelection;
 
   const pendingAttachmentDelete = useMemo(
-    () => getPendingAttachmentDelete(renderHasSelection ? selectedWorkOrder.attachments : [], pendingAttachmentDeleteId),
-    [pendingAttachmentDeleteId, renderHasSelection, selectedWorkOrder.attachments],
+    () =>
+      getPendingAttachmentDelete(
+        renderHasSelection ? selection.selectedWorkOrder.attachments : [],
+        pendingAttachmentDeleteId,
+      ),
+    [pendingAttachmentDeleteId, renderHasSelection, selection.selectedWorkOrder.attachments],
   );
 
   const handleRequestDeleteAttachment = (attachmentId: string) => {
@@ -136,115 +59,116 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
 
   const handleConfirmDeleteAttachment = () => {
     if (!pendingAttachmentDeleteId) return;
-    handleDeleteAttachment(pendingAttachmentDeleteId);
+
+    attachments.handleDeleteAttachment(pendingAttachmentDeleteId);
     setPendingAttachmentDeleteId(null);
   };
 
   const viewModel = buildWorkspaceViewModel({
-    drawerOpen,
-    basicInfoOpen,
-    materialOpen,
-    outsourcingOpen,
-    inventoryEditorOpen,
-    permissionModalOpen,
-    createWorkOrderModalOpen,
-    managerAssignModalOpen,
-    inventoryLogModalOpen,
-    orderRequestConfirmOpen,
-    users,
-    currentUserId,
-    permissionTargetUserId,
-    historyFilter,
-    searchQuery,
-    workOrders,
+    drawerOpen: ui.drawerOpen,
+    basicInfoOpen: ui.basicInfoOpen,
+    materialOpen: ui.materialOpen,
+    outsourcingOpen: ui.outsourcingOpen,
+    inventoryEditorOpen: ui.inventoryEditorOpen,
+    permissionModalOpen: ui.permissionModalOpen,
+    createWorkOrderModalOpen: ui.createWorkOrderModalOpen,
+    managerAssignModalOpen: ui.managerAssignModalOpen,
+    inventoryLogModalOpen: ui.inventoryLogModalOpen,
+    orderRequestConfirmOpen: ui.orderRequestConfirmOpen,
+    users: identity.users,
+    currentUserId: identity.currentUserId,
+    permissionTargetUserId: identity.permissionTargetUserId,
+    historyFilter: history.historyFilter,
+    searchQuery: selection.searchQuery,
+    workOrders: selection.workOrders,
     hasVisibleWorkOrders: renderHasSelection,
-    workflowStateById,
-    selectedId,
-    selectedWorkOrder,
-    currentWorkflowState,
-    currentUser,
-    currentRole,
-    isAdmin,
-    canCreateWorkOrder,
-    canSeeAttachments,
-    canEditSideDraftContent,
-    canUploadOfficialAttachments,
-    canEditMemo,
-    canRenameTitle,
-    isReviewRequestLocked,
-    canChangeManager,
-    canSeeProductionSections,
-    canSeeCostSections,
-    canOpenInventoryEditor,
-    currentDisplayStage,
-    currentInventoryQuantity,
-    filteredHistoryLogs,
-    inventoryLogs,
-    designAttachments,
-    officialAttachments,
-    selectedAttachment,
-    fabricTotal,
-    subsidiaryTotal,
-    outsourcingTotal,
-    totalCost,
-    unitCost,
-    saveStatus,
-    lastSavedAt,
-    availableActions,
-    visibleStages,
+    workflowStateById: selection.workflowStateById,
+    selectedId: selection.selectedId,
+    selectedWorkOrder: selection.selectedWorkOrder,
+    currentWorkflowState: selection.currentWorkflowState,
+    currentUser: identity.currentUser,
+    currentRole: identity.currentRole,
+    isAdmin: identity.isAdmin,
+    canCreateWorkOrder: permissions.canCreateWorkOrder,
+    canSeeAttachments: permissions.canSeeAttachments,
+    canEditSideDraftContent: permissions.canEditSideDraftContent,
+    canUploadOfficialAttachments: permissions.canUploadOfficialAttachments,
+    canEditMemo: permissions.canEditMemo,
+    canRenameTitle: permissions.canRenameTitle,
+    isReviewRequestLocked: permissions.isReviewRequestLocked,
+    canChangeManager: permissions.canChangeManager,
+    canSeeProductionSections: permissions.canSeeProductionSections,
+    canSeeCostSections: permissions.canSeeCostSections,
+    canOpenInventoryEditor: permissions.canOpenInventoryEditor,
+    currentDisplayStage: selection.currentDisplayStage,
+    currentInventoryQuantity: selection.currentInventoryQuantity,
+    filteredHistoryLogs: history.filteredHistoryLogs,
+    inventoryLogs: history.inventoryLogs,
+    designAttachments: attachments.designAttachments,
+    officialAttachments: attachments.officialAttachments,
+    selectedAttachment: attachments.selectedAttachment,
+    fabricTotal: cost.fabricTotal,
+    subsidiaryTotal: cost.subsidiaryTotal,
+    outsourcingTotal: cost.outsourcingTotal,
+    totalCost: cost.totalCost,
+    unitCost: cost.unitCost,
+    saveStatus: persistence.saveStatus,
+    lastSavedAt: persistence.lastSavedAt,
+    availableActions: workflow.availableActions,
+    visibleStages: workflow.visibleStages,
     pendingAttachmentDelete,
-    canDeleteWorkOrder,
-    getAttachmentPermissions,
+    canDeleteWorkOrder: actions.canDeleteWorkOrder,
+    getAttachmentPermissions: attachments.getAttachmentPermissions,
     i18n,
-    onSetDrawerOpen: setDrawerOpen,
-    onSetBasicInfoOpen: setBasicInfoOpen,
-    onSetMaterialOpen: setMaterialOpen,
-    onSetOutsourcingOpen: setOutsourcingOpen,
-    onSetInventoryEditorOpen: setInventoryEditorOpen,
-    onSetPermissionModalOpen: setPermissionModalOpen,
-    onSetCreateWorkOrderModalOpen: setCreateWorkOrderModalOpen,
-    onSetInventoryLogModalOpen: setInventoryLogModalOpen,
-    onSetAttachmentPreviewId: setAttachmentPreviewId,
-    onSetPermissionTargetUserId: setPermissionTargetUserId,
-    onSetCurrentUserId: setCurrentUserId,
-    onSetSearchQuery: setSearchQuery,
+    onSetDrawerOpen: ui.setDrawerOpen,
+    onSetBasicInfoOpen: ui.setBasicInfoOpen,
+    onSetMaterialOpen: ui.setMaterialOpen,
+    onSetOutsourcingOpen: ui.setOutsourcingOpen,
+    onSetInventoryEditorOpen: ui.setInventoryEditorOpen,
+    onSetPermissionModalOpen: ui.setPermissionModalOpen,
+    onSetCreateWorkOrderModalOpen: ui.setCreateWorkOrderModalOpen,
+    onSetInventoryLogModalOpen: ui.setInventoryLogModalOpen,
+    onSetAttachmentPreviewId: ui.setAttachmentPreviewId,
+    onSetPermissionTargetUserId: identity.setPermissionTargetUserId,
+    onSetCurrentUserId: identity.setCurrentUserId,
+    onSetSearchQuery: selection.setSearchQuery,
     dbConnectionStatus,
-    onSetHistoryFilter: setHistoryFilter,
-    onSave: handleSave,
-    onSelectWorkOrder: handleSelectWorkOrder,
-    onCreateWorkOrder: handleCreateWorkOrder,
-    onDeleteWorkOrder: handleDeleteWorkOrder,
-    onReorderWorkOrder: handleReorderWorkOrder,
-    onReworkWorkOrder: handleReworkWorkOrder,
-    onWorkflowAction: handleWorkflowAction,
-    onUpdateSelectedWorkOrder: handleUpdateSelectedWorkOrder,
-    onRenameWorkOrderTitle: handleRenameWorkOrderTitle,
-    onConfirmOrderRequest: handleConfirmOrderRequest,
-    onCloseOrderRequestConfirm: handleCloseOrderRequestConfirm,
-    onInventoryApply: handleInventoryApply,
-    onCompleteInspection: handleCompleteInspection,
-    onApplyRoles: handleApplyRoles,
-    onOpenManagerAssignModal: handleOpenManagerAssignModal,
-    onCloseManagerAssignModal: handleCloseManagerAssignModal,
-    onChangeManager: handleChangeManager,
-    onOpenAttachmentPicker: handleOpenAttachmentPicker,
+    onSetHistoryFilter: history.setHistoryFilter,
+    onSave: actions.handleSave,
+    onSelectWorkOrder: actions.handleSelectWorkOrder,
+    onCreateWorkOrder: actions.handleCreateWorkOrder,
+    onDeleteWorkOrder: actions.handleDeleteWorkOrder,
+    onReorderWorkOrder: actions.handleReorderWorkOrder,
+    onReworkWorkOrder: actions.handleReworkWorkOrder,
+    onWorkflowAction: actions.handleWorkflowAction,
+    onUpdateSelectedWorkOrder: actions.handleUpdateSelectedWorkOrder,
+    onRenameWorkOrderTitle: actions.handleRenameWorkOrderTitle,
+    onConfirmOrderRequest: actions.handleConfirmOrderRequest,
+    onCloseOrderRequestConfirm: actions.handleCloseOrderRequestConfirm,
+    onInventoryApply: actions.handleInventoryApply,
+    onCompleteInspection: actions.handleCompleteInspection,
+    onApplyRoles: actions.handleApplyRoles,
+    onOpenManagerAssignModal: actions.handleOpenManagerAssignModal,
+    onCloseManagerAssignModal: actions.handleCloseManagerAssignModal,
+    onChangeManager: actions.handleChangeManager,
+    onOpenAttachmentPicker: attachments.handleOpenAttachmentPicker,
     onRequestDeleteAttachment: handleRequestDeleteAttachment,
-    onSetPrimaryDesignAttachment: handleSetPrimaryDesignAttachment,
+    onSetPrimaryDesignAttachment: attachments.handleSetPrimaryDesignAttachment,
     onAttachmentDeleteConfirmClose: handleCloseDeleteAttachmentConfirm,
     onAttachmentDeleteConfirm: handleConfirmDeleteAttachment,
-    onCreateMemoThread: handleCreateMemoThread,
-    onCreateMemoReply: handleCreateMemoReply,
-    onUpdateMemoThread: handleUpdateMemoThread,
-    onDeleteMemoThread: handleDeleteMemoThread,
-    onUpdateMemoReply: handleUpdateMemoReply,
-    onDeleteMemoReply: handleDeleteMemoReply,
+    onCreateMemoThread: memo.handleCreateMemoThread,
+    onCreateMemoReply: memo.handleCreateMemoReply,
+    onUpdateMemoThread: memo.handleUpdateMemoThread,
+    onDeleteMemoThread: memo.handleDeleteMemoThread,
+    onUpdateMemoReply: memo.handleUpdateMemoReply,
+    onDeleteMemoReply: memo.handleDeleteMemoReply,
   });
 
   return (
     <>
       <WorkOrderLayout
-        appShellRef={appShellRef}
-        selectedId={renderHasSelection ? selectedId : ""}
+        appShellRef={ui.appShellRef}
+        selectedId={renderHasSelection ? selection.selectedId : ""}
         hasSelection={renderHasSelection}
         sidebarListProps={viewModel.sidebarListProps}
         detailProps={viewModel.detailProps}
@@ -252,11 +176,12 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
         mobileTopBarProps={viewModel.mobileTopBarProps}
         mobileDrawerProps={viewModel.mobileDrawerProps}
       />
+
       <WorkOrderOverlay
-        attachmentInputRef={attachmentInputRef}
-        attachmentInputAccept={attachmentInputAccept}
-        onAttachmentFilesChange={handleAttachmentFiles}
-        toastMessage={toastMessage}
+        attachmentInputRef={ui.attachmentInputRef}
+        attachmentInputAccept={attachments.attachmentInputAccept}
+        onAttachmentFilesChange={attachments.handleAttachmentFiles}
+        toastMessage={ui.toastMessage}
         modalProps={viewModel.modalProps}
       />
     </>
