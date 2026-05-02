@@ -1,0 +1,71 @@
+import { NextResponse } from "next/server";
+
+import { statsRepository } from "../statsRepository";
+import type { StatsPeriod } from "../statsTypes";
+
+function toPeriod(request: Request): StatsPeriod | undefined {
+  const url = new URL(request.url);
+  const from = url.searchParams.get("from");
+  const to = url.searchParams.get("to");
+
+  if (!from || !to) {
+    return undefined;
+  }
+
+  return { from, to };
+}
+
+function toErrorResponse(error: unknown) {
+  return NextResponse.json(
+    {
+      ok: false,
+      error: "STATS_ROUTE_ERROR",
+      message: error instanceof Error ? error.message : "Unknown stats route error",
+    },
+    { status: 500 },
+  );
+}
+
+export async function handleGetAdminStats(request: Request) {
+  try {
+    const url = new URL(request.url);
+    const companyId = url.searchParams.get("companyId");
+
+    if (!companyId) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "COMPANY_ID_REQUIRED",
+        },
+        { status: 400 },
+      );
+    }
+
+    const summary = await statsRepository.getAdminStats({
+      companyId,
+      period: toPeriod(request),
+    });
+
+    return NextResponse.json({
+      ok: true,
+      summary,
+    });
+  } catch (error) {
+    return toErrorResponse(error);
+  }
+}
+
+export async function handleGetSystemStats(request: Request) {
+  try {
+    const summary = await statsRepository.getSystemStats({
+      period: toPeriod(request),
+    });
+
+    return NextResponse.json({
+      ok: true,
+      summary,
+    });
+  } catch (error) {
+    return toErrorResponse(error);
+  }
+}
