@@ -69,9 +69,10 @@ export const ADMIN_REGRESSION_ROUTES: AdminRegressionRouteItem[] = [
     label: "환경설정",
     href: "/admin/settings",
     description: "고객사별 화면, 파일, 알림, 사용자 접근 정책 설정 진입점입니다.",
-    status: "needs_component_restore",
-    statusLabel: "컴포넌트 복원 필요",
-    nextAction: "settings form 하위 컴포넌트 무결성 확인 후 본 기능 화면으로 재연결합니다.",
+    status: "stable",
+    statusLabel: "read-only 복원",
+    apiPath: "/api/admin/settings",
+    nextAction: "0.9.101에서 read-only 환경설정 화면으로 복원했습니다. 설정 저장과 권한 변경 action은 별도 버전에서 판단합니다.",
   },
   {
     id: "admin-stats",
