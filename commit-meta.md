@@ -1,11 +1,13 @@
-Version : 0.9.108
-Base Version : 0.9.107
-Target Version : 0.9.108
-Summary : 전체 route 원복 상태 점검표 추가
-Description : /admin, /system, /worker, /invite/[token] 관련 route의 원복 상태를 실제 화면 복원됨, read-only 복원됨, skeleton, API only, 미구현 상태로 분류한 점검표를 추가했습니다. 다음 복원 순서를 /invite/[token], /system/companies, /system/permissions, /system/storage-usage, /system/stats 순서로 재정리했으며 audit log 설계, DB schema 변경, 기존 화면/API 동작 변경은 포함하지 않았습니다.
+Version : 0.9.109
+Base Version : 0.9.108
+Target Version : 0.9.109
+Summary : 초대 수락 화면 API 연결
+Description : /invite/[token] 초대 수락 화면을 skeleton에서 API 연결 화면으로 전환했습니다. GET /api/invitations/accept?token=...로 초대 상태를 조회하고 ready, invalid, expired, revoked, accepted 상태를 표시하며, ready 상태에서 POST /api/invitations/accept로 invitation status를 accepted로 변경할 수 있습니다. 실제 회원가입, 로그인, user 생성, DB schema 변경은 포함하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
+- components/invitations/InviteAcceptSkeleton.tsx
+- lib/invitations/invitationAcceptanceSkeleton.ts
 추가 파일 목록 :
-- docs/roadmap/route_recovery_status_0.9.108.md
+- docs/invitations/invitation_accept_page_api_connection.md
 삭제 파일 목록 :
 - 없음
