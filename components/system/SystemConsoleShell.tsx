@@ -1,43 +1,64 @@
 import Link from "next/link";
 
 import SystemStoragePurgeButton from "@/components/system/storage/SystemStoragePurgeButton";
+import { APP_VERSION } from "@/lib/constants/app";
 import {
   SAMPLE_SYSTEM_CATEGORY_RULE_SUMMARIES,
   SAMPLE_SYSTEM_COMPANY_SUMMARIES,
-  SAMPLE_SYSTEM_INVITE_FLOW_STEPS,
-  SAMPLE_SYSTEM_INTERNAL_INVITE_SUMMARIES,
-  SAMPLE_SYSTEM_INVITE_SUMMARIES,
-  SAMPLE_SYSTEM_OPERATION_ITEMS,
 } from "@/lib/data/sample/system";
-import { APP_VERSION } from "@/lib/constants/app";
 import { getI18n } from "@/lib/i18n";
-import type { SystemInviteAction } from "@/lib/data/domain/system";
 import {
+  SYSTEM_CONSOLE_API_LINKS,
   SYSTEM_CONSOLE_PLACEHOLDERS,
+  SYSTEM_CONSOLE_QUICK_LINKS,
   SYSTEM_CONSOLE_TABS,
+  type SystemConsoleTabStatus,
 } from "@/lib/system/systemConsoleShell";
 
 const i18n = getI18n();
 const system = i18n.system;
 
-function getInviteActionClassName(tone: SystemInviteAction["tone"]) {
-  if (tone === "primary") {
-    return "border-stone-900 bg-stone-900 text-white hover:bg-stone-800";
-  }
-
-  if (tone === "danger") {
-    return "border-red-200 bg-red-50 text-red-700 hover:bg-red-100";
-  }
-
-  return "border-stone-300 bg-white text-stone-700 hover:bg-stone-50";
+function getStatusClassName(status: SystemConsoleTabStatus) {
+  if (status === "current") return "border-stone-900 bg-stone-900 text-white";
+  if (status === "linked") return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  if (status === "api") return "border-blue-200 bg-blue-50 text-blue-700";
+  if (status === "legacy") return "border-violet-200 bg-violet-50 text-violet-700";
+  return "border-stone-200 bg-stone-100 text-stone-500";
 }
 
 function getTabClassName(isActive: boolean) {
-  if (isActive) {
-    return "border-stone-900 bg-stone-900 text-white";
+  return isActive
+    ? "border-stone-900 bg-stone-900 text-white"
+    : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50";
+}
+
+function renderPlaceholderAction(
+  placeholder: (typeof SYSTEM_CONSOLE_PLACEHOLDERS)[number],
+) {
+  if (placeholder.href) {
+    return (
+      <Link
+        href={placeholder.href}
+        className="mt-4 inline-flex rounded-xl border border-stone-900 bg-stone-900 px-3 py-2 text-xs font-semibold text-white hover:bg-stone-800"
+      >
+        {placeholder.actionLabel}
+      </Link>
+    );
   }
 
-  return "border-stone-200 bg-white text-stone-600 hover:bg-stone-50";
+  if (placeholder.apiPath) {
+    return (
+      <code className="mt-4 block rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-600">
+        {placeholder.apiPath}
+      </code>
+    );
+  }
+
+  return (
+    <span className="mt-4 inline-flex rounded-xl border border-stone-200 bg-stone-100 px-3 py-2 text-xs font-semibold text-stone-400">
+      {placeholder.actionLabel}
+    </span>
+  );
 }
 
 export default function SystemConsoleShell() {
@@ -48,266 +69,145 @@ export default function SystemConsoleShell() {
   ];
 
   return (
-    <main className="min-h-screen bg-stone-100 px-4 py-6 text-stone-900 md:px-6 md:py-8">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+    <main className="min-h-screen bg-stone-50 px-4 py-6 text-stone-900 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-7xl flex-col gap-6">
         <header className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">{system.eyebrow}</p>
-              <h1 className="text-2xl font-semibold tracking-tight text-stone-900 md:text-3xl">{system.title}</h1>
-              <p className="max-w-2xl text-sm leading-6 text-stone-600">{system.description}</p>
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+            <div className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
+                {system.eyebrow}
+              </p>
+              <div className="space-y-2">
+                <h1 className="text-2xl font-semibold text-stone-950">{system.title}</h1>
+                <p className="max-w-3xl text-sm leading-6 text-stone-600">
+                  {system.description}
+                </p>
+              </div>
             </div>
-            <div className="flex flex-col items-start gap-3 md:items-end">
-              <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">
+
+            <div className="flex flex-wrap gap-2 text-xs font-medium">
+              <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-stone-600">
                 {system.versionLabel} v{APP_VERSION}
               </span>
-              <Link
-                href="/worker"
-                className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
-              >
+              <Link href="/" className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50">
                 {system.moveToWorkspace}
               </Link>
-              <Link
-                href="/system/category-rules"
-                className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
-              >
+              <Link href="/system/category-rules" className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50">
                 {system.openCategoryRules}
               </Link>
-              <SystemStoragePurgeButton />
             </div>
           </div>
         </header>
 
         <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-          <div className="mb-4 flex flex-col gap-2">
-            <h2 className="text-lg font-semibold text-stone-900">시스템관리자 콘솔</h2>
+          <div className="flex flex-col gap-2 border-b border-stone-100 pb-4">
+            <h2 className="text-lg font-semibold text-stone-950">시스템관리자 콘솔</h2>
             <p className="text-sm leading-6 text-stone-600">
-              고객사 관리, 고객 초대, 요금제·용량, 통계, 시스템 로그 영역을 같은 shell 안에서 확장할 수 있도록 탭 구조를 먼저 고정합니다.
+              고객사 관리, 고객 초대, 요금제·용량, 통계, 시스템 로그 영역을 같은 shell 안에서 확장할 수 있도록 탭과 링크 구조를 고정합니다.
             </p>
           </div>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {SYSTEM_CONSOLE_TABS.map((tab) => {
               const isActive = tab.id === "overview";
 
               return (
-                <div
+                <article
                   key={tab.id}
-                  className={`rounded-2xl border p-4 transition ${getTabClassName(isActive)}`}
+                  className={`rounded-2xl border p-4 ${getTabClassName(isActive)}`}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 space-y-1">
-                      <div className="text-sm font-semibold">{tab.label}</div>
-                      <div className={`text-xs leading-5 ${isActive ? "text-stone-200" : "text-stone-500"}`}>{tab.description}</div>
-                    </div>
-                    <span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-medium ${isActive ? "bg-white/15 text-white" : "bg-stone-100 text-stone-500"}`}>
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="text-sm font-semibold">{tab.label}</h3>
+                    <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getStatusClassName(tab.status)}`}>
                       {tab.statusLabel}
                     </span>
                   </div>
-                </div>
+                  <p className="mt-3 text-xs leading-5 opacity-80">{tab.description}</p>
+                  {tab.href ? (
+                    <Link href={tab.href} className="mt-4 inline-flex text-xs font-semibold underline underline-offset-4">
+                      화면 열기
+                    </Link>
+                  ) : tab.apiPath ? (
+                    <code className="mt-4 block truncate rounded-xl border border-stone-200 bg-white/70 px-2.5 py-2 text-[11px] text-stone-500">
+                      {tab.apiPath}
+                    </code>
+                  ) : null}
+                </article>
               );
             })}
           </div>
         </section>
 
-        <section className="grid gap-4 md:grid-cols-3">
-          {overviewCards.map((card) => (
-            <article key={card.title} className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-              <div className="space-y-3">
-                <span className="inline-flex rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-medium text-stone-600">{card.badge}</span>
-                <h2 className="text-lg font-semibold text-stone-900">{card.title}</h2>
-                <p className="text-sm leading-6 text-stone-600">{card.description}</p>
-              </div>
-            </article>
-          ))}
+        <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+          <div className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+            <h2 className="text-lg font-semibold text-stone-950">화면 바로가기</h2>
+            <div className="mt-4 grid gap-3">
+              {SYSTEM_CONSOLE_QUICK_LINKS.map((link) => (
+                <Link key={link.id} href={link.href} className="rounded-2xl border border-stone-200 bg-stone-50 p-4 hover:bg-stone-100">
+                  <p className="text-sm font-semibold text-stone-950">{link.label}</p>
+                  <p className="mt-1 text-xs leading-5 text-stone-600">{link.description}</p>
+                  <p className="mt-2 text-xs font-medium text-stone-500">{link.href}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+            <h2 className="text-lg font-semibold text-stone-950">API 연결 준비</h2>
+            <div className="mt-4 grid gap-3">
+              {SYSTEM_CONSOLE_API_LINKS.map((link) => (
+                <article key={link.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+                  <p className="text-sm font-semibold text-stone-950">{link.label}</p>
+                  <p className="mt-1 text-xs leading-5 text-stone-600">{link.description}</p>
+                  <code className="mt-2 block truncate rounded-xl border border-stone-200 bg-white px-2.5 py-2 text-[11px] text-stone-500">
+                    {link.path}
+                  </code>
+                </article>
+              ))}
+            </div>
+          </div>
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]">
-          <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-            <div className="mb-4 space-y-1">
-              <h2 className="text-lg font-semibold text-stone-900">{system.operationsSection.title}</h2>
-              <p className="text-sm leading-6 text-stone-600">{system.operationsSection.description}</p>
-            </div>
-
-            <div className="space-y-3">
-              {SAMPLE_SYSTEM_OPERATION_ITEMS.map((item) => (
-                <div key={item.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0 space-y-1">
-                      <div className="text-base font-semibold text-stone-900">{item.title}</div>
-                      <div className="text-sm leading-6 text-stone-600">{item.description}</div>
-                    </div>
-                    <span className="rounded-full border border-stone-300 bg-white px-2.5 py-1 text-[11px] font-medium text-stone-600">{item.statusLabel}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </article>
-
-          <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-            <div className="mb-4 space-y-1">
-              <h2 className="text-lg font-semibold text-stone-900">{system.inviteSection.flowTitle}</h2>
-              <p className="text-sm leading-6 text-stone-600">{system.inviteSection.flowDescription}</p>
-            </div>
-
-            <div className="space-y-3">
-              {SAMPLE_SYSTEM_INVITE_FLOW_STEPS.map((step, index) => (
-                <div key={step.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-                  <div className="flex items-start gap-3">
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-xs font-semibold text-stone-600 ring-1 ring-stone-200">{index + 1}</span>
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="text-base font-semibold text-stone-900">{step.title}</div>
-                        <span className="rounded-full border border-stone-300 bg-white px-2.5 py-1 text-[11px] font-medium text-stone-600">{step.statusLabel}</span>
-                      </div>
-                      <div className="text-sm leading-6 text-stone-600">{step.description}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </article>
+        <section className="grid gap-4 lg:grid-cols-3">
+          {overviewCards.map((card) => (
+            <article key={card.title} className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+              <p className="text-xs font-semibold text-stone-500">{card.badge}</p>
+              <h2 className="mt-3 text-lg font-semibold text-stone-950">{card.title}</h2>
+              <p className="mt-2 text-sm leading-6 text-stone-600">{card.description}</p>
+            </article>
+          ))}
         </section>
 
         <section className="grid gap-4 lg:grid-cols-5">
           {SYSTEM_CONSOLE_PLACEHOLDERS.map((placeholder) => (
             <article key={placeholder.id} className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-              <div className="space-y-3">
-                <span className="inline-flex rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-medium text-stone-600">placeholder</span>
-                <h2 className="text-base font-semibold text-stone-900">{placeholder.title}</h2>
-                <p className="text-sm leading-6 text-stone-600">{placeholder.description}</p>
-                <ul className="space-y-1 text-sm text-stone-500">
-                  {placeholder.items.map((item) => (
-                    <li key={item}>· {item}</li>
-                  ))}
-                </ul>
-              </div>
+              <p className="text-xs font-semibold text-stone-500">placeholder</p>
+              <h2 className="mt-3 text-base font-semibold text-stone-950">{placeholder.title}</h2>
+              <p className="mt-2 text-xs leading-5 text-stone-600">{placeholder.description}</p>
+              <ul className="mt-4 space-y-2 text-xs text-stone-600">
+                {placeholder.items.map((item) => (
+                  <li key={item}>· {item}</li>
+                ))}
+              </ul>
+              {renderPlaceholderAction(placeholder)}
             </article>
           ))}
         </section>
 
-        <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-          <div className="mb-4 space-y-1">
-            <h2 className="text-lg font-semibold text-stone-900">{system.inviteSection.title}</h2>
-            <p className="text-sm leading-6 text-stone-600">{system.inviteSection.description}</p>
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-3">
-            {SAMPLE_SYSTEM_INVITE_SUMMARIES.map((invite) => (
-              <article key={invite.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-                <div className="flex h-full flex-col gap-4">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0 space-y-1">
-                      <div className="text-base font-semibold text-stone-900">{invite.companyName}</div>
-                      <div className="text-sm text-stone-600">{system.inviteSection.inviteeLabel}: {invite.inviteeName}</div>
-                      <div className="truncate text-sm text-stone-500">{system.inviteSection.emailLabel}: {invite.email}</div>
-                    </div>
-                    <span className="rounded-full border border-stone-300 bg-white px-2.5 py-1 text-[11px] font-medium text-stone-600">{invite.statusLabel}</span>
-                  </div>
-
-                  <dl className="space-y-2 text-sm text-stone-600">
-                    <div className="flex justify-between gap-3">
-                      <dt className="text-stone-500">{system.inviteSection.tokenLabel}</dt>
-                      <dd className="font-medium text-stone-700">{invite.tokenPreview}</dd>
-                    </div>
-                    <div className="flex justify-between gap-3">
-                      <dt className="text-stone-500">{system.inviteSection.linkLabel}</dt>
-                      <dd className="font-medium text-stone-700">{invite.inviteUrlLabel}</dd>
-                    </div>
-                    <div className="flex justify-between gap-3">
-                      <dt className="text-stone-500">{system.inviteSection.requestedByLabel}</dt>
-                      <dd className="font-medium text-stone-700">{invite.requestedByLabel}</dd>
-                    </div>
-                    <div className="flex justify-between gap-3">
-                      <dt className="text-stone-500">{system.inviteSection.acceptedAtLabel}</dt>
-                      <dd className="font-medium text-stone-700">{invite.acceptedAtLabel ?? system.inviteSection.pendingAcceptedAt}</dd>
-                    </div>
-                    <div className="flex justify-between gap-3">
-                      <dt className="text-stone-500">{invite.roleLabel}</dt>
-                      <dd className="font-medium text-stone-700">{invite.expiresAtLabel}</dd>
-                    </div>
-                  </dl>
-
-                  <div className="mt-auto flex flex-wrap gap-2">
-                    {invite.actions.map((action) => (
-                      <button
-                        key={action.id}
-                        type="button"
-                        className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${getInviteActionClassName(action.tone)}`}
-                      >
-                        {action.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-          <div className="mb-4 space-y-1">
-            <h2 className="text-lg font-semibold text-stone-900">{system.internalInviteSection.title}</h2>
-            <p className="text-sm leading-6 text-stone-600">{system.internalInviteSection.description}</p>
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-3">
-            {SAMPLE_SYSTEM_INTERNAL_INVITE_SUMMARIES.map((invite) => (
-              <article key={invite.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-                <div className="flex h-full flex-col gap-3">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0 space-y-1">
-                      <div className="text-base font-semibold text-stone-900">{invite.companyName}</div>
-                      <div className="text-sm text-stone-600">{system.internalInviteSection.inviterLabel}: {invite.inviterName}</div>
-                      <div className="truncate text-sm text-stone-500">{invite.email}</div>
-                    </div>
-                    <span className="rounded-full border border-stone-300 bg-white px-2.5 py-1 text-[11px] font-medium text-stone-600">{invite.statusLabel}</span>
-                  </div>
-
-                  <dl className="space-y-2 text-sm text-stone-600">
-                    <div className="flex justify-between gap-3">
-                      <dt className="text-stone-500">{system.internalInviteSection.inviteeLabel}</dt>
-                      <dd className="font-medium text-stone-700">{invite.inviteeName}</dd>
-                    </div>
-                    <div className="flex justify-between gap-3">
-                      <dt className="text-stone-500">{system.internalInviteSection.roleLabel}</dt>
-                      <dd className="font-medium text-stone-700">{invite.roleLabel}</dd>
-                    </div>
-                    <div className="flex justify-between gap-3">
-                      <dt className="text-stone-500">{system.internalInviteSection.expiresAtLabel}</dt>
-                      <dd className="font-medium text-stone-700">{invite.expiresAtLabel}</dd>
-                    </div>
-                    <div className="rounded-2xl border border-stone-200 bg-white p-3">
-                      <dt className="mb-1 text-stone-500">{system.internalInviteSection.connectionLabel}</dt>
-                      <dd className="font-medium text-stone-700">{invite.connectionLabel}</dd>
-                    </div>
-                    <div className="rounded-2xl border border-stone-200 bg-white p-3">
-                      <dt className="mb-1 text-stone-500">{system.internalInviteSection.policyLabel}</dt>
-                      <dd className="font-medium text-stone-700">{invite.policyLabel}</dd>
-                    </div>
-                  </dl>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+        <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-            <div className="mb-4 space-y-1">
-              <h2 className="text-lg font-semibold text-stone-900">{system.companySection.title}</h2>
-              <p className="text-sm leading-6 text-stone-600">{system.companySection.description}</p>
-            </div>
-
-            <div className="space-y-3">
+            <h2 className="text-lg font-semibold text-stone-950">{system.companySection.title}</h2>
+            <p className="mt-2 text-sm leading-6 text-stone-600">{system.companySection.description}</p>
+            <div className="mt-4 space-y-3">
               {SAMPLE_SYSTEM_COMPANY_SUMMARIES.map((company) => (
                 <div key={company.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="space-y-1">
-                      <div className="text-base font-semibold text-stone-900">{company.name}</div>
-                      <div className="text-sm text-stone-600">{system.companySection.adminLabel}: {company.adminName}</div>
-                      <div className="text-sm text-stone-500">{company.seatSummary}</div>
-                    </div>
-                    <span className="rounded-full border border-stone-300 bg-white px-2.5 py-1 text-[11px] font-medium text-stone-600">{company.statusLabel}</span>
+                  <p className="text-sm font-semibold text-stone-950">{company.name}</p>
+                  <p className="mt-1 text-xs text-stone-600">
+                    {system.companySection.adminLabel}: {company.adminName}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-medium">
+                    <span className="rounded-full border border-stone-200 bg-white px-2.5 py-1 text-stone-600">{company.seatSummary}</span>
+                    <span className="rounded-full border border-stone-200 bg-white px-2.5 py-1 text-stone-600">{company.statusLabel}</span>
                   </div>
                 </div>
               ))}
@@ -315,25 +215,41 @@ export default function SystemConsoleShell() {
           </article>
 
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-            <div className="mb-4 space-y-1">
-              <h2 className="text-lg font-semibold text-stone-900">{system.ruleSection.title}</h2>
-              <p className="text-sm leading-6 text-stone-600">{system.ruleSection.description}</p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-stone-950">{system.ruleSection.title}</h2>
+                <p className="mt-2 text-sm leading-6 text-stone-600">{system.ruleSection.description}</p>
+              </div>
+              <Link href="/system/category-rules" className="rounded-xl border border-stone-900 bg-stone-900 px-3 py-2 text-xs font-semibold text-white hover:bg-stone-800">
+                규칙 관리 열기
+              </Link>
             </div>
-            <div className="space-y-3">
+
+            <div className="mt-4 space-y-3">
               {SAMPLE_SYSTEM_CATEGORY_RULE_SUMMARIES.map((rule) => (
                 <div key={rule.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-2">
-                      <div className="text-base font-semibold text-stone-900">{rule.title}</div>
-                      <div className="text-sm text-stone-600"><span className="font-medium text-stone-700">{system.ruleSection.keywordsLabel}:</span> {rule.keywordSummary}</div>
-                      <div className="text-sm text-stone-600"><span className="font-medium text-stone-700">{system.ruleSection.recommendationLabel}:</span> {rule.recommendation}</div>
-                    </div>
-                    <span className="rounded-full border border-stone-300 bg-white px-2.5 py-1 text-[11px] font-medium text-stone-600">{rule.statusLabel}</span>
-                  </div>
+                  <p className="text-sm font-semibold text-stone-950">{rule.title}</p>
+                  <p className="mt-1 text-xs text-stone-600">
+                    {system.ruleSection.keywordsLabel}: {rule.keywordSummary}
+                  </p>
+                  <p className="mt-1 text-xs text-stone-600">
+                    {system.ruleSection.recommendationLabel}: {rule.recommendation}
+                  </p>
+                  <p className="mt-2 text-[11px] font-semibold text-stone-500">{rule.statusLabel}</p>
                 </div>
               ))}
             </div>
           </article>
+        </section>
+
+        <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+          <h2 className="text-lg font-semibold text-stone-950">스토리지 운영</h2>
+          <p className="mt-2 text-sm leading-6 text-stone-600">
+            기존 첨부파일 휴지통/삭제 운영 기능은 유지하고, 저장공간 사용량 API는 skeleton 상태로 분리합니다.
+          </p>
+          <div className="mt-4">
+            <SystemStoragePurgeButton />
+          </div>
         </section>
       </div>
     </main>
