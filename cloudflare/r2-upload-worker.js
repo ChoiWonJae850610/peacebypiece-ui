@@ -65,6 +65,17 @@ function getEffectiveMethod(request, url) {
   return request.method;
 }
 
+function sanitizeDownloadFileName(value) {
+  const normalized = typeof value === "string" ? value.trim() : "";
+  const safeName = normalized.replace(/[\\/\r\n\0"]/g, "_");
+  return safeName || "attachment";
+}
+
+function createContentDisposition(fileName) {
+  const fallback = fileName.replace(/[^\x20-\x7E]/g, "_");
+  return `attachment; filename="${fallback}"; filename*=UTF-8''${encodeURIComponent(fileName)}`;
+}
+
 function createSignaturePayload(method, key, contentType, expires) {
   if (method === "PUT") return ["PUT", key, contentType || "application/octet-stream", String(expires)].join("\n");
   if (method === "DELETE") return ["DELETE", key, String(expires)].join("\n");
@@ -77,6 +88,7 @@ function toHex(buffer) {
 
 function safeEqual(a, b) {
   if (typeof a !== "string" || typeof b !== "string" || a.length !== b.length) return false;
+
   let diff = 0;
   for (let index = 0; index < a.length; index += 1) {
     diff |= a.charCodeAt(index) ^ b.charCodeAt(index);
@@ -103,32 +115,36 @@ async function verifyRequest({ env, url, method, key, contentType }) {
 
   const expires = readExpires(url);
   const signature = url.searchParams.get("signature") || "";
+
   if (!expires || Math.floor(Date.now() / 1000) > expires) {
     return { ok: false, status: 401, error: "WORKER_URL_EXPIRED" };
   }
+
   if (!signature) return { ok: false, status: 401, error: "WORKER_SIGNATURE_REQUIRED" };
 
-  const expected = await createExpectedSignature({
-    secret,
-    method,
-    key,
-    contentType,
-    expires,
-  });
-
+  const expected = await createExpectedSignature({ secret, method, key, contentType, expires });
   if (!safeEqual(signature, expected)) {
     return { ok: false, status: 401, error: "WORKER_SIGNATURE_INVALID" };
   }
+
   return { ok: true };
 }
 
-function createFileHeaders(object) {
+function createFileHeaders(object, url) {
   const headers = new Headers(CORS_HEADERS);
   const contentType = object.httpMetadata?.contentType || object.httpMetadata?.contentTypeHeader || "application/octet-stream";
+
   headers.set("Content-Type", contentType);
   headers.set("Cache-Control", "private, max-age=300");
   if (object.size) headers.set("Content-Length", String(object.size));
   if (object.etag) headers.set("ETag", object.etag);
+
+  if (url.searchParams.get("download") === "1") {
+    const fileName = sanitizeDownloadFileName(url.searchParams.get("name"));
+    headers.set("Content-Disposition", createContentDisposition(fileName));
+    headers.set("Cache-Control", "no-store");
+  }
+
   return headers;
 }
 
@@ -140,6 +156,7 @@ export default {
 
     const url = new URL(request.url);
     const effectiveMethod = getEffectiveMethod(request, url);
+
     if (effectiveMethod !== "PUT" && effectiveMethod !== "GET" && effectiveMethod !== "DELETE") {
       return json({ error: "METHOD_NOT_ALLOWED" }, { status: 405 });
     }
@@ -167,10 +184,7 @@ export default {
         return json({ error: "WORKER_FILE_POLICY_REJECTED" }, { status: 400 });
       }
 
-      await bucket.put(key, request.body, {
-        httpMetadata: { contentType },
-      });
-
+      await bucket.put(key, request.body, { httpMetadata: { contentType } });
       return json({ ok: true, key, method: "PUT" });
     }
 
@@ -184,6 +198,6 @@ export default {
       return json({ error: "WORKER_FILE_NOT_FOUND" }, { status: 404 });
     }
 
-    return new Response(object.body, { status: 200, headers: createFileHeaders(object) });
+    return new Response(object.body, { status: 200, headers: createFileHeaders(object, url) });
   },
 };
