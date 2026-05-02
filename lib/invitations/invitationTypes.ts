@@ -5,13 +5,23 @@ import type {
   InvitationStatus,
 } from "./invitationPolicy";
 
+export type {
+  InvitationPermissionPreset,
+  InvitationRecipientRole,
+  InvitationScope,
+  InvitationStatus,
+};
+
 export interface InvitationDraft {
   companyId: string;
+  inviterCompanyId?: string | null;
   recipientEmail: string;
   recipientRole: InvitationRecipientRole;
   permissionPreset: InvitationPermissionPreset;
   scope: InvitationScope;
   expiresAt: string;
+  createdByUserId?: string | null;
+  createdBySystemUserId?: string | null;
 }
 
 export interface InvitationRecord {
@@ -27,6 +37,8 @@ export interface InvitationRecord {
   revokedAt?: string | null;
   expiresAt: string;
   createdByUserId?: string | null;
+  createdBySystemUserId?: string | null;
+  acceptedUserId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
