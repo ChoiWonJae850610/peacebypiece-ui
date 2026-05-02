@@ -26,11 +26,11 @@ export const SYSTEM_CONSOLE_LINKS: SystemConsoleLink[] = [
   },
   {
     id: "companies",
-    label: "고객사 API",
-    description: "고객사 목록과 상세 조회 API입니다.",
-    status: "api",
-    statusLabel: "API",
-    apiPath: "/api/system/companies",
+    label: "고객사 관리",
+    description: "고객사 목록과 상태를 확인하는 read-only 화면입니다.",
+    status: "linked",
+    statusLabel: "화면",
+    href: "/system/companies",
   },
   {
     id: "invites",
