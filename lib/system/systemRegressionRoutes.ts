@@ -70,9 +70,9 @@ export const SYSTEM_REGRESSION_ROUTES: SystemRegressionRouteItem[] = [
     label: "카테고리 규칙",
     href: "/system/category-rules",
     description: "작업지시서 카테고리 추천 규칙 관리 진입점입니다.",
-    status: "needs_component_restore",
-    statusLabel: "컴포넌트 복원 필요",
-    nextAction: "CategoryRulesManager와 page JSX 무결성 확인 후 본 기능 화면으로 재연결합니다.",
+    status: "stable",
+    statusLabel: "UI 재연결",
+    nextAction: "0.9.103에서 기존 CategoryRulesManager 본 화면을 재연결했습니다. DB 저장 구조 변경은 별도 버전에서 판단합니다.",
   },
   {
     id: "stats",

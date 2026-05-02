@@ -1,13 +1,13 @@
-Version : 0.9.102
-Base Version : 0.9.101
-Target Version : 0.9.102
-Summary : 멤버 초대 UI 본 화면 재연결
-Description : 0.9.93에서 회귀 점검 화면으로 대체된 /admin/invites를 CompanyMemberInviteSkeleton 본 화면으로 재연결했습니다. 기존 createInvitationLink()와 POST /api/invitations를 사용해 초대 링크를 생성하고 inviteUrl과 QR preview를 표시합니다. 이메일 발송, 인증/회원가입, 초대 수락 후 user 생성, DB schema 변경은 포함하지 않았습니다.
+Version : 0.9.103
+Base Version : 0.9.102
+Target Version : 0.9.103
+Summary : 시스템 카테고리 규칙 UI 재연결
+Description : 0.9.94에서 회귀 점검 화면으로 대체된 /system/category-rules를 기존 CategoryRulesManager 본 화면으로 재연결했습니다. getCategoryRulesManagerText()를 사용해 기존 i18n text를 전달하고, 기존 category rule editor/list/test modal/category values modal 및 local persistence 흐름을 유지했습니다. DB schema, 추천 알고리즘, 저장소 구조는 수정하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- app/admin/invites/page.tsx
-- lib/admin/adminRegressionRoutes.ts
+- app/system/category-rules/page.tsx
+- lib/system/systemRegressionRoutes.ts
 추가 파일 목록 :
-- docs/admin/admin_member_invite_ui_reconnect.md
+- docs/system/system_category_rules_ui_reconnect.md
 삭제 파일 목록 :
 - 없음
