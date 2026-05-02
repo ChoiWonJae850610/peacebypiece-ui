@@ -1,12 +1,13 @@
-Base Version : 0.9.52
-Target Version : 0.9.53
-Version : 0.9.53
-Summary : 거래처/공장관리 화면 컨트롤러 분리
-Description : PartnerMasterSection의 데이터 조회, 필터, 모달, draft, 저장 처리 상태를 usePartnerMasterController 훅으로 분리하고 화면 컴포넌트는 렌더링 조립 중심으로 축소했습니다. 기존 Partner API 호출 및 DB 저장 흐름은 변경하지 않았습니다.
+Version : 0.9.54
+Base Version : 0.9.53
+Target Version : 0.9.54
+Summary : 시스템관리자 콘솔 shell 구조 정리
+Description : /system 페이지를 얇게 만들고 시스템관리자 콘솔 렌더링을 SystemConsoleShell 컴포넌트로 분리했습니다. 고객사 관리, 고객 초대, 요금제·용량, 통계, 시스템 로그 placeholder와 탭 메타데이터를 추가했으며 기존 카테고리 규칙 이동과 스토리지 정리 기능은 유지했습니다.
 수정 파일 목록 :
-- components/admin/PartnerMasterSection.tsx
+- app/system/page.tsx
 - lib/constants/app.ts
 추가 파일 목록 :
-- components/admin/partnerMaster/usePartnerMasterController.ts
+- components/system/SystemConsoleShell.tsx
+- lib/system/systemConsoleShell.ts
 삭제 파일 목록 :
 - 없음
