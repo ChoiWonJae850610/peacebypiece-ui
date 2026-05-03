@@ -16,6 +16,7 @@ export type SystemStoragePurgeCandidate = {
   workorderTitle: string;
   fileName: string;
   fileTypeLabel: string;
+  previewUrl: string | null;
   storageKey: string | null;
   thumbnailKey: string | null;
   originalSizeBytes: number;
@@ -87,6 +88,13 @@ function formatBytes(bytes: number): string {
   return `${bytes}B`;
 }
 
+function buildFileProxyUrl(key: string | null | undefined): string | null {
+  const cleanKey = typeof key === "string" ? key.trim() : "";
+  if (!cleanKey) return null;
+  const params = new URLSearchParams({ key: cleanKey });
+  return `/api/workorders/attachments/file?${params.toString()}`;
+}
+
 function getFileTypeLabel(mimeType: string | null | undefined, fileName: string): string {
   const lowerName = fileName.toLowerCase();
   if (mimeType?.startsWith("image/") || /\.(jpg|jpeg|png|webp|gif|bmp|svg|heic|heif)$/i.test(lowerName)) return "이미지";
@@ -111,6 +119,8 @@ function mapCandidateRow(row: PurgeCandidateRow): SystemStoragePurgeCandidate {
   const fileName = row.original_name || "파일명 없음";
   const sizeBytes = toNumber(row.size_bytes);
   const hasThumbnail = typeof row.thumbnail_key === "string" && row.thumbnail_key.trim().length > 0;
+  const fileTypeLabel = getFileTypeLabel(row.mime_type, fileName);
+  const previewUrl = hasThumbnail ? buildFileProxyUrl(row.thumbnail_key) : fileTypeLabel === "이미지" ? buildFileProxyUrl(row.storage_key) : null;
 
   return {
     trashItemId: row.id,
@@ -120,7 +130,8 @@ function mapCandidateRow(row: PurgeCandidateRow): SystemStoragePurgeCandidate {
     workorderId: row.order_id,
     workorderTitle: row.workorder_title || "작업지시서명 없음",
     fileName,
-    fileTypeLabel: getFileTypeLabel(row.mime_type, fileName),
+    fileTypeLabel,
+    previewUrl,
     storageKey: row.storage_key,
     thumbnailKey: row.thumbnail_key,
     originalSizeBytes: sizeBytes,

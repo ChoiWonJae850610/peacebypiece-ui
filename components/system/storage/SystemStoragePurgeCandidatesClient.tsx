@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import type { SystemStoragePurgeCandidate } from "@/lib/system/storagePurgeCandidates";
 
@@ -36,6 +37,7 @@ async function postPurgeRequest(body: { mode: "selected" | "all-due"; trashItemI
 }
 
 export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStoragePurgeCandidatesClientProps) {
+  const router = useRouter();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isPending, setIsPending] = useState(false);
   const [resultMessage, setResultMessage] = useState<string | null>(null);
@@ -63,6 +65,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
       const result = await postPurgeRequest({ mode: "selected", trashItemIds: selectedIds, limit: selectedIds.length });
       setResultMessage(`선택 삭제 결과: ${result.purgedCount ?? 0}개 삭제 완료, ${result.failedCount ?? 0}개 실패.`);
       setSelectedIds([]);
+      router.refresh();
     } catch (error) {
       setResultMessage(error instanceof Error ? error.message : "선택 삭제 요청에 실패했습니다.");
     } finally {
@@ -81,6 +84,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
       const result = await postPurgeRequest({ mode: "all-due", limit: 200 });
       setResultMessage(`전체 도래 항목 삭제 결과: ${result.purgedCount ?? 0}개 삭제 완료, ${result.failedCount ?? 0}개 실패.`);
       setSelectedIds([]);
+      router.refresh();
     } catch (error) {
       setResultMessage(error instanceof Error ? error.message : "전체 도래 항목 삭제 요청에 실패했습니다.");
     } finally {
@@ -119,10 +123,11 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
       </div>
 
       <div className="mt-4 overflow-hidden rounded-2xl border border-stone-200">
-        <div className="hidden grid-cols-[0.22fr_1.1fr_1.2fr_1fr_0.8fr_1.6fr] gap-3 border-b border-stone-200 bg-stone-100 px-4 py-3 text-xs font-semibold text-stone-600 lg:grid">
+        <div className="hidden grid-cols-[0.22fr_0.55fr_1.05fr_1.15fr_1fr_0.8fr_1.45fr] gap-3 border-b border-stone-200 bg-stone-100 px-4 py-3 text-xs font-semibold text-stone-600 lg:grid">
           <span>
             <input type="checkbox" checked={hasCandidates && selectedCount === candidates.length} onChange={toggleAll} disabled={!hasCandidates || isPending} />
           </span>
+          <span>미리보기</span>
           <span>고객사 / 작업지시서</span>
           <span>파일</span>
           <span>삭제일 / 예정일</span>
@@ -135,7 +140,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
         ) : (
           <div className="divide-y divide-stone-100">
             {candidates.map((candidate) => (
-              <article key={candidate.trashItemId} className="grid gap-3 px-4 py-4 text-sm lg:grid-cols-[0.22fr_1.1fr_1.2fr_1fr_0.8fr_1.6fr]">
+              <article key={candidate.trashItemId} className="grid gap-3 px-4 py-4 text-sm lg:grid-cols-[0.22fr_0.55fr_1.05fr_1.15fr_1fr_0.8fr_1.45fr]">
                 <div>
                   <input
                     type="checkbox"
@@ -144,6 +149,20 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
                     disabled={isPending}
                     aria-label={`${candidate.fileName} 삭제 후보 선택`}
                   />
+                </div>
+                <div>
+                  {candidate.previewUrl ? (
+                    <img
+                      src={candidate.previewUrl}
+                      alt={`${candidate.fileName} 미리보기`}
+                      className="h-14 w-14 rounded-xl border border-stone-200 bg-stone-100 object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-stone-200 bg-stone-100 text-[11px] font-bold text-stone-500">
+                      {candidate.fileTypeLabel}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <p className="font-semibold text-stone-950">{candidate.companyName}</p>
