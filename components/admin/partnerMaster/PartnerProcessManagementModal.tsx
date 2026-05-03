@@ -22,6 +22,7 @@ type PartnerProcessManagementModalProps = {
   onClose: () => void;
   onSave: () => void;
   onResetDefaults: () => void;
+  saving?: boolean;
   onNewProcessLabelChange: (value: string) => void;
   onAddProcessDefinition: () => void;
   onSetProcessActive: (type: OutsourcingProcessType, isActive: boolean) => void;
@@ -80,6 +81,7 @@ export default function PartnerProcessManagementModal({
   onClose,
   onSave,
   onResetDefaults,
+  saving = false,
   onNewProcessLabelChange,
   onAddProcessDefinition,
   onSetProcessActive,
@@ -101,6 +103,7 @@ export default function PartnerProcessManagementModal({
           <button
             type="button"
             onClick={onResetDefaults}
+            disabled={saving}
             className={adminModalSecondaryButtonClassName}
           >
             {processText.resetDefaults}
@@ -108,9 +111,10 @@ export default function PartnerProcessManagementModal({
           <button
             type="button"
             onClick={onSave}
+            disabled={saving}
             className={adminModalPrimaryButtonClassName}
           >
-            {processText.save}
+            {saving ? i18n.admin.standards.common.saving : processText.save}
           </button>
         </div>
       }
@@ -121,6 +125,7 @@ export default function PartnerProcessManagementModal({
             <input
               value={newProcessLabel}
               maxLength={PARTNER_MASTER_FIELD_LIMITS.outsourcingProcessLabel}
+              disabled={saving}
               onChange={(event) => {
                 onNewProcessLabelChange(event.target.value);
                 if (processFormError) onClearProcessFormError();
@@ -128,7 +133,7 @@ export default function PartnerProcessManagementModal({
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
                   event.preventDefault();
-                  onAddProcessDefinition();
+                  if (!saving) onAddProcessDefinition();
                 }
               }}
               placeholder={processText.newProcessPlaceholder}
@@ -138,7 +143,8 @@ export default function PartnerProcessManagementModal({
           <button
             type="button"
             onClick={onAddProcessDefinition}
-            className="inline-flex h-11 items-center justify-center rounded-full bg-stone-950 px-4 text-sm font-medium text-white transition hover:bg-stone-800"
+            disabled={saving}
+            className="inline-flex h-11 items-center justify-center rounded-full bg-stone-950 px-4 text-sm font-medium text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {processText.add}
           </button>
@@ -155,6 +161,7 @@ export default function PartnerProcessManagementModal({
             selectedType={selectedInactiveProcess}
             emptyLabel={processText.inactiveEmpty}
             onSelect={(type) => {
+              if (saving) return;
               onSelectInactiveProcess(type);
               onSelectActiveProcess(null);
             }}
@@ -165,12 +172,12 @@ export default function PartnerProcessManagementModal({
           <button
             type="button"
             onClick={() => {
-              if (!selectedInactiveProcess) return;
+              if (saving || !selectedInactiveProcess) return;
               onSetProcessActive(selectedInactiveProcess, true);
               onSelectActiveProcess(selectedInactiveProcess);
               onSelectInactiveProcess(null);
             }}
-            disabled={!selectedInactiveProcess}
+            disabled={saving || !selectedInactiveProcess}
             className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition hover:border-stone-300 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-35"
             aria-label={processText.activateSelected}
           >
@@ -179,12 +186,12 @@ export default function PartnerProcessManagementModal({
           <button
             type="button"
             onClick={() => {
-              if (!selectedActiveProcess) return;
+              if (saving || !selectedActiveProcess) return;
               onSetProcessActive(selectedActiveProcess, false);
               onSelectInactiveProcess(selectedActiveProcess);
               onSelectActiveProcess(null);
             }}
-            disabled={!selectedActiveProcess}
+            disabled={saving || !selectedActiveProcess}
             className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition hover:border-stone-300 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-35"
             aria-label={processText.deactivateSelected}
           >
@@ -199,6 +206,7 @@ export default function PartnerProcessManagementModal({
             selectedType={selectedActiveProcess}
             emptyLabel={processText.activeEmpty}
             onSelect={(type) => {
+              if (saving) return;
               onSelectActiveProcess(type);
               onSelectInactiveProcess(null);
             }}

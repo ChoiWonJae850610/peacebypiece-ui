@@ -52,6 +52,7 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   async function saveNextSettings(nextSettings: CompanySettings) {
+    if (saveState === "saving") return;
     if (nextSettings.ui.language !== draft.ui.language) {
       setLocale(nextSettings.ui.language);
     }
@@ -128,7 +129,8 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
                   type="button"
                   title={option.label}
                   onClick={() => saveNextSettings(withAdminSettingsUiDraft(draft, { themeColor: option.value }))}
-                  className={`h-9 rounded-2xl border transition ${draft.ui.themeColor === option.value ? "border-stone-950 bg-white" : "border-stone-200 bg-white/70 hover:bg-white"}`}
+                  disabled={saveState === "saving"}
+                  className={`h-9 rounded-2xl border transition disabled:cursor-not-allowed disabled:opacity-60 ${draft.ui.themeColor === option.value ? "border-stone-950 bg-white" : "border-stone-200 bg-white/70 hover:bg-white"}`}
                 >
                   <span className={`mx-auto block h-5 w-5 rounded-full ${option.swatchClassName}`} />
                 </button>
@@ -147,7 +149,8 @@ export default function AdminCompanySettingsForm({ initialSettings, companyName 
                   key={option.value}
                   type="button"
                   onClick={() => saveNextSettings(withAdminSettingsUiDraft(draft, { language: option.value }))}
-                  className={`rounded-2xl border px-3 py-2 text-sm font-semibold transition ${draft.ui.language === option.value ? "border-[var(--admin-theme-surface)] bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"}`}
+                  disabled={saveState === "saving"}
+                  className={`rounded-2xl border px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${draft.ui.language === option.value ? "border-[var(--admin-theme-surface)] bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"}`}
                 >
                   {option.label}
                 </button>

@@ -73,6 +73,7 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
   const storageThresholdPolicy = useMemo(() => buildAdminStorageThresholdPolicy(draft.filePolicy), [draft.filePolicy]);
 
   function handleReset() {
+    if (saving || loading) return;
     setDraft((current) => ({
       ...current,
       filePolicy: { ...defaultSettings.filePolicy },
@@ -80,6 +81,7 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
   }
 
   async function handleSave() {
+    if (saving || loading) return;
     setSaving(true);
     setErrorMessage(null);
     const normalizedDraft = { ...draft, filePolicy: normalizeAdminFilePolicyDraft(draft.filePolicy) };
@@ -96,12 +98,15 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
   return (
     <AdminModal
       open={open}
-      onClose={onClose}
+      onClose={() => {
+        if (saving || loading) return;
+        onClose();
+      }}
       title={t("standards.filePolicy.title", "파일 정책 관리")}
       maxWidthClass="md:max-w-3xl"
       footer={
         <div className="flex items-center justify-between gap-3">
-          <button type="button" onClick={handleReset} className={adminModalSecondaryButtonClassName}>
+          <button type="button" onClick={handleReset} disabled={saving || loading} className={adminModalSecondaryButtonClassName}>
             {t("standards.common.resetDefaults", "기본값 복원")}
           </button>
           <button type="button" onClick={handleSave} disabled={saving || loading} className={adminModalPrimaryButtonClassName}>
@@ -120,14 +125,17 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
             activeLabel={t("standards.filePolicy.softDelete", "휴지통")}
             inactiveLabel={t("standards.filePolicy.hardDelete", "즉시삭제")}
             checked={draft.filePolicy.softDeleteEnabled}
-            onChange={(softDeleteEnabled) => setDraft((current) => ({
+            onChange={(softDeleteEnabled) => {
+              if (saving || loading) return;
+              setDraft((current) => ({
               ...current,
               filePolicy: normalizeAdminFilePolicyDraft({
                 ...current.filePolicy,
                 softDeleteEnabled,
                 trashRetentionDays: softDeleteEnabled ? current.filePolicy.trashRetentionDays || 5 : current.filePolicy.trashRetentionDays,
               }),
-            }))}
+            }));
+            }}
           />
           <ToggleButtonGroup
             label={t("standards.filePolicy.includeTrashInUsage", "휴지통 용량 포함")}
@@ -135,7 +143,10 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
             activeLabel={t("standards.filePolicy.includeTrashActive", "포함")}
             inactiveLabel={t("standards.filePolicy.includeTrashInactive", "제외")}
             checked={draft.filePolicy.includeTrashInUsage}
-            onChange={(includeTrashInUsage) => setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, includeTrashInUsage } }))}
+            onChange={(includeTrashInUsage) => {
+              if (saving || loading) return;
+              setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, includeTrashInUsage } }));
+            }}
           />
         </div>
 
@@ -155,7 +166,11 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
                   <button
                     key={days}
                     type="button"
-                    onClick={() => setDraft((current) => ({ ...current, filePolicy: normalizeAdminFilePolicyDraft({ ...current.filePolicy, trashRetentionDays: days }) }))}
+                    onClick={() => {
+                      if (saving || loading) return;
+                      setDraft((current) => ({ ...current, filePolicy: normalizeAdminFilePolicyDraft({ ...current.filePolicy, trashRetentionDays: days }) }));
+                    }}
+                    disabled={saving || loading}
                     className={`w-full rounded-full border px-3 py-2 text-sm font-semibold transition ${selected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"}`}
                   >
                     {days}{t("standards.filePolicy.daySuffix", "일")}
@@ -178,7 +193,11 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
               min={1}
               max={999}
               value={draft.filePolicy.storageLimitGb}
-              onChange={(event) => setDraft((current) => ({ ...current, filePolicy: normalizeAdminFilePolicyDraft({ ...current.filePolicy, storageLimitGb: Number(event.target.value) }) }))}
+              onChange={(event) => {
+                if (saving || loading) return;
+                setDraft((current) => ({ ...current, filePolicy: normalizeAdminFilePolicyDraft({ ...current.filePolicy, storageLimitGb: Number(event.target.value) }) }));
+              }}
+              disabled={saving || loading}
               className="rounded-2xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400"
             />
           </label>
@@ -189,7 +208,11 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
               min={1}
               max={99}
               value={draft.filePolicy.warningThresholdPercent}
-              onChange={(event) => setDraft((current) => ({ ...current, filePolicy: normalizeAdminFilePolicyDraft({ ...current.filePolicy, warningThresholdPercent: Number(event.target.value) }) }))}
+              onChange={(event) => {
+                if (saving || loading) return;
+                setDraft((current) => ({ ...current, filePolicy: normalizeAdminFilePolicyDraft({ ...current.filePolicy, warningThresholdPercent: Number(event.target.value) }) }));
+              }}
+              disabled={saving || loading}
               className="rounded-2xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400"
             />
             <span className="text-xs font-semibold leading-5 text-stone-500">

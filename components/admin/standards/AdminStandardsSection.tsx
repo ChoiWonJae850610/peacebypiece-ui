@@ -51,6 +51,7 @@ export default function AdminStandardsSection() {
   const [standardFormError, setStandardFormError] = useState("");
   const [isSavingUnits, setIsSavingUnits] = useState(false);
   const [isSavingItemCategories, setIsSavingItemCategories] = useState(false);
+  const [isSavingProcesses, setIsSavingProcesses] = useState(false);
   const [selectedInactiveProcessDefinition, setSelectedInactiveProcessDefinition] = useState<OutsourcingProcessType | null>(null);
   const [selectedActiveProcessDefinition, setSelectedActiveProcessDefinition] = useState<OutsourcingProcessType | null>(null);
 
@@ -107,13 +108,14 @@ export default function AdminStandardsSection() {
   }, [processDefinitions]);
 
   const closeProcessModal = useCallback(() => {
+    if (isSavingProcesses) return;
     setIsProcessModalOpen(false);
     setNewProcessLabel("");
     setProcessFormError("");
     setSelectedInactiveProcessDefinition(null);
     setSelectedActiveProcessDefinition(null);
     setProcessDraftDefinitions(processDefinitions);
-  }, [processDefinitions]);
+  }, [isSavingProcesses, processDefinitions]);
 
   const updateProcessDefinition = useCallback(
     (type: OutsourcingProcessType, updater: (current: OutsourcingProcessDefinition) => OutsourcingProcessDefinition) => {
@@ -148,22 +150,25 @@ export default function AdminStandardsSection() {
   }, [newProcessLabel, processDraftDefinitions]);
 
   const saveProcessDefinitions = useCallback(() => {
+    if (isSavingProcesses) return;
     const nextDefinitions = normalizeOutsourcingProcessDefinitions(processDraftDefinitions);
-    setProcessDefinitions(nextDefinitions);
+    setIsSavingProcesses(true);
+    setProcessFormError("");
     savePartnerMasterProcessesToApi(nextDefinitions)
       .then((payload) => {
-        if (payload.processDefinitions) setProcessDefinitions(payload.processDefinitions);
+        const savedDefinitions = payload.processDefinitions ? payload.processDefinitions : nextDefinitions;
+        setProcessDefinitions(savedDefinitions);
+        setProcessDraftDefinitions(savedDefinitions);
+        setIsProcessModalOpen(false);
+        setNewProcessLabel("");
+        setSelectedInactiveProcessDefinition(null);
+        setSelectedActiveProcessDefinition(null);
       })
       .catch(() => {
         setProcessFormError(t("standards.section.saveProcessFailed", "저장에 실패했습니다. DB 연결 상태를 확인하세요."));
-        return;
-      });
-    setIsProcessModalOpen(false);
-    setNewProcessLabel("");
-    setProcessFormError("");
-    setSelectedInactiveProcessDefinition(null);
-    setSelectedActiveProcessDefinition(null);
-  }, [processDraftDefinitions, t]);
+      })
+      .finally(() => setIsSavingProcesses(false));
+  }, [isSavingProcesses, processDraftDefinitions, t]);
 
   const saveUnitDefinitions = useCallback((nextUnits: AdminUnitDefinition[]) => {
     setIsSavingUnits(true);
@@ -289,6 +294,7 @@ export default function AdminStandardsSection() {
         selectedActiveProcess={selectedActiveProcessDefinition}
         onClose={closeProcessModal}
         onSave={saveProcessDefinitions}
+        saving={isSavingProcesses}
         onResetDefaults={resetProcessDefinitions}
         onNewProcessLabelChange={setNewProcessLabel}
         onAddProcessDefinition={addProcessDefinition}

@@ -60,6 +60,7 @@ export default function AdminNotificationPolicySettingsModal({ open, onClose }: 
   }, [open, t]);
 
   function handleReset() {
+    if (saving || loading) return;
     setDraft((current) => ({
       ...current,
       notificationPolicy: { ...defaultSettings.notificationPolicy },
@@ -67,6 +68,7 @@ export default function AdminNotificationPolicySettingsModal({ open, onClose }: 
   }
 
   async function handleSave() {
+    if (saving || loading) return;
     setSaving(true);
     setErrorMessage(null);
     const result = await runSaveCompanySettingsFlow(draft);
@@ -82,12 +84,15 @@ export default function AdminNotificationPolicySettingsModal({ open, onClose }: 
   return (
     <AdminModal
       open={open}
-      onClose={onClose}
+      onClose={() => {
+        if (saving || loading) return;
+        onClose();
+      }}
       title={t("standards.notificationPolicy.title", "알림 정책")}
       maxWidthClass="md:max-w-2xl"
       footer={
         <div className="flex items-center justify-between gap-3">
-          <button type="button" onClick={handleReset} className={adminModalSecondaryButtonClassName}>
+          <button type="button" onClick={handleReset} disabled={saving || loading} className={adminModalSecondaryButtonClassName}>
             {t("standards.common.resetDefaults", "기본값 복원")}
           </button>
           <button type="button" onClick={handleSave} disabled={saving || loading} className={adminModalPrimaryButtonClassName}>
@@ -109,13 +114,17 @@ export default function AdminNotificationPolicySettingsModal({ open, onClose }: 
                 </span>
                 <StatusToggle
                   checked={checked}
-                  onChange={(nextValue) => setDraft((current) => ({
-                    ...current,
-                    notificationPolicy: {
-                      ...current.notificationPolicy,
-                      [item.key]: nextValue,
-                    },
-                  }))}
+                  onChange={(nextValue) => {
+                    if (saving || loading) return;
+                    setDraft((current) => ({
+                      ...current,
+                      notificationPolicy: {
+                        ...current.notificationPolicy,
+                        [item.key]: nextValue,
+                      },
+                    }));
+                  }}
+                  disabled={saving || loading}
                   srLabel={t(item.labelPath, item.fallback)}
                   size="sm"
                 />
