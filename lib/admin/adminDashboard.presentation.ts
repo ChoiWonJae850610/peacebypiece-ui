@@ -223,7 +223,7 @@ export type AdminPolicyPreviewItem = {
 export const ADMIN_SETTINGS_SUMMARY_CARDS: AdminSettingsSummaryCard[] = [
   { label: "테마", value: "Blue", badge: "기본", description: "고객사별 관리자 화면 색상 기준", accent: "bg-blue-50 text-blue-700" },
   { label: "언어", value: "한국어", badge: "현재", description: "관리자 화면 기본 표시 언어", accent: "bg-emerald-50 text-emerald-700" },
-  { label: "파일 정책", value: "15일", badge: "보관", description: "휴지통 보관 및 purge 기준", accent: "bg-amber-50 text-amber-700" },
+  { label: "파일 정책", value: "30일", badge: "고정", description: "전 고객 공통 휴지통 보관 및 purge 후보 기준", accent: "bg-amber-50 text-amber-700" },
   { label: "알림", value: "ON", badge: "운영", description: "검토/발주/용량 알림 정책", accent: "bg-violet-50 text-violet-700" },
 ];
 
@@ -252,7 +252,7 @@ export const ADMIN_LANGUAGE_OPTIONS: AdminLanguageOption[] = [
 export const ADMIN_FILE_POLICY_PREVIEW_ITEMS: AdminPolicyPreviewItem[] = [
   { label: "소프트 삭제", value: "사용", statusLabel: "ON" },
   { label: "휴지통 포함", value: "사용량 계산 포함", statusLabel: "ON" },
-  { label: "자동 삭제 기간", value: "15일", statusLabel: "기본" },
+  { label: "휴지통 보관", value: "30일", statusLabel: "고정" },
   { label: "용량 상태 기준", value: "80%", statusLabel: "경고" },
 ];
 

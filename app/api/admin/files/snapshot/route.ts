@@ -124,7 +124,7 @@ function buildUsageCards(activeCount: number, trashCount: number, activeBytes: n
     { label: "전체 사용량", value: `${summary.usedLabel} / ${summary.limitLabel}`, description: filePolicy.includeTrashInUsage ? "휴지통 보관 파일 포함" : "사용중 파일만 합산" },
     { label: "첨부파일", value: `${activeCount}개`, description: `${formatBytes(activeBytes)} 사용` },
     { label: "휴지통", value: `${trashCount}개`, description: `${formatBytes(trashBytes)} 보관` },
-    { label: "보관 기간", value: `${filePolicy.trashRetentionDays}일`, description: "company_settings.trash_retention_days 기준" },
+    { label: "보관 기간", value: `${filePolicy.trashRetentionDays}일`, description: "전 고객 공통 휴지통 보관 정책" },
   ];
 }
 

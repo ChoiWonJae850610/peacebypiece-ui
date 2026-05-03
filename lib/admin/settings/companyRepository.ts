@@ -2,7 +2,7 @@ import "server-only";
 
 import { queryDb } from "@/lib/db/client";
 import { WORKSPACE_COMPANY_ID, WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
-import { buildDefaultCompanySettings } from "@/lib/admin/settings/companyDefaults";
+import { COMPANY_FILE_TRASH_RETENTION_DAYS, buildDefaultCompanySettings } from "@/lib/admin/settings/companyDefaults";
 import type {
   AdminCompanySummary,
   CompanyFilePolicySettings,
@@ -55,9 +55,8 @@ function isLanguage(value: string | null | undefined): value is CompanyLanguage 
   return value === "ko" || value === "en";
 }
 
-function normalizeRetentionDays(value: unknown, fallback: number): number {
-  const numericValue = typeof value === "number" ? value : Number(value);
-  return [1, 5, 15, 30].includes(numericValue) ? numericValue : fallback;
+function normalizeRetentionDays(): number {
+  return COMPANY_FILE_TRASH_RETENTION_DAYS;
 }
 
 function normalizePositiveInteger(value: unknown, fallback: number): number {
@@ -94,9 +93,9 @@ function normalizeFilePolicySettings(
   fallback: CompanyFilePolicySettings,
 ): CompanyFilePolicySettings {
   return {
-    softDeleteEnabled: normalizeBoolean(input?.softDeleteEnabled, fallback.softDeleteEnabled),
+    softDeleteEnabled: true,
     includeTrashInUsage: normalizeBoolean(input?.includeTrashInUsage, fallback.includeTrashInUsage),
-    trashRetentionDays: normalizeRetentionDays(input?.trashRetentionDays, fallback.trashRetentionDays),
+    trashRetentionDays: normalizeRetentionDays(),
     storageLimitGb: normalizePositiveInteger(input?.storageLimitGb, fallback.storageLimitGb),
     warningThresholdPercent: normalizePercent(input?.warningThresholdPercent, fallback.warningThresholdPercent),
   };
@@ -135,9 +134,9 @@ function mapSettingsRow(row: CompanySettingsRow): CompanySettings {
       compactMode: normalizeBoolean(row.compact_mode, fallback.ui.compactMode),
     },
     filePolicy: {
-      softDeleteEnabled: normalizeBoolean(row.soft_delete_enabled, fallback.filePolicy.softDeleteEnabled),
+      softDeleteEnabled: true,
       includeTrashInUsage: normalizeBoolean(row.include_trash_in_usage, fallback.filePolicy.includeTrashInUsage),
-      trashRetentionDays: normalizeRetentionDays(row.trash_retention_days, fallback.filePolicy.trashRetentionDays),
+      trashRetentionDays: normalizeRetentionDays(),
       storageLimitGb: normalizePositiveInteger(row.storage_limit_gb, fallback.filePolicy.storageLimitGb),
       warningThresholdPercent: normalizePercent(row.warning_threshold_percent, fallback.filePolicy.warningThresholdPercent),
     },

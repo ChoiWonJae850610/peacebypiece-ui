@@ -1,6 +1,8 @@
 import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 import type { CompanySettings } from "@/lib/admin/settings/companyTypes";
 
+export const COMPANY_FILE_TRASH_RETENTION_DAYS = 30;
+
 export const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
   companyId: WORKSPACE_COMPANY_ID,
   ui: {
@@ -11,7 +13,7 @@ export const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
   filePolicy: {
     softDeleteEnabled: true,
     includeTrashInUsage: true,
-    trashRetentionDays: 15,
+    trashRetentionDays: COMPANY_FILE_TRASH_RETENTION_DAYS,
     storageLimitGb: 5,
     warningThresholdPercent: 80,
   },

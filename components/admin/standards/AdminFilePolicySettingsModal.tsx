@@ -4,13 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import StatusToggle from "@/components/common/StatusToggle";
 import { AdminModal, adminModalPrimaryButtonClassName, adminModalSecondaryButtonClassName } from "@/components/admin/layout/AdminModal";
 import {
-  ADMIN_RETENTION_DAY_OPTIONS,
   buildAdminStorageStatusPreview,
   buildAdminStorageThresholdPolicy,
   normalizeAdminFilePolicyDraft,
 } from "@/lib/admin/settings/presentation";
 import { runSaveCompanySettingsFlow } from "@/lib/admin/settings/actionFlow";
-import { buildDefaultCompanySettings } from "@/lib/admin/settings/companyDefaults";
+import { COMPANY_FILE_TRASH_RETENTION_DAYS, buildDefaultCompanySettings } from "@/lib/admin/settings/companyDefaults";
 import type { CompanySettings } from "@/lib/admin/settings/companyTypes";
 import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
@@ -119,24 +118,18 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
         {errorMessage ? <p className="rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">{errorMessage}</p> : null}
 
         <div className="grid gap-3 md:grid-cols-2">
-          <ToggleButtonGroup
-            label={t("standards.filePolicy.deleteMode", "삭제 방식")}
-            description={t("standards.filePolicy.deleteModeDescription", "삭제 시 파일을 휴지통으로 이동할지 즉시 실제 삭제할지 정합니다.")}
-            activeLabel={t("standards.filePolicy.softDelete", "휴지통")}
-            inactiveLabel={t("standards.filePolicy.hardDelete", "즉시삭제")}
-            checked={draft.filePolicy.softDeleteEnabled}
-            onChange={(softDeleteEnabled) => {
-              if (saving || loading) return;
-              setDraft((current) => ({
-              ...current,
-              filePolicy: normalizeAdminFilePolicyDraft({
-                ...current.filePolicy,
-                softDeleteEnabled,
-                trashRetentionDays: softDeleteEnabled ? current.filePolicy.trashRetentionDays || 5 : current.filePolicy.trashRetentionDays,
-              }),
-            }));
-            }}
-          />
+          <div className="rounded-3xl border border-stone-200 bg-stone-50 p-3">
+            <p className="text-sm font-semibold text-stone-950">{t("standards.filePolicy.deleteMode", "삭제 방식")}</p>
+            <p className="mt-1 text-xs font-semibold leading-5 text-stone-500">
+              {t("standards.filePolicy.fixedTrashPolicyDescription", "삭제된 파일은 휴지통으로 이동하며 30일 동안 복원할 수 있습니다.")}
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className="rounded-full bg-stone-950 px-3 py-1 text-xs font-semibold text-white">{t("standards.filePolicy.softDelete", "휴지통")}</span>
+              <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-600">
+                {COMPANY_FILE_TRASH_RETENTION_DAYS}{t("standards.filePolicy.daySuffix", "일")} {t("standards.filePolicy.fixedRetention", "고정")}
+              </span>
+            </div>
+          </div>
           <ToggleButtonGroup
             label={t("standards.filePolicy.includeTrashInUsage", "휴지통 용량 포함")}
             description={t("standards.filePolicy.includeTrashDescription", "실제 삭제 전 파일을 사용량에 포함할지 정합니다.")}
@@ -145,44 +138,16 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
             checked={draft.filePolicy.includeTrashInUsage}
             onChange={(includeTrashInUsage) => {
               if (saving || loading) return;
-              setDraft((current) => ({ ...current, filePolicy: { ...current.filePolicy, includeTrashInUsage } }));
+              setDraft((current) => ({ ...current, filePolicy: normalizeAdminFilePolicyDraft({ ...current.filePolicy, includeTrashInUsage }) }));
             }}
           />
         </div>
 
-        <div className="rounded-3xl border border-stone-200 bg-stone-50 p-3">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold text-stone-950">{t("standards.filePolicy.retentionDays", "파일 보관 기간")}</p>
-              <p className="mt-1 text-xs font-semibold text-stone-500">{t("standards.filePolicy.retentionDescription", "휴지통 파일이 실제 삭제 후보가 되기 전까지 보관되는 기간입니다.")}</p>
-            </div>
-            {!draft.filePolicy.softDeleteEnabled ? <span className="rounded-full bg-stone-200 px-3 py-1 text-xs font-semibold text-stone-500">{t("standards.filePolicy.disabled", "비활성")}</span> : null}
-          </div>
-          {draft.filePolicy.softDeleteEnabled ? (
-            <div className="mt-3 grid grid-cols-4 gap-2">
-              {ADMIN_RETENTION_DAY_OPTIONS.map((days) => {
-                const selected = draft.filePolicy.trashRetentionDays === days;
-                return (
-                  <button
-                    key={days}
-                    type="button"
-                    onClick={() => {
-                      if (saving || loading) return;
-                      setDraft((current) => ({ ...current, filePolicy: normalizeAdminFilePolicyDraft({ ...current.filePolicy, trashRetentionDays: days }) }));
-                    }}
-                    disabled={saving || loading}
-                    className={`w-full rounded-full border px-3 py-2 text-sm font-semibold transition ${selected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"}`}
-                  >
-                    {days}{t("standards.filePolicy.daySuffix", "일")}
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="mt-3 rounded-2xl border border-stone-200 bg-white px-3 py-2 text-sm font-semibold text-stone-500">
-              {t("standards.filePolicy.retentionDisabledDescription", "즉시삭제 방식에서는 삭제 파일 보관 기간을 선택하지 않습니다.")}
-            </p>
-          )}
+        <div className="rounded-3xl border border-amber-100 bg-amber-50 p-3">
+          <p className="text-sm font-semibold text-amber-950">{t("standards.filePolicy.retentionDays", "파일 보관 기간")}</p>
+          <p className="mt-1 text-xs font-semibold leading-5 text-amber-800">
+            {t("standards.filePolicy.fixedRetentionDescription", "고객사는 보관 기간을 변경할 수 없습니다. 휴지통 파일은 삭제일로부터 30일이 지나면 시스템관리자 R2 삭제 후보가 됩니다.")}
+          </p>
         </div>
 
         <div className="grid gap-3 md:grid-cols-2">

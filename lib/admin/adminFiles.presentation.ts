@@ -9,6 +9,7 @@ import type {
   AdminStorageUsageSummary,
   AdminTrashFileItem,
 } from "@/lib/admin/adminFiles.types";
+import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
 
 export type { AdminFileTabKey } from "@/lib/admin/adminFiles.types";
 
@@ -26,7 +27,7 @@ export const ADMIN_FILE_USAGE_CARDS: AdminFileUsageCard[] = [
   { label: "전체 사용량", value: "2.0GB / 5.0GB", description: "휴지통 보관 파일 포함" },
   { label: "첨부파일", value: "3개", description: "작업지시서에 연결된 이미지, PDF, 기타 파일" },
   { label: "휴지통", value: "2개", description: "소프트 삭제 후 보관 중인 파일" },
-  { label: "보관 기간", value: "15일", description: "company_settings.trash_retention_days 기준" },
+  { label: "보관 기간", value: `${COMPANY_FILE_TRASH_RETENTION_DAYS}일`, description: "전 고객 공통 30일 휴지통 보관 정책" },
 ];
 
 export const ADMIN_FILE_TABS: AdminFileTabItem[] = [
@@ -157,14 +158,14 @@ export const ADMIN_FILE_TRASH_PLACEHOLDERS: AdminTrashFileItem[] = [
 export const ADMIN_STORAGE_POLICY_SETTINGS: AdminStoragePolicySettings = {
   softDeleteEnabled: true,
   includeTrashInUsage: true,
-  purgeAfterDays: 15,
+  purgeAfterDays: COMPANY_FILE_TRASH_RETENTION_DAYS,
 };
 
 export const ADMIN_STORAGE_POLICY_ITEMS: AdminStoragePolicyItem[] = [
   {
     label: "삭제 방식",
-    value: "소프트 삭제",
-    description: "삭제 시 attachments.deleted_at, deleted_by, delete_reason, purge_after_at 값을 기록",
+    value: "휴지통",
+    description: "삭제 시 R2 객체를 즉시 삭제하지 않고 휴지통 상태로 기록",
   },
   {
     label: "용량 계산",
@@ -173,8 +174,8 @@ export const ADMIN_STORAGE_POLICY_ITEMS: AdminStoragePolicyItem[] = [
   },
   {
     label: "보관기간",
-    value: "15일",
-    description: "휴지통 파일이 실제 삭제 후보가 되기 전까지 보관되는 기간",
+    value: `${COMPANY_FILE_TRASH_RETENTION_DAYS}일`,
+    description: "전 고객 공통 30일 휴지통 보관 정책",
   },
 ];
 
@@ -183,13 +184,10 @@ function readBoolean(value: unknown, fallback: boolean): boolean {
 }
 
 export function normalizeAdminFilePolicySettings(filePolicy: { softDeleteEnabled?: unknown; includeTrashInUsage?: unknown; trashRetentionDays?: unknown }): AdminStoragePolicySettings {
-  const parsedDays = Math.trunc(Number(filePolicy.trashRetentionDays));
-  const purgeAfterDays = [1, 5, 15, 30].includes(parsedDays) ? parsedDays : 15;
-
   return {
-    softDeleteEnabled: readBoolean(filePolicy.softDeleteEnabled, true),
+    softDeleteEnabled: true,
     includeTrashInUsage: readBoolean(filePolicy.includeTrashInUsage, true),
-    purgeAfterDays: purgeAfterDays as AdminStoragePolicySettings["purgeAfterDays"],
+    purgeAfterDays: COMPANY_FILE_TRASH_RETENTION_DAYS,
   };
 }
 
@@ -197,8 +195,8 @@ export function buildAdminStoragePolicyItems(policySettings: AdminStoragePolicyS
   return [
     {
       label: "삭제 방식",
-      value: policySettings.softDeleteEnabled ? "소프트 삭제" : "즉시삭제",
-      description: policySettings.softDeleteEnabled ? "삭제 시 휴지통으로 이동하고 보관 기간을 둡니다." : "삭제 액션 시 R2 실제 삭제 흐름으로 바로 연결합니다.",
+      value: "휴지통",
+      description: "삭제된 파일은 30일 동안 복원 가능하며 이후 R2 삭제 후보가 됩니다.",
     },
     {
       label: "용량 계산",
@@ -207,8 +205,8 @@ export function buildAdminStoragePolicyItems(policySettings: AdminStoragePolicyS
     },
     {
       label: "보관기간",
-      value: `${policySettings.purgeAfterDays}일`,
-      description: "company_settings.trash_retention_days 기준으로 실제 삭제 후보가 되는 시점을 계산합니다.",
+      value: `${COMPANY_FILE_TRASH_RETENTION_DAYS}일`,
+      description: "전 고객 공통 30일 기준으로 실제 삭제 후보가 되는 시점을 계산합니다.",
     },
   ];
 }
@@ -252,17 +250,17 @@ export function getAdminFilePolicySourceLabel(dataSource: AdminFileDataSource): 
 export function buildAdminFilePolicyUpdateInput(policySettings: AdminStoragePolicySettings) {
   return {
     filePolicy: {
-      softDeleteEnabled: policySettings.softDeleteEnabled,
+      softDeleteEnabled: true,
       includeTrashInUsage: policySettings.includeTrashInUsage,
-      trashRetentionDays: policySettings.purgeAfterDays,
+      trashRetentionDays: COMPANY_FILE_TRASH_RETENTION_DAYS,
     },
   };
 }
 
 export function buildAdminStoragePolicyBadges(policySettings: AdminStoragePolicySettings): { label: string; value: string }[] {
   return [
-    { label: "삭제 방식", value: policySettings.softDeleteEnabled ? "소프트 삭제" : "즉시삭제" },
+    { label: "삭제 방식", value: "휴지통" },
     { label: "용량 계산", value: policySettings.includeTrashInUsage ? "휴지통 포함" : "사용중 파일만" },
-    { label: "파일 보관 기간", value: `${policySettings.purgeAfterDays}일` },
+    { label: "파일 보관 기간", value: `${COMPANY_FILE_TRASH_RETENTION_DAYS}일 고정` },
   ];
 }

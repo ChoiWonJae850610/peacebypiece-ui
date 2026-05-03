@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { markAttachmentTrashItemsPurgedByAttachmentIds } from "@/lib/admin/files/serverActions";
 import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
-import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/settings/companyRepository";
+import { getCurrentAdminCompany } from "@/lib/admin/settings/companyRepository";
+import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
 import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
-import { deleteR2ObjectViaWorker } from "@/lib/storage/r2/r2WorkerUpload";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
 import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
 
@@ -47,9 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     const company = await getCurrentAdminCompany();
-    const settings = await getCompanySettings(company.id);
-    const trashRetentionDays = settings.filePolicy.trashRetentionDays;
-    const softDeleteEnabled = settings.filePolicy.softDeleteEnabled;
+    const trashRetentionDays = COMPANY_FILE_TRASH_RETENTION_DAYS;
 
     const deleteKeys = Array.from(
       new Set(
@@ -57,30 +54,19 @@ export async function POST(request: NextRequest) {
       ),
     );
 
-    if (!softDeleteEnabled) {
-      for (const key of deleteKeys) {
-        await deleteR2ObjectViaWorker({ key });
-        deleteCachedR2UrlsByKey(key);
-      }
-    } else {
-      for (const key of deleteKeys) {
-        deleteCachedR2UrlsByKey(key);
-      }
+    for (const key of deleteKeys) {
+      deleteCachedR2UrlsByKey(key);
     }
 
     const deleted = await repository.softDeleteAttachment({
       attachmentId,
       deletedBy: readText(payload?.deletedBy),
       deleteReason: readText(payload?.deleteReason),
-      trashRetentionDays: softDeleteEnabled ? trashRetentionDays : 0,
+      trashRetentionDays,
     });
 
     if (!deleted) {
       return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_NOT_FOUND" }, { status: 404 });
-    }
-
-    if (!softDeleteEnabled) {
-      await markAttachmentTrashItemsPurgedByAttachmentIds({ attachmentIds: [attachmentId], actorId: readText(payload?.deletedBy) ?? "attachment-delete-api" });
     }
 
     await createAdminHistoryLogSafe({
@@ -96,16 +82,16 @@ export async function POST(request: NextRequest) {
         fileName: target.original_name ?? null,
         storageKey: target.storage_key ?? null,
         thumbnailKey: target.thumbnail_key ?? null,
-        trashMode: softDeleteEnabled ? "soft-delete" : "immediate-delete",
+        trashMode: "soft-delete",
         deleteReason: readText(payload?.deleteReason),
       },
     });
 
     return NextResponse.json({
       attachmentId: deleted.id,
-      trashMode: softDeleteEnabled ? "soft-delete" : "immediate-delete",
-      storageDeleteMode: softDeleteEnabled ? "deferred" : "immediate",
-      trashRetentionDays: softDeleteEnabled ? trashRetentionDays : 0,
+      trashMode: "soft-delete",
+      storageDeleteMode: "deferred",
+      trashRetentionDays,
     });
   } catch (error) {
     const message = getErrorMessage(error) || "Attachment delete failed.";

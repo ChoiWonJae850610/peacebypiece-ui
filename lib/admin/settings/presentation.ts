@@ -5,6 +5,7 @@ import type {
   CompanySettingsUpdateInput,
   CompanyThemeColor,
 } from "@/lib/admin/settings/companyTypes";
+import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
 
 export type AdminSettingSaveState = "idle" | "saving" | "saved" | "error";
 export type AdminStorageStatusTone = "normal" | "caution" | "danger";
@@ -44,8 +45,6 @@ export const ADMIN_LANGUAGE_OPTIONS: AdminLanguageOption[] = [
   { label: "English", value: "en" },
 ];
 
-export const ADMIN_RETENTION_DAY_OPTIONS = [1, 5, 15, 30] as const;
-
 export function getAdminSettingsSaveLabel(saveState: AdminSettingSaveState): string {
   if (saveState === "saving") return "저장 중";
   if (saveState === "saved") return "저장됨";
@@ -80,9 +79,6 @@ export function getAdminSettingsUpdatedAtLabel(updatedAt?: string | null): strin
 }
 
 export function normalizeAdminFilePolicyDraft(filePolicy: CompanyFilePolicySettings): CompanyFilePolicySettings {
-  const retentionDays = ADMIN_RETENTION_DAY_OPTIONS.includes(filePolicy.trashRetentionDays as (typeof ADMIN_RETENTION_DAY_OPTIONS)[number])
-    ? filePolicy.trashRetentionDays
-    : 15;
   const storageLimitGb = Number.isFinite(filePolicy.storageLimitGb) ? Math.max(1, Math.min(999, Math.trunc(filePolicy.storageLimitGb))) : 5;
   const warningThresholdPercent = Number.isFinite(filePolicy.warningThresholdPercent)
     ? Math.max(1, Math.min(99, Math.trunc(filePolicy.warningThresholdPercent)))
@@ -90,7 +86,8 @@ export function normalizeAdminFilePolicyDraft(filePolicy: CompanyFilePolicySetti
 
   return {
     ...filePolicy,
-    trashRetentionDays: retentionDays,
+    softDeleteEnabled: true,
+    trashRetentionDays: COMPANY_FILE_TRASH_RETENTION_DAYS,
     storageLimitGb,
     warningThresholdPercent,
   };
