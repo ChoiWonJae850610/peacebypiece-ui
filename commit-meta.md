@@ -1,21 +1,19 @@
 Version :
-0.9.126
+0.9.127
 
 Summary :
-R2 첨부 업로드 경로를 Worker 기준으로 고정
+첨부 삭제 복구 대표 이미지 QA 기준 추가
 
 Description :
-첨부 업로드 클라이언트에서 Worker 업로드 실패 시 서버 direct upload fallback을 호출하지 않도록 변경했다. direct upload route는 R2 SDK 업로드를 수행하지 않고 410 응답만 반환하도록 비활성화했다. 기존 삭제 기능, 첨부 UI, DB schema, package 파일은 변경하지 않았다.
+작업지시서 첨부 삭제, 관리자 파일관리 복구, 영구삭제 요청, Worker purge, 대표 이미지 지정 흐름의 테스트 기준을 문서화했다. 기존 기능 코드는 변경하지 않고 APP_VERSION과 복구 기준 문서만 갱신했다.
 
 수정 파일 목록 :
-- app/api/workorders/attachments/upload/direct/route.ts
-- lib/workorder/attachments/attachmentUploadApiClient.ts
 - lib/constants/app.ts
 - docs/restore-baseline-0.9.121.md
 - docs/attachment-memo-r2-audit-0.9.123.md
 
 추가 파일 목록 :
-없음
+- docs/attachment-trash-primary-qa-0.9.127.md
 
 삭제 파일 목록 :
 없음
