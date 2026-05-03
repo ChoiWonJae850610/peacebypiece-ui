@@ -74,6 +74,30 @@ Neon/repository 연결 상태를 점검했다. workorder, attachment, memo, part
 
 작업지시서 핵심 flow 회귀 테스트 기준을 문서화했다. 작성중, 검토요청, 검토완료, 발주요청, 생산/검수, 완료 상태 변경 후 제목, 담당자, 발주정보, 생산구성, 첨부, 대표 이미지, 메모, DB 저장 상태가 유지되는지 확인하는 체크리스트를 `docs/workorder-flow-qa-0.9.129.md`에 고정했다. 기능 코드는 변경하지 않았다.
 
+### 0.9.130
+
+첨부 썸네일 Worker 업로드 실패 로그를 안전화하고, 대표 이미지/썸네일 규칙을 `docs/attachment-primary-thumbnail-rules-0.9.130.md`에 문서화했다. 원본 업로드 성공 흐름을 유지하고, R2 직접 SDK fallback은 재도입하지 않았다.
+
+### 0.9.131
+
+첨부 표시 URL helper에서 `thumbnail_key` 기반 썸네일 URL을 우선 생성하도록 보완했다. 미리보기/다운로드는 원본 key 기준을 유지했다.
+
+### 0.9.132
+
+DB/API 응답 필드명이 snake_case로 넘어오는 경우를 고려해 `thumbnail_key`, `storage_key` 호환 처리를 보완했다.
+
+### 0.9.133
+
+DB attachments 조회 시 `thumbnail_key` hydrate 누락을 보완해 작업지시서 카드 표시에서 실제 썸네일 key를 사용할 수 있게 했다.
+
+### 0.9.134
+
+관리자 콘솔 현재 기능 상태를 `docs/admin-console-audit-0.9.134.md`에 문서화했다. `/admin/partners`, `/admin/files`, `/admin/settings`를 read-only/skeleton으로 대체하지 않는 기준을 고정했다.
+
+### 0.9.135
+
+관리자 거래처/공장관리 화면의 저장 안정성을 보완했다. 거래처 생성/수정 저장 중 중복 클릭으로 POST/PATCH가 반복 호출되지 않도록 저장 진행 상태를 추가하고, 본 기능 UI를 유지하는 QA 기준을 `docs/admin-partner-master-stability-0.9.135.md`에 문서화했다.
+
 ## 제외 대상
 
 - 기존 본 기능을 read-only 화면으로 대체한 변경

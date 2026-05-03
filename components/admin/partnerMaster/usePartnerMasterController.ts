@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 
 import {
   applyPartnerPrimaryTypeToDraft,
@@ -45,6 +45,8 @@ export function usePartnerMasterController(partnerText: PartnerMasterText) {
   const [selectedAssignedProcess, setSelectedAssignedProcess] = useState<OutsourcingProcessType | null>(null);
   const [formError, setFormError] = useState("");
   const [isLoadingPartners, setIsLoadingPartners] = useState(true);
+  const [isSavingPartner, setIsSavingPartner] = useState(false);
+  const isSavingPartnerRef = useRef(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -132,6 +134,8 @@ export function usePartnerMasterController(partnerText: PartnerMasterText) {
   }, []);
 
   const handleSubmit = useCallback(() => {
+    if (isSavingPartnerRef.current) return;
+
     const normalizedDraft = normalizePartnerDraft(draft);
 
     if (!normalizedDraft.name) {
@@ -149,6 +153,9 @@ export function usePartnerMasterController(partnerText: PartnerMasterText) {
       return;
     }
 
+    isSavingPartnerRef.current = true;
+    setIsSavingPartner(true);
+
     savePartnerMasterItemToApi(editingPartnerId, normalizedDraft)
       .then((payload) => {
         setPartners(payload.partners);
@@ -157,6 +164,10 @@ export function usePartnerMasterController(partnerText: PartnerMasterText) {
       })
       .catch(() => {
         setFormError(partnerText.form.saveFailed);
+      })
+      .finally(() => {
+        isSavingPartnerRef.current = false;
+        setIsSavingPartner(false);
       });
   }, [closeModal, draft, editingPartnerId, partnerText.form.saveFailed]);
 
@@ -181,6 +192,7 @@ export function usePartnerMasterController(partnerText: PartnerMasterText) {
     setSelectedAssignedProcess,
     formError,
     isLoadingPartners,
+    isSavingPartner,
     listViewModel,
     isOutsourcingEnabled,
     selectedPrimaryTypes,

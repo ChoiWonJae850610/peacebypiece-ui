@@ -47,6 +47,7 @@ export default function PartnerMasterSection() {
         editingPartnerId={controller.editingPartnerId}
         draft={controller.draft}
         formError={controller.formError}
+        isSubmitting={controller.isSavingPartner}
         selectedPrimaryTypes={controller.selectedPrimaryTypes}
         isOutsourcingEnabled={controller.isOutsourcingEnabled}
         availableProcessDefinitions={controller.availableProcessDefinitions}

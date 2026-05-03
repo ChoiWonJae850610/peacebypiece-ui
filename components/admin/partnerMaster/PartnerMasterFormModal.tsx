@@ -25,6 +25,7 @@ type PartnerMasterFormModalProps = {
   editingPartnerId: string | null;
   draft: PartnerDraft;
   formError: string;
+  isSubmitting?: boolean;
   selectedPrimaryTypes: BasePartnerType[];
   isOutsourcingEnabled: boolean;
   availableProcessDefinitions: OutsourcingProcessDefinition[];
@@ -45,6 +46,7 @@ export default function PartnerMasterFormModal({
   editingPartnerId,
   draft,
   formError,
+  isSubmitting = false,
   selectedPrimaryTypes,
   isOutsourcingEnabled,
   availableProcessDefinitions,
@@ -65,7 +67,7 @@ export default function PartnerMasterFormModal({
   return (
     <AdminModal
       open={open}
-      onClose={onClose}
+      onClose={isSubmitting ? () => undefined : onClose}
       title={editingPartnerId ? formText.editTitle : formText.createTitle}
       maxWidthClass="md:max-w-2xl"
       footer={
@@ -75,6 +77,7 @@ export default function PartnerMasterFormModal({
             <button
               type="button"
               onClick={onClose}
+              disabled={isSubmitting}
               className={adminModalSecondaryButtonClassName}
             >
               {formText.cancel}
@@ -82,6 +85,7 @@ export default function PartnerMasterFormModal({
             <button
               type="button"
               onClick={onSubmit}
+              disabled={isSubmitting}
               className={adminModalPrimaryButtonClassName}
             >
               {formText.save}
