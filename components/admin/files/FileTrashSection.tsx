@@ -12,6 +12,7 @@ type FileTrashSectionProps = {
   onToggleAll: () => void;
   onRestore: () => void;
   onPurge: () => void;
+  isActionPending?: boolean;
 };
 
 const TRASH_TABLE_GRID = "0.38fr 1.08fr 0.82fr 1.72fr 0.68fr 0.72fr";
@@ -22,22 +23,23 @@ function getTrashFileType(item: AdminTrashFileItem, t: ReturnType<typeof useAdmi
   return t("filesList.fileTypes.other", "기타");
 }
 
-export default function FileTrashSection({ items, selectedItemIds, onToggleItem, onToggleAll, onRestore, onPurge }: FileTrashSectionProps) {
+export default function FileTrashSection({ items, selectedItemIds, onToggleItem, onToggleAll, onRestore, onPurge, isActionPending = false }: FileTrashSectionProps) {
   const hasSelection = selectedItemIds.length > 0;
+  const canAct = hasSelection && !isActionPending;
   const t = useAdminTranslation();
   const allSelected = items.length > 0 && selectedItemIds.length === items.length;
 
   return (
     <section className="flex h-full min-h-[420px] flex-col rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm">
       <AdminActionBar title={t("trashPage.title", "휴지통")}>
-        <button type="button" onClick={onToggleAll} className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm hover:bg-stone-50">
+        <button type="button" onClick={onToggleAll} disabled={isActionPending || items.length === 0} className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm hover:bg-stone-50 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-400">
           {allSelected ? t("filesList.clearAll", "전체 해제") : t("filesList.selectAll", "전체 선택")}
         </button>
-        <button type="button" onClick={onRestore} className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${hasSelection ? "border-stone-300 bg-white text-stone-700 shadow-sm hover:bg-stone-50" : "border-stone-200 bg-stone-50 text-stone-400"}`} disabled={!hasSelection}>
-          {t("filesList.restore", "복구")} {hasSelection ? selectedItemIds.length : ""}
+        <button type="button" onClick={onRestore} className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${canAct ? "border-stone-300 bg-white text-stone-700 shadow-sm hover:bg-stone-50" : "border-stone-200 bg-stone-50 text-stone-400"}`} disabled={!canAct}>
+          {isActionPending ? t("filesList.processing", "처리 중") : t("filesList.restore", "복구")} {hasSelection ? selectedItemIds.length : ""}
         </button>
-        <button type="button" onClick={onPurge} className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${hasSelection ? "border-red-200 bg-white text-red-600 shadow-sm hover:bg-red-50" : "border-stone-200 bg-stone-50 text-stone-400"}`} disabled={!hasSelection}>
-          {t("filesList.purge", "영구 삭제")} {hasSelection ? selectedItemIds.length : ""}
+        <button type="button" onClick={onPurge} className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${canAct ? "border-red-200 bg-white text-red-600 shadow-sm hover:bg-red-50" : "border-stone-200 bg-stone-50 text-stone-400"}`} disabled={!canAct}>
+          {isActionPending ? t("filesList.processing", "처리 중") : t("filesList.purge", "영구 삭제")} {hasSelection ? selectedItemIds.length : ""}
         </button>
       </AdminActionBar>
 

@@ -1,21 +1,21 @@
 Version :
-0.9.135
+0.9.136
 
 Summary :
-관리자 거래처 저장 중복 요청 방지와 안정화 기준 추가
+관리자 파일관리 액션 중복 실행 방지
 
 Description :
-관리자 거래처/공장관리 화면에서 생성/수정 저장 중 저장 버튼과 닫기 동작을 비활성화해 중복 POST/PATCH 요청이 발생하지 않도록 보완했다. 기존 거래처 목록, 필터, 생성/수정 모달 구조는 유지했고, 관리자 거래처 기능 안정화 테스트 기준 문서를 추가했다.
+관리자 파일관리 화면에서 첨부 삭제, 휴지통 복구, 영구삭제 요청 중 버튼을 반복 클릭해 같은 액션이 중복 실행될 수 있는 위험을 줄였다. 액션 진행 중에는 관련 버튼과 전체 선택을 비활성화하고 처리 중 상태를 표시한다. 기존 R2 Worker 기반 삭제 흐름, DB schema, API 응답 포맷은 변경하지 않았다.
 
 수정 파일 목록 :
-- components/admin/PartnerMasterSection.tsx
-- components/admin/partnerMaster/PartnerMasterFormModal.tsx
-- components/admin/partnerMaster/usePartnerMasterController.ts
+- app/admin/files/page.tsx
+- components/admin/files/FileListSection.tsx
+- components/admin/files/FileTrashSection.tsx
 - lib/constants/app.ts
 - docs/restore-baseline-0.9.121.md
 
 추가 파일 목록 :
-- docs/admin-partner-master-stability-0.9.135.md
+- docs/admin-files-stability-0.9.136.md
 
 삭제 파일 목록 :
 없음

@@ -41,6 +41,7 @@ export default function AdminFilesPage() {
   const [selectedAttachmentIds, setSelectedAttachmentIds] = useState<string[]>([]);
   const [selectedTrashItemIds, setSelectedTrashItemIds] = useState<string[]>([]);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [pendingFileAction, setPendingFileAction] = useState<"move" | "restore" | "purge" | null>(null);
 
   async function refreshSnapshot() {
     setIsLoadingSnapshot(true);
@@ -88,29 +89,47 @@ export default function AdminFilesPage() {
   }
 
   async function handleMoveAttachmentToTrash() {
-    const result = await runMoveAttachmentsToTrashFlow(selectedAttachments);
-    setActionMessage(result.message);
-    if (result.ok) {
-      setSelectedAttachmentIds([]);
-      await refreshSnapshot();
+    if (pendingFileAction) return;
+    setPendingFileAction("move");
+    try {
+      const result = await runMoveAttachmentsToTrashFlow(selectedAttachments);
+      setActionMessage(result.message);
+      if (result.ok) {
+        setSelectedAttachmentIds([]);
+        await refreshSnapshot();
+      }
+    } finally {
+      setPendingFileAction(null);
     }
   }
 
   async function handleRestoreTrashItem() {
-    const result = await runRestoreTrashItemsFlow(selectedTrashItems);
-    setActionMessage(result.message);
-    if (result.ok) {
-      setSelectedTrashItemIds([]);
-      await refreshSnapshot();
+    if (pendingFileAction) return;
+    setPendingFileAction("restore");
+    try {
+      const result = await runRestoreTrashItemsFlow(selectedTrashItems);
+      setActionMessage(result.message);
+      if (result.ok) {
+        setSelectedTrashItemIds([]);
+        await refreshSnapshot();
+      }
+    } finally {
+      setPendingFileAction(null);
     }
   }
 
   async function handlePurgeTrashItem() {
-    const result = await runPurgeTrashItemsFlow(selectedTrashItems);
-    setActionMessage(result.message);
-    if (result.ok) {
-      setSelectedTrashItemIds([]);
-      await refreshSnapshot();
+    if (pendingFileAction) return;
+    setPendingFileAction("purge");
+    try {
+      const result = await runPurgeTrashItemsFlow(selectedTrashItems);
+      setActionMessage(result.message);
+      if (result.ok) {
+        setSelectedTrashItemIds([]);
+        await refreshSnapshot();
+      }
+    } finally {
+      setPendingFileAction(null);
     }
   }
 
@@ -174,6 +193,7 @@ export default function AdminFilesPage() {
               onToggleItem={(itemId) => toggleId(itemId, selectedAttachmentIds, setSelectedAttachmentIds)}
               onToggleAll={handleToggleAllAttachments}
               onMoveToTrash={handleMoveAttachmentToTrash}
+              isActionPending={pendingFileAction !== null}
             />
           ) : null}
           {activeTab === "trash" ? (
@@ -184,6 +204,7 @@ export default function AdminFilesPage() {
               onToggleAll={handleToggleAllTrashItems}
               onRestore={handleRestoreTrashItem}
               onPurge={handlePurgeTrashItem}
+              isActionPending={pendingFileAction !== null}
             />
           ) : null}
         </div>

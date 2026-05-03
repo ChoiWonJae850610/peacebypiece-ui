@@ -14,12 +14,14 @@ type FileListSectionProps = {
   onToggleItem: (itemId: string) => void;
   onToggleAll: () => void;
   onMoveToTrash: () => void;
+  isActionPending?: boolean;
 };
 
 const FILE_TABLE_GRID = "0.38fr 1.08fr 0.82fr 1.72fr 0.68fr 0.72fr";
 
-export default function FileListSection({ items, selectedItemIds, sortKey, onChangeSort, onToggleItem, onToggleAll, onMoveToTrash }: FileListSectionProps) {
+export default function FileListSection({ items, selectedItemIds, sortKey, onChangeSort, onToggleItem, onToggleAll, onMoveToTrash, isActionPending = false }: FileListSectionProps) {
   const hasSelection = selectedItemIds.length > 0;
+  const canAct = hasSelection && !isActionPending;
   const t = useAdminTranslation();
   const allSelected = items.length > 0 && selectedItemIds.length === items.length;
 
@@ -31,11 +33,11 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
             <option key={option.key} value={option.key}>{t(`filesList.sort.${option.key}`, option.label)}</option>
           ))}
         </select>
-        <button type="button" onClick={onToggleAll} className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm hover:bg-stone-50">
+        <button type="button" onClick={onToggleAll} disabled={isActionPending || items.length === 0} className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm hover:bg-stone-50 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-400">
           {allSelected ? t("filesList.clearAll", "전체 해제") : t("filesList.selectAll", "전체 선택")}
         </button>
-        <button type="button" onClick={onMoveToTrash} disabled={!hasSelection} className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${hasSelection ? "border-red-200 bg-white text-red-600 shadow-sm hover:bg-red-50" : "border-stone-200 bg-stone-50 text-stone-400"}`}>
-          {t("filesList.delete", "삭제")} {hasSelection ? selectedItemIds.length : ""}
+        <button type="button" onClick={onMoveToTrash} disabled={!canAct} className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${canAct ? "border-red-200 bg-white text-red-600 shadow-sm hover:bg-red-50" : "border-stone-200 bg-stone-50 text-stone-400"}`}>
+          {isActionPending ? t("filesList.processing", "처리 중") : t("filesList.delete", "삭제")} {hasSelection ? selectedItemIds.length : ""}
         </button>
       </AdminActionBar>
 
