@@ -252,3 +252,30 @@
 
 - Neon/repository 계약을 점검한다.
 - DB schema는 변경하지 않고 현재 API 응답과 repository 반환 타입만 확인한다.
+
+## 0.9.124 다운로드/미리보기 안정화 반영
+
+### 반영 범위
+
+- `lib/permissions/attachments.ts`의 다운로드 URL 생성 로직만 보완했다.
+- DB attachment처럼 `storageKey`가 있는 항목은 기존처럼 `/api/workorders/attachments/file?download=1` 경로를 사용한다.
+- 이미 `/api/workorders/attachments/file?...` 형태의 proxy URL만 가진 항목은 query 안의 `key`를 다시 꺼내 다운로드 query를 붙인다.
+- mock, sample, 브라우저 임시 업로드처럼 `data:`, `blob:`, `http(s)` 직접 URL만 가진 항목은 R2 file API로 억지 전송하지 않고 직접 URL을 그대로 사용한다.
+
+### 수정 이유
+
+복구 라인은 `0.9.77` UI와 mock/sample 흐름도 함께 보존해야 한다. 기존 다운로드 URL 생성은 `storageKey`가 없으면 `attachment.url`을 storage key처럼 다루어 `/api/workorders/attachments/file?key=...`로 보낼 수 있었다. 이 경우 R2 storage key가 아닌 `data:` URL이나 이미 만들어진 file proxy URL이 다시 key로 중첩되어 다운로드가 실패할 수 있다.
+
+### 유지한 것
+
+- `app/api/workorders/attachments/file/route.ts`는 수정하지 않았다.
+- `lib/workorder/attachments/attachmentFileRoute.ts`는 수정하지 않았다.
+- `cloudflare/r2-upload-worker.js`는 수정하지 않았다.
+- 업로드, 삭제, 대표 이미지, 메모 API는 수정하지 않았다.
+- DB schema와 package 파일은 수정하지 않았다.
+
+### 다음 확인
+
+- 실제 R2 attachment 다운로드가 `Content-Disposition`을 통해 파일명과 함께 내려오는지 확인한다.
+- mock/sample attachment에서 다운로드 버튼이 invalid storage key API로 가지 않는지 확인한다.
+- 이미지 preview와 PDF iframe preview는 기존 URL을 그대로 사용하므로 화면 표시 회귀 여부만 확인한다.

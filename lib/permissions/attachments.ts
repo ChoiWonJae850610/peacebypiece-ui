@@ -51,13 +51,34 @@ function normalizeAttachmentUrl(value: string | null | undefined): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function isAttachmentFileRouteUrl(value: string): boolean {
+  return value.startsWith("/api/workorders/attachments/file?");
+}
+
+function isDirectPreviewOrDownloadUrl(value: string): boolean {
+  return /^(blob:|data:|https?:\/\/)/i.test(value);
+}
+
+function readStorageKeyFromAttachmentRouteUrl(value: string): string {
+  if (!isAttachmentFileRouteUrl(value)) return "";
+
+  try {
+    const routeUrl = new URL(value, "http://peacebypiece.local");
+    return normalizeAttachmentUrl(routeUrl.searchParams.get("key"));
+  } catch {
+    return "";
+  }
+}
+
 export function getAttachmentPreviewUrl(attachment: Attachment | null | undefined): string {
   return normalizeAttachmentUrl(attachment?.previewUrl) || normalizeAttachmentUrl(attachment?.url);
 }
 
 function createAttachmentFileRouteUrl(input: { key?: string | null; download?: boolean; fileName?: string | null }): string {
-  const key = normalizeAttachmentUrl(input.key);
-  if (!key) return "";
+  const rawKey = normalizeAttachmentUrl(input.key);
+  if (!rawKey) return "";
+
+  const key = readStorageKeyFromAttachmentRouteUrl(rawKey) || rawKey;
 
   const params = new URLSearchParams({ key });
   if (input.download) params.set("download", "1");
@@ -72,7 +93,23 @@ export function getAttachmentThumbnailUrl(attachment: Attachment | null | undefi
 }
 
 export function getAttachmentDownloadUrl(attachment: Attachment | null | undefined): string {
-  return createAttachmentFileRouteUrl({ key: attachment?.storageKey ?? attachment?.url, download: true, fileName: attachment?.name });
+  const storageKey = normalizeAttachmentUrl(attachment?.storageKey);
+  if (storageKey) {
+    return createAttachmentFileRouteUrl({ key: storageKey, download: true, fileName: attachment?.name });
+  }
+
+  const previewOrFileUrl = normalizeAttachmentUrl(attachment?.previewUrl) || normalizeAttachmentUrl(attachment?.url);
+  if (!previewOrFileUrl) return "";
+
+  if (isAttachmentFileRouteUrl(previewOrFileUrl)) {
+    return createAttachmentFileRouteUrl({ key: previewOrFileUrl, download: true, fileName: attachment?.name });
+  }
+
+  if (isDirectPreviewOrDownloadUrl(previewOrFileUrl)) {
+    return previewOrFileUrl;
+  }
+
+  return "";
 }
 
 export function canDownloadAttachment(attachment: Attachment | null | undefined): boolean {
