@@ -4,10 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import AdminUsageToggle from "@/components/admin/common/AdminUsageToggle";
 import {
   AdminModal,
+  AdminModalFooterActions,
   AdminModalSection,
   adminModalInputClassName,
-  adminModalPrimaryButtonClassName,
-  adminModalSecondaryButtonClassName,
 } from "@/components/admin/layout/AdminModal";
 import { createDefaultUnitDefinitions } from "@/lib/admin/settings/standardsDefaults";
 import type { AdminUnitDefinition } from "@/lib/admin/settings/standardsTypes";
@@ -81,23 +80,28 @@ export default function AdminUnitManagementModal({ open, units, saving = false, 
   return (
     <AdminModal
       open={open}
-      onClose={onClose}
+      onClose={saving ? () => undefined : onClose}
       title={t("standards.units.title", "단위 표준")}
       maxWidthClass="md:max-w-3xl"
       footer={
-        <div className="flex w-full items-center justify-between gap-2">
-          <button type="button" onClick={resetDraft} className={adminModalSecondaryButtonClassName}>{t("standards.common.resetDefaults", "기본값 복원")}</button>
-          <button type="button" onClick={() => onSave(draft)} disabled={saving} className={adminModalPrimaryButtonClassName}>{saving ? t("standards.common.saving", "저장 중") : t("standards.common.save", "저장")}</button>
-        </div>
+        <AdminModalFooterActions
+          secondaryLabel={t("standards.common.resetDefaults", "기본값 복원")}
+          primaryLabel={saving ? t("standards.common.saving", "저장 중") : t("standards.common.save", "저장")}
+          onSecondary={resetDraft}
+          onPrimary={() => onSave(draft)}
+          secondaryDisabled={saving}
+          primaryDisabled={saving}
+          statusMessage={formError || error}
+          statusTone={formError || error ? "danger" : "neutral"}
+        />
       }
     >
       <AdminModalSection title={t("standards.units.addTitle", "단위 추가")}>
         <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
-          <input value={newName} onChange={(event) => { setNewName(event.target.value); if (formError) setFormError(""); }} placeholder={t("standards.units.namePlaceholder", "단위명 예: 개")} className={`h-11 ${adminModalInputClassName}`} />
-          <input value={newCode} onChange={(event) => { setNewCode(event.target.value); if (formError) setFormError(""); }} placeholder={t("standards.units.codePlaceholder", "코드 예: piece")} className={`h-11 ${adminModalInputClassName}`} />
-          <button type="button" onClick={addUnit} className="h-11 rounded-full bg-stone-950 px-5 text-sm font-semibold text-white">{t("standards.common.add", "추가")}</button>
+          <input value={newName} onChange={(event) => { setNewName(event.target.value); if (formError) setFormError(""); }} placeholder={t("standards.units.namePlaceholder", "단위명 예: 개")} disabled={saving} className={`h-11 ${adminModalInputClassName}`} />
+          <input disabled={saving} value={newCode} onChange={(event) => { setNewCode(event.target.value); if (formError) setFormError(""); }} placeholder={t("standards.units.codePlaceholder", "코드 예: piece")} className={`h-11 ${adminModalInputClassName}`} />
+          <button type="button" onClick={addUnit} disabled={saving} className="h-11 rounded-full bg-stone-950 px-5 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-50">{t("standards.common.add", "추가")}</button>
         </div>
-        {formError || error ? <p className="mt-2 text-sm font-semibold text-rose-600">{formError || error}</p> : null}
       </AdminModalSection>
 
       <AdminModalSection title={t("standards.units.usageTitle", "단위 사용 여부")}>

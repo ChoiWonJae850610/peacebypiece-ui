@@ -2,10 +2,9 @@
 
 import {
   AdminModal,
+  AdminModalFooterActions,
   AdminModalSection,
   adminModalInputClassName,
-  adminModalPrimaryButtonClassName,
-  adminModalSecondaryButtonClassName,
 } from "@/components/admin/layout/AdminModal";
 import { PARTNER_MASTER_FIELD_LIMITS, type OutsourcingProcessDefinition } from "@/lib/admin/partner";
 import { useI18n } from "@/lib/i18n";
@@ -95,28 +94,20 @@ export default function PartnerProcessManagementModal({
   return (
     <AdminModal
       open={open}
-      onClose={onClose}
+      onClose={saving ? () => undefined : onClose}
       title={processText.title}
       maxWidthClass="md:max-w-3xl"
       footer={
-        <div className="flex w-full items-center justify-between gap-2">
-          <button
-            type="button"
-            onClick={onResetDefaults}
-            disabled={saving}
-            className={adminModalSecondaryButtonClassName}
-          >
-            {processText.resetDefaults}
-          </button>
-          <button
-            type="button"
-            onClick={onSave}
-            disabled={saving}
-            className={adminModalPrimaryButtonClassName}
-          >
-            {saving ? i18n.admin.standards.common.saving : processText.save}
-          </button>
-        </div>
+        <AdminModalFooterActions
+          secondaryLabel={processText.resetDefaults}
+          primaryLabel={saving ? i18n.admin.standards.common.saving : processText.save}
+          onSecondary={onResetDefaults}
+          onPrimary={onSave}
+          secondaryDisabled={saving}
+          primaryDisabled={saving}
+          statusMessage={processFormError}
+          statusTone={processFormError ? "danger" : "neutral"}
+        />
       }
     >
       <AdminModalSection title={processText.addSectionTitle}>
@@ -149,7 +140,6 @@ export default function PartnerProcessManagementModal({
             {processText.add}
           </button>
         </div>
-        {processFormError ? <p className="mt-2 text-sm font-medium text-rose-600">{processFormError}</p> : null}
       </AdminModalSection>
 
       <AdminModalSection title={processText.usageSectionTitle}>

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import AdminSettingsToggleRow from "@/components/admin/common/AdminSettingsToggleRow";
-import { AdminModal, adminModalPrimaryButtonClassName, adminModalSecondaryButtonClassName } from "@/components/admin/layout/AdminModal";
+import { AdminModal, AdminModalFooterActions } from "@/components/admin/layout/AdminModal";
 import {
   buildAdminStorageStatusPreview,
   buildAdminStorageThresholdPolicy,
@@ -89,14 +89,14 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
       title={t("standards.filePolicy.title", "파일 정책 관리")}
       maxWidthClass="md:max-w-3xl"
       footer={
-        <div className="flex items-center justify-between gap-3">
-          <button type="button" onClick={handleReset} disabled={saving || loading} className={adminModalSecondaryButtonClassName}>
-            {t("standards.common.resetDefaults", "기본값 복원")}
-          </button>
-          <button type="button" onClick={handleSave} disabled={saving || loading} className={adminModalPrimaryButtonClassName}>
-            {saving ? t("standards.common.saving", "저장 중") : t("standards.common.save", "저장")}
-          </button>
-        </div>
+        <AdminModalFooterActions
+          secondaryLabel={t("standards.common.resetDefaults", "기본값 복원")}
+          primaryLabel={saving ? t("standards.common.saving", "저장 중") : t("standards.common.save", "저장")}
+          onSecondary={handleReset}
+          onPrimary={handleSave}
+          secondaryDisabled={saving || loading}
+          primaryDisabled={saving || loading}
+        />
       }
     >
       <div className="grid min-h-[232px] gap-3 rounded-3xl border border-stone-200 bg-white p-4 shadow-sm">

@@ -73,3 +73,56 @@ export const adminModalPrimaryButtonClassName =
   "inline-flex min-h-9 items-center justify-center rounded-full bg-stone-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-50";
 export const adminModalDangerButtonClassName =
   "inline-flex min-h-9 items-center justify-center rounded-full bg-rose-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-50";
+
+
+type AdminModalFooterActionsProps = {
+  secondaryLabel?: string;
+  primaryLabel: string;
+  onSecondary?: () => void;
+  onPrimary: () => void;
+  secondaryDisabled?: boolean;
+  primaryDisabled?: boolean;
+  statusMessage?: string;
+  statusTone?: "neutral" | "danger";
+};
+
+export function AdminModalFooterActions({
+  secondaryLabel,
+  primaryLabel,
+  onSecondary,
+  onPrimary,
+  secondaryDisabled = false,
+  primaryDisabled = false,
+  statusMessage = "",
+  statusTone = "neutral",
+}: AdminModalFooterActionsProps) {
+  const statusClassName = statusTone === "danger" ? "text-rose-600" : "text-stone-500";
+
+  return (
+    <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="min-h-[20px] min-w-0 flex-1">
+        {statusMessage ? <p className={`text-xs font-semibold ${statusClassName}`}>{statusMessage}</p> : null}
+      </div>
+      <div className="flex shrink-0 items-center justify-end gap-2">
+        {secondaryLabel && onSecondary ? (
+          <button
+            type="button"
+            onClick={onSecondary}
+            disabled={secondaryDisabled}
+            className={adminModalSecondaryButtonClassName}
+          >
+            {secondaryLabel}
+          </button>
+        ) : null}
+        <button
+          type="button"
+          onClick={onPrimary}
+          disabled={primaryDisabled}
+          className={adminModalPrimaryButtonClassName}
+        >
+          {primaryLabel}
+        </button>
+      </div>
+    </div>
+  );
+}

@@ -4,10 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import AdminUsageToggle from "@/components/admin/common/AdminUsageToggle";
 import {
   AdminModal,
+  AdminModalFooterActions,
   AdminModalSection,
   adminModalInputClassName,
-  adminModalPrimaryButtonClassName,
-  adminModalSecondaryButtonClassName,
 } from "@/components/admin/layout/AdminModal";
 import { createDefaultItemCategoryDefinitions } from "@/lib/admin/settings/standardsDefaults";
 import type { AdminItemCategoryDefinition, AdminItemCategoryLevel } from "@/lib/admin/settings/standardsTypes";
@@ -65,6 +64,7 @@ function CategoryList({
   countSuffix,
   activeLabel,
   inactiveLabel,
+  disabled = false,
 }: {
   title: string;
   items: AdminItemCategoryDefinition[];
@@ -75,6 +75,7 @@ function CategoryList({
   countSuffix: string;
   activeLabel: string;
   inactiveLabel: string;
+  disabled?: boolean;
 }) {
   return (
     <div className="min-h-0 space-y-2">
@@ -97,7 +98,7 @@ function CategoryList({
                     isSelected ? "border-stone-950 bg-white text-stone-950 shadow-sm" : "border-stone-200 bg-white text-stone-700 hover:border-stone-300",
                   ].join(" ")}
                 >
-                  <button type="button" onClick={() => onSelect(item.id)} className="min-w-0 flex-1 truncate text-left font-medium">
+                  <button type="button" onClick={() => onSelect(item.id)} disabled={disabled} className="min-w-0 flex-1 truncate text-left font-medium disabled:cursor-not-allowed disabled:opacity-60">
                     {item.name}
                   </button>
                   <AdminUsageToggle
@@ -106,6 +107,7 @@ function CategoryList({
                     activeLabel={activeLabel}
                     inactiveLabel={inactiveLabel}
                     variant="inline"
+                    disabled={disabled}
                     onChange={(nextValue) => onToggleActive(item.id, nextValue)}
                   />
                 </div>
@@ -210,39 +212,44 @@ export default function AdminItemCategoryManagementModal({ open, categories, sav
   return (
     <AdminModal
       open={open}
-      onClose={onClose}
+      onClose={saving ? () => undefined : onClose}
       title={t("standards.itemCategories.title", "생산품 유형")}
       maxWidthClass="md:max-w-5xl"
       footer={
-        <div className="flex w-full items-center justify-between gap-2">
-          <button type="button" onClick={resetDraft} className={adminModalSecondaryButtonClassName}>{t("standards.common.resetDefaults", "기본값 복원")}</button>
-          <button type="button" onClick={() => onSave(flattenDraft(draft))} disabled={saving} className={adminModalPrimaryButtonClassName}>{saving ? t("standards.common.saving", "저장 중") : t("standards.common.save", "저장")}</button>
-        </div>
+        <AdminModalFooterActions
+          secondaryLabel={t("standards.common.resetDefaults", "기본값 복원")}
+          primaryLabel={saving ? t("standards.common.saving", "저장 중") : t("standards.common.save", "저장")}
+          onSecondary={resetDraft}
+          onPrimary={() => onSave(flattenDraft(draft))}
+          secondaryDisabled={saving}
+          primaryDisabled={saving}
+          statusMessage={formError || error}
+          statusTone={formError || error ? "danger" : "neutral"}
+        />
       }
     >
       <AdminModalSection title={t("standards.itemCategories.addTitle", "품목 추가")}>
         <div className="grid gap-3 md:grid-cols-3">
           <div className="flex min-w-0 gap-2">
-            <input value={newLevel1Label} onChange={(event) => { setNewLevel1Label(event.target.value); if (formError) setFormError(""); }} placeholder={t("standards.itemCategories.level1Placeholder", "1차 품목 추가")} className={`h-11 min-w-0 flex-1 ${adminModalInputClassName}`} />
-            <button type="button" onClick={() => addCategory(1)} className="h-11 shrink-0 whitespace-nowrap rounded-full bg-stone-950 px-5 text-sm font-semibold text-white">{t("standards.common.add", "추가")}</button>
+            <input disabled={saving} value={newLevel1Label} onChange={(event) => { setNewLevel1Label(event.target.value); if (formError) setFormError(""); }} placeholder={t("standards.itemCategories.level1Placeholder", "1차 품목 추가")} className={`h-11 min-w-0 flex-1 ${adminModalInputClassName}`} />
+            <button type="button" onClick={() => addCategory(1)} disabled={saving} className="h-11 shrink-0 whitespace-nowrap rounded-full bg-stone-950 px-5 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-50">{t("standards.common.add", "추가")}</button>
           </div>
           <div className="flex min-w-0 gap-2">
-            <input value={newLevel2Label} onChange={(event) => { setNewLevel2Label(event.target.value); if (formError) setFormError(""); }} placeholder={t("standards.itemCategories.level2Placeholder", "선택한 1차 안에 2차 추가")} className={`h-11 min-w-0 flex-1 ${adminModalInputClassName}`} />
-            <button type="button" onClick={() => addCategory(2)} className="h-11 shrink-0 whitespace-nowrap rounded-full bg-stone-950 px-5 text-sm font-semibold text-white">{t("standards.common.add", "추가")}</button>
+            <input disabled={saving} value={newLevel2Label} onChange={(event) => { setNewLevel2Label(event.target.value); if (formError) setFormError(""); }} placeholder={t("standards.itemCategories.level2Placeholder", "선택한 1차 안에 2차 추가")} className={`h-11 min-w-0 flex-1 ${adminModalInputClassName}`} />
+            <button type="button" onClick={() => addCategory(2)} disabled={saving} className="h-11 shrink-0 whitespace-nowrap rounded-full bg-stone-950 px-5 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-50">{t("standards.common.add", "추가")}</button>
           </div>
           <div className="flex min-w-0 gap-2">
-            <input value={newLevel3Label} onChange={(event) => { setNewLevel3Label(event.target.value); if (formError) setFormError(""); }} placeholder={t("standards.itemCategories.level3Placeholder", "선택한 2차 안에 3차 추가")} className={`h-11 min-w-0 flex-1 ${adminModalInputClassName}`} />
-            <button type="button" onClick={() => addCategory(3)} className="h-11 shrink-0 whitespace-nowrap rounded-full bg-stone-950 px-5 text-sm font-semibold text-white">{t("standards.common.add", "추가")}</button>
+            <input disabled={saving} value={newLevel3Label} onChange={(event) => { setNewLevel3Label(event.target.value); if (formError) setFormError(""); }} placeholder={t("standards.itemCategories.level3Placeholder", "선택한 2차 안에 3차 추가")} className={`h-11 min-w-0 flex-1 ${adminModalInputClassName}`} />
+            <button type="button" onClick={() => addCategory(3)} disabled={saving} className="h-11 shrink-0 whitespace-nowrap rounded-full bg-stone-950 px-5 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-50">{t("standards.common.add", "추가")}</button>
           </div>
         </div>
-        {formError || error ? <p className="mt-2 text-sm font-semibold text-rose-600">{formError || error}</p> : null}
       </AdminModalSection>
 
       <AdminModalSection title={t("standards.itemCategories.usageTitle", "품목 사용 여부")}>
         <div className="grid gap-4 md:grid-cols-3">
-          <CategoryList title={t("standards.itemCategories.level1Title", "1차 품목")} items={draft.level1} selectedId={selectedLevel1Id} emptyLabel={t("standards.itemCategories.level1Empty", "1차 품목이 없습니다.")} countSuffix={t("standards.itemCategories.countSuffix", "개")} activeLabel={t("standards.itemCategories.active", "사용")} inactiveLabel={t("standards.itemCategories.inactive", "미사용")} onSelect={(id) => { setSelectedLevel1Id(id); setSelectedLevel2Id(draft.level2.find((item) => item.parent_id === id)?.id ?? null); }} onToggleActive={(id, isActive) => updateNodeActive(1, id, isActive)} />
-          <CategoryList title={t("standards.itemCategories.level2Title", "2차 품목")} items={level2Items} selectedId={selectedLevel2Id} emptyLabel={t("standards.itemCategories.level2Empty", "선택한 1차 품목의 2차 품목이 없습니다.")} countSuffix={t("standards.itemCategories.countSuffix", "개")} activeLabel={t("standards.itemCategories.active", "사용")} inactiveLabel={t("standards.itemCategories.inactive", "미사용")} onSelect={setSelectedLevel2Id} onToggleActive={(id, isActive) => updateNodeActive(2, id, isActive)} />
-          <CategoryList title={t("standards.itemCategories.level3Title", "3차 품목")} items={level3Items} selectedId={null} emptyLabel={t("standards.itemCategories.level3Empty", "선택한 2차 품목의 3차 품목이 없습니다.")} countSuffix={t("standards.itemCategories.countSuffix", "개")} activeLabel={t("standards.itemCategories.active", "사용")} inactiveLabel={t("standards.itemCategories.inactive", "미사용")} onSelect={() => undefined} onToggleActive={(id, isActive) => updateNodeActive(3, id, isActive)} />
+          <CategoryList title={t("standards.itemCategories.level1Title", "1차 품목")} items={draft.level1} selectedId={selectedLevel1Id} emptyLabel={t("standards.itemCategories.level1Empty", "1차 품목이 없습니다.")} countSuffix={t("standards.itemCategories.countSuffix", "개")} activeLabel={t("standards.itemCategories.active", "사용")} inactiveLabel={t("standards.itemCategories.inactive", "미사용")} onSelect={(id) => { setSelectedLevel1Id(id); setSelectedLevel2Id(draft.level2.find((item) => item.parent_id === id)?.id ?? null); }} onToggleActive={(id, isActive) => updateNodeActive(1, id, isActive)} disabled={saving} />
+          <CategoryList title={t("standards.itemCategories.level2Title", "2차 품목")} items={level2Items} selectedId={selectedLevel2Id} emptyLabel={t("standards.itemCategories.level2Empty", "선택한 1차 품목의 2차 품목이 없습니다.")} countSuffix={t("standards.itemCategories.countSuffix", "개")} activeLabel={t("standards.itemCategories.active", "사용")} inactiveLabel={t("standards.itemCategories.inactive", "미사용")} onSelect={setSelectedLevel2Id} onToggleActive={(id, isActive) => updateNodeActive(2, id, isActive)} disabled={saving} />
+          <CategoryList title={t("standards.itemCategories.level3Title", "3차 품목")} items={level3Items} selectedId={null} emptyLabel={t("standards.itemCategories.level3Empty", "선택한 2차 품목의 3차 품목이 없습니다.")} countSuffix={t("standards.itemCategories.countSuffix", "개")} activeLabel={t("standards.itemCategories.active", "사용")} inactiveLabel={t("standards.itemCategories.inactive", "미사용")} onSelect={() => undefined} onToggleActive={(id, isActive) => updateNodeActive(3, id, isActive)} disabled={saving} />
         </div>
       </AdminModalSection>
     </AdminModal>
