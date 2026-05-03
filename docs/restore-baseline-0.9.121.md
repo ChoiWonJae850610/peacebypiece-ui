@@ -112,3 +112,11 @@ Neon/repository 연결 상태를 점검했다. workorder, attachment, memo, part
 - DB `attachments.thumbnail_key`는 저장되어 있었으나 작업지시서 snapshot 조회 SELECT 목록에서 누락되어 프론트 attachment 객체까지 전달되지 않는 문제가 있었다.
 - `dbAttachmentMemoRepository.listSnapshotByWorkOrderId`의 attachments 조회에 `thumbnail_key`를 포함해 카드/목록 표시 helper가 썸네일 URL을 선택할 수 있도록 보완했다.
 - 원본 미리보기/다운로드, Worker 기반 R2 처리, DB schema는 변경하지 않았다.
+
+
+## 0.9.134 관리자 콘솔 점검 기준
+
+- 0.9.77 복구 라인 기준의 `/admin` 계열 화면을 본 기능, 부분 기능, redirect, API only 기준으로 분류한다.
+- `/admin/partners`, `/admin/files`, `/admin/settings`는 기존 본 기능을 유지해야 하며, 0.9.108 이후의 read-only/skeleton 화면으로 대체하지 않는다.
+- 기능 TS/TSX/API 코드는 변경하지 않고, 화면 진입 및 route 역할 점검 결과만 문서화한다.
+- 관리자 콘솔 점검 이후에는 거래처/공장관리, 파일관리, 설정 화면 순서로 실제 기능 안정화를 진행한다.
