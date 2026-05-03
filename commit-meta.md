@@ -1,23 +1,22 @@
 Version :
-0.9.140
+0.9.141
 
 Summary :
-시스템관리자 R2 실제 삭제 후보 화면 1차 추가
+시스템관리자 R2 purge 수동 실행 1차 연결
 
 Description :
-전 고객 공통 30일 휴지통 정책을 기준으로 시스템관리자가 R2 실제 삭제 후보를 확인할 수 있는 /system/storage-usage 화면을 추가했다. 후보 목록에는 고객사명, 작업지시서명, 파일명, 삭제일, 삭제 예정일, 원본 storage_key, 썸네일 thumbnail_key, purge 상태를 표시한다. 기존 시스템 콘솔의 스토리지 버튼은 즉시 purge 실행 모달이 아니라 후보 목록 화면으로 이동하도록 변경했다. 실제 R2 삭제 실행은 아직 연결하지 않았고, 선택 삭제/전체 삭제 버튼은 비활성 상태로 유지했다.
+/system/storage-usage 삭제 후보 목록에서 선택 항목 또는 전체 도래 항목을 Worker 기반으로 실제 삭제할 수 있도록 API와 클라이언트 UI를 연결했다. 삭제 대상은 원본 storage_key와 thumbnail_key를 함께 처리하며, 성공 시 purge 완료 상태를 기록하고 실패 시 실패 사유를 남기도록 했다. 자동 purge, DB schema 변경, R2 직접 SDK 삭제는 포함하지 않았다.
 
 수정 파일 목록 :
-- components/system/SystemConsoleShell.tsx
-- components/system/storage/SystemStoragePurgeButton.tsx
+- app/system/storage-usage/page.tsx
+- lib/system/storagePurgeCandidates.ts
 - lib/constants/app.ts
-- lib/system/systemConsoleShell.ts
 - docs/restore-baseline-0.9.121.md
 
 추가 파일 목록 :
-- app/system/storage-usage/page.tsx
-- lib/system/storagePurgeCandidates.ts
-- docs/system-storage-purge-candidates-0.9.140.md
+- app/api/system/storage-usage/purge/route.ts
+- components/system/storage/SystemStoragePurgeCandidatesClient.tsx
+- docs/system-storage-purge-execution-0.9.141.md
 
 삭제 파일 목록 :
 없음

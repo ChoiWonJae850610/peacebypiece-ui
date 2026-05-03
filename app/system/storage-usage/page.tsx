@@ -1,12 +1,8 @@
 import Link from "next/link";
 
+import { SystemStoragePurgeCandidatesClient } from "@/components/system/storage/SystemStoragePurgeCandidatesClient";
 import { APP_VERSION } from "@/lib/constants/app";
 import { getSystemStoragePurgeCandidateSnapshot } from "@/lib/system/storagePurgeCandidates";
-
-function renderKey(value: string | null) {
-  if (!value) return <span className="text-stone-400">없음</span>;
-  return <code className="break-all text-[11px] leading-5 text-stone-500">{value}</code>;
-}
 
 export default async function SystemStorageUsagePage() {
   const snapshot = await getSystemStoragePurgeCandidateSnapshot();
@@ -26,7 +22,7 @@ export default async function SystemStorageUsagePage() {
                   R2 실제 삭제 후보
                 </h1>
                 <p className="max-w-3xl text-sm leading-6 text-stone-600">
-                  전 고객 공통 30일 휴지통 정책에 따라 삭제 예정일이 도래한 파일을 확인합니다. 이 화면은 후보 확인 1차 화면이며, 실제 R2 삭제 실행은 다음 버전에서 확인 모달과 함께 연결합니다.
+                  전 고객 공통 30일 휴지통 정책에 따라 삭제 예정일이 도래한 파일을 확인합니다. 이 화면에서 후보를 확인한 뒤 선택 항목 또는 전체 도래 항목을 Worker 기반으로 실제 삭제할 수 있습니다.
                 </p>
               </div>
             </div>
@@ -67,88 +63,7 @@ export default async function SystemStorageUsagePage() {
           </article>
         </section>
 
-        <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-          <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-stone-950">삭제 후보 목록</h2>
-              <p className="mt-2 text-sm leading-6 text-stone-600">
-                고객사 관리자가 삭제한 뒤 {summary.retentionDays}일이 지난 파일과 영구삭제 요청 파일입니다. 실제 삭제 전 원본 key와 썸네일 key를 함께 확인합니다.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                disabled
-                className="rounded-xl border border-stone-200 bg-stone-100 px-3 py-2 text-xs font-semibold text-stone-400"
-              >
-                선택 삭제 준비중
-              </button>
-              <button
-                type="button"
-                disabled
-                className="rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-semibold text-red-300"
-              >
-                전체 도래 항목 삭제 준비중
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-4 overflow-hidden rounded-2xl border border-stone-200">
-            <div className="hidden grid-cols-[1.1fr_1.2fr_1fr_0.8fr_1.6fr] gap-3 border-b border-stone-200 bg-stone-100 px-4 py-3 text-xs font-semibold text-stone-600 lg:grid">
-              <span>고객사 / 작업지시서</span>
-              <span>파일</span>
-              <span>삭제일 / 예정일</span>
-              <span>용량 / 상태</span>
-              <span>R2 key</span>
-            </div>
-
-            {candidates.length === 0 ? (
-              <div className="px-4 py-12 text-center text-sm text-stone-500">
-                현재 R2 실제 삭제 후보가 없습니다.
-              </div>
-            ) : (
-              <div className="divide-y divide-stone-100">
-                {candidates.map((candidate) => (
-                  <article
-                    key={candidate.trashItemId}
-                    className="grid gap-3 px-4 py-4 text-sm lg:grid-cols-[1.1fr_1.2fr_1fr_0.8fr_1.6fr]"
-                  >
-                    <div>
-                      <p className="font-semibold text-stone-950">{candidate.companyName}</p>
-                      <p className="mt-1 text-xs leading-5 text-stone-500">{candidate.workorderTitle}</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-stone-800">{candidate.fileName}</p>
-                      <p className="mt-1 text-xs text-stone-500">{candidate.fileTypeLabel} · {candidate.thumbnailCountLabel}</p>
-                    </div>
-                    <div className="text-xs leading-5 text-stone-600">
-                      <p>삭제일: {candidate.deletedAt}</p>
-                      <p>예정일: {candidate.purgeDueAt}</p>
-                      <p className="font-semibold text-red-600">경과: {candidate.overdueDays}일</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-stone-800">{candidate.originalSizeLabel}</p>
-                      <p className="mt-1 text-xs text-stone-500">{candidate.purgeStatusLabel}</p>
-                      {candidate.lastPurgeError ? (
-                        <p className="mt-1 text-xs text-red-600">{candidate.lastPurgeError}</p>
-                      ) : null}
-                    </div>
-                    <div className="space-y-2">
-                      <div>
-                        <p className="text-[11px] font-semibold text-stone-400">원본</p>
-                        {renderKey(candidate.storageKey)}
-                      </div>
-                      <div>
-                        <p className="text-[11px] font-semibold text-stone-400">썸네일</p>
-                        {renderKey(candidate.thumbnailKey)}
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
+        <SystemStoragePurgeCandidatesClient candidates={candidates} />
       </div>
     </main>
   );

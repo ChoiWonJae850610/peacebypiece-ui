@@ -1,6 +1,9 @@
 import "server-only";
 
 import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
+import { markAttachmentTrashItemPurgeFailed, markAttachmentTrashItemsPurged } from "@/lib/admin/files/serverActions";
+import { deleteR2ObjectViaWorker } from "@/lib/storage/r2/r2WorkerUpload";
+import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
 import { queryDb } from "@/lib/db/client";
 import type { DbQueryResultRow } from "@/lib/db/client";
 
@@ -179,5 +182,172 @@ export async function getSystemStoragePurgeCandidateSnapshot(limit = 200): Promi
       retentionDays: COMPANY_FILE_TRASH_RETENTION_DAYS,
     },
     candidates,
+  };
+}
+
+export type SystemStoragePurgeRunInput = {
+  trashItemIds?: string[];
+  mode?: "selected" | "all-due";
+  limit?: number;
+  actorId?: string | null;
+};
+
+export type SystemStoragePurgeRunItemResult = {
+  trashItemId: string;
+  attachmentId: string;
+  storageKey: string | null;
+  thumbnailKey: string | null;
+  status: "purged" | "failed";
+  errorMessage?: string;
+};
+
+export type SystemStoragePurgeRunResult = {
+  requestedCount: number;
+  candidateCount: number;
+  purgedCount: number;
+  failedCount: number;
+  items: SystemStoragePurgeRunItemResult[];
+};
+
+type PurgeRunCandidateRow = PurgeCandidateRow;
+
+function normalizeTrashItemIds(ids: string[] | undefined): string[] {
+  return Array.from(new Set((ids ?? []).map((id) => id.trim()).filter(Boolean)));
+}
+
+function getPurgeErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error || "UNKNOWN_ERROR");
+}
+
+function getPurgeDeleteKeys(candidate: Pick<PurgeCandidateRow, "storage_key" | "thumbnail_key">): string[] {
+  return Array.from(
+    new Set([candidate.storage_key, candidate.thumbnail_key].filter((key): key is string => typeof key === "string" && key.trim().length > 0)),
+  );
+}
+
+async function listSystemStoragePurgeRunCandidates(input: SystemStoragePurgeRunInput): Promise<PurgeRunCandidateRow[]> {
+  const safeLimit = Math.min(Math.max(Math.trunc(input.limit ?? 100), 1), 200);
+  const trashItemIds = normalizeTrashItemIds(input.trashItemIds);
+
+  if (input.mode === "selected") {
+    if (trashItemIds.length === 0) return [];
+
+    const result = await queryDb<PurgeRunCandidateRow>(
+      `SELECT t.id,
+              t.attachment_id,
+              t.company_id,
+              t.company_name,
+              t.order_id,
+              COALESCE(s.title, '작업지시서명 없음') AS workorder_title,
+              t.original_name,
+              t.mime_type,
+              t.storage_key,
+              t.thumbnail_key,
+              t.size_bytes,
+              t.deleted_at,
+              (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) AS purge_due_at,
+              t.purge_status,
+              t.last_purge_error
+         FROM attachment_trash_items t
+         LEFT JOIN spec_sheets s ON s.id = t.order_id
+        WHERE t.id = ANY($1::text[])
+          AND t.restored_at IS NULL
+          AND t.purged_at IS NULL
+          AND (
+            t.purge_status = 'purge_requested'
+            OR (t.purge_status = 'pending' AND (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) <= now())
+            OR t.last_purge_error IS NOT NULL
+          )
+        ORDER BY purge_due_at ASC, t.deleted_at ASC
+        LIMIT $3`,
+      [trashItemIds, COMPANY_FILE_TRASH_RETENTION_DAYS, safeLimit],
+    );
+
+    return result.rows;
+  }
+
+  const result = await queryDb<PurgeRunCandidateRow>(
+    `SELECT t.id,
+            t.attachment_id,
+            t.company_id,
+            t.company_name,
+            t.order_id,
+            COALESCE(s.title, '작업지시서명 없음') AS workorder_title,
+            t.original_name,
+            t.mime_type,
+            t.storage_key,
+            t.thumbnail_key,
+            t.size_bytes,
+            t.deleted_at,
+            (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) AS purge_due_at,
+            t.purge_status,
+            t.last_purge_error
+       FROM attachment_trash_items t
+       LEFT JOIN spec_sheets s ON s.id = t.order_id
+      WHERE t.restored_at IS NULL
+        AND t.purged_at IS NULL
+        AND (
+          t.purge_status = 'purge_requested'
+          OR (t.purge_status = 'pending' AND (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) <= now())
+          OR t.last_purge_error IS NOT NULL
+        )
+      ORDER BY purge_due_at ASC, t.deleted_at ASC
+      LIMIT $1`,
+    [safeLimit, COMPANY_FILE_TRASH_RETENTION_DAYS],
+  );
+
+  return result.rows;
+}
+
+async function purgeSystemStorageCandidate(
+  candidate: PurgeRunCandidateRow,
+  actorId: string | null | undefined,
+): Promise<SystemStoragePurgeRunItemResult> {
+  try {
+    const keys = getPurgeDeleteKeys(candidate);
+    for (const key of keys) {
+      await deleteR2ObjectViaWorker({ key });
+      deleteCachedR2UrlsByKey(key);
+    }
+
+    await markAttachmentTrashItemsPurged({ trashItemIds: [candidate.id], actorId: actorId ?? "system-storage-purge" });
+
+    return {
+      trashItemId: candidate.id,
+      attachmentId: candidate.attachment_id,
+      storageKey: candidate.storage_key,
+      thumbnailKey: candidate.thumbnail_key,
+      status: "purged",
+    };
+  } catch (error) {
+    const errorMessage = getPurgeErrorMessage(error);
+    await markAttachmentTrashItemPurgeFailed({ trashItemId: candidate.id, errorMessage });
+
+    return {
+      trashItemId: candidate.id,
+      attachmentId: candidate.attachment_id,
+      storageKey: candidate.storage_key,
+      thumbnailKey: candidate.thumbnail_key,
+      status: "failed",
+      errorMessage,
+    };
+  }
+}
+
+export async function runSystemStoragePurge(input: SystemStoragePurgeRunInput): Promise<SystemStoragePurgeRunResult> {
+  const requestedCount = input.mode === "selected" ? normalizeTrashItemIds(input.trashItemIds).length : 0;
+  const candidates = await listSystemStoragePurgeRunCandidates(input);
+  const items: SystemStoragePurgeRunItemResult[] = [];
+
+  for (const candidate of candidates) {
+    items.push(await purgeSystemStorageCandidate(candidate, input.actorId));
+  }
+
+  return {
+    requestedCount,
+    candidateCount: candidates.length,
+    purgedCount: items.filter((item) => item.status === "purged").length,
+    failedCount: items.filter((item) => item.status === "failed").length,
+    items,
   };
 }
