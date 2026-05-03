@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import AdminUsageToggle from "@/components/admin/common/AdminUsageToggle";
+import AdminSettingsToggleRow from "@/components/admin/common/AdminSettingsToggleRow";
 import { AdminModal, adminModalPrimaryButtonClassName, adminModalSecondaryButtonClassName } from "@/components/admin/layout/AdminModal";
 import { runSaveCompanySettingsFlow } from "@/lib/admin/settings/actionFlow";
 import { buildDefaultCompanySettings } from "@/lib/admin/settings/companyDefaults";
@@ -106,7 +106,7 @@ export default function AdminNotificationPolicySettingsModal({ open, onClose }: 
         {POLICY_ITEMS.map((item) => {
           const checked = draft.notificationPolicy[item.key];
           return (
-            <AdminUsageToggle
+            <AdminSettingsToggleRow
               key={item.key}
               label={t(item.labelPath, item.fallback)}
               checked={checked}

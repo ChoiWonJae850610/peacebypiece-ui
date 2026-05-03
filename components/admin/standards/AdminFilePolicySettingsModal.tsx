@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import AdminUsageToggle from "@/components/admin/common/AdminUsageToggle";
+import AdminSettingsToggleRow from "@/components/admin/common/AdminSettingsToggleRow";
 import { AdminModal, adminModalPrimaryButtonClassName, adminModalSecondaryButtonClassName } from "@/components/admin/layout/AdminModal";
 import {
   buildAdminStorageStatusPreview,
@@ -115,13 +115,14 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
               </span>
             </div>
           </div>
-          <AdminUsageToggle
+          <AdminSettingsToggleRow
             label={t("standards.filePolicy.includeTrashInUsage", "휴지통 용량 포함")}
             description={t("standards.filePolicy.includeTrashDescription", "실제 삭제 전 파일을 사용량에 포함할지 정합니다.")}
             activeLabel={t("standards.filePolicy.includeTrashActive", "포함")}
             inactiveLabel={t("standards.filePolicy.includeTrashInactive", "제외")}
             checked={draft.filePolicy.includeTrashInUsage}
             disabled={saving || loading}
+            className="bg-stone-50"
             onChange={(includeTrashInUsage) => {
               if (saving || loading) return;
               setDraft((current) => ({ ...current, filePolicy: normalizeAdminFilePolicyDraft({ ...current.filePolicy, includeTrashInUsage }) }));
