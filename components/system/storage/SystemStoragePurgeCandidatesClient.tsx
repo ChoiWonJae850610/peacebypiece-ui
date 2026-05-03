@@ -23,6 +23,25 @@ function renderKey(value: string | null) {
   return <code className="break-all text-[11px] leading-5 text-stone-500">{value}</code>;
 }
 
+function buildPurgeResultMessage(label: string, result: PurgeResponse) {
+  const purgedCount = result.purgedCount ?? 0;
+  const failedCount = result.failedCount ?? 0;
+  if (failedCount > 0) {
+    return `${label}: ${purgedCount}개 삭제 완료, ${failedCount}개 실패. 실패 항목은 목록에 남아 재시도할 수 있습니다.`;
+  }
+  return `${label}: ${purgedCount}개 삭제 완료. 후보 목록과 요약이 갱신됩니다.`;
+}
+
+function getPurgeResultTone(result: PurgeResponse): "success" | "warning" {
+  return (result.failedCount ?? 0) > 0 ? "warning" : "success";
+}
+
+function getResultMessageClass(tone: "success" | "warning" | "error" | null) {
+  if (tone === "error") return "bg-red-50 text-red-700 ring-1 ring-red-100";
+  if (tone === "warning") return "bg-amber-50 text-amber-800 ring-1 ring-amber-100";
+  return "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100";
+}
+
 async function postPurgeRequest(body: { mode: "selected" | "all-due"; trashItemIds?: string[]; limit?: number }): Promise<PurgeResponse> {
   const response = await fetch("/api/system/storage-usage/purge", {
     method: "POST",
@@ -41,6 +60,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isPending, setIsPending] = useState(false);
   const [resultMessage, setResultMessage] = useState<string | null>(null);
+  const [resultTone, setResultTone] = useState<"success" | "warning" | "error" | null>(null);
 
   const selectedCount = selectedIds.length;
   const hasCandidates = candidates.length > 0;
@@ -61,13 +81,16 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
 
     setIsPending(true);
     setResultMessage(null);
+    setResultTone(null);
     try {
       const result = await postPurgeRequest({ mode: "selected", trashItemIds: selectedIds, limit: selectedIds.length });
-      setResultMessage(`선택 삭제 결과: ${result.purgedCount ?? 0}개 삭제 완료, ${result.failedCount ?? 0}개 실패.`);
+      setResultMessage(buildPurgeResultMessage("선택 삭제 결과", result));
+      setResultTone(getPurgeResultTone(result));
       setSelectedIds([]);
       router.refresh();
     } catch (error) {
       setResultMessage(error instanceof Error ? error.message : "선택 삭제 요청에 실패했습니다.");
+      setResultTone("error");
     } finally {
       setIsPending(false);
     }
@@ -80,13 +103,16 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
 
     setIsPending(true);
     setResultMessage(null);
+    setResultTone(null);
     try {
       const result = await postPurgeRequest({ mode: "all-due", limit: 200 });
-      setResultMessage(`전체 도래 항목 삭제 결과: ${result.purgedCount ?? 0}개 삭제 완료, ${result.failedCount ?? 0}개 실패.`);
+      setResultMessage(buildPurgeResultMessage("전체 도래 항목 삭제 결과", result));
+      setResultTone(getPurgeResultTone(result));
       setSelectedIds([]);
       router.refresh();
     } catch (error) {
       setResultMessage(error instanceof Error ? error.message : "전체 도래 항목 삭제 요청에 실패했습니다.");
+      setResultTone("error");
     } finally {
       setIsPending(false);
     }
@@ -100,7 +126,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
           <p className="mt-2 text-sm leading-6 text-stone-600">
             30일 경과 또는 영구삭제 요청 상태의 파일입니다. 실제 삭제 전 원본 key와 썸네일 key를 함께 확인합니다.
           </p>
-          {resultMessage ? <p className="mt-2 rounded-2xl bg-stone-100 px-3 py-2 text-xs font-medium text-stone-700">{resultMessage}</p> : null}
+          {resultMessage ? <p className={`mt-2 rounded-2xl px-3 py-2 text-xs font-medium ${getResultMessageClass(resultTone)}`}>{resultMessage}</p> : null}
         </div>
         <div className="flex flex-wrap gap-2">
           <button
@@ -150,7 +176,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
                     aria-label={`${candidate.fileName} 삭제 후보 선택`}
                   />
                 </div>
-                <div>
+                <div className="space-y-1">
                   {candidate.previewUrl ? (
                     <img
                       src={candidate.previewUrl}
@@ -163,6 +189,13 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
                       {candidate.fileTypeLabel}
                     </div>
                   )}
+                  <p
+                    className={`max-w-24 text-[10px] font-semibold leading-4 ${
+                      candidate.previewMode === "original-fallback" ? "text-amber-700" : "text-stone-500"
+                    }`}
+                  >
+                    {candidate.previewModeLabel}
+                  </p>
                 </div>
                 <div>
                   <p className="font-semibold text-stone-950">{candidate.companyName}</p>

@@ -1,11 +1,11 @@
 Version :
-0.9.142
+0.9.143
 
 Summary :
-시스템관리자 R2 삭제 후보 화면 갱신과 썸네일 표시 보완
+시스템관리자 R2 purge 후보 표시와 결과 메시지 보완
 
 Description :
-시스템관리자 저장소 삭제 후보 목록에 썸네일 기반 미리보기를 추가하고, 선택 삭제 또는 전체 삭제 후 후보 목록과 요약 카드가 갱신되도록 보완했다. 선택 삭제 후보 조회 SQL의 불필요한 괄호도 정리했다. R2 직접 SDK 삭제 방식은 사용하지 않고 기존 Worker 기반 삭제 흐름을 유지했다.
+시스템관리자 저장공간 삭제 후보 화면에서 썸네일이 없는 이미지 파일은 원본 fallback을 사용하되 “썸네일 없음 · 원본 표시”로 명확히 표시하도록 보완했다. purge 실행 결과 메시지를 성공, 일부 실패, 요청 실패 상태로 구분하고 실패 항목은 목록에 남아 재시도할 수 있음을 문서화했다. R2 직접 SDK 삭제 방식, 자동 purge 스케줄러, DB schema는 변경하지 않았다.
 
 수정 파일 목록 :
 - components/system/storage/SystemStoragePurgeCandidatesClient.tsx
@@ -14,7 +14,7 @@ Description :
 - docs/restore-baseline-0.9.121.md
 
 추가 파일 목록 :
-- docs/system-storage-purge-result-0.9.142.md
+- docs/system-storage-purge-retry-0.9.143.md
 
 삭제 파일 목록 :
 없음

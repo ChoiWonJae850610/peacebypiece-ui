@@ -17,6 +17,8 @@ export type SystemStoragePurgeCandidate = {
   fileName: string;
   fileTypeLabel: string;
   previewUrl: string | null;
+  previewMode: "thumbnail" | "original-fallback" | "file-type";
+  previewModeLabel: string;
   storageKey: string | null;
   thumbnailKey: string | null;
   originalSizeBytes: number;
@@ -120,7 +122,10 @@ function mapCandidateRow(row: PurgeCandidateRow): SystemStoragePurgeCandidate {
   const sizeBytes = toNumber(row.size_bytes);
   const hasThumbnail = typeof row.thumbnail_key === "string" && row.thumbnail_key.trim().length > 0;
   const fileTypeLabel = getFileTypeLabel(row.mime_type, fileName);
-  const previewUrl = hasThumbnail ? buildFileProxyUrl(row.thumbnail_key) : fileTypeLabel === "이미지" ? buildFileProxyUrl(row.storage_key) : null;
+  const isImage = fileTypeLabel === "이미지";
+  const previewUrl = hasThumbnail ? buildFileProxyUrl(row.thumbnail_key) : isImage ? buildFileProxyUrl(row.storage_key) : null;
+  const previewMode = hasThumbnail ? "thumbnail" : isImage ? "original-fallback" : "file-type";
+  const previewModeLabel = hasThumbnail ? "썸네일 표시" : isImage ? "썸네일 없음 · 원본 표시" : `${fileTypeLabel} 파일`;
 
   return {
     trashItemId: row.id,
@@ -132,11 +137,13 @@ function mapCandidateRow(row: PurgeCandidateRow): SystemStoragePurgeCandidate {
     fileName,
     fileTypeLabel,
     previewUrl,
+    previewMode,
+    previewModeLabel,
     storageKey: row.storage_key,
     thumbnailKey: row.thumbnail_key,
     originalSizeBytes: sizeBytes,
     originalSizeLabel: formatBytes(sizeBytes),
-    thumbnailCountLabel: hasThumbnail ? "썸네일 포함" : "썸네일 없음",
+    thumbnailCountLabel: previewModeLabel,
     deletedAt: formatDate(row.deleted_at),
     purgeDueAt: formatDate(row.purge_due_at),
     overdueDays: getOverdueDays(row.purge_due_at),
