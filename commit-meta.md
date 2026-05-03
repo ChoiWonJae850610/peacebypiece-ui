@@ -1,20 +1,18 @@
 Version :
-0.9.143
+0.9.144
 
 Summary :
-시스템관리자 R2 purge 후보 표시와 결과 메시지 보완
+자동 purge 스케줄러 도입 검토 문서 추가
 
 Description :
-시스템관리자 저장공간 삭제 후보 화면에서 썸네일이 없는 이미지 파일은 원본 fallback을 사용하되 “썸네일 없음 · 원본 표시”로 명확히 표시하도록 보완했다. purge 실행 결과 메시지를 성공, 일부 실패, 요청 실패 상태로 구분하고 실패 항목은 목록에 남아 재시도할 수 있음을 문서화했다. R2 직접 SDK 삭제 방식, 자동 purge 스케줄러, DB schema는 변경하지 않았다.
+시스템관리자 R2 purge 기능의 자동화 도입 여부를 검토하고, 수동 실행 유지, Vercel Cron, Cloudflare Scheduled Trigger 방식을 비교했다. 초기 운영에서는 자동 purge를 켜지 않고 시스템관리자 수동 실행을 유지하는 기준을 문서화했다. 실제 자동 purge 기능, DB schema, R2 직접 SDK 삭제 방식, package 의존성은 변경하지 않았다.
 
 수정 파일 목록 :
-- components/system/storage/SystemStoragePurgeCandidatesClient.tsx
-- lib/system/storagePurgeCandidates.ts
 - lib/constants/app.ts
 - docs/restore-baseline-0.9.121.md
 
 추가 파일 목록 :
-- docs/system-storage-purge-retry-0.9.143.md
+- docs/system-storage-auto-purge-scheduler-0.9.144.md
 
 삭제 파일 목록 :
 없음
