@@ -1,3 +1,5 @@
+"use client";
+
 import { AdminCard } from "@/components/admin/layout/AdminCard";
 import type { AdminCompletionAuditSummary } from "@/lib/admin/completionAudit";
 import { getAdminCompletionAuditStatusPresentation } from "@/lib/admin/completionAudit";

@@ -1,3 +1,5 @@
+"use client";
+
 import { AdminCard } from "@/components/admin/layout/AdminCard";
 import type { AdminDbCompletionSummary } from "@/lib/admin/dbCompletionAudit";
 import { getAdminDbCompletionStatusPresentation, getAdminDbSourceTypeLabel, getAdminRepositoryModeLabel } from "@/lib/admin/dbCompletionAudit";

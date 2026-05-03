@@ -1,13 +1,19 @@
-Version : 0.9.117
-Base Version : 0.9.116
-Target Version : 0.9.117
-Summary : 관리자 히스토리 i18n hook 의존성 제거
-Description : /admin/history 하위 컴포넌트인 AdminWorkOrderHistoryPage와 AdminWorkOrderHistoryItem에서 useI18n hook 의존성을 제거했습니다. AdminWorkOrderHistoryPage는 getI18n().admin 기본 리소스를 사용하고, AdminWorkOrderHistoryItem은 buildAdminHistoryItemViewModel()의 기본 i18n fallback을 사용하도록 변경했습니다. history repository/API, audit log write, DB schema, package.json 변경은 포함하지 않았습니다.
+Version :
+0.9.118
+
+Summary :
+관리자 대시보드 hook 사용 컴포넌트의 client boundary 명시
+
+Description :
+관리자 대시보드의 완료 검증 패널과 DB 연결 점검 패널이 useAdminTranslation hook을 사용하므로 client component boundary를 명시했다. route 복구 과정에서 발생할 수 있는 i18n/provider hook 경계 문제를 줄였고, 기존 API/repository, DB schema, package 설정은 변경하지 않았다.
+
 수정 파일 목록 :
+- components/admin/dashboard/AdminCompletionAuditPanel.tsx
+- components/admin/dashboard/AdminDbConnectionAuditPanel.tsx
 - lib/constants/app.ts
-- components/admin/history/AdminWorkOrderHistoryPage.tsx
-- components/admin/history/AdminWorkOrderHistoryItem.tsx
+
 추가 파일 목록 :
-- docs/admin/admin_history_i18n_hook_fix.md
+없음
+
 삭제 파일 목록 :
-- 없음
+없음
