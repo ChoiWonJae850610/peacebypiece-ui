@@ -25,6 +25,14 @@ export const ADMIN_CONSOLE_LINKS: AdminConsoleLink[] = [
     href: "/admin",
   },
   {
+    id: "admin-stats",
+    label: "통계 상세",
+    description: "고객사 기준 작업지시서/첨부/용량 통계 상세 화면입니다.",
+    status: "linked",
+    statusLabel: "화면",
+    href: "/admin/stats",
+  },
+  {
     id: "partners",
     label: "거래처/공장관리",
     description: "거래처, 공장, 원단, 부자재, 외주처 기준정보 화면입니다.",
@@ -63,14 +71,6 @@ export const ADMIN_CONSOLE_LINKS: AdminConsoleLink[] = [
     status: "linked",
     statusLabel: "UI",
     href: "/admin/invites",
-  },
-  {
-    id: "admin-stats",
-    label: "고객관리자 통계 API",
-    description: "고객사 기준 작업지시서/첨부/용량 통계 API입니다.",
-    status: "api",
-    statusLabel: "API",
-    apiPath: "/api/admin/stats?companyId=company-sample-customer",
   },
 ];
 
