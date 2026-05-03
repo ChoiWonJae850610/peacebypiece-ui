@@ -1,16 +1,16 @@
 Version :
-0.9.125
+0.9.126
 
 Summary :
-메모 저장과 상태전환 후 유지 문제 보완
+R2 첨부 업로드 경로를 Worker 기준으로 고정
 
 Description :
-작업지시서 상태 변경 저장 과정에서 memoThreads 전체를 삭제 후 재삽입하지 않도록 변경해, 별도 메모 API로 저장된 DB 메모가 검토완료 등 상태 변경 시 사라지는 문제를 보완했다. 기존 replace helper에는 company_id와 company_name을 포함해 memos 테이블 not-null 제약 위반 가능성을 줄였다. R2는 Worker 기반 처리 흐름을 유지하고, 첨부 UI와 Worker 파일은 변경하지 않았다.
+첨부 업로드 클라이언트에서 Worker 업로드 실패 시 서버 direct upload fallback을 호출하지 않도록 변경했다. direct upload route는 R2 SDK 업로드를 수행하지 않고 410 응답만 반환하도록 비활성화했다. 기존 삭제 기능, 첨부 UI, DB schema, package 파일은 변경하지 않았다.
 
 수정 파일 목록 :
+- app/api/workorders/attachments/upload/direct/route.ts
+- lib/workorder/attachments/attachmentUploadApiClient.ts
 - lib/constants/app.ts
-- lib/workorder/api/workOrderRouteHandlers.ts
-- lib/workorder/persistence/dbAttachmentMemoRepository.ts
 - docs/restore-baseline-0.9.121.md
 - docs/attachment-memo-r2-audit-0.9.123.md
 

@@ -1,53 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
-import { putR2Object } from "@/lib/storage/r2/r2Client";
-import { isSupportedWorkOrderAttachmentStorageKey } from "@/lib/storage/r2/r2Keys";
-import { validateAttachmentFile, type WorkOrderAttachmentUploadScope } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
+import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-function readText(value: FormDataEntryValue | null): string | null {
-  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
-}
-
-function getScopeFromStorageKey(storageKey: string): WorkOrderAttachmentUploadScope {
-  return storageKey.includes("/design/") ? "design" : "attachment";
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const formData = await request.formData();
-    const storageKey = readText(formData.get("storageKey"));
-    const file = formData.get("file");
-
-    if (!storageKey || !isSupportedWorkOrderAttachmentStorageKey(storageKey)) {
-      return NextResponse.json({ error: "INVALID_STORAGE_KEY" }, { status: 400 });
-    }
-
-    if (!(file instanceof File) || file.size <= 0) {
-      return NextResponse.json({ error: "FILE_REQUIRED" }, { status: 400 });
-    }
-
-    const validation = validateAttachmentFile({
-      scope: getScopeFromStorageKey(storageKey),
-      fileName: file.name,
-      contentType: file.type || "application/octet-stream",
-      fileSize: file.size,
-    });
-    if (!validation.ok) {
-      return NextResponse.json({ error: validation.error, message: validation.message }, { status: 400 });
-    }
-
-    const buffer = Buffer.from(await file.arrayBuffer());
-    await putR2Object({
-      key: storageKey,
-      body: buffer,
-      contentType: file.type || "application/octet-stream",
-    });
-
-    return NextResponse.json({ ok: true, storageKey });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Attachment server upload failed.";
-    console.error("[ATTACHMENT_SERVER_UPLOAD_FAILED]", { message, error });
-    return NextResponse.json({ error: "ATTACHMENT_SERVER_UPLOAD_FAILED", message }, { status: 500 });
-  }
+export async function POST() {
+  return NextResponse.json(
+    {
+      error: "R2_DIRECT_UPLOAD_DISABLED",
+      message: "R2 direct server upload is disabled. Use the Worker upload URL returned by /api/workorders/attachments/upload.",
+    },
+    { status: 410 },
+  );
 }

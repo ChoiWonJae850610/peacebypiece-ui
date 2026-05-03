@@ -70,19 +70,17 @@ async function prepareWorkOrderAttachmentUploads(payload: {
   return Array.isArray(result.uploadTargets) ? result.uploadTargets : [];
 }
 
-async function uploadFileThroughServerFallback(file: File, target: Pick<AttachmentUploadTarget, "storageKey">): Promise<void> {
-  const formData = new FormData();
-  formData.set("storageKey", target.storageKey);
-  formData.set("file", file);
+async function readUploadUrlError(response: Response | null): Promise<string> {
+  if (!response) return "ATTACHMENT_WORKER_UPLOAD_NETWORK_FAILED";
 
-  const response = await fetch("/api/workorders/attachments/upload/direct", {
-    method: "POST",
-    body: formData,
-  });
-  const result = await readJson<{ error?: string; message?: string }>(response, { error: "INVALID_SERVER_UPLOAD_RESPONSE" });
+  const body = await response.text().catch(() => "");
+  if (!body) return `ATTACHMENT_WORKER_UPLOAD_FAILED:${response.status}`;
 
-  if (!response.ok) {
-    throw new Error(result.message || result.error || `ATTACHMENT_SERVER_UPLOAD_FAILED:${response.status}`);
+  try {
+    const parsed = JSON.parse(body) as { error?: string; message?: string };
+    return parsed.message || parsed.error || body;
+  } catch {
+    return body;
   }
 }
 
@@ -97,7 +95,8 @@ async function putBlobToUploadUrl(file: File, target: Pick<AttachmentUploadTarge
     return;
   }
 
-  await uploadFileThroughServerFallback(file, target);
+  const message = await readUploadUrlError(response);
+  throw new Error(message || "ATTACHMENT_WORKER_UPLOAD_FAILED");
 }
 
 async function completeWorkOrderAttachmentUploads(payload: {

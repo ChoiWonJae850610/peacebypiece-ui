@@ -312,3 +312,26 @@
 - 새 메모 저장 후 검토완료/취소/재저장 같은 상태 변경을 수행해도 메모가 유지되는지 확인한다.
 - 기존 DB에 저장된 메모가 workorder GET hydrate 후 계속 표시되는지 확인한다.
 - R2 upload/direct 500 로그는 0.9.126 이후 Worker 경로 정리 작업에서 별도 확인한다.
+
+## 0.9.126 보완 — Worker 전용 업로드 경로 고정
+
+### 발견 증상
+
+- 첨부 원본은 R2에 저장되지만 브라우저 콘솔/서버 로그에 `/api/workorders/attachments/upload/direct` 500과 SSL EPROTO handshake 오류가 남았다.
+- 원인은 Worker PUT 실패 또는 썸네일 업로드 실패 시 클라이언트가 서버 direct upload fallback을 호출하는 구조였다.
+- 현재 운영 전제에서는 R2 직접 SDK 업로드가 handshake 문제를 일으킬 수 있으므로 서버 fallback은 사용하지 않는다.
+
+### 반영 내용
+
+- `lib/workorder/attachments/attachmentUploadApiClient.ts`에서 Worker upload URL 실패 시 `/api/workorders/attachments/upload/direct`를 호출하지 않도록 변경했다.
+- 원본 파일 업로드가 Worker에서 실패하면 즉시 upload 실패로 처리한다.
+- 썸네일 업로드 실패는 기존처럼 `ATTACHMENT_THUMBNAIL_UPLOAD_SKIPPED`로 처리되며 원본 첨부 등록은 계속 가능하다.
+- `app/api/workorders/attachments/upload/direct/route.ts`는 R2 SDK 업로드를 수행하지 않고 410 응답을 반환하도록 비활성화했다.
+
+### 유지 원칙
+
+- R2 업로드/삭제/다운로드는 Worker 기반 흐름을 기준으로 유지한다.
+- R2 직접 SDK 업로드 fallback은 다시 추가하지 않는다.
+- 삭제 기능은 이미 정상 동작 중이므로 이번 버전에서는 변경하지 않았다.
+- DB schema와 첨부 UI는 변경하지 않았다.
+
