@@ -279,3 +279,36 @@
 - 실제 R2 attachment 다운로드가 `Content-Disposition`을 통해 파일명과 함께 내려오는지 확인한다.
 - mock/sample attachment에서 다운로드 버튼이 invalid storage key API로 가지 않는지 확인한다.
 - 이미지 preview와 PDF iframe preview는 기존 URL을 그대로 사용하므로 화면 표시 회귀 여부만 확인한다.
+
+## 0.9.125 메모 저장/상태전환 유지 보완
+
+### 발견 증상
+
+- 메모 저장 직후 화면에는 보이지만, 검토완료 등 상태 변경 후 workorder가 다시 hydrate되면 메모가 사라질 수 있었다.
+- 서버 로그에서 `memos.company_id` not-null 오류가 발생했다.
+- 서버 로그에서 `memos_parent_id_fkey` 오류가 발생할 수 있었다.
+- 첨부파일은 R2에 저장되지만, 직접 R2 접근 경로에서는 SSL handshake/EPROTO 로그가 남을 수 있었다.
+
+### 반영 범위
+
+- workorder PATCH 저장 과정에서 `memoThreads` 전체를 삭제 후 재삽입하지 않도록 변경했다.
+- 메모는 `/api/workorders/memos` 전용 API를 통해 생성/수정/삭제하고, workorder 상태 변경 PATCH는 메모 테이블을 덮어쓰지 않는다.
+- 기존 replace용 메모 삽입 helper에는 `company_id`, `company_name`을 명시적으로 포함해 not-null 제약 위반 가능성을 제거했다.
+- R2 업로드/삭제/다운로드는 Worker 기반 흐름을 유지한다는 원칙을 문서에 반영하고, 이번 버전에서는 첨부 UI와 Worker 파일을 수정하지 않았다.
+
+### 수정 이유
+
+상태 변경 PATCH는 작업지시서 본문 상태 저장 목적이다. 이 과정에서 별도 API로 저장된 메모를 `memoThreads` payload 기준으로 다시 삭제/삽입하면, 로컬 상태와 DB 상태가 조금만 어긋나도 저장된 메모가 사라지거나 FK 오류가 발생할 수 있다. 따라서 workorder 저장과 메모 저장 책임을 분리했다.
+
+### 유지한 것
+
+- DB schema는 변경하지 않았다.
+- 메모 생성/수정/삭제 API 경로는 유지했다.
+- 첨부 업로드, 삭제, 대표 이미지, Worker 파일은 수정하지 않았다.
+- R2 직접 SDK 업로드/삭제 방식으로 되돌리지 않았다.
+
+### 다음 확인
+
+- 새 메모 저장 후 검토완료/취소/재저장 같은 상태 변경을 수행해도 메모가 유지되는지 확인한다.
+- 기존 DB에 저장된 메모가 workorder GET hydrate 후 계속 표시되는지 확인한다.
+- R2 upload/direct 500 로그는 0.9.126 이후 Worker 경로 정리 작업에서 별도 확인한다.

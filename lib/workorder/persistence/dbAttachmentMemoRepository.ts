@@ -135,15 +135,16 @@ function mapAttachmentInput(input: CreateAttachmentRecordInput) {
 
 async function insertMemoThreadRecord(workOrderId: string, thread: MemoThread): Promise<string> {
   const keepId = isUuid(thread.id);
+  const company = getWorkspaceCompanyContext();
   const columns = keepId
-    ? "id, order_id, parent_id, body, author_id, is_active, deleted_at"
-    : "order_id, parent_id, body, author_id, is_active, deleted_at";
+    ? "id, company_id, company_name, order_id, parent_id, body, author_id, is_active, deleted_at"
+    : "company_id, company_name, order_id, parent_id, body, author_id, is_active, deleted_at";
   const valuesSql = keepId
-    ? "$1, $2, NULL, $3, $4, $5, $6"
-    : "$1, NULL, $2, $3, $4, $5";
+    ? "$1, $2, $3, $4, NULL, $5, $6, $7, $8"
+    : "$1, $2, $3, NULL, $4, $5, $6, $7";
   const values = keepId
-    ? [thread.id, workOrderId, thread.content, thread.authorId || thread.authorName || null, thread.isVisible !== false, thread.deletedAt ?? null]
-    : [workOrderId, thread.content, thread.authorId || thread.authorName || null, thread.isVisible !== false, thread.deletedAt ?? null];
+    ? [thread.id, company.companyId, company.companyName, workOrderId, thread.content, thread.authorId || thread.authorName || null, thread.isVisible !== false, thread.deletedAt ?? null]
+    : [company.companyId, company.companyName, workOrderId, thread.content, thread.authorId || thread.authorName || null, thread.isVisible !== false, thread.deletedAt ?? null];
 
   const result = await queryDb<{ id: string }>(
     `INSERT INTO memos (${columns}) VALUES (${valuesSql}) RETURNING id`,
@@ -156,15 +157,16 @@ async function insertMemoThreadRecord(workOrderId: string, thread: MemoThread): 
 
 async function insertMemoReplyRecord(workOrderId: string, parentId: string, reply: MemoReply): Promise<void> {
   const keepId = isUuid(reply.id);
+  const company = getWorkspaceCompanyContext();
   const columns = keepId
-    ? "id, order_id, parent_id, body, author_id, is_active, deleted_at"
-    : "order_id, parent_id, body, author_id, is_active, deleted_at";
+    ? "id, company_id, company_name, order_id, parent_id, body, author_id, is_active, deleted_at"
+    : "company_id, company_name, order_id, parent_id, body, author_id, is_active, deleted_at";
   const valuesSql = keepId
-    ? "$1, $2, $3, $4, $5, $6, $7"
-    : "$1, $2, $3, $4, $5, $6";
+    ? "$1, $2, $3, $4, $5, $6, $7, $8, $9"
+    : "$1, $2, $3, $4, $5, $6, $7, $8";
   const values = keepId
-    ? [reply.id, workOrderId, parentId, reply.content, reply.authorId || reply.authorName || null, reply.isVisible !== false, reply.deletedAt ?? null]
-    : [workOrderId, parentId, reply.content, reply.authorId || reply.authorName || null, reply.isVisible !== false, reply.deletedAt ?? null];
+    ? [reply.id, company.companyId, company.companyName, workOrderId, parentId, reply.content, reply.authorId || reply.authorName || null, reply.isVisible !== false, reply.deletedAt ?? null]
+    : [company.companyId, company.companyName, workOrderId, parentId, reply.content, reply.authorId || reply.authorName || null, reply.isVisible !== false, reply.deletedAt ?? null];
 
   await queryDb(`INSERT INTO memos (${columns}) VALUES (${valuesSql})`, values);
 }

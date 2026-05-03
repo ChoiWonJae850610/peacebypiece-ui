@@ -1,15 +1,16 @@
 Version :
-0.9.124
+0.9.125
 
 Summary :
-첨부 다운로드 URL 생성 로직 안정화
+메모 저장과 상태전환 후 유지 문제 보완
 
 Description :
-0.9.77 복구 라인의 기존 UI를 유지하면서 첨부 다운로드 URL 생성 로직만 최소 보완했다. storageKey가 있는 DB 첨부는 기존 file API 다운로드 경로를 사용하고, storageKey 없이 data/blob/http URL만 가진 mock/sample/임시 첨부는 R2 storage key로 오인하지 않도록 직접 URL을 유지한다. 복구 기준 문서와 R2 첨부 점검 문서에 0.9.124 반영 내용을 기록했다.
+작업지시서 상태 변경 저장 과정에서 memoThreads 전체를 삭제 후 재삽입하지 않도록 변경해, 별도 메모 API로 저장된 DB 메모가 검토완료 등 상태 변경 시 사라지는 문제를 보완했다. 기존 replace helper에는 company_id와 company_name을 포함해 memos 테이블 not-null 제약 위반 가능성을 줄였다. R2는 Worker 기반 처리 흐름을 유지하고, 첨부 UI와 Worker 파일은 변경하지 않았다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/permissions/attachments.ts
+- lib/workorder/api/workOrderRouteHandlers.ts
+- lib/workorder/persistence/dbAttachmentMemoRepository.ts
 - docs/restore-baseline-0.9.121.md
 - docs/attachment-memo-r2-audit-0.9.123.md
 

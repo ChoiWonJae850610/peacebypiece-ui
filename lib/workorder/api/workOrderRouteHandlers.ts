@@ -317,8 +317,6 @@ export async function handlePatchWorkOrders(request: Request) {
       const previousWorkOrderMap = buildWorkOrderMap(await findAllDbWorkOrders());
       const savedWorkOrders = await saveDbWorkOrders(body.workOrders);
 
-      await Promise.all(body.workOrders.map((workOrder) => replaceWorkOrderMemoThreads(workOrder)));
-
       const workOrders = await hydrateWorkOrdersWithAttachmentMemoSnapshots(savedWorkOrders);
 
       await Promise.all(
@@ -340,8 +338,6 @@ export async function handlePatchWorkOrders(request: Request) {
 
     const previousWorkOrderMap = buildWorkOrderMap(await findAllDbWorkOrders());
     const savedWorkOrder = await saveDbWorkOrder(body.workOrder);
-
-    await replaceWorkOrderMemoThreads(body.workOrder);
 
     const workOrder = await hydrateWorkOrderWithAttachmentMemoSnapshot(savedWorkOrder);
     await writeWorkOrderStatusChangeHistory(previousWorkOrderMap.get(workOrder.id), workOrder);
