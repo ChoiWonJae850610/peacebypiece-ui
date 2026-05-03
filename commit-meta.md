@@ -1,21 +1,20 @@
 Version :
-0.9.130
+0.9.131
 
 Summary :
-첨부 썸네일 Worker 업로드 실패 안전화와 대표 이미지 규칙 문서화
+첨부 카드 표시에서 썸네일 키 기반 URL 우선 사용
 
 Description :
-원본 첨부 업로드 성공 흐름은 유지하면서 썸네일 업로드 실패 로그가 Error stack으로 과도하게 출력되지 않도록 정리했다. Worker는 썸네일 key를 명시적으로 허용하고 배포 버전 확인용 헤더를 포함하도록 보완했다. 대표 이미지 자동 지정과 삭제 후 승계 로직은 이번 버전에서 문서화만 하고 코드 적용은 다음 버전으로 분리했다.
+첨부 목록과 카드 표시에서 thumbnail_url이 비어 있어도 thumbnail_key가 있으면 기존 첨부 file proxy API로 썸네일 표시 URL을 생성하도록 보완했다. 원본 미리보기와 다운로드는 기존 원본 storage_key 기준을 유지했다. 대표 이미지 자동 지정과 삭제 후 승계 로직은 다음 버전 이후로 분리하고, 관련 기준 문서를 추가했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/workorder/attachments/attachmentUploadApiClient.ts
-- cloudflare/r2-upload-worker.js
+- lib/permissions/attachments.ts
 - docs/restore-baseline-0.9.121.md
-- docs/attachment-memo-r2-audit-0.9.123.md
+- docs/attachment-primary-thumbnail-rules-0.9.130.md
 
 추가 파일 목록 :
-- docs/attachment-primary-thumbnail-rules-0.9.130.md
+- docs/attachment-thumbnail-display-0.9.131.md
 
 삭제 파일 목록 :
 없음

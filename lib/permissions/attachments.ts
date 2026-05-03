@@ -89,7 +89,15 @@ function createAttachmentFileRouteUrl(input: { key?: string | null; download?: b
 }
 
 export function getAttachmentThumbnailUrl(attachment: Attachment | null | undefined): string {
-  return normalizeAttachmentUrl(attachment?.thumbnailUrl) || getAttachmentPreviewUrl(attachment);
+  const thumbnailUrl = normalizeAttachmentUrl(attachment?.thumbnailUrl);
+  if (thumbnailUrl) return thumbnailUrl;
+
+  const thumbnailKey = normalizeAttachmentUrl(attachment?.thumbnailKey);
+  if (thumbnailKey) {
+    return createAttachmentFileRouteUrl({ key: thumbnailKey });
+  }
+
+  return getAttachmentPreviewUrl(attachment);
 }
 
 export function getAttachmentDownloadUrl(attachment: Attachment | null | undefined): string {
