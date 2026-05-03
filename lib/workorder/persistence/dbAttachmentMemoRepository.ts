@@ -189,6 +189,7 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                   order_id,
                   type,
                   storage_key,
+                  thumbnail_key,
                   original_name,
                   mime_type,
                   size_bytes,

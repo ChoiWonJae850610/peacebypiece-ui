@@ -1,19 +1,19 @@
 Version :
-0.9.132
+0.9.133
 
 Summary :
-첨부 카드 썸네일 표시 필드 호환 보완
+첨부 썸네일 키 hydrate 누락 보완
 
 Description :
-작업지시서 첨부 카드 표시 URL 생성 시 camelCase 필드뿐 아니라 DB/API 응답에서 넘어올 수 있는 snake_case 필드도 읽도록 보완했다. thumbnail_key가 있으면 기존 file proxy API로 썸네일 표시 URL을 생성하고, 미리보기와 다운로드는 원본 경로를 유지한다. 대표 이미지 자동 지정과 삭제 후 승계 로직은 이번 버전에 적용하지 않았다.
+작업지시서 첨부 snapshot 조회 시 attachments.thumbnail_key가 응답에 포함되지 않아 카드 표시에서 원본 이미지를 계속 사용하던 문제를 보완했다. DB에 저장된 thumbnail_key가 프론트 attachment 객체까지 전달되도록 조회 컬럼을 추가했으며, 원본 미리보기와 다운로드, Worker 기반 R2 처리 흐름은 변경하지 않았다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/permissions/attachments.ts
+- lib/workorder/persistence/dbAttachmentMemoRepository.ts
 - docs/restore-baseline-0.9.121.md
 
 추가 파일 목록 :
-- docs/attachment-thumbnail-display-0.9.132.md
+- docs/attachment-thumbnail-hydration-0.9.133.md
 
 삭제 파일 목록 :
 없음

@@ -106,3 +106,9 @@ Neon/repository 연결 상태를 점검했다. workorder, attachment, memo, part
 - 다운로드 URL 생성 시 `storageKey`뿐 아니라 `storage_key`도 읽도록 보완했다.
 - 미리보기/다운로드 원본 경로는 유지하고, 카드 표시만 썸네일 우선 규칙을 적용한다.
 - 대표 이미지 자동 지정/삭제 후 승계 로직은 별도 버전으로 분리한다.
+
+## 0.9.133 보완 기록
+
+- DB `attachments.thumbnail_key`는 저장되어 있었으나 작업지시서 snapshot 조회 SELECT 목록에서 누락되어 프론트 attachment 객체까지 전달되지 않는 문제가 있었다.
+- `dbAttachmentMemoRepository.listSnapshotByWorkOrderId`의 attachments 조회에 `thumbnail_key`를 포함해 카드/목록 표시 helper가 썸네일 URL을 선택할 수 있도록 보완했다.
+- 원본 미리보기/다운로드, Worker 기반 R2 처리, DB schema는 변경하지 않았다.
