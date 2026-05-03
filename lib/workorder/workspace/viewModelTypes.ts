@@ -1,11 +1,11 @@
 import type { ComponentProps } from "react";
 import type { getI18n } from "@/lib/i18n";
-import SidebarContent from "@/components/layout/SidebarContent";
-import MobileDrawer from "@/components/layout/MobileDrawer";
-import MobileTopBar from "@/components/layout/MobileTopBar";
-import WorkOrderDetail from "@/components/workorder/WorkOrderDetail";
-import WorkOrderOverlay from "@/components/workorder/WorkOrderOverlay";
-import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
+import type SidebarContent from "@/components/layout/SidebarContent";
+import type MobileDrawer from "@/components/layout/MobileDrawer";
+import type MobileTopBar from "@/components/layout/MobileTopBar";
+import type WorkOrderDetail from "@/components/workorder/WorkOrderDetail";
+import type WorkOrderOverlay from "@/components/workorder/WorkOrderOverlay";
+import type WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
 import type { AttachmentPermissionState } from "@/lib/workorder/attachments/attachmentPermissions";
 import type { DbConnectionStatus } from "@/lib/repositories/dbConnectionStatusStore";
 import type { Attachment, HistoryFilter, InventoryLog, RoleType, UserProfile, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";

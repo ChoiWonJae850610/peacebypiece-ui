@@ -1,9 +1,9 @@
 import type { ComponentProps, RefObject } from "react";
-import MobileDrawer from "@/components/layout/MobileDrawer";
-import MobileTopBar from "@/components/layout/MobileTopBar";
-import SidebarContent from "@/components/layout/SidebarContent";
-import WorkOrderDetail from "@/components/workorder/WorkOrderDetail";
-import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
+import type MobileDrawer from "@/components/layout/MobileDrawer";
+import type MobileTopBar from "@/components/layout/MobileTopBar";
+import type SidebarContent from "@/components/layout/SidebarContent";
+import type WorkOrderDetail from "@/components/workorder/WorkOrderDetail";
+import type WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
 
 export type SidebarListProps = ComponentProps<typeof SidebarContent>;
 export type DetailProps = ComponentProps<typeof WorkOrderDetail>;

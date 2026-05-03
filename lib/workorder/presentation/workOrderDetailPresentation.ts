@@ -1,10 +1,10 @@
 import type { ComponentProps } from "react";
 import { isDebugFeatureEnabled } from "@/lib/constants/runtimeMode";
-import WorkOrderActionSection from "@/components/workorder/detail/WorkOrderActionSection";
-import WorkOrderCostSummarySection from "@/components/workorder/detail/WorkOrderCostSummarySection";
-import WorkOrderHeaderSection from "@/components/workorder/detail/WorkOrderHeaderSection";
-import OrderInfoSection from "@/components/workorder/detail/sections/OrderInfoSection";
-import ProductionCompositionSection from "@/components/workorder/detail/sections/ProductionCompositionSection";
+import type WorkOrderActionSection from "@/components/workorder/detail/WorkOrderActionSection";
+import type WorkOrderCostSummarySection from "@/components/workorder/detail/WorkOrderCostSummarySection";
+import type WorkOrderHeaderSection from "@/components/workorder/detail/WorkOrderHeaderSection";
+import type OrderInfoSection from "@/components/workorder/detail/sections/OrderInfoSection";
+import type ProductionCompositionSection from "@/components/workorder/detail/sections/ProductionCompositionSection";
 import { formatBasicSummary } from "@/lib/workorder/detail/detailFormatting";
 import { getAvailableOrderTypeOptions } from "@/lib/constants/workorderOptions";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
