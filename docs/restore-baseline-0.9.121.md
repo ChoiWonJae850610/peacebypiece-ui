@@ -83,3 +83,12 @@ Neon/repository 연결 상태를 점검했다. workorder, attachment, memo, part
 - 이메일 발송 자동화
 - 인증/회원가입 고도화
 - package 의존성 변경
+
+## 0.9.130 추가 기준 — 썸네일 Worker와 대표 이미지 미세 로직
+
+- 원본 첨부 업로드 성공 흐름은 유지한다.
+- 썸네일 업로드 실패는 전체 첨부 업로드 실패로 처리하지 않는다.
+- `INVALID_WORKER_FILE_REQUEST`가 발생하면 먼저 Cloudflare Worker가 최신 `cloudflare/r2-upload-worker.js`로 배포되었는지 확인한다.
+- 대표 이미지 자동 지정/삭제 후 승계는 0.9.130에서 문서화하고, 실제 코드 적용은 0.9.131 이후로 분리한다.
+- R2 직접 SDK 업로드/삭제 fallback은 재도입하지 않는다.
+

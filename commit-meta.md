@@ -1,18 +1,21 @@
 Version :
-0.9.129
+0.9.130
 
 Summary :
-작업지시서 핵심 플로우 회귀 테스트 기준 추가
+첨부 썸네일 Worker 업로드 실패 안전화와 대표 이미지 규칙 문서화
 
 Description :
-0.9.77 복구 라인을 기준으로 작성중부터 완료와 재검수요청까지의 작업지시서 핵심 상태 전환, 첨부, 메모, 대표 이미지, 발주정보, 생산구성 데이터 유지 여부를 확인하는 QA 문서를 추가했다. 기능 코드는 변경하지 않고 APP_VERSION과 복구 기준 문서만 갱신했다.
+원본 첨부 업로드 성공 흐름은 유지하면서 썸네일 업로드 실패 로그가 Error stack으로 과도하게 출력되지 않도록 정리했다. Worker는 썸네일 key를 명시적으로 허용하고 배포 버전 확인용 헤더를 포함하도록 보완했다. 대표 이미지 자동 지정과 삭제 후 승계 로직은 이번 버전에서 문서화만 하고 코드 적용은 다음 버전으로 분리했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
+- lib/workorder/attachments/attachmentUploadApiClient.ts
+- cloudflare/r2-upload-worker.js
 - docs/restore-baseline-0.9.121.md
+- docs/attachment-memo-r2-audit-0.9.123.md
 
 추가 파일 목록 :
-- docs/workorder-flow-qa-0.9.129.md
+- docs/attachment-primary-thumbnail-rules-0.9.130.md
 
 삭제 파일 목록 :
 없음

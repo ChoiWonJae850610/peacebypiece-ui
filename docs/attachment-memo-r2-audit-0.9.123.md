@@ -352,3 +352,11 @@
 - 일반 삭제 후 `attachment_trash_items`가 생성되고 R2 원본은 즉시 삭제되지 않는지 확인한다.
 - 관리자 복구 후 작업지시서 화면에 첨부가 다시 표시되는지 확인한다.
 - 영구삭제는 Worker purge 경로로만 수행되는지 확인한다.
+
+## 0.9.130 보완 — 썸네일 Worker 요청
+
+- 원본 첨부 업로드와 DB 저장이 정상이라면 썸네일 업로드 실패는 차단 오류로 보지 않는다.
+- 썸네일 업로드 실패 시 complete payload에서 thumbnail key를 null 처리하여 DB에 실패한 thumbnail key를 저장하지 않는다.
+- Worker는 `workorders/{workOrderId}/thumbnails/{design|attachments|memos}/{fileId}.webp` key를 허용해야 한다.
+- Cloudflare에 배포된 Worker가 오래된 코드이면 앱에서는 `INVALID_WORKER_FILE_REQUEST`가 계속 보일 수 있으므로 Worker 배포 상태를 별도 확인한다.
+

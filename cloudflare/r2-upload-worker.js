@@ -6,6 +6,10 @@ const CORS_HEADERS = {
 };
 
 const TEXT_ENCODER = new TextEncoder();
+const WORKER_VERSION = "0.9.130";
+const ATTACHMENT_KEY_PATTERN = /^workorders\/[^/]+\/(design|attachments|memos)\/[^/]+$/i;
+const SCOPED_THUMBNAIL_KEY_PATTERN = /^workorders\/[^/]+\/thumbnails\/(design|attachments|memos)\/[^/]+\.webp$/i;
+const LEGACY_THUMBNAIL_KEY_PATTERN = /^workorders\/[^/]+\/thumbnails\/[^/]+\.webp$/i;
 
 const ATTACHMENT_POLICY = {
   maxFileSizeBytes: 10 * 1024 * 1024,
@@ -16,9 +20,14 @@ const ATTACHMENT_POLICY = {
   },
 };
 
+function normalizeStorageKey(value) {
+  return String(value || "").replace(/^\/+/, "").trim();
+}
+
 function getScopeFromKey(key) {
-  if (key.includes("/design/") || key.includes("/thumbnails/design/")) return "design";
-  if (key.includes("/memos/") || key.includes("/thumbnails/memos/")) return "memos";
+  const normalized = normalizeStorageKey(key);
+  if (normalized.includes("/design/") || normalized.includes("/thumbnails/design/")) return "design";
+  if (normalized.includes("/memos/") || normalized.includes("/thumbnails/memos/")) return "memos";
   return "attachment";
 }
 
@@ -33,6 +42,7 @@ function json(data, init = {}) {
     ...init,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
+      "X-PeaceByPiece-Worker-Version": WORKER_VERSION,
       ...CORS_HEADERS,
       ...(init.headers || {}),
     },
@@ -40,10 +50,12 @@ function json(data, init = {}) {
 }
 
 function isSafeStorageKey(key) {
+  const normalized = normalizeStorageKey(key);
   return (
-    /^workorders\/[^/]+\/(design|attachments|memos)\/[^/]+$/i.test(key) ||
-    /^workorders\/[^/]+\/thumbnails\/(design|attachments|memos)\/[^/]+\.webp$/i.test(key)
-  ) && !key.includes("..") && !key.startsWith("/");
+    ATTACHMENT_KEY_PATTERN.test(normalized) ||
+    SCOPED_THUMBNAIL_KEY_PATTERN.test(normalized) ||
+    LEGACY_THUMBNAIL_KEY_PATTERN.test(normalized)
+  ) && !normalized.includes("..") && !normalized.startsWith("/");
 }
 
 function readSecret(env) {
@@ -132,6 +144,7 @@ async function verifyRequest({ env, url, method, key, contentType }) {
 
 function createFileHeaders(object, url) {
   const headers = new Headers(CORS_HEADERS);
+  headers.set("X-PeaceByPiece-Worker-Version", WORKER_VERSION);
   const contentType = object.httpMetadata?.contentType || object.httpMetadata?.contentTypeHeader || "application/octet-stream";
 
   headers.set("Content-Type", contentType);
@@ -166,7 +179,7 @@ export default {
       return json({ error: "WORKER_BUCKET_NOT_CONFIGURED" }, { status: 503 });
     }
 
-    const key = url.searchParams.get("key") || "";
+    const key = normalizeStorageKey(url.searchParams.get("key") || "");
     const contentType = readContentType(url);
 
     if (!key || !isSafeStorageKey(key)) {

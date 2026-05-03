@@ -41,6 +41,18 @@ async function readJson<T>(response: Response, fallback: T): Promise<T> {
   return (await response.json().catch(() => fallback)) as T;
 }
 
+function readErrorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error && error.message ? error.message : fallback;
+}
+
+function logThumbnailUploadSkipped(error: unknown, target: AttachmentUploadTarget): void {
+  const message = readErrorMessage(error, "ATTACHMENT_THUMBNAIL_UPLOAD_FAILED");
+  console.info("[ATTACHMENT_THUMBNAIL_UPLOAD_SKIPPED]", {
+    message,
+    thumbnailStorageKey: target.thumbnailStorageKey ?? null,
+  });
+}
+
 async function prepareWorkOrderAttachmentUploads(payload: {
   workOrder: Pick<WorkOrder, "id" | "attachments">;
   files: File[];
@@ -200,7 +212,7 @@ export async function uploadWorkOrderAttachmentFiles(payload: {
           });
         }
       } catch (thumbnailError) {
-        console.warn("[ATTACHMENT_THUMBNAIL_UPLOAD_SKIPPED]", thumbnailError);
+        logThumbnailUploadSkipped(thumbnailError, target);
         completedTarget = markThumbnailUnavailable(target);
       }
 
