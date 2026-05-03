@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-import PartnerMasterFilters from "@/components/admin/partnerMaster/PartnerMasterFilters";
 import { APP_VERSION } from "@/lib/constants/app";
 import {
   buildPartnerListViewModel,
@@ -24,6 +23,106 @@ function EmptyState({ label }: { label: string }) {
   return (
     <div className="rounded-2xl border border-dashed border-stone-200 bg-stone-50 px-4 py-8 text-center text-sm text-stone-500">
       {label}
+    </div>
+  );
+}
+
+type PartnerReadOnlyFilterOption = {
+  value: PartnerFilterChip;
+  label: string;
+};
+
+function AdminPartnersReadOnlyFilters({
+  searchTerm,
+  onSearchTermChange,
+  filterOptions,
+  selectedTypes,
+  onToggleType,
+  selectedStatus,
+  onStatusChange,
+  filteredCount,
+  hasSearch,
+}: {
+  searchTerm: string;
+  onSearchTermChange: (value: string) => void;
+  filterOptions: PartnerReadOnlyFilterOption[];
+  selectedTypes: PartnerFilterChip[];
+  onToggleType: (value: PartnerFilterChip) => void;
+  selectedStatus: PartnerStatusFilter;
+  onStatusChange: (value: PartnerStatusFilter) => void;
+  filteredCount: number;
+  hasSearch: boolean;
+}) {
+  const statusOptions: { value: PartnerStatusFilter; label: string }[] = [
+    { value: "all", label: "전체" },
+    { value: "active", label: "사용중" },
+    { value: "inactive", label: "미사용" },
+  ];
+
+  return (
+    <div className="rounded-3xl border border-stone-200 bg-stone-50 p-4">
+      <div className="grid gap-y-5 gap-x-8 xl:grid-cols-[minmax(260px,0.9fr)_minmax(360px,1.4fr)_minmax(220px,0.7fr)] xl:items-start">
+        <label className="space-y-2">
+          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+            검색
+          </span>
+          <input
+            value={searchTerm}
+            onChange={(event) => onSearchTermChange(event.target.value)}
+            placeholder="업체명, 담당자, 연락처, 이메일"
+            className="h-11 w-full rounded-2xl border border-stone-200 bg-white px-4 text-sm outline-none transition focus:border-stone-400 focus:ring-4 focus:ring-stone-100"
+          />
+        </label>
+
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+            유형
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {filterOptions.map((item) => {
+              const isSelected = selectedTypes.includes(item.value);
+
+              return (
+                <button
+                  key={item.value}
+                  type="button"
+                  onClick={() => onToggleType(item.value)}
+                  className={[
+                    "inline-flex h-9 items-center rounded-full px-3 text-sm font-medium transition",
+                    isSelected
+                      ? "bg-stone-900 text-white shadow-sm"
+                      : "border border-stone-200 bg-white text-stone-700 hover:bg-stone-100",
+                  ].join(" ")}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <label className="space-y-2">
+          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+            상태
+          </span>
+          <select
+            value={selectedStatus}
+            onChange={(event) => onStatusChange(event.target.value as PartnerStatusFilter)}
+            className="h-11 w-full rounded-2xl border border-stone-200 bg-white px-4 text-sm text-stone-900 outline-none transition focus:border-stone-400 focus:ring-4 focus:ring-stone-100"
+          >
+            {statusOptions.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-stone-500">
+        <span>표시 대상 {filteredCount}개</span>
+        {hasSearch ? <span>필터 적용 중</span> : <span>전체 목록 표시 중</span>}
+      </div>
     </div>
   );
 }
@@ -271,7 +370,7 @@ export default function AdminPartnersReadOnlyPage() {
         </section>
 
         <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-          <PartnerMasterFilters
+          <AdminPartnersReadOnlyFilters
             searchTerm={searchTerm}
             onSearchTermChange={setSearchTerm}
             filterOptions={listViewModel.filterOptions}
