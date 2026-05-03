@@ -1,26 +1,23 @@
 Version :
-0.9.139
+0.9.140
 
 Summary :
-30일 고정 휴지통 정책 반영과 고객관리자 저장정책 정리
+시스템관리자 R2 실제 삭제 후보 화면 1차 추가
 
 Description :
-고객사별 삭제 방식과 보관기간 설정을 제거하고 전 고객 공통 30일 휴지통 보관 정책으로 고정했다. 고객관리자 저장정책 모달에서는 보관기간 선택 UI를 제거하고 30일 복원 가능 안내를 표시하도록 변경했다. 기존 DB 값과 무관하게 런타임 파일 정책은 휴지통 이동과 30일 보관으로 정규화하며, 첨부 삭제 API는 R2 직접 삭제 없이 soft delete만 수행하도록 정리했다. 시스템관리자 R2 purge 후보와 실행 기능은 별도 버전으로 분리했다.
+전 고객 공통 30일 휴지통 정책을 기준으로 시스템관리자가 R2 실제 삭제 후보를 확인할 수 있는 /system/storage-usage 화면을 추가했다. 후보 목록에는 고객사명, 작업지시서명, 파일명, 삭제일, 삭제 예정일, 원본 storage_key, 썸네일 thumbnail_key, purge 상태를 표시한다. 기존 시스템 콘솔의 스토리지 버튼은 즉시 purge 실행 모달이 아니라 후보 목록 화면으로 이동하도록 변경했다. 실제 R2 삭제 실행은 아직 연결하지 않았고, 선택 삭제/전체 삭제 버튼은 비활성 상태로 유지했다.
 
 수정 파일 목록 :
-- app/api/admin/files/snapshot/route.ts
-- app/api/workorders/attachments/delete/route.ts
-- components/admin/standards/AdminFilePolicySettingsModal.tsx
-- docs/restore-baseline-0.9.121.md
-- lib/admin/adminDashboard.presentation.ts
-- lib/admin/adminFiles.presentation.ts
-- lib/admin/settings/companyDefaults.ts
-- lib/admin/settings/companyRepository.ts
-- lib/admin/settings/presentation.ts
+- components/system/SystemConsoleShell.tsx
+- components/system/storage/SystemStoragePurgeButton.tsx
 - lib/constants/app.ts
+- lib/system/systemConsoleShell.ts
+- docs/restore-baseline-0.9.121.md
 
 추가 파일 목록 :
-- docs/file-retention-purge-policy-0.9.139.md
+- app/system/storage-usage/page.tsx
+- lib/system/storagePurgeCandidates.ts
+- docs/system-storage-purge-candidates-0.9.140.md
 
 삭제 파일 목록 :
 없음

@@ -86,10 +86,10 @@ export const SYSTEM_CONSOLE_TABS: SystemConsoleTab[] = [
   {
     id: "storage",
     label: "스토리지",
-    description: "첨부파일 저장소 정리 기능을 유지합니다.",
-    statusLabel: "기존 기능",
-    status: "legacy",
-    apiPath: "/api/system/storage-usage?companyId=company-sample-customer",
+    description: "30일 경과 휴지통 파일의 R2 실제 삭제 후보를 확인합니다.",
+    statusLabel: "화면 연결",
+    status: "linked",
+    href: "/system/storage-usage",
   },
   {
     id: "categoryRules",
@@ -159,6 +159,12 @@ export const SYSTEM_CONSOLE_QUICK_LINKS = [
     label: "요금제·용량",
     href: "/system/billing",
     description: "고객별 plan과 override skeleton",
+  },
+  {
+    id: "storage-usage",
+    label: "스토리지 정리",
+    href: "/system/storage-usage",
+    description: "R2 실제 삭제 후보 확인",
   },
   {
     id: "category-rules",

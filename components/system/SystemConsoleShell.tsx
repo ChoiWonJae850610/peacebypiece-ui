@@ -336,7 +336,7 @@ export default function SystemConsoleShell() {
         <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
           <h2 className="text-lg font-semibold text-stone-950">스토리지 운영</h2>
           <p className="mt-2 text-sm leading-6 text-stone-600">
-            기존 첨부파일 휴지통/삭제 운영 기능은 유지하고, 저장공간 사용량 API는 skeleton 상태로 분리합니다.
+            전 고객 공통 30일 휴지통 정책 기준으로 R2 실제 삭제 후보를 확인합니다. 실제 삭제 실행은 후보 목록 확인 후 별도 단계에서 연결합니다.
           </p>
           <div className="mt-4">
             <SystemStoragePurgeButton />
