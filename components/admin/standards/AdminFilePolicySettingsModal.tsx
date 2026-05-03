@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import StatusToggle from "@/components/common/StatusToggle";
+import AdminUsageToggle from "@/components/admin/common/AdminUsageToggle";
 import { AdminModal, adminModalPrimaryButtonClassName, adminModalSecondaryButtonClassName } from "@/components/admin/layout/AdminModal";
 import {
   buildAdminStorageStatusPreview,
@@ -18,21 +18,6 @@ type AdminFilePolicySettingsModalProps = {
   open: boolean;
   onClose: () => void;
 };
-
-function ToggleButtonGroup({ label, description, activeLabel, inactiveLabel, checked, onChange }: { label: string; description: string; activeLabel: string; inactiveLabel: string; checked: boolean; onChange: (next: boolean) => void }) {
-  return (
-    <div className="rounded-3xl border border-stone-200 bg-white p-3">
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-stone-950">{label}</p>
-          <p className="mt-1 text-xs font-semibold leading-5 text-stone-500">{description}</p>
-          <p className="mt-1 text-xs font-semibold text-stone-700">{checked ? activeLabel : inactiveLabel}</p>
-        </div>
-        <StatusToggle checked={checked} onChange={onChange} srLabel={label} size="sm" />
-      </div>
-    </div>
-  );
-}
 
 export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFilePolicySettingsModalProps) {
   const t = useAdminTranslation();
@@ -130,12 +115,13 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
               </span>
             </div>
           </div>
-          <ToggleButtonGroup
+          <AdminUsageToggle
             label={t("standards.filePolicy.includeTrashInUsage", "휴지통 용량 포함")}
             description={t("standards.filePolicy.includeTrashDescription", "실제 삭제 전 파일을 사용량에 포함할지 정합니다.")}
             activeLabel={t("standards.filePolicy.includeTrashActive", "포함")}
             inactiveLabel={t("standards.filePolicy.includeTrashInactive", "제외")}
             checked={draft.filePolicy.includeTrashInUsage}
+            disabled={saving || loading}
             onChange={(includeTrashInUsage) => {
               if (saving || loading) return;
               setDraft((current) => ({ ...current, filePolicy: normalizeAdminFilePolicyDraft({ ...current.filePolicy, includeTrashInUsage }) }));

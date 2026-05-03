@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import AdminUsageToggle from "@/components/admin/common/AdminUsageToggle";
 import {
   AdminModal,
   AdminModalSection,
@@ -103,18 +104,24 @@ export default function AdminUnitManagementModal({ open, units, saving = false, 
         <div className="h-[360px] rounded-3xl border border-stone-200 bg-stone-50/70 p-2">
           <div className="h-full space-y-2 overflow-auto pr-1">
             {sortedDraft.map((unit) => (
-              <button
+              <div
                 key={unit.id}
-                type="button"
-                onClick={() => toggleUnit(unit.id)}
-                className="flex w-full items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-left text-sm hover:border-stone-300"
+                className="flex w-full items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-left text-sm transition hover:border-stone-300"
               >
-                <span className="min-w-0">
+                <button type="button" onClick={() => toggleUnit(unit.id)} disabled={saving} className="min-w-0 flex-1 text-left disabled:cursor-not-allowed disabled:opacity-60">
                   <span className="block font-semibold text-stone-950">{unit.name}</span>
                   <span className="block text-xs text-stone-400">{unit.code}</span>
-                </span>
-                <span className={["rounded-full px-2.5 py-1 text-xs font-semibold", unit.is_active ? "bg-emerald-100 text-emerald-700" : "bg-stone-100 text-stone-500"].join(" ")}>{unit.is_active ? t("standards.common.active", "사용") : t("standards.common.inactive", "미사용")}</span>
-              </button>
+                </button>
+                <AdminUsageToggle
+                  label={`${unit.name} ${t("standards.units.usageTitle", "단위 사용 여부")}`}
+                  checked={unit.is_active}
+                  activeLabel={t("standards.common.active", "사용")}
+                  inactiveLabel={t("standards.common.inactive", "미사용")}
+                  disabled={saving}
+                  variant="inline"
+                  onChange={() => toggleUnit(unit.id)}
+                />
+              </div>
             ))}
           </div>
         </div>

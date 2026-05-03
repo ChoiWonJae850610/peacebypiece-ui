@@ -1,0 +1,51 @@
+"use client";
+
+import StatusToggle from "@/components/common/StatusToggle";
+
+type AdminUsageToggleProps = {
+  label: string;
+  description?: string;
+  checked: boolean;
+  onChange: (nextValue: boolean) => void;
+  disabled?: boolean;
+  activeLabel?: string;
+  inactiveLabel?: string;
+  variant?: "card" | "inline";
+  className?: string;
+};
+
+export default function AdminUsageToggle({
+  label,
+  description,
+  checked,
+  onChange,
+  disabled = false,
+  activeLabel = "사용",
+  inactiveLabel = "미사용",
+  variant = "card",
+  className = "",
+}: AdminUsageToggleProps) {
+  const statusLabel = checked ? activeLabel : inactiveLabel;
+
+  if (variant === "inline") {
+    return (
+      <div className={["inline-flex shrink-0 items-center gap-2", className].join(" ") }>
+        <span className={["min-w-[42px] text-right text-xs font-semibold", checked ? "text-stone-900" : "text-stone-500"].join(" ")}>{statusLabel}</span>
+        <StatusToggle checked={checked} onChange={onChange} disabled={disabled} srLabel={label} size="sm" />
+      </div>
+    );
+  }
+
+  return (
+    <div className={["rounded-3xl border border-stone-200 bg-white p-3", className].join(" ") }>
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-stone-950">{label}</p>
+          {description ? <p className="mt-1 text-xs font-semibold leading-5 text-stone-500">{description}</p> : null}
+          <p className={["mt-1 text-xs font-semibold", checked ? "text-stone-900" : "text-stone-500"].join(" ")}>{statusLabel}</p>
+        </div>
+        <StatusToggle checked={checked} onChange={onChange} disabled={disabled} srLabel={label} size="sm" />
+      </div>
+    </div>
+  );
+}

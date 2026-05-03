@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import AdminUsageToggle from "@/components/admin/common/AdminUsageToggle";
 import {
   AdminModal,
   AdminModalSection,
@@ -89,31 +90,25 @@ function CategoryList({
             items.map((item) => {
               const isSelected = selectedId === item.id;
               return (
-                <button
+                <div
                   key={item.id}
-                  type="button"
-                  onClick={() => onSelect(item.id)}
                   className={[
                     "flex w-full items-center justify-between gap-3 rounded-2xl border px-3 py-3 text-left text-sm transition",
                     isSelected ? "border-stone-950 bg-white text-stone-950 shadow-sm" : "border-stone-200 bg-white text-stone-700 hover:border-stone-300",
                   ].join(" ")}
                 >
-                  <span className="min-w-0 truncate font-medium">{item.name}</span>
-                  <span
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onToggleActive(item.id, !item.is_active);
-                    }}
-                    className={[
-                      "shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold",
-                      item.is_active ? "bg-emerald-100 text-emerald-700" : "bg-stone-100 text-stone-500",
-                    ].join(" ")}
-                    role="switch"
-                    aria-checked={item.is_active}
-                  >
-                    {item.is_active ? activeLabel : inactiveLabel}
-                  </span>
-                </button>
+                  <button type="button" onClick={() => onSelect(item.id)} className="min-w-0 flex-1 truncate text-left font-medium">
+                    {item.name}
+                  </button>
+                  <AdminUsageToggle
+                    label={`${item.name} ${title}`}
+                    checked={item.is_active}
+                    activeLabel={activeLabel}
+                    inactiveLabel={inactiveLabel}
+                    variant="inline"
+                    onChange={(nextValue) => onToggleActive(item.id, nextValue)}
+                  />
+                </div>
               );
             })
           )}
