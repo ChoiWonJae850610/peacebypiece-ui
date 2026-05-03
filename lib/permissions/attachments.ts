@@ -4,6 +4,33 @@ import type { Attachment, AttachmentScope, AttachmentType, UserProfile } from "@
 
 const i18n = getI18n();
 
+type AttachmentFieldName =
+  | "name"
+  | "original_name"
+  | "url"
+  | "storageKey"
+  | "storage_key"
+  | "thumbnailKey"
+  | "thumbnail_key"
+  | "thumbnailUrl"
+  | "thumbnail_url"
+  | "previewUrl"
+  | "preview_url";
+
+function readAttachmentStringField(attachment: Attachment | null | undefined, ...fieldNames: AttachmentFieldName[]): string {
+  if (!attachment) return "";
+
+  const source = attachment as Attachment & Record<string, unknown>;
+  for (const fieldName of fieldNames) {
+    const value = source[fieldName];
+    if (typeof value === "string" && value.trim().length > 0) {
+      return value.trim();
+    }
+  }
+
+  return "";
+}
+
 export function getAttachmentScope(attachment: Attachment | null | undefined): AttachmentScope {
   return (attachment?.scope ?? "attachment") as AttachmentScope;
 }
@@ -71,7 +98,10 @@ function readStorageKeyFromAttachmentRouteUrl(value: string): string {
 }
 
 export function getAttachmentPreviewUrl(attachment: Attachment | null | undefined): string {
-  return normalizeAttachmentUrl(attachment?.previewUrl) || normalizeAttachmentUrl(attachment?.url);
+  return (
+    readAttachmentStringField(attachment, "previewUrl", "preview_url") ||
+    readAttachmentStringField(attachment, "url")
+  );
 }
 
 function createAttachmentFileRouteUrl(input: { key?: string | null; download?: boolean; fileName?: string | null }): string {
@@ -89,10 +119,10 @@ function createAttachmentFileRouteUrl(input: { key?: string | null; download?: b
 }
 
 export function getAttachmentThumbnailUrl(attachment: Attachment | null | undefined): string {
-  const thumbnailUrl = normalizeAttachmentUrl(attachment?.thumbnailUrl);
+  const thumbnailUrl = readAttachmentStringField(attachment, "thumbnailUrl", "thumbnail_url");
   if (thumbnailUrl) return thumbnailUrl;
 
-  const thumbnailKey = normalizeAttachmentUrl(attachment?.thumbnailKey);
+  const thumbnailKey = readAttachmentStringField(attachment, "thumbnailKey", "thumbnail_key");
   if (thumbnailKey) {
     return createAttachmentFileRouteUrl({ key: thumbnailKey });
   }
@@ -101,16 +131,16 @@ export function getAttachmentThumbnailUrl(attachment: Attachment | null | undefi
 }
 
 export function getAttachmentDownloadUrl(attachment: Attachment | null | undefined): string {
-  const storageKey = normalizeAttachmentUrl(attachment?.storageKey);
+  const storageKey = readAttachmentStringField(attachment, "storageKey", "storage_key");
   if (storageKey) {
-    return createAttachmentFileRouteUrl({ key: storageKey, download: true, fileName: attachment?.name });
+    return createAttachmentFileRouteUrl({ key: storageKey, download: true, fileName: readAttachmentStringField(attachment, "name", "original_name") });
   }
 
-  const previewOrFileUrl = normalizeAttachmentUrl(attachment?.previewUrl) || normalizeAttachmentUrl(attachment?.url);
+  const previewOrFileUrl = getAttachmentPreviewUrl(attachment);
   if (!previewOrFileUrl) return "";
 
   if (isAttachmentFileRouteUrl(previewOrFileUrl)) {
-    return createAttachmentFileRouteUrl({ key: previewOrFileUrl, download: true, fileName: attachment?.name });
+    return createAttachmentFileRouteUrl({ key: previewOrFileUrl, download: true, fileName: readAttachmentStringField(attachment, "name", "original_name") });
   }
 
   if (isDirectPreviewOrDownloadUrl(previewOrFileUrl)) {
