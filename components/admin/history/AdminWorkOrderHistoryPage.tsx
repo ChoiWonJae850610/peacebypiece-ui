@@ -10,7 +10,7 @@ import {
 } from "@/lib/admin/history/selectors";
 import type { AdminHistoryDateFilter, AdminHistoryFilter } from "@/lib/admin/history/types";
 import { applyAdminHistoryFilterAction } from "@/lib/admin/history/actionFlow";
-import { useI18n } from "@/lib/i18n";
+import { getI18n } from "@/lib/i18n";
 
 function RefreshIcon() {
   return (
@@ -25,9 +25,10 @@ type AdminWorkOrderHistoryPageProps = {
   initialHistoryEvents?: import("@/lib/admin/history/types").AdminHistoryEvent[];
 };
 
+const DEFAULT_ADMIN_TEXT = getI18n().admin;
+const pageText = DEFAULT_ADMIN_TEXT.historyPage;
+
 export default function AdminWorkOrderHistoryPage({ initialHistoryEvents = [] }: AdminWorkOrderHistoryPageProps) {
-  const { i18n } = useI18n();
-  const pageText = i18n.admin.historyPage;
   const [historyFilter, setHistoryFilter] = useState<AdminHistoryFilter>("all");
   const historyEvents = useMemo(
     () => applyAdminHistoryFilterAction({ events: initialHistoryEvents, filter: historyFilter }),
@@ -60,7 +61,7 @@ export default function AdminWorkOrderHistoryPage({ initialHistoryEvents = [] }:
     [dateFilter, historyEvents, refreshKey, searchQuery, userFilter],
   );
 
-  const viewModel = buildAdminHistorySectionViewModel(filteredLogs, historyFilter, i18n.admin);
+  const viewModel = buildAdminHistorySectionViewModel(filteredLogs, historyFilter, DEFAULT_ADMIN_TEXT);
   const hasSearchQuery = searchQuery.trim().length > 0 || dateFilter !== "all" || userFilter !== "all" || historyFilter !== "all";
 
   return (

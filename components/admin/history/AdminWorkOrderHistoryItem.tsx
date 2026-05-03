@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useI18n } from "@/lib/i18n";
 import { buildAdminHistoryItemViewModel } from "@/lib/admin/history/presentation";
 import type { AdminHistoryEvent } from "@/lib/admin/history/types";
 
@@ -11,8 +10,7 @@ type AdminWorkOrderHistoryItemProps = {
 
 export default function AdminWorkOrderHistoryItem({ item }: AdminWorkOrderHistoryItemProps) {
   const [open, setOpen] = useState(false);
-  const { i18n } = useI18n();
-  const viewModel = buildAdminHistoryItemViewModel(item, open, i18n.admin);
+  const viewModel = buildAdminHistoryItemViewModel(item, open);
 
   return (
     <div className="rounded-xl border border-stone-200 bg-stone-50 p-3">
