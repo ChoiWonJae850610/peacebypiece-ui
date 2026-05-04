@@ -251,9 +251,11 @@ export const workorderKo = {
       drawingAction: "직접 그리기",
       drawingActionPending: "직접 그리기 기능은 다음 단계에서 연결합니다.",
       designUploadGuide: "디자인 파일을 추가하세요",
-      designUploadGuideDescription: "PC에서는 이 영역을 업로드 진입점으로 사용합니다. 드래그 업로드는 다음 단계에서 연결합니다.",
+      designUploadGuideDescription: "이 영역을 클릭하거나 파일을 드래그해 디자인을 업로드합니다.",
       attachmentUploadGuide: "첨부 파일을 추가하세요",
-      attachmentUploadGuideDescription: "PDF와 이미지 파일을 보관합니다. 드래그 업로드는 다음 단계에서 연결합니다.",
+      attachmentUploadGuideDescription: "이 영역을 클릭하거나 파일을 드래그해 PDF와 이미지를 업로드합니다.",
+      dropUploadGuide: "여기에 파일을 놓아 업로드",
+      dropUploadGuideDescription: "선택한 영역 기준으로 파일을 저장합니다.",
     },
     header: {
       titleInputAria: "작업지시서명",

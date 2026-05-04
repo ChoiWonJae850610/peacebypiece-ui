@@ -251,9 +251,11 @@ export const workorderEn = {
       drawingAction: "Draw directly",
       drawingActionPending: "Direct drawing will be connected in a later step.",
       designUploadGuide: "Add design files",
-      designUploadGuideDescription: "Use this area as the upload entry point on PC. Drag upload will be connected later.",
+      designUploadGuideDescription: "Click this area or drag files here to upload design files.",
       attachmentUploadGuide: "Add attachment files",
-      attachmentUploadGuideDescription: "Store PDFs and image files here. Drag upload will be connected later.",
+      attachmentUploadGuideDescription: "Click this area or drag files here to upload PDFs and images.",
+      dropUploadGuide: "Drop files here to upload",
+      dropUploadGuideDescription: "Files are saved to the selected panel scope.",
     },
     header: {
       titleInputAria: "Work order title",

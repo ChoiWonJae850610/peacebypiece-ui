@@ -1,23 +1,29 @@
 Version :
-0.9.155
+0.9.156
 
 Summary :
-작업지시서 디자인·첨부 영역 업로드 진입점 정리
+작업지시서 디자인·첨부 드래그 업로드 연결
 
 Description :
-작업지시서 우측 디자인/첨부 영역의 파일 추가 진입점을 ... 액션 메뉴와 점선 안내 영역으로 정리했다. 디자인 영역에는 향후 직접 그리기 기능 연결을 위한 준비 상태 메뉴 항목을 추가했다. 실제 drag-and-drop 업로드 로직과 그리기 라이브러리 연결은 추가하지 않았고, 기존 첨부 업로드/삭제/썸네일/R2 흐름은 유지했다.
+디자인/첨부 패널의 점선 업로드 안내 영역에 실제 drag-and-drop 업로드를 연결했다. 기존 파일 선택 업로드와 동일한 업로드 처리 흐름을 재사용하며, R2 Worker 업로드·썸네일·삭제·메모 로직은 변경하지 않았다.
 
 수정 파일 목록 :
+- components/workorder/WorkOrderWorkspace.tsx
 - components/workorder/sidepanel/WorkOrderAttachmentPanel.tsx
+- components/workorder/sidepanel/WorkOrderSidePanel.types.ts
 - components/workorder/sidepanel/shared/WorkOrderSidePanelAttachmentSections.tsx
 - components/workorder/sidepanel/shared/WorkOrderSidePanelMobileAttachmentSections.tsx
+- lib/hooks/workorder/useWorkOrderAttachments.ts
+- lib/workorder/workspace/buildWorkspaceViewModel.ts
+- lib/workorder/workspace/builders/detailBuilders.ts
+- lib/workorder/workspace/viewModelTypes.ts
 - lib/i18n/ko/workorder.ts
 - lib/i18n/en/workorder.ts
 - lib/constants/app.ts
 - docs/restore-baseline-0.9.121.md
 
 추가 파일 목록 :
-- docs/workorder-attachment-panel-ux-0.9.155.md
+- docs/workorder-attachment-dnd-0.9.156.md
 
 삭제 파일 목록 :
 없음

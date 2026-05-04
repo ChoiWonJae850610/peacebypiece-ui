@@ -66,15 +66,8 @@ export function useWorkOrderAttachments({
     );
   };
 
-  const handleAttachmentFiles = async (event: ChangeEvent<HTMLInputElement>) => {
-    if (!canEditSideDraftContent || !canUploadOfficialAttachments) {
-      clearAttachmentInputValue(event);
-      return;
-    }
-
-    const files = readAttachmentInputFiles(event);
-    const scope = attachmentPickerScope === "design" ? "design" : "attachment";
-    clearAttachmentInputValue(event);
+  const uploadAttachmentFileList = async (files: File[], scope: AttachmentScope) => {
+    if (!canEditSideDraftContent || !canUploadOfficialAttachments) return;
     if (files.length === 0) return;
 
     setSaveStatus("saving");
@@ -112,6 +105,23 @@ export function useWorkOrderAttachments({
     if (result.toastMessage) {
       setToastMessage(result.toastMessage);
     }
+  };
+
+  const handleAttachmentFiles = async (event: ChangeEvent<HTMLInputElement>) => {
+    if (!canEditSideDraftContent || !canUploadOfficialAttachments) {
+      clearAttachmentInputValue(event);
+      return;
+    }
+
+    const files = readAttachmentInputFiles(event);
+    const scope = attachmentPickerScope === "design" ? "design" : "attachment";
+    clearAttachmentInputValue(event);
+    await uploadAttachmentFileList(files, scope);
+  };
+
+  const handleAttachmentFileDrop = async (scope: AttachmentScope, files: File[]) => {
+    const normalizedScope = scope === "design" ? "design" : "attachment";
+    await uploadAttachmentFileList(files, normalizedScope);
   };
 
   const handleDeleteAttachment = async (attachmentId: string) => {
@@ -427,6 +437,7 @@ export function useWorkOrderAttachments({
     attachmentInputAccept: getAttachmentInputAccept(attachmentPickerScope === "design" ? "design" : "attachment"),
     handleOpenAttachmentPicker,
     handleAttachmentFiles,
+    handleAttachmentFileDrop,
     handleDeleteAttachment,
     handleSetPrimaryDesignAttachment,
     handleCreateMemoThread,

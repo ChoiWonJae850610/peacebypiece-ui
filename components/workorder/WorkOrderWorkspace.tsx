@@ -152,6 +152,7 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
     onCloseManagerAssignModal: actions.handleCloseManagerAssignModal,
     onChangeManager: actions.handleChangeManager,
     onOpenAttachmentPicker: attachments.handleOpenAttachmentPicker,
+    onUploadAttachmentFiles: attachments.handleAttachmentFileDrop,
     onRequestDeleteAttachment: handleRequestDeleteAttachment,
     onSetPrimaryDesignAttachment: attachments.handleSetPrimaryDesignAttachment,
     onAttachmentDeleteConfirmClose: handleCloseDeleteAttachmentConfirm,

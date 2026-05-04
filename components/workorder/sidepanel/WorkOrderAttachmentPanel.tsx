@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type DragEvent } from "react";
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
 import { DeleteButton } from "@/components/workorder/detail/shared/detailEditorShared";
 import { useI18n } from "@/lib/i18n";
@@ -78,17 +78,39 @@ function AttachmentUploadHint({
   scope,
   canManageAttachments,
   onOpenAttachmentPicker,
+  onUploadFiles,
   compact,
 }: {
   scope: AttachmentPanelScope;
   canManageAttachments: boolean;
   onOpenAttachmentPicker: () => void;
+  onUploadFiles: (files: File[]) => void;
   compact: boolean;
 }) {
   const { i18n } = useI18n();
   const ui = i18n.workorder.ui;
-  const title = getUploadGuideLabel(scope, ui);
-  const description = getUploadGuideDescription(scope, ui);
+  const [dragActive, setDragActive] = useState(false);
+  const title = dragActive ? ui.attachmentPanel.dropUploadGuide : getUploadGuideLabel(scope, ui);
+  const description = dragActive ? ui.attachmentPanel.dropUploadGuideDescription : getUploadGuideDescription(scope, ui);
+
+  const handleDragOver = (event: DragEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+    setDragActive(true);
+  };
+
+  const handleDragLeave = (event: DragEvent<HTMLButtonElement>) => {
+    if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+    setDragActive(false);
+  };
+
+  const handleDrop = (event: DragEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    setDragActive(false);
+    const files = Array.from(event.dataTransfer.files ?? []);
+    if (files.length === 0) return;
+    onUploadFiles(files);
+  };
 
   if (!canManageAttachments) return null;
 
@@ -96,10 +118,18 @@ function AttachmentUploadHint({
     <button
       type="button"
       onClick={onOpenAttachmentPicker}
-      className={`mt-3 w-full rounded-2xl border border-dashed border-stone-300 bg-stone-50 text-left transition-colors hover:border-stone-400 hover:bg-white active:bg-stone-100 ${compact ? "px-3 py-3" : "px-4 py-3.5"}`}
+      onDragEnter={handleDragOver}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className={`mt-3 w-full rounded-2xl border border-dashed text-left transition-colors active:bg-stone-100 ${
+        dragActive
+          ? "border-stone-500 bg-white shadow-sm"
+          : "border-stone-300 bg-stone-50 hover:border-stone-400 hover:bg-white"
+      } ${compact ? "px-3 py-3" : "px-4 py-3.5"}`}
     >
       <div className="flex items-center gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-base text-stone-700 shadow-sm">＋</span>
+        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-base text-stone-700 shadow-sm ${dragActive ? "ring-2 ring-stone-300" : ""}`}>＋</span>
         <span className="min-w-0">
           <span className="block text-[13px] font-semibold text-stone-900">{title}</span>
           <span className="mt-0.5 block text-xs leading-4 text-stone-500">{description}</span>
@@ -118,6 +148,7 @@ export default function WorkOrderAttachmentPanel({
   attachments,
   uploadScope,
   onOpenAttachmentPicker,
+  onUploadFiles,
   onPreviewAttachment,
   onDeleteAttachment,
   onSetPrimaryDesignAttachment,
@@ -131,6 +162,7 @@ export default function WorkOrderAttachmentPanel({
   attachments: AttachmentPanelItem[];
   uploadScope: AttachmentPanelScope;
   onOpenAttachmentPicker: () => void;
+  onUploadFiles: (files: File[]) => void;
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;
   onSetPrimaryDesignAttachment?: (attachmentId: string) => void;
@@ -212,6 +244,7 @@ export default function WorkOrderAttachmentPanel({
             scope={uploadScope}
             canManageAttachments={canManageAttachments}
             onOpenAttachmentPicker={onOpenAttachmentPicker}
+            onUploadFiles={onUploadFiles}
             compact={isMobile || isTablet}
           />
         </div>
@@ -222,6 +255,7 @@ export default function WorkOrderAttachmentPanel({
             scope={uploadScope}
             canManageAttachments={canManageAttachments}
             onOpenAttachmentPicker={onOpenAttachmentPicker}
+            onUploadFiles={onUploadFiles}
             compact={isMobile || isTablet}
           />
         </div>

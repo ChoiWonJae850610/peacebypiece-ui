@@ -8,6 +8,7 @@ export type WorkOrderSidePanelProps = {
   canEditMemo: boolean;
   attachmentSections: AttachmentPanelSection[];
   onOpenAttachmentPicker: (scope?: "design" | "attachment") => void;
+  onUploadAttachmentFiles: (scope: "design" | "attachment", files: File[]) => void;
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;
   onSetPrimaryDesignAttachment: (attachmentId: string) => void;
