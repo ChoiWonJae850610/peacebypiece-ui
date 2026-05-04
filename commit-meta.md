@@ -1,23 +1,19 @@
 Version :
-0.9.152
+0.9.153
 
 Summary :
-작업지시서 PC UI 1차 정리
+작업지시서 발주요청 확인 영역 정렬
 
 Description :
-발주정보 표의 상태 컬럼을 표 밖 요약 배지로 이동하고 원단/부자재 테이블 컬럼 순서를 거래처 중심으로 정리했다. 메모와 댓글의 작성자/시간 표시를 단순화하고 첨부 삭제 안내 문구를 30일 휴지통 복원 정책에 맞게 변경했다.
+발주요청 확인 모달에서 대표 이미지 영역과 요청사항 영역을 같은 카드 구조로 정리했다. 두 영역의 헤더 높이, 테두리, 패딩, 최소 높이를 맞추고 요청사항 상단의 불필요한 대표 이미지 안내 문구를 제거했다. 출력/PDF 생성 로직, 상태 변경, 첨부/메모 저장, R2/Worker/purge 로직은 변경하지 않았다.
 
 수정 파일 목록 :
-- components/workorder/detail/sections/OrderInfoSection.tsx
-- components/workorder/detail/sections/MaterialSection.tsx
-- components/workorder/sidepanel/WorkOrderMemoPanel.tsx
-- lib/i18n/ko/common.ts
-- lib/i18n/en/common.ts
+- components/common/modal/OrderRequestConfirmModal.tsx
 - lib/constants/app.ts
 - docs/restore-baseline-0.9.121.md
 
 추가 파일 목록 :
-- docs/workorder-pc-ui-adjustment-0.9.152.md
+- docs/workorder-order-request-preview-0.9.153.md
 
 삭제 파일 목록 :
 없음

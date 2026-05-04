@@ -405,32 +405,29 @@ export default function OrderRequestConfirmModal({
         ) : null}
 
         <div className="border-b border-stone-400 bg-[#fcfaf5] p-4">
-          <section className="overflow-hidden border border-stone-400 bg-white">
-            <div className="border-b border-stone-300 bg-stone-100 px-3 py-2 text-sm font-bold text-stone-900">대표이미지 / 요청사항</div>
-            <div className="grid gap-0 xl:grid-cols-[1.08fr_0.92fr]">
-              <div className="border-b border-stone-300 p-4 xl:border-b-0 xl:border-r">
+          <section className="grid gap-3 xl:grid-cols-2">
+            <div className="flex min-h-[360px] flex-col overflow-hidden border border-stone-400 bg-white">
+              <div className="flex h-10 shrink-0 items-center border-b border-stone-300 bg-stone-100 px-3 text-sm font-bold text-stone-900">대표 이미지</div>
+              <div className="flex flex-1 p-4">
                 {representativeImage ? (
-                  <div className="overflow-hidden border border-stone-300 bg-stone-100">
-                    <img src={representativeImage.url} alt={representativeImage.name} className="h-[300px] w-full object-contain bg-white" />
+                  <div className="flex min-h-[300px] flex-1 items-center justify-center overflow-hidden border border-stone-300 bg-stone-100">
+                    <img src={representativeImage.url} alt={representativeImage.name} className="h-full max-h-[300px] w-full object-contain bg-white" />
                   </div>
                 ) : (
-                  <div className="flex h-[300px] items-center justify-center border border-dashed border-stone-300 bg-white text-sm text-stone-500">
+                  <div className="flex min-h-[300px] flex-1 items-center justify-center border border-dashed border-stone-300 bg-white text-sm text-stone-500">
                     대표 이미지가 없습니다.
                   </div>
                 )}
               </div>
-              <div className="p-4">
-                <div className="mb-2 flex items-center justify-between gap-3">
-                  <div className="text-xs font-bold tracking-wide text-rose-700">요청사항</div>
-                  <span className="rounded border border-stone-300 bg-stone-50 px-2 py-0.5 text-[11px] font-semibold text-stone-600">
-대표이미지는 디자인 영역 파일을 우선 사용합니다.
-                  </span>
-                </div>
+            </div>
+            <div className="flex min-h-[360px] flex-col overflow-hidden border border-stone-400 bg-white">
+              <div className="flex h-10 shrink-0 items-center border-b border-stone-300 bg-stone-100 px-3 text-sm font-bold text-stone-900">요청사항</div>
+              <div className="flex flex-1 p-4">
                 <textarea
                   value={requestNote}
                   onChange={(event) => setRequestNote(event.target.value)}
                   placeholder="요청사항을 입력하세요."
-                  className="min-h-[300px] w-full resize-none border border-stone-300 bg-white px-3 py-3 text-sm leading-6 text-stone-800 outline-none transition focus:border-stone-500"
+                  className="min-h-[300px] flex-1 resize-none border border-stone-300 bg-white px-3 py-3 text-sm leading-6 text-stone-800 outline-none transition focus:border-stone-500"
                 />
               </div>
             </div>
