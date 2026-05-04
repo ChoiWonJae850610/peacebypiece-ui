@@ -22,8 +22,10 @@ export default function AdminFilesPage() {
   const [isLoadingSnapshot, setIsLoadingSnapshot] = useState(false);
   const [trendPeriod, setTrendPeriod] = useState<AdminFileTrendPeriod>(7);
   const [selectedTrashItemIds, setSelectedTrashItemIds] = useState<string[]>([]);
+  const [selectedWorkOrderIds, setSelectedWorkOrderIds] = useState<string[]>([]);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [pendingFileAction, setPendingFileAction] = useState<"restore" | "purge" | null>(null);
+  const [pendingWorkOrderAction, setPendingWorkOrderAction] = useState<"restore" | "purge" | null>(null);
 
   async function refreshSnapshot() {
     setIsLoadingSnapshot(true);
@@ -58,8 +60,14 @@ export default function AdminFilesPage() {
     setActionMessage(null);
   }
 
+  function toggleWorkOrderId(workOrderId: string) {
+    setSelectedWorkOrderIds((currentIds) => (currentIds.includes(workOrderId) ? currentIds.filter((id) => id !== workOrderId) : [...currentIds, workOrderId]));
+    setActionMessage(null);
+  }
+
   function handleToggleAllTrashItems() {
-    setSelectedTrashItemIds(buildAdminSelectAllIds(snapshot.trashItems, selectedTrashItemIds));
+    const selectableItems = snapshot.trashItems.filter((item) => !item.parentWorkOrderDeleted);
+    setSelectedTrashItemIds(buildAdminSelectAllIds(selectableItems, selectedTrashItemIds));
     setActionMessage(null);
   }
 
@@ -76,6 +84,31 @@ export default function AdminFilesPage() {
       }
     } finally {
       setPendingFileAction(null);
+    }
+  }
+
+
+  async function handleRestoreWorkOrder(workOrderId: string) {
+    if (pendingWorkOrderAction) return;
+    setPendingWorkOrderAction("restore");
+    try {
+      const response = await fetch("/api/admin/files/workorders/restore", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ workOrderId, restoredBy: "admin" }),
+      });
+      const payload = (await response.json().catch(() => null)) as { ok?: boolean; message?: string; affectedCount?: number; requestedCount?: number } | null;
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.message || `WORKORDER_RESTORE_FAILED_${response.status}`);
+      }
+      setActionMessage(payload.message || `작업지시서를 복구했습니다.`);
+      setSelectedWorkOrderIds((currentIds) => currentIds.filter((id) => id !== workOrderId));
+      setSelectedTrashItemIds([]);
+      await refreshSnapshot();
+    } catch (error) {
+      setActionMessage(error instanceof Error ? error.message : "작업지시서 복구 요청에 실패했습니다.");
+    } finally {
+      setPendingWorkOrderAction(null);
     }
   }
 
@@ -125,13 +158,17 @@ export default function AdminFilesPage() {
             items={snapshot.trashItems}
             workOrderItems={snapshot.workOrders ?? []}
             selectedItemIds={selectedTrashItemIds}
+            selectedWorkOrderIds={selectedWorkOrderIds}
             onToggleItem={toggleTrashItemId}
+            onToggleWorkOrder={toggleWorkOrderId}
             onToggleAll={handleToggleAllTrashItems}
             onRestore={() => handleRestoreTrashItem()}
             onPurge={() => handlePurgeTrashItem()}
             onRestoreItem={(itemId) => handleRestoreTrashItem([itemId])}
             onPurgeItem={(itemId) => handlePurgeTrashItem([itemId])}
+            onRestoreWorkOrder={handleRestoreWorkOrder}
             isActionPending={pendingFileAction !== null}
+            isWorkOrderActionPending={pendingWorkOrderAction !== null}
           />
         </div>
       </section>

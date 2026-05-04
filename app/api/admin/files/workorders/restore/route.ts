@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { previewRestoreWorkOrderTrashBundle } from "@/lib/admin/files/serverActions";
+import { restoreWorkOrderTrashBundle } from "@/lib/admin/files/serverActions";
 
 export const runtime = "nodejs";
 
@@ -19,7 +19,7 @@ function getErrorMessage(error: unknown): string {
 export async function POST(request: NextRequest) {
   try {
     const payload = (await request.json().catch(() => null)) as WorkOrderRestoreRequest | null;
-    const result = await previewRestoreWorkOrderTrashBundle({
+    const result = await restoreWorkOrderTrashBundle({
       workOrderId: readText(payload?.workOrderId) ?? "",
       actorId: readText(payload?.restoredBy),
     });
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
         reason: result.reason,
         message: result.message,
       },
-      { status: result.reason === "WORKORDER_ID_REQUIRED" ? 400 : 409 },
+      { status: result.ok ? 200 : result.reason === "WORKORDER_ID_REQUIRED" ? 400 : 404 },
     );
   } catch (error) {
     const message = getErrorMessage(error);

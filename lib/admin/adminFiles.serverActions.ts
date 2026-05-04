@@ -578,12 +578,12 @@ export type AdminWorkOrderTrashActionInput = {
 };
 
 export type AdminWorkOrderTrashActionResult = {
-  ok: false;
+  ok: boolean;
   action: AdminWorkOrderTrashActionType;
   workOrderId: string | null;
   requestedCount: number;
-  affectedCount: 0;
-  reason: "WORKORDER_ACTION_NOT_CONNECTED" | "WORKORDER_ID_REQUIRED";
+  affectedCount: number;
+  reason: "WORKORDER_ACTION_NOT_CONNECTED" | "WORKORDER_ID_REQUIRED" | "WORKORDER_NOT_FOUND" | "OK";
   message: string;
 };
 
@@ -622,11 +622,98 @@ function createWorkOrderTrashActionSkeletonResult(input: {
   };
 }
 
-export async function previewRestoreWorkOrderTrashBundle(input: AdminWorkOrderTrashActionInput): Promise<AdminWorkOrderTrashActionResult> {
-  return createWorkOrderTrashActionSkeletonResult({
+export async function restoreWorkOrderTrashBundle(input: AdminWorkOrderTrashActionInput): Promise<AdminWorkOrderTrashActionResult> {
+  const workOrderId = normalizeWorkOrderTrashActionInput(input);
+  if (!workOrderId) {
+    return createWorkOrderTrashActionSkeletonResult({ action: "restore", workOrderId });
+  }
+
+  const result = await queryDb<CountRow & { attachment_count: string | number; trash_count: string | number; memo_count: string | number }>(
+    `WITH target_workorder AS (
+       SELECT id, deleted_at
+         FROM spec_sheets
+        WHERE id = $1
+          AND (deleted_at IS NOT NULL OR COALESCE(is_active, true) = false)
+     ), restored_workorder AS (
+       UPDATE spec_sheets
+          SET is_active = true,
+              deleted_at = NULL,
+              updated_at = now()
+        WHERE id IN (SELECT id FROM target_workorder)
+        RETURNING id
+     ), bundle_trash AS (
+       SELECT t.id, t.attachment_id
+         FROM attachment_trash_items t
+        WHERE t.order_id = $1
+          AND t.delete_reason = $2
+          AND t.purge_status = 'pending'
+          AND t.restored_at IS NULL
+          AND t.purged_at IS NULL
+     ), restored_attachments AS (
+       UPDATE attachments
+          SET is_active = true,
+              deleted_at = NULL,
+              deleted_by = NULL,
+              delete_reason = NULL,
+              purge_after_at = NULL,
+              updated_at = now()
+        WHERE id IN (SELECT attachment_id FROM bundle_trash)
+        RETURNING id
+     ), restored_trash AS (
+       UPDATE attachment_trash_items
+          SET restored_at = now(),
+              restored_by = $3,
+              purge_status = 'restored',
+              updated_at = now()
+        WHERE id IN (SELECT id FROM bundle_trash)
+        RETURNING id
+     ), restored_memos AS (
+       UPDATE memos
+          SET is_active = true,
+              deleted_at = NULL,
+              updated_at = now()
+        WHERE order_id = $1
+          AND deleted_at IS NOT NULL
+          AND deleted_at >= COALESCE((SELECT deleted_at FROM target_workorder), now()) - interval '10 seconds'
+        RETURNING id
+     )
+     SELECT COUNT(*)::text AS affected_count,
+            (SELECT COUNT(*) FROM restored_attachments)::text AS attachment_count,
+            (SELECT COUNT(*) FROM restored_trash)::text AS trash_count,
+            (SELECT COUNT(*) FROM restored_memos)::text AS memo_count
+       FROM restored_workorder`,
+    [workOrderId, WORKORDER_BUNDLE_DELETE_REASON, input.actorId ?? null],
+  );
+
+  const row = result.rows[0];
+  const workOrderCount = readCount(row);
+  if (workOrderCount === 0) {
+    return {
+      ok: false,
+      action: "restore",
+      workOrderId,
+      requestedCount: 1,
+      affectedCount: 0,
+      reason: "WORKORDER_NOT_FOUND",
+      message: "복구할 삭제 상태 작업지시서를 찾지 못했습니다.",
+    };
+  }
+
+  const attachmentCount = Number(row?.attachment_count ?? 0);
+  const memoCount = Number(row?.memo_count ?? 0);
+  return {
+    ok: true,
     action: "restore",
-    workOrderId: normalizeWorkOrderTrashActionInput(input),
-  });
+    workOrderId,
+    requestedCount: 1,
+    affectedCount: workOrderCount,
+    reason: "OK",
+    message: `작업지시서 1건을 복구했습니다. 작업지시서 삭제와 함께 휴지통으로 이동한 첨부 ${attachmentCount}건, 메모 ${memoCount}건을 함께 복구했습니다.`,
+  };
+}
+
+export async function previewRestoreWorkOrderTrashBundle(input: AdminWorkOrderTrashActionInput): Promise<AdminWorkOrderTrashActionResult> {
+  return restoreWorkOrderTrashBundle(input);
 }
 
 export async function previewPurgeWorkOrderTrashBundle(input: AdminWorkOrderTrashActionInput): Promise<AdminWorkOrderTrashActionResult> {
