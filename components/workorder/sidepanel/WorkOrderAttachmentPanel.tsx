@@ -9,6 +9,14 @@ import type { AttachmentPanelItem } from "@/lib/workorder/presentation/workOrder
 
 type AttachmentPanelScope = "design" | "attachment";
 
+function readDroppedFiles(event: DragEvent<HTMLElement>) {
+  return Array.from(event.dataTransfer?.files ?? []).filter((file) => file.size > 0);
+}
+
+function hasDroppedFiles(event: DragEvent<HTMLElement>) {
+  return Array.from(event.dataTransfer?.types ?? []).includes("Files");
+}
+
 function getUploadGuideLabel(scope: AttachmentPanelScope, ui: ReturnType<typeof useI18n>["i18n"]["workorder"]["ui"]) {
   return scope === "design" ? ui.attachmentPanel.designUploadGuide : ui.attachmentPanel.attachmentUploadGuide;
 }
@@ -93,21 +101,25 @@ function AttachmentUploadHint({
   const title = dragActive ? ui.attachmentPanel.dropUploadGuide : getUploadGuideLabel(scope, ui);
   const description = dragActive ? ui.attachmentPanel.dropUploadGuideDescription : getUploadGuideDescription(scope, ui);
 
-  const handleDragOver = (event: DragEvent<HTMLButtonElement>) => {
+  const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
+    if (!hasDroppedFiles(event)) return;
     event.preventDefault();
+    event.stopPropagation();
     event.dataTransfer.dropEffect = "copy";
     setDragActive(true);
   };
 
-  const handleDragLeave = (event: DragEvent<HTMLButtonElement>) => {
+  const handleDragLeave = (event: DragEvent<HTMLDivElement>) => {
     if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
     setDragActive(false);
   };
 
-  const handleDrop = (event: DragEvent<HTMLButtonElement>) => {
+  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
+    if (!hasDroppedFiles(event)) return;
     event.preventDefault();
+    event.stopPropagation();
     setDragActive(false);
-    const files = Array.from(event.dataTransfer.files ?? []);
+    const files = readDroppedFiles(event);
     if (files.length === 0) return;
     onUploadFiles(files);
   };
@@ -115,14 +127,21 @@ function AttachmentUploadHint({
   if (!canManageAttachments) return null;
 
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onOpenAttachmentPicker}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onOpenAttachmentPicker();
+        }
+      }}
       onDragEnter={handleDragOver}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`mt-3 w-full rounded-2xl border border-dashed text-left transition-colors active:bg-stone-100 ${
+      className={`mt-3 w-full cursor-pointer rounded-2xl border border-dashed text-left transition-colors active:bg-stone-100 ${
         dragActive
           ? "border-stone-500 bg-white shadow-sm"
           : "border-stone-300 bg-stone-50 hover:border-stone-400 hover:bg-white"
@@ -135,7 +154,7 @@ function AttachmentUploadHint({
           <span className="mt-0.5 block text-xs leading-4 text-stone-500">{description}</span>
         </span>
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -176,13 +195,45 @@ export default function WorkOrderAttachmentPanel({
     onSetPrimaryDesignAttachment(attachmentId);
   };
 
+  const [panelDragActive, setPanelDragActive] = useState(false);
+
+  const handlePanelDragOver = (event: DragEvent<HTMLDivElement>) => {
+    if (!canManageAttachments || !hasDroppedFiles(event)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.dataTransfer.dropEffect = "copy";
+    setPanelDragActive(true);
+  };
+
+  const handlePanelDragLeave = (event: DragEvent<HTMLDivElement>) => {
+    if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+    setPanelDragActive(false);
+  };
+
+  const handlePanelDrop = (event: DragEvent<HTMLDivElement>) => {
+    if (!canManageAttachments || !hasDroppedFiles(event)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setPanelDragActive(false);
+    const files = readDroppedFiles(event);
+    if (files.length === 0) return;
+    onUploadFiles(files);
+  };
+
   if (!canSeeAttachments) return null;
 
   const isMobile = variant === "mobile";
   const isTablet = variant === "tablet";
 
   return (
-    <WorkOrderPanelCard>
+    <div
+      onDragEnter={handlePanelDragOver}
+      onDragOver={handlePanelDragOver}
+      onDragLeave={handlePanelDragLeave}
+      onDrop={handlePanelDrop}
+      className={panelDragActive ? "rounded-[1.75rem] ring-2 ring-stone-300" : undefined}
+    >
+      <WorkOrderPanelCard>
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-stone-900">{title}</h3>
@@ -260,6 +311,7 @@ export default function WorkOrderAttachmentPanel({
           />
         </div>
       )}
-    </WorkOrderPanelCard>
+      </WorkOrderPanelCard>
+    </div>
   );
 }
