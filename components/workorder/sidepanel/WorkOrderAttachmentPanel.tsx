@@ -25,6 +25,11 @@ function getUploadGuideDescription(scope: AttachmentPanelScope, ui: ReturnType<t
   return scope === "design" ? ui.attachmentPanel.designUploadGuideDescription : ui.attachmentPanel.attachmentUploadGuideDescription;
 }
 
+function logAttachmentDropDebug(scope: AttachmentPanelScope, message: string, payload?: Record<string, unknown>) {
+  if (process.env.NODE_ENV === "production") return;
+  console.info(`[attachment-dnd:${scope}] ${message}`, payload ?? {});
+}
+
 function AttachmentActionMenu({
   scope,
   addButtonLabel,
@@ -120,6 +125,7 @@ function AttachmentUploadHint({
     event.stopPropagation();
     setDragActive(false);
     const files = readDroppedFiles(event);
+    logAttachmentDropDebug(scope, "drop on hint", { fileCount: files.length, fileNames: files.map((file) => file.name) });
     if (files.length === 0) return;
     onUploadFiles(files);
   };
@@ -216,6 +222,7 @@ export default function WorkOrderAttachmentPanel({
     event.stopPropagation();
     setPanelDragActive(false);
     const files = readDroppedFiles(event);
+    logAttachmentDropDebug(uploadScope, "drop on panel", { fileCount: files.length, fileNames: files.map((file) => file.name) });
     if (files.length === 0) return;
     onUploadFiles(files);
   };

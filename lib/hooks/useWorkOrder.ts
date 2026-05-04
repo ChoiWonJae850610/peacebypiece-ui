@@ -256,6 +256,7 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     getAttachmentPermissions: attachmentState.getAttachmentPermissions,
     handleOpenAttachmentPicker: attachmentState.handleOpenAttachmentPicker,
     handleAttachmentFiles: attachmentState.handleAttachmentFiles,
+    handleAttachmentFileDrop: attachmentState.handleAttachmentFileDrop,
     handleDeleteAttachment: attachmentState.handleDeleteAttachment,
     handleSetPrimaryDesignAttachment: attachmentState.handleSetPrimaryDesignAttachment,
   };

@@ -1,19 +1,20 @@
 Version :
-0.9.158
+0.9.159
 
 Summary :
-작업지시서 드래그 업로드 drop 이벤트 보완
+작업지시서 드래그 업로드 빌드 오류와 진단 로그 보완
 
 Description :
-디자인/첨부 패널의 dragOver/drop 이벤트 처리를 보완해 파일을 드래그했을 때 실제 업로드 함수까지 도달하도록 정리했다. 점선 안내 영역을 drop 이벤트를 안정적으로 받을 수 있는 구조로 바꾸고, 패널 전체에서도 파일 drop을 받을 수 있게 했다. 기존 파일 선택 업로드, R2 Worker 업로드, 썸네일, 삭제/복구 흐름은 변경하지 않았다.
+useWorkOrder의 attachments 반환 객체에 handleAttachmentFileDrop을 포함해 WorkOrderWorkspace의 drag-and-drop 업로드 prop 연결 빌드 오류를 수정했다. 드래그 업로드가 실제 drop 이벤트까지 도달하는지 확인할 수 있도록 개발 환경 전용 콘솔 로그를 추가했다. R2 Worker 업로드, 썸네일 생성, 삭제/복구, 메모 저장 로직은 변경하지 않았다.
 
 수정 파일 목록 :
 - components/workorder/sidepanel/WorkOrderAttachmentPanel.tsx
+- lib/hooks/useWorkOrder.ts
 - lib/constants/app.ts
 - docs/restore-baseline-0.9.121.md
 
 추가 파일 목록 :
-- docs/workorder-attachment-dnd-drop-0.9.158.md
+- docs/workorder-attachment-dnd-build-fix-0.9.159.md
 
 삭제 파일 목록 :
 없음
