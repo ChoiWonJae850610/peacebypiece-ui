@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 
 import WorkOrderLayout from "@/components/workorder/WorkOrderLayout";
 import WorkOrderOverlay from "@/components/workorder/WorkOrderOverlay";
+import WorkOrderDeleteConfirmModal from "@/components/common/modal/WorkOrderDeleteConfirmModal";
 import { useWorkOrder } from "@/lib/hooks/useWorkOrder";
 import { useDbConnectionStatus } from "@/lib/hooks/workorder/useDbConnectionStatus";
 import { getPendingAttachmentDelete } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
@@ -37,6 +38,7 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
   } = workOrder;
 
   const [pendingAttachmentDeleteId, setPendingAttachmentDeleteId] = useState<string | null>(null);
+  const [pendingWorkOrderDeleteId, setPendingWorkOrderDeleteId] = useState<string | null>(null);
 
   const renderHasSelection = selection.hasVisibleWorkOrders && selection.hasActiveSelection;
 
@@ -48,6 +50,26 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
       ),
     [pendingAttachmentDeleteId, renderHasSelection, selection.selectedWorkOrder.attachments],
   );
+
+  const pendingWorkOrderDelete = useMemo(
+    () => selection.workOrders.find((item) => item.id === pendingWorkOrderDeleteId) ?? null,
+    [pendingWorkOrderDeleteId, selection.workOrders],
+  );
+
+  const handleRequestDeleteWorkOrder = (workOrderId: string) => {
+    setPendingWorkOrderDeleteId(workOrderId);
+  };
+
+  const handleCloseDeleteWorkOrderConfirm = () => {
+    setPendingWorkOrderDeleteId(null);
+  };
+
+  const handleConfirmDeleteWorkOrder = () => {
+    if (!pendingWorkOrderDeleteId) return;
+
+    actions.handleDeleteWorkOrder(pendingWorkOrderDeleteId);
+    setPendingWorkOrderDeleteId(null);
+  };
 
   const handleRequestDeleteAttachment = (attachmentId: string) => {
     setPendingAttachmentDeleteId(attachmentId);
@@ -137,7 +159,7 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
     onSave: actions.handleSave,
     onSelectWorkOrder: actions.handleSelectWorkOrder,
     onCreateWorkOrder: actions.handleCreateWorkOrder,
-    onDeleteWorkOrder: actions.handleDeleteWorkOrder,
+    onDeleteWorkOrder: handleRequestDeleteWorkOrder,
     onReorderWorkOrder: actions.handleReorderWorkOrder,
     onReworkWorkOrder: actions.handleReworkWorkOrder,
     onWorkflowAction: actions.handleWorkflowAction,
@@ -184,6 +206,12 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
         onAttachmentFilesChange={attachments.handleAttachmentFiles}
         toastMessage={ui.toastMessage}
         modalProps={viewModel.modalProps}
+      />
+      <WorkOrderDeleteConfirmModal
+        open={Boolean(pendingWorkOrderDelete)}
+        workOrder={pendingWorkOrderDelete}
+        onClose={handleCloseDeleteWorkOrderConfirm}
+        onConfirm={handleConfirmDeleteWorkOrder}
       />
     </>
   );

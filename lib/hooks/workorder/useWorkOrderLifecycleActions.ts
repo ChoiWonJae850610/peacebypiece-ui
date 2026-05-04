@@ -289,11 +289,6 @@ export function useWorkOrderLifecycleActions({
     async ({ workOrderId, workOrders, selectedId }: DeleteWorkOrderInput) => {
       const target = workOrders.find((item) => item.id === workOrderId);
       if (!target || !canDeleteWorkOrder(target.workflowState)) return;
-      if (typeof window !== "undefined") {
-        const ok = window.confirm(lifecycleText.deleteConfirmFormat.replace("{title}", getWorkOrderDisplayTitle(target)));
-        if (!ok) return;
-      }
-
       await executeWorkOrderAsyncAction({
         actionKey: "delete",
         setActionStatus,

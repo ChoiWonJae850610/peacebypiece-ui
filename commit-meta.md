@@ -1,22 +1,23 @@
 Version :
-0.9.160
+0.9.161
 
 Summary :
-직접 그리기 준비 모달과 드래그 업로드 빌드 오류 보완
+작업지시서 삭제 확인을 앱 내부 모달로 교체
 
 Description :
-작업지시서 디자인 영역의 직접 그리기 메뉴를 준비 안내 모달로 연결했다. useWorkOrderAttachments의 업로드 scope 타입을 design 또는 attachment로 좁혀 memo scope가 첨부 업로드 action flow에 들어가지 않도록 보완했다. 실제 drawing library, canvas 저장, R2 저장 연결은 추가하지 않았고 기존 파일 선택 업로드와 드래그 업로드 흐름은 유지했다.
+작업지시서 삭제 시 브라우저 기본 confirm을 사용하지 않고 앱 내부 확인 모달을 표시하도록 변경했다. 삭제 대상 작업지시서명을 모달에 표시하고, 작업지시서가 목록에서 숨겨진다는 안내를 추가했다. 기존 삭제 API와 첨부, 메모, R2, purge 흐름은 변경하지 않았다.
 
 수정 파일 목록 :
-- components/workorder/sidepanel/WorkOrderAttachmentPanel.tsx
-- lib/hooks/workorder/useWorkOrderAttachments.ts
+- components/workorder/WorkOrderWorkspace.tsx
+- lib/hooks/workorder/useWorkOrderLifecycleActions.ts
 - lib/i18n/ko/workorder.ts
 - lib/i18n/en/workorder.ts
 - lib/constants/app.ts
 - docs/restore-baseline-0.9.121.md
 
 추가 파일 목록 :
-- docs/workorder-drawing-placeholder-0.9.160.md
+- components/common/modal/WorkOrderDeleteConfirmModal.tsx
+- docs/workorder-delete-confirm-modal-0.9.161.md
 
 삭제 파일 목록 :
 없음
