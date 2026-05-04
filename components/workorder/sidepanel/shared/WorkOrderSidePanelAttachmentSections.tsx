@@ -37,7 +37,10 @@ export default function WorkOrderSidePanelAttachmentSections({
       attachments={section.items}
       uploadScope={section.uploadScope}
       onOpenAttachmentPicker={() => onOpenAttachmentPicker(section.uploadScope)}
-      onUploadFiles={(files) => onUploadAttachmentFiles(section.uploadScope, files)}
+      onUploadFiles={(files) => {
+        if (typeof onUploadAttachmentFiles !== "function") return;
+        onUploadAttachmentFiles(section.uploadScope, files);
+      }}
       onPreviewAttachment={onPreviewAttachment}
       onDeleteAttachment={onDeleteAttachment}
       onSetPrimaryDesignAttachment={onSetPrimaryDesignAttachment}

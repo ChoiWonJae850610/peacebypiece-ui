@@ -13,6 +13,7 @@ export default function WorkOrderSidePanelSections({
   canEditMemo,
   attachmentSections,
   onOpenAttachmentPicker,
+  onUploadAttachmentFiles,
   onPreviewAttachment,
   onDeleteAttachment,
   onSetPrimaryDesignAttachment,
@@ -35,6 +36,7 @@ export default function WorkOrderSidePanelSections({
       canSeeAttachments={canSeeAttachments}
       canManageAttachments={canManageAttachments}
       onOpenAttachmentPicker={onOpenAttachmentPicker}
+      onUploadAttachmentFiles={onUploadAttachmentFiles}
       onPreviewAttachment={onPreviewAttachment}
       onDeleteAttachment={onDeleteAttachment}
       onSetPrimaryDesignAttachment={onSetPrimaryDesignAttachment}

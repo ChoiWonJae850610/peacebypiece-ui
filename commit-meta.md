@@ -1,29 +1,23 @@
 Version :
-0.9.156
+0.9.157
 
 Summary :
-작업지시서 디자인·첨부 드래그 업로드 연결
+작업지시서 드래그 업로드 런타임 에러 보완
 
 Description :
-디자인/첨부 패널의 점선 업로드 안내 영역에 실제 drag-and-drop 업로드를 연결했다. 기존 파일 선택 업로드와 동일한 업로드 처리 흐름을 재사용하며, R2 Worker 업로드·썸네일·삭제·메모 로직은 변경하지 않았다.
+디자인/첨부 drag-and-drop 업로드 시 side panel 경로에서 onUploadAttachmentFiles handler가 전달되지 않아 발생하던 런타임 에러를 보완했다. desktop, tablet, mobile attachment section에 handler 전달을 명시하고 handler 누락 시 화면이 중단되지 않도록 방어 처리했다. 기존 파일 선택 업로드, R2 Worker 업로드, 썸네일, 삭제, 메모 저장 흐름은 변경하지 않았다.
 
 수정 파일 목록 :
-- components/workorder/WorkOrderWorkspace.tsx
-- components/workorder/sidepanel/WorkOrderAttachmentPanel.tsx
-- components/workorder/sidepanel/WorkOrderSidePanel.types.ts
+- components/workorder/sidepanel/shared/WorkOrderSidePanelSections.tsx
 - components/workorder/sidepanel/shared/WorkOrderSidePanelAttachmentSections.tsx
 - components/workorder/sidepanel/shared/WorkOrderSidePanelMobileAttachmentSections.tsx
-- lib/hooks/workorder/useWorkOrderAttachments.ts
-- lib/workorder/workspace/buildWorkspaceViewModel.ts
-- lib/workorder/workspace/builders/detailBuilders.ts
-- lib/workorder/workspace/viewModelTypes.ts
-- lib/i18n/ko/workorder.ts
-- lib/i18n/en/workorder.ts
+- components/workorder/sidepanel/views/WorkOrderSidePanelTabletView.tsx
+- components/workorder/sidepanel/views/WorkOrderSidePanelMobileView.tsx
 - lib/constants/app.ts
 - docs/restore-baseline-0.9.121.md
 
 추가 파일 목록 :
-- docs/workorder-attachment-dnd-0.9.156.md
+- docs/workorder-attachment-dnd-runtime-fix-0.9.157.md
 
 삭제 파일 목록 :
 없음
