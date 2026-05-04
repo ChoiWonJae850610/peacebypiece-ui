@@ -1,10 +1,113 @@
 "use client";
 
+import { useState } from "react";
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
-import { AddButton, DeleteButton } from "@/components/workorder/detail/shared/detailEditorShared";
+import { DeleteButton } from "@/components/workorder/detail/shared/detailEditorShared";
 import { useI18n } from "@/lib/i18n";
 import { WORK_ORDER_ATTACHMENT_POLICY } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
 import type { AttachmentPanelItem } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
+
+type AttachmentPanelScope = "design" | "attachment";
+
+function getUploadGuideLabel(scope: AttachmentPanelScope, ui: ReturnType<typeof useI18n>["i18n"]["workorder"]["ui"]) {
+  return scope === "design" ? ui.attachmentPanel.designUploadGuide : ui.attachmentPanel.attachmentUploadGuide;
+}
+
+function getUploadGuideDescription(scope: AttachmentPanelScope, ui: ReturnType<typeof useI18n>["i18n"]["workorder"]["ui"]) {
+  return scope === "design" ? ui.attachmentPanel.designUploadGuideDescription : ui.attachmentPanel.attachmentUploadGuideDescription;
+}
+
+function AttachmentActionMenu({
+  scope,
+  addButtonLabel,
+  onOpenAttachmentPicker,
+  isMobile,
+}: {
+  scope: AttachmentPanelScope;
+  addButtonLabel: string;
+  onOpenAttachmentPicker: () => void;
+  isMobile: boolean;
+}) {
+  const { i18n } = useI18n();
+  const ui = i18n.workorder.ui;
+  const [open, setOpen] = useState(false);
+  const canShowDrawingAction = scope === "design";
+
+  return (
+    <div className="relative shrink-0">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        className="pbp-interactive-button inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-300 bg-white text-sm font-semibold text-stone-700 shadow-sm transition-colors hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+        aria-label={ui.attachmentPanel.actionMenuAria}
+        aria-expanded={open}
+      >
+        ···
+      </button>
+      {open ? (
+        <div className={`absolute right-0 z-30 mt-2 min-w-[160px] overflow-hidden rounded-2xl border border-stone-200 bg-white p-1.5 text-sm shadow-lg ${isMobile ? "top-8" : "top-8"}`}>
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              onOpenAttachmentPicker();
+            }}
+            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-[13px] font-medium text-stone-800 hover:bg-stone-50 active:bg-stone-100"
+          >
+            <span aria-hidden="true">＋</span>
+            <span>{addButtonLabel}</span>
+          </button>
+          {canShowDrawingAction ? (
+            <button
+              type="button"
+              disabled
+              className="flex w-full cursor-not-allowed items-center gap-2 rounded-xl px-3 py-2 text-left text-[13px] font-medium text-stone-400"
+              title={ui.attachmentPanel.drawingActionPending}
+            >
+              <span aria-hidden="true">✎</span>
+              <span>{ui.attachmentPanel.drawingAction}</span>
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function AttachmentUploadHint({
+  scope,
+  canManageAttachments,
+  onOpenAttachmentPicker,
+  compact,
+}: {
+  scope: AttachmentPanelScope;
+  canManageAttachments: boolean;
+  onOpenAttachmentPicker: () => void;
+  compact: boolean;
+}) {
+  const { i18n } = useI18n();
+  const ui = i18n.workorder.ui;
+  const title = getUploadGuideLabel(scope, ui);
+  const description = getUploadGuideDescription(scope, ui);
+
+  if (!canManageAttachments) return null;
+
+  return (
+    <button
+      type="button"
+      onClick={onOpenAttachmentPicker}
+      className={`mt-3 w-full rounded-2xl border border-dashed border-stone-300 bg-stone-50 text-left transition-colors hover:border-stone-400 hover:bg-white active:bg-stone-100 ${compact ? "px-3 py-3" : "px-4 py-3.5"}`}
+    >
+      <div className="flex items-center gap-3">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-base text-stone-700 shadow-sm">＋</span>
+        <span className="min-w-0">
+          <span className="block text-[13px] font-semibold text-stone-900">{title}</span>
+          <span className="mt-0.5 block text-xs leading-4 text-stone-500">{description}</span>
+        </span>
+      </div>
+    </button>
+  );
+}
 
 export default function WorkOrderAttachmentPanel({
   title,
@@ -13,6 +116,7 @@ export default function WorkOrderAttachmentPanel({
   canSeeAttachments,
   canManageAttachments,
   attachments,
+  uploadScope,
   onOpenAttachmentPicker,
   onPreviewAttachment,
   onDeleteAttachment,
@@ -25,6 +129,7 @@ export default function WorkOrderAttachmentPanel({
   canSeeAttachments: boolean;
   canManageAttachments: boolean;
   attachments: AttachmentPanelItem[];
+  uploadScope: AttachmentPanelScope;
   onOpenAttachmentPicker: () => void;
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;
@@ -50,7 +155,14 @@ export default function WorkOrderAttachmentPanel({
         <div>
           <h3 className="text-sm font-semibold text-stone-900">{title}</h3>
         </div>
-        {canManageAttachments ? <AddButton onClick={onOpenAttachmentPicker} srLabel={addButtonLabel} title={addButtonLabel} /> : null}
+        {canManageAttachments ? (
+          <AttachmentActionMenu
+            scope={uploadScope}
+            addButtonLabel={addButtonLabel}
+            onOpenAttachmentPicker={onOpenAttachmentPicker}
+            isMobile={isMobile}
+          />
+        ) : null}
       </div>
       {attachments.length > 0 ? (
         <div className={isMobile ? "mt-2.5 space-y-1.5" : "mt-2.5 space-y-2"}>
@@ -96,9 +208,23 @@ export default function WorkOrderAttachmentPanel({
               </button>
             </div>
           ))}
+          <AttachmentUploadHint
+            scope={uploadScope}
+            canManageAttachments={canManageAttachments}
+            onOpenAttachmentPicker={onOpenAttachmentPicker}
+            compact={isMobile || isTablet}
+          />
         </div>
       ) : (
-        <div className="mt-3 rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">{emptyText}</div>
+        <div>
+          <div className="mt-3 rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">{emptyText}</div>
+          <AttachmentUploadHint
+            scope={uploadScope}
+            canManageAttachments={canManageAttachments}
+            onOpenAttachmentPicker={onOpenAttachmentPicker}
+            compact={isMobile || isTablet}
+          />
+        </div>
       )}
     </WorkOrderPanelCard>
   );

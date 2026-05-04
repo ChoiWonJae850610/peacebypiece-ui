@@ -247,6 +247,13 @@ export const workorderKo = {
       previewFile: "파일",
       previewImage: "이미지",
       compactAddButton: "첨부 추가",
+      actionMenuAria: "첨부 작업 메뉴",
+      drawingAction: "직접 그리기",
+      drawingActionPending: "직접 그리기 기능은 다음 단계에서 연결합니다.",
+      designUploadGuide: "디자인 파일을 추가하세요",
+      designUploadGuideDescription: "PC에서는 이 영역을 업로드 진입점으로 사용합니다. 드래그 업로드는 다음 단계에서 연결합니다.",
+      attachmentUploadGuide: "첨부 파일을 추가하세요",
+      attachmentUploadGuideDescription: "PDF와 이미지 파일을 보관합니다. 드래그 업로드는 다음 단계에서 연결합니다.",
     },
     header: {
       titleInputAria: "작업지시서명",

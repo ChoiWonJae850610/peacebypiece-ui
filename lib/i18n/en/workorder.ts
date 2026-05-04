@@ -247,6 +247,13 @@ export const workorderEn = {
       previewFile: "File",
       previewImage: "Image",
       compactAddButton: "Add attachment",
+      actionMenuAria: "Attachment action menu",
+      drawingAction: "Draw directly",
+      drawingActionPending: "Direct drawing will be connected in a later step.",
+      designUploadGuide: "Add design files",
+      designUploadGuideDescription: "Use this area as the upload entry point on PC. Drag upload will be connected later.",
+      attachmentUploadGuide: "Add attachment files",
+      attachmentUploadGuideDescription: "Store PDFs and image files here. Drag upload will be connected later.",
     },
     header: {
       titleInputAria: "Work order title",

@@ -33,6 +33,7 @@ export default function WorkOrderSidePanelAttachmentSections({
       canSeeAttachments={canSeeAttachments}
       canManageAttachments={canManageAttachments}
       attachments={section.items}
+      uploadScope={section.uploadScope}
       onOpenAttachmentPicker={() => onOpenAttachmentPicker(section.uploadScope)}
       onPreviewAttachment={onPreviewAttachment}
       onDeleteAttachment={onDeleteAttachment}
