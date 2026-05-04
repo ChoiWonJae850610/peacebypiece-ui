@@ -179,12 +179,35 @@ export default function FileTrashSection({
   const canRestoreSelection = canAct && !hasRestoreBlockedSelection;
   const canPurgeSelection = canAct && !hasPurgeBlockedSelection;
   const allSelected = items.length > 0 && selectedItemIds.length === items.length;
+  const policySummary = useMemo(() => {
+    const fileUnitCount = items.filter((item) => item.restorePolicy === "file_unit").length;
+    const parentBlockedCount = items.filter((item) => item.restorePolicy === "parent_deleted_restore_blocked").length;
+    const bundleRequiredCount = items.filter((item) => item.restorePolicy === "bundle_required").length;
+
+    return [
+      {
+        label: t("filesList.policySummary.fileUnit", "파일 단위"),
+        value: `${fileUnitCount}${t("filesList.countSuffix", "개")}`,
+        description: t("filesList.policySummary.fileUnitDescription", "복구와 영구삭제를 파일별로 처리합니다."),
+      },
+      {
+        label: t("filesList.policySummary.parentBlocked", "복원 불가"),
+        value: `${parentBlockedCount}${t("filesList.countSuffix", "개")}`,
+        description: t("filesList.policySummary.parentBlockedDescription", "부모 작업지시서가 삭제되어 복구는 막고 영구삭제만 허용합니다."),
+      },
+      {
+        label: t("filesList.policySummary.bundleRequired", "묶음 처리"),
+        value: `${bundleRequiredCount}${t("filesList.countSuffix", "개")}`,
+        description: t("filesList.policySummary.bundleRequiredDescription", "작업지시서 대표 row에서 복원/삭제해야 하는 파일입니다."),
+      },
+    ];
+  }, [items, t]);
 
   return (
     <section className="flex h-full min-h-[420px] flex-col rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm">
       <AdminActionBar
         title={t("trashPage.title", "휴지통")}
-        description={t("trashPage.description", "삭제된 작업지시서와 첨부파일을 한 목록에서 확인합니다. 작업지시서 묶음 항목의 실제 복원/영구삭제는 다음 단계에서 연결합니다.")}
+        description={t("trashPage.description", "삭제된 항목의 처리 단위를 먼저 확인한 뒤 복구 또는 영구삭제를 진행합니다. 작업지시서 묶음 항목은 대표 row에서만 처리합니다.")}
       >
         <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-600">
           {t("filesList.retentionPolicy", "30일 휴지통 보관")}
@@ -211,6 +234,18 @@ export default function FileTrashSection({
           {isActionPending ? t("filesList.processing", "처리 중") : t("filesList.purge", "영구 삭제")} {hasSelection ? selectedItemIds.length : ""}
         </button>
       </AdminActionBar>
+
+      <div className="mt-3 grid gap-2 md:grid-cols-3">
+        {policySummary.map((item) => (
+          <div key={item.label} className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-[11px] font-semibold text-stone-600">{item.label}</p>
+              <p className="text-xs font-bold text-stone-900">{item.value}</p>
+            </div>
+            <p className="mt-1 text-[10px] leading-4 text-stone-500">{item.description}</p>
+          </div>
+        ))}
+      </div>
 
       <AdminTable
         className="mt-3 min-h-0 flex-1"
@@ -250,8 +285,14 @@ export default function FileTrashSection({
                 <p className={`truncate font-semibold ${row.kind === "workorder" ? "text-stone-950" : "text-stone-800"}`}>
                   {row.isGroupedAttachment ? "└ " : ""}{row.targetLabel}
                 </p>
-                {row.kind === "workorder" ? <p className="mt-1 truncate text-[10px] text-stone-400">{row.id}</p> : null}
-                {row.isGroupedAttachment ? <p className="mt-1 text-[10px] text-stone-400">{t("filesList.groupedAttachmentHint", "작업지시서 삭제 그룹에 포함된 파일")}</p> : null}
+                {row.kind === "workorder" ? (
+                  <div className="mt-1 space-y-0.5 text-[10px] text-stone-500">
+                    <p>{row.sourceItem.statusLabel}</p>
+                    <p>{row.sourceItem.attachmentSummaryLabel}</p>
+                    <p>{row.sourceItem.memoSummaryLabel}</p>
+                  </div>
+                ) : null}
+                {row.isGroupedAttachment ? <p className="mt-1 text-[10px] text-stone-400">{t("filesList.groupedAttachmentHint", "작업지시서 대표 row에서 처리할 파일")}</p> : null}
               </div>
             ),
           },
@@ -288,10 +329,10 @@ export default function FileTrashSection({
                 return (
                   <div className="flex flex-wrap gap-1.5">
                     <button type="button" disabled className="rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-[10px] font-semibold text-stone-400" title={row.restoreDisabledReason}>
-                      {t("filesList.restorePreparing", "복원 준비중")}
+                      {t("filesList.workorderRestorePreparingShort", "작업지시서 복원 준비중")}
                     </button>
                     <button type="button" disabled className="rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-[10px] font-semibold text-stone-400" title={row.purgeDisabledReason}>
-                      {t("filesList.purgePreparing", "영구삭제 준비중")}
+                      {t("filesList.workorderPurgePreparingShort", "작업지시서 영구삭제 준비중")}
                     </button>
                   </div>
                 );
