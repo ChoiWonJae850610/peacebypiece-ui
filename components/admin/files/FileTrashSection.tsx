@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import ModalShell from "@/components/common/modal/ModalShell";
 import AdminActionBar from "@/components/admin/common/AdminActionBar";
 import AdminTable from "@/components/admin/common/AdminTable";
 import type { AdminStorageWorkOrderItem, AdminTrashFileItem } from "@/lib/admin/files/types";
@@ -10,8 +11,6 @@ type FileTrashSectionProps = {
   items: AdminTrashFileItem[];
   workOrderItems?: AdminStorageWorkOrderItem[];
   selectedItemIds: string[];
-  selectedWorkOrderId?: string | null;
-  onSelectWorkOrder?: (workOrderId: string) => void;
   onToggleItem: (itemId: string) => void;
   onToggleAll: () => void;
   onRestore: () => void;
@@ -184,38 +183,24 @@ export default function FileTrashSection({
   onPurge,
   onRestoreItem,
   onPurgeItem,
-  selectedWorkOrderId = null,
-  onSelectWorkOrder,
   isActionPending = false,
 }: FileTrashSectionProps) {
   const t = useAdminTranslation();
   const rows = useMemo(() => createUnifiedRows({ items, workOrderItems, selectedItemIds, t }), [items, workOrderItems, selectedItemIds, t]);
   const [workOrderActionPreview, setWorkOrderActionPreview] = useState<WorkOrderActionPreview | null>(null);
-  const selectedWorkOrder = useMemo(() => workOrderItems.find((item) => item.id === selectedWorkOrderId) ?? null, [selectedWorkOrderId, workOrderItems]);
   const previewWorkOrder = useMemo(() => workOrderItems.find((item) => item.id === workOrderActionPreview?.workOrderId) ?? null, [workOrderActionPreview?.workOrderId, workOrderItems]);
-  const selectedWorkOrderTrashItems = useMemo(() => {
-    if (!selectedWorkOrderId) return [];
-    return items.filter((item) => item.workorderId === selectedWorkOrderId && item.parentWorkOrderDeleted);
-  }, [items, selectedWorkOrderId]);
   const previewWorkOrderTrashItems = useMemo(() => {
     if (!workOrderActionPreview?.workOrderId) return [];
     return items.filter((item) => item.workorderId === workOrderActionPreview.workOrderId && item.parentWorkOrderDeleted);
   }, [items, workOrderActionPreview?.workOrderId]);
-  const selectedWorkOrderBundleCount = selectedWorkOrderTrashItems.filter((item) => item.restorePolicy === "bundle_required").length;
-  const selectedWorkOrderBlockedCount = selectedWorkOrderTrashItems.filter((item) => item.restorePolicy === "parent_deleted_restore_blocked").length;
   const previewWorkOrderBundleCount = previewWorkOrderTrashItems.filter((item) => item.restorePolicy === "bundle_required").length;
   const previewWorkOrderBlockedCount = previewWorkOrderTrashItems.filter((item) => item.restorePolicy === "parent_deleted_restore_blocked").length;
-  const selectedWorkOrderTotalSizeLabel = formatStorageSize(
-    selectedWorkOrderTrashItems.reduce((sum, item) => sum + item.fileSizeBytes, 0),
-    t,
-  );
   const previewWorkOrderTotalSizeLabel = formatStorageSize(
     previewWorkOrderTrashItems.reduce((sum, item) => sum + item.fileSizeBytes, 0),
     t,
   );
 
   function openWorkOrderActionPreview(workOrderId: string, intent: WorkOrderActionIntent) {
-    onSelectWorkOrder?.(workOrderId);
     setWorkOrderActionPreview({ workOrderId, intent });
   }
 
@@ -295,69 +280,38 @@ export default function FileTrashSection({
         ))}
       </div>
 
-      {selectedWorkOrder ? (
-        <div className="mt-3 rounded-2xl border border-stone-300 bg-stone-50 px-4 py-3">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-stone-500">{t("filesList.selectedWorkOrderLabel", "선택된 작업지시서")}</p>
-              <h3 className="mt-1 truncate text-sm font-bold text-stone-950">{selectedWorkOrder.title}</h3>
-              <p className="mt-1 text-[11px] text-stone-500">{selectedWorkOrder.statusLabel} · {t("filesList.columns.deletedAt", "삭제일시")} {selectedWorkOrder.deletedAt || "-"}</p>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              <button type="button" onClick={() => openWorkOrderActionPreview(selectedWorkOrder.id, "restore")} className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-[10px] font-semibold text-stone-700 shadow-sm hover:bg-stone-100" title={t("filesList.workorderRestorePreparing", "작업지시서 복원은 다음 단계에서 연결합니다.")}>
-                {t("filesList.workorderRestorePreview", "복원 범위 확인")}
-              </button>
-              <button type="button" onClick={() => openWorkOrderActionPreview(selectedWorkOrder.id, "purge")} className="rounded-full border border-red-200 bg-white px-3 py-1.5 text-[10px] font-semibold text-red-600 shadow-sm hover:bg-red-50" title={t("filesList.workorderPurgePreparing", "작업지시서 영구삭제는 다음 단계에서 연결합니다.")}>
-                {t("filesList.workorderPurgePreview", "영구삭제 범위 확인")}
-              </button>
-              <button type="button" onClick={() => onSelectWorkOrder?.(selectedWorkOrder.id)} className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-[10px] font-semibold text-stone-600 shadow-sm hover:bg-stone-100">
-                {t("filesList.clearWorkOrderSelection", "선택 해제")}
-              </button>
-            </div>
+      <ModalShell
+        open={Boolean(workOrderActionPreview && previewWorkOrder)}
+        onClose={() => setWorkOrderActionPreview(null)}
+        title={
+          workOrderActionPreview?.intent === "purge"
+            ? t("filesList.workorderPurgePreview", "영구삭제 범위 확인")
+            : t("filesList.workorderRestorePreview", "복원 범위 확인")
+        }
+        description={previewWorkOrder ? `${previewWorkOrder.title} · ${previewWorkOrder.statusLabel}` : undefined}
+        maxWidthClass="md:max-w-2xl"
+        footer={
+          <div className="flex w-full justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setWorkOrderActionPreview(null)}
+              className="rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-700 shadow-sm hover:bg-stone-50"
+            >
+              {t("common.confirm", "확인")}
+            </button>
           </div>
-          <div className="mt-3 grid gap-2 md:grid-cols-4">
-            <div className="rounded-xl border border-stone-200 bg-white px-3 py-2">
-              <p className="text-[10px] font-semibold text-stone-400">{t("filesList.selectedScope.workorder", "작업지시서")}</p>
-              <p className="mt-1 text-[11px] font-bold text-stone-700">{t("filesList.selectedScope.workorderValue", "대표 row 1건")}</p>
-            </div>
-            <div className="rounded-xl border border-stone-200 bg-white px-3 py-2">
-              <p className="text-[10px] font-semibold text-stone-400">{t("filesList.selectedScope.bundleAttachments", "묶음 처리 첨부")}</p>
-              <p className="mt-1 text-[11px] font-bold text-stone-700">{selectedWorkOrderBundleCount}{t("filesList.countSuffix", "개")}</p>
-            </div>
-            <div className="rounded-xl border border-stone-200 bg-white px-3 py-2">
-              <p className="text-[10px] font-semibold text-stone-400">{t("filesList.selectedScope.restoreBlocked", "복원 불가 파일")}</p>
-              <p className="mt-1 text-[11px] font-bold text-stone-700">{selectedWorkOrderBlockedCount}{t("filesList.countSuffix", "개")}</p>
-            </div>
-            <div className="rounded-xl border border-stone-200 bg-white px-3 py-2">
-              <p className="text-[10px] font-semibold text-stone-400">{t("filesList.selectedScope.totalSize", "연결 파일 용량")}</p>
-              <p className="mt-1 text-[11px] font-bold text-stone-700">{selectedWorkOrderTotalSizeLabel}</p>
-            </div>
-          </div>
-          <div className="mt-2 grid gap-2 md:grid-cols-3">
-            <div className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-[11px] text-stone-600">{selectedWorkOrder.attachmentSummaryLabel}</div>
-            <div className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-[11px] text-stone-600">{selectedWorkOrder.memoSummaryLabel}</div>
-            <div className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-[11px] text-stone-600">{t("filesList.workorderBundleActionHint", "복원/영구삭제는 작업지시서 단위 API 연결 후 처리합니다.")}</div>
-          </div>
-        </div>
-      ) : null}
-
-      {workOrderActionPreview && previewWorkOrder ? (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30 px-4" role="dialog" aria-modal="true" aria-label={t("filesList.workorderActionPreviewTitle", "작업지시서 처리 범위 확인")}>
-          <div className="w-full max-w-xl rounded-[28px] border border-stone-200 bg-white p-5 shadow-2xl">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-stone-500">
-                  {workOrderActionPreview.intent === "restore" ? t("filesList.workorderRestorePreview", "복원 범위 확인") : t("filesList.workorderPurgePreview", "영구삭제 범위 확인")}
-                </p>
-                <h3 className="mt-1 truncate text-base font-bold text-stone-950">{previewWorkOrder.title}</h3>
-                <p className="mt-1 text-xs text-stone-500">{previewWorkOrder.statusLabel} · {t("filesList.columns.deletedAt", "삭제일시")} {previewWorkOrder.deletedAt || "-"}</p>
-              </div>
-              <button type="button" onClick={() => setWorkOrderActionPreview(null)} className="rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-600 shadow-sm hover:bg-stone-50">
-                {t("common.close", "닫기")}
-              </button>
+        }
+      >
+        {workOrderActionPreview && previewWorkOrder ? (
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
+              <p className="text-xs font-semibold text-stone-900">{previewWorkOrder.title}</p>
+              <p className="mt-1 text-xs text-stone-500">
+                {previewWorkOrder.statusLabel} · {t("filesList.columns.deletedAt", "삭제일시")} {previewWorkOrder.deletedAt || "-"}
+              </p>
             </div>
 
-            <div className="mt-4 grid gap-2 md:grid-cols-4">
+            <div className="grid gap-2 md:grid-cols-4">
               <div className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2">
                 <p className="text-[10px] font-semibold text-stone-400">{t("filesList.selectedScope.workorder", "작업지시서")}</p>
                 <p className="mt-1 text-[11px] font-bold text-stone-800">{t("filesList.selectedScope.workorderValue", "대표 row 1건")}</p>
@@ -376,7 +330,7 @@ export default function FileTrashSection({
               </div>
             </div>
 
-            <div className="mt-4 space-y-2 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800">
+            <div className="space-y-2 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800">
               <p className="font-semibold">{t("filesList.workorderActionGuardTitle", "아직 실제 작업지시서 복원/영구삭제 API는 연결하지 않았습니다.")}</p>
               <p>
                 {workOrderActionPreview.intent === "restore"
@@ -384,15 +338,9 @@ export default function FileTrashSection({
                   : t("filesList.workorderPurgeGuardDescription", "영구삭제 연결 시 작업지시서 대표 row와 묶음 처리 첨부/메모를 작업지시서 단위로 확정 처리하고, R2 삭제는 Worker 기반 purge 흐름만 사용해야 합니다.")}
               </p>
             </div>
-
-            <div className="mt-4 flex justify-end gap-2">
-              <button type="button" onClick={() => setWorkOrderActionPreview(null)} className="rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-700 shadow-sm hover:bg-stone-50">
-                {t("common.confirm", "확인")}
-              </button>
-            </div>
           </div>
-        </div>
-      ) : null}
+        ) : null}
+      </ModalShell>
 
       <AdminTable
         className="mt-3 min-h-0 flex-1"
@@ -401,9 +349,10 @@ export default function FileTrashSection({
         emptyLabel={t("filesList.trashEmpty", "휴지통에 보관 중인 항목이 없습니다.")}
         gridTemplateColumns={TRASH_TABLE_GRID}
         rowClassName={(row) => {
-          if (row.kind === "workorder") return row.id === selectedWorkOrderId ? "bg-stone-100 ring-1 ring-inset ring-stone-300" : "bg-stone-50/90";
-          const isSelectedWorkOrderGroup = Boolean(selectedWorkOrderId && row.sourceItem.workorderId === selectedWorkOrderId);
-          if (row.isGroupedAttachment) return `border-l-4 ${isSelectedWorkOrderGroup ? "border-l-stone-400 bg-stone-100/70" : "border-l-stone-200"} transition ${row.isSelected ? "bg-stone-100" : "bg-stone-50/40 hover:bg-stone-50"}`;
+          const previewWorkOrderId = workOrderActionPreview?.workOrderId ?? null;
+          if (row.kind === "workorder") return row.id === previewWorkOrderId ? "bg-stone-100 ring-1 ring-inset ring-stone-300" : "bg-stone-50/90";
+          const isPreviewWorkOrderGroup = Boolean(previewWorkOrderId && row.sourceItem.workorderId === previewWorkOrderId);
+          if (row.isGroupedAttachment) return `border-l-4 ${isPreviewWorkOrderGroup ? "border-l-stone-400 bg-stone-100/70" : "border-l-stone-200"} transition ${row.isSelected ? "bg-stone-100" : "bg-stone-50/40 hover:bg-stone-50"}`;
           return `transition ${row.isSelected ? "bg-stone-100" : "bg-white hover:bg-stone-50"}`;
         }}
         columns={[
@@ -474,17 +423,13 @@ export default function FileTrashSection({
             label: t("filesList.columns.actions", "작업"),
             render: (row) => {
               if (row.kind === "workorder") {
-                const isSelectedWorkOrder = row.id === selectedWorkOrderId;
                 return (
                   <div className="flex flex-wrap gap-1.5">
-                    <button type="button" onClick={() => onSelectWorkOrder?.(row.id)} className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold shadow-sm ${isSelectedWorkOrder ? "border-stone-900 bg-stone-900 text-white" : "border-stone-300 bg-white text-stone-700 hover:bg-stone-50"}`}>
-                      {isSelectedWorkOrder ? t("filesList.workorderSelected", "선택됨") : t("filesList.selectWorkOrder", "대표 row 선택")}
-                    </button>
                     <button type="button" onClick={() => openWorkOrderActionPreview(row.id, "restore")} className="rounded-full border border-stone-300 bg-white px-2.5 py-1 text-[10px] font-semibold text-stone-700 shadow-sm hover:bg-stone-50" title={row.restoreDisabledReason}>
-                      {t("filesList.workorderRestorePreviewShort", "복원 범위")}
+                      {t("filesList.restore", "복구")}
                     </button>
                     <button type="button" onClick={() => openWorkOrderActionPreview(row.id, "purge")} className="rounded-full border border-red-200 bg-white px-2.5 py-1 text-[10px] font-semibold text-red-600 shadow-sm hover:bg-red-50" title={row.purgeDisabledReason}>
-                      {t("filesList.workorderPurgePreviewShort", "영구삭제 범위")}
+                      {t("filesList.purge", "영구 삭제")}
                     </button>
                   </div>
                 );
