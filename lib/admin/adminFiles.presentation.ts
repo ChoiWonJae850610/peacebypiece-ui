@@ -33,24 +33,9 @@ export const ADMIN_FILE_USAGE_CARDS: AdminFileUsageCard[] = [
 
 export const ADMIN_FILE_TABS: AdminFileTabItem[] = [
   {
-    key: "workorders",
-    label: "작업지시서",
-    description: "삭제된 작업지시서와 연결 파일·메모 상태를 읽기 전용으로 확인",
-  },
-  {
-    key: "attachments",
-    label: "첨부파일 목록",
-    description: "작업지시서명, 파일명, 파일 유형, 용량, 등록자를 함께 확인",
-  },
-  {
     key: "trash",
     label: "휴지통",
-    description: "삭제 요청된 파일의 보관 상태 확인",
-  },
-  {
-    key: "storage",
-    label: "용량 관리",
-    description: "사용량, 보관 정책, 용량 추가 요청 관리",
+    description: "삭제된 작업지시서와 첨부파일을 한 목록에서 복원·영구삭제 정책에 따라 확인",
   },
 ];
 
