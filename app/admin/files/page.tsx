@@ -22,6 +22,7 @@ export default function AdminFilesPage() {
   const [isLoadingSnapshot, setIsLoadingSnapshot] = useState(false);
   const [trendPeriod, setTrendPeriod] = useState<AdminFileTrendPeriod>(7);
   const [selectedTrashItemIds, setSelectedTrashItemIds] = useState<string[]>([]);
+  const [selectedWorkOrderId, setSelectedWorkOrderId] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [pendingFileAction, setPendingFileAction] = useState<"restore" | "purge" | null>(null);
 
@@ -51,6 +52,12 @@ export default function AdminFilesPage() {
   }, [trendPeriod]);
 
   const selectedTrashItems = useMemo(() => selectAdminTrashItemsByIds(snapshot.trashItems, selectedTrashItemIds), [selectedTrashItemIds, snapshot.trashItems]);
+
+  useEffect(() => {
+    if (!selectedWorkOrderId) return;
+    if (snapshot.workOrders.some((item) => item.id === selectedWorkOrderId)) return;
+    setSelectedWorkOrderId(null);
+  }, [selectedWorkOrderId, snapshot.workOrders]);
 
   function toggleTrashItemId(itemId: string) {
     setSelectedTrashItemIds((currentIds) => (currentIds.includes(itemId) ? currentIds.filter((id) => id !== itemId) : [...currentIds, itemId]));
@@ -124,6 +131,8 @@ export default function AdminFilesPage() {
             items={snapshot.trashItems}
             workOrderItems={snapshot.workOrders ?? []}
             selectedItemIds={selectedTrashItemIds}
+            selectedWorkOrderId={selectedWorkOrderId}
+            onSelectWorkOrder={(workOrderId) => setSelectedWorkOrderId((currentId) => (currentId === workOrderId ? null : workOrderId))}
             onToggleItem={toggleTrashItemId}
             onToggleAll={handleToggleAllTrashItems}
             onRestore={() => handleRestoreTrashItem()}

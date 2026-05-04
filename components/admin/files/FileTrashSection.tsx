@@ -10,6 +10,8 @@ type FileTrashSectionProps = {
   items: AdminTrashFileItem[];
   workOrderItems?: AdminStorageWorkOrderItem[];
   selectedItemIds: string[];
+  selectedWorkOrderId?: string | null;
+  onSelectWorkOrder?: (workOrderId: string) => void;
   onToggleItem: (itemId: string) => void;
   onToggleAll: () => void;
   onRestore: () => void;
@@ -167,10 +169,13 @@ export default function FileTrashSection({
   onPurge,
   onRestoreItem,
   onPurgeItem,
+  selectedWorkOrderId = null,
+  onSelectWorkOrder,
   isActionPending = false,
 }: FileTrashSectionProps) {
   const t = useAdminTranslation();
   const rows = useMemo(() => createUnifiedRows({ items, workOrderItems, selectedItemIds, t }), [items, workOrderItems, selectedItemIds, t]);
+  const selectedWorkOrder = useMemo(() => workOrderItems.find((item) => item.id === selectedWorkOrderId) ?? null, [selectedWorkOrderId, workOrderItems]);
   const hasSelection = selectedItemIds.length > 0;
   const selectedItems = items.filter((item) => selectedItemIds.includes(item.id));
   const hasRestoreBlockedSelection = selectedItems.some((item) => !item.canRestore);
@@ -247,6 +252,26 @@ export default function FileTrashSection({
         ))}
       </div>
 
+      {selectedWorkOrder ? (
+        <div className="mt-3 rounded-2xl border border-stone-300 bg-stone-50 px-4 py-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-stone-500">{t("filesList.selectedWorkOrderLabel", "선택된 작업지시서")}</p>
+              <h3 className="mt-1 truncate text-sm font-bold text-stone-950">{selectedWorkOrder.title}</h3>
+              <p className="mt-1 text-[11px] text-stone-500">{selectedWorkOrder.statusLabel} · {t("filesList.columns.deletedAt", "삭제일시")} {selectedWorkOrder.deletedAt || "-"}</p>
+            </div>
+            <button type="button" onClick={() => onSelectWorkOrder?.(selectedWorkOrder.id)} className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-[10px] font-semibold text-stone-600 shadow-sm hover:bg-stone-100">
+              {t("filesList.clearWorkOrderSelection", "선택 해제")}
+            </button>
+          </div>
+          <div className="mt-3 grid gap-2 md:grid-cols-3">
+            <div className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-[11px] text-stone-600">{selectedWorkOrder.attachmentSummaryLabel}</div>
+            <div className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-[11px] text-stone-600">{selectedWorkOrder.memoSummaryLabel}</div>
+            <div className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-[11px] text-stone-600">{t("filesList.workorderBundleActionHint", "복원/영구삭제는 작업지시서 단위 API 연결 후 처리합니다.")}</div>
+          </div>
+        </div>
+      ) : null}
+
       <AdminTable
         className="mt-3 min-h-0 flex-1"
         items={rows}
@@ -254,8 +279,9 @@ export default function FileTrashSection({
         emptyLabel={t("filesList.trashEmpty", "휴지통에 보관 중인 항목이 없습니다.")}
         gridTemplateColumns={TRASH_TABLE_GRID}
         rowClassName={(row) => {
-          if (row.kind === "workorder") return "bg-stone-50/90";
-          if (row.isGroupedAttachment) return `border-l-4 border-l-stone-200 transition ${row.isSelected ? "bg-stone-100" : "bg-stone-50/40 hover:bg-stone-50"}`;
+          if (row.kind === "workorder") return row.id === selectedWorkOrderId ? "bg-stone-100 ring-1 ring-inset ring-stone-300" : "bg-stone-50/90";
+          const isSelectedWorkOrderGroup = Boolean(selectedWorkOrderId && row.sourceItem.workorderId === selectedWorkOrderId);
+          if (row.isGroupedAttachment) return `border-l-4 ${isSelectedWorkOrderGroup ? "border-l-stone-400 bg-stone-100/70" : "border-l-stone-200"} transition ${row.isSelected ? "bg-stone-100" : "bg-stone-50/40 hover:bg-stone-50"}`;
           return `transition ${row.isSelected ? "bg-stone-100" : "bg-white hover:bg-stone-50"}`;
         }}
         columns={[
@@ -326,13 +352,17 @@ export default function FileTrashSection({
             label: t("filesList.columns.actions", "작업"),
             render: (row) => {
               if (row.kind === "workorder") {
+                const isSelectedWorkOrder = row.id === selectedWorkOrderId;
                 return (
                   <div className="flex flex-wrap gap-1.5">
+                    <button type="button" onClick={() => onSelectWorkOrder?.(row.id)} className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold shadow-sm ${isSelectedWorkOrder ? "border-stone-900 bg-stone-900 text-white" : "border-stone-300 bg-white text-stone-700 hover:bg-stone-50"}`}>
+                      {isSelectedWorkOrder ? t("filesList.workorderSelected", "선택됨") : t("filesList.selectWorkOrder", "대표 row 선택")}
+                    </button>
                     <button type="button" disabled className="rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-[10px] font-semibold text-stone-400" title={row.restoreDisabledReason}>
-                      {t("filesList.workorderRestorePreparingShort", "작업지시서 복원 준비중")}
+                      {t("filesList.workorderRestorePreparingShort", "복원 준비중")}
                     </button>
                     <button type="button" disabled className="rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-[10px] font-semibold text-stone-400" title={row.purgeDisabledReason}>
-                      {t("filesList.workorderPurgePreparingShort", "작업지시서 영구삭제 준비중")}
+                      {t("filesList.workorderPurgePreparingShort", "영구삭제 준비중")}
                     </button>
                   </div>
                 );
