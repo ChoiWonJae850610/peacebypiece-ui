@@ -36,6 +36,7 @@ type UnifiedTrashRow =
       restoreDisabledReason: string;
       purgeDisabledReason: string;
       isSelected: false;
+      isGroupedAttachment: false;
       sourceItem: AdminStorageWorkOrderItem;
     }
   | {
@@ -54,6 +55,7 @@ type UnifiedTrashRow =
       restoreDisabledReason: string | null;
       purgeDisabledReason: string | null;
       isSelected: boolean;
+      isGroupedAttachment: boolean;
       sourceItem: AdminTrashFileItem;
     };
 
@@ -72,6 +74,12 @@ function getRestorePolicyBadgeClass(row: UnifiedTrashRow): string {
   return "border-stone-200 bg-stone-50 text-stone-600";
 }
 
+function sortByDeletedAtDesc<T extends { deletedAt: string | null; targetLabel?: string; fileName?: string }>(a: T, b: T): number {
+  const deletedAtCompare = (b.deletedAt || "").localeCompare(a.deletedAt || "");
+  if (deletedAtCompare !== 0) return deletedAtCompare;
+  return (a.targetLabel || a.fileName || "").localeCompare(b.targetLabel || b.fileName || "", "ko");
+}
+
 function createUnifiedRows(input: {
   items: AdminTrashFileItem[];
   workOrderItems: AdminStorageWorkOrderItem[];
@@ -79,7 +87,9 @@ function createUnifiedRows(input: {
   t: ReturnType<typeof useAdminTranslation>;
 }): UnifiedTrashRow[] {
   const { items, workOrderItems, selectedItemIds, t } = input;
-  const workOrderRows: UnifiedTrashRow[] = workOrderItems.map((item) => ({
+  const workOrderIdSet = new Set(workOrderItems.map((item) => item.id));
+
+  const createWorkOrderRow = (item: AdminStorageWorkOrderItem): UnifiedTrashRow => ({
     kind: "workorder",
     id: item.id,
     rowId: `workorder:${item.id}`,
@@ -95,10 +105,11 @@ function createUnifiedRows(input: {
     restoreDisabledReason: t("filesList.workorderRestorePreparing", "작업지시서 복원은 다음 단계에서 연결합니다."),
     purgeDisabledReason: t("filesList.workorderPurgePreparing", "작업지시서 영구삭제는 다음 단계에서 연결합니다."),
     isSelected: false,
+    isGroupedAttachment: false,
     sourceItem: item,
-  }));
+  });
 
-  const attachmentRows: UnifiedTrashRow[] = items.map((item) => ({
+  const createAttachmentRow = (item: AdminTrashFileItem, isGroupedAttachment: boolean): UnifiedTrashRow => ({
     kind: "attachment",
     id: item.id,
     rowId: `attachment:${item.id}`,
@@ -114,10 +125,36 @@ function createUnifiedRows(input: {
     restoreDisabledReason: item.restoreDisabledReason,
     purgeDisabledReason: item.purgeDisabledReason,
     isSelected: selectedItemIds.includes(item.id),
+    isGroupedAttachment,
     sourceItem: item,
-  }));
+  });
 
-  return [...workOrderRows, ...attachmentRows].sort((a, b) => b.deletedAt.localeCompare(a.deletedAt));
+  const rows: UnifiedTrashRow[] = [];
+  const groupedAttachmentIds = new Set<string>();
+
+  [...workOrderItems].sort(sortByDeletedAtDesc).forEach((workOrder) => {
+    rows.push(createWorkOrderRow(workOrder));
+
+    items
+      .filter((item) => item.workorderId === workOrder.id && item.parentWorkOrderDeleted)
+      .sort(sortByDeletedAtDesc)
+      .forEach((item) => {
+        groupedAttachmentIds.add(item.id);
+        rows.push(createAttachmentRow(item, true));
+      });
+  });
+
+  items
+    .filter((item) => !groupedAttachmentIds.has(item.id))
+    .sort((a, b) => {
+      if (workOrderIdSet.has(a.workorderId) !== workOrderIdSet.has(b.workorderId)) {
+        return workOrderIdSet.has(a.workorderId) ? -1 : 1;
+      }
+      return sortByDeletedAtDesc(a, b);
+    })
+    .forEach((item) => rows.push(createAttachmentRow(item, false)));
+
+  return rows;
 }
 
 export default function FileTrashSection({
@@ -182,7 +219,8 @@ export default function FileTrashSection({
         emptyLabel={t("filesList.trashEmpty", "휴지통에 보관 중인 항목이 없습니다.")}
         gridTemplateColumns={TRASH_TABLE_GRID}
         rowClassName={(row) => {
-          if (row.kind === "workorder") return "bg-stone-50/80";
+          if (row.kind === "workorder") return "bg-stone-50/90";
+          if (row.isGroupedAttachment) return `border-l-4 border-l-stone-200 transition ${row.isSelected ? "bg-stone-100" : "bg-stone-50/40 hover:bg-stone-50"}`;
           return `transition ${row.isSelected ? "bg-stone-100" : "bg-white hover:bg-stone-50"}`;
         }}
         columns={[
@@ -207,10 +245,13 @@ export default function FileTrashSection({
             key: "target",
             label: t("filesList.columns.target", "대상"),
             render: (row) => (
-              <div className="min-w-0">
+              <div className={`min-w-0 ${row.isGroupedAttachment ? "pl-4" : ""}`}>
                 <p className="text-[10px] text-stone-400 md:hidden">{t("filesList.columns.target", "대상")}</p>
-                <p className="truncate font-semibold text-stone-950">{row.targetLabel}</p>
+                <p className={`truncate font-semibold ${row.kind === "workorder" ? "text-stone-950" : "text-stone-800"}`}>
+                  {row.isGroupedAttachment ? "└ " : ""}{row.targetLabel}
+                </p>
                 {row.kind === "workorder" ? <p className="mt-1 truncate text-[10px] text-stone-400">{row.id}</p> : null}
+                {row.isGroupedAttachment ? <p className="mt-1 text-[10px] text-stone-400">{t("filesList.groupedAttachmentHint", "작업지시서 삭제 그룹에 포함된 파일")}</p> : null}
               </div>
             ),
           },
@@ -221,7 +262,7 @@ export default function FileTrashSection({
             render: (row) => (
               <div className="min-w-0">
                 <p className="text-[10px] text-stone-400 md:hidden">{t("filesList.columns.workorder", "작업지시서")}</p>
-                <p className="truncate text-[11px] text-stone-700">{row.workorderTitle}</p>
+                <p className={`truncate text-[11px] ${row.kind === "workorder" ? "font-semibold text-stone-800" : "text-stone-700"}`}>{row.workorderTitle}</p>
               </div>
             ),
           },
