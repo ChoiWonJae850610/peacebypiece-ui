@@ -56,6 +56,18 @@ export default function OrderInfoSection({
   const copy = i18n.workorder.ui.sections.orderInfo;
   const common = i18n.workorder.ui.common;
   const totals = calculateOrderEntryTotals(orderEntries);
+  const inspectionStatusCounts = orderEntries.reduce<Record<string, { label: string; tone: string; count: number }>>((acc, item) => {
+    const key = item.inspectionStatus ?? "__pending";
+    const current = acc[key] ?? {
+      label: getInspectionStatusLabel(item.inspectionStatus),
+      tone: getInspectionStatusTone(item.inspectionStatus),
+      count: 0,
+    };
+    current.count += 1;
+    acc[key] = current;
+    return acc;
+  }, {});
+  const inspectionStatusSummary = Object.values(inspectionStatusCounts);
   const inspectionButton = canOpenInspectionModal ? (
     <button
       type="button"
@@ -72,21 +84,30 @@ export default function OrderInfoSection({
       {open ? (
         <>
           {showDebugPanel ? <OrderInfoHubDebugPanel policy={orderHubPolicy} /> : null}
-          <div className="mt-1 max-w-full overflow-hidden">
+          {inspectionStatusSummary.length > 0 ? (
+            <div className="mt-2 flex flex-wrap items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-2">
+              <span className="mr-1 text-[11px] font-semibold text-stone-500">발주 상태</span>
+              {inspectionStatusSummary.map((status) => (
+                <span key={status.label} className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium leading-none ${status.tone}`}>
+                  {status.label} {status.count}
+                </span>
+              ))}
+            </div>
+          ) : null}
+          <div className="mt-2 max-w-full overflow-hidden">
             <table className="w-full max-w-full table-fixed text-left">
               <colgroup>
                 <col className="w-[13%]" />
-                <col className="w-[17%]" />
-                <col className="w-[15%]" />
-                <col className="w-[12%]" />
-                <col className="w-[12%]" />
-                <col className="w-[12%]" />
-                <col className="w-[12%]" />
-                <col className="w-[7%]" />
+                <col className="w-[19%]" />
+                <col className="w-[18%]" />
+                <col className="w-[13%]" />
+                <col className="w-[14%]" />
+                <col className="w-[14%]" />
+                <col className="w-[9%]" />
               </colgroup>
               <thead className="text-stone-500">
                 <tr className="border-b border-stone-200">
-                  {[copy.fields.type, copy.fields.factory, copy.fields.dueDate, copy.fields.quantity, copy.fields.laborCost, copy.fields.lossCost, copy.fields.inspectionStatus, ""].map((header, index) => (
+                  {[copy.fields.type, copy.fields.factory, copy.fields.dueDate, copy.fields.quantity, copy.fields.laborCost, copy.fields.lossCost, ""].map((header, index) => (
                     <th key={`${header}-${index}`} className={TABLE_HEADER_CELL_CLASS}>
                       <span className="block w-full whitespace-nowrap leading-4">{header}</span>
                     </th>
@@ -102,7 +123,6 @@ export default function OrderInfoSection({
                     <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                     <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="laborCost" value={item.laborCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                     <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="lossCost" value={item.lossCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
-                    <td className="px-3 py-2 text-center align-middle text-[11px] lg:text-[11px]"><span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium ${getInspectionStatusTone(item.inspectionStatus)}`}>{getInspectionStatusLabel(item.inspectionStatus)}</span></td>
                     <td className="px-1.5 py-2 text-center align-middle lg:px-2">
                       <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.factory || copy.fallbackItem.replace("{index}", String(rowIndex + 1))} ${common.deleteSuffix}`} disabled={locked} />
                     </td>
@@ -113,11 +133,11 @@ export default function OrderInfoSection({
                   <td className="px-3 py-2 text-center text-[11px] font-semibold text-stone-900 tabular-nums lg:text-[11px]">{totals.quantity.toLocaleString()}{common.quantitySuffix}</td>
                   <td className="px-3 py-2 text-center text-[11px] font-semibold text-stone-900 tabular-nums lg:text-[11px]">{totals.laborCost.toLocaleString()}{common.currencySuffix}</td>
                   <td className="px-3 py-2 text-center text-[11px] font-semibold text-stone-900 tabular-nums lg:text-[11px]">{totals.lossCost.toLocaleString()}{common.currencySuffix}</td>
-                  <td colSpan={2} />
+                  <td />
                 </tr>
                 {locked ? null : (
                   <tr>
-                    <td colSpan={8} className="px-3 pb-2 pt-2">
+                    <td colSpan={7} className="px-3 pb-2 pt-2">
                       <button
                         type="button"
                         onClick={onAdd}

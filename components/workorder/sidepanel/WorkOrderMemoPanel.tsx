@@ -7,8 +7,25 @@ import { getMemoDisplayContent, getVisibleMemoReplies, getVisibleMemoThreads, is
 import type { MemoReply, MemoThread, RoleType, WorkOrder } from "@/types/workorder";
 
 const MEMO_MAX_LENGTH = 50;
-function getRoleDisplayLabel(role: RoleType, i18n: ReturnType<typeof useI18n>["i18n"]) {
-  return i18n.common.ui.roles?.[role] ?? role;
+
+function padMemoDatePart(value: number) {
+  return String(value).padStart(2, "0");
+}
+
+function formatMemoTimestamp(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return [
+    padMemoDatePart(date.getFullYear() % 100),
+    padMemoDatePart(date.getMonth() + 1),
+    padMemoDatePart(date.getDate()),
+  ].join(".") + ` ${padMemoDatePart(date.getHours())}:${padMemoDatePart(date.getMinutes())}`;
+}
+
+function getMemoAuthorDisplayName(authorName: string, authorRole: RoleType) {
+  if (authorRole === "admin") return "대표";
+  const normalized = authorName.trim();
+  return normalized || "이름 없음";
 }
 
 function normalizeMemoInput(value: string) {
@@ -198,8 +215,8 @@ function MemoThreadCard({
     <div className={isMobile ? "rounded-2xl border border-stone-200 bg-white p-2.5 shadow-sm" : "rounded-2xl border border-stone-200 bg-white p-3 shadow-sm"}>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className={isMobile ? "truncate text-[13px] font-semibold text-stone-900" : "truncate text-sm font-semibold text-stone-900"}>{thread.authorName}</div>
-          <div className="mt-0.5 text-[11px] text-stone-500">{getRoleDisplayLabel(thread.authorRole, i18n)} · {thread.createdAt}</div>
+          <div className={isMobile ? "truncate text-[13px] font-semibold text-stone-900" : "truncate text-sm font-semibold text-stone-900"}>{getMemoAuthorDisplayName(thread.authorName, thread.authorRole)}</div>
+          <div className="mt-0.5 text-[11px] text-stone-500">{formatMemoTimestamp(thread.createdAt)}</div>
         </div>
         <MemoItemActions
           canMutate={canMutateThread}
@@ -243,7 +260,7 @@ function MemoThreadCard({
           return (
             <div key={reply.id} className="pl-3 text-stone-700">
               <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0 text-[11px] text-stone-500">ㄴ {reply.authorName} · {getRoleDisplayLabel(reply.authorRole, i18n)} · {reply.createdAt}</div>
+                <div className="min-w-0 text-[11px] text-stone-500">ㄴ {getMemoAuthorDisplayName(reply.authorName, reply.authorRole)} · {formatMemoTimestamp(reply.createdAt)}</div>
                 <MemoItemActions canMutate={canMutateAuthor(reply.authorId)} editLabel={ui.memo.edit} deleteAriaLabel={ui.memo.deleteAria} onEdit={() => startReplyEdit(reply)} onDelete={() => onDeleteReply(thread.id, reply.id)} />
               </div>
               {isEditingReply ? (
@@ -339,7 +356,7 @@ export default function WorkOrderMemoPanel({
         <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">{`${memoThreads.length}${ui.memo.countSuffix}`}</span>
       </div>
       <div className={isMobile ? "mt-2.5 rounded-xl border border-stone-200 bg-stone-50 p-2" : isTablet ? "mt-3 rounded-xl border border-stone-200 bg-stone-50 p-2.5" : "mt-3 rounded-xl border border-stone-200 bg-stone-50 p-2.5"}>
-        <div className="text-[11px] text-stone-500">{currentUserName} · {getRoleDisplayLabel(currentUserRole, i18n)}</div>
+        <div className="text-[11px] text-stone-500">{getMemoAuthorDisplayName(currentUserName, currentUserRole)}</div>
         <div className="mt-2">
           <MemoInputField value={threadDraft} disabled={!canEditMemo} placeholder={ui.memo.threadPlaceholder} submitLabel={ui.memo.submit} onChange={setThreadDraft} onSubmit={submitThread} isMobile={isMobile} />
         </div>

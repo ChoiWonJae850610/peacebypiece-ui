@@ -40,7 +40,7 @@ export const commonKo = {
         targetLabel: "삭제 대상",
         pdfTypeLabel: "PDF",
         pdfNotice: "문서 파일은 삭제 후 복구할 수 없습니다.",
-        warning: "이 첨부파일을 삭제하시겠습니까? 삭제 후에는 되돌릴 수 없습니다.",
+        warning: "삭제한 파일은 휴지통으로 이동하며, 30일 이내 복원할 수 있습니다.",
       },
       inventoryLog: {
         detailSummary: "상세",

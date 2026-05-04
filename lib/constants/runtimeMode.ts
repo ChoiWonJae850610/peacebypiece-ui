@@ -5,7 +5,7 @@ export const APP_RUNTIME_MODE: AppRuntimeMode = "development";
 
 // 디버그 패널 표시 여부는 이 값들만 수정
 export const DEBUG_FLAGS = {
-  orderInfoHubPanel: true,
+  orderInfoHubPanel: false,
   adminHistoryDebugPanel: true,
   orderRequestDocumentDebug: false,
 } as const;

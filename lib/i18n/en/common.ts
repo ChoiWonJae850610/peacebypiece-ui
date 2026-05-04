@@ -40,7 +40,7 @@ export const commonEn = {
         targetLabel: "Delete target",
         pdfTypeLabel: "PDF",
         pdfNotice: "Document files cannot be recovered after deletion.",
-        warning: "Delete this attachment? This action cannot be undone.",
+        warning: "Deleted files move to trash and can be restored within 30 days.",
       },
       inventoryLog: {
         detailSummary: "Detail",
