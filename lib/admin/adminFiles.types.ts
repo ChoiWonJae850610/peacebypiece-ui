@@ -47,6 +47,8 @@ export type AdminFileStatus = "active" | "trashed" | "purged" | "temp" | AdminFi
 
 export type AdminTrashPurgeStatus = "pending" | "purge_requested" | "purged" | "failed" | "restored";
 
+export type AdminTrashRestorePolicy = "file_unit" | "parent_deleted_restore_blocked" | "bundle_required";
+
 export type AdminFileSortKey = "latest" | "size" | "workorder";
 
 
@@ -62,6 +64,8 @@ export type AdminStorageWorkOrderItem = {
   memoCount: number;
   trashMemoCount: number;
   restorePolicyLabel: string;
+  attachmentSummaryLabel: string;
+  memoSummaryLabel: string;
 };
 
 export type AdminManagedFileItem = {
@@ -103,6 +107,8 @@ export type AdminTrashFileItem = {
   isPurgeReady: boolean;
   lastPurgeError: string | null;
   parentWorkOrderDeleted: boolean;
+  restorePolicy: AdminTrashRestorePolicy;
+  restorePolicyLabel: string;
   canRestore: boolean;
   restoreDisabledReason: string | null;
   canPurge: boolean;

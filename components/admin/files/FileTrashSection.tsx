@@ -15,12 +15,18 @@ type FileTrashSectionProps = {
   isActionPending?: boolean;
 };
 
-const TRASH_TABLE_GRID = "0.36fr 1.02fr 0.72fr 1.45fr 0.62fr 0.62fr 0.9fr";
+const TRASH_TABLE_GRID = "0.36fr 1.02fr 0.82fr 1.35fr 0.62fr 0.62fr 1.18fr";
 
 function getTrashFileType(item: AdminTrashFileItem, t: ReturnType<typeof useAdminTranslation>) {
   if (item.fileIcon === "PDF") return t("filesList.fileTypes.document", "문서");
   if (item.fileIcon === "IMG") return t("filesList.fileTypes.design", "디자인");
   return t("filesList.fileTypes.other", "기타");
+}
+
+function getRestorePolicyBadgeClass(item: AdminTrashFileItem): string {
+  if (item.restorePolicy === "bundle_required") return "border-amber-200 bg-amber-50 text-amber-700";
+  if (item.restorePolicy === "parent_deleted_restore_blocked") return "border-rose-200 bg-rose-50 text-rose-700";
+  return "border-stone-200 bg-stone-50 text-stone-600";
 }
 
 export default function FileTrashSection({ items, selectedItemIds, onToggleItem, onToggleAll, onRestore, onPurge, isActionPending = false }: FileTrashSectionProps) {
@@ -45,7 +51,7 @@ export default function FileTrashSection({ items, selectedItemIds, onToggleItem,
           onClick={onRestore}
           className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${canRestoreSelection ? "border-stone-300 bg-white text-stone-700 shadow-sm hover:bg-stone-50" : "border-stone-200 bg-stone-50 text-stone-400"}`}
           disabled={!canRestoreSelection}
-          title={hasRestoreBlockedSelection ? t("filesList.restoreBlockedByWorkOrder", "삭제된 작업지시서의 연결 파일은 작업지시서 묶음 복원에서 처리해야 합니다.") : undefined}
+          title={hasRestoreBlockedSelection ? selectedItems.find((item) => !item.canRestore)?.restoreDisabledReason ?? t("filesList.restoreBlockedByWorkOrder", "선택한 파일 중 복구할 수 없는 항목이 있습니다.") : undefined}
         >
           {isActionPending ? t("filesList.processing", "처리 중") : t("filesList.restore", "복구")} {hasSelection ? selectedItemIds.length : ""}
         </button>
@@ -54,7 +60,7 @@ export default function FileTrashSection({ items, selectedItemIds, onToggleItem,
           onClick={onPurge}
           className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${canPurgeSelection ? "border-red-200 bg-white text-red-600 shadow-sm hover:bg-red-50" : "border-stone-200 bg-stone-50 text-stone-400"}`}
           disabled={!canPurgeSelection}
-          title={hasPurgeBlockedSelection ? t("filesList.purgeBlockedByWorkOrder", "삭제된 작업지시서의 연결 파일은 작업지시서 묶음 삭제/purge에서 처리해야 합니다.") : undefined}
+          title={hasPurgeBlockedSelection ? selectedItems.find((item) => !item.canPurge)?.purgeDisabledReason ?? t("filesList.purgeBlockedByWorkOrder", "선택한 파일 중 영구삭제할 수 없는 항목이 있습니다.") : undefined}
         >
           {isActionPending ? t("filesList.processing", "처리 중") : t("filesList.purge", "영구 삭제")} {hasSelection ? selectedItemIds.length : ""}
         </button>
@@ -90,7 +96,7 @@ export default function FileTrashSection({ items, selectedItemIds, onToggleItem,
               </div>
             ),
           },
-          { key: "deletedAt", label: t("filesList.columns.deletedAt", "삭제일자"), render: (item) => <p className="text-[11px] text-stone-600">{item.deletedAt}</p> },
+          { key: "deletedAt", label: t("filesList.columns.deletedAt", "삭제일시"), render: (item) => <p className="text-[11px] text-stone-600">{item.deletedAt}</p> },
           {
             key: "fileName",
             label: t("filesList.columns.fileName", "파일명"),
@@ -108,10 +114,10 @@ export default function FileTrashSection({ items, selectedItemIds, onToggleItem,
             label: t("filesList.columns.restorePolicy", "복구 정책"),
             render: (item) => (
               <span
-                className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold ${item.canRestore ? "border-stone-200 bg-stone-50 text-stone-600" : "border-amber-200 bg-amber-50 text-amber-700"}`}
-                title={item.restoreDisabledReason ?? undefined}
+                className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold ${getRestorePolicyBadgeClass(item)}`}
+                title={item.restoreDisabledReason ?? item.purgeDisabledReason ?? undefined}
               >
-                {item.canRestore && item.canPurge ? t("filesList.restoreAvailable", "개별 처리 가능") : t("filesList.restoreWithWorkOrder", "묶음 처리 필요")}
+                {item.restorePolicyLabel}
               </span>
             ),
           },

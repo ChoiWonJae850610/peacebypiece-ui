@@ -5,7 +5,7 @@ import AdminTable from "@/components/admin/common/AdminTable";
 import type { AdminStorageWorkOrderItem } from "@/lib/admin/files/types";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
-const WORKORDER_STORAGE_TABLE_GRID = "1.36fr 0.56fr 0.66fr 0.82fr 0.82fr 0.92fr";
+const WORKORDER_STORAGE_TABLE_GRID = "1.36fr 0.58fr 0.78fr 1.18fr 1.18fr 0.92fr";
 
 type WorkOrderStorageSectionProps = {
   items: AdminStorageWorkOrderItem[];
@@ -79,9 +79,9 @@ export default function WorkOrderStorageSection({ items }: WorkOrderStorageSecti
             ),
           },
           { key: "status", label: t("filesWorkOrders.columns.status", "상태"), render: (item) => <p className="text-[11px] font-semibold text-stone-700">{item.statusLabel}</p> },
-          { key: "deletedAt", label: t("filesWorkOrders.columns.deletedAt", "삭제일"), render: (item) => <p className="text-[11px] text-stone-600">{item.deletedAt || "-"}</p> },
-          { key: "attachments", label: t("filesWorkOrders.columns.attachments", "첨부"), render: (item) => <p className="text-[11px] text-stone-600">{item.attachmentCount} / {item.trashAttachmentCount}</p> },
-          { key: "memos", label: t("filesWorkOrders.columns.memos", "메모"), render: (item) => <p className="text-[11px] text-stone-600">{item.memoCount} / {item.trashMemoCount}</p> },
+          { key: "deletedAt", label: t("filesWorkOrders.columns.deletedAt", "삭제일시"), render: (item) => <p className="text-[11px] text-stone-600">{item.deletedAt || "-"}</p> },
+          { key: "attachments", label: t("filesWorkOrders.columns.attachments", "첨부"), render: (item) => <p className="text-[11px] leading-4 text-stone-600">{item.attachmentSummaryLabel}</p> },
+          { key: "memos", label: t("filesWorkOrders.columns.memos", "메모"), render: (item) => <p className="text-[11px] leading-4 text-stone-600">{item.memoSummaryLabel}</p> },
           {
             key: "policy",
             label: t("filesWorkOrders.columns.policy", "복원 정책"),

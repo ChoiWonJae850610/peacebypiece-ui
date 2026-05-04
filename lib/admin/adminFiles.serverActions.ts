@@ -17,6 +17,8 @@ type CountRow = DbQueryResultRow & {
   affected_count: string | number;
 };
 
+const WORKORDER_BUNDLE_DELETE_REASON = "작업지시서 삭제로 함께 휴지통 이동";
+
 function normalizeIds(ids: string[]): string[] {
   return Array.from(new Set(ids.map((id) => id.trim()).filter(Boolean)));
 }
@@ -84,7 +86,11 @@ export async function requestPurgeAttachmentTrashItems(input: AdminTrashDbAction
           AND t.purge_status = 'pending'
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
-          AND (t.order_id IS NULL OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true))
+          AND (
+            t.order_id IS NULL
+            OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true)
+            OR COALESCE(t.delete_reason, '') <> $2
+          )
      ), marked_attachments AS (
        UPDATE attachments
           SET is_active = false,
@@ -102,7 +108,7 @@ export async function requestPurgeAttachmentTrashItems(input: AdminTrashDbAction
      )
      SELECT COUNT(*)::text AS affected_count
        FROM marked_trash`,
-    [trashItemIds],
+    [trashItemIds, WORKORDER_BUNDLE_DELETE_REASON],
   );
 
   return {
@@ -136,6 +142,7 @@ type AdminTrashRow = DbQueryResultRow & {
   order_id: string | null;
   workorder_title: string | null;
   parent_workorder_deleted: boolean | null;
+  parent_workorder_deleted_at: string | Date | null;
   original_name: string | null;
   mime_type: string | null;
   size_bytes: string | number | null;
@@ -173,6 +180,18 @@ function formatDate(value: string | Date | null | undefined): string {
   return date.toISOString().slice(0, 10);
 }
 
+function formatDateTime(value: string | Date | null | undefined): string {
+  if (!value) return "-";
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  const yy = String(date.getFullYear()).slice(2);
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${yy}.${month}.${day} ${hours}:${minutes}`;
+}
+
 function formatBytes(bytes: number): string {
   if (!Number.isFinite(bytes) || bytes < 0) return "0B";
   if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1)}GB`;
@@ -197,11 +216,30 @@ function getFileType(mimeType: string | null | undefined, fileName = ""): string
 
 function getWorkOrderStatusLabel(status: string | null | undefined): string {
   if (status === "draft") return "작성중";
-  if (status === "in_progress") return "진행중";
-  if (status === "inspection") return "검수중";
+  if (status === "review_requested") return "검토요청";
+  if (status === "review_completed" || status === "review_approved") return "검토완료";
+  if (status === "request_order" || status === "order_requested") return "발주요청";
+  if (status === "order_pending") return "발주대기";
+  if (status === "inspection" || status === "in_inspection") return "검수";
+  if (status === "inspection_pending") return "검수대기";
+  if (status === "inspection_in_progress") return "검수중";
+  if (status === "inspection_completed") return "검수완료";
   if (status === "completed") return "완료";
+  if (status === "rejected") return "반려";
   if (status === "cancelled") return "취소";
+  if (status === "in_progress" || status === "in_production") return "진행중";
   return status || "상태 없음";
+}
+
+function getTrashRestorePolicy(input: { parentWorkOrderDeleted: boolean; deleteReason: string | null | undefined }): "file_unit" | "parent_deleted_restore_blocked" | "bundle_required" {
+  if (!input.parentWorkOrderDeleted) return "file_unit";
+  return input.deleteReason === WORKORDER_BUNDLE_DELETE_REASON ? "bundle_required" : "parent_deleted_restore_blocked";
+}
+
+function getTrashRestorePolicyLabel(policy: "file_unit" | "parent_deleted_restore_blocked" | "bundle_required"): string {
+  if (policy === "bundle_required") return "묶음 처리 필요";
+  if (policy === "parent_deleted_restore_blocked") return "작업지시서 삭제로 복원 불가";
+  return "파일 단위 처리 가능";
 }
 
 function getPurgeStatusLabel(status: string | null | undefined, errorMessage: string | null | undefined): string {
@@ -256,6 +294,7 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
               t.order_id,
               COALESCE(s.title, '작업지시서명 없음') AS workorder_title,
               (s.id IS NOT NULL AND (s.deleted_at IS NOT NULL OR COALESCE(s.is_active, true) = false)) AS parent_workorder_deleted,
+              s.deleted_at AS parent_workorder_deleted_at,
               t.original_name,
               t.mime_type,
               t.size_bytes,
@@ -268,7 +307,7 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
               t.last_purge_error
          FROM attachment_trash_items t
          LEFT JOIN spec_sheets s ON s.id = t.order_id
-        WHERE t.purge_status IN ('pending', 'purge_requested')
+        WHERE t.purge_status = 'pending'
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
         ORDER BY t.deleted_at DESC
@@ -312,7 +351,7 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
       uploadedBy: row.author_id || "미지정",
       status: "active" as const,
       statusLabel: "사용중",
-      deletedAt: row.deleted_at ? formatDate(row.deleted_at) : null,
+      deletedAt: row.deleted_at ? formatDateTime(row.deleted_at) : null,
       deletedBy: row.deleted_by,
       deleteReason: row.delete_reason,
       purgeAfterAt: row.purge_after_at ? formatDate(row.purge_after_at) : null,
@@ -323,6 +362,10 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
     const fileName = row.original_name || "파일명 없음";
     const sizeBytes = toNumber(row.size_bytes);
     const restoreDaysLeft = getRestoreDaysLeft(row.purge_after_at);
+    const parentWorkOrderDeleted = Boolean(row.parent_workorder_deleted);
+    const restorePolicy = getTrashRestorePolicy({ parentWorkOrderDeleted, deleteReason: row.delete_reason });
+    const restorePolicyLabel = getTrashRestorePolicyLabel(restorePolicy);
+    const isPending = (row.purge_status ?? "pending") === "pending";
     return {
       id: row.id,
       attachmentId: row.attachment_id,
@@ -332,7 +375,7 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
       fileIcon: getFileIcon(row.mime_type, fileName),
       fileSizeBytes: sizeBytes,
       fileSizeLabel: formatBytes(sizeBytes),
-      deletedAt: formatDate(row.deleted_at),
+      deletedAt: formatDateTime(row.deleted_at),
       deletedBy: row.deleted_by || "미지정",
       purgeAfterAt: formatDate(row.purge_after_at),
       restoreDaysLeft,
@@ -342,11 +385,13 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
       purgeStatusLabel: getPurgeStatusLabel(row.purge_status, row.last_purge_error),
       isPurgeReady: isPurgeReady(row.purge_after_at),
       lastPurgeError: row.last_purge_error,
-      parentWorkOrderDeleted: Boolean(row.parent_workorder_deleted),
-      canRestore: !row.parent_workorder_deleted && !row.last_purge_error && (row.purge_status ?? 'pending') === 'pending',
-      restoreDisabledReason: row.parent_workorder_deleted ? '작업지시서가 삭제 상태라 개별 파일만 복구할 수 없습니다.' : row.last_purge_error ? '삭제 실패 상태는 시스템관리자 확인 후 처리해야 합니다.' : (row.purge_status ?? 'pending') !== 'pending' ? '복구 가능 상태가 아닙니다.' : null,
-      canPurge: !row.parent_workorder_deleted && !row.last_purge_error && (row.purge_status ?? 'pending') === 'pending',
-      purgeDisabledReason: row.parent_workorder_deleted ? '작업지시서가 삭제 상태라 개별 파일만 영구삭제할 수 없습니다. 작업지시서 묶음 삭제/purge에서 함께 처리해야 합니다.' : row.last_purge_error ? '삭제 실패 상태는 시스템관리자 확인 후 처리해야 합니다.' : (row.purge_status ?? 'pending') !== 'pending' ? '영구삭제 요청 가능 상태가 아닙니다.' : null,
+      parentWorkOrderDeleted,
+      restorePolicy,
+      restorePolicyLabel,
+      canRestore: restorePolicy === "file_unit" && !row.last_purge_error && isPending,
+      restoreDisabledReason: restorePolicy === "bundle_required" ? "작업지시서 삭제와 함께 휴지통으로 이동한 파일은 작업지시서 묶음 복원에서 처리해야 합니다." : restorePolicy === "parent_deleted_restore_blocked" ? "부모 작업지시서가 삭제 상태라 파일만 복원할 수 없습니다." : row.last_purge_error ? "삭제 실패 상태는 시스템관리자 확인 후 처리해야 합니다." : !isPending ? "복구 가능 상태가 아닙니다." : null,
+      canPurge: restorePolicy !== "bundle_required" && !row.last_purge_error && isPending,
+      purgeDisabledReason: restorePolicy === "bundle_required" ? "작업지시서 삭제와 함께 휴지통으로 이동한 파일은 작업지시서 묶음 삭제/purge에서 함께 처리해야 합니다." : row.last_purge_error ? "삭제 실패 상태는 시스템관리자 확인 후 처리해야 합니다." : !isPending ? "영구삭제 요청 가능 상태가 아닙니다." : null,
     };
   });
 
@@ -362,12 +407,14 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
       status: row.status || "unknown",
       statusLabel: getWorkOrderStatusLabel(row.status),
       updatedAt: formatDate(row.updated_at),
-      deletedAt: row.deleted_at ? formatDate(row.deleted_at) : null,
+      deletedAt: row.deleted_at ? formatDateTime(row.deleted_at) : null,
       attachmentCount,
       trashAttachmentCount,
       memoCount,
       trashMemoCount,
       restorePolicyLabel: "묶음 복원 준비중",
+      attachmentSummaryLabel: `연결 첨부 ${attachmentCount + trashAttachmentCount}개 · 묶음 처리 ${trashAttachmentCount}개`,
+      memoSummaryLabel: `연결 메모 ${memoCount + trashMemoCount}개 · 묶음 처리 ${trashMemoCount}개`,
     };
   });
 
@@ -403,14 +450,18 @@ export async function listPurgeReadyAttachmentTrashItems(limit = 50, trashRetent
        LEFT JOIN spec_sheets s ON s.id = t.order_id
       WHERE t.restored_at IS NULL
         AND t.purged_at IS NULL
-        AND (t.order_id IS NULL OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true))
+        AND (
+          t.order_id IS NULL
+          OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true)
+          OR COALESCE(t.delete_reason, '') <> $3
+        )
         AND (
           t.purge_status = 'purge_requested'
           OR (t.purge_status = 'pending' AND (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) <= now())
         )
       ORDER BY purge_after_at ASC
       LIMIT $1`,
-    [safeLimit, safeTrashRetentionDays],
+    [safeLimit, safeTrashRetentionDays, WORKORDER_BUNDLE_DELETE_REASON],
   );
 
   return result.rows.map((row) => ({

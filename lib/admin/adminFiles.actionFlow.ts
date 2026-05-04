@@ -81,7 +81,7 @@ export async function runRestoreTrashItemsFlow(items: AdminTrashFileItem[]): Pro
     return createAdminFileActionResult({
       ok: false,
       status: "error",
-      message: blockedItem.restoreDisabledReason || "삭제된 작업지시서의 연결 파일은 작업지시서 묶음 복원에서 처리해야 합니다.",
+      message: blockedItem.restoreDisabledReason || "선택한 파일 중 복구할 수 없는 항목이 있습니다.",
     });
   }
 
@@ -113,7 +113,7 @@ export async function runPurgeTrashItemsFlow(items: AdminTrashFileItem[]): Promi
     return createAdminFileActionResult({
       ok: false,
       status: "error",
-      message: blockedItem.purgeDisabledReason || "삭제된 작업지시서의 연결 파일은 작업지시서 묶음 삭제/purge에서 처리해야 합니다.",
+      message: blockedItem.purgeDisabledReason || "선택한 파일 중 영구삭제할 수 없는 항목이 있습니다.",
     });
   }
 
@@ -125,7 +125,7 @@ export async function runPurgeTrashItemsFlow(items: AdminTrashFileItem[]): Promi
     return createAdminFileActionResult({
       ok: result.ok,
       status: result.ok ? "success" : "error",
-      message: `${result.affectedCount}/${result.requestedCount}개 파일을 영구삭제 요청 상태로 변경했습니다. R2 실제 삭제는 purge worker에서 처리됩니다.`,
+      message: `${result.affectedCount}/${result.requestedCount}개 파일을 영구삭제 요청 상태로 변경했습니다. 요청된 파일은 휴지통 목록에서 제외되며 R2 실제 삭제는 purge worker에서 처리됩니다.`,
     });
   } catch (error) {
     return createAdminFileActionResult({

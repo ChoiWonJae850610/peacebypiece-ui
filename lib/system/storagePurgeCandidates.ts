@@ -7,6 +7,8 @@ import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
 import { queryDb } from "@/lib/db/client";
 import type { DbQueryResultRow } from "@/lib/db/client";
 
+const WORKORDER_BUNDLE_DELETE_REASON = "작업지시서 삭제로 함께 휴지통 이동";
+
 export type SystemStoragePurgeCandidate = {
   trashItemId: string;
   attachmentId: string;
@@ -176,13 +178,18 @@ export async function getSystemStoragePurgeCandidateSnapshot(limit = 200): Promi
       WHERE t.restored_at IS NULL
         AND t.purged_at IS NULL
         AND (
+          t.order_id IS NULL
+          OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true)
+          OR COALESCE(t.delete_reason, '') <> $3
+        )
+        AND (
           t.purge_status = 'purge_requested'
           OR (t.purge_status = 'pending' AND (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) <= now())
           OR t.last_purge_error IS NOT NULL
         )
       ORDER BY purge_due_at ASC, t.deleted_at ASC
       LIMIT $1`,
-    [safeLimit, COMPANY_FILE_TRASH_RETENTION_DAYS],
+    [safeLimit, COMPANY_FILE_TRASH_RETENTION_DAYS, WORKORDER_BUNDLE_DELETE_REASON],
   );
 
   const candidates = result.rows.map(mapCandidateRow);
@@ -272,13 +279,18 @@ async function listSystemStoragePurgeRunCandidates(input: SystemStoragePurgeRunI
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
           AND (
+            t.order_id IS NULL
+            OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true)
+            OR COALESCE(t.delete_reason, '') <> $4
+          )
+          AND (
             t.purge_status = 'purge_requested'
             OR (t.purge_status = 'pending' AND (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) <= now())
             OR t.last_purge_error IS NOT NULL
           )
         ORDER BY purge_due_at ASC, t.deleted_at ASC
         LIMIT $3`,
-      [trashItemIds, COMPANY_FILE_TRASH_RETENTION_DAYS, safeLimit],
+      [trashItemIds, COMPANY_FILE_TRASH_RETENTION_DAYS, safeLimit, WORKORDER_BUNDLE_DELETE_REASON],
     );
 
     return result.rows;
@@ -305,13 +317,18 @@ async function listSystemStoragePurgeRunCandidates(input: SystemStoragePurgeRunI
       WHERE t.restored_at IS NULL
         AND t.purged_at IS NULL
         AND (
+          t.order_id IS NULL
+          OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true)
+          OR COALESCE(t.delete_reason, '') <> $3
+        )
+        AND (
           t.purge_status = 'purge_requested'
           OR (t.purge_status = 'pending' AND (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) <= now())
           OR t.last_purge_error IS NOT NULL
         )
       ORDER BY purge_due_at ASC, t.deleted_at ASC
       LIMIT $1`,
-    [safeLimit, COMPANY_FILE_TRASH_RETENTION_DAYS],
+    [safeLimit, COMPANY_FILE_TRASH_RETENTION_DAYS, WORKORDER_BUNDLE_DELETE_REASON],
   );
 
   return result.rows;
