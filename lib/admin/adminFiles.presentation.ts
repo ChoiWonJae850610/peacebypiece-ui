@@ -138,6 +138,9 @@ export const ADMIN_FILE_TRASH_PLACEHOLDERS: AdminTrashFileItem[] = [
     purgeStatusLabel: "복구 가능",
     isPurgeReady: false,
     lastPurgeError: null,
+    parentWorkOrderDeleted: false,
+    canRestore: true,
+    restoreDisabledReason: null,
   },
   {
     id: "sample-trash-2",
@@ -158,6 +161,9 @@ export const ADMIN_FILE_TRASH_PLACEHOLDERS: AdminTrashFileItem[] = [
     purgeStatusLabel: "복구 가능",
     isPurgeReady: false,
     lastPurgeError: null,
+    parentWorkOrderDeleted: false,
+    canRestore: true,
+    restoreDisabledReason: null,
   },
 ];
 

@@ -40,6 +40,11 @@ export default function WorkOrderStorageSection({ items }: WorkOrderStorageSecti
         </button>
       </AdminActionBar>
 
+      <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50/70 px-3 py-3 text-xs text-amber-800">
+        <p className="font-semibold">{t("filesWorkOrders.restorePolicyNoticeTitle", "복원 정책 확인")}</p>
+        <p className="mt-1 leading-5">{t("filesWorkOrders.restorePolicyNotice", "작업지시서가 삭제 상태이면 연결 첨부·메모는 개별 복구하지 않고 작업지시서 묶음 복원에서 함께 처리합니다. purge 완료 파일은 복원 대상에서 제외됩니다.")}</p>
+      </div>
+
       <div className="mt-3 grid gap-2.5 md:grid-cols-3">
         <div className="rounded-2xl border border-stone-200 bg-stone-50/70 px-3 py-3">
           <p className="text-[10px] font-semibold text-stone-500">{t("filesWorkOrders.summary.deletedWorkOrders", "삭제된 작업지시서")}</p>

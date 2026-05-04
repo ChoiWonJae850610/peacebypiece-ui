@@ -15,7 +15,7 @@ type FileTrashSectionProps = {
   isActionPending?: boolean;
 };
 
-const TRASH_TABLE_GRID = "0.38fr 1.08fr 0.82fr 1.72fr 0.68fr 0.72fr";
+const TRASH_TABLE_GRID = "0.36fr 1.02fr 0.72fr 1.45fr 0.62fr 0.62fr 0.9fr";
 
 function getTrashFileType(item: AdminTrashFileItem, t: ReturnType<typeof useAdminTranslation>) {
   if (item.fileIcon === "PDF") return t("filesList.fileTypes.document", "문서");
@@ -25,7 +25,10 @@ function getTrashFileType(item: AdminTrashFileItem, t: ReturnType<typeof useAdmi
 
 export default function FileTrashSection({ items, selectedItemIds, onToggleItem, onToggleAll, onRestore, onPurge, isActionPending = false }: FileTrashSectionProps) {
   const hasSelection = selectedItemIds.length > 0;
+  const selectedItems = items.filter((item) => selectedItemIds.includes(item.id));
+  const hasRestoreBlockedSelection = selectedItems.some((item) => !item.canRestore);
   const canAct = hasSelection && !isActionPending;
+  const canRestoreSelection = canAct && !hasRestoreBlockedSelection;
   const t = useAdminTranslation();
   const allSelected = items.length > 0 && selectedItemIds.length === items.length;
 
@@ -35,7 +38,13 @@ export default function FileTrashSection({ items, selectedItemIds, onToggleItem,
         <button type="button" onClick={onToggleAll} disabled={isActionPending || items.length === 0} className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm hover:bg-stone-50 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-400">
           {allSelected ? t("filesList.clearAll", "전체 해제") : t("filesList.selectAll", "전체 선택")}
         </button>
-        <button type="button" onClick={onRestore} className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${canAct ? "border-stone-300 bg-white text-stone-700 shadow-sm hover:bg-stone-50" : "border-stone-200 bg-stone-50 text-stone-400"}`} disabled={!canAct}>
+        <button
+          type="button"
+          onClick={onRestore}
+          className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${canRestoreSelection ? "border-stone-300 bg-white text-stone-700 shadow-sm hover:bg-stone-50" : "border-stone-200 bg-stone-50 text-stone-400"}`}
+          disabled={!canRestoreSelection}
+          title={hasRestoreBlockedSelection ? t("filesList.restoreBlockedByWorkOrder", "삭제된 작업지시서의 연결 파일은 작업지시서 묶음 복원에서 처리해야 합니다.") : undefined}
+        >
           {isActionPending ? t("filesList.processing", "처리 중") : t("filesList.restore", "복구")} {hasSelection ? selectedItemIds.length : ""}
         </button>
         <button type="button" onClick={onPurge} className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${canAct ? "border-red-200 bg-white text-red-600 shadow-sm hover:bg-red-50" : "border-stone-200 bg-stone-50 text-stone-400"}`} disabled={!canAct}>
@@ -86,6 +95,18 @@ export default function FileTrashSection({ items, selectedItemIds, onToggleItem,
           },
           { key: "type", label: t("filesList.columns.type", "유형"), render: (item) => <p className="text-[11px] text-stone-600">{getTrashFileType(item, t)}</p> },
           { key: "size", label: t("filesList.columns.size", "용량"), render: (item) => <p className="text-[11px] text-stone-600">{item.fileSizeLabel}</p> },
+          {
+            key: "restorePolicy",
+            label: t("filesList.columns.restorePolicy", "복구 정책"),
+            render: (item) => (
+              <span
+                className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold ${item.canRestore ? "border-stone-200 bg-stone-50 text-stone-600" : "border-amber-200 bg-amber-50 text-amber-700"}`}
+                title={item.restoreDisabledReason ?? undefined}
+              >
+                {item.canRestore ? t("filesList.restoreAvailable", "개별 복구 가능") : t("filesList.restoreWithWorkOrder", "묶음 복구 필요")}
+              </span>
+            ),
+          },
         ]}
       />
     </section>

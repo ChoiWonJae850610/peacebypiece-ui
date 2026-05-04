@@ -76,6 +76,15 @@ export async function runMoveAttachmentsToTrashFlow(items: AdminManagedFileItem[
 export async function runRestoreTrashItemsFlow(items: AdminTrashFileItem[]): Promise<AdminFileActionResult> {
   if (items.length === 0) return createEmptySelectionResult("복구");
 
+  const blockedItem = items.find((item) => !item.canRestore);
+  if (blockedItem) {
+    return createAdminFileActionResult({
+      ok: false,
+      status: "error",
+      message: blockedItem.restoreDisabledReason || "삭제된 작업지시서의 연결 파일은 작업지시서 묶음 복원에서 처리해야 합니다.",
+    });
+  }
+
   try {
     const result = await postAdminJson<TrashApiResponse>("/api/admin/files/trash/restore", {
       trashItemIds: items.map((item) => item.id),

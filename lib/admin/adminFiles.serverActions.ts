@@ -33,12 +33,14 @@ export async function restoreAttachmentTrashItems(input: AdminTrashDbActionInput
 
   const result = await queryDb<CountRow>(
     `WITH target_trash AS (
-       SELECT id, attachment_id
-         FROM attachment_trash_items
-        WHERE id = ANY($1::text[])
-          AND purge_status = 'pending'
-          AND restored_at IS NULL
-          AND purged_at IS NULL
+       SELECT t.id, t.attachment_id
+         FROM attachment_trash_items t
+         LEFT JOIN spec_sheets s ON s.id = t.order_id
+        WHERE t.id = ANY($1::text[])
+          AND t.purge_status = 'pending'
+          AND t.restored_at IS NULL
+          AND t.purged_at IS NULL
+          AND (t.order_id IS NULL OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true))
      ), restored_attachments AS (
        UPDATE attachments
           SET is_active = true,
@@ -131,6 +133,7 @@ type AdminTrashRow = DbQueryResultRow & {
   attachment_id: string;
   order_id: string | null;
   workorder_title: string | null;
+  parent_workorder_deleted: boolean | null;
   original_name: string | null;
   mime_type: string | null;
   size_bytes: string | number | null;
@@ -250,6 +253,7 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
               t.attachment_id,
               t.order_id,
               COALESCE(s.title, '작업지시서명 없음') AS workorder_title,
+              (s.id IS NOT NULL AND (s.deleted_at IS NOT NULL OR COALESCE(s.is_active, true) = false)) AS parent_workorder_deleted,
               t.original_name,
               t.mime_type,
               t.size_bytes,
@@ -336,6 +340,9 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
       purgeStatusLabel: getPurgeStatusLabel(row.purge_status, row.last_purge_error),
       isPurgeReady: isPurgeReady(row.purge_after_at),
       lastPurgeError: row.last_purge_error,
+      parentWorkOrderDeleted: Boolean(row.parent_workorder_deleted),
+      canRestore: !row.parent_workorder_deleted && !row.last_purge_error && (row.purge_status ?? 'pending') === 'pending',
+      restoreDisabledReason: row.parent_workorder_deleted ? '작업지시서가 삭제 상태라 개별 파일만 복구할 수 없습니다.' : row.last_purge_error ? '삭제 실패 상태는 시스템관리자 확인 후 처리해야 합니다.' : (row.purge_status ?? 'pending') !== 'pending' ? '복구 가능 상태가 아닙니다.' : null,
     };
   });
 

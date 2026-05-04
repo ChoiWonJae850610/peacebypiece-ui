@@ -102,6 +102,9 @@ export type AdminTrashFileItem = {
   purgeStatusLabel: string;
   isPurgeReady: boolean;
   lastPurgeError: string | null;
+  parentWorkOrderDeleted: boolean;
+  canRestore: boolean;
+  restoreDisabledReason: string | null;
 };
 
 export type AdminStoragePolicyItem = {
