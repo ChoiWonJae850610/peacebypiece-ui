@@ -1,10 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { RegistryType } from "@/components/workorder/PartnerFactoryRegistryModal";
 import {
-  blurActiveEditableElement,
   type BasicInfoState,
-  type EditableCell,
-  type EditableSectionKey,
   type OrderEntryState,
 } from "@/components/workorder/detail/shared/detailEditorShared";
 import { ensurePartnerMasterItem } from "@/lib/admin/partner/persistence";
@@ -19,6 +16,7 @@ import {
   toOutsourcingPatch,
 } from "@/lib/hooks/workorder/detailEditor/itemMutations";
 import { useWorkOrderMaterialsEditor } from "@/lib/hooks/workorder/detailEditor/useWorkOrderMaterialsEditor";
+import { useWorkOrderEditingSession } from "@/lib/hooks/workorder/detailEditor/useWorkOrderEditingSession";
 import { usePartnerWorkOrderOptions } from "@/lib/hooks/partners/usePartnerWorkOrderOptions";
 import { recalculateOutsourcing } from "@/lib/workorder/detail/detailCalculations";
 import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
@@ -80,8 +78,12 @@ export function useWorkOrderDetailEditor({
   const [basicInfoModalOpen, setBasicInfoModalOpen] = useState(false);
   const [basicInfoDraft, setBasicInfoDraft] = useState<BasicInfoState>(() => getInitialBasicInfo(workOrder));
   const [outsourcingItems, setOutsourcingItems] = useState<Outsourcing[]>(() => (workOrder.outsourcing ?? []).map(recalculateOutsourcing));
-  const [editingCell, setEditingCell] = useState<EditableCell>(null);
-  const [editingValue, setEditingValue] = useState("");
+  const {
+    editingCell,
+    editingValue,
+    startEdit,
+    cancelEdit,
+  } = useWorkOrderEditingSession();
   const [inspectionModalOpen, setInspectionModalOpen] = useState(false);
 
   const partnerWorkOrderOptions = usePartnerWorkOrderOptions();
@@ -95,11 +97,7 @@ export function useWorkOrderDetailEditor({
     workOrder,
     editingCell,
     onUpdateWorkOrder,
-    cancelEdit: () => {
-      blurActiveEditableElement();
-      setEditingCell(null);
-      setEditingValue("");
-    },
+    cancelEdit,
   });
 
   useEffect(() => {
@@ -156,17 +154,6 @@ export function useWorkOrderDetailEditor({
     });
   };
 
-  const startEdit = (section: EditableSectionKey, rowId: string, field: string, value: string) => {
-    setEditingCell({ section, rowId, field });
-    setEditingValue(value);
-  };
-
-  const cancelEdit = () => {
-    blurActiveEditableElement();
-    setEditingCell(null);
-    setEditingValue("");
-  };
-
   const commitEdit = (nextValueOverride?: string) => {
     if (!editingCell) {
       return;
@@ -188,7 +175,6 @@ export function useWorkOrderDetailEditor({
       const requestedOrderType = nextPrimaryType as "메인 생산" | "샘플" | "재작업";
       if (!orderInfoHubPolicy.allowedOrderTypes.includes(requestedOrderType)) {
         setOrderItems(getInitialOrderEntries(workOrder));
-        blurActiveEditableElement();
         cancelEdit();
         return;
       }
@@ -210,7 +196,6 @@ export function useWorkOrderDetailEditor({
       onUpdateWorkOrder(toOutsourcingPatch(nextItems));
     }
 
-    blurActiveEditableElement();
     cancelEdit();
   };
 

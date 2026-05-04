@@ -1,20 +1,20 @@
 Version :
-0.9.149
+0.9.150
 
 Summary :
-작업지시서 detail view model section props 조립부 분리
+작업지시서 detail editor 편집 세션 상태 분리
 
 Description :
-작업지시서 detail view model 내부의 header, action, 발주정보, 생산구성, 비용 요약 props 조립을 별도 builder 파일로 분리했다. 화면 배치, 상태 변경, 첨부, 메모, R2 purge 흐름은 변경하지 않았다.
+작업지시서 detail editor 내부에서 직접 관리하던 editingCell, editingValue, startEdit, cancelEdit 흐름을 useWorkOrderEditingSession hook으로 분리했다. UI, 상태 변경, 첨부, 메모, R2 purge, DB 구조는 변경하지 않았다.
 
 수정 파일 목록 :
-- lib/workorder/presentation/workOrderDetailPresentation.ts
+- lib/hooks/workorder/useWorkOrderDetailEditor.ts
 - lib/constants/app.ts
 - docs/restore-baseline-0.9.121.md
 
 추가 파일 목록 :
-- lib/workorder/presentation/workOrderDetailSectionProps.ts
-- docs/workorder-detail-refactor-0.9.149.md
+- lib/hooks/workorder/detailEditor/useWorkOrderEditingSession.ts
+- docs/workorder-detail-editor-refactor-0.9.150.md
 
 삭제 파일 목록 :
 없음
