@@ -1,21 +1,19 @@
 Version :
-0.9.162
+0.9.163
 
 Summary :
-작업지시서 삭제 휴지통 정책 정리와 삭제 모달 빌드 오류 보완
+작업지시서 삭제 시 연결 파일과 메모를 함께 휴지통 처리
 
 Description :
-작업지시서 삭제 시 연결된 디자인, 첨부파일, 메모 첨부를 함께 휴지통 대상으로 보는 정책을 문서화하고, 삭제 확인 모달 문구를 30일 휴지통 정책 기준으로 정리했다. 삭제 확인 모달의 입력 타입을 WorkOrderListItem 기준으로 좁혀 0.9.161 build 오류를 보완했다.
+작업지시서 삭제 성공 후 해당 작업지시서에 연결된 디자인/첨부 파일을 함께 soft delete하고 attachment_trash_items에 등록하도록 보완했다. 연결 메모도 작업지시서 삭제 상태에 맞춰 숨김 처리했다. R2 원본과 썸네일은 즉시 삭제하지 않고 기존 30일 휴지통 및 시스템관리자 purge 후보 흐름을 유지한다.
 
 수정 파일 목록 :
-- components/common/modal/WorkOrderDeleteConfirmModal.tsx
-- lib/i18n/ko/workorder.ts
-- lib/i18n/en/workorder.ts
+- lib/workorder/repository/dbWorkOrderRepository.ts
 - lib/constants/app.ts
 - docs/restore-baseline-0.9.121.md
 
 추가 파일 목록 :
-- docs/workorder-delete-trash-policy-0.9.162.md
+- docs/workorder-delete-cascade-trash-0.9.163.md
 
 삭제 파일 목록 :
 없음

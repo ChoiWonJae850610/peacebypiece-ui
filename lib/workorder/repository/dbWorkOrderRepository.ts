@@ -3,6 +3,7 @@ import "server-only";
 import { queryDb } from "@/lib/db/client";
 import { getAdminCompanyId, getAdminCompanyScope } from "@/lib/admin/settings/companyScope";
 import { LEGACY_WORKFLOW_STATE_MAP, WORKFLOW_STATES } from "@/lib/constants/workorderStates";
+import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
 import type { WorkOrder } from "@/types/workorder";
 import { applyReorderIdentity } from "@/lib/workorder/reorder/helpers";
 import { syncDbFactoryOrdersForSpecSheet } from "@/lib/workorder/repository/dbFactoryOrderRepository";
@@ -575,6 +576,80 @@ export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
 }
 
 
+async function softDeleteAttachmentMemoBundleForWorkOrder(workOrderId: string): Promise<void> {
+  const trashRetentionDays = COMPANY_FILE_TRASH_RETENTION_DAYS;
+
+  await queryDb(
+    `WITH updated_attachments AS (
+       UPDATE attachments
+          SET is_active = false,
+              deleted_at = COALESCE(deleted_at, now()),
+              deleted_by = COALESCE(deleted_by, 'workorder-delete'),
+              delete_reason = COALESCE(delete_reason, '작업지시서 삭제로 함께 휴지통 이동'),
+              purge_after_at = COALESCE(purge_after_at, now() + ($2::integer * interval '1 day')),
+              updated_at = now()
+        WHERE order_id = $1
+          AND is_active = true
+          AND deleted_at IS NULL
+        RETURNING id,
+                  company_id,
+                  company_name,
+                  order_id,
+                  storage_key,
+                  thumbnail_key,
+                  original_name,
+                  mime_type,
+                  size_bytes,
+                  deleted_by,
+                  delete_reason,
+                  deleted_at,
+                  purge_after_at
+     )
+     INSERT INTO attachment_trash_items (
+       company_id,
+       company_name,
+       attachment_id,
+       order_id,
+       storage_key,
+       thumbnail_key,
+       original_name,
+       mime_type,
+       size_bytes,
+       deleted_by,
+       delete_reason,
+       deleted_at,
+       purge_after_at
+     )
+     SELECT company_id,
+            company_name,
+            id,
+            order_id,
+            storage_key,
+            thumbnail_key,
+            original_name,
+            mime_type,
+            COALESCE(size_bytes, 0),
+            deleted_by,
+            delete_reason,
+            COALESCE(deleted_at, now()),
+            COALESCE(purge_after_at, now() + ($2::integer * interval '1 day'))
+       FROM updated_attachments
+     ON CONFLICT DO NOTHING`,
+    [workOrderId, trashRetentionDays],
+  );
+
+  await queryDb(
+    `UPDATE memos
+        SET is_active = false,
+            deleted_at = COALESCE(deleted_at, now()),
+            updated_at = now()
+      WHERE order_id = $1
+        AND is_active = true
+        AND deleted_at IS NULL`,
+    [workOrderId],
+  );
+}
+
 export async function deleteDbWorkOrder(workOrderId: string): Promise<string> {
   const schema = await loadSpecSheetSchema();
   assertMinimumSpecSheetSchema(schema);
@@ -600,6 +675,8 @@ export async function deleteDbWorkOrder(workOrderId: string): Promise<string> {
     if (!deleted?.id) {
       throw new Error(`spec_sheets row not found for id: ${workOrderId}`);
     }
+
+    await softDeleteAttachmentMemoBundleForWorkOrder(deleted.id);
     return deleted.id;
   }
 
@@ -618,6 +695,7 @@ export async function deleteDbWorkOrder(workOrderId: string): Promise<string> {
     throw new Error(`spec_sheets row not found for id: ${workOrderId}`);
   }
 
+  await softDeleteAttachmentMemoBundleForWorkOrder(deleted.id);
   return deleted.id;
 }
 
