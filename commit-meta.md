@@ -1,20 +1,22 @@
 Version :
-0.9.159
+0.9.160
 
 Summary :
-작업지시서 드래그 업로드 빌드 오류와 진단 로그 보완
+직접 그리기 준비 모달과 드래그 업로드 빌드 오류 보완
 
 Description :
-useWorkOrder의 attachments 반환 객체에 handleAttachmentFileDrop을 포함해 WorkOrderWorkspace의 drag-and-drop 업로드 prop 연결 빌드 오류를 수정했다. 드래그 업로드가 실제 drop 이벤트까지 도달하는지 확인할 수 있도록 개발 환경 전용 콘솔 로그를 추가했다. R2 Worker 업로드, 썸네일 생성, 삭제/복구, 메모 저장 로직은 변경하지 않았다.
+작업지시서 디자인 영역의 직접 그리기 메뉴를 준비 안내 모달로 연결했다. useWorkOrderAttachments의 업로드 scope 타입을 design 또는 attachment로 좁혀 memo scope가 첨부 업로드 action flow에 들어가지 않도록 보완했다. 실제 drawing library, canvas 저장, R2 저장 연결은 추가하지 않았고 기존 파일 선택 업로드와 드래그 업로드 흐름은 유지했다.
 
 수정 파일 목록 :
 - components/workorder/sidepanel/WorkOrderAttachmentPanel.tsx
-- lib/hooks/useWorkOrder.ts
+- lib/hooks/workorder/useWorkOrderAttachments.ts
+- lib/i18n/ko/workorder.ts
+- lib/i18n/en/workorder.ts
 - lib/constants/app.ts
 - docs/restore-baseline-0.9.121.md
 
 추가 파일 목록 :
-- docs/workorder-attachment-dnd-build-fix-0.9.159.md
+- docs/workorder-drawing-placeholder-0.9.160.md
 
 삭제 파일 목록 :
 없음

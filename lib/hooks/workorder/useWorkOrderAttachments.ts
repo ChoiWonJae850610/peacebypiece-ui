@@ -22,6 +22,8 @@ import { getAttachmentInputAccept, WORK_ORDER_ATTACHMENT_POLICY } from "@/lib/wo
 import { createMemoReplyInDb, createMemoThreadInDb, deleteMemoInDb, updateMemoInDb } from "@/lib/workorder/memo/memoApiClient";
 import type { Attachment, AttachmentScope, HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
 
+type UploadableAttachmentScope = "attachment" | "design";
+
 export function useWorkOrderAttachments({
   attachmentInputRef,
   canEditSideDraftContent,
@@ -66,7 +68,7 @@ export function useWorkOrderAttachments({
     );
   };
 
-  const uploadAttachmentFileList = async (files: File[], scope: AttachmentScope) => {
+  const uploadAttachmentFileList = async (files: File[], scope: UploadableAttachmentScope) => {
     if (!canEditSideDraftContent || !canUploadOfficialAttachments) return;
     if (files.length === 0) return;
 
@@ -119,9 +121,8 @@ export function useWorkOrderAttachments({
     await uploadAttachmentFileList(files, scope);
   };
 
-  const handleAttachmentFileDrop = async (scope: AttachmentScope, files: File[]) => {
-    const normalizedScope = scope === "design" ? "design" : "attachment";
-    await uploadAttachmentFileList(files, normalizedScope);
+  const handleAttachmentFileDrop = async (scope: UploadableAttachmentScope, files: File[]) => {
+    await uploadAttachmentFileList(files, scope);
   };
 
   const handleDeleteAttachment = async (attachmentId: string) => {

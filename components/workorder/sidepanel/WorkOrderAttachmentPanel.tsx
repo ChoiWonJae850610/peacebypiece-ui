@@ -34,11 +34,13 @@ function AttachmentActionMenu({
   scope,
   addButtonLabel,
   onOpenAttachmentPicker,
+  onOpenDrawingPlaceholder,
   isMobile,
 }: {
   scope: AttachmentPanelScope;
   addButtonLabel: string;
   onOpenAttachmentPicker: () => void;
+  onOpenDrawingPlaceholder: () => void;
   isMobile: boolean;
 }) {
   const { i18n } = useI18n();
@@ -73,8 +75,11 @@ function AttachmentActionMenu({
           {canShowDrawingAction ? (
             <button
               type="button"
-              disabled
-              className="flex w-full cursor-not-allowed items-center gap-2 rounded-xl px-3 py-2 text-left text-[13px] font-medium text-stone-400"
+              onClick={() => {
+                setOpen(false);
+                onOpenDrawingPlaceholder();
+              }}
+              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-[13px] font-medium text-stone-800 hover:bg-stone-50 active:bg-stone-100"
               title={ui.attachmentPanel.drawingActionPending}
             >
               <span aria-hidden="true">✎</span>
@@ -83,6 +88,44 @@ function AttachmentActionMenu({
           ) : null}
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function DrawingPlaceholderModal({ onClose }: { onClose: () => void }) {
+  const { i18n } = useI18n();
+  const ui = i18n.workorder.ui.attachmentPanel;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/35 px-4" role="dialog" aria-modal="true" aria-labelledby="workorder-drawing-placeholder-title">
+      <div className="w-full max-w-md rounded-[1.75rem] border border-stone-200 bg-white p-5 shadow-2xl">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p id="workorder-drawing-placeholder-title" className="text-base font-semibold text-stone-950">{ui.drawingPlaceholderTitle}</p>
+            <p className="mt-2 text-sm leading-6 text-stone-600">{ui.drawingPlaceholderDescription}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="pbp-interactive-button inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-white text-sm font-semibold text-stone-700 hover:bg-stone-50"
+            aria-label={ui.drawingPlaceholderClose}
+          >
+            ×
+          </button>
+        </div>
+        <div className="mt-4 rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-5 text-sm leading-6 text-stone-600">
+          {ui.drawingPlaceholderPlan}
+        </div>
+        <div className="mt-5 flex justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="pbp-interactive-button rounded-full bg-stone-900 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-800"
+          >
+            {ui.drawingPlaceholderConfirm}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -202,6 +245,7 @@ export default function WorkOrderAttachmentPanel({
   };
 
   const [panelDragActive, setPanelDragActive] = useState(false);
+  const [drawingPlaceholderOpen, setDrawingPlaceholderOpen] = useState(false);
 
   const handlePanelDragOver = (event: DragEvent<HTMLDivElement>) => {
     if (!canManageAttachments || !hasDroppedFiles(event)) return;
@@ -233,6 +277,7 @@ export default function WorkOrderAttachmentPanel({
   const isTablet = variant === "tablet";
 
   return (
+    <>
     <div
       onDragEnter={handlePanelDragOver}
       onDragOver={handlePanelDragOver}
@@ -250,6 +295,7 @@ export default function WorkOrderAttachmentPanel({
             scope={uploadScope}
             addButtonLabel={addButtonLabel}
             onOpenAttachmentPicker={onOpenAttachmentPicker}
+            onOpenDrawingPlaceholder={() => setDrawingPlaceholderOpen(true)}
             isMobile={isMobile}
           />
         ) : null}
@@ -320,5 +366,7 @@ export default function WorkOrderAttachmentPanel({
       )}
       </WorkOrderPanelCard>
     </div>
+    {drawingPlaceholderOpen ? <DrawingPlaceholderModal onClose={() => setDrawingPlaceholderOpen(false)} /> : null}
+    </>
   );
 }
