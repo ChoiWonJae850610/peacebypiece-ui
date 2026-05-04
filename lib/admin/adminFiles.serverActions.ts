@@ -143,6 +143,18 @@ type AdminTrashRow = DbQueryResultRow & {
   last_purge_error: string | null;
 };
 
+type AdminStorageWorkOrderRow = DbQueryResultRow & {
+  id: string;
+  title: string | null;
+  status: string | null;
+  updated_at: string | Date | null;
+  deleted_at: string | Date | null;
+  attachment_count: string | number | null;
+  trash_attachment_count: string | number | null;
+  memo_count: string | number | null;
+  trash_memo_count: string | number | null;
+};
+
 function toNumber(value: string | number | null | undefined): number {
   if (typeof value === "number") return Number.isFinite(value) ? value : 0;
   const parsed = Number(value ?? 0);
@@ -178,6 +190,15 @@ function getFileType(mimeType: string | null | undefined, fileName = ""): string
   return "문서";
 }
 
+function getWorkOrderStatusLabel(status: string | null | undefined): string {
+  if (status === "draft") return "작성중";
+  if (status === "in_progress") return "진행중";
+  if (status === "inspection") return "검수중";
+  if (status === "completed") return "완료";
+  if (status === "cancelled") return "취소";
+  return status || "상태 없음";
+}
+
 function getPurgeStatusLabel(status: string | null | undefined, errorMessage: string | null | undefined): string {
   if (status === "purge_requested") return "영구삭제 요청";
   if (status === "purged") return "삭제 완료";
@@ -202,7 +223,7 @@ function getRestoreDaysLeft(value: string | Date | null | undefined): number {
 
 export async function listAdminFileManagementRows(trashRetentionDays = 30) {
   const safeTrashRetentionDays = [1, 5, 15, 30].includes(trashRetentionDays) ? trashRetentionDays : 30;
-  const [attachmentsResult, trashResult] = await Promise.all([
+  const [attachmentsResult, trashResult, workOrdersResult] = await Promise.all([
     queryDb<AdminAttachmentRow>(
       `SELECT a.id,
               a.order_id,
@@ -247,6 +268,25 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
         ORDER BY t.deleted_at DESC
         LIMIT 100`,
       [safeTrashRetentionDays],
+    ),
+    queryDb<AdminStorageWorkOrderRow>(
+      `SELECT s.id,
+              COALESCE(s.title, '작업지시서명 없음') AS title,
+              s.status,
+              s.updated_at,
+              s.deleted_at,
+              COUNT(DISTINCT a.id) FILTER (WHERE a.deleted_at IS NULL AND COALESCE(a.is_active, true) = true)::text AS attachment_count,
+              COUNT(DISTINCT a.id) FILTER (WHERE a.deleted_at IS NOT NULL OR COALESCE(a.is_active, true) = false)::text AS trash_attachment_count,
+              COUNT(DISTINCT m.id) FILTER (WHERE m.deleted_at IS NULL AND COALESCE(m.is_active, true) = true)::text AS memo_count,
+              COUNT(DISTINCT m.id) FILTER (WHERE m.deleted_at IS NOT NULL OR COALESCE(m.is_active, true) = false)::text AS trash_memo_count
+         FROM spec_sheets s
+         LEFT JOIN attachments a ON a.order_id = s.id
+         LEFT JOIN memos m ON m.order_id = s.id
+        WHERE s.deleted_at IS NOT NULL
+           OR COALESCE(s.is_active, true) = false
+        GROUP BY s.id, s.title, s.status, s.updated_at, s.deleted_at
+        ORDER BY COALESCE(s.deleted_at, s.updated_at) DESC
+        LIMIT 50`,
     ),
   ]);
 
@@ -299,7 +339,28 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
     };
   });
 
-  return { attachments, trashItems };
+  const workOrders = workOrdersResult.rows.map((row) => {
+    const attachmentCount = toNumber(row.attachment_count);
+    const trashAttachmentCount = toNumber(row.trash_attachment_count);
+    const memoCount = toNumber(row.memo_count);
+    const trashMemoCount = toNumber(row.trash_memo_count);
+
+    return {
+      id: row.id,
+      title: row.title || "작업지시서명 없음",
+      status: row.status || "unknown",
+      statusLabel: getWorkOrderStatusLabel(row.status),
+      updatedAt: formatDate(row.updated_at),
+      deletedAt: row.deleted_at ? formatDate(row.deleted_at) : null,
+      attachmentCount,
+      trashAttachmentCount,
+      memoCount,
+      trashMemoCount,
+      restorePolicyLabel: "묶음 복원 준비중",
+    };
+  });
+
+  return { attachments, trashItems, workOrders };
 }
 
 type PurgeCandidateRow = DbQueryResultRow & {

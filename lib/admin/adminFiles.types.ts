@@ -27,7 +27,7 @@ export type AdminStorageUsageSummary = {
   statusTone: "normal" | "caution" | "danger";
 };
 
-export type AdminFileTabKey = "attachments" | "trash" | "storage";
+export type AdminFileTabKey = "workorders" | "attachments" | "trash" | "storage";
 
 export type AdminFileTabItem = {
   key: AdminFileTabKey;
@@ -48,6 +48,21 @@ export type AdminFileStatus = "active" | "trashed" | "purged" | "temp" | AdminFi
 export type AdminTrashPurgeStatus = "pending" | "purge_requested" | "purged" | "failed" | "restored";
 
 export type AdminFileSortKey = "latest" | "size" | "workorder";
+
+
+export type AdminStorageWorkOrderItem = {
+  id: string;
+  title: string;
+  status: string;
+  statusLabel: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  attachmentCount: number;
+  trashAttachmentCount: number;
+  memoCount: number;
+  trashMemoCount: number;
+  restorePolicyLabel: string;
+};
 
 export type AdminManagedFileItem = {
   id: string;
@@ -124,6 +139,7 @@ export type AdminFileManagementSnapshot = {
   usageCards: AdminFileUsageCard[];
   usageSummary: AdminStorageUsageSummary;
   tabs: AdminFileTabItem[];
+  workOrders: AdminStorageWorkOrderItem[];
   attachments: AdminManagedFileItem[];
   trashItems: AdminTrashFileItem[];
   storagePolicies: AdminStoragePolicyItem[];

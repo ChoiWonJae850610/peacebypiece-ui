@@ -147,6 +147,7 @@ export async function GET(request: Request) {
         ...fallbackSnapshot,
         dataSource: "db",
         dataSourceLabel: "DB 조회",
+        workOrders: rows.workOrders,
         attachments: rows.attachments,
         trashItems: rows.trashItems,
         usageSummary: buildUsageSummary(activeBytes, trashBytes, settings.filePolicy),

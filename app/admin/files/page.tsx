@@ -5,6 +5,7 @@ import AdminFilterBar from "@/components/admin/common/AdminFilterBar";
 import FileListSection from "@/components/admin/files/FileListSection";
 import FileStorageSummary from "@/components/admin/files/FileStorageSummary";
 import FileTrashSection from "@/components/admin/files/FileTrashSection";
+import WorkOrderStorageSection from "@/components/admin/files/WorkOrderStorageSection";
 import AdminShell from "@/components/admin/layout/AdminShell";
 import { runMoveAttachmentsToTrashFlow, runPurgeTrashItemsFlow, runRestoreTrashItemsFlow } from "@/lib/admin/files/actionFlow";
 import { getAdminFileManagementSnapshot } from "@/lib/admin/files/adapter";
@@ -25,6 +26,7 @@ import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
 const FILE_ADMIN_NAVIGATION_ITEMS = getAdminNavigationItems("/admin/files");
 
 function getFileTabLabel(tabKey: AdminFileTabKey, fallback: string, t: ReturnType<typeof useAdminTranslation>) {
+  if (tabKey === "workorders") return t("filesPage.tabs.workorders", fallback);
   if (tabKey === "attachments") return t("filesPage.tabs.attachments", fallback);
   if (tabKey === "trash") return t("filesPage.tabs.trash", fallback);
   return t("filesPage.tabs.storage", fallback);
@@ -35,7 +37,7 @@ export default function AdminFilesPage() {
   const placeholderSnapshot = useMemo(() => getAdminFileManagementSnapshot(), []);
   const [snapshot, setSnapshot] = useState<AdminFileManagementSnapshot>(placeholderSnapshot);
   const [isLoadingSnapshot, setIsLoadingSnapshot] = useState(false);
-  const [activeTab, setActiveTab] = useState<AdminFileTabKey>("attachments");
+  const [activeTab, setActiveTab] = useState<AdminFileTabKey>("workorders");
   const [trendPeriod, setTrendPeriod] = useState<AdminFileTrendPeriod>(7);
   const [fileSortKey, setFileSortKey] = useState<AdminFileSortKey>("latest");
   const [selectedAttachmentIds, setSelectedAttachmentIds] = useState<string[]>([]);
@@ -184,6 +186,9 @@ export default function AdminFilesPage() {
         ) : null}
 
         <div className="mt-4 h-[520px] min-h-[420px] flex-1 overflow-hidden">
+          {activeTab === "workorders" ? (
+            <WorkOrderStorageSection items={snapshot.workOrders ?? []} />
+          ) : null}
           {activeTab === "attachments" ? (
             <FileListSection
               items={sortedAttachments}

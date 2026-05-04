@@ -27,6 +27,7 @@ export function getAdminFileManagementSnapshot(): AdminFileManagementSnapshot {
     ],
     usageSummary,
     tabs: ADMIN_FILE_TABS,
+    workOrders: [],
     attachments: [],
     trashItems: [],
     storagePolicies: buildAdminStoragePolicyItems(ADMIN_STORAGE_POLICY_SETTINGS),

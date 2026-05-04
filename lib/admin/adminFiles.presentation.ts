@@ -7,6 +7,7 @@ import type {
   AdminStoragePolicyItem,
   AdminStoragePolicySettings,
   AdminStorageUsageSummary,
+  AdminStorageWorkOrderItem,
   AdminTrashFileItem,
 } from "@/lib/admin/adminFiles.types";
 import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
@@ -31,6 +32,11 @@ export const ADMIN_FILE_USAGE_CARDS: AdminFileUsageCard[] = [
 ];
 
 export const ADMIN_FILE_TABS: AdminFileTabItem[] = [
+  {
+    key: "workorders",
+    label: "작업지시서",
+    description: "삭제된 작업지시서와 연결 파일·메모 상태를 읽기 전용으로 확인",
+  },
   {
     key: "attachments",
     label: "첨부파일 목록",
@@ -110,6 +116,7 @@ export const ADMIN_FILE_LIST_PLACEHOLDERS: AdminManagedFileItem[] = [
     purgeAfterAt: null,
   },
 ];
+export const ADMIN_FILE_WORKORDER_PLACEHOLDERS: AdminStorageWorkOrderItem[] = [];
 
 export const ADMIN_FILE_TRASH_PLACEHOLDERS: AdminTrashFileItem[] = [
   {

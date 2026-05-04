@@ -1,18 +1,23 @@
 Version :
-0.9.164
+0.9.165
 
 Summary :
-작업지시서 복원 정책과 저장소 탭 구조 설계
+고객관리자 저장소 작업지시서 탭 구조 1차 반영
 
 Description :
-작업지시서 삭제 시 함께 휴지통 이동된 디자인, 첨부파일, 메모를 복원할 때 함께 복원하는 정책을 문서화했다. 고객관리자 저장소를 작업지시서, 첨부파일목록, 휴지통 구조로 개편하는 기준을 추가했다. 실제 복원 로직, 저장소 UI, DB schema, R2 삭제 흐름은 변경하지 않았다.
+/admin/files에 작업지시서 탭을 추가하고 삭제된 작업지시서와 연결 첨부·메모 상태를 읽기 전용으로 확인할 수 있게 했다. 기존 첨부파일목록과 휴지통 탭의 삭제, 복구, 영구삭제 요청 흐름은 변경하지 않았다. 작업지시서 복원 버튼은 실제 로직 없이 준비중 상태로 표시했다.
 
 수정 파일 목록 :
+- app/admin/files/page.tsx
+- app/api/admin/files/snapshot/route.ts
+- lib/admin/adminFiles.adapter.ts
+- lib/admin/adminFiles.presentation.ts
+- lib/admin/adminFiles.serverActions.ts
+- lib/admin/adminFiles.types.ts
 - lib/constants/app.ts
-- docs/restore-baseline-0.9.121.md
 
 추가 파일 목록 :
-- docs/workorder-restore-storage-tabs-0.9.164.md
+- components/admin/files/WorkOrderStorageSection.tsx
 
 삭제 파일 목록 :
 없음
