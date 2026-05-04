@@ -3,7 +3,7 @@
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { useI18n } from "@/lib/i18n";
-import type { WorkOrder } from "@/types/workorder";
+import type { WorkOrderListItem } from "@/types/workorder";
 
 export default function WorkOrderDeleteConfirmModal({
   open,
@@ -12,7 +12,7 @@ export default function WorkOrderDeleteConfirmModal({
   onConfirm,
 }: {
   open: boolean;
-  workOrder: WorkOrder | null;
+  workOrder: WorkOrderListItem | null;
   onClose: () => void;
   onConfirm: () => void;
 }) {

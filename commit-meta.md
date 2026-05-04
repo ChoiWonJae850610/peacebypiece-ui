@@ -1,23 +1,21 @@
 Version :
-0.9.161
+0.9.162
 
 Summary :
-작업지시서 삭제 확인을 앱 내부 모달로 교체
+작업지시서 삭제 휴지통 정책 정리와 삭제 모달 빌드 오류 보완
 
 Description :
-작업지시서 삭제 시 브라우저 기본 confirm을 사용하지 않고 앱 내부 확인 모달을 표시하도록 변경했다. 삭제 대상 작업지시서명을 모달에 표시하고, 작업지시서가 목록에서 숨겨진다는 안내를 추가했다. 기존 삭제 API와 첨부, 메모, R2, purge 흐름은 변경하지 않았다.
+작업지시서 삭제 시 연결된 디자인, 첨부파일, 메모 첨부를 함께 휴지통 대상으로 보는 정책을 문서화하고, 삭제 확인 모달 문구를 30일 휴지통 정책 기준으로 정리했다. 삭제 확인 모달의 입력 타입을 WorkOrderListItem 기준으로 좁혀 0.9.161 build 오류를 보완했다.
 
 수정 파일 목록 :
-- components/workorder/WorkOrderWorkspace.tsx
-- lib/hooks/workorder/useWorkOrderLifecycleActions.ts
+- components/common/modal/WorkOrderDeleteConfirmModal.tsx
 - lib/i18n/ko/workorder.ts
 - lib/i18n/en/workorder.ts
 - lib/constants/app.ts
 - docs/restore-baseline-0.9.121.md
 
 추가 파일 목록 :
-- components/common/modal/WorkOrderDeleteConfirmModal.tsx
-- docs/workorder-delete-confirm-modal-0.9.161.md
+- docs/workorder-delete-trash-policy-0.9.162.md
 
 삭제 파일 목록 :
 없음
