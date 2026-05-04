@@ -1,116 +1,30 @@
 "use client";
 
 import WorkOrderEmptyState from "@/components/workorder/WorkOrderEmptyState";
-import type {
-  WorkOrderDetailActionModel,
-  WorkOrderDetailCostModel,
-  WorkOrderDetailDisclosureModel,
-  WorkOrderDetailIdentityModel,
-  WorkOrderDetailPermissionModel,
-  WorkOrderDetailPersistenceModel,
-  WorkOrderDetailProps,
-  WorkOrderDetailWorkflowModel,
-} from "@/components/workorder/detail/WorkOrderDetail.types";
+import type { WorkOrderDetailProps } from "@/components/workorder/detail/WorkOrderDetail.types";
 import WorkOrderDetailViewSwitch from "@/components/workorder/detail/views/WorkOrderDetailViewSwitch";
+import { buildWorkOrderDetailContainerModels } from "@/components/workorder/detail/workOrderDetailContainerModels";
 import { useWorkOrderDeviceType } from "@/components/workorder/layout/useWorkOrderDeviceType";
 import { useWorkOrderDetailEditor } from "@/lib/hooks/workorder/useWorkOrderDetailEditor";
 import { buildWorkOrderDetailViewModel } from "@/lib/workorder/presentation/workOrderDetailPresentation";
 
-export default function WorkOrderDetailContainer({
-  workOrder,
-  currentWorkflowState,
-  saveStatus,
-  lastSavedAt,
-  currentInventoryQuantity,
-  currentUserName,
-  currentUserRole,
-  canRenameTitle = false,
-  canEditInventory,
-  canChangeManager,
-  canSeeProductionSections,
-  canSeeCostSections,
-  fabricTotal,
-  subsidiaryTotal,
-  outsourcingTotal,
-  totalCost,
-  unitCost,
-  basicInfoOpen,
-  materialOpen,
-  outsourcingOpen,
-  onSave,
-  onOpenInventoryEditor,
-  isReviewRequestLocked,
-  onOpenManagerAssignModal,
-  onToggleBasicInfo,
-  onToggleMaterial,
-  onToggleOutsourcing,
-  onSetMaterialOpen,
-  onSetOutsourcingOpen,
-  visibleStages,
-  currentDisplayStage,
-  actions,
-  onAction,
-  onUpdateWorkOrder,
-  onRenameWorkOrderTitle,
-  onCompleteInspection,
-  isEmpty = false,
-}: WorkOrderDetailProps) {
+export default function WorkOrderDetailContainer(props: WorkOrderDetailProps) {
+  const {
+    workOrder,
+    currentInventoryQuantity,
+    isEmpty = false,
+  } = props;
   const deviceType = useWorkOrderDeviceType();
 
-  const persistenceModel: WorkOrderDetailPersistenceModel = {
-    saveStatus,
-    lastSavedAt,
-  };
-
-  const identityModel: WorkOrderDetailIdentityModel = {
-    currentUserName,
-    currentUserRole,
-  };
-
-  const permissionModel: WorkOrderDetailPermissionModel = {
-    canRenameTitle: canRenameTitle ?? false,
-    canEditInventory,
-    canChangeManager,
-    canSeeProductionSections,
-    canSeeCostSections,
-    isReviewRequestLocked,
-  };
-
-  const costModel: WorkOrderDetailCostModel = {
-    fabricTotal,
-    subsidiaryTotal,
-    outsourcingTotal,
-    totalCost,
-    unitCost,
-  };
-
-  const disclosureModel: WorkOrderDetailDisclosureModel = {
-    basicInfoOpen,
-    materialOpen,
-    outsourcingOpen,
-    onToggleBasicInfo,
-    onToggleMaterial,
-    onToggleOutsourcing,
-    onSetMaterialOpen,
-    onSetOutsourcingOpen,
-  };
-
-  const workflowModel: WorkOrderDetailWorkflowModel = {
-    currentWorkflowState,
-    visibleStages,
-    currentDisplayStage,
-    actions,
-  };
-
-  const actionModel: WorkOrderDetailActionModel = {
-    onSave,
-    onOpenInventoryEditor,
-    onOpenManagerAssignModal,
-    onAction,
-    onUpdateWorkOrder,
-    onRenameWorkOrderTitle,
-    onCompleteInspection,
-  };
+  const {
+    persistenceModel,
+    identityModel,
+    permissionModel,
+    costModel,
+    disclosureModel,
+    workflowModel,
+    actionModel,
+  } = buildWorkOrderDetailContainerModels(props);
 
   const editor = useWorkOrderDetailEditor({
     workOrder,
@@ -129,6 +43,12 @@ export default function WorkOrderDetailContainer({
   if (isEmpty) {
     return <WorkOrderEmptyState />;
   }
+
+  const toggleProductionSection = () => {
+    const nextOpen = !editor.productionSectionOpen;
+    disclosureModel.onSetMaterialOpen(nextOpen);
+    disclosureModel.onSetOutsourcingOpen(nextOpen);
+  };
 
   const viewModel = buildWorkOrderDetailViewModel({
     workOrder,
@@ -177,11 +97,7 @@ export default function WorkOrderDetailContainer({
     onAddOrderEntry: editor.addOrderEntry,
     onRemoveOrderEntry: editor.removeOrderEntry,
     onOpenInspectionModal: editor.handleOpenInspectionModal,
-    onToggleProductionSection: () => {
-      const nextOpen = !editor.productionSectionOpen;
-      disclosureModel.onSetMaterialOpen(nextOpen);
-      disclosureModel.onSetOutsourcingOpen(nextOpen);
-    },
+    onToggleProductionSection: toggleProductionSection,
     onToggleMaterial: disclosureModel.onToggleMaterial,
     onToggleOutsourcing: disclosureModel.onToggleOutsourcing,
     onAddMaterial: editor.addMaterial,
