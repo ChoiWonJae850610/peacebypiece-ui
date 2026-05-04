@@ -141,6 +141,8 @@ export const ADMIN_FILE_TRASH_PLACEHOLDERS: AdminTrashFileItem[] = [
     parentWorkOrderDeleted: false,
     canRestore: true,
     restoreDisabledReason: null,
+    canPurge: true,
+    purgeDisabledReason: null,
   },
   {
     id: "sample-trash-2",
@@ -164,6 +166,8 @@ export const ADMIN_FILE_TRASH_PLACEHOLDERS: AdminTrashFileItem[] = [
     parentWorkOrderDeleted: false,
     canRestore: true,
     restoreDisabledReason: null,
+    canPurge: true,
+    purgeDisabledReason: null,
   },
 ];
 

@@ -27,8 +27,10 @@ export default function FileTrashSection({ items, selectedItemIds, onToggleItem,
   const hasSelection = selectedItemIds.length > 0;
   const selectedItems = items.filter((item) => selectedItemIds.includes(item.id));
   const hasRestoreBlockedSelection = selectedItems.some((item) => !item.canRestore);
+  const hasPurgeBlockedSelection = selectedItems.some((item) => !item.canPurge);
   const canAct = hasSelection && !isActionPending;
   const canRestoreSelection = canAct && !hasRestoreBlockedSelection;
+  const canPurgeSelection = canAct && !hasPurgeBlockedSelection;
   const t = useAdminTranslation();
   const allSelected = items.length > 0 && selectedItemIds.length === items.length;
 
@@ -47,7 +49,13 @@ export default function FileTrashSection({ items, selectedItemIds, onToggleItem,
         >
           {isActionPending ? t("filesList.processing", "처리 중") : t("filesList.restore", "복구")} {hasSelection ? selectedItemIds.length : ""}
         </button>
-        <button type="button" onClick={onPurge} className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${canAct ? "border-red-200 bg-white text-red-600 shadow-sm hover:bg-red-50" : "border-stone-200 bg-stone-50 text-stone-400"}`} disabled={!canAct}>
+        <button
+          type="button"
+          onClick={onPurge}
+          className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${canPurgeSelection ? "border-red-200 bg-white text-red-600 shadow-sm hover:bg-red-50" : "border-stone-200 bg-stone-50 text-stone-400"}`}
+          disabled={!canPurgeSelection}
+          title={hasPurgeBlockedSelection ? t("filesList.purgeBlockedByWorkOrder", "삭제된 작업지시서의 연결 파일은 작업지시서 묶음 삭제/purge에서 처리해야 합니다.") : undefined}
+        >
           {isActionPending ? t("filesList.processing", "처리 중") : t("filesList.purge", "영구 삭제")} {hasSelection ? selectedItemIds.length : ""}
         </button>
       </AdminActionBar>
@@ -103,7 +111,7 @@ export default function FileTrashSection({ items, selectedItemIds, onToggleItem,
                 className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold ${item.canRestore ? "border-stone-200 bg-stone-50 text-stone-600" : "border-amber-200 bg-amber-50 text-amber-700"}`}
                 title={item.restoreDisabledReason ?? undefined}
               >
-                {item.canRestore ? t("filesList.restoreAvailable", "개별 복구 가능") : t("filesList.restoreWithWorkOrder", "묶음 복구 필요")}
+                {item.canRestore && item.canPurge ? t("filesList.restoreAvailable", "개별 처리 가능") : t("filesList.restoreWithWorkOrder", "묶음 처리 필요")}
               </span>
             ),
           },

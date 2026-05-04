@@ -105,6 +105,8 @@ export type AdminTrashFileItem = {
   parentWorkOrderDeleted: boolean;
   canRestore: boolean;
   restoreDisabledReason: string | null;
+  canPurge: boolean;
+  purgeDisabledReason: string | null;
 };
 
 export type AdminStoragePolicyItem = {

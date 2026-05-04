@@ -108,6 +108,15 @@ export async function runRestoreTrashItemsFlow(items: AdminTrashFileItem[]): Pro
 export async function runPurgeTrashItemsFlow(items: AdminTrashFileItem[]): Promise<AdminFileActionResult> {
   if (items.length === 0) return createEmptySelectionResult("영구삭제");
 
+  const blockedItem = items.find((item) => !item.canPurge);
+  if (blockedItem) {
+    return createAdminFileActionResult({
+      ok: false,
+      status: "error",
+      message: blockedItem.purgeDisabledReason || "삭제된 작업지시서의 연결 파일은 작업지시서 묶음 삭제/purge에서 처리해야 합니다.",
+    });
+  }
+
   try {
     const result = await postAdminJson<TrashApiResponse>("/api/admin/files/trash/purge", {
       trashItemIds: items.map((item) => item.id),

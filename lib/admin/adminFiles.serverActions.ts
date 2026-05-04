@@ -77,12 +77,14 @@ export async function requestPurgeAttachmentTrashItems(input: AdminTrashDbAction
 
   const result = await queryDb<CountRow>(
     `WITH target_trash AS (
-       SELECT id, attachment_id
-         FROM attachment_trash_items
-        WHERE id = ANY($1::text[])
-          AND purge_status = 'pending'
-          AND restored_at IS NULL
-          AND purged_at IS NULL
+       SELECT t.id, t.attachment_id
+         FROM attachment_trash_items t
+         LEFT JOIN spec_sheets s ON s.id = t.order_id
+        WHERE t.id = ANY($1::text[])
+          AND t.purge_status = 'pending'
+          AND t.restored_at IS NULL
+          AND t.purged_at IS NULL
+          AND (t.order_id IS NULL OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true))
      ), marked_attachments AS (
        UPDATE attachments
           SET is_active = false,
@@ -343,6 +345,8 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
       parentWorkOrderDeleted: Boolean(row.parent_workorder_deleted),
       canRestore: !row.parent_workorder_deleted && !row.last_purge_error && (row.purge_status ?? 'pending') === 'pending',
       restoreDisabledReason: row.parent_workorder_deleted ? '작업지시서가 삭제 상태라 개별 파일만 복구할 수 없습니다.' : row.last_purge_error ? '삭제 실패 상태는 시스템관리자 확인 후 처리해야 합니다.' : (row.purge_status ?? 'pending') !== 'pending' ? '복구 가능 상태가 아닙니다.' : null,
+      canPurge: !row.parent_workorder_deleted && !row.last_purge_error && (row.purge_status ?? 'pending') === 'pending',
+      purgeDisabledReason: row.parent_workorder_deleted ? '작업지시서가 삭제 상태라 개별 파일만 영구삭제할 수 없습니다. 작업지시서 묶음 삭제/purge에서 함께 처리해야 합니다.' : row.last_purge_error ? '삭제 실패 상태는 시스템관리자 확인 후 처리해야 합니다.' : (row.purge_status ?? 'pending') !== 'pending' ? '영구삭제 요청 가능 상태가 아닙니다.' : null,
     };
   });
 
@@ -390,17 +394,19 @@ export async function listPurgeReadyAttachmentTrashItems(limit = 50, trashRetent
   const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 200);
   const safeTrashRetentionDays = [1, 5, 15, 30].includes(trashRetentionDays) ? trashRetentionDays : 30;
   const result = await queryDb<PurgeCandidateRow>(
-    `SELECT id,
-            attachment_id,
-            storage_key,
-            thumbnail_key,
-            (COALESCE(deleted_at, now()) + ($2::integer * interval '1 day')) AS purge_after_at
-       FROM attachment_trash_items
-      WHERE restored_at IS NULL
-        AND purged_at IS NULL
+    `SELECT t.id,
+            t.attachment_id,
+            t.storage_key,
+            t.thumbnail_key,
+            (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) AS purge_after_at
+       FROM attachment_trash_items t
+       LEFT JOIN spec_sheets s ON s.id = t.order_id
+      WHERE t.restored_at IS NULL
+        AND t.purged_at IS NULL
+        AND (t.order_id IS NULL OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true))
         AND (
-          purge_status = 'purge_requested'
-          OR (purge_status = 'pending' AND (COALESCE(deleted_at, now()) + ($2::integer * interval '1 day')) <= now())
+          t.purge_status = 'purge_requested'
+          OR (t.purge_status = 'pending' AND (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) <= now())
         )
       ORDER BY purge_after_at ASC
       LIMIT $1`,
