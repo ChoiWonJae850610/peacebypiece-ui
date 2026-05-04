@@ -291,13 +291,23 @@ export default function FileTrashSection({
         description={previewWorkOrder ? `${previewWorkOrder.title} · ${previewWorkOrder.statusLabel}` : undefined}
         maxWidthClass="md:max-w-2xl"
         footer={
-          <div className="flex w-full justify-end gap-2">
+          <div className="flex w-full flex-wrap justify-end gap-2">
             <button
               type="button"
               onClick={() => setWorkOrderActionPreview(null)}
               className="rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-700 shadow-sm hover:bg-stone-50"
             >
-              {t("common.confirm", "확인")}
+              {t("common.close", "닫기")}
+            </button>
+            <button
+              type="button"
+              disabled
+              className="rounded-full border border-stone-200 bg-stone-50 px-4 py-2 text-xs font-semibold text-stone-400"
+              title={t("filesList.workorderActionApiPreparing", "작업지시서 단위 처리 API 연결 후 활성화됩니다.")}
+            >
+              {workOrderActionPreview?.intent === "purge"
+                ? t("filesList.workorderPurgeApiPreparing", "영구삭제 API 미연결")
+                : t("filesList.workorderRestoreApiPreparing", "복구 API 미연결")}
             </button>
           </div>
         }
@@ -332,6 +342,9 @@ export default function FileTrashSection({
 
             <div className="space-y-2 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800">
               <p className="font-semibold">{t("filesList.workorderActionGuardTitle", "아직 실제 작업지시서 복원/영구삭제 API는 연결하지 않았습니다.")}</p>
+              <p className="text-[11px] text-amber-700">
+                {t("filesList.workorderActionSkeletonNotice", "이번 단계에서는 서버 skeleton이 요청을 방어하며, 실제 DB/R2 상태 변경은 수행하지 않습니다.")}
+              </p>
               <p>
                 {workOrderActionPreview.intent === "restore"
                   ? t("filesList.workorderRestoreGuardDescription", "복원 연결 시 작업지시서와 작업지시서 삭제로 함께 휴지통 이동한 첨부/메모를 같은 트랜잭션에서 복원해야 합니다.")

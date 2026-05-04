@@ -569,3 +569,69 @@ export async function markAttachmentTrashItemPurgeFailed(input: { trashItemId: s
     [trashItemId, input.errorMessage],
   );
 }
+
+export type AdminWorkOrderTrashActionType = "restore" | "purge";
+
+export type AdminWorkOrderTrashActionInput = {
+  workOrderId: string;
+  actorId?: string | null;
+};
+
+export type AdminWorkOrderTrashActionResult = {
+  ok: false;
+  action: AdminWorkOrderTrashActionType;
+  workOrderId: string | null;
+  requestedCount: number;
+  affectedCount: 0;
+  reason: "WORKORDER_ACTION_NOT_CONNECTED" | "WORKORDER_ID_REQUIRED";
+  message: string;
+};
+
+function normalizeWorkOrderTrashActionInput(input: AdminWorkOrderTrashActionInput): string | null {
+  const workOrderId = input.workOrderId.trim();
+  return workOrderId.length > 0 ? workOrderId : null;
+}
+
+function createWorkOrderTrashActionSkeletonResult(input: {
+  action: AdminWorkOrderTrashActionType;
+  workOrderId: string | null;
+}): AdminWorkOrderTrashActionResult {
+  if (!input.workOrderId) {
+    return {
+      ok: false,
+      action: input.action,
+      workOrderId: null,
+      requestedCount: 0,
+      affectedCount: 0,
+      reason: "WORKORDER_ID_REQUIRED",
+      message: "작업지시서 ID가 없어 작업지시서 단위 처리를 실행할 수 없습니다.",
+    };
+  }
+
+  return {
+    ok: false,
+    action: input.action,
+    workOrderId: input.workOrderId,
+    requestedCount: 1,
+    affectedCount: 0,
+    reason: "WORKORDER_ACTION_NOT_CONNECTED",
+    message:
+      input.action === "restore"
+        ? "작업지시서 복구 API는 아직 실제 DB 복원 로직에 연결되지 않았습니다. 작업지시서와 연결 첨부/메모를 같은 트랜잭션에서 복원해야 합니다."
+        : "작업지시서 영구삭제 API는 아직 실제 DB/R2 처리 로직에 연결되지 않았습니다. R2 삭제는 Worker 기반 purge 흐름만 사용해야 합니다.",
+  };
+}
+
+export async function previewRestoreWorkOrderTrashBundle(input: AdminWorkOrderTrashActionInput): Promise<AdminWorkOrderTrashActionResult> {
+  return createWorkOrderTrashActionSkeletonResult({
+    action: "restore",
+    workOrderId: normalizeWorkOrderTrashActionInput(input),
+  });
+}
+
+export async function previewPurgeWorkOrderTrashBundle(input: AdminWorkOrderTrashActionInput): Promise<AdminWorkOrderTrashActionResult> {
+  return createWorkOrderTrashActionSkeletonResult({
+    action: "purge",
+    workOrderId: normalizeWorkOrderTrashActionInput(input),
+  });
+}
