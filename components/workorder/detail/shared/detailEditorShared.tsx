@@ -1,5 +1,6 @@
 import { type KeyboardEvent, type ReactNode } from "react";
 import { getDisplayValue, getEditingInitialValue } from "@/lib/workorder/detail/detailFormatting";
+import { isUnavailableWorkOrderSelectOption } from "@/lib/constants/workorderDomain";
 import { normalizeEditingValue } from "@/lib/workorder/detail/detailSanitizers";
 import type { OrderEntry } from "@/types/workorder";
 
@@ -175,7 +176,12 @@ export function EditableValue({
   const handleSelectKeyDown = (event: KeyboardEvent<HTMLSelectElement>) => {
     if (event.key === "Enter") {
       event.preventDefault();
-      onCommit((event.currentTarget as HTMLSelectElement).value);
+      const nextValue = (event.currentTarget as HTMLSelectElement).value;
+      if (isUnavailableWorkOrderSelectOption(nextValue)) {
+        onCancel();
+        return;
+      }
+      onCommit(nextValue);
     }
     if (event.key === "Escape") {
       event.preventDefault();
@@ -195,17 +201,26 @@ export function EditableValue({
   };
 
   if (editing && options) {
+    const selectValue = options.includes(editingValue) ? editingValue : (options[0] ?? "");
+    const commitSelectValue = (nextValue: string) => {
+      if (isUnavailableWorkOrderSelectOption(nextValue)) {
+        onCancel();
+        return;
+      }
+      onCommit(nextValue);
+    };
+
     return (
       <select
         autoFocus
-        value={editingValue}
-        onChange={(event) => onCommit(event.target.value)}
-        onBlur={(event) => onCommit(event.target.value)}
+        value={selectValue}
+        onChange={(event) => commitSelectValue(event.target.value)}
+        onBlur={(event) => commitSelectValue(event.target.value)}
         onKeyDown={handleSelectKeyDown}
         className={`${EDITABLE_SELECT_CLASS} ${compact ? "mx-auto max-w-[11rem]" : ""} ${alignRight ? "text-right tabular-nums" : centered ? "text-center" : "text-left"}`}
       >
         {options.map((option) => (
-          <option key={option} value={option}>
+          <option key={option} value={option} disabled={isUnavailableWorkOrderSelectOption(option)}>
             {option}
           </option>
         ))}

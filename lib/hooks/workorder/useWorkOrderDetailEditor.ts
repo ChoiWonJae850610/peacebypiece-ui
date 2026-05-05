@@ -143,8 +143,8 @@ export function useWorkOrderDetailEditor({
   );
 
   const outsourcingVendorOptionsById = useMemo(
-    () => selectOutsourcingVendorOptionsById(outsourcingItems, partnerWorkOrderOptions.outsourcingVendorOptions),
-    [outsourcingItems, partnerWorkOrderOptions.outsourcingVendorOptions],
+    () => selectOutsourcingVendorOptionsById(outsourcingItems, partnerWorkOrderOptions.outsourcingVendorOptionsByProcess),
+    [outsourcingItems, partnerWorkOrderOptions.outsourcingVendorOptionsByProcess],
   );
 
   const syncOrderEntries = (nextItems: OrderEntryState[], extraPatch: Partial<WorkOrder> = {}) => {

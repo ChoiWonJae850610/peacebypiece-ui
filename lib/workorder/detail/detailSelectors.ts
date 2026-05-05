@@ -1,10 +1,4 @@
-import { FACTORY_OPTIONS, OUTSOURCING_PROCESS_OPTIONS } from "@/lib/constants/workorderOptions";
-import { MATERIAL_KIND } from "@/lib/constants/workorderDomain";
-import {
-  listActiveMaterialPartnerNames,
-  listActiveOutsourcingPartnerNamesByProcess,
-  listActivePartnerNamesByTypes,
-} from "@/lib/admin/partner/persistence";
+import { MATERIAL_KIND, NO_REGISTERED_PARTNER_OPTION, NO_REGISTERED_PROCESS_OPTION } from "@/lib/constants/workorderDomain";
 import { appendOption } from "@/lib/workorder/detail/detailSanitizers";
 import type { Material, Outsourcing } from "@/types/workorder";
 import type { OrderEntryState } from "@/components/workorder/detail/shared/detailEditorShared";
@@ -13,30 +7,22 @@ function mergeOptionLists(...sources: ReadonlyArray<ReadonlyArray<string>>): str
   return sources.flat().reduce<string[]>((options, value) => appendOption(options, value), []);
 }
 
-function hasPartnerOptions(options: readonly string[] | undefined): boolean {
-  return Array.isArray(options) && options.length > 0;
+function buildRegisteredPartnerOptions(options: readonly string[] | undefined): string[] {
+  const registeredOptions = mergeOptionLists(options ?? []);
+  return registeredOptions.length > 0 ? registeredOptions : [NO_REGISTERED_PARTNER_OPTION];
 }
 
-function selectDbOptionsOrFallback(partnerOptions: readonly string[] | undefined, fallbackOptions: readonly string[]): string[] {
-  return hasPartnerOptions(partnerOptions) ? mergeOptionLists(partnerOptions ?? []) : mergeOptionLists(fallbackOptions);
+function buildRegisteredProcessOptions(options: readonly string[] | undefined): string[] {
+  const registeredOptions = mergeOptionLists(options ?? []);
+  return registeredOptions.length > 0 ? registeredOptions : [NO_REGISTERED_PROCESS_OPTION];
 }
 
 export function selectSeededFactoryOptions() {
-  return mergeOptionLists(
-    FACTORY_OPTIONS,
-    listActivePartnerNamesByTypes(["factory"]),
-  );
+  return buildRegisteredPartnerOptions([]);
 }
 
-export function selectFactoryOptions(orderItems: OrderEntryState[], partnerFactoryOptions: readonly string[] = []): string[] {
-  if (hasPartnerOptions(partnerFactoryOptions)) {
-    return mergeOptionLists(partnerFactoryOptions);
-  }
-
-  return orderItems.reduce<string[]>(
-    (options, item) => appendOption(options, item.factory),
-    selectSeededFactoryOptions(),
-  );
+export function selectFactoryOptions(_orderItems: OrderEntryState[], partnerFactoryOptions: readonly string[] = []): string[] {
+  return buildRegisteredPartnerOptions(partnerFactoryOptions);
 }
 
 export type PartnerMaterialVendorOptions = {
@@ -44,17 +30,12 @@ export type PartnerMaterialVendorOptions = {
   subsidiary?: readonly string[];
 };
 
+export type PartnerOutsourcingVendorOptionsByProcess = Record<string, readonly string[]>;
+
 function selectPartnerMaterialVendorOptions(materialType: string, partnerMaterialVendorOptions: PartnerMaterialVendorOptions = {}): readonly string[] {
   if (materialType === MATERIAL_KIND.fabric) return partnerMaterialVendorOptions.fabric ?? [];
   if (materialType === MATERIAL_KIND.subsidiary) return partnerMaterialVendorOptions.subsidiary ?? [];
   return mergeOptionLists(partnerMaterialVendorOptions.fabric ?? [], partnerMaterialVendorOptions.subsidiary ?? []);
-}
-
-function selectSeededMaterialVendorOptions(materialType: string, currentVendor: string | undefined): string[] {
-  return mergeOptionLists(
-    listActiveMaterialPartnerNames(materialType),
-    currentVendor ? [currentVendor] : [],
-  );
 }
 
 export function selectMaterialVendorOptionsById(
@@ -64,33 +45,37 @@ export function selectMaterialVendorOptionsById(
   return Object.fromEntries(
     materialItems.map((item) => [
       item.id,
-      selectDbOptionsOrFallback(
-        selectPartnerMaterialVendorOptions(item.type, partnerMaterialVendorOptions),
-        selectSeededMaterialVendorOptions(item.type, item.vendor),
-      ),
+      buildRegisteredPartnerOptions(selectPartnerMaterialVendorOptions(item.type, partnerMaterialVendorOptions)),
     ]),
   );
 }
 
-
 export function selectOutsourcingProcessOptions(partnerOutsourcingProcessOptions: readonly string[] = []): string[] {
-  return selectDbOptionsOrFallback(partnerOutsourcingProcessOptions, OUTSOURCING_PROCESS_OPTIONS);
+  return buildRegisteredProcessOptions(partnerOutsourcingProcessOptions);
+}
+
+function normalizeProcessKey(value: string) {
+  return value.trim().toLocaleLowerCase("ko-KR");
+}
+
+function selectPartnerOutsourcingVendorOptions(
+  process: string,
+  partnerOutsourcingVendorOptionsByProcess: PartnerOutsourcingVendorOptionsByProcess = {},
+): readonly string[] {
+  const processKey = normalizeProcessKey(process);
+  if (!processKey) return [];
+
+  return partnerOutsourcingVendorOptionsByProcess[processKey] ?? [];
 }
 
 export function selectOutsourcingVendorOptionsById(
   outsourcingItems: Outsourcing[],
-  partnerOutsourcingVendorOptions: readonly string[] = [],
+  partnerOutsourcingVendorOptionsByProcess: PartnerOutsourcingVendorOptionsByProcess = {},
 ): Record<string, string[]> {
   return Object.fromEntries(
     outsourcingItems.map((item) => [
       item.id,
-      selectDbOptionsOrFallback(
-        partnerOutsourcingVendorOptions,
-        mergeOptionLists(
-          listActiveOutsourcingPartnerNamesByProcess(item.process),
-          item.vendor ? [item.vendor] : [],
-        ),
-      ),
+      buildRegisteredPartnerOptions(selectPartnerOutsourcingVendorOptions(item.process, partnerOutsourcingVendorOptionsByProcess)),
     ]),
   );
 }

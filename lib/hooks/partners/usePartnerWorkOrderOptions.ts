@@ -9,6 +9,7 @@ export type PartnerWorkOrderOptions = {
     subsidiary: string[];
   };
   outsourcingVendorOptions: string[];
+  outsourcingVendorOptionsByProcess: Record<string, string[]>;
   outsourcingProcessOptions: string[];
   partnerItemOptions: {
     labor: string[];
@@ -25,6 +26,7 @@ const EMPTY_OPTIONS: PartnerWorkOrderOptions = {
     subsidiary: [],
   },
   outsourcingVendorOptions: [],
+  outsourcingVendorOptionsByProcess: {},
   outsourcingProcessOptions: [],
   partnerItemOptions: {
     labor: [],
@@ -51,6 +53,17 @@ function normalizeOptionList(values: unknown): string[] {
   return options;
 }
 
+
+function normalizeOptionsRecord(values: unknown): Record<string, string[]> {
+  if (!values || typeof values !== "object" || Array.isArray(values)) return {};
+
+  return Object.fromEntries(
+    Object.entries(values as Record<string, unknown>)
+      .map(([key, value]) => [key.trim().toLocaleLowerCase("ko-KR"), normalizeOptionList(value)] as const)
+      .filter(([key, options]) => Boolean(key) && options.length > 0),
+  );
+}
+
 function normalizeWorkOrderOptions(response: Partial<PartnerWorkOrderOptions>): PartnerWorkOrderOptions {
   return {
     factoryOptions: normalizeOptionList(response.factoryOptions),
@@ -59,6 +72,7 @@ function normalizeWorkOrderOptions(response: Partial<PartnerWorkOrderOptions>): 
       subsidiary: normalizeOptionList(response.materialVendorOptions?.subsidiary),
     },
     outsourcingVendorOptions: normalizeOptionList(response.outsourcingVendorOptions),
+    outsourcingVendorOptionsByProcess: normalizeOptionsRecord(response.outsourcingVendorOptionsByProcess),
     outsourcingProcessOptions: normalizeOptionList(response.outsourcingProcessOptions),
     partnerItemOptions: {
       labor: normalizeOptionList(response.partnerItemOptions?.labor),

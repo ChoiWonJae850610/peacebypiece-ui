@@ -1,5 +1,11 @@
 export const DEFAULT_UNSELECTED_OPTION = "선택 안함" as const;
 export const DEFAULT_UNASSIGNED_FACTORY_LABEL = "미정 공장" as const;
+export const NO_REGISTERED_PARTNER_OPTION = "등록된 업체 없음" as const;
+export const NO_REGISTERED_PROCESS_OPTION = "등록된 공정 없음" as const;
+
+export function isUnavailableWorkOrderSelectOption(value: string | null | undefined) {
+  return value === NO_REGISTERED_PARTNER_OPTION || value === NO_REGISTERED_PROCESS_OPTION;
+}
 
 export const MATERIAL_KIND = {
   unselected: DEFAULT_UNSELECTED_OPTION,

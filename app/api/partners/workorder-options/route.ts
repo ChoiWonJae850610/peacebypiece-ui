@@ -9,6 +9,7 @@ type WorkOrderPartnerOptions = {
     subsidiary: string[];
   };
   outsourcingVendorOptions: string[];
+  outsourcingVendorOptionsByProcess: Record<string, string[]>;
   outsourcingProcessOptions: string[];
   partnerItemOptions: {
     labor: string[];
@@ -25,6 +26,7 @@ const EMPTY_OPTIONS: WorkOrderPartnerOptions = {
     subsidiary: [],
   },
   outsourcingVendorOptions: [],
+  outsourcingVendorOptionsByProcess: {},
   outsourcingProcessOptions: [],
   partnerItemOptions: {
     labor: [],
@@ -40,6 +42,17 @@ function appendUnique(options: string[], value: string | null | undefined) {
   return [...options, normalized];
 }
 
+function normalizeProcessKey(value: string | null | undefined) {
+  return (value ?? "").trim().toLocaleLowerCase("ko-KR");
+}
+
+function appendProcessPartnerOption(options: WorkOrderPartnerOptions, processName: string | null | undefined, partnerName: string | null | undefined) {
+  const processKey = normalizeProcessKey(processName);
+  if (!processKey) return;
+
+  options.outsourcingVendorOptionsByProcess[processKey] = appendUnique(options.outsourcingVendorOptionsByProcess[processKey] ?? [], partnerName);
+}
+
 function buildPartnerOptions(partners: PartnerDbRecord[], partnerItems: PartnerItemWithRelations[]): WorkOrderPartnerOptions {
   const options: WorkOrderPartnerOptions = {
     factoryOptions: [],
@@ -48,6 +61,7 @@ function buildPartnerOptions(partners: PartnerDbRecord[], partnerItems: PartnerI
       subsidiary: [],
     },
     outsourcingVendorOptions: [],
+    outsourcingVendorOptionsByProcess: {},
     outsourcingProcessOptions: [],
     partnerItemOptions: {
       labor: [],
@@ -83,8 +97,10 @@ function buildPartnerOptions(partners: PartnerDbRecord[], partnerItems: PartnerI
     }
 
     if (item.category === "outsourcing") {
+      const processName = item.outsourcing_process_name ?? item.name;
       options.outsourcingVendorOptions = appendUnique(options.outsourcingVendorOptions, partnerName);
-      options.outsourcingProcessOptions = appendUnique(options.outsourcingProcessOptions, item.outsourcing_process_name ?? item.name);
+      options.outsourcingProcessOptions = appendUnique(options.outsourcingProcessOptions, processName);
+      appendProcessPartnerOption(options, processName, partnerName);
       options.partnerItemOptions.outsourcing = appendUnique(options.partnerItemOptions.outsourcing, item.name);
     }
   }
