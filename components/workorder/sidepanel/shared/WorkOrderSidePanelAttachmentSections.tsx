@@ -11,6 +11,8 @@ type WorkOrderSidePanelAttachmentSectionsProps = Pick<
   | "onPreviewAttachment"
   | "onDeleteAttachment"
   | "onSetPrimaryDesignAttachment"
+  | "writeLocked"
+  | "writeLockMessage"
 > & {
   variant: WorkOrderSidePanelVariant;
 };
@@ -24,6 +26,8 @@ export default function WorkOrderSidePanelAttachmentSections({
   onPreviewAttachment,
   onDeleteAttachment,
   onSetPrimaryDesignAttachment,
+  writeLocked = false,
+  writeLockMessage,
   variant,
 }: WorkOrderSidePanelAttachmentSectionsProps) {
   return attachmentSections.map((section) => (
@@ -44,6 +48,8 @@ export default function WorkOrderSidePanelAttachmentSections({
       onPreviewAttachment={onPreviewAttachment}
       onDeleteAttachment={onDeleteAttachment}
       onSetPrimaryDesignAttachment={onSetPrimaryDesignAttachment}
+      writeLocked={writeLocked}
+      writeLockMessage={writeLockMessage}
       variant={variant}
     />
   ));

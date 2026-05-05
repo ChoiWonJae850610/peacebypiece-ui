@@ -47,6 +47,9 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
   const isRepositoryLoading = repository.repositoryStatus === "loading";
   const isCreatingWorkOrder = runtime.actionStatusMap.create === "loading";
   const loadingCopy = i18n.workorder.ui.layout.sidebarControls;
+  const isWorkflowWriteLocked = Boolean(workflowProcessingLabel);
+  const workflowWriteLockMessage = workflowProcessingLabel ? `${workflowProcessingLabel.replace(/\s+/g, "")} 중입니다...` : undefined;
+
   const workspaceLoadingState = {
     isRepositoryLoading,
     detailTitle: loadingCopy.loadingDetailTitle,
@@ -70,6 +73,7 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
   );
 
   const handleRequestDeleteWorkOrder = (workOrderId: string) => {
+    if (isWorkflowWriteLocked) return;
     setPendingWorkOrderDeleteId(workOrderId);
   };
 
@@ -78,13 +82,14 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
   };
 
   const handleConfirmDeleteWorkOrder = () => {
-    if (!pendingWorkOrderDeleteId) return;
+    if (isWorkflowWriteLocked || !pendingWorkOrderDeleteId) return;
 
     actions.handleDeleteWorkOrder(pendingWorkOrderDeleteId);
     setPendingWorkOrderDeleteId(null);
   };
 
   const handleRequestDeleteAttachment = (attachmentId: string) => {
+    if (isWorkflowWriteLocked) return;
     setPendingAttachmentDeleteId(attachmentId);
   };
 
@@ -93,7 +98,7 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
   };
 
   const handleConfirmDeleteAttachment = () => {
-    if (!pendingAttachmentDeleteId) return;
+    if (isWorkflowWriteLocked || !pendingAttachmentDeleteId) return;
 
     attachments.handleDeleteAttachment(pendingAttachmentDeleteId);
     setPendingAttachmentDeleteId(null);
@@ -161,6 +166,8 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
     availableActions: workflow.availableActions,
     visibleStages: workflow.visibleStages,
     workflowProcessingLabel,
+    isWorkspaceWriteLocked: isWorkflowWriteLocked,
+    workspaceWriteLockMessage: workflowWriteLockMessage,
     pendingAttachmentDelete,
     canDeleteWorkOrder: actions.canDeleteWorkOrder,
     getAttachmentPermissions: attachments.getAttachmentPermissions,
@@ -227,7 +234,8 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
       <WorkOrderOverlay
         attachmentInputRef={ui.attachmentInputRef}
         attachmentInputAccept={attachments.attachmentInputAccept}
-        onAttachmentFilesChange={attachments.handleAttachmentFiles}
+        onAttachmentFilesChange={(event) => { if (!isWorkflowWriteLocked) attachments.handleAttachmentFiles(event); }}
+        writeLocked={isWorkflowWriteLocked}
         toastMessage={ui.toastMessage}
         modalProps={{
           ...viewModel.modalProps,

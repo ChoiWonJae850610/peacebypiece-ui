@@ -51,6 +51,8 @@ export type WorkOrderDetailWorkflowModel = {
   currentDisplayStage: DisplayStage;
   actions: WorkflowAction[];
   workflowProcessingLabel?: string | null;
+  isWorkspaceWriteLocked?: boolean;
+  workspaceWriteLockMessage?: string;
 };
 
 export type WorkOrderDetailActionModel = {

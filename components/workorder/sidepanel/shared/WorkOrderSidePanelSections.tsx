@@ -11,6 +11,8 @@ export default function WorkOrderSidePanelSections({
   canSeeAttachments,
   canManageAttachments,
   canEditMemo,
+  writeLocked = false,
+  writeLockMessage,
   attachmentSections,
   onOpenAttachmentPicker,
   onUploadAttachmentFiles,
@@ -40,6 +42,8 @@ export default function WorkOrderSidePanelSections({
       onPreviewAttachment={onPreviewAttachment}
       onDeleteAttachment={onDeleteAttachment}
       onSetPrimaryDesignAttachment={onSetPrimaryDesignAttachment}
+      writeLocked={writeLocked}
+      writeLockMessage={writeLockMessage}
       variant={variant}
     />
   );
@@ -57,6 +61,8 @@ export default function WorkOrderSidePanelSections({
       onUpdateReply={onUpdateMemoReply}
       onDeleteReply={onDeleteMemoReply}
       canEditMemo={canEditMemo}
+      writeLocked={writeLocked}
+      writeLockMessage={writeLockMessage}
       variant={variant}
     />
   );

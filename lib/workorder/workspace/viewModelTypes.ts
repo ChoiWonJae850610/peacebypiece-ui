@@ -71,6 +71,8 @@ export type BuildWorkspaceViewModelArgs = {
   availableActions: WorkflowAction[];
   visibleStages: DetailProps["visibleStages"];
   workflowProcessingLabel?: string | null;
+  isWorkspaceWriteLocked?: boolean;
+  workspaceWriteLockMessage?: string;
   pendingAttachmentDelete: Attachment | null;
   canDeleteWorkOrder: SidebarListProps["canDelete"];
   getAttachmentPermissions: GetAttachmentPermissions;
@@ -163,6 +165,8 @@ export type BaseWorkspaceViewModelArgs = {
   availableActions: WorkflowAction[];
   visibleStages: DetailProps["visibleStages"];
   workflowProcessingLabel?: string | null;
+  isWorkspaceWriteLocked?: boolean;
+  workspaceWriteLockMessage?: string;
   getAttachmentPermissions: GetAttachmentPermissions;
   i18n: ReturnType<typeof getI18n>;
   onSave: () => void;
@@ -201,6 +205,8 @@ export type SidebarViewModelArgs = {
   onReworkWorkOrder: (id: string) => void;
   onSetSearchQuery: (next: string) => void;
   dbConnectionStatus?: DbConnectionStatus;
+  writeLocked?: boolean;
+  writeLockMessage?: string;
 };
 
 export type DetailViewModelArgs = BaseWorkspaceViewModelArgs & {

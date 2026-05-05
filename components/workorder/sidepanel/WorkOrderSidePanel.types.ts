@@ -6,6 +6,8 @@ export type WorkOrderSidePanelProps = {
   canSeeAttachments: boolean;
   canManageAttachments: boolean;
   canEditMemo: boolean;
+  writeLocked?: boolean;
+  writeLockMessage?: string;
   attachmentSections: AttachmentPanelSection[];
   onOpenAttachmentPicker: (scope?: "design" | "attachment") => void;
   onUploadAttachmentFiles: (scope: "design" | "attachment", files: File[]) => void;

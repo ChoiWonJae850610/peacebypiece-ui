@@ -13,6 +13,7 @@ type WorkOrderOverlayProps = {
   attachmentInputRef: RefObject<HTMLInputElement | null>;
   attachmentInputAccept: string;
   onAttachmentFilesChange: ChangeEventHandler<HTMLInputElement>;
+  writeLocked?: boolean;
   toastMessage: ComponentProps<typeof ToastMessage>["message"];
   modalProps: {
     orderRequestConfirm: ComponentProps<typeof OrderRequestConfirmModal>;
@@ -32,6 +33,7 @@ export default function WorkOrderOverlay({
   onAttachmentFilesChange,
   toastMessage,
   modalProps,
+  writeLocked = false,
 }: WorkOrderOverlayProps) {
   return (
     <>
@@ -51,6 +53,7 @@ export default function WorkOrderOverlay({
         multiple
         className="sr-only"
         onChange={onAttachmentFilesChange}
+        disabled={writeLocked}
       />
       <ToastMessage message={toastMessage} />
     </>

@@ -36,12 +36,16 @@ function AttachmentActionMenu({
   onOpenAttachmentPicker,
   onOpenDrawingPlaceholder,
   isMobile,
+  disabled = false,
+  disabledReason,
 }: {
   scope: AttachmentPanelScope;
   addButtonLabel: string;
   onOpenAttachmentPicker: () => void;
   onOpenDrawingPlaceholder: () => void;
   isMobile: boolean;
+  disabled?: boolean;
+  disabledReason?: string;
 }) {
   const { i18n } = useI18n();
   const ui = i18n.workorder.ui;
@@ -52,8 +56,10 @@ function AttachmentActionMenu({
     <div className="relative shrink-0">
       <button
         type="button"
-        onClick={() => setOpen((value) => !value)}
-        className="pbp-interactive-button inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-300 bg-white text-sm font-semibold text-stone-700 shadow-sm transition-colors hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+        onClick={() => { if (!disabled) setOpen((value) => !value); }}
+        disabled={disabled}
+        title={disabled ? disabledReason : undefined}
+        className="pbp-interactive-button inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-300 bg-white text-sm font-semibold text-stone-700 shadow-sm transition-colors hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50"
         aria-label={ui.attachmentPanel.actionMenuAria}
         aria-expanded={open}
       >
@@ -65,7 +71,7 @@ function AttachmentActionMenu({
             type="button"
             onClick={() => {
               setOpen(false);
-              onOpenAttachmentPicker();
+              if (!disabled) onOpenAttachmentPicker();
             }}
             className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-[13px] font-medium text-stone-800 hover:bg-stone-50 active:bg-stone-100"
           >
@@ -136,12 +142,16 @@ function AttachmentUploadHint({
   onOpenAttachmentPicker,
   onUploadFiles,
   compact,
+  disabled = false,
+  disabledReason,
 }: {
   scope: AttachmentPanelScope;
   canManageAttachments: boolean;
   onOpenAttachmentPicker: () => void;
   onUploadFiles: (files: File[]) => void;
   compact: boolean;
+  disabled?: boolean;
+  disabledReason?: string;
 }) {
   const { i18n } = useI18n();
   const ui = i18n.workorder.ui;
@@ -150,7 +160,7 @@ function AttachmentUploadHint({
   const description = dragActive ? ui.attachmentPanel.dropUploadGuideDescription : getUploadGuideDescription(scope, ui);
 
   const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
-    if (!hasDroppedFiles(event)) return;
+    if (disabled || !hasDroppedFiles(event)) return;
     event.preventDefault();
     event.stopPropagation();
     event.dataTransfer.dropEffect = "copy";
@@ -163,7 +173,7 @@ function AttachmentUploadHint({
   };
 
   const handleDrop = (event: DragEvent<HTMLDivElement>) => {
-    if (!hasDroppedFiles(event)) return;
+    if (disabled || !hasDroppedFiles(event)) return;
     event.preventDefault();
     event.stopPropagation();
     setDragActive(false);
@@ -179,18 +189,20 @@ function AttachmentUploadHint({
     <div
       role="button"
       tabIndex={0}
-      onClick={onOpenAttachmentPicker}
+      onClick={() => { if (!disabled) onOpenAttachmentPicker(); }}
+      title={disabled ? disabledReason : undefined}
+      aria-disabled={disabled}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
-          onOpenAttachmentPicker();
+          if (!disabled) onOpenAttachmentPicker();
         }
       }}
       onDragEnter={handleDragOver}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`mt-3 w-full cursor-pointer rounded-2xl border border-dashed text-left transition-colors active:bg-stone-100 ${
+      className={`mt-3 w-full rounded-2xl border border-dashed text-left transition-colors active:bg-stone-100 ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"} ${
         dragActive
           ? "border-stone-500 bg-white shadow-sm"
           : "border-stone-300 bg-stone-50 hover:border-stone-400 hover:bg-white"
@@ -220,6 +232,8 @@ export default function WorkOrderAttachmentPanel({
   onPreviewAttachment,
   onDeleteAttachment,
   onSetPrimaryDesignAttachment,
+  writeLocked = false,
+  writeLockMessage,
   variant = "desktop",
 }: {
   title: string;
@@ -234,13 +248,15 @@ export default function WorkOrderAttachmentPanel({
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;
   onSetPrimaryDesignAttachment?: (attachmentId: string) => void;
+  writeLocked?: boolean;
+  writeLockMessage?: string;
   variant?: "desktop" | "tablet" | "mobile";
 }) {
   const { i18n } = useI18n();
   const ui = i18n.workorder.ui;
   const attachmentPolicyText = WORK_ORDER_ATTACHMENT_POLICY.messages;
   const handleSetPrimaryDesignAttachment = (attachmentId: string) => {
-    if (typeof onSetPrimaryDesignAttachment !== "function") return;
+    if (writeLocked || typeof onSetPrimaryDesignAttachment !== "function") return;
     onSetPrimaryDesignAttachment(attachmentId);
   };
 
@@ -248,7 +264,7 @@ export default function WorkOrderAttachmentPanel({
   const [drawingPlaceholderOpen, setDrawingPlaceholderOpen] = useState(false);
 
   const handlePanelDragOver = (event: DragEvent<HTMLDivElement>) => {
-    if (!canManageAttachments || !hasDroppedFiles(event)) return;
+    if (writeLocked || !canManageAttachments || !hasDroppedFiles(event)) return;
     event.preventDefault();
     event.stopPropagation();
     event.dataTransfer.dropEffect = "copy";
@@ -261,7 +277,7 @@ export default function WorkOrderAttachmentPanel({
   };
 
   const handlePanelDrop = (event: DragEvent<HTMLDivElement>) => {
-    if (!canManageAttachments || !hasDroppedFiles(event)) return;
+    if (writeLocked || !canManageAttachments || !hasDroppedFiles(event)) return;
     event.preventDefault();
     event.stopPropagation();
     setPanelDragActive(false);
@@ -297,6 +313,8 @@ export default function WorkOrderAttachmentPanel({
             onOpenAttachmentPicker={onOpenAttachmentPicker}
             onOpenDrawingPlaceholder={() => setDrawingPlaceholderOpen(true)}
             isMobile={isMobile}
+            disabled={writeLocked}
+            disabledReason={writeLockMessage}
           />
         ) : null}
       </div>
@@ -308,8 +326,9 @@ export default function WorkOrderAttachmentPanel({
                 <button
                   type="button"
                   onClick={() => handleSetPrimaryDesignAttachment(attachment.id)}
+                  disabled={writeLocked}
                   className={`${isMobile ? "left-9 top-9 h-5 w-5 text-[11px]" : "left-11 top-11 h-6 w-6 text-xs"} absolute z-10 flex items-center justify-center rounded-full border font-bold shadow-sm ${attachment.isPrimary ? "border-amber-500 bg-amber-100 text-amber-900" : "border-stone-300 bg-white text-stone-600 hover:border-stone-400 hover:bg-stone-50"}`}
-                  title={attachment.isPrimary ? attachmentPolicyText.primaryTitle : attachmentPolicyText.primaryActionTitle}
+                  title={writeLocked ? writeLockMessage : attachment.isPrimary ? attachmentPolicyText.primaryTitle : attachmentPolicyText.primaryActionTitle}
                   aria-label={attachment.isPrimary ? `${attachment.name} ${attachmentPolicyText.primaryTitle}` : `${attachment.name} ${attachmentPolicyText.primaryActionTitle}`}
                 >
                   {attachment.isPrimary ? attachmentPolicyText.primaryBadge : attachmentPolicyText.primaryAction}
@@ -318,9 +337,10 @@ export default function WorkOrderAttachmentPanel({
               {attachment.canDelete ? (
                 <div className="absolute right-3 top-3">
                   <DeleteButton
-                    onClick={() => onDeleteAttachment(attachment.id)}
+                    onClick={() => { if (!writeLocked) onDeleteAttachment(attachment.id); }}
                     srLabel={`${attachment.name} ${ui.attachmentPanel.deleteAriaSuffix}`}
-                    title={ui.attachmentPanel.deleteTitle}
+                    disabled={writeLocked}
+                    title={writeLocked ? writeLockMessage : ui.attachmentPanel.deleteTitle}
                   />
                 </div>
               ) : null}
@@ -350,6 +370,8 @@ export default function WorkOrderAttachmentPanel({
             onOpenAttachmentPicker={onOpenAttachmentPicker}
             onUploadFiles={onUploadFiles}
             compact={isMobile || isTablet}
+            disabled={writeLocked}
+            disabledReason={writeLockMessage}
           />
         </div>
       ) : (
@@ -361,6 +383,8 @@ export default function WorkOrderAttachmentPanel({
             onOpenAttachmentPicker={onOpenAttachmentPicker}
             onUploadFiles={onUploadFiles}
             compact={isMobile || isTablet}
+            disabled={writeLocked}
+            disabledReason={writeLockMessage}
           />
         </div>
       )}

@@ -108,7 +108,7 @@ function MemoPencilIcon() {
   );
 }
 
-function MemoItemActions({ canMutate, editLabel, deleteAriaLabel, onEdit, onDelete }: { canMutate: boolean; editLabel: string; deleteAriaLabel: string; onEdit: () => void; onDelete: () => void }) {
+function MemoItemActions({ canMutate, editLabel, deleteAriaLabel, onEdit, onDelete, disabledReason }: { canMutate: boolean; editLabel: string; deleteAriaLabel: string; onEdit: () => void; onDelete: () => void; disabledReason?: string }) {
   if (!canMutate) return null;
   return (
     <div className="flex shrink-0 items-center gap-1">
@@ -116,7 +116,7 @@ function MemoItemActions({ canMutate, editLabel, deleteAriaLabel, onEdit, onDele
         type="button"
         onClick={onEdit}
         aria-label={editLabel}
-        title={editLabel}
+        title={disabledReason ?? editLabel}
         className="pbp-interactive-button inline-flex h-5 w-5 items-center justify-center rounded-full border border-amber-300 bg-white text-amber-600 hover:border-amber-400 hover:bg-amber-50 active:bg-amber-100"
       >
         <MemoPencilIcon />
@@ -125,7 +125,7 @@ function MemoItemActions({ canMutate, editLabel, deleteAriaLabel, onEdit, onDele
         type="button"
         onClick={onDelete}
         aria-label={deleteAriaLabel}
-        title={deleteAriaLabel}
+        title={disabledReason ?? deleteAriaLabel}
         className="pbp-interactive-button inline-flex h-5 w-5 items-center justify-center rounded-full border border-red-200 bg-white text-[13px] font-semibold leading-none text-red-500 hover:bg-red-50 active:bg-red-100"
       >
         -
@@ -142,6 +142,8 @@ function MemoThreadCard({
   onUpdateReply,
   onDeleteReply,
   canEditMemo,
+  writeLocked = false,
+  writeLockMessage,
   currentUserId,
   currentUserRole,
   workOrderId,
@@ -154,6 +156,8 @@ function MemoThreadCard({
   onUpdateReply: (threadId: string, replyId: string, content: string) => void;
   onDeleteReply: (threadId: string, replyId: string) => void;
   canEditMemo: boolean;
+  writeLocked?: boolean;
+  writeLockMessage?: string;
   currentUserId: string;
   currentUserRole: RoleType;
   workOrderId: string;
@@ -180,11 +184,11 @@ function MemoThreadCard({
 
   const canMutateAuthor = (authorId: string) => canEditMemo && (isAdminRole(currentUserRole) || authorId === currentUserId);
   const isThreadDeleted = isDeletedMemoItem(thread, ui.memo.deleted);
-  const canMutateThread = canMutateAuthor(thread.authorId) && !isThreadDeleted;
+  const canMutateThread = canMutateAuthor(thread.authorId) && !isThreadDeleted && !writeLocked;
 
   const submitReply = () => {
     const nextContent = replyDraft.trim();
-    if (!canEditMemo || isThreadDeleted || !nextContent) return;
+    if (!canEditMemo || writeLocked || isThreadDeleted || !nextContent) return;
     onCreateReply(thread.id, nextContent);
     if (typeof document !== "undefined" && document.activeElement instanceof HTMLTextAreaElement) document.activeElement.blur();
     setReplyDraft("");
@@ -220,6 +224,7 @@ function MemoThreadCard({
         </div>
         <MemoItemActions
           canMutate={canMutateThread}
+          disabledReason={writeLockMessage}
           editLabel={ui.memo.edit}
           deleteAriaLabel={ui.memo.deleteAria}
           onEdit={() => {
@@ -261,13 +266,13 @@ function MemoThreadCard({
             <div key={reply.id} className="pl-3 text-stone-700">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 text-[11px] text-stone-500">ㄴ {getMemoAuthorDisplayName(reply.authorName, reply.authorRole)} · {formatMemoTimestamp(reply.createdAt)}</div>
-                <MemoItemActions canMutate={canMutateAuthor(reply.authorId)} editLabel={ui.memo.edit} deleteAriaLabel={ui.memo.deleteAria} onEdit={() => startReplyEdit(reply)} onDelete={() => onDeleteReply(thread.id, reply.id)} />
+                <MemoItemActions canMutate={canMutateAuthor(reply.authorId) && !writeLocked} disabledReason={writeLockMessage} editLabel={ui.memo.edit} deleteAriaLabel={ui.memo.deleteAria} onEdit={() => startReplyEdit(reply)} onDelete={() => onDeleteReply(thread.id, reply.id)} />
               </div>
               {isEditingReply ? (
                 <div className="mt-1.5 rounded-xl border border-stone-200 bg-stone-50 p-2">
                   <MemoInputField
                     value={replyEditDraft}
-                    disabled={!canMutateAuthor(reply.authorId)}
+                    disabled={!canMutateAuthor(reply.authorId) || writeLocked}
                     placeholder={ui.memo.replyPlaceholder}
                     submitLabel={ui.memo.save}
             cancelLabel={ui.memo.cancel}
@@ -288,14 +293,14 @@ function MemoThreadCard({
         }) : null}
 
         <div className="flex items-center justify-between gap-2 pt-1">
-          <button type="button" onClick={() => setReplyComposerOpen((prev) => !prev)} disabled={!canEditMemo || isThreadDeleted} className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1 text-[11px] font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200 disabled:cursor-not-allowed disabled:opacity-50">
+          <button type="button" onClick={() => setReplyComposerOpen((prev) => !prev)} disabled={!canEditMemo || writeLocked || isThreadDeleted} className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1 text-[11px] font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200 disabled:cursor-not-allowed disabled:opacity-50">
             {replyComposerOpen ? ui.memo.toggleReplyClose : ui.memo.toggleReplyOpen}
           </button>
         </div>
 
         {replyComposerOpen ? (
           <div className="rounded-xl border border-stone-200 bg-stone-50 p-2.5">
-            <MemoInputField value={replyDraft} disabled={!canEditMemo || isThreadDeleted} placeholder={ui.memo.replyPlaceholder} submitLabel={ui.memo.submit} onChange={setReplyDraft} onSubmit={submitReply} isMobile={isMobile} />
+            <MemoInputField value={replyDraft} disabled={!canEditMemo || writeLocked || isThreadDeleted} placeholder={ui.memo.replyPlaceholder} submitLabel={ui.memo.submit} onChange={setReplyDraft} onSubmit={submitReply} isMobile={isMobile} />
           </div>
         ) : null}
       </div>
@@ -315,6 +320,8 @@ export default function WorkOrderMemoPanel({
   onUpdateReply,
   onDeleteReply,
   canEditMemo,
+  writeLocked = false,
+  writeLockMessage,
   variant = "desktop",
 }: {
   workOrder: WorkOrder;
@@ -328,6 +335,8 @@ export default function WorkOrderMemoPanel({
   onUpdateReply: (threadId: string, replyId: string, content: string) => void;
   onDeleteReply: (threadId: string, replyId: string) => void;
   canEditMemo: boolean;
+  writeLocked?: boolean;
+  writeLockMessage?: string;
   variant?: "desktop" | "tablet" | "mobile";
 }) {
   const { i18n } = useI18n();
@@ -343,7 +352,7 @@ export default function WorkOrderMemoPanel({
 
   const submitThread = () => {
     const nextContent = threadDraft.trim();
-    if (!canEditMemo || !nextContent) return;
+    if (!canEditMemo || writeLocked || !nextContent) return;
     onCreateThread(nextContent);
     if (typeof document !== "undefined" && document.activeElement instanceof HTMLTextAreaElement) document.activeElement.blur();
     setThreadDraft("");
@@ -358,7 +367,7 @@ export default function WorkOrderMemoPanel({
       <div className={isMobile ? "mt-2.5 rounded-xl border border-stone-200 bg-stone-50 p-2" : isTablet ? "mt-3 rounded-xl border border-stone-200 bg-stone-50 p-2.5" : "mt-3 rounded-xl border border-stone-200 bg-stone-50 p-2.5"}>
         <div className="text-[11px] text-stone-500">{getMemoAuthorDisplayName(currentUserName, currentUserRole)}</div>
         <div className="mt-2">
-          <MemoInputField value={threadDraft} disabled={!canEditMemo} placeholder={ui.memo.threadPlaceholder} submitLabel={ui.memo.submit} onChange={setThreadDraft} onSubmit={submitThread} isMobile={isMobile} />
+          <MemoInputField value={threadDraft} disabled={!canEditMemo || writeLocked} placeholder={ui.memo.threadPlaceholder} submitLabel={ui.memo.submit} onChange={setThreadDraft} onSubmit={submitThread} isMobile={isMobile} />
         </div>
       </div>
       <div className={isMobile ? "mt-2.5 space-y-1.5" : "mt-2.5 space-y-2"}>
@@ -374,6 +383,8 @@ export default function WorkOrderMemoPanel({
             workOrderId={workOrder.id}
             variant={variant}
             canEditMemo={canEditMemo}
+            writeLocked={writeLocked}
+            writeLockMessage={writeLockMessage}
             currentUserId={currentUserId}
             currentUserRole={currentUserRole}
           />

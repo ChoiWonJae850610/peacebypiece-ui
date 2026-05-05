@@ -24,6 +24,8 @@ type Props = {
   searchQuery: string;
   onSearchQueryChange: (value: string) => void;
   dbConnectionStatus?: DbConnectionStatus;
+  writeLocked?: boolean;
+  writeLockMessage?: string;
 };
 
 export default function SidebarContent({
@@ -44,6 +46,8 @@ export default function SidebarContent({
   searchQuery,
   onSearchQueryChange,
   dbConnectionStatus,
+  writeLocked = false,
+  writeLockMessage,
 }: Props) {
   const { i18n } = useI18n();
   const sidebarUi = i18n.workorder.ui.layout.sidebar;
@@ -62,18 +66,21 @@ export default function SidebarContent({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => window.location.reload()}
+              onClick={() => { if (!writeLocked) window.location.reload(); }}
               aria-label="새로고침"
-              title="새로고침"
-              className="pbp-interactive-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stone-300 bg-white text-base font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+              title={writeLocked ? writeLockMessage ?? "상태 변경 처리 중입니다." : "새로고침"}
+              disabled={writeLocked}
+              className="pbp-interactive-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stone-300 bg-white text-base font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50"
             >
               ↻
             </button>
             <button
               type="button"
-              onClick={onOpenSettings}
+              onClick={() => { if (!writeLocked) onOpenSettings(); }}
+              disabled={writeLocked}
+              title={writeLocked ? writeLockMessage ?? "상태 변경 처리 중입니다." : controlsUi.openSettingsAria}
             aria-label={controlsUi.openSettingsAria}
-            className="pbp-interactive-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stone-300 bg-white text-base font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+            className="pbp-interactive-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stone-300 bg-white text-base font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50"
           >
             ⚙️
           </button>
@@ -92,8 +99,10 @@ export default function SidebarContent({
         {canCreate ? (
           <button
             type="button"
-            onClick={onCreate}
-            className="pbp-touch-target pbp-interactive-button mt-3.5 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white hover:bg-stone-800 active:bg-black"
+            onClick={() => { if (!writeLocked) onCreate(); }}
+            disabled={writeLocked}
+            title={writeLocked ? writeLockMessage ?? "상태 변경 처리 중입니다." : undefined}
+            className="pbp-touch-target pbp-interactive-button mt-3.5 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:opacity-50"
           >
             {controlsUi.create}
           </button>
@@ -111,8 +120,8 @@ export default function SidebarContent({
               onReorder={onReorder}
               onDelete={onDelete}
               onRework={onRework}
-              canDelete={canManageListActions ? canDelete : undefined}
-              canReorder={canManageListActions && Boolean(onReorder)}
+              canDelete={!writeLocked && canManageListActions ? canDelete : undefined}
+              canReorder={!writeLocked && canManageListActions && Boolean(onReorder)}
             />
           ))}
         </div>

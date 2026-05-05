@@ -14,6 +14,8 @@ import type { BuildWorkspaceViewModelArgs, WorkspaceViewModel } from "@/lib/work
 export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): WorkspaceViewModel {
   const version = APP_VERSION;
   const companyName = getWorkspaceCompanyName();
+  const isWorkspaceWriteLocked = Boolean(args.workflowProcessingLabel);
+  const workspaceWriteLockMessage = args.workflowProcessingLabel ? `${args.workflowProcessingLabel.replace(/\s+/g, "")} 중입니다...` : undefined;
 
   const sidebarListProps = buildSidebarListProps({
     companyName,
@@ -33,6 +35,8 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
     onReworkWorkOrder: args.onReworkWorkOrder,
     onSetSearchQuery: args.onSetSearchQuery,
     dbConnectionStatus: args.dbConnectionStatus,
+    writeLocked: isWorkspaceWriteLocked,
+    writeLockMessage: workspaceWriteLockMessage,
   });
 
   const detailProps = buildDetailProps({
@@ -70,6 +74,8 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
     availableActions: args.availableActions,
     visibleStages: args.visibleStages,
     workflowProcessingLabel: args.workflowProcessingLabel,
+    isWorkspaceWriteLocked,
+    workspaceWriteLockMessage,
     getAttachmentPermissions: args.getAttachmentPermissions,
     onSave: args.onSave,
     onWorkflowAction: args.onWorkflowAction,
@@ -131,6 +137,8 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
       availableActions: args.availableActions,
       visibleStages: args.visibleStages,
       workflowProcessingLabel: args.workflowProcessingLabel,
+      isWorkspaceWriteLocked,
+      workspaceWriteLockMessage,
       getAttachmentPermissions: args.getAttachmentPermissions,
       i18n: args.i18n,
       onSave: args.onSave,

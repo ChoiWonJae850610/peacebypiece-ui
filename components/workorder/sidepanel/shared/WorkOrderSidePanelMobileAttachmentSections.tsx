@@ -12,6 +12,8 @@ type WorkOrderSidePanelMobileAttachmentSectionsProps = Pick<
   | "onPreviewAttachment"
   | "onDeleteAttachment"
   | "onSetPrimaryDesignAttachment"
+  | "writeLocked"
+  | "writeLockMessage"
 > & {
   collapseLabel: string;
 };
@@ -25,6 +27,8 @@ export default function WorkOrderSidePanelMobileAttachmentSections({
   onPreviewAttachment,
   onDeleteAttachment,
   onSetPrimaryDesignAttachment,
+  writeLocked = false,
+  writeLockMessage,
   collapseLabel,
 }: WorkOrderSidePanelMobileAttachmentSectionsProps) {
   const attachmentCount = attachmentSections.reduce((sum, section) => sum + section.items.length, 0);
@@ -53,6 +57,8 @@ export default function WorkOrderSidePanelMobileAttachmentSections({
         onPreviewAttachment={onPreviewAttachment}
         onDeleteAttachment={onDeleteAttachment}
         onSetPrimaryDesignAttachment={onSetPrimaryDesignAttachment}
+        writeLocked={writeLocked}
+        writeLockMessage={writeLockMessage}
         variant="mobile"
       />
     </WorkOrderSidePanelMobileAccordionSection>

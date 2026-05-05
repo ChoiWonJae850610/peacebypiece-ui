@@ -46,6 +46,8 @@ export type BuildWorkOrderDetailViewModelArgs = {
   currentDisplayStage: ActionProps["currentStage"];
   actions: ActionProps["actions"];
   workflowProcessingLabel?: ActionProps["workflowProcessingLabel"];
+  isWorkspaceWriteLocked?: boolean;
+  workspaceWriteLockMessage?: string;
   fabricTotal: number;
   subsidiaryTotal: number;
   outsourcingTotal: number;
@@ -109,6 +111,7 @@ export function buildHeaderSectionProps({
   canEditInventory,
   canChangeManager,
   isReviewRequestLocked,
+  isWorkspaceWriteLocked,
   onSave,
   onOpenBasicInfoModal,
   onOpenManagerAssignModal,
@@ -131,8 +134,8 @@ export function buildHeaderSectionProps({
     onOpenManagerAssignModal,
     onOpenInventoryEditor,
     onRenameTitle: onRenameWorkOrderTitle,
-    locked: isReviewRequestLocked,
-    managerLocked: !canEditManagerInWorkflow(currentWorkflowState, isReviewRequestLocked),
+    locked: isReviewRequestLocked || Boolean(isWorkspaceWriteLocked),
+    managerLocked: Boolean(isWorkspaceWriteLocked) || !canEditManagerInWorkflow(currentWorkflowState, isReviewRequestLocked),
   };
 }
 
@@ -173,7 +176,7 @@ export function buildOrderInfoSectionProps(
     onRemove: args.onRemoveOrderEntry,
     canOpenInspectionModal: args.canOpenInspectionModal,
     onOpenInspectionModal: args.onOpenInspectionModal,
-    locked: args.isReviewRequestLocked,
+    locked: args.isReviewRequestLocked || Boolean(args.isWorkspaceWriteLocked),
     orderHubPolicy: orderInfoHubPolicy,
     showDebugPanel: isDebugFeatureEnabled("orderInfoHubPanel"),
   };
@@ -201,6 +204,7 @@ export function buildProductionCompositionSectionProps({
   outsourcingVendorOptionsById,
   outsourcingProcessOptions,
   isReviewRequestLocked,
+  isWorkspaceWriteLocked,
 }: BuildWorkOrderDetailViewModelArgs): ProductionCompositionProps {
   return {
     materials: materialItems,
@@ -223,7 +227,7 @@ export function buildProductionCompositionSectionProps({
     materialVendorOptionsById,
     outsourcingVendorOptionsById,
     outsourcingProcessOptions,
-    locked: isReviewRequestLocked,
+    locked: isReviewRequestLocked || Boolean(isWorkspaceWriteLocked),
   };
 }
 

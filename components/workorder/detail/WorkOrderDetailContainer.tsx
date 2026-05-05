@@ -15,6 +15,7 @@ export default function WorkOrderDetailContainer(props: WorkOrderDetailProps) {
     isEmpty = false,
   } = props;
   const deviceType = useWorkOrderDeviceType();
+  const isWorkspaceWriteLocked = Boolean(props.isWorkspaceWriteLocked || props.workflowProcessingLabel);
 
   const {
     persistenceModel,
@@ -36,8 +37,8 @@ export default function WorkOrderDetailContainer(props: WorkOrderDetailProps) {
     outsourcingTotal: costModel.outsourcingTotal,
     materialOpen: disclosureModel.materialOpen,
     outsourcingOpen: disclosureModel.outsourcingOpen,
-    onUpdateWorkOrder: actionModel.onUpdateWorkOrder,
-    onCompleteInspection: actionModel.onCompleteInspection,
+    onUpdateWorkOrder: isWorkspaceWriteLocked ? () => undefined : actionModel.onUpdateWorkOrder,
+    onCompleteInspection: isWorkspaceWriteLocked ? () => undefined : actionModel.onCompleteInspection,
   });
 
   if (isEmpty) {
@@ -70,6 +71,8 @@ export default function WorkOrderDetailContainer(props: WorkOrderDetailProps) {
     currentDisplayStage: workflowModel.currentDisplayStage,
     actions: workflowModel.actions,
     workflowProcessingLabel: workflowModel.workflowProcessingLabel,
+    isWorkspaceWriteLocked,
+    workspaceWriteLockMessage: props.workspaceWriteLockMessage,
     fabricTotal: costModel.fabricTotal,
     subsidiaryTotal: costModel.subsidiaryTotal,
     outsourcingTotal: costModel.outsourcingTotal,
@@ -85,26 +88,26 @@ export default function WorkOrderDetailContainer(props: WorkOrderDetailProps) {
     outsourcingVendorOptionsById: editor.outsourcingVendorOptionsById,
     outsourcingProcessOptions: editor.outsourcingProcessOptions,
     costSummary: editor.costSummary,
-    onSave: actionModel.onSave,
-    onOpenBasicInfoModal: editor.handleOpenBasicInfoModal,
-    onOpenManagerAssignModal: actionModel.onOpenManagerAssignModal,
-    onOpenInventoryEditor: actionModel.onOpenInventoryEditor,
-    onRenameWorkOrderTitle: actionModel.onRenameWorkOrderTitle,
+    onSave: isWorkspaceWriteLocked ? () => undefined : actionModel.onSave,
+    onOpenBasicInfoModal: isWorkspaceWriteLocked ? () => undefined : editor.handleOpenBasicInfoModal,
+    onOpenManagerAssignModal: isWorkspaceWriteLocked ? () => undefined : actionModel.onOpenManagerAssignModal,
+    onOpenInventoryEditor: isWorkspaceWriteLocked ? () => undefined : actionModel.onOpenInventoryEditor,
+    onRenameWorkOrderTitle: isWorkspaceWriteLocked ? () => undefined : actionModel.onRenameWorkOrderTitle,
     onAction: actionModel.onAction,
     onToggleBasicInfo: disclosureModel.onToggleBasicInfo,
-    onStartEdit: editor.startEdit,
-    onCommitEdit: editor.commitEdit,
+    onStartEdit: isWorkspaceWriteLocked ? () => undefined : editor.startEdit,
+    onCommitEdit: isWorkspaceWriteLocked ? () => undefined : editor.commitEdit,
     onCancelEdit: editor.cancelEdit,
-    onAddOrderEntry: editor.addOrderEntry,
-    onRemoveOrderEntry: editor.removeOrderEntry,
-    onOpenInspectionModal: editor.handleOpenInspectionModal,
+    onAddOrderEntry: isWorkspaceWriteLocked ? () => undefined : editor.addOrderEntry,
+    onRemoveOrderEntry: isWorkspaceWriteLocked ? () => undefined : editor.removeOrderEntry,
+    onOpenInspectionModal: isWorkspaceWriteLocked ? () => undefined : editor.handleOpenInspectionModal,
     onToggleProductionSection: toggleProductionSection,
     onToggleMaterial: disclosureModel.onToggleMaterial,
     onToggleOutsourcing: disclosureModel.onToggleOutsourcing,
-    onAddMaterial: editor.addMaterial,
-    onRemoveMaterial: editor.removeMaterial,
-    onAddOutsourcing: editor.addOutsourcing,
-    onRemoveOutsourcing: editor.removeOutsourcing,
+    onAddMaterial: isWorkspaceWriteLocked ? () => undefined : editor.addMaterial,
+    onRemoveMaterial: isWorkspaceWriteLocked ? () => undefined : editor.removeMaterial,
+    onAddOutsourcing: isWorkspaceWriteLocked ? () => undefined : editor.addOutsourcing,
+    onRemoveOutsourcing: isWorkspaceWriteLocked ? () => undefined : editor.removeOutsourcing,
   });
 
   const detailViewProps = {

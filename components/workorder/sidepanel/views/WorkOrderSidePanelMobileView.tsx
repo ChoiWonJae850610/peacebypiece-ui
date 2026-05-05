@@ -26,6 +26,8 @@ export default function WorkOrderSidePanelMobileView(props: WorkOrderSidePanelPr
             onUpdateReply={props.onUpdateMemoReply}
             onDeleteReply={props.onDeleteMemoReply}
             canEditMemo={props.canEditMemo}
+            writeLocked={props.writeLocked}
+            writeLockMessage={props.writeLockMessage}
             variant="mobile"
           />
         </WorkOrderSidePanelMobileAccordionSection>
@@ -39,6 +41,8 @@ export default function WorkOrderSidePanelMobileView(props: WorkOrderSidePanelPr
           onPreviewAttachment={props.onPreviewAttachment}
           onDeleteAttachment={props.onDeleteAttachment}
           onSetPrimaryDesignAttachment={props.onSetPrimaryDesignAttachment}
+          writeLocked={props.writeLocked}
+          writeLockMessage={props.writeLockMessage}
           collapseLabel={collapseLabel}
         />
       </SidePanelSectionStack>

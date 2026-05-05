@@ -19,6 +19,8 @@ export function buildSidebarListProps({
   onReworkWorkOrder,
   onSetSearchQuery,
   dbConnectionStatus,
+  writeLocked,
+  writeLockMessage,
 }: SidebarViewModelArgs): SidebarListProps {
   return {
     companyName,
@@ -38,6 +40,8 @@ export function buildSidebarListProps({
     searchQuery,
     onSearchQueryChange: onSetSearchQuery,
     dbConnectionStatus,
+    writeLocked,
+    writeLockMessage,
   };
 }
 
