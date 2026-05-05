@@ -104,6 +104,9 @@ export type WorkOrder = {
   category1: string;
   category2: string;
   category3: string;
+  category1Id?: string | null;
+  category2Id?: string | null;
+  category3Id?: string | null;
   season: string;
   priority: string;
   vendor: string;

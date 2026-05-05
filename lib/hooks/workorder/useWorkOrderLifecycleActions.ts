@@ -152,6 +152,9 @@ export function useWorkOrderLifecycleActions({
             category1: payload?.category1,
             category2: payload?.category2,
             category3: payload?.category3,
+            category1Id: payload?.category1Id,
+            category2Id: payload?.category2Id,
+            category3Id: payload?.category3Id,
             season: payload?.season,
           });
           const nextHistoryLogs = [

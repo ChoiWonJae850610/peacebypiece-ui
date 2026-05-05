@@ -32,6 +32,9 @@ const PURGE_STATUS_COLUMN_CANDIDATES = ["purge_status"] as const;
 const PURGE_REQUESTED_AT_COLUMN_CANDIDATES = ["purge_requested_at"] as const;
 const PURGED_AT_COLUMN_CANDIDATES = ["purged_at"] as const;
 const PURGED_BY_COLUMN_CANDIDATES = ["purged_by"] as const;
+const CATEGORY1_ID_COLUMN_CANDIDATES = ["category1_id"] as const;
+const CATEGORY2_ID_COLUMN_CANDIDATES = ["category2_id"] as const;
+const CATEGORY3_ID_COLUMN_CANDIDATES = ["category3_id"] as const;
 
 type DbSpecSheetRow = {
   id: string;
@@ -43,6 +46,9 @@ type DbSpecSheetRow = {
   reorder_round: number | null;
   parent_spec_sheet_id: string | null;
   is_rework: boolean | null;
+  category1_id?: string | null;
+  category2_id?: string | null;
+  category3_id?: string | null;
   payload: WorkOrder | string | null;
   is_active?: boolean | null;
   deleted_at?: string | Date | null;
@@ -79,6 +85,9 @@ type DbSpecSheetSchema = {
   purgeRequestedAtColumn: string | null;
   purgedAtColumn: string | null;
   purgedByColumn: string | null;
+  category1IdColumn: string | null;
+  category2IdColumn: string | null;
+  category3IdColumn: string | null;
   hasIdColumn: boolean;
   hasTitleColumn: boolean;
 };
@@ -112,6 +121,36 @@ function normalizeWorkOrderForDb(workOrder: WorkOrder): WorkOrder {
     ...normalizedIdentity,
     workflowState: normalizeDbWorkflowState(workOrder.workflowState),
     lastSavedAt: workOrder.lastSavedAt || now,
+  };
+}
+
+async function resolveCategoryIdsForDb(workOrder: WorkOrder): Promise<Pick<WorkOrder, "category1Id" | "category2Id" | "category3Id">> {
+  if (workOrder.category1Id || workOrder.category2Id || workOrder.category3Id) {
+    return {
+      category1Id: workOrder.category1Id ?? null,
+      category2Id: workOrder.category2Id ?? null,
+      category3Id: workOrder.category3Id ?? null,
+    };
+  }
+
+  const companyId = getAdminCompanyId();
+  const result = await queryDb<{ id: string; parent_id: string | null; level: number; name: string }>(
+    `SELECT id, parent_id, level, name
+       FROM item_categories
+      WHERE (company_id = $1 OR company_id IS NULL)
+        AND is_active = true
+      ORDER BY level ASC, sort_order ASC, name ASC`,
+    [companyId],
+  );
+
+  const category1 = result.rows.find((item) => item.level === 1 && item.name === workOrder.category1) ?? null;
+  const category2 = result.rows.find((item) => item.level === 2 && item.name === workOrder.category2 && (!category1 || item.parent_id === category1.id)) ?? null;
+  const category3 = result.rows.find((item) => item.level === 3 && item.name === workOrder.category3 && (!category2 || item.parent_id === category2.id)) ?? null;
+
+  return {
+    category1Id: category1?.id ?? null,
+    category2Id: category2?.id ?? null,
+    category3Id: category3?.id ?? null,
   };
 }
 
@@ -185,6 +224,9 @@ function mapSpecSheetRowToWorkOrder(row: DbSpecSheetRow): WorkOrder {
     reorderRound: typeof row.reorder_round === "number" ? row.reorder_round : (typeof payload.reorderRound === "number" ? payload.reorderRound : undefined),
     parentSpecSheetId: row.parent_spec_sheet_id ?? (typeof payload.parentSpecSheetId === "string" ? payload.parentSpecSheetId : undefined),
     isDefectOrder: typeof row.is_rework === "boolean" ? row.is_rework : (typeof payload.isDefectOrder === "boolean" ? payload.isDefectOrder : undefined),
+    category1Id: row.category1_id ?? (typeof payload.category1Id === "string" ? payload.category1Id : null),
+    category2Id: row.category2_id ?? (typeof payload.category2Id === "string" ? payload.category2Id : null),
+    category3Id: row.category3_id ?? (typeof payload.category3Id === "string" ? payload.category3Id : null),
     workflowState:
       row.workflow_state !== null && row.workflow_state !== undefined
         ? normalizeDbWorkflowState(row.workflow_state)
@@ -291,6 +333,9 @@ async function loadSpecSheetSchema(): Promise<DbSpecSheetSchema> {
     purgeRequestedAtColumn: findFirstMatchingColumn(columnNames, PURGE_REQUESTED_AT_COLUMN_CANDIDATES),
     purgedAtColumn: findFirstMatchingColumn(columnNames, PURGED_AT_COLUMN_CANDIDATES),
     purgedByColumn: findFirstMatchingColumn(columnNames, PURGED_BY_COLUMN_CANDIDATES),
+    category1IdColumn: findFirstMatchingColumn(columnNames, CATEGORY1_ID_COLUMN_CANDIDATES),
+    category2IdColumn: findFirstMatchingColumn(columnNames, CATEGORY2_ID_COLUMN_CANDIDATES),
+    category3IdColumn: findFirstMatchingColumn(columnNames, CATEGORY3_ID_COLUMN_CANDIDATES),
     hasIdColumn: columnNames.includes("id"),
     hasTitleColumn: columnNames.includes("title"),
   };
@@ -325,6 +370,9 @@ export async function findAllDbWorkOrders(): Promise<WorkOrder[]> {
         ${buildAliasSelection(schema.reorderRoundColumn, "reorder_round", "NULL")},
         ${buildAliasSelection(schema.parentSpecSheetIdColumn, "parent_spec_sheet_id", "NULL")},
         ${buildAliasSelection(schema.isReworkColumn, "is_rework", "NULL")},
+        ${buildAliasSelection(schema.category1IdColumn, "category1_id", "NULL")},
+        ${buildAliasSelection(schema.category2IdColumn, "category2_id", "NULL")},
+        ${buildAliasSelection(schema.category3IdColumn, "category3_id", "NULL")},
         ${buildAliasSelection(schema.payloadColumn, "payload", payloadFallbackSql)},
         ${buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE")},
         ${buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL")},
@@ -345,7 +393,9 @@ export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
   const schema = await loadSpecSheetSchema();
   assertMinimumSpecSheetSchema(schema);
 
-  const normalizedWorkOrder = normalizeWorkOrderForDb(workOrder);
+  const normalizedBaseWorkOrder = normalizeWorkOrderForDb(workOrder);
+  const resolvedCategoryIds = await resolveCategoryIdsForDb(normalizedBaseWorkOrder);
+  const normalizedWorkOrder = { ...normalizedBaseWorkOrder, ...resolvedCategoryIds };
   const payload = serializeWorkOrderPayload(normalizedWorkOrder);
 
   const columns = ["id", "title"];
@@ -407,6 +457,24 @@ export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
     placeholders.push(`$${values.length}`);
   }
 
+  if (schema.category1IdColumn) {
+    columns.push(schema.category1IdColumn);
+    values.push(normalizedWorkOrder.category1Id ?? null);
+    placeholders.push(`$${values.length}`);
+  }
+
+  if (schema.category2IdColumn) {
+    columns.push(schema.category2IdColumn);
+    values.push(normalizedWorkOrder.category2Id ?? null);
+    placeholders.push(`$${values.length}`);
+  }
+
+  if (schema.category3IdColumn) {
+    columns.push(schema.category3IdColumn);
+    values.push(normalizedWorkOrder.category3Id ?? null);
+    placeholders.push(`$${values.length}`);
+  }
+
   if (schema.payloadColumn) {
     columns.push(schema.payloadColumn);
     values.push(buildPayloadValue(schema.payloadColumnKind, payload));
@@ -437,6 +505,9 @@ export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
     buildAliasSelection(schema.reorderRoundColumn, "reorder_round", "NULL"),
     buildAliasSelection(schema.parentSpecSheetIdColumn, "parent_spec_sheet_id", "NULL"),
     buildAliasSelection(schema.isReworkColumn, "is_rework", "NULL"),
+    buildAliasSelection(schema.category1IdColumn, "category1_id", "NULL"),
+    buildAliasSelection(schema.category2IdColumn, "category2_id", "NULL"),
+    buildAliasSelection(schema.category3IdColumn, "category3_id", "NULL"),
     buildAliasSelection(schema.payloadColumn, "payload", payloadFallbackSql),
     buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE"),
     buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL"),
@@ -479,7 +550,9 @@ export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
   const schema = await loadSpecSheetSchema();
   assertMinimumSpecSheetSchema(schema);
 
-  const normalizedWorkOrder = normalizeWorkOrderForDb(workOrder);
+  const normalizedBaseWorkOrder = normalizeWorkOrderForDb(workOrder);
+  const resolvedCategoryIds = await resolveCategoryIdsForDb(normalizedBaseWorkOrder);
+  const normalizedWorkOrder = { ...normalizedBaseWorkOrder, ...resolvedCategoryIds };
   const payload = serializeWorkOrderPayload(normalizedWorkOrder);
 
   const assignments = ["title = $2"];
@@ -531,6 +604,21 @@ export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
     values.push(Boolean(normalizedWorkOrder.isDefectOrder));
   }
 
+  if (schema.category1IdColumn) {
+    assignments.push(`${quoteIdentifier(schema.category1IdColumn)} = $${values.length + 1}`);
+    values.push(normalizedWorkOrder.category1Id ?? null);
+  }
+
+  if (schema.category2IdColumn) {
+    assignments.push(`${quoteIdentifier(schema.category2IdColumn)} = $${values.length + 1}`);
+    values.push(normalizedWorkOrder.category2Id ?? null);
+  }
+
+  if (schema.category3IdColumn) {
+    assignments.push(`${quoteIdentifier(schema.category3IdColumn)} = $${values.length + 1}`);
+    values.push(normalizedWorkOrder.category3Id ?? null);
+  }
+
   if (schema.payloadColumn) {
     assignments.push(`${quoteIdentifier(schema.payloadColumn)} = ${buildPayloadInsertPlaceholder(schema.payloadColumnKind, values.length + 1)}`);
     values.push(buildPayloadValue(schema.payloadColumnKind, payload));
@@ -558,6 +646,9 @@ export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
     buildAliasSelection(schema.reorderRoundColumn, "reorder_round", "NULL"),
     buildAliasSelection(schema.parentSpecSheetIdColumn, "parent_spec_sheet_id", "NULL"),
     buildAliasSelection(schema.isReworkColumn, "is_rework", "NULL"),
+    buildAliasSelection(schema.category1IdColumn, "category1_id", "NULL"),
+    buildAliasSelection(schema.category2IdColumn, "category2_id", "NULL"),
+    buildAliasSelection(schema.category3IdColumn, "category3_id", "NULL"),
     buildAliasSelection(schema.payloadColumn, "payload", payloadFallbackSql),
     buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE"),
     buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL"),

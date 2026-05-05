@@ -302,7 +302,10 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
       category1: string;
       category2: string;
       category3: string;
-      season: string;
+      category1Id?: string | null;
+      category2Id?: string | null;
+      category3Id?: string | null;
+      season?: string;
     }) =>
       actionState.handleCreateWorkOrder({
         nextIndex: coreState.workOrders.length + 1,

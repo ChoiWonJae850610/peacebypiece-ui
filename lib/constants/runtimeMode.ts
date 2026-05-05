@@ -19,3 +19,5 @@ export function isDevelopmentRuntime(mode: AppRuntimeMode = APP_RUNTIME_MODE) {
 export function isDebugFeatureEnabled(flag: DebugFlagKey) {
   return isDevelopmentRuntime() && DEBUG_FLAGS[flag];
 }
+
+export const WORKORDER_CATEGORY_RECOMMENDATION_ENABLED = false;

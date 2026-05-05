@@ -9,6 +9,9 @@ CREATE TABLE IF NOT EXISTS spec_sheets (
   reorder_round integer NOT NULL DEFAULT 0,
   parent_spec_sheet_id text,
   is_rework boolean NOT NULL DEFAULT false,
+  category1_id text REFERENCES item_categories(id) ON DELETE SET NULL,
+  category2_id text REFERENCES item_categories(id) ON DELETE SET NULL,
+  category3_id text REFERENCES item_categories(id) ON DELETE SET NULL,
   is_active boolean NOT NULL DEFAULT true,
   delete_status text NOT NULL DEFAULT 'active',
   purge_status text NOT NULL DEFAULT 'none',
@@ -38,6 +41,15 @@ CREATE INDEX IF NOT EXISTS spec_sheets_active_idx
 
 CREATE INDEX IF NOT EXISTS spec_sheets_parent_idx
   ON spec_sheets (parent_spec_sheet_id);
+
+CREATE INDEX IF NOT EXISTS spec_sheets_category1_idx
+  ON spec_sheets (company_id, category1_id);
+
+CREATE INDEX IF NOT EXISTS spec_sheets_category2_idx
+  ON spec_sheets (company_id, category2_id);
+
+CREATE INDEX IF NOT EXISTS spec_sheets_category3_idx
+  ON spec_sheets (company_id, category3_id);
 
 
 CREATE INDEX IF NOT EXISTS spec_sheets_delete_status_idx

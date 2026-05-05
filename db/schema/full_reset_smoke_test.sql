@@ -70,6 +70,9 @@ BEGIN
       ('spec_sheets', 'purge_requested_at'),
       ('spec_sheets', 'purged_at'),
       ('spec_sheets', 'purged_by'),
+      ('spec_sheets', 'category1_id'),
+      ('spec_sheets', 'category2_id'),
+      ('spec_sheets', 'category3_id'),
       ('memos', 'delete_status'),
       ('memos', 'purge_status'),
       ('memos', 'purge_requested_at'),
@@ -85,7 +88,7 @@ BEGIN
   );
 
   IF missing_columns IS NOT NULL THEN
-    RAISE EXCEPTION 'full_reset smoke test failed. Missing purge/delete status columns: %', missing_columns;
+    RAISE EXCEPTION 'full_reset smoke test failed. Missing purge/delete/category columns: %', missing_columns;
   END IF;
 END $$;
 

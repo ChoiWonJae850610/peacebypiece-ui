@@ -32,6 +32,9 @@ export function createNewWorkOrder(nextIndex: number, payload: {
   category1?: string;
   category2?: string;
   category3?: string;
+  category1Id?: string | null;
+  category2Id?: string | null;
+  category3Id?: string | null;
   season?: string;
 }): WorkOrder {
   const title = String(payload.title ?? `새 작업지시서 ${nextIndex}`).trim() || `새 작업지시서 ${nextIndex}`;
@@ -48,6 +51,9 @@ export function createNewWorkOrder(nextIndex: number, payload: {
     category1: payload.category1 ?? DEFAULT_WORKORDER_CATEGORY1,
     category2: payload.category2 ?? DEFAULT_WORKORDER_CATEGORY2,
     category3: payload.category3 ?? DEFAULT_WORKORDER_CATEGORY3,
+    category1Id: payload.category1Id ?? null,
+    category2Id: payload.category2Id ?? null,
+    category3Id: payload.category3Id ?? null,
     season: payload.season ?? DEFAULT_WORKORDER_SEASON,
     priority: DEFAULT_WORKORDER_PRIORITY,
     vendor: DEFAULT_WORKORDER_VENDOR,
