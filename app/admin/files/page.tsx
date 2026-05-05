@@ -183,17 +183,20 @@ export default function AdminFilesPage() {
 
   function createPurgeSelectionMessage(input: {
     fileCount: number;
-    blockedWorkOrderCount: number;
+    workOrderCount: number;
     skippedFileCount: number;
   }) {
     const messages: string[] = [];
-    if (input.fileCount > 0) {
-      messages.push(`파일 ${input.fileCount}개를 영구삭제 요청했습니다.`);
-    }
-    if (input.blockedWorkOrderCount > 0) {
+    if (input.workOrderCount > 0 && input.fileCount > 0) {
       messages.push(
-        `작업지시서 ${input.blockedWorkOrderCount}건은 아직 영구삭제할 수 없습니다.`,
+        `작업지시서 ${input.workOrderCount}건과 파일 ${input.fileCount}개를 영구삭제 요청했습니다.`,
       );
+    } else if (input.workOrderCount > 0) {
+      messages.push(
+        `작업지시서 ${input.workOrderCount}건을 영구삭제 완료 상태로 변경했습니다.`,
+      );
+    } else if (input.fileCount > 0) {
+      messages.push(`파일 ${input.fileCount}개를 영구삭제 요청했습니다.`);
     }
     if (input.skippedFileCount > 0) {
       messages.push(
@@ -218,6 +221,26 @@ export default function AdminFilesPage() {
     if (!response.ok || !payload?.ok) {
       throw new Error(
         payload?.message || `WORKORDER_RESTORE_FAILED_${response.status}`,
+      );
+    }
+    return payload;
+  }
+
+  async function purgeWorkOrderById(workOrderId: string) {
+    const response = await fetch("/api/admin/files/workorders/purge", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ workOrderId, purgedBy: "admin" }),
+    });
+    const payload = (await response.json().catch(() => null)) as {
+      ok?: boolean;
+      message?: string;
+      affectedCount?: number;
+      requestedCount?: number;
+    } | null;
+    if (!response.ok || !payload?.ok) {
+      throw new Error(
+        payload?.message || `WORKORDER_PURGE_FAILED_${response.status}`,
       );
     }
     return payload;
@@ -274,31 +297,39 @@ export default function AdminFilesPage() {
   async function handlePurgeSelection() {
     if (pendingFileAction || pendingWorkOrderAction) return;
     const fileTargets = selectedTrashItems.filter((item) => item.canPurge);
-    const blockedWorkOrderCount = selectedWorkOrderIds.length;
+    const workOrderTargets = [...selectedWorkOrderIds];
 
-    if (fileTargets.length === 0 && blockedWorkOrderCount === 0) {
+    if (fileTargets.length === 0 && workOrderTargets.length === 0) {
       setActionMessage("영구삭제 가능한 선택 항목이 없습니다.");
       return;
     }
 
     setPendingFileAction(fileTargets.length > 0 ? "purge" : null);
+    setPendingWorkOrderAction(workOrderTargets.length > 0 ? "purge" : null);
     try {
       let purgedFileCount = 0;
       if (fileTargets.length > 0) {
         const result = await runPurgeTrashItemsFlow(fileTargets);
         purgedFileCount = result.ok ? fileTargets.length : 0;
       }
-      const skippedFileCount = selectedTrashItems.length - fileTargets.length;
 
+      let purgedWorkOrderCount = 0;
+      for (const workOrderId of workOrderTargets) {
+        await purgeWorkOrderById(workOrderId);
+        purgedWorkOrderCount += 1;
+      }
+
+      const skippedFileCount = selectedTrashItems.length - fileTargets.length;
       setActionMessage(
         createPurgeSelectionMessage({
           fileCount: purgedFileCount,
-          blockedWorkOrderCount,
+          workOrderCount: purgedWorkOrderCount,
           skippedFileCount,
         }),
       );
       setSelectedTrashItemIds([]);
-      if (fileTargets.length > 0) await refreshSnapshot();
+      setSelectedWorkOrderIds([]);
+      await refreshSnapshot();
     } catch (error) {
       setActionMessage(
         error instanceof Error
@@ -307,6 +338,7 @@ export default function AdminFilesPage() {
       );
     } finally {
       setPendingFileAction(null);
+      setPendingWorkOrderAction(null);
     }
   }
 
@@ -326,6 +358,31 @@ export default function AdminFilesPage() {
         error instanceof Error
           ? error.message
           : "작업지시서 복구 요청에 실패했습니다.",
+      );
+    } finally {
+      setPendingWorkOrderAction(null);
+    }
+  }
+
+  async function handlePurgeWorkOrder(workOrderId: string) {
+    if (pendingWorkOrderAction) return;
+    setPendingWorkOrderAction("purge");
+    try {
+      const payload = await purgeWorkOrderById(workOrderId);
+      setActionMessage(
+        payload.message ||
+          "작업지시서 1건을 영구삭제 완료 상태로 변경했습니다.",
+      );
+      setSelectedWorkOrderIds((currentIds) =>
+        currentIds.filter((id) => id !== workOrderId),
+      );
+      setSelectedTrashItemIds([]);
+      await refreshSnapshot();
+    } catch (error) {
+      setActionMessage(
+        error instanceof Error
+          ? error.message
+          : "작업지시서 영구삭제 요청에 실패했습니다.",
       );
     } finally {
       setPendingWorkOrderAction(null);
@@ -385,6 +442,7 @@ export default function AdminFilesPage() {
             onRestoreItem={(itemId) => handleRestoreTrashItem([itemId])}
             onPurgeItem={(itemId) => handlePurgeTrashItem([itemId])}
             onRestoreWorkOrder={handleRestoreWorkOrder}
+            onPurgeWorkOrder={handlePurgeWorkOrder}
             isActionPending={pendingFileAction !== null}
             isWorkOrderActionPending={pendingWorkOrderAction !== null}
           />

@@ -548,12 +548,14 @@ export async function listPurgeReadyAttachmentTrashItems(
         AND (
           t.order_id IS NULL
           OR COALESCE(s.delete_status, 'active') <> 'purged'
+          OR t.purge_status = 'purge_requested'
         )
-        AND (s.id IS NULL OR s.purged_at IS NULL)
+        AND (s.id IS NULL OR s.purged_at IS NULL OR t.purge_status = 'purge_requested')
         AND (
           t.order_id IS NULL
           OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true)
           OR COALESCE(t.delete_reason, '') <> $3
+          OR (COALESCE(s.delete_status, 'active') = 'purged' AND t.purge_status = 'purge_requested')
         )
         AND (
           t.purge_status = 'purge_requested'
@@ -855,11 +857,110 @@ export async function previewRestoreWorkOrderTrashBundle(
   return restoreWorkOrderTrashBundle(input);
 }
 
+export async function purgeWorkOrderTrashBundle(
+  input: AdminWorkOrderTrashActionInput,
+): Promise<AdminWorkOrderTrashActionResult> {
+  const workOrderId = normalizeWorkOrderTrashActionInput(input);
+  if (!workOrderId) {
+    return createWorkOrderTrashActionSkeletonResult({
+      action: "purge",
+      workOrderId,
+    });
+  }
+
+  const result = await queryDb<
+    CountRow & {
+      trash_count: string | number;
+      memo_count: string | number;
+    }
+  >(
+    `WITH target_workorder AS (
+       SELECT id
+         FROM spec_sheets
+        WHERE id = $1
+          AND (deleted_at IS NOT NULL OR COALESCE(is_active, true) = false)
+          AND COALESCE(delete_status, 'active') <> 'purged'
+          AND purged_at IS NULL
+     ), marked_workorder AS (
+       UPDATE spec_sheets
+          SET is_active = false,
+              delete_status = 'purged',
+              purge_status = 'purged',
+              purge_requested_at = COALESCE(purge_requested_at, now()),
+              purged_at = now(),
+              purged_by = $2,
+              updated_at = now()
+        WHERE id IN (SELECT id FROM target_workorder)
+        RETURNING id
+     ), bundle_trash AS (
+       SELECT t.id, t.attachment_id
+         FROM attachment_trash_items t
+        WHERE t.order_id = $1
+          AND t.delete_reason = $3
+          AND t.restored_at IS NULL
+          AND t.purged_at IS NULL
+          AND t.purge_status IN ('pending', 'purge_requested')
+     ), marked_attachments AS (
+       UPDATE attachments
+          SET is_active = false,
+              purge_after_at = now(),
+              updated_at = now()
+        WHERE id IN (SELECT attachment_id FROM bundle_trash)
+        RETURNING id
+     ), marked_trash AS (
+       UPDATE attachment_trash_items
+          SET purge_status = 'purge_requested',
+              purge_after_at = now(),
+              updated_at = now()
+        WHERE id IN (SELECT id FROM bundle_trash)
+        RETURNING id
+     ), marked_memos AS (
+       UPDATE memos
+          SET is_active = false,
+              delete_status = 'purged',
+              purge_status = 'purged',
+              purge_requested_at = COALESCE(purge_requested_at, now()),
+              purged_at = now(),
+              purged_by = $2,
+              updated_at = now()
+        WHERE order_id = $1
+          AND COALESCE(delete_status, 'active') <> 'purged'
+        RETURNING id
+     )
+     SELECT COUNT(*)::text AS affected_count,
+            (SELECT COUNT(*) FROM marked_trash)::text AS trash_count,
+            (SELECT COUNT(*) FROM marked_memos)::text AS memo_count
+       FROM marked_workorder`,
+    [workOrderId, input.actorId ?? null, WORKORDER_BUNDLE_DELETE_REASON],
+  );
+
+  const row = result.rows[0];
+  const workOrderCount = readCount(row);
+  if (workOrderCount === 0) {
+    return {
+      ok: false,
+      action: "purge",
+      workOrderId,
+      requestedCount: 1,
+      affectedCount: 0,
+      reason: "WORKORDER_NOT_FOUND",
+      message: "영구삭제할 삭제 상태 작업지시서를 찾지 못했습니다.",
+    };
+  }
+
+  return {
+    ok: true,
+    action: "purge",
+    workOrderId,
+    requestedCount: 1,
+    affectedCount: workOrderCount,
+    reason: "OK",
+    message: "작업지시서 1건을 영구삭제 완료 상태로 변경했습니다.",
+  };
+}
+
 export async function previewPurgeWorkOrderTrashBundle(
   input: AdminWorkOrderTrashActionInput,
 ): Promise<AdminWorkOrderTrashActionResult> {
-  return createWorkOrderTrashActionSkeletonResult({
-    action: "purge",
-    workOrderId: normalizeWorkOrderTrashActionInput(input),
-  });
+  return purgeWorkOrderTrashBundle(input);
 }

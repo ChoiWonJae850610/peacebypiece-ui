@@ -23,6 +23,7 @@ type FileTrashSectionProps = {
   onRestoreItem?: (itemId: string) => void;
   onPurgeItem?: (itemId: string) => void;
   onRestoreWorkOrder?: (workOrderId: string) => void;
+  onPurgeWorkOrder?: (workOrderId: string) => void;
   isActionPending?: boolean;
   isWorkOrderActionPending?: boolean;
 };
@@ -46,8 +47,8 @@ type UnifiedTrashRow =
       sizeLabel: string;
       restorePolicyLabel: string;
       restorePolicy: "workorder_bundle";
-      canRestore: false;
-      canPurge: false;
+      canRestore: true;
+      canPurge: true;
       restoreDisabledReason: string;
       purgeDisabledReason: string;
       isSelected: boolean;
@@ -153,15 +154,15 @@ function createUnifiedRows(input: {
       "작업지시서 단위 처리",
     ),
     restorePolicy: "workorder_bundle",
-    canRestore: false,
-    canPurge: false,
+    canRestore: true,
+    canPurge: true,
     restoreDisabledReason: t(
       "filesList.workorderRestorePreparing",
-      "작업지시서 복원은 다음 단계에서 연결합니다.",
+      "작업지시서를 복구하고 작업지시서 삭제와 함께 이동한 첨부/메모를 함께 복구합니다.",
     ),
     purgeDisabledReason: t(
       "filesList.workorderPurgePreparing",
-      "작업지시서 영구삭제는 다음 단계에서 연결합니다.",
+      "작업지시서는 영구삭제 완료 상태로 전환하고 휴지통에서 제외합니다.",
     ),
     isSelected: selectedWorkOrderIds.includes(item.id),
     isGroupedAttachment: false,
@@ -237,6 +238,7 @@ export default function FileTrashSection({
   onRestoreItem,
   onPurgeItem,
   onRestoreWorkOrder,
+  onPurgeWorkOrder,
   isActionPending = false,
   isWorkOrderActionPending = false,
 }: FileTrashSectionProps) {
@@ -398,34 +400,25 @@ export default function FileTrashSection({
             </button>
             <button
               type="button"
-              disabled={
-                isWorkOrderActionPending ||
-                !previewWorkOrder ||
-                workOrderActionPreview?.intent === "purge"
-              }
+              disabled={isWorkOrderActionPending || !previewWorkOrder}
               onClick={() => {
-                if (
-                  previewWorkOrder &&
-                  workOrderActionPreview?.intent === "restore"
-                ) {
+                if (!previewWorkOrder) return;
+                if (workOrderActionPreview?.intent === "restore") {
                   onRestoreWorkOrder?.(previewWorkOrder.id);
+                  setWorkOrderActionPreview(null);
+                  return;
+                }
+                if (workOrderActionPreview?.intent === "purge") {
+                  onPurgeWorkOrder?.(previewWorkOrder.id);
                   setWorkOrderActionPreview(null);
                 }
               }}
-              className={`rounded-full border px-4 py-2 text-xs font-semibold ${workOrderActionPreview?.intent === "restore" ? "border-stone-900 bg-stone-900 text-white shadow-sm hover:bg-stone-800 disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-400" : "border-stone-200 bg-stone-50 text-stone-400"}`}
-              title={
-                workOrderActionPreview?.intent === "purge"
-                  ? t(
-                      "filesList.workorderPurgeApiPreparing",
-                      "작업지시서 영구삭제 API는 아직 연결하지 않았습니다.",
-                    )
-                  : undefined
-              }
+              className={`rounded-full border px-4 py-2 text-xs font-semibold ${workOrderActionPreview?.intent === "purge" ? "border-red-600 bg-red-600 text-white shadow-sm hover:bg-red-700 disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-400" : "border-stone-900 bg-stone-900 text-white shadow-sm hover:bg-stone-800 disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-400"}`}
             >
               {isWorkOrderActionPending
                 ? t("filesList.processing", "처리 중")
                 : workOrderActionPreview?.intent === "purge"
-                  ? t("filesList.workorderPurgeApiPreparing", "영구삭제 준비중")
+                  ? t("filesList.purge", "영구 삭제")
                   : t("filesList.restore", "복구")}
             </button>
           </div>
@@ -502,7 +495,7 @@ export default function FileTrashSection({
                     )
                   : t(
                       "filesList.workorderActionSkeletonNotice",
-                      "영구삭제는 아직 실제 DB/R2 처리에 연결하지 않았습니다.",
+                      "영구삭제는 작업지시서를 삭제 완료 상태로 전환하고 휴지통에서 제외합니다. R2 파일 삭제는 Worker 기반 purge 흐름으로 분리됩니다.",
                     )}
               </p>
               <p>
@@ -513,7 +506,7 @@ export default function FileTrashSection({
                     )
                   : t(
                       "filesList.workorderPurgeGuardDescription",
-                      "영구삭제 연결 시 작업지시서 대표 row와 묶음 처리 첨부/메모를 작업지시서 단위로 확정 처리하고, R2 삭제는 Worker 기반 purge 흐름만 사용해야 합니다.",
+                      "영구삭제 시 Neon row는 hard delete하지 않고 delete_status/purge_status만 완료 상태로 변경합니다. 작업지시서에 딸린 R2 파일은 직접 삭제하지 않습니다.",
                     )}
               </p>
             </div>

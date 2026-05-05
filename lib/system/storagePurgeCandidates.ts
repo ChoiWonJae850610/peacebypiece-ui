@@ -177,12 +177,17 @@ export async function getSystemStoragePurgeCandidateSnapshot(limit = 200): Promi
        LEFT JOIN spec_sheets s ON s.id = t.order_id
       WHERE t.restored_at IS NULL
         AND t.purged_at IS NULL
-        AND (s.id IS NULL OR COALESCE(s.delete_status, 'active') <> 'purged')
-        AND (s.id IS NULL OR s.purged_at IS NULL)
+        AND (
+          s.id IS NULL
+          OR COALESCE(s.delete_status, 'active') <> 'purged'
+          OR t.purge_status = 'purge_requested'
+        )
+        AND (s.id IS NULL OR s.purged_at IS NULL OR t.purge_status = 'purge_requested')
         AND (
           t.order_id IS NULL
           OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true)
           OR COALESCE(t.delete_reason, '') <> $3
+          OR (COALESCE(s.delete_status, 'active') = 'purged' AND t.purge_status = 'purge_requested')
         )
         AND (
           t.purge_status = 'purge_requested'
@@ -280,12 +285,17 @@ async function listSystemStoragePurgeRunCandidates(input: SystemStoragePurgeRunI
         WHERE t.id = ANY($1::text[])
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
-          AND (s.id IS NULL OR COALESCE(s.delete_status, 'active') <> 'purged')
-          AND (s.id IS NULL OR s.purged_at IS NULL)
+          AND (
+            s.id IS NULL
+            OR COALESCE(s.delete_status, 'active') <> 'purged'
+            OR t.purge_status = 'purge_requested'
+          )
+          AND (s.id IS NULL OR s.purged_at IS NULL OR t.purge_status = 'purge_requested')
           AND (
             t.order_id IS NULL
             OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true)
             OR COALESCE(t.delete_reason, '') <> $4
+            OR (COALESCE(s.delete_status, 'active') = 'purged' AND t.purge_status = 'purge_requested')
           )
           AND (
             t.purge_status = 'purge_requested'
@@ -320,12 +330,17 @@ async function listSystemStoragePurgeRunCandidates(input: SystemStoragePurgeRunI
        LEFT JOIN spec_sheets s ON s.id = t.order_id
       WHERE t.restored_at IS NULL
         AND t.purged_at IS NULL
-        AND (s.id IS NULL OR COALESCE(s.delete_status, 'active') <> 'purged')
-        AND (s.id IS NULL OR s.purged_at IS NULL)
+        AND (
+          s.id IS NULL
+          OR COALESCE(s.delete_status, 'active') <> 'purged'
+          OR t.purge_status = 'purge_requested'
+        )
+        AND (s.id IS NULL OR s.purged_at IS NULL OR t.purge_status = 'purge_requested')
         AND (
           t.order_id IS NULL
           OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true)
           OR COALESCE(t.delete_reason, '') <> $3
+          OR (COALESCE(s.delete_status, 'active') = 'purged' AND t.purge_status = 'purge_requested')
         )
         AND (
           t.purge_status = 'purge_requested'

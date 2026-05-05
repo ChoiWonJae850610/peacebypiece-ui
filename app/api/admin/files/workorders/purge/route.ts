@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { previewPurgeWorkOrderTrashBundle } from "@/lib/admin/files/serverActions";
+import { purgeWorkOrderTrashBundle } from "@/lib/admin/files/serverActions";
 
 export const runtime = "nodejs";
 
@@ -19,10 +19,18 @@ function getErrorMessage(error: unknown): string {
 export async function POST(request: NextRequest) {
   try {
     const payload = (await request.json().catch(() => null)) as WorkOrderPurgeRequest | null;
-    const result = await previewPurgeWorkOrderTrashBundle({
+    const result = await purgeWorkOrderTrashBundle({
       workOrderId: readText(payload?.workOrderId) ?? "",
       actorId: readText(payload?.purgedBy),
     });
+
+    const status = result.ok
+      ? 200
+      : result.reason === "WORKORDER_ID_REQUIRED"
+        ? 400
+        : result.reason === "WORKORDER_NOT_FOUND"
+          ? 404
+          : 409;
 
     return NextResponse.json(
       {
@@ -35,11 +43,11 @@ export async function POST(request: NextRequest) {
         message: result.message,
         storageDeleteMode: "deferred-worker",
       },
-      { status: result.reason === "WORKORDER_ID_REQUIRED" ? 400 : 409 },
+      { status },
     );
   } catch (error) {
     const message = getErrorMessage(error);
-    console.error("[ADMIN_WORKORDER_TRASH_PURGE_PREVIEW_FAILED]", { message, error });
-    return NextResponse.json({ ok: false, error: "ADMIN_WORKORDER_TRASH_PURGE_PREVIEW_FAILED", message }, { status: 500 });
+    console.error("[ADMIN_WORKORDER_TRASH_PURGE_FAILED]", { message, error });
+    return NextResponse.json({ ok: false, error: "ADMIN_WORKORDER_TRASH_PURGE_FAILED", message }, { status: 500 });
   }
 }
