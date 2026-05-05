@@ -16,8 +16,8 @@ export function calculateWorkOrderCosts(workOrder: WorkOrder) {
   const orderEntries = workOrder.orderEntries ?? [];
   const quantity = orderEntries.length > 0 ? orderEntries.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0) : workOrder.quantity;
   const laborCost = orderEntries.length > 0
-    ? orderEntries.reduce((sum, item) => sum + Math.max(0, Number(item.laborCost) || 0), 0)
-    : Math.max(0, Number(workOrder.laborCost) || 0);
+    ? orderEntries.reduce((sum, item) => sum + (Math.max(0, Number(item.quantity) || 0) * Math.max(0, Number(item.laborCost) || 0)), 0)
+    : Math.max(0, Number(workOrder.quantity) || 0) * Math.max(0, Number(workOrder.laborCost) || 0);
   const lossCost = orderEntries.length > 0
     ? orderEntries.reduce((sum, item) => sum + Math.max(0, Number(item.lossCost) || 0), 0)
     : Math.max(0, Number(workOrder.lossCost) || 0);

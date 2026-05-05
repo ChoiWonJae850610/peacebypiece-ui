@@ -1,15 +1,19 @@
 Version :
-0.9.186
+0.9.187
 
 Summary :
-PDF 요청사항 문구와 출력 토스트 표시 보완
+대표 디자인 이미지 정책과 공장 비용 계산식을 보완
 
 Description :
-발주요청 PDF 요청사항에 작업지시서 메모나 생성 안내 문구가 자동으로 들어가지 않도록 요청사항 입력값만 사용하게 정리했다. 요청사항이 비어 있으면 PDF에는 요청사항 없음 문구를 표시한다. PDF 출력 요청 토스트는 출력창으로 포커스가 이동해도 사용자가 돌아온 뒤 확인할 수 있도록 닫힘 타이밍을 보완했다.
+최초 디자인 이미지 업로드 시 대표 이미지로 자동 지정하고, 대표 디자인 이미지 삭제 시 남은 디자인 이미지 중 하나를 대표로 재지정하도록 보완했다. 삭제된 디자인 이미지는 대표 상태를 해제해 복원 시 대표 이미지가 되지 않도록 했다. 공장 공임비는 수량을 곱한 금액으로 계산하고 로스비는 그대로 더하는 기준으로 비용 요약과 PDF 금액 계산식을 보정했다.
 
 수정 파일 목록 :
 - components/common/modal/OrderRequestConfirmModal.tsx
-- lib/workorder/presentation/orderRequestDocumentPrint.ts
+- lib/hooks/workorder/useWorkOrderAttachments.ts
+- lib/workorder/derived/workOrderCostSummary.ts
+- lib/workorder/detail/detailCalculations.ts
+- lib/workorder/persistence/dbAttachmentMemoRepository.ts
+- lib/workorder/presentation/orderRequestDocumentPresentation.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :

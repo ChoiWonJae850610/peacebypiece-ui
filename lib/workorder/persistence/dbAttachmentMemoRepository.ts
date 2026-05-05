@@ -435,6 +435,7 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
         `WITH updated_attachment AS (
            UPDATE attachments
               SET is_active = false,
+                  is_primary = false,
                   deleted_at = COALESCE(deleted_at, now()),
                   deleted_by = COALESCE($2, deleted_by),
                   delete_reason = COALESCE($3, delete_reason),

@@ -86,10 +86,28 @@ export function useWorkOrderAttachments({
       return;
     }
 
+    let persistedAttachments = uploadResult.attachments;
+    const shouldSetFirstDesignAsPrimary = scope === "design"
+      && !(selectedWorkOrder.attachments ?? []).some((attachment) => attachment.scope === "design" && attachment.type === "image" && attachment.isPrimary === true);
+    const firstUploadedDesignImage = shouldSetFirstDesignAsPrimary
+      ? persistedAttachments.find((attachment) => attachment.scope === "design" && attachment.type === "image") ?? null
+      : null;
+
+    if (firstUploadedDesignImage) {
+      try {
+        await setPrimaryDesignAttachmentInDb({ workOrderId: selectedWorkOrder.id, attachmentId: firstUploadedDesignImage.id });
+        persistedAttachments = persistedAttachments.map((attachment) => attachment.scope === "design"
+          ? { ...attachment, isPrimary: attachment.id === firstUploadedDesignImage.id }
+          : attachment);
+      } catch (error) {
+        console.warn("[PRIMARY_DESIGN_AUTO_SET_FAILED]", error);
+      }
+    }
+
     const result = buildPersistedAttachmentUploadResult({
       workOrder: selectedWorkOrder,
       currentUser,
-      attachments: uploadResult.attachments,
+      attachments: persistedAttachments,
       scope,
       text: actionFlowText as typeof actionFlowText & { designAttachmentUploadedToast?: string },
       historyText,
@@ -145,6 +163,19 @@ export function useWorkOrderAttachments({
         deletedBy: currentUser.name,
         deleteReason: targetAttachment?.scope === "design" ? "작지 디자인 삭제" : "작지 첨부 삭제",
       });
+
+      const nextPrimaryDesignAttachment = targetAttachment?.scope === "design" && targetAttachment.type === "image" && targetAttachment.isPrimary === true
+        ? (selectedWorkOrder.attachments ?? []).find((attachment) => attachment.id !== attachmentId && attachment.scope === "design" && attachment.type === "image") ?? null
+        : null;
+
+      if (nextPrimaryDesignAttachment) {
+        try {
+          await setPrimaryDesignAttachmentInDb({ workOrderId: selectedWorkOrder.id, attachmentId: nextPrimaryDesignAttachment.id });
+        } catch (error) {
+          console.warn("[PRIMARY_DESIGN_AUTO_REASSIGN_FAILED]", error);
+        }
+      }
+
       const result = buildAttachmentDeleteResult({
         workOrder: selectedWorkOrder,
         currentUser,
@@ -157,7 +188,17 @@ export function useWorkOrderAttachments({
         return;
       }
 
-      setWorkOrders((prev) => prev.map((item) => (item.id === selectedWorkOrder.id ? result.nextWorkOrder : item)));
+      setWorkOrders((prev) => prev.map((item) => {
+        if (item.id !== selectedWorkOrder.id) return item;
+        if (!nextPrimaryDesignAttachment) return result.nextWorkOrder;
+
+        return {
+          ...result.nextWorkOrder,
+          attachments: (result.nextWorkOrder.attachments ?? []).map((attachment) => attachment.scope === "design"
+            ? { ...attachment, isPrimary: attachment.id === nextPrimaryDesignAttachment.id }
+            : attachment),
+        };
+      }));
       if (result.resetAttachmentPreview) {
         setAttachmentPreviewId(null);
       }
