@@ -15,9 +15,9 @@ import { formatBasicSummary } from "@/lib/workorder/detail/detailFormatting";
 import type { BasicInfoState } from "@/components/workorder/detail/shared/detailEditorShared";
 
 function buildCategorySourceFromValue(value: BasicInfoState): CategorySource {
-  const category1 = createFallbackOption(value.category1 || "-");
-  const category2 = createFallbackOption(value.category2 || "-");
-  const category3 = createFallbackOption(value.category3 || "-");
+  const category1: CategoryOption = { id: value.category1Id ?? null, name: value.category1 || "-" };
+  const category2: CategoryOption = { id: value.category2Id ?? null, name: value.category2 || "-" };
+  const category3: CategoryOption = { id: value.category3Id ?? null, name: value.category3 || "-" };
 
   return {
     category1Options: [category1],
@@ -73,6 +73,9 @@ export default function BasicInfoEditModal({
           category1: nextCategory1.name,
           category2: nextCategory2.name,
           category3: nextCategory3.name,
+          category1Id: nextCategory1.id,
+          category2Id: nextCategory2.id,
+          category3Id: nextCategory3.id,
         });
       })
       .catch(() => undefined);
@@ -91,21 +94,28 @@ export default function BasicInfoEditModal({
     const nextCategory2 = nextCategory2Options[0] ?? categorySource.defaultCategory2;
     const nextCategory3Options = categorySource.category3OptionsMap[nextCategory2.name] ?? [categorySource.defaultCategory3];
     const nextCategory3 = nextCategory3Options[0] ?? categorySource.defaultCategory3;
+    const nextCategory1 = findCategoryOption(categorySource.category1Options, category1, categorySource.defaultCategory1);
     onChange({
       ...value,
-      category1,
+      category1: nextCategory1.name,
       category2: nextCategory2.name,
       category3: nextCategory3.name,
+      category1Id: nextCategory1.id,
+      category2Id: nextCategory2.id,
+      category3Id: nextCategory3.id,
     });
   };
 
   const handleCategory2Change = (category2: string) => {
     const nextCategory3Options = categorySource.category3OptionsMap[category2] ?? [categorySource.defaultCategory3];
     const nextCategory3 = nextCategory3Options[0] ?? categorySource.defaultCategory3;
+    const nextCategory2 = findCategoryOption(category2Options, category2, categorySource.defaultCategory2);
     onChange({
       ...value,
-      category2,
+      category2: nextCategory2.name,
       category3: nextCategory3.name,
+      category2Id: nextCategory2.id,
+      category3Id: nextCategory3.id,
     });
   };
 
@@ -147,7 +157,14 @@ export default function BasicInfoEditModal({
           <div className="text-xs text-stone-500">{copy.category3}</div>
           <select
             value={value.category3}
-            onChange={(event) => onChange({ ...value, category3: event.target.value })}
+            onChange={(event) => {
+              const nextCategory3 = findCategoryOption(category3Options, event.target.value, categorySource.defaultCategory3);
+              onChange({
+                ...value,
+                category3: nextCategory3.name,
+                category3Id: nextCategory3.id,
+              });
+            }}
             className={`mt-2 ${MODAL_SELECT_CLASS}`}
           >
             {renderCategoryOptions(category3Options)}

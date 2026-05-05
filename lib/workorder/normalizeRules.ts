@@ -91,6 +91,9 @@ export function buildInitialBasicInfoFromWorkOrder(workOrder: WorkOrder) {
 
   return {
     ...category,
+    category1Id: workOrder.category1Id ?? null,
+    category2Id: workOrder.category2Id ?? null,
+    category3Id: workOrder.category3Id ?? null,
     season: parsedSeason.season || SEASON_OPTIONS[0],
     year: parsedSeason.year || DEFAULT_BASIC_YEAR,
   };

@@ -305,6 +305,9 @@ export function useWorkOrderDetailEditor({
       category1: basicInfoDraft.category1,
       category2: basicInfoDraft.category2,
       category3: basicInfoDraft.category3,
+      category1Id: basicInfoDraft.category1Id ?? null,
+      category2Id: basicInfoDraft.category2Id ?? null,
+      category3Id: basicInfoDraft.category3Id ?? null,
     });
     setBasicInfoModalOpen(false);
   };
