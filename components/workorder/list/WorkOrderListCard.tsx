@@ -18,6 +18,8 @@ type Props = {
   onDelete?: (id: string) => void;
   canDelete?: (workflowState: WorkflowState) => boolean;
   canReorder?: boolean;
+  writeLocked?: boolean;
+  writeLockMessage?: string;
 };
 
 export default function WorkOrderListCard({
@@ -29,6 +31,8 @@ export default function WorkOrderListCard({
   onDelete,
   canDelete,
   canReorder = false,
+  writeLocked = false,
+  writeLockMessage,
 }: Props) {
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.layout.workOrderListCard;
@@ -38,11 +42,18 @@ export default function WorkOrderListCard({
   const canShowReorder = canReorder && canReorderWorkOrder(workOrder) && isWorkflowStateOneOf(state, REORDERABLE_WORKFLOW_STATES);
   const canShowDelete = Boolean(onDelete) && (!canDelete || canDelete(state));
   const hasMenuActions = canShowReorder || canShowDelete;
+  const canOpenMenu = hasMenuActions && !writeLocked;
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!menuOpen) return;
+    if (writeLocked && menuOpen) {
+      setMenuOpen(false);
+    }
+  }, [menuOpen, writeLocked]);
+
+  useEffect(() => {
+    if (!menuOpen || writeLocked) return;
     const handleOutsideClick = (event: MouseEvent) => {
       if (!menuRef.current?.contains(event.target as Node)) {
         setMenuOpen(false);
@@ -59,7 +70,7 @@ export default function WorkOrderListCard({
       document.removeEventListener("mousedown", handleOutsideClick);
       document.removeEventListener("keydown", handleEscape);
     };
-  }, [menuOpen]);
+  }, [menuOpen, writeLocked]);
 
   return (
     <div
@@ -92,19 +103,20 @@ export default function WorkOrderListCard({
         <div className="relative shrink-0" ref={menuRef}>
           <button
             type="button"
-            onClick={() => { if (hasMenuActions) setMenuOpen((prev) => !prev); }}
-            disabled={!hasMenuActions}
+            onClick={() => { if (canOpenMenu) setMenuOpen((prev) => !prev); }}
+            disabled={!canOpenMenu}
+            title={writeLocked ? writeLockMessage ?? "처리 중입니다." : undefined}
             className={`pbp-touch-target pbp-interactive-button flex h-9 w-9 items-center justify-center rounded-xl border text-base font-semibold disabled:cursor-not-allowed disabled:opacity-50 ${
               active
                 ? "border-white/20 bg-white/10 text-white hover:bg-white/15"
                 : "border-stone-300 bg-white text-stone-800 hover:border-stone-400 hover:bg-stone-100"
             }`}
             aria-haspopup="menu"
-            aria-expanded={menuOpen}
+            aria-expanded={canOpenMenu && menuOpen}
           >
             …
           </button>
-          {menuOpen && hasMenuActions ? (
+          {menuOpen && canOpenMenu ? (
             <div
               className={`absolute right-0 top-11 z-20 min-w-[132px] rounded-xl border p-1 shadow-lg ${
                 active ? "border-stone-700 bg-stone-950 text-white" : "border-stone-200 bg-white text-stone-900"

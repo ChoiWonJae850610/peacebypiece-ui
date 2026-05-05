@@ -117,11 +117,13 @@ export default function SidebarContent({
               selectedId={selectedId}
               workflowStateById={workflowStateById}
               onClick={onSelect}
-              onReorder={!writeLocked ? onReorder : undefined}
-              onDelete={!writeLocked ? onDelete : undefined}
-              onRework={!writeLocked ? onRework : undefined}
-              canDelete={!writeLocked && canManageListActions ? canDelete : undefined}
-              canReorder={!writeLocked && canManageListActions && Boolean(onReorder)}
+              onReorder={onReorder}
+              onDelete={onDelete}
+              onRework={onRework}
+              canDelete={canManageListActions ? canDelete : undefined}
+              canReorder={canManageListActions && Boolean(onReorder)}
+              writeLocked={writeLocked}
+              writeLockMessage={writeLockMessage}
             />
           ))}
         </div>

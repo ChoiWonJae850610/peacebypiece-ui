@@ -20,7 +20,7 @@ export function buildWorkspaceViewModel(
   const version = APP_VERSION;
   const companyName = getWorkspaceCompanyName();
   const isWorkspaceWriteLocked = Boolean(
-    args.isWorkspaceWriteLocked ?? args.workflowProcessingLabel,
+    args.isWorkspaceWriteLocked || args.workflowProcessingLabel,
   );
   const workspaceWriteLockMessage =
     args.workspaceWriteLockMessage ??
