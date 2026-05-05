@@ -1,11 +1,41 @@
+import { useEffect, useMemo, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import ModalShell from "@/components/common/modal/ModalShell";
-import { MODAL_INPUT_CLASS, MODAL_SELECT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
+import { MODAL_SELECT_CLASS } from "@/components/common/modal/modalFieldClassNames";
 import { MODAL_ACTION_LABELS, renderModalFooterActions } from "@/components/common/modal/modalActions";
-import { CATEGORY1_OPTIONS, SEASON_OPTIONS, YEAR_OPTIONS } from "@/lib/constants/workorderOptions";
+import { fetchAdminStandardsFromApi } from "@/lib/admin/settings/standardsApiClient";
+import {
+  buildCategorySourceFromDefinitions,
+  createFallbackOption,
+  findCategoryOption,
+  type CategoryOption,
+  type CategorySource,
+} from "@/components/common/modal/createWorkOrder/createWorkOrderCategorySource";
 import { formatBasicSummary } from "@/lib/workorder/detail/detailFormatting";
-import { getCategory2Options, getCategory3Options } from "@/lib/workorder/detail/detailSanitizers";
 import type { BasicInfoState } from "@/components/workorder/detail/shared/detailEditorShared";
+
+function buildCategorySourceFromValue(value: BasicInfoState): CategorySource {
+  const category1 = createFallbackOption(value.category1 || "-");
+  const category2 = createFallbackOption(value.category2 || "-");
+  const category3 = createFallbackOption(value.category3 || "-");
+
+  return {
+    category1Options: [category1],
+    category2OptionsMap: { [category1.name]: [category2] },
+    category3OptionsMap: { [category2.name]: [category3] },
+    defaultCategory1: category1,
+    defaultCategory2: category2,
+    defaultCategory3: category3,
+  };
+}
+
+function renderCategoryOptions(options: CategoryOption[]) {
+  return options.map((option) => (
+    <option key={option.id ?? option.name} value={option.name}>
+      {option.name}
+    </option>
+  ));
+}
 
 export default function BasicInfoEditModal({
   open,
@@ -22,27 +52,60 @@ export default function BasicInfoEditModal({
 }) {
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.modals.basicInfo;
-  const category2Options = getCategory2Options(value.category1);
-  const category3Options = getCategory3Options(value.category2, value.category1);
+  const [categorySource, setCategorySource] = useState<CategorySource>(() => buildCategorySourceFromValue(value));
+
+  useEffect(() => {
+    if (!open) return;
+    setCategorySource(buildCategorySourceFromValue(value));
+    let isMounted = true;
+    fetchAdminStandardsFromApi()
+      .then((payload) => {
+        if (!isMounted) return;
+        const nextSource = buildCategorySourceFromDefinitions(payload.itemCategories);
+        setCategorySource(nextSource);
+        const nextCategory1 = findCategoryOption(nextSource.category1Options, value.category1, nextSource.defaultCategory1);
+        const nextCategory2Options = nextSource.category2OptionsMap[nextCategory1.name] ?? [nextSource.defaultCategory2];
+        const nextCategory2 = findCategoryOption(nextCategory2Options, value.category2, nextSource.defaultCategory2);
+        const nextCategory3Options = nextSource.category3OptionsMap[nextCategory2.name] ?? [nextSource.defaultCategory3];
+        const nextCategory3 = findCategoryOption(nextCategory3Options, value.category3, nextSource.defaultCategory3);
+        onChange({
+          ...value,
+          category1: nextCategory1.name,
+          category2: nextCategory2.name,
+          category3: nextCategory3.name,
+        });
+      })
+      .catch(() => undefined);
+    return () => {
+      isMounted = false;
+    };
+  // category refresh must run when the modal opens. value/onChange are intentionally not included to avoid resetting drafts on every select change.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  const category2Options = useMemo(() => categorySource.category2OptionsMap[value.category1] ?? [categorySource.defaultCategory2], [categorySource, value.category1]);
+  const category3Options = useMemo(() => categorySource.category3OptionsMap[value.category2] ?? [categorySource.defaultCategory3], [categorySource, value.category2]);
 
   const handleCategory1Change = (category1: string) => {
-    const nextCategory2Options = getCategory2Options(category1);
-    const nextCategory2 = nextCategory2Options[0] ?? "";
-    const nextCategory3Options = getCategory3Options(nextCategory2, category1);
+    const nextCategory2Options = categorySource.category2OptionsMap[category1] ?? [categorySource.defaultCategory2];
+    const nextCategory2 = nextCategory2Options[0] ?? categorySource.defaultCategory2;
+    const nextCategory3Options = categorySource.category3OptionsMap[nextCategory2.name] ?? [categorySource.defaultCategory3];
+    const nextCategory3 = nextCategory3Options[0] ?? categorySource.defaultCategory3;
     onChange({
       ...value,
       category1,
-      category2: nextCategory2,
-      category3: nextCategory3Options[0] ?? "",
+      category2: nextCategory2.name,
+      category3: nextCategory3.name,
     });
   };
 
   const handleCategory2Change = (category2: string) => {
-    const nextCategory3Options = getCategory3Options(category2, value.category1);
+    const nextCategory3Options = categorySource.category3OptionsMap[category2] ?? [categorySource.defaultCategory3];
+    const nextCategory3 = nextCategory3Options[0] ?? categorySource.defaultCategory3;
     onChange({
       ...value,
       category2,
-      category3: nextCategory3Options[0] ?? "",
+      category3: nextCategory3.name,
     });
   };
 
@@ -67,7 +130,7 @@ export default function BasicInfoEditModal({
             onChange={(event) => handleCategory1Change(event.target.value)}
             className={`mt-2 ${MODAL_SELECT_CLASS}`}
           >
-            {CATEGORY1_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
+            {renderCategoryOptions(categorySource.category1Options)}
           </select>
         </label>
         <label className="rounded-2xl border border-stone-200 bg-white p-3">
@@ -77,7 +140,7 @@ export default function BasicInfoEditModal({
             onChange={(event) => handleCategory2Change(event.target.value)}
             className={`mt-2 ${MODAL_SELECT_CLASS}`}
           >
-            {category2Options.map((option) => <option key={option} value={option}>{option}</option>)}
+            {renderCategoryOptions(category2Options)}
           </select>
         </label>
         <label className="rounded-2xl border border-stone-200 bg-white p-3">
@@ -87,31 +150,9 @@ export default function BasicInfoEditModal({
             onChange={(event) => onChange({ ...value, category3: event.target.value })}
             className={`mt-2 ${MODAL_SELECT_CLASS}`}
           >
-            {category3Options.map((option) => <option key={option} value={option}>{option}</option>)}
+            {renderCategoryOptions(category3Options)}
           </select>
         </label>
-        <div className="grid grid-cols-2 gap-4 sm:col-span-2">
-          <label className="rounded-2xl border border-stone-200 bg-white p-3">
-            <div className="text-xs text-stone-500">{copy.season}</div>
-            <select
-              value={value.season}
-              onChange={(event) => onChange({ ...value, season: event.target.value })}
-              className={`mt-2 ${MODAL_SELECT_CLASS}`}
-            >
-              {SEASON_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
-            </select>
-          </label>
-          <label className="rounded-2xl border border-stone-200 bg-white p-3">
-            <div className="text-xs text-stone-500">{copy.year}</div>
-            <select
-              value={value.year}
-              onChange={(event) => onChange({ ...value, year: event.target.value })}
-              className={`mt-2 ${MODAL_SELECT_CLASS}`}
-            >
-              {YEAR_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
-            </select>
-          </label>
-        </div>
       </div>
 
       <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">

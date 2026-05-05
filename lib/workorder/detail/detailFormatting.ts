@@ -31,12 +31,9 @@ export function getDisplayValue(field: string, value: string) {
 
 
 export function formatBasicSummary(basicInfo: BasicInfoLike) {
-  return [
-    [basicInfo.category1, basicInfo.category2, basicInfo.category3].filter(Boolean).join(" > "),
-    `${basicInfo.season} ${basicInfo.year}`.trim(),
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  void basicInfo.season;
+  void basicInfo.year;
+  return [basicInfo.category1, basicInfo.category2, basicInfo.category3].filter(Boolean).join(" > ");
 }
 
 export function formatOrderSummary(orderEntries: OrderEntry[]) {

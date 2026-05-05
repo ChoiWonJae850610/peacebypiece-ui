@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import InlineInfoItem from "@/components/common/ui/InlineInfoItem";
 import { canCreateWorkOrderByRoles } from "@/lib/constants/roles";
 import { useI18n } from "@/lib/i18n";
+import { WORKORDER_CATEGORY_RECOMMENDATION_ENABLED } from "@/lib/constants/runtimeMode";
 import { getRecommendedWorkOrderCategory } from "@/lib/utils/workorderCategoryRecommend";
 import type { RoleType } from "@/types/workorder";
 
@@ -66,7 +67,7 @@ export default function WorkOrderHeaderSection({
   const inventoryValue = `${currentInventoryQuantity.toLocaleString()}${common.quantitySuffix}`;
   const summaryValue = summaryText || "-";
   const canEditSummary = !locked && canCreateWorkOrderByRoles([currentUserRole]) && typeof onOpenBasicInfoModal === "function";
-  const recommendedCategory = getRecommendedWorkOrderCategory(titleDraft.trim());
+  const recommendedCategory = WORKORDER_CATEGORY_RECOMMENDATION_ENABLED ? getRecommendedWorkOrderCategory(titleDraft.trim()) : null;
   const canEditManager = !managerLocked && canChangeManager;
   const canEditTitle = !locked && canRenameTitle && typeof onRenameTitle === "function";
 

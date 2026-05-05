@@ -305,7 +305,6 @@ export function useWorkOrderDetailEditor({
       category1: basicInfoDraft.category1,
       category2: basicInfoDraft.category2,
       category3: basicInfoDraft.category3,
-      season: `${basicInfoDraft.season} ${basicInfoDraft.year}`.trim(),
     });
     setBasicInfoModalOpen(false);
   };
