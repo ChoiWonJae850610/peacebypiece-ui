@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import ToastMessage from "@/components/common/ToastMessage";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS } from "@/components/common/modal/modalActions";
 
@@ -36,7 +37,6 @@ import { getFactoryOrderRowsValidationMessage, getOrderSubmissionSnapshot } from
 import { getOrderRequestDocumentPreview } from "@/lib/workorder/presentation/orderRequestDocumentPresentation";
 import { buildOrderRequestPrintHtml } from "@/lib/workorder/presentation/orderRequestDocumentPrint";
 import { useI18n } from "@/lib/i18n";
-import { getOrderRequestPrintUnsupportedMessage } from "@/lib/workorder/presentation/workOrderPresentation";
 import { isDebugFeatureEnabled } from "@/lib/constants/runtimeMode";
 import type { Material, Outsourcing, WorkOrder } from "@/types/workorder";
 
@@ -247,6 +247,12 @@ export default function OrderRequestConfirmModal({
   }, [open, workOrder.id, workOrder.memo]);
 
   useEffect(() => {
+    if (!printFeedback) return;
+    const timeout = window.setTimeout(() => setPrintFeedback(null), 2200);
+    return () => window.clearTimeout(timeout);
+  }, [printFeedback]);
+
+  useEffect(() => {
     return () => {
       if (printWindowRef.current && !printWindowRef.current.closed) {
         printWindowRef.current.close();
@@ -300,13 +306,13 @@ export default function OrderRequestConfirmModal({
       });
 
       if (isSamsungInternet) {
-        setPrintFeedback(getOrderRequestPrintUnsupportedMessage());
+        setPrintFeedback("PDF 출력 요청을 시작하지 못했습니다.");
         return;
       }
 
       const printWindow = window.open("", "_blank", "noopener=no,width=1024,height=900");
       if (!printWindow) {
-        setPrintFeedback("팝업이 차단되어 PDF 창을 열 수 없습니다. 브라우저 팝업 차단을 해제한 뒤 다시 시도해주세요.");
+        setPrintFeedback("PDF 출력 요청을 시작하지 못했습니다.");
         return;
       }
 
@@ -319,7 +325,7 @@ export default function OrderRequestConfirmModal({
         setTimeout(() => {
           URL.revokeObjectURL(objectUrl);
         }, 60_000);
-        setPrintFeedback("안드로이드 기기에서는 새 창 상단의 ‘인쇄’ 버튼으로 출력해주세요.");
+        setPrintFeedback("PDF 출력 요청을 완료했습니다.");
       } else {
         printWindow.document.open();
         printWindow.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8" /><title>발주서 준비 중</title><style>html,body{height:100%;margin:0;font-family:Arial,'Noto Sans KR',sans-serif;background:#f5f2eb;color:#1c1917;}body{display:flex;align-items:center;justify-content:center;padding:24px;}div{font-size:14px;font-weight:600;}</style></head><body><div>출력용 문서를 준비하는 중입니다...</div></body></html>`);
@@ -328,10 +334,11 @@ export default function OrderRequestConfirmModal({
         printWindow.document.write(html);
         printWindow.document.close();
         printWindow.focus();
+        setPrintFeedback("PDF 출력 요청을 완료했습니다.");
       }
     } catch (error) {
       console.error("[order-request-print] failed to render print window", error);
-      setPrintFeedback("문서 생성 중 오류가 발생했습니다. 다시 시도해주세요.");
+      setPrintFeedback("PDF 출력 요청을 시작하지 못했습니다.");
       if (printWindowRef.current && !printWindowRef.current.closed) {
         printWindowRef.current.close();
       }
@@ -381,6 +388,7 @@ export default function OrderRequestConfirmModal({
         </div>
       }
     >
+      <ToastMessage message={printFeedback} />
       <div className="mx-auto w-full max-w-[1040px] overflow-hidden rounded-sm border border-stone-500 bg-white text-stone-900 shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
         <div className="border-b border-stone-400 px-5 py-5">
           <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3">
@@ -401,12 +409,6 @@ export default function OrderRequestConfirmModal({
 
         <SummaryLine items={firstSummaryItems} />
         <SummaryLine items={secondSummaryItems} className="bg-stone-50" />
-
-        {printFeedback ? (
-          <div className="border-b border-amber-300 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900">
-            {printFeedback}
-          </div>
-        ) : null}
 
         {orderRowsValidationMessage ? (
           <div className="border-b border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">
@@ -436,7 +438,7 @@ export default function OrderRequestConfirmModal({
                 <textarea
                   value={requestNote}
                   onChange={(event) => setRequestNote(event.target.value)}
-                  placeholder="요청사항을 입력하세요."
+                  placeholder="발주 요청 시 전달할 메모를 입력하세요."
                   className="min-h-[300px] flex-1 resize-none border border-stone-300 bg-white px-3 py-3 text-sm leading-6 text-stone-800 outline-none transition focus:border-stone-500"
                 />
               </div>
