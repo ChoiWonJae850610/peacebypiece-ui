@@ -353,10 +353,21 @@ CREATE TABLE spec_sheets (
   parent_spec_sheet_id text REFERENCES spec_sheets(id) ON DELETE SET NULL,
   is_rework boolean NOT NULL DEFAULT false,
   is_active boolean NOT NULL DEFAULT true,
+  delete_status text NOT NULL DEFAULT 'active',
+  purge_status text NOT NULL DEFAULT 'none',
+  purge_requested_at timestamptz,
+  purged_at timestamptz,
+  purged_by text,
   payload jsonb NOT NULL DEFAULT '{}'::jsonb,
   created_at timestamp without time zone DEFAULT now(),
   updated_at timestamp without time zone DEFAULT now(),
-  deleted_at timestamp without time zone
+  deleted_at timestamp without time zone,
+  CONSTRAINT spec_sheets_delete_status_check CHECK (
+    delete_status IN ('active', 'trashed', 'purge_requested', 'purged', 'restored')
+  ),
+  CONSTRAINT spec_sheets_purge_status_check CHECK (
+    purge_status IN ('none', 'pending', 'purge_requested', 'purged', 'failed', 'restored')
+  )
 );
 
 CREATE TABLE orders (
@@ -509,9 +520,20 @@ CREATE TABLE memos (
   body text NOT NULL,
   author_id text,
   is_active boolean NOT NULL DEFAULT true,
+  delete_status text NOT NULL DEFAULT 'active',
+  purge_status text NOT NULL DEFAULT 'none',
+  purge_requested_at timestamptz,
+  purged_at timestamptz,
+  purged_by text,
   deleted_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT memos_delete_status_check CHECK (
+    delete_status IN ('active', 'trashed', 'purge_requested', 'purged', 'restored')
+  ),
+  CONSTRAINT memos_purge_status_check CHECK (
+    purge_status IN ('none', 'pending', 'purge_requested', 'purged', 'failed', 'restored')
+  )
 );
 
 CREATE TABLE history_logs (
@@ -1033,6 +1055,8 @@ CREATE INDEX spec_sheets_reorder_group_idx ON spec_sheets (reorder_group_id, reo
 CREATE INDEX spec_sheets_active_idx ON spec_sheets (is_active, updated_at DESC);
 CREATE INDEX spec_sheets_parent_idx ON spec_sheets (parent_spec_sheet_id);
 CREATE INDEX spec_sheets_company_status_updated_idx ON spec_sheets (company_id, status, updated_at DESC) WHERE deleted_at IS NULL AND COALESCE(is_active, true) = true;
+CREATE INDEX spec_sheets_delete_status_idx ON spec_sheets (delete_status, deleted_at DESC);
+CREATE INDEX spec_sheets_purge_status_idx ON spec_sheets (purge_status, purge_requested_at DESC, purged_at DESC);
 
 CREATE INDEX orders_spec_sheet_idx ON orders (spec_sheet_id);
 CREATE INDEX orders_company_spec_sheet_idx ON orders (company_id, spec_sheet_id);
@@ -1083,6 +1107,8 @@ CREATE INDEX memos_order_idx ON memos (order_id);
 CREATE INDEX memos_company_order_idx ON memos (company_id, order_id);
 CREATE INDEX memos_parent_idx ON memos (parent_id);
 CREATE INDEX memos_order_active_idx ON memos (order_id, is_active, created_at ASC);
+CREATE INDEX memos_delete_status_idx ON memos (delete_status, deleted_at DESC);
+CREATE INDEX memos_purge_status_idx ON memos (purge_status, purge_requested_at DESC, purged_at DESC);
 
 CREATE INDEX history_logs_company_created_idx ON history_logs (company_id, created_at DESC);
 CREATE INDEX history_logs_company_action_idx ON history_logs (company_id, action_type, created_at DESC);

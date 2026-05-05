@@ -56,6 +56,39 @@ BEGIN
   END IF;
 END $$;
 
+
+DO $$
+DECLARE
+  missing_columns text[];
+BEGIN
+  SELECT array_agg(table_name || '.' || column_name)
+  INTO missing_columns
+  FROM (
+    VALUES
+      ('spec_sheets', 'delete_status'),
+      ('spec_sheets', 'purge_status'),
+      ('spec_sheets', 'purge_requested_at'),
+      ('spec_sheets', 'purged_at'),
+      ('spec_sheets', 'purged_by'),
+      ('memos', 'delete_status'),
+      ('memos', 'purge_status'),
+      ('memos', 'purge_requested_at'),
+      ('memos', 'purged_at'),
+      ('memos', 'purged_by')
+  ) AS required_columns(table_name, column_name)
+  WHERE NOT EXISTS (
+    SELECT 1
+      FROM information_schema.columns c
+     WHERE c.table_schema = current_schema()
+       AND c.table_name = required_columns.table_name
+       AND c.column_name = required_columns.column_name
+  );
+
+  IF missing_columns IS NOT NULL THEN
+    RAISE EXCEPTION 'full_reset smoke test failed. Missing purge/delete status columns: %', missing_columns;
+  END IF;
+END $$;
+
 DO $$
 DECLARE
   role_count integer;

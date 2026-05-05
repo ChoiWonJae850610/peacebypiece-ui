@@ -361,6 +361,8 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
         WHERE t.purge_status = 'pending'
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
+          AND (s.id IS NULL OR COALESCE(s.delete_status, 'active') <> 'purged')
+          AND (s.id IS NULL OR s.purged_at IS NULL)
         ORDER BY t.deleted_at DESC
         LIMIT 100`,
       [safeTrashRetentionDays],
@@ -371,6 +373,9 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
               s.status,
               s.updated_at,
               s.deleted_at,
+              s.delete_status,
+              s.purge_status,
+              s.purged_at,
               COUNT(DISTINCT a.id) FILTER (WHERE a.deleted_at IS NULL AND COALESCE(a.is_active, true) = true)::text AS attachment_count,
               COUNT(DISTINCT a.id) FILTER (WHERE a.deleted_at IS NOT NULL OR COALESCE(a.is_active, true) = false)::text AS trash_attachment_count,
               COUNT(DISTINCT m.id) FILTER (WHERE m.deleted_at IS NULL AND COALESCE(m.is_active, true) = true)::text AS memo_count,
@@ -378,9 +383,10 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
          FROM spec_sheets s
          LEFT JOIN attachments a ON a.order_id = s.id
          LEFT JOIN memos m ON m.order_id = s.id
-        WHERE s.deleted_at IS NOT NULL
-           OR COALESCE(s.is_active, true) = false
-        GROUP BY s.id, s.title, s.status, s.updated_at, s.deleted_at
+        WHERE (s.deleted_at IS NOT NULL OR COALESCE(s.is_active, true) = false)
+          AND COALESCE(s.delete_status, 'active') <> 'purged'
+          AND s.purged_at IS NULL
+        GROUP BY s.id, s.title, s.status, s.updated_at, s.deleted_at, s.delete_status, s.purge_status, s.purged_at
         ORDER BY COALESCE(s.deleted_at, s.updated_at) DESC
         LIMIT 50`,
     ),
@@ -539,6 +545,11 @@ export async function listPurgeReadyAttachmentTrashItems(
        LEFT JOIN spec_sheets s ON s.id = t.order_id
       WHERE t.restored_at IS NULL
         AND t.purged_at IS NULL
+        AND (
+          t.order_id IS NULL
+          OR COALESCE(s.delete_status, 'active') <> 'purged'
+        )
+        AND (s.id IS NULL OR s.purged_at IS NULL)
         AND (
           t.order_id IS NULL
           OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true)
@@ -753,6 +764,11 @@ export async function restoreWorkOrderTrashBundle(
      ), restored_workorder AS (
        UPDATE spec_sheets
           SET is_active = true,
+              delete_status = 'active',
+              purge_status = 'none',
+              purge_requested_at = NULL,
+              purged_at = NULL,
+              purged_by = NULL,
               deleted_at = NULL,
               updated_at = now()
         WHERE id IN (SELECT id FROM target_workorder)
@@ -786,6 +802,11 @@ export async function restoreWorkOrderTrashBundle(
      ), restored_memos AS (
        UPDATE memos
           SET is_active = true,
+              delete_status = 'active',
+              purge_status = 'none',
+              purge_requested_at = NULL,
+              purged_at = NULL,
+              purged_by = NULL,
               deleted_at = NULL,
               updated_at = now()
         WHERE order_id = $1

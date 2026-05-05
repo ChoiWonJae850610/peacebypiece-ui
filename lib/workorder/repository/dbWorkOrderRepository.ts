@@ -27,6 +27,11 @@ const CREATED_AT_COLUMN_CANDIDATES = ["created_at"] as const;
 const UPDATED_AT_COLUMN_CANDIDATES = ["updated_at"] as const;
 const IS_ACTIVE_COLUMN_CANDIDATES = ["is_active"] as const;
 const DELETED_AT_COLUMN_CANDIDATES = ["deleted_at"] as const;
+const DELETE_STATUS_COLUMN_CANDIDATES = ["delete_status"] as const;
+const PURGE_STATUS_COLUMN_CANDIDATES = ["purge_status"] as const;
+const PURGE_REQUESTED_AT_COLUMN_CANDIDATES = ["purge_requested_at"] as const;
+const PURGED_AT_COLUMN_CANDIDATES = ["purged_at"] as const;
+const PURGED_BY_COLUMN_CANDIDATES = ["purged_by"] as const;
 
 type DbSpecSheetRow = {
   id: string;
@@ -69,6 +74,11 @@ type DbSpecSheetSchema = {
   updatedAtColumn: string | null;
   isActiveColumn: string | null;
   deletedAtColumn: string | null;
+  deleteStatusColumn: string | null;
+  purgeStatusColumn: string | null;
+  purgeRequestedAtColumn: string | null;
+  purgedAtColumn: string | null;
+  purgedByColumn: string | null;
   hasIdColumn: boolean;
   hasTitleColumn: boolean;
 };
@@ -276,6 +286,11 @@ async function loadSpecSheetSchema(): Promise<DbSpecSheetSchema> {
     updatedAtColumn: findFirstMatchingColumn(columnNames, UPDATED_AT_COLUMN_CANDIDATES),
     isActiveColumn: findFirstMatchingColumn(columnNames, IS_ACTIVE_COLUMN_CANDIDATES),
     deletedAtColumn: findFirstMatchingColumn(columnNames, DELETED_AT_COLUMN_CANDIDATES),
+    deleteStatusColumn: findFirstMatchingColumn(columnNames, DELETE_STATUS_COLUMN_CANDIDATES),
+    purgeStatusColumn: findFirstMatchingColumn(columnNames, PURGE_STATUS_COLUMN_CANDIDATES),
+    purgeRequestedAtColumn: findFirstMatchingColumn(columnNames, PURGE_REQUESTED_AT_COLUMN_CANDIDATES),
+    purgedAtColumn: findFirstMatchingColumn(columnNames, PURGED_AT_COLUMN_CANDIDATES),
+    purgedByColumn: findFirstMatchingColumn(columnNames, PURGED_BY_COLUMN_CANDIDATES),
     hasIdColumn: columnNames.includes("id"),
     hasTitleColumn: columnNames.includes("title"),
   };
@@ -641,6 +656,11 @@ async function softDeleteAttachmentMemoBundleForWorkOrder(workOrderId: string): 
   await queryDb(
     `UPDATE memos
         SET is_active = false,
+            delete_status = 'trashed',
+            purge_status = 'pending',
+            purge_requested_at = NULL,
+            purged_at = NULL,
+            purged_by = NULL,
             deleted_at = COALESCE(deleted_at, now()),
             updated_at = now()
       WHERE order_id = $1
@@ -658,6 +678,21 @@ export async function deleteDbWorkOrder(workOrderId: string): Promise<string> {
     const assignments = [`${quoteIdentifier(schema.isActiveColumn)} = FALSE`];
     if (schema.deletedAtColumn) {
       assignments.push(`${quoteIdentifier(schema.deletedAtColumn)} = NOW()`);
+    }
+    if (schema.deleteStatusColumn) {
+      assignments.push(`${quoteIdentifier(schema.deleteStatusColumn)} = 'trashed'`);
+    }
+    if (schema.purgeStatusColumn) {
+      assignments.push(`${quoteIdentifier(schema.purgeStatusColumn)} = 'pending'`);
+    }
+    if (schema.purgeRequestedAtColumn) {
+      assignments.push(`${quoteIdentifier(schema.purgeRequestedAtColumn)} = NULL`);
+    }
+    if (schema.purgedAtColumn) {
+      assignments.push(`${quoteIdentifier(schema.purgedAtColumn)} = NULL`);
+    }
+    if (schema.purgedByColumn) {
+      assignments.push(`${quoteIdentifier(schema.purgedByColumn)} = NULL`);
     }
 
     const result = await queryDb<{ id: string }>(
