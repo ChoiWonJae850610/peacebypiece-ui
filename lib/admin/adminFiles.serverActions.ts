@@ -29,7 +29,9 @@ function readCount(row: CountRow | undefined): number {
   return typeof value === "number" ? value : Number(value ?? 0);
 }
 
-export async function restoreAttachmentTrashItems(input: AdminTrashDbActionInput): Promise<AdminTrashDbActionResult> {
+export async function restoreAttachmentTrashItems(
+  input: AdminTrashDbActionInput,
+): Promise<AdminTrashDbActionResult> {
   const trashItemIds = normalizeIds(input.trashItemIds);
   if (trashItemIds.length === 0) return { requestedCount: 0, affectedCount: 0 };
 
@@ -73,7 +75,9 @@ export async function restoreAttachmentTrashItems(input: AdminTrashDbActionInput
   };
 }
 
-export async function requestPurgeAttachmentTrashItems(input: AdminTrashDbActionInput): Promise<AdminTrashDbActionResult> {
+export async function requestPurgeAttachmentTrashItems(
+  input: AdminTrashDbActionInput,
+): Promise<AdminTrashDbActionResult> {
   const trashItemIds = normalizeIds(input.trashItemIds);
   if (trashItemIds.length === 0) return { requestedCount: 0, affectedCount: 0 };
 
@@ -200,25 +204,59 @@ function formatBytes(bytes: number): string {
   return `${bytes}B`;
 }
 
-function getFileIcon(mimeType: string | null | undefined, fileName: string): string {
-  if (mimeType?.includes("pdf") || fileName.toLowerCase().endsWith(".pdf")) return "PDF";
+function getFileIcon(
+  mimeType: string | null | undefined,
+  fileName: string,
+): string {
+  if (mimeType?.includes("pdf") || fileName.toLowerCase().endsWith(".pdf"))
+    return "PDF";
   if (mimeType?.startsWith("image/")) return "IMG";
   return "FILE";
 }
 
-function getFileType(mimeType: string | null | undefined, fileName = ""): string {
+function getFileType(
+  mimeType: string | null | undefined,
+  fileName = "",
+): string {
   const lowerName = fileName.toLowerCase();
-  const extension = lowerName.includes(".") ? lowerName.split(".").pop() ?? "" : "";
-  if (mimeType?.includes("pdf") || extension === "pdf" || ["doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "hwp"].includes(extension)) return "문서";
-  if (mimeType?.startsWith("image/") || ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "heic", "heif", "ai", "psd"].includes(extension)) return "디자인";
+  const extension = lowerName.includes(".")
+    ? (lowerName.split(".").pop() ?? "")
+    : "";
+  if (
+    mimeType?.includes("pdf") ||
+    extension === "pdf" ||
+    ["doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "hwp"].includes(
+      extension,
+    )
+  )
+    return "문서";
+  if (
+    mimeType?.startsWith("image/") ||
+    [
+      "jpg",
+      "jpeg",
+      "png",
+      "gif",
+      "webp",
+      "bmp",
+      "svg",
+      "heic",
+      "heif",
+      "ai",
+      "psd",
+    ].includes(extension)
+  )
+    return "디자인";
   return "문서";
 }
 
 function getWorkOrderStatusLabel(status: string | null | undefined): string {
   if (status === "draft") return "작성중";
   if (status === "review_requested") return "검토요청";
-  if (status === "review_completed" || status === "review_approved") return "검토완료";
-  if (status === "request_order" || status === "order_requested") return "발주요청";
+  if (status === "review_completed" || status === "review_approved")
+    return "검토완료";
+  if (status === "request_order" || status === "order_requested")
+    return "발주요청";
   if (status === "order_pending") return "발주대기";
   if (status === "inspection" || status === "in_inspection") return "검수";
   if (status === "inspection_pending") return "검수대기";
@@ -231,18 +269,29 @@ function getWorkOrderStatusLabel(status: string | null | undefined): string {
   return status || "상태 없음";
 }
 
-function getTrashRestorePolicy(input: { parentWorkOrderDeleted: boolean; deleteReason: string | null | undefined }): "file_unit" | "parent_deleted_restore_blocked" | "bundle_required" {
+function getTrashRestorePolicy(input: {
+  parentWorkOrderDeleted: boolean;
+  deleteReason: string | null | undefined;
+}): "file_unit" | "parent_deleted_restore_blocked" | "bundle_required" {
   if (!input.parentWorkOrderDeleted) return "file_unit";
-  return input.deleteReason === WORKORDER_BUNDLE_DELETE_REASON ? "bundle_required" : "parent_deleted_restore_blocked";
+  return input.deleteReason === WORKORDER_BUNDLE_DELETE_REASON
+    ? "bundle_required"
+    : "parent_deleted_restore_blocked";
 }
 
-function getTrashRestorePolicyLabel(policy: "file_unit" | "parent_deleted_restore_blocked" | "bundle_required"): string {
+function getTrashRestorePolicyLabel(
+  policy: "file_unit" | "parent_deleted_restore_blocked" | "bundle_required",
+): string {
   if (policy === "bundle_required") return "묶음 처리 필요";
-  if (policy === "parent_deleted_restore_blocked") return "작업지시서 삭제로 복원 불가";
+  if (policy === "parent_deleted_restore_blocked")
+    return "작업지시서 삭제로 복원 불가";
   return "파일 단위 처리 가능";
 }
 
-function getPurgeStatusLabel(status: string | null | undefined, errorMessage: string | null | undefined): string {
+function getPurgeStatusLabel(
+  status: string | null | undefined,
+  errorMessage: string | null | undefined,
+): string {
   if (status === "purge_requested") return "영구삭제 요청";
   if (status === "purged") return "삭제 완료";
   if (status === "restored") return "복구 완료";
@@ -265,7 +314,9 @@ function getRestoreDaysLeft(value: string | Date | null | undefined): number {
 }
 
 export async function listAdminFileManagementRows(trashRetentionDays = 30) {
-  const safeTrashRetentionDays = [1, 5, 15, 30].includes(trashRetentionDays) ? trashRetentionDays : 30;
+  const safeTrashRetentionDays = [1, 5, 15, 30].includes(trashRetentionDays)
+    ? trashRetentionDays
+    : 30;
   const [attachmentsResult, trashResult, workOrdersResult] = await Promise.all([
     queryDb<AdminAttachmentRow>(
       `SELECT a.id,
@@ -363,7 +414,10 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
     const sizeBytes = toNumber(row.size_bytes);
     const restoreDaysLeft = getRestoreDaysLeft(row.purge_after_at);
     const parentWorkOrderDeleted = Boolean(row.parent_workorder_deleted);
-    const restorePolicy = getTrashRestorePolicy({ parentWorkOrderDeleted, deleteReason: row.delete_reason });
+    const restorePolicy = getTrashRestorePolicy({
+      parentWorkOrderDeleted,
+      deleteReason: row.delete_reason,
+    });
     const restorePolicyLabel = getTrashRestorePolicyLabel(restorePolicy);
     const isPending = (row.purge_status ?? "pending") === "pending";
     return {
@@ -381,17 +435,47 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
       restoreDaysLeft,
       restoreLabel: `D-${restoreDaysLeft}`,
       deleteReason: row.delete_reason || "삭제 사유 없음",
-      purgeStatus: (row.last_purge_error ? "failed" : row.purge_status || "pending") as "pending" | "purge_requested" | "purged" | "failed" | "restored",
-      purgeStatusLabel: getPurgeStatusLabel(row.purge_status, row.last_purge_error),
+      purgeStatus: (row.last_purge_error
+        ? "failed"
+        : row.purge_status || "pending") as
+        | "pending"
+        | "purge_requested"
+        | "purged"
+        | "failed"
+        | "restored",
+      purgeStatusLabel: getPurgeStatusLabel(
+        row.purge_status,
+        row.last_purge_error,
+      ),
       isPurgeReady: isPurgeReady(row.purge_after_at),
       lastPurgeError: row.last_purge_error,
       parentWorkOrderDeleted,
       restorePolicy,
       restorePolicyLabel,
-      canRestore: restorePolicy === "file_unit" && !row.last_purge_error && isPending,
-      restoreDisabledReason: restorePolicy === "bundle_required" ? "작업지시서 삭제와 함께 휴지통으로 이동한 파일은 작업지시서 묶음 복원에서 처리해야 합니다." : restorePolicy === "parent_deleted_restore_blocked" ? "부모 작업지시서가 삭제 상태라 파일만 복원할 수 없습니다." : row.last_purge_error ? "삭제 실패 상태는 시스템관리자 확인 후 처리해야 합니다." : !isPending ? "복구 가능 상태가 아닙니다." : null,
-      canPurge: restorePolicy !== "bundle_required" && !row.last_purge_error && isPending,
-      purgeDisabledReason: restorePolicy === "bundle_required" ? "작업지시서 삭제와 함께 휴지통으로 이동한 파일은 작업지시서 묶음 삭제/purge에서 함께 처리해야 합니다." : row.last_purge_error ? "삭제 실패 상태는 시스템관리자 확인 후 처리해야 합니다." : !isPending ? "영구삭제 요청 가능 상태가 아닙니다." : null,
+      canRestore:
+        restorePolicy === "file_unit" && !row.last_purge_error && isPending,
+      restoreDisabledReason:
+        restorePolicy === "bundle_required"
+          ? "작업지시서 삭제와 함께 휴지통으로 이동한 파일은 작업지시서 묶음 복원에서 처리해야 합니다."
+          : restorePolicy === "parent_deleted_restore_blocked"
+            ? "부모 작업지시서가 삭제 상태라 파일만 복원할 수 없습니다."
+            : row.last_purge_error
+              ? "삭제 실패 상태는 시스템관리자 확인 후 처리해야 합니다."
+              : !isPending
+                ? "복구 가능 상태가 아닙니다."
+                : null,
+      canPurge:
+        restorePolicy !== "bundle_required" &&
+        !row.last_purge_error &&
+        isPending,
+      purgeDisabledReason:
+        restorePolicy === "bundle_required"
+          ? "작업지시서 삭제와 함께 휴지통으로 이동한 파일은 작업지시서 묶음 삭제/purge에서 함께 처리해야 합니다."
+          : row.last_purge_error
+            ? "삭제 실패 상태는 시스템관리자 확인 후 처리해야 합니다."
+            : !isPending
+              ? "영구삭제 요청 가능 상태가 아닙니다."
+              : null,
     };
   });
 
@@ -413,8 +497,8 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
       memoCount,
       trashMemoCount,
       restorePolicyLabel: "묶음 복원 준비중",
-      attachmentSummaryLabel: `연결 첨부 ${attachmentCount + trashAttachmentCount}개 · 묶음 처리 ${trashAttachmentCount}개`,
-      memoSummaryLabel: `연결 메모 ${memoCount + trashMemoCount}개 · 묶음 처리 ${trashMemoCount}개`,
+      attachmentSummaryLabel: `첨부 ${attachmentCount + trashAttachmentCount}개`,
+      memoSummaryLabel: `메모 ${memoCount + trashMemoCount}개`,
     };
   });
 
@@ -437,9 +521,14 @@ export type AdminPurgeCandidate = {
   purgeAfterAt: string;
 };
 
-export async function listPurgeReadyAttachmentTrashItems(limit = 50, trashRetentionDays = 30): Promise<AdminPurgeCandidate[]> {
+export async function listPurgeReadyAttachmentTrashItems(
+  limit = 50,
+  trashRetentionDays = 30,
+): Promise<AdminPurgeCandidate[]> {
   const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 200);
-  const safeTrashRetentionDays = [1, 5, 15, 30].includes(trashRetentionDays) ? trashRetentionDays : 30;
+  const safeTrashRetentionDays = [1, 5, 15, 30].includes(trashRetentionDays)
+    ? trashRetentionDays
+    : 30;
   const result = await queryDb<PurgeCandidateRow>(
     `SELECT t.id,
             t.attachment_id,
@@ -473,7 +562,9 @@ export async function listPurgeReadyAttachmentTrashItems(limit = 50, trashRetent
   }));
 }
 
-export async function markAttachmentTrashItemsPurged(input: AdminTrashDbActionInput): Promise<AdminTrashDbActionResult> {
+export async function markAttachmentTrashItemsPurged(
+  input: AdminTrashDbActionInput,
+): Promise<AdminTrashDbActionResult> {
   const trashItemIds = normalizeIds(input.trashItemIds);
   if (trashItemIds.length === 0) return { requestedCount: 0, affectedCount: 0 };
 
@@ -513,9 +604,13 @@ export async function markAttachmentTrashItemsPurged(input: AdminTrashDbActionIn
   };
 }
 
-export async function markAttachmentTrashItemsPurgedByAttachmentIds(input: { attachmentIds: string[]; actorId?: string | null }): Promise<AdminTrashDbActionResult> {
+export async function markAttachmentTrashItemsPurgedByAttachmentIds(input: {
+  attachmentIds: string[];
+  actorId?: string | null;
+}): Promise<AdminTrashDbActionResult> {
   const attachmentIds = normalizeIds(input.attachmentIds);
-  if (attachmentIds.length === 0) return { requestedCount: 0, affectedCount: 0 };
+  if (attachmentIds.length === 0)
+    return { requestedCount: 0, affectedCount: 0 };
 
   const result = await queryDb<CountRow>(
     `WITH target_trash AS (
@@ -553,7 +648,10 @@ export async function markAttachmentTrashItemsPurgedByAttachmentIds(input: { att
   };
 }
 
-export async function markAttachmentTrashItemPurgeFailed(input: { trashItemId: string; errorMessage: string }): Promise<void> {
+export async function markAttachmentTrashItemPurgeFailed(input: {
+  trashItemId: string;
+  errorMessage: string;
+}): Promise<void> {
   const trashItemId = input.trashItemId.trim();
   if (!trashItemId) return;
 
@@ -583,11 +681,17 @@ export type AdminWorkOrderTrashActionResult = {
   workOrderId: string | null;
   requestedCount: number;
   affectedCount: number;
-  reason: "WORKORDER_ACTION_NOT_CONNECTED" | "WORKORDER_ID_REQUIRED" | "WORKORDER_NOT_FOUND" | "OK";
+  reason:
+    | "WORKORDER_ACTION_NOT_CONNECTED"
+    | "WORKORDER_ID_REQUIRED"
+    | "WORKORDER_NOT_FOUND"
+    | "OK";
   message: string;
 };
 
-function normalizeWorkOrderTrashActionInput(input: AdminWorkOrderTrashActionInput): string | null {
+function normalizeWorkOrderTrashActionInput(
+  input: AdminWorkOrderTrashActionInput,
+): string | null {
   const workOrderId = input.workOrderId.trim();
   return workOrderId.length > 0 ? workOrderId : null;
 }
@@ -604,7 +708,8 @@ function createWorkOrderTrashActionSkeletonResult(input: {
       requestedCount: 0,
       affectedCount: 0,
       reason: "WORKORDER_ID_REQUIRED",
-      message: "작업지시서 ID가 없어 작업지시서 단위 처리를 실행할 수 없습니다.",
+      message:
+        "작업지시서 ID가 없어 작업지시서 단위 처리를 실행할 수 없습니다.",
     };
   }
 
@@ -622,13 +727,24 @@ function createWorkOrderTrashActionSkeletonResult(input: {
   };
 }
 
-export async function restoreWorkOrderTrashBundle(input: AdminWorkOrderTrashActionInput): Promise<AdminWorkOrderTrashActionResult> {
+export async function restoreWorkOrderTrashBundle(
+  input: AdminWorkOrderTrashActionInput,
+): Promise<AdminWorkOrderTrashActionResult> {
   const workOrderId = normalizeWorkOrderTrashActionInput(input);
   if (!workOrderId) {
-    return createWorkOrderTrashActionSkeletonResult({ action: "restore", workOrderId });
+    return createWorkOrderTrashActionSkeletonResult({
+      action: "restore",
+      workOrderId,
+    });
   }
 
-  const result = await queryDb<CountRow & { attachment_count: string | number; trash_count: string | number; memo_count: string | number }>(
+  const result = await queryDb<
+    CountRow & {
+      attachment_count: string | number;
+      trash_count: string | number;
+      memo_count: string | number;
+    }
+  >(
     `WITH target_workorder AS (
        SELECT id, deleted_at
          FROM spec_sheets
@@ -712,11 +828,15 @@ export async function restoreWorkOrderTrashBundle(input: AdminWorkOrderTrashActi
   };
 }
 
-export async function previewRestoreWorkOrderTrashBundle(input: AdminWorkOrderTrashActionInput): Promise<AdminWorkOrderTrashActionResult> {
+export async function previewRestoreWorkOrderTrashBundle(
+  input: AdminWorkOrderTrashActionInput,
+): Promise<AdminWorkOrderTrashActionResult> {
   return restoreWorkOrderTrashBundle(input);
 }
 
-export async function previewPurgeWorkOrderTrashBundle(input: AdminWorkOrderTrashActionInput): Promise<AdminWorkOrderTrashActionResult> {
+export async function previewPurgeWorkOrderTrashBundle(
+  input: AdminWorkOrderTrashActionInput,
+): Promise<AdminWorkOrderTrashActionResult> {
   return createWorkOrderTrashActionSkeletonResult({
     action: "purge",
     workOrderId: normalizeWorkOrderTrashActionInput(input),

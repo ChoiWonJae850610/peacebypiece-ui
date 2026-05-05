@@ -4,7 +4,10 @@ import { useMemo, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import AdminActionBar from "@/components/admin/common/AdminActionBar";
 import AdminTable from "@/components/admin/common/AdminTable";
-import type { AdminStorageWorkOrderItem, AdminTrashFileItem } from "@/lib/admin/files/types";
+import type {
+  AdminStorageWorkOrderItem,
+  AdminTrashFileItem,
+} from "@/lib/admin/files/types";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type FileTrashSectionProps = {
@@ -71,33 +74,56 @@ type UnifiedTrashRow =
       sourceItem: AdminTrashFileItem;
     };
 
-const TRASH_TABLE_GRID = "0.34fr 1.24fr 0.82fr 1.12fr 0.58fr 0.56fr 1.05fr 1.08fr";
+const TRASH_TABLE_GRID =
+  "0.34fr 1.24fr 0.82fr 1.12fr 0.58fr 0.56fr 1.05fr 1.08fr";
 
-function getTrashFileType(item: AdminTrashFileItem, t: ReturnType<typeof useAdminTranslation>) {
+function getTrashFileType(
+  item: AdminTrashFileItem,
+  t: ReturnType<typeof useAdminTranslation>,
+) {
   if (item.fileIcon === "PDF") return t("filesList.fileTypes.document", "문서");
   if (item.fileIcon === "IMG") return t("filesList.fileTypes.design", "디자인");
   return t("filesList.fileTypes.other", "기타");
 }
 
 function getRestorePolicyBadgeClass(row: UnifiedTrashRow): string {
-  if (row.restorePolicy === "workorder_bundle") return "border-stone-300 bg-stone-100 text-stone-700";
-  if (row.restorePolicy === "bundle_required") return "border-amber-200 bg-amber-50 text-amber-700";
-  if (row.restorePolicy === "parent_deleted_restore_blocked") return "border-rose-200 bg-rose-50 text-rose-700";
+  if (row.restorePolicy === "workorder_bundle")
+    return "border-stone-300 bg-stone-100 text-stone-700";
+  if (row.restorePolicy === "bundle_required")
+    return "border-amber-200 bg-amber-50 text-amber-700";
+  if (row.restorePolicy === "parent_deleted_restore_blocked")
+    return "border-rose-200 bg-rose-50 text-rose-700";
   return "border-stone-200 bg-stone-50 text-stone-600";
 }
 
-function formatStorageSize(bytes: number, t: ReturnType<typeof useAdminTranslation>): string {
-  if (!Number.isFinite(bytes) || bytes <= 0) return `0${t("filesList.sizeUnit.mb", "MB")}`;
-  if (bytes >= 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024 / 1024).toFixed(1)}${t("filesList.sizeUnit.gb", "GB")}`;
-  if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)}${t("filesList.sizeUnit.mb", "MB")}`;
-  if (bytes >= 1024) return `${Math.ceil(bytes / 1024)}${t("filesList.sizeUnit.kb", "KB")}`;
+function formatStorageSize(
+  bytes: number,
+  t: ReturnType<typeof useAdminTranslation>,
+): string {
+  if (!Number.isFinite(bytes) || bytes <= 0)
+    return `0${t("filesList.sizeUnit.mb", "MB")}`;
+  if (bytes >= 1024 * 1024 * 1024)
+    return `${(bytes / 1024 / 1024 / 1024).toFixed(1)}${t("filesList.sizeUnit.gb", "GB")}`;
+  if (bytes >= 1024 * 1024)
+    return `${(bytes / 1024 / 1024).toFixed(1)}${t("filesList.sizeUnit.mb", "MB")}`;
+  if (bytes >= 1024)
+    return `${Math.ceil(bytes / 1024)}${t("filesList.sizeUnit.kb", "KB")}`;
   return `${bytes}${t("filesList.sizeUnit.byte", "B")}`;
 }
 
-function sortByDeletedAtDesc<T extends { deletedAt: string | null; targetLabel?: string; fileName?: string }>(a: T, b: T): number {
+function sortByDeletedAtDesc<
+  T extends {
+    deletedAt: string | null;
+    targetLabel?: string;
+    fileName?: string;
+  },
+>(a: T, b: T): number {
   const deletedAtCompare = (b.deletedAt || "").localeCompare(a.deletedAt || "");
   if (deletedAtCompare !== 0) return deletedAtCompare;
-  return (a.targetLabel || a.fileName || "").localeCompare(b.targetLabel || b.fileName || "", "ko");
+  return (a.targetLabel || a.fileName || "").localeCompare(
+    b.targetLabel || b.fileName || "",
+    "ko",
+  );
 }
 
 function createUnifiedRows(input: {
@@ -107,10 +133,13 @@ function createUnifiedRows(input: {
   selectedWorkOrderIds: string[];
   t: ReturnType<typeof useAdminTranslation>;
 }): UnifiedTrashRow[] {
-  const { items, workOrderItems, selectedItemIds, selectedWorkOrderIds, t } = input;
+  const { items, workOrderItems, selectedItemIds, selectedWorkOrderIds, t } =
+    input;
   const workOrderIdSet = new Set(workOrderItems.map((item) => item.id));
 
-  const createWorkOrderRow = (item: AdminStorageWorkOrderItem): UnifiedTrashRow => ({
+  const createWorkOrderRow = (
+    item: AdminStorageWorkOrderItem,
+  ): UnifiedTrashRow => ({
     kind: "workorder",
     id: item.id,
     rowId: `workorder:${item.id}`,
@@ -119,18 +148,30 @@ function createUnifiedRows(input: {
     workorderTitle: item.title,
     typeLabel: t("filesList.types.workorder", "작업지시서"),
     sizeLabel: "-",
-    restorePolicyLabel: t("filesList.restorePolicies.workorderBundle", "작업지시서 단위 처리"),
+    restorePolicyLabel: t(
+      "filesList.restorePolicies.workorderBundle",
+      "작업지시서 단위 처리",
+    ),
     restorePolicy: "workorder_bundle",
     canRestore: false,
     canPurge: false,
-    restoreDisabledReason: t("filesList.workorderRestorePreparing", "작업지시서 복원은 다음 단계에서 연결합니다."),
-    purgeDisabledReason: t("filesList.workorderPurgePreparing", "작업지시서 영구삭제는 다음 단계에서 연결합니다."),
+    restoreDisabledReason: t(
+      "filesList.workorderRestorePreparing",
+      "작업지시서 복원은 다음 단계에서 연결합니다.",
+    ),
+    purgeDisabledReason: t(
+      "filesList.workorderPurgePreparing",
+      "작업지시서 영구삭제는 다음 단계에서 연결합니다.",
+    ),
     isSelected: selectedWorkOrderIds.includes(item.id),
     isGroupedAttachment: false,
     sourceItem: item,
   });
 
-  const createAttachmentRow = (item: AdminTrashFileItem, isGroupedAttachment: boolean): UnifiedTrashRow => ({
+  const createAttachmentRow = (
+    item: AdminTrashFileItem,
+    isGroupedAttachment: boolean,
+  ): UnifiedTrashRow => ({
     kind: "attachment",
     id: item.id,
     rowId: `attachment:${item.id}`,
@@ -157,7 +198,10 @@ function createUnifiedRows(input: {
     rows.push(createWorkOrderRow(workOrder));
 
     items
-      .filter((item) => item.workorderId === workOrder.id && item.parentWorkOrderDeleted)
+      .filter(
+        (item) =>
+          item.workorderId === workOrder.id && item.parentWorkOrderDeleted,
+      )
       .sort(sortByDeletedAtDesc)
       .forEach((item) => {
         groupedAttachmentIds.add(item.id);
@@ -168,7 +212,9 @@ function createUnifiedRows(input: {
   items
     .filter((item) => !groupedAttachmentIds.has(item.id))
     .sort((a, b) => {
-      if (workOrderIdSet.has(a.workorderId) !== workOrderIdSet.has(b.workorderId)) {
+      if (
+        workOrderIdSet.has(a.workorderId) !== workOrderIdSet.has(b.workorderId)
+      ) {
         return workOrderIdSet.has(a.workorderId) ? -1 : 1;
       }
       return sortByDeletedAtDesc(a, b);
@@ -195,110 +241,137 @@ export default function FileTrashSection({
   isWorkOrderActionPending = false,
 }: FileTrashSectionProps) {
   const t = useAdminTranslation();
-  const rows = useMemo(() => createUnifiedRows({ items, workOrderItems, selectedItemIds, selectedWorkOrderIds, t }), [items, workOrderItems, selectedItemIds, selectedWorkOrderIds, t]);
-  const [workOrderActionPreview, setWorkOrderActionPreview] = useState<WorkOrderActionPreview | null>(null);
-  const previewWorkOrder = useMemo(() => workOrderItems.find((item) => item.id === workOrderActionPreview?.workOrderId) ?? null, [workOrderActionPreview?.workOrderId, workOrderItems]);
+  const rows = useMemo(
+    () =>
+      createUnifiedRows({
+        items,
+        workOrderItems,
+        selectedItemIds,
+        selectedWorkOrderIds,
+        t,
+      }),
+    [items, workOrderItems, selectedItemIds, selectedWorkOrderIds, t],
+  );
+  const [workOrderActionPreview, setWorkOrderActionPreview] =
+    useState<WorkOrderActionPreview | null>(null);
+  const previewWorkOrder = useMemo(
+    () =>
+      workOrderItems.find(
+        (item) => item.id === workOrderActionPreview?.workOrderId,
+      ) ?? null,
+    [workOrderActionPreview?.workOrderId, workOrderItems],
+  );
   const previewWorkOrderTrashItems = useMemo(() => {
     if (!workOrderActionPreview?.workOrderId) return [];
-    return items.filter((item) => item.workorderId === workOrderActionPreview.workOrderId && item.parentWorkOrderDeleted);
+    return items.filter(
+      (item) =>
+        item.workorderId === workOrderActionPreview.workOrderId &&
+        item.parentWorkOrderDeleted,
+    );
   }, [items, workOrderActionPreview?.workOrderId]);
-  const previewWorkOrderBundleCount = previewWorkOrderTrashItems.filter((item) => item.restorePolicy === "bundle_required").length;
-  const previewWorkOrderBlockedCount = previewWorkOrderTrashItems.filter((item) => item.restorePolicy === "parent_deleted_restore_blocked").length;
+  const previewWorkOrderBundleCount = previewWorkOrderTrashItems.filter(
+    (item) => item.restorePolicy === "bundle_required",
+  ).length;
+  const previewWorkOrderBlockedCount = previewWorkOrderTrashItems.filter(
+    (item) => item.restorePolicy === "parent_deleted_restore_blocked",
+  ).length;
   const previewWorkOrderTotalSizeLabel = formatStorageSize(
-    previewWorkOrderTrashItems.reduce((sum, item) => sum + item.fileSizeBytes, 0),
+    previewWorkOrderTrashItems.reduce(
+      (sum, item) => sum + item.fileSizeBytes,
+      0,
+    ),
     t,
   );
 
-  function openWorkOrderActionPreview(workOrderId: string, intent: WorkOrderActionIntent) {
+  function openWorkOrderActionPreview(
+    workOrderId: string,
+    intent: WorkOrderActionIntent,
+  ) {
     setWorkOrderActionPreview({ workOrderId, intent });
   }
 
-  const selectableItems = items.filter((item) => !item.parentWorkOrderDeleted);
-  const hasSelection = selectedItemIds.length > 0;
-  const hasWorkOrderSelection = selectedWorkOrderIds.length > 0;
-  const selectedItems = items.filter((item) => selectedItemIds.includes(item.id));
-  const hasRestoreBlockedSelection = selectedItems.some((item) => !item.canRestore);
-  const hasPurgeBlockedSelection = selectedItems.some((item) => !item.canPurge);
-  const canAct = hasSelection && !isActionPending;
-  const canRestoreSelection = canAct && !hasRestoreBlockedSelection;
-  const canPurgeSelection = canAct && !hasPurgeBlockedSelection;
-  const allSelected = selectableItems.length > 0 && selectedItemIds.length === selectableItems.length;
-  const policySummary = useMemo(() => {
-    const fileUnitCount = items.filter((item) => item.restorePolicy === "file_unit").length;
-    const parentBlockedCount = items.filter((item) => item.restorePolicy === "parent_deleted_restore_blocked").length;
-    const bundleRequiredCount = items.filter((item) => item.restorePolicy === "bundle_required").length;
-
-    return [
-      {
-        label: t("filesList.policySummary.fileUnit", "파일 단위"),
-        value: `${fileUnitCount}${t("filesList.countSuffix", "개")}`,
-        description: t("filesList.policySummary.fileUnitDescription", "복구와 영구삭제를 파일별로 처리합니다."),
-      },
-      {
-        label: t("filesList.policySummary.parentBlocked", "복원 불가"),
-        value: `${parentBlockedCount}${t("filesList.countSuffix", "개")}`,
-        description: t("filesList.policySummary.parentBlockedDescription", "부모 작업지시서가 삭제되어 복구는 막고 영구삭제만 허용합니다."),
-      },
-      {
-        label: t("filesList.policySummary.bundleRequired", "묶음 처리"),
-        value: `${bundleRequiredCount}${t("filesList.countSuffix", "개")}`,
-        description: t("filesList.policySummary.bundleRequiredDescription", "작업지시서 대표 row에서 복원/삭제해야 하는 파일입니다."),
-      },
-    ];
-  }, [items, t]);
+  const selectableItems = items.filter(
+    (item) => item.restorePolicy !== "bundle_required",
+  );
+  const selectableWorkOrderIds = workOrderItems.map((item) => item.id);
+  const selectedItems = items.filter((item) =>
+    selectedItemIds.includes(item.id),
+  );
+  const hasSelection =
+    selectedItemIds.length > 0 || selectedWorkOrderIds.length > 0;
+  const restoreEligibleItemCount = selectedItems.filter(
+    (item) => item.canRestore,
+  ).length;
+  const purgeEligibleItemCount = selectedItems.filter(
+    (item) => item.canPurge,
+  ).length;
+  const canAct = hasSelection && !isActionPending && !isWorkOrderActionPending;
+  const canRestoreSelection =
+    canAct && selectedWorkOrderIds.length + restoreEligibleItemCount > 0;
+  const canPurgeSelection =
+    canAct && selectedWorkOrderIds.length + purgeEligibleItemCount > 0;
+  const selectedCount = selectedItemIds.length + selectedWorkOrderIds.length;
+  const selectableCount =
+    selectableItems.length + selectableWorkOrderIds.length;
+  const allSelected =
+    selectableCount > 0 &&
+    selectedItemIds.length === selectableItems.length &&
+    selectedWorkOrderIds.length === selectableWorkOrderIds.length;
 
   return (
     <section className="flex h-full min-h-[420px] flex-col rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm">
-      <AdminActionBar
-        title={t("trashPage.title", "휴지통")}
-        description={t("trashPage.description", "삭제된 항목의 처리 단위를 먼저 확인한 뒤 복구 또는 영구삭제를 진행합니다. 작업지시서 묶음 항목은 대표 row에서만 처리합니다.")}
-      >
-        <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-600">
-          {t("filesList.retentionPolicy", "30일 휴지통 보관")}
-        </span>
+      <AdminActionBar title={t("trashPage.title", "휴지통")}>
         <button
           type="button"
-          onClick={() => selectedWorkOrderIds[0] ? onRestoreWorkOrder?.(selectedWorkOrderIds[0]) : undefined}
-          disabled={isWorkOrderActionPending || selectedWorkOrderIds.length !== 1}
+          onClick={onToggleAll}
+          disabled={
+            isActionPending || isWorkOrderActionPending || selectableCount === 0
+          }
           className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm hover:bg-stone-50 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-400"
-          title={selectedWorkOrderIds.length > 1 ? t("filesList.restoreOneWorkOrderAtATime", "작업지시서 복구는 한 건씩 처리합니다.") : undefined}
         >
-          {isWorkOrderActionPending ? t("filesList.processing", "처리 중") : t("filesList.restoreSelectedWorkOrder", "선택 작업지시서 복구")} {hasWorkOrderSelection ? selectedWorkOrderIds.length : ""}
-        </button>
-        <button type="button" onClick={onToggleAll} disabled={isActionPending || selectableItems.length === 0} className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm hover:bg-stone-50 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-400">
-          {allSelected ? t("filesList.clearAll", "전체 해제") : t("filesList.selectAll", "파일 선택")}
+          {allSelected
+            ? t("filesList.clearAll", "전체 해제")
+            : t("filesList.selectAll", "전체 선택")}
         </button>
         <button
           type="button"
           onClick={onRestore}
           className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${canRestoreSelection ? "border-stone-300 bg-white text-stone-700 shadow-sm hover:bg-stone-50" : "border-stone-200 bg-stone-50 text-stone-400"}`}
           disabled={!canRestoreSelection}
-          title={hasRestoreBlockedSelection ? selectedItems.find((item) => !item.canRestore)?.restoreDisabledReason ?? t("filesList.restoreBlockedByWorkOrder", "선택한 파일 중 복구할 수 없는 항목이 있습니다.") : undefined}
+          title={
+            selectedItems.some((item) => !item.canRestore)
+              ? t(
+                  "filesList.restoreSkipsBlockedItems",
+                  "복구할 수 없는 선택 항목은 제외하고 처리합니다.",
+                )
+              : undefined
+          }
         >
-          {isActionPending ? t("filesList.processing", "처리 중") : t("filesList.restore", "복구")} {hasSelection ? selectedItemIds.length : ""}
+          {isActionPending || isWorkOrderActionPending
+            ? t("filesList.processing", "처리 중")
+            : t("filesList.restore", "복구")}{" "}
+          {selectedCount > 0 ? selectedCount : ""}
         </button>
         <button
           type="button"
           onClick={onPurge}
           className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${canPurgeSelection ? "border-red-200 bg-white text-red-600 shadow-sm hover:bg-red-50" : "border-stone-200 bg-stone-50 text-stone-400"}`}
           disabled={!canPurgeSelection}
-          title={hasPurgeBlockedSelection ? selectedItems.find((item) => !item.canPurge)?.purgeDisabledReason ?? t("filesList.purgeBlockedByWorkOrder", "선택한 파일 중 영구삭제할 수 없는 항목이 있습니다.") : undefined}
+          title={
+            selectedItems.some((item) => !item.canPurge)
+              ? t(
+                  "filesList.purgeSkipsBlockedItems",
+                  "영구삭제할 수 없는 선택 항목은 제외하고 처리합니다.",
+                )
+              : undefined
+          }
         >
-          {isActionPending ? t("filesList.processing", "처리 중") : t("filesList.purge", "영구 삭제")} {hasSelection ? selectedItemIds.length : ""}
+          {isActionPending || isWorkOrderActionPending
+            ? t("filesList.processing", "처리 중")
+            : t("filesList.purge", "영구 삭제")}{" "}
+          {selectedCount > 0 ? selectedCount : ""}
         </button>
       </AdminActionBar>
-
-      <div className="mt-3 grid gap-2 md:grid-cols-3">
-        {policySummary.map((item) => (
-          <div key={item.label} className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2">
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-[11px] font-semibold text-stone-600">{item.label}</p>
-              <p className="text-xs font-bold text-stone-900">{item.value}</p>
-            </div>
-            <p className="mt-1 text-[10px] leading-4 text-stone-500">{item.description}</p>
-          </div>
-        ))}
-      </div>
 
       <ModalShell
         open={Boolean(workOrderActionPreview && previewWorkOrder)}
@@ -308,7 +381,11 @@ export default function FileTrashSection({
             ? t("filesList.workorderPurgePreview", "영구삭제 범위 확인")
             : t("filesList.workorderRestorePreview", "복원 범위 확인")
         }
-        description={previewWorkOrder ? `${previewWorkOrder.title} · ${previewWorkOrder.statusLabel}` : undefined}
+        description={
+          previewWorkOrder
+            ? `${previewWorkOrder.title} · ${previewWorkOrder.statusLabel}`
+            : undefined
+        }
         maxWidthClass="md:max-w-2xl"
         footer={
           <div className="flex w-full flex-wrap justify-end gap-2">
@@ -321,15 +398,29 @@ export default function FileTrashSection({
             </button>
             <button
               type="button"
-              disabled={isWorkOrderActionPending || !previewWorkOrder || workOrderActionPreview?.intent === "purge"}
+              disabled={
+                isWorkOrderActionPending ||
+                !previewWorkOrder ||
+                workOrderActionPreview?.intent === "purge"
+              }
               onClick={() => {
-                if (previewWorkOrder && workOrderActionPreview?.intent === "restore") {
+                if (
+                  previewWorkOrder &&
+                  workOrderActionPreview?.intent === "restore"
+                ) {
                   onRestoreWorkOrder?.(previewWorkOrder.id);
                   setWorkOrderActionPreview(null);
                 }
               }}
               className={`rounded-full border px-4 py-2 text-xs font-semibold ${workOrderActionPreview?.intent === "restore" ? "border-stone-900 bg-stone-900 text-white shadow-sm hover:bg-stone-800 disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-400" : "border-stone-200 bg-stone-50 text-stone-400"}`}
-              title={workOrderActionPreview?.intent === "purge" ? t("filesList.workorderPurgeApiPreparing", "작업지시서 영구삭제 API는 아직 연결하지 않았습니다.") : undefined}
+              title={
+                workOrderActionPreview?.intent === "purge"
+                  ? t(
+                      "filesList.workorderPurgeApiPreparing",
+                      "작업지시서 영구삭제 API는 아직 연결하지 않았습니다.",
+                    )
+                  : undefined
+              }
             >
               {isWorkOrderActionPending
                 ? t("filesList.processing", "처리 중")
@@ -343,42 +434,87 @@ export default function FileTrashSection({
         {workOrderActionPreview && previewWorkOrder ? (
           <div className="space-y-4">
             <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
-              <p className="text-xs font-semibold text-stone-900">{previewWorkOrder.title}</p>
+              <p className="text-xs font-semibold text-stone-900">
+                {previewWorkOrder.title}
+              </p>
               <p className="mt-1 text-xs text-stone-500">
-                {previewWorkOrder.statusLabel} · {t("filesList.columns.deletedAt", "삭제일시")} {previewWorkOrder.deletedAt || "-"}
+                {previewWorkOrder.statusLabel} ·{" "}
+                {t("filesList.columns.deletedAt", "삭제일시")}{" "}
+                {previewWorkOrder.deletedAt || "-"}
               </p>
             </div>
 
             <div className="grid gap-2 md:grid-cols-4">
               <div className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2">
-                <p className="text-[10px] font-semibold text-stone-400">{t("filesList.selectedScope.workorder", "작업지시서")}</p>
-                <p className="mt-1 text-[11px] font-bold text-stone-800">{t("filesList.selectedScope.workorderValue", "대표 row 1건")}</p>
+                <p className="text-[10px] font-semibold text-stone-400">
+                  {t("filesList.selectedScope.workorder", "작업지시서")}
+                </p>
+                <p className="mt-1 text-[11px] font-bold text-stone-800">
+                  {t("filesList.selectedScope.workorderValue", "대표 row 1건")}
+                </p>
               </div>
               <div className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2">
-                <p className="text-[10px] font-semibold text-stone-400">{t("filesList.selectedScope.bundleAttachments", "묶음 처리 첨부")}</p>
-                <p className="mt-1 text-[11px] font-bold text-stone-800">{previewWorkOrderBundleCount}{t("filesList.countSuffix", "개")}</p>
+                <p className="text-[10px] font-semibold text-stone-400">
+                  {t(
+                    "filesList.selectedScope.bundleAttachments",
+                    "묶음 처리 첨부",
+                  )}
+                </p>
+                <p className="mt-1 text-[11px] font-bold text-stone-800">
+                  {previewWorkOrderBundleCount}
+                  {t("filesList.countSuffix", "개")}
+                </p>
               </div>
               <div className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2">
-                <p className="text-[10px] font-semibold text-stone-400">{t("filesList.selectedScope.restoreBlocked", "복원 불가 파일")}</p>
-                <p className="mt-1 text-[11px] font-bold text-stone-800">{previewWorkOrderBlockedCount}{t("filesList.countSuffix", "개")}</p>
+                <p className="text-[10px] font-semibold text-stone-400">
+                  {t(
+                    "filesList.selectedScope.restoreBlocked",
+                    "복원 불가 파일",
+                  )}
+                </p>
+                <p className="mt-1 text-[11px] font-bold text-stone-800">
+                  {previewWorkOrderBlockedCount}
+                  {t("filesList.countSuffix", "개")}
+                </p>
               </div>
               <div className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2">
-                <p className="text-[10px] font-semibold text-stone-400">{t("filesList.selectedScope.totalSize", "연결 파일 용량")}</p>
-                <p className="mt-1 text-[11px] font-bold text-stone-800">{previewWorkOrderTotalSizeLabel}</p>
+                <p className="text-[10px] font-semibold text-stone-400">
+                  {t("filesList.selectedScope.totalSize", "연결 파일 용량")}
+                </p>
+                <p className="mt-1 text-[11px] font-bold text-stone-800">
+                  {previewWorkOrderTotalSizeLabel}
+                </p>
               </div>
             </div>
 
             <div className="space-y-2 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800">
-              <p className="font-semibold">{t("filesList.workorderActionGuardTitle", "작업지시서 단위로 처리 범위를 확인합니다.")}</p>
+              <p className="font-semibold">
+                {t(
+                  "filesList.workorderActionGuardTitle",
+                  "작업지시서 단위로 처리 범위를 확인합니다.",
+                )}
+              </p>
               <p className="text-[11px] text-amber-700">
                 {workOrderActionPreview.intent === "restore"
-                  ? t("filesList.workorderRestoreConnectedNotice", "복구는 이번 단계에서 실제 DB 복원 API에 연결됩니다. 작업지시서 삭제와 함께 휴지통으로 이동한 첨부/메모만 함께 복구합니다.")
-                  : t("filesList.workorderActionSkeletonNotice", "영구삭제는 아직 실제 DB/R2 처리에 연결하지 않았습니다.")}
+                  ? t(
+                      "filesList.workorderRestoreConnectedNotice",
+                      "복구는 이번 단계에서 실제 DB 복원 API에 연결됩니다. 작업지시서 삭제와 함께 휴지통으로 이동한 첨부/메모만 함께 복구합니다.",
+                    )
+                  : t(
+                      "filesList.workorderActionSkeletonNotice",
+                      "영구삭제는 아직 실제 DB/R2 처리에 연결하지 않았습니다.",
+                    )}
               </p>
               <p>
                 {workOrderActionPreview.intent === "restore"
-                  ? t("filesList.workorderRestoreGuardDescription", "복원 연결 시 작업지시서와 작업지시서 삭제로 함께 휴지통 이동한 첨부/메모를 같은 트랜잭션에서 복원해야 합니다.")
-                  : t("filesList.workorderPurgeGuardDescription", "영구삭제 연결 시 작업지시서 대표 row와 묶음 처리 첨부/메모를 작업지시서 단위로 확정 처리하고, R2 삭제는 Worker 기반 purge 흐름만 사용해야 합니다.")}
+                  ? t(
+                      "filesList.workorderRestoreGuardDescription",
+                      "복원 연결 시 작업지시서와 작업지시서 삭제로 함께 휴지통 이동한 첨부/메모를 같은 트랜잭션에서 복원해야 합니다.",
+                    )
+                  : t(
+                      "filesList.workorderPurgeGuardDescription",
+                      "영구삭제 연결 시 작업지시서 대표 row와 묶음 처리 첨부/메모를 작업지시서 단위로 확정 처리하고, R2 삭제는 Worker 기반 purge 흐름만 사용해야 합니다.",
+                    )}
               </p>
             </div>
           </div>
@@ -389,13 +525,24 @@ export default function FileTrashSection({
         className="mt-3 min-h-0 flex-1"
         items={rows}
         getRowKey={(row) => row.rowId}
-        emptyLabel={t("filesList.trashEmpty", "휴지통에 보관 중인 항목이 없습니다.")}
+        emptyLabel={t(
+          "filesList.trashEmpty",
+          "휴지통에 보관 중인 항목이 없습니다.",
+        )}
         gridTemplateColumns={TRASH_TABLE_GRID}
         rowClassName={(row) => {
-          const previewWorkOrderId = workOrderActionPreview?.workOrderId ?? null;
-          if (row.kind === "workorder") return row.id === previewWorkOrderId || row.isSelected ? "bg-stone-100 ring-1 ring-inset ring-stone-300" : "bg-stone-50/90";
-          const isPreviewWorkOrderGroup = Boolean(previewWorkOrderId && row.sourceItem.workorderId === previewWorkOrderId);
-          if (row.isGroupedAttachment) return `border-l-4 ${isPreviewWorkOrderGroup ? "border-l-stone-400 bg-stone-100/70" : "border-l-stone-200"} transition ${row.isSelected ? "bg-stone-100" : "bg-stone-50/40 hover:bg-stone-50"}`;
+          const previewWorkOrderId =
+            workOrderActionPreview?.workOrderId ?? null;
+          if (row.kind === "workorder")
+            return row.id === previewWorkOrderId || row.isSelected
+              ? "bg-stone-100 ring-1 ring-inset ring-stone-300"
+              : "bg-stone-50/90";
+          const isPreviewWorkOrderGroup = Boolean(
+            previewWorkOrderId &&
+            row.sourceItem.workorderId === previewWorkOrderId,
+          );
+          if (row.isGroupedAttachment)
+            return `border-l-4 ${isPreviewWorkOrderGroup ? "border-l-stone-400 bg-stone-100/70" : "border-l-stone-200"} transition ${row.isSelected ? "bg-stone-100" : "bg-stone-50/40 hover:bg-stone-50"}`;
           return `transition ${row.isSelected ? "bg-stone-100" : "bg-white hover:bg-stone-50"}`;
         }}
         columns={[
@@ -409,19 +556,35 @@ export default function FileTrashSection({
                     type="button"
                     onClick={() => onToggleWorkOrder?.(row.id)}
                     className={`flex h-4 w-4 items-center justify-center rounded border text-[10px] ${row.isSelected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-300 bg-white text-transparent"}`}
-                    aria-label={row.isSelected ? t("filesList.deselectWorkOrder", "작업지시서 선택 해제") : t("filesList.selectWorkOrder", "작업지시서 선택")}
+                    aria-label={
+                      row.isSelected
+                        ? t(
+                            "filesList.deselectWorkOrder",
+                            "작업지시서 선택 해제",
+                          )
+                        : t("filesList.selectWorkOrder", "작업지시서 선택")
+                    }
                   >
                     ✓
                   </button>
                 );
               }
-              if (row.isGroupedAttachment || row.sourceItem.parentWorkOrderDeleted) return <span className="text-[10px] font-semibold text-stone-300">-</span>;
+              if (row.restorePolicy === "bundle_required")
+                return (
+                  <span className="text-[10px] font-semibold text-stone-300">
+                    -
+                  </span>
+                );
               return (
                 <button
                   type="button"
                   onClick={() => onToggleItem(row.id)}
                   className={`flex h-4 w-4 items-center justify-center rounded border text-[10px] ${row.isSelected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-300 bg-white text-transparent"}`}
-                  aria-label={row.isSelected ? t("filesList.deselectItem", "선택 해제") : t("filesList.selectItem", "선택")}
+                  aria-label={
+                    row.isSelected
+                      ? t("filesList.deselectItem", "선택 해제")
+                      : t("filesList.selectItem", "선택")
+                  }
                 >
                   ✓
                 </button>
@@ -432,42 +595,83 @@ export default function FileTrashSection({
             key: "target",
             label: t("filesList.columns.target", "대상"),
             render: (row) => (
-              <div className={`min-w-0 ${row.isGroupedAttachment ? "pl-4" : ""}`}>
-                <p className="text-[10px] text-stone-400 md:hidden">{t("filesList.columns.target", "대상")}</p>
-                <p className={`truncate font-semibold ${row.kind === "workorder" ? "text-stone-950" : "text-stone-800"}`}>
-                  {row.isGroupedAttachment ? "└ " : ""}{row.targetLabel}
+              <div
+                className={`min-w-0 ${row.isGroupedAttachment ? "pl-4" : ""}`}
+              >
+                <p className="text-[10px] text-stone-400 md:hidden">
+                  {t("filesList.columns.target", "대상")}
+                </p>
+                <p
+                  className={`truncate font-semibold ${row.kind === "workorder" ? "text-stone-950" : "text-stone-800"}`}
+                >
+                  {row.isGroupedAttachment ? "└ " : ""}
+                  {row.targetLabel}
                 </p>
                 {row.kind === "workorder" ? (
                   <div className="mt-1 space-y-0.5 text-[10px] text-stone-500">
                     <p>{row.sourceItem.statusLabel}</p>
-                    <p>{row.sourceItem.attachmentSummaryLabel}</p>
                     <p>{row.sourceItem.memoSummaryLabel}</p>
                   </div>
                 ) : null}
-                {row.isGroupedAttachment ? <p className="mt-1 text-[10px] text-stone-400">{t("filesList.groupedAttachmentHint", "작업지시서 대표 row에서 처리할 파일")}</p> : null}
+                {row.isGroupedAttachment ? (
+                  <p className="mt-1 text-[10px] text-stone-400">
+                    {t(
+                      "filesList.groupedAttachmentHint",
+                      "작업지시서 대표 row에서 처리할 파일",
+                    )}
+                  </p>
+                ) : null}
               </div>
             ),
           },
-          { key: "deletedAt", label: t("filesList.columns.deletedAt", "삭제일시"), render: (row) => <p className="text-[11px] text-stone-600">{row.deletedAt}</p> },
+          {
+            key: "deletedAt",
+            label: t("filesList.columns.deletedAt", "삭제일시"),
+            render: (row) => (
+              <p className="text-[11px] text-stone-600">{row.deletedAt}</p>
+            ),
+          },
           {
             key: "workorder",
             label: t("filesList.columns.workorder", "작업지시서"),
             render: (row) => (
               <div className="min-w-0">
-                <p className="text-[10px] text-stone-400 md:hidden">{t("filesList.columns.workorder", "작업지시서")}</p>
-                <p className={`truncate text-[11px] ${row.kind === "workorder" ? "font-semibold text-stone-800" : "text-stone-700"}`}>{row.workorderTitle}</p>
+                <p className="text-[10px] text-stone-400 md:hidden">
+                  {t("filesList.columns.workorder", "작업지시서")}
+                </p>
+                <p
+                  className={`truncate text-[11px] ${row.kind === "workorder" ? "font-semibold text-stone-800" : "text-stone-700"}`}
+                >
+                  {row.workorderTitle}
+                </p>
               </div>
             ),
           },
-          { key: "type", label: t("filesList.columns.type", "유형"), render: (row) => <p className="text-[11px] text-stone-600">{row.typeLabel}</p> },
-          { key: "size", label: t("filesList.columns.size", "크기"), render: (row) => <p className="text-[11px] text-stone-600">{row.sizeLabel}</p> },
+          {
+            key: "type",
+            label: t("filesList.columns.type", "유형"),
+            render: (row) => (
+              <p className="text-[11px] text-stone-600">{row.typeLabel}</p>
+            ),
+          },
+          {
+            key: "size",
+            label: t("filesList.columns.size", "크기"),
+            render: (row) => (
+              <p className="text-[11px] text-stone-600">{row.sizeLabel}</p>
+            ),
+          },
           {
             key: "restorePolicy",
             label: t("filesList.columns.restorePolicy", "복구정책"),
             render: (row) => (
               <span
                 className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold ${getRestorePolicyBadgeClass(row)}`}
-                title={row.restoreDisabledReason ?? row.purgeDisabledReason ?? undefined}
+                title={
+                  row.restoreDisabledReason ??
+                  row.purgeDisabledReason ??
+                  undefined
+                }
               >
                 {row.restorePolicyLabel}
               </span>
@@ -480,10 +684,24 @@ export default function FileTrashSection({
               if (row.kind === "workorder") {
                 return (
                   <div className="flex flex-wrap gap-1.5">
-                    <button type="button" onClick={() => openWorkOrderActionPreview(row.id, "restore")} className="rounded-full border border-stone-300 bg-white px-2.5 py-1 text-[10px] font-semibold text-stone-700 shadow-sm hover:bg-stone-50" title={row.restoreDisabledReason}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        openWorkOrderActionPreview(row.id, "restore")
+                      }
+                      className="rounded-full border border-stone-300 bg-white px-2.5 py-1 text-[10px] font-semibold text-stone-700 shadow-sm hover:bg-stone-50"
+                      title={row.restoreDisabledReason}
+                    >
                       {t("filesList.restore", "복구")}
                     </button>
-                    <button type="button" onClick={() => openWorkOrderActionPreview(row.id, "purge")} className="rounded-full border border-red-200 bg-white px-2.5 py-1 text-[10px] font-semibold text-red-600 shadow-sm hover:bg-red-50" title={row.purgeDisabledReason}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        openWorkOrderActionPreview(row.id, "purge")
+                      }
+                      className="rounded-full border border-red-200 bg-white px-2.5 py-1 text-[10px] font-semibold text-red-600 shadow-sm hover:bg-red-50"
+                      title={row.purgeDisabledReason}
+                    >
                       {t("filesList.purge", "영구 삭제")}
                     </button>
                   </div>
@@ -491,7 +709,10 @@ export default function FileTrashSection({
               }
 
               return (
-                <div className="flex flex-wrap gap-1.5" onClick={(event) => event.stopPropagation()}>
+                <div
+                  className="flex flex-wrap gap-1.5"
+                  onClick={(event) => event.stopPropagation()}
+                >
                   <button
                     type="button"
                     disabled={isActionPending || !row.canRestore}
