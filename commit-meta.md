@@ -1,19 +1,17 @@
 Version :
-0.9.1993
+0.9.200
 
 Summary :
-기본정보 수정 즉시 저장과 쓰기 잠금 보완
+통계 지표와 요금제별 노출 설계 문서화
 
 Description :
-기본정보 수정 적용 시 통계용 분류 ID와 분류 이름값이 즉시 DB에 저장되도록 작업지시서 patch 저장 흐름을 보완했다. 기본정보 저장 중에도 기존 CUD 전역 쓰기 잠금 규칙이 적용되도록 작업지시서 업데이트 요청을 workspace write lock으로 감쌌다.
+고객관리자와 시스템관리자 통계 지표를 요금제별로 정리하고, Recharts/TanStack Query 도입 시기, SQL aggregate API, 인덱스, summary table, 성능 측정 기준까지 통계 기능 전체 로드맵으로 문서화했다. 실제 통계 API와 차트 구현은 추가하지 않고 APP_VERSION만 0.9.200으로 갱신했다.
 
 수정 파일 목록 :
-- components/workorder/WorkOrderWorkspace.tsx
-- lib/hooks/workorder/useWorkOrderWorkflowActions.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-없음
+- docs/stats-indicator-plan-0.9.200.md
 
 삭제 파일 목록 :
 없음
