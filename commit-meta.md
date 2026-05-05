@@ -1,22 +1,15 @@
 Version :
-0.9.195
+0.9.1951
 
 Summary :
-작업지시서 직접 문구 i18n 1차 정리
+발주요청 미리보기 i18n 누락과 빌드 오류 보완
 
 Description :
-작업지시서 화면의 처리 중 문구, 로딩 fallback, PDF 출력/발주요청 문서 미리보기 문구 일부를 i18n 기준으로 이동했다. 기존 기능 동작은 유지하고, 작업지시서 write lock과 PDF 출력 흐름은 변경하지 않았다.
+발주요청 확인 모달에서 참조하는 요약, 대표 이미지, 요청사항, 원단/부자재/외주 테이블, PDF 출력 토스트 문구의 i18n 키를 보강했다. 누락된 copy 키 때문에 발생한 TypeScript 빌드 오류와 미리보기 테이블 제목/컬럼 문구 누락 문제를 보완했다.
 
 수정 파일 목록 :
-- components/common/modal/OrderRequestConfirmModal.tsx
-- components/workorder/WorkOrderWorkspace.tsx
-- components/workorder/layout/WorkOrderDetailDesktopView.tsx
-- components/workorder/layout/WorkOrderDetailMobileView.tsx
-- components/workorder/layout/WorkOrderDetailTabletView.tsx
-- components/workorder/list/WorkOrderListCard.tsx
-- lib/i18n/en/workorder.ts
-- lib/i18n/ko/workorder.ts
-- lib/workorder/workspace/buildWorkspaceViewModel.ts
+- lib/i18n/ko/common.ts
+- lib/i18n/en/common.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
