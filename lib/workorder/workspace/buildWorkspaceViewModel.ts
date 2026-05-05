@@ -9,13 +9,24 @@ import {
   buildSidebarListProps,
   buildSidePanelProps,
 } from "@/lib/workorder/workspace/workspaceViewModelBuilders";
-import type { BuildWorkspaceViewModelArgs, WorkspaceViewModel } from "@/lib/workorder/workspace/viewModelTypes";
+import type {
+  BuildWorkspaceViewModelArgs,
+  WorkspaceViewModel,
+} from "@/lib/workorder/workspace/viewModelTypes";
 
-export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): WorkspaceViewModel {
+export function buildWorkspaceViewModel(
+  args: BuildWorkspaceViewModelArgs,
+): WorkspaceViewModel {
   const version = APP_VERSION;
   const companyName = getWorkspaceCompanyName();
-  const isWorkspaceWriteLocked = Boolean(args.workflowProcessingLabel);
-  const workspaceWriteLockMessage = args.workflowProcessingLabel ? `${args.workflowProcessingLabel.replace(/\s+/g, "")} 중입니다...` : undefined;
+  const isWorkspaceWriteLocked = Boolean(
+    args.isWorkspaceWriteLocked ?? args.workflowProcessingLabel,
+  );
+  const workspaceWriteLockMessage =
+    args.workspaceWriteLockMessage ??
+    (args.workflowProcessingLabel
+      ? `${args.workflowProcessingLabel.replace(/\s+/g, "")} 중입니다...`
+      : undefined);
 
   const sidebarListProps = buildSidebarListProps({
     companyName,
@@ -86,13 +97,13 @@ export function buildWorkspaceViewModel(args: BuildWorkspaceViewModelArgs): Work
     onOpenAttachmentPicker: args.onOpenAttachmentPicker,
     onUploadAttachmentFiles: args.onUploadAttachmentFiles,
     onRequestDeleteAttachment: args.onRequestDeleteAttachment,
-      onSetPrimaryDesignAttachment: args.onSetPrimaryDesignAttachment,
+    onSetPrimaryDesignAttachment: args.onSetPrimaryDesignAttachment,
     onCreateMemoThread: args.onCreateMemoThread,
     onCreateMemoReply: args.onCreateMemoReply,
-      onUpdateMemoThread: args.onUpdateMemoThread,
-      onDeleteMemoThread: args.onDeleteMemoThread,
-      onUpdateMemoReply: args.onUpdateMemoReply,
-      onDeleteMemoReply: args.onDeleteMemoReply,
+    onUpdateMemoThread: args.onUpdateMemoThread,
+    onDeleteMemoThread: args.onDeleteMemoThread,
+    onUpdateMemoReply: args.onUpdateMemoReply,
+    onDeleteMemoReply: args.onDeleteMemoReply,
     basicInfoOpen: args.basicInfoOpen,
     materialOpen: args.materialOpen,
     outsourcingOpen: args.outsourcingOpen,

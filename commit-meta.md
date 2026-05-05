@@ -1,20 +1,15 @@
 Version :
-0.9.192
+0.9.193
 
 Summary :
-리오더와 삭제 처리 중 로딩 표시와 쓰기 잠금 보완
+작업지시서 CUD 전역 쓰기 잠금 기준 통합
 
 Description :
-작업지시서 리오더와 삭제 실행 중에도 전역 쓰기 잠금을 유지하고 하단 중앙 처리 중 표시를 추가했다. 좌측 작업지시서 카드 메뉴는 상태 전환, 리오더, 삭제 처리 중 비활성화되며 모바일 drawer에서도 동일한 잠금 기준을 적용했다.
+작업지시서 화면에서 리오더, 삭제, 메모, 첨부, 대표 이미지, 저장, 발주요청 등 CUD 액션이 실행되는 동안 전역 쓰기 잠금이 실제로 적용되도록 보완했다. 기존 전역 쓰기 잠금 범위는 유지하고, workspace view model이 전달받은 잠금 상태를 사용하도록 수정했다.
 
 수정 파일 목록 :
-- components/layout/MobileDrawer.tsx
-- components/layout/SidebarContent.tsx
-- components/workorder/WorkOrderOverlay.tsx
 - components/workorder/WorkOrderWorkspace.tsx
-- components/workorder/list/WorkOrderListCard.tsx
-- lib/i18n/en/workorder.ts
-- lib/i18n/ko/workorder.ts
+- lib/workorder/workspace/buildWorkspaceViewModel.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :

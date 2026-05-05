@@ -17,7 +17,20 @@ type WorkOrderWorkspaceProps = {
   initialWorkOrderId?: string | null;
 };
 
-export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOrderWorkspaceProps) {
+const WORK_ORDER_WRITE_LOCK_MESSAGES = {
+  create: "작업지시서 생성 중입니다...",
+  workflow: "상태 변경 처리 중입니다...",
+  reorder: "리오더 생성 중입니다...",
+  delete: "작업지시서 삭제 중입니다...",
+  memo: "메모 저장 중입니다...",
+  attachment: "파일 처리 중입니다...",
+  edit: "변경사항 저장 중입니다...",
+  orderRequest: "발주요청 중입니다...",
+} as const;
+
+export default function WorkOrderWorkspace({
+  initialWorkOrderId = null,
+}: WorkOrderWorkspaceProps) {
   const { i18n } = useI18n();
   const workOrder = useWorkOrder({ initialWorkOrderId });
   const dbConnectionStatus = useDbConnectionStatus();
@@ -39,23 +52,75 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
     runtime,
   } = workOrder;
 
-  const [pendingAttachmentDeleteId, setPendingAttachmentDeleteId] = useState<string | null>(null);
-  const [pendingWorkOrderDeleteId, setPendingWorkOrderDeleteId] = useState<string | null>(null);
-  const [workflowProcessingLabel, setWorkflowProcessingLabel] = useState<string | null>(null);
+  const [pendingAttachmentDeleteId, setPendingAttachmentDeleteId] = useState<
+    string | null
+  >(null);
+  const [pendingWorkOrderDeleteId, setPendingWorkOrderDeleteId] = useState<
+    string | null
+  >(null);
+  const [workflowProcessingLabel, setWorkflowProcessingLabel] = useState<
+    string | null
+  >(null);
+  const [manualWriteLockMessage, setManualWriteLockMessage] = useState<
+    string | null
+  >(null);
 
-  const renderHasSelection = selection.hasVisibleWorkOrders && selection.hasActiveSelection;
+  const renderHasSelection =
+    selection.hasVisibleWorkOrders && selection.hasActiveSelection;
   const isRepositoryLoading = repository.repositoryStatus === "loading";
   const isCreatingWorkOrder = runtime.actionStatusMap.create === "loading";
   const loadingCopy = i18n.workorder.ui.layout.sidebarControls;
   const lifecycleProcessingLabel = (() => {
-    if (runtime.actionStatusMap.create === "loading") return i18n.workorder.lifecycle.createProcessingLabel ?? "작업지시서 생성 중입니다...";
-    if (runtime.actionStatusMap.reorder === "loading") return i18n.workorder.lifecycle.reorderProcessingLabel ?? "리오더 생성 중입니다...";
-    if (runtime.actionStatusMap.delete === "loading") return i18n.workorder.lifecycle.deleteProcessingLabel ?? "작업지시서 삭제 중입니다...";
+    if (runtime.actionStatusMap.create === "loading")
+      return (
+        i18n.workorder.lifecycle.createProcessingLabel ??
+        "작업지시서 생성 중입니다..."
+      );
+    if (runtime.actionStatusMap.reorder === "loading")
+      return (
+        i18n.workorder.lifecycle.reorderProcessingLabel ??
+        "리오더 생성 중입니다..."
+      );
+    if (runtime.actionStatusMap.delete === "loading")
+      return (
+        i18n.workorder.lifecycle.deleteProcessingLabel ??
+        "작업지시서 삭제 중입니다..."
+      );
     return null;
   })();
-  const workflowWriteLockMessage = workflowProcessingLabel ? `${workflowProcessingLabel.replace(/\s+/g, "")} 중입니다...` : null;
-  const workspaceWriteLockMessage = lifecycleProcessingLabel ?? workflowWriteLockMessage ?? undefined;
-  const isWorkspaceWriteLocked = Boolean(lifecycleProcessingLabel || workflowProcessingLabel);
+  const workflowWriteLockMessage = workflowProcessingLabel
+    ? `${workflowProcessingLabel.replace(/\s+/g, "")} 중입니다...`
+    : null;
+  const persistenceProcessingLabel =
+    persistence.saveStatus === "saving"
+      ? WORK_ORDER_WRITE_LOCK_MESSAGES.edit
+      : null;
+  const workspaceWriteLockMessage =
+    manualWriteLockMessage ??
+    lifecycleProcessingLabel ??
+    workflowWriteLockMessage ??
+    persistenceProcessingLabel ??
+    undefined;
+  const isWorkspaceWriteLocked = Boolean(
+    manualWriteLockMessage ||
+    lifecycleProcessingLabel ||
+    workflowProcessingLabel ||
+    persistenceProcessingLabel,
+  );
+
+  const runWithWorkspaceWriteLock = async <T,>(
+    message: string,
+    task: () => T | Promise<T>,
+  ) => {
+    if (isWorkspaceWriteLocked) return undefined;
+
+    setManualWriteLockMessage(message);
+    try {
+      return await Promise.resolve(task());
+    } finally {
+      setManualWriteLockMessage(null);
+    }
+  };
 
   const workspaceLoadingState = {
     isRepositoryLoading,
@@ -71,11 +136,18 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
         renderHasSelection ? selection.selectedWorkOrder.attachments : [],
         pendingAttachmentDeleteId,
       ),
-    [pendingAttachmentDeleteId, renderHasSelection, selection.selectedWorkOrder.attachments],
+    [
+      pendingAttachmentDeleteId,
+      renderHasSelection,
+      selection.selectedWorkOrder.attachments,
+    ],
   );
 
   const pendingWorkOrderDelete = useMemo(
-    () => selection.workOrders.find((item) => item.id === pendingWorkOrderDeleteId) ?? null,
+    () =>
+      selection.workOrders.find(
+        (item) => item.id === pendingWorkOrderDeleteId,
+      ) ?? null,
     [pendingWorkOrderDeleteId, selection.workOrders],
   );
 
@@ -91,8 +163,13 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
   const handleConfirmDeleteWorkOrder = () => {
     if (isWorkspaceWriteLocked || !pendingWorkOrderDeleteId) return;
 
-    void actions.handleDeleteWorkOrder(pendingWorkOrderDeleteId);
+    const workOrderId = pendingWorkOrderDeleteId;
     setPendingWorkOrderDeleteId(null);
+    void runWithWorkspaceWriteLock(
+      i18n.workorder.lifecycle.deleteProcessingLabel ??
+        WORK_ORDER_WRITE_LOCK_MESSAGES.delete,
+      () => actions.handleDeleteWorkOrder(workOrderId),
+    );
   };
 
   const handleRequestDeleteAttachment = (attachmentId: string) => {
@@ -107,11 +184,17 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
   const handleConfirmDeleteAttachment = () => {
     if (isWorkspaceWriteLocked || !pendingAttachmentDeleteId) return;
 
-    attachments.handleDeleteAttachment(pendingAttachmentDeleteId);
+    const attachmentId = pendingAttachmentDeleteId;
     setPendingAttachmentDeleteId(null);
+    void runWithWorkspaceWriteLock(
+      WORK_ORDER_WRITE_LOCK_MESSAGES.attachment,
+      () => attachments.handleDeleteAttachment(attachmentId),
+    );
   };
 
-  const handleWorkflowActionWithProcessing = async (action: Parameters<typeof actions.handleWorkflowAction>[0]) => {
+  const handleWorkflowActionWithProcessing = async (
+    action: Parameters<typeof actions.handleWorkflowAction>[0],
+  ) => {
     setWorkflowProcessingLabel(action.label);
     try {
       await actions.handleWorkflowAction(action);
@@ -193,35 +276,120 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
     onSetSearchQuery: selection.setSearchQuery,
     dbConnectionStatus,
     onSetHistoryFilter: history.setHistoryFilter,
-    onSave: actions.handleSave,
+    onSave: () => {
+      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.edit, () =>
+        actions.handleSave(),
+      );
+    },
     onSelectWorkOrder: actions.handleSelectWorkOrder,
-    onCreateWorkOrder: actions.handleCreateWorkOrder,
+    onCreateWorkOrder: (payload) => {
+      void runWithWorkspaceWriteLock(
+        i18n.workorder.lifecycle.createProcessingLabel ??
+          WORK_ORDER_WRITE_LOCK_MESSAGES.create,
+        () => actions.handleCreateWorkOrder(payload),
+      );
+    },
     onDeleteWorkOrder: handleRequestDeleteWorkOrder,
-    onReorderWorkOrder: actions.handleReorderWorkOrder,
-    onReworkWorkOrder: actions.handleReworkWorkOrder,
+    onReorderWorkOrder: (id) => {
+      void runWithWorkspaceWriteLock(
+        i18n.workorder.lifecycle.reorderProcessingLabel ??
+          WORK_ORDER_WRITE_LOCK_MESSAGES.reorder,
+        () => actions.handleReorderWorkOrder(id),
+      );
+    },
+    onReworkWorkOrder: (id) => {
+      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.edit, () =>
+        actions.handleReworkWorkOrder(id),
+      );
+    },
     onWorkflowAction: handleWorkflowActionWithProcessing,
-    onUpdateSelectedWorkOrder: actions.handleUpdateSelectedWorkOrder,
-    onRenameWorkOrderTitle: actions.handleRenameWorkOrderTitle,
-    onConfirmOrderRequest: actions.handleConfirmOrderRequest,
+    onUpdateSelectedWorkOrder: (patch) => {
+      if (!isWorkspaceWriteLocked) actions.handleUpdateSelectedWorkOrder(patch);
+    },
+    onRenameWorkOrderTitle: (nextTitle) => {
+      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.edit, () =>
+        actions.handleRenameWorkOrderTitle(nextTitle),
+      );
+    },
+    onConfirmOrderRequest: (payload) => {
+      void runWithWorkspaceWriteLock(
+        WORK_ORDER_WRITE_LOCK_MESSAGES.orderRequest,
+        () => actions.handleConfirmOrderRequest(payload),
+      );
+    },
     onCloseOrderRequestConfirm: actions.handleCloseOrderRequestConfirm,
-    onInventoryApply: actions.handleInventoryApply,
-    onCompleteInspection: actions.handleCompleteInspection,
-    onApplyRoles: actions.handleApplyRoles,
+    onInventoryApply: (payload) => {
+      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.edit, () =>
+        actions.handleInventoryApply(payload),
+      );
+    },
+    onCompleteInspection: (payload) => {
+      void runWithWorkspaceWriteLock(
+        WORK_ORDER_WRITE_LOCK_MESSAGES.workflow,
+        () => actions.handleCompleteInspection(payload),
+      );
+    },
+    onApplyRoles: (rolesByUserId) => {
+      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.edit, () =>
+        actions.handleApplyRoles(rolesByUserId),
+      );
+    },
     onOpenManagerAssignModal: actions.handleOpenManagerAssignModal,
     onCloseManagerAssignModal: actions.handleCloseManagerAssignModal,
-    onChangeManager: actions.handleChangeManager,
-    onOpenAttachmentPicker: attachments.handleOpenAttachmentPicker,
-    onUploadAttachmentFiles: attachments.handleAttachmentFileDrop,
+    onChangeManager: (managerId) => {
+      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.edit, () =>
+        actions.handleChangeManager(managerId),
+      );
+    },
+    onOpenAttachmentPicker: (scope) => {
+      if (!isWorkspaceWriteLocked)
+        attachments.handleOpenAttachmentPicker(scope);
+    },
+    onUploadAttachmentFiles: (scope, files) => {
+      void runWithWorkspaceWriteLock(
+        WORK_ORDER_WRITE_LOCK_MESSAGES.attachment,
+        () => attachments.handleAttachmentFileDrop(scope, files),
+      );
+    },
     onRequestDeleteAttachment: handleRequestDeleteAttachment,
-    onSetPrimaryDesignAttachment: attachments.handleSetPrimaryDesignAttachment,
+    onSetPrimaryDesignAttachment: (attachmentId) => {
+      void runWithWorkspaceWriteLock(
+        WORK_ORDER_WRITE_LOCK_MESSAGES.attachment,
+        () => attachments.handleSetPrimaryDesignAttachment(attachmentId),
+      );
+    },
     onAttachmentDeleteConfirmClose: handleCloseDeleteAttachmentConfirm,
     onAttachmentDeleteConfirm: handleConfirmDeleteAttachment,
-    onCreateMemoThread: memo.handleCreateMemoThread,
-    onCreateMemoReply: memo.handleCreateMemoReply,
-    onUpdateMemoThread: memo.handleUpdateMemoThread,
-    onDeleteMemoThread: memo.handleDeleteMemoThread,
-    onUpdateMemoReply: memo.handleUpdateMemoReply,
-    onDeleteMemoReply: memo.handleDeleteMemoReply,
+    onCreateMemoThread: (content) => {
+      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.memo, () =>
+        memo.handleCreateMemoThread(content),
+      );
+    },
+    onCreateMemoReply: (threadId, content) => {
+      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.memo, () =>
+        memo.handleCreateMemoReply(threadId, content),
+      );
+    },
+    onUpdateMemoThread: (threadId, content) => {
+      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.memo, () =>
+        memo.handleUpdateMemoThread(threadId, content),
+      );
+    },
+    onDeleteMemoThread: (threadId) => {
+      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.memo, () =>
+        memo.handleDeleteMemoThread(threadId),
+      );
+    },
+    onUpdateMemoReply: (threadId, replyId, content) => {
+      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.memo, () =>
+        memo.handleUpdateMemoReply(threadId, replyId, content),
+      );
+    },
+    onDeleteMemoReply: (threadId, replyId) => {
+      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.memo, () =>
+        memo.handleDeleteMemoReply(threadId, replyId),
+      );
+    },
   });
 
   return (
@@ -241,7 +409,12 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
       <WorkOrderOverlay
         attachmentInputRef={ui.attachmentInputRef}
         attachmentInputAccept={attachments.attachmentInputAccept}
-        onAttachmentFilesChange={(event) => { if (!isWorkspaceWriteLocked) attachments.handleAttachmentFiles(event); }}
+        onAttachmentFilesChange={(event) => {
+          void runWithWorkspaceWriteLock(
+            WORK_ORDER_WRITE_LOCK_MESSAGES.attachment,
+            () => attachments.handleAttachmentFiles(event),
+          );
+        }}
         writeLocked={isWorkspaceWriteLocked}
         writeLockMessage={workspaceWriteLockMessage}
         toastMessage={ui.toastMessage}
