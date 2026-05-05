@@ -329,9 +329,9 @@ export default function WorkOrderWorkspace({
         () => actions.handleCompleteInspection(payload),
       );
     },
-    onApplyRoles: (rolesByUserId) => {
+    onApplyRoles: (userId, roles) => {
       void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.edit, () =>
-        actions.handleApplyRoles(rolesByUserId),
+        actions.handleApplyRoles(userId, roles),
       );
     },
     onOpenManagerAssignModal: actions.handleOpenManagerAssignModal,

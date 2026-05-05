@@ -9,10 +9,22 @@ function getProcessingLabel(label: string, format: string) {
   return format.replace("{label}", compactLabel);
 }
 
-export default function WorkOrderDetailMobileActionSection({ stages, currentStage, actions, onAction, workflowProcessingLabel = null }: ActionProps) {
+export default function WorkOrderDetailMobileActionSection({
+  stages,
+  currentStage,
+  actions,
+  onAction,
+  workflowProcessingLabel = null,
+  isWorkspaceWriteLocked = false,
+  workspaceWriteLockMessage,
+}: ActionProps) {
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.actionSection;
   const isWorkflowProcessing = Boolean(workflowProcessingLabel);
+  const isActionLocked = isWorkflowProcessing || Boolean(isWorkspaceWriteLocked);
+  const processingMessage = workflowProcessingLabel
+    ? getProcessingLabel(workflowProcessingLabel, copy.processingFormat)
+    : workspaceWriteLockMessage;
 
   return (
     <section className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
@@ -33,9 +45,9 @@ export default function WorkOrderDetailMobileActionSection({ stages, currentStag
           );
         })}
       </div>
-      {workflowProcessingLabel ? (
+      {processingMessage ? (
         <div className="mt-4 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-medium text-stone-700">
-          {getProcessingLabel(workflowProcessingLabel, copy.processingFormat)}
+          {processingMessage}
         </div>
       ) : null}
       {actions.length > 0 ? (
@@ -47,7 +59,7 @@ export default function WorkOrderDetailMobileActionSection({ stages, currentStag
                 key={`${currentStage}-${action.nextState}-${action.label}`}
                 type="button"
                 onClick={() => onAction(action)}
-                disabled={isWorkflowProcessing}
+                disabled={isActionLocked}
                 className={`inline-flex items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-70 ${
                   index === 0 ? "bg-stone-900 text-white" : "border border-stone-300 bg-white text-stone-700"
                 }`}

@@ -144,6 +144,8 @@ export function buildActionSectionProps({
   currentDisplayStage,
   actions,
   workflowProcessingLabel,
+  isWorkspaceWriteLocked,
+  workspaceWriteLockMessage,
   onAction,
   onSave,
 }: BuildWorkOrderDetailViewModelArgs): ActionProps {
@@ -152,6 +154,8 @@ export function buildActionSectionProps({
     currentStage: currentDisplayStage,
     actions,
     workflowProcessingLabel,
+    isWorkspaceWriteLocked,
+    workspaceWriteLockMessage,
     onAction,
     onSave,
   };
