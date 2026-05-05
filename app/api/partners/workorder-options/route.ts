@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createPartnerRepository } from "@/lib/partners/partnerAdapter";
-import type { PartnerDbRecord, PartnerItemWithRelations } from "@/lib/partners/types";
+import type { OutsourcingProcessRecord, PartnerDbRecord, PartnerItemWithRelations } from "@/lib/partners/types";
 
 type WorkOrderPartnerOptions = {
   factoryOptions: string[];
@@ -53,7 +53,11 @@ function appendProcessPartnerOption(options: WorkOrderPartnerOptions, processNam
   options.outsourcingVendorOptionsByProcess[processKey] = appendUnique(options.outsourcingVendorOptionsByProcess[processKey] ?? [], partnerName);
 }
 
-function buildPartnerOptions(partners: PartnerDbRecord[], partnerItems: PartnerItemWithRelations[]): WorkOrderPartnerOptions {
+function buildPartnerOptions(
+  partners: PartnerDbRecord[],
+  partnerItems: PartnerItemWithRelations[],
+  outsourcingProcesses: OutsourcingProcessRecord[] = [],
+): WorkOrderPartnerOptions {
   const options: WorkOrderPartnerOptions = {
     factoryOptions: [],
     materialVendorOptions: {
@@ -72,6 +76,11 @@ function buildPartnerOptions(partners: PartnerDbRecord[], partnerItems: PartnerI
   };
 
   const activePartnerNames = new Map(partners.filter((partner) => partner.is_active).map((partner) => [partner.id, partner.name]));
+
+  for (const process of outsourcingProcesses) {
+    if (!process.is_active) continue;
+    options.outsourcingProcessOptions = appendUnique(options.outsourcingProcessOptions, process.name);
+  }
 
   for (const item of partnerItems) {
     if (!item.is_active) continue;
@@ -99,7 +108,6 @@ function buildPartnerOptions(partners: PartnerDbRecord[], partnerItems: PartnerI
     if (item.category === "outsourcing") {
       const processName = item.outsourcing_process_name ?? item.name;
       options.outsourcingVendorOptions = appendUnique(options.outsourcingVendorOptions, partnerName);
-      options.outsourcingProcessOptions = appendUnique(options.outsourcingProcessOptions, processName);
       appendProcessPartnerOption(options, processName, partnerName);
       options.partnerItemOptions.outsourcing = appendUnique(options.partnerItemOptions.outsourcing, item.name);
     }
@@ -111,13 +119,14 @@ function buildPartnerOptions(partners: PartnerDbRecord[], partnerItems: PartnerI
 export async function GET() {
   try {
     const repository = await createPartnerRepository();
-    const [partners, partnerItems] = await Promise.all([
+    const [partners, partnerItems, outsourcingProcesses] = await Promise.all([
       repository.listPartners({ activeOnly: true }),
       repository.listPartnerItems({ activeOnly: true }),
+      repository.listOutsourcingProcesses?.(true) ?? Promise.resolve([]),
     ]);
 
     return NextResponse.json({
-      ...buildPartnerOptions(partners, partnerItems),
+      ...buildPartnerOptions(partners, partnerItems, outsourcingProcesses),
       repository: repository.getRepositoryInfo(),
     });
   } catch {
