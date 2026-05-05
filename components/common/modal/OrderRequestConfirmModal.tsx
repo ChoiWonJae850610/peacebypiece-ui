@@ -33,6 +33,11 @@ function CheckIcon() {
     </svg>
   );
 }
+
+function getProcessingLabel(label: string, format: string) {
+  const compactLabel = label.replace(/\s+/g, "");
+  return format.replace("{label}", compactLabel);
+}
 import { getFactoryOrderRowsValidationMessage, getOrderSubmissionSnapshot } from "@/lib/workorder/orderSubmission";
 import { getOrderRequestDocumentPreview } from "@/lib/workorder/presentation/orderRequestDocumentPresentation";
 import { buildOrderRequestPrintHtml } from "@/lib/workorder/presentation/orderRequestDocumentPrint";
@@ -218,7 +223,7 @@ export default function OrderRequestConfirmModal({
   open: boolean;
   workOrder: WorkOrder;
   onClose: () => void;
-  onConfirm: (payload: { factoryName: string; quantity: number }) => void;
+  onConfirm: (payload: { factoryName: string; quantity: number }) => void | Promise<void>;
 }) {
   const { i18n } = useI18n();
   const copy = i18n.common.ui.modal.orderRequestConfirm;
@@ -237,6 +242,7 @@ export default function OrderRequestConfirmModal({
   const [requestNote, setRequestNote] = useState("");
   const [printFeedback, setPrintFeedback] = useState<string | null>(null);
   const [isPreparingPrint, setIsPreparingPrint] = useState(false);
+  const [isSubmittingOrderRequest, setIsSubmittingOrderRequest] = useState(false);
   const printWindowRef = useRef<Window | null>(null);
 
   useEffect(() => {
@@ -244,6 +250,7 @@ export default function OrderRequestConfirmModal({
     setRequestNote("");
     setPrintFeedback(null);
     setIsPreparingPrint(false);
+    setIsSubmittingOrderRequest(false);
   }, [open, workOrder.id]);
 
   useEffect(() => {
@@ -306,6 +313,17 @@ export default function OrderRequestConfirmModal({
     { label: "외주합", value: formatCurrency(preview.outsourcingAmountTotal) },
     { label: "로스", value: formatCurrency(currentFactoryLossCost) },
   ];
+
+  const handleSubmitOrderRequest = async () => {
+    if (!canSubmit || isSubmittingOrderRequest) return;
+
+    setIsSubmittingOrderRequest(true);
+    try {
+      await onConfirm({ factoryName: confirmedFactoryName, quantity: confirmedQuantity });
+    } finally {
+      setIsSubmittingOrderRequest(false);
+    }
+  };
 
   const handlePrintPdf = async () => {
     if (typeof window === "undefined" || isPreparingPrint) return;
@@ -392,16 +410,16 @@ export default function OrderRequestConfirmModal({
           </button>
           <button
             type="button"
-            onClick={() => onConfirm({ factoryName: confirmedFactoryName, quantity: confirmedQuantity })}
-            disabled={!canSubmit}
+            onClick={handleSubmitOrderRequest}
+            disabled={!canSubmit || isSubmittingOrderRequest}
             className={cn(
               "pbp-interactive-button inline-flex h-11 w-11 items-center justify-center rounded-xl bg-stone-900 text-white",
               "hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:bg-stone-300",
             )}
-            aria-label={requested ? (copy.requestedBadge ?? "발주 완료") : MODAL_ACTION_LABELS.proceedOrderRequest}
-            title={requested ? (copy.requestedBadge ?? "발주 완료") : MODAL_ACTION_LABELS.proceedOrderRequest}
+            aria-label={isSubmittingOrderRequest ? getProcessingLabel(MODAL_ACTION_LABELS.proceedOrderRequest, i18n.workorder.ui.actionSection.processingFormat) : requested ? (copy.requestedBadge ?? "발주 완료") : MODAL_ACTION_LABELS.proceedOrderRequest}
+            title={isSubmittingOrderRequest ? getProcessingLabel(MODAL_ACTION_LABELS.proceedOrderRequest, i18n.workorder.ui.actionSection.processingFormat) : requested ? (copy.requestedBadge ?? "발주 완료") : MODAL_ACTION_LABELS.proceedOrderRequest}
           >
-            {requested ? <CheckIcon /> : <ArrowNextIcon />}
+            {isSubmittingOrderRequest ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" /> : requested ? <CheckIcon /> : <ArrowNextIcon />}
           </button>
         </div>
       }

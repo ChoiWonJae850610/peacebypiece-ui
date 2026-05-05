@@ -286,6 +286,7 @@ export const workorderEn = {
       fallbackGroup: "Progress",
       rejectKeyword: "Reject",
       saveDraftLabel: "Save draft",
+      processingFormat: "Processing {label}...",
       saveDraftHint: "Input changes and draft save stay local only, and the DB is updated only from workflow action buttons.",
     },
     sections: {

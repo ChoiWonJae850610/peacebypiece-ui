@@ -47,6 +47,7 @@ export function buildWorkOrderDetailContainerModels({
   visibleStages,
   currentDisplayStage,
   actions,
+  workflowProcessingLabel,
   onSave,
   onOpenInventoryEditor,
   onOpenManagerAssignModal,
@@ -94,6 +95,7 @@ export function buildWorkOrderDetailContainerModels({
       visibleStages,
       currentDisplayStage,
       actions,
+      workflowProcessingLabel,
     },
     actionModel: {
       onSave,

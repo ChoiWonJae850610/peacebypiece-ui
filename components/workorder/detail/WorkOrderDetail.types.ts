@@ -50,6 +50,7 @@ export type WorkOrderDetailWorkflowModel = {
   visibleStages: DisplayStage[];
   currentDisplayStage: DisplayStage;
   actions: WorkflowAction[];
+  workflowProcessingLabel?: string | null;
 };
 
 export type WorkOrderDetailActionModel = {

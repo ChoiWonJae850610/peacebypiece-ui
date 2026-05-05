@@ -70,6 +70,7 @@ export type BuildWorkspaceViewModelArgs = {
   lastSavedAt: string | null;
   availableActions: WorkflowAction[];
   visibleStages: DetailProps["visibleStages"];
+  workflowProcessingLabel?: string | null;
   pendingAttachmentDelete: Attachment | null;
   canDeleteWorkOrder: SidebarListProps["canDelete"];
   getAttachmentPermissions: GetAttachmentPermissions;
@@ -161,6 +162,7 @@ export type BaseWorkspaceViewModelArgs = {
   lastSavedAt: string | null;
   availableActions: WorkflowAction[];
   visibleStages: DetailProps["visibleStages"];
+  workflowProcessingLabel?: string | null;
   getAttachmentPermissions: GetAttachmentPermissions;
   i18n: ReturnType<typeof getI18n>;
   onSave: () => void;

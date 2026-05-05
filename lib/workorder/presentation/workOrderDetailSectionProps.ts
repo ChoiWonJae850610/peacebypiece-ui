@@ -45,6 +45,7 @@ export type BuildWorkOrderDetailViewModelArgs = {
   visibleStages: ActionProps["stages"];
   currentDisplayStage: ActionProps["currentStage"];
   actions: ActionProps["actions"];
+  workflowProcessingLabel?: ActionProps["workflowProcessingLabel"];
   fabricTotal: number;
   subsidiaryTotal: number;
   outsourcingTotal: number;
@@ -139,6 +140,7 @@ export function buildActionSectionProps({
   visibleStages,
   currentDisplayStage,
   actions,
+  workflowProcessingLabel,
   onAction,
   onSave,
 }: BuildWorkOrderDetailViewModelArgs): ActionProps {
@@ -146,6 +148,7 @@ export function buildActionSectionProps({
     stages: visibleStages,
     currentStage: currentDisplayStage,
     actions,
+    workflowProcessingLabel,
     onAction,
     onSave,
   };

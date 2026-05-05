@@ -7,23 +7,31 @@ function getStageStepFillTone(stage: DisplayStage) {
   return stage === "completed" ? "bg-stone-900" : getStageDotTone(stage);
 }
 
+function getProcessingLabel(label: string, format: string) {
+  const compactLabel = label.replace(/\s+/g, "");
+  return format.replace("{label}", compactLabel);
+}
+
 export default function WorkOrderActionSection({
   stages,
   currentStage,
   actions,
   onAction,
   onSave,
+  workflowProcessingLabel = null,
 }: {
   stages: DisplayStage[];
   currentStage: DisplayStage;
   actions: WorkflowAction[];
   onAction: (action: WorkflowAction) => void;
   onSave?: (() => void) | null;
+  workflowProcessingLabel?: string | null;
 }) {
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.actionSection;
   const stageGroupsCopy = i18n.workorder.stageGroups;
   const currentIndex = stages.indexOf(currentStage);
+  const isWorkflowProcessing = Boolean(workflowProcessingLabel);
   const primaryActionIndex = actions.findIndex((action) => !action.label.includes(copy.rejectKeyword));
   const doneTrackTone = "bg-stone-400";
   const stageGroups: Array<{ label: string; stages: DisplayStage[] }> = [
@@ -45,7 +53,8 @@ export default function WorkOrderActionSection({
               <button
                 type="button"
                 onClick={onSave}
-                className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs font-semibold text-stone-700 transition hover:bg-stone-100"
+                disabled={isWorkflowProcessing}
+                className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs font-semibold text-stone-700 transition hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50"
                 title={copy.saveDraftHint}
               >
                 {copy.saveDraftLabel}
@@ -53,24 +62,33 @@ export default function WorkOrderActionSection({
             ) : null}
             {actions.map((action, index) => {
               const isPrimary = primaryActionIndex === -1 ? index === 0 : index === primaryActionIndex;
+              const isProcessingTarget = workflowProcessingLabel === action.label;
               return (
                 <button
                   key={`${currentStage}-${action.nextState}-${action.label}`}
                   type="button"
                   onClick={() => onAction(action)}
-                  className={`rounded-xl px-3 py-2 text-xs font-semibold transition ${
+                  disabled={isWorkflowProcessing}
+                  className={`inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-70 ${
                     isPrimary
                       ? "bg-stone-900 text-white hover:bg-stone-800"
                       : "border border-stone-300 bg-white text-stone-700 hover:bg-stone-100"
                   }`}
                 >
-                  {action.label}
+                  {isProcessingTarget ? <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" /> : null}
+                  <span>{isProcessingTarget ? getProcessingLabel(action.label, copy.processingFormat) : action.label}</span>
                 </button>
               );
             })}
           </div>
         ) : null}
       </div>
+
+      {workflowProcessingLabel ? (
+        <div className="mt-3 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-medium text-stone-700">
+          {getProcessingLabel(workflowProcessingLabel, copy.processingFormat)}
+        </div>
+      ) : null}
 
       <div className="mt-3">
         <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${stages.length}, minmax(0, 1fr))` }}>

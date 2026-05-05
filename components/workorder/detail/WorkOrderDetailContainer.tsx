@@ -69,6 +69,7 @@ export default function WorkOrderDetailContainer(props: WorkOrderDetailProps) {
     visibleStages: workflowModel.visibleStages,
     currentDisplayStage: workflowModel.currentDisplayStage,
     actions: workflowModel.actions,
+    workflowProcessingLabel: workflowModel.workflowProcessingLabel,
     fabricTotal: costModel.fabricTotal,
     subsidiaryTotal: costModel.subsidiaryTotal,
     outsourcingTotal: costModel.outsourcingTotal,

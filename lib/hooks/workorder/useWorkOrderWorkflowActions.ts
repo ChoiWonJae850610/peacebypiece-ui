@@ -207,7 +207,7 @@ export function useWorkOrderWorkflowActions({
   );
 
   const handleWorkflowAction = useCallback(
-    (workOrder: WorkOrder, action: WorkflowAction) => {
+    async (workOrder: WorkOrder, action: WorkflowAction) => {
       let reviewWarningMessage: string | null = null;
 
       if (isWorkflowState(action.nextState, "review_requested")) {
@@ -245,7 +245,7 @@ export function useWorkOrderWorkflowActions({
       const effectiveWorkflowState = deriveWorkflowStateFromOrderEntries(workOrder.workflowState, workOrder.orderEntries);
 
       if (isWorkflowState(action.nextState, "inspection") && canReinspectInWorkflow(effectiveWorkflowState)) {
-        void applyReinspectionAction(workOrder, action);
+        await applyReinspectionAction(workOrder, action);
         return;
       }
 
@@ -271,7 +271,7 @@ export function useWorkOrderWorkflowActions({
         return;
       }
 
-      void applyWorkflowAction(workOrder, action, reviewWarningMessage);
+      await applyWorkflowAction(workOrder, action, reviewWarningMessage);
     },
     [actionFlowText, applyReinspectionAction, applyWorkflowAction, currentUser.role, currentUser.roles, setOrderRequestConfirmOpen, setPendingWorkflowAction, setToastMessage],
   );

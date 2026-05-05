@@ -41,6 +41,7 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
 
   const [pendingAttachmentDeleteId, setPendingAttachmentDeleteId] = useState<string | null>(null);
   const [pendingWorkOrderDeleteId, setPendingWorkOrderDeleteId] = useState<string | null>(null);
+  const [workflowProcessingLabel, setWorkflowProcessingLabel] = useState<string | null>(null);
 
   const renderHasSelection = selection.hasVisibleWorkOrders && selection.hasActiveSelection;
   const isRepositoryLoading = repository.repositoryStatus === "loading";
@@ -98,6 +99,15 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
     setPendingAttachmentDeleteId(null);
   };
 
+  const handleWorkflowActionWithProcessing = async (action: Parameters<typeof actions.handleWorkflowAction>[0]) => {
+    setWorkflowProcessingLabel(action.label);
+    try {
+      await actions.handleWorkflowAction(action);
+    } finally {
+      setWorkflowProcessingLabel(null);
+    }
+  };
+
   const viewModel = buildWorkspaceViewModel({
     drawerOpen: ui.drawerOpen,
     basicInfoOpen: ui.basicInfoOpen,
@@ -150,6 +160,7 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
     lastSavedAt: persistence.lastSavedAt,
     availableActions: workflow.availableActions,
     visibleStages: workflow.visibleStages,
+    workflowProcessingLabel,
     pendingAttachmentDelete,
     canDeleteWorkOrder: actions.canDeleteWorkOrder,
     getAttachmentPermissions: attachments.getAttachmentPermissions,
@@ -174,7 +185,7 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
     onDeleteWorkOrder: handleRequestDeleteWorkOrder,
     onReorderWorkOrder: actions.handleReorderWorkOrder,
     onReworkWorkOrder: actions.handleReworkWorkOrder,
-    onWorkflowAction: actions.handleWorkflowAction,
+    onWorkflowAction: handleWorkflowActionWithProcessing,
     onUpdateSelectedWorkOrder: actions.handleUpdateSelectedWorkOrder,
     onRenameWorkOrderTitle: actions.handleRenameWorkOrderTitle,
     onConfirmOrderRequest: actions.handleConfirmOrderRequest,

@@ -1,25 +1,29 @@
 Version :
-0.9.189
+0.9.190
 
 Summary :
-작업지시서 생성 분류 입력과 통계용 카테고리 저장 기준 정리
+작업지시서 상태 전환 처리 중 표시를 보완
 
 Description :
-작업지시서 생성 모달에서 추천분류 표시를 runtime flag로 비활성화하고 시즌/연도 입력을 제거했다. spec_sheets에 1차/2차/3차 분류 참조 컬럼을 추가하고, 작업지시서 생성/저장 시 item_categories 기준 분류 id를 함께 저장하도록 보완했다.
+검토요청, 검토완료, 반려 등 작업지시서 상태 전환 버튼을 누르면 처리 중 문구와 spinner를 표시하고 중복 클릭을 방지하도록 보완했다. 발주요청 확인 모달의 최종 진행 버튼에도 발주요청 처리 중 상태를 표시했다.
 
 수정 파일 목록 :
-- components/common/modal/CreateWorkOrderModal.tsx
-- db/schema/full_reset.sql
-- db/schema/full_reset_smoke_test.sql
-- db/schema/spec_sheets.sql
+- components/common/modal/OrderRequestConfirmModal.tsx
+- components/workorder/WorkOrderWorkspace.tsx
+- components/workorder/detail/WorkOrderActionSection.tsx
+- components/workorder/detail/WorkOrderDetail.types.ts
+- components/workorder/detail/WorkOrderDetailContainer.tsx
+- components/workorder/detail/sections/device/WorkOrderDetailMobileActionSection.tsx
+- components/workorder/detail/sections/device/WorkOrderDetailTabletActionSection.tsx
+- components/workorder/detail/workOrderDetailContainerModels.ts
 - lib/constants/app.ts
-- lib/constants/runtimeMode.ts
-- lib/hooks/useWorkOrder.ts
-- lib/hooks/workorder/useWorkOrderActionTypes.ts
-- lib/hooks/workorder/useWorkOrderLifecycleActions.ts
-- lib/workorder/actions.ts
-- lib/workorder/repository/dbWorkOrderRepository.ts
-- types/workorder.ts
+- lib/hooks/workorder/useWorkOrderWorkflowActions.ts
+- lib/i18n/en/workorder.ts
+- lib/i18n/ko/workorder.ts
+- lib/workorder/presentation/workOrderDetailSectionProps.ts
+- lib/workorder/workspace/buildWorkspaceViewModel.ts
+- lib/workorder/workspace/builders/detailBuilders.ts
+- lib/workorder/workspace/viewModelTypes.ts
 
 추가 파일 목록 :
 없음
