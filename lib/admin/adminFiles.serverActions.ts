@@ -824,7 +824,7 @@ export async function restoreWorkOrderTrashBundle(
     requestedCount: 1,
     affectedCount: workOrderCount,
     reason: "OK",
-    message: `작업지시서 1건을 복구했습니다. 작업지시서 삭제와 함께 휴지통으로 이동한 첨부 ${attachmentCount}건, 메모 ${memoCount}건을 함께 복구했습니다.`,
+    message: "작업지시서 1건을 복구했습니다.",
   };
 }
 

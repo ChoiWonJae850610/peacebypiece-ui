@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import ToastMessage from "@/components/common/ToastMessage";
 import FileStorageSummary from "@/components/admin/files/FileStorageSummary";
 import FileTrashSection from "@/components/admin/files/FileTrashSection";
 import AdminShell from "@/components/admin/layout/AdminShell";
@@ -93,6 +94,12 @@ export default function AdminFilesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trendPeriod]);
 
+  useEffect(() => {
+    if (!actionMessage) return;
+    const timer = window.setTimeout(() => setActionMessage(null), 2400);
+    return () => window.clearTimeout(timer);
+  }, [actionMessage]);
+
   const selectedTrashItems = useMemo(
     () => selectAdminTrashItemsByIds(snapshot.trashItems, selectedTrashItemIds),
     [selectedTrashItemIds, snapshot.trashItems],
@@ -153,6 +160,49 @@ export default function AdminFilesPage() {
     }
   }
 
+  function createRestoreSelectionMessage(input: {
+    fileCount: number;
+    workOrderCount: number;
+    skippedCount: number;
+  }) {
+    const messages: string[] = [];
+    if (input.workOrderCount > 0 && input.fileCount > 0) {
+      messages.push(
+        `작업지시서 ${input.workOrderCount}건과 파일 ${input.fileCount}개를 복구했습니다.`,
+      );
+    } else if (input.workOrderCount > 0) {
+      messages.push(`작업지시서 ${input.workOrderCount}건을 복구했습니다.`);
+    } else if (input.fileCount > 0) {
+      messages.push(`파일 ${input.fileCount}개를 복구했습니다.`);
+    }
+    if (input.skippedCount > 0) {
+      messages.push(`복구할 수 없는 항목 ${input.skippedCount}개는 제외했습니다.`);
+    }
+    return messages.join(" ");
+  }
+
+  function createPurgeSelectionMessage(input: {
+    fileCount: number;
+    blockedWorkOrderCount: number;
+    skippedFileCount: number;
+  }) {
+    const messages: string[] = [];
+    if (input.fileCount > 0) {
+      messages.push(`파일 ${input.fileCount}개를 영구삭제 요청했습니다.`);
+    }
+    if (input.blockedWorkOrderCount > 0) {
+      messages.push(
+        `작업지시서 ${input.blockedWorkOrderCount}건은 아직 영구삭제할 수 없습니다.`,
+      );
+    }
+    if (input.skippedFileCount > 0) {
+      messages.push(
+        `영구삭제할 수 없는 파일 ${input.skippedFileCount}개는 제외했습니다.`,
+      );
+    }
+    return messages.join(" ");
+  }
+
   async function restoreWorkOrderById(workOrderId: string) {
     const response = await fetch("/api/admin/files/workorders/restore", {
       method: "POST",
@@ -186,10 +236,10 @@ export default function AdminFilesPage() {
     setPendingFileAction(fileTargets.length > 0 ? "restore" : null);
     setPendingWorkOrderAction(workOrderTargets.length > 0 ? "restore" : null);
     try {
-      const messages: string[] = [];
+      let restoredFileCount = 0;
       if (fileTargets.length > 0) {
         const result = await runRestoreTrashItemsFlow(fileTargets);
-        messages.push(result.message);
+        restoredFileCount = result.ok ? fileTargets.length : 0;
       }
 
       let restoredWorkOrderCount = 0;
@@ -197,18 +247,15 @@ export default function AdminFilesPage() {
         await restoreWorkOrderById(workOrderId);
         restoredWorkOrderCount += 1;
       }
-      if (workOrderTargets.length > 0) {
-        messages.push(
-          `${restoredWorkOrderCount}/${workOrderTargets.length}개 작업지시서를 복구했습니다.`,
-        );
-      }
 
       const skippedCount = selectedTrashItems.length - fileTargets.length;
-      if (skippedCount > 0) {
-        messages.push(`복구할 수 없는 파일 ${skippedCount}개는 제외했습니다.`);
-      }
-
-      setActionMessage(messages.join(" "));
+      setActionMessage(
+        createRestoreSelectionMessage({
+          fileCount: restoredFileCount,
+          workOrderCount: restoredWorkOrderCount,
+          skippedCount,
+        }),
+      );
       setSelectedTrashItemIds([]);
       setSelectedWorkOrderIds([]);
       await refreshSnapshot();
@@ -236,24 +283,20 @@ export default function AdminFilesPage() {
 
     setPendingFileAction(fileTargets.length > 0 ? "purge" : null);
     try {
-      const messages: string[] = [];
+      let purgedFileCount = 0;
       if (fileTargets.length > 0) {
         const result = await runPurgeTrashItemsFlow(fileTargets);
-        messages.push(result.message);
-      }
-      if (blockedWorkOrderCount > 0) {
-        messages.push(
-          `작업지시서 영구삭제 ${blockedWorkOrderCount}건은 아직 실제 API 연결 전이라 제외했습니다.`,
-        );
+        purgedFileCount = result.ok ? fileTargets.length : 0;
       }
       const skippedFileCount = selectedTrashItems.length - fileTargets.length;
-      if (skippedFileCount > 0) {
-        messages.push(
-          `영구삭제할 수 없는 파일 ${skippedFileCount}개는 제외했습니다.`,
-        );
-      }
 
-      setActionMessage(messages.join(" "));
+      setActionMessage(
+        createPurgeSelectionMessage({
+          fileCount: purgedFileCount,
+          blockedWorkOrderCount,
+          skippedFileCount,
+        }),
+      );
       setSelectedTrashItemIds([]);
       if (fileTargets.length > 0) await refreshSnapshot();
     } catch (error) {
@@ -272,7 +315,7 @@ export default function AdminFilesPage() {
     setPendingWorkOrderAction("restore");
     try {
       const payload = await restoreWorkOrderById(workOrderId);
-      setActionMessage(payload.message || `작업지시서를 복구했습니다.`);
+      setActionMessage(payload.message || "작업지시서 1건을 복구했습니다.");
       setSelectedWorkOrderIds((currentIds) =>
         currentIds.filter((id) => id !== workOrderId),
       );
@@ -326,11 +369,7 @@ export default function AdminFilesPage() {
           onRefresh={refreshSnapshot}
         />
 
-        {actionMessage ? (
-          <section className="pointer-events-none absolute bottom-5 right-5 z-10 max-w-md rounded-2xl bg-[var(--admin-theme-surface)] px-4 py-3 text-sm font-semibold text-[var(--admin-theme-text-on-surface)] shadow-xl">
-            {actionMessage}
-          </section>
-        ) : null}
+        <ToastMessage message={actionMessage} />
 
         <div className="mt-4 h-[560px] min-h-[440px] flex-1 overflow-hidden">
           <FileTrashSection

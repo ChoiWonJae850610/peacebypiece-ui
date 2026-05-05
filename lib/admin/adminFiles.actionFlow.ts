@@ -62,7 +62,7 @@ export async function runMoveAttachmentsToTrashFlow(items: AdminManagedFileItem[
     return createAdminFileActionResult({
       ok: successCount > 0,
       status: successCount === items.length ? "success" : "error",
-      message: `${successCount}/${items.length}개 파일을 휴지통으로 이동했습니다. attachments soft delete와 attachment_trash_items 기록을 사용합니다.`,
+      message: successCount === items.length ? `파일 ${successCount}개를 휴지통으로 이동했습니다.` : `파일 ${successCount}개를 휴지통으로 이동했습니다. 일부 파일은 처리하지 못했습니다.`,
     });
   } catch (error) {
     return createAdminFileActionResult({
@@ -94,7 +94,7 @@ export async function runRestoreTrashItemsFlow(items: AdminTrashFileItem[]): Pro
     return createAdminFileActionResult({
       ok: result.ok,
       status: result.ok ? "success" : "error",
-      message: `${result.affectedCount}/${result.requestedCount}개 파일을 휴지통에서 복구했습니다. attachments 삭제 컬럼을 초기화하고 휴지통 이력을 restored 상태로 변경했습니다.`,
+      message: result.affectedCount === result.requestedCount ? `파일 ${result.affectedCount}개를 복구했습니다.` : `파일 ${result.affectedCount}개를 복구했습니다. 일부 파일은 처리하지 못했습니다.`,
     });
   } catch (error) {
     return createAdminFileActionResult({
@@ -125,7 +125,7 @@ export async function runPurgeTrashItemsFlow(items: AdminTrashFileItem[]): Promi
     return createAdminFileActionResult({
       ok: result.ok,
       status: result.ok ? "success" : "error",
-      message: `${result.affectedCount}/${result.requestedCount}개 파일을 영구삭제 요청 상태로 변경했습니다. 요청된 파일은 휴지통 목록에서 제외되며 R2 실제 삭제는 purge worker에서 처리됩니다.`,
+      message: result.affectedCount === result.requestedCount ? `파일 ${result.affectedCount}개를 영구삭제 요청했습니다.` : `파일 ${result.affectedCount}개를 영구삭제 요청했습니다. 일부 파일은 처리하지 못했습니다.`,
     });
   } catch (error) {
     return createAdminFileActionResult({
