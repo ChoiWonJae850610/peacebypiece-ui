@@ -417,6 +417,8 @@ export const workorderKo = {
         category3: "소분류",
         season: "시즌",
         year: "연도",
+        creating: "생성 중...",
+        creatingDescription: "작업지시서를 생성하는 중입니다.",
       },
     },
     layout: {
@@ -432,6 +434,10 @@ export const workorderKo = {
         searchPlaceholder: "작업명, 분류, 공장, 상태 검색",
         create: "작업지시서 생성",
         empty: "검색 결과가 없습니다.",
+        loadingDetailTitle: "작업지시서를 불러오는 중입니다.",
+        loadingDetailDescription: "DB에서 작업지시서와 연결 정보를 불러오는 동안 화면을 준비합니다.",
+        loadingSideTitle: "첨부와 메모를 준비하는 중입니다.",
+        loadingSideDescription: "디자인, 첨부파일, 작업메모 정보를 확인하고 있습니다.",
       },
       mobileTopBar: {
         title: "PeacebyPiece",
@@ -450,6 +456,10 @@ export const workorderKo = {
         searchPlaceholder: "작업명, 분류, 공장, 상태 검색",
         create: "작업지시서 생성",
         empty: "검색 결과가 없습니다.",
+        loadingDetailTitle: "작업지시서를 불러오는 중입니다.",
+        loadingDetailDescription: "DB에서 작업지시서와 연결 정보를 불러오는 동안 화면을 준비합니다.",
+        loadingSideTitle: "첨부와 메모를 준비하는 중입니다.",
+        loadingSideDescription: "디자인, 첨부파일, 작업메모 정보를 확인하고 있습니다.",
       },
       workOrderListCard: {
         uncategorized: "분류 미지정",

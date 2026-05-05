@@ -5,6 +5,14 @@ import SidebarContent from "@/components/layout/SidebarContent";
 import WorkOrderDetail from "@/components/workorder/WorkOrderDetail";
 import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
 
+export type WorkOrderWorkspaceLoadingState = {
+  isRepositoryLoading: boolean;
+  detailTitle: string;
+  detailDescription: string;
+  sideTitle: string;
+  sideDescription: string;
+};
+
 export type SidebarListProps = ComponentProps<typeof SidebarContent>;
 export type DetailProps = ComponentProps<typeof WorkOrderDetail>;
 export type SidePanelProps = ComponentProps<typeof WorkOrderSidePanel>;
@@ -23,4 +31,5 @@ export type WorkOrderLayoutViewProps = {
   sidePanelProps: SidePanelProps;
   mobileTopBarProps: MobileTopBarProps;
   mobileDrawerProps: MobileDrawerProps;
+  loadingState?: WorkOrderWorkspaceLoadingState;
 };

@@ -417,6 +417,8 @@ export const workorderEn = {
         category3: "Tertiary category",
         season: "Season",
         year: "Year",
+        creating: "Creating...",
+        creatingDescription: "Creating the work order.",
       },
     },
     layout: {
@@ -432,6 +434,10 @@ export const workorderEn = {
         searchPlaceholder: "Search by work name, category, factory, or status",
         create: "Create work order",
         empty: "No search results.",
+        loadingDetailTitle: "Loading work order.",
+        loadingDetailDescription: "Preparing the screen while loading work orders and related data from the database.",
+        loadingSideTitle: "Preparing attachments and memos.",
+        loadingSideDescription: "Checking design files, attachments, and work memos.",
       },
       mobileTopBar: {
         title: "PeacebyPiece",
@@ -450,6 +456,10 @@ export const workorderEn = {
         searchPlaceholder: "Search by work name, category, factory, or status",
         create: "Create work order",
         empty: "No search results.",
+        loadingDetailTitle: "Loading work order.",
+        loadingDetailDescription: "Preparing the screen while loading work orders and related data from the database.",
+        loadingSideTitle: "Preparing attachments and memos.",
+        loadingSideDescription: "Checking design files, attachments, and work memos.",
       },
       workOrderListCard: {
         uncategorized: "Uncategorized",

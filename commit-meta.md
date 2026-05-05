@@ -1,23 +1,25 @@
 Version :
-0.9.187
+0.9.188
 
 Summary :
-대표 디자인 이미지 정책과 공장 비용 계산식을 보완
+작업지시서 생성과 DB 로딩 UX를 보완
 
 Description :
-최초 디자인 이미지 업로드 시 대표 이미지로 자동 지정하고, 대표 디자인 이미지 삭제 시 남은 디자인 이미지 중 하나를 대표로 재지정하도록 보완했다. 삭제된 디자인 이미지는 대표 상태를 해제해 복원 시 대표 이미지가 되지 않도록 했다. 공장 공임비는 수량을 곱한 금액으로 계산하고 로스비는 그대로 더하는 기준으로 비용 요약과 PDF 금액 계산식을 보정했다.
+작업지시서 DB 로딩 중 상세/첨부 영역에 skeleton 로딩 화면을 표시하고, 작업지시서 생성 중 모달 입력과 버튼 상태를 로딩 상태로 전환하도록 보완했다. 패키지 의존성은 추가하지 않고 기존 Tailwind 기반 UI만 사용했다.
 
 수정 파일 목록 :
-- components/common/modal/OrderRequestConfirmModal.tsx
-- lib/hooks/workorder/useWorkOrderAttachments.ts
-- lib/workorder/derived/workOrderCostSummary.ts
-- lib/workorder/detail/detailCalculations.ts
-- lib/workorder/persistence/dbAttachmentMemoRepository.ts
-- lib/workorder/presentation/orderRequestDocumentPresentation.ts
+- components/common/modal/CreateWorkOrderModal.tsx
+- components/workorder/WorkOrderWorkspace.tsx
+- components/workorder/layout/WorkOrderDetailDesktopView.tsx
+- components/workorder/layout/WorkOrderDetailMobileView.tsx
+- components/workorder/layout/WorkOrderDetailTabletView.tsx
+- components/workorder/layout/types.ts
+- lib/i18n/en/workorder.ts
+- lib/i18n/ko/workorder.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-없음
+- components/workorder/WorkOrderLoadingState.tsx
 
 삭제 파일 목록 :
 없음

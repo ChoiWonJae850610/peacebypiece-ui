@@ -15,6 +15,7 @@ type Props = {
   open: boolean;
   onClose: () => void;
   onCreate: (payload: { title: string; category1: string; category2: string; category3: string; season: string }) => void;
+  isCreating?: boolean;
 };
 
 type CategorySource = {
@@ -69,7 +70,7 @@ function buildCategorySourceFromDefinitions(items: AdminItemCategoryDefinition[]
   };
 }
 
-export default function CreateWorkOrderModal({ open, onClose, onCreate }: Props) {
+export default function CreateWorkOrderModal({ open, onClose, onCreate, isCreating = false }: Props) {
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.modals.createWorkOrder;
   const [title, setTitle] = useState("");
@@ -120,7 +121,7 @@ export default function CreateWorkOrderModal({ open, onClose, onCreate }: Props)
   }, [categorySource, category2]);
 
   const trimmedTitle = title.trim();
-  const submitDisabled = getModalActionDisabledState(trimmedTitle.length === 0);
+  const submitDisabled = getModalActionDisabledState(trimmedTitle.length === 0 || isCreating);
   const recommendedCategory = useMemo(() => getRecommendedWorkOrderCategory(trimmedTitle), [trimmedTitle]);
 
   const handleCreate = createModalActionHandler({
@@ -144,15 +145,21 @@ export default function CreateWorkOrderModal({ open, onClose, onCreate }: Props)
       maxWidthClass="md:max-w-xl"
       footer={renderModalFooterActions({
         layout: "end",
-        secondary: { label: i18n.common.ui.common.cancel ?? MODAL_ACTION_LABELS.cancel, onClick: onClose },
-        primary: { label: i18n.common.ui.common.create ?? MODAL_ACTION_LABELS.create, onClick: handleCreate, disabled: submitDisabled, tone: "primary", className: "font-semibold" },
+        secondary: { label: i18n.common.ui.common.cancel ?? MODAL_ACTION_LABELS.cancel, onClick: onClose, disabled: isCreating },
+        primary: { label: isCreating ? copy.creating : i18n.common.ui.common.create ?? MODAL_ACTION_LABELS.create, onClick: handleCreate, disabled: submitDisabled, tone: "primary", className: "font-semibold" },
       })}
     >
       <div className="grid gap-4">
         <label className="grid gap-1.5">
           <span className="text-sm font-medium text-stone-700">{copy.workOrderTitle}</span>
-          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={copy.titlePlaceholder} className={MODAL_INPUT_CLASS} />
+          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={copy.titlePlaceholder} className={MODAL_INPUT_CLASS} disabled={isCreating} />
         </label>
+        {isCreating ? (
+          <div className="flex items-center gap-2 rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-600">
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-stone-200 border-t-stone-700" aria-hidden="true" />
+            {copy.creatingDescription}
+          </div>
+        ) : null}
         {recommendedCategory ? (
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-3">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -166,6 +173,7 @@ export default function CreateWorkOrderModal({ open, onClose, onCreate }: Props)
               <button
                 type="button"
                 onClick={handleApplyRecommendation}
+                disabled={isCreating}
                 className="pbp-interactive-button shrink-0 rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm font-medium text-emerald-800 hover:border-emerald-400 hover:bg-emerald-100"
               >
                 {copy.applyRecommendedCategory}
@@ -176,19 +184,19 @@ export default function CreateWorkOrderModal({ open, onClose, onCreate }: Props)
         <div className="grid gap-4 md:grid-cols-3">
           <label className="grid gap-1.5">
             <span className="text-sm font-medium text-stone-700">{copy.category1}</span>
-            <select value={category1} onChange={(e) => setCategory1(e.target.value)} className={MODAL_SELECT_CLASS}>
+            <select value={category1} onChange={(e) => setCategory1(e.target.value)} className={MODAL_SELECT_CLASS} disabled={isCreating}>
               {categorySource.category1Options.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
           </label>
           <label className="grid gap-1.5">
             <span className="text-sm font-medium text-stone-700">{copy.category2}</span>
-            <select value={category2} onChange={(e) => setCategory2(e.target.value)} className={MODAL_SELECT_CLASS}>
+            <select value={category2} onChange={(e) => setCategory2(e.target.value)} className={MODAL_SELECT_CLASS} disabled={isCreating}>
               {category2Options.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
           </label>
           <label className="grid gap-1.5">
             <span className="text-sm font-medium text-stone-700">{copy.category3}</span>
-            <select value={category3} onChange={(e) => setCategory3(e.target.value)} className={MODAL_SELECT_CLASS}>
+            <select value={category3} onChange={(e) => setCategory3(e.target.value)} className={MODAL_SELECT_CLASS} disabled={isCreating}>
               {category3Options.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
           </label>
@@ -196,13 +204,13 @@ export default function CreateWorkOrderModal({ open, onClose, onCreate }: Props)
         <div className="grid gap-4 md:grid-cols-2">
           <label className="grid gap-1.5">
             <span className="text-sm font-medium text-stone-700">{copy.season}</span>
-            <select value={seasonType} onChange={(e) => setSeasonType(e.target.value)} className={MODAL_SELECT_CLASS}>
+            <select value={seasonType} onChange={(e) => setSeasonType(e.target.value)} className={MODAL_SELECT_CLASS} disabled={isCreating}>
               {SEASON_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
           </label>
           <label className="grid gap-1.5">
             <span className="text-sm font-medium text-stone-700">{copy.year}</span>
-            <select value={seasonYear} onChange={(e) => setSeasonYear(e.target.value)} className={MODAL_SELECT_CLASS}>
+            <select value={seasonYear} onChange={(e) => setSeasonYear(e.target.value)} className={MODAL_SELECT_CLASS} disabled={isCreating}>
               {YEAR_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
           </label>

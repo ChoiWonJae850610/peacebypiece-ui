@@ -35,12 +35,24 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
     persistence,
     workflow,
     actions,
+    repository,
+    runtime,
   } = workOrder;
 
   const [pendingAttachmentDeleteId, setPendingAttachmentDeleteId] = useState<string | null>(null);
   const [pendingWorkOrderDeleteId, setPendingWorkOrderDeleteId] = useState<string | null>(null);
 
   const renderHasSelection = selection.hasVisibleWorkOrders && selection.hasActiveSelection;
+  const isRepositoryLoading = repository.repositoryStatus === "loading";
+  const isCreatingWorkOrder = runtime.actionStatusMap.create === "loading";
+  const loadingCopy = i18n.workorder.ui.layout.sidebarControls;
+  const workspaceLoadingState = {
+    isRepositoryLoading,
+    detailTitle: loadingCopy.loadingDetailTitle,
+    detailDescription: loadingCopy.loadingDetailDescription,
+    sideTitle: loadingCopy.loadingSideTitle,
+    sideDescription: loadingCopy.loadingSideDescription,
+  };
 
   const pendingAttachmentDelete = useMemo(
     () =>
@@ -198,6 +210,7 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
         sidePanelProps={viewModel.sidePanelProps}
         mobileTopBarProps={viewModel.mobileTopBarProps}
         mobileDrawerProps={viewModel.mobileDrawerProps}
+        loadingState={workspaceLoadingState}
       />
 
       <WorkOrderOverlay
@@ -205,7 +218,13 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
         attachmentInputAccept={attachments.attachmentInputAccept}
         onAttachmentFilesChange={attachments.handleAttachmentFiles}
         toastMessage={ui.toastMessage}
-        modalProps={viewModel.modalProps}
+        modalProps={{
+          ...viewModel.modalProps,
+          createWorkOrder: {
+            ...viewModel.modalProps.createWorkOrder,
+            isCreating: isCreatingWorkOrder,
+          },
+        }}
       />
       <WorkOrderDeleteConfirmModal
         open={Boolean(pendingWorkOrderDelete)}
