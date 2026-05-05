@@ -18,7 +18,7 @@ import {
   replaceWorkOrderById,
 } from "./workorderRepositoryMutations";
 import { findPartnerIdByNameAndTypes } from "@/lib/admin/partner/persistence";
-import { createReinspectionRequestHistoryLog, createWorkOrderKindChangeHistoryLog } from "@/lib/workorder/history/builders";
+import { createReinspectionRequestHistoryLog } from "@/lib/workorder/history/builders";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import { getOrderTypeFromWorkOrderKind } from "@/lib/workorder/reorder/helpers";
 import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
@@ -429,7 +429,7 @@ export function useWorkOrderWorkflowActions({
   );
 
   const handleUpdateSelectedWorkOrder = useCallback(
-    ({ workOrderId, patch, isReviewRequestLocked }: UpdateSelectedWorkOrderInput) => {
+    async ({ workOrderId, patch, isReviewRequestLocked }: UpdateSelectedWorkOrderInput) => {
       const hasLockedChanges = Object.keys(patch).some((key) => key !== "memoThreads" && key !== "lastSavedAt");
       if (isReviewRequestLocked && hasLockedChanges) {
         return;
@@ -462,27 +462,29 @@ export function useWorkOrderWorkflowActions({
         workOrdersRef.current.map((item) => (item.id === workOrderId ? result.nextWorkOrder : item)),
       );
       const normalizedNextWorkOrder = nextWorkOrders.find((item) => item.id === workOrderId) ?? result.nextWorkOrder;
-      const nextHistoryLogs = result.historyLogs?.length ? [
-        createWorkOrderKindChangeHistoryLog(
-          currentUser.name,
-          currentWorkOrder.id,
-          {
-            fromTitle: getWorkOrderDisplayTitle(currentWorkOrder),
-            toTitle: getWorkOrderDisplayTitle(normalizedNextWorkOrder),
-            fromKind: currentWorkOrder.workOrderKind ?? "sample",
-            toKind: normalizedNextWorkOrder.workOrderKind ?? "sample",
-          },
-          historyText,
-        ),
-      ] : undefined;
+      const nextHistoryLogs = result.historyLogs;
 
+      setSaveStatus("saving");
       setWorkOrders(nextWorkOrders);
-      if (nextHistoryLogs?.length) {
-        setHistoryLogs((prev) => [...nextHistoryLogs, ...prev]);
+
+      try {
+        const persistedWorkOrder = await persistWorkOrderWithHistory(repository, {
+          workOrder: normalizedNextWorkOrder,
+          historyLogs: nextHistoryLogs,
+        });
+        const persistedWorkOrders = replaceWorkOrderById(nextWorkOrders, workOrderId, persistedWorkOrder);
+        setWorkOrders(persistedWorkOrders);
+        setPersistedWorkOrders(persistedWorkOrders);
+        syncSelectedWorkOrderSaveState(persistedWorkOrders);
+        if (nextHistoryLogs?.length) {
+          setHistoryLogs((prev) => [...nextHistoryLogs, ...prev]);
+        }
+      } catch (error) {
+        setSaveStatus("dirty");
+        throw error;
       }
-      setSaveStatus("dirty");
     },
-    [actionFlowText.orderInfoLockedToast, currentUser.name, currentUser.role, historyText, repository, setHistoryLogs, setSaveStatus, setToastMessage, setWorkOrders, syncSelectedWorkOrderSaveState],
+    [actionFlowText.orderInfoLockedToast, currentUser.name, currentUser.role, historyText, repository, setHistoryLogs, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders, syncSelectedWorkOrderSaveState],
   );
 
   return {

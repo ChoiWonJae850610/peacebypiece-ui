@@ -284,7 +284,9 @@ export default function WorkOrderWorkspace({
     },
     onWorkflowAction: handleWorkflowActionWithProcessing,
     onUpdateSelectedWorkOrder: (patch) => {
-      if (!isWorkspaceWriteLocked) actions.handleUpdateSelectedWorkOrder(patch);
+      void runWithWorkspaceWriteLock(lifecycleCopy.editProcessingLabel, () =>
+        actions.handleUpdateSelectedWorkOrder(patch),
+      );
     },
     onRenameWorkOrderTitle: (nextTitle) => {
       void runWithWorkspaceWriteLock(lifecycleCopy.editProcessingLabel, () =>
