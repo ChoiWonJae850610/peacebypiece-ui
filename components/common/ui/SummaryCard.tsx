@@ -7,8 +7,8 @@ type SummaryCardProps = {
 
 export default function SummaryCard({ title, children }: SummaryCardProps) {
   return (
-    <div className="rounded-[24px] border border-stone-200 bg-white p-5 shadow-sm">
-      <h3 className="text-sm font-semibold text-stone-900">{title}</h3>
+    <div className="rounded-[24px] p-5 pbp-card">
+      <h3 className="text-sm font-semibold pbp-text-primary">{title}</h3>
       <div className="mt-4">{children}</div>
     </div>
   );
