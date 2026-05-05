@@ -47,8 +47,15 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
   const isRepositoryLoading = repository.repositoryStatus === "loading";
   const isCreatingWorkOrder = runtime.actionStatusMap.create === "loading";
   const loadingCopy = i18n.workorder.ui.layout.sidebarControls;
-  const isWorkflowWriteLocked = Boolean(workflowProcessingLabel);
-  const workflowWriteLockMessage = workflowProcessingLabel ? `${workflowProcessingLabel.replace(/\s+/g, "")} 중입니다...` : undefined;
+  const lifecycleProcessingLabel = (() => {
+    if (runtime.actionStatusMap.create === "loading") return i18n.workorder.lifecycle.createProcessingLabel ?? "작업지시서 생성 중입니다...";
+    if (runtime.actionStatusMap.reorder === "loading") return i18n.workorder.lifecycle.reorderProcessingLabel ?? "리오더 생성 중입니다...";
+    if (runtime.actionStatusMap.delete === "loading") return i18n.workorder.lifecycle.deleteProcessingLabel ?? "작업지시서 삭제 중입니다...";
+    return null;
+  })();
+  const workflowWriteLockMessage = workflowProcessingLabel ? `${workflowProcessingLabel.replace(/\s+/g, "")} 중입니다...` : null;
+  const workspaceWriteLockMessage = lifecycleProcessingLabel ?? workflowWriteLockMessage ?? undefined;
+  const isWorkspaceWriteLocked = Boolean(lifecycleProcessingLabel || workflowProcessingLabel);
 
   const workspaceLoadingState = {
     isRepositoryLoading,
@@ -73,7 +80,7 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
   );
 
   const handleRequestDeleteWorkOrder = (workOrderId: string) => {
-    if (isWorkflowWriteLocked) return;
+    if (isWorkspaceWriteLocked) return;
     setPendingWorkOrderDeleteId(workOrderId);
   };
 
@@ -82,14 +89,14 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
   };
 
   const handleConfirmDeleteWorkOrder = () => {
-    if (isWorkflowWriteLocked || !pendingWorkOrderDeleteId) return;
+    if (isWorkspaceWriteLocked || !pendingWorkOrderDeleteId) return;
 
-    actions.handleDeleteWorkOrder(pendingWorkOrderDeleteId);
+    void actions.handleDeleteWorkOrder(pendingWorkOrderDeleteId);
     setPendingWorkOrderDeleteId(null);
   };
 
   const handleRequestDeleteAttachment = (attachmentId: string) => {
-    if (isWorkflowWriteLocked) return;
+    if (isWorkspaceWriteLocked) return;
     setPendingAttachmentDeleteId(attachmentId);
   };
 
@@ -98,7 +105,7 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
   };
 
   const handleConfirmDeleteAttachment = () => {
-    if (isWorkflowWriteLocked || !pendingAttachmentDeleteId) return;
+    if (isWorkspaceWriteLocked || !pendingAttachmentDeleteId) return;
 
     attachments.handleDeleteAttachment(pendingAttachmentDeleteId);
     setPendingAttachmentDeleteId(null);
@@ -166,8 +173,8 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
     availableActions: workflow.availableActions,
     visibleStages: workflow.visibleStages,
     workflowProcessingLabel,
-    isWorkspaceWriteLocked: isWorkflowWriteLocked,
-    workspaceWriteLockMessage: workflowWriteLockMessage,
+    isWorkspaceWriteLocked,
+    workspaceWriteLockMessage,
     pendingAttachmentDelete,
     canDeleteWorkOrder: actions.canDeleteWorkOrder,
     getAttachmentPermissions: attachments.getAttachmentPermissions,
@@ -234,8 +241,9 @@ export default function WorkOrderWorkspace({ initialWorkOrderId = null }: WorkOr
       <WorkOrderOverlay
         attachmentInputRef={ui.attachmentInputRef}
         attachmentInputAccept={attachments.attachmentInputAccept}
-        onAttachmentFilesChange={(event) => { if (!isWorkflowWriteLocked) attachments.handleAttachmentFiles(event); }}
-        writeLocked={isWorkflowWriteLocked}
+        onAttachmentFilesChange={(event) => { if (!isWorkspaceWriteLocked) attachments.handleAttachmentFiles(event); }}
+        writeLocked={isWorkspaceWriteLocked}
+        writeLockMessage={workspaceWriteLockMessage}
         toastMessage={ui.toastMessage}
         modalProps={{
           ...viewModel.modalProps,

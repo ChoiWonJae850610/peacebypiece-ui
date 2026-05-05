@@ -14,6 +14,7 @@ type WorkOrderOverlayProps = {
   attachmentInputAccept: string;
   onAttachmentFilesChange: ChangeEventHandler<HTMLInputElement>;
   writeLocked?: boolean;
+  writeLockMessage?: string;
   toastMessage: ComponentProps<typeof ToastMessage>["message"];
   modalProps: {
     orderRequestConfirm: ComponentProps<typeof OrderRequestConfirmModal>;
@@ -34,6 +35,7 @@ export default function WorkOrderOverlay({
   toastMessage,
   modalProps,
   writeLocked = false,
+  writeLockMessage,
 }: WorkOrderOverlayProps) {
   return (
     <>
@@ -55,6 +57,14 @@ export default function WorkOrderOverlay({
         onChange={onAttachmentFilesChange}
         disabled={writeLocked}
       />
+      {writeLocked && writeLockMessage ? (
+        <div className="pointer-events-none fixed inset-x-0 bottom-6 z-[70] flex justify-center px-4">
+          <div className="inline-flex max-w-[calc(100vw-2rem)] items-center gap-2 rounded-full border border-stone-200 bg-stone-950 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-stone-900/20">
+            <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/35 border-t-white" aria-hidden="true" />
+            <span className="truncate">{writeLockMessage}</span>
+          </div>
+        </div>
+      ) : null}
       <ToastMessage message={toastMessage} />
     </>
   );

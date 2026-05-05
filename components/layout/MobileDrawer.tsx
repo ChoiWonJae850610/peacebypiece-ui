@@ -20,6 +20,8 @@ type Props = {
   canDelete?: (workflowState: WorkflowState) => boolean;
   canCreate: boolean;
   canManageListActions?: boolean;
+  writeLocked?: boolean;
+  writeLockMessage?: string;
   searchQuery: string;
   onSearchQueryChange: (value: string) => void;
 };
@@ -38,6 +40,8 @@ export default function MobileDrawer({
   canDelete,
   canCreate,
   canManageListActions = true,
+  writeLocked = false,
+  writeLockMessage,
   searchQuery,
   onSearchQueryChange,
 }: Props) {
@@ -89,10 +93,13 @@ export default function MobileDrawer({
             <button
               type="button"
               onClick={() => {
+                if (writeLocked) return;
                 onCreate();
                 onClose();
               }}
-              className="pbp-touch-target pbp-interactive-button mt-3 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white hover:bg-stone-800 active:bg-black"
+              disabled={writeLocked}
+              title={writeLocked ? writeLockMessage ?? "상태 변경 처리 중입니다." : undefined}
+              className="pbp-touch-target pbp-interactive-button mt-3 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:opacity-50"
             >
               {copy.create}
             </button>
@@ -110,11 +117,11 @@ export default function MobileDrawer({
                   onSelect(id);
                   onClose();
                 }}
-                onReorder={onReorder}
-                onDelete={onDelete}
-              onRework={onRework}
-                canDelete={canManageListActions ? canDelete : undefined}
-                canReorder={canManageListActions && Boolean(onReorder)}
+                onReorder={!writeLocked ? onReorder : undefined}
+                onDelete={!writeLocked ? onDelete : undefined}
+                onRework={!writeLocked ? onRework : undefined}
+                canDelete={!writeLocked && canManageListActions ? canDelete : undefined}
+                canReorder={!writeLocked && canManageListActions && Boolean(onReorder)}
               />
             ))}
           </div>

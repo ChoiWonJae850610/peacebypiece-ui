@@ -36,7 +36,8 @@ export default function WorkOrderListCard({
   const stateLabel = getWorkflowStateLabel(state);
   const active = workOrder.id === selectedId;
   const canShowReorder = canReorder && canReorderWorkOrder(workOrder) && isWorkflowStateOneOf(state, REORDERABLE_WORKFLOW_STATES);
-  const canShowDelete = Boolean(onDelete) || Boolean(canDelete?.(state));
+  const canShowDelete = Boolean(onDelete) && (!canDelete || canDelete(state));
+  const hasMenuActions = canShowReorder || canShowDelete;
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -91,8 +92,9 @@ export default function WorkOrderListCard({
         <div className="relative shrink-0" ref={menuRef}>
           <button
             type="button"
-            onClick={() => setMenuOpen((prev) => !prev)}
-            className={`pbp-touch-target pbp-interactive-button flex h-9 w-9 items-center justify-center rounded-xl border text-base font-semibold ${
+            onClick={() => { if (hasMenuActions) setMenuOpen((prev) => !prev); }}
+            disabled={!hasMenuActions}
+            className={`pbp-touch-target pbp-interactive-button flex h-9 w-9 items-center justify-center rounded-xl border text-base font-semibold disabled:cursor-not-allowed disabled:opacity-50 ${
               active
                 ? "border-white/20 bg-white/10 text-white hover:bg-white/15"
                 : "border-stone-300 bg-white text-stone-800 hover:border-stone-400 hover:bg-stone-100"
@@ -102,7 +104,7 @@ export default function WorkOrderListCard({
           >
             …
           </button>
-          {menuOpen ? (
+          {menuOpen && hasMenuActions ? (
             <div
               className={`absolute right-0 top-11 z-20 min-w-[132px] rounded-xl border p-1 shadow-lg ${
                 active ? "border-stone-700 bg-stone-950 text-white" : "border-stone-200 bg-white text-stone-900"
