@@ -45,12 +45,12 @@ import { useI18n } from "@/lib/i18n";
 import { isDebugFeatureEnabled } from "@/lib/constants/runtimeMode";
 import type { Material, Outsourcing, WorkOrder } from "@/types/workorder";
 
-function formatCurrency(value: number) {
+function formatCurrency(value: number, suffix: string) {
   const numeric = Number(value ?? 0);
   if (!Number.isFinite(numeric) || numeric <= 0) {
     return "-";
   }
-  return `${numeric.toLocaleString()}원`;
+  return `${numeric.toLocaleString()}${suffix}`;
 }
 
 function formatQuantity(value: number, suffix?: string) {
@@ -159,12 +159,12 @@ function SectionTable({
   );
 }
 
-function MaterialTableRows({ materials }: { materials: Material[] }) {
+function MaterialTableRows({ materials, emptyLabel, currencySuffix }: { materials: Material[]; emptyLabel: string; currencySuffix: string }) {
   if (materials.length === 0) {
     return (
       <tr>
         <td colSpan={6} className={TABLE_EMPTY_CLASS}>
-          항목이 없습니다.
+          {emptyLabel}
         </td>
       </tr>
     );
@@ -178,9 +178,9 @@ function MaterialTableRows({ materials }: { materials: Material[] }) {
           <td className={`${TABLE_CELL_CLASS} break-words`}>{material.name || "-"}</td>
           <td className={TABLE_CELL_CLASS}>{formatQuantity(material.quantity)}</td>
           <td className={TABLE_CELL_CLASS}>{material.unit || "-"}</td>
-          <td className={TABLE_CELL_CLASS}>{formatCurrency(material.unitCost)}</td>
+          <td className={TABLE_CELL_CLASS}>{formatCurrency(material.unitCost, currencySuffix)}</td>
           <td className={TABLE_CELL_CLASS}>
-            {formatCurrency(material.totalCost || material.quantity * material.unitCost)}
+            {formatCurrency(material.totalCost || material.quantity * material.unitCost, currencySuffix)}
           </td>
         </tr>
       ))}
@@ -188,12 +188,12 @@ function MaterialTableRows({ materials }: { materials: Material[] }) {
   );
 }
 
-function OutsourcingTableRows({ outsourcingItems }: { outsourcingItems: Outsourcing[] }) {
+function OutsourcingTableRows({ outsourcingItems, emptyLabel, currencySuffix }: { outsourcingItems: Outsourcing[]; emptyLabel: string; currencySuffix: string }) {
   if (outsourcingItems.length === 0) {
     return (
       <tr>
         <td colSpan={5} className={TABLE_EMPTY_CLASS}>
-          항목이 없습니다.
+          {emptyLabel}
         </td>
       </tr>
     );
@@ -206,8 +206,8 @@ function OutsourcingTableRows({ outsourcingItems }: { outsourcingItems: Outsourc
           <td className={TABLE_CELL_CLASS}>{item.vendor || "-"}</td>
           <td className={`${TABLE_CELL_CLASS} break-words`}>{item.process || "-"}</td>
           <td className={TABLE_CELL_CLASS}>{formatQuantity(item.quantity)}</td>
-          <td className={TABLE_CELL_CLASS}>{formatCurrency(item.unitCost)}</td>
-          <td className={TABLE_CELL_CLASS}>{formatCurrency(item.totalCost)}</td>
+          <td className={TABLE_CELL_CLASS}>{formatCurrency(item.unitCost, currencySuffix)}</td>
+          <td className={TABLE_CELL_CLASS}>{formatCurrency(item.totalCost, currencySuffix)}</td>
         </tr>
       ))}
     </>
@@ -227,6 +227,8 @@ export default function OrderRequestConfirmModal({
 }) {
   const { i18n } = useI18n();
   const copy = i18n.common.ui.modal.orderRequestConfirm;
+  const currencySuffix = i18n.workorder.ui.common.currencySuffix;
+  const formatDisplayCurrency = (value: number) => formatCurrency(value, currencySuffix);
   const requested = workOrder.factoryOrderRequest ?? null;
   const submissionSnapshot = useMemo(() => getOrderSubmissionSnapshot(workOrder), [workOrder]);
   const confirmedFactoryName = requested?.factoryName?.trim() || submissionSnapshot.factoryName;
@@ -301,17 +303,17 @@ export default function OrderRequestConfirmModal({
   const subsidiaryMaterials = preview.subsidiaryMaterials;
   const representativeImage = preview.representativeImage;
   const firstSummaryItems = [
-    { label: "품명", value: displayTitle },
-    { label: "공임", value: formatCurrency(currentFactoryLaborCost) },
-    { label: "원가", value: formatCurrency(preview.currentDocumentAmount) },
-    { label: "수량", value: formatQuantity(currentFactoryQuantity) },
+    { label: copy.summaryItemName, value: displayTitle },
+    { label: copy.summaryLaborCost, value: formatDisplayCurrency(currentFactoryLaborCost) },
+    { label: copy.summaryCost, value: formatDisplayCurrency(preview.currentDocumentAmount) },
+    { label: copy.summaryQuantity, value: formatQuantity(currentFactoryQuantity) },
   ];
 
   const secondSummaryItems = [
-    { label: "원단합", value: formatCurrency(preview.fabricAmountTotal) },
-    { label: "부자재합", value: formatCurrency(preview.subsidiaryAmountTotal) },
-    { label: "외주합", value: formatCurrency(preview.outsourcingAmountTotal) },
-    { label: "로스", value: formatCurrency(currentFactoryLossCost) },
+    { label: copy.summaryFabricTotal, value: formatDisplayCurrency(preview.fabricAmountTotal) },
+    { label: copy.summarySubsidiaryTotal, value: formatDisplayCurrency(preview.subsidiaryAmountTotal) },
+    { label: copy.summaryOutsourcingTotal, value: formatDisplayCurrency(preview.outsourcingAmountTotal) },
+    { label: copy.summaryLossCost, value: formatDisplayCurrency(currentFactoryLossCost) },
   ];
 
   const handleSubmitOrderRequest = async () => {
@@ -342,13 +344,13 @@ export default function OrderRequestConfirmModal({
       });
 
       if (isSamsungInternet) {
-        setPrintFeedback("PDF 출력 요청을 시작하지 못했습니다.");
+        setPrintFeedback(copy.printFailedToast);
         return;
       }
 
       const printWindow = window.open("", "_blank", "noopener=no,width=1024,height=900");
       if (!printWindow) {
-        setPrintFeedback("PDF 출력 요청을 시작하지 못했습니다.");
+        setPrintFeedback(copy.printFailedToast);
         return;
       }
 
@@ -361,20 +363,20 @@ export default function OrderRequestConfirmModal({
         setTimeout(() => {
           URL.revokeObjectURL(objectUrl);
         }, 60_000);
-        setPrintFeedback("PDF 출력 요청을 완료했습니다.");
+        setPrintFeedback(copy.printSuccessToast);
       } else {
         printWindow.document.open();
-        printWindow.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8" /><title>발주서 준비 중</title><style>html,body{height:100%;margin:0;font-family:Arial,'Noto Sans KR',sans-serif;background:#f5f2eb;color:#1c1917;}body{display:flex;align-items:center;justify-content:center;padding:24px;}div{font-size:14px;font-weight:600;}</style></head><body><div>출력용 문서를 준비하는 중입니다...</div></body></html>`);
+        printWindow.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8" /><title>${copy.printPreparingTitle}</title><style>html,body{height:100%;margin:0;font-family:Arial,'Noto Sans KR',sans-serif;background:#f5f2eb;color:#1c1917;}body{display:flex;align-items:center;justify-content:center;padding:24px;}div{font-size:14px;font-weight:600;}</style></head><body><div>${copy.printPreparingMessage}</div></body></html>`);
         printWindow.document.close();
         printWindow.document.open();
         printWindow.document.write(html);
         printWindow.document.close();
         printWindow.focus();
-        setPrintFeedback("PDF 출력 요청을 완료했습니다.");
+        setPrintFeedback(copy.printSuccessToast);
       }
     } catch (error) {
       console.error("[order-request-print] failed to render print window", error);
-      setPrintFeedback("PDF 출력 요청을 시작하지 못했습니다.");
+      setPrintFeedback(copy.printFailedToast);
       if (printWindowRef.current && !printWindowRef.current.closed) {
         printWindowRef.current.close();
       }
@@ -403,8 +405,8 @@ export default function OrderRequestConfirmModal({
               "pbp-interactive-button inline-flex h-11 w-11 items-center justify-center rounded-xl border border-stone-300 bg-white text-stone-700",
               "hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400",
             )}
-            aria-label={isPreparingPrint ? "PDF 준비 중" : i18n.common.ui.modalActions.exportPdf}
-            title={isPreparingPrint ? "PDF 준비 중" : i18n.common.ui.modalActions.exportPdf}
+            aria-label={isPreparingPrint ? copy.printPreparingAria : i18n.common.ui.modalActions.exportPdf}
+            title={isPreparingPrint ? copy.printPreparingAria : i18n.common.ui.modalActions.exportPdf}
           >
             <PrintIcon />
           </button>
@@ -416,8 +418,8 @@ export default function OrderRequestConfirmModal({
               "pbp-interactive-button inline-flex h-11 w-11 items-center justify-center rounded-xl bg-stone-900 text-white",
               "hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:bg-stone-300",
             )}
-            aria-label={isSubmittingOrderRequest ? getProcessingLabel(MODAL_ACTION_LABELS.proceedOrderRequest, i18n.workorder.ui.actionSection.processingFormat) : requested ? (copy.requestedBadge ?? "발주 완료") : MODAL_ACTION_LABELS.proceedOrderRequest}
-            title={isSubmittingOrderRequest ? getProcessingLabel(MODAL_ACTION_LABELS.proceedOrderRequest, i18n.workorder.ui.actionSection.processingFormat) : requested ? (copy.requestedBadge ?? "발주 완료") : MODAL_ACTION_LABELS.proceedOrderRequest}
+            aria-label={isSubmittingOrderRequest ? getProcessingLabel(MODAL_ACTION_LABELS.proceedOrderRequest, i18n.workorder.ui.actionSection.processingFormat) : requested ? copy.requestedBadge : MODAL_ACTION_LABELS.proceedOrderRequest}
+            title={isSubmittingOrderRequest ? getProcessingLabel(MODAL_ACTION_LABELS.proceedOrderRequest, i18n.workorder.ui.actionSection.processingFormat) : requested ? copy.requestedBadge : MODAL_ACTION_LABELS.proceedOrderRequest}
           >
             {isSubmittingOrderRequest ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" /> : requested ? <CheckIcon /> : <ArrowNextIcon />}
           </button>
@@ -429,13 +431,13 @@ export default function OrderRequestConfirmModal({
         <div className="border-b border-stone-400 px-5 py-5">
           <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3">
             <div className="min-w-0 pt-1 text-left">
-              <div className="text-[11px] font-semibold tracking-wide text-stone-500">납기일</div>
+              <div className="text-[11px] font-semibold tracking-wide text-stone-500">{copy.dueDateLabel}</div>
               <div className="mt-1 text-sm font-semibold text-stone-900">{formatDateLabel(currentDueDate)}</div>
             </div>
             <div className="min-w-0 text-center">
               <div className="flex flex-wrap items-end justify-center gap-x-3 gap-y-1">
-                <div className="text-[25px] font-black tracking-[0.2em] text-stone-900">작 업 지 시 서</div>
-                <div className="max-w-[240px] truncate text-xs font-semibold text-stone-500">{currentFactoryName || "공장 미지정"}</div>
+                <div className="text-[25px] font-black tracking-[0.2em] text-stone-900">{copy.documentTitle}</div>
+                <div className="max-w-[240px] truncate text-xs font-semibold text-stone-500">{currentFactoryName || copy.factoryUnset}</div>
               </div>
               <div className="mt-2 text-lg font-bold text-stone-900">{displayTitle}</div>
             </div>
@@ -455,7 +457,7 @@ export default function OrderRequestConfirmModal({
         <div className="border-b border-stone-400 bg-[#fcfaf5] p-4">
           <section className="grid gap-3 xl:grid-cols-2">
             <div className="flex min-h-[360px] flex-col overflow-hidden border border-stone-400 bg-white">
-              <div className="flex h-10 shrink-0 items-center border-b border-stone-300 bg-stone-100 px-3 text-sm font-bold text-stone-900">대표 이미지</div>
+              <div className="flex h-10 shrink-0 items-center border-b border-stone-300 bg-stone-100 px-3 text-sm font-bold text-stone-900">{copy.representativeImageTitle}</div>
               <div className="flex flex-1 p-4">
                 {representativeImage ? (
                   <div className="flex min-h-[300px] flex-1 items-center justify-center overflow-hidden border border-stone-300 bg-stone-100">
@@ -463,18 +465,18 @@ export default function OrderRequestConfirmModal({
                   </div>
                 ) : (
                   <div className="flex min-h-[300px] flex-1 items-center justify-center border border-dashed border-stone-300 bg-white text-sm text-stone-500">
-                    대표 이미지가 없습니다.
+                    {copy.representativeImageEmpty}
                   </div>
                 )}
               </div>
             </div>
             <div className="flex min-h-[360px] flex-col overflow-hidden border border-stone-400 bg-white">
-              <div className="flex h-10 shrink-0 items-center border-b border-stone-300 bg-stone-100 px-3 text-sm font-bold text-stone-900">요청사항</div>
+              <div className="flex h-10 shrink-0 items-center border-b border-stone-300 bg-stone-100 px-3 text-sm font-bold text-stone-900">{copy.requestNoteTitle}</div>
               <div className="flex flex-1 p-4">
                 <textarea
                   value={requestNote}
                   onChange={(event) => setRequestNote(event.target.value)}
-                  placeholder="발주 요청 시 전달할 메모를 입력하세요."
+                  placeholder={copy.requestNotePlaceholder}
                   className="min-h-[300px] flex-1 resize-none border border-stone-300 bg-white px-3 py-3 text-sm leading-6 text-stone-800 outline-none transition focus:border-stone-500"
                 />
               </div>
@@ -484,58 +486,58 @@ export default function OrderRequestConfirmModal({
 
         <div className="space-y-4 bg-[#fcfaf5] p-4">
           <SectionTable
-            title="원단 내역"
+            title={copy.fabricTableTitle}
             columns={[
-              { label: "거래처", className: "w-[19%]" },
-              { label: "자재명", className: "w-[27%]" },
-              { label: "수량", className: "w-[12%]" },
-              { label: "단위", className: "w-[10%]" },
-              { label: "단가", className: "w-[16%]" },
-              { label: "금액", className: "w-[16%]" },
+              { label: copy.tableVendor, className: "w-[19%]" },
+              { label: copy.tableMaterialName, className: "w-[27%]" },
+              { label: copy.tableQuantity, className: "w-[12%]" },
+              { label: copy.tableUnit, className: "w-[10%]" },
+              { label: copy.tableUnitCost, className: "w-[16%]" },
+              { label: copy.tableAmount, className: "w-[16%]" },
             ]}
-            footerLabel="원단 총합"
-            footerValue={formatCurrency(preview.fabricAmountTotal)}
+            footerLabel={copy.fabricFooter}
+            footerValue={formatDisplayCurrency(preview.fabricAmountTotal)}
           >
-            <MaterialTableRows materials={fabricMaterials} />
+            <MaterialTableRows materials={fabricMaterials} emptyLabel={copy.itemEmpty} currencySuffix={currencySuffix} />
           </SectionTable>
 
           <SectionTable
-            title="부자재 내역"
+            title={copy.subsidiaryTableTitle}
             columns={[
-              { label: "거래처", className: "w-[19%]" },
-              { label: "자재명", className: "w-[27%]" },
-              { label: "수량", className: "w-[12%]" },
-              { label: "단위", className: "w-[10%]" },
-              { label: "단가", className: "w-[16%]" },
-              { label: "금액", className: "w-[16%]" },
+              { label: copy.tableVendor, className: "w-[19%]" },
+              { label: copy.tableMaterialName, className: "w-[27%]" },
+              { label: copy.tableQuantity, className: "w-[12%]" },
+              { label: copy.tableUnit, className: "w-[10%]" },
+              { label: copy.tableUnitCost, className: "w-[16%]" },
+              { label: copy.tableAmount, className: "w-[16%]" },
             ]}
-            footerLabel="부자재 총합"
-            footerValue={formatCurrency(preview.subsidiaryAmountTotal)}
+            footerLabel={copy.subsidiaryFooter}
+            footerValue={formatDisplayCurrency(preview.subsidiaryAmountTotal)}
           >
-            <MaterialTableRows materials={subsidiaryMaterials} />
+            <MaterialTableRows materials={subsidiaryMaterials} emptyLabel={copy.itemEmpty} currencySuffix={currencySuffix} />
           </SectionTable>
 
           <SectionTable
-            title="외주 내역"
+            title={copy.outsourcingTableTitle}
             columns={[
-              { label: "외주처", className: "w-[24%]" },
-              { label: "작업명", className: "w-[30%]" },
-              { label: "수량", className: "w-[12%]" },
-              { label: "단가", className: "w-[17%]" },
-              { label: "금액", className: "w-[17%]" },
+              { label: copy.tableOutsourcingVendor, className: "w-[24%]" },
+              { label: copy.tableOutsourcingTask, className: "w-[30%]" },
+              { label: copy.tableQuantity, className: "w-[12%]" },
+              { label: copy.tableUnitCost, className: "w-[17%]" },
+              { label: copy.tableAmount, className: "w-[17%]" },
             ]}
-            footerLabel="외주 총합"
-            footerValue={formatCurrency(preview.outsourcingAmountTotal)}
+            footerLabel={copy.outsourcingFooter}
+            footerValue={formatDisplayCurrency(preview.outsourcingAmountTotal)}
           >
-            <OutsourcingTableRows outsourcingItems={preview.outsourcingItems} />
+            <OutsourcingTableRows outsourcingItems={preview.outsourcingItems} emptyLabel={copy.itemEmpty} currencySuffix={currencySuffix} />
           </SectionTable>
         </div>
 
         {showOrderRequestDocumentDebug ? (
           <div className="border-t border-dashed border-amber-300 bg-amber-50/70 px-4 py-3 text-xs text-amber-900">
-            <div className="font-semibold">발주 문서 디버그</div>
+            <div className="font-semibold">{copy.debugTitle}</div>
             <div className="mt-1 break-words">
-              {preview.currentDocument.label} · {currentFactoryPage.factoryName || "공장 미지정"} · 납기 {formatDateLabel(currentDueDate)} · 수량 {formatQuantity(currentFactoryQuantity)}
+              {preview.currentDocument.label} · {currentFactoryPage.factoryName || copy.factoryUnset} · {copy.dueDateLabel} {formatDateLabel(currentDueDate)} · {copy.tableQuantity} {formatQuantity(currentFactoryQuantity)}
             </div>
           </div>
         ) : null}
@@ -547,20 +549,20 @@ export default function OrderRequestConfirmModal({
               onClick={() => setCurrentPageIndex((prev) => clampPageIndex(prev - 1, totalPageCount))}
               disabled={totalPageCount <= 1 || safePageIndex <= 0}
               className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-300"
-              aria-label="이전 페이지"
+              aria-label={copy.previousPageAria}
             >
               <span className="block rotate-90">▾</span>
             </button>
             <div className="text-center">
               <div className="text-sm font-semibold text-stone-600">{getFactoryPageLabel(safePageIndex, totalPageCount)}</div>
-              <div className="mt-1 text-[11px] text-stone-500">{preview.currentDocument.label} · {currentFactoryPage.factoryName || "공장 미지정"}</div>
+              <div className="mt-1 text-[11px] text-stone-500">{preview.currentDocument.label} · {currentFactoryPage.factoryName || copy.factoryUnset}</div>
             </div>
             <button
               type="button"
               onClick={() => setCurrentPageIndex((prev) => clampPageIndex(prev + 1, totalPageCount))}
               disabled={totalPageCount <= 1 || safePageIndex >= totalPageCount - 1}
               className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-300"
-              aria-label="다음 페이지"
+              aria-label={copy.nextPageAria}
             >
               <span className="block -rotate-90">▾</span>
             </button>

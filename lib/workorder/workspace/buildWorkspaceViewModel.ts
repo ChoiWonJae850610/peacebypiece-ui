@@ -22,10 +22,11 @@ export function buildWorkspaceViewModel(
   const isWorkspaceWriteLocked = Boolean(
     args.isWorkspaceWriteLocked || args.workflowProcessingLabel,
   );
+  const processingFormat = args.i18n.workorder.ui.actionSection.processingFormat;
   const workspaceWriteLockMessage =
     args.workspaceWriteLockMessage ??
     (args.workflowProcessingLabel
-      ? `${args.workflowProcessingLabel.replace(/\s+/g, "")} 중입니다...`
+      ? processingFormat.replace("{label}", args.workflowProcessingLabel.replace(/\s+/g, ""))
       : undefined);
 
   const sidebarListProps = buildSidebarListProps({

@@ -17,17 +17,6 @@ type WorkOrderWorkspaceProps = {
   initialWorkOrderId?: string | null;
 };
 
-const WORK_ORDER_WRITE_LOCK_MESSAGES = {
-  create: "작업지시서 생성 중입니다...",
-  workflow: "상태 변경 처리 중입니다...",
-  reorder: "리오더 생성 중입니다...",
-  delete: "작업지시서 삭제 중입니다...",
-  memo: "메모 저장 중입니다...",
-  attachment: "파일 처리 중입니다...",
-  edit: "변경사항 저장 중입니다...",
-  orderRequest: "발주요청 중입니다...",
-} as const;
-
 export default function WorkOrderWorkspace({
   initialWorkOrderId = null,
 }: WorkOrderWorkspaceProps) {
@@ -70,31 +59,25 @@ export default function WorkOrderWorkspace({
   const isRepositoryLoading = repository.repositoryStatus === "loading";
   const isCreatingWorkOrder = runtime.actionStatusMap.create === "loading";
   const loadingCopy = i18n.workorder.ui.layout.sidebarControls;
+  const lifecycleCopy = i18n.workorder.lifecycle;
+  const processingFormat = i18n.workorder.ui.actionSection.processingFormat;
   const lifecycleProcessingLabel = (() => {
-    if (runtime.actionStatusMap.create === "loading")
-      return (
-        i18n.workorder.lifecycle.createProcessingLabel ??
-        "작업지시서 생성 중입니다..."
-      );
-    if (runtime.actionStatusMap.reorder === "loading")
-      return (
-        i18n.workorder.lifecycle.reorderProcessingLabel ??
-        "리오더 생성 중입니다..."
-      );
-    if (runtime.actionStatusMap.delete === "loading")
-      return (
-        i18n.workorder.lifecycle.deleteProcessingLabel ??
-        "작업지시서 삭제 중입니다..."
-      );
+    if (runtime.actionStatusMap.create === "loading") {
+      return lifecycleCopy.createProcessingLabel;
+    }
+    if (runtime.actionStatusMap.reorder === "loading") {
+      return lifecycleCopy.reorderProcessingLabel;
+    }
+    if (runtime.actionStatusMap.delete === "loading") {
+      return lifecycleCopy.deleteProcessingLabel;
+    }
     return null;
   })();
   const workflowWriteLockMessage = workflowProcessingLabel
-    ? `${workflowProcessingLabel.replace(/\s+/g, "")} 중입니다...`
+    ? processingFormat.replace("{label}", workflowProcessingLabel.replace(/\s+/g, ""))
     : null;
   const persistenceProcessingLabel =
-    persistence.saveStatus === "saving"
-      ? WORK_ORDER_WRITE_LOCK_MESSAGES.edit
-      : null;
+    persistence.saveStatus === "saving" ? lifecycleCopy.editProcessingLabel : null;
   const workspaceWriteLockMessage =
     manualWriteLockMessage ??
     lifecycleProcessingLabel ??
@@ -166,8 +149,7 @@ export default function WorkOrderWorkspace({
     const workOrderId = pendingWorkOrderDeleteId;
     setPendingWorkOrderDeleteId(null);
     void runWithWorkspaceWriteLock(
-      i18n.workorder.lifecycle.deleteProcessingLabel ??
-        WORK_ORDER_WRITE_LOCK_MESSAGES.delete,
+      lifecycleCopy.deleteProcessingLabel,
       () => actions.handleDeleteWorkOrder(workOrderId),
     );
   };
@@ -187,7 +169,7 @@ export default function WorkOrderWorkspace({
     const attachmentId = pendingAttachmentDeleteId;
     setPendingAttachmentDeleteId(null);
     void runWithWorkspaceWriteLock(
-      WORK_ORDER_WRITE_LOCK_MESSAGES.attachment,
+      lifecycleCopy.attachmentProcessingLabel,
       () => attachments.handleDeleteAttachment(attachmentId),
     );
   };
@@ -277,28 +259,26 @@ export default function WorkOrderWorkspace({
     dbConnectionStatus,
     onSetHistoryFilter: history.setHistoryFilter,
     onSave: () => {
-      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.edit, () =>
+      void runWithWorkspaceWriteLock(lifecycleCopy.editProcessingLabel, () =>
         actions.handleSave(),
       );
     },
     onSelectWorkOrder: actions.handleSelectWorkOrder,
     onCreateWorkOrder: (payload) => {
       void runWithWorkspaceWriteLock(
-        i18n.workorder.lifecycle.createProcessingLabel ??
-          WORK_ORDER_WRITE_LOCK_MESSAGES.create,
+        lifecycleCopy.createProcessingLabel,
         () => actions.handleCreateWorkOrder(payload),
       );
     },
     onDeleteWorkOrder: handleRequestDeleteWorkOrder,
     onReorderWorkOrder: (id) => {
       void runWithWorkspaceWriteLock(
-        i18n.workorder.lifecycle.reorderProcessingLabel ??
-          WORK_ORDER_WRITE_LOCK_MESSAGES.reorder,
+        lifecycleCopy.reorderProcessingLabel,
         () => actions.handleReorderWorkOrder(id),
       );
     },
     onReworkWorkOrder: (id) => {
-      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.edit, () =>
+      void runWithWorkspaceWriteLock(lifecycleCopy.editProcessingLabel, () =>
         actions.handleReworkWorkOrder(id),
       );
     },
@@ -307,37 +287,37 @@ export default function WorkOrderWorkspace({
       if (!isWorkspaceWriteLocked) actions.handleUpdateSelectedWorkOrder(patch);
     },
     onRenameWorkOrderTitle: (nextTitle) => {
-      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.edit, () =>
+      void runWithWorkspaceWriteLock(lifecycleCopy.editProcessingLabel, () =>
         actions.handleRenameWorkOrderTitle(nextTitle),
       );
     },
     onConfirmOrderRequest: (payload) => {
       void runWithWorkspaceWriteLock(
-        WORK_ORDER_WRITE_LOCK_MESSAGES.orderRequest,
+        lifecycleCopy.orderRequestProcessingLabel,
         () => actions.handleConfirmOrderRequest(payload),
       );
     },
     onCloseOrderRequestConfirm: actions.handleCloseOrderRequestConfirm,
     onInventoryApply: (payload) => {
-      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.edit, () =>
+      void runWithWorkspaceWriteLock(lifecycleCopy.editProcessingLabel, () =>
         actions.handleInventoryApply(payload),
       );
     },
     onCompleteInspection: (payload) => {
       void runWithWorkspaceWriteLock(
-        WORK_ORDER_WRITE_LOCK_MESSAGES.workflow,
+        lifecycleCopy.workflowProcessingLabel,
         () => actions.handleCompleteInspection(payload),
       );
     },
     onApplyRoles: (userId, roles) => {
-      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.edit, () =>
+      void runWithWorkspaceWriteLock(lifecycleCopy.editProcessingLabel, () =>
         actions.handleApplyRoles(userId, roles),
       );
     },
     onOpenManagerAssignModal: actions.handleOpenManagerAssignModal,
     onCloseManagerAssignModal: actions.handleCloseManagerAssignModal,
     onChangeManager: (managerId) => {
-      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.edit, () =>
+      void runWithWorkspaceWriteLock(lifecycleCopy.editProcessingLabel, () =>
         actions.handleChangeManager(managerId),
       );
     },
@@ -347,46 +327,46 @@ export default function WorkOrderWorkspace({
     },
     onUploadAttachmentFiles: (scope, files) => {
       void runWithWorkspaceWriteLock(
-        WORK_ORDER_WRITE_LOCK_MESSAGES.attachment,
+        lifecycleCopy.attachmentProcessingLabel,
         () => attachments.handleAttachmentFileDrop(scope, files),
       );
     },
     onRequestDeleteAttachment: handleRequestDeleteAttachment,
     onSetPrimaryDesignAttachment: (attachmentId) => {
       void runWithWorkspaceWriteLock(
-        WORK_ORDER_WRITE_LOCK_MESSAGES.attachment,
+        lifecycleCopy.attachmentProcessingLabel,
         () => attachments.handleSetPrimaryDesignAttachment(attachmentId),
       );
     },
     onAttachmentDeleteConfirmClose: handleCloseDeleteAttachmentConfirm,
     onAttachmentDeleteConfirm: handleConfirmDeleteAttachment,
     onCreateMemoThread: (content) => {
-      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.memo, () =>
+      void runWithWorkspaceWriteLock(lifecycleCopy.memoProcessingLabel, () =>
         memo.handleCreateMemoThread(content),
       );
     },
     onCreateMemoReply: (threadId, content) => {
-      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.memo, () =>
+      void runWithWorkspaceWriteLock(lifecycleCopy.memoProcessingLabel, () =>
         memo.handleCreateMemoReply(threadId, content),
       );
     },
     onUpdateMemoThread: (threadId, content) => {
-      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.memo, () =>
+      void runWithWorkspaceWriteLock(lifecycleCopy.memoProcessingLabel, () =>
         memo.handleUpdateMemoThread(threadId, content),
       );
     },
     onDeleteMemoThread: (threadId) => {
-      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.memo, () =>
+      void runWithWorkspaceWriteLock(lifecycleCopy.memoProcessingLabel, () =>
         memo.handleDeleteMemoThread(threadId),
       );
     },
     onUpdateMemoReply: (threadId, replyId, content) => {
-      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.memo, () =>
+      void runWithWorkspaceWriteLock(lifecycleCopy.memoProcessingLabel, () =>
         memo.handleUpdateMemoReply(threadId, replyId, content),
       );
     },
     onDeleteMemoReply: (threadId, replyId) => {
-      void runWithWorkspaceWriteLock(WORK_ORDER_WRITE_LOCK_MESSAGES.memo, () =>
+      void runWithWorkspaceWriteLock(lifecycleCopy.memoProcessingLabel, () =>
         memo.handleDeleteMemoReply(threadId, replyId),
       );
     },
@@ -411,7 +391,7 @@ export default function WorkOrderWorkspace({
         attachmentInputAccept={attachments.attachmentInputAccept}
         onAttachmentFilesChange={(event) => {
           void runWithWorkspaceWriteLock(
-            WORK_ORDER_WRITE_LOCK_MESSAGES.attachment,
+            lifecycleCopy.attachmentProcessingLabel,
             () => attachments.handleAttachmentFiles(event),
           );
         }}

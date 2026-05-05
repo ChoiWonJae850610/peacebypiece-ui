@@ -22,7 +22,7 @@ export default function WorkOrderDetailDesktopView({
       sidebar={<SidebarContent {...sidebarListProps} />}
       detail={isLoading ? (
         <WorkOrderLoadingState
-          title={loadingState?.detailTitle ?? "작업지시서를 불러오는 중입니다."}
+          title={loadingState?.detailTitle ?? ""}
           description={loadingState?.detailDescription}
         />
       ) : hasSelection ? (
@@ -33,7 +33,7 @@ export default function WorkOrderDetailDesktopView({
       sidePanel={isLoading ? (
         <WorkOrderLoadingState
           variant="side"
-          title={loadingState?.sideTitle ?? "첨부와 메모를 준비하는 중입니다."}
+          title={loadingState?.sideTitle ?? ""}
           description={loadingState?.sideDescription}
         />
       ) : hasSelection ? <WorkOrderSidePanel {...sidePanelProps} /> : <WorkOrderEmptyState variant="side" />}

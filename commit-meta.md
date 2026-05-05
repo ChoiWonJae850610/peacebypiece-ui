@@ -1,18 +1,22 @@
 Version :
-0.9.1941
+0.9.195
 
 Summary :
-작업지시서 전역 쓰기 잠금 누락과 빌드 오류 보완
+작업지시서 직접 문구 i18n 1차 정리
 
 Description :
-권한 적용 콜백 인자 전달 오류를 수정해 TypeScript 빌드 실패 원인을 보완했다. 리오더와 삭제 등 작업지시서 CUD 처리 중에도 검토완료, 반려, 발주요청 같은 상태 전환 버튼이 비활성화되도록 액션 섹션에 전역 쓰기 잠금 상태를 전달했다. 기존 전역 쓰기 잠금 범위는 되돌리지 않고 유지했다.
+작업지시서 화면의 처리 중 문구, 로딩 fallback, PDF 출력/발주요청 문서 미리보기 문구 일부를 i18n 기준으로 이동했다. 기존 기능 동작은 유지하고, 작업지시서 write lock과 PDF 출력 흐름은 변경하지 않았다.
 
 수정 파일 목록 :
+- components/common/modal/OrderRequestConfirmModal.tsx
 - components/workorder/WorkOrderWorkspace.tsx
-- components/workorder/detail/WorkOrderActionSection.tsx
-- components/workorder/detail/sections/device/WorkOrderDetailMobileActionSection.tsx
-- components/workorder/detail/sections/device/WorkOrderDetailTabletActionSection.tsx
-- lib/workorder/presentation/workOrderDetailSectionProps.ts
+- components/workorder/layout/WorkOrderDetailDesktopView.tsx
+- components/workorder/layout/WorkOrderDetailMobileView.tsx
+- components/workorder/layout/WorkOrderDetailTabletView.tsx
+- components/workorder/list/WorkOrderListCard.tsx
+- lib/i18n/en/workorder.ts
+- lib/i18n/ko/workorder.ts
+- lib/workorder/workspace/buildWorkspaceViewModel.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :

@@ -105,7 +105,7 @@ export default function WorkOrderListCard({
             type="button"
             onClick={() => { if (canOpenMenu) setMenuOpen((prev) => !prev); }}
             disabled={!canOpenMenu}
-            title={writeLocked ? writeLockMessage ?? "처리 중입니다." : undefined}
+            title={writeLocked ? writeLockMessage ?? i18n.workorder.lifecycle.genericProcessingLabel : undefined}
             className={`pbp-touch-target pbp-interactive-button flex h-9 w-9 items-center justify-center rounded-xl border text-base font-semibold disabled:cursor-not-allowed disabled:opacity-50 ${
               active
                 ? "border-white/20 bg-white/10 text-white hover:bg-white/15"
