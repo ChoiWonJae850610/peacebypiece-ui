@@ -234,22 +234,40 @@ export default function OrderRequestConfirmModal({
   const canSubmit = Boolean(confirmedFactoryName) && Boolean(confirmedDueDate) && confirmedQuantity > 0 && !requested && !orderRowsValidationMessage;
 
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
-  const [requestNote, setRequestNote] = useState(() => String(workOrder.memo ?? "").trim());
+  const [requestNote, setRequestNote] = useState("");
   const [printFeedback, setPrintFeedback] = useState<string | null>(null);
   const [isPreparingPrint, setIsPreparingPrint] = useState(false);
   const printWindowRef = useRef<Window | null>(null);
 
   useEffect(() => {
     setCurrentPageIndex(0);
-    setRequestNote(String(workOrder.memo ?? "").trim());
+    setRequestNote("");
     setPrintFeedback(null);
     setIsPreparingPrint(false);
-  }, [open, workOrder.id, workOrder.memo]);
+  }, [open, workOrder.id]);
 
   useEffect(() => {
     if (!printFeedback) return;
-    const timeout = window.setTimeout(() => setPrintFeedback(null), 2200);
-    return () => window.clearTimeout(timeout);
+
+    let timeout: number | null = null;
+    const clearFeedback = () => setPrintFeedback(null);
+    const startDismissTimer = () => {
+      if (timeout !== null) return;
+      timeout = window.setTimeout(clearFeedback, 3200);
+    };
+
+    if (document.hasFocus()) {
+      startDismissTimer();
+    } else {
+      window.addEventListener("focus", startDismissTimer, { once: true });
+    }
+
+    return () => {
+      if (timeout !== null) {
+        window.clearTimeout(timeout);
+      }
+      window.removeEventListener("focus", startDismissTimer);
+    };
   }, [printFeedback]);
 
   useEffect(() => {

@@ -1,14 +1,15 @@
 Version :
-0.9.185
+0.9.186
 
 Summary :
-작업지시서 PDF 출력 알림과 발주요청 메모 입력 안내 보완
+PDF 요청사항 문구와 출력 토스트 표시 보완
 
 Description :
-발주요청 모달에서 PDF 출력 요청 성공/실패 결과를 작업지시서 화면과 같은 하단 중앙 토스트로 표시하도록 정리했다. 모달 내부의 별도 안내 박스는 제거하고, 요청사항 입력란에는 발주 요청 시 전달할 메모를 입력할 수 있음을 알리는 placeholder를 추가했다.
+발주요청 PDF 요청사항에 작업지시서 메모나 생성 안내 문구가 자동으로 들어가지 않도록 요청사항 입력값만 사용하게 정리했다. 요청사항이 비어 있으면 PDF에는 요청사항 없음 문구를 표시한다. PDF 출력 요청 토스트는 출력창으로 포커스가 이동해도 사용자가 돌아온 뒤 확인할 수 있도록 닫힘 타이밍을 보완했다.
 
 수정 파일 목록 :
 - components/common/modal/OrderRequestConfirmModal.tsx
+- lib/workorder/presentation/orderRequestDocumentPrint.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :

@@ -111,6 +111,10 @@ export function buildOrderRequestPrintHtml(
   },
 ) {
   const initialPreview = getOrderRequestDocumentPreview(workOrder, 0);
+  const requestNote = options && Object.prototype.hasOwnProperty.call(options, "requestNote")
+    ? String(options.requestNote ?? "").trim()
+    : initialPreview.requestNote;
+  const requestNoteLabel = requestNote || "요청사항이 없습니다.";
 
   const documentsHtml = initialPreview.documents.map((documentUnit, index) => {
     const preview = getOrderRequestDocumentPreview(workOrder, index);
@@ -155,7 +159,7 @@ export function buildOrderRequestPrintHtml(
             <section class="hero-section hero-side">
               <div class="section-head">요청사항</div>
               <div class="hero-side-body request-only-body">
-                <div class="request-note">${escapeHtml(options?.requestNote?.trim() || preview.requestNote || "표시할 요청사항이 없습니다.")}</div>
+                <div class="request-note">${escapeHtml(requestNoteLabel)}</div>
               </div>
             </section>
           </div>
