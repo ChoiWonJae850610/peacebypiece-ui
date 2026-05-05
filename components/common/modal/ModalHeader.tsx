@@ -18,7 +18,7 @@ export default function ModalHeader({
 }: ModalHeaderProps) {
   const { i18n } = useI18n();
   return (
-    <div className="sticky top-0 z-20 shrink-0 border-b px-4 pb-3 pt-[max(1rem,env(safe-area-inset-top))] shadow-[0_1px_0_rgba(0,0,0,0.04)] backdrop-blur md:px-6 md:pb-4 md:pt-4 pbp-modal-chrome">
+    <div className="sticky top-0 z-20 shrink-0 border-b px-4 pb-3 pt-[max(1rem,env(safe-area-inset-top))] shadow-[0_1px_0_rgba(0,0,0,0.06)] md:px-6 md:pb-4 md:pt-4 pbp-modal-chrome">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div id={titleId} className="text-base font-semibold md:text-lg pbp-text-primary">

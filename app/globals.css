@@ -18,8 +18,12 @@
   --pbp-danger-soft: #fef2f2;
   --pbp-warning: #d97706;
   --pbp-warning-soft: #fffbeb;
-  --pbp-shadow-card: 0 1px 2px rgba(28, 25, 23, 0.06);
-  --pbp-shadow-elevated: 0 18px 55px rgba(28, 25, 23, 0.16);
+  --pbp-modal-surface: #ffffff;
+  --pbp-modal-chrome: #ffffff;
+  --pbp-toast-background: #171717;
+  --pbp-toast-foreground: #ffffff;
+  --pbp-shadow-card: 0 1px 3px rgba(28, 25, 23, 0.08), 0 1px 2px rgba(28, 25, 23, 0.04);
+  --pbp-shadow-elevated: 0 18px 55px rgba(28, 25, 23, 0.22);
 }
 
 @theme inline {
@@ -84,7 +88,7 @@ body {
 }
 
 .pbp-card {
-  border: 1px solid var(--pbp-border);
+  border: 1px solid var(--pbp-border-strong);
   background: var(--pbp-surface);
   color: var(--pbp-text-primary);
   box-shadow: var(--pbp-shadow-card);
@@ -94,6 +98,7 @@ body {
   border: 1px solid var(--pbp-border);
   background: var(--pbp-surface-muted);
   color: var(--pbp-text-primary);
+  box-shadow: var(--pbp-shadow-card);
 }
 
 .pbp-button-surface {
@@ -103,20 +108,22 @@ body {
 }
 
 .pbp-toast {
-  background: var(--pbp-text-primary);
-  color: var(--pbp-surface);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--pbp-toast-background);
+  color: var(--pbp-toast-foreground);
   box-shadow: var(--pbp-shadow-elevated);
 }
 
 .pbp-modal-panel {
-  border-color: var(--pbp-border);
-  background: var(--pbp-surface);
+  border-color: var(--pbp-border-strong);
+  background: var(--pbp-modal-surface);
   color: var(--pbp-text-primary);
+  box-shadow: var(--pbp-shadow-elevated);
 }
 
 .pbp-modal-chrome {
   border-color: var(--pbp-border);
-  background: color-mix(in srgb, var(--pbp-surface) 95%, transparent);
+  background: var(--pbp-modal-chrome);
 }
 
 

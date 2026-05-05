@@ -1,25 +1,21 @@
 Version :
-0.9.197
+0.9.1971
 
 Summary :
-작업지시서 테마 토큰 준비 1차
+테마 토큰 적용 후 모달과 토스트 배경 대비 보정
 
 Description :
-전역 CSS 변수와 토큰 기반 공통 클래스를 추가하고, 작업지시서 공통 카드, 공통 모달, 하단 중앙 토스트 일부를 테마 토큰 기준으로 연결했다. 기능 동작은 변경하지 않았다.
+공통 테마 토큰 구조는 유지하면서 모달 본체와 header/footer chrome의 배경을 불투명 surface 기준으로 보정했다. 하단 중앙 토스트의 배경과 텍스트 대비를 강화하고, 공통 카드 border와 shadow를 보강해 비용 요약과 발주요청 preview 영역의 분리감을 개선했다.
 
 수정 파일 목록 :
 - app/globals.css
 - components/common/ToastMessage.tsx
 - components/common/modal/BaseModal.tsx
-- components/common/modal/ModalFooter.tsx
 - components/common/modal/ModalHeader.tsx
-- components/common/ui/SummaryCard.tsx
-- components/common/ui/WorkOrderPanelCard.tsx
-- components/workorder/detail/layout/DesktopWorkspaceLayout.tsx
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/workorder-theme-token-0.9.197.md
+없음
 
 삭제 파일 목록 :
 없음
