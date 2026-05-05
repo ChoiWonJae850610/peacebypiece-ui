@@ -79,13 +79,13 @@ export default function OrderInfoSection({
   ) : null;
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-stone-50 p-3.5">
+    <div className="overflow-hidden rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm">
       <SectionHeader title={copy.title} summary={formatOrderSummary(orderEntries)} open={open} onToggle={onToggle} rightSlot={inspectionButton} />
       {open ? (
         <>
           {showDebugPanel ? <OrderInfoHubDebugPanel policy={orderHubPolicy} /> : null}
           {inspectionStatusSummary.length > 0 ? (
-            <div className="mt-2 flex flex-wrap items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-2">
+            <div className="mt-3 flex flex-wrap items-center gap-1.5 rounded-2xl border border-stone-200 bg-stone-50/80 px-3 py-2">
               <span className="mr-1 text-[11px] font-semibold text-stone-500">발주 상태</span>
               {inspectionStatusSummary.map((status) => (
                 <span key={status.label} className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium leading-none ${status.tone}`}>
@@ -94,7 +94,7 @@ export default function OrderInfoSection({
               ))}
             </div>
           ) : null}
-          <div className="mt-2 max-w-full overflow-hidden">
+          <div className="mt-3 max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-white">
             <table className="w-full max-w-full table-fixed text-left">
               <colgroup>
                 <col className="w-[13%]" />

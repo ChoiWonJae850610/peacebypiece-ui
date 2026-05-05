@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-export const WORKORDER_PANEL_CARD_CLASS = "rounded-2xl border border-stone-200 bg-white p-3 shadow-sm md:p-4";
+export const WORKORDER_PANEL_CARD_CLASS = "rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm";
 
 export default function WorkOrderPanelCard({
   children,

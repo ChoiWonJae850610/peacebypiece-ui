@@ -12,17 +12,20 @@ type WorkOrderDetailDesktopSectionsProps = {
 export default function WorkOrderDetailDesktopSections({ viewModel }: WorkOrderDetailDesktopSectionsProps) {
   return (
     <>
-      <WorkOrderHeaderSection {...viewModel.headerProps} />
+      <div className="rounded-[28px] border border-stone-200 bg-white px-5 py-5 shadow-sm">
+        <WorkOrderHeaderSection {...viewModel.headerProps} />
 
-      <WorkOrderActionSection {...viewModel.actionProps} />
+        <WorkOrderActionSection {...viewModel.actionProps} />
+
+      </div>
 
       {viewModel.showCostSummary ? (
-        <div className="mt-6">
+        <div className="mt-5">
           <WorkOrderCostSummarySection {...viewModel.costSummaryProps} />
         </div>
       ) : null}
 
-      <div className="mt-6 grid gap-6">
+      <div className="mt-5 grid gap-5">
         <OrderInfoSection {...viewModel.orderInfoProps} />
 
         {viewModel.showProductionComposition ? <ProductionCompositionSection {...viewModel.productionCompositionProps} /> : null}

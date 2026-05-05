@@ -50,8 +50,8 @@ export default function WorkOrderActionSection({
   const currentGroupIndex = stageGroups.findIndex((group) => group.stages.includes(currentStage));
 
   return (
-    <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-4 md:mt-5">
-      <div className="flex items-start justify-between gap-3">
+    <div className="mt-5 rounded-[24px] border border-stone-200 bg-stone-50/80 p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="text-sm font-semibold text-stone-900">{copy.title}</div>
         </div>
@@ -93,12 +93,12 @@ export default function WorkOrderActionSection({
       </div>
 
       {processingMessage ? (
-        <div className="mt-3 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs font-medium text-stone-700">
+        <div className="mt-3 rounded-2xl border border-stone-200 bg-white px-3 py-2 text-xs font-medium text-stone-700 shadow-sm">
           {processingMessage}
         </div>
       ) : null}
 
-      <div className="mt-3">
+      <div className="mt-4">
         <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${stages.length}, minmax(0, 1fr))` }}>
           {stages.map((stage, index) => {
             const isDone = index <= currentIndex;
@@ -125,7 +125,7 @@ export default function WorkOrderActionSection({
         </div>
       </div>
 
-      <div className="mt-3 flex items-center gap-2 text-xs text-stone-500">
+      <div className="mt-4 flex items-center gap-2 text-xs text-stone-500">
         <span>{stageGroups[currentGroupIndex]?.label ?? copy.fallbackGroup}</span>
         <span>·</span>
         <span>{getDisplayStageLabel(currentStage)}</span>

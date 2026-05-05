@@ -1,15 +1,21 @@
 Version :
-0.9.1951
+0.9.196
 
 Summary :
-발주요청 미리보기 i18n 누락과 빌드 오류 보완
+작업지시서 PC 화면 간격과 카드 톤 정리
 
 Description :
-발주요청 확인 모달에서 참조하는 요약, 대표 이미지, 요청사항, 원단/부자재/외주 테이블, PDF 출력 토스트 문구의 i18n 키를 보강했다. 누락된 copy 키 때문에 발생한 TypeScript 빌드 오류와 미리보기 테이블 제목/컬럼 문구 누락 문제를 보완했다.
+작업지시서 PC 화면의 좌측, 상세, 우측 패널 간격과 카드 톤을 정리했다. 상세 상단 영역을 카드화하고 발주정보, 생산구성, 비용요약, 우측 첨부/메모 카드의 radius, border, padding 기준을 맞췄다. 기능 동작과 DB/R2 흐름은 변경하지 않았다.
 
 수정 파일 목록 :
-- lib/i18n/ko/common.ts
-- lib/i18n/en/common.ts
+- components/common/ui/SummaryCard.tsx
+- components/common/ui/WorkOrderPanelCard.tsx
+- components/workorder/detail/WorkOrderActionSection.tsx
+- components/workorder/detail/sections/OrderInfoSection.tsx
+- components/workorder/detail/sections/ProductionCompositionSection.tsx
+- components/workorder/detail/views/WorkOrderDetailDesktopSections.tsx
+- components/workorder/layout/DesktopWorkspaceLayout.tsx
+- components/workorder/sidepanel/layout/SidePanelSectionStack.tsx
 - lib/constants/app.ts
 
 추가 파일 목록 :
