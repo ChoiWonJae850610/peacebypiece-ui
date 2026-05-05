@@ -32,7 +32,7 @@ function CheckIcon() {
     </svg>
   );
 }
-import { getOrderSubmissionSnapshot } from "@/lib/workorder/orderSubmission";
+import { getFactoryOrderRowsValidationMessage, getOrderSubmissionSnapshot } from "@/lib/workorder/orderSubmission";
 import { getOrderRequestDocumentPreview } from "@/lib/workorder/presentation/orderRequestDocumentPresentation";
 import { buildOrderRequestPrintHtml } from "@/lib/workorder/presentation/orderRequestDocumentPrint";
 import { useI18n } from "@/lib/i18n";
@@ -227,7 +227,11 @@ export default function OrderRequestConfirmModal({
   const confirmedFactoryName = requested?.factoryName?.trim() || submissionSnapshot.factoryName;
   const confirmedDueDate = submissionSnapshot.dueDate;
   const confirmedQuantity = requested?.quantity ?? submissionSnapshot.quantity;
-  const canSubmit = Boolean(confirmedFactoryName) && Boolean(confirmedDueDate) && confirmedQuantity > 0 && !requested;
+  const orderRowsValidationMessage = useMemo(
+    () => getFactoryOrderRowsValidationMessage(workOrder, i18n.workorder.actionFlow),
+    [i18n.workorder.actionFlow, workOrder],
+  );
+  const canSubmit = Boolean(confirmedFactoryName) && Boolean(confirmedDueDate) && confirmedQuantity > 0 && !requested && !orderRowsValidationMessage;
 
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [requestNote, setRequestNote] = useState(() => String(workOrder.memo ?? "").trim());
@@ -401,6 +405,12 @@ export default function OrderRequestConfirmModal({
         {printFeedback ? (
           <div className="border-b border-amber-300 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900">
             {printFeedback}
+          </div>
+        ) : null}
+
+        {orderRowsValidationMessage ? (
+          <div className="border-b border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">
+            {orderRowsValidationMessage}
           </div>
         ) : null}
 

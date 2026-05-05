@@ -20,6 +20,16 @@ export type OrderSubmissionSnapshot = {
 
 export type OrderEntriesByTarget = Record<OrderEntryTargetTypeValue, OrderEntry[]>;
 
+export type FactoryOrderRowsValidationText = {
+  factoryOrderFactoryRequiredToast?: string;
+  factoryOrderDueDateRequiredToast?: string;
+  factoryOrderQuantityRequiredToast?: string;
+  factoryOrderLaborCostInvalidToast?: string;
+  factoryOrderLossCostInvalidToast?: string;
+  factoryOrderRowsRequiredToast?: string;
+  factoryOrderRowsInvalidToast?: string;
+};
+
 function normalizeText(value: unknown) {
   return String(value ?? "").trim();
 }
@@ -79,6 +89,47 @@ export function getSubmittableOrderEntries(orderEntries?: OrderEntry[] | null): 
     const hasQuantity = normalizeNonNegativeNumber(entry.quantity) > 0;
     return hasFactoryLikeValue || hasDueDate || hasQuantity;
   });
+}
+
+export function getFactoryOrderEntriesForValidation(workOrder: WorkOrder): OrderEntry[] {
+  return getOrderEntriesForTargetType(workOrder.orderEntries, ORDER_ENTRY_TARGET_TYPE.factory);
+}
+
+export function getFactoryOrderRowsValidationMessage(workOrder: WorkOrder, text: FactoryOrderRowsValidationText): string | null {
+  const factoryEntries = getFactoryOrderEntriesForValidation(workOrder);
+  if (factoryEntries.length === 0) {
+    return text.factoryOrderRowsRequiredToast ?? text.factoryOrderFactoryRequiredToast ?? null;
+  }
+
+  const invalidRow = factoryEntries.find((entry) => {
+    const factoryName = normalizeOrderFactoryName(entry.factory);
+    const dueDate = normalizeText(entry.dueDate);
+    const quantity = normalizeNonNegativeNumber(entry.quantity);
+    const laborCost = Number(entry.laborCost ?? 0);
+    const lossCost = Number(entry.lossCost ?? 0);
+
+    return !factoryName
+      || !dueDate
+      || quantity < 1
+      || !Number.isFinite(laborCost)
+      || laborCost < 0
+      || !Number.isFinite(lossCost)
+      || lossCost < 0;
+  });
+
+  if (!invalidRow) return null;
+
+  const factoryName = normalizeOrderFactoryName(invalidRow.factory);
+  if (!factoryName) return text.factoryOrderFactoryRequiredToast ?? text.factoryOrderRowsInvalidToast ?? null;
+  if (!normalizeText(invalidRow.dueDate)) return text.factoryOrderDueDateRequiredToast ?? text.factoryOrderRowsInvalidToast ?? null;
+  if (normalizeNonNegativeNumber(invalidRow.quantity) < 1) return text.factoryOrderQuantityRequiredToast ?? text.factoryOrderRowsInvalidToast ?? null;
+
+  const laborCost = Number(invalidRow.laborCost ?? 0);
+  if (!Number.isFinite(laborCost) || laborCost < 0) return text.factoryOrderLaborCostInvalidToast ?? text.factoryOrderRowsInvalidToast ?? null;
+  const lossCost = Number(invalidRow.lossCost ?? 0);
+  if (!Number.isFinite(lossCost) || lossCost < 0) return text.factoryOrderLossCostInvalidToast ?? text.factoryOrderRowsInvalidToast ?? null;
+
+  return text.factoryOrderRowsInvalidToast ?? null;
 }
 
 export function isOrderFactoryUnselectableValue(value: unknown): value is OrderFactoryUnselectableValue {

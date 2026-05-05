@@ -21,6 +21,7 @@ import {
   getReviewApprovalCancelNextStateByPolicy,
 } from "@/lib/workorder/workflowPolicy";
 import {
+  getFactoryOrderRowsValidationMessage,
   getOrderSubmissionSnapshot,
   hasValidOrderFactoryName,
   normalizeOrderFactoryName,
@@ -83,7 +84,12 @@ function getWorkOrderSubmissionValidationMessage(workOrder: WorkOrder, text: {
   factoryOrderQuantityRequiredToast?: string;
   factoryOrderLaborCostInvalidToast?: string;
   factoryOrderLossCostInvalidToast?: string;
+  factoryOrderRowsRequiredToast?: string;
+  factoryOrderRowsInvalidToast?: string;
 }) {
+  const rowValidationMessage = getFactoryOrderRowsValidationMessage(workOrder, text);
+  if (rowValidationMessage) return rowValidationMessage;
+
   const { factoryName, dueDate, quantity, laborCost, lossCost } = getOrderSubmissionSnapshot(workOrder);
 
   if (!hasValidOrderFactoryName(factoryName)) {
@@ -105,11 +111,11 @@ function getWorkOrderSubmissionValidationMessage(workOrder: WorkOrder, text: {
   return null;
 }
 
-export function getReviewRequestValidationMessage(payload: { workOrder: WorkOrder; text: { factoryOrderFactoryRequiredToast?: string; factoryOrderDueDateRequiredToast?: string; factoryOrderQuantityRequiredToast?: string; factoryOrderLaborCostInvalidToast?: string; factoryOrderLossCostInvalidToast?: string; }; }) {
+export function getReviewRequestValidationMessage(payload: { workOrder: WorkOrder; text: { factoryOrderFactoryRequiredToast?: string; factoryOrderDueDateRequiredToast?: string; factoryOrderQuantityRequiredToast?: string; factoryOrderLaborCostInvalidToast?: string; factoryOrderLossCostInvalidToast?: string; factoryOrderRowsRequiredToast?: string; factoryOrderRowsInvalidToast?: string; }; }) {
   return getWorkOrderSubmissionValidationMessage(payload.workOrder, payload.text);
 }
 
-export function getReviewApprovalValidationMessage(payload: { workOrder: WorkOrder; text: { factoryOrderFactoryRequiredToast?: string; factoryOrderDueDateRequiredToast?: string; factoryOrderQuantityRequiredToast?: string; factoryOrderLaborCostInvalidToast?: string; factoryOrderLossCostInvalidToast?: string; }; }) {
+export function getReviewApprovalValidationMessage(payload: { workOrder: WorkOrder; text: { factoryOrderFactoryRequiredToast?: string; factoryOrderDueDateRequiredToast?: string; factoryOrderQuantityRequiredToast?: string; factoryOrderLaborCostInvalidToast?: string; factoryOrderLossCostInvalidToast?: string; factoryOrderRowsRequiredToast?: string; factoryOrderRowsInvalidToast?: string; }; }) {
   return getWorkOrderSubmissionValidationMessage(payload.workOrder, payload.text);
 }
 
@@ -165,6 +171,11 @@ export function getFactoryOrderRequestValidationMessage(payload: {
     factoryOrderQuantityRequiredToast?: string;
     factoryOrderAdminOnlyToast?: string;
     factoryOrderReviewApprovedOnlyToast?: string;
+    factoryOrderDueDateRequiredToast?: string;
+    factoryOrderLaborCostInvalidToast?: string;
+    factoryOrderLossCostInvalidToast?: string;
+    factoryOrderRowsRequiredToast?: string;
+    factoryOrderRowsInvalidToast?: string;
   };
 }) {
   if (!canRequestOrder(payload.currentRoles)) {
@@ -173,6 +184,8 @@ export function getFactoryOrderRequestValidationMessage(payload: {
   if (!canRequestFactoryOrderInWorkflow(payload.currentWorkflowState)) {
     return payload.text.factoryOrderReviewApprovedOnlyToast ?? null;
   }
+  const rowValidationMessage = getFactoryOrderRowsValidationMessage(payload.workOrder, payload.text);
+  if (rowValidationMessage) return rowValidationMessage;
   if (!hasValidOrderFactoryName(payload.factoryName)) {
     return payload.text.factoryOrderFactoryRequiredToast ?? null;
   }

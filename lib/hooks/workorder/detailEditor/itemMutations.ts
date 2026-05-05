@@ -113,7 +113,14 @@ export function toOrderEntriesPatch(orderItems: OrderEntryState[], currentWorkfl
       laborCost: submissionSnapshot.laborCost,
       lossCost: submissionSnapshot.lossCost,
       priority: submissionSnapshot.priority,
-    } : {}),
+    } : {
+      vendor: DEFAULT_FACTORY_OPTION,
+      dueDate: "",
+      quantity: 0,
+      laborCost: 0,
+      lossCost: 0,
+      priority: "",
+    }),
   };
 }
 

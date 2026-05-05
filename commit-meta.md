@@ -1,18 +1,20 @@
 Version :
-0.9.181
+0.9.182
 
 Summary :
-작업지시서 영구삭제 완료 상태를 실제 연결
+작업지시서 공장 row 검증과 삭제 기준 보완
 
 Description :
-통합 휴지통에서 작업지시서 영구삭제 실행 시 Neon row를 hard delete하지 않고 delete_status와 purge_status를 완료 상태로 전환하도록 연결했다. 작업지시서에 종속된 첨부 trash item은 Worker 기반 purge 대상으로 넘기기 위해 purge_requested 상태로 전환하고, 고객관리자 휴지통에서는 제외되도록 유지했다. 개별 첨부 복구/영구삭제와 작업지시서 복구 흐름은 유지했다.
+검토요청, 검토완료, 발주요청 전에 입력된 모든 공장 row의 공장, 납기일, 수량을 검증하도록 보완했다. 공장 row가 0개인 상태를 허용하되 상태 전환과 발주요청은 차단되도록 하고, 공장 row가 1개만 남아도 삭제할 수 있게 수정했다. 발주요청 모달에서도 같은 검증 메시지를 표시한다.
 
 수정 파일 목록 :
-- app/admin/files/page.tsx
-- app/api/admin/files/workorders/purge/route.ts
-- components/admin/files/FileTrashSection.tsx
-- lib/admin/adminFiles.serverActions.ts
-- lib/system/storagePurgeCandidates.ts
+- components/common/modal/OrderRequestConfirmModal.tsx
+- lib/hooks/workorder/detailEditor/itemMutations.ts
+- lib/hooks/workorder/useWorkOrderDetailEditor.ts
+- lib/i18n/en/workorder.ts
+- lib/i18n/ko/workorder.ts
+- lib/workorder/orderSubmission.ts
+- lib/workorder/workflow.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :

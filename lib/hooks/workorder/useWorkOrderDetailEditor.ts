@@ -209,7 +209,7 @@ export function useWorkOrderDetailEditor({
   };
 
   const removeOrderEntry = (id: string) => {
-    const nextItems = orderItems.length > 1 ? orderItems.filter((item) => item.id !== id) : orderItems;
+    const nextItems = orderItems.filter((item) => item.id !== id);
     setOrderItems(nextItems);
     syncOrderEntries(nextItems);
     if (editingCell?.section === "order" && editingCell.rowId === id) {
