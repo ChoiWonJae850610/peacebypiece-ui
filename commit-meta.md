@@ -1,20 +1,20 @@
 Version :
-0.9.215
+0.9.216
 
 Summary :
-권한과 feature flag 체계 설계
+고객사 관리자 UI 정책 정리
 
 Description :
-고객사 관리자 권한 설정과 요금제별 통계 노출을 분리하기 위해 기능별 permission code와 feature flag 기준을 코드 상수와 문서로 정리했다. 작업지시서, 워크플로우, 메모, 첨부, 기준정보, 통계, 운영 권한 그룹을 분리하고 Basic/Standard/Growth/Premium/Enterprise feature 정책을 추가했다. 이번 버전은 DB schema, full_reset.sql, API 차단 로직, package 의존성은 변경하지 않는다.
+고객사 관리자 환경설정 화면에서 삭제방식, 기본 용량 한도, 휴지통 용량 포함 여부, 용량 주의 기준, 개발중 기능 상태를 확인할 수 있도록 정책 영역을 추가했다. 정책 표시 데이터는 presentation 파일로 분리하고, 실제 권한 저장 UI나 API 차단은 후속 버전으로 유지한다. DB schema, full_reset.sql, package 의존성은 변경하지 않는다.
 
 수정 파일 목록 :
+- app/admin/settings/page.tsx
 - lib/constants/app.ts
-- lib/permissions/index.ts
-- lib/permissions/permissionPolicy.ts
 
 추가 파일 목록 :
-- lib/permissions/featureFlagPolicy.ts
-- docs/permission-feature-gate-0.9.215.md
+- components/admin/settings/AdminPolicyOverview.tsx
+- lib/admin/settings/adminPolicyPresentation.ts
+- docs/admin-company-policy-ui-0.9.216.md
 
 삭제 파일 목록 :
 없음
