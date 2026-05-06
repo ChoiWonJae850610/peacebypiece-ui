@@ -63,10 +63,10 @@ export default function ProductionCompositionSection({
   ].join(" · ");
 
   return (
-    <div className="overflow-hidden rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm">
+    <div className="overflow-hidden rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm xl:p-5">
       <SectionHeader title={copy.title} summary={summary} open={open} onToggle={onToggle} />
       {open ? (
-        <div className="mt-4 space-y-4">
+        <div className="mt-4 grid gap-3">
           <MaterialSection
             materials={materials}
             open={materialOpen}

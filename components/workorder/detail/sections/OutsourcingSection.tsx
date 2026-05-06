@@ -51,10 +51,10 @@ export default function OutsourcingSection({
     : copy.empty;
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white p-3.5">
+    <div className="overflow-hidden rounded-2xl border border-stone-200 bg-stone-50/40 p-3.5">
       <SectionHeader title={copy.title} summary={summary} open={open} onToggle={onToggle} />
       {open ? (
-        <div className="mt-1 max-w-full overflow-hidden">
+        <div className="mt-2 max-w-full overflow-x-auto rounded-2xl border border-stone-200 bg-white">
           <table className="w-full max-w-full table-fixed text-left">
             <colgroup>
               <col className="w-[20%]" />
@@ -75,6 +75,11 @@ export default function OutsourcingSection({
               </tr>
             </thead>
             <tbody>
+              {outsourcing.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-3 py-7 text-center text-sm text-stone-500">{copy.empty}</td>
+                </tr>
+              ) : null}
               {outsourcing.map((item, rowIndex) => (
                 <tr key={item.id} className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
                   <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} options={processOptions} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
@@ -94,7 +99,7 @@ export default function OutsourcingSection({
                     <button
                       type="button"
                       onClick={onAdd}
-                      className="pbp-interactive-button flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-3 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+                      className="pbp-interactive-button flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-2.5 text-sm font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
                     >
                       {copy.addButton}
                     </button>

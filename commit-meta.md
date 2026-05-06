@@ -1,21 +1,23 @@
 Version :
-0.9.219
+0.9.220
 
 Summary :
-작업지시서 PC 화면 안정화 1차
+작업지시서 상세 UX 섹션 정리
 
 Description :
-작업지시서 PC 화면의 좌측 목록, 중앙 상세, 우측 첨부/메모 패널의 폭과 스크롤 여백을 정리했다. 마지막 카드와 상세 하단 섹션이 잘려 보이지 않도록 하단 여백과 scrollbar gutter를 보강하고, 3패널의 정보 밀도와 균형을 소폭 개선했다. DB schema, API route, package 의존성은 변경하지 않았다.
+작업지시서 PC 상세 화면에서 비용 요약, 발주 정보, 생산 구성의 섹션 위계를 정리했다. 비용 요약은 총 비용과 단가를 먼저 확인할 수 있게 재구성하고, 발주/원단/외주 테이블에는 빈 상태 행과 내부 스크롤 안정성을 보강했다. 원단/부자재 발주 화면 신규 구현, DB schema, API route, package 의존성은 변경하지 않았다.
 
 수정 파일 목록 :
-- components/workorder/layout/DesktopWorkspaceLayout.tsx
 - components/workorder/detail/views/WorkOrderDetailDesktopSections.tsx
-- components/workorder/sidepanel/layout/SidePanelSectionStack.tsx
-- components/layout/SidebarContent.tsx
+- components/workorder/detail/WorkOrderCostSummarySection.tsx
+- components/workorder/detail/sections/OrderInfoSection.tsx
+- components/workorder/detail/sections/MaterialSection.tsx
+- components/workorder/detail/sections/OutsourcingSection.tsx
+- components/workorder/detail/sections/ProductionCompositionSection.tsx
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/workorder-pc-stability-0.9.219.md
+- docs/workorder-detail-section-ux-0.9.220.md
 
 삭제 파일 목록 :
 없음

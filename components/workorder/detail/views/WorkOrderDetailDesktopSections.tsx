@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import WorkOrderActionSection from "@/components/workorder/detail/WorkOrderActionSection";
 import WorkOrderCostSummarySection from "@/components/workorder/detail/WorkOrderCostSummarySection";
 import WorkOrderHeaderSection from "@/components/workorder/detail/WorkOrderHeaderSection";
@@ -8,6 +9,31 @@ import type { WorkOrderDetailViewModel } from "@/components/workorder/detail/vie
 type WorkOrderDetailDesktopSectionsProps = {
   viewModel: WorkOrderDetailViewModel;
 };
+
+function DetailSectionGroup({
+  eyebrow,
+  title,
+  description,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="mt-5 min-w-0">
+      <div className="mb-2.5 flex min-w-0 items-end justify-between gap-3 px-1">
+        <div className="min-w-0">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-stone-400">{eyebrow}</div>
+          <h3 className="mt-1 text-sm font-semibold leading-5 text-stone-900">{title}</h3>
+          <p className="mt-0.5 max-w-[44rem] text-[11px] leading-4 text-stone-500">{description}</p>
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+}
 
 export default function WorkOrderDetailDesktopSections({ viewModel }: WorkOrderDetailDesktopSectionsProps) {
   return (
@@ -20,16 +46,20 @@ export default function WorkOrderDetailDesktopSections({ viewModel }: WorkOrderD
       </div>
 
       {viewModel.showCostSummary ? (
-        <div className="mt-5">
+        <DetailSectionGroup eyebrow="Cost" title="비용 요약" description="원단, 부자재, 외주, 공임, 로스 비용을 먼저 확인합니다.">
           <WorkOrderCostSummarySection {...viewModel.costSummaryProps} />
-        </div>
+        </DetailSectionGroup>
       ) : null}
 
-      <div className="mt-5 grid gap-4 pb-2 xl:gap-5">
+      <DetailSectionGroup eyebrow="Order" title="발주 정보" description="공장별 발주 수량, 납기일, 공임과 로스 비용을 관리합니다.">
         <OrderInfoSection {...viewModel.orderInfoProps} />
+      </DetailSectionGroup>
 
-        {viewModel.showProductionComposition ? <ProductionCompositionSection {...viewModel.productionCompositionProps} /> : null}
-      </div>
+      {viewModel.showProductionComposition ? (
+        <DetailSectionGroup eyebrow="Production" title="생산 구성" description="원단, 부자재, 외주 공정의 구성과 비용을 한 곳에서 정리합니다.">
+          <ProductionCompositionSection {...viewModel.productionCompositionProps} />
+        </DetailSectionGroup>
+      ) : null}
     </>
   );
 }
