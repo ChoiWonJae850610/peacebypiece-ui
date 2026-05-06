@@ -1,6 +1,9 @@
 import Link from "next/link";
 
+import AdminOperationsDashboard from "@/components/admin/dashboard/AdminOperationsDashboard";
+import AdminShell from "@/components/admin/layout/AdminShell";
 import { APP_VERSION } from "@/lib/constants/app";
+import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
 import {
   ADMIN_CONSOLE_API_LINKS,
   ADMIN_CONSOLE_POLICY_NOTES,
@@ -9,6 +12,8 @@ import {
   type AdminConsoleLinkItem,
   type AdminConsoleLinkStatus,
 } from "@/lib/admin/adminConsoleLinks";
+import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
+import { getAdminOperationalDashboardSnapshots } from "@/lib/admin/adminOperations.repository";
 
 function getStatusClassName(status: AdminConsoleLinkStatus) {
   if (status === "linked") {
@@ -28,7 +33,7 @@ function getStatusClassName(status: AdminConsoleLinkStatus) {
 
 function AdminConsoleCard({ item }: { item: AdminConsoleLinkItem }) {
   return (
-    <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+    <article className="h-full rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-base font-semibold text-stone-950">{item.label}</h2>
         <span
@@ -60,87 +65,65 @@ function AdminConsoleCard({ item }: { item: AdminConsoleLinkItem }) {
   );
 }
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  const snapshots = await getAdminOperationalDashboardSnapshots();
+
   return (
-    <main className="min-h-screen bg-stone-50 px-4 py-6 text-stone-900 sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-7xl flex-col gap-6">
-        <header className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-            <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
-                ADMIN CONSOLE
-              </p>
-              <div className="space-y-2">
-                <h1 className="text-2xl font-semibold text-stone-950">
-                  고객관리자 콘솔
-                </h1>
-                <p className="max-w-3xl text-sm leading-6 text-stone-600">
-                  작업지시서, 거래처/공장관리, 멤버 초대, 통계, 저장소 관리로 이동하는 고객관리자 메뉴 허브입니다.
-                  새로 추가된 초대/통계 skeleton과 기존 운영 화면을 같은 진입점에서 확인할 수 있게 정리했습니다.
-                </p>
-              </div>
-            </div>
+    <AdminShell
+      companyName={WORKSPACE_COMPANY_NAME}
+      appVersion={APP_VERSION}
+      navigationItems={getAdminNavigationItems("/admin")}
+      title="고객관리자 메인"
+      description="최근 작업 진행, 검토 필요 항목, 통계와 운영 메뉴를 한 화면에서 확인합니다."
+    >
+      <AdminOperationsDashboard snapshots={snapshots} />
 
-            <div className="flex flex-wrap gap-2 text-xs font-medium">
-              <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-stone-600">
-                v{APP_VERSION}
-              </span>
-              <Link
-                href="/"
-                className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50"
-              >
-                작업지시서 홈
-              </Link>
-              <Link
-                href="/system"
-                className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50"
-              >
-                시스템관리자
-              </Link>
-            </div>
-          </div>
-        </header>
+      <section className="grid gap-4 lg:grid-cols-4">
+        {ADMIN_CONSOLE_PRIMARY_LINKS.map((item) => (
+          <AdminConsoleCard key={item.id} item={item} />
+        ))}
+      </section>
 
-        <section className="grid gap-4 lg:grid-cols-4">
-          {ADMIN_CONSOLE_PRIMARY_LINKS.map((item) => (
-            <AdminConsoleCard key={item.id} item={item} />
-          ))}
-        </section>
-
-        <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
-          <div className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold text-stone-950">운영 메뉴</h2>
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              {ADMIN_CONSOLE_SECONDARY_LINKS.map((item) => (
-                <AdminConsoleCard key={item.id} item={item} />
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold text-stone-950">API 연결 준비</h2>
-            <div className="mt-4 grid gap-3">
-              {ADMIN_CONSOLE_API_LINKS.map((item) => (
-                <AdminConsoleCard key={item.id} item={item} />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-semibold text-stone-950">운영 정책 메모</h2>
-          <ul className="mt-4 grid gap-3 lg:grid-cols-4">
-            {ADMIN_CONSOLE_POLICY_NOTES.map((note) => (
-              <li
-                key={note}
-                className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-xs leading-5 text-stone-600"
-              >
-                {note}
-              </li>
+      <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+        <div className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+          <h2 className="text-lg font-semibold text-stone-950">운영 메뉴</h2>
+          <p className="mt-1 text-xs leading-5 text-stone-500">
+            고객관리자 메인에서는 실제 작업 진행과 바로 실행할 메뉴를 우선 노출합니다.
+            히스토리는 추적용 화면으로 유지하되 메인 상황판의 중심 지표에서는 분리합니다.
+          </p>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {ADMIN_CONSOLE_SECONDARY_LINKS.map((item) => (
+              <AdminConsoleCard key={item.id} item={item} />
             ))}
-          </ul>
-        </section>
-      </div>
-    </main>
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+          <h2 className="text-lg font-semibold text-stone-950">API 연결 준비</h2>
+          <p className="mt-1 text-xs leading-5 text-stone-500">
+            실제 고객사 데이터는 repository와 API에서 집계하고, 화면은 요약 결과만 표시합니다.
+          </p>
+          <div className="mt-4 grid gap-3">
+            {ADMIN_CONSOLE_API_LINKS.map((item) => (
+              <AdminConsoleCard key={item.id} item={item} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+        <h2 className="text-lg font-semibold text-stone-950">운영 정책 메모</h2>
+        <ul className="mt-4 grid gap-3 lg:grid-cols-4">
+          {ADMIN_CONSOLE_POLICY_NOTES.map((note) => (
+            <li
+              key={note}
+              className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-xs leading-5 text-stone-600"
+            >
+              {note}
+            </li>
+          ))}
+        </ul>
+      </section>
+    </AdminShell>
   );
 }

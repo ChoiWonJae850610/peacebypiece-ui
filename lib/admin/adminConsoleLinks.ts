@@ -25,7 +25,7 @@ export const ADMIN_CONSOLE_PRIMARY_LINKS: AdminConsoleLinkItem[] = [
   },
   {
     id: "partners",
-    label: "거래처/공장관리",
+    label: "협력업체 관리",
     description: "공장, 원단, 부자재, 외주처 기준정보를 관리합니다.",
     status: "legacy",
     statusLabel: "기존 기능",
@@ -43,10 +43,10 @@ export const ADMIN_CONSOLE_PRIMARY_LINKS: AdminConsoleLinkItem[] = [
   {
     id: "stats",
     label: "통계",
-    description: "고객관리자 통계 summary API와 연결될 영역입니다.",
-    status: "api",
-    statusLabel: "API 준비",
-    apiPath: "/api/admin/stats?companyId=company-sample-customer",
+    description: "작업지시서, 협력업체, 파일 사용량 지표를 확인합니다.",
+    status: "linked",
+    statusLabel: "화면 연결",
+    href: "/admin/dashboard",
   },
 ];
 
@@ -61,8 +61,8 @@ export const ADMIN_CONSOLE_SECONDARY_LINKS: AdminConsoleLinkItem[] = [
   },
   {
     id: "history",
-    label: "히스토리",
-    description: "작업지시서와 운영 변경 이력을 확인합니다.",
+    label: "운영 히스토리",
+    description: "상태 변경과 주요 작업 기록을 추적용으로 확인합니다.",
     status: "legacy",
     statusLabel: "기존 기능",
     href: "/admin/history",
@@ -107,5 +107,5 @@ export const ADMIN_CONSOLE_POLICY_NOTES = [
   "고객관리자 화면에서는 company_id가 현재 고객사로 고정됩니다.",
   "멤버 초대는 이메일 발송 전 링크 생성 흐름부터 연결합니다.",
   "통계 계산은 화면이 아니라 stats repository/API에서 처리합니다.",
-  "기존 작업지시서, 거래처, 저장소, 히스토리 기능은 유지합니다.",
+  "고객관리자 메인은 상황판으로 사용하고 히스토리는 추적용 화면으로 분리합니다.",
 ] as const;
