@@ -1,18 +1,19 @@
 Version :
-0.9.221
+0.9.2211
 
 Summary :
-관리자 통계 화면 정보 구조 재정리
+관리자 통계 화면 요금제 선택 구조 도입
 
 Description :
-관리자 통계 화면의 정보 위계를 핵심 KPI, Basic 통계, 요금제별 preview, 운영 기준 접힘 영역 순서로 재정리했다. Basic/Standard/Growth/Premium 보기 버튼을 추가하고, 캐싱 정책과 summary table 검토 및 성능 기준은 하단 접힘 영역으로 이동했다. DB schema, API route, package 의존성은 변경하지 않는다.
+관리자 통계 화면에서 Basic, Standard, Growth, Premium 통계가 한 화면에 모두 나열되던 구조를 상단 요금제 선택 방식으로 정리했다. 선택된 요금제에 따라 아래 통계 본문이 단계적으로 바뀌며, 운영/개발 기준 영역은 runtime debug flag가 켜진 경우에만 표시되도록 분리했다. DB schema, API route, package 의존성은 변경하지 않는다.
 
 수정 파일 목록 :
 - components/admin/dashboard/AdminStatsDashboard.tsx
+- lib/constants/runtimeMode.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/admin-stats-layout-0.9.221.md
+- docs/admin-stats-plan-filter-0.9.2211.md
 
 삭제 파일 목록 :
 없음
