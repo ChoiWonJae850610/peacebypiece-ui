@@ -7,6 +7,7 @@ import { AdminBasicBarChart, AdminBasicDonutChart } from "@/components/admin/das
 import type { AdminStatsSnapshot } from "@/lib/admin/stats/types";
 import { buildAdminStatsDashboardViewModel } from "@/lib/admin/stats/presentation";
 import { ADMIN_STATS_CACHE_POLICIES, ADMIN_STATS_TANSTACK_QUERY_DECISION } from "@/lib/admin/stats/cachePolicy";
+import { ADMIN_STATS_PERFORMANCE_POLICY, ADMIN_STATS_PERFORMANCE_TARGETS } from "@/lib/admin/stats/performancePolicy";
 import { ADMIN_PREMIUM_STATS_READINESS_ITEMS, ADMIN_STATS_FEATURE_GATE_NOTES, buildAdminAdvancedStatsPreviewCards } from "@/lib/admin/stats/featureGate";
 import type { getI18n } from "@/lib/i18n";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
@@ -268,6 +269,37 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
               </div>
               <p className="mt-3 text-2xl font-bold text-stone-950">{item.staleSeconds === 0 ? "캐시 없음" : `${item.staleSeconds}초`}</p>
               <p className="mt-2 text-xs leading-5 text-stone-500">{item.invalidation}</p>
+            </AdminCard>
+          ))}
+        </div>
+      </section>
+
+
+      <section className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
+        <AdminCard>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Performance baseline</p>
+              <h2 className="mt-2 text-lg font-semibold text-stone-950">성능 측정 기준</h2>
+              <p className="mt-2 text-sm leading-6 text-stone-600">통계 화면과 작업지시서 핵심 흐름의 성능 목표를 먼저 고정합니다.</p>
+            </div>
+            <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-500">{ADMIN_STATS_PERFORMANCE_POLICY.status}</span>
+          </div>
+          <div className="mt-4 rounded-2xl bg-stone-50 px-4 py-3 text-xs leading-5 text-stone-600">
+            <p>{ADMIN_STATS_PERFORMANCE_POLICY.noSchemaChange}</p>
+            <p className="mt-1">{ADMIN_STATS_PERFORMANCE_POLICY.nextStep}</p>
+          </div>
+        </AdminCard>
+
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {ADMIN_STATS_PERFORMANCE_TARGETS.map((item) => (
+            <AdminCard key={item.key} className="px-4 py-4">
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="text-sm font-semibold text-stone-950">{item.label}</h3>
+                <span className="shrink-0 rounded-full bg-[var(--admin-theme-surface)] px-2.5 py-1 text-[11px] font-semibold text-[var(--admin-theme-text-on-surface)]">{item.target}</span>
+              </div>
+              <p className="mt-3 text-xs leading-5 text-stone-500">{item.measureAt}</p>
+              <p className="mt-3 rounded-2xl bg-stone-50 px-3 py-2 text-xs leading-5 text-stone-600">{item.escalation}</p>
             </AdminCard>
           ))}
         </div>
