@@ -56,8 +56,8 @@ export default function SidebarContent({
   const dbStatusPresentation = getDbConnectionStatusPresentation(dbConnectionStatus);
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="border-b border-stone-200 p-4">
+    <div className="flex h-full min-h-0 w-full min-w-0 flex-col">
+      <div className="shrink-0 border-b border-stone-200 p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-lg font-semibold leading-6 text-stone-900">{companyName}</div>
@@ -108,8 +108,8 @@ export default function SidebarContent({
           </button>
         ) : null}
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto p-4 pb-8">
-        <div className="space-y-2.5">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3 pb-20 pr-2 [scrollbar-gutter:stable]">
+        <div className="space-y-2">
           {workOrders.map((workOrder) => (
             <WorkOrderListCard
               key={workOrder.id}

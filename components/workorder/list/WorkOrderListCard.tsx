@@ -74,18 +74,18 @@ export default function WorkOrderListCard({
 
   return (
     <div
-      className={`group pbp-interactive-card w-full rounded-2xl border p-3 ${
+      className={`group pbp-interactive-card w-full rounded-2xl border p-2.5 ${
         active
           ? "border-stone-900 bg-stone-900 text-white shadow-[0_10px_28px_rgba(28,25,23,0.18)] ring-1 ring-stone-900/10"
           : "border-stone-200 bg-stone-50 text-stone-900 hover:border-stone-300 hover:bg-white hover:shadow-[0_10px_24px_rgba(28,25,23,0.08)]"
       }`}
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-2.5">
         <button type="button" onClick={() => onClick(workOrder.id)} className="pbp-touch-target pbp-press-subtle min-w-0 flex-1 text-left">
           <div className="truncate text-sm font-semibold leading-5">{getWorkOrderDisplayTitle(workOrder)}</div>
-          <div className="mt-2 flex h-7 items-center">
+          <div className="mt-1.5 flex h-6 items-center">
             <span
-              className={`inline-flex h-7 items-center gap-2 rounded-full px-2.5 text-[11px] font-semibold transition-colors duration-150 ease-out ${
+              className={`inline-flex h-6 items-center gap-2 rounded-full px-2.5 text-[11px] font-semibold transition-colors duration-150 ease-out ${
                 active ? "bg-white/15 text-white ring-1 ring-white/10" : `${getWorkOrderCardTone(state)} ring-1 ring-black/5 group-hover:ring-black/10`
               }`}
             >
@@ -93,7 +93,7 @@ export default function WorkOrderListCard({
               {stateLabel}
             </span>
           </div>
-          <div className={`mt-2 space-y-0.5 text-xs leading-4 ${active ? "text-stone-200" : "text-stone-500"}`}>
+          <div className={`mt-1.5 space-y-0.5 text-[11px] leading-4 ${active ? "text-stone-200" : "text-stone-500"}`}>
             <div className="truncate">{getCategoryPath(workOrder) || copy.uncategorized}</div>
             <div className="truncate">{copy.vendorLabel}: {getDisplayValueOrFallback(workOrder.vendor, copy.unspecified)}</div>
             <div>{copy.dueDateLabel}: {getDisplayValueOrFallback(workOrder.dueDate, copy.unspecified)}</div>
