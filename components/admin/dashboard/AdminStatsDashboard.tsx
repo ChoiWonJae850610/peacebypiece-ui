@@ -146,14 +146,9 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   const effectivePlan: StatsPlanKey = isPlanSwitcherVisible ? selectedPlan : "premium";
   const selectedPlanOption = ADMIN_STATS_PLAN_OPTIONS.find((item) => item.key === effectivePlan) ?? ADMIN_STATS_PLAN_OPTIONS[0];
   const includedPlanOptions = ADMIN_STATS_PLAN_OPTIONS.filter((item) => isStatsPlanAtLeast(effectivePlan, item.key));
-  const includedPlanText = includedPlanOptions.map((item) => item.label).join(" · ");
   const focusPlanPreviewCards = advancedStatsPreviewCards.filter((item) => {
     const requiredPlan = ADVANCED_CARD_MIN_PLAN[item.key] ?? "premium";
     return requiredPlan === effectivePlan;
-  });
-  const includedAdvancedPreviewCards = advancedStatsPreviewCards.filter((item) => {
-    const requiredPlan = ADVANCED_CARD_MIN_PLAN[item.key] ?? "premium";
-    return isStatsPlanAtLeast(effectivePlan, requiredPlan);
   });
   const showOperationNotes = isDebugFeatureEnabled("adminStatsDevSections");
 
@@ -243,56 +238,26 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     </div>
   );
 
-  const renderIncludedPlanSummary = () => (
-    <section className="grid gap-4 lg:grid-cols-[0.78fr_1.22fr]">
-      <AdminCard className="px-5 py-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Included plan</p>
-        <h2 className="mt-2 text-lg font-semibold text-stone-950">{selectedPlanOption.label} 포함 범위</h2>
-        <div className="mt-4 grid gap-2">
+  const renderPlanScopeBar = () => (
+    <section className="rounded-[24px] border border-stone-100 bg-white px-4 py-3 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Plan scope</p>
+          <h2 className="mt-1 text-sm font-bold text-stone-950">{selectedPlanOption.label} 보기 · 하위 요금제 통계 포함</h2>
+        </div>
+        <div className="flex flex-wrap justify-end gap-1.5">
           {includedPlanOptions.map((item) => (
-            <div key={item.key} className={`flex items-center justify-between rounded-2xl border px-3 py-2 text-xs font-semibold ${item.key === effectivePlan ? "border-stone-900 bg-stone-950 text-white" : "border-stone-100 bg-stone-50 text-stone-600"}`}>
-              <span className="inline-flex items-center gap-2">
-                <span className={`grid size-4 place-items-center rounded-full text-[10px] ${item.key === effectivePlan ? "bg-white text-stone-950" : "bg-white text-stone-500"}`}>✓</span>
-                {item.label}
-              </span>
-              <span className="text-[10px] opacity-70">{item.key === effectivePlan ? "현재 보기" : "포함"}</span>
-            </div>
+            <span
+              key={item.key}
+              className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${item.key === effectivePlan ? "border-stone-900 bg-stone-950 text-white" : "border-stone-200 bg-stone-50 text-stone-600"}`}
+            >
+              <span aria-hidden="true">✓</span>
+              {item.label}
+              <span className="text-[10px] opacity-70">{item.key === effectivePlan ? "현재" : "포함"}</span>
+            </span>
           ))}
         </div>
-        <p className="mt-4 text-sm leading-6 text-stone-500">표시는 버튼이 아니라 포함 범위입니다. 상위 요금제는 하위 요금제 통계를 모두 포함합니다.</p>
-      </AdminCard>
-      <AdminCard className="px-5 py-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Supporting metrics</p>
-        <h2 className="mt-2 text-lg font-semibold text-stone-950">보조 지표 요약</h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-2xl bg-stone-50 px-4 py-3">
-            <p className="text-xs font-semibold text-stone-500">Basic 작업 흐름</p>
-            <p className="mt-2 text-lg font-bold text-stone-950">{formatCount(totalWorkorderCount)}</p>
-          </div>
-          <div className="rounded-2xl bg-stone-50 px-4 py-3">
-            <p className="text-xs font-semibold text-stone-500">Standard 생산품유형</p>
-            <p className="mt-2 text-lg font-bold text-stone-950">{formatCount(totalCategoryCount, "개")}</p>
-          </div>
-          <div className="rounded-2xl bg-stone-50 px-4 py-3">
-            <p className="text-xs font-semibold text-stone-500">Growth 리오더</p>
-            <p className="mt-2 text-lg font-bold text-stone-950">{formatCount(totalReorderCount)}</p>
-          </div>
-          <div className="rounded-2xl bg-stone-50 px-4 py-3">
-            <p className="text-xs font-semibold text-stone-500">Premium 준비</p>
-            <p className="mt-2 text-lg font-bold text-stone-950">{formatCount(qualityReadinessCount, "개")}</p>
-          </div>
-        </div>
-        {includedAdvancedPreviewCards.length > 0 ? (
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
-            {includedAdvancedPreviewCards.map((item) => (
-              <div key={item.key} className="rounded-2xl border border-stone-100 px-3 py-2">
-                <p className="text-xs font-semibold text-stone-500">{item.title}</p>
-                <p className="mt-1 text-sm font-bold text-stone-900">{item.metricValue}</p>
-              </div>
-            ))}
-          </div>
-        ) : null}
-      </AdminCard>
+      </div>
     </section>
   );
 
@@ -300,13 +265,13 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     if (effectivePlan === "basic") return null;
 
     return (
-      <section className="rounded-[28px] border border-stone-100 bg-white p-5 shadow-sm">
+      <section className="rounded-[28px] border border-stone-100 bg-white p-4 shadow-sm">
         <div className="flex flex-wrap items-end justify-between gap-3 border-b border-stone-100 pb-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Included Basic</p>
-            <h2 className="mt-2 text-lg font-semibold text-stone-950">Basic 포함 통계</h2>
+            <h2 className="mt-2 text-lg font-semibold text-stone-950">Basic 핵심 통계</h2>
           </div>
-          <p className="text-xs font-semibold text-stone-500">{selectedPlanOption.label} 요금제에서도 기본 운영 통계를 함께 확인합니다.</p>
+          <p className="text-xs font-semibold text-stone-500">상위 요금제에 포함되는 기본 운영 지표입니다.</p>
         </div>
         <div className="mt-5 grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
           <AdminCard className="border-stone-100 bg-stone-50/60 shadow-none">
@@ -439,7 +404,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-400">Stats</p>
             <h2 className="mt-2 text-2xl font-bold text-stone-950">관리자 통계</h2>
-            <p className="mt-2 text-sm leading-6 text-stone-500">/admin/dashboard · {selectedPlanOption.label} 보기. {planDescriptions[effectivePlan]}</p>
+            <p className="mt-2 text-sm leading-6 text-stone-500">/admin/dashboard · {selectedPlanOption.label} 보기</p>
           </div>
           <div className="flex flex-col items-end gap-3">
             <div className="flex flex-wrap justify-end gap-2">
@@ -474,6 +439,8 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         </div>
       </section>
 
+      {renderPlanScopeBar()}
+
       {!hasVisibleStatsData ? (
         <AdminCard className="border-dashed border-amber-200 bg-amber-50/55 px-5 py-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -503,7 +470,6 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
 
       {renderIncludedBasicStats()}
 
-      {renderIncludedPlanSummary()}
 
       {effectivePlan === "basic" ? (
         <section className="grid gap-5 xl:grid-cols-2">
