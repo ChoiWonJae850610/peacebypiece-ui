@@ -6,6 +6,7 @@ import { AdminCard, AdminStatCard } from "@/components/admin/layout/AdminCard";
 import { AdminBasicBarChart, AdminBasicDonutChart } from "@/components/admin/dashboard/AdminBasicStatsCharts";
 import type { AdminStatsSnapshot } from "@/lib/admin/stats/types";
 import { buildAdminStatsDashboardViewModel } from "@/lib/admin/stats/presentation";
+import { ADMIN_ADVANCED_STATS_PREVIEW_CARDS, ADMIN_STATS_FEATURE_GATE_NOTES } from "@/lib/admin/stats/featureGate";
 import type { getI18n } from "@/lib/i18n";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
@@ -124,6 +125,50 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
             <p className="mt-1 text-xs leading-5 text-stone-400">{item.description}</p>
           </AdminCard>
         ))}
+      </section>
+
+
+      <section className="grid gap-5 xl:grid-cols-[1fr_0.74fr]">
+        <AdminCard>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Advanced statistics</p>
+              <h2 className="mt-2 text-lg font-semibold text-stone-950">고급 통계 preview</h2>
+              <p className="mt-1 text-xs leading-5 text-stone-500">요금제별 잠금 기준을 먼저 고정하고, 실제 API 차단은 권한/feature gate 작업에서 연결합니다.</p>
+            </div>
+            <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700">요금제 잠금</span>
+          </div>
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
+            {ADMIN_ADVANCED_STATS_PREVIEW_CARDS.map((item) => (
+              <article key={item.key} className="rounded-3xl border border-stone-200 bg-stone-50/70 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">{item.featureKey}</p>
+                    <h3 className="mt-2 text-sm font-semibold text-stone-950">{item.title}</h3>
+                  </div>
+                  <span className="shrink-0 rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-500">{item.planLabel}</span>
+                </div>
+                <div className="mt-4 rounded-2xl bg-white px-3 py-3 shadow-sm">
+                  <p className="text-[11px] font-semibold text-stone-400">{item.metricLabel}</p>
+                  <p className="mt-1 text-xl font-bold text-stone-950">{item.metricValue}</p>
+                </div>
+                <p className="mt-3 text-xs leading-5 text-stone-500">{item.description}</p>
+                <div className="mt-4 inline-flex rounded-full bg-stone-200 px-3 py-1 text-[11px] font-semibold text-stone-600">{item.statusLabel}</div>
+              </article>
+            ))}
+          </div>
+        </AdminCard>
+
+        <AdminCard>
+          <h2 className="text-lg font-semibold text-stone-950">요금제 노출 기준</h2>
+          <div className="mt-4 grid gap-3">
+            {ADMIN_STATS_FEATURE_GATE_NOTES.map((note) => (
+              <div key={note} className="rounded-2xl border border-stone-100 bg-stone-50 px-4 py-3 text-xs leading-5 text-stone-600">
+                {note}
+              </div>
+            ))}
+          </div>
+        </AdminCard>
       </section>
 
       <section className="grid min-h-0 flex-1 gap-5 overflow-hidden xl:grid-cols-[1.2fr_0.8fr]">

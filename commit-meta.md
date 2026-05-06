@@ -1,19 +1,19 @@
 Version :
-0.9.206
+0.9.207
 
 Summary :
-고객 관리자 메인 상황판 연결
+고급 통계 preview와 요금제 잠금 기준 추가
 
 Description :
-고객관리자 메인 화면에 기존 운영 대시보드를 연결해 최근 작업 진행표와 검토/검수 대기 요약을 바로 확인할 수 있게 했다. 통계 화면은 분석용 화면으로 유지하고, 히스토리는 추적용 화면으로 분리하는 기준을 문서화했다. DB schema, package 의존성, API 응답 포맷은 변경하지 않았다.
+고객관리자 통계 화면에 고급 통계 preview 영역을 추가하고 생산품유형, 협력업체 성과, 리오더, 검수/불량 통계의 요금제 잠금 기준을 표시했다. feature key와 preview 카드 데이터는 별도 stats feature gate 파일로 분리했다. DB schema, API route, package 의존성은 변경하지 않았다.
 
 수정 파일 목록 :
-- app/admin/page.tsx
-- lib/admin/adminConsoleLinks.ts
+- components/admin/dashboard/AdminStatsDashboard.tsx
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/admin-main-summary-0.9.206.md
+- lib/admin/stats/featureGate.ts
+- docs/stats-advanced-preview-0.9.207.md
 
 삭제 파일 목록 :
 없음
