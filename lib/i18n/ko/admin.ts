@@ -253,7 +253,7 @@ export const adminKo = {
       loading: "협력업체 목록을 불러오는 중입니다.",
     },
     form: {
-      createTitle: "업체추가"
+      createTitle: "업체추가",
       editTitle: "협력업체 수정",
       description: "",
       cancel: "취소",
