@@ -23,10 +23,10 @@ type AdminStatsDashboardProps = {
 type StatsPlanKey = "basic" | "standard" | "growth" | "premium";
 
 const ADMIN_STATS_PLAN_OPTIONS: { key: StatsPlanKey; label: string; description: string }[] = [
-  { key: "basic", label: "Basic", description: "기본" },
-  { key: "standard", label: "Standard", description: "분류·업체" },
-  { key: "growth", label: "Growth", description: "리오더" },
-  { key: "premium", label: "Premium", description: "고급" },
+  { key: "basic", label: "Basic", description: "기본 운영" },
+  { key: "standard", label: "Standard", description: "Basic 포함 · 분류/업체" },
+  { key: "growth", label: "Growth", description: "Standard 포함 · 리오더" },
+  { key: "premium", label: "Premium", description: "Growth 포함 · 고급 분석" },
 ];
 
 const ADMIN_STATS_PLAN_ORDER: Record<StatsPlanKey, number> = {
@@ -145,9 +145,15 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   const [selectedPlan, setSelectedPlan] = useState<StatsPlanKey>("basic");
   const effectivePlan: StatsPlanKey = isPlanSwitcherVisible ? selectedPlan : "premium";
   const selectedPlanOption = ADMIN_STATS_PLAN_OPTIONS.find((item) => item.key === effectivePlan) ?? ADMIN_STATS_PLAN_OPTIONS[0];
-  const selectedPlanPreviewCards = advancedStatsPreviewCards.filter((item) => {
+  const includedPlanOptions = ADMIN_STATS_PLAN_OPTIONS.filter((item) => isStatsPlanAtLeast(effectivePlan, item.key));
+  const includedPlanText = includedPlanOptions.map((item) => item.label).join(" · ");
+  const focusPlanPreviewCards = advancedStatsPreviewCards.filter((item) => {
     const requiredPlan = ADVANCED_CARD_MIN_PLAN[item.key] ?? "premium";
     return requiredPlan === effectivePlan;
+  });
+  const includedAdvancedPreviewCards = advancedStatsPreviewCards.filter((item) => {
+    const requiredPlan = ADVANCED_CARD_MIN_PLAN[item.key] ?? "premium";
+    return isStatsPlanAtLeast(effectivePlan, requiredPlan);
   });
   const showOperationNotes = isDebugFeatureEnabled("adminStatsDevSections");
 
@@ -197,10 +203,10 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   };
 
   const planDescriptions: Record<StatsPlanKey, string> = {
-    basic: "기본 운영 흐름과 저장소 사용량만 먼저 확인합니다.",
-    standard: "생산품유형과 협력업체 성과를 중심으로 재배치합니다.",
-    growth: "반복 생산과 리오더 흐름을 중심으로 재배치합니다.",
-    premium: "품질·납기·내보내기처럼 준비가 필요한 고급 지표를 분리합니다.",
+    basic: "기본 운영 흐름과 저장소 사용량을 먼저 봅니다.",
+    standard: "Basic 통계를 포함하고 생산품유형과 협력업체 성과를 앞으로 배치합니다.",
+    growth: "Basic·Standard 통계를 포함하고 리오더와 반복 생산 흐름을 앞으로 배치합니다.",
+    premium: "하위 요금제 통계를 모두 포함하고 품질·납기·내보내기 준비 상태를 앞으로 배치합니다.",
   };
 
   const renderBarList = (title: string, points: typeof viewModel.categoryBars, emptyLabel: string) => (
@@ -237,13 +243,62 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     </div>
   );
 
+  const renderIncludedPlanSummary = () => (
+    <section className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
+      <AdminCard className="px-5 py-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Included plan</p>
+        <h2 className="mt-2 text-lg font-semibold text-stone-950">{selectedPlanOption.label}에 포함된 통계</h2>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {includedPlanOptions.map((item) => (
+            <span key={item.key} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${item.key === effectivePlan ? "bg-stone-950 text-white" : "bg-stone-100 text-stone-600"}`}>
+              {item.label}
+            </span>
+          ))}
+        </div>
+        <p className="mt-4 text-sm leading-6 text-stone-500">상위 요금제는 하위 요금제 통계를 포함하되, 화면은 선택 요금제의 핵심 지표가 먼저 보이도록 재배치합니다.</p>
+      </AdminCard>
+      <AdminCard className="px-5 py-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Supporting metrics</p>
+        <h2 className="mt-2 text-lg font-semibold text-stone-950">보조 지표 요약</h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-2xl bg-stone-50 px-4 py-3">
+            <p className="text-xs font-semibold text-stone-500">작업 흐름</p>
+            <p className="mt-2 text-lg font-bold text-stone-950">{formatCount(totalWorkorderCount)}</p>
+          </div>
+          <div className="rounded-2xl bg-stone-50 px-4 py-3">
+            <p className="text-xs font-semibold text-stone-500">생산품유형</p>
+            <p className="mt-2 text-lg font-bold text-stone-950">{formatCount(totalCategoryCount, "개")}</p>
+          </div>
+          <div className="rounded-2xl bg-stone-50 px-4 py-3">
+            <p className="text-xs font-semibold text-stone-500">리오더</p>
+            <p className="mt-2 text-lg font-bold text-stone-950">{formatCount(totalReorderCount)}</p>
+          </div>
+          <div className="rounded-2xl bg-stone-50 px-4 py-3">
+            <p className="text-xs font-semibold text-stone-500">포함 범위</p>
+            <p className="mt-2 truncate text-sm font-bold text-stone-950">{includedPlanText}</p>
+          </div>
+        </div>
+        {includedAdvancedPreviewCards.length > 0 ? (
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            {includedAdvancedPreviewCards.map((item) => (
+              <div key={item.key} className="rounded-2xl border border-stone-100 px-3 py-2">
+                <p className="text-xs font-semibold text-stone-500">{item.title}</p>
+                <p className="mt-1 text-sm font-bold text-stone-900">{item.metricValue}</p>
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </AdminCard>
+    </section>
+  );
+
   const renderPlanBody = () => {
     if (effectivePlan === "standard") {
       return (
         <section className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
           <div className="grid gap-5">
             {renderBarList(pt("categoryDistributionTitle", pageText.categoryDistributionTitle), viewModel.categoryBars, "생산품유형 데이터 없음")}
-            {renderPreviewCards(selectedPlanPreviewCards, "Standard preview 데이터 없음")}
+            {renderPreviewCards(focusPlanPreviewCards, "Standard preview 데이터 없음")}
           </div>
           <div className="grid gap-5">
             {renderBarList(pt("factoryProductionTitle", pageText.factoryProductionTitle), viewModel.factoryProductionBars, "협력업체 성과 데이터 없음")}
@@ -266,7 +321,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
                 <AdminBasicDonutChart points={translatedStats.productionRoundDistribution} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel="생산 단계 데이터 없음" />
               </div>
             </AdminCard>
-            {renderPreviewCards(selectedPlanPreviewCards, "리오더 데이터 없음")}
+            {renderPreviewCards(focusPlanPreviewCards, "리오더 데이터 없음")}
           </div>
           <div className="grid gap-5">
             {renderBarList(pt("categoryDistributionTitle", pageText.categoryDistributionTitle), viewModel.categoryBars, "생산품유형 데이터 없음")}
@@ -284,7 +339,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
             <h2 className="mt-2 text-lg font-semibold text-stone-950">Premium 통계 준비 상태</h2>
             <p className="mt-2 text-sm leading-6 text-stone-500">품질·납기·내보내기처럼 데이터 기준이 더 필요한 지표를 따로 봅니다.</p>
             <div className="mt-5">
-              {renderPreviewCards(selectedPlanPreviewCards, "Premium preview 데이터 없음")}
+              {renderPreviewCards(focusPlanPreviewCards, "Premium preview 데이터 없음")}
             </div>
           </AdminCard>
           <div className="grid gap-3 md:grid-cols-2">
@@ -344,7 +399,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-400">Stats</p>
             <h2 className="mt-2 text-2xl font-bold text-stone-950">관리자 통계</h2>
-            <p className="mt-2 text-sm leading-6 text-stone-500">{selectedPlanOption.label} 기준으로 화면을 재배치합니다. {planDescriptions[effectivePlan]}</p>
+            <p className="mt-2 text-sm leading-6 text-stone-500">/admin/dashboard · {selectedPlanOption.label} 보기. {planDescriptions[effectivePlan]}</p>
           </div>
           <div className="flex flex-col items-end gap-3">
             <div className="flex flex-wrap justify-end gap-2">
@@ -369,7 +424,8 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
                     className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${effectivePlan === item.key ? "bg-white text-stone-950 shadow-sm" : "text-stone-500 hover:text-stone-800"}`}
                     aria-pressed={effectivePlan === item.key}
                   >
-                    {item.label}
+                    <span>{item.label}</span>
+                    <span className="ml-1 hidden text-[10px] font-semibold opacity-70 xl:inline">{item.description}</span>
                   </button>
                 ))}
               </div>
@@ -404,6 +460,8 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
       </section>
 
       {renderPlanBody()}
+
+      {renderIncludedPlanSummary()}
 
       {effectivePlan === "basic" ? (
         <section className="grid gap-5 xl:grid-cols-2">
