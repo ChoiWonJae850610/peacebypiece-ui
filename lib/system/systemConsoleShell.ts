@@ -72,9 +72,9 @@ export const SYSTEM_CONSOLE_TABS: SystemConsoleTab[] = [
     id: "stats",
     label: "통계",
     description: "고객사, 저장용량, 초대, 요금제 통계를 확인할 영역입니다.",
-    statusLabel: "API 준비",
-    status: "api",
-    apiPath: "/api/system/stats",
+    statusLabel: "화면 반영",
+    status: "linked",
+    href: "/system#system-stats",
   },
   {
     id: "logs",
@@ -132,10 +132,10 @@ export const SYSTEM_CONSOLE_PLACEHOLDERS: SystemConsolePlaceholder[] = [
   {
     id: "stats",
     title: "통계",
-    description: "시스템 전체 운영 지표와 고객사별 사용량을 볼 API의 자리입니다.",
-    items: ["고객사 수", "활성 고객사", "저장용량", "초대 수락 현황"],
-    apiPath: "/api/system/stats",
-    actionLabel: "시스템 통계 API 확인",
+    description: "시스템 전체 운영 지표와 고객사별 사용량을 볼 화면의 자리입니다.",
+    items: ["고객사 수", "활성 고객사", "저장용량", "요금제 분포"],
+    href: "/system#system-stats",
+    actionLabel: "시스템 통계 확인",
   },
   {
     id: "logs",
@@ -159,6 +159,12 @@ export const SYSTEM_CONSOLE_QUICK_LINKS = [
     label: "요금제·용량",
     href: "/system/billing",
     description: "고객별 plan과 override skeleton",
+  },
+  {
+    id: "system-stats",
+    label: "시스템 통계",
+    href: "/system#system-stats",
+    description: "고객사별 사용량과 운영 위험 신호",
   },
   {
     id: "storage-usage",

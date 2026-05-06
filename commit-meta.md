@@ -1,19 +1,21 @@
 Version :
-0.9.209
+0.9.210
 
 Summary :
-Premium 통계 준비 상태 표시
+시스템 관리자 통계 1차 상황판 추가
 
 Description :
-고객관리자 통계 화면에 Premium 통계 준비 상태 섹션을 추가했다. 검수/불량률, 납기 지연율, 공장별 비용/위험, 통계 내보내기의 현재 가능 여부와 후속 설계 항목을 표시한다. 이번 버전은 DB schema, API route, package 의존성을 변경하지 않고 Premium 통계 데이터 기준을 먼저 확정하기 위한 준비 작업으로 처리했다.
+시스템관리자 콘솔에 고객사별 작업지시서 수, 저장 용량 사용률, 요금제 분포, 최근 활동일, 운영 위험 신호를 확인할 수 있는 통계 1차 상황판을 추가했다. 통계 탭은 화면 반영 상태로 변경하고 시스템 콘솔 내부 anchor로 연결했다. 이번 버전은 sample 기반 UI 기준을 고정하는 작업이며 DB schema, API route, package 의존성은 변경하지 않았다.
 
 수정 파일 목록 :
-- components/admin/dashboard/AdminStatsDashboard.tsx
-- lib/admin/stats/featureGate.ts
+- components/system/SystemConsoleShell.tsx
 - lib/constants/app.ts
+- lib/system/systemConsoleShell.ts
 
 추가 파일 목록 :
-- docs/stats-premium-readiness-0.9.209.md
+- components/system/SystemStatsOverview.tsx
+- docs/system-stats-overview-0.9.210.md
+- lib/system/systemStats.ts
 
 삭제 파일 목록 :
 없음

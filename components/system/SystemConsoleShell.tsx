@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import SystemStatsOverview from "@/components/system/SystemStatsOverview";
 import SystemStoragePurgeButton from "@/components/system/storage/SystemStoragePurgeButton";
 import { APP_VERSION } from "@/lib/constants/app";
 import {
@@ -170,6 +171,8 @@ export default function SystemConsoleShell() {
             })}
           </div>
         </section>
+
+        <SystemStatsOverview />
 
         <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
           <div className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
