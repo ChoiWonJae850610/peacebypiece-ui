@@ -5,6 +5,7 @@ import PartnerMasterFilters from "@/components/admin/partnerMaster/PartnerMaster
 import PartnerMasterFormModal from "@/components/admin/partnerMaster/PartnerMasterFormModal";
 import PartnerMasterHeader from "@/components/admin/partnerMaster/PartnerMasterHeader";
 import PartnerMasterList from "@/components/admin/partnerMaster/PartnerMasterList";
+import PartnerMasterSummaryCards from "@/components/admin/partnerMaster/PartnerMasterSummaryCards";
 import { togglePartnerFilterSelection } from "@/lib/admin/partner";
 import { usePartnerMasterController } from "@/components/admin/partnerMaster/usePartnerMasterController";
 
@@ -17,7 +18,13 @@ export default function PartnerMasterSection() {
     <section className="flex min-h-0 flex-1 flex-col rounded-[32px] border border-stone-200 bg-white/95 p-5 shadow-sm backdrop-blur md:p-6">
       <PartnerMasterHeader onOpenCreateModal={controller.openCreateModal} />
 
-      <div className="mt-5 rounded-3xl border border-sky-100 bg-sky-50/70 px-4 py-3 text-sm leading-6 text-sky-900">
+      <PartnerMasterSummaryCards
+        summary={controller.listViewModel.summary}
+        filteredSummary={controller.listViewModel.filteredSummary}
+        hasFilter={controller.listViewModel.hasSearch || controller.selectedStatus !== "all" || !controller.selectedTypes.includes("all")}
+      />
+
+      <div className="mt-4 rounded-3xl border border-sky-100 bg-sky-50/70 px-4 py-3 text-sm leading-6 text-sky-900">
         {partnerText.filters.summaryDescription}
       </div>
 

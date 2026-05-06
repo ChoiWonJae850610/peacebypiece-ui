@@ -95,9 +95,17 @@ export function selectFilteredPartners(
 
 export function buildPartnerSummary(partners: Partner[]) {
   const activeCount = partners.filter((partner) => partner.isActive).length;
+  const typeCounts = PARTNER_TYPE_VALUES.reduce<Record<PartnerType, number>>((acc, type) => {
+    acc[type] = partners.filter((partner) => partner.partnerTypes.includes(type)).length;
+    return acc;
+  }, {} as Record<PartnerType, number>);
+  const outsourcingProcessCount = partners.reduce((count, partner) => count + (partner.outsourcingProcessTypes?.length ?? 0), 0);
+
   return {
     total: partners.length,
     active: activeCount,
     inactive: partners.length - activeCount,
+    typeCounts,
+    outsourcingProcessCount,
   };
 }

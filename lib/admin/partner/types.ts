@@ -53,14 +53,22 @@ export type PartnerListItemViewModel = {
   typeDisplayLabel: string;
 };
 
+export type PartnerSummaryViewModel = {
+  total: number;
+  active: number;
+  inactive: number;
+  typeCounts: Record<PartnerType, number>;
+  outsourcingProcessCount: number;
+};
+
 export type PartnerListViewModel = {
   filters: PartnerListFilterState;
-  summary: { total: number; active: number; inactive: number };
+  summary: PartnerSummaryViewModel;
   filteredPartners: import("@/types/partner").Partner[];
   items: PartnerListItemViewModel[];
   editablePartnerMap: Record<string, import("@/types/partner").Partner>;
   filteredCount: number;
-  filteredSummary: { total: number; active: number; inactive: number };
+  filteredSummary: PartnerSummaryViewModel;
   hasSearch: boolean;
   availablePartnerTypes: BasePartnerType[];
   availableOutsourcingProcessTypes: OutsourcingProcessType[];
