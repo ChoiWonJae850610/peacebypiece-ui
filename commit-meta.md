@@ -1,18 +1,18 @@
 Version :
-0.9.2214
+0.9.2215
 
 Summary :
-관리자 통계 화면 요금제 포함 구조 정리
+관리자 통계 하위 요금제 포함 구조 보정
 
 Description :
-관리자 통계 화면에서 상위 요금제가 하위 요금제 통계를 포함한다는 정책을 화면 구조에 반영했다. Basic, Standard, Growth, Premium 선택 시 카드가 단순 누적되지 않도록 선택 요금제의 핵심 지표를 먼저 배치하고, 하위 요금제 통계는 포함 범위와 보조 지표 요약으로 압축 표시했다. 요금제 선택 UI와 운영/개발 기준 영역은 기존 runtime flag 기준을 유지한다.
+관리자 통계 화면에서 Standard, Growth, Premium 선택 시 하위 요금제 통계가 보이지 않는 것처럼 느껴지는 문제를 줄이기 위해 Basic 포함 통계 섹션을 별도로 추가했다. Included Plan 배지는 클릭 버튼이 아니라 포함 범위 표시로 보이도록 정리했다. DB schema, API route, package 의존성은 변경하지 않는다.
 
 수정 파일 목록 :
 - components/admin/dashboard/AdminStatsDashboard.tsx
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/admin-stats-plan-layout-0.9.2214.md
+- docs/admin-stats-included-basic-0.9.2215.md
 
 삭제 파일 목록 :
 없음

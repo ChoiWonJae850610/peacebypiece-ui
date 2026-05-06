@@ -244,38 +244,42 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   );
 
   const renderIncludedPlanSummary = () => (
-    <section className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
+    <section className="grid gap-4 lg:grid-cols-[0.78fr_1.22fr]">
       <AdminCard className="px-5 py-5">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Included plan</p>
-        <h2 className="mt-2 text-lg font-semibold text-stone-950">{selectedPlanOption.label}에 포함된 통계</h2>
-        <div className="mt-4 flex flex-wrap gap-2">
+        <h2 className="mt-2 text-lg font-semibold text-stone-950">{selectedPlanOption.label} 포함 범위</h2>
+        <div className="mt-4 grid gap-2">
           {includedPlanOptions.map((item) => (
-            <span key={item.key} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${item.key === effectivePlan ? "bg-stone-950 text-white" : "bg-stone-100 text-stone-600"}`}>
-              {item.label}
-            </span>
+            <div key={item.key} className={`flex items-center justify-between rounded-2xl border px-3 py-2 text-xs font-semibold ${item.key === effectivePlan ? "border-stone-900 bg-stone-950 text-white" : "border-stone-100 bg-stone-50 text-stone-600"}`}>
+              <span className="inline-flex items-center gap-2">
+                <span className={`grid size-4 place-items-center rounded-full text-[10px] ${item.key === effectivePlan ? "bg-white text-stone-950" : "bg-white text-stone-500"}`}>✓</span>
+                {item.label}
+              </span>
+              <span className="text-[10px] opacity-70">{item.key === effectivePlan ? "현재 보기" : "포함"}</span>
+            </div>
           ))}
         </div>
-        <p className="mt-4 text-sm leading-6 text-stone-500">상위 요금제는 하위 요금제 통계를 포함하되, 화면은 선택 요금제의 핵심 지표가 먼저 보이도록 재배치합니다.</p>
+        <p className="mt-4 text-sm leading-6 text-stone-500">표시는 버튼이 아니라 포함 범위입니다. 상위 요금제는 하위 요금제 통계를 모두 포함합니다.</p>
       </AdminCard>
       <AdminCard className="px-5 py-5">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Supporting metrics</p>
         <h2 className="mt-2 text-lg font-semibold text-stone-950">보조 지표 요약</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <div className="rounded-2xl bg-stone-50 px-4 py-3">
-            <p className="text-xs font-semibold text-stone-500">작업 흐름</p>
+            <p className="text-xs font-semibold text-stone-500">Basic 작업 흐름</p>
             <p className="mt-2 text-lg font-bold text-stone-950">{formatCount(totalWorkorderCount)}</p>
           </div>
           <div className="rounded-2xl bg-stone-50 px-4 py-3">
-            <p className="text-xs font-semibold text-stone-500">생산품유형</p>
+            <p className="text-xs font-semibold text-stone-500">Standard 생산품유형</p>
             <p className="mt-2 text-lg font-bold text-stone-950">{formatCount(totalCategoryCount, "개")}</p>
           </div>
           <div className="rounded-2xl bg-stone-50 px-4 py-3">
-            <p className="text-xs font-semibold text-stone-500">리오더</p>
+            <p className="text-xs font-semibold text-stone-500">Growth 리오더</p>
             <p className="mt-2 text-lg font-bold text-stone-950">{formatCount(totalReorderCount)}</p>
           </div>
           <div className="rounded-2xl bg-stone-50 px-4 py-3">
-            <p className="text-xs font-semibold text-stone-500">포함 범위</p>
-            <p className="mt-2 truncate text-sm font-bold text-stone-950">{includedPlanText}</p>
+            <p className="text-xs font-semibold text-stone-500">Premium 준비</p>
+            <p className="mt-2 text-lg font-bold text-stone-950">{formatCount(qualityReadinessCount, "개")}</p>
           </div>
         </div>
         {includedAdvancedPreviewCards.length > 0 ? (
@@ -291,6 +295,42 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
       </AdminCard>
     </section>
   );
+
+  const renderIncludedBasicStats = () => {
+    if (effectivePlan === "basic") return null;
+
+    return (
+      <section className="rounded-[28px] border border-stone-100 bg-white p-5 shadow-sm">
+        <div className="flex flex-wrap items-end justify-between gap-3 border-b border-stone-100 pb-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Included Basic</p>
+            <h2 className="mt-2 text-lg font-semibold text-stone-950">Basic 포함 통계</h2>
+          </div>
+          <p className="text-xs font-semibold text-stone-500">{selectedPlanOption.label} 요금제에서도 기본 운영 통계를 함께 확인합니다.</p>
+        </div>
+        <div className="mt-5 grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+          <AdminCard className="border-stone-100 bg-stone-50/60 shadow-none">
+            <h3 className="text-sm font-semibold text-stone-950">작업지시서 상태</h3>
+            <AdminBasicBarChart points={translatedStats.workorderFlow} emptyLabel={pt("emptyFlowLabel", pageText.emptyFlowLabel)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} />
+          </AdminCard>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+            <AdminCard className="border-stone-100 bg-stone-50/60 px-4 py-4 shadow-none">
+              <h3 className="text-sm font-semibold text-stone-950">파일 사용량</h3>
+              <div className="mt-4">
+                <AdminBasicDonutChart points={translatedStats.fileUsagePoints} totalLabel={pt("fileUsageTotalLabel", "전체")} emptyLabel="파일 사용 데이터 없음" compact />
+              </div>
+            </AdminCard>
+            <AdminCard className="border-stone-100 bg-stone-50/60 px-4 py-4 shadow-none">
+              <h3 className="text-sm font-semibold text-stone-950">협력업체 분포</h3>
+              <div className="mt-4">
+                <AdminBasicDonutChart points={translatedStats.partnerDistribution} totalLabel={pt("partnerCountSuffix", pageText.partnerCountSuffix)} valueSuffix={pt("partnerCountSuffix", pageText.partnerCountSuffix)} emptyLabel="협력업체 데이터 없음" compact />
+              </div>
+            </AdminCard>
+          </div>
+        </div>
+      </section>
+    );
+  };
 
   const renderPlanBody = () => {
     if (effectivePlan === "standard") {
@@ -460,6 +500,8 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
       </section>
 
       {renderPlanBody()}
+
+      {renderIncludedBasicStats()}
 
       {renderIncludedPlanSummary()}
 
