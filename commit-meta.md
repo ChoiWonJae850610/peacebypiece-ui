@@ -1,20 +1,20 @@
 Version :
-0.9.2071
+0.9.208
 
 Summary :
-통계 확인용 seed 데이터와 빈 상태 안내 보강
+Standard/Growth 통계 preview 1차 연결
 
 Description :
-통계 화면이 빈 DB 상태에서 변화가 작게 보이는 문제를 줄이기 위해 개발용 통계 seed SQL을 추가했다. 고객관리자 통계 화면에는 데이터가 없을 때 full reset, smoke test, seed SQL 실행 순서를 안내하는 empty state를 추가하고, 도넛 차트의 빈 상태 표시를 보강했다. 원래 예정된 Standard/Growth 통계 1차 작업은 0.9.208로 유지한다.
+고객관리자 통계 화면의 고급 통계 preview를 실제 DB 집계값과 연결했다. 생산품유형 TOP, 협력업체 성과, 리오더 preview는 기존 통계 snapshot의 집계 데이터를 사용하고, 검수/불량 위험은 데이터 구조 확정 전 준비 상태로 유지했다. 생산 단계 도넛 차트의 좁은 카드 범례 겹침은 compact layout으로 최소 보완했다.
 
 수정 파일 목록 :
 - components/admin/dashboard/AdminBasicStatsCharts.tsx
 - components/admin/dashboard/AdminStatsDashboard.tsx
+- lib/admin/stats/featureGate.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- db/schema/seed_stats_demo_0_9_2071.sql
-- docs/stats-demo-data-0.9.2071.md
+- docs/stats-standard-growth-0.9.208.md
 
 삭제 파일 목록 :
 없음

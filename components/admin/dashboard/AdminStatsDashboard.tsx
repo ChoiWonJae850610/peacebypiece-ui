@@ -6,7 +6,7 @@ import { AdminCard, AdminStatCard } from "@/components/admin/layout/AdminCard";
 import { AdminBasicBarChart, AdminBasicDonutChart } from "@/components/admin/dashboard/AdminBasicStatsCharts";
 import type { AdminStatsSnapshot } from "@/lib/admin/stats/types";
 import { buildAdminStatsDashboardViewModel } from "@/lib/admin/stats/presentation";
-import { ADMIN_ADVANCED_STATS_PREVIEW_CARDS, ADMIN_STATS_FEATURE_GATE_NOTES } from "@/lib/admin/stats/featureGate";
+import { ADMIN_STATS_FEATURE_GATE_NOTES, buildAdminAdvancedStatsPreviewCards } from "@/lib/admin/stats/featureGate";
 import type { getI18n } from "@/lib/i18n";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
@@ -92,6 +92,22 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     translatedStats.fileUsagePoints.some((item) => item.value > 0) ||
     translatedStats.keyMetrics.some((item) => item.value > 0);
 
+  const topCategory = viewModel.categoryBars.find((item) => item.value > 0);
+  const topFactory = viewModel.factoryProductionBars.find((item) => item.value > 0);
+  const reorderRounds = translatedStats.productionRoundDistribution.filter((item) => item.value > 0 && item.label !== translateStatsLabel("1차", t));
+  const topReorder = reorderRounds.reduce<(typeof reorderRounds)[number] | undefined>((current, item) => (!current || item.value > current.value ? item : current), undefined);
+  const totalReorderCount = reorderRounds.reduce((sum, item) => sum + item.value, 0);
+  const advancedStatsPreviewCards = buildAdminAdvancedStatsPreviewCards({
+    categoryTopLabel: topCategory?.label,
+    categoryTopValue: topCategory?.value,
+    factoryTopLabel: topFactory?.label,
+    factoryTopValue: topFactory?.value,
+    reorderTopLabel: topReorder?.label,
+    reorderTopValue: topReorder?.value,
+    totalReorderCount,
+    qualityRiskCount: Number(viewModel.keyMetrics.find((item) => item.key === "defectCount")?.value ?? 0),
+  });
+
   return (
     <>
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -160,13 +176,13 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Advanced statistics</p>
-              <h2 className="mt-2 text-lg font-semibold text-stone-950">고급 통계 preview</h2>
-              <p className="mt-1 text-xs leading-5 text-stone-500">요금제별 잠금 기준을 먼저 고정하고, 실제 API 차단은 권한/feature gate 작업에서 연결합니다.</p>
+              <h2 className="mt-2 text-lg font-semibold text-stone-950">Standard/Growth 통계 preview</h2>
+              <p className="mt-1 text-xs leading-5 text-stone-500">생산품유형, 협력업체 성과, 리오더 preview를 실제 DB 집계값으로 먼저 연결합니다.</p>
             </div>
-            <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700">요금제 잠금</span>
+            <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700">부분 연결</span>
           </div>
           <div className="mt-5 grid gap-3 md:grid-cols-2">
-            {ADMIN_ADVANCED_STATS_PREVIEW_CARDS.map((item) => (
+            {advancedStatsPreviewCards.map((item) => (
               <article key={item.key} className="rounded-3xl border border-stone-200 bg-stone-50/70 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -244,7 +260,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         <AdminCard>
           <h2 className="text-lg font-semibold text-stone-950">{pt("productionRoundTitle", pageText.productionRoundTitle)}</h2>
           <div className="mt-5">
-            <AdminBasicDonutChart points={translatedStats.productionRoundDistribution} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel="생산 단계 데이터 없음" />
+            <AdminBasicDonutChart points={translatedStats.productionRoundDistribution} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel="생산 단계 데이터 없음" compact />
           </div>
         </AdminCard>
 

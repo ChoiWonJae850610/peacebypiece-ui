@@ -29,6 +29,7 @@ type BasicDonutChartProps = {
   totalLabel: string;
   valueSuffix?: string;
   emptyLabel?: string;
+  compact?: boolean;
 };
 
 const CHART_SEGMENT_COLORS = [
@@ -86,12 +87,14 @@ export function AdminBasicBarChart({ points, emptyLabel, valueSuffix = "" }: Bas
   );
 }
 
-export function AdminBasicDonutChart({ points, totalLabel, valueSuffix = "", emptyLabel = "표시할 데이터가 없습니다" }: BasicDonutChartProps) {
+export function AdminBasicDonutChart({ points, totalLabel, valueSuffix = "", emptyLabel = "표시할 데이터가 없습니다", compact = false }: BasicDonutChartProps) {
   const total = points.reduce((sum, item) => sum + item.value, 0);
+  const chartLayoutClassName = compact ? "mt-5 grid gap-4" : "mt-5 grid gap-4 md:grid-cols-[150px_minmax(0,1fr)]";
+  const chartBoxClassName = compact ? "relative mx-auto h-36 w-full max-w-[150px] min-w-0" : "relative h-36 w-full min-w-0";
 
   return (
-    <div className="mt-5 grid gap-4 md:grid-cols-[150px_minmax(0,1fr)]">
-      <div className="relative h-36 w-full min-w-0">
+    <div className={chartLayoutClassName}>
+      <div className={chartBoxClassName}>
         {total === 0 ? (
           <div className="absolute inset-1 z-10 flex items-center justify-center rounded-full border border-dashed border-stone-300 bg-white/70 px-4 text-center text-[11px] font-semibold leading-4 text-stone-500">
             {emptyLabel}
@@ -115,7 +118,7 @@ export function AdminBasicDonutChart({ points, totalLabel, valueSuffix = "", emp
           <span className="text-[11px] font-semibold text-stone-400">{totalLabel}</span>
         </div>
       </div>
-      <div className="grid content-center gap-2">
+      <div className="grid min-w-0 content-center gap-2">
         {points.map((item, index) => (
           <div key={item.label} className="flex items-center justify-between rounded-2xl bg-stone-50 px-3 py-2 text-xs font-semibold text-stone-600">
             <span className="flex min-w-0 items-center gap-2">
