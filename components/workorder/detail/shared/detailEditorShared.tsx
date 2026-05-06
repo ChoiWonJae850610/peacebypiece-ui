@@ -2,6 +2,7 @@ import { type KeyboardEvent, type ReactNode } from "react";
 import { getDisplayValue, getEditingInitialValue } from "@/lib/workorder/detail/detailFormatting";
 import { isUnavailableWorkOrderSelectOption } from "@/lib/constants/workorderDomain";
 import { normalizeEditingValue } from "@/lib/workorder/detail/detailSanitizers";
+import { clampPastDateInputValue, getTodayDateInputValue } from "@/lib/workorder/datePolicy";
 import type { OrderEntry } from "@/types/workorder";
 
 export type RowValue = string | number | null | undefined;
@@ -232,16 +233,19 @@ export function EditableValue({
   }
 
   if (editing) {
+    const minDateValue = inputType === "date" ? getTodayDateInputValue() : undefined;
+
     return (
       <input
         autoFocus
         type={inputType}
         inputMode={inputType === "date" ? undefined : inputMode}
         value={editingValue}
+        min={minDateValue}
         onChange={(event) => {
           const nextValue = normalizeEditingValue(field, event.target.value);
           if (inputType === "date") {
-            onCommit(nextValue);
+            onCommit(clampPastDateInputValue(nextValue, minDateValue));
             event.currentTarget.blur();
             return;
           }
@@ -255,7 +259,7 @@ export function EditableValue({
           event.currentTarget.select();
         }}
         onClick={(event) => openDatePicker(event.currentTarget)}
-        onBlur={(event) => onCommit(event.target.value)}
+        onBlur={(event) => onCommit(inputType === "date" ? clampPastDateInputValue(event.target.value, minDateValue) : event.target.value)}
         onKeyDown={handleInputKeyDown}
         className={`${EDITABLE_INPUT_CLASS} ${compact ? "mx-auto max-w-[11rem]" : ""} ${alignRight ? "text-right tabular-nums" : centered ? "text-center" : "text-left"}`}
       />
