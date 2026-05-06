@@ -1,19 +1,19 @@
 Version :
-0.9.204
+0.9.205
 
 Summary :
-Recharts 통계 차트 라이브러리 도입
+고객 관리자 Basic 통계 차트 1차 적용
 
 Description :
-고객관리자와 시스템관리자 통계 화면에서 사용할 차트 라이브러리로 recharts를 추가했다. 이번 버전은 사용자의 명시 허용에 따라 package.json과 package-lock.json을 수정하며, 다른 dependency는 추가하지 않았다. 실제 통계 화면 구현은 다음 버전에서 진행한다.
+Recharts를 고객 관리자 통계 화면에 실제 연결했다. 작업지시서 상태별 현황은 막대 차트로, 협력업체 분포와 파일 사용량 및 생산 단계 비율은 도넛 차트로 표시하도록 공통 차트 컴포넌트를 추가했다. 기존 통계 repository, API, DB schema, package 의존성은 변경하지 않았다.
 
 수정 파일 목록 :
+- components/admin/dashboard/AdminStatsDashboard.tsx
 - lib/constants/app.ts
-- package.json
-- package-lock.json
 
 추가 파일 목록 :
-- docs/stats-recharts-adoption-0.9.204.md
+- components/admin/dashboard/AdminBasicStatsCharts.tsx
+- docs/stats-basic-dashboard-0.9.205.md
 
 삭제 파일 목록 :
 없음

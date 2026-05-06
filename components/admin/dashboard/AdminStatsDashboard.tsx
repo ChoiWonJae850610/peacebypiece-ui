@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { AdminCard, AdminStatCard } from "@/components/admin/layout/AdminCard";
+import { AdminBasicBarChart, AdminBasicDonutChart } from "@/components/admin/dashboard/AdminBasicStatsCharts";
 import type { AdminStatsSnapshot } from "@/lib/admin/stats/types";
 import { buildAdminStatsDashboardViewModel } from "@/lib/admin/stats/presentation";
 import type { getI18n } from "@/lib/i18n";
@@ -12,51 +13,6 @@ type AdminStatsDashboardProps = {
   stats: AdminStatsSnapshot;
   pageText: ReturnType<typeof getI18n>["admin"]["dashboardPage"];
 };
-
-type DonutProps = {
-  segments: { label: string; value: number; percent: number; strokeDasharray: string; strokeDashoffset: number }[];
-  total: number;
-  suffix: string;
-};
-
-function AdminStatsDonut({ segments, total, suffix }: DonutProps) {
-  return (
-    <div className="grid gap-4 md:grid-cols-[140px_minmax(0,1fr)]">
-      <div className="relative mx-auto h-32 w-32">
-        <svg viewBox="0 0 36 36" className="h-32 w-32 -rotate-90">
-          <circle cx="18" cy="18" r="15.5" fill="none" stroke="currentColor" strokeWidth="4" className="text-stone-100" />
-          {segments.map((item) => (
-            <circle
-              key={item.label}
-              cx="18"
-              cy="18"
-              r="15.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="4"
-              strokeDasharray={item.strokeDasharray}
-              strokeDashoffset={item.strokeDashoffset}
-              pathLength="100"
-              className="text-[var(--admin-theme-surface)]"
-            />
-          ))}
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <span className="text-xl font-bold text-stone-950">{total}</span>
-          <span className="text-[11px] font-semibold text-stone-400">{suffix}</span>
-        </div>
-      </div>
-      <div className="grid content-center gap-2">
-        {segments.map((item) => (
-          <div key={item.label} className="flex items-center justify-between rounded-2xl bg-stone-50 px-3 py-2 text-xs font-semibold text-stone-600">
-            <span>{item.label}</span>
-            <span>{item.value}{suffix} · {item.percent}%</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 function translateStatsLabel(label: string, t: ReturnType<typeof useAdminTranslation>) {
   const map: Record<string, string> = {
@@ -180,38 +136,21 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
             <span className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--admin-theme-text-on-surface)]">{translateStatsLabel(stats.periodOptions.find((item) => item.active)?.label ?? pt("currentMonth", pageText.currentMonth), t)}</span>
           </div>
 
-          <div className="relative mt-5 flex min-h-0 flex-1 items-end gap-4 rounded-[22px] border border-stone-100 bg-stone-50/70 px-5 pb-5 pt-7">
-            {viewModel.totalFlowValue === 0 ? (
-              <div className="absolute inset-x-5 top-5 rounded-2xl border border-dashed border-stone-300 bg-white/75 px-4 py-3 text-center text-xs font-semibold text-stone-500">
-                {pt("emptyFlowLabel", pageText.emptyFlowLabel)}
-              </div>
-            ) : null}
-            {viewModel.workorderBars.map((item) => (
-              <div key={item.label} className="flex min-w-0 flex-1 flex-col items-center justify-end gap-3">
-                <div className="flex h-48 w-full items-end justify-center border-b border-stone-200">
-                  <div className={`w-full max-w-14 rounded-t-3xl shadow-sm transition ${item.isEmpty ? "bg-stone-200" : "bg-[var(--admin-theme-surface)]"}`} style={{ height: `${item.heightPercent}%` }} aria-label={item.ariaLabel} />
-                </div>
-                <div className="text-center">
-                  <p className="text-base font-semibold text-stone-950">{item.value}</p>
-                  <p className="mt-1 text-xs font-medium text-stone-500">{translateStatsLabel(item.label, t)}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <AdminBasicBarChart points={translatedStats.workorderFlow} emptyLabel={pt("emptyFlowLabel", pageText.emptyFlowLabel)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} />
         </AdminCard>
 
         <div className="grid min-h-0 grid-rows-[auto_auto] gap-5 overflow-hidden">
           <AdminCard className="min-h-0">
             <h2 className="text-lg font-semibold text-stone-950">{pt("partnerDonutTitle", pageText.partnerDonutTitle)}</h2>
             <div className="mt-5">
-              <AdminStatsDonut segments={viewModel.partnerDonut} total={viewModel.totalPartnerCount} suffix={pt("partnerCountSuffix", pageText.partnerCountSuffix)} />
+              <AdminBasicDonutChart points={translatedStats.partnerDistribution} totalLabel={pt("partnerCountSuffix", pageText.partnerCountSuffix)} valueSuffix={pt("partnerCountSuffix", pageText.partnerCountSuffix)} />
             </div>
           </AdminCard>
 
           <AdminCard className="min-h-0">
             <h2 className="text-lg font-semibold text-stone-950">{pt("fileDonutTitle", pageText.fileDonutTitle)}</h2>
             <div className="mt-5">
-              <AdminStatsDonut segments={viewModel.fileUsageDonut} total={translatedStats.fileUsagePoints.reduce((sum, item) => sum + item.value, 0)} suffix="" />
+              <AdminBasicDonutChart points={translatedStats.fileUsagePoints} totalLabel={pt("fileUsageTotalLabel", "전체")} />
             </div>
           </AdminCard>
         </div>
@@ -233,7 +172,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         <AdminCard>
           <h2 className="text-lg font-semibold text-stone-950">{pt("productionRoundTitle", pageText.productionRoundTitle)}</h2>
           <div className="mt-5">
-            <AdminStatsDonut segments={viewModel.roundDonut} total={viewModel.totalRoundCount} suffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} />
+            <AdminBasicDonutChart points={translatedStats.productionRoundDistribution} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} />
           </div>
         </AdminCard>
 
