@@ -1,20 +1,20 @@
 Version :
-0.9.216
+0.9.217
 
 Summary :
-고객사 관리자 UI 정책 정리
+협력업체와 기준정보 UI 정리
 
 Description :
-고객사 관리자 환경설정 화면에서 삭제방식, 기본 용량 한도, 휴지통 용량 포함 여부, 용량 주의 기준, 개발중 기능 상태를 확인할 수 있도록 정책 영역을 추가했다. 정책 표시 데이터는 presentation 파일로 분리하고, 실제 권한 저장 UI나 API 차단은 후속 버전으로 유지한다. DB schema, full_reset.sql, package 의존성은 변경하지 않는다.
+협력업체 관리 화면의 버튼명과 상태 필터명을 정리하고, 목록의 별도 수정 버튼을 제거해 업체 행 선택 시 수정 모달이 열리도록 변경했다. 협력업체 안내 문구도 행 선택 수정 방식과 외주공정 관리 기준 중심으로 교체했다. 이번 버전은 DB schema, API route, package 의존성을 변경하지 않는다.
 
 수정 파일 목록 :
-- app/admin/settings/page.tsx
+- components/admin/partnerMaster/PartnerMasterList.tsx
+- lib/admin/partner/constants.ts
+- lib/i18n/ko/admin.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- components/admin/settings/AdminPolicyOverview.tsx
-- lib/admin/settings/adminPolicyPresentation.ts
-- docs/admin-company-policy-ui-0.9.216.md
+- docs/partner-master-ui-cleanup-0.9.217.md
 
 삭제 파일 목록 :
 없음

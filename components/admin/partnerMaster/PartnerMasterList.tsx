@@ -11,7 +11,7 @@ type PartnerMasterListProps = {
   className?: string;
 };
 
-const PARTNER_TABLE_GRID = "minmax(0,1.18fr) minmax(0,0.72fr) minmax(0,0.82fr) minmax(0,1.02fr) minmax(0,1.08fr) 78px 78px";
+const PARTNER_TABLE_GRID = "minmax(0,1.18fr) minmax(0,0.72fr) minmax(0,0.82fr) minmax(0,1.02fr) minmax(0,1.08fr) 84px";
 
 export default function PartnerMasterList({ items, isLoading = false, onEditPartner, className = "mt-5" }: PartnerMasterListProps) {
   const { i18n } = useI18n();
@@ -26,7 +26,8 @@ export default function PartnerMasterList({ items, isLoading = false, onEditPart
       emptyLabel={listText.empty}
       getRowKey={(item) => item.id}
       gridTemplateColumns={PARTNER_TABLE_GRID}
-      rowClassName={(item) => ["px-4 py-4 md:gap-3", item.isActive ? "bg-white" : "bg-stone-50/80"].join(" ")}
+      rowClassName={(item) => ["px-4 py-4 md:gap-3 transition hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-theme-ring)]", item.isActive ? "bg-white" : "bg-stone-50/80"].join(" ")}
+      onRowClick={(item) => onEditPartner(item.id)}
       columns={[
         {
           key: "name",
@@ -77,19 +78,6 @@ export default function PartnerMasterList({ items, isLoading = false, onEditPart
             <span className={["inline-flex rounded-full px-2.5 py-1 text-xs font-medium", item.isActive ? "bg-teal-100 text-teal-700" : "bg-stone-200 text-stone-600"].join(" ")}>
               {item.isActive ? listText.active : listText.inactive}
             </span>
-          ),
-        },
-        {
-          key: "actions",
-          label: listText.columns.actions,
-          render: (item) => (
-            <button
-              type="button"
-              onClick={() => onEditPartner(item.id)}
-              className="inline-flex items-center justify-center rounded-full border border-stone-300 bg-white px-3 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-50"
-            >
-              {listText.edit}
-            </button>
           ),
         },
       ]}

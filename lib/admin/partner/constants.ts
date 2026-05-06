@@ -36,7 +36,7 @@ export const EMPTY_PARTNER_DRAFT: PartnerDraft = {
 };
 
 export const PARTNER_STATUS_FILTER_OPTIONS: PartnerStatusFilterOption[] = [
-  { value: "all", label: "전체 상태" },
+  { value: "all", label: "전체" },
   { value: "active", label: "사용중" },
   { value: "inactive", label: "미사용" },
 ];

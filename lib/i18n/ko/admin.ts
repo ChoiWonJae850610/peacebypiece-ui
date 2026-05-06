@@ -200,9 +200,9 @@ export const adminKo = {
     header: {
       eyebrow: "",
       title: "협력업체 관리",
-      description: "공장, 원단 협력업체, 부자재 협력업체를 하나의 협력업체 마스터에서 관리하고 외주 가능 여부와 지원 공정은 별도 속성으로 유지합니다.",
+      description: "공장, 원단, 부자재, 외주 업체를 한 화면에서 관리합니다. 행을 선택하면 바로 수정할 수 있고 외주 공정은 별도 기준정보로 유지합니다.",
       manageProcesses: "외주 공정 관리",
-      createPartner: "협력업체 추가",
+      createPartner: "업체추가",
     },
     typeLabels: {
       all: "전체",
@@ -215,11 +215,11 @@ export const adminKo = {
       searchLabel: "검색",
       searchPlaceholder: "이름, 담당자, 연락처, 메모, 외주공정 검색",
       summaryLabel: "요약",
-      summaryDescription: "협력업체 정보는 작업지시서에서 바로 선택되는 기준정보이므로 사용 중인 거래처만 안정적으로 관리합니다.",
+      summaryDescription: "협력업체는 작업지시서에서 바로 선택되는 기준정보입니다. 업체 행을 선택하면 수정 모달이 열리고, 외주 공정은 별도 관리합니다.",
       typeLabel: "유형",
       statusLabel: "사용 상태",
       statusOptions: {
-        all: "전체 상태",
+        all: "전체",
         active: "사용",
         inactive: "미사용",
       },
@@ -249,10 +249,11 @@ export const adminKo = {
       noBaseType: "기본 유형 없음",
       typeMissing: "유형 정보 없음",
       edit: "수정",
+      rowClickHint: "행 선택 시 수정",
       loading: "협력업체 목록을 불러오는 중입니다.",
     },
     form: {
-      createTitle: "협력업체 추가",
+      createTitle: "업체추가"
       editTitle: "협력업체 수정",
       description: "",
       cancel: "취소",
@@ -276,7 +277,7 @@ export const adminKo = {
         memo: "메모",
       },
       placeholders: {
-        name: "협력업체명을 입력하세요",
+        name: "업체명을 입력하세요",
         contactName: "담당자명을 입력하세요",
         phone: "000-0000-0000",
         email: "이메일을 입력하세요",
