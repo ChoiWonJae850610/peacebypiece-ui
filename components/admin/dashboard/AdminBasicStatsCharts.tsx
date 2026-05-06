@@ -28,6 +28,7 @@ type BasicDonutChartProps = {
   points: readonly ChartPoint[];
   totalLabel: string;
   valueSuffix?: string;
+  emptyLabel?: string;
 };
 
 const CHART_SEGMENT_COLORS = [
@@ -85,12 +86,17 @@ export function AdminBasicBarChart({ points, emptyLabel, valueSuffix = "" }: Bas
   );
 }
 
-export function AdminBasicDonutChart({ points, totalLabel, valueSuffix = "" }: BasicDonutChartProps) {
+export function AdminBasicDonutChart({ points, totalLabel, valueSuffix = "", emptyLabel = "표시할 데이터가 없습니다" }: BasicDonutChartProps) {
   const total = points.reduce((sum, item) => sum + item.value, 0);
 
   return (
     <div className="mt-5 grid gap-4 md:grid-cols-[150px_minmax(0,1fr)]">
       <div className="relative h-36 w-full min-w-0">
+        {total === 0 ? (
+          <div className="absolute inset-1 z-10 flex items-center justify-center rounded-full border border-dashed border-stone-300 bg-white/70 px-4 text-center text-[11px] font-semibold leading-4 text-stone-500">
+            {emptyLabel}
+          </div>
+        ) : null}
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie data={points} dataKey="value" nameKey="label" cx="50%" cy="50%" innerRadius={42} outerRadius={66} paddingAngle={2} strokeWidth={0}>

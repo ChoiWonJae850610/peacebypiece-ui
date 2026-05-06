@@ -83,6 +83,14 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     productionCategoryDistribution: translatedStats.productionCategoryDistribution,
     attachmentTrashCards: translatedStats.attachmentTrashCards,
   });
+  const hasVisibleStatsData =
+    viewModel.totalFlowValue > 0 ||
+    viewModel.totalPartnerCount > 0 ||
+    viewModel.totalRoundCount > 0 ||
+    viewModel.totalCategoryCount > 0 ||
+    viewModel.totalFactoryProductionCount > 0 ||
+    translatedStats.fileUsagePoints.some((item) => item.value > 0) ||
+    translatedStats.keyMetrics.some((item) => item.value > 0);
 
   return (
     <>
@@ -116,6 +124,25 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
           <p className="mt-2 text-sm leading-6 text-stone-600">{pt("cumulativeNoticeDescription", pageText.cumulativeNoticeDescription)}</p>
         </AdminCard>
       </section>
+
+      {!hasVisibleStatsData ? (
+        <AdminCard className="border-dashed border-amber-200 bg-amber-50/55 px-5 py-5">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">Demo seed required</p>
+              <h2 className="mt-2 text-lg font-semibold text-stone-950">통계 확인용 데이터가 아직 없습니다</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">
+                현재 화면은 실제 DB 집계값만 표시합니다. 차트와 요금제 preview를 확인하려면 full reset 이후 개발용 seed SQL을 실행하세요.
+              </p>
+            </div>
+            <div className="rounded-2xl bg-white px-4 py-3 text-xs font-semibold leading-5 text-stone-600 shadow-sm">
+              <p>1. full_reset.sql</p>
+              <p>2. full_reset_smoke_test.sql</p>
+              <p>3. seed_stats_demo_0_9_2071.sql</p>
+            </div>
+          </div>
+        </AdminCard>
+      ) : null}
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {viewModel.keyMetrics.map((item) => (
@@ -188,14 +215,14 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
           <AdminCard className="min-h-0">
             <h2 className="text-lg font-semibold text-stone-950">{pt("partnerDonutTitle", pageText.partnerDonutTitle)}</h2>
             <div className="mt-5">
-              <AdminBasicDonutChart points={translatedStats.partnerDistribution} totalLabel={pt("partnerCountSuffix", pageText.partnerCountSuffix)} valueSuffix={pt("partnerCountSuffix", pageText.partnerCountSuffix)} />
+              <AdminBasicDonutChart points={translatedStats.partnerDistribution} totalLabel={pt("partnerCountSuffix", pageText.partnerCountSuffix)} valueSuffix={pt("partnerCountSuffix", pageText.partnerCountSuffix)} emptyLabel="협력업체 데이터 없음" />
             </div>
           </AdminCard>
 
           <AdminCard className="min-h-0">
             <h2 className="text-lg font-semibold text-stone-950">{pt("fileDonutTitle", pageText.fileDonutTitle)}</h2>
             <div className="mt-5">
-              <AdminBasicDonutChart points={translatedStats.fileUsagePoints} totalLabel={pt("fileUsageTotalLabel", "전체")} />
+              <AdminBasicDonutChart points={translatedStats.fileUsagePoints} totalLabel={pt("fileUsageTotalLabel", "전체")} emptyLabel="파일 사용 데이터 없음" />
             </div>
           </AdminCard>
         </div>
@@ -217,7 +244,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         <AdminCard>
           <h2 className="text-lg font-semibold text-stone-950">{pt("productionRoundTitle", pageText.productionRoundTitle)}</h2>
           <div className="mt-5">
-            <AdminBasicDonutChart points={translatedStats.productionRoundDistribution} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} />
+            <AdminBasicDonutChart points={translatedStats.productionRoundDistribution} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel="생산 단계 데이터 없음" />
           </div>
         </AdminCard>
 
