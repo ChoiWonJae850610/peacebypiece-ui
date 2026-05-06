@@ -1,20 +1,12 @@
-Version :
-0.9.2221
-
-Summary :
-통계 화면 현재 요약과 기간별 분석 구조 재정의
-
-Description :
-고객관리자 통계 화면을 요금제 기준이 아니라 현재 시점 요약과 기간별 분석 기준으로 재정의했다. 상단 4개 카드는 누적 생산, 누적 납기 지연율, 누적 검수/불량률, 현재 저장소 사용량으로 정리하고 기간 필터는 작업흐름분석 이하에만 적용되도록 배치했다. 저장소 상세 요약과 저장소 카드 이동 기능은 통계 화면에서 제거했다.
-
+Version : 0.9.2222
+Summary : 통계 분석 섹션 재구성
+Description : 고객관리자 통계정보 화면에서 기간별 리오더 TOP5, 생산품 유형 차수별 분석, 업체별 납기·검수 지표를 실제 집계 기준에 맞게 보강했다. 리오더 TOP5는 제품명 기준으로 표시하고, 생산품 유형 분석은 1차/2차/3차 이상 선택에 따라 도넛 그래프와 TOP5가 함께 바뀌도록 정리했다. 업체 성과는 제작 건수, 납기 지연율, 검수/불량률을 한 화면에서 확인하도록 보완했다. DB schema, API route, package 의존성은 변경하지 않는다.
 수정 파일 목록 :
 - components/admin/dashboard/AdminStatsDashboard.tsx
 - lib/admin/adminStats.repository.ts
 - lib/admin/stats/types.ts
 - lib/constants/app.ts
-
 추가 파일 목록 :
-- docs/admin-stats-current-period-0.9.2221.md
-
+- docs/admin-stats-analysis-sections-0.9.2222.md
 삭제 파일 목록 :
 없음

@@ -110,6 +110,13 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     productionRoundDistribution: translateStatsText(stats.productionRoundDistribution, t),
     factoryProductionDistribution: translateStatsText(stats.factoryProductionDistribution, t),
     productionCategoryDistribution: translateStatsText(stats.productionCategoryDistribution, t),
+    productionCategoryByRound: {
+      first: translateStatsText(stats.productionCategoryByRound.first, t),
+      second: translateStatsText(stats.productionCategoryByRound.second, t),
+      third: translateStatsText(stats.productionCategoryByRound.third, t),
+    },
+    reorderTopProducts: translateStatsText(stats.reorderTopProducts, t),
+    factoryPerformance: stats.factoryPerformance,
     attachmentTrashCards: translateStatsText(stats.attachmentTrashCards, t),
   };
 
@@ -135,7 +142,6 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     translatedStats.fileUsagePoints.some((item) => item.value > 0) ||
     translatedStats.keyMetrics.some((item) => item.value > 0);
 
-  const reorderRounds = translatedStats.productionRoundDistribution.filter((item) => item.value > 0 && item.label !== translateStatsLabel("1차", t));
   const totalReorderCount = stats.currentOverview.reorderCount;
   const activePeriodOptions = stats.periodOptions.filter((item) => item.key === "7d" || item.key === "30d");
   const activePeriodLabel = translateStatsLabel(stats.periodOptions.find((item) => item.active)?.label ?? "30일", t);
@@ -146,12 +152,16 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     third: "3차 이상",
   };
 
-  const selectedRoundPoint = translatedStats.productionRoundDistribution.find((item) => item.label === translateStatsLabel(roundFilterLabels[roundFilter], t));
   const selectedRoundLabel = roundFilterLabels[roundFilter];
-  const selectedRoundTotal = selectedRoundPoint?.value ?? 0;
-  const categoryTopFive = viewModel.categoryBars.slice(0, 5);
+  const toRatioBars = (points: { label: string; value: number; valueLabel?: string }[]) => {
+    const total = points.reduce((sum, item) => sum + item.value, 0);
+    return points.map((item) => ({ ...item, limit: total, valueLabel: item.valueLabel ?? String(item.value), widthPercent: total > 0 ? Math.max(4, Math.round((item.value / total) * 100)) : 0 }));
+  };
+  const selectedRoundCategoryBars = toRatioBars(translatedStats.productionCategoryByRound[roundFilter]).slice(0, 5);
+  const selectedRoundTotal = selectedRoundCategoryBars.reduce((sum, item) => sum + item.value, 0);
+  const reorderTopProducts = toRatioBars(translatedStats.reorderTopProducts).slice(0, 5);
 
-  const renderBarList = (title: string, points: typeof viewModel.categoryBars, emptyLabel: string) => (
+  const renderBarList = (title: string, points: ReturnType<typeof toRatioBars>, emptyLabel: string) => (
     <AdminCard>
       <h2 className="text-lg font-semibold text-stone-950">{title}</h2>
       <div className="mt-5 grid gap-3">
@@ -264,10 +274,15 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Reorder TOP5</p>
           <h2 className="mt-2 text-lg font-semibold text-stone-950">기간별 리오더 TOP5</h2>
           <div className="mt-5 grid gap-3">
-            {reorderRounds.length > 0 ? reorderRounds.slice(0, 5).map((item, index) => (
-              <div key={`${item.label}-${index}`} className="flex items-center justify-between rounded-2xl bg-stone-50 px-4 py-3 text-sm font-semibold text-stone-700">
-                <span className="truncate pr-3">{index + 1}. {item.label}</span>
-                <span className="shrink-0 text-stone-950">{formatCount(item.value)}</span>
+            {reorderTopProducts.length > 0 ? reorderTopProducts.map((item, index) => (
+              <div key={`${item.label}-${index}`} className="rounded-2xl bg-stone-50 px-4 py-3">
+                <div className="flex items-center justify-between text-sm font-semibold text-stone-700">
+                  <span className="truncate pr-3">{index + 1}. {item.label}</span>
+                  <span className="shrink-0 text-stone-950">{formatCount(item.value)}</span>
+                </div>
+                <div className="mt-2 h-1.5 rounded-full bg-white">
+                  <div className="h-1.5 rounded-full bg-[var(--admin-theme-surface)]" style={{ width: `${item.widthPercent}%` }} />
+                </div>
               </div>
             )) : <p className="rounded-2xl border border-dashed border-stone-200 bg-stone-50 px-4 py-4 text-sm font-semibold text-stone-500">리오더 데이터 없음</p>}
           </div>
@@ -295,12 +310,12 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
             </div>
           </div>
           <div className="mt-5">
-            <AdminBasicDonutChart points={translatedStats.productionRoundDistribution} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel="생산 단계 데이터 없음" compact />
+            <AdminBasicDonutChart points={selectedRoundCategoryBars} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel="생산품 유형 데이터 없음" compact />
           </div>
           <p className="mt-4 text-xs font-semibold text-stone-500">현재 선택: {selectedRoundLabel} · {formatCount(selectedRoundTotal)}</p>
         </AdminCard>
 
-        {renderBarList("생산품유형 TOP5", categoryTopFive, "생산품유형 데이터 없음")}
+        {renderBarList(`${selectedRoundLabel} 생산품유형 TOP5`, selectedRoundCategoryBars, "생산품유형 데이터 없음")}
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
@@ -314,11 +329,11 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
               <span>납기 지연율</span>
               <span>검수/불량률</span>
             </div>
-            {viewModel.factoryProductionBars.length > 0 ? viewModel.factoryProductionBars.slice(0, 5).map((item) => (
+            {translatedStats.factoryPerformance.length > 0 ? translatedStats.factoryPerformance.slice(0, 5).map((item) => (
               <div key={item.label} className="grid grid-cols-[1.2fr_0.8fr_0.8fr] border-t border-stone-100 px-4 py-3 text-xs font-semibold text-stone-700">
-                <span className="truncate pr-3">{item.label}</span>
-                <span>준비중</span>
-                <span>준비중</span>
+                <span className="truncate pr-3">{item.label} · {formatCount(item.productionCount)}</span>
+                <span>{formatPercent(item.dueDelayRate)}</span>
+                <span>{formatPercent(item.qualityIssueRate)}</span>
               </div>
             )) : (
               <p className="border-t border-stone-100 px-4 py-4 text-sm font-semibold text-stone-500">업체 성과 데이터 없음</p>

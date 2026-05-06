@@ -17,6 +17,21 @@ export type AdminStatsRatioPoint = AdminStatChartPoint & {
   valueLabel?: string;
 };
 
+export type AdminStatsFactoryPerformance = {
+  label: string;
+  productionCount: number;
+  dueDelayRate: number | null;
+  dueDelayCount: number;
+  dueDateTargetCount: number;
+  qualityIssueRate: number | null;
+  qualityIssueCount: number;
+  qualityTargetCount: number;
+};
+
+export type AdminStatsRoundKey = "first" | "second" | "third";
+
+export type AdminStatsCategoryByRound = Record<AdminStatsRoundKey, AdminStatsRatioPoint[]>;
+
 export type AdminStatsCurrentOverview = {
   totalProducedCount: number;
   reorderCount: number;
@@ -40,6 +55,9 @@ export type AdminStatsSnapshot = {
   productionRoundDistribution: AdminStatsRatioPoint[];
   factoryProductionDistribution: AdminStatsRatioPoint[];
   productionCategoryDistribution: AdminStatsRatioPoint[];
+  productionCategoryByRound: AdminStatsCategoryByRound;
+  reorderTopProducts: AdminStatsRatioPoint[];
+  factoryPerformance: AdminStatsFactoryPerformance[];
   attachmentTrashCards: AdminStatsRatioPoint[];
   periodOptions: { key: AdminStatsPeriodKey; label: string; active: boolean; href: string }[];
   selectedPeriod: AdminStatsPeriodKey;
