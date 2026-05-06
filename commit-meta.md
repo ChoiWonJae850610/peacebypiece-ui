@@ -1,17 +1,17 @@
 Version :
-0.9.201
+0.9.202
 
 Summary :
-통계 데이터 소스 매핑 문서 추가
+통계 API와 DTO 설계 문서 추가
 
 Description :
-현재 DB 구조를 기준으로 고객관리자와 시스템관리자 통계 지표의 계산 가능 여부를 가능, 부분 가능, 불가능으로 분류했다. 추가 schema, index, 정책 확정이 필요한 항목과 SQL DDL 및 전체 리셋 필요 여부를 문서화하고 APP_VERSION을 0.9.201로 갱신했다.
+고객관리자와 시스템관리자 통계 API 후보, 공통 기간 필터, feature gate, availability 표현 방식, DTO 응답 구조를 문서화했다. 이번 버전은 설계 문서와 APP_VERSION 변경만 포함하며 DB schema, API route, UI, package 의존성은 변경하지 않았다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/stats-data-source-map-0.9.201.md
+- docs/stats-api-dto-plan-0.9.202.md
 
 삭제 파일 목록 :
 없음
