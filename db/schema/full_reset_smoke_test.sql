@@ -1,6 +1,6 @@
 -- =========================================
 -- PeaceByPiece full_reset smoke test
--- Version: 0.9.74
+-- Version: 0.9.203
 --
 -- 목적:
 -- - full_reset.sql 실행 후 핵심 테이블 / view / seed / 제약 구조가 만들어졌는지 확인한다.
@@ -37,6 +37,9 @@ BEGIN
       ('plans', to_regclass('public.plans')),
       ('company_plan_assignments', to_regclass('public.company_plan_assignments')),
       ('storage_usage_snapshots', to_regclass('public.storage_usage_snapshots')),
+      ('company_workorder_daily_stats', to_regclass('public.company_workorder_daily_stats')),
+      ('company_workorder_monthly_stats', to_regclass('public.company_workorder_monthly_stats')),
+      ('company_storage_daily_stats', to_regclass('public.company_storage_daily_stats')),
       ('expired_pending_invitations', to_regclass('public.expired_pending_invitations')),
       ('latest_storage_usage_snapshots', to_regclass('public.latest_storage_usage_snapshots')),
       ('spec_sheets', to_regclass('public.spec_sheets')),
@@ -73,6 +76,14 @@ BEGIN
       ('spec_sheets', 'category1_id'),
       ('spec_sheets', 'category2_id'),
       ('spec_sheets', 'category3_id'),
+      ('company_workorder_daily_stats', 'stats_date'),
+      ('company_workorder_daily_stats', 'created_workorder_count'),
+      ('company_workorder_daily_stats', 'reorder_workorder_count'),
+      ('company_workorder_monthly_stats', 'stats_month'),
+      ('company_workorder_monthly_stats', 'order_quantity_total'),
+      ('company_storage_daily_stats', 'stats_date'),
+      ('company_storage_daily_stats', 'active_attachment_bytes'),
+      ('company_storage_daily_stats', 'purge_requested_count'),
       ('memos', 'delete_status'),
       ('memos', 'purge_status'),
       ('memos', 'purge_requested_at'),
@@ -175,6 +186,45 @@ BEGIN
 
   IF orphan_storage_snapshots > 0 THEN
     RAISE EXCEPTION 'orphan storage_usage_snapshots found: %', orphan_storage_snapshots;
+  END IF;
+END $$;
+
+
+DO $$
+DECLARE
+  missing_indexes text[];
+BEGIN
+  SELECT array_agg(index_name)
+  INTO missing_indexes
+  FROM (
+    VALUES
+      ('spec_sheets_company_created_idx'),
+      ('spec_sheets_company_status_created_idx'),
+      ('spec_sheets_company_reorder_created_idx'),
+      ('orders_company_factory_created_idx'),
+      ('attachments_company_size_idx'),
+      ('company_workorder_daily_stats_company_date_idx'),
+      ('company_workorder_monthly_stats_company_month_idx'),
+      ('company_storage_daily_stats_company_date_idx')
+  ) AS required_indexes(index_name)
+  WHERE to_regclass('public.' || required_indexes.index_name) IS NULL;
+
+  IF missing_indexes IS NOT NULL THEN
+    RAISE EXCEPTION 'full_reset smoke test failed. Missing stats indexes: %', missing_indexes;
+  END IF;
+END $$;
+
+DO $$
+DECLARE
+  invalid_month_rows integer;
+BEGIN
+  SELECT count(*)
+  INTO invalid_month_rows
+  FROM company_workorder_monthly_stats
+  WHERE stats_month <> date_trunc('month', stats_month)::date;
+
+  IF invalid_month_rows > 0 THEN
+    RAISE EXCEPTION 'company_workorder_monthly_stats contains invalid stats_month rows: %', invalid_month_rows;
   END IF;
 END $$;
 
