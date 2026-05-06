@@ -19,6 +19,15 @@ export type AdminStatsPreviewCard = {
   description: string;
 };
 
+
+export type AdminPremiumStatsReadinessItem = {
+  key: string;
+  title: string;
+  statusLabel: "가능" | "부분 가능" | "준비 필요";
+  dataSource: string;
+  nextAction: string;
+};
+
 export type AdminAdvancedStatsPreviewInput = {
   categoryTopLabel?: string;
   categoryTopValue?: number;
@@ -96,3 +105,35 @@ export const ADMIN_STATS_FEATURE_GATE_NOTES = [
   "Growth 이상은 리오더 preview를 연결하고, Premium 이상은 검수/불량과 export 기능을 확장하는 기준으로 둡니다.",
   "현재 버전의 잠금은 화면 기준 preview이며, API 차단은 permission/feature gate 버전에서 별도 적용합니다.",
 ] as const;
+
+
+export const ADMIN_PREMIUM_STATS_READINESS_ITEMS: AdminPremiumStatsReadinessItem[] = [
+  {
+    key: "quality-defect-rate",
+    title: "검수/불량률",
+    statusLabel: "준비 필요",
+    dataSource: "검수 결과와 불량 수량을 저장하는 전용 필드가 아직 확정되지 않았습니다.",
+    nextAction: "검수 완료 액션에서 불량 수량, 검사 수량, 사유 코드를 저장할 schema를 먼저 확정합니다.",
+  },
+  {
+    key: "delivery-delay-rate",
+    title: "납기 지연율",
+    statusLabel: "부분 가능",
+    dataSource: "작업지시서/발주 데이터의 납기일과 완료일 후보를 기준으로 계산할 수 있으나, 실제 완료 기준일 정책이 필요합니다.",
+    nextAction: "발주 단위 due_date, completed_at, inspection_completed_at 중 통계 기준일을 하나로 고정합니다.",
+  },
+  {
+    key: "factory-cost-risk",
+    title: "공장별 비용/위험",
+    statusLabel: "부분 가능",
+    dataSource: "orders의 factory_name과 비용 후보 필드를 사용할 수 있으나, 공임/로스/외주비 합산 기준이 아직 분리되어 있습니다.",
+    nextAction: "공장별 총비용은 labor_cost, loss_cost, outsourcing_cost 등 비용 컬럼 확정 후 연결합니다.",
+  },
+  {
+    key: "stats-export",
+    title: "통계 내보내기",
+    statusLabel: "준비 필요",
+    dataSource: "현재 화면 집계값은 표시용 snapshot 중심이며, export 전용 DTO와 권한 차단이 아직 없습니다.",
+    nextAction: "permission/feature gate 작업 후 CSV export API와 감사 로그를 함께 설계합니다.",
+  },
+];
