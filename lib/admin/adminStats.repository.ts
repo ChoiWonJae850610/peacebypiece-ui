@@ -24,6 +24,7 @@ import {
   type AdminRoundCountRow as RoundCountRow,
   type AdminStatusCountRow as StatusCountRow,
 } from "@/lib/admin/stats/selectors";
+import { ADMIN_FILE_LIMIT_BYTES } from "@/lib/constants/adminStats";
 import { isDatabaseConfigured, queryDb } from "@/lib/db/client";
 
 function getAdminStatsPeriodWhereClause(period: AdminStatsPeriodKey): string {
@@ -38,6 +39,18 @@ function buildEmptyStats(sourceState: Exclude<AdminStatsSourceState, "db">, sele
   const { points: fileUsagePoints, fileUsageLabel, activeFileCount, trashFileCount } = buildAdminFileUsagePoints(undefined);
 
   return {
+    currentOverview: {
+      totalProducedCount: 0,
+      reorderCount: 0,
+      dueDelayRate: null,
+      dueDelayCount: 0,
+      dueDateTargetCount: 0,
+      qualityIssueRate: null,
+      qualityIssueCount: 0,
+      qualityTargetCount: 0,
+      storageUsedBytes: 0,
+      storageLimitBytes: ADMIN_FILE_LIMIT_BYTES,
+    },
     summaries: buildAdminSummaryCards({ totalWorkorders: 0, partnerCount: 0, fileUsageLabel, completedInPeriod: 0 }),
     workorderFlow: buildAdminWorkorderFlow([]),
     partnerDistribution: buildAdminPartnerDistribution([]),
@@ -61,7 +74,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[]): Pr
 
   try {
     const companyId = getAdminCompanyId();
-    const [workordersResult, completedResult, partnersResult, partnerTypesResult, fileUsageResult, reviewWaitingResult, inspectionWaitingResult, inboundDelayedResult, defectResult, roundResult, factoryProductionResult, categoryResult] = await Promise.all([
+    const [workordersResult, completedResult, partnersResult, partnerTypesResult, fileUsageResult, reviewWaitingResult, inspectionWaitingResult, inboundDelayedResult, defectResult, roundResult, factoryProductionResult, categoryResult, currentWorkordersResult, currentReorderResult, dueDateTargetResult, dueDelayedResult, qualityIssueResult] = await Promise.all([
       queryDb<StatusCountRow>(
         `SELECT COALESCE(status, 'draft') AS status,
                 COUNT(*)::text AS count_value
@@ -190,6 +203,52 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[]): Pr
           LIMIT 6`,
         [companyId],
       ),
+      queryDb<CountRow>(
+        `SELECT COUNT(*)::text AS count_value
+           FROM spec_sheets
+          WHERE company_id = $1
+            AND deleted_at IS NULL
+            AND COALESCE(is_active, true) = true`,
+        [companyId],
+      ),
+      queryDb<CountRow>(
+        `SELECT COUNT(*)::text AS count_value
+           FROM spec_sheets
+          WHERE company_id = $1
+            AND deleted_at IS NULL
+            AND COALESCE(is_active, true) = true
+            AND (COALESCE(reorder_round, 0) > 1 OR COALESCE(is_rework, false) = true)`,
+        [companyId],
+      ),
+      queryDb<CountRow>(
+        `SELECT COUNT(*)::text AS count_value
+           FROM orders
+          WHERE company_id = $1
+            AND deleted_at IS NULL
+            AND COALESCE(is_active, true) = true
+            AND COALESCE(due_date, '') ~ '^\\d{4}-\\d{2}-\\d{2}$'`,
+        [companyId],
+      ),
+      queryDb<CountRow>(
+        `SELECT COUNT(*)::text AS count_value
+           FROM orders
+          WHERE company_id = $1
+            AND deleted_at IS NULL
+            AND COALESCE(is_active, true) = true
+            AND COALESCE(due_date, '') ~ '^\\d{4}-\\d{2}-\\d{2}$'
+            AND due_date::date < CURRENT_DATE
+            AND status <> 'completed'`,
+        [companyId],
+      ),
+      queryDb<CountRow>(
+        `SELECT COUNT(*)::text AS count_value
+           FROM spec_sheets
+          WHERE company_id = $1
+            AND deleted_at IS NULL
+            AND COALESCE(is_active, true) = true
+            AND (status = 'rejected' OR COALESCE(is_rework, false) = true)`,
+        [companyId],
+      ),
     ]);
 
     const statusRows = workordersResult.rows;
@@ -200,8 +259,26 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[]): Pr
     const partnerDistribution = buildAdminPartnerDistribution(partnerTypesResult.rows);
     const { points: fileUsagePoints, fileUsageLabel, activeFileCount, trashFileCount } = buildAdminFileUsagePoints(fileUsageResult.rows[0]);
     const summaries = buildAdminSummaryCards({ totalWorkorders, partnerCount, fileUsageLabel, completedInPeriod });
+    const currentTotalProducedCount = readAdminCount(currentWorkordersResult.rows[0]);
+    const currentReorderCount = readAdminCount(currentReorderResult.rows[0]);
+    const dueDateTargetCount = readAdminCount(dueDateTargetResult.rows[0]);
+    const dueDelayCount = readAdminCount(dueDelayedResult.rows[0]);
+    const qualityIssueCount = readAdminCount(qualityIssueResult.rows[0]);
+    const storageUsedBytes = toAdminStatNumber(fileUsageResult.rows[0]?.total_size_bytes);
 
     return {
+      currentOverview: {
+        totalProducedCount: currentTotalProducedCount,
+        reorderCount: currentReorderCount,
+        dueDelayRate: dueDateTargetCount > 0 ? Math.round((dueDelayCount / dueDateTargetCount) * 1000) / 10 : null,
+        dueDelayCount,
+        dueDateTargetCount,
+        qualityIssueRate: currentTotalProducedCount > 0 ? Math.round((qualityIssueCount / currentTotalProducedCount) * 1000) / 10 : null,
+        qualityIssueCount,
+        qualityTargetCount: currentTotalProducedCount,
+        storageUsedBytes,
+        storageLimitBytes: ADMIN_FILE_LIMIT_BYTES,
+      },
       summaries,
       workorderFlow,
       partnerDistribution,

@@ -1,12 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 
-import { AdminCard, AdminStatCard } from "@/components/admin/layout/AdminCard";
+import { AdminCard } from "@/components/admin/layout/AdminCard";
 import { AdminBasicBarChart, AdminBasicDonutChart } from "@/components/admin/dashboard/AdminBasicStatsCharts";
 import type { AdminStatsSnapshot } from "@/lib/admin/stats/types";
 import { buildAdminStatsDashboardViewModel } from "@/lib/admin/stats/presentation";
-import { ADMIN_PREMIUM_STATS_READINESS_ITEMS, buildAdminAdvancedStatsPreviewCards } from "@/lib/admin/stats/featureGate";
 import type { getI18n } from "@/lib/i18n";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
@@ -14,6 +14,8 @@ type AdminStatsDashboardProps = {
   stats: AdminStatsSnapshot;
   pageText: ReturnType<typeof getI18n>["admin"]["dashboardPage"];
 };
+
+type RoundFilterKey = "first" | "second" | "third";
 
 function translateStatsLabel(label: string, t: ReturnType<typeof useAdminTranslation>) {
   const map: Record<string, string> = {
@@ -43,11 +45,7 @@ function translateStatsLabel(label: string, t: ReturnType<typeof useAdminTransla
     "3차": t("statsUi.productionRounds.thirdOrMore", label),
     "분류 미지정": t("statsUi.unknownLabel", label),
     "7일": t("statsUi.periods.sevenDays", label),
-    "15일": t("statsUi.periods.fifteenDays", label),
     "30일": t("statsUi.periods.thirtyDays", label),
-    "월별": t("statsUi.periods.monthly", label),
-    "이번달": t("dashboardPage.currentMonth", label),
-    "누적": t("statsUi.periods.all", label),
   };
   return map[label] ?? label;
 }
@@ -56,9 +54,52 @@ function translateStatsText<T extends { label: string; description?: string }>(i
   return items.map((item) => ({ ...item, label: translateStatsLabel(item.label, t), description: item.description ? translateStatsLabel(item.description, t) : item.description }));
 }
 
+function formatCount(value: number | undefined, suffix = "건") {
+  return `${Math.max(0, Math.round(value ?? 0)).toLocaleString("ko-KR")}${suffix}`;
+}
+
+function formatPercent(value: number | null | undefined) {
+  if (value === null || value === undefined) return "준비중";
+  return `${value.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}%`;
+}
+
+function formatStorageGb(bytes: number, limitBytes: number) {
+  const usedGb = bytes / 1024 / 1024 / 1024;
+  const limitGb = limitBytes / 1024 / 1024 / 1024;
+  return `${usedGb.toFixed(2)}GB / ${limitGb.toFixed(2)}GB`;
+}
+
+function formatStorageMb(bytes: number) {
+  return `${(bytes / 1024 / 1024).toLocaleString("ko-KR", { maximumFractionDigits: 2 })}MB 사용`;
+}
+
+function CurrentSummaryCard({ label, value, description, subValue }: { label: string; value: string; description: string; subValue?: string }) {
+  return (
+    <div className="rounded-[24px] border border-stone-100 bg-white px-5 py-4 shadow-sm">
+      <p className="text-xs font-semibold text-stone-500">{label}</p>
+      <p className="mt-2 text-2xl font-bold text-stone-950">{value}</p>
+      <p className="mt-1 text-xs font-semibold text-stone-500">{description}</p>
+      {subValue ? <p className="mt-2 text-[11px] font-semibold text-stone-400">{subValue}</p> : null}
+    </div>
+  );
+}
+
+function SmallMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-stone-100 bg-stone-50 px-4 py-3">
+      <p className="text-xs font-semibold text-stone-500">{label}</p>
+      <p className="mt-2 text-lg font-bold text-stone-950">{value}</p>
+    </div>
+  );
+}
+
 export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashboardProps) {
   const t = useAdminTranslation();
   const pt = (key: string, fallback: string) => t(`dashboardPage.${key}`, fallback);
+  const [roundFilter, setRoundFilter] = useState<RoundFilterKey>("first");
+  const [customStartDate, setCustomStartDate] = useState("");
+  const [customEndDate, setCustomEndDate] = useState("");
+
   const translatedStats = {
     ...stats,
     summaries: translateStatsText(stats.summaries, t),
@@ -94,37 +135,21 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     translatedStats.fileUsagePoints.some((item) => item.value > 0) ||
     translatedStats.keyMetrics.some((item) => item.value > 0);
 
-  const topCategory = viewModel.categoryBars.find((item) => item.value > 0);
-  const topFactory = viewModel.factoryProductionBars.find((item) => item.value > 0);
   const reorderRounds = translatedStats.productionRoundDistribution.filter((item) => item.value > 0 && item.label !== translateStatsLabel("1차", t));
-  const topReorder = reorderRounds.reduce<(typeof reorderRounds)[number] | undefined>((current, item) => (!current || item.value > current.value ? item : current), undefined);
-  const totalReorderCount = reorderRounds.reduce((sum, item) => sum + item.value, 0);
-  const advancedStatsPreviewCards = buildAdminAdvancedStatsPreviewCards({
-    categoryTopLabel: topCategory?.label,
-    categoryTopValue: topCategory?.value,
-    factoryTopLabel: topFactory?.label,
-    factoryTopValue: topFactory?.value,
-    reorderTopLabel: topReorder?.label,
-    reorderTopValue: topReorder?.value,
-    totalReorderCount,
-    qualityRiskCount: Number(viewModel.keyMetrics.find((item) => item.key === "defectCount")?.value ?? 0),
-  });
-
-  const formatCount = (value: number | undefined, suffix = "건") => `${Math.max(0, Math.round(value ?? 0)).toLocaleString("ko-KR")}${suffix}`;
-  const formatFileSize = (value: number | undefined) => {
-    const normalized = Math.max(0, value ?? 0);
-    if (normalized >= 1024 * 1024 * 1024) return `${(normalized / 1024 / 1024 / 1024).toFixed(1)}GB`;
-    if (normalized >= 1024 * 1024) return `${(normalized / 1024 / 1024).toFixed(1)}MB`;
-    if (normalized >= 1024) return `${(normalized / 1024).toFixed(1)}KB`;
-    return `${normalized.toLocaleString("ko-KR")}B`;
+  const totalReorderCount = stats.currentOverview.reorderCount;
+  const activePeriodOptions = stats.periodOptions.filter((item) => item.key === "7d" || item.key === "30d");
+  const activePeriodLabel = translateStatsLabel(stats.periodOptions.find((item) => item.active)?.label ?? "30일", t);
+  const storageUsePercent = stats.currentOverview.storageLimitBytes > 0 ? Math.round((stats.currentOverview.storageUsedBytes / stats.currentOverview.storageLimitBytes) * 1000) / 10 : 0;
+  const roundFilterLabels: Record<RoundFilterKey, string> = {
+    first: "1차",
+    second: "2차",
+    third: "3차 이상",
   };
 
-  const totalWorkorderCount = viewModel.totalFlowValue;
-  const completedCount = translatedStats.workorderFlow.find((item) => item.label === translateStatsLabel("완료", t))?.value ?? 0;
-  const completionRate = totalWorkorderCount > 0 ? Math.round((completedCount / totalWorkorderCount) * 100) : 0;
-  const totalFileBytes = translatedStats.fileUsagePoints.reduce((sum, item) => sum + item.value, 0);
-  const activeFilePoint = translatedStats.fileUsagePoints.find((item) => item.label === translateStatsLabel("첨부파일", t));
-  const trashFilePoint = translatedStats.fileUsagePoints.find((item) => item.label === translateStatsLabel("휴지통", t));
+  const selectedRoundPoint = translatedStats.productionRoundDistribution.find((item) => item.label === translateStatsLabel(roundFilterLabels[roundFilter], t));
+  const selectedRoundLabel = roundFilterLabels[roundFilter];
+  const selectedRoundTotal = selectedRoundPoint?.value ?? 0;
+  const categoryTopFive = viewModel.categoryBars.slice(0, 5);
 
   const renderBarList = (title: string, points: typeof viewModel.categoryBars, emptyLabel: string) => (
     <AdminCard>
@@ -145,35 +170,12 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     </AdminCard>
   );
 
-  const compactMetricItems = [
-    { label: "첨부파일", value: activeFilePoint ? formatCount(activeFilePoint.value) : "0건" },
-    { label: "휴지통", value: trashFilePoint ? formatCount(trashFilePoint.value) : "0건" },
-    { label: "생산 단계", value: formatCount(viewModel.totalRoundCount) },
-    { label: "리오더", value: formatCount(totalReorderCount) },
-  ];
-
   return (
     <>
       <section className="rounded-[28px] border border-stone-100 bg-white px-5 py-5 shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-400">Analytics</p>
-            <h2 className="mt-2 text-2xl font-bold text-stone-950">통계정보</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-500">대시보드와 저장소의 단순 요약은 줄이고, 생산 흐름·협력업체·리오더 분석을 한 화면에서 확인합니다.</p>
-          </div>
-          <div className="flex flex-wrap justify-end gap-2">
-            {stats.periodOptions.map((item) => (
-              <Link
-                key={item.key}
-                href={item.href}
-                aria-current={item.active ? "page" : undefined}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${item.active ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "bg-stone-50 text-stone-500 hover:bg-stone-100"}`}
-              >
-                {translateStatsLabel(item.label, t)}
-              </Link>
-            ))}
-          </div>
-        </div>
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-400">Analytics</p>
+        <h2 className="mt-2 text-2xl font-bold text-stone-950">통계정보</h2>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-500">현재 시점 요약과 기간별 생산 분석을 분리해 확인합니다.</p>
       </section>
 
       {!hasVisibleStatsData ? (
@@ -193,11 +195,57 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         </AdminCard>
       ) : null}
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <AdminStatCard label="작업지시서" value={formatCount(totalWorkorderCount)} description="선택 기간의 전체 작업 흐름" href={null} accent="bg-stone-950 text-white" />
-        <AdminStatCard label="완료율" value={`${completionRate}%`} description="완료 작업 기준 진행 안정도" href={null} accent="bg-emerald-50 text-emerald-700" />
-        <AdminStatCard label="리오더" value={formatCount(totalReorderCount)} description="2차 이상 반복 생산 합계" href={null} accent="bg-stone-100 text-stone-700" />
-        <AdminStatCard label="저장소 요약" value={formatFileSize(totalFileBytes)} description="상세 관리는 저장소 메뉴에서 확인" href="/admin/files" accent="bg-amber-50 text-amber-700" />
+      <section>
+        <div className="mb-3 flex items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Current snapshot</p>
+            <h2 className="mt-1 text-lg font-bold text-stone-950">현재 시점 요약</h2>
+          </div>
+          <p className="text-xs font-semibold text-stone-400">기간 필터 미적용</p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <CurrentSummaryCard label="누적 생산" value={formatCount(stats.currentOverview.totalProducedCount)} description={`리오더 ${formatCount(totalReorderCount)}`} />
+          <CurrentSummaryCard label="누적 납기 지연율" value={formatPercent(stats.currentOverview.dueDelayRate)} description={`${formatCount(stats.currentOverview.dueDelayCount)} / ${formatCount(stats.currentOverview.dueDateTargetCount)} 기준`} />
+          <CurrentSummaryCard label="누적 검수/불량률" value={formatPercent(stats.currentOverview.qualityIssueRate)} description={`${formatCount(stats.currentOverview.qualityIssueCount)} / ${formatCount(stats.currentOverview.qualityTargetCount)} 기준`} />
+          <CurrentSummaryCard label="현재 저장소 사용량" value={`${storageUsePercent}%`} description={formatStorageGb(stats.currentOverview.storageUsedBytes, stats.currentOverview.storageLimitBytes)} subValue={formatStorageMb(stats.currentOverview.storageUsedBytes)} />
+        </div>
+      </section>
+
+      <section className="rounded-[28px] border border-stone-100 bg-white px-5 py-5 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-stone-100 pb-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Period analysis</p>
+            <h2 className="mt-2 text-lg font-semibold text-stone-950">기간별 분석 범위</h2>
+            <p className="mt-1 text-xs font-semibold text-stone-500">작업 흐름과 리오더 분석에 적용합니다.</p>
+          </div>
+          <div className="flex flex-wrap justify-end gap-2">
+            {activePeriodOptions.map((item) => (
+              <Link
+                key={item.key}
+                href={item.href}
+                aria-current={item.active ? "page" : undefined}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${item.active ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "bg-stone-50 text-stone-500 hover:bg-stone-100"}`}
+              >
+                {translateStatsLabel(item.label, t)}
+              </Link>
+            ))}
+          </div>
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+          <label className="grid gap-1 text-xs font-semibold text-stone-500">
+            시작일
+            <input type="date" value={customStartDate} onChange={(event) => setCustomStartDate(event.target.value)} className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-semibold text-stone-700 outline-none focus:border-stone-400" />
+          </label>
+          <label className="grid gap-1 text-xs font-semibold text-stone-500">
+            종료일
+            <input type="date" value={customEndDate} onChange={(event) => setCustomEndDate(event.target.value)} className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-semibold text-stone-700 outline-none focus:border-stone-400" />
+          </label>
+          <div className="flex items-end">
+            <button type="button" className="rounded-2xl border border-dashed border-stone-200 bg-stone-50 px-4 py-2 text-xs font-semibold text-stone-500" title="직접 기간 DB 조회는 다음 단계에서 연결합니다.">
+              직접 선택 준비중
+            </button>
+          </div>
+        </div>
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
@@ -205,90 +253,86 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
           <div className="flex items-start justify-between gap-3 border-b border-stone-100 pb-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Workflow</p>
-              <h2 className="mt-2 text-lg font-semibold text-stone-950">작업 흐름 분석</h2>
+              <h2 className="mt-2 text-lg font-semibold text-stone-950">작업흐름분석</h2>
             </div>
-            <span className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--admin-theme-text-on-surface)]">
-              {translateStatsLabel(stats.periodOptions.find((item) => item.active)?.label ?? pt("currentMonth", pageText.currentMonth), t)}
-            </span>
+            <span className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--admin-theme-text-on-surface)]">{activePeriodLabel}</span>
           </div>
           <AdminBasicBarChart points={translatedStats.workorderFlow} emptyLabel={pt("emptyFlowLabel", pageText.emptyFlowLabel)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} />
         </AdminCard>
 
         <AdminCard>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Storage summary</p>
-          <h2 className="mt-2 text-lg font-semibold text-stone-950">저장소 요약</h2>
-          <p className="mt-2 text-xs leading-5 text-stone-500">용량·휴지통 상세 관리는 저장소 메뉴로 분리합니다.</p>
-          <div className="mt-5">
-            <AdminBasicDonutChart points={translatedStats.fileUsagePoints} totalLabel={pt("fileUsageTotalLabel", "전체")} emptyLabel="파일 사용 데이터 없음" compact />
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Reorder TOP5</p>
+          <h2 className="mt-2 text-lg font-semibold text-stone-950">기간별 리오더 TOP5</h2>
+          <div className="mt-5 grid gap-3">
+            {reorderRounds.length > 0 ? reorderRounds.slice(0, 5).map((item, index) => (
+              <div key={`${item.label}-${index}`} className="flex items-center justify-between rounded-2xl bg-stone-50 px-4 py-3 text-sm font-semibold text-stone-700">
+                <span className="truncate pr-3">{index + 1}. {item.label}</span>
+                <span className="shrink-0 text-stone-950">{formatCount(item.value)}</span>
+              </div>
+            )) : <p className="rounded-2xl border border-dashed border-stone-200 bg-stone-50 px-4 py-4 text-sm font-semibold text-stone-500">리오더 데이터 없음</p>}
           </div>
         </AdminCard>
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
-        {renderBarList("생산 분석 · 생산품유형 TOP", viewModel.categoryBars, "생산품유형 데이터 없음")}
         <AdminCard>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Production stage</p>
-          <h2 className="mt-2 text-lg font-semibold text-stone-950">생산 단계 비율</h2>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Production mix</p>
+              <h2 className="mt-2 text-lg font-semibold text-stone-950">생산품 유형 비율</h2>
+            </div>
+            <div className="flex rounded-full bg-stone-100 p-1">
+              {(["first", "second", "third"] as const).map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setRoundFilter(key)}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${roundFilter === key ? "bg-white text-stone-950 shadow-sm" : "text-stone-500"}`}
+                >
+                  {roundFilterLabels[key]}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="mt-5">
             <AdminBasicDonutChart points={translatedStats.productionRoundDistribution} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel="생산 단계 데이터 없음" compact />
           </div>
+          <p className="mt-4 text-xs font-semibold text-stone-500">현재 선택: {selectedRoundLabel} · {formatCount(selectedRoundTotal)}</p>
         </AdminCard>
+
+        {renderBarList("생산품유형 TOP5", categoryTopFive, "생산품유형 데이터 없음")}
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
-        {renderBarList("협력업체 성과 분석", viewModel.factoryProductionBars, "협력업체 성과 데이터 없음")}
+        {renderBarList("업체 성과", viewModel.factoryProductionBars, "협력업체 성과 데이터 없음")}
         <AdminCard>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Partner mix</p>
-          <h2 className="mt-2 text-lg font-semibold text-stone-950">협력업체 분포</h2>
-          <div className="mt-5">
-            <AdminBasicDonutChart points={translatedStats.partnerDistribution} totalLabel={pt("partnerCountSuffix", pageText.partnerCountSuffix)} valueSuffix={pt("partnerCountSuffix", pageText.partnerCountSuffix)} emptyLabel="협력업체 데이터 없음" compact />
-          </div>
-        </AdminCard>
-      </section>
-
-      <section className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
-        <AdminCard>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Reorder</p>
-          <h2 className="mt-2 text-lg font-semibold text-stone-950">리오더 분석</h2>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {advancedStatsPreviewCards.filter((item) => item.key === "reorder-ranking").map((item) => (
-              <div key={item.key} className="rounded-2xl border border-stone-100 bg-stone-50 px-4 py-3">
-                <p className="text-xs font-semibold text-stone-500">{item.title}</p>
-                <p className="mt-2 text-xl font-bold text-stone-950">{item.metricValue}</p>
-                <p className="mt-1 text-xs font-semibold text-stone-500">{item.metricLabel}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Delay / quality</p>
+          <h2 className="mt-2 text-lg font-semibold text-stone-950">업체별 납기·검수 지표</h2>
+          <div className="mt-5 overflow-hidden rounded-2xl border border-stone-100">
+            <div className="grid grid-cols-[1.2fr_0.8fr_0.8fr] bg-stone-50 px-4 py-3 text-xs font-semibold text-stone-500">
+              <span>업체</span>
+              <span>납기 지연율</span>
+              <span>검수/불량률</span>
+            </div>
+            {viewModel.factoryProductionBars.length > 0 ? viewModel.factoryProductionBars.slice(0, 5).map((item) => (
+              <div key={item.label} className="grid grid-cols-[1.2fr_0.8fr_0.8fr] border-t border-stone-100 px-4 py-3 text-xs font-semibold text-stone-700">
+                <span className="truncate pr-3">{item.label}</span>
+                <span>준비중</span>
+                <span>준비중</span>
               </div>
-            ))}
-            {advancedStatsPreviewCards.filter((item) => item.key === "reorder-ranking").length === 0 ? (
-              <p className="rounded-2xl border border-dashed border-stone-200 bg-stone-50 px-4 py-4 text-sm font-semibold text-stone-500">리오더 데이터 없음</p>
-            ) : null}
-          </div>
-        </AdminCard>
-        <AdminCard>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Quality / due date</p>
-          <h2 className="mt-2 text-lg font-semibold text-stone-950">품질·납기 준비 영역</h2>
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
-            {ADMIN_PREMIUM_STATS_READINESS_ITEMS.map((item) => (
-              <div key={item.key} className="rounded-2xl border border-stone-100 bg-stone-50 px-4 py-3">
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className="text-sm font-semibold text-stone-950">{item.title}</h3>
-                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${item.statusLabel === "가능" ? "bg-emerald-50 text-emerald-700" : item.statusLabel === "부분 가능" ? "bg-amber-50 text-amber-700" : "bg-stone-100 text-stone-500"}`}>{item.statusLabel}</span>
-                </div>
-                <p className="mt-2 text-xs leading-5 text-stone-500">{item.nextAction}</p>
-              </div>
-            ))}
+            )) : (
+              <p className="border-t border-stone-100 px-4 py-4 text-sm font-semibold text-stone-500">업체 성과 데이터 없음</p>
+            )}
           </div>
         </AdminCard>
       </section>
 
       <section className="grid gap-3 md:grid-cols-4">
-        {compactMetricItems.map((item) => (
-          <div key={item.label} className="rounded-2xl border border-stone-100 bg-white px-4 py-3 shadow-sm">
-            <p className="text-xs font-semibold text-stone-500">{item.label}</p>
-            <p className="mt-2 text-lg font-bold text-stone-950">{item.value}</p>
-          </div>
-        ))}
+        <SmallMetric label="검토 대기" value={formatCount(translatedStats.keyMetrics.find((item) => item.key === "reviewWaiting")?.value)} />
+        <SmallMetric label="검수 대기" value={formatCount(translatedStats.keyMetrics.find((item) => item.key === "inspectionWaiting")?.value)} />
+        <SmallMetric label="납기 후보" value={formatCount(stats.currentOverview.dueDelayCount)} />
+        <SmallMetric label="검수/불량 후보" value={formatCount(stats.currentOverview.qualityIssueCount)} />
       </section>
-
     </>
   );
 }

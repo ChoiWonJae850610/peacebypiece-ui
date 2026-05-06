@@ -17,7 +17,21 @@ export type AdminStatsRatioPoint = AdminStatChartPoint & {
   valueLabel?: string;
 };
 
+export type AdminStatsCurrentOverview = {
+  totalProducedCount: number;
+  reorderCount: number;
+  dueDelayRate: number | null;
+  dueDelayCount: number;
+  dueDateTargetCount: number;
+  qualityIssueRate: number | null;
+  qualityIssueCount: number;
+  qualityTargetCount: number;
+  storageUsedBytes: number;
+  storageLimitBytes: number;
+};
+
 export type AdminStatsSnapshot = {
+  currentOverview: AdminStatsCurrentOverview;
   summaries: AdminSummaryCard[];
   workorderFlow: AdminStatChartPoint[];
   partnerDistribution: AdminStatChartPoint[];

@@ -1,18 +1,20 @@
 Version :
-0.9.2220
+0.9.2221
 
 Summary :
-시스템 통계 화면 JSX 닫힘 오류 수정
+통계 화면 현재 요약과 기간별 분석 구조 재정의
 
 Description :
-0.9.2219에서 시스템관리자 통계 화면으로 운영 기준 영역을 이동하는 과정에서 SystemStatsOverview.tsx의 grid 컨테이너 닫힘 태그가 누락되어 Next.js 빌드가 실패하던 문제를 수정했다. APP_VERSION을 0.9.2220으로 올렸으며 DB schema, API route, package 의존성은 변경하지 않는다.
+고객관리자 통계 화면을 요금제 기준이 아니라 현재 시점 요약과 기간별 분석 기준으로 재정의했다. 상단 4개 카드는 누적 생산, 누적 납기 지연율, 누적 검수/불량률, 현재 저장소 사용량으로 정리하고 기간 필터는 작업흐름분석 이하에만 적용되도록 배치했다. 저장소 상세 요약과 저장소 카드 이동 기능은 통계 화면에서 제거했다.
 
 수정 파일 목록 :
-- components/system/SystemStatsOverview.tsx
+- components/admin/dashboard/AdminStatsDashboard.tsx
+- lib/admin/adminStats.repository.ts
+- lib/admin/stats/types.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-없음
+- docs/admin-stats-current-period-0.9.2221.md
 
 삭제 파일 목록 :
 없음
