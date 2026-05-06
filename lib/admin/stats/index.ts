@@ -5,3 +5,4 @@ export * from "@/lib/admin/stats/selectors";
 export * from "@/lib/admin/stats/types";
 export * from "@/lib/admin/stats/cachePolicy";
 export * from "@/lib/admin/stats/performancePolicy";
+export * from "@/lib/admin/stats/aggregateReadinessPolicy";
