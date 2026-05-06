@@ -141,80 +141,171 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     qualityRiskCount: Number(viewModel.keyMetrics.find((item) => item.key === "defectCount")?.value ?? 0),
   });
 
+  const isPlanSwitcherVisible = isDebugFeatureEnabled("adminStatsPlanSwitcher");
   const [selectedPlan, setSelectedPlan] = useState<StatsPlanKey>("basic");
-  const selectedPlanOption = ADMIN_STATS_PLAN_OPTIONS.find((item) => item.key === selectedPlan) ?? ADMIN_STATS_PLAN_OPTIONS[0];
-  const visibleAdvancedStatsPreviewCards = advancedStatsPreviewCards.filter((item) => {
+  const effectivePlan: StatsPlanKey = isPlanSwitcherVisible ? selectedPlan : "premium";
+  const selectedPlanOption = ADMIN_STATS_PLAN_OPTIONS.find((item) => item.key === effectivePlan) ?? ADMIN_STATS_PLAN_OPTIONS[0];
+  const selectedPlanPreviewCards = advancedStatsPreviewCards.filter((item) => {
     const requiredPlan = ADVANCED_CARD_MIN_PLAN[item.key] ?? "premium";
-    return isStatsPlanAtLeast(selectedPlan, requiredPlan);
+    return requiredPlan === effectivePlan;
   });
-  const showStandardStats = isStatsPlanAtLeast(selectedPlan, "standard");
-  const showGrowthStats = isStatsPlanAtLeast(selectedPlan, "growth");
-  const showPremiumStats = isStatsPlanAtLeast(selectedPlan, "premium");
   const showOperationNotes = isDebugFeatureEnabled("adminStatsDevSections");
 
-  return (
-    <>
-      <section className="rounded-[28px] border border-stone-100 bg-white px-5 py-5 shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-400">Stats</p>
-            <h2 className="mt-2 text-2xl font-bold text-stone-950">관리자 통계</h2>
-          </div>
-          <div className="flex flex-col items-end gap-3">
-            <div className="flex flex-wrap justify-end gap-2">
-              {stats.periodOptions.map((item) => (
-                <Link
-                  key={item.key}
-                  href={item.href}
-                  aria-current={item.active ? "page" : undefined}
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${item.active ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "bg-stone-50 text-stone-500 hover:bg-stone-100"}`}
-                >
-                  {translateStatsLabel(item.label, t)}
-                </Link>
-              ))}
-            </div>
-            <div className="flex flex-wrap justify-end gap-2 rounded-full bg-stone-50 p-1">
-              {ADMIN_STATS_PLAN_OPTIONS.map((item) => (
-                <button
-                  key={item.key}
-                  type="button"
-                  onClick={() => setSelectedPlan(item.key)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${selectedPlan === item.key ? "bg-white text-stone-950 shadow-sm" : "text-stone-500 hover:text-stone-800"}`}
-                  aria-pressed={selectedPlan === item.key}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+  const formatCount = (value: number | undefined, suffix = "건") => `${Math.max(0, Math.round(value ?? 0)).toLocaleString("ko-KR")}${suffix}`;
+  const formatFileSize = (value: number | undefined) => {
+    const normalized = Math.max(0, value ?? 0);
+    if (normalized >= 1024 * 1024 * 1024) return `${(normalized / 1024 / 1024 / 1024).toFixed(1)}GB`;
+    if (normalized >= 1024 * 1024) return `${(normalized / 1024 / 1024).toFixed(1)}MB`;
+    if (normalized >= 1024) return `${(normalized / 1024).toFixed(1)}KB`;
+    return `${normalized.toLocaleString("ko-KR")}B`;
+  };
 
-      {!hasVisibleStatsData ? (
-        <AdminCard className="border-dashed border-amber-200 bg-amber-50/55 px-5 py-5">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">Demo seed required</p>
-              <h2 className="mt-2 text-lg font-semibold text-stone-950">통계 확인용 데이터가 아직 없습니다</h2>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">
-                차트 확인은 개발용 seed SQL 실행 후 진행하세요.
-              </p>
+  const totalWorkorderCount = viewModel.totalFlowValue;
+  const completedCount = translatedStats.workorderFlow.find((item) => item.label === translateStatsLabel("완료", t))?.value ?? 0;
+  const completionRate = totalWorkorderCount > 0 ? Math.round((completedCount / totalWorkorderCount) * 100) : 0;
+  const totalFileBytes = translatedStats.fileUsagePoints.reduce((sum, item) => sum + item.value, 0);
+  const totalPartnerCount = viewModel.totalPartnerCount;
+  const totalCategoryCount = viewModel.totalCategoryCount;
+  const totalFactoryCount = viewModel.totalFactoryProductionCount;
+  const qualityReadinessCount = ADMIN_PREMIUM_STATS_READINESS_ITEMS.length;
+
+  const planKpis: Record<StatsPlanKey, { label: string; value: string; description: string; accent?: string }[]> = {
+    basic: [
+      { label: "작업지시서", value: formatCount(totalWorkorderCount), description: "선택 기간의 전체 작업 흐름", accent: "bg-stone-950 text-white" },
+      { label: "완료율", value: `${completionRate}%`, description: "완료 작업 기준 진행 안정도", accent: "bg-emerald-50 text-emerald-700" },
+      { label: "협력업체", value: formatCount(totalPartnerCount, "곳"), description: "등록된 협력업체 분포", accent: "bg-stone-100 text-stone-700" },
+      { label: "파일 사용량", value: formatFileSize(totalFileBytes), description: "첨부/휴지통 합산 기준", accent: "bg-amber-50 text-amber-700" },
+    ],
+    standard: [
+      { label: "생산품유형", value: formatCount(totalCategoryCount, "개"), description: "분류별 생산 현황", accent: "bg-stone-950 text-white" },
+      { label: "TOP 유형", value: topCategory ? topCategory.label : "데이터 없음", description: topCategory ? formatCount(topCategory.value) : "seed 또는 실제 데이터 필요", accent: "bg-emerald-50 text-emerald-700" },
+      { label: "협력업체 성과", value: topFactory ? topFactory.label : "데이터 없음", description: topFactory ? formatCount(topFactory.value) : "발주 데이터 필요", accent: "bg-stone-100 text-stone-700" },
+      { label: "공장 분포", value: formatCount(totalFactoryCount, "건"), description: "공장별 발주/생산 기준", accent: "bg-amber-50 text-amber-700" },
+    ],
+    growth: [
+      { label: "리오더", value: formatCount(totalReorderCount), description: "2차 이상 반복 생산 합계", accent: "bg-stone-950 text-white" },
+      { label: "주요 리오더", value: topReorder ? topReorder.label : "데이터 없음", description: topReorder ? formatCount(topReorder.value) : "리오더 데이터 필요", accent: "bg-emerald-50 text-emerald-700" },
+      { label: "생산 단계", value: formatCount(viewModel.totalRoundCount), description: "1차/2차/3차 이상 분포", accent: "bg-stone-100 text-stone-700" },
+      { label: "완료 작업", value: formatCount(completedCount), description: "반복 생산 검토 기준", accent: "bg-amber-50 text-amber-700" },
+    ],
+    premium: [
+      { label: "품질 지표", value: "준비", description: "검수/불량률 schema 확정 필요", accent: "bg-stone-950 text-white" },
+      { label: "납기 위험", value: "부분 가능", description: "납기일/완료일 기준 확정 필요", accent: "bg-amber-50 text-amber-700" },
+      { label: "운영 기준", value: formatCount(qualityReadinessCount, "개"), description: "Premium 준비 항목", accent: "bg-stone-100 text-stone-700" },
+      { label: "내보내기", value: "준비", description: "권한/감사 로그 연동 후 처리", accent: "bg-emerald-50 text-emerald-700" },
+    ],
+  };
+
+  const planDescriptions: Record<StatsPlanKey, string> = {
+    basic: "기본 운영 흐름과 저장소 사용량만 먼저 확인합니다.",
+    standard: "생산품유형과 협력업체 성과를 중심으로 재배치합니다.",
+    growth: "반복 생산과 리오더 흐름을 중심으로 재배치합니다.",
+    premium: "품질·납기·내보내기처럼 준비가 필요한 고급 지표를 분리합니다.",
+  };
+
+  const renderBarList = (title: string, points: typeof viewModel.categoryBars, emptyLabel: string) => (
+    <AdminCard>
+      <h2 className="text-lg font-semibold text-stone-950">{title}</h2>
+      <div className="mt-5 grid gap-3">
+        {points.length > 0 ? points.map((item) => (
+          <div key={item.label}>
+            <div className="flex items-center justify-between text-xs font-semibold text-stone-600">
+              <span className="truncate pr-2">{translateStatsLabel(item.label, t)}</span>
+              <span>{item.value}</span>
             </div>
-            <div className="rounded-2xl bg-white px-4 py-3 text-xs font-semibold leading-5 text-stone-600 shadow-sm">
-              <p>1. full_reset.sql</p>
-              <p>2. full_reset_smoke_test.sql</p>
-              <p>3. seed_stats_demo_0_9_2071.sql</p>
+            <div className="mt-2 h-2 rounded-full bg-stone-100">
+              <div className="h-2 rounded-full bg-[var(--admin-theme-surface)]" style={{ width: `${item.widthPercent}%` }} />
             </div>
           </div>
+        )) : <p className="rounded-2xl border border-dashed border-stone-200 bg-stone-50 px-4 py-4 text-sm font-semibold text-stone-500">{emptyLabel}</p>}
+      </div>
+    </AdminCard>
+  );
+
+  const renderPreviewCards = (cards: typeof advancedStatsPreviewCards, emptyLabel: string) => (
+    <div className="grid gap-3 md:grid-cols-2">
+      {cards.length > 0 ? cards.map((item) => (
+        <AdminCard key={item.key} className="px-4 py-4">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="text-sm font-semibold text-stone-950">{item.title}</h3>
+            <span className="shrink-0 rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-semibold text-stone-500">{item.planLabel}</span>
+          </div>
+          <p className="mt-4 text-xl font-bold text-stone-950">{item.metricValue}</p>
+          <p className="mt-2 text-xs font-semibold text-stone-500">{item.metricLabel}</p>
         </AdminCard>
-      ) : null}
+      )) : <AdminCard className="px-4 py-4"><p className="text-sm font-semibold text-stone-500">{emptyLabel}</p></AdminCard>}
+    </div>
+  );
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {translatedStats.summaries.slice(0, 4).map((item) => (
-          <AdminStatCard key={item.label} label={item.label} value={item.value} description={item.description} href={null} accent={item.accent} />
-        ))}
-      </section>
+  const renderPlanBody = () => {
+    if (effectivePlan === "standard") {
+      return (
+        <section className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
+          <div className="grid gap-5">
+            {renderBarList(pt("categoryDistributionTitle", pageText.categoryDistributionTitle), viewModel.categoryBars, "생산품유형 데이터 없음")}
+            {renderPreviewCards(selectedPlanPreviewCards, "Standard preview 데이터 없음")}
+          </div>
+          <div className="grid gap-5">
+            {renderBarList(pt("factoryProductionTitle", pageText.factoryProductionTitle), viewModel.factoryProductionBars, "협력업체 성과 데이터 없음")}
+            <AdminCard className="min-h-0">
+              <h2 className="text-lg font-semibold text-stone-950">{pt("workorderFlowTitle", pageText.workorderFlowTitle)}</h2>
+              <AdminBasicBarChart points={translatedStats.workorderFlow} emptyLabel={pt("emptyFlowLabel", pageText.emptyFlowLabel)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} />
+            </AdminCard>
+          </div>
+        </section>
+      );
+    }
 
+    if (effectivePlan === "growth") {
+      return (
+        <section className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
+          <div className="grid gap-5">
+            <AdminCard>
+              <h2 className="text-lg font-semibold text-stone-950">{pt("productionRoundTitle", pageText.productionRoundTitle)}</h2>
+              <div className="mt-5">
+                <AdminBasicDonutChart points={translatedStats.productionRoundDistribution} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel="생산 단계 데이터 없음" />
+              </div>
+            </AdminCard>
+            {renderPreviewCards(selectedPlanPreviewCards, "리오더 데이터 없음")}
+          </div>
+          <div className="grid gap-5">
+            {renderBarList(pt("categoryDistributionTitle", pageText.categoryDistributionTitle), viewModel.categoryBars, "생산품유형 데이터 없음")}
+            {renderBarList(pt("factoryProductionTitle", pageText.factoryProductionTitle), viewModel.factoryProductionBars, "협력업체 성과 데이터 없음")}
+          </div>
+        </section>
+      );
+    }
+
+    if (effectivePlan === "premium") {
+      return (
+        <section className="grid gap-5 xl:grid-cols-[0.85fr_1.15fr]">
+          <AdminCard>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Premium</p>
+            <h2 className="mt-2 text-lg font-semibold text-stone-950">Premium 통계 준비 상태</h2>
+            <p className="mt-2 text-sm leading-6 text-stone-500">품질·납기·내보내기처럼 데이터 기준이 더 필요한 지표를 따로 봅니다.</p>
+            <div className="mt-5">
+              {renderPreviewCards(selectedPlanPreviewCards, "Premium preview 데이터 없음")}
+            </div>
+          </AdminCard>
+          <div className="grid gap-3 md:grid-cols-2">
+            {ADMIN_PREMIUM_STATS_READINESS_ITEMS.map((item) => (
+              <AdminCard key={item.key} className="px-4 py-4">
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="text-sm font-semibold text-stone-950">{item.title}</h3>
+                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${item.statusLabel === "가능" ? "bg-emerald-50 text-emerald-700" : item.statusLabel === "부분 가능" ? "bg-amber-50 text-amber-700" : "bg-stone-100 text-stone-500"}`}>
+                    {item.statusLabel}
+                  </span>
+                </div>
+                <p className="mt-3 text-xs leading-5 text-stone-500">{item.dataSource}</p>
+                <p className="mt-3 rounded-2xl bg-stone-50 px-3 py-2 text-xs leading-5 text-stone-600">{item.nextAction}</p>
+              </AdminCard>
+            ))}
+          </div>
+        </section>
+      );
+    }
+
+    return (
       <section id="basic-stats" className="grid gap-5 xl:grid-cols-[1.25fr_0.75fr]">
         <AdminCard className="flex min-h-[360px] flex-col">
           <div className="flex items-start justify-between gap-3 border-b border-stone-100 pb-4">
@@ -243,118 +334,96 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
           </AdminCard>
         </div>
       </section>
+    );
+  };
 
-      <section className="grid gap-5 xl:grid-cols-2">
-        <AdminCard>
-          <h2 className="text-lg font-semibold text-stone-950">{pt("attachmentTrashTitle", pageText.attachmentTrashTitle)}</h2>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {viewModel.attachmentTrashCards.map((item) => (
-              <div key={item.label} className="rounded-2xl border border-stone-100 bg-stone-50 px-4 py-3">
-                <p className="text-xs font-semibold text-stone-500">{translateStatsLabel(item.label, t)}</p>
-                <p className="mt-2 text-xl font-bold text-stone-950">{item.value}</p>
+  return (
+    <>
+      <section className="rounded-[28px] border border-stone-100 bg-white px-5 py-5 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-400">Stats</p>
+            <h2 className="mt-2 text-2xl font-bold text-stone-950">관리자 통계</h2>
+            <p className="mt-2 text-sm leading-6 text-stone-500">{selectedPlanOption.label} 기준으로 화면을 재배치합니다. {planDescriptions[effectivePlan]}</p>
+          </div>
+          <div className="flex flex-col items-end gap-3">
+            <div className="flex flex-wrap justify-end gap-2">
+              {stats.periodOptions.map((item) => (
+                <Link
+                  key={item.key}
+                  href={item.href}
+                  aria-current={item.active ? "page" : undefined}
+                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${item.active ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "bg-stone-50 text-stone-500 hover:bg-stone-100"}`}
+                >
+                  {translateStatsLabel(item.label, t)}
+                </Link>
+              ))}
+            </div>
+            {isPlanSwitcherVisible ? (
+              <div className="flex flex-wrap justify-end gap-2 rounded-full bg-stone-50 p-1">
+                {ADMIN_STATS_PLAN_OPTIONS.map((item) => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => setSelectedPlan(item.key)}
+                    className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${effectivePlan === item.key ? "bg-white text-stone-950 shadow-sm" : "text-stone-500 hover:text-stone-800"}`}
+                    aria-pressed={effectivePlan === item.key}
+                  >
+                    {item.label}
+                  </button>
+                ))}
               </div>
-            ))}
+            ) : null}
           </div>
-        </AdminCard>
-
-        <AdminCard>
-          <h2 className="text-lg font-semibold text-stone-950">{pt("productionRoundTitle", pageText.productionRoundTitle)}</h2>
-          <div className="mt-5">
-            <AdminBasicDonutChart points={translatedStats.productionRoundDistribution} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel="생산 단계 데이터 없음" compact />
-          </div>
-        </AdminCard>
+        </div>
       </section>
 
-      {showStandardStats ? (
-        <section className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
-          <AdminCard>
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Standard</p>
-                <h2 className="mt-2 text-lg font-semibold text-stone-950">Standard 통계</h2>
-              </div>
-              <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-500">Standard 이상</span>
+      {!hasVisibleStatsData ? (
+        <AdminCard className="border-dashed border-amber-200 bg-amber-50/55 px-5 py-5">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">Demo seed required</p>
+              <h2 className="mt-2 text-lg font-semibold text-stone-950">통계 확인용 데이터가 아직 없습니다</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">
+                차트 확인은 개발용 seed SQL 실행 후 진행하세요.
+              </p>
             </div>
-            <div className="mt-5 grid gap-3 md:grid-cols-2">
-              {visibleAdvancedStatsPreviewCards.filter((item) => item.planLabel === "Standard").map((item) => (
-                <article key={item.key} className="rounded-3xl border border-stone-200 bg-stone-50/70 p-4">
-                  <h3 className="text-sm font-semibold text-stone-950">{item.title}</h3>
-                  <div className="mt-4 rounded-2xl bg-white px-3 py-3 shadow-sm">
-                    <p className="text-[11px] font-semibold text-stone-400">{item.metricLabel}</p>
-                    <p className="mt-1 text-lg font-bold text-stone-950">{item.metricValue}</p>
-                  </div>
-                </article>
+            <div className="rounded-2xl bg-white px-4 py-3 text-xs font-semibold leading-5 text-stone-600 shadow-sm">
+              <p>1. full_reset.sql</p>
+              <p>2. full_reset_smoke_test.sql</p>
+              <p>3. seed_stats_demo_0_9_2071.sql</p>
+            </div>
+          </div>
+        </AdminCard>
+      ) : null}
+
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {planKpis[effectivePlan].map((item) => (
+          <AdminStatCard key={item.label} label={item.label} value={item.value} description={item.description} href={null} accent={item.accent} />
+        ))}
+      </section>
+
+      {renderPlanBody()}
+
+      {effectivePlan === "basic" ? (
+        <section className="grid gap-5 xl:grid-cols-2">
+          <AdminCard>
+            <h2 className="text-lg font-semibold text-stone-950">{pt("attachmentTrashTitle", pageText.attachmentTrashTitle)}</h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {viewModel.attachmentTrashCards.map((item) => (
+                <div key={item.label} className="rounded-2xl border border-stone-100 bg-stone-50 px-4 py-3">
+                  <p className="text-xs font-semibold text-stone-500">{translateStatsLabel(item.label, t)}</p>
+                  <p className="mt-2 text-xl font-bold text-stone-950">{item.value}</p>
+                </div>
               ))}
             </div>
           </AdminCard>
-
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-1">
-            <AdminCard>
-              <h2 className="text-lg font-semibold text-stone-950">{pt("factoryProductionTitle", pageText.factoryProductionTitle)}</h2>
-              <div className="mt-5 grid gap-3">
-                {viewModel.factoryProductionBars.map((item) => (
-                  <div key={item.label}>
-                    <div className="flex items-center justify-between text-xs font-semibold text-stone-600"><span className="truncate pr-2">{translateStatsLabel(item.label, t)}</span><span>{item.value}</span></div>
-                    <div className="mt-2 h-2 rounded-full bg-stone-100"><div className="h-2 rounded-full bg-[var(--admin-theme-surface)]" style={{ width: `${item.widthPercent}%` }} /></div>
-                  </div>
-                ))}
-              </div>
-            </AdminCard>
-
-            <AdminCard>
-              <h2 className="text-lg font-semibold text-stone-950">{pt("categoryDistributionTitle", pageText.categoryDistributionTitle)}</h2>
-              <div className="mt-5 grid gap-3">
-                {viewModel.categoryBars.map((item) => (
-                  <div key={item.label}>
-                    <div className="flex items-center justify-between text-xs font-semibold text-stone-600"><span className="truncate pr-2">{translateStatsLabel(item.label, t)}</span><span>{item.value}</span></div>
-                    <div className="mt-2 h-2 rounded-full bg-stone-100"><div className="h-2 rounded-full bg-[var(--admin-theme-surface)]" style={{ width: `${item.widthPercent}%` }} /></div>
-                  </div>
-                ))}
-              </div>
-            </AdminCard>
-          </div>
-        </section>
-      ) : null}
-
-      {showGrowthStats ? (
-        <section className="grid gap-5 xl:grid-cols-[0.8fr_1.2fr]">
           <AdminCard>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Growth</p>
-            <h2 className="mt-2 text-lg font-semibold text-stone-950">리오더 통계</h2>
+            <h2 className="text-lg font-semibold text-stone-950">{pt("productionRoundTitle", pageText.productionRoundTitle)}</h2>
+            <div className="mt-5">
+              <AdminBasicDonutChart points={translatedStats.productionRoundDistribution} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel="생산 단계 데이터 없음" compact />
+            </div>
           </AdminCard>
-          <div className="grid gap-3 md:grid-cols-2">
-            {visibleAdvancedStatsPreviewCards.filter((item) => item.planLabel === "Growth").map((item) => (
-              <AdminCard key={item.key} className="px-4 py-4">
-                <h3 className="text-sm font-semibold text-stone-950">{item.title}</h3>
-                <p className="mt-3 text-2xl font-bold text-stone-950">{item.metricValue}</p>
-                <p className="mt-2 text-xs leading-5 text-stone-500">{item.metricLabel}</p>
-              </AdminCard>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {showPremiumStats ? (
-        <section id="premium-readiness" className="grid gap-4 lg:grid-cols-[0.72fr_1.28fr]">
-          <AdminCard>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Premium</p>
-            <h2 className="mt-2 text-lg font-semibold text-stone-950">Premium 통계 준비 상태</h2>
-          </AdminCard>
-
-          <div className="grid gap-3 md:grid-cols-2">
-            {ADMIN_PREMIUM_STATS_READINESS_ITEMS.map((item) => (
-              <AdminCard key={item.key} className="px-4 py-4">
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className="text-sm font-semibold text-stone-950">{item.title}</h3>
-                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${item.statusLabel === "가능" ? "bg-emerald-50 text-emerald-700" : item.statusLabel === "부분 가능" ? "bg-amber-50 text-amber-700" : "bg-stone-100 text-stone-500"}`}>
-                    {item.statusLabel}
-                  </span>
-                </div>
-                <p className="mt-3 text-xs leading-5 text-stone-500">{item.dataSource}</p>
-                <p className="mt-3 rounded-2xl bg-stone-50 px-3 py-2 text-xs leading-5 text-stone-600">{item.nextAction}</p>
-              </AdminCard>
-            ))}
-          </div>
         </section>
       ) : null}
 

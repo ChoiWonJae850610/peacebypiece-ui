@@ -8,6 +8,7 @@ export const DEBUG_FLAGS = {
   orderInfoHubPanel: false,
   adminHistoryDebugPanel: true,
   adminStatsDevSections: true,
+  adminStatsPlanSwitcher: true,
   orderRequestDocumentDebug: false,
 } as const;
 
