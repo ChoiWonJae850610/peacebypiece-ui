@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 
 import { AdminCard, AdminStatCard } from "@/components/admin/layout/AdminCard";
@@ -19,34 +18,6 @@ type AdminStatsDashboardProps = {
   stats: AdminStatsSnapshot;
   pageText: ReturnType<typeof getI18n>["admin"]["dashboardPage"];
 };
-
-type StatsPlanKey = "basic" | "standard" | "growth" | "premium";
-
-const ADMIN_STATS_PLAN_OPTIONS: { key: StatsPlanKey; label: string; description: string }[] = [
-  { key: "basic", label: "Basic", description: "기본 운영" },
-  { key: "standard", label: "Standard", description: "Basic 포함 · 분류/업체" },
-  { key: "growth", label: "Growth", description: "Standard 포함 · 리오더" },
-  { key: "premium", label: "Premium", description: "Growth 포함 · 고급 분석" },
-];
-
-const ADMIN_STATS_PLAN_ORDER: Record<StatsPlanKey, number> = {
-  basic: 0,
-  standard: 1,
-  growth: 2,
-  premium: 3,
-};
-
-const ADVANCED_CARD_MIN_PLAN: Record<string, StatsPlanKey> = {
-  "category-top": "standard",
-  "factory-performance": "standard",
-  "reorder-ranking": "growth",
-  "quality-risk": "premium",
-};
-
-function isStatsPlanAtLeast(selectedPlan: StatsPlanKey, requiredPlan: StatsPlanKey) {
-  return ADMIN_STATS_PLAN_ORDER[selectedPlan] >= ADMIN_STATS_PLAN_ORDER[requiredPlan];
-}
-
 
 function translateStatsLabel(label: string, t: ReturnType<typeof useAdminTranslation>) {
   const map: Record<string, string> = {
@@ -104,6 +75,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     productionCategoryDistribution: translateStatsText(stats.productionCategoryDistribution, t),
     attachmentTrashCards: translateStatsText(stats.attachmentTrashCards, t),
   };
+
   const viewModel = buildAdminStatsDashboardViewModel({
     sourceState: stats.sourceState,
     text: pageText,
@@ -116,6 +88,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     productionCategoryDistribution: translatedStats.productionCategoryDistribution,
     attachmentTrashCards: translatedStats.attachmentTrashCards,
   });
+
   const hasVisibleStatsData =
     viewModel.totalFlowValue > 0 ||
     viewModel.totalPartnerCount > 0 ||
@@ -141,15 +114,6 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     qualityRiskCount: Number(viewModel.keyMetrics.find((item) => item.key === "defectCount")?.value ?? 0),
   });
 
-  const isPlanSwitcherVisible = isDebugFeatureEnabled("adminStatsPlanSwitcher");
-  const [selectedPlan, setSelectedPlan] = useState<StatsPlanKey>("basic");
-  const effectivePlan: StatsPlanKey = isPlanSwitcherVisible ? selectedPlan : "premium";
-  const selectedPlanOption = ADMIN_STATS_PLAN_OPTIONS.find((item) => item.key === effectivePlan) ?? ADMIN_STATS_PLAN_OPTIONS[0];
-  const includedPlanOptions = ADMIN_STATS_PLAN_OPTIONS.filter((item) => isStatsPlanAtLeast(effectivePlan, item.key));
-  const focusPlanPreviewCards = advancedStatsPreviewCards.filter((item) => {
-    const requiredPlan = ADVANCED_CARD_MIN_PLAN[item.key] ?? "premium";
-    return requiredPlan === effectivePlan;
-  });
   const showOperationNotes = isDebugFeatureEnabled("adminStatsDevSections");
 
   const formatCount = (value: number | undefined, suffix = "건") => `${Math.max(0, Math.round(value ?? 0)).toLocaleString("ko-KR")}${suffix}`;
@@ -165,44 +129,8 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   const completedCount = translatedStats.workorderFlow.find((item) => item.label === translateStatsLabel("완료", t))?.value ?? 0;
   const completionRate = totalWorkorderCount > 0 ? Math.round((completedCount / totalWorkorderCount) * 100) : 0;
   const totalFileBytes = translatedStats.fileUsagePoints.reduce((sum, item) => sum + item.value, 0);
-  const totalPartnerCount = viewModel.totalPartnerCount;
-  const totalCategoryCount = viewModel.totalCategoryCount;
-  const totalFactoryCount = viewModel.totalFactoryProductionCount;
-  const qualityReadinessCount = ADMIN_PREMIUM_STATS_READINESS_ITEMS.length;
-
-  const planKpis: Record<StatsPlanKey, { label: string; value: string; description: string; accent?: string }[]> = {
-    basic: [
-      { label: "작업지시서", value: formatCount(totalWorkorderCount), description: "선택 기간의 전체 작업 흐름", accent: "bg-stone-950 text-white" },
-      { label: "완료율", value: `${completionRate}%`, description: "완료 작업 기준 진행 안정도", accent: "bg-emerald-50 text-emerald-700" },
-      { label: "협력업체", value: formatCount(totalPartnerCount, "곳"), description: "등록된 협력업체 분포", accent: "bg-stone-100 text-stone-700" },
-      { label: "파일 사용량", value: formatFileSize(totalFileBytes), description: "첨부/휴지통 합산 기준", accent: "bg-amber-50 text-amber-700" },
-    ],
-    standard: [
-      { label: "생산품유형", value: formatCount(totalCategoryCount, "개"), description: "분류별 생산 현황", accent: "bg-stone-950 text-white" },
-      { label: "TOP 유형", value: topCategory ? topCategory.label : "데이터 없음", description: topCategory ? formatCount(topCategory.value) : "seed 또는 실제 데이터 필요", accent: "bg-emerald-50 text-emerald-700" },
-      { label: "협력업체 성과", value: topFactory ? topFactory.label : "데이터 없음", description: topFactory ? formatCount(topFactory.value) : "발주 데이터 필요", accent: "bg-stone-100 text-stone-700" },
-      { label: "공장 분포", value: formatCount(totalFactoryCount, "건"), description: "공장별 발주/생산 기준", accent: "bg-amber-50 text-amber-700" },
-    ],
-    growth: [
-      { label: "리오더", value: formatCount(totalReorderCount), description: "2차 이상 반복 생산 합계", accent: "bg-stone-950 text-white" },
-      { label: "주요 리오더", value: topReorder ? topReorder.label : "데이터 없음", description: topReorder ? formatCount(topReorder.value) : "리오더 데이터 필요", accent: "bg-emerald-50 text-emerald-700" },
-      { label: "생산 단계", value: formatCount(viewModel.totalRoundCount), description: "1차/2차/3차 이상 분포", accent: "bg-stone-100 text-stone-700" },
-      { label: "완료 작업", value: formatCount(completedCount), description: "반복 생산 검토 기준", accent: "bg-amber-50 text-amber-700" },
-    ],
-    premium: [
-      { label: "품질 지표", value: "준비", description: "검수/불량률 schema 확정 필요", accent: "bg-stone-950 text-white" },
-      { label: "납기 위험", value: "부분 가능", description: "납기일/완료일 기준 확정 필요", accent: "bg-amber-50 text-amber-700" },
-      { label: "운영 기준", value: formatCount(qualityReadinessCount, "개"), description: "Premium 준비 항목", accent: "bg-stone-100 text-stone-700" },
-      { label: "내보내기", value: "준비", description: "권한/감사 로그 연동 후 처리", accent: "bg-emerald-50 text-emerald-700" },
-    ],
-  };
-
-  const planDescriptions: Record<StatsPlanKey, string> = {
-    basic: "기본 운영 흐름과 저장소 사용량을 먼저 봅니다.",
-    standard: "Basic 통계를 포함하고 생산품유형과 협력업체 성과를 앞으로 배치합니다.",
-    growth: "Basic·Standard 통계를 포함하고 리오더와 반복 생산 흐름을 앞으로 배치합니다.",
-    premium: "하위 요금제 통계를 모두 포함하고 품질·납기·내보내기 준비 상태를 앞으로 배치합니다.",
-  };
+  const activeFilePoint = translatedStats.fileUsagePoints.find((item) => item.label === translateStatsLabel("첨부파일", t));
+  const trashFilePoint = translatedStats.fileUsagePoints.find((item) => item.label === translateStatsLabel("휴지통", t));
 
   const renderBarList = (title: string, points: typeof viewModel.categoryBars, emptyLabel: string) => (
     <AdminCard>
@@ -223,223 +151,36 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     </AdminCard>
   );
 
-  const renderPreviewCards = (cards: typeof advancedStatsPreviewCards, emptyLabel: string) => (
-    <div className="grid gap-3 md:grid-cols-2">
-      {cards.length > 0 ? cards.map((item) => (
-        <AdminCard key={item.key} className="px-4 py-4">
-          <div className="flex items-start justify-between gap-3">
-            <h3 className="text-sm font-semibold text-stone-950">{item.title}</h3>
-            <span className="shrink-0 rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-semibold text-stone-500">{item.planLabel}</span>
-          </div>
-          <p className="mt-4 text-xl font-bold text-stone-950">{item.metricValue}</p>
-          <p className="mt-2 text-xs font-semibold text-stone-500">{item.metricLabel}</p>
-        </AdminCard>
-      )) : <AdminCard className="px-4 py-4"><p className="text-sm font-semibold text-stone-500">{emptyLabel}</p></AdminCard>}
-    </div>
-  );
-
-  const renderPlanScopeBar = () => (
-    <section className="rounded-[24px] border border-stone-100 bg-white px-4 py-3 shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Plan scope</p>
-          <h2 className="mt-1 text-sm font-bold text-stone-950">{selectedPlanOption.label} 보기 · 하위 요금제 통계 포함</h2>
-        </div>
-        <div className="flex flex-wrap justify-end gap-1.5">
-          {includedPlanOptions.map((item) => (
-            <span
-              key={item.key}
-              className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${item.key === effectivePlan ? "border-stone-900 bg-stone-950 text-white" : "border-stone-200 bg-stone-50 text-stone-600"}`}
-            >
-              <span aria-hidden="true">✓</span>
-              {item.label}
-              <span className="text-[10px] opacity-70">{item.key === effectivePlan ? "현재" : "포함"}</span>
-            </span>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-
-  const renderIncludedBasicStats = () => {
-    if (effectivePlan === "basic") return null;
-
-    return (
-      <section className="rounded-[28px] border border-stone-100 bg-white p-4 shadow-sm">
-        <div className="flex flex-wrap items-end justify-between gap-3 border-b border-stone-100 pb-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Included Basic</p>
-            <h2 className="mt-2 text-lg font-semibold text-stone-950">Basic 핵심 통계</h2>
-          </div>
-          <p className="text-xs font-semibold text-stone-500">상위 요금제에 포함되는 기본 운영 지표입니다.</p>
-        </div>
-        <div className="mt-5 grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-          <AdminCard className="border-stone-100 bg-stone-50/60 shadow-none">
-            <h3 className="text-sm font-semibold text-stone-950">작업지시서 상태</h3>
-            <AdminBasicBarChart points={translatedStats.workorderFlow} emptyLabel={pt("emptyFlowLabel", pageText.emptyFlowLabel)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} />
-          </AdminCard>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
-            <AdminCard className="border-stone-100 bg-stone-50/60 px-4 py-4 shadow-none">
-              <h3 className="text-sm font-semibold text-stone-950">파일 사용량</h3>
-              <div className="mt-4">
-                <AdminBasicDonutChart points={translatedStats.fileUsagePoints} totalLabel={pt("fileUsageTotalLabel", "전체")} emptyLabel="파일 사용 데이터 없음" compact />
-              </div>
-            </AdminCard>
-            <AdminCard className="border-stone-100 bg-stone-50/60 px-4 py-4 shadow-none">
-              <h3 className="text-sm font-semibold text-stone-950">협력업체 분포</h3>
-              <div className="mt-4">
-                <AdminBasicDonutChart points={translatedStats.partnerDistribution} totalLabel={pt("partnerCountSuffix", pageText.partnerCountSuffix)} valueSuffix={pt("partnerCountSuffix", pageText.partnerCountSuffix)} emptyLabel="협력업체 데이터 없음" compact />
-              </div>
-            </AdminCard>
-          </div>
-        </div>
-      </section>
-    );
-  };
-
-  const renderPlanBody = () => {
-    if (effectivePlan === "standard") {
-      return (
-        <section className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
-          <div className="grid gap-5">
-            {renderBarList(pt("categoryDistributionTitle", pageText.categoryDistributionTitle), viewModel.categoryBars, "생산품유형 데이터 없음")}
-            {renderPreviewCards(focusPlanPreviewCards, "Standard preview 데이터 없음")}
-          </div>
-          <div className="grid gap-5">
-            {renderBarList(pt("factoryProductionTitle", pageText.factoryProductionTitle), viewModel.factoryProductionBars, "협력업체 성과 데이터 없음")}
-            <AdminCard className="min-h-0">
-              <h2 className="text-lg font-semibold text-stone-950">{pt("workorderFlowTitle", pageText.workorderFlowTitle)}</h2>
-              <AdminBasicBarChart points={translatedStats.workorderFlow} emptyLabel={pt("emptyFlowLabel", pageText.emptyFlowLabel)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} />
-            </AdminCard>
-          </div>
-        </section>
-      );
-    }
-
-    if (effectivePlan === "growth") {
-      return (
-        <section className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
-          <div className="grid gap-5">
-            <AdminCard>
-              <h2 className="text-lg font-semibold text-stone-950">{pt("productionRoundTitle", pageText.productionRoundTitle)}</h2>
-              <div className="mt-5">
-                <AdminBasicDonutChart points={translatedStats.productionRoundDistribution} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel="생산 단계 데이터 없음" />
-              </div>
-            </AdminCard>
-            {renderPreviewCards(focusPlanPreviewCards, "리오더 데이터 없음")}
-          </div>
-          <div className="grid gap-5">
-            {renderBarList(pt("categoryDistributionTitle", pageText.categoryDistributionTitle), viewModel.categoryBars, "생산품유형 데이터 없음")}
-            {renderBarList(pt("factoryProductionTitle", pageText.factoryProductionTitle), viewModel.factoryProductionBars, "협력업체 성과 데이터 없음")}
-          </div>
-        </section>
-      );
-    }
-
-    if (effectivePlan === "premium") {
-      return (
-        <section className="grid gap-5 xl:grid-cols-[0.85fr_1.15fr]">
-          <AdminCard>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Premium</p>
-            <h2 className="mt-2 text-lg font-semibold text-stone-950">Premium 통계 준비 상태</h2>
-            <p className="mt-2 text-sm leading-6 text-stone-500">품질·납기·내보내기처럼 데이터 기준이 더 필요한 지표를 따로 봅니다.</p>
-            <div className="mt-5">
-              {renderPreviewCards(focusPlanPreviewCards, "Premium preview 데이터 없음")}
-            </div>
-          </AdminCard>
-          <div className="grid gap-3 md:grid-cols-2">
-            {ADMIN_PREMIUM_STATS_READINESS_ITEMS.map((item) => (
-              <AdminCard key={item.key} className="px-4 py-4">
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className="text-sm font-semibold text-stone-950">{item.title}</h3>
-                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${item.statusLabel === "가능" ? "bg-emerald-50 text-emerald-700" : item.statusLabel === "부분 가능" ? "bg-amber-50 text-amber-700" : "bg-stone-100 text-stone-500"}`}>
-                    {item.statusLabel}
-                  </span>
-                </div>
-                <p className="mt-3 text-xs leading-5 text-stone-500">{item.dataSource}</p>
-                <p className="mt-3 rounded-2xl bg-stone-50 px-3 py-2 text-xs leading-5 text-stone-600">{item.nextAction}</p>
-              </AdminCard>
-            ))}
-          </div>
-        </section>
-      );
-    }
-
-    return (
-      <section id="basic-stats" className="grid gap-5 xl:grid-cols-[1.25fr_0.75fr]">
-        <AdminCard className="flex min-h-[360px] flex-col">
-          <div className="flex items-start justify-between gap-3 border-b border-stone-100 pb-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Basic</p>
-              <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("workorderFlowTitle", pageText.workorderFlowTitle)}</h2>
-            </div>
-            <span className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--admin-theme-text-on-surface)]">{translateStatsLabel(stats.periodOptions.find((item) => item.active)?.label ?? pt("currentMonth", pageText.currentMonth), t)}</span>
-          </div>
-          <AdminBasicBarChart points={translatedStats.workorderFlow} emptyLabel={pt("emptyFlowLabel", pageText.emptyFlowLabel)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} />
-        </AdminCard>
-
-        <div className="grid gap-5">
-          <AdminCard className="min-h-0">
-            <h2 className="text-lg font-semibold text-stone-950">{pt("partnerDonutTitle", pageText.partnerDonutTitle)}</h2>
-            <div className="mt-5">
-              <AdminBasicDonutChart points={translatedStats.partnerDistribution} totalLabel={pt("partnerCountSuffix", pageText.partnerCountSuffix)} valueSuffix={pt("partnerCountSuffix", pageText.partnerCountSuffix)} emptyLabel="협력업체 데이터 없음" compact />
-            </div>
-          </AdminCard>
-
-          <AdminCard className="min-h-0">
-            <h2 className="text-lg font-semibold text-stone-950">{pt("fileDonutTitle", pageText.fileDonutTitle)}</h2>
-            <div className="mt-5">
-              <AdminBasicDonutChart points={translatedStats.fileUsagePoints} totalLabel={pt("fileUsageTotalLabel", "전체")} emptyLabel="파일 사용 데이터 없음" compact />
-            </div>
-          </AdminCard>
-        </div>
-      </section>
-    );
-  };
+  const compactMetricItems = [
+    { label: "첨부파일", value: activeFilePoint ? formatCount(activeFilePoint.value) : "0건" },
+    { label: "휴지통", value: trashFilePoint ? formatCount(trashFilePoint.value) : "0건" },
+    { label: "생산 단계", value: formatCount(viewModel.totalRoundCount) },
+    { label: "리오더", value: formatCount(totalReorderCount) },
+  ];
 
   return (
     <>
       <section className="rounded-[28px] border border-stone-100 bg-white px-5 py-5 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-400">Stats</p>
-            <h2 className="mt-2 text-2xl font-bold text-stone-950">관리자 통계</h2>
-            <p className="mt-2 text-sm leading-6 text-stone-500">/admin/dashboard · {selectedPlanOption.label} 보기</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-400">Analytics</p>
+            <h2 className="mt-2 text-2xl font-bold text-stone-950">통계정보</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-500">대시보드와 저장소의 단순 요약은 줄이고, 생산 흐름·협력업체·리오더 분석을 한 화면에서 확인합니다.</p>
           </div>
-          <div className="flex flex-col items-end gap-3">
-            <div className="flex flex-wrap justify-end gap-2">
-              {stats.periodOptions.map((item) => (
-                <Link
-                  key={item.key}
-                  href={item.href}
-                  aria-current={item.active ? "page" : undefined}
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${item.active ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "bg-stone-50 text-stone-500 hover:bg-stone-100"}`}
-                >
-                  {translateStatsLabel(item.label, t)}
-                </Link>
-              ))}
-            </div>
-            {isPlanSwitcherVisible ? (
-              <div className="flex flex-wrap justify-end gap-2 rounded-full bg-stone-50 p-1">
-                {ADMIN_STATS_PLAN_OPTIONS.map((item) => (
-                  <button
-                    key={item.key}
-                    type="button"
-                    onClick={() => setSelectedPlan(item.key)}
-                    className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${effectivePlan === item.key ? "bg-white text-stone-950 shadow-sm" : "text-stone-500 hover:text-stone-800"}`}
-                    aria-pressed={effectivePlan === item.key}
-                  >
-                    <span>{item.label}</span>
-                    <span className="ml-1 hidden text-[10px] font-semibold opacity-70 xl:inline">{item.description}</span>
-                  </button>
-                ))}
-              </div>
-            ) : null}
+          <div className="flex flex-wrap justify-end gap-2">
+            {stats.periodOptions.map((item) => (
+              <Link
+                key={item.key}
+                href={item.href}
+                aria-current={item.active ? "page" : undefined}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${item.active ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "bg-stone-50 text-stone-500 hover:bg-stone-100"}`}
+              >
+                {translateStatsLabel(item.label, t)}
+              </Link>
+            ))}
           </div>
         </div>
       </section>
-
-      {renderPlanScopeBar()}
 
       {!hasVisibleStatsData ? (
         <AdminCard className="border-dashed border-amber-200 bg-amber-50/55 px-5 py-5">
@@ -447,9 +188,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">Demo seed required</p>
               <h2 className="mt-2 text-lg font-semibold text-stone-950">통계 확인용 데이터가 아직 없습니다</h2>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">
-                차트 확인은 개발용 seed SQL 실행 후 진행하세요.
-              </p>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">차트 확인은 개발용 seed SQL 실행 후 진행하세요.</p>
             </div>
             <div className="rounded-2xl bg-white px-4 py-3 text-xs font-semibold leading-5 text-stone-600 shadow-sm">
               <p>1. full_reset.sql</p>
@@ -461,37 +200,100 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
       ) : null}
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {planKpis[effectivePlan].map((item) => (
-          <AdminStatCard key={item.label} label={item.label} value={item.value} description={item.description} href={null} accent={item.accent} />
-        ))}
+        <AdminStatCard label="작업지시서" value={formatCount(totalWorkorderCount)} description="선택 기간의 전체 작업 흐름" href={null} accent="bg-stone-950 text-white" />
+        <AdminStatCard label="완료율" value={`${completionRate}%`} description="완료 작업 기준 진행 안정도" href={null} accent="bg-emerald-50 text-emerald-700" />
+        <AdminStatCard label="리오더" value={formatCount(totalReorderCount)} description="2차 이상 반복 생산 합계" href={null} accent="bg-stone-100 text-stone-700" />
+        <AdminStatCard label="저장소 요약" value={formatFileSize(totalFileBytes)} description="상세 관리는 저장소 메뉴에서 확인" href="/admin/files" accent="bg-amber-50 text-amber-700" />
       </section>
 
-      {renderPlanBody()}
+      <section className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
+        <AdminCard className="flex min-h-[360px] flex-col">
+          <div className="flex items-start justify-between gap-3 border-b border-stone-100 pb-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Workflow</p>
+              <h2 className="mt-2 text-lg font-semibold text-stone-950">작업 흐름 분석</h2>
+            </div>
+            <span className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--admin-theme-text-on-surface)]">
+              {translateStatsLabel(stats.periodOptions.find((item) => item.active)?.label ?? pt("currentMonth", pageText.currentMonth), t)}
+            </span>
+          </div>
+          <AdminBasicBarChart points={translatedStats.workorderFlow} emptyLabel={pt("emptyFlowLabel", pageText.emptyFlowLabel)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} />
+        </AdminCard>
 
-      {renderIncludedBasicStats()}
+        <AdminCard>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Storage summary</p>
+          <h2 className="mt-2 text-lg font-semibold text-stone-950">저장소 요약</h2>
+          <p className="mt-2 text-xs leading-5 text-stone-500">용량·휴지통 상세 관리는 저장소 메뉴로 분리합니다.</p>
+          <div className="mt-5">
+            <AdminBasicDonutChart points={translatedStats.fileUsagePoints} totalLabel={pt("fileUsageTotalLabel", "전체")} emptyLabel="파일 사용 데이터 없음" compact />
+          </div>
+        </AdminCard>
+      </section>
 
+      <section className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
+        {renderBarList("생산 분석 · 생산품유형 TOP", viewModel.categoryBars, "생산품유형 데이터 없음")}
+        <AdminCard>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Production stage</p>
+          <h2 className="mt-2 text-lg font-semibold text-stone-950">생산 단계 비율</h2>
+          <div className="mt-5">
+            <AdminBasicDonutChart points={translatedStats.productionRoundDistribution} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel="생산 단계 데이터 없음" compact />
+          </div>
+        </AdminCard>
+      </section>
 
-      {effectivePlan === "basic" ? (
-        <section className="grid gap-5 xl:grid-cols-2">
-          <AdminCard>
-            <h2 className="text-lg font-semibold text-stone-950">{pt("attachmentTrashTitle", pageText.attachmentTrashTitle)}</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {viewModel.attachmentTrashCards.map((item) => (
-                <div key={item.label} className="rounded-2xl border border-stone-100 bg-stone-50 px-4 py-3">
-                  <p className="text-xs font-semibold text-stone-500">{translateStatsLabel(item.label, t)}</p>
-                  <p className="mt-2 text-xl font-bold text-stone-950">{item.value}</p>
+      <section className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
+        {renderBarList("협력업체 성과 분석", viewModel.factoryProductionBars, "협력업체 성과 데이터 없음")}
+        <AdminCard>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Partner mix</p>
+          <h2 className="mt-2 text-lg font-semibold text-stone-950">협력업체 분포</h2>
+          <div className="mt-5">
+            <AdminBasicDonutChart points={translatedStats.partnerDistribution} totalLabel={pt("partnerCountSuffix", pageText.partnerCountSuffix)} valueSuffix={pt("partnerCountSuffix", pageText.partnerCountSuffix)} emptyLabel="협력업체 데이터 없음" compact />
+          </div>
+        </AdminCard>
+      </section>
+
+      <section className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
+        <AdminCard>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Reorder</p>
+          <h2 className="mt-2 text-lg font-semibold text-stone-950">리오더 분석</h2>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {advancedStatsPreviewCards.filter((item) => item.key === "reorder-ranking").map((item) => (
+              <div key={item.key} className="rounded-2xl border border-stone-100 bg-stone-50 px-4 py-3">
+                <p className="text-xs font-semibold text-stone-500">{item.title}</p>
+                <p className="mt-2 text-xl font-bold text-stone-950">{item.metricValue}</p>
+                <p className="mt-1 text-xs font-semibold text-stone-500">{item.metricLabel}</p>
+              </div>
+            ))}
+            {advancedStatsPreviewCards.filter((item) => item.key === "reorder-ranking").length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-stone-200 bg-stone-50 px-4 py-4 text-sm font-semibold text-stone-500">리오더 데이터 없음</p>
+            ) : null}
+          </div>
+        </AdminCard>
+        <AdminCard>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Quality / due date</p>
+          <h2 className="mt-2 text-lg font-semibold text-stone-950">품질·납기 준비 영역</h2>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {ADMIN_PREMIUM_STATS_READINESS_ITEMS.map((item) => (
+              <div key={item.key} className="rounded-2xl border border-stone-100 bg-stone-50 px-4 py-3">
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="text-sm font-semibold text-stone-950">{item.title}</h3>
+                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${item.statusLabel === "가능" ? "bg-emerald-50 text-emerald-700" : item.statusLabel === "부분 가능" ? "bg-amber-50 text-amber-700" : "bg-stone-100 text-stone-500"}`}>{item.statusLabel}</span>
                 </div>
-              ))}
-            </div>
-          </AdminCard>
-          <AdminCard>
-            <h2 className="text-lg font-semibold text-stone-950">{pt("productionRoundTitle", pageText.productionRoundTitle)}</h2>
-            <div className="mt-5">
-              <AdminBasicDonutChart points={translatedStats.productionRoundDistribution} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel="생산 단계 데이터 없음" compact />
-            </div>
-          </AdminCard>
-        </section>
-      ) : null}
+                <p className="mt-2 text-xs leading-5 text-stone-500">{item.nextAction}</p>
+              </div>
+            ))}
+          </div>
+        </AdminCard>
+      </section>
+
+      <section className="grid gap-3 md:grid-cols-4">
+        {compactMetricItems.map((item) => (
+          <div key={item.label} className="rounded-2xl border border-stone-100 bg-white px-4 py-3 shadow-sm">
+            <p className="text-xs font-semibold text-stone-500">{item.label}</p>
+            <p className="mt-2 text-lg font-bold text-stone-950">{item.value}</p>
+          </div>
+        ))}
+      </section>
 
       {showOperationNotes ? (
         <details className="group rounded-[28px] border border-stone-100 bg-white p-5 shadow-sm">
@@ -499,7 +301,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-400">Operation notes</p>
               <h2 className="mt-2 text-lg font-semibold text-stone-950">운영/개발 기준</h2>
-              <p className="mt-1 text-xs leading-5 text-stone-500">개발 모드 플래그가 켜진 경우에만 표시합니다.</p>
+              <p className="mt-1 text-xs leading-5 text-stone-500">고객 화면에서는 숨기고 시스템관리자 영역으로 이동할 기준입니다.</p>
             </div>
             <span className="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-600 group-open:hidden">펼치기</span>
             <span className="hidden rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-600 group-open:inline-flex">접기</span>
