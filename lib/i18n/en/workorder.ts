@@ -306,6 +306,7 @@ export const workorderEn = {
         mobileSubtitleFormat: "{type} · {quantity}",
         addButton: "+ Add order",
         totalRow: "Total",
+        empty: "No order information registered.",
         fields: {
           type: "Type",
           factory: "Factory",

@@ -23,10 +23,10 @@ type AdminStatsDashboardProps = {
 type StatsPlanKey = "basic" | "standard" | "growth" | "premium";
 
 const ADMIN_STATS_PLAN_OPTIONS: { key: StatsPlanKey; label: string; description: string }[] = [
-  { key: "basic", label: "Basic", description: "기본 현황" },
-  { key: "standard", label: "Standard", description: "유형·협력업체" },
+  { key: "basic", label: "Basic", description: "기본" },
+  { key: "standard", label: "Standard", description: "분류·업체" },
   { key: "growth", label: "Growth", description: "리오더" },
-  { key: "premium", label: "Premium", description: "검수·내보내기" },
+  { key: "premium", label: "Premium", description: "고급" },
 ];
 
 const ADMIN_STATS_PLAN_ORDER: Record<StatsPlanKey, number> = {
@@ -157,11 +157,8 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
       <section className="rounded-[28px] border border-stone-100 bg-white px-5 py-5 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-400">Stats dashboard</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-400">Stats</p>
             <h2 className="mt-2 text-2xl font-bold text-stone-950">관리자 통계</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-500">
-              기간과 요금제를 먼저 선택하면 아래 통계 화면 전체가 해당 기준으로 정리됩니다.
-            </p>
           </div>
           <div className="flex flex-col items-end gap-3">
             <div className="flex flex-wrap justify-end gap-2">
@@ -200,7 +197,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">Demo seed required</p>
               <h2 className="mt-2 text-lg font-semibold text-stone-950">통계 확인용 데이터가 아직 없습니다</h2>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">
-                실제 DB 집계값만 표시합니다. 차트 확인은 개발용 seed SQL 실행 후 진행하세요.
+                차트 확인은 개발용 seed SQL 실행 후 진행하세요.
               </p>
             </div>
             <div className="rounded-2xl bg-white px-4 py-3 text-xs font-semibold leading-5 text-stone-600 shadow-sm">
@@ -218,25 +215,12 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         ))}
       </section>
 
-      <section className="rounded-[28px] border border-stone-100 bg-white p-4 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Selected plan</p>
-            <h2 className="mt-1 text-xl font-bold text-stone-950">{selectedPlanOption.label} 통계 보기</h2>
-          </div>
-          <span className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--admin-theme-text-on-surface)]">
-            {selectedPlanOption.description}
-          </span>
-        </div>
-      </section>
-
       <section id="basic-stats" className="grid gap-5 xl:grid-cols-[1.25fr_0.75fr]">
         <AdminCard className="flex min-h-[360px] flex-col">
           <div className="flex items-start justify-between gap-3 border-b border-stone-100 pb-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Basic</p>
               <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("workorderFlowTitle", pageText.workorderFlowTitle)}</h2>
-              <p className="mt-1 text-xs text-stone-500">{viewModel.sourceDescription}</p>
             </div>
             <span className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--admin-theme-text-on-surface)]">{translateStatsLabel(stats.periodOptions.find((item) => item.active)?.label ?? pt("currentMonth", pageText.currentMonth), t)}</span>
           </div>
@@ -287,15 +271,14 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Standard</p>
-                <h2 className="mt-2 text-lg font-semibold text-stone-950">생산품유형·협력업체 성과</h2>
+                <h2 className="mt-2 text-lg font-semibold text-stone-950">Standard 통계</h2>
               </div>
               <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-500">Standard 이상</span>
             </div>
             <div className="mt-5 grid gap-3 md:grid-cols-2">
               {visibleAdvancedStatsPreviewCards.filter((item) => item.planLabel === "Standard").map((item) => (
                 <article key={item.key} className="rounded-3xl border border-stone-200 bg-stone-50/70 p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">{item.featureKey}</p>
-                  <h3 className="mt-2 text-sm font-semibold text-stone-950">{item.title}</h3>
+                  <h3 className="text-sm font-semibold text-stone-950">{item.title}</h3>
                   <div className="mt-4 rounded-2xl bg-white px-3 py-3 shadow-sm">
                     <p className="text-[11px] font-semibold text-stone-400">{item.metricLabel}</p>
                     <p className="mt-1 text-lg font-bold text-stone-950">{item.metricValue}</p>
@@ -338,7 +321,6 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
           <AdminCard>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Growth</p>
             <h2 className="mt-2 text-lg font-semibold text-stone-950">리오더 통계</h2>
-            <p className="mt-2 text-sm leading-6 text-stone-500">2차 이상 반복 생산 흐름을 분리해 리오더 preview로 표시합니다.</p>
           </AdminCard>
           <div className="grid gap-3 md:grid-cols-2">
             {visibleAdvancedStatsPreviewCards.filter((item) => item.planLabel === "Growth").map((item) => (
@@ -357,7 +339,6 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
           <AdminCard>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Premium</p>
             <h2 className="mt-2 text-lg font-semibold text-stone-950">Premium 통계 준비 상태</h2>
-            <p className="mt-2 text-sm leading-6 text-stone-500">검수/불량, 납기 지연, 비용 위험, 내보내기는 데이터 기준 확정 후 연결합니다.</p>
           </AdminCard>
 
           <div className="grid gap-3 md:grid-cols-2">

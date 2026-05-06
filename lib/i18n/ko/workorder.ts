@@ -306,6 +306,7 @@ export const workorderKo = {
         mobileSubtitleFormat: "{type} · {quantity}",
         addButton: "+ 발주 추가",
         totalRow: "합계",
+        empty: "등록된 발주 정보가 없습니다.",
         fields: {
           type: "구분",
           factory: "공장",
