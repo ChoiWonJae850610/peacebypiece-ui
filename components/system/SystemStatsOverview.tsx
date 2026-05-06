@@ -240,7 +240,7 @@ export default function SystemStatsOverview() {
             </div>
           </article>
         </div>
-
+      </div>
 
       <div className="mt-5 rounded-2xl border border-stone-200 bg-stone-50 p-4">
         <div className="flex flex-col gap-2 border-b border-stone-200 pb-4 lg:flex-row lg:items-start lg:justify-between">

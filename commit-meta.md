@@ -1,19 +1,18 @@
 Version :
-0.9.2219
+0.9.2220
 
 Summary :
-성능/캐시/summary 기준 시스템관리자 이동
+시스템 통계 화면 JSX 닫힘 오류 수정
 
 Description :
-고객관리자 통계정보 화면에서 통계 API 캐싱 기준, summary table/materialized view 검토, 성능 측정 기준을 제거하고 시스템관리자 통계 상황판으로 이동했다. 고객관리자 통계 화면은 생산 흐름, 생산 분석, 협력업체 성과, 리오더, 품질/납기 준비 상태 중심으로 유지한다. DB schema, API route, package 의존성은 변경하지 않는다.
+0.9.2219에서 시스템관리자 통계 화면으로 운영 기준 영역을 이동하는 과정에서 SystemStatsOverview.tsx의 grid 컨테이너 닫힘 태그가 누락되어 Next.js 빌드가 실패하던 문제를 수정했다. APP_VERSION을 0.9.2220으로 올렸으며 DB schema, API route, package 의존성은 변경하지 않는다.
 
 수정 파일 목록 :
-- components/admin/dashboard/AdminStatsDashboard.tsx
 - components/system/SystemStatsOverview.tsx
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/admin-stats-operation-move-0.9.2219.md
+없음
 
 삭제 파일 목록 :
 없음
