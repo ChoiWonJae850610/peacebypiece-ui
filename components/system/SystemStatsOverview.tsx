@@ -8,6 +8,9 @@ import {
   getSystemUsageSummary,
   type SystemStatTone,
 } from "@/lib/system/systemStats";
+import { ADMIN_STATS_CACHE_POLICIES, ADMIN_STATS_TANSTACK_QUERY_DECISION } from "@/lib/admin/stats/cachePolicy";
+import { ADMIN_STATS_AGGREGATE_READINESS_ITEMS, ADMIN_STATS_AGGREGATE_READINESS_POLICY } from "@/lib/admin/stats/aggregateReadinessPolicy";
+import { ADMIN_STATS_PERFORMANCE_POLICY, ADMIN_STATS_PERFORMANCE_TARGETS } from "@/lib/admin/stats/performancePolicy";
 
 function getToneClassName(tone: SystemStatTone) {
   if (tone === "success") {
@@ -237,7 +240,74 @@ export default function SystemStatsOverview() {
             </div>
           </article>
         </div>
+
+
+      <div className="mt-5 rounded-2xl border border-stone-200 bg-stone-50 p-4">
+        <div className="flex flex-col gap-2 border-b border-stone-200 pb-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">OPERATION BASELINE</p>
+            <h3 className="mt-2 text-sm font-semibold text-stone-950">통계 운영 기준</h3>
+            <p className="mt-2 max-w-3xl text-xs leading-5 text-stone-600">
+              고객관리자 통계 화면에서 제거한 캐싱, summary table, 성능 기준을 시스템관리자 운영 기준으로 관리합니다.
+            </p>
+          </div>
+          <span className="w-fit rounded-full border border-stone-200 bg-white px-3 py-1 text-[11px] font-semibold text-stone-500">
+            고객 화면 비노출
+          </span>
+        </div>
+
+        <div className="mt-4 grid gap-4 xl:grid-cols-3">
+          <article className="rounded-2xl border border-stone-200 bg-white p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Cache</p>
+            <h4 className="mt-2 text-sm font-semibold text-stone-950">통계 API 캐싱 기준</h4>
+            <p className="mt-2 text-xs leading-5 text-stone-600">{ADMIN_STATS_TANSTACK_QUERY_DECISION.reason}</p>
+            <div className="mt-4 grid gap-2">
+              {ADMIN_STATS_CACHE_POLICIES.map((item) => (
+                <div key={item.key} className="rounded-xl border border-stone-100 bg-stone-50 px-3 py-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-stone-700">{item.label}</span>
+                    <span className="text-xs font-semibold text-stone-950">{item.staleSeconds === 0 ? "캐시 없음" : `${item.staleSeconds}초`}</span>
+                  </div>
+                  <p className="mt-1 text-[11px] leading-4 text-stone-500">{item.invalidation}</p>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className="rounded-2xl border border-stone-200 bg-white p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Aggregate</p>
+            <h4 className="mt-2 text-sm font-semibold text-stone-950">summary table 검토</h4>
+            <p className="mt-2 text-xs leading-5 text-stone-600">{ADMIN_STATS_AGGREGATE_READINESS_POLICY.nextStep}</p>
+            <div className="mt-4 grid gap-2">
+              {ADMIN_STATS_AGGREGATE_READINESS_ITEMS.slice(0, 4).map((item) => (
+                <div key={item.key} className="rounded-xl border border-stone-100 bg-stone-50 px-3 py-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-stone-700">{item.title}</span>
+                    <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-stone-500">{item.status}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className="rounded-2xl border border-stone-200 bg-white p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Performance</p>
+            <h4 className="mt-2 text-sm font-semibold text-stone-950">성능 측정 기준</h4>
+            <p className="mt-2 text-xs leading-5 text-stone-600">{ADMIN_STATS_PERFORMANCE_POLICY.nextStep}</p>
+            <div className="mt-4 grid gap-2">
+              {ADMIN_STATS_PERFORMANCE_TARGETS.slice(0, 5).map((item) => (
+                <div key={item.key} className="rounded-xl border border-stone-100 bg-stone-50 px-3 py-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-stone-700">{item.label}</span>
+                    <span className="text-xs font-semibold text-stone-950">{item.target}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </article>
+        </div>
       </div>
+
     </section>
   );
 }

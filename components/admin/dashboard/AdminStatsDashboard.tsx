@@ -6,11 +6,7 @@ import { AdminCard, AdminStatCard } from "@/components/admin/layout/AdminCard";
 import { AdminBasicBarChart, AdminBasicDonutChart } from "@/components/admin/dashboard/AdminBasicStatsCharts";
 import type { AdminStatsSnapshot } from "@/lib/admin/stats/types";
 import { buildAdminStatsDashboardViewModel } from "@/lib/admin/stats/presentation";
-import { ADMIN_STATS_CACHE_POLICIES, ADMIN_STATS_TANSTACK_QUERY_DECISION } from "@/lib/admin/stats/cachePolicy";
-import { ADMIN_STATS_PERFORMANCE_POLICY, ADMIN_STATS_PERFORMANCE_TARGETS } from "@/lib/admin/stats/performancePolicy";
-import { ADMIN_STATS_AGGREGATE_READINESS_ITEMS, ADMIN_STATS_AGGREGATE_READINESS_POLICY } from "@/lib/admin/stats/aggregateReadinessPolicy";
 import { ADMIN_PREMIUM_STATS_READINESS_ITEMS, buildAdminAdvancedStatsPreviewCards } from "@/lib/admin/stats/featureGate";
-import { isDebugFeatureEnabled } from "@/lib/constants/runtimeMode";
 import type { getI18n } from "@/lib/i18n";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
@@ -113,8 +109,6 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     totalReorderCount,
     qualityRiskCount: Number(viewModel.keyMetrics.find((item) => item.key === "defectCount")?.value ?? 0),
   });
-
-  const showOperationNotes = isDebugFeatureEnabled("adminStatsDevSections");
 
   const formatCount = (value: number | undefined, suffix = "건") => `${Math.max(0, Math.round(value ?? 0)).toLocaleString("ko-KR")}${suffix}`;
   const formatFileSize = (value: number | undefined) => {
@@ -295,76 +289,6 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         ))}
       </section>
 
-      {showOperationNotes ? (
-        <details className="group rounded-[28px] border border-stone-100 bg-white p-5 shadow-sm">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-400">Operation notes</p>
-              <h2 className="mt-2 text-lg font-semibold text-stone-950">운영/개발 기준</h2>
-              <p className="mt-1 text-xs leading-5 text-stone-500">고객 화면에서는 숨기고 시스템관리자 영역으로 이동할 기준입니다.</p>
-            </div>
-            <span className="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-600 group-open:hidden">펼치기</span>
-            <span className="hidden rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-600 group-open:inline-flex">접기</span>
-          </summary>
-
-          <div className="mt-5 grid gap-4">
-            <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-              <AdminCard>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Cache policy</p>
-                <h2 className="mt-2 text-lg font-semibold text-stone-950">통계 API 캐싱 기준</h2>
-                <p className="mt-2 text-sm leading-6 text-stone-600">{ADMIN_STATS_TANSTACK_QUERY_DECISION.reason}</p>
-              </AdminCard>
-              <div className="grid gap-3 md:grid-cols-3">
-                {ADMIN_STATS_CACHE_POLICIES.map((item) => (
-                  <AdminCard key={item.key} className="px-4 py-4">
-                    <h3 className="text-sm font-semibold text-stone-950">{item.label}</h3>
-                    <p className="mt-3 text-2xl font-bold text-stone-950">{item.staleSeconds === 0 ? "캐시 없음" : `${item.staleSeconds}초`}</p>
-                    <p className="mt-2 text-xs leading-5 text-stone-500">{item.invalidation}</p>
-                  </AdminCard>
-                ))}
-              </div>
-            </section>
-
-            <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-              <AdminCard>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Aggregate strategy</p>
-                <h2 className="mt-2 text-lg font-semibold text-stone-950">summary table / materialized view 검토</h2>
-                <p className="mt-2 text-sm leading-6 text-stone-600">{ADMIN_STATS_AGGREGATE_READINESS_POLICY.nextStep}</p>
-              </AdminCard>
-              <div className="grid gap-3 md:grid-cols-2">
-                {ADMIN_STATS_AGGREGATE_READINESS_ITEMS.map((item) => (
-                  <AdminCard key={item.key} className="px-4 py-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <h3 className="text-sm font-semibold text-stone-950">{item.title}</h3>
-                      <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-semibold text-stone-500">{item.status}</span>
-                    </div>
-                    <p className="mt-3 text-xs leading-5 text-stone-500">{item.decision}</p>
-                  </AdminCard>
-                ))}
-              </div>
-            </section>
-
-            <section className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
-              <AdminCard>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Performance baseline</p>
-                <h2 className="mt-2 text-lg font-semibold text-stone-950">성능 측정 기준</h2>
-                <p className="mt-2 text-sm leading-6 text-stone-600">{ADMIN_STATS_PERFORMANCE_POLICY.nextStep}</p>
-              </AdminCard>
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {ADMIN_STATS_PERFORMANCE_TARGETS.map((item) => (
-                  <AdminCard key={item.key} className="px-4 py-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <h3 className="text-sm font-semibold text-stone-950">{item.label}</h3>
-                      <span className="shrink-0 rounded-full bg-[var(--admin-theme-surface)] px-2.5 py-1 text-[11px] font-semibold text-[var(--admin-theme-text-on-surface)]">{item.target}</span>
-                    </div>
-                    <p className="mt-3 text-xs leading-5 text-stone-500">{item.measureAt}</p>
-                  </AdminCard>
-                ))}
-              </div>
-            </section>
-          </div>
-        </details>
-      ) : null}
     </>
   );
 }
