@@ -1,23 +1,18 @@
 Version :
-0.9.220
+0.9.221
 
 Summary :
-작업지시서 상세 UX 섹션 정리
+관리자 통계 화면 정보 구조 재정리
 
 Description :
-작업지시서 PC 상세 화면에서 비용 요약, 발주 정보, 생산 구성의 섹션 위계를 정리했다. 비용 요약은 총 비용과 단가를 먼저 확인할 수 있게 재구성하고, 발주/원단/외주 테이블에는 빈 상태 행과 내부 스크롤 안정성을 보강했다. 원단/부자재 발주 화면 신규 구현, DB schema, API route, package 의존성은 변경하지 않았다.
+관리자 통계 화면의 정보 위계를 핵심 KPI, Basic 통계, 요금제별 preview, 운영 기준 접힘 영역 순서로 재정리했다. Basic/Standard/Growth/Premium 보기 버튼을 추가하고, 캐싱 정책과 summary table 검토 및 성능 기준은 하단 접힘 영역으로 이동했다. DB schema, API route, package 의존성은 변경하지 않는다.
 
 수정 파일 목록 :
-- components/workorder/detail/views/WorkOrderDetailDesktopSections.tsx
-- components/workorder/detail/WorkOrderCostSummarySection.tsx
-- components/workorder/detail/sections/OrderInfoSection.tsx
-- components/workorder/detail/sections/MaterialSection.tsx
-- components/workorder/detail/sections/OutsourcingSection.tsx
-- components/workorder/detail/sections/ProductionCompositionSection.tsx
+- components/admin/dashboard/AdminStatsDashboard.tsx
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/workorder-detail-section-ux-0.9.220.md
+- docs/admin-stats-layout-0.9.221.md
 
 삭제 파일 목록 :
 없음

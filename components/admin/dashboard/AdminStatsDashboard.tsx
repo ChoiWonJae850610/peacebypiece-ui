@@ -113,35 +113,28 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
 
   return (
     <>
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {translatedStats.summaries.map((item) => (
-          <AdminStatCard key={item.label} label={item.label} value={item.value} description={item.description} href={null} accent={item.accent} />
-        ))}
-      </section>
-
-      <section className="flex flex-wrap items-center gap-2 rounded-[24px] border border-stone-100 bg-white p-3 shadow-sm">
-        <span className="px-2 text-xs font-semibold text-stone-500">{pt("periodTitle", pageText.periodTitle)}</span>
-        {stats.periodOptions.map((item) => (
-          <Link
-            key={item.key}
-            href={item.href}
-            aria-current={item.active ? "page" : undefined}
-            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${item.active ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "bg-stone-50 text-stone-500 hover:bg-stone-100"}`}
-          >
-            {translateStatsLabel(item.label, t)}
-          </Link>
-        ))}
-      </section>
-
-      <section className="grid gap-4 lg:grid-cols-2">
-        <AdminCard className="px-4 py-4">
-          <p className="text-xs font-semibold text-stone-500">{pt("monthlyNoticeTitle", pageText.monthlyNoticeTitle)}</p>
-          <p className="mt-2 text-sm leading-6 text-stone-600">{pt("monthlyNoticeDescription", pageText.monthlyNoticeDescription)}</p>
-        </AdminCard>
-        <AdminCard className="px-4 py-4">
-          <p className="text-xs font-semibold text-stone-500">{pt("cumulativeNoticeTitle", pageText.cumulativeNoticeTitle)}</p>
-          <p className="mt-2 text-sm leading-6 text-stone-600">{pt("cumulativeNoticeDescription", pageText.cumulativeNoticeDescription)}</p>
-        </AdminCard>
+      <section className="rounded-[28px] border border-stone-100 bg-white px-5 py-5 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-400">Stats dashboard</p>
+            <h2 className="mt-2 text-2xl font-bold text-stone-950">관리자 통계 요약</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-500">
+              먼저 핵심 KPI와 Basic 통계를 확인하고, 요금제별 preview는 아래 버튼 기준으로 비교합니다. 운영 기준/성능 기준은 화면 하단 접힘 영역으로 정리했습니다.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {stats.periodOptions.map((item) => (
+              <Link
+                key={item.key}
+                href={item.href}
+                aria-current={item.active ? "page" : undefined}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${item.active ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "bg-stone-50 text-stone-500 hover:bg-stone-100"}`}
+              >
+                {translateStatsLabel(item.label, t)}
+              </Link>
+            ))}
+          </div>
+        </div>
       </section>
 
       {!hasVisibleStatsData ? (
@@ -164,17 +157,66 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
       ) : null}
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {viewModel.keyMetrics.map((item) => (
-          <AdminCard key={item.key ?? item.label} className="px-4 py-4">
-            <p className="text-xs font-semibold text-stone-500">{translateStatsLabel(item.label, t)}</p>
-            <p className="mt-2 text-2xl font-bold text-stone-950">{item.value}</p>
-            <p className="mt-1 text-xs leading-5 text-stone-400">{item.description}</p>
-          </AdminCard>
+        {translatedStats.summaries.slice(0, 4).map((item) => (
+          <AdminStatCard key={item.label} label={item.label} value={item.value} description={item.description} href={null} accent={item.accent} />
         ))}
       </section>
 
+      <section className="grid gap-5 xl:grid-cols-[1.25fr_0.75fr]">
+        <AdminCard className="flex min-h-[360px] flex-col">
+          <div className="flex items-start justify-between gap-3 border-b border-stone-100 pb-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Basic statistics</p>
+              <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("workorderFlowTitle", pageText.workorderFlowTitle)}</h2>
+              <p className="mt-1 text-xs text-stone-500">{viewModel.sourceDescription}</p>
+            </div>
+            <span className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--admin-theme-text-on-surface)]">{translateStatsLabel(stats.periodOptions.find((item) => item.active)?.label ?? pt("currentMonth", pageText.currentMonth), t)}</span>
+          </div>
+          <AdminBasicBarChart points={translatedStats.workorderFlow} emptyLabel={pt("emptyFlowLabel", pageText.emptyFlowLabel)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} />
+        </AdminCard>
 
-      <section className="grid gap-5 xl:grid-cols-[1fr_0.74fr]">
+        <div className="grid gap-5">
+          <AdminCard className="min-h-0">
+            <h2 className="text-lg font-semibold text-stone-950">{pt("partnerDonutTitle", pageText.partnerDonutTitle)}</h2>
+            <div className="mt-5">
+              <AdminBasicDonutChart points={translatedStats.partnerDistribution} totalLabel={pt("partnerCountSuffix", pageText.partnerCountSuffix)} valueSuffix={pt("partnerCountSuffix", pageText.partnerCountSuffix)} emptyLabel="협력업체 데이터 없음" compact />
+            </div>
+          </AdminCard>
+
+          <AdminCard className="min-h-0">
+            <h2 className="text-lg font-semibold text-stone-950">{pt("fileDonutTitle", pageText.fileDonutTitle)}</h2>
+            <div className="mt-5">
+              <AdminBasicDonutChart points={translatedStats.fileUsagePoints} totalLabel={pt("fileUsageTotalLabel", "전체")} emptyLabel="파일 사용 데이터 없음" compact />
+            </div>
+          </AdminCard>
+        </div>
+      </section>
+
+      <section id="plan-preview" className="rounded-[28px] border border-stone-100 bg-white p-5 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-400">Plan preview</p>
+            <h2 className="mt-2 text-xl font-bold text-stone-950">요금제별 통계 보기</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-500">
+              실제 요금제 권한 적용 전까지는 임시 preview 버튼으로 노출 범위를 확인합니다. Basic은 기본 통계, Standard/Growth/Premium은 고급 통계 preview를 단계적으로 보여줍니다.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { label: "Basic", href: "#basic-stats" },
+              { label: "Standard", href: "#advanced-stats" },
+              { label: "Growth", href: "#advanced-stats" },
+              { label: "Premium", href: "#premium-readiness" },
+            ].map((item) => (
+              <a key={item.label} href={item.href} className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-600 hover:bg-stone-100">
+                {item.label} 보기
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="advanced-stats" className="grid gap-5 xl:grid-cols-[1fr_0.72fr]">
         <AdminCard>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -217,7 +259,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         </AdminCard>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
+      <section id="premium-readiness" className="grid gap-4 lg:grid-cols-[0.78fr_1.22fr]">
         <AdminCard>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -225,7 +267,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
               <h2 className="mt-2 text-lg font-semibold text-stone-950">Premium 통계 준비 상태</h2>
               <p className="mt-1 text-xs leading-5 text-stone-500">검수/불량, 납기 지연, 비용 위험, 내보내기는 데이터 기준 확정 후 연결합니다.</p>
             </div>
-            <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-500">0.9.209 기준</span>
+            <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-500">준비</span>
           </div>
         </AdminCard>
 
@@ -245,141 +287,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         </div>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-        <AdminCard>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Cache policy</p>
-              <h2 className="mt-2 text-lg font-semibold text-stone-950">통계 API 캐싱 기준</h2>
-              <p className="mt-2 text-sm leading-6 text-stone-600">{ADMIN_STATS_TANSTACK_QUERY_DECISION.reason}</p>
-            </div>
-            <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-500">TanStack Query {ADMIN_STATS_TANSTACK_QUERY_DECISION.status}</span>
-          </div>
-          <div className="mt-4 rounded-2xl bg-stone-50 px-4 py-3 text-xs leading-5 text-stone-600">
-            <p>{ADMIN_STATS_TANSTACK_QUERY_DECISION.packageChange}</p>
-            <p className="mt-1">{ADMIN_STATS_TANSTACK_QUERY_DECISION.adoptionTrigger}</p>
-          </div>
-        </AdminCard>
-
-        <div className="grid gap-3 md:grid-cols-3">
-          {ADMIN_STATS_CACHE_POLICIES.map((item) => (
-            <AdminCard key={item.key} className="px-4 py-4">
-              <div className="flex items-start justify-between gap-2">
-                <h3 className="text-sm font-semibold text-stone-950">{item.label}</h3>
-                <span className="shrink-0 rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-semibold text-stone-500">{item.scope}</span>
-              </div>
-              <p className="mt-3 text-2xl font-bold text-stone-950">{item.staleSeconds === 0 ? "캐시 없음" : `${item.staleSeconds}초`}</p>
-              <p className="mt-2 text-xs leading-5 text-stone-500">{item.invalidation}</p>
-            </AdminCard>
-          ))}
-        </div>
-      </section>
-
-
-      <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-        <AdminCard>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Aggregate strategy</p>
-              <h2 className="mt-2 text-lg font-semibold text-stone-950">summary table / materialized view 검토</h2>
-              <p className="mt-2 text-sm leading-6 text-stone-600">통계 집계가 느려질 때 바로 테이블을 늘리지 않고, 적용 순서와 보류 기준을 먼저 고정합니다.</p>
-            </div>
-            <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-500">{ADMIN_STATS_AGGREGATE_READINESS_POLICY.status}</span>
-          </div>
-          <div className="mt-4 rounded-2xl bg-stone-50 px-4 py-3 text-xs leading-5 text-stone-600">
-            <p>{ADMIN_STATS_AGGREGATE_READINESS_POLICY.noSchemaChange}</p>
-            <p className="mt-1">{ADMIN_STATS_AGGREGATE_READINESS_POLICY.nextStep}</p>
-          </div>
-          <div className="mt-4 grid gap-2">
-            {ADMIN_STATS_AGGREGATE_READINESS_POLICY.preferredOrder.map((item, index) => (
-              <div key={item} className="flex items-center gap-2 rounded-2xl border border-stone-100 bg-white px-3 py-2 text-xs font-semibold text-stone-600">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]">{index + 1}</span>
-                {item}
-              </div>
-            ))}
-          </div>
-        </AdminCard>
-
-        <div className="grid gap-3 md:grid-cols-2">
-          {ADMIN_STATS_AGGREGATE_READINESS_ITEMS.map((item) => (
-            <AdminCard key={item.key} className="px-4 py-4">
-              <div className="flex items-start justify-between gap-3">
-                <h3 className="text-sm font-semibold text-stone-950">{item.title}</h3>
-                <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${item.status === "유지" ? "bg-emerald-50 text-emerald-700" : item.status === "검토" ? "bg-amber-50 text-amber-700" : "bg-stone-100 text-stone-500"}`}>
-                  {item.status}
-                </span>
-              </div>
-              <p className="mt-3 text-xs leading-5 text-stone-500">{item.currentStrategy}</p>
-              <p className="mt-3 rounded-2xl bg-stone-50 px-3 py-2 text-xs leading-5 text-stone-600">summary 후보: {item.summaryCandidate}</p>
-              <p className="mt-2 rounded-2xl bg-stone-50 px-3 py-2 text-xs leading-5 text-stone-600">MV 후보: {item.materializedViewCandidate}</p>
-              <p className="mt-3 text-xs font-semibold leading-5 text-stone-700">{item.decision}</p>
-            </AdminCard>
-          ))}
-        </div>
-      </section>
-
-
-      <section className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
-        <AdminCard>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Performance baseline</p>
-              <h2 className="mt-2 text-lg font-semibold text-stone-950">성능 측정 기준</h2>
-              <p className="mt-2 text-sm leading-6 text-stone-600">통계 화면과 작업지시서 핵심 흐름의 성능 목표를 먼저 고정합니다.</p>
-            </div>
-            <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-500">{ADMIN_STATS_PERFORMANCE_POLICY.status}</span>
-          </div>
-          <div className="mt-4 rounded-2xl bg-stone-50 px-4 py-3 text-xs leading-5 text-stone-600">
-            <p>{ADMIN_STATS_PERFORMANCE_POLICY.noSchemaChange}</p>
-            <p className="mt-1">{ADMIN_STATS_PERFORMANCE_POLICY.nextStep}</p>
-          </div>
-        </AdminCard>
-
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {ADMIN_STATS_PERFORMANCE_TARGETS.map((item) => (
-            <AdminCard key={item.key} className="px-4 py-4">
-              <div className="flex items-start justify-between gap-3">
-                <h3 className="text-sm font-semibold text-stone-950">{item.label}</h3>
-                <span className="shrink-0 rounded-full bg-[var(--admin-theme-surface)] px-2.5 py-1 text-[11px] font-semibold text-[var(--admin-theme-text-on-surface)]">{item.target}</span>
-              </div>
-              <p className="mt-3 text-xs leading-5 text-stone-500">{item.measureAt}</p>
-              <p className="mt-3 rounded-2xl bg-stone-50 px-3 py-2 text-xs leading-5 text-stone-600">{item.escalation}</p>
-            </AdminCard>
-          ))}
-        </div>
-      </section>
-
-      <section className="grid min-h-0 flex-1 gap-5 overflow-hidden xl:grid-cols-[1.2fr_0.8fr]">
-        <AdminCard className="flex min-h-0 flex-col overflow-hidden">
-          <div className="flex items-start justify-between gap-3 border-b border-stone-100 pb-4">
-            <div>
-              <h2 className="text-lg font-semibold text-stone-950">{pt("workorderFlowTitle", pageText.workorderFlowTitle)}</h2>
-              <p className="mt-1 text-xs text-stone-500">{viewModel.sourceDescription}</p>
-            </div>
-            <span className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--admin-theme-text-on-surface)]">{translateStatsLabel(stats.periodOptions.find((item) => item.active)?.label ?? pt("currentMonth", pageText.currentMonth), t)}</span>
-          </div>
-
-          <AdminBasicBarChart points={translatedStats.workorderFlow} emptyLabel={pt("emptyFlowLabel", pageText.emptyFlowLabel)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} />
-        </AdminCard>
-
-        <div className="grid min-h-0 grid-rows-[auto_auto] gap-5 overflow-hidden">
-          <AdminCard className="min-h-0">
-            <h2 className="text-lg font-semibold text-stone-950">{pt("partnerDonutTitle", pageText.partnerDonutTitle)}</h2>
-            <div className="mt-5">
-              <AdminBasicDonutChart points={translatedStats.partnerDistribution} totalLabel={pt("partnerCountSuffix", pageText.partnerCountSuffix)} valueSuffix={pt("partnerCountSuffix", pageText.partnerCountSuffix)} emptyLabel="협력업체 데이터 없음" />
-            </div>
-          </AdminCard>
-
-          <AdminCard className="min-h-0">
-            <h2 className="text-lg font-semibold text-stone-950">{pt("fileDonutTitle", pageText.fileDonutTitle)}</h2>
-            <div className="mt-5">
-              <AdminBasicDonutChart points={translatedStats.fileUsagePoints} totalLabel={pt("fileUsageTotalLabel", "전체")} emptyLabel="파일 사용 데이터 없음" />
-            </div>
-          </AdminCard>
-        </div>
-      </section>
-
-      <section className="grid gap-5 xl:grid-cols-4">
+      <section id="basic-stats" className="grid gap-5 xl:grid-cols-4">
         <AdminCard>
           <h2 className="text-lg font-semibold text-stone-950">{pt("attachmentTrashTitle", pageText.attachmentTrashTitle)}</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -423,6 +331,83 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
           </div>
         </AdminCard>
       </section>
+
+      <details className="group rounded-[28px] border border-stone-100 bg-white p-5 shadow-sm">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-400">Operation notes</p>
+            <h2 className="mt-2 text-lg font-semibold text-stone-950">운영/개발 기준 접힘 영역</h2>
+            <p className="mt-1 text-xs leading-5 text-stone-500">캐싱, 집계 전략, 성능 기준은 고객이 매일 볼 지표가 아니므로 기본 통계 아래 접힘 영역으로 분리합니다.</p>
+          </div>
+          <span className="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-600 group-open:hidden">펼치기</span>
+          <span className="hidden rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-600 group-open:inline-flex">접기</span>
+        </summary>
+
+        <div className="mt-5 grid gap-4">
+          <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+            <AdminCard>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Cache policy</p>
+                  <h2 className="mt-2 text-lg font-semibold text-stone-950">통계 API 캐싱 기준</h2>
+                  <p className="mt-2 text-sm leading-6 text-stone-600">{ADMIN_STATS_TANSTACK_QUERY_DECISION.reason}</p>
+                </div>
+                <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-500">TanStack Query {ADMIN_STATS_TANSTACK_QUERY_DECISION.status}</span>
+              </div>
+            </AdminCard>
+
+            <div className="grid gap-3 md:grid-cols-3">
+              {ADMIN_STATS_CACHE_POLICIES.map((item) => (
+                <AdminCard key={item.key} className="px-4 py-4">
+                  <h3 className="text-sm font-semibold text-stone-950">{item.label}</h3>
+                  <p className="mt-3 text-2xl font-bold text-stone-950">{item.staleSeconds === 0 ? "캐시 없음" : `${item.staleSeconds}초`}</p>
+                  <p className="mt-2 text-xs leading-5 text-stone-500">{item.invalidation}</p>
+                </AdminCard>
+              ))}
+            </div>
+          </section>
+
+          <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+            <AdminCard>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Aggregate strategy</p>
+              <h2 className="mt-2 text-lg font-semibold text-stone-950">summary table / materialized view 검토</h2>
+              <p className="mt-2 text-sm leading-6 text-stone-600">{ADMIN_STATS_AGGREGATE_READINESS_POLICY.nextStep}</p>
+            </AdminCard>
+
+            <div className="grid gap-3 md:grid-cols-2">
+              {ADMIN_STATS_AGGREGATE_READINESS_ITEMS.map((item) => (
+                <AdminCard key={item.key} className="px-4 py-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="text-sm font-semibold text-stone-950">{item.title}</h3>
+                    <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-semibold text-stone-500">{item.status}</span>
+                  </div>
+                  <p className="mt-3 text-xs leading-5 text-stone-500">{item.decision}</p>
+                </AdminCard>
+              ))}
+            </div>
+          </section>
+
+          <section className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
+            <AdminCard>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Performance baseline</p>
+              <h2 className="mt-2 text-lg font-semibold text-stone-950">성능 측정 기준</h2>
+              <p className="mt-2 text-sm leading-6 text-stone-600">{ADMIN_STATS_PERFORMANCE_POLICY.nextStep}</p>
+            </AdminCard>
+
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {ADMIN_STATS_PERFORMANCE_TARGETS.map((item) => (
+                <AdminCard key={item.key} className="px-4 py-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="text-sm font-semibold text-stone-950">{item.label}</h3>
+                    <span className="shrink-0 rounded-full bg-[var(--admin-theme-surface)] px-2.5 py-1 text-[11px] font-semibold text-[var(--admin-theme-text-on-surface)]">{item.target}</span>
+                  </div>
+                  <p className="mt-3 text-xs leading-5 text-stone-500">{item.measureAt}</p>
+                </AdminCard>
+              ))}
+            </div>
+          </section>
+        </div>
+      </details>
     </>
   );
 }
