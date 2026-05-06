@@ -36,6 +36,22 @@ export type SystemRiskItem = {
   tone: SystemStatTone;
 };
 
+export type SystemStoragePurgeStat = {
+  id: string;
+  label: string;
+  value: string;
+  description: string;
+  tone: SystemStatTone;
+};
+
+export type SystemStorageUsageBucket = {
+  id: string;
+  label: string;
+  valueLabel: string;
+  description: string;
+  tone: SystemStatTone;
+};
+
 export const SYSTEM_STATS_OVERVIEW_CARDS: SystemStatCard[] = [
   {
     id: "company-count",
@@ -127,6 +143,62 @@ export const SYSTEM_PLAN_DISTRIBUTION: SystemPlanDistributionItem[] = [
   },
 ];
 
+
+export const SYSTEM_STORAGE_PURGE_STATS: SystemStoragePurgeStat[] = [
+  {
+    id: "purge-requested",
+    label: "영구삭제 요청",
+    value: "2건",
+    description: "휴지통에서 사용자가 명시적으로 영구삭제를 요청한 항목",
+    tone: "warning",
+  },
+  {
+    id: "purge-pending",
+    label: "삭제 대기",
+    value: "1건",
+    description: "보존기간이 도래했거나 삭제 실행 전 대기 중인 항목",
+    tone: "neutral",
+  },
+  {
+    id: "purge-succeeded",
+    label: "삭제 완료",
+    value: "3건",
+    description: "Worker 기반 R2 삭제 후 DB에 purged_at이 기록된 항목",
+    tone: "success",
+  },
+  {
+    id: "purge-failed",
+    label: "삭제 실패",
+    value: "1건",
+    description: "R2 삭제 실패 사유가 남아 재시도가 필요한 항목",
+    tone: "danger",
+  },
+];
+
+export const SYSTEM_STORAGE_USAGE_BUCKETS: SystemStorageUsageBucket[] = [
+  {
+    id: "active-storage",
+    label: "사용중 파일",
+    valueLabel: "4.9GB",
+    description: "작업지시서에서 현재 참조되는 원본/썸네일 기준 저장량",
+    tone: "success",
+  },
+  {
+    id: "trash-storage",
+    label: "휴지통 파일",
+    valueLabel: "820MB",
+    description: "복원 가능 기간에 남아 있어 아직 R2에서 보존하는 저장량",
+    tone: "warning",
+  },
+  {
+    id: "purged-storage",
+    label: "영구삭제 완료",
+    valueLabel: "1.4GB",
+    description: "DB에서 삭제 완료로 표시되고 R2 객체 삭제가 완료된 누적량",
+    tone: "neutral",
+  },
+];
+
 export const SYSTEM_RISK_ITEMS: SystemRiskItem[] = [
   {
     id: "storage-limit",
@@ -145,9 +217,9 @@ export const SYSTEM_RISK_ITEMS: SystemRiskItem[] = [
   {
     id: "purge-candidate",
     title: "스토리지 purge 후보",
-    description: "R2 실제 삭제 후보는 스토리지 화면에서 별도로 확인합니다.",
-    statusLabel: "스토리지 연동",
-    tone: "neutral",
+    description: "영구삭제 요청, 삭제 대기, 삭제 완료, 실패 상태를 시스템 통계와 스토리지 화면에서 분리합니다.",
+    statusLabel: "분리 집계",
+    tone: "warning",
   },
 ];
 

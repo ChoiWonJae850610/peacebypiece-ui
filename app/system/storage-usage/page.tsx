@@ -44,17 +44,17 @@ export default async function SystemStorageUsagePage() {
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
             <p className="text-xs font-semibold text-stone-500">삭제 후보</p>
             <p className="mt-3 text-2xl font-semibold text-stone-950">{summary.candidateCount}개</p>
-            <p className="mt-2 text-xs leading-5 text-stone-600">30일 경과 또는 영구삭제 요청 상태</p>
+            <p className="mt-2 text-xs leading-5 text-stone-600">영구삭제 요청 {summary.requestedCount}개 · 대기 {summary.pendingCount}개</p>
           </article>
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold text-stone-500">고객사</p>
-            <p className="mt-3 text-2xl font-semibold text-stone-950">{summary.companyCount}곳</p>
-            <p className="mt-2 text-xs leading-5 text-stone-600">후보 파일이 있는 고객사 수</p>
+            <p className="text-xs font-semibold text-stone-500">삭제 실패</p>
+            <p className="mt-3 text-2xl font-semibold text-stone-950">{summary.failedCount}개</p>
+            <p className="mt-2 text-xs leading-5 text-stone-600">실패 사유 확인 후 재시도 대상 {summary.retryRequiredCount}개</p>
           </article>
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
             <p className="text-xs font-semibold text-stone-500">원본 용량</p>
             <p className="mt-3 text-2xl font-semibold text-stone-950">{summary.totalOriginalSizeLabel}</p>
-            <p className="mt-2 text-xs leading-5 text-stone-600">썸네일 용량은 추후 별도 산정</p>
+            <p className="mt-2 text-xs leading-5 text-stone-600">후보 원본 기준 · 고객사 {summary.companyCount}곳</p>
           </article>
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
             <p className="text-xs font-semibold text-stone-500">썸네일 객체</p>

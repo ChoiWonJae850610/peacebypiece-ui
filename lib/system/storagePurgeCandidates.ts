@@ -36,6 +36,10 @@ export type SystemStoragePurgeCandidate = {
 
 export type SystemStoragePurgeCandidateSummary = {
   candidateCount: number;
+  requestedCount: number;
+  pendingCount: number;
+  failedCount: number;
+  retryRequiredCount: number;
   companyCount: number;
   totalOriginalBytes: number;
   totalOriginalSizeLabel: string;
@@ -107,9 +111,10 @@ function getFileTypeLabel(mimeType: string | null | undefined, fileName: string)
 }
 
 function getPurgeStatusLabel(status: string | null | undefined, error: string | null | undefined): string {
-  if (error) return "삭제 실패";
+  if (error || status === "failed") return "삭제 실패";
   if (status === "purge_requested") return "영구삭제 요청";
-  if (status === "pending") return "30일 경과";
+  if (status === "pending") return "삭제 대기";
+  if (status === "purged") return "삭제 완료";
   return status || "후보";
 }
 
@@ -203,10 +208,17 @@ export async function getSystemStoragePurgeCandidateSnapshot(limit = 200): Promi
   const companyIds = new Set(candidates.map((candidate) => candidate.companyId || candidate.companyName));
   const totalOriginalBytes = candidates.reduce((sum, candidate) => sum + candidate.originalSizeBytes, 0);
   const thumbnailObjectCount = candidates.filter((candidate) => candidate.thumbnailKey).length;
+  const requestedCount = candidates.filter((candidate) => candidate.purgeStatus === "purge_requested").length;
+  const failedCount = candidates.filter((candidate) => candidate.lastPurgeError || candidate.purgeStatus === "failed").length;
+  const pendingCount = candidates.filter((candidate) => candidate.purgeStatus === "pending" && !candidate.lastPurgeError).length;
 
   return {
     summary: {
       candidateCount: candidates.length,
+      requestedCount,
+      pendingCount,
+      failedCount,
+      retryRequiredCount: failedCount,
       companyCount: companyIds.size,
       totalOriginalBytes,
       totalOriginalSizeLabel: formatBytes(totalOriginalBytes),

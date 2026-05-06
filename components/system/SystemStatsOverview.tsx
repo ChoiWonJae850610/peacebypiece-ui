@@ -2,6 +2,8 @@ import {
   SYSTEM_COMPANY_USAGE_ROWS,
   SYSTEM_PLAN_DISTRIBUTION,
   SYSTEM_RISK_ITEMS,
+  SYSTEM_STORAGE_PURGE_STATS,
+  SYSTEM_STORAGE_USAGE_BUCKETS,
   SYSTEM_STATS_OVERVIEW_CARDS,
   getSystemUsageSummary,
   type SystemStatTone,
@@ -81,6 +83,63 @@ export default function SystemStatsOverview() {
             </p>
           </article>
         ))}
+      </div>
+
+
+      <div className="mt-5 grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+        <article className="rounded-2xl border border-stone-200 bg-white p-4">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-sm font-semibold text-stone-950">
+              R2 purge 상태
+            </h3>
+            <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700">
+              요청/대기/완료/실패 분리
+            </span>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {SYSTEM_STORAGE_PURGE_STATS.map((item) => (
+              <div
+                key={item.id}
+                className={`rounded-2xl border p-4 ${getToneClassName(item.tone)}`}
+              >
+                <p className="text-xs font-semibold opacity-80">{item.label}</p>
+                <p className="mt-2 text-xl font-semibold">{item.value}</p>
+                <p className="mt-2 text-xs leading-5 opacity-80">
+                  {item.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="rounded-2xl border border-stone-200 bg-white p-4">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-sm font-semibold text-stone-950">
+              저장소 용량 구분
+            </h3>
+            <span className="rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-[11px] font-semibold text-stone-500">
+              active / trash / purged
+            </span>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            {SYSTEM_STORAGE_USAGE_BUCKETS.map((item) => (
+              <div key={item.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-xs font-semibold text-stone-500">{item.label}</p>
+                  <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${getToneClassName(item.tone)}`}>
+                    기준
+                  </span>
+                </div>
+                <p className="mt-2 text-xl font-semibold text-stone-950">
+                  {item.valueLabel}
+                </p>
+                <p className="mt-2 text-xs leading-5 text-stone-600">
+                  {item.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </article>
       </div>
 
       <div className="mt-5 grid gap-4 xl:grid-cols-[1.4fr_0.8fr]">
