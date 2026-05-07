@@ -97,8 +97,8 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   const t = useAdminTranslation();
   const pt = (key: string, fallback: string) => t(`dashboardPage.${key}`, fallback);
   const [roundFilter, setRoundFilter] = useState<RoundFilterKey>("first");
-  const [customStartDate, setCustomStartDate] = useState("");
-  const [customEndDate, setCustomEndDate] = useState("");
+  const [customStartDate, setCustomStartDate] = useState(stats.selectedPeriodRange.isCustom ? stats.selectedPeriodRange.startDate : "");
+  const [customEndDate, setCustomEndDate] = useState(stats.selectedPeriodRange.isCustom ? stats.selectedPeriodRange.endDate : "");
 
   const translatedStats = {
     ...stats,
@@ -144,7 +144,9 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
 
   const totalReorderCount = stats.currentOverview.reorderCount;
   const activePeriodOptions = stats.periodOptions.filter((item) => item.key === "7d" || item.key === "30d");
-  const activePeriodLabel = translateStatsLabel(stats.periodOptions.find((item) => item.active)?.label ?? "30일", t);
+  const activePeriodLabel = stats.selectedPeriodRange.label;
+  const customPeriodHref = customStartDate && customEndDate ? `/admin/dashboard?period=custom&startDate=${customStartDate}&endDate=${customEndDate}` : "/admin/dashboard?period=30d";
+  const isCustomPeriodReady = Boolean(customStartDate && customEndDate);
   const storageUsePercent = stats.currentOverview.storageLimitBytes > 0 ? Math.round((stats.currentOverview.storageUsedBytes / stats.currentOverview.storageLimitBytes) * 1000) / 10 : 0;
   const roundFilterLabels: Record<RoundFilterKey, string> = {
     first: "1차",
@@ -226,7 +228,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Period analysis</p>
             <h2 className="mt-2 text-lg font-semibold text-stone-950">기간별 분석 범위</h2>
-            <p className="mt-1 text-xs font-semibold text-stone-500">작업 흐름과 리오더 분석에 적용합니다.</p>
+            <p className="mt-1 text-xs font-semibold text-stone-500">작업 흐름과 리오더 분석에 적용합니다. 현재 범위: {activePeriodLabel}</p>
           </div>
           <div className="flex flex-wrap justify-end gap-2">
             {activePeriodOptions.map((item) => (
@@ -250,10 +252,14 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
             종료일
             <input type="date" value={customEndDate} onChange={(event) => setCustomEndDate(event.target.value)} className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-semibold text-stone-700 outline-none focus:border-stone-400" />
           </label>
-          <div className="flex items-end">
-            <button type="button" className="rounded-2xl border border-dashed border-stone-200 bg-stone-50 px-4 py-2 text-xs font-semibold text-stone-500" title="직접 기간 DB 조회는 다음 단계에서 연결합니다.">
-              직접 선택 준비중
-            </button>
+          <div className="flex items-end gap-2">
+            <Link
+              href={customPeriodHref}
+              aria-disabled={!isCustomPeriodReady}
+              className={`rounded-2xl px-4 py-2 text-xs font-semibold transition ${isCustomPeriodReady ? "bg-stone-950 text-white hover:bg-stone-800" : "pointer-events-none bg-stone-100 text-stone-400"}`}
+            >
+              직접 선택 적용
+            </Link>
           </div>
         </div>
       </section>

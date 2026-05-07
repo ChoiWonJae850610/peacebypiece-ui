@@ -1,6 +1,6 @@
 import type { DbQueryResultRow } from "@/lib/db/client";
 import type { AdminFileUsagePoint, AdminStatChartPoint, AdminSummaryCard } from "@/lib/admin/adminDashboard.presentation";
-import type { AdminStatsMetric, AdminStatsPeriodKey, AdminStatsRatioPoint } from "@/lib/admin/stats/types";
+import type { AdminStatsMetric, AdminStatsPeriodKey, AdminStatsPeriodRange, AdminStatsRatioPoint } from "@/lib/admin/stats/types";
 import {
   ADMIN_ATTACHMENT_COUNT_LIMIT,
   ADMIN_FILE_LIMIT_BYTES,
@@ -96,17 +96,63 @@ export function buildAdminKeyMetrics(payload: { reviewWaiting: number; inspectio
 
 export function normalizeAdminStatsPeriod(value: string | string[] | undefined): AdminStatsPeriodKey {
   const rawValue = Array.isArray(value) ? value[0] : value;
-  if (rawValue === "7d" || rawValue === "15d" || rawValue === "30d" || rawValue === "monthly" || rawValue === "all") return rawValue;
+  if (rawValue === "7d" || rawValue === "custom") return rawValue;
   return "30d";
 }
 
-export function buildAdminPeriodOptions(selectedPeriod: AdminStatsPeriodKey) {
+export function isAdminDateInputValue(value: string | string[] | undefined): value is string {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+  return typeof rawValue === "string" && /^\d{4}-\d{2}-\d{2}$/.test(rawValue);
+}
+
+function formatAdminDateLabel(value: string): string {
+  return value.replace(/-/g, ".");
+}
+
+function getRelativeDateInputValue(daysBack: number): string {
+  const date = new Date();
+  date.setDate(date.getDate() - daysBack);
+  return date.toISOString().slice(0, 10);
+}
+
+export function buildAdminPeriodRange(selectedPeriod: AdminStatsPeriodKey, startDateValue?: string | string[], endDateValue?: string | string[]): AdminStatsPeriodRange {
+  const endDate = isAdminDateInputValue(endDateValue) ? endDateValue : new Date().toISOString().slice(0, 10);
+  const startDate = isAdminDateInputValue(startDateValue) ? startDateValue : selectedPeriod === "7d" ? getRelativeDateInputValue(6) : getRelativeDateInputValue(29);
+
+  if (selectedPeriod === "custom" && isAdminDateInputValue(startDateValue) && isAdminDateInputValue(endDateValue) && startDate <= endDate) {
+    return {
+      startDate,
+      endDate,
+      label: `${formatAdminDateLabel(startDate)} ~ ${formatAdminDateLabel(endDate)}`,
+      isCustom: true,
+    };
+  }
+
+  if (selectedPeriod === "7d") {
+    return {
+      startDate: getRelativeDateInputValue(6),
+      endDate,
+      label: adminStatsText.periods.sevenDays,
+      isCustom: false,
+    };
+  }
+
+  return {
+    startDate: getRelativeDateInputValue(29),
+    endDate,
+    label: adminStatsText.periods.thirtyDays,
+    isCustom: false,
+  };
+}
+
+export function buildAdminPeriodOptions(selectedPeriod: AdminStatsPeriodKey, selectedRange?: AdminStatsPeriodRange) {
+  const customHref = selectedRange?.isCustom
+    ? `/admin/dashboard?period=custom&startDate=${selectedRange.startDate}&endDate=${selectedRange.endDate}`
+    : "/admin/dashboard?period=custom";
   return [
     { key: "7d" as const, label: adminStatsText.periods.sevenDays, href: "/admin/dashboard?period=7d", active: selectedPeriod === "7d" },
-    { key: "15d" as const, label: adminStatsText.periods.fifteenDays, href: "/admin/dashboard?period=15d", active: selectedPeriod === "15d" },
     { key: "30d" as const, label: adminStatsText.periods.thirtyDays, href: "/admin/dashboard?period=30d", active: selectedPeriod === "30d" },
-    { key: "monthly" as const, label: adminStatsText.periods.monthly, href: "/admin/dashboard?period=monthly", active: selectedPeriod === "monthly" },
-    { key: "all" as const, label: adminStatsText.periods.all, href: "/admin/dashboard?period=all", active: selectedPeriod === "all" },
+    { key: "custom" as const, label: selectedRange?.isCustom ? selectedRange.label : "직접 선택", href: customHref, active: selectedPeriod === "custom" },
   ];
 }
 

@@ -10,6 +10,7 @@ import {
   buildAdminKeyMetrics,
   buildAdminPartnerDistribution,
   buildAdminPeriodOptions,
+  buildAdminPeriodRange,
   buildAdminRoundDistribution,
   buildAdminSummaryCards,
   buildAdminWorkorderFlow,
@@ -82,15 +83,15 @@ function buildAdminFactoryPerformance(rows: FactoryPerformanceRow[]): AdminStats
   });
 }
 
-function getAdminStatsPeriodWhereClause(period: AdminStatsPeriodKey): string {
-  if (period === "all") return "";
+function getAdminStatsPeriodWhereClause(period: AdminStatsPeriodKey, startDate?: string, endDate?: string): string {
+  if (period === "custom" && startDate && endDate) {
+    return `AND updated_at::date BETWEEN DATE '${startDate}' AND DATE '${endDate}'`;
+  }
   if (period === "7d") return "AND updated_at >= now() - interval '7 days'";
-  if (period === "15d") return "AND updated_at >= now() - interval '15 days'";
-  if (period === "monthly") return "AND updated_at >= date_trunc('month', now())";
   return "AND updated_at >= now() - interval '30 days'";
 }
 
-function buildEmptyStats(sourceState: Exclude<AdminStatsSourceState, "db">, selectedPeriod: AdminStatsPeriodKey): AdminStatsSnapshot {
+function buildEmptyStats(sourceState: Exclude<AdminStatsSourceState, "db">, selectedPeriod: AdminStatsPeriodKey, selectedPeriodRange = buildAdminPeriodRange(selectedPeriod)): AdminStatsSnapshot {
   const { points: fileUsagePoints, fileUsageLabel, activeFileCount, trashFileCount } = buildAdminFileUsagePoints(undefined);
 
   return {
@@ -118,17 +119,20 @@ function buildEmptyStats(sourceState: Exclude<AdminStatsSourceState, "db">, sele
     reorderTopProducts: [],
     factoryPerformance: [],
     attachmentTrashCards: buildAdminAttachmentTrashCards(activeFileCount, trashFileCount),
-    periodOptions: buildAdminPeriodOptions(selectedPeriod),
+    periodOptions: buildAdminPeriodOptions(selectedPeriod, selectedPeriodRange),
     selectedPeriod,
+    selectedPeriodRange,
     sourceState,
     sourceLabel: sourceState === "not_configured" ? "DB 미설정" : "조회 실패",
   };
 }
 
-export async function getAdminStatsSnapshot(periodValue?: string | string[]): Promise<AdminStatsSnapshot> {
-  const selectedPeriod = normalizeAdminStatsPeriod(periodValue);
-  const periodWhereClause = getAdminStatsPeriodWhereClause(selectedPeriod);
-  if (!isDatabaseConfigured()) return buildEmptyStats("not_configured", selectedPeriod);
+export async function getAdminStatsSnapshot(periodValue?: string | string[], startDateValue?: string | string[], endDateValue?: string | string[]): Promise<AdminStatsSnapshot> {
+  const requestedPeriod = normalizeAdminStatsPeriod(periodValue);
+  const selectedPeriodRange = buildAdminPeriodRange(requestedPeriod, startDateValue, endDateValue);
+  const selectedPeriod: AdminStatsPeriodKey = requestedPeriod === "custom" && !selectedPeriodRange.isCustom ? "30d" : requestedPeriod;
+  const periodWhereClause = getAdminStatsPeriodWhereClause(selectedPeriod, selectedPeriodRange.startDate, selectedPeriodRange.endDate);
+  if (!isDatabaseConfigured()) return buildEmptyStats("not_configured", selectedPeriod, selectedPeriodRange);
 
   try {
     const companyId = getAdminCompanyId();
@@ -408,13 +412,14 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[]): Pr
       reorderTopProducts: buildAdminReorderTopProducts(reorderTopProductsResult.rows),
       factoryPerformance: buildAdminFactoryPerformance(factoryPerformanceResult.rows),
       attachmentTrashCards: buildAdminAttachmentTrashCards(activeFileCount, trashFileCount),
-      periodOptions: buildAdminPeriodOptions(selectedPeriod),
+      periodOptions: buildAdminPeriodOptions(selectedPeriod, selectedPeriodRange),
       selectedPeriod,
+      selectedPeriodRange,
       sourceState: "db",
       sourceLabel: "DB",
     };
   } catch (error) {
     console.warn("[admin-stats] failed to load DB stats. Mock fallback is disabled.", error);
-    return buildEmptyStats("error", selectedPeriod);
+    return buildEmptyStats("error", selectedPeriod, selectedPeriodRange);
   }
 }

@@ -2,7 +2,7 @@ import type { AdminFileUsagePoint, AdminStatChartPoint, AdminSummaryCard } from 
 
 export type AdminStatsSourceState = "db" | "not_configured" | "error";
 
-export type AdminStatsPeriodKey = "7d" | "15d" | "30d" | "monthly" | "all" | "custom";
+export type AdminStatsPeriodKey = "7d" | "30d" | "custom";
 
 export type AdminStatsMetricKey = "reviewWaiting" | "inspectionWaiting" | "inboundDelayed" | "defectCount";
 
@@ -31,6 +31,13 @@ export type AdminStatsFactoryPerformance = {
 export type AdminStatsRoundKey = "first" | "second" | "third";
 
 export type AdminStatsCategoryByRound = Record<AdminStatsRoundKey, AdminStatsRatioPoint[]>;
+
+export type AdminStatsPeriodRange = {
+  startDate: string;
+  endDate: string;
+  label: string;
+  isCustom: boolean;
+};
 
 export type AdminStatsCurrentOverview = {
   totalProducedCount: number;
@@ -61,6 +68,7 @@ export type AdminStatsSnapshot = {
   attachmentTrashCards: AdminStatsRatioPoint[];
   periodOptions: { key: AdminStatsPeriodKey; label: string; active: boolean; href: string }[];
   selectedPeriod: AdminStatsPeriodKey;
+  selectedPeriodRange: AdminStatsPeriodRange;
   sourceState: AdminStatsSourceState;
   sourceLabel: "DB" | "DB 미설정" | "조회 실패";
 };

@@ -7,13 +7,13 @@ import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
 import { getI18n } from "@/lib/i18n";
 
 type AdminDashboardPageProps = {
-  searchParams?: Promise<{ period?: string | string[] }>;
+  searchParams?: Promise<{ period?: string | string[]; startDate?: string | string[]; endDate?: string | string[] }>;
 };
 
 export default async function AdminDashboardPage({ searchParams }: AdminDashboardPageProps) {
   const pageText = getI18n().admin.dashboardPage;
   const resolvedSearchParams = await searchParams;
-  const stats = await getAdminStatsSnapshot(resolvedSearchParams?.period);
+  const stats = await getAdminStatsSnapshot(resolvedSearchParams?.period, resolvedSearchParams?.startDate, resolvedSearchParams?.endDate);
 
   return (
     <AdminShell
