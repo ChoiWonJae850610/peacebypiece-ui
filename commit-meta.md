@@ -1,12 +1,10 @@
-Version : 0.9.2237
-Summary : 작업지시서 휴지통 요청과 시스템 실제삭제 후보 흐름 정리
-Description : 고객관리자 저장소 화면에서 작업지시서 영구삭제를 실행할 때 즉시 삭제 완료 상태로 바꾸지 않고 영구삭제 요청 상태로 남기도록 수정했다. 작업지시서와 연결 첨부/메모는 purge_requested 상태로 전환되고, 시스템관리자 실제 삭제 후보 화면에서 최종 처리하도록 흐름을 정리했다. 작업지시서 복구는 pending뿐 아니라 purge_requested 상태의 묶음 첨부도 함께 복구할 수 있도록 보정했다.
+Version : 0.9.22371
+Summary : 작업지시서 영구삭제 요청 SQL parameter 오류 수정
+Description : 고객관리자 저장소 휴지통에서 작업지시서 영구삭제 요청 시 SQL에서 사용하지 않는 $2 parameter 때문에 PostgreSQL이 타입을 결정하지 못하던 문제를 수정했다. 작업지시서 영구삭제 요청 쿼리의 delete_reason parameter 위치를 $2로 정리하고 전달 params 배열을 실제 사용값만 포함하도록 축소했다. APP_VERSION을 0.9.22371로 갱신했다.
 수정 파일 목록 :
-app/admin/files/page.tsx
-app/api/admin/files/workorders/purge/route.ts
 lib/admin/adminFiles.serverActions.ts
 lib/constants/app.ts
 추가 파일 목록 :
-docs/storage-trash-workorder-flow-0.9.2237.md
+docs/storage-trash-workorder-purge-param-fix-0.9.22371.md
 삭제 파일 목록 :
 없음

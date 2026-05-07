@@ -918,7 +918,7 @@ export async function purgeWorkOrderTrashBundle(
        SELECT t.id, t.attachment_id
          FROM attachment_trash_items t
         WHERE t.order_id = $1
-          AND t.delete_reason = $3
+          AND t.delete_reason = $2
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
           AND t.purge_status IN ('pending', 'purge_requested')
@@ -953,7 +953,7 @@ export async function purgeWorkOrderTrashBundle(
             (SELECT COUNT(*) FROM marked_trash)::text AS trash_count,
             (SELECT COUNT(*) FROM marked_memos)::text AS memo_count
        FROM marked_workorder`,
-    [workOrderId, input.actorId ?? null, WORKORDER_BUNDLE_DELETE_REASON],
+    [workOrderId, WORKORDER_BUNDLE_DELETE_REASON],
   );
 
   const row = result.rows[0];
