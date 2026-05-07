@@ -161,7 +161,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   const selectedRoundTotal = selectedRoundCategoryBars.reduce((sum, item) => sum + item.value, 0);
   const reorderTopProducts = toRatioBars(translatedStats.reorderTopProducts).slice(0, 5);
 
-  const renderBarList = (title: string, points: ReturnType<typeof toRatioBars>, emptyLabel: string) => (
+  const renderBarList = (title: string, points: Array<{ label: string; value: number; widthPercent: number; valueLabel?: string }>, emptyLabel: string) => (
     <AdminCard>
       <h2 className="text-lg font-semibold text-stone-950">{title}</h2>
       <div className="mt-5 grid gap-3">
