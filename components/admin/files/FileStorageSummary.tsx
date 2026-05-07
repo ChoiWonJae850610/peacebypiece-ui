@@ -340,6 +340,7 @@ export default function FileStorageSummary({
   const t = useAdminTranslation();
   const attachmentCard = usageCards[1];
   const trashCard = usageCards[2];
+  const purgeRequestCard = usageCards[3];
   const attachmentCount = translateStorageValue(
     attachmentCard?.value ?? "0개",
     t,
@@ -350,6 +351,11 @@ export default function FileStorageSummary({
     t,
   );
   const trashSizeLabel = trashCard?.description || "0MB 보관";
+  const purgeRequestCount = translateStorageValue(
+    purgeRequestCard?.value ?? "0개",
+    t,
+  );
+  const purgeRequestSizeLabel = purgeRequestCard?.description || "0MB 처리 대기";
   const statusLabel = translateStorageStatus(
     usageSummary.statusTone,
     usageSummary.statusLabel,
@@ -369,9 +375,10 @@ export default function FileStorageSummary({
       tone: trashCount === "0개" ? "neutral" : "caution",
     },
     {
-      label: t("filesSummary.largeFiles", "대용량 파일"),
-      value: "검토 예정",
-      description: "10MB 이상 기준",
+      label: t("filesSummary.purgeRequestedFiles", "삭제 요청"),
+      value: purgeRequestCount,
+      description: purgeRequestCount === "0개" ? "0MB 처리 대기" : purgeRequestSizeLabel,
+      tone: purgeRequestCount === "0개" ? "neutral" : "danger",
     },
   ];
 

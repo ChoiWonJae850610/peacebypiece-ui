@@ -3,6 +3,8 @@ import { getAdminFileManagementSnapshot } from "@/lib/admin/files/adapter";
 import { buildAdminStoragePolicyItems, normalizeAdminFilePolicySettings } from "@/lib/admin/files/presentation";
 import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/settings/companyRepository";
 import { listAdminFileManagementRows } from "@/lib/admin/files/serverActions";
+import { queryDb } from "@/lib/db/client";
+import type { DbQueryResultRow } from "@/lib/db/client";
 import type { AdminFileTrendPeriod, AdminFileTypeDistributionItem, AdminFileUsageCard, AdminRecentUploadTrendPoint, AdminManagedFileItem, AdminStorageUsageSummary } from "@/lib/admin/files/types";
 import type { CompanyFilePolicySettings } from "@/lib/admin/settings/companyTypes";
 
@@ -118,13 +120,49 @@ function buildFileTypeDistribution(items: AdminManagedFileItem[], period: AdminF
   }));
 }
 
-function buildUsageCards(activeCount: number, trashCount: number, activeBytes: number, trashBytes: number, filePolicy: CompanyFilePolicySettings): AdminFileUsageCard[] {
+type PurgeRequestSummaryRow = DbQueryResultRow & {
+  file_count: string | number | null;
+  size_bytes: string | number | null;
+};
+
+function readNumber(value: string | number | null | undefined): number {
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  const parsed = Number(value ?? 0);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+async function getPurgeRequestSummary(): Promise<{ count: number; bytes: number }> {
+  const result = await queryDb<PurgeRequestSummaryRow>(
+    `SELECT COUNT(DISTINCT t.attachment_id)::text AS file_count,
+            COALESCE(SUM(COALESCE(t.size_bytes, a.size_bytes, 0)), 0)::text AS size_bytes
+       FROM attachment_trash_items t
+       LEFT JOIN attachments a ON a.id = t.attachment_id
+      WHERE t.purge_status = 'purge_requested'
+        AND t.restored_at IS NULL
+        AND t.purged_at IS NULL`,
+  );
+  const row = result.rows[0];
+  return {
+    count: readNumber(row?.file_count),
+    bytes: readNumber(row?.size_bytes),
+  };
+}
+
+function buildUsageCards(
+  activeCount: number,
+  trashCount: number,
+  activeBytes: number,
+  trashBytes: number,
+  purgeRequestCount: number,
+  purgeRequestBytes: number,
+  filePolicy: CompanyFilePolicySettings,
+): AdminFileUsageCard[] {
   const summary = buildUsageSummary(activeBytes, trashBytes, filePolicy);
   return [
     { label: "전체 사용량", value: `${summary.usedLabel} / ${summary.limitLabel}`, description: filePolicy.includeTrashInUsage ? "휴지통 보관 파일 포함" : "사용중 파일만 합산" },
     { label: "첨부파일", value: `${activeCount}개`, description: `${formatBytes(activeBytes)} 사용` },
     { label: "휴지통", value: `${trashCount}개`, description: `${formatBytes(trashBytes)} 보관` },
-    { label: "보관 기간", value: `${filePolicy.trashRetentionDays}일`, description: "전 고객 공통 휴지통 보관 정책" },
+    { label: "삭제 요청", value: `${purgeRequestCount}개`, description: `${formatBytes(purgeRequestBytes)} 처리 대기` },
   ];
 }
 
@@ -140,6 +178,7 @@ export async function GET(request: Request) {
     const rows = await listAdminFileManagementRows(settings.filePolicy.trashRetentionDays);
     const activeBytes = rows.attachments.reduce((total, item) => total + item.fileSizeBytes, 0);
     const trashBytes = rows.trashItems.reduce((total, item) => total + item.fileSizeBytes, 0);
+    const purgeRequestSummary = await getPurgeRequestSummary();
 
     return NextResponse.json({
       ok: true,
@@ -151,7 +190,7 @@ export async function GET(request: Request) {
         attachments: rows.attachments,
         trashItems: rows.trashItems,
         usageSummary: buildUsageSummary(activeBytes, trashBytes, settings.filePolicy),
-        usageCards: buildUsageCards(rows.attachments.length, rows.trashItems.length, activeBytes, trashBytes, settings.filePolicy),
+        usageCards: buildUsageCards(rows.attachments.length, rows.trashItems.length, activeBytes, trashBytes, purgeRequestSummary.count, purgeRequestSummary.bytes, settings.filePolicy),
         storagePolicies: buildAdminStoragePolicyItems(policySettings),
         policySettings,
         recentUploadTrend: buildRecentUploadTrend(rows.attachments.map((item) => item.uploadedAt), trendPeriod),

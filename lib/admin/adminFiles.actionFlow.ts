@@ -1,7 +1,7 @@
 import { buildAdminFilePolicyUpdateInput } from "@/lib/admin/adminFiles.presentation";
 import type { AdminFileActionResult, AdminManagedFileItem, AdminPurgeWorkerActionResult, AdminStoragePolicySettings, AdminTrashFileItem } from "@/lib/admin/adminFiles.types";
 
-function createAdminFileActionResult(input: { ok: boolean; status: AdminFileActionResult["status"]; message: string }): AdminFileActionResult {
+function createAdminFileActionResult(input: AdminFileActionResult): AdminFileActionResult {
   return input;
 }
 

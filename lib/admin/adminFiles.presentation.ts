@@ -28,7 +28,7 @@ export const ADMIN_FILE_USAGE_CARDS: AdminFileUsageCard[] = [
   { label: "전체 사용량", value: "2.0GB / 5.0GB", description: "휴지통 보관 파일 포함" },
   { label: "첨부파일", value: "3개", description: "작업지시서에 연결된 이미지, PDF, 기타 파일" },
   { label: "휴지통", value: "2개", description: "소프트 삭제 후 보관 중인 파일" },
-  { label: "보관 기간", value: `${COMPANY_FILE_TRASH_RETENTION_DAYS}일`, description: "전 고객 공통 30일 휴지통 보관 정책" },
+  { label: "삭제 요청", value: "0개", description: "0MB 처리 대기" },
 ];
 
 export const ADMIN_FILE_TABS: AdminFileTabItem[] = [
