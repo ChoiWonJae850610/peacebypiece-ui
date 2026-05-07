@@ -142,6 +142,8 @@ export type AdminFileActionResult = {
   ok: boolean;
   status: AdminFileActionStatus;
   message: string;
+  requestedCount?: number;
+  affectedCount?: number;
 };
 
 export type AdminFileDataSource = "db" | "placeholder";

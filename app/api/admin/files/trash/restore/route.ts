@@ -34,12 +34,19 @@ export async function POST(request: NextRequest) {
       actorId: readText(payload?.restoredBy),
     });
 
-    return NextResponse.json({
-      ok: true,
-      action: "restore",
-      requestedCount: result.requestedCount,
-      affectedCount: result.affectedCount,
-    });
+    const ok = result.affectedCount > 0;
+    return NextResponse.json(
+      {
+        ok,
+        action: "restore",
+        requestedCount: result.requestedCount,
+        affectedCount: result.affectedCount,
+        message: ok
+          ? `파일 ${result.affectedCount}개를 복구했습니다.`
+          : "복구할 수 있는 휴지통 파일을 찾지 못했습니다.",
+      },
+      { status: ok ? 200 : 409 },
+    );
   } catch (error) {
     const message = getErrorMessage(error);
     console.error("[ADMIN_FILE_TRASH_RESTORE_FAILED]", { message, error });

@@ -709,6 +709,8 @@ export type AdminWorkOrderTrashActionResult = {
   workOrderId: string | null;
   requestedCount: number;
   affectedCount: number;
+  attachmentCount?: number;
+  memoCount?: number;
   reason:
     | "WORKORDER_ACTION_NOT_CONNECTED"
     | "WORKORDER_ID_REQUIRED"
@@ -861,8 +863,13 @@ export async function restoreWorkOrderTrashBundle(
     workOrderId,
     requestedCount: 1,
     affectedCount: workOrderCount,
+    attachmentCount,
+    memoCount,
     reason: "OK",
-    message: "작업지시서 1건을 복구했습니다.",
+    message:
+      attachmentCount > 0 || memoCount > 0
+        ? `작업지시서 1건과 연결 첨부 ${attachmentCount}개, 메모 ${memoCount}개를 복구했습니다.`
+        : "작업지시서 1건을 복구했습니다.",
   };
 }
 
@@ -963,14 +970,21 @@ export async function purgeWorkOrderTrashBundle(
     };
   }
 
+  const trashCount = Number(row?.trash_count ?? 0);
+  const memoCount = Number(row?.memo_count ?? 0);
   return {
     ok: true,
     action: "purge",
     workOrderId,
     requestedCount: 1,
     affectedCount: workOrderCount,
+    attachmentCount: trashCount,
+    memoCount,
     reason: "OK",
-    message: "작업지시서 1건을 영구삭제 완료 상태로 변경했습니다.",
+    message:
+      trashCount > 0 || memoCount > 0
+        ? `작업지시서 1건을 영구삭제 완료 상태로 변경하고 연결 첨부 ${trashCount}개, 메모 ${memoCount}개를 삭제 요청 상태로 표시했습니다.`
+        : "작업지시서 1건을 영구삭제 완료 상태로 변경했습니다.",
   };
 }
 

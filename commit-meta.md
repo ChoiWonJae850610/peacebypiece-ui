@@ -1,10 +1,17 @@
-Version : 0.9.2235
-Summary : 저장소 preview 실패 fallback 및 목록 시각 밀도 보정
-Description : 저장소 관리 휴지통 목록에서 R2 preview 이미지 로딩이 실패하면 IMG 배지로 되돌아가도록 fallback을 추가했다. 목록 visual 배지 크기와 주요 텍스트 크기를 낮추고, 상세 모달 정보 카드 값과 미리보기 링크의 글씨 굵기를 완화해 화면 밀도를 보정했다.
+Version : 0.9.2236
+Summary : 저장소 휴지통 실제 복구/영구삭제 처리 결과 보정
+Description : 저장소 관리 휴지통에서 파일 및 작업지시서 복구/영구삭제 요청 후 실제 affectedCount를 기준으로 성공/실패와 메시지를 표시하도록 보정했다. 작업지시서 단위 복구/영구삭제 응답에는 연결 첨부/메모 처리 개수를 포함하고, 파일 처리 API는 처리 개수가 0이면 실패 응답을 반환한다. DB schema, package 의존성, R2 Worker 정책은 변경하지 않는다.
 수정 파일 목록 :
-components/admin/files/FileTrashSection.tsx
+app/admin/files/page.tsx
+app/api/admin/files/trash/restore/route.ts
+app/api/admin/files/trash/purge/route.ts
+app/api/admin/files/workorders/restore/route.ts
+app/api/admin/files/workorders/purge/route.ts
+lib/admin/adminFiles.actionFlow.ts
+lib/admin/adminFiles.serverActions.ts
+lib/admin/adminFiles.types.ts
 lib/constants/app.ts
 추가 파일 목록 :
-docs/storage-trash-preview-fallback-0.9.2235.md
+docs/storage-trash-action-check-0.9.2236.md
 삭제 파일 목록 :
 없음

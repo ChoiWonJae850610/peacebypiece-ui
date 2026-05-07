@@ -260,7 +260,8 @@ export default function AdminFilesPage() {
       let restoredFileCount = 0;
       if (fileTargets.length > 0) {
         const result = await runRestoreTrashItemsFlow(fileTargets);
-        restoredFileCount = result.ok ? fileTargets.length : 0;
+        restoredFileCount = result.ok ? (result.affectedCount ?? 0) : 0;
+        if (!result.ok) throw new Error(result.message);
       }
 
       let restoredWorkOrderCount = 0;
@@ -308,7 +309,8 @@ export default function AdminFilesPage() {
       let purgedFileCount = 0;
       if (fileTargets.length > 0) {
         const result = await runPurgeTrashItemsFlow(fileTargets);
-        purgedFileCount = result.ok ? fileTargets.length : 0;
+        purgedFileCount = result.ok ? (result.affectedCount ?? 0) : 0;
+        if (!result.ok) throw new Error(result.message);
       }
 
       let purgedWorkOrderCount = 0;

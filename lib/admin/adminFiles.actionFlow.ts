@@ -32,6 +32,7 @@ type TrashApiResponse = {
   ok: boolean;
   requestedCount: number;
   affectedCount: number;
+  message?: string;
 };
 
 type PurgeWorkerApiResponse = {
@@ -91,10 +92,17 @@ export async function runRestoreTrashItemsFlow(items: AdminTrashFileItem[]): Pro
       restoredBy: "admin",
     });
 
+    const isSuccess = result.ok && result.affectedCount > 0;
     return createAdminFileActionResult({
-      ok: result.ok,
-      status: result.ok ? "success" : "error",
-      message: result.affectedCount === result.requestedCount ? `파일 ${result.affectedCount}개를 복구했습니다.` : `파일 ${result.affectedCount}개를 복구했습니다. 일부 파일은 처리하지 못했습니다.`,
+      ok: isSuccess,
+      status: isSuccess ? "success" : "error",
+      message:
+        result.message ||
+        (result.affectedCount === result.requestedCount
+          ? `파일 ${result.affectedCount}개를 복구했습니다.`
+          : `파일 ${result.affectedCount}개를 복구했습니다. 일부 파일은 처리하지 못했습니다.`),
+      requestedCount: result.requestedCount,
+      affectedCount: result.affectedCount,
     });
   } catch (error) {
     return createAdminFileActionResult({
@@ -122,10 +130,17 @@ export async function runPurgeTrashItemsFlow(items: AdminTrashFileItem[]): Promi
       trashItemIds: items.map((item) => item.id),
     });
 
+    const isSuccess = result.ok && result.affectedCount > 0;
     return createAdminFileActionResult({
-      ok: result.ok,
-      status: result.ok ? "success" : "error",
-      message: result.affectedCount === result.requestedCount ? `파일 ${result.affectedCount}개를 영구삭제 요청했습니다.` : `파일 ${result.affectedCount}개를 영구삭제 요청했습니다. 일부 파일은 처리하지 못했습니다.`,
+      ok: isSuccess,
+      status: isSuccess ? "success" : "error",
+      message:
+        result.message ||
+        (result.affectedCount === result.requestedCount
+          ? `파일 ${result.affectedCount}개를 영구삭제 요청했습니다.`
+          : `파일 ${result.affectedCount}개를 영구삭제 요청했습니다. 일부 파일은 처리하지 못했습니다.`),
+      requestedCount: result.requestedCount,
+      affectedCount: result.affectedCount,
     });
   } catch (error) {
     return createAdminFileActionResult({

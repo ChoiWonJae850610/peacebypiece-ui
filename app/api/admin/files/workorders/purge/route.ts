@@ -39,6 +39,8 @@ export async function POST(request: NextRequest) {
         workOrderId: result.workOrderId,
         requestedCount: result.requestedCount,
         affectedCount: result.affectedCount,
+        attachmentCount: result.attachmentCount ?? 0,
+        memoCount: result.memoCount ?? 0,
         reason: result.reason,
         message: result.message,
         storageDeleteMode: "deferred-worker",

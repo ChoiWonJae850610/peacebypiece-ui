@@ -26,13 +26,20 @@ export async function POST(request: NextRequest) {
 
     const result = await requestPurgeAttachmentTrashItems({ trashItemIds });
 
-    return NextResponse.json({
-      ok: true,
-      action: "purge-request",
-      requestedCount: result.requestedCount,
-      affectedCount: result.affectedCount,
-      storageDeleteMode: "deferred-worker",
-    });
+    const ok = result.affectedCount > 0;
+    return NextResponse.json(
+      {
+        ok,
+        action: "purge-request",
+        requestedCount: result.requestedCount,
+        affectedCount: result.affectedCount,
+        storageDeleteMode: "deferred-worker",
+        message: ok
+          ? `파일 ${result.affectedCount}개를 영구삭제 요청했습니다.`
+          : "영구삭제 요청 가능한 휴지통 파일을 찾지 못했습니다.",
+      },
+      { status: ok ? 200 : 409 },
+    );
   } catch (error) {
     const message = getErrorMessage(error);
     console.error("[ADMIN_FILE_TRASH_PURGE_FAILED]", { message, error });
