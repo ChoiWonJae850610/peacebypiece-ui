@@ -76,7 +76,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
 
   async function runSelectedPurge() {
     if (selectedIds.length === 0 || isPending) return;
-    const confirmed = window.confirm(`선택한 ${selectedIds.length}개 파일의 원본과 썸네일을 R2에서 실제 삭제합니다. 이 작업은 복구할 수 없습니다. 계속할까요?`);
+    const confirmed = window.confirm(`선택한 ${selectedIds.length}개 삭제 후보를 처리합니다. 파일은 R2에서 실제 삭제하고, 작업지시서는 DB 삭제 완료 상태로 전환합니다. 이 작업은 복구할 수 없습니다. 계속할까요?`);
     if (!confirmed) return;
 
     setIsPending(true);
@@ -98,7 +98,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
 
   async function runAllDuePurge() {
     if (!hasCandidates || isPending) return;
-    const confirmed = window.confirm(`현재 표시된 기준의 삭제 후보 ${candidates.length}개를 R2에서 실제 삭제합니다. 원본과 썸네일이 함께 삭제되며 복구할 수 없습니다. 계속할까요?`);
+    const confirmed = window.confirm(`삭제 예정일이 도래했거나 영구삭제 요청된 후보를 처리합니다. 파일은 R2에서 실제 삭제하고, 작업지시서는 DB 삭제 완료 상태로 전환합니다. 계속할까요?`);
     if (!confirmed) return;
 
     setIsPending(true);
@@ -124,7 +124,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
         <div>
           <h2 className="text-lg font-semibold text-stone-950">삭제 후보 목록</h2>
           <p className="mt-2 text-sm leading-6 text-stone-600">
-            30일 경과 또는 영구삭제 요청 상태의 파일입니다. 실제 삭제 전 원본 key와 썸네일 key를 함께 확인합니다.
+            파일 후보는 원본/썸네일 key를 확인한 뒤 Worker로 실제 삭제합니다. 작업지시서 후보는 DB 삭제 완료 상태로 전환하고 연결 파일은 R2 purge 후보로 이어집니다.
           </p>
           {resultMessage ? <p className={`mt-2 rounded-2xl px-3 py-2 text-xs font-medium ${getResultMessageClass(resultTone)}`}>{resultMessage}</p> : null}
         </div>
@@ -143,7 +143,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
             disabled={!hasCandidates || isPending}
             className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100 disabled:border-red-100 disabled:bg-red-50 disabled:text-red-300"
           >
-            {isPending ? "처리 중" : "전체 도래 항목 삭제"}
+            {isPending ? "처리 중" : "전체 도래 후보 처리"}
           </button>
         </div>
       </div>
@@ -153,9 +153,9 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
           <span>
             <input type="checkbox" checked={hasCandidates && selectedCount === candidates.length} onChange={toggleAll} disabled={!hasCandidates || isPending} />
           </span>
-          <span>미리보기</span>
+          <span>구분</span>
           <span>고객사 / 작업지시서</span>
-          <span>파일</span>
+          <span>대상</span>
           <span>삭제일 / 예정일</span>
           <span>용량 / 상태</span>
           <span>R2 key</span>
@@ -203,7 +203,11 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
                 </div>
                 <div>
                   <p className="font-semibold text-stone-800">{candidate.fileName}</p>
-                  <p className="mt-1 text-xs text-stone-500">{candidate.fileTypeLabel} · {candidate.thumbnailCountLabel}</p>
+                  <p className="mt-1 text-xs text-stone-500">
+                    {candidate.candidateKind === "workorder"
+                      ? `작업지시서 · 첨부 ${candidate.attachmentCount}개 · 메모 ${candidate.memoCount}개`
+                      : `${candidate.fileTypeLabel} · ${candidate.thumbnailCountLabel}`}
+                  </p>
                 </div>
                 <div className="text-xs leading-5 text-stone-600">
                   <p>삭제일: {candidate.deletedAt}</p>
@@ -218,11 +222,11 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
                 <div className="space-y-2">
                   <div>
                     <p className="text-[11px] font-semibold text-stone-400">원본</p>
-                    {renderKey(candidate.storageKey)}
+                    {candidate.candidateKind === "workorder" ? <span className="text-stone-400">작업지시서 후보</span> : renderKey(candidate.storageKey)}
                   </div>
                   <div>
                     <p className="text-[11px] font-semibold text-stone-400">썸네일</p>
-                    {renderKey(candidate.thumbnailKey)}
+                    {candidate.candidateKind === "workorder" ? <span className="text-stone-400">연결 파일 별도 후보화</span> : renderKey(candidate.thumbnailKey)}
                   </div>
                 </div>
               </article>

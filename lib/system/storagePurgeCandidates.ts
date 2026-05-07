@@ -8,10 +8,14 @@ import { queryDb } from "@/lib/db/client";
 import type { DbQueryResultRow } from "@/lib/db/client";
 
 const WORKORDER_BUNDLE_DELETE_REASON = "작업지시서 삭제로 함께 휴지통 이동";
+const WORKORDER_CANDIDATE_PREFIX = "workorder:";
+
+export type SystemStoragePurgeCandidateKind = "file" | "workorder";
 
 export type SystemStoragePurgeCandidate = {
   trashItemId: string;
-  attachmentId: string;
+  candidateKind: SystemStoragePurgeCandidateKind;
+  attachmentId: string | null;
   companyId: string | null;
   companyName: string;
   workorderId: string | null;
@@ -32,10 +36,14 @@ export type SystemStoragePurgeCandidate = {
   purgeStatus: string;
   purgeStatusLabel: string;
   lastPurgeError: string | null;
+  attachmentCount: number;
+  memoCount: number;
 };
 
 export type SystemStoragePurgeCandidateSummary = {
   candidateCount: number;
+  fileCandidateCount: number;
+  workorderCandidateCount: number;
   requestedCount: number;
   pendingCount: number;
   failedCount: number;
@@ -69,6 +77,25 @@ type PurgeCandidateRow = DbQueryResultRow & {
   purge_status: string | null;
   last_purge_error: string | null;
 };
+
+type WorkOrderPurgeCandidateRow = DbQueryResultRow & {
+  id: string;
+  company_id: string | null;
+  company_name: string | null;
+  title: string | null;
+  status: string | null;
+  deleted_at: string | Date | null;
+  purge_due_at: string | Date | null;
+  purge_status: string | null;
+  attachment_count: string | number | null;
+  memo_count: string | number | null;
+  total_size_bytes: string | number | null;
+  thumbnail_count: string | number | null;
+};
+
+type SystemStoragePurgeRunCandidate =
+  | ({ candidateKind: "file" } & PurgeCandidateRow)
+  | ({ candidateKind: "workorder" } & WorkOrderPurgeCandidateRow);
 
 function toNumber(value: string | number | null | undefined): number {
   if (typeof value === "number") return Number.isFinite(value) ? value : 0;
@@ -110,10 +137,10 @@ function getFileTypeLabel(mimeType: string | null | undefined, fileName: string)
   return "파일";
 }
 
-function getPurgeStatusLabel(status: string | null | undefined, error: string | null | undefined): string {
+function getPurgeStatusLabel(status: string | null | undefined, error: string | null | undefined, kind: SystemStoragePurgeCandidateKind): string {
   if (error || status === "failed") return "삭제 실패";
-  if (status === "purge_requested") return "영구삭제 요청";
-  if (status === "pending") return "삭제 대기";
+  if (status === "purge_requested") return kind === "workorder" ? "작업지시서 삭제 요청" : "영구삭제 요청";
+  if (status === "pending") return kind === "workorder" ? "작업지시서 삭제 대기" : "삭제 대기";
   if (status === "purged") return "삭제 완료";
   return status || "후보";
 }
@@ -124,7 +151,18 @@ function getOverdueDays(purgeDueAt: string | Date | null | undefined): number {
   return Math.max(0, Math.floor((Date.now() - date.getTime()) / 86400000));
 }
 
-function mapCandidateRow(row: PurgeCandidateRow): SystemStoragePurgeCandidate {
+function parseWorkOrderCandidateIds(ids: string[]): string[] {
+  return ids
+    .filter((id) => id.startsWith(WORKORDER_CANDIDATE_PREFIX))
+    .map((id) => id.slice(WORKORDER_CANDIDATE_PREFIX.length).trim())
+    .filter(Boolean);
+}
+
+function parseFileTrashIds(ids: string[]): string[] {
+  return ids.filter((id) => !id.startsWith(WORKORDER_CANDIDATE_PREFIX));
+}
+
+function mapFileCandidateRow(row: PurgeCandidateRow): SystemStoragePurgeCandidate {
   const fileName = row.original_name || "파일명 없음";
   const sizeBytes = toNumber(row.size_bytes);
   const hasThumbnail = typeof row.thumbnail_key === "string" && row.thumbnail_key.trim().length > 0;
@@ -136,6 +174,7 @@ function mapCandidateRow(row: PurgeCandidateRow): SystemStoragePurgeCandidate {
 
   return {
     trashItemId: row.id,
+    candidateKind: "file",
     attachmentId: row.attachment_id,
     companyId: row.company_id,
     companyName: row.company_name || row.company_id || "고객사명 없음",
@@ -155,13 +194,51 @@ function mapCandidateRow(row: PurgeCandidateRow): SystemStoragePurgeCandidate {
     purgeDueAt: formatDate(row.purge_due_at),
     overdueDays: getOverdueDays(row.purge_due_at),
     purgeStatus: row.purge_status || "pending",
-    purgeStatusLabel: getPurgeStatusLabel(row.purge_status, row.last_purge_error),
+    purgeStatusLabel: getPurgeStatusLabel(row.purge_status, row.last_purge_error, "file"),
     lastPurgeError: row.last_purge_error,
+    attachmentCount: 1,
+    memoCount: 0,
   };
 }
 
-export async function getSystemStoragePurgeCandidateSnapshot(limit = 200): Promise<SystemStoragePurgeCandidateSnapshot> {
-  const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 500);
+function mapWorkOrderCandidateRow(row: WorkOrderPurgeCandidateRow): SystemStoragePurgeCandidate {
+  const title = row.title || "작업지시서명 없음";
+  const totalSizeBytes = toNumber(row.total_size_bytes);
+  const attachmentCount = toNumber(row.attachment_count);
+  const memoCount = toNumber(row.memo_count);
+  const thumbnailCount = toNumber(row.thumbnail_count);
+  const previewModeLabel = attachmentCount > 0 || memoCount > 0 ? `첨부 ${attachmentCount}개 · 메모 ${memoCount}개` : "연결 항목 없음";
+
+  return {
+    trashItemId: `${WORKORDER_CANDIDATE_PREFIX}${row.id}`,
+    candidateKind: "workorder",
+    attachmentId: null,
+    companyId: row.company_id,
+    companyName: row.company_name || row.company_id || "고객사명 없음",
+    workorderId: row.id,
+    workorderTitle: title,
+    fileName: title,
+    fileTypeLabel: "작업지시서",
+    previewUrl: null,
+    previewMode: "file-type",
+    previewModeLabel,
+    storageKey: null,
+    thumbnailKey: null,
+    originalSizeBytes: totalSizeBytes,
+    originalSizeLabel: formatBytes(totalSizeBytes),
+    thumbnailCountLabel: thumbnailCount > 0 ? `썸네일 ${thumbnailCount}개` : "썸네일 없음",
+    deletedAt: formatDate(row.deleted_at),
+    purgeDueAt: formatDate(row.purge_due_at),
+    overdueDays: getOverdueDays(row.purge_due_at),
+    purgeStatus: row.purge_status || "pending",
+    purgeStatusLabel: getPurgeStatusLabel(row.purge_status, null, "workorder"),
+    lastPurgeError: null,
+    attachmentCount,
+    memoCount,
+  };
+}
+
+async function listFilePurgeCandidateRows(limit: number): Promise<PurgeCandidateRow[]> {
   const result = await queryDb<PurgeCandidateRow>(
     `SELECT t.id,
             t.attachment_id,
@@ -201,10 +278,67 @@ export async function getSystemStoragePurgeCandidateSnapshot(limit = 200): Promi
         )
       ORDER BY purge_due_at ASC, t.deleted_at ASC
       LIMIT $1`,
-    [safeLimit, COMPANY_FILE_TRASH_RETENTION_DAYS, WORKORDER_BUNDLE_DELETE_REASON],
+    [limit, COMPANY_FILE_TRASH_RETENTION_DAYS, WORKORDER_BUNDLE_DELETE_REASON],
   );
+  return result.rows;
+}
 
-  const candidates = result.rows.map(mapCandidateRow);
+async function listWorkOrderPurgeCandidateRows(input: { limit: number; includeFuturePending?: boolean; workOrderIds?: string[] }): Promise<WorkOrderPurgeCandidateRow[]> {
+  const workOrderIds = input.workOrderIds ?? [];
+  const params: unknown[] = [input.limit, COMPANY_FILE_TRASH_RETENTION_DAYS];
+  let idFilter = "";
+  if (workOrderIds.length > 0) {
+    params.push(workOrderIds);
+    idFilter = `AND s.id = ANY($${params.length}::text[])`;
+  }
+
+  const statusFilter = input.includeFuturePending
+    ? `AND COALESCE(NULLIF(s.purge_status, 'none'), 'pending') IN ('pending', 'purge_requested', 'failed')`
+    : `AND (
+          COALESCE(NULLIF(s.purge_status, 'none'), 'pending') = 'purge_requested'
+          OR (COALESCE(NULLIF(s.purge_status, 'none'), 'pending') = 'pending' AND (COALESCE(s.deleted_at, now()) + ($2::integer * interval '1 day')) <= now())
+          OR COALESCE(NULLIF(s.purge_status, 'none'), 'pending') = 'failed'
+        )`;
+
+  const result = await queryDb<WorkOrderPurgeCandidateRow>(
+    `SELECT s.id,
+            s.company_id,
+            s.company_name,
+            s.title,
+            s.status,
+            s.deleted_at,
+            (COALESCE(s.deleted_at, now()) + ($2::integer * interval '1 day')) AS purge_due_at,
+            COALESCE(NULLIF(s.purge_status, 'none'), 'pending') AS purge_status,
+            COUNT(DISTINCT a.id) FILTER (WHERE a.deleted_at IS NOT NULL OR COALESCE(a.is_active, true) = false)::text AS attachment_count,
+            COUNT(DISTINCT m.id) FILTER (WHERE m.deleted_at IS NOT NULL OR COALESCE(m.is_active, true) = false)::text AS memo_count,
+            COALESCE(SUM(COALESCE(a.size_bytes, 0)) FILTER (WHERE a.deleted_at IS NOT NULL OR COALESCE(a.is_active, true) = false), 0)::text AS total_size_bytes,
+            COUNT(DISTINCT a.id) FILTER (WHERE a.thumbnail_key IS NOT NULL AND a.thumbnail_key <> '')::text AS thumbnail_count
+       FROM spec_sheets s
+       LEFT JOIN attachments a ON a.order_id = s.id
+       LEFT JOIN memos m ON m.order_id = s.id
+      WHERE (s.deleted_at IS NOT NULL OR COALESCE(s.is_active, true) = false)
+        AND COALESCE(s.delete_status, 'active') <> 'purged'
+        AND s.purged_at IS NULL
+        ${idFilter}
+        ${statusFilter}
+      GROUP BY s.id, s.company_id, s.company_name, s.title, s.status, s.deleted_at, s.purge_status
+      ORDER BY purge_due_at ASC, s.deleted_at ASC
+      LIMIT $1`,
+    params,
+  );
+  return result.rows;
+}
+
+export async function getSystemStoragePurgeCandidateSnapshot(limit = 200): Promise<SystemStoragePurgeCandidateSnapshot> {
+  const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 500);
+  const [fileRows, workOrderRows] = await Promise.all([
+    listFilePurgeCandidateRows(safeLimit),
+    // 작업지시서는 사용자가 방금 삭제한 항목도 시스템관리자 후보에서 확인할 수 있어야 하므로
+    // 30일 도래 전 pending 항목까지 목록에 노출한다. 실제 전체 실행은 도래/요청 항목만 처리한다.
+    listWorkOrderPurgeCandidateRows({ limit: safeLimit, includeFuturePending: true }),
+  ]);
+
+  const candidates = [...workOrderRows.map(mapWorkOrderCandidateRow), ...fileRows.map(mapFileCandidateRow)].slice(0, safeLimit);
   const companyIds = new Set(candidates.map((candidate) => candidate.companyId || candidate.companyName));
   const totalOriginalBytes = candidates.reduce((sum, candidate) => sum + candidate.originalSizeBytes, 0);
   const thumbnailObjectCount = candidates.filter((candidate) => candidate.thumbnailKey).length;
@@ -215,6 +349,8 @@ export async function getSystemStoragePurgeCandidateSnapshot(limit = 200): Promi
   return {
     summary: {
       candidateCount: candidates.length,
+      fileCandidateCount: candidates.filter((candidate) => candidate.candidateKind === "file").length,
+      workorderCandidateCount: candidates.filter((candidate) => candidate.candidateKind === "workorder").length,
       requestedCount,
       pendingCount,
       failedCount,
@@ -238,7 +374,7 @@ export type SystemStoragePurgeRunInput = {
 
 export type SystemStoragePurgeRunItemResult = {
   trashItemId: string;
-  attachmentId: string;
+  attachmentId: string | null;
   storageKey: string | null;
   thumbnailKey: string | null;
   status: "purged" | "failed";
@@ -252,8 +388,6 @@ export type SystemStoragePurgeRunResult = {
   failedCount: number;
   items: SystemStoragePurgeRunItemResult[];
 };
-
-type PurgeRunCandidateRow = PurgeCandidateRow;
 
 function normalizeTrashItemIds(ids: string[] | undefined): string[] {
   return Array.from(new Set((ids ?? []).map((id) => id.trim()).filter(Boolean)));
@@ -269,14 +403,12 @@ function getPurgeDeleteKeys(candidate: Pick<PurgeCandidateRow, "storage_key" | "
   );
 }
 
-async function listSystemStoragePurgeRunCandidates(input: SystemStoragePurgeRunInput): Promise<PurgeRunCandidateRow[]> {
+async function listFilePurgeRunCandidates(input: SystemStoragePurgeRunInput, fileTrashIds: string[]): Promise<PurgeCandidateRow[]> {
   const safeLimit = Math.min(Math.max(Math.trunc(input.limit ?? 100), 1), 200);
-  const trashItemIds = normalizeTrashItemIds(input.trashItemIds);
 
   if (input.mode === "selected") {
-    if (trashItemIds.length === 0) return [];
-
-    const result = await queryDb<PurgeRunCandidateRow>(
+    if (fileTrashIds.length === 0) return [];
+    const result = await queryDb<PurgeCandidateRow>(
       `SELECT t.id,
               t.attachment_id,
               t.company_id,
@@ -316,59 +448,35 @@ async function listSystemStoragePurgeRunCandidates(input: SystemStoragePurgeRunI
           )
         ORDER BY purge_due_at ASC, t.deleted_at ASC
         LIMIT $3`,
-      [trashItemIds, COMPANY_FILE_TRASH_RETENTION_DAYS, safeLimit, WORKORDER_BUNDLE_DELETE_REASON],
+      [fileTrashIds, COMPANY_FILE_TRASH_RETENTION_DAYS, safeLimit, WORKORDER_BUNDLE_DELETE_REASON],
     );
-
     return result.rows;
   }
 
-  const result = await queryDb<PurgeRunCandidateRow>(
-    `SELECT t.id,
-            t.attachment_id,
-            t.company_id,
-            t.company_name,
-            t.order_id,
-            COALESCE(s.title, '작업지시서명 없음') AS workorder_title,
-            t.original_name,
-            t.mime_type,
-            t.storage_key,
-            t.thumbnail_key,
-            t.size_bytes,
-            t.deleted_at,
-            (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) AS purge_due_at,
-            t.purge_status,
-            t.last_purge_error
-       FROM attachment_trash_items t
-       LEFT JOIN spec_sheets s ON s.id = t.order_id
-      WHERE t.restored_at IS NULL
-        AND t.purged_at IS NULL
-        AND (
-          s.id IS NULL
-          OR COALESCE(s.delete_status, 'active') <> 'purged'
-          OR t.purge_status = 'purge_requested'
-        )
-        AND (s.id IS NULL OR s.purged_at IS NULL OR t.purge_status = 'purge_requested')
-        AND (
-          t.order_id IS NULL
-          OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true)
-          OR COALESCE(t.delete_reason, '') <> $3
-          OR (COALESCE(s.delete_status, 'active') = 'purged' AND t.purge_status = 'purge_requested')
-        )
-        AND (
-          t.purge_status = 'purge_requested'
-          OR (t.purge_status = 'pending' AND (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) <= now())
-          OR t.last_purge_error IS NOT NULL
-        )
-      ORDER BY purge_due_at ASC, t.deleted_at ASC
-      LIMIT $1`,
-    [safeLimit, COMPANY_FILE_TRASH_RETENTION_DAYS, WORKORDER_BUNDLE_DELETE_REASON],
-  );
-
-  return result.rows;
+  return listFilePurgeCandidateRows(safeLimit);
 }
 
-async function purgeSystemStorageCandidate(
-  candidate: PurgeRunCandidateRow,
+async function listSystemStoragePurgeRunCandidates(input: SystemStoragePurgeRunInput): Promise<SystemStoragePurgeRunCandidate[]> {
+  const allIds = normalizeTrashItemIds(input.trashItemIds);
+  const fileTrashIds = parseFileTrashIds(allIds);
+  const workOrderIds = parseWorkOrderCandidateIds(allIds);
+  const safeLimit = Math.min(Math.max(Math.trunc(input.limit ?? 100), 1), 200);
+
+  const [fileRows, workOrderRows] = await Promise.all([
+    listFilePurgeRunCandidates(input, fileTrashIds),
+    input.mode === "selected"
+      ? listWorkOrderPurgeCandidateRows({ limit: safeLimit, includeFuturePending: true, workOrderIds })
+      : listWorkOrderPurgeCandidateRows({ limit: safeLimit, includeFuturePending: false }),
+  ]);
+
+  return [
+    ...workOrderRows.map((row) => ({ ...row, candidateKind: "workorder" as const })),
+    ...fileRows.map((row) => ({ ...row, candidateKind: "file" as const })),
+  ];
+}
+
+async function purgeSystemFileCandidate(
+  candidate: PurgeCandidateRow,
   actorId: string | null | undefined,
 ): Promise<SystemStoragePurgeRunItemResult> {
   try {
@@ -400,6 +508,103 @@ async function purgeSystemStorageCandidate(
       errorMessage,
     };
   }
+}
+
+async function purgeSystemWorkOrderCandidate(
+  candidate: WorkOrderPurgeCandidateRow,
+  actorId: string | null | undefined,
+): Promise<SystemStoragePurgeRunItemResult> {
+  try {
+    const result = await queryDb<{ affected_count: string | number }>(
+      `WITH target_workorder AS (
+         SELECT id
+           FROM spec_sheets
+          WHERE id = $1
+            AND (deleted_at IS NOT NULL OR COALESCE(is_active, true) = false)
+            AND COALESCE(delete_status, 'active') <> 'purged'
+            AND purged_at IS NULL
+       ), marked_workorder AS (
+         UPDATE spec_sheets
+            SET is_active = false,
+                delete_status = 'purged',
+                purge_status = 'purged',
+                purge_requested_at = COALESCE(purge_requested_at, now()),
+                purged_at = now(),
+                purged_by = $2,
+                updated_at = now()
+          WHERE id IN (SELECT id FROM target_workorder)
+          RETURNING id
+       ), bundle_trash AS (
+         SELECT t.id, t.attachment_id
+           FROM attachment_trash_items t
+          WHERE t.order_id = $1
+            AND t.delete_reason = $3
+            AND t.restored_at IS NULL
+            AND t.purged_at IS NULL
+            AND t.purge_status IN ('pending', 'purge_requested')
+       ), marked_attachments AS (
+         UPDATE attachments
+            SET is_active = false,
+                purge_after_at = now(),
+                updated_at = now()
+          WHERE id IN (SELECT attachment_id FROM bundle_trash)
+          RETURNING id
+       ), marked_trash AS (
+         UPDATE attachment_trash_items
+            SET purge_status = 'purge_requested',
+                purge_after_at = now(),
+                updated_at = now()
+          WHERE id IN (SELECT id FROM bundle_trash)
+          RETURNING id
+       ), marked_memos AS (
+         UPDATE memos
+            SET is_active = false,
+                delete_status = 'purged',
+                purge_status = 'purged',
+                purge_requested_at = COALESCE(purge_requested_at, now()),
+                purged_at = now(),
+                purged_by = $2,
+                updated_at = now()
+          WHERE order_id = $1
+            AND COALESCE(delete_status, 'active') <> 'purged'
+          RETURNING id
+       )
+       SELECT COUNT(*)::text AS affected_count
+         FROM marked_workorder`,
+      [candidate.id, actorId ?? "system-storage-purge", WORKORDER_BUNDLE_DELETE_REASON],
+    );
+
+    const affectedCount = toNumber(result.rows[0]?.affected_count ?? 0);
+    if (affectedCount === 0) {
+      throw new Error("WORKORDER_PURGE_CANDIDATE_NOT_FOUND");
+    }
+
+    return {
+      trashItemId: `${WORKORDER_CANDIDATE_PREFIX}${candidate.id}`,
+      attachmentId: null,
+      storageKey: null,
+      thumbnailKey: null,
+      status: "purged",
+    };
+  } catch (error) {
+    return {
+      trashItemId: `${WORKORDER_CANDIDATE_PREFIX}${candidate.id}`,
+      attachmentId: null,
+      storageKey: null,
+      thumbnailKey: null,
+      status: "failed",
+      errorMessage: getPurgeErrorMessage(error),
+    };
+  }
+}
+
+async function purgeSystemStorageCandidate(
+  candidate: SystemStoragePurgeRunCandidate,
+  actorId: string | null | undefined,
+): Promise<SystemStoragePurgeRunItemResult> {
+  return candidate.candidateKind === "workorder"
+    ? purgeSystemWorkOrderCandidate(candidate, actorId)
+    : purgeSystemFileCandidate(candidate, actorId);
 }
 
 export async function runSystemStoragePurge(input: SystemStoragePurgeRunInput): Promise<SystemStoragePurgeRunResult> {

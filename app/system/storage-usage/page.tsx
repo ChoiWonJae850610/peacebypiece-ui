@@ -22,7 +22,7 @@ export default async function SystemStorageUsagePage() {
                   R2 실제 삭제 후보
                 </h1>
                 <p className="max-w-3xl text-sm leading-6 text-stone-600">
-                  전 고객 공통 30일 휴지통 정책에 따라 삭제 예정일이 도래한 파일을 확인합니다. 이 화면에서 후보를 확인한 뒤 선택 항목 또는 전체 도래 항목을 Worker 기반으로 실제 삭제할 수 있습니다.
+                  전 고객 공통 30일 휴지통 정책에 따라 파일과 작업지시서 삭제 후보를 확인합니다. 작업지시서는 먼저 DB 삭제 완료 상태로 전환하고, 연결 파일은 Worker 기반 R2 purge 후보로 이어집니다.
                 </p>
               </div>
             </div>
@@ -44,7 +44,7 @@ export default async function SystemStorageUsagePage() {
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
             <p className="text-xs font-semibold text-stone-500">삭제 후보</p>
             <p className="mt-3 text-2xl font-semibold text-stone-950">{summary.candidateCount}개</p>
-            <p className="mt-2 text-xs leading-5 text-stone-600">영구삭제 요청 {summary.requestedCount}개 · 대기 {summary.pendingCount}개</p>
+            <p className="mt-2 text-xs leading-5 text-stone-600">파일 {summary.fileCandidateCount}개 · 작업지시서 {summary.workorderCandidateCount}개</p>
           </article>
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
             <p className="text-xs font-semibold text-stone-500">삭제 실패</p>
@@ -54,7 +54,7 @@ export default async function SystemStorageUsagePage() {
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
             <p className="text-xs font-semibold text-stone-500">원본 용량</p>
             <p className="mt-3 text-2xl font-semibold text-stone-950">{summary.totalOriginalSizeLabel}</p>
-            <p className="mt-2 text-xs leading-5 text-stone-600">후보 원본 기준 · 고객사 {summary.companyCount}곳</p>
+            <p className="mt-2 text-xs leading-5 text-stone-600">파일 후보와 작업지시서 묶음 첨부 기준 · 고객사 {summary.companyCount}곳</p>
           </article>
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
             <p className="text-xs font-semibold text-stone-500">썸네일 객체</p>
