@@ -96,6 +96,8 @@ export type AdminTrashFileItem = {
   fileIcon: string;
   fileSizeBytes: number;
   fileSizeLabel: string;
+  thumbnailUrl: string | null;
+  previewUrl: string | null;
   deletedAt: string;
   deletedBy: string;
   purgeAfterAt: string;

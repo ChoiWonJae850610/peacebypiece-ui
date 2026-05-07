@@ -150,6 +150,8 @@ type AdminTrashRow = DbQueryResultRow & {
   original_name: string | null;
   mime_type: string | null;
   size_bytes: string | number | null;
+  storage_key: string | null;
+  thumbnail_key: string | null;
   deleted_at: string | Date | null;
   deleted_by: string | null;
   delete_reason: string | null;
@@ -349,6 +351,8 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
               t.original_name,
               t.mime_type,
               t.size_bytes,
+              t.storage_key,
+              t.thumbnail_key,
               t.deleted_at,
               t.deleted_by,
               t.delete_reason,
@@ -435,6 +439,8 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
       fileIcon: getFileIcon(row.mime_type, fileName),
       fileSizeBytes: sizeBytes,
       fileSizeLabel: formatBytes(sizeBytes),
+      thumbnailUrl: createAttachmentFilePreviewUrl(row.thumbnail_key),
+      previewUrl: createAttachmentFilePreviewUrl(row.storage_key),
       deletedAt: formatDateTime(row.deleted_at),
       deletedBy: row.deleted_by || "미지정",
       purgeAfterAt: formatDate(row.purge_after_at),

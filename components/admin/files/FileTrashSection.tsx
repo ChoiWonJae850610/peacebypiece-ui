@@ -47,6 +47,8 @@ type UnifiedTrashRow =
       sizeLabel: string;
       visualLabel: string;
       visualTone: "workorder" | "image" | "pdf" | "file";
+      thumbnailUrl: string | null;
+      previewUrl: string | null;
       restorePolicyLabel: string;
       restorePolicy: "workorder_bundle";
       canRestore: true;
@@ -68,6 +70,8 @@ type UnifiedTrashRow =
       sizeLabel: string;
       visualLabel: string;
       visualTone: "workorder" | "image" | "pdf" | "file";
+      thumbnailUrl: string | null;
+      previewUrl: string | null;
       restorePolicyLabel: string;
       restorePolicy: AdminTrashFileItem["restorePolicy"];
       canRestore: boolean;
@@ -201,11 +205,14 @@ function TrashItemVisual({
   label,
   tone,
   compact = false,
+  thumbnailUrl,
 }: {
   label: string;
   tone: "workorder" | "image" | "pdf" | "file";
   compact?: boolean;
+  thumbnailUrl?: string | null;
 }) {
+  const sizeClass = compact ? "h-8 w-8 text-[9px]" : "h-11 w-11 text-[10px]";
   const toneClass =
     tone === "workorder"
       ? "border-stone-300 bg-stone-950 text-white"
@@ -215,9 +222,26 @@ function TrashItemVisual({
           ? "border-red-100 bg-red-50 text-red-600"
           : "border-stone-200 bg-stone-50 text-stone-600";
 
+  if (tone === "image" && thumbnailUrl) {
+    return (
+      <span
+        className={`flex shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 ${sizeClass} shadow-sm`}
+        aria-hidden="true"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={thumbnailUrl}
+          alt=""
+          className="h-full w-full object-cover"
+          loading="lazy"
+        />
+      </span>
+    );
+  }
+
   return (
     <span
-      className={`flex shrink-0 items-center justify-center rounded-2xl border ${toneClass} ${compact ? "h-8 w-8 text-[9px]" : "h-11 w-11 text-[10px]"} font-bold shadow-sm`}
+      className={`flex shrink-0 items-center justify-center rounded-2xl border ${toneClass} ${sizeClass} font-bold shadow-sm`}
       aria-hidden="true"
     >
       {label}
@@ -264,6 +288,8 @@ function createUnifiedRows(input: {
     sizeLabel: "-",
     visualLabel: getTrashVisualInfo({ kind: "workorder" }).label,
     visualTone: getTrashVisualInfo({ kind: "workorder" }).tone,
+    thumbnailUrl: null,
+    previewUrl: null,
     restorePolicyLabel: t(
       "filesList.restorePolicies.workorderBundle",
       "작업지시서 단위 처리",
@@ -306,6 +332,8 @@ function createUnifiedRows(input: {
     sizeLabel: item.fileSizeLabel,
     visualLabel: visualInfo.label,
     visualTone: visualInfo.tone,
+    thumbnailUrl: item.thumbnailUrl,
+    previewUrl: item.previewUrl,
     restorePolicyLabel: item.restorePolicyLabel,
     restorePolicy: item.restorePolicy,
     canRestore: item.canRestore,
@@ -721,6 +749,7 @@ export default function FileTrashSection({
               <TrashItemVisual
                 label={detailRow.visualLabel}
                 tone={detailRow.visualTone}
+                thumbnailUrl={detailRow.thumbnailUrl || detailRow.previewUrl}
               />
               <div className="min-w-0">
                 <p
@@ -737,6 +766,17 @@ export default function FileTrashSection({
                 </p>
               </div>
             </div>
+
+            {detailRow.kind === "attachment" && detailRow.previewUrl ? (
+              <a
+                href={detailRow.previewUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="block rounded-2xl border border-stone-200 bg-white px-4 py-3 text-xs font-semibold text-stone-700 shadow-sm transition hover:bg-stone-50"
+              >
+                파일 미리보기 열기
+              </a>
+            ) : null}
             {detailRow.kind === "workorder" ? (
               <WorkOrderStageInline
                 statusLabel={detailRow.sourceItem.statusLabel}
@@ -889,6 +929,7 @@ export default function FileTrashSection({
                 <TrashItemVisual
                   label={row.visualLabel}
                   tone={row.visualTone}
+                  thumbnailUrl={row.thumbnailUrl || row.previewUrl}
                   compact
                 />
                 <div className="min-w-0">
