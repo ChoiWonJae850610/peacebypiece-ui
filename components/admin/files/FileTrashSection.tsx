@@ -602,18 +602,35 @@ export default function FileTrashSection({
               </div>
             </div>
             <div className="grid gap-2 md:grid-cols-2">
-              {[
-                [t("filesList.columns.type", "유형"), detailRow.typeLabel],
-                [t("filesList.columns.size", "용량"), detailRow.sizeLabel],
-                [
-                  t("filesList.columns.deletedAt", "삭제일시"),
-                  detailRow.deletedAt,
-                ],
-                [
-                  t("filesList.columns.restorePolicy", "복구정책"),
-                  detailRow.restorePolicyLabel,
-                ],
-              ].map(([label, value]) => (
+              {(detailRow.kind === "workorder"
+                ? [
+                    [t("filesList.columns.type", "유형"), detailRow.typeLabel],
+                    [t("filesList.columns.status", "현재 단계"), detailRow.sourceItem.statusLabel],
+                    [t("filesList.attachmentCount", "첨부파일"), detailRow.sourceItem.attachmentSummaryLabel],
+                    [t("filesList.memoCount", "메모"), detailRow.sourceItem.memoSummaryLabel],
+                    [
+                      t("filesList.columns.deletedAt", "삭제일시"),
+                      detailRow.deletedAt,
+                    ],
+                    [
+                      t("filesList.columns.restorePolicy", "복구정책"),
+                      detailRow.restorePolicyLabel,
+                    ],
+                  ]
+                : [
+                    [t("filesList.columns.type", "유형"), detailRow.typeLabel],
+                    [t("filesList.columns.size", "용량"), detailRow.sizeLabel],
+                    [t("filesList.columns.workorder", "작업지시서"), detailRow.workorderTitle],
+                    [
+                      t("filesList.columns.deletedAt", "삭제일시"),
+                      detailRow.deletedAt,
+                    ],
+                    [
+                      t("filesList.columns.restorePolicy", "복구정책"),
+                      detailRow.restorePolicyLabel,
+                    ],
+                  ]
+              ).map(([label, value]) => (
                 <div
                   key={label}
                   className="rounded-2xl border border-stone-200 bg-white px-4 py-3"
@@ -731,24 +748,11 @@ export default function FileTrashSection({
                 </p>
                 <p
                   className={`truncate text-sm font-semibold ${row.kind === "workorder" ? "text-stone-950" : "text-stone-800"}`}
+                  title={row.targetLabel}
                 >
                   {row.isGroupedAttachment ? "└ " : ""}
                   {row.targetLabel}
                 </p>
-                {row.kind === "workorder" ? (
-                  <div className="mt-1 space-y-0.5 text-[10px] text-stone-500">
-                    <p>{row.sourceItem.statusLabel}</p>
-                    <p>{row.sourceItem.memoSummaryLabel}</p>
-                  </div>
-                ) : null}
-                {row.isGroupedAttachment ? (
-                  <p className="mt-1 text-[10px] text-stone-400">
-                    {t(
-                      "filesList.groupedAttachmentHint",
-                      "작업지시서 대표 row에서 처리할 파일",
-                    )}
-                  </p>
-                ) : null}
               </div>
             ),
           },
@@ -774,6 +778,7 @@ export default function FileTrashSection({
                 </p>
                 <p
                   className={`truncate text-sm ${row.kind === "workorder" ? "font-semibold text-stone-800" : "text-stone-700"}`}
+                  title={row.workorderTitle}
                 >
                   {row.workorderTitle}
                 </p>

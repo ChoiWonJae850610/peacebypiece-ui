@@ -338,14 +338,18 @@ export default function FileStorageSummary({
   onRefresh,
 }: FileStorageSummaryProps) {
   const t = useAdminTranslation();
+  const attachmentCard = usageCards[1];
+  const trashCard = usageCards[2];
   const attachmentCount = translateStorageValue(
-    getUsageCardValue(usageCards, 1, "0개"),
+    attachmentCard?.value ?? "0개",
     t,
   );
+  const attachmentSizeLabel = attachmentCard?.description || "0MB 사용";
   const trashCount = translateStorageValue(
-    getUsageCardValue(usageCards, 2, "0개"),
+    trashCard?.value ?? "0개",
     t,
   );
+  const trashSizeLabel = trashCard?.description || "0MB 보관";
   const statusLabel = translateStorageStatus(
     usageSummary.statusTone,
     usageSummary.statusLabel,
@@ -354,30 +358,20 @@ export default function FileStorageSummary({
 
   const statusItems: FileStatusItem[] = [
     {
-      label: t("filesSummary.attachments", "전체 첨부파일"),
-      value: attachmentCount,
-      description: usageSummary.usedLabel,
-    },
-    {
       label: t("filesSummary.activeFiles", "사용중 파일"),
       value: attachmentCount,
-      description: "휴지통 제외 기준",
+      description: attachmentSizeLabel,
     },
     {
-      label: t("filesSummary.trash", "휴지통"),
+      label: t("filesSummary.trashFiles", "휴지통 파일"),
       value: trashCount,
-      description: trashCount === "0개" ? "정리 항목 없음" : "복구/영구삭제 필요",
+      description: trashCount === "0개" ? "0MB 보관" : trashSizeLabel,
       tone: trashCount === "0개" ? "neutral" : "caution",
     },
     {
       label: t("filesSummary.largeFiles", "대용량 파일"),
       value: "검토 예정",
-      description: "10MB 이상 기준은 후속 연결",
-    },
-    {
-      label: t("filesSummary.cleanupNeeded", "정리 필요"),
-      value: "0개",
-      description: "삭제 실패·보관기간 초과",
+      description: "10MB 이상 기준",
     },
   ];
 
