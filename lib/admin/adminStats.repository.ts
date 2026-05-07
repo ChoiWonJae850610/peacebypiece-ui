@@ -37,7 +37,14 @@ type FactoryPerformanceRow = Record<string, unknown> & {
   due_delay_count: string | number | null;
   quality_target_count: string | number | null;
   quality_issue_count: string | number | null;
+  due_delay_examples: string | null;
+  quality_issue_examples: string | null;
 };
+
+function splitAdminStatsExamples(value: string | null | undefined): string[] {
+  if (!value) return [];
+  return value.split("|||").map((item) => item.trim()).filter(Boolean).slice(0, 3);
+}
 
 function toAdminRate(numerator: number, denominator: number): number | null {
   if (!Number.isFinite(numerator) || !Number.isFinite(denominator) || denominator <= 0) return null;
@@ -79,6 +86,8 @@ function buildAdminFactoryPerformance(rows: FactoryPerformanceRow[]): AdminStats
       qualityIssueRate: toAdminRate(qualityIssueCount, qualityTargetCount),
       qualityIssueCount,
       qualityTargetCount,
+      dueDelayExamples: splitAdminStatsExamples(row.due_delay_examples),
+      qualityIssueExamples: splitAdminStatsExamples(row.quality_issue_examples),
     };
   });
 }
@@ -307,7 +316,15 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
                     AND o.status <> 'completed'
                 )::text AS due_delay_count,
                 COUNT(*)::text AS quality_target_count,
-                COUNT(*) FILTER (WHERE s.status = 'rejected' OR COALESCE(s.is_rework, false) = true)::text AS quality_issue_count
+                COUNT(*) FILTER (WHERE s.status = 'rejected' OR COALESCE(s.is_rework, false) = true)::text AS quality_issue_count,
+                STRING_AGG(DISTINCT COALESCE(NULLIF(s.title, ''), NULLIF(s.payload->>'name', ''), NULLIF(s.payload->>'productName', ''), '작업지시서 미지정'), '|||')
+                  FILTER (
+                    WHERE COALESCE(o.due_date, '') ~ '^\\d{4}-\\d{2}-\\d{2}$'
+                      AND o.due_date::date < CURRENT_DATE
+                      AND o.status <> 'completed'
+                  ) AS due_delay_examples,
+                STRING_AGG(DISTINCT COALESCE(NULLIF(s.title, ''), NULLIF(s.payload->>'name', ''), NULLIF(s.payload->>'productName', ''), '작업지시서 미지정'), '|||')
+                  FILTER (WHERE s.status = 'rejected' OR COALESCE(s.is_rework, false) = true) AS quality_issue_examples
            FROM orders o
            LEFT JOIN spec_sheets s ON s.id = o.spec_sheet_id
           WHERE o.company_id = $1

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ClipboardEvent, type KeyboardEvent } from "react";
 import Link from "next/link";
 
 import { AdminCard } from "@/components/admin/layout/AdminCard";
@@ -84,21 +84,28 @@ function CurrentSummaryCard({ label, value, description, subValue }: { label: st
   );
 }
 
-function SmallMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl border border-stone-100 bg-stone-50 px-4 py-3">
-      <p className="text-xs font-semibold text-stone-500">{label}</p>
-      <p className="mt-2 text-lg font-bold text-stone-950">{value}</p>
-    </div>
-  );
-}
-
 export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashboardProps) {
   const t = useAdminTranslation();
   const pt = (key: string, fallback: string) => t(`dashboardPage.${key}`, fallback);
   const [roundFilter, setRoundFilter] = useState<RoundFilterKey>("first");
   const [customStartDate, setCustomStartDate] = useState(stats.selectedPeriodRange.isCustom ? stats.selectedPeriodRange.startDate : "");
   const [customEndDate, setCustomEndDate] = useState(stats.selectedPeriodRange.isCustom ? stats.selectedPeriodRange.endDate : "");
+  const todayDateValue = new Date().toISOString().slice(0, 10);
+  const preventDateTextInput = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== "Tab") event.preventDefault();
+  };
+  const preventDatePaste = (event: ClipboardEvent<HTMLInputElement>) => event.preventDefault();
+  const updateCustomStartDate = (value: string) => {
+    if (!value || value > todayDateValue) return;
+    setCustomStartDate(value);
+    if (customEndDate && customEndDate < value) setCustomEndDate("");
+  };
+  const updateCustomEndDate = (value: string) => {
+    if (!value || value > todayDateValue) return;
+    if (customStartDate && value < customStartDate) return;
+    if (!customStartDate && value < todayDateValue) return;
+    setCustomEndDate(value);
+  };
 
   const translatedStats = {
     ...stats,
@@ -147,9 +154,11 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   const activePeriodLabel = stats.selectedPeriodRange.label;
   const isCustomPeriodReady = Boolean(customStartDate && customEndDate);
   const isCustomPeriodOrderValid = !isCustomPeriodReady || customStartDate <= customEndDate;
-  const isCustomPeriodValid = isCustomPeriodReady && isCustomPeriodOrderValid;
+  const isCustomPeriodNotFuture = (!customStartDate || customStartDate <= todayDateValue) && (!customEndDate || customEndDate <= todayDateValue);
+  const isCustomEndSelectable = !customEndDate || (customStartDate ? customEndDate >= customStartDate : customEndDate >= todayDateValue);
+  const isCustomPeriodValid = isCustomPeriodReady && isCustomPeriodOrderValid && isCustomPeriodNotFuture && isCustomEndSelectable;
   const customPeriodHref = isCustomPeriodValid ? `/admin/dashboard?period=custom&startDate=${customStartDate}&endDate=${customEndDate}` : "/admin/dashboard?period=30d";
-  const customPeriodMessage = !isCustomPeriodReady ? "시작일과 종료일을 선택하면 적용할 수 있습니다." : !isCustomPeriodOrderValid ? "종료일은 시작일과 같거나 이후 날짜여야 합니다." : "직접 선택 기간을 적용할 수 있습니다.";
+  const customPeriodMessage = !isCustomPeriodOrderValid ? "종료일은 시작일과 같거나 이후 날짜여야 합니다." : !isCustomPeriodNotFuture ? "오늘 이후 날짜는 선택할 수 없습니다." : customEndDate && !isCustomEndSelectable ? "종료일은 시작일과 같거나 이후 날짜여야 합니다." : "";
   const storageUsePercent = stats.currentOverview.storageLimitBytes > 0 ? Math.round((stats.currentOverview.storageUsedBytes / stats.currentOverview.storageLimitBytes) * 1000) / 10 : 0;
   const roundFilterLabels: Record<RoundFilterKey, string> = {
     first: "1차",
@@ -185,14 +194,30 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     </AdminCard>
   );
 
+  const buildFactoryMetricTooltip = (item: {
+    label: string;
+    productionCount: number;
+    dueDelayCount: number;
+    dueDateTargetCount: number;
+    qualityIssueCount: number;
+    qualityTargetCount: number;
+    dueDelayExamples?: string[];
+    qualityIssueExamples?: string[];
+  }) => {
+    const dueExamples = item.dueDelayExamples?.slice(0, 3) ?? [];
+    const qualityExamples = item.qualityIssueExamples?.slice(0, 3) ?? [];
+    const lines = [
+      `${item.label} · 제작 ${formatCount(item.productionCount)}`,
+      `납기 지연 ${formatCount(item.dueDelayCount)} / ${formatCount(item.dueDateTargetCount)} 기준`,
+      dueExamples.length > 0 ? `납기 지연 작업: ${dueExamples.join(", ")}` : "납기 지연 작업: 없음",
+      `검수/불량 후보 ${formatCount(item.qualityIssueCount)} / ${formatCount(item.qualityTargetCount)} 기준`,
+      qualityExamples.length > 0 ? `검수/불량 후보: ${qualityExamples.join(", ")}` : "검수/불량 후보: 없음",
+    ];
+    return lines.join("\n");
+  };
+
   return (
     <>
-      <section className="rounded-[28px] border border-stone-100 bg-white px-5 py-5 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-400">Analytics</p>
-        <h2 className="mt-2 text-2xl font-bold text-stone-950">통계정보</h2>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-500">현재 시점 요약과 기간별 생산 분석을 분리해 확인합니다.</p>
-      </section>
-
       {!hasVisibleStatsData ? (
         <AdminCard className="border-dashed border-amber-200 bg-amber-50/55 px-5 py-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -211,13 +236,6 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
       ) : null}
 
       <section>
-        <div className="mb-3 flex items-end justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Current snapshot</p>
-            <h2 className="mt-1 text-lg font-bold text-stone-950">현재 시점 요약</h2>
-          </div>
-          <p className="text-xs font-semibold text-stone-400">기간 필터 미적용</p>
-        </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <CurrentSummaryCard label="누적 생산" value={formatCount(stats.currentOverview.totalProducedCount)} description={`리오더 ${formatCount(totalReorderCount)}`} />
           <CurrentSummaryCard label="누적 납기 지연율" value={formatPercent(stats.currentOverview.dueDelayRate)} description={`${formatCount(stats.currentOverview.dueDelayCount)} / ${formatCount(stats.currentOverview.dueDateTargetCount)} 기준`} />
@@ -230,9 +248,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         <div className="flex flex-wrap items-start justify-between gap-4 border-b border-stone-100 pb-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Period analysis</p>
-            <h2 className="mt-2 text-lg font-semibold text-stone-950">기간별 분석 범위</h2>
-            <p className="mt-1 text-xs font-semibold text-stone-500">작업 흐름, 리오더, 생산품유형, 업체 성과에 적용합니다.</p>
-            <p className="mt-1 text-xs font-semibold text-[var(--admin-theme-surface)]">현재 범위: {activePeriodLabel}</p>
+            <h2 className="mt-2 text-lg font-semibold text-stone-950">기간별 분석</h2>
           </div>
           <div className="flex flex-wrap justify-end gap-2">
             {activePeriodOptions.map((item) => (
@@ -250,11 +266,11 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_auto]">
           <label className="grid gap-1 text-xs font-semibold text-stone-500">
             시작일
-            <input type="date" value={customStartDate} onChange={(event) => setCustomStartDate(event.target.value)} className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-semibold text-stone-700 outline-none focus:border-stone-400" />
+            <input type="date" value={customStartDate} max={todayDateValue} onKeyDown={preventDateTextInput} onPaste={preventDatePaste} onChange={(event) => updateCustomStartDate(event.target.value)} className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-semibold text-stone-700 outline-none focus:border-stone-400" />
           </label>
           <label className="grid gap-1 text-xs font-semibold text-stone-500">
             종료일
-            <input type="date" value={customEndDate} onChange={(event) => setCustomEndDate(event.target.value)} className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-semibold text-stone-700 outline-none focus:border-stone-400" />
+            <input type="date" value={customEndDate} min={customStartDate || todayDateValue} max={todayDateValue} onKeyDown={preventDateTextInput} onPaste={preventDatePaste} onChange={(event) => updateCustomEndDate(event.target.value)} className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-semibold text-stone-700 outline-none focus:border-stone-400" />
           </label>
           <div className="flex items-end gap-2">
             <Link
@@ -266,7 +282,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
             </Link>
           </div>
         </div>
-        <p className={`mt-2 text-xs font-semibold ${isCustomPeriodValid ? "text-stone-500" : "text-amber-700"}`}>{customPeriodMessage}</p>
+        {customPeriodMessage ? <p className="mt-2 text-xs font-semibold text-amber-700">{customPeriodMessage}</p> : null}
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
@@ -340,24 +356,20 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
               <span>납기 지연율</span>
               <span>검수/불량률</span>
             </div>
-            {translatedStats.factoryPerformance.length > 0 ? translatedStats.factoryPerformance.slice(0, 5).map((item) => (
-              <div key={item.label} className="grid grid-cols-[1.2fr_0.8fr_0.8fr] border-t border-stone-100 px-4 py-3 text-xs font-semibold text-stone-700">
-                <span className="truncate pr-3">{item.label} · {formatCount(item.productionCount)}</span>
-                <span>{formatPercent(item.dueDelayRate)}</span>
-                <span>{formatPercent(item.qualityIssueRate)}</span>
-              </div>
-            )) : (
+            {translatedStats.factoryPerformance.length > 0 ? translatedStats.factoryPerformance.slice(0, 5).map((item) => {
+              const tooltip = buildFactoryMetricTooltip(item);
+              return (
+                <div key={item.label} title={tooltip} className="grid grid-cols-[1.2fr_0.8fr_0.8fr] border-t border-stone-100 px-4 py-3 text-xs font-semibold text-stone-700">
+                  <span className="truncate pr-3">{item.label} · {formatCount(item.productionCount)}</span>
+                  <span className="cursor-help underline decoration-stone-300 decoration-dotted underline-offset-4">{formatPercent(item.dueDelayRate)}</span>
+                  <span className="cursor-help underline decoration-stone-300 decoration-dotted underline-offset-4">{formatPercent(item.qualityIssueRate)}</span>
+                </div>
+              );
+            }) : (
               <p className="border-t border-stone-100 px-4 py-4 text-sm font-semibold text-stone-500">업체 성과 데이터 없음</p>
             )}
           </div>
         </AdminCard>
-      </section>
-
-      <section className="grid gap-3 md:grid-cols-4">
-        <SmallMetric label="검토 대기" value={formatCount(translatedStats.keyMetrics.find((item) => item.key === "reviewWaiting")?.value)} />
-        <SmallMetric label="검수 대기" value={formatCount(translatedStats.keyMetrics.find((item) => item.key === "inspectionWaiting")?.value)} />
-        <SmallMetric label="납기 후보" value={formatCount(stats.currentOverview.dueDelayCount)} />
-        <SmallMetric label="검수/불량 후보" value={formatCount(stats.currentOverview.qualityIssueCount)} />
       </section>
     </>
   );

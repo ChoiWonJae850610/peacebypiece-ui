@@ -26,6 +26,8 @@ export type AdminStatsFactoryPerformance = {
   qualityIssueRate: number | null;
   qualityIssueCount: number;
   qualityTargetCount: number;
+  dueDelayExamples: string[];
+  qualityIssueExamples: string[];
 };
 
 export type AdminStatsRoundKey = "first" | "second" | "third";
