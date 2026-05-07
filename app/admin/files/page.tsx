@@ -191,7 +191,7 @@ export default function AdminFilesPage() {
       );
     } else if (input.workOrderCount > 0) {
       messages.push(
-        `작업지시서 ${input.workOrderCount}건을 영구삭제 완료 상태로 변경했습니다.`,
+        `작업지시서 ${input.workOrderCount}건을 영구삭제 요청했습니다.`,
       );
     } else if (input.fileCount > 0) {
       messages.push(`파일 ${input.fileCount}개를 영구삭제 요청했습니다.`);
@@ -371,7 +371,7 @@ export default function AdminFilesPage() {
       const payload = await purgeWorkOrderById(workOrderId);
       setActionMessage(
         payload.message ||
-          "작업지시서 1건을 영구삭제 완료 상태로 변경했습니다.",
+          "작업지시서 1건을 영구삭제 요청했습니다.",
       );
       setSelectedWorkOrderIds((currentIds) =>
         currentIds.filter((id) => id !== workOrderId),

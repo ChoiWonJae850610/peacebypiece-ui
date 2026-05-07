@@ -797,7 +797,7 @@ export async function restoreWorkOrderTrashBundle(
          FROM attachment_trash_items t
         WHERE t.order_id = $1
           AND t.delete_reason = $2
-          AND t.purge_status = 'pending'
+          AND t.purge_status IN ('pending', 'purge_requested')
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
      ), restored_attachments AS (
@@ -906,11 +906,11 @@ export async function purgeWorkOrderTrashBundle(
      ), marked_workorder AS (
        UPDATE spec_sheets
           SET is_active = false,
-              delete_status = 'purged',
-              purge_status = 'purged',
+              delete_status = 'purge_requested',
+              purge_status = 'purge_requested',
               purge_requested_at = COALESCE(purge_requested_at, now()),
-              purged_at = now(),
-              purged_by = $2,
+              purged_at = NULL,
+              purged_by = NULL,
               updated_at = now()
         WHERE id IN (SELECT id FROM target_workorder)
         RETURNING id
@@ -939,11 +939,11 @@ export async function purgeWorkOrderTrashBundle(
      ), marked_memos AS (
        UPDATE memos
           SET is_active = false,
-              delete_status = 'purged',
-              purge_status = 'purged',
+              delete_status = 'purge_requested',
+              purge_status = 'purge_requested',
               purge_requested_at = COALESCE(purge_requested_at, now()),
-              purged_at = now(),
-              purged_by = $2,
+              purged_at = NULL,
+              purged_by = NULL,
               updated_at = now()
         WHERE order_id = $1
           AND COALESCE(delete_status, 'active') <> 'purged'
@@ -983,8 +983,8 @@ export async function purgeWorkOrderTrashBundle(
     reason: "OK",
     message:
       trashCount > 0 || memoCount > 0
-        ? `작업지시서 1건을 영구삭제 완료 상태로 변경하고 연결 첨부 ${trashCount}개, 메모 ${memoCount}개를 삭제 요청 상태로 표시했습니다.`
-        : "작업지시서 1건을 영구삭제 완료 상태로 변경했습니다.",
+        ? `작업지시서 1건을 영구삭제 요청 상태로 변경하고 연결 첨부 ${trashCount}개, 메모 ${memoCount}개를 삭제 요청 상태로 표시했습니다.`
+        : "작업지시서 1건을 영구삭제 요청 상태로 변경했습니다.",
   };
 }
 

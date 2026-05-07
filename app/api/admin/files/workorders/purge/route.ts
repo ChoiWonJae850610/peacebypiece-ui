@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
         memoCount: result.memoCount ?? 0,
         reason: result.reason,
         message: result.message,
-        storageDeleteMode: "deferred-worker",
+        storageDeleteMode: "deferred-system-purge",
       },
       { status },
     );

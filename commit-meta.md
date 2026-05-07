@@ -1,11 +1,12 @@
-Version : 0.9.22361
-Summary : 작업지시서 삭제 후보 시스템관리자 연결 보정
-Description : 시스템관리자 실제 삭제 후보 화면에서 attachment 기반 파일 후보만 표시되던 구조에 삭제 상태 작업지시서 후보를 추가했다. 작업지시서 후보는 방금 삭제된 pending 상태에서도 목록에 표시되며, 선택 처리 시 작업지시서를 DB 삭제 완료 상태로 전환하고 연결 첨부파일은 R2 purge 요청 후보로 이어지도록 처리한다. 파일 후보의 Worker 기반 R2 삭제 흐름은 기존대로 유지한다.
+Version : 0.9.2237
+Summary : 작업지시서 휴지통 요청과 시스템 실제삭제 후보 흐름 정리
+Description : 고객관리자 저장소 화면에서 작업지시서 영구삭제를 실행할 때 즉시 삭제 완료 상태로 바꾸지 않고 영구삭제 요청 상태로 남기도록 수정했다. 작업지시서와 연결 첨부/메모는 purge_requested 상태로 전환되고, 시스템관리자 실제 삭제 후보 화면에서 최종 처리하도록 흐름을 정리했다. 작업지시서 복구는 pending뿐 아니라 purge_requested 상태의 묶음 첨부도 함께 복구할 수 있도록 보정했다.
 수정 파일 목록 :
-lib/system/storagePurgeCandidates.ts
-components/system/storage/SystemStoragePurgeCandidatesClient.tsx
-app/system/storage-usage/page.tsx
+app/admin/files/page.tsx
+app/api/admin/files/workorders/purge/route.ts
+lib/admin/adminFiles.serverActions.ts
 lib/constants/app.ts
 추가 파일 목록 :
-docs/system-workorder-purge-candidates-0.9.22361.md
+docs/storage-trash-workorder-flow-0.9.2237.md
 삭제 파일 목록 :
+없음
