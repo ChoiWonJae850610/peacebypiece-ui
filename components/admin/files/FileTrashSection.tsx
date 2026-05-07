@@ -45,6 +45,8 @@ type UnifiedTrashRow =
       workorderTitle: string;
       typeLabel: string;
       sizeLabel: string;
+      visualLabel: string;
+      visualTone: "workorder" | "image" | "pdf" | "file";
       restorePolicyLabel: string;
       restorePolicy: "workorder_bundle";
       canRestore: true;
@@ -64,6 +66,8 @@ type UnifiedTrashRow =
       workorderTitle: string;
       typeLabel: string;
       sizeLabel: string;
+      visualLabel: string;
+      visualTone: "workorder" | "image" | "pdf" | "file";
       restorePolicyLabel: string;
       restorePolicy: AdminTrashFileItem["restorePolicy"];
       canRestore: boolean;
@@ -180,6 +184,47 @@ function formatStorageSize(
   return `${bytes}${t("filesList.sizeUnit.byte", "B")}`;
 }
 
+function getTrashVisualInfo(input: {
+  kind: "workorder" | "attachment";
+  fileIcon?: string;
+  typeLabel?: string;
+}): { label: string; tone: "workorder" | "image" | "pdf" | "file" } {
+  if (input.kind === "workorder") return { label: "작지", tone: "workorder" };
+  const icon = (input.fileIcon || "").trim().toUpperCase();
+  const typeLabel = (input.typeLabel || "").trim();
+  if (icon === "IMG" || typeLabel === "디자인") return { label: "IMG", tone: "image" };
+  if (icon === "PDF" || typeLabel === "문서") return { label: "PDF", tone: "pdf" };
+  return { label: "FILE", tone: "file" };
+}
+
+function TrashItemVisual({
+  label,
+  tone,
+  compact = false,
+}: {
+  label: string;
+  tone: "workorder" | "image" | "pdf" | "file";
+  compact?: boolean;
+}) {
+  const toneClass =
+    tone === "workorder"
+      ? "border-stone-300 bg-stone-950 text-white"
+      : tone === "image"
+        ? "border-purple-100 bg-purple-50 text-purple-700"
+        : tone === "pdf"
+          ? "border-red-100 bg-red-50 text-red-600"
+          : "border-stone-200 bg-stone-50 text-stone-600";
+
+  return (
+    <span
+      className={`flex shrink-0 items-center justify-center rounded-2xl border ${toneClass} ${compact ? "h-8 w-8 text-[9px]" : "h-11 w-11 text-[10px]"} font-bold shadow-sm`}
+      aria-hidden="true"
+    >
+      {label}
+    </span>
+  );
+}
+
 function sortByDeletedAtDesc<
   T extends {
     deletedAt: string | null;
@@ -217,6 +262,8 @@ function createUnifiedRows(input: {
     workorderTitle: item.title,
     typeLabel: t("filesList.types.workorder", "작업지시서"),
     sizeLabel: "-",
+    visualLabel: getTrashVisualInfo({ kind: "workorder" }).label,
+    visualTone: getTrashVisualInfo({ kind: "workorder" }).tone,
     restorePolicyLabel: t(
       "filesList.restorePolicies.workorderBundle",
       "작업지시서 단위 처리",
@@ -240,15 +287,25 @@ function createUnifiedRows(input: {
   const createAttachmentRow = (
     item: AdminTrashFileItem,
     isGroupedAttachment: boolean,
-  ): UnifiedTrashRow => ({
+  ): UnifiedTrashRow => {
+    const typeLabel = getTrashFileType(item, t);
+    const visualInfo = getTrashVisualInfo({
+      kind: "attachment",
+      fileIcon: item.fileIcon,
+      typeLabel,
+    });
+
+    return {
     kind: "attachment",
     id: item.id,
     rowId: `attachment:${item.id}`,
     targetLabel: item.fileName,
     deletedAt: item.deletedAt,
     workorderTitle: item.workorderTitle,
-    typeLabel: getTrashFileType(item, t),
+    typeLabel,
     sizeLabel: item.fileSizeLabel,
+    visualLabel: visualInfo.label,
+    visualTone: visualInfo.tone,
     restorePolicyLabel: item.restorePolicyLabel,
     restorePolicy: item.restorePolicy,
     canRestore: item.canRestore,
@@ -258,7 +315,8 @@ function createUnifiedRows(input: {
     isSelected: selectedItemIds.includes(item.id),
     isGroupedAttachment,
     sourceItem: item,
-  });
+  };
+  };
 
   const rows: UnifiedTrashRow[] = [];
   const groupedAttachmentIds = new Set<string>();
@@ -660,11 +718,10 @@ export default function FileTrashSection({
         {detailRow ? (
           <div className="space-y-4">
             <div className="flex items-start gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-xs font-bold text-stone-700 shadow-sm">
-                {detailRow.kind === "workorder"
-                  ? "작지"
-                  : detailRow.typeLabel.slice(0, 2)}
-              </div>
+              <TrashItemVisual
+                label={detailRow.visualLabel}
+                tone={detailRow.visualTone}
+              />
               <div className="min-w-0">
                 <p
                   className="truncate text-sm font-bold text-stone-950"
@@ -822,18 +879,29 @@ export default function FileTrashSection({
             label: t("filesList.columns.target", "대상"),
             render: (row) => (
               <div
-                className={`min-w-0 ${row.isGroupedAttachment ? "pl-4" : ""}`}
+                className={`flex min-w-0 items-center gap-3 ${row.isGroupedAttachment ? "pl-4" : ""}`}
               >
-                <p className="text-[10px] text-stone-400 md:hidden">
-                  {t("filesList.columns.target", "대상")}
-                </p>
-                <p
-                  className="truncate text-sm font-medium text-stone-800"
-                  title={row.targetLabel}
-                >
-                  {row.isGroupedAttachment ? "└ " : ""}
-                  {row.targetLabel}
-                </p>
+                {row.isGroupedAttachment ? (
+                  <span className="shrink-0 text-xs font-semibold text-stone-300">
+                    └
+                  </span>
+                ) : null}
+                <TrashItemVisual
+                  label={row.visualLabel}
+                  tone={row.visualTone}
+                  compact
+                />
+                <div className="min-w-0">
+                  <p className="text-[10px] text-stone-400 md:hidden">
+                    {t("filesList.columns.target", "대상")}
+                  </p>
+                  <p
+                    className="truncate text-sm font-medium text-stone-800"
+                    title={row.targetLabel}
+                  >
+                    {row.targetLabel}
+                  </p>
+                </div>
               </div>
             ),
           },
