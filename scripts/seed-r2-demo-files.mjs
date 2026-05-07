@@ -37,6 +37,20 @@ const PRESETS = {
   large: { label: "large", maxFiles: 1200, maxTotalBytes: 2 * 1024 * 1024 * 1024 },
 };
 
+const SUPPORTED_UPLOAD_MIME_TYPES = new Set([
+  "image/png",
+  "image/jpeg",
+  "application/pdf",
+  "text/plain",
+]);
+
+const SUPPORTED_UPLOAD_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".pdf", ".txt"]);
+
+const SKIPPABLE_WORKER_ERROR_CODES = new Set([
+  "WORKER_FILE_POLICY_REJECTED",
+  "FILE_POLICY_REJECTED",
+]);
+
 const MINIMAL_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMB/ax3pPAAAAAASUVORK5CYII=",
   "base64",
@@ -179,6 +193,35 @@ function getUploadContentType(item) {
   return item.mime_type || "application/octet-stream";
 }
 
+function getStorageKeyExtension(item) {
+  return path.extname(String(item.key || item.fileName || "")).toLowerCase();
+}
+
+function isSupportedUploadItem(item) {
+  const contentType = String(getUploadContentType(item)).toLowerCase();
+  const extension = getStorageKeyExtension(item);
+  return SUPPORTED_UPLOAD_MIME_TYPES.has(contentType) && SUPPORTED_UPLOAD_EXTENSIONS.has(extension);
+}
+
+function getSkipReasonForItem(item) {
+  if (isSupportedUploadItem(item)) return null;
+  return `unsupported file policy target: ${getUploadContentType(item)} ${getStorageKeyExtension(item) || "(no extension)"}`;
+}
+
+function parseWorkerErrorCode(text) {
+  if (!text) return null;
+  try {
+    const parsed = JSON.parse(text);
+    if (parsed && typeof parsed.error === "string") return parsed.error;
+  } catch {
+    // Worker errors may not always be JSON. Fall through to text matching.
+  }
+  for (const code of SKIPPABLE_WORKER_ERROR_CODES) {
+    if (text.includes(code)) return code;
+  }
+  return null;
+}
+
 function getTargetSize(row) {
   const fallback = row.type === "design" ? 128 * 1024 : row.type === "memo" ? 64 * 1024 : 512 * 1024;
   return Math.max(Number(row.size_bytes || 0), fallback);
@@ -221,19 +264,33 @@ function createCandidateItems(rows) {
 
 function selectPresetItems(items) {
   const selected = [];
+  let selectedPrimaryCount = 0;
   let total = 0;
+  const selectedPrimaryIds = new Set();
+
   for (const item of items) {
+    const skipReason = getSkipReasonForItem(item);
+    if (skipReason) {
+      continue;
+    }
+
     if (!item.isThumbnail) {
-      if (selected.filter((entry) => !entry.isThumbnail).length >= preset.maxFiles) break;
+      if (selectedPrimaryCount >= preset.maxFiles) break;
       if (total + item.size > preset.maxTotalBytes && selected.length > 0) continue;
       selected.push(item);
+      selectedPrimaryCount += 1;
+      selectedPrimaryIds.add(item.attachmentId);
       total += item.size;
+      continue;
     }
-    if (item.isThumbnail && selected.some((entry) => entry.attachmentId === item.attachmentId.replace("#thumbnail", ""))) {
+
+    const primaryId = item.attachmentId.replace("#thumbnail", "");
+    if (selectedPrimaryIds.has(primaryId)) {
       selected.push(item);
       total += item.size;
     }
   }
+
   return selected;
 }
 
@@ -305,27 +362,73 @@ async function uploadFiles(items) {
   if (!confirmUpload && !dryRun) {
     fail("Upload requires --confirm-upload. Use --dry-run to preview without uploading.");
   }
+
+  const result = { uploaded: 0, skippedUnsupported: 0, skippedMissing: 0, skippedWorkerPolicy: 0, failed: 0, failures: [] };
+
   for (const [index, item] of items.entries()) {
     const contentType = getUploadContentType(item);
+    const skipReason = getSkipReasonForItem(item);
+    if (skipReason) {
+      result.skippedUnsupported += 1;
+      console.log(`[SKIP:UNSUPPORTED] ${item.key} (${skipReason})`);
+      continue;
+    }
+
     if (dryRun) {
       console.log(`[DRY-RUN] PUT ${item.key} (${contentType}, ${item.size} bytes)`);
       continue;
     }
-    const payload = await fs.readFile(item.localPath);
+
+    let payload;
+    try {
+      payload = await fs.readFile(item.localPath);
+    } catch (error) {
+      if (error && error.code === "ENOENT") {
+        result.skippedMissing += 1;
+        console.log(`[SKIP:MISSING] ${item.key} (${path.relative(PROJECT_ROOT, item.localPath)})`);
+        continue;
+      }
+      throw error;
+    }
+
     const url = buildWorkerUrl({ method: "PUT", key: item.key, contentType });
     const response = await fetch(url, { method: "PUT", headers: { "Content-Type": contentType }, body: payload });
     if (!response.ok) {
       const text = await response.text().catch(() => "");
-      fail(`Upload failed for ${item.key}: ${response.status} ${text}`);
+      const workerErrorCode = parseWorkerErrorCode(text);
+      if (workerErrorCode && SKIPPABLE_WORKER_ERROR_CODES.has(workerErrorCode)) {
+        result.skippedWorkerPolicy += 1;
+        console.log(`[SKIP:WORKER_POLICY] ${item.key}: ${response.status} ${workerErrorCode}`);
+        continue;
+      }
+      result.failed += 1;
+      result.failures.push({ key: item.key, status: response.status, body: text.slice(0, 500) });
+      console.log(`[FAIL] ${item.key}: ${response.status} ${text}`);
+      continue;
     }
+
+    result.uploaded += 1;
     if ((index + 1) % 10 === 0 || index + 1 === items.length) {
       console.log(`[UPLOAD] ${index + 1}/${items.length}`);
     }
   }
+
+  console.log(`[INFO] upload result: uploaded=${result.uploaded}, skippedUnsupported=${result.skippedUnsupported}, skippedMissing=${result.skippedMissing}, skippedWorkerPolicy=${result.skippedWorkerPolicy}, failed=${result.failed}`);
+  if (result.failed > 0) {
+    fail(`Upload completed with ${result.failed} non-skippable failures. See log above.`);
+  }
+  return result;
 }
 
 async function verifyFiles(items) {
+  const result = { verified: 0, skippedUnsupported: 0, failed: 0, failures: [] };
   for (const [index, item] of items.entries()) {
+    const skipReason = getSkipReasonForItem(item);
+    if (skipReason) {
+      result.skippedUnsupported += 1;
+      console.log(`[SKIP:UNSUPPORTED] ${item.key} (${skipReason})`);
+      continue;
+    }
     if (dryRun) {
       console.log(`[DRY-RUN] GET ${item.key}`);
       continue;
@@ -334,13 +437,22 @@ async function verifyFiles(items) {
     const response = await fetch(url, { method: "GET" });
     if (!response.ok) {
       const text = await response.text().catch(() => "");
-      fail(`Verify failed for ${item.key}: ${response.status} ${text}`);
+      result.failed += 1;
+      result.failures.push({ key: item.key, status: response.status, body: text.slice(0, 500) });
+      console.log(`[FAIL] Verify failed for ${item.key}: ${response.status} ${text}`);
+      continue;
     }
     await response.arrayBuffer();
+    result.verified += 1;
     if ((index + 1) % 10 === 0 || index + 1 === items.length) {
       console.log(`[VERIFY] ${index + 1}/${items.length}`);
     }
   }
+  console.log(`[INFO] verify result: verified=${result.verified}, skippedUnsupported=${result.skippedUnsupported}, failed=${result.failed}`);
+  if (result.failed > 0) {
+    fail(`Verify completed with ${result.failed} failures. See log above.`);
+  }
+  return result;
 }
 
 async function main() {
@@ -353,8 +465,14 @@ async function main() {
     fail("No realistic attachment metadata found. Run seed_realistic_workorders_0_9_2227.sql first.");
   }
 
-  const items = selectPresetItems(createCandidateItems(rows));
+  const candidates = createCandidateItems(rows);
+  const unsupportedCandidates = candidates.filter((item) => getSkipReasonForItem(item));
+  const items = selectPresetItems(candidates);
   const totalBytes = items.reduce((sum, item) => sum + item.size, 0);
+  console.log(`[INFO] candidates=${candidates.length}, supported=${candidates.length - unsupportedCandidates.length}, unsupported=${unsupportedCandidates.length}`);
+  if (unsupportedCandidates.length > 0) {
+    console.log(`[INFO] unsupported examples=${unsupportedCandidates.slice(0, 5).map((item) => `${item.key} (${getUploadContentType(item)})`).join(", ")}`);
+  }
   console.log(`[INFO] selected=${items.length} files, total=${(totalBytes / 1024 / 1024).toFixed(2)}MB`);
   const manifestPath = await writeManifest(items, "plan");
   console.log(`[INFO] manifest=${path.relative(PROJECT_ROOT, manifestPath)}`);
