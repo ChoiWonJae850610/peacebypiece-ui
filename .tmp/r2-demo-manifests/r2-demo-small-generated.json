@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-07T04:01:46.228Z",
+  "generatedAt": "2026-05-07T04:17:34.616Z",
   "preset": "small",
   "mode": "generate",
   "outDir": "C:\\CWJ_Project\\peacebypiece-2.0\\.tmp\\r2-demo-files",
   "totalFiles": 77,
-  "totalBytes": 19646464,
-  "totalMb": 18.74,
+  "totalBytes": 15726592,
+  "totalMb": 15,
   "items": [
     {
       "attachmentId": "realistic-attachment-001-1",
@@ -708,16 +708,6 @@
       "isThumbnail": true
     },
     {
-      "attachmentId": "realistic-attachment-025-4",
-      "orderId": "realistic-spec-025",
-      "key": "workorders/realistic-spec-025/attachments/realistic-attachment-025-4.zip",
-      "localPath": ".tmp\\r2-demo-files\\workorders\\realistic-spec-025\\attachments\\realistic-attachment-025-4.zip",
-      "contentType": "application/zip",
-      "size": 4718592,
-      "sourceType": "file",
-      "isThumbnail": false
-    },
-    {
       "attachmentId": "realistic-attachment-026-2",
       "orderId": "realistic-spec-026",
       "key": "workorders/realistic-spec-026/attachments/realistic-attachment-026-2.pdf",
@@ -776,6 +766,16 @@
       "size": 18432,
       "sourceType": "thumbnail",
       "isThumbnail": true
+    },
+    {
+      "attachmentId": "realistic-attachment-028-2",
+      "orderId": "realistic-spec-028",
+      "key": "workorders/realistic-spec-028/attachments/realistic-attachment-028-2.pdf",
+      "localPath": ".tmp\\r2-demo-files\\workorders\\realistic-spec-028\\attachments\\realistic-attachment-028-2.pdf",
+      "contentType": "application/pdf",
+      "size": 798720,
+      "sourceType": "file",
+      "isThumbnail": false
     }
   ]
 }

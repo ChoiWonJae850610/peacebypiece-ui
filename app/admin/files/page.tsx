@@ -14,10 +14,7 @@ import {
   buildAdminSelectAllIds,
   selectAdminTrashItemsByIds,
 } from "@/lib/admin/files/selectors";
-import type {
-  AdminFileManagementSnapshot,
-  AdminFileTrendPeriod,
-} from "@/lib/admin/files/types";
+import type { AdminFileManagementSnapshot } from "@/lib/admin/files/types";
 import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { APP_VERSION } from "@/lib/constants/app";
@@ -34,7 +31,6 @@ export default function AdminFilesPage() {
   const [snapshot, setSnapshot] =
     useState<AdminFileManagementSnapshot>(placeholderSnapshot);
   const [isLoadingSnapshot, setIsLoadingSnapshot] = useState(false);
-  const [trendPeriod, setTrendPeriod] = useState<AdminFileTrendPeriod>(7);
   const [selectedTrashItemIds, setSelectedTrashItemIds] = useState<string[]>(
     [],
   );
@@ -53,7 +49,7 @@ export default function AdminFilesPage() {
     setIsLoadingSnapshot(true);
     try {
       const response = await fetch(
-        `/api/admin/files/snapshot?period=${trendPeriod}&t=${Date.now()}`,
+        `/api/admin/files/snapshot?period=30&t=${Date.now()}`,
         { method: "GET", cache: "no-store" },
       );
       const payload = (await response.json().catch(() => null)) as {
@@ -92,7 +88,7 @@ export default function AdminFilesPage() {
   useEffect(() => {
     refreshSnapshot();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trendPeriod]);
+  }, []);
 
   useEffect(() => {
     if (!actionMessage) return;
@@ -176,7 +172,9 @@ export default function AdminFilesPage() {
       messages.push(`파일 ${input.fileCount}개를 복구했습니다.`);
     }
     if (input.skippedCount > 0) {
-      messages.push(`복구할 수 없는 항목 ${input.skippedCount}개는 제외했습니다.`);
+      messages.push(
+        `복구할 수 없는 항목 ${input.skippedCount}개는 제외했습니다.`,
+      );
     }
     return messages.join(" ");
   }
@@ -418,11 +416,8 @@ export default function AdminFilesPage() {
         <FileStorageSummary
           usageCards={snapshot.usageCards}
           usageSummary={snapshot.usageSummary}
-          recentUploadTrend={snapshot.recentUploadTrend}
-          recentUploadTrendPeriod={trendPeriod}
           fileTypeDistribution={snapshot.fileTypeDistribution}
           isRefreshing={isLoadingSnapshot}
-          onChangeTrendPeriod={setTrendPeriod}
           onRefresh={refreshSnapshot}
         />
 

@@ -290,6 +290,12 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
           </label>
           <div className="flex items-end gap-2">
             <Link
+              href="/admin/dashboard?period=30d"
+              className="rounded-2xl border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-600 shadow-sm transition hover:bg-stone-50"
+            >
+              초기화
+            </Link>
+            <Link
               href={customPeriodHref}
               aria-disabled={!isCustomPeriodValid}
               className={`rounded-2xl px-4 py-2 text-xs font-semibold transition ${isCustomPeriodValid ? "bg-stone-950 text-white hover:bg-stone-800" : "pointer-events-none bg-stone-100 text-stone-400"}`}

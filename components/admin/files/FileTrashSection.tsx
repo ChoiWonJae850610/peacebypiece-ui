@@ -75,8 +75,7 @@ type UnifiedTrashRow =
       sourceItem: AdminTrashFileItem;
     };
 
-const TRASH_TABLE_GRID =
-  "0.34fr 1.24fr 0.82fr 1.12fr 0.58fr 0.56fr 1.05fr 1.08fr";
+const TRASH_TABLE_GRID = "0.34fr 1.5fr 0.82fr 1.15fr 0.62fr 0.58fr";
 
 function getTrashFileType(
   item: AdminTrashFileItem,
@@ -85,16 +84,6 @@ function getTrashFileType(
   if (item.fileIcon === "PDF") return t("filesList.fileTypes.document", "문서");
   if (item.fileIcon === "IMG") return t("filesList.fileTypes.design", "디자인");
   return t("filesList.fileTypes.other", "기타");
-}
-
-function getRestorePolicyBadgeClass(row: UnifiedTrashRow): string {
-  if (row.restorePolicy === "workorder_bundle")
-    return "border-stone-300 bg-stone-100 text-stone-700";
-  if (row.restorePolicy === "bundle_required")
-    return "border-amber-200 bg-amber-50 text-amber-700";
-  if (row.restorePolicy === "parent_deleted_restore_blocked")
-    return "border-rose-200 bg-rose-50 text-rose-700";
-  return "border-stone-200 bg-stone-50 text-stone-600";
 }
 
 function formatStorageSize(
@@ -256,6 +245,7 @@ export default function FileTrashSection({
   );
   const [workOrderActionPreview, setWorkOrderActionPreview] =
     useState<WorkOrderActionPreview | null>(null);
+  const [detailRow, setDetailRow] = useState<UnifiedTrashRow | null>(null);
   const previewWorkOrder = useMemo(
     () =>
       workOrderItems.find(
@@ -514,6 +504,144 @@ export default function FileTrashSection({
         ) : null}
       </ModalShell>
 
+      <ModalShell
+        open={Boolean(detailRow)}
+        onClose={() => setDetailRow(null)}
+        title={
+          detailRow?.kind === "workorder"
+            ? t("filesList.workorderDetailTitle", "작업지시서 휴지통 상세")
+            : t("filesList.fileDetailTitle", "파일 휴지통 상세")
+        }
+        description={detailRow?.targetLabel}
+        maxWidthClass="md:max-w-xl"
+        footer={
+          detailRow ? (
+            <div className="flex w-full flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setDetailRow(null)}
+                className="rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-700 shadow-sm hover:bg-stone-50"
+              >
+                {t("common.close", "닫기")}
+              </button>
+              <button
+                type="button"
+                disabled={
+                  detailRow.kind === "attachment"
+                    ? isActionPending || !detailRow.canRestore
+                    : isWorkOrderActionPending
+                }
+                onClick={() => {
+                  if (!detailRow) return;
+                  if (detailRow.kind === "workorder") {
+                    onRestoreWorkOrder?.(detailRow.id);
+                  } else {
+                    onRestoreItem?.(detailRow.id);
+                  }
+                  setDetailRow(null);
+                }}
+                className="rounded-full border border-stone-900 bg-stone-900 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-stone-800 disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-400"
+                title={
+                  detailRow.kind === "attachment"
+                    ? (detailRow.restoreDisabledReason ?? undefined)
+                    : detailRow.restoreDisabledReason
+                }
+              >
+                {t("filesList.restore", "복구")}
+              </button>
+              <button
+                type="button"
+                disabled={
+                  detailRow.kind === "attachment"
+                    ? isActionPending || !detailRow.canPurge
+                    : isWorkOrderActionPending
+                }
+                onClick={() => {
+                  if (!detailRow) return;
+                  if (detailRow.kind === "workorder") {
+                    onPurgeWorkOrder?.(detailRow.id);
+                  } else {
+                    onPurgeItem?.(detailRow.id);
+                  }
+                  setDetailRow(null);
+                }}
+                className="rounded-full border border-red-600 bg-red-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-red-700 disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-400"
+                title={
+                  detailRow.kind === "attachment"
+                    ? (detailRow.purgeDisabledReason ?? undefined)
+                    : detailRow.purgeDisabledReason
+                }
+              >
+                {t("filesList.purge", "영구 삭제")}
+              </button>
+            </div>
+          ) : null
+        }
+      >
+        {detailRow ? (
+          <div className="space-y-4">
+            <div className="flex items-start gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-xs font-bold text-stone-700 shadow-sm">
+                {detailRow.kind === "workorder"
+                  ? "작지"
+                  : detailRow.typeLabel.slice(0, 2)}
+              </div>
+              <div className="min-w-0">
+                <p
+                  className="truncate text-sm font-bold text-stone-950"
+                  title={detailRow.targetLabel}
+                >
+                  {detailRow.targetLabel}
+                </p>
+                <p
+                  className="mt-1 truncate text-xs text-stone-500"
+                  title={detailRow.workorderTitle}
+                >
+                  {detailRow.workorderTitle}
+                </p>
+              </div>
+            </div>
+            <div className="grid gap-2 md:grid-cols-2">
+              {[
+                [t("filesList.columns.type", "유형"), detailRow.typeLabel],
+                [t("filesList.columns.size", "용량"), detailRow.sizeLabel],
+                [
+                  t("filesList.columns.deletedAt", "삭제일시"),
+                  detailRow.deletedAt,
+                ],
+                [
+                  t("filesList.columns.restorePolicy", "복구정책"),
+                  detailRow.restorePolicyLabel,
+                ],
+              ].map(([label, value]) => (
+                <div
+                  key={label}
+                  className="rounded-2xl border border-stone-200 bg-white px-4 py-3"
+                >
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-stone-400">
+                    {label}
+                  </p>
+                  <p
+                    className="mt-1 truncate text-sm font-semibold text-stone-800"
+                    title={value}
+                  >
+                    {value}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <p className="rounded-2xl bg-stone-50 px-4 py-3 text-xs leading-5 text-stone-500">
+              {detailRow.restoreDisabledReason ||
+                detailRow.purgeDisabledReason ||
+                t(
+                  "filesList.detailActionHint",
+                  "복구 또는 영구 삭제 작업은 이 상세 창에서 처리합니다.",
+                )}
+            </p>
+          </div>
+        ) : null}
+      </ModalShell>
+
       <AdminTable
         className="mt-3 min-h-0 flex-1"
         items={rows}
@@ -523,6 +651,7 @@ export default function FileTrashSection({
           "휴지통에 보관 중인 항목이 없습니다.",
         )}
         gridTemplateColumns={TRASH_TABLE_GRID}
+        onRowClick={(row) => setDetailRow(row)}
         rowClassName={(row) => {
           const previewWorkOrderId =
             workOrderActionPreview?.workOrderId ?? null;
@@ -547,7 +676,10 @@ export default function FileTrashSection({
                 return (
                   <button
                     type="button"
-                    onClick={() => onToggleWorkOrder?.(row.id)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onToggleWorkOrder?.(row.id);
+                    }}
                     className={`flex h-4 w-4 items-center justify-center rounded border text-[10px] ${row.isSelected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-300 bg-white text-transparent"}`}
                     aria-label={
                       row.isSelected
@@ -571,7 +703,10 @@ export default function FileTrashSection({
               return (
                 <button
                   type="button"
-                  onClick={() => onToggleItem(row.id)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onToggleItem(row.id);
+                  }}
                   className={`flex h-4 w-4 items-center justify-center rounded border text-[10px] ${row.isSelected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-300 bg-white text-transparent"}`}
                   aria-label={
                     row.isSelected
@@ -595,7 +730,7 @@ export default function FileTrashSection({
                   {t("filesList.columns.target", "대상")}
                 </p>
                 <p
-                  className={`truncate font-semibold ${row.kind === "workorder" ? "text-stone-950" : "text-stone-800"}`}
+                  className={`truncate text-sm font-semibold ${row.kind === "workorder" ? "text-stone-950" : "text-stone-800"}`}
                 >
                   {row.isGroupedAttachment ? "└ " : ""}
                   {row.targetLabel}
@@ -621,7 +756,12 @@ export default function FileTrashSection({
             key: "deletedAt",
             label: t("filesList.columns.deletedAt", "삭제일시"),
             render: (row) => (
-              <p className="text-[11px] text-stone-600">{row.deletedAt}</p>
+              <p
+                className="truncate text-sm text-stone-600"
+                title={row.deletedAt}
+              >
+                {row.deletedAt}
+              </p>
             ),
           },
           {
@@ -633,7 +773,7 @@ export default function FileTrashSection({
                   {t("filesList.columns.workorder", "작업지시서")}
                 </p>
                 <p
-                  className={`truncate text-[11px] ${row.kind === "workorder" ? "font-semibold text-stone-800" : "text-stone-700"}`}
+                  className={`truncate text-sm ${row.kind === "workorder" ? "font-semibold text-stone-800" : "text-stone-700"}`}
                 >
                   {row.workorderTitle}
                 </p>
@@ -644,89 +784,25 @@ export default function FileTrashSection({
             key: "type",
             label: t("filesList.columns.type", "유형"),
             render: (row) => (
-              <p className="text-[11px] text-stone-600">{row.typeLabel}</p>
+              <p
+                className="truncate text-sm text-stone-600"
+                title={row.typeLabel}
+              >
+                {row.typeLabel}
+              </p>
             ),
           },
           {
             key: "size",
             label: t("filesList.columns.size", "크기"),
             render: (row) => (
-              <p className="text-[11px] text-stone-600">{row.sizeLabel}</p>
-            ),
-          },
-          {
-            key: "restorePolicy",
-            label: t("filesList.columns.restorePolicy", "복구정책"),
-            render: (row) => (
-              <span
-                className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold ${getRestorePolicyBadgeClass(row)}`}
-                title={
-                  row.restoreDisabledReason ??
-                  row.purgeDisabledReason ??
-                  undefined
-                }
+              <p
+                className="truncate text-sm text-stone-600"
+                title={row.sizeLabel}
               >
-                {row.restorePolicyLabel}
-              </span>
+                {row.sizeLabel}
+              </p>
             ),
-          },
-          {
-            key: "actions",
-            label: t("filesList.columns.actions", "작업"),
-            render: (row) => {
-              if (row.kind === "workorder") {
-                return (
-                  <div className="flex flex-wrap gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        openWorkOrderActionPreview(row.id, "restore")
-                      }
-                      className="rounded-full border border-stone-300 bg-white px-2.5 py-1 text-[10px] font-semibold text-stone-700 shadow-sm hover:bg-stone-50"
-                      title={row.restoreDisabledReason}
-                    >
-                      {t("filesList.restore", "복구")}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        openWorkOrderActionPreview(row.id, "purge")
-                      }
-                      className="rounded-full border border-red-200 bg-white px-2.5 py-1 text-[10px] font-semibold text-red-600 shadow-sm hover:bg-red-50"
-                      title={row.purgeDisabledReason}
-                    >
-                      {t("filesList.purge", "영구 삭제")}
-                    </button>
-                  </div>
-                );
-              }
-
-              return (
-                <div
-                  className="flex flex-wrap gap-1.5"
-                  onClick={(event) => event.stopPropagation()}
-                >
-                  <button
-                    type="button"
-                    disabled={isActionPending || !row.canRestore}
-                    onClick={() => onRestoreItem?.(row.id)}
-                    className="rounded-full border border-stone-300 bg-white px-2.5 py-1 text-[10px] font-semibold text-stone-700 shadow-sm hover:bg-stone-50 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-400"
-                    title={row.restoreDisabledReason ?? undefined}
-                  >
-                    {t("filesList.restore", "복구")}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={isActionPending || !row.canPurge}
-                    onClick={() => onPurgeItem?.(row.id)}
-                    className="rounded-full border border-red-200 bg-white px-2.5 py-1 text-[10px] font-semibold text-red-600 shadow-sm hover:bg-red-50 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-400"
-                    title={row.purgeDisabledReason ?? undefined}
-                  >
-                    {t("filesList.purge", "영구 삭제")}
-                  </button>
-                </div>
-              );
-            },
           },
         ]}
       />
