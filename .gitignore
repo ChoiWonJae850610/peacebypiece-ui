@@ -67,6 +67,5 @@ git-history-files.txt
 *.pfx
 service-account*.json
 credentials*.json
-# Local generated demo files
+# local generated demo files
 .tmp/
-

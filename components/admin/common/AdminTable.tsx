@@ -50,9 +50,22 @@ export default function AdminTable<TItem>({
 
             if (onRowClick) {
               return (
-                <button key={getRowKey(item)} type="button" onClick={() => onRowClick(item)} className={mergedRowClassName} style={gridStyle}>
+                <div
+                  key={getRowKey(item)}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onRowClick(item)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onRowClick(item);
+                    }
+                  }}
+                  className={[mergedRowClassName, "cursor-pointer focus:outline-none focus:ring-2 focus:ring-stone-300"].join(" ")}
+                  style={gridStyle}
+                >
                   {cells}
-                </button>
+                </div>
               );
             }
 
