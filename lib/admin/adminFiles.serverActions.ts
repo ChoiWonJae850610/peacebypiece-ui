@@ -1,6 +1,7 @@
 import "server-only";
 
 import { queryDb } from "@/lib/db/client";
+import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
 import type { DbQueryResultRow } from "@/lib/db/client";
 
 export type AdminTrashDbActionInput = {
@@ -214,6 +215,14 @@ function getFileIcon(
     return "PDF";
   if (mimeType?.startsWith("image/")) return "IMG";
   return "FILE";
+}
+
+
+function createAttachmentFilePreviewUrl(storageKey: string | null | undefined): string | null {
+  if (!storageKey) return null;
+  const cleanKey = String(storageKey).trim();
+  if (!cleanKey) return null;
+  return createAttachmentFileProxyUrl(cleanKey);
 }
 
 function getFileType(

@@ -121,14 +121,14 @@ function WorkOrderStageInline({ statusLabel }: { statusLabel: string }) {
     <div className="rounded-2xl border border-stone-200 bg-white px-4 py-3">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-stone-400">
+          <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-stone-400">
             현재 단계
           </p>
-          <p className="mt-1 text-sm font-semibold text-stone-900">
+          <p className="mt-1 text-sm font-medium text-stone-800">
             {statusLabel}
           </p>
         </div>
-        <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-semibold text-stone-600">
+        <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-medium text-stone-600">
           삭제 당시
         </span>
       </div>
@@ -597,7 +597,7 @@ export default function FileTrashSection({
                 <p className="text-[10px] font-semibold text-stone-400">
                   {t("filesList.selectedScope.workorder", "작업지시서")}
                 </p>
-                <p className="mt-1 text-[11px] font-bold text-stone-800">
+                <p className="mt-1 text-[11px] font-medium text-stone-700">
                   {t("filesList.selectedScope.workorderValue", "대표 row 1건")}
                 </p>
               </div>
@@ -608,7 +608,7 @@ export default function FileTrashSection({
                     "묶음 처리 첨부",
                   )}
                 </p>
-                <p className="mt-1 text-[11px] font-bold text-stone-800">
+                <p className="mt-1 text-[11px] font-medium text-stone-700">
                   {previewWorkOrderBundleCount}
                   {t("filesList.countSuffix", "개")}
                 </p>
@@ -620,7 +620,7 @@ export default function FileTrashSection({
                     "복원 불가 파일",
                   )}
                 </p>
-                <p className="mt-1 text-[11px] font-bold text-stone-800">
+                <p className="mt-1 text-[11px] font-medium text-stone-700">
                   {previewWorkOrderBlockedCount}
                   {t("filesList.countSuffix", "개")}
                 </p>
@@ -629,7 +629,7 @@ export default function FileTrashSection({
                 <p className="text-[10px] font-semibold text-stone-400">
                   {t("filesList.selectedScope.totalSize", "연결 파일 용량")}
                 </p>
-                <p className="mt-1 text-[11px] font-bold text-stone-800">
+                <p className="mt-1 text-[11px] font-medium text-stone-700">
                   {previewWorkOrderTotalSizeLabel}
                 </p>
               </div>
@@ -753,7 +753,7 @@ export default function FileTrashSection({
               />
               <div className="min-w-0">
                 <p
-                  className="truncate text-sm font-bold text-stone-950"
+                  className="truncate text-sm font-medium text-stone-800"
                   title={detailRow.targetLabel}
                 >
                   {detailRow.targetLabel}
@@ -808,11 +808,11 @@ export default function FileTrashSection({
                   key={label}
                   className="rounded-2xl border border-stone-200 bg-white px-4 py-3"
                 >
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-stone-400">
+                  <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-stone-400">
                     {label}
                   </p>
                   <p
-                    className="mt-1 truncate text-sm font-semibold text-stone-800"
+                    className="mt-1 truncate text-sm font-medium text-stone-700"
                     title={value}
                   >
                     {value}
