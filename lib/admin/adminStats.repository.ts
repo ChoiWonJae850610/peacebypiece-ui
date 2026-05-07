@@ -262,34 +262,56 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
         [companyId],
       ),
       queryDb<CategoryCountRow>(
-        `SELECT COALESCE(NULLIF(payload->>'categoryLabel', ''), NULLIF(payload->>'category', ''), NULLIF(payload->>'itemCategory', ''), '분류 미지정') AS category_label,
+        `SELECT COALESCE(NULLIF(c2.name, ''), NULLIF(s.payload->>'category2Label', ''), NULLIF(s.payload->>'category2', ''), NULLIF(s.payload->>'categoryLabel', ''), NULLIF(s.payload->>'category', ''), '분류 미지정') AS category_label,
                 COUNT(*)::text AS count_value
-           FROM spec_sheets
-          WHERE company_id = $1
-            AND deleted_at IS NULL
-            AND COALESCE(is_active, true) = true
-            ${periodWhereClause}
+           FROM spec_sheets s
+           LEFT JOIN item_categories c2 ON c2.id = s.category2_id AND c2.company_id = s.company_id
+          WHERE s.company_id = $1
+            AND s.deleted_at IS NULL
+            AND COALESCE(s.is_active, true) = true
+            ${periodWhereClause.replace(/updated_at/g, "s.updated_at")}
           GROUP BY 1
           ORDER BY COUNT(*) DESC
           LIMIT 6`,
         [companyId],
       ),
       queryDb<CategoryByRoundRow>(
-        `SELECT CASE
-                  WHEN COALESCE(reorder_round, 0) <= 1 THEN 'first'
-                  WHEN reorder_round = 2 THEN 'second'
-                  ELSE 'third'
-                END AS round_key,
-                COALESCE(NULLIF(payload->>'categoryLabel', ''), NULLIF(payload->>'category', ''), NULLIF(payload->>'itemCategory', ''), '분류 미지정') AS category_label,
-                COUNT(*)::text AS count_value
-           FROM spec_sheets
-          WHERE company_id = $1
-            AND deleted_at IS NULL
-            AND COALESCE(is_active, true) = true
-            ${periodWhereClause}
-          GROUP BY 1, 2
-          ORDER BY 1, COUNT(*) DESC
-          LIMIT 30`,
+        `WITH category_depth_rows AS (
+            SELECT 'first'::text AS round_key,
+                   COALESCE(NULLIF(c1.name, ''), NULLIF(s.payload->>'category1Label', ''), NULLIF(s.payload->>'category1', ''), '분류 미지정') AS category_label
+              FROM spec_sheets s
+              LEFT JOIN item_categories c1 ON c1.id = s.category1_id AND c1.company_id = s.company_id
+             WHERE s.company_id = $1
+               AND s.deleted_at IS NULL
+               AND COALESCE(s.is_active, true) = true
+               ${periodWhereClause.replace(/updated_at/g, "s.updated_at")}
+            UNION ALL
+            SELECT 'second'::text AS round_key,
+                   COALESCE(NULLIF(c2.name, ''), NULLIF(s.payload->>'category2Label', ''), NULLIF(s.payload->>'category2', ''), '분류 미지정') AS category_label
+              FROM spec_sheets s
+              LEFT JOIN item_categories c2 ON c2.id = s.category2_id AND c2.company_id = s.company_id
+             WHERE s.company_id = $1
+               AND s.deleted_at IS NULL
+               AND COALESCE(s.is_active, true) = true
+               ${periodWhereClause.replace(/updated_at/g, "s.updated_at")}
+            UNION ALL
+            SELECT 'third'::text AS round_key,
+                   COALESCE(NULLIF(c3.name, ''), NULLIF(s.payload->>'category3Label', ''), NULLIF(s.payload->>'category3', ''), '분류 미지정') AS category_label
+              FROM spec_sheets s
+              LEFT JOIN item_categories c3 ON c3.id = s.category3_id AND c3.company_id = s.company_id
+             WHERE s.company_id = $1
+               AND s.deleted_at IS NULL
+               AND COALESCE(s.is_active, true) = true
+               ${periodWhereClause.replace(/updated_at/g, "s.updated_at")}
+          )
+          SELECT round_key::text AS round_key,
+                 category_label,
+                 COUNT(*)::text AS count_value
+            FROM category_depth_rows
+           WHERE category_label <> '분류 미지정'
+           GROUP BY round_key, category_label
+           ORDER BY CASE round_key WHEN 'first' THEN 1 WHEN 'second' THEN 2 ELSE 3 END, COUNT(*) DESC, category_label
+           LIMIT 45`,
         [companyId],
       ),
       queryDb<ReorderTopProductRow>(

@@ -345,7 +345,7 @@ export const adminKo = {
     countSuffix: "개",
     flowCountSuffix: "건",
     unknownLabel: "분류 미지정",
-    productionRounds: { first: "1차", second: "2차", thirdOrMore: "3차 이상" },
+    productionRounds: { first: "대분류", second: "중분류", thirdOrMore: "세분류" },
     periods: { sevenDays: "7일", fifteenDays: "15일", thirtyDays: "30일", monthly: "이번달", all: "누적", custom: "직접 선택" },
     metrics: {
       reviewWaiting: { label: "검토대기", description: "발주 전 관리자 확인이 필요한 작업" },

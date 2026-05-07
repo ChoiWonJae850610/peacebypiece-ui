@@ -391,7 +391,7 @@ export const adminEn = {
     countSuffix: "items",
     flowCountSuffix: "items",
     unknownLabel: "Uncategorized",
-    productionRounds: { first: "Round 1", second: "Round 2", thirdOrMore: "Round 3+" },
+    productionRounds: { first: "Primary", second: "Secondary", thirdOrMore: "Tertiary" },
     periods: { sevenDays: "7 days", fifteenDays: "15 days", thirtyDays: "30 days", monthly: "This month", all: "Cumulative", custom: "Custom" },
     metrics: {
       reviewWaiting: { label: "Review waiting", description: "Work before order that needs admin review" },

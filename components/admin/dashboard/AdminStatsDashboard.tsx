@@ -15,7 +15,7 @@ type AdminStatsDashboardProps = {
   pageText: ReturnType<typeof getI18n>["admin"]["dashboardPage"];
 };
 
-type RoundFilterKey = "first" | "second" | "third";
+type CategoryDepthKey = "first" | "second" | "third";
 
 function translateStatsLabel(label: string, t: ReturnType<typeof useAdminTranslation>) {
   const map: Record<string, string> = {
@@ -87,7 +87,7 @@ function CurrentSummaryCard({ label, value, description, subValue }: { label: st
 export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashboardProps) {
   const t = useAdminTranslation();
   const pt = (key: string, fallback: string) => t(`dashboardPage.${key}`, fallback);
-  const [roundFilter, setRoundFilter] = useState<RoundFilterKey>("first");
+  const [categoryDepth, setCategoryDepth] = useState<CategoryDepthKey>("first");
   const [customStartDate, setCustomStartDate] = useState(stats.selectedPeriodRange.isCustom ? stats.selectedPeriodRange.startDate : "");
   const [customEndDate, setCustomEndDate] = useState(stats.selectedPeriodRange.isCustom ? stats.selectedPeriodRange.endDate : "");
   const todayDateValue = new Date().toISOString().slice(0, 10);
@@ -160,19 +160,19 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   const customPeriodHref = isCustomPeriodValid ? `/admin/dashboard?period=custom&startDate=${customStartDate}&endDate=${customEndDate}` : "/admin/dashboard?period=30d";
   const customPeriodMessage = !isCustomPeriodOrderValid ? "종료일은 시작일과 같거나 이후 날짜여야 합니다." : !isCustomPeriodNotFuture ? "오늘 이후 날짜는 선택할 수 없습니다." : customEndDate && !isCustomEndSelectable ? "종료일은 시작일과 같거나 이후 날짜여야 합니다." : "";
   const storageUsePercent = stats.currentOverview.storageLimitBytes > 0 ? Math.round((stats.currentOverview.storageUsedBytes / stats.currentOverview.storageLimitBytes) * 1000) / 10 : 0;
-  const roundFilterLabels: Record<RoundFilterKey, string> = {
-    first: "1차",
-    second: "2차",
-    third: "3차 이상",
+  const categoryDepthLabels: Record<CategoryDepthKey, string> = {
+    first: "대분류",
+    second: "중분류",
+    third: "세분류",
   };
 
-  const selectedRoundLabel = roundFilterLabels[roundFilter];
+  const selectedCategoryDepthLabel = categoryDepthLabels[categoryDepth];
   const toRatioBars = (points: { label: string; value: number; valueLabel?: string }[]) => {
     const total = points.reduce((sum, item) => sum + item.value, 0);
     return points.map((item) => ({ ...item, limit: total, valueLabel: item.valueLabel ?? String(item.value), widthPercent: total > 0 ? Math.max(4, Math.round((item.value / total) * 100)) : 0 }));
   };
-  const selectedRoundCategoryBars = toRatioBars(translatedStats.productionCategoryByRound[roundFilter]).slice(0, 5);
-  const selectedRoundTotal = selectedRoundCategoryBars.reduce((sum, item) => sum + item.value, 0);
+  const selectedCategoryDepthBars = toRatioBars(translatedStats.productionCategoryByRound[categoryDepth]).slice(0, 5);
+  const selectedCategoryDepthTotal = selectedCategoryDepthBars.reduce((sum, item) => sum + item.value, 0);
   const reorderTopProducts = toRatioBars(translatedStats.reorderTopProducts).slice(0, 5);
 
   const renderBarList = (title: string, points: Array<{ label: string; value: number; widthPercent: number; valueLabel?: string }>, emptyLabel: string) => (
@@ -328,21 +328,21 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
                 <button
                   key={key}
                   type="button"
-                  onClick={() => setRoundFilter(key)}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ${roundFilter === key ? "bg-white text-stone-950 shadow-sm" : "text-stone-500"}`}
+                  onClick={() => setCategoryDepth(key)}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${categoryDepth === key ? "bg-white text-stone-950 shadow-sm" : "text-stone-500"}`}
                 >
-                  {roundFilterLabels[key]}
+                  {categoryDepthLabels[key]}
                 </button>
               ))}
             </div>
           </div>
           <div className="mt-5">
-            <AdminBasicDonutChart points={selectedRoundCategoryBars} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel="생산품 유형 데이터 없음" compact />
+            <AdminBasicDonutChart points={selectedCategoryDepthBars} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel="생산품 유형 데이터 없음" compact />
           </div>
-          <p className="mt-4 text-xs font-semibold text-stone-500">현재 선택: {selectedRoundLabel} · {formatCount(selectedRoundTotal)}</p>
+          <p className="mt-4 text-xs font-semibold text-stone-500">현재 기준: {selectedCategoryDepthLabel} · {formatCount(selectedCategoryDepthTotal)}</p>
         </AdminCard>
 
-        {renderBarList(`${selectedRoundLabel} 생산품유형 TOP5`, selectedRoundCategoryBars, "생산품유형 데이터 없음")}
+        {renderBarList(`${selectedCategoryDepthLabel} 생산품유형 TOP5`, selectedCategoryDepthBars, "생산품유형 데이터 없음")}
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
