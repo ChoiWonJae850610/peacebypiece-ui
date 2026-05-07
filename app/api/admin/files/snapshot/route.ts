@@ -143,7 +143,7 @@ async function getPurgeRequestSummary(): Promise<{ count: number; bytes: number 
           AND t.attachment_id IS NOT NULL
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
-        ORDER BY t.attachment_id, COALESCE(t.purge_requested_at, t.updated_at, t.deleted_at) DESC
+        ORDER BY t.attachment_id, COALESCE(t.updated_at, t.deleted_at) DESC
      )
      SELECT COUNT(*)::text AS file_count,
             COALESCE(SUM(size_bytes), 0)::text AS size_bytes
