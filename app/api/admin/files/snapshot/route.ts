@@ -133,13 +133,21 @@ function readNumber(value: string | number | null | undefined): number {
 
 async function getPurgeRequestSummary(): Promise<{ count: number; bytes: number }> {
   const result = await queryDb<PurgeRequestSummaryRow>(
-    `SELECT COUNT(DISTINCT t.attachment_id)::text AS file_count,
-            COALESCE(SUM(COALESCE(t.size_bytes, a.size_bytes, 0)), 0)::text AS size_bytes
-       FROM attachment_trash_items t
-       LEFT JOIN attachments a ON a.id = t.attachment_id
-      WHERE t.purge_status = 'purge_requested'
-        AND t.restored_at IS NULL
-        AND t.purged_at IS NULL`,
+    `WITH purge_requested_attachments AS (
+       SELECT DISTINCT ON (t.attachment_id)
+              t.attachment_id,
+              COALESCE(t.size_bytes, a.size_bytes, 0) AS size_bytes
+         FROM attachment_trash_items t
+         LEFT JOIN attachments a ON a.id = t.attachment_id
+        WHERE t.purge_status = 'purge_requested'
+          AND t.attachment_id IS NOT NULL
+          AND t.restored_at IS NULL
+          AND t.purged_at IS NULL
+        ORDER BY t.attachment_id, COALESCE(t.purge_requested_at, t.updated_at, t.deleted_at) DESC
+     )
+     SELECT COUNT(*)::text AS file_count,
+            COALESCE(SUM(size_bytes), 0)::text AS size_bytes
+       FROM purge_requested_attachments`,
   );
   const row = result.rows[0];
   return {
