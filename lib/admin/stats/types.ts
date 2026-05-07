@@ -34,6 +34,10 @@ export type AdminStatsRoundKey = "first" | "second" | "third";
 
 export type AdminStatsCategoryByRound = Record<AdminStatsRoundKey, AdminStatsRatioPoint[]>;
 
+export type AdminStatsCategoryDrilldownKey = "firstToSecond" | "secondToThird";
+
+export type AdminStatsCategoryDrilldown = Record<AdminStatsCategoryDrilldownKey, Record<string, AdminStatsRatioPoint[]>>;
+
 export type AdminStatsPeriodRange = {
   startDate: string;
   endDate: string;
@@ -65,6 +69,7 @@ export type AdminStatsSnapshot = {
   factoryProductionDistribution: AdminStatsRatioPoint[];
   productionCategoryDistribution: AdminStatsRatioPoint[];
   productionCategoryByRound: AdminStatsCategoryByRound;
+  productionCategoryDrilldown: AdminStatsCategoryDrilldown;
   reorderTopProducts: AdminStatsRatioPoint[];
   factoryPerformance: AdminStatsFactoryPerformance[];
   attachmentTrashCards: AdminStatsRatioPoint[];

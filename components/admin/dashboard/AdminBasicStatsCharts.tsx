@@ -30,6 +30,8 @@ type BasicDonutChartProps = {
   valueSuffix?: string;
   emptyLabel?: string;
   compact?: boolean;
+  selectedLabel?: string | null;
+  onSelectPoint?: (label: string) => void;
 };
 
 const CHART_SEGMENT_COLORS = [
@@ -87,7 +89,7 @@ export function AdminBasicBarChart({ points, emptyLabel, valueSuffix = "" }: Bas
   );
 }
 
-export function AdminBasicDonutChart({ points, totalLabel, valueSuffix = "", emptyLabel = "표시할 데이터가 없습니다", compact = false }: BasicDonutChartProps) {
+export function AdminBasicDonutChart({ points, totalLabel, valueSuffix = "", emptyLabel = "표시할 데이터가 없습니다", compact = false, selectedLabel = null, onSelectPoint }: BasicDonutChartProps) {
   const total = points.reduce((sum, item) => sum + item.value, 0);
   const chartLayoutClassName = compact ? "mt-5 grid gap-4" : "mt-5 grid gap-4 md:grid-cols-[150px_minmax(0,1fr)]";
   const chartBoxClassName = compact ? "relative mx-auto h-36 w-full max-w-[150px] min-w-0" : "relative h-36 w-full min-w-0";
@@ -121,15 +123,27 @@ export function AdminBasicDonutChart({ points, totalLabel, valueSuffix = "", emp
         ) : null}
       </div>
       <div className="grid min-w-0 content-center gap-2">
-        {points.map((item, index) => (
-          <div key={item.label} className="flex items-center justify-between rounded-2xl bg-stone-50 px-3 py-2 text-xs font-semibold text-stone-600">
-            <span className="flex min-w-0 items-center gap-2">
-              <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: CHART_SEGMENT_COLORS[index % CHART_SEGMENT_COLORS.length] }} />
-              <span className="truncate">{item.label}</span>
-            </span>
-            <span className="shrink-0">{getPointValueLabel(item, valueSuffix)}</span>
-          </div>
-        ))}
+        {points.map((item, index) => {
+          const isSelected = selectedLabel === item.label;
+          const content = (
+            <>
+              <span className="flex min-w-0 items-center gap-2">
+                <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: CHART_SEGMENT_COLORS[index % CHART_SEGMENT_COLORS.length] }} />
+                <span className="truncate">{item.label}</span>
+              </span>
+              <span className="shrink-0">{getPointValueLabel(item, valueSuffix)}</span>
+            </>
+          );
+          const className = `flex w-full items-center justify-between rounded-2xl px-3 py-2 text-xs font-semibold transition ${isSelected ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "bg-stone-50 text-stone-600"}`;
+          if (!onSelectPoint) {
+            return <div key={item.label} className={className}>{content}</div>;
+          }
+          return (
+            <button key={item.label} type="button" onClick={() => onSelectPoint(item.label)} className={`${className} text-left hover:bg-stone-100 ${isSelected ? "hover:bg-[var(--admin-theme-surface)]" : ""}`}>
+              {content}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

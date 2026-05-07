@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ClipboardEvent, type KeyboardEvent } from "react";
+import { useEffect, useState, type ClipboardEvent, type KeyboardEvent } from "react";
 import Link from "next/link";
 
 import { AdminCard } from "@/components/admin/layout/AdminCard";
@@ -15,7 +15,7 @@ type AdminStatsDashboardProps = {
   pageText: ReturnType<typeof getI18n>["admin"]["dashboardPage"];
 };
 
-type CategoryDepthKey = "first" | "second" | "third";
+type CategoryDepthKey = "first" | "second";
 
 function translateStatsLabel(label: string, t: ReturnType<typeof useAdminTranslation>) {
   const map: Record<string, string> = {
@@ -88,6 +88,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   const t = useAdminTranslation();
   const pt = (key: string, fallback: string) => t(`dashboardPage.${key}`, fallback);
   const [categoryDepth, setCategoryDepth] = useState<CategoryDepthKey>("first");
+  const [selectedCategoryLabel, setSelectedCategoryLabel] = useState<string | null>(null);
   const [customStartDate, setCustomStartDate] = useState(stats.selectedPeriodRange.isCustom ? stats.selectedPeriodRange.startDate : "");
   const [customEndDate, setCustomEndDate] = useState(stats.selectedPeriodRange.isCustom ? stats.selectedPeriodRange.endDate : "");
   const todayDateValue = new Date().toISOString().slice(0, 10);
@@ -121,6 +122,10 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
       first: translateStatsText(stats.productionCategoryByRound.first, t),
       second: translateStatsText(stats.productionCategoryByRound.second, t),
       third: translateStatsText(stats.productionCategoryByRound.third, t),
+    },
+    productionCategoryDrilldown: {
+      firstToSecond: Object.fromEntries(Object.entries(stats.productionCategoryDrilldown.firstToSecond).map(([label, items]) => [translateStatsLabel(label, t), translateStatsText(items, t)])),
+      secondToThird: Object.fromEntries(Object.entries(stats.productionCategoryDrilldown.secondToThird).map(([label, items]) => [translateStatsLabel(label, t), translateStatsText(items, t)])),
     },
     reorderTopProducts: translateStatsText(stats.reorderTopProducts, t),
     factoryPerformance: stats.factoryPerformance,
@@ -162,8 +167,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   const storageUsePercent = stats.currentOverview.storageLimitBytes > 0 ? Math.round((stats.currentOverview.storageUsedBytes / stats.currentOverview.storageLimitBytes) * 1000) / 10 : 0;
   const categoryDepthLabels: Record<CategoryDepthKey, string> = {
     first: "대분류",
-    second: "중분류",
-    third: "세분류",
+    second: "품목",
   };
 
   const selectedCategoryDepthLabel = categoryDepthLabels[categoryDepth];
@@ -173,7 +177,19 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   };
   const selectedCategoryDepthBars = toRatioBars(translatedStats.productionCategoryByRound[categoryDepth]).slice(0, 5);
   const selectedCategoryDepthTotal = selectedCategoryDepthBars.reduce((sum, item) => sum + item.value, 0);
+  const normalizedSelectedCategoryLabel = selectedCategoryDepthBars.some((item) => item.label === selectedCategoryLabel) ? selectedCategoryLabel : (selectedCategoryDepthBars[0]?.label ?? null);
+  const drilldownKey = categoryDepth === "first" ? "firstToSecond" : "secondToThird";
+  const categoryDetailPoints = normalizedSelectedCategoryLabel ? toRatioBars(translatedStats.productionCategoryDrilldown[drilldownKey][normalizedSelectedCategoryLabel] ?? []).slice(0, 5) : [];
+  const categoryDetailTitle = categoryDepth === "first" ? `${normalizedSelectedCategoryLabel ?? "선택 항목"} 품목 TOP5` : `${normalizedSelectedCategoryLabel ?? "선택 품목"} 세부형태 TOP5`;
+  const categoryDetailEmptyLabel = categoryDepth === "first" ? "선택한 대분류의 품목 데이터 없음" : "선택한 품목의 세부형태 데이터 없음";
   const reorderTopProducts = toRatioBars(translatedStats.reorderTopProducts).slice(0, 5);
+
+  useEffect(() => {
+    setSelectedCategoryLabel((current) => {
+      if (current && selectedCategoryDepthBars.some((item) => item.label === current)) return current;
+      return selectedCategoryDepthBars[0]?.label ?? null;
+    });
+  }, [categoryDepth, selectedCategoryDepthBars.map((item) => item.label).join("|")]);
 
   const renderBarList = (title: string, points: Array<{ label: string; value: number; widthPercent: number; valueLabel?: string }>, emptyLabel: string) => (
     <AdminCard>
@@ -324,11 +340,14 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
               <h2 className="mt-2 text-lg font-semibold text-stone-950">생산품 유형 비율</h2>
             </div>
             <div className="flex rounded-full bg-stone-100 p-1">
-              {(["first", "second", "third"] as const).map((key) => (
+              {(["first", "second"] as const).map((key) => (
                 <button
                   key={key}
                   type="button"
-                  onClick={() => setCategoryDepth(key)}
+                  onClick={() => {
+                    setCategoryDepth(key);
+                    setSelectedCategoryLabel(null);
+                  }}
                   className={`rounded-full px-3 py-1 text-xs font-semibold ${categoryDepth === key ? "bg-white text-stone-950 shadow-sm" : "text-stone-500"}`}
                 >
                   {categoryDepthLabels[key]}
@@ -337,12 +356,13 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
             </div>
           </div>
           <div className="mt-5">
-            <AdminBasicDonutChart points={selectedCategoryDepthBars} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel="생산품 유형 데이터 없음" compact />
+            <AdminBasicDonutChart points={selectedCategoryDepthBars} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel="생산품 유형 데이터 없음" compact selectedLabel={normalizedSelectedCategoryLabel} onSelectPoint={setSelectedCategoryLabel} />
           </div>
           <p className="mt-4 text-xs font-semibold text-stone-500">현재 기준: {selectedCategoryDepthLabel} · {formatCount(selectedCategoryDepthTotal)}</p>
+          {normalizedSelectedCategoryLabel ? <p className="mt-1 text-xs font-semibold text-[var(--admin-theme-surface)]">선택 항목: {normalizedSelectedCategoryLabel}</p> : null}
         </AdminCard>
 
-        {renderBarList(`${selectedCategoryDepthLabel} 생산품유형 TOP5`, selectedCategoryDepthBars, "생산품유형 데이터 없음")}
+        {renderBarList(categoryDetailTitle, categoryDetailPoints, categoryDetailEmptyLabel)}
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">

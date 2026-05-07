@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { AdminStatsCategoryByRound, AdminStatsFactoryPerformance, AdminStatsPeriodKey, AdminStatsRatioPoint, AdminStatsSnapshot, AdminStatsSourceState } from "@/lib/admin/stats/types";
+import type { AdminStatsCategoryByRound, AdminStatsCategoryDrilldown, AdminStatsFactoryPerformance, AdminStatsPeriodKey, AdminStatsRatioPoint, AdminStatsSnapshot, AdminStatsSourceState } from "@/lib/admin/stats/types";
 import { getAdminCompanyId } from "@/lib/admin/settings/companyScope";
 import {
   buildAdminAttachmentTrashCards,
@@ -30,6 +30,7 @@ import { isDatabaseConfigured, queryDb } from "@/lib/db/client";
 
 type ReorderTopProductRow = Record<string, unknown> & { product_label: string | null; count_value: string | number | null };
 type CategoryByRoundRow = Record<string, unknown> & { round_key: "first" | "second" | "third" | null; category_label: string | null; count_value: string | number | null };
+type CategoryDrilldownRow = Record<string, unknown> & { drilldown_key: "firstToSecond" | "secondToThird" | null; parent_label: string | null; child_label: string | null; count_value: string | number | null };
 type FactoryPerformanceRow = Record<string, unknown> & {
   factory_label: string | null;
   production_count: string | number | null;
@@ -66,6 +67,25 @@ function buildAdminCategoryByRound(rows: CategoryByRoundRow[]): AdminStatsCatego
     const value = toAdminStatNumber(row.count_value);
     if (value <= 0) return;
     result[key].push({ label: row.category_label || "분류 미지정", value });
+  });
+  return result;
+}
+
+function buildAdminCategoryDrilldown(rows: CategoryDrilldownRow[]): AdminStatsCategoryDrilldown {
+  const result: AdminStatsCategoryDrilldown = { firstToSecond: {}, secondToThird: {} };
+  rows.forEach((row) => {
+    const key = row.drilldown_key === "secondToThird" ? "secondToThird" : "firstToSecond";
+    const parentLabel = row.parent_label || "분류 미지정";
+    const childLabel = row.child_label || "분류 미지정";
+    const value = toAdminStatNumber(row.count_value);
+    if (parentLabel === "분류 미지정" || childLabel === "분류 미지정" || value <= 0) return;
+    if (!result[key][parentLabel]) result[key][parentLabel] = [];
+    result[key][parentLabel].push({ label: childLabel, value });
+  });
+  Object.values(result).forEach((group) => {
+    Object.keys(group).forEach((parentLabel) => {
+      group[parentLabel] = group[parentLabel].sort((a, b) => b.value - a.value || a.label.localeCompare(b.label)).slice(0, 5);
+    });
   });
   return result;
 }
@@ -125,6 +145,7 @@ function buildEmptyStats(sourceState: Exclude<AdminStatsSourceState, "db">, sele
     factoryProductionDistribution: buildAdminFactoryProductionDistribution([]),
     productionCategoryDistribution: buildAdminCategoryDistribution([]),
     productionCategoryByRound: { first: [], second: [], third: [] },
+    productionCategoryDrilldown: { firstToSecond: {}, secondToThird: {} },
     reorderTopProducts: [],
     factoryPerformance: [],
     attachmentTrashCards: buildAdminAttachmentTrashCards(activeFileCount, trashFileCount),
@@ -145,7 +166,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
 
   try {
     const companyId = getAdminCompanyId();
-    const [workordersResult, completedResult, partnersResult, partnerTypesResult, fileUsageResult, reviewWaitingResult, inspectionWaitingResult, inboundDelayedResult, defectResult, roundResult, factoryProductionResult, categoryResult, categoryByRoundResult, reorderTopProductsResult, factoryPerformanceResult, currentWorkordersResult, currentReorderResult, dueDateTargetResult, dueDelayedResult, qualityIssueResult] = await Promise.all([
+    const [workordersResult, completedResult, partnersResult, partnerTypesResult, fileUsageResult, reviewWaitingResult, inspectionWaitingResult, inboundDelayedResult, defectResult, roundResult, factoryProductionResult, categoryResult, categoryByRoundResult, categoryDrilldownResult, reorderTopProductsResult, factoryPerformanceResult, currentWorkordersResult, currentReorderResult, dueDateTargetResult, dueDelayedResult, qualityIssueResult] = await Promise.all([
       queryDb<StatusCountRow>(
         `SELECT COALESCE(status, 'draft') AS status,
                 COUNT(*)::text AS count_value
@@ -314,6 +335,41 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
            LIMIT 45`,
         [companyId],
       ),
+      queryDb<CategoryDrilldownRow>(
+        `WITH category_drilldown_rows AS (
+            SELECT 'firstToSecond'::text AS drilldown_key,
+                   COALESCE(NULLIF(c1.name, ''), NULLIF(s.payload->>'category1Label', ''), NULLIF(s.payload->>'category1', ''), '분류 미지정') AS parent_label,
+                   COALESCE(NULLIF(c2.name, ''), NULLIF(s.payload->>'category2Label', ''), NULLIF(s.payload->>'category2', ''), '분류 미지정') AS child_label
+              FROM spec_sheets s
+              LEFT JOIN item_categories c1 ON c1.id = s.category1_id AND c1.company_id = s.company_id
+              LEFT JOIN item_categories c2 ON c2.id = s.category2_id AND c2.company_id = s.company_id
+             WHERE s.company_id = $1
+               AND s.deleted_at IS NULL
+               AND COALESCE(s.is_active, true) = true
+               ${periodWhereClause.replace(/updated_at/g, "s.updated_at")}
+            UNION ALL
+            SELECT 'secondToThird'::text AS drilldown_key,
+                   COALESCE(NULLIF(c2.name, ''), NULLIF(s.payload->>'category2Label', ''), NULLIF(s.payload->>'category2', ''), '분류 미지정') AS parent_label,
+                   COALESCE(NULLIF(c3.name, ''), NULLIF(s.payload->>'category3Label', ''), NULLIF(s.payload->>'category3', ''), '분류 미지정') AS child_label
+              FROM spec_sheets s
+              LEFT JOIN item_categories c2 ON c2.id = s.category2_id AND c2.company_id = s.company_id
+              LEFT JOIN item_categories c3 ON c3.id = s.category3_id AND c3.company_id = s.company_id
+             WHERE s.company_id = $1
+               AND s.deleted_at IS NULL
+               AND COALESCE(s.is_active, true) = true
+               ${periodWhereClause.replace(/updated_at/g, "s.updated_at")}
+          )
+          SELECT drilldown_key::text AS drilldown_key,
+                 parent_label,
+                 child_label,
+                 COUNT(*)::text AS count_value
+            FROM category_drilldown_rows
+           WHERE parent_label <> '분류 미지정'
+             AND child_label <> '분류 미지정'
+           GROUP BY drilldown_key, parent_label, child_label
+           ORDER BY CASE drilldown_key WHEN 'firstToSecond' THEN 1 ELSE 2 END, parent_label, COUNT(*) DESC, child_label`,
+        [companyId],
+      ),
       queryDb<ReorderTopProductRow>(
         `SELECT COALESCE(NULLIF(title, ''), NULLIF(payload->>'name', ''), NULLIF(payload->>'productName', ''), '제품 미지정') AS product_label,
                 COUNT(*)::text AS count_value
@@ -448,6 +504,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
       factoryProductionDistribution: buildAdminFactoryProductionDistribution(factoryProductionResult.rows),
       productionCategoryDistribution: buildAdminCategoryDistribution(categoryResult.rows),
       productionCategoryByRound: buildAdminCategoryByRound(categoryByRoundResult.rows),
+      productionCategoryDrilldown: buildAdminCategoryDrilldown(categoryDrilldownResult.rows),
       reorderTopProducts: buildAdminReorderTopProducts(reorderTopProductsResult.rows),
       factoryPerformance: buildAdminFactoryPerformance(factoryPerformanceResult.rows),
       attachmentTrashCards: buildAdminAttachmentTrashCards(activeFileCount, trashFileCount),
