@@ -77,6 +77,85 @@ type UnifiedTrashRow =
 
 const TRASH_TABLE_GRID = "0.34fr 1.5fr 0.82fr 1.15fr 0.62fr 0.58fr";
 
+const WORKORDER_STAGE_STEPS = [
+  { keys: ["draft", "작성중"], label: "작성중" },
+  { keys: ["review_requested", "검토요청", "검토"], label: "검토" },
+  { keys: ["request_order", "order_requested", "발주요청", "발주"], label: "발주" },
+  {
+    keys: [
+      "inspection",
+      "in_inspection",
+      "inspection_pending",
+      "inspection_in_progress",
+      "inspection_completed",
+      "검수",
+      "검수대기",
+      "검수중",
+      "검수완료",
+    ],
+    label: "검수",
+  },
+  { keys: ["completed", "완료"], label: "완료" },
+];
+
+function getWorkOrderStageIndex(statusLabel: string): number {
+  const normalizedStatus = statusLabel.trim().toLowerCase();
+  const foundIndex = WORKORDER_STAGE_STEPS.findIndex((step) =>
+    step.keys.some((key) => key.toLowerCase() === normalizedStatus),
+  );
+  return foundIndex >= 0 ? foundIndex : 0;
+}
+
+function WorkOrderStageInline({ statusLabel }: { statusLabel: string }) {
+  const currentIndex = getWorkOrderStageIndex(statusLabel);
+
+  return (
+    <div className="rounded-2xl border border-stone-200 bg-white px-4 py-3">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-stone-400">
+            현재 단계
+          </p>
+          <p className="mt-1 text-sm font-semibold text-stone-900">
+            {statusLabel}
+          </p>
+        </div>
+        <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-semibold text-stone-600">
+          삭제 당시
+        </span>
+      </div>
+      <div className="mt-4 grid grid-cols-5 items-start gap-1.5">
+        {WORKORDER_STAGE_STEPS.map((step, index) => {
+          const isActive = index === currentIndex;
+          const isPassed = index < currentIndex;
+          return (
+            <div key={step.label} className="min-w-0">
+              <div
+                className={`h-1.5 rounded-full ${
+                  isActive
+                    ? "bg-stone-950"
+                    : isPassed
+                      ? "bg-stone-400"
+                      : "bg-stone-200"
+                }`}
+              />
+              <p
+                className={`mt-1 truncate text-center text-[10px] font-semibold ${
+                  isActive ? "text-stone-950" : "text-stone-400"
+                }`}
+                title={step.label}
+              >
+                {step.label}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+
 function getTrashFileType(
   item: AdminTrashFileItem,
   t: ReturnType<typeof useAdminTranslation>,
@@ -601,20 +680,21 @@ export default function FileTrashSection({
                 </p>
               </div>
             </div>
+            {detailRow.kind === "workorder" ? (
+              <WorkOrderStageInline
+                statusLabel={detailRow.sourceItem.statusLabel}
+              />
+            ) : null}
+
             <div className="grid gap-2 md:grid-cols-2">
               {(detailRow.kind === "workorder"
                 ? [
                     [t("filesList.columns.type", "유형"), detailRow.typeLabel],
-                    [t("filesList.columns.status", "현재 단계"), detailRow.sourceItem.statusLabel],
                     [t("filesList.attachmentCount", "첨부파일"), detailRow.sourceItem.attachmentSummaryLabel],
                     [t("filesList.memoCount", "메모"), detailRow.sourceItem.memoSummaryLabel],
                     [
                       t("filesList.columns.deletedAt", "삭제일시"),
                       detailRow.deletedAt,
-                    ],
-                    [
-                      t("filesList.columns.restorePolicy", "복구정책"),
-                      detailRow.restorePolicyLabel,
                     ],
                   ]
                 : [
@@ -624,10 +704,6 @@ export default function FileTrashSection({
                     [
                       t("filesList.columns.deletedAt", "삭제일시"),
                       detailRow.deletedAt,
-                    ],
-                    [
-                      t("filesList.columns.restorePolicy", "복구정책"),
-                      detailRow.restorePolicyLabel,
                     ],
                   ]
               ).map(([label, value]) => (
@@ -648,12 +724,17 @@ export default function FileTrashSection({
               ))}
             </div>
             <p className="rounded-2xl bg-stone-50 px-4 py-3 text-xs leading-5 text-stone-500">
-              {detailRow.restoreDisabledReason ||
-                detailRow.purgeDisabledReason ||
-                t(
-                  "filesList.detailActionHint",
-                  "복구 또는 영구 삭제 작업은 이 상세 창에서 처리합니다.",
-                )}
+              {detailRow.kind === "workorder"
+                ? t(
+                    "filesList.detailWorkorderActionHint",
+                    "복구하면 작업지시서와 연결된 첨부파일/메모가 함께 복구됩니다.",
+                  )
+                : detailRow.restoreDisabledReason ||
+                  detailRow.purgeDisabledReason ||
+                  t(
+                    "filesList.detailActionHint",
+                    "복구 또는 영구 삭제 작업은 이 상세 창에서 처리합니다.",
+                  )}
             </p>
           </div>
         ) : null}
@@ -747,7 +828,7 @@ export default function FileTrashSection({
                   {t("filesList.columns.target", "대상")}
                 </p>
                 <p
-                  className={`truncate text-sm font-semibold ${row.kind === "workorder" ? "text-stone-950" : "text-stone-800"}`}
+                  className="truncate text-sm font-medium text-stone-800"
                   title={row.targetLabel}
                 >
                   {row.isGroupedAttachment ? "└ " : ""}
@@ -777,10 +858,10 @@ export default function FileTrashSection({
                   {t("filesList.columns.workorder", "작업지시서")}
                 </p>
                 <p
-                  className={`truncate text-sm ${row.kind === "workorder" ? "font-semibold text-stone-800" : "text-stone-700"}`}
-                  title={row.workorderTitle}
+                  className="truncate text-sm font-medium text-stone-700"
+                  title={row.kind === "workorder" ? "-" : row.workorderTitle}
                 >
-                  {row.workorderTitle}
+                  {row.kind === "workorder" ? "-" : row.workorderTitle}
                 </p>
               </div>
             ),
