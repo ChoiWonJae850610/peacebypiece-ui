@@ -333,9 +333,9 @@ export async function getSystemStoragePurgeCandidateSnapshot(limit = 200): Promi
   const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 500);
   const [fileRows, workOrderRows] = await Promise.all([
     listFilePurgeCandidateRows(safeLimit),
-    // 작업지시서는 사용자가 방금 삭제한 항목도 시스템관리자 후보에서 확인할 수 있어야 하므로
-    // 30일 도래 전 pending 항목까지 목록에 노출한다. 실제 전체 실행은 도래/요청 항목만 처리한다.
-    listWorkOrderPurgeCandidateRows({ limit: safeLimit, includeFuturePending: true }),
+    // 시스템관리자 실제 삭제 후보는 고객관리자가 영구삭제 요청했거나
+    // 보관 기간이 도래한 항목만 노출한다. 단순 휴지통 pending 항목은 고객관리자 복구 가능 상태이므로 숨긴다.
+    listWorkOrderPurgeCandidateRows({ limit: safeLimit, includeFuturePending: false }),
   ]);
 
   const candidates = [...workOrderRows.map(mapWorkOrderCandidateRow), ...fileRows.map(mapFileCandidateRow)].slice(0, safeLimit);

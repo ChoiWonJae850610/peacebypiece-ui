@@ -1,18 +1,18 @@
 Version :
-0.9.22375
+0.9.22376
 
 Summary :
-저장소 삭제 요청 요약 런타임 오류 수정
+시스템관리자 실제 삭제 후보 pending 노출 보정
 
 Description :
-관리자 저장소 snapshot API에서 존재하지 않는 attachment_trash_items.purge_requested_at 컬럼을 참조하던 정렬식을 실제 schema에 존재하는 updated_at, deleted_at 기준으로 수정했다. 삭제 요청 요약은 기존처럼 purge_requested 상태의 첨부파일 개수와 용량만 합산한다.
+시스템관리자 저장소 실제 삭제 후보 목록에서 고객관리자가 아직 영구삭제 요청하지 않은 복구 가능 pending 작업지시서가 보이지 않도록 수정했다. 실제 삭제 후보는 영구삭제 요청, 보관 기간 도래, 실패 항목만 표시하도록 정리했다.
 
 수정 파일 목록 :
-- app/api/admin/files/snapshot/route.ts
+- lib/system/storagePurgeCandidates.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/storage-delete-request-summary-error-fix-0.9.22375.md
+- docs/system-storage-purge-candidate-pending-hide-0.9.22376.md
 
 삭제 파일 목록 :
 없음
