@@ -124,11 +124,11 @@ function WorkOrderStageInline({ statusLabel }: { statusLabel: string }) {
           <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-stone-400">
             현재 단계
           </p>
-          <p className="mt-1 text-sm font-medium text-stone-800">
+          <p className="mt-1 text-sm font-medium text-stone-700">
             {statusLabel}
           </p>
         </div>
-        <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-medium text-stone-600">
+        <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-medium text-stone-500">
           삭제 당시
         </span>
       </div>
@@ -148,8 +148,8 @@ function WorkOrderStageInline({ statusLabel }: { statusLabel: string }) {
                 }`}
               />
               <p
-                className={`mt-1 truncate text-center text-[10px] font-semibold ${
-                  isActive ? "text-stone-950" : "text-stone-400"
+                className={`mt-1 truncate text-center text-[10px] font-medium ${
+                  isActive ? "text-stone-800" : "text-stone-400"
                 }`}
                 title={step.label}
               >
@@ -212,20 +212,21 @@ function TrashItemVisual({
   compact?: boolean;
   thumbnailUrl?: string | null;
 }) {
-  const sizeClass = compact ? "h-8 w-8 text-[9px]" : "h-11 w-11 text-[10px]";
+  const [hasPreviewError, setHasPreviewError] = useState(false);
+  const sizeClass = compact ? "h-7 w-7 text-[8px]" : "h-10 w-10 text-[9px]";
   const toneClass =
     tone === "workorder"
-      ? "border-stone-300 bg-stone-950 text-white"
+      ? "border-stone-300 bg-stone-900 text-white"
       : tone === "image"
         ? "border-purple-100 bg-purple-50 text-purple-700"
         : tone === "pdf"
           ? "border-red-100 bg-red-50 text-red-600"
           : "border-stone-200 bg-stone-50 text-stone-600";
 
-  if (tone === "image" && thumbnailUrl) {
+  if (tone === "image" && thumbnailUrl && !hasPreviewError) {
     return (
       <span
-        className={`flex shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 ${sizeClass} shadow-sm`}
+        className={`flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-stone-200 bg-stone-50 ${sizeClass} shadow-sm`}
         aria-hidden="true"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -234,6 +235,7 @@ function TrashItemVisual({
           alt=""
           className="h-full w-full object-cover"
           loading="lazy"
+          onError={() => setHasPreviewError(true)}
         />
       </span>
     );
@@ -241,8 +243,9 @@ function TrashItemVisual({
 
   return (
     <span
-      className={`flex shrink-0 items-center justify-center rounded-2xl border ${toneClass} ${sizeClass} font-bold shadow-sm`}
+      className={`flex shrink-0 items-center justify-center rounded-xl border ${toneClass} ${sizeClass} font-medium shadow-sm`}
       aria-hidden="true"
+      title={hasPreviewError ? "미리보기 실패" : undefined}
     >
       {label}
     </span>
@@ -753,7 +756,7 @@ export default function FileTrashSection({
               />
               <div className="min-w-0">
                 <p
-                  className="truncate text-sm font-medium text-stone-800"
+                  className="truncate text-[13px] font-medium text-stone-700"
                   title={detailRow.targetLabel}
                 >
                   {detailRow.targetLabel}
@@ -772,7 +775,7 @@ export default function FileTrashSection({
                 href={detailRow.previewUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="block rounded-2xl border border-stone-200 bg-white px-4 py-3 text-xs font-semibold text-stone-700 shadow-sm transition hover:bg-stone-50"
+                className="block rounded-2xl border border-stone-200 bg-white px-4 py-3 text-xs font-medium text-stone-600 shadow-sm transition hover:bg-stone-50"
               >
                 파일 미리보기 열기
               </a>
@@ -812,7 +815,7 @@ export default function FileTrashSection({
                     {label}
                   </p>
                   <p
-                    className="mt-1 truncate text-sm font-medium text-stone-700"
+                    className="mt-1 truncate text-sm font-normal text-stone-600"
                     title={value}
                   >
                     {value}
@@ -891,7 +894,7 @@ export default function FileTrashSection({
               }
               if (row.restorePolicy === "bundle_required")
                 return (
-                  <span className="text-[10px] font-semibold text-stone-300">
+                  <span className="text-[10px] font-medium text-stone-300">
                     -
                   </span>
                 );
@@ -922,7 +925,7 @@ export default function FileTrashSection({
                 className={`flex min-w-0 items-center gap-3 ${row.isGroupedAttachment ? "pl-4" : ""}`}
               >
                 {row.isGroupedAttachment ? (
-                  <span className="shrink-0 text-xs font-semibold text-stone-300">
+                  <span className="shrink-0 text-xs font-medium text-stone-300">
                     └
                   </span>
                 ) : null}
@@ -937,7 +940,7 @@ export default function FileTrashSection({
                     {t("filesList.columns.target", "대상")}
                   </p>
                   <p
-                    className="truncate text-sm font-medium text-stone-800"
+                    className="truncate text-[13px] font-medium text-stone-700"
                     title={row.targetLabel}
                   >
                     {row.targetLabel}
@@ -951,7 +954,7 @@ export default function FileTrashSection({
             label: t("filesList.columns.deletedAt", "삭제일시"),
             render: (row) => (
               <p
-                className="truncate text-sm text-stone-600"
+                className="truncate text-[13px] text-stone-600"
                 title={row.deletedAt}
               >
                 {row.deletedAt}
@@ -967,7 +970,7 @@ export default function FileTrashSection({
                   {t("filesList.columns.workorder", "작업지시서")}
                 </p>
                 <p
-                  className="truncate text-sm font-medium text-stone-700"
+                  className="truncate text-[13px] font-medium text-stone-600"
                   title={row.kind === "workorder" ? "-" : row.workorderTitle}
                 >
                   {row.kind === "workorder" ? "-" : row.workorderTitle}
@@ -980,7 +983,7 @@ export default function FileTrashSection({
             label: t("filesList.columns.type", "유형"),
             render: (row) => (
               <p
-                className="truncate text-sm text-stone-600"
+                className="truncate text-[13px] text-stone-600"
                 title={row.typeLabel}
               >
                 {row.typeLabel}
@@ -992,7 +995,7 @@ export default function FileTrashSection({
             label: t("filesList.columns.size", "크기"),
             render: (row) => (
               <p
-                className="truncate text-sm text-stone-600"
+                className="truncate text-[13px] text-stone-600"
                 title={row.sizeLabel}
               >
                 {row.sizeLabel}
