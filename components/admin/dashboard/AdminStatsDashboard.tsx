@@ -145,8 +145,11 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   const totalReorderCount = stats.currentOverview.reorderCount;
   const activePeriodOptions = stats.periodOptions.filter((item) => item.key === "7d" || item.key === "30d");
   const activePeriodLabel = stats.selectedPeriodRange.label;
-  const customPeriodHref = customStartDate && customEndDate ? `/admin/dashboard?period=custom&startDate=${customStartDate}&endDate=${customEndDate}` : "/admin/dashboard?period=30d";
   const isCustomPeriodReady = Boolean(customStartDate && customEndDate);
+  const isCustomPeriodOrderValid = !isCustomPeriodReady || customStartDate <= customEndDate;
+  const isCustomPeriodValid = isCustomPeriodReady && isCustomPeriodOrderValid;
+  const customPeriodHref = isCustomPeriodValid ? `/admin/dashboard?period=custom&startDate=${customStartDate}&endDate=${customEndDate}` : "/admin/dashboard?period=30d";
+  const customPeriodMessage = !isCustomPeriodReady ? "시작일과 종료일을 선택하면 적용할 수 있습니다." : !isCustomPeriodOrderValid ? "종료일은 시작일과 같거나 이후 날짜여야 합니다." : "직접 선택 기간을 적용할 수 있습니다.";
   const storageUsePercent = stats.currentOverview.storageLimitBytes > 0 ? Math.round((stats.currentOverview.storageUsedBytes / stats.currentOverview.storageLimitBytes) * 1000) / 10 : 0;
   const roundFilterLabels: Record<RoundFilterKey, string> = {
     first: "1차",
@@ -228,7 +231,8 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Period analysis</p>
             <h2 className="mt-2 text-lg font-semibold text-stone-950">기간별 분석 범위</h2>
-            <p className="mt-1 text-xs font-semibold text-stone-500">작업 흐름과 리오더 분석에 적용합니다. 현재 범위: {activePeriodLabel}</p>
+            <p className="mt-1 text-xs font-semibold text-stone-500">작업 흐름, 리오더, 생산품유형, 업체 성과에 적용합니다.</p>
+            <p className="mt-1 text-xs font-semibold text-[var(--admin-theme-surface)]">현재 범위: {activePeriodLabel}</p>
           </div>
           <div className="flex flex-wrap justify-end gap-2">
             {activePeriodOptions.map((item) => (
@@ -255,13 +259,14 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
           <div className="flex items-end gap-2">
             <Link
               href={customPeriodHref}
-              aria-disabled={!isCustomPeriodReady}
-              className={`rounded-2xl px-4 py-2 text-xs font-semibold transition ${isCustomPeriodReady ? "bg-stone-950 text-white hover:bg-stone-800" : "pointer-events-none bg-stone-100 text-stone-400"}`}
+              aria-disabled={!isCustomPeriodValid}
+              className={`rounded-2xl px-4 py-2 text-xs font-semibold transition ${isCustomPeriodValid ? "bg-stone-950 text-white hover:bg-stone-800" : "pointer-events-none bg-stone-100 text-stone-400"}`}
             >
               직접 선택 적용
             </Link>
           </div>
         </div>
+        <p className={`mt-2 text-xs font-semibold ${isCustomPeriodValid ? "text-stone-500" : "text-amber-700"}`}>{customPeriodMessage}</p>
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">

@@ -96,7 +96,7 @@ export function AdminBasicDonutChart({ points, totalLabel, valueSuffix = "", emp
     <div className={chartLayoutClassName}>
       <div className={chartBoxClassName}>
         {total === 0 ? (
-          <div className="absolute inset-1 z-10 flex items-center justify-center rounded-full border border-dashed border-stone-300 bg-white/70 px-4 text-center text-[11px] font-semibold leading-4 text-stone-500">
+          <div className="absolute inset-1 z-10 flex items-center justify-center rounded-full border border-dashed border-stone-300 bg-white/80 px-4 text-center text-[11px] font-semibold leading-4 text-stone-500">
             {emptyLabel}
           </div>
         ) : null}
@@ -113,10 +113,12 @@ export function AdminBasicDonutChart({ points, totalLabel, valueSuffix = "", emp
             />
           </PieChart>
         </ResponsiveContainer>
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-          <span className="text-xl font-bold text-stone-950">{formatTooltipValue(total, valueSuffix)}</span>
-          <span className="text-[11px] font-semibold text-stone-400">{totalLabel}</span>
-        </div>
+        {total > 0 ? (
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+            <span className="text-xl font-bold text-stone-950">{formatTooltipValue(total, valueSuffix)}</span>
+            <span className="text-[11px] font-semibold text-stone-400">{totalLabel}</span>
+          </div>
+        ) : null}
       </div>
       <div className="grid min-w-0 content-center gap-2">
         {points.map((item, index) => (
