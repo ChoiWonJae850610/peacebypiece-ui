@@ -46,6 +46,48 @@ export function isWorkOrderBundleTrashMetadata(input: {
   );
 }
 
+
+export type AdminTrashPolicyFileItem = {
+  workorderId?: string | null;
+  restorePolicy?: string | null;
+  parentWorkOrderDeleted?: boolean | null;
+  canRestore?: boolean | null;
+  canPurge?: boolean | null;
+};
+
+export function isAdminTrashItemWorkOrderBundle(
+  item: AdminTrashPolicyFileItem,
+): boolean {
+  return (
+    item.restorePolicy === "bundle_required" ||
+    Boolean(item.parentWorkOrderDeleted && item.workorderId)
+  );
+}
+
+export function isAdminTrashItemHandledByWorkOrderSelection(
+  item: AdminTrashPolicyFileItem,
+  selectedWorkOrderIds: ReadonlySet<string>,
+): boolean {
+  const workOrderId = String(item.workorderId ?? "").trim();
+  return (
+    workOrderId.length > 0 &&
+    selectedWorkOrderIds.has(workOrderId) &&
+    isAdminTrashItemWorkOrderBundle(item)
+  );
+}
+
+export function canAdminTrashItemRestore(
+  item: AdminTrashPolicyFileItem,
+): boolean {
+  return item.canRestore === true;
+}
+
+export function canAdminTrashItemPurge(
+  item: AdminTrashPolicyFileItem,
+): boolean {
+  return item.canPurge === true;
+}
+
 export const ADMIN_FILE_TRASH_PURGE_STATUSES = {
   pending: "pending",
   purgeRequested: "purge_requested",

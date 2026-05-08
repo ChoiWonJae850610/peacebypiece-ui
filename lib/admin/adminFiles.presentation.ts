@@ -33,6 +33,43 @@ function joinTrashActionCountParts(parts: string[], hasWorkOrder: boolean): stri
   return `${workOrderPart}과 ${restParts.join(", ")}`;
 }
 
+
+export function createEmptyAdminSelectionMessage(actionLabel: string): string {
+  return `${actionLabel}할 항목을 먼저 선택해야 합니다.`;
+}
+
+export function createAdminMoveToTrashMessage(
+  successCount: number,
+  hasPartialFailure: boolean,
+): string {
+  const baseMessage = `문서/디자인 ${successCount}개를 휴지통으로 이동했습니다.`;
+  return hasPartialFailure
+    ? `${baseMessage} 일부 항목은 처리하지 못했습니다.`
+    : baseMessage;
+}
+
+export function createAdminPurgeWorkerResultMessage(input: {
+  dryRun: boolean;
+  candidateCount: number;
+  purgedCount: number;
+  failedCount: number;
+}): string {
+  if (input.dryRun) {
+    return `dryRun 결과: 실제 삭제 가능 후보 ${input.candidateCount}개를 확인했습니다.`;
+  }
+  return `실제 삭제 결과: 후보 ${input.candidateCount}개 중 ${input.purgedCount}개 삭제 완료, ${input.failedCount}개 실패.`;
+}
+
+export function createAdminFilePolicyResultMessage(input: {
+  ok: boolean;
+  detail?: string | null;
+}): string {
+  if (input.ok) return "파일/용량 정책을 저장했습니다.";
+  return input.detail
+    ? `파일 정책 저장 실패: ${input.detail}`
+    : "파일 정책 저장 실패";
+}
+
 export function createEmptyAdminTrashActionSummary(): AdminTrashActionResultSummary {
   return {
     workOrderCount: 0,

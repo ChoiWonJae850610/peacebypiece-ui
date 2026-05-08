@@ -1,11 +1,20 @@
 import {
   buildAdminFilePolicyUpdateInput,
+  createAdminFilePolicyResultMessage,
+  createAdminMoveToTrashMessage,
+  createAdminPurgeWorkerResultMessage,
   createAdminTrashActionMessage,
   createAdminTrashFileActionSummary,
+  createEmptyAdminSelectionMessage,
   createEmptyAdminTrashActionSummary,
   mergeAdminTrashActionSummaries,
+  selectAdminTrashItemsByIds,
 } from "@/lib/admin/adminFiles.presentation";
-import { selectAdminTrashItemsByIds } from "@/lib/admin/adminFiles.presentation";
+import {
+  canAdminTrashItemPurge,
+  canAdminTrashItemRestore,
+  isAdminTrashItemHandledByWorkOrderSelection,
+} from "@/lib/admin/files/trashPolicy";
 import type {
   AdminFileActionResult,
   AdminManagedFileItem,
@@ -25,7 +34,7 @@ function createEmptySelectionResult(actionLabel: string): AdminFileActionResult 
   return createAdminFileActionResult({
     ok: false,
     status: "empty-selection",
-    message: `${actionLabel}할 항목을 먼저 선택해야 합니다.`,
+    message: createEmptyAdminSelectionMessage(actionLabel),
   });
 }
 
@@ -98,17 +107,24 @@ function getTrashSelectionTargets(
   action: AdminTrashActionType,
   input: TrashSelectionFlowInput,
 ): TrashSelectionTargets {
+  const workOrderIds = normalizeWorkOrderIds(input.workOrderIds);
+  const workOrderIdSet = new Set(workOrderIds);
   const selectedItems = input.selectedItemIds
     ? selectAdminTrashItemsByIds(input.items, input.selectedItemIds)
     : input.items;
-  const fileTargets = selectedItems.filter((item) =>
-    action === "restore" ? item.canRestore : item.canPurge,
+  const standaloneItems = selectedItems.filter(
+    (item) => !isAdminTrashItemHandledByWorkOrderSelection(item, workOrderIdSet),
+  );
+  const fileTargets = standaloneItems.filter((item) =>
+    action === "restore"
+      ? canAdminTrashItemRestore(item)
+      : canAdminTrashItemPurge(item),
   );
 
   return {
     fileTargets,
-    skippedCount: selectedItems.length - fileTargets.length,
-    workOrderIds: normalizeWorkOrderIds(input.workOrderIds),
+    skippedCount: standaloneItems.length - fileTargets.length,
+    workOrderIds,
   };
 }
 
@@ -188,7 +204,7 @@ export async function runMoveAttachmentsToTrashFlow(items: AdminManagedFileItem[
     return createAdminFileActionResult({
       ok: successCount > 0,
       status: successCount === items.length ? "success" : "error",
-      message: successCount === items.length ? `문서/디자인 ${successCount}개를 휴지통으로 이동했습니다.` : `문서/디자인 ${successCount}개를 휴지통으로 이동했습니다. 일부 항목은 처리하지 못했습니다.`,
+      message: createAdminMoveToTrashMessage(successCount, successCount !== items.length),
     });
   } catch (error) {
     return createAdminFileActionResult({
@@ -202,7 +218,7 @@ export async function runMoveAttachmentsToTrashFlow(items: AdminManagedFileItem[
 export async function runRestoreTrashItemsFlow(items: AdminTrashFileItem[]): Promise<AdminFileActionResult> {
   if (items.length === 0) return createEmptySelectionResult("복원");
 
-  const blockedItem = items.find((item) => !item.canRestore);
+  const blockedItem = items.find((item) => !canAdminTrashItemRestore(item));
   if (blockedItem) {
     return createAdminFileActionResult({
       ok: false,
@@ -231,7 +247,7 @@ export async function runRestoreTrashItemsFlow(items: AdminTrashFileItem[]): Pro
 export async function runPurgeTrashItemsFlow(items: AdminTrashFileItem[]): Promise<AdminFileActionResult> {
   if (items.length === 0) return createEmptySelectionResult("선택 삭제");
 
-  const blockedItem = items.find((item) => !item.canPurge);
+  const blockedItem = items.find((item) => !canAdminTrashItemPurge(item));
   if (blockedItem) {
     return createAdminFileActionResult({
       ok: false,
@@ -326,8 +342,18 @@ export async function runPurgeWorkerFlow(dryRun: boolean): Promise<AdminPurgeWor
     }
 
     const message = dryRun
-      ? `dryRun 결과: 실제 삭제 가능 후보 ${payload.candidateCount}개를 확인했습니다.`
-      : `실제 삭제 결과: 후보 ${payload.candidateCount}개 중 ${payload.purgedCount}개 삭제 완료, ${payload.failedCount}개 실패.`;
+      ? createAdminPurgeWorkerResultMessage({
+          dryRun: true,
+          candidateCount: payload.candidateCount,
+          purgedCount: payload.purgedCount,
+          failedCount: payload.failedCount,
+        })
+      : createAdminPurgeWorkerResultMessage({
+          dryRun: false,
+          candidateCount: payload.candidateCount,
+          purgedCount: payload.purgedCount,
+          failedCount: payload.failedCount,
+        });
 
     return {
       ok: true,
@@ -364,20 +390,23 @@ export async function runUpdateFilePolicySettingsFlow(policySettings: AdminStora
       return createAdminFileActionResult({
         ok: false,
         status: "error",
-        message: payload?.message ? `파일 정책 저장 실패: ${payload.message}` : "파일 정책 저장 실패",
+        message: createAdminFilePolicyResultMessage({ ok: false, detail: payload?.message }),
       });
     }
 
     return createAdminFileActionResult({
       ok: true,
       status: "success",
-      message: "파일/용량 정책을 저장했습니다.",
+      message: createAdminFilePolicyResultMessage({ ok: true }),
     });
   } catch (error) {
     return createAdminFileActionResult({
       ok: false,
       status: "error",
-      message: error instanceof Error ? `파일 정책 저장 실패: ${error.message}` : "파일 정책 저장 실패",
+      message: createAdminFilePolicyResultMessage({
+        ok: false,
+        detail: error instanceof Error ? error.message : undefined,
+      }),
     });
   }
 }

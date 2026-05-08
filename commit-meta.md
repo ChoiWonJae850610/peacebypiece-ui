@@ -1,19 +1,21 @@
 Version :
-0.9.22401
+0.9.22402
 
 Summary :
-저장소 관리 요약 초기 표시와 요금제 용량 placeholder 보정
+저장소 휴지통 선택 흐름과 공통 정책 함수 보정
 
 Description :
-저장소 관리 화면 새로고침 직후 삭제 요청 카드에 복원 가능 기간 30일 값이 잠깐 표시되는 초기 placeholder 불일치를 수정했다. 실제 고객 요금제 용량이 로드되기 전에는 5.0GB 하드코딩 값 대신 요금제 확인 중 상태를 표시하도록 정리했다.
+저장소 관리 휴지통에서 작업지시서 묶음 첨부가 파일 단독 실패 항목으로 잘못 집계되지 않도록 선택 대상 계산을 보정했다. 복원/삭제 요청 가능 여부 판정을 trashPolicy 공통 함수로 이동하고, 일부 actionFlow 결과 메시지 생성을 presentation formatter로 분리했다.
 
 수정 파일 목록 :
-- components/admin/files/FileStorageSummary.tsx
-- lib/admin/adminFiles.adapter.ts
+- components/admin/files/fileTrashSectionActions.ts
+- lib/admin/adminFiles.actionFlow.ts
+- lib/admin/adminFiles.presentation.ts
+- lib/admin/files/trashPolicy.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/storage-management-summary-plan-quota-0.9.22401.md
+- docs/storage-trash-flow-common-policy-0.9.22402.md
 
 삭제 파일 목록 :
 없음
