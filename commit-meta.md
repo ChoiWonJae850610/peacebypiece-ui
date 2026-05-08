@@ -1,19 +1,17 @@
 Version :
-0.9.22397
+0.9.22398
 
 Summary :
-저장소 snapshot build 타입 오류 보정
+삭제 상태 DB 구조 리팩토링 설계 정리
 
 Description :
-0.9.22396 적용 후 snapshot API에서 attachments 배열의 fileKind가 string으로 넓게 추론되어 AdminManagedFileItem[]에 할당되지 못하던 TypeScript 오류를 보정했다. listAdminFileManagementRows 반환 타입과 배열 타입을 명시하고 APP_VERSION을 0.9.22397로 갱신했다.
+저장소와 휴지통의 삭제 상태를 문장 기반 delete_reason 비교가 아니라 delete_source, delete_scope, delete_parent_id, purge_status 같은 구조화된 코드값으로 정리하는 설계 문서를 추가했다. 이번 버전은 실제 DB schema 변경 없이 다음 schema 적용 버전에서 사용할 SQL 초안, full_reset 반영 범위, smoke test 추가 항목을 문서화했다.
 
 수정 파일 목록 :
-- lib/admin/adminFiles.serverActions.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/storage-trash-build-type-fix-0.9.22397.md
-- commit-meta.md
+- docs/storage-delete-state-schema-refactor-0.9.22398.md
 
 삭제 파일 목록 :
 없음
