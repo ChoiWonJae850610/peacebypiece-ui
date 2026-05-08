@@ -6,12 +6,14 @@ import FileStorageSummary from "@/components/admin/files/FileStorageSummary";
 import FileTrashSection from "@/components/admin/files/FileTrashSection";
 import AdminShell from "@/components/admin/layout/AdminShell";
 import {
-  runPurgeTrashSelectionFlow,
-  runRestoreTrashSelectionFlow,
+  runPurgeAllTrashItemsFlow,
+  runTrashSelectionActionFlow,
 } from "@/lib/admin/files/actionFlow";
 import { getAdminFileManagementSnapshot } from "@/lib/admin/files/adapter";
-import { selectAdminTrashItemsByIds } from "@/lib/admin/files/selectors";
-import type { AdminFileManagementSnapshot } from "@/lib/admin/files/types";
+import type {
+  AdminFileManagementSnapshot,
+  AdminTrashActionType,
+} from "@/lib/admin/files/types";
 import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { APP_VERSION } from "@/lib/constants/app";
@@ -93,11 +95,6 @@ export default function AdminFilesPage() {
     return () => window.clearTimeout(timer);
   }, [actionMessage]);
 
-  const selectedTrashItems = useMemo(
-    () => selectAdminTrashItemsByIds(snapshot.trashItems, selectedTrashItemIds),
-    [selectedTrashItemIds, snapshot.trashItems],
-  );
-
   function toggleTrashItemId(itemId: string) {
     setSelectedTrashItemIds((currentIds) =>
       currentIds.includes(itemId)
@@ -116,51 +113,21 @@ export default function AdminFilesPage() {
     setActionMessage(null);
   }
 
-  async function executeRestoreTrashSelection(input: {
-    itemIds?: string[];
-    workOrderIds?: string[];
-  }) {
+  async function executeTrashSelectionAction(
+    action: AdminTrashActionType,
+    input: { itemIds?: string[]; workOrderIds?: string[] },
+  ) {
     if (pendingFileAction || pendingWorkOrderAction) return;
-    const targets = input.itemIds
-      ? selectAdminTrashItemsByIds(snapshot.trashItems, input.itemIds)
-      : selectedTrashItems;
-    const workOrderTargets = input.workOrderIds ?? [];
+    const itemIds = input.itemIds ?? [];
+    const workOrderIds = input.workOrderIds ?? [];
 
-    setPendingFileAction(targets.length > 0 ? "restore" : null);
-    setPendingWorkOrderAction(workOrderTargets.length > 0 ? "restore" : null);
+    setPendingFileAction(itemIds.length > 0 ? action : null);
+    setPendingWorkOrderAction(workOrderIds.length > 0 ? action : null);
     try {
-      const result = await runRestoreTrashSelectionFlow({
-        items: targets,
-        workOrderIds: workOrderTargets,
-      });
-      setActionMessage(result.message);
-      if (result.ok) {
-        setSelectedTrashItemIds([]);
-        setSelectedWorkOrderIds([]);
-        await refreshSnapshot();
-      }
-    } finally {
-      setPendingFileAction(null);
-      setPendingWorkOrderAction(null);
-    }
-  }
-
-  async function executePurgeTrashSelection(input: {
-    itemIds?: string[];
-    workOrderIds?: string[];
-  }) {
-    if (pendingFileAction || pendingWorkOrderAction) return;
-    const targets = input.itemIds
-      ? selectAdminTrashItemsByIds(snapshot.trashItems, input.itemIds)
-      : selectedTrashItems;
-    const workOrderTargets = input.workOrderIds ?? [];
-
-    setPendingFileAction(targets.length > 0 ? "purge" : null);
-    setPendingWorkOrderAction(workOrderTargets.length > 0 ? "purge" : null);
-    try {
-      const result = await runPurgeTrashSelectionFlow({
-        items: targets,
-        workOrderIds: workOrderTargets,
+      const result = await runTrashSelectionActionFlow(action, {
+        items: snapshot.trashItems,
+        selectedItemIds: itemIds,
+        workOrderIds,
       });
       setActionMessage(result.message);
       if (result.ok) {
@@ -175,38 +142,54 @@ export default function AdminFilesPage() {
   }
 
   async function handleRestoreTrashItem(itemIds?: string[]) {
-    await executeRestoreTrashSelection({ itemIds });
+    await executeTrashSelectionAction("restore", { itemIds, workOrderIds: [] });
   }
 
   async function handleRestoreSelection() {
-    await executeRestoreTrashSelection({
+    await executeTrashSelectionAction("restore", {
+      itemIds: selectedTrashItemIds,
       workOrderIds: selectedWorkOrderIds,
     });
   }
 
   async function handlePurgeSelection() {
-    await executePurgeTrashSelection({
+    await executeTrashSelectionAction("purge", {
+      itemIds: selectedTrashItemIds,
       workOrderIds: selectedWorkOrderIds,
     });
   }
 
   async function handlePurgeAllTrashItems() {
-    await executePurgeTrashSelection({
-      itemIds: snapshot.trashItems.map((item) => item.id),
-      workOrderIds: (snapshot.workOrders ?? []).map((item) => item.id),
-    });
+    if (pendingFileAction || pendingWorkOrderAction) return;
+    setPendingFileAction("purge");
+    setPendingWorkOrderAction("purge");
+    try {
+      const result = await runPurgeAllTrashItemsFlow({
+        items: snapshot.trashItems,
+        workOrderItems: snapshot.workOrders ?? [],
+      });
+      setActionMessage(result.message);
+      if (result.ok) {
+        setSelectedTrashItemIds([]);
+        setSelectedWorkOrderIds([]);
+        await refreshSnapshot();
+      }
+    } finally {
+      setPendingFileAction(null);
+      setPendingWorkOrderAction(null);
+    }
   }
 
   async function handleRestoreWorkOrder(workOrderId: string) {
-    await executeRestoreTrashSelection({ itemIds: [], workOrderIds: [workOrderId] });
+    await executeTrashSelectionAction("restore", { itemIds: [], workOrderIds: [workOrderId] });
   }
 
   async function handlePurgeWorkOrder(workOrderId: string) {
-    await executePurgeTrashSelection({ itemIds: [], workOrderIds: [workOrderId] });
+    await executeTrashSelectionAction("purge", { itemIds: [], workOrderIds: [workOrderId] });
   }
 
   async function handlePurgeTrashItem(itemIds?: string[]) {
-    await executePurgeTrashSelection({ itemIds });
+    await executeTrashSelectionAction("purge", { itemIds, workOrderIds: [] });
   }
 
   return (
