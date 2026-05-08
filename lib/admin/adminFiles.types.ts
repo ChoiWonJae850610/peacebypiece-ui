@@ -114,7 +114,6 @@ export type AdminManagedFileItem = {
   statusLabel: string;
   deletedAt: string | null;
   deletedBy: string | null;
-  deleteReason: string | null;
   purgeAfterAt: string | null;
 };
 
@@ -136,7 +135,6 @@ export type AdminTrashFileItem = {
   purgeAfterAt: string;
   restoreDaysLeft: number;
   restoreLabel: string;
-  deleteReason: string;
   purgeStatus: AdminTrashPurgeStatus;
   purgeStatusLabel: string;
   isPurgeReady: boolean;

@@ -100,7 +100,6 @@ export async function restoreAttachmentTrashItems(
           SET is_active = true,
               deleted_at = NULL,
               deleted_by = NULL,
-              delete_reason = NULL,
               delete_source = NULL,
               delete_scope = NULL,
               delete_parent_type = NULL,
@@ -214,7 +213,6 @@ type AdminAttachmentRow = DbQueryResultRow & {
   created_at: string | Date | null;
   deleted_at: string | Date | null;
   deleted_by: string | null;
-  delete_reason: string | null;
   purge_after_at: string | Date | null;
   purge_status: string | null;
   delete_source: string | null;
@@ -244,7 +242,6 @@ type AdminTrashRow = DbQueryResultRow & {
   thumbnail_key: string | null;
   deleted_at: string | Date | null;
   deleted_by: string | null;
-  delete_reason: string | null;
   purge_after_at: string | Date | null;
   purge_status: string | null;
   delete_source: string | null;
@@ -490,7 +487,6 @@ export async function listAdminFileManagementRows(
               a.created_at,
               a.deleted_at,
               a.deleted_by,
-              a.delete_reason,
               a.purge_after_at
          FROM attachments a
          LEFT JOIN spec_sheets s ON s.id = a.order_id
@@ -517,7 +513,6 @@ export async function listAdminFileManagementRows(
               t.thumbnail_key,
               t.deleted_at,
               t.deleted_by,
-              t.delete_reason,
               t.delete_source,
               t.delete_scope,
               t.delete_parent_type,
@@ -599,7 +594,6 @@ export async function listAdminFileManagementRows(
         statusLabel: "사용중",
         deletedAt: row.deleted_at ? formatDateTime(row.deleted_at) : null,
         deletedBy: row.deleted_by,
-        deleteReason: row.delete_reason,
         purgeAfterAt: row.purge_after_at
           ? formatDate(row.purge_after_at)
           : null,
@@ -645,7 +639,6 @@ export async function listAdminFileManagementRows(
       purgeAfterAt: formatDate(row.purge_after_at),
       restoreDaysLeft,
       restoreLabel: `D-${restoreDaysLeft}`,
-      deleteReason: row.delete_reason || "삭제 사유 없음",
       purgeStatus: getAdminFileTrashVisiblePurgeStatus({
         status: row.purge_status,
         lastPurgeError: row.last_purge_error,
@@ -1040,7 +1033,6 @@ export async function restoreWorkOrderTrashBundle(
           SET is_active = true,
               deleted_at = NULL,
               deleted_by = NULL,
-              delete_reason = NULL,
               delete_source = NULL,
               delete_scope = NULL,
               delete_parent_type = NULL,

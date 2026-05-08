@@ -127,6 +127,33 @@ BEGIN
   END IF;
 END $$;
 
+
+DO $$
+DECLARE
+  legacy_columns text[];
+BEGIN
+  SELECT array_agg(table_name || '.' || column_name)
+  INTO legacy_columns
+  FROM (
+    VALUES
+      ('attachments', 'delete_reason'),
+      ('attachment_trash_items', 'delete_reason'),
+      ('memos', 'delete_reason'),
+      ('spec_sheets', 'delete_reason')
+  ) AS blocked_columns(table_name, column_name)
+  WHERE EXISTS (
+    SELECT 1
+      FROM information_schema.columns c
+     WHERE c.table_schema = current_schema()
+       AND c.table_name = blocked_columns.table_name
+       AND c.column_name = blocked_columns.column_name
+  );
+
+  IF legacy_columns IS NOT NULL THEN
+    RAISE EXCEPTION 'full_reset smoke test failed. Legacy delete_reason columns remain: %', legacy_columns;
+  END IF;
+END $$;
+
 DO $$
 DECLARE
   role_count integer;

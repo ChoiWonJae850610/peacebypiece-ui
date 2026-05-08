@@ -194,7 +194,6 @@ export async function runMoveAttachmentsToTrashFlow(items: AdminManagedFileItem[
         postAdminJson<{ attachmentId: string | null; trashMode?: string }>("/api/workorders/attachments/delete", {
           attachmentId: item.id,
           deletedBy: "admin",
-          deleteReason: "관리자 파일/용량 관리에서 휴지통 이동",
         }),
       ),
     );

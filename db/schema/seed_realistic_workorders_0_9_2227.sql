@@ -324,7 +324,7 @@ WHERE idx % 2 = 0 OR status IN ('rejected', 'inspection');
 -- 5) R2 업로드 테스트용 attachments metadata small preset
 -- =========================================
 
-INSERT INTO attachments (id, company_id, company_name, order_id, type, storage_key, original_name, mime_type, size_bytes, author_id, is_primary, thumbnail_key, preview_url, is_active, deleted_at, deleted_by, delete_reason, purge_after_at, created_at, updated_at)
+INSERT INTO attachments (id, company_id, company_name, order_id, type, storage_key, original_name, mime_type, size_bytes, author_id, is_primary, thumbnail_key, preview_url, is_active, deleted_at, deleted_by, purge_after_at, created_at, updated_at)
 SELECT
   'realistic-attachment-' || lpad(w.idx::text, 3, '0') || '-' || slot,
   'company-sample-customer',
@@ -365,7 +365,6 @@ SELECT
   CASE WHEN (w.idx + slot) % 17 = 0 THEN false ELSE true END,
   CASE WHEN (w.idx + slot) % 17 = 0 THEN w.created_at + interval '70 days' ELSE NULL END,
   CASE WHEN (w.idx + slot) % 17 = 0 THEN 'user-sample-admin' ELSE NULL END,
-  CASE WHEN (w.idx + slot) % 17 = 0 THEN 'realistic seed 휴지통 확인용' ELSE NULL END,
   CASE WHEN (w.idx + slot) % 17 = 0 THEN w.created_at + interval '100 days' ELSE NULL END,
   w.created_at + (slot || ' days')::interval,
   LEAST(w.raw_updated_at + (slot || ' days')::interval, current_timestamp - interval '2 minutes')
@@ -377,7 +376,7 @@ WHERE
   OR (slot = 3 AND w.idx % 3 = 0)
   OR (slot = 4 AND w.idx % 25 = 0);
 
-INSERT INTO attachment_trash_items (id, company_id, company_name, attachment_id, order_id, storage_key, thumbnail_key, original_name, mime_type, size_bytes, deleted_by, delete_reason, deleted_at, purge_after_at, purge_status, created_at, updated_at)
+INSERT INTO attachment_trash_items (id, company_id, company_name, attachment_id, order_id, storage_key, thumbnail_key, original_name, mime_type, size_bytes, deleted_by, deleted_at, purge_after_at, purge_status, created_at, updated_at)
 SELECT
   'realistic-trash-' || a.id,
   a.company_id,
@@ -390,7 +389,6 @@ SELECT
   a.mime_type,
   COALESCE(a.size_bytes, 0),
   COALESCE(a.deleted_by, 'user-sample-admin'),
-  COALESCE(a.delete_reason, 'realistic seed 휴지통 확인용'),
   COALESCE(a.deleted_at, now() - interval '10 days'),
   COALESCE(a.purge_after_at, now() + interval '20 days'),
   CASE

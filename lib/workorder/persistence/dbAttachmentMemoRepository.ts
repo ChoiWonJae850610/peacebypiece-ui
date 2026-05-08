@@ -510,7 +510,6 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
     },
     softDeleteAttachment: async (input) => {
       const deletedBy = input.deletedBy ?? null;
-      const deleteReason = input.deleteReason ?? null;
       const trashRetentionDays = Number.isFinite(
         Number(input.trashRetentionDays),
       )
@@ -523,13 +522,12 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                   is_primary = false,
                   deleted_at = COALESCE(deleted_at, now()),
                   deleted_by = COALESCE($2, deleted_by),
-                  delete_reason = COALESCE($3, delete_reason),
                   delete_source = COALESCE(delete_source, 'manual'),
                   delete_scope = COALESCE(delete_scope, 'single'),
                   delete_parent_type = COALESCE(delete_parent_type, 'none'),
                   delete_parent_id = NULL,
                   delete_batch_id = COALESCE(delete_batch_id, id),
-                  purge_after_at = COALESCE(purge_after_at, now() + ($4::integer * interval '1 day')),
+                  purge_after_at = COALESCE(purge_after_at, now() + ($3::integer * interval '1 day')),
                   updated_at = now()
             WHERE id = $1
               AND is_active = true
@@ -549,7 +547,6 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                       is_active,
                       deleted_at,
                       deleted_by,
-                      delete_reason,
                       delete_source,
                       delete_scope,
                       delete_parent_type,
@@ -569,7 +566,6 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
              mime_type,
              size_bytes,
              deleted_by,
-             delete_reason,
              delete_source,
              delete_scope,
              delete_parent_type,
@@ -588,14 +584,13 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                   mime_type,
                   COALESCE(size_bytes, 0),
                   deleted_by,
-                  delete_reason,
                   delete_source,
                   delete_scope,
                   delete_parent_type,
                   delete_parent_id,
                   delete_batch_id,
                   COALESCE(deleted_at, now()),
-                  COALESCE(purge_after_at, now() + ($4::integer * interval '1 day'))
+                  COALESCE(purge_after_at, now() + ($3::integer * interval '1 day'))
              FROM updated_attachment
            ON CONFLICT DO NOTHING
            RETURNING attachment_id
@@ -614,7 +609,7 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                 deleted_at,
                 created_at
            FROM updated_attachment`,
-        [input.attachmentId, deletedBy, deleteReason, trashRetentionDays],
+        [input.attachmentId, deletedBy, trashRetentionDays],
       );
 
       return result.rows[0] ?? null;

@@ -11,7 +11,6 @@ export const runtime = "nodejs";
 type AttachmentDeleteRequest = {
   attachmentId?: unknown;
   deletedBy?: unknown;
-  deleteReason?: unknown;
 };
 
 function isWritableRepository(repository: AttachmentMemoRepository): repository is AttachmentMemoWritableRepository {
@@ -61,7 +60,6 @@ export async function POST(request: NextRequest) {
     const deleted = await repository.softDeleteAttachment({
       attachmentId,
       deletedBy: readText(payload?.deletedBy),
-      deleteReason: readText(payload?.deleteReason),
       trashRetentionDays,
     });
 
@@ -83,8 +81,7 @@ export async function POST(request: NextRequest) {
         storageKey: target.storage_key ?? null,
         thumbnailKey: target.thumbnail_key ?? null,
         trashMode: "soft-delete",
-        deleteReason: readText(payload?.deleteReason),
-      },
+        },
     });
 
     return NextResponse.json({

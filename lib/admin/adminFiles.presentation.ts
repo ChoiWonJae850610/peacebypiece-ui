@@ -196,7 +196,6 @@ export const ADMIN_FILE_LIST_PLACEHOLDERS: AdminManagedFileItem[] = [
     statusLabel: "사용중",
     deletedAt: null,
     deletedBy: null,
-    deleteReason: null,
     purgeAfterAt: null,
   },
   {
@@ -215,7 +214,6 @@ export const ADMIN_FILE_LIST_PLACEHOLDERS: AdminManagedFileItem[] = [
     statusLabel: "사용중",
     deletedAt: null,
     deletedBy: null,
-    deleteReason: null,
     purgeAfterAt: null,
   },
   {
@@ -234,7 +232,6 @@ export const ADMIN_FILE_LIST_PLACEHOLDERS: AdminManagedFileItem[] = [
     statusLabel: "사용중",
     deletedAt: null,
     deletedBy: null,
-    deleteReason: null,
     purgeAfterAt: null,
   },
 ];
@@ -259,7 +256,6 @@ export const ADMIN_FILE_TRASH_PLACEHOLDERS: AdminTrashFileItem[] = [
     purgeAfterAt: "2026-05-24",
     restoreDaysLeft: 27,
     restoreLabel: "D-27",
-    deleteReason: "중복 첨부 정리",
     purgeStatus: "pending",
     purgeStatusLabel: "복원 가능",
     isPurgeReady: false,
@@ -290,7 +286,6 @@ export const ADMIN_FILE_TRASH_PLACEHOLDERS: AdminTrashFileItem[] = [
     purgeAfterAt: "2026-05-20",
     restoreDaysLeft: 23,
     restoreLabel: "D-23",
-    deleteReason: "최신 이미지로 교체",
     purgeStatus: "pending",
     purgeStatusLabel: "복원 가능",
     isPurgeReady: false,

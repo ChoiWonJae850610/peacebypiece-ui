@@ -161,7 +161,6 @@ export function useWorkOrderAttachments({
       await deleteWorkOrderAttachmentInDb({
         attachmentId,
         deletedBy: currentUser.name,
-        deleteReason: targetAttachment?.scope === "design" ? "작지 디자인 삭제" : "작지 첨부 삭제",
       });
 
       const nextPrimaryDesignAttachment = targetAttachment?.scope === "design" && targetAttachment.type === "image" && targetAttachment.isPrimary === true
