@@ -374,11 +374,15 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
         WHERE t.purge_status = 'pending'
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
-          AND (s.id IS NULL OR COALESCE(s.delete_status, 'active') <> 'purged')
-          AND (s.id IS NULL OR s.purged_at IS NULL)
+          AND (
+            s.id IS NULL
+            OR COALESCE(s.delete_status, 'active') <> 'purged'
+            OR COALESCE(t.delete_reason, '') <> $2
+          )
+          AND (s.id IS NULL OR s.purged_at IS NULL OR COALESCE(t.delete_reason, '') <> $2)
         ORDER BY t.deleted_at DESC
         LIMIT 100`,
-      [safeTrashRetentionDays],
+      [safeTrashRetentionDays, WORKORDER_BUNDLE_DELETE_REASON],
     ),
     queryDb<AdminStorageWorkOrderRow>(
       `SELECT s.id,
@@ -564,9 +568,10 @@ export async function listPurgeReadyAttachmentTrashItems(
         AND (
           t.order_id IS NULL
           OR COALESCE(s.delete_status, 'active') <> 'purged'
+          OR COALESCE(t.delete_reason, '') <> $3
           OR t.purge_status = 'purge_requested'
         )
-        AND (s.id IS NULL OR s.purged_at IS NULL OR t.purge_status = 'purge_requested')
+        AND (s.id IS NULL OR s.purged_at IS NULL OR COALESCE(t.delete_reason, '') <> $3 OR t.purge_status = 'purge_requested')
         AND (
           t.order_id IS NULL
           OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true)

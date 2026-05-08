@@ -262,10 +262,11 @@ async function listFilePurgeCandidateRows(limit: number): Promise<PurgeCandidate
         AND (
           s.id IS NULL
           OR COALESCE(s.delete_status, 'active') <> 'purged'
+          OR COALESCE(t.delete_reason, '') <> $3
           OR t.purge_status = 'purge_requested'
           OR t.last_purge_error IS NOT NULL
         )
-        AND (s.id IS NULL OR s.purged_at IS NULL OR t.purge_status = 'purge_requested' OR t.last_purge_error IS NOT NULL)
+        AND (s.id IS NULL OR s.purged_at IS NULL OR COALESCE(t.delete_reason, '') <> $3 OR t.purge_status = 'purge_requested' OR t.last_purge_error IS NOT NULL)
         ${getWorkOrderBundleFileVisibilitySql("t")}
         AND (
           t.purge_status = 'purge_requested'
@@ -281,7 +282,7 @@ async function listFilePurgeCandidateRows(limit: number): Promise<PurgeCandidate
 
 async function listWorkOrderPurgeCandidateRows(input: { limit: number; includeFuturePending?: boolean; workOrderIds?: string[] }): Promise<WorkOrderPurgeCandidateRow[]> {
   const workOrderIds = input.workOrderIds ?? [];
-  const params: unknown[] = [input.limit, COMPANY_FILE_TRASH_RETENTION_DAYS];
+  const params: unknown[] = [input.limit, COMPANY_FILE_TRASH_RETENTION_DAYS, WORKORDER_BUNDLE_DELETE_REASON];
   let idFilter = "";
   if (workOrderIds.length > 0) {
     params.push(workOrderIds);
@@ -305,19 +306,34 @@ async function listWorkOrderPurgeCandidateRows(input: { limit: number; includeFu
             s.deleted_at,
             (COALESCE(s.deleted_at, now()) + ($2::integer * interval '1 day')) AS purge_due_at,
             COALESCE(NULLIF(s.purge_status, 'none'), 'pending') AS purge_status,
-            COUNT(DISTINCT a.id) FILTER (WHERE a.deleted_at IS NOT NULL OR COALESCE(a.is_active, true) = false)::text AS attachment_count,
-            COUNT(DISTINCT m.id) FILTER (WHERE m.deleted_at IS NOT NULL OR COALESCE(m.is_active, true) = false)::text AS memo_count,
-            COALESCE(SUM(COALESCE(a.size_bytes, 0)) FILTER (WHERE a.deleted_at IS NOT NULL OR COALESCE(a.is_active, true) = false), 0)::text AS total_size_bytes,
-            COUNT(DISTINCT a.id) FILTER (WHERE a.thumbnail_key IS NOT NULL AND a.thumbnail_key <> '')::text AS thumbnail_count
+            COALESCE(bundle_files.attachment_count, 0)::text AS attachment_count,
+            COALESCE(memo_summary.memo_count, 0)::text AS memo_count,
+            COALESCE(bundle_files.total_size_bytes, 0)::text AS total_size_bytes,
+            COALESCE(bundle_files.thumbnail_count, 0)::text AS thumbnail_count
        FROM spec_sheets s
-       LEFT JOIN attachments a ON a.order_id = s.id
-       LEFT JOIN memos m ON m.order_id = s.id
+       LEFT JOIN LATERAL (
+         SELECT COUNT(DISTINCT t.attachment_id)::integer AS attachment_count,
+                COALESCE(SUM(COALESCE(t.size_bytes, 0)), 0)::bigint AS total_size_bytes,
+                COUNT(*) FILTER (WHERE t.thumbnail_key IS NOT NULL AND t.thumbnail_key <> '')::integer AS thumbnail_count
+           FROM attachment_trash_items t
+          WHERE t.order_id = s.id
+            AND t.delete_reason = $3
+            AND t.restored_at IS NULL
+            AND t.purged_at IS NULL
+            AND (t.purge_status IN ('pending', 'purge_requested', 'failed') OR t.last_purge_error IS NOT NULL)
+       ) bundle_files ON true
+       LEFT JOIN LATERAL (
+         SELECT COUNT(DISTINCT m.id)::integer AS memo_count
+           FROM memos m
+          WHERE m.order_id = s.id
+            AND (m.deleted_at IS NOT NULL OR COALESCE(m.is_active, true) = false)
+            AND COALESCE(m.delete_status, 'active') <> 'purged'
+       ) memo_summary ON true
       WHERE (s.deleted_at IS NOT NULL OR COALESCE(s.is_active, true) = false)
         AND COALESCE(s.delete_status, 'active') <> 'purged'
         AND s.purged_at IS NULL
         ${idFilter}
         ${statusFilter}
-      GROUP BY s.id, s.company_id, s.company_name, s.title, s.status, s.deleted_at, s.purge_status
       ORDER BY purge_due_at ASC, s.deleted_at ASC
       LIMIT $1`,
     params,
@@ -439,10 +455,11 @@ async function listFilePurgeRunCandidates(input: SystemStoragePurgeRunInput, fil
           AND (
             s.id IS NULL
             OR COALESCE(s.delete_status, 'active') <> 'purged'
+            OR COALESCE(t.delete_reason, '') <> $4
             OR t.purge_status = 'purge_requested'
             OR t.last_purge_error IS NOT NULL
           )
-          AND (s.id IS NULL OR s.purged_at IS NULL OR t.purge_status = 'purge_requested' OR t.last_purge_error IS NOT NULL)
+          AND (s.id IS NULL OR s.purged_at IS NULL OR COALESCE(t.delete_reason, '') <> $4 OR t.purge_status = 'purge_requested' OR t.last_purge_error IS NOT NULL)
           AND (
             t.order_id IS NULL
             OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true)
