@@ -1,3 +1,6 @@
+import {
+  selectAdminTrashItemsByIds as selectAdminTrashItemsByIdsFromPolicy,
+} from "@/lib/admin/files/trashPolicy";
 import type {
   AdminFileDataSource,
   AdminFileSortKey,
@@ -376,9 +379,7 @@ export function selectAdminManagedFilesByIds(items: AdminManagedFileItem[], sele
 }
 
 export function selectAdminTrashItemsByIds(items: AdminTrashFileItem[], selectedIds: string[]): AdminTrashFileItem[] {
-  if (selectedIds.length === 0) return [];
-  const selectedIdSet = new Set(selectedIds);
-  return items.filter((item) => selectedIdSet.has(item.id));
+  return selectAdminTrashItemsByIdsFromPolicy(items, selectedIds);
 }
 
 export function toggleAdminSelectedId(currentIds: string[], targetId: string): string[] {

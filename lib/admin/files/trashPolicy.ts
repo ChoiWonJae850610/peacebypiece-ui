@@ -77,6 +77,65 @@ export function canAdminTrashItemPurge(
   return item.canPurge === true;
 }
 
+export function normalizeAdminTrashWorkOrderIds(
+  workOrderIds: readonly string[] | undefined,
+): string[] {
+  return Array.from(
+    new Set((workOrderIds ?? []).map((id) => id.trim()).filter(Boolean)),
+  );
+}
+
+export function createAdminTrashWorkOrderIdSet(
+  workOrderIds: readonly string[] | undefined,
+): Set<string> {
+  return new Set(normalizeAdminTrashWorkOrderIds(workOrderIds));
+}
+
+export function selectAdminTrashItemsByIds<T extends { id: string }>(
+  items: readonly T[],
+  selectedIds: readonly string[] | undefined,
+): T[] {
+  if (!selectedIds || selectedIds.length === 0) return [];
+  const selectedIdSet = new Set(selectedIds);
+  return items.filter((item) => selectedIdSet.has(item.id));
+}
+
+export function selectAdminStandaloneTrashItems<T extends AdminTrashPolicyFileItem>(input: {
+  items: readonly T[];
+  selectedWorkOrderIds: readonly string[] | undefined;
+}): T[] {
+  const selectedWorkOrderIdSet = createAdminTrashWorkOrderIdSet(
+    input.selectedWorkOrderIds,
+  );
+  return input.items.filter(
+    (item) =>
+      !isAdminTrashItemHandledByWorkOrderSelection(
+        item,
+        selectedWorkOrderIdSet,
+      ),
+  );
+}
+
+export function canAdminTrashItemRunAction(
+  item: AdminTrashPolicyFileItem,
+  action: "restore" | "purge",
+): boolean {
+  return action === "restore"
+    ? canAdminTrashItemRestore(item)
+    : canAdminTrashItemPurge(item);
+}
+
+export function selectAdminTrashActionEligibleItems<T extends AdminTrashPolicyFileItem>(input: {
+  items: readonly T[];
+  selectedWorkOrderIds: readonly string[] | undefined;
+  action: "restore" | "purge";
+}): T[] {
+  return selectAdminStandaloneTrashItems({
+    items: input.items,
+    selectedWorkOrderIds: input.selectedWorkOrderIds,
+  }).filter((item) => canAdminTrashItemRunAction(item, input.action));
+}
+
 export const ADMIN_FILE_TRASH_PURGE_STATUSES = {
   pending: "pending",
   purgeRequested: "purge_requested",

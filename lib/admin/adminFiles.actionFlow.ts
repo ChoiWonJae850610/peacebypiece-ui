@@ -8,12 +8,14 @@ import {
   createEmptyAdminSelectionMessage,
   createEmptyAdminTrashActionSummary,
   mergeAdminTrashActionSummaries,
-  selectAdminTrashItemsByIds,
 } from "@/lib/admin/adminFiles.presentation";
 import {
   canAdminTrashItemPurge,
   canAdminTrashItemRestore,
-  isAdminTrashItemHandledByWorkOrderSelection,
+  normalizeAdminTrashWorkOrderIds,
+  selectAdminStandaloneTrashItems,
+  selectAdminTrashActionEligibleItems,
+  selectAdminTrashItemsByIds,
 } from "@/lib/admin/files/trashPolicy";
 import type {
   AdminFileActionResult,
@@ -99,27 +101,23 @@ type TrashSelectionTargets = {
   workOrderIds: string[];
 };
 
-function normalizeWorkOrderIds(workOrderIds: string[] | undefined): string[] {
-  return Array.from(new Set((workOrderIds ?? []).map((id) => id.trim()).filter(Boolean)));
-}
-
 function getTrashSelectionTargets(
   action: AdminTrashActionType,
   input: TrashSelectionFlowInput,
 ): TrashSelectionTargets {
-  const workOrderIds = normalizeWorkOrderIds(input.workOrderIds);
-  const workOrderIdSet = new Set(workOrderIds);
+  const workOrderIds = normalizeAdminTrashWorkOrderIds(input.workOrderIds);
   const selectedItems = input.selectedItemIds
     ? selectAdminTrashItemsByIds(input.items, input.selectedItemIds)
     : input.items;
-  const standaloneItems = selectedItems.filter(
-    (item) => !isAdminTrashItemHandledByWorkOrderSelection(item, workOrderIdSet),
-  );
-  const fileTargets = standaloneItems.filter((item) =>
-    action === "restore"
-      ? canAdminTrashItemRestore(item)
-      : canAdminTrashItemPurge(item),
-  );
+  const standaloneItems = selectAdminStandaloneTrashItems({
+    items: selectedItems,
+    selectedWorkOrderIds: workOrderIds,
+  });
+  const fileTargets = selectAdminTrashActionEligibleItems({
+    items: selectedItems,
+    selectedWorkOrderIds: workOrderIds,
+    action,
+  });
 
   return {
     fileTargets,

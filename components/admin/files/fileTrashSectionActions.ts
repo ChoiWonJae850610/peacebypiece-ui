@@ -7,7 +7,8 @@ import { formatStorageSize } from "@/components/admin/files/fileTrashSectionRows
 import {
   canAdminTrashItemPurge,
   canAdminTrashItemRestore,
-  isAdminTrashItemHandledByWorkOrderSelection,
+  selectAdminStandaloneTrashItems,
+  selectAdminTrashActionEligibleItems,
 } from "@/lib/admin/files/trashPolicy";
 
 export type WorkOrderActionIntent = "restore" | "purge";
@@ -46,13 +47,13 @@ export function getTrashSelectionActionState(input: {
     isActionPending,
     isWorkOrderActionPending,
   } = input;
-  const selectedWorkOrderIdSet = new Set(selectedWorkOrderIds);
   const selectedItems = items.filter((item) =>
     selectedItemIds.includes(item.id),
   );
-  const standaloneSelectedItems = selectedItems.filter(
-    (item) => !isAdminTrashItemHandledByWorkOrderSelection(item, selectedWorkOrderIdSet),
-  );
+  const standaloneSelectedItems = selectAdminStandaloneTrashItems({
+    items: selectedItems,
+    selectedWorkOrderIds,
+  });
   const hasSelection =
     selectedItemIds.length > 0 || selectedWorkOrderIds.length > 0;
   const restoreEligibleItemCount = standaloneSelectedItems.filter(
@@ -63,13 +64,12 @@ export function getTrashSelectionActionState(input: {
   ).length;
   const canAct = hasSelection && !isActionPending && !isWorkOrderActionPending;
   const selectedCount = selectedItemIds.length + selectedWorkOrderIds.length;
-  const workOrderIdSet = new Set(workOrderItems.map((item) => item.id));
   const allPurgeableCount =
-    items.filter(
-      (item) =>
-        canAdminTrashItemPurge(item) &&
-        !isAdminTrashItemHandledByWorkOrderSelection(item, workOrderIdSet),
-    ).length + workOrderItems.length;
+    selectAdminTrashActionEligibleItems({
+      items,
+      selectedWorkOrderIds: workOrderItems.map((item) => item.id),
+      action: "purge",
+    }).length + workOrderItems.length;
 
   return {
     selectedItems,
