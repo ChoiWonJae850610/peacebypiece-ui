@@ -38,11 +38,8 @@ export default function WorkOrderDeleteConfirmModal({
           <div className="text-xs font-medium text-stone-500">{lifecycleText.deleteModalTargetLabel}</div>
           <div className="mt-1 break-all text-base font-semibold text-stone-950">{title}</div>
         </div>
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm leading-6 text-amber-900">
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-sm leading-6 text-red-600">
           {lifecycleText.deleteModalNotice}
-        </div>
-        <div className="rounded-2xl border border-stone-200 bg-white px-4 py-4 text-sm leading-6 text-stone-600">
-          {lifecycleText.deleteModalPolicyNotice}
         </div>
       </div>
     </ModalShell>

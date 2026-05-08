@@ -2,6 +2,7 @@ import "server-only";
 
 import { queryDb } from "@/lib/db/client";
 import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
+import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import {
   ADMIN_FILE_TRASH_OPEN_PURGE_STATUS_SQL_LIST,
   ADMIN_FILE_TRASH_PURGE_STATUS_SQL,
@@ -137,6 +138,10 @@ type AdminAttachmentRow = DbQueryResultRow & {
   id: string;
   order_id: string | null;
   workorder_title: string | null;
+  workorder_base_title: string | null;
+  workorder_reorder_round: string | number | null;
+  workorder_kind: "sample" | "main" | "rework" | null;
+  workorder_is_rework: boolean | null;
   original_name: string | null;
   mime_type: string | null;
   size_bytes: string | number | null;
@@ -157,6 +162,10 @@ type AdminTrashRow = DbQueryResultRow & {
   attachment_id: string;
   order_id: string | null;
   workorder_title: string | null;
+  workorder_base_title: string | null;
+  workorder_reorder_round: string | number | null;
+  workorder_kind: "sample" | "main" | "rework" | null;
+  workorder_is_rework: boolean | null;
   parent_workorder_deleted: boolean | null;
   parent_workorder_deleted_at: string | Date | null;
   original_name: string | null;
@@ -176,6 +185,10 @@ type AdminTrashRow = DbQueryResultRow & {
 type AdminStorageWorkOrderRow = DbQueryResultRow & {
   id: string;
   title: string | null;
+  base_title: string | null;
+  reorder_round: string | number | null;
+  work_order_kind: "sample" | "main" | "rework" | null;
+  is_rework: boolean | null;
   status: string | null;
   updated_at: string | Date | null;
   deleted_at: string | Date | null;
@@ -216,6 +229,27 @@ function formatBytes(bytes: number): string {
   if (bytes >= 1024 ** 2) return `${Math.round(bytes / 1024 ** 2)}MB`;
   if (bytes >= 1024) return `${Math.round(bytes / 1024)}KB`;
   return `${bytes}B`;
+}
+
+function formatAdminWorkOrderTitle(input: {
+  title?: string | null;
+  baseTitle?: string | null;
+  reorderRound?: string | number | null;
+  workOrderKind?: "sample" | "main" | "rework" | null;
+  isRework?: boolean | null;
+}): string {
+  const title = String(input.title ?? "").trim();
+  const baseTitle = String(input.baseTitle ?? "").trim();
+  const rawRound = Number(input.reorderRound ?? 0);
+  const reorderRound = Number.isFinite(rawRound) ? rawRound : 0;
+  const workOrderKind = input.workOrderKind ?? (reorderRound > 0 ? "main" : "sample");
+  return getWorkOrderDisplayTitle({
+    title: title || undefined,
+    baseTitle: baseTitle || undefined,
+    reorderRound,
+    workOrderKind,
+    isDefectOrder: Boolean(input.isRework),
+  });
 }
 
 function getFileIcon(
@@ -352,6 +386,10 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
       `SELECT a.id,
               a.order_id,
               COALESCE(s.title, '작업지시서명 없음') AS workorder_title,
+              s.base_title AS workorder_base_title,
+              s.reorder_round AS workorder_reorder_round,
+              s.work_order_kind AS workorder_kind,
+              s.is_rework AS workorder_is_rework,
               a.original_name,
               a.mime_type,
               a.size_bytes,
@@ -374,6 +412,10 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
               t.attachment_id,
               t.order_id,
               COALESCE(s.title, '작업지시서명 없음') AS workorder_title,
+              s.base_title AS workorder_base_title,
+              s.reorder_round AS workorder_reorder_round,
+              s.work_order_kind AS workorder_kind,
+              s.is_rework AS workorder_is_rework,
               (s.id IS NOT NULL AND (s.deleted_at IS NOT NULL OR COALESCE(s.is_active, true) = false)) AS parent_workorder_deleted,
               s.deleted_at AS parent_workorder_deleted_at,
               t.original_name,
@@ -406,6 +448,10 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
     queryDb<AdminStorageWorkOrderRow>(
       `SELECT s.id,
               COALESCE(s.title, '작업지시서명 없음') AS title,
+              s.base_title,
+              s.reorder_round,
+              s.work_order_kind,
+              s.is_rework,
               s.status,
               s.updated_at,
               s.deleted_at,
@@ -423,7 +469,7 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
           AND COALESCE(s.delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.deleted}) NOT IN (${ADMIN_WORKORDER_ADMIN_TRASH_HIDDEN_DELETE_STATUS_SQL_LIST})
           AND COALESCE(s.purge_status, ${ADMIN_WORKORDER_PURGE_STATUS_SQL.pending}) NOT IN (${ADMIN_WORKORDER_ADMIN_TRASH_HIDDEN_PURGE_STATUS_SQL_LIST})
           AND s.purged_at IS NULL
-        GROUP BY s.id, s.title, s.status, s.updated_at, s.deleted_at, s.delete_status, s.purge_status, s.purged_at
+        GROUP BY s.id, s.title, s.base_title, s.reorder_round, s.work_order_kind, s.is_rework, s.status, s.updated_at, s.deleted_at, s.delete_status, s.purge_status, s.purged_at
         ORDER BY COALESCE(s.deleted_at, s.updated_at) DESC
         LIMIT 50`,
     ),
@@ -435,7 +481,13 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
     return {
       id: row.id,
       workorderId: row.order_id || "",
-      workorderTitle: row.workorder_title || "작업지시서명 없음",
+      workorderTitle: formatAdminWorkOrderTitle({
+        title: row.workorder_title || "작업지시서명 없음",
+        baseTitle: row.workorder_base_title,
+        reorderRound: row.workorder_reorder_round,
+        workOrderKind: row.workorder_kind,
+        isRework: row.workorder_is_rework,
+      }),
       fileName,
       fileType: getFileType(row.mime_type, fileName),
       fileIcon: getFileIcon(row.mime_type, fileName),
@@ -467,7 +519,13 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
       id: row.id,
       attachmentId: row.attachment_id,
       workorderId: row.order_id || "",
-      workorderTitle: row.workorder_title || "작업지시서명 없음",
+      workorderTitle: formatAdminWorkOrderTitle({
+        title: row.workorder_title || "작업지시서명 없음",
+        baseTitle: row.workorder_base_title,
+        reorderRound: row.workorder_reorder_round,
+        workOrderKind: row.workorder_kind,
+        isRework: row.workorder_is_rework,
+      }),
       fileName,
       fileIcon: getFileIcon(row.mime_type, fileName),
       fileSizeBytes: sizeBytes,
@@ -528,7 +586,13 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
 
     return {
       id: row.id,
-      title: row.title || "작업지시서명 없음",
+      title: formatAdminWorkOrderTitle({
+        title: row.title || "작업지시서명 없음",
+        baseTitle: row.base_title,
+        reorderRound: row.reorder_round,
+        workOrderKind: row.work_order_kind,
+        isRework: row.is_rework,
+      }),
       status: row.status || "unknown",
       statusLabel: getWorkOrderStatusLabel(row.status),
       updatedAt: formatDate(row.updated_at),

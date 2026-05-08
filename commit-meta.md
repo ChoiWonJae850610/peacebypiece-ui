@@ -1,19 +1,21 @@
 Version :
-0.9.22388
+0.9.22389
 
 Summary :
-저장소 휴지통 모달 컴포넌트 리팩토링
+저장소 삭제 모달 문구와 리오더 작업지시서명 표시 보정
 
 Description :
-고객관리자 저장소 휴지통 화면의 비우기 확인 모달, 작업지시서 범위 확인 모달, 상세 모달을 별도 파일로 분리했다. 기존 휴지통 row 생성, 컬럼 렌더링, 선택 상태 계산, 복원/선택 삭제/비우기 동작은 변경하지 않았다.
+작업지시서 삭제 모달의 기존 안내 문구 두 개를 제거하고 첨부파일 삭제 모달과 같은 빨간 안내 문구로 통일했다. 저장소 휴지통 목록과 상세 모달에서 리오더 차수가 포함된 작업지시서명이 표시되도록 작업지시서 표시명 계산을 보정했다.
 
 수정 파일 목록 :
-- components/admin/files/FileTrashSection.tsx
+- components/common/modal/WorkOrderDeleteConfirmModal.tsx
+- lib/admin/adminFiles.serverActions.ts
+- lib/i18n/ko/workorder.ts
+- lib/i18n/en/workorder.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- components/admin/files/fileTrashSectionModals.tsx
-- docs/storage-refactor-trash-modals-0.9.22388.md
+- docs/storage-trash-delete-modal-reorder-title-0.9.22389.md
 
 삭제 파일 목록 :
 없음
