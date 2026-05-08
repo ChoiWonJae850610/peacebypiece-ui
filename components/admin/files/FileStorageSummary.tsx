@@ -126,8 +126,9 @@ function PlanUsageCard({
   const hasPlanLimit = Number.isFinite(usageSummary.limitBytes) && usageSummary.limitBytes > 0;
   const usedGbLabel = `${(usageSummary.usedBytes / 1024 / 1024 / 1024).toFixed(2)}GB`;
   const remainingBytes = hasPlanLimit ? Math.max(0, usageSummary.limitBytes - usageSummary.usedBytes) : 0;
-  const remainingLabel = hasPlanLimit ? formatBytes(remainingBytes) : "요금제 확인 중";
-  const planName = hasPlanLimit ? "현재 요금제" : "확인 중";
+  const t = useAdminTranslation();
+  const remainingLabel = hasPlanLimit ? formatBytes(remainingBytes) : t("filesSummary.planCapacityPending", "요금제 확인 중");
+  const planName = hasPlanLimit ? t("filesSummary.currentPlan", "현재 요금제") : t("filesSummary.pendingPlan", "확인 중");
   const isDanger = hasPlanLimit && usageSummary.statusTone === "danger";
   const isCaution = hasPlanLimit && usageSummary.statusTone === "caution";
 
@@ -136,7 +137,7 @@ function PlanUsageCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">
-            Storage plan
+            {t("filesSummary.storagePlanLabel", "Storage plan")}
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1 text-xs font-bold text-white">
@@ -152,9 +153,9 @@ function PlanUsageCard({
         <button
           type="button"
           className="shrink-0 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm transition hover:bg-stone-50"
-          title="요금제 업그레이드 화면은 후속 버전에서 연결합니다."
+          title={t("filesSummary.upgradeTitle", "요금제 업그레이드 화면은 후속 버전에서 연결합니다.")}
         >
-          업그레이드
+          {t("filesSummary.upgrade", "업그레이드")}
         </button>
       </div>
 
@@ -162,10 +163,10 @@ function PlanUsageCard({
 
       <div className="mt-4 text-center">
         <p className="text-2xl font-bold tracking-tight text-stone-950">
-          {hasPlanLimit ? `${usageSummary.usedLabel} / ${usageSummary.limitLabel}` : "요금제 용량 확인 중"}
+          {hasPlanLimit ? `${usageSummary.usedLabel} / ${usageSummary.limitLabel}` : t("filesSummary.planCapacityLoading", "요금제 용량 확인 중")}
         </p>
         <p className="mt-1 text-xs font-semibold text-stone-500">
-          {hasPlanLimit ? `${usedGbLabel} 사용 · ${remainingLabel} 남음` : "고객 정보의 요금제 용량을 불러오는 중"}
+          {hasPlanLimit ? `${usedGbLabel} ${t("filesSummary.usedSuffix", "사용")} · ${remainingLabel} ${t("filesSummary.remainingSuffix", "남음")}` : t("filesSummary.planCapacityLoadingDescription", "고객 정보의 요금제 용량을 불러오는 중")}
         </p>
       </div>
 
@@ -180,13 +181,14 @@ function PlanUsageCard({
 }
 
 function FileOperationsCard({ items }: { items: FileStatusItem[] }) {
+  const t = useAdminTranslation();
   return (
     <div className="flex h-full min-h-[300px] flex-col rounded-[24px] border border-stone-200 bg-white px-5 py-5">
       <div>
         <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">
-          File operations
+          {t("filesSummary.fileOperationsLabel", "File operations")}
         </p>
-        <h3 className="mt-2 text-lg font-bold text-stone-950">파일 운영 요약</h3>
+        <h3 className="mt-2 text-lg font-bold text-stone-950">{t("filesSummary.fileOperationsTitle", "파일 운영 요약")}</h3>
       </div>
       <div className="mt-4 grid flex-1 content-center gap-2.5">
         {items.map((item) => (
@@ -300,7 +302,7 @@ function DonutChart({
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
             <span className="text-xl font-bold text-stone-950">{total}</span>
-            <span className="text-[10px] font-semibold text-stone-400">전체</span>
+            <span className="text-[10px] font-semibold text-stone-400">{t("filesSummary.totalLabel", "전체")}</span>
           </div>
         </div>
         <div className="min-w-0 flex-1 space-y-2.5">
@@ -342,18 +344,23 @@ export default function FileStorageSummary({
   const attachmentCard = usageCards[1];
   const trashCard = usageCards[2];
   const purgeRequestCard = usageCards[3];
+  const rawAttachmentCount = attachmentCard?.value ?? "0개";
+  const rawTrashCount = trashCard?.value ?? "0개";
+  const rawPurgeRequestCount = purgeRequestCard?.value ?? "0개";
+  const isTrashEmpty = rawTrashCount.trim().startsWith("0");
+  const isPurgeRequestEmpty = rawPurgeRequestCount.trim().startsWith("0");
   const attachmentCount = translateStorageValue(
-    attachmentCard?.value ?? "0개",
+    rawAttachmentCount,
     t,
   );
   const attachmentSizeLabel = attachmentCard?.description || "0MB 사용";
   const trashCount = translateStorageValue(
-    trashCard?.value ?? "0개",
+    rawTrashCount,
     t,
   );
   const trashSizeLabel = trashCard?.description || "0MB 보관";
   const purgeRequestCount = translateStorageValue(
-    purgeRequestCard?.value ?? "0개",
+    rawPurgeRequestCount,
     t,
   );
   const purgeRequestSizeLabel = purgeRequestCard?.description || "0MB 처리 대기";
@@ -372,14 +379,14 @@ export default function FileStorageSummary({
     {
       label: t("filesSummary.trashFiles", "휴지통 파일"),
       value: trashCount,
-      description: trashCount === "0개" ? "0MB 보관" : trashSizeLabel,
-      tone: trashCount === "0개" ? "neutral" : "caution",
+      description: isTrashEmpty ? t("filesSummary.zeroTrashSize", "0MB 보관") : trashSizeLabel,
+      tone: isTrashEmpty ? "neutral" : "caution",
     },
     {
       label: t("filesSummary.purgeRequestedFiles", "삭제 요청"),
       value: purgeRequestCount,
-      description: purgeRequestCount === "0개" ? "0MB 처리 대기" : purgeRequestSizeLabel,
-      tone: purgeRequestCount === "0개" ? "neutral" : "danger",
+      description: isPurgeRequestEmpty ? t("filesSummary.zeroPurgeRequestSize", "0MB 처리 대기") : purgeRequestSizeLabel,
+      tone: isPurgeRequestEmpty ? "neutral" : "danger",
     },
   ];
 

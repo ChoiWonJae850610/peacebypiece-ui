@@ -4,6 +4,12 @@ import { queryDb } from "@/lib/db/client";
 import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import {
+  createAdminWorkOrderTrashActionMessage,
+  createAdminWorkOrderTrashIdRequiredMessage,
+  createAdminWorkOrderTrashNotConnectedMessage,
+  createAdminWorkOrderTrashNotFoundMessage,
+} from "@/lib/admin/adminFiles.presentation";
+import {
   ADMIN_FILE_TRASH_OPEN_PURGE_STATUS_SQL_LIST,
   ADMIN_TRASH_RESTORE_POLICIES,
   ADMIN_FILE_TRASH_PURGE_STATUS_SQL,
@@ -936,8 +942,7 @@ function createWorkOrderTrashActionSkeletonResult(input: {
       requestedCount: 0,
       affectedCount: 0,
       reason: "WORKORDER_ID_REQUIRED",
-      message:
-        "작업지시서 ID가 없어 작업지시서 단위 처리를 실행할 수 없습니다.",
+      message: createAdminWorkOrderTrashIdRequiredMessage(),
     };
   }
 
@@ -948,10 +953,7 @@ function createWorkOrderTrashActionSkeletonResult(input: {
     requestedCount: 1,
     affectedCount: 0,
     reason: "WORKORDER_ACTION_NOT_CONNECTED",
-    message:
-      input.action === "restore"
-        ? "작업지시서 복원 API는 아직 실제 DB 복원 로직에 연결되지 않았습니다. 작업지시서와 문서/디자인/메모를 같은 트랜잭션에서 복원해야 합니다."
-        : "작업지시서 선택 삭제 API는 아직 실제 DB/R2 처리 로직에 연결되지 않았습니다. R2 삭제는 Worker 기반 purge 흐름만 사용해야 합니다.",
+    message: createAdminWorkOrderTrashNotConnectedMessage(input.action),
   };
 }
 
@@ -1070,7 +1072,7 @@ export async function restoreWorkOrderTrashBundle(
       requestedCount: 1,
       affectedCount: 0,
       reason: "WORKORDER_NOT_FOUND",
-      message: "복원할 삭제 상태 작업지시서를 찾지 못했습니다.",
+      message: createAdminWorkOrderTrashNotFoundMessage("restore"),
     };
   }
 
@@ -1089,14 +1091,12 @@ export async function restoreWorkOrderTrashBundle(
     designCount,
     memoCount,
     reason: "OK",
-    message:
-      "작업지시서 1건과 문서 " +
-      documentCount +
-      "개, 디자인 " +
-      designCount +
-      "개, 메모 " +
-      memoCount +
-      "개를 복원하였습니다.",
+    message: createAdminWorkOrderTrashActionMessage({
+      action: "restore",
+      documentCount,
+      designCount,
+      memoCount,
+    }),
   };
 }
 
@@ -1222,7 +1222,7 @@ export async function purgeWorkOrderTrashBundle(
       requestedCount: 1,
       affectedCount: 0,
       reason: "WORKORDER_NOT_FOUND",
-      message: "선택 삭제할 삭제 상태 작업지시서를 찾지 못했습니다.",
+      message: createAdminWorkOrderTrashNotFoundMessage("purge"),
     };
   }
 
@@ -1241,14 +1241,12 @@ export async function purgeWorkOrderTrashBundle(
     designCount,
     memoCount,
     reason: "OK",
-    message:
-      "작업지시서 1건과 문서 " +
-      documentCount +
-      "개, 디자인 " +
-      designCount +
-      "개, 메모 " +
-      memoCount +
-      "개를 삭제 요청하였습니다.",
+    message: createAdminWorkOrderTrashActionMessage({
+      action: "purge",
+      documentCount,
+      designCount,
+      memoCount,
+    }),
   };
 }
 

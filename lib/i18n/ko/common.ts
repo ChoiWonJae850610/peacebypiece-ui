@@ -2,7 +2,7 @@ export const commonKo = {
   appName: "PeaceByPiece",
   adminLabel: "관리자",
   moveToWorkspace: "작업지시서 워크스페이스로 이동",
-  viewWorkOrderHistory: "작지 히스토리 보기",
+  viewWorkOrderHistory: "작업지시서 히스토리 보기",
   metadataDescription: "작업지시 워크스테이션",
   comingSoon: "다음 단계에서 실제 화면과 데이터 연결 예정",
   ui: {
@@ -39,7 +39,7 @@ export const commonKo = {
         fallbackName: "첨부파일",
         targetLabel: "삭제 대상",
         pdfTypeLabel: "PDF",
-        pdfNotice: "문서 파일은 삭제 후 복구할 수 없습니다.",
+        pdfNotice: "문서 파일은 삭제 후 복원할 수 없습니다.",
         warning: "삭제한 파일은 휴지통으로 이동하며, 30일 이내 복원할 수 있습니다.",
       },
       inventoryLog: {

@@ -136,6 +136,38 @@ export function createAdminTrashActionMessage(
   return `${baseMessage} ${skippedLabel} ${summary.skippedCount}개는 제외했습니다.`;
 }
 
+
+export function createAdminWorkOrderTrashActionMessage(input: {
+  action: AdminTrashActionType;
+  documentCount: number;
+  designCount: number;
+  memoCount: number;
+}): string {
+  return createAdminTrashActionMessage(input.action, {
+    workOrderCount: 1,
+    documentCount: input.documentCount,
+    designCount: input.designCount,
+    memoCount: input.memoCount,
+    skippedCount: 0,
+  });
+}
+
+export function createAdminWorkOrderTrashIdRequiredMessage(): string {
+  return "작업지시서 ID가 없어 작업지시서 단위 처리를 실행할 수 없습니다.";
+}
+
+export function createAdminWorkOrderTrashNotConnectedMessage(action: AdminTrashActionType): string {
+  return action === "restore"
+    ? "작업지시서 복원 API는 아직 실제 DB 복원 로직에 연결되지 않았습니다. 작업지시서와 문서/디자인/메모를 같은 트랜잭션에서 복원해야 합니다."
+    : "작업지시서 선택 삭제 API는 아직 실제 DB/R2 처리 로직에 연결되지 않았습니다. R2 삭제는 Worker 기반 purge 흐름만 사용해야 합니다.";
+}
+
+export function createAdminWorkOrderTrashNotFoundMessage(action: AdminTrashActionType): string {
+  return action === "restore"
+    ? "복원할 삭제 상태 작업지시서를 찾지 못했습니다."
+    : "선택 삭제할 삭제 상태 작업지시서를 찾지 못했습니다.";
+}
+
 export function createAdminTrashFileActionSummary(
   items: AdminTrashFileItem[],
   affectedCount: number,

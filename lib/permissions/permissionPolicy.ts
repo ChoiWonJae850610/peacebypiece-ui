@@ -128,7 +128,7 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
   {
     key: "attachment",
     title: "첨부/디자인",
-    description: "첨부파일, 디자인, 메모 첨부의 생성, 조회, 수정, 삭제, 복원, 영구삭제 권한을 분리합니다.",
+    description: "첨부파일, 디자인, 메모 첨부의 생성, 조회, 수정, 삭제, 복원, 삭제 요청 권한을 분리합니다.",
     permissions: ATTACHMENT_CRUD_PERMISSIONS,
   },
   {
