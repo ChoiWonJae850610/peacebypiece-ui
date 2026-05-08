@@ -14,7 +14,7 @@ import {
   ADMIN_WORKORDER_PURGE_STATUS_SQL,
   getAdminFileTrashVisiblePurgeStatus,
   isAdminFileTrashPendingStatus,
-  isWorkOrderBundleTrashReason,
+  isWorkOrderBundleTrashMetadata,
 } from "@/lib/admin/files/trashPolicy";
 import type { DbQueryResultRow } from "@/lib/db/client";
 import type {
@@ -49,7 +49,6 @@ function readCount(row: CountRow | undefined): number {
   return typeof value === "number" ? value : Number(value ?? 0);
 }
 
-
 function createFileKindCountSql(alias: string): string {
   return `(CASE WHEN COALESCE(${alias}.mime_type, '') LIKE 'image/%' OR lower(COALESCE(${alias}.original_name, '')) ~ '\.(jpg|jpeg|png|gif|webp|bmp|svg|heic|heif|ai|psd)$' THEN 'design' ELSE 'document' END)`;
 }
@@ -58,9 +57,20 @@ export async function restoreAttachmentTrashItems(
   input: AdminTrashDbActionInput,
 ): Promise<AdminTrashDbActionResult> {
   const trashItemIds = normalizeIds(input.trashItemIds);
-  if (trashItemIds.length === 0) return { requestedCount: 0, affectedCount: 0, documentCount: 0, designCount: 0 };
+  if (trashItemIds.length === 0)
+    return {
+      requestedCount: 0,
+      affectedCount: 0,
+      documentCount: 0,
+      designCount: 0,
+    };
 
-  const result = await queryDb<CountRow & { document_count: string | number; design_count: string | number }>(
+  const result = await queryDb<
+    CountRow & {
+      document_count: string | number;
+      design_count: string | number;
+    }
+  >(
     `WITH target_trash AS (
        SELECT t.id, t.attachment_id, t.original_name, t.mime_type
          FROM attachment_trash_items t
@@ -76,6 +86,11 @@ export async function restoreAttachmentTrashItems(
               deleted_at = NULL,
               deleted_by = NULL,
               delete_reason = NULL,
+              delete_source = NULL,
+              delete_scope = NULL,
+              delete_parent_type = NULL,
+              delete_parent_id = NULL,
+              delete_batch_id = NULL,
               purge_after_at = NULL,
               updated_at = now()
         WHERE id IN (SELECT attachment_id FROM target_trash)
@@ -109,9 +124,20 @@ export async function requestPurgeAttachmentTrashItems(
   input: AdminTrashDbActionInput,
 ): Promise<AdminTrashDbActionResult> {
   const trashItemIds = normalizeIds(input.trashItemIds);
-  if (trashItemIds.length === 0) return { requestedCount: 0, affectedCount: 0, documentCount: 0, designCount: 0 };
+  if (trashItemIds.length === 0)
+    return {
+      requestedCount: 0,
+      affectedCount: 0,
+      documentCount: 0,
+      designCount: 0,
+    };
 
-  const result = await queryDb<CountRow & { document_count: string | number; design_count: string | number }>(
+  const result = await queryDb<
+    CountRow & {
+      document_count: string | number;
+      design_count: string | number;
+    }
+  >(
     `WITH target_trash AS (
        SELECT t.id, t.attachment_id, t.original_name, t.mime_type
          FROM attachment_trash_items t
@@ -123,7 +149,7 @@ export async function requestPurgeAttachmentTrashItems(
           AND (
             t.order_id IS NULL
             OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true)
-            OR COALESCE(t.delete_reason, '') <> $2
+            OR (COALESCE(t.delete_source, '') <> 'workorder_bundle' AND COALESCE(t.delete_reason, '') <> $2)
           )
      ), marked_attachments AS (
        UPDATE attachments
@@ -135,6 +161,7 @@ export async function requestPurgeAttachmentTrashItems(
      ), marked_trash AS (
        UPDATE attachment_trash_items
           SET purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested},
+              purge_requested_by = $3,
               purge_after_at = COALESCE(purge_after_at, now()),
               updated_at = now()
         WHERE id IN (SELECT id FROM target_trash)
@@ -144,7 +171,11 @@ export async function requestPurgeAttachmentTrashItems(
             COUNT(*) FILTER (WHERE ${createFileKindCountSql("target_trash")} = 'document')::text AS document_count,
             COUNT(*) FILTER (WHERE ${createFileKindCountSql("target_trash")} = 'design')::text AS design_count
        FROM target_trash`,
-    [trashItemIds, ADMIN_FILE_TRASH_REASONS.workorderBundle],
+    [
+      trashItemIds,
+      ADMIN_FILE_TRASH_REASONS.workorderBundle,
+      input.actorId ?? null,
+    ],
   );
 
   const row = result.rows[0];
@@ -175,6 +206,11 @@ type AdminAttachmentRow = DbQueryResultRow & {
   delete_reason: string | null;
   purge_after_at: string | Date | null;
   purge_status: string | null;
+  delete_source: string | null;
+  delete_scope: string | null;
+  delete_parent_type: string | null;
+  delete_parent_id: string | null;
+  delete_batch_id: string | null;
   purge_attempt_count: string | number | null;
   last_purge_error: string | null;
 };
@@ -200,6 +236,11 @@ type AdminTrashRow = DbQueryResultRow & {
   delete_reason: string | null;
   purge_after_at: string | Date | null;
   purge_status: string | null;
+  delete_source: string | null;
+  delete_scope: string | null;
+  delete_parent_type: string | null;
+  delete_parent_id: string | null;
+  delete_batch_id: string | null;
   purge_attempt_count: string | number | null;
   last_purge_error: string | null;
 };
@@ -264,7 +305,8 @@ function formatAdminWorkOrderTitle(input: {
   const baseTitle = String(input.baseTitle ?? "").trim();
   const rawRound = Number(input.reorderRound ?? 0);
   const reorderRound = Number.isFinite(rawRound) ? rawRound : 0;
-  const workOrderKind = input.workOrderKind ?? (reorderRound > 0 ? "main" : "sample");
+  const workOrderKind =
+    input.workOrderKind ?? (reorderRound > 0 ? "main" : "sample");
   return getWorkOrderDisplayTitle({
     title: title || undefined,
     baseTitle: baseTitle || undefined,
@@ -284,8 +326,9 @@ function getFileIcon(
   return "FILE";
 }
 
-
-function createAttachmentFilePreviewUrl(storageKey: string | null | undefined): string | null {
+function createAttachmentFilePreviewUrl(
+  storageKey: string | null | undefined,
+): string | null {
   if (!storageKey) return null;
   const cleanKey = String(storageKey).trim();
   if (!cleanKey) return null;
@@ -350,9 +393,13 @@ function getWorkOrderStatusLabel(status: string | null | undefined): string {
 function getTrashRestorePolicy(input: {
   parentWorkOrderDeleted: boolean;
   deleteReason: string | null | undefined;
+  deleteSource?: string | null | undefined;
 }): "file_unit" | "parent_deleted_restore_blocked" | "bundle_required" {
   if (!input.parentWorkOrderDeleted) return "file_unit";
-  return isWorkOrderBundleTrashReason(input.deleteReason)
+  return isWorkOrderBundleTrashMetadata({
+    deleteReason: input.deleteReason,
+    deleteSource: input.deleteSource,
+  })
     ? "bundle_required"
     : "parent_deleted_restore_blocked";
 }
@@ -376,6 +423,8 @@ function getPurgeStatusLabel(
   });
   if (visibleStatus === ADMIN_FILE_TRASH_PURGE_STATUSES.purgeRequested)
     return "삭제 요청";
+  if (visibleStatus === ADMIN_FILE_TRASH_PURGE_STATUSES.processing)
+    return "삭제 처리 중";
   if (visibleStatus === ADMIN_FILE_TRASH_PURGE_STATUSES.purged)
     return "삭제 완료";
   if (visibleStatus === ADMIN_FILE_TRASH_PURGE_STATUSES.restored)
@@ -456,6 +505,11 @@ export async function listAdminFileManagementRows(
               t.deleted_at,
               t.deleted_by,
               t.delete_reason,
+              t.delete_source,
+              t.delete_scope,
+              t.delete_parent_type,
+              t.delete_parent_id,
+              t.delete_batch_id,
               (COALESCE(t.deleted_at, now()) + ($1::integer * interval '1 day')) AS purge_after_at,
               t.purge_status,
               t.purge_attempt_count,
@@ -468,9 +522,9 @@ export async function listAdminFileManagementRows(
           AND (
             s.id IS NULL
             OR COALESCE(s.delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
-            OR COALESCE(t.delete_reason, '') <> $2
+            OR (COALESCE(t.delete_source, '') <> 'workorder_bundle' AND COALESCE(t.delete_reason, '') <> $2)
           )
-          AND (s.id IS NULL OR s.purged_at IS NULL OR COALESCE(t.delete_reason, '') <> $2)
+          AND (s.id IS NULL OR s.purged_at IS NULL OR (COALESCE(t.delete_source, '') <> 'workorder_bundle' AND COALESCE(t.delete_reason, '') <> $2))
         ORDER BY t.deleted_at DESC
         LIMIT 100`,
       [safeTrashRetentionDays, ADMIN_FILE_TRASH_REASONS.workorderBundle],
@@ -505,36 +559,40 @@ export async function listAdminFileManagementRows(
     ),
   ]);
 
-  const attachments: AdminManagedFileItem[] = attachmentsResult.rows.map((row) => {
-    const fileName = row.original_name || "파일명 없음";
-    const fileType = getFileType(row.mime_type, fileName);
-    const sizeBytes = toNumber(row.size_bytes);
-    return {
-      id: row.id,
-      workorderId: row.order_id || "",
-      workorderTitle: formatAdminWorkOrderTitle({
-        title: row.workorder_title || "작업지시서명 없음",
-        baseTitle: row.workorder_base_title,
-        reorderRound: row.workorder_reorder_round,
-        workOrderKind: row.workorder_kind,
-        isRework: row.workorder_is_rework,
-      }),
-      fileName,
-      fileType,
-      fileKind: fileType === "디자인" ? "design" : "document",
-      fileIcon: getFileIcon(row.mime_type, fileName),
-      fileSizeBytes: sizeBytes,
-      fileSizeLabel: formatBytes(sizeBytes),
-      uploadedAt: formatDate(row.created_at),
-      uploadedBy: row.author_id || "미지정",
-      status: "active" as const,
-      statusLabel: "사용중",
-      deletedAt: row.deleted_at ? formatDateTime(row.deleted_at) : null,
-      deletedBy: row.deleted_by,
-      deleteReason: row.delete_reason,
-      purgeAfterAt: row.purge_after_at ? formatDate(row.purge_after_at) : null,
-    };
-  });
+  const attachments: AdminManagedFileItem[] = attachmentsResult.rows.map(
+    (row) => {
+      const fileName = row.original_name || "파일명 없음";
+      const fileType = getFileType(row.mime_type, fileName);
+      const sizeBytes = toNumber(row.size_bytes);
+      return {
+        id: row.id,
+        workorderId: row.order_id || "",
+        workorderTitle: formatAdminWorkOrderTitle({
+          title: row.workorder_title || "작업지시서명 없음",
+          baseTitle: row.workorder_base_title,
+          reorderRound: row.workorder_reorder_round,
+          workOrderKind: row.workorder_kind,
+          isRework: row.workorder_is_rework,
+        }),
+        fileName,
+        fileType,
+        fileKind: fileType === "디자인" ? "design" : "document",
+        fileIcon: getFileIcon(row.mime_type, fileName),
+        fileSizeBytes: sizeBytes,
+        fileSizeLabel: formatBytes(sizeBytes),
+        uploadedAt: formatDate(row.created_at),
+        uploadedBy: row.author_id || "미지정",
+        status: "active" as const,
+        statusLabel: "사용중",
+        deletedAt: row.deleted_at ? formatDateTime(row.deleted_at) : null,
+        deletedBy: row.deleted_by,
+        deleteReason: row.delete_reason,
+        purgeAfterAt: row.purge_after_at
+          ? formatDate(row.purge_after_at)
+          : null,
+      };
+    },
+  );
 
   const trashItems: AdminTrashFileItem[] = trashResult.rows.map((row) => {
     const fileName = row.original_name || "파일명 없음";
@@ -545,6 +603,7 @@ export async function listAdminFileManagementRows(
     const restorePolicy = getTrashRestorePolicy({
       parentWorkOrderDeleted,
       deleteReason: row.delete_reason,
+      deleteSource: row.delete_source,
     });
     const restorePolicyLabel = getTrashRestorePolicyLabel(restorePolicy);
     const isPending = isAdminFileTrashPendingStatus(row.purge_status);
@@ -613,34 +672,36 @@ export async function listAdminFileManagementRows(
     };
   });
 
-  const workOrders: AdminStorageWorkOrderItem[] = workOrdersResult.rows.map((row) => {
-    const attachmentCount = toNumber(row.attachment_count);
-    const trashAttachmentCount = toNumber(row.trash_attachment_count);
-    const memoCount = toNumber(row.memo_count);
-    const trashMemoCount = toNumber(row.trash_memo_count);
+  const workOrders: AdminStorageWorkOrderItem[] = workOrdersResult.rows.map(
+    (row) => {
+      const attachmentCount = toNumber(row.attachment_count);
+      const trashAttachmentCount = toNumber(row.trash_attachment_count);
+      const memoCount = toNumber(row.memo_count);
+      const trashMemoCount = toNumber(row.trash_memo_count);
 
-    return {
-      id: row.id,
-      title: formatAdminWorkOrderTitle({
-        title: row.title || "작업지시서명 없음",
-        baseTitle: row.base_title,
-        reorderRound: row.reorder_round,
-        workOrderKind: row.work_order_kind,
-        isRework: row.is_rework,
-      }),
-      status: row.status || "unknown",
-      statusLabel: getWorkOrderStatusLabel(row.status),
-      updatedAt: formatDate(row.updated_at),
-      deletedAt: row.deleted_at ? formatDateTime(row.deleted_at) : null,
-      attachmentCount,
-      trashAttachmentCount,
-      memoCount,
-      trashMemoCount,
-      restorePolicyLabel: "묶음 복원 준비중",
-      attachmentSummaryLabel: `첨부 ${attachmentCount + trashAttachmentCount}개`,
-      memoSummaryLabel: `메모 ${memoCount + trashMemoCount}개`,
-    };
-  });
+      return {
+        id: row.id,
+        title: formatAdminWorkOrderTitle({
+          title: row.title || "작업지시서명 없음",
+          baseTitle: row.base_title,
+          reorderRound: row.reorder_round,
+          workOrderKind: row.work_order_kind,
+          isRework: row.is_rework,
+        }),
+        status: row.status || "unknown",
+        statusLabel: getWorkOrderStatusLabel(row.status),
+        updatedAt: formatDate(row.updated_at),
+        deletedAt: row.deleted_at ? formatDateTime(row.deleted_at) : null,
+        attachmentCount,
+        trashAttachmentCount,
+        memoCount,
+        trashMemoCount,
+        restorePolicyLabel: "묶음 복원 준비중",
+        attachmentSummaryLabel: `첨부 ${attachmentCount + trashAttachmentCount}개`,
+        memoSummaryLabel: `메모 ${memoCount + trashMemoCount}개`,
+      };
+    },
+  );
 
   return { attachments, trashItems, workOrders };
 }
@@ -698,7 +759,11 @@ export async function listPurgeReadyAttachmentTrashItems(
         )
       ORDER BY purge_after_at ASC
       LIMIT $1`,
-    [safeLimit, safeTrashRetentionDays, ADMIN_FILE_TRASH_REASONS.workorderBundle],
+    [
+      safeLimit,
+      safeTrashRetentionDays,
+      ADMIN_FILE_TRASH_REASONS.workorderBundle,
+    ],
   );
 
   return result.rows.map((row) => ({
@@ -714,9 +779,20 @@ export async function markAttachmentTrashItemsPurged(
   input: AdminTrashDbActionInput,
 ): Promise<AdminTrashDbActionResult> {
   const trashItemIds = normalizeIds(input.trashItemIds);
-  if (trashItemIds.length === 0) return { requestedCount: 0, affectedCount: 0, documentCount: 0, designCount: 0 };
+  if (trashItemIds.length === 0)
+    return {
+      requestedCount: 0,
+      affectedCount: 0,
+      documentCount: 0,
+      designCount: 0,
+    };
 
-  const result = await queryDb<CountRow & { document_count: string | number; design_count: string | number }>(
+  const result = await queryDb<
+    CountRow & {
+      document_count: string | number;
+      design_count: string | number;
+    }
+  >(
     `WITH target_trash AS (
        SELECT t.id, t.attachment_id, t.original_name, t.mime_type
          FROM attachment_trash_items t
@@ -763,9 +839,19 @@ export async function markAttachmentTrashItemsPurgedByAttachmentIds(input: {
 }): Promise<AdminTrashDbActionResult> {
   const attachmentIds = normalizeIds(input.attachmentIds);
   if (attachmentIds.length === 0)
-    return { requestedCount: 0, affectedCount: 0, documentCount: 0, designCount: 0 };
+    return {
+      requestedCount: 0,
+      affectedCount: 0,
+      documentCount: 0,
+      designCount: 0,
+    };
 
-  const result = await queryDb<CountRow & { document_count: string | number; design_count: string | number }>(
+  const result = await queryDb<
+    CountRow & {
+      document_count: string | number;
+      design_count: string | number;
+    }
+  >(
     `WITH target_trash AS (
        SELECT t.id, t.attachment_id, t.original_name, t.mime_type
          FROM attachment_trash_items t
@@ -920,6 +1006,11 @@ export async function restoreWorkOrderTrashBundle(
               delete_status = ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active},
               purge_status = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.none},
               purge_requested_at = NULL,
+              delete_source = NULL,
+              delete_scope = NULL,
+              delete_parent_type = NULL,
+              delete_parent_id = NULL,
+              delete_batch_id = NULL,
               purged_at = NULL,
               purged_by = NULL,
               deleted_at = NULL,
@@ -930,7 +1021,7 @@ export async function restoreWorkOrderTrashBundle(
        SELECT t.id, t.attachment_id, t.original_name, t.mime_type
          FROM attachment_trash_items t
         WHERE t.order_id = $1
-          AND t.delete_reason = $2
+          AND (t.delete_source = 'workorder_bundle' OR t.delete_reason = $2)
           AND t.purge_status IN (${ADMIN_FILE_TRASH_OPEN_PURGE_STATUS_SQL_LIST})
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
@@ -940,6 +1031,11 @@ export async function restoreWorkOrderTrashBundle(
               deleted_at = NULL,
               deleted_by = NULL,
               delete_reason = NULL,
+              delete_source = NULL,
+              delete_scope = NULL,
+              delete_parent_type = NULL,
+              delete_parent_id = NULL,
+              delete_batch_id = NULL,
               purge_after_at = NULL,
               updated_at = now()
         WHERE id IN (SELECT attachment_id FROM bundle_trash)
@@ -958,6 +1054,11 @@ export async function restoreWorkOrderTrashBundle(
               delete_status = ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active},
               purge_status = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.none},
               purge_requested_at = NULL,
+              delete_source = NULL,
+              delete_scope = NULL,
+              delete_parent_type = NULL,
+              delete_parent_id = NULL,
+              delete_batch_id = NULL,
               purged_at = NULL,
               purged_by = NULL,
               deleted_at = NULL,
@@ -974,7 +1075,11 @@ export async function restoreWorkOrderTrashBundle(
             (SELECT COUNT(*) FROM restored_trash)::text AS trash_count,
             (SELECT COUNT(*) FROM restored_memos)::text AS memo_count
        FROM restored_workorder`,
-    [workOrderId, ADMIN_FILE_TRASH_REASONS.workorderBundle, input.actorId ?? null],
+    [
+      workOrderId,
+      ADMIN_FILE_TRASH_REASONS.workorderBundle,
+      input.actorId ?? null,
+    ],
   );
 
   const row = result.rows[0];
@@ -1006,7 +1111,14 @@ export async function restoreWorkOrderTrashBundle(
     designCount,
     memoCount,
     reason: "OK",
-    message: "작업지시서 1건과 문서 " + documentCount + "개, 디자인 " + designCount + "개, 메모 " + memoCount + "개를 복원하였습니다.",
+    message:
+      "작업지시서 1건과 문서 " +
+      documentCount +
+      "개, 디자인 " +
+      designCount +
+      "개, 메모 " +
+      memoCount +
+      "개를 복원하였습니다.",
   };
 }
 
@@ -1048,6 +1160,12 @@ export async function purgeWorkOrderTrashBundle(
               delete_status = ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purgeRequested},
               purge_status = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.purgeRequested},
               purge_requested_at = COALESCE(purge_requested_at, now()),
+              purge_requested_by = $3,
+              delete_source = 'manual',
+              delete_scope = 'bundle',
+              delete_parent_type = 'workorder',
+              delete_parent_id = id,
+              delete_batch_id = COALESCE(delete_batch_id, id),
               purged_at = NULL,
               purged_by = NULL,
               updated_at = now()
@@ -1057,7 +1175,7 @@ export async function purgeWorkOrderTrashBundle(
        SELECT t.id, t.attachment_id, t.original_name, t.mime_type
          FROM attachment_trash_items t
         WHERE t.order_id = $1
-          AND t.delete_reason = $2
+          AND (t.delete_source = 'workorder_bundle' OR t.delete_reason = $2)
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
           AND t.purge_status IN (${ADMIN_FILE_TRASH_OPEN_PURGE_STATUS_SQL_LIST})
@@ -1071,6 +1189,7 @@ export async function purgeWorkOrderTrashBundle(
      ), marked_trash AS (
        UPDATE attachment_trash_items
           SET purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested},
+              purge_requested_by = $3,
               purge_after_at = now(),
               updated_at = now()
         WHERE id IN (SELECT id FROM bundle_trash)
@@ -1081,6 +1200,12 @@ export async function purgeWorkOrderTrashBundle(
               delete_status = ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purgeRequested},
               purge_status = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.purgeRequested},
               purge_requested_at = COALESCE(purge_requested_at, now()),
+              purge_requested_by = $3,
+              delete_source = 'workorder_bundle',
+              delete_scope = 'bundle',
+              delete_parent_type = 'workorder',
+              delete_parent_id = $1,
+              delete_batch_id = COALESCE(delete_batch_id, $1),
               purged_at = NULL,
               purged_by = NULL,
               updated_at = now()
@@ -1094,7 +1219,11 @@ export async function purgeWorkOrderTrashBundle(
             (SELECT COUNT(*) FROM marked_trash)::text AS trash_count,
             (SELECT COUNT(*) FROM marked_memos)::text AS memo_count
        FROM marked_workorder`,
-    [workOrderId, ADMIN_FILE_TRASH_REASONS.workorderBundle],
+    [
+      workOrderId,
+      ADMIN_FILE_TRASH_REASONS.workorderBundle,
+      input.actorId ?? null,
+    ],
   );
 
   const row = result.rows[0];
@@ -1126,7 +1255,14 @@ export async function purgeWorkOrderTrashBundle(
     designCount,
     memoCount,
     reason: "OK",
-    message: "작업지시서 1건과 문서 " + documentCount + "개, 디자인 " + designCount + "개, 메모 " + memoCount + "개를 삭제 요청하였습니다.",
+    message:
+      "작업지시서 1건과 문서 " +
+      documentCount +
+      "개, 디자인 " +
+      designCount +
+      "개, 메모 " +
+      memoCount +
+      "개를 삭제 요청하였습니다.",
   };
 }
 

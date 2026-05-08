@@ -1,10 +1,19 @@
 import "server-only";
 
 import { queryDb } from "@/lib/db/client";
-import { getAdminCompanyId, getAdminCompanyScope } from "@/lib/admin/settings/companyScope";
-import { LEGACY_WORKFLOW_STATE_MAP, WORKFLOW_STATES } from "@/lib/constants/workorderStates";
+import {
+  getAdminCompanyId,
+  getAdminCompanyScope,
+} from "@/lib/admin/settings/companyScope";
+import {
+  LEGACY_WORKFLOW_STATE_MAP,
+  WORKFLOW_STATES,
+} from "@/lib/constants/workorderStates";
 import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
-import { ADMIN_FILE_TRASH_ACTOR_IDS, ADMIN_FILE_TRASH_REASONS } from "@/lib/admin/files/trashPolicy";
+import {
+  ADMIN_FILE_TRASH_ACTOR_IDS,
+  ADMIN_FILE_TRASH_REASONS,
+} from "@/lib/admin/files/trashPolicy";
 import type { WorkOrder } from "@/types/workorder";
 import { applyReorderIdentity } from "@/lib/workorder/reorder/helpers";
 import { syncDbFactoryOrdersForSpecSheet } from "@/lib/workorder/repository/dbFactoryOrderRepository";
@@ -16,13 +25,24 @@ const DEFAULT_WORKFLOW_STATE: WorkOrder["workflowState"] = "draft";
 
 const COMPANY_ID_COLUMN_CANDIDATES = ["company_id"] as const;
 const COMPANY_NAME_COLUMN_CANDIDATES = ["company_name"] as const;
-const PAYLOAD_COLUMN_CANDIDATES = ["payload", "data", "workorder_payload", "work_order_payload"] as const;
-const WORKFLOW_STATE_COLUMN_CANDIDATES = ["workflow_state", "status", "state"] as const;
+const PAYLOAD_COLUMN_CANDIDATES = [
+  "payload",
+  "data",
+  "workorder_payload",
+  "work_order_payload",
+] as const;
+const WORKFLOW_STATE_COLUMN_CANDIDATES = [
+  "workflow_state",
+  "status",
+  "state",
+] as const;
 const LAST_SAVED_AT_COLUMN_CANDIDATES = ["last_saved_at", "saved_at"] as const;
 const WORK_ORDER_KIND_COLUMN_CANDIDATES = ["work_order_kind"] as const;
 const REORDER_GROUP_ID_COLUMN_CANDIDATES = ["reorder_group_id"] as const;
 const REORDER_ROUND_COLUMN_CANDIDATES = ["reorder_round"] as const;
-const PARENT_SPEC_SHEET_ID_COLUMN_CANDIDATES = ["parent_spec_sheet_id"] as const;
+const PARENT_SPEC_SHEET_ID_COLUMN_CANDIDATES = [
+  "parent_spec_sheet_id",
+] as const;
 const IS_REWORK_COLUMN_CANDIDATES = ["is_rework", "is_defect_order"] as const;
 const CREATED_AT_COLUMN_CANDIDATES = ["created_at"] as const;
 const UPDATED_AT_COLUMN_CANDIDATES = ["updated_at"] as const;
@@ -33,6 +53,12 @@ const PURGE_STATUS_COLUMN_CANDIDATES = ["purge_status"] as const;
 const PURGE_REQUESTED_AT_COLUMN_CANDIDATES = ["purge_requested_at"] as const;
 const PURGED_AT_COLUMN_CANDIDATES = ["purged_at"] as const;
 const PURGED_BY_COLUMN_CANDIDATES = ["purged_by"] as const;
+const PURGE_REQUESTED_BY_COLUMN_CANDIDATES = ["purge_requested_by"] as const;
+const DELETE_SOURCE_COLUMN_CANDIDATES = ["delete_source"] as const;
+const DELETE_SCOPE_COLUMN_CANDIDATES = ["delete_scope"] as const;
+const DELETE_PARENT_TYPE_COLUMN_CANDIDATES = ["delete_parent_type"] as const;
+const DELETE_PARENT_ID_COLUMN_CANDIDATES = ["delete_parent_id"] as const;
+const DELETE_BATCH_ID_COLUMN_CANDIDATES = ["delete_batch_id"] as const;
 const CATEGORY1_ID_COLUMN_CANDIDATES = ["category1_id"] as const;
 const CATEGORY2_ID_COLUMN_CANDIDATES = ["category2_id"] as const;
 const CATEGORY3_ID_COLUMN_CANDIDATES = ["category3_id"] as const;
@@ -86,6 +112,12 @@ type DbSpecSheetSchema = {
   purgeRequestedAtColumn: string | null;
   purgedAtColumn: string | null;
   purgedByColumn: string | null;
+  purgeRequestedByColumn: string | null;
+  deleteSourceColumn: string | null;
+  deleteScopeColumn: string | null;
+  deleteParentTypeColumn: string | null;
+  deleteParentIdColumn: string | null;
+  deleteBatchIdColumn: string | null;
   category1IdColumn: string | null;
   category2IdColumn: string | null;
   category3IdColumn: string | null;
@@ -103,13 +135,17 @@ function toIsoString(value: string | Date | null | undefined): string {
   return value;
 }
 
-function normalizeDbWorkflowState(value: string | null | undefined): WorkOrder["workflowState"] {
+function normalizeDbWorkflowState(
+  value: string | null | undefined,
+): WorkOrder["workflowState"] {
   if (!value) return DEFAULT_WORKFLOW_STATE;
   if ((WORKFLOW_STATES as readonly string[]).includes(value)) {
     return value as WorkOrder["workflowState"];
   }
   if (value in LEGACY_WORKFLOW_STATE_MAP) {
-    return LEGACY_WORKFLOW_STATE_MAP[value as keyof typeof LEGACY_WORKFLOW_STATE_MAP] as WorkOrder["workflowState"];
+    return LEGACY_WORKFLOW_STATE_MAP[
+      value as keyof typeof LEGACY_WORKFLOW_STATE_MAP
+    ] as WorkOrder["workflowState"];
   }
   return DEFAULT_WORKFLOW_STATE;
 }
@@ -125,7 +161,9 @@ function normalizeWorkOrderForDb(workOrder: WorkOrder): WorkOrder {
   };
 }
 
-async function resolveCategoryIdsForDb(workOrder: WorkOrder): Promise<Pick<WorkOrder, "category1Id" | "category2Id" | "category3Id">> {
+async function resolveCategoryIdsForDb(
+  workOrder: WorkOrder,
+): Promise<Pick<WorkOrder, "category1Id" | "category2Id" | "category3Id">> {
   if (workOrder.category1Id || workOrder.category2Id || workOrder.category3Id) {
     return {
       category1Id: workOrder.category1Id ?? null,
@@ -135,7 +173,12 @@ async function resolveCategoryIdsForDb(workOrder: WorkOrder): Promise<Pick<WorkO
   }
 
   const companyId = getAdminCompanyId();
-  const result = await queryDb<{ id: string; parent_id: string | null; level: number; name: string }>(
+  const result = await queryDb<{
+    id: string;
+    parent_id: string | null;
+    level: number;
+    name: string;
+  }>(
     `SELECT id, parent_id, level, name
        FROM item_categories
       WHERE (company_id = $1 OR company_id IS NULL)
@@ -144,9 +187,24 @@ async function resolveCategoryIdsForDb(workOrder: WorkOrder): Promise<Pick<WorkO
     [companyId],
   );
 
-  const category1 = result.rows.find((item) => item.level === 1 && item.name === workOrder.category1) ?? null;
-  const category2 = result.rows.find((item) => item.level === 2 && item.name === workOrder.category2 && (!category1 || item.parent_id === category1.id)) ?? null;
-  const category3 = result.rows.find((item) => item.level === 3 && item.name === workOrder.category3 && (!category2 || item.parent_id === category2.id)) ?? null;
+  const category1 =
+    result.rows.find(
+      (item) => item.level === 1 && item.name === workOrder.category1,
+    ) ?? null;
+  const category2 =
+    result.rows.find(
+      (item) =>
+        item.level === 2 &&
+        item.name === workOrder.category2 &&
+        (!category1 || item.parent_id === category1.id),
+    ) ?? null;
+  const category3 =
+    result.rows.find(
+      (item) =>
+        item.level === 3 &&
+        item.name === workOrder.category3 &&
+        (!category2 || item.parent_id === category2.id),
+    ) ?? null;
 
   return {
     category1Id: category1?.id ?? null,
@@ -191,7 +249,9 @@ function serializeWorkOrderPayload(workOrder: WorkOrder): Partial<WorkOrder> {
   return payload;
 }
 
-function parsePayloadValue(payload: DbSpecSheetRow["payload"]): Partial<WorkOrder> {
+function parsePayloadValue(
+  payload: DbSpecSheetRow["payload"],
+): Partial<WorkOrder> {
   if (isObject(payload)) {
     return payload as Partial<WorkOrder>;
   }
@@ -221,17 +281,43 @@ function mapSpecSheetRowToWorkOrder(row: DbSpecSheetRow): WorkOrder {
     id: row.id,
     title: row.title,
     workOrderKind: row.work_order_kind ?? payload.workOrderKind ?? undefined,
-    reorderGroupId: row.reorder_group_id ?? (typeof payload.reorderGroupId === "string" ? payload.reorderGroupId : undefined),
-    reorderRound: typeof row.reorder_round === "number" ? row.reorder_round : (typeof payload.reorderRound === "number" ? payload.reorderRound : undefined),
-    parentSpecSheetId: row.parent_spec_sheet_id ?? (typeof payload.parentSpecSheetId === "string" ? payload.parentSpecSheetId : undefined),
-    isDefectOrder: typeof row.is_rework === "boolean" ? row.is_rework : (typeof payload.isDefectOrder === "boolean" ? payload.isDefectOrder : undefined),
-    category1Id: row.category1_id ?? (typeof payload.category1Id === "string" ? payload.category1Id : null),
-    category2Id: row.category2_id ?? (typeof payload.category2Id === "string" ? payload.category2Id : null),
-    category3Id: row.category3_id ?? (typeof payload.category3Id === "string" ? payload.category3Id : null),
+    reorderGroupId:
+      row.reorder_group_id ??
+      (typeof payload.reorderGroupId === "string"
+        ? payload.reorderGroupId
+        : undefined),
+    reorderRound:
+      typeof row.reorder_round === "number"
+        ? row.reorder_round
+        : typeof payload.reorderRound === "number"
+          ? payload.reorderRound
+          : undefined,
+    parentSpecSheetId:
+      row.parent_spec_sheet_id ??
+      (typeof payload.parentSpecSheetId === "string"
+        ? payload.parentSpecSheetId
+        : undefined),
+    isDefectOrder:
+      typeof row.is_rework === "boolean"
+        ? row.is_rework
+        : typeof payload.isDefectOrder === "boolean"
+          ? payload.isDefectOrder
+          : undefined,
+    category1Id:
+      row.category1_id ??
+      (typeof payload.category1Id === "string" ? payload.category1Id : null),
+    category2Id:
+      row.category2_id ??
+      (typeof payload.category2Id === "string" ? payload.category2Id : null),
+    category3Id:
+      row.category3_id ??
+      (typeof payload.category3Id === "string" ? payload.category3Id : null),
     workflowState:
       row.workflow_state !== null && row.workflow_state !== undefined
         ? normalizeDbWorkflowState(row.workflow_state)
-        : (typeof payload.workflowState === "string" ? payload.workflowState : DEFAULT_WORKFLOW_STATE),
+        : typeof payload.workflowState === "string"
+          ? payload.workflowState
+          : DEFAULT_WORKFLOW_STATE,
     lastSavedAt:
       row.last_saved_at ??
       toIsoString(row.updated_at) ??
@@ -246,7 +332,10 @@ function quoteIdentifier(identifier: string): string {
   return `"${identifier.replaceAll('"', '""')}"`;
 }
 
-function findFirstMatchingColumn(columnNames: string[], candidates: readonly string[]): string | null {
+function findFirstMatchingColumn(
+  columnNames: string[],
+  candidates: readonly string[],
+): string | null {
   for (const candidate of candidates) {
     if (columnNames.includes(candidate)) {
       return candidate;
@@ -256,7 +345,11 @@ function findFirstMatchingColumn(columnNames: string[], candidates: readonly str
   return null;
 }
 
-function buildAliasSelection(columnName: string | null, alias: keyof DbSpecSheetRow, fallbackSql: string): string {
+function buildAliasSelection(
+  columnName: string | null,
+  alias: keyof DbSpecSheetRow,
+  fallbackSql: string,
+): string {
   if (!columnName) {
     return `${fallbackSql} AS ${alias}`;
   }
@@ -264,25 +357,38 @@ function buildAliasSelection(columnName: string | null, alias: keyof DbSpecSheet
   return `${quoteIdentifier(columnName)} AS ${alias}`;
 }
 
-function getPayloadColumnKind(column: DbColumnInfo | undefined): DbPayloadColumnKind | null {
+function getPayloadColumnKind(
+  column: DbColumnInfo | undefined,
+): DbPayloadColumnKind | null {
   if (!column) return null;
 
   if (column.udt_name === "jsonb") return "jsonb";
   if (column.udt_name === "json") return "json";
-  if (column.data_type === "text" || column.udt_name === "text" || column.data_type === "character varying" || column.udt_name === "varchar") {
+  if (
+    column.data_type === "text" ||
+    column.udt_name === "text" ||
+    column.data_type === "character varying" ||
+    column.udt_name === "varchar"
+  ) {
     return "text";
   }
 
   return null;
 }
 
-function buildPayloadInsertPlaceholder(kind: DbPayloadColumnKind | null, placeholderIndex: number): string {
+function buildPayloadInsertPlaceholder(
+  kind: DbPayloadColumnKind | null,
+  placeholderIndex: number,
+): string {
   if (kind === "jsonb") return `$${placeholderIndex}::jsonb`;
   if (kind === "json") return `$${placeholderIndex}::json`;
   return `$${placeholderIndex}`;
 }
 
-function buildPayloadValue(kind: DbPayloadColumnKind | null, payload: Partial<WorkOrder>): string {
+function buildPayloadValue(
+  kind: DbPayloadColumnKind | null,
+  payload: Partial<WorkOrder>,
+): string {
   const serialized = JSON.stringify(payload);
   return serialized;
 }
@@ -305,38 +411,132 @@ async function loadSpecSheetSchema(): Promise<DbSpecSheetSchema> {
     throw new Error(`relation \"${SPEC_SHEET_TABLE}\" does not exist`);
   }
 
-  const payloadColumn = findFirstMatchingColumn(columnNames, PAYLOAD_COLUMN_CANDIDATES);
-  const payloadColumnInfo = payloadColumn ? columns.find((column) => column.column_name === payloadColumn) : undefined;
+  const payloadColumn = findFirstMatchingColumn(
+    columnNames,
+    PAYLOAD_COLUMN_CANDIDATES,
+  );
+  const payloadColumnInfo = payloadColumn
+    ? columns.find((column) => column.column_name === payloadColumn)
+    : undefined;
   const payloadColumnKind = getPayloadColumnKind(payloadColumnInfo);
 
   if (payloadColumn && !payloadColumnKind) {
-    throw new Error(`Unsupported payload column type for ${payloadColumn}: ${payloadColumnInfo?.data_type ?? "unknown"}/${payloadColumnInfo?.udt_name ?? "unknown"}`);
+    throw new Error(
+      `Unsupported payload column type for ${payloadColumn}: ${payloadColumnInfo?.data_type ?? "unknown"}/${payloadColumnInfo?.udt_name ?? "unknown"}`,
+    );
   }
 
   return {
-    companyIdColumn: findFirstMatchingColumn(columnNames, COMPANY_ID_COLUMN_CANDIDATES),
-    companyNameColumn: findFirstMatchingColumn(columnNames, COMPANY_NAME_COLUMN_CANDIDATES),
+    companyIdColumn: findFirstMatchingColumn(
+      columnNames,
+      COMPANY_ID_COLUMN_CANDIDATES,
+    ),
+    companyNameColumn: findFirstMatchingColumn(
+      columnNames,
+      COMPANY_NAME_COLUMN_CANDIDATES,
+    ),
     payloadColumn,
     payloadColumnKind,
-    workflowStateColumn: findFirstMatchingColumn(columnNames, WORKFLOW_STATE_COLUMN_CANDIDATES),
-    lastSavedAtColumn: findFirstMatchingColumn(columnNames, LAST_SAVED_AT_COLUMN_CANDIDATES),
-    workOrderKindColumn: findFirstMatchingColumn(columnNames, WORK_ORDER_KIND_COLUMN_CANDIDATES),
-    reorderGroupIdColumn: findFirstMatchingColumn(columnNames, REORDER_GROUP_ID_COLUMN_CANDIDATES),
-    reorderRoundColumn: findFirstMatchingColumn(columnNames, REORDER_ROUND_COLUMN_CANDIDATES),
-    parentSpecSheetIdColumn: findFirstMatchingColumn(columnNames, PARENT_SPEC_SHEET_ID_COLUMN_CANDIDATES),
-    isReworkColumn: findFirstMatchingColumn(columnNames, IS_REWORK_COLUMN_CANDIDATES),
-    createdAtColumn: findFirstMatchingColumn(columnNames, CREATED_AT_COLUMN_CANDIDATES),
-    updatedAtColumn: findFirstMatchingColumn(columnNames, UPDATED_AT_COLUMN_CANDIDATES),
-    isActiveColumn: findFirstMatchingColumn(columnNames, IS_ACTIVE_COLUMN_CANDIDATES),
-    deletedAtColumn: findFirstMatchingColumn(columnNames, DELETED_AT_COLUMN_CANDIDATES),
-    deleteStatusColumn: findFirstMatchingColumn(columnNames, DELETE_STATUS_COLUMN_CANDIDATES),
-    purgeStatusColumn: findFirstMatchingColumn(columnNames, PURGE_STATUS_COLUMN_CANDIDATES),
-    purgeRequestedAtColumn: findFirstMatchingColumn(columnNames, PURGE_REQUESTED_AT_COLUMN_CANDIDATES),
-    purgedAtColumn: findFirstMatchingColumn(columnNames, PURGED_AT_COLUMN_CANDIDATES),
-    purgedByColumn: findFirstMatchingColumn(columnNames, PURGED_BY_COLUMN_CANDIDATES),
-    category1IdColumn: findFirstMatchingColumn(columnNames, CATEGORY1_ID_COLUMN_CANDIDATES),
-    category2IdColumn: findFirstMatchingColumn(columnNames, CATEGORY2_ID_COLUMN_CANDIDATES),
-    category3IdColumn: findFirstMatchingColumn(columnNames, CATEGORY3_ID_COLUMN_CANDIDATES),
+    workflowStateColumn: findFirstMatchingColumn(
+      columnNames,
+      WORKFLOW_STATE_COLUMN_CANDIDATES,
+    ),
+    lastSavedAtColumn: findFirstMatchingColumn(
+      columnNames,
+      LAST_SAVED_AT_COLUMN_CANDIDATES,
+    ),
+    workOrderKindColumn: findFirstMatchingColumn(
+      columnNames,
+      WORK_ORDER_KIND_COLUMN_CANDIDATES,
+    ),
+    reorderGroupIdColumn: findFirstMatchingColumn(
+      columnNames,
+      REORDER_GROUP_ID_COLUMN_CANDIDATES,
+    ),
+    reorderRoundColumn: findFirstMatchingColumn(
+      columnNames,
+      REORDER_ROUND_COLUMN_CANDIDATES,
+    ),
+    parentSpecSheetIdColumn: findFirstMatchingColumn(
+      columnNames,
+      PARENT_SPEC_SHEET_ID_COLUMN_CANDIDATES,
+    ),
+    isReworkColumn: findFirstMatchingColumn(
+      columnNames,
+      IS_REWORK_COLUMN_CANDIDATES,
+    ),
+    createdAtColumn: findFirstMatchingColumn(
+      columnNames,
+      CREATED_AT_COLUMN_CANDIDATES,
+    ),
+    updatedAtColumn: findFirstMatchingColumn(
+      columnNames,
+      UPDATED_AT_COLUMN_CANDIDATES,
+    ),
+    isActiveColumn: findFirstMatchingColumn(
+      columnNames,
+      IS_ACTIVE_COLUMN_CANDIDATES,
+    ),
+    deletedAtColumn: findFirstMatchingColumn(
+      columnNames,
+      DELETED_AT_COLUMN_CANDIDATES,
+    ),
+    deleteStatusColumn: findFirstMatchingColumn(
+      columnNames,
+      DELETE_STATUS_COLUMN_CANDIDATES,
+    ),
+    purgeStatusColumn: findFirstMatchingColumn(
+      columnNames,
+      PURGE_STATUS_COLUMN_CANDIDATES,
+    ),
+    purgeRequestedAtColumn: findFirstMatchingColumn(
+      columnNames,
+      PURGE_REQUESTED_AT_COLUMN_CANDIDATES,
+    ),
+    purgedAtColumn: findFirstMatchingColumn(
+      columnNames,
+      PURGED_AT_COLUMN_CANDIDATES,
+    ),
+    purgedByColumn: findFirstMatchingColumn(
+      columnNames,
+      PURGED_BY_COLUMN_CANDIDATES,
+    ),
+    purgeRequestedByColumn: findFirstMatchingColumn(
+      columnNames,
+      PURGE_REQUESTED_BY_COLUMN_CANDIDATES,
+    ),
+    deleteSourceColumn: findFirstMatchingColumn(
+      columnNames,
+      DELETE_SOURCE_COLUMN_CANDIDATES,
+    ),
+    deleteScopeColumn: findFirstMatchingColumn(
+      columnNames,
+      DELETE_SCOPE_COLUMN_CANDIDATES,
+    ),
+    deleteParentTypeColumn: findFirstMatchingColumn(
+      columnNames,
+      DELETE_PARENT_TYPE_COLUMN_CANDIDATES,
+    ),
+    deleteParentIdColumn: findFirstMatchingColumn(
+      columnNames,
+      DELETE_PARENT_ID_COLUMN_CANDIDATES,
+    ),
+    deleteBatchIdColumn: findFirstMatchingColumn(
+      columnNames,
+      DELETE_BATCH_ID_COLUMN_CANDIDATES,
+    ),
+    category1IdColumn: findFirstMatchingColumn(
+      columnNames,
+      CATEGORY1_ID_COLUMN_CANDIDATES,
+    ),
+    category2IdColumn: findFirstMatchingColumn(
+      columnNames,
+      CATEGORY2_ID_COLUMN_CANDIDATES,
+    ),
+    category3IdColumn: findFirstMatchingColumn(
+      columnNames,
+      CATEGORY3_ID_COLUMN_CANDIDATES,
+    ),
     hasIdColumn: columnNames.includes("id"),
     hasTitleColumn: columnNames.includes("title"),
   };
@@ -349,7 +549,9 @@ function assertMinimumSpecSheetSchema(schema: DbSpecSheetSchema) {
   ].filter((value): value is string => Boolean(value));
 
   if (missingColumns.length > 0) {
-    throw new Error(`spec_sheets table is missing required columns: ${missingColumns.join(", ")}`);
+    throw new Error(
+      `spec_sheets table is missing required columns: ${missingColumns.join(", ")}`,
+    );
   }
 }
 
@@ -357,7 +559,8 @@ export async function findAllDbWorkOrders(): Promise<WorkOrder[]> {
   const schema = await loadSpecSheetSchema();
   assertMinimumSpecSheetSchema(schema);
 
-  const payloadFallbackSql = schema.payloadColumnKind === "text" ? "NULL::text" : "NULL::jsonb";
+  const payloadFallbackSql =
+    schema.payloadColumnKind === "text" ? "NULL::text" : "NULL::jsonb";
 
   const result = await queryDb<DbSpecSheetRow>(
     `
@@ -390,13 +593,20 @@ export async function findAllDbWorkOrders(): Promise<WorkOrder[]> {
   return result.rows.map(mapSpecSheetRowToWorkOrder);
 }
 
-export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder> {
+export async function createDbWorkOrder(
+  workOrder: WorkOrder,
+): Promise<WorkOrder> {
   const schema = await loadSpecSheetSchema();
   assertMinimumSpecSheetSchema(schema);
 
   const normalizedBaseWorkOrder = normalizeWorkOrderForDb(workOrder);
-  const resolvedCategoryIds = await resolveCategoryIdsForDb(normalizedBaseWorkOrder);
-  const normalizedWorkOrder = { ...normalizedBaseWorkOrder, ...resolvedCategoryIds };
+  const resolvedCategoryIds = await resolveCategoryIdsForDb(
+    normalizedBaseWorkOrder,
+  );
+  const normalizedWorkOrder = {
+    ...normalizedBaseWorkOrder,
+    ...resolvedCategoryIds,
+  };
   const payload = serializeWorkOrderPayload(normalizedWorkOrder);
 
   const columns = ["id", "title"];
@@ -479,7 +689,9 @@ export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
   if (schema.payloadColumn) {
     columns.push(schema.payloadColumn);
     values.push(buildPayloadValue(schema.payloadColumnKind, payload));
-    placeholders.push(buildPayloadInsertPlaceholder(schema.payloadColumnKind, values.length));
+    placeholders.push(
+      buildPayloadInsertPlaceholder(schema.payloadColumnKind, values.length),
+    );
   }
 
   if (schema.isActiveColumn) {
@@ -494,7 +706,8 @@ export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
     placeholders.push(`$${values.length}`);
   }
 
-  const payloadFallbackSql = schema.payloadColumnKind === "text" ? "NULL::text" : "NULL::jsonb";
+  const payloadFallbackSql =
+    schema.payloadColumnKind === "text" ? "NULL::text" : "NULL::jsonb";
 
   const returningColumns = [
     "id",
@@ -502,9 +715,17 @@ export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
     buildAliasSelection(schema.workflowStateColumn, "workflow_state", "NULL"),
     buildAliasSelection(schema.lastSavedAtColumn, "last_saved_at", "NULL"),
     buildAliasSelection(schema.workOrderKindColumn, "work_order_kind", "NULL"),
-    buildAliasSelection(schema.reorderGroupIdColumn, "reorder_group_id", "NULL"),
+    buildAliasSelection(
+      schema.reorderGroupIdColumn,
+      "reorder_group_id",
+      "NULL",
+    ),
     buildAliasSelection(schema.reorderRoundColumn, "reorder_round", "NULL"),
-    buildAliasSelection(schema.parentSpecSheetIdColumn, "parent_spec_sheet_id", "NULL"),
+    buildAliasSelection(
+      schema.parentSpecSheetIdColumn,
+      "parent_spec_sheet_id",
+      "NULL",
+    ),
     buildAliasSelection(schema.isReworkColumn, "is_rework", "NULL"),
     buildAliasSelection(schema.category1IdColumn, "category1_id", "NULL"),
     buildAliasSelection(schema.category2IdColumn, "category2_id", "NULL"),
@@ -544,16 +765,26 @@ export async function createDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
 }
 
 function isNotFoundWorkOrderError(error: unknown): boolean {
-  return error instanceof Error && /spec_sheets row not found for id:/i.test(error.message);
+  return (
+    error instanceof Error &&
+    /spec_sheets row not found for id:/i.test(error.message)
+  );
 }
 
-export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder> {
+export async function updateDbWorkOrder(
+  workOrder: WorkOrder,
+): Promise<WorkOrder> {
   const schema = await loadSpecSheetSchema();
   assertMinimumSpecSheetSchema(schema);
 
   const normalizedBaseWorkOrder = normalizeWorkOrderForDb(workOrder);
-  const resolvedCategoryIds = await resolveCategoryIdsForDb(normalizedBaseWorkOrder);
-  const normalizedWorkOrder = { ...normalizedBaseWorkOrder, ...resolvedCategoryIds };
+  const resolvedCategoryIds = await resolveCategoryIdsForDb(
+    normalizedBaseWorkOrder,
+  );
+  const normalizedWorkOrder = {
+    ...normalizedBaseWorkOrder,
+    ...resolvedCategoryIds,
+  };
   const payload = serializeWorkOrderPayload(normalizedWorkOrder);
 
   const assignments = ["title = $2"];
@@ -561,81 +792,112 @@ export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
   const company = getAdminCompanyScope();
 
   if (schema.companyIdColumn) {
-    assignments.push(`${quoteIdentifier(schema.companyIdColumn)} = $${values.length + 1}`);
+    assignments.push(
+      `${quoteIdentifier(schema.companyIdColumn)} = $${values.length + 1}`,
+    );
     values.push(company.companyId);
   }
 
   if (schema.companyNameColumn) {
-    assignments.push(`${quoteIdentifier(schema.companyNameColumn)} = $${values.length + 1}`);
+    assignments.push(
+      `${quoteIdentifier(schema.companyNameColumn)} = $${values.length + 1}`,
+    );
     values.push(company.companyName);
   }
 
   if (schema.workflowStateColumn) {
-    assignments.push(`${quoteIdentifier(schema.workflowStateColumn)} = $${values.length + 1}`);
+    assignments.push(
+      `${quoteIdentifier(schema.workflowStateColumn)} = $${values.length + 1}`,
+    );
     values.push(normalizedWorkOrder.workflowState);
   }
 
   if (schema.lastSavedAtColumn) {
-    assignments.push(`${quoteIdentifier(schema.lastSavedAtColumn)} = $${values.length + 1}`);
+    assignments.push(
+      `${quoteIdentifier(schema.lastSavedAtColumn)} = $${values.length + 1}`,
+    );
     values.push(normalizedWorkOrder.lastSavedAt);
   }
 
   if (schema.workOrderKindColumn) {
-    assignments.push(`${quoteIdentifier(schema.workOrderKindColumn)} = $${values.length + 1}`);
+    assignments.push(
+      `${quoteIdentifier(schema.workOrderKindColumn)} = $${values.length + 1}`,
+    );
     values.push(normalizedWorkOrder.workOrderKind ?? "sample");
   }
 
   if (schema.reorderGroupIdColumn) {
-    assignments.push(`${quoteIdentifier(schema.reorderGroupIdColumn)} = $${values.length + 1}`);
+    assignments.push(
+      `${quoteIdentifier(schema.reorderGroupIdColumn)} = $${values.length + 1}`,
+    );
     values.push(normalizedWorkOrder.reorderGroupId ?? normalizedWorkOrder.id);
   }
 
   if (schema.reorderRoundColumn) {
-    assignments.push(`${quoteIdentifier(schema.reorderRoundColumn)} = $${values.length + 1}`);
+    assignments.push(
+      `${quoteIdentifier(schema.reorderRoundColumn)} = $${values.length + 1}`,
+    );
     values.push(normalizedWorkOrder.reorderRound ?? 0);
   }
 
   if (schema.parentSpecSheetIdColumn) {
-    assignments.push(`${quoteIdentifier(schema.parentSpecSheetIdColumn)} = $${values.length + 1}`);
+    assignments.push(
+      `${quoteIdentifier(schema.parentSpecSheetIdColumn)} = $${values.length + 1}`,
+    );
     values.push(normalizedWorkOrder.parentSpecSheetId ?? null);
   }
 
   if (schema.isReworkColumn) {
-    assignments.push(`${quoteIdentifier(schema.isReworkColumn)} = $${values.length + 1}`);
+    assignments.push(
+      `${quoteIdentifier(schema.isReworkColumn)} = $${values.length + 1}`,
+    );
     values.push(Boolean(normalizedWorkOrder.isDefectOrder));
   }
 
   if (schema.category1IdColumn) {
-    assignments.push(`${quoteIdentifier(schema.category1IdColumn)} = $${values.length + 1}`);
+    assignments.push(
+      `${quoteIdentifier(schema.category1IdColumn)} = $${values.length + 1}`,
+    );
     values.push(normalizedWorkOrder.category1Id ?? null);
   }
 
   if (schema.category2IdColumn) {
-    assignments.push(`${quoteIdentifier(schema.category2IdColumn)} = $${values.length + 1}`);
+    assignments.push(
+      `${quoteIdentifier(schema.category2IdColumn)} = $${values.length + 1}`,
+    );
     values.push(normalizedWorkOrder.category2Id ?? null);
   }
 
   if (schema.category3IdColumn) {
-    assignments.push(`${quoteIdentifier(schema.category3IdColumn)} = $${values.length + 1}`);
+    assignments.push(
+      `${quoteIdentifier(schema.category3IdColumn)} = $${values.length + 1}`,
+    );
     values.push(normalizedWorkOrder.category3Id ?? null);
   }
 
   if (schema.payloadColumn) {
-    assignments.push(`${quoteIdentifier(schema.payloadColumn)} = ${buildPayloadInsertPlaceholder(schema.payloadColumnKind, values.length + 1)}`);
+    assignments.push(
+      `${quoteIdentifier(schema.payloadColumn)} = ${buildPayloadInsertPlaceholder(schema.payloadColumnKind, values.length + 1)}`,
+    );
     values.push(buildPayloadValue(schema.payloadColumnKind, payload));
   }
 
   if (schema.isActiveColumn) {
-    assignments.push(`${quoteIdentifier(schema.isActiveColumn)} = $${values.length + 1}`);
+    assignments.push(
+      `${quoteIdentifier(schema.isActiveColumn)} = $${values.length + 1}`,
+    );
     values.push(true);
   }
 
   if (schema.deletedAtColumn) {
-    assignments.push(`${quoteIdentifier(schema.deletedAtColumn)} = $${values.length + 1}`);
+    assignments.push(
+      `${quoteIdentifier(schema.deletedAtColumn)} = $${values.length + 1}`,
+    );
     values.push(null);
   }
 
-  const payloadFallbackSql = schema.payloadColumnKind === "text" ? "NULL::text" : "NULL::jsonb";
+  const payloadFallbackSql =
+    schema.payloadColumnKind === "text" ? "NULL::text" : "NULL::jsonb";
 
   const returningColumns = [
     "id",
@@ -643,9 +905,17 @@ export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
     buildAliasSelection(schema.workflowStateColumn, "workflow_state", "NULL"),
     buildAliasSelection(schema.lastSavedAtColumn, "last_saved_at", "NULL"),
     buildAliasSelection(schema.workOrderKindColumn, "work_order_kind", "NULL"),
-    buildAliasSelection(schema.reorderGroupIdColumn, "reorder_group_id", "NULL"),
+    buildAliasSelection(
+      schema.reorderGroupIdColumn,
+      "reorder_group_id",
+      "NULL",
+    ),
     buildAliasSelection(schema.reorderRoundColumn, "reorder_round", "NULL"),
-    buildAliasSelection(schema.parentSpecSheetIdColumn, "parent_spec_sheet_id", "NULL"),
+    buildAliasSelection(
+      schema.parentSpecSheetIdColumn,
+      "parent_spec_sheet_id",
+      "NULL",
+    ),
     buildAliasSelection(schema.isReworkColumn, "is_rework", "NULL"),
     buildAliasSelection(schema.category1IdColumn, "category1_id", "NULL"),
     buildAliasSelection(schema.category2IdColumn, "category2_id", "NULL"),
@@ -672,7 +942,9 @@ export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
   const updated = result.rows[0];
 
   if (!updated) {
-    throw new Error(`spec_sheets row not found for id: ${normalizedWorkOrder.id}`);
+    throw new Error(
+      `spec_sheets row not found for id: ${normalizedWorkOrder.id}`,
+    );
   }
 
   const mapped = mapSpecSheetRowToWorkOrder(updated);
@@ -682,8 +954,9 @@ export async function updateDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder
   return mapped;
 }
 
-
-async function softDeleteAttachmentMemoBundleForWorkOrder(workOrderId: string): Promise<void> {
+async function softDeleteAttachmentMemoBundleForWorkOrder(
+  workOrderId: string,
+): Promise<void> {
   const trashRetentionDays = COMPANY_FILE_TRASH_RETENTION_DAYS;
 
   await queryDb(
@@ -693,6 +966,11 @@ async function softDeleteAttachmentMemoBundleForWorkOrder(workOrderId: string): 
               deleted_at = COALESCE(deleted_at, now()),
               deleted_by = COALESCE(deleted_by, $3),
               delete_reason = COALESCE(delete_reason, $4),
+              delete_source = COALESCE(delete_source, 'workorder_bundle'),
+              delete_scope = COALESCE(delete_scope, 'bundle'),
+              delete_parent_type = COALESCE(delete_parent_type, 'workorder'),
+              delete_parent_id = COALESCE(delete_parent_id, $1),
+              delete_batch_id = COALESCE(delete_batch_id, $1),
               purge_after_at = COALESCE(purge_after_at, now() + ($2::integer * interval '1 day')),
               updated_at = now()
         WHERE order_id = $1
@@ -709,6 +987,11 @@ async function softDeleteAttachmentMemoBundleForWorkOrder(workOrderId: string): 
                   size_bytes,
                   deleted_by,
                   delete_reason,
+                  delete_source,
+                  delete_scope,
+                  delete_parent_type,
+                  delete_parent_id,
+                  delete_batch_id,
                   deleted_at,
                   purge_after_at
      )
@@ -724,6 +1007,11 @@ async function softDeleteAttachmentMemoBundleForWorkOrder(workOrderId: string): 
        size_bytes,
        deleted_by,
        delete_reason,
+       delete_source,
+       delete_scope,
+       delete_parent_type,
+       delete_parent_id,
+       delete_batch_id,
        deleted_at,
        purge_after_at
      )
@@ -738,11 +1026,21 @@ async function softDeleteAttachmentMemoBundleForWorkOrder(workOrderId: string): 
             COALESCE(size_bytes, 0),
             deleted_by,
             delete_reason,
+            delete_source,
+            delete_scope,
+            delete_parent_type,
+            delete_parent_id,
+            delete_batch_id,
             COALESCE(deleted_at, now()),
             COALESCE(purge_after_at, now() + ($2::integer * interval '1 day'))
        FROM updated_attachments
      ON CONFLICT DO NOTHING`,
-    [workOrderId, trashRetentionDays, ADMIN_FILE_TRASH_ACTOR_IDS.workorderDelete, ADMIN_FILE_TRASH_REASONS.workorderBundle],
+    [
+      workOrderId,
+      trashRetentionDays,
+      ADMIN_FILE_TRASH_ACTOR_IDS.workorderDelete,
+      ADMIN_FILE_TRASH_REASONS.workorderBundle,
+    ],
   );
 
   await queryDb(
@@ -751,6 +1049,12 @@ async function softDeleteAttachmentMemoBundleForWorkOrder(workOrderId: string): 
             delete_status = 'trashed',
             purge_status = 'pending',
             purge_requested_at = NULL,
+            purge_requested_by = NULL,
+            delete_source = 'workorder_bundle',
+            delete_scope = 'bundle',
+            delete_parent_type = 'workorder',
+            delete_parent_id = $1,
+            delete_batch_id = COALESCE(delete_batch_id, $1),
             purged_at = NULL,
             purged_by = NULL,
             deleted_at = COALESCE(deleted_at, now()),
@@ -772,13 +1076,47 @@ export async function deleteDbWorkOrder(workOrderId: string): Promise<string> {
       assignments.push(`${quoteIdentifier(schema.deletedAtColumn)} = NOW()`);
     }
     if (schema.deleteStatusColumn) {
-      assignments.push(`${quoteIdentifier(schema.deleteStatusColumn)} = 'trashed'`);
+      assignments.push(
+        `${quoteIdentifier(schema.deleteStatusColumn)} = 'trashed'`,
+      );
     }
     if (schema.purgeStatusColumn) {
-      assignments.push(`${quoteIdentifier(schema.purgeStatusColumn)} = 'pending'`);
+      assignments.push(
+        `${quoteIdentifier(schema.purgeStatusColumn)} = 'pending'`,
+      );
     }
     if (schema.purgeRequestedAtColumn) {
-      assignments.push(`${quoteIdentifier(schema.purgeRequestedAtColumn)} = NULL`);
+      assignments.push(
+        `${quoteIdentifier(schema.purgeRequestedAtColumn)} = NULL`,
+      );
+    }
+    if (schema.purgeRequestedByColumn) {
+      assignments.push(
+        `${quoteIdentifier(schema.purgeRequestedByColumn)} = NULL`,
+      );
+    }
+    if (schema.deleteSourceColumn) {
+      assignments.push(
+        `${quoteIdentifier(schema.deleteSourceColumn)} = 'manual'`,
+      );
+    }
+    if (schema.deleteScopeColumn) {
+      assignments.push(
+        `${quoteIdentifier(schema.deleteScopeColumn)} = 'bundle'`,
+      );
+    }
+    if (schema.deleteParentTypeColumn) {
+      assignments.push(
+        `${quoteIdentifier(schema.deleteParentTypeColumn)} = 'workorder'`,
+      );
+    }
+    if (schema.deleteParentIdColumn) {
+      assignments.push(`${quoteIdentifier(schema.deleteParentIdColumn)} = id`);
+    }
+    if (schema.deleteBatchIdColumn) {
+      assignments.push(
+        `${quoteIdentifier(schema.deleteBatchIdColumn)} = COALESCE(${quoteIdentifier(schema.deleteBatchIdColumn)}, id)`,
+      );
     }
     if (schema.purgedAtColumn) {
       assignments.push(`${quoteIdentifier(schema.purgedAtColumn)} = NULL`);
@@ -826,7 +1164,9 @@ export async function deleteDbWorkOrder(workOrderId: string): Promise<string> {
   return deleted.id;
 }
 
-export async function saveDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder> {
+export async function saveDbWorkOrder(
+  workOrder: WorkOrder,
+): Promise<WorkOrder> {
   try {
     return await updateDbWorkOrder(workOrder);
   } catch (error) {
@@ -838,7 +1178,9 @@ export async function saveDbWorkOrder(workOrder: WorkOrder): Promise<WorkOrder> 
   }
 }
 
-export async function saveDbWorkOrders(workOrders: WorkOrder[]): Promise<WorkOrder[]> {
+export async function saveDbWorkOrders(
+  workOrders: WorkOrder[],
+): Promise<WorkOrder[]> {
   const savedWorkOrders: WorkOrder[] = [];
 
   for (const workOrder of workOrders) {

@@ -16,6 +16,12 @@ CREATE TABLE IF NOT EXISTS spec_sheets (
   delete_status text NOT NULL DEFAULT 'active',
   purge_status text NOT NULL DEFAULT 'none',
   purge_requested_at timestamptz,
+  purge_requested_by text,
+  delete_source text,
+  delete_scope text,
+  delete_parent_type text,
+  delete_parent_id text,
+  delete_batch_id text,
   purged_at timestamptz,
   purged_by text,
   payload jsonb NOT NULL DEFAULT '{}'::jsonb,
@@ -26,7 +32,16 @@ CREATE TABLE IF NOT EXISTS spec_sheets (
     delete_status IN ('active', 'trashed', 'purge_requested', 'purged', 'restored')
   ),
   CONSTRAINT spec_sheets_purge_status_check CHECK (
-    purge_status IN ('none', 'pending', 'purge_requested', 'purged', 'failed', 'restored')
+    purge_status IN ('none', 'pending', 'purge_requested', 'processing', 'purged', 'failed', 'restored')
+  ),
+  CONSTRAINT spec_sheets_delete_source_check CHECK (
+    delete_source IS NULL OR delete_source IN ('manual', 'workorder_bundle', 'system')
+  ),
+  CONSTRAINT spec_sheets_delete_scope_check CHECK (
+    delete_scope IS NULL OR delete_scope IN ('single', 'bundle')
+  ),
+  CONSTRAINT spec_sheets_delete_parent_type_check CHECK (
+    delete_parent_type IS NULL OR delete_parent_type IN ('none', 'workorder')
   )
 );
 
@@ -57,3 +72,6 @@ CREATE INDEX IF NOT EXISTS spec_sheets_delete_status_idx
 
 CREATE INDEX IF NOT EXISTS spec_sheets_purge_status_idx
   ON spec_sheets (purge_status, purge_requested_at DESC, purged_at DESC);
+
+CREATE INDEX IF NOT EXISTS spec_sheets_delete_metadata_idx
+  ON spec_sheets (delete_source, delete_scope, delete_parent_type, delete_parent_id);

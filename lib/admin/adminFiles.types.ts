@@ -27,7 +27,11 @@ export type AdminStorageUsageSummary = {
   statusTone: "normal" | "caution" | "danger";
 };
 
-export type AdminFileTabKey = "workorders" | "attachments" | "trash" | "storage";
+export type AdminFileTabKey =
+  | "workorders"
+  | "attachments"
+  | "trash"
+  | "storage";
 
 export type AdminFileTabItem = {
   key: AdminFileTabKey;
@@ -41,13 +45,28 @@ export const ADMIN_FILE_LIFECYCLE_STATUS = {
   TEMP: "TEMP",
 } as const;
 
-export type AdminFileLifecycleStatus = (typeof ADMIN_FILE_LIFECYCLE_STATUS)[keyof typeof ADMIN_FILE_LIFECYCLE_STATUS];
+export type AdminFileLifecycleStatus =
+  (typeof ADMIN_FILE_LIFECYCLE_STATUS)[keyof typeof ADMIN_FILE_LIFECYCLE_STATUS];
 
-export type AdminFileStatus = "active" | "trashed" | "purged" | "temp" | AdminFileLifecycleStatus;
+export type AdminFileStatus =
+  | "active"
+  | "trashed"
+  | "purged"
+  | "temp"
+  | AdminFileLifecycleStatus;
 
-export type AdminTrashPurgeStatus = "pending" | "purge_requested" | "purged" | "failed" | "restored";
+export type AdminTrashPurgeStatus =
+  | "pending"
+  | "purge_requested"
+  | "processing"
+  | "purged"
+  | "failed"
+  | "restored";
 
-export type AdminTrashRestorePolicy = "file_unit" | "parent_deleted_restore_blocked" | "bundle_required";
+export type AdminTrashRestorePolicy =
+  | "file_unit"
+  | "parent_deleted_restore_blocked"
+  | "bundle_required";
 
 export type AdminFileSortKey = "latest" | "size" | "workorder";
 
@@ -62,7 +81,6 @@ export type AdminTrashActionResultSummary = {
   memoCount: number;
   skippedCount?: number;
 };
-
 
 export type AdminStorageWorkOrderItem = {
   id: string;
@@ -144,7 +162,11 @@ export type AdminStoragePolicySettings = {
   purgeAfterDays: 1 | 5 | 15 | 30;
 };
 
-export type AdminFileActionStatus = "empty-selection" | "pending-api" | "success" | "error";
+export type AdminFileActionStatus =
+  | "empty-selection"
+  | "pending-api"
+  | "success"
+  | "error";
 
 export type AdminPurgeWorkerActionResult = AdminFileActionResult & {
   dryRun: boolean;

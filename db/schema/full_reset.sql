@@ -362,6 +362,12 @@ CREATE TABLE spec_sheets (
   delete_status text NOT NULL DEFAULT 'active',
   purge_status text NOT NULL DEFAULT 'none',
   purge_requested_at timestamptz,
+  purge_requested_by text,
+  delete_source text,
+  delete_scope text,
+  delete_parent_type text,
+  delete_parent_id text,
+  delete_batch_id text,
   purged_at timestamptz,
   purged_by text,
   payload jsonb NOT NULL DEFAULT '{}'::jsonb,
@@ -372,7 +378,16 @@ CREATE TABLE spec_sheets (
     delete_status IN ('active', 'trashed', 'purge_requested', 'purged', 'restored')
   ),
   CONSTRAINT spec_sheets_purge_status_check CHECK (
-    purge_status IN ('none', 'pending', 'purge_requested', 'purged', 'failed', 'restored')
+    purge_status IN ('none', 'pending', 'purge_requested', 'processing', 'purged', 'failed', 'restored')
+  ),
+  CONSTRAINT spec_sheets_delete_source_check CHECK (
+    delete_source IS NULL OR delete_source IN ('manual', 'workorder_bundle', 'system')
+  ),
+  CONSTRAINT spec_sheets_delete_scope_check CHECK (
+    delete_scope IS NULL OR delete_scope IN ('single', 'bundle')
+  ),
+  CONSTRAINT spec_sheets_delete_parent_type_check CHECK (
+    delete_parent_type IS NULL OR delete_parent_type IN ('none', 'workorder')
   )
 );
 
@@ -483,6 +498,11 @@ CREATE TABLE attachments (
   deleted_at timestamptz,
   deleted_by text,
   delete_reason text,
+  delete_source text,
+  delete_scope text,
+  delete_parent_type text,
+  delete_parent_id text,
+  delete_batch_id text,
   purge_after_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
@@ -501,17 +521,33 @@ CREATE TABLE attachment_trash_items (
   size_bytes bigint NOT NULL DEFAULT 0,
   deleted_by text,
   delete_reason text,
+  delete_source text,
+  delete_scope text,
+  delete_parent_type text,
+  delete_parent_id text,
+  delete_batch_id text,
   deleted_at timestamptz NOT NULL DEFAULT now(),
   purge_after_at timestamptz NOT NULL DEFAULT (now() + interval '30 days'),
   restored_at timestamptz,
   restored_by text,
   purged_at timestamptz,
+  purge_requested_by text,
+  purge_failure_code text,
   purge_status text NOT NULL DEFAULT 'pending',
   purge_attempt_count integer NOT NULL DEFAULT 0,
   last_purge_attempt_at timestamptz,
   last_purge_error text,
   CONSTRAINT attachment_trash_items_purge_status_check CHECK (
-    purge_status IN ('pending', 'restored', 'purge_requested', 'purged', 'failed')
+    purge_status IN ('pending', 'restored', 'purge_requested', 'processing', 'purged', 'failed')
+  ),
+  CONSTRAINT attachment_trash_items_delete_source_check CHECK (
+    delete_source IS NULL OR delete_source IN ('manual', 'workorder_bundle', 'system')
+  ),
+  CONSTRAINT attachment_trash_items_delete_scope_check CHECK (
+    delete_scope IS NULL OR delete_scope IN ('single', 'bundle')
+  ),
+  CONSTRAINT attachment_trash_items_delete_parent_type_check CHECK (
+    delete_parent_type IS NULL OR delete_parent_type IN ('none', 'workorder')
   ),
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
@@ -529,6 +565,12 @@ CREATE TABLE memos (
   delete_status text NOT NULL DEFAULT 'active',
   purge_status text NOT NULL DEFAULT 'none',
   purge_requested_at timestamptz,
+  purge_requested_by text,
+  delete_source text,
+  delete_scope text,
+  delete_parent_type text,
+  delete_parent_id text,
+  delete_batch_id text,
   purged_at timestamptz,
   purged_by text,
   deleted_at timestamptz,
@@ -538,7 +580,16 @@ CREATE TABLE memos (
     delete_status IN ('active', 'trashed', 'purge_requested', 'purged', 'restored')
   ),
   CONSTRAINT memos_purge_status_check CHECK (
-    purge_status IN ('none', 'pending', 'purge_requested', 'purged', 'failed', 'restored')
+    purge_status IN ('none', 'pending', 'purge_requested', 'processing', 'purged', 'failed', 'restored')
+  ),
+  CONSTRAINT memos_delete_source_check CHECK (
+    delete_source IS NULL OR delete_source IN ('manual', 'workorder_bundle', 'system')
+  ),
+  CONSTRAINT memos_delete_scope_check CHECK (
+    delete_scope IS NULL OR delete_scope IN ('single', 'bundle')
+  ),
+  CONSTRAINT memos_delete_parent_type_check CHECK (
+    delete_parent_type IS NULL OR delete_parent_type IN ('none', 'workorder')
   )
 );
 
@@ -1174,6 +1225,7 @@ CREATE INDEX spec_sheets_category3_idx ON spec_sheets (company_id, category3_id)
 CREATE INDEX spec_sheets_company_status_updated_idx ON spec_sheets (company_id, status, updated_at DESC) WHERE deleted_at IS NULL AND COALESCE(is_active, true) = true;
 CREATE INDEX spec_sheets_delete_status_idx ON spec_sheets (delete_status, deleted_at DESC);
 CREATE INDEX spec_sheets_purge_status_idx ON spec_sheets (purge_status, purge_requested_at DESC, purged_at DESC);
+CREATE INDEX spec_sheets_delete_metadata_idx ON spec_sheets (delete_source, delete_scope, delete_parent_type, delete_parent_id);
 
 CREATE INDEX orders_spec_sheet_idx ON orders (spec_sheet_id);
 CREATE INDEX orders_company_spec_sheet_idx ON orders (company_id, spec_sheet_id);
@@ -1219,6 +1271,7 @@ CREATE INDEX attachment_trash_items_pending_list_idx ON attachment_trash_items (
 CREATE INDEX attachment_trash_items_admin_status_list_idx ON attachment_trash_items (purge_status, deleted_at DESC) WHERE restored_at IS NULL AND purged_at IS NULL;
 CREATE INDEX attachment_trash_items_purge_retry_idx ON attachment_trash_items (purge_attempt_count, last_purge_attempt_at) WHERE purged_at IS NULL AND restored_at IS NULL;
 CREATE INDEX attachment_trash_items_company_status_deleted_idx ON attachment_trash_items (company_id, purge_status, deleted_at DESC) WHERE restored_at IS NULL AND purged_at IS NULL;
+CREATE INDEX attachment_trash_items_delete_metadata_idx ON attachment_trash_items (delete_source, delete_scope, delete_parent_type, delete_parent_id);
 
 CREATE INDEX memos_order_idx ON memos (order_id);
 CREATE INDEX memos_company_order_idx ON memos (company_id, order_id);
@@ -1226,6 +1279,7 @@ CREATE INDEX memos_parent_idx ON memos (parent_id);
 CREATE INDEX memos_order_active_idx ON memos (order_id, is_active, created_at ASC);
 CREATE INDEX memos_delete_status_idx ON memos (delete_status, deleted_at DESC);
 CREATE INDEX memos_purge_status_idx ON memos (purge_status, purge_requested_at DESC, purged_at DESC);
+CREATE INDEX memos_delete_metadata_idx ON memos (delete_source, delete_scope, delete_parent_type, delete_parent_id);
 
 CREATE INDEX history_logs_company_created_idx ON history_logs (company_id, created_at DESC);
 CREATE INDEX history_logs_company_action_idx ON history_logs (company_id, action_type, created_at DESC);

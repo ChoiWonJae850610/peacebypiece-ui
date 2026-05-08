@@ -29,7 +29,8 @@ type MemoRow = WorkOrderMemoDbRecord & DbQueryResultRow;
 
 function toNumberOrNull(value: unknown): number | null {
   if (typeof value === "number") return value;
-  if (typeof value === "string" && value.trim().length > 0) return Number(value);
+  if (typeof value === "string" && value.trim().length > 0)
+    return Number(value);
   return null;
 }
 
@@ -39,7 +40,9 @@ function toIsoString(value: unknown): string {
 }
 
 function isUuid(value: string): boolean {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value,
+  );
 }
 
 function mapAttachmentRow(row: AttachmentRow): Attachment {
@@ -50,7 +53,9 @@ function mapAttachmentRow(row: AttachmentRow): Attachment {
     url: createAttachmentFileProxyUrl(row.storage_key),
     storageKey: row.storage_key,
     thumbnailKey: row.thumbnail_key ?? null,
-    thumbnailUrl: row.thumbnail_key ? createAttachmentFileProxyUrl(row.thumbnail_key) : null,
+    thumbnailUrl: row.thumbnail_key
+      ? createAttachmentFileProxyUrl(row.thumbnail_key)
+      : null,
     previewUrl: createAttachmentFileProxyUrl(row.storage_key),
     scope: normalizeAttachmentScope(row.type),
     ownerId: row.author_id,
@@ -59,7 +64,9 @@ function mapAttachmentRow(row: AttachmentRow): Attachment {
   };
 }
 
-function isActiveMemoRow(row: Pick<MemoRow, "is_active" | "deleted_at">): boolean {
+function isActiveMemoRow(
+  row: Pick<MemoRow, "is_active" | "deleted_at">,
+): boolean {
   return row.is_active !== false && !row.deleted_at;
 }
 
@@ -73,7 +80,8 @@ function mapMemoThreadRow(row: MemoRow, replies: MemoReply[]): MemoThread {
     authorId: row.author_id ?? "system",
     authorName,
     authorRole: "admin",
-    content: isDeletedThread && hasVisibleReplies ? "삭제된 메모입니다." : row.body,
+    content:
+      isDeletedThread && hasVisibleReplies ? "삭제된 메모입니다." : row.body,
     createdAt: toIsoString(row.created_at),
     deletedAt: row.deleted_at,
     isVisible: isActiveMemoRow(row) || hasVisibleReplies,
@@ -133,7 +141,10 @@ function mapAttachmentInput(input: CreateAttachmentRecordInput) {
   };
 }
 
-async function insertMemoThreadRecord(workOrderId: string, thread: MemoThread): Promise<string> {
+async function insertMemoThreadRecord(
+  workOrderId: string,
+  thread: MemoThread,
+): Promise<string> {
   const keepId = isUuid(thread.id);
   const company = getWorkspaceCompanyContext();
   const columns = keepId
@@ -143,8 +154,25 @@ async function insertMemoThreadRecord(workOrderId: string, thread: MemoThread): 
     ? "$1, $2, $3, $4, NULL, $5, $6, $7, $8"
     : "$1, $2, $3, NULL, $4, $5, $6, $7";
   const values = keepId
-    ? [thread.id, company.companyId, company.companyName, workOrderId, thread.content, thread.authorId || thread.authorName || null, thread.isVisible !== false, thread.deletedAt ?? null]
-    : [company.companyId, company.companyName, workOrderId, thread.content, thread.authorId || thread.authorName || null, thread.isVisible !== false, thread.deletedAt ?? null];
+    ? [
+        thread.id,
+        company.companyId,
+        company.companyName,
+        workOrderId,
+        thread.content,
+        thread.authorId || thread.authorName || null,
+        thread.isVisible !== false,
+        thread.deletedAt ?? null,
+      ]
+    : [
+        company.companyId,
+        company.companyName,
+        workOrderId,
+        thread.content,
+        thread.authorId || thread.authorName || null,
+        thread.isVisible !== false,
+        thread.deletedAt ?? null,
+      ];
 
   const result = await queryDb<{ id: string }>(
     `INSERT INTO memos (${columns}) VALUES (${valuesSql}) RETURNING id`,
@@ -155,7 +183,11 @@ async function insertMemoThreadRecord(workOrderId: string, thread: MemoThread): 
   return id;
 }
 
-async function insertMemoReplyRecord(workOrderId: string, parentId: string, reply: MemoReply): Promise<void> {
+async function insertMemoReplyRecord(
+  workOrderId: string,
+  parentId: string,
+  reply: MemoReply,
+): Promise<void> {
   const keepId = isUuid(reply.id);
   const company = getWorkspaceCompanyContext();
   const columns = keepId
@@ -165,8 +197,27 @@ async function insertMemoReplyRecord(workOrderId: string, parentId: string, repl
     ? "$1, $2, $3, $4, $5, $6, $7, $8, $9"
     : "$1, $2, $3, $4, $5, $6, $7, $8";
   const values = keepId
-    ? [reply.id, company.companyId, company.companyName, workOrderId, parentId, reply.content, reply.authorId || reply.authorName || null, reply.isVisible !== false, reply.deletedAt ?? null]
-    : [company.companyId, company.companyName, workOrderId, parentId, reply.content, reply.authorId || reply.authorName || null, reply.isVisible !== false, reply.deletedAt ?? null];
+    ? [
+        reply.id,
+        company.companyId,
+        company.companyName,
+        workOrderId,
+        parentId,
+        reply.content,
+        reply.authorId || reply.authorName || null,
+        reply.isVisible !== false,
+        reply.deletedAt ?? null,
+      ]
+    : [
+        company.companyId,
+        company.companyName,
+        workOrderId,
+        parentId,
+        reply.content,
+        reply.authorId || reply.authorName || null,
+        reply.isVisible !== false,
+        reply.deletedAt ?? null,
+      ];
 
   await queryDb(`INSERT INTO memos (${columns}) VALUES (${valuesSql})`, values);
 }
@@ -271,14 +322,29 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                    is_active,
                    deleted_at,
                    created_at`,
-        [attachmentId, getWorkspaceCompanyContext().companyId, getWorkspaceCompanyContext().companyName, next.order_id, next.type, next.storage_key, next.thumbnail_key, next.original_name, next.mime_type, next.size_bytes, next.author_id, next.is_primary],
+        [
+          attachmentId,
+          getWorkspaceCompanyContext().companyId,
+          getWorkspaceCompanyContext().companyName,
+          next.order_id,
+          next.type,
+          next.storage_key,
+          next.thumbnail_key,
+          next.original_name,
+          next.mime_type,
+          next.size_bytes,
+          next.author_id,
+          next.is_primary,
+        ],
       );
 
       const [created] = result.rows;
       if (!created) throw new Error("Attachment creation failed");
       return created;
     },
-    createMemoThread: async (input: CreateMemoThreadRecordInput): Promise<WorkOrderMemoThreadDbRecord> => {
+    createMemoThread: async (
+      input: CreateMemoThreadRecordInput,
+    ): Promise<WorkOrderMemoThreadDbRecord> => {
       const result = await queryDb<MemoRow>(
         `INSERT INTO memos (company_id, company_name, order_id, parent_id, body, author_id)
          VALUES ($1, $2, $3, NULL, $4, $5)
@@ -291,14 +357,22 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                    deleted_at,
                    created_at,
                    updated_at`,
-        [getWorkspaceCompanyContext().companyId, getWorkspaceCompanyContext().companyName, input.order_id, input.thread.content, input.thread.authorId || input.thread.authorName || null],
+        [
+          getWorkspaceCompanyContext().companyId,
+          getWorkspaceCompanyContext().companyName,
+          input.order_id,
+          input.thread.content,
+          input.thread.authorId || input.thread.authorName || null,
+        ],
       );
 
       const [created] = result.rows;
       if (!created) throw new Error("Memo creation failed");
       return created;
     },
-    createMemoReply: async (input: CreateMemoReplyRecordInput): Promise<WorkOrderMemoReplyDbRecord> => {
+    createMemoReply: async (
+      input: CreateMemoReplyRecordInput,
+    ): Promise<WorkOrderMemoReplyDbRecord> => {
       const result = await queryDb<MemoRow>(
         `INSERT INTO memos (company_id, company_name, order_id, parent_id, body, author_id)
          VALUES ($1, $2, $3, $4, $5, $6)
@@ -311,7 +385,14 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                    deleted_at,
                    created_at,
                    updated_at`,
-        [getWorkspaceCompanyContext().companyId, getWorkspaceCompanyContext().companyName, input.order_id, input.thread_id, input.reply.content, input.reply.authorId || input.reply.authorName || null],
+        [
+          getWorkspaceCompanyContext().companyId,
+          getWorkspaceCompanyContext().companyName,
+          input.order_id,
+          input.thread_id,
+          input.reply.content,
+          input.reply.authorId || input.reply.authorName || null,
+        ],
       );
 
       const [created] = result.rows;
@@ -430,7 +511,11 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
     softDeleteAttachment: async (input) => {
       const deletedBy = input.deletedBy ?? null;
       const deleteReason = input.deleteReason ?? null;
-      const trashRetentionDays = Number.isFinite(Number(input.trashRetentionDays)) ? Math.max(0, Math.trunc(Number(input.trashRetentionDays))) : 30;
+      const trashRetentionDays = Number.isFinite(
+        Number(input.trashRetentionDays),
+      )
+        ? Math.max(0, Math.trunc(Number(input.trashRetentionDays)))
+        : 30;
       const result = await queryDb<AttachmentRow>(
         `WITH updated_attachment AS (
            UPDATE attachments
@@ -439,6 +524,11 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                   deleted_at = COALESCE(deleted_at, now()),
                   deleted_by = COALESCE($2, deleted_by),
                   delete_reason = COALESCE($3, delete_reason),
+                  delete_source = COALESCE(delete_source, 'manual'),
+                  delete_scope = COALESCE(delete_scope, 'single'),
+                  delete_parent_type = COALESCE(delete_parent_type, 'none'),
+                  delete_parent_id = NULL,
+                  delete_batch_id = COALESCE(delete_batch_id, id),
                   purge_after_at = COALESCE(purge_after_at, now() + ($4::integer * interval '1 day')),
                   updated_at = now()
             WHERE id = $1
@@ -460,6 +550,11 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                       deleted_at,
                       deleted_by,
                       delete_reason,
+                      delete_source,
+                      delete_scope,
+                      delete_parent_type,
+                      delete_parent_id,
+                      delete_batch_id,
                       purge_after_at,
                       created_at
          ), inserted_trash AS (
@@ -475,6 +570,11 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
              size_bytes,
              deleted_by,
              delete_reason,
+             delete_source,
+             delete_scope,
+             delete_parent_type,
+             delete_parent_id,
+             delete_batch_id,
              deleted_at,
              purge_after_at
            )
@@ -489,6 +589,11 @@ export function createDbAttachmentMemoRepository(): AttachmentMemoWritableReposi
                   COALESCE(size_bytes, 0),
                   deleted_by,
                   delete_reason,
+                  delete_source,
+                  delete_scope,
+                  delete_parent_type,
+                  delete_parent_id,
+                  delete_batch_id,
                   COALESCE(deleted_at, now()),
                   COALESCE(purge_after_at, now() + ($4::integer * interval '1 day'))
              FROM updated_attachment
