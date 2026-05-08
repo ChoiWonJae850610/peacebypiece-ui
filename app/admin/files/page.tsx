@@ -10,10 +10,7 @@ import {
   runRestoreTrashItemsFlow,
 } from "@/lib/admin/files/actionFlow";
 import { getAdminFileManagementSnapshot } from "@/lib/admin/files/adapter";
-import {
-  buildAdminSelectAllIds,
-  selectAdminTrashItemsByIds,
-} from "@/lib/admin/files/selectors";
+import { selectAdminTrashItemsByIds } from "@/lib/admin/files/selectors";
 import type { AdminFileManagementSnapshot } from "@/lib/admin/files/types";
 import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
@@ -116,25 +113,6 @@ export default function AdminFilesPage() {
         ? currentIds.filter((id) => id !== workOrderId)
         : [...currentIds, workOrderId],
     );
-    setActionMessage(null);
-  }
-
-  function handleToggleAllTrashItems() {
-    const selectableItems = snapshot.trashItems.filter(
-      (item) => item.restorePolicy !== "bundle_required",
-    );
-    const selectableWorkOrderIds = (snapshot.workOrders ?? []).map(
-      (item) => item.id,
-    );
-    const allSelected =
-      selectableItems.length + selectableWorkOrderIds.length > 0 &&
-      selectedTrashItemIds.length === selectableItems.length &&
-      selectedWorkOrderIds.length === selectableWorkOrderIds.length;
-
-    setSelectedTrashItemIds(
-      allSelected ? [] : buildAdminSelectAllIds(selectableItems, []),
-    );
-    setSelectedWorkOrderIds(allSelected ? [] : selectableWorkOrderIds);
     setActionMessage(null);
   }
 
@@ -342,6 +320,54 @@ export default function AdminFilesPage() {
     }
   }
 
+  async function handlePurgeAllTrashItems() {
+    if (pendingFileAction || pendingWorkOrderAction) return;
+    const fileTargets = snapshot.trashItems.filter((item) => item.canPurge);
+    const workOrderTargets = (snapshot.workOrders ?? []).map((item) => item.id);
+
+    if (fileTargets.length === 0 && workOrderTargets.length === 0) {
+      setActionMessage("삭제 요청 가능한 휴지통 항목이 없습니다.");
+      return;
+    }
+
+    setPendingFileAction(fileTargets.length > 0 ? "purge" : null);
+    setPendingWorkOrderAction(workOrderTargets.length > 0 ? "purge" : null);
+    try {
+      let purgedFileCount = 0;
+      if (fileTargets.length > 0) {
+        const result = await runPurgeTrashItemsFlow(fileTargets);
+        purgedFileCount = result.ok ? (result.affectedCount ?? 0) : 0;
+        if (!result.ok) throw new Error(result.message);
+      }
+
+      let purgedWorkOrderCount = 0;
+      for (const workOrderId of workOrderTargets) {
+        await purgeWorkOrderById(workOrderId);
+        purgedWorkOrderCount += 1;
+      }
+
+      setActionMessage(
+        createPurgeSelectionMessage({
+          fileCount: purgedFileCount,
+          workOrderCount: purgedWorkOrderCount,
+          skippedFileCount: 0,
+        }),
+      );
+      setSelectedTrashItemIds([]);
+      setSelectedWorkOrderIds([]);
+      await refreshSnapshot();
+    } catch (error) {
+      setActionMessage(
+        error instanceof Error
+          ? error.message
+          : "휴지통 비우기 요청에 실패했습니다.",
+      );
+    } finally {
+      setPendingFileAction(null);
+      setPendingWorkOrderAction(null);
+    }
+  }
+
   async function handleRestoreWorkOrder(workOrderId: string) {
     if (pendingWorkOrderAction) return;
     setPendingWorkOrderAction("restore");
@@ -433,8 +459,8 @@ export default function AdminFilesPage() {
             selectedWorkOrderIds={selectedWorkOrderIds}
             onToggleItem={toggleTrashItemId}
             onToggleWorkOrder={toggleWorkOrderId}
-            onToggleAll={handleToggleAllTrashItems}
             onRestore={handleRestoreSelection}
+            onPurgeAll={handlePurgeAllTrashItems}
             onPurge={handlePurgeSelection}
             onRestoreItem={(itemId) => handleRestoreTrashItem([itemId])}
             onPurgeItem={(itemId) => handlePurgeTrashItem([itemId])}

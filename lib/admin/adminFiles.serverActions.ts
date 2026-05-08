@@ -293,9 +293,9 @@ function getTrashRestorePolicy(input: {
 function getTrashRestorePolicyLabel(
   policy: "file_unit" | "parent_deleted_restore_blocked" | "bundle_required",
 ): string {
-  if (policy === "bundle_required") return "묶음 처리 필요";
+  if (policy === "bundle_required") return "작업지시서 묶음 복원";
   if (policy === "parent_deleted_restore_blocked")
-    return "작업지시서 삭제로 복원 불가";
+    return "작업지시서를 찾을 수 없음";
   return "파일 단위 처리 가능";
 }
 
@@ -482,9 +482,9 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
         restorePolicy === "file_unit" && !row.last_purge_error && isPending,
       restoreDisabledReason:
         restorePolicy === "bundle_required"
-          ? "작업지시서 삭제와 함께 휴지통으로 이동한 파일은 작업지시서 묶음 복원에서 처리해야 합니다."
+          ? "작업지시서와 첨부된 파일/메모가 함께 복원됩니다."
           : restorePolicy === "parent_deleted_restore_blocked"
-            ? "삭제된 작업지시서에 연결된 파일이라 파일만 복구할 수 없습니다. 작업지시서 복구 후 다시 처리할 수 있습니다."
+            ? "해당 작업지시서를 찾을 수 없습니다."
             : row.last_purge_error
               ? "삭제 실패 상태는 시스템관리자 확인 후 처리해야 합니다."
               : !isPending
