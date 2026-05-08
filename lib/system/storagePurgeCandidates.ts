@@ -1,7 +1,14 @@
 import "server-only";
 
 import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
-import { ADMIN_FILE_TRASH_REASONS } from "@/lib/admin/files/trashPolicy";
+import {
+  ADMIN_FILE_TRASH_ACTOR_IDS,
+  ADMIN_FILE_TRASH_PURGE_STATUSES,
+  ADMIN_FILE_TRASH_REASONS,
+  getAdminFileTrashVisiblePurgeStatus,
+  isAdminFileTrashPendingStatus,
+  isAdminFileTrashPurgeRequestedStatus,
+} from "@/lib/admin/files/trashPolicy";
 import { markAttachmentTrashItemPurgeFailed, markAttachmentTrashItemsPurged } from "@/lib/admin/files/serverActions";
 import { deleteR2ObjectViaWorker } from "@/lib/storage/r2/r2WorkerUpload";
 import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
@@ -138,11 +145,16 @@ function getFileTypeLabel(mimeType: string | null | undefined, fileName: string)
 }
 
 function getPurgeStatusLabel(status: string | null | undefined, error: string | null | undefined, kind: SystemStoragePurgeCandidateKind): string {
-  if (error || status === "failed") return "삭제 실패";
-  if (status === "purge_requested") return kind === "workorder" ? "작업지시서 삭제 요청" : "영구삭제 요청";
-  if (status === "pending") return kind === "workorder" ? "작업지시서 삭제 대기" : "삭제 대기";
-  if (status === "purged") return "삭제 완료";
-  return status || "후보";
+  const visibleStatus = getAdminFileTrashVisiblePurgeStatus({
+    status,
+    lastPurgeError: error,
+  });
+  if (visibleStatus === ADMIN_FILE_TRASH_PURGE_STATUSES.failed) return "삭제 실패";
+  if (visibleStatus === ADMIN_FILE_TRASH_PURGE_STATUSES.purgeRequested) return kind === "workorder" ? "작업지시서 삭제 요청" : "영구삭제 요청";
+  if (visibleStatus === ADMIN_FILE_TRASH_PURGE_STATUSES.pending) return kind === "workorder" ? "작업지시서 삭제 대기" : "삭제 대기";
+  if (visibleStatus === ADMIN_FILE_TRASH_PURGE_STATUSES.purged) return "삭제 완료";
+  if (visibleStatus === ADMIN_FILE_TRASH_PURGE_STATUSES.restored) return "복구 완료";
+  return "후보";
 }
 
 function getOverdueDays(purgeDueAt: string | Date | null | undefined): number {
@@ -193,7 +205,7 @@ function mapFileCandidateRow(row: PurgeCandidateRow): SystemStoragePurgeCandidat
     deletedAt: formatDate(row.deleted_at),
     purgeDueAt: formatDate(row.purge_due_at),
     overdueDays: getOverdueDays(row.purge_due_at),
-    purgeStatus: row.purge_status || "pending",
+    purgeStatus: getAdminFileTrashVisiblePurgeStatus({ status: row.purge_status, lastPurgeError: row.last_purge_error }),
     purgeStatusLabel: getPurgeStatusLabel(row.purge_status, row.last_purge_error, "file"),
     lastPurgeError: row.last_purge_error,
     attachmentCount: 1,
@@ -230,7 +242,7 @@ function mapWorkOrderCandidateRow(row: WorkOrderPurgeCandidateRow): SystemStorag
     deletedAt: formatDate(row.deleted_at),
     purgeDueAt: formatDate(row.purge_due_at),
     overdueDays: getOverdueDays(row.purge_due_at),
-    purgeStatus: row.purge_status || "pending",
+    purgeStatus: getAdminFileTrashVisiblePurgeStatus({ status: row.purge_status }),
     purgeStatusLabel: getPurgeStatusLabel(row.purge_status, null, "workorder"),
     lastPurgeError: null,
     attachmentCount,
@@ -354,9 +366,9 @@ export async function getSystemStoragePurgeCandidateSnapshot(limit = 200): Promi
   const companyIds = new Set(candidates.map((candidate) => candidate.companyId || candidate.companyName));
   const totalOriginalBytes = candidates.reduce((sum, candidate) => sum + candidate.originalSizeBytes, 0);
   const thumbnailObjectCount = candidates.filter((candidate) => candidate.thumbnailKey).length;
-  const requestedCount = candidates.filter((candidate) => candidate.purgeStatus === "purge_requested").length;
-  const failedCount = candidates.filter((candidate) => candidate.lastPurgeError || candidate.purgeStatus === "failed").length;
-  const pendingCount = candidates.filter((candidate) => candidate.purgeStatus === "pending" && !candidate.lastPurgeError).length;
+  const requestedCount = candidates.filter((candidate) => isAdminFileTrashPurgeRequestedStatus(candidate.purgeStatus)).length;
+  const failedCount = candidates.filter((candidate) => candidate.lastPurgeError || candidate.purgeStatus === ADMIN_FILE_TRASH_PURGE_STATUSES.failed).length;
+  const pendingCount = candidates.filter((candidate) => isAdminFileTrashPendingStatus(candidate.purgeStatus) && !candidate.lastPurgeError).length;
 
   return {
     summary: {
@@ -511,7 +523,7 @@ async function purgeSystemFileCandidate(
       deleteCachedR2UrlsByKey(key);
     }
 
-    await markAttachmentTrashItemsPurged({ trashItemIds: [candidate.id], actorId: actorId ?? "system-storage-purge" });
+    await markAttachmentTrashItemsPurged({ trashItemIds: [candidate.id], actorId: actorId ?? ADMIN_FILE_TRASH_ACTOR_IDS.systemStoragePurge });
 
     return {
       trashItemId: candidate.id,
@@ -637,7 +649,7 @@ async function purgeSystemWorkOrderCandidate(
        )
        SELECT COUNT(*)::text AS affected_count
          FROM marked_workorder`,
-      [candidate.id, actorId ?? "system-storage-purge"],
+      [candidate.id, actorId ?? ADMIN_FILE_TRASH_ACTOR_IDS.systemStoragePurge],
     );
 
     const affectedCount = toNumber(result.rows[0]?.affected_count ?? 0);

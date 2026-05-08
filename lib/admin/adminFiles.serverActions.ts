@@ -2,7 +2,13 @@ import "server-only";
 
 import { queryDb } from "@/lib/db/client";
 import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
-import { ADMIN_FILE_TRASH_REASONS, isWorkOrderBundleTrashReason } from "@/lib/admin/files/trashPolicy";
+import {
+  ADMIN_FILE_TRASH_PURGE_STATUSES,
+  ADMIN_FILE_TRASH_REASONS,
+  getAdminFileTrashVisiblePurgeStatus,
+  isAdminFileTrashPendingStatus,
+  isWorkOrderBundleTrashReason,
+} from "@/lib/admin/files/trashPolicy";
 import type { DbQueryResultRow } from "@/lib/db/client";
 
 export type AdminTrashDbActionInput = {
@@ -302,10 +308,18 @@ function getPurgeStatusLabel(
   status: string | null | undefined,
   errorMessage: string | null | undefined,
 ): string {
-  if (status === "purge_requested") return "영구삭제 요청";
-  if (status === "purged") return "삭제 완료";
-  if (status === "restored") return "복구 완료";
-  if (errorMessage) return "삭제 실패";
+  const visibleStatus = getAdminFileTrashVisiblePurgeStatus({
+    status,
+    lastPurgeError: errorMessage,
+  });
+  if (visibleStatus === ADMIN_FILE_TRASH_PURGE_STATUSES.purgeRequested)
+    return "영구삭제 요청";
+  if (visibleStatus === ADMIN_FILE_TRASH_PURGE_STATUSES.purged)
+    return "삭제 완료";
+  if (visibleStatus === ADMIN_FILE_TRASH_PURGE_STATUSES.restored)
+    return "복구 완료";
+  if (visibleStatus === ADMIN_FILE_TRASH_PURGE_STATUSES.failed)
+    return "삭제 실패";
   return "복구 가능";
 }
 
@@ -442,7 +456,7 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
       deleteReason: row.delete_reason,
     });
     const restorePolicyLabel = getTrashRestorePolicyLabel(restorePolicy);
-    const isPending = (row.purge_status ?? "pending") === "pending";
+    const isPending = isAdminFileTrashPendingStatus(row.purge_status);
     return {
       id: row.id,
       attachmentId: row.attachment_id,
@@ -460,14 +474,10 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
       restoreDaysLeft,
       restoreLabel: `D-${restoreDaysLeft}`,
       deleteReason: row.delete_reason || "삭제 사유 없음",
-      purgeStatus: (row.last_purge_error
-        ? "failed"
-        : row.purge_status || "pending") as
-        | "pending"
-        | "purge_requested"
-        | "purged"
-        | "failed"
-        | "restored",
+      purgeStatus: getAdminFileTrashVisiblePurgeStatus({
+        status: row.purge_status,
+        lastPurgeError: row.last_purge_error,
+      }),
       purgeStatusLabel: getPurgeStatusLabel(
         row.purge_status,
         row.last_purge_error,
