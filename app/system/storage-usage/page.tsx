@@ -3,6 +3,7 @@ import Link from "next/link";
 import { SystemStoragePurgeCandidatesClient } from "@/components/system/storage/SystemStoragePurgeCandidatesClient";
 import { APP_VERSION } from "@/lib/constants/app";
 import { getSystemStoragePurgeCandidateSnapshot } from "@/lib/system/storagePurgeCandidates";
+import { SYSTEM_STORAGE_PURGE_COPY } from "@/lib/system/storagePurgePresentation";
 
 export default async function SystemStorageUsagePage() {
   const snapshot = await getSystemStoragePurgeCandidateSnapshot();
@@ -15,14 +16,14 @@ export default async function SystemStorageUsagePage() {
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
-                SYSTEM STORAGE PURGE
+                {SYSTEM_STORAGE_PURGE_COPY.pageEyebrow}
               </p>
               <div className="space-y-2">
                 <h1 className="text-2xl font-semibold text-stone-950">
-                  R2 실제 삭제 후보
+                  {SYSTEM_STORAGE_PURGE_COPY.pageTitle}
                 </h1>
                 <p className="max-w-3xl text-sm leading-6 text-stone-600">
-                  전 고객 공통 30일 휴지통 정책에 따라 파일과 작업지시서 삭제 후보를 확인합니다. 작업지시서 후보는 대표 row로 표시하고, 실제 삭제 시 연결 첨부파일과 메모를 같은 흐름에서 함께 처리합니다. 화면에서는 정상 삭제 흐름을 확인하고, R2 파일 없음·Worker 실패 같은 예외는 코드 처리 기준으로 점검합니다.
+                  {SYSTEM_STORAGE_PURGE_COPY.pageDescription}
                 </p>
               </div>
             </div>
@@ -34,7 +35,7 @@ export default async function SystemStorageUsagePage() {
                 href="/system"
                 className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50"
               >
-                시스템 콘솔
+                {SYSTEM_STORAGE_PURGE_COPY.consoleLink}
               </Link>
             </div>
           </div>
@@ -42,24 +43,24 @@ export default async function SystemStorageUsagePage() {
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold text-stone-500">삭제 후보</p>
+            <p className="text-xs font-semibold text-stone-500">{SYSTEM_STORAGE_PURGE_COPY.summary.candidateTitle}</p>
             <p className="mt-3 text-2xl font-semibold text-stone-950">{summary.candidateCount}개</p>
-            <p className="mt-2 text-xs leading-5 text-stone-600">파일 {summary.fileCandidateCount}개 · 작업지시서 {summary.workorderCandidateCount}개</p>
+            <p className="mt-2 text-xs leading-5 text-stone-600">{SYSTEM_STORAGE_PURGE_COPY.summary.fileUnit} {summary.fileCandidateCount}개 · {SYSTEM_STORAGE_PURGE_COPY.summary.workOrderUnit} {summary.workorderCandidateCount}개</p>
           </article>
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold text-stone-500">재시도 필요</p>
+            <p className="text-xs font-semibold text-stone-500">{SYSTEM_STORAGE_PURGE_COPY.summary.retryTitle}</p>
             <p className="mt-3 text-2xl font-semibold text-stone-950">{summary.failedCount}개</p>
-            <p className="mt-2 text-xs leading-5 text-stone-600">Worker/권한/네트워크 실패로 다시 처리할 후보 {summary.retryRequiredCount}개</p>
+            <p className="mt-2 text-xs leading-5 text-stone-600">{SYSTEM_STORAGE_PURGE_COPY.summary.retryDescriptionPrefix} {summary.retryRequiredCount}개</p>
           </article>
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold text-stone-500">원본 용량</p>
+            <p className="text-xs font-semibold text-stone-500">{SYSTEM_STORAGE_PURGE_COPY.summary.originalSizeTitle}</p>
             <p className="mt-3 text-2xl font-semibold text-stone-950">{summary.totalOriginalSizeLabel}</p>
-            <p className="mt-2 text-xs leading-5 text-stone-600">파일 후보와 작업지시서 묶음 첨부 기준 · 고객사 {summary.companyCount}곳</p>
+            <p className="mt-2 text-xs leading-5 text-stone-600">{SYSTEM_STORAGE_PURGE_COPY.summary.sizeDescriptionPrefix} {summary.companyCount}곳</p>
           </article>
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold text-stone-500">썸네일 객체</p>
+            <p className="text-xs font-semibold text-stone-500">{SYSTEM_STORAGE_PURGE_COPY.summary.thumbnailTitle}</p>
             <p className="mt-3 text-2xl font-semibold text-stone-950">{summary.thumbnailObjectCount}개</p>
-            <p className="mt-2 text-xs leading-5 text-stone-600">R2 삭제 시 원본과 함께 처리 대상</p>
+            <p className="mt-2 text-xs leading-5 text-stone-600">{SYSTEM_STORAGE_PURGE_COPY.summary.thumbnailDescription}</p>
           </article>
         </section>
 

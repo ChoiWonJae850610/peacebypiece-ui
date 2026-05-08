@@ -147,9 +147,9 @@ export const SYSTEM_PLAN_DISTRIBUTION: SystemPlanDistributionItem[] = [
 export const SYSTEM_STORAGE_PURGE_STATS: SystemStoragePurgeStat[] = [
   {
     id: "purge-requested",
-    label: "영구삭제 요청",
+    label: "실제 삭제 요청",
     value: "2건",
-    description: "휴지통에서 사용자가 명시적으로 영구삭제를 요청한 항목",
+    description: "휴지통에서 사용자가 명시적으로 실제 삭제를 요청한 항목",
     tone: "warning",
   },
   {
@@ -192,7 +192,7 @@ export const SYSTEM_STORAGE_USAGE_BUCKETS: SystemStorageUsageBucket[] = [
   },
   {
     id: "purged-storage",
-    label: "영구삭제 완료",
+    label: "실제 삭제 완료",
     valueLabel: "1.4GB",
     description: "DB에서 삭제 완료로 표시되고 R2 객체 삭제가 완료된 누적량",
     tone: "neutral",
@@ -217,7 +217,7 @@ export const SYSTEM_RISK_ITEMS: SystemRiskItem[] = [
   {
     id: "purge-candidate",
     title: "스토리지 purge 후보",
-    description: "영구삭제 요청, 삭제 대기, 삭제 완료, 실패 상태를 시스템 통계와 스토리지 화면에서 분리합니다.",
+    description: "실제 삭제 요청, 삭제 대기, 삭제 완료, 실패 상태를 시스템 통계와 스토리지 화면에서 분리합니다.",
     statusLabel: "분리 집계",
     tone: "warning",
   },

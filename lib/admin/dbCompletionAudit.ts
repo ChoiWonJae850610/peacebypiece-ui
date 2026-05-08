@@ -82,9 +82,9 @@ export const ADMIN_DB_SCREEN_AUDIT_ITEMS: readonly AdminDbScreenAuditItem[] = [
     status: "db-prepared",
     sourceType: "db-prepared-fallback",
     readSource: "첨부파일과 회사 저장소 설정을 기준으로 조회",
-    writeSource: "파일 삭제, 복구, 영구삭제 작업",
+    writeSource: "파일 삭제, 복원, 삭제 요청 작업",
     alternateDisplay: "조회가 불안정한 경우 기본 저장소 현황으로 안전하게 표시",
-    nextCheck: "실제 파일 삭제, 복구, 영구삭제 흐름 확인",
+    nextCheck: "실제 파일 삭제, 복원, 삭제 요청 흐름 확인",
   },
   {
     key: "partner",

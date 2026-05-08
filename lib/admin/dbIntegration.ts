@@ -67,7 +67,7 @@ export const ADMIN_DB_INTEGRATION_POINTS: readonly AdminDbIntegrationPoint[] = [
     readBoundary: "createPartnerRepository().list*",
     writeBoundary: "PartnerWritableRepository methods",
     fallback: "PARTNER_REPOSITORY_MODE=mock 또는 DB 미연결 시 mockPartnerRepository",
-    nextDbAction: "PARTNER_REPOSITORY_MODE=db 전환 후 관리자/작지 선택 UI 양쪽 회귀 테스트",
+    nextDbAction: "PARTNER_REPOSITORY_MODE=db 전환 후 관리자/작업지시서 선택 UI 양쪽 회귀 테스트",
   },
   {
     domain: "settings",

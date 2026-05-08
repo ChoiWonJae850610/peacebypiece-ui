@@ -39,7 +39,7 @@ export function buildAdminPolicyOverviewViewModel(settings: CompanySettings): Ad
       {
         id: "delete-mode",
         title: "삭제 방식",
-        value: "휴지통 보관 후 영구삭제",
+        value: "휴지통 보관 후 삭제 요청",
         description: "작업지시서와 첨부파일은 즉시 R2에서 제거하지 않고 DB soft delete와 휴지통 상태를 먼저 거칩니다.",
         status: "fixed",
         statusLabel: "고정",
