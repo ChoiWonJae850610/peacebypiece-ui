@@ -15,11 +15,11 @@ export const adminEn = {
     countUnit: "items",
   },
   filesPage: {
-    title: "저장소 관리",
-    tabGroupLabel: "문서/디자인 상태",
-    tabs: { attachments: "문서/디자인", trash: "휴지통", storage: "저장 정책" },
-    snapshotLoadFailed: "파일 목록 DB 조회 실패",
-    snapshotLoadFailedWithMessage: "파일 목록 DB 조회 실패: {message}",
+    title: "Storage",
+    tabGroupLabel: "Document/design status",
+    tabs: { attachments: "Documents/designs", trash: "Trash", storage: "Storage policy" },
+    snapshotLoadFailed: "Could not load file list from DB",
+    snapshotLoadFailedWithMessage: "Could not load file list from DB: {message}",
   },
   auditSummary: {
     title: "Admin Audit",
@@ -59,7 +59,7 @@ export const adminEn = {
     summary: "Shows only admin-relevant operational history.",
     countSuffix: " items",
   },
-  navigation: { dashboard: "대시보드", workorder: "작업지시서", partners: "협력업체", storage: "저장소 관리", statistics: "통계정보", history: "히스토리", settings: "환경설정", dbConnected: "DB 상태 점검" },
+  navigation: { dashboard: "Dashboard", workorder: "Work Orders", partners: "Partners", storage: "Storage", statistics: "Statistics", history: "History", settings: "Settings", dbConnected: "DB status audit" },
   operationsDashboard: {
     title: "Operations Dashboard",
     sourceDb: "Shows today's work and waiting items from DB.",
@@ -108,9 +108,9 @@ export const adminEn = {
       updatedDays: "{days}d ago",
     },
   },
-  filesSummary: { title: "저장소 사용 현황", description: "요금제 용량, 파일 상태, 파일 유형을 현재 기준으로 확인합니다.", periods: { 7: "7일", 15: "15일", 30: "30일" }, uploadAmount: "첨부량", count: "건수", fileType: "파일 유형", fileTypeLabel: "파일 유형", countSuffix: "개", totalUsage: "전체 사용량", attachments: "문서/디자인", trash: "휴지통", retentionPeriod: "보관 기간", usage: "사용량", refreshLabel: "저장소 데이터 새로고침", documents: "문서", designs: "디자인", memos: "메모", others: "기타", storagePlanLabel: "요금제 용량", currentPlan: "현재 요금제", pendingPlan: "확인 중", upgrade: "업그레이드", upgradeTitle: "요금제 업그레이드 화면은 후속 버전에서 연결합니다.", planCapacityPending: "요금제 확인 중", planCapacityLoading: "요금제 용량 확인 중", planCapacityLoadingDescription: "고객 정보의 요금제 용량을 불러오는 중", usedSuffix: "사용", remainingSuffix: "남음", fileOperationsLabel: "파일 운영", fileOperationsTitle: "파일 운영 요약", totalLabel: "전체", activeFiles: "사용중 파일", trashFiles: "휴지통 파일", purgeRequestedFiles: "삭제 요청", zeroTrashSize: "0MB 보관", zeroPurgeRequestSize: "0MB 처리 대기", statuses: { normal: "정상", caution: "주의", danger: "위험" }, units: { count: "개", day: "일" } },
-  filesList: { title: "문서/디자인 목록", sort: { latest: "최신순", size: "용량순", workorder: "작업지시서명순" }, selectAll: "전체 선택", clearAll: "전체 해제", emptyTrash: "비우기", delete: "삭제", restore: "복원", purge: "선택 삭제", processing: "처리 중", close: "닫기", yes: "예", no: "아니오", empty: "표시할 문서/디자인이 없습니다.", trashEmpty: "휴지통에 보관 중인 항목이 없습니다.", restoreSkipsBlockedItems: "복원할 수 없는 선택 항목은 제외하고 처리합니다.", purgeSkipsBlockedItems: "삭제 요청할 수 없는 선택 항목은 제외하고 처리합니다.", selectWorkOrder: "작업지시서 선택", deselectWorkOrder: "작업지시서 선택 해제", selectItem: "선택", deselectItem: "선택 해제", countSuffix: "개", columns: { select: "선택", target: "대상", workorder: "작업지시서", createdAt: "생성일자", deletedAt: "삭제일시", fileName: "파일명", type: "유형", size: "크기" }, selectedScope: { workorder: "작업지시서", workorderValue: "대표 row 1건", bundleAttachments: "문서/디자인/메모", restoreBlocked: "복원 제외 항목", totalSize: "파일 용량" }, emptyTrashConfirmTitle: "휴지통 비우기", emptyTrashConfirmDescription: "휴지통의 모든 항목을 삭제 요청하시겠습니까?", workorderPurgePreview: "선택 삭제 범위 확인", workorderRestorePreview: "복원 범위 확인", workorderActionGuardTitle: "작업지시서 단위로 처리 범위를 확인합니다.", workorderRestoreConnectedNotice: "작업지시서와 문서/디자인/메모가 함께 복원됩니다.", workorderActionSkeletonNotice: "선택 삭제는 고객관리자 삭제 요청으로 처리하고 휴지통 기본 목록에서 제외합니다. R2 파일 삭제는 시스템관리자 Worker 기반 purge 흐름에서만 처리됩니다.", workorderRestoreGuardDescription: "복원 시 작업지시서와 함께 삭제된 문서/디자인/메모를 함께 복원합니다.", workorderPurgeGuardDescription: "선택 삭제 시 고객관리자 삭제 요청 상태로 전환합니다. 실제 파일 삭제는 시스템관리자 처리 단계에서 진행합니다.", fileTypes: { document: "문서", design: "디자인", other: "기타" }, attachmentCount: "문서/디자인" },
-  trashPage: { title: "휴지통" },
+  filesSummary: { title: "Storage usage", description: "Review plan capacity, file status, and file types based on current data.", periods: { 7: "7 days", 15: "15 days", 30: "30 days" }, uploadAmount: "Upload amount", count: "Count", fileType: "File type", fileTypeLabel: "File type", countSuffix: "items", totalUsage: "Total usage", attachments: "Documents/designs", trash: "Trash", retentionPeriod: "Retention period", usage: "Usage", refreshLabel: "Refresh storage data", documents: "Documents", designs: "Designs", memos: "Memos", others: "Other", storagePlanLabel: "Storage plan", currentPlan: "Current plan", pendingPlan: "Checking", upgrade: "Upgrade", upgradeTitle: "Plan upgrade screen will be connected in a later version.", planCapacityPending: "Checking plan", planCapacityLoading: "Checking plan capacity", planCapacityLoadingDescription: "Loading the plan capacity from customer information", usedSuffix: "used", remainingSuffix: "remaining", fileOperationsLabel: "File operations", fileOperationsTitle: "File operations summary", totalLabel: "Total", activeFiles: "Active files", trashFiles: "Trash files", purgeRequestedFiles: "Deletion requests", zeroTrashSize: "0MB stored", zeroPurgeRequestSize: "0MB waiting", statuses: { normal: "Normal", caution: "Caution", danger: "Risk" }, units: { count: "items", day: "days" } },
+  filesList: { title: "Document/design list", sort: { latest: "Latest", size: "By size", workorder: "By work order" }, selectAll: "Select all", clearAll: "Clear all", emptyTrash: "Empty trash", delete: "Delete", restore: "Restore", purge: "Request deletion", processing: "Processing", close: "Close", yes: "Yes", no: "No", empty: "No documents or designs to display.", trashEmpty: "No items are stored in trash.", restoreSkipsBlockedItems: "Items that cannot be restored will be skipped.", purgeSkipsBlockedItems: "Items that cannot be requested for deletion will be skipped.", selectWorkOrder: "Select work order", deselectWorkOrder: "Deselect work order", selectItem: "Select", deselectItem: "Deselect", countSuffix: "items", columns: { select: "Select", target: "Target", workorder: "Work order", createdAt: "Created", deletedAt: "Deleted", fileName: "File name", type: "Type", size: "Size" }, selectedScope: { workorder: "Work order", workorderValue: "1 representative row", bundleAttachments: "Documents/designs/memos", restoreBlocked: "Restore excluded items", totalSize: "File size" }, emptyTrashConfirmTitle: "Empty trash", emptyTrashConfirmDescription: "Request deletion for all items in trash?", workorderPurgePreview: "Review deletion request scope", workorderRestorePreview: "Review restore scope", workorderActionGuardTitle: "Review the processing scope by work order.", workorderRestoreConnectedNotice: "The work order and its documents/designs/memos will be restored together.", workorderActionSkeletonNotice: "Request deletion is handled as a customer-admin deletion request and hidden from the default trash list. R2 file deletion is handled only in the system-admin Worker purge flow.", workorderRestoreGuardDescription: "When restoring, documents/designs/memos deleted with the work order are restored together.", workorderPurgeGuardDescription: "Request deletion switches the selected scope to customer-admin deletion request status. Actual file deletion is handled in the system-admin step.", fileTypes: { document: "Document", design: "Design", other: "Other" }, attachmentCount: "Documents/designs" },
+  trashPage: { title: "Trash" },
 
   historyPage: {
     title: "Work Order History",
@@ -143,7 +143,7 @@ export const adminEn = {
   topbar: {
     summaries: {
       adminMain: "Operations, status flow, and today checks",
-      storage: "문서/디자인 · 휴지통 · 용량 관리",
+      storage: "Documents/designs · Trash · Storage usage",
       partners: "Partners, factories, and outsourcing vendors",
       dashboard: "Work orders, partners, and file usage",
       settings: "Standards, storage policy, and log events",
