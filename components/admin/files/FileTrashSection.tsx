@@ -83,10 +83,12 @@ type UnifiedTrashRow =
       sourceItem: AdminTrashFileItem;
     };
 
-const TRASH_TABLE_GRID = "0.42fr 1.45fr 0.95fr 1.2fr 0.7fr 0.65fr";
+const TRASH_TABLE_GRID = "56px minmax(260px,1fr) 136px minmax(160px,0.75fr) 96px 96px";
 const TRASH_HEADER_CENTER_CLASS = "text-center";
-const TRASH_CELL_CENTER_CLASS = "flex items-center justify-center text-center";
-const TRASH_CELL_SELECT_CLASS = "flex h-full min-h-[34px] items-center justify-center self-center text-center";
+const TRASH_HEADER_LEFT_CLASS = "text-left";
+const TRASH_CELL_CENTER_CLASS = "flex h-full min-h-[40px] w-full items-center justify-center text-center";
+const TRASH_CELL_TARGET_CLASS = "flex h-full min-h-[40px] w-full items-center justify-start text-left";
+const TRASH_CELL_SELECT_CLASS = "flex h-full min-h-[40px] w-full items-center justify-center text-center";
 
 const WORKORDER_STAGE_STEPS = [
   { keys: ["draft", "작성중"], label: "작성중" },
@@ -894,7 +896,7 @@ export default function FileTrashSection({
             row.sourceItem.workorderId === previewWorkOrderId,
           );
           if (row.isGroupedAttachment)
-            return `border-l-4 ${isPreviewWorkOrderGroup ? "border-l-stone-400 bg-stone-100/70" : "border-l-stone-200"} transition ${row.isSelected ? "bg-stone-100" : "bg-stone-50/40 hover:bg-stone-50"}`;
+            return `${isPreviewWorkOrderGroup ? "shadow-[inset_4px_0_0_0_rgba(120,113,108,0.55)] bg-stone-100/70" : "shadow-[inset_4px_0_0_0_rgba(231,229,228,1)]"} transition ${row.isSelected ? "bg-stone-100" : "bg-stone-50/40 hover:bg-stone-50"}`;
           return `transition ${row.isSelected ? "bg-stone-100" : "bg-white hover:bg-stone-50"}`;
         }}
         columns={[
@@ -928,7 +930,7 @@ export default function FileTrashSection({
               }
               if (row.restorePolicy === "bundle_required")
                 return (
-                  <span className="text-[10px] font-medium text-stone-300">
+                  <span className="flex h-4 w-4 items-center justify-center text-[10px] font-medium text-stone-300">
                     -
                   </span>
                 );
@@ -954,11 +956,11 @@ export default function FileTrashSection({
           {
             key: "target",
             label: t("filesList.columns.target", "대상"),
-            headerClassName: TRASH_HEADER_CENTER_CLASS,
-            className: TRASH_CELL_CENTER_CLASS,
+            headerClassName: TRASH_HEADER_LEFT_CLASS,
+            className: TRASH_CELL_TARGET_CLASS,
             render: (row) => (
               <div
-                className={`flex min-w-0 items-center gap-3 ${row.kind === "workorder" ? "w-full justify-start pl-4 text-left" : "justify-center text-center"} ${row.isGroupedAttachment ? "pl-4" : ""}`}
+                className={`flex w-full min-w-0 items-center gap-3 text-left ${row.kind === "workorder" ? "pl-2" : row.isGroupedAttachment ? "pl-5" : "pl-2"}`}
               >
                 {row.isGroupedAttachment ? (
                   <span className="shrink-0 text-xs font-medium text-stone-300">
@@ -971,12 +973,12 @@ export default function FileTrashSection({
                   thumbnailUrl={row.thumbnailUrl || row.previewUrl}
                   compact
                 />
-                <div className={`min-w-0 ${row.kind === "workorder" ? "text-left" : "text-center"}`}>
+                <div className="min-w-0 text-left">
                   <p className="text-[10px] text-stone-400 md:hidden">
                     {t("filesList.columns.target", "대상")}
                   </p>
                   <p
-                    className="truncate text-[13px] font-medium text-stone-700"
+                    className="truncate text-left text-[13px] font-medium text-stone-700"
                     title={row.targetLabel}
                   >
                     {row.targetLabel}
