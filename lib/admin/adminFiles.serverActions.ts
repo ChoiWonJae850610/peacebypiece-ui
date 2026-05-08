@@ -386,7 +386,7 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
       `SELECT a.id,
               a.order_id,
               COALESCE(s.title, '작업지시서명 없음') AS workorder_title,
-              s.base_title AS workorder_base_title,
+              NULL::text AS workorder_base_title,
               s.reorder_round AS workorder_reorder_round,
               s.work_order_kind AS workorder_kind,
               s.is_rework AS workorder_is_rework,
@@ -412,7 +412,7 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
               t.attachment_id,
               t.order_id,
               COALESCE(s.title, '작업지시서명 없음') AS workorder_title,
-              s.base_title AS workorder_base_title,
+              NULL::text AS workorder_base_title,
               s.reorder_round AS workorder_reorder_round,
               s.work_order_kind AS workorder_kind,
               s.is_rework AS workorder_is_rework,
@@ -448,7 +448,7 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
     queryDb<AdminStorageWorkOrderRow>(
       `SELECT s.id,
               COALESCE(s.title, '작업지시서명 없음') AS title,
-              s.base_title,
+              NULL::text AS base_title,
               s.reorder_round,
               s.work_order_kind,
               s.is_rework,
@@ -469,7 +469,7 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
           AND COALESCE(s.delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.deleted}) NOT IN (${ADMIN_WORKORDER_ADMIN_TRASH_HIDDEN_DELETE_STATUS_SQL_LIST})
           AND COALESCE(s.purge_status, ${ADMIN_WORKORDER_PURGE_STATUS_SQL.pending}) NOT IN (${ADMIN_WORKORDER_ADMIN_TRASH_HIDDEN_PURGE_STATUS_SQL_LIST})
           AND s.purged_at IS NULL
-        GROUP BY s.id, s.title, s.base_title, s.reorder_round, s.work_order_kind, s.is_rework, s.status, s.updated_at, s.deleted_at, s.delete_status, s.purge_status, s.purged_at
+        GROUP BY s.id, s.title, s.reorder_round, s.work_order_kind, s.is_rework, s.status, s.updated_at, s.deleted_at, s.delete_status, s.purge_status, s.purged_at
         ORDER BY COALESCE(s.deleted_at, s.updated_at) DESC
         LIMIT 50`,
     ),
