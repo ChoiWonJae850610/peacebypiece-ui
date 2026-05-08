@@ -80,7 +80,7 @@ function translateFileTypeLabel(
     normalizedLabel === "attachment" ||
     normalizedLabel === "attachments"
   )
-    return t("filesSummary.attachments", "첨부파일");
+    return t("filesSummary.attachments", "문서/디자인");
   return t("filesSummary.others", "기타");
 }
 
@@ -137,7 +137,7 @@ function PlanUsageCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">
-            {t("filesSummary.storagePlanLabel", "Storage plan")}
+            {t("filesSummary.storagePlanLabel", "요금제 용량")}
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1 text-xs font-bold text-white">
@@ -186,7 +186,7 @@ function FileOperationsCard({ items }: { items: FileStatusItem[] }) {
     <div className="flex h-full min-h-[300px] flex-col rounded-[24px] border border-stone-200 bg-white px-5 py-5">
       <div>
         <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">
-          {t("filesSummary.fileOperationsLabel", "File operations")}
+          {t("filesSummary.fileOperationsLabel", "파일 운영")}
         </p>
         <h3 className="mt-2 text-lg font-bold text-stone-950">{t("filesSummary.fileOperationsTitle", "파일 운영 요약")}</h3>
       </div>
@@ -242,7 +242,7 @@ function DonutChart({
       <div className="flex shrink-0 items-start justify-between gap-3">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">
-            File type
+            {t("filesSummary.fileTypeLabel", "파일 유형")}
           </p>
           <h3 className="mt-2 text-lg font-bold text-stone-950">
             {t("filesSummary.fileType", "파일 유형")}

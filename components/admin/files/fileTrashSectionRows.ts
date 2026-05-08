@@ -259,7 +259,7 @@ export function createUnifiedRows(input: {
     canPurge: true,
     restoreDisabledReason: t(
       "filesList.workorderRestorePreparing",
-      "작업지시서와 첨부된 파일/메모가 함께 복원됩니다.",
+      "작업지시서와 문서/디자인/메모가 함께 복원됩니다.",
     ),
     purgeDisabledReason: t(
       "filesList.workorderPurgePreparing",

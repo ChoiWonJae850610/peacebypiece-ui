@@ -25,7 +25,7 @@ export default function WorkOrderStorageSection({ items }: WorkOrderStorageSecti
     <section className="flex h-full min-h-[420px] flex-col rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm">
       <AdminActionBar
         title={t("filesWorkOrders.title", "작업지시서 저장소")}
-        description={t("filesWorkOrders.description", "삭제된 작업지시서와 함께 휴지통으로 이동한 첨부파일·메모를 읽기 전용으로 확인합니다.")}
+        description={t("filesWorkOrders.description", "삭제된 작업지시서와 함께 휴지통으로 이동한 문서·디자인·메모를 확인합니다.")}
       >
         <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-600">
           {t("filesWorkOrders.trashRetention", "30일 휴지통 보관")}
@@ -51,7 +51,7 @@ export default function WorkOrderStorageSection({ items }: WorkOrderStorageSecti
           <p className="mt-1.5 text-lg font-semibold text-stone-950">{deletedWorkOrderCount}{t("filesWorkOrders.units.count", "개")}</p>
         </div>
         <div className="rounded-2xl border border-stone-200 bg-stone-50/70 px-3 py-3">
-          <p className="text-[10px] font-semibold text-stone-500">{t("filesWorkOrders.summary.trashAttachments", "묶음 휴지통 첨부")}</p>
+          <p className="text-[10px] font-semibold text-stone-500">{t("filesWorkOrders.summary.trashAttachments", "묶음 문서/디자인")}</p>
           <p className="mt-1.5 text-lg font-semibold text-stone-950">{trashAttachmentCount}{t("filesWorkOrders.units.count", "개")}</p>
         </div>
         <div className="rounded-2xl border border-stone-200 bg-stone-50/70 px-3 py-3">
@@ -80,7 +80,7 @@ export default function WorkOrderStorageSection({ items }: WorkOrderStorageSecti
           },
           { key: "status", label: t("filesWorkOrders.columns.status", "상태"), render: (item) => <p className="text-[11px] font-semibold text-stone-700">{item.statusLabel}</p> },
           { key: "deletedAt", label: t("filesWorkOrders.columns.deletedAt", "삭제일시"), render: (item) => <p className="text-[11px] text-stone-600">{item.deletedAt || "-"}</p> },
-          { key: "attachments", label: t("filesWorkOrders.columns.attachments", "첨부"), render: (item) => <p className="text-[11px] leading-4 text-stone-600">{item.attachmentSummaryLabel}</p> },
+          { key: "attachments", label: t("filesWorkOrders.columns.attachments", "문서/디자인"), render: (item) => <p className="text-[11px] leading-4 text-stone-600">{item.attachmentSummaryLabel}</p> },
           { key: "memos", label: t("filesWorkOrders.columns.memos", "메모"), render: (item) => <p className="text-[11px] leading-4 text-stone-600">{item.memoSummaryLabel}</p> },
           {
             key: "policy",

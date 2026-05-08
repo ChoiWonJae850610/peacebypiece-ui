@@ -41,7 +41,7 @@ export function EmptyTrashConfirmModal({
             onClick={onClose}
             className="rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-700 shadow-sm hover:bg-stone-50"
           >
-            {t("common.no", "아니오")}
+            {t("filesList.no", "아니오")}
           </button>
           <button
             type="button"
@@ -52,7 +52,7 @@ export function EmptyTrashConfirmModal({
             }}
             className="rounded-full border border-red-600 bg-red-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-red-700 disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-400"
           >
-            {t("common.yes", "예")}
+            {t("filesList.yes", "예")}
           </button>
         </div>
       }
@@ -114,7 +114,7 @@ export function WorkOrderActionPreviewModal({
             onClick={onClose}
             className="rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-700 shadow-sm hover:bg-stone-50"
           >
-            {t("common.close", "닫기")}
+            {t("filesList.close", "닫기")}
           </button>
           <button
             type="button"
@@ -160,15 +160,15 @@ export function WorkOrderActionPreviewModal({
               value={t("filesList.selectedScope.workorderValue", "대표 row 1건")}
             />
             <PreviewStatCard
-              label={t("filesList.selectedScope.bundleAttachments", "묶음 처리 첨부")}
+              label={t("filesList.selectedScope.bundleAttachments", "문서/디자인/메모")}
               value={`${bundleCount}${t("filesList.countSuffix", "개")}`}
             />
             <PreviewStatCard
-              label={t("filesList.selectedScope.restoreBlocked", "복원 불가 파일")}
+              label={t("filesList.selectedScope.restoreBlocked", "복원 제외 항목")}
               value={`${blockedCount}${t("filesList.countSuffix", "개")}`}
             />
             <PreviewStatCard
-              label={t("filesList.selectedScope.totalSize", "연결 파일 용량")}
+              label={t("filesList.selectedScope.totalSize", "파일 용량")}
               value={totalSizeLabel}
             />
           </div>
@@ -184,7 +184,7 @@ export function WorkOrderActionPreviewModal({
               {intent === "restore"
                 ? t(
                     "filesList.workorderRestoreConnectedNotice",
-                    "작업지시서와 첨부된 파일/메모가 함께 복원됩니다.",
+                    "작업지시서와 문서/디자인/메모가 함께 복원됩니다.",
                   )
                 : t(
                     "filesList.workorderActionSkeletonNotice",
@@ -195,11 +195,11 @@ export function WorkOrderActionPreviewModal({
               {intent === "restore"
                 ? t(
                     "filesList.workorderRestoreGuardDescription",
-                    "복원 연결 시 작업지시서와 묶음 삭제 상태의 문서/디자인/메모를 같은 트랜잭션에서 복원해야 합니다.",
+                    "복원 시 작업지시서와 함께 삭제된 문서/디자인/메모를 함께 복원합니다.",
                   )
                 : t(
                     "filesList.workorderPurgeGuardDescription",
-                    "선택 삭제 시 Neon row는 hard delete하지 않고 delete_status/purge_status를 삭제 요청 상태로 표시합니다. 작업지시서에 딸린 R2 파일은 직접 삭제하지 않습니다.",
+                    "선택 삭제 시 고객관리자 삭제 요청 상태로 전환합니다. 실제 파일 삭제는 시스템관리자 처리 단계에서 진행합니다.",
                   )}
             </p>
           </div>
@@ -258,7 +258,7 @@ export function TrashDetailModal({
               onClick={onClose}
               className="rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-700 shadow-sm hover:bg-stone-50"
             >
-              {t("common.close", "닫기")}
+              {t("filesList.close", "닫기")}
             </button>
             <button
               type="button"
@@ -378,7 +378,7 @@ function TrashDetailContent({ row, t }: { row: UnifiedTrashRow; t: AdminT }) {
         {row.kind === "workorder"
           ? t(
               "filesList.detailWorkorderActionHint",
-              "작업지시서와 첨부된 파일/메모가 함께 복원됩니다.",
+              "작업지시서와 문서/디자인/메모가 함께 복원됩니다.",
             )
           : row.restoreDisabledReason ||
             row.purgeDisabledReason ||
@@ -399,7 +399,7 @@ function getTrashDetailFields(
     return [
       [t("filesList.columns.type", "유형"), row.typeLabel],
       [
-        t("filesList.attachmentCount", "첨부파일"),
+        t("filesList.attachmentCount", "문서/디자인"),
         row.sourceItem.attachmentSummaryLabel,
       ],
       [t("filesList.memoCount", "메모"), row.sourceItem.memoSummaryLabel],

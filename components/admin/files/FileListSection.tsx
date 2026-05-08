@@ -27,7 +27,7 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
 
   return (
     <section className="flex h-full min-h-[420px] flex-col rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm">
-      <AdminActionBar title={t("filesList.title", "첨부파일 목록")}>
+      <AdminActionBar title={t("filesList.title", "문서/디자인 목록")}>
         <select value={sortKey} onChange={(event) => onChangeSort(event.target.value as AdminFileSortKey)} className="rounded-full border border-stone-300 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-700 shadow-sm">
           {ADMIN_FILE_SORT_OPTIONS.map((option) => (
             <option key={option.key} value={option.key}>{t(`filesList.sort.${option.key}`, option.label)}</option>
@@ -45,7 +45,7 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
         className="mt-3 min-h-0 flex-1"
         items={items}
         getRowKey={(item) => item.id}
-        emptyLabel={t("filesList.empty", "표시할 첨부파일이 없습니다.")}
+        emptyLabel={t("filesList.empty", "표시할 문서/디자인이 없습니다.")}
         gridTemplateColumns={FILE_TABLE_GRID}
         onRowClick={(item) => onToggleItem(item.id)}
         rowClassName={(item) => {
