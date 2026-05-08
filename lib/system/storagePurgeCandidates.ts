@@ -381,11 +381,7 @@ async function listWorkOrderPurgeCandidateRows(input: {
           OR COALESCE(NULLIF(s.purge_status, ${ADMIN_WORKORDER_PURGE_STATUS_SQL.none}), ${ADMIN_WORKORDER_PURGE_STATUS_SQL.pending}) = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.failed}
         )`;
 
-  const bundleFilePredicate = getWorkOrderBundleFilePredicate(
-    "t",
-    3,
-    input.deleteStateMetadata.attachmentTrashItems,
-  );
+  const bundleFilePredicate = getWorkOrderBundleFilePredicate("t");
   const result = await queryDb<WorkOrderPurgeCandidateRow>(
     `SELECT s.id,
             s.company_id,
@@ -564,11 +560,7 @@ async function listFilePurgeRunCandidates(
 
   if (input.mode === "selected") {
     if (fileTrashIds.length === 0) return [];
-    const notWorkOrderBundlePredicate = getNotWorkOrderBundleFilePredicate(
-      "t",
-      4,
-      deleteStateMetadata.attachmentTrashItems,
-    );
+    const notWorkOrderBundlePredicate = getNotWorkOrderBundleFilePredicate("t");
     const result = await queryDb<PurgeCandidateRow>(
       `SELECT t.id,
               t.attachment_id,
@@ -814,7 +806,6 @@ async function purgeSystemWorkOrderCandidate(
     const bundleFileResult = await purgeWorkOrderBundleFiles({
       workOrderId: candidate.id,
       actorId,
-      deleteStateMetadata,
     });
     if (bundleFileResult.failedCount > 0) {
       return {
@@ -867,11 +858,7 @@ export async function runSystemStoragePurge(
 
   for (const candidate of candidates) {
     items.push(
-      await purgeSystemStorageCandidate(
-        candidate,
-        input.actorId,
-        deleteStateMetadata,
-      ),
+      await purgeSystemStorageCandidate(candidate, input.actorId),
     );
   }
 

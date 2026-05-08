@@ -403,14 +403,12 @@ function getWorkOrderStatusLabel(status: string | null | undefined): string {
 
 function getTrashRestorePolicy(input: {
   parentWorkOrderDeleted: boolean;
-  deleteReason: string | null | undefined;
   deleteSource?: string | null | undefined;
   deleteScope?: string | null | undefined;
   deleteParentType?: string | null | undefined;
 }): "file_unit" | "parent_deleted_restore_blocked" | "bundle_required" {
   if (!input.parentWorkOrderDeleted) return "file_unit";
   return isWorkOrderBundleTrashMetadata({
-    deleteReason: input.deleteReason,
     deleteSource: input.deleteSource,
     deleteScope: input.deleteScope,
     deleteParentType: input.deleteParentType,
@@ -617,7 +615,6 @@ export async function listAdminFileManagementRows(
     const parentWorkOrderDeleted = Boolean(row.parent_workorder_deleted);
     const restorePolicy = getTrashRestorePolicy({
       parentWorkOrderDeleted,
-      deleteReason: row.delete_reason,
       deleteSource: row.delete_source,
       deleteScope: row.delete_scope,
       deleteParentType: row.delete_parent_type,
