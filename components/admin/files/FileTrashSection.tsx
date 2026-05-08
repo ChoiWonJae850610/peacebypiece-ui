@@ -83,7 +83,9 @@ type UnifiedTrashRow =
       sourceItem: AdminTrashFileItem;
     };
 
-const TRASH_TABLE_GRID = "0.34fr 1.5fr 0.82fr 1.15fr 0.62fr 0.58fr";
+const TRASH_TABLE_GRID = "0.42fr 1.45fr 0.95fr 1.2fr 0.7fr 0.65fr";
+const TRASH_HEADER_CENTER_CLASS = "text-center";
+const TRASH_CELL_CENTER_CLASS = "flex items-center justify-center text-center";
 
 const WORKORDER_STAGE_STEPS = [
   { keys: ["draft", "작성중"], label: "작성중" },
@@ -869,6 +871,8 @@ export default function FileTrashSection({
           {
             key: "select",
             label: t("filesList.columns.select", "선택"),
+            headerClassName: TRASH_HEADER_CENTER_CLASS,
+            className: TRASH_CELL_CENTER_CLASS,
             render: (row) => {
               if (row.kind === "workorder") {
                 return (
@@ -920,9 +924,11 @@ export default function FileTrashSection({
           {
             key: "target",
             label: t("filesList.columns.target", "대상"),
+            headerClassName: TRASH_HEADER_CENTER_CLASS,
+            className: TRASH_CELL_CENTER_CLASS,
             render: (row) => (
               <div
-                className={`flex min-w-0 items-center gap-3 ${row.isGroupedAttachment ? "pl-4" : ""}`}
+                className={`flex min-w-0 items-center justify-center gap-3 text-center ${row.isGroupedAttachment ? "pl-4" : ""}`}
               >
                 {row.isGroupedAttachment ? (
                   <span className="shrink-0 text-xs font-medium text-stone-300">
@@ -935,7 +941,7 @@ export default function FileTrashSection({
                   thumbnailUrl={row.thumbnailUrl || row.previewUrl}
                   compact
                 />
-                <div className="min-w-0">
+                <div className="min-w-0 text-center">
                   <p className="text-[10px] text-stone-400 md:hidden">
                     {t("filesList.columns.target", "대상")}
                   </p>
@@ -952,9 +958,11 @@ export default function FileTrashSection({
           {
             key: "deletedAt",
             label: t("filesList.columns.deletedAt", "삭제일시"),
+            headerClassName: TRASH_HEADER_CENTER_CLASS,
+            className: TRASH_CELL_CENTER_CLASS,
             render: (row) => (
               <p
-                className="truncate text-[13px] text-stone-600"
+                className="truncate text-center text-[13px] text-stone-600"
                 title={row.deletedAt}
               >
                 {row.deletedAt}
@@ -964,13 +972,15 @@ export default function FileTrashSection({
           {
             key: "workorder",
             label: t("filesList.columns.workorder", "작업지시서"),
+            headerClassName: TRASH_HEADER_CENTER_CLASS,
+            className: TRASH_CELL_CENTER_CLASS,
             render: (row) => (
-              <div className="min-w-0">
+              <div className="min-w-0 text-center">
                 <p className="text-[10px] text-stone-400 md:hidden">
                   {t("filesList.columns.workorder", "작업지시서")}
                 </p>
                 <p
-                  className="truncate text-[13px] font-medium text-stone-600"
+                  className="truncate text-center text-[13px] font-medium text-stone-600"
                   title={row.kind === "workorder" ? "-" : row.workorderTitle}
                 >
                   {row.kind === "workorder" ? "-" : row.workorderTitle}
@@ -981,9 +991,11 @@ export default function FileTrashSection({
           {
             key: "type",
             label: t("filesList.columns.type", "유형"),
+            headerClassName: TRASH_HEADER_CENTER_CLASS,
+            className: TRASH_CELL_CENTER_CLASS,
             render: (row) => (
               <p
-                className="truncate text-[13px] text-stone-600"
+                className="truncate text-center text-[13px] text-stone-600"
                 title={row.typeLabel}
               >
                 {row.typeLabel}
@@ -993,9 +1005,11 @@ export default function FileTrashSection({
           {
             key: "size",
             label: t("filesList.columns.size", "크기"),
+            headerClassName: TRASH_HEADER_CENTER_CLASS,
+            className: TRASH_CELL_CENTER_CLASS,
             render: (row) => (
               <p
-                className="truncate text-[13px] text-stone-600"
+                className="truncate text-center text-[13px] text-stone-600"
                 title={row.sizeLabel}
               >
                 {row.sizeLabel}
