@@ -123,12 +123,13 @@ function PlanUsageCard({
   usageSummary: AdminStorageUsageSummary;
   statusLabel: string;
 }) {
+  const hasPlanLimit = Number.isFinite(usageSummary.limitBytes) && usageSummary.limitBytes > 0;
   const usedGbLabel = `${(usageSummary.usedBytes / 1024 / 1024 / 1024).toFixed(2)}GB`;
-  const remainingBytes = Math.max(0, usageSummary.limitBytes - usageSummary.usedBytes);
-  const remainingLabel = formatBytes(remainingBytes);
-  const planName = "Basic";
-  const isDanger = usageSummary.statusTone === "danger";
-  const isCaution = usageSummary.statusTone === "caution";
+  const remainingBytes = hasPlanLimit ? Math.max(0, usageSummary.limitBytes - usageSummary.usedBytes) : 0;
+  const remainingLabel = hasPlanLimit ? formatBytes(remainingBytes) : "요금제 확인 중";
+  const planName = hasPlanLimit ? "현재 요금제" : "확인 중";
+  const isDanger = hasPlanLimit && usageSummary.statusTone === "danger";
+  const isCaution = hasPlanLimit && usageSummary.statusTone === "caution";
 
   return (
     <div className="flex h-full min-h-[300px] flex-col rounded-[24px] border border-stone-200 bg-gradient-to-b from-white to-stone-50 px-5 py-5">
@@ -157,21 +158,21 @@ function PlanUsageCard({
         </button>
       </div>
 
-      <StorageCylinder percent={usageSummary.usagePercent} />
+      <StorageCylinder percent={hasPlanLimit ? usageSummary.usagePercent : 0} />
 
       <div className="mt-4 text-center">
         <p className="text-2xl font-bold tracking-tight text-stone-950">
-          {usageSummary.usedLabel} / {usageSummary.limitLabel}
+          {hasPlanLimit ? `${usageSummary.usedLabel} / ${usageSummary.limitLabel}` : "요금제 용량 확인 중"}
         </p>
         <p className="mt-1 text-xs font-semibold text-stone-500">
-          {usedGbLabel} 사용 · {remainingLabel} 남음
+          {hasPlanLimit ? `${usedGbLabel} 사용 · ${remainingLabel} 남음` : "고객 정보의 요금제 용량을 불러오는 중"}
         </p>
       </div>
 
       <div className="mt-4 h-2 overflow-hidden rounded-full bg-white shadow-inner">
         <div
           className={`h-full rounded-full ${isDanger ? "bg-red-500" : isCaution ? "bg-amber-400" : "bg-[var(--admin-theme-surface)]"}`}
-          style={{ width: `${Math.min(100, Math.max(0, usageSummary.usagePercent))}%` }}
+          style={{ width: `${hasPlanLimit ? Math.min(100, Math.max(0, usageSummary.usagePercent)) : 0}%` }}
         />
       </div>
     </div>

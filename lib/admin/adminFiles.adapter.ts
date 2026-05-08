@@ -1,6 +1,5 @@
 import {
   ADMIN_FILE_TABS,
-  ADMIN_FILE_USAGE_SUMMARY,
   ADMIN_STORAGE_POLICY_SETTINGS,
   buildAdminStoragePolicyItems,
 } from "@/lib/admin/adminFiles.presentation";
@@ -8,11 +7,12 @@ import type { AdminFileManagementSnapshot } from "@/lib/admin/adminFiles.types";
 
 export function getAdminFileManagementSnapshot(): AdminFileManagementSnapshot {
   const usageSummary = {
-    ...ADMIN_FILE_USAGE_SUMMARY,
     usedBytes: 0,
+    limitBytes: 0,
     usedLabel: "0B",
+    limitLabel: "요금제 확인 중",
     usagePercent: 0,
-    statusLabel: "정상" as const,
+    statusLabel: "확인 중" as const,
     statusTone: "normal" as const,
   };
 
@@ -20,10 +20,10 @@ export function getAdminFileManagementSnapshot(): AdminFileManagementSnapshot {
     dataSource: "db",
     dataSourceLabel: "DB 대기",
     usageCards: [
-      { label: "전체 사용량", value: `${usageSummary.usedLabel} / ${usageSummary.limitLabel}`, description: "" },
-      { label: "첨부파일", value: "0개", description: "" },
-      { label: "휴지통", value: "0개", description: "" },
-      { label: "복원 가능 기간", value: `${ADMIN_STORAGE_POLICY_SETTINGS.purgeAfterDays}일`, description: "" },
+      { label: "전체 사용량", value: `${usageSummary.usedLabel} / ${usageSummary.limitLabel}`, description: "요금제 용량 확인 중" },
+      { label: "첨부파일", value: "0개", description: "0MB 사용" },
+      { label: "휴지통", value: "0개", description: "0MB 보관" },
+      { label: "삭제 요청", value: "0개", description: "0MB 처리 대기" },
     ],
     usageSummary,
     tabs: ADMIN_FILE_TABS,
