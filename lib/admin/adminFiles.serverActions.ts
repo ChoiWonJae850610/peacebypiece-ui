@@ -2,6 +2,7 @@ import "server-only";
 
 import { queryDb } from "@/lib/db/client";
 import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
+import { ADMIN_FILE_TRASH_REASONS, isWorkOrderBundleTrashReason } from "@/lib/admin/files/trashPolicy";
 import type { DbQueryResultRow } from "@/lib/db/client";
 
 export type AdminTrashDbActionInput = {
@@ -17,8 +18,6 @@ export type AdminTrashDbActionResult = {
 type CountRow = DbQueryResultRow & {
   affected_count: string | number;
 };
-
-const WORKORDER_BUNDLE_DELETE_REASON = "작업지시서 삭제로 함께 휴지통 이동";
 
 function normalizeIds(ids: string[]): string[] {
   return Array.from(new Set(ids.map((id) => id.trim()).filter(Boolean)));
@@ -113,7 +112,7 @@ export async function requestPurgeAttachmentTrashItems(
      )
      SELECT COUNT(*)::text AS affected_count
        FROM marked_trash`,
-    [trashItemIds, WORKORDER_BUNDLE_DELETE_REASON],
+    [trashItemIds, ADMIN_FILE_TRASH_REASONS.workorderBundle],
   );
 
   return {
@@ -285,7 +284,7 @@ function getTrashRestorePolicy(input: {
   deleteReason: string | null | undefined;
 }): "file_unit" | "parent_deleted_restore_blocked" | "bundle_required" {
   if (!input.parentWorkOrderDeleted) return "file_unit";
-  return input.deleteReason === WORKORDER_BUNDLE_DELETE_REASON
+  return isWorkOrderBundleTrashReason(input.deleteReason)
     ? "bundle_required"
     : "parent_deleted_restore_blocked";
 }
@@ -382,7 +381,7 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
           AND (s.id IS NULL OR s.purged_at IS NULL OR COALESCE(t.delete_reason, '') <> $2)
         ORDER BY t.deleted_at DESC
         LIMIT 100`,
-      [safeTrashRetentionDays, WORKORDER_BUNDLE_DELETE_REASON],
+      [safeTrashRetentionDays, ADMIN_FILE_TRASH_REASONS.workorderBundle],
     ),
     queryDb<AdminStorageWorkOrderRow>(
       `SELECT s.id,
@@ -584,7 +583,7 @@ export async function listPurgeReadyAttachmentTrashItems(
         )
       ORDER BY purge_after_at ASC
       LIMIT $1`,
-    [safeLimit, safeTrashRetentionDays, WORKORDER_BUNDLE_DELETE_REASON],
+    [safeLimit, safeTrashRetentionDays, ADMIN_FILE_TRASH_REASONS.workorderBundle],
   );
 
   return result.rows.map((row) => ({
@@ -844,7 +843,7 @@ export async function restoreWorkOrderTrashBundle(
             (SELECT COUNT(*) FROM restored_trash)::text AS trash_count,
             (SELECT COUNT(*) FROM restored_memos)::text AS memo_count
        FROM restored_workorder`,
-    [workOrderId, WORKORDER_BUNDLE_DELETE_REASON, input.actorId ?? null],
+    [workOrderId, ADMIN_FILE_TRASH_REASONS.workorderBundle, input.actorId ?? null],
   );
 
   const row = result.rows[0];
@@ -959,7 +958,7 @@ export async function purgeWorkOrderTrashBundle(
             (SELECT COUNT(*) FROM marked_trash)::text AS trash_count,
             (SELECT COUNT(*) FROM marked_memos)::text AS memo_count
        FROM marked_workorder`,
-    [workOrderId, WORKORDER_BUNDLE_DELETE_REASON],
+    [workOrderId, ADMIN_FILE_TRASH_REASONS.workorderBundle],
   );
 
   const row = result.rows[0];

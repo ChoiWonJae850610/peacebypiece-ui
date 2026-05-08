@@ -1,13 +1,13 @@
 import "server-only";
 
 import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
+import { ADMIN_FILE_TRASH_REASONS } from "@/lib/admin/files/trashPolicy";
 import { markAttachmentTrashItemPurgeFailed, markAttachmentTrashItemsPurged } from "@/lib/admin/files/serverActions";
 import { deleteR2ObjectViaWorker } from "@/lib/storage/r2/r2WorkerUpload";
 import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
 import { queryDb } from "@/lib/db/client";
 import type { DbQueryResultRow } from "@/lib/db/client";
 
-const WORKORDER_BUNDLE_DELETE_REASON = "작업지시서 삭제로 함께 휴지통 이동";
 const WORKORDER_CANDIDATE_PREFIX = "workorder:";
 
 export type SystemStoragePurgeCandidateKind = "file" | "workorder";
@@ -275,14 +275,14 @@ async function listFilePurgeCandidateRows(limit: number): Promise<PurgeCandidate
         )
       ORDER BY purge_due_at ASC, t.deleted_at ASC
       LIMIT $1`,
-    [limit, COMPANY_FILE_TRASH_RETENTION_DAYS, WORKORDER_BUNDLE_DELETE_REASON],
+    [limit, COMPANY_FILE_TRASH_RETENTION_DAYS, ADMIN_FILE_TRASH_REASONS.workorderBundle],
   );
   return result.rows;
 }
 
 async function listWorkOrderPurgeCandidateRows(input: { limit: number; includeFuturePending?: boolean; workOrderIds?: string[] }): Promise<WorkOrderPurgeCandidateRow[]> {
   const workOrderIds = input.workOrderIds ?? [];
-  const params: unknown[] = [input.limit, COMPANY_FILE_TRASH_RETENTION_DAYS, WORKORDER_BUNDLE_DELETE_REASON];
+  const params: unknown[] = [input.limit, COMPANY_FILE_TRASH_RETENTION_DAYS, ADMIN_FILE_TRASH_REASONS.workorderBundle];
   let idFilter = "";
   if (workOrderIds.length > 0) {
     params.push(workOrderIds);
@@ -473,7 +473,7 @@ async function listFilePurgeRunCandidates(input: SystemStoragePurgeRunInput, fil
           )
         ORDER BY purge_due_at ASC, t.deleted_at ASC
         LIMIT $3`,
-      [fileTrashIds, COMPANY_FILE_TRASH_RETENTION_DAYS, safeLimit, WORKORDER_BUNDLE_DELETE_REASON],
+      [fileTrashIds, COMPANY_FILE_TRASH_RETENTION_DAYS, safeLimit, ADMIN_FILE_TRASH_REASONS.workorderBundle],
     );
     return result.rows;
   }
@@ -560,7 +560,7 @@ async function listWorkOrderBundleFileCandidates(workOrderId: string): Promise<P
         AND t.purged_at IS NULL
         AND (t.purge_status IN ('pending', 'purge_requested', 'failed') OR t.last_purge_error IS NOT NULL)
       ORDER BY t.updated_at ASC, t.deleted_at ASC`,
-    [workOrderId, COMPANY_FILE_TRASH_RETENTION_DAYS, WORKORDER_BUNDLE_DELETE_REASON],
+    [workOrderId, COMPANY_FILE_TRASH_RETENTION_DAYS, ADMIN_FILE_TRASH_REASONS.workorderBundle],
   );
   return result.rows;
 }

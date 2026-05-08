@@ -4,6 +4,7 @@ import { queryDb } from "@/lib/db/client";
 import { getAdminCompanyId, getAdminCompanyScope } from "@/lib/admin/settings/companyScope";
 import { LEGACY_WORKFLOW_STATE_MAP, WORKFLOW_STATES } from "@/lib/constants/workorderStates";
 import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
+import { ADMIN_FILE_TRASH_ACTOR_IDS, ADMIN_FILE_TRASH_REASONS } from "@/lib/admin/files/trashPolicy";
 import type { WorkOrder } from "@/types/workorder";
 import { applyReorderIdentity } from "@/lib/workorder/reorder/helpers";
 import { syncDbFactoryOrdersForSpecSheet } from "@/lib/workorder/repository/dbFactoryOrderRepository";
@@ -690,8 +691,8 @@ async function softDeleteAttachmentMemoBundleForWorkOrder(workOrderId: string): 
        UPDATE attachments
           SET is_active = false,
               deleted_at = COALESCE(deleted_at, now()),
-              deleted_by = COALESCE(deleted_by, 'workorder-delete'),
-              delete_reason = COALESCE(delete_reason, '작업지시서 삭제로 함께 휴지통 이동'),
+              deleted_by = COALESCE(deleted_by, $3),
+              delete_reason = COALESCE(delete_reason, $4),
               purge_after_at = COALESCE(purge_after_at, now() + ($2::integer * interval '1 day')),
               updated_at = now()
         WHERE order_id = $1
@@ -741,7 +742,7 @@ async function softDeleteAttachmentMemoBundleForWorkOrder(workOrderId: string): 
             COALESCE(purge_after_at, now() + ($2::integer * interval '1 day'))
        FROM updated_attachments
      ON CONFLICT DO NOTHING`,
-    [workOrderId, trashRetentionDays],
+    [workOrderId, trashRetentionDays, ADMIN_FILE_TRASH_ACTOR_IDS.workorderDelete, ADMIN_FILE_TRASH_REASONS.workorderBundle],
   );
 
   await queryDb(

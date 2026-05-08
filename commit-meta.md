@@ -1,18 +1,21 @@
 Version :
-0.9.223793
+0.9.22380
 
 Summary :
-저장소 휴지통 테이블 컬럼 고정 정렬 보정
+저장소 휴지통 정책 상수화 리팩토링
 
 Description :
-고객관리자 저장소 휴지통 목록에서 작업지시서와 첨부파일 row가 섞일 때 선택, 대상, 삭제일시, 작업지시서명, 유형, 용량 컬럼이 row마다 어긋나 보이는 문제를 보정했다. 컬럼 폭을 고정하고 대상 컬럼은 좌측 정렬로 통일했으며, 선택 컬럼과 묶음 첨부 row의 표시 방식이 컬럼 위치를 밀지 않도록 정리했다.
+작업지시서 삭제 묶음 판단에 사용하던 delete_reason 문장 하드코딩을 저장소 휴지통 정책 상수로 분리했다. 관리자 저장소, 시스템관리자 실제 삭제 후보, 작업지시서 삭제 저장 로직이 같은 정책 값을 참조하도록 정리하고, 기존 queryDb 인자 중복 전달도 함께 보정했다.
 
 수정 파일 목록 :
-- components/admin/files/FileTrashSection.tsx
+- lib/admin/adminFiles.serverActions.ts
+- lib/system/storagePurgeCandidates.ts
+- lib/workorder/repository/dbWorkOrderRepository.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/storage-trash-table-fixed-columns-0.9.223793.md
+- lib/admin/files/trashPolicy.ts
+- docs/storage-refactor-trash-policy-0.9.22380.md
 
 삭제 파일 목록 :
 없음
