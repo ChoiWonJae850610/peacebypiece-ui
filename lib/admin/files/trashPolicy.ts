@@ -55,6 +55,41 @@ export function isAdminFileTrashPurgeRequestedStatus(
   return normalizeAdminFileTrashPurgeStatus(status) === ADMIN_FILE_TRASH_PURGE_STATUSES.purgeRequested;
 }
 
+
+function quoteAdminTrashSqlLiteral(value: string): string {
+  return `'${value.replace(/'/g, "''")}'`;
+}
+
+function joinAdminTrashSqlLiterals(values: readonly string[]): string {
+  return values.map(quoteAdminTrashSqlLiteral).join(", ");
+}
+
+export const ADMIN_FILE_TRASH_PURGE_STATUS_SQL = {
+  pending: quoteAdminTrashSqlLiteral(ADMIN_FILE_TRASH_PURGE_STATUSES.pending),
+  purgeRequested: quoteAdminTrashSqlLiteral(ADMIN_FILE_TRASH_PURGE_STATUSES.purgeRequested),
+  purged: quoteAdminTrashSqlLiteral(ADMIN_FILE_TRASH_PURGE_STATUSES.purged),
+  restored: quoteAdminTrashSqlLiteral(ADMIN_FILE_TRASH_PURGE_STATUSES.restored),
+  failed: quoteAdminTrashSqlLiteral(ADMIN_FILE_TRASH_PURGE_STATUSES.failed),
+} as const;
+
+export const ADMIN_FILE_TRASH_OPEN_PURGE_STATUSES = [
+  ADMIN_FILE_TRASH_PURGE_STATUSES.pending,
+  ADMIN_FILE_TRASH_PURGE_STATUSES.purgeRequested,
+] as const;
+
+export const ADMIN_FILE_TRASH_SYSTEM_CANDIDATE_PURGE_STATUSES = [
+  ADMIN_FILE_TRASH_PURGE_STATUSES.pending,
+  ADMIN_FILE_TRASH_PURGE_STATUSES.purgeRequested,
+  ADMIN_FILE_TRASH_PURGE_STATUSES.failed,
+] as const;
+
+export const ADMIN_FILE_TRASH_OPEN_PURGE_STATUS_SQL_LIST = joinAdminTrashSqlLiterals(
+  ADMIN_FILE_TRASH_OPEN_PURGE_STATUSES,
+);
+
+export const ADMIN_FILE_TRASH_SYSTEM_CANDIDATE_PURGE_STATUS_SQL_LIST =
+  joinAdminTrashSqlLiterals(ADMIN_FILE_TRASH_SYSTEM_CANDIDATE_PURGE_STATUSES);
+
 export const ADMIN_WORKORDER_DELETE_STATUSES = {
   active: "active",
   deleted: "deleted",
@@ -69,6 +104,29 @@ export const ADMIN_WORKORDER_PURGE_STATUSES = {
   purged: "purged",
   failed: "failed",
 } as const;
+
+
+export const ADMIN_WORKORDER_DELETE_STATUS_SQL = {
+  active: quoteAdminTrashSqlLiteral(ADMIN_WORKORDER_DELETE_STATUSES.active),
+  deleted: quoteAdminTrashSqlLiteral(ADMIN_WORKORDER_DELETE_STATUSES.deleted),
+  purgeRequested: quoteAdminTrashSqlLiteral(ADMIN_WORKORDER_DELETE_STATUSES.purgeRequested),
+  purged: quoteAdminTrashSqlLiteral(ADMIN_WORKORDER_DELETE_STATUSES.purged),
+} as const;
+
+export const ADMIN_WORKORDER_PURGE_STATUS_SQL = {
+  none: quoteAdminTrashSqlLiteral(ADMIN_WORKORDER_PURGE_STATUSES.none),
+  pending: quoteAdminTrashSqlLiteral(ADMIN_WORKORDER_PURGE_STATUSES.pending),
+  purgeRequested: quoteAdminTrashSqlLiteral(ADMIN_WORKORDER_PURGE_STATUSES.purgeRequested),
+  purged: quoteAdminTrashSqlLiteral(ADMIN_WORKORDER_PURGE_STATUSES.purged),
+  failed: quoteAdminTrashSqlLiteral(ADMIN_WORKORDER_PURGE_STATUSES.failed),
+} as const;
+
+export const ADMIN_WORKORDER_SYSTEM_CANDIDATE_PURGE_STATUS_SQL_LIST =
+  joinAdminTrashSqlLiterals([
+    ADMIN_WORKORDER_PURGE_STATUSES.pending,
+    ADMIN_WORKORDER_PURGE_STATUSES.purgeRequested,
+    ADMIN_WORKORDER_PURGE_STATUSES.failed,
+  ] as const);
 
 export const ADMIN_FILE_TRASH_ACTOR_IDS = {
   workorderDelete: "workorder-delete",

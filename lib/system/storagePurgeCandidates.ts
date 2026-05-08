@@ -3,8 +3,14 @@ import "server-only";
 import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
 import {
   ADMIN_FILE_TRASH_ACTOR_IDS,
+  ADMIN_FILE_TRASH_OPEN_PURGE_STATUS_SQL_LIST,
+  ADMIN_FILE_TRASH_PURGE_STATUS_SQL,
   ADMIN_FILE_TRASH_PURGE_STATUSES,
   ADMIN_FILE_TRASH_REASONS,
+  ADMIN_FILE_TRASH_SYSTEM_CANDIDATE_PURGE_STATUS_SQL_LIST,
+  ADMIN_WORKORDER_DELETE_STATUS_SQL,
+  ADMIN_WORKORDER_PURGE_STATUS_SQL,
+  ADMIN_WORKORDER_SYSTEM_CANDIDATE_PURGE_STATUS_SQL_LIST,
   getAdminFileTrashVisiblePurgeStatus,
   isAdminFileTrashPendingStatus,
   isAdminFileTrashPurgeRequestedStatus,
@@ -273,16 +279,16 @@ async function listFilePurgeCandidateRows(limit: number): Promise<PurgeCandidate
         AND t.purged_at IS NULL
         AND (
           s.id IS NULL
-          OR COALESCE(s.delete_status, 'active') <> 'purged'
+          OR COALESCE(s.delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
           OR COALESCE(t.delete_reason, '') <> $3
-          OR t.purge_status = 'purge_requested'
+          OR t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested}
           OR t.last_purge_error IS NOT NULL
         )
-        AND (s.id IS NULL OR s.purged_at IS NULL OR COALESCE(t.delete_reason, '') <> $3 OR t.purge_status = 'purge_requested' OR t.last_purge_error IS NOT NULL)
+        AND (s.id IS NULL OR s.purged_at IS NULL OR COALESCE(t.delete_reason, '') <> $3 OR t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested} OR t.last_purge_error IS NOT NULL)
         ${getWorkOrderBundleFileVisibilitySql("t")}
         AND (
-          t.purge_status = 'purge_requested'
-          OR (t.purge_status = 'pending' AND (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) <= now())
+          t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested}
+          OR (t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.pending} AND (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) <= now())
           OR t.last_purge_error IS NOT NULL
         )
       ORDER BY purge_due_at ASC, t.deleted_at ASC
@@ -302,11 +308,11 @@ async function listWorkOrderPurgeCandidateRows(input: { limit: number; includeFu
   }
 
   const statusFilter = input.includeFuturePending
-    ? `AND COALESCE(NULLIF(s.purge_status, 'none'), 'pending') IN ('pending', 'purge_requested', 'failed')`
+    ? `AND COALESCE(NULLIF(s.purge_status, ${ADMIN_WORKORDER_PURGE_STATUS_SQL.none}), ${ADMIN_WORKORDER_PURGE_STATUS_SQL.pending}) IN (${ADMIN_WORKORDER_SYSTEM_CANDIDATE_PURGE_STATUS_SQL_LIST})`
     : `AND (
-          COALESCE(NULLIF(s.purge_status, 'none'), 'pending') = 'purge_requested'
-          OR (COALESCE(NULLIF(s.purge_status, 'none'), 'pending') = 'pending' AND (COALESCE(s.deleted_at, now()) + ($2::integer * interval '1 day')) <= now())
-          OR COALESCE(NULLIF(s.purge_status, 'none'), 'pending') = 'failed'
+          COALESCE(NULLIF(s.purge_status, ${ADMIN_WORKORDER_PURGE_STATUS_SQL.none}), ${ADMIN_WORKORDER_PURGE_STATUS_SQL.pending}) = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.purgeRequested}
+          OR (COALESCE(NULLIF(s.purge_status, ${ADMIN_WORKORDER_PURGE_STATUS_SQL.none}), ${ADMIN_WORKORDER_PURGE_STATUS_SQL.pending}) = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.pending} AND (COALESCE(s.deleted_at, now()) + ($2::integer * interval '1 day')) <= now())
+          OR COALESCE(NULLIF(s.purge_status, ${ADMIN_WORKORDER_PURGE_STATUS_SQL.none}), ${ADMIN_WORKORDER_PURGE_STATUS_SQL.pending}) = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.failed}
         )`;
 
   const result = await queryDb<WorkOrderPurgeCandidateRow>(
@@ -317,7 +323,7 @@ async function listWorkOrderPurgeCandidateRows(input: { limit: number; includeFu
             s.status,
             s.deleted_at,
             (COALESCE(s.deleted_at, now()) + ($2::integer * interval '1 day')) AS purge_due_at,
-            COALESCE(NULLIF(s.purge_status, 'none'), 'pending') AS purge_status,
+            COALESCE(NULLIF(s.purge_status, ${ADMIN_WORKORDER_PURGE_STATUS_SQL.none}), ${ADMIN_WORKORDER_PURGE_STATUS_SQL.pending}) AS purge_status,
             COALESCE(bundle_files.attachment_count, 0)::text AS attachment_count,
             COALESCE(memo_summary.memo_count, 0)::text AS memo_count,
             COALESCE(bundle_files.total_size_bytes, 0)::text AS total_size_bytes,
@@ -332,17 +338,17 @@ async function listWorkOrderPurgeCandidateRows(input: { limit: number; includeFu
             AND t.delete_reason = $3
             AND t.restored_at IS NULL
             AND t.purged_at IS NULL
-            AND (t.purge_status IN ('pending', 'purge_requested', 'failed') OR t.last_purge_error IS NOT NULL)
+            AND (t.purge_status IN (${ADMIN_FILE_TRASH_SYSTEM_CANDIDATE_PURGE_STATUS_SQL_LIST}) OR t.last_purge_error IS NOT NULL)
        ) bundle_files ON true
        LEFT JOIN LATERAL (
          SELECT COUNT(DISTINCT m.id)::integer AS memo_count
            FROM memos m
           WHERE m.order_id = s.id
             AND (m.deleted_at IS NOT NULL OR COALESCE(m.is_active, true) = false)
-            AND COALESCE(m.delete_status, 'active') <> 'purged'
+            AND COALESCE(m.delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
        ) memo_summary ON true
       WHERE (s.deleted_at IS NOT NULL OR COALESCE(s.is_active, true) = false)
-        AND COALESCE(s.delete_status, 'active') <> 'purged'
+        AND COALESCE(s.delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
         AND s.purged_at IS NULL
         ${idFilter}
         ${statusFilter}
@@ -434,7 +440,7 @@ function getWorkOrderBundleFileVisibilitySql(alias = "t"): string {
           ${alias}.order_id IS NULL
           OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true)
           OR COALESCE(${alias}.delete_reason, '') <> $3
-          OR (COALESCE(s.delete_status, 'active') = 'purged' AND (${alias}.purge_status = 'purge_requested' OR ${alias}.last_purge_error IS NOT NULL))
+          OR (COALESCE(s.delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) = ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged} AND (${alias}.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested} OR ${alias}.last_purge_error IS NOT NULL))
         )`;
 }
 
@@ -466,21 +472,21 @@ async function listFilePurgeRunCandidates(input: SystemStoragePurgeRunInput, fil
           AND t.purged_at IS NULL
           AND (
             s.id IS NULL
-            OR COALESCE(s.delete_status, 'active') <> 'purged'
+            OR COALESCE(s.delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
             OR COALESCE(t.delete_reason, '') <> $4
-            OR t.purge_status = 'purge_requested'
+            OR t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested}
             OR t.last_purge_error IS NOT NULL
           )
-          AND (s.id IS NULL OR s.purged_at IS NULL OR COALESCE(t.delete_reason, '') <> $4 OR t.purge_status = 'purge_requested' OR t.last_purge_error IS NOT NULL)
+          AND (s.id IS NULL OR s.purged_at IS NULL OR COALESCE(t.delete_reason, '') <> $4 OR t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested} OR t.last_purge_error IS NOT NULL)
           AND (
             t.order_id IS NULL
             OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true)
             OR COALESCE(t.delete_reason, '') <> $4
-            OR (COALESCE(s.delete_status, 'active') = 'purged' AND (t.purge_status = 'purge_requested' OR t.last_purge_error IS NOT NULL))
+            OR (COALESCE(s.delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) = ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged} AND (t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested} OR t.last_purge_error IS NOT NULL))
           )
           AND (
-            t.purge_status = 'purge_requested'
-            OR (t.purge_status = 'pending' AND (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) <= now())
+            t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested}
+            OR (t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.pending} AND (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) <= now())
             OR t.last_purge_error IS NOT NULL
           )
         ORDER BY purge_due_at ASC, t.deleted_at ASC
@@ -570,7 +576,7 @@ async function listWorkOrderBundleFileCandidates(workOrderId: string): Promise<P
         AND t.delete_reason = $3
         AND t.restored_at IS NULL
         AND t.purged_at IS NULL
-        AND (t.purge_status IN ('pending', 'purge_requested', 'failed') OR t.last_purge_error IS NOT NULL)
+        AND (t.purge_status IN (${ADMIN_FILE_TRASH_SYSTEM_CANDIDATE_PURGE_STATUS_SQL_LIST}) OR t.last_purge_error IS NOT NULL)
       ORDER BY t.updated_at ASC, t.deleted_at ASC`,
     [workOrderId, COMPANY_FILE_TRASH_RETENTION_DAYS, ADMIN_FILE_TRASH_REASONS.workorderBundle],
   );
@@ -596,7 +602,7 @@ async function purgeWorkOrderBundleFiles(input: {
 
       const result = await markAttachmentTrashItemsPurged({
         trashItemIds: [bundleFile.id],
-        actorId: input.actorId ?? "system-storage-purge",
+        actorId: input.actorId ?? ADMIN_FILE_TRASH_ACTOR_IDS.systemStoragePurge,
       });
       purgedCount += result.affectedCount;
     } catch (error) {
@@ -621,13 +627,13 @@ async function purgeSystemWorkOrderCandidate(
            FROM spec_sheets
           WHERE id = $1
             AND (deleted_at IS NOT NULL OR COALESCE(is_active, true) = false)
-            AND COALESCE(delete_status, 'active') <> 'purged'
+            AND COALESCE(delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
             AND purged_at IS NULL
        ), marked_workorder AS (
          UPDATE spec_sheets
             SET is_active = false,
-                delete_status = 'purged',
-                purge_status = 'purged',
+                delete_status = ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged},
+                purge_status = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.purged},
                 purge_requested_at = COALESCE(purge_requested_at, now()),
                 purged_at = now(),
                 purged_by = $2,
@@ -637,14 +643,14 @@ async function purgeSystemWorkOrderCandidate(
        ), marked_memos AS (
          UPDATE memos
             SET is_active = false,
-                delete_status = 'purged',
-                purge_status = 'purged',
+                delete_status = ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged},
+                purge_status = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.purged},
                 purge_requested_at = COALESCE(purge_requested_at, now()),
                 purged_at = now(),
                 purged_by = $2,
                 updated_at = now()
           WHERE order_id = $1
-            AND COALESCE(delete_status, 'active') <> 'purged'
+            AND COALESCE(delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
           RETURNING id
        )
        SELECT COUNT(*)::text AS affected_count

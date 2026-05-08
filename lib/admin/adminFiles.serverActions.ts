@@ -3,8 +3,12 @@ import "server-only";
 import { queryDb } from "@/lib/db/client";
 import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
 import {
+  ADMIN_FILE_TRASH_OPEN_PURGE_STATUS_SQL_LIST,
+  ADMIN_FILE_TRASH_PURGE_STATUS_SQL,
   ADMIN_FILE_TRASH_PURGE_STATUSES,
   ADMIN_FILE_TRASH_REASONS,
+  ADMIN_WORKORDER_DELETE_STATUS_SQL,
+  ADMIN_WORKORDER_PURGE_STATUS_SQL,
   getAdminFileTrashVisiblePurgeStatus,
   isAdminFileTrashPendingStatus,
   isWorkOrderBundleTrashReason,
@@ -47,7 +51,7 @@ export async function restoreAttachmentTrashItems(
          FROM attachment_trash_items t
          LEFT JOIN spec_sheets s ON s.id = t.order_id
         WHERE t.id = ANY($1::text[])
-          AND t.purge_status = 'pending'
+          AND t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.pending}
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
           AND (t.order_id IS NULL OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true))
@@ -65,7 +69,7 @@ export async function restoreAttachmentTrashItems(
        UPDATE attachment_trash_items
           SET restored_at = now(),
               restored_by = $2,
-              purge_status = 'restored',
+              purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.restored},
               updated_at = now()
         WHERE id IN (SELECT id FROM target_trash)
         RETURNING id
@@ -93,7 +97,7 @@ export async function requestPurgeAttachmentTrashItems(
          FROM attachment_trash_items t
          LEFT JOIN spec_sheets s ON s.id = t.order_id
         WHERE t.id = ANY($1::text[])
-          AND t.purge_status = 'pending'
+          AND t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.pending}
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
           AND (
@@ -110,7 +114,7 @@ export async function requestPurgeAttachmentTrashItems(
         RETURNING id
      ), marked_trash AS (
        UPDATE attachment_trash_items
-          SET purge_status = 'purge_requested',
+          SET purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested},
               purge_after_at = COALESCE(purge_after_at, now()),
               updated_at = now()
         WHERE id IN (SELECT id FROM target_trash)
@@ -384,12 +388,12 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
               t.last_purge_error
          FROM attachment_trash_items t
          LEFT JOIN spec_sheets s ON s.id = t.order_id
-        WHERE t.purge_status = 'pending'
+        WHERE t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.pending}
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
           AND (
             s.id IS NULL
-            OR COALESCE(s.delete_status, 'active') <> 'purged'
+            OR COALESCE(s.delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
             OR COALESCE(t.delete_reason, '') <> $2
           )
           AND (s.id IS NULL OR s.purged_at IS NULL OR COALESCE(t.delete_reason, '') <> $2)
@@ -576,20 +580,20 @@ export async function listPurgeReadyAttachmentTrashItems(
         AND t.purged_at IS NULL
         AND (
           t.order_id IS NULL
-          OR COALESCE(s.delete_status, 'active') <> 'purged'
+          OR COALESCE(s.delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
           OR COALESCE(t.delete_reason, '') <> $3
-          OR t.purge_status = 'purge_requested'
+          OR t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested}
         )
-        AND (s.id IS NULL OR s.purged_at IS NULL OR COALESCE(t.delete_reason, '') <> $3 OR t.purge_status = 'purge_requested')
+        AND (s.id IS NULL OR s.purged_at IS NULL OR COALESCE(t.delete_reason, '') <> $3 OR t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested})
         AND (
           t.order_id IS NULL
           OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true)
           OR COALESCE(t.delete_reason, '') <> $3
-          OR (COALESCE(s.delete_status, 'active') = 'purged' AND t.purge_status = 'purge_requested')
+          OR (COALESCE(s.delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) = ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged} AND t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested})
         )
         AND (
-          t.purge_status = 'purge_requested'
-          OR (t.purge_status = 'pending' AND (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) <= now())
+          t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested}
+          OR (t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.pending} AND (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) <= now())
         )
       ORDER BY purge_after_at ASC
       LIMIT $1`,
@@ -616,7 +620,7 @@ export async function markAttachmentTrashItemsPurged(
        SELECT id, attachment_id
          FROM attachment_trash_items
         WHERE id = ANY($1::text[])
-          AND purge_status IN ('pending', 'purge_requested')
+          AND purge_status IN (${ADMIN_FILE_TRASH_OPEN_PURGE_STATUS_SQL_LIST})
           AND restored_at IS NULL
           AND purged_at IS NULL
      ), marked_attachments AS (
@@ -629,7 +633,7 @@ export async function markAttachmentTrashItemsPurged(
      ), marked_trash AS (
        UPDATE attachment_trash_items
           SET purged_at = now(),
-              purge_status = 'purged',
+              purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purged},
               last_purge_attempt_at = now(),
               last_purge_error = NULL,
               updated_at = now()
@@ -660,7 +664,7 @@ export async function markAttachmentTrashItemsPurgedByAttachmentIds(input: {
        SELECT id, attachment_id
          FROM attachment_trash_items
         WHERE attachment_id = ANY($1::text[])
-          AND purge_status IN ('pending', 'purge_requested')
+          AND purge_status IN (${ADMIN_FILE_TRASH_OPEN_PURGE_STATUS_SQL_LIST})
           AND restored_at IS NULL
           AND purged_at IS NULL
      ), marked_attachments AS (
@@ -673,7 +677,7 @@ export async function markAttachmentTrashItemsPurgedByAttachmentIds(input: {
      ), marked_trash AS (
        UPDATE attachment_trash_items
           SET purged_at = now(),
-              purge_status = 'purged',
+              purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purged},
               last_purge_attempt_at = now(),
               last_purge_error = NULL,
               updated_at = now()
@@ -798,8 +802,8 @@ export async function restoreWorkOrderTrashBundle(
      ), restored_workorder AS (
        UPDATE spec_sheets
           SET is_active = true,
-              delete_status = 'active',
-              purge_status = 'none',
+              delete_status = ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active},
+              purge_status = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.none},
               purge_requested_at = NULL,
               purged_at = NULL,
               purged_by = NULL,
@@ -812,7 +816,7 @@ export async function restoreWorkOrderTrashBundle(
          FROM attachment_trash_items t
         WHERE t.order_id = $1
           AND t.delete_reason = $2
-          AND t.purge_status IN ('pending', 'purge_requested')
+          AND t.purge_status IN (${ADMIN_FILE_TRASH_OPEN_PURGE_STATUS_SQL_LIST})
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
      ), restored_attachments AS (
@@ -829,15 +833,15 @@ export async function restoreWorkOrderTrashBundle(
        UPDATE attachment_trash_items
           SET restored_at = now(),
               restored_by = $3,
-              purge_status = 'restored',
+              purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.restored},
               updated_at = now()
         WHERE id IN (SELECT id FROM bundle_trash)
         RETURNING id
      ), restored_memos AS (
        UPDATE memos
           SET is_active = true,
-              delete_status = 'active',
-              purge_status = 'none',
+              delete_status = ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active},
+              purge_status = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.none},
               purge_requested_at = NULL,
               purged_at = NULL,
               purged_by = NULL,
@@ -916,13 +920,13 @@ export async function purgeWorkOrderTrashBundle(
          FROM spec_sheets
         WHERE id = $1
           AND (deleted_at IS NOT NULL OR COALESCE(is_active, true) = false)
-          AND COALESCE(delete_status, 'active') <> 'purged'
+          AND COALESCE(delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
           AND purged_at IS NULL
      ), marked_workorder AS (
        UPDATE spec_sheets
           SET is_active = false,
-              delete_status = 'purge_requested',
-              purge_status = 'purge_requested',
+              delete_status = ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purgeRequested},
+              purge_status = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.purgeRequested},
               purge_requested_at = COALESCE(purge_requested_at, now()),
               purged_at = NULL,
               purged_by = NULL,
@@ -936,7 +940,7 @@ export async function purgeWorkOrderTrashBundle(
           AND t.delete_reason = $2
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
-          AND t.purge_status IN ('pending', 'purge_requested')
+          AND t.purge_status IN (${ADMIN_FILE_TRASH_OPEN_PURGE_STATUS_SQL_LIST})
      ), marked_attachments AS (
        UPDATE attachments
           SET is_active = false,
@@ -946,7 +950,7 @@ export async function purgeWorkOrderTrashBundle(
         RETURNING id
      ), marked_trash AS (
        UPDATE attachment_trash_items
-          SET purge_status = 'purge_requested',
+          SET purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested},
               purge_after_at = now(),
               updated_at = now()
         WHERE id IN (SELECT id FROM bundle_trash)
@@ -954,14 +958,14 @@ export async function purgeWorkOrderTrashBundle(
      ), marked_memos AS (
        UPDATE memos
           SET is_active = false,
-              delete_status = 'purge_requested',
-              purge_status = 'purge_requested',
+              delete_status = ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purgeRequested},
+              purge_status = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.purgeRequested},
               purge_requested_at = COALESCE(purge_requested_at, now()),
               purged_at = NULL,
               purged_by = NULL,
               updated_at = now()
         WHERE order_id = $1
-          AND COALESCE(delete_status, 'active') <> 'purged'
+          AND COALESCE(delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
         RETURNING id
      )
      SELECT COUNT(*)::text AS affected_count,

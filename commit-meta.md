@@ -1,11 +1,11 @@
 Version :
-0.9.22381
+0.9.22382
 
 Summary :
-저장소 휴지통 상태 정책 리팩토링
+저장소 휴지통 SQL 상태 정책 리팩토링
 
 Description :
-저장소 휴지통과 시스템관리자 실제 삭제 후보에서 사용하던 purge 상태 문자열 판정을 중앙 정책 함수로 분리했다. 휴지통 상태 정규화, pending/requested 판정, 표시 상태 계산을 공통 함수로 정리하고 시스템관리자 실제 삭제 처리 actor id도 중앙 상수로 정리했다. 시스템관리자 삭제 후보 row의 중복 companyName 필드도 제거했다.
+저장소 휴지통과 시스템관리자 실제 삭제 후보 로직에서 반복되던 purge_status, delete_status, purge_status SQL 문자열을 중앙 정책 값으로 참조하도록 정리했다. DB schema와 R2 Worker 기반 삭제 흐름은 변경하지 않고, delete_reason 문장 컬럼은 기존 구조를 유지했다.
 
 수정 파일 목록 :
 - lib/admin/files/trashPolicy.ts
@@ -14,7 +14,7 @@ Description :
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/storage-refactor-trash-status-policy-0.9.22381.md
+- docs/storage-refactor-trash-sql-policy-0.9.22382.md
 
 삭제 파일 목록 :
 없음
