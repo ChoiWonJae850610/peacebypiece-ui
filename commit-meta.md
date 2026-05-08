@@ -1,26 +1,22 @@
 Version :
-0.9.22392
+0.9.22393
 
 Summary :
-저장소 휴지통 문구와 회귀 테스트 문서 보정
+시스템관리자 실제 삭제 후보 점검 기준 보정
 
 Description :
-고객관리자 저장소 휴지통 화면의 복구 표현을 복원으로 정리하고 영구삭제 표현을 선택 삭제 또는 삭제 요청 기준으로 보정했다. 작업지시서 축약 배지를 작업으로 바꾸고 저장소 관리 회귀 테스트 문서를 추가했다.
+시스템관리자 저장소 실제 삭제 후보 화면의 안내 문구를 정상 흐름 화면 확인과 예외 처리 코드 확인 기준으로 정리했다. R2 Worker 삭제 응답에서 not found 계열 응답은 이미 삭제된 객체로 보고 성공 처리하도록 보정하고, Worker/권한/네트워크 실패만 재시도 후보로 남기는 기준을 문서화했다. 삭제 후보 표의 예정일 정렬 버튼 중복 표시도 제거했다.
 
 수정 파일 목록 :
-- app/admin/files/page.tsx
-- components/admin/files/WorkOrderStorageSection.tsx
-- components/admin/files/fileTrashSectionModals.tsx
-- components/admin/files/fileTrashSectionRows.ts
-- lib/admin/adminFiles.actionFlow.ts
-- lib/admin/adminFiles.adapter.ts
-- lib/admin/adminFiles.presentation.ts
-- lib/admin/adminFiles.serverActions.ts
+- app/system/storage-usage/page.tsx
+- components/system/storage/SystemStoragePurgeButton.tsx
+- components/system/storage/SystemStoragePurgeCandidatesClient.tsx
 - lib/constants/app.ts
+- lib/storage/r2/r2WorkerUpload.ts
+- lib/system/storagePurgeCandidates.ts
 
 추가 파일 목록 :
-- docs/storage-management-regression-0.9.22392.md
-- commit-meta.md
+- docs/system-storage-purge-final-check-0.9.22393.md
 
 삭제 파일 목록 :
 없음

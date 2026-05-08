@@ -161,7 +161,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
   async function runSelectedPurge() {
     if (selectedIds.length === 0 || isPending) return;
     const confirmed = window.confirm(
-      `선택한 ${selectedIds.length}개 삭제 후보를 처리합니다. 작업지시서 후보는 연결 첨부파일과 메모를 함께 처리하고, 실패한 R2 항목만 재시도 후보로 남깁니다. 이 작업은 복구할 수 없습니다. 계속할까요?`,
+      `선택한 ${selectedIds.length}개 삭제 후보를 처리합니다. 작업지시서 후보는 연결 첨부파일과 메모를 함께 처리합니다. R2 파일 없음은 삭제 완료로 보고, Worker/권한/네트워크 실패만 재시도 후보로 남깁니다. 이 작업은 되돌릴 수 없습니다. 계속할까요?`,
     );
     if (!confirmed) return;
 
@@ -185,7 +185,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
   async function runAllDuePurge() {
     if (!hasCandidates || isPending) return;
     const confirmed = window.confirm(
-      "삭제 예정일이 도래했거나 영구삭제 요청된 후보를 전체 처리합니다. 작업지시서 후보는 연결 첨부파일과 메모를 함께 처리하고, 실패한 R2 항목만 재시도 후보로 남깁니다. 계속할까요?",
+      "삭제 예정일이 도래했거나 삭제 요청된 후보를 전체 처리합니다. 작업지시서 후보는 연결 첨부파일과 메모를 함께 처리합니다. R2 파일 없음은 삭제 완료로 보고, Worker/권한/네트워크 실패만 재시도 후보로 남깁니다. 계속할까요?",
     );
     if (!confirmed) return;
 
@@ -212,7 +212,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
         <div>
           <h2 className="text-lg font-semibold text-stone-950">삭제 후보 목록</h2>
           <p className="mt-2 text-sm leading-6 text-stone-600">
-            파일 후보는 Worker로 R2에서 실제 삭제합니다. 작업지시서 후보는 대표 row로 표시하고, 실제 삭제 시 연결 첨부파일과 메모를 함께 처리합니다. 정상 처리된 연결 파일은 다시 후보로 노출하지 않고 실패한 R2 항목만 재시도 후보로 남깁니다.
+            파일 후보는 Worker로 R2에서 실제 삭제합니다. 작업지시서 후보는 대표 row로 표시하고, 실제 삭제 시 연결 첨부파일과 메모를 함께 처리합니다. R2 파일 없음은 삭제 완료로 보고, Worker/권한/네트워크 실패만 재시도 후보로 남깁니다.
           </p>
           <p className="mt-2 text-xs font-medium text-stone-500">
             현재 정렬: {SORT_LABELS[sortState.key]} · {getSortDirectionLabel(sortState.direction)}
@@ -337,7 +337,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
                   </div>
                   <div>
                     <p className="text-[11px] font-semibold text-stone-400">썸네일</p>
-                    {candidate.candidateKind === "workorder" ? <span className="text-stone-400">실패한 R2만 별도 노출</span> : renderKey(candidate.thumbnailKey)}
+                    {candidate.candidateKind === "workorder" ? <span className="text-stone-400">실패 항목만 재시도</span> : renderKey(candidate.thumbnailKey)}
                   </div>
                 </div>
               </article>

@@ -84,6 +84,10 @@ async function readWorkerError(response: Response): Promise<string> {
   }
 }
 
+function isR2WorkerObjectNotFound(status: number, message: string): boolean {
+  return status === 404 || /(?:WORKER_FILE_NOT_FOUND|OBJECT_NOT_FOUND|NOT_FOUND|NO_SUCH_KEY)/i.test(message);
+}
+
 export function getR2WorkerUploadConfig(): R2WorkerUploadConfig | null {
   const uploadUrl = readEnv("R2_WORKER_UPLOAD_URL");
   const secret = readEnv("R2_WORKER_UPLOAD_SECRET");
@@ -195,6 +199,8 @@ export async function deleteR2ObjectViaWorker(input: CreateR2WorkerDeleteUrlInpu
   if (deleteResponse.ok) return;
 
   const deleteError = await readWorkerError(deleteResponse);
+  if (isR2WorkerObjectNotFound(deleteResponse.status, deleteError)) return;
+
   const shouldTryPostFallback = deleteResponse.status === 405 || /METHOD_NOT_ALLOWED/i.test(deleteError);
   if (!shouldTryPostFallback) {
     throw new Error(deleteError || "R2_WORKER_DELETE_FAILED");
@@ -205,6 +211,7 @@ export async function deleteR2ObjectViaWorker(input: CreateR2WorkerDeleteUrlInpu
   const fallbackResponse = await fetch(fallbackUrl.toString(), { method: "POST" });
   if (!fallbackResponse.ok) {
     const fallbackError = await readWorkerError(fallbackResponse);
+    if (isR2WorkerObjectNotFound(fallbackResponse.status, fallbackError)) return;
     throw new Error(fallbackError || deleteError || "R2_WORKER_DELETE_FAILED");
   }
 }
