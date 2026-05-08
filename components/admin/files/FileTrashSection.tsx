@@ -86,6 +86,7 @@ type UnifiedTrashRow =
 const TRASH_TABLE_GRID = "0.42fr 1.45fr 0.95fr 1.2fr 0.7fr 0.65fr";
 const TRASH_HEADER_CENTER_CLASS = "text-center";
 const TRASH_CELL_CENTER_CLASS = "flex items-center justify-center text-center";
+const TRASH_CELL_SELECT_CLASS = "flex h-full min-h-[34px] items-center justify-center self-center text-center";
 
 const WORKORDER_STAGE_STEPS = [
   { keys: ["draft", "작성중"], label: "작성중" },
@@ -901,7 +902,7 @@ export default function FileTrashSection({
             key: "select",
             label: t("filesList.columns.select", "선택"),
             headerClassName: TRASH_HEADER_CENTER_CLASS,
-            className: TRASH_CELL_CENTER_CLASS,
+            className: TRASH_CELL_SELECT_CLASS,
             render: (row) => {
               if (row.kind === "workorder") {
                 return (

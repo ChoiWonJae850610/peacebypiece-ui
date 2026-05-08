@@ -1,21 +1,18 @@
 Version :
-0.9.223791
+0.9.223792
 
 Summary :
-저장소 휴지통 버튼명과 비우기 확인 모달 보정
+저장소 휴지통 선택 컬럼 정렬 보정
 
 Description :
-고객관리자 저장소 휴지통에서 전체 선택 버튼을 제거하고 복구/영구 삭제 버튼명을 복원/선택 삭제로 변경했다. 비우기 버튼과 예/아니오 확인 모달을 추가하고, 작업지시서 row 대상명 좌측 정렬과 휴지통 안내 문구를 사용자용 표현으로 정리했다.
+고객관리자 저장소 휴지통 목록에서 작업지시서 row와 첨부파일 row가 섞일 때 선택 컬럼 체크박스가 줄 중앙에 맞지 않아 보이는 문제를 보정했다. 선택 컬럼 전용 셀 정렬 클래스를 분리해 row 종류와 관계없이 같은 기준으로 세로 중앙 정렬되도록 수정했다.
 
 수정 파일 목록 :
-- app/admin/files/page.tsx
 - components/admin/files/FileTrashSection.tsx
-- lib/admin/adminFiles.serverActions.ts
-- lib/i18n/ko/admin.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/storage-trash-ui-empty-confirm-0.9.223791.md
+- docs/storage-trash-checkbox-alignment-0.9.223792.md
 
 삭제 파일 목록 :
 없음
