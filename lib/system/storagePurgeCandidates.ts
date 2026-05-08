@@ -263,14 +263,10 @@ async function listFilePurgeCandidateRows(limit: number): Promise<PurgeCandidate
           s.id IS NULL
           OR COALESCE(s.delete_status, 'active') <> 'purged'
           OR t.purge_status = 'purge_requested'
+          OR t.last_purge_error IS NOT NULL
         )
-        AND (s.id IS NULL OR s.purged_at IS NULL OR t.purge_status = 'purge_requested')
-        AND (
-          t.order_id IS NULL
-          OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true)
-          OR COALESCE(t.delete_reason, '') <> $3
-          OR (COALESCE(s.delete_status, 'active') = 'purged' AND t.purge_status = 'purge_requested')
-        )
+        AND (s.id IS NULL OR s.purged_at IS NULL OR t.purge_status = 'purge_requested' OR t.last_purge_error IS NOT NULL)
+        ${getWorkOrderBundleFileVisibilitySql("t")}
         AND (
           t.purge_status = 'purge_requested'
           OR (t.purge_status = 'pending' AND (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) <= now())
@@ -403,6 +399,17 @@ function getPurgeDeleteKeys(candidate: Pick<PurgeCandidateRow, "storage_key" | "
   );
 }
 
+
+function getWorkOrderBundleFileVisibilitySql(alias = "t"): string {
+  return `
+        AND (
+          ${alias}.order_id IS NULL
+          OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true)
+          OR COALESCE(${alias}.delete_reason, '') <> $3
+          OR (COALESCE(s.delete_status, 'active') = 'purged' AND (${alias}.purge_status = 'purge_requested' OR ${alias}.last_purge_error IS NOT NULL))
+        )`;
+}
+
 async function listFilePurgeRunCandidates(input: SystemStoragePurgeRunInput, fileTrashIds: string[]): Promise<PurgeCandidateRow[]> {
   const safeLimit = Math.min(Math.max(Math.trunc(input.limit ?? 100), 1), 200);
 
@@ -433,13 +440,14 @@ async function listFilePurgeRunCandidates(input: SystemStoragePurgeRunInput, fil
             s.id IS NULL
             OR COALESCE(s.delete_status, 'active') <> 'purged'
             OR t.purge_status = 'purge_requested'
+            OR t.last_purge_error IS NOT NULL
           )
-          AND (s.id IS NULL OR s.purged_at IS NULL OR t.purge_status = 'purge_requested')
+          AND (s.id IS NULL OR s.purged_at IS NULL OR t.purge_status = 'purge_requested' OR t.last_purge_error IS NOT NULL)
           AND (
             t.order_id IS NULL
             OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true)
             OR COALESCE(t.delete_reason, '') <> $4
-            OR (COALESCE(s.delete_status, 'active') = 'purged' AND t.purge_status = 'purge_requested')
+            OR (COALESCE(s.delete_status, 'active') = 'purged' AND (t.purge_status = 'purge_requested' OR t.last_purge_error IS NOT NULL))
           )
           AND (
             t.purge_status = 'purge_requested'
@@ -510,6 +518,69 @@ async function purgeSystemFileCandidate(
   }
 }
 
+async function listWorkOrderBundleFileCandidates(workOrderId: string): Promise<PurgeCandidateRow[]> {
+  const result = await queryDb<PurgeCandidateRow>(
+    `SELECT t.id,
+            t.attachment_id,
+            t.company_id,
+            t.company_name,
+            t.order_id,
+            COALESCE(s.title, '작업지시서명 없음') AS workorder_title,
+            t.original_name,
+            t.mime_type,
+            t.storage_key,
+            t.thumbnail_key,
+            t.size_bytes,
+            t.deleted_at,
+            (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) AS purge_due_at,
+            t.purge_status,
+            t.last_purge_error
+       FROM attachment_trash_items t
+       LEFT JOIN spec_sheets s ON s.id = t.order_id
+      WHERE t.order_id = $1
+        AND t.delete_reason = $3
+        AND t.restored_at IS NULL
+        AND t.purged_at IS NULL
+        AND (t.purge_status IN ('pending', 'purge_requested', 'failed') OR t.last_purge_error IS NOT NULL)
+      ORDER BY t.updated_at ASC, t.deleted_at ASC`,
+    [workOrderId, COMPANY_FILE_TRASH_RETENTION_DAYS, WORKORDER_BUNDLE_DELETE_REASON],
+  );
+  return result.rows;
+}
+
+async function purgeWorkOrderBundleFiles(input: {
+  workOrderId: string;
+  actorId: string | null | undefined;
+}): Promise<{ purgedCount: number; failedCount: number; firstErrorMessage: string | null }> {
+  const bundleFiles = await listWorkOrderBundleFileCandidates(input.workOrderId);
+  let purgedCount = 0;
+  let failedCount = 0;
+  let firstErrorMessage: string | null = null;
+
+  for (const bundleFile of bundleFiles) {
+    try {
+      const keys = getPurgeDeleteKeys(bundleFile);
+      for (const key of keys) {
+        await deleteR2ObjectViaWorker({ key });
+        deleteCachedR2UrlsByKey(key);
+      }
+
+      const result = await markAttachmentTrashItemsPurged({
+        trashItemIds: [bundleFile.id],
+        actorId: input.actorId ?? "system-storage-purge",
+      });
+      purgedCount += result.affectedCount;
+    } catch (error) {
+      const errorMessage = getPurgeErrorMessage(error);
+      failedCount += 1;
+      firstErrorMessage = firstErrorMessage ?? errorMessage;
+      await markAttachmentTrashItemPurgeFailed({ trashItemId: bundleFile.id, errorMessage });
+    }
+  }
+
+  return { purgedCount, failedCount, firstErrorMessage };
+}
+
 async function purgeSystemWorkOrderCandidate(
   candidate: WorkOrderPurgeCandidateRow,
   actorId: string | null | undefined,
@@ -534,28 +605,6 @@ async function purgeSystemWorkOrderCandidate(
                 updated_at = now()
           WHERE id IN (SELECT id FROM target_workorder)
           RETURNING id
-       ), bundle_trash AS (
-         SELECT t.id, t.attachment_id
-           FROM attachment_trash_items t
-          WHERE t.order_id = $1
-            AND t.delete_reason = $3
-            AND t.restored_at IS NULL
-            AND t.purged_at IS NULL
-            AND t.purge_status IN ('pending', 'purge_requested')
-       ), marked_attachments AS (
-         UPDATE attachments
-            SET is_active = false,
-                purge_after_at = now(),
-                updated_at = now()
-          WHERE id IN (SELECT attachment_id FROM bundle_trash)
-          RETURNING id
-       ), marked_trash AS (
-         UPDATE attachment_trash_items
-            SET purge_status = 'purge_requested',
-                purge_after_at = now(),
-                updated_at = now()
-          WHERE id IN (SELECT id FROM bundle_trash)
-          RETURNING id
        ), marked_memos AS (
          UPDATE memos
             SET is_active = false,
@@ -571,12 +620,24 @@ async function purgeSystemWorkOrderCandidate(
        )
        SELECT COUNT(*)::text AS affected_count
          FROM marked_workorder`,
-      [candidate.id, actorId ?? "system-storage-purge", WORKORDER_BUNDLE_DELETE_REASON],
+      [candidate.id, actorId ?? "system-storage-purge"],
     );
 
     const affectedCount = toNumber(result.rows[0]?.affected_count ?? 0);
     if (affectedCount === 0) {
       throw new Error("WORKORDER_PURGE_CANDIDATE_NOT_FOUND");
+    }
+
+    const bundleFileResult = await purgeWorkOrderBundleFiles({ workOrderId: candidate.id, actorId });
+    if (bundleFileResult.failedCount > 0) {
+      return {
+        trashItemId: `${WORKORDER_CANDIDATE_PREFIX}${candidate.id}`,
+        attachmentId: null,
+        storageKey: null,
+        thumbnailKey: null,
+        status: "failed",
+        errorMessage: `WORKORDER_PURGED_BUT_BUNDLE_R2_FAILED:${bundleFileResult.firstErrorMessage ?? "UNKNOWN_ERROR"}`,
+      };
     }
 
     return {

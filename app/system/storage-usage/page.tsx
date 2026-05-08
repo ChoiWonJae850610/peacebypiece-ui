@@ -22,7 +22,7 @@ export default async function SystemStorageUsagePage() {
                   R2 실제 삭제 후보
                 </h1>
                 <p className="max-w-3xl text-sm leading-6 text-stone-600">
-                  전 고객 공통 30일 휴지통 정책에 따라 파일과 작업지시서 삭제 후보를 확인합니다. 작업지시서는 먼저 DB 삭제 완료 상태로 전환하고, 연결 파일은 Worker 기반 R2 purge 후보로 이어집니다.
+                  전 고객 공통 30일 휴지통 정책에 따라 파일과 작업지시서 삭제 후보를 확인합니다. 작업지시서 후보는 대표 row로 표시하고, 실제 삭제 시 연결 첨부파일과 메모를 같은 흐름에서 함께 처리합니다.
                 </p>
               </div>
             </div>
