@@ -17,6 +17,11 @@ import {
   isWorkOrderBundleTrashReason,
 } from "@/lib/admin/files/trashPolicy";
 import type { DbQueryResultRow } from "@/lib/db/client";
+import type {
+  AdminManagedFileItem,
+  AdminStorageWorkOrderItem,
+  AdminTrashFileItem,
+} from "@/lib/admin/adminFiles.types";
 
 export type AdminTrashDbActionInput = {
   trashItemIds: string[];
@@ -394,7 +399,15 @@ function getRestoreDaysLeft(value: string | Date | null | undefined): number {
   return Math.max(0, Math.ceil((date.getTime() - Date.now()) / 86400000));
 }
 
-export async function listAdminFileManagementRows(trashRetentionDays = 30) {
+type AdminFileManagementRows = {
+  attachments: AdminManagedFileItem[];
+  trashItems: AdminTrashFileItem[];
+  workOrders: AdminStorageWorkOrderItem[];
+};
+
+export async function listAdminFileManagementRows(
+  trashRetentionDays = 30,
+): Promise<AdminFileManagementRows> {
   const safeTrashRetentionDays = [1, 5, 15, 30].includes(trashRetentionDays)
     ? trashRetentionDays
     : 30;
@@ -492,7 +505,7 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
     ),
   ]);
 
-  const attachments = attachmentsResult.rows.map((row) => {
+  const attachments: AdminManagedFileItem[] = attachmentsResult.rows.map((row) => {
     const fileName = row.original_name || "파일명 없음";
     const fileType = getFileType(row.mime_type, fileName);
     const sizeBytes = toNumber(row.size_bytes);
@@ -523,7 +536,7 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
     };
   });
 
-  const trashItems = trashResult.rows.map((row) => {
+  const trashItems: AdminTrashFileItem[] = trashResult.rows.map((row) => {
     const fileName = row.original_name || "파일명 없음";
     const fileType = getFileType(row.mime_type, fileName);
     const sizeBytes = toNumber(row.size_bytes);
@@ -600,7 +613,7 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
     };
   });
 
-  const workOrders = workOrdersResult.rows.map((row) => {
+  const workOrders: AdminStorageWorkOrderItem[] = workOrdersResult.rows.map((row) => {
     const attachmentCount = toNumber(row.attachment_count);
     const trashAttachmentCount = toNumber(row.trash_attachment_count);
     const memoCount = toNumber(row.memo_count);
