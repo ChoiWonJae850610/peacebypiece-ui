@@ -142,16 +142,16 @@ export default function AdminFilesPage() {
     const messages: string[] = [];
     if (input.workOrderCount > 0 && input.fileCount > 0) {
       messages.push(
-        `작업지시서 ${input.workOrderCount}건과 파일 ${input.fileCount}개를 복구했습니다.`,
+        `작업지시서 ${input.workOrderCount}건과 파일 ${input.fileCount}개를 복원했습니다.`,
       );
     } else if (input.workOrderCount > 0) {
-      messages.push(`작업지시서 ${input.workOrderCount}건을 복구했습니다.`);
+      messages.push(`작업지시서 ${input.workOrderCount}건을 복원했습니다.`);
     } else if (input.fileCount > 0) {
-      messages.push(`파일 ${input.fileCount}개를 복구했습니다.`);
+      messages.push(`파일 ${input.fileCount}개를 복원했습니다.`);
     }
     if (input.skippedCount > 0) {
       messages.push(
-        `복구할 수 없는 항목 ${input.skippedCount}개는 제외했습니다.`,
+        `복원할 수 없는 항목 ${input.skippedCount}개는 제외했습니다.`,
       );
     }
     return messages.join(" ");
@@ -165,18 +165,18 @@ export default function AdminFilesPage() {
     const messages: string[] = [];
     if (input.workOrderCount > 0 && input.fileCount > 0) {
       messages.push(
-        `작업지시서 ${input.workOrderCount}건과 파일 ${input.fileCount}개를 영구삭제 요청했습니다.`,
+        `작업지시서 ${input.workOrderCount}건과 파일 ${input.fileCount}개를 삭제 요청했습니다.`,
       );
     } else if (input.workOrderCount > 0) {
       messages.push(
-        `작업지시서 ${input.workOrderCount}건을 영구삭제 요청했습니다.`,
+        `작업지시서 ${input.workOrderCount}건을 삭제 요청했습니다.`,
       );
     } else if (input.fileCount > 0) {
-      messages.push(`파일 ${input.fileCount}개를 영구삭제 요청했습니다.`);
+      messages.push(`파일 ${input.fileCount}개를 삭제 요청했습니다.`);
     }
     if (input.skippedFileCount > 0) {
       messages.push(
-        `영구삭제할 수 없는 파일 ${input.skippedFileCount}개는 제외했습니다.`,
+        `선택 삭제할 수 없는 파일 ${input.skippedFileCount}개는 제외했습니다.`,
       );
     }
     return messages.join(" ");
@@ -228,7 +228,7 @@ export default function AdminFilesPage() {
     const workOrderTargets = [...selectedWorkOrderIds];
 
     if (fileTargets.length === 0 && workOrderTargets.length === 0) {
-      setActionMessage("복구 가능한 선택 항목이 없습니다.");
+      setActionMessage("복원 가능한 선택 항목이 없습니다.");
       return;
     }
 
@@ -263,7 +263,7 @@ export default function AdminFilesPage() {
       setActionMessage(
         error instanceof Error
           ? error.message
-          : "선택 항목 복구 요청에 실패했습니다.",
+          : "선택 항목 복원 요청에 실패했습니다.",
       );
     } finally {
       setPendingFileAction(null);
@@ -277,7 +277,7 @@ export default function AdminFilesPage() {
     const workOrderTargets = [...selectedWorkOrderIds];
 
     if (fileTargets.length === 0 && workOrderTargets.length === 0) {
-      setActionMessage("영구삭제 가능한 선택 항목이 없습니다.");
+      setActionMessage("선택 삭제 가능한 선택 항목이 없습니다.");
       return;
     }
 
@@ -312,7 +312,7 @@ export default function AdminFilesPage() {
       setActionMessage(
         error instanceof Error
           ? error.message
-          : "선택 항목 영구삭제 요청에 실패했습니다.",
+          : "선택 항목 삭제 요청에 실패했습니다.",
       );
     } finally {
       setPendingFileAction(null);
@@ -373,7 +373,7 @@ export default function AdminFilesPage() {
     setPendingWorkOrderAction("restore");
     try {
       const payload = await restoreWorkOrderById(workOrderId);
-      setActionMessage(payload.message || "작업지시서 1건을 복구했습니다.");
+      setActionMessage(payload.message || "작업지시서 1건을 복원했습니다.");
       setSelectedWorkOrderIds((currentIds) =>
         currentIds.filter((id) => id !== workOrderId),
       );
@@ -383,7 +383,7 @@ export default function AdminFilesPage() {
       setActionMessage(
         error instanceof Error
           ? error.message
-          : "작업지시서 복구 요청에 실패했습니다.",
+          : "작업지시서 복원 요청에 실패했습니다.",
       );
     } finally {
       setPendingWorkOrderAction(null);
@@ -397,7 +397,7 @@ export default function AdminFilesPage() {
       const payload = await purgeWorkOrderById(workOrderId);
       setActionMessage(
         payload.message ||
-          "작업지시서 1건을 영구삭제 요청했습니다.",
+          "작업지시서 1건을 삭제 요청했습니다.",
       );
       setSelectedWorkOrderIds((currentIds) =>
         currentIds.filter((id) => id !== workOrderId),
@@ -408,7 +408,7 @@ export default function AdminFilesPage() {
       setActionMessage(
         error instanceof Error
           ? error.message
-          : "작업지시서 영구삭제 요청에 실패했습니다.",
+          : "작업지시서 삭제 요청에 실패했습니다.",
       );
     } finally {
       setPendingWorkOrderAction(null);

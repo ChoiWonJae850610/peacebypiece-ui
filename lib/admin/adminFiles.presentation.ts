@@ -35,7 +35,7 @@ export const ADMIN_FILE_TABS: AdminFileTabItem[] = [
   {
     key: "trash",
     label: "휴지통",
-    description: "삭제된 작업지시서와 첨부파일을 한 목록에서 복원·영구삭제 정책에 따라 확인",
+    description: "삭제된 작업지시서와 첨부파일을 한 목록에서 복원·삭제 요청 정책에 따라 확인",
   },
 ];
 
@@ -122,7 +122,7 @@ export const ADMIN_FILE_TRASH_PLACEHOLDERS: AdminTrashFileItem[] = [
     restoreLabel: "D-27",
     deleteReason: "중복 첨부 정리",
     purgeStatus: "pending",
-    purgeStatusLabel: "복구 가능",
+    purgeStatusLabel: "복원 가능",
     isPurgeReady: false,
     lastPurgeError: null,
     parentWorkOrderDeleted: false,
@@ -151,7 +151,7 @@ export const ADMIN_FILE_TRASH_PLACEHOLDERS: AdminTrashFileItem[] = [
     restoreLabel: "D-23",
     deleteReason: "최신 이미지로 교체",
     purgeStatus: "pending",
-    purgeStatusLabel: "복구 가능",
+    purgeStatusLabel: "복원 가능",
     isPurgeReady: false,
     lastPurgeError: null,
     parentWorkOrderDeleted: false,

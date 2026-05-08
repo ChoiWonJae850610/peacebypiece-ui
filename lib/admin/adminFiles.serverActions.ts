@@ -353,14 +353,14 @@ function getPurgeStatusLabel(
     lastPurgeError: errorMessage,
   });
   if (visibleStatus === ADMIN_FILE_TRASH_PURGE_STATUSES.purgeRequested)
-    return "영구삭제 요청";
+    return "삭제 요청";
   if (visibleStatus === ADMIN_FILE_TRASH_PURGE_STATUSES.purged)
     return "삭제 완료";
   if (visibleStatus === ADMIN_FILE_TRASH_PURGE_STATUSES.restored)
-    return "복구 완료";
+    return "복원 완료";
   if (visibleStatus === ADMIN_FILE_TRASH_PURGE_STATUSES.failed)
     return "삭제 실패";
-  return "복구 가능";
+  return "복원 가능";
 }
 
 function isPurgeReady(value: string | Date | null | undefined): boolean {
@@ -561,7 +561,7 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
             : row.last_purge_error
               ? "삭제 실패 상태는 시스템관리자 확인 후 처리해야 합니다."
               : !isPending
-                ? "복구 가능 상태가 아닙니다."
+                ? "복원 가능 상태가 아닙니다."
                 : null,
       canPurge:
         restorePolicy !== "bundle_required" &&
@@ -569,11 +569,11 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
         isPending,
       purgeDisabledReason:
         restorePolicy === "bundle_required"
-          ? "작업지시서 삭제와 함께 휴지통으로 이동한 파일은 작업지시서 묶음 삭제/purge에서 함께 처리해야 합니다."
+          ? "작업지시서 삭제와 함께 휴지통으로 이동한 파일은 작업지시서 묶음 삭제 요청에서 함께 처리해야 합니다."
           : row.last_purge_error
             ? "삭제 실패 상태는 시스템관리자 확인 후 처리해야 합니다."
             : !isPending
-              ? "영구삭제 요청 가능 상태가 아닙니다."
+              ? "선택 삭제 요청 가능 상태가 아닙니다."
               : null,
     };
   });
@@ -837,8 +837,8 @@ function createWorkOrderTrashActionSkeletonResult(input: {
     reason: "WORKORDER_ACTION_NOT_CONNECTED",
     message:
       input.action === "restore"
-        ? "작업지시서 복구 API는 아직 실제 DB 복원 로직에 연결되지 않았습니다. 작업지시서와 연결 첨부/메모를 같은 트랜잭션에서 복원해야 합니다."
-        : "작업지시서 영구삭제 API는 아직 실제 DB/R2 처리 로직에 연결되지 않았습니다. R2 삭제는 Worker 기반 purge 흐름만 사용해야 합니다.",
+        ? "작업지시서 복원 API는 아직 실제 DB 복원 로직에 연결되지 않았습니다. 작업지시서와 연결 첨부/메모를 같은 트랜잭션에서 복원해야 합니다."
+        : "작업지시서 선택 삭제 API는 아직 실제 DB/R2 처리 로직에 연결되지 않았습니다. R2 삭제는 Worker 기반 purge 흐름만 사용해야 합니다.",
   };
 }
 
@@ -936,7 +936,7 @@ export async function restoreWorkOrderTrashBundle(
       requestedCount: 1,
       affectedCount: 0,
       reason: "WORKORDER_NOT_FOUND",
-      message: "복구할 삭제 상태 작업지시서를 찾지 못했습니다.",
+      message: "복원할 삭제 상태 작업지시서를 찾지 못했습니다.",
     };
   }
 
@@ -953,8 +953,8 @@ export async function restoreWorkOrderTrashBundle(
     reason: "OK",
     message:
       attachmentCount > 0 || memoCount > 0
-        ? `작업지시서 1건과 연결 첨부 ${attachmentCount}개, 메모 ${memoCount}개를 복구했습니다.`
-        : "작업지시서 1건을 복구했습니다.",
+        ? `작업지시서 1건과 연결 첨부 ${attachmentCount}개, 메모 ${memoCount}개를 복원했습니다.`
+        : "작업지시서 1건을 복원했습니다.",
   };
 }
 
@@ -1051,7 +1051,7 @@ export async function purgeWorkOrderTrashBundle(
       requestedCount: 1,
       affectedCount: 0,
       reason: "WORKORDER_NOT_FOUND",
-      message: "영구삭제할 삭제 상태 작업지시서를 찾지 못했습니다.",
+      message: "선택 삭제할 삭제 상태 작업지시서를 찾지 못했습니다.",
     };
   }
 
@@ -1068,8 +1068,8 @@ export async function purgeWorkOrderTrashBundle(
     reason: "OK",
     message:
       trashCount > 0 || memoCount > 0
-        ? `작업지시서 1건을 영구삭제 요청 상태로 변경하고 연결 첨부 ${trashCount}개, 메모 ${memoCount}개를 삭제 요청 상태로 표시했습니다.`
-        : "작업지시서 1건을 영구삭제 요청 상태로 변경했습니다.",
+        ? `작업지시서 1건을 삭제 요청 상태로 변경하고 연결 첨부 ${trashCount}개, 메모 ${memoCount}개를 삭제 요청 상태로 표시했습니다.`
+        : "작업지시서 1건을 삭제 요청 상태로 변경했습니다.",
   };
 }
 

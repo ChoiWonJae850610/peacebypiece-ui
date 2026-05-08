@@ -23,7 +23,7 @@ export function getAdminFileManagementSnapshot(): AdminFileManagementSnapshot {
       { label: "전체 사용량", value: `${usageSummary.usedLabel} / ${usageSummary.limitLabel}`, description: "" },
       { label: "첨부파일", value: "0개", description: "" },
       { label: "휴지통", value: "0개", description: "" },
-      { label: "복구 가능 기간", value: `${ADMIN_STORAGE_POLICY_SETTINGS.purgeAfterDays}일`, description: "" },
+      { label: "복원 가능 기간", value: `${ADMIN_STORAGE_POLICY_SETTINGS.purgeAfterDays}일`, description: "" },
     ],
     usageSummary,
     tabs: ADMIN_FILE_TABS,

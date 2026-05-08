@@ -75,14 +75,14 @@ export async function runMoveAttachmentsToTrashFlow(items: AdminManagedFileItem[
 }
 
 export async function runRestoreTrashItemsFlow(items: AdminTrashFileItem[]): Promise<AdminFileActionResult> {
-  if (items.length === 0) return createEmptySelectionResult("복구");
+  if (items.length === 0) return createEmptySelectionResult("복원");
 
   const blockedItem = items.find((item) => !item.canRestore);
   if (blockedItem) {
     return createAdminFileActionResult({
       ok: false,
       status: "error",
-      message: blockedItem.restoreDisabledReason || "선택한 파일 중 복구할 수 없는 항목이 있습니다.",
+      message: blockedItem.restoreDisabledReason || "선택한 파일 중 복원할 수 없는 항목이 있습니다.",
     });
   }
 
@@ -99,8 +99,8 @@ export async function runRestoreTrashItemsFlow(items: AdminTrashFileItem[]): Pro
       message:
         result.message ||
         (result.affectedCount === result.requestedCount
-          ? `파일 ${result.affectedCount}개를 복구했습니다.`
-          : `파일 ${result.affectedCount}개를 복구했습니다. 일부 파일은 처리하지 못했습니다.`),
+          ? `파일 ${result.affectedCount}개를 복원했습니다.`
+          : `파일 ${result.affectedCount}개를 복원했습니다. 일부 파일은 처리하지 못했습니다.`),
       requestedCount: result.requestedCount,
       affectedCount: result.affectedCount,
     });
@@ -108,20 +108,20 @@ export async function runRestoreTrashItemsFlow(items: AdminTrashFileItem[]): Pro
     return createAdminFileActionResult({
       ok: false,
       status: "error",
-      message: error instanceof Error ? error.message : "휴지통 복구 요청에 실패했습니다.",
+      message: error instanceof Error ? error.message : "휴지통 복원 요청에 실패했습니다.",
     });
   }
 }
 
 export async function runPurgeTrashItemsFlow(items: AdminTrashFileItem[]): Promise<AdminFileActionResult> {
-  if (items.length === 0) return createEmptySelectionResult("영구삭제");
+  if (items.length === 0) return createEmptySelectionResult("선택 삭제");
 
   const blockedItem = items.find((item) => !item.canPurge);
   if (blockedItem) {
     return createAdminFileActionResult({
       ok: false,
       status: "error",
-      message: blockedItem.purgeDisabledReason || "선택한 파일 중 영구삭제할 수 없는 항목이 있습니다.",
+      message: blockedItem.purgeDisabledReason || "선택한 파일 중 선택 삭제할 수 없는 항목이 있습니다.",
     });
   }
 
@@ -137,8 +137,8 @@ export async function runPurgeTrashItemsFlow(items: AdminTrashFileItem[]): Promi
       message:
         result.message ||
         (result.affectedCount === result.requestedCount
-          ? `파일 ${result.affectedCount}개를 영구삭제 요청했습니다.`
-          : `파일 ${result.affectedCount}개를 영구삭제 요청했습니다. 일부 파일은 처리하지 못했습니다.`),
+          ? `파일 ${result.affectedCount}개를 삭제 요청했습니다.`
+          : `파일 ${result.affectedCount}개를 삭제 요청했습니다. 일부 파일은 처리하지 못했습니다.`),
       requestedCount: result.requestedCount,
       affectedCount: result.affectedCount,
     });
@@ -146,7 +146,7 @@ export async function runPurgeTrashItemsFlow(items: AdminTrashFileItem[]): Promi
     return createAdminFileActionResult({
       ok: false,
       status: "error",
-      message: error instanceof Error ? error.message : "영구삭제 요청에 실패했습니다.",
+      message: error instanceof Error ? error.message : "삭제 요청에 실패했습니다.",
     });
   }
 }

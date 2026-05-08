@@ -98,7 +98,7 @@ export function WorkOrderActionPreviewModal({
       onClose={onClose}
       title={
         intent === "purge"
-          ? t("filesList.workorderPurgePreview", "영구삭제 범위 확인")
+          ? t("filesList.workorderPurgePreview", "선택 삭제 범위 확인")
           : t("filesList.workorderRestorePreview", "복원 범위 확인")
       }
       description={
@@ -188,7 +188,7 @@ export function WorkOrderActionPreviewModal({
                   )
                 : t(
                     "filesList.workorderActionSkeletonNotice",
-                    "영구삭제는 작업지시서를 삭제 완료 상태로 전환하고 휴지통에서 제외합니다. R2 파일 삭제는 Worker 기반 purge 흐름으로 분리됩니다.",
+                    "선택 삭제는 고객관리자 삭제 요청으로 처리하고 휴지통 기본 목록에서 제외합니다. R2 파일 삭제는 시스템관리자 Worker 기반 purge 흐름에서만 처리됩니다.",
                   )}
             </p>
             <p>
@@ -199,7 +199,7 @@ export function WorkOrderActionPreviewModal({
                   )
                 : t(
                     "filesList.workorderPurgeGuardDescription",
-                    "영구삭제 시 Neon row는 hard delete하지 않고 delete_status/purge_status만 완료 상태로 변경합니다. 작업지시서에 딸린 R2 파일은 직접 삭제하지 않습니다.",
+                    "선택 삭제 시 Neon row는 hard delete하지 않고 delete_status/purge_status를 삭제 요청 상태로 표시합니다. 작업지시서에 딸린 R2 파일은 직접 삭제하지 않습니다.",
                   )}
             </p>
           </div>

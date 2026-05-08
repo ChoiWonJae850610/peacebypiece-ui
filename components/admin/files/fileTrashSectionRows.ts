@@ -129,7 +129,7 @@ export function getTrashVisualInfo(input: {
   fileIcon?: string;
   typeLabel?: string;
 }): { label: string; tone: "workorder" | "image" | "pdf" | "file" } {
-  if (input.kind === "workorder") return { label: "작지", tone: "workorder" };
+  if (input.kind === "workorder") return { label: "작업", tone: "workorder" };
   const icon = (input.fileIcon || "").trim().toUpperCase();
   const typeLabel = (input.typeLabel || "").trim();
   if (icon === "IMG" || typeLabel === "디자인")
@@ -262,7 +262,7 @@ export function createUnifiedRows(input: {
     ),
     purgeDisabledReason: t(
       "filesList.workorderPurgePreparing",
-      "작업지시서는 영구삭제 완료 상태로 전환하고 휴지통에서 제외합니다.",
+      "작업지시서는 삭제 요청 상태로 전환하고 고객관리자 휴지통 기본 목록에서 제외합니다.",
     ),
     isSelected: selectedWorkOrderIds.includes(item.id),
     isGroupedAttachment: false,
