@@ -13,6 +13,9 @@ import { createFileTrashColumns } from "@/components/admin/files/fileTrashSectio
 import {
   TRASH_TABLE_GRID,
   createUnifiedRows,
+  sortUnifiedTrashRows,
+  type TrashSortKey,
+  type TrashSortState,
   type UnifiedTrashRow,
 } from "@/components/admin/files/fileTrashSectionRows";
 import {
@@ -74,6 +77,11 @@ export default function FileTrashSection({
       }),
     [items, workOrderItems, selectedItemIds, selectedWorkOrderIds, t],
   );
+  const [sortState, setSortState] = useState<TrashSortState | null>(null);
+  const sortedRows = useMemo(
+    () => sortUnifiedTrashRows(rows, sortState),
+    [rows, sortState],
+  );
   const [workOrderActionPreview, setWorkOrderActionPreview] =
     useState<WorkOrderActionPreview | null>(null);
   const [detailRow, setDetailRow] = useState<UnifiedTrashRow | null>(null);
@@ -93,6 +101,16 @@ export default function FileTrashSection({
       }),
     [items, workOrderItems, workOrderActionPreview, t],
   );
+
+  function toggleSort(sortKey: TrashSortKey) {
+    setSortState((current) => {
+      if (current?.key !== sortKey) return { key: sortKey, direction: "asc" };
+      return {
+        key: sortKey,
+        direction: current.direction === "asc" ? "desc" : "asc",
+      };
+    });
+  }
 
   function openWorkOrderActionPreview(
     workOrderId: string,
@@ -202,7 +220,7 @@ export default function FileTrashSection({
 
       <AdminTable
         className="mt-3 min-h-0 flex-1"
-        items={rows}
+        items={sortedRows}
         getRowKey={(row) => row.rowId}
         emptyLabel={t(
           "filesList.trashEmpty",
@@ -215,7 +233,7 @@ export default function FileTrashSection({
           if (row.kind === "workorder")
             return row.id === previewWorkOrderId || row.isSelected
               ? "bg-stone-100 ring-1 ring-inset ring-stone-300"
-              : "bg-stone-50/90";
+              : "bg-white shadow-[inset_3px_0_0_0_rgba(68,64,60,0.28)] hover:bg-stone-50";
           const isPreviewWorkOrderGroup = Boolean(
             previewWorkOrderId && row.sourceItem.workorderId === previewWorkOrderId,
           );
@@ -223,14 +241,16 @@ export default function FileTrashSection({
             return `${
               isPreviewWorkOrderGroup
                 ? "shadow-[inset_4px_0_0_0_rgba(120,113,108,0.55)] bg-stone-100/70"
-                : "shadow-[inset_4px_0_0_0_rgba(231,229,228,1)]"
-            } transition ${row.isSelected ? "bg-stone-100" : "bg-stone-50/40 hover:bg-stone-50"}`;
-          return `transition ${row.isSelected ? "bg-stone-100" : "bg-white hover:bg-stone-50"}`;
+                : "shadow-[inset_4px_0_0_0_rgba(214,211,209,1)] bg-stone-50/70"
+            } text-stone-500 transition`;
+          return `transition ${row.isSelected ? "bg-stone-100 ring-1 ring-inset ring-stone-300" : "bg-white hover:bg-stone-50"}`;
         }}
         columns={createFileTrashColumns({
           t,
           onToggleItem,
           onToggleWorkOrder,
+          sortState,
+          onSort: toggleSort,
         })}
       />
     </section>

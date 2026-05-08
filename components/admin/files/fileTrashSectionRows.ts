@@ -52,6 +52,14 @@ export type UnifiedTrashRow =
       sourceItem: AdminTrashFileItem;
     };
 
+export type TrashSortKey = "target" | "deletedAt" | "workorder" | "type" | "size";
+export type TrashSortDirection = "asc" | "desc";
+
+export type TrashSortState = {
+  key: TrashSortKey;
+  direction: TrashSortDirection;
+};
+
 export const TRASH_TABLE_GRID =
   "56px minmax(260px,1fr) 136px minmax(160px,0.75fr) 96px 96px";
 export const TRASH_HEADER_CENTER_CLASS = "text-center";
@@ -144,6 +152,75 @@ function sortByDeletedAtDesc<
     b.targetLabel || b.fileName || "",
     "ko",
   );
+}
+
+function getTrashRowSortText(row: UnifiedTrashRow, key: TrashSortKey): string {
+  if (key === "target") return row.targetLabel;
+  if (key === "deletedAt") return row.deletedAt;
+  if (key === "workorder") return row.workorderTitle;
+  if (key === "type") return row.typeLabel;
+  return row.sizeLabel;
+}
+
+function getTrashRowSortNumber(row: UnifiedTrashRow, key: TrashSortKey): number | null {
+  if (key !== "size") return null;
+  if (row.kind === "attachment") return row.sourceItem.fileSizeBytes;
+  return -1;
+}
+
+function compareTrashRowsBySortState(
+  a: UnifiedTrashRow,
+  b: UnifiedTrashRow,
+  sortState: TrashSortState,
+): number {
+  const direction = sortState.direction === "asc" ? 1 : -1;
+  const aNumber = getTrashRowSortNumber(a, sortState.key);
+  const bNumber = getTrashRowSortNumber(b, sortState.key);
+
+  if (aNumber !== null || bNumber !== null) {
+    const numberCompare = (aNumber ?? -1) - (bNumber ?? -1);
+    if (numberCompare !== 0) return numberCompare * direction;
+  }
+
+  const textCompare = getTrashRowSortText(a, sortState.key).localeCompare(
+    getTrashRowSortText(b, sortState.key),
+    "ko",
+    { numeric: true, sensitivity: "base" },
+  );
+  if (textCompare !== 0) return textCompare * direction;
+
+  return a.rowId.localeCompare(b.rowId, "ko");
+}
+
+type TrashRowGroup = {
+  head: UnifiedTrashRow;
+  children: UnifiedTrashRow[];
+};
+
+export function sortUnifiedTrashRows(
+  rows: UnifiedTrashRow[],
+  sortState: TrashSortState | null,
+): UnifiedTrashRow[] {
+  if (!sortState) return rows;
+
+  const groups: TrashRowGroup[] = [];
+  rows.forEach((row) => {
+    if (row.isGroupedAttachment && groups.length > 0) {
+      groups[groups.length - 1].children.push(row);
+      return;
+    }
+
+    groups.push({ head: row, children: [] });
+  });
+
+  return groups
+    .sort((a, b) => compareTrashRowsBySortState(a.head, b.head, sortState))
+    .flatMap((group) => [
+      group.head,
+      ...group.children.sort((a, b) =>
+        compareTrashRowsBySortState(a, b, sortState),
+      ),
+    ]);
 }
 
 export function createUnifiedRows(input: {
