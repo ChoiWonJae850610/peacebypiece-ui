@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requestPurgeAttachmentTrashItems } from "@/lib/admin/files/serverActions";
+import { createAdminTrashActionMessage } from "@/lib/admin/files/presentation";
 
 export const runtime = "nodejs";
 
@@ -33,10 +34,15 @@ export async function POST(request: NextRequest) {
         action: "purge-request",
         requestedCount: result.requestedCount,
         affectedCount: result.affectedCount,
+        documentCount: result.documentCount,
+        designCount: result.designCount,
         storageDeleteMode: "deferred-worker",
-        message: ok
-          ? `파일 ${result.affectedCount}개를 영구삭제 요청했습니다.`
-          : "영구삭제 요청 가능한 휴지통 파일을 찾지 못했습니다.",
+        message: createAdminTrashActionMessage("purge", {
+          workOrderCount: 0,
+          documentCount: result.documentCount,
+          designCount: result.designCount,
+          memoCount: 0,
+        }),
       },
       { status: ok ? 200 : 409 },
     );

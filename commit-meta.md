@@ -1,17 +1,27 @@
 Version :
-0.9.22394
+0.9.22395
 
 Summary :
-저장소 관리 문구와 삭제 정책 문서 정리
+휴지통 액션 결과 메시지 중앙화 1차
 
 Description :
-고객관리자와 시스템관리자의 저장소 삭제 역할을 분리해 복원, 선택 삭제, 삭제 요청, 실제 삭제, 전체삭제 문구 기준을 문서화했다. 작업지시서 묶음 삭제와 선삭제 첨부파일 분리 정책, 휴지통 비우기 정책, 화면 직접 테스트 항목과 코드상 확인 항목도 정리했다.
+저장소 휴지통의 상세 모달, 상단 복원, 상단 선택 삭제, 비우기 버튼이 같은 actionFlow와 presentation formatter를 통해 결과 메시지를 만들도록 정리했다. 작업지시서, 문서, 디자인, 메모 단위의 결과 요약을 공통 summary 타입으로 합산하고 고객관리자 문구에서 연결 첨부, 복구, 영구삭제 표현을 제거했다.
 
 수정 파일 목록 :
+- app/admin/files/page.tsx
+- app/api/admin/files/trash/restore/route.ts
+- app/api/admin/files/trash/purge/route.ts
+- app/api/admin/files/workorders/restore/route.ts
+- app/api/admin/files/workorders/purge/route.ts
+- lib/admin/adminFiles.actionFlow.ts
+- lib/admin/adminFiles.presentation.ts
+- lib/admin/adminFiles.serverActions.ts
+- lib/admin/adminFiles.types.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/storage-management-wording-policy-0.9.22394.md
+- docs/storage-trash-action-result-refactor-0.9.22395.md
+- commit-meta.md
 
 삭제 파일 목록 :
 없음

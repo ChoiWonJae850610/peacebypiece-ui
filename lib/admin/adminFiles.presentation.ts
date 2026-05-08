@@ -1,6 +1,7 @@
 import type {
   AdminFileDataSource,
   AdminFileSortKey,
+  AdminStorageFileKind,
   AdminFileTabItem,
   AdminFileUsageCard,
   AdminManagedFileItem,
@@ -8,11 +9,107 @@ import type {
   AdminStoragePolicySettings,
   AdminStorageUsageSummary,
   AdminStorageWorkOrderItem,
+  AdminTrashActionResultSummary,
+  AdminTrashActionType,
   AdminTrashFileItem,
 } from "@/lib/admin/adminFiles.types";
 import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
 
 export type { AdminFileTabKey } from "@/lib/admin/adminFiles.types";
+
+
+export function getAdminStorageFileKind(fileType: string | null | undefined): AdminStorageFileKind {
+  return fileType === "디자인" ? "design" : "document";
+}
+
+function formatTrashActionCount(label: string, count: number, unit: "건" | "개"): string {
+  return `${label} ${count}${unit}`;
+}
+
+function joinTrashActionCountParts(parts: string[], hasWorkOrder: boolean): string {
+  if (parts.length === 0) return "";
+  if (!hasWorkOrder || parts.length === 1) return parts.join(", ");
+  const [workOrderPart, ...restParts] = parts;
+  return `${workOrderPart}과 ${restParts.join(", ")}`;
+}
+
+export function createEmptyAdminTrashActionSummary(): AdminTrashActionResultSummary {
+  return {
+    workOrderCount: 0,
+    documentCount: 0,
+    designCount: 0,
+    memoCount: 0,
+    skippedCount: 0,
+  };
+}
+
+export function mergeAdminTrashActionSummaries(
+  summaries: AdminTrashActionResultSummary[],
+): AdminTrashActionResultSummary {
+  return summaries.reduce<AdminTrashActionResultSummary>(
+    (merged, summary) => ({
+      workOrderCount: merged.workOrderCount + summary.workOrderCount,
+      documentCount: merged.documentCount + summary.documentCount,
+      designCount: merged.designCount + summary.designCount,
+      memoCount: merged.memoCount + summary.memoCount,
+      skippedCount: (merged.skippedCount ?? 0) + (summary.skippedCount ?? 0),
+    }),
+    createEmptyAdminTrashActionSummary(),
+  );
+}
+
+export function createAdminTrashActionMessage(
+  action: AdminTrashActionType,
+  summary: AdminTrashActionResultSummary,
+): string {
+  const actionLabel = action === "restore" ? "복원하였습니다" : "삭제 요청하였습니다";
+  const hasWorkOrder = summary.workOrderCount > 0;
+  const parts = hasWorkOrder
+    ? [
+        formatTrashActionCount("작업지시서", summary.workOrderCount, "건"),
+        formatTrashActionCount("문서", summary.documentCount, "개"),
+        formatTrashActionCount("디자인", summary.designCount, "개"),
+        formatTrashActionCount("메모", summary.memoCount, "개"),
+      ]
+    : [
+        summary.documentCount > 0
+          ? formatTrashActionCount("문서", summary.documentCount, "개")
+          : null,
+        summary.designCount > 0
+          ? formatTrashActionCount("디자인", summary.designCount, "개")
+          : null,
+        summary.memoCount > 0
+          ? formatTrashActionCount("메모", summary.memoCount, "개")
+          : null,
+      ].filter((part): part is string => Boolean(part));
+
+  const baseMessage = parts.length > 0
+    ? `${joinTrashActionCountParts(parts, hasWorkOrder)}를 ${actionLabel}.`
+    : action === "restore"
+      ? "복원 가능한 선택 항목이 없습니다."
+      : "삭제 요청 가능한 선택 항목이 없습니다.";
+
+  if (!summary.skippedCount || summary.skippedCount <= 0) return baseMessage;
+  const skippedLabel = action === "restore"
+    ? "복원할 수 없는 항목"
+    : "삭제 요청할 수 없는 항목";
+  return `${baseMessage} ${skippedLabel} ${summary.skippedCount}개는 제외했습니다.`;
+}
+
+export function createAdminTrashFileActionSummary(
+  items: AdminTrashFileItem[],
+  affectedCount: number,
+): AdminTrashActionResultSummary {
+  const selectedItems = items.slice(0, Math.max(0, affectedCount));
+  return selectedItems.reduce<AdminTrashActionResultSummary>(
+    (summary, item) => ({
+      ...summary,
+      documentCount: summary.documentCount + (item.fileKind === "document" ? 1 : 0),
+      designCount: summary.designCount + (item.fileKind === "design" ? 1 : 0),
+    }),
+    createEmptyAdminTrashActionSummary(),
+  );
+}
 
 export const ADMIN_FILE_USAGE_SUMMARY: AdminStorageUsageSummary = {
   usedBytes: 2147483648,
@@ -51,7 +148,8 @@ export const ADMIN_FILE_LIST_PLACEHOLDERS: AdminManagedFileItem[] = [
     workorderId: "sample-workorder-1",
     workorderTitle: "샘플 작업지시서 A",
     fileName: "design-reference.png",
-    fileType: "이미지",
+    fileType: "디자인",
+    fileKind: "design",
     fileIcon: "IMG",
     fileSizeBytes: 7340032,
     fileSizeLabel: "7MB",
@@ -69,7 +167,8 @@ export const ADMIN_FILE_LIST_PLACEHOLDERS: AdminManagedFileItem[] = [
     workorderId: "sample-workorder-2",
     workorderTitle: "샘플 작업지시서 B",
     fileName: "production-note.pdf",
-    fileType: "PDF",
+    fileType: "문서",
+    fileKind: "document",
     fileIcon: "PDF",
     fileSizeBytes: 18874368,
     fileSizeLabel: "18MB",
@@ -87,7 +186,8 @@ export const ADMIN_FILE_LIST_PLACEHOLDERS: AdminManagedFileItem[] = [
     workorderId: "sample-workorder-3",
     workorderTitle: "샘플 작업지시서 C",
     fileName: "factory-reference.xlsx",
-    fileType: "기타",
+    fileType: "문서",
+    fileKind: "document",
     fileIcon: "FILE",
     fileSizeBytes: 2097152,
     fileSizeLabel: "2MB",
@@ -110,6 +210,8 @@ export const ADMIN_FILE_TRASH_PLACEHOLDERS: AdminTrashFileItem[] = [
     workorderId: "sample-workorder-1",
     workorderTitle: "샘플 작업지시서 A",
     fileName: "removed-reference.pdf",
+    fileType: "문서",
+    fileKind: "document",
     fileIcon: "PDF",
     fileSizeBytes: 5242880,
     fileSizeLabel: "5MB",
@@ -139,6 +241,8 @@ export const ADMIN_FILE_TRASH_PLACEHOLDERS: AdminTrashFileItem[] = [
     workorderId: "sample-workorder-2",
     workorderTitle: "샘플 작업지시서 B",
     fileName: "old-detail-image.jpg",
+    fileType: "디자인",
+    fileKind: "design",
     fileIcon: "IMG",
     fileSizeBytes: 9437184,
     fileSizeLabel: "9MB",

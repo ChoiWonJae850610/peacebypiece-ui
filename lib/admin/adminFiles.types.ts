@@ -51,6 +51,18 @@ export type AdminTrashRestorePolicy = "file_unit" | "parent_deleted_restore_bloc
 
 export type AdminFileSortKey = "latest" | "size" | "workorder";
 
+export type AdminStorageFileKind = "document" | "design";
+
+export type AdminTrashActionType = "restore" | "purge";
+
+export type AdminTrashActionResultSummary = {
+  workOrderCount: number;
+  documentCount: number;
+  designCount: number;
+  memoCount: number;
+  skippedCount?: number;
+};
+
 
 export type AdminStorageWorkOrderItem = {
   id: string;
@@ -74,6 +86,7 @@ export type AdminManagedFileItem = {
   workorderTitle: string;
   fileName: string;
   fileType: string;
+  fileKind: AdminStorageFileKind;
   fileIcon: string;
   fileSizeBytes: number;
   fileSizeLabel: string;
@@ -93,6 +106,8 @@ export type AdminTrashFileItem = {
   workorderId: string;
   workorderTitle: string;
   fileName: string;
+  fileType: string;
+  fileKind: AdminStorageFileKind;
   fileIcon: string;
   fileSizeBytes: number;
   fileSizeLabel: string;
@@ -144,6 +159,7 @@ export type AdminFileActionResult = {
   message: string;
   requestedCount?: number;
   affectedCount?: number;
+  summary?: AdminTrashActionResultSummary;
 };
 
 export type AdminFileDataSource = "db" | "placeholder";

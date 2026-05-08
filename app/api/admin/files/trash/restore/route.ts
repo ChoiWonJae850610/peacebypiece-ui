@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { restoreAttachmentTrashItems } from "@/lib/admin/files/serverActions";
+import { createAdminTrashActionMessage } from "@/lib/admin/files/presentation";
 
 export const runtime = "nodejs";
 
@@ -41,9 +42,14 @@ export async function POST(request: NextRequest) {
         action: "restore",
         requestedCount: result.requestedCount,
         affectedCount: result.affectedCount,
-        message: ok
-          ? `파일 ${result.affectedCount}개를 복구했습니다.`
-          : "복구할 수 있는 휴지통 파일을 찾지 못했습니다.",
+        documentCount: result.documentCount,
+        designCount: result.designCount,
+        message: createAdminTrashActionMessage("restore", {
+          workOrderCount: 0,
+          documentCount: result.documentCount,
+          designCount: result.designCount,
+          memoCount: 0,
+        }),
       },
       { status: ok ? 200 : 409 },
     );

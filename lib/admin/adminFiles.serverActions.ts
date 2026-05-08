@@ -26,6 +26,8 @@ export type AdminTrashDbActionInput = {
 export type AdminTrashDbActionResult = {
   requestedCount: number;
   affectedCount: number;
+  documentCount: number;
+  designCount: number;
 };
 
 type CountRow = DbQueryResultRow & {
@@ -42,15 +44,20 @@ function readCount(row: CountRow | undefined): number {
   return typeof value === "number" ? value : Number(value ?? 0);
 }
 
+
+function createFileKindCountSql(alias: string): string {
+  return `(CASE WHEN COALESCE(${alias}.mime_type, '') LIKE 'image/%' OR lower(COALESCE(${alias}.original_name, '')) ~ '\.(jpg|jpeg|png|gif|webp|bmp|svg|heic|heif|ai|psd)$' THEN 'design' ELSE 'document' END)`;
+}
+
 export async function restoreAttachmentTrashItems(
   input: AdminTrashDbActionInput,
 ): Promise<AdminTrashDbActionResult> {
   const trashItemIds = normalizeIds(input.trashItemIds);
-  if (trashItemIds.length === 0) return { requestedCount: 0, affectedCount: 0 };
+  if (trashItemIds.length === 0) return { requestedCount: 0, affectedCount: 0, documentCount: 0, designCount: 0 };
 
-  const result = await queryDb<CountRow>(
+  const result = await queryDb<CountRow & { document_count: string | number; design_count: string | number }>(
     `WITH target_trash AS (
-       SELECT t.id, t.attachment_id
+       SELECT t.id, t.attachment_id, t.original_name, t.mime_type
          FROM attachment_trash_items t
          LEFT JOIN spec_sheets s ON s.id = t.order_id
         WHERE t.id = ANY($1::text[])
@@ -77,14 +84,19 @@ export async function restoreAttachmentTrashItems(
         WHERE id IN (SELECT id FROM target_trash)
         RETURNING id
      )
-     SELECT COUNT(*)::text AS affected_count
-       FROM restored_trash`,
+     SELECT COUNT(*)::text AS affected_count,
+            COUNT(*) FILTER (WHERE ${createFileKindCountSql("target_trash")} = 'document')::text AS document_count,
+            COUNT(*) FILTER (WHERE ${createFileKindCountSql("target_trash")} = 'design')::text AS design_count
+       FROM target_trash`,
     [trashItemIds, input.actorId ?? null],
   );
 
+  const row = result.rows[0];
   return {
     requestedCount: trashItemIds.length,
-    affectedCount: readCount(result.rows[0]),
+    affectedCount: readCount(row),
+    documentCount: toNumber(row?.document_count),
+    designCount: toNumber(row?.design_count),
   };
 }
 
@@ -92,11 +104,11 @@ export async function requestPurgeAttachmentTrashItems(
   input: AdminTrashDbActionInput,
 ): Promise<AdminTrashDbActionResult> {
   const trashItemIds = normalizeIds(input.trashItemIds);
-  if (trashItemIds.length === 0) return { requestedCount: 0, affectedCount: 0 };
+  if (trashItemIds.length === 0) return { requestedCount: 0, affectedCount: 0, documentCount: 0, designCount: 0 };
 
-  const result = await queryDb<CountRow>(
+  const result = await queryDb<CountRow & { document_count: string | number; design_count: string | number }>(
     `WITH target_trash AS (
-       SELECT t.id, t.attachment_id
+       SELECT t.id, t.attachment_id, t.original_name, t.mime_type
          FROM attachment_trash_items t
          LEFT JOIN spec_sheets s ON s.id = t.order_id
         WHERE t.id = ANY($1::text[])
@@ -123,14 +135,19 @@ export async function requestPurgeAttachmentTrashItems(
         WHERE id IN (SELECT id FROM target_trash)
         RETURNING id
      )
-     SELECT COUNT(*)::text AS affected_count
-       FROM marked_trash`,
+     SELECT COUNT(*)::text AS affected_count,
+            COUNT(*) FILTER (WHERE ${createFileKindCountSql("target_trash")} = 'document')::text AS document_count,
+            COUNT(*) FILTER (WHERE ${createFileKindCountSql("target_trash")} = 'design')::text AS design_count
+       FROM target_trash`,
     [trashItemIds, ADMIN_FILE_TRASH_REASONS.workorderBundle],
   );
 
+  const row = result.rows[0];
   return {
     requestedCount: trashItemIds.length,
-    affectedCount: readCount(result.rows[0]),
+    affectedCount: readCount(row),
+    documentCount: toNumber(row?.document_count),
+    designCount: toNumber(row?.design_count),
   };
 }
 
@@ -477,6 +494,7 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
 
   const attachments = attachmentsResult.rows.map((row) => {
     const fileName = row.original_name || "파일명 없음";
+    const fileType = getFileType(row.mime_type, fileName);
     const sizeBytes = toNumber(row.size_bytes);
     return {
       id: row.id,
@@ -489,7 +507,8 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
         isRework: row.workorder_is_rework,
       }),
       fileName,
-      fileType: getFileType(row.mime_type, fileName),
+      fileType,
+      fileKind: fileType === "디자인" ? "design" : "document",
       fileIcon: getFileIcon(row.mime_type, fileName),
       fileSizeBytes: sizeBytes,
       fileSizeLabel: formatBytes(sizeBytes),
@@ -506,6 +525,7 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
 
   const trashItems = trashResult.rows.map((row) => {
     const fileName = row.original_name || "파일명 없음";
+    const fileType = getFileType(row.mime_type, fileName);
     const sizeBytes = toNumber(row.size_bytes);
     const restoreDaysLeft = getRestoreDaysLeft(row.purge_after_at);
     const parentWorkOrderDeleted = Boolean(row.parent_workorder_deleted);
@@ -527,6 +547,8 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
         isRework: row.workorder_is_rework,
       }),
       fileName,
+      fileType,
+      fileKind: fileType === "디자인" ? "design" : "document",
       fileIcon: getFileIcon(row.mime_type, fileName),
       fileSizeBytes: sizeBytes,
       fileSizeLabel: formatBytes(sizeBytes),
@@ -679,16 +701,16 @@ export async function markAttachmentTrashItemsPurged(
   input: AdminTrashDbActionInput,
 ): Promise<AdminTrashDbActionResult> {
   const trashItemIds = normalizeIds(input.trashItemIds);
-  if (trashItemIds.length === 0) return { requestedCount: 0, affectedCount: 0 };
+  if (trashItemIds.length === 0) return { requestedCount: 0, affectedCount: 0, documentCount: 0, designCount: 0 };
 
-  const result = await queryDb<CountRow>(
+  const result = await queryDb<CountRow & { document_count: string | number; design_count: string | number }>(
     `WITH target_trash AS (
-       SELECT id, attachment_id
-         FROM attachment_trash_items
-        WHERE id = ANY($1::text[])
-          AND purge_status IN (${ADMIN_FILE_TRASH_OPEN_PURGE_STATUS_SQL_LIST})
-          AND restored_at IS NULL
-          AND purged_at IS NULL
+       SELECT t.id, t.attachment_id, t.original_name, t.mime_type
+         FROM attachment_trash_items t
+        WHERE t.id = ANY($1::text[])
+          AND t.purge_status IN (${ADMIN_FILE_TRASH_OPEN_PURGE_STATUS_SQL_LIST})
+          AND t.restored_at IS NULL
+          AND t.purged_at IS NULL
      ), marked_attachments AS (
        UPDATE attachments
           SET is_active = false,
@@ -706,14 +728,19 @@ export async function markAttachmentTrashItemsPurged(
         WHERE id IN (SELECT id FROM target_trash)
         RETURNING id
      )
-     SELECT COUNT(*)::text AS affected_count
-       FROM marked_trash`,
+     SELECT COUNT(*)::text AS affected_count,
+            COUNT(*) FILTER (WHERE ${createFileKindCountSql("target_trash")} = 'document')::text AS document_count,
+            COUNT(*) FILTER (WHERE ${createFileKindCountSql("target_trash")} = 'design')::text AS design_count
+       FROM target_trash`,
     [trashItemIds],
   );
 
+  const row = result.rows[0];
   return {
     requestedCount: trashItemIds.length,
-    affectedCount: readCount(result.rows[0]),
+    affectedCount: readCount(row),
+    documentCount: toNumber(row?.document_count),
+    designCount: toNumber(row?.design_count),
   };
 }
 
@@ -723,16 +750,16 @@ export async function markAttachmentTrashItemsPurgedByAttachmentIds(input: {
 }): Promise<AdminTrashDbActionResult> {
   const attachmentIds = normalizeIds(input.attachmentIds);
   if (attachmentIds.length === 0)
-    return { requestedCount: 0, affectedCount: 0 };
+    return { requestedCount: 0, affectedCount: 0, documentCount: 0, designCount: 0 };
 
-  const result = await queryDb<CountRow>(
+  const result = await queryDb<CountRow & { document_count: string | number; design_count: string | number }>(
     `WITH target_trash AS (
-       SELECT id, attachment_id
-         FROM attachment_trash_items
-        WHERE attachment_id = ANY($1::text[])
-          AND purge_status IN (${ADMIN_FILE_TRASH_OPEN_PURGE_STATUS_SQL_LIST})
-          AND restored_at IS NULL
-          AND purged_at IS NULL
+       SELECT t.id, t.attachment_id, t.original_name, t.mime_type
+         FROM attachment_trash_items t
+        WHERE t.attachment_id = ANY($1::text[])
+          AND t.purge_status IN (${ADMIN_FILE_TRASH_OPEN_PURGE_STATUS_SQL_LIST})
+          AND t.restored_at IS NULL
+          AND t.purged_at IS NULL
      ), marked_attachments AS (
        UPDATE attachments
           SET is_active = false,
@@ -750,14 +777,19 @@ export async function markAttachmentTrashItemsPurgedByAttachmentIds(input: {
         WHERE id IN (SELECT id FROM target_trash)
         RETURNING id
      )
-     SELECT COUNT(*)::text AS affected_count
-       FROM marked_trash`,
+     SELECT COUNT(*)::text AS affected_count,
+            COUNT(*) FILTER (WHERE ${createFileKindCountSql("target_trash")} = 'document')::text AS document_count,
+            COUNT(*) FILTER (WHERE ${createFileKindCountSql("target_trash")} = 'design')::text AS design_count
+       FROM target_trash`,
     [attachmentIds],
   );
 
+  const row = result.rows[0];
   return {
     requestedCount: attachmentIds.length,
-    affectedCount: readCount(result.rows[0]),
+    affectedCount: readCount(row),
+    documentCount: toNumber(row?.document_count),
+    designCount: toNumber(row?.design_count),
   };
 }
 
@@ -795,6 +827,8 @@ export type AdminWorkOrderTrashActionResult = {
   requestedCount: number;
   affectedCount: number;
   attachmentCount?: number;
+  documentCount?: number;
+  designCount?: number;
   memoCount?: number;
   reason:
     | "WORKORDER_ACTION_NOT_CONNECTED"
@@ -837,7 +871,7 @@ function createWorkOrderTrashActionSkeletonResult(input: {
     reason: "WORKORDER_ACTION_NOT_CONNECTED",
     message:
       input.action === "restore"
-        ? "작업지시서 복원 API는 아직 실제 DB 복원 로직에 연결되지 않았습니다. 작업지시서와 연결 첨부/메모를 같은 트랜잭션에서 복원해야 합니다."
+        ? "작업지시서 복원 API는 아직 실제 DB 복원 로직에 연결되지 않았습니다. 작업지시서와 문서/디자인/메모를 같은 트랜잭션에서 복원해야 합니다."
         : "작업지시서 선택 삭제 API는 아직 실제 DB/R2 처리 로직에 연결되지 않았습니다. R2 삭제는 Worker 기반 purge 흐름만 사용해야 합니다.",
   };
 }
@@ -856,6 +890,8 @@ export async function restoreWorkOrderTrashBundle(
   const result = await queryDb<
     CountRow & {
       attachment_count: string | number;
+      document_count: string | number;
+      design_count: string | number;
       trash_count: string | number;
       memo_count: string | number;
     }
@@ -878,7 +914,7 @@ export async function restoreWorkOrderTrashBundle(
         WHERE id IN (SELECT id FROM target_workorder)
         RETURNING id
      ), bundle_trash AS (
-       SELECT t.id, t.attachment_id
+       SELECT t.id, t.attachment_id, t.original_name, t.mime_type
          FROM attachment_trash_items t
         WHERE t.order_id = $1
           AND t.delete_reason = $2
@@ -920,6 +956,8 @@ export async function restoreWorkOrderTrashBundle(
      )
      SELECT COUNT(*)::text AS affected_count,
             (SELECT COUNT(*) FROM restored_attachments)::text AS attachment_count,
+            (SELECT COUNT(*) FILTER (WHERE ${createFileKindCountSql("bundle_trash")} = 'document') FROM bundle_trash)::text AS document_count,
+            (SELECT COUNT(*) FILTER (WHERE ${createFileKindCountSql("bundle_trash")} = 'design') FROM bundle_trash)::text AS design_count,
             (SELECT COUNT(*) FROM restored_trash)::text AS trash_count,
             (SELECT COUNT(*) FROM restored_memos)::text AS memo_count
        FROM restored_workorder`,
@@ -941,6 +979,8 @@ export async function restoreWorkOrderTrashBundle(
   }
 
   const attachmentCount = Number(row?.attachment_count ?? 0);
+  const documentCount = Number(row?.document_count ?? 0);
+  const designCount = Number(row?.design_count ?? 0);
   const memoCount = Number(row?.memo_count ?? 0);
   return {
     ok: true,
@@ -949,12 +989,11 @@ export async function restoreWorkOrderTrashBundle(
     requestedCount: 1,
     affectedCount: workOrderCount,
     attachmentCount,
+    documentCount,
+    designCount,
     memoCount,
     reason: "OK",
-    message:
-      attachmentCount > 0 || memoCount > 0
-        ? `작업지시서 1건과 연결 첨부 ${attachmentCount}개, 메모 ${memoCount}개를 복원했습니다.`
-        : "작업지시서 1건을 복원했습니다.",
+    message: "작업지시서 1건과 문서 " + documentCount + "개, 디자인 " + designCount + "개, 메모 " + memoCount + "개를 복원하였습니다.",
   };
 }
 
@@ -977,6 +1016,8 @@ export async function purgeWorkOrderTrashBundle(
 
   const result = await queryDb<
     CountRow & {
+      document_count: string | number;
+      design_count: string | number;
       trash_count: string | number;
       memo_count: string | number;
     }
@@ -1000,7 +1041,7 @@ export async function purgeWorkOrderTrashBundle(
         WHERE id IN (SELECT id FROM target_workorder)
         RETURNING id
      ), bundle_trash AS (
-       SELECT t.id, t.attachment_id
+       SELECT t.id, t.attachment_id, t.original_name, t.mime_type
          FROM attachment_trash_items t
         WHERE t.order_id = $1
           AND t.delete_reason = $2
@@ -1035,6 +1076,8 @@ export async function purgeWorkOrderTrashBundle(
         RETURNING id
      )
      SELECT COUNT(*)::text AS affected_count,
+            (SELECT COUNT(*) FILTER (WHERE ${createFileKindCountSql("bundle_trash")} = 'document') FROM bundle_trash)::text AS document_count,
+            (SELECT COUNT(*) FILTER (WHERE ${createFileKindCountSql("bundle_trash")} = 'design') FROM bundle_trash)::text AS design_count,
             (SELECT COUNT(*) FROM marked_trash)::text AS trash_count,
             (SELECT COUNT(*) FROM marked_memos)::text AS memo_count
        FROM marked_workorder`,
@@ -1056,6 +1099,8 @@ export async function purgeWorkOrderTrashBundle(
   }
 
   const trashCount = Number(row?.trash_count ?? 0);
+  const documentCount = Number(row?.document_count ?? 0);
+  const designCount = Number(row?.design_count ?? 0);
   const memoCount = Number(row?.memo_count ?? 0);
   return {
     ok: true,
@@ -1064,12 +1109,11 @@ export async function purgeWorkOrderTrashBundle(
     requestedCount: 1,
     affectedCount: workOrderCount,
     attachmentCount: trashCount,
+    documentCount,
+    designCount,
     memoCount,
     reason: "OK",
-    message:
-      trashCount > 0 || memoCount > 0
-        ? `작업지시서 1건을 삭제 요청 상태로 변경하고 연결 첨부 ${trashCount}개, 메모 ${memoCount}개를 삭제 요청 상태로 표시했습니다.`
-        : "작업지시서 1건을 삭제 요청 상태로 변경했습니다.",
+    message: "작업지시서 1건과 문서 " + documentCount + "개, 디자인 " + designCount + "개, 메모 " + memoCount + "개를 삭제 요청하였습니다.",
   };
 }
 

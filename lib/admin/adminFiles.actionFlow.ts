@@ -1,5 +1,19 @@
-import { buildAdminFilePolicyUpdateInput } from "@/lib/admin/adminFiles.presentation";
-import type { AdminFileActionResult, AdminManagedFileItem, AdminPurgeWorkerActionResult, AdminStoragePolicySettings, AdminTrashFileItem } from "@/lib/admin/adminFiles.types";
+import {
+  buildAdminFilePolicyUpdateInput,
+  createAdminTrashActionMessage,
+  createAdminTrashFileActionSummary,
+  createEmptyAdminTrashActionSummary,
+  mergeAdminTrashActionSummaries,
+} from "@/lib/admin/adminFiles.presentation";
+import type {
+  AdminFileActionResult,
+  AdminManagedFileItem,
+  AdminPurgeWorkerActionResult,
+  AdminStoragePolicySettings,
+  AdminTrashActionResultSummary,
+  AdminTrashActionType,
+  AdminTrashFileItem,
+} from "@/lib/admin/adminFiles.types";
 
 function createAdminFileActionResult(input: AdminFileActionResult): AdminFileActionResult {
   return input;
@@ -9,7 +23,7 @@ function createEmptySelectionResult(actionLabel: string): AdminFileActionResult 
   return createAdminFileActionResult({
     ok: false,
     status: "empty-selection",
-    message: `${actionLabel}할 파일을 먼저 선택해야 합니다.`,
+    message: `${actionLabel}할 항목을 먼저 선택해야 합니다.`,
   });
 }
 
@@ -32,6 +46,19 @@ type TrashApiResponse = {
   ok: boolean;
   requestedCount: number;
   affectedCount: number;
+  documentCount?: number;
+  designCount?: number;
+  message?: string;
+};
+
+type WorkOrderTrashApiResponse = {
+  ok: boolean;
+  requestedCount: number;
+  affectedCount: number;
+  attachmentCount?: number;
+  documentCount?: number;
+  designCount?: number;
+  memoCount?: number;
   message?: string;
 };
 
@@ -43,6 +70,72 @@ type PurgeWorkerApiResponse = {
   failedCount: number;
   items?: unknown[];
 };
+
+type TrashSelectionFlowInput = {
+  items?: AdminTrashFileItem[];
+  workOrderIds?: string[];
+};
+
+function normalizeWorkOrderIds(workOrderIds: string[] | undefined): string[] {
+  return Array.from(new Set((workOrderIds ?? []).map((id) => id.trim()).filter(Boolean)));
+}
+
+function createSummaryFromTrashApiResponse(
+  response: TrashApiResponse,
+  fallbackItems: AdminTrashFileItem[],
+): AdminTrashActionResultSummary {
+  if (typeof response.documentCount === "number" || typeof response.designCount === "number") {
+    return {
+      ...createEmptyAdminTrashActionSummary(),
+      documentCount: response.documentCount ?? 0,
+      designCount: response.designCount ?? 0,
+    };
+  }
+  return createAdminTrashFileActionSummary(fallbackItems, response.affectedCount);
+}
+
+function createSummaryFromWorkOrderResponse(
+  response: WorkOrderTrashApiResponse,
+): AdminTrashActionResultSummary {
+  return {
+    ...createEmptyAdminTrashActionSummary(),
+    workOrderCount: response.affectedCount,
+    documentCount: response.documentCount ?? response.attachmentCount ?? 0,
+    designCount: response.designCount ?? 0,
+    memoCount: response.memoCount ?? 0,
+  };
+}
+
+function createTrashSelectionFlowResult(
+  action: AdminTrashActionType,
+  requestedCount: number,
+  affectedCount: number,
+  summary: AdminTrashActionResultSummary,
+): AdminFileActionResult {
+  const ok = affectedCount > 0;
+  return createAdminFileActionResult({
+    ok,
+    status: ok ? "success" : "error",
+    message: createAdminTrashActionMessage(action, summary),
+    requestedCount,
+    affectedCount,
+    summary,
+  });
+}
+
+async function runWorkOrderTrashAction(
+  action: AdminTrashActionType,
+  workOrderId: string,
+): Promise<WorkOrderTrashApiResponse> {
+  const url = action === "restore"
+    ? "/api/admin/files/workorders/restore"
+    : "/api/admin/files/workorders/purge";
+  const actorKey = action === "restore" ? "restoredBy" : "purgedBy";
+  return postAdminJson<WorkOrderTrashApiResponse>(url, {
+    workOrderId,
+    [actorKey]: "admin",
+  });
+}
 
 export async function runMoveAttachmentsToTrashFlow(items: AdminManagedFileItem[]): Promise<AdminFileActionResult> {
   if (items.length === 0) return createEmptySelectionResult("휴지통으로 이동");
@@ -63,7 +156,7 @@ export async function runMoveAttachmentsToTrashFlow(items: AdminManagedFileItem[
     return createAdminFileActionResult({
       ok: successCount > 0,
       status: successCount === items.length ? "success" : "error",
-      message: successCount === items.length ? `파일 ${successCount}개를 휴지통으로 이동했습니다.` : `파일 ${successCount}개를 휴지통으로 이동했습니다. 일부 파일은 처리하지 못했습니다.`,
+      message: successCount === items.length ? `문서/디자인 ${successCount}개를 휴지통으로 이동했습니다.` : `문서/디자인 ${successCount}개를 휴지통으로 이동했습니다. 일부 항목은 처리하지 못했습니다.`,
     });
   } catch (error) {
     return createAdminFileActionResult({
@@ -82,7 +175,7 @@ export async function runRestoreTrashItemsFlow(items: AdminTrashFileItem[]): Pro
     return createAdminFileActionResult({
       ok: false,
       status: "error",
-      message: blockedItem.restoreDisabledReason || "선택한 파일 중 복원할 수 없는 항목이 있습니다.",
+      message: blockedItem.restoreDisabledReason || "선택한 항목 중 복원할 수 없는 항목이 있습니다.",
     });
   }
 
@@ -92,18 +185,8 @@ export async function runRestoreTrashItemsFlow(items: AdminTrashFileItem[]): Pro
       restoredBy: "admin",
     });
 
-    const isSuccess = result.ok && result.affectedCount > 0;
-    return createAdminFileActionResult({
-      ok: isSuccess,
-      status: isSuccess ? "success" : "error",
-      message:
-        result.message ||
-        (result.affectedCount === result.requestedCount
-          ? `파일 ${result.affectedCount}개를 복원했습니다.`
-          : `파일 ${result.affectedCount}개를 복원했습니다. 일부 파일은 처리하지 못했습니다.`),
-      requestedCount: result.requestedCount,
-      affectedCount: result.affectedCount,
-    });
+    const summary = createSummaryFromTrashApiResponse(result, items);
+    return createTrashSelectionFlowResult("restore", result.requestedCount, result.affectedCount, summary);
   } catch (error) {
     return createAdminFileActionResult({
       ok: false,
@@ -121,7 +204,7 @@ export async function runPurgeTrashItemsFlow(items: AdminTrashFileItem[]): Promi
     return createAdminFileActionResult({
       ok: false,
       status: "error",
-      message: blockedItem.purgeDisabledReason || "선택한 파일 중 선택 삭제할 수 없는 항목이 있습니다.",
+      message: blockedItem.purgeDisabledReason || "선택한 항목 중 삭제 요청할 수 없는 항목이 있습니다.",
     });
   }
 
@@ -130,23 +213,89 @@ export async function runPurgeTrashItemsFlow(items: AdminTrashFileItem[]): Promi
       trashItemIds: items.map((item) => item.id),
     });
 
-    const isSuccess = result.ok && result.affectedCount > 0;
-    return createAdminFileActionResult({
-      ok: isSuccess,
-      status: isSuccess ? "success" : "error",
-      message:
-        result.message ||
-        (result.affectedCount === result.requestedCount
-          ? `파일 ${result.affectedCount}개를 삭제 요청했습니다.`
-          : `파일 ${result.affectedCount}개를 삭제 요청했습니다. 일부 파일은 처리하지 못했습니다.`),
-      requestedCount: result.requestedCount,
-      affectedCount: result.affectedCount,
-    });
+    const summary = createSummaryFromTrashApiResponse(result, items);
+    return createTrashSelectionFlowResult("purge", result.requestedCount, result.affectedCount, summary);
   } catch (error) {
     return createAdminFileActionResult({
       ok: false,
       status: "error",
       message: error instanceof Error ? error.message : "삭제 요청에 실패했습니다.",
+    });
+  }
+}
+
+export async function runRestoreTrashSelectionFlow(input: TrashSelectionFlowInput): Promise<AdminFileActionResult> {
+  const fileTargets = (input.items ?? []).filter((item) => item.canRestore);
+  const skippedCount = (input.items ?? []).length - fileTargets.length;
+  const workOrderIds = normalizeWorkOrderIds(input.workOrderIds);
+  if (fileTargets.length === 0 && workOrderIds.length === 0) return createEmptySelectionResult("복원");
+
+  try {
+    const summaries: AdminTrashActionResultSummary[] = [];
+    let requestedCount = 0;
+    let affectedCount = 0;
+
+    if (fileTargets.length > 0) {
+      const result = await runRestoreTrashItemsFlow(fileTargets);
+      if (!result.ok) throw new Error(result.message);
+      requestedCount += result.requestedCount ?? 0;
+      affectedCount += result.affectedCount ?? 0;
+      summaries.push(result.summary ?? createAdminTrashFileActionSummary(fileTargets, result.affectedCount ?? 0));
+    }
+
+    for (const workOrderId of workOrderIds) {
+      const result = await runWorkOrderTrashAction("restore", workOrderId);
+      requestedCount += result.requestedCount;
+      affectedCount += result.affectedCount;
+      summaries.push(createSummaryFromWorkOrderResponse(result));
+    }
+
+    const summary = mergeAdminTrashActionSummaries(summaries);
+    summary.skippedCount = skippedCount;
+    return createTrashSelectionFlowResult("restore", requestedCount, affectedCount, summary);
+  } catch (error) {
+    return createAdminFileActionResult({
+      ok: false,
+      status: "error",
+      message: error instanceof Error ? error.message : "선택 항목 복원 요청에 실패했습니다.",
+    });
+  }
+}
+
+export async function runPurgeTrashSelectionFlow(input: TrashSelectionFlowInput): Promise<AdminFileActionResult> {
+  const fileTargets = (input.items ?? []).filter((item) => item.canPurge);
+  const skippedCount = (input.items ?? []).length - fileTargets.length;
+  const workOrderIds = normalizeWorkOrderIds(input.workOrderIds);
+  if (fileTargets.length === 0 && workOrderIds.length === 0) return createEmptySelectionResult("선택 삭제");
+
+  try {
+    const summaries: AdminTrashActionResultSummary[] = [];
+    let requestedCount = 0;
+    let affectedCount = 0;
+
+    if (fileTargets.length > 0) {
+      const result = await runPurgeTrashItemsFlow(fileTargets);
+      if (!result.ok) throw new Error(result.message);
+      requestedCount += result.requestedCount ?? 0;
+      affectedCount += result.affectedCount ?? 0;
+      summaries.push(result.summary ?? createAdminTrashFileActionSummary(fileTargets, result.affectedCount ?? 0));
+    }
+
+    for (const workOrderId of workOrderIds) {
+      const result = await runWorkOrderTrashAction("purge", workOrderId);
+      requestedCount += result.requestedCount;
+      affectedCount += result.affectedCount;
+      summaries.push(createSummaryFromWorkOrderResponse(result));
+    }
+
+    const summary = mergeAdminTrashActionSummaries(summaries);
+    summary.skippedCount = skippedCount;
+    return createTrashSelectionFlowResult("purge", requestedCount, affectedCount, summary);
+  } catch (error) {
+    return createAdminFileActionResult({
+      ok: false,
+      status: "error",
+      message: error instanceof Error ? error.message : "선택 항목 삭제 요청에 실패했습니다.",
     });
   }
 }

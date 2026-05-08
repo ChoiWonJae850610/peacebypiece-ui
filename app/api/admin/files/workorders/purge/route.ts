@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { purgeWorkOrderTrashBundle } from "@/lib/admin/files/serverActions";
+import { createAdminTrashActionMessage } from "@/lib/admin/files/presentation";
 
 export const runtime = "nodejs";
 
@@ -40,9 +41,18 @@ export async function POST(request: NextRequest) {
         requestedCount: result.requestedCount,
         affectedCount: result.affectedCount,
         attachmentCount: result.attachmentCount ?? 0,
+        documentCount: result.documentCount ?? result.attachmentCount ?? 0,
+        designCount: result.designCount ?? 0,
         memoCount: result.memoCount ?? 0,
         reason: result.reason,
-        message: result.message,
+        message: result.ok
+          ? createAdminTrashActionMessage("purge", {
+              workOrderCount: result.affectedCount,
+              documentCount: result.documentCount ?? result.attachmentCount ?? 0,
+              designCount: result.designCount ?? 0,
+              memoCount: result.memoCount ?? 0,
+            })
+          : result.message,
         storageDeleteMode: "deferred-system-purge",
       },
       { status },

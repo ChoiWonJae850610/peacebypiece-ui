@@ -6,8 +6,8 @@ import FileStorageSummary from "@/components/admin/files/FileStorageSummary";
 import FileTrashSection from "@/components/admin/files/FileTrashSection";
 import AdminShell from "@/components/admin/layout/AdminShell";
 import {
-  runPurgeTrashItemsFlow,
-  runRestoreTrashItemsFlow,
+  runPurgeTrashSelectionFlow,
+  runRestoreTrashSelectionFlow,
 } from "@/lib/admin/files/actionFlow";
 import { getAdminFileManagementSnapshot } from "@/lib/admin/files/adapter";
 import { selectAdminTrashItemsByIds } from "@/lib/admin/files/selectors";
@@ -116,321 +116,97 @@ export default function AdminFilesPage() {
     setActionMessage(null);
   }
 
-  async function handleRestoreTrashItem(itemIds?: string[]) {
-    if (pendingFileAction) return;
-    const targets = itemIds
-      ? selectAdminTrashItemsByIds(snapshot.trashItems, itemIds)
+  async function executeRestoreTrashSelection(input: {
+    itemIds?: string[];
+    workOrderIds?: string[];
+  }) {
+    if (pendingFileAction || pendingWorkOrderAction) return;
+    const targets = input.itemIds
+      ? selectAdminTrashItemsByIds(snapshot.trashItems, input.itemIds)
       : selectedTrashItems;
-    setPendingFileAction("restore");
+    const workOrderTargets = input.workOrderIds ?? [];
+
+    setPendingFileAction(targets.length > 0 ? "restore" : null);
+    setPendingWorkOrderAction(workOrderTargets.length > 0 ? "restore" : null);
     try {
-      const result = await runRestoreTrashItemsFlow(targets);
+      const result = await runRestoreTrashSelectionFlow({
+        items: targets,
+        workOrderIds: workOrderTargets,
+      });
       setActionMessage(result.message);
       if (result.ok) {
         setSelectedTrashItemIds([]);
+        setSelectedWorkOrderIds([]);
         await refreshSnapshot();
       }
     } finally {
       setPendingFileAction(null);
+      setPendingWorkOrderAction(null);
     }
   }
 
-  function createRestoreSelectionMessage(input: {
-    fileCount: number;
-    workOrderCount: number;
-    skippedCount: number;
+  async function executePurgeTrashSelection(input: {
+    itemIds?: string[];
+    workOrderIds?: string[];
   }) {
-    const messages: string[] = [];
-    if (input.workOrderCount > 0 && input.fileCount > 0) {
-      messages.push(
-        `작업지시서 ${input.workOrderCount}건과 파일 ${input.fileCount}개를 복원했습니다.`,
-      );
-    } else if (input.workOrderCount > 0) {
-      messages.push(`작업지시서 ${input.workOrderCount}건을 복원했습니다.`);
-    } else if (input.fileCount > 0) {
-      messages.push(`파일 ${input.fileCount}개를 복원했습니다.`);
+    if (pendingFileAction || pendingWorkOrderAction) return;
+    const targets = input.itemIds
+      ? selectAdminTrashItemsByIds(snapshot.trashItems, input.itemIds)
+      : selectedTrashItems;
+    const workOrderTargets = input.workOrderIds ?? [];
+
+    setPendingFileAction(targets.length > 0 ? "purge" : null);
+    setPendingWorkOrderAction(workOrderTargets.length > 0 ? "purge" : null);
+    try {
+      const result = await runPurgeTrashSelectionFlow({
+        items: targets,
+        workOrderIds: workOrderTargets,
+      });
+      setActionMessage(result.message);
+      if (result.ok) {
+        setSelectedTrashItemIds([]);
+        setSelectedWorkOrderIds([]);
+        await refreshSnapshot();
+      }
+    } finally {
+      setPendingFileAction(null);
+      setPendingWorkOrderAction(null);
     }
-    if (input.skippedCount > 0) {
-      messages.push(
-        `복원할 수 없는 항목 ${input.skippedCount}개는 제외했습니다.`,
-      );
-    }
-    return messages.join(" ");
   }
 
-  function createPurgeSelectionMessage(input: {
-    fileCount: number;
-    workOrderCount: number;
-    skippedFileCount: number;
-  }) {
-    const messages: string[] = [];
-    if (input.workOrderCount > 0 && input.fileCount > 0) {
-      messages.push(
-        `작업지시서 ${input.workOrderCount}건과 파일 ${input.fileCount}개를 삭제 요청했습니다.`,
-      );
-    } else if (input.workOrderCount > 0) {
-      messages.push(
-        `작업지시서 ${input.workOrderCount}건을 삭제 요청했습니다.`,
-      );
-    } else if (input.fileCount > 0) {
-      messages.push(`파일 ${input.fileCount}개를 삭제 요청했습니다.`);
-    }
-    if (input.skippedFileCount > 0) {
-      messages.push(
-        `선택 삭제할 수 없는 파일 ${input.skippedFileCount}개는 제외했습니다.`,
-      );
-    }
-    return messages.join(" ");
-  }
-
-  async function restoreWorkOrderById(workOrderId: string) {
-    const response = await fetch("/api/admin/files/workorders/restore", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ workOrderId, restoredBy: "admin" }),
-    });
-    const payload = (await response.json().catch(() => null)) as {
-      ok?: boolean;
-      message?: string;
-      affectedCount?: number;
-      requestedCount?: number;
-    } | null;
-    if (!response.ok || !payload?.ok) {
-      throw new Error(
-        payload?.message || `WORKORDER_RESTORE_FAILED_${response.status}`,
-      );
-    }
-    return payload;
-  }
-
-  async function purgeWorkOrderById(workOrderId: string) {
-    const response = await fetch("/api/admin/files/workorders/purge", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ workOrderId, purgedBy: "admin" }),
-    });
-    const payload = (await response.json().catch(() => null)) as {
-      ok?: boolean;
-      message?: string;
-      affectedCount?: number;
-      requestedCount?: number;
-    } | null;
-    if (!response.ok || !payload?.ok) {
-      throw new Error(
-        payload?.message || `WORKORDER_PURGE_FAILED_${response.status}`,
-      );
-    }
-    return payload;
+  async function handleRestoreTrashItem(itemIds?: string[]) {
+    await executeRestoreTrashSelection({ itemIds });
   }
 
   async function handleRestoreSelection() {
-    if (pendingFileAction || pendingWorkOrderAction) return;
-    const fileTargets = selectedTrashItems.filter((item) => item.canRestore);
-    const workOrderTargets = [...selectedWorkOrderIds];
-
-    if (fileTargets.length === 0 && workOrderTargets.length === 0) {
-      setActionMessage("복원 가능한 선택 항목이 없습니다.");
-      return;
-    }
-
-    setPendingFileAction(fileTargets.length > 0 ? "restore" : null);
-    setPendingWorkOrderAction(workOrderTargets.length > 0 ? "restore" : null);
-    try {
-      let restoredFileCount = 0;
-      if (fileTargets.length > 0) {
-        const result = await runRestoreTrashItemsFlow(fileTargets);
-        restoredFileCount = result.ok ? (result.affectedCount ?? 0) : 0;
-        if (!result.ok) throw new Error(result.message);
-      }
-
-      let restoredWorkOrderCount = 0;
-      for (const workOrderId of workOrderTargets) {
-        await restoreWorkOrderById(workOrderId);
-        restoredWorkOrderCount += 1;
-      }
-
-      const skippedCount = selectedTrashItems.length - fileTargets.length;
-      setActionMessage(
-        createRestoreSelectionMessage({
-          fileCount: restoredFileCount,
-          workOrderCount: restoredWorkOrderCount,
-          skippedCount,
-        }),
-      );
-      setSelectedTrashItemIds([]);
-      setSelectedWorkOrderIds([]);
-      await refreshSnapshot();
-    } catch (error) {
-      setActionMessage(
-        error instanceof Error
-          ? error.message
-          : "선택 항목 복원 요청에 실패했습니다.",
-      );
-    } finally {
-      setPendingFileAction(null);
-      setPendingWorkOrderAction(null);
-    }
+    await executeRestoreTrashSelection({
+      workOrderIds: selectedWorkOrderIds,
+    });
   }
 
   async function handlePurgeSelection() {
-    if (pendingFileAction || pendingWorkOrderAction) return;
-    const fileTargets = selectedTrashItems.filter((item) => item.canPurge);
-    const workOrderTargets = [...selectedWorkOrderIds];
-
-    if (fileTargets.length === 0 && workOrderTargets.length === 0) {
-      setActionMessage("선택 삭제 가능한 선택 항목이 없습니다.");
-      return;
-    }
-
-    setPendingFileAction(fileTargets.length > 0 ? "purge" : null);
-    setPendingWorkOrderAction(workOrderTargets.length > 0 ? "purge" : null);
-    try {
-      let purgedFileCount = 0;
-      if (fileTargets.length > 0) {
-        const result = await runPurgeTrashItemsFlow(fileTargets);
-        purgedFileCount = result.ok ? (result.affectedCount ?? 0) : 0;
-        if (!result.ok) throw new Error(result.message);
-      }
-
-      let purgedWorkOrderCount = 0;
-      for (const workOrderId of workOrderTargets) {
-        await purgeWorkOrderById(workOrderId);
-        purgedWorkOrderCount += 1;
-      }
-
-      const skippedFileCount = selectedTrashItems.length - fileTargets.length;
-      setActionMessage(
-        createPurgeSelectionMessage({
-          fileCount: purgedFileCount,
-          workOrderCount: purgedWorkOrderCount,
-          skippedFileCount,
-        }),
-      );
-      setSelectedTrashItemIds([]);
-      setSelectedWorkOrderIds([]);
-      await refreshSnapshot();
-    } catch (error) {
-      setActionMessage(
-        error instanceof Error
-          ? error.message
-          : "선택 항목 삭제 요청에 실패했습니다.",
-      );
-    } finally {
-      setPendingFileAction(null);
-      setPendingWorkOrderAction(null);
-    }
+    await executePurgeTrashSelection({
+      workOrderIds: selectedWorkOrderIds,
+    });
   }
 
   async function handlePurgeAllTrashItems() {
-    if (pendingFileAction || pendingWorkOrderAction) return;
-    const fileTargets = snapshot.trashItems.filter((item) => item.canPurge);
-    const workOrderTargets = (snapshot.workOrders ?? []).map((item) => item.id);
-
-    if (fileTargets.length === 0 && workOrderTargets.length === 0) {
-      setActionMessage("삭제 요청 가능한 휴지통 항목이 없습니다.");
-      return;
-    }
-
-    setPendingFileAction(fileTargets.length > 0 ? "purge" : null);
-    setPendingWorkOrderAction(workOrderTargets.length > 0 ? "purge" : null);
-    try {
-      let purgedFileCount = 0;
-      if (fileTargets.length > 0) {
-        const result = await runPurgeTrashItemsFlow(fileTargets);
-        purgedFileCount = result.ok ? (result.affectedCount ?? 0) : 0;
-        if (!result.ok) throw new Error(result.message);
-      }
-
-      let purgedWorkOrderCount = 0;
-      for (const workOrderId of workOrderTargets) {
-        await purgeWorkOrderById(workOrderId);
-        purgedWorkOrderCount += 1;
-      }
-
-      setActionMessage(
-        createPurgeSelectionMessage({
-          fileCount: purgedFileCount,
-          workOrderCount: purgedWorkOrderCount,
-          skippedFileCount: 0,
-        }),
-      );
-      setSelectedTrashItemIds([]);
-      setSelectedWorkOrderIds([]);
-      await refreshSnapshot();
-    } catch (error) {
-      setActionMessage(
-        error instanceof Error
-          ? error.message
-          : "휴지통 비우기 요청에 실패했습니다.",
-      );
-    } finally {
-      setPendingFileAction(null);
-      setPendingWorkOrderAction(null);
-    }
+    await executePurgeTrashSelection({
+      itemIds: snapshot.trashItems.map((item) => item.id),
+      workOrderIds: (snapshot.workOrders ?? []).map((item) => item.id),
+    });
   }
 
   async function handleRestoreWorkOrder(workOrderId: string) {
-    if (pendingWorkOrderAction) return;
-    setPendingWorkOrderAction("restore");
-    try {
-      const payload = await restoreWorkOrderById(workOrderId);
-      setActionMessage(payload.message || "작업지시서 1건을 복원했습니다.");
-      setSelectedWorkOrderIds((currentIds) =>
-        currentIds.filter((id) => id !== workOrderId),
-      );
-      setSelectedTrashItemIds([]);
-      await refreshSnapshot();
-    } catch (error) {
-      setActionMessage(
-        error instanceof Error
-          ? error.message
-          : "작업지시서 복원 요청에 실패했습니다.",
-      );
-    } finally {
-      setPendingWorkOrderAction(null);
-    }
+    await executeRestoreTrashSelection({ itemIds: [], workOrderIds: [workOrderId] });
   }
 
   async function handlePurgeWorkOrder(workOrderId: string) {
-    if (pendingWorkOrderAction) return;
-    setPendingWorkOrderAction("purge");
-    try {
-      const payload = await purgeWorkOrderById(workOrderId);
-      setActionMessage(
-        payload.message ||
-          "작업지시서 1건을 삭제 요청했습니다.",
-      );
-      setSelectedWorkOrderIds((currentIds) =>
-        currentIds.filter((id) => id !== workOrderId),
-      );
-      setSelectedTrashItemIds([]);
-      await refreshSnapshot();
-    } catch (error) {
-      setActionMessage(
-        error instanceof Error
-          ? error.message
-          : "작업지시서 삭제 요청에 실패했습니다.",
-      );
-    } finally {
-      setPendingWorkOrderAction(null);
-    }
+    await executePurgeTrashSelection({ itemIds: [], workOrderIds: [workOrderId] });
   }
 
   async function handlePurgeTrashItem(itemIds?: string[]) {
-    if (pendingFileAction) return;
-    const targets = itemIds
-      ? selectAdminTrashItemsByIds(snapshot.trashItems, itemIds)
-      : selectedTrashItems;
-    setPendingFileAction("purge");
-    try {
-      const result = await runPurgeTrashItemsFlow(targets);
-      setActionMessage(result.message);
-      if (result.ok) {
-        setSelectedTrashItemIds([]);
-        await refreshSnapshot();
-      }
-    } finally {
-      setPendingFileAction(null);
-    }
+    await executePurgeTrashSelection({ itemIds });
   }
 
   return (

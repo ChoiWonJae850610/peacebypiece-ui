@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { restoreWorkOrderTrashBundle } from "@/lib/admin/files/serverActions";
+import { createAdminTrashActionMessage } from "@/lib/admin/files/presentation";
 
 export const runtime = "nodejs";
 
@@ -32,9 +33,18 @@ export async function POST(request: NextRequest) {
         requestedCount: result.requestedCount,
         affectedCount: result.affectedCount,
         attachmentCount: result.attachmentCount ?? 0,
+        documentCount: result.documentCount ?? result.attachmentCount ?? 0,
+        designCount: result.designCount ?? 0,
         memoCount: result.memoCount ?? 0,
         reason: result.reason,
-        message: result.message,
+        message: result.ok
+          ? createAdminTrashActionMessage("restore", {
+              workOrderCount: result.affectedCount,
+              documentCount: result.documentCount ?? result.attachmentCount ?? 0,
+              designCount: result.designCount ?? 0,
+              memoCount: result.memoCount ?? 0,
+            })
+          : result.message,
       },
       { status: result.ok ? 200 : result.reason === "WORKORDER_ID_REQUIRED" ? 400 : 404 },
     );
