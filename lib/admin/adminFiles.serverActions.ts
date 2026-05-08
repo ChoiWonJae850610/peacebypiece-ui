@@ -7,6 +7,8 @@ import {
   ADMIN_FILE_TRASH_PURGE_STATUS_SQL,
   ADMIN_FILE_TRASH_PURGE_STATUSES,
   ADMIN_FILE_TRASH_REASONS,
+  ADMIN_WORKORDER_ADMIN_TRASH_HIDDEN_DELETE_STATUS_SQL_LIST,
+  ADMIN_WORKORDER_ADMIN_TRASH_HIDDEN_PURGE_STATUS_SQL_LIST,
   ADMIN_WORKORDER_DELETE_STATUS_SQL,
   ADMIN_WORKORDER_PURGE_STATUS_SQL,
   getAdminFileTrashVisiblePurgeStatus,
@@ -418,8 +420,8 @@ export async function listAdminFileManagementRows(trashRetentionDays = 30) {
          LEFT JOIN attachments a ON a.order_id = s.id
          LEFT JOIN memos m ON m.order_id = s.id
         WHERE (s.deleted_at IS NOT NULL OR COALESCE(s.is_active, true) = false)
-          AND COALESCE(s.delete_status, 'deleted') NOT IN ('purge_requested', 'purged')
-          AND COALESCE(s.purge_status, 'pending') <> 'purge_requested'
+          AND COALESCE(s.delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.deleted}) NOT IN (${ADMIN_WORKORDER_ADMIN_TRASH_HIDDEN_DELETE_STATUS_SQL_LIST})
+          AND COALESCE(s.purge_status, ${ADMIN_WORKORDER_PURGE_STATUS_SQL.pending}) NOT IN (${ADMIN_WORKORDER_ADMIN_TRASH_HIDDEN_PURGE_STATUS_SQL_LIST})
           AND s.purged_at IS NULL
         GROUP BY s.id, s.title, s.status, s.updated_at, s.deleted_at, s.delete_status, s.purge_status, s.purged_at
         ORDER BY COALESCE(s.deleted_at, s.updated_at) DESC
