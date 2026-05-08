@@ -3,7 +3,11 @@ import type {
   AdminTrashFileItem,
 } from "@/lib/admin/files/types";
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
-import { selectAdminWorkOrderBundleTrashItems } from "@/lib/admin/files/trashPolicy";
+import {
+  ADMIN_FILE_TRASH_PURGE_STATUSES,
+  ADMIN_TRASH_RESTORE_POLICIES,
+  selectAdminWorkOrderBundleTrashItems,
+} from "@/lib/admin/files/trashPolicy";
 
 export type UnifiedTrashRow =
   | {
@@ -73,10 +77,11 @@ export const TRASH_CELL_SELECT_CLASS =
   "flex h-full min-h-[40px] w-full items-center justify-center text-center";
 
 export const WORKORDER_STAGE_STEPS = [
-  { keys: ["draft", "작성중"], label: "작성중" },
-  { keys: ["review_requested", "검토요청", "검토"], label: "검토" },
-  { keys: ["request_order", "order_requested", "발주요청", "발주"], label: "발주" },
+  { key: "draft", keys: ["draft", "작성중"], label: "작성중" },
+  { key: "review", keys: ["review_requested", "검토요청", "검토"], label: "검토" },
+  { key: "order", keys: ["request_order", "order_requested", "발주요청", "발주"], label: "발주" },
   {
+    key: "inspection",
     keys: [
       "inspection",
       "in_inspection",
@@ -90,7 +95,7 @@ export const WORKORDER_STAGE_STEPS = [
     ],
     label: "검수",
   },
-  { keys: ["completed", "완료"], label: "완료" },
+  { key: "completed", keys: ["completed", "완료"], label: "완료" },
 ];
 
 export function getWorkOrderStageIndex(statusLabel: string): number {
@@ -224,6 +229,65 @@ export function sortUnifiedTrashRows(
     ]);
 }
 
+function getTrashRestoreDisabledReason(
+  item: AdminTrashFileItem,
+  t: ReturnType<typeof useAdminTranslation>,
+): string | null {
+  if (item.restorePolicy === ADMIN_TRASH_RESTORE_POLICIES.bundleRequired) {
+    return t(
+      "filesList.disabledReasons.bundleRestoreRequired",
+      "작업지시서와 문서/디자인/메모를 함께 복원해야 합니다.",
+    );
+  }
+  if (
+    item.restorePolicy ===
+    ADMIN_TRASH_RESTORE_POLICIES.parentDeletedRestoreBlocked
+  ) {
+    return t(
+      "filesList.disabledReasons.parentWorkOrderMissing",
+      "해당 작업지시서를 찾을 수 없습니다.",
+    );
+  }
+  if (item.lastPurgeError) {
+    return t(
+      "filesList.disabledReasons.purgeFailedNeedsSystemReview",
+      "삭제 실패 상태는 시스템관리자 확인 후 처리해야 합니다.",
+    );
+  }
+  if (item.purgeStatus !== ADMIN_FILE_TRASH_PURGE_STATUSES.pending) {
+    return t(
+      "filesList.disabledReasons.restoreUnavailable",
+      "복원 가능 상태가 아닙니다.",
+    );
+  }
+  return item.canRestore ? null : item.restoreDisabledReason;
+}
+
+function getTrashPurgeDisabledReason(
+  item: AdminTrashFileItem,
+  t: ReturnType<typeof useAdminTranslation>,
+): string | null {
+  if (item.restorePolicy === ADMIN_TRASH_RESTORE_POLICIES.bundleRequired) {
+    return t(
+      "filesList.disabledReasons.bundlePurgeRequired",
+      "작업지시서와 문서/디자인/메모를 함께 삭제 요청해야 합니다.",
+    );
+  }
+  if (item.lastPurgeError) {
+    return t(
+      "filesList.disabledReasons.purgeFailedNeedsSystemReview",
+      "삭제 실패 상태는 시스템관리자 확인 후 처리해야 합니다.",
+    );
+  }
+  if (item.purgeStatus !== ADMIN_FILE_TRASH_PURGE_STATUSES.pending) {
+    return t(
+      "filesList.disabledReasons.purgeUnavailable",
+      "선택 삭제 요청 가능 상태가 아닙니다.",
+    );
+  }
+  return item.canPurge ? null : item.purgeDisabledReason;
+}
+
 export function createUnifiedRows(input: {
   items: AdminTrashFileItem[];
   workOrderItems: AdminStorageWorkOrderItem[];
@@ -246,7 +310,7 @@ export function createUnifiedRows(input: {
     workorderTitle: item.title,
     typeLabel: t("filesList.types.workorder", "작업지시서"),
     sizeLabel: "-",
-    visualLabel: getTrashVisualInfo({ kind: "workorder" }).label,
+    visualLabel: t("filesList.visual.workorder", "작업"),
     visualTone: getTrashVisualInfo({ kind: "workorder" }).tone,
     thumbnailUrl: null,
     previewUrl: null,
@@ -258,11 +322,11 @@ export function createUnifiedRows(input: {
     canRestore: true,
     canPurge: true,
     restoreDisabledReason: t(
-      "filesList.workorderRestorePreparing",
+      "filesList.disabledReasons.workorderRestorePreparing",
       "작업지시서와 문서/디자인/메모가 함께 복원됩니다.",
     ),
     purgeDisabledReason: t(
-      "filesList.workorderPurgePreparing",
+      "filesList.disabledReasons.workorderPurgePreparing",
       "작업지시서는 삭제 요청 상태로 전환하고 고객관리자 휴지통 기본 목록에서 제외합니다.",
     ),
     isSelected: selectedWorkOrderIds.includes(item.id),
@@ -298,8 +362,8 @@ export function createUnifiedRows(input: {
       restorePolicy: item.restorePolicy,
       canRestore: item.canRestore,
       canPurge: item.canPurge,
-      restoreDisabledReason: item.restoreDisabledReason,
-      purgeDisabledReason: item.purgeDisabledReason,
+      restoreDisabledReason: getTrashRestoreDisabledReason(item, t),
+      purgeDisabledReason: getTrashPurgeDisabledReason(item, t),
       isSelected: selectedItemIds.includes(item.id),
       isGroupedAttachment,
       sourceItem: item,

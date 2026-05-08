@@ -637,28 +637,12 @@ export async function listAdminFileManagementRows(
       restorePolicyLabel,
       canRestore:
         restorePolicy === "file_unit" && !row.last_purge_error && isPending,
-      restoreDisabledReason:
-        restorePolicy === ADMIN_TRASH_RESTORE_POLICIES.bundleRequired
-          ? "작업지시서와 첨부된 파일/메모가 함께 복원됩니다."
-          : restorePolicy === ADMIN_TRASH_RESTORE_POLICIES.parentDeletedRestoreBlocked
-            ? "해당 작업지시서를 찾을 수 없습니다."
-            : row.last_purge_error
-              ? "삭제 실패 상태는 시스템관리자 확인 후 처리해야 합니다."
-              : !isPending
-                ? "복원 가능 상태가 아닙니다."
-                : null,
+      restoreDisabledReason: null,
       canPurge:
         restorePolicy !== ADMIN_TRASH_RESTORE_POLICIES.bundleRequired &&
         !row.last_purge_error &&
         isPending,
-      purgeDisabledReason:
-        restorePolicy === ADMIN_TRASH_RESTORE_POLICIES.bundleRequired
-          ? "작업지시서 삭제와 함께 휴지통으로 이동한 파일은 작업지시서 묶음 삭제 요청에서 함께 처리해야 합니다."
-          : row.last_purge_error
-            ? "삭제 실패 상태는 시스템관리자 확인 후 처리해야 합니다."
-            : !isPending
-              ? "선택 삭제 요청 가능 상태가 아닙니다."
-              : null,
+      purgeDisabledReason: null,
     };
   });
 

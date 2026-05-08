@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { WORKORDER_STAGE_STEPS, getWorkOrderStageIndex } from "@/components/admin/files/fileTrashSectionRows";
 
 export const TRASH_ACTION_BUTTON_BASE =
@@ -26,7 +27,15 @@ export function getTrashActionButtonClassName(
   return `${TRASH_ACTION_BUTTON_BASE} ${TRASH_ACTION_BUTTON_NEUTRAL_ENABLED}`;
 }
 
-export function WorkOrderStageInline({ statusLabel }: { statusLabel: string }) {
+type AdminT = ReturnType<typeof useAdminTranslation>;
+
+export function WorkOrderStageInline({
+  statusLabel,
+  t,
+}: {
+  statusLabel: string;
+  t: AdminT;
+}) {
   const currentIndex = getWorkOrderStageIndex(statusLabel);
 
   return (
@@ -34,14 +43,14 @@ export function WorkOrderStageInline({ statusLabel }: { statusLabel: string }) {
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-stone-400">
-            현재 단계
+            {t("filesList.workorderStage.currentStage", "현재 단계")}
           </p>
           <p className="mt-1 text-sm font-medium text-stone-700">
             {statusLabel}
           </p>
         </div>
         <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-medium text-stone-500">
-          삭제 당시
+          {t("filesList.workorderStage.deletedAtStage", "삭제 당시")}
         </span>
       </div>
       <div className="mt-4 grid grid-cols-5 items-start gap-1.5">
@@ -63,9 +72,9 @@ export function WorkOrderStageInline({ statusLabel }: { statusLabel: string }) {
                 className={`mt-1 truncate text-center text-[10px] font-medium ${
                   isActive ? "text-stone-800" : "text-stone-400"
                 }`}
-                title={step.label}
+                title={t(`filesList.workorderStage.steps.${step.key}`, step.label)}
               >
-                {step.label}
+                {t(`filesList.workorderStage.steps.${step.key}`, step.label)}
               </p>
             </div>
           );

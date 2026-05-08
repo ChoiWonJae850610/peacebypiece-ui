@@ -245,8 +245,8 @@ export function TrashDetailModal({
       onClose={onClose}
       title={
         row?.kind === "workorder"
-          ? t("filesList.workorderDetailTitle", "작업지시서 휴지통 상세")
-          : t("filesList.fileDetailTitle", "파일 휴지통 상세")
+          ? t("filesList.detailTitles.workorder", "작업지시서 휴지통 상세")
+          : t("filesList.detailTitles.file", "파일 휴지통 상세")
       }
       description={row?.targetLabel}
       maxWidthClass="md:max-w-xl"
@@ -349,11 +349,11 @@ function TrashDetailContent({ row, t }: { row: UnifiedTrashRow; t: AdminT }) {
           rel="noreferrer"
           className="block rounded-2xl border border-stone-200 bg-white px-4 py-3 text-xs font-medium text-stone-600 shadow-sm transition hover:bg-stone-50"
         >
-          {t("filesList.openPreview", "파일 미리보기 열기")}
+          {t("filesList.detail.openPreview", "파일 미리보기 열기")}
         </a>
       ) : null}
       {row.kind === "workorder" ? (
-        <WorkOrderStageInline statusLabel={row.sourceItem.statusLabel} />
+        <WorkOrderStageInline statusLabel={row.sourceItem.statusLabel} t={t} />
       ) : null}
 
       <div className="grid gap-2 md:grid-cols-2">
@@ -377,14 +377,14 @@ function TrashDetailContent({ row, t }: { row: UnifiedTrashRow; t: AdminT }) {
       <p className="rounded-2xl bg-stone-50 px-4 py-3 text-xs leading-5 text-stone-500">
         {row.kind === "workorder"
           ? t(
-              "filesList.detailWorkorderActionHint",
+              "filesList.detail.workorderActionHint",
               "작업지시서와 문서/디자인/메모가 함께 복원됩니다.",
             )
           : row.restoreDisabledReason ||
             row.purgeDisabledReason ||
             t(
-              "filesList.detailActionHint",
-              "복원 또는 선택 삭제 작업은 이 상세 창에서 처리합니다.",
+              "filesList.detail.fileActionHint",
+              "이 파일만 복원하거나 삭제 요청할 수 있습니다.",
             )}
       </p>
     </div>
@@ -399,10 +399,10 @@ function getTrashDetailFields(
     return [
       [t("filesList.columns.type", "유형"), row.typeLabel],
       [
-        t("filesList.attachmentCount", "문서/디자인"),
+        t("filesList.detail.documentsDesigns", "문서/디자인"),
         row.sourceItem.attachmentSummaryLabel,
       ],
-      [t("filesList.memoCount", "메모"), row.sourceItem.memoSummaryLabel],
+      [t("filesList.detail.memos", "메모"), row.sourceItem.memoSummaryLabel],
       [t("filesList.columns.deletedAt", "삭제일시"), row.deletedAt],
     ];
   }
