@@ -7,14 +7,11 @@ import {
   ADMIN_FILE_TRASH_OPEN_PURGE_STATUS_SQL_LIST,
   ADMIN_FILE_TRASH_PURGE_STATUS_SQL,
   ADMIN_FILE_TRASH_PURGE_STATUSES,
-  ADMIN_FILE_TRASH_REASONS,
   ADMIN_WORKORDER_ADMIN_TRASH_HIDDEN_DELETE_STATUS_SQL_LIST,
   ADMIN_WORKORDER_ADMIN_TRASH_HIDDEN_PURGE_STATUS_SQL_LIST,
   ADMIN_WORKORDER_DELETE_STATUS_SQL,
   ADMIN_WORKORDER_PURGE_STATUS_SQL,
-  createAdminNotWorkOrderBundleTrashSqlPredicate,
   createAdminWorkOrderBundleMetadataSqlPredicate,
-  createAdminWorkOrderBundleTrashSqlPredicate,
   getAdminFileTrashVisiblePurgeStatus,
   isAdminFileTrashPendingStatus,
   isWorkOrderBundleTrashMetadata,
@@ -64,28 +61,11 @@ function createWorkOrderBundleMetadataPredicate(
   return createAdminWorkOrderBundleMetadataSqlPredicate(alias, workOrderParamIndex);
 }
 
-function createWorkOrderBundleTrashPredicate(
-  alias: string,
-  legacyReasonParamIndex: number,
-  workOrderParamIndex?: number,
-): string {
-  return createAdminWorkOrderBundleTrashSqlPredicate({
-    alias,
-    legacyReasonParamIndex,
-    workOrderParamIndex,
-  });
-}
-
 function createNotWorkOrderBundleTrashPredicate(
   alias: string,
-  legacyReasonParamIndex: number,
   workOrderParamIndex?: number,
 ): string {
-  return createAdminNotWorkOrderBundleTrashSqlPredicate({
-    alias,
-    legacyReasonParamIndex,
-    workOrderParamIndex,
-  });
+  return `(NOT ${createWorkOrderBundleMetadataPredicate(alias, workOrderParamIndex)})`;
 }
 
 export async function restoreAttachmentTrashItems(
@@ -184,7 +164,7 @@ export async function requestPurgeAttachmentTrashItems(
           AND (
             t.order_id IS NULL
             OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true)
-            OR ${createNotWorkOrderBundleTrashPredicate("t", 2)}
+            OR ${createNotWorkOrderBundleTrashPredicate("t")}
           )
      ), marked_attachments AS (
        UPDATE attachments
@@ -196,7 +176,7 @@ export async function requestPurgeAttachmentTrashItems(
      ), marked_trash AS (
        UPDATE attachment_trash_items
           SET purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested},
-              purge_requested_by = $3,
+              purge_requested_by = $2,
               purge_after_at = COALESCE(purge_after_at, now()),
               updated_at = now()
         WHERE id IN (SELECT id FROM target_trash)
@@ -206,11 +186,7 @@ export async function requestPurgeAttachmentTrashItems(
             COUNT(*) FILTER (WHERE ${createFileKindCountSql("target_trash")} = 'document')::text AS document_count,
             COUNT(*) FILTER (WHERE ${createFileKindCountSql("target_trash")} = 'design')::text AS design_count
        FROM target_trash`,
-    [
-      trashItemIds,
-      ADMIN_FILE_TRASH_REASONS.workorderBundle,
-      input.actorId ?? null,
-    ],
+    [trashItemIds, input.actorId ?? null],
   );
 
   const row = result.rows[0];
@@ -561,12 +537,12 @@ export async function listAdminFileManagementRows(
           AND (
             s.id IS NULL
             OR COALESCE(s.delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
-            OR ${createNotWorkOrderBundleTrashPredicate("t", 2)}
+            OR ${createNotWorkOrderBundleTrashPredicate("t")}
           )
-          AND (s.id IS NULL OR s.purged_at IS NULL OR ${createNotWorkOrderBundleTrashPredicate("t", 2)})
+          AND (s.id IS NULL OR s.purged_at IS NULL OR ${createNotWorkOrderBundleTrashPredicate("t")})
         ORDER BY t.deleted_at DESC
         LIMIT 100`,
-      [safeTrashRetentionDays, ADMIN_FILE_TRASH_REASONS.workorderBundle],
+      [safeTrashRetentionDays],
     ),
     queryDb<AdminStorageWorkOrderRow>(
       `SELECT s.id,
@@ -784,14 +760,14 @@ export async function listPurgeReadyAttachmentTrashItems(
         AND (
           t.order_id IS NULL
           OR COALESCE(s.delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
-          OR ${createNotWorkOrderBundleTrashPredicate("t", 3)}
+          OR ${createNotWorkOrderBundleTrashPredicate("t")}
           OR t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested}
         )
-        AND (s.id IS NULL OR s.purged_at IS NULL OR ${createNotWorkOrderBundleTrashPredicate("t", 3)} OR t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested})
+        AND (s.id IS NULL OR s.purged_at IS NULL OR ${createNotWorkOrderBundleTrashPredicate("t")} OR t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested})
         AND (
           t.order_id IS NULL
           OR (s.deleted_at IS NULL AND COALESCE(s.is_active, true) = true)
-          OR ${createNotWorkOrderBundleTrashPredicate("t", 3)}
+          OR ${createNotWorkOrderBundleTrashPredicate("t")}
           OR (COALESCE(s.delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) = ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged} AND t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested})
         )
         AND (
@@ -800,11 +776,7 @@ export async function listPurgeReadyAttachmentTrashItems(
         )
       ORDER BY purge_after_at ASC
       LIMIT $1`,
-    [
-      safeLimit,
-      safeTrashRetentionDays,
-      ADMIN_FILE_TRASH_REASONS.workorderBundle,
-    ],
+    [safeLimit, safeTrashRetentionDays],
   );
 
   return result.rows.map((row) => ({
@@ -1062,7 +1034,7 @@ export async function restoreWorkOrderTrashBundle(
        SELECT t.id, t.attachment_id, t.original_name, t.mime_type
          FROM attachment_trash_items t
         WHERE t.order_id = $1
-          AND ${createWorkOrderBundleTrashPredicate("t", 2, 1)}
+          AND ${createWorkOrderBundleMetadataPredicate("t", 1)}
           AND t.purge_status IN (${ADMIN_FILE_TRASH_OPEN_PURGE_STATUS_SQL_LIST})
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
@@ -1084,7 +1056,7 @@ export async function restoreWorkOrderTrashBundle(
      ), restored_trash AS (
        UPDATE attachment_trash_items
           SET restored_at = now(),
-              restored_by = $3,
+              restored_by = $2,
               purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.restored},
               updated_at = now()
         WHERE id IN (SELECT id FROM bundle_trash)
@@ -1119,11 +1091,7 @@ export async function restoreWorkOrderTrashBundle(
             (SELECT COUNT(*) FROM restored_trash)::text AS trash_count,
             (SELECT COUNT(*) FROM restored_memos)::text AS memo_count
        FROM restored_workorder`,
-    [
-      workOrderId,
-      ADMIN_FILE_TRASH_REASONS.workorderBundle,
-      input.actorId ?? null,
-    ],
+    [workOrderId, input.actorId ?? null],
   );
 
   const row = result.rows[0];
@@ -1204,7 +1172,7 @@ export async function purgeWorkOrderTrashBundle(
               delete_status = ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purgeRequested},
               purge_status = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.purgeRequested},
               purge_requested_at = COALESCE(purge_requested_at, now()),
-              purge_requested_by = $3,
+              purge_requested_by = $2,
               delete_source = 'manual',
               delete_scope = 'bundle',
               delete_parent_type = 'workorder',
@@ -1219,7 +1187,7 @@ export async function purgeWorkOrderTrashBundle(
        SELECT t.id, t.attachment_id, t.original_name, t.mime_type
          FROM attachment_trash_items t
         WHERE t.order_id = $1
-          AND ${createWorkOrderBundleTrashPredicate("t", 2, 1)}
+          AND ${createWorkOrderBundleMetadataPredicate("t", 1)}
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
           AND t.purge_status IN (${ADMIN_FILE_TRASH_OPEN_PURGE_STATUS_SQL_LIST})
@@ -1238,7 +1206,7 @@ export async function purgeWorkOrderTrashBundle(
      ), marked_trash AS (
        UPDATE attachment_trash_items
           SET purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested},
-              purge_requested_by = $3,
+              purge_requested_by = $2,
               purge_after_at = now(),
               delete_source = COALESCE(delete_source, 'workorder_bundle'),
               delete_scope = COALESCE(delete_scope, 'bundle'),
@@ -1254,7 +1222,7 @@ export async function purgeWorkOrderTrashBundle(
               delete_status = ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purgeRequested},
               purge_status = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.purgeRequested},
               purge_requested_at = COALESCE(purge_requested_at, now()),
-              purge_requested_by = $3,
+              purge_requested_by = $2,
               delete_source = 'workorder_bundle',
               delete_scope = 'bundle',
               delete_parent_type = 'workorder',
@@ -1275,11 +1243,7 @@ export async function purgeWorkOrderTrashBundle(
             (SELECT COUNT(*) FROM marked_trash)::text AS trash_count,
             (SELECT COUNT(*) FROM marked_memos)::text AS memo_count
        FROM marked_workorder`,
-    [
-      workOrderId,
-      ADMIN_FILE_TRASH_REASONS.workorderBundle,
-      input.actorId ?? null,
-    ],
+    [workOrderId, input.actorId ?? null],
   );
 
   const row = result.rows[0];

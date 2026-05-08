@@ -195,7 +195,7 @@ export function WorkOrderActionPreviewModal({
               {intent === "restore"
                 ? t(
                     "filesList.workorderRestoreGuardDescription",
-                    "복원 연결 시 작업지시서와 작업지시서 삭제로 함께 휴지통 이동한 첨부/메모를 같은 트랜잭션에서 복원해야 합니다.",
+                    "복원 연결 시 작업지시서와 묶음 삭제 상태의 문서/디자인/메모를 같은 트랜잭션에서 복원해야 합니다.",
                   )
                 : t(
                     "filesList.workorderPurgeGuardDescription",

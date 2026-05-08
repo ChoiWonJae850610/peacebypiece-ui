@@ -6,7 +6,6 @@ import {
   ADMIN_FILE_TRASH_OPEN_PURGE_STATUS_SQL_LIST,
   ADMIN_FILE_TRASH_PURGE_STATUS_SQL,
   ADMIN_FILE_TRASH_PURGE_STATUSES,
-  ADMIN_FILE_TRASH_REASONS,
   ADMIN_FILE_TRASH_SYSTEM_CANDIDATE_PURGE_STATUS_SQL_LIST,
   ADMIN_WORKORDER_DELETE_STATUS_SQL,
   ADMIN_WORKORDER_PURGE_STATUS_SQL,
@@ -115,61 +114,12 @@ type SystemStoragePurgeRunCandidate =
   | ({ candidateKind: "file" } & PurgeCandidateRow)
   | ({ candidateKind: "workorder" } & WorkOrderPurgeCandidateRow);
 
-type DeleteStateMetadataAvailability = {
-  attachmentTrashItems: boolean;
-};
-
-async function getDeleteStateMetadataAvailability(): Promise<DeleteStateMetadataAvailability> {
-  try {
-    const result = await queryDb<{ table_name: string; column_name: string }>(
-      `SELECT table_name, column_name
-         FROM information_schema.columns
-        WHERE table_schema = 'public'
-          AND table_name = 'attachment_trash_items'
-          AND column_name IN ('delete_source', 'delete_scope', 'delete_parent_type', 'delete_parent_id', 'delete_batch_id')`,
-    );
-    const columns = new Set(result.rows.map((row) => row.column_name));
-    return {
-      attachmentTrashItems:
-        columns.has("delete_source") &&
-        columns.has("delete_scope") &&
-        columns.has("delete_parent_type") &&
-        columns.has("delete_parent_id") &&
-        columns.has("delete_batch_id"),
-    };
-  } catch {
-    return { attachmentTrashItems: false };
-  }
+function getWorkOrderBundleFilePredicate(alias: string): string {
+  return createAdminWorkOrderBundleTrashSqlPredicate({ alias });
 }
 
-function getWorkOrderBundleFilePredicate(
-  alias: string,
-  reasonParamIndex: number,
-  hasDeleteStateMetadata: boolean,
-): string {
-  if (!hasDeleteStateMetadata) {
-    return `${alias}.delete_reason = $${reasonParamIndex}`;
-  }
-
-  return createAdminWorkOrderBundleTrashSqlPredicate({
-    alias,
-    legacyReasonParamIndex: reasonParamIndex,
-  });
-}
-
-function getNotWorkOrderBundleFilePredicate(
-  alias: string,
-  reasonParamIndex: number,
-  hasDeleteStateMetadata: boolean,
-): string {
-  if (!hasDeleteStateMetadata) {
-    return `COALESCE(${alias}.delete_reason, '') <> $${reasonParamIndex}`;
-  }
-
-  return createAdminNotWorkOrderBundleTrashSqlPredicate({
-    alias,
-    legacyReasonParamIndex: reasonParamIndex,
-  });
+function getNotWorkOrderBundleFilePredicate(alias: string): string {
+  return createAdminNotWorkOrderBundleTrashSqlPredicate({ alias });
 }
 
 function toNumber(value: string | number | null | undefined): number {
@@ -367,13 +317,8 @@ function mapWorkOrderCandidateRow(
 
 async function listFilePurgeCandidateRows(
   limit: number,
-  deleteStateMetadata: DeleteStateMetadataAvailability,
 ): Promise<PurgeCandidateRow[]> {
-  const notWorkOrderBundlePredicate = getNotWorkOrderBundleFilePredicate(
-    "t",
-    3,
-    deleteStateMetadata.attachmentTrashItems,
-  );
+  const notWorkOrderBundlePredicate = getNotWorkOrderBundleFilePredicate("t");
   const result = await queryDb<PurgeCandidateRow>(
     `SELECT t.id,
             t.attachment_id,
@@ -402,7 +347,7 @@ async function listFilePurgeCandidateRows(
           OR t.last_purge_error IS NOT NULL
         )
         AND (s.id IS NULL OR s.purged_at IS NULL OR ${notWorkOrderBundlePredicate} OR t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested} OR t.last_purge_error IS NOT NULL)
-        ${getWorkOrderBundleFileVisibilitySql("t", 3, deleteStateMetadata)}
+        ${getWorkOrderBundleFileVisibilitySql("t")}
         AND (
           t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purgeRequested}
           OR (t.purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.pending} AND (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) <= now())
@@ -410,11 +355,7 @@ async function listFilePurgeCandidateRows(
         )
       ORDER BY purge_due_at ASC, t.deleted_at ASC
       LIMIT $1`,
-    [
-      limit,
-      COMPANY_FILE_TRASH_RETENTION_DAYS,
-      ADMIN_FILE_TRASH_REASONS.workorderBundle,
-    ],
+    [limit, COMPANY_FILE_TRASH_RETENTION_DAYS],
   );
   return result.rows;
 }
@@ -423,14 +364,9 @@ async function listWorkOrderPurgeCandidateRows(input: {
   limit: number;
   includeFuturePending?: boolean;
   workOrderIds?: string[];
-  deleteStateMetadata: DeleteStateMetadataAvailability;
 }): Promise<WorkOrderPurgeCandidateRow[]> {
   const workOrderIds = input.workOrderIds ?? [];
-  const params: unknown[] = [
-    input.limit,
-    COMPANY_FILE_TRASH_RETENTION_DAYS,
-    ADMIN_FILE_TRASH_REASONS.workorderBundle,
-  ];
+  const params: unknown[] = [input.limit, COMPANY_FILE_TRASH_RETENTION_DAYS];
   let idFilter = "";
   if (workOrderIds.length > 0) {
     params.push(workOrderIds);
@@ -498,15 +434,13 @@ export async function getSystemStoragePurgeCandidateSnapshot(
   limit = 200,
 ): Promise<SystemStoragePurgeCandidateSnapshot> {
   const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 500);
-  const deleteStateMetadata = await getDeleteStateMetadataAvailability();
   const [fileRows, workOrderRows] = await Promise.all([
-    listFilePurgeCandidateRows(safeLimit, deleteStateMetadata),
+    listFilePurgeCandidateRows(safeLimit),
     // 시스템관리자 실제 삭제 후보는 고객관리자가 삭제 요청했거나
     // 보관 기간이 도래한 항목만 노출한다. 단순 휴지통 pending 항목은 고객관리자 복원 가능 상태이므로 숨긴다.
     listWorkOrderPurgeCandidateRows({
       limit: safeLimit,
       includeFuturePending: false,
-      deleteStateMetadata,
     }),
   ]);
 
@@ -610,16 +544,8 @@ function getPurgeDeleteKeys(
   );
 }
 
-function getWorkOrderBundleFileVisibilitySql(
-  alias: string,
-  reasonParamIndex: number,
-  deleteStateMetadata: DeleteStateMetadataAvailability,
-): string {
-  const notWorkOrderBundlePredicate = getNotWorkOrderBundleFilePredicate(
-    alias,
-    reasonParamIndex,
-    deleteStateMetadata.attachmentTrashItems,
-  );
+function getWorkOrderBundleFileVisibilitySql(alias: string): string {
+  const notWorkOrderBundlePredicate = getNotWorkOrderBundleFilePredicate(alias);
 
   return `
         AND (
@@ -633,7 +559,6 @@ function getWorkOrderBundleFileVisibilitySql(
 async function listFilePurgeRunCandidates(
   input: SystemStoragePurgeRunInput,
   fileTrashIds: string[],
-  deleteStateMetadata: DeleteStateMetadataAvailability,
 ): Promise<PurgeCandidateRow[]> {
   const safeLimit = Math.min(Math.max(Math.trunc(input.limit ?? 100), 1), 200);
 
@@ -686,22 +611,16 @@ async function listFilePurgeRunCandidates(
           )
         ORDER BY purge_due_at ASC, t.deleted_at ASC
         LIMIT $3`,
-      [
-        fileTrashIds,
-        COMPANY_FILE_TRASH_RETENTION_DAYS,
-        safeLimit,
-        ADMIN_FILE_TRASH_REASONS.workorderBundle,
-      ],
+      [fileTrashIds, COMPANY_FILE_TRASH_RETENTION_DAYS, safeLimit],
     );
     return result.rows;
   }
 
-  return listFilePurgeCandidateRows(safeLimit, deleteStateMetadata);
+  return listFilePurgeCandidateRows(safeLimit);
 }
 
 async function listSystemStoragePurgeRunCandidates(
   input: SystemStoragePurgeRunInput,
-  deleteStateMetadata: DeleteStateMetadataAvailability,
 ): Promise<SystemStoragePurgeRunCandidate[]> {
   const allIds = normalizeTrashItemIds(input.trashItemIds);
   const fileTrashIds = parseFileTrashIds(allIds);
@@ -709,18 +628,16 @@ async function listSystemStoragePurgeRunCandidates(
   const safeLimit = Math.min(Math.max(Math.trunc(input.limit ?? 100), 1), 200);
 
   const [fileRows, workOrderRows] = await Promise.all([
-    listFilePurgeRunCandidates(input, fileTrashIds, deleteStateMetadata),
+    listFilePurgeRunCandidates(input, fileTrashIds),
     input.mode === "selected"
       ? listWorkOrderPurgeCandidateRows({
           limit: safeLimit,
           includeFuturePending: true,
           workOrderIds,
-          deleteStateMetadata,
         })
       : listWorkOrderPurgeCandidateRows({
           limit: safeLimit,
           includeFuturePending: false,
-          deleteStateMetadata,
         }),
   ]);
 
@@ -776,13 +693,8 @@ async function purgeSystemFileCandidate(
 
 async function listWorkOrderBundleFileCandidates(
   workOrderId: string,
-  deleteStateMetadata: DeleteStateMetadataAvailability,
 ): Promise<PurgeCandidateRow[]> {
-  const bundleFilePredicate = getWorkOrderBundleFilePredicate(
-    "t",
-    3,
-    deleteStateMetadata.attachmentTrashItems,
-  );
+  const bundleFilePredicate = getWorkOrderBundleFilePredicate("t");
   const result = await queryDb<PurgeCandidateRow>(
     `SELECT t.id,
             t.attachment_id,
@@ -807,11 +719,7 @@ async function listWorkOrderBundleFileCandidates(
         AND t.purged_at IS NULL
         AND (t.purge_status IN (${ADMIN_FILE_TRASH_SYSTEM_CANDIDATE_PURGE_STATUS_SQL_LIST}) OR t.last_purge_error IS NOT NULL)
       ORDER BY t.updated_at ASC, t.deleted_at ASC`,
-    [
-      workOrderId,
-      COMPANY_FILE_TRASH_RETENTION_DAYS,
-      ADMIN_FILE_TRASH_REASONS.workorderBundle,
-    ],
+    [workOrderId, COMPANY_FILE_TRASH_RETENTION_DAYS],
   );
   return result.rows;
 }
@@ -819,16 +727,12 @@ async function listWorkOrderBundleFileCandidates(
 async function purgeWorkOrderBundleFiles(input: {
   workOrderId: string;
   actorId: string | null | undefined;
-  deleteStateMetadata: DeleteStateMetadataAvailability;
 }): Promise<{
   purgedCount: number;
   failedCount: number;
   firstErrorMessage: string | null;
 }> {
-  const bundleFiles = await listWorkOrderBundleFileCandidates(
-    input.workOrderId,
-    input.deleteStateMetadata,
-  );
+  const bundleFiles = await listWorkOrderBundleFileCandidates(input.workOrderId);
   let purgedCount = 0;
   let failedCount = 0;
   let firstErrorMessage: string | null = null;
@@ -863,7 +767,6 @@ async function purgeWorkOrderBundleFiles(input: {
 async function purgeSystemWorkOrderCandidate(
   candidate: WorkOrderPurgeCandidateRow,
   actorId: string | null | undefined,
-  deleteStateMetadata: DeleteStateMetadataAvailability,
 ): Promise<SystemStoragePurgeRunItemResult> {
   try {
     const result = await queryDb<{ affected_count: string | number }>(
@@ -946,10 +849,9 @@ async function purgeSystemWorkOrderCandidate(
 async function purgeSystemStorageCandidate(
   candidate: SystemStoragePurgeRunCandidate,
   actorId: string | null | undefined,
-  deleteStateMetadata: DeleteStateMetadataAvailability,
 ): Promise<SystemStoragePurgeRunItemResult> {
   return candidate.candidateKind === "workorder"
-    ? purgeSystemWorkOrderCandidate(candidate, actorId, deleteStateMetadata)
+    ? purgeSystemWorkOrderCandidate(candidate, actorId)
     : purgeSystemFileCandidate(candidate, actorId);
 }
 
@@ -960,11 +862,7 @@ export async function runSystemStoragePurge(
     input.mode === "selected"
       ? normalizeTrashItemIds(input.trashItemIds).length
       : 0;
-  const deleteStateMetadata = await getDeleteStateMetadataAvailability();
-  const candidates = await listSystemStoragePurgeRunCandidates(
-    input,
-    deleteStateMetadata,
-  );
+  const candidates = await listSystemStoragePurgeRunCandidates(input);
   const items: SystemStoragePurgeRunItemResult[] = [];
 
   for (const candidate of candidates) {

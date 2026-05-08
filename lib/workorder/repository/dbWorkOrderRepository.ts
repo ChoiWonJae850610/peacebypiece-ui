@@ -10,10 +10,7 @@ import {
   WORKFLOW_STATES,
 } from "@/lib/constants/workorderStates";
 import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
-import {
-  ADMIN_FILE_TRASH_ACTOR_IDS,
-  ADMIN_FILE_TRASH_REASONS,
-} from "@/lib/admin/files/trashPolicy";
+import { ADMIN_FILE_TRASH_ACTOR_IDS } from "@/lib/admin/files/trashPolicy";
 import type { WorkOrder } from "@/types/workorder";
 import { applyReorderIdentity } from "@/lib/workorder/reorder/helpers";
 import { syncDbFactoryOrdersForSpecSheet } from "@/lib/workorder/repository/dbFactoryOrderRepository";
@@ -965,7 +962,6 @@ async function softDeleteAttachmentMemoBundleForWorkOrder(
           SET is_active = false,
               deleted_at = COALESCE(deleted_at, now()),
               deleted_by = COALESCE(deleted_by, $3),
-              delete_reason = COALESCE(delete_reason, $4),
               delete_source = COALESCE(delete_source, 'workorder_bundle'),
               delete_scope = COALESCE(delete_scope, 'bundle'),
               delete_parent_type = COALESCE(delete_parent_type, 'workorder'),
@@ -1035,12 +1031,7 @@ async function softDeleteAttachmentMemoBundleForWorkOrder(
             COALESCE(purge_after_at, now() + ($2::integer * interval '1 day'))
        FROM updated_attachments
      ON CONFLICT DO NOTHING`,
-    [
-      workOrderId,
-      trashRetentionDays,
-      ADMIN_FILE_TRASH_ACTOR_IDS.workorderDelete,
-      ADMIN_FILE_TRASH_REASONS.workorderBundle,
-    ],
+    [workOrderId, trashRetentionDays, ADMIN_FILE_TRASH_ACTOR_IDS.workorderDelete],
   );
 
   await queryDb(

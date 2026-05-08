@@ -1,16 +1,3 @@
-export const ADMIN_FILE_TRASH_REASONS = {
-  workorderBundle: "작업지시서 삭제로 함께 휴지통 이동",
-} as const;
-
-export type AdminFileTrashReason =
-  (typeof ADMIN_FILE_TRASH_REASONS)[keyof typeof ADMIN_FILE_TRASH_REASONS];
-
-export function isWorkOrderBundleTrashReason(
-  reason: string | null | undefined,
-): boolean {
-  return reason === ADMIN_FILE_TRASH_REASONS.workorderBundle;
-}
-
 export const ADMIN_DELETE_SOURCES = {
   manual: "manual",
   workorderBundle: "workorder_bundle",
@@ -40,13 +27,11 @@ export function isWorkOrderBundleTrashMetadata(input: {
   deleteSource?: string | null | undefined;
   deleteScope?: string | null | undefined;
   deleteParentType?: string | null | undefined;
-  deleteReason?: string | null | undefined;
 }): boolean {
   return (
     input.deleteSource === ADMIN_DELETE_SOURCES.workorderBundle ||
     (input.deleteScope === ADMIN_DELETE_SCOPES.bundle &&
-      input.deleteParentType === ADMIN_DELETE_PARENT_TYPES.workorder) ||
-    isWorkOrderBundleTrashReason(input.deleteReason)
+      input.deleteParentType === ADMIN_DELETE_PARENT_TYPES.workorder)
   );
 }
 
@@ -179,15 +164,16 @@ export function createAdminWorkOrderBundleMetadataSqlPredicate(
 
 export function createAdminWorkOrderBundleTrashSqlPredicate(input: {
   alias: string;
-  legacyReasonParamIndex: number;
   workOrderParamIndex?: number;
 }): string {
-  return `(${createAdminWorkOrderBundleMetadataSqlPredicate(input.alias, input.workOrderParamIndex)} OR COALESCE(${input.alias}.delete_reason, '') = $${input.legacyReasonParamIndex})`;
+  return createAdminWorkOrderBundleMetadataSqlPredicate(
+    input.alias,
+    input.workOrderParamIndex,
+  );
 }
 
 export function createAdminNotWorkOrderBundleTrashSqlPredicate(input: {
   alias: string;
-  legacyReasonParamIndex: number;
   workOrderParamIndex?: number;
 }): string {
   return `(NOT ${createAdminWorkOrderBundleTrashSqlPredicate(input)})`;
