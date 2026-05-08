@@ -1,0 +1,121 @@
+import type {
+  AdminStorageWorkOrderItem,
+  AdminTrashFileItem,
+} from "@/lib/admin/files/types";
+import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
+import { formatStorageSize } from "@/components/admin/files/fileTrashSectionRows";
+
+export type WorkOrderActionIntent = "restore" | "purge";
+
+export type WorkOrderActionPreview = {
+  intent: WorkOrderActionIntent;
+  workOrderId: string;
+};
+
+export type TrashSelectionActionState = {
+  selectedItems: AdminTrashFileItem[];
+  hasSelection: boolean;
+  restoreEligibleItemCount: number;
+  purgeEligibleItemCount: number;
+  canAct: boolean;
+  canRestoreSelection: boolean;
+  canPurgeSelection: boolean;
+  selectedCount: number;
+  allPurgeableCount: number;
+  canEmptyTrash: boolean;
+};
+
+export function getTrashSelectionActionState(input: {
+  items: AdminTrashFileItem[];
+  workOrderItems: AdminStorageWorkOrderItem[];
+  selectedItemIds: string[];
+  selectedWorkOrderIds: string[];
+  isActionPending: boolean;
+  isWorkOrderActionPending: boolean;
+}): TrashSelectionActionState {
+  const {
+    items,
+    workOrderItems,
+    selectedItemIds,
+    selectedWorkOrderIds,
+    isActionPending,
+    isWorkOrderActionPending,
+  } = input;
+  const selectedItems = items.filter((item) =>
+    selectedItemIds.includes(item.id),
+  );
+  const hasSelection =
+    selectedItemIds.length > 0 || selectedWorkOrderIds.length > 0;
+  const restoreEligibleItemCount = selectedItems.filter(
+    (item) => item.canRestore,
+  ).length;
+  const purgeEligibleItemCount = selectedItems.filter(
+    (item) => item.canPurge,
+  ).length;
+  const canAct = hasSelection && !isActionPending && !isWorkOrderActionPending;
+  const selectedCount = selectedItemIds.length + selectedWorkOrderIds.length;
+  const allPurgeableCount =
+    items.filter((item) => item.canPurge).length + workOrderItems.length;
+
+  return {
+    selectedItems,
+    hasSelection,
+    restoreEligibleItemCount,
+    purgeEligibleItemCount,
+    canAct,
+    canRestoreSelection:
+      canAct && selectedWorkOrderIds.length + restoreEligibleItemCount > 0,
+    canPurgeSelection:
+      canAct && selectedWorkOrderIds.length + purgeEligibleItemCount > 0,
+    selectedCount,
+    allPurgeableCount,
+    canEmptyTrash:
+      allPurgeableCount > 0 && !isActionPending && !isWorkOrderActionPending,
+  };
+}
+
+export type WorkOrderActionPreviewState = {
+  previewWorkOrder: AdminStorageWorkOrderItem | null;
+  previewWorkOrderTrashItems: AdminTrashFileItem[];
+  previewWorkOrderBundleCount: number;
+  previewWorkOrderBlockedCount: number;
+  previewWorkOrderTotalSizeLabel: string;
+};
+
+export function getWorkOrderActionPreviewState(input: {
+  items: AdminTrashFileItem[];
+  workOrderItems: AdminStorageWorkOrderItem[];
+  workOrderActionPreview: WorkOrderActionPreview | null;
+  t: ReturnType<typeof useAdminTranslation>;
+}): WorkOrderActionPreviewState {
+  const { items, workOrderItems, workOrderActionPreview, t } = input;
+  const previewWorkOrder =
+    workOrderItems.find(
+      (item) => item.id === workOrderActionPreview?.workOrderId,
+    ) ?? null;
+  const previewWorkOrderTrashItems = workOrderActionPreview?.workOrderId
+    ? items.filter(
+        (item) =>
+          item.workorderId === workOrderActionPreview.workOrderId &&
+          item.parentWorkOrderDeleted,
+      )
+    : [];
+
+  return {
+    previewWorkOrder,
+    previewWorkOrderTrashItems,
+    previewWorkOrderBundleCount: previewWorkOrderTrashItems.filter(
+      (item) => item.restorePolicy === "bundle_required",
+    ).length,
+    previewWorkOrderBlockedCount: previewWorkOrderTrashItems.filter(
+      (item) => item.restorePolicy === "parent_deleted_restore_blocked",
+    ).length,
+    previewWorkOrderTotalSizeLabel: formatStorageSize(
+      previewWorkOrderTrashItems.reduce(
+        (sum, item) => sum + item.fileSizeBytes,
+        0,
+      ),
+      t,
+    ),
+  };
+}

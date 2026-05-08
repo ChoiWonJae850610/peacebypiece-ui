@@ -18,9 +18,14 @@ import { createFileTrashColumns } from "@/components/admin/files/fileTrashSectio
 import {
   TRASH_TABLE_GRID,
   createUnifiedRows,
-  formatStorageSize,
   type UnifiedTrashRow,
 } from "@/components/admin/files/fileTrashSectionRows";
+import {
+  getTrashSelectionActionState,
+  getWorkOrderActionPreviewState,
+  type WorkOrderActionIntent,
+  type WorkOrderActionPreview,
+} from "@/components/admin/files/fileTrashSectionActions";
 
 type FileTrashSectionProps = {
   items: AdminTrashFileItem[];
@@ -38,13 +43,6 @@ type FileTrashSectionProps = {
   onPurgeWorkOrder?: (workOrderId: string) => void;
   isActionPending?: boolean;
   isWorkOrderActionPending?: boolean;
-};
-
-type WorkOrderActionIntent = "restore" | "purge";
-
-type WorkOrderActionPreview = {
-  intent: WorkOrderActionIntent;
-  workOrderId: string;
 };
 
 export default function FileTrashSection({
@@ -80,33 +78,20 @@ export default function FileTrashSection({
     useState<WorkOrderActionPreview | null>(null);
   const [detailRow, setDetailRow] = useState<UnifiedTrashRow | null>(null);
   const [isEmptyTrashConfirmOpen, setIsEmptyTrashConfirmOpen] = useState(false);
-  const previewWorkOrder = useMemo(
+  const {
+    previewWorkOrder,
+    previewWorkOrderBundleCount,
+    previewWorkOrderBlockedCount,
+    previewWorkOrderTotalSizeLabel,
+  } = useMemo(
     () =>
-      workOrderItems.find(
-        (item) => item.id === workOrderActionPreview?.workOrderId,
-      ) ?? null,
-    [workOrderActionPreview?.workOrderId, workOrderItems],
-  );
-  const previewWorkOrderTrashItems = useMemo(() => {
-    if (!workOrderActionPreview?.workOrderId) return [];
-    return items.filter(
-      (item) =>
-        item.workorderId === workOrderActionPreview.workOrderId &&
-        item.parentWorkOrderDeleted,
-    );
-  }, [items, workOrderActionPreview?.workOrderId]);
-  const previewWorkOrderBundleCount = previewWorkOrderTrashItems.filter(
-    (item) => item.restorePolicy === "bundle_required",
-  ).length;
-  const previewWorkOrderBlockedCount = previewWorkOrderTrashItems.filter(
-    (item) => item.restorePolicy === "parent_deleted_restore_blocked",
-  ).length;
-  const previewWorkOrderTotalSizeLabel = formatStorageSize(
-    previewWorkOrderTrashItems.reduce(
-      (sum, item) => sum + item.fileSizeBytes,
-      0,
-    ),
-    t,
+      getWorkOrderActionPreviewState({
+        items,
+        workOrderItems,
+        workOrderActionPreview,
+        t,
+      }),
+    [items, workOrderItems, workOrderActionPreview, t],
   );
 
   function openWorkOrderActionPreview(
@@ -116,29 +101,20 @@ export default function FileTrashSection({
     setWorkOrderActionPreview({ workOrderId, intent });
   }
 
-  const selectedItems = items.filter((item) =>
-    selectedItemIds.includes(item.id),
-  );
-  const hasSelection =
-    selectedItemIds.length > 0 || selectedWorkOrderIds.length > 0;
-  const restoreEligibleItemCount = selectedItems.filter(
-    (item) => item.canRestore,
-  ).length;
-  const purgeEligibleItemCount = selectedItems.filter(
-    (item) => item.canPurge,
-  ).length;
-  const canAct = hasSelection && !isActionPending && !isWorkOrderActionPending;
-  const canRestoreSelection =
-    canAct && selectedWorkOrderIds.length + restoreEligibleItemCount > 0;
-  const canPurgeSelection =
-    canAct && selectedWorkOrderIds.length + purgeEligibleItemCount > 0;
-  const selectedCount = selectedItemIds.length + selectedWorkOrderIds.length;
-  const allPurgeableCount =
-    items.filter((item) => item.canPurge).length + workOrderItems.length;
-  const canEmptyTrash =
-    allPurgeableCount > 0 &&
-    !isActionPending &&
-    !isWorkOrderActionPending;
+  const {
+    selectedItems,
+    canRestoreSelection,
+    canPurgeSelection,
+    selectedCount,
+    canEmptyTrash,
+  } = getTrashSelectionActionState({
+    items,
+    workOrderItems,
+    selectedItemIds,
+    selectedWorkOrderIds,
+    isActionPending,
+    isWorkOrderActionPending,
+  });
 
   return (
     <section className="flex h-full min-h-[420px] flex-col rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm">
@@ -184,7 +160,10 @@ export default function FileTrashSection({
         <button
           type="button"
           onClick={() => setIsEmptyTrashConfirmOpen(true)}
-          className={getTrashActionButtonClassName(canEmptyTrash, "dangerSolid")}
+          className={getTrashActionButtonClassName(
+            canEmptyTrash,
+            "dangerSolid",
+          )}
           disabled={!canEmptyTrash}
         >
           {t("filesList.emptyTrash", "비우기")}
@@ -484,8 +463,14 @@ export default function FileTrashSection({
               {(detailRow.kind === "workorder"
                 ? [
                     [t("filesList.columns.type", "유형"), detailRow.typeLabel],
-                    [t("filesList.attachmentCount", "첨부파일"), detailRow.sourceItem.attachmentSummaryLabel],
-                    [t("filesList.memoCount", "메모"), detailRow.sourceItem.memoSummaryLabel],
+                    [
+                      t("filesList.attachmentCount", "첨부파일"),
+                      detailRow.sourceItem.attachmentSummaryLabel,
+                    ],
+                    [
+                      t("filesList.memoCount", "메모"),
+                      detailRow.sourceItem.memoSummaryLabel,
+                    ],
                     [
                       t("filesList.columns.deletedAt", "삭제일시"),
                       detailRow.deletedAt,
@@ -494,7 +479,10 @@ export default function FileTrashSection({
                 : [
                     [t("filesList.columns.type", "유형"), detailRow.typeLabel],
                     [t("filesList.columns.size", "용량"), detailRow.sizeLabel],
-                    [t("filesList.columns.workorder", "작업지시서"), detailRow.workorderTitle],
+                    [
+                      t("filesList.columns.workorder", "작업지시서"),
+                      detailRow.workorderTitle,
+                    ],
                     [
                       t("filesList.columns.deletedAt", "삭제일시"),
                       detailRow.deletedAt,
