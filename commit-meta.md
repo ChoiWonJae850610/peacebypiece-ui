@@ -1,22 +1,17 @@
 Version :
-0.9.22393
+0.9.22394
 
 Summary :
-시스템관리자 실제 삭제 후보 점검 기준 보정
+저장소 관리 문구와 삭제 정책 문서 정리
 
 Description :
-시스템관리자 저장소 실제 삭제 후보 화면의 안내 문구를 정상 흐름 화면 확인과 예외 처리 코드 확인 기준으로 정리했다. R2 Worker 삭제 응답에서 not found 계열 응답은 이미 삭제된 객체로 보고 성공 처리하도록 보정하고, Worker/권한/네트워크 실패만 재시도 후보로 남기는 기준을 문서화했다. 삭제 후보 표의 예정일 정렬 버튼 중복 표시도 제거했다.
+고객관리자와 시스템관리자의 저장소 삭제 역할을 분리해 복원, 선택 삭제, 삭제 요청, 실제 삭제, 전체삭제 문구 기준을 문서화했다. 작업지시서 묶음 삭제와 선삭제 첨부파일 분리 정책, 휴지통 비우기 정책, 화면 직접 테스트 항목과 코드상 확인 항목도 정리했다.
 
 수정 파일 목록 :
-- app/system/storage-usage/page.tsx
-- components/system/storage/SystemStoragePurgeButton.tsx
-- components/system/storage/SystemStoragePurgeCandidatesClient.tsx
 - lib/constants/app.ts
-- lib/storage/r2/r2WorkerUpload.ts
-- lib/system/storagePurgeCandidates.ts
 
 추가 파일 목록 :
-- docs/system-storage-purge-final-check-0.9.22393.md
+- docs/storage-management-wording-policy-0.9.22394.md
 
 삭제 파일 목록 :
 없음
