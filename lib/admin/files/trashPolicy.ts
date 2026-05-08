@@ -23,6 +23,15 @@ export type AdminDeleteScope =
 export type AdminDeleteParentType =
   (typeof ADMIN_DELETE_PARENT_TYPES)[keyof typeof ADMIN_DELETE_PARENT_TYPES];
 
+export const ADMIN_TRASH_RESTORE_POLICIES = {
+  fileUnit: "file_unit",
+  parentDeletedRestoreBlocked: "parent_deleted_restore_blocked",
+  bundleRequired: "bundle_required",
+} as const;
+
+export type AdminTrashRestorePolicyValue =
+  (typeof ADMIN_TRASH_RESTORE_POLICIES)[keyof typeof ADMIN_TRASH_RESTORE_POLICIES];
+
 export function isWorkOrderBundleTrashMetadata(input: {
   deleteSource?: string | null | undefined;
   deleteScope?: string | null | undefined;
@@ -44,11 +53,43 @@ export type AdminTrashPolicyFileItem = {
   canPurge?: boolean | null;
 };
 
+export type AdminTrashPolicySizeItem = AdminTrashPolicyFileItem & {
+  fileSizeBytes?: number | null;
+};
+
+export function getAdminTrashRestorePolicy(input: {
+  parentWorkOrderDeleted: boolean;
+  deleteSource?: string | null | undefined;
+  deleteScope?: string | null | undefined;
+  deleteParentType?: string | null | undefined;
+}): AdminTrashRestorePolicyValue {
+  if (!input.parentWorkOrderDeleted) return ADMIN_TRASH_RESTORE_POLICIES.fileUnit;
+  return isWorkOrderBundleTrashMetadata({
+    deleteSource: input.deleteSource,
+    deleteScope: input.deleteScope,
+    deleteParentType: input.deleteParentType,
+  })
+    ? ADMIN_TRASH_RESTORE_POLICIES.bundleRequired
+    : ADMIN_TRASH_RESTORE_POLICIES.parentDeletedRestoreBlocked;
+}
+
+export function getAdminTrashRestorePolicyLabel(
+  policy: string | null | undefined,
+): string {
+  if (policy === ADMIN_TRASH_RESTORE_POLICIES.bundleRequired) {
+    return "작업지시서 묶음 복원";
+  }
+  if (policy === ADMIN_TRASH_RESTORE_POLICIES.parentDeletedRestoreBlocked) {
+    return "작업지시서를 찾을 수 없음";
+  }
+  return "파일 단위 처리 가능";
+}
+
 export function isAdminTrashItemWorkOrderBundle(
   item: AdminTrashPolicyFileItem,
 ): boolean {
   return (
-    item.restorePolicy === "bundle_required" ||
+    item.restorePolicy === ADMIN_TRASH_RESTORE_POLICIES.bundleRequired ||
     Boolean(item.parentWorkOrderDeleted && item.workorderId)
   );
 }
@@ -114,6 +155,32 @@ export function selectAdminStandaloneTrashItems<T extends AdminTrashPolicyFileIt
         selectedWorkOrderIdSet,
       ),
   );
+}
+
+export function selectAdminWorkOrderBundleTrashItems<T extends AdminTrashPolicyFileItem>(input: {
+  items: readonly T[];
+  workOrderId: string | null | undefined;
+}): T[] {
+  const workOrderId = String(input.workOrderId ?? "").trim();
+  if (!workOrderId) return [];
+  return input.items.filter(
+    (item) =>
+      item.workorderId === workOrderId &&
+      item.parentWorkOrderDeleted === true,
+  );
+}
+
+export function countAdminWorkOrderBundleRestorePolicy(
+  items: readonly AdminTrashPolicyFileItem[],
+  policy: string,
+): number {
+  return items.filter((item) => item.restorePolicy === policy).length;
+}
+
+export function sumAdminTrashItemSizeBytes(
+  items: readonly AdminTrashPolicySizeItem[],
+): number {
+  return items.reduce((sum, item) => sum + (item.fileSizeBytes ?? 0), 0);
 }
 
 export function canAdminTrashItemRunAction(

@@ -3,6 +3,7 @@
 import type { AdminTableColumn } from "@/lib/admin/common/types";
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { TrashItemVisual } from "@/components/admin/files/fileTrashSectionPresentation";
+import { ADMIN_TRASH_RESTORE_POLICIES } from "@/lib/admin/files/trashPolicy";
 import {
   TRASH_CELL_CENTER_CLASS,
   TRASH_CELL_SELECT_CLASS,
@@ -79,7 +80,7 @@ function TrashSelectionControl({
     );
   }
 
-  if (row.restorePolicy === "bundle_required") {
+  if (row.restorePolicy === ADMIN_TRASH_RESTORE_POLICIES.bundleRequired) {
     return (
       <span className="flex h-4 w-4 items-center justify-center text-[10px] font-medium text-stone-300">
         -

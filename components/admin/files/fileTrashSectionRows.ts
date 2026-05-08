@@ -3,6 +3,7 @@ import type {
   AdminTrashFileItem,
 } from "@/lib/admin/files/types";
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
+import { selectAdminWorkOrderBundleTrashItems } from "@/lib/admin/files/trashPolicy";
 
 export type UnifiedTrashRow =
   | {
@@ -311,11 +312,7 @@ export function createUnifiedRows(input: {
   [...workOrderItems].sort(sortByDeletedAtDesc).forEach((workOrder) => {
     rows.push(createWorkOrderRow(workOrder));
 
-    items
-      .filter(
-        (item) =>
-          item.workorderId === workOrder.id && item.parentWorkOrderDeleted,
-      )
+    selectAdminWorkOrderBundleTrashItems({ items, workOrderId: workOrder.id })
       .sort(sortByDeletedAtDesc)
       .forEach((item) => {
         groupedAttachmentIds.add(item.id);

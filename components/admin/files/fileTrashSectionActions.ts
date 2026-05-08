@@ -5,10 +5,14 @@ import type {
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { formatStorageSize } from "@/components/admin/files/fileTrashSectionRows";
 import {
+  ADMIN_TRASH_RESTORE_POLICIES,
   canAdminTrashItemPurge,
   canAdminTrashItemRestore,
+  countAdminWorkOrderBundleRestorePolicy,
   selectAdminStandaloneTrashItems,
   selectAdminTrashActionEligibleItems,
+  selectAdminWorkOrderBundleTrashItems,
+  sumAdminTrashItemSizeBytes,
 } from "@/lib/admin/files/trashPolicy";
 
 export type WorkOrderActionIntent = "restore" | "purge";
@@ -107,28 +111,24 @@ export function getWorkOrderActionPreviewState(input: {
     workOrderItems.find(
       (item) => item.id === workOrderActionPreview?.workOrderId,
     ) ?? null;
-  const previewWorkOrderTrashItems = workOrderActionPreview?.workOrderId
-    ? items.filter(
-        (item) =>
-          item.workorderId === workOrderActionPreview.workOrderId &&
-          item.parentWorkOrderDeleted,
-      )
-    : [];
+  const previewWorkOrderTrashItems = selectAdminWorkOrderBundleTrashItems({
+    items,
+    workOrderId: workOrderActionPreview?.workOrderId,
+  });
 
   return {
     previewWorkOrder,
     previewWorkOrderTrashItems,
-    previewWorkOrderBundleCount: previewWorkOrderTrashItems.filter(
-      (item) => item.restorePolicy === "bundle_required",
-    ).length,
-    previewWorkOrderBlockedCount: previewWorkOrderTrashItems.filter(
-      (item) => item.restorePolicy === "parent_deleted_restore_blocked",
-    ).length,
+    previewWorkOrderBundleCount: countAdminWorkOrderBundleRestorePolicy(
+      previewWorkOrderTrashItems,
+      ADMIN_TRASH_RESTORE_POLICIES.bundleRequired,
+    ),
+    previewWorkOrderBlockedCount: countAdminWorkOrderBundleRestorePolicy(
+      previewWorkOrderTrashItems,
+      ADMIN_TRASH_RESTORE_POLICIES.parentDeletedRestoreBlocked,
+    ),
     previewWorkOrderTotalSizeLabel: formatStorageSize(
-      previewWorkOrderTrashItems.reduce(
-        (sum, item) => sum + item.fileSizeBytes,
-        0,
-      ),
+      sumAdminTrashItemSizeBytes(previewWorkOrderTrashItems),
       t,
     ),
   };

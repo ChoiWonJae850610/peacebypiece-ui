@@ -5,6 +5,7 @@ import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import {
   ADMIN_FILE_TRASH_OPEN_PURGE_STATUS_SQL_LIST,
+  ADMIN_TRASH_RESTORE_POLICIES,
   ADMIN_FILE_TRASH_PURGE_STATUS_SQL,
   ADMIN_FILE_TRASH_PURGE_STATUSES,
   ADMIN_WORKORDER_ADMIN_TRASH_HIDDEN_DELETE_STATUS_SQL_LIST,
@@ -13,8 +14,9 @@ import {
   ADMIN_WORKORDER_PURGE_STATUS_SQL,
   createAdminWorkOrderBundleMetadataSqlPredicate,
   getAdminFileTrashVisiblePurgeStatus,
+  getAdminTrashRestorePolicy,
+  getAdminTrashRestorePolicyLabel,
   isAdminFileTrashPendingStatus,
-  isWorkOrderBundleTrashMetadata,
 } from "@/lib/admin/files/trashPolicy";
 import type { DbQueryResultRow } from "@/lib/db/client";
 import type {
@@ -398,31 +400,6 @@ function getWorkOrderStatusLabel(status: string | null | undefined): string {
   return status || "상태 없음";
 }
 
-function getTrashRestorePolicy(input: {
-  parentWorkOrderDeleted: boolean;
-  deleteSource?: string | null | undefined;
-  deleteScope?: string | null | undefined;
-  deleteParentType?: string | null | undefined;
-}): "file_unit" | "parent_deleted_restore_blocked" | "bundle_required" {
-  if (!input.parentWorkOrderDeleted) return "file_unit";
-  return isWorkOrderBundleTrashMetadata({
-    deleteSource: input.deleteSource,
-    deleteScope: input.deleteScope,
-    deleteParentType: input.deleteParentType,
-  })
-    ? "bundle_required"
-    : "parent_deleted_restore_blocked";
-}
-
-function getTrashRestorePolicyLabel(
-  policy: "file_unit" | "parent_deleted_restore_blocked" | "bundle_required",
-): string {
-  if (policy === "bundle_required") return "작업지시서 묶음 복원";
-  if (policy === "parent_deleted_restore_blocked")
-    return "작업지시서를 찾을 수 없음";
-  return "파일 단위 처리 가능";
-}
-
 function getPurgeStatusLabel(
   status: string | null | undefined,
   errorMessage: string | null | undefined,
@@ -607,13 +584,13 @@ export async function listAdminFileManagementRows(
     const sizeBytes = toNumber(row.size_bytes);
     const restoreDaysLeft = getRestoreDaysLeft(row.purge_after_at);
     const parentWorkOrderDeleted = Boolean(row.parent_workorder_deleted);
-    const restorePolicy = getTrashRestorePolicy({
+    const restorePolicy = getAdminTrashRestorePolicy({
       parentWorkOrderDeleted,
       deleteSource: row.delete_source,
       deleteScope: row.delete_scope,
       deleteParentType: row.delete_parent_type,
     });
-    const restorePolicyLabel = getTrashRestorePolicyLabel(restorePolicy);
+    const restorePolicyLabel = getAdminTrashRestorePolicyLabel(restorePolicy);
     const isPending = isAdminFileTrashPendingStatus(row.purge_status);
     return {
       id: row.id,
@@ -655,9 +632,9 @@ export async function listAdminFileManagementRows(
       canRestore:
         restorePolicy === "file_unit" && !row.last_purge_error && isPending,
       restoreDisabledReason:
-        restorePolicy === "bundle_required"
+        restorePolicy === ADMIN_TRASH_RESTORE_POLICIES.bundleRequired
           ? "작업지시서와 첨부된 파일/메모가 함께 복원됩니다."
-          : restorePolicy === "parent_deleted_restore_blocked"
+          : restorePolicy === ADMIN_TRASH_RESTORE_POLICIES.parentDeletedRestoreBlocked
             ? "해당 작업지시서를 찾을 수 없습니다."
             : row.last_purge_error
               ? "삭제 실패 상태는 시스템관리자 확인 후 처리해야 합니다."
@@ -665,11 +642,11 @@ export async function listAdminFileManagementRows(
                 ? "복원 가능 상태가 아닙니다."
                 : null,
       canPurge:
-        restorePolicy !== "bundle_required" &&
+        restorePolicy !== ADMIN_TRASH_RESTORE_POLICIES.bundleRequired &&
         !row.last_purge_error &&
         isPending,
       purgeDisabledReason:
-        restorePolicy === "bundle_required"
+        restorePolicy === ADMIN_TRASH_RESTORE_POLICIES.bundleRequired
           ? "작업지시서 삭제와 함께 휴지통으로 이동한 파일은 작업지시서 묶음 삭제 요청에서 함께 처리해야 합니다."
           : row.last_purge_error
             ? "삭제 실패 상태는 시스템관리자 확인 후 처리해야 합니다."
