@@ -11,6 +11,8 @@ import {
   ADMIN_WORKORDER_DELETE_STATUS_SQL,
   ADMIN_WORKORDER_PURGE_STATUS_SQL,
   ADMIN_WORKORDER_SYSTEM_CANDIDATE_PURGE_STATUS_SQL_LIST,
+  createAdminNotWorkOrderBundleTrashSqlPredicate,
+  createAdminWorkOrderBundleTrashSqlPredicate,
   getAdminFileTrashVisiblePurgeStatus,
   isAdminFileTrashPendingStatus,
   isAdminFileTrashPurgeRequestedStatus,
@@ -149,7 +151,10 @@ function getWorkOrderBundleFilePredicate(
     return `${alias}.delete_reason = $${reasonParamIndex}`;
   }
 
-  return `(${alias}.delete_source = 'workorder_bundle' OR ${alias}.delete_reason = $${reasonParamIndex})`;
+  return createAdminWorkOrderBundleTrashSqlPredicate({
+    alias,
+    legacyReasonParamIndex: reasonParamIndex,
+  });
 }
 
 function getNotWorkOrderBundleFilePredicate(
@@ -161,7 +166,10 @@ function getNotWorkOrderBundleFilePredicate(
     return `COALESCE(${alias}.delete_reason, '') <> $${reasonParamIndex}`;
   }
 
-  return `(COALESCE(${alias}.delete_source, '') <> 'workorder_bundle' AND COALESCE(${alias}.delete_reason, '') <> $${reasonParamIndex})`;
+  return createAdminNotWorkOrderBundleTrashSqlPredicate({
+    alias,
+    legacyReasonParamIndex: reasonParamIndex,
+  });
 }
 
 function toNumber(value: string | number | null | undefined): number {

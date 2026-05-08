@@ -1,21 +1,20 @@
 Version :
-0.9.22402
+0.9.22403
 
 Summary :
-저장소 휴지통 선택 흐름과 공통 정책 함수 보정
+작업지시서 휴지통 삭제 메타데이터 판정 보정
 
 Description :
-저장소 관리 휴지통에서 작업지시서 묶음 첨부가 파일 단독 실패 항목으로 잘못 집계되지 않도록 선택 대상 계산을 보정했다. 복원/삭제 요청 가능 여부 판정을 trashPolicy 공통 함수로 이동하고, 일부 actionFlow 결과 메시지 생성을 presentation formatter로 분리했다.
+작업지시서 삭제/복원/삭제 요청 흐름에서 문서/디자인/메모 묶음 항목을 delete_reason 문장 비교보다 구조화된 삭제 메타데이터 기준으로 우선 판정하도록 보정했다. 작업지시서 묶음 SQL predicate를 공통 정책 함수로 분리하고, 시스템관리자 실제 삭제 후보 판정도 같은 기준을 사용하도록 정리했다.
 
 수정 파일 목록 :
-- components/admin/files/fileTrashSectionActions.ts
-- lib/admin/adminFiles.actionFlow.ts
-- lib/admin/adminFiles.presentation.ts
+- lib/admin/adminFiles.serverActions.ts
 - lib/admin/files/trashPolicy.ts
+- lib/system/storagePurgeCandidates.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/storage-trash-flow-common-policy-0.9.22402.md
+- docs/workorder-trash-policy-metadata-0.9.22403.md
 
 삭제 파일 목록 :
 없음

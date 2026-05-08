@@ -38,10 +38,14 @@ export type AdminDeleteParentType =
 
 export function isWorkOrderBundleTrashMetadata(input: {
   deleteSource?: string | null | undefined;
+  deleteScope?: string | null | undefined;
+  deleteParentType?: string | null | undefined;
   deleteReason?: string | null | undefined;
 }): boolean {
   return (
     input.deleteSource === ADMIN_DELETE_SOURCES.workorderBundle ||
+    (input.deleteScope === ADMIN_DELETE_SCOPES.bundle &&
+      input.deleteParentType === ADMIN_DELETE_PARENT_TYPES.workorder) ||
     isWorkOrderBundleTrashReason(input.deleteReason)
   );
 }
@@ -145,6 +149,48 @@ function quoteAdminTrashSqlLiteral(value: string): string {
 
 function joinAdminTrashSqlLiterals(values: readonly string[]): string {
   return values.map(quoteAdminTrashSqlLiteral).join(", ");
+}
+
+export const ADMIN_DELETE_SOURCE_SQL = {
+  manual: quoteAdminTrashSqlLiteral(ADMIN_DELETE_SOURCES.manual),
+  workorderBundle: quoteAdminTrashSqlLiteral(ADMIN_DELETE_SOURCES.workorderBundle),
+  system: quoteAdminTrashSqlLiteral(ADMIN_DELETE_SOURCES.system),
+} as const;
+
+export const ADMIN_DELETE_SCOPE_SQL = {
+  single: quoteAdminTrashSqlLiteral(ADMIN_DELETE_SCOPES.single),
+  bundle: quoteAdminTrashSqlLiteral(ADMIN_DELETE_SCOPES.bundle),
+} as const;
+
+export const ADMIN_DELETE_PARENT_TYPE_SQL = {
+  none: quoteAdminTrashSqlLiteral(ADMIN_DELETE_PARENT_TYPES.none),
+  workorder: quoteAdminTrashSqlLiteral(ADMIN_DELETE_PARENT_TYPES.workorder),
+} as const;
+
+export function createAdminWorkOrderBundleMetadataSqlPredicate(
+  alias: string,
+  workOrderParamIndex?: number,
+): string {
+  const parentIdPredicate = workOrderParamIndex
+    ? ` AND ${alias}.delete_parent_id = $${workOrderParamIndex}`
+    : "";
+  return `(COALESCE(${alias}.delete_source, '') = ${ADMIN_DELETE_SOURCE_SQL.workorderBundle} OR (COALESCE(${alias}.delete_scope, '') = ${ADMIN_DELETE_SCOPE_SQL.bundle} AND COALESCE(${alias}.delete_parent_type, '') = ${ADMIN_DELETE_PARENT_TYPE_SQL.workorder}${parentIdPredicate}))`;
+}
+
+export function createAdminWorkOrderBundleTrashSqlPredicate(input: {
+  alias: string;
+  legacyReasonParamIndex: number;
+  workOrderParamIndex?: number;
+}): string {
+  return `(${createAdminWorkOrderBundleMetadataSqlPredicate(input.alias, input.workOrderParamIndex)} OR COALESCE(${input.alias}.delete_reason, '') = $${input.legacyReasonParamIndex})`;
+}
+
+export function createAdminNotWorkOrderBundleTrashSqlPredicate(input: {
+  alias: string;
+  legacyReasonParamIndex: number;
+  workOrderParamIndex?: number;
+}): string {
+  return `(NOT ${createAdminWorkOrderBundleTrashSqlPredicate(input)})`;
 }
 
 export const ADMIN_FILE_TRASH_PURGE_STATUS_SQL = {
