@@ -7,7 +7,7 @@ import { enUS, ko } from "date-fns/locale";
 
 import { AdminCard } from "@/components/admin/layout/AdminCard";
 import { AdminBasicBarChart, AdminBasicDonutChart } from "@/components/admin/dashboard/AdminBasicStatsCharts";
-import type { AdminStatsSnapshot } from "@/lib/admin/stats/types";
+import type { AdminStatsPeriodTopMode, AdminStatsSnapshot } from "@/lib/admin/stats/types";
 import { buildAdminStatsDashboardViewModel } from "@/lib/admin/stats/presentation";
 import type { getI18n } from "@/lib/i18n";
 import { useI18n } from "@/lib/i18n";
@@ -180,22 +180,22 @@ function AdminStatsDateRangePicker({
       <button
         type="button"
         onClick={() => setIsCalendarOpen((current) => !current)}
-        className="flex w-full flex-col gap-2 rounded-2xl border border-stone-100 bg-white p-2 text-left shadow-sm transition hover:border-stone-200 hover:bg-stone-50 sm:flex-row"
+        className="flex w-full min-w-[280px] flex-col gap-1.5 rounded-2xl border border-stone-100 bg-white p-1.5 text-left shadow-sm transition hover:border-stone-200 hover:bg-stone-50 sm:flex-row"
         aria-expanded={isCalendarOpen}
         aria-label={labels.calendarAria}
       >
-        <span className="min-w-0 flex-1 rounded-xl bg-stone-50 px-3 py-2">
+        <span className="min-w-0 flex-1 rounded-xl bg-stone-50 px-3 py-1.5">
           <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-400">{labels.start}</span>
-          <span className="mt-1 block text-sm font-semibold text-stone-800">{formatDateDisplay(startDate, locale)}</span>
+          <span className="mt-0.5 block text-xs font-semibold text-stone-800">{formatDateDisplay(startDate, locale)}</span>
         </span>
-        <span className="min-w-0 flex-1 rounded-xl bg-stone-50 px-3 py-2">
+        <span className="min-w-0 flex-1 rounded-xl bg-stone-50 px-3 py-1.5">
           <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-400">{labels.end}</span>
-          <span className="mt-1 block text-sm font-semibold text-stone-800">{formatDateDisplay(endDate, locale)}</span>
+          <span className="mt-0.5 block text-xs font-semibold text-stone-800">{formatDateDisplay(endDate, locale)}</span>
         </span>
       </button>
 
       {isCalendarOpen ? (
-        <div className="absolute left-0 top-[calc(100%+8px)] z-30 w-[min(340px,calc(100vw-3rem))] rounded-[22px] border border-stone-100 bg-white p-3 shadow-2xl">
+        <div className="absolute left-0 top-[calc(100%+8px)] z-30 w-[min(320px,calc(100vw-3rem))] rounded-[22px] border border-stone-100 bg-white p-3 shadow-2xl">
           <DayPicker
             mode="range"
             selected={selected}
@@ -217,7 +217,7 @@ function AdminStatsDateRangePicker({
               weekdays: "grid grid-cols-7 text-center text-[11px] font-semibold uppercase tracking-[0.08em] text-stone-400",
               week: "grid grid-cols-7 gap-1",
               day: "flex items-center justify-center",
-              day_button: "h-8 w-8 rounded-full text-xs font-semibold transition hover:bg-stone-100 disabled:text-stone-300",
+              day_button: "h-7 w-7 rounded-full text-[11px] font-semibold transition hover:bg-stone-100 disabled:text-stone-300",
               today: "font-bold text-[var(--admin-theme-surface)]",
               selected: "rounded-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
               range_start: "rounded-l-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
@@ -256,27 +256,74 @@ function AdminStatsDateRangePicker({
 function PeriodSummaryCard({
   title,
   items,
+  selectedKey,
+  onSelect,
 }: {
   title: string;
-  items: Array<{ label: string; value: string; description: string }>;
+  items: Array<{ key: AdminStatsPeriodTopMode; label: string; value: string; description: string }>;
+  selectedKey: AdminStatsPeriodTopMode;
+  onSelect: (key: AdminStatsPeriodTopMode) => void;
 }) {
   return (
     <div className="rounded-[24px] border border-stone-100 bg-stone-50/70 p-4">
       <h3 className="text-sm font-semibold text-stone-950">{title}</h3>
       <div className="mt-3 grid gap-2">
-        {items.map((item) => (
-          <div key={item.label} className="rounded-2xl border border-stone-100 bg-white px-4 py-3 shadow-sm">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-stone-800">{item.label}</p>
-                <p className="mt-1 text-[11px] font-semibold leading-5 text-stone-400">{item.description}</p>
+        {items.map((item) => {
+          const isSelected = item.key === selectedKey;
+          return (
+            <button
+              key={item.key}
+              type="button"
+              onClick={() => onSelect(item.key)}
+              className={`rounded-2xl border px-4 py-3 text-left shadow-sm transition ${isSelected ? "border-stone-950 bg-white" : "border-stone-100 bg-white hover:border-stone-200 hover:bg-stone-50"}`}
+              aria-pressed={isSelected}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-stone-800">{item.label}</p>
+                  <p className="mt-1 text-[11px] font-semibold leading-5 text-stone-400">{item.description}</p>
+                </div>
+                <p className="shrink-0 text-lg font-bold text-stone-950">{item.value}</p>
               </div>
-              <p className="shrink-0 text-lg font-bold text-stone-950">{item.value}</p>
-            </div>
-          </div>
-        ))}
+            </button>
+          );
+        })}
       </div>
     </div>
+  );
+}
+
+function PeriodTopCard({
+  eyebrow,
+  title,
+  items,
+  emptyLabel,
+  valueSuffix,
+}: {
+  eyebrow: string;
+  title: string;
+  items: Array<{ label: string; value: number; widthPercent: number }>;
+  emptyLabel: string;
+  valueSuffix: string;
+}) {
+  return (
+    <AdminCard className="min-h-[250px]">
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{eyebrow}</p>
+      <h2 className="mt-2 text-lg font-semibold text-stone-950">{title}</h2>
+      <div className="mt-5 grid gap-3">
+        {items.length > 0 ? items.map((item, index) => (
+          <div key={`${item.label}-${index}`} className="rounded-2xl bg-stone-50 px-4 py-3">
+            <div className="flex items-center justify-between text-sm font-semibold text-stone-700">
+              <span className="truncate pr-3">{index + 1}. {item.label}</span>
+              <span className="shrink-0 text-stone-950">{formatCount(item.value, valueSuffix)}</span>
+            </div>
+            <div className="mt-2 h-1.5 rounded-full bg-white">
+              <div className="h-1.5 rounded-full bg-[var(--admin-theme-surface)]" style={{ width: `${item.widthPercent}%` }} />
+            </div>
+          </div>
+        )) : <p className="rounded-2xl border border-dashed border-stone-200 bg-stone-50 px-4 py-4 text-sm font-semibold text-stone-500">{emptyLabel}</p>}
+      </div>
+    </AdminCard>
   );
 }
 
@@ -297,6 +344,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   const pt = (key: string, fallback: string) => t(`dashboardPage.${key}`, fallback);
   const [categoryDepth, setCategoryDepth] = useState<CategoryDepthKey>("first");
   const [selectedCategoryLabel, setSelectedCategoryLabel] = useState<string | null>(null);
+  const [selectedPeriodTopMode, setSelectedPeriodTopMode] = useState<AdminStatsPeriodTopMode>("reorder");
   const [customStartDate, setCustomStartDate] = useState(stats.selectedPeriodRange.isCustom ? stats.selectedPeriodRange.startDate : "");
   const [customEndDate, setCustomEndDate] = useState(stats.selectedPeriodRange.isCustom ? stats.selectedPeriodRange.endDate : "");
   const todayDateValue = new Date().toISOString().slice(0, 10);
@@ -349,6 +397,11 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
       secondToThird: Object.fromEntries(Object.entries(stats.productionCategoryDrilldown.secondToThird).map(([label, items]) => [translateStatsLabel(label, t), translateStatsText(items, t)])),
     },
     reorderTopProducts: translateStatsText(stats.reorderTopProducts, t),
+    periodTopProducts: {
+      completed: translateStatsText(stats.periodTopProducts.completed, t),
+      reorder: translateStatsText(stats.periodTopProducts.reorder, t),
+      defect: translateStatsText(stats.periodTopProducts.defect, t),
+    },
     factoryPerformance: stats.factoryPerformance,
     attachmentTrashCards: translateStatsText(stats.attachmentTrashCards, t),
   };
@@ -394,18 +447,21 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   const storageUsePercent = stats.currentOverview.storageLimitBytes > 0 ? Math.round((stats.currentOverview.storageUsedBytes / stats.currentOverview.storageLimitBytes) * 1000) / 10 : 0;
   const periodSummaryItems = [
     {
+      key: "completed" as const,
       label: pt("periodSummaryCompletedLabel", "완료 작업지시서"),
-      value: formatCount(stats.currentOverview.completedCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)),
+      value: formatCount(stats.periodSummary.completedCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)),
       description: pt("periodSummaryCompletedDescription", "선택 기간 안에 완료된 작업지시서"),
     },
     {
+      key: "reorder" as const,
       label: pt("periodSummaryReorderLabel", "리오더"),
-      value: formatCount(stats.currentOverview.reorderCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)),
+      value: formatCount(stats.periodSummary.reorderCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)),
       description: pt("periodSummaryReorderDescription", "선택 기간 안의 리오더 작업지시서"),
     },
     {
+      key: "defect" as const,
       label: pt("periodSummaryDefectLabel", "불량 작업지시서"),
-      value: formatCount(stats.currentOverview.qualityIssueCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)),
+      value: formatCount(stats.periodSummary.qualityIssueCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)),
       description: pt("periodSummaryDefectDescription", "불량이 1개 이상 기록된 작업지시서"),
     },
   ];
@@ -429,7 +485,18 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     ? pt("categoryDetailTitleFirst", pageText.categoryDetailTitleFirst).replace("{label}", fallbackSelectedCategory)
     : pt("categoryDetailTitleSecond", pageText.categoryDetailTitleSecond).replace("{label}", fallbackSelectedCategory);
   const categoryDetailEmptyLabel = categoryDepth === "first" ? pt("categoryDetailEmptyFirst", pageText.categoryDetailEmptyFirst) : pt("categoryDetailEmptySecond", pageText.categoryDetailEmptySecond);
-  const reorderTopProducts = toRatioBars(translatedStats.reorderTopProducts).slice(0, 5);
+  const periodTopModeTitle: Record<AdminStatsPeriodTopMode, string> = {
+    completed: pt("periodTopCompletedTitle", "발주수량 상위 TOP5"),
+    reorder: pt("periodTopReorderTitle", pageText.reorderTopTitle),
+    defect: pt("periodTopDefectTitle", "불량 작업지시서 TOP5"),
+  };
+  const periodTopModeEmpty: Record<AdminStatsPeriodTopMode, string> = {
+    completed: pt("periodTopCompletedEmpty", "발주수량 데이터 없음"),
+    reorder: pt("reorderEmpty", pageText.reorderEmpty),
+    defect: pt("periodTopDefectEmpty", "불량 작업지시서 데이터 없음"),
+  };
+  const periodTopValueSuffix = selectedPeriodTopMode === "completed" ? pt("quantityCountSuffix", "pcs") : pt("workorderCountSuffix", pageText.workorderCountSuffix);
+  const selectedPeriodTopProducts = toRatioBars(translatedStats.periodTopProducts[selectedPeriodTopMode] ?? []).slice(0, 5);
 
   useEffect(() => {
     setSelectedCategoryLabel((current) => {
@@ -512,88 +579,6 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         </div>
       </section>
 
-      <section className="rounded-[28px] border border-stone-100 bg-white px-5 py-5 shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-stone-100 pb-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("periodAnalysisEyebrow", pageText.periodAnalysisEyebrow)}</p>
-            <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("periodAnalysisTitle", pageText.periodAnalysisTitle)}</h2>
-          </div>
-          <div className="flex flex-wrap justify-end gap-2">
-            {activePeriodOptions.map((item) => (
-              <Link
-                key={item.key}
-                href={item.href}
-                aria-current={item.active ? "page" : undefined}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${item.active ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "bg-stone-50 text-stone-500 hover:bg-stone-100"}`}
-              >
-                {translateStatsLabel(item.label, t)}
-              </Link>
-            ))}
-          </div>
-        </div>
-        <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(280px,0.75fr)]">
-          <div className="rounded-[24px] border border-stone-100 bg-white p-4 shadow-sm">
-            <AdminStatsDateRangePicker
-              startDate={customStartDate}
-              endDate={customEndDate}
-              maxDateValue={todayDateValue}
-              labels={dateRangeLabels}
-              locale={locale}
-              onStartDateChange={updateCustomStartDate}
-              onEndDateChange={updateCustomEndDate}
-            />
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <Link
-                href="/admin/dashboard?period=30d"
-                className="rounded-2xl border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-600 shadow-sm transition hover:bg-stone-50"
-              >
-                {pt("customReset", pageText.customReset)}
-              </Link>
-              <Link
-                href={customPeriodHref}
-                aria-disabled={!isCustomPeriodValid}
-                className={`rounded-2xl px-4 py-2 text-xs font-semibold transition ${isCustomPeriodValid ? "bg-stone-950 text-white hover:bg-stone-800" : "pointer-events-none bg-stone-100 text-stone-400"}`}
-              >
-                {pt("customApply", pageText.customApply)}
-              </Link>
-            </div>
-            {customPeriodMessage ? <p className="mt-2 text-xs font-semibold text-amber-700">{customPeriodMessage}</p> : null}
-          </div>
-          <PeriodSummaryCard title={pt("periodSummaryTitle", "기간 요약")} items={periodSummaryItems} />
-        </div>
-      </section>
-
-      <section className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
-        <AdminCard className="flex min-h-[360px] flex-col">
-          <div className="flex items-start justify-between gap-3 border-b border-stone-100 pb-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("workflowEyebrow", pageText.workflowEyebrow)}</p>
-              <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("workflowAnalysisTitle", pageText.workflowAnalysisTitle)}</h2>
-            </div>
-            <span className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--admin-theme-text-on-surface)]">{activePeriodLabel}</span>
-          </div>
-          <AdminBasicBarChart points={translatedStats.workorderFlow} emptyLabel={pt("emptyFlowLabel", pageText.emptyFlowLabel)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} />
-        </AdminCard>
-
-        <AdminCard>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("reorderTopEyebrow", pageText.reorderTopEyebrow)}</p>
-          <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("reorderTopTitle", pageText.reorderTopTitle)}</h2>
-          <div className="mt-5 grid gap-3">
-            {reorderTopProducts.length > 0 ? reorderTopProducts.map((item, index) => (
-              <div key={`${item.label}-${index}`} className="rounded-2xl bg-stone-50 px-4 py-3">
-                <div className="flex items-center justify-between text-sm font-semibold text-stone-700">
-                  <span className="truncate pr-3">{index + 1}. {item.label}</span>
-                  <span className="shrink-0 text-stone-950">{formatCount(item.value, pt("workorderCountSuffix", pageText.workorderCountSuffix))}</span>
-                </div>
-                <div className="mt-2 h-1.5 rounded-full bg-white">
-                  <div className="h-1.5 rounded-full bg-[var(--admin-theme-surface)]" style={{ width: `${item.widthPercent}%` }} />
-                </div>
-              </div>
-            )) : <p className="rounded-2xl border border-dashed border-stone-200 bg-stone-50 px-4 py-4 text-sm font-semibold text-stone-500">{pt("reorderEmpty", pageText.reorderEmpty)}</p>}
-          </div>
-        </AdminCard>
-      </section>
-
       <section className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
         <AdminCard>
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -652,6 +637,70 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
             )}
           </div>
         </AdminCard>
+      </section>
+
+
+      <section className="rounded-[28px] border border-stone-100 bg-white px-5 py-5 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-100 pb-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("periodAnalysisEyebrow", pageText.periodAnalysisEyebrow)}</p>
+            <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("periodAnalysisTitle", pageText.periodAnalysisTitle)}</h2>
+          </div>
+          <div className="flex flex-1 flex-wrap items-center justify-end gap-2">
+            <div className="min-w-[280px] max-w-[440px] flex-1 sm:flex-none">
+              <AdminStatsDateRangePicker
+                startDate={customStartDate}
+                endDate={customEndDate}
+                maxDateValue={todayDateValue}
+                labels={dateRangeLabels}
+                locale={locale}
+                onStartDateChange={updateCustomStartDate}
+                onEndDateChange={updateCustomEndDate}
+              />
+            </div>
+            {activePeriodOptions.map((item) => (
+              <Link
+                key={item.key}
+                href={item.href}
+                aria-current={item.active ? "page" : undefined}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${item.active ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "bg-stone-50 text-stone-500 hover:bg-stone-100"}`}
+              >
+                {translateStatsLabel(item.label, t)}
+              </Link>
+            ))}
+            <Link
+              href="/admin/dashboard?period=30d"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-white text-sm font-semibold text-stone-500 shadow-sm transition hover:bg-stone-50"
+              aria-label={pt("customReset", pageText.customReset)}
+              title={pt("customReset", pageText.customReset)}
+            >
+              ↻
+            </Link>
+            <Link
+              href={customPeriodHref}
+              aria-disabled={!isCustomPeriodValid}
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${isCustomPeriodValid ? "bg-stone-950 text-white hover:bg-stone-800" : "pointer-events-none bg-stone-100 text-stone-400"}`}
+            >
+              {pt("customApplyShort", pageText.customApply)}
+            </Link>
+          </div>
+        </div>
+        {customPeriodMessage ? <p className="mt-3 text-xs font-semibold text-amber-700">{customPeriodMessage}</p> : null}
+        <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.25fr)_minmax(280px,0.75fr)]">
+          <PeriodTopCard
+            eyebrow={pt("periodTopEyebrow", pageText.reorderTopEyebrow)}
+            title={periodTopModeTitle[selectedPeriodTopMode]}
+            items={selectedPeriodTopProducts}
+            emptyLabel={periodTopModeEmpty[selectedPeriodTopMode]}
+            valueSuffix={periodTopValueSuffix}
+          />
+          <PeriodSummaryCard
+            title={pt("periodSummaryTitle", "기간 요약")}
+            items={periodSummaryItems}
+            selectedKey={selectedPeriodTopMode}
+            onSelect={setSelectedPeriodTopMode}
+          />
+        </div>
       </section>
     </>
   );

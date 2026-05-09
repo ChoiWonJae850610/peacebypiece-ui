@@ -28,7 +28,7 @@ import {
 import { ADMIN_FILE_LIMIT_BYTES } from "@/lib/constants/adminStats";
 import { isDatabaseConfigured, queryDb } from "@/lib/db/client";
 
-type ReorderTopProductRow = Record<string, unknown> & { product_label: string | null; count_value: string | number | null };
+type PeriodTopProductRow = Record<string, unknown> & { product_label: string | null; count_value: string | number | null };
 type CategoryByRoundRow = Record<string, unknown> & { round_key: "first" | "second" | "third" | null; category_label: string | null; count_value: string | number | null };
 type CategoryDrilldownRow = Record<string, unknown> & { drilldown_key: "firstToSecond" | "secondToThird" | null; parent_label: string | null; child_label: string | null; count_value: string | number | null };
 type FactoryPerformanceRow = Record<string, unknown> & {
@@ -52,7 +52,7 @@ function toAdminRate(numerator: number, denominator: number): number | null {
   return Math.round((numerator / denominator) * 1000) / 10;
 }
 
-function buildAdminReorderTopProducts(rows: ReorderTopProductRow[]): AdminStatsRatioPoint[] {
+function buildAdminPeriodTopProducts(rows: PeriodTopProductRow[]): AdminStatsRatioPoint[] {
   return rows
     .map((row) => ({ label: row.product_label || "제품 미지정", value: toAdminStatNumber(row.count_value) }))
     .filter((item) => item.value > 0)
@@ -137,6 +137,7 @@ function buildEmptyStats(sourceState: Exclude<AdminStatsSourceState, "db">, sele
       storageUsedBytes: 0,
       storageLimitBytes: ADMIN_FILE_LIMIT_BYTES,
     },
+    periodSummary: { completedCount: 0, reorderCount: 0, qualityIssueCount: 0 },
     summaries: buildAdminSummaryCards({ totalWorkorders: 0, partnerCount: 0, fileUsageLabel, completedInPeriod: 0 }),
     workorderFlow: buildAdminWorkorderFlow([]),
     partnerDistribution: buildAdminPartnerDistribution([]),
@@ -148,6 +149,7 @@ function buildEmptyStats(sourceState: Exclude<AdminStatsSourceState, "db">, sele
     productionCategoryByRound: { first: [], second: [], third: [] },
     productionCategoryDrilldown: { firstToSecond: {}, secondToThird: {} },
     reorderTopProducts: [],
+    periodTopProducts: { completed: [], reorder: [], defect: [] },
     factoryPerformance: [],
     attachmentTrashCards: buildAdminAttachmentTrashCards(activeFileCount, trashFileCount),
     periodOptions: buildAdminPeriodOptions(selectedPeriod, selectedPeriodRange),
@@ -167,7 +169,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
 
   try {
     const companyId = getAdminCompanyId();
-    const [workordersResult, completedResult, partnersResult, partnerTypesResult, fileUsageResult, reviewWaitingResult, inspectionWaitingResult, inboundDelayedResult, defectResult, roundResult, factoryProductionResult, categoryResult, categoryByRoundResult, categoryDrilldownResult, reorderTopProductsResult, factoryPerformanceResult, currentWorkordersResult, currentReorderResult, dueDateTargetResult, dueDelayedResult, qualityIssueResult] = await Promise.all([
+    const [workordersResult, completedResult, partnersResult, partnerTypesResult, fileUsageResult, reviewWaitingResult, inspectionWaitingResult, inboundDelayedResult, defectResult, roundResult, factoryProductionResult, categoryResult, categoryByRoundResult, categoryDrilldownResult, completedTopProductsResult, reorderTopProductsResult, defectTopProductsResult, factoryPerformanceResult, currentWorkordersResult, currentReorderResult, periodReorderResult, periodQualityIssueResult, dueDateTargetResult, dueDelayedResult, qualityIssueResult] = await Promise.all([
       queryDb<StatusCountRow>(
         `SELECT COALESCE(status, 'draft') AS status,
                 COUNT(*)::text AS count_value
@@ -371,7 +373,26 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
            ORDER BY CASE drilldown_key WHEN 'firstToSecond' THEN 1 ELSE 2 END, parent_label, COUNT(*) DESC, child_label`,
         [companyId],
       ),
-      queryDb<ReorderTopProductRow>(
+      queryDb<PeriodTopProductRow>(
+        `SELECT COALESCE(NULLIF(s.title, ''), NULLIF(s.payload->>'name', ''), NULLIF(s.payload->>'productName', ''), '제품 미지정') AS product_label,
+                COALESCE(SUM(COALESCE(o.quantity, 0)), 0)::text AS count_value
+           FROM spec_sheets s
+           LEFT JOIN orders o ON o.spec_sheet_id = s.id
+            AND o.company_id = s.company_id
+            AND o.deleted_at IS NULL
+            AND COALESCE(o.is_active, true) = true
+          WHERE s.company_id = $1
+            AND s.deleted_at IS NULL
+            AND COALESCE(s.is_active, true) = true
+            AND s.status = 'completed'
+            ${periodWhereClause.replace(/updated_at/g, "s.updated_at")}
+          GROUP BY 1
+          HAVING COALESCE(SUM(COALESCE(o.quantity, 0)), 0) > 0
+          ORDER BY COALESCE(SUM(COALESCE(o.quantity, 0)), 0) DESC, product_label
+          LIMIT 5`,
+        [companyId],
+      ),
+      queryDb<PeriodTopProductRow>(
         `SELECT COALESCE(NULLIF(title, ''), NULLIF(payload->>'name', ''), NULLIF(payload->>'productName', ''), '제품 미지정') AS product_label,
                 COUNT(*)::text AS count_value
            FROM spec_sheets
@@ -381,7 +402,21 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
             AND (COALESCE(reorder_round, 0) > 1 OR COALESCE(is_rework, false) = true)
             ${periodWhereClause}
           GROUP BY 1
-          ORDER BY COUNT(*) DESC
+          ORDER BY COUNT(*) DESC, product_label
+          LIMIT 5`,
+        [companyId],
+      ),
+      queryDb<PeriodTopProductRow>(
+        `SELECT COALESCE(NULLIF(title, ''), NULLIF(payload->>'name', ''), NULLIF(payload->>'productName', ''), '제품 미지정') AS product_label,
+                COUNT(*)::text AS count_value
+           FROM spec_sheets
+          WHERE company_id = $1
+            AND deleted_at IS NULL
+            AND COALESCE(is_active, true) = true
+            AND (status = 'rejected' OR COALESCE(is_rework, false) = true)
+            ${periodWhereClause}
+          GROUP BY 1
+          ORDER BY COUNT(*) DESC, product_label
           LIMIT 5`,
         [companyId],
       ),
@@ -434,6 +469,26 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
       ),
       queryDb<CountRow>(
         `SELECT COUNT(*)::text AS count_value
+           FROM spec_sheets
+          WHERE company_id = $1
+            AND deleted_at IS NULL
+            AND COALESCE(is_active, true) = true
+            AND (COALESCE(reorder_round, 0) > 1 OR COALESCE(is_rework, false) = true)
+            ${periodWhereClause}`,
+        [companyId],
+      ),
+      queryDb<CountRow>(
+        `SELECT COUNT(*)::text AS count_value
+           FROM spec_sheets
+          WHERE company_id = $1
+            AND deleted_at IS NULL
+            AND COALESCE(is_active, true) = true
+            AND (status = 'rejected' OR COALESCE(is_rework, false) = true)
+            ${periodWhereClause}`,
+        [companyId],
+      ),
+      queryDb<CountRow>(
+        `SELECT COUNT(*)::text AS count_value
            FROM orders
           WHERE company_id = $1
             AND deleted_at IS NULL
@@ -473,6 +528,8 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
     const summaries = buildAdminSummaryCards({ totalWorkorders, partnerCount, fileUsageLabel, completedInPeriod });
     const currentTotalProducedCount = readAdminCount(currentWorkordersResult.rows[0]);
     const currentReorderCount = readAdminCount(currentReorderResult.rows[0]);
+    const periodReorderCount = readAdminCount(periodReorderResult.rows[0]);
+    const periodQualityIssueCount = readAdminCount(periodQualityIssueResult.rows[0]);
     const dueDateTargetCount = readAdminCount(dueDateTargetResult.rows[0]);
     const dueDelayCount = readAdminCount(dueDelayedResult.rows[0]);
     const qualityIssueCount = readAdminCount(qualityIssueResult.rows[0]);
@@ -492,6 +549,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
         storageUsedBytes,
         storageLimitBytes: ADMIN_FILE_LIMIT_BYTES,
       },
+      periodSummary: { completedCount: completedInPeriod, reorderCount: periodReorderCount, qualityIssueCount: periodQualityIssueCount },
       summaries,
       workorderFlow,
       partnerDistribution,
@@ -507,7 +565,12 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
       productionCategoryDistribution: buildAdminCategoryDistribution(categoryResult.rows),
       productionCategoryByRound: buildAdminCategoryByRound(categoryByRoundResult.rows),
       productionCategoryDrilldown: buildAdminCategoryDrilldown(categoryDrilldownResult.rows),
-      reorderTopProducts: buildAdminReorderTopProducts(reorderTopProductsResult.rows),
+      reorderTopProducts: buildAdminPeriodTopProducts(reorderTopProductsResult.rows),
+      periodTopProducts: {
+        completed: buildAdminPeriodTopProducts(completedTopProductsResult.rows),
+        reorder: buildAdminPeriodTopProducts(reorderTopProductsResult.rows),
+        defect: buildAdminPeriodTopProducts(defectTopProductsResult.rows),
+      },
       factoryPerformance: buildAdminFactoryPerformance(factoryPerformanceResult.rows),
       attachmentTrashCards: buildAdminAttachmentTrashCards(activeFileCount, trashFileCount),
       periodOptions: buildAdminPeriodOptions(selectedPeriod, selectedPeriodRange),

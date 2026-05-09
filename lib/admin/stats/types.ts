@@ -6,6 +6,8 @@ export type AdminStatsPeriodKey = "7d" | "30d" | "custom";
 
 export type AdminStatsMetricKey = "reviewWaiting" | "inspectionWaiting" | "inboundDelayed" | "defectCount";
 
+export type AdminStatsPeriodTopMode = "completed" | "reorder" | "defect";
+
 export type AdminStatsMetric = {
   key: AdminStatsMetricKey;
   label: string;
@@ -59,8 +61,15 @@ export type AdminStatsCurrentOverview = {
   storageLimitBytes: number;
 };
 
+export type AdminStatsPeriodSummary = {
+  completedCount: number;
+  reorderCount: number;
+  qualityIssueCount: number;
+};
+
 export type AdminStatsSnapshot = {
   currentOverview: AdminStatsCurrentOverview;
+  periodSummary: AdminStatsPeriodSummary;
   summaries: AdminSummaryCard[];
   workorderFlow: AdminStatChartPoint[];
   partnerDistribution: AdminStatChartPoint[];
@@ -72,6 +81,7 @@ export type AdminStatsSnapshot = {
   productionCategoryByRound: AdminStatsCategoryByRound;
   productionCategoryDrilldown: AdminStatsCategoryDrilldown;
   reorderTopProducts: AdminStatsRatioPoint[];
+  periodTopProducts: Record<AdminStatsPeriodTopMode, AdminStatsRatioPoint[]>;
   factoryPerformance: AdminStatsFactoryPerformance[];
   attachmentTrashCards: AdminStatsRatioPoint[];
   periodOptions: { key: AdminStatsPeriodKey; label: string; active: boolean; href: string }[];
