@@ -302,12 +302,14 @@ function PeriodSummaryCard({
 function PeriodTopCard({
   eyebrow,
   title,
+  basis,
   items,
   emptyLabel,
   valueSuffix,
 }: {
   eyebrow: string;
   title: string;
+  basis: string;
   items: Array<{ label: string; value: number; widthPercent: number }>;
   emptyLabel: string;
   valueSuffix: string;
@@ -316,7 +318,8 @@ function PeriodTopCard({
     <AdminCard className="flex h-full min-h-[250px] flex-col">
       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{eyebrow}</p>
       <h2 className="mt-2 text-lg font-semibold text-stone-950">{title}</h2>
-      <div className="mt-5 grid flex-1 content-start gap-3">
+      <p className="mt-1 text-xs font-semibold leading-5 text-stone-500">{basis}</p>
+      <div className="mt-4 grid flex-1 content-start gap-3">
         {items.length > 0 ? items.map((item, index) => (
           <div key={`${item.label}-${index}`} className="rounded-2xl bg-stone-50 px-4 py-3">
             <div className="flex items-center justify-between text-sm font-semibold text-stone-700">
@@ -498,8 +501,13 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   };
   const periodTopModeEmpty: Record<AdminStatsPeriodTopMode, string> = {
     completed: pt("periodTopCompletedEmpty", "발주수량 데이터 없음"),
-    reorder: pt("reorderEmpty", pageText.reorderEmpty),
+    reorder: pt("periodTopReorderEmpty", pageText.reorderEmpty),
     defect: pt("periodTopDefectEmpty", "불량 작업지시서 데이터 없음"),
+  };
+  const periodTopModeBasis: Record<AdminStatsPeriodTopMode, string> = {
+    completed: pt("periodTopCompletedBasis", "완료 작업지시서의 발주수량 합계 기준"),
+    reorder: pt("periodTopReorderBasis", "2차 이상 리오더 작업지시서 수 기준"),
+    defect: pt("periodTopDefectBasis", "불량이 1개 이상 기록된 작업지시서 수 기준"),
   };
   const periodTopValueSuffix = selectedPeriodTopMode === "completed" ? pt("quantityCountSuffix", "pcs") : pt("workorderCountSuffix", pageText.workorderCountSuffix);
   const selectedPeriodTopProducts = toRatioBars(translatedStats.periodTopProducts[selectedPeriodTopMode] ?? []).slice(0, 5);
@@ -696,6 +704,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
           <PeriodTopCard
             eyebrow={pt("periodTopEyebrow", pageText.reorderTopEyebrow)}
             title={periodTopModeTitle[selectedPeriodTopMode]}
+            basis={periodTopModeBasis[selectedPeriodTopMode]}
             items={selectedPeriodTopProducts}
             emptyLabel={periodTopModeEmpty[selectedPeriodTopMode]}
             valueSuffix={periodTopValueSuffix}

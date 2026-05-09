@@ -126,6 +126,24 @@ function buildAdminStatsSafeDateExpression(columnName: string): string {
   return `CASE WHEN COALESCE(${columnName}, '') ~ '${ADMIN_STATS_DATE_INPUT_PATTERN_SQL}' THEN ${columnName}::date ELSE NULL END`;
 }
 
+function buildAdminStatsColumnName(columnName: string, tableAlias?: string): string {
+  return tableAlias ? `${tableAlias}.${columnName}` : columnName;
+}
+
+function buildAdminStatsReorderWorkorderCondition(tableAlias?: string): string {
+  const reorderRoundColumn = buildAdminStatsColumnName("reorder_round", tableAlias);
+  const parentColumn = buildAdminStatsColumnName("parent_spec_sheet_id", tableAlias);
+  const kindColumn = buildAdminStatsColumnName("work_order_kind", tableAlias);
+  return `(COALESCE(${reorderRoundColumn}, 0) > 1 OR ${parentColumn} IS NOT NULL) AND COALESCE(${kindColumn}, '') <> 'rework'`;
+}
+
+function buildAdminStatsDefectWorkorderCondition(tableAlias?: string): string {
+  const statusColumn = buildAdminStatsColumnName("status", tableAlias);
+  const reworkColumn = buildAdminStatsColumnName("is_rework", tableAlias);
+  const kindColumn = buildAdminStatsColumnName("work_order_kind", tableAlias);
+  return `${statusColumn} = 'rejected' OR COALESCE(${reworkColumn}, false) = true OR COALESCE(${kindColumn}, '') = 'rework'`;
+}
+
 function buildEmptyStats(sourceState: Exclude<AdminStatsSourceState, "db">, selectedPeriod: AdminStatsPeriodKey, selectedPeriodRange = buildAdminPeriodRange(selectedPeriod)): AdminStatsSnapshot {
   const { points: fileUsagePoints, fileUsageLabel, activeFileCount, trashFileCount } = buildAdminFileUsagePoints(undefined);
 
@@ -177,6 +195,9 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
     const companyId = getAdminCompanyId();
     const orderDueDateExpression = buildAdminStatsSafeDateExpression("o.due_date");
     const dueDateExpression = buildAdminStatsSafeDateExpression("due_date");
+    const reorderWorkorderCondition = buildAdminStatsReorderWorkorderCondition();
+    const defectWorkorderCondition = buildAdminStatsDefectWorkorderCondition();
+    const sourceDefectWorkorderCondition = buildAdminStatsDefectWorkorderCondition("s");
     const [workordersResult, completedResult, partnersResult, partnerTypesResult, fileUsageResult, reviewWaitingResult, inspectionWaitingResult, inboundDelayedResult, defectResult, roundResult, factoryProductionResult, categoryResult, categoryByRoundResult, categoryDrilldownResult, completedTopProductsResult, reorderTopProductsResult, defectTopProductsResult, factoryPerformanceResult, currentWorkordersResult, currentReorderResult, periodReorderResult, periodQualityIssueResult, dueDateTargetResult, dueDelayedResult, qualityIssueResult] = await Promise.all([
       queryDb<StatusCountRow>(
         `SELECT COALESCE(status, 'draft') AS status,
@@ -260,7 +281,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
           WHERE company_id = $1
             AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true
-            AND COALESCE(is_rework, false) = true
+            AND (${defectWorkorderCondition})
             ${periodWhereClause}`,
         [companyId],
       ),
@@ -401,17 +422,22 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
         [companyId],
       ),
       queryDb<PeriodTopProductRow>(
-        `SELECT COALESCE(NULLIF(title, ''), NULLIF(payload->>'name', ''), NULLIF(payload->>'productName', ''), '제품 미지정') AS product_label,
-                COUNT(*)::text AS count_value
-           FROM spec_sheets
-          WHERE company_id = $1
-            AND deleted_at IS NULL
-            AND COALESCE(is_active, true) = true
-            AND (COALESCE(reorder_round, 0) > 1 OR COALESCE(is_rework, false) = true)
-            ${periodWhereClause}
-          GROUP BY 1
-          ORDER BY COUNT(*) DESC, product_label
-          LIMIT 5`,
+        `WITH reorder_rows AS (
+            SELECT COALESCE(NULLIF(reorder_group_id, ''), parent_spec_sheet_id, id) AS reorder_group_key,
+                   COALESCE(NULLIF(title, ''), NULLIF(payload->>'name', ''), NULLIF(payload->>'productName', ''), '제품 미지정') AS product_label
+              FROM spec_sheets
+             WHERE company_id = $1
+               AND deleted_at IS NULL
+               AND COALESCE(is_active, true) = true
+               AND ${reorderWorkorderCondition}
+               ${periodWhereClause}
+          )
+          SELECT COALESCE(NULLIF(MIN(product_label), ''), '제품 미지정') AS product_label,
+                 COUNT(*)::text AS count_value
+            FROM reorder_rows
+           GROUP BY reorder_group_key
+           ORDER BY COUNT(*) DESC, product_label
+           LIMIT 5`,
         [companyId],
       ),
       queryDb<PeriodTopProductRow>(
@@ -421,7 +447,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
           WHERE company_id = $1
             AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true
-            AND (status = 'rejected' OR COALESCE(is_rework, false) = true)
+            AND (${defectWorkorderCondition})
             ${periodWhereClause}
           GROUP BY 1
           ORDER BY COUNT(*) DESC, product_label
@@ -438,7 +464,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
                     AND o.status <> 'completed'
                 )::text AS due_delay_count,
                 COUNT(*)::text AS quality_target_count,
-                COUNT(*) FILTER (WHERE s.status = 'rejected' OR COALESCE(s.is_rework, false) = true)::text AS quality_issue_count,
+                COUNT(*) FILTER (WHERE ${sourceDefectWorkorderCondition})::text AS quality_issue_count,
                 STRING_AGG(DISTINCT COALESCE(NULLIF(s.title, ''), NULLIF(s.payload->>'name', ''), NULLIF(s.payload->>'productName', ''), '작업지시서 미지정'), '|||')
                   FILTER (
                     WHERE ${orderDueDateExpression} IS NOT NULL
@@ -446,7 +472,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
                       AND o.status <> 'completed'
                   ) AS due_delay_examples,
                 STRING_AGG(DISTINCT COALESCE(NULLIF(s.title, ''), NULLIF(s.payload->>'name', ''), NULLIF(s.payload->>'productName', ''), '작업지시서 미지정'), '|||')
-                  FILTER (WHERE s.status = 'rejected' OR COALESCE(s.is_rework, false) = true) AS quality_issue_examples
+                  FILTER (WHERE ${sourceDefectWorkorderCondition}) AS quality_issue_examples
            FROM orders o
            LEFT JOIN spec_sheets s ON s.id = o.spec_sheet_id
           WHERE o.company_id = $1
@@ -472,7 +498,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
           WHERE company_id = $1
             AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true
-            AND (COALESCE(reorder_round, 0) > 1 OR COALESCE(is_rework, false) = true)`,
+            AND ${reorderWorkorderCondition}`,
         [companyId],
       ),
       queryDb<CountRow>(
@@ -481,7 +507,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
           WHERE company_id = $1
             AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true
-            AND (COALESCE(reorder_round, 0) > 1 OR COALESCE(is_rework, false) = true)
+            AND ${reorderWorkorderCondition}
             ${periodWhereClause}`,
         [companyId],
       ),
@@ -491,7 +517,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
           WHERE company_id = $1
             AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true
-            AND (status = 'rejected' OR COALESCE(is_rework, false) = true)
+            AND (${defectWorkorderCondition})
             ${periodWhereClause}`,
         [companyId],
       ),
@@ -521,7 +547,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
           WHERE company_id = $1
             AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true
-            AND (status = 'rejected' OR COALESCE(is_rework, false) = true)`,
+            AND (${defectWorkorderCondition})`,
         [companyId],
       ),
     ]);
