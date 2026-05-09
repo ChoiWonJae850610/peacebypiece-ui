@@ -8,6 +8,7 @@ import type {
   AdminTrashFileItem,
 } from "@/lib/admin/files/types";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
+import { formatAdminTermCount } from "@/lib/i18n/adminTermFormatters";
 import { getTrashActionButtonClassName } from "@/components/admin/files/fileTrashSectionPresentation";
 import { createFileTrashColumns } from "@/components/admin/files/fileTrashSectionColumns";
 import {
@@ -154,7 +155,7 @@ export default function FileTrashSection({
           {isActionPending || isWorkOrderActionPending
             ? t("filesList.processing", "처리 중")
             : t("terms.actions.restore", "복원")} {" "}
-          {selectedCount > 0 ? selectedCount : ""}
+          {selectedCount > 0 ? formatAdminTermCount(t, selectedCount, "item") : ""}
         </button>
         <button
           type="button"
@@ -173,7 +174,7 @@ export default function FileTrashSection({
           {isActionPending || isWorkOrderActionPending
             ? t("filesList.processing", "처리 중")
             : t("filesList.purge", "선택 삭제")} {" "}
-          {selectedCount > 0 ? selectedCount : ""}
+          {selectedCount > 0 ? formatAdminTermCount(t, selectedCount, "item") : ""}
         </button>
         <button
           type="button"

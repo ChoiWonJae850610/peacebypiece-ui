@@ -7,6 +7,7 @@ import type {
   AdminStorageUsageSummary,
 } from "@/lib/admin/files/types";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
+import { formatAdminTermCount, translateAdminFileTypeTerm } from "@/lib/i18n/adminTermFormatters";
 
 type FileStorageSummaryProps = {
   usageCards: AdminFileUsageCard[];
@@ -75,45 +76,12 @@ function translateStorageStatus(
   return t("filesSummary.statuses.normal", fallback);
 }
 
-function translateFileTypeLabel(
-  label: string,
-  t: ReturnType<typeof useAdminTranslation>,
-) {
-  const normalizedLabel = label.trim().toLowerCase();
-  if (
-    label === "문서" ||
-    normalizedLabel === "document" ||
-    normalizedLabel === "documents"
-  )
-    return t("terms.files.document", "문서");
-  if (
-    label === "디자인" ||
-    normalizedLabel === "design" ||
-    normalizedLabel === "designs"
-  )
-    return t("terms.files.design", "디자인");
-  if (
-    label === "작업메모" ||
-    normalizedLabel === "memo" ||
-    normalizedLabel === "memos"
-  )
-    return t("terms.files.memos", "작업메모");
-  if (
-    label === "첨부파일" ||
-    normalizedLabel === "attachment" ||
-    normalizedLabel === "attachments"
-  )
-    return t("terms.files.documentDesignGroup", "문서/디자인");
-  return t("terms.files.other", "기타");
-}
-
 
 function formatCountWithUnit(
   count: number,
   t: ReturnType<typeof useAdminTranslation>,
 ): string {
-  const unit = t("terms.units.item", "개");
-  return unit === "개" ? `${count}${unit}` : `${count} ${unit}`;
+  return formatAdminTermCount(t, count, "item");
 }
 
 function formatBytes(bytes: number): string {
@@ -263,7 +231,7 @@ function DonutChart({
           { label: t("terms.files.document", "문서"), value: 0, percent: 0 },
           { label: t("terms.files.design", "디자인"), value: 0, percent: 0 },
         ]
-  ).map((item) => ({ ...item, label: translateFileTypeLabel(item.label, t) }));
+  ).map((item) => ({ ...item, label: translateAdminFileTypeTerm(item.label, t) }));
   const total = normalizedItems.reduce((sum, item) => sum + item.value, 0);
   const radius = 32;
   const circumference = 2 * Math.PI * radius;

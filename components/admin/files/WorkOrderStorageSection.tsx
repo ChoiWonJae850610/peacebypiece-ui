@@ -4,6 +4,7 @@ import AdminActionBar from "@/components/admin/common/AdminActionBar";
 import AdminTable from "@/components/admin/common/AdminTable";
 import type { AdminStorageWorkOrderItem } from "@/lib/admin/files/types";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
+import { formatAdminTermCount } from "@/lib/i18n/adminTermFormatters";
 import {
   formatTrashDetailCountLabel,
   getLocalizedWorkOrderStageLabel,
@@ -20,8 +21,7 @@ function getTotalCount(items: AdminStorageWorkOrderItem[], readValue: (item: Adm
 }
 
 function formatCount(count: number, t: ReturnType<typeof useAdminTranslation>) {
-  const unit = t("filesWorkOrders.units.count", "개");
-  return unit === "개" ? `${count}${unit}` : `${count} ${unit}`;
+  return formatAdminTermCount(t, count, "item");
 }
 
 export default function WorkOrderStorageSection({ items }: WorkOrderStorageSectionProps) {

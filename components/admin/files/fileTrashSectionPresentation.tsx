@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
+import { formatAdminTermCount } from "@/lib/i18n/adminTermFormatters";
 import { WORKORDER_STAGE_STEPS, getWorkOrderStageIndex } from "@/components/admin/files/fileTrashSectionRows";
 
 export const TRASH_ACTION_BUTTON_BASE =
@@ -48,10 +49,7 @@ export function formatTrashDetailCountLabel(
 ): string {
   const count = Number(rawLabel.match(/\d+/)?.[0] ?? 0);
   const key = kind === "memos" ? "filesList.detail.memoCount" : "filesList.detail.documentDesignCount";
-  const fallbackTerm = kind === "memos"
-    ? t("terms.files.memos", "memos")
-    : t("terms.files.documentDesignGroup", "documents/designs");
-  const fallback = `${count} ${fallbackTerm}`;
+  const fallback = formatAdminTermCount(t, count, kind === "memos" ? "memo" : "documentDesign");
   return t(key, fallback, { count });
 }
 

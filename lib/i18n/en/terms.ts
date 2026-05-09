@@ -40,6 +40,16 @@ export const termsEn = {
     workOrder: "work orders",
     day: "days",
   },
+
+  count: {
+    item: "{count} items",
+    workOrder: "{count} work orders",
+    document: "{count} documents",
+    design: "{count} designs",
+    memo: "{count} memos",
+    documentDesign: "{count} documents/designs",
+    documentDesignMemo: "{count} documents/designs/memos",
+  },
   status: {
     working: "Working",
     pending: "Waiting",

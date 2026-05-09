@@ -40,6 +40,16 @@ export const termsKo = {
     workOrder: "건",
     day: "일",
   },
+
+  count: {
+    item: "{count}개",
+    workOrder: "{count}건",
+    document: "문서 {count}개",
+    design: "디자인 {count}개",
+    memo: "메모 {count}개",
+    documentDesign: "문서/디자인 {count}개",
+    documentDesignMemo: "문서/디자인/메모 {count}개",
+  },
   status: {
     working: "작업중",
     pending: "대기",
