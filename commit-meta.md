@@ -1,15 +1,9 @@
-Version : 0.9.22425
-Summary : 관리자 통계 기간 선택 React DayPicker 적용
-Description : 관리자 통계 화면의 직접 기간 선택을 react-day-picker 기반 달력 range 선택으로 전환하고, 한국어/영어 locale에 맞는 달력 표시와 기간 선택 안내 문구를 추가했습니다. 이번 버전은 사용자 승인에 따라 package.json/package-lock.json 수정을 포함합니다.
+Version : 0.9.22426
+Summary : 관리자 통계 기간 선택 달력 popover UX 정리
+Description : React DayPicker를 페이지에 상시 노출하지 않고 시작일/종료일 표시 영역 클릭 시 작은 popover로 열리도록 변경했습니다. 날짜 직접 입력 UI를 제거하고 달력 클릭 기반 선택만 유지했습니다.
 수정 파일 목록 :
 - components/admin/dashboard/AdminStatsDashboard.tsx
-- lib/i18n/en/admin.ts
-- lib/i18n/ko/admin.ts
 - lib/constants/app.ts
-- package.json
-- package-lock.json
 추가 파일 목록 :
-- docs/admin-stats-react-day-picker-0.9.22425.md
-- commit-meta.md
+- docs/admin-stats-day-picker-popover-0.9.22426.md
 삭제 파일 목록 :
-없음

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { DayPicker, type DateRange } from "react-day-picker";
 import { enUS, ko } from "date-fns/locale";
@@ -129,11 +129,34 @@ function AdminStatsDateRangePicker({
   onStartDateChange: (value: string) => void;
   onEndDateChange: (value: string) => void;
 }) {
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const pickerRef = useRef<HTMLDivElement | null>(null);
   const selected: DateRange | undefined = startDate
     ? { from: parseLocalDateValue(startDate), to: parseLocalDateValue(endDate) }
     : undefined;
   const maxDate = parseLocalDateValue(maxDateValue);
   const dayPickerLocale = locale === "ko" ? ko : enUS;
+
+  useEffect(() => {
+    if (!isCalendarOpen) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!pickerRef.current) return;
+      if (event.target instanceof Node && pickerRef.current.contains(event.target)) return;
+      setIsCalendarOpen(false);
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsCalendarOpen(false);
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isCalendarOpen]);
 
   const handleSelect = (range: DateRange | undefined) => {
     const nextStart = toLocalDateValue(range?.from);
@@ -147,61 +170,74 @@ function AdminStatsDateRangePicker({
     onEndDateChange("");
   };
 
+  const selectedSummary = startDate && endDate
+    ? labels.selected.replace("{start}", formatDateDisplay(startDate, locale)).replace("{end}", formatDateDisplay(endDate, locale))
+    : labels.notSelected;
+
   return (
-    <div className="rounded-[24px] border border-stone-100 bg-white p-3 shadow-sm md:col-span-2">
-      <div className="mb-3 grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
-        <div className="rounded-2xl bg-stone-50 px-3 py-2">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-400">{labels.start}</p>
-          <p className="mt-1 text-sm font-semibold text-stone-800">{formatDateDisplay(startDate, locale)}</p>
-        </div>
-        <div className="rounded-2xl bg-stone-50 px-3 py-2">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-400">{labels.end}</p>
-          <p className="mt-1 text-sm font-semibold text-stone-800">{formatDateDisplay(endDate, locale)}</p>
-        </div>
-        <button
-          type="button"
-          onClick={clearSelection}
-          className="rounded-2xl border border-stone-200 bg-white px-4 py-2 text-xs font-semibold text-stone-600 transition hover:bg-stone-50"
-        >
-          {labels.clear}
-        </button>
-      </div>
-      <DayPicker
-        mode="range"
-        selected={selected}
-        onSelect={handleSelect}
-        locale={dayPickerLocale}
-        disabled={maxDate ? { after: maxDate } : undefined}
-        showOutsideDays
-        fixedWeeks
+    <div ref={pickerRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setIsCalendarOpen((current) => !current)}
+        className="grid w-full gap-2 rounded-[24px] border border-stone-100 bg-white p-3 text-left shadow-sm transition hover:border-stone-200 hover:bg-stone-50 sm:grid-cols-2"
+        aria-expanded={isCalendarOpen}
         aria-label={labels.calendarAria}
-        classNames={{
-          root: "text-sm text-stone-700",
-          months: "grid gap-4",
-          month: "space-y-3",
-          month_caption: "flex items-center justify-center px-2 py-1 text-sm font-semibold text-stone-950",
-          caption_label: "text-sm font-semibold",
-          nav: "flex items-center justify-between",
-          button_previous: "rounded-full border border-stone-200 px-2 py-1 text-stone-500 hover:bg-stone-50",
-          button_next: "rounded-full border border-stone-200 px-2 py-1 text-stone-500 hover:bg-stone-50",
-          weekdays: "grid grid-cols-7 text-center text-[11px] font-semibold uppercase tracking-[0.08em] text-stone-400",
-          week: "grid grid-cols-7 gap-1",
-          day: "flex items-center justify-center",
-          day_button: "h-9 w-9 rounded-full text-sm font-semibold transition hover:bg-stone-100 disabled:text-stone-300",
-          today: "font-bold text-[var(--admin-theme-surface)]",
-          selected: "rounded-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
-          range_start: "rounded-l-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
-          range_end: "rounded-r-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
-          range_middle: "rounded-none bg-stone-100 text-stone-900",
-          outside: "text-stone-300",
-          disabled: "text-stone-300 opacity-40",
-        }}
-      />
-      <p className="mt-3 text-xs font-semibold text-stone-500">
-        {startDate && endDate
-          ? labels.selected.replace("{start}", formatDateDisplay(startDate, locale)).replace("{end}", formatDateDisplay(endDate, locale))
-          : labels.notSelected}
-      </p>
+      >
+        <span className="rounded-2xl bg-stone-50 px-3 py-2">
+          <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-400">{labels.start}</span>
+          <span className="mt-1 block text-sm font-semibold text-stone-800">{formatDateDisplay(startDate, locale)}</span>
+        </span>
+        <span className="rounded-2xl bg-stone-50 px-3 py-2">
+          <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-400">{labels.end}</span>
+          <span className="mt-1 block text-sm font-semibold text-stone-800">{formatDateDisplay(endDate, locale)}</span>
+        </span>
+      </button>
+
+      {isCalendarOpen ? (
+        <div className="absolute left-0 top-[calc(100%+8px)] z-30 w-full rounded-[24px] border border-stone-100 bg-white p-4 shadow-2xl sm:w-[360px]">
+          <DayPicker
+            mode="range"
+            selected={selected}
+            onSelect={handleSelect}
+            locale={dayPickerLocale}
+            disabled={maxDate ? { after: maxDate } : undefined}
+            showOutsideDays
+            fixedWeeks
+            aria-label={labels.calendarAria}
+            classNames={{
+              root: "text-sm text-stone-700",
+              months: "grid gap-4",
+              month: "space-y-3",
+              month_caption: "flex items-center justify-center px-2 py-1 text-sm font-semibold text-stone-950",
+              caption_label: "text-sm font-semibold",
+              nav: "flex items-center justify-between",
+              button_previous: "rounded-full border border-stone-200 px-2 py-1 text-stone-500 hover:bg-stone-50",
+              button_next: "rounded-full border border-stone-200 px-2 py-1 text-stone-500 hover:bg-stone-50",
+              weekdays: "grid grid-cols-7 text-center text-[11px] font-semibold uppercase tracking-[0.08em] text-stone-400",
+              week: "grid grid-cols-7 gap-1",
+              day: "flex items-center justify-center",
+              day_button: "h-9 w-9 rounded-full text-sm font-semibold transition hover:bg-stone-100 disabled:text-stone-300",
+              today: "font-bold text-[var(--admin-theme-surface)]",
+              selected: "rounded-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
+              range_start: "rounded-l-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
+              range_end: "rounded-r-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
+              range_middle: "rounded-none bg-stone-100 text-stone-900",
+              outside: "text-stone-300",
+              disabled: "text-stone-300 opacity-40",
+            }}
+          />
+          <div className="mt-3 flex items-center justify-between gap-3 border-t border-stone-100 pt-3">
+            <p className="text-xs font-semibold text-stone-500">{selectedSummary}</p>
+            <button
+              type="button"
+              onClick={clearSelection}
+              className="shrink-0 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-600 transition hover:bg-stone-50"
+            >
+              {labels.clear}
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
