@@ -153,7 +153,7 @@ export default function FileTrashSection({
         >
           {isActionPending || isWorkOrderActionPending
             ? t("filesList.processing", "처리 중")
-            : t("filesList.restore", "복원")} {" "}
+            : t("terms.actions.restore", "복원")} {" "}
           {selectedCount > 0 ? selectedCount : ""}
         </button>
         <button

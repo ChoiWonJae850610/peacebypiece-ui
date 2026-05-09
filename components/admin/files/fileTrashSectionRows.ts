@@ -110,9 +110,9 @@ export function getTrashFileType(
   item: AdminTrashFileItem,
   t: ReturnType<typeof useAdminTranslation>,
 ) {
-  if (item.fileIcon === "PDF") return t("filesList.fileTypes.document", "문서");
-  if (item.fileIcon === "IMG") return t("filesList.fileTypes.design", "디자인");
-  return t("filesList.fileTypes.other", "기타");
+  if (item.fileIcon === "PDF") return t("terms.files.document", "문서");
+  if (item.fileIcon === "IMG") return t("terms.files.design", "디자인");
+  return t("terms.files.other", "기타");
 }
 
 export function formatStorageSize(
@@ -308,9 +308,9 @@ export function createUnifiedRows(input: {
     targetLabel: item.title,
     deletedAt: item.deletedAt || "-",
     workorderTitle: item.title,
-    typeLabel: t("filesList.types.workorder", "작업지시서"),
+    typeLabel: t("terms.workOrder.singular", "작업지시서"),
     sizeLabel: "-",
-    visualLabel: t("filesList.visual.workorder", "작업"),
+    visualLabel: t("terms.workOrder.short", "작업"),
     visualTone: getTrashVisualInfo({ kind: "workorder" }).tone,
     thumbnailUrl: null,
     previewUrl: null,

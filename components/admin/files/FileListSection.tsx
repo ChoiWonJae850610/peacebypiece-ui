@@ -27,7 +27,7 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
 
   return (
     <section className="flex h-full min-h-[420px] flex-col rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm">
-      <AdminActionBar title={t("filesList.title", "문서/디자인 목록")}>
+      <AdminActionBar title={t("filesList.title", `${t("terms.files.documentDesignGroup", "문서/디자인")} 목록`)}>
         <select value={sortKey} onChange={(event) => onChangeSort(event.target.value as AdminFileSortKey)} className="rounded-full border border-stone-300 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-700 shadow-sm">
           {ADMIN_FILE_SORT_OPTIONS.map((option) => (
             <option key={option.key} value={option.key}>{t(`filesList.sort.${option.key}`, option.label)}</option>
@@ -45,7 +45,7 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
         className="mt-3 min-h-0 flex-1"
         items={items}
         getRowKey={(item) => item.id}
-        emptyLabel={t("filesList.empty", "표시할 문서/디자인이 없습니다.")}
+        emptyLabel={t("filesList.empty", `${t("terms.files.documentDesignGroup", "문서/디자인")}이 없습니다.`)}
         gridTemplateColumns={FILE_TABLE_GRID}
         onRowClick={(item) => onToggleItem(item.id)}
         rowClassName={(item) => {
@@ -63,10 +63,10 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
           },
           {
             key: "workorder",
-            label: t("filesList.columns.workorder", "작업지시서명"),
+            label: t("filesList.columns.workorder", `${t("terms.workOrder.singular", "작업지시서")}명`),
             render: (item) => (
               <div className="min-w-0">
-                <p className="text-[10px] text-stone-400 md:hidden">{t("filesList.columns.workorder", "작업지시서명")}</p>
+                <p className="text-[10px] text-stone-400 md:hidden">{t("filesList.columns.workorder", `${t("terms.workOrder.singular", "작업지시서")}명`)}</p>
                 <p className="truncate font-semibold text-stone-950">{item.workorderTitle}</p>
               </div>
             ),

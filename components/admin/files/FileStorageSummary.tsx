@@ -37,12 +37,12 @@ function translateStorageValue(
 ) {
   const countMatch = value.match(/^(\d+)\s*(개|items?)$/i);
   if (countMatch) {
-    const unit = t("filesSummary.units.count", "개");
+    const unit = t("terms.units.item", "개");
     return unit === "개" ? `${countMatch[1]}${unit}` : `${countMatch[1]} ${unit}`;
   }
   const dayMatch = value.match(/^(\d+)일$/);
   if (dayMatch) {
-    const unit = t("filesSummary.units.day", "일");
+    const unit = t("terms.units.day", "일");
     return unit === "일" ? `${dayMatch[1]}${unit}` : `${dayMatch[1]} ${unit}`;
   }
   return value;
@@ -85,26 +85,26 @@ function translateFileTypeLabel(
     normalizedLabel === "document" ||
     normalizedLabel === "documents"
   )
-    return t("filesSummary.documents", "문서");
+    return t("terms.files.document", "문서");
   if (
     label === "디자인" ||
     normalizedLabel === "design" ||
     normalizedLabel === "designs"
   )
-    return t("filesSummary.designs", "디자인");
+    return t("terms.files.design", "디자인");
   if (
     label === "작업메모" ||
     normalizedLabel === "memo" ||
     normalizedLabel === "memos"
   )
-    return t("filesSummary.memos", "작업메모");
+    return t("terms.files.memos", "작업메모");
   if (
     label === "첨부파일" ||
     normalizedLabel === "attachment" ||
     normalizedLabel === "attachments"
   )
-    return t("filesSummary.attachments", "문서/디자인");
-  return t("filesSummary.others", "기타");
+    return t("terms.files.documentDesignGroup", "문서/디자인");
+  return t("terms.files.other", "기타");
 }
 
 
@@ -112,7 +112,7 @@ function formatCountWithUnit(
   count: number,
   t: ReturnType<typeof useAdminTranslation>,
 ): string {
-  const unit = t("filesSummary.countSuffix", "개");
+  const unit = t("terms.units.item", "개");
   return unit === "개" ? `${count}${unit}` : `${count} ${unit}`;
 }
 
@@ -260,8 +260,8 @@ function DonutChart({
     items.length > 0
       ? items
       : [
-          { label: t("filesSummary.documents", "문서"), value: 0, percent: 0 },
-          { label: t("filesSummary.designs", "디자인"), value: 0, percent: 0 },
+          { label: t("terms.files.document", "문서"), value: 0, percent: 0 },
+          { label: t("terms.files.design", "디자인"), value: 0, percent: 0 },
         ]
   ).map((item) => ({ ...item, label: translateFileTypeLabel(item.label, t) }));
   const total = normalizedItems.reduce((sum, item) => sum + item.value, 0);

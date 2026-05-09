@@ -20,8 +20,10 @@ function interpolate(value: string, params?: TranslateParams) {
 export function useAdminTranslation() {
   const { i18n } = useI18n();
   return useCallback((path: string, fallback = path, params?: TranslateParams) => {
-    const value = readPath(i18n.admin, path);
+    const source = path.startsWith("terms.") ? i18n.terms : i18n.admin;
+    const normalizedPath = path.startsWith("terms.") ? path.slice("terms.".length) : path;
+    const value = readPath(source, normalizedPath);
     if (typeof value !== "string") return interpolate(fallback, params);
     return interpolate(value, params);
-  }, [i18n.admin]);
+  }, [i18n.admin, i18n.terms]);
 }

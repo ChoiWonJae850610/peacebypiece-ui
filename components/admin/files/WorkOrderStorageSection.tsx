@@ -78,7 +78,7 @@ export default function WorkOrderStorageSection({ items }: WorkOrderStorageSecti
         columns={[
           {
             key: "title",
-            label: t("filesWorkOrders.columns.title", "작업지시서명"),
+            label: t("filesWorkOrders.columns.title", `${t("terms.workOrder.singular", "작업지시서")}명`),
             render: (item) => (
               <div className="min-w-0">
                 <p className="text-[10px] text-stone-400 md:hidden">{t("filesWorkOrders.columns.title", "작업지시서명")}</p>
@@ -89,14 +89,14 @@ export default function WorkOrderStorageSection({ items }: WorkOrderStorageSecti
           },
           { key: "status", label: t("filesWorkOrders.columns.status", "상태"), render: (item) => <p className="text-[11px] font-semibold text-stone-700">{getLocalizedWorkOrderStageLabel(item.statusLabel, t)}</p> },
           { key: "deletedAt", label: t("filesWorkOrders.columns.deletedAt", "삭제일시"), render: (item) => <p className="text-[11px] text-stone-600">{item.deletedAt || "-"}</p> },
-          { key: "attachments", label: t("filesWorkOrders.columns.attachments", "문서/디자인"), render: (item) => <p className="text-[11px] leading-4 text-stone-600">{formatTrashDetailCountLabel(item.attachmentSummaryLabel, "documentsDesigns", t)}</p> },
+          { key: "attachments", label: t("filesWorkOrders.columns.attachments", t("terms.files.documentDesignGroup", "문서/디자인")), render: (item) => <p className="text-[11px] leading-4 text-stone-600">{formatTrashDetailCountLabel(item.attachmentSummaryLabel, "documentsDesigns", t)}</p> },
           { key: "memos", label: t("filesWorkOrders.columns.memos", "메모"), render: (item) => <p className="text-[11px] leading-4 text-stone-600">{formatTrashDetailCountLabel(item.memoSummaryLabel, "memos", t)}</p> },
           {
             key: "policy",
             label: t("filesWorkOrders.columns.policy", "복원 정책"),
             render: (item) => (
               <span className="inline-flex rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-[10px] font-semibold text-stone-500">
-                {item.restorePolicyLabel}
+                {t(`filesList.restorePolicies.${item.restorePolicy === "workorder_bundle" ? "workorderBundle" : "default"}`, item.restorePolicyLabel)}
               </span>
             ),
           },

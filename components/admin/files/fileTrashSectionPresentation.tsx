@@ -48,7 +48,10 @@ export function formatTrashDetailCountLabel(
 ): string {
   const count = Number(rawLabel.match(/\d+/)?.[0] ?? 0);
   const key = kind === "memos" ? "filesList.detail.memoCount" : "filesList.detail.documentDesignCount";
-  const fallback = kind === "memos" ? `${count} memos` : `${count} documents/designs`;
+  const fallbackTerm = kind === "memos"
+    ? t("terms.files.memos", "memos")
+    : t("terms.files.documentDesignGroup", "documents/designs");
+  const fallback = `${count} ${fallbackTerm}`;
   return t(key, fallback, { count });
 }
 
