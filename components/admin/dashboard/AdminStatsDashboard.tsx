@@ -271,9 +271,9 @@ function PeriodSummaryCard({
   onSelect: (key: AdminStatsPeriodTopMode) => void;
 }) {
   return (
-    <div className="rounded-[24px] border border-stone-100 bg-stone-50/70 p-4">
+    <div className="flex h-full min-h-[250px] flex-col rounded-[24px] border border-stone-100 bg-stone-50/70 p-4">
       <h3 className="text-sm font-semibold text-stone-950">{title}</h3>
-      <div className="mt-3 grid gap-2">
+      <div className="mt-3 grid flex-1 content-start gap-2">
         {items.map((item) => {
           const isSelected = item.key === selectedKey;
           return (
@@ -281,7 +281,7 @@ function PeriodSummaryCard({
               key={item.key}
               type="button"
               onClick={() => onSelect(item.key)}
-              className={`rounded-2xl border px-4 py-3 text-left shadow-sm transition ${isSelected ? "border-stone-950 bg-white" : "border-stone-100 bg-white hover:border-stone-200 hover:bg-stone-50"}`}
+              className={`min-h-[68px] rounded-2xl border px-4 py-3 text-left shadow-sm transition ${isSelected ? "border-stone-950 bg-white" : "border-stone-100 bg-white hover:border-stone-200 hover:bg-stone-50"}`}
               aria-pressed={isSelected}
             >
               <div className="flex items-start justify-between gap-3">
@@ -313,10 +313,10 @@ function PeriodTopCard({
   valueSuffix: string;
 }) {
   return (
-    <AdminCard className="min-h-[250px]">
+    <AdminCard className="flex h-full min-h-[250px] flex-col">
       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{eyebrow}</p>
       <h2 className="mt-2 text-lg font-semibold text-stone-950">{title}</h2>
-      <div className="mt-5 grid gap-3">
+      <div className="mt-5 grid flex-1 content-start gap-3">
         {items.length > 0 ? items.map((item, index) => (
           <div key={`${item.label}-${index}`} className="rounded-2xl bg-stone-50 px-4 py-3">
             <div className="flex items-center justify-between text-sm font-semibold text-stone-700">
@@ -335,10 +335,10 @@ function PeriodTopCard({
 
 function CurrentSummaryCard({ label, value, description, subValue }: { label: string; value: string; description: string; subValue?: string }) {
   return (
-    <div className="rounded-[24px] border border-stone-100 bg-white px-5 py-4 shadow-sm">
+    <div className="flex h-full min-h-[138px] flex-col rounded-[24px] border border-stone-100 bg-white px-5 py-4 shadow-sm">
       <p className="text-xs font-semibold text-stone-500">{label}</p>
       <p className="mt-2 text-2xl font-bold text-stone-950">{value}</p>
-      <p className="mt-1 text-xs font-semibold text-stone-500">{description}</p>
+      <p className="mt-1 flex-1 text-xs font-semibold leading-5 text-stone-500">{description}</p>
       {subValue ? <p className="mt-2 text-[11px] font-semibold text-stone-400">{subValue}</p> : null}
     </div>
   );
@@ -512,9 +512,9 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   }, [categoryDepth, selectedCategoryDepthBars.map((item) => item.label).join("|")]);
 
   const renderBarList = (title: string, points: Array<{ label: string; value: number; widthPercent: number; valueLabel?: string }>, emptyLabel: string) => (
-    <AdminCard>
+    <AdminCard className="flex h-full min-h-[320px] flex-col">
       <h2 className="text-lg font-semibold text-stone-950">{title}</h2>
-      <div className="mt-5 grid gap-3">
+      <div className="mt-5 grid flex-1 content-start gap-3">
         {points.length > 0 ? points.map((item) => (
           <div key={item.label}>
             <div className="flex items-center justify-between text-xs font-semibold text-stone-600">
@@ -577,7 +577,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
       ) : null}
 
       <section>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid auto-rows-fr gap-4 md:grid-cols-2 xl:grid-cols-4">
           <CurrentSummaryCard label={pt("currentProducedLabel", pageText.currentProducedLabel)} value={formatCount(stats.currentOverview.totalProducedCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))} description={pt("currentReorderDescription", pageText.currentReorderDescription).replace("{count}", formatCount(totalReorderCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)))} />
           <CurrentSummaryCard label={pt("currentDelayRateLabel", pageText.currentDelayRateLabel)} value={formatPercent(stats.currentOverview.dueDelayRate, pt("pendingLabel", pageText.pendingLabel))} description={pt("currentRateBasis", pageText.currentRateBasis).replace("{count}", formatCount(stats.currentOverview.dueDelayCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))).replace("{target}", formatCount(stats.currentOverview.dueDateTargetCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)))} />
           <CurrentSummaryCard label={pt("currentQualityRateLabel", pageText.currentQualityRateLabel)} value={formatPercent(stats.currentOverview.qualityIssueRate, pt("pendingLabel", pageText.pendingLabel))} description={pt("currentRateBasis", pageText.currentRateBasis).replace("{count}", formatCount(stats.currentOverview.qualityIssueCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))).replace("{target}", formatCount(stats.currentOverview.qualityTargetCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)))} />
@@ -585,8 +585,8 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         </div>
       </section>
 
-      <section className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
-        <AdminCard>
+      <section className="grid auto-rows-fr gap-5 xl:grid-cols-2">
+        <AdminCard className="flex h-full min-h-[320px] flex-col">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("productionMixEyebrow", pageText.productionMixEyebrow)}</p>
@@ -608,7 +608,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
               ))}
             </div>
           </div>
-          <div className="mt-5">
+          <div className="mt-5 flex-1">
             <AdminBasicDonutChart points={selectedCategoryDepthBars} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel={pt("productionMixEmpty", pageText.productionMixEmpty)} compact selectedLabel={normalizedSelectedCategoryLabel} onSelectPoint={setSelectedCategoryLabel} />
           </div>
           <p className="mt-4 text-xs font-semibold text-stone-500">{pt("currentBasis", pageText.currentBasis)}: {selectedCategoryDepthLabel} · {formatCount(selectedCategoryDepthTotal, pt("workorderCountSuffix", pageText.workorderCountSuffix))}</p>
@@ -618,12 +618,12 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         {renderBarList(categoryDetailTitle, categoryDetailPoints, categoryDetailEmptyLabel)}
       </section>
 
-      <section className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
+      <section className="grid auto-rows-fr gap-5 xl:grid-cols-2">
         {renderBarList(pt("factoryPerformanceTitle", pageText.factoryPerformanceTitle), viewModel.factoryProductionBars, pt("factoryPerformanceEmpty", pageText.factoryPerformanceEmpty))}
-        <AdminCard>
+        <AdminCard className="flex h-full min-h-[320px] flex-col">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("delayQualityEyebrow", pageText.delayQualityEyebrow)}</p>
           <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("delayQualityTitle", pageText.delayQualityTitle)}</h2>
-          <div className="mt-5 overflow-hidden rounded-2xl border border-stone-100">
+          <div className="mt-5 flex-1 overflow-hidden rounded-2xl border border-stone-100">
             <div className="grid grid-cols-[1.2fr_0.8fr_0.8fr] bg-stone-50 px-4 py-3 text-xs font-semibold text-stone-500">
               <span>{pt("factoryColumn", pageText.factoryColumn)}</span>
               <span>{pt("delayRateColumn", pageText.delayRateColumn)}</span>
@@ -647,13 +647,13 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
 
 
       <section className="rounded-[28px] border border-stone-100 bg-white px-5 py-5 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-100 pb-4">
+        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-stone-100 pb-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("periodAnalysisEyebrow", pageText.periodAnalysisEyebrow)}</p>
             <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("periodAnalysisTitle", pageText.periodAnalysisTitle)}</h2>
           </div>
-          <div className="flex flex-1 flex-wrap items-center justify-end gap-2">
-            <div className="min-w-[280px] max-w-[440px] flex-1 sm:flex-none">
+          <div className="flex w-full flex-wrap items-center justify-start gap-2 lg:w-auto lg:justify-end">
+            <div className="w-full min-w-[280px] max-w-[440px] flex-1 sm:w-auto sm:flex-none">
               <AdminStatsDateRangePicker
                 startDate={customStartDate}
                 endDate={customEndDate}
@@ -692,7 +692,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
           </div>
         </div>
         {customPeriodMessage ? <p className="mt-3 text-xs font-semibold text-amber-700">{customPeriodMessage}</p> : null}
-        <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.25fr)_minmax(280px,0.75fr)]">
+        <div className="mt-4 grid auto-rows-fr gap-5 xl:grid-cols-2">
           <PeriodTopCard
             eyebrow={pt("periodTopEyebrow", pageText.reorderTopEyebrow)}
             title={periodTopModeTitle[selectedPeriodTopMode]}
