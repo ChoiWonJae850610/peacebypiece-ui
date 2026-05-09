@@ -1,6 +1,7 @@
 import "server-only";
 
 import { queryDb } from "@/lib/db/client";
+import { formatAdminStorageDate, formatAdminStorageDateTime } from "@/lib/admin/adminFiles.datePresentation";
 import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import {
@@ -284,22 +285,11 @@ function toNumber(value: string | number | null | undefined): number {
 }
 
 function formatDate(value: string | Date | null | undefined): string {
-  if (!value) return "-";
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) return String(value);
-  return date.toISOString().slice(0, 10);
+  return formatAdminStorageDate(value);
 }
 
 function formatDateTime(value: string | Date | null | undefined): string {
-  if (!value) return "-";
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) return String(value);
-  const yy = String(date.getFullYear()).slice(2);
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  return `${yy}.${month}.${day} ${hours}:${minutes}`;
+  return formatAdminStorageDateTime(value);
 }
 
 function formatBytes(bytes: number): string {

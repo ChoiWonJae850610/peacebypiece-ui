@@ -373,7 +373,7 @@ CREATE TABLE spec_sheets (
   payload jsonb NOT NULL DEFAULT '{}'::jsonb,
   created_at timestamp without time zone DEFAULT now(),
   updated_at timestamp without time zone DEFAULT now(),
-  deleted_at timestamp without time zone,
+  deleted_at timestamptz,
   CONSTRAINT spec_sheets_delete_status_check CHECK (
     delete_status IN ('active', 'trashed', 'purge_requested', 'purged', 'restored')
   ),

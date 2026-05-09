@@ -1,6 +1,7 @@
 import "server-only";
 
 import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
+import { formatAdminStorageDate } from "@/lib/admin/adminFiles.datePresentation";
 import {
   ADMIN_FILE_TRASH_ACTOR_IDS,
   ADMIN_FILE_TRASH_OPEN_PURGE_STATUS_SQL_LIST,
@@ -135,9 +136,7 @@ function toDate(value: string | Date | null | undefined): Date | null {
 }
 
 function formatDate(value: string | Date | null | undefined): string {
-  const date = toDate(value);
-  if (!date) return "-";
-  return date.toISOString().slice(0, 10);
+  return formatAdminStorageDate(value);
 }
 
 function formatBytes(bytes: number): string {

@@ -288,3 +288,11 @@ SELECT
   (SELECT count(*) FROM permission_catalog) AS permissions,
   (SELECT count(*) FROM plans) AS plans,
   (SELECT count(*) FROM storage_usage_snapshots) AS storage_snapshots;
+
+
+-- 0.9.22417: deleted_at columns used by storage/trash must use timestamptz.
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_name = 'spec_sheets'
+  AND column_name = 'deleted_at'
+  AND data_type <> 'timestamp with time zone';
