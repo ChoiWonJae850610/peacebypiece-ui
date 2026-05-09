@@ -1,18 +1,19 @@
 Version :
-0.9.22434
+0.9.224341
 
 Summary :
-관리자 통계 화면 1차 안정 체크포인트 보정
+통계 테스트 seed와 PowerShell 실행 문서 보정
 
 Description :
-관리자 통계 화면의 생산품 유형 비율과 기간별 TOP5 계산 보조 로직을 공통 함수와 useMemo 기준으로 정리했다. 카테고리 선택 상태 보정 effect의 의존성도 안정화하고 통계 화면 1차 안정 체크포인트 문서를 추가했다.
+관리자 통계 화면 검증을 위해 realistic seed에 발주수량 상위 5개, 리오더 차수 상위 5개, 불량 작업지시서 상위 5개, 업체별 납기/검수 지표 확인용 고정 케이스를 추가했다. seed SQL과 같은 위치에 PowerShell 실행 사용법 문서를 추가했다.
 
 수정 파일 목록 :
-- components/admin/dashboard/AdminStatsDashboard.tsx
+- db/schema/seed_realistic_workorders_0_9_2227.sql
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/admin-stats-first-stable-checkpoint-0.9.22434.md
+- db/schema/seed_realistic_workorders_usage_0_9_224341.md
+- docs/admin-stats-seed-usage-0.9.224341.md
 
 삭제 파일 목록 :
 없음

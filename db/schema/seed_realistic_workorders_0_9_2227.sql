@@ -1,4 +1,4 @@
--- PeaceByPiece 0.9.2227
+-- PeaceByPiece 0.9.2227 / 0.9.224341 보정
 -- 6개월 realistic 통계/작업지시서 개발 seed 데이터
 --
 -- 실행 전제:
@@ -8,7 +8,8 @@
 --
 -- 목적:
 -- - 고객관리자 통계 화면(/admin/dashboard)에서 실제 DB 집계처럼 보이는 데이터 확인
--- - 작업지시서 약 100개, 협력업체/공장/원단/부자재/외주, 리오더/납기/검수 후보 데이터 구성
+-- - 0.9.22434 통계 화면 기준(발주수량 TOP5, 리오더 차수 TOP5, 불량 작업지시서 TOP5)을 검증하는 고정 케이스 포함
+-- - 작업지시서 약 100개 + 통계 검증 고정 케이스, 협력업체/공장/원단/부자재/외주, 리오더/납기/검수 후보 데이터 구성
 -- - R2 더미 업로드 0.9.2228에서 사용할 attachments metadata와 storage_key 선배치
 --
 -- 주의:
@@ -176,6 +177,56 @@ SELECT
   (created_at + ((2 + (idx % 21)) || ' days')::interval)::timestamp AS raw_updated_at,
   created_at
 FROM rounded;
+
+-- =========================================
+-- 3-1) 0.9.22434 통계 화면 검증용 고정 케이스
+-- =========================================
+-- 목적:
+-- - 완료 작업지시서 → 발주수량 상위 5개 검증
+-- - 리오더 → reorder_round가 높은 순서 TOP5 검증
+-- - 불량 작업지시서 → rejected/is_rework 기준 TOP5 검증
+-- - 업체별 납기/검수 지표 → 납기 지연/검수 이슈가 보이는지 검증
+-- 주의:
+-- - 실제 schema에 없는 임시 필드는 만들지 않는다.
+-- - id는 realistic-spec-9xx 대역을 사용해 기존 100개 자동 생성 데이터와 충돌하지 않게 한다.
+
+INSERT INTO realistic_seed_workorders (
+  idx, spec_id, reorder_group_id, first_spec_id, title, product_index, product_label,
+  category1_id, category2_id, category3_id, reorder_round, status, is_rework,
+  factory_partner_id, factory_name, quantity, due_date, unit_labor_cost, raw_updated_at, created_at
+)
+VALUES
+  -- 발주수량 상위 TOP5와 리오더 차수 TOP5를 동시에 검증하는 리오더 그룹
+  (901, 'realistic-spec-901', 'realistic-group-top-linen-shirt', 'realistic-spec-901', '통계 검증 린넨 셔츠 1차', 14, '통계 검증 린넨 셔츠', 'category:상의', 'realistic-category:상의:셔츠', 'realistic-category:상의:셔츠:린넨', 1, 'completed', false, 'realistic-partner-factory-03', '광주 봉제 C', 260, current_date - interval '18 days', 3900, current_timestamp - interval '10 days', current_timestamp - interval '26 days'),
+  (902, 'realistic-spec-902', 'realistic-group-top-linen-shirt', 'realistic-spec-901', '통계 검증 린넨 셔츠 2차 리오더', 14, '통계 검증 린넨 셔츠', 'category:상의', 'realistic-category:상의:셔츠', 'realistic-category:상의:셔츠:린넨', 2, 'completed', false, 'realistic-partner-factory-03', '광주 봉제 C', 320, current_date - interval '14 days', 3900, current_timestamp - interval '8 days', current_timestamp - interval '22 days'),
+  (903, 'realistic-spec-903', 'realistic-group-top-linen-shirt', 'realistic-spec-901', '통계 검증 린넨 셔츠 3차 리오더', 14, '통계 검증 린넨 셔츠', 'category:상의', 'realistic-category:상의:셔츠', 'realistic-category:상의:셔츠:린넨', 3, 'completed', false, 'realistic-partner-factory-03', '광주 봉제 C', 380, current_date - interval '10 days', 3900, current_timestamp - interval '6 days', current_timestamp - interval '18 days'),
+  (904, 'realistic-spec-904', 'realistic-group-top-linen-shirt', 'realistic-spec-901', '통계 검증 린넨 셔츠 4차 리오더', 14, '통계 검증 린넨 셔츠', 'category:상의', 'realistic-category:상의:셔츠', 'realistic-category:상의:셔츠:린넨', 4, 'completed', false, 'realistic-partner-factory-03', '광주 봉제 C', 460, current_date - interval '6 days', 3900, current_timestamp - interval '4 days', current_timestamp - interval '14 days'),
+  (905, 'realistic-spec-905', 'realistic-group-top-linen-shirt', 'realistic-spec-901', '통계 검증 린넨 셔츠 5차 리오더', 14, '통계 검증 린넨 셔츠', 'category:상의', 'realistic-category:상의:셔츠', 'realistic-category:상의:셔츠:린넨', 5, 'completed', false, 'realistic-partner-factory-03', '광주 봉제 C', 520, current_date - interval '3 days', 3900, current_timestamp - interval '2 days', current_timestamp - interval '9 days'),
+  (906, 'realistic-spec-906', 'realistic-group-top-linen-shirt', 'realistic-spec-901', '통계 검증 린넨 셔츠 6차 리오더', 14, '통계 검증 린넨 셔츠', 'category:상의', 'realistic-category:상의:셔츠', 'realistic-category:상의:셔츠:린넨', 6, 'completed', false, 'realistic-partner-factory-03', '광주 봉제 C', 640, current_date - interval '1 days', 3900, current_timestamp - interval '12 hours', current_timestamp - interval '4 days'),
+
+  -- 리오더 차수 TOP5 보조 그룹. 같은 차수에서는 발주수량 보조 정렬을 확인한다.
+  (911, 'realistic-spec-911', 'realistic-group-top-wide-pants', 'realistic-spec-911', '통계 검증 와이드 팬츠 1차', 10, '통계 검증 와이드 팬츠', 'category:하의', 'category:하의:팬츠', 'realistic-category:하의:팬츠:와이드', 1, 'completed', false, 'realistic-partner-factory-01', '빛가람 봉제 A', 180, current_date - interval '20 days', 4200, current_timestamp - interval '16 days', current_timestamp - interval '28 days'),
+  (912, 'realistic-spec-912', 'realistic-group-top-wide-pants', 'realistic-spec-911', '통계 검증 와이드 팬츠 2차 리오더', 10, '통계 검증 와이드 팬츠', 'category:하의', 'category:하의:팬츠', 'realistic-category:하의:팬츠:와이드', 2, 'completed', false, 'realistic-partner-factory-01', '빛가람 봉제 A', 240, current_date - interval '12 days', 4200, current_timestamp - interval '10 days', current_timestamp - interval '18 days'),
+  (913, 'realistic-spec-913', 'realistic-group-top-wide-pants', 'realistic-spec-911', '통계 검증 와이드 팬츠 3차 리오더', 10, '통계 검증 와이드 팬츠', 'category:하의', 'category:하의:팬츠', 'realistic-category:하의:팬츠:와이드', 3, 'completed', false, 'realistic-partner-factory-01', '빛가람 봉제 A', 360, current_date - interval '7 days', 4200, current_timestamp - interval '5 days', current_timestamp - interval '11 days'),
+  (914, 'realistic-spec-914', 'realistic-group-top-wide-pants', 'realistic-spec-911', '통계 검증 와이드 팬츠 4차 리오더', 10, '통계 검증 와이드 팬츠', 'category:하의', 'category:하의:팬츠', 'realistic-category:하의:팬츠:와이드', 4, 'completed', false, 'realistic-partner-factory-01', '빛가람 봉제 A', 500, current_date - interval '2 days', 4200, current_timestamp - interval '1 days', current_timestamp - interval '5 days'),
+
+  (921, 'realistic-spec-921', 'realistic-group-top-crop-jacket', 'realistic-spec-921', '통계 검증 크롭 자켓 1차', 15, '통계 검증 크롭 자켓', 'category:아우터', 'category:아우터:자켓', 'realistic-category:아우터:자켓:크롭', 1, 'completed', false, 'realistic-partner-factory-02', '나주 샘플실 B', 140, current_date - interval '21 days', 5200, current_timestamp - interval '18 days', current_timestamp - interval '29 days'),
+  (922, 'realistic-spec-922', 'realistic-group-top-crop-jacket', 'realistic-spec-921', '통계 검증 크롭 자켓 2차 리오더', 15, '통계 검증 크롭 자켓', 'category:아우터', 'category:아우터:자켓', 'realistic-category:아우터:자켓:크롭', 2, 'completed', false, 'realistic-partner-factory-02', '나주 샘플실 B', 260, current_date - interval '13 days', 5200, current_timestamp - interval '11 days', current_timestamp - interval '20 days'),
+  (923, 'realistic-spec-923', 'realistic-group-top-crop-jacket', 'realistic-spec-921', '통계 검증 크롭 자켓 3차 리오더', 15, '통계 검증 크롭 자켓', 'category:아우터', 'category:아우터:자켓', 'realistic-category:아우터:자켓:크롭', 3, 'completed', false, 'realistic-partner-factory-02', '나주 샘플실 B', 420, current_date - interval '4 days', 5200, current_timestamp - interval '2 days', current_timestamp - interval '8 days'),
+
+  (931, 'realistic-spec-931', 'realistic-group-top-shirt-dress', 'realistic-spec-931', '통계 검증 셔츠 원피스 1차', 5, '통계 검증 셔츠 원피스', 'realistic-category:원피스', 'realistic-category:원피스:셔츠', 'realistic-category:원피스:셔츠:기본', 1, 'completed', false, 'realistic-partner-factory-04', '담양 생산 D', 300, current_date - interval '17 days', 3700, current_timestamp - interval '13 days', current_timestamp - interval '24 days'),
+  (932, 'realistic-spec-932', 'realistic-group-top-shirt-dress', 'realistic-spec-931', '통계 검증 셔츠 원피스 2차 리오더', 5, '통계 검증 셔츠 원피스', 'realistic-category:원피스', 'realistic-category:원피스:셔츠', 'realistic-category:원피스:셔츠:기본', 2, 'completed', false, 'realistic-partner-factory-04', '담양 생산 D', 410, current_date - interval '5 days', 3700, current_timestamp - interval '3 days', current_timestamp - interval '7 days'),
+
+  -- 납기 지연 검증용. due_date는 지났고 status는 완료가 아니어야 업체별 납기 지연에 잡힌다.
+  (941, 'realistic-spec-941', 'realistic-group-delay-hoodie', 'realistic-spec-941', '통계 검증 후드 집업 납기 지연', 11, '통계 검증 후드 집업', 'category:아우터', 'realistic-category:아우터:집업', 'realistic-category:아우터:집업:후드', 1, 'inspection', false, 'realistic-partner-factory-04', '담양 생산 D', 210, current_date - interval '9 days', 3700, current_timestamp - interval '2 days', current_timestamp - interval '15 days'),
+  (942, 'realistic-spec-942', 'realistic-group-delay-pleats-skirt', 'realistic-spec-942', '통계 검증 플리츠 스커트 납기 지연', 4, '통계 검증 플리츠 스커트', 'category:하의', 'realistic-category:하의:스커트', 'realistic-category:하의:스커트:플리츠', 1, 'review_requested', false, 'realistic-partner-factory-05', '목포 봉제 E', 175, current_date - interval '6 days', 4500, current_timestamp - interval '1 days', current_timestamp - interval '12 days'),
+
+  -- 불량 작업지시서 TOP5 검증용. title을 일부 반복해 COUNT 기준을 확인한다.
+  (951, 'realistic-spec-951', 'realistic-group-defect-blouse-a', 'realistic-spec-951', '통계 검증 블라우스 검수 불량', 8, '통계 검증 블라우스', 'category:상의', 'realistic-category:상의:블라우스', 'realistic-category:상의:블라우스:기본', 1, 'rejected', true, 'realistic-partner-factory-05', '목포 봉제 E', 95, current_date - interval '8 days', 4500, current_timestamp - interval '1 days', current_timestamp - interval '10 days'),
+  (952, 'realistic-spec-952', 'realistic-group-defect-blouse-b', 'realistic-spec-952', '통계 검증 블라우스 검수 불량', 8, '통계 검증 블라우스', 'category:상의', 'realistic-category:상의:블라우스', 'realistic-category:상의:블라우스:기본', 1, 'rejected', true, 'realistic-partner-factory-05', '목포 봉제 E', 110, current_date - interval '4 days', 4500, current_timestamp - interval '20 hours', current_timestamp - interval '6 days'),
+  (953, 'realistic-spec-953', 'realistic-group-defect-blouse-c', 'realistic-spec-953', '통계 검증 블라우스 검수 불량', 8, '통계 검증 블라우스', 'category:상의', 'realistic-category:상의:블라우스', 'realistic-category:상의:블라우스:기본', 1, 'rejected', true, 'realistic-partner-factory-05', '목포 봉제 E', 125, current_date - interval '2 days', 4500, current_timestamp - interval '12 hours', current_timestamp - interval '3 days'),
+  (954, 'realistic-spec-954', 'realistic-group-defect-denim-skirt-a', 'realistic-spec-954', '통계 검증 데님 스커트 검수 불량', 12, '통계 검증 데님 스커트', 'category:하의', 'realistic-category:하의:스커트', 'realistic-category:하의:스커트:데님', 1, 'rejected', true, 'realistic-partner-factory-02', '나주 샘플실 B', 130, current_date - interval '3 days', 5200, current_timestamp - interval '10 hours', current_timestamp - interval '4 days'),
+  (955, 'realistic-spec-955', 'realistic-group-defect-denim-skirt-b', 'realistic-spec-955', '통계 검증 데님 스커트 검수 불량', 12, '통계 검증 데님 스커트', 'category:하의', 'realistic-category:하의:스커트', 'realistic-category:하의:스커트:데님', 1, 'rejected', true, 'realistic-partner-factory-02', '나주 샘플실 B', 150, current_date - interval '1 days', 5200, current_timestamp - interval '6 hours', current_timestamp - interval '2 days');
 
 -- =========================================
 -- 4) 작업지시서 / 발주 / 자재 / 외주 / 메모
@@ -516,7 +567,7 @@ ON CONFLICT (company_id, stats_date) DO UPDATE SET
 COMMIT;
 
 SELECT
-  'realistic seed 0.9.2227 applied' AS result,
+  'realistic seed 0.9.2227 / stats test 0.9.224341 applied' AS result,
   (SELECT COUNT(*) FROM spec_sheets WHERE id LIKE 'realistic-spec-%') AS spec_sheet_count,
   (SELECT COUNT(*) FROM orders WHERE id LIKE 'realistic-order-%') AS order_count,
   (SELECT COUNT(*) FROM partners WHERE id LIKE 'realistic-partner-%') AS partner_count,
