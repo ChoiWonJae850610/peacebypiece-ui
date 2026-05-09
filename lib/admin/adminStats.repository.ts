@@ -196,6 +196,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
     const orderDueDateExpression = buildAdminStatsSafeDateExpression("o.due_date");
     const dueDateExpression = buildAdminStatsSafeDateExpression("due_date");
     const reorderWorkorderCondition = buildAdminStatsReorderWorkorderCondition();
+    const sourceReorderWorkorderCondition = buildAdminStatsReorderWorkorderCondition("s");
     const defectWorkorderCondition = buildAdminStatsDefectWorkorderCondition();
     const sourceDefectWorkorderCondition = buildAdminStatsDefectWorkorderCondition("s");
     const [workordersResult, completedResult, partnersResult, partnerTypesResult, fileUsageResult, reviewWaitingResult, inspectionWaitingResult, inboundDelayedResult, defectResult, roundResult, factoryProductionResult, categoryResult, categoryByRoundResult, categoryDrilldownResult, completedTopProductsResult, reorderTopProductsResult, defectTopProductsResult, factoryPerformanceResult, currentWorkordersResult, currentReorderResult, periodReorderResult, periodQualityIssueResult, dueDateTargetResult, dueDelayedResult, qualityIssueResult] = await Promise.all([
@@ -423,20 +424,28 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
       ),
       queryDb<PeriodTopProductRow>(
         `WITH reorder_rows AS (
-            SELECT COALESCE(NULLIF(reorder_group_id, ''), parent_spec_sheet_id, id) AS reorder_group_key,
-                   COALESCE(NULLIF(title, ''), NULLIF(payload->>'name', ''), NULLIF(payload->>'productName', ''), '제품 미지정') AS product_label
-              FROM spec_sheets
-             WHERE company_id = $1
-               AND deleted_at IS NULL
-               AND COALESCE(is_active, true) = true
-               AND ${reorderWorkorderCondition}
-               ${periodWhereClause}
+            SELECT COALESCE(NULLIF(s.reorder_group_id, ''), s.parent_spec_sheet_id, s.id) AS reorder_group_key,
+                   COALESCE(NULLIF(s.title, ''), NULLIF(s.payload->>'name', ''), NULLIF(s.payload->>'productName', ''), '제품 미지정') AS product_label,
+                   GREATEST(COALESCE(s.reorder_round, 0), CASE WHEN s.parent_spec_sheet_id IS NOT NULL THEN 2 ELSE 0 END) AS reorder_round_value,
+                   COALESCE(SUM(COALESCE(o.quantity, 0)), 0) AS order_quantity_value
+              FROM spec_sheets s
+              LEFT JOIN orders o ON o.spec_sheet_id = s.id
+               AND o.company_id = s.company_id
+               AND o.deleted_at IS NULL
+               AND COALESCE(o.is_active, true) = true
+             WHERE s.company_id = $1
+               AND s.deleted_at IS NULL
+               AND COALESCE(s.is_active, true) = true
+               AND ${sourceReorderWorkorderCondition}
+               ${periodWhereClause.replace(/updated_at/g, "s.updated_at")}
+             GROUP BY reorder_group_key, product_label, reorder_round_value
           )
-          SELECT COALESCE(NULLIF(MIN(product_label), ''), '제품 미지정') AS product_label,
-                 COUNT(*)::text AS count_value
+          SELECT COALESCE((ARRAY_AGG(product_label ORDER BY reorder_round_value DESC, order_quantity_value DESC, product_label))[1], '제품 미지정') AS product_label,
+                 MAX(reorder_round_value)::text AS count_value
             FROM reorder_rows
            GROUP BY reorder_group_key
-           ORDER BY COUNT(*) DESC, product_label
+          HAVING MAX(reorder_round_value) > 1
+           ORDER BY MAX(reorder_round_value) DESC, SUM(order_quantity_value) DESC, product_label
            LIMIT 5`,
         [companyId],
       ),

@@ -506,10 +506,15 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   };
   const periodTopModeBasis: Record<AdminStatsPeriodTopMode, string> = {
     completed: pt("periodTopCompletedBasis", "완료 작업지시서의 발주수량 합계 기준"),
-    reorder: pt("periodTopReorderBasis", "2차 이상 리오더 작업지시서 수 기준"),
+    reorder: pt("periodTopReorderBasis", "리오더 차수가 높은 작업지시서 기준"),
     defect: pt("periodTopDefectBasis", "불량이 1개 이상 기록된 작업지시서 수 기준"),
   };
-  const periodTopValueSuffix = selectedPeriodTopMode === "completed" ? pt("quantityCountSuffix", "pcs") : pt("workorderCountSuffix", pageText.workorderCountSuffix);
+  const periodTopValueSuffixByMode: Record<AdminStatsPeriodTopMode, string> = {
+    completed: pt("quantityCountSuffix", "pcs"),
+    reorder: pt("reorderRoundSuffix", "차"),
+    defect: pt("workorderCountSuffix", pageText.workorderCountSuffix),
+  };
+  const periodTopValueSuffix = periodTopValueSuffixByMode[selectedPeriodTopMode];
   const selectedPeriodTopProducts = toRatioBars(translatedStats.periodTopProducts[selectedPeriodTopMode] ?? []).slice(0, 5);
 
   useEffect(() => {
