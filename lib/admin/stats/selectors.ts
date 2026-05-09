@@ -163,7 +163,7 @@ export function buildAdminPeriodOptions(selectedPeriod: AdminStatsPeriodKey, sel
   return [
     { key: "7d" as const, label: adminStatsText.periods.sevenDays, href: "/admin/dashboard?period=7d", active: selectedPeriod === "7d" },
     { key: "30d" as const, label: adminStatsText.periods.thirtyDays, href: "/admin/dashboard?period=30d", active: selectedPeriod === "30d" },
-    { key: "custom" as const, label: selectedRange?.isCustom ? selectedRange.label : "직접 선택", href: customHref, active: selectedPeriod === "custom" },
+    { key: "custom" as const, label: selectedRange?.isCustom ? selectedRange.label : adminStatsText.periods.custom, href: customHref, active: selectedPeriod === "custom" },
   ];
 }
 

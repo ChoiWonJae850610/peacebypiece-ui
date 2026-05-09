@@ -57,9 +57,11 @@ function translateStatsText<T extends { label: string; description?: string }>(i
   return items.map((item) => ({ ...item, label: translateStatsLabel(item.label, t), description: item.description ? translateStatsLabel(item.description, t) : item.description }));
 }
 
-function formatCount(value: number | undefined, suffix = "건") {
+function formatCount(value: number | undefined, suffix = "") {
   const normalizedValue = Math.max(0, Math.round(value ?? 0)).toLocaleString("ko-KR");
-  return suffix === "건" ? `${normalizedValue}${suffix}` : `${normalizedValue} ${suffix}`;
+  if (!suffix) return normalizedValue;
+  const shouldUseSpacing = /^[A-Za-z%]+$/.test(suffix);
+  return shouldUseSpacing ? `${normalizedValue} ${suffix}` : `${normalizedValue}${suffix}`;
 }
 
 function formatPercent(value: number | null | undefined, pendingLabel: string) {
@@ -361,10 +363,10 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     start: pt("customStartDateLabel", pageText.customStartDateLabel),
     end: pt("customEndDateLabel", pageText.customEndDateLabel),
     clear: pt("customClear", pageText.customReset),
-    done: pt("customDone", "Done"),
-    selected: pt("customDateRangeSelected", "{start} - {end}"),
-    notSelected: pt("customDateRangeEmpty", "Select a date range."),
-    calendarAria: pt("customDateRangeCalendarAria", "Select statistics date range"),
+    done: pt("customDone", pageText.customDone),
+    selected: pt("customDateRangeSelected", pageText.customDateRangeSelected),
+    notSelected: pt("customDateRangeEmpty", pageText.customDateRangeEmpty),
+    calendarAria: pt("customDateRangeCalendarAria", pageText.customDateRangeCalendarAria),
   };
   const updateCustomStartDate = (value: string) => {
     if (!value) {
@@ -457,21 +459,21 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   const periodSummaryItems = [
     {
       key: "completed" as const,
-      label: pt("periodSummaryCompletedLabel", "완료 작업지시서"),
+      label: pt("periodSummaryCompletedLabel", pageText.periodSummaryCompletedLabel),
       value: formatCount(stats.periodSummary.completedCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)),
-      description: pt("periodSummaryCompletedDescription", "선택 기간 안에 완료된 작업지시서"),
+      description: pt("periodSummaryCompletedDescription", pageText.periodSummaryCompletedDescription),
     },
     {
       key: "reorder" as const,
-      label: pt("periodSummaryReorderLabel", "리오더"),
+      label: pt("periodSummaryReorderLabel", pageText.periodSummaryReorderLabel),
       value: formatCount(stats.periodSummary.reorderCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)),
-      description: pt("periodSummaryReorderDescription", "선택 기간 안의 리오더 작업지시서"),
+      description: pt("periodSummaryReorderDescription", pageText.periodSummaryReorderDescription),
     },
     {
       key: "defect" as const,
-      label: pt("periodSummaryDefectLabel", "불량 작업지시서"),
+      label: pt("periodSummaryDefectLabel", pageText.periodSummaryDefectLabel),
       value: formatCount(stats.periodSummary.qualityIssueCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)),
-      description: pt("periodSummaryDefectDescription", "불량이 1개 이상 기록된 작업지시서"),
+      description: pt("periodSummaryDefectDescription", pageText.periodSummaryDefectDescription),
     },
   ];
   const categoryDepthLabels: Record<CategoryDepthKey, string> = {
@@ -495,23 +497,23 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     : pt("categoryDetailTitleSecond", pageText.categoryDetailTitleSecond).replace("{label}", fallbackSelectedCategory);
   const categoryDetailEmptyLabel = categoryDepth === "first" ? pt("categoryDetailEmptyFirst", pageText.categoryDetailEmptyFirst) : pt("categoryDetailEmptySecond", pageText.categoryDetailEmptySecond);
   const periodTopModeTitle: Record<AdminStatsPeriodTopMode, string> = {
-    completed: pt("periodTopCompletedTitle", "발주수량 상위 TOP5"),
+    completed: pt("periodTopCompletedTitle", pageText.periodTopCompletedTitle),
     reorder: pt("periodTopReorderTitle", pageText.reorderTopTitle),
-    defect: pt("periodTopDefectTitle", "불량 작업지시서 TOP5"),
+    defect: pt("periodTopDefectTitle", pageText.periodTopDefectTitle),
   };
   const periodTopModeEmpty: Record<AdminStatsPeriodTopMode, string> = {
-    completed: pt("periodTopCompletedEmpty", "발주수량 데이터 없음"),
+    completed: pt("periodTopCompletedEmpty", pageText.periodTopCompletedEmpty),
     reorder: pt("periodTopReorderEmpty", pageText.reorderEmpty),
-    defect: pt("periodTopDefectEmpty", "불량 작업지시서 데이터 없음"),
+    defect: pt("periodTopDefectEmpty", pageText.periodTopDefectEmpty),
   };
   const periodTopModeBasis: Record<AdminStatsPeriodTopMode, string> = {
-    completed: pt("periodTopCompletedBasis", "완료 작업지시서의 발주수량 합계 기준"),
-    reorder: pt("periodTopReorderBasis", "리오더 차수가 높은 작업지시서 기준"),
-    defect: pt("periodTopDefectBasis", "불량이 1개 이상 기록된 작업지시서 수 기준"),
+    completed: pt("periodTopCompletedBasis", pageText.periodTopCompletedBasis),
+    reorder: pt("periodTopReorderBasis", pageText.periodTopReorderBasis),
+    defect: pt("periodTopDefectBasis", pageText.periodTopDefectBasis),
   };
   const periodTopValueSuffixByMode: Record<AdminStatsPeriodTopMode, string> = {
     completed: pt("quantityCountSuffix", "pcs"),
-    reorder: pt("reorderRoundSuffix", "차"),
+    reorder: pt("reorderRoundSuffix", pageText.reorderRoundSuffix),
     defect: pt("workorderCountSuffix", pageText.workorderCountSuffix),
   };
   const periodTopValueSuffix = periodTopValueSuffixByMode[selectedPeriodTopMode];
@@ -715,7 +717,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
             valueSuffix={periodTopValueSuffix}
           />
           <PeriodSummaryCard
-            title={pt("periodSummaryTitle", "기간 요약")}
+            title={pt("periodSummaryTitle", pageText.periodSummaryTitle)}
             items={periodSummaryItems}
             selectedKey={selectedPeriodTopMode}
             onSelect={setSelectedPeriodTopMode}
