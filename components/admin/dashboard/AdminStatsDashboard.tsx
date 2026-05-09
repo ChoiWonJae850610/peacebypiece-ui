@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ClipboardEvent, type KeyboardEvent } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import { AdminCard } from "@/components/admin/layout/AdminCard";
@@ -74,6 +74,101 @@ function formatStorageMb(bytes: number, usedSuffix: string) {
   return `${(bytes / 1024 / 1024).toLocaleString("ko-KR", { maximumFractionDigits: 2 })}MB ${usedSuffix}`;
 }
 
+
+type AdminCustomDateSelectLabels = {
+  year: string;
+  month: string;
+  day: string;
+};
+
+function parseDateParts(value: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return { year: "", month: "", day: "" };
+  return { year: match[1], month: match[2], day: match[3] };
+}
+
+function composeDateValue(parts: { year: string; month: string; day: string }) {
+  if (!parts.year || !parts.month || !parts.day) return "";
+  return `${parts.year}-${parts.month}-${parts.day}`;
+}
+
+function getDaysInMonth(year: string, month: string) {
+  if (!year || !month) return 31;
+  return new Date(Number(year), Number(month), 0).getDate();
+}
+
+function AdminCustomDateSelect({
+  value,
+  min,
+  max,
+  labels,
+  onChange,
+}: {
+  value: string;
+  min?: string;
+  max: string;
+  labels: AdminCustomDateSelectLabels;
+  onChange: (value: string) => void;
+}) {
+  const maxYear = Number(max.slice(0, 4));
+  const minYear = min ? Number(min.slice(0, 4)) : maxYear - 5;
+  const years = Array.from({ length: Math.max(1, maxYear - minYear + 1) }, (_, index) => String(maxYear - index));
+  const months = Array.from({ length: 12 }, (_, index) => String(index + 1).padStart(2, "0"));
+  const [parts, setParts] = useState(() => parseDateParts(value));
+  useEffect(() => {
+    setParts(parseDateParts(value));
+  }, [value]);
+  const dayCount = getDaysInMonth(parts.year, parts.month);
+  const days = Array.from({ length: dayCount }, (_, index) => String(index + 1).padStart(2, "0"));
+
+  const updatePart = (key: "year" | "month" | "day", nextValue: string) => {
+    const nextParts = { ...parts, [key]: nextValue };
+    const maxDay = getDaysInMonth(nextParts.year, nextParts.month);
+    if (nextParts.day && Number(nextParts.day) > maxDay) nextParts.day = String(maxDay).padStart(2, "0");
+    setParts(nextParts);
+    const nextDate = composeDateValue(nextParts);
+    if (nextDate) onChange(nextDate);
+  };
+
+  return (
+    <div className="grid grid-cols-3 gap-2 rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-semibold text-stone-700 focus-within:border-stone-400">
+      <select
+        aria-label={labels.year}
+        value={parts.year}
+        onChange={(event) => updatePart("year", event.target.value)}
+        className="min-w-0 bg-transparent outline-none"
+      >
+        <option value="">{labels.year}</option>
+        {years.map((year) => (
+          <option key={year} value={year}>{year}</option>
+        ))}
+      </select>
+      <select
+        aria-label={labels.month}
+        value={parts.month}
+        onChange={(event) => updatePart("month", event.target.value)}
+        className="min-w-0 bg-transparent outline-none"
+      >
+        <option value="">{labels.month}</option>
+        {months.map((month) => (
+          <option key={month} value={month}>{month}</option>
+        ))}
+      </select>
+      <select
+        aria-label={labels.day}
+        value={parts.day}
+        onChange={(event) => updatePart("day", event.target.value)}
+        className="min-w-0 bg-transparent outline-none"
+      >
+        <option value="">{labels.day}</option>
+        {days.map((day) => (
+          <option key={day} value={day}>{day}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 function CurrentSummaryCard({ label, value, description, subValue }: { label: string; value: string; description: string; subValue?: string }) {
   return (
     <div className="rounded-[24px] border border-stone-100 bg-white px-5 py-4 shadow-sm">
@@ -93,10 +188,11 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   const [customStartDate, setCustomStartDate] = useState(stats.selectedPeriodRange.isCustom ? stats.selectedPeriodRange.startDate : "");
   const [customEndDate, setCustomEndDate] = useState(stats.selectedPeriodRange.isCustom ? stats.selectedPeriodRange.endDate : "");
   const todayDateValue = new Date().toISOString().slice(0, 10);
-  const preventDateTextInput = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key !== "Tab") event.preventDefault();
+  const dateSelectLabels = {
+    year: pt("dateSelectYear", pageText.dateSelectYear),
+    month: pt("dateSelectMonth", pageText.dateSelectMonth),
+    day: pt("dateSelectDay", pageText.dateSelectDay),
   };
-  const preventDatePaste = (event: ClipboardEvent<HTMLInputElement>) => event.preventDefault();
   const updateCustomStartDate = (value: string) => {
     if (!value || value > todayDateValue) return;
     setCustomStartDate(value);
@@ -157,7 +253,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
 
   const totalReorderCount = stats.currentOverview.reorderCount;
   const activePeriodOptions = stats.periodOptions.filter((item) => item.key === "7d" || item.key === "30d");
-  const activePeriodLabel = stats.selectedPeriodRange.label;
+  const activePeriodLabel = translateStatsLabel(stats.selectedPeriodRange.label, t);
   const isCustomPeriodReady = Boolean(customStartDate && customEndDate);
   const isCustomPeriodOrderValid = !isCustomPeriodReady || customStartDate <= customEndDate;
   const isCustomPeriodNotFuture = (!customStartDate || customStartDate <= todayDateValue) && (!customEndDate || customEndDate <= todayDateValue);
@@ -297,11 +393,11 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_auto]">
           <label className="grid gap-1 text-xs font-semibold text-stone-500">
             {pt("customStartDateLabel", pageText.customStartDateLabel)}
-            <input type="date" value={customStartDate} max={todayDateValue} onKeyDown={preventDateTextInput} onPaste={preventDatePaste} onChange={(event) => updateCustomStartDate(event.target.value)} className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-semibold text-stone-700 outline-none focus:border-stone-400" />
+            <AdminCustomDateSelect value={customStartDate} max={todayDateValue} labels={dateSelectLabels} onChange={updateCustomStartDate} />
           </label>
           <label className="grid gap-1 text-xs font-semibold text-stone-500">
             {pt("customEndDateLabel", pageText.customEndDateLabel)}
-            <input type="date" value={customEndDate} min={customStartDate || todayDateValue} max={todayDateValue} onKeyDown={preventDateTextInput} onPaste={preventDatePaste} onChange={(event) => updateCustomEndDate(event.target.value)} className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-semibold text-stone-700 outline-none focus:border-stone-400" />
+            <AdminCustomDateSelect value={customEndDate} min={customStartDate || todayDateValue} max={todayDateValue} labels={dateSelectLabels} onChange={updateCustomEndDate} />
           </label>
           <div className="flex items-end gap-2">
             <Link
