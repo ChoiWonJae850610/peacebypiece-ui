@@ -1,24 +1,20 @@
 Version :
-0.9.22422
+0.9.22423
 
 Summary :
-i18n terms count formatter 적용 범위 확대
+관리자 통계 화면 i18n 잔여 문구 정리
 
 Description :
-저장소관리에서 반복되는 개수 표시와 파일 유형 표시를 terms glossary 기반 공통 formatter로 정리했다. 한국어와 영어 terms count key를 추가하고 저장소 요약, 휴지통 선택 count, 작업지시서 저장소 summary가 같은 formatter를 사용하도록 보정했다.
+관리자 통계 화면의 기간 분석, 누적 요약, 생산품 유형, 업체 성과, 납기·검수 지표에 남아 있던 하드코딩 문구를 dashboardPage dictionary 기준으로 정리했다. 직접 기간 선택 검증 메시지와 tooltip 문구도 i18n key를 타도록 보정했다.
 
 수정 파일 목록 :
-- components/admin/files/FileStorageSummary.tsx
-- components/admin/files/FileTrashSection.tsx
-- components/admin/files/WorkOrderStorageSection.tsx
-- components/admin/files/fileTrashSectionPresentation.tsx
-- lib/i18n/ko/terms.ts
-- lib/i18n/en/terms.ts
+- components/admin/dashboard/AdminStatsDashboard.tsx
+- lib/i18n/ko/admin.ts
+- lib/i18n/en/admin.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- lib/i18n/adminTermFormatters.ts
-- docs/i18n-terms-glossary-usage-expand-0.9.22422.md
+- docs/admin-stats-i18n-residual-cleanup-0.9.22423.md
 
 삭제 파일 목록 :
 없음

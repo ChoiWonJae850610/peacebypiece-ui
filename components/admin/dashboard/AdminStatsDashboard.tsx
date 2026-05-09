@@ -55,11 +55,12 @@ function translateStatsText<T extends { label: string; description?: string }>(i
 }
 
 function formatCount(value: number | undefined, suffix = "건") {
-  return `${Math.max(0, Math.round(value ?? 0)).toLocaleString("ko-KR")}${suffix}`;
+  const normalizedValue = Math.max(0, Math.round(value ?? 0)).toLocaleString("ko-KR");
+  return suffix === "건" ? `${normalizedValue}${suffix}` : `${normalizedValue} ${suffix}`;
 }
 
-function formatPercent(value: number | null | undefined) {
-  if (value === null || value === undefined) return "준비중";
+function formatPercent(value: number | null | undefined, pendingLabel: string) {
+  if (value === null || value === undefined) return pendingLabel;
   return `${value.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}%`;
 }
 
@@ -69,8 +70,8 @@ function formatStorageGb(bytes: number, limitBytes: number) {
   return `${usedGb.toFixed(2)}GB / ${limitGb.toFixed(2)}GB`;
 }
 
-function formatStorageMb(bytes: number) {
-  return `${(bytes / 1024 / 1024).toLocaleString("ko-KR", { maximumFractionDigits: 2 })}MB 사용`;
+function formatStorageMb(bytes: number, usedSuffix: string) {
+  return `${(bytes / 1024 / 1024).toLocaleString("ko-KR", { maximumFractionDigits: 2 })}MB ${usedSuffix}`;
 }
 
 function CurrentSummaryCard({ label, value, description, subValue }: { label: string; value: string; description: string; subValue?: string }) {
@@ -163,11 +164,17 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   const isCustomEndSelectable = !customEndDate || (customStartDate ? customEndDate >= customStartDate : customEndDate >= todayDateValue);
   const isCustomPeriodValid = isCustomPeriodReady && isCustomPeriodOrderValid && isCustomPeriodNotFuture && isCustomEndSelectable;
   const customPeriodHref = isCustomPeriodValid ? `/admin/dashboard?period=custom&startDate=${customStartDate}&endDate=${customEndDate}` : "/admin/dashboard?period=30d";
-  const customPeriodMessage = !isCustomPeriodOrderValid ? "종료일은 시작일과 같거나 이후 날짜여야 합니다." : !isCustomPeriodNotFuture ? "오늘 이후 날짜는 선택할 수 없습니다." : customEndDate && !isCustomEndSelectable ? "종료일은 시작일과 같거나 이후 날짜여야 합니다." : "";
+  const customPeriodMessage = !isCustomPeriodOrderValid
+    ? pt("customPeriodInvalidOrder", pageText.customPeriodInvalidOrder)
+    : !isCustomPeriodNotFuture
+      ? pt("customPeriodFutureBlocked", pageText.customPeriodFutureBlocked)
+      : customEndDate && !isCustomEndSelectable
+        ? pt("customPeriodInvalidOrder", pageText.customPeriodInvalidOrder)
+        : "";
   const storageUsePercent = stats.currentOverview.storageLimitBytes > 0 ? Math.round((stats.currentOverview.storageUsedBytes / stats.currentOverview.storageLimitBytes) * 1000) / 10 : 0;
   const categoryDepthLabels: Record<CategoryDepthKey, string> = {
-    first: "대분류",
-    second: "품목",
+    first: pt("categoryDepthFirst", pageText.categoryDepthFirst),
+    second: pt("categoryDepthSecond", pageText.categoryDepthSecond),
   };
 
   const selectedCategoryDepthLabel = categoryDepthLabels[categoryDepth];
@@ -180,8 +187,11 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   const normalizedSelectedCategoryLabel = selectedCategoryDepthBars.some((item) => item.label === selectedCategoryLabel) ? selectedCategoryLabel : (selectedCategoryDepthBars[0]?.label ?? null);
   const drilldownKey = categoryDepth === "first" ? "firstToSecond" : "secondToThird";
   const categoryDetailPoints = normalizedSelectedCategoryLabel ? toRatioBars(translatedStats.productionCategoryDrilldown[drilldownKey][normalizedSelectedCategoryLabel] ?? []).slice(0, 5) : [];
-  const categoryDetailTitle = categoryDepth === "first" ? `${normalizedSelectedCategoryLabel ?? "선택 항목"} 품목 TOP5` : `${normalizedSelectedCategoryLabel ?? "선택 품목"} 세부형태 TOP5`;
-  const categoryDetailEmptyLabel = categoryDepth === "first" ? "선택한 대분류의 품목 데이터 없음" : "선택한 품목의 세부형태 데이터 없음";
+  const fallbackSelectedCategory = normalizedSelectedCategoryLabel ?? pt("selectedCategoryFallback", pageText.selectedCategoryFallback);
+  const categoryDetailTitle = categoryDepth === "first"
+    ? pt("categoryDetailTitleFirst", pageText.categoryDetailTitleFirst).replace("{label}", fallbackSelectedCategory)
+    : pt("categoryDetailTitleSecond", pageText.categoryDetailTitleSecond).replace("{label}", fallbackSelectedCategory);
+  const categoryDetailEmptyLabel = categoryDepth === "first" ? pt("categoryDetailEmptyFirst", pageText.categoryDetailEmptyFirst) : pt("categoryDetailEmptySecond", pageText.categoryDetailEmptySecond);
   const reorderTopProducts = toRatioBars(translatedStats.reorderTopProducts).slice(0, 5);
 
   useEffect(() => {
@@ -222,12 +232,17 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   }) => {
     const dueExamples = item.dueDelayExamples?.slice(0, 3) ?? [];
     const qualityExamples = item.qualityIssueExamples?.slice(0, 3) ?? [];
+    const countSuffix = pt("workorderCountSuffix", pageText.workorderCountSuffix);
     const lines = [
-      `${item.label} · 제작 ${formatCount(item.productionCount)}`,
-      `납기 지연 ${formatCount(item.dueDelayCount)} / ${formatCount(item.dueDateTargetCount)} 기준`,
-      dueExamples.length > 0 ? `납기 지연 작업: ${dueExamples.join(", ")}` : "납기 지연 작업: 없음",
-      `검수/불량 후보 ${formatCount(item.qualityIssueCount)} / ${formatCount(item.qualityTargetCount)} 기준`,
-      qualityExamples.length > 0 ? `검수/불량 후보: ${qualityExamples.join(", ")}` : "검수/불량 후보: 없음",
+      pt("factoryTooltipProduction", pageText.factoryTooltipProduction).replace("{label}", item.label).replace("{count}", formatCount(item.productionCount, countSuffix)),
+      pt("factoryTooltipDelay", pageText.factoryTooltipDelay).replace("{count}", formatCount(item.dueDelayCount, countSuffix)).replace("{target}", formatCount(item.dueDateTargetCount, countSuffix)),
+      dueExamples.length > 0
+        ? pt("factoryTooltipDelayExamples", pageText.factoryTooltipDelayExamples).replace("{items}", dueExamples.join(", "))
+        : pt("factoryTooltipDelayNone", pageText.factoryTooltipDelayNone),
+      pt("factoryTooltipQuality", pageText.factoryTooltipQuality).replace("{count}", formatCount(item.qualityIssueCount, countSuffix)).replace("{target}", formatCount(item.qualityTargetCount, countSuffix)),
+      qualityExamples.length > 0
+        ? pt("factoryTooltipQualityExamples", pageText.factoryTooltipQualityExamples).replace("{items}", qualityExamples.join(", "))
+        : pt("factoryTooltipQualityNone", pageText.factoryTooltipQualityNone),
     ];
     return lines.join("\n");
   };
@@ -238,9 +253,9 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         <AdminCard className="border-dashed border-amber-200 bg-amber-50/55 px-5 py-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">Demo seed required</p>
-              <h2 className="mt-2 text-lg font-semibold text-stone-950">통계 확인용 데이터가 아직 없습니다</h2>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">차트 확인은 개발용 seed SQL 실행 후 진행하세요.</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">{pt("demoSeedEyebrow", pageText.demoSeedEyebrow)}</p>
+              <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("demoSeedTitle", pageText.demoSeedTitle)}</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">{pt("demoSeedDescription", pageText.demoSeedDescription)}</p>
             </div>
             <div className="rounded-2xl bg-white px-4 py-3 text-xs font-semibold leading-5 text-stone-600 shadow-sm">
               <p>1. full_reset.sql</p>
@@ -253,18 +268,18 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
 
       <section>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <CurrentSummaryCard label="누적 생산" value={formatCount(stats.currentOverview.totalProducedCount)} description={`리오더 ${formatCount(totalReorderCount)}`} />
-          <CurrentSummaryCard label="누적 납기 지연율" value={formatPercent(stats.currentOverview.dueDelayRate)} description={`${formatCount(stats.currentOverview.dueDelayCount)} / ${formatCount(stats.currentOverview.dueDateTargetCount)} 기준`} />
-          <CurrentSummaryCard label="누적 검수/불량률" value={formatPercent(stats.currentOverview.qualityIssueRate)} description={`${formatCount(stats.currentOverview.qualityIssueCount)} / ${formatCount(stats.currentOverview.qualityTargetCount)} 기준`} />
-          <CurrentSummaryCard label="현재 저장소 사용량" value={`${storageUsePercent}%`} description={formatStorageGb(stats.currentOverview.storageUsedBytes, stats.currentOverview.storageLimitBytes)} subValue={formatStorageMb(stats.currentOverview.storageUsedBytes)} />
+          <CurrentSummaryCard label={pt("currentProducedLabel", pageText.currentProducedLabel)} value={formatCount(stats.currentOverview.totalProducedCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))} description={pt("currentReorderDescription", pageText.currentReorderDescription).replace("{count}", formatCount(totalReorderCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)))} />
+          <CurrentSummaryCard label={pt("currentDelayRateLabel", pageText.currentDelayRateLabel)} value={formatPercent(stats.currentOverview.dueDelayRate, pt("pendingLabel", pageText.pendingLabel))} description={pt("currentRateBasis", pageText.currentRateBasis).replace("{count}", formatCount(stats.currentOverview.dueDelayCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))).replace("{target}", formatCount(stats.currentOverview.dueDateTargetCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)))} />
+          <CurrentSummaryCard label={pt("currentQualityRateLabel", pageText.currentQualityRateLabel)} value={formatPercent(stats.currentOverview.qualityIssueRate, pt("pendingLabel", pageText.pendingLabel))} description={pt("currentRateBasis", pageText.currentRateBasis).replace("{count}", formatCount(stats.currentOverview.qualityIssueCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))).replace("{target}", formatCount(stats.currentOverview.qualityTargetCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)))} />
+          <CurrentSummaryCard label={pt("currentStorageUsageLabel", pageText.currentStorageUsageLabel)} value={`${storageUsePercent}%`} description={formatStorageGb(stats.currentOverview.storageUsedBytes, stats.currentOverview.storageLimitBytes)} subValue={formatStorageMb(stats.currentOverview.storageUsedBytes, pt("usedSuffix", pageText.usedSuffix))} />
         </div>
       </section>
 
       <section className="rounded-[28px] border border-stone-100 bg-white px-5 py-5 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4 border-b border-stone-100 pb-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Period analysis</p>
-            <h2 className="mt-2 text-lg font-semibold text-stone-950">기간별 분석</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("periodAnalysisEyebrow", pageText.periodAnalysisEyebrow)}</p>
+            <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("periodAnalysisTitle", pageText.periodAnalysisTitle)}</h2>
           </div>
           <div className="flex flex-wrap justify-end gap-2">
             {activePeriodOptions.map((item) => (
@@ -281,11 +296,11 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_auto]">
           <label className="grid gap-1 text-xs font-semibold text-stone-500">
-            시작일
+            {pt("customStartDateLabel", pageText.customStartDateLabel)}
             <input type="date" value={customStartDate} max={todayDateValue} onKeyDown={preventDateTextInput} onPaste={preventDatePaste} onChange={(event) => updateCustomStartDate(event.target.value)} className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-semibold text-stone-700 outline-none focus:border-stone-400" />
           </label>
           <label className="grid gap-1 text-xs font-semibold text-stone-500">
-            종료일
+            {pt("customEndDateLabel", pageText.customEndDateLabel)}
             <input type="date" value={customEndDate} min={customStartDate || todayDateValue} max={todayDateValue} onKeyDown={preventDateTextInput} onPaste={preventDatePaste} onChange={(event) => updateCustomEndDate(event.target.value)} className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-semibold text-stone-700 outline-none focus:border-stone-400" />
           </label>
           <div className="flex items-end gap-2">
@@ -293,14 +308,14 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
               href="/admin/dashboard?period=30d"
               className="rounded-2xl border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-600 shadow-sm transition hover:bg-stone-50"
             >
-              초기화
+              {pt("customReset", pageText.customReset)}
             </Link>
             <Link
               href={customPeriodHref}
               aria-disabled={!isCustomPeriodValid}
               className={`rounded-2xl px-4 py-2 text-xs font-semibold transition ${isCustomPeriodValid ? "bg-stone-950 text-white hover:bg-stone-800" : "pointer-events-none bg-stone-100 text-stone-400"}`}
             >
-              직접 선택 적용
+              {pt("customApply", pageText.customApply)}
             </Link>
           </div>
         </div>
@@ -311,8 +326,8 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         <AdminCard className="flex min-h-[360px] flex-col">
           <div className="flex items-start justify-between gap-3 border-b border-stone-100 pb-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Workflow</p>
-              <h2 className="mt-2 text-lg font-semibold text-stone-950">작업흐름분석</h2>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("workflowEyebrow", pageText.workflowEyebrow)}</p>
+              <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("workflowAnalysisTitle", pageText.workflowAnalysisTitle)}</h2>
             </div>
             <span className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--admin-theme-text-on-surface)]">{activePeriodLabel}</span>
           </div>
@@ -320,20 +335,20 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         </AdminCard>
 
         <AdminCard>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Reorder TOP5</p>
-          <h2 className="mt-2 text-lg font-semibold text-stone-950">기간별 리오더 TOP5</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("reorderTopEyebrow", pageText.reorderTopEyebrow)}</p>
+          <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("reorderTopTitle", pageText.reorderTopTitle)}</h2>
           <div className="mt-5 grid gap-3">
             {reorderTopProducts.length > 0 ? reorderTopProducts.map((item, index) => (
               <div key={`${item.label}-${index}`} className="rounded-2xl bg-stone-50 px-4 py-3">
                 <div className="flex items-center justify-between text-sm font-semibold text-stone-700">
                   <span className="truncate pr-3">{index + 1}. {item.label}</span>
-                  <span className="shrink-0 text-stone-950">{formatCount(item.value)}</span>
+                  <span className="shrink-0 text-stone-950">{formatCount(item.value, pt("workorderCountSuffix", pageText.workorderCountSuffix))}</span>
                 </div>
                 <div className="mt-2 h-1.5 rounded-full bg-white">
                   <div className="h-1.5 rounded-full bg-[var(--admin-theme-surface)]" style={{ width: `${item.widthPercent}%` }} />
                 </div>
               </div>
-            )) : <p className="rounded-2xl border border-dashed border-stone-200 bg-stone-50 px-4 py-4 text-sm font-semibold text-stone-500">리오더 데이터 없음</p>}
+            )) : <p className="rounded-2xl border border-dashed border-stone-200 bg-stone-50 px-4 py-4 text-sm font-semibold text-stone-500">{pt("reorderEmpty", pageText.reorderEmpty)}</p>}
           </div>
         </AdminCard>
       </section>
@@ -342,8 +357,8 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         <AdminCard>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Production mix</p>
-              <h2 className="mt-2 text-lg font-semibold text-stone-950">생산품 유형 비율</h2>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("productionMixEyebrow", pageText.productionMixEyebrow)}</p>
+              <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("productionMixTitle", pageText.productionMixTitle)}</h2>
             </div>
             <div className="flex rounded-full bg-stone-100 p-1">
               {(["first", "second"] as const).map((key) => (
@@ -362,37 +377,37 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
             </div>
           </div>
           <div className="mt-5">
-            <AdminBasicDonutChart points={selectedCategoryDepthBars} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel="생산품 유형 데이터 없음" compact selectedLabel={normalizedSelectedCategoryLabel} onSelectPoint={setSelectedCategoryLabel} />
+            <AdminBasicDonutChart points={selectedCategoryDepthBars} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel={pt("productionMixEmpty", pageText.productionMixEmpty)} compact selectedLabel={normalizedSelectedCategoryLabel} onSelectPoint={setSelectedCategoryLabel} />
           </div>
-          <p className="mt-4 text-xs font-semibold text-stone-500">현재 기준: {selectedCategoryDepthLabel} · {formatCount(selectedCategoryDepthTotal)}</p>
-          {normalizedSelectedCategoryLabel ? <p className="mt-1 text-xs font-semibold text-[var(--admin-theme-surface)]">선택 항목: {normalizedSelectedCategoryLabel}</p> : null}
+          <p className="mt-4 text-xs font-semibold text-stone-500">{pt("currentBasis", pageText.currentBasis)}: {selectedCategoryDepthLabel} · {formatCount(selectedCategoryDepthTotal, pt("workorderCountSuffix", pageText.workorderCountSuffix))}</p>
+          {normalizedSelectedCategoryLabel ? <p className="mt-1 text-xs font-semibold text-[var(--admin-theme-surface)]">{pt("selectedItemLabel", pageText.selectedItemLabel)}: {normalizedSelectedCategoryLabel}</p> : null}
         </AdminCard>
 
         {renderBarList(categoryDetailTitle, categoryDetailPoints, categoryDetailEmptyLabel)}
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
-        {renderBarList("업체 성과", viewModel.factoryProductionBars, "협력업체 성과 데이터 없음")}
+        {renderBarList(pt("factoryPerformanceTitle", pageText.factoryPerformanceTitle), viewModel.factoryProductionBars, pt("factoryPerformanceEmpty", pageText.factoryPerformanceEmpty))}
         <AdminCard>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Delay / quality</p>
-          <h2 className="mt-2 text-lg font-semibold text-stone-950">업체별 납기·검수 지표</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("delayQualityEyebrow", pageText.delayQualityEyebrow)}</p>
+          <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("delayQualityTitle", pageText.delayQualityTitle)}</h2>
           <div className="mt-5 overflow-hidden rounded-2xl border border-stone-100">
             <div className="grid grid-cols-[1.2fr_0.8fr_0.8fr] bg-stone-50 px-4 py-3 text-xs font-semibold text-stone-500">
-              <span>업체</span>
-              <span>납기 지연율</span>
-              <span>검수/불량률</span>
+              <span>{pt("factoryColumn", pageText.factoryColumn)}</span>
+              <span>{pt("delayRateColumn", pageText.delayRateColumn)}</span>
+              <span>{pt("qualityRateColumn", pageText.qualityRateColumn)}</span>
             </div>
             {translatedStats.factoryPerformance.length > 0 ? translatedStats.factoryPerformance.slice(0, 5).map((item) => {
               const tooltip = buildFactoryMetricTooltip(item);
               return (
                 <div key={item.label} title={tooltip} className="grid grid-cols-[1.2fr_0.8fr_0.8fr] border-t border-stone-100 px-4 py-3 text-xs font-semibold text-stone-700">
-                  <span className="truncate pr-3">{item.label} · {formatCount(item.productionCount)}</span>
-                  <span className="cursor-help underline decoration-stone-300 decoration-dotted underline-offset-4">{formatPercent(item.dueDelayRate)}</span>
-                  <span className="cursor-help underline decoration-stone-300 decoration-dotted underline-offset-4">{formatPercent(item.qualityIssueRate)}</span>
+                  <span className="truncate pr-3">{item.label} · {formatCount(item.productionCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))}</span>
+                  <span className="cursor-help underline decoration-stone-300 decoration-dotted underline-offset-4">{formatPercent(item.dueDelayRate, pt("pendingLabel", pageText.pendingLabel))}</span>
+                  <span className="cursor-help underline decoration-stone-300 decoration-dotted underline-offset-4">{formatPercent(item.qualityIssueRate, pt("pendingLabel", pageText.pendingLabel))}</span>
                 </div>
               );
             }) : (
-              <p className="border-t border-stone-100 px-4 py-4 text-sm font-semibold text-stone-500">업체 성과 데이터 없음</p>
+              <p className="border-t border-stone-100 px-4 py-4 text-sm font-semibold text-stone-500">{pt("factoryPerformanceEmpty", pageText.factoryPerformanceEmpty)}</p>
             )}
           </div>
         </AdminCard>
