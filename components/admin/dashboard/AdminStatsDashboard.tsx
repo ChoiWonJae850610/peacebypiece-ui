@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { DayPicker, type DateRange } from "react-day-picker";
+import { enUS, ko } from "date-fns/locale";
 
 import { AdminCard } from "@/components/admin/layout/AdminCard";
 import { AdminBasicBarChart, AdminBasicDonutChart } from "@/components/admin/dashboard/AdminBasicStatsCharts";
 import type { AdminStatsSnapshot } from "@/lib/admin/stats/types";
 import { buildAdminStatsDashboardViewModel } from "@/lib/admin/stats/presentation";
 import type { getI18n } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminStatsDashboardProps = {
@@ -75,96 +78,130 @@ function formatStorageMb(bytes: number, usedSuffix: string) {
 }
 
 
-type AdminCustomDateSelectLabels = {
-  year: string;
-  month: string;
-  day: string;
+type AdminStatsDateRangePickerLabels = {
+  start: string;
+  end: string;
+  clear: string;
+  selected: string;
+  notSelected: string;
+  calendarAria: string;
 };
 
-function parseDateParts(value: string) {
+function parseLocalDateValue(value: string) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (!match) return { year: "", month: "", day: "" };
-  return { year: match[1], month: match[2], day: match[3] };
+  if (!match) return undefined;
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  return Number.isNaN(date.getTime()) ? undefined : date;
 }
 
-function composeDateValue(parts: { year: string; month: string; day: string }) {
-  if (!parts.year || !parts.month || !parts.day) return "";
-  return `${parts.year}-${parts.month}-${parts.day}`;
+function toLocalDateValue(date: Date | undefined) {
+  if (!date) return "";
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
-function getDaysInMonth(year: string, month: string) {
-  if (!year || !month) return 31;
-  return new Date(Number(year), Number(month), 0).getDate();
+function formatDateDisplay(value: string, locale: "ko" | "en") {
+  const date = parseLocalDateValue(value);
+  if (!date) return "—";
+  return date.toLocaleDateString(locale === "ko" ? "ko-KR" : "en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
 }
 
-function AdminCustomDateSelect({
-  value,
-  min,
-  max,
+function AdminStatsDateRangePicker({
+  startDate,
+  endDate,
+  maxDateValue,
   labels,
-  onChange,
+  locale,
+  onStartDateChange,
+  onEndDateChange,
 }: {
-  value: string;
-  min?: string;
-  max: string;
-  labels: AdminCustomDateSelectLabels;
-  onChange: (value: string) => void;
+  startDate: string;
+  endDate: string;
+  maxDateValue: string;
+  labels: AdminStatsDateRangePickerLabels;
+  locale: "ko" | "en";
+  onStartDateChange: (value: string) => void;
+  onEndDateChange: (value: string) => void;
 }) {
-  const maxYear = Number(max.slice(0, 4));
-  const minYear = min ? Number(min.slice(0, 4)) : maxYear - 5;
-  const years = Array.from({ length: Math.max(1, maxYear - minYear + 1) }, (_, index) => String(maxYear - index));
-  const months = Array.from({ length: 12 }, (_, index) => String(index + 1).padStart(2, "0"));
-  const [parts, setParts] = useState(() => parseDateParts(value));
-  useEffect(() => {
-    setParts(parseDateParts(value));
-  }, [value]);
-  const dayCount = getDaysInMonth(parts.year, parts.month);
-  const days = Array.from({ length: dayCount }, (_, index) => String(index + 1).padStart(2, "0"));
+  const selected: DateRange | undefined = startDate
+    ? { from: parseLocalDateValue(startDate), to: parseLocalDateValue(endDate) }
+    : undefined;
+  const maxDate = parseLocalDateValue(maxDateValue);
+  const dayPickerLocale = locale === "ko" ? ko : enUS;
 
-  const updatePart = (key: "year" | "month" | "day", nextValue: string) => {
-    const nextParts = { ...parts, [key]: nextValue };
-    const maxDay = getDaysInMonth(nextParts.year, nextParts.month);
-    if (nextParts.day && Number(nextParts.day) > maxDay) nextParts.day = String(maxDay).padStart(2, "0");
-    setParts(nextParts);
-    const nextDate = composeDateValue(nextParts);
-    if (nextDate) onChange(nextDate);
+  const handleSelect = (range: DateRange | undefined) => {
+    const nextStart = toLocalDateValue(range?.from);
+    const nextEnd = toLocalDateValue(range?.to);
+    onStartDateChange(nextStart);
+    onEndDateChange(nextEnd);
+  };
+
+  const clearSelection = () => {
+    onStartDateChange("");
+    onEndDateChange("");
   };
 
   return (
-    <div className="grid grid-cols-3 gap-2 rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm font-semibold text-stone-700 focus-within:border-stone-400">
-      <select
-        aria-label={labels.year}
-        value={parts.year}
-        onChange={(event) => updatePart("year", event.target.value)}
-        className="min-w-0 bg-transparent outline-none"
-      >
-        <option value="">{labels.year}</option>
-        {years.map((year) => (
-          <option key={year} value={year}>{year}</option>
-        ))}
-      </select>
-      <select
-        aria-label={labels.month}
-        value={parts.month}
-        onChange={(event) => updatePart("month", event.target.value)}
-        className="min-w-0 bg-transparent outline-none"
-      >
-        <option value="">{labels.month}</option>
-        {months.map((month) => (
-          <option key={month} value={month}>{month}</option>
-        ))}
-      </select>
-      <select
-        aria-label={labels.day}
-        value={parts.day}
-        onChange={(event) => updatePart("day", event.target.value)}
-        className="min-w-0 bg-transparent outline-none"
-      >
-        <option value="">{labels.day}</option>
-        {days.map((day) => (
-          <option key={day} value={day}>{day}</option>
-        ))}
-      </select>
+    <div className="rounded-[24px] border border-stone-100 bg-white p-3 shadow-sm md:col-span-2">
+      <div className="mb-3 grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+        <div className="rounded-2xl bg-stone-50 px-3 py-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-400">{labels.start}</p>
+          <p className="mt-1 text-sm font-semibold text-stone-800">{formatDateDisplay(startDate, locale)}</p>
+        </div>
+        <div className="rounded-2xl bg-stone-50 px-3 py-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-400">{labels.end}</p>
+          <p className="mt-1 text-sm font-semibold text-stone-800">{formatDateDisplay(endDate, locale)}</p>
+        </div>
+        <button
+          type="button"
+          onClick={clearSelection}
+          className="rounded-2xl border border-stone-200 bg-white px-4 py-2 text-xs font-semibold text-stone-600 transition hover:bg-stone-50"
+        >
+          {labels.clear}
+        </button>
+      </div>
+      <DayPicker
+        mode="range"
+        selected={selected}
+        onSelect={handleSelect}
+        locale={dayPickerLocale}
+        disabled={maxDate ? { after: maxDate } : undefined}
+        showOutsideDays
+        fixedWeeks
+        aria-label={labels.calendarAria}
+        classNames={{
+          root: "text-sm text-stone-700",
+          months: "grid gap-4",
+          month: "space-y-3",
+          month_caption: "flex items-center justify-center px-2 py-1 text-sm font-semibold text-stone-950",
+          caption_label: "text-sm font-semibold",
+          nav: "flex items-center justify-between",
+          button_previous: "rounded-full border border-stone-200 px-2 py-1 text-stone-500 hover:bg-stone-50",
+          button_next: "rounded-full border border-stone-200 px-2 py-1 text-stone-500 hover:bg-stone-50",
+          weekdays: "grid grid-cols-7 text-center text-[11px] font-semibold uppercase tracking-[0.08em] text-stone-400",
+          week: "grid grid-cols-7 gap-1",
+          day: "flex items-center justify-center",
+          day_button: "h-9 w-9 rounded-full text-sm font-semibold transition hover:bg-stone-100 disabled:text-stone-300",
+          today: "font-bold text-[var(--admin-theme-surface)]",
+          selected: "rounded-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
+          range_start: "rounded-l-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
+          range_end: "rounded-r-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
+          range_middle: "rounded-none bg-stone-100 text-stone-900",
+          outside: "text-stone-300",
+          disabled: "text-stone-300 opacity-40",
+        }}
+      />
+      <p className="mt-3 text-xs font-semibold text-stone-500">
+        {startDate && endDate
+          ? labels.selected.replace("{start}", formatDateDisplay(startDate, locale)).replace("{end}", formatDateDisplay(endDate, locale))
+          : labels.notSelected}
+      </p>
     </div>
   );
 }
@@ -182,26 +219,38 @@ function CurrentSummaryCard({ label, value, description, subValue }: { label: st
 
 export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashboardProps) {
   const t = useAdminTranslation();
+  const { locale } = useI18n();
   const pt = (key: string, fallback: string) => t(`dashboardPage.${key}`, fallback);
   const [categoryDepth, setCategoryDepth] = useState<CategoryDepthKey>("first");
   const [selectedCategoryLabel, setSelectedCategoryLabel] = useState<string | null>(null);
   const [customStartDate, setCustomStartDate] = useState(stats.selectedPeriodRange.isCustom ? stats.selectedPeriodRange.startDate : "");
   const [customEndDate, setCustomEndDate] = useState(stats.selectedPeriodRange.isCustom ? stats.selectedPeriodRange.endDate : "");
   const todayDateValue = new Date().toISOString().slice(0, 10);
-  const dateSelectLabels = {
-    year: pt("dateSelectYear", pageText.dateSelectYear),
-    month: pt("dateSelectMonth", pageText.dateSelectMonth),
-    day: pt("dateSelectDay", pageText.dateSelectDay),
+  const dateRangeLabels = {
+    start: pt("customStartDateLabel", pageText.customStartDateLabel),
+    end: pt("customEndDateLabel", pageText.customEndDateLabel),
+    clear: pt("customClear", pageText.customReset),
+    selected: pt("customDateRangeSelected", "{start} - {end}"),
+    notSelected: pt("customDateRangeEmpty", "Select a date range."),
+    calendarAria: pt("customDateRangeCalendarAria", "Select statistics date range"),
   };
   const updateCustomStartDate = (value: string) => {
-    if (!value || value > todayDateValue) return;
+    if (!value) {
+      setCustomStartDate("");
+      setCustomEndDate("");
+      return;
+    }
+    if (value > todayDateValue) return;
     setCustomStartDate(value);
     if (customEndDate && customEndDate < value) setCustomEndDate("");
   };
   const updateCustomEndDate = (value: string) => {
-    if (!value || value > todayDateValue) return;
+    if (!value) {
+      setCustomEndDate("");
+      return;
+    }
+    if (value > todayDateValue) return;
     if (customStartDate && value < customStartDate) return;
-    if (!customStartDate && value < todayDateValue) return;
     setCustomEndDate(value);
   };
 
@@ -390,15 +439,16 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
             ))}
           </div>
         </div>
-        <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_auto]">
-          <label className="grid gap-1 text-xs font-semibold text-stone-500">
-            {pt("customStartDateLabel", pageText.customStartDateLabel)}
-            <AdminCustomDateSelect value={customStartDate} max={todayDateValue} labels={dateSelectLabels} onChange={updateCustomStartDate} />
-          </label>
-          <label className="grid gap-1 text-xs font-semibold text-stone-500">
-            {pt("customEndDateLabel", pageText.customEndDateLabel)}
-            <AdminCustomDateSelect value={customEndDate} min={customStartDate || todayDateValue} max={todayDateValue} labels={dateSelectLabels} onChange={updateCustomEndDate} />
-          </label>
+        <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
+          <AdminStatsDateRangePicker
+            startDate={customStartDate}
+            endDate={customEndDate}
+            maxDateValue={todayDateValue}
+            labels={dateRangeLabels}
+            locale={locale}
+            onStartDateChange={updateCustomStartDate}
+            onEndDateChange={updateCustomEndDate}
+          />
           <div className="flex items-end gap-2">
             <Link
               href="/admin/dashboard?period=30d"
