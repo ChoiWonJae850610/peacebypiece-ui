@@ -1,13 +1,20 @@
-Version : 0.9.22429
-Summary : 관리자 통계 정보 구조 재배치
-Description : 통계 화면을 누적/전체 지표 우선 구조로 재정렬하고 기간별 분석을 하단으로 이동했습니다. 기간 요약 항목을 클릭 가능한 필터로 변경하여 완료 작업지시서, 리오더, 불량 작업지시서 선택에 따라 TOP5 제목과 데이터가 바뀌도록 정리했습니다.
+Version :
+0.9.22430
+
+Summary :
+관리자 통계 화면 타입과 SQL 안정성 보정
+
+Description :
+통계 화면 재배치 이후 DayPicker 선택값, 직접 기간 날짜 계산, 기간 검증 조건을 보정하고 납기 지연 통계 SQL의 due_date 캐스팅을 안전하게 정리했다. APP_VERSION을 0.9.22430으로 갱신하고 관련 안정화 문서를 추가했다.
+
 수정 파일 목록 :
 - components/admin/dashboard/AdminStatsDashboard.tsx
 - lib/admin/adminStats.repository.ts
-- lib/admin/stats/types.ts
-- lib/i18n/en/admin.ts
-- lib/i18n/ko/admin.ts
+- lib/admin/stats/selectors.ts
 - lib/constants/app.ts
+
 추가 파일 목록 :
-- docs/admin-stats-information-architecture-0.9.22429.md
+- docs/admin-stats-build-runtime-stability-0.9.22430.md
+
 삭제 파일 목록 :
+없음

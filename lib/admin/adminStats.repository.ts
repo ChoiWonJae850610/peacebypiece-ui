@@ -120,6 +120,12 @@ function getAdminStatsPeriodWhereClause(period: AdminStatsPeriodKey, startDate?:
   return "AND updated_at >= now() - interval '30 days'";
 }
 
+const ADMIN_STATS_DATE_INPUT_PATTERN_SQL = "^\\d{4}-\\d{2}-\\d{2}$";
+
+function buildAdminStatsSafeDateExpression(columnName: string): string {
+  return `CASE WHEN COALESCE(${columnName}, '') ~ '${ADMIN_STATS_DATE_INPUT_PATTERN_SQL}' THEN ${columnName}::date ELSE NULL END`;
+}
+
 function buildEmptyStats(sourceState: Exclude<AdminStatsSourceState, "db">, selectedPeriod: AdminStatsPeriodKey, selectedPeriodRange = buildAdminPeriodRange(selectedPeriod)): AdminStatsSnapshot {
   const { points: fileUsagePoints, fileUsageLabel, activeFileCount, trashFileCount } = buildAdminFileUsagePoints(undefined);
 
@@ -169,6 +175,8 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
 
   try {
     const companyId = getAdminCompanyId();
+    const orderDueDateExpression = buildAdminStatsSafeDateExpression("o.due_date");
+    const dueDateExpression = buildAdminStatsSafeDateExpression("due_date");
     const [workordersResult, completedResult, partnersResult, partnerTypesResult, fileUsageResult, reviewWaitingResult, inspectionWaitingResult, inboundDelayedResult, defectResult, roundResult, factoryProductionResult, categoryResult, categoryByRoundResult, categoryDrilldownResult, completedTopProductsResult, reorderTopProductsResult, defectTopProductsResult, factoryPerformanceResult, currentWorkordersResult, currentReorderResult, periodReorderResult, periodQualityIssueResult, dueDateTargetResult, dueDelayedResult, qualityIssueResult] = await Promise.all([
       queryDb<StatusCountRow>(
         `SELECT COALESCE(status, 'draft') AS status,
@@ -423,18 +431,18 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
       queryDb<FactoryPerformanceRow>(
         `SELECT COALESCE(NULLIF(o.factory_name, ''), '공장 미지정') AS factory_label,
                 COUNT(*)::text AS production_count,
-                COUNT(*) FILTER (WHERE COALESCE(o.due_date, '') ~ '^\\d{4}-\\d{2}-\\d{2}$')::text AS due_target_count,
+                COUNT(*) FILTER (WHERE ${orderDueDateExpression} IS NOT NULL)::text AS due_target_count,
                 COUNT(*) FILTER (
-                  WHERE COALESCE(o.due_date, '') ~ '^\\d{4}-\\d{2}-\\d{2}$'
-                    AND o.due_date::date < CURRENT_DATE
+                  WHERE ${orderDueDateExpression} IS NOT NULL
+                    AND ${orderDueDateExpression} < CURRENT_DATE
                     AND o.status <> 'completed'
                 )::text AS due_delay_count,
                 COUNT(*)::text AS quality_target_count,
                 COUNT(*) FILTER (WHERE s.status = 'rejected' OR COALESCE(s.is_rework, false) = true)::text AS quality_issue_count,
                 STRING_AGG(DISTINCT COALESCE(NULLIF(s.title, ''), NULLIF(s.payload->>'name', ''), NULLIF(s.payload->>'productName', ''), '작업지시서 미지정'), '|||')
                   FILTER (
-                    WHERE COALESCE(o.due_date, '') ~ '^\\d{4}-\\d{2}-\\d{2}$'
-                      AND o.due_date::date < CURRENT_DATE
+                    WHERE ${orderDueDateExpression} IS NOT NULL
+                      AND ${orderDueDateExpression} < CURRENT_DATE
                       AND o.status <> 'completed'
                   ) AS due_delay_examples,
                 STRING_AGG(DISTINCT COALESCE(NULLIF(s.title, ''), NULLIF(s.payload->>'name', ''), NULLIF(s.payload->>'productName', ''), '작업지시서 미지정'), '|||')
@@ -493,7 +501,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
           WHERE company_id = $1
             AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true
-            AND COALESCE(due_date, '') ~ '^\\d{4}-\\d{2}-\\d{2}$'`,
+            AND ${dueDateExpression} IS NOT NULL`,
         [companyId],
       ),
       queryDb<CountRow>(
@@ -502,8 +510,8 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
           WHERE company_id = $1
             AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true
-            AND COALESCE(due_date, '') ~ '^\\d{4}-\\d{2}-\\d{2}$'
-            AND due_date::date < CURRENT_DATE
+            AND ${dueDateExpression} IS NOT NULL
+            AND ${dueDateExpression} < CURRENT_DATE
             AND status <> 'completed'`,
         [companyId],
       ),

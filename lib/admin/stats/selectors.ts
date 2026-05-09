@@ -109,14 +109,25 @@ function formatAdminDateLabel(value: string): string {
   return value.replace(/-/g, ".");
 }
 
+function toAdminLocalDateInputValue(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function getCurrentAdminDateInputValue(): string {
+  return toAdminLocalDateInputValue(new Date());
+}
+
 function getRelativeDateInputValue(daysBack: number): string {
   const date = new Date();
   date.setDate(date.getDate() - daysBack);
-  return date.toISOString().slice(0, 10);
+  return toAdminLocalDateInputValue(date);
 }
 
 export function buildAdminPeriodRange(selectedPeriod: AdminStatsPeriodKey, startDateValue?: string | string[], endDateValue?: string | string[]): AdminStatsPeriodRange {
-  const endDate = isAdminDateInputValue(endDateValue) ? endDateValue : new Date().toISOString().slice(0, 10);
+  const endDate = isAdminDateInputValue(endDateValue) ? endDateValue : getCurrentAdminDateInputValue();
   const startDate = isAdminDateInputValue(startDateValue) ? startDateValue : selectedPeriod === "7d" ? getRelativeDateInputValue(6) : getRelativeDateInputValue(29);
 
   if (selectedPeriod === "custom" && isAdminDateInputValue(startDateValue) && isAdminDateInputValue(endDateValue) && startDate <= endDate) {

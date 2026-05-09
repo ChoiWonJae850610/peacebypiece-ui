@@ -103,6 +103,10 @@ function toLocalDateValue(date: Date | undefined) {
   return `${year}-${month}-${day}`;
 }
 
+function getTodayLocalDateValue() {
+  return toLocalDateValue(new Date());
+}
+
 function formatDateDisplay(value: string, locale: "ko" | "en") {
   const date = parseLocalDateValue(value);
   if (!date) return "—";
@@ -132,8 +136,10 @@ function AdminStatsDateRangePicker({
 }) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const pickerRef = useRef<HTMLDivElement | null>(null);
-  const selected: DateRange | undefined = startDate
-    ? { from: parseLocalDateValue(startDate), to: parseLocalDateValue(endDate) }
+  const selectedStartDate = parseLocalDateValue(startDate);
+  const selectedEndDate = parseLocalDateValue(endDate);
+  const selected: DateRange | undefined = selectedStartDate
+    ? { from: selectedStartDate, to: selectedEndDate }
     : undefined;
   const maxDate = parseLocalDateValue(maxDateValue);
   const dayPickerLocale = locale === "ko" ? ko : enUS;
@@ -347,7 +353,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   const [selectedPeriodTopMode, setSelectedPeriodTopMode] = useState<AdminStatsPeriodTopMode>("reorder");
   const [customStartDate, setCustomStartDate] = useState(stats.selectedPeriodRange.isCustom ? stats.selectedPeriodRange.startDate : "");
   const [customEndDate, setCustomEndDate] = useState(stats.selectedPeriodRange.isCustom ? stats.selectedPeriodRange.endDate : "");
-  const todayDateValue = new Date().toISOString().slice(0, 10);
+  const todayDateValue = getTodayLocalDateValue();
   const dateRangeLabels = {
     start: pt("customStartDateLabel", pageText.customStartDateLabel),
     end: pt("customEndDateLabel", pageText.customEndDateLabel),
@@ -434,7 +440,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   const isCustomPeriodReady = Boolean(customStartDate && customEndDate);
   const isCustomPeriodOrderValid = !isCustomPeriodReady || customStartDate <= customEndDate;
   const isCustomPeriodNotFuture = (!customStartDate || customStartDate <= todayDateValue) && (!customEndDate || customEndDate <= todayDateValue);
-  const isCustomEndSelectable = !customEndDate || (customStartDate ? customEndDate >= customStartDate : customEndDate >= todayDateValue);
+  const isCustomEndSelectable = !customEndDate || !customStartDate || customEndDate >= customStartDate;
   const isCustomPeriodValid = isCustomPeriodReady && isCustomPeriodOrderValid && isCustomPeriodNotFuture && isCustomEndSelectable;
   const customPeriodHref = isCustomPeriodValid ? `/admin/dashboard?period=custom&startDate=${customStartDate}&endDate=${customEndDate}` : "/admin/dashboard?period=30d";
   const customPeriodMessage = !isCustomPeriodOrderValid
