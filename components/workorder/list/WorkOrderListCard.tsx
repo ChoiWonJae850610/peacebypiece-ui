@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { REORDERABLE_WORKFLOW_STATES, isWorkflowStateOneOf } from "@/lib/constants/workorderStates";
 import { canReorderWorkOrder } from "@/lib/workorder/reorder/helpers";
 import { useI18n } from "@/lib/i18n";
-import { getStageDotTone, getWorkflowStateLabel } from "@/lib/workorder/presentation/statusPresentation";
+import { getStageDotTone } from "@/lib/workorder/presentation/statusPresentation";
+import { translateWorkflowStateLabel } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { getCategoryPath, getDisplayValueOrFallback, getWorkOrderCardTone, getWorkOrderDisplayTitle, getWorkOrderState } from "@/lib/workorder/presentation/workOrderPresentation";
 import type { WorkOrderListItem, WorkflowState } from "@/types/workorder";
 
@@ -37,7 +38,7 @@ export default function WorkOrderListCard({
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.layout.workOrderListCard;
   const state = getWorkOrderState(workflowStateById, workOrder.id);
-  const stateLabel = getWorkflowStateLabel(state);
+  const stateLabel = translateWorkflowStateLabel(state, i18n);
   const active = workOrder.id === selectedId;
   const canShowReorder = canReorder && canReorderWorkOrder(workOrder) && isWorkflowStateOneOf(state, REORDERABLE_WORKFLOW_STATES);
   const canShowDelete = Boolean(onDelete) && (!canDelete || canDelete(state));

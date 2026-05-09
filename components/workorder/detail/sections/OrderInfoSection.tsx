@@ -2,8 +2,8 @@ import OrderInfoHubDebugPanel from "@/components/debug/OrderInfoHubDebugPanel";
 import { useI18n } from "@/lib/i18n";
 import type { OrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculations";
-import { formatOrderSummary } from "@/lib/workorder/detail/detailFormatting";
-import { getInspectionStatusLabel, getInspectionStatusTone } from "@/lib/workorder/presentation/statusPresentation";
+import { getInspectionStatusTone } from "@/lib/workorder/presentation/statusPresentation";
+import { translateInspectionStatusLabel, translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import {
   DeleteButton,
   EditableValue,
@@ -52,14 +52,14 @@ export default function OrderInfoSection({
   onOpenInspectionModal: () => void;
   showDebugPanel?: boolean;
 }) {
-  const { i18n } = useI18n();
+  const { i18n, locale } = useI18n();
   const copy = i18n.workorder.ui.sections.orderInfo;
   const common = i18n.workorder.ui.common;
   const totals = calculateOrderEntryTotals(orderEntries);
   const inspectionStatusCounts = orderEntries.reduce<Record<string, { label: string; tone: string; count: number }>>((acc, item) => {
     const key = item.inspectionStatus ?? "__pending";
     const current = acc[key] ?? {
-      label: getInspectionStatusLabel(item.inspectionStatus),
+      label: translateInspectionStatusLabel(item.inspectionStatus, i18n),
       tone: getInspectionStatusTone(item.inspectionStatus),
       count: 0,
     };
@@ -68,6 +68,15 @@ export default function OrderInfoSection({
     return acc;
   }, {});
   const inspectionStatusSummary = Object.values(inspectionStatusCounts);
+  const orderSummary = orderEntries.length === 0
+    ? i18n.workorder.ui.formatting.orderSummaryEmpty
+    : [
+        `${orderEntries.length}${common.countSuffix}`,
+        `${totals.quantity.toLocaleString()}${common.quantitySuffix}`,
+        i18n.workorder.ui.formatting.inspectionCompletedFormat
+          .replace("{completed}", String(orderEntries.filter((item) => item.inspectionStatus === "inspection_completed").length))
+          .replace("{total}", String(orderEntries.length)),
+      ].join(" · ");
   const inspectionButton = canOpenInspectionModal ? (
     <button
       type="button"
@@ -80,13 +89,13 @@ export default function OrderInfoSection({
 
   return (
     <div className="overflow-hidden rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm xl:p-5">
-      <SectionHeader title={copy.title} summary={formatOrderSummary(orderEntries)} open={open} onToggle={onToggle} rightSlot={inspectionButton} />
+      <SectionHeader title={copy.title} summary={orderSummary} open={open} onToggle={onToggle} rightSlot={inspectionButton} />
       {open ? (
         <>
           {showDebugPanel ? <OrderInfoHubDebugPanel policy={orderHubPolicy} /> : null}
           {inspectionStatusSummary.length > 0 ? (
             <div className="mt-3 flex flex-wrap items-center gap-1.5 rounded-2xl border border-stone-200 bg-stone-50/80 px-3 py-2">
-              <span className="mr-1 text-[11px] font-semibold text-stone-500">발주 상태</span>
+              <span className="mr-1 text-[11px] font-semibold text-stone-500">{copy.statusSummaryLabel}</span>
               {inspectionStatusSummary.map((status) => (
                 <span key={status.label} className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium leading-none ${status.tone}`}>
                   {status.label} {status.count}
@@ -122,8 +131,8 @@ export default function OrderInfoSection({
                 ) : null}
                 {orderEntries.map((item, rowIndex) => (
                   <tr key={item.id} className={`border-b border-stone-100 ${rowIndex % 2 === 0 ? "bg-white" : "bg-stone-50/70"} hover:bg-stone-50`}>
-                    <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="type" value={item.type} options={orderTypeOptions} centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
-                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="factory" value={item.factory} options={factoryOptions} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
+                    <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="type" value={item.type} displayValue={translateWorkOrderDisplayText(item.type, locale)} options={orderTypeOptions} centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
+                    <td className={TABLE_BODY_CELL_CLASS}><EditableValue section="order" rowId={item.id} field="factory" value={item.factory} displayValue={translateWorkOrderDisplayText(item.factory, locale)} options={factoryOptions} wrapText centered editingCell={editingCell} editingValue={editingValue} onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                     <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="dueDate" value={item.dueDate} centered editingCell={editingCell} editingValue={editingValue} inputType="date" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                     <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>
                     <td className={`${TABLE_BODY_CELL_CLASS} whitespace-nowrap`}><EditableValue section="order" rowId={item.id} field="laborCost" value={item.laborCost.toLocaleString()} centered editingCell={editingCell} editingValue={editingValue} inputMode="numeric" onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></td>

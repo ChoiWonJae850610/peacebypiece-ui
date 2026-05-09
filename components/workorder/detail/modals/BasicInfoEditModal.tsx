@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_SELECT_CLASS } from "@/components/common/modal/modalFieldClassNames";
-import { MODAL_ACTION_LABELS, renderModalFooterActions } from "@/components/common/modal/modalActions";
+import { renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { fetchAdminStandardsFromApi } from "@/lib/admin/settings/standardsApiClient";
 import {
   buildCategorySourceFromDefinitions,
@@ -128,8 +128,8 @@ export default function BasicInfoEditModal({
       maxWidthClass="md:max-w-xl"
       footer={renderModalFooterActions({
         layout: "split",
-        secondary: { label: MODAL_ACTION_LABELS.cancel, onClick: onClose, width: "fill" },
-        primary: { label: MODAL_ACTION_LABELS.apply, onClick: onSave, tone: "primary", width: "fill" },
+        secondary: { label: i18n.common.ui.common.cancel, onClick: onClose, width: "fill" },
+        primary: { label: i18n.common.ui.common.apply, onClick: onSave, tone: "primary", width: "fill" },
       })}
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

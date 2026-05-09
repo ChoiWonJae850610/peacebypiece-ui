@@ -145,6 +145,7 @@ export function EditableValue({
   onCancel,
   compact,
   disabled = false,
+  displayValue,
 }: {
   section: EditableSectionKey;
   rowId: string;
@@ -160,6 +161,7 @@ export function EditableValue({
   centered?: boolean;
   compact?: boolean;
   disabled?: boolean;
+  displayValue?: string;
   onStartEdit: (section: EditableSectionKey, rowId: string, field: string, value: string) => void;
   onCommit: (nextValue?: string) => void;
   onCancel: () => void;
@@ -273,7 +275,7 @@ export function EditableValue({
       disabled={disabled}
       className={`${EDITABLE_DISPLAY_CLASS} ${compact ? "mx-auto max-w-[11rem]" : ""} ${alignRight ? "items-center justify-center w-[48px] text-right tabular-nums" : centered ? "justify-center text-center" : "text-left"} ${disabled ? "cursor-not-allowed opacity-60 hover:border-transparent hover:bg-transparent" : ""}`}
     >
-      <span className={wrapText ? EDITABLE_VALUE_TEXT_WRAP_CLASS : EDITABLE_VALUE_TEXT_CLASS}>{getDisplayValue(field, value) || "-"}</span>
+      <span className={wrapText ? EDITABLE_VALUE_TEXT_WRAP_CLASS : EDITABLE_VALUE_TEXT_CLASS}>{displayValue ?? getDisplayValue(field, value) || "-"}</span>
     </button>
   );
 }

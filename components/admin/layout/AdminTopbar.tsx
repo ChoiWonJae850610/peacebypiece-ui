@@ -22,9 +22,23 @@ function getTopbarSummary(title: string, description: string | undefined, t: Ret
   return summaries[title] ?? null;
 }
 
+function getLocalizedTopbarTitle(title: string, t: ReturnType<typeof useAdminTranslation>): string {
+  const titleMap: Record<string, string> = {
+    "고객관리자 메인": t("operationsDashboard.title", "운영 대시보드"),
+    "협력업체 관리": t("navigation.partners", "협력업체 관리"),
+    "저장소 관리": t("navigation.storage", "저장소 관리"),
+    "통계정보": t("dashboardPage.title", "통계정보"),
+    "히스토리": t("historySection.title", "히스토리"),
+    "환경설정": t("navigation.settings", "환경설정"),
+  };
+
+  return titleMap[title] ?? title;
+}
+
 export default function AdminTopbar({ title, description }: AdminTopbarProps) {
   const t = useAdminTranslation();
-  const summary = getTopbarSummary(title, description, t);
+  const localizedTitle = getLocalizedTopbarTitle(title, t);
+  const summary = getTopbarSummary(localizedTitle, description, t);
 
   return (
     <header className="rounded-[30px] border border-stone-200 bg-white/95 px-5 py-4 shadow-sm backdrop-blur">
@@ -34,7 +48,7 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
             <span className="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-500">{summary}</span>
           </div>
         ) : null}
-        <h1 className="text-2xl font-semibold tracking-tight text-stone-950">{title}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-stone-950">{localizedTitle}</h1>
       </div>
     </header>
   );

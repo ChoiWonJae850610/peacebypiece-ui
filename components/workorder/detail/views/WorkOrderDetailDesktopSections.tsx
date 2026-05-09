@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useI18n } from "@/lib/i18n";
 import WorkOrderActionSection from "@/components/workorder/detail/WorkOrderActionSection";
 import WorkOrderCostSummarySection from "@/components/workorder/detail/WorkOrderCostSummarySection";
 import WorkOrderHeaderSection from "@/components/workorder/detail/WorkOrderHeaderSection";
@@ -36,6 +37,9 @@ function DetailSectionGroup({
 }
 
 export default function WorkOrderDetailDesktopSections({ viewModel }: WorkOrderDetailDesktopSectionsProps) {
+  const { i18n } = useI18n();
+  const groups = i18n.workorder.ui.detailGroups;
+
   return (
     <>
       <div className="overflow-hidden rounded-[28px] border border-stone-200 bg-white px-5 py-5 shadow-sm">
@@ -46,17 +50,17 @@ export default function WorkOrderDetailDesktopSections({ viewModel }: WorkOrderD
       </div>
 
       {viewModel.showCostSummary ? (
-        <DetailSectionGroup eyebrow="Cost" title="비용 요약" description="원단, 부자재, 외주, 공임, 로스 비용을 먼저 확인합니다.">
+        <DetailSectionGroup eyebrow={groups.cost.eyebrow} title={groups.cost.title} description={groups.cost.description}>
           <WorkOrderCostSummarySection {...viewModel.costSummaryProps} />
         </DetailSectionGroup>
       ) : null}
 
-      <DetailSectionGroup eyebrow="Order" title="발주 정보" description="공장별 발주 수량, 납기일, 공임과 로스 비용을 관리합니다.">
+      <DetailSectionGroup eyebrow={groups.order.eyebrow} title={groups.order.title} description={groups.order.description}>
         <OrderInfoSection {...viewModel.orderInfoProps} />
       </DetailSectionGroup>
 
       {viewModel.showProductionComposition ? (
-        <DetailSectionGroup eyebrow="Production" title="생산 구성" description="원단, 부자재, 외주 공정의 구성과 비용을 한 곳에서 정리합니다.">
+        <DetailSectionGroup eyebrow={groups.production.eyebrow} title={groups.production.title} description={groups.production.description}>
           <ProductionCompositionSection {...viewModel.productionCompositionProps} />
         </DetailSectionGroup>
       ) : null}

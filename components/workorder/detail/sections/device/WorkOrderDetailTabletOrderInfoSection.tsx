@@ -1,7 +1,8 @@
 import { useI18n } from "@/lib/i18n";
 import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculations";
 import { formatOrderSummary } from "@/lib/workorder/detail/detailFormatting";
-import { getInspectionStatusLabel, getInspectionStatusTone } from "@/lib/workorder/presentation/statusPresentation";
+import { getInspectionStatusTone } from "@/lib/workorder/presentation/statusPresentation";
+import { translateInspectionStatusLabel, translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { DeleteButton, SectionHeader } from "@/components/workorder/detail/shared/detailEditorShared";
 import type { WorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
 
@@ -17,7 +18,7 @@ export default function WorkOrderDetailTabletOrderInfoSection({
   onOpenInspectionModal,
   locked = false,
 }: OrderInfoProps) {
-  const { i18n } = useI18n();
+  const { i18n, locale } = useI18n();
   const copy = i18n.workorder.ui.sections.orderInfo;
   const common = i18n.workorder.ui.common;
   const totals = calculateOrderEntryTotals(orderEntries);
@@ -26,7 +27,7 @@ export default function WorkOrderDetailTabletOrderInfoSection({
     <section className="overflow-hidden rounded-2xl bg-stone-50 p-4">
       <SectionHeader
         title={copy.title}
-        summary={formatOrderSummary(orderEntries)}
+        summary={formatOrderSummary(orderEntries, i18n)}
         open={open}
         onToggle={onToggle}
         rightSlot={
@@ -48,10 +49,10 @@ export default function WorkOrderDetailTabletOrderInfoSection({
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="text-base font-semibold text-stone-900">{item.factory || copy.fallbackItem.replace("{index}", String(index + 1))}</div>
-                  <div className="mt-1 text-sm text-stone-500">{item.type} · {item.dueDate || "-"}</div>
+                  <div className="mt-1 text-sm text-stone-500">{translateWorkOrderDisplayText(item.type, locale)} · {item.dueDate || "-"}</div>
                 </div>
                 <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium ${getInspectionStatusTone(item.inspectionStatus)}`}>
-                  {getInspectionStatusLabel(item.inspectionStatus)}
+                  {translateInspectionStatusLabel(item.inspectionStatus, i18n)}
                 </span>
               </div>
 

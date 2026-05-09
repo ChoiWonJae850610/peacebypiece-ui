@@ -1,5 +1,6 @@
 import { useI18n } from "@/lib/i18n";
-import { getDisplayStageLabel, getStageDotTone } from "@/lib/workorder/presentation/statusPresentation";
+import { getStageDotTone } from "@/lib/workorder/presentation/statusPresentation";
+import { translateDisplayStageLabel, translateWorkflowActionLabel, translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import type { WorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
 
 type ActionProps = WorkOrderDetailViewModel["actionProps"];
@@ -18,12 +19,20 @@ export default function WorkOrderDetailTabletActionSection({
   isWorkspaceWriteLocked = false,
   workspaceWriteLockMessage,
 }: ActionProps) {
-  const { i18n } = useI18n();
+  const { i18n, locale } = useI18n();
   const copy = i18n.workorder.ui.actionSection;
   const isWorkflowProcessing = Boolean(workflowProcessingLabel);
   const isActionLocked = isWorkflowProcessing || Boolean(isWorkspaceWriteLocked);
+  const processingAction = workflowProcessingLabel
+    ? actions.find((action) => action.label === workflowProcessingLabel)
+    : undefined;
   const processingMessage = workflowProcessingLabel
-    ? getProcessingLabel(workflowProcessingLabel, copy.processingFormat)
+    ? getProcessingLabel(
+        processingAction
+          ? translateWorkflowActionLabel(processingAction, i18n, locale)
+          : translateWorkOrderDisplayText(workflowProcessingLabel, locale),
+        copy.processingFormat,
+      )
     : workspaceWriteLockMessage;
 
   return (
@@ -45,7 +54,7 @@ export default function WorkOrderDetailTabletActionSection({
                   }`}
                 >
                   {isProcessingTarget ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" /> : null}
-                  <span>{isProcessingTarget ? getProcessingLabel(action.label, copy.processingFormat) : action.label}</span>
+                  <span>{isProcessingTarget ? getProcessingLabel(translateWorkflowActionLabel(action, i18n, locale), copy.processingFormat) : translateWorkflowActionLabel(action, i18n, locale)}</span>
                 </button>
               );
             })}
@@ -64,7 +73,7 @@ export default function WorkOrderDetailTabletActionSection({
             <div key={stage} className={`rounded-2xl border px-3 py-3 ${isCurrent ? "border-stone-900 bg-white" : "border-stone-200 bg-white"}`}>
               <div className="flex items-center gap-2 text-sm font-medium text-stone-900">
                 <span className={`h-2.5 w-2.5 rounded-full ${isCurrent ? getStageDotTone(stage) : "bg-stone-300"}`} />
-                <span>{getDisplayStageLabel(stage)}</span>
+                <span>{translateDisplayStageLabel(stage, i18n)}</span>
               </div>
             </div>
           );

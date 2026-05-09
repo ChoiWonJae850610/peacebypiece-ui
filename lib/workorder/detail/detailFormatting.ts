@@ -36,8 +36,7 @@ export function formatBasicSummary(basicInfo: BasicInfoLike) {
   return [basicInfo.category1, basicInfo.category2, basicInfo.category3].filter(Boolean).join(" > ");
 }
 
-export function formatOrderSummary(orderEntries: OrderEntry[]) {
-  const i18n = getI18n();
+export function formatOrderSummary(orderEntries: OrderEntry[], i18n: ReturnType<typeof getI18n> = getI18n()) {
   const copy = i18n.workorder.ui.formatting;
   const common = i18n.workorder.ui.common;
   if (orderEntries.length === 0) return copy.orderSummaryEmpty;

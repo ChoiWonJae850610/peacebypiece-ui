@@ -4,7 +4,8 @@ import { useI18n } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_INPUT_CLASS, MODAL_SELECT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
-import { MODAL_ACTION_LABELS, createModalActionHandler, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
+import { createModalActionHandler, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
+import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { isOrderInspectionCompleted } from "@/lib/constants/workorderStates";
 import { DEFAULT_FACTORY_OPTION } from "@/lib/constants/workorderOptions";
 import { toNumber } from "@/lib/workorder/detail/detailSanitizers";
@@ -23,7 +24,7 @@ export default function OrderInspectionModal({
   onClose: () => void;
   onApply: (payload: { orderEntryId: string; inboundQuantity: number; nextInventoryQuantity: number; memo: string }) => void;
 }) {
-  const { i18n } = useI18n();
+  const { i18n, locale } = useI18n();
   const copy = i18n.workorder.ui.modals.inspection;
   const common = i18n.workorder.ui.common;
   const pendingEntries = orderEntries.filter((item) => !isOrderInspectionCompleted(item.inspectionStatus));
@@ -97,8 +98,8 @@ export default function OrderInspectionModal({
       maxWidthClass="md:max-w-lg"
       footer={renderModalFooterActions({
         layout: "split",
-        secondary: { label: MODAL_ACTION_LABELS.close, onClick: onClose, width: "fill" },
-        primary: { label: MODAL_ACTION_LABELS.completeInspection, onClick: handleApply, disabled: submitDisabled, tone: "primary", width: "fill" },
+        secondary: { label: i18n.common.ui.common.close, onClick: onClose, width: "fill" },
+        primary: { label: i18n.common.ui.modalActions.completeInspection, onClick: handleApply, disabled: submitDisabled, tone: "primary", width: "fill" },
       })}
     >
       {selectedEntry ? (
@@ -111,7 +112,7 @@ export default function OrderInspectionModal({
                 onChange={(event) => handleFactoryChange(event.target.value)}
                 className={`mt-2 ${MODAL_INPUT_CLASS}`}
               >
-                {factoryOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                {factoryOptions.map((option) => <option key={option} value={option}>{translateWorkOrderDisplayText(option, locale)}</option>)}
               </select>
             </label>
             <label className="rounded-2xl border border-stone-200 bg-white p-3">
@@ -123,7 +124,7 @@ export default function OrderInspectionModal({
               >
                 {filteredEntries.map((item) => (
                   <option key={item.id} value={item.id}>
-                    {copy.optionFormat.replace("{type}", item.type).replace("{quantity}", `${item.quantity.toLocaleString()}${common.quantitySuffix}`)}
+                    {copy.optionFormat.replace("{type}", translateWorkOrderDisplayText(item.type, locale)).replace("{quantity}", `${item.quantity.toLocaleString()}${common.quantitySuffix}`)}
                   </option>
                 ))}
               </select>

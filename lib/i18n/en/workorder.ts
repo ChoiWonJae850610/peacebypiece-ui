@@ -298,10 +298,16 @@ export const workorderEn = {
       processingFormat: "Processing {label}...",
       saveDraftHint: "Input changes and draft save stay local only, and the DB is updated only from workflow action buttons.",
     },
+    detailGroups: {
+      cost: { eyebrow: "Cost", title: "Cost summary", description: "Review fabric, trim, outsourcing, labor, and loss costs first." },
+      order: { eyebrow: "Order", title: "Order info", description: "Manage factory order quantities, due dates, labor, and loss costs." },
+      production: { eyebrow: "Production", title: "Production composition", description: "Review fabric, trims, outsourcing processes, and costs in one place." },
+    },
     sections: {
       orderInfo: {
         title: "Order info",
         inspectionAction: "Start inspection",
+        statusSummaryLabel: "Order status",
         fallbackItem: "Order {index}",
         mobileSubtitleFormat: "{type} · {quantity}",
         addButton: "+ Add order",

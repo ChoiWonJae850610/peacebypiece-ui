@@ -298,10 +298,16 @@ export const workorderKo = {
       processingFormat: "{label} 중입니다...",
       saveDraftHint: "입력 변경과 임시 저장은 로컬 상태에만 반영되며, 상태 변경 버튼에서만 DB에 저장됩니다.",
     },
+    detailGroups: {
+      cost: { eyebrow: "비용", title: "비용 요약", description: "원단, 부자재, 외주, 공임, 로스 비용을 먼저 확인합니다." },
+      order: { eyebrow: "발주", title: "발주 정보", description: "공장별 발주 수량, 납기일, 공임과 로스 비용을 관리합니다." },
+      production: { eyebrow: "생산", title: "생산 구성", description: "원단, 부자재, 외주 공정의 구성과 비용을 한 곳에서 정리합니다." },
+    },
     sections: {
       orderInfo: {
         title: "발주 정보",
         inspectionAction: "검수 진행",
+        statusSummaryLabel: "발주 상태",
         fallbackItem: "발주 {index}",
         mobileSubtitleFormat: "{type} · {quantity}",
         addButton: "+ 발주 추가",
