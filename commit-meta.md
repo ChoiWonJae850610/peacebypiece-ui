@@ -1,9 +1,12 @@
-Version : 0.9.22426
-Summary : 관리자 통계 기간 선택 달력 popover UX 정리
-Description : React DayPicker를 페이지에 상시 노출하지 않고 시작일/종료일 표시 영역 클릭 시 작은 popover로 열리도록 변경했습니다. 날짜 직접 입력 UI를 제거하고 달력 클릭 기반 선택만 유지했습니다.
+Version : 0.9.22427
+Summary : 관리자 통계 달력 popover UX 보정
+Description : 통계 기간 선택 DayPicker의 화면 점유율을 줄이고 완료 버튼을 추가해 작은 popover 형태로 정리했습니다. 날짜 직접 입력 없이 마우스 클릭 선택 방식은 유지했습니다.
 수정 파일 목록 :
 - components/admin/dashboard/AdminStatsDashboard.tsx
+- lib/i18n/en/admin.ts
+- lib/i18n/ko/admin.ts
 - lib/constants/app.ts
 추가 파일 목록 :
-- docs/admin-stats-day-picker-popover-0.9.22426.md
+- docs/admin-stats-day-picker-compact-popover-0.9.22427.md
+- commit-meta.md
 삭제 파일 목록 :

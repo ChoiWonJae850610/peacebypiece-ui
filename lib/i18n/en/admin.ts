@@ -233,6 +233,7 @@ export const adminEn = {
     customReset: "Reset",
     customApply: "Apply custom range",
     customClear: "Clear",
+    customDone: "Done",
     customDateRangeSelected: "Selected range: {start} - {end}",
     customDateRangeEmpty: "Select a start and end date from the calendar.",
     customDateRangeCalendarAria: "Select statistics date range",

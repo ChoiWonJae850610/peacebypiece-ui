@@ -82,6 +82,7 @@ type AdminStatsDateRangePickerLabels = {
   start: string;
   end: string;
   clear: string;
+  done: string;
   selected: string;
   notSelected: string;
   calendarAria: string;
@@ -179,22 +180,22 @@ function AdminStatsDateRangePicker({
       <button
         type="button"
         onClick={() => setIsCalendarOpen((current) => !current)}
-        className="grid w-full gap-2 rounded-[24px] border border-stone-100 bg-white p-3 text-left shadow-sm transition hover:border-stone-200 hover:bg-stone-50 sm:grid-cols-2"
+        className="flex w-full flex-col gap-2 rounded-2xl border border-stone-100 bg-white p-2 text-left shadow-sm transition hover:border-stone-200 hover:bg-stone-50 sm:flex-row"
         aria-expanded={isCalendarOpen}
         aria-label={labels.calendarAria}
       >
-        <span className="rounded-2xl bg-stone-50 px-3 py-2">
+        <span className="min-w-0 flex-1 rounded-xl bg-stone-50 px-3 py-2">
           <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-400">{labels.start}</span>
           <span className="mt-1 block text-sm font-semibold text-stone-800">{formatDateDisplay(startDate, locale)}</span>
         </span>
-        <span className="rounded-2xl bg-stone-50 px-3 py-2">
+        <span className="min-w-0 flex-1 rounded-xl bg-stone-50 px-3 py-2">
           <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-400">{labels.end}</span>
           <span className="mt-1 block text-sm font-semibold text-stone-800">{formatDateDisplay(endDate, locale)}</span>
         </span>
       </button>
 
       {isCalendarOpen ? (
-        <div className="absolute left-0 top-[calc(100%+8px)] z-30 w-full rounded-[24px] border border-stone-100 bg-white p-4 shadow-2xl sm:w-[360px]">
+        <div className="absolute left-0 top-[calc(100%+8px)] z-30 w-[min(340px,calc(100vw-3rem))] rounded-[22px] border border-stone-100 bg-white p-3 shadow-2xl">
           <DayPicker
             mode="range"
             selected={selected}
@@ -206,8 +207,8 @@ function AdminStatsDateRangePicker({
             aria-label={labels.calendarAria}
             classNames={{
               root: "text-sm text-stone-700",
-              months: "grid gap-4",
-              month: "space-y-3",
+              months: "grid gap-3",
+              month: "space-y-2",
               month_caption: "flex items-center justify-center px-2 py-1 text-sm font-semibold text-stone-950",
               caption_label: "text-sm font-semibold",
               nav: "flex items-center justify-between",
@@ -216,7 +217,7 @@ function AdminStatsDateRangePicker({
               weekdays: "grid grid-cols-7 text-center text-[11px] font-semibold uppercase tracking-[0.08em] text-stone-400",
               week: "grid grid-cols-7 gap-1",
               day: "flex items-center justify-center",
-              day_button: "h-9 w-9 rounded-full text-sm font-semibold transition hover:bg-stone-100 disabled:text-stone-300",
+              day_button: "h-8 w-8 rounded-full text-xs font-semibold transition hover:bg-stone-100 disabled:text-stone-300",
               today: "font-bold text-[var(--admin-theme-surface)]",
               selected: "rounded-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
               range_start: "rounded-l-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
@@ -227,14 +228,23 @@ function AdminStatsDateRangePicker({
             }}
           />
           <div className="mt-3 flex items-center justify-between gap-3 border-t border-stone-100 pt-3">
-            <p className="text-xs font-semibold text-stone-500">{selectedSummary}</p>
-            <button
-              type="button"
-              onClick={clearSelection}
-              className="shrink-0 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-600 transition hover:bg-stone-50"
-            >
-              {labels.clear}
-            </button>
+            <p className="min-w-0 flex-1 text-xs font-semibold text-stone-500">{selectedSummary}</p>
+            <div className="flex shrink-0 items-center gap-2">
+              <button
+                type="button"
+                onClick={clearSelection}
+                className="rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-600 transition hover:bg-stone-50"
+              >
+                {labels.clear}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsCalendarOpen(false)}
+                className="rounded-full bg-stone-950 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-stone-800"
+              >
+                {labels.done}
+              </button>
+            </div>
           </div>
         </div>
       ) : null}
@@ -266,6 +276,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     start: pt("customStartDateLabel", pageText.customStartDateLabel),
     end: pt("customEndDateLabel", pageText.customEndDateLabel),
     clear: pt("customClear", pageText.customReset),
+    done: pt("customDone", "Done"),
     selected: pt("customDateRangeSelected", "{start} - {end}"),
     notSelected: pt("customDateRangeEmpty", "Select a date range."),
     calendarAria: pt("customDateRangeCalendarAria", "Select statistics date range"),
@@ -475,7 +486,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
             ))}
           </div>
         </div>
-        <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="mt-4 grid gap-3 md:grid-cols-[minmax(320px,420px)_auto]">
           <AdminStatsDateRangePicker
             startDate={customStartDate}
             endDate={customEndDate}

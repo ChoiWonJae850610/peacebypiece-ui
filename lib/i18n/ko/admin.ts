@@ -186,6 +186,7 @@ export const adminKo = {
     customReset: "초기화",
     customApply: "직접 선택 적용",
     customClear: "비우기",
+    customDone: "완료",
     customDateRangeSelected: "선택 기간: {start} - {end}",
     customDateRangeEmpty: "달력에서 시작일과 종료일을 선택하세요.",
     customDateRangeCalendarAria: "통계 기간 선택 달력",
