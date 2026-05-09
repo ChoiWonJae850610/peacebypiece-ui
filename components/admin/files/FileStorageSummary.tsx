@@ -35,11 +35,34 @@ function translateStorageValue(
   value: string,
   t: ReturnType<typeof useAdminTranslation>,
 ) {
-  if (value.endsWith("개"))
-    return value.replace("개", t("filesSummary.units.count", "개"));
-  if (value.endsWith("일"))
-    return value.replace("일", t("filesSummary.units.day", "일"));
+  const countMatch = value.match(/^(\d+)개$/);
+  if (countMatch) {
+    const unit = t("filesSummary.units.count", "개");
+    return unit === "개" ? `${countMatch[1]}${unit}` : `${countMatch[1]} ${unit}`;
+  }
+  const dayMatch = value.match(/^(\d+)일$/);
+  if (dayMatch) {
+    const unit = t("filesSummary.units.day", "일");
+    return unit === "일" ? `${dayMatch[1]}${unit}` : `${dayMatch[1]} ${unit}`;
+  }
   return value;
+}
+
+
+function translateStorageDescription(
+  value: string | undefined,
+  t: ReturnType<typeof useAdminTranslation>,
+  fallbackKey: string,
+  fallback: string,
+): string {
+  const text = (value || fallback).trim();
+  const normalized = text.toLowerCase();
+  if (!text) return t(fallbackKey, fallback);
+  if (normalized.includes("checking plan") || text === "요금제 용량 확인 중") return t("filesSummary.planCapacityLoading", "요금제 용량 확인 중");
+  if (text.endsWith("처리 대기") || normalized.endsWith("waiting")) return `${text.replace(/\s*(처리 대기|waiting)$/i, "").trim()} ${t("filesSummary.waitingSuffix", "처리 대기")}`;
+  if (text.endsWith("보관") || normalized.endsWith("stored")) return `${text.replace(/\s*(보관|stored)$/i, "").trim()} ${t("filesSummary.storedSuffix", "보관")}`;
+  if (text.endsWith("사용") || normalized.endsWith("used")) return `${text.replace(/\s*(사용|used)$/i, "").trim()} ${t("filesSummary.usedSuffix", "사용")}`;
+  return text;
 }
 
 function translateStorageStatus(
@@ -82,6 +105,15 @@ function translateFileTypeLabel(
   )
     return t("filesSummary.attachments", "문서/디자인");
   return t("filesSummary.others", "기타");
+}
+
+
+function formatCountWithUnit(
+  count: number,
+  t: ReturnType<typeof useAdminTranslation>,
+): string {
+  const unit = t("filesSummary.countSuffix", "개");
+  return unit === "개" ? `${count}${unit}` : `${count} ${unit}`;
 }
 
 function formatBytes(bytes: number): string {
@@ -249,8 +281,7 @@ function DonutChart({
           </h3>
         </div>
         <span className="rounded-full bg-stone-100 px-2.5 py-1 text-xs font-bold text-stone-700">
-          {total}
-          {t("filesSummary.countSuffix", "개")}
+          {formatCountWithUnit(total, t)}
         </span>
       </div>
       <div className="mt-4 flex min-h-0 flex-1 items-center justify-center gap-5">
@@ -316,7 +347,7 @@ function DonutChart({
                   <span className="truncate" title={item.label}>{item.label}</span>
                 </span>
                 <span className="shrink-0 font-bold text-stone-950">
-                  {item.value}{t("filesSummary.countSuffix", "개")} · {item.percent}%
+                  {formatCountWithUnit(item.value, t)} · {item.percent}%
                 </span>
               </div>
               <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-stone-100">
@@ -353,17 +384,17 @@ export default function FileStorageSummary({
     rawAttachmentCount,
     t,
   );
-  const attachmentSizeLabel = attachmentCard?.description || "0MB 사용";
+  const attachmentSizeLabel = translateStorageDescription(attachmentCard?.description, t, "filesSummary.zeroActiveSize", "0MB 사용");
   const trashCount = translateStorageValue(
     rawTrashCount,
     t,
   );
-  const trashSizeLabel = trashCard?.description || "0MB 보관";
+  const trashSizeLabel = translateStorageDescription(trashCard?.description, t, "filesSummary.zeroTrashSize", "0MB 보관");
   const purgeRequestCount = translateStorageValue(
     rawPurgeRequestCount,
     t,
   );
-  const purgeRequestSizeLabel = purgeRequestCard?.description || "0MB 처리 대기";
+  const purgeRequestSizeLabel = translateStorageDescription(purgeRequestCard?.description, t, "filesSummary.zeroPurgeRequestSize", "0MB 처리 대기");
   const statusLabel = translateStorageStatus(
     usageSummary.statusTone,
     usageSummary.statusLabel,

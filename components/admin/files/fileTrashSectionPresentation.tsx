@@ -29,6 +29,29 @@ export function getTrashActionButtonClassName(
 
 type AdminT = ReturnType<typeof useAdminTranslation>;
 
+
+export function getLocalizedWorkOrderStageLabel(
+  statusLabel: string,
+  t: AdminT,
+): string {
+  const normalized = statusLabel.trim().toLowerCase();
+  const matched = WORKORDER_STAGE_STEPS.find((step) =>
+    step.keys.some((key) => key.toLowerCase() === normalized),
+  );
+  return matched ? t(`filesList.workorderStage.steps.${matched.key}`, matched.label) : statusLabel;
+}
+
+export function formatTrashDetailCountLabel(
+  rawLabel: string,
+  kind: "documentsDesigns" | "memos",
+  t: AdminT,
+): string {
+  const count = Number(rawLabel.match(/\d+/)?.[0] ?? 0);
+  const key = kind === "memos" ? "filesList.detail.memoCount" : "filesList.detail.documentDesignCount";
+  const fallback = kind === "memos" ? `메모 ${count}개` : `첨부 ${count}개`;
+  return t(key, fallback, { count });
+}
+
 export function WorkOrderStageInline({
   statusLabel,
   t,
@@ -46,7 +69,7 @@ export function WorkOrderStageInline({
             {t("filesList.workorderStage.currentStage", "현재 단계")}
           </p>
           <p className="mt-1 text-sm font-medium text-stone-700">
-            {statusLabel}
+            {getLocalizedWorkOrderStageLabel(statusLabel, t)}
           </p>
         </div>
         <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-medium text-stone-500">

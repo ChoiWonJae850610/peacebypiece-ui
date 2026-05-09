@@ -1,24 +1,26 @@
 Version :
-0.9.22417
+0.9.22418
 
 Summary :
-저장소 휴지통 삭제일시 시간대 기준 보정
+고객관리자와 저장소 화면 i18n 잔여 문구 정리 2차
 
 Description :
-작업지시서 삭제일시와 문서/디자인 휴지통 삭제일시가 서로 다른 시간처럼 표시되는 문제를 보정했다. spec_sheets.deleted_at을 timestamptz 기준으로 정리하고, 저장소관리 날짜 표시를 Asia/Seoul 기준 formatter로 중앙화했다.
+고객관리자 메인 카드와 운영 메뉴, API 준비 영역을 i18n 기반 client presentation 컴포넌트로 분리했다. 운영 대시보드 상태/우선 처리 label과 저장소 요약 placeholder, 휴지통 상세 모달의 작업지시서 단계 및 첨부/메모 개수 표시가 현재 locale을 따르도록 보정했다.
 
 수정 파일 목록 :
-- db/schema/full_reset.sql
-- db/schema/full_reset_smoke_test.sql
-- db/schema/spec_sheets.sql
-- lib/admin/adminFiles.serverActions.ts
+- app/admin/page.tsx
+- components/admin/dashboard/AdminOperationsDashboard.tsx
+- components/admin/files/FileStorageSummary.tsx
+- components/admin/files/fileTrashSectionModals.tsx
+- components/admin/files/fileTrashSectionPresentation.tsx
+- lib/i18n/en/admin.ts
+- lib/i18n/ko/admin.ts
 - lib/constants/app.ts
-- lib/system/storagePurgeCandidates.ts
 
 추가 파일 목록 :
-- db/schema/patch_0_9_22417_spec_sheets_deleted_at_timestamptz.sql
-- docs/storage-trash-deleted-at-timezone-0.9.22417.md
-- lib/admin/adminFiles.datePresentation.ts
+- components/admin/dashboard/AdminConsoleSections.tsx
+- docs/admin-worker-i18n-hardcoding-sweep-0.9.22418.md
+- commit-meta.md
 
 삭제 파일 목록 :
 없음

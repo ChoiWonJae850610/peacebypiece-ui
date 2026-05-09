@@ -6,6 +6,8 @@ import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import {
   TrashItemVisual,
   WorkOrderStageInline,
+  formatTrashDetailCountLabel,
+  getLocalizedWorkOrderStageLabel,
 } from "@/components/admin/files/fileTrashSectionPresentation";
 import type { UnifiedTrashRow } from "@/components/admin/files/fileTrashSectionRows";
 import type {
@@ -103,7 +105,7 @@ export function WorkOrderActionPreviewModal({
       }
       description={
         previewWorkOrder
-          ? `${previewWorkOrder.title} · ${previewWorkOrder.statusLabel}`
+          ? `${previewWorkOrder.title} · ${getLocalizedWorkOrderStageLabel(previewWorkOrder.statusLabel, t)}`
           : undefined
       }
       maxWidthClass="md:max-w-2xl"
@@ -149,7 +151,7 @@ export function WorkOrderActionPreviewModal({
               {previewWorkOrder.title}
             </p>
             <p className="mt-1 text-xs text-stone-500">
-              {previewWorkOrder.statusLabel} ·{" "}
+              {getLocalizedWorkOrderStageLabel(previewWorkOrder.statusLabel, t)} ·{" "}
               {t("filesList.columns.deletedAt", "삭제일시")} {previewWorkOrder.deletedAt || "-"}
             </p>
           </div>
@@ -400,9 +402,9 @@ function getTrashDetailFields(
       [t("filesList.columns.type", "유형"), row.typeLabel],
       [
         t("filesList.detail.documentsDesigns", "문서/디자인"),
-        row.sourceItem.attachmentSummaryLabel,
+        formatTrashDetailCountLabel(row.sourceItem.attachmentSummaryLabel, "documentsDesigns", t),
       ],
-      [t("filesList.detail.memos", "메모"), row.sourceItem.memoSummaryLabel],
+      [t("filesList.detail.memos", "메모"), formatTrashDetailCountLabel(row.sourceItem.memoSummaryLabel, "memos", t)],
       [t("filesList.columns.deletedAt", "삭제일시"), row.deletedAt],
     ];
   }

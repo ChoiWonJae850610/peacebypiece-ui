@@ -14,6 +14,50 @@ type AdminOperationsDashboardProps = {
   snapshots: AdminOperationalDashboardSnapshots;
 };
 
+
+function formatAdminCount(count: number, t: ReturnType<typeof useAdminTranslation>): string {
+  const unit = t("operationsDashboard.countSuffix", "건");
+  return unit === "건" ? `${count}${unit}` : `${count} ${unit}`;
+}
+
+function translateStatusFlowLabel(id: string, fallback: string, t: ReturnType<typeof useAdminTranslation>): string {
+  return t(`statsUi.flowBuckets.${id}`, fallback);
+}
+
+function translateStatusDistributionLabel(id: string, fallback: string, t: ReturnType<typeof useAdminTranslation>): string {
+  return t(`operationsDashboard.statusDistribution.${id}`, fallback);
+}
+
+function translateInsightLabel(index: number, fallback: string, t: ReturnType<typeof useAdminTranslation>): string {
+  const keys = ["reviewWaiting", "inspectionWaiting", "inboundDelayed"] as const;
+  const key = keys[index];
+  return key ? t(`operationsDashboard.insights.${key}`, fallback) : fallback;
+}
+
+function translateInsightDescription(index: number, fallback: string, t: ReturnType<typeof useAdminTranslation>): string {
+  const keys = ["reviewWaitingDescription", "inspectionWaitingDescription", "inboundDelayedDescription"] as const;
+  const key = keys[index];
+  return key ? t(`operationsDashboard.insights.${key}`, fallback) : fallback;
+}
+
+function translateTodayTaskStatusLabel(label: string, t: ReturnType<typeof useAdminTranslation>): string {
+  const normalized = label.trim().toLowerCase();
+  if (["검토대기", "검토 대기", "review waiting"].includes(normalized)) return t("operationsDashboard.todayTasks.status.reviewRequested", label);
+  if (["검수대기", "검수 대기", "inspection waiting"].includes(normalized)) return t("operationsDashboard.todayTasks.status.inspection", label);
+  if (["발주대기", "발주 대기", "order waiting"].includes(normalized)) return t("operationsDashboard.todayTasks.status.reviewCompleted", label);
+  if (["반려", "rejected"].includes(normalized)) return t("operationsDashboard.todayTasks.status.rejected", label);
+  if (["작성중", "draft"].includes(normalized)) return t("operationsDashboard.todayTasks.status.draft", label);
+  return label;
+}
+
+function translateTodayTaskPriorityLabel(label: string, t: ReturnType<typeof useAdminTranslation>): string {
+  const normalized = label.trim().toLowerCase();
+  if (["관리자 검토", "review needed"].includes(normalized)) return t("operationsDashboard.todayTasks.priority.review", label);
+  if (["검수 필요", "inspection needed"].includes(normalized)) return t("operationsDashboard.todayTasks.priority.inspection", label);
+  if (["발주 확인", "order check"].includes(normalized)) return t("operationsDashboard.todayTasks.priority.order", label);
+  return label;
+}
+
 export default function AdminOperationsDashboard({ snapshots }: AdminOperationsDashboardProps) {
   const t = useAdminTranslation();
   const [selectedPeriod, setSelectedPeriod] = useState<AdminDashboardPeriod>("today");
@@ -56,7 +100,7 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
               <p className="mt-1 text-xs text-stone-500">{t("operationsDashboard.todayWorkDescription", "검토대기와 검수대기 작업을 우선 확인합니다.")}</p>
             </div>
             <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-stone-500 ring-1 ring-stone-200">
-              {snapshot.todayTasks.length}{t("operationsDashboard.countSuffix", "건")}
+              {formatAdminCount(snapshot.todayTasks.length, t)}
             </span>
           </div>
 
@@ -75,10 +119,10 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
 
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-semibold text-stone-600">{task.statusLabel}</span>
-                      <span className="rounded-full bg-[var(--admin-theme-surface)] px-2.5 py-1 text-[11px] font-semibold text-[var(--admin-theme-text-on-surface)]">{task.priorityLabel}</span>
+                      <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-semibold text-stone-600">{translateTodayTaskStatusLabel(task.statusLabel, t)}</span>
+                      <span className="rounded-full bg-[var(--admin-theme-surface)] px-2.5 py-1 text-[11px] font-semibold text-[var(--admin-theme-text-on-surface)]">{translateTodayTaskPriorityLabel(task.priorityLabel, t)}</span>
                       <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-500 ring-1 ring-stone-200">
-                        {t("operationsDashboard.attachmentLabel", "첨부")} {task.attachmentCount}{t("operationsDashboard.countSuffix", "건")}
+                        {t("operationsDashboard.attachmentLabel", "첨부")} {formatAdminCount(task.attachmentCount, t)}
                       </span>
                     </div>
                     <p className="mt-2 truncate text-sm font-semibold text-stone-950">{task.title}</p>
@@ -115,10 +159,10 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
               {snapshot.insights.map((item, index) => (
                 <div key={`${item.label}-${index}`} className="rounded-2xl bg-white/10 px-4 py-3">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm font-semibold">{item.label}</span>
+                    <span className="text-sm font-semibold">{translateInsightLabel(index, item.label, t)}</span>
                     <span className="text-lg font-semibold">{item.value}</span>
                   </div>
-                  <p className="mt-1 text-xs text-stone-300">{item.description}</p>
+                  <p className="mt-1 text-xs text-stone-300">{translateInsightDescription(index, item.description, t)}</p>
                 </div>
               ))}
             </div>
@@ -127,7 +171,7 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
           <div className="rounded-[24px] border border-stone-100 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-base font-semibold text-stone-950">{t("operationsDashboard.statusDistributionTitle", "상태 분포")}</h3>
-              <span className="text-xs font-semibold text-stone-400">{totalDistributionValue}{t("operationsDashboard.countSuffix", "건")}</span>
+              <span className="text-xs font-semibold text-stone-400">{formatAdminCount(totalDistributionValue, t)}</span>
             </div>
             <div className="mt-5 grid gap-3">
               {snapshot.statusDistribution.map((item) => {
@@ -135,8 +179,8 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
                 return (
                   <div key={item.id}>
                     <div className="flex items-center justify-between text-xs font-semibold text-stone-600">
-                      <span>{item.label}</span>
-                      <span>{item.value}{t("operationsDashboard.countSuffix", "건")}</span>
+                      <span>{translateStatusDistributionLabel(item.id, item.label, t)}</span>
+                      <span>{formatAdminCount(item.value, t)}</span>
                     </div>
                     <div className="mt-2 h-2 rounded-full bg-stone-100">
                       <div className="h-2 rounded-full bg-[var(--admin-theme-surface)]" style={{ width: `${width}%` }} />
@@ -160,11 +204,11 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
                 return (
                   <div key={stage.id} className="flex min-w-0 flex-1 flex-col items-center justify-end gap-2">
                     <div className="flex h-full w-full items-end justify-center">
-                      <div className="w-full max-w-10 rounded-t-2xl bg-[var(--admin-theme-surface)] shadow-sm" style={{ height: `${height}%` }} aria-label={`${stage.label} ${stage.value}${t("common.countUnit", "건")}`} />
+                      <div className="w-full max-w-10 rounded-t-2xl bg-[var(--admin-theme-surface)] shadow-sm" style={{ height: `${height}%` }} aria-label={`${translateStatusFlowLabel(stage.id, stage.label, t)} ${formatAdminCount(stage.value, t)}`} />
                     </div>
                     <div className="text-center">
                       <p className="text-sm font-semibold text-stone-950">{stage.value}</p>
-                      <p className="mt-0.5 truncate text-[11px] font-medium text-stone-500">{stage.label}</p>
+                      <p className="mt-0.5 truncate text-[11px] font-medium text-stone-500">{translateStatusFlowLabel(stage.id, stage.label, t)}</p>
                     </div>
                   </div>
                 );
