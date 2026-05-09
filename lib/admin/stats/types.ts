@@ -47,6 +47,7 @@ export type AdminStatsPeriodRange = {
 
 export type AdminStatsCurrentOverview = {
   totalProducedCount: number;
+  completedCount: number;
   reorderCount: number;
   dueDelayRate: number | null;
   dueDelayCount: number;

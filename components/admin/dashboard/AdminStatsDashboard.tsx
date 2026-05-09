@@ -252,6 +252,34 @@ function AdminStatsDateRangePicker({
   );
 }
 
+
+function PeriodSummaryCard({
+  title,
+  items,
+}: {
+  title: string;
+  items: Array<{ label: string; value: string; description: string }>;
+}) {
+  return (
+    <div className="rounded-[24px] border border-stone-100 bg-stone-50/70 p-4">
+      <h3 className="text-sm font-semibold text-stone-950">{title}</h3>
+      <div className="mt-3 grid gap-2">
+        {items.map((item) => (
+          <div key={item.label} className="rounded-2xl border border-stone-100 bg-white px-4 py-3 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-stone-800">{item.label}</p>
+                <p className="mt-1 text-[11px] font-semibold leading-5 text-stone-400">{item.description}</p>
+              </div>
+              <p className="shrink-0 text-lg font-bold text-stone-950">{item.value}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function CurrentSummaryCard({ label, value, description, subValue }: { label: string; value: string; description: string; subValue?: string }) {
   return (
     <div className="rounded-[24px] border border-stone-100 bg-white px-5 py-4 shadow-sm">
@@ -364,6 +392,23 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         ? pt("customPeriodInvalidOrder", pageText.customPeriodInvalidOrder)
         : "";
   const storageUsePercent = stats.currentOverview.storageLimitBytes > 0 ? Math.round((stats.currentOverview.storageUsedBytes / stats.currentOverview.storageLimitBytes) * 1000) / 10 : 0;
+  const periodSummaryItems = [
+    {
+      label: pt("periodSummaryCompletedLabel", "완료 작업지시서"),
+      value: formatCount(stats.currentOverview.completedCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)),
+      description: pt("periodSummaryCompletedDescription", "선택 기간 안에 완료된 작업지시서"),
+    },
+    {
+      label: pt("periodSummaryReorderLabel", "리오더"),
+      value: formatCount(stats.currentOverview.reorderCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)),
+      description: pt("periodSummaryReorderDescription", "선택 기간 안의 리오더 작업지시서"),
+    },
+    {
+      label: pt("periodSummaryDefectLabel", "불량 작업지시서"),
+      value: formatCount(stats.currentOverview.qualityIssueCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)),
+      description: pt("periodSummaryDefectDescription", "불량이 1개 이상 기록된 작업지시서"),
+    },
+  ];
   const categoryDepthLabels: Record<CategoryDepthKey, string> = {
     first: pt("categoryDepthFirst", pageText.categoryDepthFirst),
     second: pt("categoryDepthSecond", pageText.categoryDepthSecond),
@@ -486,33 +531,36 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
             ))}
           </div>
         </div>
-        <div className="mt-4 grid gap-3 md:grid-cols-[minmax(320px,420px)_auto]">
-          <AdminStatsDateRangePicker
-            startDate={customStartDate}
-            endDate={customEndDate}
-            maxDateValue={todayDateValue}
-            labels={dateRangeLabels}
-            locale={locale}
-            onStartDateChange={updateCustomStartDate}
-            onEndDateChange={updateCustomEndDate}
-          />
-          <div className="flex items-end gap-2">
-            <Link
-              href="/admin/dashboard?period=30d"
-              className="rounded-2xl border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-600 shadow-sm transition hover:bg-stone-50"
-            >
-              {pt("customReset", pageText.customReset)}
-            </Link>
-            <Link
-              href={customPeriodHref}
-              aria-disabled={!isCustomPeriodValid}
-              className={`rounded-2xl px-4 py-2 text-xs font-semibold transition ${isCustomPeriodValid ? "bg-stone-950 text-white hover:bg-stone-800" : "pointer-events-none bg-stone-100 text-stone-400"}`}
-            >
-              {pt("customApply", pageText.customApply)}
-            </Link>
+        <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(280px,0.75fr)]">
+          <div className="rounded-[24px] border border-stone-100 bg-white p-4 shadow-sm">
+            <AdminStatsDateRangePicker
+              startDate={customStartDate}
+              endDate={customEndDate}
+              maxDateValue={todayDateValue}
+              labels={dateRangeLabels}
+              locale={locale}
+              onStartDateChange={updateCustomStartDate}
+              onEndDateChange={updateCustomEndDate}
+            />
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <Link
+                href="/admin/dashboard?period=30d"
+                className="rounded-2xl border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-600 shadow-sm transition hover:bg-stone-50"
+              >
+                {pt("customReset", pageText.customReset)}
+              </Link>
+              <Link
+                href={customPeriodHref}
+                aria-disabled={!isCustomPeriodValid}
+                className={`rounded-2xl px-4 py-2 text-xs font-semibold transition ${isCustomPeriodValid ? "bg-stone-950 text-white hover:bg-stone-800" : "pointer-events-none bg-stone-100 text-stone-400"}`}
+              >
+                {pt("customApply", pageText.customApply)}
+              </Link>
+            </div>
+            {customPeriodMessage ? <p className="mt-2 text-xs font-semibold text-amber-700">{customPeriodMessage}</p> : null}
           </div>
+          <PeriodSummaryCard title={pt("periodSummaryTitle", "기간 요약")} items={periodSummaryItems} />
         </div>
-        {customPeriodMessage ? <p className="mt-2 text-xs font-semibold text-amber-700">{customPeriodMessage}</p> : null}
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">

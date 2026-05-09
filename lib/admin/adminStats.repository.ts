@@ -126,6 +126,7 @@ function buildEmptyStats(sourceState: Exclude<AdminStatsSourceState, "db">, sele
   return {
     currentOverview: {
       totalProducedCount: 0,
+      completedCount: 0,
       reorderCount: 0,
       dueDelayRate: null,
       dueDelayCount: 0,
@@ -480,6 +481,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
     return {
       currentOverview: {
         totalProducedCount: currentTotalProducedCount,
+        completedCount: completedInPeriod,
         reorderCount: currentReorderCount,
         dueDelayRate: dueDateTargetCount > 0 ? Math.round((dueDelayCount / dueDateTargetCount) * 1000) / 10 : null,
         dueDelayCount,
