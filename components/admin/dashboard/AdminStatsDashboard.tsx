@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { DayPicker, type DateRange } from "react-day-picker";
 import { enUS, ko } from "date-fns/locale";
@@ -79,6 +79,15 @@ function formatStorageMb(bytes: number, usedSuffix: string) {
   return `${(bytes / 1024 / 1024).toLocaleString("ko-KR", { maximumFractionDigits: 2 })}MB ${usedSuffix}`;
 }
 
+function buildAdminStatsRatioBars(points: Array<{ label: string; value: number; valueLabel?: string }>) {
+  const total = points.reduce((sum, item) => sum + item.value, 0);
+  return points.map((item) => ({
+    ...item,
+    limit: total,
+    valueLabel: item.valueLabel ?? String(item.value),
+    widthPercent: total > 0 ? Math.max(4, Math.round((item.value / total) * 100)) : 0,
+  }));
+}
 
 type AdminStatsDateRangePickerLabels = {
   start: string;
@@ -482,15 +491,17 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   };
 
   const selectedCategoryDepthLabel = categoryDepthLabels[categoryDepth];
-  const toRatioBars = (points: { label: string; value: number; valueLabel?: string }[]) => {
-    const total = points.reduce((sum, item) => sum + item.value, 0);
-    return points.map((item) => ({ ...item, limit: total, valueLabel: item.valueLabel ?? String(item.value), widthPercent: total > 0 ? Math.max(4, Math.round((item.value / total) * 100)) : 0 }));
-  };
-  const selectedCategoryDepthBars = toRatioBars(translatedStats.productionCategoryByRound[categoryDepth]).slice(0, 5);
+  const selectedCategoryDepthBars = useMemo(
+    () => buildAdminStatsRatioBars(translatedStats.productionCategoryByRound[categoryDepth]).slice(0, 5),
+    [categoryDepth, translatedStats.productionCategoryByRound],
+  );
   const selectedCategoryDepthTotal = selectedCategoryDepthBars.reduce((sum, item) => sum + item.value, 0);
   const normalizedSelectedCategoryLabel = selectedCategoryDepthBars.some((item) => item.label === selectedCategoryLabel) ? selectedCategoryLabel : (selectedCategoryDepthBars[0]?.label ?? null);
   const drilldownKey = categoryDepth === "first" ? "firstToSecond" : "secondToThird";
-  const categoryDetailPoints = normalizedSelectedCategoryLabel ? toRatioBars(translatedStats.productionCategoryDrilldown[drilldownKey][normalizedSelectedCategoryLabel] ?? []).slice(0, 5) : [];
+  const categoryDetailPoints = useMemo(
+    () => normalizedSelectedCategoryLabel ? buildAdminStatsRatioBars(translatedStats.productionCategoryDrilldown[drilldownKey][normalizedSelectedCategoryLabel] ?? []).slice(0, 5) : [],
+    [drilldownKey, normalizedSelectedCategoryLabel, translatedStats.productionCategoryDrilldown],
+  );
   const fallbackSelectedCategory = normalizedSelectedCategoryLabel ?? pt("selectedCategoryFallback", pageText.selectedCategoryFallback);
   const categoryDetailTitle = categoryDepth === "first"
     ? pt("categoryDetailTitleFirst", pageText.categoryDetailTitleFirst).replace("{label}", fallbackSelectedCategory)
@@ -517,14 +528,17 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     defect: pt("workorderCountSuffix", pageText.workorderCountSuffix),
   };
   const periodTopValueSuffix = periodTopValueSuffixByMode[selectedPeriodTopMode];
-  const selectedPeriodTopProducts = toRatioBars(translatedStats.periodTopProducts[selectedPeriodTopMode] ?? []).slice(0, 5);
+  const selectedPeriodTopProducts = useMemo(
+    () => buildAdminStatsRatioBars(translatedStats.periodTopProducts[selectedPeriodTopMode] ?? []).slice(0, 5),
+    [selectedPeriodTopMode, translatedStats.periodTopProducts],
+  );
 
   useEffect(() => {
     setSelectedCategoryLabel((current) => {
       if (current && selectedCategoryDepthBars.some((item) => item.label === current)) return current;
       return selectedCategoryDepthBars[0]?.label ?? null;
     });
-  }, [categoryDepth, selectedCategoryDepthBars.map((item) => item.label).join("|")]);
+  }, [categoryDepth, selectedCategoryDepthBars]);
 
   const renderBarList = (title: string, points: Array<{ label: string; value: number; widthPercent: number; valueLabel?: string }>, emptyLabel: string) => (
     <AdminCard className="flex h-full min-h-[320px] flex-col">
