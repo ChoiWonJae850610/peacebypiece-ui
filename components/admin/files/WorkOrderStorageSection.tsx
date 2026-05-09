@@ -4,6 +4,10 @@ import AdminActionBar from "@/components/admin/common/AdminActionBar";
 import AdminTable from "@/components/admin/common/AdminTable";
 import type { AdminStorageWorkOrderItem } from "@/lib/admin/files/types";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
+import {
+  formatTrashDetailCountLabel,
+  getLocalizedWorkOrderStageLabel,
+} from "@/components/admin/files/fileTrashSectionPresentation";
 
 const WORKORDER_STORAGE_TABLE_GRID = "1.36fr 0.58fr 0.78fr 1.18fr 1.18fr 0.92fr";
 
@@ -13,6 +17,11 @@ type WorkOrderStorageSectionProps = {
 
 function getTotalCount(items: AdminStorageWorkOrderItem[], readValue: (item: AdminStorageWorkOrderItem) => number) {
   return items.reduce((total, item) => total + readValue(item), 0);
+}
+
+function formatCount(count: number, t: ReturnType<typeof useAdminTranslation>) {
+  const unit = t("filesWorkOrders.units.count", "개");
+  return unit === "개" ? `${count}${unit}` : `${count} ${unit}`;
 }
 
 export default function WorkOrderStorageSection({ items }: WorkOrderStorageSectionProps) {
@@ -48,15 +57,15 @@ export default function WorkOrderStorageSection({ items }: WorkOrderStorageSecti
       <div className="mt-3 grid gap-2.5 md:grid-cols-3">
         <div className="rounded-2xl border border-stone-200 bg-stone-50/70 px-3 py-3">
           <p className="text-[10px] font-semibold text-stone-500">{t("filesWorkOrders.summary.deletedWorkOrders", "삭제된 작업지시서")}</p>
-          <p className="mt-1.5 text-lg font-semibold text-stone-950">{deletedWorkOrderCount}{t("filesWorkOrders.units.count", "개")}</p>
+          <p className="mt-1.5 text-lg font-semibold text-stone-950">{formatCount(deletedWorkOrderCount, t)}</p>
         </div>
         <div className="rounded-2xl border border-stone-200 bg-stone-50/70 px-3 py-3">
           <p className="text-[10px] font-semibold text-stone-500">{t("filesWorkOrders.summary.trashAttachments", "묶음 문서/디자인")}</p>
-          <p className="mt-1.5 text-lg font-semibold text-stone-950">{trashAttachmentCount}{t("filesWorkOrders.units.count", "개")}</p>
+          <p className="mt-1.5 text-lg font-semibold text-stone-950">{formatCount(trashAttachmentCount, t)}</p>
         </div>
         <div className="rounded-2xl border border-stone-200 bg-stone-50/70 px-3 py-3">
           <p className="text-[10px] font-semibold text-stone-500">{t("filesWorkOrders.summary.trashMemos", "묶음 휴지통 메모")}</p>
-          <p className="mt-1.5 text-lg font-semibold text-stone-950">{trashMemoCount}{t("filesWorkOrders.units.count", "개")}</p>
+          <p className="mt-1.5 text-lg font-semibold text-stone-950">{formatCount(trashMemoCount, t)}</p>
         </div>
       </div>
 
@@ -78,10 +87,10 @@ export default function WorkOrderStorageSection({ items }: WorkOrderStorageSecti
               </div>
             ),
           },
-          { key: "status", label: t("filesWorkOrders.columns.status", "상태"), render: (item) => <p className="text-[11px] font-semibold text-stone-700">{item.statusLabel}</p> },
+          { key: "status", label: t("filesWorkOrders.columns.status", "상태"), render: (item) => <p className="text-[11px] font-semibold text-stone-700">{getLocalizedWorkOrderStageLabel(item.statusLabel, t)}</p> },
           { key: "deletedAt", label: t("filesWorkOrders.columns.deletedAt", "삭제일시"), render: (item) => <p className="text-[11px] text-stone-600">{item.deletedAt || "-"}</p> },
-          { key: "attachments", label: t("filesWorkOrders.columns.attachments", "문서/디자인"), render: (item) => <p className="text-[11px] leading-4 text-stone-600">{item.attachmentSummaryLabel}</p> },
-          { key: "memos", label: t("filesWorkOrders.columns.memos", "메모"), render: (item) => <p className="text-[11px] leading-4 text-stone-600">{item.memoSummaryLabel}</p> },
+          { key: "attachments", label: t("filesWorkOrders.columns.attachments", "문서/디자인"), render: (item) => <p className="text-[11px] leading-4 text-stone-600">{formatTrashDetailCountLabel(item.attachmentSummaryLabel, "documentsDesigns", t)}</p> },
+          { key: "memos", label: t("filesWorkOrders.columns.memos", "메모"), render: (item) => <p className="text-[11px] leading-4 text-stone-600">{formatTrashDetailCountLabel(item.memoSummaryLabel, "memos", t)}</p> },
           {
             key: "policy",
             label: t("filesWorkOrders.columns.policy", "복원 정책"),

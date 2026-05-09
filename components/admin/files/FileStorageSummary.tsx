@@ -35,7 +35,7 @@ function translateStorageValue(
   value: string,
   t: ReturnType<typeof useAdminTranslation>,
 ) {
-  const countMatch = value.match(/^(\d+)개$/);
+  const countMatch = value.match(/^(\d+)\s*(개|items?)$/i);
   if (countMatch) {
     const unit = t("filesSummary.units.count", "개");
     return unit === "개" ? `${countMatch[1]}${unit}` : `${countMatch[1]} ${unit}`;

@@ -125,6 +125,7 @@ function TrashTargetCell({
         label={row.visualLabel}
         tone={row.visualTone}
         thumbnailUrl={row.thumbnailUrl || row.previewUrl}
+        previewFailedLabel={t("filesList.detail.previewFailed", "Preview failed")}
         compact
       />
       <div className="min-w-0 text-left">

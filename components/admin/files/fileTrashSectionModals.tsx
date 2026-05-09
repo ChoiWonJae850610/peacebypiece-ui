@@ -327,6 +327,7 @@ function TrashDetailContent({ row, t }: { row: UnifiedTrashRow; t: AdminT }) {
           label={row.visualLabel}
           tone={row.visualTone}
           thumbnailUrl={row.thumbnailUrl || row.previewUrl}
+          previewFailedLabel={t("filesList.detail.previewFailed", "Preview failed")}
         />
         <div className="min-w-0">
           <p

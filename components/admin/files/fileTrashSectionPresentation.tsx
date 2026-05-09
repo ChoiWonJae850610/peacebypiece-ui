@@ -48,7 +48,7 @@ export function formatTrashDetailCountLabel(
 ): string {
   const count = Number(rawLabel.match(/\d+/)?.[0] ?? 0);
   const key = kind === "memos" ? "filesList.detail.memoCount" : "filesList.detail.documentDesignCount";
-  const fallback = kind === "memos" ? `메모 ${count}개` : `첨부 ${count}개`;
+  const fallback = kind === "memos" ? `${count} memos` : `${count} documents/designs`;
   return t(key, fallback, { count });
 }
 
@@ -112,11 +112,13 @@ export function TrashItemVisual({
   tone,
   compact = false,
   thumbnailUrl,
+  previewFailedLabel,
 }: {
   label: string;
   tone: "workorder" | "image" | "pdf" | "file";
   compact?: boolean;
   thumbnailUrl?: string | null;
+  previewFailedLabel?: string;
 }) {
   const [hasPreviewError, setHasPreviewError] = useState(false);
   const sizeClass = compact ? "h-7 w-7 text-[8px]" : "h-10 w-10 text-[9px]";
@@ -151,7 +153,7 @@ export function TrashItemVisual({
     <span
       className={`flex shrink-0 items-center justify-center rounded-xl border ${toneClass} ${sizeClass} font-medium shadow-sm`}
       aria-hidden="true"
-      title={hasPreviewError ? "미리보기 실패" : undefined}
+      title={hasPreviewError ? previewFailedLabel : undefined}
     >
       {label}
     </span>
