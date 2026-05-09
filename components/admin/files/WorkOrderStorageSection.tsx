@@ -96,7 +96,7 @@ export default function WorkOrderStorageSection({ items }: WorkOrderStorageSecti
             label: t("filesWorkOrders.columns.policy", "복원 정책"),
             render: (item) => (
               <span className="inline-flex rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-[10px] font-semibold text-stone-500">
-                {t(`filesList.restorePolicies.${item.restorePolicy === "workorder_bundle" ? "workorderBundle" : "default"}`, item.restorePolicyLabel)}
+                {t("filesList.restorePolicies.workorderBundle", item.restorePolicyLabel)}
               </span>
             ),
           },
