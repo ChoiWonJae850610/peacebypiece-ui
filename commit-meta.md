@@ -1,18 +1,21 @@
 Version :
-0.9.224351
+0.9.224352
 
 Summary :
-작업지시서 상태 patch 로그 타입 오류 수정
+작업지시서 상태 patch 응답 경량화
 
 Description :
-작업지시서 상태 변경 최소 patch API에서 DB 요청 로그 함수에 허용되지 않는 PATCH_STATE 값을 전달해 발생한 TypeScript 빌드 오류를 수정했다. APP_VERSION도 0.9.224351로 갱신했다.
+작업지시서 상태 변경 전용 PATCH 응답이 상세 첨부와 메모를 포함하지 않도록 경량화했다. 프론트 저장 경로는 patch 결과를 현재 작업지시서 상태에 부분 병합하도록 조정해 상세 snapshot 상태가 false로 덮이는 문제를 줄였다.
 
 수정 파일 목록 :
 - lib/workorder/api/workOrderRouteHandlers.ts
+- lib/repositories/dbWorkorderHttpAdapter.ts
+- lib/hooks/workorder/workorderRepositoryMutations.ts
+- types/workorder.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-없음
+- docs/workorder-state-patch-response-lightweight-0.9.224352.md
 
 삭제 파일 목록 :
 없음
