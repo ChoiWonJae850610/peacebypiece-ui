@@ -110,26 +110,27 @@ export const adminEn = {
   },
   adminConsole: {
     actions: { open: "Open screen" },
-    statuses: { linked: "Connected", api: "API ready", legacy: "Existing", planned: "Planned" },
-    operationsMenu: { title: "Operations menu", description: "The customer admin home prioritizes actual work progress and immediately usable menus. History remains available for tracing, but is separated from the main operations dashboard." },
-    apiReady: { title: "API readiness", description: "Actual customer data is aggregated in repositories and APIs, while the screen only displays summarized results." },
-    policyNotes: { title: "Operations policy notes", items: [
-      "The customer admin screen is scoped to the current company_id.",
-      "Member invitations start with link generation before email delivery is connected.",
-      "Statistics are calculated in the stats repository/API, not in the screen.",
-      "The customer admin home is used as an operations dashboard, while history is separated as a tracing screen."
-    ] },
+    statuses: { available: "Available", planned: "Planned", linked: "Connected", api: "API ready", legacy: "Existing" },
+    permissionLabel: "Permission",
+    managementCards: {
+      title: "Management menu",
+      description: "The customer admin home uses dashboard cards instead of a left sidebar so users can move directly to the required management screen.",
+      cardCount: "4 default cards + member management candidate",
+    },
+    futurePermissions: {
+      title: "Permission-based expansion candidates",
+      description: "Standard units, outsourcing processes, and product types remain permission-based candidates instead of fixed customer-admin-only menus.",
+    },
     links: {
-      workorders: { label: "Work Orders", description: "Open the work order list and workspace." },
-      partners: { label: "Partners", description: "Manage factory, fabric, subsidiary, and outsourcing master data." },
-      "member-invites": { label: "Member invitations", description: "Invite designers, inspectors, and inventory users for this customer company." },
+      "workorder-entry": { label: "Work order workspace", description: "Open the work order list and detail workspace." },
+      partners: { label: "Partner management", description: "Manage factory, fabric, subsidiary, and outsourcing master data." },
+      files: { label: "Storage management", description: "Manage documents/designs, trash, and storage usage." },
       stats: { label: "Statistics", description: "Review work order, partner, and file usage metrics." },
-      files: { label: "Storage", description: "Manage documents/designs, trash, and storage usage." },
-      history: { label: "Operations history", description: "Review status changes and key work logs for tracing." },
       settings: { label: "Settings", description: "Manage customer screen, file, and notification policies." },
       "member-management": { label: "Member management", description: "Area for managing member permissions after invitation acceptance." },
-      "admin-stats-api": { label: "Customer statistics API", description: "Skeleton API for customer work volume, status, and storage statistics." },
-      "invitations-api": { label: "Invitation API", description: "Skeleton API for invitation link creation and list lookup." }
+      "standard-units": { label: "Standard units", description: "Permission candidate for managing fabric, subsidiary, and production quantity units." },
+      "outsourcing-processes": { label: "Outsourcing processes", description: "Permission candidate for managing printing, embroidery, washing, and other outsourcing process standards." },
+      "product-types": { label: "Product types", description: "Permission candidate for managing work order product classification standards." }
     }
   },
   filesSummary: { title: "Storage usage", description: "Review plan capacity, file status, and file types based on current data.", periods: { 7: "7 days", 15: "15 days", 30: "30 days" }, uploadAmount: "Upload amount", count: "Count", fileType: "File type", fileTypeLabel: "File type", countSuffix: "items", totalUsage: "Total usage", attachments: "Documents/designs", trash: "Trash", retentionPeriod: "Retention period", usage: "Usage", refreshLabel: "Refresh storage data", documents: "Documents", designs: "Designs", memos: "Memos", others: "Other", storagePlanLabel: "Storage plan", currentPlan: "Current plan", pendingPlan: "Checking", upgrade: "Upgrade", upgradeTitle: "Plan upgrade screen will be connected in a later version.", planCapacityPending: "Checking plan", planCapacityLoading: "Checking plan capacity", planCapacityLoadingDescription: "Loading the plan capacity from customer information", usedSuffix: "used", remainingSuffix: "remaining", fileOperationsLabel: "File operations", fileOperationsTitle: "File operations summary", totalLabel: "Total", activeFiles: "Active files", trashFiles: "Trash files", purgeRequestedFiles: "Deletion requests", zeroTrashSize: "0MB stored", zeroActiveSize: "0MB used", zeroPurgeRequestSize: "0MB waiting", storedSuffix: "stored", waitingSuffix: "waiting", statuses: { normal: "Normal", caution: "Caution", danger: "Risk" }, units: { count: "items", day: "days" } },
@@ -165,6 +166,7 @@ export const adminEn = {
     unknownLabel: "Needs Review",
   },
   topbar: {
+    actions: { home: "Home", openWorkorder: "Work orders" },
     summaries: {
       adminMain: "Operations, status flow, and today checks",
       storage: "Documents/designs · Trash · Storage usage",
