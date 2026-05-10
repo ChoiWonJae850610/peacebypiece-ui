@@ -36,6 +36,33 @@ const EMPTY_OPTIONS: PartnerWorkOrderOptions = {
   },
 };
 
+const WORKORDER_OPTIONS_CACHE_TTL_MS = 5 * 60 * 1000;
+
+let cachedOptions: PartnerWorkOrderOptions | null = null;
+let cachedOptionsAt = 0;
+let optionsLoadPromise: Promise<PartnerWorkOrderOptions> | null = null;
+
+function cloneWorkOrderOptions(options: PartnerWorkOrderOptions): PartnerWorkOrderOptions {
+  return {
+    factoryOptions: [...options.factoryOptions],
+    materialVendorOptions: {
+      fabric: [...options.materialVendorOptions.fabric],
+      subsidiary: [...options.materialVendorOptions.subsidiary],
+    },
+    outsourcingVendorOptions: [...options.outsourcingVendorOptions],
+    outsourcingVendorOptionsByProcess: Object.fromEntries(
+      Object.entries(options.outsourcingVendorOptionsByProcess).map(([key, values]) => [key, [...values]]),
+    ),
+    outsourcingProcessOptions: [...options.outsourcingProcessOptions],
+    partnerItemOptions: {
+      labor: [...options.partnerItemOptions.labor],
+      fabric: [...options.partnerItemOptions.fabric],
+      subsidiary: [...options.partnerItemOptions.subsidiary],
+      outsourcing: [...options.partnerItemOptions.outsourcing],
+    },
+  };
+}
+
 function normalizeOptionList(values: unknown): string[] {
   if (!Array.isArray(values)) return [];
 
@@ -52,7 +79,6 @@ function normalizeOptionList(values: unknown): string[] {
 
   return options;
 }
-
 
 function normalizeOptionsRecord(values: unknown): Record<string, string[]> {
   if (!values || typeof values !== "object" || Array.isArray(values)) return {};
@@ -83,17 +109,45 @@ function normalizeWorkOrderOptions(response: Partial<PartnerWorkOrderOptions>): 
   };
 }
 
+function isOptionsCacheValid(now = Date.now()) {
+  return Boolean(cachedOptions && now - cachedOptionsAt < WORKORDER_OPTIONS_CACHE_TTL_MS);
+}
+
+async function loadPartnerWorkOrderOptions(): Promise<PartnerWorkOrderOptions> {
+  const now = Date.now();
+  if (isOptionsCacheValid(now) && cachedOptions) {
+    return cloneWorkOrderOptions(cachedOptions);
+  }
+
+  if (!optionsLoadPromise) {
+    optionsLoadPromise = fetch("/api/partners/workorder-options", { cache: "no-store" })
+      .then((response) => response.json() as Promise<Partial<PartnerWorkOrderOptions>>)
+      .then((data) => {
+        const normalizedOptions = normalizeWorkOrderOptions(data);
+        cachedOptions = normalizedOptions;
+        cachedOptionsAt = Date.now();
+        return cloneWorkOrderOptions(normalizedOptions);
+      })
+      .finally(() => {
+        optionsLoadPromise = null;
+      });
+  }
+
+  return optionsLoadPromise.then(cloneWorkOrderOptions);
+}
+
 export function usePartnerWorkOrderOptions() {
-  const [options, setOptions] = useState<PartnerWorkOrderOptions>(EMPTY_OPTIONS);
+  const [options, setOptions] = useState<PartnerWorkOrderOptions>(() =>
+    cachedOptions ? cloneWorkOrderOptions(cachedOptions) : EMPTY_OPTIONS,
+  );
 
   useEffect(() => {
     let cancelled = false;
 
-    fetch("/api/partners/workorder-options", { cache: "no-store" })
-      .then((response) => response.json() as Promise<Partial<PartnerWorkOrderOptions>>)
+    loadPartnerWorkOrderOptions()
       .then((data) => {
         if (cancelled) return;
-        setOptions(normalizeWorkOrderOptions(data));
+        setOptions(data);
       })
       .catch(() => {
         if (cancelled) return;
