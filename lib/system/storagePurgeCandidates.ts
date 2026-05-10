@@ -1,7 +1,7 @@
 import "server-only";
 
 import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
-import { formatAdminStorageDate } from "@/lib/admin/adminFiles.datePresentation";
+import { formatAdminStorageDate, formatAdminStorageDateTime } from "@/lib/admin/adminFiles.datePresentation";
 import {
   ADMIN_FILE_TRASH_ACTOR_IDS,
   ADMIN_FILE_TRASH_OPEN_PURGE_STATUS_SQL_LIST,
@@ -139,6 +139,10 @@ function formatDate(value: string | Date | null | undefined): string {
   return formatAdminStorageDate(value);
 }
 
+function formatDateTime(value: string | Date | null | undefined): string {
+  return formatAdminStorageDateTime(value);
+}
+
 function formatBytes(bytes: number): string {
   if (!Number.isFinite(bytes) || bytes <= 0) return "0B";
   if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1)}GB`;
@@ -251,7 +255,7 @@ function mapFileCandidateRow(
     originalSizeBytes: sizeBytes,
     originalSizeLabel: formatBytes(sizeBytes),
     thumbnailCountLabel: previewModeLabel,
-    deletedAt: formatDate(row.deleted_at),
+    deletedAt: formatDateTime(row.deleted_at),
     purgeDueAt: formatDate(row.purge_due_at),
     overdueDays: getOverdueDays(row.purge_due_at),
     purgeStatus: getAdminFileTrashVisiblePurgeStatus({
@@ -301,7 +305,7 @@ function mapWorkOrderCandidateRow(
     originalSizeLabel: formatBytes(totalSizeBytes),
     thumbnailCountLabel:
       thumbnailCount > 0 ? `썸네일 ${thumbnailCount}개` : "썸네일 없음",
-    deletedAt: formatDate(row.deleted_at),
+    deletedAt: formatDateTime(row.deleted_at),
     purgeDueAt: formatDate(row.purge_due_at),
     overdueDays: getOverdueDays(row.purge_due_at),
     purgeStatus: getAdminFileTrashVisiblePurgeStatus({

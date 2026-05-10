@@ -1,4 +1,4 @@
-const ADMIN_STORAGE_TIME_ZONE = "Asia/Seoul";
+export const ADMIN_STORAGE_TIME_ZONE = "Asia/Seoul";
 
 const ADMIN_STORAGE_DATE_TIME_FORMATTER = new Intl.DateTimeFormat("en-CA", {
   timeZone: ADMIN_STORAGE_TIME_ZONE,
@@ -23,17 +23,37 @@ function parseAdminStorageDate(value: string | Date | null | undefined): Date | 
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+function getDatePartMap(
+  formatter: Intl.DateTimeFormat,
+  date: Date,
+): Record<string, string> {
+  return formatter.formatToParts(date).reduce<Record<string, string>>(
+    (parts, part) => {
+      if (part.type !== "literal") parts[part.type] = part.value;
+      return parts;
+    },
+    {},
+  );
+}
+
 export function formatAdminStorageDate(value: string | Date | null | undefined): string {
   const date = parseAdminStorageDate(value);
   if (!date) return value ? String(value) : "-";
-  return ADMIN_STORAGE_DATE_FORMATTER.format(date);
+  const parts = getDatePartMap(ADMIN_STORAGE_DATE_FORMATTER, date);
+  const year = parts.year ?? "0000";
+  const month = parts.month ?? "00";
+  const day = parts.day ?? "00";
+  return `${year}-${month}-${day}`;
 }
 
 export function formatAdminStorageDateTime(value: string | Date | null | undefined): string {
   const date = parseAdminStorageDate(value);
   if (!date) return value ? String(value) : "-";
-  const formatted = ADMIN_STORAGE_DATE_TIME_FORMATTER.format(date).replace(",", "").replace("24:", "00:");
-  const [datePart, timePart] = formatted.split(" ");
-  const [year, month, day] = datePart.split("-");
-  return `${year.slice(2)}.${month}.${day} ${timePart}`;
+  const parts = getDatePartMap(ADMIN_STORAGE_DATE_TIME_FORMATTER, date);
+  const year = parts.year ?? "0000";
+  const month = parts.month ?? "00";
+  const day = parts.day ?? "00";
+  const hour = parts.hour === "24" ? "00" : parts.hour ?? "00";
+  const minute = parts.minute ?? "00";
+  return `${year.slice(2)}.${month}.${day} ${hour}:${minute}`;
 }

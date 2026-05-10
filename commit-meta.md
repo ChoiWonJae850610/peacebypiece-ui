@@ -1,21 +1,20 @@
 Version :
-0.9.224352
+0.9.22436
 
 Summary :
-저장소 휴지통 상세 복원 안내 문구 재보정
+저장소 휴지통 삭제일시 표시 기준 정리
 
 Description :
-작업지시서와 작업지시서에 포함되어 함께 삭제된 문서, 디자인, 메모 상세 안내 문구를 “작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.”로 통일했다. 작업지시서를 찾을 수 없는 경우와 단독 삭제 항목 안내 문구는 유지했다.
+저장소 관리와 시스템관리자 실제 삭제 후보의 삭제일시 표시를 KST 기준으로 통일했다. 작업지시서와 함께 삭제된 문서, 디자인, 메모는 작업지시서 삭제일시를 우선 표시하도록 보정하고, 삭제일시 formatter를 안정화했다.
 
 수정 파일 목록 :
-- components/admin/files/fileTrashSectionModals.tsx
-- components/admin/files/fileTrashSectionRows.ts
-- lib/i18n/ko/admin.ts
-- lib/i18n/en/admin.ts
+- lib/admin/adminFiles.datePresentation.ts
+- lib/admin/adminFiles.serverActions.ts
+- lib/system/storagePurgeCandidates.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-없음
+- docs/storage-trash-deleted-at-timezone-0.9.22436.md
 
 삭제 파일 목록 :
 없음

@@ -580,6 +580,10 @@ export async function listAdminFileManagementRows(
     const sizeBytes = toNumber(row.size_bytes);
     const restoreDaysLeft = getRestoreDaysLeft(row.purge_after_at);
     const parentWorkOrderDeleted = Boolean(row.parent_workorder_deleted);
+    const effectiveDeletedAt =
+      parentWorkOrderDeleted && row.parent_workorder_deleted_at
+        ? row.parent_workorder_deleted_at
+        : row.deleted_at;
     const restorePolicy = getAdminTrashRestorePolicy({
       parentWorkOrderDeleted,
       deleteSource: row.delete_source,
@@ -607,7 +611,7 @@ export async function listAdminFileManagementRows(
       fileSizeLabel: formatBytes(sizeBytes),
       thumbnailUrl: createAttachmentFilePreviewUrl(row.thumbnail_key),
       previewUrl: createAttachmentFilePreviewUrl(row.storage_key),
-      deletedAt: formatDateTime(row.deleted_at),
+      deletedAt: formatDateTime(effectiveDeletedAt),
       deletedBy: row.deleted_by || "미지정",
       purgeAfterAt: formatDate(row.purge_after_at),
       restoreDaysLeft,
