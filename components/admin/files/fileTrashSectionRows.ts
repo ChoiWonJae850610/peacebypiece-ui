@@ -236,7 +236,7 @@ function getTrashRestoreDisabledReason(
   if (item.restorePolicy === ADMIN_TRASH_RESTORE_POLICIES.bundleRequired) {
     return t(
       "filesList.disabledReasons.bundleRestoreRequired",
-      "작업지시서와 문서/디자인/메모를 함께 복원해야 합니다.",
+      "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.",
     );
   }
   if (
@@ -323,7 +323,7 @@ export function createUnifiedRows(input: {
     canPurge: true,
     restoreDisabledReason: t(
       "filesList.disabledReasons.workorderRestorePreparing",
-      "작업지시서와 문서/디자인/메모가 함께 복원됩니다.",
+      "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.",
     ),
     purgeDisabledReason: t(
       "filesList.disabledReasons.workorderPurgePreparing",

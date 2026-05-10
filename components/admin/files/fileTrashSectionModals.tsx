@@ -186,7 +186,7 @@ export function WorkOrderActionPreviewModal({
               {intent === "restore"
                 ? t(
                     "filesList.workorderRestoreConnectedNotice",
-                    "작업지시서와 문서/디자인/메모가 함께 복원됩니다.",
+                    "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.",
                   )
                 : t(
                     "filesList.workorderActionSkeletonNotice",
@@ -197,7 +197,7 @@ export function WorkOrderActionPreviewModal({
               {intent === "restore"
                 ? t(
                     "filesList.workorderRestoreGuardDescription",
-                    "복원 시 작업지시서와 함께 삭제된 문서/디자인/메모를 함께 복원합니다.",
+                    "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.",
                   )
                 : t(
                     "filesList.workorderPurgeGuardDescription",
@@ -381,7 +381,7 @@ function TrashDetailContent({ row, t }: { row: UnifiedTrashRow; t: AdminT }) {
         {row.kind === "workorder"
           ? t(
               "filesList.detail.workorderActionHint",
-              "작업지시서와 문서/디자인/메모가 함께 복원됩니다.",
+              "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.",
             )
           : row.restoreDisabledReason ||
             row.purgeDisabledReason ||

@@ -2,20 +2,20 @@ Version :
 0.9.224352
 
 Summary :
-작업지시서 상태 patch 응답 경량화
+저장소 휴지통 상세 복원 안내 문구 재보정
 
 Description :
-작업지시서 상태 변경 전용 PATCH 응답이 상세 첨부와 메모를 포함하지 않도록 경량화했다. 프론트 저장 경로는 patch 결과를 현재 작업지시서 상태에 부분 병합하도록 조정해 상세 snapshot 상태가 false로 덮이는 문제를 줄였다.
+작업지시서와 작업지시서에 포함되어 함께 삭제된 문서, 디자인, 메모 상세 안내 문구를 “작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.”로 통일했다. 작업지시서를 찾을 수 없는 경우와 단독 삭제 항목 안내 문구는 유지했다.
 
 수정 파일 목록 :
-- lib/workorder/api/workOrderRouteHandlers.ts
-- lib/repositories/dbWorkorderHttpAdapter.ts
-- lib/hooks/workorder/workorderRepositoryMutations.ts
-- types/workorder.ts
+- components/admin/files/fileTrashSectionModals.tsx
+- components/admin/files/fileTrashSectionRows.ts
+- lib/i18n/ko/admin.ts
+- lib/i18n/en/admin.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/workorder-state-patch-response-lightweight-0.9.224352.md
+없음
 
 삭제 파일 목록 :
 없음
