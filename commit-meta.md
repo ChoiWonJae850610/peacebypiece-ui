@@ -1,17 +1,17 @@
 Version :
-0.9.224354
+0.9.22435
 
 Summary :
-작업지시서 lazy load 1차 안정 체크포인트 문서화
+저장소 휴지통 회귀 테스트 기준 문서화
 
 Description :
-작업지시서 목록/상세 로딩 분리, 상태 patch 경량화, 옵션 요청 캐시 보정의 현재 기준과 허용 동작, 남은 개선 후보를 문서화했다. APP_VERSION도 0.9.224354로 갱신했다.
+작업지시서 lazy load 안정화 이후 저장소 관리와 휴지통의 문서, 디자인, 메모, 작업지시서 삭제/복원/삭제 요청 흐름을 점검할 1차 회귀 테스트 기준을 문서화했다. APP_VERSION도 0.9.22435로 갱신했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/workorder-lazy-load-stable-checkpoint-0.9.224354.md
+- docs/storage-trash-regression-checkpoint-0.9.22435.md
 
 삭제 파일 목록 :
 없음
