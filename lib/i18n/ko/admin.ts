@@ -235,7 +235,7 @@ export const adminKo = {
     qualityRateColumn: "검수/불량률",
   },
   settingsForm: {
-    title: "환경설정",
+    title: "조직 설정",
     sampleCompanyName: "샘플 고객사",
     planLabel: "요금제: 기본요금제",
     joinedPending: "가입일 준비중",
@@ -249,6 +249,34 @@ export const adminKo = {
     themeCurrentPrefix: "현재 ",
     languageTitle: "언어 설정",
     languageCurrentPrefix: "현재 ",
+    organization: {
+      badge: "조직 설정",
+      title: "회사 운영 설정",
+      description: "이 화면은 고객사 전체에 적용되는 파일, 저장소, 알림, 기준정보, 멤버 권한 정책을 관리하는 영역입니다. 개인 언어와 색상은 개인 설정에서 변경합니다.",
+      scopeTitle: "조직 설정 범위",
+      scopeDescription: "고객관리자가 회사 단위로 관리해야 하는 설정만 이 화면에 남깁니다.",
+      summaryUnits: { gb: "GB", days: "일", percent: "%", count: "개" },
+      summaryCards: {
+        "storage-limit": { label: "기본 용량" },
+        "trash-retention": { label: "휴지통 보관" },
+        "warning-threshold": { label: "용량 주의" },
+        "notification-events": { label: "알림 항목" },
+      },
+      scopes: {
+        "file-policy": { title: "파일 정책", description: "업로드, 삭제 요청, 휴지통 보관 같은 파일 처리 기준입니다." },
+        "storage-policy": { title: "저장소 정책", description: "저장소 한도, 용량 경고, 휴지통 용량 포함 여부를 관리합니다." },
+        "notification-policy": { title: "알림 정책", description: "검토 요청, 발주 준비, 저장소 경고 같은 조직 알림 기준입니다." },
+        standards: { title: "기준정보", description: "단위표준, 생산품유형, 외주공정처럼 작업지시서에서 공통으로 쓰는 기준입니다." },
+        "member-permissions": { title: "멤버 권한", description: "멤버가 볼 수 있는 카드와 기능을 권한 코드 기준으로 분리하는 후속 영역입니다." },
+      },
+      statusLabels: { active: "사용중", fixed: "고정", planned: "후속" },
+      personalSettings: {
+        title: "개인 설정은 분리됨",
+        description: "언어, 색상, 화면 밀도, 기본 진입 화면은 회사 전체 정책이 아니라 사용자별 선호 설정입니다.",
+        note: "고객관리자와 일반 멤버는 /me/settings에서 각자 개인 설정을 변경합니다. 이후 DB 사용자 설정으로 옮길 수 있도록 현재는 분리된 진입점을 유지합니다.",
+        actionLabel: "개인 설정 열기",
+      },
+    },
   },
   userAccessPreview: {
     title: "사용자/권한 테스트 구조",

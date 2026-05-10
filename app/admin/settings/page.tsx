@@ -1,5 +1,5 @@
 import AdminShell from "@/components/admin/layout/AdminShell";
-import AdminCompanySettingsForm from "@/components/admin/settings/AdminCompanySettingsForm";
+import AdminOrganizationSettingsSummary from "@/components/admin/settings/AdminOrganizationSettingsSummary";
 import AdminPolicyOverview from "@/components/admin/settings/AdminPolicyOverview";
 import AdminUserAccessPreview from "@/components/admin/settings/AdminUserAccessPreview";
 import AdminStandardsSection from "@/components/admin/standards/AdminStandardsSection";
@@ -47,7 +47,7 @@ export default async function AdminSettingsPage() {
       title={pageText.title}
     >
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1">
-        <AdminCompanySettingsForm initialSettings={settings} companyName={companyName} />
+        <AdminOrganizationSettingsSummary settings={settings} companyName={companyName} />
         <AdminPolicyOverview settings={settings} />
         <AdminUserAccessPreview users={userAccess.users} sourceState={userAccess.sourceState} />
         <AdminStandardsSection />

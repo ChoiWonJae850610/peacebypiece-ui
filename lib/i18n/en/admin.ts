@@ -282,7 +282,7 @@ export const adminEn = {
     qualityRateColumn: "Inspection/defect rate",
   },
   settingsForm: {
-    title: "Settings",
+    title: "Organization Settings",
     sampleCompanyName: "Sample customer",
     planLabel: "Plan: Basic",
     joinedPending: "Join date pending",
@@ -296,6 +296,34 @@ export const adminEn = {
     themeCurrentPrefix: "Current ",
     languageTitle: "Language",
     languageCurrentPrefix: "Current ",
+    organization: {
+      badge: "Organization settings",
+      title: "Company operation settings",
+      description: "This area manages company-wide file, storage, notification, master-data, and member permission policies. Personal language and color preferences are changed in Personal Settings.",
+      scopeTitle: "Organization setting scope",
+      scopeDescription: "Only company-level settings that a customer admin manages remain on this screen.",
+      summaryUnits: { gb: "GB", days: " days", percent: "%", count: "" },
+      summaryCards: {
+        "storage-limit": { label: "Storage limit" },
+        "trash-retention": { label: "Trash retention" },
+        "warning-threshold": { label: "Usage warning" },
+        "notification-events": { label: "Notifications" },
+      },
+      scopes: {
+        "file-policy": { title: "File policy", description: "Rules for upload, delete request, and trash retention flows." },
+        "storage-policy": { title: "Storage policy", description: "Storage limits, warning thresholds, and whether trash counts toward usage." },
+        "notification-policy": { title: "Notification policy", description: "Organization-level alerts such as review requests, order readiness, and storage warnings." },
+        standards: { title: "Master data", description: "Shared standards used by work orders, such as units, product types, and outsourcing processes." },
+        "member-permissions": { title: "Member permissions", description: "A later area for controlling which cards and features members can access by permission code." },
+      },
+      statusLabels: { active: "Active", fixed: "Fixed", planned: "Planned" },
+      personalSettings: {
+        title: "Personal settings are separate",
+        description: "Language, color, screen density, and default home are per-user preferences, not company-wide policy.",
+        note: "Customer admins and members change personal preferences in /me/settings. The separate entry point is kept so these settings can later move to DB-backed user settings.",
+        actionLabel: "Open personal settings",
+      },
+    },
   },
   userAccessPreview: {
     title: "User / Permission Test Structure",
