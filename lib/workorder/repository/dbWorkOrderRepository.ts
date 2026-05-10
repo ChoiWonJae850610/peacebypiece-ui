@@ -638,7 +638,7 @@ function assertMinimumSpecSheetSchema(schema: DbSpecSheetSchema) {
   }
 }
 
-function buildSpecSheetSelectSql(schema: DbSpecSheetSchema): string {
+function buildSpecSheetSelectBaseSql(schema: DbSpecSheetSchema): string {
   const payloadFallbackSql =
     schema.payloadColumnKind === "text" ? "NULL::text" : "NULL::jsonb";
 
@@ -662,9 +662,33 @@ function buildSpecSheetSelectSql(schema: DbSpecSheetSchema): string {
         ${buildAliasSelection(schema.createdAtColumn, "created_at", "NULL")},
         ${buildAliasSelection(schema.updatedAtColumn, "updated_at", "NULL")}
       FROM ${quoteIdentifier(SPEC_SHEET_TABLE)}
+    `;
+}
+
+function buildSpecSheetSelectSql(schema: DbSpecSheetSchema): string {
+  return `
+      ${buildSpecSheetSelectBaseSql(schema)}
       ${schema.companyIdColumn ? `WHERE ${quoteIdentifier(schema.companyIdColumn)} = $1` : schema.isActiveColumn ? `WHERE ${quoteIdentifier(schema.isActiveColumn)} = TRUE` : ""}
       ${schema.companyIdColumn && schema.isActiveColumn ? `AND ${quoteIdentifier(schema.isActiveColumn)} = TRUE` : ""}
       ORDER BY ${schema.updatedAtColumn ? `${quoteIdentifier(schema.updatedAtColumn)} DESC NULLS LAST, ` : ""}${schema.createdAtColumn ? `${quoteIdentifier(schema.createdAtColumn)} DESC NULLS LAST, ` : ""}id DESC
+    `;
+}
+
+function buildSpecSheetSelectByIdSql(schema: DbSpecSheetSchema): string {
+  const predicates = ["id = $1"];
+
+  if (schema.companyIdColumn) {
+    predicates.push(`${quoteIdentifier(schema.companyIdColumn)} = $2`);
+  }
+
+  if (schema.isActiveColumn) {
+    predicates.push(`${quoteIdentifier(schema.isActiveColumn)} = TRUE`);
+  }
+
+  return `
+      ${buildSpecSheetSelectBaseSql(schema)}
+      WHERE ${predicates.join("\n        AND ")}
+      LIMIT 1
     `;
 }
 
@@ -691,8 +715,19 @@ export async function findAllDbWorkOrders(): Promise<WorkOrder[]> {
 }
 
 export async function findDbWorkOrderById(workOrderId: string): Promise<WorkOrder | null> {
-  const rows = await loadActiveSpecSheetRows();
-  const row = rows.find((item) => item.id === workOrderId) ?? null;
+  const schema = await loadSpecSheetSchema();
+  assertMinimumSpecSheetSchema(schema);
+
+  const values: unknown[] = [workOrderId];
+  if (schema.companyIdColumn) {
+    values.push(getAdminCompanyId());
+  }
+
+  const result = await queryDb<DbSpecSheetRow>(
+    buildSpecSheetSelectByIdSql(schema),
+    values,
+  );
+  const row = result.rows[0] ?? null;
   return row ? mapSpecSheetRowToWorkOrder(row) : null;
 }
 

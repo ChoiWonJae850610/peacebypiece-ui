@@ -36,9 +36,22 @@ type DbStatusPayload = {
   message: string | null;
   configSource?: string | null;
   checkedAt: string;
+  schema?: {
+    payloadColumn: string | null;
+    payloadColumnKind: string | null;
+    payloadOptional: boolean;
+  };
 };
 
-async function inspectWorkOrdersTable() {
+type DbPayloadSchemaInspection = NonNullable<DbStatusPayload["schema"]>;
+
+type WorkOrdersTableInspection = {
+  code: DbStatusPayload["code"];
+  message: string | null;
+  schema?: DbPayloadSchemaInspection;
+};
+
+async function inspectWorkOrdersTable(): Promise<WorkOrdersTableInspection> {
   const result = await queryDb<DbColumnInfo>(
     `
       SELECT column_name, data_type, udt_name
@@ -67,17 +80,16 @@ async function inspectWorkOrdersTable() {
     };
   }
 
-  const payloadColumn = PAYLOAD_COLUMN_CANDIDATES.find((column) => columnNames.includes(column));
-  if (!payloadColumn) {
-    return {
-      code: "DB_SCHEMA_UNSUPPORTED" as const,
-      message: `${SPEC_SHEET_TABLE} table is missing a supported payload column. Expected one of: ${PAYLOAD_COLUMN_CANDIDATES.join(", ")}`,
-    };
-  }
-
-  const payloadInfo = columns.find((column) => column.column_name === payloadColumn);
-  const payloadKind = payloadInfo?.udt_name ?? payloadInfo?.data_type ?? "unknown";
-  const payloadSupported = payloadKind === "jsonb" || payloadKind === "json" || payloadKind === "text" || payloadKind === "varchar" || payloadKind === "character varying";
+  const payloadColumn = PAYLOAD_COLUMN_CANDIDATES.find((column) => columnNames.includes(column)) ?? null;
+  const payloadInfo = payloadColumn ? columns.find((column) => column.column_name === payloadColumn) : null;
+  const payloadKind = payloadInfo?.udt_name ?? payloadInfo?.data_type ?? null;
+  const payloadSupported =
+    payloadKind === null ||
+    payloadKind === "jsonb" ||
+    payloadKind === "json" ||
+    payloadKind === "text" ||
+    payloadKind === "varchar" ||
+    payloadKind === "character varying";
 
   if (!payloadSupported) {
     return {
@@ -86,7 +98,15 @@ async function inspectWorkOrdersTable() {
     };
   }
 
-  return { code: "READY" as const, message: null };
+  return {
+    code: "READY" as const,
+    message: null,
+    schema: {
+      payloadColumn,
+      payloadColumnKind: payloadKind,
+      payloadOptional: true,
+    },
+  };
 }
 
 export async function GET() {
@@ -123,6 +143,7 @@ export async function GET() {
         message: tableInspection.message,
         configSource: getDatabaseConfigSource(),
         checkedAt,
+        schema: tableInspection.schema,
       });
     }
 
@@ -137,6 +158,7 @@ export async function GET() {
       message: null,
       configSource: getDatabaseConfigSource(),
       checkedAt,
+      schema: tableInspection.schema,
     });
   } catch (error) {
     const runtimeCode = getDatabaseRuntimeErrorCode(error);
