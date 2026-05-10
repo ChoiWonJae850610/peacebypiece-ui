@@ -77,6 +77,32 @@ function createNotWorkOrderBundleTrashPredicate(
   return `(NOT ${createWorkOrderBundleMetadataPredicate(alias, workOrderParamIndex)})`;
 }
 
+function isAttachmentDeletedWithWorkOrder(input: {
+  parentWorkOrderDeleted: boolean;
+  orderId?: string | null;
+  deleteSource?: string | null;
+  deleteScope?: string | null;
+  deleteParentType?: string | null;
+  deleteParentId?: string | null;
+  deleteBatchId?: string | null;
+}): boolean {
+  if (!input.parentWorkOrderDeleted) return false;
+  const orderId = String(input.orderId ?? "").trim();
+  if (!orderId) return false;
+
+  const deleteParentId = String(input.deleteParentId ?? "").trim();
+  const deleteBatchId = String(input.deleteBatchId ?? "").trim();
+  const hasWorkOrderBundleMetadata =
+    input.deleteSource === "workorder_bundle" ||
+    (input.deleteScope === "bundle" &&
+      input.deleteParentType === "workorder");
+
+  return (
+    hasWorkOrderBundleMetadata &&
+    (deleteParentId === orderId || deleteBatchId === orderId)
+  );
+}
+
 export async function restoreAttachmentTrashItems(
   input: AdminTrashDbActionInput,
 ): Promise<AdminTrashDbActionResult> {
@@ -580,8 +606,17 @@ export async function listAdminFileManagementRows(
     const sizeBytes = toNumber(row.size_bytes);
     const restoreDaysLeft = getRestoreDaysLeft(row.purge_after_at);
     const parentWorkOrderDeleted = Boolean(row.parent_workorder_deleted);
+    const deletedWithWorkOrder = isAttachmentDeletedWithWorkOrder({
+      parentWorkOrderDeleted,
+      orderId: row.order_id,
+      deleteSource: row.delete_source,
+      deleteScope: row.delete_scope,
+      deleteParentType: row.delete_parent_type,
+      deleteParentId: row.delete_parent_id,
+      deleteBatchId: row.delete_batch_id,
+    });
     const effectiveDeletedAt =
-      parentWorkOrderDeleted && row.parent_workorder_deleted_at
+      deletedWithWorkOrder && row.parent_workorder_deleted_at
         ? row.parent_workorder_deleted_at
         : row.deleted_at;
     const restorePolicy = getAdminTrashRestorePolicy({
