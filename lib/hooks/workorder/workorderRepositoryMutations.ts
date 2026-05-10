@@ -47,6 +47,25 @@ export async function persistCreatedWorkOrderWithHistory(
 }
 
 
+function mergeStatePatchResultIntoWorkOrder(currentWorkOrder: WorkOrder, savedPatch: WorkOrder): WorkOrder {
+  return {
+    ...currentWorkOrder,
+    workflowState: savedPatch.workflowState ?? currentWorkOrder.workflowState,
+    lastSavedAt: savedPatch.lastSavedAt ?? currentWorkOrder.lastSavedAt,
+    inventoryQuantity: Object.prototype.hasOwnProperty.call(savedPatch, "inventoryQuantity")
+      ? savedPatch.inventoryQuantity
+      : currentWorkOrder.inventoryQuantity,
+    inventoryStatus: Object.prototype.hasOwnProperty.call(savedPatch, "inventoryStatus")
+      ? savedPatch.inventoryStatus
+      : currentWorkOrder.inventoryStatus,
+    factoryOrderRequest: Object.prototype.hasOwnProperty.call(savedPatch, "factoryOrderRequest")
+      ? (savedPatch.factoryOrderRequest ?? null)
+      : currentWorkOrder.factoryOrderRequest,
+    orderEntries: Array.isArray(savedPatch.orderEntries) ? savedPatch.orderEntries : currentWorkOrder.orderEntries,
+    hasDetailSnapshot: currentWorkOrder.hasDetailSnapshot,
+  };
+}
+
 function buildWorkOrderStatePatch(workOrder: WorkOrder): WorkOrderStatePatch {
   return {
     id: workOrder.id,
@@ -67,11 +86,11 @@ export async function persistWorkOrderStatePatchWithHistory(
   },
 ) {
   const stampedWorkOrder = stampPersistedWorkOrder(payload.workOrder);
-  const nextWorkOrder = await repository.saveWorkOrderStatePatchAsync(buildWorkOrderStatePatch(stampedWorkOrder));
+  const savedPatch = await repository.saveWorkOrderStatePatchAsync(buildWorkOrderStatePatch(stampedWorkOrder));
   if (payload.historyLogs?.length) {
     await repository.appendHistoryLogsAsync(payload.historyLogs);
   }
-  return nextWorkOrder;
+  return mergeStatePatchResultIntoWorkOrder(stampedWorkOrder, savedPatch);
 }
 
 export async function persistWorkOrderStatePatchesWithHistory(
@@ -84,7 +103,8 @@ export async function persistWorkOrderStatePatchesWithHistory(
   const stampedWorkOrders = stampPersistedWorkOrders(payload.workOrders);
   const nextWorkOrders: WorkOrder[] = [];
   for (const workOrder of stampedWorkOrders) {
-    nextWorkOrders.push(await repository.saveWorkOrderStatePatchAsync(buildWorkOrderStatePatch(workOrder)));
+    const savedPatch = await repository.saveWorkOrderStatePatchAsync(buildWorkOrderStatePatch(workOrder));
+    nextWorkOrders.push(mergeStatePatchResultIntoWorkOrder(workOrder, savedPatch));
   }
   if (payload.historyLogs?.length) {
     await repository.appendHistoryLogsAsync(payload.historyLogs);

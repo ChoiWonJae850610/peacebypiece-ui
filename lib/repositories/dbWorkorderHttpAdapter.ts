@@ -3,7 +3,7 @@ import { mockWorkorderAdapter } from "@/lib/repositories/mockWorkorderRepository
 import { loadPersistedWorkspaceState } from "@/lib/repositories/workorderPersistence";
 import type { WorkorderRepositoryAdapter } from "@/lib/repositories/workorderRepositoryAdapter";
 import { setDbConnectionStatus, type DbConnectionStateCode } from "@/lib/repositories/dbConnectionStatusStore";
-import type { MemoThread, UserProfile, WorkOrder, WorkOrderStatePatch, WorkOrderSummary } from "@/types/workorder";
+import type { MemoThread, UserProfile, WorkOrder, WorkOrderStatePatch, WorkOrderStatePatchResult, WorkOrderSummary } from "@/types/workorder";
 
 type DbApiErrorBody = {
   message?: string;
@@ -18,6 +18,13 @@ type WorkOrderSummaryLoadResponse = {
 };
 
 type WorkOrderDetailLoadResponse = {
+  workOrder?: WorkOrder;
+  error?: string;
+  message?: string;
+};
+
+type WorkOrderStatePatchResponse = {
+  patch?: WorkOrderStatePatchResult;
   workOrder?: WorkOrder;
   error?: string;
   message?: string;
@@ -169,18 +176,22 @@ async function saveWorkOrderStatePatchToApi(patch: WorkOrderStatePatch): Promise
     body: JSON.stringify({ patch }),
   });
 
-  const result = await parseResponse<WorkOrderDetailLoadResponse>(response);
+  const result = await parseResponse<WorkOrderStatePatchResponse>(response);
 
-  if (!result.workOrder) {
-    const emptyBodyError = new Error("DB work order state patch response is empty.") as Error & { code?: string };
-    emptyBodyError.code = "DB_EMPTY_RESPONSE";
-    throw emptyBodyError;
+  if (result.patch) {
+    return {
+      ...patch,
+      ...result.patch,
+    } as WorkOrder;
   }
 
-  return {
-    ...result.workOrder,
-    hasDetailSnapshot: true,
-  };
+  if (result.workOrder) {
+    return result.workOrder;
+  }
+
+  const emptyBodyError = new Error("DB work order state patch response is empty.") as Error & { code?: string };
+  emptyBodyError.code = "DB_EMPTY_RESPONSE";
+  throw emptyBodyError;
 }
 
 async function loadMemoThreadsForWorkOrder(workOrderId: string): Promise<MemoThread[] | null> {
