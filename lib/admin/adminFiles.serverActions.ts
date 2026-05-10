@@ -77,6 +77,22 @@ function createNotWorkOrderBundleTrashPredicate(
   return `(NOT ${createWorkOrderBundleMetadataPredicate(alias, workOrderParamIndex)})`;
 }
 
+function createWorkOrderBundleMemoMetadataPredicate(
+  alias: string,
+  workOrderParamIndex: number,
+): string {
+  return `(
+    (
+      COALESCE(${alias}.delete_source, '') = 'workorder_bundle'
+      OR (COALESCE(${alias}.delete_scope, '') = 'bundle' AND COALESCE(${alias}.delete_parent_type, '') = 'workorder')
+    )
+    AND (
+      ${alias}.delete_parent_id = $${workOrderParamIndex}
+      OR ${alias}.delete_batch_id = $${workOrderParamIndex}
+    )
+  )`;
+}
+
 function isAttachmentDeletedWithWorkOrder(input: {
   parentWorkOrderDeleted: boolean;
   orderId?: string | null;
@@ -552,7 +568,16 @@ export async function listAdminFileManagementRows(
               COUNT(DISTINCT a.id) FILTER (WHERE a.deleted_at IS NULL AND COALESCE(a.is_active, true) = true)::text AS attachment_count,
               COUNT(DISTINCT a.id) FILTER (WHERE a.deleted_at IS NOT NULL OR COALESCE(a.is_active, true) = false)::text AS trash_attachment_count,
               COUNT(DISTINCT m.id) FILTER (WHERE m.deleted_at IS NULL AND COALESCE(m.is_active, true) = true)::text AS memo_count,
-              COUNT(DISTINCT m.id) FILTER (WHERE m.deleted_at IS NOT NULL OR COALESCE(m.is_active, true) = false)::text AS trash_memo_count
+              COUNT(DISTINCT m.id) FILTER (
+                WHERE (m.deleted_at IS NOT NULL OR COALESCE(m.is_active, true) = false)
+                  AND (
+                    (
+                      COALESCE(m.delete_source, '') = 'workorder_bundle'
+                      OR (COALESCE(m.delete_scope, '') = 'bundle' AND COALESCE(m.delete_parent_type, '') = 'workorder')
+                    )
+                    AND (m.delete_parent_id = s.id OR m.delete_batch_id = s.id)
+                  )
+              )::text AS trash_memo_count
          FROM spec_sheets s
          LEFT JOIN attachments a ON a.order_id = s.id
          LEFT JOIN memos m ON m.order_id = s.id
@@ -1059,10 +1084,7 @@ export async function restoreWorkOrderTrashBundle(
               updated_at = now()
         WHERE order_id = $1
           AND deleted_at IS NOT NULL
-          AND (
-            ${createWorkOrderBundleMetadataPredicate("memos", 1)}
-            OR deleted_at >= COALESCE((SELECT deleted_at FROM target_workorder), now()) - interval '10 seconds'
-          )
+          AND ${createWorkOrderBundleMemoMetadataPredicate("memos", 1)}
         RETURNING id
      )
      SELECT COUNT(*)::text AS affected_count,
@@ -1213,7 +1235,7 @@ export async function purgeWorkOrderTrashBundle(
         WHERE order_id = $1
           AND deleted_at IS NOT NULL
           AND COALESCE(delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
-          AND ${createWorkOrderBundleMetadataPredicate("memos", 1)}
+          AND ${createWorkOrderBundleMemoMetadataPredicate("memos", 1)}
         RETURNING id
      )
      SELECT COUNT(*)::text AS affected_count,

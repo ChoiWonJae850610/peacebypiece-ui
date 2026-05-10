@@ -1,20 +1,19 @@
 Version :
-0.9.22437
+0.9.224371
 
 Summary :
-시스템관리자 저장소 삭제 후보 조회 표시 기준 보정
+작업지시서 복원 시 단독 삭제 메모 복원 방지
 
 Description :
-시스템관리자 storage-usage 실제 삭제 후보에서 작업지시서 대표 row의 문서, 디자인, 메모 집계를 구분해 표시하도록 보정했다. 문서/디자인 수는 attachment_trash_items와 attachments.type 기준으로 계산하고, 작업지시서 묶음 후보 메시지도 고객 화면 용어에 맞게 정리했다.
+작업지시서 복원 시 삭제 시각 근접 조건으로 단독 삭제 메모까지 복원되던 문제를 수정했다. 휴지통과 시스템관리자 실제 삭제 후보의 메모 개수도 작업지시서 묶음 삭제 메타데이터가 있는 메모만 카운트하도록 보정했다.
 
 수정 파일 목록 :
+- lib/admin/adminFiles.serverActions.ts
 - lib/system/storagePurgeCandidates.ts
-- lib/system/storagePurgePresentation.ts
-- components/system/storage/SystemStoragePurgeCandidatesClient.tsx
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/system-storage-usage-candidate-query-0.9.22437.md
+- docs/storage-trash-workorder-memo-bundle-restore-0.9.224371.md
 
 삭제 파일 목록 :
 없음

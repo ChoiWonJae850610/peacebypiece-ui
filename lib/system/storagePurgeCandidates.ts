@@ -453,6 +453,13 @@ async function listWorkOrderPurgeCandidateRows(input: {
            FROM memos m
           WHERE m.order_id = s.id
             AND (m.deleted_at IS NOT NULL OR COALESCE(m.is_active, true) = false)
+            AND (
+              (
+                COALESCE(m.delete_source, '') = 'workorder_bundle'
+                OR (COALESCE(m.delete_scope, '') = 'bundle' AND COALESCE(m.delete_parent_type, '') = 'workorder')
+              )
+              AND (m.delete_parent_id = s.id OR m.delete_batch_id = s.id)
+            )
             AND COALESCE(m.delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
        ) memo_summary ON true
       WHERE (s.deleted_at IS NOT NULL OR COALESCE(s.is_active, true) = false)
