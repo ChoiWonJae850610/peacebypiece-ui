@@ -166,7 +166,7 @@ export const adminEn = {
     unknownLabel: "Needs Review",
   },
   topbar: {
-    actions: { home: "Home", openWorkorder: "Work orders" },
+    actions: { home: "Home", personalSettings: "Personal settings", openWorkorder: "Work orders" },
     summaries: {
       adminMain: "Operations, status flow, and today checks",
       storage: "Documents/designs · Trash · Storage usage",

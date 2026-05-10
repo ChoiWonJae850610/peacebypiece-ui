@@ -25,6 +25,61 @@ export const commonKo = {
       },
     },
   },
+  personalSettings: {
+    title: "개인 환경설정",
+    description: "언어, 색상, 화면 밀도, 기본 진입 화면처럼 사용자별로 달라지는 설정을 관리합니다.",
+    loading: "저장된 개인 설정을 불러오는 중입니다.",
+    actions: {
+      workspaceHome: "내 업무 홈",
+      workorder: "작업지시서",
+    },
+    summary: {
+      language: "언어",
+      theme: "색상",
+      density: "화면 밀도",
+      defaultHome: "기본 진입",
+    },
+    sections: {
+      language: {
+        title: "언어",
+        description: "현재 사용자에게 적용할 화면 언어입니다. 조직 설정과 분리해서 저장합니다.",
+      },
+      theme: {
+        title: "색상",
+        description: "현재 사용자의 화면 강조 색상입니다. 관리자 테마와 같은 색상 토큰을 재사용합니다.",
+      },
+      density: {
+        title: "화면 밀도",
+        description: "작업 화면의 여백과 정보량을 조정할 수 있도록 준비하는 개인 설정입니다.",
+      },
+      defaultHome: {
+        title: "기본 진입 화면",
+        description: "로그인 후 우선 열릴 화면을 사용자별로 정하기 위한 후보 설정입니다.",
+      },
+    },
+    languageOptions: {
+      ko: "한국어",
+      en: "English",
+    },
+    themeOptions: {
+      blue: "Blue",
+      emerald: "Emerald",
+      violet: "Violet",
+      stone: "Stone",
+    },
+    densityOptions: {
+      comfortable: "기본",
+      compact: "간결",
+    },
+    defaultHomeOptions: {
+      workspace: "내 업무 홈",
+      workorder: "작업지시서",
+    },
+    policyNote: {
+      title: "개인 설정과 조직 설정 분리",
+      description: "이 화면은 사용자 개인 선호만 다룹니다. 저장소 정책, 파일 정책, 협력업체 정책, 권한 정책은 조직 환경설정에서 계속 관리합니다.",
+    },
+  },
   ui: {
     common: {
       close: "닫기",

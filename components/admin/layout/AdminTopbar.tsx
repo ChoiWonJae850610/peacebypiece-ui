@@ -67,6 +67,9 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
           <Link href="/admin" className="inline-flex items-center justify-center rounded-full border border-stone-200 bg-white px-3 py-2 text-xs font-semibold text-stone-700 transition hover:bg-stone-50">
             {t("topbar.actions.home", "홈")}
           </Link>
+          <Link href="/me/settings" className="inline-flex items-center justify-center rounded-full border border-stone-200 bg-white px-3 py-2 text-xs font-semibold text-stone-700 transition hover:bg-stone-50">
+            {t("topbar.actions.personalSettings", "개인 설정")}
+          </Link>
           <Link href="/worker" className="inline-flex items-center justify-center rounded-full border border-stone-900 bg-stone-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-stone-800">
             {t("topbar.actions.openWorkorder", "작업지시서")}
           </Link>

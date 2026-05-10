@@ -119,7 +119,7 @@ export const adminKo = {
     unknownLabel: "확인 필요",
   },
   topbar: {
-    actions: { home: "홈", openWorkorder: "작업지시서" },
+    actions: { home: "홈", personalSettings: "개인 설정", openWorkorder: "작업지시서" },
     summaries: {
       adminMain: "운영 통계 · 상태 흐름 · 오늘 체크",
       storage: "첨부파일 · 휴지통 · 용량 관리",

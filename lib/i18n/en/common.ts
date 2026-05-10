@@ -25,6 +25,61 @@ export const commonEn = {
       },
     },
   },
+  personalSettings: {
+    title: "Personal settings",
+    description: "Manage user-specific settings such as language, color, screen density, and the default entry screen.",
+    loading: "Loading saved personal settings.",
+    actions: {
+      workspaceHome: "My workspace home",
+      workorder: "Work orders",
+    },
+    summary: {
+      language: "Language",
+      theme: "Color",
+      density: "Screen density",
+      defaultHome: "Default entry",
+    },
+    sections: {
+      language: {
+        title: "Language",
+        description: "The interface language for the current user. This is stored separately from organization settings.",
+      },
+      theme: {
+        title: "Color",
+        description: "The current user's accent color. This reuses the same color tokens as the admin theme.",
+      },
+      density: {
+        title: "Screen density",
+        description: "A personal preference prepared for adjusting spacing and information density.",
+      },
+      defaultHome: {
+        title: "Default entry screen",
+        description: "A candidate user preference for choosing the first screen after sign-in.",
+      },
+    },
+    languageOptions: {
+      ko: "한국어",
+      en: "English",
+    },
+    themeOptions: {
+      blue: "Blue",
+      emerald: "Emerald",
+      violet: "Violet",
+      stone: "Stone",
+    },
+    densityOptions: {
+      comfortable: "Comfortable",
+      compact: "Compact",
+    },
+    defaultHomeOptions: {
+      workspace: "My workspace home",
+      workorder: "Work orders",
+    },
+    policyNote: {
+      title: "Personal settings and organization settings are separate",
+      description: "This screen manages user preferences only. Storage policy, file policy, partner policy, and permission policy remain in organization settings.",
+    },
+  },
   ui: {
     common: {
       close: "Close",

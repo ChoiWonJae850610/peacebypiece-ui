@@ -20,8 +20,8 @@ const MEMBER_WORKSPACE_CARDS: WorkspaceHomeCard[] = [
   },
   {
     id: "personalSettings",
-    href: null,
-    status: "planned",
+    href: "/me/settings",
+    status: "available",
   },
 ];
 
