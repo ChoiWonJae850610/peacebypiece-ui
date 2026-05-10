@@ -234,12 +234,11 @@ export function useWorkOrderAttachments({
       }
 
       const nextWorkOrder = {
-        ...result.nextWorkOrder,
-        memoThreads: (result.nextWorkOrder.memoThreads ?? []).map((thread) =>
-          thread.content === createdThread.content && thread.authorId === createdThread.authorId
-            ? { ...createdThread, replies: createdThread.replies ?? [] }
-            : thread,
-        ),
+        ...selectedWorkOrder,
+        memoThreads: [
+          { ...createdThread, replies: createdThread.replies ?? [] },
+          ...(selectedWorkOrder.memoThreads ?? []).filter((thread) => thread.id !== createdThread.id),
+        ],
       };
 
       setWorkOrders((prev) => prev.map((item) => (item.id === selectedWorkOrder.id ? nextWorkOrder : item)));
@@ -282,14 +281,15 @@ export function useWorkOrderAttachments({
       }
 
       const nextWorkOrder = {
-        ...result.nextWorkOrder,
-        memoThreads: (result.nextWorkOrder.memoThreads ?? []).map((thread) =>
+        ...selectedWorkOrder,
+        memoThreads: (selectedWorkOrder.memoThreads ?? []).map((thread) =>
           thread.id === threadId
             ? {
                 ...thread,
-                replies: (thread.replies ?? []).map((reply) =>
-                  reply.content === createdReply.content && reply.authorId === createdReply.authorId ? createdReply : reply,
-                ),
+                replies: [
+                  ...(thread.replies ?? []).filter((reply) => reply.id !== createdReply.id),
+                  createdReply,
+                ],
               }
             : thread,
         ),

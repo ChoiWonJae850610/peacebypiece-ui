@@ -22,6 +22,7 @@ import { createReinspectionRequestHistoryLog } from "@/lib/workorder/history/bui
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
 import { getOrderTypeFromWorkOrderKind } from "@/lib/workorder/reorder/helpers";
 import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
+import { isImmediateDbField } from "@/lib/workorder/storagePolicy";
 import { stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
 import { getOrderSubmissionSnapshot } from "@/lib/workorder/orderSubmission";
 import {
@@ -380,6 +381,9 @@ export function useWorkOrderWorkflowActions({
         setWorkOrders(persistedWorkOrders);
         setPersistedWorkOrders(persistedWorkOrders);
         syncSelectedWorkOrderSaveState(persistedWorkOrders);
+      }).catch((error) => {
+        setSaveStatus("dirty");
+        setToastMessage(error instanceof Error ? error.message : null);
       });
       setWorkOrders(nextWorkOrders);
       if (result.historyLogs?.length) {
@@ -416,6 +420,9 @@ export function useWorkOrderWorkflowActions({
         setWorkOrders(persistedWorkOrders);
         setPersistedWorkOrders(persistedWorkOrders);
         syncSelectedWorkOrderSaveState(persistedWorkOrders);
+      }).catch((error) => {
+        setSaveStatus("dirty");
+        setToastMessage(error instanceof Error ? error.message : null);
       });
       setWorkOrders(nextWorkOrders);
       if (result.historyLogs?.length) {
@@ -463,9 +470,16 @@ export function useWorkOrderWorkflowActions({
       );
       const normalizedNextWorkOrder = nextWorkOrders.find((item) => item.id === workOrderId) ?? result.nextWorkOrder;
       const nextHistoryLogs = result.historyLogs;
+      const shouldPersistImmediately = (Object.keys(patch) as (keyof WorkOrder)[]).some(isImmediateDbField);
+
+      setWorkOrders(nextWorkOrders);
+
+      if (!shouldPersistImmediately) {
+        setSaveStatus("dirty");
+        return;
+      }
 
       setSaveStatus("saving");
-      setWorkOrders(nextWorkOrders);
 
       try {
         const persistedWorkOrder = await persistWorkOrderWithHistory(repository, {
