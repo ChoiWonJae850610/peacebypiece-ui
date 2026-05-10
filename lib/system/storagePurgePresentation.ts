@@ -50,7 +50,7 @@ export const SYSTEM_STORAGE_PURGE_COPY = {
     overdueLabel: "경과",
     selectCandidateLabelSuffix: "삭제 후보 선택",
     previewAltSuffix: "미리보기",
-    workOrderSourceHint: "문서·디자인·메모 함께 처리",
+    workOrderSourceHint: "작업지시서 묶음 후보",
     workOrderRetryHint: "실패 항목만 재시도",
   },
   confirm: {
@@ -113,8 +113,8 @@ export function getSystemStorageSortDirectionLabel(direction: "asc" | "desc"): s
   return direction === "asc" ? SYSTEM_STORAGE_PURGE_COPY.sort.asc : SYSTEM_STORAGE_PURGE_COPY.sort.desc;
 }
 
-export function buildSystemStorageWorkOrderBundleMetaLabel(input: { attachmentCount: number; memoCount: number }): string {
-  return `${SYSTEM_STORAGE_PURGE_COPY.list.workOrderBundleMeta} · ${SYSTEM_STORAGE_PURGE_COPY.list.attachmentCount} ${input.attachmentCount}개 · ${SYSTEM_STORAGE_PURGE_COPY.list.memoCount} ${input.memoCount}개`;
+export function buildSystemStorageWorkOrderBundleMetaLabel(input: { documentCount: number; designCount: number; memoCount: number }): string {
+  return `${SYSTEM_STORAGE_PURGE_COPY.list.workOrderBundleMeta} · 문서 ${input.documentCount}개 · 디자인 ${input.designCount}개 · ${SYSTEM_STORAGE_PURGE_COPY.list.memoCount} ${input.memoCount}개`;
 }
 
 export function getSystemStorageCandidateKindLabel(kind: SystemStoragePurgeCandidateKind): string {

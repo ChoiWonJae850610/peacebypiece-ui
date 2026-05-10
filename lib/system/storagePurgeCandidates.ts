@@ -55,6 +55,8 @@ export type SystemStoragePurgeCandidate = {
   purgeStatusLabel: string;
   lastPurgeError: string | null;
   attachmentCount: number;
+  documentCount: number;
+  designCount: number;
   memoCount: number;
 };
 
@@ -94,6 +96,7 @@ type PurgeCandidateRow = DbQueryResultRow & {
   purge_due_at: string | Date | null;
   purge_status: string | null;
   last_purge_error: string | null;
+  attachment_type: string | null;
 };
 
 type WorkOrderPurgeCandidateRow = DbQueryResultRow & {
@@ -106,6 +109,8 @@ type WorkOrderPurgeCandidateRow = DbQueryResultRow & {
   purge_due_at: string | Date | null;
   purge_status: string | null;
   attachment_count: string | number | null;
+  document_count: string | number | null;
+  design_count: string | number | null;
   memo_count: string | number | null;
   total_size_bytes: string | number | null;
   thumbnail_count: string | number | null;
@@ -172,6 +177,22 @@ function getFileTypeLabel(
   return "파일";
 }
 
+
+function getAttachmentDocumentDesignCounts(input: {
+  attachmentType?: string | null | undefined;
+  fileTypeLabel?: string | null | undefined;
+}): { documentCount: number; designCount: number } {
+  if (input.attachmentType === "design") {
+    return { documentCount: 0, designCount: 1 };
+  }
+  if (input.attachmentType === "file") {
+    return { documentCount: 1, designCount: 0 };
+  }
+  return input.fileTypeLabel === "이미지"
+    ? { documentCount: 0, designCount: 1 }
+    : { documentCount: 1, designCount: 0 };
+}
+
 function getPurgeStatusLabel(
   status: string | null | undefined,
   error: string | null | undefined,
@@ -220,6 +241,10 @@ function mapFileCandidateRow(
     typeof row.thumbnail_key === "string" &&
     row.thumbnail_key.trim().length > 0;
   const fileTypeLabel = getFileTypeLabel(row.mime_type, fileName);
+  const { documentCount, designCount } = getAttachmentDocumentDesignCounts({
+    attachmentType: row.attachment_type,
+    fileTypeLabel,
+  });
   const isImage = fileTypeLabel === "이미지";
   const previewUrl = hasThumbnail
     ? buildFileProxyUrl(row.thumbnail_key)
@@ -269,6 +294,8 @@ function mapFileCandidateRow(
     ),
     lastPurgeError: row.last_purge_error,
     attachmentCount: 1,
+    documentCount,
+    designCount,
     memoCount: 0,
   };
 }
@@ -279,12 +306,14 @@ function mapWorkOrderCandidateRow(
   const title = row.title || "작업지시서명 없음";
   const totalSizeBytes = toNumber(row.total_size_bytes);
   const attachmentCount = toNumber(row.attachment_count);
+  const documentCount = toNumber(row.document_count);
+  const designCount = toNumber(row.design_count);
   const memoCount = toNumber(row.memo_count);
   const thumbnailCount = toNumber(row.thumbnail_count);
   const previewModeLabel =
     attachmentCount > 0 || memoCount > 0
-      ? `첨부 ${attachmentCount}개 · 메모 ${memoCount}개`
-      : "연결 항목 없음";
+      ? `문서 ${documentCount}개 · 디자인 ${designCount}개 · 메모 ${memoCount}개`
+      : "문서/디자인/메모 없음";
 
   return {
     trashItemId: `${WORKORDER_CANDIDATE_PREFIX}${row.id}`,
@@ -314,6 +343,8 @@ function mapWorkOrderCandidateRow(
     purgeStatusLabel: getPurgeStatusLabel(row.purge_status, null, "workorder"),
     lastPurgeError: null,
     attachmentCount,
+    documentCount,
+    designCount,
     memoCount,
   };
 }
@@ -337,9 +368,11 @@ async function listFilePurgeCandidateRows(
             t.deleted_at,
             (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) AS purge_due_at,
             t.purge_status,
-            t.last_purge_error
+            t.last_purge_error,
+            a.type AS attachment_type
        FROM attachment_trash_items t
        LEFT JOIN spec_sheets s ON s.id = t.order_id
+       LEFT JOIN attachments a ON a.id = t.attachment_id
       WHERE t.restored_at IS NULL
         AND t.purged_at IS NULL
         AND (
@@ -395,15 +428,20 @@ async function listWorkOrderPurgeCandidateRows(input: {
             (COALESCE(s.deleted_at, now()) + ($2::integer * interval '1 day')) AS purge_due_at,
             COALESCE(NULLIF(s.purge_status, ${ADMIN_WORKORDER_PURGE_STATUS_SQL.none}), ${ADMIN_WORKORDER_PURGE_STATUS_SQL.pending}) AS purge_status,
             COALESCE(bundle_files.attachment_count, 0)::text AS attachment_count,
+            COALESCE(bundle_files.document_count, 0)::text AS document_count,
+            COALESCE(bundle_files.design_count, 0)::text AS design_count,
             COALESCE(memo_summary.memo_count, 0)::text AS memo_count,
             COALESCE(bundle_files.total_size_bytes, 0)::text AS total_size_bytes,
             COALESCE(bundle_files.thumbnail_count, 0)::text AS thumbnail_count
        FROM spec_sheets s
        LEFT JOIN LATERAL (
          SELECT COUNT(DISTINCT t.attachment_id)::integer AS attachment_count,
+                COUNT(DISTINCT t.attachment_id) FILTER (WHERE COALESCE(a.type, 'file') <> 'design')::integer AS document_count,
+                COUNT(DISTINCT t.attachment_id) FILTER (WHERE a.type = 'design')::integer AS design_count,
                 COALESCE(SUM(COALESCE(t.size_bytes, 0)), 0)::bigint AS total_size_bytes,
                 COUNT(*) FILTER (WHERE t.thumbnail_key IS NOT NULL AND t.thumbnail_key <> '')::integer AS thumbnail_count
            FROM attachment_trash_items t
+          LEFT JOIN attachments a ON a.id = t.attachment_id
           WHERE t.order_id = s.id
             AND ${bundleFilePredicate}
             AND t.restored_at IS NULL
@@ -579,9 +617,11 @@ async function listFilePurgeRunCandidates(
               t.deleted_at,
               (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) AS purge_due_at,
               t.purge_status,
-              t.last_purge_error
+              t.last_purge_error,
+              a.type AS attachment_type
          FROM attachment_trash_items t
          LEFT JOIN spec_sheets s ON s.id = t.order_id
+         LEFT JOIN attachments a ON a.id = t.attachment_id
         WHERE t.id = ANY($1::text[])
           AND t.restored_at IS NULL
           AND t.purged_at IS NULL
@@ -705,9 +745,11 @@ async function listWorkOrderBundleFileCandidates(
             t.deleted_at,
             (COALESCE(t.deleted_at, now()) + ($2::integer * interval '1 day')) AS purge_due_at,
             t.purge_status,
-            t.last_purge_error
+            t.last_purge_error,
+            a.type AS attachment_type
        FROM attachment_trash_items t
        LEFT JOIN spec_sheets s ON s.id = t.order_id
+       LEFT JOIN attachments a ON a.id = t.attachment_id
       WHERE t.order_id = $1
         AND ${bundleFilePredicate}
         AND t.restored_at IS NULL

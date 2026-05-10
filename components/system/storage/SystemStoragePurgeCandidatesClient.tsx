@@ -286,7 +286,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
                   <p className="font-semibold text-stone-800">{candidate.fileName}</p>
                   <p className="mt-1 text-xs text-stone-500">
                     {candidate.candidateKind === "workorder"
-                      ? buildSystemStorageWorkOrderBundleMetaLabel({ attachmentCount: candidate.attachmentCount, memoCount: candidate.memoCount })
+                      ? buildSystemStorageWorkOrderBundleMetaLabel({ documentCount: candidate.documentCount, designCount: candidate.designCount, memoCount: candidate.memoCount })
                       : `${candidate.fileTypeLabel} · ${candidate.thumbnailCountLabel}`}
                   </p>
                 </div>
