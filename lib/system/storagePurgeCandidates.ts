@@ -768,16 +768,14 @@ async function listWorkOrderBundleFileCandidates(
   return result.rows;
 }
 
-async function purgeWorkOrderBundleFiles(input: {
+async function deleteWorkOrderBundleFileObjects(input: {
   workOrderId: string;
-  actorId: string | null | undefined;
 }): Promise<{
-  purgedCount: number;
+  bundleFiles: PurgeCandidateRow[];
   failedCount: number;
   firstErrorMessage: string | null;
 }> {
   const bundleFiles = await listWorkOrderBundleFileCandidates(input.workOrderId);
-  let purgedCount = 0;
   let failedCount = 0;
   let firstErrorMessage: string | null = null;
 
@@ -788,12 +786,6 @@ async function purgeWorkOrderBundleFiles(input: {
         await deleteR2ObjectViaWorker({ key });
         deleteCachedR2UrlsByKey(key);
       }
-
-      const result = await markAttachmentTrashItemsPurged({
-        trashItemIds: [bundleFile.id],
-        actorId: input.actorId ?? ADMIN_FILE_TRASH_ACTOR_IDS.systemStoragePurge,
-      });
-      purgedCount += result.affectedCount;
     } catch (error) {
       const errorMessage = getPurgeErrorMessage(error);
       failedCount += 1;
@@ -805,7 +797,84 @@ async function purgeWorkOrderBundleFiles(input: {
     }
   }
 
-  return { purgedCount, failedCount, firstErrorMessage };
+  return { bundleFiles, failedCount, firstErrorMessage };
+}
+
+async function markSystemWorkOrderPurgeFailed(input: {
+  workOrderId: string;
+  errorMessage: string;
+}): Promise<void> {
+  await queryDb(
+    `UPDATE spec_sheets
+        SET purge_status = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.failed},
+            updated_at = now()
+      WHERE id = $1
+        AND COALESCE(delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
+        AND purged_at IS NULL`,
+    [input.workOrderId],
+  );
+}
+
+async function markSystemWorkOrderBundlePurged(input: {
+  workOrderId: string;
+  bundleFileTrashIds: string[];
+  actorId: string | null | undefined;
+}): Promise<number> {
+  const actorId = input.actorId ?? ADMIN_FILE_TRASH_ACTOR_IDS.systemStoragePurge;
+  const memoBundlePredicate = getWorkOrderBundleFilePredicate("m");
+
+  const result = await queryDb<{ affected_count: string | number }>(
+    `WITH target_workorder AS (
+       SELECT id
+         FROM spec_sheets
+        WHERE id = $1
+          AND (deleted_at IS NOT NULL OR COALESCE(is_active, true) = false)
+          AND COALESCE(delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
+          AND purged_at IS NULL
+     ), marked_files AS (
+       UPDATE attachment_trash_items
+          SET purged_at = now(),
+              purge_status = ${ADMIN_FILE_TRASH_PURGE_STATUS_SQL.purged},
+              last_purge_attempt_at = now(),
+              last_purge_error = NULL,
+              updated_at = now()
+        WHERE id = ANY($3::text[])
+          AND restored_at IS NULL
+          AND purged_at IS NULL
+          AND purge_status IN (${ADMIN_FILE_TRASH_SYSTEM_CANDIDATE_PURGE_STATUS_SQL_LIST})
+        RETURNING id
+     ), marked_memos AS (
+       UPDATE memos m
+          SET is_active = false,
+              delete_status = ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged},
+              purge_status = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.purged},
+              purge_requested_at = COALESCE(purge_requested_at, now()),
+              purged_at = now(),
+              purged_by = $2,
+              updated_at = now()
+        WHERE m.order_id = $1
+          AND ${memoBundlePredicate}
+          AND (m.delete_parent_id = $1 OR m.delete_batch_id = $1)
+          AND COALESCE(m.delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
+        RETURNING id
+     ), marked_workorder AS (
+       UPDATE spec_sheets
+          SET is_active = false,
+              delete_status = ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged},
+              purge_status = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.purged},
+              purge_requested_at = COALESCE(purge_requested_at, now()),
+              purged_at = now(),
+              purged_by = $2,
+              updated_at = now()
+        WHERE id IN (SELECT id FROM target_workorder)
+        RETURNING id
+     )
+     SELECT COUNT(*)::text AS affected_count
+       FROM marked_workorder`,
+    [input.workOrderId, actorId, input.bundleFileTrashIds],
+  );
+
+  return toNumber(result.rows[0]?.affected_count ?? 0);
 }
 
 async function purgeSystemWorkOrderCandidate(
@@ -813,61 +882,35 @@ async function purgeSystemWorkOrderCandidate(
   actorId: string | null | undefined,
 ): Promise<SystemStoragePurgeRunItemResult> {
   try {
-    const result = await queryDb<{ affected_count: string | number }>(
-      `WITH target_workorder AS (
-         SELECT id
-           FROM spec_sheets
-          WHERE id = $1
-            AND (deleted_at IS NOT NULL OR COALESCE(is_active, true) = false)
-            AND COALESCE(delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
-            AND purged_at IS NULL
-       ), marked_workorder AS (
-         UPDATE spec_sheets
-            SET is_active = false,
-                delete_status = ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged},
-                purge_status = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.purged},
-                purge_requested_at = COALESCE(purge_requested_at, now()),
-                purged_at = now(),
-                purged_by = $2,
-                updated_at = now()
-          WHERE id IN (SELECT id FROM target_workorder)
-          RETURNING id
-       ), marked_memos AS (
-         UPDATE memos
-            SET is_active = false,
-                delete_status = ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged},
-                purge_status = ${ADMIN_WORKORDER_PURGE_STATUS_SQL.purged},
-                purge_requested_at = COALESCE(purge_requested_at, now()),
-                purged_at = now(),
-                purged_by = $2,
-                updated_at = now()
-          WHERE order_id = $1
-            AND COALESCE(delete_status, ${ADMIN_WORKORDER_DELETE_STATUS_SQL.active}) <> ${ADMIN_WORKORDER_DELETE_STATUS_SQL.purged}
-          RETURNING id
-       )
-       SELECT COUNT(*)::text AS affected_count
-         FROM marked_workorder`,
-      [candidate.id, actorId ?? ADMIN_FILE_TRASH_ACTOR_IDS.systemStoragePurge],
-    );
-
-    const affectedCount = toNumber(result.rows[0]?.affected_count ?? 0);
-    if (affectedCount === 0) {
-      throw new Error("WORKORDER_PURGE_CANDIDATE_NOT_FOUND");
-    }
-
-    const bundleFileResult = await purgeWorkOrderBundleFiles({
+    const bundleFileResult = await deleteWorkOrderBundleFileObjects({
       workOrderId: candidate.id,
-      actorId,
     });
+
     if (bundleFileResult.failedCount > 0) {
+      const errorMessage = `WORKORDER_BUNDLE_R2_DELETE_FAILED:${bundleFileResult.firstErrorMessage ?? "UNKNOWN_ERROR"}`;
+      await markSystemWorkOrderPurgeFailed({
+        workOrderId: candidate.id,
+        errorMessage,
+      });
+
       return {
         trashItemId: `${WORKORDER_CANDIDATE_PREFIX}${candidate.id}`,
         attachmentId: null,
         storageKey: null,
         thumbnailKey: null,
         status: "failed",
-        errorMessage: `WORKORDER_PURGED_BUT_BUNDLE_R2_FAILED:${bundleFileResult.firstErrorMessage ?? "UNKNOWN_ERROR"}`,
+        errorMessage,
       };
+    }
+
+    const affectedCount = await markSystemWorkOrderBundlePurged({
+      workOrderId: candidate.id,
+      bundleFileTrashIds: bundleFileResult.bundleFiles.map((bundleFile) => bundleFile.id),
+      actorId,
+    });
+
+    if (affectedCount === 0) {
+      throw new Error("WORKORDER_PURGE_CANDIDATE_NOT_FOUND");
     }
 
     return {
@@ -878,13 +921,19 @@ async function purgeSystemWorkOrderCandidate(
       status: "purged",
     };
   } catch (error) {
+    const errorMessage = getPurgeErrorMessage(error);
+    await markSystemWorkOrderPurgeFailed({
+      workOrderId: candidate.id,
+      errorMessage,
+    }).catch(() => undefined);
+
     return {
       trashItemId: `${WORKORDER_CANDIDATE_PREFIX}${candidate.id}`,
       attachmentId: null,
       storageKey: null,
       thumbnailKey: null,
       status: "failed",
-      errorMessage: getPurgeErrorMessage(error),
+      errorMessage,
     };
   }
 }
