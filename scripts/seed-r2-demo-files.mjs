@@ -86,6 +86,8 @@ const manifestDir = path.resolve(args.get("manifest-dir") || DEFAULT_MANIFEST_DI
 const dryRun = flags.has("dry-run");
 const confirmUpload = flags.has("confirm-upload");
 const includeDeleted = flags.has("include-deleted");
+const workorderIdFilter = args.get("workorder-id") || null;
+const onlyStatsFixtures = flags.has("only-stats-fixtures");
 const preset = PRESETS[presetName];
 
 if (!preset) {
@@ -153,24 +155,36 @@ async function readAttachmentRows() {
     const result = await client.query(
       `
         SELECT
-          id,
-          order_id,
-          type,
-          storage_key,
-          thumbnail_key,
-          original_name,
-          mime_type,
-          COALESCE(size_bytes, 0)::bigint AS size_bytes,
-          is_active,
-          deleted_at,
-          created_at
-        FROM attachments
-        WHERE id LIKE 'realistic-attachment-%'
-          AND storage_key IS NOT NULL
-          AND storage_key LIKE 'workorders/%'
-          ${includeDeleted ? "" : "AND deleted_at IS NULL AND COALESCE(is_active, true) = true"}
-        ORDER BY created_at ASC, id ASC
+          a.id,
+          a.order_id,
+          s.title AS order_title,
+          s.status AS order_status,
+          COALESCE(s.reorder_round, 0)::integer AS reorder_round,
+          a.type,
+          a.storage_key,
+          a.thumbnail_key,
+          a.original_name,
+          a.mime_type,
+          COALESCE(a.size_bytes, 0)::bigint AS size_bytes,
+          a.is_active,
+          a.deleted_at,
+          a.created_at
+        FROM attachments a
+        LEFT JOIN spec_sheets s ON s.id = a.order_id
+        WHERE a.id LIKE 'realistic-attachment-%'
+          AND a.storage_key IS NOT NULL
+          AND a.storage_key LIKE 'workorders/%'
+          AND a.storage_key LIKE ('workorders/' || a.order_id || '/%')
+          ${workorderIdFilter ? "AND a.order_id = $1" : ""}
+          ${onlyStatsFixtures ? "AND a.id LIKE 'realistic-attachment-9%'" : ""}
+          ${includeDeleted ? "" : "AND a.deleted_at IS NULL AND COALESCE(a.is_active, true) = true"}
+        ORDER BY
+          CASE WHEN a.id LIKE 'realistic-attachment-9%' THEN 0 ELSE 1 END,
+          s.created_at DESC NULLS LAST,
+          a.created_at ASC,
+          a.id ASC
       `,
+      workorderIdFilter ? [workorderIdFilter] : [],
     );
     return result.rows.map((row) => ({
       ...row,
@@ -234,6 +248,9 @@ function createCandidateItems(rows) {
     items.push({
       attachmentId: row.id,
       orderId: row.order_id,
+      orderTitle: row.order_title || null,
+      orderStatus: row.order_status || null,
+      reorderRound: Number(row.reorder_round || 0),
       key,
       localPath: path.join(outDir, key),
       fileName: row.original_name,
@@ -248,6 +265,9 @@ function createCandidateItems(rows) {
       items.push({
         attachmentId: `${row.id}#thumbnail`,
         orderId: row.order_id,
+        orderTitle: row.order_title || null,
+        orderStatus: row.order_status || null,
+        reorderRound: Number(row.reorder_round || 0),
         key: thumbKey,
         localPath: path.join(outDir, thumbKey),
         fileName: `${row.original_name || row.id}.thumbnail.png`,
@@ -334,6 +354,9 @@ async function writeManifest(items, status) {
     items: items.map((item) => ({
       attachmentId: item.attachmentId,
       orderId: item.orderId,
+      orderTitle: item.orderTitle,
+      orderStatus: item.orderStatus,
+      reorderRound: item.reorderRound,
       key: item.key,
       localPath: path.relative(PROJECT_ROOT, item.localPath),
       contentType: getUploadContentType(item),
@@ -458,6 +481,7 @@ async function verifyFiles(items) {
 async function main() {
   console.log(`[INFO] PeaceByPiece R2 demo files helper`);
   console.log(`[INFO] preset=${preset.label}, mode=${mode}, dryRun=${dryRun}`);
+  console.log(`[INFO] workorderId=${workorderIdFilter || "(all)"}, onlyStatsFixtures=${onlyStatsFixtures}`);
   console.log(`[INFO] outDir=${outDir}`);
 
   const rows = await readAttachmentRows();

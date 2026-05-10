@@ -1,4 +1,4 @@
--- PeaceByPiece 0.9.2227 / 0.9.224341 보정
+-- PeaceByPiece 0.9.2227 / 0.9.224342 보정
 -- 6개월 realistic 통계/작업지시서 개발 seed 데이터
 --
 -- 실행 전제:
@@ -10,12 +10,13 @@
 -- - 고객관리자 통계 화면(/admin/dashboard)에서 실제 DB 집계처럼 보이는 데이터 확인
 -- - 0.9.22434 통계 화면 기준(발주수량 TOP5, 리오더 차수 TOP5, 불량 작업지시서 TOP5)을 검증하는 고정 케이스 포함
 -- - 작업지시서 약 100개 + 통계 검증 고정 케이스, 협력업체/공장/원단/부자재/외주, 리오더/납기/검수 후보 데이터 구성
--- - R2 더미 업로드 0.9.2228에서 사용할 attachments metadata와 storage_key 선배치
+-- - R2 더미 업로드 스크립트에서 사용할 attachments metadata와 storage_key 선배치
+-- - 0.9.224342 기준 DB attachment metadata와 R2 object가 같은 작업지시서 storage_key로 매칭되도록 보정
 --
 -- 주의:
 -- - 운영 DB 실행 금지
 -- - 개발/샘플 고객사(company-sample-customer) 기준
--- - 실제 R2 파일은 아직 업로드하지 않는다. 0.9.2228의 R2 더미 업로드 스크립트에서 storage_key에 맞춰 업로드한다.
+-- - 실제 R2 파일은 아직 업로드하지 않는다. scripts/seed-r2-demo-files.mjs가 attachments.storage_key에 맞춰 업로드한다.
 
 BEGIN;
 
@@ -389,18 +390,18 @@ SELECT
   CASE
     WHEN slot = 1 THEN 'workorders/' || w.spec_id || '/design/realistic-attachment-' || lpad(w.idx::text, 3, '0') || '-' || slot || '.png'
     WHEN slot = 3 THEN 'workorders/' || w.spec_id || '/memos/realistic-attachment-' || lpad(w.idx::text, 3, '0') || '-' || slot || '.png'
-    WHEN slot = 4 THEN 'workorders/' || w.spec_id || '/attachments/realistic-attachment-' || lpad(w.idx::text, 3, '0') || '-' || slot || '.zip'
+    WHEN slot = 4 THEN 'workorders/' || w.spec_id || '/attachments/realistic-attachment-' || lpad(w.idx::text, 3, '0') || '-' || slot || '.pdf'
     ELSE 'workorders/' || w.spec_id || '/attachments/realistic-attachment-' || lpad(w.idx::text, 3, '0') || '-' || slot || '.pdf'
   END,
   CASE
     WHEN slot = 1 THEN w.product_label || '_디자인_' || lpad(w.idx::text, 3, '0') || '.png'
     WHEN slot = 3 THEN w.product_label || '_메모이미지_' || lpad(w.idx::text, 3, '0') || '.png'
-    WHEN slot = 4 THEN w.product_label || '_대용량자료_' || lpad(w.idx::text, 3, '0') || '.zip'
+    WHEN slot = 4 THEN w.product_label || '_대용량자료_' || lpad(w.idx::text, 3, '0') || '.pdf'
     ELSE w.product_label || '_작업자료_' || lpad(w.idx::text, 3, '0') || '.pdf'
   END,
   CASE
     WHEN slot IN (1, 3) THEN 'image/png'
-    WHEN slot = 4 THEN 'application/zip'
+    WHEN slot = 4 THEN 'application/pdf'
     ELSE 'application/pdf'
   END,
   CASE
@@ -572,6 +573,8 @@ SELECT
   (SELECT COUNT(*) FROM orders WHERE id LIKE 'realistic-order-%') AS order_count,
   (SELECT COUNT(*) FROM partners WHERE id LIKE 'realistic-partner-%') AS partner_count,
   (SELECT COUNT(*) FROM attachments WHERE id LIKE 'realistic-attachment-%') AS attachment_metadata_count,
+  (SELECT COUNT(*) FROM attachments WHERE id LIKE 'realistic-attachment-9%') AS stats_fixture_attachment_count,
+  (SELECT COUNT(*) FROM attachments WHERE id LIKE 'realistic-attachment-%' AND storage_key LIKE ('workorders/' || order_id || '/%')) AS matched_storage_key_count,
   (SELECT ROUND(COALESCE(SUM(size_bytes), 0) / 1024.0 / 1024.0, 2) FROM attachments WHERE id LIKE 'realistic-attachment-%') AS attachment_metadata_mb,
   (SELECT COUNT(*) FROM attachment_trash_items WHERE id LIKE 'realistic-trash-%') AS trash_item_count,
   (SELECT COUNT(*) FROM memos WHERE id LIKE 'realistic-memo-%') AS memo_count;
