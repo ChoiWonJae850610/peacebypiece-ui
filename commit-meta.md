@@ -1,18 +1,18 @@
 Version :
-0.9.22439
+0.9.224391
 
 Summary :
-작업지시서와 저장소 안정 체크포인트 문서화
+관리자와 멤버 IA 및 권한 기반 카드 구조 설계
 
 Description :
-작업지시서 lazy load, 고객관리자 저장소/휴지통, 시스템관리자 실제 삭제 후보 흐름을 1차 안정 기준점으로 문서화했다. 이후 관리자 화면 구조 개편을 위한 IA 로드맵도 별도 문서로 정리하고 APP_VERSION을 0.9.22439로 갱신했다.
+고객관리자 좌측 패널 완전 삭제, 카드형 홈 전환, 작업지시서 홈 복귀 버튼, 일반 멤버 메인화면 필요성, 권한 기반 카드 노출 원칙을 설계 문서로 확정했다. 실제 권한 DB와 권한 관리 UI는 후순위로 분리했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/peacebypiece-stability-checkpoint-0.9.22439.md
-- docs/admin-ia-roadmap-0.9.22439.md
+- docs/admin-workspace-ia-decision-0.9.224391.md
+- docs/admin-workspace-permission-card-roadmap-0.9.224391.md
 
 삭제 파일 목록 :
 없음
