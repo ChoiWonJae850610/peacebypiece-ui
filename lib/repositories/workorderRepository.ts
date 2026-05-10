@@ -12,6 +12,7 @@ export type InitialWorkorderRepositoryState = WorkorderWorkspaceState;
 
 export type WorkorderRepositoryCapabilities = {
   loadWorkspaceState: boolean;
+  loadWorkOrderDetail: boolean;
   saveWorkspaceState: boolean;
   saveWorkspaceSession: boolean;
   createWorkOrder: boolean;
@@ -47,6 +48,8 @@ export type WorkorderRepository = {
   persistStateAsync(payload: PersistedWorkOrderState): Promise<void>;
   loadWorkspaceState(): WorkorderWorkspaceState | null;
   loadWorkspaceStateAsync(): Promise<WorkorderWorkspaceState | null>;
+  loadWorkOrderDetail(workOrderId: string): WorkOrder;
+  loadWorkOrderDetailAsync(workOrderId: string): Promise<WorkOrder>;
   saveWorkspaceState(payload: WorkorderWorkspaceState): WorkorderWorkspaceState;
   saveWorkspaceStateAsync(payload: WorkorderWorkspaceState): Promise<WorkorderWorkspaceState>;
   saveWorkspaceSession(payload: WorkorderWorkspaceSession): WorkorderWorkspaceSession;

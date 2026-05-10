@@ -690,6 +690,12 @@ export async function findAllDbWorkOrders(): Promise<WorkOrder[]> {
   return rows.map(mapSpecSheetRowToWorkOrder);
 }
 
+export async function findDbWorkOrderById(workOrderId: string): Promise<WorkOrder | null> {
+  const rows = await loadActiveSpecSheetRows();
+  const row = rows.find((item) => item.id === workOrderId) ?? null;
+  return row ? mapSpecSheetRowToWorkOrder(row) : null;
+}
+
 export async function createDbWorkOrder(
   workOrder: WorkOrder,
 ): Promise<WorkOrder> {

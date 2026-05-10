@@ -129,6 +129,9 @@ export type WorkOrder = {
   workflowState: WorkflowState;
   lastSavedAt: string;
   factoryOrderRequest?: FactoryOrderRequest | null;
+  hasDetailSnapshot?: boolean;
+  summaryAttachmentCount?: number;
+  summaryMemoThreadCount?: number;
 };
 
 export type WorkOrderListItem = Pick<

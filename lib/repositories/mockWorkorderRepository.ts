@@ -139,6 +139,15 @@ function createMockWorkorderRepository(adapter: WorkorderRepositoryAdapter = moc
   },
   loadWorkspaceState: loadPersistedWorkspaceState,
   loadWorkspaceStateAsync: async () => adapter.loadWorkspaceState?.() ?? loadPersistedWorkspaceState(),
+  loadWorkOrderDetail: (workOrderId) => {
+    const current = getCurrentWorkspaceState();
+    return cloneValue(current.workOrders.find((item) => item.id === workOrderId) ?? createInitialRepositoryState().workOrders[0]!);
+  },
+  loadWorkOrderDetailAsync: async (workOrderId) => {
+    if (adapter.loadWorkOrderDetail) return adapter.loadWorkOrderDetail(workOrderId);
+    const current = getCurrentWorkspaceState();
+    return cloneValue(current.workOrders.find((item) => item.id === workOrderId) ?? createInitialRepositoryState().workOrders[0]!);
+  },
   saveWorkspaceState: saveWorkspaceStateInternal,
   saveWorkspaceStateAsync: async (payload) => adapter.saveWorkspaceState?.(payload) ?? saveWorkspaceStateInternal(payload),
   saveWorkspaceSession: saveWorkspaceSessionInternal,

@@ -40,6 +40,13 @@ export function createDbWorkorderRepository(
       }
       return fallbackRepository.loadWorkspaceStateAsync();
     },
+    loadWorkOrderDetail: (workOrderId) => fallbackRepository.loadWorkOrderDetail(workOrderId),
+    loadWorkOrderDetailAsync: async (workOrderId) => {
+      if (adapter?.loadWorkOrderDetail) {
+        return adapter.loadWorkOrderDetail(workOrderId);
+      }
+      return fallbackRepository.loadWorkOrderDetailAsync(workOrderId);
+    },
     saveWorkspaceState: (payload) => fallbackRepository.saveWorkspaceState(payload),
     saveWorkspaceStateAsync: async (payload) => {
       if (!adapter?.saveWorkspaceState) return fallbackRepository.saveWorkspaceStateAsync(payload);
@@ -91,6 +98,7 @@ export function createDbWorkorderRepository(
 export function createUnconfiguredDbWorkorderRepository(fallbackRepository: WorkorderRepository): WorkorderRepository {
   const repository = createDbWorkorderRepository(fallbackRepository, {
     loadWorkspaceState: async () => fallbackRepository.loadWorkspaceStateAsync(),
+    loadWorkOrderDetail: async (workOrderId) => fallbackRepository.loadWorkOrderDetailAsync(workOrderId),
     saveWorkspaceState: async () => {
       throw createNotConfiguredError("saveWorkspaceState");
     },

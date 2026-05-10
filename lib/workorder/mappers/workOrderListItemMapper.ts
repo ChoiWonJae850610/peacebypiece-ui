@@ -5,6 +5,9 @@ import type { WorkOrder, WorkOrderListItem } from "@/types/workorder";
 
 export function createWorkOrderListItem(workOrder: WorkOrder): WorkOrderListItem {
   const officialAttachments = getOfficialAttachments(workOrder.attachments ?? []);
+  const filesCount = workOrder.hasDetailSnapshot === false
+    ? Math.max(0, workOrder.summaryAttachmentCount ?? officialAttachments.length)
+    : officialAttachments.length;
   const submissionSnapshot = getOrderSubmissionSnapshot(workOrder);
 
   return {
@@ -23,6 +26,6 @@ export function createWorkOrderListItem(workOrder: WorkOrder): WorkOrderListItem
     dueDate: submissionSnapshot.dueDate || workOrder.dueDate,
     inventoryStatus: workOrder.inventoryStatus,
     attachments: officialAttachments,
-    filesCount: officialAttachments.length,
+    filesCount,
   };
 }

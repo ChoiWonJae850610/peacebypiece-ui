@@ -3,13 +3,25 @@ import { mockWorkorderAdapter } from "@/lib/repositories/mockWorkorderRepository
 import { loadPersistedWorkspaceState } from "@/lib/repositories/workorderPersistence";
 import type { WorkorderRepositoryAdapter } from "@/lib/repositories/workorderRepositoryAdapter";
 import { setDbConnectionStatus, type DbConnectionStateCode } from "@/lib/repositories/dbConnectionStatusStore";
-import type { MemoThread, UserProfile, WorkOrder } from "@/types/workorder";
+import type { MemoThread, UserProfile, WorkOrder, WorkOrderSummary } from "@/types/workorder";
 
 type DbApiErrorBody = {
   message?: string;
   code?: string;
 };
 
+
+type WorkOrderSummaryLoadResponse = {
+  workOrders?: WorkOrderSummary[];
+  error?: string;
+  message?: string;
+};
+
+type WorkOrderDetailLoadResponse = {
+  workOrder?: WorkOrder;
+  error?: string;
+  message?: string;
+};
 
 type MemoLoadResponse = {
   memoThreads?: MemoThread[];
@@ -63,6 +75,87 @@ function mergeMemoThreads(payloadThreads: MemoThread[] | undefined, dbThreads: M
   }
 
   return Array.from(merged.values());
+}
+
+function createSummaryWorkOrder(summary: WorkOrderSummary): WorkOrder {
+  return {
+    id: summary.id,
+    title: summary.title,
+    displayTitle: summary.displayTitle,
+    baseTitle: summary.baseTitle,
+    workOrderKind: summary.workOrderKind,
+    isDefectOrder: summary.isDefectOrder,
+    reorderGroupId: summary.reorderGroupId,
+    reorderRound: summary.reorderRound,
+    parentSpecSheetId: summary.parentSpecSheetId,
+    category1: summary.category1,
+    category2: summary.category2,
+    category3: summary.category3,
+    category1Id: summary.category1Id,
+    category2Id: summary.category2Id,
+    category3Id: summary.category3Id,
+    season: summary.season,
+    priority: summary.priority,
+    vendor: summary.vendor,
+    manager: summary.manager,
+    managerId: summary.managerId,
+    createdById: summary.createdById,
+    createdByRole: summary.createdByRole,
+    dueDate: summary.dueDate,
+    quantity: summary.quantity,
+    laborCost: 0,
+    lossCost: 0,
+    orderEntries: [],
+    inventoryQuantity: summary.inventoryQuantity,
+    inventoryStatus: summary.inventoryStatus,
+    memo: "",
+    materials: [],
+    outsourcing: [],
+    attachments: [],
+    memoThreads: [],
+    workflowState: summary.workflowState,
+    lastSavedAt: summary.lastSavedAt,
+    factoryOrderRequest: null,
+    hasDetailSnapshot: false,
+    summaryAttachmentCount: summary.attachmentCount,
+    summaryMemoThreadCount: summary.memoThreadCount,
+  };
+}
+
+function mergeDetailedWorkOrder(workOrders: WorkOrder[], detail: WorkOrder): WorkOrder[] {
+  return workOrders.map((item) => (item.id === detail.id ? { ...item, ...detail, hasDetailSnapshot: true } : item));
+}
+
+async function loadWorkOrderSummariesFromApi(): Promise<WorkOrder[]> {
+  const response = await fetch("/api/workorders/summary", {
+    method: "GET",
+    headers: { Accept: "application/json" },
+    cache: "no-store",
+  });
+
+  const result = await parseResponse<WorkOrderSummaryLoadResponse>(response);
+  return (result.workOrders ?? []).map(createSummaryWorkOrder);
+}
+
+async function loadWorkOrderDetailFromApi(workOrderId: string): Promise<WorkOrder> {
+  const response = await fetch(`/api/workorders/${encodeURIComponent(workOrderId)}`, {
+    method: "GET",
+    headers: { Accept: "application/json" },
+    cache: "no-store",
+  });
+
+  const result = await parseResponse<WorkOrderDetailLoadResponse>(response);
+
+  if (!result.workOrder) {
+    const emptyBodyError = new Error("DB work order detail response is empty.") as Error & { code?: string };
+    emptyBodyError.code = "DB_EMPTY_RESPONSE";
+    throw emptyBodyError;
+  }
+
+  return {
+    ...result.workOrder,
+    hasDetailSnapshot: true,
+  };
 }
 
 async function loadMemoThreadsForWorkOrder(workOrderId: string): Promise<MemoThread[] | null> {
@@ -232,25 +325,20 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
   return {
     loadWorkspaceState: async () => {
       try {
-        const response = await fetch("/api/workorders", {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-          },
-          cache: "no-store",
-        });
-
-        const { workOrders: loadedWorkOrders } = await parseResponse<{ workOrders: WorkOrder[] }>(response);
-        const workOrders = await hydrateWorkOrdersWithMemoThreads(loadedWorkOrders);
+        const summaryWorkOrders = await loadWorkOrderSummariesFromApi();
         const seededState = createInitialSeededWorkorderState();
         const persistedState = loadPersistedWorkspaceState();
         const dbUsers = await loadUserProfilesForWorkspace();
         const users = dbUsers ?? persistedState?.users ?? seededState.users;
         const selectedId = resolveSelectedId(
-          workOrders,
+          summaryWorkOrders,
           persistedState?.selectedId,
           seededState.selectedId,
         );
+        const selectedDetail = selectedId ? await loadWorkOrderDetailFromApi(selectedId) : null;
+        const workOrders = selectedDetail
+          ? mergeDetailedWorkOrder(summaryWorkOrders, selectedDetail)
+          : summaryWorkOrders;
         const currentUserId = resolveUserId(users, persistedState?.currentUserId, seededState.currentUserId);
         const permissionTargetUserId = resolveUserId(users, persistedState?.permissionTargetUserId, currentUserId);
 
@@ -271,6 +359,20 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
 
         reportDbStatus({ source: "workspace-load", connected: false, fallbackActive: true, code: toStatusCode(error), message: error instanceof Error ? error.message : null });
         return loadLocalWorkspaceState();
+      }
+    },
+    loadWorkOrderDetail: async (workOrderId) => {
+      try {
+        return await loadWorkOrderDetailFromApi(workOrderId);
+      } catch (error) {
+        if (!shouldUseLocalFallback(error)) {
+          throw error;
+        }
+
+        reportDbStatus({ source: "workspace-load", connected: false, fallbackActive: true, code: toStatusCode(error), message: error instanceof Error ? error.message : null });
+        const localState = (await loadLocalWorkspaceState()) ?? createInitialSeededWorkorderState();
+        const localWorkOrder = localState.workOrders.find((item) => item.id === workOrderId) ?? localState.workOrders[0];
+        return { ...localWorkOrder, hasDetailSnapshot: true };
       }
     },
     createWorkOrder: async (workOrder) => {

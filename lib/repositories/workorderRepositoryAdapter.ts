@@ -3,6 +3,7 @@ import type { WorkorderWorkspaceSession, WorkorderWorkspaceState } from "@/lib/r
 
 export type WorkorderRepositoryAdapter = {
   loadWorkspaceState?(): Promise<WorkorderWorkspaceState | null>;
+  loadWorkOrderDetail?(workOrderId: string): Promise<WorkOrder>;
   saveWorkspaceState?(payload: WorkorderWorkspaceState): Promise<WorkorderWorkspaceState>;
   saveWorkspaceSession?(payload: WorkorderWorkspaceSession): Promise<WorkorderWorkspaceSession>;
   createWorkOrder?(workOrder: WorkOrder): Promise<WorkOrder>;

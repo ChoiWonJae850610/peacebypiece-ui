@@ -5,6 +5,7 @@ import type { WorkorderRepositoryCapabilities, WorkorderRepositoryInfo } from "@
 export function createFullWorkorderRepositoryCapabilities(): WorkorderRepositoryCapabilities {
   return {
     loadWorkspaceState: true,
+    loadWorkOrderDetail: true,
     saveWorkspaceState: true,
     saveWorkspaceSession: true,
     createWorkOrder: true,
@@ -20,6 +21,7 @@ export function createFullWorkorderRepositoryCapabilities(): WorkorderRepository
 export function createAdapterBackedWorkorderRepositoryCapabilities(adapter?: WorkorderRepositoryAdapter): WorkorderRepositoryCapabilities {
   return {
     loadWorkspaceState: Boolean(adapter?.loadWorkspaceState),
+    loadWorkOrderDetail: Boolean(adapter?.loadWorkOrderDetail),
     saveWorkspaceState: Boolean(adapter?.saveWorkspaceState),
     saveWorkspaceSession: Boolean(adapter?.saveWorkspaceSession),
     createWorkOrder: Boolean(adapter?.createWorkOrder),

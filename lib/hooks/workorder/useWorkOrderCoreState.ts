@@ -140,6 +140,46 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
     [workOrders, selectedId],
   );
 
+  useEffect(() => {
+    if (repositoryStatus !== "ready" || !selectedId) return;
+
+    const selectedSummary = workOrders.find((item) => item.id === selectedId) ?? null;
+    if (!selectedSummary || selectedSummary.hasDetailSnapshot) return;
+
+    let cancelled = false;
+
+    repository
+      .loadWorkOrderDetailAsync(selectedId)
+      .then((loadedWorkOrder) => {
+        if (cancelled) return;
+        const normalizedDetail = stabilizeWorkOrders(normalizeWorkOrderDataList([{ ...loadedWorkOrder, hasDetailSnapshot: true }]))[0];
+        if (!normalizedDetail) return;
+
+        setWorkOrdersState((current) =>
+          stabilizeWorkOrders(
+            current.map((item) =>
+              item.id === normalizedDetail.id ? { ...item, ...normalizedDetail, hasDetailSnapshot: true } : item,
+            ),
+          ),
+        );
+        setPersistedWorkOrders((current) =>
+          stabilizeWorkOrders(
+            current.map((item) =>
+              item.id === normalizedDetail.id ? { ...item, ...normalizedDetail, hasDetailSnapshot: true } : item,
+            ),
+          ),
+        );
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setRepositoryError(createRepositoryError("initialize", error, "Failed to load workorder detail."));
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [repository, repositoryStatus, selectedId, workOrders]);
+
   const currentUser = useMemo(
     () => users.find((user) => user.id === currentUserId) ?? users[0],
     [users, currentUserId],

@@ -12,6 +12,7 @@ import {
   createDbWorkOrder,
   deleteDbWorkOrder,
   findAllDbWorkOrders,
+  findDbWorkOrderById,
   findDbWorkOrderSummaries,
   saveDbWorkOrder,
   saveDbWorkOrders,
@@ -255,6 +256,44 @@ export async function handleGetWorkOrders() {
     return NextResponse.json({ workOrders });
   } catch (error) {
     const resolved = resolveDbErrorPayload(error, "Failed to fetch work orders.");
+    logDbRequestOutcome("GET", false, resolved.payload.code, resolved.payload.message);
+
+    return NextResponse.json(resolved.payload, { status: resolved.status });
+  }
+}
+
+export async function handleGetWorkOrderDetail(workOrderId: string) {
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json(createDbNotConfiguredPayload(), { status: 503 });
+  }
+
+  if (!workOrderId.trim()) {
+    return createInvalidPayloadResponse("workOrderId is required.");
+  }
+
+  try {
+    const foundWorkOrder = await findDbWorkOrderById(workOrderId);
+
+    if (!foundWorkOrder) {
+      return NextResponse.json({ message: `spec_sheets row not found for id: ${workOrderId}`, code: "DB_REQUEST_FAILED" }, { status: 404 });
+    }
+
+    const workOrder = await hydrateWorkOrderWithAttachmentMemoSnapshot(foundWorkOrder);
+    logDbRequestOutcome("GET", true, "DETAIL_READY", workOrder.id);
+
+    return NextResponse.json({
+      workOrder: {
+        ...workOrder,
+        hasDetailSnapshot: true,
+      },
+      meta: {
+        mode: "detail",
+        hydrated: true,
+        workOrderId: workOrder.id,
+      },
+    });
+  } catch (error) {
+    const resolved = resolveDbErrorPayload(error, "Failed to fetch work order detail.");
     logDbRequestOutcome("GET", false, resolved.payload.code, resolved.payload.message);
 
     return NextResponse.json(resolved.payload, { status: resolved.status });
