@@ -467,12 +467,12 @@ export async function handlePatchWorkOrderState(workOrderId: string, request: Re
     const workOrder = await hydrateWorkOrderWithAttachmentMemoSnapshot(savedWorkOrder);
     await writeWorkOrderStatusChangeHistory(previousWorkOrder ?? undefined, workOrder);
 
-    logDbRequestOutcome("PATCH_STATE", true, "READY", workOrder.id);
+    logDbRequestOutcome("PATCH", true, "READY", `${workOrder.id}:state-patch`);
 
     return NextResponse.json({ workOrder, meta: { mode: "state-patch", hydrated: true } });
   } catch (error) {
     const resolved = resolveDbErrorPayload(error, "Failed to save work order state.");
-    logDbRequestOutcome("PATCH_STATE", false, resolved.payload.code, resolved.payload.message);
+    logDbRequestOutcome("PATCH", false, resolved.payload.code, `state-patch: ${resolved.payload.message}`);
 
     return NextResponse.json(resolved.payload, { status: resolved.status });
   }

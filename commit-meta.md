@@ -1,30 +1,18 @@
 Version :
-0.9.224350
+0.9.224351
 
 Summary :
-작업지시서 상태 변경 최소 patch API 추가
+작업지시서 상태 patch 로그 타입 오류 수정
 
 Description :
-검수 완료와 워크플로우 상태 변경이 전체 작업지시서 저장 경로를 타지 않도록 상태 변경 전용 patch API와 repository 경로를 추가했다. 상태 변경 저장은 workflowState, lastSavedAt, inventory 관련 값, factoryOrderRequest, orderEntries만 부분 갱신하도록 분리했다.
+작업지시서 상태 변경 최소 patch API에서 DB 요청 로그 함수에 허용되지 않는 PATCH_STATE 값을 전달해 발생한 TypeScript 빌드 오류를 수정했다. APP_VERSION도 0.9.224351로 갱신했다.
 
 수정 파일 목록 :
-- app/api/workorders/[workOrderId]/route.ts
 - lib/workorder/api/workOrderRouteHandlers.ts
-- lib/workorder/repository/dbWorkOrderRepository.ts
-- lib/repositories/dbWorkorderHttpAdapter.ts
-- lib/repositories/dbWorkorderRepository.ts
-- lib/repositories/mockWorkorderAdapter.ts
-- lib/repositories/mockWorkorderRepository.ts
-- lib/repositories/workorderRepository.ts
-- lib/repositories/workorderRepositoryAdapter.ts
-- lib/repositories/workorderRepositoryCapabilities.ts
-- lib/hooks/workorder/workorderRepositoryMutations.ts
-- lib/hooks/workorder/useWorkOrderWorkflowActions.ts
-- types/workorder.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/workorder-state-patch-api-0.9.224350.md
+없음
 
 삭제 파일 목록 :
 없음
