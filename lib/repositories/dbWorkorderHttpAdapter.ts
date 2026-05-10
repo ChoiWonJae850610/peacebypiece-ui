@@ -3,7 +3,7 @@ import { mockWorkorderAdapter } from "@/lib/repositories/mockWorkorderRepository
 import { loadPersistedWorkspaceState } from "@/lib/repositories/workorderPersistence";
 import type { WorkorderRepositoryAdapter } from "@/lib/repositories/workorderRepositoryAdapter";
 import { setDbConnectionStatus, type DbConnectionStateCode } from "@/lib/repositories/dbConnectionStatusStore";
-import type { MemoThread, UserProfile, WorkOrder, WorkOrderSummary } from "@/types/workorder";
+import type { MemoThread, UserProfile, WorkOrder, WorkOrderStatePatch, WorkOrderSummary } from "@/types/workorder";
 
 type DbApiErrorBody = {
   message?: string;
@@ -148,6 +148,31 @@ async function loadWorkOrderDetailFromApi(workOrderId: string): Promise<WorkOrde
 
   if (!result.workOrder) {
     const emptyBodyError = new Error("DB work order detail response is empty.") as Error & { code?: string };
+    emptyBodyError.code = "DB_EMPTY_RESPONSE";
+    throw emptyBodyError;
+  }
+
+  return {
+    ...result.workOrder,
+    hasDetailSnapshot: true,
+  };
+}
+
+
+async function saveWorkOrderStatePatchToApi(patch: WorkOrderStatePatch): Promise<WorkOrder> {
+  const response = await fetch(`/api/workorders/${encodeURIComponent(patch.id)}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ patch }),
+  });
+
+  const result = await parseResponse<WorkOrderDetailLoadResponse>(response);
+
+  if (!result.workOrder) {
+    const emptyBodyError = new Error("DB work order state patch response is empty.") as Error & { code?: string };
     emptyBodyError.code = "DB_EMPTY_RESPONSE";
     throw emptyBodyError;
   }
@@ -419,6 +444,20 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
 
         reportDbStatus({ source: "save", connected: false, fallbackActive: true, code: toStatusCode(error), message: error instanceof Error ? error.message : null });
         return mockWorkorderAdapter.saveWorkOrder?.(workOrder) ?? workOrder;
+      }
+    },
+    saveWorkOrderStatePatch: async (patch) => {
+      try {
+        const savedWorkOrder = await saveWorkOrderStatePatchToApi(patch);
+        reportDbStatus({ source: "save", connected: true, fallbackActive: false, code: "READY" });
+        return savedWorkOrder;
+      } catch (error) {
+        if (!shouldUseLocalFallback(error)) {
+          throw error;
+        }
+
+        reportDbStatus({ source: "save", connected: false, fallbackActive: true, code: toStatusCode(error), message: error instanceof Error ? error.message : null });
+        return mockWorkorderAdapter.saveWorkOrderStatePatch?.(patch) ?? mockWorkorderAdapter.loadWorkOrderDetail?.(patch.id) ?? ({ ...patch } as WorkOrder);
       }
     },
     saveWorkOrders: async (workOrders) => {

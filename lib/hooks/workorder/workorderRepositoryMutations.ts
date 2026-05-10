@@ -1,5 +1,5 @@
 import type { WorkorderRepository } from "@/lib/repositories/workorderRepository";
-import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
+import type { HistoryLog, UserProfile, WorkOrder, WorkOrderStatePatch } from "@/types/workorder";
 
 function stampPersistedWorkOrder(workOrder: WorkOrder): WorkOrder {
   return { ...workOrder, lastSavedAt: new Date().toISOString() };
@@ -44,6 +44,52 @@ export async function persistCreatedWorkOrderWithHistory(
     await repository.appendHistoryLogsAsync(payload.historyLogs);
   }
   return nextWorkOrder;
+}
+
+
+function buildWorkOrderStatePatch(workOrder: WorkOrder): WorkOrderStatePatch {
+  return {
+    id: workOrder.id,
+    workflowState: workOrder.workflowState,
+    lastSavedAt: workOrder.lastSavedAt,
+    inventoryQuantity: workOrder.inventoryQuantity,
+    inventoryStatus: workOrder.inventoryStatus,
+    factoryOrderRequest: workOrder.factoryOrderRequest ?? null,
+    orderEntries: workOrder.orderEntries ?? [],
+  };
+}
+
+export async function persistWorkOrderStatePatchWithHistory(
+  repository: WorkorderRepository,
+  payload: {
+    workOrder: WorkOrder;
+    historyLogs?: HistoryLog[];
+  },
+) {
+  const stampedWorkOrder = stampPersistedWorkOrder(payload.workOrder);
+  const nextWorkOrder = await repository.saveWorkOrderStatePatchAsync(buildWorkOrderStatePatch(stampedWorkOrder));
+  if (payload.historyLogs?.length) {
+    await repository.appendHistoryLogsAsync(payload.historyLogs);
+  }
+  return nextWorkOrder;
+}
+
+export async function persistWorkOrderStatePatchesWithHistory(
+  repository: WorkorderRepository,
+  payload: {
+    workOrders: WorkOrder[];
+    historyLogs?: HistoryLog[];
+  },
+) {
+  const stampedWorkOrders = stampPersistedWorkOrders(payload.workOrders);
+  const nextWorkOrders: WorkOrder[] = [];
+  for (const workOrder of stampedWorkOrders) {
+    nextWorkOrders.push(await repository.saveWorkOrderStatePatchAsync(buildWorkOrderStatePatch(workOrder)));
+  }
+  if (payload.historyLogs?.length) {
+    await repository.appendHistoryLogsAsync(payload.historyLogs);
+  }
+  return nextWorkOrders;
 }
 
 export async function persistWorkOrderWithHistory(

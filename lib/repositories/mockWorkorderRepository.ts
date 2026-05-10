@@ -25,7 +25,7 @@ import { normalizeWorkOrderCollectionsForStorage, normalizeWorkOrderCollectionsL
 import { createFullWorkorderRepositoryCapabilities, createWorkorderRepositoryInfo } from "@/lib/repositories/workorderRepositoryCapabilities";
 import { createMockWorkorderAdapter } from "@/lib/repositories/mockWorkorderAdapter";
 import type { WorkorderRepositoryAdapter } from "@/lib/repositories/workorderRepositoryAdapter";
-import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
+import type { HistoryLog, UserProfile, WorkOrder, WorkOrderStatePatch } from "@/types/workorder";
 
 function createInitialRepositoryState() {
   const persisted = loadPersistedWorkspaceState();
@@ -72,6 +72,32 @@ function saveWorkOrdersInternal(workOrders: WorkOrder[]): WorkOrder[] {
   return normalized;
 }
 
+function applyWorkOrderStatePatchToWorkOrder(workOrder: WorkOrder, patch: WorkOrderStatePatch): WorkOrder {
+  return {
+    ...workOrder,
+    workflowState: patch.workflowState,
+    lastSavedAt: patch.lastSavedAt,
+    inventoryQuantity: patch.inventoryQuantity ?? workOrder.inventoryQuantity,
+    inventoryStatus: patch.inventoryStatus ?? workOrder.inventoryStatus,
+    factoryOrderRequest: Object.prototype.hasOwnProperty.call(patch, "factoryOrderRequest")
+      ? (patch.factoryOrderRequest ?? null)
+      : workOrder.factoryOrderRequest,
+    orderEntries: patch.orderEntries ?? workOrder.orderEntries,
+  };
+}
+
+function saveWorkOrderStatePatchInternal(patch: WorkOrderStatePatch): WorkOrder {
+  const current = getCurrentWorkspaceState();
+  const currentWorkOrder = current.workOrders.find((item) => item.id === patch.id);
+  if (!currentWorkOrder) throw new Error(`workOrder row not found for id: ${patch.id}`);
+  const normalizedWorkOrder = normalizeWorkOrderCollectionsForStorage(applyWorkOrderStatePatchToWorkOrder(cloneValue(currentWorkOrder), patch));
+  saveWorkspaceStateInternal({
+    ...current,
+    workOrders: current.workOrders.map((item) => (item.id === patch.id ? normalizedWorkOrder : item)),
+  });
+  return cloneValue(normalizedWorkOrder);
+}
+
 function saveUsersInternal(users: UserProfile[]): UserProfile[] {
   const normalized = cloneValue(users);
   const current = getCurrentWorkspaceState();
@@ -107,6 +133,7 @@ export const mockWorkorderAdapter = createMockWorkorderAdapter({
     });
     return cloneValue(normalizedWorkOrder);
   },
+  saveWorkOrderStatePatch: saveWorkOrderStatePatchInternal,
   saveWorkOrders: saveWorkOrdersInternal,
   deleteWorkOrder: (workOrderId) => {
     const current = getCurrentWorkspaceState();
@@ -169,6 +196,8 @@ function createMockWorkorderRepository(adapter: WorkorderRepositoryAdapter = moc
     return cloneValue(normalizedWorkOrder);
   },
   saveWorkOrderAsync: async (workOrder) => adapter.saveWorkOrder?.(workOrder) ?? cloneValue(workOrder),
+  saveWorkOrderStatePatch: saveWorkOrderStatePatchInternal,
+  saveWorkOrderStatePatchAsync: async (patch) => adapter.saveWorkOrderStatePatch?.(patch) ?? saveWorkOrderStatePatchInternal(patch),
   saveWorkOrders: saveWorkOrdersInternal,
   saveWorkOrdersAsync: async (workOrders) => adapter.saveWorkOrders?.(workOrders) ?? saveWorkOrdersInternal(workOrders),
   deleteWorkOrder: (workOrderId) => {

@@ -1,4 +1,4 @@
-import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
+import type { HistoryLog, UserProfile, WorkOrder, WorkOrderStatePatch } from "@/types/workorder";
 import type { WorkorderWorkspaceSession, WorkorderWorkspaceState } from "@/lib/repositories/workorderRepository";
 
 export type WorkorderRepositoryAdapter = {
@@ -8,6 +8,7 @@ export type WorkorderRepositoryAdapter = {
   saveWorkspaceSession?(payload: WorkorderWorkspaceSession): Promise<WorkorderWorkspaceSession>;
   createWorkOrder?(workOrder: WorkOrder): Promise<WorkOrder>;
   saveWorkOrder?(workOrder: WorkOrder): Promise<WorkOrder>;
+  saveWorkOrderStatePatch?(patch: WorkOrderStatePatch): Promise<WorkOrder>;
   saveWorkOrders?(workOrders: WorkOrder[]): Promise<WorkOrder[]>;
   deleteWorkOrder?(workOrderId: string): Promise<string>;
   appendHistoryLogs?(historyLogs: HistoryLog[]): Promise<HistoryLog[]>;

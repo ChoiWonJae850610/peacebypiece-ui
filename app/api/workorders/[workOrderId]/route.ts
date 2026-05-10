@@ -1,4 +1,4 @@
-import { handleGetWorkOrderDetail } from "@/lib/workorder/api/workOrderRouteHandlers";
+import { handleGetWorkOrderDetail, handlePatchWorkOrderState } from "@/lib/workorder/api/workOrderRouteHandlers";
 
 type WorkOrderDetailRouteContext = {
   params: Promise<{
@@ -9,4 +9,9 @@ type WorkOrderDetailRouteContext = {
 export async function GET(_request: Request, context: WorkOrderDetailRouteContext) {
   const { workOrderId } = await context.params;
   return handleGetWorkOrderDetail(workOrderId);
+}
+
+export async function PATCH(request: Request, context: WorkOrderDetailRouteContext) {
+  const { workOrderId } = await context.params;
+  return handlePatchWorkOrderState(workOrderId, request);
 }

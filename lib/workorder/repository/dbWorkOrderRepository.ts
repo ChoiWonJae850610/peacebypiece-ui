@@ -11,7 +11,7 @@ import {
 } from "@/lib/constants/workorderStates";
 import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
 import { ADMIN_FILE_TRASH_ACTOR_IDS } from "@/lib/admin/files/trashPolicy";
-import type { WorkOrder, WorkOrderSummary } from "@/types/workorder";
+import type { WorkOrder, WorkOrderStatePatch, WorkOrderSummary } from "@/types/workorder";
 import { applyReorderIdentity } from "@/lib/workorder/reorder/helpers";
 import { syncDbFactoryOrdersForSpecSheet } from "@/lib/workorder/repository/dbFactoryOrderRepository";
 import { syncDbSpecSheetMaterialsForSpecSheet } from "@/lib/workorder/repository/dbSpecSheetMaterialRepository";
@@ -457,6 +457,30 @@ function getPayloadColumnKind(
   }
 
   return null;
+}
+
+
+function buildPayloadPatchExpression(
+  columnName: string,
+  kind: DbPayloadColumnKind | null,
+  patchEntries: Array<{ key: keyof WorkOrder; value: unknown }>,
+  values: unknown[],
+): string | null {
+  if (!kind || patchEntries.length === 0) return null;
+
+  const columnSql = quoteIdentifier(columnName);
+  let expression = kind === "text"
+    ? `COALESCE(NULLIF(${columnSql}, '')::jsonb, '{}'::jsonb)`
+    : `COALESCE(${columnSql}::jsonb, '{}'::jsonb)`;
+
+  for (const entry of patchEntries) {
+    values.push(JSON.stringify(entry.value ?? null));
+    expression = `jsonb_set(${expression}, '{${String(entry.key)}}', $${values.length}::jsonb, true)`;
+  }
+
+  if (kind === "json") return `(${expression})::json`;
+  if (kind === "text") return `(${expression})::text`;
+  return expression;
 }
 
 function buildPayloadInsertPlaceholder(
@@ -1090,6 +1114,108 @@ export async function updateDbWorkOrder(
   await syncDbSpecSheetMaterialsForSpecSheet(mapped);
   await syncDbSpecSheetOutsourcingForSpecSheet(mapped);
   return mapped;
+}
+
+
+export async function updateDbWorkOrderStatePatch(
+  patch: WorkOrderStatePatch,
+): Promise<WorkOrder> {
+  const schema = await loadSpecSheetSchema();
+  assertMinimumSpecSheetSchema(schema);
+
+  const normalizedWorkflowState = normalizeDbWorkflowState(patch.workflowState);
+  const lastSavedAt = patch.lastSavedAt || new Date().toISOString();
+  const assignments: string[] = [];
+  const values: unknown[] = [patch.id];
+
+  if (schema.workflowStateColumn) {
+    assignments.push(`${quoteIdentifier(schema.workflowStateColumn)} = $${values.length + 1}`);
+    values.push(normalizedWorkflowState);
+  }
+
+  if (schema.lastSavedAtColumn) {
+    assignments.push(`${quoteIdentifier(schema.lastSavedAtColumn)} = $${values.length + 1}`);
+    values.push(lastSavedAt);
+  }
+
+  if (schema.payloadColumn) {
+    const payloadPatchEntries: Array<{ key: keyof WorkOrder; value: unknown }> = [
+      { key: "workflowState", value: normalizedWorkflowState },
+      { key: "lastSavedAt", value: lastSavedAt },
+    ];
+
+    if (Object.prototype.hasOwnProperty.call(patch, "inventoryQuantity")) {
+      payloadPatchEntries.push({ key: "inventoryQuantity", value: patch.inventoryQuantity });
+    }
+    if (Object.prototype.hasOwnProperty.call(patch, "inventoryStatus")) {
+      payloadPatchEntries.push({ key: "inventoryStatus", value: patch.inventoryStatus });
+    }
+    if (Object.prototype.hasOwnProperty.call(patch, "factoryOrderRequest")) {
+      payloadPatchEntries.push({ key: "factoryOrderRequest", value: patch.factoryOrderRequest ?? null });
+    }
+    if (Object.prototype.hasOwnProperty.call(patch, "orderEntries")) {
+      payloadPatchEntries.push({ key: "orderEntries", value: patch.orderEntries ?? [] });
+    }
+
+    const payloadExpression = buildPayloadPatchExpression(
+      schema.payloadColumn,
+      schema.payloadColumnKind,
+      payloadPatchEntries,
+      values,
+    );
+
+    if (payloadExpression) {
+      assignments.push(`${quoteIdentifier(schema.payloadColumn)} = ${payloadExpression}`);
+    }
+  }
+
+  if (assignments.length === 0) {
+    const existing = await findDbWorkOrderById(patch.id);
+    if (!existing) throw new Error(`spec_sheets row not found for id: ${patch.id}`);
+    return existing;
+  }
+
+  const payloadFallbackSql =
+    schema.payloadColumnKind === "text" ? "NULL::text" : "NULL::jsonb";
+
+  const returningColumns = [
+    "id",
+    "title",
+    buildAliasSelection(schema.workflowStateColumn, "workflow_state", "NULL"),
+    buildAliasSelection(schema.lastSavedAtColumn, "last_saved_at", "NULL"),
+    buildAliasSelection(schema.workOrderKindColumn, "work_order_kind", "NULL"),
+    buildAliasSelection(schema.reorderGroupIdColumn, "reorder_group_id", "NULL"),
+    buildAliasSelection(schema.reorderRoundColumn, "reorder_round", "NULL"),
+    buildAliasSelection(schema.parentSpecSheetIdColumn, "parent_spec_sheet_id", "NULL"),
+    buildAliasSelection(schema.isReworkColumn, "is_rework", "NULL"),
+    buildAliasSelection(schema.category1IdColumn, "category1_id", "NULL"),
+    buildAliasSelection(schema.category2IdColumn, "category2_id", "NULL"),
+    buildAliasSelection(schema.category3IdColumn, "category3_id", "NULL"),
+    buildAliasSelection(schema.payloadColumn, "payload", payloadFallbackSql),
+    buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE"),
+    buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL"),
+    buildAliasSelection(schema.createdAtColumn, "created_at", "NULL"),
+    buildAliasSelection(schema.updatedAtColumn, "updated_at", "NULL"),
+  ];
+
+  const result = await queryDb<DbSpecSheetRow>(
+    `
+      UPDATE ${quoteIdentifier(SPEC_SHEET_TABLE)}
+      SET
+        ${assignments.join(",\n        ")}
+      WHERE id = $1
+      RETURNING
+        ${returningColumns.join(",\n        ")}
+    `,
+    values,
+  );
+
+  const updated = result.rows[0];
+  if (!updated) {
+    throw new Error(`spec_sheets row not found for id: ${patch.id}`);
+  }
+
+  return mapSpecSheetRowToWorkOrder(updated);
 }
 
 async function softDeleteAttachmentMemoBundleForWorkOrder(

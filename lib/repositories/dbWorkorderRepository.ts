@@ -67,6 +67,11 @@ export function createDbWorkorderRepository(
       if (!adapter?.saveWorkOrder) return fallbackRepository.saveWorkOrderAsync(workOrder);
       return adapter.saveWorkOrder(workOrder);
     },
+    saveWorkOrderStatePatch: (patch) => fallbackRepository.saveWorkOrderStatePatch(patch),
+    saveWorkOrderStatePatchAsync: async (patch) => {
+      if (!adapter?.saveWorkOrderStatePatch) return fallbackRepository.saveWorkOrderStatePatchAsync(patch);
+      return adapter.saveWorkOrderStatePatch(patch);
+    },
     saveWorkOrders: (workOrders) => fallbackRepository.saveWorkOrders(workOrders),
     saveWorkOrdersAsync: async (workOrders) => {
       if (!adapter?.saveWorkOrders) return fallbackRepository.saveWorkOrdersAsync(workOrders);
@@ -110,6 +115,9 @@ export function createUnconfiguredDbWorkorderRepository(fallbackRepository: Work
     },
     saveWorkOrder: async () => {
       throw createNotConfiguredError("saveWorkOrder");
+    },
+    saveWorkOrderStatePatch: async () => {
+      throw createNotConfiguredError("saveWorkOrderStatePatch");
     },
     saveWorkOrders: async () => {
       throw createNotConfiguredError("saveWorkOrders");

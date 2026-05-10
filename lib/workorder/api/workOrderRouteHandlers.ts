@@ -16,8 +16,9 @@ import {
   findDbWorkOrderSummaries,
   saveDbWorkOrder,
   saveDbWorkOrders,
+  updateDbWorkOrderStatePatch,
 } from "@/lib/workorder/repository/dbWorkOrderRepository";
-import type { MemoThread, WorkOrder } from "@/types/workorder";
+import type { MemoThread, WorkOrder, WorkOrderStatePatch } from "@/types/workorder";
 
 type DbApiErrorCode =
   | "DB_NOT_CONFIGURED"
@@ -417,6 +418,61 @@ export async function handlePatchWorkOrders(request: Request) {
   } catch (error) {
     const resolved = resolveDbErrorPayload(error, "Failed to save work order.");
     logDbRequestOutcome("PATCH", false, resolved.payload.code, resolved.payload.message);
+
+    return NextResponse.json(resolved.payload, { status: resolved.status });
+  }
+}
+
+
+export async function handlePatchWorkOrderState(workOrderId: string, request: Request) {
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json(createDbNotConfiguredPayload(), { status: 503 });
+  }
+
+  try {
+    const body = await readJsonBody<{ patch?: Partial<WorkOrderStatePatch>; historyLogs?: unknown[] }>(request);
+
+    if (!body) {
+      return createInvalidPayloadResponse("Invalid JSON payload.");
+    }
+
+    if (!body.patch || typeof body.patch !== "object") {
+      return createInvalidPayloadResponse("state patch payload is required.");
+    }
+
+    const patchId = typeof body.patch.id === "string" && body.patch.id.trim() ? body.patch.id.trim() : workOrderId;
+    if (patchId !== workOrderId) {
+      return createInvalidPayloadResponse("workOrder id does not match route parameter.");
+    }
+
+    if (typeof body.patch.workflowState !== "string" || !body.patch.workflowState.trim()) {
+      return createInvalidPayloadResponse("workflowState is required.");
+    }
+
+    const previousWorkOrder = await findDbWorkOrderById(workOrderId);
+    const savedWorkOrder = await updateDbWorkOrderStatePatch({
+      id: workOrderId,
+      workflowState: body.patch.workflowState as WorkOrder["workflowState"],
+      lastSavedAt: typeof body.patch.lastSavedAt === "string" && body.patch.lastSavedAt.trim()
+        ? body.patch.lastSavedAt
+        : new Date().toISOString(),
+      inventoryQuantity: typeof body.patch.inventoryQuantity === "number" ? body.patch.inventoryQuantity : undefined,
+      inventoryStatus: body.patch.inventoryStatus,
+      factoryOrderRequest: Object.prototype.hasOwnProperty.call(body.patch, "factoryOrderRequest")
+        ? (body.patch.factoryOrderRequest ?? null)
+        : undefined,
+      orderEntries: Array.isArray(body.patch.orderEntries) ? body.patch.orderEntries : undefined,
+    });
+
+    const workOrder = await hydrateWorkOrderWithAttachmentMemoSnapshot(savedWorkOrder);
+    await writeWorkOrderStatusChangeHistory(previousWorkOrder ?? undefined, workOrder);
+
+    logDbRequestOutcome("PATCH_STATE", true, "READY", workOrder.id);
+
+    return NextResponse.json({ workOrder, meta: { mode: "state-patch", hydrated: true } });
+  } catch (error) {
+    const resolved = resolveDbErrorPayload(error, "Failed to save work order state.");
+    logDbRequestOutcome("PATCH_STATE", false, resolved.payload.code, resolved.payload.message);
 
     return NextResponse.json(resolved.payload, { status: resolved.status });
   }

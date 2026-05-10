@@ -1,4 +1,4 @@
-import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
+import type { HistoryLog, UserProfile, WorkOrder, WorkOrderStatePatch } from "@/types/workorder";
 import type { WorkorderRepositoryAdapter } from "@/lib/repositories/workorderRepositoryAdapter";
 import type { WorkorderWorkspaceSession, WorkorderWorkspaceState } from "@/lib/repositories/workorderRepository";
 
@@ -8,6 +8,7 @@ type MockWorkorderAdapterHandlers = {
   saveWorkspaceSession(payload: WorkorderWorkspaceSession): WorkorderWorkspaceSession;
   createWorkOrder(workOrder: WorkOrder): WorkOrder;
   saveWorkOrder(workOrder: WorkOrder): WorkOrder;
+  saveWorkOrderStatePatch(patch: WorkOrderStatePatch): WorkOrder;
   saveWorkOrders(workOrders: WorkOrder[]): WorkOrder[];
   deleteWorkOrder(workOrderId: string): string;
   appendHistoryLogs(historyLogs: HistoryLog[]): HistoryLog[];
@@ -22,6 +23,7 @@ export function createMockWorkorderAdapter(handlers: MockWorkorderAdapterHandler
     saveWorkspaceSession: async (payload) => handlers.saveWorkspaceSession(payload),
     createWorkOrder: async (workOrder) => handlers.createWorkOrder(workOrder),
     saveWorkOrder: async (workOrder) => handlers.saveWorkOrder(workOrder),
+    saveWorkOrderStatePatch: async (patch) => handlers.saveWorkOrderStatePatch(patch),
     saveWorkOrders: async (workOrders) => handlers.saveWorkOrders(workOrders),
     deleteWorkOrder: async (workOrderId) => handlers.deleteWorkOrder(workOrderId),
     appendHistoryLogs: async (historyLogs) => handlers.appendHistoryLogs(historyLogs),

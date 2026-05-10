@@ -1,19 +1,30 @@
 Version :
-0.9.224349
+0.9.224350
 
 Summary :
-spec_sheets payload 의존성 점검과 상세 조회 범위 축소
+작업지시서 상태 변경 최소 patch API 추가
 
 Description :
-spec_sheets.payload 컬럼을 즉시 필수 조건으로 보지 않도록 DB 상태 점검을 완화하고, 작업지시서 상세 1건 조회가 전체 작업지시서 목록을 다시 읽지 않도록 repository 조회 범위를 축소했다. payload 정리 원칙과 남은 의존성도 문서화했다.
+검수 완료와 워크플로우 상태 변경이 전체 작업지시서 저장 경로를 타지 않도록 상태 변경 전용 patch API와 repository 경로를 추가했다. 상태 변경 저장은 workflowState, lastSavedAt, inventory 관련 값, factoryOrderRequest, orderEntries만 부분 갱신하도록 분리했다.
 
 수정 파일 목록 :
-- app/api/workorders/status/route.ts
+- app/api/workorders/[workOrderId]/route.ts
+- lib/workorder/api/workOrderRouteHandlers.ts
 - lib/workorder/repository/dbWorkOrderRepository.ts
+- lib/repositories/dbWorkorderHttpAdapter.ts
+- lib/repositories/dbWorkorderRepository.ts
+- lib/repositories/mockWorkorderAdapter.ts
+- lib/repositories/mockWorkorderRepository.ts
+- lib/repositories/workorderRepository.ts
+- lib/repositories/workorderRepositoryAdapter.ts
+- lib/repositories/workorderRepositoryCapabilities.ts
+- lib/hooks/workorder/workorderRepositoryMutations.ts
+- lib/hooks/workorder/useWorkOrderWorkflowActions.ts
+- types/workorder.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/workorder-payload-dependency-plan-0.9.224349.md
+- docs/workorder-state-patch-api-0.9.224350.md
 
 삭제 파일 목록 :
 없음

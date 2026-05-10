@@ -14,8 +14,9 @@ import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryPr
 import {
   getSelectedWorkOrderForSaveState,
   persistWorkOrderWithHistory,
+  persistWorkOrderStatePatchWithHistory,
   mergeSavedWorkOrders,
-  persistWorkOrdersWithHistory,
+  persistWorkOrderStatePatchesWithHistory,
   replaceWorkOrderById,
 } from "./workorderRepositoryMutations";
 import { findPartnerIdByNameAndTypes } from "@/lib/admin/partner/persistence";
@@ -143,7 +144,7 @@ export function useWorkOrderWorkflowActions({
         toastMessageOverride: toastMessageOverride ?? undefined,
       });
       setSaveStatus("saving");
-      const persistedWorkOrder = await persistWorkOrderWithHistory(repository, {
+      const persistedWorkOrder = await persistWorkOrderStatePatchWithHistory(repository, {
         workOrder: result.nextWorkOrder,
         historyLogs: result.historyLogs,
       });
@@ -193,7 +194,7 @@ export function useWorkOrderWorkflowActions({
         ),
       ];
       setSaveStatus("saving");
-      const persistedWorkOrder = await persistWorkOrderWithHistory(repository, {
+      const persistedWorkOrder = await persistWorkOrderStatePatchWithHistory(repository, {
         workOrder: result.nextWorkOrder,
         historyLogs: result.historyLogs,
       });
@@ -340,7 +341,7 @@ export function useWorkOrderWorkflowActions({
         workOrdersRef.current.map((item) => (item.id === workOrder.id ? result.nextWorkOrder : item)),
       );
       setSaveStatus("saving");
-      const nextPersistedWorkOrder = await persistWorkOrderWithHistory(repository, {
+      const nextPersistedWorkOrder = await persistWorkOrderStatePatchWithHistory(repository, {
         workOrder: result.nextWorkOrder,
         historyLogs: result.historyLogs,
       });
@@ -381,7 +382,7 @@ export function useWorkOrderWorkflowActions({
       const nextWorkOrders = applySharedInventoryAdjustment(workOrdersRef.current, currentWorkOrder, result.appliedChanges ?? []);
       const persistCandidates = getInventorySyncCandidates(nextWorkOrders, currentWorkOrder);
       setSaveStatus("saving");
-      void persistWorkOrdersWithHistory(repository, {
+      void persistWorkOrderStatePatchesWithHistory(repository, {
         workOrders: persistCandidates,
         historyLogs: result.historyLogs,
       }).then((persistedCandidates) => {
@@ -422,7 +423,7 @@ export function useWorkOrderWorkflowActions({
       });
       const persistCandidates = getInventorySyncCandidates(nextWorkOrders, currentWorkOrder);
       setSaveStatus("saving");
-      void persistWorkOrdersWithHistory(repository, {
+      void persistWorkOrderStatePatchesWithHistory(repository, {
         workOrders: persistCandidates,
         historyLogs: result.historyLogs,
       }).then((persistedCandidates) => {

@@ -196,6 +196,10 @@ export type WorkOrderSummary = Pick<
   updatedAt?: string;
 };
 
+
+export type WorkOrderStatePatch = Pick<WorkOrder, "id" | "workflowState" | "lastSavedAt"> &
+  Partial<Pick<WorkOrder, "inventoryQuantity" | "inventoryStatus" | "factoryOrderRequest" | "orderEntries">>;
+
 export type HistoryDetailLine = {
   label?: string;
   value: string;
