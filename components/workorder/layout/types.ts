@@ -17,7 +17,7 @@ export type WorkOrderWorkspaceLoadingState = {
 export type SidebarListProps = ComponentProps<typeof SidebarContent>;
 export type DetailProps = ComponentProps<typeof WorkOrderDetail>;
 export type SidePanelProps = ComponentProps<typeof WorkOrderSidePanel>;
-export type MobileTopBarProps = ComponentProps<typeof MobileTopBar>;
+export type MobileTopBarProps = Omit<ComponentProps<typeof MobileTopBar>, "homeNavigation">;
 export type MobileDrawerProps = Omit<ComponentProps<typeof MobileDrawer>, "open" | "onClose"> & {
   open: boolean;
   onClose: () => void;

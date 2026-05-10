@@ -13,7 +13,7 @@ import type { Attachment, HistoryFilter, InventoryLog, RoleType, UserProfile, Wo
 export type SidebarListProps = ComponentProps<typeof SidebarContent>;
 export type DetailProps = ComponentProps<typeof WorkOrderDetail>;
 export type SidePanelProps = ComponentProps<typeof WorkOrderSidePanel>;
-export type MobileTopBarProps = ComponentProps<typeof MobileTopBar>;
+export type MobileTopBarProps = Omit<ComponentProps<typeof MobileTopBar>, "homeNavigation">;
 export type MobileDrawerProps = ComponentProps<typeof MobileDrawer>;
 export type ModalProps = ComponentProps<typeof WorkOrderOverlay>["modalProps"];
 export type GetAttachmentPermissions = (attachment: Attachment | null) => AttachmentPermissionState;
