@@ -1,17 +1,18 @@
 Version :
-0.9.22435
+0.9.224351
 
 Summary :
-저장소 휴지통 회귀 테스트 기준 문서화
+작업지시서 상태 patch 로그 타입 오류 수정
 
 Description :
-작업지시서 lazy load 안정화 이후 저장소 관리와 휴지통의 문서, 디자인, 메모, 작업지시서 삭제/복원/삭제 요청 흐름을 점검할 1차 회귀 테스트 기준을 문서화했다. APP_VERSION도 0.9.22435로 갱신했다.
+작업지시서 상태 변경 최소 patch API에서 DB 요청 로그 함수에 허용되지 않는 PATCH_STATE 값을 전달해 발생한 TypeScript 빌드 오류를 수정했다. APP_VERSION도 0.9.224351로 갱신했다.
 
 수정 파일 목록 :
+- lib/workorder/api/workOrderRouteHandlers.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/storage-trash-regression-checkpoint-0.9.22435.md
+없음
 
 삭제 파일 목록 :
 없음

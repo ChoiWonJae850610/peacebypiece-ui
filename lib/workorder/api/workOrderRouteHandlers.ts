@@ -18,7 +18,7 @@ import {
   saveDbWorkOrders,
   updateDbWorkOrderStatePatch,
 } from "@/lib/workorder/repository/dbWorkOrderRepository";
-import type { MemoThread, WorkOrder, WorkOrderStatePatch, WorkOrderStatePatchResult } from "@/types/workorder";
+import type { MemoThread, WorkOrder, WorkOrderStatePatch } from "@/types/workorder";
 
 type DbApiErrorCode =
   | "DB_NOT_CONFIGURED"
@@ -464,21 +464,12 @@ export async function handlePatchWorkOrderState(workOrderId: string, request: Re
       orderEntries: Array.isArray(body.patch.orderEntries) ? body.patch.orderEntries : undefined,
     });
 
-    await writeWorkOrderStatusChangeHistory(previousWorkOrder ?? undefined, savedWorkOrder);
+    const workOrder = await hydrateWorkOrderWithAttachmentMemoSnapshot(savedWorkOrder);
+    await writeWorkOrderStatusChangeHistory(previousWorkOrder ?? undefined, workOrder);
 
-    const patchResult: WorkOrderStatePatchResult = {
-      id: savedWorkOrder.id,
-      workflowState: savedWorkOrder.workflowState,
-      lastSavedAt: savedWorkOrder.lastSavedAt,
-      inventoryQuantity: savedWorkOrder.inventoryQuantity,
-      inventoryStatus: savedWorkOrder.inventoryStatus,
-      factoryOrderRequest: savedWorkOrder.factoryOrderRequest ?? null,
-      orderEntries: savedWorkOrder.orderEntries ?? [],
-    };
+    logDbRequestOutcome("PATCH", true, "READY", `${workOrder.id}:state-patch`);
 
-    logDbRequestOutcome("PATCH", true, "READY", `${savedWorkOrder.id}:state-patch`);
-
-    return NextResponse.json({ patch: patchResult, meta: { mode: "state-patch", hydrated: false } });
+    return NextResponse.json({ workOrder, meta: { mode: "state-patch", hydrated: true } });
   } catch (error) {
     const resolved = resolveDbErrorPayload(error, "Failed to save work order state.");
     logDbRequestOutcome("PATCH", false, resolved.payload.code, `state-patch: ${resolved.payload.message}`);
