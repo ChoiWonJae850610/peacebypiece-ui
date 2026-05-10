@@ -10,6 +10,7 @@ import { useDbConnectionStatus } from "@/lib/hooks/workorder/useDbConnectionStat
 import { getPendingAttachmentDelete } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
 
 import { useI18n } from "@/lib/i18n";
+import { getWorkspaceHomeRouteByRole } from "@/lib/navigation/workspaceHomeRoutes";
 
 import { buildWorkspaceViewModel } from "@/lib/workorder/workspace/buildWorkspaceViewModel";
 
@@ -119,6 +120,12 @@ export default function WorkOrderWorkspace({
     detailDescription: loadingCopy.loadingDetailDescription,
     sideTitle: loadingCopy.loadingSideTitle,
     sideDescription: loadingCopy.loadingSideDescription,
+  };
+  const homeNavigationCopy = i18n.workorder.ui.layout.homeNavigation;
+  const homeNavigation = {
+    href: getWorkspaceHomeRouteByRole(identity.currentRole),
+    label: homeNavigationCopy.label,
+    ariaLabel: homeNavigationCopy.ariaLabel,
   };
 
   const pendingAttachmentDelete = useMemo(
@@ -392,6 +399,7 @@ export default function WorkOrderWorkspace({
         mobileTopBarProps={viewModel.mobileTopBarProps}
         mobileDrawerProps={viewModel.mobileDrawerProps}
         loadingState={workspaceLoadingState}
+        homeNavigation={homeNavigation}
       />
 
       <WorkOrderOverlay

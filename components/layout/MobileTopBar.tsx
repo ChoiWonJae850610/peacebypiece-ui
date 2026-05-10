@@ -1,5 +1,8 @@
 "use client";
 
+import Link from "next/link";
+
+import type { WorkOrderHomeNavigation } from "@/components/workorder/layout/WorkOrderHomeButton";
 import { useI18n } from "@/lib/i18n";
 import type { DbConnectionStatus } from "@/lib/repositories/dbConnectionStatusStore";
 import { getDbConnectionStatusPresentation } from "@/lib/repositories/dbConnectionStatusPresentation";
@@ -10,9 +13,10 @@ type Props = {
   onOpen: () => void;
   onOpenSettings: () => void;
   dbConnectionStatus?: DbConnectionStatus;
+  homeNavigation: WorkOrderHomeNavigation;
 };
 
-export default function MobileTopBar({ companyName, version, onOpen, onOpenSettings, dbConnectionStatus }: Props) {
+export default function MobileTopBar({ companyName, version, onOpen, onOpenSettings, dbConnectionStatus, homeNavigation }: Props) {
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.layout.mobileTopBar;
 
@@ -26,6 +30,14 @@ export default function MobileTopBar({ companyName, version, onOpen, onOpenSetti
           <div className="flex flex-wrap items-center gap-2 text-[11px] text-stone-500"><span>{copy.subtitle}</span><span className="text-[10px] leading-none text-stone-400">v{version}</span>{dbStatusPresentation ? <span title={dbStatusPresentation.title ?? undefined} className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${dbStatusPresentation.toneClass}`}>{dbStatusPresentation.label}</span> : null}</div>
         </div>
         <div className="flex items-center gap-2">
+          <Link
+            href={homeNavigation.href}
+            aria-label={homeNavigation.ariaLabel}
+            title={homeNavigation.label}
+            className="pbp-touch-target pbp-interactive-button inline-flex h-11 w-11 items-center justify-center rounded-xl border border-stone-300 bg-white text-base font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+          >
+            ⌂
+          </Link>
           <button
             type="button"
             onClick={() => window.location.reload()}

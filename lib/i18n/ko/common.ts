@@ -5,6 +5,26 @@ export const commonKo = {
   viewWorkOrderHistory: "작업지시서 히스토리 보기",
   metadataDescription: "작업지시 워크스테이션",
   comingSoon: "다음 단계에서 실제 화면과 데이터 연결 예정",
+  workspaceHome: {
+    title: "내 업무 홈",
+    description: "역할과 권한에 따라 사용할 수 있는 업무 화면으로 이동하는 공통 메인화면입니다.",
+    openLabel: "화면 열기",
+    plannedLabel: "후순위",
+    statuses: {
+      available: "사용 가능",
+      planned: "후순위",
+    },
+    cards: {
+      workorder: {
+        label: "작업지시서 업무 화면",
+        description: "나에게 배정된 작업지시서와 진행 중인 업무를 확인합니다.",
+      },
+      personalSettings: {
+        label: "개인 환경설정",
+        description: "언어, 색상, 알림 선호를 사용자별로 관리할 영역입니다.",
+      },
+    },
+  },
   ui: {
     common: {
       close: "닫기",

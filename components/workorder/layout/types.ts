@@ -4,6 +4,7 @@ import MobileTopBar from "@/components/layout/MobileTopBar";
 import SidebarContent from "@/components/layout/SidebarContent";
 import WorkOrderDetail from "@/components/workorder/WorkOrderDetail";
 import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
+import type { WorkOrderHomeNavigation } from "@/components/workorder/layout/WorkOrderHomeButton";
 
 export type WorkOrderWorkspaceLoadingState = {
   isRepositoryLoading: boolean;
@@ -32,4 +33,5 @@ export type WorkOrderLayoutViewProps = {
   mobileTopBarProps: MobileTopBarProps;
   mobileDrawerProps: MobileDrawerProps;
   loadingState?: WorkOrderWorkspaceLoadingState;
+  homeNavigation: WorkOrderHomeNavigation;
 };

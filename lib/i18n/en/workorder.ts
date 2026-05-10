@@ -464,6 +464,10 @@ export const workorderEn = {
         openMenuAria: "Open work order list",
         menu: "Menu",
       },
+      homeNavigation: {
+        label: "Home",
+        ariaLabel: "Go to home screen",
+      },
       mobileDrawer: {
         closeOverlayAria: "Close drawer",
         title: "Work list",

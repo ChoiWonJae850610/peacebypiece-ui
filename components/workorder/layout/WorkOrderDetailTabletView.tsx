@@ -5,6 +5,7 @@ import type { WorkOrderLayoutViewProps } from "@/components/workorder/layout/typ
 import TabletSplitLayout from "@/components/workorder/layout/TabletSplitLayout";
 import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
 import WorkOrderLoadingState from "@/components/workorder/WorkOrderLoadingState";
+import WorkOrderHomeButton from "@/components/workorder/layout/WorkOrderHomeButton";
 
 export default function WorkOrderDetailTabletView({
   appShellRef,
@@ -14,22 +15,30 @@ export default function WorkOrderDetailTabletView({
   detailProps,
   sidePanelProps,
   loadingState,
+  homeNavigation,
 }: WorkOrderLayoutViewProps) {
   const isLoading = Boolean(loadingState?.isRepositoryLoading);
   return (
     <TabletSplitLayout
       appShellRef={appShellRef}
       sidebar={<SidebarContent {...sidebarListProps} />}
-      detail={isLoading ? (
-        <WorkOrderLoadingState
-          title={loadingState?.detailTitle ?? ""}
-          description={loadingState?.detailDescription}
-        />
-      ) : hasSelection ? (
-        <div key={selectedId}>
-          <WorkOrderDetail {...detailProps} />
-        </div>
-      ) : <WorkOrderEmptyState variant="detail" />}
+      detail={(
+        <>
+          <WorkOrderHomeButton homeNavigation={homeNavigation} />
+          {isLoading ? (
+            <WorkOrderLoadingState
+              title={loadingState?.detailTitle ?? ""}
+              description={loadingState?.detailDescription}
+            />
+          ) : hasSelection ? (
+            <div key={selectedId}>
+              <WorkOrderDetail {...detailProps} />
+            </div>
+          ) : (
+            <WorkOrderEmptyState variant="detail" />
+          )}
+        </>
+      )}
       sidePanel={isLoading ? (
         <WorkOrderLoadingState
           variant="side"

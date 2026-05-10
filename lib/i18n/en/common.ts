@@ -5,6 +5,26 @@ export const commonEn = {
   viewWorkOrderHistory: "Open work order history",
   metadataDescription: "Work order workstation",
   comingSoon: "Actual screens and data wiring will be added next.",
+  workspaceHome: {
+    title: "My workspace home",
+    description: "A common entry screen that opens work areas based on each user's role and permissions.",
+    openLabel: "Open screen",
+    plannedLabel: "Planned",
+    statuses: {
+      available: "Available",
+      planned: "Planned",
+    },
+    cards: {
+      workorder: {
+        label: "Work order workspace",
+        description: "Review assigned work orders and active work items.",
+      },
+      personalSettings: {
+        label: "Personal settings",
+        description: "A future area for language, color, and notification preferences per user.",
+      },
+    },
+  },
   ui: {
     common: {
       close: "Close",

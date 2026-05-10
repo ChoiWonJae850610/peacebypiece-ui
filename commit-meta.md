@@ -1,24 +1,31 @@
 Version :
-0.9.224392
+0.9.224393
 
 Summary :
-고객관리자 카드형 홈 1차 구현
+작업지시서 홈 버튼과 멤버 홈 진입점 추가
 
 Description :
-고객관리자 AdminShell에서 좌측 패널 렌더링을 제거하고 상단 홈/작업지시서 이동 버튼을 추가했다. /admin 카드형 홈은 작업지시서 업무 진입과 협력업체관리, 저장소관리, 통계정보, 환경설정, 멤버관리 후보 카드로 재구성했다. 권한 기반 확장을 위해 카드 registry와 permission code를 추가하고 단위표준, 외주공정, 생산품유형은 후속 권한 후보 카드로 분리했다.
+작업지시서 화면에서 역할에 맞는 메인화면으로 돌아갈 수 있도록 PC/태블릿/모바일 홈 버튼을 추가했다. 관리자 외 일반 멤버도 사용할 수 있는 /workspace 1차 홈을 추가하고, 역할 기반 홈 경로 유틸과 관련 i18n 문구를 정리했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- components/admin/layout/AdminShell.tsx
-- components/admin/layout/AdminTopbar.tsx
-- components/admin/dashboard/AdminConsoleSections.tsx
-- lib/admin/adminConsoleLinks.ts
-- lib/i18n/ko/admin.ts
-- lib/i18n/en/admin.ts
+- components/workorder/WorkOrderWorkspace.tsx
+- components/workorder/layout/types.ts
+- components/workorder/layout/WorkOrderDetailDesktopView.tsx
+- components/workorder/layout/WorkOrderDetailTabletView.tsx
+- components/workorder/layout/WorkOrderDetailMobileView.tsx
+- components/layout/MobileTopBar.tsx
+- lib/i18n/ko/workorder.ts
+- lib/i18n/en/workorder.ts
+- lib/i18n/ko/common.ts
+- lib/i18n/en/common.ts
 
 추가 파일 목록 :
-- lib/admin/adminWorkspaceCards.ts
-- docs/admin-card-home-implementation-0.9.224392.md
+- lib/navigation/workspaceHomeRoutes.ts
+- components/workorder/layout/WorkOrderHomeButton.tsx
+- components/workspace/MemberWorkspaceHome.tsx
+- app/workspace/page.tsx
+- docs/workorder-home-navigation-0.9.224393.md
 
 삭제 파일 목록 :
 없음

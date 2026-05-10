@@ -16,12 +16,13 @@ export default function WorkOrderDetailMobileView({
   mobileTopBarProps,
   mobileDrawerProps,
   loadingState,
+  homeNavigation,
 }: WorkOrderLayoutViewProps) {
   const isLoading = Boolean(loadingState?.isRepositoryLoading);
   return (
     <MobileSectionStack
       appShellRef={appShellRef}
-      topBar={<MobileTopBar {...mobileTopBarProps} />}
+      topBar={<MobileTopBar {...mobileTopBarProps} homeNavigation={homeNavigation} />}
       drawer={<MobileDrawer {...mobileDrawerProps} />}
       detail={isLoading ? (
         <WorkOrderLoadingState

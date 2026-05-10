@@ -464,6 +464,10 @@ export const workorderKo = {
         openMenuAria: "작업 목록 열기",
         menu: "메뉴",
       },
+      homeNavigation: {
+        label: "홈",
+        ariaLabel: "메인화면으로 이동",
+      },
       mobileDrawer: {
         closeOverlayAria: "드로어 닫기",
         title: "작업 목록",
