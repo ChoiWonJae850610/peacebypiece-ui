@@ -1,19 +1,18 @@
 Version :
-0.9.224381
+0.9.22439
 
 Summary :
-휴지통 단계 표시와 리오더 생성 pending 보정
+작업지시서와 저장소 안정 체크포인트 문서화
 
 Description :
-작업지시서 휴지통 상세에서 검토완료 단계가 작성중 위치로 표시되던 문제를 보정했다. 리오더 생성 시 전체 작업지시서 목록을 저장하지 않고 새 리오더 작업지시서 1건만 생성 저장하도록 바꿔 리오더 생성중 상태가 오래 유지되는 문제를 줄였다.
+작업지시서 lazy load, 고객관리자 저장소/휴지통, 시스템관리자 실제 삭제 후보 흐름을 1차 안정 기준점으로 문서화했다. 이후 관리자 화면 구조 개편을 위한 IA 로드맵도 별도 문서로 정리하고 APP_VERSION을 0.9.22439로 갱신했다.
 
 수정 파일 목록 :
-- components/admin/files/fileTrashSectionRows.ts
-- lib/hooks/workorder/useWorkOrderLifecycleActions.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/workorder-trash-stage-and-reorder-pending-0.9.224381.md
+- docs/peacebypiece-stability-checkpoint-0.9.22439.md
+- docs/admin-ia-roadmap-0.9.22439.md
 
 삭제 파일 목록 :
 없음
