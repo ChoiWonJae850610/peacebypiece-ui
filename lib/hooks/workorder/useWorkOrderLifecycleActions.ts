@@ -218,18 +218,17 @@ export function useWorkOrderLifecycleActions({
               nextTitle: getWorkOrderDisplayTitle(createdWorkOrder),
             }, historyText),
           ];
-          const persistedWorkOrders = await persistWorkOrdersWithHistory(repository, {
-            workOrders: nextWorkOrders,
+          const persistedCreatedWorkOrder = await persistCreatedWorkOrderWithHistory(repository, {
+            workOrder: createdWorkOrder,
             historyLogs: nextHistoryLogs,
           });
-          const persistedCreatedWorkOrder = persistedWorkOrders.find((item) => item.id === createdWorkOrder.id) ?? createdWorkOrder;
-          setWorkOrders(persistedWorkOrders);
-          setPersistedWorkOrders(persistedWorkOrders);
+          setWorkOrders((prev) => upsertWorkOrderAtStart(prev, persistedCreatedWorkOrder));
+          setPersistedWorkOrders((prev) => upsertWorkOrderAtStart(prev, persistedCreatedWorkOrder));
           setSelectedId(persistedCreatedWorkOrder.id);
           setLastSavedAt(persistedCreatedWorkOrder.lastSavedAt);
           setSaveStatus("saved");
           setHistoryLogs((prev) => [...nextHistoryLogs, ...prev]);
-          setToastMessage(lifecycleText.reorderCreatedToastFormat.replace("{title}", getWorkOrderDisplayTitle(createdWorkOrder)));
+          setToastMessage(lifecycleText.reorderCreatedToastFormat.replace("{title}", getWorkOrderDisplayTitle(persistedCreatedWorkOrder)));
         },
       });
     },

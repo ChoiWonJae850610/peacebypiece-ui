@@ -1,18 +1,19 @@
 Version :
-0.9.22438
+0.9.224381
 
 Summary :
-시스템관리자 실제 삭제 흐름 보정
+휴지통 단계 표시와 리오더 생성 pending 보정
 
 Description :
-시스템관리자 저장소 실제 삭제에서 작업지시서 후보의 R2 묶음 파일 삭제가 실패했는데도 작업지시서와 메모가 삭제 완료로 처리될 수 있는 순서를 보정했다. R2 삭제가 먼저 성공한 경우에만 작업지시서와 묶음 메모, 첨부 휴지통 항목을 purged 처리하고, 실패 시 retry 가능한 failed 후보로 유지하도록 정리했다.
+작업지시서 휴지통 상세에서 검토완료 단계가 작성중 위치로 표시되던 문제를 보정했다. 리오더 생성 시 전체 작업지시서 목록을 저장하지 않고 새 리오더 작업지시서 1건만 생성 저장하도록 바꿔 리오더 생성중 상태가 오래 유지되는 문제를 줄였다.
 
 수정 파일 목록 :
-- lib/system/storagePurgeCandidates.ts
+- components/admin/files/fileTrashSectionRows.ts
+- lib/hooks/workorder/useWorkOrderLifecycleActions.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/system-storage-purge-flow-0.9.22438.md
+- docs/workorder-trash-stage-and-reorder-pending-0.9.224381.md
 
 삭제 파일 목록 :
 없음

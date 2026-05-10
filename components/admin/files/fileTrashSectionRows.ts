@@ -78,7 +78,7 @@ export const TRASH_CELL_SELECT_CLASS =
 
 export const WORKORDER_STAGE_STEPS = [
   { key: "draft", keys: ["draft", "working", "작성중", "작업중"], label: "작성중" },
-  { key: "review", keys: ["review_requested", "검토요청", "검토"], label: "검토" },
+  { key: "review", keys: ["review_requested", "review_completed", "검토요청", "검토완료", "검토"], label: "검토" },
   { key: "order", keys: ["request_order", "order_requested", "발주요청", "발주"], label: "발주" },
   {
     key: "inspection",
