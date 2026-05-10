@@ -11,7 +11,7 @@ import {
 } from "@/lib/constants/workorderStates";
 import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
 import { ADMIN_FILE_TRASH_ACTOR_IDS } from "@/lib/admin/files/trashPolicy";
-import type { WorkOrder } from "@/types/workorder";
+import type { WorkOrder, WorkOrderSummary } from "@/types/workorder";
 import { applyReorderIdentity } from "@/lib/workorder/reorder/helpers";
 import { syncDbFactoryOrdersForSpecSheet } from "@/lib/workorder/repository/dbFactoryOrderRepository";
 import { syncDbSpecSheetMaterialsForSpecSheet } from "@/lib/workorder/repository/dbSpecSheetMaterialRepository";
@@ -325,6 +325,92 @@ function mapSpecSheetRowToWorkOrder(row: DbSpecSheetRow): WorkOrder {
   return applyReorderIdentity(hydrated);
 }
 
+function countPayloadItems(value: unknown): number {
+  return Array.isArray(value) ? value.length : 0;
+}
+
+function readStringPayloadValue(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : fallback;
+}
+
+function readNumberPayloadValue(value: unknown, fallback = 0): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function mapSpecSheetRowToWorkOrderSummary(row: DbSpecSheetRow): WorkOrderSummary {
+  const payload = parsePayloadValue(row.payload);
+  const normalizedWorkflowState =
+    row.workflow_state !== null && row.workflow_state !== undefined
+      ? normalizeDbWorkflowState(row.workflow_state)
+      : typeof payload.workflowState === "string"
+        ? normalizeDbWorkflowState(payload.workflowState)
+        : DEFAULT_WORKFLOW_STATE;
+  const lastSavedAt =
+    row.last_saved_at ??
+    toIsoString(row.updated_at) ??
+    toIsoString(row.created_at) ??
+    readStringPayloadValue(payload.lastSavedAt);
+
+  return {
+    id: row.id,
+    title: row.title,
+    displayTitle: readStringPayloadValue(payload.displayTitle, row.title),
+    baseTitle: readStringPayloadValue(payload.baseTitle, row.title),
+    workOrderKind: row.work_order_kind ?? payload.workOrderKind,
+    reorderGroupId:
+      row.reorder_group_id ??
+      (typeof payload.reorderGroupId === "string" ? payload.reorderGroupId : undefined),
+    reorderRound:
+      typeof row.reorder_round === "number"
+        ? row.reorder_round
+        : typeof payload.reorderRound === "number"
+          ? payload.reorderRound
+          : undefined,
+    parentSpecSheetId:
+      row.parent_spec_sheet_id ??
+      (typeof payload.parentSpecSheetId === "string" ? payload.parentSpecSheetId : undefined),
+    isDefectOrder:
+      typeof row.is_rework === "boolean"
+        ? row.is_rework
+        : typeof payload.isDefectOrder === "boolean"
+          ? payload.isDefectOrder
+          : undefined,
+    category1: readStringPayloadValue(payload.category1),
+    category2: readStringPayloadValue(payload.category2),
+    category3: readStringPayloadValue(payload.category3),
+    category1Id:
+      row.category1_id ??
+      (typeof payload.category1Id === "string" ? payload.category1Id : null),
+    category2Id:
+      row.category2_id ??
+      (typeof payload.category2Id === "string" ? payload.category2Id : null),
+    category3Id:
+      row.category3_id ??
+      (typeof payload.category3Id === "string" ? payload.category3Id : null),
+    season: readStringPayloadValue(payload.season),
+    priority: readStringPayloadValue(payload.priority),
+    vendor: readStringPayloadValue(payload.vendor),
+    manager: readStringPayloadValue(payload.manager),
+    managerId: typeof payload.managerId === "string" ? payload.managerId : null,
+    createdById: readStringPayloadValue(payload.createdById, "system"),
+    createdByRole: payload.createdByRole ?? "admin",
+    dueDate: readStringPayloadValue(payload.dueDate),
+    quantity: readNumberPayloadValue(payload.quantity),
+    inventoryQuantity: readNumberPayloadValue(payload.inventoryQuantity),
+    inventoryStatus: payload.inventoryStatus ?? "unchecked",
+    workflowState: normalizedWorkflowState,
+    lastSavedAt,
+    orderEntryCount: countPayloadItems(payload.orderEntries),
+    materialCount: countPayloadItems(payload.materials),
+    outsourcingCount: countPayloadItems(payload.outsourcing),
+    attachmentCount: countPayloadItems(payload.attachments),
+    memoThreadCount: countPayloadItems(payload.memoThreads),
+    hasDetailSnapshot: false,
+    createdAt: toIsoString(row.created_at) || undefined,
+    updatedAt: toIsoString(row.updated_at) || undefined,
+  };
+}
+
 function quoteIdentifier(identifier: string): string {
   return `"${identifier.replaceAll('"', '""')}"`;
 }
@@ -552,15 +638,11 @@ function assertMinimumSpecSheetSchema(schema: DbSpecSheetSchema) {
   }
 }
 
-export async function findAllDbWorkOrders(): Promise<WorkOrder[]> {
-  const schema = await loadSpecSheetSchema();
-  assertMinimumSpecSheetSchema(schema);
-
+function buildSpecSheetSelectSql(schema: DbSpecSheetSchema): string {
   const payloadFallbackSql =
     schema.payloadColumnKind === "text" ? "NULL::text" : "NULL::jsonb";
 
-  const result = await queryDb<DbSpecSheetRow>(
-    `
+  return `
       SELECT
         id,
         title,
@@ -583,11 +665,29 @@ export async function findAllDbWorkOrders(): Promise<WorkOrder[]> {
       ${schema.companyIdColumn ? `WHERE ${quoteIdentifier(schema.companyIdColumn)} = $1` : schema.isActiveColumn ? `WHERE ${quoteIdentifier(schema.isActiveColumn)} = TRUE` : ""}
       ${schema.companyIdColumn && schema.isActiveColumn ? `AND ${quoteIdentifier(schema.isActiveColumn)} = TRUE` : ""}
       ORDER BY ${schema.updatedAtColumn ? `${quoteIdentifier(schema.updatedAtColumn)} DESC NULLS LAST, ` : ""}${schema.createdAtColumn ? `${quoteIdentifier(schema.createdAtColumn)} DESC NULLS LAST, ` : ""}id DESC
-    `,
+    `;
+}
+
+async function loadActiveSpecSheetRows(): Promise<DbSpecSheetRow[]> {
+  const schema = await loadSpecSheetSchema();
+  assertMinimumSpecSheetSchema(schema);
+
+  const result = await queryDb<DbSpecSheetRow>(
+    buildSpecSheetSelectSql(schema),
     schema.companyIdColumn ? [getAdminCompanyId()] : undefined,
   );
 
-  return result.rows.map(mapSpecSheetRowToWorkOrder);
+  return result.rows;
+}
+
+export async function findDbWorkOrderSummaries(): Promise<WorkOrderSummary[]> {
+  const rows = await loadActiveSpecSheetRows();
+  return rows.map(mapSpecSheetRowToWorkOrderSummary);
+}
+
+export async function findAllDbWorkOrders(): Promise<WorkOrder[]> {
+  const rows = await loadActiveSpecSheetRows();
+  return rows.map(mapSpecSheetRowToWorkOrder);
 }
 
 export async function createDbWorkOrder(

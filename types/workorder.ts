@@ -152,6 +152,47 @@ export type WorkOrderListItem = Pick<
   filesCount: number;
 };
 
+export type WorkOrderSummary = Pick<
+  WorkOrder,
+  | "id"
+  | "title"
+  | "displayTitle"
+  | "baseTitle"
+  | "workOrderKind"
+  | "isDefectOrder"
+  | "reorderGroupId"
+  | "reorderRound"
+  | "parentSpecSheetId"
+  | "category1"
+  | "category2"
+  | "category3"
+  | "category1Id"
+  | "category2Id"
+  | "category3Id"
+  | "season"
+  | "priority"
+  | "vendor"
+  | "manager"
+  | "managerId"
+  | "createdById"
+  | "createdByRole"
+  | "dueDate"
+  | "quantity"
+  | "inventoryQuantity"
+  | "inventoryStatus"
+  | "workflowState"
+  | "lastSavedAt"
+> & {
+  orderEntryCount: number;
+  materialCount: number;
+  outsourcingCount: number;
+  attachmentCount: number;
+  memoThreadCount: number;
+  hasDetailSnapshot: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export type HistoryDetailLine = {
   label?: string;
   value: string;

@@ -12,6 +12,7 @@ import {
   createDbWorkOrder,
   deleteDbWorkOrder,
   findAllDbWorkOrders,
+  findDbWorkOrderSummaries,
   saveDbWorkOrder,
   saveDbWorkOrders,
 } from "@/lib/workorder/repository/dbWorkOrderRepository";
@@ -254,6 +255,31 @@ export async function handleGetWorkOrders() {
     return NextResponse.json({ workOrders });
   } catch (error) {
     const resolved = resolveDbErrorPayload(error, "Failed to fetch work orders.");
+    logDbRequestOutcome("GET", false, resolved.payload.code, resolved.payload.message);
+
+    return NextResponse.json(resolved.payload, { status: resolved.status });
+  }
+}
+
+export async function handleGetWorkOrderSummaries() {
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json(createDbNotConfiguredPayload(), { status: 503 });
+  }
+
+  try {
+    const workOrders = await findDbWorkOrderSummaries();
+    logDbRequestOutcome("GET", true, "SUMMARY_READY", `rows=${workOrders.length}`);
+
+    return NextResponse.json({
+      workOrders,
+      meta: {
+        mode: "summary",
+        hydrated: false,
+        count: workOrders.length,
+      },
+    });
+  } catch (error) {
+    const resolved = resolveDbErrorPayload(error, "Failed to fetch work order summaries.");
     logDbRequestOutcome("GET", false, resolved.payload.code, resolved.payload.message);
 
     return NextResponse.json(resolved.payload, { status: resolved.status });
