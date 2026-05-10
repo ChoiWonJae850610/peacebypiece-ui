@@ -1,19 +1,17 @@
 Version :
-0.9.224394
+0.10.0
 
 Summary :
-작업지시서 모바일 홈 버튼 타입 오류 수정
+버전 체계를 0.10.0으로 전환
 
 Description :
-작업지시서 홈 버튼 추가 이후 모바일 상단바 props 타입에 homeNavigation이 중복 요구되어 발생한 빌드 타입 오류를 수정했다. 레이아웃과 워크스페이스 뷰모델의 MobileTopBarProps에서 homeNavigation을 별도 주입 props로 분리하고 APP_VERSION을 0.9.224394로 올렸다.
+기존 0.9.224xxx 형태의 긴 보정 버전 체계를 마무리하고 관리자 IA 개편과 workspace 구조 작업을 위한 0.10.0 기준 버전으로 전환했다. APP_VERSION을 0.10.0으로 갱신하고 이후 0.10.x 버전 라인의 작업 기준 문서를 추가했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/workorder/workspace/viewModelTypes.ts
-- components/workorder/layout/types.ts
 
 추가 파일 목록 :
-없음
+- docs/versioning-transition-0.10.0.md
 
 삭제 파일 목록 :
 없음
