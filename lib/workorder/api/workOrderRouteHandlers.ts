@@ -379,7 +379,11 @@ export async function handlePatchWorkOrders(request: Request) {
         return createInvalidPayloadResponse("Every workOrders item must include workOrder.id.");
       }
 
-      const previousWorkOrderMap = buildWorkOrderMap(await findAllDbWorkOrders());
+      const requestedWorkOrderIds = Array.from(new Set(body.workOrders.map((workOrder) => workOrder.id)));
+      const previousWorkOrders = (
+        await Promise.all(requestedWorkOrderIds.map((workOrderId) => findDbWorkOrderById(workOrderId)))
+      ).filter((workOrder): workOrder is WorkOrder => Boolean(workOrder));
+      const previousWorkOrderMap = buildWorkOrderMap(previousWorkOrders);
       const savedWorkOrders = await saveDbWorkOrders(body.workOrders);
 
       const workOrders = await hydrateWorkOrdersWithAttachmentMemoSnapshots(savedWorkOrders);
@@ -401,11 +405,11 @@ export async function handlePatchWorkOrders(request: Request) {
       return createInvalidPayloadResponse("workOrder.id is required.");
     }
 
-    const previousWorkOrderMap = buildWorkOrderMap(await findAllDbWorkOrders());
+    const previousWorkOrder = await findDbWorkOrderById(body.workOrder.id);
     const savedWorkOrder = await saveDbWorkOrder(body.workOrder);
 
     const workOrder = await hydrateWorkOrderWithAttachmentMemoSnapshot(savedWorkOrder);
-    await writeWorkOrderStatusChangeHistory(previousWorkOrderMap.get(workOrder.id), workOrder);
+    await writeWorkOrderStatusChangeHistory(previousWorkOrder ?? undefined, workOrder);
 
     logDbRequestOutcome("PATCH", true, "READY", workOrder.id);
 

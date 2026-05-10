@@ -14,13 +14,14 @@ import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryPr
 import {
   getSelectedWorkOrderForSaveState,
   persistWorkOrderWithHistory,
+  mergeSavedWorkOrders,
   persistWorkOrdersWithHistory,
   replaceWorkOrderById,
 } from "./workorderRepositoryMutations";
 import { findPartnerIdByNameAndTypes } from "@/lib/admin/partner/persistence";
 import { createReinspectionRequestHistoryLog } from "@/lib/workorder/history/builders";
 import { getWorkOrderDisplayTitle } from "@/lib/workorder/presentation/workOrderPresentation";
-import { getOrderTypeFromWorkOrderKind } from "@/lib/workorder/reorder/helpers";
+import { getOrderTypeFromWorkOrderKind, getWorkOrderReorderGroupId } from "@/lib/workorder/reorder/helpers";
 import { deriveOrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import { isImmediateDbField } from "@/lib/workorder/storagePolicy";
 import { stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
@@ -163,6 +164,11 @@ export function useWorkOrderWorkflowActions({
     },
     [actionFlowText, currentUser.name, historyText, repository, setHistoryLogs, setInventoryEditorOpen, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders, syncSelectedWorkOrderSaveState, workflowStateLabels],
   );
+
+  const getInventorySyncCandidates = useCallback((nextWorkOrders: WorkOrder[], currentWorkOrder: WorkOrder) => {
+    const currentGroupId = getWorkOrderReorderGroupId(currentWorkOrder);
+    return nextWorkOrders.filter((item) => item.id === currentWorkOrder.id || getWorkOrderReorderGroupId(item) === currentGroupId);
+  }, []);
 
   const applyReinspectionAction = useCallback(
     async (workOrder: WorkOrder, action: WorkflowAction) => {
@@ -373,11 +379,13 @@ export function useWorkOrderWorkflowActions({
       if (!result) return;
 
       const nextWorkOrders = applySharedInventoryAdjustment(workOrdersRef.current, currentWorkOrder, result.appliedChanges ?? []);
+      const persistCandidates = getInventorySyncCandidates(nextWorkOrders, currentWorkOrder);
       setSaveStatus("saving");
       void persistWorkOrdersWithHistory(repository, {
-        workOrders: nextWorkOrders,
+        workOrders: persistCandidates,
         historyLogs: result.historyLogs,
-      }).then((persistedWorkOrders) => {
+      }).then((persistedCandidates) => {
+        const persistedWorkOrders = mergeSavedWorkOrders(nextWorkOrders, persistedCandidates);
         setWorkOrders(persistedWorkOrders);
         setPersistedWorkOrders(persistedWorkOrders);
         syncSelectedWorkOrderSaveState(persistedWorkOrders);
@@ -393,7 +401,7 @@ export function useWorkOrderWorkflowActions({
         setToastMessage(result.toastMessage);
       }
     },
-    [actionFlowText, currentUser.name, historyText, repository, setHistoryLogs, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders, syncSelectedWorkOrderSaveState],
+    [actionFlowText, currentUser.name, getInventorySyncCandidates, historyText, repository, setHistoryLogs, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders, syncSelectedWorkOrderSaveState],
   );
 
   const handleCompleteInspection = useCallback(
@@ -412,11 +420,13 @@ export function useWorkOrderWorkflowActions({
         orderEntryId,
         nextInventoryQuantity,
       });
+      const persistCandidates = getInventorySyncCandidates(nextWorkOrders, currentWorkOrder);
       setSaveStatus("saving");
       void persistWorkOrdersWithHistory(repository, {
-        workOrders: nextWorkOrders,
+        workOrders: persistCandidates,
         historyLogs: result.historyLogs,
-      }).then((persistedWorkOrders) => {
+      }).then((persistedCandidates) => {
+        const persistedWorkOrders = mergeSavedWorkOrders(nextWorkOrders, persistedCandidates);
         setWorkOrders(persistedWorkOrders);
         setPersistedWorkOrders(persistedWorkOrders);
         syncSelectedWorkOrderSaveState(persistedWorkOrders);
@@ -432,7 +442,7 @@ export function useWorkOrderWorkflowActions({
         setToastMessage(result.toastMessage);
       }
     },
-    [actionFlowText, currentUser.name, historyText, repository, setHistoryLogs, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders, syncSelectedWorkOrderSaveState],
+    [actionFlowText, currentUser.name, getInventorySyncCandidates, historyText, repository, setHistoryLogs, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders, syncSelectedWorkOrderSaveState],
   );
 
   const handleUpdateSelectedWorkOrder = useCallback(

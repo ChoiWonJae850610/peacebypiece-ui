@@ -1,21 +1,19 @@
 Version :
-0.9.224347
+0.9.224348
 
 Summary :
-작업지시서 저장 정책 회귀와 메모 key 중복 오류 수정
+검수 완료 저장 범위 경량화와 payload 사용처 점검
 
 Description :
-lazy load 적용 후 작업지시서 일반 입력 변경이 즉시 DB 저장처럼 처리되던 흐름을 local draft 중심으로 보정했다. 검수 완료 저장 실패 시 저장 중 상태가 고정되지 않도록 실패 경로를 정리하고, 같은 내용의 메모나 댓글을 여러 번 등록할 때 React key 중복 오류가 발생하지 않도록 메모 생성/렌더링 기준을 DB id 중심으로 수정했다.
+검수 완료와 재고 반영 시 전체 작업지시서 목록을 저장하지 않고 현재 작업지시서와 같은 리오더 그룹만 저장하도록 보정했다. 서버 PATCH 처리에서도 이전 상태 조회 범위를 요청된 작업지시서로 축소하고, spec_sheets.payload 컬럼은 legacy/detail snapshot 용도로 남기되 상태 변경 대량 저장 기준으로 쓰지 않도록 문서화했다.
 
 수정 파일 목록 :
-- components/workorder/WorkOrderWorkspace.tsx
-- components/workorder/sidepanel/WorkOrderMemoPanel.tsx
-- lib/hooks/workorder/useWorkOrderAttachments.ts
 - lib/hooks/workorder/useWorkOrderWorkflowActions.ts
+- lib/workorder/api/workOrderRouteHandlers.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/workorder-save-policy-and-memo-key-regression-0.9.224347.md
+- docs/workorder-state-save-lightweight-and-payload-audit-0.9.224348.md
 
 삭제 파일 목록 :
 없음
