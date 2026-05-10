@@ -57,6 +57,9 @@ export default function WorkOrderWorkspace({
   const renderHasSelection =
     selection.hasVisibleWorkOrders && selection.hasActiveSelection;
   const isRepositoryLoading = repository.repositoryStatus === "loading";
+  const isSelectedDetailLoading = Boolean(
+    renderHasSelection && selection.isSelectedWorkOrderDetailLoading,
+  );
   const isCreatingWorkOrder = runtime.actionStatusMap.create === "loading";
   const loadingCopy = i18n.workorder.ui.layout.sidebarControls;
   const lifecycleCopy = i18n.workorder.lifecycle;
@@ -78,17 +81,22 @@ export default function WorkOrderWorkspace({
     : null;
   const persistenceProcessingLabel =
     persistence.saveStatus === "saving" ? lifecycleCopy.editProcessingLabel : null;
+  const selectedDetailLoadingMessage = isSelectedDetailLoading
+    ? loadingCopy.loadingDetailTitle
+    : null;
   const workspaceWriteLockMessage =
     manualWriteLockMessage ??
     lifecycleProcessingLabel ??
     workflowWriteLockMessage ??
     persistenceProcessingLabel ??
+    selectedDetailLoadingMessage ??
     undefined;
   const isWorkspaceWriteLocked = Boolean(
     manualWriteLockMessage ||
     lifecycleProcessingLabel ||
     workflowProcessingLabel ||
-    persistenceProcessingLabel,
+    persistenceProcessingLabel ||
+    selectedDetailLoadingMessage,
   );
 
   const runWithWorkspaceWriteLock = async <T,>(
@@ -106,7 +114,7 @@ export default function WorkOrderWorkspace({
   };
 
   const workspaceLoadingState = {
-    isRepositoryLoading,
+    isRepositoryLoading: isRepositoryLoading || isSelectedDetailLoading,
     detailTitle: loadingCopy.loadingDetailTitle,
     detailDescription: loadingCopy.loadingDetailDescription,
     sideTitle: loadingCopy.loadingSideTitle,

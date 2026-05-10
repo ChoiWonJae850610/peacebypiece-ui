@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
 import { createRepositoryError, type WorkOrderRepositoryError } from "@/lib/repositories/repositoryErrors";
 import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
@@ -78,6 +78,15 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(
     initialWorkOrders.find((item) => item.id === selectedId)?.lastSavedAt ?? initialWorkOrders[0]?.lastSavedAt ?? null,
   );
+  const detailLoadInFlightIdsRef = useRef<Set<string>>(new Set());
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      detailLoadInFlightIdsRef.current.clear();
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -108,7 +117,7 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
         setRepositoryStatus("ready");
       })
       .catch((error) => {
-        if (cancelled) return;
+        if (!isMountedRef.current) return;
         setRepositoryError(createRepositoryError("initialize", error, "Failed to load workorder repository state."));
         setRepositoryStatus("error");
       });
@@ -139,19 +148,21 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
     () => (selectedId ? workOrders.find((item) => item.id === selectedId) : null) ?? createFallbackWorkOrder(),
     [workOrders, selectedId],
   );
+  const isSelectedWorkOrderDetailLoading = useMemo(
+    () => Boolean(selectedId && workOrders.some((item) => item.id === selectedId && !item.hasDetailSnapshot)),
+    [selectedId, workOrders],
+  );
 
   useEffect(() => {
-    if (repositoryStatus !== "ready" || !selectedId) return;
+    if (repositoryStatus !== "ready" || !selectedId || !isSelectedWorkOrderDetailLoading) return;
+    if (detailLoadInFlightIdsRef.current.has(selectedId)) return;
 
-    const selectedSummary = workOrders.find((item) => item.id === selectedId) ?? null;
-    if (!selectedSummary || selectedSummary.hasDetailSnapshot) return;
-
-    let cancelled = false;
+    detailLoadInFlightIdsRef.current.add(selectedId);
 
     repository
       .loadWorkOrderDetailAsync(selectedId)
       .then((loadedWorkOrder) => {
-        if (cancelled) return;
+        if (!isMountedRef.current) return;
         const normalizedDetail = stabilizeWorkOrders(normalizeWorkOrderDataList([{ ...loadedWorkOrder, hasDetailSnapshot: true }]))[0];
         if (!normalizedDetail) return;
 
@@ -171,14 +182,13 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
         );
       })
       .catch((error) => {
-        if (cancelled) return;
+        if (!isMountedRef.current) return;
         setRepositoryError(createRepositoryError("initialize", error, "Failed to load workorder detail."));
+      })
+      .finally(() => {
+        detailLoadInFlightIdsRef.current.delete(selectedId);
       });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [repository, repositoryStatus, selectedId, workOrders]);
+  }, [isSelectedWorkOrderDetailLoading, repository, repositoryStatus, selectedId]);
 
   const currentUser = useMemo(
     () => users.find((user) => user.id === currentUserId) ?? users[0],
@@ -219,6 +229,7 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
     selectedId,
     setSelectedId,
     selectedWorkOrder,
+    isSelectedWorkOrderDetailLoading,
     searchQuery,
     setSearchQuery,
     saveStatus,

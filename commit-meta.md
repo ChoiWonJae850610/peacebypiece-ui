@@ -1,29 +1,20 @@
 Version :
-0.9.224345
+0.9.224346
 
 Summary :
-작업지시서 상세 lazy load 1차 구현
+작업지시서 상세 lazy load 로딩 UX와 중복 호출 방지 보정
 
 Description :
-작업지시서 첫 진입 시 목록 전용 summary API를 먼저 사용하고 초기 선택 작업지시서와 이후 선택된 작업지시서만 상세 API로 hydrate하도록 전환했다. 상세 API와 repository detail 메서드를 추가하고 summary 상태의 첨부 개수 표시를 보정했다.
+작업지시서 상세 lazy load 적용 이후 선택 상세가 아직 준비되지 않은 동안 중앙 상세와 우측 패널에 로딩 상태를 표시하고, 저장/첨부/메모/상태 변경 액션이 먼저 실행되지 않도록 잠금 처리했다. 동일 상세 요청이 중복 호출되지 않도록 in-flight id 관리도 추가했다.
 
 수정 파일 목록 :
-- lib/workorder/api/workOrderRouteHandlers.ts
-- lib/workorder/repository/dbWorkOrderRepository.ts
-- lib/repositories/dbWorkorderHttpAdapter.ts
-- lib/repositories/dbWorkorderRepository.ts
-- lib/repositories/mockWorkorderRepository.ts
-- lib/repositories/workorderRepository.ts
-- lib/repositories/workorderRepositoryAdapter.ts
-- lib/repositories/workorderRepositoryCapabilities.ts
+- components/workorder/WorkOrderWorkspace.tsx
+- lib/hooks/useWorkOrder.ts
 - lib/hooks/workorder/useWorkOrderCoreState.ts
-- lib/workorder/mappers/workOrderListItemMapper.ts
-- types/workorder.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- app/api/workorders/[workOrderId]/route.ts
-- docs/workorder-detail-lazy-load-first-pass-0.9.224345.md
+- docs/workorder-lazy-load-regression-0.9.224346.md
 
 삭제 파일 목록 :
 없음
