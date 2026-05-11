@@ -1,21 +1,24 @@
 Version :
-0.10.6
+0.10.7
 
 Summary :
-고객관리자 카드형 홈 문구와 밀도 정리
+멤버관리 1차 진입 화면 추가
 
 Description :
-고객관리자 카드형 홈의 설계용 문구를 운영 화면 기준으로 정리하고, 카드 패딩과 간격을 줄여 운영 대시보드에서 주요 메뉴 접근성을 높였다. 멤버관리와 기준정보 카드는 준비 중 상태를 유지하되 권한 후보 같은 개발자용 표현은 제거했다.
+고객관리자 카드형 홈의 멤버 관리 카드를 실제 /admin/members 화면으로 연결하고, 역할 기본값, 메인화면 카드 권한, 권한 그룹 기준을 확인할 수 있는 1차 placeholder 화면을 추가했다. 실제 멤버 초대, 권한 DB, 권한 편집 저장 기능은 후속 작업으로 유지했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- components/admin/dashboard/AdminConsoleSections.tsx
 - lib/admin/adminWorkspaceCards.ts
+- components/admin/layout/AdminTopbar.tsx
 - lib/i18n/ko/admin.ts
 - lib/i18n/en/admin.ts
 
 추가 파일 목록 :
-- docs/admin-card-copy-cleanup-0.10.6.md
+- lib/admin/members/memberManagementPresentation.ts
+- components/admin/members/AdminMemberManagementPlaceholder.tsx
+- app/admin/members/page.tsx
+- docs/member-management-placeholder-0.10.7.md
 
 삭제 파일 목록 :
 없음

@@ -66,9 +66,9 @@ export const ADMIN_WORKSPACE_MANAGEMENT_CARDS: AdminWorkspaceCard[] = [
     label: "멤버 관리",
     description: "멤버 초대와 역할 설정을 관리합니다.",
     permission: ADMIN_WORKSPACE_PERMISSIONS.memberManage,
-    href: null,
-    status: "planned",
-    statusLabel: "준비 중",
+    href: "/admin/members",
+    status: "available",
+    statusLabel: "설계 화면",
   },
 ];
 

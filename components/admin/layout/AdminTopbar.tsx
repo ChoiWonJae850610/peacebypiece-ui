@@ -19,6 +19,7 @@ function getTopbarSummary(title: string, description: string | undefined, t: Ret
     [t("navigation.partners", "협력업체 관리")]: t("topbar.summaries.partners", "협력업체 · 공장 · 외주처"),
     [t("dashboardPage.title", "통계정보")]: t("topbar.summaries.dashboard", "작업지시서 · 협력업체 · 파일 사용량"),
     [t("navigation.settings", "환경설정")]: t("topbar.summaries.settings", "기준 설정 · 저장 정책 · 로그 이벤트"),
+    [t("memberManagement.title", "멤버 관리")]: t("topbar.summaries.members", "멤버 초대 · 역할 · 권한 설계"),
   };
 
   return summaries[title] ?? null;
@@ -32,6 +33,8 @@ function getLocalizedTopbarTitle(title: string, t: ReturnType<typeof useAdminTra
     "통계정보": t("dashboardPage.title", "통계정보"),
     "히스토리": t("historySection.title", "히스토리"),
     "환경설정": t("navigation.settings", "환경설정"),
+    "멤버 관리": t("memberManagement.title", "멤버 관리"),
+    "Member management": t("memberManagement.title", "멤버 관리"),
   };
 
   return titleMap[title] ?? title;

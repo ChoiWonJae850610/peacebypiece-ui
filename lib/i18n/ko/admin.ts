@@ -86,6 +86,55 @@ export const adminKo = {
       "product-types": { label: "생산품유형", description: "작업지시서 품목과 생산품 분류 기준을 관리합니다." }
     }
   },
+  memberManagement: {
+    title: "멤버 관리",
+    description: "멤버 초대, 역할 지정, 권한 기반 카드 노출을 연결하기 전의 1차 설계 화면입니다.",
+    eyebrow: "멤버 권한",
+    permissionCount: "권한 {count}개",
+    actions: { openOrganizationSettings: "조직 설정 보기" },
+    statuses: { ready: "기준 연결", planned: "설계 중" },
+    sections: {
+      roles: "역할 기본값",
+      rolesDescription: "역할은 기본 권한 묶음으로 사용하고, 실제 화면 노출은 권한 코드 기준으로 확장합니다.",
+      nextSteps: "다음 구현 범위",
+      workspaceCards: "메인화면 카드 권한",
+      workspaceCardsDescription: "관리자가 권한을 부여하면 해당 멤버의 메인화면에 표시될 카드 후보입니다.",
+      permissionGroups: "권한 그룹",
+      permissionGroupsDescription: "실제 DB 권한 테이블을 만들 때 사용할 권한 그룹 기준입니다."
+    },
+    roles: {
+      admin: { label: "관리자", description: "조직 운영, 설정, 저장소, 통계, 멤버 권한을 관리하는 기본 역할입니다." },
+      designer: { label: "디자이너", description: "디자인 첨부, 수정 요청 대응, 작업지시서 확인 중심의 역할입니다." },
+      inspector: { label: "검수 담당", description: "입고 후 검수, 불량 확인, 완료 처리 중심의 역할입니다." },
+      inventory: { label: "발주/재고 담당", description: "발주, 입고, 외주공정, 기준정보 확인 중심의 역할입니다." }
+    },
+    nextSteps: {
+      invite: { title: "초대 방식", description: "이메일 링크 또는 QR 기반 초대 흐름을 후속 버전에서 연결합니다." },
+      role: { title: "역할 지정", description: "멤버별 기본 역할을 지정하고 기본 권한 묶음과 연결합니다." },
+      permission: { title: "권한 조정", description: "협력업체, 저장소, 기준정보 같은 기능 권한을 멤버별로 조정합니다." },
+      workspace: { title: "홈 카드 반영", description: "부여된 권한에 따라 멤버 홈의 카드 노출을 자동 구성합니다." }
+    },
+    permissionCards: {
+      workorder: { label: "작업지시서", description: "작업지시서 업무 화면 접근 권한입니다." },
+      partners: { label: "협력업체 관리", description: "공장, 원단, 부자재, 외주처 기준정보 관리 권한입니다." },
+      storage: { label: "저장소 관리", description: "문서/디자인, 휴지통, 용량 관리 권한입니다." },
+      stats: { label: "통계정보", description: "운영 통계와 파일 사용량 지표 조회 권한입니다." },
+      "organization-settings": { label: "환경설정", description: "조직 단위 정책과 기준 설정 관리 권한입니다." },
+      "standard-units": { label: "단위표준", description: "원단, 부자재, 수량 단위 기준 관리 권한입니다." },
+      "outsourcing-processes": { label: "외주공정", description: "나염, 자수, 워싱 등 외주공정 기준 관리 권한입니다." },
+      "product-types": { label: "생산품유형", description: "작업지시서 품목과 생산품 분류 기준 관리 권한입니다." }
+    },
+    permissionGroups: {
+      workorder: { label: "작업지시서" },
+      workflow: { label: "워크플로우" },
+      memo: { label: "메모" },
+      attachment: { label: "첨부/디자인" },
+      "master-data": { label: "기준정보" },
+      stats: { label: "통계" },
+      operation: { label: "운영" },
+      "workspace-card": { label: "메인화면 카드" }
+    }
+  },
   filesSummary: { title: "저장소 사용 현황", description: "요금제 용량, 파일 상태, 파일 유형을 현재 기준으로 확인합니다.", periods: { 7: "7일", 15: "15일", 30: "30일" }, uploadAmount: "첨부량", count: "건수", fileType: "파일 유형", fileTypeLabel: "파일 유형", countSuffix: "개", totalUsage: "전체 사용량", attachments: "문서/디자인", trash: "휴지통", retentionPeriod: "보관 기간", usage: "사용량", refreshLabel: "저장소 데이터 새로고침", documents: "문서", designs: "디자인", memos: "작업메모", others: "기타", storagePlanLabel: "요금제 용량", currentPlan: "현재 요금제", pendingPlan: "확인 중", upgrade: "업그레이드", upgradeTitle: "요금제 업그레이드 화면은 후속 버전에서 연결합니다.", planCapacityPending: "요금제 확인 중", planCapacityLoading: "요금제 용량 확인 중", planCapacityLoadingDescription: "고객 정보의 요금제 용량을 불러오는 중", usedSuffix: "사용", remainingSuffix: "남음", fileOperationsLabel: "파일 운영", fileOperationsTitle: "파일 운영 요약", totalLabel: "전체", activeFiles: "사용중 파일", trashFiles: "휴지통 파일", purgeRequestedFiles: "삭제 요청", zeroTrashSize: "0MB 보관", zeroActiveSize: "0MB 사용", zeroPurgeRequestSize: "0MB 처리 대기", storedSuffix: "보관", waitingSuffix: "처리 대기", statuses: { normal: "정상", caution: "주의", danger: "위험" }, units: { count: "개", day: "일" } },
   filesList: { title: "문서/디자인 목록", sort: { latest: "최신순", size: "용량순", workorder: "작업지시서명순" }, selectAll: "전체 선택", clearAll: "전체 해제", emptyTrash: "비우기", delete: "삭제", restore: "복원", purge: "선택 삭제", processing: "처리 중", close: "닫기", yes: "예", no: "아니오", empty: "표시할 문서/디자인이 없습니다.", trashEmpty: "휴지통에 보관 중인 항목이 없습니다.", restoreSkipsBlockedItems: "복원할 수 없는 선택 항목은 제외하고 처리합니다.", purgeSkipsBlockedItems: "삭제 요청할 수 없는 선택 항목은 제외하고 처리합니다.", selectWorkOrder: "작업지시서 선택", deselectWorkOrder: "작업지시서 선택 해제", selectItem: "선택", deselectItem: "선택 해제", countSuffix: "개", columns: { select: "선택", target: "대상", workorder: "작업지시서", createdAt: "생성일자", deletedAt: "삭제일시", fileName: "파일명", type: "유형", size: "크기" }, selectedScope: { workorder: "작업지시서", workorderValue: "대표 row 1건", bundleAttachments: "문서/디자인/메모", restoreBlocked: "복원 제외 항목", totalSize: "파일 용량" }, emptyTrashConfirmTitle: "휴지통 비우기", emptyTrashConfirmDescription: "휴지통의 모든 항목을 삭제 요청하시겠습니까?", workorderPurgePreview: "선택 삭제 범위 확인", workorderRestorePreview: "복원 범위 확인", workorderActionGuardTitle: "작업지시서 단위로 처리 범위를 확인합니다.", workorderRestoreConnectedNotice: "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.", workorderActionSkeletonNotice: "선택 삭제는 고객관리자 삭제 요청으로 처리하고 휴지통 기본 목록에서 제외합니다. R2 파일 삭제는 시스템관리자 Worker 기반 purge 흐름에서만 처리됩니다.", workorderRestoreGuardDescription: "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.", workorderPurgeGuardDescription: "선택 삭제 시 고객관리자 삭제 요청 상태로 전환합니다. 실제 파일 삭제는 시스템관리자 처리 단계에서 진행합니다.", fileTypes: { document: "문서", design: "디자인", other: "기타" }, attachmentCount: "문서/디자인", detailTitles: { workorder: "작업지시서 휴지통 상세", file: "파일 휴지통 상세" }, detail: { openPreview: "파일 미리보기 열기", previewFailed: "미리보기 실패", workorderActionHint: "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.", fileActionHint: "이 파일만 복원하거나 삭제 요청할 수 있습니다.", documentsDesigns: "문서/디자인", memos: "메모", documentDesignCount: "문서/디자인 {count}개", memoCount: "메모 {count}개" }, disabledReasons: { workorderRestorePreparing: "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.", workorderPurgePreparing: "작업지시서는 삭제 요청 상태로 전환하고 고객관리자 휴지통 기본 목록에서 제외합니다.", bundleRestoreRequired: "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.", bundlePurgeRequired: "작업지시서와 문서/디자인/메모를 함께 삭제 요청해야 합니다.", parentWorkOrderMissing: "해당 작업지시서를 찾을 수 없습니다.", purgeFailedNeedsSystemReview: "삭제 실패 상태는 시스템관리자 확인 후 처리해야 합니다.", restoreUnavailable: "복원 가능 상태가 아닙니다.", purgeUnavailable: "선택 삭제 요청 가능 상태가 아닙니다." }, workorderStage: { currentStage: "현재 단계", deletedAtStage: "삭제 당시", steps: { draft: "작성중", review: "검토", order: "발주", inspection: "검수", completed: "완료" } }, visual: { workorder: "작업" }, types: { workorder: "작업지시서" }, restorePolicies: { workorderBundle: "작업지시서 단위 처리" }, sizeUnit: { byte: "B", kb: "KB", mb: "MB", gb: "GB" } },
   trashPage: { title: "휴지통" },
@@ -126,6 +175,7 @@ export const adminKo = {
       partners: "협력업체 · 공장 · 외주처",
       dashboard: "작업지시서 · 협력업체 · 파일 사용량",
       settings: "기준 설정 · 저장 정책 · 로그 이벤트",
+      members: "멤버 초대 · 역할 · 권한 설계",
       history: "상태 변경 · 주요 작업 기록",
     },
   },
