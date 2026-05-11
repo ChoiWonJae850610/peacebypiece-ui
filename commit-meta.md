@@ -1,21 +1,25 @@
 Version :
-0.10.59
+0.10.60
 
 Summary :
-멤버 승인과 권한 부여 화면 추가
+권한 기반 관리자 카드와 멤버관리 액션 제한 1차 구조 추가
 
 Description :
-고객관리자 멤버관리 화면에 가입 신청자를 승인하거나 거절하기 전 확인할 수 있는 승인 처리 영역과 권한 체크리스트를 추가했다. role template은 기본값으로만 사용하고 실제 저장은 permission_code 직접 부여 기준이라는 정책을 문서화했다.
+관리자 운영 대시보드 카드 노출을 permission_code 기준 필터 구조로 통과시키고, 멤버관리 화면의 카드/승인 액션에 필요한 권한 표시를 추가했다. 실제 세션과 API 권한 검증은 후속 단계로 분리했다.
 
 수정 파일 목록 :
+- components/admin/dashboard/AdminConsoleSections.tsx
 - components/admin/members/AdminMemberManagementDashboard.tsx
+- lib/admin/adminWorkspaceCards.ts
 - lib/admin/members/memberManagementPresentation.ts
+- lib/permissions/index.ts
 - lib/i18n/ko/admin.ts
 - lib/i18n/en/admin.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/member-approval-permission-screen-0.10.59.md
+- lib/permissions/permissionAccess.ts
+- docs/permission-based-admin-access-0.10.60.md
 
 삭제 파일 목록 :
 없음

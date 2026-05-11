@@ -1,4 +1,10 @@
-import { ADMIN_WORKSPACE_PERMISSIONS, type Permission } from "@/lib/permissions";
+import {
+  ADMIN_WORKSPACE_PERMISSIONS,
+  getMemberRoleTemplatePermissions,
+  hasEveryMemberPermission,
+  type MemberPermissionCode,
+  type Permission,
+} from "@/lib/permissions";
 
 export type AdminWorkspacePermission = Extract<Permission, (typeof ADMIN_WORKSPACE_PERMISSIONS)[keyof typeof ADMIN_WORKSPACE_PERMISSIONS]>;
 
@@ -9,6 +15,7 @@ export type AdminWorkspaceCard = {
   label: string;
   description: string;
   permission: AdminWorkspacePermission;
+  requiredMemberPermissions: readonly MemberPermissionCode[];
   href: string | null;
   status: AdminWorkspaceCardStatus;
   statusLabel: string;
@@ -19,6 +26,7 @@ export const ADMIN_WORKSPACE_WORK_ENTRY_CARD: AdminWorkspaceCard = {
   label: "작업지시서 업무 화면",
   description: "작업지시서 목록과 상세 업무 화면으로 이동합니다.",
   permission: ADMIN_WORKSPACE_PERMISSIONS.workorderAccess,
+  requiredMemberPermissions: ["workorder.read"],
   href: "/worker",
   status: "available",
   statusLabel: "업무 화면",
@@ -30,6 +38,7 @@ export const ADMIN_WORKSPACE_MANAGEMENT_CARDS: AdminWorkspaceCard[] = [
     label: "협력업체 관리",
     description: "공장, 원단, 부자재, 외주처 기준정보를 관리합니다.",
     permission: ADMIN_WORKSPACE_PERMISSIONS.partnerManage,
+    requiredMemberPermissions: ["partner.read"],
     href: "/admin/partners",
     status: "available",
     statusLabel: "관리",
@@ -39,6 +48,7 @@ export const ADMIN_WORKSPACE_MANAGEMENT_CARDS: AdminWorkspaceCard[] = [
     label: "저장소 관리",
     description: "문서/디자인, 휴지통, 용량 사용량을 관리합니다.",
     permission: ADMIN_WORKSPACE_PERMISSIONS.storageManage,
+    requiredMemberPermissions: ["storage.read"],
     href: "/admin/files",
     status: "available",
     statusLabel: "관리",
@@ -48,6 +58,7 @@ export const ADMIN_WORKSPACE_MANAGEMENT_CARDS: AdminWorkspaceCard[] = [
     label: "통계정보",
     description: "작업지시서, 협력업체, 파일 사용량 지표를 확인합니다.",
     permission: ADMIN_WORKSPACE_PERMISSIONS.statsView,
+    requiredMemberPermissions: ["stats.read"],
     href: "/admin/dashboard",
     status: "available",
     statusLabel: "조회",
@@ -57,6 +68,7 @@ export const ADMIN_WORKSPACE_MANAGEMENT_CARDS: AdminWorkspaceCard[] = [
     label: "환경설정",
     description: "고객사별 화면, 파일, 알림 정책을 관리합니다.",
     permission: ADMIN_WORKSPACE_PERMISSIONS.organizationSettingsManage,
+    requiredMemberPermissions: ["settings.read"],
     href: "/admin/settings",
     status: "available",
     statusLabel: "관리",
@@ -66,6 +78,7 @@ export const ADMIN_WORKSPACE_MANAGEMENT_CARDS: AdminWorkspaceCard[] = [
     label: "멤버 관리",
     description: "멤버 초대와 역할 설정을 관리합니다.",
     permission: ADMIN_WORKSPACE_PERMISSIONS.memberManage,
+    requiredMemberPermissions: ["member.read"],
     href: "/admin/members",
     status: "available",
     statusLabel: "설계 화면",
@@ -78,6 +91,7 @@ export const ADMIN_WORKSPACE_FUTURE_PERMISSION_CARDS: AdminWorkspaceCard[] = [
     label: "단위표준",
     description: "원단, 부자재, 생산 수량에 사용하는 단위 기준을 관리합니다.",
     permission: ADMIN_WORKSPACE_PERMISSIONS.standardUnitManage,
+    requiredMemberPermissions: ["standards.manage"],
     href: null,
     status: "planned",
     statusLabel: "준비 중",
@@ -87,6 +101,7 @@ export const ADMIN_WORKSPACE_FUTURE_PERMISSION_CARDS: AdminWorkspaceCard[] = [
     label: "외주공정",
     description: "나염, 자수, 워싱 등 외주공정 기준을 관리합니다.",
     permission: ADMIN_WORKSPACE_PERMISSIONS.outsourcingProcessManage,
+    requiredMemberPermissions: ["standards.manage"],
     href: null,
     status: "planned",
     statusLabel: "준비 중",
@@ -96,11 +111,29 @@ export const ADMIN_WORKSPACE_FUTURE_PERMISSION_CARDS: AdminWorkspaceCard[] = [
     label: "생산품유형",
     description: "작업지시서 품목과 생산품 분류 기준을 관리합니다.",
     permission: ADMIN_WORKSPACE_PERMISSIONS.productTypeManage,
+    requiredMemberPermissions: ["standards.manage"],
     href: null,
     status: "planned",
     statusLabel: "준비 중",
   },
 ];
+
+export type AdminWorkspaceAccessInput = {
+  permissionCodes?: readonly MemberPermissionCode[] | null;
+};
+
+export const ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES = getMemberRoleTemplatePermissions("company_admin");
+
+export function canAccessAdminWorkspaceCard(card: AdminWorkspaceCard, input: AdminWorkspaceAccessInput): boolean {
+  return hasEveryMemberPermission({ permissionCodes: input.permissionCodes }, card.requiredMemberPermissions);
+}
+
+export function filterAdminWorkspaceCardsByPermissions(
+  cards: readonly AdminWorkspaceCard[],
+  input: AdminWorkspaceAccessInput,
+): AdminWorkspaceCard[] {
+  return cards.filter((card) => canAccessAdminWorkspaceCard(card, input));
+}
 
 export function getAdminWorkspaceWorkEntryCard(): AdminWorkspaceCard {
   return ADMIN_WORKSPACE_WORK_ENTRY_CARD;
@@ -112,4 +145,12 @@ export function getAdminWorkspaceManagementCards(): AdminWorkspaceCard[] {
 
 export function getAdminWorkspaceFuturePermissionCards(): AdminWorkspaceCard[] {
   return ADMIN_WORKSPACE_FUTURE_PERMISSION_CARDS;
+}
+
+export function getVisibleAdminWorkspaceCards(input: AdminWorkspaceAccessInput): AdminWorkspaceCard[] {
+  return filterAdminWorkspaceCardsByPermissions([ADMIN_WORKSPACE_WORK_ENTRY_CARD, ...ADMIN_WORKSPACE_MANAGEMENT_CARDS], input);
+}
+
+export function getVisibleAdminWorkspaceManagementCards(input: AdminWorkspaceAccessInput): AdminWorkspaceCard[] {
+  return filterAdminWorkspaceCardsByPermissions(ADMIN_WORKSPACE_MANAGEMENT_CARDS, input);
 }

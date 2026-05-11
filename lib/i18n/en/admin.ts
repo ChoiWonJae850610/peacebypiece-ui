@@ -189,6 +189,13 @@ export const adminEn = {
     joinRequestStatuses: { pending: "Pending approval" },
     statuses: { ready: "Connected", planned: "Planned", pending: "Pending" },
     sourceState: { dbPending: "DB connection planned" },
+    permissionGuards: {
+      visible: "Visible",
+      hidden: "Hidden",
+      blocked: "Permission missing",
+      allowedButDbPending: "Allowed · DB connection planned",
+      requiredPermissions: "Required permissions: {permissions}"
+    },
     summary: {
       members: { label: "Members", description: "Includes approved and suspended members." },
       invitations: { label: "Pending invitations", description: "Active invitation links and QR invitation candidates." },

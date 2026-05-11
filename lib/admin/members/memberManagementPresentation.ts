@@ -1,11 +1,9 @@
 import {
-  ADMIN_WORKSPACE_PERMISSIONS,
   MEMBER_PERMISSION_CATALOG,
   MEMBER_ROLE_TEMPLATE_POLICIES,
   type MemberPermissionCode,
   type MemberPermissionGroupKey,
   type MemberPermissionRoleTemplateCode,
-  type Permission,
 } from "@/lib/permissions";
 
 export type MemberManagementStatus = "planned" | "ready" | "pending";
@@ -20,7 +18,7 @@ export type MemberRolePreview = {
 
 export type MemberPermissionCard = {
   id: string;
-  permission: Permission;
+  requiredPermissions: readonly MemberPermissionCode[];
   status: MemberManagementStatus;
 };
 
@@ -99,6 +97,7 @@ export type MemberApprovalStepPreview = {
 export type MemberApprovalActionPreview = {
   id: "approve" | "reject" | "permissionUpdate";
   status: MemberManagementStatus;
+  requiredPermissions: readonly MemberPermissionCode[];
 };
 
 export type MemberApprovalPermissionPreview = {
@@ -121,15 +120,15 @@ export const MEMBER_ROLE_PREVIEWS: readonly MemberRolePreview[] = MEMBER_ROLE_TE
 }));
 
 export const MEMBER_MANAGEMENT_PERMISSION_CARDS: readonly MemberPermissionCard[] = [
-  { id: "workorder", permission: ADMIN_WORKSPACE_PERMISSIONS.workorderAccess, status: "ready" },
-  { id: "partners", permission: ADMIN_WORKSPACE_PERMISSIONS.partnerManage, status: "planned" },
-  { id: "storage", permission: ADMIN_WORKSPACE_PERMISSIONS.storageManage, status: "planned" },
-  { id: "stats", permission: ADMIN_WORKSPACE_PERMISSIONS.statsView, status: "planned" },
-  { id: "members", permission: ADMIN_WORKSPACE_PERMISSIONS.memberManage, status: "planned" },
-  { id: "organization-settings", permission: ADMIN_WORKSPACE_PERMISSIONS.organizationSettingsManage, status: "planned" },
-  { id: "standard-units", permission: ADMIN_WORKSPACE_PERMISSIONS.standardUnitManage, status: "planned" },
-  { id: "outsourcing-processes", permission: ADMIN_WORKSPACE_PERMISSIONS.outsourcingProcessManage, status: "planned" },
-  { id: "product-types", permission: ADMIN_WORKSPACE_PERMISSIONS.productTypeManage, status: "planned" },
+  { id: "workorder", requiredPermissions: ["workorder.read"], status: "ready" },
+  { id: "partners", requiredPermissions: ["partner.read"], status: "ready" },
+  { id: "storage", requiredPermissions: ["storage.read"], status: "ready" },
+  { id: "stats", requiredPermissions: ["stats.read"], status: "ready" },
+  { id: "members", requiredPermissions: ["member.read"], status: "ready" },
+  { id: "organization-settings", requiredPermissions: ["settings.read"], status: "ready" },
+  { id: "standard-units", requiredPermissions: ["standards.manage"], status: "planned" },
+  { id: "outsourcing-processes", requiredPermissions: ["standards.manage"], status: "planned" },
+  { id: "product-types", requiredPermissions: ["standards.manage"], status: "planned" },
 ] as const;
 
 export const MEMBER_TABLE_COLUMNS: readonly MemberManagementTableColumn[] = [
@@ -181,9 +180,9 @@ export const MEMBER_APPROVAL_STEP_PREVIEWS: readonly MemberApprovalStepPreview[]
 ] as const;
 
 export const MEMBER_APPROVAL_ACTION_PREVIEWS: readonly MemberApprovalActionPreview[] = [
-  { id: "approve", status: "pending" },
-  { id: "reject", status: "pending" },
-  { id: "permissionUpdate", status: "ready" },
+  { id: "approve", status: "pending", requiredPermissions: ["member.approve", "member.permission.update"] },
+  { id: "reject", status: "pending", requiredPermissions: ["member.reject"] },
+  { id: "permissionUpdate", status: "ready", requiredPermissions: ["member.permission.update"] },
 ] as const;
 
 export const MEMBER_APPROVAL_PERMISSION_PREVIEWS: readonly MemberApprovalPermissionPreview[] = MEMBER_PERMISSION_CATALOG.filter((permission) =>

@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import {
-  getAdminWorkspaceManagementCards,
-  getAdminWorkspaceWorkEntryCard,
+  ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES,
+  getVisibleAdminWorkspaceCards,
   type AdminWorkspaceCard,
   type AdminWorkspaceCardStatus,
 } from "@/lib/admin/adminWorkspaceCards";
@@ -67,7 +67,7 @@ function AdminWorkspaceCardView({ item }: { item: AdminWorkspaceCard }) {
 
 export default function AdminConsoleSections() {
   const t = useAdminTranslation();
-  const managementCards = [getAdminWorkspaceWorkEntryCard(), ...getAdminWorkspaceManagementCards()];
+  const managementCards = getVisibleAdminWorkspaceCards({ permissionCodes: ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES });
   return (
     <>
       <section className="rounded-3xl border border-stone-200 bg-white/80 p-4 shadow-sm">

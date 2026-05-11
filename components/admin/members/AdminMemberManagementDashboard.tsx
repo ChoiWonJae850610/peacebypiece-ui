@@ -24,6 +24,7 @@ import {
   type MemberManagementStatus,
 } from "@/lib/admin/members/memberManagementPresentation";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
+import { getMemberRoleTemplatePermissions, hasEveryMemberPermission } from "@/lib/permissions";
 
 function getStatusClassName(status: MemberManagementStatus) {
   if (status === "ready") return "border-emerald-200 bg-emerald-50 text-emerald-700";
@@ -60,6 +61,7 @@ export default function AdminMemberManagementDashboard() {
   const summaryCards = getMemberManagementSummaryCards();
   const roles = getMemberRolePreviews();
   const permissionCards = getMemberManagementPermissionCards();
+  const currentPermissionCodes = getMemberRoleTemplatePermissions("company_admin");
   const invitationSetupCards = getMemberInvitationSetupCards();
   const inviteRoleOptions = getMemberInviteRoleOptions();
   const inviteQrPreviewRows = getMemberInviteQrPreviewRows();
@@ -78,6 +80,11 @@ export default function AdminMemberManagementDashboard() {
     [inviteRoleOptions, selectedRoleId],
   );
   const previewInviteLink = `/invite/member/preview-${selectedRole?.id ?? "viewer"}`;
+  const canCreateInvite = hasEveryMemberPermission(
+    { permissionCodes: currentPermissionCodes },
+    ["member.invite"],
+  );
+
   const members = getMemberListPreviews();
   const invitations = getMemberInvitationPreviews();
   const joinRequests = getMemberJoinRequestPreviews();
@@ -102,8 +109,13 @@ export default function AdminMemberManagementDashboard() {
           </div>
           <div className="flex flex-wrap gap-2">
             <a
-              href="#member-invite-builder"
-              className="inline-flex w-fit items-center justify-center rounded-full border border-stone-900 bg-stone-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-stone-800"
+              href={canCreateInvite ? "#member-invite-builder" : "#member-permission-guard"}
+              aria-disabled={!canCreateInvite}
+              className={
+                canCreateInvite
+                  ? "inline-flex w-fit items-center justify-center rounded-full border border-stone-900 bg-stone-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-stone-800"
+                  : "inline-flex w-fit items-center justify-center rounded-full border border-stone-200 bg-stone-100 px-4 py-2 text-xs font-semibold text-stone-400"
+              }
             >
               {t("memberManagement.actions.createInvite", "초대 링크 생성")}
             </a>
@@ -365,19 +377,32 @@ export default function AdminMemberManagementDashboard() {
               {t("memberManagement.approvalWorkbench.actionsDescription", "실제 저장은 join_requests, company_members, member_permissions API 연결 후 활성화합니다.")}
             </p>
             <div className="mt-4 grid gap-2">
-              {approvalActions.map((action) => (
-                <button
-                  key={action.id}
-                  type="button"
-                  disabled
-                  className="flex items-center justify-between rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-left text-xs font-semibold text-stone-500 disabled:cursor-not-allowed disabled:opacity-70"
-                >
-                  <span>{t(`memberManagement.approvalWorkbench.actions.${action.id}.label`, action.id)}</span>
-                  <span className={`rounded-full border px-2 py-0.5 text-[10px] ${getStatusClassName(action.status)}`}>
-                    {t(`memberManagement.statuses.${action.status}`, action.status)}
-                  </span>
-                </button>
-              ))}
+              {approvalActions.map((action) => {
+                const hasRequiredPermission = hasEveryMemberPermission(
+                  { permissionCodes: currentPermissionCodes },
+                  action.requiredPermissions,
+                );
+                return (
+                  <button
+                    key={action.id}
+                    type="button"
+                    disabled
+                    className="flex flex-col gap-1 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-left text-xs font-semibold text-stone-500 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    <span className="flex items-center justify-between gap-2">
+                      <span>{t(`memberManagement.approvalWorkbench.actions.${action.id}.label`, action.id)}</span>
+                      <span className={`rounded-full border px-2 py-0.5 text-[10px] ${getStatusClassName(action.status)}`}>
+                        {t(`memberManagement.statuses.${action.status}`, action.status)}
+                      </span>
+                    </span>
+                    <span className="text-[11px] font-medium text-stone-400">
+                      {hasRequiredPermission
+                        ? t("memberManagement.permissionGuards.allowedButDbPending", "권한 충족 · DB 연결 예정")
+                        : t("memberManagement.permissionGuards.blocked", "권한 부족")}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
             <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-3">
               <p className="text-xs font-semibold text-amber-800">
@@ -541,7 +566,7 @@ export default function AdminMemberManagementDashboard() {
         </article>
       </section>
 
-      <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+      <section id="member-permission-guard" className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
         <h3 className="text-base font-semibold text-stone-950">
           {t("memberManagement.sections.workspaceCards", "메인화면 카드 권한")}
         </h3>
@@ -549,21 +574,35 @@ export default function AdminMemberManagementDashboard() {
           {t("memberManagement.sections.workspaceCardsDescription", "관리자가 권한을 부여하면 해당 멤버의 메인화면에 표시될 카드 후보입니다.")}
         </p>
         <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {permissionCards.map((item) => (
-            <article key={item.id} className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
-              <div className="flex items-start justify-between gap-3">
-                <h4 className="text-sm font-semibold text-stone-950">
-                  {t(`memberManagement.permissionCards.${item.id}.label`, item.id)}
-                </h4>
-                <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getStatusClassName(item.status)}`}>
-                  {t(`memberManagement.statuses.${item.status}`, item.status)}
-                </span>
-              </div>
-              <p className="mt-2 text-xs leading-5 text-stone-500">
-                {t(`memberManagement.permissionCards.${item.id}.description`, "")}
-              </p>
-            </article>
-          ))}
+          {permissionCards.map((item) => {
+            const visibleForCurrentPermissions = hasEveryMemberPermission(
+              { permissionCodes: currentPermissionCodes },
+              item.requiredPermissions,
+            );
+            return (
+              <article key={item.id} className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <h4 className="text-sm font-semibold text-stone-950">
+                    {t(`memberManagement.permissionCards.${item.id}.label`, item.id)}
+                  </h4>
+                  <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getStatusClassName(item.status)}`}>
+                    {visibleForCurrentPermissions
+                      ? t("memberManagement.permissionGuards.visible", "노출")
+                      : t("memberManagement.permissionGuards.hidden", "숨김")}
+                  </span>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-stone-500">
+                  {t(`memberManagement.permissionCards.${item.id}.description`, "")}
+                </p>
+                <p className="mt-3 rounded-xl bg-stone-50 px-3 py-2 text-[11px] font-semibold text-stone-500">
+                  {t("memberManagement.permissionGuards.requiredPermissions", "필요 권한: {permissions}").replace(
+                    "{permissions}",
+                    item.requiredPermissions.join(", "),
+                  )}
+                </p>
+              </article>
+            );
+          })}
         </div>
       </section>
 

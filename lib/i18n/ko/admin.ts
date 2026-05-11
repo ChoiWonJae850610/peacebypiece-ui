@@ -140,6 +140,13 @@ export const adminKo = {
     joinRequestStatuses: { pending: "승인 대기" },
     statuses: { ready: "기준 연결", planned: "연결 예정", pending: "대기" },
     sourceState: { dbPending: "DB 연결 예정" },
+    permissionGuards: {
+      visible: "노출",
+      hidden: "숨김",
+      blocked: "권한 부족",
+      allowedButDbPending: "권한 충족 · DB 연결 예정",
+      requiredPermissions: "필요 권한: {permissions}"
+    },
     summary: {
       members: { label: "전체 멤버", description: "승인된 멤버와 정지 멤버를 포함합니다." },
       invitations: { label: "초대 대기", description: "활성 초대 링크와 QR 초대 후보입니다." },
