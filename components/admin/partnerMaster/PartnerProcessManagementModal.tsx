@@ -3,16 +3,14 @@
 import {
   AdminModalFooterActions,
   AdminModalSection,
-  adminModalInputClassName,
 } from "@/components/admin/layout/AdminModal";
 import StandardManagementModalFrame, {
-  standardModalAddButtonClassName,
   standardModalListBoxClassName,
   standardModalListScrollClassName,
   standardModalMutedRowClassName,
   standardModalSelectedRowClassName,
 } from "@/components/admin/standards/StandardManagementModalFrame";
-import { PARTNER_MASTER_FIELD_LIMITS, type OutsourcingProcessDefinition } from "@/lib/admin/partner";
+import { type OutsourcingProcessDefinition } from "@/lib/admin/partner";
 import { useI18n } from "@/lib/i18n";
 import type { OutsourcingProcessType } from "@/types/partner";
 
@@ -48,7 +46,7 @@ function ProcessListBox({
   onSelect: (type: OutsourcingProcessType | null) => void;
 }) {
   return (
-    <div className={`h-[240px] ${standardModalListBoxClassName}`}>
+    <div className={`h-[300px] ${standardModalListBoxClassName}`}>
       <div className={standardModalListScrollClassName}>
         {items.length === 0 ? (
           <div className="flex h-full items-center justify-center px-3 text-center text-sm text-stone-400">{emptyLabel}</div>
@@ -77,7 +75,6 @@ function ProcessListBox({
 
 export default function PartnerProcessManagementModal({
   open,
-  newProcessLabel,
   processFormError,
   inactiveProcessDefinitions,
   activeProcessDefinitions,
@@ -87,10 +84,7 @@ export default function PartnerProcessManagementModal({
   onSave,
   onResetDefaults,
   saving = false,
-  onNewProcessLabelChange,
-  onAddProcessDefinition,
   onSetProcessActive,
-  onClearProcessFormError,
   onSelectInactiveProcess,
   onSelectActiveProcess,
 }: PartnerProcessManagementModalProps) {
@@ -102,8 +96,8 @@ export default function PartnerProcessManagementModal({
       open={open}
       onClose={saving ? () => undefined : onClose}
       title={processText.title}
-      description="작업지시서의 외주 처리에 쓰는 단순 공정 기준값을 사용/미사용 목록으로 관리합니다."
-      categoryLabel="단순 목록 기준정보"
+      description="시스템관리자가 제공하는 외주공정 표준 목록 중 이 고객사가 사용할 항목만 선택합니다. 새 공정 유형이 필요하면 개발 건의 또는 관리자 문의로 요청하세요."
+      categoryLabel="시스템 표준 선택형 기준정보"
       maxWidthClass="md:max-w-3xl"
       footer={
         <AdminModalFooterActions
@@ -118,99 +112,70 @@ export default function PartnerProcessManagementModal({
         />
       }
     >
-      <AdminModalSection title={processText.addSectionTitle}>
-        <div className="flex flex-col gap-3 md:flex-row md:items-end">
-          <label className="min-w-0 flex-1 space-y-2">
-            <input
-              value={newProcessLabel}
-              maxLength={PARTNER_MASTER_FIELD_LIMITS.outsourcingProcessLabel}
-              disabled={saving}
-              onChange={(event) => {
-                onNewProcessLabelChange(event.target.value);
-                if (processFormError) onClearProcessFormError();
-              }}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  if (!saving) onAddProcessDefinition();
-                }
-              }}
-              placeholder={processText.newProcessPlaceholder}
-              className={`h-11 ${adminModalInputClassName}`}
-            />
-          </label>
-          <button
-            type="button"
-            onClick={onAddProcessDefinition}
-            disabled={saving}
-            className={standardModalAddButtonClassName}
-          >
-            {processText.add}
-          </button>
-        </div>
-      </AdminModalSection>
-
       <AdminModalSection title={processText.usageSectionTitle}>
-      <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_72px_minmax(0,1fr)] md:items-center">
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-stone-800">{processText.inactiveListTitle}</p>
-          <ProcessListBox
-            items={inactiveProcessDefinitions}
-            selectedType={selectedInactiveProcess}
-            emptyLabel={processText.inactiveEmpty}
-            onSelect={(type) => {
-              if (saving) return;
-              onSelectInactiveProcess(type);
-              onSelectActiveProcess(null);
-            }}
-          />
+        <div className="mb-3 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-xs leading-5 text-stone-500">
+          외주공정 유형은 전체 고객사의 작업지시서와 통계 기준을 맞추기 위해 시스템 표준값을 사용합니다. 고객관리자는 필요한 공정만 사용 목록으로 이동합니다.
         </div>
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_72px_minmax(0,1fr)] md:items-center">
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-stone-800">{processText.inactiveListTitle}</p>
+            <ProcessListBox
+              items={inactiveProcessDefinitions}
+              selectedType={selectedInactiveProcess}
+              emptyLabel={processText.inactiveEmpty}
+              onSelect={(type) => {
+                if (saving) return;
+                onSelectInactiveProcess(type);
+                onSelectActiveProcess(null);
+              }}
+            />
+          </div>
 
-        <div className="flex items-center justify-center gap-2 md:flex-col">
-          <button
-            type="button"
-            onClick={() => {
-              if (saving || !selectedInactiveProcess) return;
-              onSetProcessActive(selectedInactiveProcess, true);
-              onSelectActiveProcess(selectedInactiveProcess);
-              onSelectInactiveProcess(null);
-            }}
-            disabled={saving || !selectedInactiveProcess}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition hover:border-stone-300 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-35"
-            aria-label={processText.activateSelected}
-          >
-            <span className="block -rotate-90">▾</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              if (saving || !selectedActiveProcess) return;
-              onSetProcessActive(selectedActiveProcess, false);
-              onSelectInactiveProcess(selectedActiveProcess);
-              onSelectActiveProcess(null);
-            }}
-            disabled={saving || !selectedActiveProcess}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition hover:border-stone-300 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-35"
-            aria-label={processText.deactivateSelected}
-          >
-            <span className="block rotate-90">▾</span>
-          </button>
-        </div>
+          <div className="flex items-center justify-center gap-2 md:flex-col">
+            <button
+              type="button"
+              onClick={() => {
+                if (saving || !selectedInactiveProcess) return;
+                onSetProcessActive(selectedInactiveProcess, true);
+                onSelectActiveProcess(selectedInactiveProcess);
+                onSelectInactiveProcess(null);
+              }}
+              disabled={saving || !selectedInactiveProcess}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition hover:border-stone-300 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-35"
+              aria-label={processText.activateSelected}
+            >
+              <span className="block -rotate-90">▾</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (saving || !selectedActiveProcess) return;
+                onSetProcessActive(selectedActiveProcess, false);
+                onSelectInactiveProcess(selectedActiveProcess);
+                onSelectActiveProcess(null);
+              }}
+              disabled={saving || !selectedActiveProcess}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition hover:border-stone-300 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-35"
+              aria-label={processText.deactivateSelected}
+            >
+              <span className="block rotate-90">▾</span>
+            </button>
+          </div>
 
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-stone-800">{processText.activeListTitle}</p>
-          <ProcessListBox
-            items={activeProcessDefinitions}
-            selectedType={selectedActiveProcess}
-            emptyLabel={processText.activeEmpty}
-            onSelect={(type) => {
-              if (saving) return;
-              onSelectActiveProcess(type);
-              onSelectInactiveProcess(null);
-            }}
-          />
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-stone-800">{processText.activeListTitle}</p>
+            <ProcessListBox
+              items={activeProcessDefinitions}
+              selectedType={selectedActiveProcess}
+              emptyLabel={processText.activeEmpty}
+              onSelect={(type) => {
+                if (saving) return;
+                onSelectActiveProcess(type);
+                onSelectInactiveProcess(null);
+              }}
+            />
+          </div>
         </div>
-      </div>
       </AdminModalSection>
     </StandardManagementModalFrame>
   );

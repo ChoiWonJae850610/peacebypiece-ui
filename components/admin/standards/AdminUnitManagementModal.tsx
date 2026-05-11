@@ -5,10 +5,8 @@ import AdminUsageToggle from "@/components/admin/common/AdminUsageToggle";
 import {
   AdminModalFooterActions,
   AdminModalSection,
-  adminModalInputClassName,
 } from "@/components/admin/layout/AdminModal";
 import StandardManagementModalFrame, {
-  standardModalAddButtonClassName,
   standardModalListBoxClassName,
   standardModalListScrollClassName,
   standardModalRowClassName,
@@ -26,50 +24,19 @@ type Props = {
   onSave: (units: AdminUnitDefinition[]) => void;
 };
 
-function normalizeLabel(value: string) {
-  return value.trim().replace(/\s+/g, " ");
-}
-
-function createUnitId(code: string) {
-  return `unit:${code}:${Date.now()}`;
-}
-
 export default function AdminUnitManagementModal({ open, units, saving = false, error = "", onClose, onSave }: Props) {
   const t = useAdminTranslation();
   const [draft, setDraft] = useState<AdminUnitDefinition[]>(units);
-  const [newName, setNewName] = useState("");
-  const [newCode, setNewCode] = useState("");
-  const [formError, setFormError] = useState("");
 
   useEffect(() => {
     if (!open) return;
     setDraft(units);
-    setNewName("");
-    setNewCode("");
-    setFormError("");
   }, [open, units]);
 
-  const sortedDraft = useMemo(() => draft.slice().sort((a, b) => a.sort_order - b.sort_order || a.name.localeCompare(b.name, "ko-KR")), [draft]);
-
-  const addUnit = () => {
-    const name = normalizeLabel(newName);
-    const code = normalizeLabel(newCode).toLowerCase();
-    if (!name || !code) {
-      setFormError(t("standards.units.nameRequired", "단위명과 코드를 입력하세요."));
-      return;
-    }
-    if (draft.some((unit) => unit.code === code || unit.name === name)) {
-      setFormError(t("standards.units.duplicate", "이미 등록된 단위입니다."));
-      return;
-    }
-    setDraft((current) => [
-      ...current,
-      { id: createUnitId(code), code, name, category: "count", is_active: true, sort_order: (current.length + 1) * 10 },
-    ]);
-    setNewName("");
-    setNewCode("");
-    setFormError("");
-  };
+  const sortedDraft = useMemo(
+    () => draft.slice().sort((a, b) => a.sort_order - b.sort_order || a.name.localeCompare(b.name, "ko-KR")),
+    [draft],
+  );
 
   const toggleUnit = (id: string) => {
     setDraft((current) => current.map((unit) => (unit.id === id ? { ...unit, is_active: !unit.is_active } : unit)));
@@ -77,9 +44,6 @@ export default function AdminUnitManagementModal({ open, units, saving = false, 
 
   const resetDraft = () => {
     setDraft(createDefaultUnitDefinitions());
-    setNewName("");
-    setNewCode("");
-    setFormError("");
   };
 
   return (
@@ -87,8 +51,8 @@ export default function AdminUnitManagementModal({ open, units, saving = false, 
       open={open}
       onClose={saving ? () => undefined : onClose}
       title={t("standards.units.title", "단위 표준")}
-      description="작업지시서 수량과 발주 단위에 쓰는 한글명과 영문 코드/약어를 함께 관리합니다."
-      categoryLabel="다국어 단위 기준정보"
+      description="시스템관리자가 제공하는 단위 표준 목록 중 이 고객사가 사용할 항목만 선택합니다. 새 단위 추가가 필요하면 개발 건의 또는 관리자 문의로 요청하세요."
+      categoryLabel="시스템 표준 선택형 기준정보"
       maxWidthClass="md:max-w-3xl"
       footer={
         <AdminModalFooterActions
@@ -98,21 +62,16 @@ export default function AdminUnitManagementModal({ open, units, saving = false, 
           onPrimary={() => onSave(draft)}
           secondaryDisabled={saving}
           primaryDisabled={saving}
-          statusMessage={formError || error}
-          statusTone={formError || error ? "danger" : "neutral"}
+          statusMessage={error}
+          statusTone={error ? "danger" : "neutral"}
         />
       }
     >
-      <AdminModalSection title={t("standards.units.addTitle", "단위 추가")}>
-        <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
-          <input value={newName} onChange={(event) => { setNewName(event.target.value); if (formError) setFormError(""); }} placeholder={t("standards.units.namePlaceholder", "단위명 예: 개")} disabled={saving} className={`h-11 ${adminModalInputClassName}`} />
-          <input disabled={saving} value={newCode} onChange={(event) => { setNewCode(event.target.value); if (formError) setFormError(""); }} placeholder={t("standards.units.codePlaceholder", "코드 예: piece")} className={`h-11 ${adminModalInputClassName}`} />
-          <button type="button" onClick={addUnit} disabled={saving} className={standardModalAddButtonClassName}>{t("standards.common.add", "추가")}</button>
+      <AdminModalSection title={t("standards.units.usageTitle", "단위 사용 여부")}> 
+        <div className="mb-3 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-xs leading-5 text-stone-500">
+          단위명과 영문 코드/약어는 시스템 표준값을 사용합니다. 고객관리자는 작업지시서에서 노출할 단위만 사용/미사용으로 선택합니다.
         </div>
-      </AdminModalSection>
-
-      <AdminModalSection title={t("standards.units.usageTitle", "단위 사용 여부")}>
-        <div className={`h-[360px] ${standardModalListBoxClassName}`}>
+        <div className={`h-[410px] ${standardModalListBoxClassName}`}>
           <div className={standardModalListScrollClassName}>
             {sortedDraft.map((unit) => (
               <div
