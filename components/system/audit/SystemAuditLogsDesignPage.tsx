@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import {
+  SYSTEM_AUDIT_LOG_API_DECISIONS,
   SYSTEM_AUDIT_LOG_DB_DECISIONS,
   SYSTEM_AUDIT_LOG_IMPLEMENTATION_STEPS,
   SYSTEM_AUDIT_LOG_LAYER_DECISIONS,
@@ -9,6 +10,35 @@ import {
   SYSTEM_AUDIT_LOG_TARGETS,
   type SystemAuditLogEventLevel,
 } from "@/lib/system/audit/systemAuditLogs.design";
+import type { SystemAuditLogFilter, SystemAuditLogViewModel } from "@/lib/system/audit/types";
+
+type SystemAuditLogsDesignPageProps = {
+  activeFilter?: SystemAuditLogFilter;
+  auditLogViewModels?: SystemAuditLogViewModel[];
+};
+
+const SYSTEM_AUDIT_TARGET_OPTIONS = [
+  { value: "all", label: "전체 대상" },
+  { value: "company", label: "고객사" },
+  { value: "member", label: "멤버" },
+  { value: "invitation", label: "초대" },
+  { value: "plan", label: "요금제" },
+  { value: "storage", label: "저장소" },
+  { value: "work_order", label: "작업지시서" },
+  { value: "file", label: "문서·디자인" },
+  { value: "memo", label: "메모" },
+  { value: "settings", label: "환경설정" },
+  { value: "auth", label: "인증" },
+  { value: "system", label: "시스템" },
+] as const;
+
+const SYSTEM_AUDIT_SEVERITY_OPTIONS = [
+  { value: "all", label: "전체 심각도" },
+  { value: "low", label: "low" },
+  { value: "medium", label: "medium" },
+  { value: "high", label: "high" },
+  { value: "critical", label: "critical" },
+] as const;
 
 function getLevelClassName(level: SystemAuditLogEventLevel) {
   if (level === "critical") return "border-red-200 bg-red-50 text-red-700";
@@ -17,7 +47,13 @@ function getLevelClassName(level: SystemAuditLogEventLevel) {
   return "border-stone-200 bg-stone-100 text-stone-600";
 }
 
-export default function SystemAuditLogsDesignPage() {
+export default function SystemAuditLogsDesignPage({
+  activeFilter = {},
+  auditLogViewModels = [],
+}: SystemAuditLogsDesignPageProps) {
+  const activeTargetType = activeFilter.targetType || "all";
+  const activeSeverity = activeFilter.severity || "all";
+
   return (
     <main className="min-h-screen bg-stone-50 px-4 py-6 text-stone-900 sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
@@ -42,6 +78,97 @@ export default function SystemAuditLogsDesignPage() {
             </Link>
           </div>
         </header>
+
+
+        <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+          <div className="flex flex-col gap-2 border-b border-stone-100 pb-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-stone-950">감사 로그 조회</h2>
+              <p className="mt-2 text-sm leading-6 text-stone-600">
+                /api/system/audit-logs와 audit_logs repository를 연결했습니다. 아직 쓰기 지점은 후속 버전에서 붙이므로, 현재는 수동 삽입 또는 후속 이벤트 연결 후 기록이 표시됩니다.
+              </p>
+            </div>
+            <code className="w-fit rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-500">
+              GET /api/system/audit-logs
+            </code>
+          </div>
+
+          <form className="mt-5 grid gap-3 md:grid-cols-[1fr_160px_160px_auto]" method="get">
+            <input
+              name="query"
+              defaultValue={activeFilter.query || ""}
+              placeholder="요약, 이벤트 코드, 대상 ID 검색"
+              className="rounded-2xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-700 outline-none focus:border-stone-400"
+            />
+            <select
+              name="targetType"
+              defaultValue={activeTargetType}
+              className="rounded-2xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-700 outline-none focus:border-stone-400"
+            >
+              {SYSTEM_AUDIT_TARGET_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <select
+              name="severity"
+              defaultValue={activeSeverity}
+              className="rounded-2xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-700 outline-none focus:border-stone-400"
+            >
+              {SYSTEM_AUDIT_SEVERITY_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <button
+              type="submit"
+              className="rounded-2xl border border-stone-900 bg-stone-900 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-800"
+            >
+              조회
+            </button>
+          </form>
+
+          <div className="mt-5 overflow-hidden rounded-2xl border border-stone-200">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-stone-100 text-stone-600">
+                <tr>
+                  <th className="px-3 py-2 font-semibold">발생 시각</th>
+                  <th className="px-3 py-2 font-semibold">이벤트</th>
+                  <th className="px-3 py-2 font-semibold">대상</th>
+                  <th className="px-3 py-2 font-semibold">행위자</th>
+                  <th className="px-3 py-2 text-center font-semibold">심각도</th>
+                  <th className="px-3 py-2 font-semibold">요약</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-stone-100 bg-white">
+                {auditLogViewModels.length > 0 ? (
+                  auditLogViewModels.map((log) => (
+                    <tr key={log.id}>
+                      <td className="whitespace-nowrap px-3 py-3 font-mono text-[11px] text-stone-600">{log.occurredAt}</td>
+                      <td className="whitespace-nowrap px-3 py-3 font-mono text-[11px] text-stone-700">{log.eventType}</td>
+                      <td className="px-3 py-3 text-stone-600">{log.targetLabel}</td>
+                      <td className="px-3 py-3 text-stone-600">{log.actorLabel}</td>
+                      <td className="px-3 py-3 text-center">
+                        <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getLevelClassName(log.severity)}`}>
+                          {log.severity}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3 leading-5 text-stone-700">{log.summary}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="px-3 py-8 text-center text-sm text-stone-500">
+                      아직 표시할 감사 로그가 없습니다. 0.10.13 이후 쓰기 지점이 연결되면 이 목록에 운영 이벤트가 표시됩니다.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
 
         <section className="grid gap-4 lg:grid-cols-2">
           {SYSTEM_AUDIT_LOG_SCOPES.map((scope) => (
@@ -131,6 +258,21 @@ export default function SystemAuditLogsDesignPage() {
           </article>
 
 
+
+
+          <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+            <h2 className="text-lg font-semibold text-stone-950">0.10.12 API 연결 기준</h2>
+            <p className="mt-2 text-sm leading-6 text-stone-600">
+              조회 API와 화면 목록을 연결하되, 쓰기 이벤트 삽입은 다음 단계로 분리해 기존 업무 흐름을 건드리지 않습니다.
+            </p>
+            <ul className="mt-4 space-y-2 text-xs leading-5 text-stone-600">
+              {SYSTEM_AUDIT_LOG_API_DECISIONS.map((decision) => (
+                <li key={decision} className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2">
+                  {decision}
+                </li>
+              ))}
+            </ul>
+          </article>
 
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
             <h2 className="text-lg font-semibold text-stone-950">0.10.11 계층 분리 기준</h2>

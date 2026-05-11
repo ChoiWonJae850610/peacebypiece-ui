@@ -166,9 +166,9 @@ export const SYSTEM_AUDIT_LOG_IMPLEMENTATION_STEPS: SystemAuditLogImplementation
   },
   {
     versionHint: "0.10.12",
-    title: "읽기 API와 화면 연결",
+    title: "읽기 API와 화면 연결 완료",
     description:
-      "/api/system/audit-logs 읽기 API를 붙이고 /system/audit-logs에서 필터, 검색, 기간 선택을 연결합니다.",
+      "/api/system/audit-logs 읽기 API와 /system/audit-logs 목록 조회·검색·대상 유형·심각도 필터를 연결했습니다. 실제 쓰기 지점은 후속 버전에서 점진 연결합니다.",
   },
   {
     versionHint: "0.10.13",
@@ -194,4 +194,12 @@ export const SYSTEM_AUDIT_LOG_LAYER_DECISIONS = [
   "selectors.ts는 검색어, 고객사, 대상 유형, 심각도 필터를 순수 함수로 처리한다.",
   "types.ts는 DB schema와 화면 사이에서 공유하는 구조화 타입을 제공한다.",
   "쓰기 연결은 각 도메인 actionFlow에서 createSystemAuditLogSafe를 호출하는 방식으로 후속 버전에서 붙인다.",
+] as const;
+
+export const SYSTEM_AUDIT_LOG_API_DECISIONS = [
+  "GET /api/system/audit-logs는 audit_logs 원장을 읽는 시스템관리자 전용 조회 API로 둔다.",
+  "API route는 lib/system/audit/api/routeHandlers.ts로 위임하고 app/api route는 얇게 유지한다.",
+  "화면 조회는 repository 결과를 actionFlow에서 view model로 변환해 표시한다.",
+  "query 검색은 목록을 가져온 뒤 selector에서 처리하고, companyId·targetType·eventType·severity는 repository 조회 조건으로 넘긴다.",
+  "아직 실제 이벤트 쓰기 지점은 연결하지 않아 빈 목록이 정상 상태일 수 있다.",
 ] as const;
