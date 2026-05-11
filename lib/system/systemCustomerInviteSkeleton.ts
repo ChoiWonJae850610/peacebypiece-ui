@@ -28,6 +28,7 @@ export interface SystemCustomerInviteResultAction {
   label: string;
   helper: string;
   state: "ready" | "disabled";
+  href?: string;
 }
 
 export interface SystemCustomerInviteApprovalRule {
@@ -147,7 +148,7 @@ export const SYSTEM_CUSTOMER_INVITE_RESULT_ACTIONS: SystemCustomerInviteResultAc
   {
     id: "create-invite",
     label: "초대 링크 생성",
-    helper: "0.10.62에서는 UI 자리만 고정하고 실제 DB 저장은 후속 API에서 연결합니다.",
+    helper: "현재는 UI 자리만 고정하고 실제 DB 저장은 후속 API에서 연결합니다.",
     state: "disabled",
   },
   {
@@ -159,8 +160,9 @@ export const SYSTEM_CUSTOMER_INVITE_RESULT_ACTIONS: SystemCustomerInviteResultAc
   {
     id: "open-preview",
     label: "가입 신청 화면 미리보기",
-    helper: "/invite/company/[token] 화면이 연결되면 활성화합니다.",
-    state: "disabled",
+    helper: "/invite/company/[token] 고객사 가입 신청 화면을 미리 봅니다.",
+    state: "ready",
+    href: "/invite/company/preview-system-company-token",
   },
 ];
 

@@ -1,20 +1,23 @@
 Version :
-0.10.62
+0.10.63
 
 Summary :
-시스템관리자 고객사 초대 링크와 QR 화면 정리
+고객사 가입 신청 화면 추가
 
 Description :
-시스템관리자 고객사 초대 화면에 고객사 초대 입력, 링크와 QR 미리보기, 초대 결과 액션, 승인 기준을 추가했다. 자동 이메일/SMS 발송 없이 링크 복사와 QR 직접 공유를 우선 방식으로 정리했다.
+시스템관리자 고객사 초대 링크로 접속하는 /invite/company/[token] 화면을 추가하고, 고객사 가입 신청 항목과 승인 전 회사 미생성 정책을 presentation 데이터로 분리했다. 시스템관리자 고객사 초대 화면의 가입 신청 화면 미리보기 액션도 새 경로로 연결했다.
 
 수정 파일 목록 :
 - components/system/invitations/SystemCustomerInviteSkeleton.tsx
+- lib/invitations/index.ts
 - lib/system/systemCustomerInviteSkeleton.ts
-- lib/invitations/invitationQrPreview.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/system-customer-invitation-link-qr-0.10.62.md
+- app/invite/company/[token]/page.tsx
+- components/invitations/CompanyInvitationJoinRequestPage.tsx
+- lib/invitations/companyInvitationJoinRequestPresentation.ts
+- docs/company-invite-join-request-screen-0.10.63.md
 
 삭제 파일 목록 :
 없음

@@ -153,20 +153,30 @@ export default function SystemCustomerInviteSkeleton() {
               </p>
             </div>
             <div className="mt-5 space-y-3">
-              {SYSTEM_CUSTOMER_INVITE_RESULT_ACTIONS.map((action) => (
-                <div key={action.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-                  <button
-                    type="button"
-                    disabled={action.state === "disabled"}
-                    className={`w-full rounded-xl border px-4 py-2 text-sm font-semibold ${getActionClassName(
-                      action.state,
-                    )}`}
-                  >
-                    {action.label}
-                  </button>
-                  <p className="mt-2 text-xs leading-5 text-stone-500">{action.helper}</p>
-                </div>
-              ))}
+              {SYSTEM_CUSTOMER_INVITE_RESULT_ACTIONS.map((action) => {
+                const actionClassName = `block w-full rounded-xl border px-4 py-2 text-center text-sm font-semibold ${getActionClassName(
+                  action.state,
+                )}`;
+
+                return (
+                  <div key={action.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+                    {action.state === "ready" && action.href ? (
+                      <Link href={action.href} className={actionClassName}>
+                        {action.label}
+                      </Link>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled
+                        className={actionClassName}
+                      >
+                        {action.label}
+                      </button>
+                    )}
+                    <p className="mt-2 text-xs leading-5 text-stone-500">{action.helper}</p>
+                  </div>
+                );
+              })}
             </div>
           </article>
         </section>
