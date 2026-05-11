@@ -1,9 +1,11 @@
 import "server-only";
 
 import { randomUUID } from "crypto";
+
 import { isDatabaseConfigured, queryDb, type DbQueryResultRow } from "@/lib/db/client";
 import { getWorkspaceCompanyContext } from "@/lib/constants/company";
-import { createDefaultItemCategoryDefinitions, createDefaultUnitDefinitions } from "@/lib/admin/settings/standardsDefaults";
+import { listSystemProductTemplates } from "@/lib/system/standards/productTemplateRepository";
+import type { SystemProductTemplateRow } from "@/lib/system/standards/systemProductTemplateStandards";
 import type { AdminItemCategoryDefinition, AdminItemCategoryLevel, AdminStandardsPayload, AdminUnitDefinition } from "@/lib/admin/settings/standardsTypes";
 
 type UnitRow = AdminUnitDefinition & DbQueryResultRow;
@@ -49,17 +51,76 @@ function normalizeItemCategory(row: ItemCategoryRow): AdminItemCategoryDefinitio
   };
 }
 
+function toDefaultItemCategories(template: SystemProductTemplateRow | null, companyId: string): AdminItemCategoryDefinition[] {
+  if (!template) return [];
+
+  const rows: AdminItemCategoryDefinition[] = [];
+
+  for (const top of template.tree) {
+    const topId = `default:${template.id}:1:${top.id}`;
+    rows.push({
+      id: topId,
+      company_id: companyId,
+      parent_id: null,
+      level: 1,
+      name: top.name,
+      is_active: top.isActive !== false,
+      sort_order: normalizeNumber(top.sortOrder, (rows.length + 1) * 10),
+    });
+
+    for (const second of top.children) {
+      const secondId = `default:${template.id}:2:${second.id}`;
+      rows.push({
+        id: secondId,
+        company_id: companyId,
+        parent_id: topId,
+        level: 2,
+        name: second.name,
+        is_active: second.isActive !== false,
+        sort_order: normalizeNumber(second.sortOrder, 10),
+      });
+
+      for (const leaf of second.children) {
+        rows.push({
+          id: `default:${template.id}:3:${leaf.id}`,
+          company_id: companyId,
+          parent_id: secondId,
+          level: 3,
+          name: leaf.name,
+          is_active: leaf.isActive !== false,
+          sort_order: normalizeNumber(leaf.sortOrder, 10),
+        });
+      }
+    }
+  }
+
+  return rows;
+}
+
+async function getDefaultItemCategories(companyId: string): Promise<AdminItemCategoryDefinition[]> {
+  if (!isDatabaseConfigured()) return [];
+  const templates = await listSystemProductTemplates();
+  const defaultTemplate =
+    templates.find((template) => template.isDefault && template.status === "active") ??
+    templates.find((template) => template.status === "active") ??
+    null;
+  return toDefaultItemCategories(defaultTemplate, companyId);
+}
+
 export async function getAdminStandards(): Promise<AdminStandardsPayload> {
+  const companyId = getWorkspaceCompanyContext().companyId;
+
   if (!isDatabaseConfigured()) {
     return {
-      units: createDefaultUnitDefinitions(),
-      itemCategories: createDefaultItemCategoryDefinitions(),
-      repository: { mode: "fallback", adapterConfigured: false, supportsWrite: false },
+      units: [],
+      itemCategories: [],
+      defaultItemCategories: [],
+      repository: { mode: "unavailable", adapterConfigured: false, supportsWrite: false },
+      error: "DB_NOT_CONFIGURED",
     };
   }
 
-  const companyId = getWorkspaceCompanyContext().companyId;
-  const [unitsResult, companyCategoriesResult] = await Promise.all([
+  const [unitsResult, companyCategoriesResult, defaultItemCategories] = await Promise.all([
     queryDb<UnitRow>(
       `SELECT sus.id,
               $1::text AS company_id,
@@ -83,28 +144,15 @@ export async function getAdminStandards(): Promise<AdminStandardsPayload> {
        ORDER BY level ASC, sort_order ASC, name ASC`,
       [companyId],
     ),
+    getDefaultItemCategories(companyId),
   ]);
 
   return {
     units: unitsResult.rows.map(normalizeUnit),
     itemCategories: companyCategoriesResult.rows.map(normalizeItemCategory),
+    defaultItemCategories,
     repository: { mode: "db", adapterConfigured: true, supportsWrite: true },
   };
-}
-
-function normalizeIncomingUnits(items: AdminUnitDefinition[]): AdminUnitDefinition[] {
-  const companyId = getWorkspaceCompanyContext().companyId;
-  return items
-    .map((item, index) => ({
-      id: item.id?.trim() || randomUUID(),
-      company_id: companyId,
-      code: item.code.trim(),
-      name: item.name.trim(),
-      category: item.category ?? null,
-      is_active: item.is_active !== false,
-      sort_order: Number.isFinite(item.sort_order) ? item.sort_order : (index + 1) * 10,
-    }))
-    .filter((item) => item.code.length > 0 && item.name.length > 0);
 }
 
 function normalizeItemCategoryLevel(level: AdminItemCategoryDefinition["level"]): AdminItemCategoryLevel {
@@ -133,9 +181,10 @@ function normalizeIncomingCategories(items: AdminItemCategoryDefinition[]): Admi
 export async function replaceAdminStandards(input: Partial<Pick<AdminStandardsPayload, "units" | "itemCategories">>): Promise<AdminStandardsPayload> {
   if (!isDatabaseConfigured()) {
     return {
-      units: input.units ?? createDefaultUnitDefinitions(),
-      itemCategories: input.itemCategories ?? createDefaultItemCategoryDefinitions(),
-      repository: { mode: "fallback", adapterConfigured: false, supportsWrite: false },
+      units: [],
+      itemCategories: [],
+      defaultItemCategories: [],
+      repository: { mode: "unavailable", adapterConfigured: false, supportsWrite: false },
       error: "DB_NOT_CONFIGURED",
     };
   }
@@ -143,13 +192,21 @@ export async function replaceAdminStandards(input: Partial<Pick<AdminStandardsPa
   const companyId = getWorkspaceCompanyContext().companyId;
 
   if (input.units) {
+    const incomingUnitIds = input.units.map((unit) => unit.id?.trim()).filter((id): id is string => Boolean(id));
+    const validUnitIdResult = incomingUnitIds.length > 0
+      ? await queryDb<{ id: string } & DbQueryResultRow>(
+          `SELECT id FROM system_unit_standards WHERE id = ANY($1::text[])`,
+          [incomingUnitIds],
+        )
+      : { rows: [] };
+    const validUnitIds = new Set(validUnitIdResult.rows.map((row) => row.id));
     const units = input.units
       .map((unit, index) => ({
         id: unit.id?.trim(),
         isEnabled: unit.is_active !== false,
         sortOrder: Number.isFinite(unit.sort_order) ? unit.sort_order : (index + 1) * 10,
       }))
-      .filter((unit): unit is { id: string; isEnabled: boolean; sortOrder: number } => Boolean(unit.id));
+      .filter((unit): unit is { id: string; isEnabled: boolean; sortOrder: number } => Boolean(unit.id) && validUnitIds.has(unit.id));
 
     for (const unit of units) {
       await queryDb(
@@ -170,11 +227,19 @@ export async function replaceAdminStandards(input: Partial<Pick<AdminStandardsPa
 
     await queryDb("DELETE FROM item_categories WHERE company_id = $1", [companyId]);
 
+    const idMap = new Map<string, string>();
+
     for (const category of categories) {
+      const sourceId = category.id;
+      const targetId = randomUUID();
+      idMap.set(sourceId, targetId);
+      const parentId = category.level === 1 ? null : category.parent_id ? idMap.get(category.parent_id) ?? null : null;
+      if (category.level > 1 && !parentId) continue;
+
       await queryDb(
         `INSERT INTO item_categories (id, company_id, parent_id, level, name, is_active, sort_order)
          VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [category.id, companyId, category.parent_id, category.level, category.name, category.is_active, category.sort_order],
+        [targetId, companyId, parentId, category.level, category.name, category.is_active, category.sort_order],
       );
     }
   }

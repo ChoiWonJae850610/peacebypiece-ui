@@ -7,7 +7,6 @@ import { APP_VERSION } from "@/lib/constants/app";
 import {
   SYSTEM_UNIT_STANDARD_CATEGORY_LABELS,
   SYSTEM_UNIT_STANDARD_POLICY,
-  SYSTEM_UNIT_STANDARD_ROWS,
   SYSTEM_UNIT_STANDARD_STATUS_LABELS,
   type SystemUnitStandardRow,
   type SystemUnitStandardStatus,
@@ -58,13 +57,13 @@ function toSortOrder(value: string): number {
 }
 
 export default function SystemUnitStandardsPage() {
-  const [records, setRecords] = useState<SystemUnitStandardRow[]>(SYSTEM_UNIT_STANDARD_ROWS);
+  const [records, setRecords] = useState<SystemUnitStandardRow[]>([]);
   const [form, setForm] = useState<UnitFormState>(EMPTY_FORM);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingForm, setEditingForm] = useState<UnitFormState | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState("DB 연결 시 시스템 단위 표준 원장을 조회합니다.");
+  const [message, setMessage] = useState("DB 기준 시스템 단위 표준 원장을 조회합니다.");
 
   const activeCount = useMemo(() => records.filter((record) => record.status === "active").length, [records]);
 

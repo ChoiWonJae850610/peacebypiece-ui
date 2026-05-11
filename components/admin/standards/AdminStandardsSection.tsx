@@ -8,13 +8,11 @@ import AdminFilePolicySettingsModal from "@/components/admin/standards/AdminFile
 import AdminNotificationPolicySettingsModal from "@/components/admin/standards/AdminNotificationPolicySettingsModal";
 import AdminUnitManagementModal from "@/components/admin/standards/AdminUnitManagementModal";
 import {
-  createDefaultOutsourcingProcessDefinitions,
   createOutsourcingProcessDefinition,
   normalizeOutsourcingProcessDefinitions,
   PARTNER_MASTER_FORM_ERRORS,
   type OutsourcingProcessDefinition,
 } from "@/lib/admin/partner";
-import { createDefaultItemCategoryDefinitions, createDefaultUnitDefinitions } from "@/lib/admin/settings/standardsDefaults";
 import { fetchPartnerMasterItemsFromApi, savePartnerMasterProcessesToApi } from "@/lib/admin/partner/apiClient";
 import { fetchAdminStandardsFromApi, saveAdminItemCategoriesToApi, saveAdminUnitsToApi } from "@/lib/admin/settings/standardsApiClient";
 import type { AdminItemCategoryDefinition, AdminUnitDefinition } from "@/lib/admin/settings/standardsTypes";
@@ -41,10 +39,11 @@ type AdminStandardsSectionProps = {
 export default function AdminStandardsSection({ mode = "full" }: AdminStandardsSectionProps) {
   const notificationTools = useAdminWorkspaceTools();
   const t = useAdminTranslation();
-  const [processDefinitions, setProcessDefinitions] = useState<OutsourcingProcessDefinition[]>(createDefaultOutsourcingProcessDefinitions());
-  const [processDraftDefinitions, setProcessDraftDefinitions] = useState<OutsourcingProcessDefinition[]>(createDefaultOutsourcingProcessDefinitions());
-  const [unitDefinitions, setUnitDefinitions] = useState<AdminUnitDefinition[]>(createDefaultUnitDefinitions());
-  const [itemCategoryDefinitions, setItemCategoryDefinitions] = useState<AdminItemCategoryDefinition[]>(createDefaultItemCategoryDefinitions());
+  const [processDefinitions, setProcessDefinitions] = useState<OutsourcingProcessDefinition[]>([]);
+  const [processDraftDefinitions, setProcessDraftDefinitions] = useState<OutsourcingProcessDefinition[]>([]);
+  const [unitDefinitions, setUnitDefinitions] = useState<AdminUnitDefinition[]>([]);
+  const [itemCategoryDefinitions, setItemCategoryDefinitions] = useState<AdminItemCategoryDefinition[]>([]);
+  const [defaultItemCategoryDefinitions, setDefaultItemCategoryDefinitions] = useState<AdminItemCategoryDefinition[]>([]);
   const [isUnitModalOpen, setIsUnitModalOpen] = useState(false);
   const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
   const [isItemCategoryModalOpen, setIsItemCategoryModalOpen] = useState(false);
@@ -81,11 +80,13 @@ export default function AdminStandardsSection({ mode = "full" }: AdminStandardsS
         if (!isMounted) return;
         setUnitDefinitions(Array.isArray(payload.units) ? payload.units : []);
         setItemCategoryDefinitions(Array.isArray(payload.itemCategories) ? payload.itemCategories : []);
+        setDefaultItemCategoryDefinitions(Array.isArray(payload.defaultItemCategories) ? payload.defaultItemCategories : []);
       })
       .catch(() => {
         if (!isMounted) return;
-        setUnitDefinitions(createDefaultUnitDefinitions());
-        setItemCategoryDefinitions(createDefaultItemCategoryDefinitions());
+        setUnitDefinitions([]);
+        setItemCategoryDefinitions([]);
+        setDefaultItemCategoryDefinitions([]);
       });
 
     return () => {
@@ -268,6 +269,7 @@ export default function AdminStandardsSection({ mode = "full" }: AdminStandardsS
       <AdminItemCategoryManagementModal
         open={isItemCategoryModalOpen}
         categories={itemCategoryDefinitions}
+        defaultCategories={defaultItemCategoryDefinitions}
         saving={isSavingItemCategories}
         error={standardFormError}
         onClose={() => setIsItemCategoryModalOpen(false)}

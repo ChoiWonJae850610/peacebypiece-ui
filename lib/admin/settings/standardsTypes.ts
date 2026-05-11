@@ -25,8 +25,9 @@ export type AdminItemCategoryDefinition = {
 export type AdminStandardsPayload = {
   units: AdminUnitDefinition[];
   itemCategories: AdminItemCategoryDefinition[];
+  defaultItemCategories?: AdminItemCategoryDefinition[];
   repository?: {
-    mode: "db" | "fallback";
+    mode: "db" | "unavailable";
     adapterConfigured: boolean;
     supportsWrite: boolean;
   };

@@ -7,7 +7,6 @@ import { APP_VERSION } from "@/lib/constants/app";
 import {
   SYSTEM_PROCESS_STANDARD_CATEGORY_LABELS,
   SYSTEM_PROCESS_STANDARD_POLICY,
-  SYSTEM_PROCESS_STANDARD_ROWS,
   SYSTEM_PROCESS_STANDARD_STATUS_LABELS,
   type SystemProcessStandardRow,
   type SystemProcessStandardStatus,
@@ -55,13 +54,13 @@ function toSortOrder(value: string): number {
 }
 
 export default function SystemProcessStandardsPage() {
-  const [records, setRecords] = useState<SystemProcessStandardRow[]>(SYSTEM_PROCESS_STANDARD_ROWS);
+  const [records, setRecords] = useState<SystemProcessStandardRow[]>([]);
   const [form, setForm] = useState<ProcessFormState>(EMPTY_FORM);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingForm, setEditingForm] = useState<ProcessFormState | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState("DB 연결 시 시스템 외주공정 유형 원장을 조회합니다.");
+  const [message, setMessage] = useState("DB 기준 시스템 외주공정 유형 원장을 조회합니다.");
 
   const activeCount = useMemo(() => records.filter((record) => record.status === "active").length, [records]);
 

@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { MATERIAL_UNIT_OPTIONS } from "@/lib/constants/material";
-import { OUTSOURCING_UNIT_OPTIONS } from "@/lib/constants/workorderOptions";
+import { useEffect, useState } from "react";
 import type { AdminStandardsPayload } from "@/lib/admin/settings/standardsTypes";
 
 function normalizeUniqueOptions(values: string[]): string[] {
@@ -27,10 +25,8 @@ function buildPriceBasisLabel(unitLabel: string): string {
 }
 
 export function useCompanyStandardOptions() {
-  const fallbackMaterialUnitOptions = useMemo(() => Array.from(MATERIAL_UNIT_OPTIONS), []);
-  const fallbackPriceBasisOptions = useMemo(() => Array.from(OUTSOURCING_UNIT_OPTIONS), []);
-  const [materialUnitOptions, setMaterialUnitOptions] = useState<string[]>(fallbackMaterialUnitOptions);
-  const [priceBasisOptions, setPriceBasisOptions] = useState<string[]>(fallbackPriceBasisOptions);
+  const [materialUnitOptions, setMaterialUnitOptions] = useState<string[]>([]);
+  const [priceBasisOptions, setPriceBasisOptions] = useState<string[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -45,30 +41,19 @@ export function useCompanyStandardOptions() {
             .map((unit) => unit.name || unit.code),
         );
 
-        if (activeUnitLabels.length === 0) {
-          if (payload.repository?.mode === "fallback" || payload.error) {
-            setMaterialUnitOptions(fallbackMaterialUnitOptions);
-            setPriceBasisOptions(fallbackPriceBasisOptions);
-            return;
-          }
-          setMaterialUnitOptions([]);
-          setPriceBasisOptions([]);
-          return;
-        }
-
         setMaterialUnitOptions(activeUnitLabels);
         setPriceBasisOptions(normalizeUniqueOptions(activeUnitLabels.map(buildPriceBasisLabel)));
       })
       .catch(() => {
         if (!isMounted) return;
-        setMaterialUnitOptions(fallbackMaterialUnitOptions);
-        setPriceBasisOptions(fallbackPriceBasisOptions);
+        setMaterialUnitOptions([]);
+        setPriceBasisOptions([]);
       });
 
     return () => {
       isMounted = false;
     };
-  }, [fallbackMaterialUnitOptions, fallbackPriceBasisOptions]);
+  }, []);
 
   return { materialUnitOptions, priceBasisOptions };
 }

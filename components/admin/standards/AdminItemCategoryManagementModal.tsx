@@ -14,7 +14,6 @@ import StandardManagementModalFrame, {
   standardModalMutedRowClassName,
   standardModalSelectedRowClassName,
 } from "@/components/admin/standards/StandardManagementModalFrame";
-import { createDefaultItemCategoryDefinitions } from "@/lib/admin/settings/standardsDefaults";
 import type { AdminItemCategoryDefinition, AdminItemCategoryLevel } from "@/lib/admin/settings/standardsTypes";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
@@ -27,6 +26,7 @@ type CategoryDraft = {
 type Props = {
   open: boolean;
   categories: AdminItemCategoryDefinition[];
+  defaultCategories?: AdminItemCategoryDefinition[];
   saving?: boolean;
   error?: string;
   onClose: () => void;
@@ -126,7 +126,7 @@ function CategoryList({
   );
 }
 
-export default function AdminItemCategoryManagementModal({ open, categories, saving = false, error = "", onClose, onSave }: Props) {
+export default function AdminItemCategoryManagementModal({ open, categories, defaultCategories = [], saving = false, error = "", onClose, onSave }: Props) {
   const t = useAdminTranslation();
   const [draft, setDraft] = useState<CategoryDraft>(() => createCategoryDraft(categories));
   const initialSelection = useMemo(() => getInitialSelection(createCategoryDraft(categories)), [categories]);
@@ -204,7 +204,11 @@ export default function AdminItemCategoryManagementModal({ open, categories, sav
   };
 
   const resetDraft = () => {
-    const nextDraft = createCategoryDraft(createDefaultItemCategoryDefinitions());
+    if (defaultCategories.length === 0) {
+      setFormError("시스템관리자 기본 템플릿이 없습니다. 시스템관리자 기준정보에서 기본 템플릿을 먼저 등록하세요.");
+      return;
+    }
+    const nextDraft = createCategoryDraft(defaultCategories);
     const nextSelection = getInitialSelection(nextDraft);
     setDraft(nextDraft);
     setSelectedLevel1Id(nextSelection.level1Id);

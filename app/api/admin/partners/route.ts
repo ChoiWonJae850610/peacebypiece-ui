@@ -7,7 +7,6 @@ import {
   mapOutsourcingProcessRecordsToDefinitions,
   mapPartnerDbRecordsToAdminPartners,
 } from "@/lib/admin/partner/dbMapper";
-import { createDefaultOutsourcingProcessDefinitions } from "@/lib/admin/partner/processes";
 import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
 import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 import { createPartnerRepository } from "@/lib/partners/partnerAdapter";
@@ -51,9 +50,7 @@ async function buildPartnerMasterResponse(repository?: PartnerRepository) {
   const repositoryInfo = targetRepository.getRepositoryInfo();
   const processDefinitions = processRecords.length > 0
     ? mapOutsourcingProcessRecordsToDefinitions(processRecords)
-    : repositoryInfo.mode === "mock"
-      ? createDefaultOutsourcingProcessDefinitions()
-      : [];
+    : [];
 
   return {
     partners: mapPartnerDbRecordsToAdminPartners(partners, partnerItems),
@@ -82,7 +79,7 @@ export async function GET() {
     return NextResponse.json(
       {
         partners: [],
-        processDefinitions: createDefaultOutsourcingProcessDefinitions(),
+        processDefinitions: [],
         error: "PARTNER_MASTER_LIST_UNAVAILABLE",
       },
       { status: 200 },

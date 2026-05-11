@@ -4,7 +4,6 @@ import { randomUUID } from "crypto";
 
 import { isDatabaseConfigured, queryDb, type DbQueryResultRow } from "@/lib/db/client";
 import {
-  SYSTEM_PRODUCT_TEMPLATE_ROWS,
   toSystemProductTemplateStatus,
   type SystemProductTemplateCategoryCreateInput,
   type SystemProductTemplateCategoryUpdateInput,
@@ -159,7 +158,7 @@ async function listTemplateCategories(): Promise<SystemProductTemplateCategoryDb
 }
 
 export async function listSystemProductTemplates(): Promise<SystemProductTemplateRow[]> {
-  if (!isDatabaseConfigured()) return SYSTEM_PRODUCT_TEMPLATE_ROWS;
+  if (!isDatabaseConfigured()) return [];
 
   const [templateResult, categories] = await Promise.all([
     queryDb<SystemProductTemplateDbRow>(

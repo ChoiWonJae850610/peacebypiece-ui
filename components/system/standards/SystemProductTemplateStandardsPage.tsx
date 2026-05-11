@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from "react";
 import { APP_VERSION } from "@/lib/constants/app";
 import {
   SYSTEM_PRODUCT_TEMPLATE_POLICY,
-  SYSTEM_PRODUCT_TEMPLATE_ROWS,
   SYSTEM_PRODUCT_TEMPLATE_STATUS_LABELS,
   isSystemProductTemplateActive,
   type SystemProductTemplateRow,
@@ -318,10 +317,10 @@ function TemplateTreePreview({
 }
 
 export default function SystemProductTemplateStandardsPage() {
-  const [records, setRecords] = useState<SystemProductTemplateRow[]>(SYSTEM_PRODUCT_TEMPLATE_ROWS);
+  const [records, setRecords] = useState<SystemProductTemplateRow[]>([]);
   const [form, setForm] = useState<TemplateFormState>(EMPTY_TEMPLATE_FORM);
   const [categoryForm, setCategoryForm] = useState<CategoryFormState>(EMPTY_CATEGORY_FORM);
-  const [selectedTemplateId, setSelectedTemplateId] = useState(SYSTEM_PRODUCT_TEMPLATE_ROWS[0]?.id ?? "");
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingForm, setEditingForm] = useState<TemplateFormState | null>(null);
   const [editingCategory, setEditingCategory] = useState<CategoryEditState | null>(null);

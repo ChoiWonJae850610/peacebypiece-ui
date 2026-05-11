@@ -4,7 +4,6 @@ import { randomUUID } from "crypto";
 
 import { isDatabaseConfigured, queryDb, type DbQueryResultRow } from "@/lib/db/client";
 import {
-  SYSTEM_PROCESS_STANDARD_ROWS,
   toSystemProcessStandardStatus,
   type SystemProcessStandardRow,
   type SystemProcessStandardUpdateInput,
@@ -75,7 +74,7 @@ function toSystemProcessStandardRow(row: SystemProcessStandardDbRow): SystemProc
 }
 
 export async function listSystemProcessStandards(): Promise<SystemProcessStandardRow[]> {
-  if (!isDatabaseConfigured()) return SYSTEM_PROCESS_STANDARD_ROWS;
+  if (!isDatabaseConfigured()) return [];
 
   const result = await queryDb<SystemProcessStandardDbRow>(
     `SELECT id,

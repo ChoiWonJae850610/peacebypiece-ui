@@ -4,7 +4,6 @@ import { randomUUID } from "crypto";
 
 import { isDatabaseConfigured, queryDb, type DbQueryResultRow } from "@/lib/db/client";
 import {
-  SYSTEM_UNIT_STANDARD_ROWS,
   toSystemUnitStandardStatus,
   type SystemUnitStandardRow,
   type SystemUnitStandardUpdateInput,
@@ -82,7 +81,7 @@ function toSystemUnitStandardRow(row: SystemUnitStandardDbRow): SystemUnitStanda
 }
 
 export async function listSystemUnitStandards(): Promise<SystemUnitStandardRow[]> {
-  if (!isDatabaseConfigured()) return SYSTEM_UNIT_STANDARD_ROWS;
+  if (!isDatabaseConfigured()) return [];
 
   const result = await queryDb<SystemUnitStandardDbRow>(
     `SELECT id,
