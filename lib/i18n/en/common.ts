@@ -30,8 +30,10 @@ export const commonEn = {
     description: "Manage user-specific settings such as language, color, screen density, and the default entry screen.",
     loading: "Loading saved personal settings.",
     actions: {
+      openDefaultHome: "Open default entry",
       workspaceHome: "My workspace home",
       workorder: "Work orders",
+      reset: "Reset to defaults",
     },
     summary: {
       language: "Language",
@@ -50,11 +52,11 @@ export const commonEn = {
       },
       density: {
         title: "Screen density",
-        description: "A personal preference prepared for adjusting spacing and information density.",
+        description: "Adjusts spacing on the personal settings screen immediately. Other work screens can adopt it in a later step.",
       },
       defaultHome: {
         title: "Default entry screen",
-        description: "A candidate user preference for choosing the first screen after sign-in.",
+        description: "Chooses where the default-entry button at the top of this screen opens.",
       },
     },
     languageOptions: {
@@ -77,7 +79,7 @@ export const commonEn = {
     },
     policyNote: {
       title: "Personal settings and organization settings are separate",
-      description: "This screen manages user preferences only. Storage policy, file policy, partner policy, and permission policy remain in organization settings.",
+      description: "This screen manages user preferences only. Storage policy, file policy, partner policy, and permission policy remain in organization settings. Values are stored in this browser first and can later move to account-based settings.",
     },
   },
   ui: {

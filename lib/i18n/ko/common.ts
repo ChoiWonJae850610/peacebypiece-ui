@@ -30,8 +30,10 @@ export const commonKo = {
     description: "언어, 색상, 화면 밀도, 기본 진입 화면처럼 사용자별로 달라지는 설정을 관리합니다.",
     loading: "저장된 개인 설정을 불러오는 중입니다.",
     actions: {
+      openDefaultHome: "기본 진입 화면 열기",
       workspaceHome: "내 업무 홈",
       workorder: "작업지시서",
+      reset: "기본값으로 되돌리기",
     },
     summary: {
       language: "언어",
@@ -50,11 +52,11 @@ export const commonKo = {
       },
       density: {
         title: "화면 밀도",
-        description: "작업 화면의 여백과 정보량을 조정할 수 있도록 준비하는 개인 설정입니다.",
+        description: "개인 설정 화면의 여백을 즉시 조정합니다. 다른 업무 화면 적용은 이후 단계에서 확대합니다.",
       },
       defaultHome: {
         title: "기본 진입 화면",
-        description: "로그인 후 우선 열릴 화면을 사용자별로 정하기 위한 후보 설정입니다.",
+        description: "상단의 기본 진입 화면 버튼이 이동할 화면을 정합니다.",
       },
     },
     languageOptions: {
@@ -77,7 +79,7 @@ export const commonKo = {
     },
     policyNote: {
       title: "개인 설정과 조직 설정 분리",
-      description: "이 화면은 사용자 개인 선호만 다룹니다. 저장소 정책, 파일 정책, 협력업체 정책, 권한 정책은 조직 환경설정에서 계속 관리합니다.",
+      description: "이 화면은 사용자 개인 선호만 다룹니다. 저장소 정책, 파일 정책, 협력업체 정책, 권한 정책은 조직 환경설정에서 계속 관리합니다. 현재 값은 이 브라우저에 우선 저장하며, 추후 사용자 계정 설정으로 이전할 수 있습니다.",
     },
   },
   ui: {

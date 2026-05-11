@@ -1,11 +1,14 @@
 import type { CompanyLanguage, CompanyThemeColor } from "@/lib/admin/settings/companyTypes";
 
 export const PERSONAL_SETTINGS_STORAGE_KEY = "peacebypiece.personal.settings";
+export const PERSONAL_SETTINGS_CHANGE_EVENT = "peacebypiece:personal-settings-change";
 
 export type PersonalSettingsTheme = CompanyThemeColor;
 export type PersonalSettingsLanguage = CompanyLanguage;
 export type PersonalSettingsDensity = "comfortable" | "compact";
 export type PersonalSettingsDefaultHome = "workspace" | "workorder";
+
+export type PersonalSettingsHomeRoute = "/workspace" | "/worker";
 
 export type PersonalSettingsDraft = {
   language: PersonalSettingsLanguage;
@@ -86,10 +89,28 @@ export function readStoredPersonalSettings(storage: Storage | null | undefined):
   }
 }
 
+export function resolvePersonalSettingsHomeRoute(defaultHome: PersonalSettingsDefaultHome): PersonalSettingsHomeRoute {
+  return defaultHome === "workorder" ? "/worker" : "/workspace";
+}
+
+export function applyPersonalSettingsToDocument(settings: PersonalSettingsDraft, documentElement: HTMLElement | null | undefined) {
+  if (!documentElement) return;
+  documentElement.lang = settings.language;
+  documentElement.dataset.density = settings.density;
+  documentElement.dataset.personalTheme = settings.theme;
+}
+
 export function writeStoredPersonalSettings(storage: Storage | null | undefined, settings: PersonalSettingsDraft): PersonalSettingsDraft {
   const normalizedSettings = normalizePersonalSettings(settings);
   if (storage) {
     storage.setItem(PERSONAL_SETTINGS_STORAGE_KEY, JSON.stringify(normalizedSettings));
   }
   return normalizedSettings;
+}
+
+export function resetStoredPersonalSettings(storage: Storage | null | undefined): PersonalSettingsDraft {
+  if (storage) {
+    storage.removeItem(PERSONAL_SETTINGS_STORAGE_KEY);
+  }
+  return DEFAULT_PERSONAL_SETTINGS;
 }

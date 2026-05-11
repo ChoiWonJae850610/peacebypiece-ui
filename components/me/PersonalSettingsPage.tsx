@@ -9,11 +9,14 @@ import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
 import { useI18n } from "@/lib/i18n";
 import {
   DEFAULT_PERSONAL_SETTINGS,
+  applyPersonalSettingsToDocument,
   PERSONAL_DEFAULT_HOME_OPTIONS,
   PERSONAL_DENSITY_OPTIONS,
   PERSONAL_LANGUAGE_OPTIONS,
   PERSONAL_THEME_OPTIONS,
   readStoredPersonalSettings,
+  resetStoredPersonalSettings,
+  resolvePersonalSettingsHomeRoute,
   writeStoredPersonalSettings,
   type PersonalSettingsDefaultHome,
   type PersonalSettingsDensity,
@@ -32,6 +35,10 @@ type PersonalSettingsOptionGroupProps<TValue extends string> = {
 };
 
 type PersonalSettingsCopy = ReturnType<typeof useI18n>["i18n"]["common"]["personalSettings"];
+
+function getDensityClassName(density: PersonalSettingsDensity): string {
+  return density === "compact" ? "gap-3 md:py-5" : "gap-5 md:py-8";
+}
 
 function getThemeSwatchClassName(theme: PersonalSettingsTheme): string {
   const swatchClassNames: Record<PersonalSettingsTheme, string> = {
@@ -104,7 +111,9 @@ function PersonalThemeOptionGroup({ copy, value, onChange }: { copy: PersonalSet
   );
 }
 
-function PersonalSettingsSummary({ copy, draft }: { copy: PersonalSettingsCopy; draft: PersonalSettingsDraft }) {
+function PersonalSettingsSummary({ copy, draft, onReset }: { copy: PersonalSettingsCopy; draft: PersonalSettingsDraft; onReset: () => void }) {
+  const defaultHomeHref = resolvePersonalSettingsHomeRoute(draft.defaultHome);
+
   return (
     <section className="rounded-[30px] border border-stone-200 bg-white/95 px-5 py-5 shadow-sm backdrop-blur">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -118,12 +127,15 @@ function PersonalSettingsSummary({ copy, draft }: { copy: PersonalSettingsCopy; 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-500">{copy.description}</p>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">
+          <Link href={defaultHomeHref} className="inline-flex items-center justify-center rounded-full border border-stone-900 bg-stone-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-stone-800">
+            {copy.actions.openDefaultHome}
+          </Link>
           <Link href="/workspace" className="inline-flex items-center justify-center rounded-full border border-stone-200 bg-white px-3 py-2 text-xs font-semibold text-stone-700 transition hover:bg-stone-50">
             {copy.actions.workspaceHome}
           </Link>
-          <Link href="/worker" className="inline-flex items-center justify-center rounded-full border border-stone-900 bg-stone-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-stone-800">
-            {copy.actions.workorder}
-          </Link>
+          <button type="button" onClick={onReset} className="inline-flex items-center justify-center rounded-full border border-stone-200 bg-white px-3 py-2 text-xs font-semibold text-stone-700 transition hover:bg-stone-50">
+            {copy.actions.reset}
+          </button>
         </div>
       </div>
       <div className="mt-5 grid gap-2 sm:grid-cols-4">
@@ -155,16 +167,28 @@ export default function PersonalSettingsPage() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    setDraft(readStoredPersonalSettings(window.localStorage));
+    const storedSettings = readStoredPersonalSettings(window.localStorage);
+    setDraft(storedSettings);
+    setLocale(storedSettings.language);
+    persistAdminTheme(storedSettings.theme);
+    applyPersonalSettingsToDocument(storedSettings, document.documentElement);
     setLoaded(true);
   }, []);
 
-  function updateDraft(nextDraft: PersonalSettingsDraft) {
-    const normalizedDraft = writeStoredPersonalSettings(window.localStorage, nextDraft);
+  function commitDraft(nextDraft: PersonalSettingsDraft, persist: (storage: Storage | null | undefined, settings: PersonalSettingsDraft) => PersonalSettingsDraft = writeStoredPersonalSettings) {
+    const normalizedDraft = persist(window.localStorage, nextDraft);
     setDraft(normalizedDraft);
     setLocale(normalizedDraft.language);
     persistAdminTheme(normalizedDraft.theme);
-    document.documentElement.dataset.density = normalizedDraft.density;
+    applyPersonalSettingsToDocument(normalizedDraft, document.documentElement);
+  }
+
+  function updateDraft(nextDraft: PersonalSettingsDraft) {
+    commitDraft(nextDraft);
+  }
+
+  function resetDraft() {
+    commitDraft(DEFAULT_PERSONAL_SETTINGS, resetStoredPersonalSettings);
   }
 
   function updateLanguage(language: PersonalSettingsLanguage) {
@@ -184,9 +208,9 @@ export default function PersonalSettingsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(135deg,#f8fafc_0%,#f5f5f4_48%,#eef2ff_100%)] px-4 py-5 text-stone-900 md:px-6 md:py-8">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
-        <PersonalSettingsSummary copy={copy} draft={draft} />
+    <main className={`min-h-screen bg-[linear-gradient(135deg,#f8fafc_0%,#f5f5f4_48%,#eef2ff_100%)] px-4 py-5 text-stone-900 md:px-6 ${getDensityClassName(draft.density)}`}>
+      <div className={`mx-auto flex w-full max-w-6xl flex-col ${draft.density === "compact" ? "gap-3" : "gap-5"}`}>
+        <PersonalSettingsSummary copy={copy} draft={draft} onReset={resetDraft} />
 
         <div className="grid gap-4 lg:grid-cols-2">
           <PersonalSettingsOptionGroup
