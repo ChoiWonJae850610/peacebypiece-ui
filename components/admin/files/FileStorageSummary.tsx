@@ -92,19 +92,19 @@ function formatBytes(bytes: number): string {
 function StorageCylinder({ percent }: { percent: number }) {
   const safePercent = Math.min(100, Math.max(0, percent));
   return (
-    <div className="relative mx-auto mt-1 h-16 w-[64px]" aria-hidden="true">
-      <div className="absolute inset-x-2 bottom-0 h-[50px] overflow-hidden rounded-b-[18px] border-x border-b border-stone-300 bg-white shadow-inner">
+    <div className="relative mx-auto mt-0.5 h-12 w-[54px]" aria-hidden="true">
+      <div className="absolute inset-x-2 bottom-0 h-[38px] overflow-hidden rounded-b-[18px] border-x border-b border-stone-300 bg-white shadow-inner">
         <div
           className="absolute inset-x-0 bottom-0 rounded-b-[28px] bg-[var(--admin-theme-surface)]/20"
           style={{ height: `${Math.max(6, safePercent)}%` }}
         />
       </div>
-      <div className="absolute inset-x-2 top-0 h-8 rounded-[50%] border border-stone-300 bg-white shadow-sm" />
+      <div className="absolute inset-x-2 top-0 h-6 rounded-[50%] border border-stone-300 bg-white shadow-sm" />
       <div
         className="absolute inset-x-2 rounded-[50%] border border-[var(--admin-theme-surface)] bg-[var(--admin-theme-surface)]/20"
-        style={{ bottom: `${Math.max(0, Math.min(44, safePercent * 0.42))}px`, height: 24 }}
+        style={{ bottom: `${Math.max(0, Math.min(34, safePercent * 0.34))}px`, height: 20 }}
       />
-      <div className="absolute inset-0 flex items-center justify-center pt-3">
+      <div className="absolute inset-0 flex items-center justify-center pt-2">
         <span className="rounded-full bg-white/90 px-2 py-0.5 text-xs font-bold text-stone-950 shadow-sm">
           {safePercent}%
         </span>
@@ -130,13 +130,13 @@ function PlanUsageCard({
   const isCaution = hasPlanLimit && usageSummary.statusTone === "caution";
 
   return (
-    <div className="flex h-full min-h-[170px] flex-col rounded-[22px] border border-stone-200 bg-gradient-to-b from-white to-stone-50 px-4 py-3 md:min-h-[165px]">
+    <div className="flex h-full min-h-[145px] flex-col rounded-[20px] border border-stone-200 bg-gradient-to-b from-white to-stone-50 px-3.5 py-2.5 md:min-h-[138px]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">
             {t("filesSummary.storagePlanLabel", "요금제 용량")}
           </p>
-          <div className="mt-1.5 flex flex-wrap items-center gap-2">
+          <div className="mt-1 flex flex-wrap items-center gap-1.5">
             <span className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1 text-xs font-bold text-white">
               {planName}
             </span>
@@ -149,7 +149,7 @@ function PlanUsageCard({
         </div>
         <button
           type="button"
-          className="shrink-0 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm transition hover:bg-stone-50"
+          className="shrink-0 rounded-full border border-stone-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-700 shadow-sm transition hover:bg-stone-50"
           title={t("filesSummary.upgradeTitle", "요금제 업그레이드 화면은 후속 버전에서 연결합니다.")}
         >
           {t("filesSummary.upgrade", "업그레이드")}
@@ -158,16 +158,16 @@ function PlanUsageCard({
 
       <StorageCylinder percent={hasPlanLimit ? usageSummary.usagePercent : 0} />
 
-      <div className="mt-1.5 text-center">
-        <p className="text-lg font-bold tracking-tight text-stone-950">
+      <div className="mt-1 text-center">
+        <p className="text-base font-bold tracking-tight text-stone-950">
           {hasPlanLimit ? `${usageSummary.usedLabel} / ${usageSummary.limitLabel}` : t("filesSummary.planCapacityLoading", "요금제 용량 확인 중")}
         </p>
-        <p className="mt-1 text-xs font-semibold text-stone-500">
+        <p className="mt-0.5 text-[11px] font-semibold text-stone-500">
           {hasPlanLimit ? `${usedGbLabel} ${t("filesSummary.usedSuffix", "사용")} · ${remainingLabel} ${t("filesSummary.remainingSuffix", "남음")}` : t("filesSummary.planCapacityLoadingDescription", "고객 정보의 요금제 용량을 불러오는 중")}
         </p>
       </div>
 
-      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white shadow-inner">
+      <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white shadow-inner">
         <div
           className={`h-full rounded-full ${isDanger ? "bg-red-500" : isCaution ? "bg-amber-400" : "bg-[var(--admin-theme-surface)]"}`}
           style={{ width: `${hasPlanLimit ? Math.min(100, Math.max(0, usageSummary.usagePercent)) : 0}%` }}
@@ -180,21 +180,21 @@ function PlanUsageCard({
 function FileOperationsCard({ items }: { items: FileStatusItem[] }) {
   const t = useAdminTranslation();
   return (
-    <div className="flex h-full min-h-[170px] flex-col rounded-[22px] border border-stone-200 bg-white px-4 py-3 md:min-h-[165px]">
+    <div className="flex h-full min-h-[145px] flex-col rounded-[20px] border border-stone-200 bg-white px-3.5 py-2.5 md:min-h-[138px]">
       <div>
         <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">
           {t("filesSummary.fileOperationsLabel", "파일 운영")}
         </p>
-        <h3 className="mt-1.5 text-base font-bold text-stone-950">{t("filesSummary.fileOperationsTitle", "파일 운영 요약")}</h3>
+        <h3 className="mt-1 text-sm font-bold text-stone-950">{t("filesSummary.fileOperationsTitle", "파일 운영 요약")}</h3>
       </div>
-      <div className="mt-2 grid flex-1 content-center gap-1.5">
+      <div className="mt-1.5 grid flex-1 content-center gap-1">
         {items.map((item) => (
           <div
             key={item.label}
-            className="flex items-center justify-between gap-4 rounded-2xl bg-stone-50 px-3 py-1.5"
+            className="flex items-center justify-between gap-3 rounded-2xl bg-stone-50 px-3 py-1"
           >
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-stone-800" title={item.label}>
+              <p className="truncate text-[13px] font-semibold text-stone-800" title={item.label}>
                 {item.label}
               </p>
               {item.description ? (
@@ -235,13 +235,13 @@ function DonutChart({
   let offset = 0;
 
   return (
-    <div className="flex h-full min-h-[170px] flex-col rounded-[22px] border border-stone-200 bg-white px-4 py-3 md:min-h-[165px]">
+    <div className="flex h-full min-h-[145px] flex-col rounded-[20px] border border-stone-200 bg-white px-3.5 py-2.5 md:min-h-[138px]">
       <div className="flex shrink-0 items-start justify-between gap-3">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">
             {t("filesSummary.fileTypeLabel", "파일 유형")}
           </p>
-          <h3 className="mt-1.5 text-base font-bold text-stone-950">
+          <h3 className="mt-1 text-sm font-bold text-stone-950">
             {t("filesSummary.fileType", "파일 유형")}
           </h3>
         </div>
@@ -249,11 +249,11 @@ function DonutChart({
           {formatCountWithUnit(total, t)}
         </span>
       </div>
-      <div className="mt-2 flex min-h-0 flex-1 items-center justify-center gap-4">
-        <div className="relative h-20 w-20 shrink-0">
+      <div className="mt-1.5 flex min-h-0 flex-1 items-center justify-center gap-3">
+        <div className="relative h-16 w-16 shrink-0">
           <svg
             viewBox="0 0 88 88"
-            className="h-20 w-20 -rotate-90"
+            className="h-16 w-16 -rotate-90"
             aria-hidden="true"
           >
             <circle
@@ -262,7 +262,7 @@ function DonutChart({
               r={radius}
               fill="none"
               stroke="rgb(231 229 228)"
-              strokeWidth="12"
+              strokeWidth="10"
             />
             {total > 0
               ? normalizedItems.map((item, index) => {
@@ -278,7 +278,7 @@ function DonutChart({
                       r={radius}
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="12"
+                      strokeWidth="10"
                       strokeDasharray={strokeDasharray}
                       strokeDashoffset={strokeDashoffset}
                       strokeLinecap="butt"
@@ -297,11 +297,11 @@ function DonutChart({
               : null}
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-            <span className="text-lg font-bold text-stone-950">{total}</span>
+            <span className="text-base font-bold text-stone-950">{total}</span>
             <span className="text-[10px] font-semibold text-stone-400">{t("filesSummary.totalLabel", "전체")}</span>
           </div>
         </div>
-        <div className="min-w-0 flex-1 space-y-2">
+        <div className="min-w-0 flex-1 space-y-1.5">
           {normalizedItems.map((item, index) => (
             <div key={item.label} className="min-w-0">
               <div className="flex items-center justify-between gap-2 text-xs">
@@ -315,7 +315,7 @@ function DonutChart({
                   {formatCountWithUnit(item.value, t)} · {item.percent}%
                 </span>
               </div>
-              <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-stone-100">
+              <div className="mt-1 h-1 overflow-hidden rounded-full bg-stone-100">
                 <div
                   className={index === 0 ? "h-full rounded-full bg-[var(--admin-theme-surface)]" : index === 1 ? "h-full rounded-full bg-stone-500" : "h-full rounded-full bg-stone-300"}
                   style={{ width: `${Math.max(2, item.percent)}%` }}
@@ -385,7 +385,7 @@ export default function FileStorageSummary({
   ];
 
   return (
-    <section className="grid shrink-0 gap-3 xl:grid-cols-[minmax(230px,0.78fr)_minmax(270px,0.95fr)_minmax(310px,1.08fr)]">
+    <section className="grid shrink-0 gap-2.5 xl:grid-cols-[minmax(230px,0.78fr)_minmax(270px,0.95fr)_minmax(310px,1.08fr)]">
       <PlanUsageCard usageSummary={usageSummary} statusLabel={statusLabel} />
       <FileOperationsCard items={statusItems} />
       <DonutChart items={fileTypeDistribution} />

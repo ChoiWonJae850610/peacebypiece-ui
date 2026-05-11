@@ -11,6 +11,8 @@ type AdminTableProps<TItem> = {
   className?: string;
   gridTemplateColumns?: string;
   rowClassName?: (item: TItem) => string;
+  rowBaseClassName?: string;
+  headerClassName?: string;
   onRowClick?: (item: TItem) => void;
 };
 
@@ -24,14 +26,17 @@ export default function AdminTable<TItem>({
   className = "",
   gridTemplateColumns,
   rowClassName,
+  rowBaseClassName,
+  headerClassName,
   onRowClick,
 }: AdminTableProps<TItem>) {
   const gridStyle = gridTemplateColumns ? { gridTemplateColumns } : undefined;
-  const baseRowClassName = "grid w-full gap-3 px-4 py-2 text-left text-[11px] md:items-center";
+  const baseRowClassName = rowBaseClassName ?? "grid w-full gap-3 px-4 py-2 text-left text-[11px] md:items-center";
+  const tableHeaderClassName = headerClassName ?? "hidden gap-3 bg-stone-50 px-4 py-2 text-[10px] font-semibold text-stone-500 md:grid";
 
   return (
     <div className={["flex min-h-0 flex-1 flex-col overflow-hidden rounded-[22px] border border-stone-200 bg-white", className].filter(Boolean).join(" ")}>
-      <div className="hidden gap-3 bg-stone-50 px-4 py-2 text-[10px] font-semibold text-stone-500 md:grid" style={gridStyle}>
+      <div className={tableHeaderClassName} style={gridStyle}>
         {columns.map((column) => (
           <span key={column.key} className={column.headerClassName}>{column.label}</span>
         ))}
