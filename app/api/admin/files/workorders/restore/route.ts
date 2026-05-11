@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { restoreWorkOrderTrashBundle } from "@/lib/admin/files/serverActions";
 import { createAdminTrashActionMessage } from "@/lib/admin/files/presentation";
+import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
+import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
+import { buildWorkOrderRestoredAuditLog } from "@/lib/system/audit/writeActions";
 
 export const runtime = "nodejs";
 
@@ -17,13 +20,40 @@ function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error || "UNKNOWN_ERROR");
 }
 
+function getAuditRequestId(request: NextRequest): string | null {
+  return request.headers.get("x-request-id") || request.headers.get("x-vercel-id") || null;
+}
+
+function getAuditIpAddress(request: NextRequest): string | null {
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  const firstForwardedIp = forwardedFor?.split(",")[0]?.trim();
+  return firstForwardedIp || request.headers.get("x-real-ip") || null;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const payload = (await request.json().catch(() => null)) as WorkOrderRestoreRequest | null;
+    const actorId = readText(payload?.restoredBy);
     const result = await restoreWorkOrderTrashBundle({
       workOrderId: readText(payload?.workOrderId) ?? "",
-      actorId: readText(payload?.restoredBy),
+      actorId,
     });
+
+    if (result.ok) {
+      await createSystemAuditLogSafe(
+        buildWorkOrderRestoredAuditLog({
+          workOrderId: result.workOrderId,
+          actorId,
+          companyId: WORKSPACE_COMPANY_ID,
+          affectedCount: result.affectedCount,
+          documentCount: result.documentCount ?? result.attachmentCount ?? 0,
+          designCount: result.designCount ?? 0,
+          memoCount: result.memoCount ?? 0,
+          requestId: getAuditRequestId(request),
+          ipAddress: getAuditIpAddress(request),
+        }),
+      );
+    }
 
     return NextResponse.json(
       {

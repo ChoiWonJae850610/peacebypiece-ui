@@ -78,3 +78,162 @@ export function buildSystemStoragePurgeAuditLog(
     ipAddress: input.ipAddress ?? null,
   };
 }
+
+export type BuildWorkOrderDeletedAuditLogInput = {
+  workOrderId: string;
+  title?: string | null;
+  workflowState?: string | null;
+  actorId?: string | null;
+  companyId?: string | null;
+  attachmentCount?: number;
+  memoThreadCount?: number;
+  requestId?: string | null;
+  ipAddress?: string | null;
+};
+
+export type BuildAttachmentDeletedAuditLogInput = {
+  attachmentId: string;
+  workOrderId?: string | null;
+  fileName?: string | null;
+  actorId?: string | null;
+  companyId?: string | null;
+  mimeType?: string | null;
+  sizeBytes?: number | null;
+  hasStorageKey?: boolean;
+  hasThumbnailKey?: boolean;
+  requestId?: string | null;
+  ipAddress?: string | null;
+};
+
+export type BuildWorkOrderRestoredAuditLogInput = {
+  workOrderId: string;
+  actorId?: string | null;
+  companyId?: string | null;
+  affectedCount: number;
+  documentCount: number;
+  designCount: number;
+  memoCount: number;
+  requestId?: string | null;
+  ipAddress?: string | null;
+};
+
+export type BuildAttachmentRestoredAuditLogInput = {
+  actorId?: string | null;
+  companyId?: string | null;
+  requestedCount: number;
+  affectedCount: number;
+  documentCount: number;
+  designCount: number;
+  requestId?: string | null;
+  ipAddress?: string | null;
+};
+
+function normalizeCount(value: number | undefined | null): number {
+  return Number.isFinite(Number(value)) ? Math.max(0, Math.trunc(Number(value))) : 0;
+}
+
+export function buildWorkOrderDeletedAuditLog(
+  input: BuildWorkOrderDeletedAuditLogInput,
+): CreateSystemAuditLogInput {
+  const title = input.title?.trim() || "작업지시서";
+  const attachmentCount = normalizeCount(input.attachmentCount);
+  const memoThreadCount = normalizeCount(input.memoThreadCount);
+
+  return {
+    actorUserId: input.actorId ?? null,
+    actorRole: "customer_admin",
+    companyId: input.companyId ?? null,
+    targetType: "work_order",
+    targetId: input.workOrderId,
+    eventType: "work_order.deleted",
+    severity: "high",
+    summary: `${title} 삭제`,
+    metadata: {
+      workOrderId: input.workOrderId,
+      title,
+      workflowState: input.workflowState ?? null,
+      attachmentCount,
+      memoThreadCount,
+      deleteMode: "soft-delete",
+      bundleTrash: true,
+    },
+    requestId: input.requestId ?? null,
+    ipAddress: input.ipAddress ?? null,
+  };
+}
+
+export function buildAttachmentDeletedAuditLog(
+  input: BuildAttachmentDeletedAuditLogInput,
+): CreateSystemAuditLogInput {
+  const fileName = input.fileName?.trim() || input.attachmentId;
+
+  return {
+    actorUserId: input.actorId ?? null,
+    actorRole: "customer_admin",
+    companyId: input.companyId ?? null,
+    targetType: "file",
+    targetId: input.attachmentId,
+    eventType: "file.deleted",
+    severity: "medium",
+    summary: `${fileName} 삭제`,
+    metadata: {
+      attachmentId: input.attachmentId,
+      workOrderId: input.workOrderId ?? null,
+      fileName,
+      mimeType: input.mimeType ?? null,
+      sizeBytes: input.sizeBytes ?? null,
+      hasStorageKey: Boolean(input.hasStorageKey),
+      hasThumbnailKey: Boolean(input.hasThumbnailKey),
+      deleteMode: "soft-delete",
+    },
+    requestId: input.requestId ?? null,
+    ipAddress: input.ipAddress ?? null,
+  };
+}
+
+export function buildWorkOrderRestoredAuditLog(
+  input: BuildWorkOrderRestoredAuditLogInput,
+): CreateSystemAuditLogInput {
+  return {
+    actorUserId: input.actorId ?? null,
+    actorRole: "customer_admin",
+    companyId: input.companyId ?? null,
+    targetType: "work_order",
+    targetId: input.workOrderId,
+    eventType: "work_order.restored",
+    severity: "medium",
+    summary: `작업지시서 복원: 문서 ${input.documentCount}개, 디자인 ${input.designCount}개, 메모 ${input.memoCount}개`,
+    metadata: {
+      workOrderId: input.workOrderId,
+      affectedCount: normalizeCount(input.affectedCount),
+      documentCount: normalizeCount(input.documentCount),
+      designCount: normalizeCount(input.designCount),
+      memoCount: normalizeCount(input.memoCount),
+    },
+    requestId: input.requestId ?? null,
+    ipAddress: input.ipAddress ?? null,
+  };
+}
+
+export function buildAttachmentRestoredAuditLog(
+  input: BuildAttachmentRestoredAuditLogInput,
+): CreateSystemAuditLogInput {
+  return {
+    actorUserId: input.actorId ?? null,
+    actorRole: "customer_admin",
+    companyId: input.companyId ?? null,
+    targetType: "file",
+    targetId: null,
+    eventType: "file.restored",
+    severity: "medium",
+    summary: `첨부파일 복원: 문서 ${input.documentCount}개, 디자인 ${input.designCount}개`,
+    metadata: {
+      requestedCount: normalizeCount(input.requestedCount),
+      affectedCount: normalizeCount(input.affectedCount),
+      documentCount: normalizeCount(input.documentCount),
+      designCount: normalizeCount(input.designCount),
+    },
+    requestId: input.requestId ?? null,
+    ipAddress: input.ipAddress ?? null,
+  };
+}

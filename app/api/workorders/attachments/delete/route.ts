@@ -3,6 +3,8 @@ import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
 import { getCurrentAdminCompany } from "@/lib/admin/settings/companyRepository";
 import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
 import { deleteCachedR2UrlsByKey } from "@/lib/storage/r2/r2UrlCache";
+import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
+import { buildAttachmentDeletedAuditLog } from "@/lib/system/audit/writeActions";
 import { createAttachmentMemoRepository } from "@/lib/workorder/persistence/attachmentMemoAdapter";
 import type { AttachmentMemoRepository, AttachmentMemoWritableRepository } from "@/lib/workorder/persistence/attachmentMemoRepository";
 
@@ -23,6 +25,16 @@ function readText(value: unknown): string | null {
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error || "UNKNOWN_ERROR");
+}
+
+function getAuditRequestId(request: NextRequest): string | null {
+  return request.headers.get("x-request-id") || request.headers.get("x-vercel-id") || null;
+}
+
+function getAuditIpAddress(request: NextRequest): string | null {
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  const firstForwardedIp = forwardedFor?.split(",")[0]?.trim();
+  return firstForwardedIp || request.headers.get("x-real-ip") || null;
 }
 
 export async function POST(request: NextRequest) {
@@ -67,9 +79,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ attachmentId: null, error: "ATTACHMENT_NOT_FOUND" }, { status: 404 });
     }
 
+    const actorId = readText(payload?.deletedBy);
+
     await createAdminHistoryLogSafe({
       company_id: company.id,
-      user_id: readText(payload?.deletedBy),
+      user_id: actorId,
       action_type: "FILE_DELETED",
       target_type: "file",
       target_id: deleted.id,
@@ -83,6 +97,22 @@ export async function POST(request: NextRequest) {
         trashMode: "soft-delete",
         },
     });
+
+    await createSystemAuditLogSafe(
+      buildAttachmentDeletedAuditLog({
+        attachmentId: deleted.id,
+        workOrderId: target.order_id,
+        fileName: target.original_name ?? null,
+        actorId,
+        companyId: company.id,
+        mimeType: target.mime_type ?? null,
+        sizeBytes: target.size_bytes ?? null,
+        hasStorageKey: Boolean(target.storage_key),
+        hasThumbnailKey: Boolean(target.thumbnail_key),
+        requestId: getAuditRequestId(request),
+        ipAddress: getAuditIpAddress(request),
+      }),
+    );
 
     return NextResponse.json({
       attachmentId: deleted.id,

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
+import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
+import { buildWorkOrderDeletedAuditLog } from "@/lib/system/audit/writeActions";
 import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 import {
   getDatabaseRuntimeErrorCode,
@@ -235,6 +237,16 @@ async function hydrateWorkOrderWithAttachmentMemoSnapshot(workOrder: WorkOrder):
 
 function createInvalidPayloadResponse(message: string) {
   return NextResponse.json({ message, code: "INVALID_PAYLOAD" }, { status: 400 });
+}
+
+function getAuditRequestId(request: Request): string | null {
+  return request.headers.get("x-request-id") || request.headers.get("x-vercel-id") || null;
+}
+
+function getAuditIpAddress(request: Request): string | null {
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  const firstForwardedIp = forwardedFor?.split(",")[0]?.trim();
+  return firstForwardedIp || request.headers.get("x-real-ip") || null;
 }
 
 async function readJsonBody<TBody>(request: Request): Promise<TBody | null> {
@@ -503,7 +515,23 @@ export async function handleDeleteWorkOrders(request: Request) {
       return createInvalidPayloadResponse("workOrderId is required.");
     }
 
+    const previousWorkOrder = await findDbWorkOrderById(body.workOrderId);
+    const previousSnapshot = previousWorkOrder ? await hydrateWorkOrderWithAttachmentMemoSnapshot(previousWorkOrder) : null;
     const deletedWorkOrderId = await deleteDbWorkOrder(body.workOrderId);
+
+    await createSystemAuditLogSafe(
+      buildWorkOrderDeletedAuditLog({
+        workOrderId: deletedWorkOrderId,
+        title: previousSnapshot?.title ?? previousWorkOrder?.title ?? null,
+        workflowState: previousSnapshot?.workflowState ?? previousWorkOrder?.workflowState ?? null,
+        actorId: previousSnapshot?.managerId ?? previousWorkOrder?.managerId ?? null,
+        companyId: WORKSPACE_COMPANY_ID,
+        attachmentCount: previousSnapshot?.attachments?.length ?? previousWorkOrder?.attachments?.length ?? 0,
+        memoThreadCount: previousSnapshot?.memoThreads?.length ?? previousWorkOrder?.memoThreads?.length ?? 0,
+        requestId: getAuditRequestId(request),
+        ipAddress: getAuditIpAddress(request),
+      }),
+    );
 
     logDbRequestOutcome("DELETE", true, "READY", deletedWorkOrderId);
 
