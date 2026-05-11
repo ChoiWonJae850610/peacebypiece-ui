@@ -1,24 +1,26 @@
 Version :
-0.10.7
+0.10.8
 
 Summary :
-멤버관리 1차 진입 화면 추가
+작업지시서 홈 이동과 워크스페이스 카드 흐름 보정
 
 Description :
-고객관리자 카드형 홈의 멤버 관리 카드를 실제 /admin/members 화면으로 연결하고, 역할 기본값, 메인화면 카드 권한, 권한 그룹 기준을 확인할 수 있는 1차 placeholder 화면을 추가했다. 실제 멤버 초대, 권한 DB, 권한 편집 저장 기능은 후속 작업으로 유지했다.
+작업지시서 업무 화면의 홈 이동 라벨과 경로 계산을 역할 기준 유틸로 정리했다. 일반 멤버용 워크스페이스 홈 카드 정의도 컴포넌트에서 분리해 중앙화하고, 업무 화면과 개인 설정 섹션을 나눠 표시하도록 보정했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/admin/adminWorkspaceCards.ts
-- components/admin/layout/AdminTopbar.tsx
-- lib/i18n/ko/admin.ts
-- lib/i18n/en/admin.ts
+- lib/navigation/workspaceHomeRoutes.ts
+- components/workorder/WorkOrderWorkspace.tsx
+- components/workorder/layout/WorkOrderHomeButton.tsx
+- components/workspace/MemberWorkspaceHome.tsx
+- lib/i18n/ko/workorder.ts
+- lib/i18n/en/workorder.ts
+- lib/i18n/ko/common.ts
+- lib/i18n/en/common.ts
 
 추가 파일 목록 :
-- lib/admin/members/memberManagementPresentation.ts
-- components/admin/members/AdminMemberManagementPlaceholder.tsx
-- app/admin/members/page.tsx
-- docs/member-management-placeholder-0.10.7.md
+- lib/navigation/memberWorkspaceCards.ts
+- docs/workspace-home-flow-0.10.8.md
 
 삭제 파일 목록 :
 없음

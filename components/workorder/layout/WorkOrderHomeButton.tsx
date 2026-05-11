@@ -1,10 +1,8 @@
 import Link from "next/link";
 
-export type WorkOrderHomeNavigation = {
-  href: string;
-  label: string;
-  ariaLabel: string;
-};
+import type { WorkspaceHomeNavigation } from "@/lib/navigation/workspaceHomeRoutes";
+
+export type WorkOrderHomeNavigation = WorkspaceHomeNavigation;
 
 type WorkOrderHomeButtonProps = {
   homeNavigation: WorkOrderHomeNavigation;

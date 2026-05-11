@@ -14,6 +14,16 @@ export const commonKo = {
       available: "사용 가능",
       planned: "후순위",
     },
+    sections: {
+      work: {
+        title: "업무 화면",
+        description: "배정된 업무와 작업지시서 화면으로 이동합니다.",
+      },
+      settings: {
+        title: "내 설정",
+        description: "사용자별 화면 환경과 기본 진입 화면을 관리합니다.",
+      },
+    },
     cards: {
       workorder: {
         label: "작업지시서 업무 화면",

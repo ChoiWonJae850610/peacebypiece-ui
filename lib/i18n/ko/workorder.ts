@@ -467,6 +467,14 @@ export const workorderKo = {
       homeNavigation: {
         label: "홈",
         ariaLabel: "메인화면으로 이동",
+        targetLabels: {
+          customerAdmin: "관리자 홈",
+          member: "내 업무 홈",
+        },
+        targetAriaLabels: {
+          customerAdmin: "관리자 홈으로 이동",
+          member: "내 업무 홈으로 이동",
+        },
       },
       mobileDrawer: {
         closeOverlayAria: "드로어 닫기",

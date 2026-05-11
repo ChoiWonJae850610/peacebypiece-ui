@@ -5,27 +5,13 @@ import Link from "next/link";
 import { APP_VERSION } from "@/lib/constants/app";
 import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
 import { useI18n } from "@/lib/i18n";
+import {
+  MEMBER_WORKSPACE_CARD_SECTIONS,
+  getMemberWorkspaceCardsBySection,
+  type MemberWorkspaceCardStatus,
+} from "@/lib/navigation/memberWorkspaceCards";
 
-type WorkspaceHomeCard = {
-  id: "workorder" | "personalSettings";
-  href: string | null;
-  status: "available" | "planned";
-};
-
-const MEMBER_WORKSPACE_CARDS: WorkspaceHomeCard[] = [
-  {
-    id: "workorder",
-    href: "/worker",
-    status: "available",
-  },
-  {
-    id: "personalSettings",
-    href: "/me/settings",
-    status: "available",
-  },
-];
-
-function getStatusClassName(status: WorkspaceHomeCard["status"]) {
+function getStatusClassName(status: MemberWorkspaceCardStatus) {
   if (status === "available") {
     return "border-emerald-200 bg-emerald-50 text-emerald-700";
   }
@@ -64,50 +50,61 @@ export default function MemberWorkspaceHome() {
           </div>
         </header>
 
-        <section className="grid gap-4 md:grid-cols-2">
-          {MEMBER_WORKSPACE_CARDS.map((card) => {
-            const cardCopy = copy.cards[card.id];
-            const statusLabel = copy.statuses[card.status];
+        {MEMBER_WORKSPACE_CARD_SECTIONS.map((section) => {
+          const cards = getMemberWorkspaceCardsBySection(section);
+          if (cards.length === 0) return null;
 
-            return (
-              <article
-                key={card.id}
-                className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <h2 className="text-base font-semibold text-stone-950">
-                      {cardCopy.label}
-                    </h2>
-                    <p className="mt-3 text-sm leading-6 text-stone-600">
-                      {cardCopy.description}
-                    </p>
-                  </div>
-                  <span
-                    className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getStatusClassName(card.status)}`}
-                  >
-                    {statusLabel}
-                  </span>
-                </div>
+          return (
+            <section key={section} className="rounded-[28px] border border-stone-200 bg-white/80 p-4 shadow-sm">
+              <div className="mb-3">
+                <h2 className="text-sm font-semibold text-stone-950">
+                  {copy.sections[section].title}
+                </h2>
+                <p className="mt-1 text-xs leading-5 text-stone-500">
+                  {copy.sections[section].description}
+                </p>
+              </div>
+              <div className="grid gap-3 md:grid-cols-2">
+                {cards.map((card) => {
+                  const cardCopy = copy.cards[card.id];
+                  const statusLabel = copy.statuses[card.status];
 
-                <div className="mt-4">
-                  {card.href ? (
-                    <Link
-                      href={card.href}
-                      className="inline-flex rounded-xl border border-stone-900 bg-stone-900 px-3 py-2 text-xs font-semibold text-white hover:bg-stone-800"
+                  return (
+                    <article
+                      key={card.id}
+                      className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm"
                     >
-                      {copy.openLabel}
-                    </Link>
-                  ) : (
-                    <span className="inline-flex rounded-xl border border-stone-200 bg-stone-100 px-3 py-2 text-xs font-semibold text-stone-400">
-                      {copy.plannedLabel}
-                    </span>
-                  )}
-                </div>
-              </article>
-            );
-          })}
-        </section>
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h3 className="text-base font-semibold text-stone-950">
+                            {cardCopy.label}
+                          </h3>
+                          <p className="mt-3 text-sm leading-6 text-stone-600">
+                            {cardCopy.description}
+                          </p>
+                        </div>
+                        <span
+                          className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getStatusClassName(card.status)}`}
+                        >
+                          {statusLabel}
+                        </span>
+                      </div>
+
+                      <div className="mt-4">
+                        <Link
+                          href={card.href}
+                          className="inline-flex rounded-xl border border-stone-900 bg-stone-900 px-3 py-2 text-xs font-semibold text-white hover:bg-stone-800"
+                        >
+                          {copy.openLabel}
+                        </Link>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })}
       </div>
     </main>
   );

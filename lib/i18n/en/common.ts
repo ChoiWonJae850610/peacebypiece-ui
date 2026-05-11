@@ -14,6 +14,16 @@ export const commonEn = {
       available: "Available",
       planned: "Planned",
     },
+    sections: {
+      work: {
+        title: "Work screens",
+        description: "Open assigned work and work order screens.",
+      },
+      settings: {
+        title: "My settings",
+        description: "Manage user-specific screen preferences and default entry.",
+      },
+    },
     cards: {
       workorder: {
         label: "Work order workspace",

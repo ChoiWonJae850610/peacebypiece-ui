@@ -467,6 +467,14 @@ export const workorderEn = {
       homeNavigation: {
         label: "Home",
         ariaLabel: "Go to home screen",
+        targetLabels: {
+          customerAdmin: "Admin home",
+          member: "My workspace home",
+        },
+        targetAriaLabels: {
+          customerAdmin: "Go to admin home",
+          member: "Go to my workspace home",
+        },
       },
       mobileDrawer: {
         closeOverlayAria: "Close drawer",
