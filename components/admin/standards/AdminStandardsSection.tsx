@@ -199,8 +199,7 @@ export default function AdminStandardsSection({ mode = "full" }: AdminStandardsS
   }, [t]);
 
   const resetProcessDefinitions = useCallback(() => {
-    const nextDefinitions = createDefaultOutsourcingProcessDefinitions();
-    setProcessDraftDefinitions(nextDefinitions);
+    setProcessDraftDefinitions((current) => current.map((definition) => ({ ...definition, isActive: true })));
     setNewProcessLabel("");
     setProcessFormError("");
     setSelectedInactiveProcessDefinition(null);

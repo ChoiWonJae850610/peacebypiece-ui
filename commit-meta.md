@@ -1,13 +1,17 @@
-Version : 0.10.42
-Summary : 생산품 유형 템플릿 분류 수정 UX 보완
-Description : 시스템관리자 생산품 유형 기본 템플릿 화면에서 1차, 2차, 3차 분류 항목의 이름과 정렬값을 인라인으로 수정할 수 있도록 보완했습니다. 각 분류 항목에 수정 버튼과 저장/취소 흐름을 추가하고, 기존 분류 추가와 사용/미사용 전환 기능은 유지했습니다. DB schema, 신규 고객사 템플릿 복사 로직, 고객관리자 생산품 유형 화면 연결은 변경하지 않았습니다.
+Version : 0.10.43
+Summary : 고객관리자 기준정보 사용 여부 DB 연결
+Description : 고객관리자 환경설정의 단위 표준과 외주공정 유형을 시스템 표준 원장 기반 사용/미사용 선택형 기준정보로 DB 연결했습니다. 단위 표준은 company_enabled_unit_standards, 외주공정 유형은 company_enabled_process_standards에 고객사별 사용 여부를 저장합니다. 생산품 유형은 기존 고객사별 계층 관리 구조를 유지하고, 생산품 유형 템플릿 화면의 nullable records 타입 빌드 오류를 함께 수정했습니다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
 - components/system/standards/SystemProductTemplateStandardsPage.tsx
+- lib/admin/settings/standardsRepository.ts
+- lib/partners/dbPartnerRepository.ts
+- components/admin/standards/AdminUnitManagementModal.tsx
+- components/admin/standards/AdminStandardsSection.tsx
 
 추가 파일 목록 :
-- docs/system-product-template-category-edit-0.10.42.md
+- docs/admin-company-standards-db-0.10.43.md
 
 삭제 파일 목록 :
 - 없음

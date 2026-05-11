@@ -342,9 +342,10 @@ export default function SystemProductTemplateStandardsPage() {
       if (!response.ok || !payload.ok || !Array.isArray(payload.records)) {
         throw new Error(payload.message || "생산품 유형 템플릿을 불러오지 못했습니다.");
       }
-      setRecords(payload.records);
-      setSelectedTemplateId((current) => payload.records.some((record) => record.id === current) ? current : payload.records[0]?.id ?? "");
-      setMessage(`생산품 유형 템플릿 ${payload.records.length}개를 불러왔습니다.`);
+      const nextRecords = payload.records;
+      setRecords(nextRecords);
+      setSelectedTemplateId((current) => nextRecords.some((record) => record.id === current) ? current : nextRecords[0]?.id ?? "");
+      setMessage(`생산품 유형 템플릿 ${nextRecords.length}개를 불러왔습니다.`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "생산품 유형 템플릿 조회 중 오류가 발생했습니다.");
     } finally {

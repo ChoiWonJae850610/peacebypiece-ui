@@ -182,12 +182,23 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
     listOutsourcingProcesses: async (activeOnly = false) => {
       const scope = getAdminCompanyScope();
       const result = await queryDb<OutsourcingProcessRow>(
-        `SELECT id, company_id, company_name, name, memo, sort_order, is_active, created_at, updated_at
-         FROM outsourcing_processes
-         WHERE company_id = $1
-         ${activeOnly ? "AND is_active = true" : ""}
-         ORDER BY sort_order ASC, name ASC`,
-        [scope.companyId],
+        `SELECT sops.id,
+                $1::text AS company_id,
+                $2::text AS company_name,
+                sops.name,
+                sops.description AS memo,
+                COALESCE(ceps.sort_order, sops.sort_order) AS sort_order,
+                COALESCE(ceps.is_enabled, true) AS is_active,
+                sops.created_at,
+                sops.updated_at
+           FROM system_outsourcing_process_standards sops
+           LEFT JOIN company_enabled_process_standards ceps
+             ON ceps.process_standard_id = sops.id
+            AND ceps.company_id = $1
+          WHERE sops.is_active = true
+            ${activeOnly ? "AND COALESCE(ceps.is_enabled, true) = true" : ""}
+          ORDER BY COALESCE(ceps.sort_order, sops.sort_order) ASC, sops.name ASC`,
+        [scope.companyId, scope.companyName],
       );
 
       return result.rows;
@@ -309,29 +320,18 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
       }
     },
     replaceOutsourcingProcesses: async (items) => {
+      const scope = getAdminCompanyScope();
       for (const item of items) {
         await queryDb(
-          `INSERT INTO outsourcing_processes (id, company_id, company_name, name, memo, sort_order, is_active)
-           VALUES ($1, $2, $3, $4, $5, $6, $7)
-           ON CONFLICT (id) DO UPDATE
-           SET company_id = EXCLUDED.company_id,
-               company_name = EXCLUDED.company_name,
-               name = EXCLUDED.name,
-               memo = EXCLUDED.memo,
+          `INSERT INTO company_enabled_process_standards (company_id, process_standard_id, is_enabled, sort_order, updated_at)
+           VALUES ($1, $2, $3, $4, now())
+           ON CONFLICT (company_id, process_standard_id) DO UPDATE
+           SET is_enabled = EXCLUDED.is_enabled,
                sort_order = EXCLUDED.sort_order,
-               is_active = EXCLUDED.is_active,
                updated_at = now()`,
-          [item.id, item.company_id ?? getWorkspaceCompanyContext().companyId, item.company_name ?? getWorkspaceCompanyContext().companyName, item.name.trim(), item.memo ?? null, item.sort_order, item.is_active],
+          [scope.companyId, item.id, item.is_active, item.sort_order],
         );
       }
-
-      const activeIds = items.map((item) => item.id);
-      if (activeIds.length === 0) {
-        await queryDb("DELETE FROM outsourcing_processes");
-        return;
-      }
-
-      await queryDb("DELETE FROM outsourcing_processes WHERE id <> ALL($1::text[])", [activeIds]);
     },
   };
 }

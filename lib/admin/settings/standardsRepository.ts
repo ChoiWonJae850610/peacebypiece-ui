@@ -61,10 +61,19 @@ export async function getAdminStandards(): Promise<AdminStandardsPayload> {
   const companyId = getWorkspaceCompanyContext().companyId;
   const [unitsResult, categoriesResult] = await Promise.all([
     queryDb<UnitRow>(
-      `SELECT id, company_id, code, name, category, is_active, sort_order
-       FROM units
-       WHERE company_id = $1 OR company_id IS NULL
-       ORDER BY sort_order ASC, name ASC`,
+      `SELECT sus.id,
+              $1::text AS company_id,
+              sus.code,
+              sus.korean_name AS name,
+              sus.category,
+              COALESCE(ceus.is_enabled, true) AS is_active,
+              COALESCE(ceus.sort_order, sus.sort_order) AS sort_order
+         FROM system_unit_standards sus
+         LEFT JOIN company_enabled_unit_standards ceus
+           ON ceus.unit_standard_id = sus.id
+          AND ceus.company_id = $1
+        WHERE sus.is_active = true
+        ORDER BY COALESCE(ceus.sort_order, sus.sort_order) ASC, sus.korean_name ASC`,
       [companyId],
     ),
     queryDb<ItemCategoryRow>(
@@ -77,7 +86,9 @@ export async function getAdminStandards(): Promise<AdminStandardsPayload> {
   ]);
 
   return {
-    units: unitsResult.rows.map(normalizeUnit),
+    units: unitsResult.rows.length > 0
+      ? unitsResult.rows.map(normalizeUnit)
+      : createDefaultUnitDefinitions(companyId),
     itemCategories: categoriesResult.rows.length > 0
       ? categoriesResult.rows.map(normalizeItemCategory)
       : createDefaultItemCategoryDefinitions(companyId),
@@ -136,24 +147,25 @@ export async function replaceAdminStandards(input: Partial<Pick<AdminStandardsPa
   const companyId = getWorkspaceCompanyContext().companyId;
 
   if (input.units) {
-    const units = normalizeIncomingUnits(input.units);
+    const units = input.units
+      .map((unit, index) => ({
+        id: unit.id?.trim(),
+        isEnabled: unit.is_active !== false,
+        sortOrder: Number.isFinite(unit.sort_order) ? unit.sort_order : (index + 1) * 10,
+      }))
+      .filter((unit): unit is { id: string; isEnabled: boolean; sortOrder: number } => Boolean(unit.id));
+
     for (const unit of units) {
       await queryDb(
-        `INSERT INTO units (id, company_id, code, name, category, is_active, sort_order)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
-         ON CONFLICT (company_id, code) DO UPDATE
-         SET id = EXCLUDED.id,
-             name = EXCLUDED.name,
-             category = EXCLUDED.category,
-             is_active = EXCLUDED.is_active,
+        `INSERT INTO company_enabled_unit_standards (company_id, unit_standard_id, is_enabled, sort_order, updated_at)
+         VALUES ($1, $2, $3, $4, now())
+         ON CONFLICT (company_id, unit_standard_id) DO UPDATE
+         SET is_enabled = EXCLUDED.is_enabled,
              sort_order = EXCLUDED.sort_order,
              updated_at = now()`,
-        [unit.id, companyId, unit.code, unit.name, unit.category, unit.is_active, unit.sort_order],
+        [companyId, unit.id, unit.isEnabled, unit.sortOrder],
       );
     }
-    const codes = units.map((unit) => unit.code);
-    if (codes.length === 0) await queryDb("DELETE FROM units WHERE company_id = $1", [companyId]);
-    else await queryDb("DELETE FROM units WHERE company_id = $1 AND code <> ALL($2::text[])", [companyId, codes]);
   }
 
   if (input.itemCategories) {

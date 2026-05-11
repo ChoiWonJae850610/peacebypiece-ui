@@ -11,7 +11,6 @@ import StandardManagementModalFrame, {
   standardModalListScrollClassName,
   standardModalRowClassName,
 } from "@/components/admin/standards/StandardManagementModalFrame";
-import { createDefaultUnitDefinitions } from "@/lib/admin/settings/standardsDefaults";
 import type { AdminUnitDefinition } from "@/lib/admin/settings/standardsTypes";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
@@ -43,7 +42,7 @@ export default function AdminUnitManagementModal({ open, units, saving = false, 
   };
 
   const resetDraft = () => {
-    setDraft(createDefaultUnitDefinitions());
+    setDraft((current) => current.map((unit) => ({ ...unit, is_active: true })));
   };
 
   return (
