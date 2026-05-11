@@ -284,7 +284,7 @@ function PeriodSummaryCard({
   onSelect: (key: AdminStatsPeriodTopMode) => void;
 }) {
   return (
-    <div className="flex h-full min-h-[250px] flex-col rounded-[24px] border border-stone-100 bg-stone-50/70 p-4">
+    <div className="flex h-full min-h-[240px] flex-col rounded-[24px] border border-stone-100 bg-stone-50/70 p-4">
       <h3 className="text-sm font-semibold text-stone-950">{title}</h3>
       <div className="mt-3 grid flex-1 content-start gap-2">
         {items.map((item) => {
@@ -328,7 +328,7 @@ function PeriodTopCard({
   valueSuffix: string;
 }) {
   return (
-    <AdminCard className="flex h-full min-h-[250px] flex-col">
+    <AdminCard className="flex h-full min-h-[240px] flex-col">
       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{eyebrow}</p>
       <h2 className="mt-2 text-lg font-semibold text-stone-950">{title}</h2>
       <p className="mt-1 text-xs font-semibold leading-5 text-stone-500">{basis}</p>
@@ -567,9 +567,9 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   }, [activeStatsSection, isStatsSectionAnimating]);
 
   const renderBarList = (title: string, points: Array<{ label: string; value: number; widthPercent: number; valueLabel?: string }>, emptyLabel: string) => (
-    <AdminCard className="flex h-full min-h-[320px] flex-col">
+    <AdminCard className="flex h-full min-h-[300px] flex-col">
       <h2 className="text-lg font-semibold text-stone-950">{title}</h2>
-      <div className="mt-5 grid flex-1 content-start gap-3">
+      <div className="mt-4 grid flex-1 content-start gap-3">
         {points.length > 0 ? points.map((item) => (
           <div key={item.label}>
             <div className="flex items-center justify-between text-xs font-semibold text-stone-600">
@@ -640,11 +640,11 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         </div>
       </section>
 
-      <section className="rounded-[28px] border border-stone-100 bg-white px-5 py-5 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-100 pb-4">
+      <section className="overflow-hidden rounded-[28px] border border-stone-100 bg-white px-4 py-4 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-100 pb-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("statsSectionEyebrow", "dashboard sections")}</p>
-            <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("statsSectionTitle", "통계 섹션")}</h2>
+            <h2 className="mt-1.5 text-lg font-semibold text-stone-950">{pt("statsSectionTitle", "통계 섹션")}</h2>
           </div>
           <div className="flex flex-wrap items-center gap-2 rounded-full bg-stone-50 p-1">
             {statsSectionTabs.map((item) => {
@@ -654,7 +654,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
                   key={item.key}
                   type="button"
                   onClick={() => changeStatsSection(item.key)}
-                  className={`rounded-full px-4 py-2 text-xs font-semibold transition ${isActive ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)] shadow-sm" : "text-stone-500 hover:bg-white hover:text-stone-800"}`}
+                  className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${isActive ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)] shadow-sm" : "text-stone-500 hover:bg-white hover:text-stone-800"}`}
                   aria-pressed={isActive}
                   title={item.description}
                 >
@@ -665,13 +665,14 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
           </div>
         </div>
 
-        <div
-          key={activeStatsSection}
-          className={`mt-5 transform-gpu transition-all duration-200 ease-out ${isStatsSectionAnimating ? (statsSectionDirection >= 0 ? "translate-x-4 opacity-0" : "-translate-x-4 opacity-0") : "translate-x-0 opacity-100"}`}
-        >
+        <div className="mt-4 min-h-[340px] overflow-hidden">
+          <div
+            key={activeStatsSection}
+            className={`transform-gpu transition-[opacity,transform] duration-200 ease-out motion-reduce:transform-none motion-reduce:transition-none ${isStatsSectionAnimating ? (statsSectionDirection >= 0 ? "translate-x-3 opacity-0" : "-translate-x-3 opacity-0") : "translate-x-0 opacity-100"}`}
+          >
           {activeStatsSection === "production" ? (
-            <div className="grid auto-rows-fr gap-5 xl:grid-cols-2">
-              <AdminCard className="flex h-full min-h-[320px] flex-col">
+            <div className="grid auto-rows-fr gap-4 xl:grid-cols-2">
+              <AdminCard className="flex h-full min-h-[300px] flex-col">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("productionMixEyebrow", pageText.productionMixEyebrow)}</p>
@@ -693,7 +694,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
                     ))}
                   </div>
                 </div>
-                <div className="mt-5 flex-1">
+                <div className="mt-4 flex-1">
                   <AdminBasicDonutChart points={selectedCategoryDepthBars} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel={pt("productionMixEmpty", pageText.productionMixEmpty)} compact selectedLabel={normalizedSelectedCategoryLabel} onSelectPoint={setSelectedCategoryLabel} />
                 </div>
                 <p className="mt-4 text-xs font-semibold text-stone-500">{pt("currentBasis", pageText.currentBasis)}: {selectedCategoryDepthLabel} · {formatCount(selectedCategoryDepthTotal, pt("workorderCountSuffix", pageText.workorderCountSuffix))}</p>
@@ -705,12 +706,12 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
           ) : null}
 
           {activeStatsSection === "factory" ? (
-            <div className="grid auto-rows-fr gap-5 xl:grid-cols-2">
+            <div className="grid auto-rows-fr gap-4 xl:grid-cols-2">
               {renderBarList(pt("factoryPerformanceTitle", pageText.factoryPerformanceTitle), viewModel.factoryProductionBars, pt("factoryPerformanceEmpty", pageText.factoryPerformanceEmpty))}
-              <AdminCard className="flex h-full min-h-[320px] flex-col">
+              <AdminCard className="flex h-full min-h-[300px] flex-col">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("delayQualityEyebrow", pageText.delayQualityEyebrow)}</p>
                 <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("delayQualityTitle", pageText.delayQualityTitle)}</h2>
-                <div className="mt-5 flex-1 overflow-hidden rounded-2xl border border-stone-100">
+                <div className="mt-4 flex-1 overflow-hidden rounded-2xl border border-stone-100">
                   <div className="grid grid-cols-[1.2fr_0.8fr_0.8fr] bg-stone-50 px-4 py-3 text-xs font-semibold text-stone-500">
                     <span>{pt("factoryColumn", pageText.factoryColumn)}</span>
                     <span>{pt("delayRateColumn", pageText.delayRateColumn)}</span>
@@ -735,7 +736,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
 
           {activeStatsSection === "period" ? (
             <div>
-              <div className="flex flex-wrap items-center justify-between gap-4 rounded-[24px] border border-stone-100 bg-stone-50/70 px-4 py-3">
+              <div className="flex flex-wrap items-center justify-between gap-4 rounded-[24px] border border-stone-100 bg-stone-50/70 px-4 py-2.5">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("periodAnalysisEyebrow", pageText.periodAnalysisEyebrow)}</p>
                   <h3 className="mt-1 text-sm font-semibold text-stone-950">{pt("periodAnalysisTitle", pageText.periodAnalysisTitle)}</h3>
@@ -780,7 +781,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
                 </div>
               </div>
               {customPeriodMessage ? <p className="mt-3 text-xs font-semibold text-amber-700">{customPeriodMessage}</p> : null}
-              <div className="mt-4 grid auto-rows-fr gap-5 xl:grid-cols-2">
+              <div className="mt-4 grid auto-rows-fr gap-4 xl:grid-cols-2">
                 <PeriodTopCard
                   eyebrow={pt("periodTopEyebrow", pageText.reorderTopEyebrow)}
                   title={periodTopModeTitle[selectedPeriodTopMode]}
@@ -798,6 +799,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
               </div>
             </div>
           ) : null}
+          </div>
         </div>
       </section>
 
