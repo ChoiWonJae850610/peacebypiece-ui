@@ -164,6 +164,7 @@ export function useWorkOrderLifecycleActions({
           const createdWorkOrder = await persistCreatedWorkOrderWithHistory(repository, {
             workOrder: newWorkOrder,
             historyLogs: nextHistoryLogs,
+            auditActor: currentUser,
           });
 
           setWorkOrders((prev) => upsertWorkOrderAtStart(prev, createdWorkOrder));
@@ -221,6 +222,7 @@ export function useWorkOrderLifecycleActions({
           const persistedCreatedWorkOrder = await persistCreatedWorkOrderWithHistory(repository, {
             workOrder: createdWorkOrder,
             historyLogs: nextHistoryLogs,
+            auditActor: currentUser,
           });
           setWorkOrders((prev) => upsertWorkOrderAtStart(prev, persistedCreatedWorkOrder));
           setPersistedWorkOrders((prev) => upsertWorkOrderAtStart(prev, persistedCreatedWorkOrder));
@@ -272,6 +274,7 @@ export function useWorkOrderLifecycleActions({
           const persistedWorkOrders = await persistWorkOrdersWithHistory(repository, {
             workOrders: nextWorkOrders,
             historyLogs: nextHistoryLogs,
+            auditActor: currentUser,
           });
           const persistedWorkOrder = persistedWorkOrders.find((item) => item.id === nextWorkOrder.id) ?? nextWorkOrder;
           setWorkOrders(persistedWorkOrders);
@@ -284,7 +287,7 @@ export function useWorkOrderLifecycleActions({
         },
       });
     },
-    [currentUser.name, findChangedWorkOrdersForPersistence, historyText, lifecycleText, repository, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setLastSavedAt, setPersistedWorkOrders, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
+    [currentUser, currentUser.name, findChangedWorkOrdersForPersistence, historyText, lifecycleText, repository, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setLastSavedAt, setPersistedWorkOrders, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
   );
 
   const handleDeleteWorkOrder = useCallback(
@@ -332,7 +335,7 @@ export function useWorkOrderLifecycleActions({
         },
       });
     },
-    [currentUser.name, findChangedWorkOrdersForPersistence, historyText, lifecycleText, repository, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setLastSavedAt, setPersistedWorkOrders, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
+    [currentUser, currentUser.name, findChangedWorkOrdersForPersistence, historyText, lifecycleText, repository, setActionError, setActionFailure, setActionStatus, setHistoryLogs, setLastSavedAt, setPersistedWorkOrders, setSaveStatus, setSelectedId, setToastMessage, setWorkOrders],
   );
 
   const handleRenameWorkOrderTitle = useCallback(

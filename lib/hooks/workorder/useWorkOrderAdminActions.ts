@@ -87,6 +87,7 @@ export function useWorkOrderAdminActions({
       void persistWorkOrderWithHistory(repository, {
         workOrder: nextPersistableWorkOrder,
         historyLogs: result.historyLogs,
+        auditActor: currentUser,
       }).then((persistedWorkOrder) => {
         setPersistedWorkOrders((prev) => replaceWorkOrderById(prev, workOrder.id, persistedWorkOrder));
         setWorkOrders((prev) => prev.map((item) => (
@@ -104,7 +105,7 @@ export function useWorkOrderAdminActions({
       }
       setManagerAssignModalOpen(false);
     },
-    [actionFlowText, currentUser.name, historyText, persistedWorkOrders, repository, setHistoryLogs, setManagerAssignModalOpen, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders, workflowStateLabels],
+    [actionFlowText, currentUser, currentUser.name, historyText, persistedWorkOrders, repository, setHistoryLogs, setManagerAssignModalOpen, setPersistedWorkOrders, setSaveStatus, setToastMessage, setWorkOrders, workflowStateLabels],
   );
 
   return {

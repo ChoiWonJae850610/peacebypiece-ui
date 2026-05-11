@@ -20,7 +20,7 @@ import {
   saveDbWorkOrders,
   updateDbWorkOrderStatePatch,
 } from "@/lib/workorder/repository/dbWorkOrderRepository";
-import type { MemoThread, WorkOrder, WorkOrderStatePatch, WorkOrderStatePatchResult } from "@/types/workorder";
+import type { MemoThread, WorkOrder, WorkOrderAuditActor, WorkOrderStatePatch, WorkOrderStatePatchResult } from "@/types/workorder";
 
 type DbApiErrorCode =
   | "DB_NOT_CONFIGURED"
@@ -40,6 +40,36 @@ type DbApiErrorPayload = {
 type ReplaceMemoThreadsRepository = {
   replaceMemoThreads: (workOrderId: string, memoThreads: MemoThread[]) => Promise<void>;
 };
+
+
+type WorkOrderAuditActorContext = {
+  id: string;
+  name: string;
+  role: "designer" | "admin" | "inspector";
+};
+
+function readAuditActor(value: unknown): WorkOrderAuditActorContext | null {
+  if (!value || typeof value !== "object") return null;
+  const source = value as Partial<WorkOrderAuditActor>;
+  const id = typeof source.id === "string" ? source.id.trim() : "";
+  const name = typeof source.name === "string" ? source.name.trim() : "";
+  const role = source.role;
+
+  if (!id || !name || (role !== "admin" && role !== "designer" && role !== "inspector")) {
+    return null;
+  }
+
+  return { id, name, role };
+}
+
+function getAuditActorFromWorkOrder(workOrder: WorkOrder): WorkOrderAuditActorContext | null {
+  return readAuditActor((workOrder as WorkOrder & { auditActor?: unknown }).auditActor);
+}
+
+function toSystemAuditActorRole(role: WorkOrderAuditActorContext["role"]) {
+  if (role === "admin") return "customer_admin" as const;
+  return role;
+}
 
 const DATABASE_ENV_HELP = `Expected one of: ${getSupportedDatabaseEnvKeys().join(", ")}`;
 const DB_API_LOG_THROTTLE_MS = 5000;
@@ -169,6 +199,7 @@ type WorkOrderStatusChangeAuditContext = {
   requestId?: string | null;
   ipAddress?: string | null;
   source?: "workorder-save" | "state-patch" | "bulk-save";
+  auditActor?: WorkOrderAuditActorContext | null;
 };
 
 async function writeWorkOrderStatusChangeLogs(
@@ -200,7 +231,9 @@ async function writeWorkOrderStatusChangeLogs(
     title: next.title,
     fromWorkflowState: previous.workflowState,
     toWorkflowState: next.workflowState,
-    actorId: next.managerId ?? previous.managerId ?? null,
+    actorId: context.auditActor?.id ?? next.managerId ?? previous.managerId ?? null,
+    actorName: context.auditActor?.name ?? null,
+    actorRole: context.auditActor ? toSystemAuditActorRole(context.auditActor.role) : null,
     companyId: WORKSPACE_COMPANY_ID,
     managerName: next.manager ?? previous.manager ?? null,
     source: context.source,
@@ -404,7 +437,7 @@ export async function handlePatchWorkOrders(request: Request) {
   }
 
   try {
-    const body = await readJsonBody<{ workOrder?: WorkOrder; workOrders?: WorkOrder[] }>(request);
+    const body = await readJsonBody<{ workOrder?: WorkOrder; workOrders?: WorkOrder[]; auditActor?: WorkOrderAuditActor | null }>(request);
 
     if (!body) {
       return createInvalidPayloadResponse("Invalid JSON payload.");
@@ -433,6 +466,7 @@ export async function handlePatchWorkOrders(request: Request) {
             requestId: getAuditRequestId(request),
             ipAddress: getAuditIpAddress(request),
             source: "bulk-save",
+            auditActor: getAuditActorFromWorkOrder(workOrder) ?? readAuditActor(body.auditActor),
           })),
       );
 
@@ -457,6 +491,7 @@ export async function handlePatchWorkOrders(request: Request) {
       requestId: getAuditRequestId(request),
       ipAddress: getAuditIpAddress(request),
       source: "workorder-save",
+      auditActor: getAuditActorFromWorkOrder(body.workOrder) ?? readAuditActor(body.auditActor),
     });
 
     logDbRequestOutcome("PATCH", true, "READY", workOrder.id);
@@ -515,6 +550,7 @@ export async function handlePatchWorkOrderState(workOrderId: string, request: Re
       requestId: getAuditRequestId(request),
       ipAddress: getAuditIpAddress(request),
       source: "state-patch",
+      auditActor: readAuditActor(body.patch.auditActor),
     });
 
     const patchResult: WorkOrderStatePatchResult = {

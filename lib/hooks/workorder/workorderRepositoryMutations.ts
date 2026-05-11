@@ -37,6 +37,7 @@ export async function persistCreatedWorkOrderWithHistory(
   payload: {
     workOrder: WorkOrder;
     historyLogs?: HistoryLog[];
+    auditActor?: UserProfile | null;
   },
 ) {
   const nextWorkOrder = await repository.createWorkOrderAsync(stampPersistedWorkOrder(payload.workOrder));
@@ -66,7 +67,7 @@ function mergeStatePatchResultIntoWorkOrder(currentWorkOrder: WorkOrder, savedPa
   };
 }
 
-function buildWorkOrderStatePatch(workOrder: WorkOrder): WorkOrderStatePatch {
+function buildWorkOrderStatePatch(workOrder: WorkOrder, auditActor?: UserProfile | null): WorkOrderStatePatch {
   return {
     id: workOrder.id,
     workflowState: workOrder.workflowState,
@@ -75,6 +76,9 @@ function buildWorkOrderStatePatch(workOrder: WorkOrder): WorkOrderStatePatch {
     inventoryStatus: workOrder.inventoryStatus,
     factoryOrderRequest: workOrder.factoryOrderRequest ?? null,
     orderEntries: workOrder.orderEntries ?? [],
+    auditActor: auditActor
+      ? { id: auditActor.id, name: auditActor.name, role: auditActor.role }
+      : null,
   };
 }
 
@@ -83,10 +87,11 @@ export async function persistWorkOrderStatePatchWithHistory(
   payload: {
     workOrder: WorkOrder;
     historyLogs?: HistoryLog[];
+    auditActor?: UserProfile | null;
   },
 ) {
   const stampedWorkOrder = stampPersistedWorkOrder(payload.workOrder);
-  const savedPatch = await repository.saveWorkOrderStatePatchAsync(buildWorkOrderStatePatch(stampedWorkOrder));
+  const savedPatch = await repository.saveWorkOrderStatePatchAsync(buildWorkOrderStatePatch(stampedWorkOrder, payload.auditActor));
   if (payload.historyLogs?.length) {
     await repository.appendHistoryLogsAsync(payload.historyLogs);
   }
@@ -98,12 +103,13 @@ export async function persistWorkOrderStatePatchesWithHistory(
   payload: {
     workOrders: WorkOrder[];
     historyLogs?: HistoryLog[];
+    auditActor?: UserProfile | null;
   },
 ) {
   const stampedWorkOrders = stampPersistedWorkOrders(payload.workOrders);
   const nextWorkOrders: WorkOrder[] = [];
   for (const workOrder of stampedWorkOrders) {
-    const savedPatch = await repository.saveWorkOrderStatePatchAsync(buildWorkOrderStatePatch(workOrder));
+    const savedPatch = await repository.saveWorkOrderStatePatchAsync(buildWorkOrderStatePatch(workOrder, payload.auditActor));
     nextWorkOrders.push(mergeStatePatchResultIntoWorkOrder(workOrder, savedPatch));
   }
   if (payload.historyLogs?.length) {
@@ -117,9 +123,17 @@ export async function persistWorkOrderWithHistory(
   payload: {
     workOrder: WorkOrder;
     historyLogs?: HistoryLog[];
+    auditActor?: UserProfile | null;
   },
 ) {
-  const nextWorkOrder = await repository.saveWorkOrderAsync(stampPersistedWorkOrder(payload.workOrder));
+  const stampedWorkOrder = stampPersistedWorkOrder(payload.workOrder);
+  const workOrderWithAuditActor = payload.auditActor
+    ? ({
+        ...stampedWorkOrder,
+        auditActor: { id: payload.auditActor.id, name: payload.auditActor.name, role: payload.auditActor.role },
+      } as WorkOrder)
+    : stampedWorkOrder;
+  const nextWorkOrder = await repository.saveWorkOrderAsync(workOrderWithAuditActor);
   if (payload.historyLogs?.length) {
     await repository.appendHistoryLogsAsync(payload.historyLogs);
   }
@@ -131,9 +145,17 @@ export async function persistWorkOrdersWithHistory(
   payload: {
     workOrders: WorkOrder[];
     historyLogs?: HistoryLog[];
+    auditActor?: UserProfile | null;
   },
 ) {
-  const nextWorkOrders = await repository.saveWorkOrdersAsync(stampPersistedWorkOrders(payload.workOrders));
+  const stampedWorkOrders = stampPersistedWorkOrders(payload.workOrders);
+  const workOrdersWithAuditActor = payload.auditActor
+    ? stampedWorkOrders.map((workOrder) => ({
+        ...workOrder,
+        auditActor: { id: payload.auditActor!.id, name: payload.auditActor!.name, role: payload.auditActor!.role },
+      } as WorkOrder))
+    : stampedWorkOrders;
+  const nextWorkOrders = await repository.saveWorkOrdersAsync(workOrdersWithAuditActor);
   if (payload.historyLogs?.length) {
     await repository.appendHistoryLogsAsync(payload.historyLogs);
   }

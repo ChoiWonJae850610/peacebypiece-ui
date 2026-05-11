@@ -197,8 +197,16 @@ export type WorkOrderSummary = Pick<
 };
 
 
+export type WorkOrderAuditActor = {
+  id: string;
+  name: string;
+  role: RoleType;
+};
+
 export type WorkOrderStatePatch = Pick<WorkOrder, "id" | "workflowState" | "lastSavedAt"> &
-  Partial<Pick<WorkOrder, "inventoryQuantity" | "inventoryStatus" | "factoryOrderRequest" | "orderEntries">>;
+  Partial<Pick<WorkOrder, "inventoryQuantity" | "inventoryStatus" | "factoryOrderRequest" | "orderEntries">> & {
+    auditActor?: WorkOrderAuditActor | null;
+  };
 
 export type WorkOrderStatePatchResult = WorkOrderStatePatch &
   Partial<Pick<WorkOrder, "hasDetailSnapshot">>;

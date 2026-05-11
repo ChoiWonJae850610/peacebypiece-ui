@@ -2,6 +2,7 @@ import type {
   CreateSystemAuditLogInput,
   SystemAuditLogMetadata,
   SystemAuditSeverity,
+  SystemAuditActorRole,
 } from "@/lib/system/audit/types";
 
 export type SystemStoragePurgeAuditItem = {
@@ -86,6 +87,8 @@ export type BuildWorkOrderStatusChangedAuditLogInput = {
   fromWorkflowState?: string | null;
   toWorkflowState: string;
   actorId?: string | null;
+  actorName?: string | null;
+  actorRole?: SystemAuditActorRole | null;
   companyId?: string | null;
   managerName?: string | null;
   requestId?: string | null;
@@ -159,7 +162,7 @@ export function buildWorkOrderStatusChangedAuditLog(
 
   return {
     actorUserId: input.actorId ?? null,
-    actorRole: "customer_admin",
+    actorRole: input.actorRole ?? "customer_admin",
     companyId: input.companyId ?? null,
     targetType: "work_order",
     targetId: input.workOrderId,
@@ -171,6 +174,8 @@ export function buildWorkOrderStatusChangedAuditLog(
       title,
       fromWorkflowState: previousState,
       toWorkflowState: nextState,
+      actorName: input.actorName ?? null,
+      actorRole: input.actorRole ?? null,
       managerName: input.managerName ?? null,
       source: input.source ?? "workorder-save",
     },
