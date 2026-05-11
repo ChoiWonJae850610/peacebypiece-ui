@@ -210,6 +210,12 @@ export const SYSTEM_CONSOLE_QUICK_LINKS = [
     description: "시스템 외주공정 유형 원장 1차 화면",
   },
   {
+    id: "system-product-template-standards",
+    label: "생산품 유형 템플릿",
+    href: "/system/standards/product-templates",
+    description: "신규 고객사 기본 생산품 유형 템플릿 1차 화면",
+  },
+  {
     id: "category-rules",
     label: "카테고리 규칙",
     href: "/system/category-rules",

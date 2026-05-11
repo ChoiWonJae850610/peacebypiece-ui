@@ -108,6 +108,14 @@ export default function SystemStandardsDesignPage() {
                   외주공정 유형 관리 화면 열기
                 </Link>
               ) : null}
+              {tab.id === "productTypeTemplates" ? (
+                <Link
+                  href="/system/standards/product-templates"
+                  className="mt-4 inline-flex rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+                >
+                  생산품 유형 기본 템플릿 화면 열기
+                </Link>
+              ) : null}
             </article>
           ))}
         </section>
