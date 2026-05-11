@@ -1,26 +1,19 @@
-Version : 0.10.49
-Summary : 기준정보 DB-only 조회 안정화
-Description : 기준정보 화면과 업무 선택지에서 레거시 fallback 목록이 섞이지 않도록 시스템 기준정보 fallback 상수를 빈 배열로 정리하고, 시스템/고객관리자 기준정보 화면에는 최신 조회 응답만 반영되도록 보정했습니다. 생산품 유형 기본값 복원은 시스템관리자가 기본으로 지정한 활성 템플릿만 사용하도록 고정했습니다. DB schema, 기준정보 CRUD, 감사 로그 흐름은 변경하지 않았습니다.
+Version : 0.10.50
+Summary : 기준정보 DB-only 회귀 점검 화면 추가
+Description : 시스템관리자 기준정보 관리에 DB-only 회귀 점검 화면과 API를 추가했습니다. 단위 표준, 외주공정 유형, 기본 생산품 유형 템플릿, 템플릿 분류, 고객사별 사용 연결 무결성을 점검하며 fallback 혼입 없이 DB 결과만 사용하는 정책을 화면에서 확인할 수 있도록 했습니다. DB schema, 기준정보 CRUD, 고객관리자 저장 로직, 작업지시서 선택지, 감사 로그 흐름은 변경하지 않았습니다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/system/standards/systemUnitStandards.ts
-- lib/system/standards/systemProcessStandards.ts
-- lib/system/standards/systemProductTemplateStandards.ts
-- lib/system/standards/unitStandardsRepository.ts
-- lib/system/standards/processStandardsRepository.ts
-- lib/system/standards/productTemplateRepository.ts
-- components/system/standards/SystemUnitStandardsPage.tsx
-- components/system/standards/SystemProcessStandardsPage.tsx
-- components/system/standards/SystemProductTemplateStandardsPage.tsx
-- components/admin/standards/AdminStandardsSection.tsx
-- components/admin/partnerMaster/usePartnerMasterController.ts
-- lib/admin/settings/standardsRepository.ts
-- lib/admin/partner/actionFlow.ts
-- lib/admin/partner/persistence.ts
+- lib/system/systemConsoleShell.ts
+- components/system/standards/SystemStandardsDesignPage.tsx
+- components/system/standards/SystemStandardsSeedStatusPage.tsx
 
 추가 파일 목록 :
-- docs/admin-standards-db-only-final-0.10.49.md
+- app/system/standards/regression/page.tsx
+- app/api/system/standards/regression/route.ts
+- components/system/standards/SystemStandardsRegressionPage.tsx
+- lib/system/standards/regressionRepository.ts
+- docs/admin-standards-db-only-regression-0.10.50.md
 
 삭제 파일 목록 :
 - 없음

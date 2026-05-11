@@ -70,6 +70,12 @@ export default function SystemStandardsDesignPage() {
                 seed 상태
               </Link>
               <Link
+                href="/system/standards/regression"
+                className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50"
+              >
+                회귀점검
+              </Link>
+              <Link
                 href="/system"
                 className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50"
               >

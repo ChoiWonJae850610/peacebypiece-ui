@@ -8,6 +8,7 @@ export type SystemConsoleTabId =
   | "storage"
   | "standards"
   | "standardsSeedStatus"
+  | "standardsRegression"
   | "categoryRules";
 
 export type SystemConsoleTabStatus =
@@ -110,6 +111,14 @@ export const SYSTEM_CONSOLE_TABS: SystemConsoleTab[] = [
     statusLabel: "DB 점검",
     status: "linked",
     href: "/system/standards/seed-status",
+  },
+  {
+    id: "standardsRegression",
+    label: "기준정보 회귀점검",
+    description: "DB-only 기준정보 전환 후 fallback 혼입, seed 부족, 고객사 연결 무결성을 점검합니다.",
+    statusLabel: "회귀 점검",
+    status: "linked",
+    href: "/system/standards/regression",
   },
   {
     id: "categoryRules",
@@ -229,6 +238,12 @@ export const SYSTEM_CONSOLE_QUICK_LINKS = [
     label: "기준정보 seed 상태",
     href: "/system/standards/seed-status",
     description: "DB 기준 기준정보 seed와 활성 항목 수 점검",
+  },
+  {
+    id: "system-standards-regression",
+    label: "기준정보 회귀점검",
+    href: "/system/standards/regression",
+    description: "fallback 혼입과 고객사 연결 무결성 점검",
   },
   {
     id: "category-rules",

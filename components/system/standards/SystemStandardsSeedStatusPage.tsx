@@ -25,6 +25,7 @@ export default function SystemStandardsSeedStatusPage({ seedStatus }: { seedStat
             <div className="flex flex-wrap gap-2 text-xs font-medium">
               <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-stone-600">v{APP_VERSION}</span>
               <Link href="/system/standards" className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50">기준정보 관리</Link>
+              <Link href="/system/standards/regression" className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50">회귀점검</Link>
               <Link href="/system" className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50">시스템 콘솔</Link>
             </div>
           </div>
