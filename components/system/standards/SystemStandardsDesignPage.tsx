@@ -92,6 +92,14 @@ export default function SystemStandardsDesignPage() {
               <p className="mt-3 rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs font-semibold text-stone-600">
                 {tab.scopeLabel}
               </p>
+              {tab.id === "units" ? (
+                <Link
+                  href="/system/standards/units"
+                  className="mt-4 inline-flex rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+                >
+                  단위 표준 관리 화면 열기
+                </Link>
+              ) : null}
             </article>
           ))}
         </section>

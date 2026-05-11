@@ -198,6 +198,12 @@ export const SYSTEM_CONSOLE_QUICK_LINKS = [
     description: "단위·외주공정·생산품 기본 템플릿 표준 설계",
   },
   {
+    id: "system-unit-standards",
+    label: "단위 표준 관리",
+    href: "/system/standards/units",
+    description: "시스템 단위 표준 원장 1차 화면",
+  },
+  {
     id: "category-rules",
     label: "카테고리 규칙",
     href: "/system/category-rules",
