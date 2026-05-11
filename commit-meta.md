@@ -1,22 +1,23 @@
 Version :
-0.10.2
+0.10.3
 
 Summary :
-관리자 환경설정을 조직 설정 중심으로 재정리
+고객관리자 운영 대시보드 상단 업무 요약 축소
 
 Description :
-관리자 환경설정 화면의 상단을 조직 설정 요약으로 교체하고, 개인 언어와 색상 설정은 개인 설정으로 분리된 기준을 반영했다. 조직 설정 범위를 파일 정책, 저장소 정책, 알림 정책, 기준정보, 멤버 권한 후보로 정리하고 개인 설정 진입 버튼을 추가했다.
+고객관리자 운영 대시보드에서 설명 문구, 기간 선택, 상태 흐름, 상태 분포 영역을 제거하고 검토·발주 대기 목록과 주요 대기 현황 중심으로 상단 업무 요약을 축소했다. 상단 작업지시서 버튼은 제거하고 작업지시서 업무 화면 진입은 주요 메뉴 카드로 통합했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- app/admin/settings/page.tsx
+- components/admin/dashboard/AdminOperationsDashboard.tsx
+- components/admin/dashboard/AdminConsoleSections.tsx
+- components/admin/layout/AdminTopbar.tsx
+- lib/admin/adminOperations.repository.ts
 - lib/i18n/ko/admin.ts
 - lib/i18n/en/admin.ts
 
 추가 파일 목록 :
-- lib/admin/settings/organizationSettingsPresentation.ts
-- components/admin/settings/AdminOrganizationSettingsSummary.tsx
-- docs/admin-organization-settings-0.10.2.md
+- docs/admin-operations-dashboard-0.10.3.md
 
 삭제 파일 목록 :
 없음

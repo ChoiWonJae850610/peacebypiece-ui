@@ -15,8 +15,6 @@ function getTopbarSummary(title: string, description: string | undefined, t: Ret
   if (title.includes(t("historySection.title", "히스토리"))) return t("topbar.summaries.history", "상태 변경 · 주요 작업 기록");
 
   const summaries: Record<string, string> = {
-    [t("navigation.dashboard", "대시보드")]: t("topbar.summaries.adminMain", "운영 통계 · 상태 흐름 · 오늘 체크"),
-    [t("operationsDashboard.title", "운영 대시보드")]: t("topbar.summaries.adminMain", "운영 통계 · 상태 흐름 · 오늘 체크"),
     [t("navigation.storage", "저장소 관리")]: t("topbar.summaries.storage", "첨부파일 · 휴지통 · 용량 관리"),
     [t("navigation.partners", "협력업체 관리")]: t("topbar.summaries.partners", "협력업체 · 공장 · 외주처"),
     [t("dashboardPage.title", "통계정보")]: t("topbar.summaries.dashboard", "작업지시서 · 협력업체 · 파일 사용량"),
@@ -37,6 +35,15 @@ function getLocalizedTopbarTitle(title: string, t: ReturnType<typeof useAdminTra
   };
 
   return titleMap[title] ?? title;
+}
+
+function SettingsIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" />
+      <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.05.05a2.05 2.05 0 0 1-2.9 2.9l-.05-.05A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .92V20.5a2.05 2.05 0 0 1-4.1 0v-.08A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.05.05a2.05 2.05 0 0 1-2.9-2.9l.05-.05A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.92-1H3.5a2.05 2.05 0 0 1 0-4.1h.08A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.05-.05a2.05 2.05 0 0 1 2.9-2.9l.05.05A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.92V3.5a2.05 2.05 0 0 1 4.1 0v.08A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.05-.05a2.05 2.05 0 0 1 2.9 2.9l-.05.05A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 .92 1h.18a2.05 2.05 0 0 1 0 4.1h-.08a1.7 1.7 0 0 0-1.02.9Z" />
+    </svg>
+  );
 }
 
 export default function AdminTopbar({ companyName, appVersion, title, description }: AdminTopbarProps) {
@@ -67,11 +74,8 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
           <Link href="/admin" className="inline-flex items-center justify-center rounded-full border border-stone-200 bg-white px-3 py-2 text-xs font-semibold text-stone-700 transition hover:bg-stone-50">
             {t("topbar.actions.home", "홈")}
           </Link>
-          <Link href="/me/settings" className="inline-flex items-center justify-center rounded-full border border-stone-200 bg-white px-3 py-2 text-xs font-semibold text-stone-700 transition hover:bg-stone-50">
-            {t("topbar.actions.personalSettings", "개인 설정")}
-          </Link>
-          <Link href="/worker" className="inline-flex items-center justify-center rounded-full border border-stone-900 bg-stone-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-stone-800">
-            {t("topbar.actions.openWorkorder", "작업지시서")}
+          <Link href="/me/settings" aria-label={t("topbar.actions.personalSettings", "개인 설정")} title={t("topbar.actions.personalSettings", "개인 설정")} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 transition hover:bg-stone-50">
+            <SettingsIcon />
           </Link>
         </div>
       </div>

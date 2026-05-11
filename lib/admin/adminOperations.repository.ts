@@ -106,6 +106,7 @@ function emptySnapshot(period: AdminDashboardPeriod, sourceState: AdminOperation
     statusDistribution: ADMIN_DASHBOARD_STATUS_DISTRIBUTION_BUCKETS.map((bucket) => ({ id: bucket.labelKey, label: adminOpsText.statusDistribution[bucket.labelKey], value: 0 })),
     insights: [
       { label: adminOpsText.insights.reviewWaiting, value: "0", description: adminOpsText.insights.reviewWaitingDescription },
+      { label: adminOpsText.insights.orderWaiting, value: "0", description: adminOpsText.insights.orderWaitingDescription },
       { label: adminOpsText.insights.inspectionWaiting, value: "0", description: adminOpsText.insights.inspectionWaitingDescription },
       { label: adminOpsText.insights.inboundDelayed, value: "0", description: adminOpsText.insights.inboundDelayedDescription },
     ],
@@ -173,9 +174,10 @@ function buildSnapshot(period: AdminDashboardPeriod, workorders: WorkorderRow[],
   }).length;
 
   const reviewWaitingCount = workorders.filter((row) => row.status === "review_requested").length;
-  const inspectionWaitingCount = workorders.filter((row) => row.status === "inspection" || row.status === "review_completed").length;
+  const orderWaitingCount = workorders.filter((row) => row.status === "review_completed").length;
+  const inspectionWaitingCount = workorders.filter((row) => row.status === "inspection").length;
   const todayTasks = workorders
-    .filter((row) => row.status === "review_requested" || row.status === "inspection" || row.status === "review_completed")
+    .filter((row) => row.status === "review_requested" || row.status === "review_completed")
     .map((row) => {
       const attachment = attachmentByWorkorderId.get(row.id);
       return {
@@ -211,6 +213,7 @@ function buildSnapshot(period: AdminDashboardPeriod, workorders: WorkorderRow[],
     })),
     insights: [
       { label: adminOpsText.insights.reviewWaiting, value: String(reviewWaitingCount), description: adminOpsText.insights.reviewWaitingDescription },
+      { label: adminOpsText.insights.orderWaiting, value: String(orderWaitingCount), description: adminOpsText.insights.orderWaitingDescription },
       { label: adminOpsText.insights.inspectionWaiting, value: String(inspectionWaitingCount), description: adminOpsText.insights.inspectionWaitingDescription },
       { label: adminOpsText.insights.inboundDelayed, value: String(inboundDelayedCount), description: adminOpsText.insights.inboundDelayedDescription },
     ],
