@@ -198,8 +198,9 @@ export default function AdminFilesPage() {
       appVersion={APP_VERSION}
       navigationItems={FILE_ADMIN_NAVIGATION_ITEMS}
       title={t("filesPage.title", "저장소 관리")}
+      contentMode="fixed-md"
     >
-      <section className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[30px] border border-stone-200 bg-white p-5 shadow-sm">
+      <section className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[30px] border border-stone-200 bg-white p-4 shadow-sm md:p-4">
         <FileStorageSummary
           usageCards={snapshot.usageCards}
           usageSummary={snapshot.usageSummary}
@@ -210,7 +211,7 @@ export default function AdminFilesPage() {
 
         <ToastMessage message={actionMessage} />
 
-        <div className="mt-4 h-[560px] min-h-[440px] flex-1 overflow-hidden">
+        <div className="mt-3 min-h-0 flex-1 overflow-hidden">
           <FileTrashSection
             items={snapshot.trashItems}
             workOrderItems={snapshot.workOrders ?? []}

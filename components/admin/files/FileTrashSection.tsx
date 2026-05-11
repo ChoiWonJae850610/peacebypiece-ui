@@ -136,7 +136,7 @@ export default function FileTrashSection({
   });
 
   return (
-    <section className="flex h-full min-h-[420px] flex-col rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm">
+    <section className="flex h-full min-h-[360px] flex-col rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm md:min-h-0">
       <AdminActionBar title={t("trashPage.title", "휴지통")}>
         <button
           type="button"
