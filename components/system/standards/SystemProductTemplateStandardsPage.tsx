@@ -33,6 +33,12 @@ type CategoryFormState = {
   sortOrder: string;
 };
 
+type CategoryEditState = {
+  id: string;
+  name: string;
+  sortOrder: string;
+};
+
 const EMPTY_TEMPLATE_FORM: TemplateFormState = {
   code: "",
   name: "",
@@ -84,13 +90,72 @@ function getCategoryOptions(template: SystemProductTemplateRow, level: CategoryF
   );
 }
 
+function CategoryEditForm({
+  value,
+  onChange,
+  onSave,
+  onCancel,
+  isSaving,
+}: {
+  value: CategoryEditState;
+  onChange: (next: CategoryEditState) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  isSaving: boolean;
+}) {
+  return (
+    <div className="grid gap-2 rounded-xl border border-stone-200 bg-white p-2 sm:grid-cols-[1fr_72px_auto]">
+      <input
+        value={value.name}
+        onChange={(event) => onChange({ ...value, name: event.target.value })}
+        className="rounded-lg border border-stone-200 bg-white px-2 py-1.5 text-xs font-semibold text-stone-700 outline-none focus:border-stone-400"
+        placeholder="분류명"
+      />
+      <input
+        value={value.sortOrder}
+        onChange={(event) => onChange({ ...value, sortOrder: event.target.value })}
+        className="rounded-lg border border-stone-200 bg-white px-2 py-1.5 text-right text-xs text-stone-600 outline-none focus:border-stone-400"
+        placeholder="정렬"
+      />
+      <div className="flex items-center justify-end gap-1">
+        <button
+          type="button"
+          onClick={onSave}
+          disabled={isSaving || !value.name.trim()}
+          className="rounded-full bg-stone-900 px-2.5 py-1 text-[11px] font-semibold text-white disabled:cursor-not-allowed disabled:bg-stone-300"
+        >
+          저장
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={isSaving}
+          className="rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-600 disabled:text-stone-300"
+        >
+          취소
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function TemplateTreePreview({
   template,
   onToggleCategory,
+  onSaveCategory,
+  editingCategory,
+  onStartEditCategory,
+  onChangeEditCategory,
+  onCancelEditCategory,
   isSaving,
 }: {
   template: SystemProductTemplateRow;
   onToggleCategory: (categoryId: string, name: string, nextActive: boolean) => void;
+  onSaveCategory: () => void;
+  editingCategory: CategoryEditState | null;
+  onStartEditCategory: (category: { id: string; name: string; sortOrder?: number }) => void;
+  onChangeEditCategory: (next: CategoryEditState) => void;
+  onCancelEditCategory: () => void;
   isSaving: boolean;
 }) {
   const { topLevelCount, secondLevelCount, thirdLevelCount } = getTemplateCounts(template);
@@ -122,56 +187,131 @@ function TemplateTreePreview({
       </div>
 
       <div className="mt-4 grid gap-3 lg:grid-cols-2">
-        {template.tree.map((top) => (
-          <div key={top.id} className="rounded-2xl border border-stone-100 bg-stone-50 p-3">
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-sm font-semibold text-stone-950">{top.name}</p>
-              <button
-                type="button"
-                onClick={() => onToggleCategory(top.id, top.name, !(top.isActive ?? true))}
-                disabled={isSaving}
-                className="rounded-full border border-stone-200 bg-white px-2 py-0.5 text-[11px] font-semibold text-stone-600 disabled:text-stone-300"
-              >
-                {top.isActive === false ? "미사용" : "사용"}
-              </button>
-            </div>
-            <div className="mt-3 grid gap-2">
-              {top.children.map((second) => (
-                <div key={second.id} className="rounded-xl border border-stone-200 bg-white p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-xs font-semibold text-stone-700">{second.name}</p>
+        {template.tree.map((top) => {
+          const isTopEditing = editingCategory?.id === top.id;
+          return (
+            <div key={top.id} className="rounded-2xl border border-stone-100 bg-stone-50 p-3">
+              {isTopEditing ? (
+                <CategoryEditForm
+                  value={editingCategory}
+                  onChange={onChangeEditCategory}
+                  onSave={onSaveCategory}
+                  onCancel={onCancelEditCategory}
+                  isSaving={isSaving}
+                />
+              ) : (
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-semibold text-stone-950">{top.name}</p>
+                  <div className="flex items-center gap-1">
                     <button
                       type="button"
-                      onClick={() => onToggleCategory(second.id, second.name, !(second.isActive ?? true))}
+                      onClick={() => onStartEditCategory(top)}
                       disabled={isSaving}
-                      className="rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-[11px] font-semibold text-stone-600 disabled:text-stone-300"
+                      className="rounded-full border border-stone-200 bg-white px-2 py-0.5 text-[11px] font-semibold text-stone-600 disabled:text-stone-300"
                     >
-                      {second.isActive === false ? "미사용" : "사용"}
+                      수정
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onToggleCategory(top.id, top.name, !(top.isActive ?? true))}
+                      disabled={isSaving}
+                      className="rounded-full border border-stone-200 bg-white px-2 py-0.5 text-[11px] font-semibold text-stone-600 disabled:text-stone-300"
+                    >
+                      {top.isActive === false ? "미사용" : "사용"}
                     </button>
                   </div>
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {second.children.map((leaf) => (
-                      <button
-                        key={leaf.id}
-                        type="button"
-                        onClick={() => onToggleCategory(leaf.id, leaf.name, !(leaf.isActive ?? true))}
-                        disabled={isSaving}
-                        className={`rounded-full border px-2 py-1 text-[11px] font-medium disabled:opacity-60 ${
-                          leaf.isActive === false
-                            ? "border-stone-200 bg-stone-100 text-stone-400"
-                            : "border-stone-200 bg-stone-50 text-stone-600"
-                        }`}
-                        title={leaf.description}
-                      >
-                        {leaf.name}
-                      </button>
-                    ))}
-                  </div>
                 </div>
-              ))}
+              )}
+
+              <div className="mt-3 grid gap-2">
+                {top.children.map((second) => {
+                  const isSecondEditing = editingCategory?.id === second.id;
+                  return (
+                    <div key={second.id} className="rounded-xl border border-stone-200 bg-white p-3">
+                      {isSecondEditing ? (
+                        <CategoryEditForm
+                          value={editingCategory}
+                          onChange={onChangeEditCategory}
+                          onSave={onSaveCategory}
+                          onCancel={onCancelEditCategory}
+                          isSaving={isSaving}
+                        />
+                      ) : (
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-xs font-semibold text-stone-700">{second.name}</p>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => onStartEditCategory(second)}
+                              disabled={isSaving}
+                              className="rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-[11px] font-semibold text-stone-600 disabled:text-stone-300"
+                            >
+                              수정
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onToggleCategory(second.id, second.name, !(second.isActive ?? true))}
+                              disabled={isSaving}
+                              className="rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-[11px] font-semibold text-stone-600 disabled:text-stone-300"
+                            >
+                              {second.isActive === false ? "미사용" : "사용"}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {second.children.map((leaf) => {
+                          const isLeafEditing = editingCategory?.id === leaf.id;
+                          if (isLeafEditing) {
+                            return (
+                              <div key={leaf.id} className="w-full">
+                                <CategoryEditForm
+                                  value={editingCategory}
+                                  onChange={onChangeEditCategory}
+                                  onSave={onSaveCategory}
+                                  onCancel={onCancelEditCategory}
+                                  isSaving={isSaving}
+                                />
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div key={leaf.id} className="flex items-center gap-1 rounded-full border border-stone-200 bg-stone-50 pl-2 text-[11px] font-medium text-stone-600">
+                              <span className={leaf.isActive === false ? "text-stone-400" : "text-stone-600"} title={leaf.description}>
+                                {leaf.name}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => onStartEditCategory(leaf)}
+                                disabled={isSaving}
+                                className="rounded-full px-1.5 py-1 text-[10px] font-semibold text-stone-500 hover:bg-white disabled:text-stone-300"
+                              >
+                                수정
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => onToggleCategory(leaf.id, leaf.name, !(leaf.isActive ?? true))}
+                                disabled={isSaving}
+                                className={`rounded-full border px-2 py-1 text-[11px] font-medium disabled:opacity-60 ${
+                                  leaf.isActive === false
+                                    ? "border-stone-200 bg-stone-100 text-stone-400"
+                                    : "border-stone-200 bg-white text-stone-600"
+                                }`}
+                              >
+                                {leaf.isActive === false ? "미사용" : "사용"}
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -184,6 +324,7 @@ export default function SystemProductTemplateStandardsPage() {
   const [selectedTemplateId, setSelectedTemplateId] = useState(SYSTEM_PRODUCT_TEMPLATE_ROWS[0]?.id ?? "");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingForm, setEditingForm] = useState<TemplateFormState | null>(null);
+  const [editingCategory, setEditingCategory] = useState<CategoryEditState | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("DB 연결 시 시스템 생산품 유형 템플릿 원장을 조회합니다.");
@@ -354,6 +495,44 @@ export default function SystemProductTemplateStandardsPage() {
     }
   }
 
+
+  function startEditCategory(category: { id: string; name: string; sortOrder?: number }) {
+    setEditingCategory({
+      id: category.id,
+      name: category.name,
+      sortOrder: String(category.sortOrder ?? 0),
+    });
+  }
+
+  async function saveCategory() {
+    if (!editingCategory) return;
+    setIsSaving(true);
+    setMessage("생산품 유형 템플릿 분류명을 수정하는 중입니다.");
+    try {
+      const response = await fetch("/api/system/standards/product-templates", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "update_category",
+          id: editingCategory.id,
+          name: editingCategory.name,
+          sortOrder: toSortOrder(editingCategory.sortOrder),
+        }),
+      });
+      const payload = (await response.json()) as { ok?: boolean; record?: SystemProductTemplateRow; message?: string };
+      if (!response.ok || !payload.ok || !payload.record) {
+        throw new Error(payload.message || "생산품 유형 템플릿 분류명을 수정하지 못했습니다.");
+      }
+      setRecords((current) => current.map((item) => (item.id === payload.record?.id ? (payload.record as SystemProductTemplateRow) : item)));
+      setEditingCategory(null);
+      setMessage(`분류명을 수정했습니다: ${editingCategory.name}`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "생산품 유형 템플릿 분류명 수정 중 오류가 발생했습니다.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
   return (
     <main className="min-h-screen bg-stone-50 px-4 py-6 text-stone-900 sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-5">
@@ -384,7 +563,7 @@ export default function SystemProductTemplateStandardsPage() {
               <div>
                 <h2 className="text-lg font-semibold text-stone-950">시스템 생산품 유형 템플릿 원장</h2>
                 <p className="mt-1 text-sm leading-6 text-stone-600">
-                  총 {records.length}개 중 활성 {activeCount}개입니다. 1차 → 2차 → 3차 계층 구조를 관리합니다.
+                  총 {records.length}개 중 활성 {activeCount}개입니다. 1차 → 2차 → 3차 분류는 각 항목의 수정 버튼으로 이름과 정렬값을 바꿀 수 있습니다.
                 </p>
               </div>
               <button
@@ -437,7 +616,16 @@ export default function SystemProductTemplateStandardsPage() {
                         </button>
                       </div>
                     )}
-                    <TemplateTreePreview template={template} onToggleCategory={toggleCategory} isSaving={isSaving} />
+                    <TemplateTreePreview
+                      template={template}
+                      onToggleCategory={toggleCategory}
+                      onSaveCategory={saveCategory}
+                      editingCategory={editingCategory}
+                      onStartEditCategory={startEditCategory}
+                      onChangeEditCategory={setEditingCategory}
+                      onCancelEditCategory={() => setEditingCategory(null)}
+                      isSaving={isSaving}
+                    />
                   </div>
                 );
               })}
