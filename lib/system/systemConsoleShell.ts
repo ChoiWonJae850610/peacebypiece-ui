@@ -78,10 +78,11 @@ export const SYSTEM_CONSOLE_TABS: SystemConsoleTab[] = [
   },
   {
     id: "logs",
-    label: "시스템 로그",
-    description: "시스템관리자 작업 이력과 운영 이벤트를 확인할 영역입니다.",
-    statusLabel: "후순위",
-    status: "planned",
+    label: "감사 로그",
+    description: "권한, 요금제, 저장소, 삭제 처리 같은 시스템 운영 이벤트를 감사 로그로 분리합니다.",
+    statusLabel: "설계 화면",
+    status: "linked",
+    href: "/system/audit-logs",
   },
   {
     id: "storage",
@@ -139,11 +140,12 @@ export const SYSTEM_CONSOLE_PLACEHOLDERS: SystemConsolePlaceholder[] = [
   },
   {
     id: "logs",
-    title: "시스템 로그",
+    title: "감사 로그",
     description:
-      "시스템관리자의 주요 작업 이력을 audit log로 연결할 화면의 자리입니다.",
-    items: ["고객사 변경", "요금제 변경", "용량 변경", "초대 링크 생성"],
-    actionLabel: "후순위 작업",
+      "고객관리자 히스토리와 분리해 시스템관리자의 운영 이벤트를 audit log로 연결할 화면입니다.",
+    items: ["권한 변경", "요금제 변경", "용량 변경", "영구 삭제 처리"],
+    href: "/system/audit-logs",
+    actionLabel: "감사 로그 설계 열기",
   },
 ];
 
@@ -173,6 +175,12 @@ export const SYSTEM_CONSOLE_QUICK_LINKS = [
     description: "R2 실제 삭제 후보 확인",
   },
   {
+    id: "audit-logs",
+    label: "감사 로그",
+    href: "/system/audit-logs",
+    description: "시스템 운영 이벤트 설계",
+  },
+  {
     id: "category-rules",
     label: "카테고리 규칙",
     href: "/system/category-rules",
@@ -198,5 +206,11 @@ export const SYSTEM_CONSOLE_API_LINKS = [
     label: "저장공간 사용량 API",
     path: "/api/system/storage-usage?companyId=company-sample-customer",
     description: "고객사별 storage usage skeleton",
+  },
+  {
+    id: "audit-logs-api",
+    label: "감사 로그 API",
+    path: "/api/system/audit-logs",
+    description: "후속 버전에서 연결할 시스템 audit log 읽기 API",
   },
 ] as const;

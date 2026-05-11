@@ -1,26 +1,14 @@
-Version :
-0.10.8
-
-Summary :
-작업지시서 홈 이동과 워크스페이스 카드 흐름 보정
-
-Description :
-작업지시서 업무 화면의 홈 이동 라벨과 경로 계산을 역할 기준 유틸로 정리했다. 일반 멤버용 워크스페이스 홈 카드 정의도 컴포넌트에서 분리해 중앙화하고, 업무 화면과 개인 설정 섹션을 나눠 표시하도록 보정했다.
-
+Version : 0.10.9
+Summary : 시스템관리자 감사 로그 설계 화면 추가
+Description : /system/audit-logs 설계 화면을 추가하고 시스템 홈에서 감사 로그 진입을 연결했습니다. 고객관리자 메뉴에서는 히스토리 노출을 제거해 상세 운영 이력을 시스템관리자 감사 로그로 분리하는 방향을 반영했습니다. DB schema와 기존 작업지시서/저장소/휴지통/R2 purge 동작은 변경하지 않았습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/navigation/workspaceHomeRoutes.ts
-- components/workorder/WorkOrderWorkspace.tsx
-- components/workorder/layout/WorkOrderHomeButton.tsx
-- components/workspace/MemberWorkspaceHome.tsx
-- lib/i18n/ko/workorder.ts
-- lib/i18n/en/workorder.ts
-- lib/i18n/ko/common.ts
-- lib/i18n/en/common.ts
-
+- lib/system/systemConsoleShell.ts
+- lib/admin/adminDashboard.presentation.ts
+- lib/admin/adminConsoleLinks.ts
 추가 파일 목록 :
-- lib/navigation/memberWorkspaceCards.ts
-- docs/workspace-home-flow-0.10.8.md
-
+- app/system/audit-logs/page.tsx
+- components/system/audit/SystemAuditLogsDesignPage.tsx
+- lib/system/audit/systemAuditLogs.design.ts
+- docs/system-audit-logs-design-0.10.9.md
 삭제 파일 목록 :
-없음

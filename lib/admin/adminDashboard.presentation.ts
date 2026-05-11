@@ -20,7 +20,7 @@ export type AdminNavigationItem = {
   label: string;
   href: AdminDashboardRoute;
   icon: string;
-  translationKey?: "dashboard" | "workorder" | "partners" | "storage" | "statistics" | "history" | "settings";
+  translationKey?: "dashboard" | "workorder" | "partners" | "storage" | "statistics" | "settings";
   active?: boolean;
 };
 
@@ -90,7 +90,6 @@ export const ADMIN_NAVIGATION_ITEMS: AdminNavigationItem[] = [
   { label: "협력업체 관리", href: "/admin/partners", icon: "partners", translationKey: "partners" },
   { label: "저장소 관리", href: "/admin/files", icon: "storage", translationKey: "storage" },
   { label: "통계정보", href: "/admin/dashboard", icon: "statistics", translationKey: "statistics" },
-  { label: "히스토리", href: "/admin/history", icon: "history", translationKey: "history" },
   { label: "환경설정", href: "/admin/settings", icon: "settings", translationKey: "settings" },
 ];
 
@@ -100,7 +99,6 @@ export const ADMIN_DASHBOARD_SECTIONS: AdminDashboardSection[] = [
     items: [
       { label: "검토 대기 작업지시서", description: "관리자 확인이 필요한 작업지시서를 확인", href: "/worker", icon: "✓" },
       { label: "작업중인 작업지시서", description: "발주 전 단계의 작업 흐름 확인", href: "/worker", icon: "□" },
-      { label: "작업지시서 히스토리", description: "상태 변경과 주요 작업 기록 확인", href: "/admin/history", icon: "◷" },
     ],
   },
   {
