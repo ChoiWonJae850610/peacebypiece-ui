@@ -172,9 +172,9 @@ export const SYSTEM_AUDIT_LOG_IMPLEMENTATION_STEPS: SystemAuditLogImplementation
   },
   {
     versionHint: "0.10.13",
-    title: "쓰기 지점 점진 연결",
+    title: "저장소 실제 삭제 감사 로그 연결",
     description:
-      "고객사, 초대, 요금제·용량, 저장소 purge, 멤버 권한 변경 지점부터 audit log 작성을 붙입니다.",
+      "시스템관리자 저장소 실제 삭제 API에서 storage.purge_run 감사 로그를 기록합니다. 고객사, 초대, 요금제·용량, 멤버 권한 변경 지점은 후속 버전에서 점진 연결합니다.",
   },
 ];
 
@@ -202,4 +202,13 @@ export const SYSTEM_AUDIT_LOG_API_DECISIONS = [
   "화면 조회는 repository 결과를 actionFlow에서 view model로 변환해 표시한다.",
   "query 검색은 목록을 가져온 뒤 selector에서 처리하고, companyId·targetType·eventType·severity는 repository 조회 조건으로 넘긴다.",
   "아직 실제 이벤트 쓰기 지점은 연결하지 않아 빈 목록이 정상 상태일 수 있다.",
+] as const;
+
+
+export const SYSTEM_AUDIT_LOG_WRITE_DECISIONS = [
+  "0.10.13의 첫 쓰기 지점은 시스템관리자 저장소 실제 삭제 처리로 제한한다.",
+  "쓰기 실패가 기존 삭제 처리를 막지 않도록 createSystemAuditLogSafe를 사용한다.",
+  "storage.purge_run 이벤트는 완료·실패 개수와 후보 수를 metadata에 구조화해서 남긴다.",
+  "실제 R2 key 원문은 목록 화면 기본 노출 대상이 아니므로 보유 여부만 요약한다.",
+  "고객사, 초대, 요금제·용량, 멤버 권한 변경 로그는 후속 버전에서 연결한다.",
 ] as const;

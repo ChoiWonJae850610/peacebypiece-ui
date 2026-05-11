@@ -80,7 +80,7 @@ export const SYSTEM_CONSOLE_TABS: SystemConsoleTab[] = [
     id: "logs",
     label: "감사 로그",
     description: "권한, 요금제, 저장소, 삭제 처리 같은 시스템 운영 이벤트를 감사 로그로 분리합니다.",
-    statusLabel: "계층 분리",
+    statusLabel: "쓰기 연결",
     status: "linked",
     href: "/system/audit-logs",
   },
@@ -178,7 +178,7 @@ export const SYSTEM_CONSOLE_QUICK_LINKS = [
     id: "audit-logs",
     label: "감사 로그",
     href: "/system/audit-logs",
-    description: "시스템 운영 이벤트 계층 분리",
+    description: "시스템 운영 이벤트 조회·쓰기 연결",
   },
   {
     id: "category-rules",

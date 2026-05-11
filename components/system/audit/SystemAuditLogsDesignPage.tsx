@@ -7,6 +7,7 @@ import {
   SYSTEM_AUDIT_LOG_LAYER_DECISIONS,
   SYSTEM_AUDIT_LOG_SCHEMA_FIELDS,
   SYSTEM_AUDIT_LOG_SCOPES,
+  SYSTEM_AUDIT_LOG_WRITE_DECISIONS,
   SYSTEM_AUDIT_LOG_TARGETS,
   type SystemAuditLogEventLevel,
 } from "@/lib/system/audit/systemAuditLogs.design";
@@ -85,7 +86,7 @@ export default function SystemAuditLogsDesignPage({
             <div>
               <h2 className="text-lg font-semibold text-stone-950">감사 로그 조회</h2>
               <p className="mt-2 text-sm leading-6 text-stone-600">
-                /api/system/audit-logs와 audit_logs repository를 연결했습니다. 아직 쓰기 지점은 후속 버전에서 붙이므로, 현재는 수동 삽입 또는 후속 이벤트 연결 후 기록이 표시됩니다.
+                /api/system/audit-logs와 audit_logs repository를 연결했습니다. 0.10.13부터 시스템관리자 저장소 실제 삭제 처리 결과가 storage.purge_run 이벤트로 기록됩니다.
               </p>
             </div>
             <code className="w-fit rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-500">
@@ -161,7 +162,7 @@ export default function SystemAuditLogsDesignPage({
                 ) : (
                   <tr>
                     <td colSpan={6} className="px-3 py-8 text-center text-sm text-stone-500">
-                      아직 표시할 감사 로그가 없습니다. 0.10.13 이후 쓰기 지점이 연결되면 이 목록에 운영 이벤트가 표시됩니다.
+                      아직 표시할 감사 로그가 없습니다. 시스템관리자 저장소 실제 삭제 처리를 실행하면 0.10.13부터 이 목록에 운영 이벤트가 표시됩니다.
                     </td>
                   </tr>
                 )}
@@ -212,6 +213,22 @@ export default function SystemAuditLogsDesignPage({
               </article>
             ))}
           </div>
+        </section>
+
+        <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+          <div className="flex flex-col gap-2 border-b border-stone-100 pb-4">
+            <h2 className="text-lg font-semibold text-stone-950">0.10.13 쓰기 연결 기준</h2>
+            <p className="text-sm leading-6 text-stone-600">
+              첫 쓰기 지점은 시스템관리자 저장소 실제 삭제 API로 제한했습니다. 삭제 처리 자체가 감사 로그 실패에 막히지 않도록 안전 기록 방식을 사용합니다.
+            </p>
+          </div>
+          <ul className="mt-4 grid gap-2 md:grid-cols-2">
+            {SYSTEM_AUDIT_LOG_WRITE_DECISIONS.map((decision) => (
+              <li key={decision} className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs leading-5 text-stone-600">
+                {decision}
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">

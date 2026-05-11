@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
+import { buildSystemStoragePurgeAuditLog } from "@/lib/system/audit/writeActions";
 import { runSystemStoragePurge } from "@/lib/system/storagePurgeCandidates";
 
 export const runtime = "nodejs";
@@ -23,6 +25,16 @@ function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error || "UNKNOWN_ERROR");
 }
 
+function getAuditRequestId(request: NextRequest): string | null {
+  return request.headers.get("x-request-id") || request.headers.get("x-vercel-id") || null;
+}
+
+function getAuditIpAddress(request: NextRequest): string | null {
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  const firstForwardedIp = forwardedFor?.split(",")[0]?.trim();
+  return firstForwardedIp || request.headers.get("x-real-ip") || null;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const payload = (await request.json().catch(() => null)) as PurgeRequestPayload | null;
@@ -33,12 +45,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: false, error: "TRASH_ITEM_IDS_REQUIRED" }, { status: 400 });
     }
 
+    const actorId = "system-admin";
     const result = await runSystemStoragePurge({
       mode,
       trashItemIds,
       limit: readLimit(payload?.limit),
-      actorId: "system-admin",
+      actorId,
     });
+
+    await createSystemAuditLogSafe(
+      buildSystemStoragePurgeAuditLog({
+        mode,
+        actorId,
+        requestId: getAuditRequestId(request),
+        ipAddress: getAuditIpAddress(request),
+        result,
+      }),
+    );
 
     return NextResponse.json({ ok: true, storageDeleteMode: "worker-delete", ...result });
   } catch (error) {
