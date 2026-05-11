@@ -9,6 +9,7 @@ export type SystemConsoleTabId =
   | "standards"
   | "standardsSeedStatus"
   | "standardsRegression"
+  | "standardsCustomerOnboarding"
   | "categoryRules";
 
 export type SystemConsoleTabStatus =
@@ -119,6 +120,14 @@ export const SYSTEM_CONSOLE_TABS: SystemConsoleTab[] = [
     statusLabel: "회귀 점검",
     status: "linked",
     href: "/system/standards/regression",
+  },
+  {
+    id: "standardsCustomerOnboarding",
+    label: "고객사 초기 기준정보",
+    description: "신규 고객사 생성 시 생산품 유형 기본 템플릿과 단위·외주공정 사용 연결을 복사하는 흐름을 설계합니다.",
+    statusLabel: "설계 화면",
+    status: "linked",
+    href: "/system/standards/customer-onboarding",
   },
   {
     id: "categoryRules",
@@ -244,6 +253,12 @@ export const SYSTEM_CONSOLE_QUICK_LINKS = [
     label: "기준정보 회귀점검",
     href: "/system/standards/regression",
     description: "fallback 혼입과 고객사 연결 무결성 점검",
+  },
+  {
+    id: "system-standards-customer-onboarding",
+    label: "고객사 초기 기준정보",
+    href: "/system/standards/customer-onboarding",
+    description: "신규 고객사 생산품 유형 템플릿 복사 설계",
   },
   {
     id: "category-rules",

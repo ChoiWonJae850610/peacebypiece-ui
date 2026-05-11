@@ -76,6 +76,12 @@ export default function SystemStandardsDesignPage() {
                 회귀점검
               </Link>
               <Link
+                href="/system/standards/customer-onboarding"
+                className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50"
+              >
+                고객사 초기 기준정보
+              </Link>
+              <Link
                 href="/system"
                 className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50"
               >
@@ -224,7 +230,7 @@ export default function SystemStandardsDesignPage() {
               ))}
             </ul>
             <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs leading-5 text-amber-800">
-              0.10.38에서 DB schema와 seed 기준을 확정했습니다. 실제 추가·수정·삭제 UI와 고객사 신규 생성 시 복사 로직은 후속 버전에서 분리합니다.
+              0.10.38에서 DB schema와 seed 기준을 확정했습니다. 0.10.51에서는 고객사 신규 생성 시 생산품 유형 기본 템플릿을 고객사 item_categories로 복사하고 단위·외주공정 사용 연결을 초기화하는 설계 화면을 추가했습니다.
             </div>
           </article>
         </section>
