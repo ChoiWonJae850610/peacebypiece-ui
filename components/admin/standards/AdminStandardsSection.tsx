@@ -32,6 +32,11 @@ function sortProcessesByLabel(items: OutsourcingProcessDefinition[]) {
   return items.slice().sort((a, b) => a.label.localeCompare(b.label, "ko-KR"));
 }
 
+function formatStandardUsageDescription(activeCount: number, totalCount: number, emptyLabel: string, inUseSuffix: string) {
+  if (totalCount === 0) return emptyLabel;
+  return `${activeCount}/${totalCount}${inUseSuffix}`;
+}
+
 type AdminStandardsSectionProps = {
   mode?: "full" | "standards-only";
 };
@@ -213,11 +218,16 @@ export default function AdminStandardsSection({ mode = "full" }: AdminStandardsS
     { key: "filePolicy", title: t("standards.actions.filePolicy.title", "저장 정책"), description: t("standards.actions.filePolicy.description", "용량·휴지통·실제삭제 기준"), statusLabel: t("standards.common.manage", "관리"), onClick: () => setIsFilePolicyModalOpen(true) },
   ];
 
+  const inUseSuffix = t("standards.common.inUseSuffix", "개 사용중");
+  const emptyDbLabel = t("standards.common.emptyDbLabel", "DB 항목 없음");
+
   const standardActions: StandardAction[] = [
-    { key: "items", title: t("standards.actions.items.title", "생산품 유형"), description: `${itemCategoryDefinitions.filter((item) => item.is_active).length}/${itemCategoryDefinitions.length}${t("standards.common.inUseSuffix", "개 사용중")}`, statusLabel: t("standards.common.manage", "관리"), onClick: () => setIsItemCategoryModalOpen(true) },
-    { key: "units", title: t("standards.actions.units.title", "단위 표준"), description: `${unitDefinitions.filter((unit) => unit.is_active).length}/${unitDefinitions.length}${t("standards.common.inUseSuffix", "개 사용중")}`, statusLabel: t("standards.common.manage", "관리"), onClick: () => setIsUnitModalOpen(true) },
-    { key: "processes", title: t("standards.actions.processes.title", "외주 공정 유형"), description: `${activeProcessDefinitions.length}/${processDraftDefinitions.length}${t("standards.common.inUseSuffix", "개 사용중")}`, statusLabel: t("standards.common.manage", "관리"), onClick: openProcessModal },
+    { key: "items", title: t("standards.actions.items.title", "생산품 유형"), description: formatStandardUsageDescription(itemCategoryDefinitions.filter((item) => item.is_active).length, itemCategoryDefinitions.length, t("standards.actions.items.empty", "고객사 품목 없음"), inUseSuffix), statusLabel: t("standards.common.manage", "관리"), onClick: () => setIsItemCategoryModalOpen(true) },
+    { key: "units", title: t("standards.actions.units.title", "단위 표준"), description: formatStandardUsageDescription(unitDefinitions.filter((unit) => unit.is_active).length, unitDefinitions.length, emptyDbLabel, inUseSuffix), statusLabel: t("standards.common.manage", "관리"), onClick: () => setIsUnitModalOpen(true) },
+    { key: "processes", title: t("standards.actions.processes.title", "외주 공정 유형"), description: formatStandardUsageDescription(activeProcessDefinitions.length, processDraftDefinitions.length, emptyDbLabel, inUseSuffix), statusLabel: t("standards.common.manage", "관리"), onClick: openProcessModal },
   ];
+
+  const hasMissingDbStandards = unitDefinitions.length === 0 || processDraftDefinitions.length === 0 || defaultItemCategoryDefinitions.length === 0;
 
   const renderActionGrid = (actions: StandardAction[]) => (
     <div className="grid gap-3 md:grid-cols-3">
@@ -254,6 +264,11 @@ export default function AdminStandardsSection({ mode = "full" }: AdminStandardsS
           <h2 className="text-base font-semibold text-stone-950">{t("standards.section.standardTitle", "기준 관리")}</h2>
           <p className="hidden text-xs font-semibold text-stone-400 sm:block">작업지시서 생성 기준값</p>
         </div>
+        {hasMissingDbStandards ? (
+          <div className="mt-2.5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800">
+            DB 기준정보 seed가 비어 있거나 일부 부족합니다. 시스템관리자 &gt; 기준정보 seed 상태에서 단위 표준, 외주공정 유형, 생산품 유형 기본 템플릿을 확인하세요.
+          </div>
+        ) : null}
         <div className="mt-2.5">{renderActionGrid(standardActions)}</div>
       </div>
 

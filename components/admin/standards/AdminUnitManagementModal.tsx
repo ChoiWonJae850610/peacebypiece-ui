@@ -72,26 +72,32 @@ export default function AdminUnitManagementModal({ open, units, saving = false, 
         </div>
         <div className={`h-[410px] ${standardModalListBoxClassName}`}>
           <div className={standardModalListScrollClassName}>
-            {sortedDraft.map((unit) => (
-              <div
-                key={unit.id}
-                className={standardModalRowClassName}
-              >
-                <button type="button" onClick={() => toggleUnit(unit.id)} disabled={saving} className="min-w-0 flex-1 text-left disabled:cursor-not-allowed disabled:opacity-60">
-                  <span className="block font-semibold text-stone-950">{unit.name}</span>
-                  <span className="block text-xs text-stone-400">{unit.code}</span>
-                </button>
-                <AdminUsageToggle
-                  label={`${unit.name} ${t("standards.units.usageTitle", "단위 사용 여부")}`}
-                  checked={unit.is_active}
-                  activeLabel={t("standards.common.active", "사용")}
-                  inactiveLabel={t("standards.common.inactive", "미사용")}
-                  disabled={saving}
-                  variant="inline"
-                  onChange={() => toggleUnit(unit.id)}
-                />
+            {sortedDraft.length === 0 ? (
+              <div className="flex h-full items-center justify-center px-4 text-center text-sm leading-6 text-stone-400">
+                시스템 단위 표준 seed가 없습니다. 시스템관리자 기준정보에서 단위 표준을 먼저 등록하세요.
               </div>
-            ))}
+            ) : (
+              sortedDraft.map((unit) => (
+                <div
+                  key={unit.id}
+                  className={standardModalRowClassName}
+                >
+                  <button type="button" onClick={() => toggleUnit(unit.id)} disabled={saving} className="min-w-0 flex-1 text-left disabled:cursor-not-allowed disabled:opacity-60">
+                    <span className="block font-semibold text-stone-950">{unit.name}</span>
+                    <span className="block text-xs text-stone-400">{unit.code}</span>
+                  </button>
+                  <AdminUsageToggle
+                    label={`${unit.name} ${t("standards.units.usageTitle", "단위 사용 여부")}`}
+                    checked={unit.is_active}
+                    activeLabel={t("standards.common.active", "사용")}
+                    inactiveLabel={t("standards.common.inactive", "미사용")}
+                    disabled={saving}
+                    variant="inline"
+                    onChange={() => toggleUnit(unit.id)}
+                  />
+                </div>
+              ))
+            )}
           </div>
         </div>
       </AdminModalSection>

@@ -64,6 +64,12 @@ export default function SystemStandardsDesignPage() {
                 v{APP_VERSION}
               </span>
               <Link
+                href="/system/standards/seed-status"
+                className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50"
+              >
+                seed 상태
+              </Link>
+              <Link
                 href="/system"
                 className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50"
               >
@@ -140,6 +146,24 @@ export default function SystemStandardsDesignPage() {
             </div>
             <SampleRows rows={SYSTEM_PROCESS_STANDARD_SAMPLES} showSecondary={false} />
           </article>
+        </section>
+
+        <section className="rounded-3xl border border-blue-200 bg-blue-50 p-5 text-sm leading-6 text-blue-900 shadow-sm">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">DB ONLY CHECK</p>
+              <h2 className="mt-2 text-lg font-semibold text-blue-950">기준정보는 DB 결과만 표시합니다</h2>
+              <p className="mt-2 max-w-4xl text-sm leading-6 text-blue-900">
+                0.10.46부터 단위 표준, 외주공정 유형, 생산품 유형 기본 템플릿은 fallback을 섞지 않습니다. 숫자가 0개로 보이면 seed 적용 상태를 먼저 확인합니다.
+              </p>
+            </div>
+            <Link
+              href="/system/standards/seed-status"
+              className="inline-flex shrink-0 rounded-full border border-blue-300 bg-white px-4 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50"
+            >
+              seed 상태 확인
+            </Link>
+          </div>
         </section>
 
         <section className="rounded-3xl border border-emerald-200 bg-emerald-50 p-5 text-sm leading-6 text-emerald-900 shadow-sm">

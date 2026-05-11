@@ -1,22 +1,20 @@
-Version : 0.10.46
-Summary : 기준정보 DB 전용 조회와 기본 템플릿 복원 보정
-Description : 기준정보 화면과 업무 선택지에서 fallback 데이터가 섞여 새로고침마다 수량이 흔들리던 문제를 보정했습니다. 시스템관리자 단위 표준, 외주공정 유형, 생산품 유형 템플릿 화면은 DB 결과만 표시하도록 초기 fallback 상태를 제거했습니다. 고객관리자 생산품 유형 기본값 복원은 시스템관리자 기본 템플릿을 기준으로 동작하도록 변경하고, 단위/외주공정 사용 여부와 작업지시서 선택지도 DB 기준만 사용하도록 정리했습니다.
+Version : 0.10.47
+Summary : 기준정보 seed 상태 점검과 빈 상태 안내 보정
+Description : 시스템 기준정보가 DB 결과만 사용하도록 전환된 이후 seed 적용 상태를 확인할 수 있는 시스템관리자 점검 화면과 API를 추가했습니다. 고객관리자 환경설정 기준관리 카드와 단위 표준 모달에는 DB 항목이 없을 때 fallback 숫자 대신 빈 상태 안내가 보이도록 보정했습니다. 기준정보 fallback 혼입 제거 원칙은 유지하고 DB schema와 업무 저장 로직은 변경하지 않았습니다.
+
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/admin/settings/standardsTypes.ts
-- lib/admin/settings/standardsRepository.ts
-- lib/admin/settings/useCompanyStandardOptions.ts
-- app/api/admin/standards/route.ts
-- app/api/admin/partners/route.ts
+- lib/system/systemConsoleShell.ts
+- components/system/standards/SystemStandardsDesignPage.tsx
 - components/admin/standards/AdminStandardsSection.tsx
-- components/admin/standards/AdminItemCategoryManagementModal.tsx
-- lib/system/standards/unitStandardsRepository.ts
-- lib/system/standards/processStandardsRepository.ts
-- lib/system/standards/productTemplateRepository.ts
-- components/system/standards/SystemUnitStandardsPage.tsx
-- components/system/standards/SystemProcessStandardsPage.tsx
-- components/system/standards/SystemProductTemplateStandardsPage.tsx
+- components/admin/standards/AdminUnitManagementModal.tsx
+
 추가 파일 목록 :
-- docs/admin-standards-db-only-0.10.46.md
+- app/api/system/standards/seed-status/route.ts
+- app/system/standards/seed-status/page.tsx
+- components/system/standards/SystemStandardsSeedStatusPage.tsx
+- lib/system/standards/seedStatusRepository.ts
+- docs/admin-standards-seed-status-0.10.47.md
+
 삭제 파일 목록 :
 - 없음

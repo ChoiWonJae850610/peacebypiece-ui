@@ -7,6 +7,7 @@ export type SystemConsoleTabId =
   | "logs"
   | "storage"
   | "standards"
+  | "standardsSeedStatus"
   | "categoryRules";
 
 export type SystemConsoleTabStatus =
@@ -101,6 +102,14 @@ export const SYSTEM_CONSOLE_TABS: SystemConsoleTab[] = [
     statusLabel: "설계 화면",
     status: "linked",
     href: "/system/standards",
+  },
+  {
+    id: "standardsSeedStatus",
+    label: "기준정보 seed",
+    description: "DB 전용 기준정보 전환 후 seed 적용 상태와 활성 항목 수를 확인합니다.",
+    statusLabel: "DB 점검",
+    status: "linked",
+    href: "/system/standards/seed-status",
   },
   {
     id: "categoryRules",
@@ -216,6 +225,12 @@ export const SYSTEM_CONSOLE_QUICK_LINKS = [
     description: "신규 고객사 기본 생산품 유형 템플릿 1차 화면",
   },
   {
+    id: "system-standards-seed-status",
+    label: "기준정보 seed 상태",
+    href: "/system/standards/seed-status",
+    description: "DB 기준 기준정보 seed와 활성 항목 수 점검",
+  },
+  {
     id: "category-rules",
     label: "카테고리 규칙",
     href: "/system/category-rules",
@@ -247,5 +262,11 @@ export const SYSTEM_CONSOLE_API_LINKS = [
     label: "감사 로그 API",
     path: "/api/system/audit-logs",
     description: "후속 버전에서 연결할 시스템 audit log 읽기 API",
+  },
+  {
+    id: "standards-seed-status-api",
+    label: "기준정보 seed 상태 API",
+    path: "/api/system/standards/seed-status",
+    description: "시스템 기준정보 seed 적용 상태 점검",
   },
 ] as const;
