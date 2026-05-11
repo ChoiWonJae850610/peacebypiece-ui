@@ -51,10 +51,10 @@ export const INVITATION_QR_PREVIEW_CELLS: InvitationQrPreviewCell[] = [
 ];
 
 export const SYSTEM_CUSTOMER_INVITE_QR_PREVIEW: InvitationQrPreviewModel = {
-  title: "고객관리자 초대 QR",
+  title: "고객사 초대 QR",
   description:
-    "초대 링크 생성 API 연결 후 raw token 기반 inviteUrl을 QR로 표시할 영역입니다.",
-  inviteUrl: "https://peacebypiece.example/invite/company/preview-system-admin-token",
+    "시스템관리자가 고객사 담당자에게 전달할 초대 링크를 QR로 표시하는 영역입니다. 실제 초대 생성 후 /invite/company/[token] 경로와 연결합니다.",
+  inviteUrl: "https://peacebypiece.example/invite/company/preview-system-company-token",
   cells: INVITATION_QR_PREVIEW_CELLS,
 };
 

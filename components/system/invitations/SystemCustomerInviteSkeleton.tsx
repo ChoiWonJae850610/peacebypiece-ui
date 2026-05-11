@@ -4,8 +4,11 @@ import InvitationQrPreview from "@/components/invitations/InvitationQrPreview";
 import { APP_VERSION } from "@/lib/constants/app";
 import { SYSTEM_CUSTOMER_INVITE_QR_PREVIEW } from "@/lib/invitations/invitationQrPreview";
 import {
+  SYSTEM_CUSTOMER_INVITE_APPROVAL_RULES,
   SYSTEM_CUSTOMER_INVITE_FIELDS,
+  SYSTEM_CUSTOMER_INVITE_FORM_FIELDS,
   SYSTEM_CUSTOMER_INVITE_POLICY_NOTES,
+  SYSTEM_CUSTOMER_INVITE_RESULT_ACTIONS,
   SYSTEM_CUSTOMER_INVITE_STEPS,
 } from "@/lib/system/systemCustomerInviteSkeleton";
 
@@ -21,6 +24,14 @@ function getStepStatusClassName(status: "ready" | "planned" | "locked") {
   return "border-stone-200 bg-stone-100 text-stone-500";
 }
 
+function getActionClassName(state: "ready" | "disabled") {
+  if (state === "ready") {
+    return "border-stone-900 bg-stone-900 text-white hover:bg-stone-800";
+  }
+
+  return "border-stone-200 bg-stone-100 text-stone-400";
+}
+
 export default function SystemCustomerInviteSkeleton() {
   return (
     <main className="min-h-screen bg-stone-50 px-4 py-6 text-stone-900 sm:px-6 lg:px-8">
@@ -29,15 +40,14 @@ export default function SystemCustomerInviteSkeleton() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
-                SYSTEM INVITATION
+                SYSTEM CUSTOMER INVITATION
               </p>
               <div className="space-y-2">
                 <h1 className="text-2xl font-semibold text-stone-950">
-                  시스템관리자 고객 초대
+                  시스템관리자 고객사 초대
                 </h1>
                 <p className="max-w-3xl text-sm leading-6 text-stone-600">
-                  시스템관리자가 고객사를 선택하고 고객사 관리자를 초대하는 화면 skeleton입니다.
-                  실제 이메일 발송 없이 초대 링크 생성 흐름을 먼저 고정합니다.
+                  신규 고객사 담당자에게 초대 링크와 QR을 전달하고, 가입 신청 후 시스템관리자가 고객사 생성과 고객관리자 권한을 확정하는 흐름입니다.
                 </p>
               </div>
             </div>
@@ -73,9 +83,33 @@ export default function SystemCustomerInviteSkeleton() {
 
         <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
           <div className="flex flex-col gap-2 border-b border-stone-100 pb-4">
+            <h2 className="text-lg font-semibold text-stone-950">초대 정보 입력</h2>
+            <p className="text-sm leading-6 text-stone-600">
+              실제 저장 전 단계에서는 입력 필드, 기본값, 승인 시 연결될 DB 컬럼 후보를 화면에 고정합니다.
+            </p>
+          </div>
+
+          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {SYSTEM_CUSTOMER_INVITE_FORM_FIELDS.map((field) => (
+              <label key={field.id} className="block rounded-2xl border border-stone-200 bg-stone-50 p-4">
+                <span className="text-xs font-semibold text-stone-500">{field.label}</span>
+                <input
+                  readOnly
+                  type={field.inputType === "email" ? "email" : "text"}
+                  value={field.value}
+                  className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm font-medium text-stone-700 outline-none"
+                />
+                <span className="mt-2 block text-xs leading-5 text-stone-500">{field.helper}</span>
+              </label>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+          <div className="flex flex-col gap-2 border-b border-stone-100 pb-4">
             <h2 className="text-lg font-semibold text-stone-950">초대 생성 흐름</h2>
             <p className="text-sm leading-6 text-stone-600">
-              초대 링크 생성 API와 연결하기 전까지 입력, 정책, 결과 영역을 고정합니다.
+              초대 링크 생성, QR 표시, 가입 신청, 고객사 생성 승인을 단계별로 분리합니다.
             </p>
           </div>
 
@@ -108,7 +142,51 @@ export default function SystemCustomerInviteSkeleton() {
           </div>
         </section>
 
-        <InvitationQrPreview model={SYSTEM_CUSTOMER_INVITE_QR_PREVIEW} />
+        <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+          <InvitationQrPreview model={SYSTEM_CUSTOMER_INVITE_QR_PREVIEW} />
+
+          <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+            <div className="border-b border-stone-100 pb-4">
+              <h2 className="text-lg font-semibold text-stone-950">초대 결과 액션</h2>
+              <p className="mt-2 text-sm leading-6 text-stone-600">
+                실제 초대 생성 API 연결 후 활성화할 버튼의 위치와 의미를 먼저 고정합니다.
+              </p>
+            </div>
+            <div className="mt-5 space-y-3">
+              {SYSTEM_CUSTOMER_INVITE_RESULT_ACTIONS.map((action) => (
+                <div key={action.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+                  <button
+                    type="button"
+                    disabled={action.state === "disabled"}
+                    className={`w-full rounded-xl border px-4 py-2 text-sm font-semibold ${getActionClassName(
+                      action.state,
+                    )}`}
+                  >
+                    {action.label}
+                  </button>
+                  <p className="mt-2 text-xs leading-5 text-stone-500">{action.helper}</p>
+                </div>
+              ))}
+            </div>
+          </article>
+        </section>
+
+        <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+          <div className="border-b border-stone-100 pb-4">
+            <h2 className="text-lg font-semibold text-stone-950">승인 기준</h2>
+            <p className="mt-2 text-sm leading-6 text-stone-600">
+              고객사 초대는 링크 접속이 아니라 시스템관리자 승인 시점에 고객사와 고객관리자 권한을 확정합니다.
+            </p>
+          </div>
+          <div className="mt-5 grid gap-4 lg:grid-cols-3">
+            {SYSTEM_CUSTOMER_INVITE_APPROVAL_RULES.map((rule) => (
+              <article key={rule.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+                <h3 className="text-sm font-semibold text-stone-950">{rule.title}</h3>
+                <p className="mt-2 text-xs leading-5 text-stone-600">{rule.description}</p>
+              </article>
+            ))}
+          </div>
+        </section>
 
         <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
           <h2 className="text-lg font-semibold text-stone-950">정책 메모</h2>
