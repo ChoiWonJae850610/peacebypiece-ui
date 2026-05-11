@@ -69,6 +69,30 @@ export const OPERATION_PERMISSIONS = [
   "system.storage.manage",
 ] as const;
 
+export const ADMIN_WORKSPACE_PERMISSIONS = {
+  workorderAccess: "workorder.access",
+  partnerManage: "partner.manage",
+  storageManage: "storage.manage",
+  statsView: "stats.view",
+  organizationSettingsManage: "settings.organization.manage",
+  memberManage: "member.manage",
+  standardUnitManage: "standard_unit.manage",
+  outsourcingProcessManage: "outsourcing_process.manage",
+  productTypeManage: "product_type.manage",
+} as const;
+
+export const ADMIN_WORKSPACE_CARD_PERMISSIONS = [
+  ADMIN_WORKSPACE_PERMISSIONS.workorderAccess,
+  ADMIN_WORKSPACE_PERMISSIONS.partnerManage,
+  ADMIN_WORKSPACE_PERMISSIONS.storageManage,
+  ADMIN_WORKSPACE_PERMISSIONS.statsView,
+  ADMIN_WORKSPACE_PERMISSIONS.organizationSettingsManage,
+  ADMIN_WORKSPACE_PERMISSIONS.memberManage,
+  ADMIN_WORKSPACE_PERMISSIONS.standardUnitManage,
+  ADMIN_WORKSPACE_PERMISSIONS.outsourcingProcessManage,
+  ADMIN_WORKSPACE_PERMISSIONS.productTypeManage,
+] as const;
+
 export const LEGACY_PERMISSION_ALIASES = [
   "workorder.edit",
   "workorder.request_review",
@@ -87,6 +111,7 @@ export const PERMISSIONS = [
   ...MASTER_DATA_PERMISSIONS,
   ...STATS_PERMISSIONS,
   ...OPERATION_PERMISSIONS,
+  ...ADMIN_WORKSPACE_CARD_PERMISSIONS,
   ...LEGACY_PERMISSION_ALIASES,
 ] as const;
 
@@ -148,6 +173,12 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
     title: "운영",
     description: "재고, 초대, 요금제, 저장소, 시스템 저장소 관리 권한입니다.",
     permissions: OPERATION_PERMISSIONS,
+  },
+  {
+    key: "workspace-card",
+    title: "메인화면 카드",
+    description: "고객관리자와 멤버 홈에서 표시할 카드형 진입 권한입니다. 실제 DB 권한 연결 전까지 프론트 카드 registry의 기준 코드로 사용합니다.",
+    permissions: ADMIN_WORKSPACE_CARD_PERMISSIONS,
   },
 ] as const;
 

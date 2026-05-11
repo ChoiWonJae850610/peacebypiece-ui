@@ -1,17 +1,6 @@
-export const ADMIN_WORKSPACE_PERMISSIONS = {
-  workorderAccess: "workorder.access",
-  partnerManage: "partner.manage",
-  storageManage: "storage.manage",
-  statsView: "stats.view",
-  organizationSettingsManage: "settings.organization.manage",
-  memberManage: "member.manage",
-  standardUnitManage: "standard_unit.manage",
-  outsourcingProcessManage: "outsourcing_process.manage",
-  productTypeManage: "product_type.manage",
-} as const;
+import { ADMIN_WORKSPACE_PERMISSIONS, type Permission } from "@/lib/permissions";
 
-export type AdminWorkspacePermission =
-  (typeof ADMIN_WORKSPACE_PERMISSIONS)[keyof typeof ADMIN_WORKSPACE_PERMISSIONS];
+export type AdminWorkspacePermission = Extract<Permission, (typeof ADMIN_WORKSPACE_PERMISSIONS)[keyof typeof ADMIN_WORKSPACE_PERMISSIONS]>;
 
 export type AdminWorkspaceCardStatus = "available" | "planned";
 
