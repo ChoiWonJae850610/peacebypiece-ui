@@ -15,7 +15,7 @@ export default function PartnerMasterSection() {
   const controller = usePartnerMasterController(partnerText);
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col rounded-[32px] border border-stone-200 bg-white/95 p-5 shadow-sm backdrop-blur md:p-6">
+    <section className="flex min-h-0 flex-1 flex-col overflow-visible rounded-[32px] md:overflow-hidden border border-stone-200 bg-white/95 p-5 shadow-sm backdrop-blur md:p-6">
       <PartnerMasterHeader onOpenCreateModal={controller.openCreateModal} />
 
       <PartnerMasterSummaryCards
@@ -24,9 +24,6 @@ export default function PartnerMasterSection() {
         hasFilter={controller.listViewModel.hasSearch || controller.selectedStatus !== "all" || !controller.selectedTypes.includes("all")}
       />
 
-      <div className="mt-4 rounded-3xl border border-sky-100 bg-sky-50/70 px-4 py-3 text-sm leading-6 text-sky-900">
-        {partnerText.filters.summaryDescription}
-      </div>
 
       <PartnerMasterFilters
         searchTerm={controller.searchTerm}
@@ -43,7 +40,7 @@ export default function PartnerMasterSection() {
       />
 
       <PartnerMasterList
-        className="mt-5 min-h-0 flex-1"
+        className="mt-4 min-h-0 flex-1"
         items={controller.listViewModel.items}
         isLoading={controller.isLoadingPartners}
         onEditPartner={controller.openEditModal}

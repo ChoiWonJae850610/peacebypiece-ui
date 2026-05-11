@@ -1,7 +1,6 @@
 "use client";
 
 import type { PartnerSummaryViewModel } from "@/lib/admin/partner";
-import { PARTNER_TYPE_META } from "@/lib/admin/partner/constants";
 
 type PartnerMasterSummaryCardsProps = {
   summary: PartnerSummaryViewModel;
@@ -25,7 +24,7 @@ export default function PartnerMasterSummaryCards({
   summary,
   filteredSummary,
   hasFilter,
-  className = "mt-5",
+  className = "mt-4",
 }: PartnerMasterSummaryCardsProps) {
   const source = hasFilter ? filteredSummary : summary;
   const cards: SummaryCard[] = [
@@ -61,15 +60,8 @@ export default function PartnerMasterSummaryCards({
     },
   ];
 
-  const distribution = [
-    { key: "factory", label: PARTNER_TYPE_META.factory.shortLabel, value: source.typeCounts.factory, tone: PARTNER_TYPE_META.factory.tone },
-    { key: "material_vendor", label: PARTNER_TYPE_META.material_vendor.shortLabel, value: source.typeCounts.material_vendor, tone: PARTNER_TYPE_META.material_vendor.tone },
-    { key: "subsidiary_vendor", label: PARTNER_TYPE_META.subsidiary_vendor.shortLabel, value: source.typeCounts.subsidiary_vendor, tone: PARTNER_TYPE_META.subsidiary_vendor.tone },
-    { key: "outsourcing_vendor", label: PARTNER_TYPE_META.outsourcing_vendor.shortLabel, value: source.typeCounts.outsourcing_vendor, tone: PARTNER_TYPE_META.outsourcing_vendor.tone },
-  ];
-
   return (
-    <section className={`${className} space-y-3`} aria-label="협력업체 요약">
+    <section className={`${className} shrink-0`} aria-label="협력업체 요약">
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
         {cards.map((card) => (
           <article key={card.label} className={`rounded-3xl border px-4 py-4 shadow-sm ${card.tone}`}>
@@ -78,26 +70,6 @@ export default function PartnerMasterSummaryCards({
             <p className="mt-1 text-xs leading-5 text-stone-500">{card.helper}</p>
           </article>
         ))}
-      </div>
-
-      <div className="rounded-3xl border border-stone-200 bg-white px-4 py-4 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold text-stone-900">업체 유형 분포</p>
-            <p className="mt-1 text-xs text-stone-500">공장, 원단, 부자재, 외주 업체를 한 화면에서 확인합니다.</p>
-          </div>
-          <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">
-            {hasFilter ? "필터 결과 기준" : "전체 기준"}
-          </span>
-        </div>
-        <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-          {distribution.map((item) => (
-            <div key={item.key} className="flex items-center justify-between rounded-2xl border border-stone-100 bg-stone-50/70 px-3 py-2">
-              <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${item.tone}`}>{item.label}</span>
-              <span className="text-sm font-semibold text-stone-900">{formatCount(item.value)}개</span>
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   );

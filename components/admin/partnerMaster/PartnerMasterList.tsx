@@ -19,7 +19,7 @@ export default function PartnerMasterList({ items, isLoading = false, onEditPart
 
   return (
     <AdminTable
-      className={`${className} rounded-[28px] bg-white shadow-sm`}
+      className={`${className} md:min-h-[360px] rounded-[28px] bg-white shadow-sm`}
       items={items}
       isLoading={isLoading}
       loadingLabel={listText.loading}

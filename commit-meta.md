@@ -1,20 +1,17 @@
-Version : 0.10.16
-Summary : 감사 로그 행위자 표시 보정
-Description : 작업지시서 상태 변경 감사 로그에서 실제 조작자와 담당자가 섞여 보이던 문제를 보정했습니다. 상태 변경 요청에 auditActor를 함께 전달하고, 서버 감사 로그는 해당 값을 실제 행위자로 우선 기록합니다. 감사 로그 화면은 내부 사용자 ID 대신 이름과 역할을 함께 표시하도록 보정했습니다.
+Version : 0.10.17
+Summary : 고객관리자 협력업체 관리 화면 밀도 정리
+Description : 고객관리자 협력업체 관리 화면에서 중복되는 업체 유형 분포 카드와 파란색 도움말 안내 카드를 제거했습니다. 본문 중복 제목/설명을 없애고 상단 요약 카드 5개와 업체추가 버튼, 검색/필터, 내부 스크롤 목록 중심으로 화면 밀도를 정리했습니다. 협력업체 저장/수정/필터 로직과 DB schema, 감사 로그 흐름은 변경하지 않았습니다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- types/workorder.ts
-- lib/hooks/workorder/workorderRepositoryMutations.ts
-- lib/hooks/workorder/useWorkOrderWorkflowActions.ts
-- lib/hooks/workorder/useWorkOrderAdminActions.ts
-- lib/hooks/workorder/useWorkOrderLifecycleActions.ts
-- lib/workorder/api/workOrderRouteHandlers.ts
-- lib/system/audit/writeActions.ts
-- lib/system/audit/actionFlow.ts
+- components/admin/PartnerMasterSection.tsx
+- components/admin/partnerMaster/PartnerMasterHeader.tsx
+- components/admin/partnerMaster/PartnerMasterSummaryCards.tsx
+- components/admin/partnerMaster/PartnerMasterFilters.tsx
+- components/admin/partnerMaster/PartnerMasterList.tsx
 
 추가 파일 목록 :
-- docs/system-audit-logs-actor-label-0.10.16.md
+- docs/admin-partners-density-cleanup-0.10.17.md
 
 삭제 파일 목록 :
 - 없음
