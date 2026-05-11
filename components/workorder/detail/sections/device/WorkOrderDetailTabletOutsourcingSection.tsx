@@ -1,5 +1,5 @@
 import { useI18n } from "@/lib/i18n";
-import { OUTSOURCING_UNIT_OPTIONS } from "@/lib/constants/workorderOptions";
+import { useCompanyStandardOptions } from "@/lib/admin/settings/useCompanyStandardOptions";
 import { AddButton, DeleteButton, EditableValue, SectionHeader, type EditableCell, type EditableSectionKey } from "@/components/workorder/detail/shared/detailEditorShared";
 import type { Outsourcing } from "@/types/workorder";
 
@@ -35,6 +35,7 @@ export default function WorkOrderDetailTabletOutsourcingSection({
   locked = false,
 }: Props) {
   const { i18n } = useI18n();
+  const { priceBasisOptions } = useCompanyStandardOptions();
   const copy = i18n.workorder.ui.sections.outsourcing;
   const common = i18n.workorder.ui.common;
   const total = outsourcing.reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
@@ -69,7 +70,7 @@ export default function WorkOrderDetailTabletOutsourcingSection({
                 </div>
                 <div className="rounded-xl bg-white p-3">
                   <div className="text-xs text-stone-500">{copy.fields.unitType}</div>
-                  <div className="mt-1"><EditableValue section="outsourcing" rowId={item.id} field="unitType" value={item.unitType} options={OUTSOURCING_UNIT_OPTIONS} editingCell={editingCell} editingValue={editingValue} centered onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></div>
+                  <div className="mt-1"><EditableValue section="outsourcing" rowId={item.id} field="unitType" value={item.unitType} options={priceBasisOptions} editingCell={editingCell} editingValue={editingValue} centered onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></div>
                 </div>
                 <div className="rounded-xl bg-white p-3">
                   <div className="text-xs text-stone-500">{copy.fields.unitCost}</div>

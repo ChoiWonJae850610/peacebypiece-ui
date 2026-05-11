@@ -1,17 +1,20 @@
-Version : 0.10.43
-Summary : 고객관리자 기준정보 사용 여부 DB 연결
-Description : 고객관리자 환경설정의 단위 표준과 외주공정 유형을 시스템 표준 원장 기반 사용/미사용 선택형 기준정보로 DB 연결했습니다. 단위 표준은 company_enabled_unit_standards, 외주공정 유형은 company_enabled_process_standards에 고객사별 사용 여부를 저장합니다. 생산품 유형은 기존 고객사별 계층 관리 구조를 유지하고, 생산품 유형 템플릿 화면의 nullable records 타입 빌드 오류를 함께 수정했습니다.
+Version : 0.10.44
+Summary : 고객관리자 기준정보 업무 화면 연결
+Description : 생산품 유형 기본값 복원 후 저장이 회사 전용 기준정보로 유지되도록 조회 기준을 보정했습니다. 고객관리자가 사용 처리한 단위 표준을 작업지시서 자재 단위 선택지에 연결하고, 외주 단가 기준은 사용 단위에서 “단위명당” 형태로 파생되도록 했습니다. 외주공정 유형은 기존 협력업체 등록/수정 모달의 고객사 사용 여부 기반 선택 흐름을 점검하고 유지했습니다. DB schema와 시스템 기준정보 원장 CRUD, 감사 로그 흐름은 변경하지 않았습니다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- components/system/standards/SystemProductTemplateStandardsPage.tsx
 - lib/admin/settings/standardsRepository.ts
-- lib/partners/dbPartnerRepository.ts
-- components/admin/standards/AdminUnitManagementModal.tsx
-- components/admin/standards/AdminStandardsSection.tsx
+- components/workorder/detail/sections/MaterialSection.tsx
+- components/workorder/detail/sections/OutsourcingSection.tsx
+- components/workorder/detail/sections/device/WorkOrderDetailMobileMaterialSection.tsx
+- components/workorder/detail/sections/device/WorkOrderDetailMobileOutsourcingSection.tsx
+- components/workorder/detail/sections/device/WorkOrderDetailTabletMaterialSection.tsx
+- components/workorder/detail/sections/device/WorkOrderDetailTabletOutsourcingSection.tsx
 
 추가 파일 목록 :
-- docs/admin-company-standards-db-0.10.43.md
+- lib/admin/settings/useCompanyStandardOptions.ts
+- docs/admin-standards-workflow-options-0.10.44.md
 
 삭제 파일 목록 :
 - 없음

@@ -59,7 +59,7 @@ export async function getAdminStandards(): Promise<AdminStandardsPayload> {
   }
 
   const companyId = getWorkspaceCompanyContext().companyId;
-  const [unitsResult, categoriesResult] = await Promise.all([
+  const [unitsResult, companyCategoriesResult] = await Promise.all([
     queryDb<UnitRow>(
       `SELECT sus.id,
               $1::text AS company_id,
@@ -79,7 +79,7 @@ export async function getAdminStandards(): Promise<AdminStandardsPayload> {
     queryDb<ItemCategoryRow>(
       `SELECT id, company_id, parent_id, level, name, is_active, sort_order
        FROM item_categories
-       WHERE company_id = $1 OR company_id IS NULL
+       WHERE company_id = $1
        ORDER BY level ASC, sort_order ASC, name ASC`,
       [companyId],
     ),
@@ -89,8 +89,8 @@ export async function getAdminStandards(): Promise<AdminStandardsPayload> {
     units: unitsResult.rows.length > 0
       ? unitsResult.rows.map(normalizeUnit)
       : createDefaultUnitDefinitions(companyId),
-    itemCategories: categoriesResult.rows.length > 0
-      ? categoriesResult.rows.map(normalizeItemCategory)
+    itemCategories: companyCategoriesResult.rows.length > 0
+      ? companyCategoriesResult.rows.map(normalizeItemCategory)
       : createDefaultItemCategoryDefinitions(companyId),
     repository: { mode: "db", adapterConfigured: true, supportsWrite: true },
   };
