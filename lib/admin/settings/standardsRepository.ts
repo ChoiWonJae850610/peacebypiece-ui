@@ -86,12 +86,8 @@ export async function getAdminStandards(): Promise<AdminStandardsPayload> {
   ]);
 
   return {
-    units: unitsResult.rows.length > 0
-      ? unitsResult.rows.map(normalizeUnit)
-      : createDefaultUnitDefinitions(companyId),
-    itemCategories: companyCategoriesResult.rows.length > 0
-      ? companyCategoriesResult.rows.map(normalizeItemCategory)
-      : createDefaultItemCategoryDefinitions(companyId),
+    units: unitsResult.rows.map(normalizeUnit),
+    itemCategories: companyCategoriesResult.rows.map(normalizeItemCategory),
     repository: { mode: "db", adapterConfigured: true, supportsWrite: true },
   };
 }
@@ -169,25 +165,18 @@ export async function replaceAdminStandards(input: Partial<Pick<AdminStandardsPa
   }
 
   if (input.itemCategories) {
-    const categories = normalizeIncomingCategories(input.itemCategories);
+    const categories = normalizeIncomingCategories(input.itemCategories)
+      .sort((a, b) => a.level - b.level || a.sort_order - b.sort_order || a.name.localeCompare(b.name, "ko-KR"));
+
+    await queryDb("DELETE FROM item_categories WHERE company_id = $1", [companyId]);
+
     for (const category of categories) {
       await queryDb(
         `INSERT INTO item_categories (id, company_id, parent_id, level, name, is_active, sort_order)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
-         ON CONFLICT (id) DO UPDATE
-         SET company_id = EXCLUDED.company_id,
-             parent_id = EXCLUDED.parent_id,
-             level = EXCLUDED.level,
-             name = EXCLUDED.name,
-             is_active = EXCLUDED.is_active,
-             sort_order = EXCLUDED.sort_order,
-             updated_at = now()`,
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
         [category.id, companyId, category.parent_id, category.level, category.name, category.is_active, category.sort_order],
       );
     }
-    const ids = categories.map((category) => category.id);
-    if (ids.length === 0) await queryDb("DELETE FROM item_categories WHERE company_id = $1", [companyId]);
-    else await queryDb("DELETE FROM item_categories WHERE company_id = $1 AND id <> ALL($2::text[])", [companyId, ids]);
   }
 
   return getAdminStandards();

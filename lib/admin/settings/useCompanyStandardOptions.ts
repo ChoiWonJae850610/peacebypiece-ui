@@ -46,8 +46,13 @@ export function useCompanyStandardOptions() {
         );
 
         if (activeUnitLabels.length === 0) {
-          setMaterialUnitOptions(fallbackMaterialUnitOptions);
-          setPriceBasisOptions(fallbackPriceBasisOptions);
+          if (payload.repository?.mode === "fallback" || payload.error) {
+            setMaterialUnitOptions(fallbackMaterialUnitOptions);
+            setPriceBasisOptions(fallbackPriceBasisOptions);
+            return;
+          }
+          setMaterialUnitOptions([]);
+          setPriceBasisOptions([]);
           return;
         }
 

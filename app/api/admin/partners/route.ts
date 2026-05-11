@@ -48,14 +48,17 @@ async function buildPartnerMasterResponse(repository?: PartnerRepository) {
   const processRecords = targetRepository.listOutsourcingProcesses
     ? await targetRepository.listOutsourcingProcesses(false)
     : [];
+  const repositoryInfo = targetRepository.getRepositoryInfo();
   const processDefinitions = processRecords.length > 0
     ? mapOutsourcingProcessRecordsToDefinitions(processRecords)
-    : createDefaultOutsourcingProcessDefinitions();
+    : repositoryInfo.mode === "mock"
+      ? createDefaultOutsourcingProcessDefinitions()
+      : [];
 
   return {
     partners: mapPartnerDbRecordsToAdminPartners(partners, partnerItems),
     processDefinitions,
-    repository: targetRepository.getRepositoryInfo(),
+    repository: repositoryInfo,
   };
 }
 

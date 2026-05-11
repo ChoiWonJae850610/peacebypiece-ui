@@ -79,8 +79,8 @@ export default function AdminStandardsSection({ mode = "full" }: AdminStandardsS
     fetchAdminStandardsFromApi()
       .then((payload) => {
         if (!isMounted) return;
-        setUnitDefinitions(payload.units.length > 0 ? payload.units : createDefaultUnitDefinitions());
-        setItemCategoryDefinitions(payload.itemCategories.length > 0 ? payload.itemCategories : createDefaultItemCategoryDefinitions());
+        setUnitDefinitions(Array.isArray(payload.units) ? payload.units : []);
+        setItemCategoryDefinitions(Array.isArray(payload.itemCategories) ? payload.itemCategories : []);
       })
       .catch(() => {
         if (!isMounted) return;
@@ -179,7 +179,7 @@ export default function AdminStandardsSection({ mode = "full" }: AdminStandardsS
     setStandardFormError("");
     saveAdminUnitsToApi(nextUnits)
       .then((payload) => {
-        setUnitDefinitions(payload.units.length > 0 ? payload.units : nextUnits);
+        setUnitDefinitions(Array.isArray(payload.units) ? payload.units : nextUnits);
         setIsUnitModalOpen(false);
       })
       .catch(() => setStandardFormError(t("standards.section.saveUnitFailed", "단위 저장에 실패했습니다. DB 연결 상태를 확인하세요.")))
@@ -191,7 +191,7 @@ export default function AdminStandardsSection({ mode = "full" }: AdminStandardsS
     setStandardFormError("");
     saveAdminItemCategoriesToApi(nextCategories)
       .then((payload) => {
-        setItemCategoryDefinitions(payload.itemCategories.length > 0 ? payload.itemCategories : nextCategories);
+        setItemCategoryDefinitions(Array.isArray(payload.itemCategories) ? payload.itemCategories : nextCategories);
         setIsItemCategoryModalOpen(false);
       })
       .catch(() => setStandardFormError(t("standards.section.saveItemFailed", "품목 저장에 실패했습니다. DB 연결 상태를 확인하세요.")))
@@ -213,9 +213,9 @@ export default function AdminStandardsSection({ mode = "full" }: AdminStandardsS
   ];
 
   const standardActions: StandardAction[] = [
-    { key: "items", title: t("standards.actions.items.title", "생산품 유형"), description: `${itemCategoryDefinitions.filter((item) => item.is_active).length}${t("standards.common.inUseSuffix", "개 사용중")}`, statusLabel: t("standards.common.manage", "관리"), onClick: () => setIsItemCategoryModalOpen(true) },
-    { key: "units", title: t("standards.actions.units.title", "단위 표준"), description: `${unitDefinitions.filter((unit) => unit.is_active).length}${t("standards.common.inUseSuffix", "개 사용중")}`, statusLabel: t("standards.common.manage", "관리"), onClick: () => setIsUnitModalOpen(true) },
-    { key: "processes", title: t("standards.actions.processes.title", "외주 공정 유형"), description: `${activeProcessDefinitions.length}${t("standards.common.inUseSuffix", "개 사용중")}`, statusLabel: t("standards.common.manage", "관리"), onClick: openProcessModal },
+    { key: "items", title: t("standards.actions.items.title", "생산품 유형"), description: `${itemCategoryDefinitions.filter((item) => item.is_active).length}/${itemCategoryDefinitions.length}${t("standards.common.inUseSuffix", "개 사용중")}`, statusLabel: t("standards.common.manage", "관리"), onClick: () => setIsItemCategoryModalOpen(true) },
+    { key: "units", title: t("standards.actions.units.title", "단위 표준"), description: `${unitDefinitions.filter((unit) => unit.is_active).length}/${unitDefinitions.length}${t("standards.common.inUseSuffix", "개 사용중")}`, statusLabel: t("standards.common.manage", "관리"), onClick: () => setIsUnitModalOpen(true) },
+    { key: "processes", title: t("standards.actions.processes.title", "외주 공정 유형"), description: `${activeProcessDefinitions.length}/${processDraftDefinitions.length}${t("standards.common.inUseSuffix", "개 사용중")}`, statusLabel: t("standards.common.manage", "관리"), onClick: openProcessModal },
   ];
 
   const renderActionGrid = (actions: StandardAction[]) => (
