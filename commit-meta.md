@@ -1,23 +1,21 @@
 Version :
-0.10.63
+0.10.64
 
 Summary :
-고객사 가입 신청 화면 추가
+시스템관리자 고객사 승인과 회사 생성 화면 추가
 
 Description :
-시스템관리자 고객사 초대 링크로 접속하는 /invite/company/[token] 화면을 추가하고, 고객사 가입 신청 항목과 승인 전 회사 미생성 정책을 presentation 데이터로 분리했다. 시스템관리자 고객사 초대 화면의 가입 신청 화면 미리보기 액션도 새 경로로 연결했다.
+시스템관리자가 고객사 초대 링크로 들어온 가입 신청을 검토하고 고객사 생성, 고객관리자 승인, 권한 부여, 초기 기준정보 복사 흐름을 확인할 수 있는 /system/companies 화면을 추가했다. 시스템 콘솔의 고객사 관리 링크도 승인 화면으로 연결했다.
 
 수정 파일 목록 :
-- components/system/invitations/SystemCustomerInviteSkeleton.tsx
-- lib/invitations/index.ts
-- lib/system/systemCustomerInviteSkeleton.ts
+- lib/system/systemConsoleShell.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- app/invite/company/[token]/page.tsx
-- components/invitations/CompanyInvitationJoinRequestPage.tsx
-- lib/invitations/companyInvitationJoinRequestPresentation.ts
-- docs/company-invite-join-request-screen-0.10.63.md
+- app/system/companies/page.tsx
+- components/system/companies/SystemCompanyApprovalConsole.tsx
+- lib/system/systemCompanyApprovalConsole.ts
+- docs/system-company-approval-create-company-0.10.64.md
 
 삭제 파일 목록 :
 없음

@@ -52,9 +52,9 @@ export const SYSTEM_CONSOLE_TABS: SystemConsoleTab[] = [
     id: "companies",
     label: "고객사 관리",
     description: "고객사, 고객사 관리자, 사용 상태를 관리할 영역입니다.",
-    statusLabel: "API 준비",
-    status: "api",
-    apiPath: "/api/system/companies",
+    statusLabel: "승인 화면",
+    status: "linked",
+    href: "/system/companies",
   },
   {
     id: "invites",
@@ -144,10 +144,10 @@ export const SYSTEM_CONSOLE_PLACEHOLDERS: SystemConsolePlaceholder[] = [
     id: "companies",
     title: "고객사 관리",
     description:
-      "SaaS형 테넌트 구조를 위한 고객사 목록, 관리자, 사용 상태 관리 API의 자리입니다.",
-    items: ["고객사 목록", "고객사 관리자", "사용/중지 상태", "고객별 기본 설정"],
-    apiPath: "/api/system/companies",
-    actionLabel: "고객사 API 확인",
+      "SaaS형 테넌트 구조를 위한 고객사 승인, 회사 생성, 고객관리자 권한 확정 화면입니다.",
+    items: ["가입 신청 검토", "고객사 생성", "고객관리자 승인", "초기 기준정보 연결"],
+    href: "/system/companies",
+    actionLabel: "고객사 승인 화면 열기",
   },
   {
     id: "invites",
@@ -187,6 +187,12 @@ export const SYSTEM_CONSOLE_PLACEHOLDERS: SystemConsolePlaceholder[] = [
 ];
 
 export const SYSTEM_CONSOLE_QUICK_LINKS = [
+  {
+    id: "system-companies",
+    label: "고객사 승인",
+    href: "/system/companies",
+    description: "고객사 가입 신청 검토와 회사 생성 승인",
+  },
   {
     id: "system-invites",
     label: "고객 초대",
