@@ -34,7 +34,11 @@ function sortProcessesByLabel(items: OutsourcingProcessDefinition[]) {
   return items.slice().sort((a, b) => a.label.localeCompare(b.label, "ko-KR"));
 }
 
-export default function AdminStandardsSection() {
+type AdminStandardsSectionProps = {
+  mode?: "full" | "standards-only";
+};
+
+export default function AdminStandardsSection({ mode = "full" }: AdminStandardsSectionProps) {
   const notificationTools = useAdminWorkspaceTools();
   const t = useAdminTranslation();
   const [processDefinitions, setProcessDefinitions] = useState<OutsourcingProcessDefinition[]>(createDefaultOutsourcingProcessDefinitions());
@@ -235,12 +239,16 @@ export default function AdminStandardsSection() {
     </div>
   );
 
+  const showPolicySection = mode === "full";
+
   return (
     <section className="flex min-h-0 flex-1 flex-col gap-3">
-      <div className="flex min-h-0 flex-1 flex-col rounded-[28px] border border-stone-200 bg-white p-4 shadow-sm">
-        <h2 className="shrink-0 text-lg font-semibold text-stone-950">{t("standards.section.policyTitle", "정책 관리")}</h2>
-        <div className="mt-3">{renderActionGrid(policyActions)}</div>
-      </div>
+      {showPolicySection ? (
+        <div className="flex min-h-0 flex-1 flex-col rounded-[28px] border border-stone-200 bg-white p-4 shadow-sm">
+          <h2 className="shrink-0 text-lg font-semibold text-stone-950">{t("standards.section.policyTitle", "정책 관리")}</h2>
+          <div className="mt-3">{renderActionGrid(policyActions)}</div>
+        </div>
+      ) : null}
       <div className="flex min-h-0 flex-1 flex-col rounded-[28px] border border-stone-200 bg-white p-4 shadow-sm">
         <h2 className="shrink-0 text-lg font-semibold text-stone-950">{t("standards.section.standardTitle", "기준 관리")}</h2>
         <div className="mt-3">{renderActionGrid(standardActions)}</div>

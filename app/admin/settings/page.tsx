@@ -1,57 +1,19 @@
 import AdminShell from "@/components/admin/layout/AdminShell";
-import AdminOrganizationSettingsSummary from "@/components/admin/settings/AdminOrganizationSettingsSummary";
-import AdminPolicyOverview from "@/components/admin/settings/AdminPolicyOverview";
-import AdminUserAccessPreview from "@/components/admin/settings/AdminUserAccessPreview";
-import AdminStandardsSection from "@/components/admin/standards/AdminStandardsSection";
+import AdminSettingsHub from "@/components/admin/settings/AdminSettingsHub";
 import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
-import { buildDefaultCompanySettings } from "@/lib/admin/settings/companyDefaults";
-import { getCurrentAdminCompany, getCompanySettings } from "@/lib/admin/settings/companyRepository";
-import type { CompanySettings } from "@/lib/admin/settings/companyTypes";
-import { listCompanyUserAccessProfiles } from "@/lib/admin/settings/userAccessRepository";
-import type { AdminUserAccessSourceState } from "@/lib/admin/settings/userAccessPresentation";
 import { APP_VERSION } from "@/lib/constants/app";
-import { WORKSPACE_COMPANY_ID, WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
-import { WORKORDER_SEED_USERS } from "@/lib/data/mock/users";
-import { getI18n } from "@/lib/i18n";
-import type { UserProfile } from "@/types/user";
+import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
 
-async function getInitialSettings(): Promise<{ companyName: string; settings: CompanySettings }> {
-  try {
-    const company = await getCurrentAdminCompany();
-    const settings = await getCompanySettings(company.id);
-    return { companyName: company.name, settings };
-  } catch {
-    return { companyName: WORKSPACE_COMPANY_NAME, settings: buildDefaultCompanySettings(WORKSPACE_COMPANY_ID) };
-  }
-}
-
-async function getInitialUserAccess(): Promise<{ users: UserProfile[]; sourceState: AdminUserAccessSourceState }> {
-  try {
-    const users = await listCompanyUserAccessProfiles();
-    return { users: users.length > 0 ? users : WORKORDER_SEED_USERS, sourceState: users.length > 0 ? "db-connected" : "db-prepared" };
-  } catch {
-    return { users: WORKORDER_SEED_USERS, sourceState: "mock-fallback" };
-  }
-}
-
-export default async function AdminSettingsPage() {
-  const pageText = getI18n().admin.settingsForm;
-  const { companyName, settings } = await getInitialSettings();
-  const userAccess = await getInitialUserAccess();
-
+export default function AdminSettingsPage() {
   return (
     <AdminShell
-      companyName={companyName}
+      companyName={WORKSPACE_COMPANY_NAME}
       appVersion={APP_VERSION}
       navigationItems={getAdminNavigationItems("/admin/settings")}
-      title={pageText.title}
+      title="환경설정"
+      description="회사 운영 기준과 계정 관련 설정을 관리합니다."
     >
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1">
-        <AdminOrganizationSettingsSummary settings={settings} companyName={companyName} />
-        <AdminPolicyOverview settings={settings} />
-        <AdminUserAccessPreview users={userAccess.users} sourceState={userAccess.sourceState} />
-        <AdminStandardsSection />
-      </div>
+      <AdminSettingsHub />
     </AdminShell>
   );
 }

@@ -1,0 +1,86 @@
+export type AdminSettingsMenuId = "standards" | "notifications" | "billing" | "account" | "feedback";
+
+export type AdminSettingsMenuTone = "stone" | "blue" | "amber" | "emerald" | "violet";
+
+export type AdminSettingsMenuItem = {
+  id: AdminSettingsMenuId;
+  title: string;
+  description: string;
+  statusLabel: string;
+  tone: AdminSettingsMenuTone;
+  detailItems: readonly string[];
+};
+
+export const ADMIN_SETTINGS_MENU_ITEMS: readonly AdminSettingsMenuItem[] = [
+  {
+    id: "standards",
+    title: "기준정보 설정",
+    description: "작업지시서 생성과 협력업체 선택에 쓰는 회사 기준값을 관리합니다.",
+    statusLabel: "관리 가능",
+    tone: "stone",
+    detailItems: ["생산품 유형", "단위 표준", "외주공정 유형"],
+  },
+  {
+    id: "notifications",
+    title: "알림 정책",
+    description: "검토요청, 납기 지연, 저장소 용량, 권한 변경 알림 기준을 준비합니다.",
+    statusLabel: "개발중",
+    tone: "amber",
+    detailItems: ["검토요청 알림", "납기/저장소 알림", "권한 변경 알림"],
+  },
+  {
+    id: "billing",
+    title: "요금제·결제",
+    description: "요금제, 결제수단, 저장소 용량 변경 요청을 관리할 영역입니다.",
+    statusLabel: "준비중",
+    tone: "blue",
+    detailItems: ["요금제 변경", "결제수단 변경", "용량 증설 요청"],
+  },
+  {
+    id: "account",
+    title: "계정 설정",
+    description: "대표 메일, 회사 계정 정보, 회원 탈퇴 요청을 관리할 영역입니다.",
+    statusLabel: "준비중",
+    tone: "emerald",
+    detailItems: ["대표 메일 변경", "회사 계정 정보", "회원 탈퇴 요청"],
+  },
+  {
+    id: "feedback",
+    title: "개발 건의",
+    description: "시스템 개발자에게 개선 요청과 기능 건의를 전달할 영역입니다.",
+    statusLabel: "준비중",
+    tone: "violet",
+    detailItems: ["기능 건의", "불편사항 접수", "개선 요청"],
+  },
+] as const;
+
+export const ADMIN_SETTINGS_NOTICE_BY_ID: Record<Exclude<AdminSettingsMenuId, "standards">, { title: string; description: string; nextStep: string; items: readonly string[] }> = {
+  notifications: {
+    title: "알림 정책은 개발중입니다.",
+    description: "검토요청, 납기 지연, 저장소 용량, 권한 변경 알림을 순차적으로 지원할 예정입니다.",
+    nextStep: "2026년 하반기 이후 순차 적용 예정입니다.",
+    items: ["검토요청/검토완료 알림", "납기 지연 알림", "저장소 용량 알림", "권한 변경 알림"],
+  },
+  billing: {
+    title: "요금제·결제 관리는 준비중입니다.",
+    description: "요금제 변경, 결제수단 변경, 저장소 용량 증설 요청을 고객관리자 화면에서 처리할 수 있도록 준비합니다.",
+    nextStep: "정식 결제 연동 전까지는 시스템관리자 문의 흐름으로 연결할 예정입니다.",
+    items: ["요금제 변경 요청", "결제수단 변경", "저장소 용량 증설", "청구 정보 확인"],
+  },
+  account: {
+    title: "계정 설정은 준비중입니다.",
+    description: "대표 이메일 변경, 회사 계정 정보 변경, 회원 탈퇴 요청을 안전하게 처리할 수 있는 절차를 준비합니다.",
+    nextStep: "정식 로그인/회원 시스템 연결 후 단계적으로 활성화합니다.",
+    items: ["대표 이메일 변경", "회사명/관리자 정보 변경", "회원 탈퇴 요청", "계정 보안 확인"],
+  },
+  feedback: {
+    title: "개발 건의 접수는 준비중입니다.",
+    description: "고객관리자가 시스템 개발자에게 기능 개선 요청과 오류 제보를 보낼 수 있는 메뉴입니다.",
+    nextStep: "초기에는 접수 화면을 준비하고, 이후 시스템관리자 검토 화면과 연결할 예정입니다.",
+    items: ["기능 개선 건의", "업무 흐름 불편사항", "오류 제보", "우선순위 검토"],
+  },
+};
+
+export function getAdminSettingsMenuItem(id: AdminSettingsMenuId): AdminSettingsMenuItem | undefined {
+  return ADMIN_SETTINGS_MENU_ITEMS.find((item) => item.id === id);
+}
