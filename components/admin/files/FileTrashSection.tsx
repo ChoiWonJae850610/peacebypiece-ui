@@ -235,8 +235,8 @@ export default function FileTrashSection({
 
       <AdminTable
         className="mt-2 min-h-0 flex-1"
-        headerClassName="hidden shrink-0 gap-3 bg-stone-50 px-4 py-1.5 text-[10px] font-semibold text-stone-500 md:grid"
-        rowBaseClassName="grid w-full gap-3 px-4 py-1.5 text-left text-[11px] md:items-center"
+        headerClassName="hidden shrink-0 gap-3 bg-stone-50 px-3.5 py-1.5 text-[10px] font-semibold text-stone-500 md:grid"
+        rowBaseClassName="grid w-full gap-3 px-3.5 py-1.5 text-left text-[11px] md:items-center"
         items={sortedRows}
         getRowKey={(row) => row.rowId}
         emptyLabel={t(

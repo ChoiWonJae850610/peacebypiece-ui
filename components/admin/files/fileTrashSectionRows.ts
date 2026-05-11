@@ -66,15 +66,15 @@ export type TrashSortState = {
 };
 
 export const TRASH_TABLE_GRID =
-  "56px minmax(260px,1fr) 136px minmax(160px,0.75fr) 96px 96px";
+  "50px minmax(280px,1.2fr) 128px minmax(180px,0.85fr) 104px 82px";
 export const TRASH_HEADER_CENTER_CLASS = "text-center";
 export const TRASH_HEADER_LEFT_CLASS = "text-left";
 export const TRASH_CELL_CENTER_CLASS =
-  "flex h-full min-h-[40px] w-full items-center justify-center text-center";
+  "flex h-full min-h-[38px] w-full items-center justify-center text-center";
 export const TRASH_CELL_TARGET_CLASS =
-  "flex h-full min-h-[40px] w-full items-center justify-start text-left";
+  "flex h-full min-h-[38px] w-full items-center justify-start text-left";
 export const TRASH_CELL_SELECT_CLASS =
-  "flex h-full min-h-[40px] w-full items-center justify-center text-center";
+  "flex h-full min-h-[38px] w-full items-center justify-center text-center";
 
 export const WORKORDER_STAGE_STEPS = [
   { key: "draft", keys: ["draft", "working", "작성중", "작업중"], label: "작성중" },

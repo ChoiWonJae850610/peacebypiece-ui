@@ -160,11 +160,44 @@ function CenterTextCell({
         <p className="text-[10px] text-stone-400 md:hidden">{mobileLabel}</p>
       ) : null}
       <p
-        className={`truncate text-center text-[13px] ${isStrong ? "font-medium" : ""} text-stone-600`}
+        className={`truncate text-center text-[12px] ${isStrong ? "font-semibold text-stone-700" : "text-stone-600"}`}
         title={title ?? value}
       >
         {value}
       </p>
+    </div>
+  );
+}
+
+function WorkOrderCell({
+  value,
+  mobileLabel,
+}: {
+  value: string;
+  mobileLabel: string;
+}) {
+  return (
+    <div className="min-w-0 text-center">
+      <p className="text-[10px] text-stone-400 md:hidden">{mobileLabel}</p>
+      <p
+        className="mx-auto max-w-[220px] truncate text-center text-[12px] font-medium text-stone-700"
+        title={value}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function TypeBadgeCell({ value }: { value: string }) {
+  return (
+    <div className="flex min-w-0 justify-center">
+      <span
+        className="max-w-[92px] truncate rounded-full bg-stone-100 px-2.5 py-1 text-center text-[11px] font-semibold text-stone-600"
+        title={value}
+      >
+        {value}
+      </span>
     </div>
   );
 }
@@ -232,11 +265,9 @@ export function createFileTrashColumns({
       headerClassName: TRASH_HEADER_CENTER_CLASS,
       className: TRASH_CELL_CENTER_CLASS,
       render: (row) => (
-        <CenterTextCell
+        <WorkOrderCell
           value={row.kind === "workorder" ? "-" : row.workorderTitle}
-          title={row.kind === "workorder" ? "-" : row.workorderTitle}
           mobileLabel={t("filesList.columns.workorder", "작업지시서")}
-          isStrong
         />
       ),
     },
@@ -252,7 +283,7 @@ export function createFileTrashColumns({
       ),
       headerClassName: TRASH_HEADER_CENTER_CLASS,
       className: TRASH_CELL_CENTER_CLASS,
-      render: (row) => <CenterTextCell value={row.typeLabel} />,
+      render: (row) => <TypeBadgeCell value={row.typeLabel} />,
     },
     {
       key: "size",
@@ -266,7 +297,7 @@ export function createFileTrashColumns({
       ),
       headerClassName: TRASH_HEADER_CENTER_CLASS,
       className: TRASH_CELL_CENTER_CLASS,
-      render: (row) => <CenterTextCell value={row.sizeLabel} />,
+      render: (row) => <CenterTextCell value={row.sizeLabel} isStrong />,
     },
   ];
 }
