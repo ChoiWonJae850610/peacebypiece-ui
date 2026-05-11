@@ -139,16 +139,16 @@ export const SYSTEM_AUDIT_LOG_SCHEMA_FIELDS: SystemAuditLogSchemaField[] = [
   { name: "id", purpose: "감사 로그 고유 ID", required: true },
   { name: "created_at", purpose: "이벤트 발생 시각", required: true },
   { name: "actor_user_id", purpose: "행위자 사용자 ID", required: false },
-  { name: "actor_role", purpose: "행위자 역할", required: true },
+  { name: "actor_role", purpose: "system_admin, customer_admin 등 구조화된 행위자 역할", required: true },
   { name: "company_id", purpose: "대상 고객사 ID. 시스템 전체 이벤트는 null 허용", required: false },
-  { name: "target_type", purpose: "company, work_order, file, plan 등 대상 유형", required: true },
+  { name: "target_type", purpose: "company, member, plan, storage, work_order 등 대상 유형", required: true },
   { name: "target_id", purpose: "대상 레코드 ID", required: false },
   { name: "event_type", purpose: "domain.action 형식의 이벤트 코드", required: true },
   { name: "severity", purpose: "low, medium, high, critical", required: true },
   { name: "summary", purpose: "목록 표시용 짧은 요약", required: true },
   { name: "metadata", purpose: "변경 전후 값, 파일 수, 용량 등 구조화 JSON", required: false },
   { name: "request_id", purpose: "API 요청 추적 ID", required: false },
-  { name: "ip_address", purpose: "접근 위치 추적용 IP. 개인정보 정책 확정 후 저장 여부 결정", required: false },
+  { name: "ip_address", purpose: "접근 위치 추적용 inet 값. 필요 시 null 허용", required: false },
 ];
 
 export const SYSTEM_AUDIT_LOG_IMPLEMENTATION_STEPS: SystemAuditLogImplementationStep[] = [
@@ -156,7 +156,7 @@ export const SYSTEM_AUDIT_LOG_IMPLEMENTATION_STEPS: SystemAuditLogImplementation
     versionHint: "0.10.10",
     title: "audit_logs DB 설계 확정",
     description:
-      "기존 history_logs를 유지할지, audit_logs를 새로 둘지 결정합니다. 시스템관리자 원장 로그는 별도 audit_logs 테이블이 더 적합합니다.",
+      "0.10.10에서 시스템관리자 원장 로그를 별도 audit_logs 테이블로 확정합니다. 고객관리자 history_logs는 최소 업무 이력으로 유지합니다.",
   },
   {
     versionHint: "0.10.11",
@@ -177,3 +177,12 @@ export const SYSTEM_AUDIT_LOG_IMPLEMENTATION_STEPS: SystemAuditLogImplementation
       "고객사, 초대, 요금제·용량, 저장소 purge, 멤버 권한 변경 지점부터 audit log 작성을 붙입니다.",
   },
 ];
+
+
+export const SYSTEM_AUDIT_LOG_DB_DECISIONS = [
+  "시스템관리자 감사 원장은 history_logs와 분리해 audit_logs 테이블로 둔다.",
+  "history_logs는 고객관리자 업무 흐름 요약용 최소 이력으로 유지한다.",
+  "event_type은 화면 문구가 아닌 domain.action 코드 형식으로 저장한다.",
+  "metadata는 변경 전후 값, 파일 수, 용량, 실패 코드 같은 구조화 JSON만 저장한다.",
+  "ip_address는 선택값으로 두고 화면 필터와 요약에는 기본 노출하지 않는다.",
+] as const;

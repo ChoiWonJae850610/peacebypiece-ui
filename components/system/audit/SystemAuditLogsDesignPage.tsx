@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import {
+  SYSTEM_AUDIT_LOG_DB_DECISIONS,
   SYSTEM_AUDIT_LOG_IMPLEMENTATION_STEPS,
   SYSTEM_AUDIT_LOG_SCHEMA_FIELDS,
   SYSTEM_AUDIT_LOG_SCOPES,
@@ -87,9 +88,9 @@ export default function SystemAuditLogsDesignPage() {
 
         <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold text-stone-950">권장 스키마 초안</h2>
+            <h2 className="text-lg font-semibold text-stone-950">확정 스키마</h2>
             <p className="mt-2 text-sm leading-6 text-stone-600">
-              이번 버전은 DB를 변경하지 않습니다. 아래 필드는 다음 DB 설계 단계에서 audit_logs 테이블 후보로 검토합니다.
+              0.10.10에서 audit_logs 테이블을 확정했습니다. 아래 필드는 DB patch와 full_reset에 반영된 기준입니다.
             </p>
             <div className="mt-4 overflow-hidden rounded-2xl border border-stone-200">
               <table className="w-full text-left text-xs">
@@ -111,6 +112,21 @@ export default function SystemAuditLogsDesignPage() {
                 </tbody>
               </table>
             </div>
+          </article>
+
+
+          <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+            <h2 className="text-lg font-semibold text-stone-950">DB 설계 확정 기준</h2>
+            <p className="mt-2 text-sm leading-6 text-stone-600">
+              고객관리자 history_logs와 시스템관리자 audit_logs를 분리해 운영 로그의 책임 범위를 명확히 합니다.
+            </p>
+            <ul className="mt-4 space-y-2 text-xs leading-5 text-stone-600">
+              {SYSTEM_AUDIT_LOG_DB_DECISIONS.map((decision) => (
+                <li key={decision} className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2">
+                  {decision}
+                </li>
+              ))}
+            </ul>
           </article>
 
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">

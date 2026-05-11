@@ -46,6 +46,8 @@ BEGIN
       ('orders', to_regclass('public.orders')),
       ('attachments', to_regclass('public.attachments')),
       ('memos', to_regclass('public.memos')),
+      ('audit_logs', to_regclass('public.audit_logs')),
+      ('history_logs', to_regclass('public.history_logs')),
       ('partners', to_regclass('public.partners')),
       ('partner_items', to_regclass('public.partner_items')),
       ('material_orders', to_regclass('public.material_orders')),
@@ -112,7 +114,17 @@ BEGIN
       ('attachment_trash_items', 'delete_parent_id'),
       ('attachment_trash_items', 'delete_batch_id'),
       ('attachment_trash_items', 'purge_requested_by'),
-      ('attachment_trash_items', 'purge_failure_code')
+      ('attachment_trash_items', 'purge_failure_code'),
+      ('audit_logs', 'actor_role'),
+      ('audit_logs', 'company_id'),
+      ('audit_logs', 'target_type'),
+      ('audit_logs', 'target_id'),
+      ('audit_logs', 'event_type'),
+      ('audit_logs', 'severity'),
+      ('audit_logs', 'summary'),
+      ('audit_logs', 'metadata'),
+      ('audit_logs', 'request_id'),
+      ('audit_logs', 'ip_address')
   ) AS required_columns(table_name, column_name)
   WHERE NOT EXISTS (
     SELECT 1
@@ -256,7 +268,10 @@ BEGIN
       ('attachments_company_size_idx'),
       ('company_workorder_daily_stats_company_date_idx'),
       ('company_workorder_monthly_stats_company_month_idx'),
-      ('company_storage_daily_stats_company_date_idx')
+      ('company_storage_daily_stats_company_date_idx'),
+      ('audit_logs_company_created_idx'),
+      ('audit_logs_company_event_idx'),
+      ('audit_logs_target_idx')
   ) AS required_indexes(index_name)
   WHERE to_regclass('public.' || required_indexes.index_name) IS NULL;
 
@@ -287,7 +302,8 @@ SELECT
   (SELECT count(*) FROM role_catalog) AS roles,
   (SELECT count(*) FROM permission_catalog) AS permissions,
   (SELECT count(*) FROM plans) AS plans,
-  (SELECT count(*) FROM storage_usage_snapshots) AS storage_snapshots;
+  (SELECT count(*) FROM storage_usage_snapshots) AS storage_snapshots,
+  (SELECT count(*) FROM audit_logs) AS audit_logs;
 
 
 -- 0.9.22417: deleted_at columns used by storage/trash must use timestamptz.
