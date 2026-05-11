@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import {
-  getAdminWorkspaceFuturePermissionCards,
   getAdminWorkspaceManagementCards,
   getAdminWorkspaceWorkEntryCard,
   type AdminWorkspaceCard,
@@ -69,8 +68,6 @@ function AdminWorkspaceCardView({ item }: { item: AdminWorkspaceCard }) {
 export default function AdminConsoleSections() {
   const t = useAdminTranslation();
   const managementCards = [getAdminWorkspaceWorkEntryCard(), ...getAdminWorkspaceManagementCards()];
-  const futurePermissionCards = getAdminWorkspaceFuturePermissionCards();
-
   return (
     <>
       <section className="rounded-3xl border border-stone-200 bg-white/80 p-4 shadow-sm">
@@ -81,15 +78,6 @@ export default function AdminConsoleSections() {
         </div>
         <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
           {managementCards.map((item) => (
-            <AdminWorkspaceCardView key={item.id} item={item} />
-          ))}
-        </div>
-      </section>
-
-      <section className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm">
-        <h2 className="text-lg font-semibold text-stone-950">{t("adminConsole.futurePermissions.title", "기준정보")}</h2>
-        <div className="mt-3 grid gap-3 md:grid-cols-3">
-          {futurePermissionCards.map((item) => (
             <AdminWorkspaceCardView key={item.id} item={item} />
           ))}
         </div>

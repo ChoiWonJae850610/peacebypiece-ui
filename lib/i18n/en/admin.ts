@@ -143,6 +143,25 @@ export const adminEn = {
     systemOnlyCount: "{count} system-only",
     matrixEnabledCount: "{count} default checks",
     actions: { openOrganizationSettings: "Open organization settings", createInvite: "Create invitation link" },
+    inviteBuilder: {
+      eyebrow: "Invitation link and QR",
+      title: "Invitation link/QR screen",
+      description: "Review the fields, default permission bundle, and approval-waiting flow before creating a link and QR for an internal member.",
+      cards: {
+        link: { label: "Invitation link", description: "Create a token-based join-request link." },
+        qr: { label: "QR", description: "Share the same invitation link as a QR code." },
+        approval: { label: "Approval waiting", description: "A customer admin approves the user after the join request." }
+      },
+      fields: { targetName: "Invitee name", targetContact: "Email or phone", roleTemplate: "Default permission bundle", expires: "Invitation expiry" },
+      placeholders: { targetName: "Example: Designer Kim", targetContact: "Optional" },
+      expires: { "3d": "3 days", "7d": "7 days", "14d": "14 days" },
+      previewLinkLabel: "Invitation link preview",
+      actions: { copy: "Copy link", create: "Create invitation" },
+      disabledNotice: "Actual token creation, persistence, and copy actions will be enabled after the invitations API is connected.",
+      qrTitle: "QR preview",
+      qrDescription: "The QR will render the real invitation token after the invitation-link API is connected.",
+      selectedRole: "Selected role {role} · {count} permissions"
+    },
     statuses: { ready: "Connected", planned: "Planned", pending: "Pending" },
     sourceState: { dbPending: "DB connection planned" },
     summary: {

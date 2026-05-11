@@ -1,10 +1,14 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   getInvitationTableColumns,
   getJoinRequestTableColumns,
   getMemberInvitationPreviews,
+  getMemberInvitationSetupCards,
+  getMemberInviteQrPreviewRows,
+  getMemberInviteRoleOptions,
   getMemberJoinRequestPreviews,
   getMemberListPreviews,
   getMemberManagementPermissionCards,
@@ -33,17 +37,41 @@ function EmptyState({ title, description }: { title: string; description: string
   );
 }
 
+function QrPreview({ rows }: { rows: readonly (readonly boolean[])[] }) {
+  return (
+    <div className="grid size-36 grid-cols-9 rounded-2xl border border-stone-200 bg-white p-2 shadow-inner" aria-hidden="true">
+      {rows.flatMap((row, rowIndex) =>
+        row.map((enabled, columnIndex) => (
+          <span
+            key={`${rowIndex}-${columnIndex}`}
+            className={enabled ? "m-0.5 rounded-sm bg-stone-900" : "m-0.5 rounded-sm bg-stone-100"}
+          />
+        )),
+      )}
+    </div>
+  );
+}
+
 export default function AdminMemberManagementDashboard() {
   const t = useAdminTranslation();
   const summaryCards = getMemberManagementSummaryCards();
   const roles = getMemberRolePreviews();
   const permissionCards = getMemberManagementPermissionCards();
+  const invitationSetupCards = getMemberInvitationSetupCards();
+  const inviteRoleOptions = getMemberInviteRoleOptions();
+  const inviteQrPreviewRows = getMemberInviteQrPreviewRows();
   const groups = getMemberPermissionGroupPreviews();
   const catalogItems = getMemberPermissionCatalogPreviews();
   const matrixItems = getMemberPermissionMatrixPreviews();
   const memberColumns = getMemberTableColumns();
   const invitationColumns = getInvitationTableColumns();
   const joinRequestColumns = getJoinRequestTableColumns();
+  const [selectedRoleId, setSelectedRoleId] = useState<string>(inviteRoleOptions[1]?.id ?? inviteRoleOptions[0]?.id ?? "viewer");
+  const selectedRole = useMemo(
+    () => inviteRoleOptions.find((role) => role.id === selectedRoleId) ?? inviteRoleOptions[0],
+    [inviteRoleOptions, selectedRoleId],
+  );
+  const previewInviteLink = `/invite/member/preview-${selectedRole?.id ?? "viewer"}`;
   const members = getMemberListPreviews();
   const invitations = getMemberInvitationPreviews();
   const joinRequests = getMemberJoinRequestPreviews();
@@ -67,13 +95,12 @@ export default function AdminMemberManagementDashboard() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              className="inline-flex w-fit items-center justify-center rounded-full border border-stone-200 bg-stone-100 px-4 py-2 text-xs font-semibold text-stone-500"
-              disabled
+            <a
+              href="#member-invite-builder"
+              className="inline-flex w-fit items-center justify-center rounded-full border border-stone-900 bg-stone-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-stone-800"
             >
               {t("memberManagement.actions.createInvite", "초대 링크 생성")}
-            </button>
+            </a>
             <Link
               href="/admin/settings"
               className="inline-flex w-fit items-center justify-center rounded-full border border-stone-200 bg-white px-4 py-2 text-xs font-semibold text-stone-700 transition hover:bg-stone-50"
@@ -81,6 +108,139 @@ export default function AdminMemberManagementDashboard() {
               {t("memberManagement.actions.openOrganizationSettings", "조직 설정 보기")}
             </Link>
           </div>
+        </div>
+      </section>
+
+      <section id="member-invite-builder" className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-400">
+              {t("memberManagement.inviteBuilder.eyebrow", "Invitation link and QR")}
+            </p>
+            <h3 className="mt-2 text-lg font-semibold text-stone-950">
+              {t("memberManagement.inviteBuilder.title", "초대 링크/QR 생성 화면")}
+            </h3>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">
+              {t(
+                "memberManagement.inviteBuilder.description",
+                "고객관리자가 내부 멤버에게 전달할 링크와 QR을 생성하기 전 입력값, 기본 권한 묶음, 승인 대기 흐름을 한 화면에서 확인합니다.",
+              )}
+            </p>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-3 xl:min-w-[420px]">
+            {invitationSetupCards.map((card) => (
+              <div key={card.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-semibold text-stone-900">
+                    {t(`memberManagement.inviteBuilder.cards.${card.id}.label`, card.id)}
+                  </p>
+                  <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${getStatusClassName(card.status)}`}>
+                    {t(`memberManagement.statuses.${card.status}`, card.status)}
+                  </span>
+                </div>
+                <p className="mt-2 text-[11px] leading-4 text-stone-500">
+                  {t(`memberManagement.inviteBuilder.cards.${card.id}.description`, "")}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_260px]">
+          <div className="grid gap-3 md:grid-cols-2">
+            <label className="block rounded-2xl border border-stone-200 bg-stone-50 p-4">
+              <span className="text-xs font-semibold text-stone-500">
+                {t("memberManagement.inviteBuilder.fields.targetName", "초대 대상 이름")}
+              </span>
+              <input
+                type="text"
+                className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-900 outline-none focus:border-stone-400"
+                placeholder={t("memberManagement.inviteBuilder.placeholders.targetName", "예: 디자이너 김00")}
+              />
+            </label>
+            <label className="block rounded-2xl border border-stone-200 bg-stone-50 p-4">
+              <span className="text-xs font-semibold text-stone-500">
+                {t("memberManagement.inviteBuilder.fields.targetContact", "이메일 또는 휴대폰")}
+              </span>
+              <input
+                type="text"
+                className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-900 outline-none focus:border-stone-400"
+                placeholder={t("memberManagement.inviteBuilder.placeholders.targetContact", "선택 입력") }
+              />
+            </label>
+            <label className="block rounded-2xl border border-stone-200 bg-stone-50 p-4">
+              <span className="text-xs font-semibold text-stone-500">
+                {t("memberManagement.inviteBuilder.fields.roleTemplate", "기본 권한 묶음")}
+              </span>
+              <select
+                value={selectedRoleId}
+                onChange={(event) => setSelectedRoleId(event.target.value)}
+                className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-900 outline-none focus:border-stone-400"
+              >
+                {inviteRoleOptions.map((role) => (
+                  <option key={role.id} value={role.id}>
+                    {t(`memberManagement.roles.${role.id}.label`, role.id)} · {t("memberManagement.permissionCount", "권한 {count}개").replace("{count}", String(role.permissionCount))}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block rounded-2xl border border-stone-200 bg-stone-50 p-4">
+              <span className="text-xs font-semibold text-stone-500">
+                {t("memberManagement.inviteBuilder.fields.expires", "초대 만료") }
+              </span>
+              <select className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-900 outline-none focus:border-stone-400" defaultValue="7d">
+                <option value="3d">{t("memberManagement.inviteBuilder.expires.3d", "3일")}</option>
+                <option value="7d">{t("memberManagement.inviteBuilder.expires.7d", "7일")}</option>
+                <option value="14d">{t("memberManagement.inviteBuilder.expires.14d", "14일")}</option>
+              </select>
+            </label>
+            <div className="rounded-2xl border border-stone-200 bg-white p-4 md:col-span-2">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-stone-500">
+                    {t("memberManagement.inviteBuilder.previewLinkLabel", "초대 링크 미리보기")}
+                  </p>
+                  <code className="mt-2 block truncate rounded-xl bg-stone-100 px-3 py-2 text-xs font-semibold text-stone-700">
+                    {previewInviteLink}
+                  </code>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    className="inline-flex items-center justify-center rounded-full border border-stone-200 bg-stone-100 px-4 py-2 text-xs font-semibold text-stone-500"
+                    disabled
+                  >
+                    {t("memberManagement.inviteBuilder.actions.copy", "링크 복사")}
+                  </button>
+                  <button
+                    type="button"
+                    className="inline-flex items-center justify-center rounded-full border border-stone-200 bg-stone-100 px-4 py-2 text-xs font-semibold text-stone-500"
+                    disabled
+                  >
+                    {t("memberManagement.inviteBuilder.actions.create", "초대 생성")}
+                  </button>
+                </div>
+              </div>
+              <p className="mt-3 text-xs leading-5 text-stone-500">
+                {t("memberManagement.inviteBuilder.disabledNotice", "실제 token 생성, 저장, 복사 기능은 invitations API 연결 후 활성화합니다.")}
+              </p>
+            </div>
+          </div>
+
+          <aside className="flex flex-col items-center justify-center rounded-3xl border border-stone-200 bg-stone-50 p-5 text-center">
+            <QrPreview rows={inviteQrPreviewRows} />
+            <p className="mt-4 text-sm font-semibold text-stone-950">
+              {t("memberManagement.inviteBuilder.qrTitle", "QR 미리보기")}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-stone-500">
+              {t("memberManagement.inviteBuilder.qrDescription", "QR은 초대 링크 token 생성 API와 연결한 뒤 실제 값으로 렌더링합니다.")}
+            </p>
+            <p className="mt-3 text-xs font-semibold text-stone-500">
+              {t("memberManagement.inviteBuilder.selectedRole", "선택 권한 {role} · {count}개")
+                .replace("{role}", t(`memberManagement.roles.${selectedRole?.id ?? "viewer"}.label`, selectedRole?.id ?? "viewer"))
+                .replace("{count}", String(selectedRole?.permissionCount ?? 0))}
+            </p>
+          </aside>
         </div>
       </section>
 

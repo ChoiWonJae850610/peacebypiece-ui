@@ -94,6 +94,25 @@ export const adminKo = {
     systemOnlyCount: "시스템 전용 {count}개",
     matrixEnabledCount: "기본 체크 {count}개",
     actions: { openOrganizationSettings: "조직 설정 보기", createInvite: "초대 링크 생성" },
+    inviteBuilder: {
+      eyebrow: "초대 링크와 QR",
+      title: "초대 링크/QR 생성 화면",
+      description: "고객관리자가 내부 멤버에게 전달할 링크와 QR을 생성하기 전 입력값, 기본 권한 묶음, 승인 대기 흐름을 한 화면에서 확인합니다.",
+      cards: {
+        link: { label: "초대 링크", description: "token 기반 가입 신청 링크를 생성합니다." },
+        qr: { label: "QR", description: "같은 초대 링크를 QR로 공유합니다." },
+        approval: { label: "승인 대기", description: "가입 신청 후 고객관리자가 승인합니다." }
+      },
+      fields: { targetName: "초대 대상 이름", targetContact: "이메일 또는 휴대폰", roleTemplate: "기본 권한 묶음", expires: "초대 만료" },
+      placeholders: { targetName: "예: 디자이너 김00", targetContact: "선택 입력" },
+      expires: { "3d": "3일", "7d": "7일", "14d": "14일" },
+      previewLinkLabel: "초대 링크 미리보기",
+      actions: { copy: "링크 복사", create: "초대 생성" },
+      disabledNotice: "실제 token 생성, 저장, 복사 기능은 invitations API 연결 후 활성화합니다.",
+      qrTitle: "QR 미리보기",
+      qrDescription: "QR은 초대 링크 token 생성 API와 연결한 뒤 실제 값으로 렌더링합니다.",
+      selectedRole: "선택 권한 {role} · {count}개"
+    },
     statuses: { ready: "기준 연결", planned: "연결 예정", pending: "대기" },
     sourceState: { dbPending: "DB 연결 예정" },
     summary: {

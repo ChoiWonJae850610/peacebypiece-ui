@@ -52,6 +52,18 @@ export type MemberManagementTableColumn = {
   id: string;
 };
 
+export type MemberInviteRoleOption = {
+  id: MemberRolePreviewId;
+  permissionCount: number;
+};
+
+export type MemberInvitationSetupCard = {
+  id: "link" | "qr" | "approval";
+  status: MemberManagementStatus;
+};
+
+export type MemberInviteQrPreviewRow = readonly boolean[];
+
 export type MemberListPreview = {
   id: string;
   name: string;
@@ -130,12 +142,42 @@ export const MEMBER_LIST_PREVIEWS: readonly MemberListPreview[] = [] as const;
 export const MEMBER_INVITATION_PREVIEWS: readonly MemberInvitationPreview[] = [] as const;
 export const MEMBER_JOIN_REQUEST_PREVIEWS: readonly MemberJoinRequestPreview[] = [] as const;
 
+export const MEMBER_INVITE_SETUP_CARDS: readonly MemberInvitationSetupCard[] = [
+  { id: "link", status: "ready" },
+  { id: "qr", status: "ready" },
+  { id: "approval", status: "pending" },
+] as const;
+
+export const MEMBER_INVITE_QR_PREVIEW_ROWS: readonly MemberInviteQrPreviewRow[] = [
+  [true, true, true, false, true, false, true, true, true],
+  [true, false, true, false, false, true, true, false, true],
+  [true, true, true, true, false, false, true, true, true],
+  [false, false, true, false, true, true, false, false, true],
+  [true, false, false, true, true, false, true, false, false],
+  [false, true, true, false, false, true, false, true, true],
+  [true, true, true, false, true, false, true, true, true],
+  [true, false, true, true, false, true, true, false, true],
+  [true, true, true, false, true, false, true, true, true],
+] as const;
+
 export function getMemberManagementSummaryCards(): readonly MemberManagementSummaryCard[] {
   return MEMBER_MANAGEMENT_SUMMARY_CARDS;
 }
 
 export function getMemberRolePreviews(): readonly MemberRolePreview[] {
   return MEMBER_ROLE_PREVIEWS;
+}
+
+export function getMemberInviteRoleOptions(): readonly MemberInviteRoleOption[] {
+  return MEMBER_ROLE_PREVIEWS.map((role) => ({ id: role.id, permissionCount: role.permissionCount }));
+}
+
+export function getMemberInvitationSetupCards(): readonly MemberInvitationSetupCard[] {
+  return MEMBER_INVITE_SETUP_CARDS;
+}
+
+export function getMemberInviteQrPreviewRows(): readonly MemberInviteQrPreviewRow[] {
+  return MEMBER_INVITE_QR_PREVIEW_ROWS;
 }
 
 export function getMemberManagementPermissionCards(): readonly MemberPermissionCard[] {
