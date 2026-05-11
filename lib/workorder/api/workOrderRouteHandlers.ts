@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
 import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
-import { buildWorkOrderDeletedAuditLog } from "@/lib/system/audit/writeActions";
+import { buildWorkOrderDeletedAuditLog, buildWorkOrderStatusChangedAuditLog } from "@/lib/system/audit/writeActions";
 import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 import {
   getDatabaseRuntimeErrorCode,
@@ -165,7 +165,17 @@ async function writeWorkOrderCreatedHistory(workOrder: WorkOrder): Promise<void>
   });
 }
 
-async function writeWorkOrderStatusChangeHistory(previous: WorkOrder | undefined, next: WorkOrder): Promise<void> {
+type WorkOrderStatusChangeAuditContext = {
+  requestId?: string | null;
+  ipAddress?: string | null;
+  source?: "workorder-save" | "state-patch" | "bulk-save";
+};
+
+async function writeWorkOrderStatusChangeLogs(
+  previous: WorkOrder | undefined,
+  next: WorkOrder,
+  context: WorkOrderStatusChangeAuditContext = {},
+): Promise<void> {
   if (!previous || previous.workflowState === next.workflowState) return;
 
   await createAdminHistoryLogSafe({
@@ -184,6 +194,23 @@ async function writeWorkOrderStatusChangeHistory(previous: WorkOrder | undefined
       managerName: next.manager ?? null,
     },
   });
+
+  const auditLog = buildWorkOrderStatusChangedAuditLog({
+    workOrderId: next.id,
+    title: next.title,
+    fromWorkflowState: previous.workflowState,
+    toWorkflowState: next.workflowState,
+    actorId: next.managerId ?? previous.managerId ?? null,
+    companyId: WORKSPACE_COMPANY_ID,
+    managerName: next.manager ?? previous.manager ?? null,
+    source: context.source,
+    requestId: context.requestId ?? null,
+    ipAddress: context.ipAddress ?? null,
+  });
+
+  if (auditLog) {
+    await createSystemAuditLogSafe(auditLog);
+  }
 }
 
 async function hydrateWorkOrdersWithAttachmentMemoSnapshots(workOrders: WorkOrder[]): Promise<WorkOrder[]> {
@@ -402,7 +429,11 @@ export async function handlePatchWorkOrders(request: Request) {
       const workOrders = await hydrateWorkOrdersWithAttachmentMemoSnapshots(savedWorkOrders);
 
       await Promise.all(
-        workOrders.map((workOrder) => writeWorkOrderStatusChangeHistory(previousWorkOrderMap.get(workOrder.id), workOrder)),
+        workOrders.map((workOrder) => writeWorkOrderStatusChangeLogs(previousWorkOrderMap.get(workOrder.id), workOrder, {
+            requestId: getAuditRequestId(request),
+            ipAddress: getAuditIpAddress(request),
+            source: "bulk-save",
+          })),
       );
 
       logDbRequestOutcome("PATCH", true, "READY", `rows=${workOrders.length}`);
@@ -422,7 +453,11 @@ export async function handlePatchWorkOrders(request: Request) {
     const savedWorkOrder = await saveDbWorkOrder(body.workOrder);
 
     const workOrder = await hydrateWorkOrderWithAttachmentMemoSnapshot(savedWorkOrder);
-    await writeWorkOrderStatusChangeHistory(previousWorkOrder ?? undefined, workOrder);
+    await writeWorkOrderStatusChangeLogs(previousWorkOrder ?? undefined, workOrder, {
+      requestId: getAuditRequestId(request),
+      ipAddress: getAuditIpAddress(request),
+      source: "workorder-save",
+    });
 
     logDbRequestOutcome("PATCH", true, "READY", workOrder.id);
 
@@ -476,7 +511,11 @@ export async function handlePatchWorkOrderState(workOrderId: string, request: Re
       orderEntries: Array.isArray(body.patch.orderEntries) ? body.patch.orderEntries : undefined,
     });
 
-    await writeWorkOrderStatusChangeHistory(previousWorkOrder ?? undefined, savedWorkOrder);
+    await writeWorkOrderStatusChangeLogs(previousWorkOrder ?? undefined, savedWorkOrder, {
+      requestId: getAuditRequestId(request),
+      ipAddress: getAuditIpAddress(request),
+      source: "state-patch",
+    });
 
     const patchResult: WorkOrderStatePatchResult = {
       id: savedWorkOrder.id,

@@ -110,7 +110,7 @@ export const SYSTEM_AUDIT_LOG_TARGETS: SystemAuditLogTarget[] = [
     label: "작업지시서",
     description: "상태 변경, 리오더 생성, 삭제·복원 요약을 기록합니다.",
     level: "medium",
-    examples: ["workorder.status_changed", "workorder.reordered", "workorder.restored"],
+    examples: ["work_order.status_changed", "work_order.deleted", "work_order.restored"],
   },
   {
     id: "file",
@@ -176,6 +176,18 @@ export const SYSTEM_AUDIT_LOG_IMPLEMENTATION_STEPS: SystemAuditLogImplementation
     description:
       "시스템관리자 저장소 실제 삭제 API에서 storage.purge_run 감사 로그를 기록합니다. 고객사, 초대, 요금제·용량, 멤버 권한 변경 지점은 후속 버전에서 점진 연결합니다.",
   },
+  {
+    versionHint: "0.10.14",
+    title: "작업지시서·첨부파일 삭제/복원 감사 로그 연결",
+    description:
+      "작업지시서 삭제·복원과 개별 첨부파일 삭제·복원 액션을 audit_logs에 기록합니다.",
+  },
+  {
+    versionHint: "0.10.15",
+    title: "작업지시서 상태 변경 감사 로그 연결",
+    description:
+      "작업지시서 workflowState 변경을 work_order.status_changed 이벤트로 기록합니다. 기존 고객관리자 history_logs 상태 이력은 유지하고, 시스템관리자 감사 로그 원장에 동일 상태 변경을 구조화해 남깁니다.",
+  },
 ];
 
 
@@ -210,5 +222,7 @@ export const SYSTEM_AUDIT_LOG_WRITE_DECISIONS = [
   "쓰기 실패가 기존 삭제 처리를 막지 않도록 createSystemAuditLogSafe를 사용한다.",
   "storage.purge_run 이벤트는 완료·실패 개수와 후보 수를 metadata에 구조화해서 남긴다.",
   "실제 R2 key 원문은 목록 화면 기본 노출 대상이 아니므로 보유 여부만 요약한다.",
+  "0.10.14부터 작업지시서·첨부파일 삭제/복원 이벤트를 기록한다.",
+  "0.10.15부터 작업지시서 workflowState 변경을 work_order.status_changed 이벤트로 기록한다.",
   "고객사, 초대, 요금제·용량, 멤버 권한 변경 로그는 후속 버전에서 연결한다.",
 ] as const;

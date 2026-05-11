@@ -79,6 +79,20 @@ export function buildSystemStoragePurgeAuditLog(
   };
 }
 
+
+export type BuildWorkOrderStatusChangedAuditLogInput = {
+  workOrderId: string;
+  title?: string | null;
+  fromWorkflowState?: string | null;
+  toWorkflowState: string;
+  actorId?: string | null;
+  companyId?: string | null;
+  managerName?: string | null;
+  requestId?: string | null;
+  ipAddress?: string | null;
+  source?: "workorder-save" | "state-patch" | "bulk-save";
+};
+
 export type BuildWorkOrderDeletedAuditLogInput = {
   workOrderId: string;
   title?: string | null;
@@ -130,6 +144,39 @@ export type BuildAttachmentRestoredAuditLogInput = {
 
 function normalizeCount(value: number | undefined | null): number {
   return Number.isFinite(Number(value)) ? Math.max(0, Math.trunc(Number(value))) : 0;
+}
+
+
+export function buildWorkOrderStatusChangedAuditLog(
+  input: BuildWorkOrderStatusChangedAuditLogInput,
+): CreateSystemAuditLogInput | null {
+  const previousState = input.fromWorkflowState?.trim() || null;
+  const nextState = input.toWorkflowState.trim();
+
+  if (!nextState || previousState === nextState) return null;
+
+  const title = input.title?.trim() || "작업지시서";
+
+  return {
+    actorUserId: input.actorId ?? null,
+    actorRole: "customer_admin",
+    companyId: input.companyId ?? null,
+    targetType: "work_order",
+    targetId: input.workOrderId,
+    eventType: "work_order.status_changed",
+    severity: "medium",
+    summary: `${title} 상태 변경: ${previousState ?? "unknown"} → ${nextState}`,
+    metadata: {
+      workOrderId: input.workOrderId,
+      title,
+      fromWorkflowState: previousState,
+      toWorkflowState: nextState,
+      managerName: input.managerName ?? null,
+      source: input.source ?? "workorder-save",
+    },
+    requestId: input.requestId ?? null,
+    ipAddress: input.ipAddress ?? null,
+  };
 }
 
 export function buildWorkOrderDeletedAuditLog(

@@ -86,7 +86,7 @@ export default function SystemAuditLogsDesignPage({
             <div>
               <h2 className="text-lg font-semibold text-stone-950">감사 로그 조회</h2>
               <p className="mt-2 text-sm leading-6 text-stone-600">
-                /api/system/audit-logs와 audit_logs repository를 연결했습니다. 0.10.13부터 시스템관리자 저장소 실제 삭제 처리 결과가 storage.purge_run 이벤트로 기록됩니다.
+                /api/system/audit-logs와 audit_logs repository를 연결했습니다. 0.10.15부터 시스템관리자 저장소 실제 삭제, 작업지시서 삭제·복원, 첨부파일 삭제·복원, 작업지시서 상태 변경 이벤트가 기록됩니다.
               </p>
             </div>
             <code className="w-fit rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-500">
@@ -162,7 +162,7 @@ export default function SystemAuditLogsDesignPage({
                 ) : (
                   <tr>
                     <td colSpan={6} className="px-3 py-8 text-center text-sm text-stone-500">
-                      아직 표시할 감사 로그가 없습니다. 시스템관리자 저장소 실제 삭제 처리를 실행하면 0.10.13부터 이 목록에 운영 이벤트가 표시됩니다.
+                      아직 표시할 감사 로그가 없습니다. 저장소 실제 삭제, 작업지시서 삭제·복원, 첨부파일 삭제·복원, 작업지시서 상태 변경을 실행하면 이 목록에 운영 이벤트가 표시됩니다.
                     </td>
                   </tr>
                 )}
