@@ -88,12 +88,25 @@ export const adminKo = {
   },
   memberManagement: {
     title: "멤버 관리",
-    description: "멤버 초대, 역할 지정, 권한 기반 카드 노출을 연결하기 전의 1차 설계 화면입니다.",
+    description: "고객사 멤버 초대, 가입 신청 승인, 권한 부여를 한 화면에서 처리하는 멤버관리 IA입니다.",
     eyebrow: "멤버 권한",
     permissionCount: "권한 {count}개",
-    actions: { openOrganizationSettings: "조직 설정 보기" },
-    statuses: { ready: "기준 연결", planned: "설계 중" },
+    actions: { openOrganizationSettings: "조직 설정 보기", createInvite: "초대 링크 생성" },
+    statuses: { ready: "기준 연결", planned: "연결 예정", pending: "대기" },
+    sourceState: { dbPending: "DB 연결 예정" },
+    summary: {
+      members: { label: "전체 멤버", description: "승인된 멤버와 정지 멤버를 포함합니다." },
+      invitations: { label: "초대 대기", description: "활성 초대 링크와 QR 초대 후보입니다." },
+      joinRequests: { label: "승인 대기", description: "가입 신청 후 고객관리자 승인을 기다리는 사용자입니다." },
+      permissionTemplates: { label: "권한 템플릿", description: "기본 역할 묶음으로 사용할 권한 preset입니다." }
+    },
     sections: {
+      members: "멤버 목록",
+      membersDescription: "승인된 멤버와 정지된 멤버를 한 목록에서 관리합니다.",
+      invitations: "초대 대기 목록",
+      invitationsDescription: "생성된 초대 링크와 QR의 만료, 취소 상태를 관리합니다.",
+      joinRequests: "가입 신청/승인 대기",
+      joinRequestsDescription: "초대 링크로 가입 신청한 사용자를 승인하거나 거절하는 영역입니다.",
       roles: "역할 기본값",
       rolesDescription: "역할은 기본 권한 묶음으로 사용하고, 실제 화면 노출은 권한 코드 기준으로 확장합니다.",
       nextSteps: "다음 구현 범위",
@@ -102,14 +115,25 @@ export const adminKo = {
       permissionGroups: "권한 그룹",
       permissionGroupsDescription: "실제 DB 권한 테이블을 만들 때 사용할 권한 그룹 기준입니다."
     },
+    tables: {
+      members: { columns: { member: "멤버", role: "역할", status: "상태", permissions: "권한", lastActive: "최근 활동" } },
+      invitations: { columns: { target: "대상", type: "방식", status: "상태", expires: "만료" } },
+      joinRequests: { columns: { applicant: "신청자", requestedRole: "요청 역할", status: "상태", requestedAt: "신청일" } }
+    },
+    empty: {
+      members: { title: "등록된 멤버가 없습니다", description: "초대/가입 승인 API를 연결하면 승인된 멤버가 이 영역에 표시됩니다." },
+      invitations: { title: "생성된 초대가 없습니다", description: "초대 링크 생성 기능을 연결하면 활성/만료/취소 초대가 표시됩니다." },
+      joinRequests: { title: "승인 대기 신청이 없습니다", description: "초대 링크 가입 신청이 생성되면 승인/거절/권한 부여 대상이 이 영역에 표시됩니다." }
+    },
     roles: {
       admin: { label: "관리자", description: "조직 운영, 설정, 저장소, 통계, 멤버 권한을 관리하는 기본 역할입니다." },
       designer: { label: "디자이너", description: "디자인 첨부, 수정 요청 대응, 작업지시서 확인 중심의 역할입니다." },
       inspector: { label: "검수 담당", description: "입고 후 검수, 불량 확인, 완료 처리 중심의 역할입니다." },
-      inventory: { label: "발주/재고 담당", description: "발주, 입고, 외주공정, 기준정보 확인 중심의 역할입니다." }
+      inventory: { label: "발주/재고 담당", description: "발주, 입고, 외주공정, 기준정보 확인 중심의 역할입니다." },
+      viewer: { label: "조회 전용", description: "작업 흐름을 읽기 전용으로 확인하는 외부/내부 협업자 후보 역할입니다." }
     },
     nextSteps: {
-      invite: { title: "초대 방식", description: "이메일 링크 또는 QR 기반 초대 흐름을 후속 버전에서 연결합니다." },
+      invite: { title: "초대 방식", description: "이메일 자동 발송보다 초대 링크와 QR 생성, 링크 복사를 먼저 연결합니다." },
       role: { title: "역할 지정", description: "멤버별 기본 역할을 지정하고 기본 권한 묶음과 연결합니다." },
       permission: { title: "권한 조정", description: "협력업체, 저장소, 기준정보 같은 기능 권한을 멤버별로 조정합니다." },
       workspace: { title: "홈 카드 반영", description: "부여된 권한에 따라 멤버 홈의 카드 노출을 자동 구성합니다." }
@@ -119,6 +143,7 @@ export const adminKo = {
       partners: { label: "협력업체 관리", description: "공장, 원단, 부자재, 외주처 기준정보 관리 권한입니다." },
       storage: { label: "저장소 관리", description: "문서/디자인, 휴지통, 용량 관리 권한입니다." },
       stats: { label: "통계정보", description: "운영 통계와 파일 사용량 지표 조회 권한입니다." },
+      members: { label: "멤버 관리", description: "멤버 초대, 승인, 권한 부여 화면 접근 권한입니다." },
       "organization-settings": { label: "환경설정", description: "조직 단위 정책과 기준 설정 관리 권한입니다." },
       "standard-units": { label: "단위표준", description: "원단, 부자재, 수량 단위 기준 관리 권한입니다." },
       "outsourcing-processes": { label: "외주공정", description: "나염, 자수, 워싱 등 외주공정 기준 관리 권한입니다." },

@@ -1,5 +1,5 @@
 import AdminShell from "@/components/admin/layout/AdminShell";
-import AdminMemberManagementPlaceholder from "@/components/admin/members/AdminMemberManagementPlaceholder";
+import AdminMemberManagementDashboard from "@/components/admin/members/AdminMemberManagementDashboard";
 import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
 import { APP_VERSION } from "@/lib/constants/app";
 import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
@@ -16,7 +16,7 @@ export default function AdminMembersPage() {
       title={pageText.title}
       description={pageText.description}
     >
-      <AdminMemberManagementPlaceholder />
+      <AdminMemberManagementDashboard />
     </AdminShell>
   );
 }

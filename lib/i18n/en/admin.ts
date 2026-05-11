@@ -137,12 +137,25 @@ export const adminEn = {
   },
   memberManagement: {
     title: "Member management",
-    description: "A first-pass design screen before connecting invitations, roles, and permission-based home cards.",
+    description: "A member-management IA for handling company member invitations, join approvals, and direct permission assignment in one screen.",
     eyebrow: "Member permissions",
     permissionCount: "{count} permissions",
-    actions: { openOrganizationSettings: "Open organization settings" },
-    statuses: { ready: "Connected", planned: "In design" },
+    actions: { openOrganizationSettings: "Open organization settings", createInvite: "Create invitation link" },
+    statuses: { ready: "Connected", planned: "Planned", pending: "Pending" },
+    sourceState: { dbPending: "DB connection planned" },
+    summary: {
+      members: { label: "Members", description: "Includes approved and suspended members." },
+      invitations: { label: "Pending invitations", description: "Active invitation links and QR invitation candidates." },
+      joinRequests: { label: "Approval queue", description: "Users waiting for customer-admin approval after joining." },
+      permissionTemplates: { label: "Permission templates", description: "Permission presets used as default role bundles." }
+    },
     sections: {
+      members: "Member list",
+      membersDescription: "Manage approved and suspended members in one list.",
+      invitations: "Invitation queue",
+      invitationsDescription: "Manage expiration and cancellation status for generated invitation links and QR codes.",
+      joinRequests: "Join requests / approval queue",
+      joinRequestsDescription: "Approve or reject users who applied through an invitation link.",
       roles: "Role defaults",
       rolesDescription: "Roles are used as default permission bundles, while screen exposure will expand by permission code.",
       nextSteps: "Next implementation scope",
@@ -151,14 +164,25 @@ export const adminEn = {
       permissionGroups: "Permission groups",
       permissionGroupsDescription: "Permission group standards for a future DB-backed permission table."
     },
+    tables: {
+      members: { columns: { member: "Member", role: "Role", status: "Status", permissions: "Permissions", lastActive: "Last active" } },
+      invitations: { columns: { target: "Target", type: "Type", status: "Status", expires: "Expires" } },
+      joinRequests: { columns: { applicant: "Applicant", requestedRole: "Requested role", status: "Status", requestedAt: "Requested" } }
+    },
+    empty: {
+      members: { title: "No members registered", description: "Approved members will appear here after invitation and approval APIs are connected." },
+      invitations: { title: "No invitations created", description: "Active, expired, and cancelled invitations will appear after invitation-link generation is connected." },
+      joinRequests: { title: "No join requests waiting", description: "Invitation-link join requests will appear here as approval, rejection, and permission-assignment targets." }
+    },
     roles: {
       admin: { label: "Admin", description: "Default role for organization operations, settings, storage, statistics, and member permissions." },
       designer: { label: "Designer", description: "Role focused on design files, revision requests, and work order review." },
       inspector: { label: "Inspector", description: "Role focused on inbound inspection, defect checks, and completion handling." },
-      inventory: { label: "Order/inventory", description: "Role focused on ordering, inbound status, outsourcing processes, and master data." }
+      inventory: { label: "Order/inventory", description: "Role focused on ordering, inbound status, outsourcing processes, and master data." },
+      viewer: { label: "Read-only", description: "Candidate role for internal or external collaborators who only need to read work flow status." }
     },
     nextSteps: {
-      invite: { title: "Invitation flow", description: "Connect email-link or QR-based invitations in a later version." },
+      invite: { title: "Invitation flow", description: "Connect invitation links, QR generation, and link copy before automated email sending." },
       role: { title: "Role assignment", description: "Assign a default role to each member and connect it to a default permission bundle." },
       permission: { title: "Permission adjustment", description: "Adjust feature permissions such as partners, storage, and master data per member." },
       workspace: { title: "Home card reflection", description: "Automatically compose member home cards based on granted permissions." }
@@ -168,6 +192,7 @@ export const adminEn = {
       partners: { label: "Partner management", description: "Permission to manage factory, fabric, subsidiary, and outsourcing master data." },
       storage: { label: "Storage management", description: "Permission to manage documents/designs, trash, and storage usage." },
       stats: { label: "Statistics", description: "Permission to view operational metrics and file usage indicators." },
+      members: { label: "Member management", description: "Permission to access member invitation, approval, and permission assignment screens." },
       "organization-settings": { label: "Settings", description: "Permission to manage organization-level policies and standards." },
       "standard-units": { label: "Standard units", description: "Permission to manage units for fabric, subsidiary materials, and quantities." },
       "outsourcing-processes": { label: "Outsourcing processes", description: "Permission to manage printing, embroidery, washing, and other process standards." },
