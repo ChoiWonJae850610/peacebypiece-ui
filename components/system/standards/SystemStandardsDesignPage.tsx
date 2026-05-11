@@ -154,7 +154,7 @@ export default function SystemStandardsDesignPage() {
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">DB ONLY CHECK</p>
               <h2 className="mt-2 text-lg font-semibold text-blue-950">기준정보는 DB 결과만 표시합니다</h2>
               <p className="mt-2 max-w-4xl text-sm leading-6 text-blue-900">
-                0.10.46부터 단위 표준, 외주공정 유형, 생산품 유형 기본 템플릿은 fallback을 섞지 않습니다. 숫자가 0개로 보이면 seed 적용 상태를 먼저 확인합니다.
+                0.10.46부터 단위 표준, 외주공정 유형, 생산품 유형 기본 템플릿은 fallback을 섞지 않습니다. 숫자가 0개이거나 최소 기준보다 부족하면 seed 상태를 확인하고 0.10.48 seed 보강 SQL을 실행합니다.
               </p>
             </div>
             <Link

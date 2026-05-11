@@ -8,6 +8,7 @@ export type SystemStandardsSeedStatusItem = {
   tableName: string;
   count: number;
   activeCount: number;
+  minimumActiveCount: number;
   required: boolean;
   ready: boolean;
   description: string;
@@ -67,8 +68,9 @@ export async function getSystemStandardsSeedStatus(): Promise<SystemStandardsSee
       tableName: "system_unit_standards",
       count: units.count,
       activeCount: units.activeCount,
+      minimumActiveCount: 7,
       required: true,
-      ready: units.activeCount > 0,
+      ready: units.activeCount >= 7,
       description: "고객관리자 단위 표준 선택과 작업지시서 단위/단가 기준 선택지의 원장입니다.",
     },
     {
@@ -77,8 +79,9 @@ export async function getSystemStandardsSeedStatus(): Promise<SystemStandardsSee
       tableName: "system_outsourcing_process_standards",
       count: processes.count,
       activeCount: processes.activeCount,
+      minimumActiveCount: 5,
       required: true,
-      ready: processes.activeCount > 0,
+      ready: processes.activeCount >= 5,
       description: "고객관리자 외주공정 사용 여부와 협력업체 외주공정 선택지의 원장입니다.",
     },
     {
@@ -87,8 +90,9 @@ export async function getSystemStandardsSeedStatus(): Promise<SystemStandardsSee
       tableName: "system_product_type_templates",
       count: templates.count,
       activeCount: templates.activeCount,
+      minimumActiveCount: 1,
       required: true,
-      ready: templates.activeCount > 0,
+      ready: templates.activeCount >= 1,
       description: "고객관리자 생산품 유형 기본값 복원에 사용할 템플릿 원장입니다.",
     },
     {
@@ -97,8 +101,9 @@ export async function getSystemStandardsSeedStatus(): Promise<SystemStandardsSee
       tableName: "system_product_type_template_categories",
       count: templateCategories.count,
       activeCount: templateCategories.activeCount,
+      minimumActiveCount: 9,
       required: true,
-      ready: templateCategories.activeCount > 0,
+      ready: templateCategories.activeCount >= 9,
       description: "기본 템플릿의 1차→2차→3차 분류 데이터입니다.",
     },
   ];
@@ -111,6 +116,6 @@ export async function getSystemStandardsSeedStatus(): Promise<SystemStandardsSee
     items,
     message: ready
       ? "시스템 기준정보 seed가 준비되어 있습니다."
-      : "시스템 기준정보 seed가 비어 있거나 일부 부족합니다. full_reset.sql 또는 0.10.38 patch SQL seed 적용 상태를 확인하세요.",
+      : "시스템 기준정보 seed가 비어 있거나 일부 부족합니다. 기존 DB 유지 시 db/schema/patch_0_10_48_system_standards_seed_refresh.sql을 실행하세요.",
   };
 }
