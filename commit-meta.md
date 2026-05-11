@@ -1,23 +1,20 @@
 Version :
-0.10.57
+0.10.58
 
 Summary :
-멤버 초대 링크 가입 신청 화면 추가
+승인 대기 대시보드 추가
 
 Description :
-고객관리자 내부 멤버 초대 링크로 접속하는 /invite/member/[token] 가입 신청 화면을 추가하고, 초대 URL 생성 기준을 멤버 초대와 고객사 초대 경로로 분리했다. 실제 OAuth 연결과 join_requests 저장은 후속 작업으로 남겼다.
+초대 가입 신청 후 고객관리자 승인 전 사용자가 접근하는 /pending 대시보드 화면을 추가했다. 승인 전 접근 허용/차단 범위, 승인 처리 흐름, API 권한 검증 필요 정책을 presentation 데이터와 문서로 정리했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/invitations/invitationRepository.ts
-- lib/invitations/invitationQrPreview.ts
-- lib/invitations/index.ts
 
 추가 파일 목록 :
-- app/invite/member/[token]/page.tsx
-- components/invitations/MemberInvitationJoinRequestPage.tsx
-- lib/invitations/memberInvitationJoinRequestPresentation.ts
-- docs/invite-member-join-request-screen-0.10.57.md
+- app/pending/page.tsx
+- components/invitations/PendingApprovalDashboard.tsx
+- lib/invitations/pendingApprovalDashboardPresentation.ts
+- docs/pending-approval-dashboard-0.10.58.md
 
 삭제 파일 목록 :
 없음
