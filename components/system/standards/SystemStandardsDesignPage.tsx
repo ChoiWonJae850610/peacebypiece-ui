@@ -142,6 +142,34 @@ export default function SystemStandardsDesignPage() {
           </article>
         </section>
 
+        <section className="rounded-3xl border border-emerald-200 bg-emerald-50 p-5 text-sm leading-6 text-emerald-900 shadow-sm">
+          <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                SCHEMA 0.10.38
+              </p>
+              <h2 className="mt-2 text-lg font-semibold text-emerald-950">
+                시스템 기준정보 DB schema 확정
+              </h2>
+              <p className="mt-2 max-w-4xl text-sm leading-6 text-emerald-900">
+                단위 표준과 외주공정 유형은 시스템 원장과 고객사별 사용 관계 테이블로 분리하고,
+                생산품 유형은 신규 고객사 기본값으로 복사할 템플릿 테이블을 별도 관리합니다.
+              </p>
+            </div>
+            <div className="grid gap-2 text-xs font-semibold text-emerald-800 sm:grid-cols-3 lg:min-w-[520px]">
+              <span className="rounded-2xl border border-emerald-200 bg-white/70 px-3 py-2">
+                system_unit_standards
+              </span>
+              <span className="rounded-2xl border border-emerald-200 bg-white/70 px-3 py-2">
+                system_outsourcing_process_standards
+              </span>
+              <span className="rounded-2xl border border-emerald-200 bg-white/70 px-3 py-2">
+                system_product_type_templates
+              </span>
+            </div>
+          </div>
+        </section>
+
         <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
             <div className="flex flex-col gap-2 border-b border-stone-100 pb-4">
@@ -166,7 +194,7 @@ export default function SystemStandardsDesignPage() {
               ))}
             </ul>
             <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs leading-5 text-amber-800">
-              이번 버전은 설계 화면입니다. 실제 추가·수정·삭제, 고객사별 사용 여부 저장, DB schema 변경은 후속 버전에서 분리합니다.
+              0.10.38에서 DB schema와 seed 기준을 확정했습니다. 실제 추가·수정·삭제 UI와 고객사 신규 생성 시 복사 로직은 후속 버전에서 분리합니다.
             </div>
           </article>
         </section>

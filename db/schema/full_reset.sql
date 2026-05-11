@@ -1,6 +1,6 @@
 -- =========================================
 -- PeaceByPiece full DB reset schema
--- Version: 0.9.203
+-- Version: 0.10.38
 --
 -- 기준:
 -- - 현재 코드에서 실제 사용하는 업무 테이블/컬럼 유지
@@ -62,6 +62,12 @@ DROP TABLE IF EXISTS orders CASCADE;
 DROP TABLE IF EXISTS partner_items CASCADE;
 DROP TABLE IF EXISTS partners CASCADE;
 DROP TABLE IF EXISTS outsourcing_processes CASCADE;
+DROP TABLE IF EXISTS company_enabled_process_standards CASCADE;
+DROP TABLE IF EXISTS company_enabled_unit_standards CASCADE;
+DROP TABLE IF EXISTS system_product_type_template_categories CASCADE;
+DROP TABLE IF EXISTS system_product_type_templates CASCADE;
+DROP TABLE IF EXISTS system_outsourcing_process_standards CASCADE;
+DROP TABLE IF EXISTS system_unit_standards CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS company_settings CASCADE;
 DROP TABLE IF EXISTS companies CASCADE;
@@ -269,6 +275,81 @@ CREATE TABLE company_settings (
   CONSTRAINT company_settings_trash_retention_days_check CHECK (trash_retention_days IN (1, 5, 15, 30)),
   CONSTRAINT company_settings_storage_limit_gb_check CHECK (storage_limit_gb > 0),
   CONSTRAINT company_settings_warning_threshold_percent_check CHECK (warning_threshold_percent BETWEEN 1 AND 100)
+);
+
+CREATE TABLE system_unit_standards (
+  id text PRIMARY KEY,
+  code text NOT NULL UNIQUE,
+  korean_name text NOT NULL,
+  english_code text NOT NULL,
+  category text NOT NULL DEFAULT 'general',
+  description text,
+  example_label text,
+  is_active boolean NOT NULL DEFAULT true,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE company_enabled_unit_standards (
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  unit_standard_id text NOT NULL REFERENCES system_unit_standards(id) ON DELETE CASCADE,
+  is_enabled boolean NOT NULL DEFAULT true,
+  custom_label text,
+  sort_order integer,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (company_id, unit_standard_id)
+);
+
+CREATE TABLE system_outsourcing_process_standards (
+  id text PRIMARY KEY,
+  code text NOT NULL UNIQUE,
+  name text NOT NULL,
+  category text NOT NULL DEFAULT 'general',
+  description text,
+  example_label text,
+  is_active boolean NOT NULL DEFAULT true,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE company_enabled_process_standards (
+  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  process_standard_id text NOT NULL REFERENCES system_outsourcing_process_standards(id) ON DELETE CASCADE,
+  is_enabled boolean NOT NULL DEFAULT true,
+  custom_label text,
+  sort_order integer,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (company_id, process_standard_id)
+);
+
+CREATE TABLE system_product_type_templates (
+  id text PRIMARY KEY,
+  code text NOT NULL UNIQUE,
+  name text NOT NULL,
+  description text,
+  is_default boolean NOT NULL DEFAULT false,
+  is_active boolean NOT NULL DEFAULT true,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE system_product_type_template_categories (
+  id text PRIMARY KEY,
+  template_id text NOT NULL REFERENCES system_product_type_templates(id) ON DELETE CASCADE,
+  parent_id text REFERENCES system_product_type_template_categories(id) ON DELETE CASCADE,
+  level integer NOT NULL,
+  name text NOT NULL,
+  is_active boolean NOT NULL DEFAULT true,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT system_product_type_template_categories_level_check CHECK (level IN (1, 2, 3)),
+  CONSTRAINT system_product_type_template_categories_unique UNIQUE (template_id, parent_id, name)
 );
 
 CREATE TABLE units (
@@ -1057,11 +1138,54 @@ VALUES
   ('system.plan.manage', '요금제 관리', '시스템관리자가 고객사 요금제와 용량 정책을 관리할 수 있다.', 'billing', true),
   ('system.storage.manage', '저장공간 관리', '시스템관리자가 고객사 저장공간 정책을 관리할 수 있다.', 'storage', true),
   ('system.stats.view', '시스템 통계 조회', '시스템관리자가 전체 통계를 조회할 수 있다.', 'stats', true),
-  ('system.audit.view', '감사 로그 조회', '시스템관리자가 감사 로그를 조회할 수 있다.', 'audit', true);
+  ('system.audit.view', '감사 로그 조회', '시스템관리자가 감사 로그를 조회할 수 있다.', 'audit', true),
+  ('system.standard.manage', '시스템 기준정보 관리', '시스템관리자가 단위 표준, 외주공정 유형, 생산품 유형 기본 템플릿을 관리할 수 있다.', 'standards', true);
 
 INSERT INTO system_user_permissions (system_user_id, permission_key, is_enabled)
 SELECT 'system-user-sample-admin', permission_key, true
 FROM system_permission_catalog;
+
+INSERT INTO system_unit_standards (id, code, korean_name, english_code, category, description, example_label, is_active, sort_order)
+VALUES
+  ('system-unit-piece', 'piece', '장', 'pcs', 'count', '일반 의류 수량 단위', '티셔츠 100장', true, 10),
+  ('system-unit-set', 'set', '벌', 'set', 'count', '상하의 세트 또는 묶음 단위', '트레이닝 세트 50벌', true, 20),
+  ('system-unit-meter', 'meter', '미터', 'm', 'length', '원단 길이 단위', '면 원단 30m', true, 30),
+  ('system-unit-yard', 'yard', '야드', 'yd', 'length', '수입 원단 길이 단위', '수입 원단 20yd', true, 40),
+  ('system-unit-roll', 'roll', '롤', 'roll', 'bundle', '롤 단위 원부자재', '심지 3롤', true, 50),
+  ('system-unit-box', 'box', '박스', 'box', 'bundle', '박스 단위 부자재', '단추 2박스', true, 60),
+  ('system-unit-process', 'process', '공정', 'process', 'service', '외주공정 단위', '자수 1공정', true, 70);
+
+INSERT INTO company_enabled_unit_standards (company_id, unit_standard_id, is_enabled, sort_order)
+SELECT 'company-sample-customer', id, true, sort_order
+FROM system_unit_standards;
+
+INSERT INTO system_outsourcing_process_standards (id, code, name, category, description, example_label, is_active, sort_order)
+VALUES
+  ('system-process-printing', 'printing', '나염', 'surface', '원단 또는 완제품 위 프린트 공정', '앞판 나염', true, 10),
+  ('system-process-embroidery', 'embroidery', '자수', 'surface', '로고·문양 자수 공정', '가슴 로고 자수', true, 20),
+  ('system-process-washing', 'washing', '워싱', 'finishing', '수축·질감·후가공 워싱 공정', '바이오 워싱', true, 30),
+  ('system-process-pleats', 'pleats', '플리츠', 'finishing', '주름 고정 외주 공정', '스커트 플리츠', true, 40),
+  ('system-process-bonding', 'bonding', '본딩', 'construction', '원단 또는 부자재 접착 공정', '심지 본딩', true, 50);
+
+INSERT INTO company_enabled_process_standards (company_id, process_standard_id, is_enabled, sort_order)
+SELECT 'company-sample-customer', id, true, sort_order
+FROM system_outsourcing_process_standards;
+
+INSERT INTO system_product_type_templates (id, code, name, description, is_default, is_active, sort_order)
+VALUES
+  ('template-apparel-basic', 'apparel-basic', '의류 기본 템플릿', '신규 고객사 생성 시 복사할 1차-2차-3차 생산품 유형 기본값입니다.', true, true, 10);
+
+INSERT INTO system_product_type_template_categories (id, template_id, parent_id, level, name, is_active, sort_order)
+VALUES
+  ('template-apparel-basic:상의', 'template-apparel-basic', NULL, 1, '상의', true, 10),
+  ('template-apparel-basic:상의:티셔츠', 'template-apparel-basic', 'template-apparel-basic:상의', 2, '티셔츠', true, 10),
+  ('template-apparel-basic:상의:티셔츠:반팔', 'template-apparel-basic', 'template-apparel-basic:상의:티셔츠', 3, '반팔', true, 10),
+  ('template-apparel-basic:하의', 'template-apparel-basic', NULL, 1, '하의', true, 20),
+  ('template-apparel-basic:하의:팬츠', 'template-apparel-basic', 'template-apparel-basic:하의', 2, '팬츠', true, 10),
+  ('template-apparel-basic:하의:팬츠:슬랙스', 'template-apparel-basic', 'template-apparel-basic:하의:팬츠', 3, '슬랙스', true, 10),
+  ('template-apparel-basic:아우터', 'template-apparel-basic', NULL, 1, '아우터', true, 30),
+  ('template-apparel-basic:아우터:자켓', 'template-apparel-basic', 'template-apparel-basic:아우터', 2, '자켓', true, 10),
+  ('template-apparel-basic:아우터:자켓:테일러드', 'template-apparel-basic', 'template-apparel-basic:아우터:자켓', 3, '테일러드', true, 10);
 
 INSERT INTO units (id, company_id, code, name, category, is_active, sort_order)
 VALUES
@@ -1230,6 +1354,12 @@ CREATE INDEX role_permissions_permission_key_idx ON role_permissions (permission
 CREATE INDEX company_user_permissions_permission_key_idx ON company_user_permissions (permission_key);
 CREATE UNIQUE INDEX system_users_email_unique_idx ON system_users (lower(email));
 
+CREATE INDEX system_unit_standards_active_idx ON system_unit_standards (is_active, sort_order, korean_name);
+CREATE INDEX company_enabled_unit_standards_company_idx ON company_enabled_unit_standards (company_id, is_enabled, sort_order);
+CREATE INDEX system_outsourcing_process_standards_active_idx ON system_outsourcing_process_standards (is_active, sort_order, name);
+CREATE INDEX company_enabled_process_standards_company_idx ON company_enabled_process_standards (company_id, is_enabled, sort_order);
+CREATE INDEX system_product_type_templates_active_idx ON system_product_type_templates (is_active, is_default, sort_order, name);
+CREATE INDEX system_product_type_template_categories_template_idx ON system_product_type_template_categories (template_id, level, parent_id, sort_order, name);
 CREATE INDEX units_company_active_idx ON units (company_id, is_active, sort_order, name);
 CREATE INDEX units_active_idx ON units (is_active, sort_order, name);
 CREATE INDEX item_categories_company_level_idx ON item_categories (company_id, level, sort_order, name);

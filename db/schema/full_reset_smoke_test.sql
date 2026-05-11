@@ -1,6 +1,6 @@
 -- =========================================
 -- PeaceByPiece full_reset smoke test
--- Version: 0.9.203
+-- Version: 0.10.38
 --
 -- 목적:
 -- - full_reset.sql 실행 후 핵심 테이블 / view / seed / 제약 구조가 만들어졌는지 확인한다.
@@ -33,6 +33,12 @@ BEGIN
       ('system_users', to_regclass('public.system_users')),
       ('system_permission_catalog', to_regclass('public.system_permission_catalog')),
       ('system_user_permissions', to_regclass('public.system_user_permissions')),
+      ('system_unit_standards', to_regclass('public.system_unit_standards')),
+      ('company_enabled_unit_standards', to_regclass('public.company_enabled_unit_standards')),
+      ('system_outsourcing_process_standards', to_regclass('public.system_outsourcing_process_standards')),
+      ('company_enabled_process_standards', to_regclass('public.company_enabled_process_standards')),
+      ('system_product_type_templates', to_regclass('public.system_product_type_templates')),
+      ('system_product_type_template_categories', to_regclass('public.system_product_type_template_categories')),
       ('invitations', to_regclass('public.invitations')),
       ('plans', to_regclass('public.plans')),
       ('company_plan_assignments', to_regclass('public.company_plan_assignments')),
@@ -124,7 +130,17 @@ BEGIN
       ('audit_logs', 'summary'),
       ('audit_logs', 'metadata'),
       ('audit_logs', 'request_id'),
-      ('audit_logs', 'ip_address')
+      ('audit_logs', 'ip_address'),
+      ('system_unit_standards', 'korean_name'),
+      ('system_unit_standards', 'english_code'),
+      ('company_enabled_unit_standards', 'is_enabled'),
+      ('system_outsourcing_process_standards', 'name'),
+      ('system_outsourcing_process_standards', 'category'),
+      ('company_enabled_process_standards', 'is_enabled'),
+      ('system_product_type_templates', 'is_default'),
+      ('system_product_type_template_categories', 'template_id'),
+      ('system_product_type_template_categories', 'parent_id'),
+      ('system_product_type_template_categories', 'level')
   ) AS required_columns(table_name, column_name)
   WHERE NOT EXISTS (
     SELECT 1
@@ -173,12 +189,18 @@ DECLARE
   plan_count integer;
   company_count integer;
   system_permission_count integer;
+  system_unit_standard_count integer;
+  system_process_standard_count integer;
+  system_product_template_count integer;
 BEGIN
   SELECT count(*) INTO role_count FROM role_catalog;
   SELECT count(*) INTO permission_count FROM permission_catalog;
   SELECT count(*) INTO plan_count FROM plans;
   SELECT count(*) INTO company_count FROM companies;
   SELECT count(*) INTO system_permission_count FROM system_permission_catalog;
+  SELECT count(*) INTO system_unit_standard_count FROM system_unit_standards;
+  SELECT count(*) INTO system_process_standard_count FROM system_outsourcing_process_standards;
+  SELECT count(*) INTO system_product_template_count FROM system_product_type_templates;
 
   IF role_count < 5 THEN
     RAISE EXCEPTION 'role_catalog seed count too low: %', role_count;
@@ -196,8 +218,20 @@ BEGIN
     RAISE EXCEPTION 'companies seed missing';
   END IF;
 
-  IF system_permission_count < 6 THEN
+  IF system_permission_count < 7 THEN
     RAISE EXCEPTION 'system_permission_catalog seed count too low: %', system_permission_count;
+  END IF;
+
+  IF system_unit_standard_count < 5 THEN
+    RAISE EXCEPTION 'system_unit_standards seed count too low: %', system_unit_standard_count;
+  END IF;
+
+  IF system_process_standard_count < 5 THEN
+    RAISE EXCEPTION 'system_outsourcing_process_standards seed count too low: %', system_process_standard_count;
+  END IF;
+
+  IF system_product_template_count < 1 THEN
+    RAISE EXCEPTION 'system_product_type_templates seed missing';
   END IF;
 END $$;
 
@@ -207,6 +241,9 @@ DECLARE
   orphan_company_users integer;
   orphan_plan_assignments integer;
   orphan_storage_snapshots integer;
+  orphan_company_unit_standards integer;
+  orphan_company_process_standards integer;
+  orphan_template_categories integer;
 BEGIN
   SELECT count(*)
   INTO orphan_role_permissions
@@ -235,6 +272,26 @@ BEGIN
   LEFT JOIN companies c ON c.id = sus.company_id
   WHERE c.id IS NULL;
 
+  SELECT count(*)
+  INTO orphan_company_unit_standards
+  FROM company_enabled_unit_standards ceus
+  LEFT JOIN companies c ON c.id = ceus.company_id
+  LEFT JOIN system_unit_standards sus ON sus.id = ceus.unit_standard_id
+  WHERE c.id IS NULL OR sus.id IS NULL;
+
+  SELECT count(*)
+  INTO orphan_company_process_standards
+  FROM company_enabled_process_standards ceps
+  LEFT JOIN companies c ON c.id = ceps.company_id
+  LEFT JOIN system_outsourcing_process_standards sps ON sps.id = ceps.process_standard_id
+  WHERE c.id IS NULL OR sps.id IS NULL;
+
+  SELECT count(*)
+  INTO orphan_template_categories
+  FROM system_product_type_template_categories sptc
+  LEFT JOIN system_product_type_templates spt ON spt.id = sptc.template_id
+  WHERE spt.id IS NULL;
+
   IF orphan_role_permissions > 0 THEN
     RAISE EXCEPTION 'orphan role_permissions found: %', orphan_role_permissions;
   END IF;
@@ -249,6 +306,18 @@ BEGIN
 
   IF orphan_storage_snapshots > 0 THEN
     RAISE EXCEPTION 'orphan storage_usage_snapshots found: %', orphan_storage_snapshots;
+  END IF;
+
+  IF orphan_company_unit_standards > 0 THEN
+    RAISE EXCEPTION 'orphan company_enabled_unit_standards found: %', orphan_company_unit_standards;
+  END IF;
+
+  IF orphan_company_process_standards > 0 THEN
+    RAISE EXCEPTION 'orphan company_enabled_process_standards found: %', orphan_company_process_standards;
+  END IF;
+
+  IF orphan_template_categories > 0 THEN
+    RAISE EXCEPTION 'orphan system_product_type_template_categories found: %', orphan_template_categories;
   END IF;
 END $$;
 
@@ -271,7 +340,13 @@ BEGIN
       ('company_storage_daily_stats_company_date_idx'),
       ('audit_logs_company_created_idx'),
       ('audit_logs_company_event_idx'),
-      ('audit_logs_target_idx')
+      ('audit_logs_target_idx'),
+      ('system_unit_standards_active_idx'),
+      ('company_enabled_unit_standards_company_idx'),
+      ('system_outsourcing_process_standards_active_idx'),
+      ('company_enabled_process_standards_company_idx'),
+      ('system_product_type_templates_active_idx'),
+      ('system_product_type_template_categories_template_idx')
   ) AS required_indexes(index_name)
   WHERE to_regclass('public.' || required_indexes.index_name) IS NULL;
 
@@ -303,7 +378,10 @@ SELECT
   (SELECT count(*) FROM permission_catalog) AS permissions,
   (SELECT count(*) FROM plans) AS plans,
   (SELECT count(*) FROM storage_usage_snapshots) AS storage_snapshots,
-  (SELECT count(*) FROM audit_logs) AS audit_logs;
+  (SELECT count(*) FROM audit_logs) AS audit_logs,
+  (SELECT count(*) FROM system_unit_standards) AS system_unit_standards,
+  (SELECT count(*) FROM system_outsourcing_process_standards) AS system_process_standards,
+  (SELECT count(*) FROM system_product_type_templates) AS system_product_type_templates;
 
 
 -- 0.9.22417: deleted_at columns used by storage/trash must use timestamptz.
