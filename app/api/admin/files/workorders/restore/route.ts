@@ -39,10 +39,12 @@ export async function POST(request: NextRequest) {
       actorId,
     });
 
-    if (result.ok) {
+    const restoredWorkOrderId = result.workOrderId;
+
+    if (result.ok && restoredWorkOrderId) {
       await createSystemAuditLogSafe(
         buildWorkOrderRestoredAuditLog({
-          workOrderId: result.workOrderId,
+          workOrderId: restoredWorkOrderId,
           actorId,
           companyId: WORKSPACE_COMPANY_ID,
           affectedCount: result.affectedCount,
