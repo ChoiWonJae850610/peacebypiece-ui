@@ -160,9 +160,9 @@ export const SYSTEM_AUDIT_LOG_IMPLEMENTATION_STEPS: SystemAuditLogImplementation
   },
   {
     versionHint: "0.10.11",
-    title: "repository/actionFlow 분리",
+    title: "repository/actionFlow 분리 완료",
     description:
-      "createSystemAuditLogSafe, listSystemAuditLogs, filter view model을 lib/system/audit 계층으로 분리합니다.",
+      "createSystemAuditLogSafe, listSystemAuditLogs, selector, filter action, view model 변환을 lib/system/audit 계층으로 분리했습니다.",
   },
   {
     versionHint: "0.10.12",
@@ -185,4 +185,13 @@ export const SYSTEM_AUDIT_LOG_DB_DECISIONS = [
   "event_type은 화면 문구가 아닌 domain.action 코드 형식으로 저장한다.",
   "metadata는 변경 전후 값, 파일 수, 용량, 실패 코드 같은 구조화 JSON만 저장한다.",
   "ip_address는 선택값으로 두고 화면 필터와 요약에는 기본 노출하지 않는다.",
+] as const;
+
+
+export const SYSTEM_AUDIT_LOG_LAYER_DECISIONS = [
+  "repository.ts는 audit_logs DB 읽기·쓰기와 safe wrapper만 담당한다.",
+  "actionFlow.ts는 필터 적용과 화면용 view model 변환만 담당한다.",
+  "selectors.ts는 검색어, 고객사, 대상 유형, 심각도 필터를 순수 함수로 처리한다.",
+  "types.ts는 DB schema와 화면 사이에서 공유하는 구조화 타입을 제공한다.",
+  "쓰기 연결은 각 도메인 actionFlow에서 createSystemAuditLogSafe를 호출하는 방식으로 후속 버전에서 붙인다.",
 ] as const;

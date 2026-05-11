@@ -3,6 +3,7 @@ import Link from "next/link";
 import {
   SYSTEM_AUDIT_LOG_DB_DECISIONS,
   SYSTEM_AUDIT_LOG_IMPLEMENTATION_STEPS,
+  SYSTEM_AUDIT_LOG_LAYER_DECISIONS,
   SYSTEM_AUDIT_LOG_SCHEMA_FIELDS,
   SYSTEM_AUDIT_LOG_SCOPES,
   SYSTEM_AUDIT_LOG_TARGETS,
@@ -122,6 +123,22 @@ export default function SystemAuditLogsDesignPage() {
             </p>
             <ul className="mt-4 space-y-2 text-xs leading-5 text-stone-600">
               {SYSTEM_AUDIT_LOG_DB_DECISIONS.map((decision) => (
+                <li key={decision} className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2">
+                  {decision}
+                </li>
+              ))}
+            </ul>
+          </article>
+
+
+
+          <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+            <h2 className="text-lg font-semibold text-stone-950">0.10.11 계층 분리 기준</h2>
+            <p className="mt-2 text-sm leading-6 text-stone-600">
+              감사 로그의 DB 접근, 필터, 화면 변환을 분리해 후속 API와 쓰기 연결이 기존 작업지시서·저장소 흐름을 침범하지 않도록 했습니다.
+            </p>
+            <ul className="mt-4 space-y-2 text-xs leading-5 text-stone-600">
+              {SYSTEM_AUDIT_LOG_LAYER_DECISIONS.map((decision) => (
                 <li key={decision} className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2">
                   {decision}
                 </li>
