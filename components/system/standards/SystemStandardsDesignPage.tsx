@@ -100,6 +100,14 @@ export default function SystemStandardsDesignPage() {
                   단위 표준 관리 화면 열기
                 </Link>
               ) : null}
+              {tab.id === "outsourcingProcesses" ? (
+                <Link
+                  href="/system/standards/processes"
+                  className="mt-4 inline-flex rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+                >
+                  외주공정 유형 관리 화면 열기
+                </Link>
+              ) : null}
             </article>
           ))}
         </section>

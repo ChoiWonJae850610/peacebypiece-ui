@@ -204,6 +204,12 @@ export const SYSTEM_CONSOLE_QUICK_LINKS = [
     description: "시스템 단위 표준 원장 1차 화면",
   },
   {
+    id: "system-process-standards",
+    label: "외주공정 유형 관리",
+    href: "/system/standards/processes",
+    description: "시스템 외주공정 유형 원장 1차 화면",
+  },
+  {
     id: "category-rules",
     label: "카테고리 규칙",
     href: "/system/category-rules",
