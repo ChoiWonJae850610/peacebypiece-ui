@@ -18,8 +18,12 @@ function createTokenHash(rawToken: string): string {
   return createHash("sha256").update(rawToken).digest("hex");
 }
 
-function createInviteUrl(rawToken: string): string {
-  return `/invite/${rawToken}`;
+function createInviteUrl(rawToken: string, scope: InvitationDraft["scope"]): string {
+  if (scope === "company_to_member") {
+    return `/invite/member/${rawToken}`;
+  }
+
+  return `/invite/company/${rawToken}`;
 }
 
 function createInvitationRecord(
@@ -60,7 +64,7 @@ export function createInvitationRepository(): InvitationRepository {
       return {
         invitation,
         rawToken,
-        inviteUrl: createInviteUrl(rawToken),
+        inviteUrl: createInviteUrl(rawToken, draft.scope),
       };
     },
 
