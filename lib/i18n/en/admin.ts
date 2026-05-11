@@ -140,6 +140,8 @@ export const adminEn = {
     description: "A member-management IA for handling company member invitations, join approvals, and direct permission assignment in one screen.",
     eyebrow: "Member permissions",
     permissionCount: "{count} permissions",
+    systemOnlyCount: "{count} system-only",
+    matrixEnabledCount: "{count} default checks",
     actions: { openOrganizationSettings: "Open organization settings", createInvite: "Create invitation link" },
     statuses: { ready: "Connected", planned: "Planned", pending: "Pending" },
     sourceState: { dbPending: "DB connection planned" },
@@ -162,7 +164,11 @@ export const adminEn = {
       workspaceCards: "Home card permissions",
       workspaceCardsDescription: "Cards that can appear on a member home screen when an admin grants the corresponding permissions.",
       permissionGroups: "Permission groups",
-      permissionGroupsDescription: "Permission group standards for a future DB-backed permission table."
+      permissionGroupsDescription: "Permission group standards for a future DB-backed permission table.",
+      permissionCatalog: "Permission catalog",
+      permissionCatalogDescription: "permission_code standards for DB permission_catalog and role templates.",
+      permissionMatrix: "Permission matrix",
+      permissionMatrixDescription: "Roles are default check presets; actual storage and access control use directly granted permission_code values."
     },
     tables: {
       members: { columns: { member: "Member", role: "Role", status: "Status", permissions: "Permissions", lastActive: "Last active" } },
@@ -176,9 +182,11 @@ export const adminEn = {
     },
     roles: {
       admin: { label: "Admin", description: "Default role for organization operations, settings, storage, statistics, and member permissions." },
+      company_admin: { label: "Company admin", description: "Default permission bundle for operations, settings, storage, statistics, and member permissions." },
       designer: { label: "Designer", description: "Role focused on design files, revision requests, and work order review." },
       inspector: { label: "Inspector", description: "Role focused on inbound inspection, defect checks, and completion handling." },
       inventory: { label: "Order/inventory", description: "Role focused on ordering, inbound status, outsourcing processes, and master data." },
+      inventory_manager: { label: "Inventory/materials", description: "Default permission bundle for ordering, inbound status, outsourcing processes, and materials checks." },
       viewer: { label: "Read-only", description: "Candidate role for internal or external collaborators who only need to read work flow status." }
     },
     nextSteps: {
@@ -204,10 +212,19 @@ export const adminEn = {
       memo: { label: "Memos" },
       attachment: { label: "Files/designs" },
       "master-data": { label: "Master data" },
+      partner: { label: "Partners" },
+      storage: { label: "Storage" },
       stats: { label: "Statistics" },
+      settings: { label: "Settings" },
+      member: { label: "Members" },
+      audit: { label: "Audit logs" },
+      personal: { label: "Personal settings" },
+      system: { label: "System" },
       operation: { label: "Operations" },
       "workspace-card": { label: "Home cards" }
-    }
+    },
+    permissionCatalogColumns: { code: "Permission code", group: "Group", scope: "Scope" },
+    scope: { company: "Company", system: "System" }
   },
   filesSummary: { title: "Storage usage", description: "Review plan capacity, file status, and file types based on current data.", periods: { 7: "7 days", 15: "15 days", 30: "30 days" }, uploadAmount: "Upload amount", count: "Count", fileType: "File type", fileTypeLabel: "File type", countSuffix: "items", totalUsage: "Total usage", attachments: "Documents/designs", trash: "Trash", retentionPeriod: "Retention period", usage: "Usage", refreshLabel: "Refresh storage data", documents: "Documents", designs: "Designs", memos: "Memos", others: "Other", storagePlanLabel: "Storage plan", currentPlan: "Current plan", pendingPlan: "Checking", upgrade: "Upgrade", upgradeTitle: "Plan upgrade screen will be connected in a later version.", planCapacityPending: "Checking plan", planCapacityLoading: "Checking plan capacity", planCapacityLoadingDescription: "Loading the plan capacity from customer information", usedSuffix: "used", remainingSuffix: "remaining", fileOperationsLabel: "File operations", fileOperationsTitle: "File operations summary", totalLabel: "Total", activeFiles: "Active files", trashFiles: "Trash files", purgeRequestedFiles: "Deletion requests", zeroTrashSize: "0MB stored", zeroActiveSize: "0MB used", zeroPurgeRequestSize: "0MB waiting", storedSuffix: "stored", waitingSuffix: "waiting", statuses: { normal: "Normal", caution: "Caution", danger: "Risk" }, units: { count: "items", day: "days" } },
   filesList: { title: "Document/design list", sort: { latest: "Latest", size: "By size", workorder: "By work order" }, selectAll: "Select all", clearAll: "Clear all", emptyTrash: "Empty trash", delete: "Delete", restore: "Restore", purge: "Request deletion", processing: "Processing", close: "Close", yes: "Yes", no: "No", empty: "No documents or designs to display.", trashEmpty: "No items are stored in trash.", restoreSkipsBlockedItems: "Items that cannot be restored will be skipped.", purgeSkipsBlockedItems: "Items that cannot be requested for deletion will be skipped.", selectWorkOrder: "Select work order", deselectWorkOrder: "Deselect work order", selectItem: "Select", deselectItem: "Deselect", countSuffix: "items", columns: { select: "Select", target: "Target", workorder: "Work order", createdAt: "Created", deletedAt: "Deleted", fileName: "File name", type: "Type", size: "Size" }, selectedScope: { workorder: "Work order", workorderValue: "1 representative row", bundleAttachments: "Documents/designs/memos", restoreBlocked: "Restore excluded items", totalSize: "File size" }, emptyTrashConfirmTitle: "Empty trash", emptyTrashConfirmDescription: "Request deletion for all items in trash?", workorderPurgePreview: "Review deletion request scope", workorderRestorePreview: "Review restore scope", workorderActionGuardTitle: "Review the processing scope by work order.", workorderRestoreConnectedNotice: "Restoring the work order also restores the deleted documents, designs, and memos.", workorderActionSkeletonNotice: "Request deletion is handled as a customer-admin deletion request and hidden from the default trash list. R2 file deletion is handled only in the system-admin Worker purge flow.", workorderRestoreGuardDescription: "Restoring the work order also restores the deleted documents, designs, and memos.", workorderPurgeGuardDescription: "Request deletion switches the selected scope to customer-admin deletion request status. Actual file deletion is handled in the system-admin step.", fileTypes: { document: "Document", design: "Design", other: "Other" }, attachmentCount: "Documents/designs", detailTitles: { workorder: "Work order trash details", file: "File trash details" }, detail: { openPreview: "Open file preview", previewFailed: "Preview failed", workorderActionHint: "Restoring the work order also restores the deleted documents, designs, and memos.", fileActionHint: "Restore or request deletion for this file only.", documentsDesigns: "Documents/designs", memos: "Memos", documentDesignCount: "{count} documents/designs", memoCount: "{count} memos" }, disabledReasons: { workorderRestorePreparing: "Restoring the work order also restores the deleted documents, designs, and memos.", workorderPurgePreparing: "The work order will be moved to deletion-request status and hidden from the customer-admin trash list.", bundleRestoreRequired: "Restoring the work order also restores the deleted documents, designs, and memos.", bundlePurgeRequired: "Request deletion for the work order together with its documents/designs/memos.", parentWorkOrderMissing: "The related work order could not be found.", purgeFailedNeedsSystemReview: "Deletion failed and needs system-admin review.", restoreUnavailable: "This item is not available for restore.", purgeUnavailable: "This item is not available for deletion request." }, workorderStage: { currentStage: "Current stage", deletedAtStage: "At deletion", steps: { draft: "Draft", review: "Review", order: "Order", inspection: "Inspection", completed: "Completed" } }, visual: { workorder: "Work" }, types: { workorder: "Work order" }, restorePolicies: { workorderBundle: "Work order scope" }, sizeUnit: { byte: "B", kb: "KB", mb: "MB", gb: "GB" } },

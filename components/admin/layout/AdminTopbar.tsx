@@ -40,6 +40,16 @@ function getLocalizedTopbarTitle(title: string, t: ReturnType<typeof useAdminTra
   return titleMap[title] ?? title;
 }
 
+function HomeIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3.5 10.6 12 3.75l8.5 6.85" />
+      <path d="M5.75 9.5v9.25a1.5 1.5 0 0 0 1.5 1.5h9.5a1.5 1.5 0 0 0 1.5-1.5V9.5" />
+      <path d="M9.75 20.25v-5.5a1.25 1.25 0 0 1 1.25-1.25h2a1.25 1.25 0 0 1 1.25 1.25v5.5" />
+    </svg>
+  );
+}
+
 function SettingsIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -74,8 +84,13 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
         </div>
 
         <div className="flex shrink-0 flex-wrap gap-2">
-          <Link href="/admin" className="inline-flex items-center justify-center rounded-full border border-stone-200 bg-white px-3 py-2 text-xs font-semibold text-stone-700 transition hover:bg-stone-50">
-            {t("topbar.actions.home", "홈")}
+          <Link
+            href="/admin"
+            aria-label={t("topbar.actions.home", "홈")}
+            title={t("topbar.actions.home", "홈")}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 transition hover:bg-stone-50"
+          >
+            <HomeIcon />
           </Link>
           <Link href="/me/settings" aria-label={t("topbar.actions.personalSettings", "개인 설정")} title={t("topbar.actions.personalSettings", "개인 설정")} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 transition hover:bg-stone-50">
             <SettingsIcon />

@@ -1,22 +1,24 @@
 Version :
-0.10.54
+0.10.55
 
 Summary :
-멤버관리 1차 IA 화면 재정리
+권한 카탈로그와 관리자 홈 아이콘 보정
 
 Description :
-고객관리자 멤버관리 화면을 단순 placeholder에서 멤버 목록, 초대 대기, 가입 신청 승인 대기, 역할 기본값, 권한 카드, 권한 그룹을 확인할 수 있는 1차 IA 화면으로 재구성했다. 실제 DB/API 연결 전 empty 상태와 권한 기준 표시 데이터를 분리하고 앱 버전을 0.10.54로 올렸다.
+멤버관리 화면에 권한 카탈로그와 권한 매트릭스 기준을 추가하고, role은 기본 체크값이며 실제 접근 제어는 permission_code 직접 부여 기준이라는 정책을 문서화했다. 관리자 공통 상단 타이틀 카드의 홈 버튼은 텍스트 대신 집 모양 아이콘 버튼으로 변경했다.
 
 수정 파일 목록 :
-- app/admin/members/page.tsx
+- components/admin/layout/AdminTopbar.tsx
+- components/admin/members/AdminMemberManagementDashboard.tsx
 - lib/admin/members/memberManagementPresentation.ts
+- lib/permissions/index.ts
 - lib/i18n/ko/admin.ts
 - lib/i18n/en/admin.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- components/admin/members/AdminMemberManagementDashboard.tsx
-- docs/member-management-ia-0.10.54.md
+- lib/permissions/memberPermissionMatrix.ts
+- docs/member-permission-catalog-matrix-0.10.55.md
 
 삭제 파일 목록 :
-- components/admin/members/AdminMemberManagementPlaceholder.tsx
+없음

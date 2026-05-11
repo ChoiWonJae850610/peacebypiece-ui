@@ -1,14 +1,16 @@
 import {
   ADMIN_WORKSPACE_PERMISSIONS,
-  DEFAULT_PERMISSION_PROFILES,
-  PERMISSION_GROUPS,
+  MEMBER_PERMISSION_CATALOG,
+  MEMBER_ROLE_TEMPLATE_POLICIES,
+  type MemberPermissionCode,
+  type MemberPermissionGroupKey,
+  type MemberPermissionRoleTemplateCode,
   type Permission,
-  type PermissionRole,
 } from "@/lib/permissions";
 
 export type MemberManagementStatus = "planned" | "ready" | "pending";
 
-export type MemberRolePreviewId = PermissionRole | "viewer";
+export type MemberRolePreviewId = MemberPermissionRoleTemplateCode;
 
 export type MemberRolePreview = {
   id: MemberRolePreviewId;
@@ -23,8 +25,21 @@ export type MemberPermissionCard = {
 };
 
 export type MemberPermissionGroupPreview = {
-  id: string;
+  id: MemberPermissionGroupKey;
   permissionCount: number;
+  systemOnlyCount: number;
+};
+
+export type MemberPermissionCatalogPreview = {
+  code: MemberPermissionCode;
+  group: MemberPermissionGroupKey;
+  systemOnly: boolean;
+};
+
+export type MemberPermissionMatrixPreview = {
+  roleId: MemberRolePreviewId;
+  permissionCode: MemberPermissionCode;
+  enabled: boolean;
 };
 
 export type MemberManagementSummaryCard = {
@@ -68,16 +83,14 @@ export const MEMBER_MANAGEMENT_SUMMARY_CARDS: readonly MemberManagementSummaryCa
   { id: "members", value: "0", status: "planned" },
   { id: "invitations", value: "0", status: "planned" },
   { id: "joinRequests", value: "0", status: "planned" },
-  { id: "permissionTemplates", value: "4", status: "ready" },
+  { id: "permissionTemplates", value: String(MEMBER_ROLE_TEMPLATE_POLICIES.length), status: "ready" },
 ] as const;
 
-export const MEMBER_ROLE_PREVIEWS: readonly MemberRolePreview[] = [
-  { id: "admin", permissionCount: DEFAULT_PERMISSION_PROFILES.admin.permissions.length, status: "ready" },
-  { id: "designer", permissionCount: DEFAULT_PERMISSION_PROFILES.designer.permissions.length, status: "ready" },
-  { id: "inspector", permissionCount: DEFAULT_PERMISSION_PROFILES.inspector.permissions.length, status: "ready" },
-  { id: "inventory", permissionCount: DEFAULT_PERMISSION_PROFILES.inventory.permissions.length, status: "ready" },
-  { id: "viewer", permissionCount: 2, status: "planned" },
-] as const;
+export const MEMBER_ROLE_PREVIEWS: readonly MemberRolePreview[] = MEMBER_ROLE_TEMPLATE_POLICIES.map((role) => ({
+  id: role.code,
+  permissionCount: role.permissionCodes.length,
+  status: "ready",
+}));
 
 export const MEMBER_MANAGEMENT_PERMISSION_CARDS: readonly MemberPermissionCard[] = [
   { id: "workorder", permission: ADMIN_WORKSPACE_PERMISSIONS.workorderAccess, status: "ready" },
@@ -130,7 +143,29 @@ export function getMemberManagementPermissionCards(): readonly MemberPermissionC
 }
 
 export function getMemberPermissionGroupPreviews(): readonly MemberPermissionGroupPreview[] {
-  return PERMISSION_GROUPS.map((group) => ({ id: group.key, permissionCount: group.permissions.length }));
+  const groups = Array.from(new Set(MEMBER_PERMISSION_CATALOG.map((item) => item.group)));
+  return groups.map((group) => {
+    const permissions = MEMBER_PERMISSION_CATALOG.filter((item) => item.group === group);
+    return {
+      id: group,
+      permissionCount: permissions.length,
+      systemOnlyCount: permissions.filter((item) => item.systemOnly).length,
+    };
+  });
+}
+
+export function getMemberPermissionCatalogPreviews(): readonly MemberPermissionCatalogPreview[] {
+  return MEMBER_PERMISSION_CATALOG.map((item) => ({ code: item.code, group: item.group, systemOnly: item.systemOnly }));
+}
+
+export function getMemberPermissionMatrixPreviews(): readonly MemberPermissionMatrixPreview[] {
+  return MEMBER_ROLE_TEMPLATE_POLICIES.flatMap((role) =>
+    MEMBER_PERMISSION_CATALOG.filter((permission) => !permission.systemOnly).map((permission) => ({
+      roleId: role.code,
+      permissionCode: permission.code,
+      enabled: role.permissionCodes.includes(permission.code),
+    })),
+  );
 }
 
 export function getMemberTableColumns(): readonly MemberManagementTableColumn[] {

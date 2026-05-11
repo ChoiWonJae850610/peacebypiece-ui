@@ -9,7 +9,9 @@ import {
   getMemberListPreviews,
   getMemberManagementPermissionCards,
   getMemberManagementSummaryCards,
+  getMemberPermissionCatalogPreviews,
   getMemberPermissionGroupPreviews,
+  getMemberPermissionMatrixPreviews,
   getMemberRolePreviews,
   getMemberTableColumns,
   type MemberManagementStatus,
@@ -37,6 +39,8 @@ export default function AdminMemberManagementDashboard() {
   const roles = getMemberRolePreviews();
   const permissionCards = getMemberManagementPermissionCards();
   const groups = getMemberPermissionGroupPreviews();
+  const catalogItems = getMemberPermissionCatalogPreviews();
+  const matrixItems = getMemberPermissionMatrixPreviews();
   const memberColumns = getMemberTableColumns();
   const invitationColumns = getInvitationTableColumns();
   const joinRequestColumns = getJoinRequestTableColumns();
@@ -261,22 +265,69 @@ export default function AdminMemberManagementDashboard() {
 
       <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
         <h3 className="text-base font-semibold text-stone-950">
-          {t("memberManagement.sections.permissionGroups", "권한 그룹")}
+          {t("memberManagement.sections.permissionCatalog", "권한 카탈로그")}
         </h3>
         <p className="mt-1 text-xs leading-5 text-stone-500">
-          {t("memberManagement.sections.permissionGroupsDescription", "실제 DB 권한 테이블을 만들 때 사용할 권한 그룹 기준입니다.")}
+          {t("memberManagement.sections.permissionCatalogDescription", "DB permission_catalog와 role template에 넣을 permission_code 기준입니다.")}
         </p>
-        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {groups.map((group) => (
             <div key={group.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-              <p className="text-sm font-semibold text-stone-900">
-                {t(`memberManagement.permissionGroups.${group.id}.label`, group.id)}
-              </p>
-              <p className="mt-2 text-xs font-semibold text-stone-500">
-                {t("memberManagement.permissionCount", "권한 {count}개").replace("{count}", String(group.permissionCount))}
-              </p>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-stone-900">
+                  {t(`memberManagement.permissionGroups.${group.id}.label`, group.id)}
+                </p>
+                <span className="rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-500">
+                  {t("memberManagement.permissionCount", "권한 {count}개").replace("{count}", String(group.permissionCount))}
+                </span>
+              </div>
+              {group.systemOnlyCount > 0 ? (
+                <p className="mt-2 text-xs font-semibold text-amber-700">
+                  {t("memberManagement.systemOnlyCount", "시스템 전용 {count}개").replace("{count}", String(group.systemOnlyCount))}
+                </p>
+              ) : null}
             </div>
           ))}
+        </div>
+        <div className="mt-4 overflow-hidden rounded-2xl border border-stone-200">
+          <div className="grid grid-cols-[minmax(180px,1.2fr)_120px_90px] bg-stone-50 px-3 py-2 text-xs font-semibold text-stone-500">
+            <span>{t("memberManagement.permissionCatalogColumns.code", "권한 코드")}</span>
+            <span>{t("memberManagement.permissionCatalogColumns.group", "그룹")}</span>
+            <span>{t("memberManagement.permissionCatalogColumns.scope", "범위")}</span>
+          </div>
+          <div className="max-h-64 overflow-y-auto">
+            {catalogItems.map((item) => (
+              <div key={item.code} className="grid grid-cols-[minmax(180px,1.2fr)_120px_90px] border-t border-stone-100 px-3 py-2 text-xs text-stone-600">
+                <code className="truncate font-semibold text-stone-800">{item.code}</code>
+                <span>{t(`memberManagement.permissionGroups.${item.group}.label`, item.group)}</span>
+                <span>{item.systemOnly ? t("memberManagement.scope.system", "시스템") : t("memberManagement.scope.company", "고객사")}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+        <h3 className="text-base font-semibold text-stone-950">
+          {t("memberManagement.sections.permissionMatrix", "권한 매트릭스")}
+        </h3>
+        <p className="mt-1 text-xs leading-5 text-stone-500">
+          {t("memberManagement.sections.permissionMatrixDescription", "role은 기본 체크값이고 실제 저장과 접근 제어는 permission_code 직접 부여 기준입니다.")}
+        </p>
+        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+          {roles.map((role) => {
+            const enabledCount = matrixItems.filter((item) => item.roleId === role.id && item.enabled).length;
+            return (
+              <article key={role.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+                <p className="text-sm font-semibold text-stone-900">
+                  {t(`memberManagement.roles.${role.id}.label`, role.id)}
+                </p>
+                <p className="mt-2 text-xs leading-5 text-stone-500">
+                  {t("memberManagement.matrixEnabledCount", "기본 체크 {count}개").replace("{count}", String(enabledCount))}
+                </p>
+              </article>
+            );
+          })}
         </div>
       </section>
     </div>
