@@ -39,6 +39,7 @@ type FileTrashSectionProps = {
   onToggleItem: (itemId: string) => void;
   onToggleWorkOrder?: (workOrderId: string) => void;
   onPurgeAll?: () => void;
+  onRefresh?: () => void;
   onRestore: () => void;
   onPurge: () => void;
   onRestoreItem?: (itemId: string) => void;
@@ -47,6 +48,7 @@ type FileTrashSectionProps = {
   onPurgeWorkOrder?: (workOrderId: string) => void;
   isActionPending?: boolean;
   isWorkOrderActionPending?: boolean;
+  isRefreshing?: boolean;
 };
 
 export default function FileTrashSection({
@@ -57,6 +59,7 @@ export default function FileTrashSection({
   onToggleItem,
   onToggleWorkOrder,
   onPurgeAll,
+  onRefresh,
   onRestore,
   onPurge,
   onRestoreItem,
@@ -65,6 +68,7 @@ export default function FileTrashSection({
   onPurgeWorkOrder,
   isActionPending = false,
   isWorkOrderActionPending = false,
+  isRefreshing = false,
 }: FileTrashSectionProps) {
   const t = useAdminTranslation();
   const rows = useMemo(
@@ -134,10 +138,20 @@ export default function FileTrashSection({
     isActionPending,
     isWorkOrderActionPending,
   });
+  const canRefresh = Boolean(onRefresh) && !isRefreshing;
 
   return (
     <section className="flex h-full min-h-[360px] flex-col rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm md:min-h-0">
       <AdminActionBar title={t("trashPage.title", "휴지통")}>
+        <button
+          type="button"
+          onClick={onRefresh}
+          className={getTrashActionButtonClassName(canRefresh)}
+          disabled={!canRefresh}
+          title={t("filesSummary.refreshLabel", "저장소 데이터 새로고침")}
+        >
+          {isRefreshing ? t("filesPage.refreshing", "새로고침 중") : t("terms.actions.refresh", "새로고침")}
+        </button>
         <button
           type="button"
           onClick={onRestore}

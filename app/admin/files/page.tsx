@@ -44,7 +44,11 @@ export default function AdminFilesPage() {
     "restore" | "purge" | null
   >(null);
 
-  async function refreshSnapshot() {
+  async function refreshSnapshot(options: { notify?: boolean } = {}) {
+    const shouldNotify = options.notify === true;
+    if (shouldNotify) {
+      setActionMessage(t("filesPage.refreshing", "새로고침 중입니다."));
+    }
     setIsLoadingSnapshot(true);
     try {
       const response = await fetch(
@@ -68,6 +72,11 @@ export default function AdminFilesPage() {
             { message: payload.message },
           ),
         );
+        return;
+      }
+
+      if (shouldNotify) {
+        setActionMessage(t("filesPage.refreshed", "새로고침되었습니다."));
       }
     } catch (error) {
       setActionMessage(
@@ -205,8 +214,6 @@ export default function AdminFilesPage() {
           usageCards={snapshot.usageCards}
           usageSummary={snapshot.usageSummary}
           fileTypeDistribution={snapshot.fileTypeDistribution}
-          isRefreshing={isLoadingSnapshot}
-          onRefresh={refreshSnapshot}
         />
 
         <ToastMessage message={actionMessage} />
@@ -226,6 +233,8 @@ export default function AdminFilesPage() {
             onPurgeItem={(itemId) => handlePurgeTrashItem([itemId])}
             onRestoreWorkOrder={handleRestoreWorkOrder}
             onPurgeWorkOrder={handlePurgeWorkOrder}
+            onRefresh={() => refreshSnapshot({ notify: true })}
+            isRefreshing={isLoadingSnapshot}
             isActionPending={pendingFileAction !== null}
             isWorkOrderActionPending={pendingWorkOrderAction !== null}
           />
