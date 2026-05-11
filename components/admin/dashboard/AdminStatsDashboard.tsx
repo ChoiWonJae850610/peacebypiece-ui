@@ -19,6 +19,8 @@ type AdminStatsDashboardProps = {
 };
 
 type CategoryDepthKey = "first" | "second";
+type AdminStatsSectionKey = "production" | "factory" | "period";
+
 
 function translateStatsLabel(label: string, t: ReturnType<typeof useAdminTranslation>) {
   const map: Record<string, string> = {
@@ -365,6 +367,9 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   const [categoryDepth, setCategoryDepth] = useState<CategoryDepthKey>("first");
   const [selectedCategoryLabel, setSelectedCategoryLabel] = useState<string | null>(null);
   const [selectedPeriodTopMode, setSelectedPeriodTopMode] = useState<AdminStatsPeriodTopMode>("reorder");
+  const [activeStatsSection, setActiveStatsSection] = useState<AdminStatsSectionKey>("production");
+  const [statsSectionDirection, setStatsSectionDirection] = useState(1);
+  const [isStatsSectionAnimating, setIsStatsSectionAnimating] = useState(false);
   const [customStartDate, setCustomStartDate] = useState(stats.selectedPeriodRange.isCustom ? stats.selectedPeriodRange.startDate : "");
   const [customEndDate, setCustomEndDate] = useState(stats.selectedPeriodRange.isCustom ? stats.selectedPeriodRange.endDate : "");
   const todayDateValue = getTodayLocalDateValue();
@@ -532,6 +537,19 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     () => buildAdminStatsRatioBars(translatedStats.periodTopProducts[selectedPeriodTopMode] ?? []).slice(0, 5),
     [selectedPeriodTopMode, translatedStats.periodTopProducts],
   );
+  const statsSectionTabs: Array<{ key: AdminStatsSectionKey; label: string; description: string }> = [
+    { key: "production", label: pt("statsSectionProductionLabel", "생산 구성"), description: pt("statsSectionProductionDescription", "생산품 유형과 상위 품목") },
+    { key: "factory", label: pt("statsSectionFactoryLabel", "업체 성과"), description: pt("statsSectionFactoryDescription", "업체별 생산·납기·검수") },
+    { key: "period", label: pt("statsSectionPeriodLabel", "기간 분석"), description: pt("statsSectionPeriodDescription", "기간별 리오더와 요약") },
+  ];
+  const activeStatsSectionIndex = statsSectionTabs.findIndex((item) => item.key === activeStatsSection);
+  const changeStatsSection = (nextKey: AdminStatsSectionKey) => {
+    if (nextKey === activeStatsSection) return;
+    const nextIndex = statsSectionTabs.findIndex((item) => item.key === nextKey);
+    setStatsSectionDirection(nextIndex >= activeStatsSectionIndex ? 1 : -1);
+    setIsStatsSectionAnimating(true);
+    setActiveStatsSection(nextKey);
+  };
 
   useEffect(() => {
     setSelectedCategoryLabel((current) => {
@@ -539,6 +557,14 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
       return selectedCategoryDepthBars[0]?.label ?? null;
     });
   }, [categoryDepth, selectedCategoryDepthBars]);
+
+  useEffect(() => {
+    if (!isStatsSectionAnimating) return;
+    const animationFrame = window.requestAnimationFrame(() => {
+      setIsStatsSectionAnimating(false);
+    });
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [activeStatsSection, isStatsSectionAnimating]);
 
   const renderBarList = (title: string, points: Array<{ label: string; value: number; widthPercent: number; valueLabel?: string }>, emptyLabel: string) => (
     <AdminCard className="flex h-full min-h-[320px] flex-col">
@@ -614,130 +640,167 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         </div>
       </section>
 
-      <section className="grid auto-rows-fr gap-5 xl:grid-cols-2">
-        <AdminCard className="flex h-full min-h-[320px] flex-col">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("productionMixEyebrow", pageText.productionMixEyebrow)}</p>
-              <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("productionMixTitle", pageText.productionMixTitle)}</h2>
-            </div>
-            <div className="flex rounded-full bg-stone-100 p-1">
-              {(["first", "second"] as const).map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => {
-                    setCategoryDepth(key);
-                    setSelectedCategoryLabel(null);
-                  }}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ${categoryDepth === key ? "bg-white text-stone-950 shadow-sm" : "text-stone-500"}`}
-                >
-                  {categoryDepthLabels[key]}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="mt-5 flex-1">
-            <AdminBasicDonutChart points={selectedCategoryDepthBars} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel={pt("productionMixEmpty", pageText.productionMixEmpty)} compact selectedLabel={normalizedSelectedCategoryLabel} onSelectPoint={setSelectedCategoryLabel} />
-          </div>
-          <p className="mt-4 text-xs font-semibold text-stone-500">{pt("currentBasis", pageText.currentBasis)}: {selectedCategoryDepthLabel} · {formatCount(selectedCategoryDepthTotal, pt("workorderCountSuffix", pageText.workorderCountSuffix))}</p>
-          {normalizedSelectedCategoryLabel ? <p className="mt-1 text-xs font-semibold text-[var(--admin-theme-surface)]">{pt("selectedItemLabel", pageText.selectedItemLabel)}: {normalizedSelectedCategoryLabel}</p> : null}
-        </AdminCard>
-
-        {renderBarList(categoryDetailTitle, categoryDetailPoints, categoryDetailEmptyLabel)}
-      </section>
-
-      <section className="grid auto-rows-fr gap-5 xl:grid-cols-2">
-        {renderBarList(pt("factoryPerformanceTitle", pageText.factoryPerformanceTitle), viewModel.factoryProductionBars, pt("factoryPerformanceEmpty", pageText.factoryPerformanceEmpty))}
-        <AdminCard className="flex h-full min-h-[320px] flex-col">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("delayQualityEyebrow", pageText.delayQualityEyebrow)}</p>
-          <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("delayQualityTitle", pageText.delayQualityTitle)}</h2>
-          <div className="mt-5 flex-1 overflow-hidden rounded-2xl border border-stone-100">
-            <div className="grid grid-cols-[1.2fr_0.8fr_0.8fr] bg-stone-50 px-4 py-3 text-xs font-semibold text-stone-500">
-              <span>{pt("factoryColumn", pageText.factoryColumn)}</span>
-              <span>{pt("delayRateColumn", pageText.delayRateColumn)}</span>
-              <span>{pt("qualityRateColumn", pageText.qualityRateColumn)}</span>
-            </div>
-            {translatedStats.factoryPerformance.length > 0 ? translatedStats.factoryPerformance.slice(0, 5).map((item) => {
-              const tooltip = buildFactoryMetricTooltip(item);
-              return (
-                <div key={item.label} title={tooltip} className="grid grid-cols-[1.2fr_0.8fr_0.8fr] border-t border-stone-100 px-4 py-3 text-xs font-semibold text-stone-700">
-                  <span className="truncate pr-3">{item.label} · {formatCount(item.productionCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))}</span>
-                  <span className="cursor-help underline decoration-stone-300 decoration-dotted underline-offset-4">{formatPercent(item.dueDelayRate, pt("pendingLabel", pageText.pendingLabel))}</span>
-                  <span className="cursor-help underline decoration-stone-300 decoration-dotted underline-offset-4">{formatPercent(item.qualityIssueRate, pt("pendingLabel", pageText.pendingLabel))}</span>
-                </div>
-              );
-            }) : (
-              <p className="border-t border-stone-100 px-4 py-4 text-sm font-semibold text-stone-500">{pt("factoryPerformanceEmpty", pageText.factoryPerformanceEmpty)}</p>
-            )}
-          </div>
-        </AdminCard>
-      </section>
-
-
       <section className="rounded-[28px] border border-stone-100 bg-white px-5 py-5 shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-stone-100 pb-4">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-100 pb-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("periodAnalysisEyebrow", pageText.periodAnalysisEyebrow)}</p>
-            <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("periodAnalysisTitle", pageText.periodAnalysisTitle)}</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("statsSectionEyebrow", "dashboard sections")}</p>
+            <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("statsSectionTitle", "통계 섹션")}</h2>
           </div>
-          <div className="flex w-full flex-wrap items-center justify-start gap-2 lg:w-auto lg:justify-end">
-            <div className="w-full min-w-[280px] max-w-[440px] flex-1 sm:w-auto sm:flex-none">
-              <AdminStatsDateRangePicker
-                startDate={customStartDate}
-                endDate={customEndDate}
-                maxDateValue={todayDateValue}
-                labels={dateRangeLabels}
-                locale={locale}
-                onStartDateChange={updateCustomStartDate}
-                onEndDateChange={updateCustomEndDate}
-              />
-            </div>
-            {activePeriodOptions.map((item) => (
-              <Link
-                key={item.key}
-                href={item.href}
-                aria-current={item.active ? "page" : undefined}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${item.active ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "bg-stone-50 text-stone-500 hover:bg-stone-100"}`}
-              >
-                {translateStatsLabel(item.label, t)}
-              </Link>
-            ))}
-            <Link
-              href="/admin/dashboard?period=30d"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-white text-sm font-semibold text-stone-500 shadow-sm transition hover:bg-stone-50"
-              aria-label={pt("customReset", pageText.customReset)}
-              title={pt("customReset", pageText.customReset)}
-            >
-              ↻
-            </Link>
-            <Link
-              href={customPeriodHref}
-              aria-disabled={!isCustomPeriodValid}
-              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${isCustomPeriodValid ? "bg-stone-950 text-white hover:bg-stone-800" : "pointer-events-none bg-stone-100 text-stone-400"}`}
-            >
-              {pt("customApplyShort", pageText.customApply)}
-            </Link>
+          <div className="flex flex-wrap items-center gap-2 rounded-full bg-stone-50 p-1">
+            {statsSectionTabs.map((item) => {
+              const isActive = item.key === activeStatsSection;
+              return (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => changeStatsSection(item.key)}
+                  className={`rounded-full px-4 py-2 text-xs font-semibold transition ${isActive ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)] shadow-sm" : "text-stone-500 hover:bg-white hover:text-stone-800"}`}
+                  aria-pressed={isActive}
+                  title={item.description}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
           </div>
         </div>
-        {customPeriodMessage ? <p className="mt-3 text-xs font-semibold text-amber-700">{customPeriodMessage}</p> : null}
-        <div className="mt-4 grid auto-rows-fr gap-5 xl:grid-cols-2">
-          <PeriodTopCard
-            eyebrow={pt("periodTopEyebrow", pageText.reorderTopEyebrow)}
-            title={periodTopModeTitle[selectedPeriodTopMode]}
-            basis={periodTopModeBasis[selectedPeriodTopMode]}
-            items={selectedPeriodTopProducts}
-            emptyLabel={periodTopModeEmpty[selectedPeriodTopMode]}
-            valueSuffix={periodTopValueSuffix}
-          />
-          <PeriodSummaryCard
-            title={pt("periodSummaryTitle", pageText.periodSummaryTitle)}
-            items={periodSummaryItems}
-            selectedKey={selectedPeriodTopMode}
-            onSelect={setSelectedPeriodTopMode}
-          />
+
+        <div
+          key={activeStatsSection}
+          className={`mt-5 transform-gpu transition-all duration-200 ease-out ${isStatsSectionAnimating ? (statsSectionDirection >= 0 ? "translate-x-4 opacity-0" : "-translate-x-4 opacity-0") : "translate-x-0 opacity-100"}`}
+        >
+          {activeStatsSection === "production" ? (
+            <div className="grid auto-rows-fr gap-5 xl:grid-cols-2">
+              <AdminCard className="flex h-full min-h-[320px] flex-col">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("productionMixEyebrow", pageText.productionMixEyebrow)}</p>
+                    <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("productionMixTitle", pageText.productionMixTitle)}</h2>
+                  </div>
+                  <div className="flex rounded-full bg-stone-100 p-1">
+                    {(["first", "second"] as const).map((key) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => {
+                          setCategoryDepth(key);
+                          setSelectedCategoryLabel(null);
+                        }}
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${categoryDepth === key ? "bg-white text-stone-950 shadow-sm" : "text-stone-500"}`}
+                      >
+                        {categoryDepthLabels[key]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-5 flex-1">
+                  <AdminBasicDonutChart points={selectedCategoryDepthBars} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel={pt("productionMixEmpty", pageText.productionMixEmpty)} compact selectedLabel={normalizedSelectedCategoryLabel} onSelectPoint={setSelectedCategoryLabel} />
+                </div>
+                <p className="mt-4 text-xs font-semibold text-stone-500">{pt("currentBasis", pageText.currentBasis)}: {selectedCategoryDepthLabel} · {formatCount(selectedCategoryDepthTotal, pt("workorderCountSuffix", pageText.workorderCountSuffix))}</p>
+                {normalizedSelectedCategoryLabel ? <p className="mt-1 text-xs font-semibold text-[var(--admin-theme-surface)]">{pt("selectedItemLabel", pageText.selectedItemLabel)}: {normalizedSelectedCategoryLabel}</p> : null}
+              </AdminCard>
+
+              {renderBarList(categoryDetailTitle, categoryDetailPoints, categoryDetailEmptyLabel)}
+            </div>
+          ) : null}
+
+          {activeStatsSection === "factory" ? (
+            <div className="grid auto-rows-fr gap-5 xl:grid-cols-2">
+              {renderBarList(pt("factoryPerformanceTitle", pageText.factoryPerformanceTitle), viewModel.factoryProductionBars, pt("factoryPerformanceEmpty", pageText.factoryPerformanceEmpty))}
+              <AdminCard className="flex h-full min-h-[320px] flex-col">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("delayQualityEyebrow", pageText.delayQualityEyebrow)}</p>
+                <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("delayQualityTitle", pageText.delayQualityTitle)}</h2>
+                <div className="mt-5 flex-1 overflow-hidden rounded-2xl border border-stone-100">
+                  <div className="grid grid-cols-[1.2fr_0.8fr_0.8fr] bg-stone-50 px-4 py-3 text-xs font-semibold text-stone-500">
+                    <span>{pt("factoryColumn", pageText.factoryColumn)}</span>
+                    <span>{pt("delayRateColumn", pageText.delayRateColumn)}</span>
+                    <span>{pt("qualityRateColumn", pageText.qualityRateColumn)}</span>
+                  </div>
+                  {translatedStats.factoryPerformance.length > 0 ? translatedStats.factoryPerformance.slice(0, 5).map((item) => {
+                    const tooltip = buildFactoryMetricTooltip(item);
+                    return (
+                      <div key={item.label} title={tooltip} className="grid grid-cols-[1.2fr_0.8fr_0.8fr] border-t border-stone-100 px-4 py-3 text-xs font-semibold text-stone-700">
+                        <span className="truncate pr-3">{item.label} · {formatCount(item.productionCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))}</span>
+                        <span className="cursor-help underline decoration-stone-300 decoration-dotted underline-offset-4">{formatPercent(item.dueDelayRate, pt("pendingLabel", pageText.pendingLabel))}</span>
+                        <span className="cursor-help underline decoration-stone-300 decoration-dotted underline-offset-4">{formatPercent(item.qualityIssueRate, pt("pendingLabel", pageText.pendingLabel))}</span>
+                      </div>
+                    );
+                  }) : (
+                    <p className="border-t border-stone-100 px-4 py-4 text-sm font-semibold text-stone-500">{pt("factoryPerformanceEmpty", pageText.factoryPerformanceEmpty)}</p>
+                  )}
+                </div>
+              </AdminCard>
+            </div>
+          ) : null}
+
+          {activeStatsSection === "period" ? (
+            <div>
+              <div className="flex flex-wrap items-center justify-between gap-4 rounded-[24px] border border-stone-100 bg-stone-50/70 px-4 py-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("periodAnalysisEyebrow", pageText.periodAnalysisEyebrow)}</p>
+                  <h3 className="mt-1 text-sm font-semibold text-stone-950">{pt("periodAnalysisTitle", pageText.periodAnalysisTitle)}</h3>
+                </div>
+                <div className="flex w-full flex-wrap items-center justify-start gap-2 lg:w-auto lg:justify-end">
+                  <div className="w-full min-w-[280px] max-w-[440px] flex-1 sm:w-auto sm:flex-none">
+                    <AdminStatsDateRangePicker
+                      startDate={customStartDate}
+                      endDate={customEndDate}
+                      maxDateValue={todayDateValue}
+                      labels={dateRangeLabels}
+                      locale={locale}
+                      onStartDateChange={updateCustomStartDate}
+                      onEndDateChange={updateCustomEndDate}
+                    />
+                  </div>
+                  {activePeriodOptions.map((item) => (
+                    <Link
+                      key={item.key}
+                      href={item.href}
+                      aria-current={item.active ? "page" : undefined}
+                      className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${item.active ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "bg-white text-stone-500 hover:bg-stone-100"}`}
+                    >
+                      {translateStatsLabel(item.label, t)}
+                    </Link>
+                  ))}
+                  <Link
+                    href="/admin/dashboard?period=30d"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-white text-sm font-semibold text-stone-500 shadow-sm transition hover:bg-stone-50"
+                    aria-label={pt("customReset", pageText.customReset)}
+                    title={pt("customReset", pageText.customReset)}
+                  >
+                    ↻
+                  </Link>
+                  <Link
+                    href={customPeriodHref}
+                    aria-disabled={!isCustomPeriodValid}
+                    className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${isCustomPeriodValid ? "bg-stone-950 text-white hover:bg-stone-800" : "pointer-events-none bg-stone-100 text-stone-400"}`}
+                  >
+                    {pt("customApplyShort", pageText.customApply)}
+                  </Link>
+                </div>
+              </div>
+              {customPeriodMessage ? <p className="mt-3 text-xs font-semibold text-amber-700">{customPeriodMessage}</p> : null}
+              <div className="mt-4 grid auto-rows-fr gap-5 xl:grid-cols-2">
+                <PeriodTopCard
+                  eyebrow={pt("periodTopEyebrow", pageText.reorderTopEyebrow)}
+                  title={periodTopModeTitle[selectedPeriodTopMode]}
+                  basis={periodTopModeBasis[selectedPeriodTopMode]}
+                  items={selectedPeriodTopProducts}
+                  emptyLabel={periodTopModeEmpty[selectedPeriodTopMode]}
+                  valueSuffix={periodTopValueSuffix}
+                />
+                <PeriodSummaryCard
+                  title={pt("periodSummaryTitle", pageText.periodSummaryTitle)}
+                  items={periodSummaryItems}
+                  selectedKey={selectedPeriodTopMode}
+                  onSelect={setSelectedPeriodTopMode}
+                />
+              </div>
+            </div>
+          ) : null}
         </div>
       </section>
+
     </>
   );
 }
