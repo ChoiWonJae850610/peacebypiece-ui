@@ -284,9 +284,9 @@ function PeriodSummaryCard({
   onSelect: (key: AdminStatsPeriodTopMode) => void;
 }) {
   return (
-    <div className="flex h-full min-h-[240px] flex-col rounded-[24px] border border-stone-100 bg-stone-50/70 p-4">
+    <div className="flex h-full min-h-[220px] flex-col rounded-[24px] border border-stone-100 bg-stone-50/70 p-3">
       <h3 className="text-sm font-semibold text-stone-950">{title}</h3>
-      <div className="mt-3 grid flex-1 content-start gap-2">
+      <div className="mt-2 grid flex-1 content-start gap-1.5">
         {items.map((item) => {
           const isSelected = item.key === selectedKey;
           return (
@@ -294,13 +294,13 @@ function PeriodSummaryCard({
               key={item.key}
               type="button"
               onClick={() => onSelect(item.key)}
-              className={`min-h-[68px] rounded-2xl border px-4 py-3 text-left shadow-sm transition ${isSelected ? "border-stone-950 bg-white" : "border-stone-100 bg-white hover:border-stone-200 hover:bg-stone-50"}`}
+              className={`min-h-[58px] rounded-2xl border px-3 py-2.5 text-left shadow-sm transition ${isSelected ? "border-stone-950 bg-white" : "border-stone-100 bg-white hover:border-stone-200 hover:bg-stone-50"}`}
               aria-pressed={isSelected}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-stone-800">{item.label}</p>
-                  <p className="mt-1 text-[11px] font-semibold leading-5 text-stone-400">{item.description}</p>
+                  <p className="mt-0.5 line-clamp-1 text-[11px] font-semibold leading-4 text-stone-400">{item.description}</p>
                 </div>
                 <p className="shrink-0 text-lg font-bold text-stone-950">{item.value}</p>
               </div>
@@ -315,7 +315,6 @@ function PeriodSummaryCard({
 function PeriodTopCard({
   eyebrow,
   title,
-  basis,
   items,
   emptyLabel,
   valueSuffix,
@@ -328,18 +327,17 @@ function PeriodTopCard({
   valueSuffix: string;
 }) {
   return (
-    <AdminCard className="flex h-full min-h-[240px] flex-col">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{eyebrow}</p>
-      <h2 className="mt-2 text-lg font-semibold text-stone-950">{title}</h2>
-      <p className="mt-1 text-xs font-semibold leading-5 text-stone-500">{basis}</p>
-      <div className="mt-4 grid flex-1 content-start gap-3">
+    <AdminCard className="flex h-full min-h-[220px] flex-col p-4">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">{eyebrow}</p>
+      <h2 className="mt-1 text-base font-semibold text-stone-950">{title}</h2>
+      <div className="mt-3 grid flex-1 content-start gap-2.5">
         {items.length > 0 ? items.map((item, index) => (
-          <div key={`${item.label}-${index}`} className="rounded-2xl bg-stone-50 px-4 py-3">
+          <div key={`${item.label}-${index}`} className="rounded-2xl bg-stone-50 px-3 py-2.5">
             <div className="flex items-center justify-between text-sm font-semibold text-stone-700">
               <span className="truncate pr-3">{index + 1}. {item.label}</span>
               <span className="shrink-0 text-stone-950">{formatCount(item.value, valueSuffix)}</span>
             </div>
-            <div className="mt-2 h-1.5 rounded-full bg-white">
+            <div className="mt-1.5 h-1.5 rounded-full bg-white">
               <div className="h-1.5 rounded-full bg-[var(--admin-theme-surface)]" style={{ width: `${item.widthPercent}%` }} />
             </div>
           </div>
@@ -351,11 +349,11 @@ function PeriodTopCard({
 
 function CurrentSummaryCard({ label, value, description, subValue }: { label: string; value: string; description: string; subValue?: string }) {
   return (
-    <div className="flex h-full min-h-[138px] flex-col rounded-[24px] border border-stone-100 bg-white px-5 py-4 shadow-sm">
+    <div className="flex h-full min-h-[112px] flex-col rounded-[22px] border border-stone-100 bg-white px-4 py-3 shadow-sm">
       <p className="text-xs font-semibold text-stone-500">{label}</p>
-      <p className="mt-2 text-2xl font-bold text-stone-950">{value}</p>
-      <p className="mt-1 flex-1 text-xs font-semibold leading-5 text-stone-500">{description}</p>
-      {subValue ? <p className="mt-2 text-[11px] font-semibold text-stone-400">{subValue}</p> : null}
+      <p className="mt-1.5 text-xl font-bold text-stone-950">{value}</p>
+      <p className="mt-1 flex-1 text-xs font-semibold leading-4 text-stone-500">{description}</p>
+      {subValue ? <p className="sr-only">{subValue}</p> : null}
     </div>
   );
 }
@@ -567,9 +565,9 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   }, [activeStatsSection, isStatsSectionAnimating]);
 
   const renderBarList = (title: string, points: Array<{ label: string; value: number; widthPercent: number; valueLabel?: string }>, emptyLabel: string) => (
-    <AdminCard className="flex h-full min-h-[300px] flex-col">
-      <h2 className="text-lg font-semibold text-stone-950">{title}</h2>
-      <div className="mt-4 grid flex-1 content-start gap-3">
+    <AdminCard className="flex h-full min-h-[268px] flex-col p-4">
+      <h2 className="text-base font-semibold text-stone-950">{title}</h2>
+      <div className="mt-3 grid flex-1 content-start gap-2.5">
         {points.length > 0 ? points.map((item) => (
           <div key={item.label}>
             <div className="flex items-center justify-between text-xs font-semibold text-stone-600">
@@ -632,19 +630,18 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
       ) : null}
 
       <section>
-        <div className="grid auto-rows-fr gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid auto-rows-fr gap-3 md:grid-cols-2 xl:grid-cols-4">
           <CurrentSummaryCard label={pt("currentProducedLabel", pageText.currentProducedLabel)} value={formatCount(stats.currentOverview.totalProducedCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))} description={pt("currentReorderDescription", pageText.currentReorderDescription).replace("{count}", formatCount(totalReorderCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)))} />
           <CurrentSummaryCard label={pt("currentDelayRateLabel", pageText.currentDelayRateLabel)} value={formatPercent(stats.currentOverview.dueDelayRate, pt("pendingLabel", pageText.pendingLabel))} description={pt("currentRateBasis", pageText.currentRateBasis).replace("{count}", formatCount(stats.currentOverview.dueDelayCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))).replace("{target}", formatCount(stats.currentOverview.dueDateTargetCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)))} />
           <CurrentSummaryCard label={pt("currentQualityRateLabel", pageText.currentQualityRateLabel)} value={formatPercent(stats.currentOverview.qualityIssueRate, pt("pendingLabel", pageText.pendingLabel))} description={pt("currentRateBasis", pageText.currentRateBasis).replace("{count}", formatCount(stats.currentOverview.qualityIssueCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))).replace("{target}", formatCount(stats.currentOverview.qualityTargetCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)))} />
-          <CurrentSummaryCard label={pt("currentStorageUsageLabel", pageText.currentStorageUsageLabel)} value={`${storageUsePercent}%`} description={formatStorageGb(stats.currentOverview.storageUsedBytes, stats.currentOverview.storageLimitBytes)} subValue={formatStorageMb(stats.currentOverview.storageUsedBytes, pt("usedSuffix", pageText.usedSuffix))} />
+          <CurrentSummaryCard label={pt("currentStorageUsageLabel", pageText.currentStorageUsageLabel)} value={`${storageUsePercent}%`} description={formatStorageGb(stats.currentOverview.storageUsedBytes, stats.currentOverview.storageLimitBytes)} />
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-[28px] border border-stone-100 bg-white px-4 py-4 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-100 pb-3">
+      <section className="overflow-hidden rounded-[26px] border border-stone-100 bg-white px-3 py-3 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-100 pb-2">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("statsSectionEyebrow", "dashboard sections")}</p>
-            <h2 className="mt-1.5 text-lg font-semibold text-stone-950">{pt("statsSectionTitle", "통계 섹션")}</h2>
+            <h2 className="text-base font-semibold text-stone-950">{pt("statsSectionTitle", "통계 섹션")}</h2>
           </div>
           <div className="flex flex-wrap items-center gap-2 rounded-full bg-stone-50 p-1">
             {statsSectionTabs.map((item) => {
@@ -665,18 +662,18 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
           </div>
         </div>
 
-        <div className="mt-4 min-h-[340px] overflow-hidden">
+        <div className="mt-3 min-h-[308px] overflow-hidden">
           <div
             key={activeStatsSection}
             className={`transform-gpu transition-[opacity,transform] duration-200 ease-out motion-reduce:transform-none motion-reduce:transition-none ${isStatsSectionAnimating ? (statsSectionDirection >= 0 ? "translate-x-3 opacity-0" : "-translate-x-3 opacity-0") : "translate-x-0 opacity-100"}`}
           >
           {activeStatsSection === "production" ? (
-            <div className="grid auto-rows-fr gap-4 xl:grid-cols-2">
-              <AdminCard className="flex h-full min-h-[300px] flex-col">
+            <div className="grid auto-rows-fr gap-3 xl:grid-cols-2">
+              <AdminCard className="flex h-full min-h-[268px] flex-col p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("productionMixEyebrow", pageText.productionMixEyebrow)}</p>
-                    <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("productionMixTitle", pageText.productionMixTitle)}</h2>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("productionMixEyebrow", pageText.productionMixEyebrow)}</p>
+                    <h2 className="mt-1 text-base font-semibold text-stone-950">{pt("productionMixTitle", pageText.productionMixTitle)}</h2>
                   </div>
                   <div className="flex rounded-full bg-stone-100 p-1">
                     {(["first", "second"] as const).map((key) => (
@@ -694,11 +691,11 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
                     ))}
                   </div>
                 </div>
-                <div className="mt-4 flex-1">
+                <div className="mt-2 flex-1">
                   <AdminBasicDonutChart points={selectedCategoryDepthBars} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel={pt("productionMixEmpty", pageText.productionMixEmpty)} compact selectedLabel={normalizedSelectedCategoryLabel} onSelectPoint={setSelectedCategoryLabel} />
                 </div>
-                <p className="mt-4 text-xs font-semibold text-stone-500">{pt("currentBasis", pageText.currentBasis)}: {selectedCategoryDepthLabel} · {formatCount(selectedCategoryDepthTotal, pt("workorderCountSuffix", pageText.workorderCountSuffix))}</p>
-                {normalizedSelectedCategoryLabel ? <p className="mt-1 text-xs font-semibold text-[var(--admin-theme-surface)]">{pt("selectedItemLabel", pageText.selectedItemLabel)}: {normalizedSelectedCategoryLabel}</p> : null}
+                <p className="mt-2 text-[11px] font-semibold text-stone-500">{selectedCategoryDepthLabel} · {formatCount(selectedCategoryDepthTotal, pt("workorderCountSuffix", pageText.workorderCountSuffix))}</p>
+                {normalizedSelectedCategoryLabel ? <p className="mt-0.5 text-[11px] font-semibold text-[var(--admin-theme-surface)]">{pt("selectedItemLabel", pageText.selectedItemLabel)}: {normalizedSelectedCategoryLabel}</p> : null}
               </AdminCard>
 
               {renderBarList(categoryDetailTitle, categoryDetailPoints, categoryDetailEmptyLabel)}
@@ -706,13 +703,13 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
           ) : null}
 
           {activeStatsSection === "factory" ? (
-            <div className="grid auto-rows-fr gap-4 xl:grid-cols-2">
+            <div className="grid auto-rows-fr gap-3 xl:grid-cols-2">
               {renderBarList(pt("factoryPerformanceTitle", pageText.factoryPerformanceTitle), viewModel.factoryProductionBars, pt("factoryPerformanceEmpty", pageText.factoryPerformanceEmpty))}
-              <AdminCard className="flex h-full min-h-[300px] flex-col">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("delayQualityEyebrow", pageText.delayQualityEyebrow)}</p>
-                <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("delayQualityTitle", pageText.delayQualityTitle)}</h2>
-                <div className="mt-4 flex-1 overflow-hidden rounded-2xl border border-stone-100">
-                  <div className="grid grid-cols-[1.2fr_0.8fr_0.8fr] bg-stone-50 px-4 py-3 text-xs font-semibold text-stone-500">
+              <AdminCard className="flex h-full min-h-[268px] flex-col p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("delayQualityEyebrow", pageText.delayQualityEyebrow)}</p>
+                <h2 className="mt-1 text-base font-semibold text-stone-950">{pt("delayQualityTitle", pageText.delayQualityTitle)}</h2>
+                <div className="mt-3 flex-1 overflow-hidden rounded-2xl border border-stone-100">
+                  <div className="grid grid-cols-[1.2fr_0.8fr_0.8fr] bg-stone-50 px-4 py-2 text-xs font-semibold text-stone-500">
                     <span>{pt("factoryColumn", pageText.factoryColumn)}</span>
                     <span>{pt("delayRateColumn", pageText.delayRateColumn)}</span>
                     <span>{pt("qualityRateColumn", pageText.qualityRateColumn)}</span>
@@ -720,7 +717,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
                   {translatedStats.factoryPerformance.length > 0 ? translatedStats.factoryPerformance.slice(0, 5).map((item) => {
                     const tooltip = buildFactoryMetricTooltip(item);
                     return (
-                      <div key={item.label} title={tooltip} className="grid grid-cols-[1.2fr_0.8fr_0.8fr] border-t border-stone-100 px-4 py-3 text-xs font-semibold text-stone-700">
+                      <div key={item.label} title={tooltip} className="grid grid-cols-[1.2fr_0.8fr_0.8fr] border-t border-stone-100 px-4 py-2.5 text-xs font-semibold text-stone-700">
                         <span className="truncate pr-3">{item.label} · {formatCount(item.productionCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))}</span>
                         <span className="cursor-help underline decoration-stone-300 decoration-dotted underline-offset-4">{formatPercent(item.dueDelayRate, pt("pendingLabel", pageText.pendingLabel))}</span>
                         <span className="cursor-help underline decoration-stone-300 decoration-dotted underline-offset-4">{formatPercent(item.qualityIssueRate, pt("pendingLabel", pageText.pendingLabel))}</span>
@@ -736,10 +733,9 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
 
           {activeStatsSection === "period" ? (
             <div>
-              <div className="flex flex-wrap items-center justify-between gap-4 rounded-[24px] border border-stone-100 bg-stone-50/70 px-4 py-2.5">
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-[22px] border border-stone-100 bg-stone-50/70 px-3 py-2">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("periodAnalysisEyebrow", pageText.periodAnalysisEyebrow)}</p>
-                  <h3 className="mt-1 text-sm font-semibold text-stone-950">{pt("periodAnalysisTitle", pageText.periodAnalysisTitle)}</h3>
+                  <h3 className="text-sm font-semibold text-stone-950">{pt("periodAnalysisTitle", pageText.periodAnalysisTitle)}</h3>
                 </div>
                 <div className="flex w-full flex-wrap items-center justify-start gap-2 lg:w-auto lg:justify-end">
                   <div className="w-full min-w-[280px] max-w-[440px] flex-1 sm:w-auto sm:flex-none">
@@ -781,7 +777,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
                 </div>
               </div>
               {customPeriodMessage ? <p className="mt-3 text-xs font-semibold text-amber-700">{customPeriodMessage}</p> : null}
-              <div className="mt-4 grid auto-rows-fr gap-4 xl:grid-cols-2">
+              <div className="mt-3 grid auto-rows-fr gap-3 xl:grid-cols-2">
                 <PeriodTopCard
                   eyebrow={pt("periodTopEyebrow", pageText.reorderTopEyebrow)}
                   title={periodTopModeTitle[selectedPeriodTopMode]}
