@@ -62,17 +62,17 @@ export const adminKo = {
   navigation: { dashboard: "대시보드", workorder: "작업지시서", partners: "협력업체 관리", storage: "저장소 관리", statistics: "통계정보", history: "히스토리", settings: "환경설정", dbConnected: "DB 상태 점검" },
   operationsDashboard: { title: "운영 대시보드", sourceDb: "DB 기준 업무 대기 항목을 표시합니다.", sourceNotConfigured: "DB 연결 설정이 없어 0건으로 표시됩니다.", sourceError: "DB 조회 실패로 0건으로 표시됩니다.", periodAria: "대시보드 기간 선택", periods: { today: "오늘", week: "이번주", month: "이번달" }, todayWorkTitle: "검토·발주 대기", todayWorkDescription: "관리자 검토와 발주 처리가 필요한 작업지시서를 확인합니다.", priorityTitle: "주요 대기 현황", dueLabel: "납기", statusFlowTitle: "상태 흐름", statusDistributionTitle: "상태 분포", todayCheckTitle: "오늘 체크", previewEmpty: "미리보기", attachmentLabel: "첨부", factoryLabel: "공장", quantityLabel: "수량", updatedLabel: "업데이트", openWorkorder: "작업지시서 열기", todayTasksEmpty: "오늘 확인할 검토·발주 대기 작업지시서가 없습니다.", countSuffix: "건", statusDistribution: { working: "작업중", reviewWaiting: "검토대기", inboundWaiting: "검수대기", completed: "완료" }, insights: { reviewWaiting: "검토 대기", reviewWaitingDescription: "관리자 검토가 필요한 작업지시서", orderWaiting: "발주 대기", orderWaitingDescription: "검토 완료 후 발주 처리가 필요한 작업지시서", inspectionWaiting: "검수 대기", inspectionWaitingDescription: "검수 또는 입고 확인이 필요한 작업지시서", inboundDelayed: "입고 지연", inboundDelayedDescription: "납기일 0시 기준 24시간이 지난 검수대기 작업지시서" }, todayTasks: { duePending: "납기 미정", overdue: "지연", dueToday: "오늘", dueTomorrow: "내일", dueAfter: "D-{days}", status: { reviewRequested: "검토대기", inspection: "검수대기", reviewCompleted: "발주대기", rejected: "반려", draft: "작성중" }, priority: { review: "검토 필요", inspection: "검수 필요", order: "발주 확인" }, factoryPending: "공장 미정", quantityPending: "수량 미정", quantityValue: "{count}장", updatedPending: "기록 없음", updatedMinutes: "{minutes}분 전", updatedHours: "{hours}시간 전", updatedDays: "{days}일 전" } },
   adminConsole: {
-    actions: { open: "화면 열기" },
+    actions: { open: "열기" },
     statuses: { available: "사용 가능", planned: "준비 중", linked: "화면 연결", api: "API 준비", legacy: "기존 기능" },
     permissionLabel: "권한",
     managementCards: {
-      title: "주요 메뉴",
-      description: "고객관리자 홈은 좌측 패널 없이 필요한 관리 화면으로 바로 이동하는 카드형 구조를 사용합니다.",
-      cardCount: "기본 카드 4개 + 멤버관리 후보",
+      title: "운영 관리",
+      description: "",
+      cardCount: "",
     },
     futurePermissions: {
       title: "기준정보",
-      description: "단위표준, 외주공정, 생산품유형은 고객관리자 전용 메뉴로 고정하지 않고 멤버 권한에 따라 노출할 후보로 남깁니다.",
+      description: "",
     },
     links: {
       "workorder-entry": { label: "작업지시서 업무 화면", description: "작업지시서 목록과 상세 업무 화면으로 이동합니다." },
@@ -80,10 +80,10 @@ export const adminKo = {
       files: { label: "저장소 관리", description: "문서/디자인, 휴지통, 용량 사용량을 관리합니다." },
       stats: { label: "통계정보", description: "작업지시서, 협력업체, 파일 사용량 지표를 확인합니다." },
       settings: { label: "환경설정", description: "고객사별 화면, 파일, 알림 정책을 관리합니다." },
-      "member-management": { label: "멤버 관리", description: "초대 수락 이후 멤버 권한 관리 화면으로 확장할 영역입니다." },
-      "standard-units": { label: "단위표준", description: "원단, 부자재, 생산 수량 단위 기준을 멤버에게 위임할 수 있는 관리 영역입니다." },
-      "outsourcing-processes": { label: "외주공정", description: "나염, 자수, 워싱 등 외주공정 기준을 멤버에게 위임할 수 있는 관리 영역입니다." },
-      "product-types": { label: "생산품유형", description: "작업지시서 품목 분류 기준을 멤버에게 위임할 수 있는 관리 영역입니다." }
+      "member-management": { label: "멤버 관리", description: "멤버 초대와 역할 설정을 관리합니다." },
+      "standard-units": { label: "단위표준", description: "원단, 부자재, 생산 수량에 사용하는 단위 기준을 관리합니다." },
+      "outsourcing-processes": { label: "외주공정", description: "나염, 자수, 워싱 등 외주공정 기준을 관리합니다." },
+      "product-types": { label: "생산품유형", description: "작업지시서 품목과 생산품 분류 기준을 관리합니다." }
     }
   },
   filesSummary: { title: "저장소 사용 현황", description: "요금제 용량, 파일 상태, 파일 유형을 현재 기준으로 확인합니다.", periods: { 7: "7일", 15: "15일", 30: "30일" }, uploadAmount: "첨부량", count: "건수", fileType: "파일 유형", fileTypeLabel: "파일 유형", countSuffix: "개", totalUsage: "전체 사용량", attachments: "문서/디자인", trash: "휴지통", retentionPeriod: "보관 기간", usage: "사용량", refreshLabel: "저장소 데이터 새로고침", documents: "문서", designs: "디자인", memos: "작업메모", others: "기타", storagePlanLabel: "요금제 용량", currentPlan: "현재 요금제", pendingPlan: "확인 중", upgrade: "업그레이드", upgradeTitle: "요금제 업그레이드 화면은 후속 버전에서 연결합니다.", planCapacityPending: "요금제 확인 중", planCapacityLoading: "요금제 용량 확인 중", planCapacityLoadingDescription: "고객 정보의 요금제 용량을 불러오는 중", usedSuffix: "사용", remainingSuffix: "남음", fileOperationsLabel: "파일 운영", fileOperationsTitle: "파일 운영 요약", totalLabel: "전체", activeFiles: "사용중 파일", trashFiles: "휴지통 파일", purgeRequestedFiles: "삭제 요청", zeroTrashSize: "0MB 보관", zeroActiveSize: "0MB 사용", zeroPurgeRequestSize: "0MB 처리 대기", storedSuffix: "보관", waitingSuffix: "처리 대기", statuses: { normal: "정상", caution: "주의", danger: "위험" }, units: { count: "개", day: "일" } },

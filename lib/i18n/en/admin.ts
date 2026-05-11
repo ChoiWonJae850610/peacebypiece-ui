@@ -111,17 +111,17 @@ export const adminEn = {
     },
   },
   adminConsole: {
-    actions: { open: "Open screen" },
+    actions: { open: "Open" },
     statuses: { available: "Available", planned: "Preparing", linked: "Connected", api: "API ready", legacy: "Existing" },
     permissionLabel: "Permission",
     managementCards: {
-      title: "Main menu",
-      description: "The customer admin home uses dashboard cards instead of a left sidebar so users can move directly to the required management screen.",
-      cardCount: "4 default cards + member management candidate",
+      title: "Operations",
+      description: "",
+      cardCount: "",
     },
     futurePermissions: {
       title: "Master data",
-      description: "Standard units, outsourcing processes, and product types remain permission-based candidates instead of fixed customer-admin-only menus.",
+      description: "",
     },
     links: {
       "workorder-entry": { label: "Work order workspace", description: "Open the work order list and detail workspace." },
@@ -129,10 +129,10 @@ export const adminEn = {
       files: { label: "Storage management", description: "Manage documents/designs, trash, and storage usage." },
       stats: { label: "Statistics", description: "Review work order, partner, and file usage metrics." },
       settings: { label: "Settings", description: "Manage customer screen, file, and notification policies." },
-      "member-management": { label: "Member management", description: "Area for managing member permissions after invitation acceptance." },
-      "standard-units": { label: "Standard units", description: "Permission candidate for managing fabric, subsidiary, and production quantity units." },
-      "outsourcing-processes": { label: "Outsourcing processes", description: "Permission candidate for managing printing, embroidery, washing, and other outsourcing process standards." },
-      "product-types": { label: "Product types", description: "Permission candidate for managing work order product classification standards." }
+      "member-management": { label: "Member management", description: "Manage member invitations and role settings." },
+      "standard-units": { label: "Standard units", description: "Manage units used for fabric, subsidiary materials, and production quantities." },
+      "outsourcing-processes": { label: "Outsourcing processes", description: "Manage printing, embroidery, washing, and other outsourcing process standards." },
+      "product-types": { label: "Product types", description: "Manage work order item and product classification standards." }
     }
   },
   filesSummary: { title: "Storage usage", description: "Review plan capacity, file status, and file types based on current data.", periods: { 7: "7 days", 15: "15 days", 30: "30 days" }, uploadAmount: "Upload amount", count: "Count", fileType: "File type", fileTypeLabel: "File type", countSuffix: "items", totalUsage: "Total usage", attachments: "Documents/designs", trash: "Trash", retentionPeriod: "Retention period", usage: "Usage", refreshLabel: "Refresh storage data", documents: "Documents", designs: "Designs", memos: "Memos", others: "Other", storagePlanLabel: "Storage plan", currentPlan: "Current plan", pendingPlan: "Checking", upgrade: "Upgrade", upgradeTitle: "Plan upgrade screen will be connected in a later version.", planCapacityPending: "Checking plan", planCapacityLoading: "Checking plan capacity", planCapacityLoadingDescription: "Loading the plan capacity from customer information", usedSuffix: "used", remainingSuffix: "remaining", fileOperationsLabel: "File operations", fileOperationsTitle: "File operations summary", totalLabel: "Total", activeFiles: "Active files", trashFiles: "Trash files", purgeRequestedFiles: "Deletion requests", zeroTrashSize: "0MB stored", zeroActiveSize: "0MB used", zeroPurgeRequestSize: "0MB waiting", storedSuffix: "stored", waitingSuffix: "waiting", statuses: { normal: "Normal", caution: "Caution", danger: "Risk" }, units: { count: "items", day: "days" } },

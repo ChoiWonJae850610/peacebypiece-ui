@@ -1,19 +1,21 @@
 Version :
-0.10.5
+0.10.6
 
 Summary :
-멤버관리와 권한 기반 카드 설계 기준 정리
+고객관리자 카드형 홈 문구와 밀도 정리
 
 Description :
-고객관리자와 멤버 메인화면에서 사용할 권한 기반 카드 코드를 기존 permission policy에 연결했다. 실제 멤버 초대, 권한 DB, 권한 관리 UI는 구현하지 않고 후속 작업 기준만 문서화했다.
+고객관리자 카드형 홈의 설계용 문구를 운영 화면 기준으로 정리하고, 카드 패딩과 간격을 줄여 운영 대시보드에서 주요 메뉴 접근성을 높였다. 멤버관리와 기준정보 카드는 준비 중 상태를 유지하되 권한 후보 같은 개발자용 표현은 제거했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/permissions/permissionPolicy.ts
+- components/admin/dashboard/AdminConsoleSections.tsx
 - lib/admin/adminWorkspaceCards.ts
+- lib/i18n/ko/admin.ts
+- lib/i18n/en/admin.ts
 
 추가 파일 목록 :
-- docs/member-permission-roadmap-0.10.5.md
+- docs/admin-card-copy-cleanup-0.10.6.md
 
 삭제 파일 목록 :
 없음

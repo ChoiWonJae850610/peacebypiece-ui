@@ -64,11 +64,11 @@ export const ADMIN_WORKSPACE_MANAGEMENT_CARDS: AdminWorkspaceCard[] = [
   {
     id: "member-management",
     label: "멤버 관리",
-    description: "초대 수락 이후 멤버 권한 관리 화면으로 확장할 영역입니다.",
+    description: "멤버 초대와 역할 설정을 관리합니다.",
     permission: ADMIN_WORKSPACE_PERMISSIONS.memberManage,
     href: null,
     status: "planned",
-    statusLabel: "후순위",
+    statusLabel: "준비 중",
   },
 ];
 
@@ -76,29 +76,29 @@ export const ADMIN_WORKSPACE_FUTURE_PERMISSION_CARDS: AdminWorkspaceCard[] = [
   {
     id: "standard-units",
     label: "단위표준",
-    description: "원단, 부자재, 생산 수량 단위 기준을 멤버에게 위임할 수 있는 관리 영역입니다.",
+    description: "원단, 부자재, 생산 수량에 사용하는 단위 기준을 관리합니다.",
     permission: ADMIN_WORKSPACE_PERMISSIONS.standardUnitManage,
     href: null,
     status: "planned",
-    statusLabel: "권한 후보",
+    statusLabel: "준비 중",
   },
   {
     id: "outsourcing-processes",
     label: "외주공정",
-    description: "나염, 자수, 워싱 등 외주공정 기준을 멤버에게 위임할 수 있는 관리 영역입니다.",
+    description: "나염, 자수, 워싱 등 외주공정 기준을 관리합니다.",
     permission: ADMIN_WORKSPACE_PERMISSIONS.outsourcingProcessManage,
     href: null,
     status: "planned",
-    statusLabel: "권한 후보",
+    statusLabel: "준비 중",
   },
   {
     id: "product-types",
     label: "생산품유형",
-    description: "작업지시서 품목 분류 기준을 멤버에게 위임할 수 있는 관리 영역입니다.",
+    description: "작업지시서 품목과 생산품 분류 기준을 관리합니다.",
     permission: ADMIN_WORKSPACE_PERMISSIONS.productTypeManage,
     href: null,
     status: "planned",
-    statusLabel: "권한 후보",
+    statusLabel: "준비 중",
   },
 ];
 
