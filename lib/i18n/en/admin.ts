@@ -162,6 +162,31 @@ export const adminEn = {
       qrDescription: "The QR will render the real invitation token after the invitation-link API is connected.",
       selectedRole: "Selected role {role} · {count} permissions"
     },
+
+    approvalWorkbench: {
+      eyebrow: "Join request approval",
+      title: "Member approval and permission assignment",
+      description: "A first-pass screen for reviewing a join request and adjusting role-template permissions before approval or rejection.",
+      previewApplicant: { name: "Designer Kim", email: "designer@example.com", description: "A preview state for a member who applied through an invitation link." },
+      steps: {
+        review: { label: "Review request", description: "Check the invitation token and applicant profile." },
+        permission: { label: "Choose permissions", description: "Adjust only the permissions needed from the default role bundle." },
+        approve: { label: "Approve/reject", description: "Save the member and permissions when approved." },
+        audit: { label: "Audit log", description: "Record member approval and permission change events." }
+      },
+      permissionChecklistTitle: "Permission checklist",
+      permissionChecklistDescription: "Role templates are only starting values; approval stores the direct permission_code list.",
+      actionsTitle: "Approval actions",
+      actionsDescription: "Actual writes are enabled after join_requests, company_members, and member_permissions APIs are connected.",
+      actions: {
+        approve: { label: "Approve" },
+        reject: { label: "Reject" },
+        permissionUpdate: { label: "Edit permissions" }
+      },
+      guardTitle: "Write contract",
+      guardDescription: "Approval should mark company_members as approved and store selected permissions in member_permissions. Rejection should only mark the join request as rejected."
+    },
+    joinRequestStatuses: { pending: "Pending approval" },
     statuses: { ready: "Connected", planned: "Planned", pending: "Pending" },
     sourceState: { dbPending: "DB connection planned" },
     summary: {

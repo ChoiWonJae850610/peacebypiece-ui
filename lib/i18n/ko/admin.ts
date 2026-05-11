@@ -113,6 +113,31 @@ export const adminKo = {
       qrDescription: "QR은 초대 링크 token 생성 API와 연결한 뒤 실제 값으로 렌더링합니다.",
       selectedRole: "선택 권한 {role} · {count}개"
     },
+
+    approvalWorkbench: {
+      eyebrow: "가입 신청 승인",
+      title: "멤버 승인/권한 부여 화면",
+      description: "가입 신청자를 확인하고 승인 또는 거절하기 전에 role template 기준 권한을 직접 조정하는 1차 화면입니다.",
+      previewApplicant: { name: "김디자이너", email: "designer@example.com", description: "초대 링크로 가입 신청한 멤버를 승인하기 전 상태 예시입니다." },
+      steps: {
+        review: { label: "신청 확인", description: "초대 token과 신청자 정보를 확인합니다." },
+        permission: { label: "권한 선택", description: "기본 역할 묶음에서 필요한 권한만 조정합니다." },
+        approve: { label: "승인/거절", description: "승인 시 멤버와 권한을 저장합니다." },
+        audit: { label: "감사 로그", description: "멤버 승인과 권한 변경 이벤트를 기록합니다." }
+      },
+      permissionChecklistTitle: "권한 체크리스트",
+      permissionChecklistDescription: "기본 권한 묶음은 시작값이고 승인 저장 시 permission_code 목록을 직접 저장합니다.",
+      actionsTitle: "승인 처리 액션",
+      actionsDescription: "실제 저장은 join_requests, company_members, member_permissions API 연결 후 활성화합니다.",
+      actions: {
+        approve: { label: "승인" },
+        reject: { label: "거절" },
+        permissionUpdate: { label: "권한 수정" }
+      },
+      guardTitle: "저장 전제",
+      guardDescription: "승인 시 company_members를 approved로 만들고 member_permissions에 선택 권한을 저장해야 합니다. 거절 시 join_requests만 rejected 처리합니다."
+    },
+    joinRequestStatuses: { pending: "승인 대기" },
     statuses: { ready: "기준 연결", planned: "연결 예정", pending: "대기" },
     sourceState: { dbPending: "DB 연결 예정" },
     summary: {

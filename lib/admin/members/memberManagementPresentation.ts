@@ -91,6 +91,22 @@ export type MemberJoinRequestPreview = {
   requestedAtLabel: string;
 };
 
+export type MemberApprovalStepPreview = {
+  id: "review" | "permission" | "approve" | "audit";
+  status: MemberManagementStatus;
+};
+
+export type MemberApprovalActionPreview = {
+  id: "approve" | "reject" | "permissionUpdate";
+  status: MemberManagementStatus;
+};
+
+export type MemberApprovalPermissionPreview = {
+  code: MemberPermissionCode;
+  group: MemberPermissionGroupKey;
+  checked: boolean;
+};
+
 export const MEMBER_MANAGEMENT_SUMMARY_CARDS: readonly MemberManagementSummaryCard[] = [
   { id: "members", value: "0", status: "planned" },
   { id: "invitations", value: "0", status: "planned" },
@@ -140,13 +156,43 @@ export const JOIN_REQUEST_TABLE_COLUMNS: readonly MemberManagementTableColumn[] 
 
 export const MEMBER_LIST_PREVIEWS: readonly MemberListPreview[] = [] as const;
 export const MEMBER_INVITATION_PREVIEWS: readonly MemberInvitationPreview[] = [] as const;
-export const MEMBER_JOIN_REQUEST_PREVIEWS: readonly MemberJoinRequestPreview[] = [] as const;
+export const MEMBER_JOIN_REQUEST_PREVIEWS: readonly MemberJoinRequestPreview[] = [
+  {
+    id: "preview-join-request-designer",
+    applicantName: "김디자이너",
+    applicantEmail: "designer@example.com",
+    requestedRoleId: "designer",
+    status: "pending",
+    requestedAtLabel: "preview",
+  },
+] as const;
 
 export const MEMBER_INVITE_SETUP_CARDS: readonly MemberInvitationSetupCard[] = [
   { id: "link", status: "ready" },
   { id: "qr", status: "ready" },
   { id: "approval", status: "pending" },
 ] as const;
+
+export const MEMBER_APPROVAL_STEP_PREVIEWS: readonly MemberApprovalStepPreview[] = [
+  { id: "review", status: "ready" },
+  { id: "permission", status: "ready" },
+  { id: "approve", status: "pending" },
+  { id: "audit", status: "planned" },
+] as const;
+
+export const MEMBER_APPROVAL_ACTION_PREVIEWS: readonly MemberApprovalActionPreview[] = [
+  { id: "approve", status: "pending" },
+  { id: "reject", status: "pending" },
+  { id: "permissionUpdate", status: "ready" },
+] as const;
+
+export const MEMBER_APPROVAL_PERMISSION_PREVIEWS: readonly MemberApprovalPermissionPreview[] = MEMBER_PERMISSION_CATALOG.filter((permission) =>
+  MEMBER_ROLE_TEMPLATE_POLICIES.find((role) => role.code === "designer")?.permissionCodes.includes(permission.code),
+).map((permission) => ({
+  code: permission.code,
+  group: permission.group,
+  checked: true,
+}));
 
 export const MEMBER_INVITE_QR_PREVIEW_ROWS: readonly MemberInviteQrPreviewRow[] = [
   [true, true, true, false, true, false, true, true, true],
@@ -178,6 +224,19 @@ export function getMemberInvitationSetupCards(): readonly MemberInvitationSetupC
 
 export function getMemberInviteQrPreviewRows(): readonly MemberInviteQrPreviewRow[] {
   return MEMBER_INVITE_QR_PREVIEW_ROWS;
+}
+
+
+export function getMemberApprovalStepPreviews(): readonly MemberApprovalStepPreview[] {
+  return MEMBER_APPROVAL_STEP_PREVIEWS;
+}
+
+export function getMemberApprovalActionPreviews(): readonly MemberApprovalActionPreview[] {
+  return MEMBER_APPROVAL_ACTION_PREVIEWS;
+}
+
+export function getMemberApprovalPermissionPreviews(): readonly MemberApprovalPermissionPreview[] {
+  return MEMBER_APPROVAL_PERMISSION_PREVIEWS;
 }
 
 export function getMemberManagementPermissionCards(): readonly MemberPermissionCard[] {
