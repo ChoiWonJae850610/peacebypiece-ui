@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import AdminNotificationSettingsModal from "@/components/admin/AdminNotificationSettingsModal";
 import PartnerProcessManagementModal from "@/components/admin/partnerMaster/PartnerProcessManagementModal";
 import AdminItemCategoryManagementModal from "@/components/admin/standards/AdminItemCategoryManagementModal";
@@ -62,33 +62,36 @@ export default function AdminStandardsSection({ mode = "full" }: AdminStandardsS
   const [isSavingProcesses, setIsSavingProcesses] = useState(false);
   const [selectedInactiveProcessDefinition, setSelectedInactiveProcessDefinition] = useState<OutsourcingProcessType | null>(null);
   const [selectedActiveProcessDefinition, setSelectedActiveProcessDefinition] = useState<OutsourcingProcessType | null>(null);
+  const standardsLoadSeqRef = useRef(0);
 
   useEffect(() => {
     let isMounted = true;
+    const requestId = standardsLoadSeqRef.current + 1;
+    standardsLoadSeqRef.current = requestId;
 
     fetchPartnerMasterItemsFromApi()
       .then((payload) => {
-        if (!isMounted) return;
+        if (!isMounted || standardsLoadSeqRef.current !== requestId) return;
         if (payload.processDefinitions) {
           setProcessDefinitions(payload.processDefinitions);
           setProcessDraftDefinitions(payload.processDefinitions);
         }
       })
       .catch(() => {
-        if (!isMounted) return;
+        if (!isMounted || standardsLoadSeqRef.current !== requestId) return;
         setProcessDefinitions([]);
         setProcessDraftDefinitions([]);
       });
 
     fetchAdminStandardsFromApi()
       .then((payload) => {
-        if (!isMounted) return;
+        if (!isMounted || standardsLoadSeqRef.current !== requestId) return;
         setUnitDefinitions(Array.isArray(payload.units) ? payload.units : []);
         setItemCategoryDefinitions(Array.isArray(payload.itemCategories) ? payload.itemCategories : []);
         setDefaultItemCategoryDefinitions(Array.isArray(payload.defaultItemCategories) ? payload.defaultItemCategories : []);
       })
       .catch(() => {
-        if (!isMounted) return;
+        if (!isMounted || standardsLoadSeqRef.current !== requestId) return;
         setUnitDefinitions([]);
         setItemCategoryDefinitions([]);
         setDefaultItemCategoryDefinitions([]);

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { APP_VERSION } from "@/lib/constants/app";
 import {
@@ -326,13 +326,16 @@ export default function SystemProductTemplateStandardsPage() {
   const [editingCategory, setEditingCategory] = useState<CategoryEditState | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState("DB 연결 시 시스템 생산품 유형 템플릿 원장을 조회합니다.");
+  const [message, setMessage] = useState("DB 기준 시스템 생산품 유형 기본 템플릿을 조회합니다.");
+  const loadSeqRef = useRef(0);
 
   const selectedTemplate = records.find((record) => record.id === selectedTemplateId) ?? records[0] ?? null;
   const activeCount = useMemo(() => records.filter((record) => record.status === "active").length, [records]);
   const categoryOptions = selectedTemplate ? getCategoryOptions(selectedTemplate, categoryForm.level) : [];
 
   async function loadRecords() {
+    const requestId = loadSeqRef.current + 1;
+    loadSeqRef.current = requestId;
     setIsLoading(true);
     setMessage("생산품 유형 템플릿을 불러오는 중입니다.");
     try {
@@ -341,6 +344,7 @@ export default function SystemProductTemplateStandardsPage() {
       if (!response.ok || !payload.ok || !Array.isArray(payload.records)) {
         throw new Error(payload.message || "생산품 유형 템플릿을 불러오지 못했습니다.");
       }
+      if (loadSeqRef.current !== requestId) return;
       const nextRecords = payload.records;
       setRecords(nextRecords);
       setSelectedTemplateId((current) => nextRecords.some((record) => record.id === current) ? current : nextRecords[0]?.id ?? "");
@@ -348,7 +352,7 @@ export default function SystemProductTemplateStandardsPage() {
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "생산품 유형 템플릿 조회 중 오류가 발생했습니다.");
     } finally {
-      setIsLoading(false);
+      if (loadSeqRef.current === requestId) setIsLoading(false);
     }
   }
 

@@ -6,7 +6,6 @@ import {
   applyPartnerPrimaryTypeToDraft,
   buildPartnerDraftFromEntity,
   buildPartnerListViewModel,
-  createDefaultOutsourcingProcessDefinitions,
   createEmptyPartnerDraft,
   DEFAULT_PARTNER_FILTER_STATE,
   normalizePartnerDraft,
@@ -38,9 +37,7 @@ export function usePartnerMasterController(partnerText: PartnerMasterText) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPartnerId, setEditingPartnerId] = useState<string | null>(null);
   const [draft, setDraft] = useState<PartnerDraft>(createEmptyPartnerDraft());
-  const [processDefinitions, setProcessDefinitions] = useState<OutsourcingProcessDefinition[]>(
-    createDefaultOutsourcingProcessDefinitions(),
-  );
+  const [processDefinitions, setProcessDefinitions] = useState<OutsourcingProcessDefinition[]>([]);
   const [selectedAvailableProcess, setSelectedAvailableProcess] = useState<OutsourcingProcessType | null>(null);
   const [selectedAssignedProcess, setSelectedAssignedProcess] = useState<OutsourcingProcessType | null>(null);
   const [formError, setFormError] = useState("");

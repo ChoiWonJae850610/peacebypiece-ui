@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { APP_VERSION } from "@/lib/constants/app";
 import {
@@ -64,10 +64,13 @@ export default function SystemUnitStandardsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("DB 기준 시스템 단위 표준 원장을 조회합니다.");
+  const loadSeqRef = useRef(0);
 
   const activeCount = useMemo(() => records.filter((record) => record.status === "active").length, [records]);
 
   async function loadRecords() {
+    const requestId = loadSeqRef.current + 1;
+    loadSeqRef.current = requestId;
     setIsLoading(true);
     setMessage("단위 표준을 불러오는 중입니다.");
     try {
@@ -76,12 +79,13 @@ export default function SystemUnitStandardsPage() {
       if (!response.ok || !payload.ok || !Array.isArray(payload.records)) {
         throw new Error(payload.message || "단위 표준을 불러오지 못했습니다.");
       }
+      if (loadSeqRef.current !== requestId) return;
       setRecords(payload.records);
       setMessage(`단위 표준 ${payload.records.length}개를 불러왔습니다.`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "단위 표준 조회 중 오류가 발생했습니다.");
     } finally {
-      setIsLoading(false);
+      if (loadSeqRef.current === requestId) setIsLoading(false);
     }
   }
 

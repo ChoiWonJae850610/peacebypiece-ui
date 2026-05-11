@@ -43,58 +43,8 @@ export const SYSTEM_PROCESS_STANDARD_CATEGORY_LABELS: Record<string, string> = {
   general: "일반",
 };
 
-export const SYSTEM_PROCESS_STANDARD_ROWS: SystemProcessStandardRow[] = [
-  {
-    id: "system-process-printing",
-    code: "printing",
-    name: "나염",
-    category: "surface",
-    description: "원단 또는 완제품 위 프린트 공정",
-    example: "앞판 나염",
-    status: "active",
-    sortOrder: 10,
-  },
-  {
-    id: "system-process-embroidery",
-    code: "embroidery",
-    name: "자수",
-    category: "decoration",
-    description: "로고, 문양, 포인트 장식을 실로 표현하는 공정",
-    example: "가슴 로고 자수",
-    status: "active",
-    sortOrder: 20,
-  },
-  {
-    id: "system-process-washing",
-    code: "washing",
-    name: "워싱",
-    category: "finishing",
-    description: "수축, 질감, 색감 보정을 위한 세탁·후가공 공정",
-    example: "데님 워싱",
-    status: "active",
-    sortOrder: 30,
-  },
-  {
-    id: "system-process-pleats",
-    code: "pleats",
-    name: "플리츠",
-    category: "shape",
-    description: "열 또는 기계 가공으로 주름 형태를 고정하는 공정",
-    example: "스커트 플리츠 가공",
-    status: "active",
-    sortOrder: 40,
-  },
-  {
-    id: "system-process-bonding",
-    code: "bonding",
-    name: "본딩",
-    category: "construction",
-    description: "원단과 부자재를 접착해 형태나 기능성을 보강하는 공정",
-    example: "심지 본딩",
-    status: "active",
-    sortOrder: 50,
-  },
-];
+export const SYSTEM_PROCESS_STANDARD_ROWS: SystemProcessStandardRow[] = [];
+
 
 export const SYSTEM_PROCESS_STANDARD_POLICY = [
   "외주공정 유형은 시스템관리자가 표준 원장을 관리하고 고객사는 필요한 공정만 사용합니다.",

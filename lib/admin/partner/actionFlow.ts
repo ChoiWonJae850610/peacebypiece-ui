@@ -1,5 +1,5 @@
 import { applyPartnerTypeSelectionPolicy } from "@/lib/admin/partner/draft";
-import { createDefaultOutsourcingProcessDefinitions, normalizeOutsourcingProcessDefinitions } from "@/lib/admin/partner/processes";
+import { normalizeOutsourcingProcessDefinitions } from "@/lib/admin/partner/processes";
 import type { BasePartnerType, OutsourcingProcessDefinition } from "@/lib/admin/partner/types";
 import type { OutsourcingProcessType, PartnerDraft } from "@/types/partner";
 
@@ -32,5 +32,5 @@ export function setOutsourcingProcessDefinitionActive(
 }
 
 export function resetOutsourcingProcessDefinitionDraft() {
-  return createDefaultOutsourcingProcessDefinitions();
+  return [];
 }

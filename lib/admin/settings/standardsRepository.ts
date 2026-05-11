@@ -100,10 +100,7 @@ function toDefaultItemCategories(template: SystemProductTemplateRow | null, comp
 async function getDefaultItemCategories(companyId: string): Promise<AdminItemCategoryDefinition[]> {
   if (!isDatabaseConfigured()) return [];
   const templates = await listSystemProductTemplates();
-  const defaultTemplate =
-    templates.find((template) => template.isDefault && template.status === "active") ??
-    templates.find((template) => template.status === "active") ??
-    null;
+  const defaultTemplate = templates.find((template) => template.isDefault && template.status === "active") ?? null;
   return toDefaultItemCategories(defaultTemplate, companyId);
 }
 

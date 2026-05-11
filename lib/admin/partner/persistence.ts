@@ -1,4 +1,3 @@
-import { createDefaultOutsourcingProcessDefinitions } from "@/lib/admin/partner/processes";
 import type { OutsourcingProcessDefinition } from "@/lib/admin/partner/types";
 import {
   createPartnerMasterItem,
@@ -34,7 +33,7 @@ export function loadPartnerMasterInitialState(): {
 } {
   return {
     partners: listPartnerMasterItems(),
-    processDefinitions: loadPersistedOutsourcingProcesses() ?? createDefaultOutsourcingProcessDefinitions(),
+    processDefinitions: loadPersistedOutsourcingProcesses() ?? [],
   };
 }
 
