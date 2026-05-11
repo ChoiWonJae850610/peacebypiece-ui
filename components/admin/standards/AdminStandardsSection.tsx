@@ -227,13 +227,13 @@ export default function AdminStandardsSection({ mode = "full" }: AdminStandardsS
           type="button"
           onClick={action.onClick}
           disabled={!action.onClick}
-          className="flex min-h-[96px] items-center justify-between gap-4 rounded-3xl border border-stone-200 bg-stone-50 px-5 py-3.5 text-left transition enabled:hover:border-stone-300 enabled:hover:bg-white disabled:cursor-default disabled:opacity-70"
+          className="flex min-h-[86px] items-center justify-between gap-3 rounded-3xl border border-stone-200 bg-stone-50 px-4 py-3 text-left transition enabled:hover:border-stone-300 enabled:hover:bg-white disabled:cursor-default disabled:opacity-70"
         >
           <span className="min-w-0">
             <span className="block text-base font-semibold text-stone-950">{action.title}</span>
-            <span className="mt-1.5 block text-xs font-semibold leading-5 text-stone-500">{action.description}</span>
+            <span className="mt-1 block text-xs font-semibold leading-5 text-stone-500">{action.description}</span>
           </span>
-          <span className="shrink-0 rounded-full bg-white px-5 py-2 text-xs font-semibold text-stone-600 shadow-sm">{action.statusLabel}</span>
+          <span className="shrink-0 rounded-full bg-white px-4 py-1.5 text-xs font-semibold text-stone-600 shadow-sm">{action.statusLabel}</span>
         </button>
       ))}
     </div>
@@ -249,9 +249,12 @@ export default function AdminStandardsSection({ mode = "full" }: AdminStandardsS
           <div className="mt-3">{renderActionGrid(policyActions)}</div>
         </div>
       ) : null}
-      <div className="flex min-h-0 flex-1 flex-col rounded-[28px] border border-stone-200 bg-white p-4 shadow-sm">
-        <h2 className="shrink-0 text-lg font-semibold text-stone-950">{t("standards.section.standardTitle", "기준 관리")}</h2>
-        <div className="mt-3">{renderActionGrid(standardActions)}</div>
+      <div className="flex min-h-0 flex-1 flex-col rounded-[28px] border border-stone-200 bg-white p-3.5 shadow-sm">
+        <div className="flex shrink-0 items-center justify-between gap-3">
+          <h2 className="text-base font-semibold text-stone-950">{t("standards.section.standardTitle", "기준 관리")}</h2>
+          <p className="hidden text-xs font-semibold text-stone-400 sm:block">작업지시서 생성 기준값</p>
+        </div>
+        <div className="mt-2.5">{renderActionGrid(standardActions)}</div>
       </div>
 
       <AdminUnitManagementModal

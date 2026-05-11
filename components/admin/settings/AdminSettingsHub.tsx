@@ -51,7 +51,7 @@ function SettingsMenuCard({ item, active, onClick }: { item: AdminSettingsMenuIt
     <button
       type="button"
       onClick={onClick}
-      className={`flex min-h-[168px] flex-col justify-between rounded-[28px] border p-4 text-left shadow-sm transition ${tone.card} ${
+      className={`flex min-h-[132px] flex-col justify-between rounded-[24px] border p-3.5 text-left shadow-sm transition ${tone.card} ${
         active ? "ring-2 ring-stone-950/10" : ""
       }`}
     >
@@ -61,13 +61,13 @@ function SettingsMenuCard({ item, active, onClick }: { item: AdminSettingsMenuIt
             <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${tone.dot}`} />
             <span className="text-base font-semibold text-stone-950">{item.title}</span>
           </span>
-          <span className="mt-2 block text-xs leading-5 text-stone-500">{item.description}</span>
+          <span className="mt-1.5 block text-xs leading-5 text-stone-500">{item.description}</span>
         </span>
         <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${tone.badge}`}>{item.statusLabel}</span>
       </span>
-      <span className="mt-4 flex flex-wrap gap-1.5">
+      <span className="mt-3 flex flex-wrap gap-1.5">
         {item.detailItems.map((detail) => (
-          <span key={detail} className="rounded-full border border-white/80 bg-white/80 px-2.5 py-1 text-[11px] font-semibold text-stone-500 shadow-sm">
+          <span key={detail} className="rounded-full border border-white/80 bg-white/80 px-2 py-0.5 text-[11px] font-semibold text-stone-500 shadow-sm">
             {detail}
           </span>
         ))}
@@ -82,26 +82,26 @@ export default function AdminSettingsHub() {
   const notice = useMemo(() => (noticeMenuId ? ADMIN_SETTINGS_NOTICE_BY_ID[noticeMenuId] : null), [noticeMenuId]);
 
   const handleSelectMenu = (id: AdminSettingsMenuId) => {
-    setActiveMenuId(id);
     if (isNoticeMenuId(id)) {
       setNoticeMenuId(id);
+      return;
     }
+    setActiveMenuId(id);
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1">
-      <section className="shrink-0 rounded-[30px] border border-stone-200 bg-white p-4 shadow-sm">
-        <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1">
+      <section className="shrink-0 rounded-[28px] border border-stone-200 bg-white p-3.5 shadow-sm">
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">SETTINGS</p>
-            <h2 className="mt-2 text-xl font-semibold tracking-tight text-stone-950">환경설정</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-stone-950">환경설정</h2>
             <p className="mt-1 text-sm leading-6 text-stone-500">회사 운영 기준, 알림, 요금제, 계정, 개발 건의를 한 화면에서 관리합니다.</p>
           </div>
-          <p className="rounded-2xl bg-stone-50 px-4 py-3 text-xs font-semibold leading-5 text-stone-500">
+          <p className="rounded-2xl bg-stone-50 px-3 py-2 text-xs font-semibold leading-5 text-stone-500">
             권한 관리는 멤버관리 화면에서 별도로 다룹니다.
           </p>
         </div>
-        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+        <div className="mt-3 grid gap-2.5 md:grid-cols-2 xl:grid-cols-5">
           {ADMIN_SETTINGS_MENU_ITEMS.map((item) => (
             <SettingsMenuCard key={item.id} item={item} active={activeMenuId === item.id} onClick={() => handleSelectMenu(item.id)} />
           ))}
@@ -109,19 +109,7 @@ export default function AdminSettingsHub() {
       </section>
 
       <section className="flex min-h-0 flex-1 flex-col">
-        {activeMenuId === "standards" ? (
-          <AdminStandardsSection mode="standards-only" />
-        ) : (
-          <div className="flex min-h-[260px] flex-1 items-center justify-center rounded-[30px] border border-dashed border-stone-200 bg-white/70 p-6 text-center shadow-sm">
-            <div className="max-w-xl">
-              <p className="text-sm font-semibold text-stone-950">{ADMIN_SETTINGS_NOTICE_BY_ID[activeMenuId as NoticeMenuId].title}</p>
-              <p className="mt-2 text-sm leading-6 text-stone-500">{ADMIN_SETTINGS_NOTICE_BY_ID[activeMenuId as NoticeMenuId].description}</p>
-              <button type="button" className={`${adminModalPrimaryButtonClassName} mt-5`} onClick={() => setNoticeMenuId(activeMenuId as NoticeMenuId)}>
-                안내 보기
-              </button>
-            </div>
-          </div>
-        )}
+        <AdminStandardsSection mode="standards-only" />
       </section>
 
       <AdminModal
