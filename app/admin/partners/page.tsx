@@ -15,6 +15,7 @@ export default function AdminPartnersPage() {
       appVersion={APP_VERSION}
       navigationItems={getAdminNavigationItems("/admin/partners")}
       title={pageText.title}
+      contentMode="fixed-md"
     >
       <PartnerMasterSection />
     </AdminShell>

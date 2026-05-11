@@ -24,7 +24,7 @@ export default function PartnerMasterSummaryCards({
   summary,
   filteredSummary,
   hasFilter,
-  className = "mt-4",
+  className = "mt-3",
 }: PartnerMasterSummaryCardsProps) {
   const source = hasFilter ? filteredSummary : summary;
   const cards: SummaryCard[] = [
@@ -64,9 +64,9 @@ export default function PartnerMasterSummaryCards({
     <section className={`${className} shrink-0`} aria-label="협력업체 요약">
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
         {cards.map((card) => (
-          <article key={card.label} className={`rounded-3xl border px-4 py-4 shadow-sm ${card.tone}`}>
+          <article key={card.label} className={`rounded-3xl border px-4 py-3 shadow-sm ${card.tone}`}>
             <p className="text-xs font-semibold text-stone-500">{card.label}</p>
-            <p className="mt-2 text-2xl font-semibold tracking-tight text-stone-950">{formatCount(card.value)}</p>
+            <p className="mt-1 text-2xl font-semibold tracking-tight text-stone-950">{formatCount(card.value)}</p>
             <p className="mt-1 text-xs leading-5 text-stone-500">{card.helper}</p>
           </article>
         ))}

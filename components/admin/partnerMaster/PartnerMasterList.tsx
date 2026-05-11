@@ -26,7 +26,7 @@ export default function PartnerMasterList({ items, isLoading = false, onEditPart
       emptyLabel={listText.empty}
       getRowKey={(item) => item.id}
       gridTemplateColumns={PARTNER_TABLE_GRID}
-      rowClassName={(item) => ["px-4 py-4 md:gap-3 transition hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-theme-ring)]", item.isActive ? "bg-white" : "bg-stone-50/80"].join(" ")}
+      rowClassName={(item) => ["px-4 py-3 md:gap-3 transition hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-theme-ring)]", item.isActive ? "bg-white" : "bg-stone-50/80"].join(" ")}
       onRowClick={(item) => onEditPartner(item.id)}
       columns={[
         {

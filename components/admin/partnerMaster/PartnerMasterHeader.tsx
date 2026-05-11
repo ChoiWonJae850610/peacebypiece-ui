@@ -12,7 +12,7 @@ export default function PartnerMasterHeader({ onOpenCreateModal }: PartnerMaster
 
   return (
     <div className="flex shrink-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
-      <p className="max-w-3xl text-sm leading-6 text-stone-500 md:text-[13px]">{headerText.description}</p>
+      <p className="min-w-0 max-w-3xl text-sm leading-6 text-stone-500 md:text-[13px]">{headerText.description}</p>
       <button
         type="button"
         onClick={onOpenCreateModal}
