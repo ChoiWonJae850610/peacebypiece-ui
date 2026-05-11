@@ -75,9 +75,6 @@ export default function AdminFilesPage() {
         return;
       }
 
-      if (shouldNotify) {
-        setActionMessage(t("filesPage.refreshed", "새로고침되었습니다."));
-      }
     } catch (error) {
       setActionMessage(
         error instanceof Error
