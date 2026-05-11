@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireApiPermission } from "@/lib/permissions";
 import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
 import { getCurrentAdminCompany } from "@/lib/admin/settings/companyRepository";
 import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
@@ -38,6 +39,12 @@ function getAuditIpAddress(request: NextRequest): string | null {
 }
 
 export async function POST(request: NextRequest) {
+  const permissionDenied = requireApiPermission(request, {
+    permissionCode: "storage.delete.request",
+    routeLabel: "workorders.attachments.delete",
+  });
+  if (permissionDenied) return permissionDenied;
+
   try {
     const payload = (await request.json().catch(() => null)) as AttachmentDeleteRequest | null;
     const attachmentId = readText(payload?.attachmentId);

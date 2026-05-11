@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireApiPermission } from "@/lib/permissions";
 import { restoreWorkOrderTrashBundle } from "@/lib/admin/files/serverActions";
 import { createAdminTrashActionMessage } from "@/lib/admin/files/presentation";
 import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
@@ -31,6 +32,12 @@ function getAuditIpAddress(request: NextRequest): string | null {
 }
 
 export async function POST(request: NextRequest) {
+  const permissionDenied = requireApiPermission(request, {
+    permissionCode: "workorder.restore",
+    routeLabel: "admin.files.workorders.restore",
+  });
+  if (permissionDenied) return permissionDenied;
+
   try {
     const payload = (await request.json().catch(() => null)) as WorkOrderRestoreRequest | null;
     const actorId = readText(payload?.restoredBy);

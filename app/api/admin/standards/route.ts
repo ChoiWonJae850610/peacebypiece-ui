@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireApiPermission } from "@/lib/permissions";
 import { getAdminStandards, replaceAdminStandards } from "@/lib/admin/settings/standardsRepository";
 import type { AdminStandardsPayload } from "@/lib/admin/settings/standardsTypes";
 
@@ -15,6 +16,12 @@ export async function GET() {
 }
 
 export async function PUT(request: NextRequest) {
+  const permissionDenied = requireApiPermission(request, {
+    permissionCode: "standards.manage",
+    routeLabel: "admin.standards.update",
+  });
+  if (permissionDenied) return permissionDenied;
+
   try {
     const payload = (await request.json()) as unknown;
     if (!isRequestBody(payload)) {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireApiPermission } from "@/lib/permissions";
 import {
   buildOutsourcingProcessDbInputs,
   buildPartnerDbCreateInput,
@@ -88,6 +89,12 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const permissionDenied = requireApiPermission(request, {
+    permissionCode: "partner.manage",
+    routeLabel: "admin.partners.create",
+  });
+  if (permissionDenied) return permissionDenied;
+
   try {
     const repository = await createPartnerRepository();
     const { draft } = await readRequestBody(request);
@@ -113,6 +120,12 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const permissionDenied = requireApiPermission(request, {
+    permissionCode: "partner.manage",
+    routeLabel: "admin.partners.update",
+  });
+  if (permissionDenied) return permissionDenied;
+
   try {
     const repository = await createPartnerRepository();
     const { partnerId, draft } = await readRequestBody(request);
@@ -138,6 +151,12 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  const permissionDenied = requireApiPermission(request, {
+    permissionCode: "partner.manage",
+    routeLabel: "admin.partners.processes.update",
+  });
+  if (permissionDenied) return permissionDenied;
+
   try {
     const repository = await createPartnerRepository();
     const { processDefinitions } = await readRequestBody(request);

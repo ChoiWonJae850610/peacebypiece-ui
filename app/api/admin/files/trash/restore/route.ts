@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireApiPermission } from "@/lib/permissions";
 import { restoreAttachmentTrashItems } from "@/lib/admin/files/serverActions";
 import { createAdminTrashActionMessage } from "@/lib/admin/files/presentation";
 import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
@@ -35,6 +36,12 @@ function getAuditIpAddress(request: NextRequest): string | null {
 }
 
 export async function POST(request: NextRequest) {
+  const permissionDenied = requireApiPermission(request, {
+    permissionCode: "storage.restore",
+    routeLabel: "admin.files.trash.restore",
+  });
+  if (permissionDenied) return permissionDenied;
+
   try {
     const payload = (await request.json().catch(() => null)) as RestoreRequest | null;
     const trashItemIds = readStringArray(payload?.trashItemIds);

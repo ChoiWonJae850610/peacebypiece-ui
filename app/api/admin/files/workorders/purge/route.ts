@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireApiPermission } from "@/lib/permissions";
 import { purgeWorkOrderTrashBundle } from "@/lib/admin/files/serverActions";
 import { createAdminTrashActionMessage } from "@/lib/admin/files/presentation";
 
@@ -18,6 +19,12 @@ function getErrorMessage(error: unknown): string {
 }
 
 export async function POST(request: NextRequest) {
+  const permissionDenied = requireApiPermission(request, {
+    permissionCode: "storage.delete.request",
+    routeLabel: "admin.files.workorders.purgeRequest",
+  });
+  if (permissionDenied) return permissionDenied;
+
   try {
     const payload = (await request.json().catch(() => null)) as WorkOrderPurgeRequest | null;
     const result = await purgeWorkOrderTrashBundle({
