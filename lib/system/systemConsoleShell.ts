@@ -6,6 +6,7 @@ export type SystemConsoleTabId =
   | "stats"
   | "logs"
   | "storage"
+  | "standards"
   | "categoryRules";
 
 export type SystemConsoleTabStatus =
@@ -26,7 +27,7 @@ export type SystemConsoleTab = {
 };
 
 export type SystemConsolePlaceholder = {
-  id: Exclude<SystemConsoleTabId, "overview" | "storage" | "categoryRules">;
+  id: Exclude<SystemConsoleTabId, "overview" | "storage" | "standards" | "categoryRules">;
   title: string;
   description: string;
   items: string[];
@@ -91,6 +92,15 @@ export const SYSTEM_CONSOLE_TABS: SystemConsoleTab[] = [
     statusLabel: "화면 연결",
     status: "linked",
     href: "/system/storage-usage",
+  },
+
+  {
+    id: "standards",
+    label: "기준정보",
+    description: "단위 표준, 외주공정 유형, 생산품 유형 기본 템플릿의 시스템 표준 관리 방향을 설계합니다.",
+    statusLabel: "설계 화면",
+    status: "linked",
+    href: "/system/standards",
   },
   {
     id: "categoryRules",
@@ -179,6 +189,13 @@ export const SYSTEM_CONSOLE_QUICK_LINKS = [
     label: "감사 로그",
     href: "/system/audit-logs",
     description: "시스템 운영 이벤트 조회·쓰기 연결",
+  },
+
+  {
+    id: "system-standards",
+    label: "기준정보 관리",
+    href: "/system/standards",
+    description: "단위·외주공정·생산품 기본 템플릿 표준 설계",
   },
   {
     id: "category-rules",
