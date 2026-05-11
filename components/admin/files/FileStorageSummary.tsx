@@ -92,8 +92,8 @@ function formatBytes(bytes: number): string {
 function StorageCylinder({ percent }: { percent: number }) {
   const safePercent = Math.min(100, Math.max(0, percent));
   return (
-    <div className="relative mx-auto mt-0.5 h-12 w-[54px]" aria-hidden="true">
-      <div className="absolute inset-x-2 bottom-0 h-[38px] overflow-hidden rounded-b-[18px] border-x border-b border-stone-300 bg-white shadow-inner">
+    <div className="relative mx-auto mt-1 h-[58px] w-[62px]" aria-hidden="true">
+      <div className="absolute inset-x-2 bottom-0 h-[46px] overflow-hidden rounded-b-[18px] border-x border-b border-stone-300 bg-white shadow-inner">
         <div
           className="absolute inset-x-0 bottom-0 rounded-b-[28px] bg-[var(--admin-theme-surface)]/20"
           style={{ height: `${Math.max(6, safePercent)}%` }}
@@ -102,7 +102,7 @@ function StorageCylinder({ percent }: { percent: number }) {
       <div className="absolute inset-x-2 top-0 h-6 rounded-[50%] border border-stone-300 bg-white shadow-sm" />
       <div
         className="absolute inset-x-2 rounded-[50%] border border-[var(--admin-theme-surface)] bg-[var(--admin-theme-surface)]/20"
-        style={{ bottom: `${Math.max(0, Math.min(34, safePercent * 0.34))}px`, height: 20 }}
+        style={{ bottom: `${Math.max(0, Math.min(40, safePercent * 0.4))}px`, height: 22 }}
       />
       <div className="absolute inset-0 flex items-center justify-center pt-2">
         <span className="rounded-full bg-white/90 px-2 py-0.5 text-xs font-bold text-stone-950 shadow-sm">
@@ -130,7 +130,7 @@ function PlanUsageCard({
   const isCaution = hasPlanLimit && usageSummary.statusTone === "caution";
 
   return (
-    <div className="flex h-full min-h-[145px] flex-col rounded-[20px] border border-stone-200 bg-gradient-to-b from-white to-stone-50 px-3.5 py-2.5 md:min-h-[138px]">
+    <div className="flex h-full min-h-[168px] flex-col rounded-[20px] border border-stone-200 bg-gradient-to-b from-white to-stone-50 px-4 py-3 md:min-h-[158px]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">
@@ -180,18 +180,18 @@ function PlanUsageCard({
 function FileOperationsCard({ items }: { items: FileStatusItem[] }) {
   const t = useAdminTranslation();
   return (
-    <div className="flex h-full min-h-[145px] flex-col rounded-[20px] border border-stone-200 bg-white px-3.5 py-2.5 md:min-h-[138px]">
+    <div className="flex h-full min-h-[168px] flex-col rounded-[20px] border border-stone-200 bg-white px-4 py-3 md:min-h-[158px]">
       <div>
         <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">
           {t("filesSummary.fileOperationsLabel", "파일 운영")}
         </p>
         <h3 className="mt-1 text-sm font-bold text-stone-950">{t("filesSummary.fileOperationsTitle", "파일 운영 요약")}</h3>
       </div>
-      <div className="mt-1.5 grid flex-1 content-center gap-1">
+      <div className="mt-2 grid flex-1 content-center gap-1.5">
         {items.map((item) => (
           <div
             key={item.label}
-            className="flex items-center justify-between gap-3 rounded-2xl bg-stone-50 px-3 py-1"
+            className="flex items-center justify-between gap-3 rounded-2xl bg-stone-50 px-3 py-1.5"
           >
             <div className="min-w-0">
               <p className="truncate text-[13px] font-semibold text-stone-800" title={item.label}>
@@ -235,7 +235,7 @@ function DonutChart({
   let offset = 0;
 
   return (
-    <div className="flex h-full min-h-[145px] flex-col rounded-[20px] border border-stone-200 bg-white px-3.5 py-2.5 md:min-h-[138px]">
+    <div className="flex h-full min-h-[168px] flex-col rounded-[20px] border border-stone-200 bg-white px-4 py-3 md:min-h-[158px]">
       <div className="flex shrink-0 items-start justify-between gap-3">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">
@@ -249,11 +249,11 @@ function DonutChart({
           {formatCountWithUnit(total, t)}
         </span>
       </div>
-      <div className="mt-1.5 flex min-h-0 flex-1 items-center justify-center gap-3">
-        <div className="relative h-16 w-16 shrink-0">
+      <div className="mt-2 flex min-h-0 flex-1 items-center justify-center gap-4">
+        <div className="relative h-[76px] w-[76px] shrink-0">
           <svg
             viewBox="0 0 88 88"
-            className="h-16 w-16 -rotate-90"
+            className="h-[76px] w-[76px] -rotate-90"
             aria-hidden="true"
           >
             <circle
@@ -385,7 +385,7 @@ export default function FileStorageSummary({
   ];
 
   return (
-    <section className="grid shrink-0 gap-2.5 xl:grid-cols-[minmax(230px,0.78fr)_minmax(270px,0.95fr)_minmax(310px,1.08fr)]">
+    <section className="grid shrink-0 gap-3 xl:grid-cols-[minmax(230px,0.78fr)_minmax(270px,0.95fr)_minmax(310px,1.08fr)]">
       <PlanUsageCard usageSummary={usageSummary} statusLabel={statusLabel} />
       <FileOperationsCard items={statusItems} />
       <DonutChart items={fileTypeDistribution} />
