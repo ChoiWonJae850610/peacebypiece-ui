@@ -3,11 +3,16 @@
 import { useEffect, useMemo, useState } from "react";
 import AdminUsageToggle from "@/components/admin/common/AdminUsageToggle";
 import {
-  AdminModal,
   AdminModalFooterActions,
   AdminModalSection,
   adminModalInputClassName,
 } from "@/components/admin/layout/AdminModal";
+import StandardManagementModalFrame, {
+  standardModalAddButtonClassName,
+  standardModalListBoxClassName,
+  standardModalListScrollClassName,
+  standardModalRowClassName,
+} from "@/components/admin/standards/StandardManagementModalFrame";
 import { createDefaultUnitDefinitions } from "@/lib/admin/settings/standardsDefaults";
 import type { AdminUnitDefinition } from "@/lib/admin/settings/standardsTypes";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
@@ -78,10 +83,12 @@ export default function AdminUnitManagementModal({ open, units, saving = false, 
   };
 
   return (
-    <AdminModal
+    <StandardManagementModalFrame
       open={open}
       onClose={saving ? () => undefined : onClose}
       title={t("standards.units.title", "단위 표준")}
+      description="작업지시서 수량과 발주 단위에 쓰는 한글명과 영문 코드/약어를 함께 관리합니다."
+      categoryLabel="다국어 단위 기준정보"
       maxWidthClass="md:max-w-3xl"
       footer={
         <AdminModalFooterActions
@@ -100,17 +107,17 @@ export default function AdminUnitManagementModal({ open, units, saving = false, 
         <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
           <input value={newName} onChange={(event) => { setNewName(event.target.value); if (formError) setFormError(""); }} placeholder={t("standards.units.namePlaceholder", "단위명 예: 개")} disabled={saving} className={`h-11 ${adminModalInputClassName}`} />
           <input disabled={saving} value={newCode} onChange={(event) => { setNewCode(event.target.value); if (formError) setFormError(""); }} placeholder={t("standards.units.codePlaceholder", "코드 예: piece")} className={`h-11 ${adminModalInputClassName}`} />
-          <button type="button" onClick={addUnit} disabled={saving} className="h-11 rounded-full bg-stone-950 px-5 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-50">{t("standards.common.add", "추가")}</button>
+          <button type="button" onClick={addUnit} disabled={saving} className={standardModalAddButtonClassName}>{t("standards.common.add", "추가")}</button>
         </div>
       </AdminModalSection>
 
       <AdminModalSection title={t("standards.units.usageTitle", "단위 사용 여부")}>
-        <div className="h-[360px] rounded-3xl border border-stone-200 bg-stone-50/70 p-2">
-          <div className="h-full space-y-2 overflow-auto pr-1">
+        <div className={`h-[360px] ${standardModalListBoxClassName}`}>
+          <div className={standardModalListScrollClassName}>
             {sortedDraft.map((unit) => (
               <div
                 key={unit.id}
-                className="flex w-full items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-left text-sm transition hover:border-stone-300"
+                className={standardModalRowClassName}
               >
                 <button type="button" onClick={() => toggleUnit(unit.id)} disabled={saving} className="min-w-0 flex-1 text-left disabled:cursor-not-allowed disabled:opacity-60">
                   <span className="block font-semibold text-stone-950">{unit.name}</span>
@@ -130,6 +137,6 @@ export default function AdminUnitManagementModal({ open, units, saving = false, 
           </div>
         </div>
       </AdminModalSection>
-    </AdminModal>
+    </StandardManagementModalFrame>
   );
 }

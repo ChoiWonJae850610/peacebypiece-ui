@@ -3,11 +3,17 @@
 import { useEffect, useMemo, useState } from "react";
 import AdminUsageToggle from "@/components/admin/common/AdminUsageToggle";
 import {
-  AdminModal,
   AdminModalFooterActions,
   AdminModalSection,
   adminModalInputClassName,
 } from "@/components/admin/layout/AdminModal";
+import StandardManagementModalFrame, {
+  standardModalAddButtonClassName,
+  standardModalListBoxClassName,
+  standardModalListScrollClassName,
+  standardModalMutedRowClassName,
+  standardModalSelectedRowClassName,
+} from "@/components/admin/standards/StandardManagementModalFrame";
 import { createDefaultItemCategoryDefinitions } from "@/lib/admin/settings/standardsDefaults";
 import type { AdminItemCategoryDefinition, AdminItemCategoryLevel } from "@/lib/admin/settings/standardsTypes";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
@@ -83,8 +89,8 @@ function CategoryList({
         <p className="text-sm font-semibold text-stone-900">{title}</p>
         <span className="rounded-full bg-stone-100 px-2.5 py-1 text-xs font-semibold text-stone-500">{items.length}{countSuffix}</span>
       </div>
-      <div className="h-[250px] rounded-3xl border border-stone-200 bg-stone-50/70 p-2">
-        <div className="h-full space-y-2 overflow-auto pr-1">
+      <div className={`h-[250px] ${standardModalListBoxClassName}`}>
+        <div className={standardModalListScrollClassName}>
           {items.length === 0 ? (
             <div className="flex h-full items-center justify-center px-3 text-center text-sm text-stone-400">{emptyLabel}</div>
           ) : (
@@ -95,7 +101,7 @@ function CategoryList({
                   key={item.id}
                   className={[
                     "flex w-full items-center justify-between gap-3 rounded-2xl border px-3 py-3 text-left text-sm transition",
-                    isSelected ? "border-stone-950 bg-white text-stone-950 shadow-sm" : "border-stone-200 bg-white text-stone-700 hover:border-stone-300",
+                    isSelected ? standardModalSelectedRowClassName : standardModalMutedRowClassName,
                   ].join(" ")}
                 >
                   <button type="button" onClick={() => onSelect(item.id)} disabled={disabled} className="min-w-0 flex-1 truncate text-left font-medium disabled:cursor-not-allowed disabled:opacity-60">
@@ -210,10 +216,12 @@ export default function AdminItemCategoryManagementModal({ open, categories, sav
   };
 
   return (
-    <AdminModal
+    <StandardManagementModalFrame
       open={open}
       onClose={saving ? () => undefined : onClose}
       title={t("standards.itemCategories.title", "생산품 유형")}
+      description="1차 품목 안에 2차 품목을, 2차 품목 안에 3차 세부 유형을 연결해 관리합니다."
+      categoryLabel="계층형 기준정보"
       maxWidthClass="md:max-w-5xl"
       footer={
         <AdminModalFooterActions
@@ -232,15 +240,15 @@ export default function AdminItemCategoryManagementModal({ open, categories, sav
         <div className="grid gap-3 md:grid-cols-3">
           <div className="flex min-w-0 gap-2">
             <input disabled={saving} value={newLevel1Label} onChange={(event) => { setNewLevel1Label(event.target.value); if (formError) setFormError(""); }} placeholder={t("standards.itemCategories.level1Placeholder", "1차 품목 추가")} className={`h-11 min-w-0 flex-1 ${adminModalInputClassName}`} />
-            <button type="button" onClick={() => addCategory(1)} disabled={saving} className="h-11 shrink-0 whitespace-nowrap rounded-full bg-stone-950 px-5 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-50">{t("standards.common.add", "추가")}</button>
+            <button type="button" onClick={() => addCategory(1)} disabled={saving} className={standardModalAddButtonClassName}>{t("standards.common.add", "추가")}</button>
           </div>
           <div className="flex min-w-0 gap-2">
             <input disabled={saving} value={newLevel2Label} onChange={(event) => { setNewLevel2Label(event.target.value); if (formError) setFormError(""); }} placeholder={t("standards.itemCategories.level2Placeholder", "선택한 1차 안에 2차 추가")} className={`h-11 min-w-0 flex-1 ${adminModalInputClassName}`} />
-            <button type="button" onClick={() => addCategory(2)} disabled={saving} className="h-11 shrink-0 whitespace-nowrap rounded-full bg-stone-950 px-5 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-50">{t("standards.common.add", "추가")}</button>
+            <button type="button" onClick={() => addCategory(2)} disabled={saving} className={standardModalAddButtonClassName}>{t("standards.common.add", "추가")}</button>
           </div>
           <div className="flex min-w-0 gap-2">
             <input disabled={saving} value={newLevel3Label} onChange={(event) => { setNewLevel3Label(event.target.value); if (formError) setFormError(""); }} placeholder={t("standards.itemCategories.level3Placeholder", "선택한 2차 안에 3차 추가")} className={`h-11 min-w-0 flex-1 ${adminModalInputClassName}`} />
-            <button type="button" onClick={() => addCategory(3)} disabled={saving} className="h-11 shrink-0 whitespace-nowrap rounded-full bg-stone-950 px-5 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-50">{t("standards.common.add", "추가")}</button>
+            <button type="button" onClick={() => addCategory(3)} disabled={saving} className={standardModalAddButtonClassName}>{t("standards.common.add", "추가")}</button>
           </div>
         </div>
       </AdminModalSection>
@@ -252,6 +260,6 @@ export default function AdminItemCategoryManagementModal({ open, categories, sav
           <CategoryList title={t("standards.itemCategories.level3Title", "3차 품목")} items={level3Items} selectedId={null} emptyLabel={t("standards.itemCategories.level3Empty", "선택한 2차 품목의 3차 품목이 없습니다.")} countSuffix={t("standards.itemCategories.countSuffix", "개")} activeLabel={t("standards.itemCategories.active", "사용")} inactiveLabel={t("standards.itemCategories.inactive", "미사용")} onSelect={() => undefined} onToggleActive={(id, isActive) => updateNodeActive(3, id, isActive)} disabled={saving} />
         </div>
       </AdminModalSection>
-    </AdminModal>
+    </StandardManagementModalFrame>
   );
 }

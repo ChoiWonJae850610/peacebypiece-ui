@@ -1,11 +1,17 @@
 "use client";
 
 import {
-  AdminModal,
   AdminModalFooterActions,
   AdminModalSection,
   adminModalInputClassName,
 } from "@/components/admin/layout/AdminModal";
+import StandardManagementModalFrame, {
+  standardModalAddButtonClassName,
+  standardModalListBoxClassName,
+  standardModalListScrollClassName,
+  standardModalMutedRowClassName,
+  standardModalSelectedRowClassName,
+} from "@/components/admin/standards/StandardManagementModalFrame";
 import { PARTNER_MASTER_FIELD_LIMITS, type OutsourcingProcessDefinition } from "@/lib/admin/partner";
 import { useI18n } from "@/lib/i18n";
 import type { OutsourcingProcessType } from "@/types/partner";
@@ -42,8 +48,8 @@ function ProcessListBox({
   onSelect: (type: OutsourcingProcessType | null) => void;
 }) {
   return (
-    <div className="h-[240px] rounded-3xl border border-stone-200 bg-stone-50/70 p-2">
-      <div className="h-full space-y-2 overflow-auto pr-1">
+    <div className={`h-[240px] ${standardModalListBoxClassName}`}>
+      <div className={standardModalListScrollClassName}>
         {items.length === 0 ? (
           <div className="flex h-full items-center justify-center px-3 text-center text-sm text-stone-400">{emptyLabel}</div>
         ) : (
@@ -56,7 +62,7 @@ function ProcessListBox({
                 onClick={() => onSelect(definition.type)}
                 className={[
                   "flex w-full items-center justify-between rounded-2xl border px-3 py-3 text-left text-sm transition",
-                  isSelected ? "border-sky-300 bg-sky-50 text-sky-900 shadow-sm" : "border-stone-200 bg-white text-stone-700 hover:border-stone-300",
+                  isSelected ? standardModalSelectedRowClassName : standardModalMutedRowClassName,
                 ].join(" ")}
               >
                 <span className="min-w-0 max-w-full truncate font-medium" title={definition.label}>{definition.label}</span>
@@ -92,10 +98,12 @@ export default function PartnerProcessManagementModal({
   const processText = i18n.admin.partnerMaster.processManagement;
 
   return (
-    <AdminModal
+    <StandardManagementModalFrame
       open={open}
       onClose={saving ? () => undefined : onClose}
       title={processText.title}
+      description="작업지시서의 외주 처리에 쓰는 단순 공정 기준값을 사용/미사용 목록으로 관리합니다."
+      categoryLabel="단순 목록 기준정보"
       maxWidthClass="md:max-w-3xl"
       footer={
         <AdminModalFooterActions
@@ -135,7 +143,7 @@ export default function PartnerProcessManagementModal({
             type="button"
             onClick={onAddProcessDefinition}
             disabled={saving}
-            className="inline-flex h-11 items-center justify-center rounded-full bg-stone-950 px-4 text-sm font-medium text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-50"
+            className={standardModalAddButtonClassName}
           >
             {processText.add}
           </button>
@@ -204,6 +212,6 @@ export default function PartnerProcessManagementModal({
         </div>
       </div>
       </AdminModalSection>
-    </AdminModal>
+    </StandardManagementModalFrame>
   );
 }
