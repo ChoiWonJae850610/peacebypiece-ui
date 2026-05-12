@@ -1,3 +1,5 @@
+import { DEFAULT_ADMIN_STORAGE_QUOTA_BYTES, formatStorageBytes } from "@/lib/billing/storageQuotaPolicy";
+
 export type AdminDashboardRoute = string | null;
 
 export type AdminSummaryCard = {
@@ -33,7 +35,7 @@ export const ADMIN_SUMMARY_CARDS: AdminSummaryCard[] = [
   { label: "작업중인 작업지시서", value: "0", href: "/worker", description: "발주 전 작업 대상", accent: "bg-blue-50 text-blue-700" },
   { label: "검토 대기", value: "0", href: "/worker", description: "관리자 확인 필요", accent: "bg-amber-50 text-amber-700" },
   { label: "입고 대기", value: "0", href: "/worker", description: "발주 이후 검수 전", accent: "bg-violet-50 text-violet-700" },
-  { label: "첨부파일 사용량", value: "0GB / 5GB", href: "/admin/files", description: "저장소 사용 현황", accent: "bg-emerald-50 text-emerald-700" },
+  { label: "첨부파일 사용량", value: `0B / ${formatStorageBytes(DEFAULT_ADMIN_STORAGE_QUOTA_BYTES)}`, href: "/admin/files", description: "저장소 사용 현황", accent: "bg-emerald-50 text-emerald-700" },
 ];
 
 

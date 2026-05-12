@@ -1,51 +1,32 @@
 import { NextResponse } from "next/server";
 import { getAdminFileManagementSnapshot } from "@/lib/admin/files/adapter";
 import { buildAdminStoragePolicyItems, normalizeAdminFilePolicySettings } from "@/lib/admin/files/presentation";
+import { buildResolvedStorageUsageSummary, formatStorageBytes, resolveStorageQuotaFromCompanyFilePolicy } from "@/lib/billing/storageQuotaPolicy";
 import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/settings/companyRepository";
 import { listAdminFileManagementRows } from "@/lib/admin/files/serverActions";
 import { queryDb } from "@/lib/db/client";
 import type { DbQueryResultRow } from "@/lib/db/client";
 import type { AdminFileTrendPeriod, AdminFileTypeDistributionItem, AdminFileUsageCard, AdminRecentUploadTrendPoint, AdminManagedFileItem, AdminStorageUsageSummary } from "@/lib/admin/files/types";
-import type { CompanyFilePolicySettings } from "@/lib/admin/settings/companyTypes";
-
 export const runtime = "nodejs";
-
-const BYTES_PER_GB = 1024 ** 3;
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error || "UNKNOWN_ERROR");
 }
 
-function formatBytes(bytes: number): string {
-  if (!Number.isFinite(bytes) || bytes < 0) return "0B";
-  if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1)}GB`;
-  if (bytes >= 1024 ** 2) return `${Math.round(bytes / 1024 ** 2)}MB`;
-  if (bytes >= 1024) return `${Math.round(bytes / 1024)}KB`;
-  return `${bytes}B`;
-}
-
-function buildUsageSummary(activeBytes: number, trashBytes: number, filePolicy: CompanyFilePolicySettings): AdminStorageUsageSummary {
-  const safeActiveBytes = Number.isFinite(activeBytes) ? Math.max(0, activeBytes) : 0;
-  const safeTrashBytes = Number.isFinite(trashBytes) ? Math.max(0, trashBytes) : 0;
-  const storageLimitGb = Number.isFinite(filePolicy.storageLimitGb) ? Math.max(1, filePolicy.storageLimitGb) : 1;
-  const warningThresholdPercent = Number.isFinite(filePolicy.warningThresholdPercent) ? Math.min(100, Math.max(1, filePolicy.warningThresholdPercent)) : 80;
-  const usedBytes = safeActiveBytes + (filePolicy.includeTrashInUsage ? safeTrashBytes : 0);
-  const limitBytes = storageLimitGb * BYTES_PER_GB;
-  const usagePercent = Math.min(100, Math.round((usedBytes / limitBytes) * 100));
-  const statusTone = usagePercent >= 100 ? "danger" : usagePercent >= warningThresholdPercent ? "caution" : "normal";
-  const statusLabel = statusTone === "danger" ? "위험" : statusTone === "caution" ? "주의" : "정상";
+function buildUsageSummary(activeBytes: number, trashBytes: number, filePolicy: ReturnType<typeof normalizeAdminFilePolicySettings>): AdminStorageUsageSummary {
+  const quotaPolicy = resolveStorageQuotaFromCompanyFilePolicy(filePolicy);
+  const summary = buildResolvedStorageUsageSummary({ activeBytes, trashBytes, quotaPolicy });
 
   return {
-    usedBytes,
-    limitBytes,
-    usedLabel: formatBytes(usedBytes),
-    limitLabel: formatBytes(limitBytes),
-    usagePercent,
-    statusLabel,
-    statusTone,
+    usedBytes: summary.usedBytes,
+    limitBytes: summary.limitBytes,
+    usedLabel: summary.usedLabel,
+    limitLabel: summary.limitLabel,
+    usagePercent: summary.usagePercent,
+    statusLabel: summary.statusLabel,
+    statusTone: summary.statusTone,
   };
 }
-
 function normalizeTrendPeriod(value: string | null): AdminFileTrendPeriod {
   if (value === "15") return 15;
   if (value === "30") return 30;
@@ -163,14 +144,14 @@ function buildUsageCards(
   trashBytes: number,
   purgeRequestCount: number,
   purgeRequestBytes: number,
-  filePolicy: CompanyFilePolicySettings,
+  filePolicy: ReturnType<typeof normalizeAdminFilePolicySettings>,
 ): AdminFileUsageCard[] {
   const summary = buildUsageSummary(activeBytes, trashBytes, filePolicy);
   return [
     { label: "전체 사용량", value: `${summary.usedLabel} / ${summary.limitLabel}`, description: filePolicy.includeTrashInUsage ? "휴지통 보관 파일 포함" : "사용중 파일만 합산" },
-    { label: "첨부파일", value: `${activeCount}개`, description: `${formatBytes(activeBytes)} 사용` },
-    { label: "휴지통", value: `${trashCount}개`, description: `${formatBytes(trashBytes)} 보관` },
-    { label: "삭제 요청", value: `${purgeRequestCount}개`, description: `${formatBytes(purgeRequestBytes)} 처리 대기` },
+    { label: "첨부파일", value: `${activeCount}개`, description: `${formatStorageBytes(activeBytes)} 사용` },
+    { label: "휴지통", value: `${trashCount}개`, description: `${formatStorageBytes(trashBytes)} 보관` },
+    { label: "삭제 요청", value: `${purgeRequestCount}개`, description: `${formatStorageBytes(purgeRequestBytes)} 처리 대기` },
   ];
 }
 
@@ -197,8 +178,8 @@ export async function GET(request: Request) {
         workOrders: rows.workOrders,
         attachments: rows.attachments,
         trashItems: rows.trashItems,
-        usageSummary: buildUsageSummary(activeBytes, trashBytes, settings.filePolicy),
-        usageCards: buildUsageCards(rows.attachments.length, rows.trashItems.length, activeBytes, trashBytes, purgeRequestSummary.count, purgeRequestSummary.bytes, settings.filePolicy),
+        usageSummary: buildUsageSummary(activeBytes, trashBytes, policySettings),
+        usageCards: buildUsageCards(rows.attachments.length, rows.trashItems.length, activeBytes, trashBytes, purgeRequestSummary.count, purgeRequestSummary.bytes, policySettings),
         storagePolicies: buildAdminStoragePolicyItems(policySettings),
         policySettings,
         recentUploadTrend: buildRecentUploadTrend(rows.attachments.map((item) => item.uploadedAt), trendPeriod),

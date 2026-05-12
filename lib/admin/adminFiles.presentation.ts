@@ -17,6 +17,7 @@ import type {
   AdminTrashFileItem,
 } from "@/lib/admin/adminFiles.types";
 import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
+import { buildResolvedStorageUsageSummary, getDefaultAdminStorageQuotaPolicy } from "@/lib/billing/storageQuotaPolicy";
 
 export type { AdminFileTabKey } from "@/lib/admin/adminFiles.types";
 
@@ -183,18 +184,25 @@ export function createAdminTrashFileActionSummary(
   );
 }
 
+const ADMIN_FILE_FALLBACK_ACTIVE_BYTES = 2 * 1024 ** 3;
+const ADMIN_FILE_FALLBACK_USAGE = buildResolvedStorageUsageSummary({
+  activeBytes: ADMIN_FILE_FALLBACK_ACTIVE_BYTES,
+  trashBytes: 0,
+  quotaPolicy: getDefaultAdminStorageQuotaPolicy(true),
+});
+
 export const ADMIN_FILE_USAGE_SUMMARY: AdminStorageUsageSummary = {
-  usedBytes: 2147483648,
-  limitBytes: 5368709120,
-  usedLabel: "2.0GB",
-  limitLabel: "5.0GB",
-  usagePercent: 40,
-  statusLabel: "정상",
-  statusTone: "normal",
+  usedBytes: ADMIN_FILE_FALLBACK_USAGE.usedBytes,
+  limitBytes: ADMIN_FILE_FALLBACK_USAGE.limitBytes,
+  usedLabel: ADMIN_FILE_FALLBACK_USAGE.usedLabel,
+  limitLabel: ADMIN_FILE_FALLBACK_USAGE.limitLabel,
+  usagePercent: ADMIN_FILE_FALLBACK_USAGE.usagePercent,
+  statusLabel: ADMIN_FILE_FALLBACK_USAGE.statusLabel,
+  statusTone: ADMIN_FILE_FALLBACK_USAGE.statusTone,
 };
 
 export const ADMIN_FILE_USAGE_CARDS: AdminFileUsageCard[] = [
-  { label: "전체 사용량", value: "2.0GB / 5.0GB", description: "휴지통 보관 파일 포함" },
+  { label: "전체 사용량", value: `${ADMIN_FILE_USAGE_SUMMARY.usedLabel} / ${ADMIN_FILE_USAGE_SUMMARY.limitLabel}`, description: "휴지통 보관 파일 포함" },
   { label: "첨부파일", value: "3개", description: "작업지시서에 연결된 이미지, PDF, 기타 파일" },
   { label: "휴지통", value: "2개", description: "소프트 삭제 후 보관 중인 파일" },
   { label: "삭제 요청", value: "0개", description: "0MB 처리 대기" },

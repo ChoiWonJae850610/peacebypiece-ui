@@ -22,11 +22,13 @@ export const SYSTEM_STORAGE_PURGE_COPY = {
     retryTitle: "재시도 필요",
     originalSizeTitle: "원본 용량",
     thumbnailTitle: "썸네일 객체",
+    quotaTitle: "기본 용량 기준",
     fileUnit: "파일",
     workOrderUnit: "작업지시서",
     retryDescriptionPrefix: "Worker/권한/네트워크 실패로 다시 처리할 후보",
     sizeDescriptionPrefix: "파일 후보와 작업지시서 묶음 첨부 기준 · 고객사",
     thumbnailDescription: "R2 삭제 시 원본과 함께 처리 대상",
+    quotaDescription: "admin/files와 system/storage-usage가 같은 중앙 quota 정책을 참조합니다.",
   },
   list: {
     title: "삭제 후보 목록",

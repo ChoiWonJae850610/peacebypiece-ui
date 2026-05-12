@@ -1,20 +1,26 @@
 Version :
-0.10.71
+0.10.72
 
 Summary :
-시스템관리자 요금제 용량 관리 설계 보정
+저장소 용량 기준 중앙화
 
 Description :
-시스템관리자 요금제·용량 화면을 billing 기본 요금제 정책 기준으로 정리하고 고객사별 plan assignment와 override 설계 기준을 화면과 문서에 반영했다.
+저장소 용량 한도와 사용률 계산 기준을 billing storage quota policy로 분리하고, 고객관리자 저장소와 통계, 시스템 저장소 화면이 같은 기본 quota 기준을 참조하도록 보정했다.
 
 수정 파일 목록 :
-- components/system/billing/SystemCompanyPlanSkeleton.tsx
-- lib/system/systemCompanyPlanSkeleton.ts
-- lib/system/systemConsoleShell.ts
+- app/api/admin/files/snapshot/route.ts
+- app/system/storage-usage/page.tsx
+- lib/admin/adminDashboard.presentation.ts
+- lib/admin/adminFiles.presentation.ts
+- lib/admin/stats/selectors.ts
+- lib/billing/index.ts
+- lib/constants/adminStats.ts
 - lib/constants/app.ts
+- lib/system/storagePurgePresentation.ts
 
 추가 파일 목록 :
-- docs/system-billing-storage-policy-0.10.71.md
+- lib/billing/storageQuotaPolicy.ts
+- docs/storage-quota-centralization-0.10.72.md
 
 삭제 파일 목록 :
 없음

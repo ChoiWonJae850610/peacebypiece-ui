@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { SystemStoragePurgeCandidatesClient } from "@/components/system/storage/SystemStoragePurgeCandidatesClient";
+import { getDefaultAdminStorageQuotaPolicy } from "@/lib/billing/storageQuotaPolicy";
 import { APP_VERSION } from "@/lib/constants/app";
 import { getSystemStoragePurgeCandidateSnapshot } from "@/lib/system/storagePurgeCandidates";
 import { SYSTEM_STORAGE_PURGE_COPY } from "@/lib/system/storagePurgePresentation";
@@ -8,6 +9,7 @@ import { SYSTEM_STORAGE_PURGE_COPY } from "@/lib/system/storagePurgePresentation
 export default async function SystemStorageUsagePage() {
   const snapshot = await getSystemStoragePurgeCandidateSnapshot();
   const { summary, candidates } = snapshot;
+  const storageQuotaPolicy = getDefaultAdminStorageQuotaPolicy(true);
 
   return (
     <main className="min-h-screen bg-stone-50 px-4 py-6 text-stone-900 sm:px-6 lg:px-8">
@@ -41,7 +43,7 @@ export default async function SystemStorageUsagePage() {
           </div>
         </header>
 
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
             <p className="text-xs font-semibold text-stone-500">{SYSTEM_STORAGE_PURGE_COPY.summary.candidateTitle}</p>
             <p className="mt-3 text-2xl font-semibold text-stone-950">{summary.candidateCount}개</p>
@@ -61,6 +63,13 @@ export default async function SystemStorageUsagePage() {
             <p className="text-xs font-semibold text-stone-500">{SYSTEM_STORAGE_PURGE_COPY.summary.thumbnailTitle}</p>
             <p className="mt-3 text-2xl font-semibold text-stone-950">{summary.thumbnailObjectCount}개</p>
             <p className="mt-2 text-xs leading-5 text-stone-600">{SYSTEM_STORAGE_PURGE_COPY.summary.thumbnailDescription}</p>
+          </article>
+          <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+            <p className="text-xs font-semibold text-stone-500">{SYSTEM_STORAGE_PURGE_COPY.summary.quotaTitle}</p>
+            <p className="mt-3 text-2xl font-semibold text-stone-950">{storageQuotaPolicy.limitLabel}</p>
+            <p className="mt-2 text-xs leading-5 text-stone-600">
+              {storageQuotaPolicy.sourceLabel} · {SYSTEM_STORAGE_PURGE_COPY.summary.quotaDescription}
+            </p>
           </article>
         </section>
 

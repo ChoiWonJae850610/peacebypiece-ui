@@ -62,7 +62,8 @@ export function buildAdminFileUsagePoints(row: AdminFileUsageRow | undefined): {
   const totalSizeBytes = toAdminStatNumber(row?.total_size_bytes);
   const activeFileCount = toAdminStatNumber(row?.active_count);
   const trashFileCount = toAdminStatNumber(row?.trash_count);
-  const fileUsageLabel = `${formatAdminBytes(totalSizeBytes)} / ${adminStatsText.fileUsage.quotaLabel}`;
+  const storageQuotaLabel = formatAdminBytes(ADMIN_FILE_LIMIT_BYTES);
+  const fileUsageLabel = `${formatAdminBytes(totalSizeBytes)} / ${storageQuotaLabel}`;
 
   return {
     fileUsageLabel,

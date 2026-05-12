@@ -1,4 +1,9 @@
-export const ADMIN_FILE_LIMIT_BYTES = 5 * 1024 * 1024 * 1024;
+import {
+  DEFAULT_ADMIN_STORAGE_QUOTA_BYTES,
+  formatStorageBytes,
+} from "@/lib/billing/storageQuotaPolicy";
+
+export const ADMIN_FILE_LIMIT_BYTES = DEFAULT_ADMIN_STORAGE_QUOTA_BYTES;
 export const ADMIN_ATTACHMENT_COUNT_LIMIT = 20;
 export const ADMIN_TRASH_COUNT_LIMIT = 20;
 
@@ -21,7 +26,7 @@ export const ADMIN_FILE_USAGE_LABELS = {
   total: "전체 사용량",
   active: "첨부파일",
   trash: "휴지통",
-  quotaLabel: "5.0GB",
+  quotaLabel: formatStorageBytes(ADMIN_FILE_LIMIT_BYTES),
 } as const;
 
 export const ADMIN_STAT_SUMMARY_TEXT = {
