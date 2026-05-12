@@ -1,20 +1,18 @@
 Version :
-0.10.90
+0.10.91
 
 Summary :
-R2 더미 파일 메모 첨부 정책 정합성 보정
+작업지시서 목록 요약 조회 경량화
 
 Description :
-R2 더미 파일 seed에서 메모 첨부 metadata를 txt/text/plain 대신 pdf/application/pdf로 생성하도록 수정했다. Worker 정책과 스크립트 허용 파일 정책을 맞추기 위해 R2 더미 업로드 스크립트의 허용 확장자와 MIME 목록에서 txt/text/plain을 제외하고, 사용 문서에 기존 0.10.89 seed 실행 후 full reset부터 다시 실행해야 한다는 안내를 추가했다.
+작업지시서 목록 summary API가 spec_sheets payload 전체를 내려받지 않고 목록 표시에 필요한 summary key와 DB row count만 조회하도록 분리했다. 상세 조회 흐름은 기존대로 유지해 선택한 작업지시서 상세 데이터 hydrate 동작은 보존했다.
 
 수정 파일 목록 :
-- db/seed/realistic_workorders_seed.sql
-- scripts/seed-r2-demo-files.mjs
-- scripts/seed-r2-demo-files-usage.md
+- lib/workorder/repository/dbWorkOrderRepository.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-없음
+- docs/workorder-summary-lightweight-0.10.91.md
 
 삭제 파일 목록 :
 없음

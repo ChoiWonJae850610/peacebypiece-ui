@@ -74,6 +74,11 @@ type DbSpecSheetRow = {
   category2_id?: string | null;
   category3_id?: string | null;
   payload: WorkOrder | string | null;
+  order_entry_count?: number | null;
+  material_count?: number | null;
+  outsourcing_count?: number | null;
+  attachment_count?: number | null;
+  memo_thread_count?: number | null;
   is_active?: boolean | null;
   deleted_at?: string | Date | null;
   created_at?: string | Date | null;
@@ -329,6 +334,12 @@ function countPayloadItems(value: unknown): number {
   return Array.isArray(value) ? value.length : 0;
 }
 
+function readCountValue(value: number | null | undefined, fallbackValue: unknown): number {
+  return typeof value === "number" && Number.isFinite(value)
+    ? Math.max(0, value)
+    : countPayloadItems(fallbackValue);
+}
+
 function readStringPayloadValue(value: unknown, fallback = ""): string {
   return typeof value === "string" ? value : fallback;
 }
@@ -400,11 +411,11 @@ function mapSpecSheetRowToWorkOrderSummary(row: DbSpecSheetRow): WorkOrderSummar
     inventoryStatus: payload.inventoryStatus ?? "unchecked",
     workflowState: normalizedWorkflowState,
     lastSavedAt,
-    orderEntryCount: countPayloadItems(payload.orderEntries),
-    materialCount: countPayloadItems(payload.materials),
-    outsourcingCount: countPayloadItems(payload.outsourcing),
-    attachmentCount: countPayloadItems(payload.attachments),
-    memoThreadCount: countPayloadItems(payload.memoThreads),
+    orderEntryCount: readCountValue(row.order_entry_count, payload.orderEntries),
+    materialCount: readCountValue(row.material_count, payload.materials),
+    outsourcingCount: readCountValue(row.outsourcing_count, payload.outsourcing),
+    attachmentCount: readCountValue(row.attachment_count, payload.attachments),
+    memoThreadCount: readCountValue(row.memo_thread_count, payload.memoThreads),
     hasDetailSnapshot: false,
     createdAt: toIsoString(row.created_at) || undefined,
     updatedAt: toIsoString(row.updated_at) || undefined,
@@ -689,12 +700,141 @@ function buildSpecSheetSelectBaseSql(schema: DbSpecSheetSchema): string {
     `;
 }
 
+function buildSpecSheetSummaryPayloadSelection(schema: DbSpecSheetSchema): string {
+  const payloadFallbackSql =
+    schema.payloadColumnKind === "text" ? "NULL::text" : "NULL::jsonb";
+
+  if (!schema.payloadColumn) {
+    return `${payloadFallbackSql} AS payload`;
+  }
+
+  if (schema.payloadColumnKind === "text") {
+    return `${quoteIdentifier(schema.payloadColumn)} AS payload`;
+  }
+
+  const payloadSql = `COALESCE(${quoteIdentifier(schema.payloadColumn)}::jsonb, '{}'::jsonb)`;
+  const summaryKeys = [
+    "displayTitle",
+    "baseTitle",
+    "workOrderKind",
+    "reorderGroupId",
+    "reorderRound",
+    "parentSpecSheetId",
+    "isDefectOrder",
+    "category1",
+    "category2",
+    "category3",
+    "category1Id",
+    "category2Id",
+    "category3Id",
+    "season",
+    "priority",
+    "vendor",
+    "manager",
+    "managerId",
+    "createdById",
+    "createdByRole",
+    "dueDate",
+    "quantity",
+    "inventoryQuantity",
+    "inventoryStatus",
+    "workflowState",
+    "lastSavedAt",
+  ];
+  const keyExpressions = summaryKeys
+    .map((key) => `'${key}', ${payloadSql}->'${key}'`)
+    .join(",\n          ");
+
+  return `jsonb_strip_nulls(jsonb_build_object(
+          ${keyExpressions}
+        )) AS payload`;
+}
+
+function buildSpecSheetSummarySelectBaseSql(schema: DbSpecSheetSchema): string {
+  return `
+      SELECT
+        id,
+        title,
+        ${buildAliasSelection(schema.workflowStateColumn, "workflow_state", "NULL")},
+        ${buildAliasSelection(schema.lastSavedAtColumn, "last_saved_at", "NULL")},
+        ${buildAliasSelection(schema.workOrderKindColumn, "work_order_kind", "NULL")},
+        ${buildAliasSelection(schema.reorderGroupIdColumn, "reorder_group_id", "NULL")},
+        ${buildAliasSelection(schema.reorderRoundColumn, "reorder_round", "NULL")},
+        ${buildAliasSelection(schema.parentSpecSheetIdColumn, "parent_spec_sheet_id", "NULL")},
+        ${buildAliasSelection(schema.isReworkColumn, "is_rework", "NULL")},
+        ${buildAliasSelection(schema.category1IdColumn, "category1_id", "NULL")},
+        ${buildAliasSelection(schema.category2IdColumn, "category2_id", "NULL")},
+        ${buildAliasSelection(schema.category3IdColumn, "category3_id", "NULL")},
+        ${buildSpecSheetSummaryPayloadSelection(schema)},
+        ${buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE")},
+        ${buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL")},
+        ${buildAliasSelection(schema.createdAtColumn, "created_at", "NULL")},
+        ${buildAliasSelection(schema.updatedAtColumn, "updated_at", "NULL")}
+      FROM ${quoteIdentifier(SPEC_SHEET_TABLE)}
+    `;
+}
+
 function buildSpecSheetSelectSql(schema: DbSpecSheetSchema): string {
   return `
       ${buildSpecSheetSelectBaseSql(schema)}
       ${schema.companyIdColumn ? `WHERE ${quoteIdentifier(schema.companyIdColumn)} = $1` : schema.isActiveColumn ? `WHERE ${quoteIdentifier(schema.isActiveColumn)} = TRUE` : ""}
       ${schema.companyIdColumn && schema.isActiveColumn ? `AND ${quoteIdentifier(schema.isActiveColumn)} = TRUE` : ""}
       ORDER BY ${schema.updatedAtColumn ? `${quoteIdentifier(schema.updatedAtColumn)} DESC NULLS LAST, ` : ""}${schema.createdAtColumn ? `${quoteIdentifier(schema.createdAtColumn)} DESC NULLS LAST, ` : ""}id DESC
+    `;
+}
+
+function buildSpecSheetSummarySelectSql(schema: DbSpecSheetSchema): string {
+  return `
+      WITH spec_sheet_summaries AS (
+        ${buildSpecSheetSummarySelectBaseSql(schema)}
+        ${schema.companyIdColumn ? `WHERE ${quoteIdentifier(schema.companyIdColumn)} = $1` : schema.isActiveColumn ? `WHERE ${quoteIdentifier(schema.isActiveColumn)} = TRUE` : ""}
+        ${schema.companyIdColumn && schema.isActiveColumn ? `AND ${quoteIdentifier(schema.isActiveColumn)} = TRUE` : ""}
+      )
+      SELECT
+        s.*,
+        COALESCE(order_counts.order_entry_count, 0)::integer AS order_entry_count,
+        COALESCE(material_counts.material_count, 0)::integer AS material_count,
+        COALESCE(outsourcing_counts.outsourcing_count, 0)::integer AS outsourcing_count,
+        COALESCE(attachment_counts.attachment_count, 0)::integer AS attachment_count,
+        COALESCE(memo_counts.memo_thread_count, 0)::integer AS memo_thread_count
+      FROM spec_sheet_summaries s
+      LEFT JOIN LATERAL (
+        SELECT COUNT(*)::integer AS order_entry_count
+        FROM orders o
+        WHERE o.spec_sheet_id = s.id
+          AND COALESCE(o.is_active, true) = true
+          AND o.deleted_at IS NULL
+      ) order_counts ON true
+      LEFT JOIN LATERAL (
+        SELECT COUNT(*)::integer AS material_count
+        FROM spec_sheet_materials m
+        WHERE m.spec_sheet_id = s.id
+          AND COALESCE(m.is_active, true) = true
+          AND m.deleted_at IS NULL
+      ) material_counts ON true
+      LEFT JOIN LATERAL (
+        SELECT COUNT(*)::integer AS outsourcing_count
+        FROM spec_sheet_outsourcing_lines ol
+        WHERE ol.spec_sheet_id = s.id
+          AND COALESCE(ol.is_active, true) = true
+          AND ol.deleted_at IS NULL
+      ) outsourcing_counts ON true
+      LEFT JOIN LATERAL (
+        SELECT COUNT(*)::integer AS attachment_count
+        FROM attachments a
+        WHERE a.order_id = s.id
+          AND COALESCE(a.is_active, true) = true
+          AND a.deleted_at IS NULL
+      ) attachment_counts ON true
+      LEFT JOIN LATERAL (
+        SELECT COUNT(*)::integer AS memo_thread_count
+        FROM memos memo
+        WHERE memo.order_id = s.id
+          AND memo.parent_id IS NULL
+          AND COALESCE(memo.is_active, true) = true
+          AND memo.deleted_at IS NULL
+      ) memo_counts ON true
+      ORDER BY ${schema.updatedAtColumn ? `s.updated_at DESC NULLS LAST, ` : ""}${schema.createdAtColumn ? `s.created_at DESC NULLS LAST, ` : ""}s.id DESC
     `;
 }
 
@@ -728,8 +868,20 @@ async function loadActiveSpecSheetRows(): Promise<DbSpecSheetRow[]> {
   return result.rows;
 }
 
+async function loadActiveSpecSheetSummaryRows(): Promise<DbSpecSheetRow[]> {
+  const schema = await loadSpecSheetSchema();
+  assertMinimumSpecSheetSchema(schema);
+
+  const result = await queryDb<DbSpecSheetRow>(
+    buildSpecSheetSummarySelectSql(schema),
+    schema.companyIdColumn ? [getAdminCompanyId()] : undefined,
+  );
+
+  return result.rows;
+}
+
 export async function findDbWorkOrderSummaries(): Promise<WorkOrderSummary[]> {
-  const rows = await loadActiveSpecSheetRows();
+  const rows = await loadActiveSpecSheetSummaryRows();
   return rows.map(mapSpecSheetRowToWorkOrderSummary);
 }
 
