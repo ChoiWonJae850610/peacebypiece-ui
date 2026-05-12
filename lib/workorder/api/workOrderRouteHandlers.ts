@@ -336,6 +336,8 @@ export async function handleGetWorkOrders() {
 }
 
 export async function handleGetWorkOrderDetail(workOrderId: string) {
+  const startedAt = Date.now();
+
   if (!isDatabaseConfigured()) {
     return NextResponse.json(createDbNotConfiguredPayload(), { status: 503 });
   }
@@ -363,6 +365,7 @@ export async function handleGetWorkOrderDetail(workOrderId: string) {
         mode: "detail",
         hydrated: true,
         workOrderId: workOrder.id,
+        durationMs: Date.now() - startedAt,
       },
     });
   } catch (error) {
@@ -374,6 +377,8 @@ export async function handleGetWorkOrderDetail(workOrderId: string) {
 }
 
 export async function handleGetWorkOrderSummaries() {
+  const startedAt = Date.now();
+
   if (!isDatabaseConfigured()) {
     return NextResponse.json(createDbNotConfiguredPayload(), { status: 503 });
   }
@@ -388,6 +393,7 @@ export async function handleGetWorkOrderSummaries() {
         mode: "summary",
         hydrated: false,
         count: workOrders.length,
+        durationMs: Date.now() - startedAt,
       },
     });
   } catch (error) {

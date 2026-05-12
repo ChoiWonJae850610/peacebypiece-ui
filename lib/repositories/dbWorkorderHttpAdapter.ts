@@ -129,9 +129,6 @@ function createSummaryWorkOrder(summary: WorkOrderSummary): WorkOrder {
   };
 }
 
-function mergeDetailedWorkOrder(workOrders: WorkOrder[], detail: WorkOrder): WorkOrder[] {
-  return workOrders.map((item) => (item.id === detail.id ? { ...item, ...detail, hasDetailSnapshot: true } : item));
-}
 
 async function loadWorkOrderSummariesFromApi(): Promise<WorkOrder[]> {
   const response = await fetch("/api/workorders/summary", {
@@ -371,10 +368,7 @@ export function createDbWorkorderHttpAdapter(): WorkorderRepositoryAdapter {
           persistedState?.selectedId,
           seededState.selectedId,
         );
-        const selectedDetail = selectedId ? await loadWorkOrderDetailFromApi(selectedId) : null;
-        const workOrders = selectedDetail
-          ? mergeDetailedWorkOrder(summaryWorkOrders, selectedDetail)
-          : summaryWorkOrders;
+        const workOrders = summaryWorkOrders;
         const currentUserId = resolveUserId(users, persistedState?.currentUserId, seededState.currentUserId);
         const permissionTargetUserId = resolveUserId(users, persistedState?.permissionTargetUserId, currentUserId);
 
