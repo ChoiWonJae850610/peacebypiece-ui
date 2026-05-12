@@ -1,22 +1,20 @@
 Version :
-0.10.65
+0.10.66
 
 Summary :
-고객사 생성 시 초기 기준정보 복사 연결
+개발 건의 이메일 접수 1차 처리
 
 Description :
-시스템관리자 고객사 생성 흐름에서 회사 생성 직후 활성 단위 표준, 외주공정 유형, 기본 생산품 유형 템플릿을 신규 고객사 기준정보로 복사하는 repository를 추가했다. DB transaction 유틸을 추가하고 시스템 고객사 승인 화면의 초기 기준정보 복사 단계도 연결 완료 상태로 보정했다.
+고객관리자 환경설정의 개발 건의 메뉴를 준비중 안내에서 이메일 접수 방식으로 전환했다. 개발 건의 모달에 접수 이메일, 이메일 작성 버튼, 기본 메일 제목과 본문 템플릿 생성 유틸을 추가했다.
 
 수정 파일 목록 :
-- lib/db/client.ts
-- lib/company/api/companyRouteHandlers.ts
-- lib/system/systemCompanyApprovalConsole.ts
+- components/admin/settings/AdminSettingsHub.tsx
+- lib/admin/settings/adminSettingsHub.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- lib/system/standards/index.ts
-- lib/system/standards/companyStandardsInitializationRepository.ts
-- docs/company-standards-initialization-0.10.65.md
+- lib/admin/settings/adminFeedbackContact.ts
+- docs/development-feedback-email-0.10.66.md
 
 삭제 파일 목록 :
 없음

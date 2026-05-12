@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AdminModal, AdminModalSection, adminModalPrimaryButtonClassName } from "@/components/admin/layout/AdminModal";
+import { AdminModal, AdminModalSection, adminModalPrimaryButtonClassName, adminModalSecondaryButtonClassName } from "@/components/admin/layout/AdminModal";
 import AdminStandardsSection from "@/components/admin/standards/AdminStandardsSection";
 import {
   ADMIN_SETTINGS_MENU_ITEMS,
@@ -10,6 +10,7 @@ import {
   type AdminSettingsMenuItem,
   type AdminSettingsMenuTone,
 } from "@/lib/admin/settings/adminSettingsHub";
+import { ADMIN_FEEDBACK_CONTACT_EMAIL, buildAdminFeedbackMailtoHref } from "@/lib/admin/settings/adminFeedbackContact";
 
 type NoticeMenuId = Exclude<AdminSettingsMenuId, "standards">;
 
@@ -80,6 +81,8 @@ export default function AdminSettingsHub() {
   const [activeMenuId, setActiveMenuId] = useState<AdminSettingsMenuId>("standards");
   const [noticeMenuId, setNoticeMenuId] = useState<NoticeMenuId | null>(null);
   const notice = useMemo(() => (noticeMenuId ? ADMIN_SETTINGS_NOTICE_BY_ID[noticeMenuId] : null), [noticeMenuId]);
+  const feedbackMailtoHref = useMemo(() => buildAdminFeedbackMailtoHref(), []);
+  const isFeedbackNotice = noticeMenuId === "feedback";
 
   const handleSelectMenu = (id: AdminSettingsMenuId) => {
     if (isNoticeMenuId(id)) {
@@ -119,8 +122,13 @@ export default function AdminSettingsHub() {
         onClose={() => setNoticeMenuId(null)}
         maxWidthClass="md:max-w-2xl"
         footer={
-          <div className="flex justify-end">
-            <button type="button" className={adminModalPrimaryButtonClassName} onClick={() => setNoticeMenuId(null)}>
+          <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+            {isFeedbackNotice ? (
+              <a className={adminModalPrimaryButtonClassName} href={feedbackMailtoHref}>
+                이메일 작성하기
+              </a>
+            ) : null}
+            <button type="button" className={isFeedbackNotice ? adminModalSecondaryButtonClassName : adminModalPrimaryButtonClassName} onClick={() => setNoticeMenuId(null)}>
               확인
             </button>
           </div>
@@ -135,6 +143,15 @@ export default function AdminSettingsHub() {
                 </div>
               ))}
             </div>
+            {isFeedbackNotice ? (
+              <div className="mt-3 rounded-2xl border border-violet-100 bg-violet-50/70 p-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-violet-500">Feedback email</p>
+                <p className="mt-1 font-mono text-sm font-semibold text-violet-900">{ADMIN_FEEDBACK_CONTACT_EMAIL}</p>
+                <p className="mt-2 text-xs leading-5 text-violet-700">
+                  현재는 DB 저장 없이 사용자의 기본 메일 앱으로 개선 요청, 오류 제보, 기능 제안 내용을 작성하는 방식으로 접수합니다.
+                </p>
+              </div>
+            ) : null}
           </AdminModalSection>
         ) : null}
       </AdminModal>

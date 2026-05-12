@@ -48,9 +48,9 @@ export const ADMIN_SETTINGS_MENU_ITEMS: readonly AdminSettingsMenuItem[] = [
     id: "feedback",
     title: "개발 건의",
     description: "시스템 개발자에게 개선 요청과 기능 건의를 전달할 영역입니다.",
-    statusLabel: "준비중",
+    statusLabel: "이메일 접수",
     tone: "violet",
-    detailItems: ["기능 건의", "불편사항 접수", "개선 요청"],
+    detailItems: ["기능 건의", "오류 제보", "개선 요청"],
   },
 ] as const;
 
@@ -74,10 +74,10 @@ export const ADMIN_SETTINGS_NOTICE_BY_ID: Record<Exclude<AdminSettingsMenuId, "s
     items: ["대표 이메일 변경", "회사명/관리자 정보 변경", "회원 탈퇴 요청", "계정 보안 확인"],
   },
   feedback: {
-    title: "개발 건의 접수는 준비중입니다.",
-    description: "고객관리자가 시스템 개발자에게 기능 개선 요청과 오류 제보를 보낼 수 있는 메뉴입니다.",
-    nextStep: "초기에는 접수 화면을 준비하고, 이후 시스템관리자 검토 화면과 연결할 예정입니다.",
-    items: ["기능 개선 건의", "업무 흐름 불편사항", "오류 제보", "우선순위 검토"],
+    title: "개발 건의는 이메일로 접수합니다.",
+    description: "고객관리자가 기능 개선 요청, 오류 제보, 업무 흐름 불편사항을 이메일로 전달할 수 있는 1차 접수 방식입니다.",
+    nextStep: "정식 feature_requests DB와 시스템관리자 검토 화면은 후속 버전에서 확장합니다.",
+    items: ["기능 개선 건의", "업무 흐름 불편사항", "오류 제보", "첨부/캡처 전달"],
   },
 };
 
