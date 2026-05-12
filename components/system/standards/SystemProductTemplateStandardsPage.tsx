@@ -1,8 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
+import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import { APP_VERSION } from "@/lib/constants/app";
 import {
   SYSTEM_PRODUCT_TEMPLATE_POLICY,
@@ -12,10 +14,10 @@ import {
   type SystemProductTemplateStatus,
 } from "@/lib/system/standards/systemProductTemplateStandards";
 
-const statusClassNames: Record<SystemProductTemplateStatus, string> = {
-  active: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  draft: "border-amber-200 bg-amber-50 text-amber-700",
-  archived: "border-stone-200 bg-stone-50 text-stone-500",
+const statusTones: Record<SystemProductTemplateStatus, AdminStatusBadgeTone> = {
+  active: "success",
+  draft: "warning",
+  archived: "neutral",
 };
 
 type TemplateFormState = {
@@ -117,22 +119,12 @@ function CategoryEditForm({
         placeholder="정렬"
       />
       <div className="flex items-center justify-end gap-1">
-        <button
-          type="button"
-          onClick={onSave}
-          disabled={isSaving || !value.name.trim()}
-          className="rounded-full bg-stone-900 px-2.5 py-1 text-[11px] font-semibold text-white disabled:cursor-not-allowed disabled:bg-stone-300"
-        >
+        <AdminButton type="button" size="sm" variant="primary" onClick={onSave} disabled={isSaving || !value.name.trim()} className="min-h-7 px-2.5 py-1 text-[11px]">
           저장
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={isSaving}
-          className="rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-600 disabled:text-stone-300"
-        >
+        </AdminButton>
+        <AdminButton type="button" size="sm" variant="secondary" onClick={onCancel} disabled={isSaving} className="min-h-7 px-2.5 py-1 text-[11px]">
           취소
-        </button>
+        </AdminButton>
       </div>
     </div>
   );
@@ -165,23 +157,19 @@ function TemplateTreePreview({
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-base font-semibold text-stone-950">{template.name}</h3>
-            <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${statusClassNames[template.status]}`}>
+            <AdminStatusBadge tone={statusTones[template.status]}>
               {SYSTEM_PRODUCT_TEMPLATE_STATUS_LABELS[template.status]}
-            </span>
-            {template.isDefault ? (
-              <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-700">
-                기본값
-              </span>
-            ) : null}
+            </AdminStatusBadge>
+            {template.isDefault ? <AdminStatusBadge tone="info">기본값</AdminStatusBadge> : null}
           </div>
           <p className="mt-1 text-sm leading-6 text-stone-600">{template.description}</p>
           <p className="mt-1 font-mono text-[11px] font-semibold text-stone-500">{template.code}</p>
         </div>
         <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-stone-600">
-          <span className="rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1">1차 {topLevelCount}개</span>
-          <span className="rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1">2차 {secondLevelCount}개</span>
-          <span className="rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1">3차 {thirdLevelCount}개</span>
-          <span className="rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1">정렬 {template.sortOrder}</span>
+          <AdminStatusBadge tone="neutral">1차 {topLevelCount}개</AdminStatusBadge>
+          <AdminStatusBadge tone="neutral">2차 {secondLevelCount}개</AdminStatusBadge>
+          <AdminStatusBadge tone="neutral">3차 {thirdLevelCount}개</AdminStatusBadge>
+          <AdminStatusBadge tone="neutral">정렬 {template.sortOrder}</AdminStatusBadge>
         </div>
       </div>
 
@@ -202,22 +190,12 @@ function TemplateTreePreview({
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-sm font-semibold text-stone-950">{top.name}</p>
                   <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => onStartEditCategory(top)}
-                      disabled={isSaving}
-                      className="rounded-full border border-stone-200 bg-white px-2 py-0.5 text-[11px] font-semibold text-stone-600 disabled:text-stone-300"
-                    >
+                    <AdminButton type="button" variant="secondary" size="sm" onClick={() => onStartEditCategory(top)} disabled={isSaving} className="min-h-7 px-2 py-0.5 text-[11px]">
                       수정
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onToggleCategory(top.id, top.name, !(top.isActive ?? true))}
-                      disabled={isSaving}
-                      className="rounded-full border border-stone-200 bg-white px-2 py-0.5 text-[11px] font-semibold text-stone-600 disabled:text-stone-300"
-                    >
+                    </AdminButton>
+                    <AdminButton type="button" variant={top.isActive === false ? "ghost" : "secondary"} size="sm" onClick={() => onToggleCategory(top.id, top.name, !(top.isActive ?? true))} disabled={isSaving} className="min-h-7 px-2 py-0.5 text-[11px]">
                       {top.isActive === false ? "미사용" : "사용"}
-                    </button>
+                    </AdminButton>
                   </div>
                 </div>
               )}
@@ -239,22 +217,12 @@ function TemplateTreePreview({
                         <div className="flex items-center justify-between gap-2">
                           <p className="text-xs font-semibold text-stone-700">{second.name}</p>
                           <div className="flex items-center gap-1">
-                            <button
-                              type="button"
-                              onClick={() => onStartEditCategory(second)}
-                              disabled={isSaving}
-                              className="rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-[11px] font-semibold text-stone-600 disabled:text-stone-300"
-                            >
+                            <AdminButton type="button" variant="secondary" size="sm" onClick={() => onStartEditCategory(second)} disabled={isSaving} className="min-h-7 px-2 py-0.5 text-[11px]">
                               수정
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => onToggleCategory(second.id, second.name, !(second.isActive ?? true))}
-                              disabled={isSaving}
-                              className="rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-[11px] font-semibold text-stone-600 disabled:text-stone-300"
-                            >
+                            </AdminButton>
+                            <AdminButton type="button" variant={second.isActive === false ? "ghost" : "secondary"} size="sm" onClick={() => onToggleCategory(second.id, second.name, !(second.isActive ?? true))} disabled={isSaving} className="min-h-7 px-2 py-0.5 text-[11px]">
                               {second.isActive === false ? "미사용" : "사용"}
-                            </button>
+                            </AdminButton>
                           </div>
                         </div>
                       )}
@@ -280,26 +248,12 @@ function TemplateTreePreview({
                               <span className={leaf.isActive === false ? "text-stone-400" : "text-stone-600"} title={leaf.description}>
                                 {leaf.name}
                               </span>
-                              <button
-                                type="button"
-                                onClick={() => onStartEditCategory(leaf)}
-                                disabled={isSaving}
-                                className="rounded-full px-1.5 py-1 text-[10px] font-semibold text-stone-500 hover:bg-white disabled:text-stone-300"
-                              >
+                              <AdminButton type="button" variant="ghost" size="sm" onClick={() => onStartEditCategory(leaf)} disabled={isSaving} className="min-h-7 px-1.5 py-1 text-[10px]">
                                 수정
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => onToggleCategory(leaf.id, leaf.name, !(leaf.isActive ?? true))}
-                                disabled={isSaving}
-                                className={`rounded-full border px-2 py-1 text-[11px] font-medium disabled:opacity-60 ${
-                                  leaf.isActive === false
-                                    ? "border-stone-200 bg-stone-100 text-stone-400"
-                                    : "border-stone-200 bg-white text-stone-600"
-                                }`}
-                              >
+                              </AdminButton>
+                              <AdminButton type="button" variant={leaf.isActive === false ? "ghost" : "secondary"} size="sm" onClick={() => onToggleCategory(leaf.id, leaf.name, !(leaf.isActive ?? true))} disabled={isSaving} className="min-h-7 px-2 py-1 text-[11px]">
                                 {leaf.isActive === false ? "미사용" : "사용"}
-                              </button>
+                              </AdminButton>
                             </div>
                           );
                         })}
@@ -550,13 +504,9 @@ export default function SystemProductTemplateStandardsPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2 text-xs font-medium">
-              <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-stone-600">v{APP_VERSION}</span>
-              <Link href="/system/standards" className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50">
-                기준정보 설계
-              </Link>
-              <Link href="/system" className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50">
-                시스템 콘솔
-              </Link>
+              <AdminStatusBadge tone="neutral">v{APP_VERSION}</AdminStatusBadge>
+              <AdminLinkButton href="/system/standards">기준정보 설계</AdminLinkButton>
+              <AdminLinkButton href="/system">시스템 콘솔</AdminLinkButton>
             </div>
           </div>
         </header>
@@ -570,14 +520,9 @@ export default function SystemProductTemplateStandardsPage() {
                   총 {records.length}개 중 활성 {activeCount}개입니다. 1차 → 2차 → 3차 분류는 각 항목의 수정 버튼으로 이름과 정렬값을 바꿀 수 있습니다.
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={loadRecords}
-                disabled={isLoading || isSaving}
-                className="rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-stone-50 disabled:cursor-not-allowed disabled:text-stone-400"
-              >
+              <AdminButton type="button" variant="secondary" onClick={loadRecords} disabled={isLoading || isSaving}>
                 {isLoading ? "조회중" : "새로고침"}
-              </button>
+              </AdminButton>
             </div>
 
             <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-3">
@@ -586,15 +531,21 @@ export default function SystemProductTemplateStandardsPage() {
                 <input value={form.code} onChange={(event) => setForm((current) => ({ ...current, code: event.target.value }))} placeholder="코드 예: apparel-basic" className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400" />
                 <input value={form.description} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} placeholder="설명" className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400" />
                 <input value={form.sortOrder} onChange={(event) => setForm((current) => ({ ...current, sortOrder: event.target.value }))} placeholder="정렬" className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400" />
-                <button type="button" onClick={createTemplate} disabled={isSaving || !form.code.trim() || !form.name.trim()} className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-700 disabled:cursor-not-allowed disabled:bg-stone-300">
+                <AdminButton type="button" variant="primary" onClick={createTemplate} disabled={isSaving || !form.code.trim() || !form.name.trim()} className="rounded-xl">
                   템플릿 추가
-                </button>
+                </AdminButton>
               </div>
             </div>
 
             <p className="mt-3 rounded-2xl border border-stone-200 bg-white px-3 py-2 text-xs text-stone-600">{message}</p>
 
             <div className="mt-4 grid gap-4">
+              {records.length === 0 && !isLoading ? (
+                <AdminEmptyState
+                  title="생산품 유형 템플릿이 없습니다"
+                  description="템플릿을 추가하면 고객사 생성 시 복사할 생산품 유형 기준정보를 구성할 수 있습니다."
+                />
+              ) : null}
               {records.map((template) => {
                 const isEditing = editingId === template.id && editingForm;
                 return (
@@ -606,18 +557,18 @@ export default function SystemProductTemplateStandardsPage() {
                         <input value={editingForm.description} onChange={(event) => setEditingForm((current) => current ? { ...current, description: event.target.value } : current)} className="rounded-lg border border-stone-200 bg-white px-2 py-1 text-sm" />
                         <input value={editingForm.sortOrder} onChange={(event) => setEditingForm((current) => current ? { ...current, sortOrder: event.target.value } : current)} className="rounded-lg border border-stone-200 bg-white px-2 py-1 text-right text-sm" />
                         <div className="flex justify-end gap-1">
-                          <button type="button" onClick={() => saveTemplate(template)} disabled={isSaving} className="rounded-full bg-stone-900 px-3 py-1 text-xs font-semibold text-white disabled:bg-stone-300">저장</button>
-                          <button type="button" onClick={() => { setEditingId(null); setEditingForm(null); }} className="rounded-full border border-stone-200 bg-white px-3 py-1 text-xs font-semibold text-stone-600">취소</button>
+                          <AdminButton type="button" variant="primary" size="sm" onClick={() => saveTemplate(template)} disabled={isSaving} className="min-h-7 px-3 py-1 text-xs">저장</AdminButton>
+                          <AdminButton type="button" variant="secondary" size="sm" onClick={() => { setEditingId(null); setEditingForm(null); }} className="min-h-7 px-3 py-1 text-xs">취소</AdminButton>
                         </div>
                       </div>
                     ) : (
                       <div className="mb-3 flex flex-wrap items-center justify-end gap-1">
-                        <button type="button" onClick={() => toggleTemplate(template)} disabled={isSaving} className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${statusClassNames[template.status]}`}>
+                        <AdminButton type="button" variant={template.status === "active" ? "secondary" : "ghost"} size="sm" onClick={() => toggleTemplate(template)} disabled={isSaving} className="min-h-7 px-2.5 py-1 text-[11px]">
                           {SYSTEM_PRODUCT_TEMPLATE_STATUS_LABELS[template.status]}
-                        </button>
-                        <button type="button" onClick={() => { setEditingId(template.id); setEditingForm(toEditableState(template)); }} className="rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-600 hover:bg-stone-50">
+                        </AdminButton>
+                        <AdminButton type="button" variant="secondary" size="sm" onClick={() => { setEditingId(template.id); setEditingForm(toEditableState(template)); }} className="min-h-7 px-2.5 py-1 text-[11px]">
                           수정
-                        </button>
+                        </AdminButton>
                       </div>
                     )}
                     <TemplateTreePreview
@@ -656,9 +607,9 @@ export default function SystemProductTemplateStandardsPage() {
                 ) : null}
                 <input value={categoryForm.name} onChange={(event) => setCategoryForm((current) => ({ ...current, name: event.target.value }))} placeholder="분류명" className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400" />
                 <input value={categoryForm.sortOrder} onChange={(event) => setCategoryForm((current) => ({ ...current, sortOrder: event.target.value }))} placeholder="정렬" className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400" />
-                <button type="button" onClick={createCategory} disabled={isSaving || !selectedTemplate || !categoryForm.name.trim() || (categoryForm.level !== "1" && !categoryForm.parentId)} className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-700 disabled:cursor-not-allowed disabled:bg-stone-300">
+                <AdminButton type="button" variant="primary" onClick={createCategory} disabled={isSaving || !selectedTemplate || !categoryForm.name.trim() || (categoryForm.level !== "1" && !categoryForm.parentId)} className="rounded-xl">
                   분류 추가
-                </button>
+                </AdminButton>
               </div>
             </article>
 

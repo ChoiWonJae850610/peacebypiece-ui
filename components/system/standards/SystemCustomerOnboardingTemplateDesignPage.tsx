@@ -1,5 +1,5 @@
-import Link from "next/link";
-
+import { AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import { APP_VERSION } from "@/lib/constants/app";
 import {
   CUSTOMER_ONBOARDING_TEMPLATE_COPY_CHECKS,
@@ -23,16 +23,10 @@ export default function SystemCustomerOnboardingTemplateDesignPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2 text-xs font-medium">
-              <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-stone-600">v{APP_VERSION}</span>
-              <Link href="/system/standards/regression" className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50">
-                회귀점검
-              </Link>
-              <Link href="/system/standards" className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50">
-                기준정보 관리
-              </Link>
-              <Link href="/system" className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50">
-                시스템 콘솔
-              </Link>
+              <AdminStatusBadge tone="neutral">v{APP_VERSION}</AdminStatusBadge>
+              <AdminLinkButton href="/system/standards/regression">회귀점검</AdminLinkButton>
+              <AdminLinkButton href="/system/standards">기준정보 관리</AdminLinkButton>
+              <AdminLinkButton href="/system">시스템 콘솔</AdminLinkButton>
             </div>
           </div>
         </header>
@@ -41,12 +35,8 @@ export default function SystemCustomerOnboardingTemplateDesignPage() {
           {CUSTOMER_ONBOARDING_TEMPLATE_COPY_STEPS.map((step, index) => (
             <article key={step.id} className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
               <div className="flex items-center justify-between gap-3">
-                <span className="rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-[11px] font-semibold text-stone-600">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-700">
-                  {step.statusLabel}
-                </span>
+                <AdminStatusBadge tone="neutral">{String(index + 1).padStart(2, "0")}</AdminStatusBadge>
+                <AdminStatusBadge tone="info">{step.statusLabel}</AdminStatusBadge>
               </div>
               <h2 className="mt-4 text-base font-semibold text-stone-950">{step.title}</h2>
               <p className="mt-2 text-xs leading-5 text-stone-600">{step.description}</p>
