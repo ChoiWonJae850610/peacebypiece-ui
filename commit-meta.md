@@ -1,18 +1,18 @@
 Version :
-0.10.91
+0.10.92
 
 Summary :
-작업지시서 목록 요약 조회 경량화
+작업지시서 payload 의존도 진단과 정규화 계획 추가
 
 Description :
-작업지시서 목록 summary API가 spec_sheets payload 전체를 내려받지 않고 목록 표시에 필요한 summary key와 DB row count만 조회하도록 분리했다. 상세 조회 흐름은 기존대로 유지해 선택한 작업지시서 상세 데이터 hydrate 동작은 보존했다.
+작업지시서 payload 제거 전 의존 지점을 문서화하고 현재 DB에서 payload 사용량, key 빈도, 정규 컬럼 불일치 후보를 확인할 수 있는 진단 SQL을 추가했다. APP_VERSION도 0.10.92로 갱신했다.
 
 수정 파일 목록 :
-- lib/workorder/repository/dbWorkOrderRepository.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/workorder-summary-lightweight-0.10.91.md
+- docs/workorder-payload-normalization-audit-0.10.92.md
+- db/schema/workorder_payload_audit_0_10_92.sql
 
 삭제 파일 목록 :
 없음
