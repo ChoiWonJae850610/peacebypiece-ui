@@ -13,7 +13,7 @@ import {
   getMemberInviteQrPreviewRows,
   getMemberInviteRoleOptions,
   toMemberJoinRequestPreviews,
-  getMemberListPreviews,
+  toMemberListPreviews,
   getMemberManagementPermissionCards,
   getMemberManagementSummaryCards,
   getMemberPermissionCatalogPreviews,
@@ -22,11 +22,19 @@ import {
   getMemberRolePreviews,
   getMemberTableColumns,
   type MemberJoinRequestLoadStatus,
+  type MemberListLoadStatus,
   type MemberManagementStatus,
 } from "@/lib/admin/members/memberManagementPresentation";
 import type { JoinRequestRecord } from "@/lib/invitations/joinRequestTypes";
+import type { AdminCompanyMemberRecord } from "@/lib/admin/members/memberTypes";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
-import { getMemberRoleTemplatePermissions, hasEveryMemberPermission } from "@/lib/permissions";
+import {
+  MEMBER_PERMISSION_CATALOG,
+  getMemberRoleTemplatePermissions,
+  hasEveryMemberPermission,
+  type MemberPermissionCode,
+} from "@/lib/permissions";
+import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 
 function getStatusClassName(status: MemberManagementStatus) {
   if (status === "ready") return "border-emerald-200 bg-emerald-50 text-emerald-700";
@@ -64,6 +72,18 @@ type JoinRequestReviewResponse = {
   error?: string;
 };
 
+type MemberListResponse = {
+  ok?: boolean;
+  members?: AdminCompanyMemberRecord[];
+  error?: string;
+};
+
+type MemberPermissionUpdateResponse = {
+  ok?: boolean;
+  member?: AdminCompanyMemberRecord;
+  error?: string;
+};
+
 type JoinRequestReviewAction = "approve" | "reject";
 
 function getEmailMatchClassName(status: "matched" | "mismatched" | "unknown") {
@@ -72,7 +92,15 @@ function getEmailMatchClassName(status: "matched" | "mismatched" | "unknown") {
   return "border-stone-200 bg-stone-100 text-stone-500";
 }
 
-function getLoadStatusLabelKey(status: MemberJoinRequestLoadStatus): string {
+function getMemberStatusClassName(status: "approved" | "pending" | "suspended") {
+  if (status === "approved") return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  if (status === "suspended") return "border-rose-200 bg-rose-50 text-rose-700";
+  return "border-amber-200 bg-amber-50 text-amber-700";
+}
+
+const editableMemberPermissionCodes = MEMBER_PERMISSION_CATALOG.filter((permission) => !permission.systemOnly).map((permission) => permission.code);
+
+function getLoadStatusLabelKey(status: MemberJoinRequestLoadStatus | MemberListLoadStatus): string {
   if (status === "loaded") return "dbConnected";
   if (status === "loading") return "dbLoading";
   if (status === "failed") return "dbFailed";
@@ -135,6 +163,13 @@ export default function AdminMemberManagementDashboard() {
   const [createdInvitation, setCreatedInvitation] = useState<CreatedInvitationResult | null>(null);
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [isCreatingInvite, setIsCreatingInvite] = useState(false);
+  const [memberRecords, setMemberRecords] = useState<AdminCompanyMemberRecord[]>([]);
+  const [memberListLoadStatus, setMemberListLoadStatus] = useState<MemberListLoadStatus>("idle");
+  const [memberListLoadError, setMemberListLoadError] = useState<string | null>(null);
+  const [memberPermissionDrafts, setMemberPermissionDrafts] = useState<Record<string, MemberPermissionCode[]>>({});
+  const [updatingMemberId, setUpdatingMemberId] = useState<string | null>(null);
+  const [memberPermissionUpdateMessage, setMemberPermissionUpdateMessage] = useState<string | null>(null);
+  const [memberPermissionUpdateError, setMemberPermissionUpdateError] = useState<string | null>(null);
   const [joinRequestRecords, setJoinRequestRecords] = useState<JoinRequestRecord[]>([]);
   const [joinRequestLoadStatus, setJoinRequestLoadStatus] = useState<MemberJoinRequestLoadStatus>("idle");
   const [joinRequestLoadError, setJoinRequestLoadError] = useState<string | null>(null);
@@ -149,19 +184,53 @@ export default function AdminMemberManagementDashboard() {
     ["member.invite"],
   );
 
-  const members = getMemberListPreviews();
+  const members = useMemo(() => toMemberListPreviews(memberRecords), [memberRecords]);
   const invitations = getMemberInvitationPreviews();
   const joinRequests = useMemo(() => toMemberJoinRequestPreviews(joinRequestRecords), [joinRequestRecords]);
   const summaryCards = useMemo(
     () =>
       baseSummaryCards.map((card) =>
-        card.id === "joinRequests"
-          ? { ...card, value: String(joinRequests.length), status: joinRequestLoadStatus === "loaded" ? "ready" : card.status }
-          : card,
+        card.id === "members"
+          ? { ...card, value: String(members.length), status: memberListLoadStatus === "loaded" ? "ready" : card.status }
+          : card.id === "joinRequests"
+            ? { ...card, value: String(joinRequests.length), status: joinRequestLoadStatus === "loaded" ? "ready" : card.status }
+            : card,
       ),
-    [baseSummaryCards, joinRequestLoadStatus, joinRequests.length],
+    [baseSummaryCards, joinRequestLoadStatus, joinRequests.length, memberListLoadStatus, members.length],
   );
   const canSubmitInvite = canCreateInvite && targetContact.trim().length > 0 && !isCreatingInvite;
+
+  async function loadCompanyMembers() {
+    setMemberListLoadStatus("loading");
+    setMemberListLoadError(null);
+
+    try {
+      const response = await fetch(`/api/admin/members?companyId=${encodeURIComponent(WORKSPACE_COMPANY_ID)}&status=approved&limit=50`, {
+        cache: "no-store",
+        headers: { "x-peacebypiece-permissions": "member.read,member.permission.update" },
+      });
+      const payload = (await response.json()) as MemberListResponse;
+
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error ?? "MEMBERS_LOAD_FAILED");
+      }
+
+      const nextMembers = payload.members ?? [];
+      setMemberRecords(nextMembers);
+      setMemberPermissionDrafts((previous) => {
+        const nextDrafts: Record<string, MemberPermissionCode[]> = {};
+        for (const member of nextMembers) {
+          nextDrafts[member.id] = previous[member.id] ?? [...member.permissionCodes];
+        }
+        return nextDrafts;
+      });
+      setMemberListLoadStatus("loaded");
+    } catch (error) {
+      setMemberRecords([]);
+      setMemberListLoadStatus("failed");
+      setMemberListLoadError(error instanceof Error ? error.message : "MEMBERS_LOAD_FAILED");
+    }
+  }
 
   async function loadMemberJoinRequests() {
     setJoinRequestLoadStatus("loading");
@@ -188,6 +257,7 @@ export default function AdminMemberManagementDashboard() {
   }
 
   useEffect(() => {
+    void loadCompanyMembers();
     void loadMemberJoinRequests();
   }, []);
 
@@ -221,10 +291,55 @@ export default function AdminMemberManagementDashboard() {
           : t("memberManagement.reviewActions.rejectSuccess", "가입 신청을 거절했습니다."),
       );
       await loadMemberJoinRequests();
+      await loadCompanyMembers();
     } catch (error) {
       setJoinRequestReviewError(error instanceof Error ? error.message : "JOIN_REQUEST_REVIEW_FAILED");
     } finally {
       setReviewingJoinRequestId(null);
+    }
+  }
+
+  function handleToggleMemberPermission(memberId: string, permissionCode: MemberPermissionCode) {
+    setMemberPermissionDrafts((previous) => {
+      const current = previous[memberId] ?? [];
+      const next = current.includes(permissionCode)
+        ? current.filter((code) => code !== permissionCode)
+        : [...current, permissionCode];
+      return { ...previous, [memberId]: next };
+    });
+  }
+
+  async function handleUpdateMemberPermissions(memberId: string) {
+    if (updatingMemberId) return;
+
+    setUpdatingMemberId(memberId);
+    setMemberPermissionUpdateError(null);
+    setMemberPermissionUpdateMessage(null);
+
+    try {
+      const response = await fetch(`/api/admin/members/${encodeURIComponent(memberId)}/permissions`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-peacebypiece-permissions": "member.permission.update",
+        },
+        body: JSON.stringify({
+          actorUserId: "user-sample-admin",
+          permissionCodes: memberPermissionDrafts[memberId] ?? [],
+        }),
+      });
+      const payload = (await response.json()) as MemberPermissionUpdateResponse;
+
+      if (!response.ok || !payload.ok || !payload.member) {
+        throw new Error(payload.error ?? "MEMBER_PERMISSION_UPDATE_FAILED");
+      }
+
+      setMemberPermissionUpdateMessage(t("memberManagement.memberActions.permissionUpdateSuccess", "멤버 권한을 저장했습니다."));
+      await loadCompanyMembers();
+    } catch (error) {
+      setMemberPermissionUpdateError(error instanceof Error ? error.message : "MEMBER_PERMISSION_UPDATE_FAILED");
+    } finally {
+      setUpdatingMemberId(null);
     }
   }
 
@@ -240,8 +355,8 @@ export default function AdminMemberManagementDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           scope: "company_to_member",
-          companyId: "company-sample-customer",
-          inviterCompanyId: "company-sample-customer",
+          companyId: WORKSPACE_COMPANY_ID,
+          inviterCompanyId: WORKSPACE_COMPANY_ID,
           recipientEmail: targetContact.trim(),
           recipientRole: selectedRole.id as "designer" | "inspector" | "inventory_manager" | "viewer",
           permissionPreset: selectedRole.id,
@@ -644,24 +759,96 @@ export default function AdminMemberManagementDashboard() {
               </p>
             </div>
             <span className="text-xs font-semibold text-stone-400">
-              {t("memberManagement.sourceState.dbPending", "DB 연결 예정")}
+              {t(`memberManagement.sourceState.${getLoadStatusLabelKey(memberListLoadStatus)}`, "DB 연결 상태 확인")}
             </span>
           </div>
-          <div className="mt-4 overflow-hidden rounded-2xl border border-stone-200">
-            <div className="grid grid-cols-[minmax(150px,1.2fr)_110px_90px_100px_110px] bg-stone-50 text-xs font-semibold text-stone-500">
-              {memberColumns.map((column) => (
-                <div key={column.id} className="px-3 py-2">
-                  {t(`memberManagement.tables.members.columns.${column.id}`, column.id)}
-                </div>
-              ))}
-            </div>
-            <div className="p-3">
-              {members.length ? null : (
-                <EmptyState
-                  title={t("memberManagement.empty.members.title", "등록된 멤버가 없습니다")}
-                  description={t("memberManagement.empty.members.description", "초대/가입 승인 API를 연결하면 승인된 멤버가 이 영역에 표시됩니다.")}
-                />
-              )}
+          {memberListLoadError ? (
+            <p className="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">
+              {t("memberManagement.loadErrors.members", "멤버 목록을 불러오지 못했습니다.")} {memberListLoadError}
+            </p>
+          ) : null}
+          {memberPermissionUpdateMessage ? (
+            <p className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-semibold text-emerald-700">
+              {memberPermissionUpdateMessage}
+            </p>
+          ) : null}
+          {memberPermissionUpdateError ? (
+            <p className="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">
+              {t("memberManagement.memberActions.permissionUpdateError", "멤버 권한 저장에 실패했습니다.")} {memberPermissionUpdateError}
+            </p>
+          ) : null}
+          <div className="mt-4 overflow-x-auto rounded-2xl border border-stone-200">
+            <div className="min-w-[1080px]">
+              <div className="grid grid-cols-[minmax(150px,1fr)_110px_90px_100px_110px_140px] bg-stone-50 text-xs font-semibold text-stone-500">
+                {memberColumns.map((column) => (
+                  <div key={column.id} className="px-3 py-2">
+                    {t(`memberManagement.tables.members.columns.${column.id}`, column.id)}
+                  </div>
+                ))}
+              </div>
+              <div className="divide-y divide-stone-100">
+                {memberListLoadStatus === "loading" ? (
+                  <div className="p-3">
+                    <EmptyState
+                      title={t("memberManagement.loading.members.title", "멤버 목록을 불러오는 중입니다")}
+                      description={t("memberManagement.loading.members.description", "승인된 company_members와 member_permissions를 실제 DB 기준으로 조회하고 있습니다.")}
+                    />
+                  </div>
+                ) : members.length ? (
+                  members.map((member) => {
+                    const draftPermissionCodes = memberPermissionDrafts[member.id] ?? [...member.permissionCodes];
+                    const hasPermissionChanged = draftPermissionCodes.slice().sort().join("|") !== member.permissionCodes.slice().sort().join("|");
+                    return (
+                      <div key={member.id} className="grid grid-cols-[minmax(150px,1fr)_110px_90px_100px_110px_140px] px-3 py-3 text-xs text-stone-600">
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-stone-900">{member.name}</p>
+                          <p className="mt-1 truncate text-stone-500">{member.email}</p>
+                        </div>
+                        <span className="font-semibold text-stone-700">
+                          {t(`memberManagement.roles.${member.roleId}.label`, member.roleId)}
+                        </span>
+                        <span className={`w-fit rounded-full border px-2 py-0.5 text-[11px] font-semibold ${getMemberStatusClassName(member.status)}`}>
+                          {t(`memberManagement.memberStatuses.${member.status}`, member.status)}
+                        </span>
+                        <span className="font-semibold text-stone-700">
+                          {t("memberManagement.permissionCount", "권한 {count}개").replace("{count}", String(draftPermissionCodes.length))}
+                        </span>
+                        <span className="text-stone-500">{member.lastActiveLabel}</span>
+                        <button
+                          type="button"
+                          onClick={() => void handleUpdateMemberPermissions(member.id)}
+                          disabled={!hasPermissionChanged || updatingMemberId !== null || draftPermissionCodes.length === 0}
+                          className="inline-flex w-fit items-center justify-center rounded-full border border-stone-900 bg-stone-900 px-3 py-1 text-[11px] font-semibold text-white transition hover:bg-stone-800 disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
+                        >
+                          {updatingMemberId === member.id
+                            ? t("memberManagement.memberActions.saving", "저장 중")
+                            : t("memberManagement.memberActions.savePermissions", "권한 저장")}
+                        </button>
+                        <div className="col-span-6 mt-3 grid gap-2 rounded-2xl border border-stone-100 bg-stone-50 p-3 md:grid-cols-2 xl:grid-cols-3">
+                          {editableMemberPermissionCodes.map((permissionCode) => (
+                            <label key={`${member.id}-${permissionCode}`} className="flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-3 py-2 text-[11px] text-stone-700">
+                              <input
+                                type="checkbox"
+                                checked={draftPermissionCodes.includes(permissionCode)}
+                                onChange={() => handleToggleMemberPermission(member.id, permissionCode)}
+                                className="size-4 rounded border-stone-300"
+                              />
+                              <span className="min-w-0 flex-1 truncate font-semibold">{permissionCode}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="p-3">
+                    <EmptyState
+                      title={t("memberManagement.empty.members.title", "등록된 멤버가 없습니다")}
+                      description={t("memberManagement.empty.members.description", "초대/가입 승인 API를 연결하면 승인된 멤버가 이 영역에 표시됩니다.")}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </article>

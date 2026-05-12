@@ -128,16 +128,17 @@ export const adminKo = {
       permissionChecklistTitle: "권한 체크리스트",
       permissionChecklistDescription: "기본 권한 묶음은 시작값이고 승인 저장 시 permission_code 목록을 직접 저장합니다.",
       actionsTitle: "승인 처리 액션",
-      actionsDescription: "실제 저장은 join_requests, company_members, member_permissions API 연결 후 활성화합니다.",
+      actionsDescription: "가입 신청 승인/거절과 승인된 멤버 권한 저장 API가 실제 DB와 연결되어 있습니다.",
       actions: {
         approve: { label: "승인" },
         reject: { label: "거절" },
         permissionUpdate: { label: "권한 수정" }
       },
       guardTitle: "저장 전제",
-      guardDescription: "승인 시 company_members를 approved로 만들고 member_permissions에 선택 권한을 저장해야 합니다. 거절 시 join_requests만 rejected 처리합니다."
+      guardDescription: "승인 시 company_members를 approved로 만들고 member_permissions에 선택 권한을 저장합니다. 승인된 멤버의 권한 수정은 전체 교체 방식으로 저장합니다."
     },
     joinRequestStatuses: { pending: "승인 대기" },
+    memberStatuses: { approved: "승인", pending: "대기", suspended: "정지" },
     statuses: { ready: "기준 연결", planned: "연결 예정", pending: "대기" },
     sourceState: { dbPending: "DB 연결 예정", dbLoading: "DB 조회 중", dbConnected: "DB 연결", dbFailed: "DB 조회 실패" },
     permissionGuards: {
@@ -173,22 +174,25 @@ export const adminKo = {
       permissionMatrixDescription: "role은 기본 체크값이고 실제 저장과 접근 제어는 permission_code 직접 부여 기준입니다."
     },
     tables: {
-      members: { columns: { member: "멤버", role: "역할", status: "상태", permissions: "권한", lastActive: "최근 활동" } },
+      members: { columns: { member: "멤버", role: "역할", status: "상태", permissions: "권한", lastActive: "최근 활동", actions: "저장" } },
       invitations: { columns: { target: "대상", type: "방식", status: "상태", expires: "만료" } },
       joinRequests: { columns: { applicant: "신청자", contact: "연락처", inviteEmail: "초대 이메일", emailMatch: "비교", memo: "메모", requestedRole: "요청 역할", status: "상태", requestedAt: "신청일", actions: "처리" } }
     },
     empty: {
-      members: { title: "등록된 멤버가 없습니다", description: "초대/가입 승인 API를 연결하면 승인된 멤버가 이 영역에 표시됩니다." },
+      members: { title: "등록된 멤버가 없습니다", description: "승인된 멤버가 생성되면 이 영역에서 권한을 직접 수정할 수 있습니다." },
       invitations: { title: "생성된 초대가 없습니다", description: "초대 링크 생성 기능을 연결하면 활성/만료/취소 초대가 표시됩니다." },
       joinRequests: { title: "승인 대기 신청이 없습니다", description: "초대 링크 가입 신청이 생성되면 승인/거절/권한 부여 대상이 이 영역에 표시됩니다." }
     },
     loading: {
+      members: { title: "멤버 목록을 불러오는 중입니다", description: "승인된 company_members와 member_permissions를 실제 DB 기준으로 조회하고 있습니다." },
       joinRequests: { title: "승인 대기 신청을 불러오는 중입니다", description: "join_requests.pending 목록을 실제 DB 기준으로 조회하고 있습니다." }
     },
     loadErrors: {
+      members: "멤버 목록을 불러오지 못했습니다.",
       joinRequests: "승인 대기 신청 목록을 불러오지 못했습니다."
     },
     reviewActions: { approve: "승인", reject: "거절", processing: "처리 중", approveSuccess: "가입 신청을 승인했습니다.", rejectSuccess: "가입 신청을 거절했습니다.", error: "가입 신청 처리에 실패했습니다." },
+    memberActions: { savePermissions: "권한 저장", saving: "저장 중", permissionUpdateSuccess: "멤버 권한을 저장했습니다.", permissionUpdateError: "멤버 권한 저장에 실패했습니다." },
     emailMatchStatuses: {
       matched: "일치",
       mismatched: "불일치",

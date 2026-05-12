@@ -177,16 +177,17 @@ export const adminEn = {
       permissionChecklistTitle: "Permission checklist",
       permissionChecklistDescription: "Role templates are only starting values; approval stores the direct permission_code list.",
       actionsTitle: "Approval actions",
-      actionsDescription: "Actual writes are enabled after join_requests, company_members, and member_permissions APIs are connected.",
+      actionsDescription: "Join-request approval/rejection and approved-member permission writes are connected to the live DB.",
       actions: {
         approve: { label: "Approve" },
         reject: { label: "Reject" },
         permissionUpdate: { label: "Edit permissions" }
       },
       guardTitle: "Write contract",
-      guardDescription: "Approval should mark company_members as approved and store selected permissions in member_permissions. Rejection should only mark the join request as rejected."
+      guardDescription: "Approval marks company_members as approved and stores selected permissions in member_permissions. Approved-member permission edits are saved as a full replacement."
     },
     joinRequestStatuses: { pending: "Pending approval" },
+    memberStatuses: { approved: "Approved", pending: "Pending", suspended: "Suspended" },
     statuses: { ready: "Connected", planned: "Planned", pending: "Pending" },
     sourceState: { dbPending: "DB connection planned", dbLoading: "Loading DB", dbConnected: "DB connected", dbFailed: "DB load failed" },
     permissionGuards: {
@@ -222,22 +223,25 @@ export const adminEn = {
       permissionMatrixDescription: "Roles are default check presets; actual storage and access control use directly granted permission_code values."
     },
     tables: {
-      members: { columns: { member: "Member", role: "Role", status: "Status", permissions: "Permissions", lastActive: "Last active" } },
+      members: { columns: { member: "Member", role: "Role", status: "Status", permissions: "Permissions", lastActive: "Last active", actions: "Save" } },
       invitations: { columns: { target: "Target", type: "Type", status: "Status", expires: "Expires" } },
       joinRequests: { columns: { applicant: "Applicant", contact: "Contact", inviteEmail: "Invite email", emailMatch: "Match", memo: "Memo", requestedRole: "Requested role", status: "Status", requestedAt: "Requested", actions: "Actions" } }
     },
     empty: {
-      members: { title: "No members registered", description: "Approved members will appear here after invitation and approval APIs are connected." },
+      members: { title: "No members registered", description: "Approved members can be edited here after they are created." },
       invitations: { title: "No invitations created", description: "Active, expired, and cancelled invitations will appear after invitation-link generation is connected." },
       joinRequests: { title: "No join requests waiting", description: "Invitation-link join requests will appear here as approval, rejection, and permission-assignment targets." }
     },
     loading: {
+      members: { title: "Loading members", description: "Loading approved company_members and member_permissions from the DB." },
       joinRequests: { title: "Loading join requests", description: "Loading the join_requests.pending list from the DB." }
     },
     loadErrors: {
+      members: "Could not load members.",
       joinRequests: "Could not load the approval queue."
     },
     reviewActions: { approve: "Approve", reject: "Reject", processing: "Processing", approveSuccess: "The join request has been approved.", rejectSuccess: "The join request has been rejected.", error: "Failed to process the join request." },
+    memberActions: { savePermissions: "Save permissions", saving: "Saving", permissionUpdateSuccess: "Member permissions have been saved.", permissionUpdateError: "Failed to save member permissions." },
     emailMatchStatuses: {
       matched: "Matched",
       mismatched: "Mismatch",

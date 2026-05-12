@@ -6,6 +6,7 @@ import {
   type MemberPermissionRoleTemplateCode,
 } from "@/lib/permissions";
 import type { JoinRequestRecord } from "@/lib/invitations/joinRequestTypes";
+import type { AdminCompanyMemberRecord } from "./memberTypes";
 
 export type MemberManagementStatus = "planned" | "ready" | "pending";
 
@@ -54,6 +55,7 @@ export type MemberManagementTableColumn = {
 export type MemberJoinRequestEmailMatchStatus = "matched" | "mismatched" | "unknown";
 
 export type MemberJoinRequestLoadStatus = "idle" | "loading" | "loaded" | "failed";
+export type MemberListLoadStatus = "idle" | "loading" | "loaded" | "failed";
 
 export type MemberInviteRoleOption = {
   id: MemberRolePreviewId;
@@ -74,6 +76,7 @@ export type MemberListPreview = {
   roleId: MemberRolePreviewId;
   status: "approved" | "pending" | "suspended";
   permissionCount: number;
+  permissionCodes: readonly MemberPermissionCode[];
   lastActiveLabel: string;
 };
 
@@ -146,6 +149,7 @@ export const MEMBER_TABLE_COLUMNS: readonly MemberManagementTableColumn[] = [
   { id: "status" },
   { id: "permissions" },
   { id: "lastActive" },
+  { id: "actions" },
 ] as const;
 
 export const INVITATION_TABLE_COLUMNS: readonly MemberManagementTableColumn[] = [
@@ -248,6 +252,31 @@ function resolveEmailMatchStatus(joinRequest: JoinRequestRecord): MemberJoinRequ
 
   if (!applicantEmail || !invitationEmail) return "unknown";
   return applicantEmail === invitationEmail ? "matched" : "mismatched";
+}
+
+
+function toRelativeDateLabel(value: string | null | undefined): string {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return toCompactDateTimeLabel(value);
+}
+
+export function toMemberListPreview(member: AdminCompanyMemberRecord): MemberListPreview {
+  return {
+    id: member.id,
+    name: member.name,
+    email: member.email?.trim() || "-",
+    roleId: member.roleTemplateCode,
+    status: member.status === "suspended" ? "suspended" : member.status === "pending" ? "pending" : "approved",
+    permissionCount: member.permissionCount,
+    permissionCodes: member.permissionCodes,
+    lastActiveLabel: toRelativeDateLabel(member.lastActiveAt ?? member.approvedAt ?? member.updatedAt),
+  };
+}
+
+export function toMemberListPreviews(members: readonly AdminCompanyMemberRecord[]): readonly MemberListPreview[] {
+  return members.map(toMemberListPreview);
 }
 
 export function toMemberJoinRequestPreview(joinRequest: JoinRequestRecord): MemberJoinRequestPreview {
