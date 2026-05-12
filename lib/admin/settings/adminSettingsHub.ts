@@ -39,10 +39,10 @@ export const ADMIN_SETTINGS_MENU_ITEMS: readonly AdminSettingsMenuItem[] = [
   {
     id: "account",
     title: "계정 설정",
-    description: "대표 메일, 회사 계정 정보, 회원 탈퇴 요청을 관리할 영역입니다.",
-    statusLabel: "준비중",
+    description: "회사 계정 정보와 개인 설정 분리 기준을 읽기 전용으로 확인합니다.",
+    statusLabel: "읽기 전용",
     tone: "emerald",
-    detailItems: ["대표 메일 변경", "회사 계정 정보", "회원 탈퇴 요청"],
+    detailItems: ["회사 정보", "로그인 이메일", "개인 설정"],
   },
   {
     id: "feedback",
@@ -68,10 +68,10 @@ export const ADMIN_SETTINGS_NOTICE_BY_ID: Record<Exclude<AdminSettingsMenuId, "s
     items: ["현재 요금제 확인", "저장공간 한도 확인", "요금제 변경 요청", "청구 정보 문의"],
   },
   account: {
-    title: "계정 설정은 준비중입니다.",
-    description: "대표 이메일 변경, 회사 계정 정보 변경, 회원 탈퇴 요청을 안전하게 처리할 수 있는 절차를 준비합니다.",
-    nextStep: "정식 로그인/회원 시스템 연결 후 단계적으로 활성화합니다.",
-    items: ["대표 이메일 변경", "회사명/관리자 정보 변경", "회원 탈퇴 요청", "계정 보안 확인"],
+    title: "계정 설정은 읽기 전용으로 확인합니다.",
+    description: "회사 정보, 대표 로그인 이메일, 계정 상태를 확인하고 개인 설정과 조직 설정을 분리하는 기준을 안내합니다.",
+    nextStep: "회사 정보 변경, 계정 비활성화, 관리자 교체 요청은 정식 인증/승인 연결 후 활성화합니다.",
+    items: ["회사 정보 확인", "대표 로그인 이메일 확인", "개인 설정 분리", "계정 비활성화 요청"],
   },
   feedback: {
     title: "개발 건의는 이메일로 접수합니다.",

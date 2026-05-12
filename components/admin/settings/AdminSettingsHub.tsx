@@ -12,6 +12,7 @@ import {
 } from "@/lib/admin/settings/adminSettingsHub";
 import { ADMIN_FEEDBACK_CONTACT_EMAIL, buildAdminFeedbackMailtoHref } from "@/lib/admin/settings/adminFeedbackContact";
 import { ADMIN_BILLING_PLAN_PLACEHOLDER } from "@/lib/admin/settings/adminBillingPlanPlaceholder";
+import { ADMIN_ACCOUNT_SETTINGS_PLACEHOLDER } from "@/lib/admin/settings/adminAccountSettingsPlaceholder";
 
 type NoticeMenuId = Exclude<AdminSettingsMenuId, "standards">;
 
@@ -85,6 +86,7 @@ export default function AdminSettingsHub() {
   const feedbackMailtoHref = useMemo(() => buildAdminFeedbackMailtoHref(), []);
   const isFeedbackNotice = noticeMenuId === "feedback";
   const isBillingNotice = noticeMenuId === "billing";
+  const isAccountNotice = noticeMenuId === "account";
 
   const handleSelectMenu = (id: AdminSettingsMenuId) => {
     if (isNoticeMenuId(id)) {
@@ -175,6 +177,62 @@ export default function AdminSettingsHub() {
                       </div>
                       <p className="mt-2 text-[11px] leading-5 text-stone-500">{action.description}</p>
                     </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {isAccountNotice ? (
+              <div className="mt-3 space-y-3 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-3">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-500">Account policy</p>
+                    <h3 className="mt-1 text-sm font-semibold text-emerald-950">{ADMIN_ACCOUNT_SETTINGS_PLACEHOLDER.title}</h3>
+                    <p className="mt-1 text-xs leading-5 text-emerald-700">{ADMIN_ACCOUNT_SETTINGS_PLACEHOLDER.description}</p>
+                  </div>
+                  <span className="w-fit rounded-full border border-emerald-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
+                    {ADMIN_ACCOUNT_SETTINGS_PLACEHOLDER.readOnlyLabel}
+                  </span>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {ADMIN_ACCOUNT_SETTINGS_PLACEHOLDER.metrics.map((metric) => (
+                    <div key={metric.id} className="rounded-2xl border border-emerald-100 bg-white p-3">
+                      <p className="text-[11px] font-semibold text-emerald-500">{metric.label}</p>
+                      <p className="mt-1 text-sm font-semibold text-stone-950">{metric.value}</p>
+                      <p className="mt-1 text-[11px] leading-5 text-stone-500">{metric.description}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {ADMIN_ACCOUNT_SETTINGS_PLACEHOLDER.actions.map((action) => {
+                    const actionBody = (
+                      <>
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-xs font-semibold text-stone-900">{action.label}</p>
+                          <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-semibold text-stone-500">{action.statusLabel}</span>
+                        </div>
+                        <p className="mt-2 text-[11px] leading-5 text-stone-500">{action.description}</p>
+                      </>
+                    );
+
+                    if (action.id === "open-personal-settings") {
+                      return (
+                        <a key={action.id} className="rounded-2xl border border-emerald-100 bg-white p-3 transition hover:border-emerald-200 hover:bg-emerald-50" href={ADMIN_ACCOUNT_SETTINGS_PLACEHOLDER.personalSettingsHref}>
+                          {actionBody}
+                        </a>
+                      );
+                    }
+
+                    return (
+                      <div key={action.id} className="rounded-2xl border border-emerald-100 bg-white p-3">
+                        {actionBody}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="space-y-1.5 rounded-2xl border border-emerald-100 bg-white p-3">
+                  {ADMIN_ACCOUNT_SETTINGS_PLACEHOLDER.policyNotes.map((note) => (
+                    <p key={note} className="text-[11px] leading-5 text-stone-500">• {note}</p>
                   ))}
                 </div>
               </div>
