@@ -621,9 +621,9 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
               <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">{pt("demoSeedDescription", pageText.demoSeedDescription)}</p>
             </div>
             <div className="rounded-2xl bg-white px-4 py-3 text-xs font-semibold leading-5 text-stone-600 shadow-sm">
-              <p>1. full_reset.sql</p>
-              <p>2. full_reset_smoke_test.sql</p>
-              <p>3. seed_stats_demo_0_9_2071.sql</p>
+              <p>1. db/schema/full_reset.sql</p>
+              <p>2. db/seed/system_standards_seed.sql</p>
+              <p>3. db/schema/full_reset_smoke_test.sql</p>
             </div>
           </div>
         </AdminCard>
