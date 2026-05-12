@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminButton } from "@/components/admin/common/AdminButton";
 import ModalShell from "@/components/common/modal/ModalShell";
 import type { AdminStorageWorkOrderItem } from "@/lib/admin/files/types";
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
@@ -38,24 +39,20 @@ export function EmptyTrashConfirmModal({
       maxWidthClass="md:max-w-md"
       footer={
         <div className="flex w-full justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-700 shadow-sm hover:bg-stone-50"
-          >
+          <AdminButton type="button" variant="secondary" onClick={onClose}>
             {t("filesList.no", "아니오")}
-          </button>
-          <button
+          </AdminButton>
+          <AdminButton
             type="button"
+            variant="danger"
             disabled={!canEmptyTrash}
             onClick={() => {
               onClose();
               onConfirm?.();
             }}
-            className="rounded-full border border-red-600 bg-red-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-red-700 disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-400"
           >
             {t("filesList.yes", "예")}
-          </button>
+          </AdminButton>
         </div>
       }
     >
@@ -111,15 +108,12 @@ export function WorkOrderActionPreviewModal({
       maxWidthClass="md:max-w-2xl"
       footer={
         <div className="flex w-full flex-wrap justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-700 shadow-sm hover:bg-stone-50"
-          >
+          <AdminButton type="button" variant="secondary" onClick={onClose}>
             {t("filesList.close", "닫기")}
-          </button>
-          <button
+          </AdminButton>
+          <AdminButton
             type="button"
+            variant={intent === "purge" ? "danger" : "primary"}
             disabled={isPending || !previewWorkOrder}
             onClick={() => {
               if (!previewWorkOrder) return;
@@ -133,14 +127,13 @@ export function WorkOrderActionPreviewModal({
                 onClose();
               }
             }}
-            className={`rounded-full border px-4 py-2 text-xs font-semibold ${intent === "purge" ? "border-red-600 bg-red-600 text-white shadow-sm hover:bg-red-700 disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-400" : "border-stone-900 bg-stone-900 text-white shadow-sm hover:bg-stone-800 disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-400"}`}
           >
             {isPending
               ? t("filesList.processing", "처리 중")
               : intent === "purge"
                 ? t("filesList.purge", "선택 삭제")
                 : t("filesList.restore", "복원")}
-          </button>
+          </AdminButton>
         </div>
       }
     >
@@ -255,15 +248,12 @@ export function TrashDetailModal({
       footer={
         row ? (
           <div className="flex w-full flex-wrap justify-end gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-700 shadow-sm hover:bg-stone-50"
-            >
+            <AdminButton type="button" variant="secondary" onClick={onClose}>
               {t("filesList.close", "닫기")}
-            </button>
-            <button
+            </AdminButton>
+            <AdminButton
               type="button"
+              variant="primary"
               disabled={
                 row.kind === "attachment"
                   ? isActionPending || !row.canRestore
@@ -277,7 +267,6 @@ export function TrashDetailModal({
                 }
                 onClose();
               }}
-              className="rounded-full border border-stone-900 bg-stone-900 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-stone-800 disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-400"
               title={
                 row.kind === "attachment"
                   ? (row.restoreDisabledReason ?? undefined)
@@ -285,9 +274,10 @@ export function TrashDetailModal({
               }
             >
               {t("filesList.restore", "복원")}
-            </button>
-            <button
+            </AdminButton>
+            <AdminButton
               type="button"
+              variant="danger"
               disabled={
                 row.kind === "attachment"
                   ? isActionPending || !row.canPurge
@@ -301,7 +291,6 @@ export function TrashDetailModal({
                 }
                 onClose();
               }}
-              className="rounded-full border border-red-600 bg-red-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-red-700 disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-400"
               title={
                 row.kind === "attachment"
                   ? (row.purgeDisabledReason ?? undefined)
@@ -309,7 +298,7 @@ export function TrashDetailModal({
               }
             >
               {t("filesList.purge", "선택 삭제")}
-            </button>
+            </AdminButton>
           </div>
         ) : null
       }
