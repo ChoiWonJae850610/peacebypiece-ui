@@ -224,7 +224,7 @@ export const adminEn = {
     tables: {
       members: { columns: { member: "Member", role: "Role", status: "Status", permissions: "Permissions", lastActive: "Last active" } },
       invitations: { columns: { target: "Target", type: "Type", status: "Status", expires: "Expires" } },
-      joinRequests: { columns: { applicant: "Applicant", contact: "Contact", inviteEmail: "Invitation email", emailMatch: "Match", memo: "Memo", requestedRole: "Requested role", status: "Status", requestedAt: "Requested" } }
+      joinRequests: { columns: { applicant: "Applicant", contact: "Contact", inviteEmail: "Invite email", emailMatch: "Match", memo: "Memo", requestedRole: "Requested role", status: "Status", requestedAt: "Requested", actions: "Actions" } }
     },
     empty: {
       members: { title: "No members registered", description: "Approved members will appear here after invitation and approval APIs are connected." },
@@ -237,6 +237,7 @@ export const adminEn = {
     loadErrors: {
       joinRequests: "Could not load the approval queue."
     },
+    reviewActions: { approve: "Approve", reject: "Reject", processing: "Processing", approveSuccess: "The join request has been approved.", rejectSuccess: "The join request has been rejected.", error: "Failed to process the join request." },
     emailMatchStatuses: {
       matched: "Matched",
       mismatched: "Mismatch",

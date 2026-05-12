@@ -1,4 +1,5 @@
 import type { InvitationRecord, InvitationScope } from "./invitationTypes";
+import type { MemberPermissionCode, MemberPermissionRoleTemplateCode } from "@/lib/permissions";
 
 export type JoinRequestType = "member" | "company";
 
@@ -69,8 +70,37 @@ export interface JoinRequestListResult {
   primaryJoinRequest: JoinRequestRecord | null;
 }
 
+export interface MemberJoinRequestApproveInput {
+  requestId: string;
+  approvedByUserId?: string | null;
+  roleTemplateCode?: MemberPermissionRoleTemplateCode | null;
+  permissionCodes?: readonly MemberPermissionCode[] | null;
+}
+
+export interface MemberJoinRequestRejectInput {
+  requestId: string;
+  rejectedByUserId?: string | null;
+  reasonCode?: string | null;
+}
+
+export interface MemberJoinRequestApprovalResult {
+  joinRequest: JoinRequestRecord;
+  companyMemberId: string;
+  userId: string;
+  companyId: string;
+  permissionCodes: readonly MemberPermissionCode[];
+  roleTemplateCode: MemberPermissionRoleTemplateCode;
+}
+
+export interface MemberJoinRequestRejectionResult {
+  joinRequest: JoinRequestRecord;
+  companyId: string | null;
+}
+
 export interface JoinRequestRepository {
   createJoinRequest(draft: JoinRequestDraft): Promise<JoinRequestCreateResult>;
   listJoinRequests(input: JoinRequestLookupInput): Promise<JoinRequestListResult>;
   findJoinRequestById(id: string): Promise<JoinRequestRecord | null>;
+  approveMemberJoinRequest(input: MemberJoinRequestApproveInput): Promise<MemberJoinRequestApprovalResult>;
+  rejectMemberJoinRequest(input: MemberJoinRequestRejectInput): Promise<MemberJoinRequestRejectionResult>;
 }

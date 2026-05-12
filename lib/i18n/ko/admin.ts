@@ -175,7 +175,7 @@ export const adminKo = {
     tables: {
       members: { columns: { member: "멤버", role: "역할", status: "상태", permissions: "권한", lastActive: "최근 활동" } },
       invitations: { columns: { target: "대상", type: "방식", status: "상태", expires: "만료" } },
-      joinRequests: { columns: { applicant: "신청자", contact: "연락처", inviteEmail: "초대 이메일", emailMatch: "비교", memo: "메모", requestedRole: "요청 역할", status: "상태", requestedAt: "신청일" } }
+      joinRequests: { columns: { applicant: "신청자", contact: "연락처", inviteEmail: "초대 이메일", emailMatch: "비교", memo: "메모", requestedRole: "요청 역할", status: "상태", requestedAt: "신청일", actions: "처리" } }
     },
     empty: {
       members: { title: "등록된 멤버가 없습니다", description: "초대/가입 승인 API를 연결하면 승인된 멤버가 이 영역에 표시됩니다." },
@@ -188,6 +188,7 @@ export const adminKo = {
     loadErrors: {
       joinRequests: "승인 대기 신청 목록을 불러오지 못했습니다."
     },
+    reviewActions: { approve: "승인", reject: "거절", processing: "처리 중", approveSuccess: "가입 신청을 승인했습니다.", rejectSuccess: "가입 신청을 거절했습니다.", error: "가입 신청 처리에 실패했습니다." },
     emailMatchStatuses: {
       matched: "일치",
       mismatched: "불일치",

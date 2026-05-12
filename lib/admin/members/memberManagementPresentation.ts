@@ -164,6 +164,7 @@ export const JOIN_REQUEST_TABLE_COLUMNS: readonly MemberManagementTableColumn[] 
   { id: "requestedRole" },
   { id: "status" },
   { id: "requestedAt" },
+  { id: "actions" },
 ] as const;
 
 export const MEMBER_LIST_PREVIEWS: readonly MemberListPreview[] = [] as const;
@@ -173,7 +174,7 @@ export const MEMBER_JOIN_REQUEST_PREVIEWS: readonly MemberJoinRequestPreview[] =
 export const MEMBER_INVITE_SETUP_CARDS: readonly MemberInvitationSetupCard[] = [
   { id: "link", status: "ready" },
   { id: "qr", status: "ready" },
-  { id: "approval", status: "pending" },
+  { id: "approval", status: "ready" },
 ] as const;
 
 export const MEMBER_APPROVAL_STEP_PREVIEWS: readonly MemberApprovalStepPreview[] = [
@@ -184,8 +185,8 @@ export const MEMBER_APPROVAL_STEP_PREVIEWS: readonly MemberApprovalStepPreview[]
 ] as const;
 
 export const MEMBER_APPROVAL_ACTION_PREVIEWS: readonly MemberApprovalActionPreview[] = [
-  { id: "approve", status: "pending", requiredPermissions: ["member.approve", "member.permission.update"] },
-  { id: "reject", status: "pending", requiredPermissions: ["member.reject"] },
+  { id: "approve", status: "ready", requiredPermissions: ["member.approve", "member.permission.update"] },
+  { id: "reject", status: "ready", requiredPermissions: ["member.reject"] },
   { id: "permissionUpdate", status: "ready", requiredPermissions: ["member.permission.update"] },
 ] as const;
 

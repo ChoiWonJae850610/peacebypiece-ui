@@ -58,6 +58,14 @@ type JoinRequestListResponse = {
   error?: string;
 };
 
+type JoinRequestReviewResponse = {
+  ok?: boolean;
+  action?: "approved" | "rejected";
+  error?: string;
+};
+
+type JoinRequestReviewAction = "approve" | "reject";
+
 function getEmailMatchClassName(status: "matched" | "mismatched" | "unknown") {
   if (status === "matched") return "border-emerald-200 bg-emerald-50 text-emerald-700";
   if (status === "mismatched") return "border-amber-200 bg-amber-50 text-amber-700";
@@ -130,6 +138,9 @@ export default function AdminMemberManagementDashboard() {
   const [joinRequestRecords, setJoinRequestRecords] = useState<JoinRequestRecord[]>([]);
   const [joinRequestLoadStatus, setJoinRequestLoadStatus] = useState<MemberJoinRequestLoadStatus>("idle");
   const [joinRequestLoadError, setJoinRequestLoadError] = useState<string | null>(null);
+  const [reviewingJoinRequestId, setReviewingJoinRequestId] = useState<string | null>(null);
+  const [joinRequestReviewMessage, setJoinRequestReviewMessage] = useState<string | null>(null);
+  const [joinRequestReviewError, setJoinRequestReviewError] = useState<string | null>(null);
   const previewInviteLink = createdInvitation?.inviteUrl
     ? getAbsoluteInviteUrl(createdInvitation.inviteUrl)
     : `/invite/member/preview-${selectedRole?.id ?? "viewer"}`;
@@ -152,41 +163,70 @@ export default function AdminMemberManagementDashboard() {
   );
   const canSubmitInvite = canCreateInvite && targetContact.trim().length > 0 && !isCreatingInvite;
 
-  useEffect(() => {
-    let isMounted = true;
+  async function loadMemberJoinRequests() {
+    setJoinRequestLoadStatus("loading");
+    setJoinRequestLoadError(null);
 
-    async function loadMemberJoinRequests() {
-      setJoinRequestLoadStatus("loading");
-      setJoinRequestLoadError(null);
+    try {
+      const response = await fetch(
+        "/api/invitations/join-requests?requestType=member&status=pending&invitationScope=company_to_member&limit=50",
+        { cache: "no-store" },
+      );
+      const payload = (await response.json()) as JoinRequestListResponse;
 
-      try {
-        const response = await fetch(
-          "/api/invitations/join-requests?requestType=member&status=pending&invitationScope=company_to_member&limit=50",
-          { cache: "no-store" },
-        );
-        const payload = (await response.json()) as JoinRequestListResponse;
-
-        if (!response.ok || !payload.ok) {
-          throw new Error(payload.error ?? "JOIN_REQUESTS_LOAD_FAILED");
-        }
-
-        if (!isMounted) return;
-        setJoinRequestRecords(payload.joinRequests ?? []);
-        setJoinRequestLoadStatus("loaded");
-      } catch (error) {
-        if (!isMounted) return;
-        setJoinRequestRecords([]);
-        setJoinRequestLoadStatus("failed");
-        setJoinRequestLoadError(error instanceof Error ? error.message : "JOIN_REQUESTS_LOAD_FAILED");
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error ?? "JOIN_REQUESTS_LOAD_FAILED");
       }
+
+      setJoinRequestRecords(payload.joinRequests ?? []);
+      setJoinRequestLoadStatus("loaded");
+    } catch (error) {
+      setJoinRequestRecords([]);
+      setJoinRequestLoadStatus("failed");
+      setJoinRequestLoadError(error instanceof Error ? error.message : "JOIN_REQUESTS_LOAD_FAILED");
     }
+  }
 
+  useEffect(() => {
     void loadMemberJoinRequests();
-
-    return () => {
-      isMounted = false;
-    };
   }, []);
+
+  async function handleReviewJoinRequest(request: (typeof joinRequests)[number], action: JoinRequestReviewAction) {
+    if (reviewingJoinRequestId) return;
+
+    setReviewingJoinRequestId(request.id);
+    setJoinRequestReviewError(null);
+    setJoinRequestReviewMessage(null);
+
+    try {
+      const response = await fetch(`/api/invitations/join-requests/${encodeURIComponent(request.id)}/${action}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          actorUserId: "user-sample-admin",
+          roleTemplateCode: request.requestedRoleId,
+          permissionCodes: getMemberRoleTemplatePermissions(request.requestedRoleId),
+          reasonCode: action === "reject" ? "customer_admin_rejected" : undefined,
+        }),
+      });
+      const payload = (await response.json()) as JoinRequestReviewResponse;
+
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error ?? "JOIN_REQUEST_REVIEW_FAILED");
+      }
+
+      setJoinRequestReviewMessage(
+        action === "approve"
+          ? t("memberManagement.reviewActions.approveSuccess", "가입 신청을 승인했습니다.")
+          : t("memberManagement.reviewActions.rejectSuccess", "가입 신청을 거절했습니다."),
+      );
+      await loadMemberJoinRequests();
+    } catch (error) {
+      setJoinRequestReviewError(error instanceof Error ? error.message : "JOIN_REQUEST_REVIEW_FAILED");
+    } finally {
+      setReviewingJoinRequestId(null);
+    }
+  }
 
   async function handleCreateInvite() {
     if (!canSubmitInvite || !selectedRole) return;
@@ -709,9 +749,19 @@ export default function AdminMemberManagementDashboard() {
               {t("memberManagement.loadErrors.joinRequests", "승인 대기 신청 목록을 불러오지 못했습니다.")} {joinRequestLoadError}
             </p>
           ) : null}
+          {joinRequestReviewMessage ? (
+            <p className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-semibold text-emerald-700">
+              {joinRequestReviewMessage}
+            </p>
+          ) : null}
+          {joinRequestReviewError ? (
+            <p className="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">
+              {t("memberManagement.reviewActions.error", "가입 신청 처리에 실패했습니다.")} {joinRequestReviewError}
+            </p>
+          ) : null}
           <div className="mt-4 overflow-x-auto rounded-2xl border border-stone-200">
             <div className="min-w-[980px]">
-            <div className="grid grid-cols-[minmax(150px,1.2fr)_130px_170px_100px_minmax(130px,1fr)_110px_90px_110px] bg-stone-50 text-xs font-semibold text-stone-500">
+            <div className="grid grid-cols-[minmax(150px,1.2fr)_130px_170px_100px_minmax(130px,1fr)_110px_90px_110px_150px] bg-stone-50 text-xs font-semibold text-stone-500">
               {joinRequestColumns.map((column) => (
                 <div key={column.id} className="px-3 py-2">
                   {t(`memberManagement.tables.joinRequests.columns.${column.id}`, column.id)}
@@ -728,7 +778,7 @@ export default function AdminMemberManagementDashboard() {
                 </div>
               ) : joinRequests.length ? (
                 joinRequests.map((request) => (
-                  <div key={request.id} className="grid grid-cols-[minmax(150px,1.2fr)_130px_170px_100px_minmax(130px,1fr)_110px_90px_110px] px-3 py-3 text-xs text-stone-600">
+                  <div key={request.id} className="grid grid-cols-[minmax(150px,1.2fr)_130px_170px_100px_minmax(130px,1fr)_110px_90px_110px_150px] px-3 py-3 text-xs text-stone-600">
                     <div className="min-w-0">
                       <p className="truncate font-semibold text-stone-900">{request.applicantName}</p>
                       <p className="mt-1 truncate text-stone-500">{request.applicantEmail}</p>
@@ -748,6 +798,26 @@ export default function AdminMemberManagementDashboard() {
                       {t(`memberManagement.joinRequestStatuses.${request.status}`, request.status)}
                     </span>
                     <span className="text-stone-500">{request.requestedAtLabel}</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => void handleReviewJoinRequest(request, "approve")}
+                        disabled={reviewingJoinRequestId !== null}
+                        className="inline-flex items-center justify-center rounded-full border border-stone-900 bg-stone-900 px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-stone-800 disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
+                      >
+                        {reviewingJoinRequestId === request.id
+                          ? t("memberManagement.reviewActions.processing", "처리 중")
+                          : t("memberManagement.reviewActions.approve", "승인")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void handleReviewJoinRequest(request, "reject")}
+                        disabled={reviewingJoinRequestId !== null}
+                        className="inline-flex items-center justify-center rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-700 transition hover:bg-stone-50 disabled:bg-stone-100 disabled:text-stone-400"
+                      >
+                        {t("memberManagement.reviewActions.reject", "거절")}
+                      </button>
+                    </div>
                   </div>
                 ))
               ) : (
