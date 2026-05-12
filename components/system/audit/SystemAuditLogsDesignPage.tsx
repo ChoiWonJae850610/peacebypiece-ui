@@ -1,4 +1,7 @@
-import Link from "next/link";
+import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
+import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
+import { APP_VERSION } from "@/lib/constants/app";
 
 import {
   SYSTEM_AUDIT_LOG_API_DECISIONS,
@@ -41,11 +44,11 @@ const SYSTEM_AUDIT_SEVERITY_OPTIONS = [
   { value: "critical", label: "critical" },
 ] as const;
 
-function getLevelClassName(level: SystemAuditLogEventLevel) {
-  if (level === "critical") return "border-red-200 bg-red-50 text-red-700";
-  if (level === "high") return "border-orange-200 bg-orange-50 text-orange-700";
-  if (level === "medium") return "border-blue-200 bg-blue-50 text-blue-700";
-  return "border-stone-200 bg-stone-100 text-stone-600";
+function getLevelTone(level: SystemAuditLogEventLevel): AdminStatusBadgeTone {
+  if (level === "critical") return "danger";
+  if (level === "high") return "warning";
+  if (level === "medium") return "info";
+  return "neutral";
 }
 
 export default function SystemAuditLogsDesignPage({
@@ -71,12 +74,10 @@ export default function SystemAuditLogsDesignPage({
                 </p>
               </div>
             </div>
-            <Link
-              href="/system"
-              className="w-fit rounded-full border border-stone-300 bg-white px-3 py-1 text-xs font-semibold text-stone-700 hover:bg-stone-50"
-            >
-              시스템 홈
-            </Link>
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              <AdminStatusBadge tone="primary">v{APP_VERSION}</AdminStatusBadge>
+              <AdminLinkButton href="/system">시스템 홈</AdminLinkButton>
+            </div>
           </div>
         </header>
 
@@ -123,12 +124,9 @@ export default function SystemAuditLogsDesignPage({
                 </option>
               ))}
             </select>
-            <button
-              type="submit"
-              className="rounded-2xl border border-stone-900 bg-stone-900 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-800"
-            >
+            <AdminButton type="submit" variant="primary" size="md" className="rounded-2xl">
               조회
-            </button>
+            </AdminButton>
           </form>
 
           <div className="mt-5 overflow-hidden rounded-2xl border border-stone-200">
@@ -152,17 +150,19 @@ export default function SystemAuditLogsDesignPage({
                       <td className="px-3 py-3 text-stone-600">{log.targetLabel}</td>
                       <td className="px-3 py-3 text-stone-600">{log.actorLabel}</td>
                       <td className="px-3 py-3 text-center">
-                        <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getLevelClassName(log.severity)}`}>
-                          {log.severity}
-                        </span>
+                        <AdminStatusBadge tone={getLevelTone(log.severity)}>{log.severity}</AdminStatusBadge>
                       </td>
                       <td className="px-3 py-3 leading-5 text-stone-700">{log.summary}</td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="px-3 py-8 text-center text-sm text-stone-500">
-                      아직 표시할 감사 로그가 없습니다. 저장소 실제 삭제, 작업지시서 삭제·복원, 초대 생성, 고객사 생성, 멤버 권한 변경을 실행하면 이 목록에 운영 이벤트가 표시됩니다.
+                    <td colSpan={6} className="px-3 py-4">
+                      <AdminEmptyState
+                        title="아직 표시할 감사 로그가 없습니다."
+                        description="저장소 실제 삭제, 작업지시서 삭제·복원, 초대 생성, 고객사 생성, 멤버 권한 변경을 실행하면 이 목록에 운영 이벤트가 표시됩니다."
+                        className="border-0 shadow-none"
+                      />
                     </td>
                   </tr>
                 )}
@@ -198,9 +198,7 @@ export default function SystemAuditLogsDesignPage({
               <article key={target.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="text-sm font-semibold text-stone-950">{target.label}</h3>
-                  <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getLevelClassName(target.level)}`}>
-                    {target.level}
-                  </span>
+                  <AdminStatusBadge tone={getLevelTone(target.level)}>{target.level}</AdminStatusBadge>
                 </div>
                 <p className="mt-2 text-xs leading-5 text-stone-600">{target.description}</p>
                 <div className="mt-3 flex flex-wrap gap-1.5">
@@ -251,7 +249,11 @@ export default function SystemAuditLogsDesignPage({
                     <tr key={field.name}>
                       <td className="px-3 py-2 font-mono text-[11px] text-stone-700">{field.name}</td>
                       <td className="px-3 py-2 leading-5 text-stone-600">{field.purpose}</td>
-                      <td className="px-3 py-2 text-center text-stone-600">{field.required ? "Y" : "-"}</td>
+                      <td className="px-3 py-2 text-center text-stone-600">
+                        <AdminStatusBadge tone={field.required ? "success" : "neutral"} size="xs">
+                          {field.required ? "필수" : "선택"}
+                        </AdminStatusBadge>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
