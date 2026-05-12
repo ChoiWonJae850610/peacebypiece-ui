@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { AdminButton } from "@/components/admin/common/AdminButton";
+import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
 import {
   ADMIN_LANGUAGE_OPTIONS,
@@ -23,23 +25,32 @@ type AdminCompanySettingsFormProps = {
   companyName?: string;
 };
 
+const saveStateBadgeTone: Record<AdminSettingSaveState, AdminStatusBadgeTone> = {
+  idle: "inverse",
+  saving: "neutral",
+  saved: "success",
+  error: "danger",
+};
+
 function SaveStateBadge({ saveState, labels }: { saveState: AdminSettingSaveState; labels: ReturnType<typeof useI18n>["i18n"]["admin"]["settingsForm"]["badges"] }) {
-  if (saveState === "saving") return <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-500">{labels.saving}</span>;
-  if (saveState === "saved") return <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">{labels.saved}</span>;
-  if (saveState === "error") return <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">{labels.error}</span>;
-  return <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white">{labels.idle}</span>;
+  return (
+    <AdminStatusBadge tone={saveStateBadgeTone[saveState]} size="sm">
+      {labels[saveState]}
+    </AdminStatusBadge>
+  );
 }
 
 function HeaderRefreshButton({ label }: { label: string }) {
   return (
-    <button
+    <AdminButton
       type="button"
+      variant="ghost"
       aria-label={label}
       title={label}
-      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-[var(--admin-theme-text-on-surface)] transition hover:bg-white/15"
+      className="h-7 min-h-0 w-7 border-transparent bg-white/10 px-0 py-0 text-sm font-semibold text-[var(--admin-theme-text-on-surface)] hover:bg-white/15 hover:text-[var(--admin-theme-text-on-surface)]"
     >
       <span aria-hidden="true">↻</span>
-    </button>
+    </AdminButton>
   );
 }
 

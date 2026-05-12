@@ -1,13 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { AdminButton } from "@/components/admin/common/AdminButton";
+import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
-import {
-  AdminModal,
-  AdminModalSection,
-  adminModalPrimaryButtonClassName,
-  adminModalSecondaryButtonClassName,
-} from "@/components/admin/layout/AdminModal";
+import { AdminModal, AdminModalSection } from "@/components/admin/layout/AdminModal";
 import { buildUserRoleState, ROLE_OPTIONS } from "@/lib/constants/roles";
 import type { RoleType } from "@/types/permission";
 import { buildAdminUserAccessViewModel, type AdminUserAccessSourceState } from "@/lib/admin/settings/userAccessPresentation";
@@ -16,9 +13,9 @@ import type { UserProfile } from "@/types/user";
 
 function PermissionFlag({ active, label }: { active: boolean; label: string }) {
   return (
-    <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${active ? "bg-emerald-50 text-emerald-700" : "bg-stone-100 text-stone-500"}`}>
+    <AdminStatusBadge tone={active ? "success" : "neutral"} size="sm">
       {label}
-    </span>
+    </AdminStatusBadge>
   );
 }
 
@@ -51,14 +48,14 @@ export default function AdminUserAccessPreview({ users, sourceState }: AdminUser
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-lg font-semibold tracking-tight text-stone-950">{text.title}</h2>
-            <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">{text.sourceStates[viewModel.sourceState]}</span>
+            <AdminStatusBadge tone="warning" size="sm">{text.sourceStates[viewModel.sourceState]}</AdminStatusBadge>
           </div>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-500">{text.description}</p>
         </div>
         <div className="flex flex-col items-stretch gap-2 sm:flex-row lg:flex-col lg:items-end">
-          <button type="button" className={adminModalPrimaryButtonClassName} onClick={() => setIsRoleModalOpen(true)}>
+          <AdminButton type="button" variant="primary" onClick={() => setIsRoleModalOpen(true)}>
             {text.manageRolesButton}
-          </button>
+          </AdminButton>
           <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-right">
             <p className="text-xs font-semibold text-stone-500">{text.userCountLabel}</p>
             <p className="mt-1 text-2xl font-semibold text-stone-950">{viewModel.userCount}</p>
@@ -99,9 +96,9 @@ export default function AdminUserAccessPreview({ users, sourceState }: AdminUser
               return (
                 <div key={item.id} className="flex items-center justify-between gap-3 rounded-2xl bg-stone-50 px-3 py-2.5">
                   <span className="text-xs font-semibold text-stone-600">{label}</span>
-                  <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${item.done ? "bg-emerald-50 text-emerald-700" : "bg-stone-200 text-stone-500"}`}>
+                  <AdminStatusBadge tone={item.done ? "success" : "neutral"} size="sm">
                     {item.done ? text.status.ready : text.status.pending}
-                  </span>
+                  </AdminStatusBadge>
                 </div>
               );
             })}
@@ -120,12 +117,12 @@ export default function AdminUserAccessPreview({ users, sourceState }: AdminUser
         maxWidthClass="md:max-w-4xl"
         footer={
           <div className="flex flex-wrap justify-end gap-2">
-            <button type="button" className={adminModalSecondaryButtonClassName} onClick={() => setWorkingUsers(users ?? [])}>
+            <AdminButton type="button" variant="secondary" onClick={() => setWorkingUsers(users ?? [])}>
               {text.roleModal.resetButton}
-            </button>
-            <button type="button" className={adminModalPrimaryButtonClassName} onClick={() => setIsRoleModalOpen(false)}>
+            </AdminButton>
+            <AdminButton type="button" variant="primary" onClick={() => setIsRoleModalOpen(false)}>
               {text.roleModal.closeButton}
-            </button>
+            </AdminButton>
           </div>
         }
       >
@@ -144,16 +141,16 @@ export default function AdminUserAccessPreview({ users, sourceState }: AdminUser
                       {ROLE_OPTIONS.map((option) => {
                         const active = sourceUser?.role === option.role;
                         return (
-                          <button
+                          <AdminButton
                             key={`${user.id}-${option.role}`}
                             type="button"
-                            className={`rounded-full border px-3 py-2 text-xs font-semibold transition ${
-                              active ? "border-stone-950 bg-stone-950 text-white" : "border-stone-200 bg-white text-stone-600 hover:border-stone-300"
-                            }`}
+                            variant={active ? "primary" : "secondary"}
+                            size="sm"
+                            className="text-xs"
                             onClick={() => handleRoleChange(user.id, option.role)}
                           >
                             {option.title}
-                          </button>
+                          </AdminButton>
                         );
                       })}
                     </div>
