@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { AdminModal, AdminModalSection, adminModalPrimaryButtonClassName, adminModalSecondaryButtonClassName } from "@/components/admin/layout/AdminModal";
 import AdminStandardsSection from "@/components/admin/standards/AdminStandardsSection";
+import AdminCompanySettingsForm from "@/components/admin/settings/AdminCompanySettingsForm";
 import {
   ADMIN_SETTINGS_MENU_ITEMS,
   ADMIN_SETTINGS_NOTICE_BY_ID,
@@ -13,8 +14,16 @@ import {
 import { ADMIN_FEEDBACK_CONTACT_EMAIL, buildAdminFeedbackMailtoHref } from "@/lib/admin/settings/adminFeedbackContact";
 import { ADMIN_BILLING_PLAN_PLACEHOLDER, type AdminBillingPlanOverview } from "@/lib/admin/settings/adminBillingPlanPlaceholder";
 import { ADMIN_ACCOUNT_SETTINGS_PLACEHOLDER } from "@/lib/admin/settings/adminAccountSettingsPlaceholder";
+import type { AdminCompanySummary, CompanySettings } from "@/lib/admin/settings/companyTypes";
 
-type NoticeMenuId = Exclude<AdminSettingsMenuId, "standards">;
+type NoticeMenuId = Exclude<AdminSettingsMenuId, "company" | "standards">;
+
+type AdminCurrentCompanyPayload = {
+  ok?: boolean;
+  company?: AdminCompanySummary;
+  settings?: CompanySettings;
+  billing?: AdminBillingPlanOverview;
+};
 
 const toneClassNames: Record<AdminSettingsMenuTone, { card: string; badge: string; dot: string }> = {
   stone: {
@@ -45,7 +54,7 @@ const toneClassNames: Record<AdminSettingsMenuTone, { card: string; badge: strin
 };
 
 function isNoticeMenuId(id: AdminSettingsMenuId): id is NoticeMenuId {
-  return id !== "standards";
+  return id !== "company" && id !== "standards";
 }
 
 function SettingsMenuCard({ item, active, onClick }: { item: AdminSettingsMenuItem; active: boolean; onClick: () => void }) {
@@ -80,8 +89,11 @@ function SettingsMenuCard({ item, active, onClick }: { item: AdminSettingsMenuIt
 }
 
 export default function AdminSettingsHub() {
-  const [activeMenuId, setActiveMenuId] = useState<AdminSettingsMenuId>("standards");
+  const [activeMenuId, setActiveMenuId] = useState<AdminSettingsMenuId>("company");
   const [noticeMenuId, setNoticeMenuId] = useState<NoticeMenuId | null>(null);
+  const [companySettings, setCompanySettings] = useState<CompanySettings | null>(null);
+  const [companySummary, setCompanySummary] = useState<AdminCompanySummary | null>(null);
+  const [companySettingsLoadState, setCompanySettingsLoadState] = useState<"loading" | "loaded" | "failed">("loading");
   const [billingPlanOverview, setBillingPlanOverview] = useState<AdminBillingPlanOverview>(ADMIN_BILLING_PLAN_PLACEHOLDER);
   const [billingPlanLoadState, setBillingPlanLoadState] = useState<"idle" | "loading" | "loaded" | "failed">("idle");
   const notice = useMemo(() => (noticeMenuId ? ADMIN_SETTINGS_NOTICE_BY_ID[noticeMenuId] : null), [noticeMenuId]);
@@ -90,6 +102,35 @@ export default function AdminSettingsHub() {
   const isBillingNotice = noticeMenuId === "billing";
   const isAccountNotice = noticeMenuId === "account";
 
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch("/api/admin/companies/current", { cache: "no-store" })
+      .then(async (response) => (await response.json().catch(() => null)) as AdminCurrentCompanyPayload | null)
+      .then((payload) => {
+        if (cancelled) return;
+        if (payload?.settings) {
+          setCompanySettings(payload.settings);
+          setCompanySummary(payload.company ?? null);
+          if (payload.billing) {
+            setBillingPlanOverview(payload.billing);
+            setBillingPlanLoadState("loaded");
+          }
+          setCompanySettingsLoadState("loaded");
+          return;
+        }
+        setCompanySettingsLoadState("failed");
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setCompanySettingsLoadState("failed");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!isBillingNotice || billingPlanLoadState !== "idle") {
@@ -131,16 +172,40 @@ export default function AdminSettingsHub() {
     setActiveMenuId(id);
   };
 
+  const renderActiveSettingsPanel = () => {
+    if (activeMenuId === "standards") {
+      return <AdminStandardsSection mode="standards-only" />;
+    }
+
+    if (companySettingsLoadState === "loading") {
+      return (
+        <section className="rounded-[28px] border border-stone-200 bg-white p-5 text-sm font-semibold text-stone-500 shadow-sm">
+          회사 설정을 불러오는 중입니다.
+        </section>
+      );
+    }
+
+    if (!companySettings) {
+      return (
+        <section className="rounded-[28px] border border-red-100 bg-red-50 p-5 text-sm font-semibold text-red-700 shadow-sm">
+          회사 설정을 불러오지 못했습니다. 새로고침 후 다시 확인해 주세요.
+        </section>
+      );
+    }
+
+    return <AdminCompanySettingsForm initialSettings={companySettings} companyName={companySummary?.name} />;
+  };
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1">
       <section className="shrink-0 rounded-[28px] border border-stone-200 bg-white p-3.5 shadow-sm">
         <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-xl font-semibold tracking-tight text-stone-950">환경설정</h2>
-            <p className="mt-1 text-sm leading-6 text-stone-500">회사 운영 기준, 알림, 요금제, 계정, 개발 건의를 한 화면에서 관리합니다.</p>
+            <p className="mt-1 text-sm leading-6 text-stone-500">실제로 저장되는 회사·화면 설정과 작업 기준정보를 중심으로 정리합니다.</p>
           </div>
           <p className="rounded-2xl bg-stone-50 px-3 py-2 text-xs font-semibold leading-5 text-stone-500">
-            권한 관리는 멤버관리 화면에서 별도로 다룹니다.
+            권한은 멤버관리, 요금제·용량은 시스템관리자 기준으로 분리합니다.
           </p>
         </div>
         <div className="mt-3 grid gap-2.5 md:grid-cols-2 xl:grid-cols-5">
@@ -151,7 +216,7 @@ export default function AdminSettingsHub() {
       </section>
 
       <section className="flex min-h-0 flex-1 flex-col">
-        <AdminStandardsSection mode="standards-only" />
+        {renderActiveSettingsPanel()}
       </section>
 
       <AdminModal

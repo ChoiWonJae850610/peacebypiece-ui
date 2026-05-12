@@ -1,18 +1,19 @@
 Version :
-0.10.98
+0.10.99
 
 Summary :
-시스템관리자 홈 작업지시서 이동 버튼 제거
+고객관리자 환경설정 화면 구조 정리
 
 Description :
-시스템관리자 홈 우측 상단에 표시되던 작업지시서 화면 이동 버튼을 제거하고, 버전 표시와 카드형 시스템관리자 진입 구조는 유지했다.
+고객관리자 환경설정 화면에서 실제 저장되는 회사·화면 설정을 기본 진입 화면으로 표시하고, 기준정보 설정과 읽기 전용 요금제·계정·개발 건의 영역을 분리했다. 개발중 알림 정책 카드는 메인 환경설정 메뉴에서 제거했다.
 
 수정 파일 목록 :
-- components/system/SystemConsoleShell.tsx
+- components/admin/settings/AdminSettingsHub.tsx
+- lib/admin/settings/adminSettingsHub.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/system-console-header-workspace-link-removal-0.10.98.md
+- docs/admin-settings-hub-product-cleanup-0.10.99.md
 
 삭제 파일 목록 :
 없음
