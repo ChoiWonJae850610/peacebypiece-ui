@@ -43,6 +43,21 @@ export interface JoinRequestCreateResult {
   redirectPath: string;
 }
 
+export interface JoinRequestLookupInput {
+  id?: string | null;
+  applicantEmail?: string | null;
+  requestType?: JoinRequestType | null;
+  status?: JoinRequestStatus | null;
+  limit?: number | null;
+}
+
+export interface JoinRequestListResult {
+  joinRequests: JoinRequestRecord[];
+  primaryJoinRequest: JoinRequestRecord | null;
+}
+
 export interface JoinRequestRepository {
   createJoinRequest(draft: JoinRequestDraft): Promise<JoinRequestCreateResult>;
+  listJoinRequests(input: JoinRequestLookupInput): Promise<JoinRequestListResult>;
+  findJoinRequestById(id: string): Promise<JoinRequestRecord | null>;
 }

@@ -65,6 +65,7 @@ export default function CompanyInvitationJoinRequestPage({ token }: CompanyInvit
   const [verifyState, setVerifyState] = useState<VerifyState>(token.startsWith("preview-") ? "valid" : "idle");
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [message, setMessage] = useState<string | null>(null);
+  const [redirectPath, setRedirectPath] = useState<string | null>(null);
   const [formValues, setFormValues] = useState<Record<string, string>>({
     applicantName: "",
     applicantPhone: "",
@@ -111,6 +112,7 @@ export default function CompanyInvitationJoinRequestPage({ token }: CompanyInvit
 
     setSubmitState("submitting");
     setMessage(null);
+    setRedirectPath(null);
 
     try {
       const response = await fetch("/api/invitations/join-requests", {
@@ -127,12 +129,13 @@ export default function CompanyInvitationJoinRequestPage({ token }: CompanyInvit
           requestMemo: formValues.requestMemo,
         }),
       });
-      const payload = (await response.json()) as { ok?: boolean; error?: string; redirectPath?: string };
+      const payload = (await response.json()) as { ok?: boolean; error?: string; redirectPath?: string; joinRequest?: { id?: string } };
       if (!response.ok || !payload.ok) {
         throw new Error(payload.error ?? "JOIN_REQUEST_CREATE_FAILED");
       }
       setSubmitState("success");
-      setMessage(`고객사 가입 신청 저장 완료 · 이동 후보: ${payload.redirectPath ?? "/pending"}`);
+      setRedirectPath(payload.redirectPath ?? "/pending");
+      setMessage(`고객사 가입 신청 저장 완료 · 승인 대기 화면에서 requestId 기준으로 상태를 확인할 수 있습니다.`);
     } catch (error) {
       setSubmitState("error");
       setMessage(error instanceof Error ? error.message : "고객사 가입 신청 저장 중 오류가 발생했습니다.");
@@ -230,7 +233,14 @@ export default function CompanyInvitationJoinRequestPage({ token }: CompanyInvit
           </div>
 
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs leading-5 text-stone-500">{readSubmitMessage(submitState, message)}</p>
+            <div className="text-xs leading-5 text-stone-500">
+              <p>{readSubmitMessage(submitState, message)}</p>
+              {redirectPath ? (
+                <Link href={redirectPath} className="mt-1 inline-flex font-semibold text-stone-900 underline underline-offset-4">
+                  승인 대기 화면으로 이동
+                </Link>
+              ) : null}
+            </div>
             <button
               type="button"
               disabled={!canSubmit}

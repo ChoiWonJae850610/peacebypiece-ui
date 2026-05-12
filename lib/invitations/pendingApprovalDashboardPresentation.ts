@@ -170,3 +170,67 @@ export function getPendingApprovalAccessTone(status: PendingApprovalAccessStatus
 
   return "border-stone-200 bg-stone-100 text-stone-500";
 }
+
+export interface PendingApprovalJoinRequestView {
+  id: string;
+  applicantEmail: string;
+  applicantName: string | null;
+  requestType: "member" | "company";
+  requestedCompanyName: string | null;
+  status: "pending" | "approved" | "rejected" | "cancelled";
+  createdAt: string;
+  requestMemo: string | null;
+}
+
+export function getPendingApprovalStatusLabel(status: PendingApprovalJoinRequestView["status"]): string {
+  if (status === "approved") return "승인 완료";
+  if (status === "rejected") return "거절됨";
+  if (status === "cancelled") return "신청 취소";
+  return "승인 대기";
+}
+
+export function getPendingApprovalRequestTypeLabel(type: PendingApprovalJoinRequestView["requestType"]): string {
+  return type === "company" ? "고객사 가입 신청" : "멤버 가입 신청";
+}
+
+export function getPendingApprovalStatusTone(status: PendingApprovalJoinRequestView["status"]): string {
+  if (status === "approved") return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  if (status === "rejected") return "border-rose-200 bg-rose-50 text-rose-700";
+  if (status === "cancelled") return "border-stone-200 bg-stone-100 text-stone-500";
+  return "border-amber-200 bg-amber-50 text-amber-700";
+}
+
+export function buildPendingApprovalSummaryItems(
+  joinRequest: PendingApprovalJoinRequestView | null,
+): PendingApprovalSummaryItem[] {
+  if (!joinRequest) {
+    return PENDING_APPROVAL_SUMMARY_ITEMS;
+  }
+
+  return [
+    {
+      id: "request-status",
+      label: "신청 상태",
+      value: getPendingApprovalStatusLabel(joinRequest.status),
+      description: "join_requests.status 기준으로 표시합니다.",
+    },
+    {
+      id: "request-type",
+      label: "신청 유형",
+      value: getPendingApprovalRequestTypeLabel(joinRequest.requestType),
+      description: "멤버 초대와 고객사 초대를 같은 승인 대기 화면에서 구분합니다.",
+    },
+    {
+      id: "applicant-email",
+      label: "신청 이메일",
+      value: joinRequest.applicantEmail,
+      description: "OAuth 연결 전에는 신청자가 입력한 이메일을 기준으로 상태를 확인합니다.",
+    },
+    {
+      id: "target-company",
+      label: "신청 회사",
+      value: joinRequest.requestedCompanyName || "초대받은 고객사",
+      description: "고객사 가입 신청은 requested_company_name, 멤버 신청은 invitation의 고객사 기준으로 확장합니다.",
+    },
+  ];
+}

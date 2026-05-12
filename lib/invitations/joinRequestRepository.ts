@@ -7,6 +7,8 @@ import type {
   JoinRequestCreateResult,
   JoinRequestDraft,
   JoinRequestRecord,
+  JoinRequestLookupInput,
+  JoinRequestListResult,
   JoinRequestRepository,
   JoinRequestType,
 } from "./joinRequestTypes";
@@ -245,8 +247,96 @@ async function createDbJoinRequest(
   return toJoinRequestRecord(row);
 }
 
-function readRedirectPath(requestType: JoinRequestType): string {
-  return requestType === "company" ? "/pending?type=company" : "/pending?type=member";
+
+function normalizeLookupLimit(limit: number | null | undefined): number {
+  if (!limit || !Number.isFinite(limit)) return 10;
+  return Math.min(Math.max(Math.trunc(limit), 1), 50);
+}
+
+function filterInMemoryJoinRequests(input: JoinRequestLookupInput): JoinRequestRecord[] {
+  const normalizedEmail = input.applicantEmail ? normalizeEmail(input.applicantEmail) : null;
+  const limit = normalizeLookupLimit(input.limit);
+
+  return inMemoryJoinRequests
+    .filter((item) => {
+      if (input.id && item.id !== input.id) return false;
+      if (normalizedEmail && item.applicantEmail !== normalizedEmail) return false;
+      if (input.requestType && item.requestType !== input.requestType) return false;
+      if (input.status && item.status !== input.status) return false;
+      return true;
+    })
+    .slice(0, limit);
+}
+
+function buildJoinRequestListResult(joinRequests: JoinRequestRecord[]): JoinRequestListResult {
+  return {
+    joinRequests,
+    primaryJoinRequest: joinRequests[0] ?? null,
+  };
+}
+
+async function listDbJoinRequests(input: JoinRequestLookupInput): Promise<JoinRequestRecord[]> {
+  const conditions: string[] = [];
+  const values: Array<string | number> = [];
+
+  if (input.id?.trim()) {
+    values.push(input.id.trim());
+    conditions.push(`id = $${values.length}`);
+  }
+
+  if (input.applicantEmail?.trim()) {
+    values.push(normalizeEmail(input.applicantEmail));
+    conditions.push(`lower(applicant_email) = lower($${values.length})`);
+  }
+
+  if (input.requestType) {
+    values.push(input.requestType);
+    conditions.push(`request_type = $${values.length}`);
+  }
+
+  if (input.status) {
+    values.push(input.status);
+    conditions.push(`status = $${values.length}`);
+  }
+
+  values.push(normalizeLookupLimit(input.limit));
+
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+  const result = await queryDb<JoinRequestDbRow>(
+    `
+      SELECT
+        id,
+        invitation_id,
+        user_id,
+        applicant_email,
+        request_type,
+        requested_company_name,
+        business_name,
+        applicant_name,
+        applicant_phone,
+        request_memo,
+        status,
+        reviewed_by_user_id,
+        reviewed_by_system_user_id,
+        reviewed_at,
+        created_company_id,
+        rejection_reason,
+        created_at,
+        updated_at
+      FROM join_requests
+      ${whereClause}
+      ORDER BY created_at DESC
+      LIMIT $${values.length}
+    `,
+    values,
+  );
+
+  return result.rows.map(toJoinRequestRecord);
+}
+
+function readRedirectPath(requestType: JoinRequestType, joinRequestId: string): string {
+  const typeParam = requestType === "company" ? "company" : "member";
+  return `/pending?type=${typeParam}&requestId=${encodeURIComponent(joinRequestId)}`;
 }
 
 export function createJoinRequestRepository(): JoinRequestRepository {
@@ -272,8 +362,24 @@ export function createJoinRequestRepository(): JoinRequestRepository {
       return {
         invitation,
         joinRequest,
-        redirectPath: readRedirectPath(draft.requestType),
+        redirectPath: readRedirectPath(draft.requestType, joinRequest.id),
       };
+    },
+
+    async listJoinRequests(input: JoinRequestLookupInput): Promise<JoinRequestListResult> {
+      const joinRequests = isDatabaseConfigured()
+        ? await listDbJoinRequests(input)
+        : filterInMemoryJoinRequests(input);
+
+      return buildJoinRequestListResult(joinRequests);
+    },
+
+    async findJoinRequestById(id: string): Promise<JoinRequestRecord | null> {
+      const trimmedId = id.trim();
+      if (!trimmedId) return null;
+
+      const result = await this.listJoinRequests({ id: trimmedId, limit: 1 });
+      return result.primaryJoinRequest;
     },
   };
 }

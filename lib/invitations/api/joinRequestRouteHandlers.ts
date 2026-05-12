@@ -4,7 +4,7 @@ import { joinRequestRepository } from "../joinRequestRepository";
 import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
 import { buildJoinRequestCreatedAuditLog } from "@/lib/system/audit/writeActions";
 import { invitationRepository } from "../invitationRepository";
-import type { JoinRequestDraft, JoinRequestType } from "../joinRequestTypes";
+import type { JoinRequestDraft, JoinRequestStatus, JoinRequestType } from "../joinRequestTypes";
 
 interface CreateJoinRequestBody {
   token?: string | null;
@@ -107,6 +107,46 @@ export async function handleVerifyInvitation(request: Request) {
       invitation: toPublicInvitation(invitation),
       isJoinable,
       tokenPolicy: "raw token is converted to token_hash for lookup and is not returned",
+    });
+  } catch (error) {
+    return toErrorResponse(error);
+  }
+}
+
+
+const JOIN_REQUEST_TYPES = new Set<JoinRequestType>(["member", "company"]);
+const JOIN_REQUEST_STATUSES = new Set<JoinRequestStatus>(["pending", "approved", "rejected", "cancelled"]);
+
+function readJoinRequestType(value: string | null): JoinRequestType | null {
+  return value && JOIN_REQUEST_TYPES.has(value as JoinRequestType) ? (value as JoinRequestType) : null;
+}
+
+function readJoinRequestStatus(value: string | null): JoinRequestStatus | null {
+  return value && JOIN_REQUEST_STATUSES.has(value as JoinRequestStatus) ? (value as JoinRequestStatus) : null;
+}
+
+function readLimit(value: string | null): number {
+  const parsed = Number(value ?? "");
+  if (!Number.isFinite(parsed)) return 10;
+  return Math.min(Math.max(Math.trunc(parsed), 1), 50);
+}
+
+export async function handleListJoinRequests(request: Request) {
+  try {
+    const url = new URL(request.url);
+    const result = await joinRequestRepository.listJoinRequests({
+      id: url.searchParams.get("requestId") || url.searchParams.get("id"),
+      applicantEmail: url.searchParams.get("applicantEmail") || url.searchParams.get("email"),
+      requestType: readJoinRequestType(url.searchParams.get("requestType") || url.searchParams.get("type")),
+      status: readJoinRequestStatus(url.searchParams.get("status")) || "pending",
+      limit: readLimit(url.searchParams.get("limit")),
+    });
+
+    return NextResponse.json({
+      ok: true,
+      joinRequests: result.joinRequests,
+      primaryJoinRequest: result.primaryJoinRequest,
+      lookupPolicy: "requestId is preferred; applicantEmail lookup is for OAuth-before testing only",
     });
   } catch (error) {
     return toErrorResponse(error);
