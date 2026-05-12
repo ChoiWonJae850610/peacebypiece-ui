@@ -24,12 +24,6 @@ const DEFAULT_WORKFLOW_STATE: WorkOrder["workflowState"] = "draft";
 
 const COMPANY_ID_COLUMN_CANDIDATES = ["company_id"] as const;
 const COMPANY_NAME_COLUMN_CANDIDATES = ["company_name"] as const;
-const PAYLOAD_COLUMN_CANDIDATES = [
-  "payload",
-  "data",
-  "workorder_payload",
-  "work_order_payload",
-] as const;
 const WORKFLOW_STATE_COLUMN_CANDIDATES = [
   "workflow_state",
   "status",
@@ -109,7 +103,6 @@ type DbSpecSheetRow = {
   inventory_quantity?: number | null;
   inventory_status?: WorkOrder["inventoryStatus"] | null;
   memo?: string | null;
-  payload: WorkOrder | string | null;
   order_entry_count?: number | null;
   material_count?: number | null;
   outsourcing_count?: number | null;
@@ -127,13 +120,9 @@ type DbColumnInfo = {
   udt_name: string;
 };
 
-type DbPayloadColumnKind = "json" | "jsonb" | "text";
-
 type DbSpecSheetSchema = {
   companyIdColumn: string | null;
   companyNameColumn: string | null;
-  payloadColumn: string | null;
-  payloadColumnKind: DbPayloadColumnKind | null;
   workflowStateColumn: string | null;
   lastSavedAtColumn: string | null;
   workOrderKindColumn: string | null;
@@ -179,10 +168,6 @@ type DbSpecSheetSchema = {
   hasIdColumn: boolean;
   hasTitleColumn: boolean;
 };
-
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
 
 function toIsoString(value: string | Date | null | undefined): string {
   if (!value) return "";
@@ -268,66 +253,6 @@ async function resolveCategoryIdsForDb(
   };
 }
 
-function serializeWorkOrderPayload(workOrder: WorkOrder): Partial<WorkOrder> {
-  const normalizedWorkOrder = normalizeWorkOrderForDb(workOrder);
-  const {
-    id: _id,
-    title: _title,
-    baseTitle: _baseTitle,
-    displayTitle: _displayTitle,
-    workOrderKind: _workOrderKind,
-    reorderGroupId: _reorderGroupId,
-    reorderRound: _reorderRound,
-    parentSpecSheetId: _parentSpecSheetId,
-    isDefectOrder: _isDefectOrder,
-    workflowState: _workflowState,
-    lastSavedAt: _lastSavedAt,
-    attachments: _attachments,
-    memoThreads: _memoThreads,
-    ...payload
-  } = normalizedWorkOrder;
-
-  void _id;
-  void _title;
-  void _baseTitle;
-  void _displayTitle;
-  void _workOrderKind;
-  void _reorderGroupId;
-  void _reorderRound;
-  void _parentSpecSheetId;
-  void _isDefectOrder;
-  void _workflowState;
-  void _lastSavedAt;
-  void _attachments;
-  void _memoThreads;
-
-  return payload;
-}
-
-function parsePayloadValue(
-  payload: DbSpecSheetRow["payload"],
-): Partial<WorkOrder> {
-  if (isObject(payload)) {
-    return payload as Partial<WorkOrder>;
-  }
-
-  if (typeof payload !== "string") {
-    return {};
-  }
-
-  const trimmed = payload.trim();
-  if (!trimmed) {
-    return {};
-  }
-
-  try {
-    const parsed = JSON.parse(trimmed) as unknown;
-    return isObject(parsed) ? (parsed as Partial<WorkOrder>) : {};
-  } catch {
-    return {};
-  }
-}
-
 function readRoleValue(value: unknown, fallback: WorkOrder["createdByRole"] = "admin"): WorkOrder["createdByRole"] {
   if (value === "admin" || value === "designer" || value === "inspector") return value;
   return fallback;
@@ -347,170 +272,98 @@ function readNumberRowValue(value: unknown, fallback = 0): number {
 }
 
 function mapSpecSheetRowToWorkOrder(row: DbSpecSheetRow): WorkOrder {
-  const payload = parsePayloadValue(row.payload);
-  const normalizedWorkflowState =
-    row.workflow_state !== null && row.workflow_state !== undefined
-      ? normalizeDbWorkflowState(row.workflow_state)
-      : typeof payload.workflowState === "string"
-        ? normalizeDbWorkflowState(payload.workflowState)
-        : DEFAULT_WORKFLOW_STATE;
+  const normalizedWorkflowState = normalizeDbWorkflowState(row.workflow_state);
   const lastSavedAt =
     row.last_saved_at ??
     toIsoString(row.updated_at) ??
-    toIsoString(row.created_at) ??
-    readStringPayloadValue(payload.lastSavedAt);
+    toIsoString(row.created_at);
 
   const hydrated: WorkOrder = {
     id: row.id,
     title: row.title,
-    displayTitle: readStringRowValue(row.display_title, readStringPayloadValue(payload.displayTitle, row.title)),
-    baseTitle: readStringRowValue(row.base_title, readStringPayloadValue(payload.baseTitle, row.title)),
-    workOrderKind: row.work_order_kind ?? payload.workOrderKind ?? undefined,
-    reorderGroupId:
-      row.reorder_group_id ??
-      (typeof payload.reorderGroupId === "string" ? payload.reorderGroupId : undefined),
-    reorderRound:
-      typeof row.reorder_round === "number"
-        ? row.reorder_round
-        : typeof payload.reorderRound === "number"
-          ? payload.reorderRound
-          : undefined,
-    parentSpecSheetId:
-      row.parent_spec_sheet_id ??
-      (typeof payload.parentSpecSheetId === "string" ? payload.parentSpecSheetId : undefined),
-    isDefectOrder:
-      typeof row.is_rework === "boolean"
-        ? row.is_rework
-        : typeof payload.isDefectOrder === "boolean"
-          ? payload.isDefectOrder
-          : undefined,
-    category1: readStringRowValue(row.category1, readStringPayloadValue(payload.category1)),
-    category2: readStringRowValue(row.category2, readStringPayloadValue(payload.category2)),
-    category3: readStringRowValue(row.category3, readStringPayloadValue(payload.category3)),
-    category1Id:
-      row.category1_id ??
-      (typeof payload.category1Id === "string" ? payload.category1Id : null),
-    category2Id:
-      row.category2_id ??
-      (typeof payload.category2Id === "string" ? payload.category2Id : null),
-    category3Id:
-      row.category3_id ??
-      (typeof payload.category3Id === "string" ? payload.category3Id : null),
-    season: readStringRowValue(row.season, readStringPayloadValue(payload.season)),
-    priority: readStringRowValue(row.priority, readStringPayloadValue(payload.priority)),
-    vendor: readStringRowValue(row.vendor, readStringPayloadValue(payload.vendor)),
-    manager: readStringRowValue(row.manager, readStringPayloadValue(payload.manager)),
-    managerId:
-      row.manager_id ??
-      (typeof payload.managerId === "string" ? payload.managerId : null),
-    createdById: readStringRowValue(row.created_by_id, readStringPayloadValue(payload.createdById, "system")),
-    createdByRole: readRoleValue(row.created_by_role, readRoleValue(payload.createdByRole)),
-    dueDate: readStringRowValue(row.due_date, readStringPayloadValue(payload.dueDate)),
-    quantity: readNumberRowValue(row.quantity, readNumberPayloadValue(payload.quantity)),
-    inventoryQuantity: readNumberRowValue(row.inventory_quantity, readNumberPayloadValue(payload.inventoryQuantity)),
-    inventoryStatus: readInventoryStatusValue(row.inventory_status, readInventoryStatusValue(payload.inventoryStatus)),
-    memo: readStringRowValue(row.memo, readStringPayloadValue(payload.memo)),
-    materials: Array.isArray(payload.materials) ? payload.materials : [],
-    outsourcing: Array.isArray(payload.outsourcing) ? payload.outsourcing : [],
-    attachments: Array.isArray(payload.attachments) ? payload.attachments : [],
-    memoThreads: Array.isArray(payload.memoThreads) ? payload.memoThreads : [],
-    orderEntries: Array.isArray(payload.orderEntries) ? payload.orderEntries : [],
+    displayTitle: readStringRowValue(row.display_title, row.title),
+    baseTitle: readStringRowValue(row.base_title, row.title),
+    workOrderKind: row.work_order_kind ?? undefined,
+    reorderGroupId: row.reorder_group_id ?? undefined,
+    reorderRound: typeof row.reorder_round === "number" ? row.reorder_round : undefined,
+    parentSpecSheetId: row.parent_spec_sheet_id ?? undefined,
+    isDefectOrder: typeof row.is_rework === "boolean" ? row.is_rework : undefined,
+    category1: readStringRowValue(row.category1),
+    category2: readStringRowValue(row.category2),
+    category3: readStringRowValue(row.category3),
+    category1Id: row.category1_id ?? null,
+    category2Id: row.category2_id ?? null,
+    category3Id: row.category3_id ?? null,
+    season: readStringRowValue(row.season),
+    priority: readStringRowValue(row.priority),
+    vendor: readStringRowValue(row.vendor),
+    manager: readStringRowValue(row.manager),
+    managerId: row.manager_id ?? null,
+    createdById: readStringRowValue(row.created_by_id, "system"),
+    createdByRole: readRoleValue(row.created_by_role),
+    dueDate: readStringRowValue(row.due_date),
+    quantity: readNumberRowValue(row.quantity),
+    inventoryQuantity: readNumberRowValue(row.inventory_quantity),
+    inventoryStatus: readInventoryStatusValue(row.inventory_status),
+    memo: readStringRowValue(row.memo),
+    materials: [],
+    outsourcing: [],
+    attachments: [],
+    memoThreads: [],
+    orderEntries: [],
     workflowState: normalizedWorkflowState,
     lastSavedAt,
-    factoryOrderRequest: payload.factoryOrderRequest ?? null,
+    factoryOrderRequest: null,
   };
 
   return applyReorderIdentity(hydrated);
 }
 
-function countPayloadItems(value: unknown): number {
-  return Array.isArray(value) ? value.length : 0;
-}
-
-function readCountValue(value: number | null | undefined, fallbackValue: unknown): number {
-  return typeof value === "number" && Number.isFinite(value)
-    ? Math.max(0, value)
-    : countPayloadItems(fallbackValue);
-}
-
-function readStringPayloadValue(value: unknown, fallback = ""): string {
-  return typeof value === "string" ? value : fallback;
-}
-
-function readNumberPayloadValue(value: unknown, fallback = 0): number {
-  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+function readCountValue(value: number | null | undefined): number {
+  return typeof value === "number" && Number.isFinite(value) ? Math.max(0, value) : 0;
 }
 
 function mapSpecSheetRowToWorkOrderSummary(row: DbSpecSheetRow): WorkOrderSummary {
-  const payload = parsePayloadValue(row.payload);
-  const normalizedWorkflowState =
-    row.workflow_state !== null && row.workflow_state !== undefined
-      ? normalizeDbWorkflowState(row.workflow_state)
-      : typeof payload.workflowState === "string"
-        ? normalizeDbWorkflowState(payload.workflowState)
-        : DEFAULT_WORKFLOW_STATE;
+  const normalizedWorkflowState = normalizeDbWorkflowState(row.workflow_state);
   const lastSavedAt =
     row.last_saved_at ??
     toIsoString(row.updated_at) ??
-    toIsoString(row.created_at) ??
-    readStringPayloadValue(payload.lastSavedAt);
+    toIsoString(row.created_at);
 
   return {
     id: row.id,
     title: row.title,
-    displayTitle: readStringRowValue(row.display_title, readStringPayloadValue(payload.displayTitle, row.title)),
-    baseTitle: readStringRowValue(row.base_title, readStringPayloadValue(payload.baseTitle, row.title)),
-    workOrderKind: row.work_order_kind ?? payload.workOrderKind,
-    reorderGroupId:
-      row.reorder_group_id ??
-      (typeof payload.reorderGroupId === "string" ? payload.reorderGroupId : undefined),
-    reorderRound:
-      typeof row.reorder_round === "number"
-        ? row.reorder_round
-        : typeof payload.reorderRound === "number"
-          ? payload.reorderRound
-          : undefined,
-    parentSpecSheetId:
-      row.parent_spec_sheet_id ??
-      (typeof payload.parentSpecSheetId === "string" ? payload.parentSpecSheetId : undefined),
-    isDefectOrder:
-      typeof row.is_rework === "boolean"
-        ? row.is_rework
-        : typeof payload.isDefectOrder === "boolean"
-          ? payload.isDefectOrder
-          : undefined,
-    category1: readStringRowValue(row.category1, readStringPayloadValue(payload.category1)),
-    category2: readStringRowValue(row.category2, readStringPayloadValue(payload.category2)),
-    category3: readStringRowValue(row.category3, readStringPayloadValue(payload.category3)),
-    category1Id:
-      row.category1_id ??
-      (typeof payload.category1Id === "string" ? payload.category1Id : null),
-    category2Id:
-      row.category2_id ??
-      (typeof payload.category2Id === "string" ? payload.category2Id : null),
-    category3Id:
-      row.category3_id ??
-      (typeof payload.category3Id === "string" ? payload.category3Id : null),
-    season: readStringRowValue(row.season, readStringPayloadValue(payload.season)),
-    priority: readStringRowValue(row.priority, readStringPayloadValue(payload.priority)),
-    vendor: readStringRowValue(row.vendor, readStringPayloadValue(payload.vendor)),
-    manager: readStringRowValue(row.manager, readStringPayloadValue(payload.manager)),
-    managerId:
-      row.manager_id ??
-      (typeof payload.managerId === "string" ? payload.managerId : null),
-    createdById: readStringRowValue(row.created_by_id, readStringPayloadValue(payload.createdById, "system")),
-    createdByRole: readRoleValue(row.created_by_role, readRoleValue(payload.createdByRole)),
-    dueDate: readStringRowValue(row.due_date, readStringPayloadValue(payload.dueDate)),
-    quantity: readNumberRowValue(row.quantity, readNumberPayloadValue(payload.quantity)),
-    inventoryQuantity: readNumberRowValue(row.inventory_quantity, readNumberPayloadValue(payload.inventoryQuantity)),
-    inventoryStatus: readInventoryStatusValue(row.inventory_status, readInventoryStatusValue(payload.inventoryStatus)),
+    displayTitle: readStringRowValue(row.display_title, row.title),
+    baseTitle: readStringRowValue(row.base_title, row.title),
+    workOrderKind: row.work_order_kind ?? undefined,
+    reorderGroupId: row.reorder_group_id ?? undefined,
+    reorderRound: typeof row.reorder_round === "number" ? row.reorder_round : undefined,
+    parentSpecSheetId: row.parent_spec_sheet_id ?? undefined,
+    isDefectOrder: typeof row.is_rework === "boolean" ? row.is_rework : undefined,
+    category1: readStringRowValue(row.category1),
+    category2: readStringRowValue(row.category2),
+    category3: readStringRowValue(row.category3),
+    category1Id: row.category1_id ?? null,
+    category2Id: row.category2_id ?? null,
+    category3Id: row.category3_id ?? null,
+    season: readStringRowValue(row.season),
+    priority: readStringRowValue(row.priority),
+    vendor: readStringRowValue(row.vendor),
+    manager: readStringRowValue(row.manager),
+    managerId: row.manager_id ?? null,
+    createdById: readStringRowValue(row.created_by_id, "system"),
+    createdByRole: readRoleValue(row.created_by_role),
+    dueDate: readStringRowValue(row.due_date),
+    quantity: readNumberRowValue(row.quantity),
+    inventoryQuantity: readNumberRowValue(row.inventory_quantity),
+    inventoryStatus: readInventoryStatusValue(row.inventory_status),
     workflowState: normalizedWorkflowState,
     lastSavedAt,
-    orderEntryCount: readCountValue(row.order_entry_count, payload.orderEntries),
-    materialCount: readCountValue(row.material_count, payload.materials),
-    outsourcingCount: readCountValue(row.outsourcing_count, payload.outsourcing),
-    attachmentCount: readCountValue(row.attachment_count, payload.attachments),
-    memoThreadCount: readCountValue(row.memo_thread_count, payload.memoThreads),
+    orderEntryCount: readCountValue(row.order_entry_count),
+    materialCount: readCountValue(row.material_count),
+    outsourcingCount: readCountValue(row.outsourcing_count),
+    attachmentCount: readCountValue(row.attachment_count),
+    memoThreadCount: readCountValue(row.memo_thread_count),
     hasDetailSnapshot: false,
     createdAt: toIsoString(row.created_at) || undefined,
     updatedAt: toIsoString(row.updated_at) || undefined,
@@ -544,66 +397,6 @@ function buildAliasSelection(
   }
 
   return `${quoteIdentifier(columnName)} AS ${alias}`;
-}
-
-function getPayloadColumnKind(
-  column: DbColumnInfo | undefined,
-): DbPayloadColumnKind | null {
-  if (!column) return null;
-
-  if (column.udt_name === "jsonb") return "jsonb";
-  if (column.udt_name === "json") return "json";
-  if (
-    column.data_type === "text" ||
-    column.udt_name === "text" ||
-    column.data_type === "character varying" ||
-    column.udt_name === "varchar"
-  ) {
-    return "text";
-  }
-
-  return null;
-}
-
-
-function buildPayloadPatchExpression(
-  columnName: string,
-  kind: DbPayloadColumnKind | null,
-  patchEntries: Array<{ key: keyof WorkOrder; value: unknown }>,
-  values: unknown[],
-): string | null {
-  if (!kind || patchEntries.length === 0) return null;
-
-  const columnSql = quoteIdentifier(columnName);
-  let expression = kind === "text"
-    ? `COALESCE(NULLIF(${columnSql}, '')::jsonb, '{}'::jsonb)`
-    : `COALESCE(${columnSql}::jsonb, '{}'::jsonb)`;
-
-  for (const entry of patchEntries) {
-    values.push(JSON.stringify(entry.value ?? null));
-    expression = `jsonb_set(${expression}, '{${String(entry.key)}}', $${values.length}::jsonb, true)`;
-  }
-
-  if (kind === "json") return `(${expression})::json`;
-  if (kind === "text") return `(${expression})::text`;
-  return expression;
-}
-
-function buildPayloadInsertPlaceholder(
-  kind: DbPayloadColumnKind | null,
-  placeholderIndex: number,
-): string {
-  if (kind === "jsonb") return `$${placeholderIndex}::jsonb`;
-  if (kind === "json") return `$${placeholderIndex}::json`;
-  return `$${placeholderIndex}`;
-}
-
-function buildPayloadValue(
-  kind: DbPayloadColumnKind | null,
-  payload: Partial<WorkOrder>,
-): string {
-  const serialized = JSON.stringify(payload);
-  return serialized;
 }
 
 function pushInsertColumn(
@@ -700,21 +493,6 @@ async function loadSpecSheetSchema(): Promise<DbSpecSheetSchema> {
     throw new Error(`relation \"${SPEC_SHEET_TABLE}\" does not exist`);
   }
 
-  const payloadColumn = findFirstMatchingColumn(
-    columnNames,
-    PAYLOAD_COLUMN_CANDIDATES,
-  );
-  const payloadColumnInfo = payloadColumn
-    ? columns.find((column) => column.column_name === payloadColumn)
-    : undefined;
-  const payloadColumnKind = getPayloadColumnKind(payloadColumnInfo);
-
-  if (payloadColumn && !payloadColumnKind) {
-    throw new Error(
-      `Unsupported payload column type for ${payloadColumn}: ${payloadColumnInfo?.data_type ?? "unknown"}/${payloadColumnInfo?.udt_name ?? "unknown"}`,
-    );
-  }
-
   return {
     companyIdColumn: findFirstMatchingColumn(
       columnNames,
@@ -724,8 +502,6 @@ async function loadSpecSheetSchema(): Promise<DbSpecSheetSchema> {
       columnNames,
       COMPANY_NAME_COLUMN_CANDIDATES,
     ),
-    payloadColumn,
-    payloadColumnKind,
     workflowStateColumn: findFirstMatchingColumn(
       columnNames,
       WORKFLOW_STATE_COLUMN_CANDIDATES,
@@ -862,9 +638,6 @@ function assertMinimumSpecSheetSchema(schema: DbSpecSheetSchema) {
 }
 
 function buildSpecSheetSelectBaseSql(schema: DbSpecSheetSchema): string {
-  const payloadFallbackSql =
-    schema.payloadColumnKind === "text" ? "NULL::text" : "NULL::jsonb";
-
   return `
       SELECT
         id,
@@ -896,63 +669,12 @@ function buildSpecSheetSelectBaseSql(schema: DbSpecSheetSchema): string {
         ${buildAliasSelection(schema.inventoryQuantityColumn, "inventory_quantity", "NULL")},
         ${buildAliasSelection(schema.inventoryStatusColumn, "inventory_status", "NULL")},
         ${buildAliasSelection(schema.memoColumn, "memo", "NULL")},
-        ${buildAliasSelection(schema.payloadColumn, "payload", payloadFallbackSql)},
         ${buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE")},
         ${buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL")},
         ${buildAliasSelection(schema.createdAtColumn, "created_at", "NULL")},
         ${buildAliasSelection(schema.updatedAtColumn, "updated_at", "NULL")}
       FROM ${quoteIdentifier(SPEC_SHEET_TABLE)}
     `;
-}
-
-function buildSpecSheetSummaryPayloadSelection(schema: DbSpecSheetSchema): string {
-  const payloadFallbackSql =
-    schema.payloadColumnKind === "text" ? "NULL::text" : "NULL::jsonb";
-
-  if (!schema.payloadColumn) {
-    return `${payloadFallbackSql} AS payload`;
-  }
-
-  if (schema.payloadColumnKind === "text") {
-    return `${quoteIdentifier(schema.payloadColumn)} AS payload`;
-  }
-
-  const payloadSql = `COALESCE(${quoteIdentifier(schema.payloadColumn)}::jsonb, '{}'::jsonb)`;
-  const summaryKeys = [
-    "displayTitle",
-    "baseTitle",
-    "workOrderKind",
-    "reorderGroupId",
-    "reorderRound",
-    "parentSpecSheetId",
-    "isDefectOrder",
-    "category1",
-    "category2",
-    "category3",
-    "category1Id",
-    "category2Id",
-    "category3Id",
-    "season",
-    "priority",
-    "vendor",
-    "manager",
-    "managerId",
-    "createdById",
-    "createdByRole",
-    "dueDate",
-    "quantity",
-    "inventoryQuantity",
-    "inventoryStatus",
-    "workflowState",
-    "lastSavedAt",
-  ];
-  const keyExpressions = summaryKeys
-    .map((key) => `'${key}', ${payloadSql}->'${key}'`)
-    .join(",\n          ");
-
-  return `jsonb_strip_nulls(jsonb_build_object(
-          ${keyExpressions}
-        )) AS payload`;
 }
 
 function buildSpecSheetSummarySelectBaseSql(schema: DbSpecSheetSchema): string {
@@ -987,7 +709,6 @@ function buildSpecSheetSummarySelectBaseSql(schema: DbSpecSheetSchema): string {
         ${buildAliasSelection(schema.inventoryQuantityColumn, "inventory_quantity", "NULL")},
         ${buildAliasSelection(schema.inventoryStatusColumn, "inventory_status", "NULL")},
         ${buildAliasSelection(schema.memoColumn, "memo", "NULL")},
-        ${buildSpecSheetSummaryPayloadSelection(schema)},
         ${buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE")},
         ${buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL")},
         ${buildAliasSelection(schema.createdAtColumn, "created_at", "NULL")},
@@ -1322,8 +1043,6 @@ export async function createDbWorkOrder(
     ...normalizedBaseWorkOrder,
     ...resolvedCategoryIds,
   };
-  const payload = serializeWorkOrderPayload(normalizedWorkOrder);
-
   const columns = ["id", "title"];
   const values: unknown[] = [normalizedWorkOrder.id, normalizedWorkOrder.title];
   const placeholders = ["$1", "$2"];
@@ -1403,14 +1122,6 @@ export async function createDbWorkOrder(
 
   appendNormalizedWorkOrderInsertColumns(schema, normalizedWorkOrder, columns, values, placeholders);
 
-  if (schema.payloadColumn) {
-    columns.push(schema.payloadColumn);
-    values.push(buildPayloadValue(schema.payloadColumnKind, payload));
-    placeholders.push(
-      buildPayloadInsertPlaceholder(schema.payloadColumnKind, values.length),
-    );
-  }
-
   if (schema.isActiveColumn) {
     columns.push(schema.isActiveColumn);
     values.push(true);
@@ -1422,9 +1133,6 @@ export async function createDbWorkOrder(
     values.push(null);
     placeholders.push(`$${values.length}`);
   }
-
-  const payloadFallbackSql =
-    schema.payloadColumnKind === "text" ? "NULL::text" : "NULL::jsonb";
 
   const returningColumns = [
     "id",
@@ -1464,7 +1172,6 @@ export async function createDbWorkOrder(
     buildAliasSelection(schema.inventoryQuantityColumn, "inventory_quantity", "NULL"),
     buildAliasSelection(schema.inventoryStatusColumn, "inventory_status", "NULL"),
     buildAliasSelection(schema.memoColumn, "memo", "NULL"),
-    buildAliasSelection(schema.payloadColumn, "payload", payloadFallbackSql),
     buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE"),
     buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL"),
     buildAliasSelection(schema.createdAtColumn, "created_at", "NULL"),
@@ -1526,8 +1233,6 @@ export async function updateDbWorkOrder(
     ...normalizedBaseWorkOrder,
     ...resolvedCategoryIds,
   };
-  const payload = serializeWorkOrderPayload(normalizedWorkOrder);
-
   const assignments = ["title = $2"];
   const values: unknown[] = [normalizedWorkOrder.id, normalizedWorkOrder.title];
   const company = getAdminCompanyScope();
@@ -1618,13 +1323,6 @@ export async function updateDbWorkOrder(
 
   appendNormalizedWorkOrderUpdateAssignments(schema, normalizedWorkOrder, assignments, values);
 
-  if (schema.payloadColumn) {
-    assignments.push(
-      `${quoteIdentifier(schema.payloadColumn)} = ${buildPayloadInsertPlaceholder(schema.payloadColumnKind, values.length + 1)}`,
-    );
-    values.push(buildPayloadValue(schema.payloadColumnKind, payload));
-  }
-
   if (schema.isActiveColumn) {
     assignments.push(
       `${quoteIdentifier(schema.isActiveColumn)} = $${values.length + 1}`,
@@ -1638,9 +1336,6 @@ export async function updateDbWorkOrder(
     );
     values.push(null);
   }
-
-  const payloadFallbackSql =
-    schema.payloadColumnKind === "text" ? "NULL::text" : "NULL::jsonb";
 
   const returningColumns = [
     "id",
@@ -1680,7 +1375,6 @@ export async function updateDbWorkOrder(
     buildAliasSelection(schema.inventoryQuantityColumn, "inventory_quantity", "NULL"),
     buildAliasSelection(schema.inventoryStatusColumn, "inventory_status", "NULL"),
     buildAliasSelection(schema.memoColumn, "memo", "NULL"),
-    buildAliasSelection(schema.payloadColumn, "payload", payloadFallbackSql),
     buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE"),
     buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL"),
     buildAliasSelection(schema.createdAtColumn, "created_at", "NULL"),
@@ -1753,45 +1447,11 @@ export async function updateDbWorkOrderStatePatch(
     values.push(patch.inventoryStatus ?? "unchecked");
   }
 
-  if (schema.payloadColumn) {
-    const payloadPatchEntries: Array<{ key: keyof WorkOrder; value: unknown }> = [
-      { key: "workflowState", value: normalizedWorkflowState },
-      { key: "lastSavedAt", value: lastSavedAt },
-    ];
-
-    if (Object.prototype.hasOwnProperty.call(patch, "inventoryQuantity")) {
-      payloadPatchEntries.push({ key: "inventoryQuantity", value: patch.inventoryQuantity });
-    }
-    if (Object.prototype.hasOwnProperty.call(patch, "inventoryStatus")) {
-      payloadPatchEntries.push({ key: "inventoryStatus", value: patch.inventoryStatus });
-    }
-    if (Object.prototype.hasOwnProperty.call(patch, "factoryOrderRequest")) {
-      payloadPatchEntries.push({ key: "factoryOrderRequest", value: patch.factoryOrderRequest ?? null });
-    }
-    if (Object.prototype.hasOwnProperty.call(patch, "orderEntries")) {
-      payloadPatchEntries.push({ key: "orderEntries", value: patch.orderEntries ?? [] });
-    }
-
-    const payloadExpression = buildPayloadPatchExpression(
-      schema.payloadColumn,
-      schema.payloadColumnKind,
-      payloadPatchEntries,
-      values,
-    );
-
-    if (payloadExpression) {
-      assignments.push(`${quoteIdentifier(schema.payloadColumn)} = ${payloadExpression}`);
-    }
-  }
-
   if (assignments.length === 0) {
     const existing = await findDbWorkOrderById(patch.id);
     if (!existing) throw new Error(`spec_sheets row not found for id: ${patch.id}`);
     return existing;
   }
-
-  const payloadFallbackSql =
-    schema.payloadColumnKind === "text" ? "NULL::text" : "NULL::jsonb";
 
   const returningColumns = [
     "id",
@@ -1823,7 +1483,6 @@ export async function updateDbWorkOrderStatePatch(
     buildAliasSelection(schema.inventoryQuantityColumn, "inventory_quantity", "NULL"),
     buildAliasSelection(schema.inventoryStatusColumn, "inventory_status", "NULL"),
     buildAliasSelection(schema.memoColumn, "memo", "NULL"),
-    buildAliasSelection(schema.payloadColumn, "payload", payloadFallbackSql),
     buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE"),
     buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL"),
     buildAliasSelection(schema.createdAtColumn, "created_at", "NULL"),
@@ -1847,7 +1506,25 @@ export async function updateDbWorkOrderStatePatch(
     throw new Error(`spec_sheets row not found for id: ${patch.id}`);
   }
 
-  return mapSpecSheetRowToWorkOrder(updated);
+  const mapped = mapSpecSheetRowToWorkOrder(updated);
+  const hasOrderEntriesPatch = Object.prototype.hasOwnProperty.call(patch, "orderEntries");
+  const hasFactoryOrderRequestPatch = Object.prototype.hasOwnProperty.call(patch, "factoryOrderRequest");
+
+  if (hasOrderEntriesPatch || hasFactoryOrderRequestPatch) {
+    const existing = await findDbWorkOrderById(patch.id);
+    const patchedWorkOrder: WorkOrder = {
+      ...(existing ?? mapped),
+      ...mapped,
+      orderEntries: hasOrderEntriesPatch ? (patch.orderEntries ?? []) : (existing?.orderEntries ?? []),
+      factoryOrderRequest: hasFactoryOrderRequestPatch
+        ? (patch.factoryOrderRequest ?? null)
+        : (existing?.factoryOrderRequest ?? null),
+    };
+    await syncDbFactoryOrdersForSpecSheet(patchedWorkOrder);
+    return patchedWorkOrder;
+  }
+
+  return mapped;
 }
 
 async function softDeleteAttachmentMemoBundleForWorkOrder(
