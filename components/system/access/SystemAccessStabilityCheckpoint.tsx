@@ -1,5 +1,5 @@
-import Link from "next/link";
-
+import { AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import { APP_VERSION } from "@/lib/constants/app";
 import {
   SYSTEM_ACCESS_CHECKPOINT_GROUPS,
@@ -8,20 +8,20 @@ import {
   type SystemAccessCheckpointStatus,
 } from "@/lib/system/systemAccessStabilityCheckpoint";
 
-function getStatusClassName(status: SystemAccessCheckpointStatus) {
+function getStatusBadgeTone(status: SystemAccessCheckpointStatus): AdminStatusBadgeTone {
   if (status === "stable") {
-    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+    return "success";
   }
 
   if (status === "ready") {
-    return "border-blue-200 bg-blue-50 text-blue-700";
+    return "info";
   }
 
   if (status === "partial") {
-    return "border-amber-200 bg-amber-50 text-amber-700";
+    return "warning";
   }
 
-  return "border-stone-200 bg-stone-100 text-stone-500";
+  return "neutral";
 }
 
 export default function SystemAccessStabilityCheckpoint() {
@@ -60,15 +60,8 @@ export default function SystemAccessStabilityCheckpoint() {
             </div>
 
             <div className="flex flex-wrap gap-2 text-xs font-medium">
-              <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-stone-600">
-                v{APP_VERSION}
-              </span>
-              <Link
-                href="/system"
-                className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50"
-              >
-                시스템 홈
-              </Link>
+              <AdminStatusBadge tone="neutral">v{APP_VERSION}</AdminStatusBadge>
+              <AdminLinkButton href="/system">시스템 홈</AdminLinkButton>
             </div>
           </div>
         </header>
@@ -130,25 +123,18 @@ export default function SystemAccessStabilityCheckpoint() {
                           {item.description}
                         </p>
                       </div>
-                      <span
-                        className={`inline-flex w-fit rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getStatusClassName(
-                          item.status,
-                        )}`}
-                      >
+                      <AdminStatusBadge tone={getStatusBadgeTone(item.status)}>
                         {item.statusLabel}
-                      </span>
+                      </AdminStatusBadge>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-medium text-stone-500">
                       <span className="rounded-full border border-stone-200 bg-white px-2.5 py-1">
                         owner: {item.owner}
                       </span>
                       {item.route ? (
-                        <Link
-                          href={item.route}
-                          className="rounded-full border border-stone-200 bg-white px-2.5 py-1 underline underline-offset-4 hover:bg-stone-100"
-                        >
+                        <AdminLinkButton href={item.route} variant="ghost" size="sm" className="min-h-0 px-2.5 py-1 text-[11px] underline underline-offset-4">
                           {item.route}
-                        </Link>
+                        </AdminLinkButton>
                       ) : null}
                     </div>
                   </div>
