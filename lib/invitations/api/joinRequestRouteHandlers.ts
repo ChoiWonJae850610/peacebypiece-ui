@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { joinRequestRepository } from "../joinRequestRepository";
 import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
 import {
+  buildCompanyCreatedAuditLog,
   buildJoinRequestCreatedAuditLog,
   buildMemberApprovedAuditLog,
   buildMemberRejectedAuditLog,
@@ -24,6 +25,11 @@ interface ReviewMemberJoinRequestBody {
   roleTemplateCode?: MemberPermissionRoleTemplateCode | null;
   permissionCodes?: string[] | null;
   reasonCode?: string | null;
+}
+
+interface ReviewCompanyJoinRequestBody {
+  actorSystemUserId?: string | null;
+  approvedBySystemUserId?: string | null;
 }
 
 interface CreateJoinRequestBody {
@@ -62,10 +68,12 @@ function toErrorResponse(error: unknown) {
     message === "INVITATION_EXPIRED" ? 410 :
     message === "JOIN_REQUEST_ALREADY_PENDING" ||
     message === "JOIN_REQUEST_ALREADY_REVIEWED" ||
+    message === "COMPANY_ALREADY_EXISTS" ||
     message === "COMPANY_MEMBER_ALREADY_EXISTS" ? 409 :
     message.endsWith("_REQUIRED") ||
     message === "INVITATION_SCOPE_MISMATCH" ||
     message === "INVITATION_NOT_ACTIVE" ||
+    message === "JOIN_REQUEST_COMPANY_ONLY" ||
     message === "JOIN_REQUEST_MEMBER_ONLY" ||
     message === "MEMBER_PERMISSION_REQUIRED" ? 400 :
     500;
@@ -201,6 +209,10 @@ function readActorUserId(body: ReviewMemberJoinRequestBody): string | null {
   return body.actorUserId?.trim() || body.approvedByUserId?.trim() || body.rejectedByUserId?.trim() || null;
 }
 
+function readSystemActorUserId(body: ReviewCompanyJoinRequestBody): string | null {
+  return body.actorSystemUserId?.trim() || body.approvedBySystemUserId?.trim() || null;
+}
+
 export async function handleApproveMemberJoinRequest(requestId: string, request: Request) {
   try {
     const body = (await request.json().catch(() => ({}))) as ReviewMemberJoinRequestBody;
@@ -270,6 +282,58 @@ export async function handleRejectMemberJoinRequest(requestId: string, request: 
       action: "rejected",
       joinRequest: result.joinRequest,
       companyId: result.companyId,
+    });
+  } catch (error) {
+    return toErrorResponse(error);
+  }
+}
+
+
+export async function handleApproveCompanyJoinRequest(requestId: string, request: Request) {
+  try {
+    const body = (await request.json().catch(() => ({}))) as ReviewCompanyJoinRequestBody;
+    const approvedBySystemUserId = readSystemActorUserId(body);
+    const result = await joinRequestRepository.approveCompanyJoinRequest({
+      requestId,
+      approvedBySystemUserId,
+    });
+
+    await createSystemAuditLogSafe(
+      buildCompanyCreatedAuditLog({
+        companyId: result.companyId,
+        companyName: result.companyName,
+        businessName: result.joinRequest.businessName,
+        actorId: approvedBySystemUserId,
+        requestId: getRequestId(request),
+        ipAddress: getRequestIpAddress(request),
+      }),
+    );
+
+    await createSystemAuditLogSafe(
+      buildMemberApprovedAuditLog({
+        companyMemberId: result.companyMemberId,
+        companyId: result.companyId,
+        userId: result.userId,
+        memberEmail: result.joinRequest.applicantEmail,
+        memberName: result.joinRequest.applicantName,
+        permissionCodes: [...result.permissionCodes],
+        approvedBy: approvedBySystemUserId,
+        approvedByActorRole: "system_admin",
+        requestId: getRequestId(request),
+        ipAddress: getRequestIpAddress(request),
+      }),
+    );
+
+    return NextResponse.json({
+      ok: true,
+      action: "company_approved",
+      joinRequest: result.joinRequest,
+      companyId: result.companyId,
+      companyName: result.companyName,
+      userId: result.userId,
+      companyMemberId: result.companyMemberId,
+      permissionCodes: result.permissionCodes,
+      standardsInitialization: result.standardsInitialization,
     });
   } catch (error) {
     return toErrorResponse(error);

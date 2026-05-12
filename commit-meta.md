@@ -1,19 +1,24 @@
 Version :
-0.10.84
+0.10.85
 
 Summary :
-시스템관리자 고객사 가입 신청 목록 실제 조회 연결
+시스템관리자 고객사 가입 신청 승인과 회사 생성 연결
 
 Description :
-시스템관리자 고객사 승인 화면에서 request_type이 company이고 invitation scope가 system_to_company_admin인 join_requests.pending 목록을 실제 API로 조회해 표시하도록 연결했다. 기존 샘플 신청 필드 영역은 실제 목록과 빈 상태 안내로 전환했고, 고객사 생성 및 거절 버튼은 후속 버전 연결 전까지 비활성 상태로 유지했다.
+시스템관리자 고객사 가입 신청 승인 API를 추가하고, 승인 시 companies, users, company_members, member_permissions, join_requests, invitations, 고객사 초기 기준정보 복사를 하나의 트랜잭션 흐름으로 처리하도록 연결했다. /system/companies 화면의 승인 버튼도 실제 API 호출로 연결했다.
 
 수정 파일 목록 :
 - components/system/companies/SystemCompanyApprovalConsole.tsx
 - lib/system/systemCompanyApprovalConsole.ts
 - lib/constants/app.ts
+- lib/invitations/api/joinRequestRouteHandlers.ts
+- lib/invitations/joinRequestRepository.ts
+- lib/invitations/joinRequestTypes.ts
+- lib/system/standards/companyStandardsInitializationRepository.ts
+- lib/system/audit/writeActions.ts
 
 추가 파일 목록 :
-없음
+- app/api/system/companies/join-requests/[requestId]/approve/route.ts
 
 삭제 파일 목록 :
 없음

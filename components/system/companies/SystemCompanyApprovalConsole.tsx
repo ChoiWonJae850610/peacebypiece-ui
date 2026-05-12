@@ -23,6 +23,11 @@ type JoinRequestListResponse = {
   error?: string;
 };
 
+type CompanyJoinRequestApproveResponse = {
+  ok?: boolean;
+  error?: string;
+};
+
 function getStepStatusClassName(status: SystemCompanyApprovalStepStatus) {
   if (status === "ready") {
     return "border-emerald-200 bg-emerald-50 text-emerald-700";
@@ -82,6 +87,9 @@ export default function SystemCompanyApprovalConsole() {
   const [joinRequestRecords, setJoinRequestRecords] = useState<JoinRequestRecord[]>([]);
   const [joinRequestLoadStatus, setJoinRequestLoadStatus] = useState<SystemCompanyJoinRequestLoadStatus>("idle");
   const [joinRequestLoadError, setJoinRequestLoadError] = useState<string | null>(null);
+  const [reviewActionError, setReviewActionError] = useState<string | null>(null);
+  const [reviewActionMessage, setReviewActionMessage] = useState<string | null>(null);
+  const [approvingRequestId, setApprovingRequestId] = useState<string | null>(null);
 
   const joinRequests = useMemo(() => toSystemCompanyJoinRequestPreviews(joinRequestRecords), [joinRequestRecords]);
   const summaryItems = useMemo(
@@ -110,6 +118,32 @@ export default function SystemCompanyApprovalConsole() {
       setJoinRequestRecords([]);
       setJoinRequestLoadStatus("failed");
       setJoinRequestLoadError(error instanceof Error ? error.message : "COMPANY_JOIN_REQUESTS_LOAD_FAILED");
+    }
+  }
+
+  async function approveCompanyJoinRequest(requestId: string) {
+    setApprovingRequestId(requestId);
+    setReviewActionError(null);
+    setReviewActionMessage(null);
+
+    try {
+      const response = await fetch(`/api/system/companies/join-requests/${encodeURIComponent(requestId)}/approve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const payload = (await response.json()) as CompanyJoinRequestApproveResponse;
+
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error ?? "COMPANY_JOIN_REQUEST_APPROVE_FAILED");
+      }
+
+      setReviewActionMessage("고객사 생성과 고객관리자 승인 처리를 완료했습니다.");
+      await loadCompanyJoinRequests();
+    } catch (error) {
+      setReviewActionError(error instanceof Error ? error.message : "COMPANY_JOIN_REQUEST_APPROVE_FAILED");
+    } finally {
+      setApprovingRequestId(null);
     }
   }
 
@@ -192,6 +226,18 @@ export default function SystemCompanyApprovalConsole() {
             </div>
           ) : null}
 
+          {reviewActionError ? (
+            <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              {reviewActionError}
+            </div>
+          ) : null}
+
+          {reviewActionMessage ? (
+            <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+              {reviewActionMessage}
+            </div>
+          ) : null}
+
           <div className="mt-5 overflow-x-auto">
             {joinRequests.length === 0 ? (
               <EmptyState
@@ -235,10 +281,11 @@ export default function SystemCompanyApprovalConsole() {
                       <td className="px-4 py-4 text-center">
                         <button
                           type="button"
-                          disabled
-                          className="rounded-full border border-stone-200 bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-400"
+                          onClick={() => void approveCompanyJoinRequest(request.id)}
+                          disabled={approvingRequestId !== null}
+                          className="rounded-full border border-stone-900 bg-stone-900 px-3 py-1 text-xs font-semibold text-white hover:bg-stone-800 disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
                         >
-                          0.10.85 연결
+                          {approvingRequestId === request.id ? "승인 중" : "승인"}
                         </button>
                       </td>
                     </tr>
@@ -304,7 +351,7 @@ export default function SystemCompanyApprovalConsole() {
             <div className="border-b border-stone-100 pb-4">
               <h2 className="text-lg font-semibold text-stone-950">승인 액션</h2>
               <p className="mt-2 text-sm leading-6 text-stone-600">
-                고객사 생성/거절 저장은 다음 단계에서 API로 연결하고, 이번 버전에서는 실제 신청 목록 검토까지 연결합니다.
+                고객사 생성과 고객관리자 승인 저장은 API로 연결했고, 거절 처리는 다음 단계에서 연결합니다.
               </p>
             </div>
             <div className="mt-5 space-y-3">

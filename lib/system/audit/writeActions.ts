@@ -336,6 +336,7 @@ export type BuildMemberApprovedAuditLogInput = {
   memberName?: string | null;
   permissionCodes?: string[] | null;
   approvedBy?: string | null;
+  approvedByActorRole?: SystemAuditActorRole | null;
   requestId?: string | null;
   ipAddress?: string | null;
 };
@@ -493,7 +494,7 @@ export function buildMemberApprovedAuditLog(
 
   return {
     actorUserId: input.approvedBy ?? null,
-    actorRole: "customer_admin",
+    actorRole: input.approvedByActorRole ?? "customer_admin",
     companyId: input.companyId ?? null,
     targetType: "member",
     targetId: input.companyMemberId,

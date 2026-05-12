@@ -92,15 +92,15 @@ export const SYSTEM_COMPANY_APPROVAL_STEPS: readonly SystemCompanyApprovalStep[]
     id: "create-company",
     title: "고객사 생성",
     description: "회사명, 사업자명, 요금제, 저장공간 한도를 확정해 companies를 생성합니다.",
-    status: "planned",
-    statusLabel: "API 연결 예정",
+    status: "ready",
+    statusLabel: "API 연결 완료",
   },
   {
     id: "approve-admin",
     title: "고객관리자 승인",
     description: "신청자를 company_members.approved 상태로 연결하고 고객관리자 기본 권한을 저장합니다.",
-    status: "planned",
-    statusLabel: "API 연결 예정",
+    status: "ready",
+    statusLabel: "API 연결 완료",
   },
   {
     id: "initialize-standards",
@@ -126,9 +126,9 @@ export const SYSTEM_COMPANY_APPROVAL_ACTIONS: readonly SystemCompanyApprovalActi
   {
     id: "approve-create-company",
     label: "고객사 생성 및 승인",
-    helper: "0.10.85에서 companies, company_members, member_permissions, join_requests, invitations를 하나의 승인 흐름으로 연결합니다.",
+    helper: "companies, users, company_members, member_permissions, join_requests, invitations를 하나의 승인 흐름으로 처리합니다.",
     requiredPermission: "system.company.approve",
-    state: "disabled",
+    state: "ready",
   },
   {
     id: "reject-request",
@@ -165,7 +165,7 @@ export const SYSTEM_COMPANY_APPROVAL_POLICY_NOTES: readonly SystemCompanyApprova
   {
     id: "audit-log-candidates",
     title: "감사 로그 후보",
-    description: "company.created, company_invitation.approved, member.approved, member.permission_updated는 후속 연결하고, 기준정보 초기화 결과는 API 응답의 standardsInitialization으로 확인합니다.",
+    description: "company.created와 member.approved 감사 로그를 기록하고, 기준정보 초기화 결과는 API 응답의 standardsInitialization으로 확인합니다.",
   },
 ] as const;
 

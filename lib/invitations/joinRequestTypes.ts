@@ -83,6 +83,11 @@ export interface MemberJoinRequestRejectInput {
   reasonCode?: string | null;
 }
 
+export interface CompanyJoinRequestApproveInput {
+  requestId: string;
+  approvedBySystemUserId?: string | null;
+}
+
 export interface MemberJoinRequestApprovalResult {
   joinRequest: JoinRequestRecord;
   companyMemberId: string;
@@ -97,10 +102,32 @@ export interface MemberJoinRequestRejectionResult {
   companyId: string | null;
 }
 
+export interface CompanyJoinRequestApprovalResult {
+  joinRequest: JoinRequestRecord;
+  companyId: string;
+  companyName: string;
+  userId: string;
+  companyMemberId: string;
+  permissionCodes: readonly MemberPermissionCode[];
+  standardsInitialization: {
+    companyId: string;
+    unitStandardsLinked: number;
+    processStandardsLinked: number;
+    productCategoriesCopied: number;
+    defaultTemplateId: string | null;
+    skippedProductCategories: boolean;
+    repository: {
+      mode: "db" | "unavailable";
+      supportsWrite: boolean;
+    };
+  };
+}
+
 export interface JoinRequestRepository {
   createJoinRequest(draft: JoinRequestDraft): Promise<JoinRequestCreateResult>;
   listJoinRequests(input: JoinRequestLookupInput): Promise<JoinRequestListResult>;
   findJoinRequestById(id: string): Promise<JoinRequestRecord | null>;
   approveMemberJoinRequest(input: MemberJoinRequestApproveInput): Promise<MemberJoinRequestApprovalResult>;
   rejectMemberJoinRequest(input: MemberJoinRequestRejectInput): Promise<MemberJoinRequestRejectionResult>;
+  approveCompanyJoinRequest(input: CompanyJoinRequestApproveInput): Promise<CompanyJoinRequestApprovalResult>;
 }

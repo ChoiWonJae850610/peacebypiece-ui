@@ -13,6 +13,7 @@ import {
 export interface CompanyStandardsInitializationInput {
   companyId: string;
   overwriteProductTypes?: boolean;
+  transactionClient?: DbTransactionClient;
 }
 
 export interface CompanyStandardsInitializationResult {
@@ -206,7 +207,7 @@ export async function initializeCompanyStandards(
     };
   }
 
-  return withDbTransaction(async (client) => {
+  const runInitialization = async (client: DbTransactionClient): Promise<CompanyStandardsInitializationResult> => {
     const unitStandardsLinked = await linkActiveUnitStandards(client, companyId);
     const processStandardsLinked = await linkActiveProcessStandards(client, companyId);
     const productCategoryResult = await copyDefaultProductCategories(client, companyId, input);
@@ -220,7 +221,13 @@ export async function initializeCompanyStandards(
       skippedProductCategories: productCategoryResult.skipped,
       repository: { mode: "db", supportsWrite: true },
     };
-  });
+  };
+
+  if (input.transactionClient) {
+    return runInitialization(input.transactionClient);
+  }
+
+  return withDbTransaction(runInitialization);
 }
 
 export async function getCompanyStandardsInitializationPreview(companyId: string): Promise<CompanyStandardsInitializationResult> {
