@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
-import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
+import AdminTable from "@/components/admin/common/AdminTable";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import { APP_VERSION } from "@/lib/constants/app";
 import type { JoinRequestRecord } from "@/lib/invitations/joinRequestTypes";
@@ -15,8 +15,10 @@ import {
   toSystemCompanyJoinRequestPreviews,
   type SystemCompanyApprovalStepStatus,
   type SystemCompanyJoinRequestLoadStatus,
+  type SystemCompanyJoinRequestPreview,
   type SystemCompanyRequestEmailMatchStatus,
 } from "@/lib/system/systemCompanyApprovalConsole";
+import type { AdminTableColumn } from "@/lib/admin/common/types";
 
 type JoinRequestListResponse = {
   ok?: boolean;
@@ -78,6 +80,90 @@ export default function SystemCompanyApprovalConsole() {
   const summaryItems = useMemo(
     () => getSystemCompanyApprovalSummaryItems(joinRequests.length, joinRequestLoadStatus),
     [joinRequestLoadStatus, joinRequests.length],
+  );
+  const joinRequestTableColumns = useMemo<AdminTableColumn<SystemCompanyJoinRequestPreview>[]>(
+    () => [
+      {
+        key: "company",
+        label: "회사",
+        render: (request) => (
+          <div>
+            <p className="font-semibold text-stone-950">{request.requestedCompanyName}</p>
+            <p className="mt-1 text-xs text-stone-500">{request.businessName}</p>
+          </div>
+        ),
+      },
+      {
+        key: "applicant",
+        label: "신청자",
+        render: (request) => (
+          <div>
+            <p className="font-medium text-stone-900">{request.applicantName}</p>
+            <p className="mt-1 text-xs text-stone-500">{request.applicantEmail}</p>
+          </div>
+        ),
+      },
+      {
+        key: "invitationEmail",
+        label: "초대 이메일",
+        className: "text-xs text-stone-600",
+        render: (request) => request.invitationEmailLabel,
+      },
+      {
+        key: "emailMatch",
+        label: "비교",
+        headerClassName: "text-center",
+        className: "text-center",
+        render: (request) => (
+          <AdminStatusBadge tone={getEmailMatchTone(request.emailMatchStatus)}>
+            {getEmailMatchLabel(request.emailMatchStatus)}
+          </AdminStatusBadge>
+        ),
+      },
+      {
+        key: "phone",
+        label: "연락처",
+        className: "text-xs text-stone-600",
+        render: (request) => request.applicantPhoneLabel,
+      },
+      {
+        key: "memo",
+        label: "메모",
+        className: "max-w-[260px] text-xs leading-5 text-stone-600",
+        render: (request) => request.requestMemoLabel,
+      },
+      {
+        key: "requestedAt",
+        label: "신청일",
+        className: "text-xs text-stone-600",
+        render: (request) => request.requestedAtLabel,
+      },
+      {
+        key: "actions",
+        label: "처리",
+        headerClassName: "text-center",
+        className: "text-center",
+        render: (request) => (
+          <div className="flex justify-center gap-2">
+            <AdminButton
+              onClick={() => void approveCompanyJoinRequest(request.id)}
+              disabled={approvingRequestId !== null || rejectingRequestId !== null}
+              variant="primary"
+            >
+              {approvingRequestId === request.id ? "승인 중" : "승인"}
+            </AdminButton>
+            <AdminButton
+              onClick={() => void rejectCompanyJoinRequest(request.id)}
+              disabled={approvingRequestId !== null || rejectingRequestId !== null}
+              variant="danger"
+            >
+              {rejectingRequestId === request.id ? "거절 중" : "거절"}
+            </AdminButton>
+          </div>
+        ),
+      },
+    ],
+    [approvingRequestId, rejectingRequestId],
   );
 
   async function loadCompanyJoinRequests() {
@@ -229,69 +315,17 @@ export default function SystemCompanyApprovalConsole() {
             </div>
           ) : null}
 
-          <div className="mt-5 overflow-x-auto">
-            {joinRequests.length === 0 ? (
-              <AdminEmptyState
-                title="승인 대기 고객사 가입 신청이 없습니다."
-                description="고객사 초대 링크로 가입 신청이 들어오면 이 영역에 실제 join_requests.pending 데이터가 표시됩니다."
-              />
-            ) : (
-              <table className="min-w-full divide-y divide-stone-100 text-left text-sm">
-                <thead className="bg-stone-50 text-xs font-semibold uppercase tracking-[0.12em] text-stone-500">
-                  <tr>
-                    <th className="px-4 py-3">회사</th>
-                    <th className="px-4 py-3">신청자</th>
-                    <th className="px-4 py-3">초대 이메일</th>
-                    <th className="px-4 py-3 text-center">비교</th>
-                    <th className="px-4 py-3">연락처</th>
-                    <th className="px-4 py-3">메모</th>
-                    <th className="px-4 py-3">신청일</th>
-                    <th className="px-4 py-3 text-center">처리</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-stone-100 bg-white">
-                  {joinRequests.map((request) => (
-                    <tr key={request.id} className="align-top">
-                      <td className="px-4 py-4">
-                        <p className="font-semibold text-stone-950">{request.requestedCompanyName}</p>
-                        <p className="mt-1 text-xs text-stone-500">{request.businessName}</p>
-                      </td>
-                      <td className="px-4 py-4">
-                        <p className="font-medium text-stone-900">{request.applicantName}</p>
-                        <p className="mt-1 text-xs text-stone-500">{request.applicantEmail}</p>
-                      </td>
-                      <td className="px-4 py-4 text-xs text-stone-600">{request.invitationEmailLabel}</td>
-                      <td className="px-4 py-4 text-center">
-                        <AdminStatusBadge tone={getEmailMatchTone(request.emailMatchStatus)}>
-                          {getEmailMatchLabel(request.emailMatchStatus)}
-                        </AdminStatusBadge>
-                      </td>
-                      <td className="px-4 py-4 text-xs text-stone-600">{request.applicantPhoneLabel}</td>
-                      <td className="max-w-[260px] px-4 py-4 text-xs leading-5 text-stone-600">{request.requestMemoLabel}</td>
-                      <td className="px-4 py-4 text-xs text-stone-600">{request.requestedAtLabel}</td>
-                      <td className="px-4 py-4 text-center">
-                        <div className="flex justify-center gap-2">
-                          <AdminButton
-                            onClick={() => void approveCompanyJoinRequest(request.id)}
-                            disabled={approvingRequestId !== null || rejectingRequestId !== null}
-                            variant="primary"
-                          >
-                            {approvingRequestId === request.id ? "승인 중" : "승인"}
-                          </AdminButton>
-                          <AdminButton
-                            onClick={() => void rejectCompanyJoinRequest(request.id)}
-                            disabled={approvingRequestId !== null || rejectingRequestId !== null}
-                            variant="danger"
-                          >
-                            {rejectingRequestId === request.id ? "거절 중" : "거절"}
-                          </AdminButton>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+          <div className="mt-5">
+            <AdminTable
+              items={[...joinRequests]}
+              columns={joinRequestTableColumns}
+              getRowKey={(request) => request.id}
+              emptyLabel="승인 대기 고객사 가입 신청이 없습니다. 고객사 초대 링크로 가입 신청이 들어오면 이 영역에 실제 join_requests.pending 데이터가 표시됩니다."
+              isLoading={joinRequestLoadStatus === "loading"}
+              loadingLabel="고객사 가입 신청을 불러오는 중입니다."
+              gridTemplateColumns="1.2fr 1.1fr 1fr 0.7fr 0.8fr 1.2fr 0.8fr 1fr"
+              rowBaseClassName="grid w-full gap-3 px-4 py-4 text-left text-sm md:items-start"
+            />
           </div>
         </section>
 
