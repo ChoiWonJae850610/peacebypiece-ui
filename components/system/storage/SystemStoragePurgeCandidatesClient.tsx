@@ -4,8 +4,9 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { AdminButton } from "@/components/admin/common/AdminButton";
-import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
+import AdminTable from "@/components/admin/common/AdminTable";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import type { AdminTableColumn } from "@/lib/admin/common/types";
 import type { SystemStoragePurgeCandidate } from "@/lib/system/storagePurgeCandidates";
 import {
   SYSTEM_STORAGE_PURGE_COPY,
@@ -135,6 +136,132 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
     );
   }
 
+  const purgeCandidateTableColumns: AdminTableColumn<SystemStoragePurgeCandidate>[] = [
+    {
+      key: "select",
+      label: <input type="checkbox" checked={hasCandidates && selectedCount === sortedCandidates.length} onChange={toggleAll} disabled={!hasCandidates || isPending} />,
+      render: (candidate) => (
+        <input
+          type="checkbox"
+          checked={selectedIdSet.has(candidate.trashItemId)}
+          onChange={() => toggleCandidate(candidate.trashItemId)}
+          disabled={isPending}
+          aria-label={`${candidate.fileName} ${SYSTEM_STORAGE_PURGE_COPY.list.selectCandidateLabelSuffix}`}
+        />
+      ),
+    },
+    {
+      key: "kind",
+      label: renderSortButton("kind"),
+      render: (candidate) => (
+        <div className="space-y-1">
+          {candidate.previewUrl ? (
+            <img
+              src={candidate.previewUrl}
+              alt={`${candidate.fileName} ${SYSTEM_STORAGE_PURGE_COPY.list.previewAltSuffix}`}
+              className="h-14 w-14 rounded-xl border border-stone-200 bg-stone-100 object-cover"
+              loading="lazy"
+            />
+          ) : (
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-stone-200 bg-stone-100 text-[11px] font-bold text-stone-500">
+              {candidate.fileTypeLabel}
+            </div>
+          )}
+          <p
+            className={`max-w-24 text-[10px] font-semibold leading-4 ${
+              candidate.previewMode === "original-fallback" ? "text-amber-700" : "text-stone-500"
+            }`}
+          >
+            {candidate.previewModeLabel}
+          </p>
+        </div>
+      ),
+    },
+    {
+      key: "company",
+      label: renderSortButton("company", SYSTEM_STORAGE_PURGE_COPY.list.companyWorkOrderHeader),
+      render: (candidate) => (
+        <div>
+          <p className="text-[10px] text-stone-400 lg:hidden">{SYSTEM_STORAGE_PURGE_COPY.list.companyWorkOrderHeader}</p>
+          <p className="font-semibold text-stone-950">{candidate.companyName}</p>
+          <p className="mt-1 text-xs leading-5 text-stone-500">{candidate.workorderTitle}</p>
+        </div>
+      ),
+    },
+    {
+      key: "target",
+      label: renderSortButton("target"),
+      render: (candidate) => (
+        <div>
+          <p className="text-[10px] text-stone-400 lg:hidden">{SORT_LABELS.target}</p>
+          <p className="font-semibold text-stone-800">{candidate.fileName}</p>
+          <p className="mt-1 text-xs text-stone-500">
+            {candidate.candidateKind === "workorder"
+              ? buildSystemStorageWorkOrderBundleMetaLabel({ documentCount: candidate.documentCount, designCount: candidate.designCount, memoCount: candidate.memoCount })
+              : `${candidate.fileTypeLabel} · ${candidate.thumbnailCountLabel}`}
+          </p>
+        </div>
+      ),
+    },
+    {
+      key: "dates",
+      label: (
+        <span className="flex flex-col gap-1">
+          {renderSortButton("deletedAt")}
+          {renderSortButton("purgeDueAt")}
+        </span>
+      ),
+      render: (candidate) => (
+        <div className="text-xs leading-5 text-stone-600">
+          <p>{SYSTEM_STORAGE_PURGE_COPY.list.deletedAtLabel}: {candidate.deletedAt}</p>
+          <p>{SYSTEM_STORAGE_PURGE_COPY.list.purgeDueAtLabel}: {candidate.purgeDueAt}</p>
+          <p className="font-semibold text-red-600">{SYSTEM_STORAGE_PURGE_COPY.list.overdueLabel}: {candidate.overdueDays}일</p>
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      label: (
+        <span className="flex flex-col gap-1">
+          {renderSortButton("size")}
+          {renderSortButton("status")}
+        </span>
+      ),
+      render: (candidate) => (
+        <div>
+          <p className="font-semibold text-stone-800">{candidate.originalSizeLabel}</p>
+          <AdminStatusBadge className="mt-1">{candidate.purgeStatusLabel}</AdminStatusBadge>
+          {candidate.lastPurgeError ? <p className="mt-1 text-xs text-red-600">{candidate.lastPurgeError}</p> : null}
+        </div>
+      ),
+    },
+    {
+      key: "keys",
+      label: (
+        <span className="flex flex-col gap-1">
+          <span>{SYSTEM_STORAGE_PURGE_COPY.list.keyHeader}</span>
+          <span className="flex gap-3">
+            {renderSortButton("attachmentCount")}
+            {renderSortButton("memoCount")}
+          </span>
+        </span>
+      ),
+      render: (candidate) => (
+        <div className="space-y-2">
+          <div>
+            <p className="text-[11px] font-semibold text-stone-400">{SYSTEM_STORAGE_PURGE_COPY.list.sourceKeyTitle}</p>
+            {candidate.candidateKind === "workorder" ? <span className="text-stone-400">{SYSTEM_STORAGE_PURGE_COPY.list.workOrderSourceHint}</span> : renderKey(candidate.storageKey)}
+          </div>
+          <div>
+            <p className="text-[11px] font-semibold text-stone-400">{SYSTEM_STORAGE_PURGE_COPY.list.thumbnailKeyTitle}</p>
+            {candidate.candidateKind === "workorder" ? <span className="text-stone-400">{SYSTEM_STORAGE_PURGE_COPY.list.workOrderRetryHint}</span> : renderKey(candidate.thumbnailKey)}
+          </div>
+        </div>
+      ),
+    },
+  ];
+
+
   async function runSelectedPurge() {
     if (selectedIds.length === 0 || isPending) return;
     const confirmed = window.confirm(buildSystemStorageSelectedPurgeConfirmMessage(selectedIds.length));
@@ -205,108 +332,16 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
         </div>
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-2xl border border-stone-200">
-        <div className="hidden grid-cols-[0.22fr_0.55fr_1.05fr_1.15fr_1fr_0.8fr_1.45fr] gap-3 border-b border-stone-200 bg-stone-100 px-4 py-3 text-xs font-semibold text-stone-600 lg:grid">
-          <span>
-            <input type="checkbox" checked={hasCandidates && selectedCount === sortedCandidates.length} onChange={toggleAll} disabled={!hasCandidates || isPending} />
-          </span>
-          <span>{renderSortButton("kind")}</span>
-          <span>{renderSortButton("company", SYSTEM_STORAGE_PURGE_COPY.list.companyWorkOrderHeader)}</span>
-          <span>{renderSortButton("target")}</span>
-          <span className="flex flex-col gap-1">
-            {renderSortButton("deletedAt")}
-            {renderSortButton("purgeDueAt")}
-          </span>
-          <span className="flex flex-col gap-1">
-            {renderSortButton("size")}
-            {renderSortButton("status")}
-          </span>
-          <span className="flex flex-col gap-1">
-            <span>{SYSTEM_STORAGE_PURGE_COPY.list.keyHeader}</span>
-            <span className="flex gap-3">
-              {renderSortButton("attachmentCount")}
-              {renderSortButton("memoCount")}
-            </span>
-          </span>
-        </div>
-
-        {sortedCandidates.length === 0 ? (
-          <AdminEmptyState
-            title={SYSTEM_STORAGE_PURGE_COPY.list.empty}
-            description="현재 시스템관리자가 실제 삭제 처리할 저장소 후보가 없습니다."
-            className="m-4"
-          />
-        ) : (
-          <div className="divide-y divide-stone-100">
-            {sortedCandidates.map((candidate) => (
-              <article key={candidate.trashItemId} className="grid gap-3 px-4 py-4 text-sm lg:grid-cols-[0.22fr_0.55fr_1.05fr_1.15fr_1fr_0.8fr_1.45fr]">
-                <div>
-                  <input
-                    type="checkbox"
-                    checked={selectedIdSet.has(candidate.trashItemId)}
-                    onChange={() => toggleCandidate(candidate.trashItemId)}
-                    disabled={isPending}
-                    aria-label={`${candidate.fileName} ${SYSTEM_STORAGE_PURGE_COPY.list.selectCandidateLabelSuffix}`}
-                  />
-                </div>
-                <div className="space-y-1">
-                  {candidate.previewUrl ? (
-                    <img
-                      src={candidate.previewUrl}
-                      alt={`${candidate.fileName} ${SYSTEM_STORAGE_PURGE_COPY.list.previewAltSuffix}`}
-                      className="h-14 w-14 rounded-xl border border-stone-200 bg-stone-100 object-cover"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-stone-200 bg-stone-100 text-[11px] font-bold text-stone-500">
-                      {candidate.fileTypeLabel}
-                    </div>
-                  )}
-                  <p
-                    className={`max-w-24 text-[10px] font-semibold leading-4 ${
-                      candidate.previewMode === "original-fallback" ? "text-amber-700" : "text-stone-500"
-                    }`}
-                  >
-                    {candidate.previewModeLabel}
-                  </p>
-                </div>
-                <div>
-                  <p className="font-semibold text-stone-950">{candidate.companyName}</p>
-                  <p className="mt-1 text-xs leading-5 text-stone-500">{candidate.workorderTitle}</p>
-                </div>
-                <div>
-                  <p className="font-semibold text-stone-800">{candidate.fileName}</p>
-                  <p className="mt-1 text-xs text-stone-500">
-                    {candidate.candidateKind === "workorder"
-                      ? buildSystemStorageWorkOrderBundleMetaLabel({ documentCount: candidate.documentCount, designCount: candidate.designCount, memoCount: candidate.memoCount })
-                      : `${candidate.fileTypeLabel} · ${candidate.thumbnailCountLabel}`}
-                  </p>
-                </div>
-                <div className="text-xs leading-5 text-stone-600">
-                  <p>{SYSTEM_STORAGE_PURGE_COPY.list.deletedAtLabel}: {candidate.deletedAt}</p>
-                  <p>{SYSTEM_STORAGE_PURGE_COPY.list.purgeDueAtLabel}: {candidate.purgeDueAt}</p>
-                  <p className="font-semibold text-red-600">{SYSTEM_STORAGE_PURGE_COPY.list.overdueLabel}: {candidate.overdueDays}일</p>
-                </div>
-                <div>
-                  <p className="font-semibold text-stone-800">{candidate.originalSizeLabel}</p>
-                  <AdminStatusBadge className="mt-1">{candidate.purgeStatusLabel}</AdminStatusBadge>
-                  {candidate.lastPurgeError ? <p className="mt-1 text-xs text-red-600">{candidate.lastPurgeError}</p> : null}
-                </div>
-                <div className="space-y-2">
-                  <div>
-                    <p className="text-[11px] font-semibold text-stone-400">{SYSTEM_STORAGE_PURGE_COPY.list.sourceKeyTitle}</p>
-                    {candidate.candidateKind === "workorder" ? <span className="text-stone-400">{SYSTEM_STORAGE_PURGE_COPY.list.workOrderSourceHint}</span> : renderKey(candidate.storageKey)}
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-semibold text-stone-400">{SYSTEM_STORAGE_PURGE_COPY.list.thumbnailKeyTitle}</p>
-                    {candidate.candidateKind === "workorder" ? <span className="text-stone-400">{SYSTEM_STORAGE_PURGE_COPY.list.workOrderRetryHint}</span> : renderKey(candidate.thumbnailKey)}
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-      </div>
+      <AdminTable
+        className="mt-4"
+        items={sortedCandidates}
+        columns={purgeCandidateTableColumns}
+        getRowKey={(candidate) => candidate.trashItemId}
+        emptyLabel={SYSTEM_STORAGE_PURGE_COPY.list.empty}
+        gridTemplateColumns="0.22fr 0.55fr 1.05fr 1.15fr 1fr 0.8fr 1.45fr"
+        rowBaseClassName="grid w-full gap-3 px-4 py-4 text-left text-sm lg:items-start"
+        headerClassName="hidden gap-3 bg-stone-100 px-4 py-3 text-xs font-semibold text-stone-600 lg:grid"
+      />
     </section>
   );
 }
