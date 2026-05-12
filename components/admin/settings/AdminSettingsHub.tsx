@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
+import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import { AdminModal, AdminModalSection, adminModalPrimaryButtonClassName, adminModalSecondaryButtonClassName } from "@/components/admin/layout/AdminModal";
 import AdminStandardsSection from "@/components/admin/standards/AdminStandardsSection";
 import AdminCompanySettingsForm from "@/components/admin/settings/AdminCompanySettingsForm";
@@ -25,30 +27,30 @@ type AdminCurrentCompanyPayload = {
   billing?: AdminBillingPlanOverview;
 };
 
-const toneClassNames: Record<AdminSettingsMenuTone, { card: string; badge: string; dot: string }> = {
+const toneClassNames: Record<AdminSettingsMenuTone, { card: string; badgeTone: AdminStatusBadgeTone; dot: string }> = {
   stone: {
     card: "border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50",
-    badge: "bg-stone-950 text-white",
+    badgeTone: "primary",
     dot: "bg-stone-900",
   },
   blue: {
     card: "border-blue-100 bg-blue-50/80 hover:border-blue-200 hover:bg-blue-50",
-    badge: "bg-blue-100 text-blue-700",
+    badgeTone: "info",
     dot: "bg-blue-500",
   },
   amber: {
     card: "border-amber-100 bg-amber-50/80 hover:border-amber-200 hover:bg-amber-50",
-    badge: "bg-amber-100 text-amber-700",
+    badgeTone: "warning",
     dot: "bg-amber-500",
   },
   emerald: {
     card: "border-emerald-100 bg-emerald-50/80 hover:border-emerald-200 hover:bg-emerald-50",
-    badge: "bg-emerald-100 text-emerald-700",
+    badgeTone: "success",
     dot: "bg-emerald-500",
   },
   violet: {
     card: "border-violet-100 bg-violet-50/80 hover:border-violet-200 hover:bg-violet-50",
-    badge: "bg-violet-100 text-violet-700",
+    badgeTone: "maintenance",
     dot: "bg-violet-500",
   },
 };
@@ -75,7 +77,7 @@ function SettingsMenuCard({ item, active, onClick }: { item: AdminSettingsMenuIt
           </span>
           <span className="mt-1.5 block text-xs leading-5 text-stone-500">{item.description}</span>
         </span>
-        <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${tone.badge}`}>{item.statusLabel}</span>
+        <AdminStatusBadge tone={tone.badgeTone}>{item.statusLabel}</AdminStatusBadge>
       </span>
       <span className="mt-3 flex flex-wrap gap-1.5">
         {item.detailItems.map((detail) => (
@@ -178,19 +180,11 @@ export default function AdminSettingsHub() {
     }
 
     if (companySettingsLoadState === "loading") {
-      return (
-        <section className="rounded-[28px] border border-stone-200 bg-white p-5 text-sm font-semibold text-stone-500 shadow-sm">
-          회사 설정을 불러오는 중입니다.
-        </section>
-      );
+      return <AdminEmptyState title="회사 설정을 불러오는 중입니다." />;
     }
 
     if (!companySettings) {
-      return (
-        <section className="rounded-[28px] border border-red-100 bg-red-50 p-5 text-sm font-semibold text-red-700 shadow-sm">
-          회사 설정을 불러오지 못했습니다. 새로고침 후 다시 확인해 주세요.
-        </section>
-      );
+      return <AdminEmptyState title="회사 설정을 불러오지 못했습니다." description="새로고침 후 다시 확인해 주세요." tone="danger" />;
     }
 
     return <AdminCompanySettingsForm initialSettings={companySettings} companyName={companySummary?.name} />;
@@ -256,12 +250,8 @@ export default function AdminSettingsHub() {
                     <p className="mt-1 text-xs leading-5 text-blue-700">{billingPlanOverview.description}</p>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
-                    <span className="w-fit rounded-full border border-blue-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-blue-700">
-                      {billingPlanOverview.systemManagedLabel}
-                    </span>
-                    <span className="w-fit rounded-full border border-blue-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-blue-700">
-                      {billingPlanLoadState === "loading" ? "조회 중" : billingPlanOverview.dataSourceLabel}
-                    </span>
+                    <AdminStatusBadge tone="maintenance">{billingPlanOverview.systemManagedLabel}</AdminStatusBadge>
+                    <AdminStatusBadge tone="maintenance">{billingPlanLoadState === "loading" ? "조회 중" : billingPlanOverview.dataSourceLabel}</AdminStatusBadge>
                   </div>
                 </div>
                 <div className="grid gap-2 sm:grid-cols-2">
@@ -278,7 +268,7 @@ export default function AdminSettingsHub() {
                     <div key={action.id} className="rounded-2xl border border-blue-100 bg-white p-3">
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-xs font-semibold text-stone-900">{action.label}</p>
-                        <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-semibold text-stone-500">{action.statusLabel}</span>
+                        <AdminStatusBadge tone="neutral" size="xs">{action.statusLabel}</AdminStatusBadge>
                       </div>
                       <p className="mt-2 text-[11px] leading-5 text-stone-500">{action.description}</p>
                     </div>
@@ -300,9 +290,7 @@ export default function AdminSettingsHub() {
                     <h3 className="mt-1 text-sm font-semibold text-emerald-950">{ADMIN_ACCOUNT_SETTINGS_PLACEHOLDER.title}</h3>
                     <p className="mt-1 text-xs leading-5 text-emerald-700">{ADMIN_ACCOUNT_SETTINGS_PLACEHOLDER.description}</p>
                   </div>
-                  <span className="w-fit rounded-full border border-emerald-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
-                    {ADMIN_ACCOUNT_SETTINGS_PLACEHOLDER.readOnlyLabel}
-                  </span>
+                  <AdminStatusBadge tone="success">{ADMIN_ACCOUNT_SETTINGS_PLACEHOLDER.readOnlyLabel}</AdminStatusBadge>
                 </div>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {ADMIN_ACCOUNT_SETTINGS_PLACEHOLDER.metrics.map((metric) => (
@@ -319,7 +307,7 @@ export default function AdminSettingsHub() {
                       <>
                         <div className="flex items-center justify-between gap-2">
                           <p className="text-xs font-semibold text-stone-900">{action.label}</p>
-                          <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-semibold text-stone-500">{action.statusLabel}</span>
+                          <AdminStatusBadge tone="neutral" size="xs">{action.statusLabel}</AdminStatusBadge>
                         </div>
                         <p className="mt-2 text-[11px] leading-5 text-stone-500">{action.description}</p>
                       </>

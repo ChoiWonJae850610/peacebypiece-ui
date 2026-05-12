@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
+
 import { APP_VERSION } from "@/lib/constants/app";
 import { getI18n } from "@/lib/i18n";
 import {
@@ -11,11 +13,18 @@ import {
 const i18n = getI18n();
 const system = i18n.system;
 
-function getNavigationToneClassName(tone: SystemConsoleNavigationTone) {
+type SystemNavigationToneClassName = {
+  card: string;
+  badgeTone: AdminStatusBadgeTone;
+  description: string;
+  href: string;
+};
+
+function getNavigationToneClassName(tone: SystemConsoleNavigationTone): SystemNavigationToneClassName {
   if (tone === "primary") {
     return {
       card: "border-stone-900 bg-stone-950 text-white hover:bg-stone-900",
-      badge: "border-white/20 bg-white/10 text-white",
+      badgeTone: "inverse",
       description: "text-stone-200",
       href: "text-stone-200",
     };
@@ -24,7 +33,7 @@ function getNavigationToneClassName(tone: SystemConsoleNavigationTone) {
   if (tone === "warning") {
     return {
       card: "border-amber-200 bg-amber-50 text-amber-950 hover:bg-amber-100",
-      badge: "border-amber-200 bg-white text-amber-700",
+      badgeTone: "warning",
       description: "text-amber-800",
       href: "text-amber-700",
     };
@@ -33,7 +42,7 @@ function getNavigationToneClassName(tone: SystemConsoleNavigationTone) {
   if (tone === "maintenance") {
     return {
       card: "border-blue-100 bg-blue-50 text-blue-950 hover:bg-blue-100",
-      badge: "border-blue-200 bg-white text-blue-700",
+      badgeTone: "maintenance",
       description: "text-blue-800",
       href: "text-blue-700",
     };
@@ -41,7 +50,7 @@ function getNavigationToneClassName(tone: SystemConsoleNavigationTone) {
 
   return {
     card: "border-stone-200 bg-white text-stone-950 hover:bg-stone-50",
-    badge: "border-stone-200 bg-stone-50 text-stone-600",
+    badgeTone: "neutral",
     description: "text-stone-600",
     href: "text-stone-500",
   };
@@ -57,9 +66,7 @@ function SystemNavigationCard({ card }: { card: SystemConsoleNavigationCard }) {
     >
       <div className="flex items-start justify-between gap-3">
         <h3 className="text-base font-semibold">{card.label}</h3>
-        <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${tone.badge}`}>
-          {card.statusLabel}
-        </span>
+        <AdminStatusBadge tone={tone.badgeTone}>{card.statusLabel}</AdminStatusBadge>
       </div>
       <p className={`mt-3 text-sm leading-6 ${tone.description}`}>
         {card.description}
@@ -90,9 +97,7 @@ export default function SystemConsoleShell() {
             </div>
 
             <div className="flex flex-wrap gap-2 text-xs font-medium">
-              <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-stone-600">
-                {system.versionLabel} v{APP_VERSION}
-              </span>
+              <AdminStatusBadge tone="neutral">{system.versionLabel} v{APP_VERSION}</AdminStatusBadge>
             </div>
           </div>
         </header>
