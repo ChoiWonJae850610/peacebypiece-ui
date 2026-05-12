@@ -42,10 +42,9 @@ const SUPPORTED_UPLOAD_MIME_TYPES = new Set([
   "image/png",
   "image/jpeg",
   "application/pdf",
-  "text/plain",
 ]);
 
-const SUPPORTED_UPLOAD_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".pdf", ".txt"]);
+const SUPPORTED_UPLOAD_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".pdf"]);
 
 const SKIPPABLE_WORKER_ERROR_CODES = new Set([
   "WORKER_FILE_POLICY_REJECTED",
@@ -61,7 +60,6 @@ const MINIMAL_PDF = Buffer.from(
   "utf8",
 );
 const MINIMAL_ZIP = Buffer.from("UEsFBgAAAAAAAAAAAAAAAAAAAAAAAA==", "base64");
-const MINIMAL_TXT = Buffer.from("PeaceByPiece realistic demo file.\n", "utf8");
 
 function parseArgs(argv) {
   const args = new Map();
@@ -200,7 +198,7 @@ function getBasePayloadForMime(mimeType, fileName) {
   if (mime.includes("pdf") || name.endsWith(".pdf")) return MINIMAL_PDF;
   if (mime.includes("zip") || name.endsWith(".zip")) return MINIMAL_ZIP;
   if (mime.includes("image") || name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".webp")) return MINIMAL_PNG;
-  return MINIMAL_TXT;
+  return MINIMAL_PDF;
 }
 
 function getUploadContentType(item) {
@@ -438,6 +436,9 @@ async function uploadFiles(items) {
   }
 
   console.log(`[INFO] upload result: uploaded=${result.uploaded}, skippedUnsupported=${result.skippedUnsupported}, skippedMissing=${result.skippedMissing}, skippedWorkerPolicy=${result.skippedWorkerPolicy}, failed=${result.failed}`);
+  if (result.skippedWorkerPolicy > 0) {
+    console.log(`[INFO] skippedWorkerPolicy means the Cloudflare Worker rejected those files by upload policy. Regenerate metadata with db/seed/realistic_workorders_seed.sql if old .txt memo rows remain.`);
+  }
   if (result.failed > 0) {
     fail(`Upload completed with ${result.failed} non-skippable failures. See log above.`);
   }

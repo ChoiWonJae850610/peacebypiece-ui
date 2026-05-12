@@ -1,4 +1,4 @@
-# R2 더미 파일 생성 스크립트 사용법 — 0.10.89
+# R2 더미 파일 생성 스크립트 사용법 — 0.10.90
 
 이 문서는 `scripts/seed-r2-demo-files.mjs`를 PowerShell에서 실행하는 방법을 정리한다.
 
@@ -6,7 +6,7 @@
 
 `db/seed/realistic_workorders_seed.sql`이 만든 `attachments.storage_key`를 기준으로 실제 R2 더미 파일을 생성/업로드/검증한다.
 
-0.10.89 기준으로 이 스크립트는 임의의 R2 key를 만들지 않고, DB의 `attachments` 테이블에서 아래 조건을 만족하는 첨부만 읽는다.
+0.10.90 기준으로 이 스크립트는 임의의 R2 key를 만들지 않고, DB의 `attachments` 테이블에서 아래 조건을 만족하는 첨부만 읽는다.
 
 - `id LIKE 'realistic-attachment-%'`
 - `storage_key LIKE 'workorders/%'`
@@ -162,4 +162,5 @@ DB seed와 R2 더미 파일 업로드 후 아래 화면을 확인한다.
 - `--include-deleted`를 붙이면 삭제된 첨부까지 대상에 포함한다.
 - 기본 테스트에서는 `--include-deleted`를 사용하지 않는다.
 - Worker 정책상 허용되지 않는 확장자는 업로드에서 제외될 수 있다.
-- 0.10.89 seed 기준 slot 4 첨부도 PDF로 생성해 기본 small preset에서 제외되지 않도록 보정했다.
+- 0.10.90 seed 기준 메모 첨부도 `.pdf` / `application/pdf`로 생성한다.
+- 기존 0.10.89 seed를 이미 실행했다면 `full_reset.sql`부터 다시 실행해 `.txt` 메모 metadata를 제거한 뒤 재시도한다.

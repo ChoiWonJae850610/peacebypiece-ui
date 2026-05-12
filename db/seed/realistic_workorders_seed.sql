@@ -1,5 +1,5 @@
 -- PeaceByPiece realistic workorder / attachment seed
--- Version: 0.10.89
+-- Version: 0.10.90
 -- Purpose:
 --   Creates deterministic workorder + attachment metadata rows that can be used by
 --   scripts/seed-r2-demo-files.mjs to generate/upload R2 demo files.
@@ -438,10 +438,10 @@ WITH workorders AS (
     '샘플 고객사',
     id,
     'memo',
-    format('workorders/%s/memos/memo-%s.txt', id, id),
+    format('workorders/%s/memos/memo-%s.pdf', id, id),
     NULL,
-    format('memo-%s.txt', id),
-    'text/plain',
+    format('memo-%s.pdf', id),
+    'application/pdf',
     (24000 + (n % 10) * 5000)::bigint,
     'user-sample-admin',
     false,
