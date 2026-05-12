@@ -328,6 +328,19 @@ export type BuildCompanyCreatedAuditLogInput = {
   ipAddress?: string | null;
 };
 
+export type BuildCompanyJoinRequestRejectedAuditLogInput = {
+  joinRequestId: string;
+  invitationId?: string | null;
+  requestedCompanyName?: string | null;
+  businessName?: string | null;
+  applicantEmail?: string | null;
+  applicantName?: string | null;
+  rejectedBy?: string | null;
+  reasonCode?: string | null;
+  requestId?: string | null;
+  ipAddress?: string | null;
+};
+
 export type BuildMemberApprovedAuditLogInput = {
   companyMemberId: string;
   companyId?: string | null;
@@ -480,6 +493,35 @@ export function buildCompanyCreatedAuditLog(
       planCode: input.planCode ?? null,
       storageLimitBytes: input.storageLimitBytes ?? null,
       source: "system-company-approval",
+    },
+    requestId: input.requestId ?? null,
+    ipAddress: input.ipAddress ?? null,
+  };
+}
+
+
+export function buildCompanyJoinRequestRejectedAuditLog(
+  input: BuildCompanyJoinRequestRejectedAuditLogInput,
+): CreateSystemAuditLogInput {
+  const companyLabel = input.requestedCompanyName?.trim() || input.businessName?.trim() || input.joinRequestId;
+
+  return {
+    actorUserId: input.rejectedBy ?? null,
+    actorRole: "system_admin",
+    companyId: null,
+    targetType: "invitation",
+    targetId: input.joinRequestId,
+    eventType: "company_invitation.rejected",
+    severity: "medium",
+    summary: `고객사 가입 신청 거절: ${companyLabel}`,
+    metadata: {
+      joinRequestId: input.joinRequestId,
+      invitationId: input.invitationId ?? null,
+      requestedCompanyName: input.requestedCompanyName ?? null,
+      businessName: input.businessName ?? null,
+      applicantEmail: input.applicantEmail ?? null,
+      applicantName: input.applicantName ?? null,
+      reasonCode: input.reasonCode ?? null,
     },
     requestId: input.requestId ?? null,
     ipAddress: input.ipAddress ?? null,

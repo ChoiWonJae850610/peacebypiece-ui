@@ -4,6 +4,7 @@ import { joinRequestRepository } from "../joinRequestRepository";
 import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
 import {
   buildCompanyCreatedAuditLog,
+  buildCompanyJoinRequestRejectedAuditLog,
   buildJoinRequestCreatedAuditLog,
   buildMemberApprovedAuditLog,
   buildMemberRejectedAuditLog,
@@ -30,6 +31,8 @@ interface ReviewMemberJoinRequestBody {
 interface ReviewCompanyJoinRequestBody {
   actorSystemUserId?: string | null;
   approvedBySystemUserId?: string | null;
+  rejectedBySystemUserId?: string | null;
+  reasonCode?: string | null;
 }
 
 interface CreateJoinRequestBody {
@@ -213,6 +216,10 @@ function readSystemActorUserId(body: ReviewCompanyJoinRequestBody): string | nul
   return body.actorSystemUserId?.trim() || body.approvedBySystemUserId?.trim() || null;
 }
 
+function readRejectedSystemActorUserId(body: ReviewCompanyJoinRequestBody): string | null {
+  return body.actorSystemUserId?.trim() || body.rejectedBySystemUserId?.trim() || null;
+}
+
 export async function handleApproveMemberJoinRequest(requestId: string, request: Request) {
   try {
     const body = (await request.json().catch(() => ({}))) as ReviewMemberJoinRequestBody;
@@ -334,6 +341,42 @@ export async function handleApproveCompanyJoinRequest(requestId: string, request
       companyMemberId: result.companyMemberId,
       permissionCodes: result.permissionCodes,
       standardsInitialization: result.standardsInitialization,
+    });
+  } catch (error) {
+    return toErrorResponse(error);
+  }
+}
+
+
+export async function handleRejectCompanyJoinRequest(requestId: string, request: Request) {
+  try {
+    const body = (await request.json().catch(() => ({}))) as ReviewCompanyJoinRequestBody;
+    const rejectedBySystemUserId = readRejectedSystemActorUserId(body);
+    const result = await joinRequestRepository.rejectCompanyJoinRequest({
+      requestId,
+      rejectedBySystemUserId,
+      reasonCode: body.reasonCode ?? "system_admin_rejected",
+    });
+
+    await createSystemAuditLogSafe(
+      buildCompanyJoinRequestRejectedAuditLog({
+        joinRequestId: result.joinRequest.id,
+        invitationId: result.joinRequest.invitationId,
+        requestedCompanyName: result.joinRequest.requestedCompanyName,
+        businessName: result.joinRequest.businessName,
+        applicantEmail: result.joinRequest.applicantEmail,
+        applicantName: result.joinRequest.applicantName,
+        rejectedBy: rejectedBySystemUserId,
+        reasonCode: result.joinRequest.rejectionReason,
+        requestId: getRequestId(request),
+        ipAddress: getRequestIpAddress(request),
+      }),
+    );
+
+    return NextResponse.json({
+      ok: true,
+      action: "company_rejected",
+      joinRequest: result.joinRequest,
     });
   } catch (error) {
     return toErrorResponse(error);

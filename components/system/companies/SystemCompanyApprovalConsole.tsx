@@ -23,7 +23,7 @@ type JoinRequestListResponse = {
   error?: string;
 };
 
-type CompanyJoinRequestApproveResponse = {
+type CompanyJoinRequestReviewResponse = {
   ok?: boolean;
   error?: string;
 };
@@ -90,6 +90,7 @@ export default function SystemCompanyApprovalConsole() {
   const [reviewActionError, setReviewActionError] = useState<string | null>(null);
   const [reviewActionMessage, setReviewActionMessage] = useState<string | null>(null);
   const [approvingRequestId, setApprovingRequestId] = useState<string | null>(null);
+  const [rejectingRequestId, setRejectingRequestId] = useState<string | null>(null);
 
   const joinRequests = useMemo(() => toSystemCompanyJoinRequestPreviews(joinRequestRecords), [joinRequestRecords]);
   const summaryItems = useMemo(
@@ -132,7 +133,7 @@ export default function SystemCompanyApprovalConsole() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
       });
-      const payload = (await response.json()) as CompanyJoinRequestApproveResponse;
+      const payload = (await response.json()) as CompanyJoinRequestReviewResponse;
 
       if (!response.ok || !payload.ok) {
         throw new Error(payload.error ?? "COMPANY_JOIN_REQUEST_APPROVE_FAILED");
@@ -144,6 +145,32 @@ export default function SystemCompanyApprovalConsole() {
       setReviewActionError(error instanceof Error ? error.message : "COMPANY_JOIN_REQUEST_APPROVE_FAILED");
     } finally {
       setApprovingRequestId(null);
+    }
+  }
+
+  async function rejectCompanyJoinRequest(requestId: string) {
+    setRejectingRequestId(requestId);
+    setReviewActionError(null);
+    setReviewActionMessage(null);
+
+    try {
+      const response = await fetch(`/api/system/companies/join-requests/${encodeURIComponent(requestId)}/reject`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reasonCode: "system_admin_rejected" }),
+      });
+      const payload = (await response.json()) as CompanyJoinRequestReviewResponse;
+
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error ?? "COMPANY_JOIN_REQUEST_REJECT_FAILED");
+      }
+
+      setReviewActionMessage("고객사 가입 신청을 거절 처리했습니다.");
+      await loadCompanyJoinRequests();
+    } catch (error) {
+      setReviewActionError(error instanceof Error ? error.message : "COMPANY_JOIN_REQUEST_REJECT_FAILED");
+    } finally {
+      setRejectingRequestId(null);
     }
   }
 
@@ -255,7 +282,7 @@ export default function SystemCompanyApprovalConsole() {
                     <th className="px-4 py-3">연락처</th>
                     <th className="px-4 py-3">메모</th>
                     <th className="px-4 py-3">신청일</th>
-                    <th className="px-4 py-3 text-center">승인</th>
+                    <th className="px-4 py-3 text-center">처리</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-100 bg-white">
@@ -279,14 +306,24 @@ export default function SystemCompanyApprovalConsole() {
                       <td className="max-w-[260px] px-4 py-4 text-xs leading-5 text-stone-600">{request.requestMemoLabel}</td>
                       <td className="px-4 py-4 text-xs text-stone-600">{request.requestedAtLabel}</td>
                       <td className="px-4 py-4 text-center">
-                        <button
-                          type="button"
-                          onClick={() => void approveCompanyJoinRequest(request.id)}
-                          disabled={approvingRequestId !== null}
-                          className="rounded-full border border-stone-900 bg-stone-900 px-3 py-1 text-xs font-semibold text-white hover:bg-stone-800 disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
-                        >
-                          {approvingRequestId === request.id ? "승인 중" : "승인"}
-                        </button>
+                        <div className="flex justify-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => void approveCompanyJoinRequest(request.id)}
+                            disabled={approvingRequestId !== null || rejectingRequestId !== null}
+                            className="rounded-full border border-stone-900 bg-stone-900 px-3 py-1 text-xs font-semibold text-white hover:bg-stone-800 disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
+                          >
+                            {approvingRequestId === request.id ? "승인 중" : "승인"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void rejectCompanyJoinRequest(request.id)}
+                            disabled={approvingRequestId !== null || rejectingRequestId !== null}
+                            className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-100 disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
+                          >
+                            {rejectingRequestId === request.id ? "거절 중" : "거절"}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -351,7 +388,7 @@ export default function SystemCompanyApprovalConsole() {
             <div className="border-b border-stone-100 pb-4">
               <h2 className="text-lg font-semibold text-stone-950">승인 액션</h2>
               <p className="mt-2 text-sm leading-6 text-stone-600">
-                고객사 생성과 고객관리자 승인 저장은 API로 연결했고, 거절 처리는 다음 단계에서 연결합니다.
+                고객사 생성과 고객관리자 승인, 가입 신청 거절 처리를 실제 API 흐름으로 연결했습니다.
               </p>
             </div>
             <div className="mt-5 space-y-3">

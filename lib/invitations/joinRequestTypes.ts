@@ -88,6 +88,12 @@ export interface CompanyJoinRequestApproveInput {
   approvedBySystemUserId?: string | null;
 }
 
+export interface CompanyJoinRequestRejectInput {
+  requestId: string;
+  rejectedBySystemUserId?: string | null;
+  reasonCode?: string | null;
+}
+
 export interface MemberJoinRequestApprovalResult {
   joinRequest: JoinRequestRecord;
   companyMemberId: string;
@@ -123,6 +129,10 @@ export interface CompanyJoinRequestApprovalResult {
   };
 }
 
+export interface CompanyJoinRequestRejectionResult {
+  joinRequest: JoinRequestRecord;
+}
+
 export interface JoinRequestRepository {
   createJoinRequest(draft: JoinRequestDraft): Promise<JoinRequestCreateResult>;
   listJoinRequests(input: JoinRequestLookupInput): Promise<JoinRequestListResult>;
@@ -130,4 +140,5 @@ export interface JoinRequestRepository {
   approveMemberJoinRequest(input: MemberJoinRequestApproveInput): Promise<MemberJoinRequestApprovalResult>;
   rejectMemberJoinRequest(input: MemberJoinRequestRejectInput): Promise<MemberJoinRequestRejectionResult>;
   approveCompanyJoinRequest(input: CompanyJoinRequestApproveInput): Promise<CompanyJoinRequestApprovalResult>;
+  rejectCompanyJoinRequest(input: CompanyJoinRequestRejectInput): Promise<CompanyJoinRequestRejectionResult>;
 }

@@ -133,9 +133,9 @@ export const SYSTEM_COMPANY_APPROVAL_ACTIONS: readonly SystemCompanyApprovalActi
   {
     id: "reject-request",
     label: "가입 신청 거절",
-    helper: "0.10.86에서 join_requests.rejected와 invitations 상태 정리, 거절 감사 로그를 연결합니다.",
+    helper: "join_requests.rejected와 invitations.cancelled 상태 정리, 거절 감사 로그를 연결합니다.",
     requiredPermission: "system.company.reject",
-    state: "disabled",
+    state: "ready",
   },
   {
     id: "open-invite",
@@ -150,7 +150,7 @@ export const SYSTEM_COMPANY_APPROVAL_POLICY_NOTES: readonly SystemCompanyApprova
   {
     id: "single-transaction",
     title: "승인 흐름은 트랜잭션 기준",
-    description: "고객사 생성, 고객관리자 멤버십 생성, 권한 저장, 신청 승인 처리는 중간 실패 시 어색한 반쪽 데이터가 남지 않도록 하나의 트랜잭션으로 묶습니다.",
+    description: "고객사 승인 흐름은 고객사 생성, 고객관리자 멤버십 생성, 권한 저장, 신청 승인을 하나의 트랜잭션으로 묶고, 거절 흐름은 신청 상태와 초대 상태를 함께 정리합니다.",
   },
   {
     id: "permission-code-first",
@@ -164,8 +164,8 @@ export const SYSTEM_COMPANY_APPROVAL_POLICY_NOTES: readonly SystemCompanyApprova
   },
   {
     id: "audit-log-candidates",
-    title: "감사 로그 후보",
-    description: "company.created와 member.approved 감사 로그를 기록하고, 기준정보 초기화 결과는 API 응답의 standardsInitialization으로 확인합니다.",
+    title: "감사 로그 기준",
+    description: "승인 시 company.created와 member.approved를 기록하고, 거절 시 company_invitation.rejected를 기록합니다.",
   },
 ] as const;
 

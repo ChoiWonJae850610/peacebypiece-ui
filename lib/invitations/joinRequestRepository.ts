@@ -21,6 +21,8 @@ import type {
   JoinRequestType,
   CompanyJoinRequestApproveInput,
   CompanyJoinRequestApprovalResult,
+  CompanyJoinRequestRejectInput,
+  CompanyJoinRequestRejectionResult,
   MemberJoinRequestApproveInput,
   MemberJoinRequestApprovalResult,
   MemberJoinRequestRejectInput,
@@ -909,6 +911,78 @@ function approveInMemoryCompanyJoinRequest(
   };
 }
 
+
+async function rejectDbCompanyJoinRequest(
+  input: CompanyJoinRequestRejectInput,
+): Promise<CompanyJoinRequestRejectionResult> {
+  return withDbTransaction(async (client) => {
+    const joinRequest = await selectDbJoinRequestById(client, input.requestId);
+    if (!joinRequest) {
+      throw new Error("JOIN_REQUEST_NOT_FOUND");
+    }
+
+    assertPendingCompanyJoinRequest(joinRequest);
+    const reasonCode = normalizeText(input.reasonCode) ?? "system_admin_rejected";
+
+    await client.query(
+      `
+        UPDATE join_requests
+           SET status = 'rejected',
+               reviewed_by_system_user_id = $2,
+               reviewed_at = now(),
+               rejection_reason = $3,
+               updated_at = now()
+         WHERE id = $1
+      `,
+      [joinRequest.id, input.rejectedBySystemUserId ?? null, reasonCode],
+    );
+
+    if (joinRequest.invitationId) {
+      await client.query(
+        `
+          UPDATE invitations
+             SET status = 'cancelled',
+                 cancelled_at = now(),
+                 cancelled_by_system_user_id = $2,
+                 updated_at = now()
+           WHERE id = $1
+             AND status IN ('pending', 'active')
+        `,
+        [joinRequest.invitationId, input.rejectedBySystemUserId ?? null],
+      );
+    }
+
+    const updatedJoinRequest = await selectDbJoinRequestById(client, joinRequest.id);
+    if (!updatedJoinRequest) {
+      throw new Error("JOIN_REQUEST_NOT_FOUND");
+    }
+
+    return { joinRequest: updatedJoinRequest };
+  });
+}
+
+function rejectInMemoryCompanyJoinRequest(
+  input: CompanyJoinRequestRejectInput,
+): CompanyJoinRequestRejectionResult {
+  const index = inMemoryJoinRequests.findIndex((item) => item.id === input.requestId);
+  const joinRequest = index >= 0 ? inMemoryJoinRequests[index] : null;
+  if (!joinRequest) throw new Error("JOIN_REQUEST_NOT_FOUND");
+  assertPendingCompanyJoinRequest(joinRequest);
+
+  const now = new Date().toISOString();
+  const updated: JoinRequestRecord = {
+    ...joinRequest,
+    status: "rejected",
+    reviewedBySystemUserId: input.rejectedBySystemUserId ?? null,
+    reviewedAt: now,
+    rejectionReason: normalizeText(input.reasonCode) ?? "system_admin_rejected",
+    updatedAt: now,
+  };
+  inMemoryJoinRequests[index] = updated;
+
+  return { joinRequest: updated };
+}
+
 async function approveDbMemberJoinRequest(
   input: MemberJoinRequestApproveInput,
 ): Promise<MemberJoinRequestApprovalResult> {
@@ -1166,6 +1240,19 @@ export function createJoinRequestRepository(): JoinRequestRepository {
       }
 
       return approveInMemoryCompanyJoinRequest({ ...input, requestId: trimmedId });
+    },
+
+    async rejectCompanyJoinRequest(input: CompanyJoinRequestRejectInput): Promise<CompanyJoinRequestRejectionResult> {
+      const trimmedId = input.requestId.trim();
+      if (!trimmedId) {
+        throw new Error("JOIN_REQUEST_ID_REQUIRED");
+      }
+
+      if (isDatabaseConfigured()) {
+        return rejectDbCompanyJoinRequest({ ...input, requestId: trimmedId });
+      }
+
+      return rejectInMemoryCompanyJoinRequest({ ...input, requestId: trimmedId });
     },
   };
 }

@@ -1,11 +1,11 @@
 Version :
-0.10.85
+0.10.86
 
 Summary :
-시스템관리자 고객사 가입 신청 승인과 회사 생성 연결
+시스템관리자 고객사 가입 신청 거절 처리 연결
 
 Description :
-시스템관리자 고객사 가입 신청 승인 API를 추가하고, 승인 시 companies, users, company_members, member_permissions, join_requests, invitations, 고객사 초기 기준정보 복사를 하나의 트랜잭션 흐름으로 처리하도록 연결했다. /system/companies 화면의 승인 버튼도 실제 API 호출로 연결했다.
+시스템관리자 고객사 승인 화면에서 고객사 가입 신청을 거절할 수 있도록 실제 API를 추가하고, join_requests.rejected와 invitations.cancelled 상태 갱신 및 company_invitation.rejected 감사 로그 기록을 연결했다.
 
 수정 파일 목록 :
 - components/system/companies/SystemCompanyApprovalConsole.tsx
@@ -14,11 +14,10 @@ Description :
 - lib/invitations/api/joinRequestRouteHandlers.ts
 - lib/invitations/joinRequestRepository.ts
 - lib/invitations/joinRequestTypes.ts
-- lib/system/standards/companyStandardsInitializationRepository.ts
 - lib/system/audit/writeActions.ts
 
 추가 파일 목록 :
-- app/api/system/companies/join-requests/[requestId]/approve/route.ts
+- app/api/system/companies/join-requests/[requestId]/reject/route.ts
 
 삭제 파일 목록 :
 없음
