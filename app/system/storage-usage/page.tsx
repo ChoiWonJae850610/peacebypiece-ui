@@ -1,5 +1,5 @@
-import Link from "next/link";
-
+import { AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import { SystemStoragePurgeCandidatesClient } from "@/components/system/storage/SystemStoragePurgeCandidatesClient";
 import { getDefaultAdminStorageQuotaPolicy } from "@/lib/billing/storageQuotaPolicy";
 import { APP_VERSION } from "@/lib/constants/app";
@@ -30,15 +30,10 @@ export default async function SystemStorageUsagePage() {
               </div>
             </div>
             <div className="flex flex-wrap gap-2 text-xs font-medium">
-              <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-stone-600">
-                v{APP_VERSION}
-              </span>
-              <Link
-                href="/system"
-                className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50"
-              >
+              <AdminStatusBadge>v{APP_VERSION}</AdminStatusBadge>
+              <AdminLinkButton href="/system" size="sm">
                 {SYSTEM_STORAGE_PURGE_COPY.consoleLink}
-              </Link>
+              </AdminLinkButton>
             </div>
           </div>
         </header>

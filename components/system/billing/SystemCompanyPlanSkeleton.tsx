@@ -1,5 +1,5 @@
-import Link from "next/link";
-
+import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import { APP_VERSION } from "@/lib/constants/app";
 import {
   SYSTEM_COMPANY_PLAN_CHANGE_FIELDS,
@@ -35,15 +35,10 @@ export default function SystemCompanyPlanSkeleton() {
             </div>
 
             <div className="flex flex-wrap gap-2 text-xs font-medium">
-              <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-stone-600">
-                v{APP_VERSION}
-              </span>
-              <Link
-                href="/system"
-                className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50"
-              >
+              <AdminStatusBadge>v{APP_VERSION}</AdminStatusBadge>
+              <AdminLinkButton href="/system" size="sm">
                 시스템 콘솔
-              </Link>
+              </AdminLinkButton>
             </div>
           </div>
         </header>
@@ -61,9 +56,7 @@ export default function SystemCompanyPlanSkeleton() {
                   </h2>
                   <p className="text-xs font-medium text-stone-500">{plan.code}</p>
                 </div>
-                <span className="rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-[11px] font-semibold text-stone-600">
-                  {plan.statusLabel}
-                </span>
+                <AdminStatusBadge>{plan.statusLabel}</AdminStatusBadge>
               </div>
               <dl className="mt-4 grid gap-2 text-xs text-stone-600">
                 <div className="flex justify-between gap-3">
@@ -101,9 +94,7 @@ export default function SystemCompanyPlanSkeleton() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="text-sm font-semibold text-stone-950">{step.title}</h3>
-                  <span className="shrink-0 rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-600">
-                    {step.statusLabel}
-                  </span>
+                  <AdminStatusBadge>{step.statusLabel}</AdminStatusBadge>
                 </div>
                 <p className="mt-3 text-xs leading-5 text-stone-600">{step.description}</p>
               </article>
@@ -131,9 +122,7 @@ export default function SystemCompanyPlanSkeleton() {
                     {SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW.companyId}
                   </p>
                 </div>
-                <span className="rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-600">
-                  {SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW.policySourceLabel}
-                </span>
+                <AdminStatusBadge>{SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW.policySourceLabel}</AdminStatusBadge>
               </div>
               <dl className="mt-4 grid gap-2 text-xs text-stone-600">
                 <div className="flex justify-between gap-3">
@@ -186,9 +175,7 @@ export default function SystemCompanyPlanSkeleton() {
                       <h3 className="text-sm font-semibold text-stone-950">{field.label}</h3>
                       <p className="mt-1 text-sm font-medium text-stone-700">{field.value}</p>
                     </div>
-                    <span className="shrink-0 rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-600">
-                      {field.statusLabel}
-                    </span>
+                    <AdminStatusBadge>{field.statusLabel}</AdminStatusBadge>
                   </div>
                   <p className="mt-2 text-xs leading-5 text-stone-500">{field.description}</p>
                 </article>
@@ -204,9 +191,7 @@ export default function SystemCompanyPlanSkeleton() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="text-sm font-semibold text-stone-950">{item.label}</h3>
-                  <span className="shrink-0 rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-[11px] font-semibold text-stone-600">
-                    {item.statusLabel}
-                  </span>
+                  <AdminStatusBadge>{item.statusLabel}</AdminStatusBadge>
                 </div>
                 <p className="mt-3 text-xs leading-5 text-stone-600">{item.description}</p>
               </article>
@@ -214,20 +199,8 @@ export default function SystemCompanyPlanSkeleton() {
           </div>
 
           <div className="mt-5 flex flex-wrap gap-2">
-            <button
-              type="button"
-              disabled
-              className="rounded-xl border border-stone-200 bg-stone-100 px-4 py-2 text-sm font-semibold text-stone-400"
-            >
-              고객사 요금제 변경 저장 준비중
-            </button>
-            <button
-              type="button"
-              disabled
-              className="rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-400"
-            >
-              변경 이력 기록 준비중
-            </button>
+            <AdminButton disabled>고객사 요금제 변경 저장 준비중</AdminButton>
+            <AdminButton disabled>변경 이력 기록 준비중</AdminButton>
           </div>
         </section>
 
@@ -244,9 +217,7 @@ export default function SystemCompanyPlanSkeleton() {
                     <h3 className="text-sm font-semibold text-stone-950">
                       {company.name}
                     </h3>
-                    <span className="rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-600">
-                      {company.currentPlan}
-                    </span>
+                    <AdminStatusBadge>{company.currentPlan}</AdminStatusBadge>
                   </div>
                   <div className="mt-3 grid gap-1 text-xs text-stone-600">
                     <p>저장공간: {company.storageUsageLabel}</p>
@@ -291,20 +262,8 @@ export default function SystemCompanyPlanSkeleton() {
             </div>
 
             <div className="mt-5 flex flex-wrap gap-2">
-              <button
-                type="button"
-                disabled
-                className="rounded-xl border border-stone-200 bg-stone-100 px-4 py-2 text-sm font-semibold text-stone-400"
-              >
-                요금제 변경 저장 준비중
-              </button>
-              <button
-                type="button"
-                disabled
-                className="rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-400"
-              >
-                사용량 snapshot 새로고침 준비중
-              </button>
+              <AdminButton disabled>요금제 변경 저장 준비중</AdminButton>
+              <AdminButton disabled>사용량 snapshot 새로고침 준비중</AdminButton>
             </div>
           </section>
         </section>

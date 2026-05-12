@@ -3,6 +3,9 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { AdminButton } from "@/components/admin/common/AdminButton";
+import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
+import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import type { SystemStoragePurgeCandidate } from "@/lib/system/storagePurgeCandidates";
 import {
   SYSTEM_STORAGE_PURGE_COPY,
@@ -190,30 +193,15 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
           {resultMessage ? <p className={`mt-2 rounded-2xl px-3 py-2 text-xs font-medium ${getSystemStoragePurgeResultMessageClass(resultTone)}`}>{resultMessage}</p> : null}
         </div>
         <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={refreshCandidates}
-            disabled={isPending}
-            className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs font-semibold text-stone-700 hover:bg-stone-50 disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
-          >
+          <AdminButton onClick={refreshCandidates} disabled={isPending}>
             {SYSTEM_STORAGE_PURGE_COPY.list.refresh}
-          </button>
-          <button
-            type="button"
-            onClick={runSelectedPurge}
-            disabled={selectedCount === 0 || isPending}
-            className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs font-semibold text-stone-700 hover:bg-stone-50 disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
-          >
+          </AdminButton>
+          <AdminButton onClick={runSelectedPurge} disabled={selectedCount === 0 || isPending}>
             {isPending ? SYSTEM_STORAGE_PURGE_COPY.list.pending : `${SYSTEM_STORAGE_PURGE_COPY.list.selectDelete} (${selectedCount})`}
-          </button>
-          <button
-            type="button"
-            onClick={runAllDuePurge}
-            disabled={!hasCandidates || isPending}
-            className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100 disabled:border-red-100 disabled:bg-red-50 disabled:text-red-300"
-          >
+          </AdminButton>
+          <AdminButton variant="danger" onClick={runAllDuePurge} disabled={!hasCandidates || isPending}>
             {isPending ? SYSTEM_STORAGE_PURGE_COPY.list.pending : SYSTEM_STORAGE_PURGE_COPY.list.deleteAll}
-          </button>
+          </AdminButton>
         </div>
       </div>
 
@@ -243,7 +231,11 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
         </div>
 
         {sortedCandidates.length === 0 ? (
-          <div className="px-4 py-12 text-center text-sm text-stone-500">{SYSTEM_STORAGE_PURGE_COPY.list.empty}</div>
+          <AdminEmptyState
+            title={SYSTEM_STORAGE_PURGE_COPY.list.empty}
+            description="현재 시스템관리자가 실제 삭제 처리할 저장소 후보가 없습니다."
+            className="m-4"
+          />
         ) : (
           <div className="divide-y divide-stone-100">
             {sortedCandidates.map((candidate) => (
@@ -297,7 +289,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
                 </div>
                 <div>
                   <p className="font-semibold text-stone-800">{candidate.originalSizeLabel}</p>
-                  <p className="mt-1 text-xs text-stone-500">{candidate.purgeStatusLabel}</p>
+                  <AdminStatusBadge className="mt-1">{candidate.purgeStatusLabel}</AdminStatusBadge>
                   {candidate.lastPurgeError ? <p className="mt-1 text-xs text-red-600">{candidate.lastPurgeError}</p> : null}
                 </div>
                 <div className="space-y-2">
