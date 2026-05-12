@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import {
   getInvitationTableColumns,
   getJoinRequestTableColumns,
@@ -35,20 +34,14 @@ import {
   type MemberPermissionCode,
 } from "@/lib/permissions";
 import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
+import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
+import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 
-function getStatusClassName(status: MemberManagementStatus) {
-  if (status === "ready") return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  if (status === "pending") return "border-amber-200 bg-amber-50 text-amber-700";
-  return "border-stone-200 bg-stone-100 text-stone-500";
-}
-
-function EmptyState({ title, description }: { title: string; description: string }) {
-  return (
-    <div className="rounded-2xl border border-dashed border-stone-200 bg-stone-50/70 p-5 text-center">
-      <p className="text-sm font-semibold text-stone-800">{title}</p>
-      <p className="mt-2 text-xs leading-5 text-stone-500">{description}</p>
-    </div>
-  );
+function getStatusTone(status: MemberManagementStatus): AdminStatusBadgeTone {
+  if (status === "ready") return "success";
+  if (status === "pending") return "warning";
+  return "neutral";
 }
 
 type CreatedInvitationResult = {
@@ -86,16 +79,16 @@ type MemberPermissionUpdateResponse = {
 
 type JoinRequestReviewAction = "approve" | "reject";
 
-function getEmailMatchClassName(status: "matched" | "mismatched" | "unknown") {
-  if (status === "matched") return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  if (status === "mismatched") return "border-amber-200 bg-amber-50 text-amber-700";
-  return "border-stone-200 bg-stone-100 text-stone-500";
+function getEmailMatchTone(status: "matched" | "mismatched" | "unknown"): AdminStatusBadgeTone {
+  if (status === "matched") return "success";
+  if (status === "mismatched") return "warning";
+  return "neutral";
 }
 
-function getMemberStatusClassName(status: "approved" | "pending" | "suspended") {
-  if (status === "approved") return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  if (status === "suspended") return "border-rose-200 bg-rose-50 text-rose-700";
-  return "border-amber-200 bg-amber-50 text-amber-700";
+function getMemberStatusTone(status: "approved" | "pending" | "suspended"): AdminStatusBadgeTone {
+  if (status === "approved") return "success";
+  if (status === "suspended") return "danger";
+  return "warning";
 }
 
 const editableMemberPermissionCodes = MEMBER_PERMISSION_CATALOG.filter((permission) => !permission.systemOnly).map((permission) => permission.code);
@@ -406,23 +399,17 @@ export default function AdminMemberManagementDashboard() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <a
+            <AdminLinkButton
               href={canCreateInvite ? "#member-invite-builder" : "#member-permission-guard"}
               aria-disabled={!canCreateInvite}
-              className={
-                canCreateInvite
-                  ? "inline-flex w-fit items-center justify-center rounded-full border border-stone-900 bg-stone-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-stone-800"
-                  : "inline-flex w-fit items-center justify-center rounded-full border border-stone-200 bg-stone-100 px-4 py-2 text-xs font-semibold text-stone-400"
-              }
+              variant={canCreateInvite ? "primary" : "secondary"}
+              className={canCreateInvite ? "" : "pointer-events-none text-stone-400"}
             >
               {t("memberManagement.actions.createInvite", "초대 링크 생성")}
-            </a>
-            <Link
-              href="/admin/settings"
-              className="inline-flex w-fit items-center justify-center rounded-full border border-stone-200 bg-white px-4 py-2 text-xs font-semibold text-stone-700 transition hover:bg-stone-50"
-            >
+            </AdminLinkButton>
+            <AdminLinkButton href="/admin/settings" variant="secondary">
               {t("memberManagement.actions.openOrganizationSettings", "조직 설정 보기")}
-            </Link>
+            </AdminLinkButton>
           </div>
         </div>
       </section>
@@ -450,9 +437,9 @@ export default function AdminMemberManagementDashboard() {
                   <p className="text-xs font-semibold text-stone-900">
                     {t(`memberManagement.inviteBuilder.cards.${card.id}.label`, card.id)}
                   </p>
-                  <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${getStatusClassName(card.status)}`}>
+                  <AdminStatusBadge tone={getStatusTone(card.status)} size="xs">
                     {t(`memberManagement.statuses.${card.status}`, card.status)}
-                  </span>
+                  </AdminStatusBadge>
                 </div>
                 <p className="mt-2 text-[11px] leading-4 text-stone-500">
                   {t(`memberManagement.inviteBuilder.cards.${card.id}.description`, "")}
@@ -529,28 +516,22 @@ export default function AdminMemberManagementDashboard() {
                   </code>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
+                  <AdminButton
                     onClick={handleCopyInviteLink}
-                    className={createdInvitation
-                      ? "inline-flex items-center justify-center rounded-full border border-stone-900 bg-white px-4 py-2 text-xs font-semibold text-stone-900 transition hover:bg-stone-50"
-                      : "inline-flex items-center justify-center rounded-full border border-stone-200 bg-stone-100 px-4 py-2 text-xs font-semibold text-stone-500"}
+                    variant="secondary"
                     disabled={!createdInvitation}
                   >
                     {t("memberManagement.inviteBuilder.actions.copy", "링크 복사")}
-                  </button>
-                  <button
-                    type="button"
+                  </AdminButton>
+                  <AdminButton
                     onClick={handleCreateInvite}
-                    className={canSubmitInvite
-                      ? "inline-flex items-center justify-center rounded-full border border-stone-900 bg-stone-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-stone-800"
-                      : "inline-flex items-center justify-center rounded-full border border-stone-200 bg-stone-100 px-4 py-2 text-xs font-semibold text-stone-500"}
+                    variant="primary"
                     disabled={!canSubmitInvite}
                   >
                     {isCreatingInvite
                       ? t("memberManagement.inviteBuilder.actions.creating", "생성 중")
                       : t("memberManagement.inviteBuilder.actions.create", "초대 생성")}
-                  </button>
+                  </AdminButton>
                 </div>
               </div>
               <p className="mt-3 text-xs leading-5 text-stone-500">
@@ -603,9 +584,9 @@ export default function AdminMemberManagementDashboard() {
                 </p>
                 <p className="mt-2 text-2xl font-semibold text-stone-950">{card.value}</p>
               </div>
-              <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getStatusClassName(card.status)}`}>
+              <AdminStatusBadge tone={getStatusTone(card.status)}>
                 {t(`memberManagement.statuses.${card.status}`, card.status)}
-              </span>
+              </AdminStatusBadge>
             </div>
             <p className="mt-3 text-xs leading-5 text-stone-500">
               {t(`memberManagement.summary.${card.id}.description`, "")}
@@ -649,9 +630,9 @@ export default function AdminMemberManagementDashboard() {
                   {t("memberManagement.approvalWorkbench.previewApplicant.description", "초대 링크로 가입 신청한 멤버를 승인하기 전 상태 예시입니다.")}
                 </p>
               </div>
-              <span className="w-fit rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700">
+              <AdminStatusBadge tone="warning">
                 {t("memberManagement.joinRequestStatuses.pending", "승인 대기")}
-              </span>
+              </AdminStatusBadge>
             </div>
 
             <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
@@ -661,9 +642,9 @@ export default function AdminMemberManagementDashboard() {
                     <p className="text-xs font-semibold text-stone-900">
                       {t(`memberManagement.approvalWorkbench.steps.${step.id}.label`, step.id)}
                     </p>
-                    <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${getStatusClassName(step.status)}`}>
+                    <AdminStatusBadge tone={getStatusTone(step.status)} size="xs">
                       {t(`memberManagement.statuses.${step.status}`, step.status)}
-                    </span>
+                    </AdminStatusBadge>
                   </div>
                   <p className="mt-2 text-[11px] leading-4 text-stone-500">
                     {t(`memberManagement.approvalWorkbench.steps.${step.id}.description`, "")}
@@ -714,24 +695,24 @@ export default function AdminMemberManagementDashboard() {
                   action.requiredPermissions,
                 );
                 return (
-                  <button
+                  <AdminButton
                     key={action.id}
-                    type="button"
                     disabled
-                    className="flex flex-col gap-1 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-left text-xs font-semibold text-stone-500 disabled:cursor-not-allowed disabled:opacity-70"
+                    variant="secondary"
+                    className="flex-col items-stretch justify-start gap-1 rounded-xl bg-stone-50 px-3 py-2 text-left text-xs text-stone-500"
                   >
                     <span className="flex items-center justify-between gap-2">
                       <span>{t(`memberManagement.approvalWorkbench.actions.${action.id}.label`, action.id)}</span>
-                      <span className={`rounded-full border px-2 py-0.5 text-[10px] ${getStatusClassName(action.status)}`}>
+                      <AdminStatusBadge tone={getStatusTone(action.status)} size="xs">
                         {t(`memberManagement.statuses.${action.status}`, action.status)}
-                      </span>
+                      </AdminStatusBadge>
                     </span>
                     <span className="text-[11px] font-medium text-stone-400">
                       {hasRequiredPermission
                         ? t("memberManagement.permissionGuards.allowedButDbPending", "권한 충족 · DB 연결 예정")
                         : t("memberManagement.permissionGuards.blocked", "권한 부족")}
                     </span>
-                  </button>
+                  </AdminButton>
                 );
               })}
             </div>
@@ -789,7 +770,7 @@ export default function AdminMemberManagementDashboard() {
               <div className="divide-y divide-stone-100">
                 {memberListLoadStatus === "loading" ? (
                   <div className="p-3">
-                    <EmptyState
+                    <AdminEmptyState
                       title={t("memberManagement.loading.members.title", "멤버 목록을 불러오는 중입니다")}
                       description={t("memberManagement.loading.members.description", "승인된 company_members와 member_permissions를 실제 DB 기준으로 조회하고 있습니다.")}
                     />
@@ -807,23 +788,24 @@ export default function AdminMemberManagementDashboard() {
                         <span className="font-semibold text-stone-700">
                           {t(`memberManagement.roles.${member.roleId}.label`, member.roleId)}
                         </span>
-                        <span className={`w-fit rounded-full border px-2 py-0.5 text-[11px] font-semibold ${getMemberStatusClassName(member.status)}`}>
+                        <AdminStatusBadge tone={getMemberStatusTone(member.status)}>
                           {t(`memberManagement.memberStatuses.${member.status}`, member.status)}
-                        </span>
+                        </AdminStatusBadge>
                         <span className="font-semibold text-stone-700">
                           {t("memberManagement.permissionCount", "권한 {count}개").replace("{count}", String(draftPermissionCodes.length))}
                         </span>
                         <span className="text-stone-500">{member.lastActiveLabel}</span>
-                        <button
-                          type="button"
+                        <AdminButton
                           onClick={() => void handleUpdateMemberPermissions(member.id)}
                           disabled={!hasPermissionChanged || updatingMemberId !== null || draftPermissionCodes.length === 0}
-                          className="inline-flex w-fit items-center justify-center rounded-full border border-stone-900 bg-stone-900 px-3 py-1 text-[11px] font-semibold text-white transition hover:bg-stone-800 disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
+                          variant="primary"
+                          size="sm"
+                          className="px-3 py-1 text-[11px]"
                         >
                           {updatingMemberId === member.id
                             ? t("memberManagement.memberActions.saving", "저장 중")
                             : t("memberManagement.memberActions.savePermissions", "권한 저장")}
-                        </button>
+                        </AdminButton>
                         <div className="col-span-6 mt-3 grid gap-2 rounded-2xl border border-stone-100 bg-stone-50 p-3 md:grid-cols-2 xl:grid-cols-3">
                           {editableMemberPermissionCodes.map((permissionCode) => (
                             <label key={`${member.id}-${permissionCode}`} className="flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-3 py-2 text-[11px] text-stone-700">
@@ -842,7 +824,7 @@ export default function AdminMemberManagementDashboard() {
                   })
                 ) : (
                   <div className="p-3">
-                    <EmptyState
+                    <AdminEmptyState
                       title={t("memberManagement.empty.members.title", "등록된 멤버가 없습니다")}
                       description={t("memberManagement.empty.members.description", "초대/가입 승인 API를 연결하면 승인된 멤버가 이 영역에 표시됩니다.")}
                     />
@@ -867,9 +849,9 @@ export default function AdminMemberManagementDashboard() {
                   <p className="text-sm font-semibold text-stone-900">
                     {t(`memberManagement.roles.${role.id}.label`, role.id)}
                   </p>
-                  <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getStatusClassName(role.status)}`}>
+                  <AdminStatusBadge tone={getStatusTone(role.status)}>
                     {t(`memberManagement.statuses.${role.status}`, role.status)}
-                  </span>
+                  </AdminStatusBadge>
                 </div>
                 <p className="mt-2 text-xs leading-5 text-stone-500">
                   {t(`memberManagement.roles.${role.id}.description`, "역할 설명")}
@@ -908,7 +890,7 @@ export default function AdminMemberManagementDashboard() {
             </div>
             <div className="p-3">
               {invitations.length ? null : (
-                <EmptyState
+                <AdminEmptyState
                   title={t("memberManagement.empty.invitations.title", "생성된 초대가 없습니다")}
                   description={t("memberManagement.empty.invitations.description", "초대 링크 생성 기능을 연결하면 활성/만료/취소 초대가 표시됩니다.")}
                 />
@@ -958,7 +940,7 @@ export default function AdminMemberManagementDashboard() {
             <div className="divide-y divide-stone-100">
               {joinRequestLoadStatus === "loading" ? (
                 <div className="p-3">
-                  <EmptyState
+                  <AdminEmptyState
                     title={t("memberManagement.loading.joinRequests.title", "승인 대기 신청을 불러오는 중입니다")}
                     description={t("memberManagement.loading.joinRequests.description", "join_requests.pending 목록을 실제 DB 기준으로 조회하고 있습니다.")}
                   />
@@ -972,44 +954,44 @@ export default function AdminMemberManagementDashboard() {
                     </div>
                     <span className="truncate text-stone-500">{request.applicantPhoneLabel}</span>
                     <span className="truncate text-stone-500">{request.invitationEmailLabel}</span>
-                    <span className={`w-fit rounded-full border px-2 py-0.5 text-[11px] font-semibold ${getEmailMatchClassName(request.emailMatchStatus)}`}>
+                    <AdminStatusBadge tone={getEmailMatchTone(request.emailMatchStatus)}>
                       {t(`memberManagement.emailMatchStatuses.${request.emailMatchStatus}`, request.emailMatchStatus)}
-                    </span>
+                    </AdminStatusBadge>
                     <span className="truncate text-stone-500" title={request.requestMemoLabel}>
                       {request.requestMemoLabel}
                     </span>
                     <span className="font-semibold text-stone-700">
                       {t(`memberManagement.roles.${request.requestedRoleId}.label`, request.requestedRoleId)}
                     </span>
-                    <span className="w-fit rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+                    <AdminStatusBadge tone="warning">
                       {t(`memberManagement.joinRequestStatuses.${request.status}`, request.status)}
-                    </span>
+                    </AdminStatusBadge>
                     <span className="text-stone-500">{request.requestedAtLabel}</span>
                     <div className="flex flex-wrap gap-1.5">
-                      <button
-                        type="button"
+                      <AdminButton
                         onClick={() => void handleReviewJoinRequest(request, "approve")}
                         disabled={reviewingJoinRequestId !== null}
-                        className="inline-flex items-center justify-center rounded-full border border-stone-900 bg-stone-900 px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-stone-800 disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
+                        variant="primary"
+                        className="px-2.5 py-1 text-[11px]"
                       >
                         {reviewingJoinRequestId === request.id
                           ? t("memberManagement.reviewActions.processing", "처리 중")
                           : t("memberManagement.reviewActions.approve", "승인")}
-                      </button>
-                      <button
-                        type="button"
+                      </AdminButton>
+                      <AdminButton
                         onClick={() => void handleReviewJoinRequest(request, "reject")}
                         disabled={reviewingJoinRequestId !== null}
-                        className="inline-flex items-center justify-center rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-700 transition hover:bg-stone-50 disabled:bg-stone-100 disabled:text-stone-400"
+                        variant="secondary"
+                        className="px-2.5 py-1 text-[11px]"
                       >
                         {t("memberManagement.reviewActions.reject", "거절")}
-                      </button>
+                      </AdminButton>
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="p-3">
-                  <EmptyState
+                  <AdminEmptyState
                     title={t("memberManagement.empty.joinRequests.title", "승인 대기 신청이 없습니다")}
                     description={t("memberManagement.empty.joinRequests.description", "초대 링크 가입 신청이 생성되면 승인/거절/권한 부여 대상이 이 영역에 표시됩니다.")}
                   />
@@ -1040,11 +1022,11 @@ export default function AdminMemberManagementDashboard() {
                   <h4 className="text-sm font-semibold text-stone-950">
                     {t(`memberManagement.permissionCards.${item.id}.label`, item.id)}
                   </h4>
-                  <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getStatusClassName(item.status)}`}>
+                  <AdminStatusBadge tone={getStatusTone(item.status)}>
                     {visibleForCurrentPermissions
                       ? t("memberManagement.permissionGuards.visible", "노출")
                       : t("memberManagement.permissionGuards.hidden", "숨김")}
-                  </span>
+                  </AdminStatusBadge>
                 </div>
                 <p className="mt-2 text-xs leading-5 text-stone-500">
                   {t(`memberManagement.permissionCards.${item.id}.description`, "")}
@@ -1075,9 +1057,9 @@ export default function AdminMemberManagementDashboard() {
                 <p className="text-sm font-semibold text-stone-900">
                   {t(`memberManagement.permissionGroups.${group.id}.label`, group.id)}
                 </p>
-                <span className="rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-500">
+                <AdminStatusBadge tone="neutral">
                   {t("memberManagement.permissionCount", "권한 {count}개").replace("{count}", String(group.permissionCount))}
-                </span>
+                </AdminStatusBadge>
               </div>
               {group.systemOnlyCount > 0 ? (
                 <p className="mt-2 text-xs font-semibold text-amber-700">

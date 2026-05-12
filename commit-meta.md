@@ -1,18 +1,18 @@
 Version :
-0.11.4
+0.11.5
 
 Summary :
-관리자 저장소 휴지통 모달 버튼 공통 컴포넌트 적용
+멤버관리 버튼과 상태 라벨 공통 컴포넌트 적용
 
 Description :
-고객관리자 저장소 휴지통 관련 모달 footer의 개별 버튼 className을 AdminButton 공통 컴포넌트로 전환했다. 휴지통 비우기, 작업지시서 처리 범위 확인, 휴지통 상세 모달의 닫기, 복원, 선택 삭제 버튼 표시 기준을 공통화했다.
+고객관리자 멤버관리 화면의 초대, 권한 저장, 가입 신청 승인/거절 버튼을 AdminButton과 AdminLinkButton 기준으로 전환했다. 멤버관리 상태 라벨과 empty/loading 상태도 AdminStatusBadge와 AdminEmptyState 공통 컴포넌트 기준으로 정리했다.
 
 수정 파일 목록 :
-- components/admin/files/fileTrashSectionModals.tsx
+- components/admin/members/AdminMemberManagementDashboard.tsx
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/admin-files-trash-modal-button-standardization-0.11.4.md
+- docs/admin-members-button-badge-standardization-0.11.5.md
 
 삭제 파일 목록 :
 없음
