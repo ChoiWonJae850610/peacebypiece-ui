@@ -17,7 +17,6 @@ const UNIT_COLUMN_CANDIDATES = ["unit"] as const;
 const UNIT_COST_COLUMN_CANDIDATES = ["unit_cost"] as const;
 const TOTAL_COST_COLUMN_CANDIDATES = ["total_cost"] as const;
 const STATUS_COLUMN_CANDIDATES = ["status"] as const;
-const PAYLOAD_COLUMN_CANDIDATES = ["payload", "data"] as const;
 const IS_ACTIVE_COLUMN_CANDIDATES = ["is_active"] as const;
 const DELETED_AT_COLUMN_CANDIDATES = ["deleted_at"] as const;
 const CREATED_AT_COLUMN_CANDIDATES = ["created_at"] as const;
@@ -43,7 +42,6 @@ type DbSpecSheetOutsourcingSchema = {
   unitCostColumn: string | null;
   totalCostColumn: string | null;
   statusColumn: string | null;
-  payloadColumn: string | null;
   isActiveColumn: string | null;
   deletedAtColumn: string | null;
   createdAtColumn: string | null;
@@ -99,7 +97,9 @@ function toOutsourcingRows(workOrder: WorkOrder): Outsourcing[] {
   });
 }
 
-async function loadSpecSheetOutsourcingSchema(): Promise<DbSpecSheetOutsourcingSchema> {
+let specSheetOutsourcingSchemaCache: Promise<DbSpecSheetOutsourcingSchema> | null = null;
+
+async function readSpecSheetOutsourcingSchema(): Promise<DbSpecSheetOutsourcingSchema> {
   const result = await queryDb<DbColumnInfo>(
     `
       SELECT column_name, data_type, udt_name
@@ -128,7 +128,6 @@ async function loadSpecSheetOutsourcingSchema(): Promise<DbSpecSheetOutsourcingS
       unitCostColumn: null,
       totalCostColumn: null,
       statusColumn: null,
-      payloadColumn: null,
       isActiveColumn: null,
       deletedAtColumn: null,
       createdAtColumn: null,
@@ -150,12 +149,22 @@ async function loadSpecSheetOutsourcingSchema(): Promise<DbSpecSheetOutsourcingS
     unitCostColumn: findFirstMatchingColumn(columnNames, UNIT_COST_COLUMN_CANDIDATES),
     totalCostColumn: findFirstMatchingColumn(columnNames, TOTAL_COST_COLUMN_CANDIDATES),
     statusColumn: findFirstMatchingColumn(columnNames, STATUS_COLUMN_CANDIDATES),
-    payloadColumn: findFirstMatchingColumn(columnNames, PAYLOAD_COLUMN_CANDIDATES),
     isActiveColumn: findFirstMatchingColumn(columnNames, IS_ACTIVE_COLUMN_CANDIDATES),
     deletedAtColumn: findFirstMatchingColumn(columnNames, DELETED_AT_COLUMN_CANDIDATES),
     createdAtColumn: findFirstMatchingColumn(columnNames, CREATED_AT_COLUMN_CANDIDATES),
     updatedAtColumn: findFirstMatchingColumn(columnNames, UPDATED_AT_COLUMN_CANDIDATES),
   };
+}
+
+function loadSpecSheetOutsourcingSchema(): Promise<DbSpecSheetOutsourcingSchema> {
+  if (!specSheetOutsourcingSchemaCache) {
+    specSheetOutsourcingSchemaCache = readSpecSheetOutsourcingSchema().catch((error) => {
+      specSheetOutsourcingSchemaCache = null;
+      throw error;
+    });
+  }
+
+  return specSheetOutsourcingSchemaCache;
 }
 
 function canSyncSpecSheetOutsourcing(schema: DbSpecSheetOutsourcingSchema): boolean {
@@ -253,11 +262,6 @@ export async function syncDbSpecSheetOutsourcingForSpecSheet(workOrder: WorkOrde
       placeholders.push(`$${values.length}`);
     }
 
-    if (schema.payloadColumn) {
-      columns.push(schema.payloadColumn);
-      values.push(JSON.stringify(normalizeOutsourcingForDb(item)));
-      placeholders.push(`$${values.length}::jsonb`);
-    }
 
     if (schema.isActiveColumn) {
       columns.push(schema.isActiveColumn);

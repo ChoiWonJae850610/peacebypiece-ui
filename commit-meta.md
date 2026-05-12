@@ -1,18 +1,20 @@
 Version :
-0.10.95
+0.10.96
 
 Summary :
-작업지시서 schema 조회 캐시 보정
+작업지시서 하위 정규 테이블 저장 보정
 
 Description :
-작업지시서 repository에서 spec_sheets schema 정보를 매 호출마다 information_schema에서 다시 조회하던 흐름을 module-level Promise cache로 보정했다. 최초 조회 실패 시 캐시를 초기화해 다음 호출에서 재시도할 수 있게 했고, DB schema나 작업지시서 저장/조회 동작은 변경하지 않았다.
+작업지시서 정규화 이후 spec_sheet_materials와 spec_sheet_outsourcing_lines 동기화 코드에 남아 있던 payload 호환 분기를 제거했다. orders, spec_sheet_materials, spec_sheet_outsourcing_lines schema 조회도 모듈 단위 캐시로 보정해 저장 시 반복되는 information_schema 조회 비용을 줄였다.
 
 수정 파일 목록 :
-- lib/workorder/repository/dbWorkOrderRepository.ts
+- lib/workorder/repository/dbFactoryOrderRepository.ts
+- lib/workorder/repository/dbSpecSheetMaterialRepository.ts
+- lib/workorder/repository/dbSpecSheetOutsourcingRepository.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/workorder-schema-cache-0.10.95.md
+- docs/workorder-normalized-detail-schema-cleanup-0.10.96.md
 
 삭제 파일 목록 :
 없음

@@ -140,7 +140,9 @@ function toFactoryOrderEntries(workOrder: WorkOrder): OrderEntry[] {
   });
 }
 
-async function loadFactoryOrderSchema(): Promise<DbFactoryOrderSchema> {
+let factoryOrderSchemaCache: Promise<DbFactoryOrderSchema> | null = null;
+
+async function readFactoryOrderSchema(): Promise<DbFactoryOrderSchema> {
   const result = await queryDb<DbColumnInfo>(
     `
       SELECT column_name, data_type, udt_name
@@ -201,6 +203,17 @@ async function loadFactoryOrderSchema(): Promise<DbFactoryOrderSchema> {
     createdAtColumn: findFirstMatchingColumn(columnNames, CREATED_AT_COLUMN_CANDIDATES),
     updatedAtColumn: findFirstMatchingColumn(columnNames, UPDATED_AT_COLUMN_CANDIDATES),
   };
+}
+
+function loadFactoryOrderSchema(): Promise<DbFactoryOrderSchema> {
+  if (!factoryOrderSchemaCache) {
+    factoryOrderSchemaCache = readFactoryOrderSchema().catch((error) => {
+      factoryOrderSchemaCache = null;
+      throw error;
+    });
+  }
+
+  return factoryOrderSchemaCache;
 }
 
 function canSyncFactoryOrders(schema: DbFactoryOrderSchema): boolean {
