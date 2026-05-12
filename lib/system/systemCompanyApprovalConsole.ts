@@ -1,18 +1,27 @@
+import type { JoinRequestRecord } from "@/lib/invitations/joinRequestTypes";
+
 export type SystemCompanyApprovalStepStatus = "ready" | "planned" | "locked";
+export type SystemCompanyJoinRequestLoadStatus = "idle" | "loading" | "loaded" | "failed";
+export type SystemCompanyRequestEmailMatchStatus = "matched" | "mismatched" | "unknown";
 
 export interface SystemCompanyApprovalSummaryItem {
-  id: string;
+  id: "requestType" | "pendingRequests" | "createPolicy" | "adminPermission";
   label: string;
   value: string;
   description: string;
 }
 
-export interface SystemCompanyApprovalRequestField {
+export interface SystemCompanyJoinRequestPreview {
   id: string;
-  label: string;
-  value: string;
-  helper: string;
-  inputType: "text" | "email" | "select";
+  requestedCompanyName: string;
+  businessName: string;
+  applicantName: string;
+  applicantEmail: string;
+  applicantPhoneLabel: string;
+  requestMemoLabel: string;
+  invitationEmailLabel: string;
+  emailMatchStatus: SystemCompanyRequestEmailMatchStatus;
+  requestedAtLabel: string;
 }
 
 export interface SystemCompanyApprovalStep {
@@ -44,85 +53,40 @@ export interface SystemCompanyApprovalPermissionItem {
   enabled: boolean;
 }
 
-export const SYSTEM_COMPANY_APPROVAL_SUMMARY_ITEMS: SystemCompanyApprovalSummaryItem[] = [
+export const SYSTEM_COMPANY_APPROVAL_SUMMARY_ITEMS: readonly SystemCompanyApprovalSummaryItem[] = [
   {
-    id: "request-type",
+    id: "requestType",
     label: "신청 유형",
     value: "company",
     description: "시스템관리자 고객사 초대 링크에서 들어온 고객사 생성 신청입니다.",
   },
   {
-    id: "review-status",
-    label: "현재 상태",
-    value: "승인 대기",
-    description: "join_requests.pending 상태를 시스템관리자가 검토하는 화면입니다.",
+    id: "pendingRequests",
+    label: "승인 대기",
+    value: "0",
+    description: "join_requests.pending 상태의 고객사 가입 신청 수입니다.",
   },
   {
-    id: "create-policy",
+    id: "createPolicy",
     label: "회사 생성",
     value: "승인 버튼 기준",
     description: "가입 신청만으로 companies를 만들지 않고 승인 시점에 생성합니다.",
   },
   {
-    id: "admin-permission",
+    id: "adminPermission",
     label: "초기 권한",
     value: "permission_code 직접 부여",
     description: "role은 기본 묶음이며 실제 저장은 member_permissions 기준입니다.",
   },
-];
+] as const;
 
-export const SYSTEM_COMPANY_APPROVAL_REQUEST_FIELDS: SystemCompanyApprovalRequestField[] = [
-  {
-    id: "requestedCompanyName",
-    label: "신청 회사명",
-    value: "피스바이피스 샘플 고객사",
-    helper: "join_requests.requested_company_name 후보입니다. 승인 시 companies.name으로 최종 보정합니다.",
-    inputType: "text",
-  },
-  {
-    id: "businessName",
-    label: "사업자명",
-    value: "샘플 사업자명",
-    helper: "companies.business_name 후보입니다. 중복 회사 검토 후 확정합니다.",
-    inputType: "text",
-  },
-  {
-    id: "applicantName",
-    label: "신청자 이름",
-    value: "고객사 담당자",
-    helper: "승인 시 고객관리자 company_member 후보로 사용합니다.",
-    inputType: "text",
-  },
-  {
-    id: "applicantEmail",
-    label: "로그인 이메일",
-    value: "customer-admin@example.com",
-    helper: "초대 이메일과 Google OAuth 이메일 일치 여부를 검증할 기준입니다.",
-    inputType: "email",
-  },
-  {
-    id: "planCode",
-    label: "요금제",
-    value: "starter",
-    helper: "companies.plan_code에 저장할 시스템관리자 확정값입니다.",
-    inputType: "select",
-  },
-  {
-    id: "storageLimit",
-    label: "저장공간 한도",
-    value: "5GB",
-    helper: "companies.storage_limit_bytes로 변환해 저장할 승인값입니다.",
-    inputType: "select",
-  },
-];
-
-export const SYSTEM_COMPANY_APPROVAL_STEPS: SystemCompanyApprovalStep[] = [
+export const SYSTEM_COMPANY_APPROVAL_STEPS: readonly SystemCompanyApprovalStep[] = [
   {
     id: "review-request",
     title: "가입 신청 검토",
     description: "join_requests.pending 신청의 초대 유형, 신청자, 회사명, 연락처, 메모를 확인합니다.",
     status: "ready",
-    statusLabel: "화면 반영",
+    statusLabel: "실제 조회 연결",
   },
   {
     id: "create-company",
@@ -145,9 +109,9 @@ export const SYSTEM_COMPANY_APPROVAL_STEPS: SystemCompanyApprovalStep[] = [
     status: "ready",
     statusLabel: "연결 완료",
   },
-];
+] as const;
 
-export const SYSTEM_COMPANY_APPROVAL_PERMISSION_ITEMS: SystemCompanyApprovalPermissionItem[] = [
+export const SYSTEM_COMPANY_APPROVAL_PERMISSION_ITEMS: readonly SystemCompanyApprovalPermissionItem[] = [
   { id: "workorder-read", label: "작업지시서 조회", permissionCode: "workorder.read", enabled: true },
   { id: "workorder-manage", label: "작업지시서 생성·수정", permissionCode: "workorder.update", enabled: true },
   { id: "partner-manage", label: "협력업체 관리", permissionCode: "partner.manage", enabled: true },
@@ -156,20 +120,20 @@ export const SYSTEM_COMPANY_APPROVAL_PERMISSION_ITEMS: SystemCompanyApprovalPerm
   { id: "settings-manage", label: "환경설정 관리", permissionCode: "settings.manage", enabled: true },
   { id: "member-manage", label: "멤버 초대·승인·권한 변경", permissionCode: "member.permission.update", enabled: true },
   { id: "audit-read-company", label: "고객사 감사 로그 조회", permissionCode: "audit.read.company", enabled: true },
-];
+] as const;
 
-export const SYSTEM_COMPANY_APPROVAL_ACTIONS: SystemCompanyApprovalAction[] = [
+export const SYSTEM_COMPANY_APPROVAL_ACTIONS: readonly SystemCompanyApprovalAction[] = [
   {
     id: "approve-create-company",
     label: "고객사 생성 및 승인",
-    helper: "companies, company_members, member_permissions, join_requests, invitations를 하나의 승인 흐름으로 처리할 버튼 자리입니다.",
+    helper: "0.10.85에서 companies, company_members, member_permissions, join_requests, invitations를 하나의 승인 흐름으로 연결합니다.",
     requiredPermission: "system.company.approve",
     state: "disabled",
   },
   {
     id: "reject-request",
     label: "가입 신청 거절",
-    helper: "join_requests.rejected와 invitations 상태 정리, 거절 감사 로그를 남길 버튼 자리입니다.",
+    helper: "0.10.86에서 join_requests.rejected와 invitations 상태 정리, 거절 감사 로그를 연결합니다.",
     requiredPermission: "system.company.reject",
     state: "disabled",
   },
@@ -180,9 +144,9 @@ export const SYSTEM_COMPANY_APPROVAL_ACTIONS: SystemCompanyApprovalAction[] = [
     requiredPermission: "system.invitation.create",
     state: "ready",
   },
-];
+] as const;
 
-export const SYSTEM_COMPANY_APPROVAL_POLICY_NOTES: SystemCompanyApprovalPolicyNote[] = [
+export const SYSTEM_COMPANY_APPROVAL_POLICY_NOTES: readonly SystemCompanyApprovalPolicyNote[] = [
   {
     id: "single-transaction",
     title: "승인 흐름은 트랜잭션 기준",
@@ -203,4 +167,63 @@ export const SYSTEM_COMPANY_APPROVAL_POLICY_NOTES: SystemCompanyApprovalPolicyNo
     title: "감사 로그 후보",
     description: "company.created, company_invitation.approved, member.approved, member.permission_updated는 후속 연결하고, 기준정보 초기화 결과는 API 응답의 standardsInitialization으로 확인합니다.",
   },
-];
+] as const;
+
+function normalizeEmailForCompare(value: string | null | undefined): string {
+  return value?.trim().toLowerCase() ?? "";
+}
+
+function toCompactDateTimeLabel(value: string | null | undefined): string {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleString("ko-KR", {
+    year: "2-digit",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function resolveEmailMatchStatus(joinRequest: JoinRequestRecord): SystemCompanyRequestEmailMatchStatus {
+  const applicantEmail = normalizeEmailForCompare(joinRequest.applicantEmail);
+  const invitationEmail = normalizeEmailForCompare(joinRequest.invitation?.recipientEmail);
+
+  if (!applicantEmail || !invitationEmail) return "unknown";
+  return applicantEmail === invitationEmail ? "matched" : "mismatched";
+}
+
+export function toSystemCompanyJoinRequestPreviews(
+  joinRequests: readonly JoinRequestRecord[],
+): readonly SystemCompanyJoinRequestPreview[] {
+  return joinRequests.map((joinRequest) => ({
+    id: joinRequest.id,
+    requestedCompanyName: joinRequest.requestedCompanyName?.trim() || "-",
+    businessName: joinRequest.businessName?.trim() || "-",
+    applicantName: joinRequest.applicantName?.trim() || joinRequest.applicantEmail,
+    applicantEmail: joinRequest.applicantEmail,
+    applicantPhoneLabel: joinRequest.applicantPhone?.trim() || "-",
+    requestMemoLabel: joinRequest.requestMemo?.trim() || "-",
+    invitationEmailLabel: joinRequest.invitation?.recipientEmail?.trim() || "-",
+    emailMatchStatus: resolveEmailMatchStatus(joinRequest),
+    requestedAtLabel: toCompactDateTimeLabel(joinRequest.createdAt),
+  }));
+}
+
+export function getSystemCompanyApprovalSummaryItems(
+  pendingRequestCount: number,
+  loadStatus: SystemCompanyJoinRequestLoadStatus,
+): readonly SystemCompanyApprovalSummaryItem[] {
+  return SYSTEM_COMPANY_APPROVAL_SUMMARY_ITEMS.map((item) =>
+    item.id === "pendingRequests"
+      ? {
+          ...item,
+          value: loadStatus === "loaded" ? String(pendingRequestCount) : "-",
+          description: loadStatus === "failed"
+            ? "가입 신청 목록을 불러오지 못했습니다."
+            : item.description,
+        }
+      : item,
+  );
+}
