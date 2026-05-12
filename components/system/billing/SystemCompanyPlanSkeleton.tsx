@@ -1,5 +1,6 @@
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import AdminTable from "@/components/admin/common/AdminTable";
 import { APP_VERSION } from "@/lib/constants/app";
 import {
   SYSTEM_COMPANY_PLAN_CHANGE_FIELDS,
@@ -10,7 +11,91 @@ import {
   SYSTEM_COMPANY_PLAN_OPTIONS,
   SYSTEM_COMPANY_PLAN_POLICY_NOTES,
   SYSTEM_COMPANY_PLAN_POLICY_STEPS,
+  type SystemCompanyPlanCompany,
+  type SystemCompanyPlanField,
 } from "@/lib/system/systemCompanyPlanSkeleton";
+import type { AdminTableColumn } from "@/lib/admin/common/types";
+
+const companyPlanColumns: AdminTableColumn<SystemCompanyPlanCompany>[] = [
+  {
+    key: "company",
+    label: "고객사",
+    render: (company) => (
+      <div className="space-y-1">
+        <p className="font-semibold text-stone-950">{company.name}</p>
+        <p className="text-[10px] font-medium text-stone-500">{company.id}</p>
+      </div>
+    ),
+  },
+  {
+    key: "plan",
+    label: "요금제",
+    render: (company) => <AdminStatusBadge>{company.currentPlan}</AdminStatusBadge>,
+  },
+  {
+    key: "storage",
+    label: "저장공간",
+    render: (company) => (
+      <div className="space-y-1 text-xs text-stone-600">
+        <p className="font-semibold text-stone-900">{company.storageUsageLabel}</p>
+        <AdminStatusBadge tone={company.storageRiskLabel === "초과" ? "danger" : company.storageRiskLabel === "주의" ? "warning" : "success"} size="xs">
+          {company.storageRiskLabel}
+        </AdminStatusBadge>
+      </div>
+    ),
+  },
+  {
+    key: "members",
+    label: "멤버",
+    render: (company) => (
+      <div className="space-y-1 text-xs text-stone-600">
+        <p className="font-semibold text-stone-900">{company.memberUsageLabel}</p>
+        <AdminStatusBadge tone={company.memberRiskLabel === "초과" ? "danger" : "success"} size="xs">
+          {company.memberRiskLabel}
+        </AdminStatusBadge>
+      </div>
+    ),
+  },
+  {
+    key: "policy",
+    label: "정책",
+    render: (company) => (
+      <div className="space-y-1 text-xs text-stone-600">
+        <p className="font-semibold text-stone-900">{company.overrideLabel}</p>
+        <p className="leading-5 text-stone-500">{company.policySourceLabel}</p>
+      </div>
+    ),
+  },
+];
+
+const companyPlanFieldColumns: AdminTableColumn<SystemCompanyPlanField>[] = [
+  {
+    key: "field",
+    label: "필드",
+    render: (field) => (
+      <div className="space-y-1">
+        <p className="font-semibold text-stone-950">{field.label}</p>
+        <p className="text-[10px] font-medium text-stone-500">{field.id}</p>
+      </div>
+    ),
+  },
+  {
+    key: "value",
+    label: "현재 preview 값",
+    render: (field) => (
+      <input
+        value={field.value}
+        readOnly
+        className="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-500"
+      />
+    ),
+  },
+  {
+    key: "description",
+    label: "연결 기준",
+    render: (field) => <p className="text-xs leading-5 text-stone-500">{field.description}</p>,
+  },
+];
 
 export default function SystemCompanyPlanSkeleton() {
   return (
@@ -207,28 +292,15 @@ export default function SystemCompanyPlanSkeleton() {
         <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
           <aside className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
             <h2 className="text-lg font-semibold text-stone-950">고객사 목록</h2>
-            <div className="mt-4 space-y-3">
-              {SYSTEM_COMPANY_PLAN_COMPANIES.map((company) => (
-                <article
-                  key={company.id}
-                  className="rounded-2xl border border-stone-200 bg-stone-50 p-4"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-sm font-semibold text-stone-950">
-                      {company.name}
-                    </h3>
-                    <AdminStatusBadge>{company.currentPlan}</AdminStatusBadge>
-                  </div>
-                  <div className="mt-3 grid gap-1 text-xs text-stone-600">
-                    <p>저장공간: {company.storageUsageLabel}</p>
-                    <p>저장공간 상태: {company.storageRiskLabel}</p>
-                    <p>멤버: {company.memberUsageLabel}</p>
-                    <p>멤버 상태: {company.memberRiskLabel}</p>
-                    <p>예외 정책: {company.overrideLabel}</p>
-                    <p>정책 출처: {company.policySourceLabel}</p>
-                  </div>
-                </article>
-              ))}
+            <div className="mt-4">
+              <AdminTable
+                items={SYSTEM_COMPANY_PLAN_COMPANIES}
+                columns={companyPlanColumns}
+                getRowKey={(company) => company.id}
+                emptyLabel="요금제 preview 고객사가 없습니다."
+                gridTemplateColumns="1.1fr 0.7fr 1fr 0.9fr 1.2fr"
+                rowBaseClassName="grid w-full gap-3 px-4 py-3 text-left text-[11px] md:items-center"
+              />
             </div>
           </aside>
 
@@ -242,23 +314,15 @@ export default function SystemCompanyPlanSkeleton() {
               </p>
             </div>
 
-            <div className="mt-4 grid gap-3">
-              {SYSTEM_COMPANY_PLAN_FIELDS.map((field) => (
-                <label
-                  key={field.id}
-                  className="grid gap-1 text-sm font-medium text-stone-700"
-                >
-                  {field.label}
-                  <input
-                    value={field.value}
-                    readOnly
-                    className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-500"
-                  />
-                  <span className="text-xs leading-5 text-stone-500">
-                    {field.description}
-                  </span>
-                </label>
-              ))}
+            <div className="mt-4">
+              <AdminTable
+                items={SYSTEM_COMPANY_PLAN_FIELDS}
+                columns={companyPlanFieldColumns}
+                getRowKey={(field) => field.id}
+                emptyLabel="요금제 수정 preview 필드가 없습니다."
+                gridTemplateColumns="0.8fr 0.9fr 1.3fr"
+                rowBaseClassName="grid w-full gap-3 px-4 py-3 text-left text-[11px] md:items-center"
+              />
             </div>
 
             <div className="mt-5 flex flex-wrap gap-2">
