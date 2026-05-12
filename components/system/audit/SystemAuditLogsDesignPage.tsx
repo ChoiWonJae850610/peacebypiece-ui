@@ -1,5 +1,5 @@
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
-import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
+import AdminTable from "@/components/admin/common/AdminTable";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import { APP_VERSION } from "@/lib/constants/app";
 
@@ -15,6 +15,7 @@ import {
   type SystemAuditLogEventLevel,
 } from "@/lib/system/audit/systemAuditLogs.design";
 import type { SystemAuditLogFilter, SystemAuditLogViewModel } from "@/lib/system/audit/types";
+import type { AdminTableColumn } from "@/lib/admin/common/types";
 
 type SystemAuditLogsDesignPageProps = {
   activeFilter?: SystemAuditLogFilter;
@@ -50,6 +51,72 @@ function getLevelTone(level: SystemAuditLogEventLevel): AdminStatusBadgeTone {
   if (level === "medium") return "info";
   return "neutral";
 }
+
+const AUDIT_LOG_TABLE_COLUMNS: AdminTableColumn<SystemAuditLogViewModel>[] = [
+  {
+    key: "occurredAt",
+    label: "발생 시각",
+    className: "font-mono text-[11px] text-stone-600",
+    render: (log) => log.occurredAt,
+  },
+  {
+    key: "eventType",
+    label: "이벤트",
+    className: "font-mono text-[11px] text-stone-700",
+    render: (log) => log.eventType,
+  },
+  {
+    key: "target",
+    label: "대상",
+    className: "text-stone-600",
+    render: (log) => log.targetLabel,
+  },
+  {
+    key: "actor",
+    label: "행위자",
+    className: "text-stone-600",
+    render: (log) => log.actorLabel,
+  },
+  {
+    key: "severity",
+    label: "심각도",
+    className: "text-center",
+    headerClassName: "text-center",
+    render: (log) => <AdminStatusBadge tone={getLevelTone(log.severity)}>{log.severity}</AdminStatusBadge>,
+  },
+  {
+    key: "summary",
+    label: "요약",
+    className: "leading-5 text-stone-700",
+    render: (log) => log.summary,
+  },
+];
+
+const AUDIT_SCHEMA_FIELD_TABLE_COLUMNS: AdminTableColumn<(typeof SYSTEM_AUDIT_LOG_SCHEMA_FIELDS)[number]>[] = [
+  {
+    key: "name",
+    label: "필드",
+    className: "font-mono text-[11px] text-stone-700",
+    render: (field) => field.name,
+  },
+  {
+    key: "purpose",
+    label: "용도",
+    className: "leading-5 text-stone-600",
+    render: (field) => field.purpose,
+  },
+  {
+    key: "required",
+    label: "필수",
+    className: "text-center",
+    headerClassName: "text-center",
+    render: (field) => (
+      <AdminStatusBadge tone={field.required ? "success" : "neutral"} size="xs">
+        {field.required ? "필수" : "선택"}
+      </AdminStatusBadge>
+    ),
+  },
+];
 
 export default function SystemAuditLogsDesignPage({
   activeFilter = {},
@@ -129,46 +196,15 @@ export default function SystemAuditLogsDesignPage({
             </AdminButton>
           </form>
 
-          <div className="mt-5 overflow-hidden rounded-2xl border border-stone-200">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-stone-100 text-stone-600">
-                <tr>
-                  <th className="px-3 py-2 font-semibold">발생 시각</th>
-                  <th className="px-3 py-2 font-semibold">이벤트</th>
-                  <th className="px-3 py-2 font-semibold">대상</th>
-                  <th className="px-3 py-2 font-semibold">행위자</th>
-                  <th className="px-3 py-2 text-center font-semibold">심각도</th>
-                  <th className="px-3 py-2 font-semibold">요약</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-stone-100 bg-white">
-                {auditLogViewModels.length > 0 ? (
-                  auditLogViewModels.map((log) => (
-                    <tr key={log.id}>
-                      <td className="whitespace-nowrap px-3 py-3 font-mono text-[11px] text-stone-600">{log.occurredAt}</td>
-                      <td className="whitespace-nowrap px-3 py-3 font-mono text-[11px] text-stone-700">{log.eventType}</td>
-                      <td className="px-3 py-3 text-stone-600">{log.targetLabel}</td>
-                      <td className="px-3 py-3 text-stone-600">{log.actorLabel}</td>
-                      <td className="px-3 py-3 text-center">
-                        <AdminStatusBadge tone={getLevelTone(log.severity)}>{log.severity}</AdminStatusBadge>
-                      </td>
-                      <td className="px-3 py-3 leading-5 text-stone-700">{log.summary}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={6} className="px-3 py-4">
-                      <AdminEmptyState
-                        title="아직 표시할 감사 로그가 없습니다."
-                        description="저장소 실제 삭제, 작업지시서 삭제·복원, 초대 생성, 고객사 생성, 멤버 권한 변경을 실행하면 이 목록에 운영 이벤트가 표시됩니다."
-                        className="border-0 shadow-none"
-                      />
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          <AdminTable
+            items={auditLogViewModels}
+            columns={AUDIT_LOG_TABLE_COLUMNS}
+            getRowKey={(log) => log.id}
+            emptyLabel="아직 표시할 감사 로그가 없습니다."
+            gridTemplateColumns="140px 160px 1fr 1fr 90px 1.7fr"
+            rowBaseClassName="grid w-full gap-3 px-4 py-3 text-left text-xs md:items-center"
+            className="mt-5"
+          />
         </section>
 
         <section className="grid gap-4 lg:grid-cols-2">
@@ -235,30 +271,15 @@ export default function SystemAuditLogsDesignPage({
             <p className="mt-2 text-sm leading-6 text-stone-600">
               0.10.10에서 audit_logs 테이블을 확정했습니다. 아래 필드는 DB patch와 full_reset에 반영된 기준입니다.
             </p>
-            <div className="mt-4 overflow-hidden rounded-2xl border border-stone-200">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-stone-100 text-stone-600">
-                  <tr>
-                    <th className="px-3 py-2 font-semibold">필드</th>
-                    <th className="px-3 py-2 font-semibold">용도</th>
-                    <th className="px-3 py-2 text-center font-semibold">필수</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-stone-100 bg-white">
-                  {SYSTEM_AUDIT_LOG_SCHEMA_FIELDS.map((field) => (
-                    <tr key={field.name}>
-                      <td className="px-3 py-2 font-mono text-[11px] text-stone-700">{field.name}</td>
-                      <td className="px-3 py-2 leading-5 text-stone-600">{field.purpose}</td>
-                      <td className="px-3 py-2 text-center text-stone-600">
-                        <AdminStatusBadge tone={field.required ? "success" : "neutral"} size="xs">
-                          {field.required ? "필수" : "선택"}
-                        </AdminStatusBadge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <AdminTable
+              items={SYSTEM_AUDIT_LOG_SCHEMA_FIELDS}
+              columns={AUDIT_SCHEMA_FIELD_TABLE_COLUMNS}
+              getRowKey={(field) => field.name}
+              emptyLabel="표시할 감사 로그 스키마 필드가 없습니다."
+              gridTemplateColumns="140px 1fr 80px"
+              rowBaseClassName="grid w-full gap-3 px-4 py-3 text-left text-xs md:items-center"
+              className="mt-4"
+            />
           </article>
 
 

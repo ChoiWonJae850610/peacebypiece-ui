@@ -1,18 +1,18 @@
 Version :
-0.11.14
+0.11.15
 
 Summary :
-시스템 접근 체크포인트 화면 공통 UI 적용
+시스템 감사 로그 테이블 공통 컴포넌트 적용
 
 Description :
-시스템관리자 접근 체크포인트 화면의 버전 라벨, 시스템 홈 링크, 점검 상태 라벨, route 링크를 관리자 공통 UI 컴포넌트 기준으로 전환했다.
+시스템관리자 감사 로그 화면의 감사 로그 목록과 스키마 필드 표를 AdminTable 공통 컴포넌트 기준으로 전환했다. 감사 로그 API, DB schema, 필터, 조회 로직은 변경하지 않았다.
 
 수정 파일 목록 :
-- components/system/access/SystemAccessStabilityCheckpoint.tsx
+- components/system/audit/SystemAuditLogsDesignPage.tsx
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/system-access-checkpoint-ui-standardization-0.11.14.md
+- docs/system-audit-table-standardization-0.11.15.md
 
 삭제 파일 목록 :
 없음
