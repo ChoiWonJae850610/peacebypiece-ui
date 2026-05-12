@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminButton, getAdminButtonClassName } from "@/components/admin/common/AdminButton";
 import ModalShell from "@/components/common/modal/ModalShell";
 import type { ReactNode } from "react";
 
@@ -67,12 +68,9 @@ export const adminModalInputClassName =
   "w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-sky-300 focus:ring-4 focus:ring-sky-100";
 
 export const adminModalLabelClassName = "text-xs font-semibold uppercase tracking-[0.14em] text-stone-500";
-export const adminModalSecondaryButtonClassName =
-  "inline-flex min-h-9 items-center justify-center rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:border-stone-300 hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50";
-export const adminModalPrimaryButtonClassName =
-  "inline-flex min-h-9 items-center justify-center rounded-full bg-stone-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-50";
-export const adminModalDangerButtonClassName =
-  "inline-flex min-h-9 items-center justify-center rounded-full bg-rose-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-50";
+export const adminModalSecondaryButtonClassName = getAdminButtonClassName({ variant: "secondary" });
+export const adminModalPrimaryButtonClassName = getAdminButtonClassName({ variant: "primary" });
+export const adminModalDangerButtonClassName = getAdminButtonClassName({ variant: "danger" });
 
 
 type AdminModalFooterActionsProps = {
@@ -105,23 +103,13 @@ export function AdminModalFooterActions({
       </div>
       <div className="flex shrink-0 items-center justify-end gap-2">
         {secondaryLabel && onSecondary ? (
-          <button
-            type="button"
-            onClick={onSecondary}
-            disabled={secondaryDisabled}
-            className={adminModalSecondaryButtonClassName}
-          >
+          <AdminButton variant="secondary" onClick={onSecondary} disabled={secondaryDisabled}>
             {secondaryLabel}
-          </button>
+          </AdminButton>
         ) : null}
-        <button
-          type="button"
-          onClick={onPrimary}
-          disabled={primaryDisabled}
-          className={adminModalPrimaryButtonClassName}
-        >
+        <AdminButton variant="primary" onClick={onPrimary} disabled={primaryDisabled}>
           {primaryLabel}
-        </button>
+        </AdminButton>
       </div>
     </div>
   );

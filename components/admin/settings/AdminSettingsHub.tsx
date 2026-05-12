@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
-import { AdminModal, AdminModalSection, adminModalPrimaryButtonClassName, adminModalSecondaryButtonClassName } from "@/components/admin/layout/AdminModal";
+import { AdminModal, AdminModalSection } from "@/components/admin/layout/AdminModal";
 import AdminStandardsSection from "@/components/admin/standards/AdminStandardsSection";
 import AdminCompanySettingsForm from "@/components/admin/settings/AdminCompanySettingsForm";
 import {
@@ -222,13 +223,13 @@ export default function AdminSettingsHub() {
         footer={
           <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
             {isFeedbackNotice ? (
-              <a className={adminModalPrimaryButtonClassName} href={feedbackMailtoHref}>
+              <AdminLinkButton variant="primary" href={feedbackMailtoHref}>
                 이메일 작성하기
-              </a>
+              </AdminLinkButton>
             ) : null}
-            <button type="button" className={isFeedbackNotice ? adminModalSecondaryButtonClassName : adminModalPrimaryButtonClassName} onClick={() => setNoticeMenuId(null)}>
+            <AdminButton variant={isFeedbackNotice ? "secondary" : "primary"} onClick={() => setNoticeMenuId(null)}>
               확인
-            </button>
+            </AdminButton>
           </div>
         }
       >
