@@ -1,21 +1,22 @@
 Version :
-0.10.64
+0.10.65
 
 Summary :
-시스템관리자 고객사 승인과 회사 생성 화면 추가
+고객사 생성 시 초기 기준정보 복사 연결
 
 Description :
-시스템관리자가 고객사 초대 링크로 들어온 가입 신청을 검토하고 고객사 생성, 고객관리자 승인, 권한 부여, 초기 기준정보 복사 흐름을 확인할 수 있는 /system/companies 화면을 추가했다. 시스템 콘솔의 고객사 관리 링크도 승인 화면으로 연결했다.
+시스템관리자 고객사 생성 흐름에서 회사 생성 직후 활성 단위 표준, 외주공정 유형, 기본 생산품 유형 템플릿을 신규 고객사 기준정보로 복사하는 repository를 추가했다. DB transaction 유틸을 추가하고 시스템 고객사 승인 화면의 초기 기준정보 복사 단계도 연결 완료 상태로 보정했다.
 
 수정 파일 목록 :
-- lib/system/systemConsoleShell.ts
+- lib/db/client.ts
+- lib/company/api/companyRouteHandlers.ts
+- lib/system/systemCompanyApprovalConsole.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- app/system/companies/page.tsx
-- components/system/companies/SystemCompanyApprovalConsole.tsx
-- lib/system/systemCompanyApprovalConsole.ts
-- docs/system-company-approval-create-company-0.10.64.md
+- lib/system/standards/index.ts
+- lib/system/standards/companyStandardsInitializationRepository.ts
+- docs/company-standards-initialization-0.10.65.md
 
 삭제 파일 목록 :
 없음

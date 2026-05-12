@@ -12,8 +12,14 @@ type PoolQueryResult<TRow extends DbQueryResultRow = DbQueryResultRow> = {
   rowCount?: number | null;
 };
 
+type PgClientLike = {
+  query: <TRow extends DbQueryResultRow = DbQueryResultRow>(text: string, params?: unknown[]) => Promise<PoolQueryResult<TRow>>;
+  release: () => void;
+};
+
 type PgPoolLike = {
   query: <TRow extends DbQueryResultRow = DbQueryResultRow>(text: string, params?: unknown[]) => Promise<PoolQueryResult<TRow>>;
+  connect?: () => Promise<PgClientLike>;
   end: () => Promise<void>;
 };
 
@@ -119,4 +125,44 @@ export async function queryDb<TRow extends DbQueryResultRow = DbQueryResultRow>(
     rows: result.rows,
     rowCount: result.rowCount ?? result.rows.length,
   };
+}
+
+
+export type DbTransactionClient = {
+  query: <TRow extends DbQueryResultRow = DbQueryResultRow>(text: string, params?: unknown[]) => Promise<DbQueryResult<TRow>>;
+};
+
+export async function withDbTransaction<TResult>(
+  operation: (client: DbTransactionClient) => Promise<TResult>,
+): Promise<TResult> {
+  const pool = await getDbPool();
+
+  if (typeof pool.connect !== "function") {
+    throw new Error("The configured database pool does not support transactions.");
+  }
+
+  const client = await pool.connect();
+
+  const transactionClient: DbTransactionClient = {
+    async query<TRow extends DbQueryResultRow = DbQueryResultRow>(text: string, params: unknown[] = []) {
+      const result = await client.query<TRow>(text, params);
+
+      return {
+        rows: result.rows,
+        rowCount: result.rowCount ?? result.rows.length,
+      };
+    },
+  };
+
+  try {
+    await client.query("BEGIN");
+    const result = await operation(transactionClient);
+    await client.query("COMMIT");
+    return result;
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
 }

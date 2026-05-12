@@ -141,9 +141,9 @@ export const SYSTEM_COMPANY_APPROVAL_STEPS: SystemCompanyApprovalStep[] = [
   {
     id: "initialize-standards",
     title: "초기 기준정보 복사",
-    description: "고객사 생성 후 시스템 기준정보를 고객사 초기 생산품 유형, 단위, 외주공정 기준으로 복사합니다.",
-    status: "locked",
-    statusLabel: "0.10.65 연결",
+    description: "고객사 생성 후 initializeCompanyStandards로 활성 단위 표준, 외주공정 유형, 기본 생산품 유형 템플릿을 복사합니다.",
+    status: "ready",
+    statusLabel: "연결 완료",
   },
 ];
 
@@ -196,11 +196,11 @@ export const SYSTEM_COMPANY_APPROVAL_POLICY_NOTES: SystemCompanyApprovalPolicyNo
   {
     id: "standards-after-company",
     title: "기준정보 복사는 회사 생성 후",
-    description: "고객사 id가 확정된 뒤 0.10.51의 초기 기준정보 복사 설계를 연결합니다. 실패 시 회사 생성 rollback 여부를 명시합니다.",
+    description: "고객사 id가 확정된 뒤 initializeCompanyStandards가 company_enabled_unit_standards, company_enabled_process_standards, item_categories를 초기화합니다.",
   },
   {
     id: "audit-log-candidates",
     title: "감사 로그 후보",
-    description: "company.created, company_invitation.approved, member.approved, member.permission_updated, company.standards_initialized 이벤트를 후속 연결합니다.",
+    description: "company.created, company_invitation.approved, member.approved, member.permission_updated는 후속 연결하고, 기준정보 초기화 결과는 API 응답의 standardsInitialization으로 확인합니다.",
   },
 ];

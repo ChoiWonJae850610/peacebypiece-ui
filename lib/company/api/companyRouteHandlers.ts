@@ -5,6 +5,7 @@ import {
   companyRepository,
 } from "../companyRepository";
 import type { CreateCompanyInput, ListCompaniesQuery } from "../companyTypes";
+import { initializeCompanyStandards } from "@/lib/system/standards/companyStandardsInitializationRepository";
 
 function toBooleanParam(value: string | null): boolean | undefined {
   if (value === null) {
@@ -64,11 +65,15 @@ export async function handleCreateCompany(request: Request) {
   try {
     const input = (await request.json()) as CreateCompanyInput;
     const company = await companyRepository.createCompany(input);
+    const standardsInitialization = await initializeCompanyStandards({
+      companyId: company.id,
+    });
 
     return NextResponse.json(
       {
         ok: true,
         company,
+        standardsInitialization,
       },
       { status: 201 },
     );
