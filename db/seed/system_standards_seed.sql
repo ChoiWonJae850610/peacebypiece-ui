@@ -1,102 +1,19 @@
 -- =========================================
--- PeaceByPiece patch 0.10.38
--- 시스템 기준정보 DB schema 설계
+-- PeaceByPiece seed: system standards baseline
+-- 시스템 기준정보 seed 보강
 --
 -- 목적:
--- - 단위 표준과 외주공정 유형은 시스템관리자 표준 원장으로 관리한다.
--- - 고객사는 시스템 표준 중 사용/미사용만 선택한다.
--- - 생산품 유형은 고객사별 직접 관리를 유지하되, 신규 고객사 기본 템플릿 원장을 시스템에 둔다.
+-- - 0.10.46 이후 기준정보 화면은 fallback을 사용하지 않고 DB 결과만 표시한다.
+-- - 기존 DB를 유지하면서 단위 표준, 외주공정 유형, 생산품 유형 기본 템플릿 seed를 보강한다.
+-- - full_reset 없이 기존 개발 DB에 부족한 시스템 기준정보만 채운다.
+--
+-- 주의:
+-- - 이 SQL은 baseline seed를 upsert한다.
+-- - 고객관리자가 미사용 처리한 company_enabled_* 기존 설정은 덮어쓰지 않는다.
+-- - 신규로 누락된 고객사-기준정보 연결만 true 기본값으로 추가한다.
 -- =========================================
 
 BEGIN;
-
-CREATE TABLE IF NOT EXISTS system_unit_standards (
-  id text PRIMARY KEY,
-  code text NOT NULL UNIQUE,
-  korean_name text NOT NULL,
-  english_code text NOT NULL,
-  category text NOT NULL DEFAULT 'general',
-  description text,
-  example_label text,
-  is_active boolean NOT NULL DEFAULT true,
-  sort_order integer NOT NULL DEFAULT 0,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS company_enabled_unit_standards (
-  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-  unit_standard_id text NOT NULL REFERENCES system_unit_standards(id) ON DELETE CASCADE,
-  is_enabled boolean NOT NULL DEFAULT true,
-  custom_label text,
-  sort_order integer,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  PRIMARY KEY (company_id, unit_standard_id)
-);
-
-CREATE TABLE IF NOT EXISTS system_outsourcing_process_standards (
-  id text PRIMARY KEY,
-  code text NOT NULL UNIQUE,
-  name text NOT NULL,
-  category text NOT NULL DEFAULT 'general',
-  description text,
-  example_label text,
-  is_active boolean NOT NULL DEFAULT true,
-  sort_order integer NOT NULL DEFAULT 0,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS company_enabled_process_standards (
-  company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-  process_standard_id text NOT NULL REFERENCES system_outsourcing_process_standards(id) ON DELETE CASCADE,
-  is_enabled boolean NOT NULL DEFAULT true,
-  custom_label text,
-  sort_order integer,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  PRIMARY KEY (company_id, process_standard_id)
-);
-
-CREATE TABLE IF NOT EXISTS system_product_type_templates (
-  id text PRIMARY KEY,
-  code text NOT NULL UNIQUE,
-  name text NOT NULL,
-  description text,
-  is_default boolean NOT NULL DEFAULT false,
-  is_active boolean NOT NULL DEFAULT true,
-  sort_order integer NOT NULL DEFAULT 0,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS system_product_type_template_categories (
-  id text PRIMARY KEY,
-  template_id text NOT NULL REFERENCES system_product_type_templates(id) ON DELETE CASCADE,
-  parent_id text REFERENCES system_product_type_template_categories(id) ON DELETE CASCADE,
-  level integer NOT NULL,
-  name text NOT NULL,
-  is_active boolean NOT NULL DEFAULT true,
-  sort_order integer NOT NULL DEFAULT 0,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT system_product_type_template_categories_level_check CHECK (level IN (1, 2, 3)),
-  CONSTRAINT system_product_type_template_categories_unique UNIQUE (template_id, parent_id, name)
-);
-
-CREATE INDEX IF NOT EXISTS system_unit_standards_active_idx
-  ON system_unit_standards (is_active, sort_order, korean_name);
-CREATE INDEX IF NOT EXISTS company_enabled_unit_standards_company_idx
-  ON company_enabled_unit_standards (company_id, is_enabled, sort_order);
-CREATE INDEX IF NOT EXISTS system_outsourcing_process_standards_active_idx
-  ON system_outsourcing_process_standards (is_active, sort_order, name);
-CREATE INDEX IF NOT EXISTS company_enabled_process_standards_company_idx
-  ON company_enabled_process_standards (company_id, is_enabled, sort_order);
-CREATE INDEX IF NOT EXISTS system_product_type_templates_active_idx
-  ON system_product_type_templates (is_active, is_default, sort_order, name);
-CREATE INDEX IF NOT EXISTS system_product_type_template_categories_template_idx
-  ON system_product_type_template_categories (template_id, level, parent_id, sort_order, name);
 
 INSERT INTO system_permission_catalog (permission_key, label, description, category, is_active)
 VALUES

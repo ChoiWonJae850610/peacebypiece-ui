@@ -1,6 +1,6 @@
 -- =========================================
 -- PeaceByPiece full_reset smoke test
--- Version: 0.10.38
+-- Version: 0.10.77
 --
 -- 목적:
 -- - full_reset.sql 실행 후 핵심 테이블 / view / seed / 제약 구조가 만들어졌는지 확인한다.
@@ -30,6 +30,11 @@ BEGIN
       ('permission_catalog', to_regclass('public.permission_catalog')),
       ('role_permissions', to_regclass('public.role_permissions')),
       ('company_user_permissions', to_regclass('public.company_user_permissions')),
+      ('company_members', to_regclass('public.company_members')),
+      ('member_permissions', to_regclass('public.member_permissions')),
+      ('role_templates', to_regclass('public.role_templates')),
+      ('role_template_permissions', to_regclass('public.role_template_permissions')),
+      ('join_requests', to_regclass('public.join_requests')),
       ('system_users', to_regclass('public.system_users')),
       ('system_permission_catalog', to_regclass('public.system_permission_catalog')),
       ('system_user_permissions', to_regclass('public.system_user_permissions')),
@@ -140,7 +145,27 @@ BEGIN
       ('system_product_type_templates', 'is_default'),
       ('system_product_type_template_categories', 'template_id'),
       ('system_product_type_template_categories', 'parent_id'),
-      ('system_product_type_template_categories', 'level')
+      ('system_product_type_template_categories', 'level'),
+      ('users', 'auth_provider'),
+      ('users', 'provider_user_id'),
+      ('users', 'email_verified'),
+      ('users', 'status'),
+      ('companies', 'plan_code'),
+      ('companies', 'status'),
+      ('permission_catalog', 'permission_group'),
+      ('permission_catalog', 'label_key'),
+      ('permission_catalog', 'description_key'),
+      ('permission_catalog', 'is_system_permission'),
+      ('permission_catalog', 'sort_order'),
+      ('company_members', 'role_template_code'),
+      ('member_permissions', 'permission_code'),
+      ('role_templates', 'role_code'),
+      ('role_template_permissions', 'permission_code'),
+      ('invitations', 'invitation_type'),
+      ('invitations', 'invited_email'),
+      ('invitations', 'target_role_template_code'),
+      ('join_requests', 'request_type'),
+      ('join_requests', 'created_company_id')
   ) AS required_columns(table_name, column_name)
   WHERE NOT EXISTS (
     SELECT 1
@@ -192,6 +217,8 @@ DECLARE
   system_unit_standard_count integer;
   system_process_standard_count integer;
   system_product_template_count integer;
+  role_template_count integer;
+  member_permission_catalog_count integer;
 BEGIN
   SELECT count(*) INTO role_count FROM role_catalog;
   SELECT count(*) INTO permission_count FROM permission_catalog;
@@ -201,12 +228,14 @@ BEGIN
   SELECT count(*) INTO system_unit_standard_count FROM system_unit_standards;
   SELECT count(*) INTO system_process_standard_count FROM system_outsourcing_process_standards;
   SELECT count(*) INTO system_product_template_count FROM system_product_type_templates;
+  SELECT count(*) INTO role_template_count FROM role_templates WHERE is_system_default = true;
+  SELECT count(*) INTO member_permission_catalog_count FROM permission_catalog WHERE permission_group IN ('workorder', 'member', 'storage', 'settings', 'audit');
 
   IF role_count < 5 THEN
     RAISE EXCEPTION 'role_catalog seed count too low: %', role_count;
   END IF;
 
-  IF permission_count < 14 THEN
+  IF permission_count < 30 THEN
     RAISE EXCEPTION 'permission_catalog seed count too low: %', permission_count;
   END IF;
 
@@ -232,6 +261,14 @@ BEGIN
 
   IF system_product_template_count < 1 THEN
     RAISE EXCEPTION 'system_product_type_templates seed missing';
+  END IF;
+
+  IF role_template_count < 5 THEN
+    RAISE EXCEPTION 'role_templates default seed count too low: %', role_template_count;
+  END IF;
+
+  IF member_permission_catalog_count < 20 THEN
+    RAISE EXCEPTION 'permission_catalog member/access seed count too low: %', member_permission_catalog_count;
   END IF;
 END $$;
 
@@ -366,6 +403,45 @@ BEGIN
 
   IF invalid_month_rows > 0 THEN
     RAISE EXCEPTION 'company_workorder_monthly_stats contains invalid stats_month rows: %', invalid_month_rows;
+  END IF;
+END $$;
+
+
+DO $$
+DECLARE
+  invitation_company_nullable text;
+  active_status_exists boolean;
+  cancelled_status_exists boolean;
+BEGIN
+  SELECT is_nullable
+  INTO invitation_company_nullable
+  FROM information_schema.columns
+  WHERE table_schema = current_schema()
+    AND table_name = 'invitations'
+    AND column_name = 'company_id';
+
+  IF invitation_company_nullable <> 'YES' THEN
+    RAISE EXCEPTION 'invitations.company_id must be nullable for system_to_company_admin invitations';
+  END IF;
+
+  SELECT EXISTS (
+    SELECT 1
+    FROM pg_enum e
+    JOIN pg_type t ON t.oid = e.enumtypid
+    WHERE t.typname = 'invitation_status'
+      AND e.enumlabel = 'active'
+  ) INTO active_status_exists;
+
+  SELECT EXISTS (
+    SELECT 1
+    FROM pg_enum e
+    JOIN pg_type t ON t.oid = e.enumtypid
+    WHERE t.typname = 'invitation_status'
+      AND e.enumlabel = 'cancelled'
+  ) INTO cancelled_status_exists;
+
+  IF NOT active_status_exists OR NOT cancelled_status_exists THEN
+    RAISE EXCEPTION 'invitation_status enum must include active and cancelled';
   END IF;
 END $$;
 
