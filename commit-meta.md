@@ -1,20 +1,19 @@
 Version :
-0.10.96
+0.10.97
 
 Summary :
-작업지시서 하위 정규 테이블 저장 보정
+시스템관리자 홈 IA 카드형 진입 화면 정리
 
 Description :
-작업지시서 정규화 이후 spec_sheet_materials와 spec_sheet_outsourcing_lines 동기화 코드에 남아 있던 payload 호환 분기를 제거했다. orders, spec_sheet_materials, spec_sheet_outsourcing_lines schema 조회도 모듈 단위 캐시로 보정해 저장 시 반복되는 information_schema 조회 비용을 줄였다.
+시스템관리자 홈 화면에서 샘플 고객사, 샘플 규칙, API 준비 카드, placeholder, 긴 통계 preview를 제거하고 운영 메뉴와 관리·점검 메뉴 중심의 카드형 진입 화면으로 정리했다. 시스템 홈은 주요 기능으로 이동하는 내비게이션 역할만 하도록 단순화했다.
 
 수정 파일 목록 :
-- lib/workorder/repository/dbFactoryOrderRepository.ts
-- lib/workorder/repository/dbSpecSheetMaterialRepository.ts
-- lib/workorder/repository/dbSpecSheetOutsourcingRepository.ts
+- components/system/SystemConsoleShell.tsx
+- lib/system/systemConsoleShell.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/workorder-normalized-detail-schema-cleanup-0.10.96.md
+- docs/system-console-home-ia-cleanup-0.10.97.md
 
 삭제 파일 목록 :
 없음
