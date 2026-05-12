@@ -13,7 +13,7 @@ export type {
 };
 
 export interface InvitationDraft {
-  companyId: string;
+  companyId: string | null;
   inviterCompanyId?: string | null;
   recipientEmail: string;
   recipientRole: InvitationRecipientRole;
@@ -26,7 +26,7 @@ export interface InvitationDraft {
 
 export interface InvitationRecord {
   id: string;
-  companyId: string;
+  companyId: string | null;
   recipientEmail: string;
   recipientRole: InvitationRecipientRole;
   permissionPreset: InvitationPermissionPreset;

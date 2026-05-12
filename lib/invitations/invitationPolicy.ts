@@ -85,10 +85,6 @@ export function evaluateInvitationPolicy(
   }
 
   if (input.scope === "system_to_company_admin") {
-    if (!input.companyId) {
-      reasons.push("company_id_required");
-    }
-
     if (!SYSTEM_ALLOWED_ROLES.includes(input.recipientRole)) {
       reasons.push("system_invitation_allows_company_admin_only");
     }

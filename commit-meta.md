@@ -1,22 +1,26 @@
 Version :
-0.10.75
+0.10.76
 
 Summary :
-멤버 초대 권한 감사 로그 이벤트 연결
+초대 생성 API와 초대 링크 실제 저장 1차 연결
 
 Description :
-초대 생성과 고객사 생성 API에 시스템 감사 로그 연결 지점을 추가하고, 멤버 승인·거절·권한 변경·요금제 변경 감사 로그 빌더를 보강했다. 시스템 감사 로그 설계 화면과 문서도 0.10.75 기준으로 갱신했다.
+고객관리자 멤버 초대와 시스템관리자 고객사 초대 화면에서 invitations API를 호출해 실제 초대 링크를 생성하고 복사할 수 있도록 연결했다. 초대 repository는 DB가 설정된 경우 invitations 테이블에 token_hash만 저장하고 raw token은 생성 응답에서 한 번만 반환하도록 보정했다. 시스템관리자 고객사 초대는 승인 전 회사가 없을 수 있으므로 company_id NULL 허용 보강 SQL과 테스트 문서를 추가했다.
 
 수정 파일 목록 :
-- lib/constants/app.ts
-- lib/system/audit/writeActions.ts
+- components/admin/members/AdminMemberManagementDashboard.tsx
+- components/system/invitations/SystemCustomerInviteSkeleton.tsx
+- lib/admin/members/memberManagementPresentation.ts
 - lib/invitations/api/invitationRouteHandlers.ts
-- lib/company/api/companyRouteHandlers.ts
-- lib/system/audit/systemAuditLogs.design.ts
-- components/system/audit/SystemAuditLogsDesignPage.tsx
+- lib/invitations/invitationPolicy.ts
+- lib/invitations/invitationRepository.ts
+- lib/invitations/invitationTypes.ts
+- lib/system/systemCustomerInviteSkeleton.ts
+- lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/member-invitation-permission-audit-events-0.10.75.md
+- db/schema/patch_0_10_76_invitation_actual_create.sql
+- docs/actual-invitation-create-link-qr-0.10.76.md
 
 삭제 파일 목록 :
 없음

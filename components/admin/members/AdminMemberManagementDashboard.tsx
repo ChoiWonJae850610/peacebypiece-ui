@@ -41,6 +41,27 @@ function EmptyState({ title, description }: { title: string; description: string
   );
 }
 
+type CreatedInvitationResult = {
+  inviteUrl: string;
+  rawToken: string;
+  invitation?: {
+    id: string;
+    expiresAt: string;
+  };
+};
+
+function getAbsoluteInviteUrl(inviteUrl: string): string {
+  if (typeof window === "undefined") return inviteUrl;
+  return new URL(inviteUrl, window.location.origin).toString();
+}
+
+function resolveExpiresAt(expiresInDays: string): string {
+  const days = Number.parseInt(expiresInDays.replace("d", ""), 10);
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + (Number.isFinite(days) ? days : 7));
+  return expiresAt.toISOString();
+}
+
 function QrPreview({ rows }: { rows: readonly (readonly boolean[])[] }) {
   return (
     <div className="grid size-36 grid-cols-9 rounded-2xl border border-stone-200 bg-white p-2 shadow-inner" aria-hidden="true">
@@ -79,7 +100,15 @@ export default function AdminMemberManagementDashboard() {
     () => inviteRoleOptions.find((role) => role.id === selectedRoleId) ?? inviteRoleOptions[0],
     [inviteRoleOptions, selectedRoleId],
   );
-  const previewInviteLink = `/invite/member/preview-${selectedRole?.id ?? "viewer"}`;
+  const [targetName, setTargetName] = useState("");
+  const [targetContact, setTargetContact] = useState("");
+  const [expiresInDays, setExpiresInDays] = useState("7d");
+  const [createdInvitation, setCreatedInvitation] = useState<CreatedInvitationResult | null>(null);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+  const [isCreatingInvite, setIsCreatingInvite] = useState(false);
+  const previewInviteLink = createdInvitation?.inviteUrl
+    ? getAbsoluteInviteUrl(createdInvitation.inviteUrl)
+    : `/invite/member/preview-${selectedRole?.id ?? "viewer"}`;
   const canCreateInvite = hasEveryMemberPermission(
     { permissionCodes: currentPermissionCodes },
     ["member.invite"],
@@ -88,6 +117,51 @@ export default function AdminMemberManagementDashboard() {
   const members = getMemberListPreviews();
   const invitations = getMemberInvitationPreviews();
   const joinRequests = getMemberJoinRequestPreviews();
+  const canSubmitInvite = canCreateInvite && targetContact.trim().length > 0 && !isCreatingInvite;
+
+  async function handleCreateInvite() {
+    if (!canSubmitInvite || !selectedRole) return;
+
+    setIsCreatingInvite(true);
+    setInviteError(null);
+
+    try {
+      const response = await fetch("/api/invitations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          scope: "company_to_member",
+          companyId: "company-sample-customer",
+          inviterCompanyId: "company-sample-customer",
+          recipientEmail: targetContact.trim(),
+          recipientRole: selectedRole.id as "designer" | "inspector" | "inventory_manager" | "viewer",
+          permissionPreset: selectedRole.id,
+          expiresAt: resolveExpiresAt(expiresInDays),
+          createdByUserId: "user-sample-admin",
+        }),
+      });
+      const payload = await response.json();
+
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.error ?? "INVITATION_CREATE_FAILED");
+      }
+
+      setCreatedInvitation({
+        inviteUrl: payload.inviteUrl,
+        rawToken: payload.rawToken,
+        invitation: payload.invitation,
+      });
+    } catch (error) {
+      setInviteError(error instanceof Error ? error.message : "INVITATION_CREATE_FAILED");
+    } finally {
+      setIsCreatingInvite(false);
+    }
+  }
+
+  async function handleCopyInviteLink() {
+    if (!createdInvitation?.inviteUrl || typeof navigator === "undefined") return;
+    await navigator.clipboard.writeText(getAbsoluteInviteUrl(createdInvitation.inviteUrl));
+  }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1">
@@ -172,6 +246,8 @@ export default function AdminMemberManagementDashboard() {
               </span>
               <input
                 type="text"
+                value={targetName}
+                onChange={(event) => setTargetName(event.target.value)}
                 className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-900 outline-none focus:border-stone-400"
                 placeholder={t("memberManagement.inviteBuilder.placeholders.targetName", "예: 디자이너 김00")}
               />
@@ -181,9 +257,11 @@ export default function AdminMemberManagementDashboard() {
                 {t("memberManagement.inviteBuilder.fields.targetContact", "이메일 또는 휴대폰")}
               </span>
               <input
-                type="text"
+                type="email"
+                value={targetContact}
+                onChange={(event) => setTargetContact(event.target.value)}
                 className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-900 outline-none focus:border-stone-400"
-                placeholder={t("memberManagement.inviteBuilder.placeholders.targetContact", "선택 입력") }
+                placeholder={t("memberManagement.inviteBuilder.placeholders.targetContact", "designer@example.com") }
               />
             </label>
             <label className="block rounded-2xl border border-stone-200 bg-stone-50 p-4">
@@ -206,7 +284,11 @@ export default function AdminMemberManagementDashboard() {
               <span className="text-xs font-semibold text-stone-500">
                 {t("memberManagement.inviteBuilder.fields.expires", "초대 만료") }
               </span>
-              <select className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-900 outline-none focus:border-stone-400" defaultValue="7d">
+              <select
+                value={expiresInDays}
+                onChange={(event) => setExpiresInDays(event.target.value)}
+                className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-900 outline-none focus:border-stone-400"
+              >
                 <option value="3d">{t("memberManagement.inviteBuilder.expires.3d", "3일")}</option>
                 <option value="7d">{t("memberManagement.inviteBuilder.expires.7d", "7일")}</option>
                 <option value="14d">{t("memberManagement.inviteBuilder.expires.14d", "14일")}</option>
@@ -225,23 +307,48 @@ export default function AdminMemberManagementDashboard() {
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
-                    className="inline-flex items-center justify-center rounded-full border border-stone-200 bg-stone-100 px-4 py-2 text-xs font-semibold text-stone-500"
-                    disabled
+                    onClick={handleCopyInviteLink}
+                    className={createdInvitation
+                      ? "inline-flex items-center justify-center rounded-full border border-stone-900 bg-white px-4 py-2 text-xs font-semibold text-stone-900 transition hover:bg-stone-50"
+                      : "inline-flex items-center justify-center rounded-full border border-stone-200 bg-stone-100 px-4 py-2 text-xs font-semibold text-stone-500"}
+                    disabled={!createdInvitation}
                   >
                     {t("memberManagement.inviteBuilder.actions.copy", "링크 복사")}
                   </button>
                   <button
                     type="button"
-                    className="inline-flex items-center justify-center rounded-full border border-stone-200 bg-stone-100 px-4 py-2 text-xs font-semibold text-stone-500"
-                    disabled
+                    onClick={handleCreateInvite}
+                    className={canSubmitInvite
+                      ? "inline-flex items-center justify-center rounded-full border border-stone-900 bg-stone-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-stone-800"
+                      : "inline-flex items-center justify-center rounded-full border border-stone-200 bg-stone-100 px-4 py-2 text-xs font-semibold text-stone-500"}
+                    disabled={!canSubmitInvite}
                   >
-                    {t("memberManagement.inviteBuilder.actions.create", "초대 생성")}
+                    {isCreatingInvite
+                      ? t("memberManagement.inviteBuilder.actions.creating", "생성 중")
+                      : t("memberManagement.inviteBuilder.actions.create", "초대 생성")}
                   </button>
                 </div>
               </div>
               <p className="mt-3 text-xs leading-5 text-stone-500">
-                {t("memberManagement.inviteBuilder.disabledNotice", "실제 token 생성, 저장, 복사 기능은 invitations API 연결 후 활성화합니다.")}
+                {createdInvitation
+                  ? t("memberManagement.inviteBuilder.createdNotice", "초대가 생성되었습니다. raw token은 이 응답에서만 확인되며 DB에는 token_hash만 저장됩니다.")
+                  : t("memberManagement.inviteBuilder.disabledNotice", "이메일을 입력하면 invitations API로 실제 초대 링크를 생성합니다.")}
               </p>
+              {targetName.trim() ? (
+                <p className="mt-2 text-xs leading-5 text-stone-500">
+                  {t("memberManagement.inviteBuilder.targetNameNotice", "초대 대상")}: {targetName.trim()}
+                </p>
+              ) : null}
+              {inviteError ? (
+                <p className="mt-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">
+                  {inviteError}
+                </p>
+              ) : null}
+              {createdInvitation?.invitation ? (
+                <p className="mt-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
+                  ID {createdInvitation.invitation.id} · expires {new Date(createdInvitation.invitation.expiresAt).toLocaleString()}
+                </p>
+              ) : null}
             </div>
           </div>
 

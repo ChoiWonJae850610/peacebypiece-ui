@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 
 import InvitationQrPreview from "@/components/invitations/InvitationQrPreview";
@@ -32,7 +35,68 @@ function getActionClassName(state: "ready" | "disabled") {
   return "border-stone-200 bg-stone-100 text-stone-400";
 }
 
+type CreatedSystemInvitationResult = {
+  inviteUrl: string;
+  rawToken: string;
+  invitation?: {
+    id: string;
+    expiresAt: string;
+  };
+};
+
+function getAbsoluteInviteUrl(inviteUrl: string): string {
+  if (typeof window === "undefined") return inviteUrl;
+  return new URL(inviteUrl, window.location.origin).toString();
+}
+
 export default function SystemCustomerInviteSkeleton() {
+  const [adminEmail, setAdminEmail] = useState("customer-admin@example.com");
+  const [createdInvitation, setCreatedInvitation] = useState<CreatedSystemInvitationResult | null>(null);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+  const [isCreatingInvite, setIsCreatingInvite] = useState(false);
+  const canCreateInvite = adminEmail.trim().length > 0 && !isCreatingInvite;
+
+  async function handleCreateInvite() {
+    if (!canCreateInvite) return;
+
+    setIsCreatingInvite(true);
+    setInviteError(null);
+
+    try {
+      const response = await fetch("/api/invitations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          scope: "system_to_company_admin",
+          recipientEmail: adminEmail.trim(),
+          recipientRole: "admin",
+          permissionPreset: "company_admin",
+          createdBySystemUserId: "system-user-sample-admin",
+        }),
+      });
+      const payload = await response.json();
+
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.error ?? "INVITATION_CREATE_FAILED");
+      }
+
+      setCreatedInvitation({
+        inviteUrl: payload.inviteUrl,
+        rawToken: payload.rawToken,
+        invitation: payload.invitation,
+      });
+    } catch (error) {
+      setInviteError(error instanceof Error ? error.message : "INVITATION_CREATE_FAILED");
+    } finally {
+      setIsCreatingInvite(false);
+    }
+  }
+
+  async function handleCopyInviteLink() {
+    if (!createdInvitation?.inviteUrl || typeof navigator === "undefined") return;
+    await navigator.clipboard.writeText(getAbsoluteInviteUrl(createdInvitation.inviteUrl));
+  }
+
   return (
     <main className="min-h-screen bg-stone-50 px-4 py-6 text-stone-900 sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
@@ -94,10 +158,13 @@ export default function SystemCustomerInviteSkeleton() {
               <label key={field.id} className="block rounded-2xl border border-stone-200 bg-stone-50 p-4">
                 <span className="text-xs font-semibold text-stone-500">{field.label}</span>
                 <input
-                  readOnly
+                  readOnly={field.id !== "admin-email"}
                   type={field.inputType === "email" ? "email" : "text"}
-                  value={field.value}
-                  className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm font-medium text-stone-700 outline-none"
+                  value={field.id === "admin-email" ? adminEmail : field.value}
+                  onChange={(event) => {
+                    if (field.id === "admin-email") setAdminEmail(event.target.value);
+                  }}
+                  className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm font-medium text-stone-700 outline-none focus:border-stone-400"
                 />
                 <span className="mt-2 block text-xs leading-5 text-stone-500">{field.helper}</span>
               </label>
@@ -143,7 +210,23 @@ export default function SystemCustomerInviteSkeleton() {
         </section>
 
         <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-          <InvitationQrPreview model={SYSTEM_CUSTOMER_INVITE_QR_PREVIEW} />
+          <div className="space-y-3">
+            <InvitationQrPreview model={{
+              ...SYSTEM_CUSTOMER_INVITE_QR_PREVIEW,
+              inviteUrl: createdInvitation?.inviteUrl ? getAbsoluteInviteUrl(createdInvitation.inviteUrl) : SYSTEM_CUSTOMER_INVITE_QR_PREVIEW.inviteUrl,
+            }} />
+            {createdInvitation ? (
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-semibold text-emerald-700">
+                <p>초대 생성 완료</p>
+                <p className="mt-1 break-all">{getAbsoluteInviteUrl(createdInvitation.inviteUrl)}</p>
+              </div>
+            ) : null}
+            {inviteError ? (
+              <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-semibold text-rose-700">
+                {inviteError}
+              </div>
+            ) : null}
+          </div>
 
           <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
             <div className="border-b border-stone-100 pb-4">
@@ -160,7 +243,29 @@ export default function SystemCustomerInviteSkeleton() {
 
                 return (
                   <div key={action.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-                    {action.state === "ready" && action.href ? (
+                    {action.id === "create-invite" ? (
+                      <button
+                        type="button"
+                        onClick={handleCreateInvite}
+                        disabled={!canCreateInvite}
+                        className={canCreateInvite
+                          ? "block w-full rounded-xl border border-stone-900 bg-stone-900 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-stone-800"
+                          : actionClassName}
+                      >
+                        {isCreatingInvite ? "생성 중" : action.label}
+                      </button>
+                    ) : action.id === "copy-link" ? (
+                      <button
+                        type="button"
+                        onClick={handleCopyInviteLink}
+                        disabled={!createdInvitation}
+                        className={createdInvitation
+                          ? "block w-full rounded-xl border border-stone-900 bg-white px-4 py-2 text-center text-sm font-semibold text-stone-900 hover:bg-stone-50"
+                          : actionClassName}
+                      >
+                        {action.label}
+                      </button>
+                    ) : action.state === "ready" && action.href ? (
                       <Link href={action.href} className={actionClassName}>
                         {action.label}
                       </Link>

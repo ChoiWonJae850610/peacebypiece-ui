@@ -14,6 +14,10 @@ import type {
   InvitationScope,
 } from "../invitationTypes";
 
+const SAMPLE_COMPANY_ID = "company-sample-customer";
+const SAMPLE_ADMIN_USER_ID = "user-sample-admin";
+const SAMPLE_SYSTEM_USER_ID = "system-user-sample-admin";
+
 interface CreateInvitationRequestBody {
   companyId?: string | null;
   inviterCompanyId?: string | null;
@@ -38,21 +42,22 @@ function getRequestIpAddress(request: Request): string | null {
 
 function toInvitationDraft(body: CreateInvitationRequestBody): InvitationDraft {
   const scope = body.scope ?? "company_to_member";
-  const recipientRole = body.recipientRole ?? "viewer";
+  const recipientRole = body.recipientRole ?? (scope === "system_to_company_admin" ? "admin" : "viewer");
   const permissionPreset =
     body.permissionPreset ??
     (recipientRole === "admin" ? "company_admin" : recipientRole);
+  const inviterCompanyId = body.inviterCompanyId ?? (scope === "company_to_member" ? SAMPLE_COMPANY_ID : null);
 
   return {
-    companyId: body.companyId ?? body.inviterCompanyId ?? "",
-    inviterCompanyId: body.inviterCompanyId ?? null,
+    companyId: body.companyId ?? inviterCompanyId ?? null,
+    inviterCompanyId,
     recipientEmail: body.recipientEmail ?? "",
     recipientRole,
     permissionPreset,
     scope,
     expiresAt: body.expiresAt ?? getDefaultInvitationExpiresAt(),
-    createdByUserId: body.createdByUserId ?? null,
-    createdBySystemUserId: body.createdBySystemUserId ?? null,
+    createdByUserId: body.createdByUserId ?? (scope === "company_to_member" ? SAMPLE_ADMIN_USER_ID : null),
+    createdBySystemUserId: body.createdBySystemUserId ?? (scope === "system_to_company_admin" ? SAMPLE_SYSTEM_USER_ID : null),
   };
 }
 
@@ -143,10 +148,12 @@ export async function handleCreateInvitation(request: Request) {
       }),
     );
 
+    const { tokenHash: _tokenHash, ...publicInvitation } = result.invitation;
+
     return NextResponse.json(
       {
         ok: true,
-        invitation: result.invitation,
+        invitation: publicInvitation,
         rawToken: result.rawToken,
         inviteUrl: result.inviteUrl,
         tokenPolicy: "raw token is returned only once and must never be stored in DB",

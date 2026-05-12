@@ -214,7 +214,9 @@ export function getMemberRolePreviews(): readonly MemberRolePreview[] {
 }
 
 export function getMemberInviteRoleOptions(): readonly MemberInviteRoleOption[] {
-  return MEMBER_ROLE_PREVIEWS.map((role) => ({ id: role.id, permissionCount: role.permissionCount }));
+  return MEMBER_ROLE_PREVIEWS
+    .filter((role) => role.id !== "company_admin")
+    .map((role) => ({ id: role.id, permissionCount: role.permissionCount }));
 }
 
 export function getMemberInvitationSetupCards(): readonly MemberInvitationSetupCard[] {

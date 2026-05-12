@@ -51,8 +51,8 @@ export const SYSTEM_CUSTOMER_INVITE_STEPS: SystemCustomerInviteStep[] = [
     title: "초대 링크 생성",
     description:
       "raw token은 생성 응답에서만 보여주고 DB에는 token_hash만 저장하는 정책으로 연결합니다.",
-    status: "planned",
-    statusLabel: "API 예정",
+    status: "ready",
+    statusLabel: "API 연결",
   },
   {
     id: "manual-share",
@@ -148,13 +148,13 @@ export const SYSTEM_CUSTOMER_INVITE_RESULT_ACTIONS: SystemCustomerInviteResultAc
   {
     id: "create-invite",
     label: "초대 링크 생성",
-    helper: "현재는 UI 자리만 고정하고 실제 DB 저장은 후속 API에서 연결합니다.",
-    state: "disabled",
+    helper: "invitations API로 raw token을 생성하고 DB에는 token_hash만 저장합니다.",
+    state: "ready",
   },
   {
     id: "copy-link",
     label: "링크 복사",
-    helper: "생성된 inviteUrl을 클립보드에 복사할 버튼 자리입니다.",
+    helper: "생성된 inviteUrl을 클립보드에 복사합니다. 자동 이메일/SMS 발송은 하지 않습니다.",
     state: "disabled",
   },
   {
