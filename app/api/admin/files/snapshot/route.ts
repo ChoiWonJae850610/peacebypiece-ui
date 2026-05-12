@@ -6,6 +6,7 @@ import { getCompanySettings, getCurrentAdminCompany } from "@/lib/admin/settings
 import { listAdminFileManagementRows } from "@/lib/admin/files/serverActions";
 import { queryDb } from "@/lib/db/client";
 import type { DbQueryResultRow } from "@/lib/db/client";
+import type { CompanyFilePolicySettings } from "@/lib/admin/settings/companyTypes";
 import type { AdminFileTrendPeriod, AdminFileTypeDistributionItem, AdminFileUsageCard, AdminRecentUploadTrendPoint, AdminManagedFileItem, AdminStorageUsageSummary } from "@/lib/admin/files/types";
 export const runtime = "nodejs";
 
@@ -13,7 +14,7 @@ function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error || "UNKNOWN_ERROR");
 }
 
-function buildUsageSummary(activeBytes: number, trashBytes: number, filePolicy: ReturnType<typeof normalizeAdminFilePolicySettings>): AdminStorageUsageSummary {
+function buildUsageSummary(activeBytes: number, trashBytes: number, filePolicy: CompanyFilePolicySettings): AdminStorageUsageSummary {
   const quotaPolicy = resolveStorageQuotaFromCompanyFilePolicy(filePolicy);
   const summary = buildResolvedStorageUsageSummary({ activeBytes, trashBytes, quotaPolicy });
 
@@ -144,7 +145,7 @@ function buildUsageCards(
   trashBytes: number,
   purgeRequestCount: number,
   purgeRequestBytes: number,
-  filePolicy: ReturnType<typeof normalizeAdminFilePolicySettings>,
+  filePolicy: CompanyFilePolicySettings,
 ): AdminFileUsageCard[] {
   const summary = buildUsageSummary(activeBytes, trashBytes, filePolicy);
   return [
@@ -178,8 +179,8 @@ export async function GET(request: Request) {
         workOrders: rows.workOrders,
         attachments: rows.attachments,
         trashItems: rows.trashItems,
-        usageSummary: buildUsageSummary(activeBytes, trashBytes, policySettings),
-        usageCards: buildUsageCards(rows.attachments.length, rows.trashItems.length, activeBytes, trashBytes, purgeRequestSummary.count, purgeRequestSummary.bytes, policySettings),
+        usageSummary: buildUsageSummary(activeBytes, trashBytes, settings.filePolicy),
+        usageCards: buildUsageCards(rows.attachments.length, rows.trashItems.length, activeBytes, trashBytes, purgeRequestSummary.count, purgeRequestSummary.bytes, settings.filePolicy),
         storagePolicies: buildAdminStoragePolicyItems(policySettings),
         policySettings,
         recentUploadTrend: buildRecentUploadTrend(rows.attachments.map((item) => item.uploadedAt), trendPeriod),

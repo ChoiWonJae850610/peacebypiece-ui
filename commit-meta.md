@@ -1,26 +1,22 @@
 Version :
-0.10.72
+0.10.73
 
 Summary :
-저장소 용량 기준 중앙화
+고객별 요금제 변경 화면과 저장소 quota 타입 오류 수정
 
 Description :
-저장소 용량 한도와 사용률 계산 기준을 billing storage quota policy로 분리하고, 고객관리자 저장소와 통계, 시스템 저장소 화면이 같은 기본 quota 기준을 참조하도록 보정했다.
+시스템관리자 요금제 화면에 고객별 요금제와 저장공간, 멤버, 가격 override 변경 preview를 추가했다. 0.10.72 빌드에서 발생한 저장소 snapshot quota 계산 타입 오류도 수정했다.
 
 수정 파일 목록 :
 - app/api/admin/files/snapshot/route.ts
-- app/system/storage-usage/page.tsx
-- lib/admin/adminDashboard.presentation.ts
-- lib/admin/adminFiles.presentation.ts
-- lib/admin/stats/selectors.ts
+- components/system/billing/SystemCompanyPlanSkeleton.tsx
+- lib/system/systemCompanyPlanSkeleton.ts
 - lib/billing/index.ts
-- lib/constants/adminStats.ts
 - lib/constants/app.ts
-- lib/system/storagePurgePresentation.ts
 
 추가 파일 목록 :
-- lib/billing/storageQuotaPolicy.ts
-- docs/storage-quota-centralization-0.10.72.md
+- lib/billing/companyPlanChangePolicy.ts
+- docs/system-company-plan-change-screen-0.10.73.md
 
 삭제 파일 목록 :
 없음

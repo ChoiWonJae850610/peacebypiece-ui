@@ -7,6 +7,12 @@ import {
   type CompanyPlanAssignment,
   type PlanDefinition,
   type ResolvedCompanyPlanPolicy,
+  getCompanyPlanChangeFields,
+  getCompanyPlanChangePreview,
+  getCompanyPlanChangeValidationItems,
+  type CompanyPlanChangeFieldDefinition,
+  type CompanyPlanChangePreview,
+  type CompanyPlanChangeValidationItem,
 } from "@/lib/billing";
 
 export interface SystemCompanyPlanOption {
@@ -45,6 +51,10 @@ export interface SystemCompanyPlanPolicyStep {
   statusLabel: string;
   description: string;
 }
+
+export type SystemCompanyPlanChangeField = CompanyPlanChangeFieldDefinition;
+export type SystemCompanyPlanChangePreview = CompanyPlanChangePreview;
+export type SystemCompanyPlanChangeValidationItem = CompanyPlanChangeValidationItem;
 
 const sampleAssignments: CompanyPlanAssignment[] = [
   {
@@ -187,6 +197,28 @@ export const SYSTEM_COMPANY_PLAN_COMPANIES: SystemCompanyPlanCompany[] =
     };
   });
 
+
+const samplePlanChangeDraft = {
+  companyId: "sample-company-2",
+  companyName: "샘플 브랜드 B",
+  currentAssignment: sampleAssignments[1],
+  nextPlanCode: "team",
+  storageLimitBytesOverride: 80 * 1024 * 1024 * 1024,
+  memberLimitOverride: 20,
+  priceKrwOverride: 99000,
+  effectiveDate: "2026-06-01",
+  memo: "초기 도입 고객사 한시 override 예시",
+};
+
+export const SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW =
+  getCompanyPlanChangePreview(samplePlanChangeDraft);
+
+export const SYSTEM_COMPANY_PLAN_CHANGE_FIELDS =
+  getCompanyPlanChangeFields(samplePlanChangeDraft);
+
+export const SYSTEM_COMPANY_PLAN_CHANGE_VALIDATION_ITEMS =
+  getCompanyPlanChangeValidationItems(samplePlanChangeDraft);
+
 export const SYSTEM_COMPANY_PLAN_FIELDS: SystemCompanyPlanField[] = [
   {
     id: "plan",
@@ -227,14 +259,14 @@ export const SYSTEM_COMPANY_PLAN_POLICY_STEPS: SystemCompanyPlanPolicyStep[] = [
   {
     id: "company-assignment",
     title: "고객사 배정",
-    statusLabel: "설계 단계",
+    statusLabel: "변경 화면 준비",
     description:
       "company_plan_assignments에서 고객사별 현재 plan과 적용 기간을 관리합니다.",
   },
   {
     id: "override-policy",
     title: "예외 한도",
-    statusLabel: "설계 단계",
+    statusLabel: "입력 구조 준비",
     description:
       "저장용량, 멤버 수, 가격만 override 대상으로 두고 기능 플래그는 plan 기준을 우선합니다.",
   },
@@ -250,6 +282,7 @@ export const SYSTEM_COMPANY_PLAN_POLICY_STEPS: SystemCompanyPlanPolicyStep[] = [
 export const SYSTEM_COMPANY_PLAN_POLICY_NOTES = [
   "고객관리자는 읽기 전용으로 현재 plan과 한도만 확인합니다.",
   "시스템관리자만 고객사별 plan과 override를 변경합니다.",
+  "0.10.73 기준 변경 입력은 preview이며 실제 저장은 company_plan_assignments API 연결 후 활성화합니다.",
   "저장공간 사용률이 85% 이상이면 주의, 한도 초과는 초과 상태로 표시합니다.",
   "업로드 차단과 초과 과금 정책은 실제 결제 연동 이후 결정합니다.",
 ] as const;

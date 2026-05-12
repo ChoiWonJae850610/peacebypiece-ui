@@ -2,6 +2,9 @@ import Link from "next/link";
 
 import { APP_VERSION } from "@/lib/constants/app";
 import {
+  SYSTEM_COMPANY_PLAN_CHANGE_FIELDS,
+  SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW,
+  SYSTEM_COMPANY_PLAN_CHANGE_VALIDATION_ITEMS,
   SYSTEM_COMPANY_PLAN_COMPANIES,
   SYSTEM_COMPANY_PLAN_FIELDS,
   SYSTEM_COMPANY_PLAN_OPTIONS,
@@ -105,6 +108,126 @@ export default function SystemCompanyPlanSkeleton() {
                 <p className="mt-3 text-xs leading-5 text-stone-600">{step.description}</p>
               </article>
             ))}
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+          <div className="flex flex-col gap-2 border-b border-stone-100 pb-4">
+            <h2 className="text-lg font-semibold text-stone-950">고객별 요금제 변경 preview</h2>
+            <p className="text-sm leading-6 text-stone-600">
+              시스템관리자가 고객사별 plan, 저장공간, 멤버 수, 가격 override를 한 화면에서 확인한 뒤 저장하는 구조입니다.
+              현재는 저장 전 preview이며 실제 API 연결 전까지 버튼은 비활성 상태로 유지합니다.
+            </p>
+          </div>
+
+          <div className="mt-4 grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+            <article className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-base font-semibold text-stone-950">
+                    {SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW.companyName}
+                  </h3>
+                  <p className="mt-1 text-xs text-stone-500">
+                    {SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW.companyId}
+                  </p>
+                </div>
+                <span className="rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-600">
+                  {SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW.policySourceLabel}
+                </span>
+              </div>
+              <dl className="mt-4 grid gap-2 text-xs text-stone-600">
+                <div className="flex justify-between gap-3">
+                  <dt>현재 요금제</dt>
+                  <dd className="font-semibold text-stone-900">
+                    {SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW.currentPlanLabel}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt>변경 요금제</dt>
+                  <dd className="font-semibold text-stone-900">
+                    {SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW.nextPlanLabel}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt>저장공간</dt>
+                  <dd className="font-semibold text-stone-900">
+                    {SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW.storageChangeLabel}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt>멤버</dt>
+                  <dd className="font-semibold text-stone-900">
+                    {SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW.memberChangeLabel}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt>금액</dt>
+                  <dd className="font-semibold text-stone-900">
+                    {SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW.priceChangeLabel}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt>적용 시작일</dt>
+                  <dd className="font-semibold text-stone-900">
+                    {SYSTEM_COMPANY_PLAN_CHANGE_PREVIEW.effectiveDateLabel}
+                  </dd>
+                </div>
+              </dl>
+            </article>
+
+            <div className="grid gap-3">
+              {SYSTEM_COMPANY_PLAN_CHANGE_FIELDS.map((field) => (
+                <article
+                  key={field.id}
+                  className="rounded-2xl border border-stone-200 bg-stone-50 p-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-semibold text-stone-950">{field.label}</h3>
+                      <p className="mt-1 text-sm font-medium text-stone-700">{field.value}</p>
+                    </div>
+                    <span className="shrink-0 rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-600">
+                      {field.statusLabel}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-stone-500">{field.description}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-3 lg:grid-cols-4">
+            {SYSTEM_COMPANY_PLAN_CHANGE_VALIDATION_ITEMS.map((item) => (
+              <article
+                key={item.id}
+                className="rounded-2xl border border-stone-200 bg-white p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="text-sm font-semibold text-stone-950">{item.label}</h3>
+                  <span className="shrink-0 rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-[11px] font-semibold text-stone-600">
+                    {item.statusLabel}
+                  </span>
+                </div>
+                <p className="mt-3 text-xs leading-5 text-stone-600">{item.description}</p>
+              </article>
+            ))}
+          </div>
+
+          <div className="mt-5 flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled
+              className="rounded-xl border border-stone-200 bg-stone-100 px-4 py-2 text-sm font-semibold text-stone-400"
+            >
+              고객사 요금제 변경 저장 준비중
+            </button>
+            <button
+              type="button"
+              disabled
+              className="rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-400"
+            >
+              변경 이력 기록 준비중
+            </button>
           </div>
         </section>
 
