@@ -1,6 +1,7 @@
 "use client";
 
 import AdminActionBar from "@/components/admin/common/AdminActionBar";
+import { AdminButton } from "@/components/admin/common/AdminButton";
 import AdminTable from "@/components/admin/common/AdminTable";
 import { ADMIN_FILE_SORT_OPTIONS } from "@/lib/admin/files/presentation";
 import type { AdminFileSortKey, AdminManagedFileItem } from "@/lib/admin/files/types";
@@ -33,12 +34,12 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
             <option key={option.key} value={option.key}>{t(`filesList.sort.${option.key}`, option.label)}</option>
           ))}
         </select>
-        <button type="button" onClick={onToggleAll} disabled={isActionPending || items.length === 0} className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm hover:bg-stone-50 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-50 disabled:text-stone-400">
+        <AdminButton onClick={onToggleAll} disabled={isActionPending || items.length === 0}>
           {allSelected ? t("filesList.clearAll", "전체 해제") : t("filesList.selectAll", "전체 선택")}
-        </button>
-        <button type="button" onClick={onMoveToTrash} disabled={!canAct} className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${canAct ? "border-red-200 bg-white text-red-600 shadow-sm hover:bg-red-50" : "border-stone-200 bg-stone-50 text-stone-400"}`}>
+        </AdminButton>
+        <AdminButton variant="danger" onClick={onMoveToTrash} disabled={!canAct}>
           {isActionPending ? t("filesList.processing", "처리 중") : t("filesList.delete", "삭제")} {hasSelection ? selectedItemIds.length : ""}
-        </button>
+        </AdminButton>
       </AdminActionBar>
 
       <AdminTable

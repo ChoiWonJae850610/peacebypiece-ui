@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminButton } from "@/components/admin/common/AdminButton";
 import type {
   AdminFileTypeDistributionItem,
   AdminFileUsageCard,
@@ -147,13 +148,13 @@ function PlanUsageCard({
             </span>
           </div>
         </div>
-        <button
-          type="button"
-          className="shrink-0 rounded-full border border-stone-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-700 shadow-sm transition hover:bg-stone-50"
+        <AdminButton
+          size="sm"
           title={t("filesSummary.upgradeTitle", "요금제 업그레이드 화면은 후속 버전에서 연결합니다.")}
+          className="min-h-7 px-2.5 py-1 text-[11px]"
         >
           {t("filesSummary.upgrade", "업그레이드")}
-        </button>
+        </AdminButton>
       </div>
 
       <StorageCylinder percent={hasPlanLimit ? usageSummary.usagePercent : 0} />

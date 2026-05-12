@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import AdminActionBar from "@/components/admin/common/AdminActionBar";
+import { AdminButton } from "@/components/admin/common/AdminButton";
 import AdminTable from "@/components/admin/common/AdminTable";
 import type {
   AdminStorageWorkOrderItem,
@@ -9,7 +10,6 @@ import type {
 } from "@/lib/admin/files/types";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { formatAdminTermCount } from "@/lib/i18n/adminTermFormatters";
-import { getTrashActionButtonClassName } from "@/components/admin/files/fileTrashSectionPresentation";
 import { createFileTrashColumns } from "@/components/admin/files/fileTrashSectionColumns";
 import {
   TRASH_TABLE_GRID,
@@ -143,19 +143,16 @@ export default function FileTrashSection({
   return (
     <section className="flex h-full min-h-[360px] flex-col rounded-[22px] border border-stone-200 bg-white p-3 shadow-sm md:min-h-0">
       <AdminActionBar title={t("trashPage.title", "휴지통")}>
-        <button
-          type="button"
+        <AdminButton
           onClick={onRefresh}
-          className={getTrashActionButtonClassName(canRefresh)}
           disabled={!canRefresh}
           title={t("filesSummary.refreshLabel", "저장소 데이터 새로고침")}
         >
           {isRefreshing ? t("filesPage.refreshing", "새로고침 중") : t("terms.actions.refresh", "새로고침")}
-        </button>
-        <button
-          type="button"
+        </AdminButton>
+        <AdminButton
+          variant="primary"
           onClick={onRestore}
-          className={getTrashActionButtonClassName(canRestoreSelection)}
           disabled={!canRestoreSelection}
           title={
             selectedItems.some((item) => !item.canRestore)
@@ -170,11 +167,10 @@ export default function FileTrashSection({
             ? t("filesList.processing", "처리 중")
             : t("terms.actions.restore", "복원")} {" "}
           {selectedCount > 0 ? formatAdminTermCount(t, selectedCount, "item") : ""}
-        </button>
-        <button
-          type="button"
+        </AdminButton>
+        <AdminButton
+          variant="danger"
           onClick={onPurge}
-          className={getTrashActionButtonClassName(canPurgeSelection, "danger")}
           disabled={!canPurgeSelection}
           title={
             selectedItems.some((item) => !item.canPurge)
@@ -189,15 +185,14 @@ export default function FileTrashSection({
             ? t("filesList.processing", "처리 중")
             : t("filesList.purge", "선택 삭제")} {" "}
           {selectedCount > 0 ? formatAdminTermCount(t, selectedCount, "item") : ""}
-        </button>
-        <button
-          type="button"
+        </AdminButton>
+        <AdminButton
+          variant="danger"
           onClick={() => setIsEmptyTrashConfirmOpen(true)}
-          className={getTrashActionButtonClassName(canEmptyTrash, "dangerSolid")}
           disabled={!canEmptyTrash}
         >
           {t("filesList.emptyTrash", "비우기")}
-        </button>
+        </AdminButton>
       </AdminActionBar>
 
       <EmptyTrashConfirmModal

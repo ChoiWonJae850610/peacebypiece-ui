@@ -1,6 +1,7 @@
 "use client";
 
 import AdminActionBar from "@/components/admin/common/AdminActionBar";
+import { AdminButton } from "@/components/admin/common/AdminButton";
 import AdminTable from "@/components/admin/common/AdminTable";
 import type { AdminStorageWorkOrderItem } from "@/lib/admin/files/types";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
@@ -39,14 +40,12 @@ export default function WorkOrderStorageSection({ items }: WorkOrderStorageSecti
         <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-600">
           {t("filesWorkOrders.trashRetention", "30일 휴지통 보관")}
         </span>
-        <button
-          type="button"
+        <AdminButton
           disabled
-          className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-400"
           title={t("filesWorkOrders.restoreDisabledTitle", "작업지시서 묶음 복원은 다음 단계에서 연결합니다.")}
         >
           {t("filesWorkOrders.restorePreparing", "작업지시서 복원 준비중")}
-        </button>
+        </AdminButton>
       </AdminActionBar>
 
       <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50/70 px-3 py-3 text-xs text-amber-800">
