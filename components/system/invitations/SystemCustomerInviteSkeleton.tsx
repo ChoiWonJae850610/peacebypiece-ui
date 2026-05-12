@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-
+import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import InvitationQrPreview from "@/components/invitations/InvitationQrPreview";
 import { APP_VERSION } from "@/lib/constants/app";
 import { SYSTEM_CUSTOMER_INVITE_QR_PREVIEW } from "@/lib/invitations/invitationQrPreview";
@@ -15,24 +15,14 @@ import {
   SYSTEM_CUSTOMER_INVITE_STEPS,
 } from "@/lib/system/systemCustomerInviteSkeleton";
 
-function getStepStatusClassName(status: "ready" | "planned" | "locked") {
-  if (status === "ready") {
-    return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  }
-
-  if (status === "planned") {
-    return "border-amber-200 bg-amber-50 text-amber-700";
-  }
-
-  return "border-stone-200 bg-stone-100 text-stone-500";
+function getInviteStepStatusTone(status: "ready" | "planned" | "locked") {
+  if (status === "ready") return "success";
+  if (status === "planned") return "warning";
+  return "neutral";
 }
 
-function getActionClassName(state: "ready" | "disabled") {
-  if (state === "ready") {
-    return "border-stone-900 bg-stone-900 text-white hover:bg-stone-800";
-  }
-
-  return "border-stone-200 bg-stone-100 text-stone-400";
+function getInviteActionVariant(state: "ready" | "disabled") {
+  return state === "ready" ? "primary" : "secondary";
 }
 
 type CreatedSystemInvitationResult = {
@@ -117,15 +107,8 @@ export default function SystemCustomerInviteSkeleton() {
             </div>
 
             <div className="flex flex-wrap gap-2 text-xs font-medium">
-              <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-stone-600">
-                v{APP_VERSION}
-              </span>
-              <Link
-                href="/system"
-                className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50"
-              >
-                시스템 콘솔
-              </Link>
+              <AdminStatusBadge tone="neutral">v{APP_VERSION}</AdminStatusBadge>
+              <AdminLinkButton href="/system">시스템 콘솔</AdminLinkButton>
             </div>
           </div>
         </header>
@@ -190,13 +173,9 @@ export default function SystemCustomerInviteSkeleton() {
                   <span className="flex h-7 w-7 items-center justify-center rounded-full bg-stone-900 text-xs font-semibold text-white">
                     {index + 1}
                   </span>
-                  <span
-                    className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getStepStatusClassName(
-                      step.status,
-                    )}`}
-                  >
+                  <AdminStatusBadge tone={getInviteStepStatusTone(step.status)}>
                     {step.statusLabel}
-                  </span>
+                  </AdminStatusBadge>
                 </div>
                 <h3 className="mt-4 text-sm font-semibold text-stone-950">
                   {step.title}
@@ -236,52 +215,38 @@ export default function SystemCustomerInviteSkeleton() {
               </p>
             </div>
             <div className="mt-5 space-y-3">
-              {SYSTEM_CUSTOMER_INVITE_RESULT_ACTIONS.map((action) => {
-                const actionClassName = `block w-full rounded-xl border px-4 py-2 text-center text-sm font-semibold ${getActionClassName(
-                  action.state,
-                )}`;
-
-                return (
-                  <div key={action.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-                    {action.id === "create-invite" ? (
-                      <button
-                        type="button"
-                        onClick={handleCreateInvite}
-                        disabled={!canCreateInvite}
-                        className={canCreateInvite
-                          ? "block w-full rounded-xl border border-stone-900 bg-stone-900 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-stone-800"
-                          : actionClassName}
-                      >
-                        {isCreatingInvite ? "생성 중" : action.label}
-                      </button>
-                    ) : action.id === "copy-link" ? (
-                      <button
-                        type="button"
-                        onClick={handleCopyInviteLink}
-                        disabled={!createdInvitation}
-                        className={createdInvitation
-                          ? "block w-full rounded-xl border border-stone-900 bg-white px-4 py-2 text-center text-sm font-semibold text-stone-900 hover:bg-stone-50"
-                          : actionClassName}
-                      >
-                        {action.label}
-                      </button>
-                    ) : action.state === "ready" && action.href ? (
-                      <Link href={action.href} className={actionClassName}>
-                        {action.label}
-                      </Link>
-                    ) : (
-                      <button
-                        type="button"
-                        disabled
-                        className={actionClassName}
-                      >
-                        {action.label}
-                      </button>
-                    )}
-                    <p className="mt-2 text-xs leading-5 text-stone-500">{action.helper}</p>
-                  </div>
-                );
-              })}
+              {SYSTEM_CUSTOMER_INVITE_RESULT_ACTIONS.map((action) => (
+                <div key={action.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+                  {action.id === "create-invite" ? (
+                    <AdminButton
+                      onClick={handleCreateInvite}
+                      disabled={!canCreateInvite}
+                      variant={canCreateInvite ? "primary" : "secondary"}
+                      className="w-full rounded-xl"
+                    >
+                      {isCreatingInvite ? "생성 중" : action.label}
+                    </AdminButton>
+                  ) : action.id === "copy-link" ? (
+                    <AdminButton
+                      onClick={handleCopyInviteLink}
+                      disabled={!createdInvitation}
+                      variant={createdInvitation ? "secondary" : "secondary"}
+                      className="w-full rounded-xl"
+                    >
+                      {action.label}
+                    </AdminButton>
+                  ) : action.state === "ready" && action.href ? (
+                    <AdminLinkButton href={action.href} variant={getInviteActionVariant(action.state)} className="w-full rounded-xl">
+                      {action.label}
+                    </AdminLinkButton>
+                  ) : (
+                    <AdminButton disabled variant={getInviteActionVariant(action.state)} className="w-full rounded-xl">
+                      {action.label}
+                    </AdminButton>
+                  )}
+                  <p className="mt-2 text-xs leading-5 text-stone-500">{action.helper}</p>
+                </div>
+              ))}
             </div>
           </article>
         </section>

@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-
+import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
+import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import { APP_VERSION } from "@/lib/constants/app";
 import type { JoinRequestRecord } from "@/lib/invitations/joinRequestTypes";
 import {
@@ -28,37 +29,27 @@ type CompanyJoinRequestReviewResponse = {
   error?: string;
 };
 
-function getStepStatusClassName(status: SystemCompanyApprovalStepStatus) {
-  if (status === "ready") {
-    return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  }
-
-  if (status === "planned") {
-    return "border-amber-200 bg-amber-50 text-amber-700";
-  }
-
-  return "border-stone-200 bg-stone-100 text-stone-500";
+function getCompanyStepStatusTone(status: SystemCompanyApprovalStepStatus) {
+  if (status === "ready") return "success";
+  if (status === "planned") return "warning";
+  return "neutral";
 }
 
-function getActionClassName(state: "disabled" | "ready") {
-  if (state === "ready") {
-    return "border-stone-900 bg-stone-900 text-white hover:bg-stone-800";
-  }
-
-  return "border-stone-200 bg-stone-100 text-stone-400";
+function getCompanyActionVariant(state: "disabled" | "ready") {
+  return state === "ready" ? "primary" : "secondary";
 }
 
-function getLoadStatusClassName(status: SystemCompanyJoinRequestLoadStatus) {
-  if (status === "loaded") return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  if (status === "loading") return "border-amber-200 bg-amber-50 text-amber-700";
-  if (status === "failed") return "border-rose-200 bg-rose-50 text-rose-700";
-  return "border-stone-200 bg-stone-100 text-stone-500";
+function getLoadStatusTone(status: SystemCompanyJoinRequestLoadStatus) {
+  if (status === "loaded") return "success";
+  if (status === "loading") return "warning";
+  if (status === "failed") return "danger";
+  return "neutral";
 }
 
-function getEmailMatchClassName(status: SystemCompanyRequestEmailMatchStatus) {
-  if (status === "matched") return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  if (status === "mismatched") return "border-amber-200 bg-amber-50 text-amber-700";
-  return "border-stone-200 bg-stone-100 text-stone-500";
+function getEmailMatchTone(status: SystemCompanyRequestEmailMatchStatus) {
+  if (status === "matched") return "success";
+  if (status === "mismatched") return "warning";
+  return "neutral";
 }
 
 function getLoadStatusLabel(status: SystemCompanyJoinRequestLoadStatus) {
@@ -72,15 +63,6 @@ function getEmailMatchLabel(status: SystemCompanyRequestEmailMatchStatus) {
   if (status === "matched") return "일치";
   if (status === "mismatched") return "불일치";
   return "확인 필요";
-}
-
-function EmptyState({ title, description }: { title: string; description: string }) {
-  return (
-    <div className="rounded-2xl border border-dashed border-stone-200 bg-stone-50/70 p-6 text-center">
-      <p className="text-sm font-semibold text-stone-800">{title}</p>
-      <p className="mt-2 text-xs leading-5 text-stone-500">{description}</p>
-    </div>
-  );
 }
 
 export default function SystemCompanyApprovalConsole() {
@@ -196,21 +178,9 @@ export default function SystemCompanyApprovalConsole() {
             </div>
 
             <div className="flex flex-wrap gap-2 text-xs font-medium">
-              <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-stone-600">
-                v{APP_VERSION}
-              </span>
-              <Link
-                href="/system"
-                className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50"
-              >
-                시스템 콘솔
-              </Link>
-              <Link
-                href="/system/invites"
-                className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50"
-              >
-                고객 초대
-              </Link>
+              <AdminStatusBadge tone="neutral">v{APP_VERSION}</AdminStatusBadge>
+              <AdminLinkButton href="/system">시스템 콘솔</AdminLinkButton>
+              <AdminLinkButton href="/system/invites">고객 초대</AdminLinkButton>
             </div>
           </div>
         </header>
@@ -234,16 +204,10 @@ export default function SystemCompanyApprovalConsole() {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${getLoadStatusClassName(joinRequestLoadStatus)}`}>
+              <AdminStatusBadge tone={getLoadStatusTone(joinRequestLoadStatus)}>
                 {getLoadStatusLabel(joinRequestLoadStatus)}
-              </span>
-              <button
-                type="button"
-                onClick={() => void loadCompanyJoinRequests()}
-                className="rounded-full border border-stone-300 bg-white px-3 py-1 text-xs font-semibold text-stone-700 hover:bg-stone-50"
-              >
-                새로고침
-              </button>
+              </AdminStatusBadge>
+              <AdminButton onClick={() => void loadCompanyJoinRequests()}>새로고침</AdminButton>
             </div>
           </div>
 
@@ -267,7 +231,7 @@ export default function SystemCompanyApprovalConsole() {
 
           <div className="mt-5 overflow-x-auto">
             {joinRequests.length === 0 ? (
-              <EmptyState
+              <AdminEmptyState
                 title="승인 대기 고객사 가입 신청이 없습니다."
                 description="고객사 초대 링크로 가입 신청이 들어오면 이 영역에 실제 join_requests.pending 데이터가 표시됩니다."
               />
@@ -298,31 +262,29 @@ export default function SystemCompanyApprovalConsole() {
                       </td>
                       <td className="px-4 py-4 text-xs text-stone-600">{request.invitationEmailLabel}</td>
                       <td className="px-4 py-4 text-center">
-                        <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getEmailMatchClassName(request.emailMatchStatus)}`}>
+                        <AdminStatusBadge tone={getEmailMatchTone(request.emailMatchStatus)}>
                           {getEmailMatchLabel(request.emailMatchStatus)}
-                        </span>
+                        </AdminStatusBadge>
                       </td>
                       <td className="px-4 py-4 text-xs text-stone-600">{request.applicantPhoneLabel}</td>
                       <td className="max-w-[260px] px-4 py-4 text-xs leading-5 text-stone-600">{request.requestMemoLabel}</td>
                       <td className="px-4 py-4 text-xs text-stone-600">{request.requestedAtLabel}</td>
                       <td className="px-4 py-4 text-center">
                         <div className="flex justify-center gap-2">
-                          <button
-                            type="button"
+                          <AdminButton
                             onClick={() => void approveCompanyJoinRequest(request.id)}
                             disabled={approvingRequestId !== null || rejectingRequestId !== null}
-                            className="rounded-full border border-stone-900 bg-stone-900 px-3 py-1 text-xs font-semibold text-white hover:bg-stone-800 disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
+                            variant="primary"
                           >
                             {approvingRequestId === request.id ? "승인 중" : "승인"}
-                          </button>
-                          <button
-                            type="button"
+                          </AdminButton>
+                          <AdminButton
                             onClick={() => void rejectCompanyJoinRequest(request.id)}
                             disabled={approvingRequestId !== null || rejectingRequestId !== null}
-                            className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-100 disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
+                            variant="danger"
                           >
                             {rejectingRequestId === request.id ? "거절 중" : "거절"}
-                          </button>
+                          </AdminButton>
                         </div>
                       </td>
                     </tr>
@@ -348,9 +310,9 @@ export default function SystemCompanyApprovalConsole() {
                   <span className="flex h-7 w-7 items-center justify-center rounded-full bg-stone-900 text-xs font-semibold text-white">
                     {index + 1}
                   </span>
-                  <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getStepStatusClassName(step.status)}`}>
+                  <AdminStatusBadge tone={getCompanyStepStatusTone(step.status)}>
                     {step.statusLabel}
-                  </span>
+                  </AdminStatusBadge>
                 </div>
                 <h3 className="mt-4 text-sm font-semibold text-stone-950">{step.title}</h3>
                 <p className="mt-2 text-xs leading-5 text-stone-600">{step.description}</p>
@@ -372,9 +334,7 @@ export default function SystemCompanyApprovalConsole() {
                 <article key={item.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-semibold text-stone-950">{item.label}</p>
-                    <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
-                      기본 체크
-                    </span>
+                    <AdminStatusBadge tone="success">기본 체크</AdminStatusBadge>
                   </div>
                   <code className="mt-3 block rounded-xl border border-stone-200 bg-white px-3 py-2 text-[11px] text-stone-600">
                     {item.permissionCode}
@@ -392,23 +352,23 @@ export default function SystemCompanyApprovalConsole() {
               </p>
             </div>
             <div className="mt-5 space-y-3">
-              {SYSTEM_COMPANY_APPROVAL_ACTIONS.map((action) => {
-                const className = `block w-full rounded-xl border px-4 py-2 text-center text-sm font-semibold ${getActionClassName(action.state)}`;
-
-                return (
-                  <div key={action.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-                    {action.id === "open-invite" ? (
-                      <Link href="/system/invites" className={className}>{action.label}</Link>
-                    ) : (
-                      <button type="button" disabled className={className}>{action.label}</button>
-                    )}
-                    <p className="mt-2 text-xs leading-5 text-stone-500">{action.helper}</p>
-                    <code className="mt-2 block rounded-xl border border-stone-200 bg-white px-3 py-2 text-[11px] text-stone-600">
-                      {action.requiredPermission}
-                    </code>
-                  </div>
-                );
-              })}
+              {SYSTEM_COMPANY_APPROVAL_ACTIONS.map((action) => (
+                <div key={action.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+                  {action.id === "open-invite" ? (
+                    <AdminLinkButton href="/system/invites" variant={getCompanyActionVariant(action.state)} className="w-full rounded-xl">
+                      {action.label}
+                    </AdminLinkButton>
+                  ) : (
+                    <AdminButton disabled variant={getCompanyActionVariant(action.state)} className="w-full rounded-xl">
+                      {action.label}
+                    </AdminButton>
+                  )}
+                  <p className="mt-2 text-xs leading-5 text-stone-500">{action.helper}</p>
+                  <code className="mt-2 block rounded-xl border border-stone-200 bg-white px-3 py-2 text-[11px] text-stone-600">
+                    {action.requiredPermission}
+                  </code>
+                </div>
+              ))}
             </div>
           </article>
         </section>
