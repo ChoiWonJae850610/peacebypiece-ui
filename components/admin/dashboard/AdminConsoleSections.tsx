@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
   ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES,
   getVisibleAdminWorkspaceCards,
@@ -9,9 +9,9 @@ import {
 } from "@/lib/admin/adminWorkspaceCards";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
-function getStatusClassName(status: AdminWorkspaceCardStatus) {
-  if (status === "available") return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  return "border-stone-200 bg-stone-100 text-stone-500";
+function getStatusTone(status: AdminWorkspaceCardStatus) {
+  if (status === "available") return "success";
+  return "neutral";
 }
 
 function useWorkspaceCardText() {
@@ -36,21 +36,19 @@ function AdminWorkspaceCardView({ item }: { item: AdminWorkspaceCard }) {
         <div className="min-w-0">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <h2 className="text-sm font-semibold text-stone-950">{text.label}</h2>
-            <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getStatusClassName(item.status)}`}>
-              {text.statusLabel}
-            </span>
+            <AdminStatusBadge tone={getStatusTone(item.status)}>{text.statusLabel}</AdminStatusBadge>
           </div>
           <p className="mt-2 text-xs leading-5 text-stone-600">{text.description}</p>
         </div>
 
         {item.href ? (
-          <span className="inline-flex w-fit rounded-xl border border-stone-900 bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white">
+          <AdminStatusBadge tone="primary" className="rounded-xl px-3 py-1.5 text-xs">
             {text.openLabel}
-          </span>
+          </AdminStatusBadge>
         ) : (
-          <span className="inline-flex w-fit rounded-xl border border-stone-200 bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-400">
+          <AdminStatusBadge tone="neutral" className="rounded-xl px-3 py-1.5 text-xs text-stone-400">
             {text.preparingLabel}
-          </span>
+          </AdminStatusBadge>
         )}
       </div>
     </article>
@@ -59,9 +57,9 @@ function AdminWorkspaceCardView({ item }: { item: AdminWorkspaceCard }) {
   if (!item.href) return content;
 
   return (
-    <Link href={item.href} className="block h-full min-w-0">
+    <a href={item.href} className="block h-full min-w-0">
       {content}
-    </Link>
+    </a>
   );
 }
 

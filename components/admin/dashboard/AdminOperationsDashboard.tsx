@@ -1,6 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import { AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
+import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
 import type { AdminOperationalDashboardSnapshots } from "@/lib/admin/adminOperations.types";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
@@ -56,9 +58,9 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
             <div>
               <h2 className="text-base font-semibold text-stone-950">{t("operationsDashboard.actionQueueTitle", "검토·발주 대기")}</h2>
             </div>
-            <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-stone-500 ring-1 ring-stone-200">
+            <AdminStatusBadge tone="neutral">
               {formatAdminCount(snapshot.todayTasks.length, t)}
-            </span>
+            </AdminStatusBadge>
           </div>
 
           <div className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
@@ -76,11 +78,11 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
 
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-semibold text-stone-600">{translateTodayTaskStatusLabel(task.statusLabel, t)}</span>
-                      <span className="rounded-full bg-[var(--admin-theme-surface)] px-2.5 py-1 text-[11px] font-semibold text-[var(--admin-theme-text-on-surface)]">{translateTodayTaskPriorityLabel(task.priorityLabel, t)}</span>
-                      <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-500 ring-1 ring-stone-200">
+                      <AdminStatusBadge tone="neutral">{translateTodayTaskStatusLabel(task.statusLabel, t)}</AdminStatusBadge>
+                      <AdminStatusBadge tone="maintenance">{translateTodayTaskPriorityLabel(task.priorityLabel, t)}</AdminStatusBadge>
+                      <AdminStatusBadge tone="neutral">
                         {t("operationsDashboard.attachmentLabel", "첨부")} {formatAdminCount(task.attachmentCount, t)}
-                      </span>
+                      </AdminStatusBadge>
                     </div>
                     <p className="mt-2 truncate text-sm font-semibold text-stone-950">{task.title}</p>
                     <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium text-stone-500">
@@ -94,16 +96,17 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
                       <p className="text-xs font-semibold text-stone-500">{t("operationsDashboard.dueLabel", "납기")}</p>
                       <p className="mt-1 text-sm font-semibold text-stone-900">{task.dueLabel}</p>
                     </div>
-                    <Link href={task.actionHref} className="inline-flex items-center justify-center rounded-full bg-stone-950 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-stone-800">
+                    <AdminLinkButton href={task.actionHref} variant="primary" size="sm" className="px-3 py-1.5 text-xs">
                       {t("operationsDashboard.openWorkorder", "작업지시서 열기")}
-                    </Link>
+                    </AdminLinkButton>
                   </div>
                 </article>
               ))
             ) : (
-              <div className="flex min-h-[170px] items-center justify-center rounded-2xl border border-dashed border-stone-200 bg-white p-5 text-center text-sm font-medium text-stone-500">
-                {t("operationsDashboard.todayTasksEmpty", "오늘 확인할 검토·발주 대기 작업지시서가 없습니다.")}
-              </div>
+              <AdminEmptyState
+                title={t("operationsDashboard.todayTasksEmpty", "오늘 확인할 검토·발주 대기 작업지시서가 없습니다.")}
+                className="flex min-h-[170px] items-center justify-center border-dashed text-center"
+              />
             )}
           </div>
         </section>

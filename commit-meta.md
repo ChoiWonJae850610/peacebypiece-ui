@@ -1,21 +1,19 @@
 Version :
-0.11.18
+0.11.19
 
 Summary :
-시스템 요금제 화면 테이블 공통 컴포넌트 적용
+관리자 대시보드 공통 UI 컴포넌트 적용
 
 Description :
-- 시스템관리자 요금제/용량 관리 화면의 고객사 목록을 AdminTable 기준으로 전환
-- 요금제 수정 preview 필드 목록을 AdminTable 기준으로 전환
-- 저장공간/멤버 상태 라벨 tone을 AdminStatusBadge 기준으로 정리
-- APP_VERSION을 0.11.18로 갱신
+관리자 홈 운영 관리 카드와 운영 대시보드의 상태 라벨, 작업 액션 링크, empty state를 AdminStatusBadge, AdminLinkButton, AdminEmptyState 기준으로 정리했습니다. 데이터 조회, 권한, 작업지시서 이동 경로, API/DB 로직은 변경하지 않았습니다.
 
 수정 파일 목록 :
-components/system/billing/SystemCompanyPlanSkeleton.tsx
+components/admin/dashboard/AdminConsoleSections.tsx
+components/admin/dashboard/AdminOperationsDashboard.tsx
 lib/constants/app.ts
 
 추가 파일 목록 :
-docs/system-billing-table-standardization-0.11.18.md
+docs/admin-dashboard-common-ui-standardization-0.11.19.md
 
 삭제 파일 목록 :
 없음
