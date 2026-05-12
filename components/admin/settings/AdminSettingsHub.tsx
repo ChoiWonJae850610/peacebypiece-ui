@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AdminModal, AdminModalSection, adminModalPrimaryButtonClassName, adminModalSecondaryButtonClassName } from "@/components/admin/layout/AdminModal";
 import AdminStandardsSection from "@/components/admin/standards/AdminStandardsSection";
 import {
@@ -11,7 +11,7 @@ import {
   type AdminSettingsMenuTone,
 } from "@/lib/admin/settings/adminSettingsHub";
 import { ADMIN_FEEDBACK_CONTACT_EMAIL, buildAdminFeedbackMailtoHref } from "@/lib/admin/settings/adminFeedbackContact";
-import { ADMIN_BILLING_PLAN_PLACEHOLDER } from "@/lib/admin/settings/adminBillingPlanPlaceholder";
+import { ADMIN_BILLING_PLAN_PLACEHOLDER, type AdminBillingPlanOverview } from "@/lib/admin/settings/adminBillingPlanPlaceholder";
 import { ADMIN_ACCOUNT_SETTINGS_PLACEHOLDER } from "@/lib/admin/settings/adminAccountSettingsPlaceholder";
 
 type NoticeMenuId = Exclude<AdminSettingsMenuId, "standards">;
@@ -82,11 +82,46 @@ function SettingsMenuCard({ item, active, onClick }: { item: AdminSettingsMenuIt
 export default function AdminSettingsHub() {
   const [activeMenuId, setActiveMenuId] = useState<AdminSettingsMenuId>("standards");
   const [noticeMenuId, setNoticeMenuId] = useState<NoticeMenuId | null>(null);
+  const [billingPlanOverview, setBillingPlanOverview] = useState<AdminBillingPlanOverview>(ADMIN_BILLING_PLAN_PLACEHOLDER);
+  const [billingPlanLoadState, setBillingPlanLoadState] = useState<"idle" | "loading" | "loaded" | "failed">("idle");
   const notice = useMemo(() => (noticeMenuId ? ADMIN_SETTINGS_NOTICE_BY_ID[noticeMenuId] : null), [noticeMenuId]);
   const feedbackMailtoHref = useMemo(() => buildAdminFeedbackMailtoHref(), []);
   const isFeedbackNotice = noticeMenuId === "feedback";
   const isBillingNotice = noticeMenuId === "billing";
   const isAccountNotice = noticeMenuId === "account";
+
+
+  useEffect(() => {
+    if (!isBillingNotice || billingPlanLoadState !== "idle") {
+      return;
+    }
+
+    let cancelled = false;
+    setBillingPlanLoadState("loading");
+
+    fetch("/api/admin/companies/current", { cache: "no-store" })
+      .then(async (response) => {
+        const payload = (await response.json().catch(() => null)) as { billing?: AdminBillingPlanOverview } | null;
+        if (!cancelled && payload?.billing) {
+          setBillingPlanOverview(payload.billing);
+          setBillingPlanLoadState("loaded");
+          return;
+        }
+
+        if (!cancelled) {
+          setBillingPlanLoadState("failed");
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setBillingPlanLoadState("failed");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [billingPlanLoadState, isBillingNotice]);
 
   const handleSelectMenu = (id: AdminSettingsMenuId) => {
     if (isNoticeMenuId(id)) {
@@ -152,15 +187,20 @@ export default function AdminSettingsHub() {
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-blue-500">Billing policy</p>
-                    <h3 className="mt-1 text-sm font-semibold text-blue-950">{ADMIN_BILLING_PLAN_PLACEHOLDER.title}</h3>
-                    <p className="mt-1 text-xs leading-5 text-blue-700">{ADMIN_BILLING_PLAN_PLACEHOLDER.description}</p>
+                    <h3 className="mt-1 text-sm font-semibold text-blue-950">{billingPlanOverview.title}</h3>
+                    <p className="mt-1 text-xs leading-5 text-blue-700">{billingPlanOverview.description}</p>
                   </div>
-                  <span className="w-fit rounded-full border border-blue-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-blue-700">
-                    {ADMIN_BILLING_PLAN_PLACEHOLDER.systemManagedLabel}
-                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    <span className="w-fit rounded-full border border-blue-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-blue-700">
+                      {billingPlanOverview.systemManagedLabel}
+                    </span>
+                    <span className="w-fit rounded-full border border-blue-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-blue-700">
+                      {billingPlanLoadState === "loading" ? "조회 중" : billingPlanOverview.dataSourceLabel}
+                    </span>
+                  </div>
                 </div>
                 <div className="grid gap-2 sm:grid-cols-2">
-                  {ADMIN_BILLING_PLAN_PLACEHOLDER.metrics.map((metric) => (
+                  {billingPlanOverview.metrics.map((metric) => (
                     <div key={metric.id} className="rounded-2xl border border-blue-100 bg-white p-3">
                       <p className="text-[11px] font-semibold text-blue-500">{metric.label}</p>
                       <p className="mt-1 text-sm font-semibold text-stone-950">{metric.value}</p>
@@ -169,7 +209,7 @@ export default function AdminSettingsHub() {
                   ))}
                 </div>
                 <div className="grid gap-2 sm:grid-cols-3">
-                  {ADMIN_BILLING_PLAN_PLACEHOLDER.actions.map((action) => (
+                  {billingPlanOverview.actions.map((action) => (
                     <div key={action.id} className="rounded-2xl border border-blue-100 bg-white p-3">
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-xs font-semibold text-stone-900">{action.label}</p>
@@ -177,6 +217,11 @@ export default function AdminSettingsHub() {
                       </div>
                       <p className="mt-2 text-[11px] leading-5 text-stone-500">{action.description}</p>
                     </div>
+                  ))}
+                </div>
+                <div className="space-y-1.5 rounded-2xl border border-blue-100 bg-white p-3">
+                  {billingPlanOverview.policyNotes.map((note) => (
+                    <p key={note} className="text-[11px] leading-5 text-stone-500">• {note}</p>
                   ))}
                 </div>
               </div>

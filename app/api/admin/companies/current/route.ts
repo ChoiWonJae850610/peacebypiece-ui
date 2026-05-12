@@ -4,6 +4,7 @@ import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
 import { getCurrentAdminCompany, getCompanySettings, updateCompanySettings } from "@/lib/admin/settings/companyRepository";
 import type { CompanySettingsUpdateInput } from "@/lib/admin/settings/companyTypes";
 import { WORKSPACE_COMPANY_ID, WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
+import { buildAdminBillingPlanOverview } from "@/lib/admin/settings/adminBillingPlanPlaceholder";
 
 export const runtime = "nodejs";
 
@@ -12,9 +13,13 @@ function getErrorMessage(error: unknown): string {
 }
 
 function buildFallbackPayload() {
+  const settings = buildDefaultCompanySettings(WORKSPACE_COMPANY_ID);
+  const company = { id: WORKSPACE_COMPANY_ID, name: WORKSPACE_COMPANY_NAME, memo: null, isActive: true };
+
   return {
-    company: { id: WORKSPACE_COMPANY_ID, name: WORKSPACE_COMPANY_NAME, memo: null, isActive: true },
-    settings: buildDefaultCompanySettings(WORKSPACE_COMPANY_ID),
+    company,
+    settings,
+    billing: buildAdminBillingPlanOverview({ ok: false, company, settings }),
   };
 }
 
@@ -27,7 +32,8 @@ export async function GET() {
   try {
     const company = await getCurrentAdminCompany();
     const settings = await getCompanySettings(company.id);
-    return NextResponse.json({ ok: true, company, settings });
+    const billing = buildAdminBillingPlanOverview({ ok: true, company, settings });
+    return NextResponse.json({ ok: true, company, settings, billing });
   } catch (error) {
     const message = getErrorMessage(error);
     console.error("[ADMIN_CURRENT_COMPANY_UNAVAILABLE]", { message, error });

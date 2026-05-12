@@ -34,7 +34,7 @@ export const ADMIN_SETTINGS_MENU_ITEMS: readonly AdminSettingsMenuItem[] = [
     description: "현재 요금제와 저장공간 한도를 확인하고 변경 요청 흐름을 준비합니다.",
     statusLabel: "읽기 전용",
     tone: "blue",
-    detailItems: ["현재 요금제", "저장공간 한도", "변경 요청"],
+    detailItems: ["현재 고객사 조회", "저장공간 한도", "변경 요청"],
   },
   {
     id: "account",
