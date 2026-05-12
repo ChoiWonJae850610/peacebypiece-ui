@@ -10,6 +10,7 @@ export type SystemConsoleTabId =
   | "standardsSeedStatus"
   | "standardsRegression"
   | "standardsCustomerOnboarding"
+  | "accessCheckpoint"
   | "categoryRules";
 
 export type SystemConsoleTabStatus =
@@ -128,6 +129,15 @@ export const SYSTEM_CONSOLE_TABS: SystemConsoleTab[] = [
     statusLabel: "설계 화면",
     status: "linked",
     href: "/system/standards/customer-onboarding",
+  },
+
+  {
+    id: "accessCheckpoint",
+    label: "초대·권한 체크포인트",
+    description: "멤버 초대, 고객사 초대, 승인 대기, 권한 제한, API 검증의 1차 안정화 상태를 점검합니다.",
+    statusLabel: "체크포인트",
+    status: "linked",
+    href: "/system/access-checkpoint",
   },
   {
     id: "categoryRules",
@@ -265,6 +275,12 @@ export const SYSTEM_CONSOLE_QUICK_LINKS = [
     label: "고객사 초기 기준정보",
     href: "/system/standards/customer-onboarding",
     description: "신규 고객사 생산품 유형 템플릿 복사 설계",
+  },
+  {
+    id: "system-access-checkpoint",
+    label: "초대·권한 체크포인트",
+    href: "/system/access-checkpoint",
+    description: "멤버/초대/권한 1차 안정화 점검",
   },
   {
     id: "category-rules",
