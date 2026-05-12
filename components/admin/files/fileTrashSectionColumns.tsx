@@ -2,6 +2,7 @@
 
 import type { AdminTableColumn } from "@/lib/admin/common/types";
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
+import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import { TrashItemVisual } from "@/components/admin/files/fileTrashSectionPresentation";
 import { ADMIN_TRASH_RESTORE_POLICIES } from "@/lib/admin/files/trashPolicy";
 import {
@@ -192,12 +193,13 @@ function WorkOrderCell({
 function TypeBadgeCell({ value }: { value: string }) {
   return (
     <div className="flex min-w-0 justify-center">
-      <span
-        className="max-w-[92px] truncate rounded-full bg-stone-100 px-2.5 py-1 text-center text-[11px] font-semibold text-stone-600"
-        title={value}
+      <AdminStatusBadge
+        size="xs"
+        tone="neutral"
+        className="max-w-[92px] truncate text-center"
       >
         {value}
-      </span>
+      </AdminStatusBadge>
     </div>
   );
 }

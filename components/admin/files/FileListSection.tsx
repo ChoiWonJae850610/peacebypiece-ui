@@ -2,6 +2,7 @@
 
 import AdminActionBar from "@/components/admin/common/AdminActionBar";
 import { AdminButton } from "@/components/admin/common/AdminButton";
+import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import AdminTable from "@/components/admin/common/AdminTable";
 import { ADMIN_FILE_SORT_OPTIONS } from "@/lib/admin/files/presentation";
 import type { AdminFileSortKey, AdminManagedFileItem } from "@/lib/admin/files/types";
@@ -83,7 +84,7 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
               </div>
             ),
           },
-          { key: "type", label: t("filesList.columns.type", "유형"), render: (item) => <p className="text-[11px] text-stone-600">{item.fileType}</p> },
+          { key: "type", label: t("filesList.columns.type", "유형"), render: (item) => <AdminStatusBadge size="xs" tone="neutral">{item.fileType}</AdminStatusBadge> },
           { key: "size", label: t("filesList.columns.size", "용량"), render: (item) => <p className="text-[11px] text-stone-600">{item.fileSizeLabel}</p> },
         ]}
       />
