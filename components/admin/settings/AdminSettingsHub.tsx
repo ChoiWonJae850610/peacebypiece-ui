@@ -11,6 +11,7 @@ import {
   type AdminSettingsMenuTone,
 } from "@/lib/admin/settings/adminSettingsHub";
 import { ADMIN_FEEDBACK_CONTACT_EMAIL, buildAdminFeedbackMailtoHref } from "@/lib/admin/settings/adminFeedbackContact";
+import { ADMIN_BILLING_PLAN_PLACEHOLDER } from "@/lib/admin/settings/adminBillingPlanPlaceholder";
 
 type NoticeMenuId = Exclude<AdminSettingsMenuId, "standards">;
 
@@ -83,6 +84,7 @@ export default function AdminSettingsHub() {
   const notice = useMemo(() => (noticeMenuId ? ADMIN_SETTINGS_NOTICE_BY_ID[noticeMenuId] : null), [noticeMenuId]);
   const feedbackMailtoHref = useMemo(() => buildAdminFeedbackMailtoHref(), []);
   const isFeedbackNotice = noticeMenuId === "feedback";
+  const isBillingNotice = noticeMenuId === "billing";
 
   const handleSelectMenu = (id: AdminSettingsMenuId) => {
     if (isNoticeMenuId(id)) {
@@ -143,6 +145,40 @@ export default function AdminSettingsHub() {
                 </div>
               ))}
             </div>
+            {isBillingNotice ? (
+              <div className="mt-3 space-y-3 rounded-2xl border border-blue-100 bg-blue-50/70 p-3">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-blue-500">Billing policy</p>
+                    <h3 className="mt-1 text-sm font-semibold text-blue-950">{ADMIN_BILLING_PLAN_PLACEHOLDER.title}</h3>
+                    <p className="mt-1 text-xs leading-5 text-blue-700">{ADMIN_BILLING_PLAN_PLACEHOLDER.description}</p>
+                  </div>
+                  <span className="w-fit rounded-full border border-blue-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-blue-700">
+                    {ADMIN_BILLING_PLAN_PLACEHOLDER.systemManagedLabel}
+                  </span>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {ADMIN_BILLING_PLAN_PLACEHOLDER.metrics.map((metric) => (
+                    <div key={metric.id} className="rounded-2xl border border-blue-100 bg-white p-3">
+                      <p className="text-[11px] font-semibold text-blue-500">{metric.label}</p>
+                      <p className="mt-1 text-sm font-semibold text-stone-950">{metric.value}</p>
+                      <p className="mt-1 text-[11px] leading-5 text-stone-500">{metric.description}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {ADMIN_BILLING_PLAN_PLACEHOLDER.actions.map((action) => (
+                    <div key={action.id} className="rounded-2xl border border-blue-100 bg-white p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xs font-semibold text-stone-900">{action.label}</p>
+                        <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-semibold text-stone-500">{action.statusLabel}</span>
+                      </div>
+                      <p className="mt-2 text-[11px] leading-5 text-stone-500">{action.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
             {isFeedbackNotice ? (
               <div className="mt-3 rounded-2xl border border-violet-100 bg-violet-50/70 p-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-violet-500">Feedback email</p>

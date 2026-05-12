@@ -31,10 +31,10 @@ export const ADMIN_SETTINGS_MENU_ITEMS: readonly AdminSettingsMenuItem[] = [
   {
     id: "billing",
     title: "요금제·결제",
-    description: "요금제, 결제수단, 저장소 용량 변경 요청을 관리할 영역입니다.",
-    statusLabel: "준비중",
+    description: "현재 요금제와 저장공간 한도를 확인하고 변경 요청 흐름을 준비합니다.",
+    statusLabel: "읽기 전용",
     tone: "blue",
-    detailItems: ["요금제 변경", "결제수단 변경", "용량 증설 요청"],
+    detailItems: ["현재 요금제", "저장공간 한도", "변경 요청"],
   },
   {
     id: "account",
@@ -62,10 +62,10 @@ export const ADMIN_SETTINGS_NOTICE_BY_ID: Record<Exclude<AdminSettingsMenuId, "s
     items: ["검토요청/검토완료 알림", "납기 지연 알림", "저장소 용량 알림", "권한 변경 알림"],
   },
   billing: {
-    title: "요금제·결제 관리는 준비중입니다.",
-    description: "요금제 변경, 결제수단 변경, 저장소 용량 증설 요청을 고객관리자 화면에서 처리할 수 있도록 준비합니다.",
-    nextStep: "정식 결제 연동 전까지는 시스템관리자 문의 흐름으로 연결할 예정입니다.",
-    items: ["요금제 변경 요청", "결제수단 변경", "저장소 용량 증설", "청구 정보 확인"],
+    title: "요금제·결제는 읽기 전용으로 확인합니다.",
+    description: "정식 결제 연동 전까지 고객관리자는 현재 요금제, 저장공간 한도, 변경 요청 기준만 확인하고 실제 수정은 시스템관리자에서 처리합니다.",
+    nextStep: "요금제 변경, 저장공간 증설, 청구 정보 변경은 시스템관리자 관리 화면과 연결한 뒤 활성화합니다.",
+    items: ["현재 요금제 확인", "저장공간 한도 확인", "요금제 변경 요청", "청구 정보 문의"],
   },
   account: {
     title: "계정 설정은 준비중입니다.",
