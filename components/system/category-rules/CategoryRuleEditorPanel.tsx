@@ -2,6 +2,9 @@
 
 import { type RefObject } from "react";
 import { MODAL_INPUT_CLASS, MODAL_SELECT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
+import { AdminButton } from "@/components/admin/common/AdminButton";
+import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
+import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import type { EditableCategoryRule } from "@/lib/system/categoryRuleEditor";
 import { buildCategoryRuleMatchPreview, buildTaggedKeywordInput } from "@/lib/system/categoryRuleEditor";
 import type { CategoryRulesManagerText } from "@/lib/system/categoryRuleText";
@@ -59,8 +62,8 @@ export function CategoryRuleEditorPanel({
       {selectedRule ? (
         <div className="space-y-5">
           <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={onDuplicateRule} className="inline-flex items-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50">{text.duplicateRule}</button>
-            <button type="button" onClick={onDeleteRule} className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100">{text.deleteRule}</button>
+            <AdminButton onClick={onDuplicateRule}>{text.duplicateRule}</AdminButton>
+            <AdminButton onClick={onDeleteRule} variant="danger">{text.deleteRule}</AdminButton>
           </div>
 
           <label className="space-y-2">
@@ -76,7 +79,7 @@ export function CategoryRuleEditorPanel({
 
           <label className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
             <input type="checkbox" checked={selectedRule.enabled} onChange={(event) => onUpdateEnabled(event.target.checked)} className="h-4 w-4 rounded border-stone-300 text-stone-900 focus:ring-stone-500" />
-            <span className="text-sm font-medium text-stone-700">{selectedRule.enabled ? text.enabled : text.disabled}</span>
+            <AdminStatusBadge tone={selectedRule.enabled ? "success" : "neutral"}>{selectedRule.enabled ? text.enabled : text.disabled}</AdminStatusBadge>
           </label>
 
           <label className="space-y-2">
@@ -135,7 +138,7 @@ export function CategoryRuleEditorPanel({
           </div>
         </div>
       ) : (
-        <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-10 text-center text-sm text-stone-500">{text.noRuleSelected}</div>
+        <AdminEmptyState title={text.noRuleSelected} />
       )}
     </article>
   );

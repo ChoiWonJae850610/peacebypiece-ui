@@ -48,6 +48,7 @@ import {
 } from "@/lib/system/categoryPersistence";
 import { filterEditableCategoryRules } from "@/lib/system/categoryRuleView";
 import type { CategoryRulesManagerText } from "@/lib/system/categoryRuleText";
+import { AdminButton } from "@/components/admin/common/AdminButton";
 
 export type CategoryRulesManagerHandle = {
   save: () => void;
@@ -254,8 +255,8 @@ const CategoryRulesManager = forwardRef<CategoryRulesManagerHandle, { text: Cate
 
           <div className="flex flex-col gap-6">
             <div className="flex gap-2 md:hidden">
-              <button type="button" onClick={() => setMobileListOpen(true)} className="inline-flex flex-1 items-center justify-center rounded-full border border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-700">{text.openList}</button>
-              <button type="button" onClick={() => setMobileTestOpen(true)} className="inline-flex flex-1 items-center justify-center rounded-full border border-stone-900 bg-stone-900 px-4 py-3 text-sm font-medium text-white">{text.openTest}</button>
+              <AdminButton onClick={() => setMobileListOpen(true)} className="flex-1 px-4 py-3">{text.openList}</AdminButton>
+              <AdminButton onClick={() => setMobileTestOpen(true)} variant="primary" className="flex-1 px-4 py-3">{text.openTest}</AdminButton>
             </div>
 
             <CategoryRuleEditorPanel

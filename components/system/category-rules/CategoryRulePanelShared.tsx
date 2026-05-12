@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { MODAL_INPUT_CLASS } from "@/components/common/modal/modalFieldClassNames";
+import { AdminButton } from "@/components/admin/common/AdminButton";
+import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
+import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import type { CategoryRulesManagerText } from "@/lib/system/categoryRuleText";
 import { buildCategoryRuleMatchPreview } from "@/lib/system/categoryRuleEditor";
 
@@ -18,21 +21,16 @@ export function HomeChevronButton({
   tone?: "light" | "dark";
   label: string;
 }) {
-  const toneClass =
-    tone === "dark"
-      ? "border-white/20 bg-white/10 text-white hover:bg-white/15"
-      : "border-stone-200 bg-stone-50 text-stone-600 hover:border-stone-300 hover:bg-stone-100";
-
   return (
-    <button
-      type="button"
+    <AdminButton
       aria-label={label}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex h-8 w-8 items-center justify-center rounded-full border text-sm transition ${toneClass} disabled:cursor-not-allowed disabled:opacity-35`}
+      variant={tone === "dark" ? "ghost" : "secondary"}
+      className={`h-8 w-8 px-0 text-sm ${tone === "dark" ? "border-white/20 bg-white/10 text-white hover:bg-white/15 hover:text-white" : ""}`}
     >
       <span className={`block transition-transform ${direction === "up" ? "rotate-180" : "rotate-0"}`}>▾</span>
-    </button>
+    </AdminButton>
   );
 }
 
@@ -47,21 +45,17 @@ export function FooterIconButton({
   tone?: "secondary" | "primary";
   children: ReactNode;
 }) {
-  const toneClass = tone === "primary"
-    ? "border-stone-900 bg-stone-900 text-white hover:bg-stone-800"
-    : "border-stone-300 bg-white text-stone-700 hover:bg-stone-50";
-
   return (
-    <button
-      type="button"
+    <AdminButton
       onClick={onClick}
       aria-label={label}
       title={label}
-      className={`inline-flex h-11 w-11 items-center justify-center rounded-full border transition ${toneClass}`}
+      variant={tone === "primary" ? "primary" : "secondary"}
+      className="h-11 w-11 px-0"
     >
       <span className="sr-only">{label}</span>
       {children}
-    </button>
+    </AdminButton>
   );
 }
 
@@ -129,18 +123,18 @@ export function CategoryValueRow({ value, selected, onSelect, onCommit, onRemove
         }}
         className={`${MODAL_INPUT_CLASS} h-10`}
       />
-      <button
-        type="button"
+      <AdminButton
         onClick={(event) => {
           event.stopPropagation();
           onRemove();
         }}
-        className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-lg font-semibold text-red-700"
+        variant="danger"
+        className="h-10 w-10 rounded-xl px-0 text-lg"
         aria-label={deleteLabel}
         title={deleteLabel}
       >
         -
-      </button>
+      </AdminButton>
     </div>
   );
 }
@@ -159,8 +153,11 @@ export function TestResultPanel({
           <div>
             <span className="font-medium text-stone-900">{text.matchedRuleLabel}:</span> {preview.matchedRuleName}
           </div>
-          <div>
-            <span className="font-medium text-stone-900">{text.matchedKeywordsLabel}:</span> {preview.matchedKeywords.map((keyword) => `#${keyword}`).join(" ")}
+          <div className="flex flex-wrap items-center gap-1">
+            <span className="font-medium text-stone-900">{text.matchedKeywordsLabel}:</span>
+            {preview.matchedKeywords.map((keyword) => (
+              <AdminStatusBadge key={keyword} tone="info" size="xs">#{keyword}</AdminStatusBadge>
+            ))}
           </div>
           <div>
             <span className="font-medium text-stone-900">{text.recommendationLabel}:</span> {preview.recommendationLabel}
@@ -168,7 +165,7 @@ export function TestResultPanel({
           <div className="text-stone-600">{preview.reason}</div>
         </div>
       ) : (
-        <div className="text-stone-500">{text.noMatch}</div>
+        <AdminEmptyState title={text.noMatch} />
       )}
     </div>
   );

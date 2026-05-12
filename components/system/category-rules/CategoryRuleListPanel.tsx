@@ -1,6 +1,9 @@
 "use client";
 
 import { MODAL_INPUT_CLASS } from "@/components/common/modal/modalFieldClassNames";
+import { AdminButton } from "@/components/admin/common/AdminButton";
+import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
+import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import type { EditableCategoryRule } from "@/lib/system/categoryRuleEditor";
 import type { CategoryRulesManagerText } from "@/lib/system/categoryRuleText";
 
@@ -40,9 +43,9 @@ export function CategoryRuleListPanel({
           <h2 className="text-lg font-semibold text-stone-900">{text.selectedRuleTitle}</h2>
           <p className="text-sm text-stone-500">{text.listCountLabel.replace("{count}", String(filteredRules.length))}</p>
         </div>
-        <button type="button" onClick={onAddRule} className="inline-flex items-center rounded-full border border-stone-900 bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800">
+        <AdminButton onClick={onAddRule} variant="primary">
           {text.addRule}
-        </button>
+        </AdminButton>
       </div>
       <label className="mb-4 block">
         <span className="sr-only">{text.mobileSearchPlaceholder}</span>
@@ -75,19 +78,22 @@ export function CategoryRuleListPanel({
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 space-y-1">
                     <div className="truncate text-sm font-semibold">{rule.name}</div>
-                    <div className={`text-xs ${isSelected ? "text-stone-200" : "text-stone-500"}`}>{rule.enabled ? text.enabled : text.disabled}</div>
+                    <AdminStatusBadge tone={rule.enabled ? (isSelected ? "inverse" : "success") : "neutral"} size="xs">{rule.enabled ? text.enabled : text.disabled}</AdminStatusBadge>
                   </div>
                   <span className={`shrink-0 text-xs transition-transform ${isDragging ? "scale-110" : ""} ${isSelected ? "text-stone-200" : "text-stone-400"}`}>⋮⋮</span>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {rule.keywords.length > 0 ? rule.keywords.map((keyword, keywordIndex) => (
-                    <span key={`${rule.id}-${keywordIndex}-${keyword}`} className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${isSelected ? "bg-white/10 text-white" : "bg-white text-stone-600"}`}>#{keyword}</span>
+                    <AdminStatusBadge key={`${rule.id}-${keywordIndex}-${keyword}`} tone={isSelected ? "inverse" : "neutral"} size="xs">#{keyword}</AdminStatusBadge>
                   )) : <span className={`text-xs ${isSelected ? "text-stone-200" : "text-stone-500"}`}>{text.noKeywords}</span>}
                 </div>
               </button>
             </div>
           );
         })}
+      {filteredRules.length === 0 ? (
+          <AdminEmptyState title={text.noRuleSelected} description={text.noKeywords} />
+        ) : null}
       </div>
     </article>
   );

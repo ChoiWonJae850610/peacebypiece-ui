@@ -1,49 +1,13 @@
 "use client";
 
-import Link from "next/link";
-import { type ReactNode, useRef } from "react";
+import { useRef } from "react";
 import { APP_VERSION } from "@/lib/constants/app";
+import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import { getI18n } from "@/lib/i18n";
 import { getCategoryRulesManagerText } from "@/lib/system/categoryRuleText";
 import CategoryRulesManager, { type CategoryRulesManagerHandle } from "./CategoryRulesManager";
 
-
-function HeaderIconButton({
-  href,
-  onClick,
-  label,
-  variant = "secondary",
-  children,
-}: {
-  href?: string;
-  onClick?: () => void;
-  label: string;
-  variant?: "secondary" | "primary";
-  children: ReactNode;
-}) {
-  const className = [
-    "inline-flex h-11 w-11 items-center justify-center rounded-full border transition",
-    variant === "primary"
-      ? "border-stone-900 bg-stone-900 text-white hover:bg-stone-800"
-      : "border-stone-300 bg-white text-stone-700 hover:bg-stone-50",
-  ].join(" ");
-
-  if (href) {
-    return (
-      <Link href={href} aria-label={label} title={label} className={className}>
-        <span className="sr-only">{label}</span>
-        {children}
-      </Link>
-    );
-  }
-
-  return (
-    <button type="button" onClick={onClick} aria-label={label} title={label} className={className}>
-      <span className="sr-only">{label}</span>
-      {children}
-    </button>
-  );
-}
 
 function HomeIcon() {
   return (
@@ -100,24 +64,30 @@ export default function SystemCategoryRulesPage() {
               <h1 className="text-2xl font-semibold tracking-tight text-stone-900 md:text-3xl">{system.categoryRulePage.title}</h1>
             </div>
             <div className="flex flex-col items-start gap-3 md:items-end">
-              <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">{system.versionLabel} v{APP_VERSION}</span>
+              <AdminStatusBadge tone="neutral">{system.versionLabel} v{APP_VERSION}</AdminStatusBadge>
               <div className="flex flex-wrap gap-2">
-                <HeaderIconButton href="/system" label={system.categoryRulePage.backToSystem}>
+                <AdminLinkButton href="/system" aria-label={system.categoryRulePage.backToSystem} title={system.categoryRulePage.backToSystem} className="h-11 w-11 px-0">
+                  <span className="sr-only">{system.categoryRulePage.backToSystem}</span>
                   <HomeIcon />
-                </HeaderIconButton>
-                <HeaderIconButton onClick={() => managerRef.current?.reset()} label={system.categoryRulePage.editor.resetRules}>
+                </AdminLinkButton>
+                <AdminButton onClick={() => managerRef.current?.reset()} aria-label={system.categoryRulePage.editor.resetRules} title={system.categoryRulePage.editor.resetRules} className="h-11 w-11 px-0">
+                  <span className="sr-only">{system.categoryRulePage.editor.resetRules}</span>
                   <ResetIcon />
-                </HeaderIconButton>
-                <HeaderIconButton
+                </AdminButton>
+                <AdminButton
                   onClick={() => managerRef.current?.save()}
-                  label={system.categoryRulePage.editor.saveRules}
+                  aria-label={system.categoryRulePage.editor.saveRules}
+                  title={system.categoryRulePage.editor.saveRules}
                   variant="primary"
+                  className="h-11 w-11 px-0"
                 >
+                  <span className="sr-only">{system.categoryRulePage.editor.saveRules}</span>
                   <SaveIcon />
-                </HeaderIconButton>
-                <HeaderIconButton onClick={() => managerRef.current?.openCategoryValues()} label={system.categoryRulePage.editor.categoryValuesButton}>
+                </AdminButton>
+                <AdminButton onClick={() => managerRef.current?.openCategoryValues()} aria-label={system.categoryRulePage.editor.categoryValuesButton} title={system.categoryRulePage.editor.categoryValuesButton} className="h-11 w-11 px-0">
+                  <span className="sr-only">{system.categoryRulePage.editor.categoryValuesButton}</span>
                   <SettingsIcon />
-                </HeaderIconButton>
+                </AdminButton>
               </div>
             </div>
           </div>

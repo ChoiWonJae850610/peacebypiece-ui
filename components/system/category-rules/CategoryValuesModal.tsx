@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
+import { AdminButton } from "@/components/admin/common/AdminButton";
 import type { CategoryTreeRuntime } from "@/lib/system/categoryTreeRuntime";
 import { getCategory1Options, getCategory2Options, getCategory3Options } from "@/lib/system/categoryTreeRuntime";
 import { getNormalizedCategorySelection } from "@/lib/utils/categoryOptions";
@@ -161,7 +162,7 @@ export function CategoryValuesModal({
               <div className="text-sm font-semibold text-stone-900">{text.category1Label}</div>
               <div className="text-xs text-stone-500">{text.category1HelpText}</div>
             </div>
-            <button type="button" onClick={addCategory1} aria-label={text.addCategory1} title={text.addCategory1} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-300 bg-white text-lg font-medium text-stone-700">+</button>
+            <AdminButton onClick={addCategory1} aria-label={text.addCategory1} title={text.addCategory1} className="h-9 w-9 px-0 text-lg">+</AdminButton>
           </div>
           <div className="space-y-2">
             {category1Options.map((category1) => (
@@ -187,7 +188,7 @@ export function CategoryValuesModal({
               <div className="text-sm font-semibold text-stone-900">{text.category2Label}</div>
               <div className="text-xs text-stone-500">{text.category2HelpText}</div>
             </div>
-            <button type="button" onClick={addCategory2} aria-label={text.addCategory2} title={text.addCategory2} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-blue-300 bg-white text-lg font-medium text-blue-700">+</button>
+            <AdminButton onClick={addCategory2} aria-label={text.addCategory2} title={text.addCategory2} className="h-9 w-9 px-0 text-lg">+</AdminButton>
           </div>
           <div className="space-y-2">
             {category2Options.map((category2) => (
@@ -210,7 +211,7 @@ export function CategoryValuesModal({
               <div className="text-sm font-semibold text-stone-900">{text.category3Label}</div>
               <div className="text-xs text-stone-500">{text.category3HelpText}</div>
             </div>
-            <button type="button" onClick={addCategory3} aria-label={text.addCategory3} title={text.addCategory3} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-emerald-300 bg-white text-lg font-medium text-emerald-700">+</button>
+            <AdminButton onClick={addCategory3} aria-label={text.addCategory3} title={text.addCategory3} className="h-9 w-9 px-0 text-lg">+</AdminButton>
           </div>
           <div className="space-y-2">
             {category3Options.map((category3) => (

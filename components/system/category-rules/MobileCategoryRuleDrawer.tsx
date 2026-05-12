@@ -2,6 +2,8 @@
 
 import { useRef } from "react";
 import { MODAL_INPUT_CLASS } from "@/components/common/modal/modalFieldClassNames";
+import { AdminButton } from "@/components/admin/common/AdminButton";
+import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import type { EditableCategoryRule } from "@/lib/system/categoryRuleEditor";
 import type { CategoryRulesManagerText } from "@/lib/system/categoryRuleText";
@@ -47,9 +49,9 @@ export function MobileCategoryRuleDrawer({
         <div className="sticky top-0 z-10 border-b border-stone-200 bg-white/95 px-3 pb-2.5 pt-[max(env(safe-area-inset-top),0.875rem)] backdrop-blur">
           <div className="flex items-center justify-between gap-3">
             <div id="category-rule-mobile-drawer-title" className="text-sm font-semibold leading-5 text-stone-900">{text.mobileListTitle}</div>
-            <button type="button" onClick={onClose} className="pbp-touch-target inline-flex h-11 items-center justify-center rounded-xl border border-stone-300 bg-white px-3.5 text-sm font-medium text-stone-700">
+            <AdminButton onClick={onClose} className="pbp-touch-target h-11 rounded-xl px-3.5">
               {text.close}
-            </button>
+            </AdminButton>
           </div>
           <label className="mt-3 block">
             <span className="sr-only">{text.mobileSearchPlaceholder}</span>
@@ -61,9 +63,9 @@ export function MobileCategoryRuleDrawer({
               className={MODAL_INPUT_CLASS}
             />
           </label>
-          <button type="button" onClick={onAddRule} className="mt-3 inline-flex h-11 w-full items-center justify-center rounded-xl border border-stone-900 bg-stone-900 px-3.5 text-sm font-semibold text-white">
+          <AdminButton onClick={onAddRule} variant="primary" className="mt-3 h-11 w-full rounded-xl px-3.5">
             {text.addRule}
-          </button>
+          </AdminButton>
         </div>
 
         <div className="flex-1 overflow-y-auto px-3 py-3">
@@ -76,12 +78,12 @@ export function MobileCategoryRuleDrawer({
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 space-y-1">
                         <div className="truncate text-sm font-semibold">{rule.name}</div>
-                        <div className={`text-xs ${isSelected ? "text-stone-200" : "text-stone-500"}`}>{rule.enabled ? text.enabled : text.disabled}</div>
+                        <AdminStatusBadge tone={rule.enabled ? (isSelected ? "inverse" : "success") : "neutral"} size="xs">{rule.enabled ? text.enabled : text.disabled}</AdminStatusBadge>
                       </div>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {rule.keywords.length > 0 ? rule.keywords.map((keyword, keywordIndex) => (
-                        <span key={`${rule.id}-${keywordIndex}-${keyword}`} className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${isSelected ? "bg-white/10 text-white" : "bg-white text-stone-600"}`}>#{keyword}</span>
+                        <AdminStatusBadge key={`${rule.id}-${keywordIndex}-${keyword}`} tone={isSelected ? "inverse" : "neutral"} size="xs">#{keyword}</AdminStatusBadge>
                       )) : <span className={`text-xs ${isSelected ? "text-stone-200" : "text-stone-500"}`}>{text.noKeywords}</span>}
                     </div>
                   </button>
