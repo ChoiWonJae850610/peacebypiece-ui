@@ -475,7 +475,9 @@ function appendNormalizedWorkOrderUpdateAssignments(
 }
 
 
-async function loadSpecSheetSchema(): Promise<DbSpecSheetSchema> {
+let specSheetSchemaCache: Promise<DbSpecSheetSchema> | null = null;
+
+async function readSpecSheetSchema(): Promise<DbSpecSheetSchema> {
   const result = await queryDb<DbColumnInfo>(
     `
       SELECT column_name, data_type, udt_name
@@ -623,6 +625,18 @@ async function loadSpecSheetSchema(): Promise<DbSpecSheetSchema> {
     hasTitleColumn: columnNames.includes("title"),
   };
 }
+
+function loadSpecSheetSchema(): Promise<DbSpecSheetSchema> {
+  if (!specSheetSchemaCache) {
+    specSheetSchemaCache = readSpecSheetSchema().catch((error) => {
+      specSheetSchemaCache = null;
+      throw error;
+    });
+  }
+
+  return specSheetSchemaCache;
+}
+
 
 function assertMinimumSpecSheetSchema(schema: DbSpecSheetSchema) {
   const missingColumns = [
