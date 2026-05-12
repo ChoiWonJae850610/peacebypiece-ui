@@ -1,18 +1,22 @@
 Version :
-0.10.92
+0.10.93
 
 Summary :
-작업지시서 payload 의존도 진단과 정규화 계획 추가
+작업지시서 payload 정규화 schema 1차 반영
 
 Description :
-작업지시서 payload 제거 전 의존 지점을 문서화하고 현재 DB에서 payload 사용량, key 빈도, 정규 컬럼 불일치 후보를 확인할 수 있는 진단 SQL을 추가했다. APP_VERSION도 0.10.92로 갱신했다.
+spec_sheets와 작업지시서 하위 테이블의 payload 컬럼을 full reset 기준에서 제거하고, 작업지시서 header와 summary에 필요한 정규 컬럼을 추가했다. 작업지시서 repository는 payload 없이도 목록과 상세를 정규 컬럼 및 orders, spec_sheet_materials, spec_sheet_outsourcing_lines에서 조립하도록 보정했다. 관리자 통계 쿼리와 현실형 seed도 payload fallback 없이 동작하도록 수정했다.
 
 수정 파일 목록 :
+- db/schema/full_reset.sql
+- db/schema/workorder_payload_audit_0_10_92.sql
+- db/seed/realistic_workorders_seed.sql
+- lib/admin/adminStats.repository.ts
+- lib/workorder/repository/dbWorkOrderRepository.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/workorder-payload-normalization-audit-0.10.92.md
-- db/schema/workorder_payload_audit_0_10_92.sql
+- docs/workorder-normalized-schema-first-pass-0.10.93.md
 
 삭제 파일 목록 :
 없음

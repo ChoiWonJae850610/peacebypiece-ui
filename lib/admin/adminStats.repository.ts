@@ -316,7 +316,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
         [companyId],
       ),
       queryDb<CategoryCountRow>(
-        `SELECT COALESCE(NULLIF(c2.name, ''), NULLIF(s.payload->>'category2Label', ''), NULLIF(s.payload->>'category2', ''), NULLIF(s.payload->>'categoryLabel', ''), NULLIF(s.payload->>'category', ''), '분류 미지정') AS category_label,
+        `SELECT COALESCE(NULLIF(c2.name, ''), NULLIF(s.category2, ''), '분류 미지정') AS category_label,
                 COUNT(*)::text AS count_value
            FROM spec_sheets s
            LEFT JOIN item_categories c2 ON c2.id = s.category2_id AND c2.company_id = s.company_id
@@ -332,7 +332,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
       queryDb<CategoryByRoundRow>(
         `WITH category_depth_rows AS (
             SELECT 'first'::text AS round_key,
-                   COALESCE(NULLIF(c1.name, ''), NULLIF(s.payload->>'category1Label', ''), NULLIF(s.payload->>'category1', ''), '분류 미지정') AS category_label
+                   COALESCE(NULLIF(c1.name, ''), NULLIF(s.category1, ''), '분류 미지정') AS category_label
               FROM spec_sheets s
               LEFT JOIN item_categories c1 ON c1.id = s.category1_id AND c1.company_id = s.company_id
              WHERE s.company_id = $1
@@ -341,7 +341,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
                ${periodWhereClause.replace(/updated_at/g, "s.updated_at")}
             UNION ALL
             SELECT 'second'::text AS round_key,
-                   COALESCE(NULLIF(c2.name, ''), NULLIF(s.payload->>'category2Label', ''), NULLIF(s.payload->>'category2', ''), '분류 미지정') AS category_label
+                   COALESCE(NULLIF(c2.name, ''), NULLIF(s.category2, ''), '분류 미지정') AS category_label
               FROM spec_sheets s
               LEFT JOIN item_categories c2 ON c2.id = s.category2_id AND c2.company_id = s.company_id
              WHERE s.company_id = $1
@@ -350,7 +350,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
                ${periodWhereClause.replace(/updated_at/g, "s.updated_at")}
             UNION ALL
             SELECT 'third'::text AS round_key,
-                   COALESCE(NULLIF(c3.name, ''), NULLIF(s.payload->>'category3Label', ''), NULLIF(s.payload->>'category3', ''), '분류 미지정') AS category_label
+                   COALESCE(NULLIF(c3.name, ''), NULLIF(s.category3, ''), '분류 미지정') AS category_label
               FROM spec_sheets s
               LEFT JOIN item_categories c3 ON c3.id = s.category3_id AND c3.company_id = s.company_id
              WHERE s.company_id = $1
@@ -371,8 +371,8 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
       queryDb<CategoryDrilldownRow>(
         `WITH category_drilldown_rows AS (
             SELECT 'firstToSecond'::text AS drilldown_key,
-                   COALESCE(NULLIF(c1.name, ''), NULLIF(s.payload->>'category1Label', ''), NULLIF(s.payload->>'category1', ''), '분류 미지정') AS parent_label,
-                   COALESCE(NULLIF(c2.name, ''), NULLIF(s.payload->>'category2Label', ''), NULLIF(s.payload->>'category2', ''), '분류 미지정') AS child_label
+                   COALESCE(NULLIF(c1.name, ''), NULLIF(s.category1, ''), '분류 미지정') AS parent_label,
+                   COALESCE(NULLIF(c2.name, ''), NULLIF(s.category2, ''), '분류 미지정') AS child_label
               FROM spec_sheets s
               LEFT JOIN item_categories c1 ON c1.id = s.category1_id AND c1.company_id = s.company_id
               LEFT JOIN item_categories c2 ON c2.id = s.category2_id AND c2.company_id = s.company_id
@@ -382,8 +382,8 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
                ${periodWhereClause.replace(/updated_at/g, "s.updated_at")}
             UNION ALL
             SELECT 'secondToThird'::text AS drilldown_key,
-                   COALESCE(NULLIF(c2.name, ''), NULLIF(s.payload->>'category2Label', ''), NULLIF(s.payload->>'category2', ''), '분류 미지정') AS parent_label,
-                   COALESCE(NULLIF(c3.name, ''), NULLIF(s.payload->>'category3Label', ''), NULLIF(s.payload->>'category3', ''), '분류 미지정') AS child_label
+                   COALESCE(NULLIF(c2.name, ''), NULLIF(s.category2, ''), '분류 미지정') AS parent_label,
+                   COALESCE(NULLIF(c3.name, ''), NULLIF(s.category3, ''), '분류 미지정') AS child_label
               FROM spec_sheets s
               LEFT JOIN item_categories c2 ON c2.id = s.category2_id AND c2.company_id = s.company_id
               LEFT JOIN item_categories c3 ON c3.id = s.category3_id AND c3.company_id = s.company_id
@@ -404,7 +404,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
         [companyId],
       ),
       queryDb<PeriodTopProductRow>(
-        `SELECT COALESCE(NULLIF(s.title, ''), NULLIF(s.payload->>'name', ''), NULLIF(s.payload->>'productName', ''), '제품 미지정') AS product_label,
+        `SELECT COALESCE(NULLIF(s.title, ''), NULLIF(s.display_title, ''), '제품 미지정') AS product_label,
                 COALESCE(SUM(COALESCE(o.quantity, 0)), 0)::text AS count_value
            FROM spec_sheets s
            LEFT JOIN orders o ON o.spec_sheet_id = s.id
@@ -425,7 +425,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
       queryDb<PeriodTopProductRow>(
         `WITH reorder_rows AS (
             SELECT COALESCE(NULLIF(s.reorder_group_id, ''), s.parent_spec_sheet_id, s.id) AS reorder_group_key,
-                   COALESCE(NULLIF(s.title, ''), NULLIF(s.payload->>'name', ''), NULLIF(s.payload->>'productName', ''), '제품 미지정') AS product_label,
+                   COALESCE(NULLIF(s.title, ''), NULLIF(s.display_title, ''), '제품 미지정') AS product_label,
                    GREATEST(COALESCE(s.reorder_round, 0), CASE WHEN s.parent_spec_sheet_id IS NOT NULL THEN 2 ELSE 0 END) AS reorder_round_value,
                    COALESCE(SUM(COALESCE(o.quantity, 0)), 0) AS order_quantity_value
               FROM spec_sheets s
@@ -450,7 +450,7 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
         [companyId],
       ),
       queryDb<PeriodTopProductRow>(
-        `SELECT COALESCE(NULLIF(title, ''), NULLIF(payload->>'name', ''), NULLIF(payload->>'productName', ''), '제품 미지정') AS product_label,
+        `SELECT COALESCE(NULLIF(title, ''), NULLIF(display_title, ''), '제품 미지정') AS product_label,
                 COUNT(*)::text AS count_value
            FROM spec_sheets
           WHERE company_id = $1
@@ -474,13 +474,13 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
                 )::text AS due_delay_count,
                 COUNT(*)::text AS quality_target_count,
                 COUNT(*) FILTER (WHERE ${sourceDefectWorkorderCondition})::text AS quality_issue_count,
-                STRING_AGG(DISTINCT COALESCE(NULLIF(s.title, ''), NULLIF(s.payload->>'name', ''), NULLIF(s.payload->>'productName', ''), '작업지시서 미지정'), '|||')
+                STRING_AGG(DISTINCT COALESCE(NULLIF(s.title, ''), NULLIF(s.display_title, ''), '작업지시서 미지정'), '|||')
                   FILTER (
                     WHERE ${orderDueDateExpression} IS NOT NULL
                       AND ${orderDueDateExpression} < CURRENT_DATE
                       AND o.status <> 'completed'
                   ) AS due_delay_examples,
-                STRING_AGG(DISTINCT COALESCE(NULLIF(s.title, ''), NULLIF(s.payload->>'name', ''), NULLIF(s.payload->>'productName', ''), '작업지시서 미지정'), '|||')
+                STRING_AGG(DISTINCT COALESCE(NULLIF(s.title, ''), NULLIF(s.display_title, ''), '작업지시서 미지정'), '|||')
                   FILTER (WHERE ${sourceDefectWorkorderCondition}) AS quality_issue_examples
            FROM orders o
            LEFT JOIN spec_sheets s ON s.id = o.spec_sheet_id

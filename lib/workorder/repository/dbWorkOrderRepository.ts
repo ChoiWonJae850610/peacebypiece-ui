@@ -11,7 +11,9 @@ import {
 } from "@/lib/constants/workorderStates";
 import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
 import { ADMIN_FILE_TRASH_ACTOR_IDS } from "@/lib/admin/files/trashPolicy";
-import type { WorkOrder, WorkOrderStatePatch, WorkOrderSummary } from "@/types/workorder";
+import { ORDER_ENTRY_TARGET_TYPE } from "@/lib/constants/workorderDomain";
+import type { Material } from "@/types/material";
+import type { OrderEntry, Outsourcing, WorkOrder, WorkOrderStatePatch, WorkOrderSummary } from "@/types/workorder";
 import { applyReorderIdentity } from "@/lib/workorder/reorder/helpers";
 import { syncDbFactoryOrdersForSpecSheet } from "@/lib/workorder/repository/dbFactoryOrderRepository";
 import { syncDbSpecSheetMaterialsForSpecSheet } from "@/lib/workorder/repository/dbSpecSheetMaterialRepository";
@@ -59,6 +61,23 @@ const DELETE_BATCH_ID_COLUMN_CANDIDATES = ["delete_batch_id"] as const;
 const CATEGORY1_ID_COLUMN_CANDIDATES = ["category1_id"] as const;
 const CATEGORY2_ID_COLUMN_CANDIDATES = ["category2_id"] as const;
 const CATEGORY3_ID_COLUMN_CANDIDATES = ["category3_id"] as const;
+const DISPLAY_TITLE_COLUMN_CANDIDATES = ["display_title"] as const;
+const BASE_TITLE_COLUMN_CANDIDATES = ["base_title"] as const;
+const CATEGORY1_COLUMN_CANDIDATES = ["category1"] as const;
+const CATEGORY2_COLUMN_CANDIDATES = ["category2"] as const;
+const CATEGORY3_COLUMN_CANDIDATES = ["category3"] as const;
+const SEASON_COLUMN_CANDIDATES = ["season"] as const;
+const PRIORITY_COLUMN_CANDIDATES = ["priority"] as const;
+const VENDOR_COLUMN_CANDIDATES = ["vendor"] as const;
+const MANAGER_COLUMN_CANDIDATES = ["manager"] as const;
+const MANAGER_ID_COLUMN_CANDIDATES = ["manager_id"] as const;
+const CREATED_BY_ID_COLUMN_CANDIDATES = ["created_by_id"] as const;
+const CREATED_BY_ROLE_COLUMN_CANDIDATES = ["created_by_role"] as const;
+const DUE_DATE_COLUMN_CANDIDATES = ["due_date"] as const;
+const QUANTITY_COLUMN_CANDIDATES = ["quantity"] as const;
+const INVENTORY_QUANTITY_COLUMN_CANDIDATES = ["inventory_quantity"] as const;
+const INVENTORY_STATUS_COLUMN_CANDIDATES = ["inventory_status"] as const;
+const MEMO_COLUMN_CANDIDATES = ["memo"] as const;
 
 type DbSpecSheetRow = {
   id: string;
@@ -73,6 +92,23 @@ type DbSpecSheetRow = {
   category1_id?: string | null;
   category2_id?: string | null;
   category3_id?: string | null;
+  display_title?: string | null;
+  base_title?: string | null;
+  category1?: string | null;
+  category2?: string | null;
+  category3?: string | null;
+  season?: string | null;
+  priority?: string | null;
+  vendor?: string | null;
+  manager?: string | null;
+  manager_id?: string | null;
+  created_by_id?: string | null;
+  created_by_role?: WorkOrder["createdByRole"] | null;
+  due_date?: string | null;
+  quantity?: number | null;
+  inventory_quantity?: number | null;
+  inventory_status?: WorkOrder["inventoryStatus"] | null;
+  memo?: string | null;
   payload: WorkOrder | string | null;
   order_entry_count?: number | null;
   material_count?: number | null;
@@ -123,6 +159,23 @@ type DbSpecSheetSchema = {
   category1IdColumn: string | null;
   category2IdColumn: string | null;
   category3IdColumn: string | null;
+  displayTitleColumn: string | null;
+  baseTitleColumn: string | null;
+  category1Column: string | null;
+  category2Column: string | null;
+  category3Column: string | null;
+  seasonColumn: string | null;
+  priorityColumn: string | null;
+  vendorColumn: string | null;
+  managerColumn: string | null;
+  managerIdColumn: string | null;
+  createdByIdColumn: string | null;
+  createdByRoleColumn: string | null;
+  dueDateColumn: string | null;
+  quantityColumn: string | null;
+  inventoryQuantityColumn: string | null;
+  inventoryStatusColumn: string | null;
+  memoColumn: string | null;
   hasIdColumn: boolean;
   hasTitleColumn: boolean;
 };
@@ -275,19 +328,47 @@ function parsePayloadValue(
   }
 }
 
+function readRoleValue(value: unknown, fallback: WorkOrder["createdByRole"] = "admin"): WorkOrder["createdByRole"] {
+  if (value === "admin" || value === "designer" || value === "inspector") return value;
+  return fallback;
+}
+
+function readInventoryStatusValue(value: unknown, fallback: WorkOrder["inventoryStatus"] = "unchecked"): WorkOrder["inventoryStatus"] {
+  if (value === "unchecked" || value === "normal" || value === "shortage") return value;
+  return fallback;
+}
+
+function readStringRowValue(value: unknown, fallback = ""): string {
+  return typeof value === "string" && value.trim().length > 0 ? value : fallback;
+}
+
+function readNumberRowValue(value: unknown, fallback = 0): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
 function mapSpecSheetRowToWorkOrder(row: DbSpecSheetRow): WorkOrder {
   const payload = parsePayloadValue(row.payload);
+  const normalizedWorkflowState =
+    row.workflow_state !== null && row.workflow_state !== undefined
+      ? normalizeDbWorkflowState(row.workflow_state)
+      : typeof payload.workflowState === "string"
+        ? normalizeDbWorkflowState(payload.workflowState)
+        : DEFAULT_WORKFLOW_STATE;
+  const lastSavedAt =
+    row.last_saved_at ??
+    toIsoString(row.updated_at) ??
+    toIsoString(row.created_at) ??
+    readStringPayloadValue(payload.lastSavedAt);
 
-  const hydrated = {
-    ...(payload as WorkOrder),
+  const hydrated: WorkOrder = {
     id: row.id,
     title: row.title,
+    displayTitle: readStringRowValue(row.display_title, readStringPayloadValue(payload.displayTitle, row.title)),
+    baseTitle: readStringRowValue(row.base_title, readStringPayloadValue(payload.baseTitle, row.title)),
     workOrderKind: row.work_order_kind ?? payload.workOrderKind ?? undefined,
     reorderGroupId:
       row.reorder_group_id ??
-      (typeof payload.reorderGroupId === "string"
-        ? payload.reorderGroupId
-        : undefined),
+      (typeof payload.reorderGroupId === "string" ? payload.reorderGroupId : undefined),
     reorderRound:
       typeof row.reorder_round === "number"
         ? row.reorder_round
@@ -296,15 +377,16 @@ function mapSpecSheetRowToWorkOrder(row: DbSpecSheetRow): WorkOrder {
           : undefined,
     parentSpecSheetId:
       row.parent_spec_sheet_id ??
-      (typeof payload.parentSpecSheetId === "string"
-        ? payload.parentSpecSheetId
-        : undefined),
+      (typeof payload.parentSpecSheetId === "string" ? payload.parentSpecSheetId : undefined),
     isDefectOrder:
       typeof row.is_rework === "boolean"
         ? row.is_rework
         : typeof payload.isDefectOrder === "boolean"
           ? payload.isDefectOrder
           : undefined,
+    category1: readStringRowValue(row.category1, readStringPayloadValue(payload.category1)),
+    category2: readStringRowValue(row.category2, readStringPayloadValue(payload.category2)),
+    category3: readStringRowValue(row.category3, readStringPayloadValue(payload.category3)),
     category1Id:
       row.category1_id ??
       (typeof payload.category1Id === "string" ? payload.category1Id : null),
@@ -314,18 +396,29 @@ function mapSpecSheetRowToWorkOrder(row: DbSpecSheetRow): WorkOrder {
     category3Id:
       row.category3_id ??
       (typeof payload.category3Id === "string" ? payload.category3Id : null),
-    workflowState:
-      row.workflow_state !== null && row.workflow_state !== undefined
-        ? normalizeDbWorkflowState(row.workflow_state)
-        : typeof payload.workflowState === "string"
-          ? payload.workflowState
-          : DEFAULT_WORKFLOW_STATE,
-    lastSavedAt:
-      row.last_saved_at ??
-      toIsoString(row.updated_at) ??
-      toIsoString(row.created_at) ??
-      (typeof payload.lastSavedAt === "string" ? payload.lastSavedAt : ""),
-  } satisfies WorkOrder;
+    season: readStringRowValue(row.season, readStringPayloadValue(payload.season)),
+    priority: readStringRowValue(row.priority, readStringPayloadValue(payload.priority)),
+    vendor: readStringRowValue(row.vendor, readStringPayloadValue(payload.vendor)),
+    manager: readStringRowValue(row.manager, readStringPayloadValue(payload.manager)),
+    managerId:
+      row.manager_id ??
+      (typeof payload.managerId === "string" ? payload.managerId : null),
+    createdById: readStringRowValue(row.created_by_id, readStringPayloadValue(payload.createdById, "system")),
+    createdByRole: readRoleValue(row.created_by_role, readRoleValue(payload.createdByRole)),
+    dueDate: readStringRowValue(row.due_date, readStringPayloadValue(payload.dueDate)),
+    quantity: readNumberRowValue(row.quantity, readNumberPayloadValue(payload.quantity)),
+    inventoryQuantity: readNumberRowValue(row.inventory_quantity, readNumberPayloadValue(payload.inventoryQuantity)),
+    inventoryStatus: readInventoryStatusValue(row.inventory_status, readInventoryStatusValue(payload.inventoryStatus)),
+    memo: readStringRowValue(row.memo, readStringPayloadValue(payload.memo)),
+    materials: Array.isArray(payload.materials) ? payload.materials : [],
+    outsourcing: Array.isArray(payload.outsourcing) ? payload.outsourcing : [],
+    attachments: Array.isArray(payload.attachments) ? payload.attachments : [],
+    memoThreads: Array.isArray(payload.memoThreads) ? payload.memoThreads : [],
+    orderEntries: Array.isArray(payload.orderEntries) ? payload.orderEntries : [],
+    workflowState: normalizedWorkflowState,
+    lastSavedAt,
+    factoryOrderRequest: payload.factoryOrderRequest ?? null,
+  };
 
   return applyReorderIdentity(hydrated);
 }
@@ -365,8 +458,8 @@ function mapSpecSheetRowToWorkOrderSummary(row: DbSpecSheetRow): WorkOrderSummar
   return {
     id: row.id,
     title: row.title,
-    displayTitle: readStringPayloadValue(payload.displayTitle, row.title),
-    baseTitle: readStringPayloadValue(payload.baseTitle, row.title),
+    displayTitle: readStringRowValue(row.display_title, readStringPayloadValue(payload.displayTitle, row.title)),
+    baseTitle: readStringRowValue(row.base_title, readStringPayloadValue(payload.baseTitle, row.title)),
     workOrderKind: row.work_order_kind ?? payload.workOrderKind,
     reorderGroupId:
       row.reorder_group_id ??
@@ -386,9 +479,9 @@ function mapSpecSheetRowToWorkOrderSummary(row: DbSpecSheetRow): WorkOrderSummar
         : typeof payload.isDefectOrder === "boolean"
           ? payload.isDefectOrder
           : undefined,
-    category1: readStringPayloadValue(payload.category1),
-    category2: readStringPayloadValue(payload.category2),
-    category3: readStringPayloadValue(payload.category3),
+    category1: readStringRowValue(row.category1, readStringPayloadValue(payload.category1)),
+    category2: readStringRowValue(row.category2, readStringPayloadValue(payload.category2)),
+    category3: readStringRowValue(row.category3, readStringPayloadValue(payload.category3)),
     category1Id:
       row.category1_id ??
       (typeof payload.category1Id === "string" ? payload.category1Id : null),
@@ -398,17 +491,19 @@ function mapSpecSheetRowToWorkOrderSummary(row: DbSpecSheetRow): WorkOrderSummar
     category3Id:
       row.category3_id ??
       (typeof payload.category3Id === "string" ? payload.category3Id : null),
-    season: readStringPayloadValue(payload.season),
-    priority: readStringPayloadValue(payload.priority),
-    vendor: readStringPayloadValue(payload.vendor),
-    manager: readStringPayloadValue(payload.manager),
-    managerId: typeof payload.managerId === "string" ? payload.managerId : null,
-    createdById: readStringPayloadValue(payload.createdById, "system"),
-    createdByRole: payload.createdByRole ?? "admin",
-    dueDate: readStringPayloadValue(payload.dueDate),
-    quantity: readNumberPayloadValue(payload.quantity),
-    inventoryQuantity: readNumberPayloadValue(payload.inventoryQuantity),
-    inventoryStatus: payload.inventoryStatus ?? "unchecked",
+    season: readStringRowValue(row.season, readStringPayloadValue(payload.season)),
+    priority: readStringRowValue(row.priority, readStringPayloadValue(payload.priority)),
+    vendor: readStringRowValue(row.vendor, readStringPayloadValue(payload.vendor)),
+    manager: readStringRowValue(row.manager, readStringPayloadValue(payload.manager)),
+    managerId:
+      row.manager_id ??
+      (typeof payload.managerId === "string" ? payload.managerId : null),
+    createdById: readStringRowValue(row.created_by_id, readStringPayloadValue(payload.createdById, "system")),
+    createdByRole: readRoleValue(row.created_by_role, readRoleValue(payload.createdByRole)),
+    dueDate: readStringRowValue(row.due_date, readStringPayloadValue(payload.dueDate)),
+    quantity: readNumberRowValue(row.quantity, readNumberPayloadValue(payload.quantity)),
+    inventoryQuantity: readNumberRowValue(row.inventory_quantity, readNumberPayloadValue(payload.inventoryQuantity)),
+    inventoryStatus: readInventoryStatusValue(row.inventory_status, readInventoryStatusValue(payload.inventoryStatus)),
     workflowState: normalizedWorkflowState,
     lastSavedAt,
     orderEntryCount: readCountValue(row.order_entry_count, payload.orderEntries),
@@ -510,6 +605,82 @@ function buildPayloadValue(
   const serialized = JSON.stringify(payload);
   return serialized;
 }
+
+function pushInsertColumn(
+  columns: string[],
+  values: unknown[],
+  placeholders: string[],
+  columnName: string | null,
+  value: unknown,
+) {
+  if (!columnName) return;
+  columns.push(columnName);
+  values.push(value);
+  placeholders.push(`$${values.length}`);
+}
+
+function pushUpdateAssignment(
+  assignments: string[],
+  values: unknown[],
+  columnName: string | null,
+  value: unknown,
+) {
+  if (!columnName) return;
+  assignments.push(`${quoteIdentifier(columnName)} = $${values.length + 1}`);
+  values.push(value);
+}
+
+function appendNormalizedWorkOrderInsertColumns(
+  schema: DbSpecSheetSchema,
+  workOrder: WorkOrder,
+  columns: string[],
+  values: unknown[],
+  placeholders: string[],
+) {
+  pushInsertColumn(columns, values, placeholders, schema.displayTitleColumn, workOrder.displayTitle ?? workOrder.title);
+  pushInsertColumn(columns, values, placeholders, schema.baseTitleColumn, workOrder.baseTitle ?? workOrder.title);
+  pushInsertColumn(columns, values, placeholders, schema.category1Column, workOrder.category1 || null);
+  pushInsertColumn(columns, values, placeholders, schema.category2Column, workOrder.category2 || null);
+  pushInsertColumn(columns, values, placeholders, schema.category3Column, workOrder.category3 || null);
+  pushInsertColumn(columns, values, placeholders, schema.seasonColumn, workOrder.season || null);
+  pushInsertColumn(columns, values, placeholders, schema.priorityColumn, workOrder.priority || null);
+  pushInsertColumn(columns, values, placeholders, schema.vendorColumn, workOrder.vendor || null);
+  pushInsertColumn(columns, values, placeholders, schema.managerColumn, workOrder.manager || null);
+  pushInsertColumn(columns, values, placeholders, schema.managerIdColumn, workOrder.managerId ?? null);
+  pushInsertColumn(columns, values, placeholders, schema.createdByIdColumn, workOrder.createdById || "system");
+  pushInsertColumn(columns, values, placeholders, schema.createdByRoleColumn, workOrder.createdByRole || "admin");
+  pushInsertColumn(columns, values, placeholders, schema.dueDateColumn, workOrder.dueDate || null);
+  pushInsertColumn(columns, values, placeholders, schema.quantityColumn, workOrder.quantity ?? 0);
+  pushInsertColumn(columns, values, placeholders, schema.inventoryQuantityColumn, workOrder.inventoryQuantity ?? 0);
+  pushInsertColumn(columns, values, placeholders, schema.inventoryStatusColumn, workOrder.inventoryStatus || "unchecked");
+  pushInsertColumn(columns, values, placeholders, schema.memoColumn, workOrder.memo || null);
+}
+
+function appendNormalizedWorkOrderUpdateAssignments(
+  schema: DbSpecSheetSchema,
+  workOrder: WorkOrder,
+  assignments: string[],
+  values: unknown[],
+) {
+  pushUpdateAssignment(assignments, values, schema.displayTitleColumn, workOrder.displayTitle ?? workOrder.title);
+  pushUpdateAssignment(assignments, values, schema.baseTitleColumn, workOrder.baseTitle ?? workOrder.title);
+  pushUpdateAssignment(assignments, values, schema.category1Column, workOrder.category1 || null);
+  pushUpdateAssignment(assignments, values, schema.category2Column, workOrder.category2 || null);
+  pushUpdateAssignment(assignments, values, schema.category3Column, workOrder.category3 || null);
+  pushUpdateAssignment(assignments, values, schema.seasonColumn, workOrder.season || null);
+  pushUpdateAssignment(assignments, values, schema.priorityColumn, workOrder.priority || null);
+  pushUpdateAssignment(assignments, values, schema.vendorColumn, workOrder.vendor || null);
+  pushUpdateAssignment(assignments, values, schema.managerColumn, workOrder.manager || null);
+  pushUpdateAssignment(assignments, values, schema.managerIdColumn, workOrder.managerId ?? null);
+  pushUpdateAssignment(assignments, values, schema.createdByIdColumn, workOrder.createdById || "system");
+  pushUpdateAssignment(assignments, values, schema.createdByRoleColumn, workOrder.createdByRole || "admin");
+  pushUpdateAssignment(assignments, values, schema.dueDateColumn, workOrder.dueDate || null);
+  pushUpdateAssignment(assignments, values, schema.quantityColumn, workOrder.quantity ?? 0);
+  pushUpdateAssignment(assignments, values, schema.inventoryQuantityColumn, workOrder.inventoryQuantity ?? 0);
+  pushUpdateAssignment(assignments, values, schema.inventoryStatusColumn, workOrder.inventoryStatus || "unchecked");
+  pushUpdateAssignment(assignments, values, schema.memoColumn, workOrder.memo || null);
+}
+
 
 async function loadSpecSheetSchema(): Promise<DbSpecSheetSchema> {
   const result = await queryDb<DbColumnInfo>(
@@ -655,6 +826,23 @@ async function loadSpecSheetSchema(): Promise<DbSpecSheetSchema> {
       columnNames,
       CATEGORY3_ID_COLUMN_CANDIDATES,
     ),
+    displayTitleColumn: findFirstMatchingColumn(columnNames, DISPLAY_TITLE_COLUMN_CANDIDATES),
+    baseTitleColumn: findFirstMatchingColumn(columnNames, BASE_TITLE_COLUMN_CANDIDATES),
+    category1Column: findFirstMatchingColumn(columnNames, CATEGORY1_COLUMN_CANDIDATES),
+    category2Column: findFirstMatchingColumn(columnNames, CATEGORY2_COLUMN_CANDIDATES),
+    category3Column: findFirstMatchingColumn(columnNames, CATEGORY3_COLUMN_CANDIDATES),
+    seasonColumn: findFirstMatchingColumn(columnNames, SEASON_COLUMN_CANDIDATES),
+    priorityColumn: findFirstMatchingColumn(columnNames, PRIORITY_COLUMN_CANDIDATES),
+    vendorColumn: findFirstMatchingColumn(columnNames, VENDOR_COLUMN_CANDIDATES),
+    managerColumn: findFirstMatchingColumn(columnNames, MANAGER_COLUMN_CANDIDATES),
+    managerIdColumn: findFirstMatchingColumn(columnNames, MANAGER_ID_COLUMN_CANDIDATES),
+    createdByIdColumn: findFirstMatchingColumn(columnNames, CREATED_BY_ID_COLUMN_CANDIDATES),
+    createdByRoleColumn: findFirstMatchingColumn(columnNames, CREATED_BY_ROLE_COLUMN_CANDIDATES),
+    dueDateColumn: findFirstMatchingColumn(columnNames, DUE_DATE_COLUMN_CANDIDATES),
+    quantityColumn: findFirstMatchingColumn(columnNames, QUANTITY_COLUMN_CANDIDATES),
+    inventoryQuantityColumn: findFirstMatchingColumn(columnNames, INVENTORY_QUANTITY_COLUMN_CANDIDATES),
+    inventoryStatusColumn: findFirstMatchingColumn(columnNames, INVENTORY_STATUS_COLUMN_CANDIDATES),
+    memoColumn: findFirstMatchingColumn(columnNames, MEMO_COLUMN_CANDIDATES),
     hasIdColumn: columnNames.includes("id"),
     hasTitleColumn: columnNames.includes("title"),
   };
@@ -691,6 +879,23 @@ function buildSpecSheetSelectBaseSql(schema: DbSpecSheetSchema): string {
         ${buildAliasSelection(schema.category1IdColumn, "category1_id", "NULL")},
         ${buildAliasSelection(schema.category2IdColumn, "category2_id", "NULL")},
         ${buildAliasSelection(schema.category3IdColumn, "category3_id", "NULL")},
+        ${buildAliasSelection(schema.displayTitleColumn, "display_title", "NULL")},
+        ${buildAliasSelection(schema.baseTitleColumn, "base_title", "NULL")},
+        ${buildAliasSelection(schema.category1Column, "category1", "NULL")},
+        ${buildAliasSelection(schema.category2Column, "category2", "NULL")},
+        ${buildAliasSelection(schema.category3Column, "category3", "NULL")},
+        ${buildAliasSelection(schema.seasonColumn, "season", "NULL")},
+        ${buildAliasSelection(schema.priorityColumn, "priority", "NULL")},
+        ${buildAliasSelection(schema.vendorColumn, "vendor", "NULL")},
+        ${buildAliasSelection(schema.managerColumn, "manager", "NULL")},
+        ${buildAliasSelection(schema.managerIdColumn, "manager_id", "NULL")},
+        ${buildAliasSelection(schema.createdByIdColumn, "created_by_id", "NULL")},
+        ${buildAliasSelection(schema.createdByRoleColumn, "created_by_role", "NULL")},
+        ${buildAliasSelection(schema.dueDateColumn, "due_date", "NULL")},
+        ${buildAliasSelection(schema.quantityColumn, "quantity", "NULL")},
+        ${buildAliasSelection(schema.inventoryQuantityColumn, "inventory_quantity", "NULL")},
+        ${buildAliasSelection(schema.inventoryStatusColumn, "inventory_status", "NULL")},
+        ${buildAliasSelection(schema.memoColumn, "memo", "NULL")},
         ${buildAliasSelection(schema.payloadColumn, "payload", payloadFallbackSql)},
         ${buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE")},
         ${buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL")},
@@ -765,6 +970,23 @@ function buildSpecSheetSummarySelectBaseSql(schema: DbSpecSheetSchema): string {
         ${buildAliasSelection(schema.category1IdColumn, "category1_id", "NULL")},
         ${buildAliasSelection(schema.category2IdColumn, "category2_id", "NULL")},
         ${buildAliasSelection(schema.category3IdColumn, "category3_id", "NULL")},
+        ${buildAliasSelection(schema.displayTitleColumn, "display_title", "NULL")},
+        ${buildAliasSelection(schema.baseTitleColumn, "base_title", "NULL")},
+        ${buildAliasSelection(schema.category1Column, "category1", "NULL")},
+        ${buildAliasSelection(schema.category2Column, "category2", "NULL")},
+        ${buildAliasSelection(schema.category3Column, "category3", "NULL")},
+        ${buildAliasSelection(schema.seasonColumn, "season", "NULL")},
+        ${buildAliasSelection(schema.priorityColumn, "priority", "NULL")},
+        ${buildAliasSelection(schema.vendorColumn, "vendor", "NULL")},
+        ${buildAliasSelection(schema.managerColumn, "manager", "NULL")},
+        ${buildAliasSelection(schema.managerIdColumn, "manager_id", "NULL")},
+        ${buildAliasSelection(schema.createdByIdColumn, "created_by_id", "NULL")},
+        ${buildAliasSelection(schema.createdByRoleColumn, "created_by_role", "NULL")},
+        ${buildAliasSelection(schema.dueDateColumn, "due_date", "NULL")},
+        ${buildAliasSelection(schema.quantityColumn, "quantity", "NULL")},
+        ${buildAliasSelection(schema.inventoryQuantityColumn, "inventory_quantity", "NULL")},
+        ${buildAliasSelection(schema.inventoryStatusColumn, "inventory_status", "NULL")},
+        ${buildAliasSelection(schema.memoColumn, "memo", "NULL")},
         ${buildSpecSheetSummaryPayloadSelection(schema)},
         ${buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE")},
         ${buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL")},
@@ -880,6 +1102,183 @@ async function loadActiveSpecSheetSummaryRows(): Promise<DbSpecSheetRow[]> {
   return result.rows;
 }
 
+type DbOrderEntryRow = {
+  id: string;
+  spec_sheet_id: string;
+  source_order_entry_id: string | null;
+  factory_name: string | null;
+  quantity: number | null;
+  due_date: string | null;
+  labor_cost: number | null;
+  loss_cost: number | null;
+  status: string | null;
+};
+
+type DbMaterialRow = {
+  id: string;
+  spec_sheet_id: string;
+  material_type: Material["type"] | null;
+  name: string | null;
+  vendor: string | null;
+  quantity: number | null;
+  unit: Material["unit"] | null;
+  unit_cost: number | null;
+  total_cost: number | null;
+  status: Material["status"] | null;
+};
+
+type DbOutsourcingRow = {
+  id: string;
+  spec_sheet_id: string;
+  process: string | null;
+  vendor: string | null;
+  quantity: number | null;
+  unit: string | null;
+  unit_cost: number | null;
+  total_cost: number | null;
+  status: string | null;
+};
+
+type WorkOrderDetailRows = {
+  orderEntries: OrderEntry[];
+  materials: Material[];
+  outsourcing: Outsourcing[];
+};
+
+function getOrCreateDetailRows(
+  map: Map<string, WorkOrderDetailRows>,
+  workOrderId: string,
+): WorkOrderDetailRows {
+  const existing = map.get(workOrderId);
+  if (existing) return existing;
+  const created = { orderEntries: [], materials: [], outsourcing: [] };
+  map.set(workOrderId, created);
+  return created;
+}
+
+async function loadNormalizedDetailRowsByWorkOrderIds(
+  workOrderIds: string[],
+): Promise<Map<string, WorkOrderDetailRows>> {
+  const uniqueIds = Array.from(new Set(workOrderIds.filter(Boolean)));
+  const rowsByWorkOrderId = new Map<string, WorkOrderDetailRows>();
+  if (uniqueIds.length === 0) return rowsByWorkOrderId;
+
+  const [ordersResult, materialsResult, outsourcingResult] = await Promise.all([
+    queryDb<DbOrderEntryRow>(
+      `SELECT id,
+              spec_sheet_id,
+              source_order_entry_id,
+              factory_name,
+              quantity,
+              due_date,
+              labor_cost,
+              loss_cost,
+              status
+         FROM orders
+        WHERE spec_sheet_id = ANY($1::text[])
+          AND COALESCE(is_active, true) = true
+          AND deleted_at IS NULL
+        ORDER BY created_at ASC, id ASC`,
+      [uniqueIds],
+    ),
+    queryDb<DbMaterialRow>(
+      `SELECT id,
+              spec_sheet_id,
+              material_type,
+              name,
+              vendor,
+              quantity,
+              unit,
+              unit_cost,
+              total_cost,
+              status
+         FROM spec_sheet_materials
+        WHERE spec_sheet_id = ANY($1::text[])
+          AND COALESCE(is_active, true) = true
+          AND deleted_at IS NULL
+        ORDER BY created_at ASC, id ASC`,
+      [uniqueIds],
+    ),
+    queryDb<DbOutsourcingRow>(
+      `SELECT id,
+              spec_sheet_id,
+              process,
+              vendor,
+              quantity,
+              unit,
+              unit_cost,
+              total_cost,
+              status
+         FROM spec_sheet_outsourcing_lines
+        WHERE spec_sheet_id = ANY($1::text[])
+          AND COALESCE(is_active, true) = true
+          AND deleted_at IS NULL
+        ORDER BY created_at ASC, id ASC`,
+      [uniqueIds],
+    ),
+  ]);
+
+  for (const row of ordersResult.rows) {
+    getOrCreateDetailRows(rowsByWorkOrderId, row.spec_sheet_id).orderEntries.push({
+      id: row.source_order_entry_id || row.id,
+      type: "생산발주",
+      targetType: ORDER_ENTRY_TARGET_TYPE.factory,
+      factory: row.factory_name || "",
+      dueDate: row.due_date || "",
+      quantity: readNumberRowValue(row.quantity),
+      laborCost: readNumberRowValue(row.labor_cost),
+      lossCost: readNumberRowValue(row.loss_cost),
+      priority: "",
+    });
+  }
+
+  for (const row of materialsResult.rows) {
+    getOrCreateDetailRows(rowsByWorkOrderId, row.spec_sheet_id).materials.push({
+      id: row.id,
+      type: row.material_type || "기타",
+      name: row.name || "",
+      vendor: row.vendor || "",
+      quantity: readNumberRowValue(row.quantity),
+      unit: row.unit || "개",
+      unitCost: readNumberRowValue(row.unit_cost),
+      totalCost: readNumberRowValue(row.total_cost),
+      status: row.status || "준비",
+    });
+  }
+
+  for (const row of outsourcingResult.rows) {
+    getOrCreateDetailRows(rowsByWorkOrderId, row.spec_sheet_id).outsourcing.push({
+      id: row.id,
+      process: row.process || "",
+      vendor: row.vendor || "",
+      quantity: readNumberRowValue(row.quantity),
+      unitType: row.unit || "",
+      unitCost: readNumberRowValue(row.unit_cost),
+      totalCost: readNumberRowValue(row.total_cost),
+      status: row.status || "",
+    });
+  }
+
+  return rowsByWorkOrderId;
+}
+
+async function attachNormalizedDetailRows(workOrders: WorkOrder[]): Promise<WorkOrder[]> {
+  const rowsByWorkOrderId = await loadNormalizedDetailRowsByWorkOrderIds(
+    workOrders.map((workOrder) => workOrder.id),
+  );
+
+  return workOrders.map((workOrder) => {
+    const detailRows = rowsByWorkOrderId.get(workOrder.id);
+    if (!detailRows) return workOrder;
+    return {
+      ...workOrder,
+      orderEntries: detailRows.orderEntries,
+      materials: detailRows.materials,
+      outsourcing: detailRows.outsourcing,
+    };
+  });
+}
+
 export async function findDbWorkOrderSummaries(): Promise<WorkOrderSummary[]> {
   const rows = await loadActiveSpecSheetSummaryRows();
   return rows.map(mapSpecSheetRowToWorkOrderSummary);
@@ -887,7 +1286,7 @@ export async function findDbWorkOrderSummaries(): Promise<WorkOrderSummary[]> {
 
 export async function findAllDbWorkOrders(): Promise<WorkOrder[]> {
   const rows = await loadActiveSpecSheetRows();
-  return rows.map(mapSpecSheetRowToWorkOrder);
+  return attachNormalizedDetailRows(rows.map(mapSpecSheetRowToWorkOrder));
 }
 
 export async function findDbWorkOrderById(workOrderId: string): Promise<WorkOrder | null> {
@@ -904,7 +1303,9 @@ export async function findDbWorkOrderById(workOrderId: string): Promise<WorkOrde
     values,
   );
   const row = result.rows[0] ?? null;
-  return row ? mapSpecSheetRowToWorkOrder(row) : null;
+  if (!row) return null;
+  const [hydrated] = await attachNormalizedDetailRows([mapSpecSheetRowToWorkOrder(row)]);
+  return hydrated ?? mapSpecSheetRowToWorkOrder(row);
 }
 
 export async function createDbWorkOrder(
@@ -1000,6 +1401,8 @@ export async function createDbWorkOrder(
     placeholders.push(`$${values.length}`);
   }
 
+  appendNormalizedWorkOrderInsertColumns(schema, normalizedWorkOrder, columns, values, placeholders);
+
   if (schema.payloadColumn) {
     columns.push(schema.payloadColumn);
     values.push(buildPayloadValue(schema.payloadColumnKind, payload));
@@ -1044,6 +1447,23 @@ export async function createDbWorkOrder(
     buildAliasSelection(schema.category1IdColumn, "category1_id", "NULL"),
     buildAliasSelection(schema.category2IdColumn, "category2_id", "NULL"),
     buildAliasSelection(schema.category3IdColumn, "category3_id", "NULL"),
+    buildAliasSelection(schema.displayTitleColumn, "display_title", "NULL"),
+    buildAliasSelection(schema.baseTitleColumn, "base_title", "NULL"),
+    buildAliasSelection(schema.category1Column, "category1", "NULL"),
+    buildAliasSelection(schema.category2Column, "category2", "NULL"),
+    buildAliasSelection(schema.category3Column, "category3", "NULL"),
+    buildAliasSelection(schema.seasonColumn, "season", "NULL"),
+    buildAliasSelection(schema.priorityColumn, "priority", "NULL"),
+    buildAliasSelection(schema.vendorColumn, "vendor", "NULL"),
+    buildAliasSelection(schema.managerColumn, "manager", "NULL"),
+    buildAliasSelection(schema.managerIdColumn, "manager_id", "NULL"),
+    buildAliasSelection(schema.createdByIdColumn, "created_by_id", "NULL"),
+    buildAliasSelection(schema.createdByRoleColumn, "created_by_role", "NULL"),
+    buildAliasSelection(schema.dueDateColumn, "due_date", "NULL"),
+    buildAliasSelection(schema.quantityColumn, "quantity", "NULL"),
+    buildAliasSelection(schema.inventoryQuantityColumn, "inventory_quantity", "NULL"),
+    buildAliasSelection(schema.inventoryStatusColumn, "inventory_status", "NULL"),
+    buildAliasSelection(schema.memoColumn, "memo", "NULL"),
     buildAliasSelection(schema.payloadColumn, "payload", payloadFallbackSql),
     buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE"),
     buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL"),
@@ -1072,10 +1492,17 @@ export async function createDbWorkOrder(
   }
 
   const mapped = mapSpecSheetRowToWorkOrder(created);
-  await syncDbFactoryOrdersForSpecSheet(mapped);
-  await syncDbSpecSheetMaterialsForSpecSheet(mapped);
-  await syncDbSpecSheetOutsourcingForSpecSheet(mapped);
-  return mapped;
+  const persisted = {
+    ...normalizedWorkOrder,
+    ...mapped,
+    orderEntries: normalizedWorkOrder.orderEntries ?? [],
+    materials: normalizedWorkOrder.materials ?? [],
+    outsourcing: normalizedWorkOrder.outsourcing ?? [],
+  };
+  await syncDbFactoryOrdersForSpecSheet(persisted);
+  await syncDbSpecSheetMaterialsForSpecSheet(persisted);
+  await syncDbSpecSheetOutsourcingForSpecSheet(persisted);
+  return persisted;
 }
 
 function isNotFoundWorkOrderError(error: unknown): boolean {
@@ -1189,6 +1616,8 @@ export async function updateDbWorkOrder(
     values.push(normalizedWorkOrder.category3Id ?? null);
   }
 
+  appendNormalizedWorkOrderUpdateAssignments(schema, normalizedWorkOrder, assignments, values);
+
   if (schema.payloadColumn) {
     assignments.push(
       `${quoteIdentifier(schema.payloadColumn)} = ${buildPayloadInsertPlaceholder(schema.payloadColumnKind, values.length + 1)}`,
@@ -1234,6 +1663,23 @@ export async function updateDbWorkOrder(
     buildAliasSelection(schema.category1IdColumn, "category1_id", "NULL"),
     buildAliasSelection(schema.category2IdColumn, "category2_id", "NULL"),
     buildAliasSelection(schema.category3IdColumn, "category3_id", "NULL"),
+    buildAliasSelection(schema.displayTitleColumn, "display_title", "NULL"),
+    buildAliasSelection(schema.baseTitleColumn, "base_title", "NULL"),
+    buildAliasSelection(schema.category1Column, "category1", "NULL"),
+    buildAliasSelection(schema.category2Column, "category2", "NULL"),
+    buildAliasSelection(schema.category3Column, "category3", "NULL"),
+    buildAliasSelection(schema.seasonColumn, "season", "NULL"),
+    buildAliasSelection(schema.priorityColumn, "priority", "NULL"),
+    buildAliasSelection(schema.vendorColumn, "vendor", "NULL"),
+    buildAliasSelection(schema.managerColumn, "manager", "NULL"),
+    buildAliasSelection(schema.managerIdColumn, "manager_id", "NULL"),
+    buildAliasSelection(schema.createdByIdColumn, "created_by_id", "NULL"),
+    buildAliasSelection(schema.createdByRoleColumn, "created_by_role", "NULL"),
+    buildAliasSelection(schema.dueDateColumn, "due_date", "NULL"),
+    buildAliasSelection(schema.quantityColumn, "quantity", "NULL"),
+    buildAliasSelection(schema.inventoryQuantityColumn, "inventory_quantity", "NULL"),
+    buildAliasSelection(schema.inventoryStatusColumn, "inventory_status", "NULL"),
+    buildAliasSelection(schema.memoColumn, "memo", "NULL"),
     buildAliasSelection(schema.payloadColumn, "payload", payloadFallbackSql),
     buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE"),
     buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL"),
@@ -1262,10 +1708,17 @@ export async function updateDbWorkOrder(
   }
 
   const mapped = mapSpecSheetRowToWorkOrder(updated);
-  await syncDbFactoryOrdersForSpecSheet(mapped);
-  await syncDbSpecSheetMaterialsForSpecSheet(mapped);
-  await syncDbSpecSheetOutsourcingForSpecSheet(mapped);
-  return mapped;
+  const persisted = {
+    ...normalizedWorkOrder,
+    ...mapped,
+    orderEntries: normalizedWorkOrder.orderEntries ?? [],
+    materials: normalizedWorkOrder.materials ?? [],
+    outsourcing: normalizedWorkOrder.outsourcing ?? [],
+  };
+  await syncDbFactoryOrdersForSpecSheet(persisted);
+  await syncDbSpecSheetMaterialsForSpecSheet(persisted);
+  await syncDbSpecSheetOutsourcingForSpecSheet(persisted);
+  return persisted;
 }
 
 
@@ -1288,6 +1741,16 @@ export async function updateDbWorkOrderStatePatch(
   if (schema.lastSavedAtColumn) {
     assignments.push(`${quoteIdentifier(schema.lastSavedAtColumn)} = $${values.length + 1}`);
     values.push(lastSavedAt);
+  }
+
+  if (schema.inventoryQuantityColumn && Object.prototype.hasOwnProperty.call(patch, "inventoryQuantity")) {
+    assignments.push(`${quoteIdentifier(schema.inventoryQuantityColumn)} = $${values.length + 1}`);
+    values.push(patch.inventoryQuantity ?? 0);
+  }
+
+  if (schema.inventoryStatusColumn && Object.prototype.hasOwnProperty.call(patch, "inventoryStatus")) {
+    assignments.push(`${quoteIdentifier(schema.inventoryStatusColumn)} = $${values.length + 1}`);
+    values.push(patch.inventoryStatus ?? "unchecked");
   }
 
   if (schema.payloadColumn) {
@@ -1343,6 +1806,23 @@ export async function updateDbWorkOrderStatePatch(
     buildAliasSelection(schema.category1IdColumn, "category1_id", "NULL"),
     buildAliasSelection(schema.category2IdColumn, "category2_id", "NULL"),
     buildAliasSelection(schema.category3IdColumn, "category3_id", "NULL"),
+    buildAliasSelection(schema.displayTitleColumn, "display_title", "NULL"),
+    buildAliasSelection(schema.baseTitleColumn, "base_title", "NULL"),
+    buildAliasSelection(schema.category1Column, "category1", "NULL"),
+    buildAliasSelection(schema.category2Column, "category2", "NULL"),
+    buildAliasSelection(schema.category3Column, "category3", "NULL"),
+    buildAliasSelection(schema.seasonColumn, "season", "NULL"),
+    buildAliasSelection(schema.priorityColumn, "priority", "NULL"),
+    buildAliasSelection(schema.vendorColumn, "vendor", "NULL"),
+    buildAliasSelection(schema.managerColumn, "manager", "NULL"),
+    buildAliasSelection(schema.managerIdColumn, "manager_id", "NULL"),
+    buildAliasSelection(schema.createdByIdColumn, "created_by_id", "NULL"),
+    buildAliasSelection(schema.createdByRoleColumn, "created_by_role", "NULL"),
+    buildAliasSelection(schema.dueDateColumn, "due_date", "NULL"),
+    buildAliasSelection(schema.quantityColumn, "quantity", "NULL"),
+    buildAliasSelection(schema.inventoryQuantityColumn, "inventory_quantity", "NULL"),
+    buildAliasSelection(schema.inventoryStatusColumn, "inventory_status", "NULL"),
+    buildAliasSelection(schema.memoColumn, "memo", "NULL"),
     buildAliasSelection(schema.payloadColumn, "payload", payloadFallbackSql),
     buildAliasSelection(schema.isActiveColumn, "is_active", "TRUE"),
     buildAliasSelection(schema.deletedAtColumn, "deleted_at", "NULL"),

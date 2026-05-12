@@ -447,6 +447,23 @@ CREATE TABLE spec_sheets (
   category1_id text REFERENCES item_categories(id) ON DELETE SET NULL,
   category2_id text REFERENCES item_categories(id) ON DELETE SET NULL,
   category3_id text REFERENCES item_categories(id) ON DELETE SET NULL,
+  display_title text,
+  base_title text,
+  category1 text,
+  category2 text,
+  category3 text,
+  season text,
+  priority text,
+  vendor text,
+  manager text,
+  manager_id text,
+  created_by_id text,
+  created_by_role text,
+  due_date text,
+  quantity integer NOT NULL DEFAULT 0,
+  inventory_quantity integer NOT NULL DEFAULT 0,
+  inventory_status text NOT NULL DEFAULT 'unchecked',
+  memo text,
   is_active boolean NOT NULL DEFAULT true,
   delete_status text NOT NULL DEFAULT 'active',
   purge_status text NOT NULL DEFAULT 'none',
@@ -459,7 +476,6 @@ CREATE TABLE spec_sheets (
   delete_batch_id text,
   purged_at timestamptz,
   purged_by text,
-  payload jsonb NOT NULL DEFAULT '{}'::jsonb,
   created_at timestamp without time zone DEFAULT now(),
   updated_at timestamp without time zone DEFAULT now(),
   deleted_at timestamptz,
@@ -513,7 +529,6 @@ CREATE TABLE spec_sheet_materials (
   unit_cost numeric NOT NULL DEFAULT 0,
   total_cost numeric NOT NULL DEFAULT 0,
   status text,
-  payload jsonb,
   is_active boolean NOT NULL DEFAULT true,
   deleted_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -537,7 +552,6 @@ CREATE TABLE material_stocks (
   status text NOT NULL DEFAULT 'draft',
   source_spec_sheet_id text REFERENCES spec_sheets(id) ON DELETE SET NULL,
   source_spec_sheet_material_id text REFERENCES spec_sheet_materials(id) ON DELETE SET NULL,
-  payload jsonb,
   is_active boolean NOT NULL DEFAULT true,
   deleted_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -557,7 +571,6 @@ CREATE TABLE spec_sheet_outsourcing_lines (
   unit_cost numeric NOT NULL DEFAULT 0,
   total_cost numeric NOT NULL DEFAULT 0,
   status text,
-  payload jsonb,
   is_active boolean NOT NULL DEFAULT true,
   deleted_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -1764,6 +1777,8 @@ CREATE INDEX spec_sheets_parent_idx ON spec_sheets (parent_spec_sheet_id);
 CREATE INDEX spec_sheets_category1_idx ON spec_sheets (company_id, category1_id);
 CREATE INDEX spec_sheets_category2_idx ON spec_sheets (company_id, category2_id);
 CREATE INDEX spec_sheets_category3_idx ON spec_sheets (company_id, category3_id);
+CREATE INDEX spec_sheets_company_due_date_idx ON spec_sheets (company_id, due_date);
+CREATE INDEX spec_sheets_company_manager_idx ON spec_sheets (company_id, manager_id);
 CREATE INDEX spec_sheets_company_status_updated_idx ON spec_sheets (company_id, status, updated_at DESC) WHERE deleted_at IS NULL AND COALESCE(is_active, true) = true;
 CREATE INDEX spec_sheets_delete_status_idx ON spec_sheets (delete_status, deleted_at DESC);
 CREATE INDEX spec_sheets_purge_status_idx ON spec_sheets (purge_status, purge_requested_at DESC, purged_at DESC);
