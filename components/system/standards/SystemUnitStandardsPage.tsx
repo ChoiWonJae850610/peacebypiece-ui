@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import { APP_VERSION } from "@/lib/constants/app";
 import {
   SYSTEM_UNIT_STANDARD_CATEGORY_LABELS,
@@ -12,10 +13,10 @@ import {
   type SystemUnitStandardStatus,
 } from "@/lib/system/standards/systemUnitStandards";
 
-const statusClassNames: Record<SystemUnitStandardStatus, string> = {
-  active: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  inactive: "border-stone-200 bg-stone-50 text-stone-500",
-  review: "border-amber-200 bg-amber-50 text-amber-700",
+const statusBadgeTones: Record<SystemUnitStandardStatus, AdminStatusBadgeTone> = {
+  active: "success",
+  inactive: "neutral",
+  review: "warning",
 };
 
 type UnitFormState = {
@@ -197,21 +198,9 @@ export default function SystemUnitStandardsPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2 text-xs font-medium">
-              <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-stone-600">
-                v{APP_VERSION}
-              </span>
-              <Link
-                href="/system/standards"
-                className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50"
-              >
-                기준정보 설계
-              </Link>
-              <Link
-                href="/system"
-                className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50"
-              >
-                시스템 콘솔
-              </Link>
+              <AdminStatusBadge tone="neutral">v{APP_VERSION}</AdminStatusBadge>
+              <AdminLinkButton href="/system/standards">기준정보 설계</AdminLinkButton>
+              <AdminLinkButton href="/system">시스템 콘솔</AdminLinkButton>
             </div>
           </div>
         </header>
@@ -225,14 +214,9 @@ export default function SystemUnitStandardsPage() {
                   총 {records.length}개 중 활성 {activeCount}개입니다. 코드 중복은 허용하지 않습니다.
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={loadRecords}
-                disabled={isLoading || isSaving}
-                className="rounded-full border border-stone-300 bg-white px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-stone-50 disabled:cursor-not-allowed disabled:text-stone-400"
-              >
+              <AdminButton onClick={loadRecords} disabled={isLoading || isSaving}>
                 {isLoading ? "조회중" : "새로고침"}
-              </button>
+              </AdminButton>
             </div>
 
             <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-3">
@@ -286,14 +270,15 @@ export default function SystemUnitStandardsPage() {
                   placeholder="정렬"
                   className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400"
                 />
-                <button
-                  type="button"
+                <AdminButton
                   onClick={createRecord}
                   disabled={isSaving || !form.code.trim() || !form.koreanName.trim() || !form.englishCode.trim()}
-                  className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-700 disabled:cursor-not-allowed disabled:bg-stone-300"
+                  variant="primary"
+                  size="md"
+                  className="w-full rounded-xl"
                 >
                   단위 추가
-                </button>
+                </AdminButton>
               </div>
             </div>
 
@@ -356,24 +341,23 @@ export default function SystemUnitStandardsPage() {
                             className="rounded-lg border border-stone-200 px-2 py-1 text-right text-sm"
                           />
                           <div className="flex justify-end gap-1">
-                            <button
-                              type="button"
+                            <AdminButton
                               onClick={() => saveRecord(row)}
                               disabled={isSaving}
-                              className="rounded-full bg-stone-900 px-3 py-1 text-xs font-semibold text-white disabled:bg-stone-300"
+                              variant="primary"
+                              className="min-h-0 px-3 py-1 text-xs"
                             >
                               저장
-                            </button>
-                            <button
-                              type="button"
+                            </AdminButton>
+                            <AdminButton
                               onClick={() => {
                                 setEditingId(null);
                                 setEditingForm(null);
                               }}
-                              className="rounded-full border border-stone-200 px-3 py-1 text-xs font-semibold text-stone-600"
+                              className="min-h-0 px-3 py-1 text-xs"
                             >
                               취소
-                            </button>
+                            </AdminButton>
                           </div>
                         </>
                       ) : (
@@ -389,20 +373,21 @@ export default function SystemUnitStandardsPage() {
                               type="button"
                               onClick={() => toggleActive(row)}
                               disabled={isSaving}
-                              className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${statusClassNames[row.status]}`}
+                              className="rounded-full disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                              {SYSTEM_UNIT_STANDARD_STATUS_LABELS[row.status]}
+                              <AdminStatusBadge tone={statusBadgeTones[row.status]} size="xs">
+                                {SYSTEM_UNIT_STANDARD_STATUS_LABELS[row.status]}
+                              </AdminStatusBadge>
                             </button>
-                            <button
-                              type="button"
+                            <AdminButton
                               onClick={() => {
                                 setEditingId(row.id);
                                 setEditingForm(toEditableState(row));
                               }}
-                              className="rounded-full border border-stone-200 px-2.5 py-1 text-[11px] font-semibold text-stone-600 hover:bg-stone-50"
+                              className="min-h-0 px-2.5 py-1 text-[11px]"
                             >
                               수정
-                            </button>
+                            </AdminButton>
                           </div>
                         </>
                       )}
