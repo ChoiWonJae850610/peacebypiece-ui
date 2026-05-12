@@ -93,12 +93,6 @@ export default function SystemConsoleShell() {
               <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-stone-600">
                 {system.versionLabel} v{APP_VERSION}
               </span>
-              <Link
-                href="/"
-                className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50"
-              >
-                {system.moveToWorkspace}
-              </Link>
             </div>
           </div>
         </header>
