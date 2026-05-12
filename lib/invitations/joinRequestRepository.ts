@@ -2,7 +2,7 @@ import { randomUUID } from "crypto";
 
 import { isDatabaseConfigured, queryDb } from "@/lib/db/client";
 import { invitationRepository } from "./invitationRepository";
-import type { InvitationRecord } from "./invitationTypes";
+import type { InvitationRecord, InvitationScope } from "./invitationTypes";
 import type {
   JoinRequestCreateResult,
   JoinRequestDraft,
@@ -84,6 +84,14 @@ type JoinRequestDbRow = {
   rejection_reason: string | null;
   created_at: Date | string;
   updated_at: Date | string;
+  invitation_id_joined?: string | null;
+  invitation_company_id?: string | null;
+  invitation_recipient_email?: string | null;
+  invitation_recipient_role?: InvitationRecord["recipientRole"] | null;
+  invitation_permission_preset?: InvitationRecord["permissionPreset"] | null;
+  invitation_scope?: InvitationScope | null;
+  invitation_status?: InvitationRecord["status"] | null;
+  invitation_expires_at?: Date | string | null;
 };
 
 function toIsoString(value: Date | string | null): string | null {
@@ -111,6 +119,18 @@ function toJoinRequestRecord(row: JoinRequestDbRow): JoinRequestRecord {
     rejectionReason: row.rejection_reason,
     createdAt: toIsoString(row.created_at) ?? new Date().toISOString(),
     updatedAt: toIsoString(row.updated_at) ?? new Date().toISOString(),
+    invitation: row.invitation_id_joined && row.invitation_recipient_email && row.invitation_recipient_role && row.invitation_permission_preset && row.invitation_scope && row.invitation_status && row.invitation_expires_at
+      ? {
+          id: row.invitation_id_joined,
+          companyId: row.invitation_company_id ?? null,
+          recipientEmail: row.invitation_recipient_email,
+          recipientRole: row.invitation_recipient_role,
+          permissionPreset: row.invitation_permission_preset,
+          scope: row.invitation_scope,
+          status: row.invitation_status,
+          expiresAt: toIsoString(row.invitation_expires_at) ?? new Date().toISOString(),
+        }
+      : null,
   };
 }
 
@@ -281,22 +301,27 @@ async function listDbJoinRequests(input: JoinRequestLookupInput): Promise<JoinRe
 
   if (input.id?.trim()) {
     values.push(input.id.trim());
-    conditions.push(`id = $${values.length}`);
+    conditions.push(`join_requests.id = $${values.length}`);
   }
 
   if (input.applicantEmail?.trim()) {
     values.push(normalizeEmail(input.applicantEmail));
-    conditions.push(`lower(applicant_email) = lower($${values.length})`);
+    conditions.push(`lower(join_requests.applicant_email) = lower($${values.length})`);
   }
 
   if (input.requestType) {
     values.push(input.requestType);
-    conditions.push(`request_type = $${values.length}`);
+    conditions.push(`join_requests.request_type = $${values.length}`);
   }
 
   if (input.status) {
     values.push(input.status);
-    conditions.push(`status = $${values.length}`);
+    conditions.push(`join_requests.status = $${values.length}`);
+  }
+
+  if (input.invitationScope) {
+    values.push(input.invitationScope);
+    conditions.push(`invitations.scope = $${values.length}`);
   }
 
   values.push(normalizeLookupLimit(input.limit));
@@ -305,27 +330,36 @@ async function listDbJoinRequests(input: JoinRequestLookupInput): Promise<JoinRe
   const result = await queryDb<JoinRequestDbRow>(
     `
       SELECT
-        id,
-        invitation_id,
-        user_id,
-        applicant_email,
-        request_type,
-        requested_company_name,
-        business_name,
-        applicant_name,
-        applicant_phone,
-        request_memo,
-        status,
-        reviewed_by_user_id,
-        reviewed_by_system_user_id,
-        reviewed_at,
-        created_company_id,
-        rejection_reason,
-        created_at,
-        updated_at
+        join_requests.id,
+        join_requests.invitation_id,
+        join_requests.user_id,
+        join_requests.applicant_email,
+        join_requests.request_type,
+        join_requests.requested_company_name,
+        join_requests.business_name,
+        join_requests.applicant_name,
+        join_requests.applicant_phone,
+        join_requests.request_memo,
+        join_requests.status,
+        join_requests.reviewed_by_user_id,
+        join_requests.reviewed_by_system_user_id,
+        join_requests.reviewed_at,
+        join_requests.created_company_id,
+        join_requests.rejection_reason,
+        join_requests.created_at,
+        join_requests.updated_at,
+        invitations.id AS invitation_id_joined,
+        invitations.company_id AS invitation_company_id,
+        invitations.recipient_email AS invitation_recipient_email,
+        invitations.recipient_role AS invitation_recipient_role,
+        invitations.permission_preset AS invitation_permission_preset,
+        invitations.scope AS invitation_scope,
+        invitations.status AS invitation_status,
+        invitations.expires_at AS invitation_expires_at
       FROM join_requests
+      LEFT JOIN invitations ON invitations.id = join_requests.invitation_id
       ${whereClause}
-      ORDER BY created_at DESC
+      ORDER BY join_requests.created_at DESC
       LIMIT $${values.length}
     `,
     values,

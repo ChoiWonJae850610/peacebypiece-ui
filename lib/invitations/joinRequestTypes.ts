@@ -1,4 +1,4 @@
-import type { InvitationRecord } from "./invitationTypes";
+import type { InvitationRecord, InvitationScope } from "./invitationTypes";
 
 export type JoinRequestType = "member" | "company";
 
@@ -14,6 +14,17 @@ export interface JoinRequestDraft {
   businessName?: string | null;
   requestMemo?: string | null;
   userId?: string | null;
+}
+
+export interface JoinRequestInvitationSummary {
+  id: string;
+  companyId: string | null;
+  recipientEmail: string;
+  recipientRole: InvitationRecord["recipientRole"];
+  permissionPreset: InvitationRecord["permissionPreset"];
+  scope: InvitationScope;
+  status: InvitationRecord["status"];
+  expiresAt: string;
 }
 
 export interface JoinRequestRecord {
@@ -35,6 +46,7 @@ export interface JoinRequestRecord {
   rejectionReason: string | null;
   createdAt: string;
   updatedAt: string;
+  invitation?: JoinRequestInvitationSummary | null;
 }
 
 export interface JoinRequestCreateResult {
@@ -48,6 +60,7 @@ export interface JoinRequestLookupInput {
   applicantEmail?: string | null;
   requestType?: JoinRequestType | null;
   status?: JoinRequestStatus | null;
+  invitationScope?: InvitationScope | null;
   limit?: number | null;
 }
 

@@ -1,26 +1,24 @@
 Version :
-0.10.80
+0.10.81
 
 Summary :
-승인 대기 가입 신청 상태 조회 연결
+고객관리자 멤버 승인 대기 목록 실제 조회 연결
 
 Description :
-초대 링크에서 가입 신청 저장 후 승인 대기 화면으로 이동할 수 있도록 redirectPath에 requestId를 포함하고, /pending 화면에서 실제 join_requests.pending 상태를 조회하도록 연결했다. 가입 신청 조회 API의 GET 동작도 추가했다.
+고객관리자 멤버관리 화면에서 join_requests.pending 멤버 가입 신청을 실제 API로 조회하도록 연결했다. join_requests 목록 조회에 invitation scope 필터와 초대 이메일 요약을 추가하고, 신청자 연락처, 메모, 신청일, 초대 이메일 비교 상태를 표시하도록 보강했다.
 
 수정 파일 목록 :
-- components/invitations/MemberInvitationJoinRequestPage.tsx
-- components/invitations/CompanyInvitationJoinRequestPage.tsx
-- components/invitations/PendingApprovalDashboard.tsx
-- app/pending/page.tsx
-- app/api/invitations/join-requests/route.ts
+- components/admin/members/AdminMemberManagementDashboard.tsx
+- lib/admin/members/memberManagementPresentation.ts
 - lib/invitations/api/joinRequestRouteHandlers.ts
 - lib/invitations/joinRequestRepository.ts
 - lib/invitations/joinRequestTypes.ts
-- lib/invitations/pendingApprovalDashboardPresentation.ts
+- lib/i18n/ko/admin.ts
+- lib/i18n/en/admin.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/pending-join-request-actual-connection-0.10.80.md
+없음
 
 삭제 파일 목록 :
 없음

@@ -5,6 +5,7 @@ import {
   type MemberPermissionGroupKey,
   type MemberPermissionRoleTemplateCode,
 } from "@/lib/permissions";
+import type { JoinRequestRecord } from "@/lib/invitations/joinRequestTypes";
 
 export type MemberManagementStatus = "planned" | "ready" | "pending";
 
@@ -50,6 +51,10 @@ export type MemberManagementTableColumn = {
   id: string;
 };
 
+export type MemberJoinRequestEmailMatchStatus = "matched" | "mismatched" | "unknown";
+
+export type MemberJoinRequestLoadStatus = "idle" | "loading" | "loaded" | "failed";
+
 export type MemberInviteRoleOption = {
   id: MemberRolePreviewId;
   permissionCount: number;
@@ -84,6 +89,10 @@ export type MemberJoinRequestPreview = {
   id: string;
   applicantName: string;
   applicantEmail: string;
+  applicantPhoneLabel: string;
+  requestMemoLabel: string;
+  invitationEmailLabel: string;
+  emailMatchStatus: MemberJoinRequestEmailMatchStatus;
   requestedRoleId: MemberRolePreviewId;
   status: "pending";
   requestedAtLabel: string;
@@ -148,6 +157,10 @@ export const INVITATION_TABLE_COLUMNS: readonly MemberManagementTableColumn[] = 
 
 export const JOIN_REQUEST_TABLE_COLUMNS: readonly MemberManagementTableColumn[] = [
   { id: "applicant" },
+  { id: "contact" },
+  { id: "inviteEmail" },
+  { id: "emailMatch" },
+  { id: "memo" },
   { id: "requestedRole" },
   { id: "status" },
   { id: "requestedAt" },
@@ -155,16 +168,7 @@ export const JOIN_REQUEST_TABLE_COLUMNS: readonly MemberManagementTableColumn[] 
 
 export const MEMBER_LIST_PREVIEWS: readonly MemberListPreview[] = [] as const;
 export const MEMBER_INVITATION_PREVIEWS: readonly MemberInvitationPreview[] = [] as const;
-export const MEMBER_JOIN_REQUEST_PREVIEWS: readonly MemberJoinRequestPreview[] = [
-  {
-    id: "preview-join-request-designer",
-    applicantName: "김디자이너",
-    applicantEmail: "designer@example.com",
-    requestedRoleId: "designer",
-    status: "pending",
-    requestedAtLabel: "preview",
-  },
-] as const;
+export const MEMBER_JOIN_REQUEST_PREVIEWS: readonly MemberJoinRequestPreview[] = [] as const;
 
 export const MEMBER_INVITE_SETUP_CARDS: readonly MemberInvitationSetupCard[] = [
   { id: "link", status: "ready" },
@@ -204,6 +208,67 @@ export const MEMBER_INVITE_QR_PREVIEW_ROWS: readonly MemberInviteQrPreviewRow[] 
   [true, false, true, true, false, true, true, false, true],
   [true, true, true, false, true, false, true, true, true],
 ] as const;
+
+
+function normalizeEmailForCompare(value: string | null | undefined): string {
+  return value?.trim().toLowerCase() ?? "";
+}
+
+function isMemberRolePreviewId(value: string | null | undefined): value is MemberRolePreviewId {
+  return MEMBER_ROLE_TEMPLATE_POLICIES.some((role) => role.code === value);
+}
+
+function toMemberRolePreviewId(value: string | null | undefined): MemberRolePreviewId {
+  return isMemberRolePreviewId(value) ? value : "viewer";
+}
+
+function resolveRequestedRoleId(joinRequest: JoinRequestRecord): MemberRolePreviewId {
+  const permissionPreset = joinRequest.invitation?.permissionPreset;
+  if (isMemberRolePreviewId(permissionPreset)) return permissionPreset;
+  return toMemberRolePreviewId(joinRequest.invitation?.recipientRole);
+}
+
+function toCompactDateTimeLabel(value: string | null | undefined): string {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleString("ko-KR", {
+    year: "2-digit",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function resolveEmailMatchStatus(joinRequest: JoinRequestRecord): MemberJoinRequestEmailMatchStatus {
+  const applicantEmail = normalizeEmailForCompare(joinRequest.applicantEmail);
+  const invitationEmail = normalizeEmailForCompare(joinRequest.invitation?.recipientEmail);
+
+  if (!applicantEmail || !invitationEmail) return "unknown";
+  return applicantEmail === invitationEmail ? "matched" : "mismatched";
+}
+
+export function toMemberJoinRequestPreview(joinRequest: JoinRequestRecord): MemberJoinRequestPreview {
+  return {
+    id: joinRequest.id,
+    applicantName: joinRequest.applicantName?.trim() || "-",
+    applicantEmail: joinRequest.applicantEmail,
+    applicantPhoneLabel: joinRequest.applicantPhone?.trim() || "-",
+    requestMemoLabel: joinRequest.requestMemo?.trim() || "-",
+    invitationEmailLabel: joinRequest.invitation?.recipientEmail?.trim() || "-",
+    emailMatchStatus: resolveEmailMatchStatus(joinRequest),
+    requestedRoleId: resolveRequestedRoleId(joinRequest),
+    status: "pending",
+    requestedAtLabel: toCompactDateTimeLabel(joinRequest.createdAt),
+  };
+}
+
+export function toMemberJoinRequestPreviews(joinRequests: readonly JoinRequestRecord[]): readonly MemberJoinRequestPreview[] {
+  return joinRequests
+    .filter((joinRequest) => joinRequest.requestType === "member" && joinRequest.status === "pending")
+    .map(toMemberJoinRequestPreview);
+}
 
 export function getMemberManagementSummaryCards(): readonly MemberManagementSummaryCard[] {
   return MEMBER_MANAGEMENT_SUMMARY_CARDS;

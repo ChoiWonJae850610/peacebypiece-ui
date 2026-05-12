@@ -188,7 +188,7 @@ export const adminEn = {
     },
     joinRequestStatuses: { pending: "Pending approval" },
     statuses: { ready: "Connected", planned: "Planned", pending: "Pending" },
-    sourceState: { dbPending: "DB connection planned" },
+    sourceState: { dbPending: "DB connection planned", dbLoading: "Loading DB", dbConnected: "DB connected", dbFailed: "DB load failed" },
     permissionGuards: {
       visible: "Visible",
       hidden: "Hidden",
@@ -224,12 +224,23 @@ export const adminEn = {
     tables: {
       members: { columns: { member: "Member", role: "Role", status: "Status", permissions: "Permissions", lastActive: "Last active" } },
       invitations: { columns: { target: "Target", type: "Type", status: "Status", expires: "Expires" } },
-      joinRequests: { columns: { applicant: "Applicant", requestedRole: "Requested role", status: "Status", requestedAt: "Requested" } }
+      joinRequests: { columns: { applicant: "Applicant", contact: "Contact", inviteEmail: "Invitation email", emailMatch: "Match", memo: "Memo", requestedRole: "Requested role", status: "Status", requestedAt: "Requested" } }
     },
     empty: {
       members: { title: "No members registered", description: "Approved members will appear here after invitation and approval APIs are connected." },
       invitations: { title: "No invitations created", description: "Active, expired, and cancelled invitations will appear after invitation-link generation is connected." },
       joinRequests: { title: "No join requests waiting", description: "Invitation-link join requests will appear here as approval, rejection, and permission-assignment targets." }
+    },
+    loading: {
+      joinRequests: { title: "Loading join requests", description: "Loading the join_requests.pending list from the DB." }
+    },
+    loadErrors: {
+      joinRequests: "Could not load the approval queue."
+    },
+    emailMatchStatuses: {
+      matched: "Matched",
+      mismatched: "Mismatch",
+      unknown: "Unknown"
     },
     roles: {
       admin: { label: "Admin", description: "Default role for organization operations, settings, storage, statistics, and member permissions." },

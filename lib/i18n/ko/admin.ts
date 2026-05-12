@@ -139,7 +139,7 @@ export const adminKo = {
     },
     joinRequestStatuses: { pending: "승인 대기" },
     statuses: { ready: "기준 연결", planned: "연결 예정", pending: "대기" },
-    sourceState: { dbPending: "DB 연결 예정" },
+    sourceState: { dbPending: "DB 연결 예정", dbLoading: "DB 조회 중", dbConnected: "DB 연결", dbFailed: "DB 조회 실패" },
     permissionGuards: {
       visible: "노출",
       hidden: "숨김",
@@ -175,12 +175,23 @@ export const adminKo = {
     tables: {
       members: { columns: { member: "멤버", role: "역할", status: "상태", permissions: "권한", lastActive: "최근 활동" } },
       invitations: { columns: { target: "대상", type: "방식", status: "상태", expires: "만료" } },
-      joinRequests: { columns: { applicant: "신청자", requestedRole: "요청 역할", status: "상태", requestedAt: "신청일" } }
+      joinRequests: { columns: { applicant: "신청자", contact: "연락처", inviteEmail: "초대 이메일", emailMatch: "비교", memo: "메모", requestedRole: "요청 역할", status: "상태", requestedAt: "신청일" } }
     },
     empty: {
       members: { title: "등록된 멤버가 없습니다", description: "초대/가입 승인 API를 연결하면 승인된 멤버가 이 영역에 표시됩니다." },
       invitations: { title: "생성된 초대가 없습니다", description: "초대 링크 생성 기능을 연결하면 활성/만료/취소 초대가 표시됩니다." },
       joinRequests: { title: "승인 대기 신청이 없습니다", description: "초대 링크 가입 신청이 생성되면 승인/거절/권한 부여 대상이 이 영역에 표시됩니다." }
+    },
+    loading: {
+      joinRequests: { title: "승인 대기 신청을 불러오는 중입니다", description: "join_requests.pending 목록을 실제 DB 기준으로 조회하고 있습니다." }
+    },
+    loadErrors: {
+      joinRequests: "승인 대기 신청 목록을 불러오지 못했습니다."
+    },
+    emailMatchStatuses: {
+      matched: "일치",
+      mismatched: "불일치",
+      unknown: "확인 전"
     },
     roles: {
       admin: { label: "관리자", description: "조직 운영, 설정, 저장소, 통계, 멤버 권한을 관리하는 기본 역할입니다." },

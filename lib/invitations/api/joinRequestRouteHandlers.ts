@@ -4,6 +4,7 @@ import { joinRequestRepository } from "../joinRequestRepository";
 import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
 import { buildJoinRequestCreatedAuditLog } from "@/lib/system/audit/writeActions";
 import { invitationRepository } from "../invitationRepository";
+import type { InvitationScope } from "../invitationTypes";
 import type { JoinRequestDraft, JoinRequestStatus, JoinRequestType } from "../joinRequestTypes";
 
 interface CreateJoinRequestBody {
@@ -116,6 +117,7 @@ export async function handleVerifyInvitation(request: Request) {
 
 const JOIN_REQUEST_TYPES = new Set<JoinRequestType>(["member", "company"]);
 const JOIN_REQUEST_STATUSES = new Set<JoinRequestStatus>(["pending", "approved", "rejected", "cancelled"]);
+const INVITATION_SCOPES = new Set<InvitationScope>(["system_to_company_admin", "company_to_member"]);
 
 function readJoinRequestType(value: string | null): JoinRequestType | null {
   return value && JOIN_REQUEST_TYPES.has(value as JoinRequestType) ? (value as JoinRequestType) : null;
@@ -123,6 +125,10 @@ function readJoinRequestType(value: string | null): JoinRequestType | null {
 
 function readJoinRequestStatus(value: string | null): JoinRequestStatus | null {
   return value && JOIN_REQUEST_STATUSES.has(value as JoinRequestStatus) ? (value as JoinRequestStatus) : null;
+}
+
+function readInvitationScope(value: string | null): InvitationScope | null {
+  return value && INVITATION_SCOPES.has(value as InvitationScope) ? (value as InvitationScope) : null;
 }
 
 function readLimit(value: string | null): number {
@@ -139,6 +145,7 @@ export async function handleListJoinRequests(request: Request) {
       applicantEmail: url.searchParams.get("applicantEmail") || url.searchParams.get("email"),
       requestType: readJoinRequestType(url.searchParams.get("requestType") || url.searchParams.get("type")),
       status: readJoinRequestStatus(url.searchParams.get("status")) || "pending",
+      invitationScope: readInvitationScope(url.searchParams.get("invitationScope") || url.searchParams.get("scope")),
       limit: readLimit(url.searchParams.get("limit")),
     });
 

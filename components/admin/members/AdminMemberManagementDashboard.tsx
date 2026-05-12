@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   getInvitationTableColumns,
@@ -12,7 +12,7 @@ import {
   getMemberInvitationSetupCards,
   getMemberInviteQrPreviewRows,
   getMemberInviteRoleOptions,
-  getMemberJoinRequestPreviews,
+  toMemberJoinRequestPreviews,
   getMemberListPreviews,
   getMemberManagementPermissionCards,
   getMemberManagementSummaryCards,
@@ -21,8 +21,10 @@ import {
   getMemberPermissionMatrixPreviews,
   getMemberRolePreviews,
   getMemberTableColumns,
+  type MemberJoinRequestLoadStatus,
   type MemberManagementStatus,
 } from "@/lib/admin/members/memberManagementPresentation";
+import type { JoinRequestRecord } from "@/lib/invitations/joinRequestTypes";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { getMemberRoleTemplatePermissions, hasEveryMemberPermission } from "@/lib/permissions";
 
@@ -49,6 +51,25 @@ type CreatedInvitationResult = {
     expiresAt: string;
   };
 };
+
+type JoinRequestListResponse = {
+  ok?: boolean;
+  joinRequests?: JoinRequestRecord[];
+  error?: string;
+};
+
+function getEmailMatchClassName(status: "matched" | "mismatched" | "unknown") {
+  if (status === "matched") return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  if (status === "mismatched") return "border-amber-200 bg-amber-50 text-amber-700";
+  return "border-stone-200 bg-stone-100 text-stone-500";
+}
+
+function getLoadStatusLabelKey(status: MemberJoinRequestLoadStatus): string {
+  if (status === "loaded") return "dbConnected";
+  if (status === "loading") return "dbLoading";
+  if (status === "failed") return "dbFailed";
+  return "dbPending";
+}
 
 function getAbsoluteInviteUrl(inviteUrl: string): string {
   if (typeof window === "undefined") return inviteUrl;
@@ -79,7 +100,7 @@ function QrPreview({ rows }: { rows: readonly (readonly boolean[])[] }) {
 
 export default function AdminMemberManagementDashboard() {
   const t = useAdminTranslation();
-  const summaryCards = getMemberManagementSummaryCards();
+  const baseSummaryCards = getMemberManagementSummaryCards();
   const roles = getMemberRolePreviews();
   const permissionCards = getMemberManagementPermissionCards();
   const currentPermissionCodes = getMemberRoleTemplatePermissions("company_admin");
@@ -106,6 +127,9 @@ export default function AdminMemberManagementDashboard() {
   const [createdInvitation, setCreatedInvitation] = useState<CreatedInvitationResult | null>(null);
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [isCreatingInvite, setIsCreatingInvite] = useState(false);
+  const [joinRequestRecords, setJoinRequestRecords] = useState<JoinRequestRecord[]>([]);
+  const [joinRequestLoadStatus, setJoinRequestLoadStatus] = useState<MemberJoinRequestLoadStatus>("idle");
+  const [joinRequestLoadError, setJoinRequestLoadError] = useState<string | null>(null);
   const previewInviteLink = createdInvitation?.inviteUrl
     ? getAbsoluteInviteUrl(createdInvitation.inviteUrl)
     : `/invite/member/preview-${selectedRole?.id ?? "viewer"}`;
@@ -116,8 +140,53 @@ export default function AdminMemberManagementDashboard() {
 
   const members = getMemberListPreviews();
   const invitations = getMemberInvitationPreviews();
-  const joinRequests = getMemberJoinRequestPreviews();
+  const joinRequests = useMemo(() => toMemberJoinRequestPreviews(joinRequestRecords), [joinRequestRecords]);
+  const summaryCards = useMemo(
+    () =>
+      baseSummaryCards.map((card) =>
+        card.id === "joinRequests"
+          ? { ...card, value: String(joinRequests.length), status: joinRequestLoadStatus === "loaded" ? "ready" : card.status }
+          : card,
+      ),
+    [baseSummaryCards, joinRequestLoadStatus, joinRequests.length],
+  );
   const canSubmitInvite = canCreateInvite && targetContact.trim().length > 0 && !isCreatingInvite;
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadMemberJoinRequests() {
+      setJoinRequestLoadStatus("loading");
+      setJoinRequestLoadError(null);
+
+      try {
+        const response = await fetch(
+          "/api/invitations/join-requests?requestType=member&status=pending&invitationScope=company_to_member&limit=50",
+          { cache: "no-store" },
+        );
+        const payload = (await response.json()) as JoinRequestListResponse;
+
+        if (!response.ok || !payload.ok) {
+          throw new Error(payload.error ?? "JOIN_REQUESTS_LOAD_FAILED");
+        }
+
+        if (!isMounted) return;
+        setJoinRequestRecords(payload.joinRequests ?? []);
+        setJoinRequestLoadStatus("loaded");
+      } catch (error) {
+        if (!isMounted) return;
+        setJoinRequestRecords([]);
+        setJoinRequestLoadStatus("failed");
+        setJoinRequestLoadError(error instanceof Error ? error.message : "JOIN_REQUESTS_LOAD_FAILED");
+      }
+    }
+
+    void loadMemberJoinRequests();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   async function handleCreateInvite() {
     if (!canSubmitInvite || !selectedRole) return;
@@ -632,11 +701,17 @@ export default function AdminMemberManagementDashboard() {
               </p>
             </div>
             <span className="text-xs font-semibold text-stone-400">
-              {t("memberManagement.sourceState.dbPending", "DB 연결 예정")}
+              {t(`memberManagement.sourceState.${getLoadStatusLabelKey(joinRequestLoadStatus)}`, "DB 연결 상태 확인")}
             </span>
           </div>
-          <div className="mt-4 overflow-hidden rounded-2xl border border-stone-200">
-            <div className="grid grid-cols-[minmax(150px,1.2fr)_110px_90px_110px] bg-stone-50 text-xs font-semibold text-stone-500">
+          {joinRequestLoadError ? (
+            <p className="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">
+              {t("memberManagement.loadErrors.joinRequests", "승인 대기 신청 목록을 불러오지 못했습니다.")} {joinRequestLoadError}
+            </p>
+          ) : null}
+          <div className="mt-4 overflow-x-auto rounded-2xl border border-stone-200">
+            <div className="min-w-[980px]">
+            <div className="grid grid-cols-[minmax(150px,1.2fr)_130px_170px_100px_minmax(130px,1fr)_110px_90px_110px] bg-stone-50 text-xs font-semibold text-stone-500">
               {joinRequestColumns.map((column) => (
                 <div key={column.id} className="px-3 py-2">
                   {t(`memberManagement.tables.joinRequests.columns.${column.id}`, column.id)}
@@ -644,13 +719,28 @@ export default function AdminMemberManagementDashboard() {
               ))}
             </div>
             <div className="divide-y divide-stone-100">
-              {joinRequests.length ? (
+              {joinRequestLoadStatus === "loading" ? (
+                <div className="p-3">
+                  <EmptyState
+                    title={t("memberManagement.loading.joinRequests.title", "승인 대기 신청을 불러오는 중입니다")}
+                    description={t("memberManagement.loading.joinRequests.description", "join_requests.pending 목록을 실제 DB 기준으로 조회하고 있습니다.")}
+                  />
+                </div>
+              ) : joinRequests.length ? (
                 joinRequests.map((request) => (
-                  <div key={request.id} className="grid grid-cols-[minmax(150px,1.2fr)_110px_90px_110px] px-3 py-3 text-xs text-stone-600">
+                  <div key={request.id} className="grid grid-cols-[minmax(150px,1.2fr)_130px_170px_100px_minmax(130px,1fr)_110px_90px_110px] px-3 py-3 text-xs text-stone-600">
                     <div className="min-w-0">
                       <p className="truncate font-semibold text-stone-900">{request.applicantName}</p>
                       <p className="mt-1 truncate text-stone-500">{request.applicantEmail}</p>
                     </div>
+                    <span className="truncate text-stone-500">{request.applicantPhoneLabel}</span>
+                    <span className="truncate text-stone-500">{request.invitationEmailLabel}</span>
+                    <span className={`w-fit rounded-full border px-2 py-0.5 text-[11px] font-semibold ${getEmailMatchClassName(request.emailMatchStatus)}`}>
+                      {t(`memberManagement.emailMatchStatuses.${request.emailMatchStatus}`, request.emailMatchStatus)}
+                    </span>
+                    <span className="truncate text-stone-500" title={request.requestMemoLabel}>
+                      {request.requestMemoLabel}
+                    </span>
                     <span className="font-semibold text-stone-700">
                       {t(`memberManagement.roles.${request.requestedRoleId}.label`, request.requestedRoleId)}
                     </span>
@@ -668,6 +758,7 @@ export default function AdminMemberManagementDashboard() {
                   />
                 </div>
               )}
+            </div>
             </div>
           </div>
         </article>
