@@ -5,6 +5,8 @@ import {
   getDefaultInvitationExpiresAt,
 } from "../invitationPolicy";
 import { invitationRepository } from "../invitationRepository";
+import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
+import { buildInvitationCreatedAuditLog } from "@/lib/system/audit/writeActions";
 import type {
   InvitationDraft,
   InvitationPermissionPreset,
@@ -22,6 +24,16 @@ interface CreateInvitationRequestBody {
   expiresAt?: string | null;
   createdByUserId?: string | null;
   createdBySystemUserId?: string | null;
+}
+
+
+function getRequestId(request: Request): string | null {
+  return request.headers.get("x-request-id") || request.headers.get("x-vercel-id") || null;
+}
+
+function getRequestIpAddress(request: Request): string | null {
+  const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  return forwardedFor || request.headers.get("x-real-ip") || null;
 }
 
 function toInvitationDraft(body: CreateInvitationRequestBody): InvitationDraft {
@@ -113,6 +125,23 @@ export async function handleCreateInvitation(request: Request) {
     }
 
     const result = await invitationRepository.createInvitation(draft);
+
+    await createSystemAuditLogSafe(
+      buildInvitationCreatedAuditLog({
+        invitationId: result.invitation.id,
+        scope: result.invitation.scope,
+        companyId: result.invitation.companyId,
+        recipientEmail: result.invitation.recipientEmail,
+        recipientRole: result.invitation.recipientRole,
+        permissionPreset: result.invitation.permissionPreset,
+        expiresAt: result.invitation.expiresAt,
+        createdByUserId: result.invitation.createdByUserId,
+        createdBySystemUserId: result.invitation.createdBySystemUserId,
+        inviteUrlPath: result.inviteUrl,
+        requestId: getRequestId(request),
+        ipAddress: getRequestIpAddress(request),
+      }),
+    );
 
     return NextResponse.json(
       {

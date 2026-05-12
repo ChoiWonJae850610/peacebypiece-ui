@@ -82,21 +82,21 @@ export const SYSTEM_AUDIT_LOG_TARGETS: SystemAuditLogTarget[] = [
     label: "멤버·권한",
     description: "시스템관리자, 고객관리자, 디자이너, 검수자 권한 변경을 기록합니다.",
     level: "critical",
-    examples: ["member.role_changed", "member.disabled", "member.access_restored"],
+    examples: ["member.approved", "member.rejected", "member.permission_updated"],
   },
   {
     id: "invitation",
     label: "초대",
     description: "초대 생성, 재발송, 만료, 수락, 취소 흐름을 기록합니다.",
     level: "medium",
-    examples: ["invite.created", "invite.accepted", "invite.expired"],
+    examples: ["invitation.created", "invitation.accepted", "invitation.revoked"],
   },
   {
     id: "plan",
     label: "요금제·용량",
     description: "요금제, 좌석 수, 저장용량 한도와 override 변경을 기록합니다.",
     level: "critical",
-    examples: ["plan.changed", "storage_limit.overridden", "seat_limit.changed"],
+    examples: ["plan.changed", "storage_limit.overridden", "member_limit.changed"],
   },
   {
     id: "storage",
@@ -188,6 +188,12 @@ export const SYSTEM_AUDIT_LOG_IMPLEMENTATION_STEPS: SystemAuditLogImplementation
     description:
       "작업지시서 workflowState 변경을 work_order.status_changed 이벤트로 기록합니다. 기존 고객관리자 history_logs 상태 이력은 유지하고, 시스템관리자 감사 로그 원장에 동일 상태 변경을 구조화해 남깁니다.",
   },
+  {
+    versionHint: "0.10.75",
+    title: "멤버·초대·권한 감사 로그 후보 연결",
+    description:
+      "invitation.created, company.created, member.approved, member.rejected, member.permission_updated, plan.changed 이벤트 빌더를 추가하고 초대 생성 API와 고객사 생성 API의 감사 로그 연결 지점을 마련합니다.",
+  },
 ];
 
 
@@ -224,5 +230,6 @@ export const SYSTEM_AUDIT_LOG_WRITE_DECISIONS = [
   "실제 R2 key 원문은 목록 화면 기본 노출 대상이 아니므로 보유 여부만 요약한다.",
   "0.10.14부터 작업지시서·첨부파일 삭제/복원 이벤트를 기록한다.",
   "0.10.15부터 작업지시서 workflowState 변경을 work_order.status_changed 이벤트로 기록한다.",
-  "고객사, 초대, 요금제·용량, 멤버 권한 변경 로그는 후속 버전에서 연결한다.",
+  "0.10.75부터 초대 생성과 고객사 생성 감사 로그 연결 지점을 추가한다.",
+  "멤버 승인, 거절, 권한 변경, 요금제 변경은 실제 저장 API가 연결되는 시점에 같은 builder를 호출한다.",
 ] as const;

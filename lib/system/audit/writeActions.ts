@@ -289,3 +289,275 @@ export function buildAttachmentRestoredAuditLog(
     ipAddress: input.ipAddress ?? null,
   };
 }
+
+export type BuildInvitationCreatedAuditLogInput = {
+  invitationId: string;
+  scope: string;
+  companyId?: string | null;
+  recipientEmail?: string | null;
+  recipientRole?: string | null;
+  permissionPreset?: string | null;
+  expiresAt?: string | null;
+  createdByUserId?: string | null;
+  createdBySystemUserId?: string | null;
+  inviteUrlPath?: string | null;
+  requestId?: string | null;
+  ipAddress?: string | null;
+};
+
+export type BuildCompanyCreatedAuditLogInput = {
+  companyId: string;
+  companyName?: string | null;
+  businessName?: string | null;
+  planCode?: string | null;
+  storageLimitBytes?: number | null;
+  actorId?: string | null;
+  requestId?: string | null;
+  ipAddress?: string | null;
+};
+
+export type BuildMemberApprovedAuditLogInput = {
+  companyMemberId: string;
+  companyId?: string | null;
+  userId?: string | null;
+  memberEmail?: string | null;
+  memberName?: string | null;
+  permissionCodes?: string[] | null;
+  approvedBy?: string | null;
+  requestId?: string | null;
+  ipAddress?: string | null;
+};
+
+export type BuildMemberRejectedAuditLogInput = {
+  joinRequestId: string;
+  companyId?: string | null;
+  userId?: string | null;
+  applicantEmail?: string | null;
+  applicantName?: string | null;
+  rejectedBy?: string | null;
+  reasonCode?: string | null;
+  requestId?: string | null;
+  ipAddress?: string | null;
+};
+
+export type BuildMemberPermissionUpdatedAuditLogInput = {
+  companyMemberId: string;
+  companyId?: string | null;
+  userId?: string | null;
+  memberEmail?: string | null;
+  memberName?: string | null;
+  previousPermissionCodes?: string[] | null;
+  nextPermissionCodes?: string[] | null;
+  updatedBy?: string | null;
+  requestId?: string | null;
+  ipAddress?: string | null;
+};
+
+export type BuildPlanChangedAuditLogInput = {
+  companyId: string;
+  companyName?: string | null;
+  previousPlanCode?: string | null;
+  nextPlanCode?: string | null;
+  previousStorageLimitBytes?: number | null;
+  nextStorageLimitBytes?: number | null;
+  previousMemberLimit?: number | null;
+  nextMemberLimit?: number | null;
+  previousPriceKrw?: number | null;
+  nextPriceKrw?: number | null;
+  changedBy?: string | null;
+  requestId?: string | null;
+  ipAddress?: string | null;
+};
+
+function normalizePermissionCodes(value: string[] | null | undefined): string[] {
+  return Array.from(
+    new Set(
+      (value || [])
+        .map((item) => item.trim())
+        .filter(Boolean),
+    ),
+  ).sort();
+}
+
+function countChangedPermissions(previousCodes: string[], nextCodes: string[]) {
+  const previousSet = new Set(previousCodes);
+  const nextSet = new Set(nextCodes);
+
+  return {
+    added: nextCodes.filter((code) => !previousSet.has(code)),
+    removed: previousCodes.filter((code) => !nextSet.has(code)),
+  };
+}
+
+export function buildInvitationCreatedAuditLog(
+  input: BuildInvitationCreatedAuditLogInput,
+): CreateSystemAuditLogInput {
+  const isSystemInvite = input.scope === "system_to_company_admin";
+
+  return {
+    actorUserId: input.createdBySystemUserId ?? input.createdByUserId ?? null,
+    actorRole: isSystemInvite ? "system_admin" : "customer_admin",
+    companyId: input.companyId ?? null,
+    targetType: "invitation",
+    targetId: input.invitationId,
+    eventType: "invitation.created",
+    severity: isSystemInvite ? "high" : "medium",
+    summary: isSystemInvite ? "시스템관리자 고객사 초대 생성" : "고객관리자 멤버 초대 생성",
+    metadata: {
+      invitationId: input.invitationId,
+      scope: input.scope,
+      recipientEmail: input.recipientEmail ?? null,
+      recipientRole: input.recipientRole ?? null,
+      permissionPreset: input.permissionPreset ?? null,
+      expiresAt: input.expiresAt ?? null,
+      inviteUrlPath: input.inviteUrlPath ?? null,
+      tokenStoredPolicy: "token_hash_only",
+    },
+    requestId: input.requestId ?? null,
+    ipAddress: input.ipAddress ?? null,
+  };
+}
+
+export function buildCompanyCreatedAuditLog(
+  input: BuildCompanyCreatedAuditLogInput,
+): CreateSystemAuditLogInput {
+  const companyName = input.companyName?.trim() || input.companyId;
+
+  return {
+    actorUserId: input.actorId ?? null,
+    actorRole: "system_admin",
+    companyId: input.companyId,
+    targetType: "company",
+    targetId: input.companyId,
+    eventType: "company.created",
+    severity: "high",
+    summary: `고객사 생성: ${companyName}`,
+    metadata: {
+      companyId: input.companyId,
+      companyName,
+      businessName: input.businessName ?? null,
+      planCode: input.planCode ?? null,
+      storageLimitBytes: input.storageLimitBytes ?? null,
+      source: "system-company-approval",
+    },
+    requestId: input.requestId ?? null,
+    ipAddress: input.ipAddress ?? null,
+  };
+}
+
+export function buildMemberApprovedAuditLog(
+  input: BuildMemberApprovedAuditLogInput,
+): CreateSystemAuditLogInput {
+  const permissionCodes = normalizePermissionCodes(input.permissionCodes);
+  const memberLabel = input.memberName?.trim() || input.memberEmail?.trim() || input.companyMemberId;
+
+  return {
+    actorUserId: input.approvedBy ?? null,
+    actorRole: "customer_admin",
+    companyId: input.companyId ?? null,
+    targetType: "member",
+    targetId: input.companyMemberId,
+    eventType: "member.approved",
+    severity: "high",
+    summary: `멤버 승인: ${memberLabel}`,
+    metadata: {
+      companyMemberId: input.companyMemberId,
+      userId: input.userId ?? null,
+      memberEmail: input.memberEmail ?? null,
+      memberName: input.memberName ?? null,
+      permissionCount: permissionCodes.length,
+      permissionCodes,
+    },
+    requestId: input.requestId ?? null,
+    ipAddress: input.ipAddress ?? null,
+  };
+}
+
+export function buildMemberRejectedAuditLog(
+  input: BuildMemberRejectedAuditLogInput,
+): CreateSystemAuditLogInput {
+  const applicantLabel = input.applicantName?.trim() || input.applicantEmail?.trim() || input.joinRequestId;
+
+  return {
+    actorUserId: input.rejectedBy ?? null,
+    actorRole: "customer_admin",
+    companyId: input.companyId ?? null,
+    targetType: "member",
+    targetId: input.joinRequestId,
+    eventType: "member.rejected",
+    severity: "medium",
+    summary: `가입 신청 거절: ${applicantLabel}`,
+    metadata: {
+      joinRequestId: input.joinRequestId,
+      userId: input.userId ?? null,
+      applicantEmail: input.applicantEmail ?? null,
+      applicantName: input.applicantName ?? null,
+      reasonCode: input.reasonCode ?? null,
+    },
+    requestId: input.requestId ?? null,
+    ipAddress: input.ipAddress ?? null,
+  };
+}
+
+export function buildMemberPermissionUpdatedAuditLog(
+  input: BuildMemberPermissionUpdatedAuditLogInput,
+): CreateSystemAuditLogInput {
+  const previousPermissionCodes = normalizePermissionCodes(input.previousPermissionCodes);
+  const nextPermissionCodes = normalizePermissionCodes(input.nextPermissionCodes);
+  const changedPermissions = countChangedPermissions(previousPermissionCodes, nextPermissionCodes);
+  const memberLabel = input.memberName?.trim() || input.memberEmail?.trim() || input.companyMemberId;
+
+  return {
+    actorUserId: input.updatedBy ?? null,
+    actorRole: "customer_admin",
+    companyId: input.companyId ?? null,
+    targetType: "member",
+    targetId: input.companyMemberId,
+    eventType: "member.permission_updated",
+    severity: "critical",
+    summary: `멤버 권한 변경: ${memberLabel}`,
+    metadata: {
+      companyMemberId: input.companyMemberId,
+      userId: input.userId ?? null,
+      memberEmail: input.memberEmail ?? null,
+      memberName: input.memberName ?? null,
+      previousPermissionCount: previousPermissionCodes.length,
+      nextPermissionCount: nextPermissionCodes.length,
+      addedPermissionCodes: changedPermissions.added,
+      removedPermissionCodes: changedPermissions.removed,
+    },
+    requestId: input.requestId ?? null,
+    ipAddress: input.ipAddress ?? null,
+  };
+}
+
+export function buildPlanChangedAuditLog(
+  input: BuildPlanChangedAuditLogInput,
+): CreateSystemAuditLogInput {
+  const companyName = input.companyName?.trim() || input.companyId;
+
+  return {
+    actorUserId: input.changedBy ?? null,
+    actorRole: "system_admin",
+    companyId: input.companyId,
+    targetType: "plan",
+    targetId: input.companyId,
+    eventType: "plan.changed",
+    severity: "critical",
+    summary: `고객사 요금제·용량 변경: ${companyName}`,
+    metadata: {
+      companyId: input.companyId,
+      companyName,
+      previousPlanCode: input.previousPlanCode ?? null,
+      nextPlanCode: input.nextPlanCode ?? null,
+      previousStorageLimitBytes: input.previousStorageLimitBytes ?? null,
+      nextStorageLimitBytes: input.nextStorageLimitBytes ?? null,
+      previousMemberLimit: input.previousMemberLimit ?? null,
+      nextMemberLimit: input.nextMemberLimit ?? null,
+      previousPriceKrw: input.previousPriceKrw ?? null,
+      nextPriceKrw: input.nextPriceKrw ?? null,
+    },
+    requestId: input.requestId ?? null,
+    ipAddress: input.ipAddress ?? null,
+  };
+}

@@ -86,7 +86,7 @@ export default function SystemAuditLogsDesignPage({
             <div>
               <h2 className="text-lg font-semibold text-stone-950">감사 로그 조회</h2>
               <p className="mt-2 text-sm leading-6 text-stone-600">
-                /api/system/audit-logs와 audit_logs repository를 연결했습니다. 0.10.15부터 시스템관리자 저장소 실제 삭제, 작업지시서 삭제·복원, 첨부파일 삭제·복원, 작업지시서 상태 변경 이벤트가 기록됩니다.
+                /api/system/audit-logs와 audit_logs repository를 연결했습니다. 0.10.75부터 초대 생성, 고객사 생성, 멤버 승인/거절/권한 변경, 요금제 변경 이벤트 빌더를 같은 감사 로그 계층에서 관리합니다.
               </p>
             </div>
             <code className="w-fit rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-500">
@@ -162,7 +162,7 @@ export default function SystemAuditLogsDesignPage({
                 ) : (
                   <tr>
                     <td colSpan={6} className="px-3 py-8 text-center text-sm text-stone-500">
-                      아직 표시할 감사 로그가 없습니다. 저장소 실제 삭제, 작업지시서 삭제·복원, 첨부파일 삭제·복원, 작업지시서 상태 변경을 실행하면 이 목록에 운영 이벤트가 표시됩니다.
+                      아직 표시할 감사 로그가 없습니다. 저장소 실제 삭제, 작업지시서 삭제·복원, 초대 생성, 고객사 생성, 멤버 권한 변경을 실행하면 이 목록에 운영 이벤트가 표시됩니다.
                     </td>
                   </tr>
                 )}

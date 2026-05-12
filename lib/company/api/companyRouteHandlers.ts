@@ -6,6 +6,17 @@ import {
 } from "../companyRepository";
 import type { CreateCompanyInput, ListCompaniesQuery } from "../companyTypes";
 import { initializeCompanyStandards } from "@/lib/system/standards/companyStandardsInitializationRepository";
+import { createSystemAuditLogSafe } from "@/lib/system/audit/repository";
+import { buildCompanyCreatedAuditLog } from "@/lib/system/audit/writeActions";
+
+function getRequestId(request: Request): string | null {
+  return request.headers.get("x-request-id") || request.headers.get("x-vercel-id") || null;
+}
+
+function getRequestIpAddress(request: Request): string | null {
+  const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  return forwardedFor || request.headers.get("x-real-ip") || null;
+}
 
 function toBooleanParam(value: string | null): boolean | undefined {
   if (value === null) {
@@ -68,6 +79,16 @@ export async function handleCreateCompany(request: Request) {
     const standardsInitialization = await initializeCompanyStandards({
       companyId: company.id,
     });
+
+    await createSystemAuditLogSafe(
+      buildCompanyCreatedAuditLog({
+        companyId: company.id,
+        companyName: company.name,
+        storageLimitBytes: company.storageLimitBytes ?? null,
+        requestId: getRequestId(request),
+        ipAddress: getRequestIpAddress(request),
+      }),
+    );
 
     return NextResponse.json(
       {
