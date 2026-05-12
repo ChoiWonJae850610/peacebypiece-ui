@@ -1,5 +1,5 @@
-import Link from "next/link";
-
+import { AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import { APP_VERSION } from "@/lib/constants/app";
 import {
   SYSTEM_PROCESS_STANDARD_SAMPLES,
@@ -28,9 +28,7 @@ function SampleRows({ rows, showSecondary = true }: { rows: SystemStandardSample
             <span className="font-semibold text-stone-950">{row.primary}</span>
             <span className="text-xs text-stone-500">{row.secondary || "시스템 표준"}</span>
             <span className="text-xs leading-5 text-stone-600">{row.description}</span>
-            <span className="justify-self-end rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-[11px] font-semibold text-stone-600">
-              {row.statusLabel}
-            </span>
+            <AdminStatusBadge className="justify-self-end">{row.statusLabel}</AdminStatusBadge>
           </div>
         ))}
       </div>
@@ -60,33 +58,11 @@ export default function SystemStandardsDesignPage() {
             </div>
 
             <div className="flex flex-wrap gap-2 text-xs font-medium">
-              <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-stone-600">
-                v{APP_VERSION}
-              </span>
-              <Link
-                href="/system/standards/seed-status"
-                className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50"
-              >
-                seed 상태
-              </Link>
-              <Link
-                href="/system/standards/regression"
-                className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50"
-              >
-                회귀점검
-              </Link>
-              <Link
-                href="/system/standards/customer-onboarding"
-                className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50"
-              >
-                고객사 초기 기준정보
-              </Link>
-              <Link
-                href="/system"
-                className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50"
-              >
-                시스템 콘솔
-              </Link>
+              <AdminStatusBadge>v{APP_VERSION}</AdminStatusBadge>
+              <AdminLinkButton href="/system/standards/seed-status">seed 상태</AdminLinkButton>
+              <AdminLinkButton href="/system/standards/regression">회귀점검</AdminLinkButton>
+              <AdminLinkButton href="/system/standards/customer-onboarding">고객사 초기 기준정보</AdminLinkButton>
+              <AdminLinkButton href="/system">시스템 콘솔</AdminLinkButton>
             </div>
           </div>
         </header>
@@ -98,12 +74,8 @@ export default function SystemStandardsDesignPage() {
               className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm"
             >
               <div className="flex items-center justify-between gap-3">
-                <span className="rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-[11px] font-semibold text-stone-600">
-                  {tab.label}
-                </span>
-                <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-700">
-                  {tab.statusLabel}
-                </span>
+                <AdminStatusBadge>{tab.label}</AdminStatusBadge>
+                <AdminStatusBadge tone="info">{tab.statusLabel}</AdminStatusBadge>
               </div>
               <h2 className="mt-4 text-lg font-semibold text-stone-950">{tab.title}</h2>
               <p className="mt-2 text-sm leading-6 text-stone-600">{tab.description}</p>
@@ -111,28 +83,19 @@ export default function SystemStandardsDesignPage() {
                 {tab.scopeLabel}
               </p>
               {tab.id === "units" ? (
-                <Link
-                  href="/system/standards/units"
-                  className="mt-4 inline-flex rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
-                >
+                <AdminLinkButton href="/system/standards/units" className="mt-4">
                   단위 표준 관리 화면 열기
-                </Link>
+                </AdminLinkButton>
               ) : null}
               {tab.id === "outsourcingProcesses" ? (
-                <Link
-                  href="/system/standards/processes"
-                  className="mt-4 inline-flex rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
-                >
+                <AdminLinkButton href="/system/standards/processes" className="mt-4">
                   외주공정 유형 관리 화면 열기
-                </Link>
+                </AdminLinkButton>
               ) : null}
               {tab.id === "productTypeTemplates" ? (
-                <Link
-                  href="/system/standards/product-templates"
-                  className="mt-4 inline-flex rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
-                >
+                <AdminLinkButton href="/system/standards/product-templates" className="mt-4">
                   생산품 유형 기본 템플릿 화면 열기
-                </Link>
+                </AdminLinkButton>
               ) : null}
             </article>
           ))}
@@ -169,12 +132,9 @@ export default function SystemStandardsDesignPage() {
                 0.10.46부터 단위 표준, 외주공정 유형, 생산품 유형 기본 템플릿은 fallback을 섞지 않습니다. 숫자가 0개이거나 최소 기준보다 부족하면 seed 상태를 확인하고 0.10.48 seed 보강 SQL을 실행합니다.
               </p>
             </div>
-            <Link
-              href="/system/standards/seed-status"
-              className="inline-flex shrink-0 rounded-full border border-blue-300 bg-white px-4 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50"
-            >
+            <AdminLinkButton href="/system/standards/seed-status" className="shrink-0">
               seed 상태 확인
-            </Link>
+            </AdminLinkButton>
           </div>
         </section>
 

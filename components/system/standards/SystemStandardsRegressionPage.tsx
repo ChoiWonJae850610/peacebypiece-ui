@@ -1,15 +1,15 @@
-import Link from "next/link";
-
+import { AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import { APP_VERSION } from "@/lib/constants/app";
 import type {
   SystemStandardsRegressionCheck,
   SystemStandardsRegressionSnapshot,
 } from "@/lib/system/standards/regressionRepository";
 
-function statusClassName(status: SystemStandardsRegressionCheck["status"]) {
-  if (status === "pass") return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  if (status === "warn") return "border-amber-200 bg-amber-50 text-amber-700";
-  return "border-rose-200 bg-rose-50 text-rose-700";
+function statusTone(status: SystemStandardsRegressionCheck["status"]): AdminStatusBadgeTone {
+  if (status === "pass") return "success";
+  if (status === "warn") return "warning";
+  return "danger";
 }
 
 function statusLabel(status: SystemStandardsRegressionCheck["status"]) {
@@ -33,10 +33,10 @@ export default function SystemStandardsRegressionPage({ snapshot }: { snapshot: 
               </p>
             </div>
             <div className="flex flex-wrap gap-2 text-xs font-medium">
-              <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-stone-600">v{APP_VERSION}</span>
-              <Link href="/system/standards/seed-status" className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50">seed 상태</Link>
-              <Link href="/system/standards" className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50">기준정보 관리</Link>
-              <Link href="/system" className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50">시스템 콘솔</Link>
+              <AdminStatusBadge>v{APP_VERSION}</AdminStatusBadge>
+              <AdminLinkButton href="/system/standards/seed-status">seed 상태</AdminLinkButton>
+              <AdminLinkButton href="/system/standards">기준정보 관리</AdminLinkButton>
+              <AdminLinkButton href="/system">시스템 콘솔</AdminLinkButton>
             </div>
           </div>
         </header>
@@ -56,9 +56,7 @@ export default function SystemStandardsRegressionPage({ snapshot }: { snapshot: 
                   <h2 className="text-lg font-semibold text-stone-950">{check.label}</h2>
                   <p className="mt-2 text-sm leading-6 text-stone-600">{check.detail}</p>
                 </div>
-                <span className={`shrink-0 rounded-full border px-3 py-1 text-xs font-semibold ${statusClassName(check.status)}`}>
-                  {statusLabel(check.status)}
-                </span>
+                <AdminStatusBadge tone={statusTone(check.status)}>{statusLabel(check.status)}</AdminStatusBadge>
               </div>
               <p className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm font-semibold text-stone-800">
                 {check.valueLabel}

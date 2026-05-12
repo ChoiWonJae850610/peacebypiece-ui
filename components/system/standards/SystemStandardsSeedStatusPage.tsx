@@ -1,12 +1,16 @@
-import Link from "next/link";
-
+import { AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import { APP_VERSION } from "@/lib/constants/app";
 import type { SystemStandardsSeedStatus } from "@/lib/system/standards/seedStatusRepository";
 
-function statusClassName(ready: boolean) {
+function statusTone(ready: boolean): AdminStatusBadgeTone {
+  return ready ? "success" : "warning";
+}
+
+function statusPanelClassName(ready: boolean) {
   return ready
-    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-    : "border-amber-200 bg-amber-50 text-amber-700";
+    ? "border-emerald-200 bg-emerald-50 text-emerald-900"
+    : "border-amber-200 bg-amber-50 text-amber-900";
 }
 
 export default function SystemStandardsSeedStatusPage({ seedStatus }: { seedStatus: SystemStandardsSeedStatus }) {
@@ -23,15 +27,15 @@ export default function SystemStandardsSeedStatusPage({ seedStatus }: { seedStat
               </p>
             </div>
             <div className="flex flex-wrap gap-2 text-xs font-medium">
-              <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-stone-600">v{APP_VERSION}</span>
-              <Link href="/system/standards" className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50">기준정보 관리</Link>
-              <Link href="/system/standards/regression" className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50">회귀점검</Link>
-              <Link href="/system" className="rounded-full border border-stone-300 bg-white px-3 py-1 text-stone-700 hover:bg-stone-50">시스템 콘솔</Link>
+              <AdminStatusBadge>v{APP_VERSION}</AdminStatusBadge>
+              <AdminLinkButton href="/system/standards">기준정보 관리</AdminLinkButton>
+              <AdminLinkButton href="/system/standards/regression">회귀점검</AdminLinkButton>
+              <AdminLinkButton href="/system">시스템 콘솔</AdminLinkButton>
             </div>
           </div>
         </header>
 
-        <section className={`rounded-3xl border p-5 shadow-sm ${statusClassName(seedStatus.ready)}`}>
+        <section className={`rounded-3xl border p-5 shadow-sm ${statusPanelClassName(seedStatus.ready)}`}>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] opacity-80">{seedStatus.mode === "db" ? "DB MODE" : "DB UNAVAILABLE"}</p>
           <h2 className="mt-2 text-lg font-semibold">{seedStatus.ready ? "seed 준비 완료" : "seed 확인 필요"}</h2>
           <p className="mt-2 text-sm leading-6">{seedStatus.message}</p>
@@ -46,7 +50,7 @@ export default function SystemStandardsSeedStatusPage({ seedStatus }: { seedStat
                   <h2 className="mt-2 text-lg font-semibold text-stone-950">{item.label}</h2>
                   <p className="mt-2 text-sm leading-6 text-stone-600">{item.description}</p>
                 </div>
-                <span className={`shrink-0 rounded-full border px-3 py-1 text-xs font-semibold ${statusClassName(item.ready)}`}>{item.ready ? "준비됨" : "비어 있음"}</span>
+                <AdminStatusBadge tone={statusTone(item.ready)}>{item.ready ? "준비됨" : "비어 있음"}</AdminStatusBadge>
               </div>
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
