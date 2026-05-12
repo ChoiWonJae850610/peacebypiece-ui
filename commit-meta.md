@@ -1,20 +1,19 @@
 Version :
-0.10.68
+0.10.69
 
 Summary :
-고객관리자 계정 설정 안내 보정
+자동 이메일 발송 검토 문서 추가
 
 Description :
-고객관리자 환경설정의 계정 설정을 읽기 전용 확인 구조로 보정했다. 회사 정보, 대표 로그인 이메일, 계정 상태, 개인 설정 분리 기준을 표시하고 개인 설정 이동 링크와 후속 요청 정책을 정리했다.
+초대 링크와 QR 공유를 1차 발송 방식으로 유지하면서 자동 이메일 발송 도입 후보, 도메인 인증 필요 사항, 초대 이메일 템플릿, 실패 및 재발송 정책을 문서화했다. 초대 발송 채널 정책과 이메일 provider 후보도 공통 상수로 분리했다.
 
 수정 파일 목록 :
-- components/admin/settings/AdminSettingsHub.tsx
-- lib/admin/settings/adminSettingsHub.ts
 - lib/constants/app.ts
+- lib/invitations/index.ts
 
 추가 파일 목록 :
-- lib/admin/settings/adminAccountSettingsPlaceholder.ts
-- docs/admin-account-settings-placeholder-0.10.68.md
+- lib/invitations/invitationDeliveryPolicy.ts
+- docs/automatic-invitation-email-review-0.10.69.md
 
 삭제 파일 목록 :
 없음
