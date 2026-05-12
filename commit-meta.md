@@ -1,19 +1,19 @@
 Version :
-0.10.88
+0.10.89
 
 Summary :
-작업지시서 초기 로딩 상세 조회 분리
+R2 더미 파일 seed 기준 복구
 
 Description :
-작업지시서 화면 초기 진입 시 목록 요약 조회와 선택 작업지시서 상세 조회가 한 흐름에서 묶여 있던 구조를 분리했다. 초기 loadWorkspaceState는 목록 요약만 반환하고, 선택된 작업지시서 상세는 기존 상세 지연 로딩 흐름에서 별도로 가져오도록 변경했다. summary/detail API 응답 meta에 durationMs를 추가해 이후 성능 병목을 분리 확인할 수 있게 했다.
+삭제된 과거 seed_realistic_workorders SQL을 참조하던 R2 더미 파일 생성 흐름을 현재 reset 기준에 맞게 복구했다. 실제 작업지시서와 첨부 metadata를 생성하는 db/seed/realistic_workorders_seed.sql을 추가하고, seed-r2-demo-files 스크립트와 사용 문서를 새 seed 경로 기준으로 수정했다.
 
 수정 파일 목록 :
-- lib/repositories/dbWorkorderHttpAdapter.ts
-- lib/workorder/api/workOrderRouteHandlers.ts
+- scripts/seed-r2-demo-files.mjs
+- scripts/seed-r2-demo-files-usage.md
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/workorder-performance-first-pass-0.10.88.md
+- db/seed/realistic_workorders_seed.sql
 
 삭제 파일 목록 :
 없음
