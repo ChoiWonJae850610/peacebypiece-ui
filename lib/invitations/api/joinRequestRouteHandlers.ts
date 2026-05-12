@@ -180,7 +180,7 @@ export async function handleListJoinRequests(request: Request) {
       id: url.searchParams.get("requestId") || url.searchParams.get("id"),
       applicantEmail: url.searchParams.get("applicantEmail") || url.searchParams.get("email"),
       requestType: readJoinRequestType(url.searchParams.get("requestType") || url.searchParams.get("type")),
-      status: readJoinRequestStatus(url.searchParams.get("status")) || "pending",
+      status: readJoinRequestStatus(url.searchParams.get("status")),
       invitationScope: readInvitationScope(url.searchParams.get("invitationScope") || url.searchParams.get("scope")),
       limit: readLimit(url.searchParams.get("limit")),
     });

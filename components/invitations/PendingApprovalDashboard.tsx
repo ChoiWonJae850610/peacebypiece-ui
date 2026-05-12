@@ -9,12 +9,20 @@ import {
   PENDING_APPROVAL_ACCESS_ITEMS,
   PENDING_APPROVAL_DASHBOARD_DESCRIPTION,
   PENDING_APPROVAL_DASHBOARD_TITLE,
+  PENDING_APPROVAL_LOOKUP_DESCRIPTION,
+  PENDING_APPROVAL_LOOKUP_EMPTY_MESSAGE,
+  PENDING_APPROVAL_LOOKUP_FALLBACK_MESSAGE,
+  PENDING_APPROVAL_LOOKUP_IDLE_MESSAGE,
+  PENDING_APPROVAL_LOOKUP_TITLE,
   PENDING_APPROVAL_POLICY_NOTES,
   PENDING_APPROVAL_STEPS,
+  buildPendingApprovalLookupFoundMessage,
   buildPendingApprovalSummaryItems,
   getPendingApprovalAccessTone,
   getPendingApprovalRequestTypeLabel,
+  getPendingApprovalStatusGuidance,
   getPendingApprovalStatusLabel,
+  getPendingApprovalStatusPanelClassName,
   getPendingApprovalStatusTone,
   type PendingApprovalJoinRequestView,
 } from "@/lib/invitations/pendingApprovalDashboardPresentation";
@@ -85,6 +93,9 @@ function toJoinRequestView(value: unknown): PendingApprovalJoinRequestView | nul
     requestedCompanyName: item.requestedCompanyName ?? null,
     status,
     createdAt: item.createdAt ?? new Date().toISOString(),
+    updatedAt: item.updatedAt ?? null,
+    reviewedAt: item.reviewedAt ?? null,
+    rejectionReason: item.rejectionReason ?? null,
     requestMemo: item.requestMemo ?? null,
   };
 }
@@ -108,18 +119,21 @@ export default function PendingApprovalDashboard({
   const [joinRequest, setJoinRequest] = useState<PendingApprovalJoinRequestView | null>(null);
 
   const summaryItems = useMemo(() => buildPendingApprovalSummaryItems(joinRequest), [joinRequest]);
+  const statusGuidance = useMemo(
+    () => joinRequest ? getPendingApprovalStatusGuidance(joinRequest.status, joinRequest.requestType) : null,
+    [joinRequest],
+  );
 
   async function lookupJoinRequest(nextRequestId = requestId, nextApplicantEmail = applicantEmail, nextRequestType = requestType) {
     const params = new URLSearchParams();
     if (nextRequestId.trim()) params.set("requestId", nextRequestId.trim());
     if (nextApplicantEmail.trim()) params.set("applicantEmail", nextApplicantEmail.trim());
     if (nextRequestType) params.set("type", nextRequestType);
-    params.set("status", "pending");
     params.set("limit", "1");
 
     if (!params.has("requestId") && !params.has("applicantEmail")) {
       setLookupState("idle");
-      setLookupMessage("가입 신청 제출 후 발급된 requestId 또는 신청 이메일로 상태를 조회합니다.");
+      setLookupMessage(PENDING_APPROVAL_LOOKUP_IDLE_MESSAGE);
       setJoinRequest(null);
       return;
     }
@@ -143,13 +157,13 @@ export default function PendingApprovalDashboard({
       if (!nextJoinRequest) {
         setLookupState("empty");
         setJoinRequest(null);
-        setLookupMessage("조회 조건과 일치하는 pending 가입 신청이 없습니다.");
+        setLookupMessage(PENDING_APPROVAL_LOOKUP_EMPTY_MESSAGE);
         return;
       }
 
       setLookupState("found");
       setJoinRequest(nextJoinRequest);
-      setLookupMessage("join_requests.pending 상태를 조회했습니다.");
+      setLookupMessage(buildPendingApprovalLookupFoundMessage(nextJoinRequest.status));
     } catch (error) {
       setLookupState("error");
       setJoinRequest(null);
@@ -218,9 +232,9 @@ export default function PendingApprovalDashboard({
         <section className="rounded-[28px] border border-stone-200 bg-white/90 p-5 shadow-sm">
           <div className="flex flex-col gap-4 border-b border-stone-100 pb-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-stone-950">가입 신청 상태 조회</h2>
+              <h2 className="text-lg font-semibold text-stone-950">{PENDING_APPROVAL_LOOKUP_TITLE}</h2>
               <p className="mt-2 text-sm leading-6 text-stone-500">
-                가입 신청 제출 후 redirect된 requestId를 우선 사용하고, OAuth 연결 전 테스트에서는 신청 이메일로 pending 상태를 조회합니다.
+                {PENDING_APPROVAL_LOOKUP_DESCRIPTION}
               </p>
             </div>
             {joinRequest ? (
@@ -271,7 +285,7 @@ export default function PendingApprovalDashboard({
             </button>
           </div>
           <p className="mt-3 text-xs leading-5 text-stone-500">
-            {lookupMessage ?? "가입 신청 상태를 조회하면 아래 요약 카드가 실제 join_requests 기준으로 바뀝니다."}
+            {lookupMessage ?? PENDING_APPROVAL_LOOKUP_FALLBACK_MESSAGE}
           </p>
           {joinRequest ? (
             <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-4 text-xs leading-5 text-stone-600">
@@ -280,10 +294,41 @@ export default function PendingApprovalDashboard({
               {getPendingApprovalRequestTypeLabel(joinRequest.requestType)}
               <span className="mx-2 text-stone-300">·</span>
               접수 {formatCreatedAt(joinRequest.createdAt)}
+              {joinRequest.reviewedAt ? (
+                <>
+                  <span className="mx-2 text-stone-300">·</span>
+                  검토 {formatCreatedAt(joinRequest.reviewedAt)}
+                </>
+              ) : null}
               {joinRequest.requestMemo ? <p className="mt-2 text-stone-500">메모: {joinRequest.requestMemo}</p> : null}
+              {joinRequest.rejectionReason ? <p className="mt-1 text-stone-500">거절 코드: {joinRequest.rejectionReason}</p> : null}
             </div>
           ) : null}
         </section>
+
+        {joinRequest && statusGuidance ? (
+          <section className={`rounded-[28px] border p-5 shadow-sm ${getPendingApprovalStatusPanelClassName(joinRequest.status)}`}>
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <span className={`inline-flex w-fit rounded-full border px-3 py-1.5 text-xs font-semibold ${getPendingApprovalStatusTone(joinRequest.status)}`}>
+                  {getPendingApprovalStatusLabel(joinRequest.status)}
+                </span>
+                <h2 className="mt-4 text-lg font-semibold text-stone-950">{statusGuidance.title}</h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">{statusGuidance.description}</p>
+                <p className="mt-2 text-xs leading-5 text-stone-500">{statusGuidance.nextAction}</p>
+              </div>
+              {statusGuidance.primaryAction ? (
+                <Link
+                  href={statusGuidance.primaryAction.href}
+                  title={statusGuidance.primaryAction.description}
+                  className="inline-flex shrink-0 items-center justify-center rounded-full border border-stone-900 bg-stone-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-stone-800"
+                >
+                  {statusGuidance.primaryAction.label}
+                </Link>
+              ) : null}
+            </div>
+          </section>
+        ) : null}
 
         <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {summaryItems.map((item) => (
