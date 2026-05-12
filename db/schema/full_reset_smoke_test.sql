@@ -1,6 +1,6 @@
 -- =========================================
 -- PeaceByPiece full_reset smoke test
--- Version: 0.10.77
+-- Version: 0.10.79
 --
 -- 목적:
 -- - full_reset.sql 실행 후 핵심 테이블 / view / seed / 제약 구조가 만들어졌는지 확인한다.
@@ -165,6 +165,9 @@ BEGIN
       ('invitations', 'invited_email'),
       ('invitations', 'target_role_template_code'),
       ('join_requests', 'request_type'),
+      ('join_requests', 'applicant_email'),
+      ('join_requests', 'business_name'),
+      ('join_requests', 'request_memo'),
       ('join_requests', 'created_company_id')
   ) AS required_columns(table_name, column_name)
   WHERE NOT EXISTS (
@@ -383,7 +386,8 @@ BEGIN
       ('system_outsourcing_process_standards_active_idx'),
       ('company_enabled_process_standards_company_idx'),
       ('system_product_type_templates_active_idx'),
-      ('system_product_type_template_categories_template_idx')
+      ('system_product_type_template_categories_template_idx'),
+      ('join_requests_pending_invitation_email_unique')
   ) AS required_indexes(index_name)
   WHERE to_regclass('public.' || required_indexes.index_name) IS NULL;
 
@@ -442,6 +446,23 @@ BEGIN
 
   IF NOT active_status_exists OR NOT cancelled_status_exists THEN
     RAISE EXCEPTION 'invitation_status enum must include active and cancelled';
+  END IF;
+END $$;
+
+
+DO $$
+DECLARE
+  join_request_user_nullable text;
+BEGIN
+  SELECT is_nullable
+  INTO join_request_user_nullable
+  FROM information_schema.columns
+  WHERE table_schema = current_schema()
+    AND table_name = 'join_requests'
+    AND column_name = 'user_id';
+
+  IF join_request_user_nullable <> 'YES' THEN
+    RAISE EXCEPTION 'join_requests.user_id must be nullable until OAuth user mapping is connected';
   END IF;
 END $$;
 

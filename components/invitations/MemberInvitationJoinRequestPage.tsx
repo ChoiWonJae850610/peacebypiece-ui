@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 
 import { APP_VERSION } from "@/lib/constants/app";
 import {
@@ -14,6 +17,10 @@ import {
 interface MemberInvitationJoinRequestPageProps {
   token: string;
 }
+
+type SubmitState = "idle" | "submitting" | "success" | "error";
+
+type VerifyState = "idle" | "loading" | "valid" | "invalid";
 
 function getStatusClassName(status: MemberInvitationJoinRequestStatus): string {
   if (status === "ready") {
@@ -46,10 +53,90 @@ function HomeIcon() {
   );
 }
 
+function readSubmitMessage(state: SubmitState, message: string | null): string {
+  if (message) return message;
+  if (state === "success") return "가입 신청이 저장되었습니다. 승인 대기 화면에서 상태를 확인합니다.";
+  if (state === "submitting") return "가입 신청을 저장하는 중입니다.";
+  return "초대 token 검증 후 가입 신청을 저장합니다.";
+}
+
 export default function MemberInvitationJoinRequestPage({
   token,
 }: MemberInvitationJoinRequestPageProps) {
-  const tokenPreview = createMemberInvitationTokenPreview(token);
+  const tokenPreview = useMemo(() => createMemberInvitationTokenPreview(token), [token]);
+  const [verifyState, setVerifyState] = useState<VerifyState>(token.startsWith("preview-") ? "valid" : "idle");
+  const [submitState, setSubmitState] = useState<SubmitState>("idle");
+  const [message, setMessage] = useState<string | null>(null);
+  const [formValues, setFormValues] = useState<Record<string, string>>({
+    applicantName: "",
+    applicantEmail: "",
+    applicantPhone: "",
+    requestMemo: "",
+  });
+
+  useEffect(() => {
+    if (!token || token.startsWith("preview-")) return;
+
+    const controller = new AbortController();
+
+    async function verifyInvitation() {
+      setVerifyState("loading");
+      try {
+        const response = await fetch(
+          `/api/invitations/verify?requestType=member&token=${encodeURIComponent(token)}`,
+          { signal: controller.signal },
+        );
+        const payload = (await response.json()) as { ok?: boolean; isJoinable?: boolean; error?: string };
+        if (!response.ok || !payload.ok || !payload.isJoinable) {
+          setVerifyState("invalid");
+          setMessage(payload.error ?? "초대 링크를 확인할 수 없습니다.");
+          return;
+        }
+        setVerifyState("valid");
+      } catch (error) {
+        if ((error as Error).name === "AbortError") return;
+        setVerifyState("invalid");
+        setMessage("초대 링크 검증 중 오류가 발생했습니다.");
+      }
+    }
+
+    verifyInvitation();
+
+    return () => controller.abort();
+  }, [token]);
+
+  const canSubmit = verifyState === "valid" && submitState !== "submitting";
+
+  async function handleSubmit() {
+    if (!canSubmit) return;
+
+    setSubmitState("submitting");
+    setMessage(null);
+
+    try {
+      const response = await fetch("/api/invitations/join-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token,
+          requestType: "member",
+          applicantName: formValues.applicantName,
+          applicantEmail: formValues.applicantEmail,
+          applicantPhone: formValues.applicantPhone,
+          requestMemo: formValues.requestMemo,
+        }),
+      });
+      const payload = (await response.json()) as { ok?: boolean; error?: string; redirectPath?: string };
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error ?? "JOIN_REQUEST_CREATE_FAILED");
+      }
+      setSubmitState("success");
+      setMessage(`가입 신청 저장 완료 · 이동 후보: ${payload.redirectPath ?? "/pending"}`);
+    } catch (error) {
+      setSubmitState("error");
+      setMessage(error instanceof Error ? error.message : "가입 신청 저장 중 오류가 발생했습니다.");
+    }
+  }
 
   return (
     <main className="min-h-screen bg-stone-50 px-4 py-6 text-stone-900 sm:px-6 lg:px-8">
@@ -96,7 +183,7 @@ export default function MemberInvitationJoinRequestPage({
                 초대 링크 상태
               </h2>
               <p className="mt-2 text-sm leading-6 text-stone-600">
-                현재 버전에서는 URL token을 화면에서 식별하고, 후속 버전에서 DB token_hash 조회와 만료 검증을 연결합니다.
+                URL token을 서버에서 token_hash로 변환해 초대 상태와 만료일을 확인합니다.
               </p>
             </div>
 
@@ -108,8 +195,8 @@ export default function MemberInvitationJoinRequestPage({
                     {tokenPreview.maskedToken}
                   </p>
                 </div>
-                <span className="w-fit rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
-                  {tokenPreview.stateLabel}
+                <span className="w-fit rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                  {verifyState === "loading" ? "검증 중" : verifyState === "invalid" ? "검증 실패" : tokenPreview.stateLabel}
                 </span>
               </div>
               <p className="mt-3 text-xs leading-5 text-stone-500">
@@ -126,7 +213,7 @@ export default function MemberInvitationJoinRequestPage({
               Google 로그인 후 신청
             </h2>
             <p className="mt-2 text-sm leading-6 text-stone-600">
-              이메일/비밀번호 직접 구현은 후순위이며, 1차 인증은 Google OAuth 기준으로 연결합니다.
+              현재 테스트 단계에서는 신청 이메일을 입력값으로 저장하고, 후속 OAuth 연결에서 로그인 사용자와 매핑합니다.
             </p>
             <button
               type="button"
@@ -146,7 +233,7 @@ export default function MemberInvitationJoinRequestPage({
             </p>
           </div>
 
-          <div className="mt-5 grid gap-4 lg:grid-cols-3">
+          <div className="mt-5 grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
             {MEMBER_INVITATION_JOIN_REQUEST_FIELDS.map((field) => (
               <label
                 key={field.id}
@@ -157,10 +244,11 @@ export default function MemberInvitationJoinRequestPage({
                   {field.required ? " *" : ""}
                 </span>
                 <input
-                  type="text"
-                  disabled
+                  type={field.id === "applicantEmail" ? "email" : "text"}
+                  value={formValues[field.id] ?? ""}
+                  onChange={(event) => setFormValues((current) => ({ ...current, [field.id]: event.target.value }))}
                   placeholder={field.placeholder}
-                  className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-400 outline-none"
+                  className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-700 outline-none focus:border-stone-400"
                 />
                 <span className="mt-2 block text-[11px] leading-4 text-stone-500">
                   {field.helper}
@@ -171,14 +259,15 @@ export default function MemberInvitationJoinRequestPage({
 
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs leading-5 text-stone-500">
-              실제 신청 저장, 중복 신청 방지, 승인 대기 redirect는 후속 API 연결에서 처리합니다.
+              {readSubmitMessage(submitState, message)}
             </p>
             <button
               type="button"
-              disabled
-              className="rounded-full border border-stone-200 bg-stone-100 px-4 py-2 text-xs font-semibold text-stone-400"
+              disabled={!canSubmit}
+              onClick={handleSubmit}
+              className="rounded-full border border-stone-900 bg-stone-900 px-4 py-2 text-xs font-semibold text-white disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400"
             >
-              가입 신청 제출 준비중
+              {submitState === "submitting" ? "저장 중" : "가입 신청 제출"}
             </button>
           </div>
         </section>
@@ -201,11 +290,7 @@ export default function MemberInvitationJoinRequestPage({
                   <span className="flex h-7 w-7 items-center justify-center rounded-full bg-stone-900 text-xs font-semibold text-white">
                     {index + 1}
                   </span>
-                  <span
-                    className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getStatusClassName(
-                      step.status,
-                    )}`}
-                  >
+                  <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getStatusClassName(step.status)}`}>
                     {step.statusLabel}
                   </span>
                 </div>
@@ -222,14 +307,9 @@ export default function MemberInvitationJoinRequestPage({
 
         <section className="grid gap-4 lg:grid-cols-3">
           {MEMBER_INVITATION_JOIN_REQUEST_POLICY_NOTES.map((note) => (
-            <article
-              key={note.id}
-              className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm"
-            >
+            <article key={note.id} className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
               <h2 className="text-sm font-semibold text-stone-950">{note.title}</h2>
-              <p className="mt-2 text-xs leading-5 text-stone-600">
-                {note.description}
-              </p>
+              <p className="mt-2 text-xs leading-5 text-stone-600">{note.description}</p>
             </article>
           ))}
         </section>

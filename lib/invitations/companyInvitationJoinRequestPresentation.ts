@@ -73,9 +73,9 @@ export const COMPANY_INVITATION_JOIN_REQUEST_STEPS: CompanyInvitationJoinRequest
     id: "token-check",
     title: "고객사 초대 확인",
     description:
-      "URL token을 서버에서 token_hash로 변환해 invitations.active 상태, invitation_type, 만료일을 확인합니다.",
+      "URL token을 서버에서 token_hash로 변환해 invitations 상태, 초대 유형, 만료일을 확인합니다.",
     status: "ready",
-    statusLabel: "화면 고정",
+    statusLabel: "DB 검증 연결",
   },
   {
     id: "oauth-login",
@@ -90,8 +90,8 @@ export const COMPANY_INVITATION_JOIN_REQUEST_STEPS: CompanyInvitationJoinRequest
     title: "고객사 신청 저장",
     description:
       "join_requests에 request_type=company 기준으로 회사명, 담당자, 연락처, 비고를 저장합니다.",
-    status: "planned",
-    statusLabel: "후속 연결",
+    status: "ready",
+    statusLabel: "저장 연결",
   },
   {
     id: "system-approval",
@@ -203,10 +203,10 @@ function readTokenDescription(token: string): string {
   }
 
   if (token.startsWith("preview-")) {
-    return "시스템관리자 고객사 초대 화면에서 사용하는 미리보기 token입니다. 실제 저장은 후속 API 연결에서 처리합니다.";
+    return "시스템관리자 고객사 초대 화면에서 사용하는 미리보기 token입니다. 실제 DB 조회 없이 화면 동작을 확인합니다.";
   }
 
-  return "후속 버전에서 token_hash 조회, 초대 만료 검증, Google 로그인 이메일 검증, join_requests 저장을 연결합니다.";
+  return "서버에서 token_hash 조회와 초대 만료 검증을 수행한 뒤 고객사 가입 신청을 저장합니다.";
 }
 
 export function createCompanyInvitationTokenPreview(

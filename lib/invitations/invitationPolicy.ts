@@ -3,9 +3,11 @@ export type InvitationScope = "system_to_company_admin" | "company_to_member";
 export type InvitationStatus =
   | "draft"
   | "pending"
+  | "active"
   | "accepted"
   | "expired"
-  | "revoked";
+  | "revoked"
+  | "cancelled";
 
 export type InvitationRecipientRole =
   | "admin"

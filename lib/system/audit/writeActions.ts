@@ -305,6 +305,18 @@ export type BuildInvitationCreatedAuditLogInput = {
   ipAddress?: string | null;
 };
 
+export type BuildJoinRequestCreatedAuditLogInput = {
+  joinRequestId: string;
+  invitationId?: string | null;
+  requestType: string;
+  companyId?: string | null;
+  applicantEmail?: string | null;
+  applicantName?: string | null;
+  requestedCompanyName?: string | null;
+  requestId?: string | null;
+  ipAddress?: string | null;
+};
+
 export type BuildCompanyCreatedAuditLogInput = {
   companyId: string;
   companyName?: string | null;
@@ -411,6 +423,34 @@ export function buildInvitationCreatedAuditLog(
       permissionPreset: input.permissionPreset ?? null,
       expiresAt: input.expiresAt ?? null,
       inviteUrlPath: input.inviteUrlPath ?? null,
+      tokenStoredPolicy: "token_hash_only",
+    },
+    requestId: input.requestId ?? null,
+    ipAddress: input.ipAddress ?? null,
+  };
+}
+
+export function buildJoinRequestCreatedAuditLog(
+  input: BuildJoinRequestCreatedAuditLogInput,
+): CreateSystemAuditLogInput {
+  const isCompanyRequest = input.requestType === "company";
+
+  return {
+    actorUserId: null,
+    actorRole: "unknown",
+    companyId: input.companyId ?? null,
+    targetType: "invitation",
+    targetId: input.joinRequestId,
+    eventType: "join_request.created",
+    severity: isCompanyRequest ? "high" : "medium",
+    summary: isCompanyRequest ? "고객사 가입 신청 저장" : "멤버 가입 신청 저장",
+    metadata: {
+      joinRequestId: input.joinRequestId,
+      invitationId: input.invitationId ?? null,
+      requestType: input.requestType,
+      applicantEmail: input.applicantEmail ?? null,
+      applicantName: input.applicantName ?? null,
+      requestedCompanyName: input.requestedCompanyName ?? null,
       tokenStoredPolicy: "token_hash_only",
     },
     requestId: input.requestId ?? null,

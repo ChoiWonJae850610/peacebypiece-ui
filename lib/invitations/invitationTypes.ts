@@ -53,4 +53,5 @@ export interface InvitationRepository {
   createInvitation(draft: InvitationDraft): Promise<InvitationCreateResult>;
   listInvitations(companyId: string): Promise<InvitationRecord[]>;
   revokeInvitation(invitationId: string): Promise<InvitationRecord>;
+  findInvitationByRawToken(rawToken: string): Promise<InvitationRecord | null>;
 }

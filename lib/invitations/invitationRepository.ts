@@ -15,7 +15,7 @@ function createRawInvitationToken(): string {
   return randomBytes(32).toString("base64url");
 }
 
-function createTokenHash(rawToken: string): string {
+export function createInvitationTokenHash(rawToken: string): string {
   return createHash("sha256").update(rawToken).digest("hex");
 }
 
@@ -187,6 +187,38 @@ async function listDbInvitations(companyId: string): Promise<InvitationRecord[]>
   return result.rows.map(toInvitationRecord);
 }
 
+async function findDbInvitationByRawToken(rawToken: string): Promise<InvitationRecord | null> {
+  const tokenHash = createInvitationTokenHash(rawToken);
+  const result = await queryDb<InvitationDbRow>(
+    `
+      SELECT
+        id,
+        company_id,
+        recipient_email,
+        recipient_role,
+        permission_preset,
+        scope,
+        status,
+        token_hash,
+        accepted_at,
+        revoked_at,
+        expires_at,
+        created_by_user_id,
+        created_by_system_user_id,
+        accepted_user_id,
+        created_at,
+        updated_at
+      FROM invitations
+      WHERE token_hash = $1
+      LIMIT 1
+    `,
+    [tokenHash],
+  );
+
+  const row = result.rows[0];
+  return row ? toInvitationRecord(row) : null;
+}
+
 async function revokeDbInvitation(invitationId: string): Promise<InvitationRecord> {
   const result = await queryDb<InvitationDbRow>(
     `
@@ -226,7 +258,7 @@ export function createInvitationRepository(): InvitationRepository {
   return {
     async createInvitation(draft: InvitationDraft): Promise<InvitationCreateResult> {
       const rawToken = createRawInvitationToken();
-      const tokenHash = createTokenHash(rawToken);
+      const tokenHash = createInvitationTokenHash(rawToken);
       const invitation = isDatabaseConfigured()
         ? await createDbInvitation(draft, tokenHash)
         : createInvitationRecord(draft, tokenHash);
@@ -250,6 +282,15 @@ export function createInvitationRepository(): InvitationRepository {
       return inMemoryInvitations.filter(
         (invitation) => invitation.companyId === companyId,
       );
+    },
+
+    async findInvitationByRawToken(rawToken: string): Promise<InvitationRecord | null> {
+      if (isDatabaseConfigured()) {
+        return findDbInvitationByRawToken(rawToken);
+      }
+
+      const tokenHash = createInvitationTokenHash(rawToken);
+      return inMemoryInvitations.find((invitation) => invitation.tokenHash === tokenHash) ?? null;
     },
 
     async revokeInvitation(invitationId: string): Promise<InvitationRecord> {

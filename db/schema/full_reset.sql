@@ -1,6 +1,6 @@
 -- =========================================
 -- PeaceByPiece full DB reset schema
--- Version: 0.10.77
+-- Version: 0.10.79
 --
 -- 기준:
 -- - 현재 코드에서 실제 사용하는 업무 테이블/컬럼 유지
@@ -1652,11 +1652,14 @@ CREATE INDEX IF NOT EXISTS invitations_invited_email_idx
 CREATE TABLE join_requests (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
   invitation_id text REFERENCES invitations(id) ON DELETE SET NULL,
-  user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  user_id text REFERENCES users(id) ON DELETE SET NULL,
+  applicant_email text NOT NULL,
   request_type text NOT NULL,
   requested_company_name text,
+  business_name text,
   applicant_name text,
   applicant_phone text,
+  request_memo text,
   status text NOT NULL DEFAULT 'pending',
   reviewed_by_user_id text REFERENCES users(id),
   reviewed_by_system_user_id text REFERENCES system_users(id),
@@ -1669,6 +1672,8 @@ CREATE TABLE join_requests (
     CHECK (request_type IN ('company', 'member')),
   CONSTRAINT join_requests_status_check
     CHECK (status IN ('pending', 'approved', 'rejected', 'cancelled')),
+  CONSTRAINT join_requests_applicant_email_not_empty
+    CHECK (length(trim(applicant_email)) > 0),
   CONSTRAINT join_requests_review_consistency
     CHECK ((status IN ('approved', 'rejected') AND reviewed_at IS NOT NULL) OR status NOT IN ('approved', 'rejected'))
 );
@@ -1688,6 +1693,12 @@ CREATE INDEX join_requests_created_company_idx
 CREATE UNIQUE INDEX join_requests_pending_invitation_user_unique
   ON join_requests (invitation_id, user_id)
   WHERE status = 'pending'
+    AND invitation_id IS NOT NULL
+    AND user_id IS NOT NULL;
+
+CREATE UNIQUE INDEX join_requests_pending_invitation_email_unique
+  ON join_requests (invitation_id, lower(applicant_email))
+  WHERE status = 'pending'
     AND invitation_id IS NOT NULL;
 
 COMMENT ON TABLE company_members IS
@@ -1700,7 +1711,7 @@ COMMENT ON TABLE role_templates IS
 '역할 enum이 아니라 기본 권한 묶음 템플릿. 고객사별 커스텀 템플릿은 company_id를 채운다.';
 
 COMMENT ON TABLE join_requests IS
-'초대 링크/QR 접속 후 가입 신청과 승인 대기 상태를 관리하는 테이블.';
+'초대 링크/QR 접속 후 가입 신청과 승인 대기 상태를 관리하는 테이블. OAuth 연결 전 테스트 단계에서는 user_id 없이 applicant_email 기준으로 pending 신청을 저장할 수 있다.';
 
 COMMENT ON COLUMN invitations.company_id IS
 '고객관리자 내부 멤버 초대는 고객사 ID를 가진다. 시스템관리자 고객사 초대는 승인 전 회사가 없을 수 있으므로 NULL을 허용한다.';
