@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import type { AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import { useI18n } from "@/lib/i18n";
 import { buildAdminHistoryItemViewModel } from "@/lib/admin/history/presentation";
 import type { AdminHistoryEvent } from "@/lib/admin/history/types";
@@ -8,6 +10,15 @@ import type { AdminHistoryEvent } from "@/lib/admin/history/types";
 type AdminWorkOrderHistoryItemProps = {
   item: AdminHistoryEvent;
 };
+
+function getHistoryTone(tone: AdminHistoryEvent["tone"]): AdminStatusBadgeTone {
+  if (tone === "emerald") return "success";
+  if (tone === "rose") return "danger";
+  if (tone === "amber") return "warning";
+  if (tone === "blue") return "info";
+  if (tone === "violet") return "primary";
+  return "neutral";
+}
 
 export default function AdminWorkOrderHistoryItem({ item }: AdminWorkOrderHistoryItemProps) {
   const [open, setOpen] = useState(false);
@@ -22,15 +33,15 @@ export default function AdminWorkOrderHistoryItem({ item }: AdminWorkOrderHistor
         className={`w-full text-left ${viewModel.hasDetails ? "cursor-pointer" : "cursor-default"}`}
       >
         <div className="flex items-center justify-between gap-3">
-          <div className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${viewModel.actionToneClass}`}>
+          <AdminStatusBadge tone={getHistoryTone(item.tone)}>
             {viewModel.action}
-          </div>
+          </AdminStatusBadge>
           <div className="flex items-center gap-2 text-[11px] text-stone-500">
             <span>{viewModel.time}</span>
             {viewModel.detailToggleLabel ? (
-              <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-medium text-stone-600">
+              <AdminStatusBadge tone="neutral" size="xs">
                 {viewModel.detailToggleLabel}
-              </span>
+              </AdminStatusBadge>
             ) : null}
           </div>
         </div>
@@ -41,7 +52,9 @@ export default function AdminWorkOrderHistoryItem({ item }: AdminWorkOrderHistor
         <div className="mt-3 space-y-2 rounded-xl border border-stone-200 bg-white p-3 text-xs text-stone-700">
           {viewModel.transition ? (
             <div className="rounded-lg bg-stone-50 px-3 py-2 font-medium text-stone-800">
-              {viewModel.transition.from} <span className="px-1 text-stone-400">→</span> {viewModel.transition.to}
+              <AdminStatusBadge tone="neutral" size="xs">{viewModel.transition.from}</AdminStatusBadge>
+              <span className="px-2 text-stone-400">→</span>
+              <AdminStatusBadge tone="info" size="xs">{viewModel.transition.to}</AdminStatusBadge>
             </div>
           ) : null}
           {viewModel.detailLines.map((detail) => (

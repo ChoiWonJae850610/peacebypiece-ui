@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import AdminWorkOrderHistoryItem from "@/components/admin/history/AdminWorkOrderHistoryItem";
 import type { AdminHistorySectionViewModel } from "@/lib/admin/history/presentation";
 
@@ -22,9 +23,7 @@ export default function AdminHistoryList({ viewModel, emptyText }: AdminHistoryL
         {viewModel.items.length > 0 ? (
           viewModel.items.map((item) => <AdminWorkOrderHistoryItem key={item.id} item={item} />)
         ) : (
-          <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-sm text-stone-500">
-            {emptyText}
-          </div>
+          <AdminEmptyState title={emptyText} className="rounded-2xl border-dashed shadow-none" />
         )}
       </div>
     </div>

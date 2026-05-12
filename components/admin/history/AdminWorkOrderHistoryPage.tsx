@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { AdminButton } from "@/components/admin/common/AdminButton";
 import AdminHistoryList from "@/components/admin/history/AdminHistoryList";
 import { buildAdminHistorySectionViewModel } from "@/lib/admin/history/presentation";
 import {
@@ -113,24 +114,26 @@ export default function AdminWorkOrderHistoryPage({ initialHistoryEvents = [] }:
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             {viewModel.filterOptions.map((item) => (
-              <button
+              <AdminButton
                 key={item.value}
                 type="button"
                 onClick={() => setHistoryFilter(item.value)}
-                className={`h-9 rounded-full px-3 text-xs font-semibold transition ${item.value === historyFilter ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : item.className}`}
+                variant={item.value === historyFilter ? "primary" : "secondary"}
+                className="h-9 px-3 text-xs"
               >
                 {item.label}
-              </button>
+              </AdminButton>
             ))}
-            <button
+            <AdminButton
               type="button"
               onClick={() => setRefreshKey((value) => value + 1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 shadow-sm transition hover:border-stone-300 hover:bg-stone-50"
+              variant="secondary"
+              className="h-9 w-9 px-0"
               aria-label={pageText.refreshLabel}
               title={pageText.refreshLabel}
             >
               <RefreshIcon />
-            </button>
+            </AdminButton>
           </div>
         </div>
       </div>

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { AdminButton } from "@/components/admin/common/AdminButton";
+import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import AdminCompletionAuditPanel from "@/components/admin/dashboard/AdminCompletionAuditPanel";
 import AdminDbConnectionAuditPanel from "@/components/admin/dashboard/AdminDbConnectionAuditPanel";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
@@ -25,28 +27,29 @@ export default function AdminAuditSummarySection({ dbCompletionSummary, completi
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-base font-semibold text-stone-950">{t("auditSummary.title", "관리자 점검")}</h2>
-              <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-stone-500 ring-1 ring-stone-200">
+              <AdminStatusBadge tone="neutral">
                 {getAdminCompletionAuditStatusLabel(completionAuditSummary.overallStatus)}
-              </span>
-              <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-100">
+              </AdminStatusBadge>
+              <AdminStatusBadge tone="success">
                 {completionAuditSummary.decisionLabel}
-              </span>
+              </AdminStatusBadge>
             </div>
             <p className="mt-1 text-xs leading-5 text-stone-500">{completionAuditSummary.decisionSummary}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-stone-500">
-            <span className="rounded-full bg-white px-3 py-1.5 ring-1 ring-stone-200">{t("auditSummary.chips.db", "데이터")} {completionAuditSummary.dbConnectedCount}+{completionAuditSummary.dbWatchCount}</span>
-            <span className="rounded-full bg-white px-3 py-1.5 ring-1 ring-stone-200">{t("auditSummary.chips.domain", "구조")} {completionAuditSummary.readyDomainCount}/{completionAuditSummary.totalDomainCount}</span>
-            <span className="rounded-full bg-white px-3 py-1.5 ring-1 ring-stone-200">{t("auditSummary.chips.sample", "샘플")} {completionAuditSummary.mockRemoveReadyCount}/{completionAuditSummary.mockRetainedCount}</span>
-            <span className="rounded-full bg-white px-3 py-1.5 ring-1 ring-stone-200">{t("auditSummary.chips.finalAudit", "마감점검")} {completionAuditSummary.finalAuditWatchCount}/{completionAuditSummary.finalAuditTotalCount}</span>
-            <button
+            <AdminStatusBadge tone="neutral">{t("auditSummary.chips.db", "데이터")} {completionAuditSummary.dbConnectedCount}+{completionAuditSummary.dbWatchCount}</AdminStatusBadge>
+            <AdminStatusBadge tone="neutral">{t("auditSummary.chips.domain", "구조")} {completionAuditSummary.readyDomainCount}/{completionAuditSummary.totalDomainCount}</AdminStatusBadge>
+            <AdminStatusBadge tone="neutral">{t("auditSummary.chips.sample", "샘플")} {completionAuditSummary.mockRemoveReadyCount}/{completionAuditSummary.mockRetainedCount}</AdminStatusBadge>
+            <AdminStatusBadge tone="neutral">{t("auditSummary.chips.finalAudit", "마감점검")} {completionAuditSummary.finalAuditWatchCount}/{completionAuditSummary.finalAuditTotalCount}</AdminStatusBadge>
+            <AdminButton
               type="button"
               onClick={() => setOpen((value) => !value)}
-              className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--admin-theme-text-on-surface)] transition hover:opacity-90"
+              variant="primary"
+              className="px-3 py-1.5 text-xs"
               aria-expanded={open}
             >
               {open ? t("auditSummary.close", "점검 닫기") : t("auditSummary.open", "점검 펼치기")}
-            </button>
+            </AdminButton>
           </div>
         </div>
       </AdminCard>

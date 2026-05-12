@@ -1,19 +1,24 @@
 Version :
-0.11.19
+0.11.20
 
 Summary :
-관리자 대시보드 공통 UI 컴포넌트 적용
+관리자 히스토리와 점검 요약 공통 UI 컴포넌트 적용
 
 Description :
-관리자 홈 운영 관리 카드와 운영 대시보드의 상태 라벨, 작업 액션 링크, empty state를 AdminStatusBadge, AdminLinkButton, AdminEmptyState 기준으로 정리했습니다. 데이터 조회, 권한, 작업지시서 이동 경로, API/DB 로직은 변경하지 않았습니다.
+- 관리자 히스토리 필터/새로고침 버튼을 AdminButton 기준으로 정리했습니다.
+- 히스토리 액션/상세/전이 상태 라벨을 AdminStatusBadge 기준으로 정리했습니다.
+- 히스토리 empty state와 관리자 점검 요약 라벨/버튼을 공통 UI 컴포넌트 기준으로 정리했습니다.
+- APP_VERSION을 0.11.20으로 갱신했습니다.
 
 수정 파일 목록 :
-components/admin/dashboard/AdminConsoleSections.tsx
-components/admin/dashboard/AdminOperationsDashboard.tsx
+components/admin/dashboard/AdminAuditSummarySection.tsx
+components/admin/history/AdminWorkOrderHistoryPage.tsx
+components/admin/history/AdminHistoryList.tsx
+components/admin/history/AdminWorkOrderHistoryItem.tsx
 lib/constants/app.ts
 
 추가 파일 목록 :
-docs/admin-dashboard-common-ui-standardization-0.11.19.md
+docs/admin-history-dashboard-common-ui-standardization-0.11.20.md
 
 삭제 파일 목록 :
 없음
