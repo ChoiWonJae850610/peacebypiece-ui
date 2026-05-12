@@ -6,6 +6,7 @@ import {
   SYSTEM_COMPANY_PLAN_FIELDS,
   SYSTEM_COMPANY_PLAN_OPTIONS,
   SYSTEM_COMPANY_PLAN_POLICY_NOTES,
+  SYSTEM_COMPANY_PLAN_POLICY_STEPS,
 } from "@/lib/system/systemCompanyPlanSkeleton";
 
 export default function SystemCompanyPlanSkeleton() {
@@ -24,7 +25,8 @@ export default function SystemCompanyPlanSkeleton() {
                 </h1>
                 <p className="max-w-3xl text-sm leading-6 text-stone-600">
                   시스템관리자가 고객사별 plan을 선택하고 저장용량, 멤버 수, 가격 override를
-                  조정하는 화면 skeleton입니다. 실제 결제 자동화와 사용량 집계 API 연결은 후순위입니다.
+                  조정하는 설계 화면입니다. 기본 요금제 정책은 lib/billing 기준을 사용하고,
+                  실제 결제 자동화와 업로드 차단은 후속 단계로 분리합니다.
                 </p>
               </div>
             </div>
@@ -57,7 +59,7 @@ export default function SystemCompanyPlanSkeleton() {
                   <p className="text-xs font-medium text-stone-500">{plan.code}</p>
                 </div>
                 <span className="rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-[11px] font-semibold text-stone-600">
-                  draft
+                  {plan.statusLabel}
                 </span>
               </div>
               <dl className="mt-4 grid gap-2 text-xs text-stone-600">
@@ -81,6 +83,31 @@ export default function SystemCompanyPlanSkeleton() {
           ))}
         </section>
 
+        <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+          <div className="flex flex-col gap-2 border-b border-stone-100 pb-4">
+            <h2 className="text-lg font-semibold text-stone-950">요금제·용량 관리 설계 기준</h2>
+            <p className="text-sm leading-6 text-stone-600">
+              하드코딩된 저장공간 값 대신 billing policy와 고객사별 assignment를 분리해서 관리합니다.
+            </p>
+          </div>
+          <div className="mt-4 grid gap-3 lg:grid-cols-4">
+            {SYSTEM_COMPANY_PLAN_POLICY_STEPS.map((step) => (
+              <article
+                key={step.id}
+                className="rounded-2xl border border-stone-200 bg-stone-50 p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="text-sm font-semibold text-stone-950">{step.title}</h3>
+                  <span className="shrink-0 rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-stone-600">
+                    {step.statusLabel}
+                  </span>
+                </div>
+                <p className="mt-3 text-xs leading-5 text-stone-600">{step.description}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
         <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
           <aside className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
             <h2 className="text-lg font-semibold text-stone-950">고객사 목록</h2>
@@ -100,8 +127,11 @@ export default function SystemCompanyPlanSkeleton() {
                   </div>
                   <div className="mt-3 grid gap-1 text-xs text-stone-600">
                     <p>저장공간: {company.storageUsageLabel}</p>
+                    <p>저장공간 상태: {company.storageRiskLabel}</p>
                     <p>멤버: {company.memberUsageLabel}</p>
+                    <p>멤버 상태: {company.memberRiskLabel}</p>
                     <p>예외 정책: {company.overrideLabel}</p>
+                    <p>정책 출처: {company.policySourceLabel}</p>
                   </div>
                 </article>
               ))}
@@ -114,7 +144,7 @@ export default function SystemCompanyPlanSkeleton() {
                 요금제 수정 준비 영역
               </h2>
               <p className="text-sm leading-6 text-stone-600">
-                company_plan_assignments와 연결될 입력 영역입니다.
+                company_plan_assignments와 company_plan_override 정책에 연결될 입력 영역입니다.
               </p>
             </div>
 

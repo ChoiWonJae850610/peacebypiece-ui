@@ -68,8 +68,8 @@ export const SYSTEM_CONSOLE_TABS: SystemConsoleTab[] = [
   {
     id: "plans",
     label: "요금제·용량",
-    description: "고객별 요금제와 저장 용량 override를 관리할 영역입니다.",
-    statusLabel: "화면 연결",
+    description: "고객별 요금제와 저장 용량 override 정책을 설계하고 관리할 영역입니다.",
+    statusLabel: "설계 화면",
     status: "linked",
     href: "/system/billing",
   },
@@ -172,10 +172,10 @@ export const SYSTEM_CONSOLE_PLACEHOLDERS: SystemConsolePlaceholder[] = [
     id: "plans",
     title: "요금제·용량",
     description:
-      "시스템관리자가 고객별 요금제와 저장용량 override를 조정할 화면입니다.",
+      "시스템관리자가 고객별 요금제와 저장용량 override 기준을 관리할 화면입니다.",
     items: ["기본 요금제", "저장용량 한도", "사용자 수 한도", "고객별 override"],
     href: "/system/billing",
-    actionLabel: "요금제·용량 화면 열기",
+    actionLabel: "요금제·용량 설계 열기",
   },
   {
     id: "stats",
@@ -213,7 +213,7 @@ export const SYSTEM_CONSOLE_QUICK_LINKS = [
     id: "system-billing",
     label: "요금제·용량",
     href: "/system/billing",
-    description: "고객별 plan과 override skeleton",
+    description: "고객별 plan과 override 정책 설계",
   },
   {
     id: "system-stats",
