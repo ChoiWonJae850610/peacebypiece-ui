@@ -1,17 +1,21 @@
 Version :
-0.11.46
+0.11.47
 
 Summary :
-i18n 잔여 하드코딩 조사
+고객관리자 화면 i18n 하드코딩 정리 1차
 
 Description :
-관리자, 시스템관리자, 작업지시서 화면에 남아 있는 사용자 노출 하드코딩 문구를 조사하고 후속 i18n 정리 우선순위를 문서화했다. 정규 버전을 0.11.46으로 복귀시켰다.
+환경설정, 정책 overview, 단위 표준 모달, 외주공정 표준 선택 모달에서 고객관리자에게 직접 보이는 잔여 하드코딩 문구를 useAdminTranslation 기반 key/fallback 구조로 이동했다.
 
 수정 파일 목록 :
+- components/admin/settings/AdminSettingsHub.tsx
+- components/admin/settings/AdminPolicyOverview.tsx
+- components/admin/standards/AdminUnitManagementModal.tsx
+- components/admin/partnerMaster/PartnerProcessManagementModal.tsx
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/i18n-hardcoded-text-audit-0.11.46.md
+- docs/i18n-admin-customer-visible-cleanup-0.11.47.md
 
 삭제 파일 목록 :
 없음

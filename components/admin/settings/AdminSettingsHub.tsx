@@ -18,6 +18,7 @@ import {
 import { ADMIN_FEEDBACK_CONTACT_EMAIL, buildAdminFeedbackMailtoHref } from "@/lib/admin/settings/adminFeedbackContact";
 import { ADMIN_BILLING_PLAN_PLACEHOLDER, type AdminBillingPlanOverview } from "@/lib/admin/settings/adminBillingPlanPlaceholder";
 import { ADMIN_ACCOUNT_SETTINGS_PLACEHOLDER } from "@/lib/admin/settings/adminAccountSettingsPlaceholder";
+import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import type { AdminCompanySummary, CompanySettings } from "@/lib/admin/settings/companyTypes";
 
 type NoticeMenuId = Exclude<AdminSettingsMenuId, "company" | "standards">;
@@ -93,6 +94,7 @@ function SettingsMenuCard({ item, active, onClick }: { item: AdminSettingsMenuIt
 }
 
 export default function AdminSettingsHub() {
+  const t = useAdminTranslation();
   const [activeMenuId, setActiveMenuId] = useState<AdminSettingsMenuId>("company");
   const [noticeMenuId, setNoticeMenuId] = useState<NoticeMenuId | null>(null);
   const [companySettings, setCompanySettings] = useState<CompanySettings | null>(null);
@@ -182,11 +184,11 @@ export default function AdminSettingsHub() {
     }
 
     if (companySettingsLoadState === "loading") {
-      return <AdminEmptyState title="회사 설정을 불러오는 중입니다." />;
+      return <AdminEmptyState title={t("settings.company.loading", "회사 설정을 불러오는 중입니다.")} />;
     }
 
     if (!companySettings) {
-      return <AdminEmptyState title="회사 설정을 불러오지 못했습니다." description="새로고침 후 다시 확인해 주세요." tone="danger" />;
+      return <AdminEmptyState title={t("settings.company.loadFailed", "회사 설정을 불러오지 못했습니다.")} description={t("settings.company.loadFailedDescription", "새로고침 후 다시 확인해 주세요.")} tone="danger" />;
     }
 
     return <AdminCompanySettingsForm initialSettings={companySettings} companyName={companySummary?.name} />;
@@ -195,11 +197,11 @@ export default function AdminSettingsHub() {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-0 sm:pr-1">
       <AdminSection
-        title="환경설정"
-        description="실제로 저장되는 회사·화면 설정과 작업 기준정보를 중심으로 정리합니다."
+        title={t("settings.hub.title", "환경설정")}
+        description={t("settings.hub.description", "실제로 저장되는 회사·화면 설정과 작업 기준정보를 중심으로 정리합니다.")}
         actions={
           <p className="w-full rounded-2xl bg-stone-50 px-3 py-2 text-xs font-semibold leading-5 text-stone-500 sm:w-auto">
-            권한은 멤버관리, 요금제·용량은 시스템관리자 기준으로 분리합니다.
+            {t("settings.hub.scopeNotice", "권한은 멤버관리, 요금제·용량은 시스템관리자 기준으로 분리합니다.")}
           </p>
         }
         density="compact"
@@ -218,7 +220,7 @@ export default function AdminSettingsHub() {
 
       <AdminModal
         open={Boolean(notice)}
-        title={notice?.title ?? "준비중입니다."}
+        title={notice?.title ?? t("common.preparing", "준비중입니다.")}
         description={notice?.description}
         onClose={() => setNoticeMenuId(null)}
         maxWidthClass="md:max-w-2xl"
@@ -226,17 +228,17 @@ export default function AdminSettingsHub() {
           <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
             {isFeedbackNotice ? (
               <AdminLinkButton variant="primary" href={feedbackMailtoHref}>
-                이메일 작성하기
+                {t("settings.feedback.writeEmail", "이메일 작성하기")}
               </AdminLinkButton>
             ) : null}
             <AdminButton variant={isFeedbackNotice ? "secondary" : "primary"} onClick={() => setNoticeMenuId(null)}>
-              확인
+              {t("common.confirm", "확인")}
             </AdminButton>
           </div>
         }
       >
         {notice ? (
-          <AdminModalSection title="적용 예정" description={notice.nextStep}>
+          <AdminModalSection title={t("settings.notice.nextStepTitle", "적용 예정")} description={notice.nextStep}>
             <div className="grid gap-2 sm:grid-cols-2">
               {notice.items.map((item) => (
                 <div key={item} className="rounded-2xl border border-stone-200 bg-white px-3 py-3 text-sm font-semibold text-stone-700">
@@ -248,13 +250,13 @@ export default function AdminSettingsHub() {
               <div className="mt-3 space-y-3 rounded-2xl border border-blue-100 bg-blue-50/70 p-3">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-blue-500">Billing policy</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-blue-500">{t("settings.billing.policyLabel", "Billing policy")}</p>
                     <h3 className="mt-1 text-sm font-semibold text-blue-950">{billingPlanOverview.title}</h3>
                     <p className="mt-1 text-xs leading-5 text-blue-700">{billingPlanOverview.description}</p>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     <AdminStatusBadge tone="maintenance">{billingPlanOverview.systemManagedLabel}</AdminStatusBadge>
-                    <AdminStatusBadge tone="maintenance">{billingPlanLoadState === "loading" ? "조회 중" : billingPlanOverview.dataSourceLabel}</AdminStatusBadge>
+                    <AdminStatusBadge tone="maintenance">{billingPlanLoadState === "loading" ? t("common.loadingShort", "조회 중") : billingPlanOverview.dataSourceLabel}</AdminStatusBadge>
                   </div>
                 </div>
                 <div className="grid gap-2 sm:grid-cols-2">
@@ -340,10 +342,10 @@ export default function AdminSettingsHub() {
             ) : null}
             {isFeedbackNotice ? (
               <div className="mt-3 rounded-2xl border border-violet-100 bg-violet-50/70 p-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-violet-500">Feedback email</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-violet-500">{t("settings.feedback.emailLabel", "Feedback email")}</p>
                 <p className="mt-1 font-mono text-sm font-semibold text-violet-900">{ADMIN_FEEDBACK_CONTACT_EMAIL}</p>
                 <p className="mt-2 text-xs leading-5 text-violet-700">
-                  현재는 DB 저장 없이 사용자의 기본 메일 앱으로 개선 요청, 오류 제보, 기능 제안 내용을 작성하는 방식으로 접수합니다.
+                  {t("settings.feedback.mailDescription", "현재는 DB 저장 없이 사용자의 기본 메일 앱으로 개선 요청, 오류 제보, 기능 제안 내용을 작성하는 방식으로 접수합니다.")}
                 </p>
               </div>
             ) : null}

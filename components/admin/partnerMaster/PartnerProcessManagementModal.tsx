@@ -13,6 +13,7 @@ import StandardManagementModalFrame, {
 } from "@/components/admin/standards/StandardManagementModalFrame";
 import { type OutsourcingProcessDefinition } from "@/lib/admin/partner";
 import { useI18n } from "@/lib/i18n";
+import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import type { OutsourcingProcessType } from "@/types/partner";
 
 type PartnerProcessManagementModalProps = {
@@ -90,6 +91,7 @@ export default function PartnerProcessManagementModal({
   onSelectActiveProcess,
 }: PartnerProcessManagementModalProps) {
   const { i18n } = useI18n();
+  const t = useAdminTranslation();
   const processText = i18n.admin.partnerMaster.processManagement;
 
   return (
@@ -97,8 +99,8 @@ export default function PartnerProcessManagementModal({
       open={open}
       onClose={saving ? () => undefined : onClose}
       title={processText.title}
-      description="시스템관리자가 제공하는 외주공정 표준 목록 중 이 고객사가 사용할 항목만 선택합니다. 새 공정 유형이 필요하면 개발 건의 또는 관리자 문의로 요청하세요."
-      categoryLabel="시스템 표준 선택형 기준정보"
+      description={t("partnerMaster.processManagement.description", "시스템관리자가 제공하는 외주공정 표준 목록 중 이 고객사가 사용할 항목만 선택합니다. 새 공정 유형이 필요하면 개발 건의 또는 관리자 문의로 요청하세요.")}
+      categoryLabel={t("standards.common.systemSelectableCategory", "시스템 표준 선택형 기준정보")}
       maxWidthClass="md:max-w-3xl"
       footer={
         <AdminModalFooterActions
@@ -115,7 +117,7 @@ export default function PartnerProcessManagementModal({
     >
       <AdminModalSection title={processText.usageSectionTitle}>
         <div className="mb-3 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-xs leading-5 text-stone-500">
-          외주공정 유형은 전체 고객사의 작업지시서와 통계 기준을 맞추기 위해 시스템 표준값을 사용합니다. 고객관리자는 필요한 공정만 사용 목록으로 이동합니다.
+          {t("partnerMaster.processManagement.usageNotice", "외주공정 유형은 전체 고객사의 작업지시서와 통계 기준을 맞추기 위해 시스템 표준값을 사용합니다. 고객관리자는 필요한 공정만 사용 목록으로 이동합니다.")}
         </div>
         <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_72px_minmax(0,1fr)] md:items-center">
           <div className="space-y-2">

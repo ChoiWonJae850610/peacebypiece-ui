@@ -50,8 +50,8 @@ export default function AdminUnitManagementModal({ open, units, saving = false, 
       open={open}
       onClose={saving ? () => undefined : onClose}
       title={t("standards.units.title", "단위 표준")}
-      description="시스템관리자가 제공하는 단위 표준 목록 중 이 고객사가 사용할 항목만 선택합니다. 새 단위 추가가 필요하면 개발 건의 또는 관리자 문의로 요청하세요."
-      categoryLabel="시스템 표준 선택형 기준정보"
+      description={t("standards.units.description", "시스템관리자가 제공하는 단위 표준 목록 중 이 고객사가 사용할 항목만 선택합니다. 새 단위 추가가 필요하면 개발 건의 또는 관리자 문의로 요청하세요.")}
+      categoryLabel={t("standards.common.systemSelectableCategory", "시스템 표준 선택형 기준정보")}
       maxWidthClass="md:max-w-3xl"
       footer={
         <AdminModalFooterActions
@@ -68,7 +68,7 @@ export default function AdminUnitManagementModal({ open, units, saving = false, 
     >
       <AdminModalSection title={t("standards.units.usageTitle", "단위 사용 여부")}> 
         <div className="mb-3 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-xs leading-5 text-stone-500">
-          단위명과 영문 코드/약어는 시스템 표준값을 사용합니다. 고객관리자는 작업지시서에서 노출할 단위만 사용/미사용으로 선택합니다.
+          {t("standards.units.usageNotice", "단위명과 영문 코드/약어는 시스템 표준값을 사용합니다. 고객관리자는 작업지시서에서 노출할 단위만 사용/미사용으로 선택합니다.")}
         </div>
         <div className={`h-[410px] ${standardModalListBoxClassName}`}>
           <div className={standardModalListScrollClassName}>
