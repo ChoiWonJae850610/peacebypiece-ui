@@ -10,6 +10,10 @@ import { useDbConnectionStatus } from "@/lib/hooks/workorder/useDbConnectionStat
 import { getPendingAttachmentDelete } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
 
 import { useI18n } from "@/lib/i18n";
+import {
+  DEFAULT_WORK_ORDER_LIST_SORT,
+  DEFAULT_WORK_ORDER_LIST_STATUS_FILTER,
+} from "@/lib/workorder/list/workOrderListControls";
 import type { WorkOrderListSort, WorkOrderListStatusFilter } from "@/lib/workorder/list/workOrderListControls";
 import { buildWorkspaceHomeNavigation } from "@/lib/navigation/workspaceHomeRoutes";
 
@@ -255,6 +259,19 @@ export default function WorkOrderWorkspace({
     selection.setListSort(nextSort);
   };
 
+  const handleResetListControls = () => {
+    if (isWorkspaceWriteLocked) return;
+
+    updateWorkerListQuery({
+      status: DEFAULT_WORK_ORDER_LIST_STATUS_FILTER,
+      sort: DEFAULT_WORK_ORDER_LIST_SORT,
+      searchQuery: "",
+    });
+    selection.setSearchQuery("");
+    selection.setListStatusFilter(DEFAULT_WORK_ORDER_LIST_STATUS_FILTER);
+    selection.setListSort(DEFAULT_WORK_ORDER_LIST_SORT);
+  };
+
   const handleSelectWorkOrder = (workOrderId: string) => {
     if (isWorkspaceWriteLocked) return;
     if (workOrderId === selection.selectedId) return;
@@ -344,6 +361,7 @@ export default function WorkOrderWorkspace({
     onSetSearchQuery: handleSearchQueryChange,
     onSetListStatusFilter: handleListStatusFilterChange,
     onSetListSort: handleListSortChange,
+    onResetListControls: handleResetListControls,
     dbConnectionStatus,
     onSetHistoryFilter: history.setHistoryFilter,
     onSave: () => {

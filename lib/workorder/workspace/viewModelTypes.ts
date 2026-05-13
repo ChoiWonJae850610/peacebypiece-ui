@@ -94,6 +94,7 @@ export type BuildWorkspaceViewModelArgs = {
   onSetSearchQuery: (next: string) => void;
   onSetListStatusFilter: (next: WorkOrderListStatusFilter) => void;
   onSetListSort: (next: WorkOrderListSort) => void;
+  onResetListControls: () => void;
   dbConnectionStatus?: DbConnectionStatus;
   onSetHistoryFilter: (next: HistoryFilter) => void;
   onSave: () => void;
@@ -213,6 +214,7 @@ export type SidebarViewModelArgs = {
   onSetSearchQuery: (next: string) => void;
   onSetListStatusFilter: (next: WorkOrderListStatusFilter) => void;
   onSetListSort: (next: WorkOrderListSort) => void;
+  onResetListControls: () => void;
   dbConnectionStatus?: DbConnectionStatus;
   writeLocked?: boolean;
   writeLockMessage?: string;

@@ -50,6 +50,7 @@ export function buildWorkspaceViewModel(
     onSetSearchQuery: args.onSetSearchQuery,
     onSetListStatusFilter: args.onSetListStatusFilter,
     onSetListSort: args.onSetListSort,
+    onResetListControls: args.onResetListControls,
     dbConnectionStatus: args.dbConnectionStatus,
     writeLocked: isWorkspaceWriteLocked,
     writeLockMessage: workspaceWriteLockMessage,

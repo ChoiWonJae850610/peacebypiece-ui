@@ -1,10 +1,18 @@
-Version : 0.11.74
-Summary : 작업지시서 목록 필터 선택 상태 회귀 보정
-Description : 작업지시서 검색/필터/정렬 변경 후 현재 선택 항목이 표시 목록에서 사라질 때 첫 번째 표시 작업지시서를 자동 선택하도록 보정하고, 왼쪽 목록 선택 시 workOrderId query를 유지하도록 정리했습니다. 같은 항목 재클릭으로 선택이 해제되는 동작을 막아 상세/첨부·메모 패널이 비는 상황을 줄였습니다.
+Version : 0.11.75
+Summary : 작업지시서 목록 컨트롤 밀도와 초기화 보정
+Description : 작업지시서 업무 화면의 검색/필터/정렬 컨트롤 밀도를 PC와 모바일에서 낮추고, 검색어·상태 필터·정렬을 한 번에 기본값으로 되돌리는 초기화 액션을 추가했습니다. 상태/정렬 option 생성 로직을 공통 helper로 분리해 PC sidebar와 mobile drawer의 중복 정의를 줄였습니다.
 수정 파일 목록 :
-- lib/hooks/useWorkOrder.ts
+- components/layout/SidebarContent.tsx
+- components/layout/MobileDrawer.tsx
 - components/workorder/WorkOrderWorkspace.tsx
+- lib/workorder/list/workOrderListControls.ts
+- lib/workorder/workspace/builders/sidebarBuilders.ts
+- lib/workorder/workspace/buildWorkspaceViewModel.ts
+- lib/workorder/workspace/viewModelTypes.ts
+- lib/i18n/ko/workorder.ts
+- lib/i18n/en/workorder.ts
 - lib/constants/app.ts
 추가 파일 목록 :
-- docs/qa-workorder-list-filter-sort-regression-0.11.74.md
+- docs/qa-workorder-list-ui-final-density-0.11.75.md
 삭제 파일 목록 :
+없음

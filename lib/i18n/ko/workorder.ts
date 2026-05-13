@@ -454,6 +454,7 @@ export const workorderKo = {
         searchPlaceholder: "작업명, 분류, 공장, 상태 검색",
         clearSearch: "지우기",
         resultSummary: "{status} · {sort} · {count}건",
+        resetControls: "초기화",
         statusFilterAria: "작업지시서 상태 필터",
         sortAria: "작업지시서 정렬",
         statusFilters: {
