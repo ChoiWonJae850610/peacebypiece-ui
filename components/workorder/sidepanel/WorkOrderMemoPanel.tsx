@@ -77,7 +77,7 @@ function MemoInputField({ value, disabled, placeholder, submitLabel, onChange, o
           ? "pbp-field-interaction h-[34px] w-full resize-none overflow-hidden rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-400"
           : "pbp-field-interaction h-[32px] w-full resize-none overflow-hidden rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-400 md:text-sm"}
       />
-      <div className={isMobile ? "mt-1.5 flex items-center justify-between gap-2" : "mt-1.5 flex items-center justify-end gap-2"}>
+      <div className={isMobile ? "mt-1.5 flex flex-wrap items-center justify-between gap-2" : "mt-1.5 flex items-center justify-end gap-2"}>
         <span className="mr-auto text-[10px] font-medium text-stone-400">{`${value.length} / ${MEMO_MAX_LENGTH}`}</span>
         {onCancel ? (
           <button type="button" onClick={onCancel} className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1.5 text-[11px] font-semibold text-stone-700 hover:bg-stone-100 active:bg-stone-200">
@@ -216,10 +216,10 @@ function MemoThreadCard({
   };
 
   return (
-    <div className={isMobile ? "rounded-2xl border border-stone-200 bg-white p-2.5 shadow-sm" : "rounded-2xl border border-stone-200 bg-white p-3 shadow-sm"}>
-      <div className="flex items-start justify-between gap-2">
+    <div className={isMobile ? "min-w-0 rounded-2xl border border-stone-200 bg-white p-2.5 shadow-sm" : "min-w-0 rounded-2xl border border-stone-200 bg-white p-3 shadow-sm"}>
+      <div className="flex min-w-0 items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className={isMobile ? "truncate text-[13px] font-semibold text-stone-900" : "truncate text-sm font-semibold text-stone-900"}>{getMemoAuthorDisplayName(thread.authorName, thread.authorRole)}</div>
+          <div className={isMobile ? "break-words text-[13px] font-semibold leading-4 text-stone-900" : "truncate text-sm font-semibold text-stone-900"}>{getMemoAuthorDisplayName(thread.authorName, thread.authorRole)}</div>
           <div className="mt-0.5 text-[11px] text-stone-500">{formatMemoTimestamp(thread.createdAt)}</div>
         </div>
         <MemoItemActions
@@ -254,7 +254,7 @@ function MemoThreadCard({
         </div>
       ) : (
         <div className={isMobile
-          ? `mt-2 whitespace-pre-wrap text-[12px] leading-5 ${isThreadDeleted ? "italic text-stone-400" : "text-stone-700"}`
+          ? `mt-2 break-words whitespace-pre-wrap text-[12px] leading-5 ${isThreadDeleted ? "italic text-stone-400" : "text-stone-700"}`
           : `mt-2 whitespace-pre-wrap text-[13px] leading-5 ${isThreadDeleted ? "italic text-stone-400" : "text-stone-700"}`
         }>{getMemoDisplayContent(thread, ui.memo.deleted)}</div>
       )}
@@ -263,9 +263,9 @@ function MemoThreadCard({
         {getVisibleMemoReplies(thread.replies ?? []).length > 0 ? getVisibleMemoReplies(thread.replies ?? []).map((reply, replyIndex) => {
           const isEditingReply = editingReplyId === reply.id;
           return (
-            <div key={`${thread.id}-${reply.id}-${replyIndex}`} className="pl-3 text-stone-700">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0 text-[11px] text-stone-500">ㄴ {getMemoAuthorDisplayName(reply.authorName, reply.authorRole)} · {formatMemoTimestamp(reply.createdAt)}</div>
+            <div key={`${thread.id}-${reply.id}-${replyIndex}`} className="min-w-0 pl-2 text-stone-700 sm:pl-3">
+              <div className="flex min-w-0 items-start justify-between gap-2">
+                <div className="min-w-0 break-words text-[11px] leading-4 text-stone-500">ㄴ {getMemoAuthorDisplayName(reply.authorName, reply.authorRole)} · {formatMemoTimestamp(reply.createdAt)}</div>
                 <MemoItemActions canMutate={canMutateAuthor(reply.authorId) && !writeLocked} disabledReason={writeLockMessage} editLabel={ui.memo.edit} deleteAriaLabel={ui.memo.deleteAria} onEdit={() => startReplyEdit(reply)} onDelete={() => onDeleteReply(thread.id, reply.id)} />
               </div>
               {isEditingReply ? (
@@ -286,20 +286,20 @@ function MemoThreadCard({
                   />
                 </div>
               ) : (
-                <div className="mt-0.5 whitespace-pre-wrap text-[13px] leading-5">{reply.content}</div>
+                <div className="mt-0.5 break-words whitespace-pre-wrap text-[13px] leading-5">{reply.content}</div>
               )}
             </div>
           );
         }) : null}
 
-        <div className="flex items-center justify-between gap-2 pt-1">
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 pt-1">
           <button type="button" onClick={() => setReplyComposerOpen((prev) => !prev)} disabled={!canEditMemo || writeLocked || isThreadDeleted} className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1 text-[11px] font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200 disabled:cursor-not-allowed disabled:opacity-50">
             {replyComposerOpen ? ui.memo.toggleReplyClose : ui.memo.toggleReplyOpen}
           </button>
         </div>
 
         {replyComposerOpen ? (
-          <div className="rounded-xl border border-stone-200 bg-stone-50 p-2.5">
+          <div className="min-w-0 rounded-xl border border-stone-200 bg-stone-50 p-2.5">
             <MemoInputField value={replyDraft} disabled={!canEditMemo || writeLocked || isThreadDeleted} placeholder={ui.memo.replyPlaceholder} submitLabel={ui.memo.submit} onChange={setReplyDraft} onSubmit={submitReply} isMobile={isMobile} />
           </div>
         ) : null}
@@ -359,18 +359,18 @@ export default function WorkOrderMemoPanel({
   };
 
   return (
-    <WorkOrderPanelCard>
-      <div className={isMobile ? "flex items-center justify-between gap-2" : "flex items-center justify-between gap-3"}>
+    <WorkOrderPanelCard className={isMobile ? "min-w-0 p-3" : "min-w-0"}>
+      <div className={isMobile ? "flex min-w-0 items-center justify-between gap-2" : "flex min-w-0 items-center justify-between gap-3"}>
         <h3 className="text-sm font-semibold text-stone-900">{ui.memo.panelTitle}</h3>
         <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">{`${memoThreads.length}${ui.memo.countSuffix}`}</span>
       </div>
-      <div className={isMobile ? "mt-2.5 rounded-xl border border-stone-200 bg-stone-50 p-2" : isTablet ? "mt-3 rounded-xl border border-stone-200 bg-stone-50 p-2.5" : "mt-3 rounded-xl border border-stone-200 bg-stone-50 p-2.5"}>
+      <div className={isMobile ? "mt-2.5 min-w-0 rounded-xl border border-stone-200 bg-stone-50 p-2" : isTablet ? "mt-3 min-w-0 rounded-xl border border-stone-200 bg-stone-50 p-2.5" : "mt-3 min-w-0 rounded-xl border border-stone-200 bg-stone-50 p-2.5"}>
         <div className="text-[11px] text-stone-500">{getMemoAuthorDisplayName(currentUserName, currentUserRole)}</div>
         <div className="mt-2">
           <MemoInputField value={threadDraft} disabled={!canEditMemo || writeLocked} placeholder={ui.memo.threadPlaceholder} submitLabel={ui.memo.submit} onChange={setThreadDraft} onSubmit={submitThread} isMobile={isMobile} />
         </div>
       </div>
-      <div className={isMobile ? "mt-2.5 space-y-1.5" : "mt-2.5 space-y-2"}>
+      <div className={isMobile ? "mt-2.5 min-w-0 space-y-1.5" : "mt-2.5 min-w-0 space-y-2"}>
         {memoThreads.length > 0 ? memoThreads.map((thread, threadIndex) => (
           <MemoThreadCard
             key={`${workOrder.id}-${thread.id}-${threadIndex}`}
@@ -388,7 +388,7 @@ export default function WorkOrderMemoPanel({
             currentUserId={currentUserId}
             currentUserRole={currentUserRole}
           />
-        )) : <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-5 text-center text-sm text-stone-500">{ui.memo.empty}</div>}
+        )) : <div className="min-w-0 rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-5 text-center text-sm text-stone-500">{ui.memo.empty}</div>}
       </div>
     </WorkOrderPanelCard>
   );

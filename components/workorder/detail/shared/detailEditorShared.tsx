@@ -23,8 +23,8 @@ export type BasicInfoState = {
 
 export type OrderEntryState = OrderEntry;
 
-const EDITABLE_FIELD_HEIGHT_CLASS = "h-10";
-const EDITABLE_FIELD_BASE_CLASS = `pbp-field-interaction ${EDITABLE_FIELD_HEIGHT_CLASS} block w-full min-w-0 max-w-full overflow-hidden whitespace-nowrap rounded-xl border px-3 text-stone-900 outline-none ring-0`;
+const EDITABLE_FIELD_HEIGHT_CLASS = "min-h-10";
+const EDITABLE_FIELD_BASE_CLASS = `pbp-field-interaction ${EDITABLE_FIELD_HEIGHT_CLASS} block w-full min-w-0 max-w-full overflow-hidden rounded-xl border px-3 text-stone-900 outline-none ring-0`;
 const EDITABLE_INPUT_CLASS = `${EDITABLE_FIELD_BASE_CLASS} text-base md:text-sm border-stone-300 bg-white focus:border-stone-400 focus:bg-white`;
 const EDITABLE_SELECT_CLASS = `${EDITABLE_INPUT_CLASS} appearance-none whitespace-nowrap pr-8`;
 const EDITABLE_DISPLAY_CLASS = `${EDITABLE_FIELD_BASE_CLASS} text-sm flex items-center border-transparent bg-transparent hover:border-stone-200 hover:bg-stone-50 focus-visible:border-stone-300 focus-visible:bg-stone-50`;
@@ -34,7 +34,7 @@ const EDITABLE_VALUE_TEXT_WRAP_CLASS = "block w-full min-w-0 max-w-full whitespa
 export const TABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
 export const TABLE_HEADER_CELL_CLASS = "min-w-0 overflow-hidden px-1.5 py-2 text-center text-[11px] font-medium leading-4 text-stone-600 lg:px-2 lg:text-[11px]";
 export const TABLE_BODY_CELL_CLASS = "min-w-0 overflow-hidden px-1.5 py-2 align-middle text-center text-[10px] leading-4 text-stone-900 lg:px-2 lg:text-[10px]";
-export const MOBILE_INFO_ROW_CLASS = "grid min-w-0 grid-cols-[minmax(72px,88px)_minmax(0,1fr)] items-start gap-x-3";
+export const MOBILE_INFO_ROW_CLASS = "grid min-w-0 grid-cols-[minmax(68px,84px)_minmax(0,1fr)] items-start gap-x-2 sm:grid-cols-[minmax(72px,88px)_minmax(0,1fr)] sm:gap-x-3";
 export const MOBILE_LABEL_CLASS = "min-w-0 text-left text-[11px] leading-5 tracking-tight text-stone-500";
 export const MOBILE_VALUE_WRAPPER_CLASS = "flex min-w-0 max-w-full items-center justify-end overflow-hidden text-right";
 
@@ -74,7 +74,7 @@ export function SectionHeader({
   rightSlot?: ReactNode;
 }) {
   return (
-    <div className="flex items-start gap-3 border-b border-stone-200 pb-1.5">
+    <div className="flex min-w-0 items-start gap-2 border-b border-stone-200 pb-1.5 sm:gap-3">
       <button
         type="button"
         onClick={onToggle}
@@ -83,10 +83,10 @@ export function SectionHeader({
       >
         <div className="min-w-0 overflow-hidden">
           <div className="text-sm font-semibold leading-5 text-stone-900">{title}</div>
-          <div className="mt-0.5 block min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-[11px] leading-4 text-stone-500 md:text-xs">{summary}</div>
+          <div className="mt-0.5 block min-w-0 max-w-full break-words text-[11px] leading-4 text-stone-500 sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap md:text-xs">{summary}</div>
         </div>
       </button>
-      <div className="flex shrink-0 items-center gap-2">
+      <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
         {rightSlot ? <div className="shrink-0">{rightSlot}</div> : null}
         <CollapseToggleButton open={open} onToggle={onToggle} label={`${title} 열기/접기`} />
       </div>

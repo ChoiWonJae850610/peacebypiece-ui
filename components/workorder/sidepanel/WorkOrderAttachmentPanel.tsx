@@ -104,7 +104,7 @@ function DrawingPlaceholderModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/35 px-4" role="dialog" aria-modal="true" aria-labelledby="workorder-drawing-placeholder-title">
-      <div className="w-full max-w-md rounded-[1.75rem] border border-stone-200 bg-white p-5 shadow-2xl">
+      <div className="w-full max-w-md overflow-hidden rounded-[1.75rem] border border-stone-200 bg-white p-4 shadow-2xl sm:p-5">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p id="workorder-drawing-placeholder-title" className="text-base font-semibold text-stone-950">{ui.drawingPlaceholderTitle}</p>
@@ -122,11 +122,11 @@ function DrawingPlaceholderModal({ onClose }: { onClose: () => void }) {
         <div className="mt-4 rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-5 text-sm leading-6 text-stone-600">
           {ui.drawingPlaceholderPlan}
         </div>
-        <div className="mt-5 flex justify-end">
+        <div className="mt-5 flex flex-col justify-end gap-2 sm:flex-row">
           <button
             type="button"
             onClick={onClose}
-            className="pbp-interactive-button rounded-full bg-stone-900 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-800"
+            className="pbp-interactive-button w-full rounded-full bg-stone-900 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-800 sm:w-auto"
           >
             {ui.drawingPlaceholderConfirm}
           </button>
@@ -202,17 +202,17 @@ function AttachmentUploadHint({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`mt-3 w-full rounded-2xl border border-dashed text-left transition-colors active:bg-stone-100 ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"} ${
+      className={`mt-3 w-full min-w-0 rounded-2xl border border-dashed text-left transition-colors active:bg-stone-100 ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"} ${
         dragActive
           ? "border-stone-500 bg-white shadow-sm"
           : "border-stone-300 bg-stone-50 hover:border-stone-400 hover:bg-white"
       } ${compact ? "px-3 py-3" : "px-4 py-3.5"}`}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 items-center gap-2 sm:gap-3">
         <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-base text-stone-700 shadow-sm ${dragActive ? "ring-2 ring-stone-300" : ""}`}>＋</span>
-        <span className="min-w-0">
-          <span className="block text-[13px] font-semibold text-stone-900">{title}</span>
-          <span className="mt-0.5 block text-xs leading-4 text-stone-500">{description}</span>
+        <span className="min-w-0 flex-1">
+          <span className="block break-words text-[13px] font-semibold text-stone-900">{title}</span>
+          <span className="mt-0.5 block break-words text-xs leading-4 text-stone-500">{description}</span>
         </span>
       </div>
     </div>
@@ -301,8 +301,8 @@ export default function WorkOrderAttachmentPanel({
       onDrop={handlePanelDrop}
       className={panelDragActive ? "rounded-[1.75rem] ring-2 ring-stone-300" : undefined}
     >
-      <WorkOrderPanelCard>
-      <div className="flex items-start justify-between gap-3">
+      <WorkOrderPanelCard className={isMobile ? "min-w-0 p-3" : "min-w-0"}>
+      <div className="flex min-w-0 items-start justify-between gap-2 sm:gap-3">
         <div>
           <h3 className="text-sm font-semibold text-stone-900">{title}</h3>
         </div>
@@ -319,9 +319,9 @@ export default function WorkOrderAttachmentPanel({
         ) : null}
       </div>
       {attachments.length > 0 ? (
-        <div className={isMobile ? "mt-2.5 space-y-1.5" : "mt-2.5 space-y-2"}>
+        <div className={isMobile ? "mt-2.5 min-w-0 space-y-1.5" : "mt-2.5 min-w-0 space-y-2"}>
           {attachments.map((attachment) => (
-            <div key={attachment.id} className={isMobile ? "relative rounded-2xl border border-stone-200 bg-stone-50 p-2.5 pr-10" : isTablet ? "relative rounded-2xl border border-stone-200 bg-stone-50 p-3 pr-11" : "relative rounded-2xl border border-stone-200 bg-stone-50 p-3 pr-12"}>
+            <div key={attachment.id} className={isMobile ? "relative min-w-0 rounded-2xl border border-stone-200 bg-stone-50 p-2.5 pr-9" : isTablet ? "relative min-w-0 rounded-2xl border border-stone-200 bg-stone-50 p-3 pr-11" : "relative min-w-0 rounded-2xl border border-stone-200 bg-stone-50 p-3 pr-12"}>
               {attachment.canSetPrimary ? (
                 <button
                   type="button"
@@ -348,7 +348,7 @@ export default function WorkOrderAttachmentPanel({
                 type="button"
                 onClick={() => onPreviewAttachment(attachment.id)}
                 disabled={!attachment.canPreview}
-                className="flex w-full items-center gap-3 text-left disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex w-full min-w-0 items-center gap-2 text-left disabled:cursor-not-allowed disabled:opacity-60 sm:gap-3"
               >
                 <div className={isMobile ? "flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white" : "flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white"}>
                   {attachment.type === "image" ? (
@@ -358,8 +358,8 @@ export default function WorkOrderAttachmentPanel({
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className={isMobile ? "truncate pr-1 text-[13px] font-medium text-stone-900" : "truncate pr-2 text-sm font-medium text-stone-900"}>{attachment.name}</div>
-                  <div className={isMobile ? "mt-0.5 text-[11px] text-stone-500" : "mt-1 text-xs text-stone-500"}>{attachment.ownerLabel}</div>
+                  <div className={isMobile ? "break-words pr-1 text-[13px] font-medium leading-4 text-stone-900" : "truncate pr-2 text-sm font-medium text-stone-900"}>{attachment.name}</div>
+                  <div className={isMobile ? "mt-0.5 break-words text-[11px] leading-4 text-stone-500" : "mt-1 text-xs text-stone-500"}>{attachment.ownerLabel}</div>
                 </div>
               </button>
             </div>
@@ -376,7 +376,7 @@ export default function WorkOrderAttachmentPanel({
         </div>
       ) : (
         <div>
-          <div className="mt-3 rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">{emptyText}</div>
+          <div className="mt-3 min-w-0 rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-3 py-5 text-center text-sm text-stone-500 sm:px-4 sm:py-6">{emptyText}</div>
           <AttachmentUploadHint
             scope={uploadScope}
             canManageAttachments={canManageAttachments}
