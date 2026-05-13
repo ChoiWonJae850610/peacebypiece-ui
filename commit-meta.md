@@ -1,19 +1,17 @@
 Version :
-0.11.45.1
+0.11.46
 
 Summary :
-작업지시서 DB 드라이버 로딩 긴급 보정
+i18n 잔여 하드코딩 조사
 
 Description :
-작업지시서 화면에서 DB 드라이버 없음 상태로 실제 DB 데이터가 로딩되지 않는 문제를 보정하기 위해 pg Pool을 서버 DB client에서 명시 import하도록 변경했다. pg 타입 선언을 최소 추가하고 APP_VERSION을 긴급 보정 버전으로 갱신했다.
+관리자, 시스템관리자, 작업지시서 화면에 남아 있는 사용자 노출 하드코딩 문구를 조사하고 후속 i18n 정리 우선순위를 문서화했다. 정규 버전을 0.11.46으로 복귀시켰다.
 
 수정 파일 목록 :
-- lib/db/client.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- types/pg.d.ts
-- docs/workorder-db-driver-hotfix-0.11.45.1.md
+- docs/i18n-hardcoded-text-audit-0.11.46.md
 
 삭제 파일 목록 :
 없음
