@@ -46,7 +46,7 @@ export default function WorkOrderStorageSection({
         title={t("filesWorkOrders.title", "작업지시서 저장소")}
         description={t(
           "filesWorkOrders.description",
-          "삭제된 작업지시서와 함께 휴지통으로 이동한 문서·디자인·메모를 확인합니다.",
+          "삭제한 작업지시서와 함께 휴지통으로 이동한 문서·디자인·메모를 확인합니다.",
         )}
         actionsClassName="w-full [&>button]:w-full sm:w-auto sm:[&>button]:w-auto"
       >
@@ -81,7 +81,7 @@ export default function WorkOrderStorageSection({
           <p className="text-[10px] font-semibold text-stone-500">
             {t(
               "filesWorkOrders.summary.deletedWorkOrders",
-              "삭제된 작업지시서",
+              "삭제한 작업지시서",
             )}
           </p>
           <p className="mt-1.5 text-lg font-semibold text-stone-950">

@@ -212,7 +212,7 @@ export const ADMIN_FILE_TABS: AdminFileTabItem[] = [
   {
     key: "trash",
     label: "휴지통",
-    description: "삭제된 작업지시서와 첨부파일을 한 목록에서 복원·삭제 요청 정책에 따라 확인",
+    description: "삭제한 작업지시서와 첨부파일을 한 목록에서 복원·삭제 요청 정책에 따라 확인",
   },
 ];
 
@@ -385,7 +385,7 @@ export function buildAdminStoragePolicyItems(policySettings: AdminStoragePolicyS
     {
       label: "삭제 방식",
       value: "휴지통",
-      description: "삭제된 파일은 30일 동안 복원 가능하며 이후 R2 삭제 후보가 됩니다.",
+      description: "삭제한 파일은 30일 동안 복원 가능하며 이후 R2 삭제 후보가 됩니다.",
     },
     {
       label: "용량 계산",

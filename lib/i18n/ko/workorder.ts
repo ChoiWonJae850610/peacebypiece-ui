@@ -84,7 +84,7 @@ export const workorderKo = {
     deleteModalTitle: "작업지시서 삭제",
     deleteModalDescription: "삭제 전 내용을 확인해 주세요.",
     deleteModalTargetLabel: "삭제 대상",
-    deleteModalNotice: "삭제된 파일은 휴지통으로 이동하며, 30일 이내 복원할 수 있습니다.",
+    deleteModalNotice: "삭제한 작업지시서는 휴지통으로 이동하며, 30일 이내 복원할 수 있습니다.",
     deleteModalPolicyNotice: "",
     deleteModalConfirmLabel: "휴지통으로 이동",
     deleteCompletedToast: "작업지시서가 삭제되었습니다.",

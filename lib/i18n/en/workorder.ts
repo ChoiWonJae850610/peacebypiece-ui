@@ -84,7 +84,7 @@ export const workorderEn = {
     deleteModalTitle: "Delete work order",
     deleteModalDescription: "Review the work order before deleting it.",
     deleteModalTargetLabel: "Target",
-    deleteModalNotice: "Deleted files move to trash and can be restored within 30 days.",
+    deleteModalNotice: "The deleted work order moves to trash and can be restored within 30 days.",
     deleteModalPolicyNotice: "",
     deleteModalConfirmLabel: "Move to trash",
     deleteCompletedToast: "Work order deleted.",

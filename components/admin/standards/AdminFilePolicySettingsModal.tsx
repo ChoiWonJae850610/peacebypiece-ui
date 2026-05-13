@@ -106,7 +106,7 @@ export default function AdminFilePolicySettingsModal({ open, onClose }: AdminFil
           <div className="rounded-3xl border border-stone-200 bg-stone-50 p-3">
             <p className="text-sm font-semibold text-stone-950">{t("standards.filePolicy.deleteMode", "삭제 방식")}</p>
             <p className="mt-1 text-xs font-semibold leading-5 text-stone-500">
-              {t("standards.filePolicy.fixedTrashPolicyDescription", "삭제된 파일은 휴지통으로 이동하며 30일 동안 복원할 수 있습니다.")}
+              {t("standards.filePolicy.fixedTrashPolicyDescription", "삭제한 파일은 휴지통으로 이동하며 30일 동안 복원할 수 있습니다.")}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <span className="rounded-full bg-stone-950 px-3 py-1 text-xs font-semibold text-white">{t("standards.filePolicy.softDelete", "휴지통")}</span>
