@@ -1,6 +1,6 @@
-export type AdminSettingsMenuId = "company" | "standards" | "billing" | "account" | "feedback";
+export type AdminSettingsMenuId = "standards" | "billing" | "account" | "feedback";
 
-export type AdminSettingsMenuTone = "stone" | "blue" | "amber" | "emerald" | "violet";
+export type AdminSettingsMenuTone = "blue" | "amber" | "emerald" | "violet";
 
 export type AdminSettingsMenuItem = {
   id: AdminSettingsMenuId;
@@ -13,14 +13,6 @@ export type AdminSettingsMenuItem = {
 
 export const ADMIN_SETTINGS_MENU_ITEMS: readonly AdminSettingsMenuItem[] = [
   {
-    id: "company",
-    title: "회사·화면 설정",
-    description: "회사 기본 정보, 화면 색상, 언어 설정처럼 실제 저장되는 값을 관리합니다.",
-    statusLabel: "저장 가능",
-    tone: "stone",
-    detailItems: ["회사 정보", "색상", "언어"],
-  },
-  {
     id: "standards",
     title: "기준정보 설정",
     description: "작업지시서 생성과 협력업체 선택에 쓰는 회사 기준값을 관리합니다.",
@@ -31,7 +23,7 @@ export const ADMIN_SETTINGS_MENU_ITEMS: readonly AdminSettingsMenuItem[] = [
   {
     id: "billing",
     title: "요금제·저장공간",
-    description: "현재 요금제와 저장공간 한도를 읽기 전용으로 확인합니다.",
+    description: "현재 요금제와 저장공간 한도, 변경 요청 기준을 확인합니다.",
     statusLabel: "읽기 전용",
     tone: "emerald",
     detailItems: ["현재 요금제", "저장공간 한도", "변경 요청"],
@@ -54,7 +46,7 @@ export const ADMIN_SETTINGS_MENU_ITEMS: readonly AdminSettingsMenuItem[] = [
   },
 ] as const;
 
-export const ADMIN_SETTINGS_NOTICE_BY_ID: Record<Exclude<AdminSettingsMenuId, "company" | "standards">, { title: string; description: string; nextStep: string; items: readonly string[] }> = {
+export const ADMIN_SETTINGS_NOTICE_BY_ID: Record<Exclude<AdminSettingsMenuId, "standards">, { title: string; description: string; nextStep: string; items: readonly string[] }> = {
   billing: {
     title: "요금제·결제는 읽기 전용으로 확인합니다.",
     description: "정식 결제 연동 전까지 고객관리자는 현재 요금제, 저장공간 한도, 변경 요청 기준만 확인하고 실제 수정은 시스템관리자에서 처리합니다.",
