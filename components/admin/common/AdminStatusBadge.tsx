@@ -8,6 +8,7 @@ type AdminStatusBadgeProps = {
   tone?: AdminStatusBadgeTone;
   size?: AdminStatusBadgeSize;
   className?: string;
+  title?: string;
 };
 
 const toneClassNames: Record<AdminStatusBadgeTone, string> = {
@@ -26,9 +27,9 @@ const sizeClassNames: Record<AdminStatusBadgeSize, string> = {
   sm: "px-2.5 py-1 text-[11px]",
 };
 
-export function AdminStatusBadge({ children, tone = "neutral", size = "sm", className = "" }: AdminStatusBadgeProps) {
+export function AdminStatusBadge({ children, tone = "neutral", size = "sm", className = "", title }: AdminStatusBadgeProps) {
   return (
-    <span className={`inline-flex w-fit shrink-0 items-center justify-center rounded-full border font-semibold leading-none ${sizeClassNames[size]} ${toneClassNames[tone]} ${className}`}>
+    <span title={title} className={`inline-flex w-fit shrink-0 items-center justify-center rounded-full border font-semibold leading-none ${sizeClassNames[size]} ${toneClassNames[tone]} ${className}`}>
       {children}
     </span>
   );

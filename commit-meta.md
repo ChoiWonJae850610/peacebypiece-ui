@@ -1,22 +1,21 @@
 Version :
-0.11.24
+0.11.25
 
 Summary :
-관리자 통계 기간 선택 달력 공통 컴포넌트 분리
+날짜 입력 공통화 점검과 배지 tooltip 빌드 오류 수정
 
 Description :
-- 관리자 통계 화면 내부에 있던 기간 선택 달력 구현을 AdminDateRangePicker 공통 컴포넌트로 분리
-- AdminStatsDashboard가 공통 기간 선택 컴포넌트와 getTodayAdminLocalDateValue를 사용하도록 정리
-- 기존 기간 선택 UI, 미래 날짜 제한, custom period query 흐름은 유지
-- APP_VERSION을 0.11.24로 갱신
+- AdminStatusBadge에 title prop을 추가해 관리자 통계 업체 성과 tooltip 타입 오류를 수정
+- 0.11.24 빌드 로그의 AdminStatusBadgeProps title 누락 오류 대응
+- 관리자 날짜 입력 공통화 후보를 점검하고 작업지시서 날짜 입력은 후속 설계 대상으로 문서화
+- APP_VERSION을 0.11.25로 갱신
 
 수정 파일 목록 :
-components/admin/dashboard/AdminStatsDashboard.tsx
+components/admin/common/AdminStatusBadge.tsx
 lib/constants/app.ts
 
 추가 파일 목록 :
-components/admin/common/AdminDateRangePicker.tsx
-docs/admin-date-range-picker-standardization-0.11.24.md
+docs/admin-date-input-audit-0.11.25.md
 
 삭제 파일 목록 :
 없음
