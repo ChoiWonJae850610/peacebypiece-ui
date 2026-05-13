@@ -1,5 +1,7 @@
 import "server-only";
 
+import { Pool as PgPool } from "pg";
+
 export type DbQueryResultRow = Record<string, unknown>;
 
 export type DbQueryResult<TRow extends DbQueryResultRow = DbQueryResultRow> = {
@@ -27,15 +29,8 @@ type PgPoolConstructor = new (config: { connectionString: string }) => PgPoolLik
 
 let poolPromise: Promise<PgPoolLike> | null = null;
 
-async function loadPoolConstructor(): Promise<PgPoolConstructor> {
-  const dynamicImport = new Function("specifier", "return import(specifier);") as (specifier: string) => Promise<{ Pool?: PgPoolConstructor }>;
-  const pgModule = await dynamicImport("pg");
-
-  if (!pgModule?.Pool) {
-    throw new Error("The 'pg' package is required for DB mode but is not available.");
-  }
-
-  return pgModule.Pool;
+function getPoolConstructor(): PgPoolConstructor {
+  return PgPool as PgPoolConstructor;
 }
 
 const DATABASE_URL_ENV_KEYS = [
@@ -102,7 +97,7 @@ async function createPool(): Promise<PgPoolLike> {
     throw new Error(`No supported database env var is configured. Expected one of: ${DATABASE_URL_ENV_KEYS.join(", ")}.`);
   }
 
-  const Pool = await loadPoolConstructor();
+  const Pool = getPoolConstructor();
   return new Pool({ connectionString });
 }
 
