@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminSection, AdminCard } from "@/components/admin/common/AdminSection";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
   ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES,
@@ -31,7 +32,7 @@ function AdminWorkspaceCardView({ item }: { item: AdminWorkspaceCard }) {
   const text = translateItem(item);
 
   const content = (
-    <article className="h-full rounded-3xl border border-stone-200 bg-white p-3.5 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-md">
+    <AdminCard as="article" className="h-full p-3.5 transition hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-md">
       <div className="flex h-full flex-col justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-start justify-between gap-2">
@@ -51,7 +52,7 @@ function AdminWorkspaceCardView({ item }: { item: AdminWorkspaceCard }) {
           </AdminStatusBadge>
         )}
       </div>
-    </article>
+    </AdminCard>
   );
 
   if (!item.href) return content;
@@ -68,18 +69,13 @@ export default function AdminConsoleSections() {
   const managementCards = getVisibleAdminWorkspaceCards({ permissionCodes: ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES });
   return (
     <>
-      <section className="rounded-3xl border border-stone-200 bg-white/80 p-4 shadow-sm">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold text-stone-950">{t("adminConsole.managementCards.title", "운영 관리")}</h2>
-          </div>
-        </div>
-        <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+      <AdminSection title={t("adminConsole.managementCards.title", "운영 관리")}>
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
           {managementCards.map((item) => (
             <AdminWorkspaceCardView key={item.id} item={item} />
           ))}
         </div>
-      </section>
+      </AdminSection>
     </>
   );
 }
