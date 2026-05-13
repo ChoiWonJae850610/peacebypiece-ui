@@ -1,24 +1,20 @@
 Version :
-0.11.57
+0.11.58
 
 Summary :
-삭제 안내 문구 표현 통일
+통계 기간분석 탭 동작 분리
 
 Description :
-작업지시서 삭제 모달과 첨부파일 삭제 정책 안내에서 서로 다르게 보이던 삭제 안내 문구를 삭제한 기준으로 통일했다. 저장소 작업지시서 묶음 설명과 저장소 presentation 문구도 같은 기준으로 정리했다.
+관리자 통계 화면에서 기간분석 탭의 기간 필터를 조작해도 생산 구성 탭으로 돌아가지 않도록 section query를 유지했다. 생산 구성과 업체 성과 분포 데이터는 누적 기준으로 유지하고, 기간분석 탭의 기간 요약과 Top5만 선택 기간 기준으로 동작하도록 보정했다. 초기화 버튼도 텍스트 버튼으로 정리했다.
 
 수정 파일 목록 :
-- components/admin/files/WorkOrderStorageSection.tsx
-- components/admin/standards/AdminFilePolicySettingsModal.tsx
-- lib/admin/adminFiles.presentation.ts
-- lib/i18n/ko/admin.ts
-- lib/i18n/en/admin.ts
-- lib/i18n/ko/workorder.ts
-- lib/i18n/en/workorder.ts
+- app/admin/dashboard/page.tsx
+- components/admin/dashboard/AdminStatsDashboard.tsx
+- lib/admin/adminStats.repository.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/qa-delete-wording-alignment-0.11.57.md
+- docs/qa-admin-dashboard-period-tab-0.11.58.md
 
 삭제 파일 목록 :
 없음

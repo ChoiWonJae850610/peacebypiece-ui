@@ -16,13 +16,14 @@ import type { getI18n } from "@/lib/i18n";
 import { useI18n } from "@/lib/i18n";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
+type CategoryDepthKey = "first" | "second";
+type AdminStatsSectionKey = "production" | "factory" | "period";
+
 type AdminStatsDashboardProps = {
   stats: AdminStatsSnapshot;
   pageText: ReturnType<typeof getI18n>["admin"]["dashboardPage"];
+  initialSection?: AdminStatsSectionKey;
 };
-
-type CategoryDepthKey = "first" | "second";
-type AdminStatsSectionKey = "production" | "factory" | "period";
 type AdminStatsFactoryPerformanceItem = AdminStatsSnapshot["factoryPerformance"][number];
 
 
@@ -181,14 +182,14 @@ function CurrentSummaryCard({ label, value, description, subValue }: { label: st
   );
 }
 
-export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashboardProps) {
+export default function AdminStatsDashboard({ stats, pageText, initialSection = "production" }: AdminStatsDashboardProps) {
   const t = useAdminTranslation();
   const { locale } = useI18n();
   const pt = (key: string, fallback: string) => t(`dashboardPage.${key}`, fallback);
   const [categoryDepth, setCategoryDepth] = useState<CategoryDepthKey>("first");
   const [selectedCategoryLabel, setSelectedCategoryLabel] = useState<string | null>(null);
   const [selectedPeriodTopMode, setSelectedPeriodTopMode] = useState<AdminStatsPeriodTopMode>("reorder");
-  const [activeStatsSection, setActiveStatsSection] = useState<AdminStatsSectionKey>("production");
+  const [activeStatsSection, setActiveStatsSection] = useState<AdminStatsSectionKey>(initialSection);
   const [statsSectionDirection, setStatsSectionDirection] = useState(1);
   const [isStatsSectionAnimating, setIsStatsSectionAnimating] = useState(false);
   const [customStartDate, setCustomStartDate] = useState(stats.selectedPeriodRange.isCustom ? stats.selectedPeriodRange.startDate : "");
@@ -277,12 +278,13 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   const totalReorderCount = stats.currentOverview.reorderCount;
   const activePeriodOptions = stats.periodOptions.filter((item) => item.key === "7d" || item.key === "30d");
   const activePeriodLabel = translateStatsLabel(stats.selectedPeriodRange.label, t);
+  const buildPeriodSectionHref = (href: string) => `${href}${href.includes("?") ? "&" : "?"}section=period`;
   const isCustomPeriodReady = Boolean(customStartDate && customEndDate);
   const isCustomPeriodOrderValid = !isCustomPeriodReady || customStartDate <= customEndDate;
   const isCustomPeriodNotFuture = (!customStartDate || customStartDate <= todayDateValue) && (!customEndDate || customEndDate <= todayDateValue);
   const isCustomEndSelectable = !customEndDate || !customStartDate || customEndDate >= customStartDate;
   const isCustomPeriodValid = isCustomPeriodReady && isCustomPeriodOrderValid && isCustomPeriodNotFuture && isCustomEndSelectable;
-  const customPeriodHref = isCustomPeriodValid ? `/admin/dashboard?period=custom&startDate=${customStartDate}&endDate=${customEndDate}` : "/admin/dashboard?period=30d";
+  const customPeriodHref = buildPeriodSectionHref(isCustomPeriodValid ? `/admin/dashboard?period=custom&startDate=${customStartDate}&endDate=${customEndDate}` : "/admin/dashboard?period=30d");
   const customPeriodMessage = !isCustomPeriodOrderValid
     ? pt("customPeriodInvalidOrder", pageText.customPeriodInvalidOrder)
     : !isCustomPeriodNotFuture
@@ -412,6 +414,10 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
       return selectedCategoryDepthBars[0]?.label ?? null;
     });
   }, [categoryDepth, selectedCategoryDepthBars]);
+
+  useEffect(() => {
+    setActiveStatsSection(initialSection);
+  }, [initialSection]);
 
   useEffect(() => {
     if (!isStatsSectionAnimating) return;
@@ -601,7 +607,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
                   {activePeriodOptions.map((item) => (
                     <AdminLinkButton
                       key={item.key}
-                      href={item.href}
+                      href={buildPeriodSectionHref(item.href)}
                       aria-current={item.active ? "page" : undefined}
                       variant={item.active ? "primary" : "secondary"}
                       size="sm"
@@ -611,14 +617,12 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
                     </AdminLinkButton>
                   ))}
                   <AdminLinkButton
-                    href="/admin/dashboard?period=30d"
+                    href={buildPeriodSectionHref("/admin/dashboard?period=30d")}
                     variant="secondary"
                     size="sm"
-                    className="h-8 min-h-8 w-8 shrink-0 px-0 py-0 text-sm"
-                    aria-label={pt("customReset", pageText.customReset)}
-                    title={pt("customReset", pageText.customReset)}
+                    className="min-h-8 shrink-0 px-3 py-1.5 text-xs"
                   >
-                    ↻
+                    {pt("customReset", pageText.customReset)}
                   </AdminLinkButton>
                   <AdminLinkButton
                     href={customPeriodHref}

@@ -297,7 +297,6 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
           WHERE company_id = $1
             AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true
-            ${periodWhereClause}
           GROUP BY 1
           ORDER BY 1`,
         [companyId],
@@ -309,7 +308,6 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
           WHERE company_id = $1
             AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true
-            ${periodWhereClause}
           GROUP BY 1
           ORDER BY COUNT(*) DESC
           LIMIT 6`,
@@ -323,7 +321,6 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
           WHERE s.company_id = $1
             AND s.deleted_at IS NULL
             AND COALESCE(s.is_active, true) = true
-            ${periodWhereClause.replace(/updated_at/g, "s.updated_at")}
           GROUP BY 1
           ORDER BY COUNT(*) DESC
           LIMIT 6`,
@@ -338,7 +335,6 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
              WHERE s.company_id = $1
                AND s.deleted_at IS NULL
                AND COALESCE(s.is_active, true) = true
-               ${periodWhereClause.replace(/updated_at/g, "s.updated_at")}
             UNION ALL
             SELECT 'second'::text AS round_key,
                    COALESCE(NULLIF(c2.name, ''), NULLIF(s.category2, ''), '분류 미지정') AS category_label
@@ -347,7 +343,6 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
              WHERE s.company_id = $1
                AND s.deleted_at IS NULL
                AND COALESCE(s.is_active, true) = true
-               ${periodWhereClause.replace(/updated_at/g, "s.updated_at")}
             UNION ALL
             SELECT 'third'::text AS round_key,
                    COALESCE(NULLIF(c3.name, ''), NULLIF(s.category3, ''), '분류 미지정') AS category_label
@@ -356,7 +351,6 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
              WHERE s.company_id = $1
                AND s.deleted_at IS NULL
                AND COALESCE(s.is_active, true) = true
-               ${periodWhereClause.replace(/updated_at/g, "s.updated_at")}
           )
           SELECT round_key::text AS round_key,
                  category_label,
@@ -379,7 +373,6 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
              WHERE s.company_id = $1
                AND s.deleted_at IS NULL
                AND COALESCE(s.is_active, true) = true
-               ${periodWhereClause.replace(/updated_at/g, "s.updated_at")}
             UNION ALL
             SELECT 'secondToThird'::text AS drilldown_key,
                    COALESCE(NULLIF(c2.name, ''), NULLIF(s.category2, ''), '분류 미지정') AS parent_label,
@@ -390,7 +383,6 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
              WHERE s.company_id = $1
                AND s.deleted_at IS NULL
                AND COALESCE(s.is_active, true) = true
-               ${periodWhereClause.replace(/updated_at/g, "s.updated_at")}
           )
           SELECT drilldown_key::text AS drilldown_key,
                  parent_label,
@@ -487,7 +479,6 @@ export async function getAdminStatsSnapshot(periodValue?: string | string[], sta
           WHERE o.company_id = $1
             AND o.deleted_at IS NULL
             AND COALESCE(o.is_active, true) = true
-            ${periodWhereClause.replace(/updated_at/g, "o.updated_at")}
           GROUP BY 1
           ORDER BY COUNT(*) DESC
           LIMIT 5`,
