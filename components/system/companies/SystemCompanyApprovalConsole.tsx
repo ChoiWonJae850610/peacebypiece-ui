@@ -144,7 +144,7 @@ export default function SystemCompanyApprovalConsole() {
         headerClassName: "text-center",
         className: "text-center",
         render: (request) => (
-          <div className="flex justify-center gap-2">
+          <div className="grid gap-2 sm:flex sm:justify-center">
             <AdminButton
               onClick={() => void approveCompanyJoinRequest(request.id)}
               disabled={approvingRequestId !== null || rejectingRequestId !== null}
@@ -247,23 +247,23 @@ export default function SystemCompanyApprovalConsole() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-stone-50 px-4 py-6 text-stone-900 sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-7xl flex-col gap-6">
-        <header className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
+    <main className="min-h-screen bg-stone-50 px-3 py-4 text-stone-900 sm:px-6 sm:py-6 lg:px-8">
+      <div className="mx-auto flex max-w-7xl flex-col gap-4 sm:gap-6">
+        <header className="rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
                 SYSTEM COMPANY APPROVAL
               </p>
               <div className="space-y-2">
-                <h1 className="text-2xl font-semibold text-stone-950">시스템관리자 고객사 승인</h1>
+                <h1 className="text-xl font-semibold text-stone-950 sm:text-2xl">시스템관리자 고객사 승인</h1>
                 <p className="max-w-3xl text-sm leading-6 text-stone-600">
                   고객사 초대 링크로 들어온 가입 신청을 검토하고, 승인 시 고객사 생성·고객관리자 멤버십·권한 부여·초기 기준정보 복사로 이어지는 흐름입니다.
                 </p>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2 text-xs font-medium">
+            <div className="flex flex-col gap-2 text-xs font-medium sm:flex-row sm:flex-wrap">
               <AdminStatusBadge tone="neutral">v{APP_VERSION}</AdminStatusBadge>
               <AdminLinkButton href="/system">시스템 콘솔</AdminLinkButton>
               <AdminLinkButton href="/system/invites">고객 초대</AdminLinkButton>
@@ -271,9 +271,9 @@ export default function SystemCompanyApprovalConsole() {
           </div>
         </header>
 
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <section className="grid gap-3 sm:grid-cols-2 lg:gap-4 xl:grid-cols-4">
           {summaryItems.map((item) => (
-            <article key={item.id} className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+            <article key={item.id} className="rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-5">
               <p className="text-xs font-semibold text-stone-500">{item.label}</p>
               <p className="mt-3 text-xl font-semibold text-stone-950">{item.value}</p>
               <p className="mt-2 text-xs leading-5 text-stone-600">{item.description}</p>
@@ -281,7 +281,7 @@ export default function SystemCompanyApprovalConsole() {
           ))}
         </section>
 
-        <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+        <section className="rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-5">
           <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <h2 className="text-lg font-semibold text-stone-950">가입 신청 검토</h2>
@@ -289,7 +289,7 @@ export default function SystemCompanyApprovalConsole() {
                 request_type = company, invitation.scope = system_to_company_admin 조건의 승인 대기 신청만 표시합니다.
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="grid gap-2 sm:flex sm:flex-wrap sm:items-center">
               <AdminStatusBadge tone={getLoadStatusTone(joinRequestLoadStatus)}>
                 {getLoadStatusLabel(joinRequestLoadStatus)}
               </AdminStatusBadge>
@@ -324,12 +324,12 @@ export default function SystemCompanyApprovalConsole() {
               isLoading={joinRequestLoadStatus === "loading"}
               loadingLabel="고객사 가입 신청을 불러오는 중입니다."
               gridTemplateColumns="1.2fr 1.1fr 1fr 0.7fr 0.8fr 1.2fr 0.8fr 1fr"
-              rowBaseClassName="grid w-full gap-3 px-4 py-4 text-left text-sm md:items-start"
+              rowBaseClassName="grid min-w-[980px] w-full gap-3 px-4 py-4 text-left text-sm md:items-start"
             />
           </div>
         </section>
 
-        <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+        <section className="rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-5">
           <div className="flex flex-col gap-2 border-b border-stone-100 pb-4">
             <h2 className="text-lg font-semibold text-stone-950">승인 처리 단계</h2>
             <p className="text-sm leading-6 text-stone-600">
@@ -356,7 +356,7 @@ export default function SystemCompanyApprovalConsole() {
         </section>
 
         <section className="grid gap-4 lg:grid-cols-[1fr_0.8fr]">
-          <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+          <article className="rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-5">
             <div className="border-b border-stone-100 pb-4">
               <h2 className="text-lg font-semibold text-stone-950">고객관리자 기본 권한</h2>
               <p className="mt-2 text-sm leading-6 text-stone-600">
@@ -378,7 +378,7 @@ export default function SystemCompanyApprovalConsole() {
             </div>
           </article>
 
-          <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+          <article className="rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-5">
             <div className="border-b border-stone-100 pb-4">
               <h2 className="text-lg font-semibold text-stone-950">승인 액션</h2>
               <p className="mt-2 text-sm leading-6 text-stone-600">
@@ -407,7 +407,7 @@ export default function SystemCompanyApprovalConsole() {
           </article>
         </section>
 
-        <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+        <section className="rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-5">
           <div className="border-b border-stone-100 pb-4">
             <h2 className="text-lg font-semibold text-stone-950">처리 정책</h2>
             <p className="mt-2 text-sm leading-6 text-stone-600">

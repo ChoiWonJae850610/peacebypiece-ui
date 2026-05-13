@@ -307,7 +307,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
   }
 
   return (
-    <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+    <section className="rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-5">
       <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-stone-950">{SYSTEM_STORAGE_PURGE_COPY.list.title}</h2>
@@ -319,7 +319,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
           </p>
           {resultMessage ? <p className={`mt-2 rounded-2xl px-3 py-2 text-xs font-medium ${getSystemStoragePurgeResultMessageClass(resultTone)}`}>{resultMessage}</p> : null}
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid gap-2 sm:flex sm:flex-wrap">
           <AdminButton onClick={refreshCandidates} disabled={isPending}>
             {SYSTEM_STORAGE_PURGE_COPY.list.refresh}
           </AdminButton>
@@ -340,8 +340,8 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
         emptyLabel={SYSTEM_STORAGE_PURGE_COPY.list.empty}
         emptyDescription={SYSTEM_STORAGE_PURGE_COPY.list.emptyDescription}
         gridTemplateColumns="0.22fr 0.55fr 1.05fr 1.15fr 1fr 0.8fr 1.45fr"
-        rowBaseClassName="grid w-full gap-3 px-4 py-4 text-left text-sm lg:items-start"
-        headerClassName="hidden gap-3 bg-stone-100 px-4 py-3 text-xs font-semibold text-stone-600 lg:grid"
+        rowBaseClassName="grid min-w-[920px] w-full gap-3 px-4 py-4 text-left text-sm lg:items-start"
+        headerClassName="hidden min-w-[920px] gap-3 bg-stone-100 px-4 py-3 text-xs font-semibold text-stone-600 lg:grid"
       />
     </section>
   );

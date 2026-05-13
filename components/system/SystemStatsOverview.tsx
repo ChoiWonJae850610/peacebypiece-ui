@@ -46,7 +46,7 @@ export default function SystemStatsOverview() {
   return (
     <section
       id="system-stats"
-      className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm"
+      className="rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-5"
     >
       <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
@@ -66,13 +66,13 @@ export default function SystemStatsOverview() {
         </div>
       </div>
 
-      <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:mt-5 xl:grid-cols-4">
         {SYSTEM_STATS_OVERVIEW_CARDS.map((card) => (
           <article
             key={card.id}
             className="rounded-2xl border border-stone-200 bg-stone-50 p-4"
           >
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
               <p className="text-xs font-semibold text-stone-500">{card.label}</p>
               <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getToneClassName(card.tone)}`}>
                 {card.tone === "warning" ? "주의" : card.tone === "success" ? "정상" : "운영"}
@@ -89,9 +89,9 @@ export default function SystemStatsOverview() {
       </div>
 
 
-      <div className="mt-5 grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+      <div className="mt-4 grid gap-4 xl:mt-5 xl:grid-cols-[0.9fr_1.1fr]">
         <article className="rounded-2xl border border-stone-200 bg-white p-4">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <h3 className="text-sm font-semibold text-stone-950">
               R2 purge 상태
             </h3>
@@ -116,7 +116,7 @@ export default function SystemStatsOverview() {
         </article>
 
         <article className="rounded-2xl border border-stone-200 bg-white p-4">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <h3 className="text-sm font-semibold text-stone-950">
               저장소 용량 구분
             </h3>
@@ -124,10 +124,10 @@ export default function SystemStatsOverview() {
               active / trash / purged
             </span>
           </div>
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
             {SYSTEM_STORAGE_USAGE_BUCKETS.map((item) => (
               <div key={item.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                   <p className="text-xs font-semibold text-stone-500">{item.label}</p>
                   <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${getToneClassName(item.tone)}`}>
                     기준
@@ -145,9 +145,9 @@ export default function SystemStatsOverview() {
         </article>
       </div>
 
-      <div className="mt-5 grid gap-4 xl:grid-cols-[1.4fr_0.8fr]">
+      <div className="mt-4 grid gap-4 xl:mt-5 xl:grid-cols-[1.4fr_0.8fr]">
         <article className="rounded-2xl border border-stone-200 bg-white p-4">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <h3 className="text-sm font-semibold text-stone-950">
               고객사별 사용 현황
             </h3>
@@ -175,7 +175,7 @@ export default function SystemStatsOverview() {
                   </span>
                 </div>
                 <div className="mt-4">
-                  <div className="flex items-center justify-between text-xs text-stone-600">
+                  <div className="flex flex-col gap-1 text-xs text-stone-600 sm:flex-row sm:items-center sm:justify-between">
                     <span>저장 용량</span>
                     <span>
                       {row.storageUsedLabel} / {row.storageLimitLabel} · {row.storagePercent}%
@@ -201,7 +201,7 @@ export default function SystemStatsOverview() {
             <div className="mt-4 space-y-3">
               {SYSTEM_PLAN_DISTRIBUTION.map((plan) => (
                 <div key={plan.id} className="rounded-xl bg-white p-3">
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                     <p className="text-sm font-semibold text-stone-900">
                       {plan.label}
                     </p>
@@ -224,7 +224,7 @@ export default function SystemStatsOverview() {
             <div className="mt-4 space-y-3">
               {SYSTEM_RISK_ITEMS.map((item) => (
                 <div key={item.id} className="rounded-xl bg-white p-3">
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                     <p className="text-sm font-semibold text-stone-900">
                       {item.title}
                     </p>

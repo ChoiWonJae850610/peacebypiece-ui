@@ -63,9 +63,9 @@ function SystemNavigationCard({ card }: { card: SystemConsoleNavigationCard }) {
   return (
     <Link
       href={card.href}
-      className={`rounded-3xl border p-5 shadow-sm transition ${tone.card}`}
+      className={`rounded-[22px] border p-4 shadow-sm transition sm:rounded-3xl sm:p-5 ${tone.card}`}
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
         <h3 className="text-base font-semibold">{card.label}</h3>
         <AdminStatusBadge tone={tone.badgeTone}>{card.statusLabel}</AdminStatusBadge>
       </div>
@@ -79,16 +79,16 @@ function SystemNavigationCard({ card }: { card: SystemConsoleNavigationCard }) {
 
 export default function SystemConsoleShell() {
   return (
-    <main className="min-h-screen bg-stone-50 px-4 py-6 text-stone-900 sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-7xl flex-col gap-6">
-        <AdminCard as="header" className="p-6">
+    <main className="min-h-screen bg-stone-50 px-3 py-4 text-stone-900 sm:px-6 sm:py-6 lg:px-8">
+      <div className="mx-auto flex max-w-7xl flex-col gap-4 sm:gap-6">
+        <AdminCard as="header" className="p-4 sm:p-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
                 {system.eyebrow}
               </p>
               <div className="space-y-2">
-                <h1 className="text-2xl font-semibold text-stone-950">
+                <h1 className="text-xl font-semibold text-stone-950 sm:text-2xl">
                   {system.title}
                 </h1>
                 <p className="max-w-3xl text-sm leading-6 text-stone-600">
@@ -108,8 +108,8 @@ export default function SystemConsoleShell() {
             key={section.id}
             title={section.title}
             description={section.description}
-            className="p-5"
-            bodyClassName="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3"
+            className="p-4 sm:p-5"
+            bodyClassName="mt-4 grid gap-3 sm:grid-cols-2 xl:mt-5 xl:grid-cols-3"
             headerClassName="border-b border-stone-100 pb-4"
           >
             {section.cards.map((card) => (
