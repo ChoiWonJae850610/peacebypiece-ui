@@ -93,20 +93,20 @@ function formatBytes(bytes: number): string {
 function StorageCylinder({ percent }: { percent: number }) {
   const safePercent = Math.min(100, Math.max(0, percent));
   return (
-    <div className="relative mx-auto mt-2 h-[66px] w-[70px]" aria-hidden="true">
-      <div className="absolute inset-x-2 bottom-0 h-[52px] overflow-hidden rounded-b-[18px] border-x border-b border-stone-300 bg-white shadow-inner">
+    <div className="relative mx-auto mt-3 h-[94px] w-[96px]" aria-hidden="true">
+      <div className="absolute inset-x-3 bottom-0 h-[74px] overflow-hidden rounded-b-[24px] border-x border-b border-stone-300 bg-white shadow-inner">
         <div
           className="absolute inset-x-0 bottom-0 rounded-b-[28px] bg-[var(--admin-theme-surface)]/20"
           style={{ height: `${Math.max(6, safePercent)}%` }}
         />
       </div>
-      <div className="absolute inset-x-2 top-0 h-6 rounded-[50%] border border-stone-300 bg-white shadow-sm" />
+      <div className="absolute inset-x-3 top-0 h-8 rounded-[50%] border border-stone-300 bg-white shadow-sm" />
       <div
-        className="absolute inset-x-2 rounded-[50%] border border-[var(--admin-theme-surface)] bg-[var(--admin-theme-surface)]/20"
-        style={{ bottom: `${Math.max(0, Math.min(46, safePercent * 0.46))}px`, height: 24 }}
+        className="absolute inset-x-3 rounded-[50%] border border-[var(--admin-theme-surface)] bg-[var(--admin-theme-surface)]/20"
+        style={{ bottom: `${Math.max(0, Math.min(66, safePercent * 0.66))}px`, height: 32 }}
       />
       <div className="absolute inset-0 flex items-center justify-center pt-2">
-        <span className="rounded-full bg-white/90 px-2 py-0.5 text-xs font-bold text-stone-950 shadow-sm">
+        <span className="rounded-full bg-white/90 px-2.5 py-1 text-sm font-bold text-stone-950 shadow-sm">
           {safePercent}%
         </span>
       </div>
@@ -131,7 +131,7 @@ function PlanUsageCard({
   const isCaution = hasPlanLimit && usageSummary.statusTone === "caution";
 
   return (
-    <div className="flex h-full min-h-[160px] flex-col rounded-[18px] border border-stone-200 bg-gradient-to-b from-white to-stone-50 px-3.5 py-3 md:min-h-[174px] md:rounded-[20px] md:px-5 md:py-4">
+    <div className="flex h-full min-h-[190px] flex-col rounded-[20px] border border-stone-200 bg-gradient-to-b from-white to-stone-50 px-4 py-4 md:min-h-[210px] md:rounded-[24px] md:px-6 md:py-5">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
         <div className="min-w-0">
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">
@@ -159,8 +159,8 @@ function PlanUsageCard({
 
       <StorageCylinder percent={hasPlanLimit ? usageSummary.usagePercent : 0} />
 
-      <div className="mt-2 text-center">
-        <p className="text-base font-bold tracking-tight text-stone-950">
+      <div className="mt-3 text-center">
+        <p className="text-lg font-bold tracking-tight text-stone-950">
           {hasPlanLimit ? `${usageSummary.usedLabel} / ${usageSummary.limitLabel}` : t("filesSummary.planCapacityLoading", "요금제 용량 확인 중")}
         </p>
         <p className="mt-0.5 text-[11px] font-semibold text-stone-500">
@@ -168,7 +168,7 @@ function PlanUsageCard({
         </p>
       </div>
 
-      <div className="mt-2 h-1 overflow-hidden rounded-full bg-white shadow-inner">
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white shadow-inner">
         <div
           className={`h-full rounded-full ${isDanger ? "bg-red-500" : isCaution ? "bg-amber-400" : "bg-[var(--admin-theme-surface)]"}`}
           style={{ width: `${hasPlanLimit ? Math.min(100, Math.max(0, usageSummary.usagePercent)) : 0}%` }}
@@ -181,18 +181,18 @@ function PlanUsageCard({
 function FileOperationsCard({ items }: { items: FileStatusItem[] }) {
   const t = useAdminTranslation();
   return (
-    <div className="flex h-full min-h-[160px] flex-col rounded-[18px] border border-stone-200 bg-white px-3.5 py-3 md:min-h-[174px] md:rounded-[20px] md:px-5 md:py-4">
+    <div className="flex h-full min-h-[190px] flex-col rounded-[20px] border border-stone-200 bg-white px-4 py-4 md:min-h-[210px] md:rounded-[24px] md:px-6 md:py-5">
       <div>
         <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">
           {t("filesSummary.fileOperationsLabel", "파일 운영")}
         </p>
         <h3 className="mt-1 text-sm font-bold text-stone-950">{t("filesSummary.fileOperationsTitle", "파일 운영 요약")}</h3>
       </div>
-      <div className="mt-3 grid flex-1 content-center gap-2">
+      <div className="mt-4 grid flex-1 content-center gap-2.5">
         {items.map((item) => (
           <div
             key={item.label}
-            className="flex items-center justify-between gap-3 rounded-2xl bg-stone-50 px-3.5 py-2"
+            className="flex items-center justify-between gap-3 rounded-2xl bg-stone-50 px-4 py-3"
           >
             <div className="min-w-0">
               <p className="truncate text-[13px] font-semibold text-stone-800" title={item.label}>
@@ -231,12 +231,12 @@ function DonutChart({
         ]
   ).map((item) => ({ ...item, label: translateAdminFileTypeTerm(item.label, t) }));
   const total = normalizedItems.reduce((sum, item) => sum + item.value, 0);
-  const radius = 32;
+  const radius = 40;
   const circumference = 2 * Math.PI * radius;
   let offset = 0;
 
   return (
-    <div className="flex h-full min-h-[160px] flex-col rounded-[18px] border border-stone-200 bg-white px-3.5 py-3 md:min-h-[174px] md:rounded-[20px] md:px-5 md:py-4">
+    <div className="flex h-full min-h-[190px] flex-col rounded-[20px] border border-stone-200 bg-white px-4 py-4 md:min-h-[210px] md:rounded-[24px] md:px-6 md:py-5">
       <div className="flex shrink-0 items-start justify-between gap-3">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">
@@ -250,20 +250,20 @@ function DonutChart({
           {formatCountWithUnit(total, t)}
         </span>
       </div>
-      <div className="mt-3 flex min-h-0 flex-1 flex-col items-center justify-center gap-3 sm:flex-row sm:gap-5">
-        <div className="relative h-[86px] w-[86px] shrink-0">
+      <div className="mt-4 flex min-h-0 flex-1 flex-col items-center justify-center gap-3 sm:flex-row sm:gap-6">
+        <div className="relative h-[112px] w-[112px] shrink-0">
           <svg
-            viewBox="0 0 88 88"
-            className="h-[86px] w-[86px] -rotate-90"
+            viewBox="0 0 112 112"
+            className="h-[112px] w-[112px] -rotate-90"
             aria-hidden="true"
           >
             <circle
-              cx="44"
-              cy="44"
+              cx="56"
+              cy="56"
               r={radius}
               fill="none"
               stroke="rgb(231 229 228)"
-              strokeWidth="10"
+              strokeWidth="12"
             />
             {total > 0
               ? normalizedItems.map((item, index) => {
@@ -274,12 +274,12 @@ function DonutChart({
                   return (
                     <circle
                       key={item.label}
-                      cx="44"
-                      cy="44"
+                      cx="56"
+                      cy="56"
                       r={radius}
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="10"
+                      strokeWidth="12"
                       strokeDasharray={strokeDasharray}
                       strokeDashoffset={strokeDashoffset}
                       strokeLinecap="butt"
@@ -298,11 +298,11 @@ function DonutChart({
               : null}
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-            <span className="text-base font-bold text-stone-950">{total}</span>
+            <span className="text-lg font-bold text-stone-950">{total}</span>
             <span className="text-[10px] font-semibold text-stone-400">{t("filesSummary.totalLabel", "전체")}</span>
           </div>
         </div>
-        <div className="min-w-0 flex-1 space-y-2">
+        <div className="min-w-0 flex-[0.85] space-y-2">
           {normalizedItems.map((item, index) => (
             <div key={item.label} className="min-w-0">
               <div className="flex items-center justify-between gap-2 text-xs">
@@ -316,7 +316,7 @@ function DonutChart({
                   {formatCountWithUnit(item.value, t)} · {item.percent}%
                 </span>
               </div>
-              <div className="mt-1 h-1 overflow-hidden rounded-full bg-stone-100">
+              <div className="mt-1 h-1.5 max-w-[360px] overflow-hidden rounded-full bg-stone-100">
                 <div
                   className={index === 0 ? "h-full rounded-full bg-[var(--admin-theme-surface)]" : index === 1 ? "h-full rounded-full bg-stone-500" : "h-full rounded-full bg-stone-300"}
                   style={{ width: `${Math.max(2, item.percent)}%` }}
@@ -386,7 +386,7 @@ export default function FileStorageSummary({
   ];
 
   return (
-    <section className="grid shrink-0 gap-2.5 md:gap-3.5 lg:grid-cols-3 xl:grid-cols-[minmax(230px,0.78fr)_minmax(270px,0.95fr)_minmax(310px,1.08fr)]">
+    <section className="grid shrink-0 gap-3 md:gap-4 lg:grid-cols-3 xl:grid-cols-[minmax(250px,0.82fr)_minmax(280px,0.92fr)_minmax(360px,1.18fr)]">
       <PlanUsageCard usageSummary={usageSummary} statusLabel={statusLabel} />
       <FileOperationsCard items={statusItems} />
       <DonutChart items={fileTypeDistribution} />
