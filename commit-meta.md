@@ -1,17 +1,17 @@
 Version :
-0.11.50
+0.11.51
 
 Summary :
-제품화 전 1차 QA 체크리스트 작성
+제품화 전 QA 오류 수정 라인 시작
 
 Description :
-작업지시서, 첨부/R2, 저장소/휴지통, 통계, 멤버관리, 시스템관리자, 모바일/태블릿, i18n, build/deploy를 포함한 제품화 전 1차 QA 체크리스트를 문서화했다. APP_VERSION을 0.11.50으로 갱신했다.
+제품화 전 QA 체크리스트 이후 실제 오류 수정 라인에 사용할 오류 수집 기준과 우선순위 문서를 추가했다. 첨부된 build log나 runtime error가 없는 상태이므로 기능 로직은 변경하지 않고 APP_VERSION만 0.11.51로 갱신했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/productization-qa-checklist-0.11.50.md
+- docs/productization-qa-error-log-0.11.51.md
 
 삭제 파일 목록 :
 없음
