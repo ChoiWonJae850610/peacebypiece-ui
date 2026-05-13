@@ -67,7 +67,7 @@ function SettingsMenuCard({ item, active, onClick }: { item: AdminSettingsMenuIt
     <button
       type="button"
       onClick={onClick}
-      className={`flex min-h-[132px] flex-col justify-between rounded-[24px] border p-3.5 text-left shadow-sm transition ${tone.card} ${
+      className={`flex min-h-[124px] w-full min-w-0 flex-col justify-between rounded-[22px] border p-3 text-left shadow-sm transition sm:min-h-[132px] sm:rounded-[24px] sm:p-3.5 ${tone.card} ${
         active ? "ring-2 ring-stone-950/10" : ""
       }`}
     >
@@ -193,19 +193,19 @@ export default function AdminSettingsHub() {
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1">
+    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-0 sm:pr-1">
       <AdminSection
         title="환경설정"
         description="실제로 저장되는 회사·화면 설정과 작업 기준정보를 중심으로 정리합니다."
         actions={
-          <p className="rounded-2xl bg-stone-50 px-3 py-2 text-xs font-semibold leading-5 text-stone-500">
+          <p className="w-full rounded-2xl bg-stone-50 px-3 py-2 text-xs font-semibold leading-5 text-stone-500 sm:w-auto">
             권한은 멤버관리, 요금제·용량은 시스템관리자 기준으로 분리합니다.
           </p>
         }
         density="compact"
         className="shrink-0"
       >
-        <div className="grid gap-2.5 md:grid-cols-2 xl:grid-cols-5">
+        <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-5">
           {ADMIN_SETTINGS_MENU_ITEMS.map((item) => (
             <SettingsMenuCard key={item.id} item={item} active={activeMenuId === item.id} onClick={() => handleSelectMenu(item.id)} />
           ))}

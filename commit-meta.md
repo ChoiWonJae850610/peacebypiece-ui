@@ -1,17 +1,22 @@
 Version :
-0.11.38
+0.11.39
 
 Summary :
-모바일 태블릿 1차 점검 계획 문서화
+모바일 관리자 홈과 설정 화면 표시 보정
 
 Description :
-관리자, 시스템관리자, 작업지시서 주요 화면의 모바일과 태블릿 점검 기준을 문서화했다. 실제 UI와 동작 로직은 변경하지 않고 APP_VERSION만 0.11.38로 갱신했다.
+관리자 공통 Shell과 Topbar의 모바일 여백, 제목 크기, summary badge 줄바꿈을 보정했다. 고객관리자 홈 카드와 환경설정 메뉴 카드의 작은 폭 grid 및 카드 밀도를 조정하고, AdminSectionHeader action 영역이 모바일에서 전체 폭을 사용할 수 있도록 수정했다.
 
 수정 파일 목록 :
+- components/admin/layout/AdminShell.tsx
+- components/admin/layout/AdminTopbar.tsx
+- components/admin/common/AdminSection.tsx
+- components/admin/dashboard/AdminConsoleSections.tsx
+- components/admin/settings/AdminSettingsHub.tsx
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/responsive-audit-plan-0.11.38.md
+- docs/responsive-admin-home-settings-0.11.39.md
 
 삭제 파일 목록 :
 없음

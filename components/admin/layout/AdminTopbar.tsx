@@ -65,8 +65,8 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
   const summary = getTopbarSummary(localizedTitle, description, t);
 
   return (
-    <header className="rounded-[30px] border border-stone-200 bg-white/95 px-5 py-4 shadow-sm backdrop-blur">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <header className="rounded-[24px] border border-stone-200 bg-white/95 px-4 py-3 sm:rounded-[30px] sm:px-5 sm:py-4 shadow-sm backdrop-blur">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--admin-theme-text-on-surface)]">
@@ -76,11 +76,11 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
             <span className="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-500">v{appVersion}</span>
           </div>
           {summary ? (
-            <div className="mt-3 flex">
-              <span className="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-500">{summary}</span>
+            <div className="mt-2 flex sm:mt-3">
+              <span className="rounded-2xl bg-stone-100 px-3 py-1.5 text-xs font-semibold leading-5 text-stone-500">{summary}</span>
             </div>
           ) : null}
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-stone-950">{localizedTitle}</h1>
+          <h1 className="mt-2 text-xl font-semibold sm:text-2xl tracking-tight text-stone-950">{localizedTitle}</h1>
         </div>
 
         <div className="flex shrink-0 flex-wrap gap-2">

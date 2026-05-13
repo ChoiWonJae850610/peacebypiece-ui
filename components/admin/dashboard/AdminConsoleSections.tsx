@@ -32,7 +32,7 @@ function AdminWorkspaceCardView({ item }: { item: AdminWorkspaceCard }) {
   const text = translateItem(item);
 
   const content = (
-    <AdminCard as="article" className="h-full p-3.5 transition hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-md">
+    <AdminCard as="article" className="h-full p-3 transition hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-md sm:p-3.5">
       <div className="flex h-full flex-col justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-start justify-between gap-2">
@@ -70,7 +70,7 @@ export default function AdminConsoleSections() {
   return (
     <>
       <AdminSection title={t("adminConsole.managementCards.title", "운영 관리")}>
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+        <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
           {managementCards.map((item) => (
             <AdminWorkspaceCardView key={item.id} item={item} />
           ))}
