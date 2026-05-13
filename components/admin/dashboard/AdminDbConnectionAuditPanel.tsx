@@ -1,5 +1,6 @@
+import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
-import type { AdminDbCompletionSummary } from "@/lib/admin/dbCompletionAudit";
+import type { AdminDbCompletionSummary, AdminDbScreenAuditSourceType, AdminDbScreenAuditStatus } from "@/lib/admin/dbCompletionAudit";
 import { getAdminDbCompletionStatusPresentation, getAdminDbSourceTypeLabel, getAdminRepositoryModeLabel } from "@/lib/admin/dbCompletionAudit";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
@@ -8,6 +9,21 @@ type AdminDbConnectionAuditPanelProps = {
 };
 
 type AdminT = ReturnType<typeof useAdminTranslation>;
+
+
+function getDbStatusTone(status: AdminDbScreenAuditStatus): AdminStatusBadgeTone {
+  if (status === "db-connected") return "success";
+  if (status === "db-prepared") return "warning";
+  if (status === "fallback-guarded") return "info";
+  return "neutral";
+}
+
+function getDbSourceTypeTone(sourceType: AdminDbScreenAuditSourceType): AdminStatusBadgeTone {
+  if (sourceType === "actual-db") return "success";
+  if (sourceType === "db-with-fallback") return "info";
+  if (sourceType === "db-prepared-fallback") return "warning";
+  return "neutral";
+}
 
 function translateRepositoryMode(mode: string, t: AdminT) {
   return t(`dbConnectionAudit.repositoryModes.${mode}`, getAdminRepositoryModeLabel(mode as Parameters<typeof getAdminRepositoryModeLabel>[0]));
@@ -30,10 +46,10 @@ export default function AdminDbConnectionAuditPanel({ summary }: AdminDbConnecti
           <h2 className="text-lg font-semibold text-stone-950">{t("dbConnectionAudit.title", "데이터 연결 점검")}</h2>
           <p className="mt-1 text-xs text-stone-500">{t("dbConnectionAudit.description", "관리자 화면별 실제 데이터 조회/저장 경계와 안전 표시 상태입니다.")}</p>
         </div>
-        <div className="flex flex-wrap gap-2 text-xs font-semibold text-stone-500">
-          <span className="rounded-full bg-stone-100 px-3 py-1.5">{t("dbConnectionAudit.repository.workorder", "작업지시서")} {translateRepositoryMode(summary.repositoryModes.workorder, t)}</span>
-          <span className="rounded-full bg-stone-100 px-3 py-1.5">{t("dbConnectionAudit.repository.partner", "협력업체")} {translateRepositoryMode(summary.repositoryModes.partner, t)}</span>
-          <span className="rounded-full bg-stone-100 px-3 py-1.5">{t("dbConnectionAudit.repository.attachmentMemo", "메모/첨부")} {translateRepositoryMode(summary.repositoryModes.attachmentMemo, t)}</span>
+        <div className="flex flex-wrap gap-2">
+          <AdminStatusBadge tone="neutral">{t("dbConnectionAudit.repository.workorder", "작업지시서")} {translateRepositoryMode(summary.repositoryModes.workorder, t)}</AdminStatusBadge>
+          <AdminStatusBadge tone="neutral">{t("dbConnectionAudit.repository.partner", "협력업체")} {translateRepositoryMode(summary.repositoryModes.partner, t)}</AdminStatusBadge>
+          <AdminStatusBadge tone="neutral">{t("dbConnectionAudit.repository.attachmentMemo", "메모/첨부")} {translateRepositoryMode(summary.repositoryModes.attachmentMemo, t)}</AdminStatusBadge>
         </div>
       </div>
 
@@ -49,12 +65,12 @@ export default function AdminDbConnectionAuditPanel({ summary }: AdminDbConnecti
                   <p className="mt-1 truncate text-xs text-stone-400">{item.routePath}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <span className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ring-1 ${statusPresentation.className}`}>
+                  <AdminStatusBadge tone={getDbStatusTone(item.status)}>
                     {translateStatusLabel(item.status, statusPresentation.label, t)}
-                  </span>
-                  <span className="w-fit rounded-full bg-white px-3 py-1 text-xs font-semibold text-stone-600 ring-1 ring-stone-200">
+                  </AdminStatusBadge>
+                  <AdminStatusBadge tone={getDbSourceTypeTone(item.sourceType)}>
                     {translateSourceType(item.sourceType, t)}
-                  </span>
+                  </AdminStatusBadge>
                 </div>
               </div>
               <dl className="mt-3 grid gap-2 text-xs text-stone-500 lg:grid-cols-2">
