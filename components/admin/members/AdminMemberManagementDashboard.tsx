@@ -35,7 +35,7 @@ import {
   type MemberPermissionCode,
 } from "@/lib/permissions";
 import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
-import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import AdminTable from "@/components/admin/common/AdminTable";
@@ -106,6 +106,18 @@ function getInvitationStatusTone(status: MemberInvitationPreview["status"]): Adm
 
 const editableMemberPermissionCodes = MEMBER_PERMISSION_CATALOG.filter((permission) => !permission.systemOnly).map((permission) => permission.code);
 
+type MemberManagementTab = "invite" | "approval" | "members" | "permissions";
+
+type MemberManagementTabPreview = {
+  id: MemberManagementTab;
+  labelKey: string;
+  fallbackLabel: string;
+  descriptionKey: string;
+  fallbackDescription: string;
+  countLabel: string;
+};
+
+
 function getLoadStatusLabelKey(status: MemberJoinRequestLoadStatus | MemberListLoadStatus): string {
   if (status === "loaded") return "dbConnected";
   if (status === "loading") return "dbLoading";
@@ -159,6 +171,7 @@ export default function AdminMemberManagementDashboard() {
   const invitationColumns = getInvitationTableColumns();
   const joinRequestColumns = getJoinRequestTableColumns();
   const [selectedRoleId, setSelectedRoleId] = useState<string>(inviteRoleOptions[1]?.id ?? inviteRoleOptions[0]?.id ?? "viewer");
+  const [activeTab, setActiveTab] = useState<MemberManagementTab>("invite");
   const selectedRole = useMemo(
     () => inviteRoleOptions.find((role) => role.id === selectedRoleId) ?? inviteRoleOptions[0],
     [inviteRoleOptions, selectedRoleId],
@@ -236,6 +249,40 @@ export default function AdminMemberManagementDashboard() {
     [baseSummaryCards, joinRequestLoadStatus, joinRequests.length, memberListLoadStatus, members.length],
   );
   const canSubmitInvite = canCreateInvite && targetContact.trim().length > 0 && !isCreatingInvite;
+  const tabPreviews: MemberManagementTabPreview[] = [
+    {
+      id: "invite",
+      labelKey: "memberManagement.tabs.invite.label",
+      fallbackLabel: "멤버 초대",
+      descriptionKey: "memberManagement.tabs.invite.description",
+      fallbackDescription: "초대 링크와 QR을 생성합니다.",
+      countLabel: t("memberManagement.tabs.invite.count", "초대 {count}건").replace("{count}", String(invitations.length)),
+    },
+    {
+      id: "approval",
+      labelKey: "memberManagement.tabs.approval.label",
+      fallbackLabel: "승인",
+      descriptionKey: "memberManagement.tabs.approval.description",
+      fallbackDescription: "가입 신청을 승인하거나 거절합니다.",
+      countLabel: t("memberManagement.tabs.approval.count", "승인 대기 {count}건").replace("{count}", String(joinRequests.length)),
+    },
+    {
+      id: "members",
+      labelKey: "memberManagement.tabs.members.label",
+      fallbackLabel: "전체 멤버",
+      descriptionKey: "memberManagement.tabs.members.description",
+      fallbackDescription: "멤버 목록과 역할 기본값을 확인합니다.",
+      countLabel: t("memberManagement.tabs.members.count", "멤버 {count}명").replace("{count}", String(members.length)),
+    },
+    {
+      id: "permissions",
+      labelKey: "memberManagement.tabs.permissions.label",
+      fallbackLabel: "권한 관리",
+      descriptionKey: "memberManagement.tabs.permissions.description",
+      fallbackDescription: "권한 코드와 홈 카드 노출 기준을 관리합니다.",
+      countLabel: t("memberManagement.tabs.permissions.count", "권한 {count}개").replace("{count}", String(editableMemberPermissionCodes.length)),
+    },
+  ];
 
   async function loadCompanyMembers() {
     setMemberListLoadStatus("loading");
@@ -426,38 +473,61 @@ export default function AdminMemberManagementDashboard() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1">
-      <section className="rounded-3xl border border-stone-200 bg-white/90 p-5 shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-400">
-              {t("memberManagement.eyebrow", "Member permissions")}
+      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {summaryCards.map((card) => (
+          <article key={card.id} className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold text-stone-500">
+                  {t(`memberManagement.summary.${card.id}.label`, card.id)}
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-stone-950">{card.value}</p>
+              </div>
+              <AdminStatusBadge tone={getStatusTone(card.status)}>
+                {t(`memberManagement.statuses.${card.status}`, card.status)}
+              </AdminStatusBadge>
+            </div>
+            <p className="mt-3 text-xs leading-5 text-stone-500">
+              {t(`memberManagement.summary.${card.id}.description`, "")}
             </p>
-            <h2 className="mt-2 text-xl font-semibold text-stone-950">
-              {t("memberManagement.title", "멤버 관리")}
-            </h2>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">
-              {t(
-                "memberManagement.description",
-                "고객사 멤버 초대, 가입 신청 승인, 권한 부여를 한 화면에서 처리하는 멤버관리 IA입니다.",
-              )}
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <AdminLinkButton
-              href={canCreateInvite ? "#member-invite-builder" : "#member-permission-guard"}
-              aria-disabled={!canCreateInvite}
-              variant={canCreateInvite ? "primary" : "secondary"}
-              className={canCreateInvite ? "" : "pointer-events-none text-stone-400"}
-            >
-              {t("memberManagement.actions.createInvite", "초대 링크 생성")}
-            </AdminLinkButton>
-            <AdminLinkButton href="/admin/settings" variant="secondary">
-              {t("memberManagement.actions.openOrganizationSettings", "조직 설정 보기")}
-            </AdminLinkButton>
-          </div>
+          </article>
+        ))}
+      </section>
+
+
+      <section className="rounded-3xl border border-stone-200 bg-white p-3 shadow-sm">
+        <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+          {tabPreviews.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={[
+                  "rounded-2xl border px-4 py-3 text-left transition",
+                  isActive
+                    ? "border-stone-950 bg-stone-950 text-white shadow-sm"
+                    : "border-stone-200 bg-white text-stone-700 hover:border-stone-300 hover:bg-stone-50",
+                ].join(" ")}
+              >
+                <span className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-semibold">{t(tab.labelKey, tab.fallbackLabel)}</span>
+                  <span className={isActive ? "text-xs font-semibold text-stone-300" : "text-xs font-semibold text-stone-400"}>
+                    {tab.countLabel}
+                  </span>
+                </span>
+                <span className={isActive ? "mt-2 block text-xs leading-5 text-stone-300" : "mt-2 block text-xs leading-5 text-stone-500"}>
+                  {t(tab.descriptionKey, tab.fallbackDescription)}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </section>
 
+      {activeTab === "invite" ? (
+        <>
       <section id="member-invite-builder" className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div className="min-w-0">
@@ -618,27 +688,41 @@ export default function AdminMemberManagementDashboard() {
         </div>
       </section>
 
-      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {summaryCards.map((card) => (
-          <article key={card.id} className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold text-stone-500">
-                  {t(`memberManagement.summary.${card.id}.label`, card.id)}
-                </p>
-                <p className="mt-2 text-2xl font-semibold text-stone-950">{card.value}</p>
-              </div>
-              <AdminStatusBadge tone={getStatusTone(card.status)}>
-                {t(`memberManagement.statuses.${card.status}`, card.status)}
-              </AdminStatusBadge>
+      <section className="grid gap-4 xl:grid-cols-1">
+        <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+          <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h3 className="text-base font-semibold text-stone-950">
+                {t("memberManagement.sections.invitations", "초대 대기 목록")}
+              </h3>
+              <p className="mt-1 text-xs leading-5 text-stone-500">
+                {t("memberManagement.sections.invitationsDescription", "생성된 초대 링크와 QR의 만료, 취소 상태를 관리합니다.")}
+              </p>
             </div>
-            <p className="mt-3 text-xs leading-5 text-stone-500">
-              {t(`memberManagement.summary.${card.id}.description`, "")}
-            </p>
-          </article>
-        ))}
-      </section>
+            <span className="text-xs font-semibold text-stone-400">
+              {t("memberManagement.sourceState.dbPending", "DB 연결 예정")}
+            </span>
+          </div>
+          <div className="mt-4 overflow-x-auto">
+            <AdminTable
+              items={invitations}
+              columns={invitationTableColumns}
+              getRowKey={(invitation) => invitation.id}
+              emptyLabel={t("memberManagement.empty.invitations.title", "생성된 초대가 없습니다")}
+              emptyDescription={t("memberManagement.empty.invitations.description", "초대 링크 생성 기능을 연결하면 활성/만료/취소 초대가 표시됩니다.")}
+              gridTemplateColumns="minmax(150px,1.2fr) 90px 90px 110px"
+              rowBaseClassName="grid w-full gap-3 px-4 py-3 text-left text-xs text-stone-600 md:items-center"
+              className="min-w-[520px]"
+            />
+          </div>
+        </article>
 
+      </section>
+        </>
+      ) : null}
+
+      {activeTab === "approval" ? (
+        <>
       <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
         <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -772,6 +856,115 @@ export default function AdminMemberManagementDashboard() {
         </div>
       </section>
 
+      <section className="grid gap-4 xl:grid-cols-1">
+        <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+          <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h3 className="text-base font-semibold text-stone-950">
+                {t("memberManagement.sections.joinRequests", "가입 신청/승인 대기")}
+              </h3>
+              <p className="mt-1 text-xs leading-5 text-stone-500">
+                {t("memberManagement.sections.joinRequestsDescription", "초대 링크로 가입 신청한 사용자를 승인하거나 거절하는 영역입니다.")}
+              </p>
+            </div>
+            <span className="text-xs font-semibold text-stone-400">
+              {t(`memberManagement.sourceState.${getLoadStatusLabelKey(joinRequestLoadStatus)}`, "DB 연결 상태 확인")}
+            </span>
+          </div>
+          {joinRequestLoadError ? (
+            <p className="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">
+              {t("memberManagement.loadErrors.joinRequests", "승인 대기 신청 목록을 불러오지 못했습니다.")} {joinRequestLoadError}
+            </p>
+          ) : null}
+          {joinRequestReviewMessage ? (
+            <p className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-semibold text-emerald-700">
+              {joinRequestReviewMessage}
+            </p>
+          ) : null}
+          {joinRequestReviewError ? (
+            <p className="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">
+              {t("memberManagement.reviewActions.error", "가입 신청 처리에 실패했습니다.")} {joinRequestReviewError}
+            </p>
+          ) : null}
+          <div className="mt-4 overflow-x-auto rounded-2xl border border-stone-200">
+            <div className="min-w-[980px]">
+            <div className="grid grid-cols-[minmax(150px,1.2fr)_130px_170px_100px_minmax(130px,1fr)_110px_90px_110px_150px] bg-stone-50 text-xs font-semibold text-stone-500">
+              {joinRequestColumns.map((column) => (
+                <div key={column.id} className="px-3 py-2">
+                  {t(`memberManagement.tables.joinRequests.columns.${column.id}`, column.id)}
+                </div>
+              ))}
+            </div>
+            <div className="divide-y divide-stone-100">
+              {joinRequestLoadStatus === "loading" ? (
+                <div className="p-3">
+                  <AdminEmptyState
+                    title={t("memberManagement.loading.joinRequests.title", "승인 대기 신청을 불러오는 중입니다")}
+                    description={t("memberManagement.loading.joinRequests.description", "join_requests.pending 목록을 실제 DB 기준으로 조회하고 있습니다.")}
+                  />
+                </div>
+              ) : joinRequests.length ? (
+                joinRequests.map((request) => (
+                  <div key={request.id} className="grid grid-cols-[minmax(150px,1.2fr)_130px_170px_100px_minmax(130px,1fr)_110px_90px_110px_150px] px-3 py-3 text-xs text-stone-600">
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-stone-900">{request.applicantName}</p>
+                      <p className="mt-1 truncate text-stone-500">{request.applicantEmail}</p>
+                    </div>
+                    <span className="truncate text-stone-500">{request.applicantPhoneLabel}</span>
+                    <span className="truncate text-stone-500">{request.invitationEmailLabel}</span>
+                    <AdminStatusBadge tone={getEmailMatchTone(request.emailMatchStatus)}>
+                      {t(`memberManagement.emailMatchStatuses.${request.emailMatchStatus}`, request.emailMatchStatus)}
+                    </AdminStatusBadge>
+                    <span className="truncate text-stone-500" title={request.requestMemoLabel}>
+                      {request.requestMemoLabel}
+                    </span>
+                    <span className="font-semibold text-stone-700">
+                      {t(`memberManagement.roles.${request.requestedRoleId}.label`, request.requestedRoleId)}
+                    </span>
+                    <AdminStatusBadge tone="warning">
+                      {t(`memberManagement.joinRequestStatuses.${request.status}`, request.status)}
+                    </AdminStatusBadge>
+                    <span className="text-stone-500">{request.requestedAtLabel}</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      <AdminButton
+                        onClick={() => void handleReviewJoinRequest(request, "approve")}
+                        disabled={reviewingJoinRequestId !== null}
+                        variant="primary"
+                        className="px-2.5 py-1 text-[11px]"
+                      >
+                        {reviewingJoinRequestId === request.id
+                          ? t("memberManagement.reviewActions.processing", "처리 중")
+                          : t("memberManagement.reviewActions.approve", "승인")}
+                      </AdminButton>
+                      <AdminButton
+                        onClick={() => void handleReviewJoinRequest(request, "reject")}
+                        disabled={reviewingJoinRequestId !== null}
+                        variant="secondary"
+                        className="px-2.5 py-1 text-[11px]"
+                      >
+                        {t("memberManagement.reviewActions.reject", "거절")}
+                      </AdminButton>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-3">
+                  <AdminEmptyState
+                    title={t("memberManagement.empty.joinRequests.title", "승인 대기 신청이 없습니다")}
+                    description={t("memberManagement.empty.joinRequests.description", "초대 링크 가입 신청이 생성되면 승인/거절/권한 부여 대상이 이 영역에 표시됩니다.")}
+                  />
+                </div>
+              )}
+            </div>
+            </div>
+          </div>
+        </article>
+      </section>
+        </>
+      ) : null}
+
+      {activeTab === "members" ? (
+        <>
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
         <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
           <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-end lg:justify-between">
@@ -909,139 +1102,11 @@ export default function AdminMemberManagementDashboard() {
         </article>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-2">
-        <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-          <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <h3 className="text-base font-semibold text-stone-950">
-                {t("memberManagement.sections.invitations", "초대 대기 목록")}
-              </h3>
-              <p className="mt-1 text-xs leading-5 text-stone-500">
-                {t("memberManagement.sections.invitationsDescription", "생성된 초대 링크와 QR의 만료, 취소 상태를 관리합니다.")}
-              </p>
-            </div>
-            <span className="text-xs font-semibold text-stone-400">
-              {t("memberManagement.sourceState.dbPending", "DB 연결 예정")}
-            </span>
-          </div>
-          <div className="mt-4 overflow-x-auto">
-            <AdminTable
-              items={invitations}
-              columns={invitationTableColumns}
-              getRowKey={(invitation) => invitation.id}
-              emptyLabel={t("memberManagement.empty.invitations.title", "생성된 초대가 없습니다")}
-              emptyDescription={t("memberManagement.empty.invitations.description", "초대 링크 생성 기능을 연결하면 활성/만료/취소 초대가 표시됩니다.")}
-              gridTemplateColumns="minmax(150px,1.2fr) 90px 90px 110px"
-              rowBaseClassName="grid w-full gap-3 px-4 py-3 text-left text-xs text-stone-600 md:items-center"
-              className="min-w-[520px]"
-            />
-          </div>
-        </article>
+        </>
+      ) : null}
 
-        <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-          <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <h3 className="text-base font-semibold text-stone-950">
-                {t("memberManagement.sections.joinRequests", "가입 신청/승인 대기")}
-              </h3>
-              <p className="mt-1 text-xs leading-5 text-stone-500">
-                {t("memberManagement.sections.joinRequestsDescription", "초대 링크로 가입 신청한 사용자를 승인하거나 거절하는 영역입니다.")}
-              </p>
-            </div>
-            <span className="text-xs font-semibold text-stone-400">
-              {t(`memberManagement.sourceState.${getLoadStatusLabelKey(joinRequestLoadStatus)}`, "DB 연결 상태 확인")}
-            </span>
-          </div>
-          {joinRequestLoadError ? (
-            <p className="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">
-              {t("memberManagement.loadErrors.joinRequests", "승인 대기 신청 목록을 불러오지 못했습니다.")} {joinRequestLoadError}
-            </p>
-          ) : null}
-          {joinRequestReviewMessage ? (
-            <p className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-semibold text-emerald-700">
-              {joinRequestReviewMessage}
-            </p>
-          ) : null}
-          {joinRequestReviewError ? (
-            <p className="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">
-              {t("memberManagement.reviewActions.error", "가입 신청 처리에 실패했습니다.")} {joinRequestReviewError}
-            </p>
-          ) : null}
-          <div className="mt-4 overflow-x-auto rounded-2xl border border-stone-200">
-            <div className="min-w-[980px]">
-            <div className="grid grid-cols-[minmax(150px,1.2fr)_130px_170px_100px_minmax(130px,1fr)_110px_90px_110px_150px] bg-stone-50 text-xs font-semibold text-stone-500">
-              {joinRequestColumns.map((column) => (
-                <div key={column.id} className="px-3 py-2">
-                  {t(`memberManagement.tables.joinRequests.columns.${column.id}`, column.id)}
-                </div>
-              ))}
-            </div>
-            <div className="divide-y divide-stone-100">
-              {joinRequestLoadStatus === "loading" ? (
-                <div className="p-3">
-                  <AdminEmptyState
-                    title={t("memberManagement.loading.joinRequests.title", "승인 대기 신청을 불러오는 중입니다")}
-                    description={t("memberManagement.loading.joinRequests.description", "join_requests.pending 목록을 실제 DB 기준으로 조회하고 있습니다.")}
-                  />
-                </div>
-              ) : joinRequests.length ? (
-                joinRequests.map((request) => (
-                  <div key={request.id} className="grid grid-cols-[minmax(150px,1.2fr)_130px_170px_100px_minmax(130px,1fr)_110px_90px_110px_150px] px-3 py-3 text-xs text-stone-600">
-                    <div className="min-w-0">
-                      <p className="truncate font-semibold text-stone-900">{request.applicantName}</p>
-                      <p className="mt-1 truncate text-stone-500">{request.applicantEmail}</p>
-                    </div>
-                    <span className="truncate text-stone-500">{request.applicantPhoneLabel}</span>
-                    <span className="truncate text-stone-500">{request.invitationEmailLabel}</span>
-                    <AdminStatusBadge tone={getEmailMatchTone(request.emailMatchStatus)}>
-                      {t(`memberManagement.emailMatchStatuses.${request.emailMatchStatus}`, request.emailMatchStatus)}
-                    </AdminStatusBadge>
-                    <span className="truncate text-stone-500" title={request.requestMemoLabel}>
-                      {request.requestMemoLabel}
-                    </span>
-                    <span className="font-semibold text-stone-700">
-                      {t(`memberManagement.roles.${request.requestedRoleId}.label`, request.requestedRoleId)}
-                    </span>
-                    <AdminStatusBadge tone="warning">
-                      {t(`memberManagement.joinRequestStatuses.${request.status}`, request.status)}
-                    </AdminStatusBadge>
-                    <span className="text-stone-500">{request.requestedAtLabel}</span>
-                    <div className="flex flex-wrap gap-1.5">
-                      <AdminButton
-                        onClick={() => void handleReviewJoinRequest(request, "approve")}
-                        disabled={reviewingJoinRequestId !== null}
-                        variant="primary"
-                        className="px-2.5 py-1 text-[11px]"
-                      >
-                        {reviewingJoinRequestId === request.id
-                          ? t("memberManagement.reviewActions.processing", "처리 중")
-                          : t("memberManagement.reviewActions.approve", "승인")}
-                      </AdminButton>
-                      <AdminButton
-                        onClick={() => void handleReviewJoinRequest(request, "reject")}
-                        disabled={reviewingJoinRequestId !== null}
-                        variant="secondary"
-                        className="px-2.5 py-1 text-[11px]"
-                      >
-                        {t("memberManagement.reviewActions.reject", "거절")}
-                      </AdminButton>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="p-3">
-                  <AdminEmptyState
-                    title={t("memberManagement.empty.joinRequests.title", "승인 대기 신청이 없습니다")}
-                    description={t("memberManagement.empty.joinRequests.description", "초대 링크 가입 신청이 생성되면 승인/거절/권한 부여 대상이 이 영역에 표시됩니다.")}
-                  />
-                </div>
-              )}
-            </div>
-            </div>
-          </div>
-        </article>
-      </section>
-
+      {activeTab === "permissions" ? (
+        <>
       <section id="member-permission-guard" className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
         <h3 className="text-base font-semibold text-stone-950">
           {t("memberManagement.sections.workspaceCards", "메인화면 카드 권한")}
@@ -1149,6 +1214,8 @@ export default function AdminMemberManagementDashboard() {
           })}
         </div>
       </section>
+        </>
+      ) : null}
     </div>
   );
 }

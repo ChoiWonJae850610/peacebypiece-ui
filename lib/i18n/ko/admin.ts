@@ -94,6 +94,12 @@ export const adminKo = {
     systemOnlyCount: "시스템 전용 {count}개",
     matrixEnabledCount: "기본 체크 {count}개",
     actions: { openOrganizationSettings: "조직 설정 보기", createInvite: "초대 링크 생성" },
+    tabs: {
+      invite: { label: "멤버 초대", description: "초대 링크와 QR을 생성합니다.", count: "초대 {count}건" },
+      approval: { label: "승인", description: "가입 신청을 승인하거나 거절합니다.", count: "승인 대기 {count}건" },
+      members: { label: "전체 멤버", description: "멤버 목록과 역할 기본값을 확인합니다.", count: "멤버 {count}명" },
+      permissions: { label: "권한 관리", description: "권한 코드와 홈 카드 노출 기준을 관리합니다.", count: "권한 {count}개" }
+    },
     inviteBuilder: {
       eyebrow: "초대 링크와 QR",
       title: "초대 링크/QR 생성 화면",

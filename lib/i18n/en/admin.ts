@@ -144,6 +144,12 @@ export const adminEn = {
     systemOnlyCount: "{count} system-only",
     matrixEnabledCount: "{count} default checks",
     actions: { openOrganizationSettings: "Open organization settings", createInvite: "Create invitation link" },
+    tabs: {
+      invite: { label: "Invite members", description: "Create invitation links and QR codes.", count: "{count} invites" },
+      approval: { label: "Approvals", description: "Approve or reject join requests.", count: "{count} pending" },
+      members: { label: "All members", description: "Review members and role defaults.", count: "{count} members" },
+      permissions: { label: "Permissions", description: "Manage permission codes and home card visibility.", count: "{count} permissions" }
+    },
     inviteBuilder: {
       eyebrow: "Invitation link and QR",
       title: "Invitation link/QR screen",
