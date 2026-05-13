@@ -107,7 +107,7 @@ function PeriodSummaryCard({
   onSelect: (key: AdminStatsPeriodTopMode) => void;
 }) {
   return (
-    <div className="flex h-full min-h-[204px] flex-col rounded-[22px] border border-stone-100 bg-stone-50/70 p-3">
+    <div className="flex h-full min-h-[188px] flex-col rounded-[20px] border border-stone-100 bg-stone-50/70 p-2.5 sm:min-h-[204px] sm:rounded-[22px] sm:p-3">
       <h3 className="text-sm font-semibold text-stone-950">{title}</h3>
       <div className="mt-2 grid flex-1 content-start gap-1">
         {items.map((item) => {
@@ -117,15 +117,15 @@ function PeriodSummaryCard({
               key={item.key}
               type="button"
               onClick={() => onSelect(item.key)}
-              className={`min-h-[52px] rounded-2xl border px-3 py-2 text-left shadow-sm transition ${isSelected ? "border-stone-950 bg-white" : "border-stone-100 bg-white hover:border-stone-200 hover:bg-stone-50"}`}
+              className={`min-h-[52px] rounded-2xl border px-2.5 py-2 text-left shadow-sm transition sm:px-3 ${isSelected ? "border-stone-950 bg-white" : "border-stone-100 bg-white hover:border-stone-200 hover:bg-stone-50"}`}
               aria-pressed={isSelected}
             >
-              <div className="flex items-start justify-between gap-3">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-stone-800">{item.label}</p>
                   <p className="mt-0.5 line-clamp-1 text-[11px] font-semibold leading-4 text-stone-400">{item.description}</p>
                 </div>
-                <p className="shrink-0 text-lg font-bold text-stone-950">{item.value}</p>
+                <p className="shrink-0 text-base font-bold text-stone-950 sm:text-lg">{item.value}</p>
               </div>
             </button>
           );
@@ -150,13 +150,13 @@ function PeriodTopCard({
   valueSuffix: string;
 }) {
   return (
-    <AdminCard className="flex h-full min-h-[204px] flex-col p-3.5">
+    <AdminCard className="flex h-full min-h-[188px] flex-col p-3 sm:min-h-[204px] sm:p-3.5">
       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">{eyebrow}</p>
       <h2 className="mt-1 text-base font-semibold text-stone-950">{title}</h2>
       <div className="mt-2 grid flex-1 content-start gap-2">
         {items.length > 0 ? items.map((item, index) => (
           <div key={`${item.label}-${index}`} className="rounded-2xl bg-stone-50 px-3 py-2">
-            <div className="flex items-center justify-between text-sm font-semibold text-stone-700">
+            <div className="flex items-start justify-between gap-2 text-sm font-semibold text-stone-700">
               <span className="truncate pr-3">{index + 1}. {item.label}</span>
               <span className="shrink-0 text-stone-950">{formatCount(item.value, valueSuffix)}</span>
             </div>
@@ -172,9 +172,9 @@ function PeriodTopCard({
 
 function CurrentSummaryCard({ label, value, description, subValue }: { label: string; value: string; description: string; subValue?: string }) {
   return (
-    <div className="flex h-full min-h-[96px] flex-col rounded-[20px] border border-stone-100 bg-white px-3.5 py-2.5 shadow-sm">
+    <div className="flex h-full min-h-[92px] flex-col rounded-[18px] border border-stone-100 bg-white px-3 py-2.5 shadow-sm sm:min-h-[96px] sm:rounded-[20px] sm:px-3.5">
       <p className="text-xs font-semibold text-stone-500">{label}</p>
-      <p className="mt-1 text-lg font-bold text-stone-950">{value}</p>
+      <p className="mt-1 text-base font-bold text-stone-950 sm:text-lg">{value}</p>
       <p className="mt-0.5 flex-1 text-[11px] font-semibold leading-4 text-stone-500">{description}</p>
       {subValue ? <p className="sr-only">{subValue}</p> : null}
     </div>
@@ -422,7 +422,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   }, [activeStatsSection, isStatsSectionAnimating]);
 
   const renderBarList = (title: string, points: Array<{ label: string; value: number; widthPercent: number; valueLabel?: string }>, emptyLabel: string) => (
-    <AdminCard className="flex h-full min-h-[246px] flex-col p-3.5">
+    <AdminCard className="flex h-full min-h-[228px] flex-col p-3 sm:min-h-[246px] sm:p-3.5">
       <h2 className="text-base font-semibold text-stone-950">{title}</h2>
       <div className="mt-2 grid flex-1 content-start gap-2">
         {points.length > 0 ? points.map((item) => (
@@ -487,7 +487,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
       ) : null}
 
       <section>
-        <div className="grid auto-rows-fr gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid auto-rows-fr gap-2.5 sm:grid-cols-2 sm:gap-3 xl:grid-cols-4">
           <CurrentSummaryCard label={pt("currentProducedLabel", pageText.currentProducedLabel)} value={formatCount(stats.currentOverview.totalProducedCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))} description={pt("currentReorderDescription", pageText.currentReorderDescription).replace("{count}", formatCount(totalReorderCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)))} />
           <CurrentSummaryCard label={pt("currentDelayRateLabel", pageText.currentDelayRateLabel)} value={formatPercent(stats.currentOverview.dueDelayRate, pt("pendingLabel", pageText.pendingLabel))} description={pt("currentRateBasis", pageText.currentRateBasis).replace("{count}", formatCount(stats.currentOverview.dueDelayCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))).replace("{target}", formatCount(stats.currentOverview.dueDateTargetCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)))} />
           <CurrentSummaryCard label={pt("currentQualityRateLabel", pageText.currentQualityRateLabel)} value={formatPercent(stats.currentOverview.qualityIssueRate, pt("pendingLabel", pageText.pendingLabel))} description={pt("currentRateBasis", pageText.currentRateBasis).replace("{count}", formatCount(stats.currentOverview.qualityIssueCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))).replace("{target}", formatCount(stats.currentOverview.qualityTargetCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)))} />
@@ -495,9 +495,9 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-[24px] border border-stone-100 bg-white px-2.5 py-2.5 shadow-sm">
-        <div className="flex flex-wrap items-center justify-end border-b border-stone-100 pb-1.5">
-          <div className="flex flex-wrap items-center gap-1.5 rounded-full bg-stone-50 p-1">
+      <section className="overflow-hidden rounded-[20px] border border-stone-100 bg-white px-2 py-2 shadow-sm sm:rounded-[24px] sm:px-2.5 sm:py-2.5">
+        <div className="flex flex-wrap items-center justify-start border-b border-stone-100 pb-1.5 sm:justify-end">
+          <div className="flex w-full items-center gap-1.5 overflow-x-auto rounded-2xl bg-stone-50 p-1 sm:w-auto sm:flex-wrap sm:rounded-full">
             {statsSectionTabs.map((item) => {
               const isActive = item.key === activeStatsSection;
               return (
@@ -507,7 +507,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
                   onClick={() => changeStatsSection(item.key)}
                   variant={isActive ? "primary" : "ghost"}
                   size="sm"
-                  className="min-h-8 px-3.5 py-1.5 text-xs"
+                  className="min-h-8 shrink-0 px-3 py-1.5 text-xs sm:px-3.5"
                   aria-pressed={isActive}
                   title={item.description}
                 >
@@ -525,13 +525,13 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
           >
           {activeStatsSection === "production" ? (
             <div className="grid auto-rows-fr gap-2.5 xl:grid-cols-2">
-              <AdminCard className="flex h-full min-h-[246px] flex-col p-3.5">
-                <div className="flex flex-wrap items-center justify-between gap-3">
+              <AdminCard className="flex h-full min-h-[228px] flex-col p-3 sm:min-h-[246px] sm:p-3.5">
+                <div className="flex flex-col items-start gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("productionMixEyebrow", pageText.productionMixEyebrow)}</p>
                     <h2 className="mt-1 text-base font-semibold text-stone-950">{pt("productionMixTitle", pageText.productionMixTitle)}</h2>
                   </div>
-                  <div className="flex rounded-full bg-stone-100 p-1">
+                  <div className="flex w-full overflow-x-auto rounded-2xl bg-stone-100 p-1 sm:w-auto sm:rounded-full">
                     {(["first", "second"] as const).map((key) => (
                       <AdminButton
                         key={key}
@@ -542,14 +542,14 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
                         }}
                         variant={categoryDepth === key ? "secondary" : "ghost"}
                         size="sm"
-                        className="min-h-7 px-3 py-1 text-xs"
+                        className="min-h-7 shrink-0 px-3 py-1 text-xs"
                       >
                         {categoryDepthLabels[key]}
                       </AdminButton>
                     ))}
                   </div>
                 </div>
-                <div className="mt-1.5 flex-1">
+                <div className="mt-1.5 min-w-0 flex-1">
                   <AdminBasicDonutChart points={selectedCategoryDepthBars} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel={pt("productionMixEmpty", pageText.productionMixEmpty)} compact selectedLabel={normalizedSelectedCategoryLabel} onSelectPoint={setSelectedCategoryLabel} />
                 </div>
                 <p className="mt-1 text-[11px] font-semibold text-stone-500">{selectedCategoryDepthLabel} · {formatCount(selectedCategoryDepthTotal, pt("workorderCountSuffix", pageText.workorderCountSuffix))}</p>
@@ -563,7 +563,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
           {activeStatsSection === "factory" ? (
             <div className="grid auto-rows-fr gap-2.5 xl:grid-cols-2">
               {renderBarList(pt("factoryPerformanceTitle", pageText.factoryPerformanceTitle), viewModel.factoryProductionBars, pt("factoryPerformanceEmpty", pageText.factoryPerformanceEmpty))}
-              <AdminCard className="flex h-full min-h-[246px] flex-col p-3.5">
+              <AdminCard className="flex h-full min-h-[228px] flex-col p-3 sm:min-h-[246px] sm:p-3.5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("delayQualityEyebrow", pageText.delayQualityEyebrow)}</p>
                 <h2 className="mt-1 text-base font-semibold text-stone-950">{pt("delayQualityTitle", pageText.delayQualityTitle)}</h2>
                 <AdminTable
@@ -572,9 +572,9 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
                   getRowKey={(item) => item.label}
                   emptyLabel={pt("factoryPerformanceEmpty", pageText.factoryPerformanceEmpty)}
                   className="mt-2 min-h-[190px] rounded-2xl border-stone-100"
-                  gridTemplateColumns="minmax(0,1.2fr) minmax(0,0.8fr) minmax(0,0.8fr)"
-                  rowBaseClassName="grid w-full gap-3 px-3 py-2 text-left text-[11px] md:items-center"
-                  headerClassName="hidden gap-3 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-500 md:grid"
+                  gridTemplateColumns="minmax(180px,1.2fr) minmax(96px,0.8fr) minmax(96px,0.8fr)"
+                  rowBaseClassName="grid w-full min-w-[420px] gap-3 px-3 py-2 text-left text-[11px] md:min-w-0 md:items-center"
+                  headerClassName="hidden min-w-[420px] gap-3 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-500 md:grid md:min-w-0"
                 />
               </AdminCard>
             </div>
@@ -582,12 +582,12 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
 
           {activeStatsSection === "period" ? (
             <div>
-              <div className="flex flex-wrap items-center justify-between gap-2 rounded-[20px] border border-stone-100 bg-stone-50/70 px-3 py-1.5">
+              <div className="flex flex-col items-stretch gap-2 rounded-[18px] border border-stone-100 bg-stone-50/70 px-2.5 py-2 sm:rounded-[20px] sm:px-3 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                   <h3 className="text-sm font-semibold text-stone-950">{pt("periodAnalysisTitle", pageText.periodAnalysisTitle)}</h3>
                 </div>
                 <div className="flex w-full flex-wrap items-center justify-start gap-2 lg:w-auto lg:justify-end">
-                  <div className="w-full min-w-[280px] max-w-[440px] flex-1 sm:w-auto sm:flex-none">
+                  <div className="w-full min-w-0 flex-1 sm:w-auto sm:min-w-[280px] sm:max-w-[440px] sm:flex-none">
                     <AdminDateRangePicker
                       startDate={customStartDate}
                       endDate={customEndDate}
@@ -605,7 +605,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
                       aria-current={item.active ? "page" : undefined}
                       variant={item.active ? "primary" : "secondary"}
                       size="sm"
-                      className="min-h-8 px-3 py-1.5 text-xs"
+                      className="min-h-8 shrink-0 px-3 py-1.5 text-xs"
                     >
                       {translateStatsLabel(item.label, t)}
                     </AdminLinkButton>
@@ -614,7 +614,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
                     href="/admin/dashboard?period=30d"
                     variant="secondary"
                     size="sm"
-                    className="h-8 min-h-8 w-8 px-0 py-0 text-sm"
+                    className="h-8 min-h-8 w-8 shrink-0 px-0 py-0 text-sm"
                     aria-label={pt("customReset", pageText.customReset)}
                     title={pt("customReset", pageText.customReset)}
                   >
@@ -625,7 +625,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
                     aria-disabled={!isCustomPeriodValid}
                     variant={isCustomPeriodValid ? "primary" : "secondary"}
                     size="sm"
-                    className={`min-h-8 px-3 py-1.5 text-xs ${isCustomPeriodValid ? "" : "pointer-events-none opacity-50"}`}
+                    className={`min-h-8 shrink-0 px-3 py-1.5 text-xs ${isCustomPeriodValid ? "" : "pointer-events-none opacity-50"}`}
                   >
                     {pt("customApplyShort", pageText.customApply)}
                   </AdminLinkButton>

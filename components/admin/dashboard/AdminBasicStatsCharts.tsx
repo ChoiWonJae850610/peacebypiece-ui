@@ -57,16 +57,16 @@ export function AdminBasicBarChart({ points, emptyLabel, valueSuffix = "" }: Bas
   const total = points.reduce((sum, item) => sum + item.value, 0);
 
   return (
-    <div className="relative mt-5 min-h-[280px] rounded-[22px] border border-stone-100 bg-stone-50/70 px-4 py-5">
+    <div className="relative mt-3 min-h-[236px] rounded-[20px] border border-stone-100 bg-stone-50/70 px-3 py-4 sm:mt-5 sm:min-h-[280px] sm:rounded-[22px] sm:px-4 sm:py-5">
       {total === 0 ? (
         <div className="absolute inset-x-5 top-5 z-10 rounded-2xl border border-dashed border-stone-300 bg-white/75 px-4 py-3 text-center text-xs font-semibold text-stone-500">
           {emptyLabel}
         </div>
       ) : null}
-      <div className="h-56 w-full">
+      <div className="h-44 w-full sm:h-56">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={points} margin={{ top: 24, right: 8, bottom: 0, left: -20 }}>
-            <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "#78716c" }} />
+          <BarChart data={points} margin={{ top: 18, right: 4, bottom: 0, left: -24 }}>
+            <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "#78716c" }} />
             <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "#a8a29e" }} />
             <Tooltip
               cursor={{ fill: "rgba(231, 229, 228, 0.55)" }}
@@ -77,9 +77,9 @@ export function AdminBasicBarChart({ points, emptyLabel, valueSuffix = "" }: Bas
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <div className="mt-4 grid gap-2 sm:grid-cols-5">
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:grid-cols-3 lg:grid-cols-5">
         {points.map((item) => (
-          <div key={item.label} className="rounded-2xl bg-white px-3 py-2 text-center shadow-sm">
+          <div key={item.label} className="min-w-0 rounded-2xl bg-white px-2.5 py-2 text-center shadow-sm sm:px-3">
             <p className="text-sm font-bold text-stone-950">{getPointValueLabel(item, valueSuffix)}</p>
             <p className="mt-1 truncate text-[11px] font-semibold text-stone-500">{item.label}</p>
           </div>
@@ -91,8 +91,8 @@ export function AdminBasicBarChart({ points, emptyLabel, valueSuffix = "" }: Bas
 
 export function AdminBasicDonutChart({ points, totalLabel, valueSuffix = "", emptyLabel = "표시할 데이터가 없습니다", compact = false, selectedLabel = null, onSelectPoint }: BasicDonutChartProps) {
   const total = points.reduce((sum, item) => sum + item.value, 0);
-  const chartLayoutClassName = compact ? "mt-5 grid gap-4" : "mt-5 grid gap-4 md:grid-cols-[150px_minmax(0,1fr)]";
-  const chartBoxClassName = compact ? "relative mx-auto h-36 w-full max-w-[150px] min-w-0" : "relative h-36 w-full min-w-0";
+  const chartLayoutClassName = compact ? "mt-3 grid gap-3 sm:mt-5 sm:gap-4" : "mt-3 grid gap-3 sm:mt-5 sm:gap-4 md:grid-cols-[150px_minmax(0,1fr)]";
+  const chartBoxClassName = compact ? "relative mx-auto h-32 w-full max-w-[136px] min-w-0 sm:h-36 sm:max-w-[150px]" : "relative h-32 w-full min-w-0 sm:h-36";
 
   return (
     <div className={chartLayoutClassName}>
@@ -122,7 +122,7 @@ export function AdminBasicDonutChart({ points, totalLabel, valueSuffix = "", emp
           </div>
         ) : null}
       </div>
-      <div className="grid min-w-0 content-center gap-2">
+      <div className="grid min-w-0 content-center gap-1.5 sm:gap-2">
         {points.map((item, index) => {
           const isSelected = selectedLabel === item.label;
           const content = (
@@ -134,7 +134,7 @@ export function AdminBasicDonutChart({ points, totalLabel, valueSuffix = "", emp
               <span className="shrink-0">{getPointValueLabel(item, valueSuffix)}</span>
             </>
           );
-          const className = `flex w-full items-center justify-between rounded-2xl px-3 py-2 text-xs font-semibold transition ${isSelected ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "bg-stone-50 text-stone-600"}`;
+          const className = `flex w-full items-center justify-between gap-2 rounded-2xl px-2.5 py-2 text-xs font-semibold transition sm:px-3 ${isSelected ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "bg-stone-50 text-stone-600"}`;
           if (!onSelectPoint) {
             return <div key={item.label} className={className}>{content}</div>;
           }
