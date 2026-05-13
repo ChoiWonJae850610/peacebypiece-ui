@@ -4,11 +4,13 @@ import { AdminSection, AdminCard } from "@/components/admin/common/AdminSection"
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import {
   ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES,
-  getVisibleAdminWorkspaceCards,
+  getVisibleAdminWorkspaceManagementCards,
   type AdminWorkspaceCard,
   type AdminWorkspaceCardStatus,
 } from "@/lib/admin/adminWorkspaceCards";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
+
+const ADMIN_CONSOLE_VISIBLE_CARD_IDS = new Set(["partners", "files", "stats", "member-management"]);
 
 function getStatusTone(status: AdminWorkspaceCardStatus) {
   if (status === "available") return "success";
@@ -34,23 +36,23 @@ function AdminWorkspaceCardView({ item }: { item: AdminWorkspaceCard }) {
   const content = (
     <AdminCard
       as="article"
-      className="flex h-full min-h-[160px] p-5 transition hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-md sm:min-h-[190px] sm:p-6 lg:min-h-[220px] lg:p-7"
+      className="flex h-full min-h-[140px] p-5 transition hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-md sm:min-h-[150px] lg:min-h-[165px]"
     >
-      <div className="flex h-full min-w-0 flex-1 flex-col justify-between gap-5">
+      <div className="flex h-full min-w-0 flex-1 flex-col justify-between gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-start justify-between gap-2.5">
-            <h2 className="text-base font-semibold tracking-tight text-stone-950 sm:text-lg">{text.label}</h2>
+            <h2 className="text-base font-semibold tracking-tight text-stone-950">{text.label}</h2>
             <AdminStatusBadge tone={getStatusTone(item.status)}>{text.statusLabel}</AdminStatusBadge>
           </div>
           <p className="mt-3 text-sm leading-6 text-stone-600">{text.description}</p>
         </div>
 
         {item.href ? (
-          <AdminStatusBadge tone="primary" className="w-fit rounded-2xl px-4 py-2 text-sm">
+          <AdminStatusBadge tone="primary" className="w-fit rounded-2xl px-3.5 py-1.5 text-xs">
             {text.openLabel}
           </AdminStatusBadge>
         ) : (
-          <AdminStatusBadge tone="neutral" className="w-fit rounded-2xl px-4 py-2 text-sm text-stone-400">
+          <AdminStatusBadge tone="neutral" className="w-fit rounded-2xl px-3.5 py-1.5 text-xs text-stone-400">
             {text.preparingLabel}
           </AdminStatusBadge>
         )}
@@ -69,15 +71,14 @@ function AdminWorkspaceCardView({ item }: { item: AdminWorkspaceCard }) {
 
 export default function AdminConsoleSections() {
   const t = useAdminTranslation();
-  const managementCards = getVisibleAdminWorkspaceCards({ permissionCodes: ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES });
+  const managementCards = getVisibleAdminWorkspaceManagementCards({ permissionCodes: ADMIN_WORKSPACE_PREVIEW_PERMISSION_CODES }).filter((item) =>
+    ADMIN_CONSOLE_VISIBLE_CARD_IDS.has(item.id),
+  );
+
   return (
     <>
-      <AdminSection
-        title={t("adminConsole.managementCards.title", "운영 관리")}
-        className="flex min-h-[calc(100vh-260px)] flex-col sm:min-h-[calc(100vh-280px)]"
-        bodyClassName="mt-5 flex flex-1"
-      >
-        <div className="grid flex-1 auto-rows-fr gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3">
+      <AdminSection title={t("adminConsole.managementCards.title", "운영 관리")} bodyClassName="mt-5">
+        <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {managementCards.map((item) => (
             <AdminWorkspaceCardView key={item.id} item={item} />
           ))}

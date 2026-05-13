@@ -92,7 +92,7 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
           >
             <HomeIcon />
           </Link>
-          <Link href="/me/settings" aria-label={t("topbar.actions.personalSettings", "개인 설정")} title={t("topbar.actions.personalSettings", "개인 설정")} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 transition hover:bg-stone-50">
+          <Link href="/admin/settings" aria-label={t("topbar.actions.adminSettings", "환경설정")} title={t("topbar.actions.adminSettings", "환경설정")} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 transition hover:bg-stone-50">
             <SettingsIcon />
           </Link>
         </div>

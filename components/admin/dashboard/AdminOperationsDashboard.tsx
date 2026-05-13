@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { AdminLinkButton } from "@/components/admin/common/AdminButton";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
@@ -38,6 +39,18 @@ function translateTodayTaskStatusLabel(label: string, t: ReturnType<typeof useAd
   return label;
 }
 
+
+function WorkorderShortcutIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 4.75h10A1.75 1.75 0 0 1 18.75 6.5v11A1.75 1.75 0 0 1 17 19.25H7A1.75 1.75 0 0 1 5.25 17.5v-11A1.75 1.75 0 0 1 7 4.75Z" />
+      <path d="M8.5 8.25h7" />
+      <path d="M8.5 12h7" />
+      <path d="M8.5 15.75h4" />
+    </svg>
+  );
+}
+
 function translateTodayTaskPriorityLabel(label: string, t: ReturnType<typeof useAdminTranslation>): string {
   const normalized = label.trim().toLowerCase();
   if (["관리자 검토", "review needed"].includes(normalized)) return t("operationsDashboard.todayTasks.priority.review", label);
@@ -55,8 +68,16 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
       <div className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
         <section className="flex min-h-[270px] max-h-[310px] flex-col rounded-[24px] border border-stone-100 bg-stone-50/70 p-4">
           <div className="flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-base font-semibold text-stone-950">{t("operationsDashboard.actionQueueTitle", "검토·발주 대기")}</h2>
+            <div className="flex min-w-0 items-center gap-2">
+              <h2 className="truncate text-base font-semibold text-stone-950">{t("operationsDashboard.actionQueueTitle", "검토·발주 대기")}</h2>
+              <Link
+                href="/worker"
+                aria-label={t("operationsDashboard.actions.openWorkorderWorkspace", "작업지시서 업무 화면으로 이동")}
+                title={t("operationsDashboard.actions.openWorkorderWorkspace", "작업지시서 업무 화면으로 이동")}
+                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 shadow-sm transition hover:bg-stone-50"
+              >
+                <WorkorderShortcutIcon />
+              </Link>
             </div>
             <AdminStatusBadge tone="neutral">
               {formatAdminCount(snapshot.todayTasks.length, t)}

@@ -80,6 +80,7 @@ export const adminEn = {
     quantityLabel: "Qty",
     updatedLabel: "Updated",
     openWorkorder: "Open work order",
+    actions: { openWorkorderWorkspace: "Open work order workspace" },
     todayTasksEmpty: "No review or order waiting work orders to check today.",
     countSuffix: "items",
     statusDistribution: { working: "Working", reviewWaiting: "Review waiting", inboundWaiting: "Inspection waiting", completed: "Completed" },
@@ -327,7 +328,7 @@ export const adminEn = {
     unknownLabel: "Needs Review",
   },
   topbar: {
-    actions: { home: "Home", personalSettings: "Personal settings", openWorkorder: "Work orders" },
+    actions: { home: "Home", personalSettings: "Personal settings", adminSettings: "Settings", openWorkorder: "Work orders" },
     summaries: {
       adminMain: "Operations, status flow, and today checks",
       storage: "Documents/designs · Trash · Storage usage",
