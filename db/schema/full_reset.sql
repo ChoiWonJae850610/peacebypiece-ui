@@ -1780,6 +1780,10 @@ CREATE INDEX spec_sheets_category3_idx ON spec_sheets (company_id, category3_id)
 CREATE INDEX spec_sheets_company_due_date_idx ON spec_sheets (company_id, due_date);
 CREATE INDEX spec_sheets_company_manager_idx ON spec_sheets (company_id, manager_id);
 CREATE INDEX spec_sheets_company_status_updated_idx ON spec_sheets (company_id, status, updated_at DESC) WHERE deleted_at IS NULL AND COALESCE(is_active, true) = true;
+CREATE INDEX idx_spec_sheets_company_active_status_updated ON spec_sheets (company_id, is_active, status, updated_at DESC, created_at DESC, id DESC) WHERE deleted_at IS NULL;
+CREATE INDEX idx_spec_sheets_company_active_status_due_date ON spec_sheets (company_id, is_active, status, due_date ASC, updated_at DESC, id DESC) WHERE deleted_at IS NULL;
+CREATE INDEX idx_spec_sheets_company_active_title ON spec_sheets (company_id, is_active, lower(title), id DESC) WHERE deleted_at IS NULL;
+CREATE INDEX idx_spec_sheets_company_active_vendor ON spec_sheets (company_id, is_active, lower(coalesce(vendor, '')), lower(title), id DESC) WHERE deleted_at IS NULL;
 CREATE INDEX spec_sheets_delete_status_idx ON spec_sheets (delete_status, deleted_at DESC);
 CREATE INDEX spec_sheets_purge_status_idx ON spec_sheets (purge_status, purge_requested_at DESC, purged_at DESC);
 CREATE INDEX spec_sheets_delete_metadata_idx ON spec_sheets (delete_source, delete_scope, delete_parent_type, delete_parent_id);

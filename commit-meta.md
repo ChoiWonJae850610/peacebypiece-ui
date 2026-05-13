@@ -1,10 +1,10 @@
-Version : 0.11.71
-Summary : 작업지시서 목록 필터 회귀 보정
-Description : 작업지시서 목록 상태 필터가 legacy workflow 상태값까지 포함해 조회되도록 보정하고, 기본 진행 중 목록에서 completed/완료 상태와 휴지통 이동 항목을 SQL WHERE 단계에서 제외하도록 정리했습니다. 선택 적용용 작업지시서 목록 조회 index SQL과 회귀 테스트 문서를 추가했습니다.
+Version : 0.11.72
+Summary : full_reset 작업지시서 목록 인덱스 반영
+Description : 0.11.71에서 추가한 작업지시서 목록 필터/정렬용 spec_sheets 인덱스를 db/schema/full_reset.sql에도 반영했습니다. full reset 후에도 완료건 기본 제외와 상태/정렬 쿼리 최적화 기준이 누락되지 않도록 스키마 기준 파일을 동기화했습니다. 앱 버전을 0.11.72로 갱신했습니다.
 수정 파일 목록 :
-- lib/workorder/repository/dbWorkOrderRepository.ts
+- db/schema/full_reset.sql
 - lib/constants/app.ts
 추가 파일 목록 :
-- db/schema/patch_0_11_71_workorder_list_indexes.sql
-- docs/qa-workorder-list-filter-sort-regression-0.11.71.md
+- docs/qa-full-reset-workorder-list-indexes-0.11.72.md
 삭제 파일 목록 :
+없음
