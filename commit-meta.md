@@ -1,17 +1,17 @@
 Version :
-0.11.52
+0.11.53
 
 Summary :
-제품화 전 QA 오류 수정 1차 기준 정리
+제품화 전 QA 오류 수정 2차 기준 정리
 
 Description :
-QA 오류 수정 라인의 첫 번째 점검 버전으로, build log나 runtime error 없이 임의 코드 수정을 하지 않도록 오류 분류 기준과 기록 양식을 문서화했다. 앱 버전을 0.11.52로 갱신했다.
+제품화 전 QA 오류 수정 라인의 두 번째 기준 문서를 추가하고 APP_VERSION을 0.11.53으로 갱신했다. 첨부된 build log나 runtime error가 없어 기능 코드는 임의로 수정하지 않았다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/productization-qa-error-fix-0.11.52.md
+- docs/productization-qa-error-fix-0.11.53.md
 
 삭제 파일 목록 :
 없음
