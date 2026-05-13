@@ -11,6 +11,7 @@ import {
 import { ADMIN_STATS_CACHE_POLICIES, ADMIN_STATS_TANSTACK_QUERY_DECISION } from "@/lib/admin/stats/cachePolicy";
 import { ADMIN_STATS_AGGREGATE_READINESS_ITEMS, ADMIN_STATS_AGGREGATE_READINESS_POLICY } from "@/lib/admin/stats/aggregateReadinessPolicy";
 import { ADMIN_STATS_PERFORMANCE_POLICY, ADMIN_STATS_PERFORMANCE_TARGETS } from "@/lib/admin/stats/performancePolicy";
+import { getI18n } from "@/lib/i18n";
 
 function getToneClassName(tone: SystemStatTone) {
   if (tone === "success") {
@@ -42,6 +43,7 @@ function getProgressClassName(percent: number) {
 
 export default function SystemStatsOverview() {
   const usageSummary = getSystemUsageSummary();
+  const overview = getI18n().system.overview;
 
   return (
     <section
@@ -51,18 +53,17 @@ export default function SystemStatsOverview() {
       <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">
-            SYSTEM STATS
+            {overview.eyebrow}
           </p>
           <h2 className="mt-2 text-lg font-semibold text-stone-950">
-            시스템 관리자 통계 1차
+            {overview.title}
           </h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">
-            고객사별 작업지시서 수, 저장 용량 사용률, 요금제 분포, 최근 활동일과
-            운영 위험 신호를 한 화면에서 확인하기 위한 1차 상황판입니다.
+            {overview.description}
           </p>
         </div>
         <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-xs text-stone-600">
-          전체 작업지시서 {usageSummary.totalWorkOrders}건 · 평균 용량 사용률 {usageSummary.averageStoragePercent}% · 주의 {usageSummary.riskCompanyCount}곳
+          {overview.summary.replace("{totalWorkOrders}", String(usageSummary.totalWorkOrders)).replace("{averageStoragePercent}", String(usageSummary.averageStoragePercent)).replace("{riskCompanyCount}", String(usageSummary.riskCompanyCount))}
         </div>
       </div>
 
@@ -75,7 +76,7 @@ export default function SystemStatsOverview() {
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
               <p className="text-xs font-semibold text-stone-500">{card.label}</p>
               <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getToneClassName(card.tone)}`}>
-                {card.tone === "warning" ? "주의" : card.tone === "success" ? "정상" : "운영"}
+                {card.tone === "warning" ? overview.warningTone : card.tone === "success" ? overview.successTone : overview.operatingTone}
               </span>
             </div>
             <p className="mt-3 text-2xl font-semibold text-stone-950">
@@ -93,10 +94,10 @@ export default function SystemStatsOverview() {
         <article className="rounded-2xl border border-stone-200 bg-white p-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <h3 className="text-sm font-semibold text-stone-950">
-              R2 purge 상태
+              {overview.purgeTitle}
             </h3>
             <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700">
-              요청/대기/완료/실패 분리
+              {overview.purgeBadge}
             </span>
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -118,10 +119,10 @@ export default function SystemStatsOverview() {
         <article className="rounded-2xl border border-stone-200 bg-white p-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <h3 className="text-sm font-semibold text-stone-950">
-              저장소 용량 구분
+              {overview.storageBucketTitle}
             </h3>
             <span className="rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-[11px] font-semibold text-stone-500">
-              active / trash / purged
+              {overview.storageBucketBadge}
             </span>
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
@@ -130,7 +131,7 @@ export default function SystemStatsOverview() {
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                   <p className="text-xs font-semibold text-stone-500">{item.label}</p>
                   <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${getToneClassName(item.tone)}`}>
-                    기준
+                    {overview.baselineBadge}
                   </span>
                 </div>
                 <p className="mt-2 text-xl font-semibold text-stone-950">
@@ -149,10 +150,10 @@ export default function SystemStatsOverview() {
         <article className="rounded-2xl border border-stone-200 bg-white p-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <h3 className="text-sm font-semibold text-stone-950">
-              고객사별 사용 현황
+              {overview.companyUsageTitle}
             </h3>
             <span className="rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-[11px] font-semibold text-stone-500">
-              1차 집계
+              {overview.companyUsageBadge}
             </span>
           </div>
           <div className="mt-4 space-y-3">
@@ -167,7 +168,7 @@ export default function SystemStatsOverview() {
                       {row.companyName}
                     </p>
                     <p className="mt-1 text-xs text-stone-500">
-                      {row.planLabel} · 작업지시서 {row.workOrderCount}건 · 최근 활동 {row.recentActivityLabel}
+                      {row.planLabel} · {overview.workOrderUnit} {row.workOrderCount}건 · {overview.recentActivity} {row.recentActivityLabel}
                     </p>
                   </div>
                   <span className={`inline-flex w-fit rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getToneClassName(row.riskTone)}`}>
@@ -176,7 +177,7 @@ export default function SystemStatsOverview() {
                 </div>
                 <div className="mt-4">
                   <div className="flex flex-col gap-1 text-xs text-stone-600 sm:flex-row sm:items-center sm:justify-between">
-                    <span>저장 용량</span>
+                    <span>{overview.storageUsage}</span>
                     <span>
                       {row.storageUsedLabel} / {row.storageLimitLabel} · {row.storagePercent}%
                     </span>
@@ -196,7 +197,7 @@ export default function SystemStatsOverview() {
         <div className="grid gap-4">
           <article className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
             <h3 className="text-sm font-semibold text-stone-950">
-              요금제 분포
+              {overview.planDistributionTitle}
             </h3>
             <div className="mt-4 space-y-3">
               {SYSTEM_PLAN_DISTRIBUTION.map((plan) => (
@@ -206,7 +207,7 @@ export default function SystemStatsOverview() {
                       {plan.label}
                     </p>
                     <span className="text-sm font-semibold text-stone-950">
-                      {plan.companyCount}곳
+                      {plan.companyCount}{overview.companyUnit}
                     </span>
                   </div>
                   <p className="mt-1 text-xs leading-5 text-stone-500">
@@ -219,7 +220,7 @@ export default function SystemStatsOverview() {
 
           <article className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
             <h3 className="text-sm font-semibold text-stone-950">
-              운영 위험 신호
+              {overview.riskTitle}
             </h3>
             <div className="mt-4 space-y-3">
               {SYSTEM_RISK_ITEMS.map((item) => (
@@ -245,28 +246,28 @@ export default function SystemStatsOverview() {
       <div className="mt-5 rounded-2xl border border-stone-200 bg-stone-50 p-4">
         <div className="flex flex-col gap-2 border-b border-stone-200 pb-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">OPERATION BASELINE</p>
-            <h3 className="mt-2 text-sm font-semibold text-stone-950">통계 운영 기준</h3>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">{overview.baselineEyebrow}</p>
+            <h3 className="mt-2 text-sm font-semibold text-stone-950">{overview.baselineTitle}</h3>
             <p className="mt-2 max-w-3xl text-xs leading-5 text-stone-600">
-              고객관리자 통계 화면에서 제거한 캐싱, summary table, 성능 기준을 시스템관리자 운영 기준으로 관리합니다.
+              {overview.baselineDescription}
             </p>
           </div>
           <span className="w-fit rounded-full border border-stone-200 bg-white px-3 py-1 text-[11px] font-semibold text-stone-500">
-            고객 화면 비노출
+            {overview.baselineHiddenBadge}
           </span>
         </div>
 
         <div className="mt-4 grid gap-4 xl:grid-cols-3">
           <article className="rounded-2xl border border-stone-200 bg-white p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Cache</p>
-            <h4 className="mt-2 text-sm font-semibold text-stone-950">통계 API 캐싱 기준</h4>
+            <h4 className="mt-2 text-sm font-semibold text-stone-950">{overview.cacheTitle}</h4>
             <p className="mt-2 text-xs leading-5 text-stone-600">{ADMIN_STATS_TANSTACK_QUERY_DECISION.reason}</p>
             <div className="mt-4 grid gap-2">
               {ADMIN_STATS_CACHE_POLICIES.map((item) => (
                 <div key={item.key} className="rounded-xl border border-stone-100 bg-stone-50 px-3 py-2">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-semibold text-stone-700">{item.label}</span>
-                    <span className="text-xs font-semibold text-stone-950">{item.staleSeconds === 0 ? "캐시 없음" : `${item.staleSeconds}초`}</span>
+                    <span className="text-xs font-semibold text-stone-950">{item.staleSeconds === 0 ? overview.noCache : `${item.staleSeconds}초`}</span>
                   </div>
                   <p className="mt-1 text-[11px] leading-4 text-stone-500">{item.invalidation}</p>
                 </div>
@@ -276,7 +277,7 @@ export default function SystemStatsOverview() {
 
           <article className="rounded-2xl border border-stone-200 bg-white p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Aggregate</p>
-            <h4 className="mt-2 text-sm font-semibold text-stone-950">summary table 검토</h4>
+            <h4 className="mt-2 text-sm font-semibold text-stone-950">{overview.aggregateTitle}</h4>
             <p className="mt-2 text-xs leading-5 text-stone-600">{ADMIN_STATS_AGGREGATE_READINESS_POLICY.nextStep}</p>
             <div className="mt-4 grid gap-2">
               {ADMIN_STATS_AGGREGATE_READINESS_ITEMS.slice(0, 4).map((item) => (
@@ -292,7 +293,7 @@ export default function SystemStatsOverview() {
 
           <article className="rounded-2xl border border-stone-200 bg-white p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">Performance</p>
-            <h4 className="mt-2 text-sm font-semibold text-stone-950">성능 측정 기준</h4>
+            <h4 className="mt-2 text-sm font-semibold text-stone-950">{overview.performanceTitle}</h4>
             <p className="mt-2 text-xs leading-5 text-stone-600">{ADMIN_STATS_PERFORMANCE_POLICY.nextStep}</p>
             <div className="mt-4 grid gap-2">
               {ADMIN_STATS_PERFORMANCE_TARGETS.slice(0, 5).map((item) => (

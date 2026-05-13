@@ -6,11 +6,11 @@ import { useRouter } from "next/navigation";
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import AdminTable from "@/components/admin/common/AdminTable";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import { useSystemTranslation } from "@/lib/i18n/useSystemTranslation";
 import type { AdminTableColumn } from "@/lib/admin/common/types";
 import type { SystemStoragePurgeCandidate } from "@/lib/system/storagePurgeCandidates";
 import {
-  SYSTEM_STORAGE_PURGE_COPY,
-  SYSTEM_STORAGE_PURGE_SORT_LABELS,
+  buildSystemStoragePurgeCopy,
   buildSystemStoragePurgeResultMessage,
   buildSystemStorageSelectedPurgeConfirmMessage,
   buildSystemStorageWorkOrderBundleMetaLabel,
@@ -35,8 +35,6 @@ type SortState = {
   key: SortKey;
   direction: SortDirection;
 };
-
-const SORT_LABELS: Record<SortKey, string> = SYSTEM_STORAGE_PURGE_SORT_LABELS;
 
 function renderKey(value: string | null) {
   if (!value) return <span className="text-stone-400">없음</span>;
@@ -81,6 +79,9 @@ async function postPurgeRequest(body: { mode: "selected" | "all-due"; trashItemI
 
 export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStoragePurgeCandidatesClientProps) {
   const router = useRouter();
+  const t = useSystemTranslation();
+  const purgeCopy = buildSystemStoragePurgeCopy(t);
+  const sortLabels = purgeCopy.sort;
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isPending, setIsPending] = useState(false);
   const [resultMessage, setResultMessage] = useState<string | null>(null);
@@ -121,7 +122,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
     router.refresh();
   }
 
-  function renderSortButton(key: SortKey, label = SORT_LABELS[key]) {
+  function renderSortButton(key: SortKey, label = sortLabels[key]) {
     const isActive = sortState.key === key;
     return (
       <button
@@ -146,7 +147,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
           checked={selectedIdSet.has(candidate.trashItemId)}
           onChange={() => toggleCandidate(candidate.trashItemId)}
           disabled={isPending}
-          aria-label={`${candidate.fileName} ${SYSTEM_STORAGE_PURGE_COPY.list.selectCandidateLabelSuffix}`}
+          aria-label={`${candidate.fileName} ${purgeCopy.list.selectCandidateLabelSuffix}`}
         />
       ),
     },
@@ -158,7 +159,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
           {candidate.previewUrl ? (
             <img
               src={candidate.previewUrl}
-              alt={`${candidate.fileName} ${SYSTEM_STORAGE_PURGE_COPY.list.previewAltSuffix}`}
+              alt={`${candidate.fileName} ${purgeCopy.list.previewAltSuffix}`}
               className="h-14 w-14 rounded-xl border border-stone-200 bg-stone-100 object-cover"
               loading="lazy"
             />
@@ -179,10 +180,10 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
     },
     {
       key: "company",
-      label: renderSortButton("company", SYSTEM_STORAGE_PURGE_COPY.list.companyWorkOrderHeader),
+      label: renderSortButton("company", purgeCopy.list.companyWorkOrderHeader),
       render: (candidate) => (
         <div>
-          <p className="text-[10px] text-stone-400 lg:hidden">{SYSTEM_STORAGE_PURGE_COPY.list.companyWorkOrderHeader}</p>
+          <p className="text-[10px] text-stone-400 lg:hidden">{purgeCopy.list.companyWorkOrderHeader}</p>
           <p className="font-semibold text-stone-950">{candidate.companyName}</p>
           <p className="mt-1 text-xs leading-5 text-stone-500">{candidate.workorderTitle}</p>
         </div>
@@ -193,11 +194,11 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
       label: renderSortButton("target"),
       render: (candidate) => (
         <div>
-          <p className="text-[10px] text-stone-400 lg:hidden">{SORT_LABELS.target}</p>
+          <p className="text-[10px] text-stone-400 lg:hidden">{sortLabels.target}</p>
           <p className="font-semibold text-stone-800">{candidate.fileName}</p>
           <p className="mt-1 text-xs text-stone-500">
             {candidate.candidateKind === "workorder"
-              ? buildSystemStorageWorkOrderBundleMetaLabel({ documentCount: candidate.documentCount, designCount: candidate.designCount, memoCount: candidate.memoCount })
+              ? buildSystemStorageWorkOrderBundleMetaLabel({ documentCount: candidate.documentCount, designCount: candidate.designCount, memoCount: candidate.memoCount }, purgeCopy)
               : `${candidate.fileTypeLabel} · ${candidate.thumbnailCountLabel}`}
           </p>
         </div>
@@ -213,9 +214,9 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
       ),
       render: (candidate) => (
         <div className="text-xs leading-5 text-stone-600">
-          <p>{SYSTEM_STORAGE_PURGE_COPY.list.deletedAtLabel}: {candidate.deletedAt}</p>
-          <p>{SYSTEM_STORAGE_PURGE_COPY.list.purgeDueAtLabel}: {candidate.purgeDueAt}</p>
-          <p className="font-semibold text-red-600">{SYSTEM_STORAGE_PURGE_COPY.list.overdueLabel}: {candidate.overdueDays}일</p>
+          <p>{purgeCopy.list.deletedAtLabel}: {candidate.deletedAt}</p>
+          <p>{purgeCopy.list.purgeDueAtLabel}: {candidate.purgeDueAt}</p>
+          <p className="font-semibold text-red-600">{purgeCopy.list.overdueLabel}: {candidate.overdueDays}일</p>
         </div>
       ),
     },
@@ -239,7 +240,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
       key: "keys",
       label: (
         <span className="flex flex-col gap-1">
-          <span>{SYSTEM_STORAGE_PURGE_COPY.list.keyHeader}</span>
+          <span>{purgeCopy.list.keyHeader}</span>
           <span className="flex gap-3">
             {renderSortButton("attachmentCount")}
             {renderSortButton("memoCount")}
@@ -249,12 +250,12 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
       render: (candidate) => (
         <div className="space-y-2">
           <div>
-            <p className="text-[11px] font-semibold text-stone-400">{SYSTEM_STORAGE_PURGE_COPY.list.sourceKeyTitle}</p>
-            {candidate.candidateKind === "workorder" ? <span className="text-stone-400">{SYSTEM_STORAGE_PURGE_COPY.list.workOrderSourceHint}</span> : renderKey(candidate.storageKey)}
+            <p className="text-[11px] font-semibold text-stone-400">{purgeCopy.list.sourceKeyTitle}</p>
+            {candidate.candidateKind === "workorder" ? <span className="text-stone-400">{purgeCopy.list.workOrderSourceHint}</span> : renderKey(candidate.storageKey)}
           </div>
           <div>
-            <p className="text-[11px] font-semibold text-stone-400">{SYSTEM_STORAGE_PURGE_COPY.list.thumbnailKeyTitle}</p>
-            {candidate.candidateKind === "workorder" ? <span className="text-stone-400">{SYSTEM_STORAGE_PURGE_COPY.list.workOrderRetryHint}</span> : renderKey(candidate.thumbnailKey)}
+            <p className="text-[11px] font-semibold text-stone-400">{purgeCopy.list.thumbnailKeyTitle}</p>
+            {candidate.candidateKind === "workorder" ? <span className="text-stone-400">{purgeCopy.list.workOrderRetryHint}</span> : renderKey(candidate.thumbnailKey)}
           </div>
         </div>
       ),
@@ -264,7 +265,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
 
   async function runSelectedPurge() {
     if (selectedIds.length === 0 || isPending) return;
-    const confirmed = window.confirm(buildSystemStorageSelectedPurgeConfirmMessage(selectedIds.length));
+    const confirmed = window.confirm(buildSystemStorageSelectedPurgeConfirmMessage(selectedIds.length, purgeCopy));
     if (!confirmed) return;
 
     setIsPending(true);
@@ -272,12 +273,12 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
     setResultTone(null);
     try {
       const result = await postPurgeRequest({ mode: "selected", trashItemIds: selectedIds, limit: selectedIds.length });
-      setResultMessage(buildSystemStoragePurgeResultMessage(SYSTEM_STORAGE_PURGE_COPY.result.selectedLabel, result));
+      setResultMessage(buildSystemStoragePurgeResultMessage(purgeCopy.result.selectedLabel, result, purgeCopy));
       setResultTone(getSystemStoragePurgeResultTone(result));
       setSelectedIds([]);
       router.refresh();
     } catch (error) {
-      setResultMessage(error instanceof Error ? error.message : SYSTEM_STORAGE_PURGE_COPY.result.selectedError);
+      setResultMessage(error instanceof Error ? error.message : purgeCopy.result.selectedError);
       setResultTone("error");
     } finally {
       setIsPending(false);
@@ -286,7 +287,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
 
   async function runAllDuePurge() {
     if (!hasCandidates || isPending) return;
-    const confirmed = window.confirm(SYSTEM_STORAGE_PURGE_COPY.confirm.allDue);
+    const confirmed = window.confirm(purgeCopy.confirm.allDue);
     if (!confirmed) return;
 
     setIsPending(true);
@@ -294,12 +295,12 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
     setResultTone(null);
     try {
       const result = await postPurgeRequest({ mode: "all-due", limit: 200 });
-      setResultMessage(buildSystemStoragePurgeResultMessage(SYSTEM_STORAGE_PURGE_COPY.result.allDueLabel, result));
+      setResultMessage(buildSystemStoragePurgeResultMessage(purgeCopy.result.allDueLabel, result, purgeCopy));
       setResultTone(getSystemStoragePurgeResultTone(result));
       setSelectedIds([]);
       router.refresh();
     } catch (error) {
-      setResultMessage(error instanceof Error ? error.message : SYSTEM_STORAGE_PURGE_COPY.result.allDueError);
+      setResultMessage(error instanceof Error ? error.message : purgeCopy.result.allDueError);
       setResultTone("error");
     } finally {
       setIsPending(false);
@@ -310,24 +311,24 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
     <section className="rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-5">
       <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-stone-950">{SYSTEM_STORAGE_PURGE_COPY.list.title}</h2>
+          <h2 className="text-lg font-semibold text-stone-950">{purgeCopy.list.title}</h2>
           <p className="mt-2 text-sm leading-6 text-stone-600">
-            {SYSTEM_STORAGE_PURGE_COPY.list.description}
+            {purgeCopy.list.description}
           </p>
           <p className="mt-2 text-xs font-medium text-stone-500">
-            {SYSTEM_STORAGE_PURGE_COPY.list.currentSort}: {SORT_LABELS[sortState.key]} · {getSystemStorageSortDirectionLabel(sortState.direction)}
+            {purgeCopy.list.currentSort}: {sortLabels[sortState.key]} · {getSystemStorageSortDirectionLabel(sortState.direction, t)}
           </p>
           {resultMessage ? <p className={`mt-2 rounded-2xl px-3 py-2 text-xs font-medium ${getSystemStoragePurgeResultMessageClass(resultTone)}`}>{resultMessage}</p> : null}
         </div>
         <div className="grid gap-2 sm:flex sm:flex-wrap">
           <AdminButton onClick={refreshCandidates} disabled={isPending}>
-            {SYSTEM_STORAGE_PURGE_COPY.list.refresh}
+            {purgeCopy.list.refresh}
           </AdminButton>
           <AdminButton onClick={runSelectedPurge} disabled={selectedCount === 0 || isPending}>
-            {isPending ? SYSTEM_STORAGE_PURGE_COPY.list.pending : `${SYSTEM_STORAGE_PURGE_COPY.list.selectDelete} (${selectedCount})`}
+            {isPending ? purgeCopy.list.pending : `${purgeCopy.list.selectDelete} (${selectedCount})`}
           </AdminButton>
           <AdminButton variant="danger" onClick={runAllDuePurge} disabled={!hasCandidates || isPending}>
-            {isPending ? SYSTEM_STORAGE_PURGE_COPY.list.pending : SYSTEM_STORAGE_PURGE_COPY.list.deleteAll}
+            {isPending ? purgeCopy.list.pending : purgeCopy.list.deleteAll}
           </AdminButton>
         </div>
       </div>
@@ -337,8 +338,8 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
         items={sortedCandidates}
         columns={purgeCandidateTableColumns}
         getRowKey={(candidate) => candidate.trashItemId}
-        emptyLabel={SYSTEM_STORAGE_PURGE_COPY.list.empty}
-        emptyDescription={SYSTEM_STORAGE_PURGE_COPY.list.emptyDescription}
+        emptyLabel={purgeCopy.list.empty}
+        emptyDescription={purgeCopy.list.emptyDescription}
         gridTemplateColumns="0.22fr 0.55fr 1.05fr 1.15fr 1fr 0.8fr 1.45fr"
         rowBaseClassName="grid min-w-[920px] w-full gap-3 px-4 py-4 text-left text-sm lg:items-start"
         headerClassName="hidden min-w-[920px] gap-3 bg-stone-100 px-4 py-3 text-xs font-semibold text-stone-600 lg:grid"
