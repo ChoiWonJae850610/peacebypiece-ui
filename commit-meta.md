@@ -1,23 +1,10 @@
-Version : 0.11.70
-Summary : 작업지시서 목록 필터와 정렬 1차 정리
-Description : 작업지시서 업무 화면 기본 조회를 진행 중 상태 중심으로 정리하고, 완료건/전체/상태별 보기와 정렬값을 /worker query 및 summary API query 단계에 반영했습니다. 완료 작업지시서는 기본 조회에서 제외되어 목록 summary DB 조회량을 줄이고, 필요할 때 완료 또는 전체 필터로 다시 조회할 수 있게 했습니다.
+Version : 0.11.71
+Summary : 작업지시서 목록 필터 회귀 보정
+Description : 작업지시서 목록 상태 필터가 legacy workflow 상태값까지 포함해 조회되도록 보정하고, 기본 진행 중 목록에서 completed/완료 상태와 휴지통 이동 항목을 SQL WHERE 단계에서 제외하도록 정리했습니다. 선택 적용용 작업지시서 목록 조회 index SQL과 회귀 테스트 문서를 추가했습니다.
 수정 파일 목록 :
-- app/api/workorders/summary/route.ts
-- app/worker/page.tsx
-- components/layout/SidebarContent.tsx
-- components/workorder/WorkOrderWorkspace.tsx
-- lib/hooks/useWorkOrder.ts
-- lib/hooks/workorder/useWorkOrderCoreState.ts
-- lib/repositories/dbWorkorderHttpAdapter.ts
-- lib/workorder/api/workOrderRouteHandlers.ts
 - lib/workorder/repository/dbWorkOrderRepository.ts
-- lib/workorder/workspace/buildWorkspaceViewModel.ts
-- lib/workorder/workspace/builders/sidebarBuilders.ts
-- lib/workorder/workspace/viewModelTypes.ts
-- lib/i18n/ko/workorder.ts
-- lib/i18n/en/workorder.ts
 - lib/constants/app.ts
 추가 파일 목록 :
-- lib/workorder/list/workOrderListControls.ts
-- docs/qa-workorder-list-filter-sort-0.11.70.md
+- db/schema/patch_0_11_71_workorder_list_indexes.sql
+- docs/qa-workorder-list-filter-sort-regression-0.11.71.md
 삭제 파일 목록 :

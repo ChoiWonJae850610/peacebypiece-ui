@@ -747,6 +747,23 @@ function buildSpecSheetSelectSql(schema: DbSpecSheetSchema): string {
     `;
 }
 
+const DB_WORKFLOW_STATE_FILTER_VALUES: Record<Exclude<WorkOrderListStatusFilter, "active" | "all">, readonly string[]> = {
+  draft: ["draft", "작성중"],
+  review_requested: ["review_requested", "검토요청"],
+  review_completed: ["review_completed", "review_approved", "검토완료"],
+  inspection: ["inspection", "order_requested", "in_production", "in_inspection", "발주요청", "생산중", "검수중"],
+  rejected: ["rejected", "반려"],
+  completed: ["completed", "완료"],
+};
+
+function quoteSqlLiteral(value: string): string {
+  return `'${value.replace(/'/g, "''")}'`;
+}
+
+function buildWorkflowStateInSql(column: string, values: readonly string[]): string {
+  return `${column} IN (${values.map(quoteSqlLiteral).join(", ")})`;
+}
+
 function buildSpecSheetSummaryWhereSql(schema: DbSpecSheetSchema, status: WorkOrderListStatusFilter): string {
   const predicates: string[] = [];
 
@@ -758,14 +775,18 @@ function buildSpecSheetSummaryWhereSql(schema: DbSpecSheetSchema, status: WorkOr
     predicates.push(`${quoteIdentifier(schema.isActiveColumn)} = TRUE`);
   }
 
+  if (schema.deletedAtColumn) {
+    predicates.push(`${quoteIdentifier(schema.deletedAtColumn)} IS NULL`);
+  }
+
   if (schema.workflowStateColumn) {
     const workflowColumn = `COALESCE(${quoteIdentifier(schema.workflowStateColumn)}, 'draft')`;
     if (status === "active") {
-      predicates.push(`${workflowColumn} <> 'completed'`);
+      predicates.push(`NOT (${buildWorkflowStateInSql(workflowColumn, DB_WORKFLOW_STATE_FILTER_VALUES.completed)})`);
     } else if (status === "completed") {
-      predicates.push(`${workflowColumn} = 'completed'`);
+      predicates.push(buildWorkflowStateInSql(workflowColumn, DB_WORKFLOW_STATE_FILTER_VALUES.completed));
     } else if (isWorkflowStateStatusFilter(status)) {
-      predicates.push(`${workflowColumn} = '${status}'`);
+      predicates.push(buildWorkflowStateInSql(workflowColumn, DB_WORKFLOW_STATE_FILTER_VALUES[status]));
     }
   } else if (status === "completed") {
     predicates.push("FALSE");
