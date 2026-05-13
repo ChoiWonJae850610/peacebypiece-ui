@@ -26,8 +26,24 @@ type UnitRow = PartnerUnitRecord & DbQueryResultRow;
 type PartnerItemRow = PartnerItemWithRelations & DbQueryResultRow;
 type PartnerItemBaseRow = PartnerItemRecord & DbQueryResultRow;
 type OutsourcingProcessRow = OutsourcingProcessRecord & DbQueryResultRow;
+type ResolvedOutsourcingProcessRow = Pick<
+  OutsourcingProcessRecord,
+  "id" | "name" | "sort_order"
+> &
+  DbQueryResultRow;
+type SystemOutsourcingProcessStandardRow = {
+  id: string;
+  code: string | null;
+  name: string;
+  sort_order: number;
+} & DbQueryResultRow;
 
-const ROLE_ITEM_TYPES: PartnerDbType[] = ["factory", "fabric", "subsidiary", "outsourcing"];
+const ROLE_ITEM_TYPES: PartnerDbType[] = [
+  "factory",
+  "fabric",
+  "subsidiary",
+  "outsourcing",
+];
 
 function buildWhereClause(conditions: string[]) {
   return conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
@@ -41,7 +57,8 @@ function toNumber(value: unknown): number {
 
 function mapDbItemTypeToCategory(value: unknown): PartnerItemCategory {
   if (value === "factory") return "labor";
-  if (value === "fabric" || value === "subsidiary" || value === "outsourcing") return value;
+  if (value === "fabric" || value === "subsidiary" || value === "outsourcing")
+    return value;
   if (value === "labor") return "labor";
   return "outsourcing";
 }
@@ -67,6 +84,127 @@ function normalizePartnerItemBase(row: PartnerItemBaseRow): PartnerItemRecord {
   };
 }
 
+function normalizeProcessSearchValue(value: string | null | undefined) {
+  return String(value ?? "").trim();
+}
+
+async function findCompanyOutsourcingProcessById(
+  companyId: string,
+  processId: string,
+) {
+  const result = await queryDb<ResolvedOutsourcingProcessRow>(
+    `SELECT id, name, sort_order
+       FROM outsourcing_processes
+      WHERE company_id = $1
+        AND id = $2
+      LIMIT 1`,
+    [companyId, processId],
+  );
+
+  return result.rows[0] ?? null;
+}
+
+async function findCompanyOutsourcingProcessByName(
+  companyId: string,
+  processName: string,
+) {
+  const result = await queryDb<ResolvedOutsourcingProcessRow>(
+    `SELECT id, name, sort_order
+       FROM outsourcing_processes
+      WHERE company_id = $1
+        AND name = $2
+      ORDER BY sort_order ASC, name ASC
+      LIMIT 1`,
+    [companyId, processName],
+  );
+
+  return result.rows[0] ?? null;
+}
+
+async function findSystemOutsourcingProcessStandard(processId: string) {
+  const result = await queryDb<SystemOutsourcingProcessStandardRow>(
+    `SELECT id, code, name, sort_order
+       FROM system_outsourcing_process_standards
+      WHERE id = $1
+         OR code = $1
+      LIMIT 1`,
+    [processId],
+  );
+
+  return result.rows[0] ?? null;
+}
+
+async function ensureCompanyOutsourcingProcess(input: {
+  companyId: string;
+  companyName: string;
+  processId?: string | null;
+  processName: string;
+}) {
+  const processId = normalizeProcessSearchValue(input.processId);
+  const fallbackName = normalizeProcessSearchValue(input.processName);
+
+  if (processId) {
+    const existingById = await findCompanyOutsourcingProcessById(
+      input.companyId,
+      processId,
+    );
+    if (existingById) return existingById;
+
+    const standard = await findSystemOutsourcingProcessStandard(processId);
+    if (standard) {
+      const existingByName = await findCompanyOutsourcingProcessByName(
+        input.companyId,
+        standard.name,
+      );
+      if (existingByName) return existingByName;
+
+      const createdId = randomUUID();
+      const created = await queryDb<ResolvedOutsourcingProcessRow>(
+        `INSERT INTO outsourcing_processes (id, company_id, company_name, name, sort_order, is_active)
+         VALUES ($1, $2, $3, $4, $5, true)
+         RETURNING id, name, sort_order`,
+        [
+          createdId,
+          input.companyId,
+          input.companyName,
+          standard.name,
+          standard.sort_order,
+        ],
+      );
+
+      return (
+        created.rows[0] ?? {
+          id: createdId,
+          name: standard.name,
+          sort_order: standard.sort_order,
+        }
+      );
+    }
+  }
+
+  if (fallbackName) {
+    const existingByName = await findCompanyOutsourcingProcessByName(
+      input.companyId,
+      fallbackName,
+    );
+    if (existingByName) return existingByName;
+
+    const createdId = randomUUID();
+    const created = await queryDb<ResolvedOutsourcingProcessRow>(
+      `INSERT INTO outsourcing_processes (id, company_id, company_name, name, sort_order, is_active)
+       VALUES ($1, $2, $3, $4, 9999, true)
+       RETURNING id, name, sort_order`,
+      [createdId, input.companyId, input.companyName, fallbackName],
+    );
+
+    return (
+      created.rows[0] ?? { id: createdId, name: fallbackName, sort_order: 9999 }
+    );
+  }
+
+  return null;
+}
+
 export function getDbPartnerRepositoryInfo(): PartnerRepositoryInfo {
   return {
     mode: "db",
@@ -85,7 +223,9 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
 
       if (options.type) {
         params.push(options.type);
-        conditions.push(`EXISTS (SELECT 1 FROM partner_items pi WHERE pi.partner_id = p.id AND pi.item_type = $${params.length})`);
+        conditions.push(
+          `EXISTS (SELECT 1 FROM partner_items pi WHERE pi.partner_id = p.id AND pi.item_type = $${params.length})`,
+        );
       }
       if (options.activeOnly) {
         conditions.push("p.is_active = true");
@@ -164,16 +304,22 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
            pi.is_active,
            pi.created_at,
            pi.updated_at,
-           pi.outsourcing_process_id,
+           CASE
+             WHEN pi.item_type = 'outsourcing' THEN COALESCE(sops.id, pi.outsourcing_process_id, pi.item_name)
+             ELSE pi.outsourcing_process_id
+           END AS outsourcing_process_id,
            p.name AS partner_name,
            NULL::text AS unit_name,
            pi.unit AS unit_code,
-           op.name AS outsourcing_process_name
+           COALESCE(sops.name, op.name) AS outsourcing_process_name
          FROM partner_items pi
          LEFT JOIN partners p ON p.id = pi.partner_id
          LEFT JOIN outsourcing_processes op ON op.id = pi.outsourcing_process_id
+         LEFT JOIN system_outsourcing_process_standards sops
+           ON pi.item_type = 'outsourcing'
+          AND (sops.name = op.name OR sops.code = op.id OR sops.id = pi.outsourcing_process_id)
          ${buildWhereClause(conditions)}
-         ORDER BY p.name ASC, pi.item_type ASC, COALESCE(op.sort_order, 9999), COALESCE(op.name, pi.item_name, pi.item_type) ASC`,
+         ORDER BY p.name ASC, pi.item_type ASC, COALESCE(sops.sort_order, op.sort_order, 9999), COALESCE(sops.name, op.name, pi.item_name, pi.item_type) ASC`,
         params,
       );
 
@@ -237,14 +383,22 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
       if (!target) throw new Error("Partner not found");
 
       const next = {
-        company_id: input.company_id === undefined ? target.company_id : input.company_id,
-        company_name: input.company_name === undefined ? target.company_name ?? getWorkspaceCompanyContext().companyName : input.company_name,
+        company_id:
+          input.company_id === undefined ? target.company_id : input.company_id,
+        company_name:
+          input.company_name === undefined
+            ? (target.company_name ?? getWorkspaceCompanyContext().companyName)
+            : input.company_name,
         name: input.name === undefined ? target.name : input.name.trim(),
-        contact_person: input.contact_person === undefined ? target.contact_person ?? null : input.contact_person,
+        contact_person:
+          input.contact_person === undefined
+            ? (target.contact_person ?? null)
+            : input.contact_person,
         contact: input.contact === undefined ? target.contact : input.contact,
         email: input.email === undefined ? target.email : input.email,
-        memo: input.memo === undefined ? target.memo ?? null : input.memo,
-        is_active: input.is_active === undefined ? target.is_active : input.is_active,
+        memo: input.memo === undefined ? (target.memo ?? null) : input.memo,
+        is_active:
+          input.is_active === undefined ? target.is_active : input.is_active,
       };
 
       const result = await queryDb<PartnerRow>(
@@ -260,7 +414,17 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
              updated_at = now()
          WHERE id = $1
          RETURNING id, company_id, company_name, name, 'factory'::text AS type, contact_person, contact, email, memo, is_active, created_at, updated_at`,
-        [partnerId, next.company_id, next.company_name, next.name, next.contact_person, next.contact, next.email, next.memo, next.is_active],
+        [
+          partnerId,
+          next.company_id,
+          next.company_name,
+          next.name,
+          next.contact_person,
+          next.contact,
+          next.email,
+          next.memo,
+          next.is_active,
+        ],
       );
 
       const [updated] = result.rows;
@@ -300,19 +464,35 @@ export function createDbPartnerRepository(): PartnerWritableRepository {
         [partnerId, ROLE_ITEM_TYPES],
       );
 
+      const companyContext = getWorkspaceCompanyContext();
+
       for (const item of items) {
         const itemType = mapCategoryToDbItemType(item.category);
+        const outsourcingProcess =
+          itemType === "outsourcing"
+            ? await ensureCompanyOutsourcingProcess({
+                companyId: companyContext.companyId,
+                companyName: companyContext.companyName,
+                processId: item.outsourcing_process_id,
+                processName: item.name,
+              })
+            : null;
+
         await queryDb(
           `INSERT INTO partner_items (id, company_id, company_name, partner_id, item_type, item_name, outsourcing_process_id, unit, unit_cost, memo, is_active)
            VALUES ($1, $2, $3, $4, $5, $6, $7, NULL, 0, $8, $9)`,
           [
             randomUUID(),
-            getWorkspaceCompanyContext().companyId,
-            getWorkspaceCompanyContext().companyName,
+            companyContext.companyId,
+            companyContext.companyName,
             partnerId,
             itemType,
-            item.name.trim(),
-            item.outsourcing_process_id ?? null,
+            itemType === "outsourcing"
+              ? (outsourcingProcess?.name ?? item.name.trim())
+              : item.name.trim(),
+            itemType === "outsourcing"
+              ? (outsourcingProcess?.id ?? null)
+              : (item.outsourcing_process_id ?? null),
             item.memo ?? null,
             item.is_active ?? true,
           ],
