@@ -80,7 +80,7 @@ export const adminEn = {
     quantityLabel: "Qty",
     updatedLabel: "Updated",
     openWorkorder: "Open work order",
-    actions: { openWorkorderWorkspace: "Open work order workspace" },
+    actions: { openWorkorderShort: "Workspace", openWorkorderWorkspace: "Open work order workspace" },
     todayTasksEmpty: "No review or order waiting work orders to check today.",
     countSuffix: "items",
     statusDistribution: { working: "Working", reviewWaiting: "Review waiting", inboundWaiting: "Inspection waiting", completed: "Completed" },

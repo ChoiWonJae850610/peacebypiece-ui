@@ -1,9 +1,12 @@
-Version : 0.11.66
-Summary : 환경설정 탭 콘텐츠 1차 보정
-Description : 관리자 환경설정 화면의 탭 카드 높이와 하단 패널 콘텐츠 배치를 보정했습니다. 요금제·저장공간, 계정 정보, 개발 건의 패널을 PC 기준 좌우 분리 레이아웃으로 정리하고 기존 기준정보/요금제/계정/개발 건의 흐름과 API 동작은 유지했습니다.
+Version : 0.11.67
+Summary : 고객관리자 QA 잔여 레이아웃 보정
+Description : 고객관리자 홈의 운영 관리 카드 높이와 패딩을 축소하고, 검토·발주 대기 영역의 작업지시서 바로가기 버튼에 PC/tablet 기준 짧은 텍스트를 추가했습니다. 카드 4개 구성과 작업지시서/환경설정 진입 정책은 유지했습니다.
 수정 파일 목록 :
-components/admin/settings/AdminSettingsHub.tsx
-lib/constants/app.ts
+- components/admin/dashboard/AdminConsoleSections.tsx
+- components/admin/dashboard/AdminOperationsDashboard.tsx
+- lib/i18n/ko/admin.ts
+- lib/i18n/en/admin.ts
+- lib/constants/app.ts
 추가 파일 목록 :
-docs/qa-admin-settings-tab-content-0.11.66.md
+- docs/qa-admin-customer-residual-layout-0.11.67.md
 삭제 파일 목록 :

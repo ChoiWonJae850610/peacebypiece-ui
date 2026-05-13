@@ -36,23 +36,23 @@ function AdminWorkspaceCardView({ item }: { item: AdminWorkspaceCard }) {
   const content = (
     <AdminCard
       as="article"
-      className="flex h-full min-h-[140px] p-5 transition hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-md sm:min-h-[150px] lg:min-h-[165px]"
+      className="flex h-full min-h-[118px] p-4 transition hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-md sm:min-h-[126px] lg:min-h-[132px]"
     >
-      <div className="flex h-full min-w-0 flex-1 flex-col justify-between gap-4">
+      <div className="flex h-full min-w-0 flex-1 flex-col justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-start justify-between gap-2.5">
             <h2 className="text-base font-semibold tracking-tight text-stone-950">{text.label}</h2>
             <AdminStatusBadge tone={getStatusTone(item.status)}>{text.statusLabel}</AdminStatusBadge>
           </div>
-          <p className="mt-3 text-sm leading-6 text-stone-600">{text.description}</p>
+          <p className="mt-2 text-xs leading-5 text-stone-600">{text.description}</p>
         </div>
 
         {item.href ? (
-          <AdminStatusBadge tone="primary" className="w-fit rounded-2xl px-3.5 py-1.5 text-xs">
+          <AdminStatusBadge tone="primary" className="w-fit rounded-2xl px-3 py-1 text-[11px]">
             {text.openLabel}
           </AdminStatusBadge>
         ) : (
-          <AdminStatusBadge tone="neutral" className="w-fit rounded-2xl px-3.5 py-1.5 text-xs text-stone-400">
+          <AdminStatusBadge tone="neutral" className="w-fit rounded-2xl px-3 py-1 text-[11px] text-stone-400">
             {text.preparingLabel}
           </AdminStatusBadge>
         )}
@@ -77,8 +77,8 @@ export default function AdminConsoleSections() {
 
   return (
     <>
-      <AdminSection title={t("adminConsole.managementCards.title", "운영 관리")} bodyClassName="mt-5">
-        <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <AdminSection title={t("adminConsole.managementCards.title", "운영 관리")} bodyClassName="mt-4">
+        <div className="grid auto-rows-fr gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {managementCards.map((item) => (
             <AdminWorkspaceCardView key={item.id} item={item} />
           ))}
