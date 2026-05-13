@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
+import { AdminSection } from "@/components/admin/common/AdminSection";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import { AdminModal, AdminModalSection } from "@/components/admin/layout/AdminModal";
 import AdminStandardsSection from "@/components/admin/standards/AdminStandardsSection";
@@ -193,22 +194,23 @@ export default function AdminSettingsHub() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1">
-      <section className="shrink-0 rounded-[28px] border border-stone-200 bg-white p-3.5 shadow-sm">
-        <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h2 className="text-xl font-semibold tracking-tight text-stone-950">환경설정</h2>
-            <p className="mt-1 text-sm leading-6 text-stone-500">실제로 저장되는 회사·화면 설정과 작업 기준정보를 중심으로 정리합니다.</p>
-          </div>
+      <AdminSection
+        title="환경설정"
+        description="실제로 저장되는 회사·화면 설정과 작업 기준정보를 중심으로 정리합니다."
+        actions={
           <p className="rounded-2xl bg-stone-50 px-3 py-2 text-xs font-semibold leading-5 text-stone-500">
             권한은 멤버관리, 요금제·용량은 시스템관리자 기준으로 분리합니다.
           </p>
-        </div>
-        <div className="mt-3 grid gap-2.5 md:grid-cols-2 xl:grid-cols-5">
+        }
+        density="compact"
+        className="shrink-0"
+      >
+        <div className="grid gap-2.5 md:grid-cols-2 xl:grid-cols-5">
           {ADMIN_SETTINGS_MENU_ITEMS.map((item) => (
             <SettingsMenuCard key={item.id} item={item} active={activeMenuId === item.id} onClick={() => handleSelectMenu(item.id)} />
           ))}
         </div>
-      </section>
+      </AdminSection>
 
       <section className="flex min-h-0 flex-1 flex-col">
         {renderActiveSettingsPanel()}

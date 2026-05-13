@@ -1,19 +1,18 @@
 Version :
-0.11.32
+0.11.33
 
 Summary :
-관리자 섹션과 카드 공통 컴포넌트 1차 추가
+관리자 홈과 설정 화면 Card Section 패턴 적용
 
 Description :
-관리자 화면의 반복되는 카드와 섹션 패턴을 점진적으로 공통화하기 위해 AdminSection, AdminSectionHeader, AdminCard 공통 컴포넌트를 추가했다. 고객관리자 메인 운영 관리 섹션에만 1차 적용하고, 기존 카드 데이터와 링크, 권한 표시 로직은 유지했다.
+0.11.32에서 추가한 AdminSection 패턴을 관리자 환경설정 상단 메뉴 섹션에 적용했다. 기존 설정 메뉴 선택, 회사 설정 저장, 기준정보 진입, notice modal 동작은 변경하지 않고 wrapper 구조만 공통 섹션 컴포넌트 기준으로 정리했다.
 
 수정 파일 목록 :
-- components/admin/dashboard/AdminConsoleSections.tsx
+- components/admin/settings/AdminSettingsHub.tsx
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- components/admin/common/AdminSection.tsx
-- docs/admin-section-card-standardization-0.11.32.md
+- docs/admin-home-settings-card-section-0.11.33.md
 
 삭제 파일 목록 :
 없음
