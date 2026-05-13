@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import ModalShell from "@/components/common/modal/ModalShell";
+import { AdminModal } from "@/components/admin/layout/AdminModal";
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import type { CategoryTreeRuntime } from "@/lib/system/categoryTreeRuntime";
 import { getCategory1Options, getCategory2Options, getCategory3Options } from "@/lib/system/categoryTreeRuntime";
@@ -139,7 +139,7 @@ export function CategoryValuesModal({
   }
 
   return (
-    <ModalShell
+    <AdminModal
       open={open}
       onClose={onClose}
       title={text.categoryValuesModalTitle}
@@ -228,6 +228,6 @@ export function CategoryValuesModal({
           </div>
         </section>
       </div>
-    </ModalShell>
+    </AdminModal>
   );
 }

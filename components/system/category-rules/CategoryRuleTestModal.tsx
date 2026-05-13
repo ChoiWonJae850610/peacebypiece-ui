@@ -1,6 +1,6 @@
 "use client";
 
-import ModalShell from "@/components/common/modal/ModalShell";
+import { AdminModal, AdminModalSection } from "@/components/admin/layout/AdminModal";
 import { MODAL_INPUT_CLASS } from "@/components/common/modal/modalFieldClassNames";
 import { buildCategoryRuleMatchPreview } from "@/lib/system/categoryRuleEditor";
 import type { CategoryRulesManagerText } from "@/lib/system/categoryRuleText";
@@ -22,19 +22,21 @@ export function CategoryRuleTestModal({
   text: CategoryRulesManagerText;
 }) {
   return (
-    <ModalShell open={open} onClose={onClose} title={text.testModalTitle} maxWidthClass="md:max-w-xl">
-      <div className="grid gap-4">
-        <label className="grid gap-1.5">
-          <span className="text-sm font-medium text-stone-700">{text.testInputLabel}</span>
-          <input
-            value={testTitle}
-            onChange={(event) => onChangeTitle(event.target.value)}
-            placeholder={text.testInputPlaceholder}
-            className={MODAL_INPUT_CLASS}
-          />
-        </label>
-        <TestResultPanel preview={preview} text={text} />
-      </div>
-    </ModalShell>
+    <AdminModal open={open} onClose={onClose} title={text.testModalTitle} maxWidthClass="md:max-w-xl">
+      <AdminModalSection>
+        <div className="grid gap-4">
+          <label className="grid gap-1.5">
+            <span className="text-sm font-medium text-stone-700">{text.testInputLabel}</span>
+            <input
+              value={testTitle}
+              onChange={(event) => onChangeTitle(event.target.value)}
+              placeholder={text.testInputPlaceholder}
+              className={MODAL_INPUT_CLASS}
+            />
+          </label>
+          <TestResultPanel preview={preview} text={text} />
+        </div>
+      </AdminModalSection>
+    </AdminModal>
   );
 }

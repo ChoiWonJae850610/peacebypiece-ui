@@ -1,17 +1,19 @@
 Version :
-0.11.35
+0.11.36
 
 Summary :
-관리자 모달 패턴 잔여 조사
+시스템 기준정보 모달 AdminModal 1차 전환
 
 Description :
-관리자와 시스템관리자 화면의 AdminModal, ModalShell, drawer 사용 현황을 조사하고 다음 모달 공통화 후보를 문서화했다. 앱 버전을 0.11.35로 갱신했다.
+시스템관리자 카테고리 규칙 테스트 모달과 카테고리 값 관리 모달을 AdminModal 패턴으로 전환했다. 저장, 초기화, 카테고리 편집 로직은 변경하지 않고 모달 wrapper만 공통 관리자 모달 패턴으로 정리했다.
 
 수정 파일 목록 :
+- components/system/category-rules/CategoryRuleTestModal.tsx
+- components/system/category-rules/CategoryValuesModal.tsx
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/admin-modal-standardization-audit-0.11.35.md
+- docs/admin-modal-standardization-0.11.36.md
 
 삭제 파일 목록 :
 없음
