@@ -20,6 +20,7 @@ import {
   getMemberPermissionMatrixPreviews,
   getMemberRolePreviews,
   getMemberTableColumns,
+  type MemberInvitationPreview,
   type MemberJoinRequestLoadStatus,
   type MemberListLoadStatus,
   type MemberManagementStatus,
@@ -37,6 +38,8 @@ import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
+import AdminTable from "@/components/admin/common/AdminTable";
+import type { AdminTableColumn } from "@/lib/admin/common/types";
 
 function getStatusTone(status: MemberManagementStatus): AdminStatusBadgeTone {
   if (status === "ready") return "success";
@@ -89,6 +92,16 @@ function getMemberStatusTone(status: "approved" | "pending" | "suspended"): Admi
   if (status === "approved") return "success";
   if (status === "suspended") return "danger";
   return "warning";
+}
+
+const invitationStatusToneMap: Record<MemberInvitationPreview["status"], AdminStatusBadgeTone> = {
+  draft: "neutral",
+  active: "success",
+  expired: "warning",
+};
+
+function getInvitationStatusTone(status: MemberInvitationPreview["status"]): AdminStatusBadgeTone {
+  return invitationStatusToneMap[status];
 }
 
 const editableMemberPermissionCodes = MEMBER_PERMISSION_CATALOG.filter((permission) => !permission.systemOnly).map((permission) => permission.code);
@@ -179,6 +192,37 @@ export default function AdminMemberManagementDashboard() {
 
   const members = useMemo(() => toMemberListPreviews(memberRecords), [memberRecords]);
   const invitations = getMemberInvitationPreviews();
+  const invitationTableColumns = useMemo<AdminTableColumn<MemberInvitationPreview>[]>(
+    () =>
+      invitationColumns.map((column) => ({
+        key: column.id,
+        label: t(`memberManagement.tables.invitations.columns.${column.id}`, column.id),
+        render: (invitation) => {
+          if (column.id === "target") {
+            return <span className="truncate font-semibold text-stone-900">{invitation.targetLabel}</span>;
+          }
+
+          if (column.id === "type") {
+            return (
+              <span className="font-semibold text-stone-700">
+                {t(`memberManagement.invitationTypes.${invitation.inviteType}`, invitation.inviteType)}
+              </span>
+            );
+          }
+
+          if (column.id === "status") {
+            return (
+              <AdminStatusBadge tone={getInvitationStatusTone(invitation.status)}>
+                {t(`memberManagement.invitationStatuses.${invitation.status}`, invitation.status)}
+              </AdminStatusBadge>
+            );
+          }
+
+          return <span className="text-stone-500">{invitation.expiresLabel}</span>;
+        },
+      })),
+    [invitationColumns, t],
+  );
   const joinRequests = useMemo(() => toMemberJoinRequestPreviews(joinRequestRecords), [joinRequestRecords]);
   const summaryCards = useMemo(
     () =>
@@ -880,22 +924,17 @@ export default function AdminMemberManagementDashboard() {
               {t("memberManagement.sourceState.dbPending", "DB 연결 예정")}
             </span>
           </div>
-          <div className="mt-4 overflow-hidden rounded-2xl border border-stone-200">
-            <div className="grid grid-cols-[minmax(150px,1.2fr)_90px_90px_110px] bg-stone-50 text-xs font-semibold text-stone-500">
-              {invitationColumns.map((column) => (
-                <div key={column.id} className="px-3 py-2">
-                  {t(`memberManagement.tables.invitations.columns.${column.id}`, column.id)}
-                </div>
-              ))}
-            </div>
-            <div className="p-3">
-              {invitations.length ? null : (
-                <AdminEmptyState
-                  title={t("memberManagement.empty.invitations.title", "생성된 초대가 없습니다")}
-                  description={t("memberManagement.empty.invitations.description", "초대 링크 생성 기능을 연결하면 활성/만료/취소 초대가 표시됩니다.")}
-                />
-              )}
-            </div>
+          <div className="mt-4 overflow-x-auto">
+            <AdminTable
+              items={invitations}
+              columns={invitationTableColumns}
+              getRowKey={(invitation) => invitation.id}
+              emptyLabel={t("memberManagement.empty.invitations.title", "생성된 초대가 없습니다")}
+              emptyDescription={t("memberManagement.empty.invitations.description", "초대 링크 생성 기능을 연결하면 활성/만료/취소 초대가 표시됩니다.")}
+              gridTemplateColumns="minmax(150px,1.2fr) 90px 90px 110px"
+              rowBaseClassName="grid w-full gap-3 px-4 py-3 text-left text-xs text-stone-600 md:items-center"
+              className="min-w-[520px]"
+            />
           </div>
         </article>
 

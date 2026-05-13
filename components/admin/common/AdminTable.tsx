@@ -3,7 +3,7 @@ import type { AdminTableColumn } from "@/lib/admin/common/types";
 import { adminKo } from "@/lib/i18n/ko/admin";
 
 type AdminTableProps<TItem> = {
-  items: TItem[];
+  items: readonly TItem[];
   columns: AdminTableColumn<TItem>[];
   getRowKey: (item: TItem) => string;
   emptyLabel: string;
