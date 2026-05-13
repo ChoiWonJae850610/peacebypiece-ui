@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AdminCard, AdminSection } from "@/components/admin/common/AdminSection";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 
 import { APP_VERSION } from "@/lib/constants/app";
@@ -80,7 +81,7 @@ export default function SystemConsoleShell() {
   return (
     <main className="min-h-screen bg-stone-50 px-4 py-6 text-stone-900 sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
-        <header className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
+        <AdminCard as="header" className="p-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
@@ -100,28 +101,21 @@ export default function SystemConsoleShell() {
               <AdminStatusBadge tone="neutral">{system.versionLabel} v{APP_VERSION}</AdminStatusBadge>
             </div>
           </div>
-        </header>
+        </AdminCard>
 
         {SYSTEM_CONSOLE_NAVIGATION_SECTIONS.map((section) => (
-          <section
+          <AdminSection
             key={section.id}
-            className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm"
+            title={section.title}
+            description={section.description}
+            className="p-5"
+            bodyClassName="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3"
+            headerClassName="border-b border-stone-100 pb-4"
           >
-            <div className="flex flex-col gap-2 border-b border-stone-100 pb-4">
-              <h2 className="text-lg font-semibold text-stone-950">
-                {section.title}
-              </h2>
-              <p className="text-sm leading-6 text-stone-600">
-                {section.description}
-              </p>
-            </div>
-
-            <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {section.cards.map((card) => (
-                <SystemNavigationCard key={card.id} card={card} />
-              ))}
-            </div>
-          </section>
+            {section.cards.map((card) => (
+              <SystemNavigationCard key={card.id} card={card} />
+            ))}
+          </AdminSection>
         ))}
       </div>
     </main>

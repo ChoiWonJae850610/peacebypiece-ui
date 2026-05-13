@@ -5,7 +5,7 @@ export type AdminSectionDensity = "default" | "compact";
 type AdminCardProps = {
   children: ReactNode;
   className?: string;
-  as?: "section" | "article" | "div";
+  as?: "section" | "article" | "div" | "header";
 };
 
 const cardBaseClassName = "min-w-0 rounded-[28px] border border-stone-200 bg-white shadow-sm";
@@ -39,6 +39,7 @@ type AdminSectionProps = AdminSectionHeaderProps & {
   children: ReactNode;
   density?: AdminSectionDensity;
   bodyClassName?: string;
+  headerClassName?: string;
 };
 
 const sectionPaddingClassNames: Record<AdminSectionDensity, string> = {
@@ -55,10 +56,17 @@ export function AdminSection({
   density = "default",
   className = "",
   bodyClassName = "mt-3",
+  headerClassName,
 }: AdminSectionProps) {
   return (
     <AdminCard className={`${sectionPaddingClassNames[density]} ${className}`.trim()}>
-      <AdminSectionHeader title={title} description={description} eyebrow={eyebrow} actions={actions} />
+      <AdminSectionHeader
+        title={title}
+        description={description}
+        eyebrow={eyebrow}
+        actions={actions}
+        className={headerClassName}
+      />
       <div className={bodyClassName}>{children}</div>
     </AdminCard>
   );
