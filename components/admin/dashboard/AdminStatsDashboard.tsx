@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { DayPicker, type DateRange } from "react-day-picker";
-import { enUS, ko } from "date-fns/locale";
+import { useMemo, useState } from "react";
 
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AdminDateRangePicker, getTodayAdminLocalDateValue } from "@/components/admin/common/AdminDateRangePicker";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import AdminTable from "@/components/admin/common/AdminTable";
@@ -95,179 +94,6 @@ function buildAdminStatsRatioBars(points: Array<{ label: string; value: number; 
     widthPercent: total > 0 ? Math.max(4, Math.round((item.value / total) * 100)) : 0,
   }));
 }
-
-type AdminStatsDateRangePickerLabels = {
-  start: string;
-  end: string;
-  clear: string;
-  done: string;
-  selected: string;
-  notSelected: string;
-  calendarAria: string;
-};
-
-function parseLocalDateValue(value: string) {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (!match) return undefined;
-  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
-  return Number.isNaN(date.getTime()) ? undefined : date;
-}
-
-function toLocalDateValue(date: Date | undefined) {
-  if (!date) return "";
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function getTodayLocalDateValue() {
-  return toLocalDateValue(new Date());
-}
-
-function formatDateDisplay(value: string, locale: "ko" | "en") {
-  const date = parseLocalDateValue(value);
-  if (!date) return "—";
-  return date.toLocaleDateString(locale === "ko" ? "ko-KR" : "en-US", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-}
-
-function AdminStatsDateRangePicker({
-  startDate,
-  endDate,
-  maxDateValue,
-  labels,
-  locale,
-  onStartDateChange,
-  onEndDateChange,
-}: {
-  startDate: string;
-  endDate: string;
-  maxDateValue: string;
-  labels: AdminStatsDateRangePickerLabels;
-  locale: "ko" | "en";
-  onStartDateChange: (value: string) => void;
-  onEndDateChange: (value: string) => void;
-}) {
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const pickerRef = useRef<HTMLDivElement | null>(null);
-  const selectedStartDate = parseLocalDateValue(startDate);
-  const selectedEndDate = parseLocalDateValue(endDate);
-  const selected: DateRange | undefined = selectedStartDate
-    ? { from: selectedStartDate, to: selectedEndDate }
-    : undefined;
-  const maxDate = parseLocalDateValue(maxDateValue);
-  const dayPickerLocale = locale === "ko" ? ko : enUS;
-
-  useEffect(() => {
-    if (!isCalendarOpen) return;
-
-    const handlePointerDown = (event: MouseEvent) => {
-      if (!pickerRef.current) return;
-      if (event.target instanceof Node && pickerRef.current.contains(event.target)) return;
-      setIsCalendarOpen(false);
-    };
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsCalendarOpen(false);
-    };
-
-    document.addEventListener("mousedown", handlePointerDown);
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", handlePointerDown);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isCalendarOpen]);
-
-  const handleSelect = (range: DateRange | undefined) => {
-    const nextStart = toLocalDateValue(range?.from);
-    const nextEnd = toLocalDateValue(range?.to);
-    onStartDateChange(nextStart);
-    onEndDateChange(nextEnd);
-  };
-
-  const clearSelection = () => {
-    onStartDateChange("");
-    onEndDateChange("");
-  };
-
-  const selectedSummary = startDate && endDate
-    ? labels.selected.replace("{start}", formatDateDisplay(startDate, locale)).replace("{end}", formatDateDisplay(endDate, locale))
-    : labels.notSelected;
-
-  return (
-    <div ref={pickerRef} className="relative">
-      <button
-        type="button"
-        onClick={() => setIsCalendarOpen((current) => !current)}
-        className="flex w-full min-w-[280px] flex-col gap-1 rounded-2xl border border-stone-100 bg-white p-1 text-left shadow-sm transition hover:border-stone-200 hover:bg-stone-50 sm:flex-row"
-        aria-expanded={isCalendarOpen}
-        aria-label={labels.calendarAria}
-      >
-        <span className="min-w-0 flex-1 rounded-xl bg-stone-50 px-3 py-1">
-          <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-400">{labels.start}</span>
-          <span className="mt-0.5 block text-xs font-semibold text-stone-800">{formatDateDisplay(startDate, locale)}</span>
-        </span>
-        <span className="min-w-0 flex-1 rounded-xl bg-stone-50 px-3 py-1">
-          <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-400">{labels.end}</span>
-          <span className="mt-0.5 block text-xs font-semibold text-stone-800">{formatDateDisplay(endDate, locale)}</span>
-        </span>
-      </button>
-
-      {isCalendarOpen ? (
-        <div className="absolute left-0 top-[calc(100%+8px)] z-30 w-[min(320px,calc(100vw-3rem))] rounded-[22px] border border-stone-100 bg-white p-3 shadow-2xl">
-          <DayPicker
-            mode="range"
-            selected={selected}
-            onSelect={handleSelect}
-            locale={dayPickerLocale}
-            disabled={maxDate ? { after: maxDate } : undefined}
-            showOutsideDays
-            fixedWeeks
-            aria-label={labels.calendarAria}
-            classNames={{
-              root: "text-sm text-stone-700",
-              months: "grid gap-3",
-              month: "space-y-2",
-              month_caption: "flex items-center justify-center px-2 py-1 text-sm font-semibold text-stone-950",
-              caption_label: "text-sm font-semibold",
-              nav: "flex items-center justify-between",
-              button_previous: "rounded-full border border-stone-200 px-2 py-1 text-stone-500 hover:bg-stone-50",
-              button_next: "rounded-full border border-stone-200 px-2 py-1 text-stone-500 hover:bg-stone-50",
-              weekdays: "grid grid-cols-7 text-center text-[11px] font-semibold uppercase tracking-[0.08em] text-stone-400",
-              week: "grid grid-cols-7 gap-1",
-              day: "flex items-center justify-center",
-              day_button: "h-7 w-7 rounded-full text-[11px] font-semibold transition hover:bg-stone-100 disabled:text-stone-300",
-              today: "font-bold text-[var(--admin-theme-surface)]",
-              selected: "rounded-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
-              range_start: "rounded-l-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
-              range_end: "rounded-r-full bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]",
-              range_middle: "rounded-none bg-stone-100 text-stone-900",
-              outside: "text-stone-300",
-              disabled: "text-stone-300 opacity-40",
-            }}
-          />
-          <div className="mt-3 flex items-center justify-between gap-3 border-t border-stone-100 pt-3">
-            <p className="min-w-0 flex-1 text-xs font-semibold text-stone-500">{selectedSummary}</p>
-            <div className="flex shrink-0 items-center gap-2">
-              <AdminButton type="button" onClick={clearSelection} variant="secondary" size="sm" className="min-h-8 px-3 py-1.5 text-xs">
-                {labels.clear}
-              </AdminButton>
-              <AdminButton type="button" onClick={() => setIsCalendarOpen(false)} variant="primary" size="sm" className="min-h-8 px-3 py-1.5 text-xs">
-                {labels.done}
-              </AdminButton>
-            </div>
-          </div>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
 
 function PeriodSummaryCard({
   title,
@@ -367,7 +193,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
   const [isStatsSectionAnimating, setIsStatsSectionAnimating] = useState(false);
   const [customStartDate, setCustomStartDate] = useState(stats.selectedPeriodRange.isCustom ? stats.selectedPeriodRange.startDate : "");
   const [customEndDate, setCustomEndDate] = useState(stats.selectedPeriodRange.isCustom ? stats.selectedPeriodRange.endDate : "");
-  const todayDateValue = getTodayLocalDateValue();
+  const todayDateValue = getTodayAdminLocalDateValue();
   const dateRangeLabels = {
     start: pt("customStartDateLabel", pageText.customStartDateLabel),
     end: pt("customEndDateLabel", pageText.customEndDateLabel),
@@ -762,7 +588,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
                 </div>
                 <div className="flex w-full flex-wrap items-center justify-start gap-2 lg:w-auto lg:justify-end">
                   <div className="w-full min-w-[280px] max-w-[440px] flex-1 sm:w-auto sm:flex-none">
-                    <AdminStatsDateRangePicker
+                    <AdminDateRangePicker
                       startDate={customStartDate}
                       endDate={customEndDate}
                       maxDateValue={todayDateValue}
