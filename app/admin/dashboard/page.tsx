@@ -2,6 +2,7 @@ import AdminStatsDashboard from "@/components/admin/dashboard/AdminStatsDashboar
 import AdminShell from "@/components/admin/layout/AdminShell";
 import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
 import { getAdminStatsSnapshot } from "@/lib/admin/stats/repository";
+import type { AdminStatsPeriodTopMode } from "@/lib/admin/stats/types";
 import { APP_VERSION } from "@/lib/constants/app";
 import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
 import { getI18n } from "@/lib/i18n";
@@ -9,7 +10,13 @@ import { getI18n } from "@/lib/i18n";
 type AdminDashboardSectionKey = "production" | "factory" | "period";
 
 type AdminDashboardPageProps = {
-  searchParams?: Promise<{ period?: string | string[]; startDate?: string | string[]; endDate?: string | string[]; section?: string | string[] }>;
+  searchParams?: Promise<{
+    period?: string | string[];
+    startDate?: string | string[];
+    endDate?: string | string[];
+    section?: string | string[];
+    topMode?: string | string[];
+  }>;
 };
 
 function normalizeAdminDashboardSection(value: string | string[] | undefined): AdminDashboardSectionKey {
@@ -18,11 +25,18 @@ function normalizeAdminDashboardSection(value: string | string[] | undefined): A
   return "production";
 }
 
+function normalizeAdminPeriodTopMode(value: string | string[] | undefined): AdminStatsPeriodTopMode {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+  if (rawValue === "completed" || rawValue === "defect") return rawValue;
+  return "reorder";
+}
+
 export default async function AdminDashboardPage({ searchParams }: AdminDashboardPageProps) {
   const pageText = getI18n().admin.dashboardPage;
   const resolvedSearchParams = await searchParams;
   const stats = await getAdminStatsSnapshot(resolvedSearchParams?.period, resolvedSearchParams?.startDate, resolvedSearchParams?.endDate);
   const initialSection = normalizeAdminDashboardSection(resolvedSearchParams?.section);
+  const initialPeriodTopMode = normalizeAdminPeriodTopMode(resolvedSearchParams?.topMode);
 
   return (
     <AdminShell
@@ -32,7 +46,7 @@ export default async function AdminDashboardPage({ searchParams }: AdminDashboar
       title={pageText.title}
       description={pageText.description}
     >
-      <AdminStatsDashboard stats={stats} pageText={pageText} initialSection={initialSection} />
+      <AdminStatsDashboard stats={stats} pageText={pageText} initialSection={initialSection} initialPeriodTopMode={initialPeriodTopMode} />
     </AdminShell>
   );
 }

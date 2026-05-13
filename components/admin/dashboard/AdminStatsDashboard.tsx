@@ -23,6 +23,7 @@ type AdminStatsDashboardProps = {
   stats: AdminStatsSnapshot;
   pageText: ReturnType<typeof getI18n>["admin"]["dashboardPage"];
   initialSection?: AdminStatsSectionKey;
+  initialPeriodTopMode?: AdminStatsPeriodTopMode;
 };
 type AdminStatsFactoryPerformanceItem = AdminStatsSnapshot["factoryPerformance"][number];
 
@@ -182,13 +183,13 @@ function CurrentSummaryCard({ label, value, description, subValue }: { label: st
   );
 }
 
-export default function AdminStatsDashboard({ stats, pageText, initialSection = "production" }: AdminStatsDashboardProps) {
+export default function AdminStatsDashboard({ stats, pageText, initialSection = "production", initialPeriodTopMode = "reorder" }: AdminStatsDashboardProps) {
   const t = useAdminTranslation();
   const { locale } = useI18n();
   const pt = (key: string, fallback: string) => t(`dashboardPage.${key}`, fallback);
   const [categoryDepth, setCategoryDepth] = useState<CategoryDepthKey>("first");
   const [selectedCategoryLabel, setSelectedCategoryLabel] = useState<string | null>(null);
-  const [selectedPeriodTopMode, setSelectedPeriodTopMode] = useState<AdminStatsPeriodTopMode>("reorder");
+  const [selectedPeriodTopMode, setSelectedPeriodTopMode] = useState<AdminStatsPeriodTopMode>(initialPeriodTopMode);
   const [activeStatsSection, setActiveStatsSection] = useState<AdminStatsSectionKey>(initialSection);
   const [statsSectionDirection, setStatsSectionDirection] = useState(1);
   const [isStatsSectionAnimating, setIsStatsSectionAnimating] = useState(false);
@@ -278,7 +279,10 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
   const totalReorderCount = stats.currentOverview.reorderCount;
   const activePeriodOptions = stats.periodOptions.filter((item) => item.key === "7d" || item.key === "30d");
   const activePeriodLabel = translateStatsLabel(stats.selectedPeriodRange.label, t);
-  const buildPeriodSectionHref = (href: string) => `${href}${href.includes("?") ? "&" : "?"}section=period`;
+  const buildPeriodSectionHref = (href: string) => {
+    const separator = href.includes("?") ? "&" : "?";
+    return `${href}${separator}section=period&topMode=${selectedPeriodTopMode}`;
+  };
   const isCustomPeriodReady = Boolean(customStartDate && customEndDate);
   const isCustomPeriodOrderValid = !isCustomPeriodReady || customStartDate <= customEndDate;
   const isCustomPeriodNotFuture = (!customStartDate || customStartDate <= todayDateValue) && (!customEndDate || customEndDate <= todayDateValue);
@@ -418,6 +422,10 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
   useEffect(() => {
     setActiveStatsSection(initialSection);
   }, [initialSection]);
+
+  useEffect(() => {
+    setSelectedPeriodTopMode(initialPeriodTopMode);
+  }, [initialPeriodTopMode]);
 
   useEffect(() => {
     if (!isStatsSectionAnimating) return;
