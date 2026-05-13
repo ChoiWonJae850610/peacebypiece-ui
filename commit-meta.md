@@ -1,19 +1,17 @@
 Version :
-0.11.37
+0.11.38
 
 Summary :
-관리자 저장소 휴지통 모달 AdminModal 전환
+모바일 태블릿 1차 점검 계획 문서화
 
 Description :
-고객관리자 저장소 휴지통의 비우기 확인, 작업지시서 처리 범위 확인, 휴지통 상세 모달을 AdminModal 기준으로 전환했다. 단순 확인 모달의 과한 최소 높이를 피할 수 있도록 AdminModal에 minHeightClassName 옵션을 추가했다.
+관리자, 시스템관리자, 작업지시서 주요 화면의 모바일과 태블릿 점검 기준을 문서화했다. 실제 UI와 동작 로직은 변경하지 않고 APP_VERSION만 0.11.38로 갱신했다.
 
 수정 파일 목록 :
-- components/admin/files/fileTrashSectionModals.tsx
-- components/admin/layout/AdminModal.tsx
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/admin-modal-standardization-0.11.37.md
+- docs/responsive-audit-plan-0.11.38.md
 
 삭제 파일 목록 :
 없음
