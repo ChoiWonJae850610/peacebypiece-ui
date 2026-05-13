@@ -35,6 +35,7 @@ export const SYSTEM_STORAGE_PURGE_COPY = {
     description:
       "파일 후보는 Worker로 R2에서 실제 삭제합니다. 작업지시서 후보는 대표 row로 표시하고, 실제 삭제 시 문서, 디자인, 메모를 함께 처리합니다. R2 파일 없음은 삭제 완료로 보고, Worker/권한/네트워크 실패만 재시도 후보로 남깁니다.",
     empty: "현재 R2 실제 삭제 후보가 없습니다.",
+    emptyDescription: "고객관리자가 영구삭제를 요청했거나 30일 보관 기간이 지난 파일이 생기면 이 목록에 표시됩니다.",
     refresh: "새로고침",
     pending: "처리 중",
     selectDelete: "선택 삭제",

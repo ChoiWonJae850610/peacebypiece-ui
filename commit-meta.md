@@ -1,19 +1,19 @@
 Version :
-0.11.29
+0.11.30
 
 Summary :
-관리자 멤버 초대 목록 공통 테이블 적용
+시스템관리자 저장소 empty 설명과 공통 UI 잔여 조사 정리
 
 Description :
-관리자 멤버관리 화면의 초대 대기 목록을 AdminTable 기준으로 정리하고, AdminTable items 타입을 readonly 배열도 받을 수 있도록 보완했다. 멤버 권한 저장과 가입 신청 승인/거절 흐름은 변경하지 않고 잔여 목록 공통화 후보를 문서화했다.
+시스템관리자 화면의 공통 UI 적용 상태를 조사하고, 실제 삭제 후보 목록의 empty 상태 설명을 AdminTable의 emptyDescription 슬롯으로 보강했다. 삭제 후보 조회, 선택 삭제, 전체삭제, R2 purge action flow는 변경하지 않았다.
 
 수정 파일 목록 :
-- components/admin/common/AdminTable.tsx
-- components/admin/members/AdminMemberManagementDashboard.tsx
+- components/system/storage/SystemStoragePurgeCandidatesClient.tsx
+- lib/system/storagePurgePresentation.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/admin-member-table-list-standardization-0.11.29.md
+- docs/system-common-ui-standardization-0.11.30.md
 
 삭제 파일 목록 :
 없음

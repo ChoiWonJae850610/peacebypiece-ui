@@ -338,6 +338,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
         columns={purgeCandidateTableColumns}
         getRowKey={(candidate) => candidate.trashItemId}
         emptyLabel={SYSTEM_STORAGE_PURGE_COPY.list.empty}
+        emptyDescription={SYSTEM_STORAGE_PURGE_COPY.list.emptyDescription}
         gridTemplateColumns="0.22fr 0.55fr 1.05fr 1.15fr 1fr 0.8fr 1.45fr"
         rowBaseClassName="grid w-full gap-3 px-4 py-4 text-left text-sm lg:items-start"
         headerClassName="hidden gap-3 bg-stone-100 px-4 py-3 text-xs font-semibold text-stone-600 lg:grid"
