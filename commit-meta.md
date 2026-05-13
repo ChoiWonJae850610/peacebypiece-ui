@@ -1,21 +1,17 @@
 Version :
-0.11.49
+0.11.50
 
 Summary :
-작업지시서 i18n 잔여 하드코딩 정리
+제품화 전 1차 QA 체크리스트 작성
 
 Description :
-작업지시서 메모 패널의 작성자 fallback과 댓글 marker 문구를 workorder i18n 리소스로 이동하고, 섹션 접기 버튼의 하드코딩 한국어 aria label을 제거했다.
+작업지시서, 첨부/R2, 저장소/휴지통, 통계, 멤버관리, 시스템관리자, 모바일/태블릿, i18n, build/deploy를 포함한 제품화 전 1차 QA 체크리스트를 문서화했다. APP_VERSION을 0.11.50으로 갱신했다.
 
 수정 파일 목록 :
-- components/workorder/detail/shared/detailEditorShared.tsx
-- components/workorder/sidepanel/WorkOrderMemoPanel.tsx
-- lib/i18n/ko/workorder.ts
-- lib/i18n/en/workorder.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/i18n-workorder-cleanup-0.11.49.md
+- docs/productization-qa-checklist-0.11.50.md
 
 삭제 파일 목록 :
 없음
