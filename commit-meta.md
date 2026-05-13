@@ -1,19 +1,17 @@
 Version :
-0.11.30
+0.11.31
 
 Summary :
-시스템관리자 저장소 empty 설명과 공통 UI 잔여 조사 정리
+관리자 카드와 섹션 패턴 조사
 
 Description :
-시스템관리자 화면의 공통 UI 적용 상태를 조사하고, 실제 삭제 후보 목록의 empty 상태 설명을 AdminTable의 emptyDescription 슬롯으로 보강했다. 삭제 후보 조회, 선택 삭제, 전체삭제, R2 purge action flow는 변경하지 않았다.
+관리자와 시스템관리자 화면에 남아 있는 카드, 섹션, 헤더, 요약 카드, 안내 박스, footer action row 반복 패턴을 조사하고 다음 공통화 우선순위를 문서화했다. 앱 버전도 0.11.31로 갱신했다.
 
 수정 파일 목록 :
-- components/system/storage/SystemStoragePurgeCandidatesClient.tsx
-- lib/system/storagePurgePresentation.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/system-common-ui-standardization-0.11.30.md
+- docs/admin-card-section-standardization-audit-0.11.31.md
 
 삭제 파일 목록 :
 없음
