@@ -4,6 +4,12 @@ import { loadPersistedWorkspaceState } from "@/lib/repositories/workorderPersist
 import type { WorkorderRepositoryAdapter } from "@/lib/repositories/workorderRepositoryAdapter";
 import { setDbConnectionStatus, type DbConnectionStateCode } from "@/lib/repositories/dbConnectionStatusStore";
 import type { MemoThread, UserProfile, WorkOrder, WorkOrderStatePatch, WorkOrderStatePatchResult, WorkOrderSummary } from "@/types/workorder";
+import {
+  DEFAULT_WORK_ORDER_LIST_SORT,
+  DEFAULT_WORK_ORDER_LIST_STATUS_FILTER,
+  normalizeWorkOrderListSort,
+  normalizeWorkOrderListStatusFilter,
+} from "@/lib/workorder/list/workOrderListControls";
 
 type DbApiErrorBody = {
   message?: string;
@@ -130,8 +136,25 @@ function createSummaryWorkOrder(summary: WorkOrderSummary): WorkOrder {
 }
 
 
+
+function buildSummaryQueryStringFromLocation(): string {
+  if (typeof window === "undefined") {
+    return `?status=${DEFAULT_WORK_ORDER_LIST_STATUS_FILTER}&sort=${DEFAULT_WORK_ORDER_LIST_SORT}`;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const status = params.has("status")
+    ? normalizeWorkOrderListStatusFilter(params.get("status"))
+    : params.has("workOrderId")
+      ? "all"
+      : DEFAULT_WORK_ORDER_LIST_STATUS_FILTER;
+  const sort = normalizeWorkOrderListSort(params.get("sort"));
+
+  return `?status=${encodeURIComponent(status)}&sort=${encodeURIComponent(sort)}`;
+}
+
 async function loadWorkOrderSummariesFromApi(): Promise<WorkOrder[]> {
-  const response = await fetch("/api/workorders/summary", {
+  const response = await fetch(`/api/workorders/summary${buildSummaryQueryStringFromLocation()}`, {
     method: "GET",
     headers: { Accept: "application/json" },
     cache: "no-store",

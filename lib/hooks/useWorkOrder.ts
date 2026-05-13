@@ -13,9 +13,12 @@ import { useWorkOrderHistory } from "@/lib/hooks/workorder/useWorkOrderHistory";
 import { useWorkOrderUIState } from "@/lib/hooks/workorder/useWorkOrderUIState";
 import { useWorkOrderActionRuntime } from "@/lib/hooks/workorder/useWorkOrderActionRuntime";
 import type { WorkOrder, WorkflowAction } from "@/types/workorder";
+import type { WorkOrderListSort, WorkOrderListStatusFilter } from "@/lib/workorder/list/workOrderListControls";
 
 type UseWorkOrderOptions = {
   initialWorkOrderId?: string | null;
+  initialListStatusFilter?: WorkOrderListStatusFilter;
+  initialListSort?: WorkOrderListSort;
 };
 
 export function useWorkOrder(options: UseWorkOrderOptions = {}) {
@@ -24,6 +27,8 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
 
   const coreState = useWorkOrderCoreState({
     initialWorkOrderId: options.initialWorkOrderId ?? null,
+    initialListStatusFilter: options.initialListStatusFilter,
+    initialListSort: options.initialListSort,
   });
 
   const derivedState = useWorkOrderDerived({
@@ -220,6 +225,10 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
   const selection = {
     searchQuery: coreState.searchQuery,
     setSearchQuery: coreState.setSearchQuery,
+    listStatusFilter: coreState.listStatusFilter,
+    setListStatusFilter: coreState.setListStatusFilter,
+    listSort: coreState.listSort,
+    setListSort: coreState.setListSort,
     workOrders: derivedState.workOrders,
     hasVisibleWorkOrders: derivedState.hasVisibleWorkOrders,
     hasActiveSelection: derivedState.hasActiveSelection,

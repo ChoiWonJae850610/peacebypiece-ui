@@ -9,6 +9,7 @@ import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
 import type { AttachmentPermissionState } from "@/lib/workorder/attachments/attachmentPermissions";
 import type { DbConnectionStatus } from "@/lib/repositories/dbConnectionStatusStore";
 import type { Attachment, HistoryFilter, InventoryLog, RoleType, UserProfile, WorkOrder, WorkflowAction, WorkflowState } from "@/types/workorder";
+import type { WorkOrderListSort, WorkOrderListStatusFilter } from "@/lib/workorder/list/workOrderListControls";
 
 export type SidebarListProps = ComponentProps<typeof SidebarContent>;
 export type DetailProps = ComponentProps<typeof WorkOrderDetail>;
@@ -34,6 +35,8 @@ export type BuildWorkspaceViewModelArgs = {
   permissionTargetUserId: string;
   historyFilter: HistoryFilter;
   searchQuery: string;
+  listStatusFilter: WorkOrderListStatusFilter;
+  listSort: WorkOrderListSort;
   workOrders: SidebarListProps["workOrders"];
   hasVisibleWorkOrders: boolean;
   workflowStateById: Record<string, string>;
@@ -89,6 +92,8 @@ export type BuildWorkspaceViewModelArgs = {
   onSetPermissionTargetUserId: (next: string) => void;
   onSetCurrentUserId: (next: string) => void;
   onSetSearchQuery: (next: string) => void;
+  onSetListStatusFilter: (next: WorkOrderListStatusFilter) => void;
+  onSetListSort: (next: WorkOrderListSort) => void;
   dbConnectionStatus?: DbConnectionStatus;
   onSetHistoryFilter: (next: HistoryFilter) => void;
   onSave: () => void;
@@ -197,6 +202,8 @@ export type SidebarViewModelArgs = {
   canDeleteWorkOrder: SidebarListProps["canDelete"];
   canCreateWorkOrder: boolean;
   searchQuery: string;
+  listStatusFilter: WorkOrderListStatusFilter;
+  listSort: WorkOrderListSort;
   onSelectWorkOrder: (id: string) => void;
   onSetCreateWorkOrderModalOpen: (next: boolean) => void;
   onSetPermissionModalOpen: (next: boolean) => void;
@@ -204,6 +211,8 @@ export type SidebarViewModelArgs = {
   onDeleteWorkOrder: (id: string) => void;
   onReworkWorkOrder: (id: string) => void;
   onSetSearchQuery: (next: string) => void;
+  onSetListStatusFilter: (next: WorkOrderListStatusFilter) => void;
+  onSetListSort: (next: WorkOrderListSort) => void;
   dbConnectionStatus?: DbConnectionStatus;
   writeLocked?: boolean;
   writeLockMessage?: string;

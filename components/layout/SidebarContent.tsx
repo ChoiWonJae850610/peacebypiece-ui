@@ -3,6 +3,7 @@
 import WorkOrderListCard from "@/components/workorder/list/WorkOrderListCard";
 import { useI18n } from "@/lib/i18n";
 import type { WorkOrderListItem, WorkflowState } from "@/types/workorder";
+import type { WorkOrderListSort, WorkOrderListStatusFilter } from "@/lib/workorder/list/workOrderListControls";
 import type { DbConnectionStatus } from "@/lib/repositories/dbConnectionStatusStore";
 import { getDbConnectionStatusPresentation } from "@/lib/repositories/dbConnectionStatusPresentation";
 
@@ -23,6 +24,10 @@ type Props = {
   canManageListActions?: boolean;
   searchQuery: string;
   onSearchQueryChange: (value: string) => void;
+  statusFilter: WorkOrderListStatusFilter;
+  onStatusFilterChange: (value: WorkOrderListStatusFilter) => void;
+  sort: WorkOrderListSort;
+  onSortChange: (value: WorkOrderListSort) => void;
   dbConnectionStatus?: DbConnectionStatus;
   writeLocked?: boolean;
   writeLockMessage?: string;
@@ -45,6 +50,10 @@ export default function SidebarContent({
   canManageListActions = true,
   searchQuery,
   onSearchQueryChange,
+  statusFilter,
+  onStatusFilterChange,
+  sort,
+  onSortChange,
   dbConnectionStatus,
   writeLocked = false,
   writeLockMessage,
@@ -96,6 +105,41 @@ export default function SidebarContent({
             className="pbp-field-interaction h-11 w-full rounded-xl border border-stone-300 bg-white px-4 text-sm text-stone-900 outline-none placeholder:text-stone-400 focus:border-stone-500 focus:bg-stone-50"
           />
         </label>
+        <div className="mt-2.5 grid grid-cols-2 gap-2">
+          <label className="block">
+            <span className="sr-only">{controlsUi.statusFilterAria}</span>
+            <select
+              value={statusFilter}
+              onChange={(event) => onStatusFilterChange(event.target.value as WorkOrderListStatusFilter)}
+              disabled={writeLocked}
+              className="pbp-field-interaction h-10 w-full rounded-xl border border-stone-300 bg-white px-3 text-xs font-medium text-stone-800 outline-none focus:border-stone-500 focus:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <option value="active">{controlsUi.statusFilters.active}</option>
+              <option value="review_requested">{controlsUi.statusFilters.reviewRequested}</option>
+              <option value="review_completed">{controlsUi.statusFilters.reviewCompleted}</option>
+              <option value="inspection">{controlsUi.statusFilters.inspection}</option>
+              <option value="draft">{controlsUi.statusFilters.draft}</option>
+              <option value="rejected">{controlsUi.statusFilters.rejected}</option>
+              <option value="completed">{controlsUi.statusFilters.completed}</option>
+              <option value="all">{controlsUi.statusFilters.all}</option>
+            </select>
+          </label>
+          <label className="block">
+            <span className="sr-only">{controlsUi.sortAria}</span>
+            <select
+              value={sort}
+              onChange={(event) => onSortChange(event.target.value as WorkOrderListSort)}
+              disabled={writeLocked}
+              className="pbp-field-interaction h-10 w-full rounded-xl border border-stone-300 bg-white px-3 text-xs font-medium text-stone-800 outline-none focus:border-stone-500 focus:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <option value="updatedDesc">{controlsUi.sorts.updatedDesc}</option>
+              <option value="createdDesc">{controlsUi.sorts.createdDesc}</option>
+              <option value="dueDateAsc">{controlsUi.sorts.dueDateAsc}</option>
+              <option value="titleAsc">{controlsUi.sorts.titleAsc}</option>
+              <option value="vendorAsc">{controlsUi.sorts.vendorAsc}</option>
+            </select>
+          </label>
+        </div>
         {canCreate ? (
           <button
             type="button"

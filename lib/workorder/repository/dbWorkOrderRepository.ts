@@ -9,6 +9,13 @@ import {
   LEGACY_WORKFLOW_STATE_MAP,
   WORKFLOW_STATES,
 } from "@/lib/constants/workorderStates";
+import {
+  DEFAULT_WORK_ORDER_LIST_SORT,
+  DEFAULT_WORK_ORDER_LIST_STATUS_FILTER,
+  isWorkflowStateStatusFilter,
+  type WorkOrderListSort,
+  type WorkOrderListStatusFilter,
+} from "@/lib/workorder/list/workOrderListControls";
 import { COMPANY_FILE_TRASH_RETENTION_DAYS } from "@/lib/admin/settings/companyDefaults";
 import { ADMIN_FILE_TRASH_ACTOR_IDS } from "@/lib/admin/files/trashPolicy";
 import { ORDER_ENTRY_TARGET_TYPE } from "@/lib/constants/workorderDomain";
@@ -740,12 +747,61 @@ function buildSpecSheetSelectSql(schema: DbSpecSheetSchema): string {
     `;
 }
 
-function buildSpecSheetSummarySelectSql(schema: DbSpecSheetSchema): string {
+function buildSpecSheetSummaryWhereSql(schema: DbSpecSheetSchema, status: WorkOrderListStatusFilter): string {
+  const predicates: string[] = [];
+
+  if (schema.companyIdColumn) {
+    predicates.push(`${quoteIdentifier(schema.companyIdColumn)} = $1`);
+  }
+
+  if (schema.isActiveColumn) {
+    predicates.push(`${quoteIdentifier(schema.isActiveColumn)} = TRUE`);
+  }
+
+  if (schema.workflowStateColumn) {
+    const workflowColumn = `COALESCE(${quoteIdentifier(schema.workflowStateColumn)}, 'draft')`;
+    if (status === "active") {
+      predicates.push(`${workflowColumn} <> 'completed'`);
+    } else if (status === "completed") {
+      predicates.push(`${workflowColumn} = 'completed'`);
+    } else if (isWorkflowStateStatusFilter(status)) {
+      predicates.push(`${workflowColumn} = '${status}'`);
+    }
+  } else if (status === "completed") {
+    predicates.push("FALSE");
+  }
+
+  return predicates.length > 0 ? `WHERE ${predicates.join("\n        AND ")}` : "";
+}
+
+function buildSpecSheetSummaryOrderBySql(schema: DbSpecSheetSchema, sort: WorkOrderListSort): string {
+  if (sort === "createdDesc") {
+    return `ORDER BY ${schema.createdAtColumn ? `s.created_at DESC NULLS LAST, ` : ""}${schema.updatedAtColumn ? `s.updated_at DESC NULLS LAST, ` : ""}s.id DESC`;
+  }
+
+  if (sort === "dueDateAsc") {
+    return `ORDER BY ${schema.dueDateColumn ? `NULLIF(s.due_date::text, '') ASC NULLS LAST, ` : ""}${schema.updatedAtColumn ? `s.updated_at DESC NULLS LAST, ` : ""}s.id DESC`;
+  }
+
+  if (sort === "titleAsc") {
+    return "ORDER BY LOWER(s.title) ASC, s.id DESC";
+  }
+
+  if (sort === "vendorAsc") {
+    return `ORDER BY ${schema.vendorColumn ? `LOWER(COALESCE(s.vendor, '')) ASC, ` : ""}LOWER(s.title) ASC, s.id DESC`;
+  }
+
+  return `ORDER BY ${schema.updatedAtColumn ? `s.updated_at DESC NULLS LAST, ` : ""}${schema.createdAtColumn ? `s.created_at DESC NULLS LAST, ` : ""}s.id DESC`;
+}
+
+function buildSpecSheetSummarySelectSql(schema: DbSpecSheetSchema, options: WorkOrderSummaryQueryOptions = {}): string {
+  const status = options.status ?? DEFAULT_WORK_ORDER_LIST_STATUS_FILTER;
+  const sort = options.sort ?? DEFAULT_WORK_ORDER_LIST_SORT;
+
   return `
       WITH spec_sheet_summaries AS (
         ${buildSpecSheetSummarySelectBaseSql(schema)}
-        ${schema.companyIdColumn ? `WHERE ${quoteIdentifier(schema.companyIdColumn)} = $1` : schema.isActiveColumn ? `WHERE ${quoteIdentifier(schema.isActiveColumn)} = TRUE` : ""}
-        ${schema.companyIdColumn && schema.isActiveColumn ? `AND ${quoteIdentifier(schema.isActiveColumn)} = TRUE` : ""}
+        ${buildSpecSheetSummaryWhereSql(schema, status)}
       )
       SELECT
         s.*,
@@ -791,7 +847,7 @@ function buildSpecSheetSummarySelectSql(schema: DbSpecSheetSchema): string {
           AND COALESCE(memo.is_active, true) = true
           AND memo.deleted_at IS NULL
       ) memo_counts ON true
-      ORDER BY ${schema.updatedAtColumn ? `s.updated_at DESC NULLS LAST, ` : ""}${schema.createdAtColumn ? `s.created_at DESC NULLS LAST, ` : ""}s.id DESC
+      ${buildSpecSheetSummaryOrderBySql(schema, sort)}
     `;
 }
 
@@ -825,12 +881,17 @@ async function loadActiveSpecSheetRows(): Promise<DbSpecSheetRow[]> {
   return result.rows;
 }
 
-async function loadActiveSpecSheetSummaryRows(): Promise<DbSpecSheetRow[]> {
+type WorkOrderSummaryQueryOptions = {
+  status?: WorkOrderListStatusFilter;
+  sort?: WorkOrderListSort;
+};
+
+async function loadActiveSpecSheetSummaryRows(options: WorkOrderSummaryQueryOptions = {}): Promise<DbSpecSheetRow[]> {
   const schema = await loadSpecSheetSchema();
   assertMinimumSpecSheetSchema(schema);
 
   const result = await queryDb<DbSpecSheetRow>(
-    buildSpecSheetSummarySelectSql(schema),
+    buildSpecSheetSummarySelectSql(schema, options),
     schema.companyIdColumn ? [getAdminCompanyId()] : undefined,
   );
 
@@ -1014,8 +1075,8 @@ async function attachNormalizedDetailRows(workOrders: WorkOrder[]): Promise<Work
   });
 }
 
-export async function findDbWorkOrderSummaries(): Promise<WorkOrderSummary[]> {
-  const rows = await loadActiveSpecSheetSummaryRows();
+export async function findDbWorkOrderSummaries(options: WorkOrderSummaryQueryOptions = {}): Promise<WorkOrderSummary[]> {
+  const rows = await loadActiveSpecSheetSummaryRows(options);
   return rows.map(mapSpecSheetRowToWorkOrderSummary);
 }
 

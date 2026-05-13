@@ -10,19 +10,28 @@ import { useDbConnectionStatus } from "@/lib/hooks/workorder/useDbConnectionStat
 import { getPendingAttachmentDelete } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
 
 import { useI18n } from "@/lib/i18n";
+import type { WorkOrderListSort, WorkOrderListStatusFilter } from "@/lib/workorder/list/workOrderListControls";
 import { buildWorkspaceHomeNavigation } from "@/lib/navigation/workspaceHomeRoutes";
 
 import { buildWorkspaceViewModel } from "@/lib/workorder/workspace/buildWorkspaceViewModel";
 
 type WorkOrderWorkspaceProps = {
   initialWorkOrderId?: string | null;
+  initialListStatusFilter?: WorkOrderListStatusFilter;
+  initialListSort?: WorkOrderListSort;
 };
 
 export default function WorkOrderWorkspace({
   initialWorkOrderId = null,
+  initialListStatusFilter,
+  initialListSort,
 }: WorkOrderWorkspaceProps) {
   const { i18n } = useI18n();
-  const workOrder = useWorkOrder({ initialWorkOrderId });
+  const workOrder = useWorkOrder({
+    initialWorkOrderId,
+    initialListStatusFilter,
+    initialListSort,
+  });
   const dbConnectionStatus = useDbConnectionStatus();
 
   const {
@@ -201,6 +210,32 @@ export default function WorkOrderWorkspace({
     }
   };
 
+
+  const updateWorkerListQuery = (next: { status?: WorkOrderListStatusFilter; sort?: WorkOrderListSort }) => {
+    if (typeof window === "undefined") return;
+
+    const url = new URL(window.location.href);
+    const nextStatus = next.status ?? selection.listStatusFilter;
+    const nextSort = next.sort ?? selection.listSort;
+
+    url.searchParams.set("status", nextStatus);
+    url.searchParams.set("sort", nextSort);
+    url.searchParams.delete("workOrderId");
+    window.history.replaceState(null, "", `${url.pathname}?${url.searchParams.toString()}`);
+  };
+
+  const handleListStatusFilterChange = (nextStatus: WorkOrderListStatusFilter) => {
+    if (isWorkspaceWriteLocked) return;
+    updateWorkerListQuery({ status: nextStatus });
+    selection.setListStatusFilter(nextStatus);
+  };
+
+  const handleListSortChange = (nextSort: WorkOrderListSort) => {
+    if (isWorkspaceWriteLocked) return;
+    updateWorkerListQuery({ sort: nextSort });
+    selection.setListSort(nextSort);
+  };
+
   const viewModel = buildWorkspaceViewModel({
     drawerOpen: ui.drawerOpen,
     basicInfoOpen: ui.basicInfoOpen,
@@ -217,6 +252,8 @@ export default function WorkOrderWorkspace({
     permissionTargetUserId: identity.permissionTargetUserId,
     historyFilter: history.historyFilter,
     searchQuery: selection.searchQuery,
+    listStatusFilter: selection.listStatusFilter,
+    listSort: selection.listSort,
     workOrders: selection.workOrders,
     hasVisibleWorkOrders: renderHasSelection,
     workflowStateById: selection.workflowStateById,
@@ -272,6 +309,8 @@ export default function WorkOrderWorkspace({
     onSetPermissionTargetUserId: identity.setPermissionTargetUserId,
     onSetCurrentUserId: identity.setCurrentUserId,
     onSetSearchQuery: selection.setSearchQuery,
+    onSetListStatusFilter: handleListStatusFilterChange,
+    onSetListSort: handleListSortChange,
     dbConnectionStatus,
     onSetHistoryFilter: history.setHistoryFilter,
     onSave: () => {

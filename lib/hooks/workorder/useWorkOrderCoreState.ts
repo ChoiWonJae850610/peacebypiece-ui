@@ -4,6 +4,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useWorkorderRepository } from "@/lib/repositories/WorkorderRepositoryProvider";
 import { createRepositoryError, type WorkOrderRepositoryError } from "@/lib/repositories/repositoryErrors";
 import type { HistoryLog, UserProfile, WorkOrder } from "@/types/workorder";
+import {
+  DEFAULT_WORK_ORDER_LIST_SORT,
+  DEFAULT_WORK_ORDER_LIST_STATUS_FILTER,
+  type WorkOrderListSort,
+  type WorkOrderListStatusFilter,
+} from "@/lib/workorder/list/workOrderListControls";
 import type { AsyncOperationStatus } from "./useWorkOrderActionTypes";
 import { createStabilizedWorkOrdersSetter, stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
 import { normalizeWorkOrderDataList } from "@/lib/workorder/normalization";
@@ -41,6 +47,8 @@ const createFallbackWorkOrder = (): WorkOrder => ({
 
 type UseWorkOrderCoreStateOptions = {
   initialWorkOrderId?: string | null;
+  initialListStatusFilter?: WorkOrderListStatusFilter;
+  initialListSort?: WorkOrderListSort;
 };
 
 function resolveInitialSelectedId(input: {
@@ -49,7 +57,8 @@ function resolveInitialSelectedId(input: {
   workOrders: WorkOrder[];
 }): string {
   if (input.requestedId && input.workOrders.some((item) => item.id === input.requestedId)) return input.requestedId;
-  return input.fallbackId;
+  if (input.fallbackId && input.workOrders.some((item) => item.id === input.fallbackId)) return input.fallbackId;
+  return input.workOrders[0]?.id ?? "";
 }
 
 export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}) {
@@ -72,6 +81,12 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
     resolveInitialSelectedId({ requestedId: options.initialWorkOrderId ?? null, fallbackId: repositoryDefaultSelectedId, workOrders: normalizedInitialWorkOrders }),
   );
   const [searchQuery, setSearchQuery] = useState("");
+  const [listStatusFilter, setListStatusFilter] = useState<WorkOrderListStatusFilter>(
+    options.initialListStatusFilter ?? DEFAULT_WORK_ORDER_LIST_STATUS_FILTER,
+  );
+  const [listSort, setListSort] = useState<WorkOrderListSort>(
+    options.initialListSort ?? DEFAULT_WORK_ORDER_LIST_SORT,
+  );
   const [repositoryStatus, setRepositoryStatus] = useState<AsyncOperationStatus>("loading");
   const [repositoryError, setRepositoryError] = useState<WorkOrderRepositoryError | null>(null);
   const [saveStatus, setSaveStatus] = useState<"saved" | "dirty" | "saving">("saved");
@@ -127,7 +142,7 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
     return () => {
       cancelled = true;
     };
-  }, [options.initialWorkOrderId, repository]);
+  }, [listSort, listStatusFilter, options.initialWorkOrderId, repository]);
 
   useEffect(() => {
     if (repositoryStatus !== "ready") return;
@@ -234,6 +249,10 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
     isSelectedWorkOrderDetailLoading,
     searchQuery,
     setSearchQuery,
+    listStatusFilter,
+    setListStatusFilter,
+    listSort,
+    setListSort,
     saveStatus,
     setSaveStatus,
     lastSavedAt,

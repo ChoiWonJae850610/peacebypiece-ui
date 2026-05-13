@@ -21,6 +21,10 @@ import {
   updateDbWorkOrderStatePatch,
 } from "@/lib/workorder/repository/dbWorkOrderRepository";
 import type { MemoThread, WorkOrder, WorkOrderAuditActor, WorkOrderStatePatch, WorkOrderStatePatchResult } from "@/types/workorder";
+import {
+  normalizeWorkOrderListSort,
+  normalizeWorkOrderListStatusFilter,
+} from "@/lib/workorder/list/workOrderListControls";
 
 type DbApiErrorCode =
   | "DB_NOT_CONFIGURED"
@@ -376,7 +380,7 @@ export async function handleGetWorkOrderDetail(workOrderId: string) {
   }
 }
 
-export async function handleGetWorkOrderSummaries() {
+export async function handleGetWorkOrderSummaries(request?: Request) {
   const startedAt = Date.now();
 
   if (!isDatabaseConfigured()) {
@@ -384,8 +388,11 @@ export async function handleGetWorkOrderSummaries() {
   }
 
   try {
-    const workOrders = await findDbWorkOrderSummaries();
-    logDbRequestOutcome("GET", true, "SUMMARY_READY", `rows=${workOrders.length}`);
+    const url = request ? new URL(request.url) : null;
+    const status = normalizeWorkOrderListStatusFilter(url?.searchParams.get("status"));
+    const sort = normalizeWorkOrderListSort(url?.searchParams.get("sort"));
+    const workOrders = await findDbWorkOrderSummaries({ status, sort });
+    logDbRequestOutcome("GET", true, "SUMMARY_READY", `rows=${workOrders.length};status=${status};sort=${sort}`);
 
     return NextResponse.json({
       workOrders,
