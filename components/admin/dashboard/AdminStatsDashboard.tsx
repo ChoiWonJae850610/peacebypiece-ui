@@ -1,12 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
 import { DayPicker, type DateRange } from "react-day-picker";
 import { enUS, ko } from "date-fns/locale";
 
+import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
+import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import AdminTable from "@/components/admin/common/AdminTable";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
 import { AdminBasicBarChart, AdminBasicDonutChart } from "@/components/admin/dashboard/AdminBasicStatsCharts";
+import type { AdminTableColumn } from "@/lib/admin/common/types";
 import type { AdminStatsPeriodTopMode, AdminStatsSnapshot } from "@/lib/admin/stats/types";
 import { buildAdminStatsDashboardViewModel } from "@/lib/admin/stats/presentation";
 import type { getI18n } from "@/lib/i18n";
@@ -20,6 +24,7 @@ type AdminStatsDashboardProps = {
 
 type CategoryDepthKey = "first" | "second";
 type AdminStatsSectionKey = "production" | "factory" | "period";
+type AdminStatsFactoryPerformanceItem = AdminStatsSnapshot["factoryPerformance"][number];
 
 
 function translateStatsLabel(label: string, t: ReturnType<typeof useAdminTranslation>) {
@@ -249,20 +254,12 @@ function AdminStatsDateRangePicker({
           <div className="mt-3 flex items-center justify-between gap-3 border-t border-stone-100 pt-3">
             <p className="min-w-0 flex-1 text-xs font-semibold text-stone-500">{selectedSummary}</p>
             <div className="flex shrink-0 items-center gap-2">
-              <button
-                type="button"
-                onClick={clearSelection}
-                className="rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-600 transition hover:bg-stone-50"
-              >
+              <AdminButton type="button" onClick={clearSelection} variant="secondary" size="sm" className="min-h-8 px-3 py-1.5 text-xs">
                 {labels.clear}
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsCalendarOpen(false)}
-                className="rounded-full bg-stone-950 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-stone-800"
-              >
+              </AdminButton>
+              <AdminButton type="button" onClick={() => setIsCalendarOpen(false)} variant="primary" size="sm" className="min-h-8 px-3 py-1.5 text-xs">
                 {labels.done}
-              </button>
+              </AdminButton>
             </div>
           </div>
         </div>
@@ -341,7 +338,7 @@ function PeriodTopCard({
               <div className="h-1.5 rounded-full bg-[var(--admin-theme-surface)]" style={{ width: `${item.widthPercent}%` }} />
             </div>
           </div>
-        )) : <p className="rounded-2xl border border-dashed border-stone-200 bg-stone-50 px-4 py-4 text-sm font-semibold text-stone-500">{emptyLabel}</p>}
+        )) : <AdminEmptyState title={emptyLabel} />}
       </div>
     </AdminCard>
   );
@@ -535,6 +532,40 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
     () => buildAdminStatsRatioBars(translatedStats.periodTopProducts[selectedPeriodTopMode] ?? []).slice(0, 5),
     [selectedPeriodTopMode, translatedStats.periodTopProducts],
   );
+  const factoryPerformanceColumns = useMemo<AdminTableColumn<AdminStatsFactoryPerformanceItem>[]>(
+    () => [
+      {
+        key: "factory",
+        label: pt("factoryColumn", pageText.factoryColumn),
+        className: "min-w-0",
+        render: (item) => (
+          <span className="block truncate text-xs font-semibold text-stone-700" title={buildFactoryMetricTooltip(item)}>
+            {item.label} · {formatCount(item.productionCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))}
+          </span>
+        ),
+      },
+      {
+        key: "delayRate",
+        label: pt("delayRateColumn", pageText.delayRateColumn),
+        render: (item) => (
+          <AdminStatusBadge tone={item.dueDelayRate && item.dueDelayRate > 0 ? "warning" : "success"} size="xs" className="cursor-help" title={buildFactoryMetricTooltip(item)}>
+            {formatPercent(item.dueDelayRate, pt("pendingLabel", pageText.pendingLabel))}
+          </AdminStatusBadge>
+        ),
+      },
+      {
+        key: "qualityRate",
+        label: pt("qualityRateColumn", pageText.qualityRateColumn),
+        render: (item) => (
+          <AdminStatusBadge tone={item.qualityIssueRate && item.qualityIssueRate > 0 ? "warning" : "success"} size="xs" className="cursor-help" title={buildFactoryMetricTooltip(item)}>
+            {formatPercent(item.qualityIssueRate, pt("pendingLabel", pageText.pendingLabel))}
+          </AdminStatusBadge>
+        ),
+      },
+    ],
+    [pageText, t],
+  );
+
   const statsSectionTabs: Array<{ key: AdminStatsSectionKey; label: string; description: string }> = [
     { key: "production", label: pt("statsSectionProductionLabel", "생산 구성"), description: pt("statsSectionProductionDescription", "생산품 유형과 상위 품목") },
     { key: "factory", label: pt("statsSectionFactoryLabel", "업체 성과"), description: pt("statsSectionFactoryDescription", "업체별 생산·납기·검수") },
@@ -578,7 +609,7 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
               <div className="h-2 rounded-full bg-[var(--admin-theme-surface)]" style={{ width: `${item.widthPercent}%` }} />
             </div>
           </div>
-        )) : <p className="rounded-2xl border border-dashed border-stone-200 bg-stone-50 px-4 py-4 text-sm font-semibold text-stone-500">{emptyLabel}</p>}
+        )) : <AdminEmptyState title={emptyLabel} />}
       </div>
     </AdminCard>
   );
@@ -644,16 +675,18 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
             {statsSectionTabs.map((item) => {
               const isActive = item.key === activeStatsSection;
               return (
-                <button
+                <AdminButton
                   key={item.key}
                   type="button"
                   onClick={() => changeStatsSection(item.key)}
-                  className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${isActive ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)] shadow-sm" : "text-stone-500 hover:bg-white hover:text-stone-800"}`}
+                  variant={isActive ? "primary" : "ghost"}
+                  size="sm"
+                  className="min-h-8 px-3.5 py-1.5 text-xs"
                   aria-pressed={isActive}
                   title={item.description}
                 >
                   {item.label}
-                </button>
+                </AdminButton>
               );
             })}
           </div>
@@ -674,17 +707,19 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
                   </div>
                   <div className="flex rounded-full bg-stone-100 p-1">
                     {(["first", "second"] as const).map((key) => (
-                      <button
+                      <AdminButton
                         key={key}
                         type="button"
                         onClick={() => {
                           setCategoryDepth(key);
                           setSelectedCategoryLabel(null);
                         }}
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${categoryDepth === key ? "bg-white text-stone-950 shadow-sm" : "text-stone-500"}`}
+                        variant={categoryDepth === key ? "secondary" : "ghost"}
+                        size="sm"
+                        className="min-h-7 px-3 py-1 text-xs"
                       >
                         {categoryDepthLabels[key]}
-                      </button>
+                      </AdminButton>
                     ))}
                   </div>
                 </div>
@@ -705,25 +740,16 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
               <AdminCard className="flex h-full min-h-[246px] flex-col p-3.5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("delayQualityEyebrow", pageText.delayQualityEyebrow)}</p>
                 <h2 className="mt-1 text-base font-semibold text-stone-950">{pt("delayQualityTitle", pageText.delayQualityTitle)}</h2>
-                <div className="mt-2 flex-1 overflow-hidden rounded-2xl border border-stone-100">
-                  <div className="grid grid-cols-[1.2fr_0.8fr_0.8fr] bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-500">
-                    <span>{pt("factoryColumn", pageText.factoryColumn)}</span>
-                    <span>{pt("delayRateColumn", pageText.delayRateColumn)}</span>
-                    <span>{pt("qualityRateColumn", pageText.qualityRateColumn)}</span>
-                  </div>
-                  {translatedStats.factoryPerformance.length > 0 ? translatedStats.factoryPerformance.slice(0, 5).map((item) => {
-                    const tooltip = buildFactoryMetricTooltip(item);
-                    return (
-                      <div key={item.label} title={tooltip} className="grid grid-cols-[1.2fr_0.8fr_0.8fr] border-t border-stone-100 px-3 py-2 text-xs font-semibold text-stone-700">
-                        <span className="truncate pr-3">{item.label} · {formatCount(item.productionCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))}</span>
-                        <span className="cursor-help underline decoration-stone-300 decoration-dotted underline-offset-4">{formatPercent(item.dueDelayRate, pt("pendingLabel", pageText.pendingLabel))}</span>
-                        <span className="cursor-help underline decoration-stone-300 decoration-dotted underline-offset-4">{formatPercent(item.qualityIssueRate, pt("pendingLabel", pageText.pendingLabel))}</span>
-                      </div>
-                    );
-                  }) : (
-                    <p className="border-t border-stone-100 px-4 py-4 text-sm font-semibold text-stone-500">{pt("factoryPerformanceEmpty", pageText.factoryPerformanceEmpty)}</p>
-                  )}
-                </div>
+                <AdminTable
+                  items={translatedStats.factoryPerformance.slice(0, 5)}
+                  columns={factoryPerformanceColumns}
+                  getRowKey={(item) => item.label}
+                  emptyLabel={pt("factoryPerformanceEmpty", pageText.factoryPerformanceEmpty)}
+                  className="mt-2 min-h-[190px] rounded-2xl border-stone-100"
+                  gridTemplateColumns="minmax(0,1.2fr) minmax(0,0.8fr) minmax(0,0.8fr)"
+                  rowBaseClassName="grid w-full gap-3 px-3 py-2 text-left text-[11px] md:items-center"
+                  headerClassName="hidden gap-3 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-500 md:grid"
+                />
               </AdminCard>
             </div>
           ) : null}
@@ -747,30 +773,36 @@ export default function AdminStatsDashboard({ stats, pageText }: AdminStatsDashb
                     />
                   </div>
                   {activePeriodOptions.map((item) => (
-                    <Link
+                    <AdminLinkButton
                       key={item.key}
                       href={item.href}
                       aria-current={item.active ? "page" : undefined}
-                      className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${item.active ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "bg-white text-stone-500 hover:bg-stone-100"}`}
+                      variant={item.active ? "primary" : "secondary"}
+                      size="sm"
+                      className="min-h-8 px-3 py-1.5 text-xs"
                     >
                       {translateStatsLabel(item.label, t)}
-                    </Link>
+                    </AdminLinkButton>
                   ))}
-                  <Link
+                  <AdminLinkButton
                     href="/admin/dashboard?period=30d"
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-white text-sm font-semibold text-stone-500 shadow-sm transition hover:bg-stone-50"
+                    variant="secondary"
+                    size="sm"
+                    className="h-8 min-h-8 w-8 px-0 py-0 text-sm"
                     aria-label={pt("customReset", pageText.customReset)}
                     title={pt("customReset", pageText.customReset)}
                   >
                     ↻
-                  </Link>
-                  <Link
+                  </AdminLinkButton>
+                  <AdminLinkButton
                     href={customPeriodHref}
                     aria-disabled={!isCustomPeriodValid}
-                    className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${isCustomPeriodValid ? "bg-stone-950 text-white hover:bg-stone-800" : "pointer-events-none bg-stone-100 text-stone-400"}`}
+                    variant={isCustomPeriodValid ? "primary" : "secondary"}
+                    size="sm"
+                    className={`min-h-8 px-3 py-1.5 text-xs ${isCustomPeriodValid ? "" : "pointer-events-none opacity-50"}`}
                   >
                     {pt("customApplyShort", pageText.customApply)}
-                  </Link>
+                  </AdminLinkButton>
                 </div>
               </div>
               {customPeriodMessage ? <p className="mt-3 text-xs font-semibold text-amber-700">{customPeriodMessage}</p> : null}
