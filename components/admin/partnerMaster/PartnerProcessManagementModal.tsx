@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminButton } from "@/components/admin/common/AdminButton";
 import {
   AdminModalFooterActions,
   AdminModalSection,
@@ -132,7 +133,7 @@ export default function PartnerProcessManagementModal({
           </div>
 
           <div className="flex items-center justify-center gap-2 md:flex-col">
-            <button
+            <AdminButton
               type="button"
               onClick={() => {
                 if (saving || !selectedInactiveProcess) return;
@@ -141,12 +142,14 @@ export default function PartnerProcessManagementModal({
                 onSelectInactiveProcess(null);
               }}
               disabled={saving || !selectedInactiveProcess}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition hover:border-stone-300 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-35"
+              variant="secondary"
+              size="sm"
+              className="h-8 w-8 px-0 py-0"
               aria-label={processText.activateSelected}
             >
               <span className="block -rotate-90">▾</span>
-            </button>
-            <button
+            </AdminButton>
+            <AdminButton
               type="button"
               onClick={() => {
                 if (saving || !selectedActiveProcess) return;
@@ -155,11 +158,13 @@ export default function PartnerProcessManagementModal({
                 onSelectActiveProcess(null);
               }}
               disabled={saving || !selectedActiveProcess}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition hover:border-stone-300 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-35"
+              variant="secondary"
+              size="sm"
+              className="h-8 w-8 px-0 py-0"
               aria-label={processText.deactivateSelected}
             >
               <span className="block rotate-90">▾</span>
-            </button>
+            </AdminButton>
           </div>
 
           <div className="space-y-2">

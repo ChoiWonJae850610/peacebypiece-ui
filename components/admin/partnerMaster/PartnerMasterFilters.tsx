@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminButton } from "@/components/admin/common/AdminButton";
 import AdminFilterBar from "@/components/admin/common/AdminFilterBar";
 import { type PartnerFilterChip, type PartnerStatusFilter } from "@/lib/admin/partner";
 import { useI18n } from "@/lib/i18n";
@@ -59,17 +60,15 @@ export default function PartnerMasterFilters({
             {filterOptions.map((item) => {
               const isSelected = selectedTypes.includes(item.value);
               return (
-                <button
+                <AdminButton
                   key={item.value}
                   type="button"
                   onClick={() => onToggleType(item.value)}
-                  className={[
-                    "inline-flex h-9 items-center rounded-full px-3 text-sm font-medium transition",
-                    isSelected ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)] shadow-sm" : "border border-stone-200 bg-white text-stone-700 hover:bg-stone-100",
-                  ].join(" ")}
+                  variant={isSelected ? "primary" : "secondary"}
+                  size="sm"
                 >
                   {item.label}
-                </button>
+                </AdminButton>
               );
             })}
           </div>
@@ -79,17 +78,15 @@ export default function PartnerMasterFilters({
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">{filterText.statusLabel}</p>
           <div className="flex flex-wrap gap-2">
             {statusOptions.map((item) => (
-              <button
+              <AdminButton
                 key={item.value}
                 type="button"
                 onClick={() => onStatusChange(item.value)}
-                className={[
-                  "inline-flex h-9 items-center rounded-full px-3 text-sm font-medium transition",
-                  selectedStatus === item.value ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)] shadow-sm" : "border border-stone-200 bg-white text-stone-700 hover:bg-stone-100",
-                ].join(" ")}
+                variant={selectedStatus === item.value ? "primary" : "secondary"}
+                size="sm"
               >
                 {item.label}
-              </button>
+              </AdminButton>
             ))}
           </div>
         </div>

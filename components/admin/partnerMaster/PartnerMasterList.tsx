@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import AdminTable from "@/components/admin/common/AdminTable";
 import type { PartnerListItemViewModel } from "@/lib/admin/partner";
 import { useI18n } from "@/lib/i18n";
@@ -37,7 +38,7 @@ export default function PartnerMasterList({ items, isLoading = false, onEditPart
               <div className="flex flex-wrap items-center gap-2">
                 <p className="min-w-0 max-w-full truncate text-sm font-semibold text-stone-900 md:text-base" title={item.name}>{item.name}</p>
                 {!item.isActive ? (
-                  <span className="rounded-full bg-stone-200 px-2 py-0.5 text-[11px] font-medium text-stone-600">{listText.inactiveBadge}</span>
+                  <AdminStatusBadge tone="neutral" size="xs">{listText.inactiveBadge}</AdminStatusBadge>
                 ) : null}
               </div>
               {item.memo ? <p className="mt-1 truncate text-xs text-stone-500">{item.memo}</p> : null}
@@ -55,9 +56,9 @@ export default function PartnerMasterList({ items, isLoading = false, onEditPart
               <div className="flex min-h-7 flex-wrap items-center gap-1.5">
                 {item.hasBaseTypes ? (
                   item.baseTypeBadges.map((badge) => (
-                    <span key={badge.key} className={`rounded-full px-2.5 py-1 text-xs font-medium ${badge.tone}`}>
+                    <AdminStatusBadge key={badge.key} tone="info" size="xs">
                       {badge.label}
-                    </span>
+                    </AdminStatusBadge>
                   ))
                 ) : (
                   <span className="text-xs text-stone-400">{listText.noBaseType}</span>
@@ -75,9 +76,9 @@ export default function PartnerMasterList({ items, isLoading = false, onEditPart
           key: "status",
           label: listText.columns.status,
           render: (item) => (
-            <span className={["inline-flex rounded-full px-2.5 py-1 text-xs font-medium", item.isActive ? "bg-teal-100 text-teal-700" : "bg-stone-200 text-stone-600"].join(" ")}>
+            <AdminStatusBadge tone={item.isActive ? "success" : "neutral"} size="sm">
               {item.isActive ? listText.active : listText.inactive}
-            </span>
+            </AdminStatusBadge>
           ),
         },
       ]}

@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminButton } from "@/components/admin/common/AdminButton";
 import { useI18n } from "@/lib/i18n";
 
 type PartnerMasterHeaderProps = {
@@ -13,13 +14,9 @@ export default function PartnerMasterHeader({ onOpenCreateModal }: PartnerMaster
   return (
     <div className="flex shrink-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
       <p className="min-w-0 max-w-3xl text-sm leading-6 text-stone-500 md:text-[13px]">{headerText.description}</p>
-      <button
-        type="button"
-        onClick={onOpenCreateModal}
-        className="inline-flex h-10 shrink-0 items-center justify-center rounded-full bg-[var(--admin-theme-surface)] px-4 text-sm font-semibold text-[var(--admin-theme-text-on-surface)] shadow-sm transition hover:bg-[var(--admin-theme-surface-hover)]"
-      >
+      <AdminButton type="button" onClick={onOpenCreateModal} variant="primary" size="md">
         + {headerText.createPartner}
-      </button>
+      </AdminButton>
     </div>
   );
 }

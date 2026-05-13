@@ -1,6 +1,7 @@
 "use client";
 
-import { AdminModal, AdminModalSection, adminModalDangerButtonClassName, adminModalSecondaryButtonClassName } from "@/components/admin/layout/AdminModal";
+import { AdminButton } from "@/components/admin/common/AdminButton";
+import { AdminModal, AdminModalSection } from "@/components/admin/layout/AdminModal";
 import { buildDeleteOutsourcingProcessConfirmCopy } from "@/lib/admin/partner/confirm";
 import type { OutsourcingProcessDefinition } from "@/lib/admin/partner";
 import { useI18n } from "@/lib/i18n";
@@ -34,20 +35,12 @@ export default function PartnerProcessDeleteModal({
       maxWidthClass="md:max-w-lg"
       footer={
         <div className="flex w-full items-center justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className={adminModalSecondaryButtonClassName}
-          >
+          <AdminButton type="button" onClick={onClose} variant="secondary">
             {confirmCopy.cancelLabel}
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            className={adminModalDangerButtonClassName}
-          >
+          </AdminButton>
+          <AdminButton type="button" onClick={onConfirm} variant="danger">
             {confirmCopy.confirmLabel}
-          </button>
+          </AdminButton>
         </div>
       }
     >

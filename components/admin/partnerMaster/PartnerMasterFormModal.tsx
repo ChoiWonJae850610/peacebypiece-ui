@@ -1,13 +1,13 @@
 "use client";
 
+import { AdminButton } from "@/components/admin/common/AdminButton";
+import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import StatusToggle from "@/components/common/StatusToggle";
 import {
   AdminModal,
   AdminModalSection,
   adminModalInputClassName,
   adminModalLabelClassName,
-  adminModalPrimaryButtonClassName,
-  adminModalSecondaryButtonClassName,
 } from "@/components/admin/layout/AdminModal";
 import {
   BASE_PARTNER_TYPE_VALUES,
@@ -74,22 +74,12 @@ export default function PartnerMasterFormModal({
         <div className="flex w-full items-center justify-between gap-3">
           <p className="text-xs text-rose-600">{formError}</p>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={isSubmitting}
-              className={adminModalSecondaryButtonClassName}
-            >
+            <AdminButton type="button" onClick={onClose} disabled={isSubmitting} variant="secondary">
               {formText.cancel}
-            </button>
-            <button
-              type="button"
-              onClick={onSubmit}
-              disabled={isSubmitting}
-              className={adminModalPrimaryButtonClassName}
-            >
+            </AdminButton>
+            <AdminButton type="button" onClick={onSubmit} disabled={isSubmitting} variant="primary">
               {formText.save}
-            </button>
+            </AdminButton>
           </div>
         </div>
       }
@@ -117,9 +107,9 @@ export default function PartnerMasterFormModal({
               srLabel={formText.usageSrLabel}
               size="sm"
             />
-            <span className={`text-sm font-medium ${draft.isActive ? "text-stone-900" : "text-stone-500"}`}>
+            <AdminStatusBadge tone={draft.isActive ? "success" : "neutral"}>
               {draft.isActive ? formText.usageActive : formText.usageInactive}
-            </span>
+            </AdminStatusBadge>
           </div>
         </div>
       </div>
@@ -176,18 +166,16 @@ export default function PartnerMasterFormModal({
             {BASE_PARTNER_TYPE_VALUES.map((type) => {
               const checked = selectedPrimaryTypes.includes(type);
               return (
-                <button
+                <AdminButton
                   key={type}
                   type="button"
                   onClick={() => onSetPrimaryType(type)}
                   aria-pressed={checked}
-                  className={[
-                    "rounded-2xl border px-4 py-3 text-sm font-medium transition",
-                    checked ? "border-sky-300 bg-sky-50 text-sky-900 shadow-sm" : "border-stone-200 bg-white text-stone-700 hover:border-stone-300",
-                  ].join(" ")}
+                  variant={checked ? "primary" : "secondary"}
+                  className="rounded-2xl px-4 py-3"
                 >
                   {formText.typeLabels?.[type] ?? PARTNER_TYPE_META[type].shortLabel}
-                </button>
+                </AdminButton>
               );
             })}
           </div>
@@ -231,7 +219,7 @@ export default function PartnerMasterFormModal({
               </div>
 
               <div className="flex items-center justify-center gap-2 md:flex-col">
-                <button
+                <AdminButton
                   type="button"
                   onClick={() => {
                     if (!selectedAvailableProcess) return;
@@ -240,12 +228,14 @@ export default function PartnerMasterFormModal({
                     onSelectAvailableProcess(null);
                   }}
                   disabled={!selectedAvailableProcess}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition hover:border-stone-300 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-35"
+                  variant="secondary"
+                  size="sm"
+                  className="h-8 w-8 px-0 py-0"
                   aria-label={formText.addSelectedProcess}
                 >
                   <span className="block -rotate-90">▾</span>
-                </button>
-                <button
+                </AdminButton>
+                <AdminButton
                   type="button"
                   onClick={() => {
                     if (!selectedAssignedProcess) return;
@@ -254,11 +244,13 @@ export default function PartnerMasterFormModal({
                     onSelectAssignedProcess(null);
                   }}
                   disabled={!selectedAssignedProcess}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-sm text-stone-600 transition hover:border-stone-300 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-35"
+                  variant="secondary"
+                  size="sm"
+                  className="h-8 w-8 px-0 py-0"
                   aria-label={formText.removeSelectedProcess}
                 >
                   <span className="block rotate-90">▾</span>
-                </button>
+                </AdminButton>
               </div>
 
               <div className="space-y-2">
