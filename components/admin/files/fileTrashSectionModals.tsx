@@ -14,6 +14,8 @@ import type { UnifiedTrashRow } from "@/components/admin/files/fileTrashSectionR
 import type {
   WorkOrderActionIntent,
   WorkOrderActionPreview,
+  TrashSelectionConfirmIntent,
+  TrashSelectionConfirmSummary,
 } from "@/components/admin/files/fileTrashSectionActions";
 
 type AdminT = ReturnType<typeof useAdminTranslation>;
@@ -67,6 +69,100 @@ export function EmptyTrashConfirmModal({
   );
 }
 
+export function TrashSelectionConfirmModal({
+  intent,
+  summary,
+  isPending,
+  onClose,
+  onConfirm,
+  t,
+}: {
+  intent: TrashSelectionConfirmIntent | null;
+  summary: TrashSelectionConfirmSummary | null;
+  isPending: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  t: AdminT;
+}) {
+  const isPurge = intent === "purge";
+  return (
+    <AdminModal
+      open={Boolean(intent && summary)}
+      onClose={onClose}
+      title={
+        isPurge
+          ? t("filesList.selectionConfirm.purgeTitle", "삭제 확인")
+          : t("filesList.selectionConfirm.restoreTitle", "복원 확인")
+      }
+      description={t(
+        "filesList.selectionConfirm.description",
+        "선택한 항목의 처리 범위를 확인한 뒤 진행합니다.",
+      )}
+      maxWidthClass="md:max-w-lg"
+      minHeightClassName=""
+      footer={
+        <div className="flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <AdminButton type="button" variant="secondary" onClick={onClose}>
+            {t("filesList.close", "닫기")}
+          </AdminButton>
+          <AdminButton
+            type="button"
+            variant={isPurge ? "danger" : "primary"}
+            disabled={isPending || !summary || summary.totalActionCount === 0}
+            onClick={() => {
+              onConfirm();
+              onClose();
+            }}
+          >
+            {isPending
+              ? t("filesList.processing", "처리 중")
+              : isPurge
+                ? t("filesList.delete", "삭제")
+                : t("filesList.restore", "복원")}
+          </AdminButton>
+        </div>
+      }
+    >
+      {summary ? (
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
+            <p className="text-xs font-semibold text-stone-900">
+              {summary.summaryLabel}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-stone-500">
+              {isPurge
+                ? t(
+                    "filesList.selectionConfirm.purgeQuestion",
+                    "위 항목을 삭제 요청하시겠습니까?",
+                  )
+                : t(
+                    "filesList.selectionConfirm.restoreQuestion",
+                    "위 항목을 복원하시겠습니까?",
+                  )}
+            </p>
+          </div>
+          {summary.skippedCount > 0 ? (
+            <p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800">
+              {t(
+                "filesList.selectionConfirm.skippedNotice",
+                "처리할 수 없는 선택 항목 {count}개는 제외합니다.",
+              ).replace("{count}", String(summary.skippedCount))}
+            </p>
+          ) : null}
+          {isPurge ? (
+            <p className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs leading-5 text-rose-700">
+              {t(
+                "filesList.selectionConfirm.purgePolicyNotice",
+                "삭제는 고객관리자 삭제 요청으로 처리되며, 실제 파일 삭제는 시스템관리자 처리 단계에서 진행합니다.",
+              )}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+    </AdminModal>
+  );
+}
+
 export function WorkOrderActionPreviewModal({
   actionPreview,
   previewWorkOrder,
@@ -98,7 +194,7 @@ export function WorkOrderActionPreviewModal({
       onClose={onClose}
       title={
         intent === "purge"
-          ? t("filesList.workorderPurgePreview", "선택 삭제 범위 확인")
+          ? t("filesList.workorderPurgePreview", "삭제 범위 확인")
           : t("filesList.workorderRestorePreview", "복원 범위 확인")
       }
       description={
@@ -132,7 +228,7 @@ export function WorkOrderActionPreviewModal({
             {isPending
               ? t("filesList.processing", "처리 중")
               : intent === "purge"
-                ? t("filesList.purge", "선택 삭제")
+                ? t("filesList.delete", "삭제")
                 : t("filesList.restore", "복원")}
           </AdminButton>
         </div>
@@ -145,22 +241,32 @@ export function WorkOrderActionPreviewModal({
               {previewWorkOrder.title}
             </p>
             <p className="mt-1 text-xs text-stone-500">
-              {getLocalizedWorkOrderStageLabel(previewWorkOrder.statusLabel, t)} ·{" "}
-              {t("filesList.columns.deletedAt", "삭제일시")} {previewWorkOrder.deletedAt || "-"}
+              {getLocalizedWorkOrderStageLabel(previewWorkOrder.statusLabel, t)}{" "}
+              · {t("filesList.columns.deletedAt", "삭제일시")}{" "}
+              {previewWorkOrder.deletedAt || "-"}
             </p>
           </div>
 
           <div className="grid gap-2 md:grid-cols-4">
             <PreviewStatCard
               label={t("filesList.selectedScope.workorder", "작업지시서")}
-              value={t("filesList.selectedScope.workorderValue", "대표 row 1건")}
+              value={t(
+                "filesList.selectedScope.workorderValue",
+                "대표 row 1건",
+              )}
             />
             <PreviewStatCard
-              label={t("filesList.selectedScope.bundleAttachments", "문서/디자인/메모")}
+              label={t(
+                "filesList.selectedScope.bundleAttachments",
+                "문서/디자인/메모",
+              )}
               value={`${bundleCount}${t("filesList.countSuffix", "개")}`}
             />
             <PreviewStatCard
-              label={t("filesList.selectedScope.restoreBlocked", "복원 제외 항목")}
+              label={t(
+                "filesList.selectedScope.restoreBlocked",
+                "복원 제외 항목",
+              )}
               value={`${blockedCount}${t("filesList.countSuffix", "개")}`}
             />
             <PreviewStatCard
@@ -184,7 +290,7 @@ export function WorkOrderActionPreviewModal({
                   )
                 : t(
                     "filesList.workorderActionSkeletonNotice",
-                    "선택 삭제는 고객관리자 삭제 요청으로 처리하고 휴지통 기본 목록에서 제외합니다. R2 파일 삭제는 시스템관리자 Worker 기반 purge 흐름에서만 처리됩니다.",
+                    "삭제는 고객관리자 삭제 요청으로 처리하고 휴지통 기본 목록에서 제외합니다. R2 파일 삭제는 시스템관리자 Worker 기반 purge 흐름에서만 처리됩니다.",
                   )}
             </p>
             <p>
@@ -195,7 +301,7 @@ export function WorkOrderActionPreviewModal({
                   )
                 : t(
                     "filesList.workorderPurgeGuardDescription",
-                    "선택 삭제 시 고객관리자 삭제 요청 상태로 전환합니다. 실제 파일 삭제는 시스템관리자 처리 단계에서 진행합니다.",
+                    "삭제 시 고객관리자 삭제 요청 상태로 전환합니다. 실제 파일 삭제는 시스템관리자 처리 단계에서 진행합니다.",
                   )}
             </p>
           </div>
@@ -298,7 +404,7 @@ export function TrashDetailModal({
                   : row.purgeDisabledReason
               }
             >
-              {t("filesList.purge", "선택 삭제")}
+              {t("filesList.delete", "삭제")}
             </AdminButton>
           </div>
         ) : null
@@ -317,7 +423,10 @@ function TrashDetailContent({ row, t }: { row: UnifiedTrashRow; t: AdminT }) {
           label={row.visualLabel}
           tone={row.visualTone}
           thumbnailUrl={row.thumbnailUrl || row.previewUrl}
-          previewFailedLabel={t("filesList.detail.previewFailed", "Preview failed")}
+          previewFailedLabel={t(
+            "filesList.detail.previewFailed",
+            "Preview failed",
+          )}
         />
         <div className="min-w-0">
           <p
@@ -393,9 +502,20 @@ function getTrashDetailFields(
       [t("filesList.columns.type", "유형"), row.typeLabel],
       [
         t("filesList.detail.documentsDesigns", "문서/디자인"),
-        formatTrashDetailCountLabel(row.sourceItem.attachmentSummaryLabel, "documentsDesigns", t),
+        formatTrashDetailCountLabel(
+          row.sourceItem.attachmentSummaryLabel,
+          "documentsDesigns",
+          t,
+        ),
       ],
-      [t("filesList.detail.memos", "메모"), formatTrashDetailCountLabel(row.sourceItem.memoSummaryLabel, "memos", t)],
+      [
+        t("filesList.detail.memos", "메모"),
+        formatTrashDetailCountLabel(
+          row.sourceItem.memoSummaryLabel,
+          "memos",
+          t,
+        ),
+      ],
       [t("filesList.columns.deletedAt", "삭제일시"), row.deletedAt],
     ];
   }

@@ -57,7 +57,12 @@ export type UnifiedTrashRow =
       sourceItem: AdminTrashFileItem;
     };
 
-export type TrashSortKey = "target" | "deletedAt" | "workorder" | "type" | "size";
+export type TrashSortKey =
+  | "target"
+  | "deletedAt"
+  | "workorder"
+  | "type"
+  | "size";
 export type TrashSortDirection = "asc" | "desc";
 
 export type TrashSortState = {
@@ -77,9 +82,27 @@ export const TRASH_CELL_SELECT_CLASS =
   "flex h-full min-h-[38px] w-full items-center justify-center text-center";
 
 export const WORKORDER_STAGE_STEPS = [
-  { key: "draft", keys: ["draft", "working", "작성중", "작업중"], label: "작성중" },
-  { key: "review", keys: ["review_requested", "review_completed", "검토요청", "검토완료", "검토"], label: "검토" },
-  { key: "order", keys: ["request_order", "order_requested", "발주요청", "발주"], label: "발주" },
+  {
+    key: "draft",
+    keys: ["draft", "working", "작성중", "작업중"],
+    label: "작성중",
+  },
+  {
+    key: "review",
+    keys: [
+      "review_requested",
+      "review_completed",
+      "검토요청",
+      "검토완료",
+      "검토",
+    ],
+    label: "검토",
+  },
+  {
+    key: "order",
+    keys: ["request_order", "order_requested", "발주요청", "발주"],
+    label: "발주",
+  },
   {
     key: "inspection",
     keys: [
@@ -168,7 +191,10 @@ function getTrashRowSortText(row: UnifiedTrashRow, key: TrashSortKey): string {
   return row.sizeLabel;
 }
 
-function getTrashRowSortNumber(row: UnifiedTrashRow, key: TrashSortKey): number | null {
+function getTrashRowSortNumber(
+  row: UnifiedTrashRow,
+  key: TrashSortKey,
+): number | null {
   if (key !== "size") return null;
   if (row.kind === "attachment") return row.sourceItem.fileSizeBytes;
   return -1;
@@ -282,7 +308,7 @@ function getTrashPurgeDisabledReason(
   if (item.purgeStatus !== ADMIN_FILE_TRASH_PURGE_STATUSES.pending) {
     return t(
       "filesList.disabledReasons.purgeUnavailable",
-      "선택 삭제 요청 가능 상태가 아닙니다.",
+      "삭제 요청 가능 상태가 아닙니다.",
     );
   }
   return item.canPurge ? null : item.purgeDisabledReason;

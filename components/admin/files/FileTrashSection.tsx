@@ -20,14 +20,17 @@ import {
   type UnifiedTrashRow,
 } from "@/components/admin/files/fileTrashSectionRows";
 import {
+  createTrashSelectionConfirmSummary,
   getTrashSelectionActionState,
   getWorkOrderActionPreviewState,
+  type TrashSelectionConfirmIntent,
   type WorkOrderActionIntent,
   type WorkOrderActionPreview,
 } from "@/components/admin/files/fileTrashSectionActions";
 import {
   EmptyTrashConfirmModal,
   TrashDetailModal,
+  TrashSelectionConfirmModal,
   WorkOrderActionPreviewModal,
 } from "@/components/admin/files/fileTrashSectionModals";
 
@@ -91,6 +94,8 @@ export default function FileTrashSection({
     useState<WorkOrderActionPreview | null>(null);
   const [detailRow, setDetailRow] = useState<UnifiedTrashRow | null>(null);
   const [isEmptyTrashConfirmOpen, setIsEmptyTrashConfirmOpen] = useState(false);
+  const [selectionConfirmIntent, setSelectionConfirmIntent] =
+    useState<TrashSelectionConfirmIntent | null>(null);
   const {
     previewWorkOrder,
     previewWorkOrderBundleCount,
@@ -140,6 +145,43 @@ export default function FileTrashSection({
   });
   const canRefresh = Boolean(onRefresh) && !isRefreshing;
 
+  const selectionConfirmSummary = useMemo(
+    () =>
+      selectionConfirmIntent
+        ? createTrashSelectionConfirmSummary({
+            items,
+            workOrderItems,
+            selectedItemIds,
+            selectedWorkOrderIds,
+            intent: selectionConfirmIntent,
+            t,
+          })
+        : null,
+    [
+      items,
+      selectedItemIds,
+      selectedWorkOrderIds,
+      selectionConfirmIntent,
+      t,
+      workOrderItems,
+    ],
+  );
+  const isSelectionActionPending = isActionPending || isWorkOrderActionPending;
+
+  function openSelectionConfirm(intent: TrashSelectionConfirmIntent) {
+    setSelectionConfirmIntent(intent);
+  }
+
+  function runSelectionConfirmAction() {
+    if (selectionConfirmIntent === "restore") {
+      onRestore();
+      return;
+    }
+    if (selectionConfirmIntent === "purge") {
+      onPurge();
+    }
+  }
+
   return (
     <section className="flex h-full min-h-[360px] flex-col rounded-[20px] border border-stone-200 bg-white p-2.5 shadow-sm md:min-h-0 md:rounded-[22px] md:p-3">
       <AdminActionBar
@@ -151,11 +193,13 @@ export default function FileTrashSection({
           disabled={!canRefresh}
           title={t("filesSummary.refreshLabel", "저장소 데이터 새로고침")}
         >
-          {isRefreshing ? t("filesPage.refreshing", "새로고침 중") : t("terms.actions.refresh", "새로고침")}
+          {isRefreshing
+            ? t("filesPage.refreshing", "새로고침 중")
+            : t("terms.actions.refresh", "새로고침")}
         </AdminButton>
         <AdminButton
           variant="primary"
-          onClick={onRestore}
+          onClick={() => openSelectionConfirm("restore")}
           disabled={!canRestoreSelection}
           title={
             selectedItems.some((item) => !item.canRestore)
@@ -168,12 +212,14 @@ export default function FileTrashSection({
         >
           {isActionPending || isWorkOrderActionPending
             ? t("filesList.processing", "처리 중")
-            : t("terms.actions.restore", "복원")} {" "}
-          {selectedCount > 0 ? formatAdminTermCount(t, selectedCount, "item") : ""}
+            : t("terms.actions.restore", "복원")}{" "}
+          {selectedCount > 0
+            ? formatAdminTermCount(t, selectedCount, "item")
+            : ""}
         </AdminButton>
         <AdminButton
           variant="danger"
-          onClick={onPurge}
+          onClick={() => openSelectionConfirm("purge")}
           disabled={!canPurgeSelection}
           title={
             selectedItems.some((item) => !item.canPurge)
@@ -186,8 +232,10 @@ export default function FileTrashSection({
         >
           {isActionPending || isWorkOrderActionPending
             ? t("filesList.processing", "처리 중")
-            : t("filesList.purge", "선택 삭제")} {" "}
-          {selectedCount > 0 ? formatAdminTermCount(t, selectedCount, "item") : ""}
+            : t("filesList.delete", "삭제")}{" "}
+          {selectedCount > 0
+            ? formatAdminTermCount(t, selectedCount, "item")
+            : ""}
         </AdminButton>
         <AdminButton
           variant="danger"
@@ -203,6 +251,15 @@ export default function FileTrashSection({
         canEmptyTrash={canEmptyTrash}
         onClose={() => setIsEmptyTrashConfirmOpen(false)}
         onConfirm={onPurgeAll}
+        t={t}
+      />
+
+      <TrashSelectionConfirmModal
+        intent={selectionConfirmIntent}
+        summary={selectionConfirmSummary}
+        isPending={isSelectionActionPending}
+        onClose={() => setSelectionConfirmIntent(null)}
+        onConfirm={runSelectionConfirmAction}
         t={t}
       />
 
@@ -248,13 +305,15 @@ export default function FileTrashSection({
         gridTemplateColumns={TRASH_TABLE_GRID}
         onRowClick={(row) => setDetailRow(row)}
         rowClassName={(row) => {
-          const previewWorkOrderId = workOrderActionPreview?.workOrderId ?? null;
+          const previewWorkOrderId =
+            workOrderActionPreview?.workOrderId ?? null;
           if (row.kind === "workorder")
             return row.id === previewWorkOrderId || row.isSelected
               ? "bg-stone-100 ring-1 ring-inset ring-stone-300"
               : "bg-white shadow-[inset_3px_0_0_0_rgba(68,64,60,0.28)] hover:bg-stone-50";
           const isPreviewWorkOrderGroup = Boolean(
-            previewWorkOrderId && row.sourceItem.workorderId === previewWorkOrderId,
+            previewWorkOrderId &&
+            row.sourceItem.workorderId === previewWorkOrderId,
           );
           if (row.isGroupedAttachment)
             return `${

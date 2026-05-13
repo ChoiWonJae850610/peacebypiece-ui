@@ -11,6 +11,7 @@ import {
   countAdminWorkOrderBundleRestorePolicy,
   selectAdminStandaloneTrashItems,
   selectAdminTrashActionEligibleItems,
+  selectAdminTrashItemsByIds,
   selectAdminWorkOrderBundleTrashItems,
   sumAdminTrashItemSizeBytes,
 } from "@/lib/admin/files/trashPolicy";
@@ -89,6 +90,132 @@ export function getTrashSelectionActionState(input: {
     allPurgeableCount,
     canEmptyTrash:
       allPurgeableCount > 0 && !isActionPending && !isWorkOrderActionPending,
+  };
+}
+
+export type TrashSelectionConfirmIntent = "restore" | "purge";
+
+export type TrashSelectionConfirmSummary = {
+  workOrderCount: number;
+  documentCount: number;
+  designCount: number;
+  memoCount: number;
+  skippedCount: number;
+  totalActionCount: number;
+  summaryLabel: string;
+};
+
+function countTrashFileKind(
+  items: readonly AdminTrashFileItem[],
+  kind: "document" | "design",
+): number {
+  return items.filter((item) => item.fileKind === kind).length;
+}
+
+function formatTrashSelectionSummaryLabel(input: {
+  summary: Omit<TrashSelectionConfirmSummary, "summaryLabel">;
+  t: ReturnType<typeof useAdminTranslation>;
+}): string {
+  const { summary, t } = input;
+  const parts: string[] = [];
+  if (summary.workOrderCount > 0) {
+    parts.push(
+      t(
+        "filesList.selectionConfirm.counts.workorders",
+        "작업지시서 {count}건",
+      ).replace("{count}", String(summary.workOrderCount)),
+    );
+  }
+  if (summary.documentCount > 0) {
+    parts.push(
+      t(
+        "filesList.selectionConfirm.counts.documents",
+        "문서 {count}개",
+      ).replace("{count}", String(summary.documentCount)),
+    );
+  }
+  if (summary.designCount > 0) {
+    parts.push(
+      t(
+        "filesList.selectionConfirm.counts.designs",
+        "디자인 {count}개",
+      ).replace("{count}", String(summary.designCount)),
+    );
+  }
+  if (summary.memoCount > 0) {
+    parts.push(
+      t("filesList.selectionConfirm.counts.memos", "메모 {count}개").replace(
+        "{count}",
+        String(summary.memoCount),
+      ),
+    );
+  }
+  if (parts.length === 0)
+    return t(
+      "filesList.selectionConfirm.emptyScope",
+      "처리할 항목이 없습니다.",
+    );
+  return parts.join(", ");
+}
+
+export function createTrashSelectionConfirmSummary(input: {
+  items: AdminTrashFileItem[];
+  workOrderItems: AdminStorageWorkOrderItem[];
+  selectedItemIds: string[];
+  selectedWorkOrderIds: string[];
+  intent: TrashSelectionConfirmIntent;
+  t: ReturnType<typeof useAdminTranslation>;
+}): TrashSelectionConfirmSummary {
+  const {
+    items,
+    workOrderItems,
+    selectedItemIds,
+    selectedWorkOrderIds,
+    intent,
+    t,
+  } = input;
+  const selectedWorkOrderIdSet = new Set(selectedWorkOrderIds);
+  const selectedWorkOrders = workOrderItems.filter((item) =>
+    selectedWorkOrderIdSet.has(item.id),
+  );
+  const selectedItems = selectAdminTrashItemsByIds(items, selectedItemIds);
+  const standaloneSelectedItems = selectAdminStandaloneTrashItems({
+    items: selectedItems,
+    selectedWorkOrderIds,
+  });
+  const eligibleStandaloneItems = standaloneSelectedItems.filter((item) =>
+    intent === "restore"
+      ? canAdminTrashItemRestore(item)
+      : canAdminTrashItemPurge(item),
+  );
+  const selectedWorkOrderBundleItems = selectedWorkOrders.flatMap((workOrder) =>
+    selectAdminWorkOrderBundleTrashItems({ items, workOrderId: workOrder.id }),
+  );
+  const skippedStandaloneCount =
+    standaloneSelectedItems.length - eligibleStandaloneItems.length;
+  const documentCount =
+    countTrashFileKind(eligibleStandaloneItems, "document") +
+    countTrashFileKind(selectedWorkOrderBundleItems, "document");
+  const designCount =
+    countTrashFileKind(eligibleStandaloneItems, "design") +
+    countTrashFileKind(selectedWorkOrderBundleItems, "design");
+  const memoCount = selectedWorkOrders.reduce(
+    (sum, workOrder) => sum + Math.max(0, workOrder.trashMemoCount),
+    0,
+  );
+  const summaryBase = {
+    workOrderCount: selectedWorkOrders.length,
+    documentCount,
+    designCount,
+    memoCount,
+    skippedCount: skippedStandaloneCount,
+    totalActionCount:
+      selectedWorkOrders.length + documentCount + designCount + memoCount,
+  };
+
+  return {
+    ...summaryBase,
+    summaryLabel: formatTrashSelectionSummaryLabel({ summary: summaryBase, t }),
   };
 }
 

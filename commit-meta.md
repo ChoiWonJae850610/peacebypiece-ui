@@ -1,18 +1,24 @@
 Version :
-0.11.54
+0.11.55
 
 Summary :
-협력업체 외주 공정 저장 오류 수정
+휴지통 다중 복원 삭제 확인 모달 추가
 
 Description :
-협력업체 수정 모달에서 시스템 기준정보 외주 공정을 선택한 뒤 저장할 때 partner_items의 고객사 외주 공정 FK와 맞지 않아 저장 실패가 발생할 수 있는 문제를 보정했다. 저장 시 시스템 외주 공정 기준을 고객사 외주 공정으로 해석하거나 생성한 뒤 연결하고, 다시 조회할 때 화면 선택 상태가 유지되도록 매핑을 보완했다.
+고객관리자 저장소 휴지통에서 선택 항목을 복원하거나 삭제할 때 즉시 실행하지 않고 작업지시서, 문서, 디자인, 메모 개수를 확인하는 모달을 거치도록 수정했다. 휴지통 선택 삭제 버튼명은 삭제로 정리하고 관련 i18n 문구를 보강했다.
 
 수정 파일 목록 :
-- lib/partners/dbPartnerRepository.ts
+- components/admin/files/FileTrashSection.tsx
+- components/admin/files/fileTrashSectionActions.ts
+- components/admin/files/fileTrashSectionModals.tsx
+- components/admin/files/fileTrashSectionRows.ts
+- components/admin/files/WorkOrderStorageSection.tsx
+- lib/i18n/ko/admin.ts
+- lib/i18n/en/admin.ts
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/qa-partner-outsourcing-process-save-0.11.54.md
+- docs/qa-admin-trash-selection-confirm-0.11.55.md
 
 삭제 파일 목록 :
 없음
