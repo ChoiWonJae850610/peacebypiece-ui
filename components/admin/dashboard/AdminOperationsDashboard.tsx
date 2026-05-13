@@ -74,10 +74,9 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
                 href="/worker"
                 aria-label={t("operationsDashboard.actions.openWorkorderWorkspace", "작업지시서 업무 화면으로 이동")}
                 title={t("operationsDashboard.actions.openWorkorderWorkspace", "작업지시서 업무 화면으로 이동")}
-                className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border border-stone-200 bg-white px-2.5 text-xs font-semibold text-stone-700 shadow-sm transition hover:bg-stone-50"
+                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 shadow-sm transition hover:bg-stone-50"
               >
                 <WorkorderShortcutIcon />
-                <span className="hidden sm:inline">{t("operationsDashboard.actions.openWorkorderShort", "업무화면")}</span>
               </Link>
             </div>
             <AdminStatusBadge tone="neutral">
