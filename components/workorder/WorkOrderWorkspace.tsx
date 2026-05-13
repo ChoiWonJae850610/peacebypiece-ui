@@ -19,18 +19,21 @@ type WorkOrderWorkspaceProps = {
   initialWorkOrderId?: string | null;
   initialListStatusFilter?: WorkOrderListStatusFilter;
   initialListSort?: WorkOrderListSort;
+  initialSearchQuery?: string;
 };
 
 export default function WorkOrderWorkspace({
   initialWorkOrderId = null,
   initialListStatusFilter,
   initialListSort,
+  initialSearchQuery,
 }: WorkOrderWorkspaceProps) {
   const { i18n } = useI18n();
   const workOrder = useWorkOrder({
     initialWorkOrderId,
     initialListStatusFilter,
     initialListSort,
+    initialSearchQuery,
   });
   const dbConnectionStatus = useDbConnectionStatus();
 
@@ -211,17 +214,33 @@ export default function WorkOrderWorkspace({
   };
 
 
-  const updateWorkerListQuery = (next: { status?: WorkOrderListStatusFilter; sort?: WorkOrderListSort }) => {
+  const updateWorkerListQuery = (next: {
+    status?: WorkOrderListStatusFilter;
+    sort?: WorkOrderListSort;
+    searchQuery?: string;
+  }) => {
     if (typeof window === "undefined") return;
 
     const url = new URL(window.location.href);
     const nextStatus = next.status ?? selection.listStatusFilter;
     const nextSort = next.sort ?? selection.listSort;
+    const nextSearchQuery = next.searchQuery ?? selection.searchQuery;
 
     url.searchParams.set("status", nextStatus);
     url.searchParams.set("sort", nextSort);
+    if (nextSearchQuery.trim()) {
+      url.searchParams.set("q", nextSearchQuery.trim());
+    } else {
+      url.searchParams.delete("q");
+    }
     url.searchParams.delete("workOrderId");
-    window.history.replaceState(null, "", `${url.pathname}?${url.searchParams.toString()}`);
+    const nextQuery = url.searchParams.toString();
+    window.history.replaceState(null, "", nextQuery ? `${url.pathname}?${nextQuery}` : url.pathname);
+  };
+
+  const handleSearchQueryChange = (nextSearchQuery: string) => {
+    updateWorkerListQuery({ searchQuery: nextSearchQuery });
+    selection.setSearchQuery(nextSearchQuery);
   };
 
   const handleListStatusFilterChange = (nextStatus: WorkOrderListStatusFilter) => {
@@ -308,7 +327,7 @@ export default function WorkOrderWorkspace({
     onSetAttachmentPreviewId: ui.setAttachmentPreviewId,
     onSetPermissionTargetUserId: identity.setPermissionTargetUserId,
     onSetCurrentUserId: identity.setCurrentUserId,
-    onSetSearchQuery: selection.setSearchQuery,
+    onSetSearchQuery: handleSearchQueryChange,
     onSetListStatusFilter: handleListStatusFilterChange,
     onSetListSort: handleListSortChange,
     dbConnectionStatus,

@@ -452,6 +452,8 @@ export const workorderEn = {
         openSettingsAria: "Open settings",
         searchAria: "Search work orders",
         searchPlaceholder: "Search by work name, category, factory, or status",
+        clearSearch: "Clear",
+        resultSummary: "{status} · {sort} · {count} items",
         statusFilterAria: "Work order status filter",
         sortAria: "Work order sort",
         statusFilters: {

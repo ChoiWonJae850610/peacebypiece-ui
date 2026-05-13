@@ -19,6 +19,7 @@ type UseWorkOrderOptions = {
   initialWorkOrderId?: string | null;
   initialListStatusFilter?: WorkOrderListStatusFilter;
   initialListSort?: WorkOrderListSort;
+  initialSearchQuery?: string;
 };
 
 export function useWorkOrder(options: UseWorkOrderOptions = {}) {
@@ -29,6 +30,7 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     initialWorkOrderId: options.initialWorkOrderId ?? null,
     initialListStatusFilter: options.initialListStatusFilter,
     initialListSort: options.initialListSort,
+    initialSearchQuery: options.initialSearchQuery,
   });
 
   const derivedState = useWorkOrderDerived({

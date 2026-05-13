@@ -63,6 +63,27 @@ export default function SidebarContent({
   const controlsUi = i18n.workorder.ui.layout.sidebarControls;
 
   const dbStatusPresentation = getDbConnectionStatusPresentation(dbConnectionStatus);
+  const statusLabelByValue: Record<WorkOrderListStatusFilter, string> = {
+    active: controlsUi.statusFilters.active,
+    all: controlsUi.statusFilters.all,
+    completed: controlsUi.statusFilters.completed,
+    draft: controlsUi.statusFilters.draft,
+    review_requested: controlsUi.statusFilters.reviewRequested,
+    review_completed: controlsUi.statusFilters.reviewCompleted,
+    inspection: controlsUi.statusFilters.inspection,
+    rejected: controlsUi.statusFilters.rejected,
+  };
+  const sortLabelByValue: Record<WorkOrderListSort, string> = {
+    updatedDesc: controlsUi.sorts.updatedDesc,
+    createdDesc: controlsUi.sorts.createdDesc,
+    dueDateAsc: controlsUi.sorts.dueDateAsc,
+    titleAsc: controlsUi.sorts.titleAsc,
+    vendorAsc: controlsUi.sorts.vendorAsc,
+  };
+  const listSummary = controlsUi.resultSummary
+    .replace("{status}", statusLabelByValue[statusFilter])
+    .replace("{sort}", sortLabelByValue[sort])
+    .replace("{count}", String(workOrders.length));
 
   return (
     <div className="flex h-full min-h-0 w-full min-w-0 flex-col">
@@ -95,24 +116,36 @@ export default function SidebarContent({
           </button>
           </div>
         </div>
-        <label className="mt-3.5 block">
-          <span className="sr-only">{controlsUi.searchAria}</span>
-          <input
-            type="search"
-            value={searchQuery}
-            onChange={(event) => onSearchQueryChange(event.target.value)}
-            placeholder={controlsUi.searchPlaceholder}
-            className="pbp-field-interaction h-11 w-full rounded-xl border border-stone-300 bg-white px-4 text-sm text-stone-900 outline-none placeholder:text-stone-400 focus:border-stone-500 focus:bg-stone-50"
-          />
-        </label>
-        <div className="mt-2.5 grid grid-cols-2 gap-2">
+        <div className="mt-3 flex items-center gap-2">
+          <label className="min-w-0 flex-1">
+            <span className="sr-only">{controlsUi.searchAria}</span>
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => onSearchQueryChange(event.target.value)}
+              placeholder={controlsUi.searchPlaceholder}
+              className="pbp-field-interaction h-10 w-full rounded-xl border border-stone-300 bg-white px-3.5 text-sm text-stone-900 outline-none placeholder:text-stone-400 focus:border-stone-500 focus:bg-stone-50"
+            />
+          </label>
+          {searchQuery ? (
+            <button
+              type="button"
+              onClick={() => onSearchQueryChange("")}
+              disabled={writeLocked}
+              className="pbp-interactive-button inline-flex h-10 shrink-0 items-center justify-center rounded-xl border border-stone-300 bg-white px-3 text-xs font-medium text-stone-600 hover:border-stone-400 hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {controlsUi.clearSearch}
+            </button>
+          ) : null}
+        </div>
+        <div className="mt-2 grid grid-cols-2 gap-2">
           <label className="block">
             <span className="sr-only">{controlsUi.statusFilterAria}</span>
             <select
               value={statusFilter}
               onChange={(event) => onStatusFilterChange(event.target.value as WorkOrderListStatusFilter)}
               disabled={writeLocked}
-              className="pbp-field-interaction h-10 w-full rounded-xl border border-stone-300 bg-white px-3 text-xs font-medium text-stone-800 outline-none focus:border-stone-500 focus:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="pbp-field-interaction h-9 w-full rounded-xl border border-stone-300 bg-white px-3 text-xs font-medium text-stone-800 outline-none focus:border-stone-500 focus:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <option value="active">{controlsUi.statusFilters.active}</option>
               <option value="review_requested">{controlsUi.statusFilters.reviewRequested}</option>
@@ -130,7 +163,7 @@ export default function SidebarContent({
               value={sort}
               onChange={(event) => onSortChange(event.target.value as WorkOrderListSort)}
               disabled={writeLocked}
-              className="pbp-field-interaction h-10 w-full rounded-xl border border-stone-300 bg-white px-3 text-xs font-medium text-stone-800 outline-none focus:border-stone-500 focus:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="pbp-field-interaction h-9 w-full rounded-xl border border-stone-300 bg-white px-3 text-xs font-medium text-stone-800 outline-none focus:border-stone-500 focus:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <option value="updatedDesc">{controlsUi.sorts.updatedDesc}</option>
               <option value="createdDesc">{controlsUi.sorts.createdDesc}</option>
@@ -140,13 +173,14 @@ export default function SidebarContent({
             </select>
           </label>
         </div>
+        <div className="mt-2 text-[11px] font-medium leading-4 text-stone-500">{listSummary}</div>
         {canCreate ? (
           <button
             type="button"
             onClick={() => { if (!writeLocked) onCreate(); }}
             disabled={writeLocked}
             title={writeLocked ? writeLockMessage ?? "상태 변경 처리 중입니다." : undefined}
-            className="pbp-touch-target pbp-interactive-button mt-3.5 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:opacity-50"
+            className="pbp-touch-target pbp-interactive-button mt-3 w-full rounded-xl bg-stone-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:opacity-50"
           >
             {controlsUi.create}
           </button>

@@ -5,7 +5,12 @@ import {
 } from "@/lib/workorder/list/workOrderListControls";
 
 type WorkerPageProps = {
-  searchParams?: Promise<{ workOrderId?: string | string[]; status?: string | string[]; sort?: string | string[] }>;
+  searchParams?: Promise<{
+    workOrderId?: string | string[];
+    status?: string | string[];
+    sort?: string | string[];
+    q?: string | string[];
+  }>;
 };
 
 function readQueryValue(value: string | string[] | undefined): string | null {
@@ -22,12 +27,14 @@ export default async function WorkerPage({ searchParams }: WorkerPageProps) {
       ? "all"
       : normalizeWorkOrderListStatusFilter(null);
   const initialListSort = normalizeWorkOrderListSort(readQueryValue(resolvedSearchParams?.sort));
+  const initialSearchQuery = readQueryValue(resolvedSearchParams?.q) ?? "";
 
   return (
     <WorkOrderWorkspace
       initialWorkOrderId={initialWorkOrderId}
       initialListStatusFilter={initialListStatusFilter}
       initialListSort={initialListSort}
+      initialSearchQuery={initialSearchQuery}
     />
   );
 }

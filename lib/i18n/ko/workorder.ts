@@ -452,6 +452,8 @@ export const workorderKo = {
         openSettingsAria: "환경 설정 열기",
         searchAria: "작업지시서 검색",
         searchPlaceholder: "작업명, 분류, 공장, 상태 검색",
+        clearSearch: "지우기",
+        resultSummary: "{status} · {sort} · {count}건",
         statusFilterAria: "작업지시서 상태 필터",
         sortAria: "작업지시서 정렬",
         statusFilters: {

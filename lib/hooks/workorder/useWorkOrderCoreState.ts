@@ -49,6 +49,7 @@ type UseWorkOrderCoreStateOptions = {
   initialWorkOrderId?: string | null;
   initialListStatusFilter?: WorkOrderListStatusFilter;
   initialListSort?: WorkOrderListSort;
+  initialSearchQuery?: string;
 };
 
 function resolveInitialSelectedId(input: {
@@ -80,7 +81,7 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
   const [selectedId, setSelectedId] = useState(() =>
     resolveInitialSelectedId({ requestedId: options.initialWorkOrderId ?? null, fallbackId: repositoryDefaultSelectedId, workOrders: normalizedInitialWorkOrders }),
   );
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(options.initialSearchQuery ?? "");
   const [listStatusFilter, setListStatusFilter] = useState<WorkOrderListStatusFilter>(
     options.initialListStatusFilter ?? DEFAULT_WORK_ORDER_LIST_STATUS_FILTER,
   );

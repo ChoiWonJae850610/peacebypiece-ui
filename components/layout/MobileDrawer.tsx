@@ -5,6 +5,7 @@ import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import WorkOrderListCard from "@/components/workorder/list/WorkOrderListCard";
 import { useI18n } from "@/lib/i18n";
 import type { WorkOrderListItem, WorkflowState } from "@/types/workorder";
+import type { WorkOrderListSort, WorkOrderListStatusFilter } from "@/lib/workorder/list/workOrderListControls";
 
 type Props = {
   open: boolean;
@@ -24,6 +25,10 @@ type Props = {
   writeLockMessage?: string;
   searchQuery: string;
   onSearchQueryChange: (value: string) => void;
+  statusFilter: WorkOrderListStatusFilter;
+  onStatusFilterChange: (value: WorkOrderListStatusFilter) => void;
+  sort: WorkOrderListSort;
+  onSortChange: (value: WorkOrderListSort) => void;
 };
 
 export default function MobileDrawer({
@@ -44,10 +49,15 @@ export default function MobileDrawer({
   writeLockMessage,
   searchQuery,
   onSearchQueryChange,
+  statusFilter,
+  onStatusFilterChange,
+  sort,
+  onSortChange,
 }: Props) {
   const drawerRef = useRef<HTMLDivElement | null>(null);
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.layout.mobileDrawer;
+  const controlsCopy = i18n.workorder.ui.layout.sidebarControls;
 
   useModalEnvironment({
     open,
@@ -79,16 +89,63 @@ export default function MobileDrawer({
               {copy.close}
             </button>
           </div>
-          <label className="mt-3 block">
-            <span className="sr-only">{copy.searchAria}</span>
-            <input
-              type="search"
-              value={searchQuery}
-              onChange={(event) => onSearchQueryChange(event.target.value)}
-              placeholder={copy.searchPlaceholder}
-              className="pbp-field-interaction h-11 w-full rounded-xl border border-stone-300 bg-white px-4 text-sm text-stone-900 outline-none placeholder:text-stone-400 focus:border-stone-500 focus:bg-stone-50"
-            />
-          </label>
+          <div className="mt-3 flex items-center gap-2">
+            <label className="min-w-0 flex-1">
+              <span className="sr-only">{copy.searchAria}</span>
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(event) => onSearchQueryChange(event.target.value)}
+                placeholder={copy.searchPlaceholder}
+                className="pbp-field-interaction h-10 w-full rounded-xl border border-stone-300 bg-white px-3.5 text-sm text-stone-900 outline-none placeholder:text-stone-400 focus:border-stone-500 focus:bg-stone-50"
+              />
+            </label>
+            {searchQuery ? (
+              <button
+                type="button"
+                onClick={() => onSearchQueryChange("")}
+                disabled={writeLocked}
+                className="pbp-interactive-button inline-flex h-10 shrink-0 items-center justify-center rounded-xl border border-stone-300 bg-white px-3 text-xs font-medium text-stone-600 hover:border-stone-400 hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {controlsCopy.clearSearch}
+              </button>
+            ) : null}
+          </div>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <label className="block">
+              <span className="sr-only">{controlsCopy.statusFilterAria}</span>
+              <select
+                value={statusFilter}
+                onChange={(event) => onStatusFilterChange(event.target.value as WorkOrderListStatusFilter)}
+                disabled={writeLocked}
+                className="pbp-field-interaction h-9 w-full rounded-xl border border-stone-300 bg-white px-3 text-xs font-medium text-stone-800 outline-none focus:border-stone-500 focus:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="active">{controlsCopy.statusFilters.active}</option>
+                <option value="review_requested">{controlsCopy.statusFilters.reviewRequested}</option>
+                <option value="review_completed">{controlsCopy.statusFilters.reviewCompleted}</option>
+                <option value="inspection">{controlsCopy.statusFilters.inspection}</option>
+                <option value="draft">{controlsCopy.statusFilters.draft}</option>
+                <option value="rejected">{controlsCopy.statusFilters.rejected}</option>
+                <option value="completed">{controlsCopy.statusFilters.completed}</option>
+                <option value="all">{controlsCopy.statusFilters.all}</option>
+              </select>
+            </label>
+            <label className="block">
+              <span className="sr-only">{controlsCopy.sortAria}</span>
+              <select
+                value={sort}
+                onChange={(event) => onSortChange(event.target.value as WorkOrderListSort)}
+                disabled={writeLocked}
+                className="pbp-field-interaction h-9 w-full rounded-xl border border-stone-300 bg-white px-3 text-xs font-medium text-stone-800 outline-none focus:border-stone-500 focus:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="updatedDesc">{controlsCopy.sorts.updatedDesc}</option>
+                <option value="createdDesc">{controlsCopy.sorts.createdDesc}</option>
+                <option value="dueDateAsc">{controlsCopy.sorts.dueDateAsc}</option>
+                <option value="titleAsc">{controlsCopy.sorts.titleAsc}</option>
+                <option value="vendorAsc">{controlsCopy.sorts.vendorAsc}</option>
+              </select>
+            </label>
+          </div>
           {canCreate ? (
             <button
               type="button"
@@ -99,7 +156,7 @@ export default function MobileDrawer({
               }}
               disabled={writeLocked}
               title={writeLocked ? writeLockMessage ?? "상태 변경 처리 중입니다." : undefined}
-              className="pbp-touch-target pbp-interactive-button mt-3 w-full rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:opacity-50"
+              className="pbp-touch-target pbp-interactive-button mt-3 w-full rounded-xl bg-stone-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:opacity-50"
             >
               {copy.create}
             </button>
