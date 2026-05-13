@@ -191,7 +191,7 @@ function buildSnapshot(period: AdminDashboardPeriod, workorders: WorkorderRow[],
         attachmentCount: Number(attachment?.attachment_count ?? 0),
         thumbnailUrl: attachment?.thumbnail_url ?? attachment?.preview_url ?? null,
         updatedLabel: formatUpdatedLabel(row.updated_at, now),
-        actionHref: `/?workOrderId=${encodeURIComponent(row.id)}`,
+        actionHref: `/worker?workOrderId=${encodeURIComponent(row.id)}`,
         updatedAt: parseDate(row.updated_at)?.getTime() ?? 0,
       };
     })

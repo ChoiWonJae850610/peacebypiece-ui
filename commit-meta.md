@@ -1,11 +1,11 @@
-Version : 0.11.68
-Summary : 고객관리자 홈 카드 밀도와 홈 버튼 형태 보정
-Description : 운영 관리 카드 4개 한 줄 구조를 유지하면서 0.11.67에서 과하게 축소된 카드 크기를 일부 복원했습니다. 검토·발주 대기 영역의 작업지시서 바로가기 버튼은 문서 아이콘만 보이도록 되돌리고, 작업지시서 화면의 홈 이동 버튼은 관리자 topbar 홈 버튼과 같은 원형 홈 아이콘 형태로 통일했습니다.
+Version : 0.11.69
+Summary : 작업지시서 업무화면 client navigation 로딩 고착 수정
+Description : /admin에서 /worker로 client-side 이동할 때 작업지시서 상세 hydrate가 mounted guard에 막혀 가운데 상세 패널과 우측 첨부·메모 패널이 loading 상태로 고착될 수 있는 문제를 수정했습니다. useWorkOrderCoreState의 mounted ref를 effect setup에서 다시 true로 복구하도록 보정하고, /worker page가 workOrderId query를 initialWorkOrderId로 전달하도록 보강했습니다. 검토·발주 대기 개별 작업지시서 열기 링크도 /worker?workOrderId=... 경로로 정리했습니다.
 수정 파일 목록 :
-- components/admin/dashboard/AdminOperationsDashboard.tsx
-- components/admin/dashboard/AdminConsoleSections.tsx
-- components/workorder/layout/WorkOrderHomeButton.tsx
+- app/worker/page.tsx
+- lib/hooks/workorder/useWorkOrderCoreState.ts
+- lib/admin/adminOperations.repository.ts
 - lib/constants/app.ts
 추가 파일 목록 :
-- docs/qa-admin-home-button-density-0.11.68.md
+- docs/qa-workorder-client-navigation-loading-0.11.69.md
 삭제 파일 목록 :

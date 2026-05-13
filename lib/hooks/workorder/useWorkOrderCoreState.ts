@@ -82,6 +82,8 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
   const isMountedRef = useRef(true);
 
   useEffect(() => {
+    isMountedRef.current = true;
+
     return () => {
       isMountedRef.current = false;
       detailLoadInFlightIdsRef.current.clear();
