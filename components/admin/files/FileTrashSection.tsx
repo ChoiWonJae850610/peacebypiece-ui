@@ -238,6 +238,10 @@ export default function FileTrashSection({
           "filesList.trashEmpty",
           "휴지통에 보관 중인 항목이 없습니다.",
         )}
+        emptyDescription={t(
+          "filesList.trashEmptyDescription",
+          "삭제한 작업지시서, 문서, 디자인, 메모가 있으면 복원 또는 삭제 요청 대상으로 표시됩니다.",
+        )}
         gridTemplateColumns={TRASH_TABLE_GRID}
         onRowClick={(row) => setDetailRow(row)}
         rowClassName={(row) => {

@@ -48,6 +48,10 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
         items={items}
         getRowKey={(item) => item.id}
         emptyLabel={t("filesList.empty", `${t("terms.files.documentDesignGroup", "문서/디자인")}이 없습니다.`)}
+        emptyDescription={t(
+          "filesList.emptyDescription",
+          "작업지시서에 업로드된 문서와 디자인 파일이 이곳에 표시됩니다.",
+        )}
         gridTemplateColumns={FILE_TABLE_GRID}
         onRowClick={(item) => onToggleItem(item.id)}
         rowClassName={(item) => {

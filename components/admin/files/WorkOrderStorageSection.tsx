@@ -73,6 +73,10 @@ export default function WorkOrderStorageSection({ items }: WorkOrderStorageSecti
         items={items}
         getRowKey={(item) => item.id}
         emptyLabel={t("filesWorkOrders.empty", "휴지통에 있는 작업지시서가 없습니다.")}
+        emptyDescription={t(
+          "filesWorkOrders.emptyDescription",
+          "작업지시서를 삭제하면 함께 이동한 문서, 디자인, 메모 묶음이 이 목록에 표시됩니다.",
+        )}
         gridTemplateColumns={WORKORDER_STORAGE_TABLE_GRID}
         columns={[
           {

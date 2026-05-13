@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { AdminTableColumn } from "@/lib/admin/common/types";
 import { adminKo } from "@/lib/i18n/ko/admin";
 
@@ -6,6 +7,8 @@ type AdminTableProps<TItem> = {
   columns: AdminTableColumn<TItem>[];
   getRowKey: (item: TItem) => string;
   emptyLabel: string;
+  emptyDescription?: string;
+  emptyAction?: ReactNode;
   isLoading?: boolean;
   loadingLabel?: string;
   className?: string;
@@ -21,6 +24,8 @@ export default function AdminTable<TItem>({
   columns,
   getRowKey,
   emptyLabel,
+  emptyDescription,
+  emptyAction,
   isLoading = false,
   loadingLabel = adminKo.common.loadingList,
   className = "",
@@ -45,7 +50,15 @@ export default function AdminTable<TItem>({
         {isLoading ? (
           <div className="flex min-h-[240px] items-center justify-center bg-white px-4 py-10 text-center text-sm text-stone-500">{loadingLabel}</div>
         ) : items.length === 0 ? (
-          <div className="flex min-h-[240px] items-center justify-center bg-white px-4 py-10 text-center text-sm text-stone-500">{emptyLabel}</div>
+          <div className="flex min-h-[240px] items-center justify-center bg-white px-4 py-10 text-center text-sm text-stone-500">
+            <div className="max-w-md">
+              <p className="font-semibold text-stone-600">{emptyLabel}</p>
+              {emptyDescription ? (
+                <p className="mt-1 text-xs leading-5 text-stone-500">{emptyDescription}</p>
+              ) : null}
+              {emptyAction ? <div className="mt-3">{emptyAction}</div> : null}
+            </div>
+          </div>
         ) : (
           items.map((item) => {
             const mergedRowClassName = [baseRowClassName, rowClassName?.(item)].filter(Boolean).join(" ");
