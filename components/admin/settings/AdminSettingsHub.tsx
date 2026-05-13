@@ -52,7 +52,7 @@ function SettingsMenuCard({ item, active, onClick }: { item: AdminSettingsMenuIt
     <button
       type="button"
       onClick={onClick}
-      className={`flex min-h-[132px] w-full min-w-0 flex-col justify-between rounded-[24px] border p-4 text-left shadow-sm transition hover:-translate-y-0.5 sm:min-h-[144px] sm:p-5 ${tone.card} ${
+      className={`flex min-h-[112px] w-full min-w-0 flex-col justify-between rounded-[22px] border p-4 text-left shadow-sm transition hover:-translate-y-0.5 sm:min-h-[118px] ${tone.card} ${
         active ? "ring-2 ring-stone-950/10" : ""
       }`}
     >
@@ -66,7 +66,7 @@ function SettingsMenuCard({ item, active, onClick }: { item: AdminSettingsMenuIt
         </span>
         <AdminStatusBadge tone={tone.badgeTone}>{item.statusLabel}</AdminStatusBadge>
       </span>
-      <span className="mt-4 flex flex-wrap gap-1.5">
+      <span className="mt-3 flex flex-wrap gap-1.5">
         {item.detailItems.map((detail) => (
           <span key={detail} className="rounded-full border border-white/80 bg-white/80 px-2 py-0.5 text-[11px] font-semibold text-stone-500 shadow-sm">
             {detail}
@@ -92,28 +92,30 @@ function BillingPlanPanel({ overview, loadState }: { overview: AdminBillingPlanO
           </AdminStatusBadge>
         </div>
       }
-      className="min-h-[360px]"
+      className="min-h-[320px]"
       bodyClassName="mt-4 space-y-4"
     >
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-        {overview.metrics.map((metric) => (
-          <div key={metric.id} className="rounded-[22px] border border-emerald-100 bg-emerald-50/60 p-4">
-            <p className="text-[11px] font-semibold text-emerald-600">{metric.label}</p>
-            <p className="mt-2 text-lg font-semibold text-stone-950">{metric.value}</p>
-            <p className="mt-2 text-xs leading-5 text-stone-500">{metric.description}</p>
-          </div>
-        ))}
-      </div>
-      <div className="grid gap-3 md:grid-cols-3">
-        {overview.actions.map((action) => (
-          <div key={action.id} className="rounded-[22px] border border-stone-200 bg-white p-4 shadow-sm">
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-sm font-semibold text-stone-900">{action.label}</p>
-              <AdminStatusBadge tone="neutral" size="xs">{action.statusLabel}</AdminStatusBadge>
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.9fr)]">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {overview.metrics.map((metric) => (
+            <div key={metric.id} className="rounded-[22px] border border-emerald-100 bg-emerald-50/60 p-4">
+              <p className="text-[11px] font-semibold text-emerald-600">{metric.label}</p>
+              <p className="mt-2 text-lg font-semibold text-stone-950">{metric.value}</p>
+              <p className="mt-2 text-xs leading-5 text-stone-500">{metric.description}</p>
             </div>
-            <p className="mt-2 text-xs leading-5 text-stone-500">{action.description}</p>
-          </div>
-        ))}
+          ))}
+        </div>
+        <div className="space-y-3">
+          {overview.actions.map((action) => (
+            <div key={action.id} className="rounded-[22px] border border-stone-200 bg-white p-4 shadow-sm">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-semibold text-stone-900">{action.label}</p>
+                <AdminStatusBadge tone="neutral" size="xs">{action.statusLabel}</AdminStatusBadge>
+              </div>
+              <p className="mt-2 text-xs leading-5 text-stone-500">{action.description}</p>
+            </div>
+          ))}
+        </div>
       </div>
       <div className="grid gap-2 rounded-[22px] border border-emerald-100 bg-white p-4 md:grid-cols-2">
         {overview.policyNotes.map((note) => (
@@ -131,44 +133,46 @@ function AccountSettingsPanel() {
       title={account.title}
       description={account.description}
       actions={<AdminStatusBadge tone="warning">{account.readOnlyLabel}</AdminStatusBadge>}
-      className="min-h-[360px]"
+      className="min-h-[320px]"
       bodyClassName="mt-4 space-y-4"
     >
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {account.metrics.map((metric) => (
-          <div key={metric.id} className="rounded-[22px] border border-amber-100 bg-amber-50/60 p-4">
-            <p className="text-[11px] font-semibold text-amber-600">{metric.label}</p>
-            <p className="mt-2 text-lg font-semibold text-stone-950">{metric.value}</p>
-            <p className="mt-2 text-xs leading-5 text-stone-500">{metric.description}</p>
-          </div>
-        ))}
-      </div>
-      <div className="grid gap-3 md:grid-cols-3">
-        {account.actions.map((action) => {
-          const body = (
-            <>
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-sm font-semibold text-stone-900">{action.label}</p>
-                <AdminStatusBadge tone="neutral" size="xs">{action.statusLabel}</AdminStatusBadge>
-              </div>
-              <p className="mt-2 text-xs leading-5 text-stone-500">{action.description}</p>
-            </>
-          );
-
-          if (action.id === "open-personal-settings") {
-            return (
-              <a key={action.id} className="rounded-[22px] border border-stone-200 bg-white p-4 shadow-sm transition hover:border-amber-200 hover:bg-amber-50" href={account.personalSettingsHref}>
-                {body}
-              </a>
-            );
-          }
-
-          return (
-            <div key={action.id} className="rounded-[22px] border border-stone-200 bg-white p-4 shadow-sm">
-              {body}
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.9fr)]">
+        <div className="grid gap-3 sm:grid-cols-2">
+          {account.metrics.map((metric) => (
+            <div key={metric.id} className="rounded-[22px] border border-amber-100 bg-amber-50/60 p-4">
+              <p className="text-[11px] font-semibold text-amber-600">{metric.label}</p>
+              <p className="mt-2 text-lg font-semibold text-stone-950">{metric.value}</p>
+              <p className="mt-2 text-xs leading-5 text-stone-500">{metric.description}</p>
             </div>
-          );
-        })}
+          ))}
+        </div>
+        <div className="space-y-3">
+          {account.actions.map((action) => {
+            const body = (
+              <>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-semibold text-stone-900">{action.label}</p>
+                  <AdminStatusBadge tone="neutral" size="xs">{action.statusLabel}</AdminStatusBadge>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-stone-500">{action.description}</p>
+              </>
+            );
+
+            if (action.id === "open-personal-settings") {
+              return (
+                <a key={action.id} className="block rounded-[22px] border border-stone-200 bg-white p-4 shadow-sm transition hover:border-amber-200 hover:bg-amber-50" href={account.personalSettingsHref}>
+                  {body}
+                </a>
+              );
+            }
+
+            return (
+              <div key={action.id} className="rounded-[22px] border border-stone-200 bg-white p-4 shadow-sm">
+                {body}
+              </div>
+            );
+          })}
+        </div>
       </div>
       <div className="grid gap-2 rounded-[22px] border border-amber-100 bg-white p-4 md:grid-cols-2">
         {account.policyNotes.map((note) => (
@@ -192,7 +196,7 @@ function FeedbackPanel() {
           {t("settings.feedback.writeEmail", "이메일 작성하기")}
         </AdminLinkButton>
       }
-      className="min-h-[360px]"
+      className="min-h-[320px]"
       bodyClassName="mt-4 space-y-4"
     >
       <div className="rounded-[22px] border border-violet-100 bg-violet-50/70 p-4">
@@ -202,16 +206,18 @@ function FeedbackPanel() {
           {t("settings.feedback.mailDescription", "현재는 DB 저장 없이 사용자의 기본 메일 앱으로 개선 요청, 오류 제보, 기능 제안 내용을 작성하는 방식으로 접수합니다.")}
         </p>
       </div>
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {feedback.items.map((item) => (
-          <div key={item} className="rounded-[22px] border border-stone-200 bg-white p-4 text-sm font-semibold text-stone-700 shadow-sm">
-            {item}
-          </div>
-        ))}
-      </div>
-      <div className="rounded-[22px] border border-violet-100 bg-white p-4">
-        <p className="text-xs font-semibold text-violet-600">{t("settings.notice.nextStepTitle", "적용 예정")}</p>
-        <p className="mt-2 text-sm leading-6 text-stone-600">{feedback.nextStep}</p>
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.85fr)]">
+        <div className="grid gap-3 sm:grid-cols-2">
+          {feedback.items.map((item) => (
+            <div key={item} className="rounded-[22px] border border-stone-200 bg-white p-4 text-sm font-semibold text-stone-700 shadow-sm">
+              {item}
+            </div>
+          ))}
+        </div>
+        <div className="rounded-[22px] border border-violet-100 bg-white p-4">
+          <p className="text-xs font-semibold text-violet-600">{t("settings.notice.nextStepTitle", "적용 예정")}</p>
+          <p className="mt-2 text-sm leading-6 text-stone-600">{feedback.nextStep}</p>
+        </div>
       </div>
     </AdminSection>
   );
