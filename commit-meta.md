@@ -1,19 +1,18 @@
 Version :
-0.11.60
+0.11.61
 
 Summary :
-통계 그래프 시각 크기 보정
+고객관리자 홈 카드 레이아웃 확대
 
 Description :
-관리자 통계 화면의 도너츠 차트와 막대 차트 시각 크기를 키워 생산 구성과 업체 성과 그래프가 화면에서 더 크게 보이도록 보정했다. 통계 API와 집계 로직은 변경하지 않았다.
+고객관리자 홈의 운영 관리 카드가 화면 대비 작고 하단 공간이 비어 보이는 문제를 보정했다. 운영 관리 섹션의 최소 높이와 카드 크기, padding, grid 배치를 조정해 PC 화면에서 더 큼직하게 보이도록 했다.
 
 수정 파일 목록 :
-- components/admin/dashboard/AdminBasicStatsCharts.tsx
-- components/admin/dashboard/AdminStatsDashboard.tsx
+- components/admin/dashboard/AdminConsoleSections.tsx
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/qa-admin-dashboard-chart-scale-0.11.60.md
+- docs/qa-admin-home-card-density-0.11.61.md
 
 삭제 파일 목록 :
 없음
