@@ -155,7 +155,7 @@ function PeriodTopCard({
     <AdminCard className="flex h-full min-h-[188px] flex-col p-3 sm:min-h-[204px] sm:p-3.5">
       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">{eyebrow}</p>
       <h2 className="mt-1 text-base font-semibold text-stone-950">{title}</h2>
-      <div className="mt-2 grid flex-1 content-start gap-2">
+      <div className="mt-3 grid flex-1 content-center gap-3">
         {items.length > 0 ? items.map((item, index) => (
           <div key={`${item.label}-${index}`} className="rounded-2xl bg-stone-50 px-3 py-2">
             <div className="flex items-start justify-between gap-2 text-sm font-semibold text-stone-700">
@@ -436,17 +436,17 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
   }, [activeStatsSection, isStatsSectionAnimating]);
 
   const renderBarList = (title: string, points: Array<{ label: string; value: number; widthPercent: number; valueLabel?: string }>, emptyLabel: string) => (
-    <AdminCard className="flex h-full min-h-[228px] flex-col p-3 sm:min-h-[246px] sm:p-3.5">
+    <AdminCard className="flex h-full min-h-[252px] flex-col p-3.5 sm:min-h-[286px] sm:p-4">
       <h2 className="text-base font-semibold text-stone-950">{title}</h2>
-      <div className="mt-2 grid flex-1 content-start gap-2">
+      <div className="mt-3 grid flex-1 content-center gap-3">
         {points.length > 0 ? points.map((item) => (
           <div key={item.label}>
             <div className="flex items-center justify-between text-xs font-semibold text-stone-600">
               <span className="truncate pr-2">{translateStatsLabel(item.label, t)}</span>
               <span>{item.value}</span>
             </div>
-            <div className="mt-2 h-2 rounded-full bg-stone-100">
-              <div className="h-2 rounded-full bg-[var(--admin-theme-surface)]" style={{ width: `${item.widthPercent}%` }} />
+            <div className="mt-2.5 h-2.5 rounded-full bg-stone-100">
+              <div className="h-2.5 rounded-full bg-[var(--admin-theme-surface)]" style={{ width: `${item.widthPercent}%` }} />
             </div>
           </div>
         )) : <AdminEmptyState title={emptyLabel} />}
@@ -539,7 +539,7 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
           >
           {activeStatsSection === "production" ? (
             <div className="grid auto-rows-fr gap-2.5 xl:grid-cols-2">
-              <AdminCard className="flex h-full min-h-[228px] flex-col p-3 sm:min-h-[246px] sm:p-3.5">
+              <AdminCard className="flex h-full min-h-[252px] flex-col p-3.5 sm:min-h-[286px] sm:p-4">
                 <div className="flex flex-col items-start gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("productionMixEyebrow", pageText.productionMixEyebrow)}</p>
@@ -577,7 +577,7 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
           {activeStatsSection === "factory" ? (
             <div className="grid auto-rows-fr gap-2.5 xl:grid-cols-2">
               {renderBarList(pt("factoryPerformanceTitle", pageText.factoryPerformanceTitle), viewModel.factoryProductionBars, pt("factoryPerformanceEmpty", pageText.factoryPerformanceEmpty))}
-              <AdminCard className="flex h-full min-h-[228px] flex-col p-3 sm:min-h-[246px] sm:p-3.5">
+              <AdminCard className="flex h-full min-h-[252px] flex-col p-3.5 sm:min-h-[286px] sm:p-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("delayQualityEyebrow", pageText.delayQualityEyebrow)}</p>
                 <h2 className="mt-1 text-base font-semibold text-stone-950">{pt("delayQualityTitle", pageText.delayQualityTitle)}</h2>
                 <AdminTable
@@ -585,7 +585,7 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
                   columns={factoryPerformanceColumns}
                   getRowKey={(item) => item.label}
                   emptyLabel={pt("factoryPerformanceEmpty", pageText.factoryPerformanceEmpty)}
-                  className="mt-2 min-h-[190px] rounded-2xl border-stone-100"
+                  className="mt-3 min-h-[218px] rounded-2xl border-stone-100"
                   gridTemplateColumns="minmax(180px,1.2fr) minmax(96px,0.8fr) minmax(96px,0.8fr)"
                   rowBaseClassName="grid w-full min-w-[420px] gap-3 px-3 py-2 text-left text-[11px] md:min-w-0 md:items-center"
                   headerClassName="hidden min-w-[420px] gap-3 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-500 md:grid md:min-w-0"
@@ -644,7 +644,7 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
                 </div>
               </div>
               {customPeriodMessage ? <p className="mt-3 text-xs font-semibold text-amber-700">{customPeriodMessage}</p> : null}
-              <div className="mt-2 grid auto-rows-fr gap-2.5 xl:grid-cols-2">
+              <div className="mt-3 grid auto-rows-fr gap-3 xl:grid-cols-2">
                 <PeriodTopCard
                   eyebrow={pt("periodTopEyebrow", pageText.reorderTopEyebrow)}
                   title={periodTopModeTitle[selectedPeriodTopMode]}
