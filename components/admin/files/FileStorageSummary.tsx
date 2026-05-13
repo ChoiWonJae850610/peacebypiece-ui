@@ -131,8 +131,8 @@ function PlanUsageCard({
   const isCaution = hasPlanLimit && usageSummary.statusTone === "caution";
 
   return (
-    <div className="flex h-full min-h-[184px] flex-col rounded-[20px] border border-stone-200 bg-gradient-to-b from-white to-stone-50 px-5 py-4 md:min-h-[174px]">
-      <div className="flex items-start justify-between gap-3">
+    <div className="flex h-full min-h-[160px] flex-col rounded-[18px] border border-stone-200 bg-gradient-to-b from-white to-stone-50 px-3.5 py-3 md:min-h-[174px] md:rounded-[20px] md:px-5 md:py-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
         <div className="min-w-0">
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">
             {t("filesSummary.storagePlanLabel", "요금제 용량")}
@@ -151,7 +151,7 @@ function PlanUsageCard({
         <AdminButton
           size="sm"
           title={t("filesSummary.upgradeTitle", "요금제 업그레이드 화면은 후속 버전에서 연결합니다.")}
-          className="min-h-7 px-2.5 py-1 text-[11px]"
+          className="min-h-7 w-full px-2.5 py-1 text-[11px] sm:w-auto"
         >
           {t("filesSummary.upgrade", "업그레이드")}
         </AdminButton>
@@ -181,7 +181,7 @@ function PlanUsageCard({
 function FileOperationsCard({ items }: { items: FileStatusItem[] }) {
   const t = useAdminTranslation();
   return (
-    <div className="flex h-full min-h-[184px] flex-col rounded-[20px] border border-stone-200 bg-white px-5 py-4 md:min-h-[174px]">
+    <div className="flex h-full min-h-[160px] flex-col rounded-[18px] border border-stone-200 bg-white px-3.5 py-3 md:min-h-[174px] md:rounded-[20px] md:px-5 md:py-4">
       <div>
         <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">
           {t("filesSummary.fileOperationsLabel", "파일 운영")}
@@ -236,7 +236,7 @@ function DonutChart({
   let offset = 0;
 
   return (
-    <div className="flex h-full min-h-[184px] flex-col rounded-[20px] border border-stone-200 bg-white px-5 py-4 md:min-h-[174px]">
+    <div className="flex h-full min-h-[160px] flex-col rounded-[18px] border border-stone-200 bg-white px-3.5 py-3 md:min-h-[174px] md:rounded-[20px] md:px-5 md:py-4">
       <div className="flex shrink-0 items-start justify-between gap-3">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">
@@ -250,7 +250,7 @@ function DonutChart({
           {formatCountWithUnit(total, t)}
         </span>
       </div>
-      <div className="mt-3 flex min-h-0 flex-1 items-center justify-center gap-5">
+      <div className="mt-3 flex min-h-0 flex-1 flex-col items-center justify-center gap-3 sm:flex-row sm:gap-5">
         <div className="relative h-[86px] w-[86px] shrink-0">
           <svg
             viewBox="0 0 88 88"
@@ -386,7 +386,7 @@ export default function FileStorageSummary({
   ];
 
   return (
-    <section className="grid shrink-0 gap-3.5 xl:grid-cols-[minmax(230px,0.78fr)_minmax(270px,0.95fr)_minmax(310px,1.08fr)]">
+    <section className="grid shrink-0 gap-2.5 md:gap-3.5 lg:grid-cols-3 xl:grid-cols-[minmax(230px,0.78fr)_minmax(270px,0.95fr)_minmax(310px,1.08fr)]">
       <PlanUsageCard usageSummary={usageSummary} statusLabel={statusLabel} />
       <FileOperationsCard items={statusItems} />
       <DonutChart items={fileTypeDistribution} />

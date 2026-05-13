@@ -32,10 +32,11 @@ export default function WorkOrderStorageSection({ items }: WorkOrderStorageSecti
   const trashMemoCount = getTotalCount(items, (item) => item.trashMemoCount);
 
   return (
-    <section className="flex h-full min-h-[420px] flex-col rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm">
+    <section className="flex h-full min-h-[420px] flex-col rounded-[20px] border border-stone-200 bg-white p-2.5 shadow-sm md:rounded-[24px] md:p-4">
       <AdminActionBar
         title={t("filesWorkOrders.title", "작업지시서 저장소")}
         description={t("filesWorkOrders.description", "삭제된 작업지시서와 함께 휴지통으로 이동한 문서·디자인·메모를 확인합니다.")}
+        actionsClassName="w-full [&>button]:w-full sm:w-auto sm:[&>button]:w-auto"
       >
         <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-600">
           {t("filesWorkOrders.trashRetention", "30일 휴지통 보관")}
@@ -48,7 +49,7 @@ export default function WorkOrderStorageSection({ items }: WorkOrderStorageSecti
         </AdminButton>
       </AdminActionBar>
 
-      <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50/70 px-3 py-3 text-xs text-amber-800">
+      <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50/70 px-3 py-3 text-xs leading-5 text-amber-800">
         <p className="font-semibold">{t("filesWorkOrders.restorePolicyNoticeTitle", "복원 정책 확인")}</p>
         <p className="mt-1 leading-5">{t("filesWorkOrders.restorePolicyNotice", "작업지시서가 삭제 상태이면 문서·디자인·메모는 개별 복원하거나 개별 선택 삭제하지 않고 작업지시서 묶음 복원/삭제에서 함께 처리합니다. 삭제 완료 파일은 복원 대상에서 제외됩니다.")}</p>
       </div>

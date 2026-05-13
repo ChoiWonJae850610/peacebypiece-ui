@@ -39,7 +39,7 @@ export function EmptyTrashConfirmModal({
       maxWidthClass="md:max-w-md"
       minHeightClassName=""
       footer={
-        <div className="flex w-full justify-end gap-2">
+        <div className="flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <AdminButton type="button" variant="secondary" onClick={onClose}>
             {t("filesList.no", "아니오")}
           </AdminButton>
@@ -108,7 +108,7 @@ export function WorkOrderActionPreviewModal({
       }
       maxWidthClass="md:max-w-2xl"
       footer={
-        <div className="flex w-full flex-wrap justify-end gap-2">
+        <div className="flex w-full flex-col-reverse gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
           <AdminButton type="button" variant="secondary" onClick={onClose}>
             {t("filesList.close", "닫기")}
           </AdminButton>
@@ -248,7 +248,7 @@ export function TrashDetailModal({
       maxWidthClass="md:max-w-xl"
       footer={
         row ? (
-          <div className="flex w-full flex-wrap justify-end gap-2">
+          <div className="flex w-full flex-col-reverse gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
             <AdminButton type="button" variant="secondary" onClick={onClose}>
               {t("filesList.close", "닫기")}
             </AdminButton>
@@ -312,7 +312,7 @@ export function TrashDetailModal({
 function TrashDetailContent({ row, t }: { row: UnifiedTrashRow; t: AdminT }) {
   return (
     <div className="space-y-4">
-      <div className="flex items-start gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
+      <div className="flex items-start gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-3 py-3 sm:px-4">
         <TrashItemVisual
           label={row.visualLabel}
           tone={row.visualTone}
@@ -349,7 +349,7 @@ function TrashDetailContent({ row, t }: { row: UnifiedTrashRow; t: AdminT }) {
         <WorkOrderStageInline statusLabel={row.sourceItem.statusLabel} t={t} />
       ) : null}
 
-      <div className="grid gap-2 md:grid-cols-2">
+      <div className="grid gap-2 sm:grid-cols-2">
         {getTrashDetailFields(row, t).map(([label, value]) => (
           <div
             key={label}

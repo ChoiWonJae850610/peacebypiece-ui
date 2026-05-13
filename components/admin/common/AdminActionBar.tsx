@@ -5,9 +5,16 @@ type AdminActionBarProps = {
   description?: ReactNode;
   children?: ReactNode;
   className?: string;
+  actionsClassName?: string;
 };
 
-export default function AdminActionBar({ title, description, children, className = "" }: AdminActionBarProps) {
+export default function AdminActionBar({
+  title,
+  description,
+  children,
+  className = "",
+  actionsClassName = "",
+}: AdminActionBarProps) {
   return (
     <div className={["flex shrink-0 flex-col gap-3 md:flex-row md:items-center md:justify-between", className].filter(Boolean).join(" ")}>
       {title || description ? (
@@ -16,7 +23,16 @@ export default function AdminActionBar({ title, description, children, className
           {description ? <p className="mt-1 text-xs font-medium text-stone-500">{description}</p> : null}
         </div>
       ) : <span />}
-      {children ? <div className="flex flex-wrap items-center gap-1.5">{children}</div> : null}
+      {children ? (
+        <div
+          className={[
+            "flex flex-wrap items-center gap-1.5",
+            actionsClassName,
+          ].filter(Boolean).join(" ")}
+        >
+          {children}
+        </div>
+      ) : null}
     </div>
   );
 }

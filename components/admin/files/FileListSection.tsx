@@ -28,8 +28,11 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
   const allSelected = items.length > 0 && selectedItemIds.length === items.length;
 
   return (
-    <section className="flex h-full min-h-[420px] flex-col rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm">
-      <AdminActionBar title={t("filesList.title", `${t("terms.files.documentDesignGroup", "문서/디자인")} 목록`)}>
+    <section className="flex h-full min-h-[420px] flex-col rounded-[20px] border border-stone-200 bg-white p-2.5 shadow-sm md:rounded-[24px] md:p-4">
+      <AdminActionBar
+        title={t("filesList.title", `${t("terms.files.documentDesignGroup", "문서/디자인")} 목록`)}
+        actionsClassName="w-full [&>button]:flex-1 [&>select]:min-w-0 [&>select]:flex-1 sm:w-auto sm:[&>button]:flex-none sm:[&>select]:flex-none"
+      >
         <select value={sortKey} onChange={(event) => onChangeSort(event.target.value as AdminFileSortKey)} className="rounded-full border border-stone-300 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-700 shadow-sm">
           {ADMIN_FILE_SORT_OPTIONS.map((option) => (
             <option key={option.key} value={option.key}>{t(`filesList.sort.${option.key}`, option.label)}</option>

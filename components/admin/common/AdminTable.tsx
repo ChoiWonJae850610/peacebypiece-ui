@@ -36,7 +36,7 @@ export default function AdminTable<TItem>({
   onRowClick,
 }: AdminTableProps<TItem>) {
   const gridStyle = gridTemplateColumns ? { gridTemplateColumns } : undefined;
-  const baseRowClassName = rowBaseClassName ?? "grid w-full gap-3 px-4 py-2 text-left text-[11px] md:items-center";
+  const baseRowClassName = rowBaseClassName ?? "grid w-full gap-2 px-3 py-3 text-left text-[11px] md:gap-3 md:px-4 md:py-2 md:items-center";
   const tableHeaderClassName = headerClassName ?? "hidden gap-3 bg-stone-50 px-4 py-2 text-[10px] font-semibold text-stone-500 md:grid";
 
   return (
@@ -46,7 +46,7 @@ export default function AdminTable<TItem>({
           <span key={column.key} className={column.headerClassName}>{column.label}</span>
         ))}
       </div>
-      <div className="min-h-0 flex-1 divide-y divide-stone-200 overflow-y-auto">
+      <div className="min-h-0 flex-1 divide-y divide-stone-200 overflow-auto">
         {isLoading ? (
           <div className="flex min-h-[240px] items-center justify-center bg-white px-4 py-10 text-center text-sm text-stone-500">{loadingLabel}</div>
         ) : items.length === 0 ? (
@@ -63,7 +63,7 @@ export default function AdminTable<TItem>({
           items.map((item) => {
             const mergedRowClassName = [baseRowClassName, rowClassName?.(item)].filter(Boolean).join(" ");
             const cells = columns.map((column) => (
-              <div key={column.key} className={column.className}>{column.render(item)}</div>
+              <div key={column.key} className={["min-w-0", column.className].filter(Boolean).join(" ")}>{column.render(item)}</div>
             ));
 
             if (onRowClick) {

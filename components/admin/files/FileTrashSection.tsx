@@ -141,8 +141,11 @@ export default function FileTrashSection({
   const canRefresh = Boolean(onRefresh) && !isRefreshing;
 
   return (
-    <section className="flex h-full min-h-[360px] flex-col rounded-[22px] border border-stone-200 bg-white p-3 shadow-sm md:min-h-0">
-      <AdminActionBar title={t("trashPage.title", "휴지통")}>
+    <section className="flex h-full min-h-[360px] flex-col rounded-[20px] border border-stone-200 bg-white p-2.5 shadow-sm md:min-h-0 md:rounded-[22px] md:p-3">
+      <AdminActionBar
+        title={t("trashPage.title", "휴지통")}
+        actionsClassName="w-full [&>button]:flex-1 [&>button]:px-3 sm:w-auto sm:[&>button]:flex-none"
+      >
         <AdminButton
           onClick={onRefresh}
           disabled={!canRefresh}
@@ -231,7 +234,7 @@ export default function FileTrashSection({
       <AdminTable
         className="mt-2 min-h-0 flex-1"
         headerClassName="hidden shrink-0 gap-3 bg-stone-50 px-3.5 py-1.5 text-[10px] font-semibold text-stone-500 md:grid"
-        rowBaseClassName="grid w-full gap-3 px-3.5 py-1.5 text-left text-[11px] md:items-center"
+        rowBaseClassName="grid w-full gap-2 px-3 py-3 text-left text-[11px] md:items-center md:gap-3 md:px-3.5 md:py-1.5"
         items={sortedRows}
         getRowKey={(row) => row.rowId}
         emptyLabel={t(
