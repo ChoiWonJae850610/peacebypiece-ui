@@ -21,12 +21,12 @@ export default function MobileSectionStack({
         {topBar}
         {drawer}
 
-        <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-full flex-col gap-3 overflow-x-hidden px-3 py-3 pb-6">
+        <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-full flex-col gap-2.5 overflow-x-hidden px-2.5 py-2.5 pb-5 sm:gap-3 sm:px-3 sm:py-3 sm:pb-6">
           <section className="min-w-0 overflow-x-hidden">
             {detail}
           </section>
 
-          <aside className="min-w-0 overflow-x-hidden rounded-3xl border border-stone-200 bg-stone-50 px-3 py-3">
+          <aside className="min-w-0 overflow-x-hidden rounded-[24px] border border-stone-200 bg-stone-50 px-2.5 py-2.5 sm:rounded-3xl sm:px-3 sm:py-3">
             {sidePanel}
           </aside>
         </div>

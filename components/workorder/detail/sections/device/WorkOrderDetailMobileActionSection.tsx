@@ -36,20 +36,20 @@ export default function WorkOrderDetailMobileActionSection({
     : workspaceWriteLockMessage;
 
   return (
-    <section className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+    <section className="min-w-0 overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 p-3.5 sm:p-4">
       <div className="text-sm font-semibold text-stone-900">{copy.title}</div>
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-3 flex min-w-0 flex-wrap gap-2">
         {stages.map((stage) => {
           const isCurrent = stage === currentStage;
           return (
             <div
               key={stage}
-              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium ${
+              className={`inline-flex max-w-full items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium ${
                 isCurrent ? "border-stone-900 bg-white text-stone-900" : "border-stone-200 bg-white text-stone-500"
               }`}
             >
               <span className={`h-2 w-2 rounded-full ${isCurrent ? getStageDotTone(stage) : "bg-stone-300"}`} />
-              <span>{translateDisplayStageLabel(stage, i18n)}</span>
+              <span className="min-w-0 break-keep">{translateDisplayStageLabel(stage, i18n)}</span>
             </div>
           );
         })}
@@ -69,12 +69,12 @@ export default function WorkOrderDetailMobileActionSection({
                 type="button"
                 onClick={() => onAction(action)}
                 disabled={isActionLocked}
-                className={`inline-flex items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-70 ${
+                className={`inline-flex min-w-0 items-center justify-center gap-2 rounded-xl px-3 py-3 text-center text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-70 ${
                   index === 0 ? "bg-stone-900 text-white" : "border border-stone-300 bg-white text-stone-700"
                 }`}
               >
                 {isProcessingTarget ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" /> : null}
-                <span>{isProcessingTarget ? getProcessingLabel(translateWorkflowActionLabel(action, i18n, locale), copy.processingFormat) : translateWorkflowActionLabel(action, i18n, locale)}</span>
+                <span className="min-w-0 break-keep">{isProcessingTarget ? getProcessingLabel(translateWorkflowActionLabel(action, i18n, locale), copy.processingFormat) : translateWorkflowActionLabel(action, i18n, locale)}</span>
               </button>
             );
           })}

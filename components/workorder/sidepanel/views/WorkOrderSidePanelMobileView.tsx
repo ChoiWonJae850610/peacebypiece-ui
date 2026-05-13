@@ -11,7 +11,7 @@ export default function WorkOrderSidePanelMobileView(props: WorkOrderSidePanelPr
   const collapseLabel = i18n.common.ui.common.collapse;
 
   return (
-    <div className="rounded-[24px] border border-stone-200 bg-stone-50/60 p-2.5">
+    <div className="min-w-0 overflow-x-hidden rounded-[22px] border border-stone-200 bg-stone-50/60 p-2 sm:rounded-[24px] sm:p-2.5">
       <SidePanelSectionStack compact>
         <WorkOrderSidePanelMobileAccordionSection title={memoTitle} defaultOpen collapseLabel={collapseLabel}>
           <WorkOrderMemoPanel

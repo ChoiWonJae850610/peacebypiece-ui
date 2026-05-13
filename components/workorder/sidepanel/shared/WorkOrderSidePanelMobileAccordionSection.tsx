@@ -20,19 +20,19 @@ export default function WorkOrderSidePanelMobileAccordionSection({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <section className="overflow-hidden rounded-[22px] border border-stone-200 bg-white shadow-sm">
+    <section className="min-w-0 overflow-hidden rounded-[20px] border border-stone-200 bg-white shadow-sm sm:rounded-[22px]">
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+        className="flex w-full min-w-0 items-center justify-between gap-3 px-3.5 py-3 text-left sm:px-4"
       >
         <div className="min-w-0">
-          <div className="text-sm font-semibold text-stone-900">{title}</div>
+          <div className="break-keep text-sm font-semibold text-stone-900">{title}</div>
           {typeof count === "number" ? <div className="mt-0.5 text-[11px] text-stone-500">{count}</div> : null}
         </div>
         <span className="text-sm text-stone-500">{open ? collapseLabel : "+"}</span>
       </button>
-      {open ? <div className="border-t border-stone-200 p-2.5">{children}</div> : null}
+      {open ? <div className="min-w-0 overflow-x-hidden border-t border-stone-200 p-2 sm:p-2.5">{children}</div> : null}
     </section>
   );
 }

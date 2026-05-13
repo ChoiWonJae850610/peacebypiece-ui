@@ -13,7 +13,7 @@ export default function WorkOrderDetailMobileView({
   currentInventoryQuantity,
 }: WorkOrderDetailViewProps) {
   return (
-    <div className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm">
+    <div className="min-w-0 overflow-x-hidden rounded-[24px] border border-stone-200 bg-white p-3 shadow-sm sm:rounded-3xl sm:p-4">
       <MobileSectionStack>
         <WorkOrderDetailMobileHeaderSection {...viewModel.headerProps} />
         <WorkOrderDetailMobileActionSection {...viewModel.actionProps} />
