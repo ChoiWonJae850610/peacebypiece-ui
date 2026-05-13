@@ -4,9 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   getInvitationTableColumns,
   getJoinRequestTableColumns,
-  getMemberApprovalActionPreviews,
-  getMemberApprovalPermissionPreviews,
-  getMemberApprovalStepPreviews,
   getMemberInvitationPreviews,
   getMemberInvitationSetupCards,
   getMemberInviteQrPreviewRows,
@@ -161,9 +158,6 @@ export default function AdminMemberManagementDashboard() {
   const invitationSetupCards = getMemberInvitationSetupCards();
   const inviteRoleOptions = getMemberInviteRoleOptions();
   const inviteQrPreviewRows = getMemberInviteQrPreviewRows();
-  const approvalSteps = getMemberApprovalStepPreviews();
-  const approvalActions = getMemberApprovalActionPreviews();
-  const approvalPermissions = getMemberApprovalPermissionPreviews();
   const groups = getMemberPermissionGroupPreviews();
   const catalogItems = getMemberPermissionCatalogPreviews();
   const matrixItems = getMemberPermissionMatrixPreviews();
@@ -495,8 +489,8 @@ export default function AdminMemberManagementDashboard() {
       </section>
 
 
-      <section className="rounded-3xl border border-stone-200 bg-white p-3 shadow-sm">
-        <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+      <section className="overflow-x-auto rounded-3xl border border-stone-200 bg-white p-3 shadow-sm">
+        <div className="grid min-w-[720px] gap-2 md:grid-cols-2 xl:min-w-0 xl:grid-cols-4">
           {tabPreviews.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -540,7 +534,7 @@ export default function AdminMemberManagementDashboard() {
             <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">
               {t(
                 "memberManagement.inviteBuilder.description",
-                "고객관리자가 내부 멤버에게 전달할 링크와 QR을 생성하기 전 입력값, 기본 권한 묶음, 승인 대기 흐름을 한 화면에서 확인합니다.",
+                "고객관리자가 내부 멤버에게 전달할 링크와 QR을 생성하기 전 입력값과 기본 권한 묶음을 한 화면에서 확인합니다.",
               )}
             </p>
           </div>
@@ -723,137 +717,13 @@ export default function AdminMemberManagementDashboard() {
 
       {activeTab === "approval" ? (
         <>
-      <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-        <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-400">
-              {t("memberManagement.approvalWorkbench.eyebrow", "Join request approval")}
-            </p>
-            <h3 className="mt-2 text-base font-semibold text-stone-950">
-              {t("memberManagement.approvalWorkbench.title", "멤버 승인/권한 부여 화면")}
-            </h3>
-            <p className="mt-1 max-w-3xl text-xs leading-5 text-stone-500">
-              {t(
-                "memberManagement.approvalWorkbench.description",
-                "가입 신청자를 확인하고 승인 또는 거절하기 전에 role template 기준 권한을 직접 조정하는 1차 화면입니다.",
-              )}
-            </p>
-          </div>
-          <span className="text-xs font-semibold text-stone-400">
-            {t("memberManagement.sourceState.dbPending", "DB 연결 예정")}
-          </span>
-        </div>
-
-        <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.75fr)]">
-          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-              <div>
-                <p className="text-sm font-semibold text-stone-950">
-                  {t("memberManagement.approvalWorkbench.previewApplicant.name", "김디자이너")}
-                </p>
-                <p className="mt-1 text-xs text-stone-500">
-                  {t("memberManagement.approvalWorkbench.previewApplicant.email", "designer@example.com")}
-                </p>
-                <p className="mt-2 text-xs leading-5 text-stone-500">
-                  {t("memberManagement.approvalWorkbench.previewApplicant.description", "초대 링크로 가입 신청한 멤버를 승인하기 전 상태 예시입니다.")}
-                </p>
-              </div>
-              <AdminStatusBadge tone="warning">
-                {t("memberManagement.joinRequestStatuses.pending", "승인 대기")}
-              </AdminStatusBadge>
-            </div>
-
-            <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-              {approvalSteps.map((step) => (
-                <div key={step.id} className="rounded-2xl border border-stone-200 bg-white p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-xs font-semibold text-stone-900">
-                      {t(`memberManagement.approvalWorkbench.steps.${step.id}.label`, step.id)}
-                    </p>
-                    <AdminStatusBadge tone={getStatusTone(step.status)} size="xs">
-                      {t(`memberManagement.statuses.${step.status}`, step.status)}
-                    </AdminStatusBadge>
-                  </div>
-                  <p className="mt-2 text-[11px] leading-4 text-stone-500">
-                    {t(`memberManagement.approvalWorkbench.steps.${step.id}.description`, "")}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-4 rounded-2xl border border-stone-200 bg-white p-4">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-xs font-semibold text-stone-500">
-                    {t("memberManagement.approvalWorkbench.permissionChecklistTitle", "권한 체크리스트")}
-                  </p>
-                  <p className="mt-1 text-xs leading-5 text-stone-500">
-                    {t("memberManagement.approvalWorkbench.permissionChecklistDescription", "기본 권한 묶음은 시작값이고 승인 저장 시 permission_code 목록을 직접 저장합니다.")}
-                  </p>
-                </div>
-                <span className="text-xs font-semibold text-stone-500">
-                  {t("memberManagement.permissionCount", "권한 {count}개").replace("{count}", String(approvalPermissions.length))}
-                </span>
-              </div>
-              <div className="mt-3 grid gap-2 md:grid-cols-2">
-                {approvalPermissions.map((permission) => (
-                  <label key={permission.code} className="flex items-center gap-2 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700">
-                    <input type="checkbox" checked={permission.checked} readOnly className="size-4 rounded border-stone-300" />
-                    <span className="min-w-0 flex-1 truncate font-semibold">{permission.code}</span>
-                    <span className="text-[11px] text-stone-400">
-                      {t(`memberManagement.permissionGroups.${permission.group}.label`, permission.group)}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <aside className="rounded-2xl border border-stone-200 bg-white p-4">
-            <h4 className="text-sm font-semibold text-stone-950">
-              {t("memberManagement.approvalWorkbench.actionsTitle", "승인 처리 액션")}
-            </h4>
-            <p className="mt-1 text-xs leading-5 text-stone-500">
-              {t("memberManagement.approvalWorkbench.actionsDescription", "실제 저장은 join_requests, company_members, member_permissions API 연결 후 활성화합니다.")}
-            </p>
-            <div className="mt-4 grid gap-2">
-              {approvalActions.map((action) => {
-                const hasRequiredPermission = hasEveryMemberPermission(
-                  { permissionCodes: currentPermissionCodes },
-                  action.requiredPermissions,
-                );
-                return (
-                  <AdminButton
-                    key={action.id}
-                    disabled
-                    variant="secondary"
-                    className="flex-col items-stretch justify-start gap-1 rounded-xl bg-stone-50 px-3 py-2 text-left text-xs text-stone-500"
-                  >
-                    <span className="flex items-center justify-between gap-2">
-                      <span>{t(`memberManagement.approvalWorkbench.actions.${action.id}.label`, action.id)}</span>
-                      <AdminStatusBadge tone={getStatusTone(action.status)} size="xs">
-                        {t(`memberManagement.statuses.${action.status}`, action.status)}
-                      </AdminStatusBadge>
-                    </span>
-                    <span className="text-[11px] font-medium text-stone-400">
-                      {hasRequiredPermission
-                        ? t("memberManagement.permissionGuards.allowedButDbPending", "권한 충족 · DB 연결 예정")
-                        : t("memberManagement.permissionGuards.blocked", "권한 부족")}
-                    </span>
-                  </AdminButton>
-                );
-              })}
-            </div>
-            <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-3">
-              <p className="text-xs font-semibold text-amber-800">
-                {t("memberManagement.approvalWorkbench.guardTitle", "저장 전제")}
-              </p>
-              <p className="mt-2 text-xs leading-5 text-amber-700">
-                {t("memberManagement.approvalWorkbench.guardDescription", "승인 시 company_members를 approved로 만들고 member_permissions에 선택 권한을 저장해야 합니다. 거절 시 join_requests만 rejected 처리합니다.")}
-              </p>
-            </div>
-          </aside>
-        </div>
+      <section className="rounded-3xl border border-amber-200 bg-amber-50 p-4 shadow-sm">
+        <p className="text-sm font-semibold text-amber-900">
+          {t("memberManagement.approvalWorkbench.guardTitle", "저장 전제")}
+        </p>
+        <p className="mt-2 text-xs leading-5 text-amber-800">
+          {t("memberManagement.approvalWorkbench.guardDescription", "승인 시 company_members를 approved로 만들고 member_permissions에 선택 권한을 저장해야 합니다. 거절 시 join_requests만 rejected 처리합니다.")}
+        </p>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-1">
@@ -965,7 +835,7 @@ export default function AdminMemberManagementDashboard() {
 
       {activeTab === "members" ? (
         <>
-      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
+      <section className="grid gap-4">
         <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
           <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
@@ -1071,6 +941,14 @@ export default function AdminMemberManagementDashboard() {
             </div>
           </div>
         </article>
+      </section>
+
+        </>
+      ) : null}
+
+      {activeTab === "permissions" ? (
+        <>
+
 
         <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
           <h3 className="text-base font-semibold text-stone-950">
@@ -1079,7 +957,7 @@ export default function AdminMemberManagementDashboard() {
           <p className="mt-1 text-xs leading-5 text-stone-500">
             {t("memberManagement.sections.rolesDescription", "역할은 기본 권한 묶음으로 사용하고, 실제 화면 노출은 권한 코드 기준으로 확장합니다.")}
           </p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
             {roles.map((role) => (
               <div key={role.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
                 <div className="flex items-center justify-between gap-3">
@@ -1100,13 +978,7 @@ export default function AdminMemberManagementDashboard() {
             ))}
           </div>
         </article>
-      </section>
 
-        </>
-      ) : null}
-
-      {activeTab === "permissions" ? (
-        <>
       <section id="member-permission-guard" className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
         <h3 className="text-base font-semibold text-stone-950">
           {t("memberManagement.sections.workspaceCards", "메인화면 카드 권한")}
