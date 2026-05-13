@@ -255,6 +255,20 @@ export default function WorkOrderWorkspace({
     selection.setListSort(nextSort);
   };
 
+  const handleSelectWorkOrder = (workOrderId: string) => {
+    if (isWorkspaceWriteLocked) return;
+    if (workOrderId === selection.selectedId) return;
+
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("workOrderId", workOrderId);
+      const nextQuery = url.searchParams.toString();
+      window.history.replaceState(null, "", nextQuery ? `${url.pathname}?${nextQuery}` : url.pathname);
+    }
+
+    actions.handleSelectWorkOrder(workOrderId);
+  };
+
   const viewModel = buildWorkspaceViewModel({
     drawerOpen: ui.drawerOpen,
     basicInfoOpen: ui.basicInfoOpen,
@@ -337,7 +351,7 @@ export default function WorkOrderWorkspace({
         actions.handleSave(),
       );
     },
-    onSelectWorkOrder: actions.handleSelectWorkOrder,
+    onSelectWorkOrder: handleSelectWorkOrder,
     onCreateWorkOrder: (payload) => {
       void runWithWorkspaceWriteLock(
         lifecycleCopy.createProcessingLabel,

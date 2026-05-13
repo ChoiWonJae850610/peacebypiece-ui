@@ -88,8 +88,13 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
       return;
     }
 
+    const firstVisibleWorkOrder = derivedState.workOrders[0];
+    if (!firstVisibleWorkOrder) return;
+
     if (coreState.selectedId === "") {
-      coreState.setLastSavedAt(null);
+      coreState.setSelectedId(firstVisibleWorkOrder.id);
+      const next = coreState.workOrders.find((item) => item.id === firstVisibleWorkOrder.id);
+      coreState.setLastSavedAt(next?.lastSavedAt ?? null);
       coreState.setSaveStatus("saved");
       return;
     }
@@ -97,8 +102,9 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     const selectedVisible = derivedState.workOrders.some((item) => item.id === coreState.selectedId);
     if (selectedVisible) return;
 
-    coreState.setSelectedId("");
-    coreState.setLastSavedAt(null);
+    coreState.setSelectedId(firstVisibleWorkOrder.id);
+    const next = coreState.workOrders.find((item) => item.id === firstVisibleWorkOrder.id);
+    coreState.setLastSavedAt(next?.lastSavedAt ?? null);
     coreState.setSaveStatus("saved");
   }, [
     coreState.selectedId,
