@@ -13,6 +13,7 @@ type AdminModalProps = {
   maxWidthClass?: string;
   footer?: ReactNode;
   bodyClassName?: string;
+  minHeightClassName?: string;
 };
 
 export function AdminModal({
@@ -24,6 +25,7 @@ export function AdminModal({
   maxWidthClass = "md:max-w-3xl",
   footer,
   bodyClassName = "space-y-4 bg-stone-50/60 [scrollbar-gutter:stable]",
+  minHeightClassName = "md:min-h-[360px]",
 }: AdminModalProps) {
   return (
     <ModalShell
@@ -34,7 +36,7 @@ export function AdminModal({
       maxWidthClass={maxWidthClass}
       bodyClassName={bodyClassName}
       footerClassName="border-t border-stone-200 bg-white/95 px-5 py-4"
-      panelClassName="overflow-hidden rounded-[28px] border border-stone-200 bg-white shadow-2xl shadow-stone-950/10 md:min-h-[360px]"
+      panelClassName={`overflow-hidden rounded-[28px] border border-stone-200 bg-white shadow-2xl shadow-stone-950/10 ${minHeightClassName}`}
       overlayClassName="bg-stone-950/35 backdrop-blur-sm"
       footer={footer}
     >

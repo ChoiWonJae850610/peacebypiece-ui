@@ -1,19 +1,19 @@
 Version :
-0.11.36
+0.11.37
 
 Summary :
-시스템 기준정보 모달 AdminModal 1차 전환
+관리자 저장소 휴지통 모달 AdminModal 전환
 
 Description :
-시스템관리자 카테고리 규칙 테스트 모달과 카테고리 값 관리 모달을 AdminModal 패턴으로 전환했다. 저장, 초기화, 카테고리 편집 로직은 변경하지 않고 모달 wrapper만 공통 관리자 모달 패턴으로 정리했다.
+고객관리자 저장소 휴지통의 비우기 확인, 작업지시서 처리 범위 확인, 휴지통 상세 모달을 AdminModal 기준으로 전환했다. 단순 확인 모달의 과한 최소 높이를 피할 수 있도록 AdminModal에 minHeightClassName 옵션을 추가했다.
 
 수정 파일 목록 :
-- components/system/category-rules/CategoryRuleTestModal.tsx
-- components/system/category-rules/CategoryValuesModal.tsx
+- components/admin/files/fileTrashSectionModals.tsx
+- components/admin/layout/AdminModal.tsx
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/admin-modal-standardization-0.11.36.md
+- docs/admin-modal-standardization-0.11.37.md
 
 삭제 파일 목록 :
 없음

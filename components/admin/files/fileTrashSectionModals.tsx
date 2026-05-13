@@ -1,7 +1,7 @@
 "use client";
 
 import { AdminButton } from "@/components/admin/common/AdminButton";
-import ModalShell from "@/components/common/modal/ModalShell";
+import { AdminModal } from "@/components/admin/layout/AdminModal";
 import type { AdminStorageWorkOrderItem } from "@/lib/admin/files/types";
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import {
@@ -32,11 +32,12 @@ export function EmptyTrashConfirmModal({
   t: AdminT;
 }) {
   return (
-    <ModalShell
+    <AdminModal
       open={open}
       onClose={onClose}
       title={t("filesList.emptyTrashConfirmTitle", "휴지통 비우기")}
       maxWidthClass="md:max-w-md"
+      minHeightClassName=""
       footer={
         <div className="flex w-full justify-end gap-2">
           <AdminButton type="button" variant="secondary" onClick={onClose}>
@@ -62,7 +63,7 @@ export function EmptyTrashConfirmModal({
           "휴지통의 모든 항목을 삭제 요청하시겠습니까?",
         )}
       </p>
-    </ModalShell>
+    </AdminModal>
   );
 }
 
@@ -92,7 +93,7 @@ export function WorkOrderActionPreviewModal({
   const intent: WorkOrderActionIntent | null = actionPreview?.intent ?? null;
 
   return (
-    <ModalShell
+    <AdminModal
       open={Boolean(actionPreview && previewWorkOrder)}
       onClose={onClose}
       title={
@@ -200,7 +201,7 @@ export function WorkOrderActionPreviewModal({
           </div>
         </div>
       ) : null}
-    </ModalShell>
+    </AdminModal>
   );
 }
 
@@ -235,7 +236,7 @@ export function TrashDetailModal({
   t: AdminT;
 }) {
   return (
-    <ModalShell
+    <AdminModal
       open={Boolean(row)}
       onClose={onClose}
       title={
@@ -304,7 +305,7 @@ export function TrashDetailModal({
       }
     >
       {row ? <TrashDetailContent row={row} t={t} /> : null}
-    </ModalShell>
+    </AdminModal>
   );
 }
 
