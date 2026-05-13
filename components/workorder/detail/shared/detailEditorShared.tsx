@@ -66,12 +66,14 @@ export function SectionHeader({
   open,
   onToggle,
   rightSlot,
+  toggleLabel,
 }: {
   title: string;
   summary: string;
   open: boolean;
   onToggle: () => void;
   rightSlot?: ReactNode;
+  toggleLabel?: string;
 }) {
   return (
     <div className="flex min-w-0 items-start gap-2 border-b border-stone-200 pb-1.5 sm:gap-3">
@@ -88,7 +90,7 @@ export function SectionHeader({
       </button>
       <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
         {rightSlot ? <div className="shrink-0">{rightSlot}</div> : null}
-        <CollapseToggleButton open={open} onToggle={onToggle} label={`${title} 열기/접기`} />
+        <CollapseToggleButton open={open} onToggle={onToggle} label={toggleLabel ?? title} />
       </div>
     </div>
   );

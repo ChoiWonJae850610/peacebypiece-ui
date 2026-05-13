@@ -248,6 +248,9 @@ export const workorderEn = {
       cancel: "Cancel",
       deleteAria: "Delete memo",
       empty: "No work memos have been registered.",
+      adminAuthorFallback: "Admin",
+      unknownAuthorFallback: "Unnamed",
+      replyMarker: "↳",
     },
     attachmentPanel: {
       title: "Attachment files",

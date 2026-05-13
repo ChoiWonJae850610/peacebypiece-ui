@@ -22,10 +22,10 @@ function formatMemoTimestamp(value: string) {
   ].join(".") + ` ${padMemoDatePart(date.getHours())}:${padMemoDatePart(date.getMinutes())}`;
 }
 
-function getMemoAuthorDisplayName(authorName: string, authorRole: RoleType) {
-  if (authorRole === "admin") return "대표";
+function getMemoAuthorDisplayName(authorName: string, authorRole: RoleType, copy: { adminAuthorFallback: string; unknownAuthorFallback: string }) {
+  if (authorRole === "admin") return copy.adminAuthorFallback;
   const normalized = authorName.trim();
-  return normalized || "이름 없음";
+  return normalized || copy.unknownAuthorFallback;
 }
 
 function normalizeMemoInput(value: string) {
@@ -219,7 +219,7 @@ function MemoThreadCard({
     <div className={isMobile ? "min-w-0 rounded-2xl border border-stone-200 bg-white p-2.5 shadow-sm" : "min-w-0 rounded-2xl border border-stone-200 bg-white p-3 shadow-sm"}>
       <div className="flex min-w-0 items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className={isMobile ? "break-words text-[13px] font-semibold leading-4 text-stone-900" : "truncate text-sm font-semibold text-stone-900"}>{getMemoAuthorDisplayName(thread.authorName, thread.authorRole)}</div>
+          <div className={isMobile ? "break-words text-[13px] font-semibold leading-4 text-stone-900" : "truncate text-sm font-semibold text-stone-900"}>{getMemoAuthorDisplayName(thread.authorName, thread.authorRole, ui.memo)}</div>
           <div className="mt-0.5 text-[11px] text-stone-500">{formatMemoTimestamp(thread.createdAt)}</div>
         </div>
         <MemoItemActions
@@ -265,7 +265,7 @@ function MemoThreadCard({
           return (
             <div key={`${thread.id}-${reply.id}-${replyIndex}`} className="min-w-0 pl-2 text-stone-700 sm:pl-3">
               <div className="flex min-w-0 items-start justify-between gap-2">
-                <div className="min-w-0 break-words text-[11px] leading-4 text-stone-500">ㄴ {getMemoAuthorDisplayName(reply.authorName, reply.authorRole)} · {formatMemoTimestamp(reply.createdAt)}</div>
+                <div className="min-w-0 break-words text-[11px] leading-4 text-stone-500">{ui.memo.replyMarker} {getMemoAuthorDisplayName(reply.authorName, reply.authorRole, ui.memo)} · {formatMemoTimestamp(reply.createdAt)}</div>
                 <MemoItemActions canMutate={canMutateAuthor(reply.authorId) && !writeLocked} disabledReason={writeLockMessage} editLabel={ui.memo.edit} deleteAriaLabel={ui.memo.deleteAria} onEdit={() => startReplyEdit(reply)} onDelete={() => onDeleteReply(thread.id, reply.id)} />
               </div>
               {isEditingReply ? (
@@ -365,7 +365,7 @@ export default function WorkOrderMemoPanel({
         <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">{`${memoThreads.length}${ui.memo.countSuffix}`}</span>
       </div>
       <div className={isMobile ? "mt-2.5 min-w-0 rounded-xl border border-stone-200 bg-stone-50 p-2" : isTablet ? "mt-3 min-w-0 rounded-xl border border-stone-200 bg-stone-50 p-2.5" : "mt-3 min-w-0 rounded-xl border border-stone-200 bg-stone-50 p-2.5"}>
-        <div className="text-[11px] text-stone-500">{getMemoAuthorDisplayName(currentUserName, currentUserRole)}</div>
+        <div className="text-[11px] text-stone-500">{getMemoAuthorDisplayName(currentUserName, currentUserRole, ui.memo)}</div>
         <div className="mt-2">
           <MemoInputField value={threadDraft} disabled={!canEditMemo || writeLocked} placeholder={ui.memo.threadPlaceholder} submitLabel={ui.memo.submit} onChange={setThreadDraft} onSubmit={submitThread} isMobile={isMobile} />
         </div>

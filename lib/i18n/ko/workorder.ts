@@ -248,6 +248,9 @@ export const workorderKo = {
       cancel: "취소",
       deleteAria: "메모 삭제",
       empty: "등록된 작업 메모가 없습니다.",
+      adminAuthorFallback: "대표",
+      unknownAuthorFallback: "이름 없음",
+      replyMarker: "ㄴ",
     },
     attachmentPanel: {
       title: "첨부 파일",
