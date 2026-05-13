@@ -1,19 +1,17 @@
 Version :
-0.11.34
+0.11.35
 
 Summary :
-시스템 홈 Card Section 공통 패턴 적용
+관리자 모달 패턴 잔여 조사
 
 Description :
-시스템관리자 홈 화면의 상단 헤더와 navigation section wrapper를 AdminCard와 AdminSection 기준으로 정리했다. 공통 섹션 컴포넌트에는 headerClassName 옵션과 header semantic wrapper 지원을 추가했다.
+관리자와 시스템관리자 화면의 AdminModal, ModalShell, drawer 사용 현황을 조사하고 다음 모달 공통화 후보를 문서화했다. 앱 버전을 0.11.35로 갱신했다.
 
 수정 파일 목록 :
-- components/admin/common/AdminSection.tsx
-- components/system/SystemConsoleShell.tsx
 - lib/constants/app.ts
 
 추가 파일 목록 :
-- docs/system-home-card-section-0.11.34.md
+- docs/admin-modal-standardization-audit-0.11.35.md
 
 삭제 파일 목록 :
 없음
