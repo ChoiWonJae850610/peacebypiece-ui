@@ -1,21 +1,18 @@
 Version :
-0.12.25
+0.12.26
 
 Summary :
-tldraw 고급 그리기 개발 플래그와 의존성 정식화
+tldraw 고급 그리기 타입 오류 보정
 
 Description :
-tldraw를 package.json dependency로 정식 포함하고, 고급 그리기 메뉴를 development runtimeMode와 NEXT_PUBLIC_ENABLE_TLDRAW_POC=true 조건에서만 노출하도록 정리했다. 브라우저 bare dynamic import 오류를 줄이기 위해 tldraw dynamic import를 Next 번들러가 해석할 수 있는 구조로 바꾸고, 전역 CSS import를 복원했다.
+고급 그리기 tldraw PoC의 dynamic import component 변환과 editor export 타입을 PoC용 최소 타입 및 runtime guard 기준으로 정리해 build 타입 오류를 보정했다. 고급 그리기 개발 플래그 정책과 기본 native canvas 흐름은 유지했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/runtime/runtimeMode.ts
-- app/layout.tsx
-- package.json
 - components/workorder/drawing/WorkOrderTldrawDrawingModal.tsx
 
 추가 파일 목록 :
-- docs/workorder-tldraw-dev-flag-0.12.25.md
+- docs/workorder-tldraw-type-fix-0.12.26.md
 
 삭제 파일 목록 :
 없음

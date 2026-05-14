@@ -16,20 +16,26 @@ type WorkOrderTldrawDrawingModalProps = {
 };
 
 type OptionalTldrawEditor = {
-  getCurrentPageShapeIds: () => Set<string>;
+  getCurrentPageShapeIds: () => Iterable<unknown>;
   toImage: (
-    shapeIds: string[],
+    shapeIds: readonly unknown[],
     options: { format: "png"; background: boolean; pixelRatio: number },
   ) => Promise<{ blob?: Blob } | undefined>;
 };
 
 type OptionalTldrawComponentProps = {
-  onMount: (editor: OptionalTldrawEditor) => void;
+  onMount: (editor: unknown) => void;
 };
 
 type OptionalTldrawModule = {
   Tldraw: ComponentType<OptionalTldrawComponentProps>;
 };
+
+function isOptionalTldrawEditor(editor: unknown): editor is OptionalTldrawEditor {
+  if (!editor || typeof editor !== "object") return false;
+  const candidate = editor as Record<string, unknown>;
+  return typeof candidate.getCurrentPageShapeIds === "function" && typeof candidate.toImage === "function";
+}
 
 const DRAWING_MIME_TYPE = "image/png";
 const DRAWING_FILE_EXTENSION = "png";
@@ -40,8 +46,8 @@ function createAdvancedDrawingFileName() {
 }
 
 async function importOptionalTldraw(): Promise<OptionalTldrawModule> {
-  const module = await import("tldraw");
-  return { Tldraw: module.Tldraw as ComponentType<OptionalTldrawComponentProps> };
+  const module = (await import("tldraw")) as unknown as OptionalTldrawModule;
+  return { Tldraw: module.Tldraw };
 }
 
 export default function WorkOrderTldrawDrawingModal({
@@ -83,8 +89,8 @@ export default function WorkOrderTldrawDrawingModal({
   const handleSave = async () => {
     const editor = editorRef.current;
     if (!editor || saving) return;
-    const shapeIds = editor.getCurrentPageShapeIds();
-    if (shapeIds.size === 0) {
+    const shapeIds = [...editor.getCurrentPageShapeIds()];
+    if (shapeIds.length === 0) {
       setErrorMessage(ui.emptyCanvasMessage);
       return;
     }
@@ -92,7 +98,7 @@ export default function WorkOrderTldrawDrawingModal({
     setErrorMessage("");
     setSaving(true);
     try {
-      const result = await editor.toImage([...shapeIds], {
+      const result = await editor.toImage(shapeIds, {
         format: "png",
         background: true,
         pixelRatio: 2,
@@ -157,7 +163,11 @@ export default function WorkOrderTldrawDrawingModal({
           <div className="h-[58dvh] min-h-[420px] overflow-hidden rounded-2xl border border-[var(--pbp-border)] bg-white sm:h-[64dvh]">
             {TldrawComponent ? (
               createElement(TldrawComponent, {
-                onMount: (editor: OptionalTldrawEditor) => {
+                onMount: (editor: unknown) => {
+                  if (!isOptionalTldrawEditor(editor)) {
+                    setErrorMessage(ui.exportFailedMessage);
+                    return;
+                  }
                   editorRef.current = editor;
                   setEditorReady(true);
                 },
