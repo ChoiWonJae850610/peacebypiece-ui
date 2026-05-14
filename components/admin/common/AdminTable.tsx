@@ -37,24 +37,24 @@ export default function AdminTable<TItem>({
 }: AdminTableProps<TItem>) {
   const gridStyle = gridTemplateColumns ? { gridTemplateColumns } : undefined;
   const baseRowClassName = rowBaseClassName ?? "grid w-full gap-2 px-3 py-3 text-left text-[11px] md:gap-3 md:px-4 md:py-2 md:items-center";
-  const tableHeaderClassName = headerClassName ?? "hidden gap-3 bg-stone-50 px-4 py-2 text-[10px] font-semibold text-stone-500 md:grid";
+  const tableHeaderClassName = headerClassName ?? "hidden gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] md:grid";
 
   return (
-    <div className={["flex min-h-0 flex-1 flex-col overflow-hidden rounded-[22px] border border-stone-200 bg-white", className].filter(Boolean).join(" ")}>
+    <div className={["flex min-h-0 flex-1 flex-col overflow-hidden rounded-[22px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)]", className].filter(Boolean).join(" ")}>
       <div className={tableHeaderClassName} style={gridStyle}>
         {columns.map((column) => (
           <span key={column.key} className={column.headerClassName}>{column.label}</span>
         ))}
       </div>
-      <div className="min-h-0 flex-1 divide-y divide-stone-200 overflow-auto">
+      <div className="min-h-0 flex-1 divide-y divide-[var(--pbp-border)] overflow-auto">
         {isLoading ? (
-          <div className="flex min-h-[240px] items-center justify-center bg-white px-4 py-10 text-center text-sm text-stone-500">{loadingLabel}</div>
+          <div className="flex min-h-[240px] items-center justify-center bg-[var(--pbp-surface)] px-4 py-10 text-center text-sm text-[var(--pbp-text-muted)]">{loadingLabel}</div>
         ) : items.length === 0 ? (
-          <div className="flex min-h-[240px] items-center justify-center bg-white px-4 py-10 text-center text-sm text-stone-500">
+          <div className="flex min-h-[240px] items-center justify-center bg-[var(--pbp-surface)] px-4 py-10 text-center text-sm text-[var(--pbp-text-muted)]">
             <div className="max-w-md">
-              <p className="font-semibold text-stone-600">{emptyLabel}</p>
+              <p className="font-semibold text-[var(--pbp-text-muted)]">{emptyLabel}</p>
               {emptyDescription ? (
-                <p className="mt-1 text-xs leading-5 text-stone-500">{emptyDescription}</p>
+                <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">{emptyDescription}</p>
               ) : null}
               {emptyAction ? <div className="mt-3">{emptyAction}</div> : null}
             </div>
@@ -79,7 +79,7 @@ export default function AdminTable<TItem>({
                       onRowClick(item);
                     }
                   }}
-                  className={[mergedRowClassName, "cursor-pointer focus:outline-none focus:ring-2 focus:ring-stone-300"].join(" ")}
+                  className={[mergedRowClassName, "cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--pbp-focus-ring)]"].join(" ")}
                   style={gridStyle}
                 >
                   {cells}

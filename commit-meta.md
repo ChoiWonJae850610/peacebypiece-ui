@@ -1,21 +1,27 @@
 Version :
-0.12.13
+0.12.14
 
 Summary :
-관리자 홈 환경설정 멤버관리 semantic class 1차 정리
+저장소 관리 semantic class 정리와 Cold Winter 대비 보정
 
 Description :
-관리자 홈 운영 카드, 대기 현황, 환경설정 허브, 멤버관리 주요 카드와 탭의 직접 색상 class 일부를 공통 semantic class와 theme variable 기반 class로 정리했다. 상태 의미색은 AdminStatusBadge tone과 기존 status 계열 표현을 유지하고, DB/R2/첨부/휴지통/purge 흐름은 변경하지 않았다.
+저장소 관리 화면의 파일 요약, 작업지시서 저장소, 파일 목록, 휴지통 목록과 상세 모달의 직접 색상 class를 semantic class와 theme variable 기반으로 정리했다. default-light와 구분이 약했던 cold-winter 테마의 배경, surface, border, modal, field 계열 값을 더 차가운 블루 그레이 톤으로 보정했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- components/admin/dashboard/AdminConsoleSections.tsx
-- components/admin/dashboard/AdminOperationsDashboard.tsx
-- components/admin/settings/AdminSettingsHub.tsx
-- components/admin/members/AdminMemberManagementDashboard.tsx
+- lib/theme/themes/coldWinter.ts
+- components/admin/common/adminSemanticClassNames.ts
+- components/admin/common/AdminTable.tsx
+- components/admin/files/FileListSection.tsx
+- components/admin/files/FileStorageSummary.tsx
+- components/admin/files/FileTrashSection.tsx
+- components/admin/files/WorkOrderStorageSection.tsx
+- components/admin/files/fileTrashSectionColumns.tsx
+- components/admin/files/fileTrashSectionModals.tsx
+- components/admin/files/fileTrashSectionPresentation.tsx
 
 추가 파일 목록 :
-- components/admin/common/adminSemanticClassNames.ts
+없음
 
 삭제 파일 목록 :
 없음

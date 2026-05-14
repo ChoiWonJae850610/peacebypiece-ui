@@ -2,6 +2,14 @@
 
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminModal } from "@/components/admin/layout/AdminModal";
+import {
+  ADMIN_STORAGE_DANGER_BOX_CLASS,
+  ADMIN_STORAGE_MUTED_TEXT_CLASS,
+  ADMIN_STORAGE_SUBTLE_BOX_CLASS,
+  ADMIN_STORAGE_SUBTLE_TEXT_CLASS,
+  ADMIN_STORAGE_VALUE_CLASS,
+  ADMIN_STORAGE_WARNING_BOX_CLASS,
+} from "@/components/admin/common/adminSemanticClassNames";
 import type { AdminStorageWorkOrderItem } from "@/lib/admin/files/types";
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import {
@@ -59,7 +67,7 @@ export function EmptyTrashConfirmModal({
         </div>
       }
     >
-      <p className="text-sm font-medium text-stone-700">
+      <p className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} text-sm font-medium`}>
         {t(
           "filesList.emptyTrashConfirmDescription",
           "휴지통의 모든 항목을 삭제 요청하시겠습니까?",
@@ -125,11 +133,11 @@ export function TrashSelectionConfirmModal({
     >
       {summary ? (
         <div className="space-y-4">
-          <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
-            <p className="text-xs font-semibold text-stone-900">
+          <div className={`${ADMIN_STORAGE_SUBTLE_BOX_CLASS} px-4 py-3`}>
+            <p className={`${ADMIN_STORAGE_VALUE_CLASS} text-xs font-semibold`}>
               {summary.summaryLabel}
             </p>
-            <p className="mt-1 text-xs leading-5 text-stone-500">
+            <p className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} mt-1 text-xs leading-5`}>
               {isPurge
                 ? t(
                     "filesList.selectionConfirm.purgeQuestion",
@@ -142,7 +150,7 @@ export function TrashSelectionConfirmModal({
             </p>
           </div>
           {summary.skippedCount > 0 ? (
-            <p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800">
+            <p className={`${ADMIN_STORAGE_WARNING_BOX_CLASS} px-4`}>
               {t(
                 "filesList.selectionConfirm.skippedNotice",
                 "처리할 수 없는 선택 항목 {count}개는 제외합니다.",
@@ -150,7 +158,7 @@ export function TrashSelectionConfirmModal({
             </p>
           ) : null}
           {isPurge ? (
-            <p className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs leading-5 text-rose-700">
+            <p className={ADMIN_STORAGE_DANGER_BOX_CLASS}>
               {t(
                 "filesList.selectionConfirm.purgePolicyNotice",
                 "삭제는 고객관리자 삭제 요청으로 처리되며, 실제 파일 삭제는 시스템관리자 처리 단계에서 진행합니다.",
@@ -236,11 +244,11 @@ export function WorkOrderActionPreviewModal({
     >
       {actionPreview && previewWorkOrder ? (
         <div className="space-y-4">
-          <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
-            <p className="text-xs font-semibold text-stone-900">
+          <div className={`${ADMIN_STORAGE_SUBTLE_BOX_CLASS} px-4 py-3`}>
+            <p className={`${ADMIN_STORAGE_VALUE_CLASS} text-xs font-semibold`}>
               {previewWorkOrder.title}
             </p>
-            <p className="mt-1 text-xs text-stone-500">
+            <p className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} mt-1 text-xs`}>
               {getLocalizedWorkOrderStageLabel(previewWorkOrder.statusLabel, t)}{" "}
               · {t("filesList.columns.deletedAt", "삭제일시")}{" "}
               {previewWorkOrder.deletedAt || "-"}
@@ -275,14 +283,14 @@ export function WorkOrderActionPreviewModal({
             />
           </div>
 
-          <div className="space-y-2 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800">
+          <div className={`${ADMIN_STORAGE_WARNING_BOX_CLASS} space-y-2 px-4`}>
             <p className="font-semibold">
               {t(
                 "filesList.workorderActionGuardTitle",
                 "작업지시서 단위로 처리 범위를 확인합니다.",
               )}
             </p>
-            <p className="text-[11px] text-amber-700">
+            <p className="text-[11px] text-[var(--pbp-status-warning)]">
               {intent === "restore"
                 ? t(
                     "filesList.workorderRestoreConnectedNotice",
@@ -313,9 +321,9 @@ export function WorkOrderActionPreviewModal({
 
 function PreviewStatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2">
-      <p className="text-[10px] font-semibold text-stone-400">{label}</p>
-      <p className="mt-1 text-[11px] font-medium text-stone-700">{value}</p>
+    <div className={`${ADMIN_STORAGE_SUBTLE_BOX_CLASS} px-3 py-2`}>
+      <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] font-semibold`}>{label}</p>
+      <p className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} mt-1 text-[11px] font-medium`}>{value}</p>
     </div>
   );
 }
@@ -418,7 +426,7 @@ export function TrashDetailModal({
 function TrashDetailContent({ row, t }: { row: UnifiedTrashRow; t: AdminT }) {
   return (
     <div className="space-y-4">
-      <div className="flex items-start gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-3 py-3 sm:px-4">
+      <div className={`${ADMIN_STORAGE_SUBTLE_BOX_CLASS} flex items-start gap-3 px-3 py-3 sm:px-4`}>
         <TrashItemVisual
           label={row.visualLabel}
           tone={row.visualTone}
@@ -430,13 +438,13 @@ function TrashDetailContent({ row, t }: { row: UnifiedTrashRow; t: AdminT }) {
         />
         <div className="min-w-0">
           <p
-            className="truncate text-[13px] font-medium text-stone-700"
+            className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} truncate text-[13px] font-medium`}
             title={row.targetLabel}
           >
             {row.targetLabel}
           </p>
           <p
-            className="mt-1 truncate text-xs text-stone-500"
+            className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} mt-1 truncate text-xs`}
             title={row.workorderTitle}
           >
             {row.workorderTitle}
@@ -449,7 +457,7 @@ function TrashDetailContent({ row, t }: { row: UnifiedTrashRow; t: AdminT }) {
           href={row.previewUrl}
           target="_blank"
           rel="noreferrer"
-          className="block rounded-2xl border border-stone-200 bg-white px-4 py-3 text-xs font-medium text-stone-600 shadow-sm transition hover:bg-stone-50"
+          className="block rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3 text-xs font-medium text-[var(--pbp-text-muted)] shadow-sm transition hover:bg-[var(--pbp-surface-muted)]"
         >
           {t("filesList.detail.openPreview", "파일 미리보기 열기")}
         </a>
@@ -462,13 +470,13 @@ function TrashDetailContent({ row, t }: { row: UnifiedTrashRow; t: AdminT }) {
         {getTrashDetailFields(row, t).map(([label, value]) => (
           <div
             key={label}
-            className="rounded-2xl border border-stone-200 bg-white px-4 py-3"
+            className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3"
           >
-            <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-stone-400">
+            <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] font-medium uppercase tracking-[0.12em]`}>
               {label}
             </p>
             <p
-              className="mt-1 truncate text-sm font-normal text-stone-600"
+              className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} mt-1 truncate text-sm font-normal`}
               title={value}
             >
               {value}
@@ -476,7 +484,7 @@ function TrashDetailContent({ row, t }: { row: UnifiedTrashRow; t: AdminT }) {
           </div>
         ))}
       </div>
-      <p className="rounded-2xl bg-stone-50 px-4 py-3 text-xs leading-5 text-stone-500">
+      <p className="rounded-2xl bg-[var(--pbp-surface-muted)] px-4 py-3 text-xs leading-5 text-[var(--pbp-text-muted)]">
         {row.kind === "workorder"
           ? t(
               "filesList.detail.workorderActionHint",

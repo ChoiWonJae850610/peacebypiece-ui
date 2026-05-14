@@ -1,6 +1,15 @@
 "use client";
 
 import { AdminButton } from "@/components/admin/common/AdminButton";
+import {
+  ADMIN_STORAGE_CARD_CLASS,
+  ADMIN_STORAGE_CARD_MUTED_CLASS,
+  ADMIN_STORAGE_LABEL_CLASS,
+  ADMIN_STORAGE_MUTED_TEXT_CLASS,
+  ADMIN_STORAGE_SUBTLE_BOX_CLASS,
+  ADMIN_STORAGE_SUBTLE_TEXT_CLASS,
+  ADMIN_STORAGE_VALUE_CLASS,
+} from "@/components/admin/common/adminSemanticClassNames";
 import type {
   AdminFileTypeDistributionItem,
   AdminFileUsageCard,
@@ -94,19 +103,19 @@ function StorageCylinder({ percent }: { percent: number }) {
   const safePercent = Math.min(100, Math.max(0, percent));
   return (
     <div className="relative mx-auto mt-3 h-[94px] w-[96px]" aria-hidden="true">
-      <div className="absolute inset-x-3 bottom-0 h-[74px] overflow-hidden rounded-b-[24px] border-x border-b border-stone-300 bg-white shadow-inner">
+      <div className="absolute inset-x-3 bottom-0 h-[74px] overflow-hidden rounded-b-[24px] border-x border-b border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] shadow-inner">
         <div
           className="absolute inset-x-0 bottom-0 rounded-b-[28px] bg-[var(--admin-theme-surface)]/20"
           style={{ height: `${Math.max(6, safePercent)}%` }}
         />
       </div>
-      <div className="absolute inset-x-3 top-0 h-8 rounded-[50%] border border-stone-300 bg-white shadow-sm" />
+      <div className="absolute inset-x-3 top-0 h-8 rounded-[50%] border border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] shadow-sm" />
       <div
         className="absolute inset-x-3 rounded-[50%] border border-[var(--admin-theme-surface)] bg-[var(--admin-theme-surface)]/20"
         style={{ bottom: `${Math.max(0, Math.min(66, safePercent * 0.66))}px`, height: 32 }}
       />
       <div className="absolute inset-0 flex items-center justify-center pt-2">
-        <span className="rounded-full bg-white/90 px-2.5 py-1 text-sm font-bold text-stone-950 shadow-sm">
+        <span className="rounded-full bg-[var(--pbp-surface)]/90 px-2.5 py-1 text-sm font-bold text-[var(--pbp-text-primary)] shadow-sm">
           {safePercent}%
         </span>
       </div>
@@ -131,18 +140,18 @@ function PlanUsageCard({
   const isCaution = hasPlanLimit && usageSummary.statusTone === "caution";
 
   return (
-    <div className="flex h-full min-h-[190px] flex-col rounded-[20px] border border-stone-200 bg-gradient-to-b from-white to-stone-50 px-4 py-4 md:min-h-[210px] md:rounded-[24px] md:px-6 md:py-5">
+    <div className={`${ADMIN_STORAGE_CARD_MUTED_CLASS} flex h-full min-h-[190px] flex-col px-4 py-4 md:min-h-[210px] md:px-6 md:py-5`}>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
         <div className="min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">
+          <p className={ADMIN_STORAGE_LABEL_CLASS}>
             {t("filesSummary.storagePlanLabel", "요금제 용량")}
           </p>
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
-            <span className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1 text-xs font-bold text-white">
+            <span className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1 text-xs font-bold text-[var(--pbp-action-primary-text)]">
               {planName}
             </span>
             <span
-              className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${isDanger ? "bg-red-100 text-red-700" : isCaution ? "bg-amber-100 text-amber-900" : "bg-stone-950 text-white"}`}
+              className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${isDanger ? "bg-[var(--pbp-status-danger-soft)] text-[var(--pbp-status-danger)]" : isCaution ? "bg-[var(--pbp-status-warning-soft)] text-[var(--pbp-status-warning)]" : "bg-[var(--pbp-action-primary-surface)] text-[var(--pbp-action-primary-text)]"}`}
             >
               {statusLabel}
             </span>
@@ -160,17 +169,17 @@ function PlanUsageCard({
       <StorageCylinder percent={hasPlanLimit ? usageSummary.usagePercent : 0} />
 
       <div className="mt-3 text-center">
-        <p className="text-lg font-bold tracking-tight text-stone-950">
+        <p className={`${ADMIN_STORAGE_VALUE_CLASS} text-lg tracking-tight`}>
           {hasPlanLimit ? `${usageSummary.usedLabel} / ${usageSummary.limitLabel}` : t("filesSummary.planCapacityLoading", "요금제 용량 확인 중")}
         </p>
-        <p className="mt-0.5 text-[11px] font-semibold text-stone-500">
+        <p className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} mt-0.5 text-[11px] font-semibold`}>
           {hasPlanLimit ? `${usedGbLabel} ${t("filesSummary.usedSuffix", "사용")} · ${remainingLabel} ${t("filesSummary.remainingSuffix", "남음")}` : t("filesSummary.planCapacityLoadingDescription", "고객 정보의 요금제 용량을 불러오는 중")}
         </p>
       </div>
 
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white shadow-inner">
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[var(--pbp-surface)] shadow-inner">
         <div
-          className={`h-full rounded-full ${isDanger ? "bg-red-500" : isCaution ? "bg-amber-400" : "bg-[var(--admin-theme-surface)]"}`}
+          className={`h-full rounded-full ${isDanger ? "bg-[var(--pbp-status-danger)]" : isCaution ? "bg-[var(--pbp-status-warning)]" : "bg-[var(--admin-theme-surface)]"}`}
           style={{ width: `${hasPlanLimit ? Math.min(100, Math.max(0, usageSummary.usagePercent)) : 0}%` }}
         />
       </div>
@@ -181,31 +190,31 @@ function PlanUsageCard({
 function FileOperationsCard({ items }: { items: FileStatusItem[] }) {
   const t = useAdminTranslation();
   return (
-    <div className="flex h-full min-h-[190px] flex-col rounded-[20px] border border-stone-200 bg-white px-4 py-4 md:min-h-[210px] md:rounded-[24px] md:px-6 md:py-5">
+    <div className={`${ADMIN_STORAGE_CARD_CLASS} flex h-full min-h-[190px] flex-col px-4 py-4 md:min-h-[210px] md:px-6 md:py-5`}>
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">
+        <p className={ADMIN_STORAGE_LABEL_CLASS}>
           {t("filesSummary.fileOperationsLabel", "파일 운영")}
         </p>
-        <h3 className="mt-1 text-sm font-bold text-stone-950">{t("filesSummary.fileOperationsTitle", "파일 운영 요약")}</h3>
+        <h3 className={`${ADMIN_STORAGE_VALUE_CLASS} mt-1 text-sm`}>{t("filesSummary.fileOperationsTitle", "파일 운영 요약")}</h3>
       </div>
       <div className="mt-4 grid flex-1 content-center gap-2.5">
         {items.map((item) => (
           <div
             key={item.label}
-            className="flex items-center justify-between gap-3 rounded-2xl bg-stone-50 px-4 py-3"
+            className={`${ADMIN_STORAGE_SUBTLE_BOX_CLASS} flex items-center justify-between gap-3 px-4 py-3`}
           >
             <div className="min-w-0">
-              <p className="truncate text-[13px] font-semibold text-stone-800" title={item.label}>
+              <p className={`${ADMIN_STORAGE_VALUE_CLASS} truncate text-[13px] font-semibold`} title={item.label}>
                 {item.label}
               </p>
               {item.description ? (
-                <p className="mt-0.5 truncate text-[11px] text-stone-500" title={item.description}>
+                <p className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} mt-0.5 truncate text-[11px]`} title={item.description}>
                   {item.description}
                 </p>
               ) : null}
             </div>
             <span
-              className={`shrink-0 text-sm font-bold ${item.tone === "danger" ? "text-red-600" : item.tone === "caution" ? "text-amber-700" : "text-stone-950"}`}
+              className={`shrink-0 text-sm font-bold ${item.tone === "danger" ? "text-[var(--pbp-status-danger)]" : item.tone === "caution" ? "text-[var(--pbp-status-warning)]" : "text-[var(--pbp-text-primary)]"}`}
             >
               {item.value}
             </span>
@@ -236,17 +245,17 @@ function DonutChart({
   let offset = 0;
 
   return (
-    <div className="flex h-full min-h-[190px] flex-col rounded-[20px] border border-stone-200 bg-white px-4 py-4 md:min-h-[210px] md:rounded-[24px] md:px-6 md:py-5">
+    <div className={`${ADMIN_STORAGE_CARD_CLASS} flex h-full min-h-[190px] flex-col px-4 py-4 md:min-h-[210px] md:px-6 md:py-5`}>
       <div className="flex shrink-0 items-start justify-between gap-3">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">
+          <p className={ADMIN_STORAGE_LABEL_CLASS}>
             {t("filesSummary.fileTypeLabel", "파일 유형")}
           </p>
-          <h3 className="mt-1 text-sm font-bold text-stone-950">
+          <h3 className={`${ADMIN_STORAGE_VALUE_CLASS} mt-1 text-sm`}>
             {t("filesSummary.fileType", "파일 유형")}
           </h3>
         </div>
-        <span className="rounded-full bg-stone-100 px-2.5 py-1 text-xs font-bold text-stone-700">
+        <span className="rounded-full bg-[var(--pbp-surface-muted)] px-2.5 py-1 text-xs font-bold text-[var(--pbp-text-muted)]">
           {formatCountWithUnit(total, t)}
         </span>
       </div>
@@ -262,7 +271,7 @@ function DonutChart({
               cy="56"
               r={radius}
               fill="none"
-              stroke="rgb(231 229 228)"
+              stroke="var(--pbp-border)"
               strokeWidth="12"
             />
             {total > 0
@@ -287,10 +296,10 @@ function DonutChart({
                         index === 0
                           ? "text-[var(--admin-theme-surface)]"
                           : index === 1
-                            ? "text-stone-500"
+                            ? "text-[var(--pbp-text-muted)]"
                             : index === 2
-                              ? "text-stone-300"
-                              : "text-stone-200"
+                              ? "text-[var(--pbp-border-strong)]"
+                              : "text-[var(--pbp-border)]"
                       }
                     />
                   );
@@ -298,27 +307,27 @@ function DonutChart({
               : null}
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-            <span className="text-lg font-bold text-stone-950">{total}</span>
-            <span className="text-[10px] font-semibold text-stone-400">{t("filesSummary.totalLabel", "전체")}</span>
+            <span className={`${ADMIN_STORAGE_VALUE_CLASS} text-lg`}>{total}</span>
+            <span className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] font-semibold`}>{t("filesSummary.totalLabel", "전체")}</span>
           </div>
         </div>
         <div className="min-w-0 flex-[0.85] space-y-2">
           {normalizedItems.map((item, index) => (
             <div key={item.label} className="min-w-0">
               <div className="flex items-center justify-between gap-2 text-xs">
-                <span className="flex min-w-0 items-center gap-2 font-semibold text-stone-700">
+                <span className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} flex min-w-0 items-center gap-2 font-semibold`}>
                   <span
-                    className={`h-2 w-2 shrink-0 rounded-full ${index === 0 ? "bg-[var(--admin-theme-surface)]" : index === 1 ? "bg-stone-500" : index === 2 ? "bg-stone-300" : "bg-stone-200"}`}
+                    className={`h-2 w-2 shrink-0 rounded-full ${index === 0 ? "bg-[var(--admin-theme-surface)]" : index === 1 ? "bg-[var(--pbp-text-muted)]" : index === 2 ? "bg-[var(--pbp-border-strong)]" : "bg-[var(--pbp-border)]"}`}
                   />
                   <span className="truncate" title={item.label}>{item.label}</span>
                 </span>
-                <span className="shrink-0 font-bold text-stone-950">
+                <span className={`${ADMIN_STORAGE_VALUE_CLASS} shrink-0 font-bold`}>
                   {formatCountWithUnit(item.value, t)} · {item.percent}%
                 </span>
               </div>
-              <div className="mt-1 h-1.5 max-w-[360px] overflow-hidden rounded-full bg-stone-100">
+              <div className="mt-1 h-1.5 max-w-[360px] overflow-hidden rounded-full bg-[var(--pbp-surface-muted)]">
                 <div
-                  className={index === 0 ? "h-full rounded-full bg-[var(--admin-theme-surface)]" : index === 1 ? "h-full rounded-full bg-stone-500" : "h-full rounded-full bg-stone-300"}
+                  className={index === 0 ? "h-full rounded-full bg-[var(--admin-theme-surface)]" : index === 1 ? "h-full rounded-full bg-[var(--pbp-text-muted)]" : "h-full rounded-full bg-[var(--pbp-border-strong)]"}
                   style={{ width: `${Math.max(2, item.percent)}%` }}
                 />
               </div>

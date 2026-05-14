@@ -4,17 +4,22 @@ import { useState } from "react";
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { formatAdminTermCount } from "@/lib/i18n/adminTermFormatters";
 import { WORKORDER_STAGE_STEPS, getWorkOrderStageIndex } from "@/components/admin/files/fileTrashSectionRows";
+import {
+  ADMIN_STORAGE_MUTED_TEXT_CLASS,
+  ADMIN_STORAGE_SUBTLE_BOX_CLASS,
+  ADMIN_STORAGE_SUBTLE_TEXT_CLASS,
+} from "@/components/admin/common/adminSemanticClassNames";
 
 export const TRASH_ACTION_BUTTON_BASE =
   "rounded-full border px-3 py-1.5 text-xs font-semibold transition";
 export const TRASH_ACTION_BUTTON_NEUTRAL_ENABLED =
-  "border-stone-300 bg-white text-stone-700 shadow-sm hover:bg-stone-50";
+  "border-[var(--pbp-border-strong)] bg-[var(--pbp-action-secondary-surface)] text-[var(--pbp-action-secondary-text)] shadow-sm hover:bg-[var(--pbp-action-secondary-surface-hover)]";
 export const TRASH_ACTION_BUTTON_DANGER_ENABLED =
-  "border-red-200 bg-white text-red-600 shadow-sm hover:bg-red-50";
+  "border-[var(--pbp-action-danger-soft-border)] bg-[var(--pbp-action-secondary-surface)] text-[var(--pbp-action-danger-soft-text)] shadow-sm hover:bg-[var(--pbp-action-danger-soft-surface)]";
 export const TRASH_ACTION_BUTTON_DANGER_SOLID_ENABLED =
-  "border-red-600 bg-red-600 text-white shadow-sm hover:bg-red-700";
+  "border-[var(--pbp-action-danger-surface)] bg-[var(--pbp-action-danger-surface)] text-[var(--pbp-action-danger-text)] shadow-sm hover:bg-[var(--pbp-action-danger-surface-hover)]";
 export const TRASH_ACTION_BUTTON_DISABLED =
-  "border-stone-200 bg-stone-50 text-stone-400";
+  "border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-subtle)]";
 
 export function getTrashActionButtonClassName(
   isEnabled: boolean,
@@ -63,17 +68,17 @@ export function WorkOrderStageInline({
   const currentIndex = getWorkOrderStageIndex(statusLabel);
 
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white px-4 py-3">
+    <div className={`${ADMIN_STORAGE_SUBTLE_BOX_CLASS} px-4 py-3`}>
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-stone-400">
+          <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] font-medium uppercase tracking-[0.12em]`}>
             {t("filesList.workorderStage.currentStage", "현재 단계")}
           </p>
-          <p className="mt-1 text-sm font-medium text-stone-700">
+          <p className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} mt-1 text-sm font-medium`}>
             {getLocalizedWorkOrderStageLabel(statusLabel, t)}
           </p>
         </div>
-        <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-medium text-stone-500">
+        <span className="rounded-full bg-[var(--pbp-surface-muted)] px-2.5 py-1 text-[11px] font-medium text-[var(--pbp-text-muted)]">
           {t("filesList.workorderStage.deletedAtStage", "삭제 당시")}
         </span>
       </div>
@@ -86,15 +91,15 @@ export function WorkOrderStageInline({
               <div
                 className={`h-1.5 rounded-full ${
                   isActive
-                    ? "bg-stone-950"
+                    ? "bg-[var(--pbp-action-primary-surface)]"
                     : isPassed
-                      ? "bg-stone-400"
-                      : "bg-stone-200"
+                      ? "bg-[var(--pbp-border-strong)]"
+                      : "bg-[var(--pbp-border)]"
                 }`}
               />
               <p
                 className={`mt-1 truncate text-center text-[10px] font-medium ${
-                  isActive ? "text-stone-800" : "text-stone-400"
+                  isActive ? "text-[var(--pbp-text-primary)]" : "text-[var(--pbp-text-subtle)]"
                 }`}
                 title={t(`filesList.workorderStage.steps.${step.key}`, step.label)}
               >
@@ -125,17 +130,17 @@ export function TrashItemVisual({
   const sizeClass = compact ? "h-7 w-7 text-[8px]" : "h-10 w-10 text-[9px]";
   const toneClass =
     tone === "workorder"
-      ? "border-stone-300 bg-stone-900 text-white"
+      ? "border-[var(--pbp-action-primary-surface)] bg-[var(--pbp-action-primary-surface)] text-[var(--pbp-action-primary-text)]"
       : tone === "image"
-        ? "border-purple-100 bg-purple-50 text-purple-700"
+        ? "border-[var(--pbp-accent-border)] bg-[var(--pbp-accent-soft)] text-[var(--pbp-accent)]"
         : tone === "pdf"
-          ? "border-red-100 bg-red-50 text-red-600"
-          : "border-stone-200 bg-stone-50 text-stone-600";
+          ? "border-[var(--pbp-action-danger-soft-border)] bg-[var(--pbp-action-danger-soft-surface)] text-[var(--pbp-action-danger-soft-text)]"
+          : "border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-muted)]";
 
   if (tone === "image" && thumbnailUrl && !hasPreviewError) {
     return (
       <span
-        className={`flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-stone-200 bg-stone-50 ${sizeClass} shadow-sm`}
+        className={`flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] ${sizeClass} shadow-sm`}
         aria-hidden="true"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -3,6 +3,18 @@
 import AdminActionBar from "@/components/admin/common/AdminActionBar";
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import {
+  ADMIN_SELECT_INPUT_CLASS,
+  ADMIN_STORAGE_CHECKBOX_CLASS,
+  ADMIN_STORAGE_CHECKBOX_IDLE_CLASS,
+  ADMIN_STORAGE_CHECKBOX_SELECTED_CLASS,
+  ADMIN_STORAGE_PANEL_CLASS,
+  ADMIN_STORAGE_ROW_CLASS,
+  ADMIN_STORAGE_SELECTED_ROW_CLASS,
+  ADMIN_STORAGE_SUBTLE_TEXT_CLASS,
+  ADMIN_STORAGE_MUTED_TEXT_CLASS,
+  ADMIN_STORAGE_VALUE_CLASS,
+} from "@/components/admin/common/adminSemanticClassNames";
 import AdminTable from "@/components/admin/common/AdminTable";
 import { ADMIN_FILE_SORT_OPTIONS } from "@/lib/admin/files/presentation";
 import type { AdminFileSortKey, AdminManagedFileItem } from "@/lib/admin/files/types";
@@ -28,12 +40,12 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
   const allSelected = items.length > 0 && selectedItemIds.length === items.length;
 
   return (
-    <section className="flex h-full min-h-[420px] flex-col rounded-[20px] border border-stone-200 bg-white p-2.5 shadow-sm md:rounded-[24px] md:p-4">
+    <section className={`${ADMIN_STORAGE_PANEL_CLASS} flex h-full min-h-[420px] flex-col p-2.5 md:p-4`}>
       <AdminActionBar
         title={t("filesList.title", `${t("terms.files.documentDesignGroup", "문서/디자인")} 목록`)}
         actionsClassName="w-full [&>button]:flex-1 [&>select]:min-w-0 [&>select]:flex-1 sm:w-auto sm:[&>button]:flex-none sm:[&>select]:flex-none"
       >
-        <select value={sortKey} onChange={(event) => onChangeSort(event.target.value as AdminFileSortKey)} className="rounded-full border border-stone-300 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-700 shadow-sm">
+        <select value={sortKey} onChange={(event) => onChangeSort(event.target.value as AdminFileSortKey)} className={ADMIN_SELECT_INPUT_CLASS}>
           {ADMIN_FILE_SORT_OPTIONS.map((option) => (
             <option key={option.key} value={option.key}>{t(`filesList.sort.${option.key}`, option.label)}</option>
           ))}
@@ -59,7 +71,7 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
         onRowClick={(item) => onToggleItem(item.id)}
         rowClassName={(item) => {
           const isSelected = selectedItemIds.includes(item.id);
-          return `transition ${isSelected ? "bg-stone-100" : "bg-white hover:bg-stone-50"}`;
+          return `transition ${isSelected ? ADMIN_STORAGE_SELECTED_ROW_CLASS : ADMIN_STORAGE_ROW_CLASS}`;
         }}
         columns={[
           {
@@ -67,7 +79,7 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
             label: t("filesList.columns.select", "선택"),
             render: (item) => {
               const isSelected = selectedItemIds.includes(item.id);
-              return <span className={`flex h-4 w-4 items-center justify-center rounded border text-[10px] ${isSelected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-300 bg-white text-transparent"}`}>✓</span>;
+              return <span className={`${ADMIN_STORAGE_CHECKBOX_CLASS} ${isSelected ? ADMIN_STORAGE_CHECKBOX_SELECTED_CLASS : ADMIN_STORAGE_CHECKBOX_IDLE_CLASS}`}>✓</span>;
             },
           },
           {
@@ -75,24 +87,24 @@ export default function FileListSection({ items, selectedItemIds, sortKey, onCha
             label: t("filesList.columns.workorder", `${t("terms.workOrder.singular", "작업지시서")}명`),
             render: (item) => (
               <div className="min-w-0">
-                <p className="text-[10px] text-stone-400 md:hidden">{t("filesList.columns.workorder", `${t("terms.workOrder.singular", "작업지시서")}명`)}</p>
-                <p className="truncate font-semibold text-stone-950">{item.workorderTitle}</p>
+                <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] md:hidden`}>{t("filesList.columns.workorder", `${t("terms.workOrder.singular", "작업지시서")}명`)}</p>
+                <p className={`${ADMIN_STORAGE_VALUE_CLASS} truncate font-semibold`}>{item.workorderTitle}</p>
               </div>
             ),
           },
-          { key: "createdAt", label: t("filesList.columns.createdAt", "생성일자"), render: (item) => <p className="text-[11px] text-stone-600">{item.uploadedAt}</p> },
+          { key: "createdAt", label: t("filesList.columns.createdAt", "생성일자"), render: (item) => <p className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} text-[11px]`}>{item.uploadedAt}</p> },
           {
             key: "fileName",
             label: t("filesList.columns.fileName", "파일명"),
             render: (item) => (
               <div className="min-w-0">
-                <p className="text-[10px] text-stone-400 md:hidden">{t("filesList.columns.fileName", "파일명")}</p>
-                <p className="truncate text-[11px] text-stone-700">{item.fileName}</p>
+                <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] md:hidden`}>{t("filesList.columns.fileName", "파일명")}</p>
+                <p className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} truncate text-[11px]`}>{item.fileName}</p>
               </div>
             ),
           },
           { key: "type", label: t("filesList.columns.type", "유형"), render: (item) => <AdminStatusBadge size="xs" tone="neutral">{item.fileType}</AdminStatusBadge> },
-          { key: "size", label: t("filesList.columns.size", "용량"), render: (item) => <p className="text-[11px] text-stone-600">{item.fileSizeLabel}</p> },
+          { key: "size", label: t("filesList.columns.size", "용량"), render: (item) => <p className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} text-[11px]`}>{item.fileSizeLabel}</p> },
         ]}
       />
     </section>

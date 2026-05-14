@@ -3,6 +3,13 @@
 import type { AdminTableColumn } from "@/lib/admin/common/types";
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import {
+  ADMIN_STORAGE_CHECKBOX_CLASS,
+  ADMIN_STORAGE_CHECKBOX_IDLE_CLASS,
+  ADMIN_STORAGE_CHECKBOX_SELECTED_CLASS,
+  ADMIN_STORAGE_MUTED_TEXT_CLASS,
+  ADMIN_STORAGE_SUBTLE_TEXT_CLASS,
+} from "@/components/admin/common/adminSemanticClassNames";
 import { TrashItemVisual } from "@/components/admin/files/fileTrashSectionPresentation";
 import { ADMIN_TRASH_RESTORE_POLICIES } from "@/lib/admin/files/trashPolicy";
 import {
@@ -45,10 +52,10 @@ function SortableHeader({
     <button
       type="button"
       onClick={() => onSort?.(sortKey)}
-      className="inline-flex w-full items-center justify-center gap-1 rounded px-1 py-0.5 text-center transition hover:bg-stone-100 hover:text-stone-800"
+      className="inline-flex w-full items-center justify-center gap-1 rounded px-1 py-0.5 text-center transition hover:bg-[var(--pbp-surface-soft)] hover:text-[var(--pbp-text-primary)]"
     >
       <span>{label}</span>
-      <span className={isActive ? "text-stone-900" : "text-stone-300"}>
+      <span className={isActive ? "text-[var(--pbp-text-primary)]" : "text-[var(--pbp-text-subtle)]"}>
         {directionLabel}
       </span>
     </button>
@@ -69,7 +76,7 @@ function TrashSelectionControl({
           event.stopPropagation();
           onToggleWorkOrder?.(row.id);
         }}
-        className={`flex h-4 w-4 items-center justify-center rounded border text-[10px] ${row.isSelected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-300 bg-white text-transparent"}`}
+        className={`${ADMIN_STORAGE_CHECKBOX_CLASS} ${row.isSelected ? ADMIN_STORAGE_CHECKBOX_SELECTED_CLASS : ADMIN_STORAGE_CHECKBOX_IDLE_CLASS}`}
         aria-label={
           row.isSelected
             ? t("filesList.deselectWorkOrder", "작업지시서 선택 해제")
@@ -83,7 +90,7 @@ function TrashSelectionControl({
 
   if (row.restorePolicy === ADMIN_TRASH_RESTORE_POLICIES.bundleRequired) {
     return (
-      <span className="flex h-4 w-4 items-center justify-center text-[10px] font-medium text-stone-300">
+      <span className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} flex h-4 w-4 items-center justify-center text-[10px] font-medium`}>
         -
       </span>
     );
@@ -96,7 +103,7 @@ function TrashSelectionControl({
         event.stopPropagation();
         onToggleItem(row.id);
       }}
-      className={`flex h-4 w-4 items-center justify-center rounded border text-[10px] ${row.isSelected ? "border-stone-950 bg-stone-950 text-white" : "border-stone-300 bg-white text-transparent"}`}
+      className={`${ADMIN_STORAGE_CHECKBOX_CLASS} ${row.isSelected ? ADMIN_STORAGE_CHECKBOX_SELECTED_CLASS : ADMIN_STORAGE_CHECKBOX_IDLE_CLASS}`}
       aria-label={
         row.isSelected
           ? t("filesList.deselectItem", "선택 해제")
@@ -120,7 +127,7 @@ function TrashTargetCell({
       className={`flex w-full min-w-0 items-center gap-3 text-left ${row.kind === "workorder" ? "pl-2" : row.isGroupedAttachment ? "pl-5" : "pl-2"}`}
     >
       {row.isGroupedAttachment ? (
-        <span className="shrink-0 text-xs font-medium text-stone-300">└</span>
+        <span className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} shrink-0 text-xs font-medium`}>└</span>
       ) : null}
       <TrashItemVisual
         label={row.visualLabel}
@@ -130,11 +137,11 @@ function TrashTargetCell({
         compact
       />
       <div className="min-w-0 text-left">
-        <p className="text-[10px] text-stone-400 md:hidden">
+        <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] md:hidden`}>
           {t("filesList.columns.target", "대상")}
         </p>
         <p
-          className="truncate text-left text-[13px] font-medium text-stone-700"
+          className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} truncate text-left text-[13px] font-medium`}
           title={row.targetLabel}
         >
           {row.targetLabel}
@@ -158,10 +165,10 @@ function CenterTextCell({
   return (
     <div className="min-w-0 text-center">
       {mobileLabel ? (
-        <p className="text-[10px] text-stone-400 md:hidden">{mobileLabel}</p>
+        <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] md:hidden`}>{mobileLabel}</p>
       ) : null}
       <p
-        className={`truncate text-center text-[12px] ${isStrong ? "font-semibold text-stone-700" : "text-stone-600"}`}
+        className={`truncate text-center text-[12px] ${isStrong ? `font-semibold ${ADMIN_STORAGE_MUTED_TEXT_CLASS}` : ADMIN_STORAGE_MUTED_TEXT_CLASS}`}
         title={title ?? value}
       >
         {value}
@@ -179,9 +186,9 @@ function WorkOrderCell({
 }) {
   return (
     <div className="min-w-0 text-center">
-      <p className="text-[10px] text-stone-400 md:hidden">{mobileLabel}</p>
+      <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] md:hidden`}>{mobileLabel}</p>
       <p
-        className="mx-auto max-w-[220px] truncate text-center text-[12px] font-medium text-stone-700"
+        className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} mx-auto max-w-[220px] truncate text-center text-[12px] font-medium`}
         title={value}
       >
         {value}

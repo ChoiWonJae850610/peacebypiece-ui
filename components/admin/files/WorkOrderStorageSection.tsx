@@ -3,6 +3,15 @@
 import AdminActionBar from "@/components/admin/common/AdminActionBar";
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import AdminTable from "@/components/admin/common/AdminTable";
+import {
+  ADMIN_STORAGE_MUTED_TEXT_CLASS,
+  ADMIN_STORAGE_PANEL_CLASS,
+  ADMIN_STORAGE_PILL_CLASS,
+  ADMIN_STORAGE_SUBTLE_BOX_CLASS,
+  ADMIN_STORAGE_SUBTLE_TEXT_CLASS,
+  ADMIN_STORAGE_VALUE_CLASS,
+  ADMIN_STORAGE_WARNING_BOX_CLASS,
+} from "@/components/admin/common/adminSemanticClassNames";
 import type { AdminStorageWorkOrderItem } from "@/lib/admin/files/types";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { formatAdminTermCount } from "@/lib/i18n/adminTermFormatters";
@@ -41,7 +50,7 @@ export default function WorkOrderStorageSection({
   const trashMemoCount = getTotalCount(items, (item) => item.trashMemoCount);
 
   return (
-    <section className="flex h-full min-h-[420px] flex-col rounded-[20px] border border-stone-200 bg-white p-2.5 shadow-sm md:rounded-[24px] md:p-4">
+    <section className={`${ADMIN_STORAGE_PANEL_CLASS} flex h-full min-h-[420px] flex-col p-2.5 md:p-4`}>
       <AdminActionBar
         title={t("filesWorkOrders.title", "작업지시서 저장소")}
         description={t(
@@ -50,7 +59,7 @@ export default function WorkOrderStorageSection({
         )}
         actionsClassName="w-full [&>button]:w-full sm:w-auto sm:[&>button]:w-auto"
       >
-        <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-600">
+        <span className={ADMIN_STORAGE_PILL_CLASS}>
           {t("filesWorkOrders.trashRetention", "30일 휴지통 보관")}
         </span>
         <AdminButton
@@ -64,7 +73,7 @@ export default function WorkOrderStorageSection({
         </AdminButton>
       </AdminActionBar>
 
-      <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50/70 px-3 py-3 text-xs leading-5 text-amber-800">
+      <div className={`mt-3 ${ADMIN_STORAGE_WARNING_BOX_CLASS}`}>
         <p className="font-semibold">
           {t("filesWorkOrders.restorePolicyNoticeTitle", "복원 정책 확인")}
         </p>
@@ -77,30 +86,30 @@ export default function WorkOrderStorageSection({
       </div>
 
       <div className="mt-3 grid gap-2.5 md:grid-cols-3">
-        <div className="rounded-2xl border border-stone-200 bg-stone-50/70 px-3 py-3">
-          <p className="text-[10px] font-semibold text-stone-500">
+        <div className={`${ADMIN_STORAGE_SUBTLE_BOX_CLASS} px-3 py-3`}>
+          <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] font-semibold`}>
             {t(
               "filesWorkOrders.summary.deletedWorkOrders",
               "삭제한 작업지시서",
             )}
           </p>
-          <p className="mt-1.5 text-lg font-semibold text-stone-950">
+          <p className={`${ADMIN_STORAGE_VALUE_CLASS} mt-1.5 text-lg font-semibold`}>
             {formatCount(deletedWorkOrderCount, t)}
           </p>
         </div>
-        <div className="rounded-2xl border border-stone-200 bg-stone-50/70 px-3 py-3">
-          <p className="text-[10px] font-semibold text-stone-500">
+        <div className={`${ADMIN_STORAGE_SUBTLE_BOX_CLASS} px-3 py-3`}>
+          <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] font-semibold`}>
             {t("filesWorkOrders.summary.trashAttachments", "묶음 문서/디자인")}
           </p>
-          <p className="mt-1.5 text-lg font-semibold text-stone-950">
+          <p className={`${ADMIN_STORAGE_VALUE_CLASS} mt-1.5 text-lg font-semibold`}>
             {formatCount(trashAttachmentCount, t)}
           </p>
         </div>
-        <div className="rounded-2xl border border-stone-200 bg-stone-50/70 px-3 py-3">
-          <p className="text-[10px] font-semibold text-stone-500">
+        <div className={`${ADMIN_STORAGE_SUBTLE_BOX_CLASS} px-3 py-3`}>
+          <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] font-semibold`}>
             {t("filesWorkOrders.summary.trashMemos", "묶음 휴지통 메모")}
           </p>
-          <p className="mt-1.5 text-lg font-semibold text-stone-950">
+          <p className={`${ADMIN_STORAGE_VALUE_CLASS} mt-1.5 text-lg font-semibold`}>
             {formatCount(trashMemoCount, t)}
           </p>
         </div>
@@ -128,13 +137,13 @@ export default function WorkOrderStorageSection({
             ),
             render: (item) => (
               <div className="min-w-0">
-                <p className="text-[10px] text-stone-400 md:hidden">
+                <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] md:hidden`}>
                   {t("filesWorkOrders.columns.title", "작업지시서명")}
                 </p>
-                <p className="truncate font-semibold text-stone-950">
+                <p className={`${ADMIN_STORAGE_VALUE_CLASS} truncate font-semibold`}>
                   {item.title}
                 </p>
-                <p className="mt-1 truncate text-[10px] text-stone-400">
+                <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} mt-1 truncate text-[10px]`}>
                   {item.id}
                 </p>
               </div>
@@ -144,7 +153,7 @@ export default function WorkOrderStorageSection({
             key: "status",
             label: t("filesWorkOrders.columns.status", "상태"),
             render: (item) => (
-              <p className="text-[11px] font-semibold text-stone-700">
+              <p className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} text-[11px] font-semibold`}>
                 {getLocalizedWorkOrderStageLabel(item.statusLabel, t)}
               </p>
             ),
@@ -153,7 +162,7 @@ export default function WorkOrderStorageSection({
             key: "deletedAt",
             label: t("filesWorkOrders.columns.deletedAt", "삭제일시"),
             render: (item) => (
-              <p className="text-[11px] text-stone-600">
+              <p className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} text-[11px]`}>
                 {item.deletedAt || "-"}
               </p>
             ),
@@ -165,7 +174,7 @@ export default function WorkOrderStorageSection({
               t("terms.files.documentDesignGroup", "문서/디자인"),
             ),
             render: (item) => (
-              <p className="text-[11px] leading-4 text-stone-600">
+              <p className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} text-[11px] leading-4`}>
                 {formatTrashDetailCountLabel(
                   item.attachmentSummaryLabel,
                   "documentsDesigns",
@@ -178,7 +187,7 @@ export default function WorkOrderStorageSection({
             key: "memos",
             label: t("filesWorkOrders.columns.memos", "메모"),
             render: (item) => (
-              <p className="text-[11px] leading-4 text-stone-600">
+              <p className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} text-[11px] leading-4`}>
                 {formatTrashDetailCountLabel(item.memoSummaryLabel, "memos", t)}
               </p>
             ),
@@ -187,7 +196,7 @@ export default function WorkOrderStorageSection({
             key: "policy",
             label: t("filesWorkOrders.columns.policy", "복원 정책"),
             render: (item) => (
-              <span className="inline-flex rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-[10px] font-semibold text-stone-500">
+              <span className={`${ADMIN_STORAGE_PILL_CLASS} inline-flex px-2.5 py-1 text-[10px]`}>
                 {t(
                   "filesList.restorePolicies.workorderBundle",
                   item.restorePolicyLabel,

@@ -4,6 +4,12 @@ import { useMemo, useState } from "react";
 import AdminActionBar from "@/components/admin/common/AdminActionBar";
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import AdminTable from "@/components/admin/common/AdminTable";
+import {
+  ADMIN_STORAGE_PANEL_TIGHT_CLASS,
+  ADMIN_STORAGE_ROW_CLASS,
+  ADMIN_STORAGE_SELECTED_ROW_CLASS,
+  ADMIN_STORAGE_TABLE_HEADER_COMPACT_CLASS,
+} from "@/components/admin/common/adminSemanticClassNames";
 import type {
   AdminStorageWorkOrderItem,
   AdminTrashFileItem,
@@ -183,7 +189,7 @@ export default function FileTrashSection({
   }
 
   return (
-    <section className="flex h-full min-h-[360px] flex-col rounded-[20px] border border-stone-200 bg-white p-2.5 shadow-sm md:min-h-0 md:rounded-[22px] md:p-3">
+    <section className={`${ADMIN_STORAGE_PANEL_TIGHT_CLASS} flex h-full min-h-[360px] flex-col p-2.5 md:min-h-0 md:p-3`}>
       <AdminActionBar
         title={t("trashPage.title", "휴지통")}
         actionsClassName="w-full [&>button]:flex-1 [&>button]:px-3 sm:w-auto sm:[&>button]:flex-none"
@@ -290,7 +296,7 @@ export default function FileTrashSection({
 
       <AdminTable
         className="mt-2 min-h-0 flex-1"
-        headerClassName="hidden shrink-0 gap-3 bg-stone-50 px-3.5 py-1.5 text-[10px] font-semibold text-stone-500 md:grid"
+        headerClassName={ADMIN_STORAGE_TABLE_HEADER_COMPACT_CLASS}
         rowBaseClassName="grid w-full gap-2 px-3 py-3 text-left text-[11px] md:items-center md:gap-3 md:px-3.5 md:py-1.5"
         items={sortedRows}
         getRowKey={(row) => row.rowId}
@@ -309,8 +315,8 @@ export default function FileTrashSection({
             workOrderActionPreview?.workOrderId ?? null;
           if (row.kind === "workorder")
             return row.id === previewWorkOrderId || row.isSelected
-              ? "bg-stone-100 ring-1 ring-inset ring-stone-300"
-              : "bg-white shadow-[inset_3px_0_0_0_rgba(68,64,60,0.28)] hover:bg-stone-50";
+              ? ADMIN_STORAGE_SELECTED_ROW_CLASS
+              : `${ADMIN_STORAGE_ROW_CLASS} border-l-4 border-l-[var(--pbp-border-strong)]`;
           const isPreviewWorkOrderGroup = Boolean(
             previewWorkOrderId &&
             row.sourceItem.workorderId === previewWorkOrderId,
@@ -318,10 +324,10 @@ export default function FileTrashSection({
           if (row.isGroupedAttachment)
             return `${
               isPreviewWorkOrderGroup
-                ? "shadow-[inset_4px_0_0_0_rgba(120,113,108,0.55)] bg-stone-100/70"
-                : "shadow-[inset_4px_0_0_0_rgba(214,211,209,1)] bg-stone-50/70"
-            } text-stone-500 transition`;
-          return `transition ${row.isSelected ? "bg-stone-100 ring-1 ring-inset ring-stone-300" : "bg-white hover:bg-stone-50"}`;
+                ? "border-l-4 border-l-[var(--pbp-border-strong)] bg-[var(--pbp-selected-surface-soft)]"
+                : "border-l-4 border-l-[var(--pbp-border)] bg-[var(--pbp-surface-muted)]"
+            } text-[var(--pbp-text-muted)] transition`;
+          return `transition ${row.isSelected ? ADMIN_STORAGE_SELECTED_ROW_CLASS : ADMIN_STORAGE_ROW_CLASS}`;
         }}
         columns={createFileTrashColumns({
           t,
