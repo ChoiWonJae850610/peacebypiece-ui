@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type PointerEvent } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { useI18n } from "@/lib/i18n";
 
-type DrawingTool = "pen" | "eraser" | "line" | "arrow" | "rectangle" | "ellipse";
+type DrawingTool = "pen" | "eraser" | "line" | "arrow" | "rectangle" | "ellipse" | "pan";
 type DrawingLineStyle = "solid" | "dashed";
 type DrawingIconName =
   | "pen"
@@ -13,6 +13,10 @@ type DrawingIconName =
   | "arrow"
   | "rectangle"
   | "ellipse"
+  | "pan"
+  | "zoomIn"
+  | "zoomOut"
+  | "resetView"
   | "undo"
   | "redo"
   | "trash"
@@ -33,6 +37,7 @@ type DrawingStrokeSizeId = "thin" | "regular" | "bold" | "wide";
 type DrawingLineStyleId = DrawingLineStyle;
 type DrawingPopover = "color" | "strokeSize" | null;
 type EraserCursor = { x: number; y: number; diameter: number; visible: boolean };
+type ViewportOffset = { x: number; y: number };
 
 type DrawingColor = {
   id: DrawingColorId;
@@ -65,6 +70,9 @@ const ERASER_LINE_WIDTH_BY_STROKE_SIZE: Record<DrawingStrokeSizeId, number> = {
   wide: 72,
 };
 const SHAPE_MIN_DISTANCE = 2;
+const MIN_VIEWPORT_SCALE = 0.5;
+const MAX_VIEWPORT_SCALE = 2;
+const VIEWPORT_SCALE_STEP = 0.25;
 
 const DRAWING_COLORS: DrawingColor[] = [
   { id: "black", value: "#111827" },
@@ -107,8 +115,12 @@ function isShapeTool(tool: DrawingTool) {
   return tool === "line" || tool === "arrow" || tool === "rectangle" || tool === "ellipse";
 }
 
+function isDrawingTool(tool: DrawingTool) {
+  return tool !== "pan";
+}
+
 function isColorEnabled(tool: DrawingTool) {
-  return tool !== "eraser";
+  return tool !== "eraser" && tool !== "pan";
 }
 
 function getEraserLineWidth(strokeSizeId: DrawingStrokeSizeId) {
@@ -125,16 +137,22 @@ function getPointerPosition(canvas: HTMLCanvasElement, event: PointerEvent<HTMLC
 
 function getEraserCursor(
   canvas: HTMLCanvasElement,
+  container: HTMLDivElement,
   event: PointerEvent<HTMLCanvasElement>,
   eraserLineWidth: number,
 ): EraserCursor {
-  const rect = canvas.getBoundingClientRect();
+  const canvasRect = canvas.getBoundingClientRect();
+  const containerRect = container.getBoundingClientRect();
   return {
-    x: event.clientX - rect.left,
-    y: event.clientY - rect.top,
-    diameter: Math.max(18, (eraserLineWidth / canvas.width) * rect.width),
+    x: event.clientX - containerRect.left,
+    y: event.clientY - containerRect.top,
+    diameter: Math.max(18, (eraserLineWidth / canvas.width) * canvasRect.width),
     visible: true,
   };
+}
+
+function clampViewportScale(value: number) {
+  return Math.min(MAX_VIEWPORT_SCALE, Math.max(MIN_VIEWPORT_SCALE, Number(value.toFixed(2))));
 }
 
 function getPointDistance(start: DrawingPoint, end: DrawingPoint) {
@@ -308,6 +326,44 @@ function DrawingIcon({ name, className = "h-4 w-4" }: { name: DrawingIconName; c
       </svg>
     );
   }
+  if (name === "pan") {
+    return (
+      <svg {...commonProps}>
+        <path d="M7 11V7a2 2 0 0 1 4 0v3" />
+        <path d="M11 10V5a2 2 0 0 1 4 0v5" />
+        <path d="M15 10V7a2 2 0 0 1 4 0v6a7 7 0 0 1-7 7h-1a7 7 0 0 1-6.7-5.1L3 10a2 2 0 0 1 3.8-1.2L8 12" />
+      </svg>
+    );
+  }
+  if (name === "zoomIn") {
+    return (
+      <svg {...commonProps}>
+        <circle cx="10" cy="10" r="6" />
+        <path d="m15 15 5 5" />
+        <path d="M10 7v6" />
+        <path d="M7 10h6" />
+      </svg>
+    );
+  }
+  if (name === "zoomOut") {
+    return (
+      <svg {...commonProps}>
+        <circle cx="10" cy="10" r="6" />
+        <path d="m15 15 5 5" />
+        <path d="M7 10h6" />
+      </svg>
+    );
+  }
+  if (name === "resetView") {
+    return (
+      <svg {...commonProps}>
+        <path d="M4 4v6h6" />
+        <path d="M20 20v-6h-6" />
+        <path d="M20 9a8 8 0 0 0-13.5-3.5L4 8" />
+        <path d="M4 15a8 8 0 0 0 13.5 3.5L20 16" />
+      </svg>
+    );
+  }
   if (name === "undo") {
     return (
       <svg {...commonProps}>
@@ -378,7 +434,9 @@ export default function WorkOrderDrawingModal({
   const { i18n } = useI18n();
   const ui = i18n.workorder.ui.attachmentPanel.drawingModal;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const canvasContainerRef = useRef<HTMLDivElement | null>(null);
   const drawingRef = useRef(false);
+  const panningRef = useRef(false);
   const strokeDirtyRef = useRef(false);
   const lastPointRef = useRef<DrawingPoint | null>(null);
   const shapeStartPointRef = useRef<DrawingPoint | null>(null);
@@ -386,6 +444,7 @@ export default function WorkOrderDrawingModal({
   const historyRef = useRef<string[]>([]);
   const historyIndexRef = useRef(0);
   const blankSnapshotRef = useRef("");
+  const panStartRef = useRef<{ x: number; y: number; offset: ViewportOffset } | null>(null);
   const [tool, setTool] = useState<DrawingTool>("pen");
   const [strokeColor, setStrokeColor] = useState(DRAWING_COLORS[0]?.value ?? "#111827");
   const [strokeSize, setStrokeSize] = useState(variant === "mobile" ? 6 : 3);
@@ -395,6 +454,8 @@ export default function WorkOrderDrawingModal({
   const [historyIndex, setHistoryIndex] = useState(0);
   const [activePopover, setActivePopover] = useState<DrawingPopover>(null);
   const [eraserCursor, setEraserCursor] = useState<EraserCursor>({ x: 0, y: 0, diameter: 0, visible: false });
+  const [viewportScale, setViewportScale] = useState(1);
+  const [viewportOffset, setViewportOffset] = useState<ViewportOffset>({ x: 0, y: 0 });
   const [closeConfirmVisible, setCloseConfirmVisible] = useState(false);
   const [navigationGuardVisible, setNavigationGuardVisible] = useState(false);
   const navigationGuardTimerRef = useRef<number | null>(null);
@@ -404,6 +465,7 @@ export default function WorkOrderDrawingModal({
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < historyRef.current.length - 1;
   const shapeToolSelected = isShapeTool(tool);
+  const drawingToolSelected = isDrawingTool(tool);
   const colorEnabled = isColorEnabled(tool);
   const selectedStrokeSize = DRAWING_STROKE_SIZES.find((size) => size.value === strokeSize) ?? DEFAULT_STROKE_SIZE;
   const selectedLineStyleId: DrawingLineStyleId = lineStyle;
@@ -454,11 +516,12 @@ export default function WorkOrderDrawingModal({
   const hideEraserCursor = () => setEraserCursor((current) => ({ ...current, visible: false }));
   const updateEraserCursor = (event: PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
-    if (!canvas || tool !== "eraser") {
+    const container = canvasContainerRef.current;
+    if (!canvas || !container || tool !== "eraser") {
       hideEraserCursor();
       return;
     }
-    setEraserCursor(getEraserCursor(canvas, event, eraserLineWidth));
+    setEraserCursor(getEraserCursor(canvas, container, event, eraserLineWidth));
   };
 
   const syncHistoryState = (nextIndex: number) => {
@@ -507,6 +570,10 @@ export default function WorkOrderDrawingModal({
     setStrokeSize(isMobile ? 6 : 3);
     setLineStyle("solid");
     setActivePopover(null);
+    setViewportScale(1);
+    setViewportOffset({ x: 0, y: 0 });
+    panStartRef.current = null;
+    panningRef.current = false;
     setCloseConfirmVisible(false);
     setNavigationGuardVisible(false);
     hideEraserCursor();
@@ -588,6 +655,16 @@ export default function WorkOrderDrawingModal({
   };
 
   const handlePointerMove = (event: PointerEvent<HTMLCanvasElement>) => {
+    if (panningRef.current) {
+      const panStart = panStartRef.current;
+      if (panStart) {
+        setViewportOffset({
+          x: panStart.offset.x + event.clientX - panStart.x,
+          y: panStart.offset.y + event.clientY - panStart.y,
+        });
+      }
+      return;
+    }
     updateEraserCursor(event);
     if (isShapeTool(tool)) {
       drawShapePreview(event);
@@ -601,10 +678,18 @@ export default function WorkOrderDrawingModal({
     if (!canvas) return;
     event.preventDefault();
     canvas.setPointerCapture(event.pointerId);
-    drawingRef.current = true;
     strokeDirtyRef.current = false;
     closeToolPopovers();
     updateEraserCursor(event);
+
+    if (tool === "pan") {
+      panningRef.current = true;
+      drawingRef.current = false;
+      panStartRef.current = { x: event.clientX, y: event.clientY, offset: viewportOffset };
+      return;
+    }
+
+    drawingRef.current = true;
     const startPoint = getPointerPosition(canvas, event);
     lastPointRef.current = startPoint;
     shapeStartPointRef.current = startPoint;
@@ -622,6 +707,14 @@ export default function WorkOrderDrawingModal({
     const canvas = canvasRef.current;
     if (canvas?.hasPointerCapture(event.pointerId)) {
       canvas.releasePointerCapture(event.pointerId);
+    }
+
+    if (panningRef.current) {
+      panningRef.current = false;
+      panStartRef.current = null;
+      drawingRef.current = false;
+      hideEraserCursor();
+      return;
     }
 
     if (canvas && drawingRef.current && isShapeTool(tool)) {
@@ -687,6 +780,8 @@ export default function WorkOrderDrawingModal({
   const handleToolSelect = (nextTool: DrawingTool) => {
     setTool(nextTool);
     setActivePopover(null);
+    panningRef.current = false;
+    panStartRef.current = null;
     hideEraserCursor();
   };
 
@@ -694,6 +789,19 @@ export default function WorkOrderDrawingModal({
     if (!shapeToolSelected) return;
     closeToolPopovers();
     setLineStyle((current) => (current === "solid" ? "dashed" : "solid"));
+  };
+
+  const handleZoom = (direction: "in" | "out") => {
+    closeToolPopovers();
+    setViewportScale((current) =>
+      clampViewportScale(current + (direction === "in" ? VIEWPORT_SCALE_STEP : -VIEWPORT_SCALE_STEP)),
+    );
+  };
+
+  const resetViewport = () => {
+    closeToolPopovers();
+    setViewportScale(1);
+    setViewportOffset({ x: 0, y: 0 });
   };
 
   return (
@@ -733,10 +841,12 @@ export default function WorkOrderDrawingModal({
     >
       <div className="flex h-full min-h-0 flex-col gap-2 md:gap-3">
         <div className="flex min-h-0 flex-1 rounded-3xl border bg-[var(--pbp-surface-muted)] p-2 shadow-inner sm:p-3">
-          <div className="relative min-h-0 flex-1 overflow-hidden rounded-2xl border bg-white touch-none">
+          <div ref={canvasContainerRef} className="relative min-h-0 flex-1 overflow-hidden rounded-2xl border bg-white touch-none">
             <canvas
               ref={canvasRef}
-              className={`h-full w-full touch-none select-none ${tool === "eraser" ? "cursor-none" : "cursor-crosshair"}`}
+              className={`h-full w-full touch-none select-none ${
+                tool === "eraser" ? "cursor-none" : tool === "pan" ? "cursor-grab active:cursor-grabbing" : "cursor-crosshair"
+              }`}
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
               onPointerUp={stopDrawing}
@@ -749,6 +859,10 @@ export default function WorkOrderDrawingModal({
                 hideEraserCursor();
               }}
               aria-label={ui.canvasAria}
+              style={{
+                transform: `translate(${viewportOffset.x}px, ${viewportOffset.y}px) scale(${viewportScale})`,
+                transformOrigin: "center",
+              }}
             />
             {tool === "eraser" && eraserCursor.visible ? (
               <div
@@ -775,6 +889,7 @@ export default function WorkOrderDrawingModal({
               ["arrow", ui.arrow, "arrow"],
               ["rectangle", ui.rectangle, "rectangle"],
               ["ellipse", ui.ellipse, "ellipse"],
+              ["pan", ui.pan, "pan"],
             ] as const).map(([toolId, label, iconName]) => (
               <button
                 key={toolId}
@@ -835,15 +950,16 @@ export default function WorkOrderDrawingModal({
             <div className="relative">
               <button
                 type="button"
-                onClick={() => togglePopover("strokeSize")}
-                className={getToolButtonClass(activePopover === "strokeSize")}
+                onClick={() => drawingToolSelected && togglePopover("strokeSize")}
+                disabled={!drawingToolSelected}
+                className={getToolButtonClass(activePopover === "strokeSize", !drawingToolSelected)}
                 aria-label={strokeSizeControlLabel}
                 title={strokeSizeControlLabel}
                 aria-expanded={activePopover === "strokeSize"}
               >
                 <DrawingIcon name="stroke" />
               </button>
-              {activePopover === "strokeSize" ? (
+              {activePopover === "strokeSize" && drawingToolSelected ? (
                 <div className={`${PICKER_PANEL_CLASS} grid w-36 gap-1.5`} aria-label={strokeSizeControlLabel}>
                   {DRAWING_STROKE_SIZES.map((size) => (
                     <button
@@ -881,6 +997,39 @@ export default function WorkOrderDrawingModal({
             </button>
           </div>
 
+          <div className={TOOLBAR_GROUP_CLASS} aria-label={ui.viewportGroupAria}>
+            <button
+              type="button"
+              onClick={() => handleZoom("out")}
+              disabled={viewportScale <= MIN_VIEWPORT_SCALE}
+              className={getToolButtonClass(false, viewportScale <= MIN_VIEWPORT_SCALE)}
+              aria-label={ui.zoomOut}
+              title={ui.zoomOut}
+            >
+              <DrawingIcon name="zoomOut" />
+            </button>
+            <button
+              type="button"
+              onClick={resetViewport}
+              className="pbp-interactive-button pbp-action-secondary inline-flex h-10 min-w-[4.25rem] items-center justify-center gap-1 rounded-full border border-[var(--pbp-border)] px-2 text-xs font-semibold"
+              aria-label={ui.resetView}
+              title={ui.resetView}
+            >
+              <DrawingIcon name="resetView" />
+              <span>{Math.round(viewportScale * 100)}%</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleZoom("in")}
+              disabled={viewportScale >= MAX_VIEWPORT_SCALE}
+              className={getToolButtonClass(false, viewportScale >= MAX_VIEWPORT_SCALE)}
+              aria-label={ui.zoomIn}
+              title={ui.zoomIn}
+            >
+              <DrawingIcon name="zoomIn" />
+            </button>
+          </div>
+
           <div className={TOOLBAR_GROUP_CLASS}>
             <button
               type="button"
@@ -906,8 +1055,11 @@ export default function WorkOrderDrawingModal({
 
           <div className="min-w-[150px] rounded-2xl border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface)] px-3 py-2 text-center text-[11px] leading-5 text-[var(--pbp-text-muted)]">
             <span className="font-semibold text-[var(--pbp-text)]">{ui.toolLabels[tool] ?? tool}</span>
-            <span> · {strokeSizeStatusLabel} {ui.strokeSizeLabels[selectedStrokeSize.id] ?? selectedStrokeSize.id}</span>
+            {drawingToolSelected ? (
+              <span> · {strokeSizeStatusLabel} {ui.strokeSizeLabels[selectedStrokeSize.id] ?? selectedStrokeSize.id}</span>
+            ) : null}
             {shapeToolSelected ? <span> · {ui.lineStyleLabels[selectedLineStyleId] ?? selectedLineStyleId}</span> : null}
+            <span> · {Math.round(viewportScale * 100)}%</span>
           </div>
 
           {navigationGuardVisible ? (
