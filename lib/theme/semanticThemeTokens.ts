@@ -464,3 +464,31 @@ export const PERSONAL_LANGUAGE_SYNC_CHECKS = {
     "로그인 이후 서버 렌더링 단계의 사용자별 초기 language 결정",
   ],
 } as const;
+
+export const PBP_RESPONSIVE_THEME_REGRESSION_CHECKS = {
+  scope: [
+    "작업지시서 PC / tablet / mobile theme 전환",
+    "관리자 홈 PC / tablet / mobile theme 전환",
+    "개인 설정 화면 mobile theme 선택 UI",
+    "공통 모달 mobile focus trap / scroll lock / close button",
+    "입력 가능 / 선택 가능 / 계산 field tone의 mobile 과밀도",
+  ],
+  breakpoints: [
+    { label: "mobile", width: "360px~430px", checks: ["topbar action overflow", "theme option card tap target", "modal close button fixed visibility"] },
+    { label: "tablet", width: "768px~1024px", checks: ["workorder table horizontal scroll", "summary card wrapping", "modal width and internal scroll"] },
+    { label: "pc", width: "1280px 이상", checks: ["sidebar/list/detail density", "admin card grid balance", "chart/card contrast"] },
+  ],
+  themes: ["default-light", "beige-atelier", "cold-winter", "black-and-white", "soft-emerald"],
+  priorityScreens: ["/worker", "/me/settings", "/admin", "/admin/files", "/admin/dashboard", "/system"],
+  status: {
+    completedThisPass: [
+      "theme 후보 5종의 PC/tablet/mobile 회귀 확인 항목을 고정 목록으로 분리",
+      "다음 drawing modal 설계 전에 modal/theme/mobile 확인 기준을 문서화",
+    ],
+    deferredToManualCheck: [
+      "실제 브라우저 width별 시각 확인",
+      "영어/한국어 전환 후 hydration error 재발 여부",
+      "touch 환경에서 modal close/focus 이동 확인",
+    ],
+  },
+} as const;
