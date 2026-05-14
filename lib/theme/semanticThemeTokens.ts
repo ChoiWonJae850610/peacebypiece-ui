@@ -438,3 +438,27 @@ export const PBP_THEME_DIRECT_COLOR_CLASS_AUDIT_CHECKS = {
     "black-and-white theme는 잔여 직접 색상 class 정리 이후 추가한다.",
   ],
 } as const;
+
+
+export const PERSONAL_LANGUAGE_SYNC_CHECKS = {
+  checkedAtVersion: "0.12.10",
+  purpose: "개인 설정 theme처럼 language도 같은 탭과 다른 탭에서 즉시 반영되도록 i18n provider 동기화 기준을 정리한다.",
+  storageKeys: [
+    "peacebypiece.personal.settings",
+    "peacebypiece.admin.locale",
+  ],
+  eventSources: [
+    "PERSONAL_SETTINGS_CHANGE_EVENT",
+    "window storage event",
+  ],
+  expectedBehavior: [
+    "현재 탭에서 /me/settings 언어 변경 시 i18n context가 즉시 갱신된다.",
+    "다른 탭에서 개인 설정 언어 변경 시 새로고침 없이 현재 탭 문구가 갱신된다.",
+    "document.documentElement.lang도 변경된 언어로 갱신된다.",
+    "기존 peacebypiece.admin.locale 값은 personal settings language가 없을 때만 fallback으로 사용한다.",
+  ],
+  deferred: [
+    "DB 기반 사용자별 language 저장",
+    "로그인 이후 서버 렌더링 단계의 사용자별 초기 language 결정",
+  ],
+} as const;
