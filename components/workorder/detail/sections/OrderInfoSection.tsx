@@ -2,7 +2,7 @@ import OrderInfoHubDebugPanel from "@/components/debug/OrderInfoHubDebugPanel";
 import { useI18n } from "@/lib/i18n";
 import type { OrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculations";
-import { formatOrderSummary } from "@/lib/workorder/detail/detailFormatting";
+import { formatCurrencySummary, formatOrderSummary } from "@/lib/workorder/detail/detailFormatting";
 import { getInspectionStatusTone } from "@/lib/workorder/presentation/statusPresentation";
 import { translateInspectionStatusLabel, translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import {
@@ -141,6 +141,11 @@ export default function OrderInfoSection({
                   <td className="px-3 py-2 text-center text-[11px] font-semibold text-stone-900 tabular-nums lg:text-[11px]">{totals.laborCost.toLocaleString()}{common.currencySuffix}</td>
                   <td className="px-3 py-2 text-center text-[11px] font-semibold text-stone-900 tabular-nums lg:text-[11px]">{totals.lossCost.toLocaleString()}{common.currencySuffix}</td>
                   <td />
+                </tr>
+                <tr className="border-t border-stone-200 bg-stone-50/90">
+                  <td className="px-3 py-2 text-right text-xs font-semibold text-stone-900 tabular-nums" colSpan={7}>
+                    {formatCurrencySummary(totals.totalCost, i18n)}
+                  </td>
                 </tr>
                 {locked ? null : (
                   <tr>

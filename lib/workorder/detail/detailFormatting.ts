@@ -2,7 +2,7 @@ import { isOrderInspectionCompleted } from "@/lib/constants/workorderStates";
 import { getI18n } from "@/lib/i18n";
 import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculations";
 import { isEditorNumericField } from "@/lib/workorder/detail/detailFields";
-import type { OrderEntry } from "@/types/workorder";
+import type { Material, OrderEntry, Outsourcing } from "@/types/workorder";
 
 type BasicInfoLike = {
   category1: string;
@@ -29,6 +29,39 @@ export function getDisplayValue(field: string, value: string) {
   return isEditorNumericField(field) ? formatNumericDisplay(value) : value;
 }
 
+function sumTotalCost(items: readonly { totalCost?: number }[]) {
+  return items.reduce((sum, item) => sum + (Number(item.totalCost) || 0), 0);
+}
+
+export function formatCurrencySummary(total: number, i18n: ReturnType<typeof getI18n> = getI18n()) {
+  const copy = i18n.workorder.ui.formatting;
+  const common = i18n.workorder.ui.common;
+  return copy.orderSummaryTotalFormat.replace("{total}", `${Math.max(0, Number(total) || 0).toLocaleString()}${common.currencySuffix}`);
+}
+
+export function formatCurrencySummaryParts(total: number, i18n: ReturnType<typeof getI18n> = getI18n()) {
+  const common = i18n.workorder.ui.common;
+  const value = `${Math.max(0, Number(total) || 0).toLocaleString()}${common.currencySuffix}`;
+  const summary = formatCurrencySummary(total, i18n);
+  return {
+    label: summary.replace(value, "").trim() || summary,
+    value,
+  };
+}
+
+export function formatProductionCompositionSummary(materials: readonly Material[], outsourcing: readonly Outsourcing[], i18n: ReturnType<typeof getI18n> = getI18n()) {
+  const copy = i18n.workorder.ui.sections.productionComposition;
+  const common = i18n.workorder.ui.common;
+  const materialTotal = sumTotalCost(materials);
+  const outsourcingTotal = sumTotalCost(outsourcing);
+
+  return [
+    copy.summaryMaterialCount.replace("{count}", String(materials.length)),
+    copy.summaryOutsourcingCount.replace("{count}", String(outsourcing.length)),
+    copy.summaryTotal.replace("{total}", `${(materialTotal + outsourcingTotal).toLocaleString()}${common.currencySuffix}`),
+  ].join(" · ");
+}
+
 
 export function formatBasicSummary(basicInfo: BasicInfoLike) {
   void basicInfo.season;
@@ -46,7 +79,7 @@ export function formatOrderSummary(orderEntries: OrderEntry[], i18n: ReturnType<
     `${orderEntries.length}${common.countSuffix}`,
     `${totals.quantity.toLocaleString()}${common.quantitySuffix}`,
     copy.inspectionCompletedFormat.replace("{completed}", String(completedCount)).replace("{total}", String(orderEntries.length)),
-    copy.orderSummaryTotalFormat.replace("{total}", `${totals.totalCost.toLocaleString()}${common.currencySuffix}`),
+    formatCurrencySummary(totals.totalCost, i18n),
   ]
     .filter(Boolean)
     .join(" · ");

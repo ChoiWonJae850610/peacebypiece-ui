@@ -1,6 +1,6 @@
 import { useI18n } from "@/lib/i18n";
 import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculations";
-import { formatOrderSummary } from "@/lib/workorder/detail/detailFormatting";
+import { formatCurrencySummaryParts, formatOrderSummary } from "@/lib/workorder/detail/detailFormatting";
 import { getInspectionStatusTone } from "@/lib/workorder/presentation/statusPresentation";
 import { translateInspectionStatusLabel, translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { DeleteButton, SectionHeader } from "@/components/workorder/detail/shared/detailEditorShared";
@@ -22,6 +22,7 @@ export default function WorkOrderDetailMobileOrderInfoSection({
   const copy = i18n.workorder.ui.sections.orderInfo;
   const common = i18n.workorder.ui.common;
   const totals = calculateOrderEntryTotals(orderEntries);
+  const totalCostSummary = formatCurrencySummaryParts(totals.totalCost, i18n);
 
   return (
     <section className="min-w-0 overflow-hidden rounded-2xl bg-stone-50 p-3 sm:p-3.5">
@@ -82,7 +83,7 @@ export default function WorkOrderDetailMobileOrderInfoSection({
 
           <div className="rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-4">
             <div className="text-xs font-medium text-stone-500">{copy.totalRow}</div>
-            <div className="mt-2 grid grid-cols-1 gap-2 text-sm min-[360px]:grid-cols-3">
+            <div className="mt-2 grid grid-cols-1 gap-2 text-sm min-[360px]:grid-cols-2 sm:grid-cols-4">
               <div>
                 <div className="text-xs text-stone-500">{copy.fields.quantity}</div>
                 <div className="mt-1 font-semibold tabular-nums text-stone-900">{totals.quantity.toLocaleString()}{common.quantitySuffix}</div>
@@ -94,6 +95,10 @@ export default function WorkOrderDetailMobileOrderInfoSection({
               <div>
                 <div className="text-xs text-stone-500">{copy.fields.lossCost}</div>
                 <div className="mt-1 font-semibold tabular-nums text-stone-900">{totals.lossCost.toLocaleString()}{common.currencySuffix}</div>
+              </div>
+              <div>
+                <div className="text-xs text-stone-500">{totalCostSummary.label}</div>
+                <div className="mt-1 font-semibold tabular-nums text-stone-900">{totalCostSummary.value}</div>
               </div>
             </div>
           </div>

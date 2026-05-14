@@ -1,4 +1,5 @@
 import { useI18n } from "@/lib/i18n";
+import { formatProductionCompositionSummary } from "@/lib/workorder/detail/detailFormatting";
 import { SectionHeader } from "@/components/workorder/detail/shared/detailEditorShared";
 import WorkOrderDetailTabletMaterialSection from "@/components/workorder/detail/sections/device/WorkOrderDetailTabletMaterialSection";
 import WorkOrderDetailTabletOutsourcingSection from "@/components/workorder/detail/sections/device/WorkOrderDetailTabletOutsourcingSection";
@@ -9,16 +10,7 @@ type ProductionCompositionProps = WorkOrderDetailViewModel["productionCompositio
 export default function WorkOrderDetailTabletProductionCompositionSection(props: ProductionCompositionProps) {
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.sections.productionComposition;
-  const common = i18n.workorder.ui.common;
-  const materialCount = props.materials.length;
-  const outsourcingCount = props.outsourcing.length;
-  const materialTotal = props.materials.reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
-  const outsourcingTotal = props.outsourcing.reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
-  const summary = [
-    copy.summaryMaterialCount.replace("{count}", String(materialCount)),
-    copy.summaryOutsourcingCount.replace("{count}", String(outsourcingCount)),
-    copy.summaryTotal.replace("{total}", `${(materialTotal + outsourcingTotal).toLocaleString()}${common.currencySuffix}`),
-  ].join(" · ");
+  const summary = formatProductionCompositionSummary(props.materials, props.outsourcing, i18n);
 
   return (
     <section className="overflow-hidden rounded-2xl border border-stone-200 bg-white p-3.5">

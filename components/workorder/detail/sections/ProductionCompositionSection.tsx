@@ -1,4 +1,5 @@
 import { useI18n } from "@/lib/i18n";
+import { formatProductionCompositionSummary } from "@/lib/workorder/detail/detailFormatting";
 import MaterialSection from "@/components/workorder/detail/sections/MaterialSection";
 import OutsourcingSection from "@/components/workorder/detail/sections/OutsourcingSection";
 import { SectionHeader, type EditableCell, type EditableSectionKey } from "@/components/workorder/detail/shared/detailEditorShared";
@@ -51,16 +52,7 @@ export default function ProductionCompositionSection({
 }) {
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.sections.productionComposition;
-  const common = i18n.workorder.ui.common;
-  const materialCount = materials.length;
-  const outsourcingCount = outsourcing.length;
-  const materialTotal = materials.reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
-  const outsourcingTotal = outsourcing.reduce((sum, item) => sum + (item.totalCost ?? 0), 0);
-  const summary = [
-    copy.summaryMaterialCount.replace("{count}", String(materialCount)),
-    copy.summaryOutsourcingCount.replace("{count}", String(outsourcingCount)),
-    copy.summaryTotal.replace("{total}", `${(materialTotal + outsourcingTotal).toLocaleString()}${common.currencySuffix}`),
-  ].join(" · ");
+  const summary = formatProductionCompositionSummary(materials, outsourcing, i18n);
 
   return (
     <div className="overflow-hidden rounded-[22px] border border-stone-200 bg-white p-3 shadow-sm xl:p-3.5">
