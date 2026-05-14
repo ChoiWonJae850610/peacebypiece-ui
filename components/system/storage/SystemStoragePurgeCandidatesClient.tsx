@@ -6,6 +6,13 @@ import { useRouter } from "next/navigation";
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import AdminTable from "@/components/admin/common/AdminTable";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import {
+  SYSTEM_PANEL_CLASS,
+  SYSTEM_SECTION_HEADER_CLASS,
+  SYSTEM_SUBTLE_TEXT_CLASS,
+  SYSTEM_TABLE_HEADER_CLASS,
+  SYSTEM_VALUE_TEXT_CLASS,
+} from "@/components/system/systemSemanticClassNames";
 import { useSystemTranslation } from "@/lib/i18n/useSystemTranslation";
 import type { AdminTableColumn } from "@/lib/admin/common/types";
 import type { SystemStoragePurgeCandidate } from "@/lib/system/storagePurgeCandidates";
@@ -37,8 +44,8 @@ type SortState = {
 };
 
 function renderKey(value: string | null) {
-  if (!value) return <span className="text-stone-400">없음</span>;
-  return <code className="break-all text-[11px] leading-5 text-stone-500">{value}</code>;
+  if (!value) return <span className={SYSTEM_SUBTLE_TEXT_CLASS}>없음</span>;
+  return <code className={`break-all text-[11px] leading-5 ${SYSTEM_SUBTLE_TEXT_CLASS}`}>{value}</code>;
 }
 
 
@@ -128,11 +135,11 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
       <button
         type="button"
         onClick={() => changeSort(key)}
-        className={`inline-flex items-center gap-1 text-left font-semibold ${isActive ? "text-stone-950" : "text-stone-600 hover:text-stone-950"}`}
+        className={`inline-flex items-center gap-1 text-left font-semibold ${isActive ? SYSTEM_VALUE_TEXT_CLASS : "text-[var(--pbp-text-muted)] hover:text-[var(--pbp-text-primary)]"}`}
         aria-label={`${label} 기준 정렬`}
       >
         <span>{label}</span>
-        <span className="text-[10px] text-stone-400">{isActive ? (sortState.direction === "asc" ? "↑" : "↓") : "↕"}</span>
+        <span className="text-[10px] text-[var(--pbp-text-subtle)]">{isActive ? (sortState.direction === "asc" ? "↑" : "↓") : "↕"}</span>
       </button>
     );
   }
@@ -160,17 +167,17 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
             <img
               src={candidate.previewUrl}
               alt={`${candidate.fileName} ${purgeCopy.list.previewAltSuffix}`}
-              className="h-14 w-14 rounded-xl border border-stone-200 bg-stone-100 object-cover"
+              className="h-14 w-14 rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] object-cover"
               loading="lazy"
             />
           ) : (
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-stone-200 bg-stone-100 text-[11px] font-bold text-stone-500">
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] text-[11px] font-bold text-[var(--pbp-text-subtle)]">
               {candidate.fileTypeLabel}
             </div>
           )}
           <p
             className={`max-w-24 text-[10px] font-semibold leading-4 ${
-              candidate.previewMode === "original-fallback" ? "text-amber-700" : "text-stone-500"
+              candidate.previewMode === "original-fallback" ? "text-[var(--pbp-status-warning)]" : SYSTEM_SUBTLE_TEXT_CLASS
             }`}
           >
             {candidate.previewModeLabel}
@@ -183,9 +190,9 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
       label: renderSortButton("company", purgeCopy.list.companyWorkOrderHeader),
       render: (candidate) => (
         <div>
-          <p className="text-[10px] text-stone-400 lg:hidden">{purgeCopy.list.companyWorkOrderHeader}</p>
-          <p className="font-semibold text-stone-950">{candidate.companyName}</p>
-          <p className="mt-1 text-xs leading-5 text-stone-500">{candidate.workorderTitle}</p>
+          <p className="text-[10px] text-[var(--pbp-text-subtle)] lg:hidden">{purgeCopy.list.companyWorkOrderHeader}</p>
+          <p className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{candidate.companyName}</p>
+          <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">{candidate.workorderTitle}</p>
         </div>
       ),
     },
@@ -194,9 +201,9 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
       label: renderSortButton("target"),
       render: (candidate) => (
         <div>
-          <p className="text-[10px] text-stone-400 lg:hidden">{sortLabels.target}</p>
-          <p className="font-semibold text-stone-800">{candidate.fileName}</p>
-          <p className="mt-1 text-xs text-stone-500">
+          <p className="text-[10px] text-[var(--pbp-text-subtle)] lg:hidden">{sortLabels.target}</p>
+          <p className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{candidate.fileName}</p>
+          <p className="mt-1 text-xs text-[var(--pbp-text-muted)]">
             {candidate.candidateKind === "workorder"
               ? buildSystemStorageWorkOrderBundleMetaLabel({ documentCount: candidate.documentCount, designCount: candidate.designCount, memoCount: candidate.memoCount }, purgeCopy)
               : `${candidate.fileTypeLabel} · ${candidate.thumbnailCountLabel}`}
@@ -213,10 +220,10 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
         </span>
       ),
       render: (candidate) => (
-        <div className="text-xs leading-5 text-stone-600">
+        <div className="text-xs leading-5 text-[var(--pbp-text-muted)]">
           <p>{purgeCopy.list.deletedAtLabel}: {candidate.deletedAt}</p>
           <p>{purgeCopy.list.purgeDueAtLabel}: {candidate.purgeDueAt}</p>
-          <p className="font-semibold text-red-600">{purgeCopy.list.overdueLabel}: {candidate.overdueDays}일</p>
+          <p className="font-semibold text-[var(--pbp-status-danger)]">{purgeCopy.list.overdueLabel}: {candidate.overdueDays}일</p>
         </div>
       ),
     },
@@ -230,9 +237,9 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
       ),
       render: (candidate) => (
         <div>
-          <p className="font-semibold text-stone-800">{candidate.originalSizeLabel}</p>
+          <p className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{candidate.originalSizeLabel}</p>
           <AdminStatusBadge className="mt-1">{candidate.purgeStatusLabel}</AdminStatusBadge>
-          {candidate.lastPurgeError ? <p className="mt-1 text-xs text-red-600">{candidate.lastPurgeError}</p> : null}
+          {candidate.lastPurgeError ? <p className="mt-1 text-xs text-[var(--pbp-status-danger)]">{candidate.lastPurgeError}</p> : null}
         </div>
       ),
     },
@@ -250,12 +257,12 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
       render: (candidate) => (
         <div className="space-y-2">
           <div>
-            <p className="text-[11px] font-semibold text-stone-400">{purgeCopy.list.sourceKeyTitle}</p>
-            {candidate.candidateKind === "workorder" ? <span className="text-stone-400">{purgeCopy.list.workOrderSourceHint}</span> : renderKey(candidate.storageKey)}
+            <p className="text-[11px] font-semibold text-[var(--pbp-text-subtle)]">{purgeCopy.list.sourceKeyTitle}</p>
+            {candidate.candidateKind === "workorder" ? <span className={SYSTEM_SUBTLE_TEXT_CLASS}>{purgeCopy.list.workOrderSourceHint}</span> : renderKey(candidate.storageKey)}
           </div>
           <div>
-            <p className="text-[11px] font-semibold text-stone-400">{purgeCopy.list.thumbnailKeyTitle}</p>
-            {candidate.candidateKind === "workorder" ? <span className="text-stone-400">{purgeCopy.list.workOrderRetryHint}</span> : renderKey(candidate.thumbnailKey)}
+            <p className="text-[11px] font-semibold text-[var(--pbp-text-subtle)]">{purgeCopy.list.thumbnailKeyTitle}</p>
+            {candidate.candidateKind === "workorder" ? <span className={SYSTEM_SUBTLE_TEXT_CLASS}>{purgeCopy.list.workOrderRetryHint}</span> : renderKey(candidate.thumbnailKey)}
           </div>
         </div>
       ),
@@ -308,14 +315,14 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
   }
 
   return (
-    <section className="rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-5">
-      <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-center lg:justify-between">
+    <section className={SYSTEM_PANEL_CLASS}>
+      <div className={`flex flex-col gap-3 ${SYSTEM_SECTION_HEADER_CLASS} lg:flex-row lg:items-center lg:justify-between`}>
         <div>
-          <h2 className="text-lg font-semibold text-stone-950">{purgeCopy.list.title}</h2>
-          <p className="mt-2 text-sm leading-6 text-stone-600">
+          <h2 className={`text-lg font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{purgeCopy.list.title}</h2>
+          <p className="mt-2 text-sm leading-6 text-[var(--pbp-text-muted)]">
             {purgeCopy.list.description}
           </p>
-          <p className="mt-2 text-xs font-medium text-stone-500">
+          <p className="mt-2 text-xs font-medium text-[var(--pbp-text-muted)]">
             {purgeCopy.list.currentSort}: {sortLabels[sortState.key]} · {getSystemStorageSortDirectionLabel(sortState.direction, t)}
           </p>
           {resultMessage ? <p className={`mt-2 rounded-2xl px-3 py-2 text-xs font-medium ${getSystemStoragePurgeResultMessageClass(resultTone)}`}>{resultMessage}</p> : null}
@@ -342,7 +349,7 @@ export function SystemStoragePurgeCandidatesClient({ candidates }: SystemStorage
         emptyDescription={purgeCopy.list.emptyDescription}
         gridTemplateColumns="0.22fr 0.55fr 1.05fr 1.15fr 1fr 0.8fr 1.45fr"
         rowBaseClassName="grid min-w-[920px] w-full gap-3 px-4 py-4 text-left text-sm lg:items-start"
-        headerClassName="hidden min-w-[920px] gap-3 bg-stone-100 px-4 py-3 text-xs font-semibold text-stone-600 lg:grid"
+        headerClassName={SYSTEM_TABLE_HEADER_CLASS}
       />
     </section>
   );

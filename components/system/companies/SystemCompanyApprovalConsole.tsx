@@ -4,6 +4,24 @@ import { useEffect, useMemo, useState } from "react";
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
 import AdminTable from "@/components/admin/common/AdminTable";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import {
+  SYSTEM_CARD_CLASS,
+  SYSTEM_CODE_BLOCK_CLASS,
+  SYSTEM_DANGER_BOX_CLASS,
+  SYSTEM_EYEBROW_CLASS,
+  SYSTEM_HEADER_PANEL_CLASS,
+  SYSTEM_MUTED_CARD_CLASS,
+  SYSTEM_PAGE_CLASS,
+  SYSTEM_PAGE_WIDE_CLASS,
+  SYSTEM_SECTION_HEADER_CLASS,
+  SYSTEM_SECTION_TITLE_CLASS,
+  SYSTEM_SMALL_TEXT_CLASS,
+  SYSTEM_STEP_NUMBER_CLASS,
+  SYSTEM_SUBTITLE_CLASS,
+  SYSTEM_SUCCESS_BOX_CLASS,
+  SYSTEM_TITLE_CLASS,
+  SYSTEM_VALUE_TEXT_CLASS,
+} from "@/components/system/systemSemanticClassNames";
 import { APP_VERSION } from "@/lib/constants/app";
 import type { JoinRequestRecord } from "@/lib/invitations/joinRequestTypes";
 import {
@@ -88,8 +106,8 @@ export default function SystemCompanyApprovalConsole() {
         label: "회사",
         render: (request) => (
           <div>
-            <p className="font-semibold text-stone-950">{request.requestedCompanyName}</p>
-            <p className="mt-1 text-xs text-stone-500">{request.businessName}</p>
+            <p className={`font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{request.requestedCompanyName}</p>
+            <p className="mt-1 text-xs text-[var(--pbp-text-muted)]">{request.businessName}</p>
           </div>
         ),
       },
@@ -98,15 +116,15 @@ export default function SystemCompanyApprovalConsole() {
         label: "신청자",
         render: (request) => (
           <div>
-            <p className="font-medium text-stone-900">{request.applicantName}</p>
-            <p className="mt-1 text-xs text-stone-500">{request.applicantEmail}</p>
+            <p className="font-medium text-[var(--pbp-text-primary)]">{request.applicantName}</p>
+            <p className="mt-1 text-xs text-[var(--pbp-text-muted)]">{request.applicantEmail}</p>
           </div>
         ),
       },
       {
         key: "invitationEmail",
         label: "초대 이메일",
-        className: "text-xs text-stone-600",
+        className: "text-xs text-[var(--pbp-text-muted)]",
         render: (request) => request.invitationEmailLabel,
       },
       {
@@ -123,19 +141,19 @@ export default function SystemCompanyApprovalConsole() {
       {
         key: "phone",
         label: "연락처",
-        className: "text-xs text-stone-600",
+        className: "text-xs text-[var(--pbp-text-muted)]",
         render: (request) => request.applicantPhoneLabel,
       },
       {
         key: "memo",
         label: "메모",
-        className: "max-w-[260px] text-xs leading-5 text-stone-600",
+        className: "max-w-[260px] text-xs leading-5 text-[var(--pbp-text-muted)]",
         render: (request) => request.requestMemoLabel,
       },
       {
         key: "requestedAt",
         label: "신청일",
-        className: "text-xs text-stone-600",
+        className: "text-xs text-[var(--pbp-text-muted)]",
         render: (request) => request.requestedAtLabel,
       },
       {
@@ -247,17 +265,17 @@ export default function SystemCompanyApprovalConsole() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-stone-50 px-3 py-4 text-stone-900 sm:px-6 sm:py-6 lg:px-8">
-      <div className="mx-auto flex max-w-7xl flex-col gap-4 sm:gap-6">
-        <header className="rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6">
+    <main className={SYSTEM_PAGE_CLASS}>
+      <div className={SYSTEM_PAGE_WIDE_CLASS}>
+        <header className={SYSTEM_HEADER_PANEL_CLASS}>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
+              <p className={SYSTEM_EYEBROW_CLASS}>
                 SYSTEM COMPANY APPROVAL
               </p>
               <div className="space-y-2">
-                <h1 className="text-xl font-semibold text-stone-950 sm:text-2xl">시스템관리자 고객사 승인</h1>
-                <p className="max-w-3xl text-sm leading-6 text-stone-600">
+                <h1 className={SYSTEM_TITLE_CLASS}>시스템관리자 고객사 승인</h1>
+                <p className={SYSTEM_SUBTITLE_CLASS}>
                   고객사 초대 링크로 들어온 가입 신청을 검토하고, 승인 시 고객사 생성·고객관리자 멤버십·권한 부여·초기 기준정보 복사로 이어지는 흐름입니다.
                 </p>
               </div>
@@ -273,19 +291,19 @@ export default function SystemCompanyApprovalConsole() {
 
         <section className="grid gap-3 sm:grid-cols-2 lg:gap-4 xl:grid-cols-4">
           {summaryItems.map((item) => (
-            <article key={item.id} className="rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-5">
-              <p className="text-xs font-semibold text-stone-500">{item.label}</p>
-              <p className="mt-3 text-xl font-semibold text-stone-950">{item.value}</p>
-              <p className="mt-2 text-xs leading-5 text-stone-600">{item.description}</p>
+            <article key={item.id} className={SYSTEM_CARD_CLASS}>
+              <p className="text-xs font-semibold text-[var(--pbp-text-subtle)]">{item.label}</p>
+              <p className={`mt-3 text-xl font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{item.value}</p>
+              <p className={SYSTEM_SMALL_TEXT_CLASS}>{item.description}</p>
             </article>
           ))}
         </section>
 
-        <section className="rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-5">
-          <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-start lg:justify-between">
+        <section className={SYSTEM_CARD_CLASS}>
+          <div className={`flex flex-col gap-3 ${SYSTEM_SECTION_HEADER_CLASS} lg:flex-row lg:items-start lg:justify-between`}>
             <div>
-              <h2 className="text-lg font-semibold text-stone-950">가입 신청 검토</h2>
-              <p className="mt-2 text-sm leading-6 text-stone-600">
+              <h2 className={SYSTEM_SECTION_TITLE_CLASS}>가입 신청 검토</h2>
+              <p className="mt-2 text-sm leading-6 text-[var(--pbp-text-muted)]">
                 request_type = company, invitation.scope = system_to_company_admin 조건의 승인 대기 신청만 표시합니다.
               </p>
             </div>
@@ -298,19 +316,19 @@ export default function SystemCompanyApprovalConsole() {
           </div>
 
           {joinRequestLoadError ? (
-            <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <div className={`mt-4 ${SYSTEM_DANGER_BOX_CLASS}`}>
               {joinRequestLoadError}
             </div>
           ) : null}
 
           {reviewActionError ? (
-            <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <div className={`mt-4 ${SYSTEM_DANGER_BOX_CLASS}`}>
               {reviewActionError}
             </div>
           ) : null}
 
           {reviewActionMessage ? (
-            <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            <div className={`mt-4 ${SYSTEM_SUCCESS_BOX_CLASS}`}>
               {reviewActionMessage}
             </div>
           ) : null}
@@ -329,48 +347,48 @@ export default function SystemCompanyApprovalConsole() {
           </div>
         </section>
 
-        <section className="rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-5">
-          <div className="flex flex-col gap-2 border-b border-stone-100 pb-4">
-            <h2 className="text-lg font-semibold text-stone-950">승인 처리 단계</h2>
-            <p className="text-sm leading-6 text-stone-600">
+        <section className={SYSTEM_CARD_CLASS}>
+          <div className={`flex flex-col gap-2 ${SYSTEM_SECTION_HEADER_CLASS}`}>
+            <h2 className={SYSTEM_SECTION_TITLE_CLASS}>승인 처리 단계</h2>
+            <p className="text-sm leading-6 text-[var(--pbp-text-muted)]">
               고객사 생성과 고객관리자 승인, 권한 저장, 초기 기준정보 복사를 분리하지 말고 승인 흐름으로 묶습니다.
             </p>
           </div>
 
           <div className="mt-5 grid gap-4 lg:grid-cols-4">
             {SYSTEM_COMPANY_APPROVAL_STEPS.map((step, index) => (
-              <article key={step.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+              <article key={step.id} className={SYSTEM_MUTED_CARD_CLASS}>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-stone-900 text-xs font-semibold text-white">
+                  <span className={SYSTEM_STEP_NUMBER_CLASS}>
                     {index + 1}
                   </span>
                   <AdminStatusBadge tone={getCompanyStepStatusTone(step.status)}>
                     {step.statusLabel}
                   </AdminStatusBadge>
                 </div>
-                <h3 className="mt-4 text-sm font-semibold text-stone-950">{step.title}</h3>
-                <p className="mt-2 text-xs leading-5 text-stone-600">{step.description}</p>
+                <h3 className={`mt-4 text-sm font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{step.title}</h3>
+                <p className={SYSTEM_SMALL_TEXT_CLASS}>{step.description}</p>
               </article>
             ))}
           </div>
         </section>
 
         <section className="grid gap-4 lg:grid-cols-[1fr_0.8fr]">
-          <article className="rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-5">
-            <div className="border-b border-stone-100 pb-4">
-              <h2 className="text-lg font-semibold text-stone-950">고객관리자 기본 권한</h2>
-              <p className="mt-2 text-sm leading-6 text-stone-600">
+          <article className={SYSTEM_CARD_CLASS}>
+            <div className={SYSTEM_SECTION_HEADER_CLASS}>
+              <h2 className={SYSTEM_SECTION_TITLE_CLASS}>고객관리자 기본 권한</h2>
+              <p className="mt-2 text-sm leading-6 text-[var(--pbp-text-muted)]">
                 승인 시 role template은 기본 체크값으로만 사용하고 실제 저장은 permission_code 목록으로 처리합니다.
               </p>
             </div>
             <div className="mt-5 grid gap-3 md:grid-cols-2">
               {SYSTEM_COMPANY_APPROVAL_PERMISSION_ITEMS.map((item) => (
-                <article key={item.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+                <article key={item.id} className={SYSTEM_MUTED_CARD_CLASS}>
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-semibold text-stone-950">{item.label}</p>
+                    <p className={`text-sm font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{item.label}</p>
                     <AdminStatusBadge tone="success">기본 체크</AdminStatusBadge>
                   </div>
-                  <code className="mt-3 block rounded-xl border border-stone-200 bg-white px-3 py-2 text-[11px] text-stone-600">
+                  <code className={SYSTEM_CODE_BLOCK_CLASS}>
                     {item.permissionCode}
                   </code>
                 </article>
@@ -378,16 +396,16 @@ export default function SystemCompanyApprovalConsole() {
             </div>
           </article>
 
-          <article className="rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-5">
-            <div className="border-b border-stone-100 pb-4">
-              <h2 className="text-lg font-semibold text-stone-950">승인 액션</h2>
-              <p className="mt-2 text-sm leading-6 text-stone-600">
+          <article className={SYSTEM_CARD_CLASS}>
+            <div className={SYSTEM_SECTION_HEADER_CLASS}>
+              <h2 className={SYSTEM_SECTION_TITLE_CLASS}>승인 액션</h2>
+              <p className="mt-2 text-sm leading-6 text-[var(--pbp-text-muted)]">
                 고객사 생성과 고객관리자 승인, 가입 신청 거절 처리를 실제 API 흐름으로 연결했습니다.
               </p>
             </div>
             <div className="mt-5 space-y-3">
               {SYSTEM_COMPANY_APPROVAL_ACTIONS.map((action) => (
-                <div key={action.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+                <div key={action.id} className={SYSTEM_MUTED_CARD_CLASS}>
                   {action.id === "open-invite" ? (
                     <AdminLinkButton href="/system/invites" variant={getCompanyActionVariant(action.state)} className="w-full rounded-xl">
                       {action.label}
@@ -397,8 +415,8 @@ export default function SystemCompanyApprovalConsole() {
                       {action.label}
                     </AdminButton>
                   )}
-                  <p className="mt-2 text-xs leading-5 text-stone-500">{action.helper}</p>
-                  <code className="mt-2 block rounded-xl border border-stone-200 bg-white px-3 py-2 text-[11px] text-stone-600">
+                  <p className={SYSTEM_SMALL_TEXT_CLASS}>{action.helper}</p>
+                  <code className={SYSTEM_CODE_BLOCK_CLASS}>
                     {action.requiredPermission}
                   </code>
                 </div>
@@ -407,18 +425,18 @@ export default function SystemCompanyApprovalConsole() {
           </article>
         </section>
 
-        <section className="rounded-[24px] border border-stone-200 bg-white p-4 shadow-sm sm:rounded-3xl sm:p-5">
-          <div className="border-b border-stone-100 pb-4">
-            <h2 className="text-lg font-semibold text-stone-950">처리 정책</h2>
-            <p className="mt-2 text-sm leading-6 text-stone-600">
+        <section className={SYSTEM_CARD_CLASS}>
+          <div className={SYSTEM_SECTION_HEADER_CLASS}>
+            <h2 className={SYSTEM_SECTION_TITLE_CLASS}>처리 정책</h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--pbp-text-muted)]">
               고객사 승인 기능을 실제 API로 연결할 때 깨지면 안 되는 기준입니다.
             </p>
           </div>
           <div className="mt-5 grid gap-4 lg:grid-cols-4">
             {SYSTEM_COMPANY_APPROVAL_POLICY_NOTES.map((note) => (
-              <article key={note.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-                <h3 className="text-sm font-semibold text-stone-950">{note.title}</h3>
-                <p className="mt-2 text-xs leading-5 text-stone-600">{note.description}</p>
+              <article key={note.id} className={SYSTEM_MUTED_CARD_CLASS}>
+                <h3 className={`text-sm font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{note.title}</h3>
+                <p className={SYSTEM_SMALL_TEXT_CLASS}>{note.description}</p>
               </article>
             ))}
           </div>

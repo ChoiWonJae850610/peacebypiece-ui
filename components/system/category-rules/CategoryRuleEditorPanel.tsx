@@ -5,6 +5,7 @@ import { MODAL_INPUT_CLASS, MODAL_SELECT_CLASS, MODAL_TEXTAREA_CLASS } from "@/c
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import { SYSTEM_CARD_CLASS, SYSTEM_MUTED_CARD_CLASS, SYSTEM_VALUE_TEXT_CLASS } from "@/components/system/systemSemanticClassNames";
 import type { EditableCategoryRule } from "@/lib/system/categoryRuleEditor";
 import { buildCategoryRuleMatchPreview, buildTaggedKeywordInput } from "@/lib/system/categoryRuleEditor";
 import type { CategoryRulesManagerText } from "@/lib/system/categoryRuleText";
@@ -58,7 +59,7 @@ export function CategoryRuleEditorPanel({
   ruleNameInputRef: RefObject<HTMLInputElement | null>;
 }) {
   return (
-    <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+    <article className={SYSTEM_CARD_CLASS}>
       {selectedRule ? (
         <div className="space-y-5">
           <div className="flex flex-wrap gap-2">
@@ -67,7 +68,7 @@ export function CategoryRuleEditorPanel({
           </div>
 
           <label className="space-y-2">
-            <span className="text-sm font-medium text-stone-700">{text.ruleNameLabel}</span>
+            <span className="text-sm font-medium text-[var(--pbp-text-muted)]">{text.ruleNameLabel}</span>
             <input
               ref={ruleNameInputRef}
               value={selectedRule.name}
@@ -77,13 +78,13 @@ export function CategoryRuleEditorPanel({
             />
           </label>
 
-          <label className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
-            <input type="checkbox" checked={selectedRule.enabled} onChange={(event) => onUpdateEnabled(event.target.checked)} className="h-4 w-4 rounded border-stone-300 text-stone-900 focus:ring-stone-500" />
+          <label className="flex items-center gap-3 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-4 py-3">
+            <input type="checkbox" checked={selectedRule.enabled} onChange={(event) => onUpdateEnabled(event.target.checked)} className="h-4 w-4 rounded border-[var(--pbp-border-strong)] text-[var(--pbp-action-primary-surface)] focus:ring-[var(--pbp-focus-ring)]" />
             <AdminStatusBadge tone={selectedRule.enabled ? "success" : "neutral"}>{selectedRule.enabled ? text.enabled : text.disabled}</AdminStatusBadge>
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm font-medium text-stone-700">{text.keywordsLabel}</span>
+            <span className="text-sm font-medium text-[var(--pbp-text-muted)]">{text.keywordsLabel}</span>
             <input
               value={keywordText || buildTaggedKeywordInput(selectedRule.keywords)}
               onChange={(event) => onKeywordTextChange(event.target.value)}
@@ -99,19 +100,19 @@ export function CategoryRuleEditorPanel({
 
           <div className="grid gap-4 md:grid-cols-3">
             <label className="space-y-2">
-              <span className="text-sm font-medium text-stone-700">{text.category1Label}</span>
+              <span className="text-sm font-medium text-[var(--pbp-text-muted)]">{text.category1Label}</span>
               <select value={currentCategory1} onChange={(event) => onChangeCategory1(event.target.value)} className={MODAL_SELECT_CLASS}>
                 {category1Options.map((option) => <option key={option} value={option}>{option}</option>)}
               </select>
             </label>
             <label className="space-y-2">
-              <span className="text-sm font-medium text-stone-700">{text.category2Label}</span>
+              <span className="text-sm font-medium text-[var(--pbp-text-muted)]">{text.category2Label}</span>
               <select value={currentCategory2} onChange={(event) => onChangeCategory2(event.target.value)} className={MODAL_SELECT_CLASS}>
                 {category2Options.map((option) => <option key={option} value={option}>{option}</option>)}
               </select>
             </label>
             <label className="space-y-2">
-              <span className="text-sm font-medium text-stone-700">{text.category3Label}</span>
+              <span className="text-sm font-medium text-[var(--pbp-text-muted)]">{text.category3Label}</span>
               <select value={currentCategory3} onChange={(event) => onChangeCategory3(event.target.value)} className={MODAL_SELECT_CLASS}>
                 {category3Options.map((option) => <option key={option} value={option}>{option}</option>)}
               </select>
@@ -119,7 +120,7 @@ export function CategoryRuleEditorPanel({
           </div>
 
           <label className="space-y-2">
-            <span className="text-sm font-medium text-stone-700">{text.reasonLabel}</span>
+            <span className="text-sm font-medium text-[var(--pbp-text-muted)]">{text.reasonLabel}</span>
             <textarea
               value={selectedRule.recommendation.reason}
               placeholder={text.reasonPlaceholder}
@@ -129,8 +130,8 @@ export function CategoryRuleEditorPanel({
             />
           </label>
 
-          <div className="rounded-3xl border border-stone-200 bg-stone-50 p-4">
-            <div className="mb-3 text-sm font-semibold text-stone-900">{text.testInputLabel}</div>
+          <div className={SYSTEM_MUTED_CARD_CLASS}>
+            <div className={`mb-3 text-sm font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{text.testInputLabel}</div>
             <div className="space-y-4">
               <input value={testTitle} onChange={(event) => onChangeTestTitle(event.target.value)} placeholder={text.testInputPlaceholder} className={MODAL_INPUT_CLASS} />
               <TestResultPanel preview={preview} text={text} />

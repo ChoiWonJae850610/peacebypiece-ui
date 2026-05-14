@@ -1,6 +1,19 @@
 import Link from "next/link";
 
 import { AdminCard, AdminSection } from "@/components/admin/common/AdminSection";
+import {
+  SYSTEM_NAV_DEFAULT_CARD_CLASS,
+  SYSTEM_NAV_INVERSE_TEXT_CLASS,
+  SYSTEM_NAV_MAINTENANCE_CARD_CLASS,
+  SYSTEM_NAV_PRIMARY_CARD_CLASS,
+  SYSTEM_NAV_WARNING_CARD_CLASS,
+  SYSTEM_PAGE_CLASS,
+  SYSTEM_PAGE_WIDE_CLASS,
+  SYSTEM_SECTION_HEADER_CLASS,
+  SYSTEM_SUBTITLE_CLASS,
+  SYSTEM_TITLE_CLASS,
+  SYSTEM_EYEBROW_CLASS,
+} from "@/components/system/systemSemanticClassNames";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 
 import { APP_VERSION } from "@/lib/constants/app";
@@ -24,36 +37,36 @@ type SystemNavigationToneClassName = {
 function getNavigationToneClassName(tone: SystemConsoleNavigationTone): SystemNavigationToneClassName {
   if (tone === "primary") {
     return {
-      card: "border-stone-900 bg-stone-950 text-white hover:bg-stone-900",
+      card: SYSTEM_NAV_PRIMARY_CARD_CLASS,
       badgeTone: "inverse",
-      description: "text-stone-200",
-      href: "text-stone-200",
+      description: SYSTEM_NAV_INVERSE_TEXT_CLASS,
+      href: SYSTEM_NAV_INVERSE_TEXT_CLASS,
     };
   }
 
   if (tone === "warning") {
     return {
-      card: "border-amber-200 bg-amber-50 text-amber-950 hover:bg-amber-100",
+      card: SYSTEM_NAV_WARNING_CARD_CLASS,
       badgeTone: "warning",
-      description: "text-amber-800",
-      href: "text-amber-700",
+      description: "text-[var(--pbp-status-warning)]",
+      href: "text-[var(--pbp-status-warning)]",
     };
   }
 
   if (tone === "maintenance") {
     return {
-      card: "border-blue-100 bg-blue-50 text-blue-950 hover:bg-blue-100",
+      card: SYSTEM_NAV_MAINTENANCE_CARD_CLASS,
       badgeTone: "maintenance",
-      description: "text-blue-800",
-      href: "text-blue-700",
+      description: "text-[var(--pbp-accent)]",
+      href: "text-[var(--pbp-accent)]",
     };
   }
 
   return {
-    card: "border-stone-200 bg-white text-stone-950 hover:bg-stone-50",
+    card: SYSTEM_NAV_DEFAULT_CARD_CLASS,
     badgeTone: "neutral",
-    description: "text-stone-600",
-    href: "text-stone-500",
+    description: "text-[var(--pbp-text-muted)]",
+    href: "text-[var(--pbp-text-subtle)]",
   };
 }
 
@@ -79,19 +92,19 @@ function SystemNavigationCard({ card }: { card: SystemConsoleNavigationCard }) {
 
 export default function SystemConsoleShell() {
   return (
-    <main className="min-h-screen bg-stone-50 px-3 py-4 text-stone-900 sm:px-6 sm:py-6 lg:px-8">
-      <div className="mx-auto flex max-w-7xl flex-col gap-4 sm:gap-6">
+    <main className={SYSTEM_PAGE_CLASS}>
+      <div className={SYSTEM_PAGE_WIDE_CLASS}>
         <AdminCard as="header" className="p-4 sm:p-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
+              <p className={SYSTEM_EYEBROW_CLASS}>
                 {system.eyebrow}
               </p>
               <div className="space-y-2">
-                <h1 className="text-xl font-semibold text-stone-950 sm:text-2xl">
+                <h1 className={SYSTEM_TITLE_CLASS}>
                   {system.title}
                 </h1>
-                <p className="max-w-3xl text-sm leading-6 text-stone-600">
+                <p className={SYSTEM_SUBTITLE_CLASS}>
                   {system.description}
                 </p>
               </div>
@@ -110,7 +123,7 @@ export default function SystemConsoleShell() {
             description={section.description}
             className="p-4 sm:p-5"
             bodyClassName="mt-4 grid gap-3 sm:grid-cols-2 xl:mt-5 xl:grid-cols-3"
-            headerClassName="border-b border-stone-100 pb-4"
+            headerClassName={SYSTEM_SECTION_HEADER_CLASS}
           >
             {section.cards.map((card) => (
               <SystemNavigationCard key={card.id} card={card} />

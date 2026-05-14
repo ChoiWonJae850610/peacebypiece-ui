@@ -5,6 +5,7 @@ import { MODAL_INPUT_CLASS } from "@/components/common/modal/modalFieldClassName
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import { SYSTEM_VALUE_TEXT_CLASS } from "@/components/system/systemSemanticClassNames";
 import type { CategoryRulesManagerText } from "@/lib/system/categoryRuleText";
 import { buildCategoryRuleMatchPreview } from "@/lib/system/categoryRuleEditor";
 
@@ -101,7 +102,7 @@ export function CategoryValueRow({ value, selected, onSelect, onCommit, onRemove
   return (
     <div
       onClick={onSelect}
-      className={`flex items-center gap-2 rounded-2xl border p-2 transition ${selected ? "border-stone-900 bg-white shadow-sm ring-1 ring-stone-900/10" : "border-transparent bg-white/60 hover:border-stone-200 hover:bg-white"}`}
+      className={`flex items-center gap-2 rounded-2xl border p-2 transition ${selected ? "border-[var(--pbp-action-primary-surface)] bg-[var(--pbp-surface)] shadow-sm ring-1 ring-[var(--pbp-selected-border)]" : "border-transparent bg-[var(--pbp-surface-muted)] hover:border-[var(--pbp-border)] hover:bg-[var(--pbp-surface)]"}`}
     >
       <input
         value={draft}
@@ -147,22 +148,22 @@ export function TestResultPanel({
   text: CategoryRulesManagerText;
 }) {
   return (
-    <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
+    <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4 text-sm text-[var(--pbp-text-muted)]">
       {preview.matchedRuleId ? (
         <div className="space-y-2">
           <div>
-            <span className="font-medium text-stone-900">{text.matchedRuleLabel}:</span> {preview.matchedRuleName}
+            <span className={`font-medium ${SYSTEM_VALUE_TEXT_CLASS}`}>{text.matchedRuleLabel}:</span> {preview.matchedRuleName}
           </div>
           <div className="flex flex-wrap items-center gap-1">
-            <span className="font-medium text-stone-900">{text.matchedKeywordsLabel}:</span>
+            <span className={`font-medium ${SYSTEM_VALUE_TEXT_CLASS}`}>{text.matchedKeywordsLabel}:</span>
             {preview.matchedKeywords.map((keyword) => (
               <AdminStatusBadge key={keyword} tone="info" size="xs">#{keyword}</AdminStatusBadge>
             ))}
           </div>
           <div>
-            <span className="font-medium text-stone-900">{text.recommendationLabel}:</span> {preview.recommendationLabel}
+            <span className={`font-medium ${SYSTEM_VALUE_TEXT_CLASS}`}>{text.recommendationLabel}:</span> {preview.recommendationLabel}
           </div>
-          <div className="text-stone-600">{preview.reason}</div>
+          <div className="text-[var(--pbp-text-muted)]">{preview.reason}</div>
         </div>
       ) : (
         <AdminEmptyState title={text.noMatch} />

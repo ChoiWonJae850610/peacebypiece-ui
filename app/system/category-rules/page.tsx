@@ -4,6 +4,12 @@ import { useRef } from "react";
 import { APP_VERSION } from "@/lib/constants/app";
 import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminButton";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import {
+  SYSTEM_EYEBROW_CLASS,
+  SYSTEM_HEADER_PANEL_CLASS,
+  SYSTEM_PAGE_CLASS,
+  SYSTEM_TITLE_CLASS,
+} from "@/components/system/systemSemanticClassNames";
 import { getI18n } from "@/lib/i18n";
 import { getCategoryRulesManagerText } from "@/lib/system/categoryRuleText";
 import CategoryRulesManager, { type CategoryRulesManagerHandle } from "./CategoryRulesManager";
@@ -55,13 +61,13 @@ export default function SystemCategoryRulesPage() {
   const managerRef = useRef<CategoryRulesManagerHandle | null>(null);
 
   return (
-    <main className="min-h-screen bg-stone-100 px-4 py-6 text-stone-900 md:px-6 md:py-8">
+    <main className={SYSTEM_PAGE_CLASS}>
       <div className="mx-auto flex w-full max-w-[1680px] flex-col gap-6">
-        <header className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
+        <header className={SYSTEM_HEADER_PANEL_CLASS}>
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">{system.eyebrow}</p>
-              <h1 className="text-2xl font-semibold tracking-tight text-stone-900 md:text-3xl">{system.categoryRulePage.title}</h1>
+              <p className={SYSTEM_EYEBROW_CLASS}>{system.eyebrow}</p>
+              <h1 className={`${SYSTEM_TITLE_CLASS} tracking-tight md:text-3xl`}>{system.categoryRulePage.title}</h1>
             </div>
             <div className="flex flex-col items-start gap-3 md:items-end">
               <AdminStatusBadge tone="neutral">{system.versionLabel} v{APP_VERSION}</AdminStatusBadge>
