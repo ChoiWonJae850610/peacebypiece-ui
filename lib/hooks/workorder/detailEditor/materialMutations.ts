@@ -20,7 +20,11 @@ export function commitMaterialItemsEdit(payload: {
       return recalculateMaterial({ ...item, unitCost: toNumber(payload.nextValue) });
     }
     if (payload.editingCell.field === "type") {
-      return { ...item, type: (payload.nextValue || MATERIAL_TYPE.unselected) as Material["type"] };
+      const nextType = (payload.nextValue || MATERIAL_TYPE.unselected) as Material["type"];
+      if (nextType !== item.type) {
+        return { ...item, type: nextType, vendor: "", vendorRef: null };
+      }
+      return { ...item, type: nextType };
     }
 
     return { ...item, [payload.editingCell.field]: payload.nextValue } as Material;

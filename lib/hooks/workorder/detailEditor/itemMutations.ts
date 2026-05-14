@@ -66,6 +66,13 @@ export function commitOutsourcingItemsEdit(payload: {
     if (payload.editingCell.field === "unitCost") {
       return recalculateOutsourcing({ ...item, unitCost: toNumber(payload.nextValue) });
     }
+    if (payload.editingCell.field === "process") {
+      const nextProcess = payload.nextValue;
+      if (nextProcess !== item.process) {
+        return { ...item, process: nextProcess, vendor: "" } as Outsourcing;
+      }
+      return { ...item, process: nextProcess } as Outsourcing;
+    }
 
     return { ...item, [payload.editingCell.field]: payload.nextValue } as Outsourcing;
   });

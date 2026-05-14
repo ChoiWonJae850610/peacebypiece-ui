@@ -1,18 +1,10 @@
-Version : 0.11.75
-Summary : 작업지시서 목록 컨트롤 밀도와 초기화 보정
-Description : 작업지시서 업무 화면의 검색/필터/정렬 컨트롤 밀도를 PC와 모바일에서 낮추고, 검색어·상태 필터·정렬을 한 번에 기본값으로 되돌리는 초기화 액션을 추가했습니다. 상태/정렬 option 생성 로직을 공통 helper로 분리해 PC sidebar와 mobile drawer의 중복 정의를 줄였습니다.
+Version : 0.11.76
+Summary : 생산구성 상위 선택 변경 시 거래처 초기화
+Description : 작업지시서 생산구성에서 원단/부자재 구분 변경 시 기존 거래처와 거래처 참조값을 초기화하고, 외주공정 변경 시 기존 외주처를 초기화하도록 보정했습니다. 상위 선택값에 종속되는 하위 업체 선택값이 잘못 유지되는 문제를 방지했습니다. 기본 단위 자동 설정과 runtimeMode 플래그 정리는 후속 버전에서 별도 처리합니다.
 수정 파일 목록 :
-- components/layout/SidebarContent.tsx
-- components/layout/MobileDrawer.tsx
-- components/workorder/WorkOrderWorkspace.tsx
-- lib/workorder/list/workOrderListControls.ts
-- lib/workorder/workspace/builders/sidebarBuilders.ts
-- lib/workorder/workspace/buildWorkspaceViewModel.ts
-- lib/workorder/workspace/viewModelTypes.ts
-- lib/i18n/ko/workorder.ts
-- lib/i18n/en/workorder.ts
+- lib/hooks/workorder/detailEditor/materialMutations.ts
+- lib/hooks/workorder/detailEditor/itemMutations.ts
 - lib/constants/app.ts
 추가 파일 목록 :
-- docs/qa-workorder-list-ui-final-density-0.11.75.md
+- docs/qa-workorder-production-composition-dependent-reset-0.11.76.md
 삭제 파일 목록 :
-없음
