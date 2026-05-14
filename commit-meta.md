@@ -1,24 +1,17 @@
 Version :
-0.12.14
+0.12.15
 
 Summary :
-저장소 관리 semantic class 정리와 Cold Winter 대비 보정
+통계 화면 semantic class 1차 정리
 
 Description :
-저장소 관리 화면의 파일 요약, 작업지시서 저장소, 파일 목록, 휴지통 목록과 상세 모달의 직접 색상 class를 semantic class와 theme variable 기반으로 정리했다. default-light와 구분이 약했던 cold-winter 테마의 배경, surface, border, modal, field 계열 값을 더 차가운 블루 그레이 톤으로 보정했다.
+관리자 통계 화면의 summary card, chart card, section tab, period analysis, chart tooltip 및 empty state 영역에서 직접 stone/white 계열 색상 class를 semantic class와 theme variable 기반으로 정리했다. 통계 차트의 색상 기준도 theme variable과 텍스트/경계 token을 사용하도록 보정했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/theme/themes/coldWinter.ts
 - components/admin/common/adminSemanticClassNames.ts
-- components/admin/common/AdminTable.tsx
-- components/admin/files/FileListSection.tsx
-- components/admin/files/FileStorageSummary.tsx
-- components/admin/files/FileTrashSection.tsx
-- components/admin/files/WorkOrderStorageSection.tsx
-- components/admin/files/fileTrashSectionColumns.tsx
-- components/admin/files/fileTrashSectionModals.tsx
-- components/admin/files/fileTrashSectionPresentation.tsx
+- components/admin/dashboard/AdminBasicStatsCharts.tsx
+- components/admin/dashboard/AdminStatsDashboard.tsx
 
 추가 파일 목록 :
 없음

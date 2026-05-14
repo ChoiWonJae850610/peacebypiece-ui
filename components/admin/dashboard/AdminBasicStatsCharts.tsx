@@ -13,6 +13,14 @@ import {
 } from "recharts";
 
 import type { AdminStatChartPoint } from "@/lib/admin/adminDashboard.presentation";
+import {
+  ADMIN_STATS_BODY_CLASS,
+  ADMIN_STATS_ITEM_CLASS,
+  ADMIN_STATS_MUTED_PANEL_CLASS,
+  ADMIN_STATS_SELECTED_ITEM_CLASS,
+  ADMIN_STATS_SUBTLE_TEXT_CLASS,
+  ADMIN_STATS_TITLE_CLASS,
+} from "@/components/admin/common/adminSemanticClassNames";
 
 type ChartPoint = AdminStatChartPoint & {
   valueLabel?: string;
@@ -36,11 +44,11 @@ type BasicDonutChartProps = {
 
 const CHART_SEGMENT_COLORS = [
   "var(--admin-theme-surface)",
-  "#44403c",
-  "#78716c",
-  "#a8a29e",
-  "#d6d3d1",
-  "#e7e5e4",
+  "var(--pbp-text-primary)",
+  "var(--pbp-text-muted)",
+  "var(--pbp-text-subtle)",
+  "var(--pbp-border-strong)",
+  "var(--pbp-border)",
 ] as const;
 
 function formatTooltipValue(value: number | string, suffix: string) {
@@ -57,21 +65,21 @@ export function AdminBasicBarChart({ points, emptyLabel, valueSuffix = "" }: Bas
   const total = points.reduce((sum, item) => sum + item.value, 0);
 
   return (
-    <div className="relative mt-3 min-h-[258px] rounded-[22px] border border-stone-100 bg-stone-50/70 px-3.5 py-4.5 sm:mt-5 sm:min-h-[316px] sm:rounded-[24px] sm:px-5 sm:py-6">
+    <div className={`${ADMIN_STATS_MUTED_PANEL_CLASS} relative mt-3 min-h-[258px] px-3.5 py-4.5 sm:mt-5 sm:min-h-[316px] sm:px-5 sm:py-6`}>
       {total === 0 ? (
-        <div className="absolute inset-x-5 top-5 z-10 rounded-2xl border border-dashed border-stone-300 bg-white/75 px-4 py-3 text-center text-xs font-semibold text-stone-500">
+        <div className={`absolute inset-x-5 top-5 z-10 rounded-2xl border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)]/85 px-4 py-3 text-center text-xs font-semibold ${ADMIN_STATS_BODY_CLASS}`}>
           {emptyLabel}
         </div>
       ) : null}
       <div className="h-52 w-full sm:h-64">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={points} margin={{ top: 20, right: 6, bottom: 0, left: -20 }}>
-            <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "#78716c" }} />
-            <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "#a8a29e" }} />
+            <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "var(--pbp-text-muted)" }} />
+            <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "var(--pbp-text-subtle)" }} />
             <Tooltip
-              cursor={{ fill: "rgba(231, 229, 228, 0.55)" }}
+              cursor={{ fill: "var(--pbp-surface-soft)" }}
               formatter={(value) => formatTooltipValue(value as number | string, valueSuffix)}
-              contentStyle={{ borderRadius: 16, borderColor: "#e7e5e4", fontSize: 12 }}
+              contentStyle={{ borderRadius: 16, borderColor: "var(--pbp-border)", background: "var(--pbp-surface)", color: "var(--pbp-text-primary)", fontSize: 12 }}
             />
             <Bar dataKey="value" radius={[16, 16, 4, 4]} fill="var(--admin-theme-surface)" maxBarSize={72} />
           </BarChart>
@@ -79,9 +87,9 @@ export function AdminBasicBarChart({ points, emptyLabel, valueSuffix = "" }: Bas
       </div>
       <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:grid-cols-3 lg:grid-cols-5">
         {points.map((item) => (
-          <div key={item.label} className="min-w-0 rounded-2xl bg-white px-2.5 py-2 text-center shadow-sm sm:px-3">
-            <p className="text-sm font-bold text-stone-950">{getPointValueLabel(item, valueSuffix)}</p>
-            <p className="mt-1 truncate text-[11px] font-semibold text-stone-500">{item.label}</p>
+          <div key={item.label} className={`${ADMIN_STATS_ITEM_CLASS} min-w-0 px-2.5 py-2 text-center sm:px-3`}>
+            <p className={`text-sm font-bold ${ADMIN_STATS_TITLE_CLASS}`}>{getPointValueLabel(item, valueSuffix)}</p>
+            <p className={`mt-1 truncate text-[11px] font-semibold ${ADMIN_STATS_BODY_CLASS}`}>{item.label}</p>
           </div>
         ))}
       </div>
@@ -100,7 +108,7 @@ export function AdminBasicDonutChart({ points, totalLabel, valueSuffix = "", emp
     <div className={chartLayoutClassName}>
       <div className={chartBoxClassName}>
         {total === 0 ? (
-          <div className="absolute inset-1 z-10 flex items-center justify-center rounded-full border border-dashed border-stone-300 bg-white/80 px-4 text-center text-[11px] font-semibold leading-4 text-stone-500">
+          <div className={`absolute inset-1 z-10 flex items-center justify-center rounded-full border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)]/85 px-4 text-center text-[11px] font-semibold leading-4 ${ADMIN_STATS_BODY_CLASS}`}>
             {emptyLabel}
           </div>
         ) : null}
@@ -113,14 +121,14 @@ export function AdminBasicDonutChart({ points, totalLabel, valueSuffix = "", emp
             </Pie>
             <Tooltip
               formatter={(value) => formatTooltipValue(value as number | string, valueSuffix)}
-              contentStyle={{ borderRadius: 16, borderColor: "#e7e5e4", fontSize: 12 }}
+              contentStyle={{ borderRadius: 16, borderColor: "var(--pbp-border)", background: "var(--pbp-surface)", color: "var(--pbp-text-primary)", fontSize: 12 }}
             />
           </PieChart>
         </ResponsiveContainer>
         {total > 0 ? (
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-            <span className="text-2xl font-bold text-stone-950">{formatTooltipValue(total, valueSuffix)}</span>
-            <span className="text-xs font-semibold text-stone-400">{totalLabel}</span>
+            <span className={`text-2xl font-bold ${ADMIN_STATS_TITLE_CLASS}`}>{formatTooltipValue(total, valueSuffix)}</span>
+            <span className={`text-xs font-semibold ${ADMIN_STATS_SUBTLE_TEXT_CLASS}`}>{totalLabel}</span>
           </div>
         ) : null}
       </div>
@@ -136,12 +144,12 @@ export function AdminBasicDonutChart({ points, totalLabel, valueSuffix = "", emp
               <span className="shrink-0">{getPointValueLabel(item, valueSuffix)}</span>
             </>
           );
-          const className = `flex w-full items-center justify-between gap-2 rounded-2xl px-3 py-2.5 text-xs font-semibold transition sm:px-3.5 ${isSelected ? "bg-[var(--admin-theme-surface)] text-[var(--admin-theme-text-on-surface)]" : "bg-stone-50 text-stone-600"}`;
+          const className = `flex w-full items-center justify-between gap-2 rounded-2xl px-3 py-2.5 text-xs font-semibold transition sm:px-3.5 ${isSelected ? `${ADMIN_STATS_SELECTED_ITEM_CLASS} text-[var(--pbp-text-primary)]` : `bg-[var(--pbp-surface-muted)] ${ADMIN_STATS_BODY_CLASS}`}`;
           if (!onSelectPoint) {
             return <div key={item.label} className={className}>{content}</div>;
           }
           return (
-            <button key={item.label} type="button" onClick={() => onSelectPoint(item.label)} className={`${className} text-left hover:bg-stone-100 ${isSelected ? "hover:bg-[var(--admin-theme-surface)]" : ""}`}>
+            <button key={item.label} type="button" onClick={() => onSelectPoint(item.label)} className={`${className} text-left ${isSelected ? "" : "hover:bg-[var(--pbp-surface-soft)]"}`}>
               {content}
             </button>
           );

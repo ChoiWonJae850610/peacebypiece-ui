@@ -6,6 +6,25 @@ import { AdminButton, AdminLinkButton } from "@/components/admin/common/AdminBut
 import { AdminDateRangePicker, getTodayAdminLocalDateValue } from "@/components/admin/common/AdminDateRangePicker";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
+import {
+  ADMIN_STATS_ACCENT_BAR_CLASS,
+  ADMIN_STATS_ACCENT_TEXT_CLASS,
+  ADMIN_STATS_BODY_CLASS,
+  ADMIN_STATS_IDLE_ITEM_CLASS,
+  ADMIN_STATS_ITEM_CLASS,
+  ADMIN_STATS_ITEM_MUTED_CLASS,
+  ADMIN_STATS_MUTED_PANEL_CLASS,
+  ADMIN_STATS_PANEL_CLASS,
+  ADMIN_STATS_PANEL_TIGHT_CLASS,
+  ADMIN_STATS_SELECTED_ITEM_CLASS,
+  ADMIN_STATS_SUBTLE_TEXT_CLASS,
+  ADMIN_STATS_TAB_BAR_CLASS,
+  ADMIN_STATS_TITLE_CLASS,
+  ADMIN_STATS_TRACK_CLASS,
+  ADMIN_STATS_TRACK_INSET_CLASS,
+  ADMIN_STATS_WARNING_PANEL_CLASS,
+  ADMIN_STATS_WARNING_TEXT_CLASS,
+} from "@/components/admin/common/adminSemanticClassNames";
 import AdminTable from "@/components/admin/common/AdminTable";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
 import { AdminBasicBarChart, AdminBasicDonutChart } from "@/components/admin/dashboard/AdminBasicStatsCharts";
@@ -109,8 +128,8 @@ function PeriodSummaryCard({
   onSelect: (key: AdminStatsPeriodTopMode) => void;
 }) {
   return (
-    <div className="flex h-full min-h-[188px] flex-col rounded-[20px] border border-stone-100 bg-stone-50/70 p-2.5 sm:min-h-[204px] sm:rounded-[22px] sm:p-3">
-      <h3 className="text-sm font-semibold text-stone-950">{title}</h3>
+    <div className={`${ADMIN_STATS_MUTED_PANEL_CLASS} flex h-full min-h-[188px] flex-col p-2.5 sm:min-h-[204px] sm:p-3`}>
+      <h3 className={`text-sm font-semibold ${ADMIN_STATS_TITLE_CLASS}`}>{title}</h3>
       <div className="mt-2 grid flex-1 content-start gap-1">
         {items.map((item) => {
           const isSelected = item.key === selectedKey;
@@ -119,15 +138,15 @@ function PeriodSummaryCard({
               key={item.key}
               type="button"
               onClick={() => onSelect(item.key)}
-              className={`min-h-[52px] rounded-2xl border px-2.5 py-2 text-left shadow-sm transition sm:px-3 ${isSelected ? "border-stone-950 bg-white" : "border-stone-100 bg-white hover:border-stone-200 hover:bg-stone-50"}`}
+              className={`min-h-[52px] rounded-2xl border px-2.5 py-2 text-left shadow-sm transition sm:px-3 ${isSelected ? ADMIN_STATS_SELECTED_ITEM_CLASS : ADMIN_STATS_IDLE_ITEM_CLASS}`}
               aria-pressed={isSelected}
             >
               <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-stone-800">{item.label}</p>
-                  <p className="mt-0.5 line-clamp-1 text-[11px] font-semibold leading-4 text-stone-400">{item.description}</p>
+                  <p className={`text-sm font-semibold ${ADMIN_STATS_TITLE_CLASS}`}>{item.label}</p>
+                  <p className={`mt-0.5 line-clamp-1 text-[11px] font-semibold leading-4 ${ADMIN_STATS_SUBTLE_TEXT_CLASS}`}>{item.description}</p>
                 </div>
-                <p className="shrink-0 text-base font-bold text-stone-950 sm:text-lg">{item.value}</p>
+                <p className={`shrink-0 text-base font-bold ${ADMIN_STATS_TITLE_CLASS} sm:text-lg`}>{item.value}</p>
               </div>
             </button>
           );
@@ -153,17 +172,17 @@ function PeriodTopCard({
 }) {
   return (
     <AdminCard className="flex h-full min-h-[188px] flex-col p-3 sm:min-h-[204px] sm:p-3.5">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">{eyebrow}</p>
-      <h2 className="mt-1 text-base font-semibold text-stone-950">{title}</h2>
+      <p className={`text-[11px] font-semibold uppercase tracking-[0.14em] ${ADMIN_STATS_SUBTLE_TEXT_CLASS}`}>{eyebrow}</p>
+      <h2 className={`mt-1 text-base font-semibold ${ADMIN_STATS_TITLE_CLASS}`}>{title}</h2>
       <div className="mt-3 grid flex-1 content-center gap-3">
         {items.length > 0 ? items.map((item, index) => (
-          <div key={`${item.label}-${index}`} className="rounded-2xl bg-stone-50 px-3 py-2">
-            <div className="flex items-start justify-between gap-2 text-sm font-semibold text-stone-700">
+          <div key={`${item.label}-${index}`} className={`${ADMIN_STATS_ITEM_MUTED_CLASS} px-3 py-2`}>
+            <div className={`flex items-start justify-between gap-2 text-sm font-semibold ${ADMIN_STATS_BODY_CLASS}`}>
               <span className="truncate pr-3">{index + 1}. {item.label}</span>
-              <span className="shrink-0 text-stone-950">{formatCount(item.value, valueSuffix)}</span>
+              <span className={`shrink-0 ${ADMIN_STATS_TITLE_CLASS}`}>{formatCount(item.value, valueSuffix)}</span>
             </div>
-            <div className="mt-1.5 h-1.5 rounded-full bg-white">
-              <div className="h-1.5 rounded-full bg-[var(--admin-theme-surface)]" style={{ width: `${item.widthPercent}%` }} />
+            <div className={`mt-1.5 h-1.5 rounded-full ${ADMIN_STATS_TRACK_INSET_CLASS}`}>
+              <div className={`h-1.5 rounded-full ${ADMIN_STATS_ACCENT_BAR_CLASS}`} style={{ width: `${item.widthPercent}%` }} />
             </div>
           </div>
         )) : <AdminEmptyState title={emptyLabel} />}
@@ -174,10 +193,10 @@ function PeriodTopCard({
 
 function CurrentSummaryCard({ label, value, description, subValue }: { label: string; value: string; description: string; subValue?: string }) {
   return (
-    <div className="flex h-full min-h-[92px] flex-col rounded-[18px] border border-stone-100 bg-white px-3 py-2.5 shadow-sm sm:min-h-[96px] sm:rounded-[20px] sm:px-3.5">
-      <p className="text-xs font-semibold text-stone-500">{label}</p>
-      <p className="mt-1 text-base font-bold text-stone-950 sm:text-lg">{value}</p>
-      <p className="mt-0.5 flex-1 text-[11px] font-semibold leading-4 text-stone-500">{description}</p>
+    <div className={`${ADMIN_STATS_ITEM_CLASS} flex h-full min-h-[92px] flex-col px-3 py-2.5 sm:min-h-[96px] sm:px-3.5`}>
+      <p className={`text-xs font-semibold ${ADMIN_STATS_BODY_CLASS}`}>{label}</p>
+      <p className={`mt-1 text-base font-bold ${ADMIN_STATS_TITLE_CLASS} sm:text-lg`}>{value}</p>
+      <p className={`mt-0.5 flex-1 text-[11px] font-semibold leading-4 ${ADMIN_STATS_BODY_CLASS}`}>{description}</p>
       {subValue ? <p className="sr-only">{subValue}</p> : null}
     </div>
   );
@@ -371,7 +390,7 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
         label: pt("factoryColumn", pageText.factoryColumn),
         className: "min-w-0",
         render: (item) => (
-          <span className="block truncate text-xs font-semibold text-stone-700" title={buildFactoryMetricTooltip(item)}>
+          <span className={`block truncate text-xs font-semibold ${ADMIN_STATS_BODY_CLASS}`} title={buildFactoryMetricTooltip(item)}>
             {item.label} · {formatCount(item.productionCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))}
           </span>
         ),
@@ -437,16 +456,16 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
 
   const renderBarList = (title: string, points: Array<{ label: string; value: number; widthPercent: number; valueLabel?: string }>, emptyLabel: string) => (
     <AdminCard className="flex h-full min-h-[252px] flex-col p-3.5 sm:min-h-[286px] sm:p-4">
-      <h2 className="text-base font-semibold text-stone-950">{title}</h2>
+      <h2 className={`text-base font-semibold ${ADMIN_STATS_TITLE_CLASS}`}>{title}</h2>
       <div className="mt-3 grid flex-1 content-center gap-3">
         {points.length > 0 ? points.map((item) => (
           <div key={item.label}>
-            <div className="flex items-center justify-between text-xs font-semibold text-stone-600">
+            <div className={`flex items-center justify-between text-xs font-semibold ${ADMIN_STATS_BODY_CLASS}`}>
               <span className="truncate pr-2">{translateStatsLabel(item.label, t)}</span>
               <span>{item.value}</span>
             </div>
-            <div className="mt-2.5 h-2.5 rounded-full bg-stone-100">
-              <div className="h-2.5 rounded-full bg-[var(--admin-theme-surface)]" style={{ width: `${item.widthPercent}%` }} />
+            <div className={`mt-2.5 h-2.5 rounded-full ${ADMIN_STATS_TRACK_CLASS}`}>
+              <div className={`h-2.5 rounded-full ${ADMIN_STATS_ACCENT_BAR_CLASS}`} style={{ width: `${item.widthPercent}%` }} />
             </div>
           </div>
         )) : <AdminEmptyState title={emptyLabel} />}
@@ -484,14 +503,14 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
   return (
     <>
       {!hasVisibleStatsData ? (
-        <AdminCard className="border-dashed border-amber-200 bg-amber-50/55 px-5 py-5">
+        <AdminCard className={`${ADMIN_STATS_WARNING_PANEL_CLASS} px-5 py-5`}>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">{pt("demoSeedEyebrow", pageText.demoSeedEyebrow)}</p>
-              <h2 className="mt-2 text-lg font-semibold text-stone-950">{pt("demoSeedTitle", pageText.demoSeedTitle)}</h2>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">{pt("demoSeedDescription", pageText.demoSeedDescription)}</p>
+              <p className={`text-xs font-semibold uppercase tracking-[0.14em] ${ADMIN_STATS_WARNING_TEXT_CLASS}`}>{pt("demoSeedEyebrow", pageText.demoSeedEyebrow)}</p>
+              <h2 className={`mt-2 text-lg font-semibold ${ADMIN_STATS_TITLE_CLASS}`}>{pt("demoSeedTitle", pageText.demoSeedTitle)}</h2>
+              <p className={`mt-2 max-w-3xl text-sm leading-6 ${ADMIN_STATS_BODY_CLASS}`}>{pt("demoSeedDescription", pageText.demoSeedDescription)}</p>
             </div>
-            <div className="rounded-2xl bg-white px-4 py-3 text-xs font-semibold leading-5 text-stone-600 shadow-sm">
+            <div className={`${ADMIN_STATS_ITEM_CLASS} px-4 py-3 text-xs font-semibold leading-5 ${ADMIN_STATS_BODY_CLASS}`}>
               <p>1. db/schema/full_reset.sql</p>
               <p>2. db/seed/system_standards_seed.sql</p>
               <p>3. db/schema/full_reset_smoke_test.sql</p>
@@ -509,9 +528,9 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-[20px] border border-stone-100 bg-white px-2 py-2 shadow-sm sm:rounded-[24px] sm:px-2.5 sm:py-2.5">
-        <div className="flex flex-wrap items-center justify-start border-b border-stone-100 pb-1.5 sm:justify-end">
-          <div className="flex w-full items-center gap-1.5 overflow-x-auto rounded-2xl bg-stone-50 p-1 sm:w-auto sm:flex-wrap sm:rounded-full">
+      <section className={`${ADMIN_STATS_PANEL_CLASS} overflow-hidden px-2 py-2 sm:px-2.5 sm:py-2.5`}>
+        <div className="flex flex-wrap items-center justify-start border-b border-[var(--pbp-border)] pb-1.5 sm:justify-end">
+          <div className={`flex w-full items-center gap-1.5 overflow-x-auto ${ADMIN_STATS_TAB_BAR_CLASS} sm:w-auto sm:flex-wrap`}>
             {statsSectionTabs.map((item) => {
               const isActive = item.key === activeStatsSection;
               return (
@@ -542,10 +561,10 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
               <AdminCard className="flex h-full min-h-[252px] flex-col p-3.5 sm:min-h-[286px] sm:p-4">
                 <div className="flex flex-col items-start gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
                   <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("productionMixEyebrow", pageText.productionMixEyebrow)}</p>
-                    <h2 className="mt-1 text-base font-semibold text-stone-950">{pt("productionMixTitle", pageText.productionMixTitle)}</h2>
+                    <p className={`text-[11px] font-semibold uppercase tracking-[0.14em] ${ADMIN_STATS_SUBTLE_TEXT_CLASS}`}>{pt("productionMixEyebrow", pageText.productionMixEyebrow)}</p>
+                    <h2 className={`mt-1 text-base font-semibold ${ADMIN_STATS_TITLE_CLASS}`}>{pt("productionMixTitle", pageText.productionMixTitle)}</h2>
                   </div>
-                  <div className="flex w-full overflow-x-auto rounded-2xl bg-stone-100 p-1 sm:w-auto sm:rounded-full">
+                  <div className={`flex w-full overflow-x-auto ${ADMIN_STATS_TAB_BAR_CLASS} sm:w-auto`}>
                     {(["first", "second"] as const).map((key) => (
                       <AdminButton
                         key={key}
@@ -566,8 +585,8 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
                 <div className="mt-1.5 min-w-0 flex-1">
                   <AdminBasicDonutChart points={selectedCategoryDepthBars} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel={pt("productionMixEmpty", pageText.productionMixEmpty)} compact selectedLabel={normalizedSelectedCategoryLabel} onSelectPoint={setSelectedCategoryLabel} />
                 </div>
-                <p className="mt-1 text-[11px] font-semibold text-stone-500">{selectedCategoryDepthLabel} · {formatCount(selectedCategoryDepthTotal, pt("workorderCountSuffix", pageText.workorderCountSuffix))}</p>
-                {normalizedSelectedCategoryLabel ? <p className="mt-0.5 text-[11px] font-semibold text-[var(--admin-theme-surface)]">{pt("selectedItemLabel", pageText.selectedItemLabel)}: {normalizedSelectedCategoryLabel}</p> : null}
+                <p className={`mt-1 text-[11px] font-semibold ${ADMIN_STATS_BODY_CLASS}`}>{selectedCategoryDepthLabel} · {formatCount(selectedCategoryDepthTotal, pt("workorderCountSuffix", pageText.workorderCountSuffix))}</p>
+                {normalizedSelectedCategoryLabel ? <p className={`mt-0.5 text-[11px] font-semibold ${ADMIN_STATS_ACCENT_TEXT_CLASS}`}>{pt("selectedItemLabel", pageText.selectedItemLabel)}: {normalizedSelectedCategoryLabel}</p> : null}
               </AdminCard>
 
               {renderBarList(categoryDetailTitle, categoryDetailPoints, categoryDetailEmptyLabel)}
@@ -578,17 +597,17 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
             <div className="grid auto-rows-fr gap-2.5 xl:grid-cols-2">
               {renderBarList(pt("factoryPerformanceTitle", pageText.factoryPerformanceTitle), viewModel.factoryProductionBars, pt("factoryPerformanceEmpty", pageText.factoryPerformanceEmpty))}
               <AdminCard className="flex h-full min-h-[252px] flex-col p-3.5 sm:min-h-[286px] sm:p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">{pt("delayQualityEyebrow", pageText.delayQualityEyebrow)}</p>
-                <h2 className="mt-1 text-base font-semibold text-stone-950">{pt("delayQualityTitle", pageText.delayQualityTitle)}</h2>
+                <p className={`text-[11px] font-semibold uppercase tracking-[0.14em] ${ADMIN_STATS_SUBTLE_TEXT_CLASS}`}>{pt("delayQualityEyebrow", pageText.delayQualityEyebrow)}</p>
+                <h2 className={`mt-1 text-base font-semibold ${ADMIN_STATS_TITLE_CLASS}`}>{pt("delayQualityTitle", pageText.delayQualityTitle)}</h2>
                 <AdminTable
                   items={translatedStats.factoryPerformance.slice(0, 5)}
                   columns={factoryPerformanceColumns}
                   getRowKey={(item) => item.label}
                   emptyLabel={pt("factoryPerformanceEmpty", pageText.factoryPerformanceEmpty)}
-                  className="mt-3 min-h-[218px] rounded-2xl border-stone-100"
+                  className="mt-3 min-h-[218px] rounded-2xl border-[var(--pbp-border)]"
                   gridTemplateColumns="minmax(180px,1.2fr) minmax(96px,0.8fr) minmax(96px,0.8fr)"
                   rowBaseClassName="grid w-full min-w-[420px] gap-3 px-3 py-2 text-left text-[11px] md:min-w-0 md:items-center"
-                  headerClassName="hidden min-w-[420px] gap-3 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-stone-500 md:grid md:min-w-0"
+                  headerClassName="hidden min-w-[420px] gap-3 bg-[var(--pbp-surface-muted)] px-3 py-1.5 text-xs font-semibold text-[var(--pbp-text-muted)] md:grid md:min-w-0"
                 />
               </AdminCard>
             </div>
@@ -596,9 +615,9 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
 
           {activeStatsSection === "period" ? (
             <div>
-              <div className="flex flex-col items-stretch gap-2 rounded-[18px] border border-stone-100 bg-stone-50/70 px-2.5 py-2 sm:rounded-[20px] sm:px-3 lg:flex-row lg:items-center lg:justify-between">
+              <div className={`${ADMIN_STATS_PANEL_TIGHT_CLASS} flex flex-col items-stretch gap-2 px-2.5 py-2 sm:px-3 lg:flex-row lg:items-center lg:justify-between`}>
                 <div>
-                  <h3 className="text-sm font-semibold text-stone-950">{pt("periodAnalysisTitle", pageText.periodAnalysisTitle)}</h3>
+                  <h3 className={`text-sm font-semibold ${ADMIN_STATS_TITLE_CLASS}`}>{pt("periodAnalysisTitle", pageText.periodAnalysisTitle)}</h3>
                 </div>
                 <div className="flex w-full flex-wrap items-center justify-start gap-2 lg:w-auto lg:justify-end">
                   <div className="w-full min-w-0 flex-1 sm:w-auto sm:min-w-[280px] sm:max-w-[440px] sm:flex-none">
@@ -643,7 +662,7 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
                   </AdminLinkButton>
                 </div>
               </div>
-              {customPeriodMessage ? <p className="mt-3 text-xs font-semibold text-amber-700">{customPeriodMessage}</p> : null}
+              {customPeriodMessage ? <p className={`mt-3 text-xs font-semibold ${ADMIN_STATS_WARNING_TEXT_CLASS}`}>{customPeriodMessage}</p> : null}
               <div className="mt-3 grid auto-rows-fr gap-3 xl:grid-cols-2">
                 <PeriodTopCard
                   eyebrow={pt("periodTopEyebrow", pageText.reorderTopEyebrow)}
