@@ -58,7 +58,12 @@ const DEFAULT_CANVAS_HEIGHT = 900;
 const MOBILE_CANVAS_WIDTH = 900;
 const MOBILE_CANVAS_HEIGHT = 900;
 const MAX_HISTORY_LENGTH = 24;
-const ERASER_LINE_WIDTH = 34;
+const ERASER_LINE_WIDTH_BY_STROKE_SIZE: Record<DrawingStrokeSizeId, number> = {
+  thin: 20,
+  regular: 34,
+  bold: 52,
+  wide: 72,
+};
 const SHAPE_MIN_DISTANCE = 2;
 
 const DRAWING_COLORS: DrawingColor[] = [
@@ -106,6 +111,10 @@ function isColorEnabled(tool: DrawingTool) {
   return tool !== "eraser";
 }
 
+function getEraserLineWidth(strokeSizeId: DrawingStrokeSizeId) {
+  return ERASER_LINE_WIDTH_BY_STROKE_SIZE[strokeSizeId] ?? ERASER_LINE_WIDTH_BY_STROKE_SIZE.regular;
+}
+
 function getPointerPosition(canvas: HTMLCanvasElement, event: PointerEvent<HTMLCanvasElement>) {
   const rect = canvas.getBoundingClientRect();
   return {
@@ -114,12 +123,16 @@ function getPointerPosition(canvas: HTMLCanvasElement, event: PointerEvent<HTMLC
   };
 }
 
-function getEraserCursor(canvas: HTMLCanvasElement, event: PointerEvent<HTMLCanvasElement>): EraserCursor {
+function getEraserCursor(
+  canvas: HTMLCanvasElement,
+  event: PointerEvent<HTMLCanvasElement>,
+  eraserLineWidth: number,
+): EraserCursor {
   const rect = canvas.getBoundingClientRect();
   return {
     x: event.clientX - rect.left,
     y: event.clientY - rect.top,
-    diameter: Math.max(18, (ERASER_LINE_WIDTH / canvas.width) * rect.width),
+    diameter: Math.max(18, (eraserLineWidth / canvas.width) * rect.width),
     visible: true,
   };
 }
@@ -390,6 +403,19 @@ export default function WorkOrderDrawingModal({
   const colorEnabled = isColorEnabled(tool);
   const selectedStrokeSize = DRAWING_STROKE_SIZES.find((size) => size.value === strokeSize) ?? DEFAULT_STROKE_SIZE;
   const selectedLineStyleId: DrawingLineStyleId = lineStyle;
+  const eraserLineWidth = getEraserLineWidth(selectedStrokeSize.id);
+  const strokeSizeControlLabel =
+    tool === "eraser"
+      ? ui.eraserSizeGroupAria
+      : shapeToolSelected
+        ? ui.shapeStrokeSizeGroupAria
+        : ui.strokeSizeGroupAria;
+  const strokeSizeStatusLabel =
+    tool === "eraser"
+      ? ui.eraserSizeStatusLabel
+      : shapeToolSelected
+        ? ui.shapeStrokeSizeStatusLabel
+        : ui.strokeSizeStatusLabel;
 
   const closeToolPopovers = () => setActivePopover(null);
   const togglePopover = (nextPopover: DrawingPopover) => {
@@ -402,7 +428,7 @@ export default function WorkOrderDrawingModal({
       hideEraserCursor();
       return;
     }
-    setEraserCursor(getEraserCursor(canvas, event));
+    setEraserCursor(getEraserCursor(canvas, event, eraserLineWidth));
   };
 
   const syncHistoryState = (nextIndex: number) => {
@@ -465,7 +491,7 @@ export default function WorkOrderDrawingModal({
     context.save();
     context.lineCap = "round";
     context.lineJoin = "round";
-    context.lineWidth = tool === "eraser" ? ERASER_LINE_WIDTH : strokeSize;
+    context.lineWidth = tool === "eraser" ? eraserLineWidth : strokeSize;
     context.strokeStyle = tool === "eraser" ? "#ffffff" : strokeColor;
     context.setLineDash([]);
     context.beginPath();
@@ -608,7 +634,7 @@ export default function WorkOrderDrawingModal({
       description={isMobile ? ui.mobileDescription : ui.description}
       onClose={onClose}
       maxWidthClass="md:max-w-7xl"
-      bodyClassName="min-h-0"
+      bodyClassName="min-h-0 overflow-hidden px-3 py-3 md:px-5 md:py-4"
       closeOnBackdrop={false}
       footer={
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -635,9 +661,9 @@ export default function WorkOrderDrawingModal({
         </div>
       }
     >
-      <div className="flex min-h-0 flex-col gap-3">
-        <div className="min-h-0 rounded-3xl border bg-[var(--pbp-surface-muted)] p-2 shadow-inner sm:p-3">
-          <div className="relative h-[62dvh] min-h-[430px] overflow-hidden rounded-2xl border bg-white touch-none sm:h-[66dvh]">
+      <div className="flex h-full min-h-0 flex-col gap-3">
+        <div className="flex min-h-0 flex-1 rounded-3xl border bg-[var(--pbp-surface-muted)] p-2 shadow-inner sm:p-3">
+          <div className="relative min-h-[320px] flex-1 overflow-hidden rounded-2xl border bg-white touch-none sm:min-h-[360px]">
             <canvas
               ref={canvasRef}
               className={`h-full w-full touch-none select-none ${tool === "eraser" ? "cursor-none" : "cursor-crosshair"}`}
@@ -741,14 +767,14 @@ export default function WorkOrderDrawingModal({
                 type="button"
                 onClick={() => togglePopover("strokeSize")}
                 className={getToolButtonClass(activePopover === "strokeSize")}
-                aria-label={ui.strokeSizeGroupAria}
-                title={ui.strokeSizeGroupAria}
+                aria-label={strokeSizeControlLabel}
+                title={strokeSizeControlLabel}
                 aria-expanded={activePopover === "strokeSize"}
               >
                 <DrawingIcon name="stroke" />
               </button>
               {activePopover === "strokeSize" ? (
-                <div className={`${PICKER_PANEL_CLASS} grid w-36 gap-1.5`} aria-label={ui.strokeSizeGroupAria}>
+                <div className={`${PICKER_PANEL_CLASS} grid w-36 gap-1.5`} aria-label={strokeSizeControlLabel}>
                   {DRAWING_STROKE_SIZES.map((size) => (
                     <button
                       key={size.id}
@@ -810,7 +836,7 @@ export default function WorkOrderDrawingModal({
 
           <div className="min-w-[150px] rounded-2xl border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface)] px-3 py-2 text-center text-[11px] leading-5 text-[var(--pbp-text-muted)]">
             <span className="font-semibold text-[var(--pbp-text)]">{ui.toolLabels[tool] ?? tool}</span>
-            <span> · {ui.strokeSizeLabels[selectedStrokeSize.id] ?? selectedStrokeSize.id}</span>
+            <span> · {strokeSizeStatusLabel} {ui.strokeSizeLabels[selectedStrokeSize.id] ?? selectedStrokeSize.id}</span>
             {shapeToolSelected ? <span> · {ui.lineStyleLabels[selectedLineStyleId] ?? selectedLineStyleId}</span> : null}
           </div>
         </div>
