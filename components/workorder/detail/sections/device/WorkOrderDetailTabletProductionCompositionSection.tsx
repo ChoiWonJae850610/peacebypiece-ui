@@ -21,10 +21,10 @@ export default function WorkOrderDetailTabletProductionCompositionSection(props:
   ].join(" · ");
 
   return (
-    <section className="overflow-hidden rounded-2xl bg-stone-50 p-4">
+    <section className="overflow-hidden rounded-2xl border border-stone-200 bg-white p-3.5">
       <SectionHeader title={copy.title} summary={summary} open={props.open} onToggle={props.onToggle} />
       {props.open ? (
-        <div className="mt-4 grid gap-4">
+        <div className="mt-3 grid gap-3">
           <WorkOrderDetailTabletMaterialSection
             materials={props.materials}
             open={props.materialOpen}

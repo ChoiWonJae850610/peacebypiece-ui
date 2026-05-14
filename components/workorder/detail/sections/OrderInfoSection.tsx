@@ -96,8 +96,8 @@ export default function OrderInfoSection({
               ))}
             </div>
           ) : null}
-          <div className="mt-3 max-w-full overflow-x-auto rounded-2xl border border-stone-200 bg-white">
-            <table className="w-full max-w-full table-fixed text-left">
+          <div className="mt-3 max-w-full overflow-x-auto rounded-xl border border-stone-200 bg-white">
+            <table className="min-w-[720px] w-full table-fixed text-left">
               <colgroup>
                 <col className="w-[13%]" />
                 <col className="w-[19%]" />

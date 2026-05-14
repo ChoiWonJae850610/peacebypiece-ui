@@ -46,12 +46,12 @@ export default function WorkOrderDetailTabletOutsourcingSection({
     : copy.empty;
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-stone-200 bg-white p-4">
+    <section className="overflow-hidden rounded-xl border border-stone-200 bg-white p-3">
       <SectionHeader title={copy.title} summary={summary} open={open} onToggle={onToggle} />
       {open ? (
-        <div className="mt-4 grid gap-3">
+        <div className="mt-3 grid gap-2.5">
           {outsourcing.map((item, index) => (
-            <article key={item.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+            <article key={item.id} className="rounded-xl bg-stone-50/80 p-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} displayValue={getWorkOrderSelectDisplayValue(item.process)} options={processOptions} editingCell={editingCell} editingValue={editingValue} wrapText onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
@@ -60,24 +60,24 @@ export default function WorkOrderDetailTabletOutsourcingSection({
                 {!locked ? <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.process || copy.fallbackItem.replace("{index}", String(index + 1))} ${common.deleteSuffix}`} /> : null}
               </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                <div className="rounded-xl bg-white p-3">
+              <div className="mt-3 grid grid-cols-2 gap-2.5">
+                <div className="rounded-lg bg-white/90 p-2.5">
                   <div className="text-xs text-stone-500">{copy.fields.vendor}</div>
                   <div className="mt-1"><EditableValue section="outsourcing" rowId={item.id} field="vendor" value={item.vendor} displayValue={getWorkOrderSelectDisplayValue(item.vendor)} options={vendorOptionsById[item.id] ?? []} editingCell={editingCell} editingValue={editingValue} wrapText onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></div>
                 </div>
-                <div className="rounded-xl bg-white p-3">
+                <div className="rounded-lg bg-white/90 p-2.5">
                   <div className="text-xs text-stone-500">{copy.fields.quantity}</div>
                   <div className="mt-1"><EditableValue section="outsourcing" rowId={item.id} field="quantity" value={item.quantity.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></div>
                 </div>
-                <div className="rounded-xl bg-white p-3">
+                <div className="rounded-lg bg-white/90 p-2.5">
                   <div className="text-xs text-stone-500">{copy.fields.unitType}</div>
                   <div className="mt-1"><EditableValue section="outsourcing" rowId={item.id} field="unitType" value={item.unitType} options={priceBasisOptions} editingCell={editingCell} editingValue={editingValue} centered onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></div>
                 </div>
-                <div className="rounded-xl bg-white p-3">
+                <div className="rounded-lg bg-white/90 p-2.5">
                   <div className="text-xs text-stone-500">{copy.fields.unitCost}</div>
                   <div className="mt-1"><EditableValue section="outsourcing" rowId={item.id} field="unitCost" value={item.unitCost.toLocaleString()} editingCell={editingCell} editingValue={editingValue} inputMode="decimal" alignRight onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></div>
                 </div>
-                <div className="col-span-2 rounded-xl bg-white p-3">
+                <div className="col-span-2 rounded-lg bg-white/90 p-2.5">
                   <div className="text-xs text-stone-500">{copy.fields.amount}</div>
                   <div className="mt-1 text-right text-base font-semibold tabular-nums text-stone-900">{(item.totalCost ?? 0).toLocaleString()}{common.currencySuffix}</div>
                 </div>
@@ -85,7 +85,7 @@ export default function WorkOrderDetailTabletOutsourcingSection({
             </article>
           ))}
 
-          <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
+          <div className="rounded-xl bg-stone-50/80 px-3 py-2.5">
             <div className="text-xs text-stone-500">{copy.fields.amount}</div>
             <div className="mt-1 text-right text-base font-semibold tabular-nums text-stone-900">{total.toLocaleString()}{common.currencySuffix}</div>
           </div>
