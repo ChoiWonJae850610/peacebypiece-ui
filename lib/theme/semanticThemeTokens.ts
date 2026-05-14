@@ -102,6 +102,29 @@ export const WORKORDER_ORDER_INFO_SEMANTICS = {
 } as const;
 
 
+export const WORKORDER_MOBILE_COMPOSITION_SEMANTICS = {
+  entryCard: {
+    description: "모바일 작업지시서 생산구성에서 원단/부자재 또는 외주공정 한 항목을 감싸는 카드",
+    token: "surface.cardMuted",
+  },
+  selectablePanel: {
+    description: "모바일 생산구성에서 후보 선택으로 값을 정하는 항목",
+    examples: ["자재 구분", "거래처", "단위", "공정", "외주처", "단가 기준"],
+    token: "field.selectable",
+  },
+  editablePanel: {
+    description: "모바일 생산구성에서 숫자나 텍스트를 직접 입력하는 항목",
+    examples: ["자재명", "수량", "단가"],
+    token: "field.editable",
+  },
+  calculatedPanel: {
+    description: "모바일 생산구성에서 입력값으로 계산되는 금액 항목",
+    examples: ["자재 금액", "외주공정 금액", "총 금액"],
+    token: "field.calculated",
+  },
+} as const;
+
+
 export const WORKORDER_SIDE_PANEL_SEMANTICS = {
   attachmentItem: {
     description: "작업지시서 우측 패널에서 등록된 디자인/첨부 파일을 표시하는 항목 카드",

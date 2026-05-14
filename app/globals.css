@@ -445,6 +445,16 @@ body {
   background: var(--pbp-field-editable-surface);
 }
 
+.pbp-workorder-selectable-panel {
+  border-color: color-mix(in srgb, var(--pbp-field-selectable-border) 68%, transparent);
+  background: var(--pbp-field-selectable-surface);
+}
+
+.pbp-workorder-mobile-composition-card {
+  border-color: var(--pbp-border-default);
+  background: color-mix(in srgb, var(--pbp-surface) 72%, var(--pbp-surface-muted));
+}
+
 .pbp-workorder-calculated-panel {
   border-color: var(--pbp-field-calculated-border);
   background: var(--pbp-field-calculated-surface);
