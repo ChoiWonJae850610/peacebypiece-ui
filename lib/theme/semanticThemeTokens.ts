@@ -367,3 +367,74 @@ export const PBP_PERSONAL_THEME_EXTENSION_CHECKS = {
     "로그인 도입 후 DB 기반 사용자 설정 저장 구조 검토",
   ],
 } as const;
+
+export const PBP_THEME_DIRECT_COLOR_CLASS_AUDIT_CHECKS = {
+  checkedAtVersion: "0.12.9",
+  purpose: "개인 theme 확장 전 직접 Tailwind 색상 class 잔여 후보를 의미별로 나누어 후속 치환 우선순위를 정리한다.",
+  scannedAreas: [
+    "components/workorder",
+    "components/admin",
+    "components/me",
+    "components/common",
+    "app",
+  ],
+  workorderCandidates: {
+    summary: "작업지시서 화면은 semantic token 적용이 많이 진행되었지만, 개별 modal과 loading/empty 상태에는 직접 색상 class가 일부 남아 있다.",
+    highPriority: [
+      "components/workorder/detail/modals/OrderInspectionModal.tsx",
+      "components/workorder/detail/shared/detailEditorShared.tsx",
+      "components/workorder/WorkOrderLoadingState.tsx",
+      "components/workorder/WorkOrderEmptyState.tsx",
+    ],
+    keepAsStatusMeaning: [
+      "workflow status badge의 success/warning/danger 계열 의미색",
+      "삭제/반려/오류 계열 danger tone",
+    ],
+  },
+  adminCandidates: {
+    summary: "관리자 화면은 아직 직접 색상 class 잔여가 가장 많아, theme 전환 폭을 넓히려면 관리자 기능 화면을 별도 묶음으로 순차 정리해야 한다.",
+    highPriority: [
+      "components/admin/members/AdminMemberManagementDashboard.tsx",
+      "components/admin/settings/AdminSettingsHub.tsx",
+      "components/admin/files/FileStorageSummary.tsx",
+      "components/admin/dashboard/AdminStatsDashboard.tsx",
+      "components/admin/files/fileTrashSectionPresentation.tsx",
+    ],
+    deferUntilFeatureQA: [
+      "저장소/휴지통/purge 동작 관련 화면은 기능 회귀 위험이 있으므로 시각 token 정리는 별도 버전에서만 진행한다.",
+      "통계 차트 색상은 chart palette token 설계 이후 진행한다.",
+    ],
+  },
+  commonCandidates: {
+    summary: "공통 modal shell은 theme token을 타기 시작했지만, 개별 modal content와 preview 영역에는 직접 색상 class가 남아 있다.",
+    highPriority: [
+      "components/common/modal/orderRequest/OrderRequestDocumentPreview.tsx",
+      "components/common/modal/InventoryEditor.tsx",
+      "components/common/modal/AttachmentPreviewModal.tsx",
+      "components/common/modal/OrderRequestConfirmModal.tsx",
+      "components/common/modal/InventoryLogModal.tsx",
+      "components/common/modal/PermissionModal.tsx",
+    ],
+  },
+  systemCandidates: {
+    summary: "system route 일부는 page 단위 직접 색상 class가 남아 있다. 시스템관리자 QA 단계에서 semantic token 적용을 묶어 처리한다.",
+    highPriority: [
+      "app/system/storage-usage/page.tsx",
+      "app/system/category-rules/page.tsx",
+    ],
+  },
+  replacementRules: [
+    "surface/card 계열 직접 색상은 pbp-card 또는 surface token으로 이동한다.",
+    "input/select/search 직접 색상은 field.editable, field.selectable, field.search로 이동한다.",
+    "삭제/오류/반려는 danger 의미색으로 유지하되 실제 색상값은 theme variable을 사용한다.",
+    "검수완료/완료/성공은 success 의미색으로 유지하되 실제 색상값은 theme variable을 사용한다.",
+    "warning/pending/info는 상태 의미색으로 유지하고, 브랜드 theme 색상과 섞지 않는다.",
+    "chart 색상은 action/status/surface token과 분리한 chart palette token 설계 후 적용한다.",
+  ],
+  nextRecommendations: [
+    "작업지시서 개별 modal content semantic token 정리",
+    "관리자 멤버관리/환경설정/저장소 요약 화면의 직접 색상 class 정리",
+    "시스템관리자 route semantic token 적용은 system QA 단계에서 별도 진행",
+    "black-and-white theme는 잔여 직접 색상 class 정리 이후 추가한다.",
+  ],
+} as const;
