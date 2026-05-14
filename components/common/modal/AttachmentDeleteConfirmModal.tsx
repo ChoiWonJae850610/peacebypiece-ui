@@ -1,6 +1,7 @@
 "use client";
 
 import ModalShell from "@/components/common/modal/ModalShell";
+import { MODAL_CONTENT_LABEL_CLASS, MODAL_CONTENT_MUTED_PANEL_CLASS, MODAL_CONTENT_SECTION_PANEL_CLASS, MODAL_CONTENT_SUBTEXT_CLASS, MODAL_CONTENT_WARNING_PANEL_CLASS } from "@/components/common/modal/modalContentClassNames";
 import { MODAL_ACTION_LABELS, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { useI18n } from "@/lib/i18n";
 import { getAttachmentPreviewUrl, getAttachmentThumbnailUrl } from "@/lib/permissions/attachments";
@@ -33,38 +34,38 @@ export default function AttachmentDeleteConfirmModal({
       maxWidthClass="md:max-w-lg"
       footer={renderModalFooterActions({
         layout: "end",
-        secondary: { label: MODAL_ACTION_LABELS.cancel, onClick: onClose, className: "active:bg-stone-200" },
+        secondary: { label: MODAL_ACTION_LABELS.cancel, onClick: onClose },
         primary: { label: MODAL_ACTION_LABELS.delete, onClick: onConfirm, tone: "danger" },
       })}
     >
       <div className="space-y-4">
-        <div className="overflow-hidden rounded-2xl border border-stone-200 bg-stone-50">
-          <div className="border-b border-stone-200 px-4 py-3">
-            <div className="text-xs font-medium text-stone-500">{ui.modal.attachmentDelete.targetLabel}</div>
-            <div className="mt-1 break-all text-sm font-semibold text-stone-900">{attachment?.name ?? ui.modal.attachmentDelete.fallbackName}</div>
+        <div className={`${MODAL_CONTENT_MUTED_PANEL_CLASS} overflow-hidden p-0`}>
+          <div className="border-b border-[var(--pbp-border)] px-4 py-3">
+            <div className={`font-medium ${MODAL_CONTENT_LABEL_CLASS}`}>{ui.modal.attachmentDelete.targetLabel}</div>
+            <div className="mt-1 break-all text-sm font-semibold text-[var(--pbp-text-primary)]">{attachment?.name ?? ui.modal.attachmentDelete.fallbackName}</div>
           </div>
           <div className="p-4">
             {attachment?.type === "image" ? (
-              <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white">
-                <img src={thumbnailUrl} alt={attachment.name} className="max-h-[340px] w-full object-contain bg-stone-100" />
+              <div className={`${MODAL_CONTENT_SECTION_PANEL_CLASS} overflow-hidden p-0`}>
+                <img src={thumbnailUrl} alt={attachment.name} className="max-h-[340px] w-full object-contain bg-[var(--pbp-surface-muted)]" />
               </div>
             ) : attachment ? (
-              <div className="rounded-2xl border border-stone-200 bg-white p-4">
+              <div className={MODAL_CONTENT_SECTION_PANEL_CLASS}>
                 <div className="flex items-center gap-3">
-                  <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-sm font-semibold text-rose-700">{ui.modal.attachmentDelete.pdfTypeLabel}</div>
+                  <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--pbp-action-danger-soft-border)] bg-[var(--pbp-action-danger-soft-surface)] text-sm font-semibold text-[var(--pbp-action-danger-soft-text)]">{ui.modal.attachmentDelete.pdfTypeLabel}</div>
                   <div className="min-w-0">
-                    <div className="truncate text-sm font-semibold text-stone-900">{attachment.name}</div>
-                    <div className="mt-1 text-xs text-stone-500">{ui.modal.attachmentDelete.pdfNotice}</div>
+                    <div className="truncate text-sm font-semibold text-[var(--pbp-text-primary)]">{attachment.name}</div>
+                    <div className={`mt-1 ${MODAL_CONTENT_SUBTEXT_CLASS}`}>{ui.modal.attachmentDelete.pdfNotice}</div>
                   </div>
                 </div>
-                <div className="mt-4 overflow-hidden rounded-xl border border-stone-200">
-                  <iframe title={attachment.name} src={previewUrl} className="h-[240px] w-full bg-stone-50" />
+                <div className="mt-4 overflow-hidden rounded-xl border border-[var(--pbp-border)]">
+                  <iframe title={attachment.name} src={previewUrl} className="h-[240px] w-full bg-[var(--pbp-surface-muted)]" />
                 </div>
               </div>
             ) : null}
           </div>
         </div>
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-4 text-sm text-rose-700">
+        <div className={MODAL_CONTENT_WARNING_PANEL_CLASS}>
           {ui.modal.attachmentDelete.warning}
         </div>
       </div>

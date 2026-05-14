@@ -1,6 +1,7 @@
 "use client";
 
 import ModalShell from "@/components/common/modal/ModalShell";
+import { MODAL_CONTENT_LABEL_CLASS, MODAL_CONTENT_MUTED_PANEL_CLASS, MODAL_CONTENT_VALUE_CLASS, MODAL_CONTENT_WARNING_PANEL_CLASS } from "@/components/common/modal/modalContentClassNames";
 import { MODAL_ACTION_LABELS, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { useI18n } from "@/lib/i18n";
 import type { WorkOrderListItem } from "@/types/workorder";
@@ -29,16 +30,16 @@ export default function WorkOrderDeleteConfirmModal({
       maxWidthClass="md:max-w-lg"
       footer={renderModalFooterActions({
         layout: "end",
-        secondary: { label: MODAL_ACTION_LABELS.cancel, onClick: onClose, className: "active:bg-stone-200" },
+        secondary: { label: MODAL_ACTION_LABELS.cancel, onClick: onClose },
         primary: { label: lifecycleText.deleteModalConfirmLabel, onClick: onConfirm, tone: "danger" },
       })}
     >
       <div className="space-y-4">
-        <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4">
-          <div className="text-xs font-medium text-stone-500">{lifecycleText.deleteModalTargetLabel}</div>
-          <div className="mt-1 break-all text-base font-semibold text-stone-950">{title}</div>
+        <div className={`${MODAL_CONTENT_MUTED_PANEL_CLASS} px-4 py-4`}>
+          <div className={`font-medium ${MODAL_CONTENT_LABEL_CLASS}`}>{lifecycleText.deleteModalTargetLabel}</div>
+          <div className={`mt-1 break-all ${MODAL_CONTENT_VALUE_CLASS}`}>{title}</div>
         </div>
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-sm leading-6 text-red-600">
+        <div className={MODAL_CONTENT_WARNING_PANEL_CLASS}>
           {lifecycleText.deleteModalNotice}
         </div>
       </div>

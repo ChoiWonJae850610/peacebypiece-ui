@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
+import { MODAL_CONTENT_MUTED_PANEL_CLASS } from "@/components/common/modal/modalContentClassNames";
 import { ROLE, formatRoles, hasRole } from "@/lib/constants/roles";
 import type { UserProfile } from "@/types/user";
 import { useI18n } from "@/lib/i18n";
@@ -37,8 +38,8 @@ export default function ManagerAssignModal({
       description={copy.description}
       maxWidthClass="md:max-w-lg"
     >
-      <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-600">
-        {copy.currentManagerLabel} <span className="ml-1 font-medium text-stone-900">{currentManagerName || "-"}</span>
+      <div className={`${MODAL_CONTENT_MUTED_PANEL_CLASS} px-4 py-3 text-sm text-[var(--pbp-text-secondary)]`}>
+        {copy.currentManagerLabel} <span className="ml-1 font-medium text-[var(--pbp-text-primary)]">{currentManagerName || "-"}</span>
       </div>
 
       <div className="mt-4 space-y-2">

@@ -5,6 +5,7 @@ import ModalShell from "@/components/common/modal/ModalShell";
 import { DEFAULT_ROLE, ROLE_DISPLAY_GUIDE, formatRoles, normalizeRoles, toRoleType } from "@/lib/constants/roles";
 import { useI18n } from "@/lib/i18n";
 import { SELECTABLE_CARD_CLASS, SELECTABLE_CARD_SUBTEXT_CLASS } from "@/lib/constants/display";
+import { MODAL_CONTENT_MUTED_PANEL_CLASS, MODAL_CONTENT_SECTION_PANEL_CLASS, MODAL_CONTENT_SUBTEXT_CLASS } from "@/components/common/modal/modalContentClassNames";
 import type { RoleType, UserProfile } from "@/types/workorder";
 
 type NormalizedRoleOption = {
@@ -107,9 +108,9 @@ export default function PermissionModal({
       description={copy.description}
       maxWidthClass="md:max-w-2xl"
     >
-      <div className="mb-4 rounded-2xl border border-stone-200 bg-stone-50 p-4">
-        <div className="text-sm font-semibold text-stone-900">{copy.currentUserSectionTitle}</div>
-        <div className="mt-1 text-xs text-stone-500">{copy.currentUserSectionDescription}</div>
+      <div className={`mb-4 ${MODAL_CONTENT_MUTED_PANEL_CLASS} p-4`}>
+        <div className="text-sm font-semibold text-[var(--pbp-text-primary)]">{copy.currentUserSectionTitle}</div>
+        <div className={`mt-1 ${MODAL_CONTENT_SUBTEXT_CLASS}`}>{copy.currentUserSectionDescription}</div>
         <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
           {users.map((user) => {
             const active = user.id === currentUserId;
@@ -122,7 +123,7 @@ export default function PermissionModal({
               >
                 <div className="text-sm font-semibold">{user.name}</div>
                 <div className={`mt-1 text-[11px] ${active ? SELECTABLE_CARD_SUBTEXT_CLASS.active : SELECTABLE_CARD_SUBTEXT_CLASS.inactive}`}>{formatRoles(user.roles, user.role)}</div>
-                {active ? <div className="mt-2 text-[11px] text-stone-200">{copy.currentUserBadge}</div> : null}
+                {active ? <div className="mt-2 text-[11px] text-[var(--pbp-action-primary-text)]">{copy.currentUserBadge}</div> : null}
               </button>
             );
           })}
@@ -144,7 +145,7 @@ export default function PermissionModal({
                 <div className="text-sm font-semibold">{user.name}</div>
                 <div className={`mt-1 text-xs ${active ? SELECTABLE_CARD_SUBTEXT_CLASS.active : SELECTABLE_CARD_SUBTEXT_CLASS.inactive}`}>{formatRoles(user.roles, user.role)}</div>
                 {isCurrent ? (
-                  <div className={`mt-2 text-[11px] ${active ? "text-stone-200" : "text-cyan-700"}`}>
+                  <div className={`mt-2 text-[11px] ${active ? "text-[var(--pbp-action-primary-text)]" : "text-[var(--pbp-selected-text)]"}`}>
                     {copy.selectedUserBadge}
                   </div>
                 ) : null}
@@ -153,10 +154,10 @@ export default function PermissionModal({
           })}
         </div>
 
-        <div className="min-w-0 rounded-2xl border border-stone-200 bg-stone-50 p-4">
+        <div className={`${MODAL_CONTENT_MUTED_PANEL_CLASS} min-w-0 p-4`}>
           <div>
-            <div className="text-base font-semibold text-stone-900">{selectedUser.name}</div>
-            <div className="mt-1 text-sm text-stone-500">{copy.currentRolesPrefix}: {formatRoles(activeRoles)}</div>
+            <div className="text-base font-semibold text-[var(--pbp-text-primary)]">{selectedUser.name}</div>
+            <div className="mt-1 text-sm text-[var(--pbp-text-muted)]">{copy.currentRolesPrefix}: {formatRoles(activeRoles)}</div>
           </div>
 
           <div className="mt-4 space-y-3">
@@ -175,16 +176,16 @@ export default function PermissionModal({
                     type="checkbox"
                     checked={checked}
                     onChange={() => toggleRole(item.role)}
-                    className="mt-1 h-4 w-4 rounded border-stone-300 text-stone-900 focus:ring-stone-400"
+                    className="mt-1 h-4 w-4 rounded border-[var(--pbp-border-strong)] text-[var(--pbp-action-primary-surface)] focus:ring-[var(--pbp-focus-ring)]"
                   />
                 </label>
               );
             })}
           </div>
 
-          <div className="mt-4 rounded-2xl border border-stone-200 bg-white p-4">
-            <div className="text-sm font-semibold text-stone-900">{copy.roleGuideTitle}</div>
-            <div className="mt-2 space-y-1 text-xs text-stone-500">
+          <div className={`${MODAL_CONTENT_SECTION_PANEL_CLASS} mt-4 p-4`}>
+            <div className="text-sm font-semibold text-[var(--pbp-text-primary)]">{copy.roleGuideTitle}</div>
+            <div className="mt-2 space-y-1 text-xs text-[var(--pbp-text-muted)]">
               <div>{copy.roleGuideDesigner}</div>
               <div>{copy.roleGuideAdmin}</div>
               <div>{copy.roleGuideInspector}</div>

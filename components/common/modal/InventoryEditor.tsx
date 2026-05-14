@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import type { InventoryChangeTypeValue } from "@/lib/constants/workorderDomain";
 import ModalShell from "@/components/common/modal/ModalShell";
+import { MODAL_INPUT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
+import { MODAL_CONTENT_EMPTY_STATE_CLASS, MODAL_CONTENT_LABEL_CLASS, MODAL_CONTENT_MUTED_PANEL_CLASS, MODAL_CONTENT_READONLY_PANEL_CLASS, MODAL_CONTENT_SECTION_PANEL_CLASS, MODAL_CONTENT_SUBTEXT_CLASS, MODAL_CONTENT_VALUE_CLASS } from "@/components/common/modal/modalContentClassNames";
 import { MODAL_ACTION_LABELS, createModalActionHandler, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { useI18n } from "@/lib/i18n";
 
@@ -100,95 +102,95 @@ export default function InventoryEditor({
       maxWidthClass="md:max-w-lg"
       footer={renderModalFooterActions({
         layout: "split",
-        secondary: { label: MODAL_ACTION_LABELS.cancel, onClick: onClose, width: "fill", className: "rounded-2xl text-stone-800" },
+        secondary: { label: MODAL_ACTION_LABELS.cancel, onClick: onClose, width: "fill", className: "rounded-2xl" },
         primary: { label: MODAL_ACTION_LABELS.apply, onClick: handleApply, disabled: applyDisabled, tone: "primary", width: "fill", className: "rounded-2xl disabled:opacity-50" },
       })}
     >
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
-          <div className="text-xs text-stone-500">{copy.currentStockLabel}</div>
-          <div className="mt-1 text-lg font-semibold tabular-nums text-stone-900">{copy.quantityFormat.replace("{count}", String(currentStock))}</div>
+        <div className={MODAL_CONTENT_READONLY_PANEL_CLASS}>
+          <div className={MODAL_CONTENT_LABEL_CLASS}>{copy.currentStockLabel}</div>
+          <div className={`mt-1 tabular-nums ${MODAL_CONTENT_VALUE_CLASS}`}>{copy.quantityFormat.replace("{count}", String(currentStock))}</div>
         </div>
-        <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-3">
-          <div className="text-xs text-cyan-700">{copy.nextStockLabel}</div>
-          <div className="mt-1 text-lg font-semibold tabular-nums text-cyan-900">{copy.quantityFormat.replace("{count}", String(nextStock))}</div>
+        <div className="rounded-2xl border border-[var(--pbp-selected-border)] bg-[var(--pbp-selected-surface)] p-3">
+          <div className="text-xs text-[var(--pbp-selected-text)]">{copy.nextStockLabel}</div>
+          <div className="mt-1 text-lg font-semibold tabular-nums text-[var(--pbp-selected-text)]">{copy.quantityFormat.replace("{count}", String(nextStock))}</div>
         </div>
       </div>
 
       <div className="mt-4 space-y-3">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
-            <label className="mb-2 block text-sm font-medium text-stone-700">{copy.inboundQuantityLabel}</label>
+            <label className="mb-2 block text-sm font-medium text-[var(--pbp-text-secondary)]">{copy.inboundQuantityLabel}</label>
             <input
               type="number"
               min={0}
               value={inboundQuantity}
               onChange={(event) => setInboundQuantity(event.target.value)}
               placeholder={copy.inboundQuantityPlaceholder}
-              className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base outline-none transition focus:border-stone-500 md:text-sm"
+              className={MODAL_INPUT_CLASS}
             />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium text-stone-700">{copy.adjustmentQuantityLabel}</label>
+            <label className="mb-2 block text-sm font-medium text-[var(--pbp-text-secondary)]">{copy.adjustmentQuantityLabel}</label>
             <input
               type="number"
               min={0}
               value={adjustmentQuantity}
               onChange={(event) => setAdjustmentQuantity(event.target.value)}
               placeholder={copy.adjustmentQuantityPlaceholder}
-              className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base outline-none transition focus:border-stone-500 md:text-sm"
+              className={MODAL_INPUT_CLASS}
             />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium text-stone-700">{copy.deductionQuantityLabel}</label>
+            <label className="mb-2 block text-sm font-medium text-[var(--pbp-text-secondary)]">{copy.deductionQuantityLabel}</label>
             <input
               type="number"
               min={0}
               value={deductionQuantity}
               onChange={(event) => setDeductionQuantity(event.target.value)}
               placeholder={copy.deductionQuantityPlaceholder}
-              className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base outline-none transition focus:border-stone-500 md:text-sm"
+              className={MODAL_INPUT_CLASS}
             />
           </div>
         </div>
         <div>
-          <label className="mb-2 block text-sm font-medium text-stone-700">{copy.memoLabel}</label>
+          <label className="mb-2 block text-sm font-medium text-[var(--pbp-text-secondary)]">{copy.memoLabel}</label>
           <textarea
             value={memo}
             onChange={(event) => setMemo(event.target.value)}
             placeholder={copy.memoPlaceholder}
             rows={3}
-            className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base outline-none transition focus:border-stone-500 md:text-sm"
+            className={MODAL_TEXTAREA_CLASS}
           />
         </div>
-        <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-700">
+        <div className={`${MODAL_CONTENT_MUTED_PANEL_CLASS} text-sm text-[var(--pbp-text-secondary)]`}>
           <div>
-            {copy.editorLabel}: <span className="font-medium text-stone-900">{currentUserName}</span>
+            {copy.editorLabel}: <span className="font-medium text-[var(--pbp-text-primary)]">{currentUserName}</span>
           </div>
-          <div className="mt-1 text-xs text-stone-500">{copy.localTestNotice}</div>
+          <div className={`mt-1 ${MODAL_CONTENT_SUBTEXT_CLASS}`}>{copy.localTestNotice}</div>
         </div>
       </div>
 
       {showRecentLogs ? (
-        <div className="mt-5 border-t border-stone-200 pt-4">
+        <div className="mt-5 border-t border-[var(--pbp-border)] pt-4">
           <div className="flex items-center justify-between gap-3">
-            <div className="text-sm font-semibold text-stone-900">{copy.recentLogsTitle}</div>
-            <span className="text-xs text-stone-500">{copy.recentLogsCountFormat.replace("{count}", String(Math.min(logs.length, 3)))}</span>
+            <div className="text-sm font-semibold text-[var(--pbp-text-primary)]">{copy.recentLogsTitle}</div>
+            <span className={MODAL_CONTENT_LABEL_CLASS}>{copy.recentLogsCountFormat.replace("{count}", String(Math.min(logs.length, 3)))}</span>
           </div>
           <div className="mt-3 space-y-2">
             {logs.length > 0 ? (
               logs.slice(0, 3).map((item) => (
-                <div key={item.id} className="rounded-2xl border border-stone-200 bg-white p-3 text-sm">
+                <div key={item.id} className={`${MODAL_CONTENT_SECTION_PANEL_CLASS} text-sm`}>
                   <div className="flex items-center justify-between gap-3">
-                    <span className="font-medium text-stone-900">{item.summary}</span>
-                    <span className="text-xs text-stone-500">{item.time}</span>
+                    <span className="font-medium text-[var(--pbp-text-primary)]">{item.summary}</span>
+                    <span className={MODAL_CONTENT_LABEL_CLASS}>{item.time}</span>
                   </div>
-                  <div className="mt-1 text-xs text-stone-500">{item.user}</div>
-                  <div className="mt-1 text-sm text-stone-700">{item.memo || copy.noMemo}</div>
+                  <div className={`mt-1 ${MODAL_CONTENT_SUBTEXT_CLASS}`}>{item.user}</div>
+                  <div className="mt-1 text-sm text-[var(--pbp-text-secondary)]">{item.memo || copy.noMemo}</div>
                 </div>
               ))
             ) : (
-              <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-3 text-sm text-stone-500">{copy.emptyLogs}</div>
+              <div className={MODAL_CONTENT_EMPTY_STATE_CLASS}>{copy.emptyLogs}</div>
             )}
           </div>
         </div>

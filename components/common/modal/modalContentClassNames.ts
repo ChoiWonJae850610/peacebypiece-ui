@@ -1,0 +1,10 @@
+export const MODAL_CONTENT_LABEL_CLASS = "text-xs text-[var(--pbp-text-muted)]";
+export const MODAL_CONTENT_VALUE_CLASS = "text-base font-semibold text-[var(--pbp-text-primary)]";
+export const MODAL_CONTENT_SUBTEXT_CLASS = "text-xs text-[var(--pbp-text-muted)]";
+export const MODAL_CONTENT_BODY_TEXT_CLASS = "text-sm text-[var(--pbp-text-secondary)]";
+export const MODAL_CONTENT_FIELD_PANEL_CLASS = "pbp-modal-section rounded-2xl border p-3";
+export const MODAL_CONTENT_SECTION_PANEL_CLASS = "pbp-modal-section rounded-2xl border p-4";
+export const MODAL_CONTENT_MUTED_PANEL_CLASS = "pbp-modal-section-muted rounded-2xl border p-3";
+export const MODAL_CONTENT_READONLY_PANEL_CLASS = "pbp-workorder-calculated-panel rounded-2xl border px-4 py-3";
+export const MODAL_CONTENT_EMPTY_STATE_CLASS = "pbp-empty-state rounded-2xl border border-dashed px-4 py-6 text-center text-sm text-[var(--pbp-text-muted)]";
+export const MODAL_CONTENT_WARNING_PANEL_CLASS = "pbp-action-danger-soft rounded-2xl border px-4 py-4 text-sm leading-6";

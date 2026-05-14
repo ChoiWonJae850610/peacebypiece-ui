@@ -7,6 +7,7 @@ import ModalHeader from "@/components/common/modal/ModalHeader";
 import { useModalEnvironment } from "@/components/common/modal/modalUtils";
 import type { Attachment } from "@/types/workorder";
 import { MODAL_EXCEPTION_PRESETS } from "@/components/common/modal/modalPresets";
+import { MODAL_CONTENT_BODY_TEXT_CLASS, MODAL_CONTENT_SECTION_PANEL_CLASS } from "@/components/common/modal/modalContentClassNames";
 import { useI18n } from "@/lib/i18n";
 import { getAttachmentDownloadUrl, getAttachmentPreviewUrl } from "@/lib/permissions/attachments";
 
@@ -59,7 +60,7 @@ export default function AttachmentPreviewModal({
                   download={attachment.name}
                   target="_blank"
                   rel="noreferrer"
-                  className="pbp-interactive-button inline-flex h-10 w-10 items-center justify-center rounded-xl border border-stone-300 bg-white text-stone-700 shadow-sm transition hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+                  className="pbp-interactive-button pbp-action-secondary inline-flex h-10 w-10 items-center justify-center rounded-xl border shadow-sm transition active:scale-[0.98]"
                   aria-label={copy.download}
                   title={copy.download}
                 >
@@ -69,29 +70,29 @@ export default function AttachmentPreviewModal({
             </div>
 
             {!previewUrl ? (
-              <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
-                <div className="text-sm font-semibold text-stone-800">{copy.unavailableTitle}</div>
-                <div className="mt-2 text-sm leading-6 text-stone-600">{copy.unavailableDescription}</div>
+              <div className={`${MODAL_CONTENT_SECTION_PANEL_CLASS} p-6 shadow-sm`}>
+                <div className="text-sm font-semibold text-[var(--pbp-text-primary)]">{copy.unavailableTitle}</div>
+                <div className={`mt-2 leading-6 ${MODAL_CONTENT_BODY_TEXT_CLASS}`}>{copy.unavailableDescription}</div>
               </div>
             ) : attachment.type === "image" ? (
               <img
                 src={previewUrl}
                 alt={attachment.name}
-                className="mx-auto max-h-[70dvh] w-auto rounded-2xl border border-stone-200 bg-white object-contain shadow-sm"
+                className="mx-auto max-h-[70dvh] w-auto rounded-2xl border border-[var(--pbp-modal-section-border)] bg-[var(--pbp-modal-section-surface)] object-contain shadow-sm"
               />
             ) : attachment.type === "pdf" ? (
-              <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
-                <div className="border-b border-stone-200 px-4 py-3 text-sm font-medium text-stone-700">{copy.pdfPreview}</div>
+              <div className="overflow-hidden rounded-2xl border border-[var(--pbp-modal-section-border)] bg-[var(--pbp-modal-section-surface)] shadow-sm">
+                <div className="border-b border-[var(--pbp-border)] px-4 py-3 text-sm font-medium text-[var(--pbp-text-secondary)]">{copy.pdfPreview}</div>
                 <iframe
                   title={attachment.name}
                   src={previewUrl}
-                  className="h-[65dvh] w-full bg-white md:h-[70dvh]"
+                  className="h-[65dvh] w-full bg-[var(--pbp-modal-section-surface)] md:h-[70dvh]"
                 />
               </div>
             ) : (
-              <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
-                <div className="text-sm font-semibold text-stone-800">{copy.filePreviewTitle}</div>
-                <div className="mt-2 text-sm leading-6 text-stone-600">{copy.filePreviewDescription}</div>
+              <div className={`${MODAL_CONTENT_SECTION_PANEL_CLASS} p-6 shadow-sm`}>
+                <div className="text-sm font-semibold text-[var(--pbp-text-primary)]">{copy.filePreviewTitle}</div>
+                <div className={`mt-2 leading-6 ${MODAL_CONTENT_BODY_TEXT_CLASS}`}>{copy.filePreviewDescription}</div>
               </div>
             )}
           </div>

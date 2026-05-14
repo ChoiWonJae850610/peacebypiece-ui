@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import ToastMessage from "@/components/common/ToastMessage";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_ACTION_LABELS } from "@/components/common/modal/modalActions";
+import { MODAL_CONTENT_WARNING_PANEL_CLASS } from "@/components/common/modal/modalContentClassNames";
 import OrderRequestDocumentPreviewPanel from "@/components/common/modal/orderRequest/OrderRequestDocumentPreview";
 import { getFactoryOrderRowsValidationMessage, getOrderSubmissionSnapshot } from "@/lib/workorder/orderSubmission";
 import { getOrderRequestDocumentPreview } from "@/lib/workorder/presentation/orderRequestDocumentPresentation";
@@ -208,8 +209,8 @@ export default function OrderRequestConfirmModal({
       title={copy.title}
       description={undefined}
       maxWidthClass="md:max-w-6xl"
-      overlayClassName="bg-stone-950/55 md:bg-stone-950/50"
-      bodyClassName="bg-[#f5f2eb]"
+      overlayClassName="pbp-modal-overlay"
+      bodyClassName="bg-[var(--pbp-modal-section-muted)]"
       footer={
         <div className="flex items-center justify-end gap-2">
           <button
@@ -217,8 +218,8 @@ export default function OrderRequestConfirmModal({
             onClick={handlePrintPdf}
             disabled={isPreparingPrint}
             className={cn(
-              "pbp-interactive-button inline-flex h-11 w-11 items-center justify-center rounded-xl border border-stone-300 bg-white text-stone-700",
-              "hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:border-stone-200 disabled:bg-stone-100 disabled:text-stone-400",
+              "pbp-interactive-button pbp-action-secondary inline-flex h-11 w-11 items-center justify-center rounded-xl border",
+              "active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50",
             )}
             aria-label={isPreparingPrint ? copy.printPreparingAria : i18n.common.ui.modalActions.exportPdf}
             title={isPreparingPrint ? copy.printPreparingAria : i18n.common.ui.modalActions.exportPdf}
@@ -230,8 +231,8 @@ export default function OrderRequestConfirmModal({
             onClick={handleSubmitOrderRequest}
             disabled={!canSubmit || isSubmittingOrderRequest}
             className={cn(
-              "pbp-interactive-button inline-flex h-11 w-11 items-center justify-center rounded-xl bg-stone-900 text-white",
-              "hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:bg-stone-300",
+              "pbp-interactive-button pbp-action-primary inline-flex h-11 w-11 items-center justify-center rounded-xl",
+              "active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50",
             )}
             aria-label={isSubmittingOrderRequest ? getProcessingLabel(MODAL_ACTION_LABELS.proceedOrderRequest, i18n.workorder.ui.actionSection.processingFormat) : requested ? copy.requestedBadge : MODAL_ACTION_LABELS.proceedOrderRequest}
             title={isSubmittingOrderRequest ? getProcessingLabel(MODAL_ACTION_LABELS.proceedOrderRequest, i18n.workorder.ui.actionSection.processingFormat) : requested ? copy.requestedBadge : MODAL_ACTION_LABELS.proceedOrderRequest}
@@ -256,7 +257,7 @@ export default function OrderRequestConfirmModal({
         showDebug={showOrderRequestDocumentDebug}
       />
       {orderRowsValidationMessage ? (
-        <div className="mx-auto mt-3 w-full max-w-[1040px] rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">
+        <div className={`mx-auto mt-3 w-full max-w-[1040px] rounded-lg px-4 py-3 font-medium ${MODAL_CONTENT_WARNING_PANEL_CLASS}`}>
           {orderRowsValidationMessage}
         </div>
       ) : null}

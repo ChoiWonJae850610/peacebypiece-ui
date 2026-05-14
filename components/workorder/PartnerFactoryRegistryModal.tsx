@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
-import { MODAL_INPUT_CLASS, MODAL_SELECT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
+import { MODAL_SELECT_CLASS } from "@/components/common/modal/modalFieldClassNames";
+import { renderModalFooterActions } from "@/components/common/modal/modalActions";
+import { MODAL_CONTENT_LABEL_CLASS, MODAL_CONTENT_SECTION_PANEL_CLASS, MODAL_CONTENT_SUBTEXT_CLASS } from "@/components/common/modal/modalContentClassNames";
 import { DEFAULT_REGISTRY_TYPE, REGISTRY_TYPE_OPTIONS } from "@/lib/constants/workorderOptions";
 import { REGISTRY_TYPE, type RegistryTypeValue } from "@/lib/constants/workorderDomain";
 import { useI18n } from "@/lib/i18n";
@@ -53,20 +55,15 @@ export default function PartnerFactoryRegistryModal({
       title={copy.title}
       description={copy.description}
       maxWidthClass="md:max-w-lg"
-      footer={(
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={!name.trim()}
-          className="flex h-11 w-full items-center justify-center rounded-xl bg-stone-900 px-4 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:bg-stone-300"
-        >
-          {copy.save}
-        </button>
-      )}
+      footer={renderModalFooterActions({
+        layout: "split",
+        secondary: { label: i18n.common.ui.common.cancel, onClick: onClose, width: "fill" },
+        primary: { label: copy.save, onClick: handleSave, disabled: !name.trim(), tone: "primary", width: "fill" },
+      })}
     >
       <div className="space-y-4">
-        <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-          <label className="text-xs text-stone-500">{copy.typeLabel}</label>
+        <div className={MODAL_CONTENT_SECTION_PANEL_CLASS}>
+          <label className={MODAL_CONTENT_LABEL_CLASS}>{copy.typeLabel}</label>
           <select
             value={type}
             onChange={(event) => setType(event.target.value as RegistryType)}
@@ -80,8 +77,8 @@ export default function PartnerFactoryRegistryModal({
           </select>
         </div>
 
-        <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-          <label htmlFor="registry-name" className="text-xs text-stone-500">{copy.nameLabel}</label>
+        <div className={MODAL_CONTENT_SECTION_PANEL_CLASS}>
+          <label htmlFor="registry-name" className={MODAL_CONTENT_LABEL_CLASS}>{copy.nameLabel}</label>
           <input
             id="registry-name"
             value={name}
@@ -95,7 +92,7 @@ export default function PartnerFactoryRegistryModal({
             placeholder={`${typeOptionLabels[type]}${copy.namePlaceholderPrefix}`}
             className={`mt-2 ${MODAL_SELECT_CLASS}`}
           />
-          <p className="mt-2 text-xs text-stone-500">{copy.savedNotice}</p>
+          <p className={`mt-2 ${MODAL_CONTENT_SUBTEXT_CLASS}`}>{copy.savedNotice}</p>
         </div>
       </div>
     </ModalShell>

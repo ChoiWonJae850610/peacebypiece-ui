@@ -4,6 +4,7 @@ import { useI18n } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_INPUT_CLASS, MODAL_SELECT_CLASS, MODAL_TEXTAREA_CLASS } from "@/components/common/modal/modalFieldClassNames";
+import { MODAL_CONTENT_EMPTY_STATE_CLASS, MODAL_CONTENT_FIELD_PANEL_CLASS, MODAL_CONTENT_LABEL_CLASS, MODAL_CONTENT_READONLY_PANEL_CLASS, MODAL_CONTENT_VALUE_CLASS } from "@/components/common/modal/modalContentClassNames";
 import { createModalActionHandler, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { isOrderInspectionCompleted } from "@/lib/constants/workorderStates";
@@ -105,8 +106,8 @@ export default function OrderInspectionModal({
       {selectedEntry ? (
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <label className="rounded-2xl border border-stone-200 bg-white p-3">
-              <div className="text-xs text-stone-500">{copy.factoryLabel}</div>
+            <label className={MODAL_CONTENT_FIELD_PANEL_CLASS}>
+              <div className={MODAL_CONTENT_LABEL_CLASS}>{copy.factoryLabel}</div>
               <select
                 value={resolvedFactory}
                 onChange={(event) => handleFactoryChange(event.target.value)}
@@ -115,8 +116,8 @@ export default function OrderInspectionModal({
                 {factoryOptions.map((option) => <option key={option} value={option}>{translateWorkOrderDisplayText(option, locale)}</option>)}
               </select>
             </label>
-            <label className="rounded-2xl border border-stone-200 bg-white p-3">
-              <div className="text-xs text-stone-500">{copy.orderTypeLabel}</div>
+            <label className={MODAL_CONTENT_FIELD_PANEL_CLASS}>
+              <div className={MODAL_CONTENT_LABEL_CLASS}>{copy.orderTypeLabel}</div>
               <select
                 value={selectedEntry.id}
                 onChange={(event) => setSelectedOrderId(event.target.value)}
@@ -132,12 +133,12 @@ export default function OrderInspectionModal({
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
-              <div className="text-xs text-stone-500">{copy.orderedQuantityLabel}</div>
-              <div className="mt-1 text-base font-semibold text-stone-900">{orderedQuantity.toLocaleString()}{common.quantitySuffix}</div>
+            <div className={MODAL_CONTENT_READONLY_PANEL_CLASS}>
+              <div className={MODAL_CONTENT_LABEL_CLASS}>{copy.orderedQuantityLabel}</div>
+              <div className={`mt-1 ${MODAL_CONTENT_VALUE_CLASS}`}>{orderedQuantity.toLocaleString()}{common.quantitySuffix}</div>
             </div>
-            <label className="rounded-2xl border border-stone-200 bg-white p-3">
-              <div className="text-xs text-stone-500">{copy.appliedQuantityLabel}</div>
+            <label className={MODAL_CONTENT_FIELD_PANEL_CLASS}>
+              <div className={MODAL_CONTENT_LABEL_CLASS}>{copy.appliedQuantityLabel}</div>
               <input
                 type="number"
                 min={0}
@@ -148,14 +149,14 @@ export default function OrderInspectionModal({
                 className={`mt-2 ${MODAL_INPUT_CLASS}`}
               />
             </label>
-            <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
-              <div className="text-xs text-stone-500">{copy.nextInventoryLabel}</div>
-              <div className="mt-1 text-base font-semibold text-stone-900">{nextInventoryQuantity.toLocaleString()}{common.quantitySuffix}</div>
+            <div className={MODAL_CONTENT_READONLY_PANEL_CLASS}>
+              <div className={MODAL_CONTENT_LABEL_CLASS}>{copy.nextInventoryLabel}</div>
+              <div className={`mt-1 ${MODAL_CONTENT_VALUE_CLASS}`}>{nextInventoryQuantity.toLocaleString()}{common.quantitySuffix}</div>
             </div>
           </div>
 
-          <label className="block rounded-2xl border border-stone-200 bg-white p-3">
-            <div className="text-xs text-stone-500">{copy.memoLabel}</div>
+          <label className={`block ${MODAL_CONTENT_FIELD_PANEL_CLASS}`}>
+            <div className={MODAL_CONTENT_LABEL_CLASS}>{copy.memoLabel}</div>
             <textarea
               value={inspectionMemo}
               onChange={(event) => setInspectionMemo(event.target.value)}
@@ -166,7 +167,7 @@ export default function OrderInspectionModal({
           </label>
         </div>
       ) : (
-        <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">
+        <div className={MODAL_CONTENT_EMPTY_STATE_CLASS}>
           {copy.empty}
         </div>
       )}

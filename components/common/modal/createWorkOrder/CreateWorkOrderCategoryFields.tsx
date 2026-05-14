@@ -37,19 +37,19 @@ export default function CreateWorkOrderCategoryFields({ disabled = false, labels
   return (
     <div className="grid gap-4 md:grid-cols-3">
       <label className="grid gap-1.5">
-        <span className="text-sm font-medium text-stone-700">{labels.category1}</span>
+        <span className="text-sm font-medium text-[var(--pbp-text-secondary)]">{labels.category1}</span>
         <select value={values.category1} onChange={(event) => onChange.category1(event.target.value)} className={MODAL_SELECT_CLASS} disabled={disabled}>
           {renderCategoryOptions(options.category1Options)}
         </select>
       </label>
       <label className="grid gap-1.5">
-        <span className="text-sm font-medium text-stone-700">{labels.category2}</span>
+        <span className="text-sm font-medium text-[var(--pbp-text-secondary)]">{labels.category2}</span>
         <select value={values.category2} onChange={(event) => onChange.category2(event.target.value)} className={MODAL_SELECT_CLASS} disabled={disabled}>
           {renderCategoryOptions(options.category2Options)}
         </select>
       </label>
       <label className="grid gap-1.5">
-        <span className="text-sm font-medium text-stone-700">{labels.category3}</span>
+        <span className="text-sm font-medium text-[var(--pbp-text-secondary)]">{labels.category3}</span>
         <select value={values.category3} onChange={(event) => onChange.category3(event.target.value)} className={MODAL_SELECT_CLASS} disabled={disabled}>
           {renderCategoryOptions(options.category3Options)}
         </select>

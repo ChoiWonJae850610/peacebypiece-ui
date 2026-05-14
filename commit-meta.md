@@ -1,19 +1,30 @@
 Version :
-0.12.10
+0.12.11
 
 Summary :
-개인 설정 언어 다중 탭 동기화 보정
+작업지시서 개별 모달 content semantic token 정리
 
 Description :
-개인 설정에서 언어를 변경했을 때 테마처럼 같은 탭과 다른 탭에 즉시 반영되도록 I18nProvider의 localStorage 및 개인 설정 변경 이벤트 동기화 구조를 보정했다. legacy 언어 저장 키는 fallback으로 유지하고, document lang 값도 함께 갱신하도록 정리했다.
+작업지시서에서 사용하는 생성, 첨부 미리보기/삭제, 재고 수정, 담당자 변경, 권한, 발주 확인, 검수, 거래처/외주처 등록 모달 내부의 직접 색상 class를 semantic token 기반 class로 정리했다. 공통 모달 content class 파일을 추가해 field, readonly, muted, section, empty, warning panel 의미를 재사용하도록 했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/i18n/I18nProvider.tsx
-- lib/theme/semanticThemeTokens.ts
+- components/common/modal/AttachmentDeleteConfirmModal.tsx
+- components/common/modal/AttachmentPreviewModal.tsx
+- components/common/modal/CreateWorkOrderModal.tsx
+- components/common/modal/InventoryEditor.tsx
+- components/common/modal/InventoryLogModal.tsx
+- components/common/modal/ManagerAssignModal.tsx
+- components/common/modal/OrderRequestConfirmModal.tsx
+- components/common/modal/PermissionModal.tsx
+- components/common/modal/WorkOrderDeleteConfirmModal.tsx
+- components/common/modal/createWorkOrder/CreateWorkOrderCategoryFields.tsx
+- components/common/modal/createWorkOrder/CreateWorkOrderRecommendationPanel.tsx
+- components/workorder/PartnerFactoryRegistryModal.tsx
+- components/workorder/detail/modals/OrderInspectionModal.tsx
 
 추가 파일 목록 :
-- docs/personal-language-sync-0.12.10.md
+- components/common/modal/modalContentClassNames.ts
 
 삭제 파일 목록 :
 없음
