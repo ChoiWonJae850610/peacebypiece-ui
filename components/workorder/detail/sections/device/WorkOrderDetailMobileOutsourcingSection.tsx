@@ -1,6 +1,6 @@
 import { useI18n } from "@/lib/i18n";
 import { useCompanyStandardOptions } from "@/lib/admin/settings/useCompanyStandardOptions";
-import { DEFAULT_UNSELECTED_OPTION } from "@/lib/constants/workorderDomain";
+import { getWorkOrderSelectDisplayValue } from "@/lib/workorder/detail/selectDisplayPresentation";
 import { AddButton, DeleteButton, EditableValue, SectionHeader, type EditableCell, type EditableSectionKey } from "@/components/workorder/detail/shared/detailEditorShared";
 import type { Outsourcing } from "@/types/workorder";
 
@@ -54,7 +54,7 @@ export default function WorkOrderDetailMobileOutsourcingSection({
             <article key={item.id} className="min-w-0 rounded-2xl border border-stone-200 bg-stone-50 p-3 sm:p-3.5">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} displayValue={item.process === DEFAULT_UNSELECTED_OPTION ? "-" : item.process} options={processOptions} editingCell={editingCell} editingValue={editingValue} wrapText onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
+                  <EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} displayValue={getWorkOrderSelectDisplayValue(item.process)} options={processOptions} editingCell={editingCell} editingValue={editingValue} wrapText onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
                   <div className="mt-1 text-xs text-stone-500">{copy.fallbackItem.replace("{index}", String(index + 1))}</div>
                 </div>
                 {!locked ? <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.process || copy.fallbackItem.replace("{index}", String(index + 1))} ${common.deleteSuffix}`} /> : null}
@@ -63,7 +63,7 @@ export default function WorkOrderDetailMobileOutsourcingSection({
               <dl className="mt-3 grid gap-2 text-sm">
                 <div className="grid min-w-0 grid-cols-[76px_minmax(0,1fr)] items-center gap-2 sm:grid-cols-[84px_minmax(0,1fr)] sm:gap-3">
                   <dt className="text-xs text-stone-500">{copy.fields.vendor}</dt>
-                  <dd><EditableValue section="outsourcing" rowId={item.id} field="vendor" value={item.vendor} options={vendorOptionsById[item.id] ?? []} editingCell={editingCell} editingValue={editingValue} wrapText onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></dd>
+                  <dd><EditableValue section="outsourcing" rowId={item.id} field="vendor" value={item.vendor} displayValue={getWorkOrderSelectDisplayValue(item.vendor)} options={vendorOptionsById[item.id] ?? []} editingCell={editingCell} editingValue={editingValue} wrapText onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></dd>
                 </div>
                 <div className="grid min-w-0 grid-cols-1 gap-2 min-[380px]:grid-cols-2">
                   <div>

@@ -1,5 +1,6 @@
 import { useI18n } from "@/lib/i18n";
 import { MATERIAL_TYPE_OPTIONS } from "@/lib/constants/material";
+import { getWorkOrderSelectDisplayValue } from "@/lib/workorder/detail/selectDisplayPresentation";
 import { useCompanyStandardOptions } from "@/lib/admin/settings/useCompanyStandardOptions";
 import { AddButton, DeleteButton, EditableValue, SectionHeader, type EditableCell, type EditableSectionKey } from "@/components/workorder/detail/shared/detailEditorShared";
 import type { Material } from "@/types/material";
@@ -61,11 +62,11 @@ export default function WorkOrderDetailMobileMaterialSection({
               <dl className="mt-3 grid gap-2 text-sm">
                 <div className="grid min-w-0 grid-cols-[76px_minmax(0,1fr)] items-center gap-2 sm:grid-cols-[84px_minmax(0,1fr)] sm:gap-3">
                   <dt className="text-xs text-stone-500">{copy.fields.type}</dt>
-                  <dd><EditableValue section="material" rowId={item.id} field="type" value={item.type} options={MATERIAL_TYPE_OPTIONS} editingCell={editingCell} editingValue={editingValue} centered onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></dd>
+                  <dd><EditableValue section="material" rowId={item.id} field="type" value={item.type} displayValue={getWorkOrderSelectDisplayValue(item.type)} options={MATERIAL_TYPE_OPTIONS} editingCell={editingCell} editingValue={editingValue} centered onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></dd>
                 </div>
                 <div className="grid min-w-0 grid-cols-[76px_minmax(0,1fr)] items-center gap-2 sm:grid-cols-[84px_minmax(0,1fr)] sm:gap-3">
                   <dt className="text-xs text-stone-500">{copy.fields.vendor}</dt>
-                  <dd><EditableValue section="material" rowId={item.id} field="vendor" value={item.vendor} options={vendorOptionsById[item.id] ?? []} editingCell={editingCell} editingValue={editingValue} wrapText onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></dd>
+                  <dd><EditableValue section="material" rowId={item.id} field="vendor" value={item.vendor} displayValue={getWorkOrderSelectDisplayValue(item.vendor)} options={vendorOptionsById[item.id] ?? []} editingCell={editingCell} editingValue={editingValue} wrapText onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></dd>
                 </div>
                 <div className="grid min-w-0 grid-cols-1 gap-2 min-[380px]:grid-cols-2">
                   <div>

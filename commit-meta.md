@@ -1,18 +1,24 @@
 Version :
-0.11.86
+0.11.87
 
 Summary :
-태블릿 작업지시서 개발도구 표시 보정
+작업지시서 생산구성 선택 안함 표시 보정
 
 Description :
-작업지시서 태블릿 레이아웃이 사용하는 좌측 목록 사이드바에서 development 전용 DB 연결 배지와 사용자 변경 버튼을 별도 줄로 분리했다. 모바일 상단바와 동일하게 production에서는 숨기고 development에서만 안정적으로 표시되도록 보정했다.
+작업지시서 생산구성의 원단, 부자재, 외주공정 선택 안함 상태에서 표시값을 -로 통일하고, 거래처와 외주처 편집 후보는 등록된 업체 없음으로 보이도록 PC, 모바일, 태블릿 화면 표시 기준을 공통 helper로 정리했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- components/layout/SidebarContent.tsx
+- components/workorder/detail/sections/MaterialSection.tsx
+- components/workorder/detail/sections/OutsourcingSection.tsx
+- components/workorder/detail/sections/device/WorkOrderDetailMobileMaterialSection.tsx
+- components/workorder/detail/sections/device/WorkOrderDetailMobileOutsourcingSection.tsx
+- components/workorder/detail/sections/device/WorkOrderDetailTabletMaterialSection.tsx
+- components/workorder/detail/sections/device/WorkOrderDetailTabletOutsourcingSection.tsx
 
 추가 파일 목록 :
-- docs/runtime-mode-tablet-sidebar-0.11.86.md
+- lib/workorder/detail/selectDisplayPresentation.ts
+- docs/runtime-mode-production-composition-select-display-0.11.87.md
 
 삭제 파일 목록 :
 없음
