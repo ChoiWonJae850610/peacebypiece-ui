@@ -297,3 +297,29 @@ export const PBP_THEME_PROVIDER_STRUCTURE_CHECKS = {
     "복수 theme file 추가",
   ],
 } as const;
+
+export const PBP_PERSONAL_THEME_SETTINGS_CHECKS = {
+  checkedAtVersion: "0.12.6",
+  personalSettingsRoute: "/me/settings",
+  adminNavigation: {
+    personalSettingsIcon: "사람 아이콘",
+    adminSettingsIcon: "톱니바퀴",
+    rule: "관리자 화면에서 개인 설정과 회사/운영 환경설정 진입점을 분리한다.",
+  },
+  memberNavigation: {
+    personalSettingsIcon: "사람 아이콘",
+    adminSettingsIcon: "노출하지 않음",
+    rule: "디자이너/일반 멤버는 개인 설정 진입만 제공한다.",
+  },
+  storage: {
+    phase: "localStorage",
+    key: "peacebypiece.personal.settings",
+    future: "로그인 도입 후 사용자 설정 DB로 이전 가능",
+  },
+  themeProvider: {
+    provider: "PbpThemeProvider",
+    source: "개인 설정 localStorage theme id",
+    fallback: "default-light",
+  },
+  availableThemeIds: ["default-light", "beige-atelier"],
+} as const;

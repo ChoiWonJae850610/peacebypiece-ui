@@ -37,7 +37,7 @@ export const commonKo = {
   },
   personalSettings: {
     title: "개인 환경설정",
-    description: "언어, 색상, 화면 밀도, 기본 진입 화면처럼 사용자별로 달라지는 설정을 관리합니다.",
+    description: "언어, 테마, 화면 밀도, 기본 진입 화면처럼 사용자별로 달라지는 설정을 관리합니다.",
     loading: "저장된 개인 설정을 불러오는 중입니다.",
     actions: {
       openDefaultHome: "기본 진입 화면 열기",
@@ -47,7 +47,7 @@ export const commonKo = {
     },
     summary: {
       language: "언어",
-      theme: "색상",
+      theme: "테마",
       density: "화면 밀도",
       defaultHome: "기본 진입",
     },
@@ -57,8 +57,8 @@ export const commonKo = {
         description: "현재 사용자에게 적용할 화면 언어입니다. 조직 설정과 분리해서 저장합니다.",
       },
       theme: {
-        title: "색상",
-        description: "현재 사용자의 화면 강조 색상입니다. 관리자 테마와 같은 색상 토큰을 재사용합니다.",
+        title: "테마",
+        description: "개인별 화면 테마입니다. 색상 하나가 아니라 배경, 카드, 버튼, 상태, 입력 필드 톤을 함께 바꿉니다.",
       },
       density: {
         title: "화면 밀도",
@@ -74,10 +74,8 @@ export const commonKo = {
       en: "English",
     },
     themeOptions: {
-      blue: "Blue",
-      emerald: "Emerald",
-      violet: "Violet",
-      stone: "Stone",
+      "default-light": "기본 밝은 테마",
+      "beige-atelier": "Beige Atelier",
     },
     densityOptions: {
       comfortable: "기본",

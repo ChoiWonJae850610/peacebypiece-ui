@@ -1,6 +1,6 @@
 export type PbpThemeTone = "light" | "dark";
 
-export type PbpThemeId = "default-light";
+export type PbpThemeId = "default-light" | "beige-atelier";
 
 export type PbpThemeCssVariableName = `--${string}`;
 

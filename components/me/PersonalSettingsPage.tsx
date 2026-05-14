@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { persistAdminTheme } from "@/lib/admin/theme";
 import { APP_VERSION } from "@/lib/constants/app";
 import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
 import { useI18n } from "@/lib/i18n";
+import { usePbpTheme } from "@/lib/theme/PbpThemeProvider";
+import { getPbpThemeDefinition } from "@/lib/theme/themeRegistry";
 import {
   DEFAULT_PERSONAL_SETTINGS,
   applyPersonalSettingsToDocument,
@@ -40,15 +41,15 @@ function getDensityClassName(density: PersonalSettingsDensity): string {
   return density === "compact" ? "gap-3 md:py-5" : "gap-5 md:py-8";
 }
 
-function getThemeSwatchClassName(theme: PersonalSettingsTheme): string {
-  const swatchClassNames: Record<PersonalSettingsTheme, string> = {
-    blue: "bg-blue-500",
-    emerald: "bg-emerald-500",
-    violet: "bg-violet-500",
-    stone: "bg-stone-500",
-  };
+function getThemePreviewColors(theme: PersonalSettingsTheme) {
+  const themeDefinition = getPbpThemeDefinition(theme);
 
-  return swatchClassNames[theme];
+  return {
+    accent: themeDefinition.cssVariables["--pbp-accent"] ?? "#1c1917",
+    surface: themeDefinition.cssVariables["--pbp-surface"] ?? "#ffffff",
+    selected: themeDefinition.cssVariables["--pbp-selected-surface"] ?? "#f5f5f4",
+    border: themeDefinition.cssVariables["--pbp-border"] ?? "#e7e5e4",
+  };
 }
 
 function PersonalSettingsOptionGroup<TValue extends string>({
@@ -60,9 +61,9 @@ function PersonalSettingsOptionGroup<TValue extends string>({
   onChange,
 }: PersonalSettingsOptionGroupProps<TValue>) {
   return (
-    <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-      <h2 className="text-base font-semibold text-stone-950">{title}</h2>
-      <p className="mt-2 text-sm leading-6 text-stone-500">{description}</p>
+    <section className="rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-5 shadow-sm">
+      <h2 className="text-base font-semibold text-[var(--pbp-text-primary)]">{title}</h2>
+      <p className="mt-2 text-sm leading-6 text-[var(--pbp-text-muted)]">{description}</p>
       <div className="mt-4 flex flex-wrap gap-2">
         {options.map((option) => {
           const selected = option.value === value;
@@ -72,8 +73,8 @@ function PersonalSettingsOptionGroup<TValue extends string>({
               type="button"
               onClick={() => onChange(option.value)}
               className={selected
-                ? "inline-flex items-center justify-center rounded-2xl border border-stone-900 bg-stone-900 px-3 py-2 text-sm font-semibold text-white transition"
-                : "inline-flex items-center justify-center rounded-2xl border border-stone-200 bg-white px-3 py-2 text-sm font-semibold text-stone-600 transition hover:bg-stone-50"}
+                ? "pbp-action-primary inline-flex items-center justify-center rounded-2xl px-3 py-2 text-sm font-semibold transition"
+                : "pbp-action-secondary inline-flex items-center justify-center rounded-2xl px-3 py-2 text-sm font-semibold transition"}
             >
               {getLabel(option.value)}
             </button>
@@ -86,23 +87,28 @@ function PersonalSettingsOptionGroup<TValue extends string>({
 
 function PersonalThemeOptionGroup({ copy, value, onChange }: { copy: PersonalSettingsCopy; value: PersonalSettingsTheme; onChange: (value: PersonalSettingsTheme) => void }) {
   return (
-    <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-      <h2 className="text-base font-semibold text-stone-950">{copy.sections.theme.title}</h2>
-      <p className="mt-2 text-sm leading-6 text-stone-500">{copy.sections.theme.description}</p>
+    <section className="rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-5 shadow-sm">
+      <h2 className="text-base font-semibold text-[var(--pbp-text-primary)]">{copy.sections.theme.title}</h2>
+      <p className="mt-2 text-sm leading-6 text-[var(--pbp-text-muted)]">{copy.sections.theme.description}</p>
       <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
         {PERSONAL_THEME_OPTIONS.map((option) => {
           const selected = option.value === value;
+          const previewColors = getThemePreviewColors(option.value);
           return (
             <button
               key={option.value}
               type="button"
               onClick={() => onChange(option.value)}
               className={selected
-                ? "rounded-2xl border border-stone-900 bg-stone-50 px-3 py-3 text-left shadow-sm"
-                : "rounded-2xl border border-stone-200 bg-white px-3 py-3 text-left transition hover:bg-stone-50"}
+                ? "rounded-2xl border border-[var(--pbp-selected-border)] bg-[var(--pbp-selected-surface)] px-3 py-3 text-left shadow-sm transition"
+                : "rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-3 text-left transition hover:bg-[var(--pbp-surface-muted)]"}
             >
-              <span className={`block h-6 w-6 rounded-full ${getThemeSwatchClassName(option.value)}`} />
-              <span className="mt-3 block text-sm font-semibold text-stone-800">{copy.themeOptions[option.value]}</span>
+              <span className="flex h-9 w-full overflow-hidden rounded-xl border" style={{ borderColor: previewColors.border }}>
+                <span className="h-full flex-1" style={{ backgroundColor: previewColors.surface }} />
+                <span className="h-full flex-1" style={{ backgroundColor: previewColors.selected }} />
+                <span className="h-full flex-1" style={{ backgroundColor: previewColors.accent }} />
+              </span>
+              <span className="mt-3 block text-sm font-semibold text-[var(--pbp-text-primary)]">{copy.themeOptions[option.value]}</span>
             </button>
           );
         })}
@@ -115,45 +121,45 @@ function PersonalSettingsSummary({ copy, draft, onReset }: { copy: PersonalSetti
   const defaultHomeHref = resolvePersonalSettingsHomeRoute(draft.defaultHome);
 
   return (
-    <section className="rounded-[30px] border border-stone-200 bg-white/95 px-5 py-5 shadow-sm backdrop-blur">
+    <section className="rounded-[30px] border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-5 py-5 shadow-sm backdrop-blur">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white">PeacebyPiece</span>
-            <span className="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-500">{WORKSPACE_COMPANY_NAME}</span>
-            <span className="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-500">v{APP_VERSION}</span>
+            <span className="rounded-full bg-[var(--pbp-action-primary-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--pbp-action-primary-text)]">PeacebyPiece</span>
+            <span className="rounded-full bg-[var(--pbp-surface-muted)] px-3 py-1.5 text-xs font-semibold text-[var(--pbp-text-muted)]">{WORKSPACE_COMPANY_NAME}</span>
+            <span className="rounded-full bg-[var(--pbp-surface-muted)] px-3 py-1.5 text-xs font-semibold text-[var(--pbp-text-muted)]">v{APP_VERSION}</span>
           </div>
-          <h1 className="mt-4 text-2xl font-semibold tracking-tight text-stone-950">{copy.title}</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-500">{copy.description}</p>
+          <h1 className="mt-4 text-2xl font-semibold tracking-tight text-[var(--pbp-text-primary)]">{copy.title}</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--pbp-text-muted)]">{copy.description}</p>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">
           <Link href={defaultHomeHref} className="inline-flex items-center justify-center rounded-full border border-stone-900 bg-stone-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-stone-800">
             {copy.actions.openDefaultHome}
           </Link>
-          <Link href="/workspace" className="inline-flex items-center justify-center rounded-full border border-stone-200 bg-white px-3 py-2 text-xs font-semibold text-stone-700 transition hover:bg-stone-50">
+          <Link href="/workspace" className="inline-flex items-center justify-center rounded-full border border-[var(--pbp-border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--pbp-text-primary)] transition hover:bg-[var(--pbp-surface-muted)]">
             {copy.actions.workspaceHome}
           </Link>
-          <button type="button" onClick={onReset} className="inline-flex items-center justify-center rounded-full border border-stone-200 bg-white px-3 py-2 text-xs font-semibold text-stone-700 transition hover:bg-stone-50">
+          <button type="button" onClick={onReset} className="inline-flex items-center justify-center rounded-full border border-[var(--pbp-border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--pbp-text-primary)] transition hover:bg-[var(--pbp-surface-muted)]">
             {copy.actions.reset}
           </button>
         </div>
       </div>
       <div className="mt-5 grid gap-2 sm:grid-cols-4">
-        <div className="rounded-2xl bg-stone-50 px-3 py-3">
-          <p className="text-[11px] font-semibold text-stone-500">{copy.summary.language}</p>
-          <p className="mt-2 text-sm font-semibold text-stone-950">{copy.languageOptions[draft.language]}</p>
+        <div className="rounded-2xl bg-[var(--pbp-surface-muted)] px-3 py-3">
+          <p className="text-[11px] font-semibold text-[var(--pbp-text-muted)]">{copy.summary.language}</p>
+          <p className="mt-2 text-sm font-semibold text-[var(--pbp-text-primary)]">{copy.languageOptions[draft.language]}</p>
         </div>
-        <div className="rounded-2xl bg-stone-50 px-3 py-3">
-          <p className="text-[11px] font-semibold text-stone-500">{copy.summary.theme}</p>
-          <p className="mt-2 text-sm font-semibold text-stone-950">{copy.themeOptions[draft.theme]}</p>
+        <div className="rounded-2xl bg-[var(--pbp-surface-muted)] px-3 py-3">
+          <p className="text-[11px] font-semibold text-[var(--pbp-text-muted)]">{copy.summary.theme}</p>
+          <p className="mt-2 text-sm font-semibold text-[var(--pbp-text-primary)]">{copy.themeOptions[draft.theme]}</p>
         </div>
-        <div className="rounded-2xl bg-stone-50 px-3 py-3">
-          <p className="text-[11px] font-semibold text-stone-500">{copy.summary.density}</p>
-          <p className="mt-2 text-sm font-semibold text-stone-950">{copy.densityOptions[draft.density]}</p>
+        <div className="rounded-2xl bg-[var(--pbp-surface-muted)] px-3 py-3">
+          <p className="text-[11px] font-semibold text-[var(--pbp-text-muted)]">{copy.summary.density}</p>
+          <p className="mt-2 text-sm font-semibold text-[var(--pbp-text-primary)]">{copy.densityOptions[draft.density]}</p>
         </div>
-        <div className="rounded-2xl bg-stone-50 px-3 py-3">
-          <p className="text-[11px] font-semibold text-stone-500">{copy.summary.defaultHome}</p>
-          <p className="mt-2 text-sm font-semibold text-stone-950">{copy.defaultHomeOptions[draft.defaultHome]}</p>
+        <div className="rounded-2xl bg-[var(--pbp-surface-muted)] px-3 py-3">
+          <p className="text-[11px] font-semibold text-[var(--pbp-text-muted)]">{copy.summary.defaultHome}</p>
+          <p className="mt-2 text-sm font-semibold text-[var(--pbp-text-primary)]">{copy.defaultHomeOptions[draft.defaultHome]}</p>
         </div>
       </div>
     </section>
@@ -163,6 +169,7 @@ function PersonalSettingsSummary({ copy, draft, onReset }: { copy: PersonalSetti
 export default function PersonalSettingsPage() {
   const { i18n, setLocale } = useI18n();
   const copy = i18n.common.personalSettings;
+  const { setThemeId } = usePbpTheme();
   const [draft, setDraft] = useState<PersonalSettingsDraft>(DEFAULT_PERSONAL_SETTINGS);
   const [loaded, setLoaded] = useState(false);
 
@@ -170,7 +177,7 @@ export default function PersonalSettingsPage() {
     const storedSettings = readStoredPersonalSettings(window.localStorage);
     setDraft(storedSettings);
     setLocale(storedSettings.language);
-    persistAdminTheme(storedSettings.theme);
+    setThemeId(storedSettings.theme);
     applyPersonalSettingsToDocument(storedSettings, document.documentElement);
     setLoaded(true);
   }, []);
@@ -179,7 +186,7 @@ export default function PersonalSettingsPage() {
     const normalizedDraft = persist(window.localStorage, nextDraft);
     setDraft(normalizedDraft);
     setLocale(normalizedDraft.language);
-    persistAdminTheme(normalizedDraft.theme);
+    setThemeId(normalizedDraft.theme);
     applyPersonalSettingsToDocument(normalizedDraft, document.documentElement);
   }
 
@@ -208,7 +215,7 @@ export default function PersonalSettingsPage() {
   }
 
   return (
-    <main className={`min-h-screen bg-[linear-gradient(135deg,#f8fafc_0%,#f5f5f4_48%,#eef2ff_100%)] px-4 py-5 text-stone-900 md:px-6 ${getDensityClassName(draft.density)}`}>
+    <main className={`min-h-screen bg-[var(--background)] px-4 py-5 text-[var(--pbp-text-primary)] md:px-6 ${getDensityClassName(draft.density)}`}>
       <div className={`mx-auto flex w-full max-w-6xl flex-col ${draft.density === "compact" ? "gap-3" : "gap-5"}`}>
         <PersonalSettingsSummary copy={copy} draft={draft} onReset={resetDraft} />
 
@@ -240,10 +247,10 @@ export default function PersonalSettingsPage() {
           />
         </div>
 
-        <section className="rounded-3xl border border-dashed border-stone-300 bg-white/70 p-5 text-sm leading-6 text-stone-500">
-          <p className="font-semibold text-stone-700">{copy.policyNote.title}</p>
+        <section className="rounded-3xl border border-dashed border-[var(--pbp-border-strong)] bg-[var(--pbp-surface-muted)] p-5 text-sm leading-6 text-[var(--pbp-text-muted)]">
+          <p className="font-semibold text-[var(--pbp-text-primary)]">{copy.policyNote.title}</p>
           <p className="mt-2">{copy.policyNote.description}</p>
-          {!loaded ? <p className="mt-2 text-xs font-semibold text-stone-400">{copy.loading}</p> : null}
+          {!loaded ? <p className="mt-2 text-xs font-semibold text-[var(--pbp-text-subtle)]">{copy.loading}</p> : null}
         </section>
       </div>
     </main>

@@ -50,6 +50,15 @@ function HomeIcon() {
   );
 }
 
+function UserIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 12.25a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
+      <path d="M4.75 20.25a7.25 7.25 0 0 1 14.5 0" />
+    </svg>
+  );
+}
+
 function SettingsIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -91,6 +100,14 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
             className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 transition hover:bg-stone-50"
           >
             <HomeIcon />
+          </Link>
+          <Link
+            href="/me/settings"
+            aria-label={t("topbar.actions.personalSettings", "개인 설정")}
+            title={t("topbar.actions.personalSettings", "개인 설정")}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 transition hover:bg-stone-50"
+          >
+            <UserIcon />
           </Link>
           <Link href="/admin/settings" aria-label={t("topbar.actions.adminSettings", "환경설정")} title={t("topbar.actions.adminSettings", "환경설정")} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 transition hover:bg-stone-50">
             <SettingsIcon />

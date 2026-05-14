@@ -1,25 +1,29 @@
 Version :
-0.12.5
+0.12.6
 
 Summary :
-공통 UI semantic class 기준 점검
+개인 설정 테마 선택 구조와 진입 아이콘 정리
 
 Description :
-공통 버튼, 관리자 카드, 필터 바, 토글 컴포넌트가 theme token 기반 semantic class를 사용하도록 1차 정리했다. default-light theme 변수와 globals.css fallback 변수도 동기화했다.
+/me/settings에서 개인별 테마를 선택하고 localStorage에 저장한 값을 theme provider가 적용하도록 연결했다. 관리자 화면에는 개인 설정 사람 아이콘을 추가하고 기존 톱니바퀴는 관리자 환경설정 전용으로 유지했다. 작업지시서 PC/모바일 상단에도 개인 설정 진입 아이콘을 추가했으며, 테스트용 Beige Atelier 테마 파일을 추가했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- app/globals.css
-- lib/theme/themes/defaultLight.ts
+- lib/me/personalSettings.ts
+- lib/theme/PbpThemeProvider.tsx
+- lib/theme/themeRegistry.ts
+- lib/theme/themeTypes.ts
 - lib/theme/semanticThemeTokens.ts
-- components/admin/common/AdminButton.tsx
-- components/admin/common/AdminFilterBar.tsx
-- components/admin/common/AdminSection.tsx
-- components/admin/layout/AdminCard.tsx
-- components/common/StatusToggle.tsx
+- components/me/PersonalSettingsPage.tsx
+- components/admin/layout/AdminTopbar.tsx
+- components/layout/SidebarContent.tsx
+- components/layout/MobileTopBar.tsx
+- lib/i18n/ko/common.ts
+- lib/i18n/en/common.ts
 
 추가 파일 목록 :
-- docs/common-ui-semantic-token-0.12.5.md
+- lib/theme/themes/beigeAtelier.ts
+- docs/personal-theme-settings-0.12.6.md
 
 삭제 파일 목록 :
 없음

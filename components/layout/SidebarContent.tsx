@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import WorkOrderListCard from "@/components/workorder/list/WorkOrderListCard";
 import { useI18n } from "@/lib/i18n";
 import type { WorkOrderListItem, WorkflowState } from "@/types/workorder";
@@ -11,6 +13,16 @@ import {
 import type { WorkOrderListSort, WorkOrderListStatusFilter } from "@/lib/workorder/list/workOrderListControls";
 import type { DbConnectionStatus } from "@/lib/repositories/dbConnectionStatusStore";
 import { getDbConnectionStatusPresentation } from "@/lib/repositories/dbConnectionStatusPresentation";
+
+
+function PersonalSettingsIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 12.25a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
+      <path d="M4.75 20.25a7.25 7.25 0 0 1 14.5 0" />
+    </svg>
+  );
+}
 
 type Props = {
   companyName: string;
@@ -98,6 +110,14 @@ export default function SidebarContent({
             <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-stone-500"><span>{controlsUi.subtitle}</span><span className="text-[10px] leading-none text-stone-400">v{version}</span></div>
           </div>
           <div className="flex items-center gap-2">
+            <Link
+              href="/me/settings"
+              aria-label={i18n.common.personalSettings.title}
+              title={i18n.common.personalSettings.title}
+              className="pbp-interactive-button pbp-action-secondary inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-base font-medium shadow-sm active:bg-stone-100"
+            >
+              <PersonalSettingsIcon />
+            </Link>
             <button
               type="button"
               onClick={() => { if (!writeLocked) window.location.reload(); }}

@@ -7,6 +7,16 @@ import { useI18n } from "@/lib/i18n";
 import type { DbConnectionStatus } from "@/lib/repositories/dbConnectionStatusStore";
 import { getDbConnectionStatusPresentation } from "@/lib/repositories/dbConnectionStatusPresentation";
 
+
+function PersonalSettingsIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 12.25a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
+      <path d="M4.75 20.25a7.25 7.25 0 0 1 14.5 0" />
+    </svg>
+  );
+}
+
 type Props = {
   companyName: string;
   version: string;
@@ -40,6 +50,14 @@ export default function MobileTopBar({ companyName, version, onOpen, onOpenSetti
             className="pbp-touch-target pbp-interactive-button inline-flex h-11 w-11 items-center justify-center rounded-xl border border-stone-300 bg-white text-base font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
           >
             ⌂
+          </Link>
+          <Link
+            href="/me/settings"
+            aria-label={i18n.common.personalSettings.title}
+            title={i18n.common.personalSettings.title}
+            className="pbp-touch-target pbp-interactive-button inline-flex h-11 w-11 items-center justify-center rounded-xl border border-stone-300 bg-white text-base font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+          >
+            <PersonalSettingsIcon />
           </Link>
           <button
             type="button"

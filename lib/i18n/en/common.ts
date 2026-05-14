@@ -37,7 +37,7 @@ export const commonEn = {
   },
   personalSettings: {
     title: "Personal settings",
-    description: "Manage user-specific settings such as language, color, screen density, and the default entry screen.",
+    description: "Manage user-specific settings such as language, theme, screen density, and the default entry screen.",
     loading: "Loading saved personal settings.",
     actions: {
       openDefaultHome: "Open default entry",
@@ -47,7 +47,7 @@ export const commonEn = {
     },
     summary: {
       language: "Language",
-      theme: "Color",
+      theme: "Theme",
       density: "Screen density",
       defaultHome: "Default entry",
     },
@@ -57,8 +57,8 @@ export const commonEn = {
         description: "The interface language for the current user. This is stored separately from organization settings.",
       },
       theme: {
-        title: "Color",
-        description: "The current user's accent color. This reuses the same color tokens as the admin theme.",
+        title: "Theme",
+        description: "A personal screen theme. This changes the overall tone for surfaces, cards, buttons, statuses, and fields rather than a single accent color.",
       },
       density: {
         title: "Screen density",
@@ -74,10 +74,8 @@ export const commonEn = {
       en: "English",
     },
     themeOptions: {
-      blue: "Blue",
-      emerald: "Emerald",
-      violet: "Violet",
-      stone: "Stone",
+      "default-light": "Default Light",
+      "beige-atelier": "Beige Atelier",
     },
     densityOptions: {
       comfortable: "Comfortable",

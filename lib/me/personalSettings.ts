@@ -1,9 +1,11 @@
-import type { CompanyLanguage, CompanyThemeColor } from "@/lib/admin/settings/companyTypes";
+import type { CompanyLanguage } from "@/lib/admin/settings/companyTypes";
+import { DEFAULT_PBP_THEME_ID, PBP_THEME_OPTIONS, getPbpThemeDefinition } from "@/lib/theme/themeRegistry";
+import type { PbpThemeId } from "@/lib/theme/themeTypes";
 
 export const PERSONAL_SETTINGS_STORAGE_KEY = "peacebypiece.personal.settings";
 export const PERSONAL_SETTINGS_CHANGE_EVENT = "peacebypiece:personal-settings-change";
 
-export type PersonalSettingsTheme = CompanyThemeColor;
+export type PersonalSettingsTheme = PbpThemeId;
 export type PersonalSettingsLanguage = CompanyLanguage;
 export type PersonalSettingsDensity = "comfortable" | "compact";
 export type PersonalSettingsDefaultHome = "workspace" | "workorder";
@@ -23,7 +25,7 @@ export type PersonalSettingsOption<TValue extends string> = {
 
 export const DEFAULT_PERSONAL_SETTINGS: PersonalSettingsDraft = {
   language: "ko",
-  theme: "blue",
+  theme: DEFAULT_PBP_THEME_ID,
   density: "comfortable",
   defaultHome: "workspace",
 };
@@ -33,12 +35,9 @@ export const PERSONAL_LANGUAGE_OPTIONS: PersonalSettingsOption<PersonalSettingsL
   { value: "en" },
 ];
 
-export const PERSONAL_THEME_OPTIONS: PersonalSettingsOption<PersonalSettingsTheme>[] = [
-  { value: "blue" },
-  { value: "emerald" },
-  { value: "violet" },
-  { value: "stone" },
-];
+export const PERSONAL_THEME_OPTIONS: PersonalSettingsOption<PersonalSettingsTheme>[] = PBP_THEME_OPTIONS.map((option) => ({
+  value: option.id,
+}));
 
 export const PERSONAL_DENSITY_OPTIONS: PersonalSettingsOption<PersonalSettingsDensity>[] = [
   { value: "comfortable" },
@@ -54,8 +53,23 @@ function isPersonalLanguage(value: unknown): value is PersonalSettingsLanguage {
   return value === "ko" || value === "en";
 }
 
-function isPersonalTheme(value: unknown): value is PersonalSettingsTheme {
+function isLegacyPersonalTheme(value: unknown): value is "blue" | "emerald" | "violet" | "stone" {
   return value === "blue" || value === "emerald" || value === "violet" || value === "stone";
+}
+
+function migrateLegacyPersonalTheme(value: "blue" | "emerald" | "violet" | "stone"): PersonalSettingsTheme {
+  return value === "stone" ? "beige-atelier" : DEFAULT_PBP_THEME_ID;
+}
+
+function isPersonalTheme(value: unknown): value is PersonalSettingsTheme {
+  if (typeof value !== "string") return false;
+  return getPbpThemeDefinition(value as PersonalSettingsTheme).id === value;
+}
+
+function normalizePersonalTheme(value: unknown): PersonalSettingsTheme {
+  if (isPersonalTheme(value)) return value;
+  if (isLegacyPersonalTheme(value)) return migrateLegacyPersonalTheme(value);
+  return DEFAULT_PERSONAL_SETTINGS.theme;
 }
 
 function isPersonalDensity(value: unknown): value is PersonalSettingsDensity {
@@ -71,7 +85,7 @@ export function normalizePersonalSettings(value: unknown): PersonalSettingsDraft
 
   return {
     language: isPersonalLanguage(source.language) ? source.language : DEFAULT_PERSONAL_SETTINGS.language,
-    theme: isPersonalTheme(source.theme) ? source.theme : DEFAULT_PERSONAL_SETTINGS.theme,
+    theme: normalizePersonalTheme(source.theme),
     density: isPersonalDensity(source.density) ? source.density : DEFAULT_PERSONAL_SETTINGS.density,
     defaultHome: isPersonalDefaultHome(source.defaultHome) ? source.defaultHome : DEFAULT_PERSONAL_SETTINGS.defaultHome,
   };
@@ -98,6 +112,7 @@ export function applyPersonalSettingsToDocument(settings: PersonalSettingsDraft,
   documentElement.lang = settings.language;
   documentElement.dataset.density = settings.density;
   documentElement.dataset.personalTheme = settings.theme;
+  documentElement.dataset.pbpPersonalTheme = settings.theme;
 }
 
 export function writeStoredPersonalSettings(storage: Storage | null | undefined, settings: PersonalSettingsDraft): PersonalSettingsDraft {
@@ -105,6 +120,7 @@ export function writeStoredPersonalSettings(storage: Storage | null | undefined,
   if (storage) {
     storage.setItem(PERSONAL_SETTINGS_STORAGE_KEY, JSON.stringify(normalizedSettings));
   }
+  dispatchPersonalSettingsChange(normalizedSettings);
   return normalizedSettings;
 }
 
@@ -112,5 +128,11 @@ export function resetStoredPersonalSettings(storage: Storage | null | undefined)
   if (storage) {
     storage.removeItem(PERSONAL_SETTINGS_STORAGE_KEY);
   }
+  dispatchPersonalSettingsChange(DEFAULT_PERSONAL_SETTINGS);
   return DEFAULT_PERSONAL_SETTINGS;
+}
+
+export function dispatchPersonalSettingsChange(settings: PersonalSettingsDraft) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(PERSONAL_SETTINGS_CHANGE_EVENT, { detail: { settings } }));
 }
