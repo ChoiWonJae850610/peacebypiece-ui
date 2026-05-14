@@ -323,3 +323,28 @@ export const PBP_PERSONAL_THEME_SETTINGS_CHECKS = {
   },
   availableThemeIds: ["default-light", "beige-atelier"],
 } as const;
+
+
+export const PBP_PERSONAL_THEME_REGRESSION_CHECKS = {
+  checkedAtVersion: "0.12.7",
+  route: "/me/settings",
+  storage: {
+    phase: "localStorage",
+    key: "peacebypiece.personal.settings",
+    expectedRefreshBehavior: "선택한 theme id가 새로고침 후에도 유지되어야 한다.",
+  },
+  navigation: {
+    admin: ["사람 아이콘은 /me/settings", "톱니바퀴는 /admin/settings"],
+    worker: ["사람 아이콘은 /me/settings", "개발 전용 톱니바퀴는 runtimeMode 규칙 유지"],
+  },
+  themeApplication: [
+    "PbpThemeProvider가 초기 client state에서 localStorage theme id를 우선 읽어 깜빡임을 줄인다.",
+    "관리자 topbar, 작업지시서 topbar, 개인 설정 summary action이 직접 stone/bg-white 색상에 의존하지 않는다.",
+    "default-light와 beige-atelier 전환 시 공통 topbar, action button, card, field tone이 함께 바뀌어야 한다.",
+  ],
+  remaining: [
+    "개별 화면의 직접 색상 class 잔여 목록화",
+    "추가 theme file 확장 전 beige-atelier tone 강도 회귀 확인",
+    "로그인 도입 후 DB 기반 사용자 설정 저장 구조 검토",
+  ],
+} as const;

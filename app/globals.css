@@ -266,6 +266,35 @@ body {
   color: var(--pbp-text-primary);
 }
 
+
+.pbp-topbar-shell {
+  border: 1px solid var(--pbp-border);
+  background: color-mix(in srgb, var(--pbp-surface) 94%, transparent);
+  color: var(--pbp-text-primary);
+  box-shadow: var(--pbp-shadow-card);
+}
+
+.pbp-topbar-chip-primary {
+  background: var(--pbp-action-primary-surface);
+  color: var(--pbp-action-primary-text);
+}
+
+.pbp-topbar-chip-muted {
+  background: var(--pbp-surface-muted);
+  color: var(--pbp-text-muted);
+}
+
+.pbp-topbar-icon-button {
+  border: 1px solid var(--pbp-border);
+  background: var(--pbp-action-secondary-surface);
+  color: var(--pbp-action-secondary-text);
+}
+
+.pbp-topbar-icon-button:hover {
+  border-color: var(--pbp-border-strong);
+  background: var(--pbp-action-secondary-surface-hover);
+}
+
 .pbp-admin-card {
   border: 1px solid var(--pbp-border);
   background: var(--pbp-surface);

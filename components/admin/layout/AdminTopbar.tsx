@@ -74,22 +74,22 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
   const summary = getTopbarSummary(localizedTitle, description, t);
 
   return (
-    <header className="rounded-[24px] border border-stone-200 bg-white/95 px-4 py-3 sm:rounded-[30px] sm:px-5 sm:py-4 shadow-sm backdrop-blur">
+    <header className="pbp-topbar-shell rounded-[24px] px-4 py-3 backdrop-blur sm:rounded-[30px] sm:px-5 sm:py-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-[var(--admin-theme-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--admin-theme-text-on-surface)]">
+            <span className="pbp-topbar-chip-primary rounded-full px-3 py-1.5 text-xs font-semibold">
               PeacebyPiece
             </span>
-            <span className="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-500">{companyName}</span>
-            <span className="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-500">v{appVersion}</span>
+            <span className="pbp-topbar-chip-muted rounded-full px-3 py-1.5 text-xs font-semibold">{companyName}</span>
+            <span className="pbp-topbar-chip-muted rounded-full px-3 py-1.5 text-xs font-semibold">v{appVersion}</span>
           </div>
           {summary ? (
             <div className="mt-2 flex sm:mt-3">
-              <span className="rounded-2xl bg-stone-100 px-3 py-1.5 text-xs font-semibold leading-5 text-stone-500">{summary}</span>
+              <span className="pbp-topbar-chip-muted rounded-2xl px-3 py-1.5 text-xs font-semibold leading-5">{summary}</span>
             </div>
           ) : null}
-          <h1 className="mt-2 text-xl font-semibold sm:text-2xl tracking-tight text-stone-950">{localizedTitle}</h1>
+          <h1 className="mt-2 text-xl font-semibold tracking-tight text-[var(--pbp-text-primary)] sm:text-2xl">{localizedTitle}</h1>
         </div>
 
         <div className="flex shrink-0 flex-wrap gap-2">
@@ -97,7 +97,7 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
             href="/admin"
             aria-label={t("topbar.actions.home", "홈")}
             title={t("topbar.actions.home", "홈")}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 transition hover:bg-stone-50"
+            className="pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition"
           >
             <HomeIcon />
           </Link>
@@ -105,11 +105,11 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
             href="/me/settings"
             aria-label={t("topbar.actions.personalSettings", "개인 설정")}
             title={t("topbar.actions.personalSettings", "개인 설정")}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 transition hover:bg-stone-50"
+            className="pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition"
           >
             <UserIcon />
           </Link>
-          <Link href="/admin/settings" aria-label={t("topbar.actions.adminSettings", "환경설정")} title={t("topbar.actions.adminSettings", "환경설정")} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 transition hover:bg-stone-50">
+          <Link href="/admin/settings" aria-label={t("topbar.actions.adminSettings", "환경설정")} title={t("topbar.actions.adminSettings", "환경설정")} className="pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition">
             <SettingsIcon />
           </Link>
         </div>

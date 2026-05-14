@@ -36,18 +36,18 @@ export default function MobileTopBar({ companyName, version, onOpen, onOpenSetti
   const showDevelopmentToolbar = Boolean(dbStatusPresentation || showUserSwitchingTools);
 
   return (
-    <div className="sticky top-0 z-30 border-b border-stone-200 bg-white/95 px-3 py-[max(env(safe-area-inset-top),0.75rem)] backdrop-blur md:hidden">
+    <div className="sticky top-0 z-30 border-b border-[var(--pbp-border)] bg-[color-mix(in_srgb,var(--pbp-surface)_94%,transparent)] px-3 py-[max(env(safe-area-inset-top),0.75rem)] backdrop-blur md:hidden">
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-semibold text-stone-900">{companyName}</div>
-          <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-[11px] text-stone-500"><span>{copy.subtitle}</span><span className="text-[10px] leading-none text-stone-400">v{version}</span></div>
+          <div className="truncate text-sm font-semibold text-[var(--pbp-text-primary)]">{companyName}</div>
+          <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-[11px] text-[var(--pbp-text-muted)]"><span>{copy.subtitle}</span><span className="text-[10px] leading-none text-[var(--pbp-text-subtle)]">v{version}</span></div>
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
           <Link
             href={homeNavigation.href}
             aria-label={homeNavigation.ariaLabel}
             title={homeNavigation.label}
-            className="pbp-touch-target pbp-interactive-button inline-flex h-11 w-11 items-center justify-center rounded-xl border border-stone-300 bg-white text-base font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+            className="pbp-touch-target pbp-interactive-button pbp-topbar-icon-button inline-flex h-11 w-11 items-center justify-center rounded-xl text-base font-medium shadow-sm"
           >
             ⌂
           </Link>
@@ -55,7 +55,7 @@ export default function MobileTopBar({ companyName, version, onOpen, onOpenSetti
             href="/me/settings"
             aria-label={i18n.common.personalSettings.title}
             title={i18n.common.personalSettings.title}
-            className="pbp-touch-target pbp-interactive-button inline-flex h-11 w-11 items-center justify-center rounded-xl border border-stone-300 bg-white text-base font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+            className="pbp-touch-target pbp-interactive-button pbp-topbar-icon-button inline-flex h-11 w-11 items-center justify-center rounded-xl text-base font-medium shadow-sm"
           >
             <PersonalSettingsIcon />
           </Link>
@@ -64,7 +64,7 @@ export default function MobileTopBar({ companyName, version, onOpen, onOpenSetti
             onClick={() => window.location.reload()}
             aria-label="새로고침"
             title="새로고침"
-            className="pbp-touch-target pbp-interactive-button inline-flex h-11 w-11 items-center justify-center rounded-xl border border-stone-300 bg-white text-base font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+            className="pbp-touch-target pbp-interactive-button pbp-topbar-icon-button inline-flex h-11 w-11 items-center justify-center rounded-xl text-base font-medium shadow-sm"
           >
             ↻
           </button>
@@ -72,14 +72,14 @@ export default function MobileTopBar({ companyName, version, onOpen, onOpenSetti
             type="button"
             onClick={onOpen}
             aria-label={copy.openMenuAria}
-            className="pbp-touch-target pbp-interactive-button inline-flex h-11 items-center justify-center rounded-xl border border-stone-300 bg-white px-3.5 text-sm font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+            className="pbp-touch-target pbp-interactive-button pbp-topbar-icon-button inline-flex h-11 items-center justify-center rounded-xl px-3.5 text-sm font-medium shadow-sm"
           >
             {copy.menu}
           </button>
         </div>
       </div>
       {showDevelopmentToolbar ? (
-        <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-stone-100 pt-2">
+        <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-[var(--pbp-border)] pt-2">
           {dbStatusPresentation ? (
             <span
               title={dbStatusPresentation.title ?? undefined}
@@ -94,7 +94,7 @@ export default function MobileTopBar({ companyName, version, onOpen, onOpenSetti
               onClick={onOpenSettings}
               aria-label={copy.openSettingsAria}
               title={copy.openSettingsAria}
-              className="pbp-touch-target pbp-interactive-button inline-flex h-8 items-center justify-center gap-1 rounded-full border border-stone-300 bg-white px-2.5 text-xs font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+              className="pbp-touch-target pbp-interactive-button pbp-topbar-icon-button inline-flex h-8 items-center justify-center gap-1 rounded-full px-2.5 text-xs font-medium shadow-sm"
             >
               <span aria-hidden="true">⚙️</span>
               <span>{copy.openSettingsAria}</span>

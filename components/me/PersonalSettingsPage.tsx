@@ -133,13 +133,13 @@ function PersonalSettingsSummary({ copy, draft, onReset }: { copy: PersonalSetti
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--pbp-text-muted)]">{copy.description}</p>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">
-          <Link href={defaultHomeHref} className="inline-flex items-center justify-center rounded-full border border-stone-900 bg-stone-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-stone-800">
+          <Link href={defaultHomeHref} className="pbp-action-primary inline-flex items-center justify-center rounded-full px-3 py-2 text-xs font-semibold transition">
             {copy.actions.openDefaultHome}
           </Link>
-          <Link href="/workspace" className="inline-flex items-center justify-center rounded-full border border-[var(--pbp-border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--pbp-text-primary)] transition hover:bg-[var(--pbp-surface-muted)]">
+          <Link href="/workspace" className="pbp-action-secondary inline-flex items-center justify-center rounded-full px-3 py-2 text-xs font-semibold transition">
             {copy.actions.workspaceHome}
           </Link>
-          <button type="button" onClick={onReset} className="inline-flex items-center justify-center rounded-full border border-[var(--pbp-border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--pbp-text-primary)] transition hover:bg-[var(--pbp-surface-muted)]">
+          <button type="button" onClick={onReset} className="pbp-action-secondary inline-flex items-center justify-center rounded-full px-3 py-2 text-xs font-semibold transition">
             {copy.actions.reset}
           </button>
         </div>

@@ -103,18 +103,18 @@ export default function SidebarContent({
 
   return (
     <div className="flex h-full min-h-0 w-full min-w-0 flex-col">
-      <div className="shrink-0 border-b border-stone-200 p-3.5">
+      <div className="shrink-0 border-b border-[var(--pbp-border)] p-3.5">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-lg font-semibold leading-6 text-stone-900">{companyName}</div>
-            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-stone-500"><span>{controlsUi.subtitle}</span><span className="text-[10px] leading-none text-stone-400">v{version}</span></div>
+            <div className="text-lg font-semibold leading-6 text-[var(--pbp-text-primary)]">{companyName}</div>
+            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[var(--pbp-text-muted)]"><span>{controlsUi.subtitle}</span><span className="text-[10px] leading-none text-[var(--pbp-text-subtle)]">v{version}</span></div>
           </div>
           <div className="flex items-center gap-2">
             <Link
               href="/me/settings"
               aria-label={i18n.common.personalSettings.title}
               title={i18n.common.personalSettings.title}
-              className="pbp-interactive-button pbp-action-secondary inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-base font-medium shadow-sm active:bg-stone-100"
+              className="pbp-interactive-button pbp-action-secondary inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-base font-medium shadow-sm"
             >
               <PersonalSettingsIcon />
             </Link>
@@ -124,14 +124,14 @@ export default function SidebarContent({
               aria-label="새로고침"
               title={writeLocked ? writeLockMessage ?? "상태 변경 처리 중입니다." : "새로고침"}
               disabled={writeLocked}
-              className="pbp-interactive-button pbp-action-secondary inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-base font-medium shadow-sm active:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50"
+              className="pbp-interactive-button pbp-action-secondary inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-base font-medium shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
             >
               ↻
             </button>
           </div>
         </div>
         {showDevelopmentToolbar ? (
-          <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-stone-100 pt-2">
+          <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-[var(--pbp-border)] pt-2">
             {dbStatusPresentation ? (
               <span
                 title={dbStatusPresentation.title ?? undefined}
@@ -147,7 +147,7 @@ export default function SidebarContent({
                 disabled={writeLocked}
                 title={writeLocked ? writeLockMessage ?? "상태 변경 처리 중입니다." : controlsUi.openSettingsAria}
                 aria-label={controlsUi.openSettingsAria}
-                className="pbp-interactive-button pbp-action-secondary inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-full px-2.5 text-xs font-medium shadow-sm active:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50"
+                className="pbp-interactive-button pbp-action-secondary inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-full px-2.5 text-xs font-medium shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <span aria-hidden="true">⚙️</span>
                 <span>{controlsUi.openSettingsAria}</span>
@@ -205,7 +205,7 @@ export default function SidebarContent({
             </select>
           </label>
         </div>
-        <div className="mt-2 flex items-center justify-between gap-2 text-[11px] font-medium leading-4 text-stone-500">
+        <div className="mt-2 flex items-center justify-between gap-2 text-[11px] font-medium leading-4 text-[var(--pbp-text-muted)]">
           <span className="min-w-0 truncate">{listSummary}</span>
           {hasCustomListControls ? (
             <button
