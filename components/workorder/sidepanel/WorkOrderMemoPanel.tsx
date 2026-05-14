@@ -78,7 +78,7 @@ function MemoInputField({ value, disabled, placeholder, submitLabel, onChange, o
           : "pbp-field-interaction pbp-workorder-editable-input h-[32px] w-full resize-none overflow-hidden rounded-lg border px-2.5 py-1.5 text-base outline-none disabled:cursor-not-allowed disabled:opacity-60 md:text-sm"}
       />
       <div className={isMobile ? "mt-1.5 flex flex-wrap items-center justify-between gap-2" : "mt-1.5 flex items-center justify-end gap-2"}>
-        <span className="mr-auto text-[10px] font-medium text-stone-400">{`${value.length} / ${MEMO_MAX_LENGTH}`}</span>
+        <span className="mr-auto text-[10px] font-medium text-[var(--pbp-field-disabled-text)]">{`${value.length} / ${MEMO_MAX_LENGTH}`}</span>
         {onCancel ? (
           <button type="button" onClick={onCancel} className="pbp-interactive-button pbp-action-secondary rounded-full px-3 py-1.5 text-[11px] font-semibold">
             {cancelLabel}
@@ -117,7 +117,7 @@ function MemoItemActions({ canMutate, editLabel, deleteAriaLabel, onEdit, onDele
         onClick={onEdit}
         aria-label={editLabel}
         title={disabledReason ?? editLabel}
-        className="pbp-interactive-button pbp-action-secondary inline-flex h-5 w-5 items-center justify-center rounded-full text-amber-600"
+        className="pbp-interactive-button pbp-action-secondary inline-flex h-5 w-5 items-center justify-center rounded-full text-[var(--pbp-warning)]"
       >
         <MemoPencilIcon />
       </button>
@@ -216,11 +216,11 @@ function MemoThreadCard({
   };
 
   return (
-    <div className={isMobile ? "min-w-0 rounded-2xl border border-stone-200 bg-white p-2.5 shadow-sm" : "min-w-0 rounded-2xl border border-stone-200 bg-white p-3 shadow-sm"}>
+    <div className={isMobile ? "pbp-sidepanel-item min-w-0 rounded-2xl border p-2.5 shadow-sm" : "pbp-sidepanel-item min-w-0 rounded-2xl border p-3 shadow-sm"}>
       <div className="flex min-w-0 items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className={isMobile ? "break-words text-[13px] font-semibold leading-4 text-stone-900" : "truncate text-sm font-semibold text-stone-900"}>{getMemoAuthorDisplayName(thread.authorName, thread.authorRole, ui.memo)}</div>
-          <div className="mt-0.5 text-[11px] text-stone-500">{formatMemoTimestamp(thread.createdAt)}</div>
+          <div className={isMobile ? "break-words text-[13px] font-semibold leading-4 pbp-text-primary" : "truncate text-sm font-semibold pbp-text-primary"}>{getMemoAuthorDisplayName(thread.authorName, thread.authorRole, ui.memo)}</div>
+          <div className="mt-0.5 text-[11px] pbp-text-muted">{formatMemoTimestamp(thread.createdAt)}</div>
         </div>
         <MemoItemActions
           canMutate={canMutateThread}
@@ -254,18 +254,18 @@ function MemoThreadCard({
         </div>
       ) : (
         <div className={isMobile
-          ? `mt-2 break-words whitespace-pre-wrap text-[12px] leading-5 ${isThreadDeleted ? "italic text-stone-400" : "text-stone-700"}`
-          : `mt-2 whitespace-pre-wrap text-[13px] leading-5 ${isThreadDeleted ? "italic text-stone-400" : "text-stone-700"}`
+          ? `mt-2 break-words whitespace-pre-wrap text-[12px] leading-5 ${isThreadDeleted ? "italic text-[var(--pbp-field-disabled-text)]" : "text-[var(--pbp-text-muted)]"}`
+          : `mt-2 whitespace-pre-wrap text-[13px] leading-5 ${isThreadDeleted ? "italic text-[var(--pbp-field-disabled-text)]" : "text-[var(--pbp-text-muted)]"}`
         }>{getMemoDisplayContent(thread, ui.memo.deleted)}</div>
       )}
 
-      <div className="mt-3 space-y-2 border-t border-stone-200 pt-3">
+      <div className="mt-3 space-y-2 border-t border-[var(--pbp-border)] pt-3">
         {getVisibleMemoReplies(thread.replies ?? []).length > 0 ? getVisibleMemoReplies(thread.replies ?? []).map((reply, replyIndex) => {
           const isEditingReply = editingReplyId === reply.id;
           return (
-            <div key={`${thread.id}-${reply.id}-${replyIndex}`} className="min-w-0 pl-2 text-stone-700 sm:pl-3">
+            <div key={`${thread.id}-${reply.id}-${replyIndex}`} className="min-w-0 pl-2 text-[var(--pbp-text-muted)] sm:pl-3">
               <div className="flex min-w-0 items-start justify-between gap-2">
-                <div className="min-w-0 break-words text-[11px] leading-4 text-stone-500">{ui.memo.replyMarker} {getMemoAuthorDisplayName(reply.authorName, reply.authorRole, ui.memo)} · {formatMemoTimestamp(reply.createdAt)}</div>
+                <div className="min-w-0 break-words text-[11px] leading-4 pbp-text-muted">{ui.memo.replyMarker} {getMemoAuthorDisplayName(reply.authorName, reply.authorRole, ui.memo)} · {formatMemoTimestamp(reply.createdAt)}</div>
                 <MemoItemActions canMutate={canMutateAuthor(reply.authorId) && !writeLocked} disabledReason={writeLockMessage} editLabel={ui.memo.edit} deleteAriaLabel={ui.memo.deleteAria} onEdit={() => startReplyEdit(reply)} onDelete={() => onDeleteReply(thread.id, reply.id)} />
               </div>
               {isEditingReply ? (
@@ -361,11 +361,11 @@ export default function WorkOrderMemoPanel({
   return (
     <WorkOrderPanelCard className={isMobile ? "min-w-0 p-3" : "min-w-0"}>
       <div className={isMobile ? "flex min-w-0 items-center justify-between gap-2" : "flex min-w-0 items-center justify-between gap-3"}>
-        <h3 className="text-sm font-semibold text-stone-900">{ui.memo.panelTitle}</h3>
-        <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">{`${memoThreads.length}${ui.memo.countSuffix}`}</span>
+        <h3 className="text-sm font-semibold pbp-text-primary">{ui.memo.panelTitle}</h3>
+        <span className="pbp-sidepanel-count-badge rounded-full px-2 py-1 text-[11px] font-medium">{`${memoThreads.length}${ui.memo.countSuffix}`}</span>
       </div>
       <div className={isMobile ? "pbp-workorder-editable-panel mt-2.5 min-w-0 rounded-xl border p-2" : isTablet ? "pbp-workorder-editable-panel mt-3 min-w-0 rounded-xl border p-2.5" : "pbp-workorder-editable-panel mt-3 min-w-0 rounded-xl border p-2.5"}>
-        <div className="text-[11px] text-stone-500">{getMemoAuthorDisplayName(currentUserName, currentUserRole, ui.memo)}</div>
+        <div className="text-[11px] pbp-text-muted">{getMemoAuthorDisplayName(currentUserName, currentUserRole, ui.memo)}</div>
         <div className="mt-2">
           <MemoInputField value={threadDraft} disabled={!canEditMemo || writeLocked} placeholder={ui.memo.threadPlaceholder} submitLabel={ui.memo.submit} onChange={setThreadDraft} onSubmit={submitThread} isMobile={isMobile} />
         </div>

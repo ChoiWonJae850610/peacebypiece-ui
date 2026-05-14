@@ -4,6 +4,7 @@ export const SEMANTIC_THEME_TOKEN_GROUPS = {
   action: ["primary", "secondary", "add", "reset", "danger", "dangerSoft"],
   status: ["draft", "reviewRequested", "reviewCompleted", "requestOrder", "inspection", "completed", "rejected", "success", "warning", "danger", "pending", "neutral"],
   field: ["editable", "selectable", "search", "filter", "calculated", "readonly", "disabled"],
+  sidePanel: ["item", "preview", "upload", "uploadActive", "count", "empty"],
   border: ["default", "strong", "selected", "focus"],
   feedback: ["focusRing", "hover", "pressed"],
 } as const;
@@ -97,5 +98,37 @@ export const WORKORDER_ORDER_INFO_SEMANTICS = {
     description: "발주정보 입력값으로 계산되는 표시 필드",
     examples: ["합계", "총 금액"],
     token: "field.calculated",
+  },
+} as const;
+
+
+export const WORKORDER_SIDE_PANEL_SEMANTICS = {
+  attachmentItem: {
+    description: "작업지시서 우측 패널에서 등록된 디자인/첨부 파일을 표시하는 항목 카드",
+    token: "sidePanel.item",
+  },
+  attachmentPreview: {
+    description: "디자인 이미지 또는 PDF 라벨이 들어가는 미리보기 면",
+    token: "sidePanel.preview",
+  },
+  uploadZone: {
+    description: "디자인/첨부 파일을 추가하거나 드래그 앤 드롭하는 입력 가능 영역",
+    token: "sidePanel.upload",
+  },
+  uploadZoneActive: {
+    description: "파일 드래그 중인 업로드 영역",
+    token: "sidePanel.uploadActive",
+  },
+  memoItem: {
+    description: "작업 메모와 답글을 표시하는 카드",
+    token: "sidePanel.item",
+  },
+  memoCount: {
+    description: "메모 개수를 표시하는 보조 뱃지",
+    token: "sidePanel.count",
+  },
+  emptyState: {
+    description: "디자인 없음, 첨부 없음, 메모 없음 상태",
+    token: "sidePanel.empty",
   },
 } as const;

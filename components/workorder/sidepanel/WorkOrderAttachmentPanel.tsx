@@ -59,21 +59,21 @@ function AttachmentActionMenu({
         onClick={() => { if (!disabled) setOpen((value) => !value); }}
         disabled={disabled}
         title={disabled ? disabledReason : undefined}
-        className="pbp-interactive-button inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-300 bg-white text-sm font-semibold text-stone-700 shadow-sm transition-colors hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50"
+        className="pbp-interactive-button pbp-action-secondary inline-flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
         aria-label={ui.attachmentPanel.actionMenuAria}
         aria-expanded={open}
       >
         ···
       </button>
       {open ? (
-        <div className={`absolute right-0 z-30 mt-2 min-w-[160px] overflow-hidden rounded-2xl border border-stone-200 bg-white p-1.5 text-sm shadow-lg ${isMobile ? "top-8" : "top-8"}`}>
+        <div className={`pbp-card absolute right-0 z-30 mt-2 min-w-[160px] overflow-hidden rounded-2xl p-1.5 text-sm shadow-lg ${isMobile ? "top-8" : "top-8"}`}>
           <button
             type="button"
             onClick={() => {
               setOpen(false);
               if (!disabled) onOpenAttachmentPicker();
             }}
-            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-[13px] font-medium text-stone-800 hover:bg-stone-50 active:bg-stone-100"
+            className="pbp-interactive-button flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-[13px] font-medium text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]"
           >
             <span aria-hidden="true">＋</span>
             <span>{addButtonLabel}</span>
@@ -85,7 +85,7 @@ function AttachmentActionMenu({
                 setOpen(false);
                 onOpenDrawingPlaceholder();
               }}
-              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-[13px] font-medium text-stone-800 hover:bg-stone-50 active:bg-stone-100"
+              className="pbp-interactive-button flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-[13px] font-medium text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]"
               title={ui.attachmentPanel.drawingActionPending}
             >
               <span aria-hidden="true">✎</span>
@@ -104,29 +104,29 @@ function DrawingPlaceholderModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/35 px-4" role="dialog" aria-modal="true" aria-labelledby="workorder-drawing-placeholder-title">
-      <div className="w-full max-w-md overflow-hidden rounded-[1.75rem] border border-stone-200 bg-white p-4 shadow-2xl sm:p-5">
+      <div className="pbp-modal-panel w-full max-w-md overflow-hidden rounded-[1.75rem] border p-4 shadow-2xl sm:p-5">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p id="workorder-drawing-placeholder-title" className="text-base font-semibold text-stone-950">{ui.drawingPlaceholderTitle}</p>
-            <p className="mt-2 text-sm leading-6 text-stone-600">{ui.drawingPlaceholderDescription}</p>
+            <p id="workorder-drawing-placeholder-title" className="text-base font-semibold pbp-text-primary">{ui.drawingPlaceholderTitle}</p>
+            <p className="mt-2 text-sm leading-6 pbp-text-muted">{ui.drawingPlaceholderDescription}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="pbp-interactive-button inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-white text-sm font-semibold text-stone-700 hover:bg-stone-50"
+            className="pbp-interactive-button pbp-action-secondary inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold"
             aria-label={ui.drawingPlaceholderClose}
           >
             ×
           </button>
         </div>
-        <div className="mt-4 rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-5 text-sm leading-6 text-stone-600">
+        <div className="pbp-empty-state mt-4 rounded-2xl border border-dashed px-4 py-5 text-sm leading-6">
           {ui.drawingPlaceholderPlan}
         </div>
         <div className="mt-5 flex flex-col justify-end gap-2 sm:flex-row">
           <button
             type="button"
             onClick={onClose}
-            className="pbp-interactive-button w-full rounded-full bg-stone-900 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-800 sm:w-auto"
+            className="pbp-interactive-button pbp-action-primary w-full rounded-full px-4 py-2 text-sm font-semibold sm:w-auto"
           >
             {ui.drawingPlaceholderConfirm}
           </button>
@@ -202,17 +202,15 @@ function AttachmentUploadHint({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`mt-3 w-full min-w-0 rounded-2xl border border-dashed text-left transition-colors active:bg-stone-100 ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"} ${
-        dragActive
-          ? "border-stone-500 bg-white shadow-sm"
-          : "border-stone-300 bg-stone-50 hover:border-stone-400 hover:bg-white"
+      className={`pbp-sidepanel-upload-zone pbp-interactive-button mt-3 w-full min-w-0 rounded-2xl border border-dashed text-left active:bg-[var(--pbp-surface-soft)] ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"} ${
+        dragActive ? "pbp-sidepanel-upload-zone-active shadow-sm" : ""
       } ${compact ? "px-3 py-3" : "px-4 py-3.5"}`}
     >
       <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-base text-stone-700 shadow-sm ${dragActive ? "ring-2 ring-stone-300" : ""}`}>＋</span>
+        <span className={`pbp-sidepanel-preview-surface flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-base text-[var(--pbp-text-muted)] shadow-sm ${dragActive ? "ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]" : ""}`}>＋</span>
         <span className="min-w-0 flex-1">
-          <span className="block break-words text-[13px] font-semibold text-stone-900">{title}</span>
-          <span className="mt-0.5 block break-words text-xs leading-4 text-stone-500">{description}</span>
+          <span className="block break-words text-[13px] font-semibold pbp-text-primary">{title}</span>
+          <span className="mt-0.5 block break-words text-xs leading-4 pbp-text-muted">{description}</span>
         </span>
       </div>
     </div>
@@ -299,12 +297,12 @@ export default function WorkOrderAttachmentPanel({
       onDragOver={handlePanelDragOver}
       onDragLeave={handlePanelDragLeave}
       onDrop={handlePanelDrop}
-      className={panelDragActive ? "rounded-[1.75rem] ring-2 ring-stone-300" : undefined}
+      className={panelDragActive ? "rounded-[1.75rem] ring-2 ring-[var(--pbp-sidepanel-upload-active-border)]" : undefined}
     >
       <WorkOrderPanelCard className={isMobile ? "min-w-0 p-3" : "min-w-0"}>
       <div className="flex min-w-0 items-start justify-between gap-2 sm:gap-3">
         <div>
-          <h3 className="text-sm font-semibold text-stone-900">{title}</h3>
+          <h3 className="text-sm font-semibold pbp-text-primary">{title}</h3>
         </div>
         {canManageAttachments ? (
           <AttachmentActionMenu
@@ -321,13 +319,13 @@ export default function WorkOrderAttachmentPanel({
       {attachments.length > 0 ? (
         <div className={isMobile ? "mt-2.5 min-w-0 space-y-1.5" : "mt-2.5 min-w-0 space-y-2"}>
           {attachments.map((attachment) => (
-            <div key={attachment.id} className={isMobile ? "relative min-w-0 rounded-2xl border border-stone-200 bg-stone-50 p-2.5 pr-9" : isTablet ? "relative min-w-0 rounded-2xl border border-stone-200 bg-stone-50 p-3 pr-11" : "relative min-w-0 rounded-2xl border border-stone-200 bg-stone-50 p-3 pr-12"}>
+            <div key={attachment.id} className={isMobile ? "pbp-sidepanel-item pbp-interactive-card relative min-w-0 rounded-2xl border p-2.5 pr-9" : isTablet ? "pbp-sidepanel-item pbp-interactive-card relative min-w-0 rounded-2xl border p-3 pr-11" : "pbp-sidepanel-item pbp-interactive-card relative min-w-0 rounded-2xl border p-3 pr-12"}>
               {attachment.canSetPrimary ? (
                 <button
                   type="button"
                   onClick={() => handleSetPrimaryDesignAttachment(attachment.id)}
                   disabled={writeLocked}
-                  className={`${isMobile ? "left-9 top-9 h-5 w-5 text-[11px]" : "left-11 top-11 h-6 w-6 text-xs"} absolute z-10 flex items-center justify-center rounded-full border font-bold shadow-sm ${attachment.isPrimary ? "border-amber-500 bg-amber-100 text-amber-900" : "border-stone-300 bg-white text-stone-600 hover:border-stone-400 hover:bg-stone-50"}`}
+                  className={`${isMobile ? "left-9 top-9 h-5 w-5 text-[11px]" : "left-11 top-11 h-6 w-6 text-xs"} absolute z-10 flex items-center justify-center rounded-full border font-bold shadow-sm ${attachment.isPrimary ? "border-[var(--pbp-warning)] bg-[var(--pbp-warning-soft)] text-[var(--pbp-warning)]" : "pbp-action-secondary"}`}
                   title={writeLocked ? writeLockMessage : attachment.isPrimary ? attachmentPolicyText.primaryTitle : attachmentPolicyText.primaryActionTitle}
                   aria-label={attachment.isPrimary ? `${attachment.name} ${attachmentPolicyText.primaryTitle}` : `${attachment.name} ${attachmentPolicyText.primaryActionTitle}`}
                 >
@@ -350,7 +348,7 @@ export default function WorkOrderAttachmentPanel({
                 disabled={!attachment.canPreview}
                 className="flex w-full min-w-0 items-center gap-2 text-left disabled:cursor-not-allowed disabled:opacity-60 sm:gap-3"
               >
-                <div className={isMobile ? "flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white" : "flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white"}>
+                <div className={isMobile ? "pbp-sidepanel-preview-surface flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl" : "pbp-sidepanel-preview-surface flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl"}>
                   {attachment.type === "image" ? (
                     <img src={attachment.thumbnailUrl} alt={attachment.name} className="h-full w-full object-cover" />
                   ) : (
@@ -358,8 +356,8 @@ export default function WorkOrderAttachmentPanel({
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className={isMobile ? "break-words pr-1 text-[13px] font-medium leading-4 text-stone-900" : "truncate pr-2 text-sm font-medium text-stone-900"}>{attachment.name}</div>
-                  <div className={isMobile ? "mt-0.5 break-words text-[11px] leading-4 text-stone-500" : "mt-1 text-xs text-stone-500"}>{attachment.ownerLabel}</div>
+                  <div className={isMobile ? "break-words pr-1 text-[13px] font-medium leading-4 pbp-text-primary" : "truncate pr-2 text-sm font-medium pbp-text-primary"}>{attachment.name}</div>
+                  <div className={isMobile ? "mt-0.5 break-words text-[11px] leading-4 pbp-text-muted" : "mt-1 text-xs pbp-text-muted"}>{attachment.ownerLabel}</div>
                 </div>
               </button>
             </div>
@@ -376,7 +374,7 @@ export default function WorkOrderAttachmentPanel({
         </div>
       ) : (
         <div>
-          <div className="mt-3 min-w-0 rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-3 py-5 text-center text-sm text-stone-500 sm:px-4 sm:py-6">{emptyText}</div>
+          <div className="pbp-empty-state mt-3 min-w-0 rounded-2xl border border-dashed px-3 py-5 text-center text-sm sm:px-4 sm:py-6">{emptyText}</div>
           <AttachmentUploadHint
             scope={uploadScope}
             canManageAttachments={canManageAttachments}
