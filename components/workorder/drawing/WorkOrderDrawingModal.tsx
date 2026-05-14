@@ -36,6 +36,7 @@ type DrawingColorId = "black" | "red" | "blue" | "green";
 type DrawingStrokeSizeId = "thin" | "regular" | "bold" | "wide";
 type DrawingLineStyleId = DrawingLineStyle;
 type DrawingPopover = "color" | "strokeSize" | null;
+type DrawingPointerEvent = PointerEvent<HTMLElement>;
 type EraserCursor = { x: number; y: number; diameter: number; visible: boolean };
 type ViewportOffset = { x: number; y: number };
 
@@ -127,18 +128,24 @@ function getEraserLineWidth(strokeSizeId: DrawingStrokeSizeId) {
   return ERASER_LINE_WIDTH_BY_STROKE_SIZE[strokeSizeId] ?? ERASER_LINE_WIDTH_BY_STROKE_SIZE.regular;
 }
 
-function getPointerPosition(canvas: HTMLCanvasElement, event: PointerEvent<HTMLCanvasElement>) {
+function getPointerPosition(canvas: HTMLCanvasElement, event: DrawingPointerEvent) {
   const rect = canvas.getBoundingClientRect();
+  const safeWidth = rect.width || 1;
+  const safeHeight = rect.height || 1;
   return {
-    x: ((event.clientX - rect.left) / rect.width) * canvas.width,
-    y: ((event.clientY - rect.top) / rect.height) * canvas.height,
+    x: ((event.clientX - rect.left) / safeWidth) * canvas.width,
+    y: ((event.clientY - rect.top) / safeHeight) * canvas.height,
   };
+}
+
+function isPointInsideCanvas(point: DrawingPoint, canvas: HTMLCanvasElement) {
+  return point.x >= 0 && point.x <= canvas.width && point.y >= 0 && point.y <= canvas.height;
 }
 
 function getEraserCursor(
   canvas: HTMLCanvasElement,
   container: HTMLDivElement,
-  event: PointerEvent<HTMLCanvasElement>,
+  event: DrawingPointerEvent,
   eraserLineWidth: number,
 ): EraserCursor {
   const canvasRect = canvas.getBoundingClientRect();
@@ -514,7 +521,7 @@ export default function WorkOrderDrawingModal({
     closeModalAndReleaseHistoryGuard();
   };
   const hideEraserCursor = () => setEraserCursor((current) => ({ ...current, visible: false }));
-  const updateEraserCursor = (event: PointerEvent<HTMLCanvasElement>) => {
+  const updateEraserCursor = (event: DrawingPointerEvent) => {
     const canvas = canvasRef.current;
     const container = canvasContainerRef.current;
     if (!canvas || !container || tool !== "eraser") {
@@ -615,12 +622,13 @@ export default function WorkOrderDrawingModal({
     };
   }, [open]);
 
-  const drawFreehandLine = (event: PointerEvent<HTMLCanvasElement>) => {
+  const drawFreehandLine = (event: DrawingPointerEvent) => {
     const canvas = canvasRef.current;
     if (!canvas || !drawingRef.current) return;
     const context = canvas.getContext("2d");
     if (!context) return;
     const nextPoint = getPointerPosition(canvas, event);
+    if (!isPointInsideCanvas(nextPoint, canvas)) return;
     const previousPoint = lastPointRef.current ?? nextPoint;
 
     context.save();
@@ -639,7 +647,7 @@ export default function WorkOrderDrawingModal({
     strokeDirtyRef.current = true;
   };
 
-  const drawShapePreview = (event: PointerEvent<HTMLCanvasElement>) => {
+  const drawShapePreview = (event: DrawingPointerEvent) => {
     const canvas = canvasRef.current;
     if (!canvas || !drawingRef.current || !isShapeTool(tool)) return;
     const context = canvas.getContext("2d");
@@ -647,6 +655,7 @@ export default function WorkOrderDrawingModal({
     const baseImageData = shapeBaseImageDataRef.current;
     if (!context || !startPoint || !baseImageData) return;
     const nextPoint = getPointerPosition(canvas, event);
+    if (!isPointInsideCanvas(nextPoint, canvas)) return;
 
     context.putImageData(baseImageData, 0, 0);
     if (getPointDistance(startPoint, nextPoint) < SHAPE_MIN_DISTANCE) return;
@@ -654,7 +663,7 @@ export default function WorkOrderDrawingModal({
     strokeDirtyRef.current = true;
   };
 
-  const handlePointerMove = (event: PointerEvent<HTMLCanvasElement>) => {
+  const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
     if (panningRef.current) {
       const panStart = panStartRef.current;
       if (panStart) {
@@ -673,11 +682,12 @@ export default function WorkOrderDrawingModal({
     drawFreehandLine(event);
   };
 
-  const handlePointerDown = (event: PointerEvent<HTMLCanvasElement>) => {
+  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    const container = canvasContainerRef.current;
+    if (!canvas || !container) return;
     event.preventDefault();
-    canvas.setPointerCapture(event.pointerId);
+    container.setPointerCapture(event.pointerId);
     strokeDirtyRef.current = false;
     closeToolPopovers();
     updateEraserCursor(event);
@@ -691,6 +701,10 @@ export default function WorkOrderDrawingModal({
 
     drawingRef.current = true;
     const startPoint = getPointerPosition(canvas, event);
+    if (!isPointInsideCanvas(startPoint, canvas)) {
+      drawingRef.current = false;
+      return;
+    }
     lastPointRef.current = startPoint;
     shapeStartPointRef.current = startPoint;
 
@@ -703,10 +717,11 @@ export default function WorkOrderDrawingModal({
     drawFreehandLine(event);
   };
 
-  const stopDrawing = (event: PointerEvent<HTMLCanvasElement>) => {
+  const stopDrawing = (event: PointerEvent<HTMLDivElement>) => {
     const canvas = canvasRef.current;
-    if (canvas?.hasPointerCapture(event.pointerId)) {
-      canvas.releasePointerCapture(event.pointerId);
+    const container = canvasContainerRef.current;
+    if (container?.hasPointerCapture(event.pointerId)) {
+      container.releasePointerCapture(event.pointerId);
     }
 
     if (panningRef.current) {
@@ -841,24 +856,27 @@ export default function WorkOrderDrawingModal({
     >
       <div className="flex h-full min-h-0 flex-col gap-2 md:gap-3">
         <div className="flex min-h-0 flex-1 rounded-3xl border bg-[var(--pbp-surface-muted)] p-2 shadow-inner sm:p-3">
-          <div ref={canvasContainerRef} className="relative min-h-0 flex-1 overflow-hidden rounded-2xl border bg-white touch-none">
+          <div
+            ref={canvasContainerRef}
+            className={`relative min-h-0 flex-1 overflow-hidden rounded-2xl border bg-white touch-none ${
+              tool === "eraser" ? "cursor-none" : tool === "pan" ? "cursor-grab active:cursor-grabbing" : "cursor-crosshair"
+            }`}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={stopDrawing}
+            onPointerCancel={(event) => {
+              stopDrawing(event);
+              hideEraserCursor();
+            }}
+            onPointerLeave={(event) => {
+              if (drawingRef.current || panningRef.current) stopDrawing(event);
+              hideEraserCursor();
+            }}
+            aria-label={ui.canvasAria}
+          >
             <canvas
               ref={canvasRef}
-              className={`h-full w-full touch-none select-none ${
-                tool === "eraser" ? "cursor-none" : tool === "pan" ? "cursor-grab active:cursor-grabbing" : "cursor-crosshair"
-              }`}
-              onPointerDown={handlePointerDown}
-              onPointerMove={handlePointerMove}
-              onPointerUp={stopDrawing}
-              onPointerCancel={(event) => {
-                stopDrawing(event);
-                hideEraserCursor();
-              }}
-              onPointerLeave={(event) => {
-                if (drawingRef.current) stopDrawing(event);
-                hideEraserCursor();
-              }}
-              aria-label={ui.canvasAria}
+              className="pointer-events-none h-full w-full touch-none select-none"
               style={{
                 transform: `translate(${viewportOffset.x}px, ${viewportOffset.y}px) scale(${viewportScale})`,
                 transformOrigin: "center",
