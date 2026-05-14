@@ -133,8 +133,8 @@ export default function BasicInfoEditModal({
       })}
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <label className="rounded-2xl border border-stone-200 bg-white p-3">
-          <div className="text-xs text-stone-500">{copy.category1}</div>
+        <label className="pbp-workorder-selectable-panel rounded-2xl border p-3">
+          <div className="text-xs text-[var(--pbp-text-muted)]">{copy.category1}</div>
           <select
             value={value.category1}
             onChange={(event) => handleCategory1Change(event.target.value)}
@@ -143,8 +143,8 @@ export default function BasicInfoEditModal({
             {renderCategoryOptions(categorySource.category1Options)}
           </select>
         </label>
-        <label className="rounded-2xl border border-stone-200 bg-white p-3">
-          <div className="text-xs text-stone-500">{copy.category2}</div>
+        <label className="pbp-workorder-selectable-panel rounded-2xl border p-3">
+          <div className="text-xs text-[var(--pbp-text-muted)]">{copy.category2}</div>
           <select
             value={value.category2}
             onChange={(event) => handleCategory2Change(event.target.value)}
@@ -153,8 +153,8 @@ export default function BasicInfoEditModal({
             {renderCategoryOptions(category2Options)}
           </select>
         </label>
-        <label className="rounded-2xl border border-stone-200 bg-white p-3">
-          <div className="text-xs text-stone-500">{copy.category3}</div>
+        <label className="pbp-workorder-selectable-panel rounded-2xl border p-3">
+          <div className="text-xs text-[var(--pbp-text-muted)]">{copy.category3}</div>
           <select
             value={value.category3}
             onChange={(event) => {
@@ -172,9 +172,9 @@ export default function BasicInfoEditModal({
         </label>
       </div>
 
-      <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
-        <div className="text-xs text-stone-500">{copy.previewLabel}</div>
-        <div className="mt-2 text-sm font-medium text-stone-900">{formatBasicSummary(value)}</div>
+      <div className="pbp-detail-summary-readonly mt-4 rounded-2xl border px-4 py-3">
+        <div className="text-xs text-[var(--pbp-text-muted)]">{copy.previewLabel}</div>
+        <div className="mt-2 text-sm font-medium text-[var(--pbp-text-primary)]">{formatBasicSummary(value)}</div>
       </div>
     </ModalShell>
   );

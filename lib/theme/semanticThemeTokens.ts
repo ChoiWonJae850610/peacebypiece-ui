@@ -165,12 +165,12 @@ export const WORKORDER_SEMANTIC_TOKEN_COVERAGE_CHECKS = {
     "생산구성 PC/tablet 입력 가능, 선택 가능, 계산 필드",
     "생산구성 mobile 카드 입력 가능, 선택 가능, 계산 패널",
     "우측 디자인/첨부/메모 패널과 empty state",
-  ],
-  remaining: [
     "기본정보 수정 modal field tone",
     "검수/발주 action section workflow button tone",
     "PC/tablet/mobile 비용 요약 카드 tone",
     "작업지시서 header/detail summary card tone",
+  ],
+  remaining: [
     "프로젝트 전체 theme file 분리와 개인 설정 연결",
   ],
   regressionChecks: [
@@ -182,6 +182,26 @@ export const WORKORDER_SEMANTIC_TOKEN_COVERAGE_CHECKS = {
   ],
 } as const;
 
+
+
+export const WORKORDER_DETAIL_REMAINING_SEMANTICS = {
+  basicInfoModal: {
+    description: "작업지시서 기본정보 수정 모달의 선택 필드와 미리보기 요약",
+    tokens: ["field.selectable", "field.readonly"],
+  },
+  workflowActionSection: {
+    description: "검토/발주/검수 등 workflow 진행 영역과 주요/보조 액션 버튼",
+    tokens: ["surface.cardMuted", "action.primary", "action.secondary", "surface.selected"],
+  },
+  costSummary: {
+    description: "PC/tablet/mobile 비용 요약 카드의 계산 결과와 총액 강조",
+    tokens: ["field.calculated", "action.primary", "surface.card"],
+  },
+  headerSummary: {
+    description: "작업지시서 header의 제목, 기본정보 요약, 담당자, 재고 정보",
+    tokens: ["surface.card", "field.selectable", "field.readonly"],
+  },
+} as const;
 
 export const PBP_THEME_FILE_STRUCTURE_PLAN = {
   currentThemeId: "default-light",
@@ -203,7 +223,7 @@ export const PBP_THEME_VARIABLE_SYNC_CHECKS = {
   sourceOfTruth: "lib/theme/themes/defaultLight.ts",
   runtimeMirror: "app/globals.css :root",
   syncedVariableCount: 100,
-  checkedAtVersion: "0.12.1",
+  checkedAtVersion: "0.12.2",
   result: "default-light cssVariables와 globals.css :root 변수명/값 동기화 확인",
   remainingBeforeDynamicTheme: [
     "테마별 cssVariables를 document root에 적용하는 runtime provider",

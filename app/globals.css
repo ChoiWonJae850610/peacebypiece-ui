@@ -563,12 +563,182 @@ body {
   color: var(--pbp-sidepanel-count-text);
 }
 
+
+.pbp-detail-summary-card {
+  border-color: var(--pbp-border);
+  background: var(--pbp-surface);
+  color: var(--pbp-text-primary);
+  box-shadow: var(--pbp-shadow-card);
+}
+
+.pbp-detail-summary-action {
+  border-color: color-mix(in srgb, var(--pbp-field-selectable-border) 48%, transparent);
+  background: var(--pbp-field-selectable-surface);
+  color: var(--pbp-text-primary);
+}
+
+.pbp-detail-summary-action:hover {
+  border-color: color-mix(in srgb, var(--pbp-field-selectable-border) 76%, transparent);
+  background: var(--pbp-surface);
+}
+
+.pbp-detail-summary-readonly {
+  border-color: color-mix(in srgb, var(--pbp-field-calculated-border) 64%, transparent);
+  background: var(--pbp-field-calculated-surface);
+  color: var(--pbp-field-calculated-text);
+}
+
+.pbp-cost-row {
+  background: var(--pbp-field-calculated-surface);
+  color: var(--pbp-field-calculated-text);
+}
+
+.pbp-cost-total {
+  border-color: color-mix(in srgb, var(--pbp-accent-border) 64%, transparent);
+  background: color-mix(in srgb, var(--pbp-accent-soft) 72%, var(--pbp-surface));
+  color: var(--pbp-text-primary);
+}
+
+.pbp-cost-grand-total {
+  border-color: color-mix(in srgb, var(--pbp-accent) 18%, transparent);
+  background: var(--pbp-action-primary-surface);
+  color: var(--pbp-action-primary-text);
+}
+
+.pbp-workflow-panel {
+  border-color: var(--pbp-border);
+  background: color-mix(in srgb, var(--pbp-surface-muted) 84%, var(--pbp-surface));
+  color: var(--pbp-text-primary);
+}
+
+.pbp-workflow-step-current {
+  border-color: var(--pbp-selected-border);
+  background: var(--pbp-selected-surface);
+  color: var(--pbp-selected-text);
+}
+
+.pbp-workflow-step-idle {
+  border-color: var(--pbp-border);
+  background: var(--pbp-surface);
+  color: var(--pbp-text-muted);
+}
+
+.pbp-workflow-message {
+  border-color: var(--pbp-border);
+  background: var(--pbp-surface);
+  color: var(--pbp-text-muted);
+}
+
+.pbp-action-primary {
+  background: var(--pbp-action-primary-surface);
+  color: var(--pbp-action-primary-text);
+}
+
+.pbp-action-primary:hover {
+  background: var(--pbp-action-primary-surface-hover);
+}
+
+.pbp-action-secondary {
+  border-color: var(--pbp-border-strong);
+  background: var(--pbp-action-secondary-surface);
+  color: var(--pbp-action-secondary-text);
+}
+
+.pbp-action-secondary:hover {
+  background: var(--pbp-action-secondary-surface-hover);
+}
+
 .pbp-card-stack-mobile {
   gap: 0.75rem;
 }
 
 @media (min-width: 768px) {
-  .pbp-card-stack-mobile {
+  
+.pbp-detail-summary-card {
+  border-color: var(--pbp-border);
+  background: var(--pbp-surface);
+  color: var(--pbp-text-primary);
+  box-shadow: var(--pbp-shadow-card);
+}
+
+.pbp-detail-summary-action {
+  border-color: color-mix(in srgb, var(--pbp-field-selectable-border) 48%, transparent);
+  background: var(--pbp-field-selectable-surface);
+  color: var(--pbp-text-primary);
+}
+
+.pbp-detail-summary-action:hover {
+  border-color: color-mix(in srgb, var(--pbp-field-selectable-border) 76%, transparent);
+  background: var(--pbp-surface);
+}
+
+.pbp-detail-summary-readonly {
+  border-color: color-mix(in srgb, var(--pbp-field-calculated-border) 64%, transparent);
+  background: var(--pbp-field-calculated-surface);
+  color: var(--pbp-field-calculated-text);
+}
+
+.pbp-cost-row {
+  background: var(--pbp-field-calculated-surface);
+  color: var(--pbp-field-calculated-text);
+}
+
+.pbp-cost-total {
+  border-color: color-mix(in srgb, var(--pbp-accent-border) 64%, transparent);
+  background: color-mix(in srgb, var(--pbp-accent-soft) 72%, var(--pbp-surface));
+  color: var(--pbp-text-primary);
+}
+
+.pbp-cost-grand-total {
+  border-color: color-mix(in srgb, var(--pbp-accent) 18%, transparent);
+  background: var(--pbp-action-primary-surface);
+  color: var(--pbp-action-primary-text);
+}
+
+.pbp-workflow-panel {
+  border-color: var(--pbp-border);
+  background: color-mix(in srgb, var(--pbp-surface-muted) 84%, var(--pbp-surface));
+  color: var(--pbp-text-primary);
+}
+
+.pbp-workflow-step-current {
+  border-color: var(--pbp-selected-border);
+  background: var(--pbp-selected-surface);
+  color: var(--pbp-selected-text);
+}
+
+.pbp-workflow-step-idle {
+  border-color: var(--pbp-border);
+  background: var(--pbp-surface);
+  color: var(--pbp-text-muted);
+}
+
+.pbp-workflow-message {
+  border-color: var(--pbp-border);
+  background: var(--pbp-surface);
+  color: var(--pbp-text-muted);
+}
+
+.pbp-action-primary {
+  background: var(--pbp-action-primary-surface);
+  color: var(--pbp-action-primary-text);
+}
+
+.pbp-action-primary:hover {
+  background: var(--pbp-action-primary-surface-hover);
+}
+
+.pbp-action-secondary {
+  border-color: var(--pbp-border-strong);
+  background: var(--pbp-action-secondary-surface);
+  color: var(--pbp-action-secondary-text);
+}
+
+.pbp-action-secondary:hover {
+  background: var(--pbp-action-secondary-surface-hover);
+}
+
+.pbp-card-stack-mobile {
     gap: 1rem;
   }
 }

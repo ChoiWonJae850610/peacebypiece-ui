@@ -122,16 +122,16 @@ export default function WorkOrderHeaderSection({
             value={titleDraft}
             onChange={(event) => setTitleDraft(event.target.value)}
             onKeyDown={handleTitleKeyDown}
-            className="pbp-field-interaction h-11 w-full rounded-2xl border border-stone-300 bg-white px-3 text-lg font-semibold text-stone-950 outline-none focus:border-stone-400 md:text-2xl"
+            className="pbp-field-interaction pbp-workorder-editable-input h-11 w-full rounded-2xl border px-3 text-lg font-semibold outline-none md:text-2xl"
             aria-label={copy.titleInputAria}
           />
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <button type="button" onClick={saveTitle} className="pbp-interactive-button rounded-xl bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-stone-800">{copy.titleEditSave}</button>
-            <button type="button" onClick={closeTitleEditor} className="pbp-interactive-button rounded-xl border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100">{copy.titleEditCancel}</button>
+            <button type="button" onClick={saveTitle} className="pbp-interactive-button pbp-action-primary rounded-xl px-3 py-1.5 text-xs font-semibold">{copy.titleEditSave}</button>
+            <button type="button" onClick={closeTitleEditor} className="pbp-interactive-button pbp-action-secondary rounded-xl border px-3 py-1.5 text-xs font-medium">{copy.titleEditCancel}</button>
             <span className="text-[11px] text-stone-500">{copy.titleEditHint}</span>
           </div>
           {recommendedCategory ? (
-            <div className="mt-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] leading-5 text-emerald-800">
+            <div className="pbp-detail-summary-readonly mt-2 rounded-xl border px-3 py-2 text-[11px] leading-5">
               {i18n.workorder.ui.modals.createWorkOrder.recommendedCategory}: {recommendedCategory.category1} / {recommendedCategory.category2} / {recommendedCategory.category3}
             </div>
           ) : null}
@@ -155,7 +155,7 @@ export default function WorkOrderHeaderSection({
   );
 
   return (
-    <div className="border-b border-stone-200 pb-4">
+    <div className="border-b border-[var(--pbp-border)] pb-4">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-6 gap-y-2">
         <div className="min-w-0">{titleEditor}</div>
         <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2 text-right">

@@ -27,19 +27,19 @@ export default function WorkOrderDetailTabletCostSummarySection({
             [copy.laborCost, laborCost],
             [copy.lossCost, lossCost],
           ].map(([label, value]) => (
-            <div key={label} className="rounded-xl bg-stone-50 px-3 py-3">
-              <div className="text-xs text-stone-500">{label}</div>
-              <div className="mt-1 text-sm font-semibold tabular-nums text-stone-900">{Number(value).toLocaleString()}{common.currencySuffix}</div>
+            <div key={label} className="pbp-cost-row rounded-xl px-3 py-3">
+              <div className="text-xs text-[var(--pbp-text-muted)]">{label}</div>
+              <div className="mt-1 text-sm font-semibold tabular-nums text-[var(--pbp-text-primary)]">{Number(value).toLocaleString()}{common.currencySuffix}</div>
             </div>
           ))}
-          <div className="col-span-2 rounded-xl border border-stone-200 bg-white px-3 py-3">
+          <div className="pbp-cost-total col-span-2 rounded-xl border px-3 py-3">
             <div className="flex items-center justify-between gap-3 text-sm">
-              <span className="font-semibold text-stone-900">{copy.grandTotal}</span>
-              <span className="font-semibold tabular-nums text-stone-900">{totalCost.toLocaleString()}{common.currencySuffix}</span>
+              <span className="font-semibold text-[var(--pbp-text-primary)]">{copy.grandTotal}</span>
+              <span className="font-semibold tabular-nums text-[var(--pbp-text-primary)]">{totalCost.toLocaleString()}{common.currencySuffix}</span>
             </div>
-            <div className="mt-2 flex items-center justify-between gap-3 text-xs text-stone-600">
+            <div className="mt-2 flex items-center justify-between gap-3 text-xs text-[var(--pbp-text-muted)]">
               <span>{copy.unitCost}</span>
-              <span className="font-medium tabular-nums text-stone-900">{unitCost.toLocaleString()}{common.currencySuffix}</span>
+              <span className="font-medium tabular-nums text-[var(--pbp-text-primary)]">{unitCost.toLocaleString()}{common.currencySuffix}</span>
             </div>
           </div>
         </div>
@@ -49,13 +49,13 @@ export default function WorkOrderDetailTabletCostSummarySection({
         <div className="grid gap-2 text-sm">
           {outsourcing.length > 0 ? (
             outsourcing.map((item, index) => (
-              <div key={`${item.id ?? item.process}-${index}`} className="flex items-center justify-between gap-4 rounded-xl bg-stone-50 px-3 py-3">
-                <span className="text-stone-600">{item.process || copy.fallbackProcess.replace("{index}", String(index + 1))}</span>
-                <span className="font-semibold tabular-nums text-stone-900">{(item.totalCost ?? 0).toLocaleString()}{common.currencySuffix}</span>
+              <div key={`${item.id ?? item.process}-${index}`} className="pbp-cost-row flex items-center justify-between gap-4 rounded-xl px-3 py-3">
+                <span className="text-[var(--pbp-text-muted)]">{item.process || copy.fallbackProcess.replace("{index}", String(index + 1))}</span>
+                <span className="font-semibold tabular-nums text-[var(--pbp-text-primary)]">{(item.totalCost ?? 0).toLocaleString()}{common.currencySuffix}</span>
               </div>
             ))
           ) : (
-            <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-4 text-sm text-stone-500">{copy.empty}</div>
+            <div className="pbp-empty-state rounded-xl border border-dashed px-3 py-4 text-sm">{copy.empty}</div>
           )}
         </div>
       </SummaryCard>

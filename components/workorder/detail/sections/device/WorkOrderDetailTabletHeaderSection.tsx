@@ -27,7 +27,7 @@ export default function WorkOrderDetailTabletHeaderSection({
   const inventoryValue = `${currentInventoryQuantity.toLocaleString()}${common.quantitySuffix}`;
 
   return (
-    <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+    <section className="pbp-detail-summary-card rounded-2xl border p-5">
       <div className="grid gap-4 grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <div className="min-w-0">
           <h2 className="break-keep text-2xl font-semibold text-stone-950">{title}</h2>
@@ -35,7 +35,7 @@ export default function WorkOrderDetailTabletHeaderSection({
             type="button"
             onClick={onOpenBasicInfoModal}
             disabled={locked}
-            className="pbp-interactive-button mt-3 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-left disabled:cursor-not-allowed disabled:opacity-60"
+            className="pbp-interactive-button pbp-detail-summary-action mt-3 w-full rounded-2xl border px-4 py-3 text-left disabled:cursor-not-allowed disabled:opacity-60"
           >
             <div className="text-xs font-medium text-stone-500">{copy.summaryLabel}</div>
             <div className="mt-1 text-sm leading-6 text-stone-900">{summaryValue}</div>
@@ -47,7 +47,7 @@ export default function WorkOrderDetailTabletHeaderSection({
             type="button"
             onClick={onOpenManagerAssignModal}
             disabled={!canChangeManager || managerLocked}
-            className="pbp-interactive-button rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-left disabled:cursor-not-allowed disabled:opacity-60"
+            className="pbp-interactive-button pbp-detail-summary-action rounded-2xl border px-4 py-3 text-left disabled:cursor-not-allowed disabled:opacity-60"
           >
             <div className="text-xs font-medium text-stone-500">{copy.managerLabel}</div>
             <div className="mt-1 text-sm font-semibold text-stone-900">{managerValue}</div>
@@ -57,7 +57,7 @@ export default function WorkOrderDetailTabletHeaderSection({
             type="button"
             onClick={onOpenInventoryEditor}
             disabled={!canEditInventory}
-            className="pbp-interactive-button rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-left disabled:cursor-not-allowed disabled:opacity-60"
+            className="pbp-interactive-button pbp-detail-summary-action rounded-2xl border px-4 py-3 text-left disabled:cursor-not-allowed disabled:opacity-60"
           >
             <div className="text-xs font-medium text-stone-500">{copy.currentInventoryLabel}</div>
             <div className="mt-1 text-sm font-semibold tabular-nums text-stone-900">{inventoryValue}</div>
