@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type DragEvent } from "react";
+import WorkOrderDrawingModal from "@/components/workorder/drawing/WorkOrderDrawingModal";
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
 import { DeleteButton } from "@/components/workorder/detail/shared/detailEditorShared";
 import { useI18n } from "@/lib/i18n";
@@ -94,44 +95,6 @@ function AttachmentActionMenu({
           ) : null}
         </div>
       ) : null}
-    </div>
-  );
-}
-
-function DrawingPlaceholderModal({ onClose }: { onClose: () => void }) {
-  const { i18n } = useI18n();
-  const ui = i18n.workorder.ui.attachmentPanel;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/35 px-4" role="dialog" aria-modal="true" aria-labelledby="workorder-drawing-placeholder-title">
-      <div className="pbp-modal-panel w-full max-w-md overflow-hidden rounded-[1.75rem] border p-4 shadow-2xl sm:p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p id="workorder-drawing-placeholder-title" className="text-base font-semibold pbp-text-primary">{ui.drawingPlaceholderTitle}</p>
-            <p className="mt-2 text-sm leading-6 pbp-text-muted">{ui.drawingPlaceholderDescription}</p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="pbp-interactive-button pbp-action-secondary inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold"
-            aria-label={ui.drawingPlaceholderClose}
-          >
-            ×
-          </button>
-        </div>
-        <div className="pbp-empty-state mt-4 rounded-2xl border border-dashed px-4 py-5 text-sm leading-6">
-          {ui.drawingPlaceholderPlan}
-        </div>
-        <div className="mt-5 flex flex-col justify-end gap-2 sm:flex-row">
-          <button
-            type="button"
-            onClick={onClose}
-            className="pbp-interactive-button pbp-action-primary w-full rounded-full px-4 py-2 text-sm font-semibold sm:w-auto"
-          >
-            {ui.drawingPlaceholderConfirm}
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
@@ -259,7 +222,7 @@ export default function WorkOrderAttachmentPanel({
   };
 
   const [panelDragActive, setPanelDragActive] = useState(false);
-  const [drawingPlaceholderOpen, setDrawingPlaceholderOpen] = useState(false);
+  const [drawingModalOpen, setDrawingModalOpen] = useState(false);
 
   const handlePanelDragOver = (event: DragEvent<HTMLDivElement>) => {
     if (writeLocked || !canManageAttachments || !hasDroppedFiles(event)) return;
@@ -309,7 +272,7 @@ export default function WorkOrderAttachmentPanel({
             scope={uploadScope}
             addButtonLabel={addButtonLabel}
             onOpenAttachmentPicker={onOpenAttachmentPicker}
-            onOpenDrawingPlaceholder={() => setDrawingPlaceholderOpen(true)}
+            onOpenDrawingPlaceholder={() => setDrawingModalOpen(true)}
             isMobile={isMobile}
             disabled={writeLocked}
             disabledReason={writeLockMessage}
@@ -388,7 +351,14 @@ export default function WorkOrderAttachmentPanel({
       )}
       </WorkOrderPanelCard>
     </div>
-    {drawingPlaceholderOpen ? <DrawingPlaceholderModal onClose={() => setDrawingPlaceholderOpen(false)} /> : null}
+    {uploadScope === "design" ? (
+      <WorkOrderDrawingModal
+        open={drawingModalOpen}
+        onClose={() => setDrawingModalOpen(false)}
+        onSaveDrawing={(file) => onUploadFiles([file])}
+        variant={variant}
+      />
+    ) : null}
     </>
   );
 }
