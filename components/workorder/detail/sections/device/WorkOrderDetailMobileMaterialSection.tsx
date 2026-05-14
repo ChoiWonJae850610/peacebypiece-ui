@@ -1,6 +1,7 @@
 import { useI18n } from "@/lib/i18n";
 import { MATERIAL_TYPE_OPTIONS } from "@/lib/constants/material";
 import { getWorkOrderSelectDisplayValue } from "@/lib/workorder/detail/selectDisplayPresentation";
+import { translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import { useCompanyStandardOptions } from "@/lib/admin/settings/useCompanyStandardOptions";
 import { AddButton, DeleteButton, EditableValue, SectionHeader, type EditableCell, type EditableSectionKey } from "@/components/workorder/detail/shared/detailEditorShared";
 import type { Material } from "@/types/material";
@@ -34,7 +35,7 @@ export default function WorkOrderDetailMobileMaterialSection({
   vendorOptionsById,
   locked = false,
 }: Props) {
-  const { i18n } = useI18n();
+  const { i18n, locale } = useI18n();
   const { materialUnitOptions } = useCompanyStandardOptions();
   const copy = i18n.workorder.ui.sections.material;
   const common = i18n.workorder.ui.common;
@@ -75,7 +76,7 @@ export default function WorkOrderDetailMobileMaterialSection({
                   </div>
                   <div>
                     <dt className="text-xs text-stone-500">{copy.fields.unit}</dt>
-                    <dd className="mt-1"><EditableValue section="material" rowId={item.id} field="unit" value={item.unit} options={materialUnitOptions} editingCell={editingCell} editingValue={editingValue} centered onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></dd>
+                    <dd className="mt-1"><EditableValue section="material" rowId={item.id} field="unit" value={item.unit} displayValue={translateWorkOrderDisplayText(item.unit, locale)} options={materialUnitOptions} editingCell={editingCell} editingValue={editingValue} centered onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} /></dd>
                   </div>
                   <div>
                     <dt className="text-xs text-stone-500">{copy.fields.unitCost}</dt>

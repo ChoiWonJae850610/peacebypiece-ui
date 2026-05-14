@@ -10,7 +10,7 @@ export const MATERIAL_TYPE = {
 export type MaterialTypeValue = (typeof MATERIAL_TYPE)[keyof typeof MATERIAL_TYPE];
 
 export const MATERIAL_UNIT = {
-  yard: "yd",
+  yard: "야드",
   meter: "m",
   piece: "개",
   pcs: "pcs",
@@ -20,6 +20,24 @@ export const MATERIAL_UNIT = {
 } as const;
 
 export type MaterialUnitValue = (typeof MATERIAL_UNIT)[keyof typeof MATERIAL_UNIT];
+
+const LEGACY_MATERIAL_UNIT_VALUE_MAP: Record<string, MaterialUnitValue> = {
+  yd: MATERIAL_UNIT.yard,
+  yard: MATERIAL_UNIT.yard,
+  yards: MATERIAL_UNIT.yard,
+  ea: MATERIAL_UNIT.piece,
+  each: MATERIAL_UNIT.piece,
+  pc: MATERIAL_UNIT.piece,
+  pcs: MATERIAL_UNIT.piece,
+  piece: MATERIAL_UNIT.piece,
+  pieces: MATERIAL_UNIT.piece,
+};
+
+export function normalizeMaterialUnitValue(value: string | null | undefined): MaterialUnitValue {
+  const normalized = String(value ?? "").trim();
+  if (!normalized) return MATERIAL_UNIT.piece;
+  return LEGACY_MATERIAL_UNIT_VALUE_MAP[normalized.toLowerCase()] ?? (normalized as MaterialUnitValue);
+}
 
 export const MATERIAL_STATUS = {
   ready: "준비",

@@ -44,8 +44,8 @@ export function buildWorkOrderSeedSource(locale: Locale = DEFAULT_LOCALE): MockW
       workflowState: "review_requested",
       lastSavedAt: "03-26 21:48",
       materials: [
-        { id: "m-1", type: MATERIAL_KIND.fabric, name: wo1.materials.fabricMain, vendor: wo1.materials.vendorA, quantity: 12, unit: "yd", unitCost: 3500, totalCost: 42000, status: wo1.materials.statusOrdered },
-        { id: "m-2", type: MATERIAL_KIND.fabric, name: wo1.materials.lining, vendor: wo1.materials.vendorB, quantity: 8, unit: "yd", unitCost: 2200, totalCost: 17600, status: wo1.materials.statusReceived },
+        { id: "m-1", type: MATERIAL_KIND.fabric, name: wo1.materials.fabricMain, vendor: wo1.materials.vendorA, quantity: 12, unit: "야드", unitCost: 3500, totalCost: 42000, status: wo1.materials.statusOrdered },
+        { id: "m-2", type: MATERIAL_KIND.fabric, name: wo1.materials.lining, vendor: wo1.materials.vendorB, quantity: 8, unit: "야드", unitCost: 2200, totalCost: 17600, status: wo1.materials.statusReceived },
         { id: "m-3", type: MATERIAL_KIND.subsidiary, name: wo1.materials.button, vendor: wo1.materials.vendorC, quantity: 40, unit: wo1.materials.unitEach, unitCost: 120, totalCost: 4800, status: wo1.materials.statusOrdered },
         { id: "m-4", type: MATERIAL_KIND.subsidiary, name: wo1.materials.careLabel, vendor: wo1.materials.vendorLabel, quantity: 20, unit: wo1.materials.unitEach, unitCost: 150, totalCost: 3000, status: wo1.materials.statusPreparing },
       ],
@@ -113,7 +113,7 @@ export function buildWorkOrderSeedSource(locale: Locale = DEFAULT_LOCALE): MockW
       workflowState: "inspection",
       lastSavedAt: "03-26 18:10",
       materials: [
-        { id: "m-21", type: MATERIAL_KIND.fabric, name: wo2.materials.denim, vendor: wo2.materials.vendorBlue, quantity: 18, unit: "yd", unitCost: 4700, totalCost: 84600, status: wo2.materials.statusReceived },
+        { id: "m-21", type: MATERIAL_KIND.fabric, name: wo2.materials.denim, vendor: wo2.materials.vendorBlue, quantity: 18, unit: "야드", unitCost: 4700, totalCost: 84600, status: wo2.materials.statusReceived },
         { id: "m-22", type: MATERIAL_KIND.subsidiary, name: wo2.materials.rivet, vendor: wo2.materials.vendorMetal, quantity: 60, unit: wo2.materials.unitEach, unitCost: 300, totalCost: 18000, status: wo2.materials.statusOrdered },
       ],
       outsourcing: [
@@ -168,7 +168,7 @@ export function buildWorkOrderSeedSource(locale: Locale = DEFAULT_LOCALE): MockW
       workflowState: "completed",
       lastSavedAt: "03-26 16:02",
       materials: [
-        { id: "m-31", type: MATERIAL_KIND.fabric, name: wo3.materials.leather, vendor: wo3.materials.vendorLeather, quantity: 5, unit: "yd", unitCost: 6800, totalCost: 34000, status: wo3.materials.statusReceived },
+        { id: "m-31", type: MATERIAL_KIND.fabric, name: wo3.materials.leather, vendor: wo3.materials.vendorLeather, quantity: 5, unit: "야드", unitCost: 6800, totalCost: 34000, status: wo3.materials.statusReceived },
       ],
       outsourcing: [
         { id: "o-31", process: wo3.outsourcing.stitching, vendor: wo3.vendor, quantity: 10, unitType: wo3.outsourcing.unitPerPiece, unitCost: 4000, totalCost: 40000, status: wo3.outsourcing.statusCompleted },

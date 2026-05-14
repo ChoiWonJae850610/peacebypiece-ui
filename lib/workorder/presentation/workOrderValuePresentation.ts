@@ -1,5 +1,18 @@
 import type { Locale } from "@/lib/i18n";
 
+
+const KO_VALUE_LABELS: Record<string, string> = {
+  yd: "야드",
+  yard: "야드",
+  yards: "야드",
+  ea: "개",
+  each: "개",
+  pc: "개",
+  pcs: "개",
+  piece: "개",
+  pieces: "개",
+};
+
 const EN_VALUE_LABELS: Record<string, string> = {
   "작성중": "Draft",
   "검토요청": "Review requested",
@@ -39,6 +52,7 @@ const EN_VALUE_LABELS: Record<string, string> = {
   "발주완료": "Ordered",
   "입고완료": "Received",
   "대기": "Waiting",
+  "야드": "yd",
   "장": "pcs",
   "개": "pcs",
   "벌": "sets",
@@ -48,6 +62,7 @@ const EN_VALUE_LABELS: Record<string, string> = {
 
 export function translateWorkOrderDisplayText(value: string | null | undefined, locale: Locale) {
   const normalized = String(value ?? "").trim();
-  if (!normalized || locale !== "en") return value ?? "";
+  if (!normalized) return value ?? "";
+  if (locale !== "en") return KO_VALUE_LABELS[normalized.toLowerCase()] ?? value ?? "";
   return EN_VALUE_LABELS[normalized] ?? value ?? "";
 }

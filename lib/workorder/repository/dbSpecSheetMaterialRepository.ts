@@ -1,5 +1,6 @@
 import "server-only";
 
+import { normalizeMaterialUnitValue } from "@/lib/constants/material";
 import { queryDb } from "@/lib/db/client";
 import { getWorkspaceCompanyContext } from "@/lib/constants/company";
 import type { Material } from "@/types/material";
@@ -78,6 +79,7 @@ function normalizeMaterialForDb(material: Material): Material {
   return {
     ...material,
     quantity: normalizeNumber(material.quantity),
+    unit: normalizeMaterialUnitValue(material.unit),
     unitCost: normalizeNumber(material.unitCost),
     totalCost: calculateMaterialTotalCost(material),
   };
@@ -240,7 +242,7 @@ export async function syncDbSpecSheetMaterialsForSpecSheet(workOrder: WorkOrder)
 
     if (schema.unitColumn) {
       columns.push(schema.unitColumn);
-      values.push(normalizeText(material.unit) || null);
+      values.push(normalizeText(normalizeMaterialUnitValue(material.unit)) || null);
       placeholders.push(`$${values.length}`);
     }
 

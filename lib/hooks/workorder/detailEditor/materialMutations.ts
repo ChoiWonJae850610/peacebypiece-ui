@@ -1,4 +1,4 @@
-import { MATERIAL_TYPE, MATERIAL_UNIT } from "@/lib/constants/material";
+import { MATERIAL_TYPE, MATERIAL_UNIT, normalizeMaterialUnitValue } from "@/lib/constants/material";
 import { MATERIAL_KIND } from "@/lib/constants/workorderDomain";
 import { recalculateMaterial } from "@/lib/workorder/detail/detailCalculations";
 import { toNumber } from "@/lib/workorder/detail/detailSanitizers";
@@ -33,6 +33,10 @@ export function commitMaterialItemsEdit(payload: {
       return { ...item, type: nextType };
     }
 
+    if (payload.editingCell.field === "unit") {
+      return recalculateMaterial({ ...item, unit: normalizeMaterialUnitValue(payload.nextValue) });
+    }
+
     return { ...item, [payload.editingCell.field]: payload.nextValue } as Material;
   });
 }
@@ -43,6 +47,6 @@ export function createNewMaterialItem() {
 
 export function toMaterialsPatch(materialItems: Material[]): Partial<WorkOrder> {
   return {
-    materials: materialItems.map((item) => recalculateMaterial(item)),
+    materials: materialItems.map((item) => recalculateMaterial({ ...item, unit: normalizeMaterialUnitValue(item.unit) })),
   };
 }

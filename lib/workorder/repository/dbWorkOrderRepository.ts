@@ -1,6 +1,7 @@
 import "server-only";
 
 import { queryDb } from "@/lib/db/client";
+import { normalizeMaterialUnitValue } from "@/lib/constants/material";
 import {
   getAdminCompanyId,
   getAdminCompanyScope,
@@ -1056,7 +1057,7 @@ async function loadNormalizedDetailRowsByWorkOrderIds(
       name: row.name || "",
       vendor: row.vendor || "",
       quantity: readNumberRowValue(row.quantity),
-      unit: row.unit || "개",
+      unit: normalizeMaterialUnitValue(row.unit || "개"),
       unitCost: readNumberRowValue(row.unit_cost),
       totalCost: readNumberRowValue(row.total_cost),
       status: row.status || "준비",

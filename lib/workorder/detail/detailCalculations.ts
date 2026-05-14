@@ -1,8 +1,10 @@
+import { normalizeMaterialUnitValue } from "@/lib/constants/material";
 import type { Material, OrderEntry, Outsourcing } from "@/types/workorder";
 
 export function recalculateMaterial(item: Material): Material {
   return {
     ...item,
+    unit: normalizeMaterialUnitValue(item.unit),
     totalCost: (Number(item.quantity) || 0) * (Number(item.unitCost) || 0),
   };
 }

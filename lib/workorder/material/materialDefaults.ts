@@ -1,4 +1,4 @@
-import { MATERIAL_STATUS, MATERIAL_TYPE, MATERIAL_UNIT } from "@/lib/constants/material";
+import { MATERIAL_STATUS, MATERIAL_TYPE, MATERIAL_UNIT, normalizeMaterialUnitValue } from "@/lib/constants/material";
 import { recalculateMaterial } from "@/lib/workorder/detail/detailCalculations";
 import { createId } from "@/lib/workorder/detail/detailSanitizers";
 import type { Material } from "@/types/workorder";
@@ -13,7 +13,7 @@ export function createDefaultMaterial(overrides: Partial<Material> = {}): Materi
     vendor: overrides.vendor || "",
     vendorRef: overrides.vendorRef ?? null,
     quantity: typeof overrides.quantity === "number" && Number.isFinite(overrides.quantity) ? overrides.quantity : 0,
-    unit: overrides.unit || MATERIAL_UNIT.yard,
+    unit: normalizeMaterialUnitValue(overrides.unit || MATERIAL_UNIT.yard),
     unitCost: typeof overrides.unitCost === "number" && Number.isFinite(overrides.unitCost) ? overrides.unitCost : 0,
     totalCost: typeof overrides.totalCost === "number" && Number.isFinite(overrides.totalCost) ? overrides.totalCost : 0,
     status: overrides.status || MATERIAL_STATUS.ready,
