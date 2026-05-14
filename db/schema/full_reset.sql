@@ -1168,6 +1168,7 @@ FROM system_permission_catalog;
 INSERT INTO system_unit_standards (id, code, korean_name, english_code, category, description, example_label, is_active, sort_order)
 VALUES
   ('system-unit-piece', 'piece', '장', 'pcs', 'count', '일반 의류 수량 단위', '티셔츠 100장', true, 10),
+  ('system-unit-each', 'each', '개', 'ea', 'count', '부자재 개수 단위', '단추 100개', true, 15),
   ('system-unit-set', 'set', '벌', 'set', 'count', '상하의 세트 또는 묶음 단위', '트레이닝 세트 50벌', true, 20),
   ('system-unit-meter', 'meter', '미터', 'm', 'length', '원단 길이 단위', '면 원단 30m', true, 30),
   ('system-unit-yard', 'yard', '야드', 'yd', 'length', '수입 원단 길이 단위', '수입 원단 20yd', true, 40),

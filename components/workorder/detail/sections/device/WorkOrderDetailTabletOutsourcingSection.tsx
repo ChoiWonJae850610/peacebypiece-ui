@@ -1,5 +1,6 @@
 import { useI18n } from "@/lib/i18n";
 import { useCompanyStandardOptions } from "@/lib/admin/settings/useCompanyStandardOptions";
+import { DEFAULT_UNSELECTED_OPTION } from "@/lib/constants/workorderDomain";
 import { AddButton, DeleteButton, EditableValue, SectionHeader, type EditableCell, type EditableSectionKey } from "@/components/workorder/detail/shared/detailEditorShared";
 import type { Outsourcing } from "@/types/workorder";
 
@@ -53,7 +54,7 @@ export default function WorkOrderDetailTabletOutsourcingSection({
             <article key={item.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} options={processOptions} editingCell={editingCell} editingValue={editingValue} wrapText onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
+                  <EditableValue section="outsourcing" rowId={item.id} field="process" value={item.process} displayValue={item.process === DEFAULT_UNSELECTED_OPTION ? "-" : item.process} options={processOptions} editingCell={editingCell} editingValue={editingValue} wrapText onStartEdit={onStartEdit} onCommit={onCommitEdit} onCancel={onCancelEdit} disabled={locked} />
                   <div className="mt-1 text-sm text-stone-500">{copy.fallbackItem.replace("{index}", String(index + 1))}</div>
                 </div>
                 {!locked ? <DeleteButton onClick={() => onRemove(item.id)} srLabel={`${item.process || copy.fallbackItem.replace("{index}", String(index + 1))} ${common.deleteSuffix}`} /> : null}

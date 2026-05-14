@@ -1,4 +1,4 @@
-import { MATERIAL_KIND, NO_REGISTERED_PARTNER_OPTION, NO_REGISTERED_PROCESS_OPTION } from "@/lib/constants/workorderDomain";
+import { DEFAULT_UNSELECTED_OPTION, MATERIAL_KIND, NO_REGISTERED_PARTNER_OPTION } from "@/lib/constants/workorderDomain";
 import { appendOption } from "@/lib/workorder/detail/detailSanitizers";
 import type { Material, Outsourcing } from "@/types/workorder";
 import type { OrderEntryState } from "@/components/workorder/detail/shared/detailEditorShared";
@@ -12,10 +12,6 @@ function buildRegisteredPartnerOptions(options: readonly string[] | undefined): 
   return registeredOptions.length > 0 ? registeredOptions : [NO_REGISTERED_PARTNER_OPTION];
 }
 
-function buildRegisteredProcessOptions(options: readonly string[] | undefined): string[] {
-  const registeredOptions = mergeOptionLists(options ?? []);
-  return registeredOptions.length > 0 ? registeredOptions : [NO_REGISTERED_PROCESS_OPTION];
-}
 
 export function selectSeededFactoryOptions() {
   return buildRegisteredPartnerOptions([]);
@@ -32,10 +28,10 @@ export type PartnerMaterialVendorOptions = {
 
 export type PartnerOutsourcingVendorOptionsByProcess = Record<string, readonly string[]>;
 
-function selectPartnerMaterialVendorOptions(materialType: string, partnerMaterialVendorOptions: PartnerMaterialVendorOptions = {}): readonly string[] {
+function selectPartnerMaterialVendorOptions(materialType: string, partnerMaterialVendorOptions: PartnerMaterialVendorOptions = {}): readonly string[] | null {
   if (materialType === MATERIAL_KIND.fabric) return partnerMaterialVendorOptions.fabric ?? [];
   if (materialType === MATERIAL_KIND.subsidiary) return partnerMaterialVendorOptions.subsidiary ?? [];
-  return mergeOptionLists(partnerMaterialVendorOptions.fabric ?? [], partnerMaterialVendorOptions.subsidiary ?? []);
+  return null;
 }
 
 export function selectMaterialVendorOptionsById(
@@ -43,15 +39,15 @@ export function selectMaterialVendorOptionsById(
   partnerMaterialVendorOptions: PartnerMaterialVendorOptions = {},
 ): Record<string, string[]> {
   return Object.fromEntries(
-    materialItems.map((item) => [
-      item.id,
-      buildRegisteredPartnerOptions(selectPartnerMaterialVendorOptions(item.type, partnerMaterialVendorOptions)),
-    ]),
+    materialItems.map((item) => {
+      const options = selectPartnerMaterialVendorOptions(item.type, partnerMaterialVendorOptions);
+      return [item.id, options === null ? [] : buildRegisteredPartnerOptions(options)];
+    }),
   );
 }
 
 export function selectOutsourcingProcessOptions(partnerOutsourcingProcessOptions: readonly string[] = []): string[] {
-  return buildRegisteredProcessOptions(partnerOutsourcingProcessOptions);
+  return mergeOptionLists([DEFAULT_UNSELECTED_OPTION], partnerOutsourcingProcessOptions);
 }
 
 function normalizeProcessKey(value: string) {
@@ -61,9 +57,9 @@ function normalizeProcessKey(value: string) {
 function selectPartnerOutsourcingVendorOptions(
   process: string,
   partnerOutsourcingVendorOptionsByProcess: PartnerOutsourcingVendorOptionsByProcess = {},
-): readonly string[] {
+): readonly string[] | null {
   const processKey = normalizeProcessKey(process);
-  if (!processKey) return [];
+  if (!processKey || processKey === normalizeProcessKey(DEFAULT_UNSELECTED_OPTION)) return null;
 
   return partnerOutsourcingVendorOptionsByProcess[processKey] ?? [];
 }
@@ -73,10 +69,10 @@ export function selectOutsourcingVendorOptionsById(
   partnerOutsourcingVendorOptionsByProcess: PartnerOutsourcingVendorOptionsByProcess = {},
 ): Record<string, string[]> {
   return Object.fromEntries(
-    outsourcingItems.map((item) => [
-      item.id,
-      buildRegisteredPartnerOptions(selectPartnerOutsourcingVendorOptions(item.process, partnerOutsourcingVendorOptionsByProcess)),
-    ]),
+    outsourcingItems.map((item) => {
+      const options = selectPartnerOutsourcingVendorOptions(item.process, partnerOutsourcingVendorOptionsByProcess);
+      return [item.id, options === null ? [] : buildRegisteredPartnerOptions(options)];
+    }),
   );
 }
 

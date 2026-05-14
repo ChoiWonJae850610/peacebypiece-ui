@@ -1,4 +1,5 @@
 import { MATERIAL_TYPE } from "@/lib/constants/material";
+import { MATERIAL_KIND } from "@/lib/constants/workorderDomain";
 import { recalculateMaterial } from "@/lib/workorder/detail/detailCalculations";
 import { toNumber } from "@/lib/workorder/detail/detailSanitizers";
 import { createDefaultMaterial } from "@/lib/workorder/material/materialDefaults";
@@ -21,8 +22,13 @@ export function commitMaterialItemsEdit(payload: {
     }
     if (payload.editingCell.field === "type") {
       const nextType = (payload.nextValue || MATERIAL_TYPE.unselected) as Material["type"];
+      const nextUnit = nextType === MATERIAL_KIND.fabric
+        ? "야드"
+        : nextType === MATERIAL_KIND.subsidiary
+          ? "개"
+          : item.unit;
       if (nextType !== item.type) {
-        return { ...item, type: nextType, vendor: "", vendorRef: null };
+        return { ...item, type: nextType, unit: nextUnit, vendor: "", vendorRef: null };
       }
       return { ...item, type: nextType };
     }
