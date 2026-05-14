@@ -21,6 +21,12 @@
   --pbp-action-primary-surface: #1c1917;
   --pbp-action-primary-surface-hover: #292524;
   --pbp-action-primary-text: #ffffff;
+  --pbp-action-danger-surface: #e11d48;
+  --pbp-action-danger-surface-hover: #be123c;
+  --pbp-action-danger-text: #ffffff;
+  --pbp-action-ghost-surface: transparent;
+  --pbp-action-ghost-surface-hover: #f5f5f4;
+  --pbp-action-ghost-text: #57534e;
   --pbp-action-secondary-surface: #ffffff;
   --pbp-action-secondary-surface-hover: #f5f5f4;
   --pbp-action-secondary-text: #44403c;
@@ -106,6 +112,11 @@
   --pbp-modal-section-surface: #ffffff;
   --pbp-modal-section-border: #e7e5e4;
   --pbp-modal-section-muted: #fafaf9;
+  --pbp-toggle-on-surface: #1c1917;
+  --pbp-toggle-on-border: #1c1917;
+  --pbp-toggle-off-surface: #e7e5e4;
+  --pbp-toggle-off-border: #d6d3d1;
+  --pbp-toggle-thumb-surface: #ffffff;
   --pbp-toast-background: #171717;
   --pbp-toast-foreground: #ffffff;
   --pbp-shadow-card: 0 1px 3px rgba(28, 25, 23, 0.08), 0 1px 2px rgba(28, 25, 23, 0.04);
@@ -232,6 +243,86 @@ body {
 
 .pbp-action-danger-soft:hover {
   background: color-mix(in srgb, var(--pbp-action-danger-soft-surface) 72%, var(--pbp-action-danger-soft-border));
+}
+
+.pbp-action-danger {
+  border-color: transparent;
+  background: var(--pbp-action-danger-surface);
+  color: var(--pbp-action-danger-text);
+}
+
+.pbp-action-danger:hover {
+  background: var(--pbp-action-danger-surface-hover);
+}
+
+.pbp-action-ghost {
+  border-color: transparent;
+  background: var(--pbp-action-ghost-surface);
+  color: var(--pbp-action-ghost-text);
+}
+
+.pbp-action-ghost:hover {
+  background: var(--pbp-action-ghost-surface-hover);
+  color: var(--pbp-text-primary);
+}
+
+.pbp-admin-card {
+  border: 1px solid var(--pbp-border);
+  background: var(--pbp-surface);
+  color: var(--pbp-text-primary);
+  box-shadow: var(--pbp-shadow-card);
+}
+
+.pbp-admin-card-interactive {
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease, background 160ms ease;
+}
+
+.pbp-admin-card-interactive:hover {
+  border-color: var(--pbp-border-strong);
+  background: var(--pbp-surface);
+  box-shadow: 0 10px 24px rgba(28, 25, 23, 0.08);
+  transform: translateY(-2px);
+}
+
+.pbp-admin-filter-bar {
+  border: 1px solid var(--pbp-border);
+  background: color-mix(in srgb, var(--pbp-surface-muted) 86%, var(--pbp-surface));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--pbp-surface) 64%, transparent);
+}
+
+.pbp-admin-action-tile {
+  border: 1px solid var(--pbp-border);
+  background: var(--pbp-surface);
+  color: var(--pbp-text-primary);
+}
+
+.pbp-admin-action-tile:hover {
+  border-color: var(--pbp-border-strong);
+  box-shadow: var(--pbp-shadow-card);
+}
+
+.pbp-admin-icon-tile {
+  background: var(--pbp-surface-soft);
+  color: var(--pbp-text-muted);
+}
+
+.pbp-admin-soft-badge {
+  background: var(--pbp-surface-soft);
+  color: var(--pbp-text-muted);
+}
+
+.pbp-toggle-track-on {
+  border-color: var(--pbp-toggle-on-border);
+  background: var(--pbp-toggle-on-surface);
+}
+
+.pbp-toggle-track-off {
+  border-color: var(--pbp-toggle-off-border);
+  background: var(--pbp-toggle-off-surface);
+}
+
+.pbp-toggle-thumb {
+  background: var(--pbp-toggle-thumb-surface);
 }
 
 .pbp-workorder-list-card {

@@ -8,7 +8,7 @@ type AdminCardProps = {
   as?: "section" | "article" | "div" | "header";
 };
 
-const cardBaseClassName = "min-w-0 rounded-[28px] border border-stone-200 bg-white shadow-sm";
+const cardBaseClassName = "min-w-0 rounded-[28px] pbp-admin-card";
 
 export function AdminCard({ children, className = "", as: Component = "section" }: AdminCardProps) {
   return <Component className={`${cardBaseClassName} ${className}`.trim()}>{children}</Component>;
@@ -26,9 +26,9 @@ export function AdminSectionHeader({ title, description, eyebrow, actions, class
   return (
     <div className={`flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between ${className}`.trim()}>
       <div className="min-w-0">
-        {eyebrow ? <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{eyebrow}</p> : null}
-        <h2 className="text-lg font-semibold tracking-tight text-stone-950">{title}</h2>
-        {description ? <p className="mt-1 text-sm leading-6 text-stone-500">{description}</p> : null}
+        {eyebrow ? <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">{eyebrow}</p> : null}
+        <h2 className="text-lg font-semibold tracking-tight pbp-text-primary">{title}</h2>
+        {description ? <p className="mt-1 text-sm leading-6 pbp-text-muted">{description}</p> : null}
       </div>
       {actions ? <div className="flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto">{actions}</div> : null}
     </div>

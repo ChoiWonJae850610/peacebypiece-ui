@@ -10,7 +10,7 @@ type AdminCardProps = {
 };
 
 export function AdminCard({ children, className = "" }: AdminCardProps) {
-  return <section className={`min-w-0 rounded-[28px] border border-stone-200 bg-white p-5 shadow-sm ${className}`}>{children}</section>;
+  return <section className={`min-w-0 rounded-[28px] p-5 pbp-admin-card ${className}`}>{children}</section>;
 }
 
 type AdminStatCardProps = {
@@ -21,20 +21,20 @@ type AdminStatCardProps = {
   accent?: string;
 };
 
-export function AdminStatCard({ label, value, description, href, accent = "bg-stone-100 text-stone-700" }: AdminStatCardProps) {
+export function AdminStatCard({ label, value, description, href, accent = "pbp-admin-soft-badge" }: AdminStatCardProps) {
   const t = useAdminTranslation();
-  const interactiveClassName = href ? "h-full transition hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-md" : "h-full";
+  const interactiveClassName = href ? "h-full pbp-admin-card-interactive" : "h-full";
 
   const content = (
     <AdminCard className={interactiveClassName}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{label}</p>
-          <p className="mt-3 text-2xl font-semibold tracking-tight text-stone-950">{value}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">{label}</p>
+          <p className="mt-3 text-2xl font-semibold tracking-tight pbp-text-primary">{value}</p>
         </div>
         <span className={`rounded-2xl px-3 py-2 text-xs font-semibold ${accent}`}>{t("common.summary", "요약")}</span>
       </div>
-      {description ? <p className="mt-4 text-xs leading-5 text-stone-500">{description}</p> : null}
+      {description ? <p className="mt-4 text-xs leading-5 pbp-text-muted">{description}</p> : null}
     </AdminCard>
   );
 
@@ -61,14 +61,14 @@ export function AdminActionTile({ label, description, icon, href, statusLabel }:
   const t = useAdminTranslation();
   const resolvedStatusLabel = statusLabel ?? t("common.move", "이동");
   const content = (
-    <div className="group flex min-h-[112px] items-start gap-4 rounded-3xl border border-stone-200 bg-white p-4 text-left transition hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-sm">
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-stone-100 text-lg text-stone-700">{icon}</span>
+    <div className="group flex min-h-[112px] items-start gap-4 rounded-3xl p-4 text-left transition hover:-translate-y-0.5 pbp-admin-action-tile">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-lg pbp-admin-icon-tile">{icon}</span>
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-sm font-semibold text-stone-950">{label}</h3>
-          <span className="shrink-0 rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-medium text-stone-500">{href ? resolvedStatusLabel : t("common.preparing", "준비중")}</span>
+          <h3 className="text-sm font-semibold pbp-text-primary">{label}</h3>
+          <span className="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium pbp-admin-soft-badge">{href ? resolvedStatusLabel : t("common.preparing", "준비중")}</span>
         </div>
-        <p className="mt-2 text-xs leading-5 text-stone-500">{description}</p>
+        <p className="mt-2 text-xs leading-5 pbp-text-muted">{description}</p>
       </div>
     </div>
   );

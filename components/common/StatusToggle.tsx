@@ -50,15 +50,15 @@ export default function StatusToggle({
       className={[
         "relative inline-flex shrink-0 items-center rounded-full border transition-colors duration-200 ease-out",
         sizeClass.track,
-        checked ? "border-stone-900 bg-stone-900" : "border-stone-300 bg-stone-200",
-        disabled ? "cursor-default opacity-70" : "cursor-pointer hover:border-stone-500",
+        checked ? "pbp-toggle-track-on" : "pbp-toggle-track-off",
+        disabled ? "cursor-default opacity-70" : "cursor-pointer hover:brightness-95",
         className,
       ].join(" ")}
     >
       <span
         aria-hidden="true"
         className={[
-          "pointer-events-none absolute left-1 top-1/2 -translate-y-1/2 rounded-full bg-white shadow-sm transition-transform duration-200 ease-out",
+          "pointer-events-none absolute left-1 top-1/2 -translate-y-1/2 rounded-full shadow-sm transition-transform duration-200 ease-out pbp-toggle-thumb",
           sizeClass.thumb,
           checked ? sizeClass.translate : "translate-x-0",
         ].join(" ")}

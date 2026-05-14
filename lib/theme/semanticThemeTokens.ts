@@ -1,13 +1,13 @@
 export const SEMANTIC_THEME_TOKEN_GROUPS = {
   surface: ["page", "card", "cardMuted", "selected", "selectedSoft", "emptyState"],
   text: ["primary", "secondary", "muted", "subtle", "inverse", "selectedMuted"],
-  action: ["primary", "secondary", "add", "reset", "danger", "dangerSoft"],
+  action: ["primary", "secondary", "add", "reset", "danger", "dangerSoft", "ghost"],
   status: ["draft", "reviewRequested", "reviewCompleted", "requestOrder", "inspection", "completed", "rejected", "success", "warning", "danger", "pending", "neutral"],
   field: ["editable", "selectable", "search", "filter", "calculated", "readonly", "disabled"],
   sidePanel: ["item", "preview", "upload", "uploadActive", "count", "empty"],
   modal: ["overlay", "surface", "chrome", "body", "section", "sectionMuted"],
   border: ["default", "strong", "selected", "focus"],
-  feedback: ["focusRing", "hover", "pressed"],
+  feedback: ["focusRing", "hover", "pressed", "toggle"],
 } as const;
 
 export type SemanticThemeTokenGroup = keyof typeof SEMANTIC_THEME_TOKEN_GROUPS;
@@ -222,6 +222,31 @@ export const PBP_COMMON_MODAL_THEME_CHECKS = {
   },
 } as const;
 
+export const PBP_COMMON_UI_SEMANTIC_CHECKS = {
+  checkedAtVersion: "0.12.5",
+  button: {
+    description: "공통 AdminButton/AdminLinkButton variant가 action semantic class를 사용한다.",
+    tokens: ["action.primary", "action.secondary", "action.danger", "action.ghost"],
+  },
+  card: {
+    description: "AdminCard, AdminSection, AdminStatCard, AdminActionTile, SummaryCard, WorkOrderPanelCard가 surface/card 계열 semantic class를 사용한다.",
+    tokens: ["surface.card", "surface.cardMuted", "border.default", "shadow.card"],
+  },
+  filterAndField: {
+    description: "AdminFilterBar와 공통 modal field class가 field/search/selectable semantic class를 사용한다.",
+    tokens: ["field.search", "field.selectable", "field.filter"],
+  },
+  toggle: {
+    description: "StatusToggle track/thumb가 theme variable 기반 token을 사용한다.",
+    tokens: ["feedback.toggle", "action.primary", "surface.muted"],
+  },
+  remaining: [
+    "개별 화면 내부에 남은 직접 색상 class 목록화",
+    "공통 input/select/card 컴포넌트가 없는 영역의 중복 class 정리",
+    "개인 환경설정 theme 선택 UI 연결",
+  ],
+} as const;
+
 
 export const PBP_THEME_FILE_STRUCTURE_PLAN = {
   currentThemeId: "default-light",
@@ -242,8 +267,8 @@ export const PBP_THEME_FILE_STRUCTURE_PLAN = {
 export const PBP_THEME_VARIABLE_SYNC_CHECKS = {
   sourceOfTruth: "lib/theme/themes/defaultLight.ts",
   runtimeMirror: "app/globals.css :root",
-  syncedVariableCount: 100,
-  checkedAtVersion: "0.12.3",
+  syncedVariableCount: 117,
+  checkedAtVersion: "0.12.5",
   result: "default-light cssVariables와 globals.css :root 변수명/값 동기화 확인",
   runtimeProvider: "lib/theme/PbpThemeProvider.tsx",
   rootAttributeBuilder: "lib/theme/themeDocument.ts",

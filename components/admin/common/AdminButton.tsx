@@ -14,10 +14,10 @@ type AdminButtonProps = AdminButtonBaseProps & ButtonHTMLAttributes<HTMLButtonEl
 type AdminLinkButtonProps = AdminButtonBaseProps & AnchorHTMLAttributes<HTMLAnchorElement>;
 
 const variantClassNames: Record<AdminButtonVariant, string> = {
-  primary: "border-transparent bg-stone-950 text-white hover:bg-stone-800",
-  secondary: "border-stone-200 bg-white text-stone-700 hover:border-stone-300 hover:bg-stone-50",
-  danger: "border-transparent bg-rose-500 text-white hover:bg-rose-600",
-  ghost: "border-transparent bg-transparent text-stone-600 hover:bg-stone-100 hover:text-stone-900",
+  primary: "pbp-action-primary border-transparent",
+  secondary: "pbp-action-secondary",
+  danger: "pbp-action-danger border-transparent",
+  ghost: "pbp-action-ghost",
 };
 
 const sizeClassNames: Record<AdminButtonSize, string> = {
