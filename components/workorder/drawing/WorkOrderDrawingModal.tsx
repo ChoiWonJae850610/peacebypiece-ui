@@ -855,46 +855,48 @@ export default function WorkOrderDrawingModal({
       }
     >
       <div className="flex h-full min-h-0 flex-col gap-2 md:gap-3">
-        <div className="flex min-h-0 flex-1 rounded-3xl border bg-[var(--pbp-surface-muted)] p-2 shadow-inner sm:p-3">
-          <div
-            ref={canvasContainerRef}
-            className={`relative min-h-0 flex-1 overflow-hidden rounded-2xl border bg-white touch-none ${
-              tool === "eraser" ? "cursor-none" : tool === "pan" ? "cursor-grab active:cursor-grabbing" : "cursor-crosshair"
-            }`}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={stopDrawing}
-            onPointerCancel={(event) => {
-              stopDrawing(event);
-              hideEraserCursor();
-            }}
-            onPointerLeave={(event) => {
-              if (drawingRef.current || panningRef.current) stopDrawing(event);
-              hideEraserCursor();
-            }}
-            aria-label={ui.canvasAria}
-          >
-            <canvas
-              ref={canvasRef}
-              className="pointer-events-none h-full w-full touch-none select-none"
+        <div className="relative flex min-h-0 flex-1 overflow-hidden rounded-3xl border bg-[var(--pbp-surface-muted)] p-2 shadow-inner sm:p-3">
+          <div className="relative min-h-0 flex-1 overflow-hidden rounded-2xl border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface)]">
+            <div
+              ref={canvasContainerRef}
+              className={`absolute left-1/2 top-1/2 h-full w-full touch-none overflow-hidden rounded-xl bg-white shadow-sm outline outline-1 outline-[var(--pbp-border)] ${
+                tool === "eraser" ? "cursor-none" : tool === "pan" ? "cursor-grab active:cursor-grabbing" : "cursor-crosshair"
+              }`}
               style={{
-                transform: `translate(${viewportOffset.x}px, ${viewportOffset.y}px) scale(${viewportScale})`,
+                transform: `translate(calc(-50% + ${viewportOffset.x}px), calc(-50% + ${viewportOffset.y}px)) scale(${viewportScale})`,
                 transformOrigin: "center",
               }}
-            />
-            {tool === "eraser" && eraserCursor.visible ? (
-              <div
-                className="pointer-events-none absolute rounded-full border border-[var(--pbp-danger)] bg-[var(--pbp-danger-soft)]/35 shadow-sm"
-                style={{
-                  left: eraserCursor.x,
-                  top: eraserCursor.y,
-                  width: eraserCursor.diameter,
-                  height: eraserCursor.diameter,
-                  transform: "translate(-50%, -50%)",
-                }}
-                aria-hidden="true"
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={stopDrawing}
+              onPointerCancel={(event) => {
+                stopDrawing(event);
+                hideEraserCursor();
+              }}
+              onPointerLeave={(event) => {
+                if (drawingRef.current || panningRef.current) stopDrawing(event);
+                hideEraserCursor();
+              }}
+              aria-label={ui.canvasAria}
+            >
+              <canvas
+                ref={canvasRef}
+                className="pointer-events-none h-full w-full touch-none select-none"
               />
-            ) : null}
+              {tool === "eraser" && eraserCursor.visible ? (
+                <div
+                  className="pointer-events-none absolute rounded-full border border-[var(--pbp-danger)] bg-[var(--pbp-danger-soft)]/35 shadow-sm"
+                  style={{
+                    left: eraserCursor.x,
+                    top: eraserCursor.y,
+                    width: eraserCursor.diameter,
+                    height: eraserCursor.diameter,
+                    transform: "translate(-50%, -50%)",
+                  }}
+                  aria-hidden="true"
+                />
+              ) : null}
+            </div>
           </div>
         </div>
 
