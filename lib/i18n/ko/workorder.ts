@@ -329,6 +329,11 @@ export const workorderKo = {
           ellipse: "원/타원",
         },
         canvasAria: "직접 그리기 캔버스",
+        navigationBlockedMessage: "그리기 중에는 브라우저 뒤로가기를 사용할 수 없습니다. 닫기 버튼을 사용하세요.",
+        unsavedCloseTitle: "저장하지 않은 그림이 있습니다.",
+        unsavedCloseMessage: "닫으면 현재 그린 내용은 저장되지 않습니다.",
+        keepDrawing: "계속 그리기",
+        closeWithoutSaving: "저장하지 않고 닫기",
       },
       advancedDrawingModal: {
         title: "고급 그리기",

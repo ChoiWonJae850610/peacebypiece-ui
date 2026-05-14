@@ -395,6 +395,10 @@ export default function WorkOrderDrawingModal({
   const [historyIndex, setHistoryIndex] = useState(0);
   const [activePopover, setActivePopover] = useState<DrawingPopover>(null);
   const [eraserCursor, setEraserCursor] = useState<EraserCursor>({ x: 0, y: 0, diameter: 0, visible: false });
+  const [closeConfirmVisible, setCloseConfirmVisible] = useState(false);
+  const [navigationGuardVisible, setNavigationGuardVisible] = useState(false);
+  const navigationGuardTimerRef = useRef<number | null>(null);
+  const historyGuardActiveRef = useRef(false);
   const canvasSize = getCanvasSize(variant);
   const isMobile = variant === "mobile";
   const canUndo = historyIndex > 0;
@@ -420,6 +424,32 @@ export default function WorkOrderDrawingModal({
   const closeToolPopovers = () => setActivePopover(null);
   const togglePopover = (nextPopover: DrawingPopover) => {
     setActivePopover((current) => (current === nextPopover ? null : nextPopover));
+  };
+  const closeModalAndReleaseHistoryGuard = () => {
+    historyGuardActiveRef.current = false;
+    if (
+      typeof window !== "undefined" &&
+      window.history.state &&
+      typeof window.history.state === "object" &&
+      "pbpDrawingModalGuard" in window.history.state
+    ) {
+      window.history.back();
+    }
+    onClose();
+  };
+  const requestClose = () => {
+    closeToolPopovers();
+    setNavigationGuardVisible(false);
+    if (dirty) {
+      setCloseConfirmVisible(true);
+      return;
+    }
+    closeModalAndReleaseHistoryGuard();
+  };
+  const confirmCloseWithoutSaving = () => {
+    setCloseConfirmVisible(false);
+    setDirty(false);
+    closeModalAndReleaseHistoryGuard();
   };
   const hideEraserCursor = () => setEraserCursor((current) => ({ ...current, visible: false }));
   const updateEraserCursor = (event: PointerEvent<HTMLCanvasElement>) => {
@@ -477,8 +507,46 @@ export default function WorkOrderDrawingModal({
     setStrokeSize(isMobile ? 6 : 3);
     setLineStyle("solid");
     setActivePopover(null);
+    setCloseConfirmVisible(false);
+    setNavigationGuardVisible(false);
     hideEraserCursor();
   }, [canvasSize.height, canvasSize.width, isMobile, open]);
+
+  useEffect(() => {
+    if (!open || typeof window === "undefined") return;
+
+    const currentState = window.history.state;
+    const nextState =
+      currentState && typeof currentState === "object"
+        ? { ...currentState, pbpDrawingModalGuard: true }
+        : { pbpDrawingModalGuard: true };
+
+    historyGuardActiveRef.current = true;
+    window.history.pushState(nextState, "", window.location.href);
+
+    const handlePopState = () => {
+      if (!historyGuardActiveRef.current) return;
+      window.history.pushState(nextState, "", window.location.href);
+      setNavigationGuardVisible(true);
+      if (navigationGuardTimerRef.current) {
+        window.clearTimeout(navigationGuardTimerRef.current);
+      }
+      navigationGuardTimerRef.current = window.setTimeout(() => {
+        setNavigationGuardVisible(false);
+        navigationGuardTimerRef.current = null;
+      }, 2400);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      historyGuardActiveRef.current = false;
+      if (navigationGuardTimerRef.current) {
+        window.clearTimeout(navigationGuardTimerRef.current);
+        navigationGuardTimerRef.current = null;
+      }
+    };
+  }, [open]);
 
   const drawFreehandLine = (event: PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -611,7 +679,8 @@ export default function WorkOrderDrawingModal({
       const file = new File([blob], createDrawingFileName(), { type: DRAWING_MIME_TYPE });
       onSaveDrawing(file);
       setSaving(false);
-      onClose();
+      setDirty(false);
+      closeModalAndReleaseHistoryGuard();
     }, DRAWING_MIME_TYPE);
   };
 
@@ -632,9 +701,10 @@ export default function WorkOrderDrawingModal({
       open={open}
       title={ui.title}
       description={isMobile ? ui.mobileDescription : ui.description}
-      onClose={onClose}
+      onClose={requestClose}
       maxWidthClass="md:max-w-7xl"
-      bodyClassName="min-h-0 overflow-hidden px-3 py-3 md:px-5 md:py-4"
+      bodyClassName="flex min-h-0 flex-col !overflow-hidden px-3 py-3 md:px-5 md:py-4"
+      panelClassName="md:max-h-[calc(100dvh-2rem)]"
       closeOnBackdrop={false}
       footer={
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -661,9 +731,9 @@ export default function WorkOrderDrawingModal({
         </div>
       }
     >
-      <div className="flex h-full min-h-0 flex-col gap-3">
+      <div className="flex h-full min-h-0 flex-col gap-2 md:gap-3">
         <div className="flex min-h-0 flex-1 rounded-3xl border bg-[var(--pbp-surface-muted)] p-2 shadow-inner sm:p-3">
-          <div className="relative min-h-[320px] flex-1 overflow-hidden rounded-2xl border bg-white touch-none sm:min-h-[360px]">
+          <div className="relative min-h-0 flex-1 overflow-hidden rounded-2xl border bg-white touch-none">
             <canvas
               ref={canvasRef}
               className={`h-full w-full touch-none select-none ${tool === "eraser" ? "cursor-none" : "cursor-crosshair"}`}
@@ -839,6 +909,35 @@ export default function WorkOrderDrawingModal({
             <span> · {strokeSizeStatusLabel} {ui.strokeSizeLabels[selectedStrokeSize.id] ?? selectedStrokeSize.id}</span>
             {shapeToolSelected ? <span> · {ui.lineStyleLabels[selectedLineStyleId] ?? selectedLineStyleId}</span> : null}
           </div>
+
+          {navigationGuardVisible ? (
+            <div className="rounded-2xl border border-[var(--pbp-warning)] bg-[var(--pbp-warning-soft)] px-3 py-2 text-center text-xs font-semibold text-[var(--pbp-warning-text)]">
+              {ui.navigationBlockedMessage}
+            </div>
+          ) : null}
+
+          {closeConfirmVisible ? (
+            <div className="rounded-2xl border border-[var(--pbp-danger)] bg-[var(--pbp-danger-soft)] p-3 text-sm text-[var(--pbp-danger-text)]">
+              <div className="font-semibold">{ui.unsavedCloseTitle}</div>
+              <div className="mt-1 text-xs leading-5">{ui.unsavedCloseMessage}</div>
+              <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => setCloseConfirmVisible(false)}
+                  className="pbp-interactive-button pbp-action-secondary rounded-full px-4 py-2 text-xs font-semibold"
+                >
+                  {ui.keepDrawing}
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmCloseWithoutSaving}
+                  className="pbp-interactive-button pbp-action-danger rounded-full px-4 py-2 text-xs font-semibold"
+                >
+                  {ui.closeWithoutSaving}
+                </button>
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
     </ModalShell>

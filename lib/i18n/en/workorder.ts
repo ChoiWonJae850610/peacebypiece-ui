@@ -329,6 +329,11 @@ export const workorderEn = {
           ellipse: "Ellipse",
         },
         canvasAria: "Direct drawing canvas",
+        navigationBlockedMessage: "Browser back is disabled while drawing. Use the close button instead.",
+        unsavedCloseTitle: "There is an unsaved drawing.",
+        unsavedCloseMessage: "Closing now will discard the current drawing.",
+        keepDrawing: "Keep drawing",
+        closeWithoutSaving: "Close without saving",
       },
       advancedDrawingModal: {
         title: "Advanced drawing",

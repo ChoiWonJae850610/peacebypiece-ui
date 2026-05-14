@@ -1,11 +1,11 @@
 Version :
-0.12.30
+0.12.31
 
 Summary :
-native 직접 그리기 지우개 크기와 모달 높이 보정
+직접 그리기 모달 스크롤과 닫힘 방지 보정
 
 Description :
-직접 그리기 모달에서 지우개 크기를 굵기 선택과 연결하고, 선택 도구에 따라 굵기 label을 지우개 크기 또는 선 굵기로 구분했다. 모달 body 스크롤을 줄이고 캔버스와 하단 툴바가 처음부터 보이도록 레이아웃을 보정했다.
+직접 그리기 모달의 외부 스크롤을 줄이고 하단 툴바와 저장 버튼이 처음부터 보이도록 레이아웃을 보정했다. 모달 열림 중 브라우저 뒤로가기를 가로채 페이지 이동을 막고, 저장하지 않은 그림이 있을 때 닫기 확인 UI를 표시하도록 정리했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
@@ -14,7 +14,7 @@ Description :
 - lib/i18n/en/workorder.ts
 
 추가 파일 목록 :
-- docs/workorder-drawing-native-usability-0.12.30.md
+- docs/workorder-drawing-native-scroll-close-guard-0.12.31.md
 
 삭제 파일 목록 :
 없음
