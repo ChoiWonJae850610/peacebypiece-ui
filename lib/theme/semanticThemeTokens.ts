@@ -181,3 +181,19 @@ export const WORKORDER_SEMANTIC_TOKEN_COVERAGE_CHECKS = {
     "모바일 모달 검색 input의 focus가 입력 중 유지되는지 확인",
   ],
 } as const;
+
+
+export const PBP_THEME_FILE_STRUCTURE_PLAN = {
+  currentThemeId: "default-light",
+  themeFolder: "lib/theme/themes",
+  cssVariableSource: "lib/theme/themes/defaultLight.ts",
+  cssRuntimeMirror: "app/globals.css :root",
+  nextExpandableThemeExamples: ["beige-atelier", "cold-winter", "black-and-white"],
+  rules: [
+    "컴포넌트는 blue/emerald 같은 색상명을 직접 의존하지 않는다.",
+    "컴포넌트는 pbp-* semantic class만 사용한다.",
+    "실제 색상값은 theme definition의 cssVariables에 둔다.",
+    "상태 의미색(success/warning/danger)은 테마 분위기색과 분리한다.",
+    "개인 환경설정 연결 전까지 default-light 값을 app/globals.css :root와 동기화한다.",
+  ],
+} as const;

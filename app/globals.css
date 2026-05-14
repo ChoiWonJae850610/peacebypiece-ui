@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+/* Default theme runtime mirror. Keep these values synchronized with
+   lib/theme/themes/defaultLight.ts until dynamic theme application is wired. */
 :root {
   --background: #f5f5f4;
   --foreground: #171717;
