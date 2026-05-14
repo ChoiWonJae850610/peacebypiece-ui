@@ -14,6 +14,7 @@ export const RUNTIME_VISIBILITY = {
   showDiagnostics: isDevelopmentMode,
   showRepositoryBadges: isDevelopmentMode,
   showUserSwitchingTools: isDevelopmentMode,
+  showAdvancedDrawingTools: isDevelopmentMode,
 } as const;
 
 export const DEV_DEBUG_FLAGS = {

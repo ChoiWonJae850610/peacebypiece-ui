@@ -6,6 +6,7 @@ import WorkOrderTldrawDrawingModal from "@/components/workorder/drawing/WorkOrde
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
 import { DeleteButton } from "@/components/workorder/detail/shared/detailEditorShared";
 import { useI18n } from "@/lib/i18n";
+import { RUNTIME_VISIBILITY } from "@/lib/runtime/runtimeMode";
 import { WORK_ORDER_ATTACHMENT_POLICY } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
 import type { AttachmentPanelItem } from "@/lib/workorder/presentation/workOrderWorkspacePresentation";
 
@@ -55,6 +56,7 @@ function AttachmentActionMenu({
   const ui = i18n.workorder.ui;
   const [open, setOpen] = useState(false);
   const canShowDrawingAction = scope === "design";
+  const canShowAdvancedDrawingAction = canShowDrawingAction && RUNTIME_VISIBILITY.showAdvancedDrawingTools;
 
   return (
     <div className="relative shrink-0">
@@ -96,7 +98,7 @@ function AttachmentActionMenu({
               <span>{ui.attachmentPanel.drawingAction}</span>
             </button>
           ) : null}
-          {canShowDrawingAction ? (
+          {canShowAdvancedDrawingAction ? (
             <button
               type="button"
               onClick={() => {
@@ -378,12 +380,14 @@ export default function WorkOrderAttachmentPanel({
           onSaveDrawing={(file) => onUploadFiles([file])}
           variant={variant}
         />
-        <WorkOrderTldrawDrawingModal
-          open={advancedDrawingModalOpen}
-          onClose={() => setAdvancedDrawingModalOpen(false)}
-          onSaveDrawing={(file) => onUploadFiles([file])}
-          variant={variant}
-        />
+        {RUNTIME_VISIBILITY.showAdvancedDrawingTools ? (
+          <WorkOrderTldrawDrawingModal
+            open={advancedDrawingModalOpen}
+            onClose={() => setAdvancedDrawingModalOpen(false)}
+            onSaveDrawing={(file) => onUploadFiles([file])}
+            variant={variant}
+          />
+        ) : null}
       </>
     ) : null}
     </>

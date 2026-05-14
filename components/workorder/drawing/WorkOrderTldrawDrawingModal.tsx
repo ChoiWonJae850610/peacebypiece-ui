@@ -1,7 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Tldraw, type Editor } from "tldraw";
+import { createElement, useEffect, useRef, useState, type ComponentType } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
 import {
   MODAL_CONTENT_BODY_TEXT_CLASS,
@@ -16,12 +15,33 @@ type WorkOrderTldrawDrawingModalProps = {
   variant?: "desktop" | "tablet" | "mobile";
 };
 
+type OptionalTldrawEditor = {
+  getCurrentPageShapeIds: () => Set<string>;
+  toImage: (
+    shapeIds: string[],
+    options: { format: "png"; background: boolean; pixelRatio: number },
+  ) => Promise<{ blob?: Blob } | undefined>;
+};
+
+type OptionalTldrawComponentProps = {
+  onMount: (editor: OptionalTldrawEditor) => void;
+};
+
+type OptionalTldrawModule = {
+  Tldraw: ComponentType<OptionalTldrawComponentProps>;
+};
+
 const DRAWING_MIME_TYPE = "image/png";
 const DRAWING_FILE_EXTENSION = "png";
 
 function createAdvancedDrawingFileName() {
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
   return `workorder-advanced-drawing-${stamp}.${DRAWING_FILE_EXTENSION}`;
+}
+
+function importOptionalTldraw() {
+  const importer = new Function("return import('tldraw')") as () => Promise<OptionalTldrawModule>;
+  return importer();
 }
 
 export default function WorkOrderTldrawDrawingModal({
@@ -32,11 +52,33 @@ export default function WorkOrderTldrawDrawingModal({
 }: WorkOrderTldrawDrawingModalProps) {
   const { i18n } = useI18n();
   const ui = i18n.workorder.ui.attachmentPanel.advancedDrawingModal;
-  const editorRef = useRef<Editor | null>(null);
+  const editorRef = useRef<OptionalTldrawEditor | null>(null);
+  const [TldrawComponent, setTldrawComponent] = useState<ComponentType<OptionalTldrawComponentProps> | null>(null);
   const [saving, setSaving] = useState(false);
   const [editorReady, setEditorReady] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const isMobile = variant === "mobile";
+
+  useEffect(() => {
+    if (!open || TldrawComponent) return;
+    let cancelled = false;
+
+    importOptionalTldraw()
+      .then((module) => {
+        if (cancelled) return;
+        setTldrawComponent(() => module.Tldraw);
+        setErrorMessage("");
+      })
+      .catch((error) => {
+        console.warn("[workorder-advanced-drawing] optional tldraw package is not available", error);
+        if (cancelled) return;
+        setErrorMessage(ui.packageUnavailableMessage);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, TldrawComponent, ui.packageUnavailableMessage]);
 
   const handleSave = async () => {
     const editor = editorRef.current;
@@ -113,12 +155,18 @@ export default function WorkOrderTldrawDrawingModal({
         </div>
         <div className="min-h-0 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-2 shadow-inner sm:p-3">
           <div className="h-[58dvh] min-h-[420px] overflow-hidden rounded-2xl border border-[var(--pbp-border)] bg-white sm:h-[64dvh]">
-            <Tldraw
-              onMount={(editor) => {
-                editorRef.current = editor;
-                setEditorReady(true);
-              }}
-            />
+            {TldrawComponent ? (
+              createElement(TldrawComponent, {
+                onMount: (editor: OptionalTldrawEditor) => {
+                  editorRef.current = editor;
+                  setEditorReady(true);
+                },
+              })
+            ) : (
+              <div className="flex h-full items-center justify-center px-6 text-center text-sm leading-6 text-[var(--pbp-text-muted)]">
+                {ui.packageLoadingMessage}
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -311,6 +311,8 @@ export const workorderKo = {
         mobileHint: "작은 화면에서는 가로 모드 또는 tablet 사용을 권장합니다.",
         toolHelp: "기본 tldraw 도구를 그대로 사용합니다. 펜, 도형, 텍스트, 선택/이동, 확대/축소를 비교 테스트합니다.",
         pocNotice: "PoC 단계입니다. native canvas와 사용성을 비교하기 위해 기존 직접 그리기 기능은 그대로 유지합니다.",
+        packageLoadingMessage: "고급 그리기 모듈을 불러오는 중입니다.",
+        packageUnavailableMessage: "tldraw 패키지를 찾을 수 없습니다. 개발 모드에서 테스트하려면 로컬에서 npm install tldraw를 실행하세요.",
         cancel: "닫기",
         save: "디자인으로 저장",
         saving: "저장 중...",

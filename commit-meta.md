@@ -1,23 +1,24 @@
 Version :
-0.12.23
+0.12.24
 
 Summary :
-작업지시서 고급 그리기 tldraw PoC 추가
+고급 그리기 개발 모드 제한과 tldraw 빌드 오류 보정
 
 Description :
-작업지시서 디자인 패널의 작업 메뉴에 고급 그리기 항목을 추가하고, tldraw 기반 PoC 모달을 연결했다. 기존 native canvas 직접 그리기는 유지하며, 고급 그리기에서는 tldraw editor의 도형, 텍스트, 선택/이동 기능을 테스트하고 PNG로 export해 기존 디자인 첨부 업로드 흐름으로 저장한다.
+tldraw 기반 고급 그리기를 development runtimeMode에서만 노출하도록 제한하고, production build에서 tldraw 정적 import가 모듈 해석 오류를 발생시키지 않도록 optional 로딩 구조로 보정했다. app layout의 tldraw css 정적 import와 package.json의 tldraw dependency를 제거해 일반 build가 추가 설치 없이 진행되도록 정리했다. native canvas 강화 방향도 문서화했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- package.json
+- lib/runtime/runtimeMode.ts
 - app/layout.tsx
+- package.json
 - components/workorder/sidepanel/WorkOrderAttachmentPanel.tsx
+- components/workorder/drawing/WorkOrderTldrawDrawingModal.tsx
 - lib/i18n/ko/workorder.ts
 - lib/i18n/en/workorder.ts
 
 추가 파일 목록 :
-- components/workorder/drawing/WorkOrderTldrawDrawingModal.tsx
-- docs/workorder-tldraw-poc-0.12.23.md
+- docs/workorder-advanced-drawing-dev-mode-0.12.24.md
 
 삭제 파일 목록 :
 없음

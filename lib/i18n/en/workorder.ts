@@ -311,6 +311,8 @@ export const workorderEn = {
         mobileHint: "Landscape mode or tablet use is recommended on smaller screens.",
         toolHelp: "Use the default tldraw tools as-is. Compare pen, shapes, text, selection, movement, and zoom behavior.",
         pocNotice: "This is a PoC. The existing direct drawing feature stays available while comparing usability with native canvas.",
+        packageLoadingMessage: "Loading the advanced drawing module.",
+        packageUnavailableMessage: "The tldraw package is not available. Run npm install tldraw locally to test it in development mode.",
         cancel: "Close",
         save: "Save as design",
         saving: "Saving...",
