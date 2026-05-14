@@ -10,6 +10,20 @@ import { useI18n } from "@/lib/i18n";
 
 type DrawingTool = "pen" | "eraser" | "line" | "arrow" | "rectangle" | "ellipse";
 type DrawingLineStyle = "solid" | "dashed";
+type DrawingIconName =
+  | "pen"
+  | "eraser"
+  | "line"
+  | "arrow"
+  | "rectangle"
+  | "ellipse"
+  | "undo"
+  | "redo"
+  | "trash"
+  | "save"
+  | "stroke"
+  | "solid"
+  | "dashed";
 
 type WorkOrderDrawingModalProps = {
   open: boolean;
@@ -30,6 +44,7 @@ type DrawingColor = {
 type DrawingStrokeSize = {
   id: DrawingStrokeSizeId;
   value: number;
+  previewClassName: string;
 };
 
 type DrawingLineStyleOption = {
@@ -60,11 +75,16 @@ const DRAWING_COLORS: DrawingColor[] = [
 ];
 
 const DRAWING_STROKE_SIZES: DrawingStrokeSize[] = [
-  { id: "thin", value: 3 },
-  { id: "regular", value: 6 },
-  { id: "bold", value: 10 },
-  { id: "wide", value: 16 },
+  { id: "thin", value: 3, previewClassName: "h-0.5" },
+  { id: "regular", value: 6, previewClassName: "h-1" },
+  { id: "bold", value: 10, previewClassName: "h-1.5" },
+  { id: "wide", value: 16, previewClassName: "h-2" },
 ];
+const DEFAULT_STROKE_SIZE: DrawingStrokeSize = DRAWING_STROKE_SIZES[0] ?? {
+  id: "thin",
+  value: 3,
+  previewClassName: "h-0.5",
+};
 
 const DRAWING_LINE_STYLES: DrawingLineStyleOption[] = [
   { id: "solid", value: "solid" },
@@ -72,7 +92,12 @@ const DRAWING_LINE_STYLES: DrawingLineStyleOption[] = [
 ];
 
 const TOOL_BUTTON_BASE_CLASS =
-  "pbp-interactive-button inline-flex items-center justify-center rounded-full px-3 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50";
+  "pbp-interactive-button inline-flex h-10 w-10 items-center justify-center rounded-full border text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-45";
+const TOOL_BUTTON_ACTIVE_CLASS = "pbp-action-primary border-[var(--pbp-accent)] shadow-sm";
+const TOOL_BUTTON_INACTIVE_CLASS = "pbp-action-secondary border-[var(--pbp-border)]";
+const TOOL_BUTTON_DISABLED_CLASS = "border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-muted)]";
+const PICKER_PANEL_CLASS =
+  "absolute left-0 top-full z-20 mt-2 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-2 shadow-xl";
 
 function getCanvasSize(variant: WorkOrderDrawingModalProps["variant"]) {
   if (variant === "mobile") {
@@ -85,6 +110,10 @@ function isShapeTool(tool: DrawingTool) {
   return tool === "line" || tool === "arrow" || tool === "rectangle" || tool === "ellipse";
 }
 
+function isColorEnabled(tool: DrawingTool) {
+  return tool !== "eraser";
+}
+
 function getPointerPosition(canvas: HTMLCanvasElement, event: PointerEvent<HTMLCanvasElement>) {
   const rect = canvas.getBoundingClientRect();
   return {
@@ -92,7 +121,6 @@ function getPointerPosition(canvas: HTMLCanvasElement, event: PointerEvent<HTMLC
     y: ((event.clientY - rect.top) / rect.height) * canvas.height,
   };
 }
-
 
 function getPointDistance(start: DrawingPoint, end: DrawingPoint) {
   return Math.hypot(end.x - start.x, end.y - start.y);
@@ -202,6 +230,130 @@ function restoreCanvasSnapshot(canvas: HTMLCanvasElement, snapshot: string, onRe
   image.src = snapshot;
 }
 
+function getToolButtonClass(active: boolean, disabled = false) {
+  if (disabled) return `${TOOL_BUTTON_BASE_CLASS} ${TOOL_BUTTON_DISABLED_CLASS}`;
+  return `${TOOL_BUTTON_BASE_CLASS} ${active ? TOOL_BUTTON_ACTIVE_CLASS : TOOL_BUTTON_INACTIVE_CLASS}`;
+}
+
+function DrawingIcon({ name, className = "h-4 w-4" }: { name: DrawingIconName; className?: string }) {
+  const commonProps = {
+    className,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  };
+
+  if (name === "pen") {
+    return (
+      <svg {...commonProps}>
+        <path d="M12 20h9" />
+        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+      </svg>
+    );
+  }
+  if (name === "eraser") {
+    return (
+      <svg {...commonProps}>
+        <path d="m7 21-4-4 10-10 6 6-8 8Z" />
+        <path d="m13 7 4-4 4 4-4 4" />
+        <path d="M22 21H7" />
+      </svg>
+    );
+  }
+  if (name === "line") {
+    return (
+      <svg {...commonProps}>
+        <path d="M5 19 19 5" />
+      </svg>
+    );
+  }
+  if (name === "arrow") {
+    return (
+      <svg {...commonProps}>
+        <path d="M5 12h14" />
+        <path d="m13 6 6 6-6 6" />
+      </svg>
+    );
+  }
+  if (name === "rectangle") {
+    return (
+      <svg {...commonProps}>
+        <rect x="5" y="6" width="14" height="12" rx="1.5" />
+      </svg>
+    );
+  }
+  if (name === "ellipse") {
+    return (
+      <svg {...commonProps}>
+        <ellipse cx="12" cy="12" rx="7" ry="5" />
+      </svg>
+    );
+  }
+  if (name === "undo") {
+    return (
+      <svg {...commonProps}>
+        <path d="M9 14 4 9l5-5" />
+        <path d="M4 9h10a6 6 0 0 1 0 12h-1" />
+      </svg>
+    );
+  }
+  if (name === "redo") {
+    return (
+      <svg {...commonProps}>
+        <path d="m15 14 5-5-5-5" />
+        <path d="M20 9H10a6 6 0 0 0 0 12h1" />
+      </svg>
+    );
+  }
+  if (name === "trash") {
+    return (
+      <svg {...commonProps}>
+        <path d="M3 6h18" />
+        <path d="M8 6V4h8v2" />
+        <path d="m6 6 1 15h10l1-15" />
+        <path d="M10 11v6" />
+        <path d="M14 11v6" />
+      </svg>
+    );
+  }
+  if (name === "save") {
+    return (
+      <svg {...commonProps}>
+        <path d="M5 3h12l2 2v16H5Z" />
+        <path d="M8 3v6h8" />
+        <path d="M8 21v-7h8v7" />
+      </svg>
+    );
+  }
+  if (name === "stroke") {
+    return (
+      <svg {...commonProps}>
+        <path d="M4 7h16" />
+        <path d="M4 12h16" strokeWidth={3} />
+        <path d="M4 18h16" strokeWidth={4} />
+      </svg>
+    );
+  }
+  if (name === "dashed") {
+    return (
+      <svg {...commonProps}>
+        <path d="M4 12h3" />
+        <path d="M10.5 12h3" />
+        <path d="M17 12h3" />
+      </svg>
+    );
+  }
+  return (
+    <svg {...commonProps}>
+      <path d="M4 12h16" />
+    </svg>
+  );
+}
+
 export default function WorkOrderDrawingModal({
   open,
   onClose,
@@ -226,10 +378,16 @@ export default function WorkOrderDrawingModal({
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [historyIndex, setHistoryIndex] = useState(0);
+  const [colorPickerOpen, setColorPickerOpen] = useState(false);
+  const [strokeSizePickerOpen, setStrokeSizePickerOpen] = useState(false);
   const canvasSize = getCanvasSize(variant);
   const isMobile = variant === "mobile";
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < historyRef.current.length - 1;
+  const shapeToolSelected = isShapeTool(tool);
+  const colorEnabled = isColorEnabled(tool);
+  const selectedStrokeSize = DRAWING_STROKE_SIZES.find((size) => size.value === strokeSize) ?? DEFAULT_STROKE_SIZE;
+  const selectedLineStyleId: DrawingLineStyleId = lineStyle;
 
   const syncHistoryState = (nextIndex: number) => {
     historyIndexRef.current = nextIndex;
@@ -276,6 +434,8 @@ export default function WorkOrderDrawingModal({
     setStrokeColor(DRAWING_COLORS[0]?.value ?? "#111827");
     setStrokeSize(isMobile ? 6 : 3);
     setLineStyle("solid");
+    setColorPickerOpen(false);
+    setStrokeSizePickerOpen(false);
   }, [canvasSize.height, canvasSize.width, isMobile, open]);
 
   const drawFreehandLine = (event: PointerEvent<HTMLCanvasElement>) => {
@@ -332,6 +492,8 @@ export default function WorkOrderDrawingModal({
     canvas.setPointerCapture(event.pointerId);
     drawingRef.current = true;
     strokeDirtyRef.current = false;
+    setColorPickerOpen(false);
+    setStrokeSizePickerOpen(false);
     const startPoint = getPointerPosition(canvas, event);
     lastPointRef.current = startPoint;
     shapeStartPointRef.current = startPoint;
@@ -393,7 +555,7 @@ export default function WorkOrderDrawingModal({
 
   const handleSave = () => {
     const canvas = canvasRef.current;
-    if (!canvas || saving) return;
+    if (!canvas || saving || !dirty) return;
     setSaving(true);
     canvas.toBlob((blob) => {
       if (!blob) {
@@ -405,6 +567,17 @@ export default function WorkOrderDrawingModal({
       setSaving(false);
       onClose();
     }, DRAWING_MIME_TYPE);
+  };
+
+  const handleToolSelect = (nextTool: DrawingTool) => {
+    setTool(nextTool);
+    setColorPickerOpen(false);
+    setStrokeSizePickerOpen(false);
+  };
+
+  const toggleLineStyle = () => {
+    if (!shapeToolSelected) return;
+    setLineStyle((current) => (current === "solid" ? "dashed" : "solid"));
   };
 
   return (
@@ -422,103 +595,184 @@ export default function WorkOrderDrawingModal({
             <button
               type="button"
               onClick={handleClear}
-              className="pbp-interactive-button pbp-action-secondary rounded-full px-4 py-2 text-sm font-semibold"
+              className="pbp-interactive-button pbp-action-secondary inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold"
             >
-              {ui.clear}
+              <DrawingIcon name="trash" />
+              <span>{ui.clear}</span>
             </button>
             <button
               type="button"
               onClick={handleSave}
               disabled={saving || !dirty}
-              className="pbp-interactive-button pbp-action-primary rounded-full px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+              className="pbp-interactive-button pbp-action-primary inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {saving ? ui.saving : ui.save}
+              <DrawingIcon name="save" />
+              <span>{saving ? ui.saving : ui.save}</span>
             </button>
           </div>
         </div>
       }
     >
-      <div className="grid min-h-0 gap-3 lg:grid-cols-[210px_minmax(0,1fr)]">
+      <div className="grid min-h-0 gap-3 lg:grid-cols-[190px_minmax(0,1fr)]">
         <div className={`${MODAL_CONTENT_MUTED_PANEL_CLASS} flex flex-col gap-3`}>
-          <div className="grid grid-cols-2 gap-2 lg:grid-cols-1">
+          <div className="flex flex-wrap gap-2" aria-label={ui.toolGroupAria}>
             {([
-              ["pen", ui.pen],
-              ["eraser", ui.eraser],
-              ["line", ui.line],
-              ["arrow", ui.arrow],
-              ["rectangle", ui.rectangle],
-              ["ellipse", ui.ellipse],
-            ] as const).map(([toolId, label]) => (
+              ["pen", ui.pen, "pen"],
+              ["eraser", ui.eraser, "eraser"],
+              ["line", ui.line, "line"],
+              ["arrow", ui.arrow, "arrow"],
+              ["rectangle", ui.rectangle, "rectangle"],
+              ["ellipse", ui.ellipse, "ellipse"],
+            ] as const).map(([toolId, label, iconName]) => (
               <button
                 key={toolId}
                 type="button"
-                onClick={() => setTool(toolId)}
-                className={`${TOOL_BUTTON_BASE_CLASS} ${tool === toolId ? "pbp-action-primary" : "pbp-action-secondary"}`}
+                onClick={() => handleToolSelect(toolId)}
+                className={getToolButtonClass(tool === toolId)}
+                aria-label={label}
+                title={label}
                 aria-pressed={tool === toolId}
               >
-                {label}
+                <DrawingIcon name={iconName} />
               </button>
             ))}
           </div>
-          <div className="flex flex-wrap gap-2" aria-label={ui.colorGroupAria}>
-            {DRAWING_COLORS.map((color) => (
+
+          <div className="rounded-2xl border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface)] p-2">
+            <p className="mb-2 text-[11px] font-semibold text-[var(--pbp-text-muted)]">
+              {ui.activeToolPrefix} {ui.toolLabels[tool] ?? tool}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => colorEnabled && setColorPickerOpen((current) => !current)}
+                  disabled={!colorEnabled}
+                  className={getToolButtonClass(colorPickerOpen, !colorEnabled)}
+                  aria-label={ui.colorGroupAria}
+                  title={ui.colorGroupAria}
+                  aria-expanded={colorPickerOpen}
+                >
+                  <span
+                    className="h-5 w-5 rounded-md border border-black/10 shadow-sm"
+                    style={{ backgroundColor: strokeColor }}
+                    aria-hidden="true"
+                  />
+                </button>
+                {colorPickerOpen && colorEnabled ? (
+                  <div className={`${PICKER_PANEL_CLASS} flex gap-1.5`} aria-label={ui.colorGroupAria}>
+                    {DRAWING_COLORS.map((color) => (
+                      <button
+                        key={color.id}
+                        type="button"
+                        onClick={() => {
+                          setStrokeColor(color.value);
+                          setColorPickerOpen(false);
+                        }}
+                        className={`h-9 w-9 rounded-xl border shadow-sm transition ${
+                          strokeColor === color.value
+                            ? "ring-2 ring-[var(--pbp-accent)] ring-offset-2 ring-offset-[var(--pbp-surface)]"
+                            : "border-[var(--pbp-border)]"
+                        }`}
+                        style={{ backgroundColor: color.value }}
+                        aria-label={ui.colorLabels[color.id] ?? color.id}
+                        title={ui.colorLabels[color.id] ?? color.id}
+                        aria-pressed={strokeColor === color.value}
+                      />
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setStrokeSizePickerOpen((current) => !current)}
+                  className={getToolButtonClass(strokeSizePickerOpen)}
+                  aria-label={ui.strokeSizeGroupAria}
+                  title={ui.strokeSizeGroupAria}
+                  aria-expanded={strokeSizePickerOpen}
+                >
+                  <DrawingIcon name="stroke" />
+                </button>
+                {strokeSizePickerOpen ? (
+                  <div className={`${PICKER_PANEL_CLASS} grid w-36 gap-1.5`} aria-label={ui.strokeSizeGroupAria}>
+                    {DRAWING_STROKE_SIZES.map((size) => (
+                      <button
+                        key={size.id}
+                        type="button"
+                        onClick={() => {
+                          setStrokeSize(size.value);
+                          setStrokeSizePickerOpen(false);
+                        }}
+                        className={`pbp-interactive-button flex h-9 items-center gap-2 rounded-xl px-2 text-xs font-semibold ${
+                          strokeSize === size.value ? "pbp-action-primary" : "pbp-action-secondary"
+                        }`}
+                        aria-label={ui.strokeSizeLabels[size.id] ?? size.id}
+                        title={ui.strokeSizeLabels[size.id] ?? size.id}
+                        aria-pressed={strokeSize === size.value}
+                      >
+                        <span className={`w-12 rounded-full bg-current ${size.previewClassName}`} aria-hidden="true" />
+                        <span>{ui.strokeSizeLabels[size.id] ?? size.id}</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+
               <button
-                key={color.id}
                 type="button"
-                onClick={() => setStrokeColor(color.value)}
-                className={`h-8 w-8 rounded-full border shadow-sm transition ${strokeColor === color.value ? "ring-2 ring-[var(--pbp-accent)] ring-offset-2 ring-offset-[var(--pbp-surface)]" : "border-[var(--pbp-border)]"}`}
-                style={{ backgroundColor: color.value }}
-                aria-label={ui.colorLabels[color.id] ?? color.id}
-                aria-pressed={strokeColor === color.value}
-              />
-            ))}
-          </div>
-          <div className="grid grid-cols-4 gap-1.5 lg:grid-cols-2" aria-label={ui.strokeSizeGroupAria}>
-            {DRAWING_STROKE_SIZES.map((size) => (
-              <button
-                key={size.id}
-                type="button"
-                onClick={() => setStrokeSize(size.value)}
-                className={`${TOOL_BUTTON_BASE_CLASS} px-2 ${strokeSize === size.value ? "pbp-action-primary" : "pbp-action-secondary"}`}
-                aria-label={ui.strokeSizeLabels[size.id] ?? size.id}
-                aria-pressed={strokeSize === size.value}
+                onClick={toggleLineStyle}
+                disabled={!shapeToolSelected}
+                className={getToolButtonClass(shapeToolSelected && lineStyle === "dashed", !shapeToolSelected)}
+                aria-label={ui.lineStyleToggleAria}
+                title={shapeToolSelected ? (ui.lineStyleLabels[selectedLineStyleId] ?? selectedLineStyleId) : ui.lineStyleDisabledLabel}
+                aria-pressed={lineStyle === "dashed"}
               >
-                {ui.strokeSizeLabels[size.id] ?? size.id}
+                <DrawingIcon name={lineStyle === "dashed" ? "dashed" : "solid"} />
               </button>
-            ))}
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-2" aria-label={ui.lineStyleGroupAria}>
-            {DRAWING_LINE_STYLES.map((option) => (
-              <button
-                key={option.id}
-                type="button"
-                onClick={() => setLineStyle(option.value)}
-                className={`${TOOL_BUTTON_BASE_CLASS} ${lineStyle === option.value ? "pbp-action-primary" : "pbp-action-secondary"}`}
-                aria-pressed={lineStyle === option.value}
-              >
-                {ui.lineStyleLabels[option.id] ?? option.id}
-              </button>
-            ))}
-          </div>
-          <div className="grid grid-cols-2 gap-2">
+
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={handleUndo}
               disabled={!canUndo}
-              className={`${TOOL_BUTTON_BASE_CLASS} pbp-action-secondary`}
+              className={getToolButtonClass(false, !canUndo)}
+              aria-label={ui.undo}
+              title={ui.undo}
             >
-              {ui.undo}
+              <DrawingIcon name="undo" />
             </button>
             <button
               type="button"
               onClick={handleRedo}
               disabled={!canRedo}
-              className={`${TOOL_BUTTON_BASE_CLASS} pbp-action-secondary`}
+              className={getToolButtonClass(false, !canRedo)}
+              aria-label={ui.redo}
+              title={ui.redo}
             >
-              {ui.redo}
+              <DrawingIcon name="redo" />
             </button>
           </div>
-          {isMobile ? <p className={`${MODAL_CONTENT_BODY_TEXT_CLASS} leading-6`}>{ui.mobileToolHelp}</p> : <p className={`${MODAL_CONTENT_BODY_TEXT_CLASS} hidden leading-6 lg:block`}>{ui.toolHelp}</p>}
+
+          <div className="rounded-2xl border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface)] p-2 text-[11px] leading-5 text-[var(--pbp-text-muted)]">
+            <span className="font-semibold text-[var(--pbp-text)]">
+              {ui.currentStylePrefix} {ui.strokeSizeLabels[selectedStrokeSize.id] ?? selectedStrokeSize.id}
+            </span>
+            {shapeToolSelected ? (
+              <span> · {ui.lineStyleLabels[selectedLineStyleId] ?? selectedLineStyleId}</span>
+            ) : (
+              <span> · {ui.lineStyleDisabledLabel}</span>
+            )}
+          </div>
+
+          {isMobile ? (
+            <p className={`${MODAL_CONTENT_BODY_TEXT_CLASS} leading-6`}>{ui.mobileToolHelp}</p>
+          ) : (
+            <p className={`${MODAL_CONTENT_BODY_TEXT_CLASS} hidden leading-6 lg:block`}>{ui.toolHelp}</p>
+          )}
         </div>
         <div className="min-h-0 rounded-3xl border bg-[var(--pbp-surface-muted)] p-2 shadow-inner sm:p-3">
           <div className="h-[56dvh] min-h-[360px] overflow-hidden rounded-2xl border bg-white touch-none sm:h-[62dvh]">
