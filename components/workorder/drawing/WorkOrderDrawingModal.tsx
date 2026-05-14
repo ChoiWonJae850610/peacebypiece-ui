@@ -718,17 +718,6 @@ export default function WorkOrderDrawingModal({
     setLineStyle((current) => (current === "solid" ? "dashed" : "solid"));
   };
 
-  const handleZoom = (direction: "in" | "out") => {
-    closeToolPopovers();
-    setViewportScale((current) =>
-      clampViewportScale(current + (direction === "in" ? VIEWPORT_SCALE_STEP : -VIEWPORT_SCALE_STEP)),
-    );
-  };
-
-  const resetViewport = () => {
-    closeToolPopovers();
-  };
-
   return (
     <ModalShell
       open={open}
