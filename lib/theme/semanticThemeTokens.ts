@@ -321,7 +321,7 @@ export const PBP_PERSONAL_THEME_SETTINGS_CHECKS = {
     source: "개인 설정 localStorage theme id",
     fallback: "default-light",
   },
-  availableThemeIds: ["default-light", "beige-atelier"],
+  availableThemeIds: ["default-light", "beige-atelier", "cold-winter"],
 } as const;
 
 
@@ -345,6 +345,25 @@ export const PBP_PERSONAL_THEME_REGRESSION_CHECKS = {
   remaining: [
     "개별 화면의 직접 색상 class 잔여 목록화",
     "추가 theme file 확장 전 beige-atelier tone 강도 회귀 확인",
+    "로그인 도입 후 DB 기반 사용자 설정 저장 구조 검토",
+  ],
+} as const;
+
+
+export const PBP_PERSONAL_THEME_EXTENSION_CHECKS = {
+  checkedAtVersion: "0.12.8",
+  availableThemeIds: ["default-light", "beige-atelier", "cold-winter"],
+  newlyAddedTheme: "cold-winter",
+  purpose: "default-light와 beige-atelier만으로는 테마 전환 범위와 대비 문제를 충분히 확인하기 어려워, 차가운 블루 그레이 계열 테스트 테마를 추가한다.",
+  regressionTargets: [
+    "작업지시서 목록, 발주정보, 생산구성, 우측 패널의 tone 전환",
+    "관리자 홈 카드, topbar, 공통 버튼, 공통 카드의 tone 전환",
+    "개인 설정 theme preview와 localStorage 저장/새로고침 유지",
+    "모달 overlay, surface, section, footer action의 theme 변수 적용",
+  ],
+  remaining: [
+    "직접 Tailwind 색상 class가 남은 개별 화면 후보 목록화",
+    "black-and-white 계열 고대비 theme 추가 여부 판단",
     "로그인 도입 후 DB 기반 사용자 설정 저장 구조 검토",
   ],
 } as const;

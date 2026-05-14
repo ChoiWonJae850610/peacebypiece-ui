@@ -76,6 +76,7 @@ export const commonEn = {
     themeOptions: {
       "default-light": "Default Light",
       "beige-atelier": "Beige Atelier",
+      "cold-winter": "Cold Winter",
     },
     densityOptions: {
       comfortable: "Comfortable",
