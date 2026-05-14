@@ -197,3 +197,18 @@ export const PBP_THEME_FILE_STRUCTURE_PLAN = {
     "개인 환경설정 연결 전까지 default-light 값을 app/globals.css :root와 동기화한다.",
   ],
 } as const;
+
+
+export const PBP_THEME_VARIABLE_SYNC_CHECKS = {
+  sourceOfTruth: "lib/theme/themes/defaultLight.ts",
+  runtimeMirror: "app/globals.css :root",
+  syncedVariableCount: 100,
+  checkedAtVersion: "0.12.1",
+  result: "default-light cssVariables와 globals.css :root 변수명/값 동기화 확인",
+  remainingBeforeDynamicTheme: [
+    "테마별 cssVariables를 document root에 적용하는 runtime provider",
+    "개인 설정의 theme id 저장 위치",
+    "서버 렌더링 초기 theme id 결정 방식",
+    "테마 변경 시 깜빡임 방지 기준",
+  ],
+} as const;
