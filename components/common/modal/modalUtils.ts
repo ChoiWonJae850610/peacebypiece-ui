@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, type RefObject } from "react";
+import { useEffect, useMemo, useRef, type RefObject } from "react";
 
 type LockState = {
   count: number;
@@ -111,6 +111,11 @@ export function useModalEnvironment({
   onClose: () => void;
 }) {
   const modalId = useMemo(() => `modal-${Math.random().toString(36).slice(2, 11)}`, []);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (!open || !dialogRef.current) return;
@@ -133,7 +138,7 @@ export function useModalEnvironment({
       if (event.key === "Escape") {
         event.preventDefault();
         event.stopPropagation();
-        onClose();
+        onCloseRef.current();
         return;
       }
 
@@ -171,7 +176,7 @@ export function useModalEnvironment({
         previousActive.focus();
       }
     };
-  }, [open, dialogRef, modalId, onClose]);
+  }, [open, dialogRef, modalId]);
 }
 
 export const useModalFocusTrap = useModalEnvironment;

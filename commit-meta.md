@@ -1,18 +1,18 @@
 Version :
-0.11.97
+0.11.98
 
 Summary :
-작업지시서 semantic token 색상 강도 보정
+모바일 모달 입력 포커스 이탈 보정
 
 Description :
-작업지시서 목록 선택 카드와 생산구성 입력/선택/계산 필드의 semantic token 색상 강도를 낮췄다. 검은 선택 카드와 과한 입력 필드 테두리 느낌을 줄이고, 테마 확장 전제의 의미 토큰 구조는 유지했다.
+공통 모달 환경 hook에서 onClose 참조 변경으로 effect가 재등록되며 입력 중 포커스가 이탈할 수 있는 문제를 보정했다. onClose는 ref로 최신 값을 유지하고 모달 focus trap과 스크롤 잠금 effect는 open 상태 기준으로 안정적으로 유지되도록 수정했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- app/globals.css
+- components/common/modal/modalUtils.ts
 
 추가 파일 목록 :
-- docs/workorder-semantic-token-tone-regression-0.11.97.md
+- docs/workorder-mobile-modal-search-focus-0.11.98.md
 
 삭제 파일 목록 :
 없음
