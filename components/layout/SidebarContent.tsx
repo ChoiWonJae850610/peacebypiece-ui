@@ -64,8 +64,8 @@ export default function SidebarContent({
   onSortChange,
   onResetListControls,
   dbConnectionStatus,
-  showRepositoryBadges = true,
-  showUserSwitchingTools = true,
+  showRepositoryBadges = false,
+  showUserSwitchingTools = false,
   writeLocked = false,
   writeLockMessage,
 }: Props) {

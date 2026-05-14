@@ -18,7 +18,7 @@ type Props = {
   homeNavigation: WorkOrderHomeNavigation;
 };
 
-export default function MobileTopBar({ companyName, version, onOpen, onOpenSettings, dbConnectionStatus, showRepositoryBadges = true, showUserSwitchingTools = true, homeNavigation }: Props) {
+export default function MobileTopBar({ companyName, version, onOpen, onOpenSettings, dbConnectionStatus, showRepositoryBadges = false, showUserSwitchingTools = false, homeNavigation }: Props) {
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.layout.mobileTopBar;
 

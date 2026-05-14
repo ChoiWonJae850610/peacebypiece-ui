@@ -27,7 +27,7 @@ export function buildModalProps({
   onSetAttachmentPreviewId,
   onSetPermissionTargetUserId,
   onSetCurrentUserId,
-  showUserSwitchingTools = true,
+  showUserSwitchingTools = false,
   onSetHistoryFilter,
   onCreateWorkOrder,
   onConfirmOrderRequest,
