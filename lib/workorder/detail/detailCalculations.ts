@@ -24,8 +24,9 @@ export function calculateOrderEntryTotals(orderEntries: OrderEntry[]) {
       acc.quantity += Math.max(0, Number(item.quantity) || 0);
       acc.laborCost += calculateFactoryLaborTotal(item);
       acc.lossCost += Math.max(0, Number(item.lossCost) || 0);
+      acc.totalCost = acc.laborCost + acc.lossCost;
       return acc;
     },
-    { quantity: 0, laborCost: 0, lossCost: 0 },
+    { quantity: 0, laborCost: 0, lossCost: 0, totalCost: 0 },
   );
 }

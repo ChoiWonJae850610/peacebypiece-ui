@@ -46,6 +46,7 @@ export function formatOrderSummary(orderEntries: OrderEntry[], i18n: ReturnType<
     `${orderEntries.length}${common.countSuffix}`,
     `${totals.quantity.toLocaleString()}${common.quantitySuffix}`,
     copy.inspectionCompletedFormat.replace("{completed}", String(completedCount)).replace("{total}", String(orderEntries.length)),
+    copy.orderSummaryTotalFormat.replace("{total}", `${totals.totalCost.toLocaleString()}${common.currencySuffix}`),
   ]
     .filter(Boolean)
     .join(" · ");

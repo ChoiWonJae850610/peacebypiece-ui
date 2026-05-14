@@ -546,6 +546,7 @@ export const workorderKo = {
     formatting: {
       orderSummaryEmpty: "등록된 발주 정보가 없습니다.",
       inspectionCompletedFormat: "검수완료 {completed}/{total}",
+      orderSummaryTotalFormat: "총 {total}",
     },
   },
 } as const;

@@ -546,6 +546,7 @@ export const workorderEn = {
     formatting: {
       orderSummaryEmpty: "No order info registered.",
       inspectionCompletedFormat: "Inspection complete {completed}/{total}",
+      orderSummaryTotalFormat: "Total {total}",
     },
   },
 } as const;
