@@ -2,6 +2,7 @@ import OrderInfoHubDebugPanel from "@/components/debug/OrderInfoHubDebugPanel";
 import { useI18n } from "@/lib/i18n";
 import type { OrderInfoHubPolicy } from "@/lib/workorder/orderInfoHubPolicy";
 import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculations";
+import { formatOrderSummary } from "@/lib/workorder/detail/detailFormatting";
 import { getInspectionStatusTone } from "@/lib/workorder/presentation/statusPresentation";
 import { translateInspectionStatusLabel, translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import {
@@ -68,15 +69,7 @@ export default function OrderInfoSection({
     return acc;
   }, {});
   const inspectionStatusSummary = Object.values(inspectionStatusCounts);
-  const orderSummary = orderEntries.length === 0
-    ? i18n.workorder.ui.formatting.orderSummaryEmpty
-    : [
-        `${orderEntries.length}${common.countSuffix}`,
-        `${totals.quantity.toLocaleString()}${common.quantitySuffix}`,
-        i18n.workorder.ui.formatting.inspectionCompletedFormat
-          .replace("{completed}", String(orderEntries.filter((item) => item.inspectionStatus === "inspection_completed").length))
-          .replace("{total}", String(orderEntries.length)),
-      ].join(" · ");
+  const orderSummary = formatOrderSummary(orderEntries, i18n);
   const inspectionButton = canOpenInspectionModal ? (
     <button
       type="button"

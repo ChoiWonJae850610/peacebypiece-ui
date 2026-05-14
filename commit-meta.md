@@ -1,12 +1,9 @@
-Version : 0.11.79
-Summary : 작업지시서 발주정보 총 금액 요약 표시
-Description : 디자이너 담당 작업지시서 화면의 발주정보 요약 줄에 수량×공임비+로스비 기준 총 금액을 표시하도록 보정했습니다. 발주정보 총계 계산 helper에 totalCost를 추가하고, 공통 발주정보 summary formatter와 i18n 문구를 정리했습니다. DB/API/저장 구조는 변경하지 않았습니다.
+Version : 0.11.80
+Summary : 발주정보 총 금액 요약 실제 표시 보정
+Description : PC 작업지시서 발주정보 섹션이 직접 조립하던 요약 문자열을 공통 formatOrderSummary로 연결하여 제목 아래 요약 줄에 총 금액이 실제 표시되도록 보정했습니다. 0.11.79에서 추가한 수량 × 공임비 + 로스비 계산 기준을 화면 summary 경로에 반영했습니다.
 수정 파일 목록 :
-- lib/workorder/detail/detailCalculations.ts
-- lib/workorder/detail/detailFormatting.ts
-- lib/i18n/ko/workorder.ts
-- lib/i18n/en/workorder.ts
+- components/workorder/detail/sections/OrderInfoSection.tsx
 - lib/constants/app.ts
 추가 파일 목록 :
-- docs/qa-workorder-order-summary-total-0.11.79.md
+- docs/qa-workorder-order-summary-total-display-0.11.80.md
 삭제 파일 목록 :
