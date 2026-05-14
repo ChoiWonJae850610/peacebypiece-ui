@@ -90,7 +90,7 @@ function PersonalThemeOptionGroup({ copy, value, onChange }: { copy: PersonalSet
     <section className="rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-5 shadow-sm">
       <h2 className="text-base font-semibold text-[var(--pbp-text-primary)]">{copy.sections.theme.title}</h2>
       <p className="mt-2 text-sm leading-6 text-[var(--pbp-text-muted)]">{copy.sections.theme.description}</p>
-      <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
         {PERSONAL_THEME_OPTIONS.map((option) => {
           const selected = option.value === value;
           const previewColors = getThemePreviewColors(option.value);

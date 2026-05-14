@@ -77,6 +77,8 @@ export const commonKo = {
       "default-light": "기본 밝은 테마",
       "beige-atelier": "Beige Atelier",
       "cold-winter": "Cold Winter",
+      "black-and-white": "Black & White",
+      "soft-emerald": "Soft Emerald",
     },
     densityOptions: {
       comfortable: "기본",

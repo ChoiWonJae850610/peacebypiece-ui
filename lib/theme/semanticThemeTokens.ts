@@ -253,7 +253,7 @@ export const PBP_THEME_FILE_STRUCTURE_PLAN = {
   themeFolder: "lib/theme/themes",
   cssVariableSource: "lib/theme/themes/defaultLight.ts",
   cssRuntimeMirror: "app/globals.css :root",
-  nextExpandableThemeExamples: ["beige-atelier", "cold-winter", "black-and-white"],
+  nextExpandableThemeExamples: ["beige-atelier", "cold-winter", "black-and-white", "soft-emerald", "atelier-night"],
   rules: [
     "컴포넌트는 blue/emerald 같은 색상명을 직접 의존하지 않는다.",
     "컴포넌트는 pbp-* semantic class만 사용한다.",
@@ -321,7 +321,7 @@ export const PBP_PERSONAL_THEME_SETTINGS_CHECKS = {
     source: "개인 설정 localStorage theme id",
     fallback: "default-light",
   },
-  availableThemeIds: ["default-light", "beige-atelier", "cold-winter"],
+  availableThemeIds: ["default-light", "beige-atelier", "cold-winter", "black-and-white", "soft-emerald"],
 } as const;
 
 
@@ -344,17 +344,19 @@ export const PBP_PERSONAL_THEME_REGRESSION_CHECKS = {
   ],
   remaining: [
     "개별 화면의 직접 색상 class 잔여 목록화",
-    "추가 theme file 확장 전 beige-atelier tone 강도 회귀 확인",
+    "추가 theme file 확장 후 default-light / beige-atelier / cold-winter / black-and-white / soft-emerald 회귀 확인",
     "로그인 도입 후 DB 기반 사용자 설정 저장 구조 검토",
   ],
 } as const;
 
 
 export const PBP_PERSONAL_THEME_EXTENSION_CHECKS = {
-  checkedAtVersion: "0.12.8",
-  availableThemeIds: ["default-light", "beige-atelier", "cold-winter"],
+  checkedAtVersion: "0.12.18",
+  availableThemeIds: ["default-light", "beige-atelier", "cold-winter", "black-and-white", "soft-emerald"],
   newlyAddedTheme: "cold-winter",
-  purpose: "default-light와 beige-atelier만으로는 테마 전환 범위와 대비 문제를 충분히 확인하기 어려워, 차가운 블루 그레이 계열 테스트 테마를 추가한다.",
+  addedCandidateThemesAtVersion: "0.12.18",
+  addedCandidateThemeIds: ["black-and-white", "soft-emerald"],
+  purpose: "default-light, beige-atelier, cold-winter만으로는 고대비와 emerald accent 확장성을 충분히 확인하기 어려워 0.12.18에서 후보 테마를 추가한다.",
   regressionTargets: [
     "작업지시서 목록, 발주정보, 생산구성, 우측 패널의 tone 전환",
     "관리자 홈 카드, topbar, 공통 버튼, 공통 카드의 tone 전환",
@@ -363,7 +365,7 @@ export const PBP_PERSONAL_THEME_EXTENSION_CHECKS = {
   ],
   remaining: [
     "직접 Tailwind 색상 class가 남은 개별 화면 후보 목록화",
-    "black-and-white 계열 고대비 theme 추가 여부 판단",
+    "black-and-white 계열 고대비 theme는 0.12.18에서 후보 테마로 추가했으므로 실제 화면 대비를 확인",
     "로그인 도입 후 DB 기반 사용자 설정 저장 구조 검토",
   ],
 } as const;
@@ -435,7 +437,7 @@ export const PBP_THEME_DIRECT_COLOR_CLASS_AUDIT_CHECKS = {
     "작업지시서 개별 modal content semantic token 정리",
     "관리자 멤버관리/환경설정/저장소 요약 화면의 직접 색상 class 정리",
     "시스템관리자 route semantic token 적용은 system QA 단계에서 별도 진행",
-    "black-and-white theme는 잔여 직접 색상 class 정리 이후 추가한다.",
+    "black-and-white theme는 0.12.18에서 추가했으므로 고대비 회귀 테스트 대상으로 관리한다.",
   ],
 } as const;
 
