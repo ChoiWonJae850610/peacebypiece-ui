@@ -9,12 +9,13 @@ export const APP_RUNTIME_MODE: AppRuntimeMode = resolveAppRuntimeMode(
 );
 
 const isDevelopmentMode = APP_RUNTIME_MODE === "development";
+const isTldrawPocEnabled = process.env.NEXT_PUBLIC_ENABLE_TLDRAW_POC === "true";
 
 export const RUNTIME_VISIBILITY = {
   showDiagnostics: isDevelopmentMode,
   showRepositoryBadges: isDevelopmentMode,
   showUserSwitchingTools: isDevelopmentMode,
-  showAdvancedDrawingTools: isDevelopmentMode,
+  showAdvancedDrawingTools: isDevelopmentMode && isTldrawPocEnabled,
 } as const;
 
 export const DEV_DEBUG_FLAGS = {

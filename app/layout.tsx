@@ -8,6 +8,7 @@ import { PbpThemeProvider } from "@/lib/theme/PbpThemeProvider";
 import { buildPbpThemeRootAttributes } from "@/lib/theme/themeDocument";
 import { DEFAULT_PBP_THEME_ID } from "@/lib/theme/themeRegistry";
 import "./globals.css";
+import "tldraw/tldraw.css";
 
 const baseI18n = getI18n(DEFAULT_LOCALE);
 const initialThemeRootAttributes = buildPbpThemeRootAttributes(DEFAULT_PBP_THEME_ID);

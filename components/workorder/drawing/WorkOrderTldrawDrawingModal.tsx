@@ -39,9 +39,9 @@ function createAdvancedDrawingFileName() {
   return `workorder-advanced-drawing-${stamp}.${DRAWING_FILE_EXTENSION}`;
 }
 
-function importOptionalTldraw() {
-  const importer = new Function("return import('tldraw')") as () => Promise<OptionalTldrawModule>;
-  return importer();
+async function importOptionalTldraw(): Promise<OptionalTldrawModule> {
+  const module = await import("tldraw");
+  return { Tldraw: module.Tldraw as ComponentType<OptionalTldrawComponentProps> };
 }
 
 export default function WorkOrderTldrawDrawingModal({
