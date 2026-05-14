@@ -41,7 +41,7 @@ export function selectMaterialVendorOptionsById(
   return Object.fromEntries(
     materialItems.map((item) => {
       const options = selectPartnerMaterialVendorOptions(item.type, partnerMaterialVendorOptions);
-      return [item.id, options === null ? [] : buildRegisteredPartnerOptions(options)];
+      return [item.id, buildRegisteredPartnerOptions(options ?? [])];
     }),
   );
 }
@@ -71,7 +71,7 @@ export function selectOutsourcingVendorOptionsById(
   return Object.fromEntries(
     outsourcingItems.map((item) => {
       const options = selectPartnerOutsourcingVendorOptions(item.process, partnerOutsourcingVendorOptionsByProcess);
-      return [item.id, options === null ? [] : buildRegisteredPartnerOptions(options)];
+      return [item.id, buildRegisteredPartnerOptions(options ?? [])];
     }),
   );
 }

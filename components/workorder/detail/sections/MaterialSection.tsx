@@ -52,19 +52,19 @@ export default function MaterialSection({
     : copy.empty;
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-stone-200 bg-stone-50/40 p-3.5">
+    <div className="min-w-0">
       <SectionHeader title={copy.title} summary={summary} open={open} onToggle={onToggle} />
       {open ? (
         <div className="mt-2 max-w-full overflow-x-auto rounded-2xl border border-stone-200 bg-white">
           <table className="w-full max-w-full table-fixed text-left">
             <colgroup>
               <col className="w-[13%]" />
+              <col className="w-[17%]" />
               <col className="w-[18%]" />
-              <col className="w-[18%]" />
+              <col className="w-[11%]" />
+              <col className="w-[10%]" />
               <col className="w-[12%]" />
-              <col className="w-[8%]" />
-              <col className="w-[13%]" />
-              <col className="w-[13%]" />
+              <col className="w-[12%]" />
               <col className="w-[7%]" />
             </colgroup>
             <thead className="text-stone-500">
