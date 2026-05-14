@@ -18,6 +18,13 @@
   --pbp-danger-soft: #fef2f2;
   --pbp-warning: #d97706;
   --pbp-warning-soft: #fffbeb;
+  --pbp-field-editable-surface: #fffbeb;
+  --pbp-field-editable-surface-strong: #fef3c7;
+  --pbp-field-editable-border: #fcd34d;
+  --pbp-field-editable-border-strong: #f59e0b;
+  --pbp-field-calculated-surface: #f5f5f4;
+  --pbp-field-calculated-border: #e7e5e4;
+  --pbp-field-calculated-text: #44403c;
   --pbp-modal-surface: #ffffff;
   --pbp-modal-chrome: #ffffff;
   --pbp-toast-background: #171717;
@@ -216,6 +223,42 @@ body {
 .pbp-touch-target {
   min-height: 44px;
   touch-action: manipulation;
+}
+
+.pbp-workorder-editable-cell {
+  background: color-mix(in srgb, var(--pbp-field-editable-surface) 64%, transparent);
+}
+
+.pbp-workorder-calculated-cell {
+  border-left: 1px solid var(--pbp-field-calculated-border);
+  background: var(--pbp-field-calculated-surface);
+  color: var(--pbp-field-calculated-text);
+}
+
+.pbp-workorder-editable-panel {
+  border-color: var(--pbp-field-editable-border);
+  background: color-mix(in srgb, var(--pbp-field-editable-surface) 76%, var(--pbp-surface));
+}
+
+.pbp-workorder-calculated-panel {
+  border-color: var(--pbp-field-calculated-border);
+  background: var(--pbp-field-calculated-surface);
+  color: var(--pbp-field-calculated-text);
+}
+
+.pbp-workorder-editable-display {
+  border-color: color-mix(in srgb, var(--pbp-field-editable-border) 56%, transparent);
+  background: color-mix(in srgb, var(--pbp-surface) 78%, var(--pbp-field-editable-surface));
+}
+
+.pbp-workorder-editable-display:hover {
+  border-color: var(--pbp-field-editable-border);
+  background: var(--pbp-field-editable-surface);
+}
+
+.pbp-workorder-editable-display:focus-visible {
+  border-color: var(--pbp-field-editable-border-strong);
+  background: var(--pbp-surface);
 }
 
 .pbp-card-stack-mobile {

@@ -1,27 +1,23 @@
 Version :
-0.11.90
+0.11.91
 
 Summary :
-작업지시서 생산구성 단위 표시 정규화
+작업지시서 생산구성 입력 가능 필드와 계산 필드 시각 구분
 
 Description :
-작업지시서 생산구성 화면에서 기존 데이터나 mock 데이터에 남아 있는 yd, ea, pcs 계열 단위값이 사용자 화면에 그대로 노출되지 않도록 자재 단위 표시와 저장 값을 표준 단위 기준으로 정규화했다. 원단 기본 단위는 야드, 부자재 계열 단위는 개로 표시되도록 보정했다.
+작업지시서 생산구성의 원단·부자재와 외주공정 영역에서 입력/선택 가능한 필드와 자동 계산되는 금액 필드를 구분하는 공통 시각 토큰을 추가했다. PC 테이블과 태블릿 입력 패널에 해당 기준을 적용하고, 추후 테마 변경이 가능하도록 색상 기준을 globals.css의 CSS 변수로 분리했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/constants/material.ts
-- lib/workorder/detail/detailCalculations.ts
-- lib/workorder/material/materialDefaults.ts
-- lib/hooks/workorder/detailEditor/materialMutations.ts
-- lib/workorder/repository/dbWorkOrderRepository.ts
-- lib/workorder/repository/dbSpecSheetMaterialRepository.ts
-- lib/workorder/presentation/workOrderValuePresentation.ts
-- components/workorder/detail/sections/device/WorkOrderDetailMobileMaterialSection.tsx
+- app/globals.css
+- components/workorder/detail/shared/detailEditorShared.tsx
+- components/workorder/detail/sections/MaterialSection.tsx
+- components/workorder/detail/sections/OutsourcingSection.tsx
 - components/workorder/detail/sections/device/WorkOrderDetailTabletMaterialSection.tsx
-- lib/data/mock/workorders.ts
+- components/workorder/detail/sections/device/WorkOrderDetailTabletOutsourcingSection.tsx
 
 추가 파일 목록 :
-- docs/workorder-production-composition-unit-display-0.11.90.md
+- docs/workorder-production-composition-field-visuals-0.11.91.md
 
 삭제 파일 목록 :
 없음
