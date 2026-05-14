@@ -8,15 +8,12 @@ export const APP_RUNTIME_MODE: AppRuntimeMode = resolveAppRuntimeMode(
   process.env.NEXT_PUBLIC_APP_RUNTIME_MODE,
 );
 
-export const isDevelopmentMode = APP_RUNTIME_MODE === "development";
-export const isProductionMode = APP_RUNTIME_MODE === "production";
+const isDevelopmentMode = APP_RUNTIME_MODE === "development";
 
 export const RUNTIME_VISIBILITY = {
-  showDevTools: isDevelopmentMode,
   showDiagnostics: isDevelopmentMode,
   showRepositoryBadges: isDevelopmentMode,
   showUserSwitchingTools: isDevelopmentMode,
-  showSeedTools: isDevelopmentMode,
 } as const;
 
 export const DEV_DEBUG_FLAGS = {
