@@ -35,9 +35,9 @@ const WIDTH_CLASS_MAP: Record<ModalActionWidth, string> = {
   fill: "flex-1 py-3 font-medium",
 };
 const TONE_CLASS_MAP: Record<ModalActionTone, string> = {
-  neutral: "border border-stone-300 bg-white text-stone-700 hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100",
-  primary: "bg-stone-900 text-white hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:bg-stone-300",
-  danger: "bg-rose-600 font-semibold text-white hover:bg-rose-700 active:bg-rose-800 disabled:cursor-not-allowed disabled:bg-rose-300",
+  neutral: "pbp-action-secondary active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50",
+  primary: "pbp-action-primary active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50",
+  danger: "pbp-action-danger-soft font-semibold active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50",
 };
 const LAYOUT_CLASS_MAP: Record<ModalFooterLayout, string> = {
   end: "flex items-center justify-end gap-2",

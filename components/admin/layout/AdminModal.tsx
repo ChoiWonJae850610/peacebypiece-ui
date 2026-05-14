@@ -24,7 +24,7 @@ export function AdminModal({
   description,
   maxWidthClass = "md:max-w-3xl",
   footer,
-  bodyClassName = "space-y-4 bg-stone-50/60 [scrollbar-gutter:stable]",
+  bodyClassName = "space-y-4 [scrollbar-gutter:stable]",
   minHeightClassName = "md:min-h-[360px]",
 }: AdminModalProps) {
   return (
@@ -35,9 +35,9 @@ export function AdminModal({
       description={description}
       maxWidthClass={maxWidthClass}
       bodyClassName={bodyClassName}
-      footerClassName="border-t border-stone-200 bg-white/95 px-5 py-4"
-      panelClassName={`overflow-hidden rounded-[28px] border border-stone-200 bg-white shadow-2xl shadow-stone-950/10 ${minHeightClassName}`}
-      overlayClassName="bg-stone-950/35 backdrop-blur-sm"
+      footerClassName="px-5 py-4"
+      panelClassName={`overflow-hidden rounded-[28px] ${minHeightClassName}`}
+      overlayClassName="pbp-modal-overlay"
       footer={footer}
     >
       {children}
@@ -54,11 +54,11 @@ type AdminModalSectionProps = {
 
 export function AdminModalSection({ title, description, children, className = "" }: AdminModalSectionProps) {
   return (
-    <section className={`rounded-3xl border border-stone-200 bg-white p-4 shadow-sm ${className}`}>
+    <section className={`rounded-3xl border p-4 pbp-modal-section ${className}`}>
       {title || description ? (
         <div className="mb-4">
-          {title ? <h3 className="text-sm font-semibold text-stone-950">{title}</h3> : null}
-          {description ? <p className="mt-1 text-xs leading-5 text-stone-500">{description}</p> : null}
+          {title ? <h3 className="text-sm font-semibold pbp-text-primary">{title}</h3> : null}
+          {description ? <p className="mt-1 text-xs leading-5 pbp-text-muted">{description}</p> : null}
         </div>
       ) : null}
       {children}
@@ -67,9 +67,9 @@ export function AdminModalSection({ title, description, children, className = ""
 }
 
 export const adminModalInputClassName =
-  "w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-sky-300 focus:ring-4 focus:ring-sky-100";
+  "w-full rounded-2xl border px-4 py-3 text-sm outline-none transition pbp-field-search";
 
-export const adminModalLabelClassName = "text-xs font-semibold uppercase tracking-[0.14em] text-stone-500";
+export const adminModalLabelClassName = "text-xs font-semibold uppercase tracking-[0.14em] pbp-text-muted";
 export const adminModalSecondaryButtonClassName = getAdminButtonClassName({ variant: "secondary" });
 export const adminModalPrimaryButtonClassName = getAdminButtonClassName({ variant: "primary" });
 export const adminModalDangerButtonClassName = getAdminButtonClassName({ variant: "danger" });
@@ -96,7 +96,7 @@ export function AdminModalFooterActions({
   statusMessage = "",
   statusTone = "neutral",
 }: AdminModalFooterActionsProps) {
-  const statusClassName = statusTone === "danger" ? "text-rose-600" : "text-stone-500";
+  const statusClassName = statusTone === "danger" ? "text-[color:var(--pbp-danger)]" : "pbp-text-muted";
 
   return (
     <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

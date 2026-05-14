@@ -5,6 +5,7 @@ export const SEMANTIC_THEME_TOKEN_GROUPS = {
   status: ["draft", "reviewRequested", "reviewCompleted", "requestOrder", "inspection", "completed", "rejected", "success", "warning", "danger", "pending", "neutral"],
   field: ["editable", "selectable", "search", "filter", "calculated", "readonly", "disabled"],
   sidePanel: ["item", "preview", "upload", "uploadActive", "count", "empty"],
+  modal: ["overlay", "surface", "chrome", "body", "section", "sectionMuted"],
   border: ["default", "strong", "selected", "focus"],
   feedback: ["focusRing", "hover", "pressed"],
 } as const;
@@ -169,8 +170,11 @@ export const WORKORDER_SEMANTIC_TOKEN_COVERAGE_CHECKS = {
     "검수/발주 action section workflow button tone",
     "PC/tablet/mobile 비용 요약 카드 tone",
     "작업지시서 header/detail summary card tone",
+    "공통 ModalShell/BaseModal overlay, surface, chrome, body tone",
+    "AdminModal wrapper, section, field, footer action tone",
   ],
   remaining: [
+    "개별 모달 내부에 남아 있는 직접 색상 class 세부 정리",
     "프로젝트 전체 theme file 분리와 개인 설정 연결",
   ],
   regressionChecks: [
@@ -202,6 +206,22 @@ export const WORKORDER_DETAIL_REMAINING_SEMANTICS = {
     tokens: ["surface.card", "field.selectable", "field.readonly"],
   },
 } as const;
+
+export const PBP_COMMON_MODAL_THEME_CHECKS = {
+  commonShell: {
+    description: "프로젝트 공통 ModalShell/BaseModal 계열의 overlay, surface, header, body, footer가 theme 변수 기반으로 적용되는지 확인",
+    tokens: ["modal.overlay", "modal.surface", "modal.chrome", "modal.body"],
+  },
+  adminModal: {
+    description: "AdminModal wrapper와 section, input, footer action이 공통 modal/field/action token을 따라가는지 확인",
+    tokens: ["modal.surface", "modal.section", "field.search", "field.selectable", "action.primary", "action.secondary", "action.dangerSoft"],
+  },
+  individualModalContent: {
+    description: "개별 모달 내부의 특수 안내 박스, preview, warning, empty state는 공통 컴포넌트 연결 이후 별도 회귀 대상으로 남긴다.",
+    tokens: ["field.*", "surface.*", "status.*", "emptyState"],
+  },
+} as const;
+
 
 export const PBP_THEME_FILE_STRUCTURE_PLAN = {
   currentThemeId: "default-light",

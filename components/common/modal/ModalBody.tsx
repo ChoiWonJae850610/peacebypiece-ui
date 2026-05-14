@@ -10,7 +10,7 @@ export default function ModalBody({
   className?: string;
 }) {
   return (
-    <div className={`min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] md:px-6 md:py-5 md:pb-6 ${className}`.trim()}>
+    <div className={`min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] md:px-6 md:py-5 md:pb-6 pbp-modal-body ${className}`.trim()}>
       {children}
     </div>
   );
