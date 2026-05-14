@@ -223,12 +223,32 @@ export const PBP_THEME_VARIABLE_SYNC_CHECKS = {
   sourceOfTruth: "lib/theme/themes/defaultLight.ts",
   runtimeMirror: "app/globals.css :root",
   syncedVariableCount: 100,
-  checkedAtVersion: "0.12.2",
+  checkedAtVersion: "0.12.3",
   result: "default-light cssVariables와 globals.css :root 변수명/값 동기화 확인",
-  remainingBeforeDynamicTheme: [
-    "테마별 cssVariables를 document root에 적용하는 runtime provider",
+  runtimeProvider: "lib/theme/PbpThemeProvider.tsx",
+  rootAttributeBuilder: "lib/theme/themeDocument.ts",
+  remainingBeforePersonalThemeSettings: [
     "개인 설정의 theme id 저장 위치",
-    "서버 렌더링 초기 theme id 결정 방식",
-    "테마 변경 시 깜빡임 방지 기준",
+    "SSR에서 사용자별 초기 theme id를 결정하는 경로",
+    "개인 환경설정 UI와 theme provider 연결",
+    "beige/cold/black-white 등 추가 theme file 확장",
+  ],
+} as const;
+
+export const PBP_THEME_PROVIDER_STRUCTURE_CHECKS = {
+  checkedAtVersion: "0.12.3",
+  initialThemeId: "default-light",
+  rootAttributes: ["data-pbp-theme", "data-pbp-theme-tone", "style cssVariables"],
+  provider: "PbpThemeProvider",
+  providerScope: "app/layout.tsx에서 I18nProvider와 WorkorderRepositoryProvider 바깥쪽에 배치",
+  flickerPrevention: [
+    "app/layout.tsx에서 html style에 default-light cssVariables를 서버 렌더링 시점에 주입",
+    "app/globals.css :root는 no-JS/static fallback으로 유지",
+    "client provider는 hydrate 후 동일 theme를 documentElement에 재적용",
+  ],
+  notConnectedYet: [
+    "개인 환경설정 theme 선택 UI",
+    "DB 또는 localStorage 기반 사용자별 theme id",
+    "복수 theme file 추가",
   ],
 } as const;

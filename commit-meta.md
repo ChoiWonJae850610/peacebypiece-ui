@@ -1,29 +1,22 @@
 Version :
-0.12.2
+0.12.3
 
 Summary :
-작업지시서 잔여 semantic token 적용
+theme provider 구조 1차 설계
 
 Description :
-작업지시서 기본정보 수정 모달, workflow action section, 비용 요약 카드, header/detail summary card에 semantic token 기반 class를 적용했다. 실제 테마 선택 UI나 동적 theme provider는 연결하지 않았다.
+default-light 테마의 CSS 변수를 서버 렌더링 시점과 클라이언트 provider에서 document root에 적용할 수 있는 기본 구조를 추가했다. app/layout.tsx에 theme root attributes와 PbpThemeProvider를 연결하고, app/globals.css의 :root는 fallback mirror로 유지하도록 정리했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
+- app/layout.tsx
 - app/globals.css
 - lib/theme/semanticThemeTokens.ts
-- components/workorder/detail/modals/BasicInfoEditModal.tsx
-- components/workorder/detail/WorkOrderActionSection.tsx
-- components/workorder/detail/sections/device/WorkOrderDetailTabletActionSection.tsx
-- components/workorder/detail/sections/device/WorkOrderDetailMobileActionSection.tsx
-- components/workorder/detail/WorkOrderCostSummarySection.tsx
-- components/workorder/detail/sections/device/WorkOrderDetailTabletCostSummarySection.tsx
-- components/workorder/detail/sections/device/WorkOrderDetailMobileCostSummarySection.tsx
-- components/workorder/detail/WorkOrderHeaderSection.tsx
-- components/workorder/detail/sections/device/WorkOrderDetailTabletHeaderSection.tsx
-- components/workorder/detail/sections/device/WorkOrderDetailMobileHeaderSection.tsx
 
 추가 파일 목록 :
-- docs/workorder-remaining-semantic-token-0.12.2.md
+- lib/theme/themeDocument.ts
+- lib/theme/PbpThemeProvider.tsx
+- docs/theme-provider-structure-0.12.3.md
 
 삭제 파일 목록 :
 없음
