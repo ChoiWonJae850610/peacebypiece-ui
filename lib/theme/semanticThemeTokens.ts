@@ -155,3 +155,29 @@ export const WORKORDER_SIDE_PANEL_SEMANTICS = {
     token: "sidePanel.empty",
   },
 } as const;
+
+export const WORKORDER_SEMANTIC_TOKEN_COVERAGE_CHECKS = {
+  applied: [
+    "작업지시서 목록 카드와 선택 상태",
+    "작업지시서 workflow 상태 뱃지",
+    "작업지시서 검색 입력과 상태 필터, 정렬 select",
+    "발주정보 입력 가능, 선택 가능, 계산 필드",
+    "생산구성 PC/tablet 입력 가능, 선택 가능, 계산 필드",
+    "생산구성 mobile 카드 입력 가능, 선택 가능, 계산 패널",
+    "우측 디자인/첨부/메모 패널과 empty state",
+  ],
+  remaining: [
+    "기본정보 수정 modal field tone",
+    "검수/발주 action section workflow button tone",
+    "PC/tablet/mobile 비용 요약 카드 tone",
+    "작업지시서 header/detail summary card tone",
+    "프로젝트 전체 theme file 분리와 개인 설정 연결",
+  ],
+  regressionChecks: [
+    "입력 가능 field가 버튼처럼 과하게 보이지 않는지 확인",
+    "선택 가능 field와 직접 입력 field가 구분되지만 같은 계열로 보이는지 확인",
+    "계산 field가 읽기 전용 tone으로 보이는지 확인",
+    "좌측 선택 카드가 과도한 border나 shadow로 보이지 않는지 확인",
+    "모바일 모달 검색 input의 focus가 입력 중 유지되는지 확인",
+  ],
+} as const;
