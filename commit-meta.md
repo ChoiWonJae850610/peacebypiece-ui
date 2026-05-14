@@ -1,20 +1,18 @@
 Version :
-0.12.28
+0.12.29
 
 Summary :
-native 직접 그리기 툴바 UX 정리
+native 직접 그리기 모달 레이아웃과 태블릿 조작성 정리
 
 Description :
-작업지시서 직접 그리기 모달의 도구 선택을 아이콘 버튼 중심으로 정리했다. 색상 선택은 현재 색상 버튼과 팝오버로, 굵기 선택은 드롭다운으로 변경하고 실선/점선은 단일 토글 버튼으로 통합했다. 펜과 지우개에서는 실선/점선 선택을 비활성화해 현재 도구에 적용되지 않는 옵션을 구분하도록 보정했다.
+직접 그리기 모달의 좌측 도구 패널을 하단 툴바로 이동하고 캔버스 영역을 넓혔다. 색상과 굵기 popover는 하나만 열리도록 정리했으며, 지우개 선택 시 커서 위치에 지우개 영역을 표시하도록 보완했다. 태블릿에서 배경 터치로 모달이 닫히지 않도록 backdrop 닫기도 비활성화했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
 - components/workorder/drawing/WorkOrderDrawingModal.tsx
-- lib/i18n/ko/workorder.ts
-- lib/i18n/en/workorder.ts
 
 추가 파일 목록 :
-- docs/workorder-drawing-native-toolbar-0.12.28.md
+- docs/workorder-drawing-native-layout-ux-0.12.29.md
 
 삭제 파일 목록 :
 없음

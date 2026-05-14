@@ -2,10 +2,6 @@
 
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import ModalShell from "@/components/common/modal/ModalShell";
-import {
-  MODAL_CONTENT_BODY_TEXT_CLASS,
-  MODAL_CONTENT_MUTED_PANEL_CLASS,
-} from "@/components/common/modal/modalContentClassNames";
 import { useI18n } from "@/lib/i18n";
 
 type DrawingTool = "pen" | "eraser" | "line" | "arrow" | "rectangle" | "ellipse";
@@ -35,6 +31,8 @@ type WorkOrderDrawingModalProps = {
 type DrawingColorId = "black" | "red" | "blue" | "green";
 type DrawingStrokeSizeId = "thin" | "regular" | "bold" | "wide";
 type DrawingLineStyleId = DrawingLineStyle;
+type DrawingPopover = "color" | "strokeSize" | null;
+type EraserCursor = { x: number; y: number; diameter: number; visible: boolean };
 
 type DrawingColor = {
   id: DrawingColorId;
@@ -47,10 +45,6 @@ type DrawingStrokeSize = {
   previewClassName: string;
 };
 
-type DrawingLineStyleOption = {
-  id: DrawingLineStyleId;
-  value: DrawingLineStyle;
-};
 
 type DrawingPoint = {
   x: number;
@@ -86,10 +80,6 @@ const DEFAULT_STROKE_SIZE: DrawingStrokeSize = DRAWING_STROKE_SIZES[0] ?? {
   previewClassName: "h-0.5",
 };
 
-const DRAWING_LINE_STYLES: DrawingLineStyleOption[] = [
-  { id: "solid", value: "solid" },
-  { id: "dashed", value: "dashed" },
-];
 
 const TOOL_BUTTON_BASE_CLASS =
   "pbp-interactive-button inline-flex h-10 w-10 items-center justify-center rounded-full border text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-45";
@@ -97,7 +87,9 @@ const TOOL_BUTTON_ACTIVE_CLASS = "pbp-action-primary border-[var(--pbp-accent)] 
 const TOOL_BUTTON_INACTIVE_CLASS = "pbp-action-secondary border-[var(--pbp-border)]";
 const TOOL_BUTTON_DISABLED_CLASS = "border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-muted)]";
 const PICKER_PANEL_CLASS =
-  "absolute left-0 top-full z-20 mt-2 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-2 shadow-xl";
+  "absolute bottom-full left-1/2 z-20 mb-2 -translate-x-1/2 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-2 shadow-xl";
+const TOOLBAR_GROUP_CLASS =
+  "flex items-center gap-1.5 rounded-2xl border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface)] p-1.5 shadow-sm";
 
 function getCanvasSize(variant: WorkOrderDrawingModalProps["variant"]) {
   if (variant === "mobile") {
@@ -119,6 +111,16 @@ function getPointerPosition(canvas: HTMLCanvasElement, event: PointerEvent<HTMLC
   return {
     x: ((event.clientX - rect.left) / rect.width) * canvas.width,
     y: ((event.clientY - rect.top) / rect.height) * canvas.height,
+  };
+}
+
+function getEraserCursor(canvas: HTMLCanvasElement, event: PointerEvent<HTMLCanvasElement>): EraserCursor {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top,
+    diameter: Math.max(18, (ERASER_LINE_WIDTH / canvas.width) * rect.width),
+    visible: true,
   };
 }
 
@@ -378,8 +380,8 @@ export default function WorkOrderDrawingModal({
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [historyIndex, setHistoryIndex] = useState(0);
-  const [colorPickerOpen, setColorPickerOpen] = useState(false);
-  const [strokeSizePickerOpen, setStrokeSizePickerOpen] = useState(false);
+  const [activePopover, setActivePopover] = useState<DrawingPopover>(null);
+  const [eraserCursor, setEraserCursor] = useState<EraserCursor>({ x: 0, y: 0, diameter: 0, visible: false });
   const canvasSize = getCanvasSize(variant);
   const isMobile = variant === "mobile";
   const canUndo = historyIndex > 0;
@@ -388,6 +390,20 @@ export default function WorkOrderDrawingModal({
   const colorEnabled = isColorEnabled(tool);
   const selectedStrokeSize = DRAWING_STROKE_SIZES.find((size) => size.value === strokeSize) ?? DEFAULT_STROKE_SIZE;
   const selectedLineStyleId: DrawingLineStyleId = lineStyle;
+
+  const closeToolPopovers = () => setActivePopover(null);
+  const togglePopover = (nextPopover: DrawingPopover) => {
+    setActivePopover((current) => (current === nextPopover ? null : nextPopover));
+  };
+  const hideEraserCursor = () => setEraserCursor((current) => ({ ...current, visible: false }));
+  const updateEraserCursor = (event: PointerEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas || tool !== "eraser") {
+      hideEraserCursor();
+      return;
+    }
+    setEraserCursor(getEraserCursor(canvas, event));
+  };
 
   const syncHistoryState = (nextIndex: number) => {
     historyIndexRef.current = nextIndex;
@@ -434,8 +450,8 @@ export default function WorkOrderDrawingModal({
     setStrokeColor(DRAWING_COLORS[0]?.value ?? "#111827");
     setStrokeSize(isMobile ? 6 : 3);
     setLineStyle("solid");
-    setColorPickerOpen(false);
-    setStrokeSizePickerOpen(false);
+    setActivePopover(null);
+    hideEraserCursor();
   }, [canvasSize.height, canvasSize.width, isMobile, open]);
 
   const drawFreehandLine = (event: PointerEvent<HTMLCanvasElement>) => {
@@ -478,6 +494,7 @@ export default function WorkOrderDrawingModal({
   };
 
   const handlePointerMove = (event: PointerEvent<HTMLCanvasElement>) => {
+    updateEraserCursor(event);
     if (isShapeTool(tool)) {
       drawShapePreview(event);
       return;
@@ -492,8 +509,8 @@ export default function WorkOrderDrawingModal({
     canvas.setPointerCapture(event.pointerId);
     drawingRef.current = true;
     strokeDirtyRef.current = false;
-    setColorPickerOpen(false);
-    setStrokeSizePickerOpen(false);
+    closeToolPopovers();
+    updateEraserCursor(event);
     const startPoint = getPointerPosition(canvas, event);
     lastPointRef.current = startPoint;
     shapeStartPointRef.current = startPoint;
@@ -525,6 +542,9 @@ export default function WorkOrderDrawingModal({
       pushHistorySnapshot();
     }
     strokeDirtyRef.current = false;
+    if (tool !== "eraser") {
+      hideEraserCursor();
+    }
   };
 
   const handleUndo = () => {
@@ -571,12 +591,13 @@ export default function WorkOrderDrawingModal({
 
   const handleToolSelect = (nextTool: DrawingTool) => {
     setTool(nextTool);
-    setColorPickerOpen(false);
-    setStrokeSizePickerOpen(false);
+    setActivePopover(null);
+    hideEraserCursor();
   };
 
   const toggleLineStyle = () => {
     if (!shapeToolSelected) return;
+    closeToolPopovers();
     setLineStyle((current) => (current === "solid" ? "dashed" : "solid"));
   };
 
@@ -586,8 +607,9 @@ export default function WorkOrderDrawingModal({
       title={ui.title}
       description={isMobile ? ui.mobileDescription : ui.description}
       onClose={onClose}
-      maxWidthClass="md:max-w-6xl"
+      maxWidthClass="md:max-w-7xl"
       bodyClassName="min-h-0"
+      closeOnBackdrop={false}
       footer={
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs leading-5 text-[var(--pbp-text-muted)]">{isMobile ? ui.mobileHint : ui.hint}</p>
@@ -613,9 +635,43 @@ export default function WorkOrderDrawingModal({
         </div>
       }
     >
-      <div className="grid min-h-0 gap-3 lg:grid-cols-[190px_minmax(0,1fr)]">
-        <div className={`${MODAL_CONTENT_MUTED_PANEL_CLASS} flex flex-col gap-3`}>
-          <div className="flex flex-wrap gap-2" aria-label={ui.toolGroupAria}>
+      <div className="flex min-h-0 flex-col gap-3">
+        <div className="min-h-0 rounded-3xl border bg-[var(--pbp-surface-muted)] p-2 shadow-inner sm:p-3">
+          <div className="relative h-[62dvh] min-h-[430px] overflow-hidden rounded-2xl border bg-white touch-none sm:h-[66dvh]">
+            <canvas
+              ref={canvasRef}
+              className={`h-full w-full touch-none select-none ${tool === "eraser" ? "cursor-none" : "cursor-crosshair"}`}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={stopDrawing}
+              onPointerCancel={(event) => {
+                stopDrawing(event);
+                hideEraserCursor();
+              }}
+              onPointerLeave={(event) => {
+                if (drawingRef.current) stopDrawing(event);
+                hideEraserCursor();
+              }}
+              aria-label={ui.canvasAria}
+            />
+            {tool === "eraser" && eraserCursor.visible ? (
+              <div
+                className="pointer-events-none absolute rounded-full border border-[var(--pbp-danger)] bg-[var(--pbp-danger-soft)]/35 shadow-sm"
+                style={{
+                  left: eraserCursor.x,
+                  top: eraserCursor.y,
+                  width: eraserCursor.diameter,
+                  height: eraserCursor.diameter,
+                  transform: "translate(-50%, -50%)",
+                }}
+                aria-hidden="true"
+              />
+            ) : null}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-center gap-2 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-2 shadow-sm">
+          <div className={TOOLBAR_GROUP_CLASS} aria-label={ui.toolGroupAria}>
             {([
               ["pen", ui.pen, "pen"],
               ["eraser", ui.eraser, "eraser"],
@@ -638,103 +694,98 @@ export default function WorkOrderDrawingModal({
             ))}
           </div>
 
-          <div className="rounded-2xl border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface)] p-2">
-            <p className="mb-2 text-[11px] font-semibold text-[var(--pbp-text-muted)]">
-              {ui.activeToolPrefix} {ui.toolLabels[tool] ?? tool}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => colorEnabled && setColorPickerOpen((current) => !current)}
-                  disabled={!colorEnabled}
-                  className={getToolButtonClass(colorPickerOpen, !colorEnabled)}
-                  aria-label={ui.colorGroupAria}
-                  title={ui.colorGroupAria}
-                  aria-expanded={colorPickerOpen}
-                >
-                  <span
-                    className="h-5 w-5 rounded-md border border-black/10 shadow-sm"
-                    style={{ backgroundColor: strokeColor }}
-                    aria-hidden="true"
-                  />
-                </button>
-                {colorPickerOpen && colorEnabled ? (
-                  <div className={`${PICKER_PANEL_CLASS} flex gap-1.5`} aria-label={ui.colorGroupAria}>
-                    {DRAWING_COLORS.map((color) => (
-                      <button
-                        key={color.id}
-                        type="button"
-                        onClick={() => {
-                          setStrokeColor(color.value);
-                          setColorPickerOpen(false);
-                        }}
-                        className={`h-9 w-9 rounded-xl border shadow-sm transition ${
-                          strokeColor === color.value
-                            ? "ring-2 ring-[var(--pbp-accent)] ring-offset-2 ring-offset-[var(--pbp-surface)]"
-                            : "border-[var(--pbp-border)]"
-                        }`}
-                        style={{ backgroundColor: color.value }}
-                        aria-label={ui.colorLabels[color.id] ?? color.id}
-                        title={ui.colorLabels[color.id] ?? color.id}
-                        aria-pressed={strokeColor === color.value}
-                      />
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setStrokeSizePickerOpen((current) => !current)}
-                  className={getToolButtonClass(strokeSizePickerOpen)}
-                  aria-label={ui.strokeSizeGroupAria}
-                  title={ui.strokeSizeGroupAria}
-                  aria-expanded={strokeSizePickerOpen}
-                >
-                  <DrawingIcon name="stroke" />
-                </button>
-                {strokeSizePickerOpen ? (
-                  <div className={`${PICKER_PANEL_CLASS} grid w-36 gap-1.5`} aria-label={ui.strokeSizeGroupAria}>
-                    {DRAWING_STROKE_SIZES.map((size) => (
-                      <button
-                        key={size.id}
-                        type="button"
-                        onClick={() => {
-                          setStrokeSize(size.value);
-                          setStrokeSizePickerOpen(false);
-                        }}
-                        className={`pbp-interactive-button flex h-9 items-center gap-2 rounded-xl px-2 text-xs font-semibold ${
-                          strokeSize === size.value ? "pbp-action-primary" : "pbp-action-secondary"
-                        }`}
-                        aria-label={ui.strokeSizeLabels[size.id] ?? size.id}
-                        title={ui.strokeSizeLabels[size.id] ?? size.id}
-                        aria-pressed={strokeSize === size.value}
-                      >
-                        <span className={`w-12 rounded-full bg-current ${size.previewClassName}`} aria-hidden="true" />
-                        <span>{ui.strokeSizeLabels[size.id] ?? size.id}</span>
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-
+          <div className={TOOLBAR_GROUP_CLASS}>
+            <div className="relative">
               <button
                 type="button"
-                onClick={toggleLineStyle}
-                disabled={!shapeToolSelected}
-                className={getToolButtonClass(shapeToolSelected && lineStyle === "dashed", !shapeToolSelected)}
-                aria-label={ui.lineStyleToggleAria}
-                title={shapeToolSelected ? (ui.lineStyleLabels[selectedLineStyleId] ?? selectedLineStyleId) : ui.lineStyleDisabledLabel}
-                aria-pressed={lineStyle === "dashed"}
+                onClick={() => colorEnabled && togglePopover("color")}
+                disabled={!colorEnabled}
+                className={getToolButtonClass(activePopover === "color", !colorEnabled)}
+                aria-label={ui.colorGroupAria}
+                title={ui.colorGroupAria}
+                aria-expanded={activePopover === "color"}
               >
-                <DrawingIcon name={lineStyle === "dashed" ? "dashed" : "solid"} />
+                <span
+                  className="h-5 w-5 rounded-md border border-black/10 shadow-sm"
+                  style={{ backgroundColor: strokeColor }}
+                  aria-hidden="true"
+                />
               </button>
+              {activePopover === "color" && colorEnabled ? (
+                <div className={`${PICKER_PANEL_CLASS} flex gap-1.5`} aria-label={ui.colorGroupAria}>
+                  {DRAWING_COLORS.map((color) => (
+                    <button
+                      key={color.id}
+                      type="button"
+                      onClick={() => {
+                        setStrokeColor(color.value);
+                        closeToolPopovers();
+                      }}
+                      className={`h-9 w-9 rounded-xl border shadow-sm transition ${
+                        strokeColor === color.value
+                          ? "ring-2 ring-[var(--pbp-accent)] ring-offset-2 ring-offset-[var(--pbp-surface)]"
+                          : "border-[var(--pbp-border)]"
+                      }`}
+                      style={{ backgroundColor: color.value }}
+                      aria-label={ui.colorLabels[color.id] ?? color.id}
+                      title={ui.colorLabels[color.id] ?? color.id}
+                      aria-pressed={strokeColor === color.value}
+                    />
+                  ))}
+                </div>
+              ) : null}
             </div>
+
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => togglePopover("strokeSize")}
+                className={getToolButtonClass(activePopover === "strokeSize")}
+                aria-label={ui.strokeSizeGroupAria}
+                title={ui.strokeSizeGroupAria}
+                aria-expanded={activePopover === "strokeSize"}
+              >
+                <DrawingIcon name="stroke" />
+              </button>
+              {activePopover === "strokeSize" ? (
+                <div className={`${PICKER_PANEL_CLASS} grid w-36 gap-1.5`} aria-label={ui.strokeSizeGroupAria}>
+                  {DRAWING_STROKE_SIZES.map((size) => (
+                    <button
+                      key={size.id}
+                      type="button"
+                      onClick={() => {
+                        setStrokeSize(size.value);
+                        closeToolPopovers();
+                      }}
+                      className={`pbp-interactive-button flex h-9 items-center gap-2 rounded-xl px-2 text-xs font-semibold ${
+                        strokeSize === size.value ? "pbp-action-primary" : "pbp-action-secondary"
+                      }`}
+                      aria-label={ui.strokeSizeLabels[size.id] ?? size.id}
+                      title={ui.strokeSizeLabels[size.id] ?? size.id}
+                      aria-pressed={strokeSize === size.value}
+                    >
+                      <span className={`w-12 rounded-full bg-current ${size.previewClassName}`} aria-hidden="true" />
+                      <span>{ui.strokeSizeLabels[size.id] ?? size.id}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <button
+              type="button"
+              onClick={toggleLineStyle}
+              disabled={!shapeToolSelected}
+              className={getToolButtonClass(shapeToolSelected && lineStyle === "dashed", !shapeToolSelected)}
+              aria-label={ui.lineStyleToggleAria}
+              title={shapeToolSelected ? (ui.lineStyleLabels[selectedLineStyleId] ?? selectedLineStyleId) : ui.lineStyleDisabledLabel}
+              aria-pressed={lineStyle === "dashed"}
+            >
+              <DrawingIcon name={lineStyle === "dashed" ? "dashed" : "solid"} />
+            </button>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className={TOOLBAR_GROUP_CLASS}>
             <button
               type="button"
               onClick={handleUndo}
@@ -757,37 +808,10 @@ export default function WorkOrderDrawingModal({
             </button>
           </div>
 
-          <div className="rounded-2xl border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface)] p-2 text-[11px] leading-5 text-[var(--pbp-text-muted)]">
-            <span className="font-semibold text-[var(--pbp-text)]">
-              {ui.currentStylePrefix} {ui.strokeSizeLabels[selectedStrokeSize.id] ?? selectedStrokeSize.id}
-            </span>
-            {shapeToolSelected ? (
-              <span> · {ui.lineStyleLabels[selectedLineStyleId] ?? selectedLineStyleId}</span>
-            ) : (
-              <span> · {ui.lineStyleDisabledLabel}</span>
-            )}
-          </div>
-
-          {isMobile ? (
-            <p className={`${MODAL_CONTENT_BODY_TEXT_CLASS} leading-6`}>{ui.mobileToolHelp}</p>
-          ) : (
-            <p className={`${MODAL_CONTENT_BODY_TEXT_CLASS} hidden leading-6 lg:block`}>{ui.toolHelp}</p>
-          )}
-        </div>
-        <div className="min-h-0 rounded-3xl border bg-[var(--pbp-surface-muted)] p-2 shadow-inner sm:p-3">
-          <div className="h-[56dvh] min-h-[360px] overflow-hidden rounded-2xl border bg-white touch-none sm:h-[62dvh]">
-            <canvas
-              ref={canvasRef}
-              className="h-full w-full cursor-crosshair touch-none select-none"
-              onPointerDown={handlePointerDown}
-              onPointerMove={handlePointerMove}
-              onPointerUp={stopDrawing}
-              onPointerCancel={stopDrawing}
-              onPointerLeave={(event) => {
-                if (drawingRef.current) stopDrawing(event);
-              }}
-              aria-label={ui.canvasAria}
-            />
+          <div className="min-w-[150px] rounded-2xl border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface)] px-3 py-2 text-center text-[11px] leading-5 text-[var(--pbp-text-muted)]">
+            <span className="font-semibold text-[var(--pbp-text)]">{ui.toolLabels[tool] ?? tool}</span>
+            <span> · {ui.strokeSizeLabels[selectedStrokeSize.id] ?? selectedStrokeSize.id}</span>
+            {shapeToolSelected ? <span> · {ui.lineStyleLabels[selectedLineStyleId] ?? selectedLineStyleId}</span> : null}
           </div>
         </div>
       </div>
