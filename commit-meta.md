@@ -1,22 +1,18 @@
 Version :
-0.11.96
+0.11.97
 
 Summary :
-모바일 생산구성 카드 semantic token 적용
+작업지시서 semantic token 색상 강도 보정
 
 Description :
-작업지시서 모바일 원단/부자재와 외주공정 카드에서 입력 가능 항목, 선택 가능 항목, 계산 항목을 semantic field token 기준으로 구분했다. 모바일 생산구성 카드와 선택 가능 패널 class를 공통 detail editor shared class로 분리하고, semantic theme token 설명과 문서를 추가했다.
+작업지시서 목록 선택 카드와 생산구성 입력/선택/계산 필드의 semantic token 색상 강도를 낮췄다. 검은 선택 카드와 과한 입력 필드 테두리 느낌을 줄이고, 테마 확장 전제의 의미 토큰 구조는 유지했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
 - app/globals.css
-- lib/theme/semanticThemeTokens.ts
-- components/workorder/detail/shared/detailEditorShared.tsx
-- components/workorder/detail/sections/device/WorkOrderDetailMobileMaterialSection.tsx
-- components/workorder/detail/sections/device/WorkOrderDetailMobileOutsourcingSection.tsx
 
 추가 파일 목록 :
-- docs/workorder-mobile-composition-semantic-token-0.11.96.md
+- docs/workorder-semantic-token-tone-regression-0.11.97.md
 
 삭제 파일 목록 :
 없음

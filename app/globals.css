@@ -28,11 +28,11 @@
   --pbp-action-danger-soft-surface: #fff7f7;
   --pbp-action-danger-soft-border: #fecdd3;
   --pbp-action-danger-soft-text: #e11d48;
-  --pbp-selected-surface: #1c1917;
-  --pbp-selected-surface-soft: rgba(255, 255, 255, 0.14);
-  --pbp-selected-text: #ffffff;
-  --pbp-selected-muted-text: #e7e5e4;
-  --pbp-selected-border: #1c1917;
+  --pbp-selected-surface: #fff8e8;
+  --pbp-selected-surface-soft: #f7ecd4;
+  --pbp-selected-text: #1c1917;
+  --pbp-selected-muted-text: #78716c;
+  --pbp-selected-border: #d6c2a2;
   --pbp-danger: #dc2626;
   --pbp-danger-soft: #fef2f2;
   --pbp-warning: #d97706;
@@ -60,25 +60,25 @@
   --pbp-workorder-status-inspection-bg: #ecfdf5;
   --pbp-workorder-status-inspection-text: #047857;
   --pbp-workorder-status-inspection-dot: #10b981;
-  --pbp-workorder-status-completed-bg: #1c1917;
+  --pbp-workorder-status-completed-bg: #292524;
   --pbp-workorder-status-completed-text: #ffffff;
   --pbp-workorder-status-completed-dot: #ffffff;
   --pbp-workorder-status-rejected-bg: #fef2f2;
   --pbp-workorder-status-rejected-text: #be123c;
   --pbp-workorder-status-rejected-dot: #f43f5e;
-  --pbp-field-editable-surface: #fffdf7;
-  --pbp-field-editable-surface-strong: #fef7e6;
-  --pbp-field-editable-border: #eadfc7;
-  --pbp-field-editable-border-strong: #b89555;
-  --pbp-field-selectable-surface: #f7fbf9;
-  --pbp-field-selectable-border: #cfe6da;
+  --pbp-field-editable-surface: #fffefa;
+  --pbp-field-editable-surface-strong: #fffaf0;
+  --pbp-field-editable-border: #eee3cf;
+  --pbp-field-editable-border-strong: #bda36f;
+  --pbp-field-selectable-surface: #fbfdfc;
+  --pbp-field-selectable-border: #dcebe4;
   --pbp-field-search-surface: #ffffff;
   --pbp-field-search-border: #d6d3d1;
   --pbp-field-filter-active-surface: #ecfdf5;
   --pbp-field-filter-active-border: #a7f3d0;
   --pbp-field-filter-active-text: #065f46;
-  --pbp-field-calculated-surface: #f8f7f5;
-  --pbp-field-calculated-border: #ebe7df;
+  --pbp-field-calculated-surface: #faf9f7;
+  --pbp-field-calculated-border: #eee9df;
   --pbp-field-calculated-text: #57534e;
   --pbp-field-disabled-surface: #f5f5f4;
   --pbp-field-disabled-text: #a8a29e;
@@ -226,22 +226,22 @@ body {
 }
 
 .pbp-workorder-list-card {
-  border-color: var(--pbp-border);
+  border-color: color-mix(in srgb, var(--pbp-border) 84%, transparent);
   background: var(--pbp-surface-muted);
   color: var(--pbp-text-primary);
 }
 
 .pbp-workorder-list-card:hover {
-  border-color: var(--pbp-border-strong);
+  border-color: color-mix(in srgb, var(--pbp-border-strong) 72%, transparent);
   background: var(--pbp-surface);
-  box-shadow: 0 10px 24px rgba(28, 25, 23, 0.08);
+  box-shadow: 0 8px 18px rgba(28, 25, 23, 0.06);
 }
 
 .pbp-workorder-list-card-selected {
   border-color: var(--pbp-selected-border);
   background: var(--pbp-selected-surface);
   color: var(--pbp-selected-text);
-  box-shadow: 0 10px 28px rgba(28, 25, 23, 0.18);
+  box-shadow: 0 8px 20px rgba(28, 25, 23, 0.08);
 }
 
 .pbp-workorder-list-card-selected .pbp-workorder-list-muted {
@@ -263,9 +263,9 @@ body {
 }
 
 .pbp-workorder-status-active {
-  --pbp-workorder-status-bg: var(--pbp-selected-surface-soft);
-  --pbp-workorder-status-text: var(--pbp-selected-text);
-  --pbp-workorder-status-dot: var(--pbp-selected-text);
+  --pbp-workorder-status-bg: color-mix(in srgb, var(--pbp-selected-surface) 72%, var(--pbp-surface));
+  --pbp-workorder-status-text: var(--pbp-text-primary);
+  --pbp-workorder-status-dot: var(--pbp-selected-border);
 }
 
 .pbp-workorder-status-draft {
@@ -426,51 +426,51 @@ body {
    decide the actual tone. */
 .pbp-workorder-editable-cell {
   background: var(--pbp-field-editable-surface);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pbp-field-editable-border) 38%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pbp-field-editable-border) 22%, transparent);
 }
 
 .pbp-workorder-selectable-cell {
   background: var(--pbp-field-selectable-surface);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pbp-field-selectable-border) 38%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pbp-field-selectable-border) 22%, transparent);
 }
 
 .pbp-workorder-calculated-cell {
   background: var(--pbp-field-calculated-surface);
   color: var(--pbp-field-calculated-text);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pbp-field-calculated-border) 64%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pbp-field-calculated-border) 42%, transparent);
 }
 
 .pbp-workorder-editable-panel {
-  border-color: color-mix(in srgb, var(--pbp-field-editable-border) 68%, transparent);
+  border-color: color-mix(in srgb, var(--pbp-field-editable-border) 44%, transparent);
   background: var(--pbp-field-editable-surface);
 }
 
 .pbp-workorder-selectable-panel {
-  border-color: color-mix(in srgb, var(--pbp-field-selectable-border) 68%, transparent);
+  border-color: color-mix(in srgb, var(--pbp-field-selectable-border) 44%, transparent);
   background: var(--pbp-field-selectable-surface);
 }
 
 .pbp-workorder-mobile-composition-card {
-  border-color: var(--pbp-border-default);
-  background: color-mix(in srgb, var(--pbp-surface) 72%, var(--pbp-surface-muted));
+  border-color: var(--pbp-border);
+  background: color-mix(in srgb, var(--pbp-surface) 84%, var(--pbp-surface-muted));
 }
 
 .pbp-workorder-calculated-panel {
-  border-color: var(--pbp-field-calculated-border);
+  border-color: color-mix(in srgb, var(--pbp-field-calculated-border) 58%, transparent);
   background: var(--pbp-field-calculated-surface);
   color: var(--pbp-field-calculated-text);
 }
 
 .pbp-workorder-editable-display,
 .pbp-workorder-editable-input {
-  border-color: color-mix(in srgb, var(--pbp-field-editable-border) 58%, transparent);
-  background: color-mix(in srgb, var(--pbp-surface) 86%, var(--pbp-field-editable-surface));
+  border-color: color-mix(in srgb, var(--pbp-field-editable-border) 36%, transparent);
+  background: color-mix(in srgb, var(--pbp-surface) 94%, var(--pbp-field-editable-surface));
   color: var(--pbp-text-primary);
 }
 
 .pbp-workorder-editable-display:hover,
 .pbp-workorder-editable-input:hover {
-  border-color: var(--pbp-field-editable-border);
+  border-color: color-mix(in srgb, var(--pbp-field-editable-border) 72%, transparent);
   background: var(--pbp-field-editable-surface-strong);
 }
 
