@@ -36,7 +36,7 @@ export default function WorkOrderDetailTabletOrderInfoSection({
             <button
               type="button"
               onClick={onOpenInspectionModal}
-              className="pbp-interactive-button rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-700"
+              className="pbp-interactive-button pbp-action-secondary rounded-xl px-3 py-2 text-sm font-medium"
             >
               {copy.inspectionAction}
             </button>
@@ -58,15 +58,15 @@ export default function WorkOrderDetailTabletOrderInfoSection({
               </div>
 
               <dl className="mt-4 grid grid-cols-3 gap-3 text-sm">
-                <div className="rounded-xl bg-stone-50 px-3 py-3">
+                <div className="pbp-workorder-editable-panel rounded-xl border px-3 py-3">
                   <dt className="text-xs text-stone-500">{copy.fields.quantity}</dt>
                   <dd className="mt-1 font-semibold tabular-nums text-stone-900">{item.quantity.toLocaleString()}{common.quantitySuffix}</dd>
                 </div>
-                <div className="rounded-xl bg-stone-50 px-3 py-3">
+                <div className="pbp-workorder-editable-panel rounded-xl border px-3 py-3">
                   <dt className="text-xs text-stone-500">{copy.fields.laborCost}</dt>
                   <dd className="mt-1 font-semibold tabular-nums text-stone-900">{item.laborCost.toLocaleString()}{common.currencySuffix}</dd>
                 </div>
-                <div className="rounded-xl bg-stone-50 px-3 py-3">
+                <div className="pbp-workorder-editable-panel rounded-xl border px-3 py-3">
                   <dt className="text-xs text-stone-500">{copy.fields.lossCost}</dt>
                   <dd className="mt-1 font-semibold tabular-nums text-stone-900">{item.lossCost.toLocaleString()}{common.currencySuffix}</dd>
                 </div>
@@ -103,7 +103,7 @@ export default function WorkOrderDetailTabletOrderInfoSection({
             <button
               type="button"
               onClick={onAdd}
-              className="pbp-interactive-button flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-3 text-sm font-medium text-stone-700"
+              className="pbp-interactive-button pbp-action-add flex w-full items-center justify-center rounded-xl px-3 py-3 text-sm font-medium"
             >
               {copy.addButton}
             </button>

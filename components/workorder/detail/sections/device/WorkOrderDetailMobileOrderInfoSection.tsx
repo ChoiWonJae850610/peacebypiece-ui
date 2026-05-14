@@ -36,7 +36,7 @@ export default function WorkOrderDetailMobileOrderInfoSection({
             <button
               type="button"
               onClick={onOpenInspectionModal}
-              className="pbp-interactive-button rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs font-medium text-stone-700 w-full sm:w-auto"
+              className="pbp-interactive-button pbp-action-secondary w-full rounded-xl px-3 py-2 text-xs font-medium sm:w-auto"
             >
               {copy.inspectionAction}
             </button>
@@ -107,7 +107,7 @@ export default function WorkOrderDetailMobileOrderInfoSection({
             <button
               type="button"
               onClick={onAdd}
-              className="pbp-interactive-button flex w-full items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white px-3 py-3 text-sm font-medium text-stone-700"
+              className="pbp-interactive-button pbp-action-add flex w-full items-center justify-center rounded-xl px-3 py-3 text-sm font-medium"
             >
               {copy.addButton}
             </button>

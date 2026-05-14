@@ -117,7 +117,7 @@ export default function MobileDrawer({
                 value={searchQuery}
                 onChange={(event) => onSearchQueryChange(event.target.value)}
                 placeholder={copy.searchPlaceholder}
-                className="pbp-field-interaction h-9 w-full rounded-xl border border-stone-300 bg-white px-3 text-sm text-stone-900 outline-none placeholder:text-stone-400 focus:border-stone-500 focus:bg-stone-50"
+                className="pbp-field-interaction pbp-field-search h-9 w-full rounded-xl border px-3 text-sm outline-none"
               />
             </label>
             {searchQuery ? (
@@ -125,7 +125,7 @@ export default function MobileDrawer({
                 type="button"
                 onClick={() => onSearchQueryChange("")}
                 disabled={writeLocked}
-                className="pbp-interactive-button inline-flex h-9 shrink-0 items-center justify-center rounded-xl border border-stone-300 bg-white px-2.5 text-xs font-medium text-stone-600 hover:border-stone-400 hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="pbp-interactive-button pbp-action-secondary inline-flex h-9 shrink-0 items-center justify-center rounded-xl px-2.5 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {controlsCopy.clearSearch}
               </button>
@@ -138,7 +138,7 @@ export default function MobileDrawer({
                 value={statusFilter}
                 onChange={(event) => onStatusFilterChange(event.target.value as WorkOrderListStatusFilter)}
                 disabled={writeLocked}
-                className="pbp-field-interaction h-8 w-full rounded-xl border border-stone-300 bg-white px-2.5 text-xs font-medium text-stone-800 outline-none focus:border-stone-500 focus:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="pbp-field-interaction pbp-field-selectable h-8 w-full rounded-xl border px-2.5 text-xs font-medium outline-none disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {statusOptions.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
@@ -151,7 +151,7 @@ export default function MobileDrawer({
                 value={sort}
                 onChange={(event) => onSortChange(event.target.value as WorkOrderListSort)}
                 disabled={writeLocked}
-                className="pbp-field-interaction h-8 w-full rounded-xl border border-stone-300 bg-white px-2.5 text-xs font-medium text-stone-800 outline-none focus:border-stone-500 focus:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="pbp-field-interaction pbp-field-selectable h-8 w-full rounded-xl border px-2.5 text-xs font-medium outline-none disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {sortOptions.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
@@ -166,7 +166,7 @@ export default function MobileDrawer({
                 type="button"
                 onClick={onResetListControls}
                 disabled={writeLocked}
-                className="pbp-interactive-button shrink-0 rounded-full border border-stone-300 bg-white px-2 py-0.5 text-[10px] font-semibold text-stone-600 hover:border-stone-400 hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="pbp-interactive-button pbp-filter-active shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {controlsCopy.resetControls}
               </button>
@@ -182,7 +182,7 @@ export default function MobileDrawer({
               }}
               disabled={writeLocked}
               title={writeLocked ? writeLockMessage ?? "상태 변경 처리 중입니다." : undefined}
-              className="pbp-touch-target pbp-interactive-button mt-2.5 w-full rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:opacity-50"
+              className="pbp-touch-target pbp-interactive-button pbp-action-primary mt-2.5 w-full rounded-xl px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
             >
               {copy.create}
             </button>

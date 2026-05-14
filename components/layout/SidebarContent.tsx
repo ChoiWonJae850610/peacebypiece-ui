@@ -143,7 +143,7 @@ export default function SidebarContent({
               value={searchQuery}
               onChange={(event) => onSearchQueryChange(event.target.value)}
               placeholder={controlsUi.searchPlaceholder}
-              className="pbp-field-interaction h-9 w-full rounded-xl border border-stone-300 bg-white px-3 text-sm text-stone-900 outline-none placeholder:text-stone-400 focus:border-stone-500 focus:bg-stone-50"
+              className="pbp-field-interaction pbp-field-search h-9 w-full rounded-xl border px-3 text-sm outline-none"
             />
           </label>
           {searchQuery ? (
@@ -164,7 +164,7 @@ export default function SidebarContent({
               value={statusFilter}
               onChange={(event) => onStatusFilterChange(event.target.value as WorkOrderListStatusFilter)}
               disabled={writeLocked}
-              className="pbp-field-interaction h-8 w-full rounded-xl border border-stone-300 bg-white px-2.5 text-xs font-medium text-stone-800 outline-none focus:border-stone-500 focus:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="pbp-field-interaction pbp-field-selectable h-8 w-full rounded-xl border px-2.5 text-xs font-medium outline-none disabled:cursor-not-allowed disabled:opacity-50"
             >
               {statusOptions.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
@@ -177,7 +177,7 @@ export default function SidebarContent({
               value={sort}
               onChange={(event) => onSortChange(event.target.value as WorkOrderListSort)}
               disabled={writeLocked}
-              className="pbp-field-interaction h-8 w-full rounded-xl border border-stone-300 bg-white px-2.5 text-xs font-medium text-stone-800 outline-none focus:border-stone-500 focus:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="pbp-field-interaction pbp-field-selectable h-8 w-full rounded-xl border px-2.5 text-xs font-medium outline-none disabled:cursor-not-allowed disabled:opacity-50"
             >
               {sortOptions.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
@@ -192,7 +192,7 @@ export default function SidebarContent({
               type="button"
               onClick={onResetListControls}
               disabled={writeLocked}
-              className="pbp-interactive-button pbp-action-secondary shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+              className="pbp-interactive-button pbp-filter-active shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold disabled:cursor-not-allowed disabled:opacity-50"
             >
               {controlsUi.resetControls}
             </button>

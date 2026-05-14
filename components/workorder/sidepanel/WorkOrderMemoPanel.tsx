@@ -74,13 +74,13 @@ function MemoInputField({ value, disabled, placeholder, submitLabel, onChange, o
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         className={isMobile
-          ? "pbp-field-interaction h-[34px] w-full resize-none overflow-hidden rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-400"
-          : "pbp-field-interaction h-[32px] w-full resize-none overflow-hidden rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-base text-stone-800 outline-none focus:border-stone-400 focus:bg-stone-50 disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-400 md:text-sm"}
+          ? "pbp-field-interaction pbp-workorder-editable-input h-[34px] w-full resize-none overflow-hidden rounded-lg border px-2.5 py-1.5 text-base outline-none disabled:cursor-not-allowed disabled:opacity-60"
+          : "pbp-field-interaction pbp-workorder-editable-input h-[32px] w-full resize-none overflow-hidden rounded-lg border px-2.5 py-1.5 text-base outline-none disabled:cursor-not-allowed disabled:opacity-60 md:text-sm"}
       />
       <div className={isMobile ? "mt-1.5 flex flex-wrap items-center justify-between gap-2" : "mt-1.5 flex items-center justify-end gap-2"}>
         <span className="mr-auto text-[10px] font-medium text-stone-400">{`${value.length} / ${MEMO_MAX_LENGTH}`}</span>
         {onCancel ? (
-          <button type="button" onClick={onCancel} className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1.5 text-[11px] font-semibold text-stone-700 hover:bg-stone-100 active:bg-stone-200">
+          <button type="button" onClick={onCancel} className="pbp-interactive-button pbp-action-secondary rounded-full px-3 py-1.5 text-[11px] font-semibold">
             {cancelLabel}
           </button>
         ) : null}
@@ -89,8 +89,8 @@ function MemoInputField({ value, disabled, placeholder, submitLabel, onChange, o
           onClick={onSubmit}
           disabled={disabled || !trimmed}
           className={isMobile
-            ? "pbp-interactive-button rounded-full bg-stone-900 px-3 py-2 text-xs font-semibold text-white hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:opacity-50"
-            : "pbp-interactive-button rounded-full bg-stone-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:opacity-50"}
+            ? "pbp-interactive-button pbp-action-primary rounded-full px-3 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+            : "pbp-interactive-button pbp-action-primary rounded-full px-3 py-1.5 text-[11px] font-semibold disabled:cursor-not-allowed disabled:opacity-50"}
         >
           {submitLabel}
         </button>
@@ -117,7 +117,7 @@ function MemoItemActions({ canMutate, editLabel, deleteAriaLabel, onEdit, onDele
         onClick={onEdit}
         aria-label={editLabel}
         title={disabledReason ?? editLabel}
-        className="pbp-interactive-button inline-flex h-5 w-5 items-center justify-center rounded-full border border-amber-300 bg-white text-amber-600 hover:border-amber-400 hover:bg-amber-50 active:bg-amber-100"
+        className="pbp-interactive-button pbp-action-secondary inline-flex h-5 w-5 items-center justify-center rounded-full text-amber-600"
       >
         <MemoPencilIcon />
       </button>
@@ -126,7 +126,7 @@ function MemoItemActions({ canMutate, editLabel, deleteAriaLabel, onEdit, onDele
         onClick={onDelete}
         aria-label={deleteAriaLabel}
         title={disabledReason ?? deleteAriaLabel}
-        className="pbp-interactive-button inline-flex h-5 w-5 items-center justify-center rounded-full border border-red-200 bg-white text-[13px] font-semibold leading-none text-red-500 hover:bg-red-50 active:bg-red-100"
+        className="pbp-interactive-button pbp-action-danger-soft inline-flex h-5 w-5 items-center justify-center rounded-full border text-[13px] font-semibold leading-none"
       >
         -
       </button>
@@ -236,7 +236,7 @@ function MemoThreadCard({
       </div>
 
       {editingThread ? (
-        <div className="mt-2 rounded-xl border border-stone-200 bg-stone-50 p-2">
+        <div className="pbp-workorder-editable-panel mt-2 rounded-xl border p-2">
           <MemoInputField
             value={threadEditDraft}
             disabled={!canMutateThread}
@@ -269,7 +269,7 @@ function MemoThreadCard({
                 <MemoItemActions canMutate={canMutateAuthor(reply.authorId) && !writeLocked} disabledReason={writeLockMessage} editLabel={ui.memo.edit} deleteAriaLabel={ui.memo.deleteAria} onEdit={() => startReplyEdit(reply)} onDelete={() => onDeleteReply(thread.id, reply.id)} />
               </div>
               {isEditingReply ? (
-                <div className="mt-1.5 rounded-xl border border-stone-200 bg-stone-50 p-2">
+                <div className="pbp-workorder-editable-panel mt-1.5 rounded-xl border p-2">
                   <MemoInputField
                     value={replyEditDraft}
                     disabled={!canMutateAuthor(reply.authorId) || writeLocked}
@@ -293,13 +293,13 @@ function MemoThreadCard({
         }) : null}
 
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 pt-1">
-          <button type="button" onClick={() => setReplyComposerOpen((prev) => !prev)} disabled={!canEditMemo || writeLocked || isThreadDeleted} className="pbp-interactive-button rounded-full border border-stone-300 bg-white px-3 py-1 text-[11px] font-medium text-stone-700 hover:border-stone-400 hover:bg-stone-100 active:bg-stone-200 disabled:cursor-not-allowed disabled:opacity-50">
+          <button type="button" onClick={() => setReplyComposerOpen((prev) => !prev)} disabled={!canEditMemo || writeLocked || isThreadDeleted} className="pbp-interactive-button pbp-action-secondary rounded-full px-3 py-1 text-[11px] font-medium disabled:cursor-not-allowed disabled:opacity-50">
             {replyComposerOpen ? ui.memo.toggleReplyClose : ui.memo.toggleReplyOpen}
           </button>
         </div>
 
         {replyComposerOpen ? (
-          <div className="min-w-0 rounded-xl border border-stone-200 bg-stone-50 p-2.5">
+          <div className="pbp-workorder-editable-panel min-w-0 rounded-xl border p-2.5">
             <MemoInputField value={replyDraft} disabled={!canEditMemo || writeLocked || isThreadDeleted} placeholder={ui.memo.replyPlaceholder} submitLabel={ui.memo.submit} onChange={setReplyDraft} onSubmit={submitReply} isMobile={isMobile} />
           </div>
         ) : null}
@@ -364,7 +364,7 @@ export default function WorkOrderMemoPanel({
         <h3 className="text-sm font-semibold text-stone-900">{ui.memo.panelTitle}</h3>
         <span className="rounded-full bg-stone-100 px-2 py-1 text-[11px] font-medium text-stone-600">{`${memoThreads.length}${ui.memo.countSuffix}`}</span>
       </div>
-      <div className={isMobile ? "mt-2.5 min-w-0 rounded-xl border border-stone-200 bg-stone-50 p-2" : isTablet ? "mt-3 min-w-0 rounded-xl border border-stone-200 bg-stone-50 p-2.5" : "mt-3 min-w-0 rounded-xl border border-stone-200 bg-stone-50 p-2.5"}>
+      <div className={isMobile ? "pbp-workorder-editable-panel mt-2.5 min-w-0 rounded-xl border p-2" : isTablet ? "pbp-workorder-editable-panel mt-3 min-w-0 rounded-xl border p-2.5" : "pbp-workorder-editable-panel mt-3 min-w-0 rounded-xl border p-2.5"}>
         <div className="text-[11px] text-stone-500">{getMemoAuthorDisplayName(currentUserName, currentUserRole, ui.memo)}</div>
         <div className="mt-2">
           <MemoInputField value={threadDraft} disabled={!canEditMemo || writeLocked} placeholder={ui.memo.threadPlaceholder} submitLabel={ui.memo.submit} onChange={setThreadDraft} onSubmit={submitThread} isMobile={isMobile} />
@@ -388,7 +388,7 @@ export default function WorkOrderMemoPanel({
             currentUserId={currentUserId}
             currentUserRole={currentUserRole}
           />
-        )) : <div className="min-w-0 rounded-xl border border-dashed border-stone-300 bg-stone-50 px-3 py-5 text-center text-sm text-stone-500">{ui.memo.empty}</div>}
+        )) : <div className="pbp-empty-state min-w-0 rounded-xl border border-dashed px-3 py-5 text-center text-sm">{ui.memo.empty}</div>}
       </div>
     </WorkOrderPanelCard>
   );
