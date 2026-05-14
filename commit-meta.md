@@ -1,11 +1,11 @@
 Version :
-0.11.91
+0.11.92
 
 Summary :
-작업지시서 생산구성 입력 가능 필드와 계산 필드 시각 구분
+작업지시서 semantic theme token 1차 기준과 생산구성 필드 톤 보정
 
 Description :
-작업지시서 생산구성의 원단·부자재와 외주공정 영역에서 입력/선택 가능한 필드와 자동 계산되는 금액 필드를 구분하는 공통 시각 토큰을 추가했다. PC 테이블과 태블릿 입력 패널에 해당 기준을 적용하고, 추후 테마 변경이 가능하도록 색상 기준을 globals.css의 CSS 변수로 분리했다.
+작업지시서 화면에서 입력 가능, 선택 가능, 계산, 비활성, 빈 상태를 의미 기준으로 구분할 수 있도록 semantic theme token 1차 기준을 추가했다. 생산구성 테이블의 과한 테두리 표현을 옅은 배경과 약한 경계선 중심으로 재보정하고, PC 원단/부자재 및 외주공정 테이블에서 선택 필드와 입력 필드를 구분했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
@@ -13,11 +13,10 @@ Description :
 - components/workorder/detail/shared/detailEditorShared.tsx
 - components/workorder/detail/sections/MaterialSection.tsx
 - components/workorder/detail/sections/OutsourcingSection.tsx
-- components/workorder/detail/sections/device/WorkOrderDetailTabletMaterialSection.tsx
-- components/workorder/detail/sections/device/WorkOrderDetailTabletOutsourcingSection.tsx
 
 추가 파일 목록 :
-- docs/workorder-production-composition-field-visuals-0.11.91.md
+- lib/theme/semanticThemeTokens.ts
+- docs/workorder-semantic-theme-tokens-0.11.92.md
 
 삭제 파일 목록 :
 없음

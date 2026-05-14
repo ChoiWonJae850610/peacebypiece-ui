@@ -24,8 +24,8 @@ export type BasicInfoState = {
 export type OrderEntryState = OrderEntry;
 
 const EDITABLE_FIELD_HEIGHT_CLASS = "min-h-10";
-const EDITABLE_FIELD_BASE_CLASS = `pbp-field-interaction ${EDITABLE_FIELD_HEIGHT_CLASS} block w-full min-w-0 max-w-full overflow-hidden rounded-xl border px-3 text-stone-900 outline-none ring-0`;
-const EDITABLE_INPUT_CLASS = `${EDITABLE_FIELD_BASE_CLASS} text-base md:text-sm border-stone-300 bg-white focus:border-stone-400 focus:bg-white`;
+const EDITABLE_FIELD_BASE_CLASS = `pbp-field-interaction ${EDITABLE_FIELD_HEIGHT_CLASS} block w-full min-w-0 max-w-full overflow-hidden rounded-xl border px-3 outline-none ring-0`;
+const EDITABLE_INPUT_CLASS = `${EDITABLE_FIELD_BASE_CLASS} pbp-workorder-editable-input text-base md:text-sm`;
 const EDITABLE_SELECT_CLASS = `${EDITABLE_INPUT_CLASS} appearance-none whitespace-nowrap pr-8`;
 const EDITABLE_DISPLAY_CLASS = `${EDITABLE_FIELD_BASE_CLASS} pbp-workorder-editable-display text-sm flex items-center`;
 const EDITABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap";
@@ -35,6 +35,7 @@ export const TABLE_VALUE_TEXT_CLASS = "block w-full min-w-0 max-w-full overflow-
 export const TABLE_HEADER_CELL_CLASS = "min-w-0 overflow-hidden px-1.5 py-2 text-center text-[11px] font-medium leading-4 text-stone-600 lg:px-2 lg:text-[11px]";
 export const TABLE_BODY_CELL_CLASS = "min-w-0 overflow-hidden px-1.5 py-2 align-middle text-center text-[10px] leading-4 text-stone-900 lg:px-2 lg:text-[10px]";
 export const EDITABLE_TABLE_CELL_CLASS = `${TABLE_BODY_CELL_CLASS} pbp-workorder-editable-cell`;
+export const SELECTABLE_TABLE_CELL_CLASS = `${TABLE_BODY_CELL_CLASS} pbp-workorder-selectable-cell`;
 export const CALCULATED_TABLE_CELL_CLASS = "pbp-workorder-calculated-cell min-w-0 overflow-hidden px-1.5 py-2 text-center align-middle text-[11px] font-medium tabular-nums lg:px-2 lg:text-[11px]";
 export const EDITABLE_FIELD_PANEL_CLASS = "pbp-workorder-editable-panel rounded-lg border p-2.5";
 export const CALCULATED_FIELD_PANEL_CLASS = "pbp-workorder-calculated-panel rounded-lg border p-2.5";
@@ -279,7 +280,7 @@ export function EditableValue({
       type="button"
       onClick={() => onStartEdit(section, rowId, field, getEditingInitialValue(field, value))}
       disabled={disabled}
-      className={`${EDITABLE_DISPLAY_CLASS} ${compact ? "mx-auto max-w-[11rem]" : ""} ${alignRight ? "items-center justify-center w-[48px] text-right tabular-nums" : centered ? "justify-center text-center" : "text-left"} ${disabled ? "cursor-not-allowed opacity-60 hover:border-transparent hover:bg-transparent" : ""}`}
+      className={`${EDITABLE_DISPLAY_CLASS} ${compact ? "mx-auto max-w-[11rem]" : ""} ${alignRight ? "items-center justify-center w-[48px] text-right tabular-nums" : centered ? "justify-center text-center" : "text-left"} ${disabled ? "pbp-workorder-field-disabled cursor-not-allowed opacity-70" : ""}`}
     >
       <span className={wrapText ? EDITABLE_VALUE_TEXT_WRAP_CLASS : EDITABLE_VALUE_TEXT_CLASS}>{(displayValue ?? getDisplayValue(field, value)) || "-"}</span>
     </button>
