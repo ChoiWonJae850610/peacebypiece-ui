@@ -33,6 +33,17 @@ import {
 } from "@/lib/permissions";
 import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 import { AdminButton } from "@/components/admin/common/AdminButton";
+import {
+  ADMIN_ACTIVE_TAB_CLASS,
+  ADMIN_FIELD_CONTAINER_CLASS,
+  ADMIN_INACTIVE_TAB_CLASS,
+  ADMIN_INPUT_CLASS,
+  ADMIN_SURFACE_ITEM_CLASS,
+  ADMIN_SURFACE_PANEL_CLASS,
+  ADMIN_SURFACE_SUBTLE_BOX_CLASS,
+  ADMIN_TABLE_HEADER_CLASS,
+  ADMIN_TABLE_ROW_CLASS,
+} from "@/components/admin/common/adminSemanticClassNames";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
 import AdminTable from "@/components/admin/common/AdminTable";
@@ -136,12 +147,12 @@ function resolveExpiresAt(expiresInDays: string): string {
 
 function QrPreview({ rows }: { rows: readonly (readonly boolean[])[] }) {
   return (
-    <div className="grid size-36 grid-cols-9 rounded-2xl border border-stone-200 bg-white p-2 shadow-inner" aria-hidden="true">
+    <div className="grid size-36 grid-cols-9 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-2 shadow-inner" aria-hidden="true">
       {rows.flatMap((row, rowIndex) =>
         row.map((enabled, columnIndex) => (
           <span
             key={`${rowIndex}-${columnIndex}`}
-            className={enabled ? "m-0.5 rounded-sm bg-stone-900" : "m-0.5 rounded-sm bg-stone-100"}
+            className={enabled ? "m-0.5 rounded-sm bg-[var(--pbp-action-primary-surface)]" : "m-0.5 rounded-sm bg-[var(--pbp-surface-soft)]"}
           />
         )),
       )}
@@ -206,12 +217,12 @@ export default function AdminMemberManagementDashboard() {
         label: t(`memberManagement.tables.invitations.columns.${column.id}`, column.id),
         render: (invitation) => {
           if (column.id === "target") {
-            return <span className="truncate font-semibold text-stone-900">{invitation.targetLabel}</span>;
+            return <span className="truncate font-semibold pbp-text-primary">{invitation.targetLabel}</span>;
           }
 
           if (column.id === "type") {
             return (
-              <span className="font-semibold text-stone-700">
+              <span className="font-semibold pbp-text-primary">
                 {t(`memberManagement.invitationTypes.${invitation.inviteType}`, invitation.inviteType)}
               </span>
             );
@@ -225,7 +236,7 @@ export default function AdminMemberManagementDashboard() {
             );
           }
 
-          return <span className="text-stone-500">{invitation.expiresLabel}</span>;
+          return <span className="pbp-text-muted">{invitation.expiresLabel}</span>;
         },
       })),
     [invitationColumns, t],
@@ -469,19 +480,19 @@ export default function AdminMemberManagementDashboard() {
     <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1">
       <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         {summaryCards.map((card) => (
-          <article key={card.id} className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm">
+          <article key={card.id} className={ADMIN_SURFACE_ITEM_CLASS}>
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold text-stone-500">
+                <p className="text-xs font-semibold pbp-text-muted">
                   {t(`memberManagement.summary.${card.id}.label`, card.id)}
                 </p>
-                <p className="mt-2 text-2xl font-semibold text-stone-950">{card.value}</p>
+                <p className="mt-2 text-2xl font-semibold pbp-text-primary">{card.value}</p>
               </div>
               <AdminStatusBadge tone={getStatusTone(card.status)}>
                 {t(`memberManagement.statuses.${card.status}`, card.status)}
               </AdminStatusBadge>
             </div>
-            <p className="mt-3 text-xs leading-5 text-stone-500">
+            <p className="mt-3 text-xs leading-5 pbp-text-muted">
               {t(`memberManagement.summary.${card.id}.description`, "")}
             </p>
           </article>
@@ -489,7 +500,7 @@ export default function AdminMemberManagementDashboard() {
       </section>
 
 
-      <section className="overflow-x-auto rounded-3xl border border-stone-200 bg-white p-3 shadow-sm">
+      <section className="overflow-x-auto rounded-3xl border p-3 shadow-sm pbp-admin-card">
         <div className="grid min-w-[720px] gap-2 md:grid-cols-2 xl:min-w-0 xl:grid-cols-4">
           {tabPreviews.map((tab) => {
             const isActive = activeTab === tab.id;
@@ -500,18 +511,16 @@ export default function AdminMemberManagementDashboard() {
                 onClick={() => setActiveTab(tab.id)}
                 className={[
                   "rounded-2xl border px-4 py-3 text-left transition",
-                  isActive
-                    ? "border-stone-950 bg-stone-950 text-white shadow-sm"
-                    : "border-stone-200 bg-white text-stone-700 hover:border-stone-300 hover:bg-stone-50",
+                  isActive ? ADMIN_ACTIVE_TAB_CLASS : ADMIN_INACTIVE_TAB_CLASS,
                 ].join(" ")}
               >
                 <span className="flex items-center justify-between gap-3">
                   <span className="text-sm font-semibold">{t(tab.labelKey, tab.fallbackLabel)}</span>
-                  <span className={isActive ? "text-xs font-semibold text-stone-300" : "text-xs font-semibold text-stone-400"}>
+                  <span className={isActive ? "text-xs font-semibold text-[var(--pbp-action-primary-text)]/70" : "text-xs font-semibold pbp-text-subtle"}>
                     {tab.countLabel}
                   </span>
                 </span>
-                <span className={isActive ? "mt-2 block text-xs leading-5 text-stone-300" : "mt-2 block text-xs leading-5 text-stone-500"}>
+                <span className={isActive ? "mt-2 block text-xs leading-5 text-[var(--pbp-action-primary-text)]/70" : "mt-2 block text-xs leading-5 pbp-text-muted"}>
                   {t(tab.descriptionKey, tab.fallbackDescription)}
                 </span>
               </button>
@@ -522,16 +531,16 @@ export default function AdminMemberManagementDashboard() {
 
       {activeTab === "invite" ? (
         <>
-      <section id="member-invite-builder" className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+      <section id="member-invite-builder" className={ADMIN_SURFACE_PANEL_CLASS}>
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-400">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] pbp-text-subtle">
               {t("memberManagement.inviteBuilder.eyebrow", "Invitation link and QR")}
             </p>
-            <h3 className="mt-2 text-lg font-semibold text-stone-950">
+            <h3 className="mt-2 text-lg font-semibold pbp-text-primary">
               {t("memberManagement.inviteBuilder.title", "초대 링크/QR 생성 화면")}
             </h3>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">
+            <p className="mt-2 max-w-3xl text-sm leading-6 pbp-text-muted">
               {t(
                 "memberManagement.inviteBuilder.description",
                 "고객관리자가 내부 멤버에게 전달할 링크와 QR을 생성하기 전 입력값과 기본 권한 묶음을 한 화면에서 확인합니다.",
@@ -540,16 +549,16 @@ export default function AdminMemberManagementDashboard() {
           </div>
           <div className="grid gap-2 sm:grid-cols-3 xl:min-w-[420px]">
             {invitationSetupCards.map((card) => (
-              <div key={card.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
+              <div key={card.id} className={ADMIN_SURFACE_SUBTLE_BOX_CLASS}>
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs font-semibold text-stone-900">
+                  <p className="text-xs font-semibold pbp-text-primary">
                     {t(`memberManagement.inviteBuilder.cards.${card.id}.label`, card.id)}
                   </p>
                   <AdminStatusBadge tone={getStatusTone(card.status)} size="xs">
                     {t(`memberManagement.statuses.${card.status}`, card.status)}
                   </AdminStatusBadge>
                 </div>
-                <p className="mt-2 text-[11px] leading-4 text-stone-500">
+                <p className="mt-2 text-[11px] leading-4 pbp-text-muted">
                   {t(`memberManagement.inviteBuilder.cards.${card.id}.description`, "")}
                 </p>
               </div>
@@ -559,38 +568,38 @@ export default function AdminMemberManagementDashboard() {
 
         <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_260px]">
           <div className="grid gap-3 md:grid-cols-2">
-            <label className="block rounded-2xl border border-stone-200 bg-stone-50 p-4">
-              <span className="text-xs font-semibold text-stone-500">
+            <label className={ADMIN_FIELD_CONTAINER_CLASS}>
+              <span className="text-xs font-semibold pbp-text-muted">
                 {t("memberManagement.inviteBuilder.fields.targetName", "초대 대상 이름")}
               </span>
               <input
                 type="text"
                 value={targetName}
                 onChange={(event) => setTargetName(event.target.value)}
-                className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-900 outline-none focus:border-stone-400"
+                className={ADMIN_INPUT_CLASS}
                 placeholder={t("memberManagement.inviteBuilder.placeholders.targetName", "예: 디자이너 김00")}
               />
             </label>
-            <label className="block rounded-2xl border border-stone-200 bg-stone-50 p-4">
-              <span className="text-xs font-semibold text-stone-500">
+            <label className={ADMIN_FIELD_CONTAINER_CLASS}>
+              <span className="text-xs font-semibold pbp-text-muted">
                 {t("memberManagement.inviteBuilder.fields.targetContact", "이메일 또는 휴대폰")}
               </span>
               <input
                 type="email"
                 value={targetContact}
                 onChange={(event) => setTargetContact(event.target.value)}
-                className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-900 outline-none focus:border-stone-400"
+                className={ADMIN_INPUT_CLASS}
                 placeholder={t("memberManagement.inviteBuilder.placeholders.targetContact", "designer@example.com") }
               />
             </label>
-            <label className="block rounded-2xl border border-stone-200 bg-stone-50 p-4">
-              <span className="text-xs font-semibold text-stone-500">
+            <label className={ADMIN_FIELD_CONTAINER_CLASS}>
+              <span className="text-xs font-semibold pbp-text-muted">
                 {t("memberManagement.inviteBuilder.fields.roleTemplate", "기본 권한 묶음")}
               </span>
               <select
                 value={selectedRoleId}
                 onChange={(event) => setSelectedRoleId(event.target.value)}
-                className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-900 outline-none focus:border-stone-400"
+                className={ADMIN_INPUT_CLASS}
               >
                 {inviteRoleOptions.map((role) => (
                   <option key={role.id} value={role.id}>
@@ -599,14 +608,14 @@ export default function AdminMemberManagementDashboard() {
                 ))}
               </select>
             </label>
-            <label className="block rounded-2xl border border-stone-200 bg-stone-50 p-4">
-              <span className="text-xs font-semibold text-stone-500">
+            <label className={ADMIN_FIELD_CONTAINER_CLASS}>
+              <span className="text-xs font-semibold pbp-text-muted">
                 {t("memberManagement.inviteBuilder.fields.expires", "초대 만료") }
               </span>
               <select
                 value={expiresInDays}
                 onChange={(event) => setExpiresInDays(event.target.value)}
-                className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-900 outline-none focus:border-stone-400"
+                className={ADMIN_INPUT_CLASS}
               >
                 <option value="3d">{t("memberManagement.inviteBuilder.expires.3d", "3일")}</option>
                 <option value="7d">{t("memberManagement.inviteBuilder.expires.7d", "7일")}</option>
@@ -616,7 +625,7 @@ export default function AdminMemberManagementDashboard() {
             <div className="rounded-2xl border border-stone-200 bg-white p-4 md:col-span-2">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold text-stone-500">
+                  <p className="text-xs font-semibold pbp-text-muted">
                     {t("memberManagement.inviteBuilder.previewLinkLabel", "초대 링크 미리보기")}
                   </p>
                   <code className="mt-2 block truncate rounded-xl bg-stone-100 px-3 py-2 text-xs font-semibold text-stone-700">
@@ -642,13 +651,13 @@ export default function AdminMemberManagementDashboard() {
                   </AdminButton>
                 </div>
               </div>
-              <p className="mt-3 text-xs leading-5 text-stone-500">
+              <p className="mt-3 text-xs leading-5 pbp-text-muted">
                 {createdInvitation
                   ? t("memberManagement.inviteBuilder.createdNotice", "초대가 생성되었습니다. raw token은 이 응답에서만 확인되며 DB에는 token_hash만 저장됩니다.")
                   : t("memberManagement.inviteBuilder.disabledNotice", "이메일을 입력하면 invitations API로 실제 초대 링크를 생성합니다.")}
               </p>
               {targetName.trim() ? (
-                <p className="mt-2 text-xs leading-5 text-stone-500">
+                <p className="mt-2 text-xs leading-5 pbp-text-muted">
                   {t("memberManagement.inviteBuilder.targetNameNotice", "초대 대상")}: {targetName.trim()}
                 </p>
               ) : null}
@@ -667,13 +676,13 @@ export default function AdminMemberManagementDashboard() {
 
           <aside className="flex flex-col items-center justify-center rounded-3xl border border-stone-200 bg-stone-50 p-5 text-center">
             <QrPreview rows={inviteQrPreviewRows} />
-            <p className="mt-4 text-sm font-semibold text-stone-950">
+            <p className="mt-4 text-sm font-semibold pbp-text-primary">
               {t("memberManagement.inviteBuilder.qrTitle", "QR 미리보기")}
             </p>
-            <p className="mt-2 text-xs leading-5 text-stone-500">
+            <p className="mt-2 text-xs leading-5 pbp-text-muted">
               {t("memberManagement.inviteBuilder.qrDescription", "QR은 초대 링크 token 생성 API와 연결한 뒤 실제 값으로 렌더링합니다.")}
             </p>
-            <p className="mt-3 text-xs font-semibold text-stone-500">
+            <p className="mt-3 text-xs font-semibold pbp-text-muted">
               {t("memberManagement.inviteBuilder.selectedRole", "선택 권한 {role} · {count}개")
                 .replace("{role}", t(`memberManagement.roles.${selectedRole?.id ?? "viewer"}.label`, selectedRole?.id ?? "viewer"))
                 .replace("{count}", String(selectedRole?.permissionCount ?? 0))}
@@ -683,17 +692,17 @@ export default function AdminMemberManagementDashboard() {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-1">
-        <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-          <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-end lg:justify-between">
+        <article className={ADMIN_SURFACE_PANEL_CLASS}>
+          <div className="flex flex-col gap-3 border-b border-[var(--pbp-border)] pb-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <h3 className="text-base font-semibold text-stone-950">
+              <h3 className="text-base font-semibold pbp-text-primary">
                 {t("memberManagement.sections.invitations", "초대 대기 목록")}
               </h3>
-              <p className="mt-1 text-xs leading-5 text-stone-500">
+              <p className="mt-1 text-xs leading-5 pbp-text-muted">
                 {t("memberManagement.sections.invitationsDescription", "생성된 초대 링크와 QR의 만료, 취소 상태를 관리합니다.")}
               </p>
             </div>
-            <span className="text-xs font-semibold text-stone-400">
+            <span className="text-xs font-semibold pbp-text-subtle">
               {t("memberManagement.sourceState.dbPending", "DB 연결 예정")}
             </span>
           </div>
@@ -705,7 +714,7 @@ export default function AdminMemberManagementDashboard() {
               emptyLabel={t("memberManagement.empty.invitations.title", "생성된 초대가 없습니다")}
               emptyDescription={t("memberManagement.empty.invitations.description", "초대 링크 생성 기능을 연결하면 활성/만료/취소 초대가 표시됩니다.")}
               gridTemplateColumns="minmax(150px,1.2fr) 90px 90px 110px"
-              rowBaseClassName="grid w-full gap-3 px-4 py-3 text-left text-xs text-stone-600 md:items-center"
+              rowBaseClassName="grid w-full gap-3 px-4 py-3 text-left text-xs text-[var(--pbp-text-muted)] md:items-center"
               className="min-w-[520px]"
             />
           </div>
@@ -717,55 +726,55 @@ export default function AdminMemberManagementDashboard() {
 
       {activeTab === "approval" ? (
         <>
-      <section className="rounded-3xl border border-amber-200 bg-amber-50 p-4 shadow-sm">
-        <p className="text-sm font-semibold text-amber-900">
+      <section className="rounded-3xl border p-4 shadow-sm pbp-card-muted">
+        <p className="text-sm font-semibold pbp-text-primary">
           {t("memberManagement.approvalWorkbench.guardTitle", "저장 전제")}
         </p>
-        <p className="mt-2 text-xs leading-5 text-amber-800">
+        <p className="mt-2 text-xs leading-5 pbp-text-muted">
           {t("memberManagement.approvalWorkbench.guardDescription", "승인 시 company_members를 approved로 만들고 member_permissions에 선택 권한을 저장해야 합니다. 거절 시 join_requests만 rejected 처리합니다.")}
         </p>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-1">
-        <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-          <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-end lg:justify-between">
+        <article className={ADMIN_SURFACE_PANEL_CLASS}>
+          <div className="flex flex-col gap-3 border-b border-[var(--pbp-border)] pb-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <h3 className="text-base font-semibold text-stone-950">
+              <h3 className="text-base font-semibold pbp-text-primary">
                 {t("memberManagement.sections.joinRequests", "가입 신청/승인 대기")}
               </h3>
-              <p className="mt-1 text-xs leading-5 text-stone-500">
+              <p className="mt-1 text-xs leading-5 pbp-text-muted">
                 {t("memberManagement.sections.joinRequestsDescription", "초대 링크로 가입 신청한 사용자를 승인하거나 거절하는 영역입니다.")}
               </p>
             </div>
-            <span className="text-xs font-semibold text-stone-400">
+            <span className="text-xs font-semibold pbp-text-subtle">
               {t(`memberManagement.sourceState.${getLoadStatusLabelKey(joinRequestLoadStatus)}`, "DB 연결 상태 확인")}
             </span>
           </div>
           {joinRequestLoadError ? (
-            <p className="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">
+            <p className="mt-3 rounded-2xl border px-4 py-3 text-xs font-semibold pbp-action-danger-soft">
               {t("memberManagement.loadErrors.joinRequests", "승인 대기 신청 목록을 불러오지 못했습니다.")} {joinRequestLoadError}
             </p>
           ) : null}
           {joinRequestReviewMessage ? (
-            <p className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-semibold text-emerald-700">
+            <p className="mt-3 rounded-2xl border border-[var(--pbp-accent-border)] bg-[var(--pbp-accent-soft)] px-4 py-3 text-xs font-semibold text-[var(--pbp-accent)]">
               {joinRequestReviewMessage}
             </p>
           ) : null}
           {joinRequestReviewError ? (
-            <p className="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">
+            <p className="mt-3 rounded-2xl border px-4 py-3 text-xs font-semibold pbp-action-danger-soft">
               {t("memberManagement.reviewActions.error", "가입 신청 처리에 실패했습니다.")} {joinRequestReviewError}
             </p>
           ) : null}
-          <div className="mt-4 overflow-x-auto rounded-2xl border border-stone-200">
+          <div className="mt-4 overflow-x-auto rounded-2xl border border-[var(--pbp-border)]">
             <div className="min-w-[980px]">
-            <div className="grid grid-cols-[minmax(150px,1.2fr)_130px_170px_100px_minmax(130px,1fr)_110px_90px_110px_150px] bg-stone-50 text-xs font-semibold text-stone-500">
+            <div className={`grid grid-cols-[minmax(150px,1.2fr)_130px_170px_100px_minmax(130px,1fr)_110px_90px_110px_150px] ${ADMIN_TABLE_HEADER_CLASS}`}>
               {joinRequestColumns.map((column) => (
                 <div key={column.id} className="px-3 py-2">
                   {t(`memberManagement.tables.joinRequests.columns.${column.id}`, column.id)}
                 </div>
               ))}
             </div>
-            <div className="divide-y divide-stone-100">
+            <div className="divide-y divide-[var(--pbp-border)]">
               {joinRequestLoadStatus === "loading" ? (
                 <div className="p-3">
                   <AdminEmptyState
@@ -775,26 +784,26 @@ export default function AdminMemberManagementDashboard() {
                 </div>
               ) : joinRequests.length ? (
                 joinRequests.map((request) => (
-                  <div key={request.id} className="grid grid-cols-[minmax(150px,1.2fr)_130px_170px_100px_minmax(130px,1fr)_110px_90px_110px_150px] px-3 py-3 text-xs text-stone-600">
+                  <div key={request.id} className={`grid grid-cols-[minmax(150px,1.2fr)_130px_170px_100px_minmax(130px,1fr)_110px_90px_110px_150px] px-3 py-3 ${ADMIN_TABLE_ROW_CLASS}`}>
                     <div className="min-w-0">
-                      <p className="truncate font-semibold text-stone-900">{request.applicantName}</p>
-                      <p className="mt-1 truncate text-stone-500">{request.applicantEmail}</p>
+                      <p className="truncate font-semibold pbp-text-primary">{request.applicantName}</p>
+                      <p className="mt-1 truncate pbp-text-muted">{request.applicantEmail}</p>
                     </div>
-                    <span className="truncate text-stone-500">{request.applicantPhoneLabel}</span>
-                    <span className="truncate text-stone-500">{request.invitationEmailLabel}</span>
+                    <span className="truncate pbp-text-muted">{request.applicantPhoneLabel}</span>
+                    <span className="truncate pbp-text-muted">{request.invitationEmailLabel}</span>
                     <AdminStatusBadge tone={getEmailMatchTone(request.emailMatchStatus)}>
                       {t(`memberManagement.emailMatchStatuses.${request.emailMatchStatus}`, request.emailMatchStatus)}
                     </AdminStatusBadge>
-                    <span className="truncate text-stone-500" title={request.requestMemoLabel}>
+                    <span className="truncate pbp-text-muted" title={request.requestMemoLabel}>
                       {request.requestMemoLabel}
                     </span>
-                    <span className="font-semibold text-stone-700">
+                    <span className="font-semibold pbp-text-primary">
                       {t(`memberManagement.roles.${request.requestedRoleId}.label`, request.requestedRoleId)}
                     </span>
                     <AdminStatusBadge tone="warning">
                       {t(`memberManagement.joinRequestStatuses.${request.status}`, request.status)}
                     </AdminStatusBadge>
-                    <span className="text-stone-500">{request.requestedAtLabel}</span>
+                    <span className="pbp-text-muted">{request.requestedAtLabel}</span>
                     <div className="flex flex-wrap gap-1.5">
                       <AdminButton
                         onClick={() => void handleReviewJoinRequest(request, "approve")}
@@ -836,36 +845,36 @@ export default function AdminMemberManagementDashboard() {
       {activeTab === "members" ? (
         <>
       <section className="grid gap-4">
-        <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-          <div className="flex flex-col gap-3 border-b border-stone-100 pb-4 lg:flex-row lg:items-end lg:justify-between">
+        <article className={ADMIN_SURFACE_PANEL_CLASS}>
+          <div className="flex flex-col gap-3 border-b border-[var(--pbp-border)] pb-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <h3 className="text-base font-semibold text-stone-950">
+              <h3 className="text-base font-semibold pbp-text-primary">
                 {t("memberManagement.sections.members", "멤버 목록")}
               </h3>
-              <p className="mt-1 text-xs leading-5 text-stone-500">
+              <p className="mt-1 text-xs leading-5 pbp-text-muted">
                 {t("memberManagement.sections.membersDescription", "승인된 멤버와 정지된 멤버를 한 목록에서 관리합니다.")}
               </p>
             </div>
-            <span className="text-xs font-semibold text-stone-400">
+            <span className="text-xs font-semibold pbp-text-subtle">
               {t(`memberManagement.sourceState.${getLoadStatusLabelKey(memberListLoadStatus)}`, "DB 연결 상태 확인")}
             </span>
           </div>
           {memberListLoadError ? (
-            <p className="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">
+            <p className="mt-3 rounded-2xl border px-4 py-3 text-xs font-semibold pbp-action-danger-soft">
               {t("memberManagement.loadErrors.members", "멤버 목록을 불러오지 못했습니다.")} {memberListLoadError}
             </p>
           ) : null}
           {memberPermissionUpdateMessage ? (
-            <p className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-semibold text-emerald-700">
+            <p className="mt-3 rounded-2xl border border-[var(--pbp-accent-border)] bg-[var(--pbp-accent-soft)] px-4 py-3 text-xs font-semibold text-[var(--pbp-accent)]">
               {memberPermissionUpdateMessage}
             </p>
           ) : null}
           {memberPermissionUpdateError ? (
-            <p className="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">
+            <p className="mt-3 rounded-2xl border px-4 py-3 text-xs font-semibold pbp-action-danger-soft">
               {t("memberManagement.memberActions.permissionUpdateError", "멤버 권한 저장에 실패했습니다.")} {memberPermissionUpdateError}
             </p>
           ) : null}
-          <div className="mt-4 overflow-x-auto rounded-2xl border border-stone-200">
+          <div className="mt-4 overflow-x-auto rounded-2xl border border-[var(--pbp-border)]">
             <div className="min-w-[1080px]">
               <div className="grid grid-cols-[minmax(150px,1fr)_110px_90px_100px_110px_140px] bg-stone-50 text-xs font-semibold text-stone-500">
                 {memberColumns.map((column) => (
@@ -874,7 +883,7 @@ export default function AdminMemberManagementDashboard() {
                   </div>
                 ))}
               </div>
-              <div className="divide-y divide-stone-100">
+              <div className="divide-y divide-[var(--pbp-border)]">
                 {memberListLoadStatus === "loading" ? (
                   <div className="p-3">
                     <AdminEmptyState
@@ -889,19 +898,19 @@ export default function AdminMemberManagementDashboard() {
                     return (
                       <div key={member.id} className="grid grid-cols-[minmax(150px,1fr)_110px_90px_100px_110px_140px] px-3 py-3 text-xs text-stone-600">
                         <div className="min-w-0">
-                          <p className="truncate font-semibold text-stone-900">{member.name}</p>
-                          <p className="mt-1 truncate text-stone-500">{member.email}</p>
+                          <p className="truncate font-semibold pbp-text-primary">{member.name}</p>
+                          <p className="mt-1 truncate pbp-text-muted">{member.email}</p>
                         </div>
-                        <span className="font-semibold text-stone-700">
+                        <span className="font-semibold pbp-text-primary">
                           {t(`memberManagement.roles.${member.roleId}.label`, member.roleId)}
                         </span>
                         <AdminStatusBadge tone={getMemberStatusTone(member.status)}>
                           {t(`memberManagement.memberStatuses.${member.status}`, member.status)}
                         </AdminStatusBadge>
-                        <span className="font-semibold text-stone-700">
+                        <span className="font-semibold pbp-text-primary">
                           {t("memberManagement.permissionCount", "권한 {count}개").replace("{count}", String(draftPermissionCodes.length))}
                         </span>
-                        <span className="text-stone-500">{member.lastActiveLabel}</span>
+                        <span className="pbp-text-muted">{member.lastActiveLabel}</span>
                         <AdminButton
                           onClick={() => void handleUpdateMemberPermissions(member.id)}
                           disabled={!hasPermissionChanged || updatingMemberId !== null || draftPermissionCodes.length === 0}
@@ -950,11 +959,11 @@ export default function AdminMemberManagementDashboard() {
         <>
 
 
-        <article className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-          <h3 className="text-base font-semibold text-stone-950">
+        <article className={ADMIN_SURFACE_PANEL_CLASS}>
+          <h3 className="text-base font-semibold pbp-text-primary">
             {t("memberManagement.sections.roles", "역할 기본값")}
           </h3>
-          <p className="mt-1 text-xs leading-5 text-stone-500">
+          <p className="mt-1 text-xs leading-5 pbp-text-muted">
             {t("memberManagement.sections.rolesDescription", "역할은 기본 권한 묶음으로 사용하고, 실제 화면 노출은 권한 코드 기준으로 확장합니다.")}
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
@@ -968,10 +977,10 @@ export default function AdminMemberManagementDashboard() {
                     {t(`memberManagement.statuses.${role.status}`, role.status)}
                   </AdminStatusBadge>
                 </div>
-                <p className="mt-2 text-xs leading-5 text-stone-500">
+                <p className="mt-2 text-xs leading-5 pbp-text-muted">
                   {t(`memberManagement.roles.${role.id}.description`, "역할 설명")}
                 </p>
-                <p className="mt-3 text-xs font-semibold text-stone-500">
+                <p className="mt-3 text-xs font-semibold pbp-text-muted">
                   {t("memberManagement.permissionCount", "권한 {count}개").replace("{count}", String(role.permissionCount))}
                 </p>
               </div>
@@ -979,11 +988,11 @@ export default function AdminMemberManagementDashboard() {
           </div>
         </article>
 
-      <section id="member-permission-guard" className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-        <h3 className="text-base font-semibold text-stone-950">
+      <section id="member-permission-guard" className={ADMIN_SURFACE_PANEL_CLASS}>
+        <h3 className="text-base font-semibold pbp-text-primary">
           {t("memberManagement.sections.workspaceCards", "메인화면 카드 권한")}
         </h3>
-        <p className="mt-1 text-xs leading-5 text-stone-500">
+        <p className="mt-1 text-xs leading-5 pbp-text-muted">
           {t("memberManagement.sections.workspaceCardsDescription", "관리자가 권한을 부여하면 해당 멤버의 메인화면에 표시될 카드 후보입니다.")}
         </p>
         <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -1004,7 +1013,7 @@ export default function AdminMemberManagementDashboard() {
                       : t("memberManagement.permissionGuards.hidden", "숨김")}
                   </AdminStatusBadge>
                 </div>
-                <p className="mt-2 text-xs leading-5 text-stone-500">
+                <p className="mt-2 text-xs leading-5 pbp-text-muted">
                   {t(`memberManagement.permissionCards.${item.id}.description`, "")}
                 </p>
                 <p className="mt-3 rounded-xl bg-stone-50 px-3 py-2 text-[11px] font-semibold text-stone-500">
@@ -1019,11 +1028,11 @@ export default function AdminMemberManagementDashboard() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-        <h3 className="text-base font-semibold text-stone-950">
+      <section className={ADMIN_SURFACE_PANEL_CLASS}>
+        <h3 className="text-base font-semibold pbp-text-primary">
           {t("memberManagement.sections.permissionCatalog", "권한 카탈로그")}
         </h3>
-        <p className="mt-1 text-xs leading-5 text-stone-500">
+        <p className="mt-1 text-xs leading-5 pbp-text-muted">
           {t("memberManagement.sections.permissionCatalogDescription", "DB permission_catalog와 role template에 넣을 permission_code 기준입니다.")}
         </p>
         <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -1063,11 +1072,11 @@ export default function AdminMemberManagementDashboard() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
-        <h3 className="text-base font-semibold text-stone-950">
+      <section className={ADMIN_SURFACE_PANEL_CLASS}>
+        <h3 className="text-base font-semibold pbp-text-primary">
           {t("memberManagement.sections.permissionMatrix", "권한 매트릭스")}
         </h3>
-        <p className="mt-1 text-xs leading-5 text-stone-500">
+        <p className="mt-1 text-xs leading-5 pbp-text-muted">
           {t("memberManagement.sections.permissionMatrixDescription", "role은 기본 체크값이고 실제 저장과 접근 제어는 permission_code 직접 부여 기준입니다.")}
         </p>
         <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
@@ -1078,7 +1087,7 @@ export default function AdminMemberManagementDashboard() {
                 <p className="text-sm font-semibold text-stone-900">
                   {t(`memberManagement.roles.${role.id}.label`, role.id)}
                 </p>
-                <p className="mt-2 text-xs leading-5 text-stone-500">
+                <p className="mt-2 text-xs leading-5 pbp-text-muted">
                   {t("memberManagement.matrixEnabledCount", "기본 체크 {count}개").replace("{count}", String(enabledCount))}
                 </p>
               </article>

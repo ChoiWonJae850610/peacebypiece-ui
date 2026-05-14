@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { ADMIN_SURFACE_ITEM_CLASS } from "@/components/admin/common/adminSemanticClassNames";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
@@ -66,15 +67,15 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
   return (
     <AdminCard className="shrink-0 overflow-hidden">
       <div className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
-        <section className="flex min-h-[270px] max-h-[310px] flex-col rounded-[24px] border border-stone-100 bg-stone-50/70 p-4">
+        <section className="flex min-h-[270px] max-h-[310px] flex-col rounded-[24px] border p-4 pbp-card-muted">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2">
-              <h2 className="truncate text-base font-semibold text-stone-950">{t("operationsDashboard.actionQueueTitle", "검토·발주 대기")}</h2>
+              <h2 className="truncate text-base font-semibold pbp-text-primary">{t("operationsDashboard.actionQueueTitle", "검토·발주 대기")}</h2>
               <Link
                 href="/worker"
                 aria-label={t("operationsDashboard.actions.openWorkorderWorkspace", "작업지시서 업무 화면으로 이동")}
                 title={t("operationsDashboard.actions.openWorkorderWorkspace", "작업지시서 업무 화면으로 이동")}
-                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 shadow-sm transition hover:bg-stone-50"
+                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border shadow-sm transition pbp-action-secondary"
               >
                 <WorkorderShortcutIcon />
               </Link>
@@ -87,8 +88,8 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
           <div className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
             {snapshot.todayTasks.length > 0 ? (
               snapshot.todayTasks.map((task) => (
-                <article key={task.id} className="grid gap-3 rounded-2xl border border-stone-100 bg-white p-3 shadow-sm sm:grid-cols-[64px_1fr_auto] sm:items-center">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-stone-100 text-[11px] font-semibold text-stone-400 ring-1 ring-stone-200">
+                <article key={task.id} className={`${ADMIN_SURFACE_ITEM_CLASS} grid gap-3 rounded-2xl p-3 sm:grid-cols-[64px_1fr_auto] sm:items-center`}>
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[var(--pbp-surface-soft)] text-[11px] font-semibold pbp-text-subtle ring-1 ring-[var(--pbp-border)]">
                     {task.thumbnailUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={task.thumbnailUrl} alt="" className="h-full w-full object-cover" />
@@ -105,8 +106,8 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
                         {t("operationsDashboard.attachmentLabel", "첨부")} {formatAdminCount(task.attachmentCount, t)}
                       </AdminStatusBadge>
                     </div>
-                    <p className="mt-2 truncate text-sm font-semibold text-stone-950">{task.title}</p>
-                    <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium text-stone-500">
+                    <p className="mt-2 truncate text-sm font-semibold pbp-text-primary">{task.title}</p>
+                    <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium pbp-text-muted">
                       <span>{t("operationsDashboard.factoryLabel", "공장")} : {task.factoryName}</span>
                       <span>{t("operationsDashboard.quantityLabel", "수량")} : {task.quantityLabel}</span>
                     </div>
@@ -114,8 +115,8 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
 
                   <div className="flex flex-col gap-2 text-left sm:items-end sm:text-right">
                     <div>
-                      <p className="text-xs font-semibold text-stone-500">{t("operationsDashboard.dueLabel", "납기")}</p>
-                      <p className="mt-1 text-sm font-semibold text-stone-900">{task.dueLabel}</p>
+                      <p className="text-xs font-semibold pbp-text-muted">{t("operationsDashboard.dueLabel", "납기")}</p>
+                      <p className="mt-1 text-sm font-semibold pbp-text-primary">{task.dueLabel}</p>
                     </div>
                     <AdminLinkButton href={task.actionHref} variant="primary" size="sm" className="px-3 py-1.5 text-xs">
                       {t("operationsDashboard.openWorkorder", "작업지시서 열기")}
@@ -141,7 +142,7 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
                   <span className="text-sm font-semibold">{translateInsightLabel(index, item.label, t)}</span>
                   <span className="text-lg font-semibold">{item.value}</span>
                 </div>
-                <p className="mt-1 text-xs text-stone-300">{translateInsightDescription(index, item.description, t)}</p>
+                <p className="mt-1 text-xs text-[var(--pbp-action-primary-text)]/70">{translateInsightDescription(index, item.description, t)}</p>
               </div>
             ))}
           </div>

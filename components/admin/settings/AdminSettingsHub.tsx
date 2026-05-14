@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { AdminLinkButton } from "@/components/admin/common/AdminButton";
+import { ADMIN_SURFACE_ITEM_CLASS, ADMIN_SURFACE_SUBTLE_BOX_CLASS } from "@/components/admin/common/adminSemanticClassNames";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminSection } from "@/components/admin/common/AdminSection";
 import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/common/AdminStatusBadge";
@@ -25,24 +26,24 @@ type AdminCurrentCompanyPayload = {
 
 const toneClassNames: Record<AdminSettingsMenuTone, { card: string; badgeTone: AdminStatusBadgeTone; dot: string }> = {
   blue: {
-    card: "border-blue-100 bg-blue-50/80 hover:border-blue-200 hover:bg-blue-50",
+    card: "pbp-admin-card-interactive",
     badgeTone: "info",
-    dot: "bg-blue-500",
+    dot: "bg-[var(--pbp-status-neutral)]",
   },
   amber: {
-    card: "border-amber-100 bg-amber-50/80 hover:border-amber-200 hover:bg-amber-50",
+    card: "pbp-admin-card-interactive",
     badgeTone: "warning",
-    dot: "bg-amber-500",
+    dot: "bg-[var(--pbp-status-warning)]",
   },
   emerald: {
-    card: "border-emerald-100 bg-emerald-50/80 hover:border-emerald-200 hover:bg-emerald-50",
+    card: "pbp-admin-card-interactive",
     badgeTone: "success",
-    dot: "bg-emerald-500",
+    dot: "bg-[var(--pbp-status-success)]",
   },
   violet: {
-    card: "border-violet-100 bg-violet-50/80 hover:border-violet-200 hover:bg-violet-50",
+    card: "pbp-admin-card-interactive",
     badgeTone: "maintenance",
-    dot: "bg-violet-500",
+    dot: "bg-[var(--pbp-accent)]",
   },
 };
 
@@ -53,22 +54,22 @@ function SettingsMenuCard({ item, active, onClick }: { item: AdminSettingsMenuIt
       type="button"
       onClick={onClick}
       className={`flex min-h-[112px] w-full min-w-0 flex-col justify-between rounded-[22px] border p-4 text-left shadow-sm transition hover:-translate-y-0.5 sm:min-h-[118px] ${tone.card} ${
-        active ? "ring-2 ring-stone-950/10" : ""
+        active ? "ring-2 ring-[var(--pbp-focus-ring)]/20" : ""
       }`}
     >
       <span className="flex items-start justify-between gap-3">
         <span className="min-w-0">
           <span className="flex items-center gap-2">
             <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${tone.dot}`} />
-            <span className="text-base font-semibold text-stone-950">{item.title}</span>
+            <span className="text-base font-semibold pbp-text-primary">{item.title}</span>
           </span>
-          <span className="mt-2 block text-xs leading-5 text-stone-500">{item.description}</span>
+          <span className="mt-2 block text-xs leading-5 pbp-text-muted">{item.description}</span>
         </span>
         <AdminStatusBadge tone={tone.badgeTone}>{item.statusLabel}</AdminStatusBadge>
       </span>
       <span className="mt-3 flex flex-wrap gap-1.5">
         {item.detailItems.map((detail) => (
-          <span key={detail} className="rounded-full border border-white/80 bg-white/80 px-2 py-0.5 text-[11px] font-semibold text-stone-500 shadow-sm">
+          <span key={detail} className="rounded-full px-2 py-0.5 text-[11px] font-semibold pbp-admin-soft-badge">
             {detail}
           </span>
         ))}
@@ -98,28 +99,28 @@ function BillingPlanPanel({ overview, loadState }: { overview: AdminBillingPlanO
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.9fr)]">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {overview.metrics.map((metric) => (
-            <div key={metric.id} className="rounded-[22px] border border-emerald-100 bg-emerald-50/60 p-4">
-              <p className="text-[11px] font-semibold text-emerald-600">{metric.label}</p>
+            <div key={metric.id} className={ADMIN_SURFACE_SUBTLE_BOX_CLASS}>
+              <p className="text-[11px] font-semibold pbp-text-subtle">{metric.label}</p>
               <p className="mt-2 text-lg font-semibold text-stone-950">{metric.value}</p>
-              <p className="mt-2 text-xs leading-5 text-stone-500">{metric.description}</p>
+              <p className="mt-2 text-xs leading-5 pbp-text-muted">{metric.description}</p>
             </div>
           ))}
         </div>
         <div className="space-y-3">
           {overview.actions.map((action) => (
-            <div key={action.id} className="rounded-[22px] border border-stone-200 bg-white p-4 shadow-sm">
+            <div key={action.id} className={ADMIN_SURFACE_ITEM_CLASS}>
               <div className="flex items-center justify-between gap-2">
-                <p className="text-sm font-semibold text-stone-900">{action.label}</p>
+                <p className="text-sm font-semibold pbp-text-primary">{action.label}</p>
                 <AdminStatusBadge tone="neutral" size="xs">{action.statusLabel}</AdminStatusBadge>
               </div>
-              <p className="mt-2 text-xs leading-5 text-stone-500">{action.description}</p>
+              <p className="mt-2 text-xs leading-5 pbp-text-muted">{action.description}</p>
             </div>
           ))}
         </div>
       </div>
-      <div className="grid gap-2 rounded-[22px] border border-emerald-100 bg-white p-4 md:grid-cols-2">
+      <div className={`${ADMIN_SURFACE_ITEM_CLASS} grid gap-2 rounded-[22px] md:grid-cols-2`}>
         {overview.policyNotes.map((note) => (
-          <p key={note} className="text-xs leading-5 text-stone-500">• {note}</p>
+          <p key={note} className="text-xs leading-5 pbp-text-muted">• {note}</p>
         ))}
       </div>
     </AdminSection>
@@ -139,10 +140,10 @@ function AccountSettingsPanel() {
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.9fr)]">
         <div className="grid gap-3 sm:grid-cols-2">
           {account.metrics.map((metric) => (
-            <div key={metric.id} className="rounded-[22px] border border-amber-100 bg-amber-50/60 p-4">
-              <p className="text-[11px] font-semibold text-amber-600">{metric.label}</p>
+            <div key={metric.id} className={ADMIN_SURFACE_SUBTLE_BOX_CLASS}>
+              <p className="text-[11px] font-semibold pbp-text-subtle">{metric.label}</p>
               <p className="mt-2 text-lg font-semibold text-stone-950">{metric.value}</p>
-              <p className="mt-2 text-xs leading-5 text-stone-500">{metric.description}</p>
+              <p className="mt-2 text-xs leading-5 pbp-text-muted">{metric.description}</p>
             </div>
           ))}
         </div>
@@ -151,32 +152,32 @@ function AccountSettingsPanel() {
             const body = (
               <>
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-stone-900">{action.label}</p>
+                  <p className="text-sm font-semibold pbp-text-primary">{action.label}</p>
                   <AdminStatusBadge tone="neutral" size="xs">{action.statusLabel}</AdminStatusBadge>
                 </div>
-                <p className="mt-2 text-xs leading-5 text-stone-500">{action.description}</p>
+                <p className="mt-2 text-xs leading-5 pbp-text-muted">{action.description}</p>
               </>
             );
 
             if (action.id === "open-personal-settings") {
               return (
-                <a key={action.id} className="block rounded-[22px] border border-stone-200 bg-white p-4 shadow-sm transition hover:border-amber-200 hover:bg-amber-50" href={account.personalSettingsHref}>
+                <a key={action.id} className={`${ADMIN_SURFACE_ITEM_CLASS} block transition hover:border-[var(--pbp-border-strong)]`} href={account.personalSettingsHref}>
                   {body}
                 </a>
               );
             }
 
             return (
-              <div key={action.id} className="rounded-[22px] border border-stone-200 bg-white p-4 shadow-sm">
+              <div key={action.id} className={ADMIN_SURFACE_ITEM_CLASS}>
                 {body}
               </div>
             );
           })}
         </div>
       </div>
-      <div className="grid gap-2 rounded-[22px] border border-amber-100 bg-white p-4 md:grid-cols-2">
+      <div className={`${ADMIN_SURFACE_ITEM_CLASS} grid gap-2 rounded-[22px] md:grid-cols-2`}>
         {account.policyNotes.map((note) => (
-          <p key={note} className="text-xs leading-5 text-stone-500">• {note}</p>
+          <p key={note} className="text-xs leading-5 pbp-text-muted">• {note}</p>
         ))}
       </div>
     </AdminSection>
@@ -199,24 +200,24 @@ function FeedbackPanel() {
       className="min-h-[320px]"
       bodyClassName="mt-4 space-y-4"
     >
-      <div className="rounded-[22px] border border-violet-100 bg-violet-50/70 p-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-violet-500">{t("settings.feedback.emailLabel", "Feedback email")}</p>
-        <p className="mt-1 font-mono text-base font-semibold text-violet-900">{ADMIN_FEEDBACK_CONTACT_EMAIL}</p>
-        <p className="mt-2 text-xs leading-5 text-violet-700">
+      <div className={ADMIN_SURFACE_SUBTLE_BOX_CLASS}>
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] pbp-text-subtle">{t("settings.feedback.emailLabel", "Feedback email")}</p>
+        <p className="mt-1 font-mono text-base font-semibold pbp-text-primary">{ADMIN_FEEDBACK_CONTACT_EMAIL}</p>
+        <p className="mt-2 text-xs leading-5 pbp-text-muted">
           {t("settings.feedback.mailDescription", "현재는 DB 저장 없이 사용자의 기본 메일 앱으로 개선 요청, 오류 제보, 기능 제안 내용을 작성하는 방식으로 접수합니다.")}
         </p>
       </div>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.85fr)]">
         <div className="grid gap-3 sm:grid-cols-2">
           {feedback.items.map((item) => (
-            <div key={item} className="rounded-[22px] border border-stone-200 bg-white p-4 text-sm font-semibold text-stone-700 shadow-sm">
+            <div key={item} className={`${ADMIN_SURFACE_ITEM_CLASS} text-sm font-semibold pbp-text-primary`}>
               {item}
             </div>
           ))}
         </div>
-        <div className="rounded-[22px] border border-violet-100 bg-white p-4">
-          <p className="text-xs font-semibold text-violet-600">{t("settings.notice.nextStepTitle", "적용 예정")}</p>
-          <p className="mt-2 text-sm leading-6 text-stone-600">{feedback.nextStep}</p>
+        <div className={ADMIN_SURFACE_ITEM_CLASS}>
+          <p className="text-xs font-semibold pbp-text-subtle">{t("settings.notice.nextStepTitle", "적용 예정")}</p>
+          <p className="mt-2 text-sm leading-6 pbp-text-muted">{feedback.nextStep}</p>
         </div>
       </div>
     </AdminSection>
@@ -283,7 +284,7 @@ export default function AdminSettingsHub() {
         title={t("settings.hub.title", "환경설정")}
         description={t("settings.hub.description", "회사 운영 기준정보, 요금제, 계정, 개발 건의를 한 화면에서 전환해 확인합니다.")}
         actions={
-          <p className="w-full rounded-2xl bg-stone-50 px-3 py-2 text-xs font-semibold leading-5 text-stone-500 sm:w-auto">
+          <p className="w-full rounded-2xl bg-[var(--pbp-surface-muted)] px-3 py-2 text-xs font-semibold leading-5 pbp-text-muted sm:w-auto">
             {t("settings.hub.scopeNotice", "개인별 언어와 색상 테마는 우측 상단 개인 설정에서 관리합니다.")}
           </p>
         }

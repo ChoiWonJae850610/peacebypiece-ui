@@ -1,0 +1,11 @@
+export const ADMIN_SURFACE_PANEL_CLASS = "rounded-3xl border p-5 shadow-sm pbp-admin-card";
+export const ADMIN_SURFACE_PANEL_COMPACT_CLASS = "rounded-3xl border p-3 shadow-sm pbp-admin-card";
+export const ADMIN_SURFACE_MUTED_PANEL_CLASS = "rounded-3xl border p-5 shadow-sm pbp-card-muted";
+export const ADMIN_SURFACE_SUBTLE_BOX_CLASS = "rounded-2xl border p-3 pbp-card-muted";
+export const ADMIN_SURFACE_ITEM_CLASS = "rounded-2xl border p-4 shadow-sm pbp-admin-card";
+export const ADMIN_FIELD_CONTAINER_CLASS = "block rounded-2xl border p-4 pbp-card-muted";
+export const ADMIN_INPUT_CLASS = "mt-2 w-full rounded-xl border bg-[var(--pbp-field-search-surface)] px-3 py-2 text-sm text-[var(--pbp-text-primary)] outline-none transition focus:border-[var(--pbp-focus-ring)]";
+export const ADMIN_TABLE_HEADER_CLASS = "bg-[var(--pbp-surface-muted)] text-xs font-semibold text-[var(--pbp-text-muted)]";
+export const ADMIN_TABLE_ROW_CLASS = "text-xs text-[var(--pbp-text-muted)]";
+export const ADMIN_ACTIVE_TAB_CLASS = "border-transparent pbp-action-primary shadow-sm";
+export const ADMIN_INACTIVE_TAB_CLASS = "pbp-action-secondary hover:border-[var(--pbp-border-strong)]";
