@@ -27,6 +27,7 @@ export function buildModalProps({
   onSetAttachmentPreviewId,
   onSetPermissionTargetUserId,
   onSetCurrentUserId,
+  showUserSwitchingTools = true,
   onSetHistoryFilter,
   onCreateWorkOrder,
   onConfirmOrderRequest,
@@ -89,7 +90,7 @@ export function buildModalProps({
       onCreate: onCreateWorkOrder,
     },
     permission: {
-      open: permissionModalOpen,
+      open: permissionModalOpen && showUserSwitchingTools,
       onClose: () => onSetPermissionModalOpen(false),
       users,
       currentUserId,

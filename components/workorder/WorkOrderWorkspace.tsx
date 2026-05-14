@@ -16,6 +16,7 @@ import {
 } from "@/lib/workorder/list/workOrderListControls";
 import type { WorkOrderListSort, WorkOrderListStatusFilter } from "@/lib/workorder/list/workOrderListControls";
 import { buildWorkspaceHomeNavigation } from "@/lib/navigation/workspaceHomeRoutes";
+import { RUNTIME_VISIBILITY } from "@/lib/runtime/runtimeMode";
 
 import { buildWorkspaceViewModel } from "@/lib/workorder/workspace/buildWorkspaceViewModel";
 
@@ -40,6 +41,8 @@ export default function WorkOrderWorkspace({
     initialSearchQuery,
   });
   const dbConnectionStatus = useDbConnectionStatus();
+  const showRepositoryBadges = RUNTIME_VISIBILITY.showRepositoryBadges;
+  const showUserSwitchingTools = RUNTIME_VISIBILITY.showUserSwitchingTools;
 
   const {
     ui,
@@ -362,7 +365,9 @@ export default function WorkOrderWorkspace({
     onSetListStatusFilter: handleListStatusFilterChange,
     onSetListSort: handleListSortChange,
     onResetListControls: handleResetListControls,
-    dbConnectionStatus,
+    dbConnectionStatus: showRepositoryBadges ? dbConnectionStatus : undefined,
+    showRepositoryBadges,
+    showUserSwitchingTools,
     onSetHistoryFilter: history.setHistoryFilter,
     onSave: () => {
       void runWithWorkspaceWriteLock(lifecycleCopy.editProcessingLabel, () =>

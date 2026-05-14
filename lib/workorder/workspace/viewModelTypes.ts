@@ -96,6 +96,8 @@ export type BuildWorkspaceViewModelArgs = {
   onSetListSort: (next: WorkOrderListSort) => void;
   onResetListControls: () => void;
   dbConnectionStatus?: DbConnectionStatus;
+  showRepositoryBadges?: boolean;
+  showUserSwitchingTools?: boolean;
   onSetHistoryFilter: (next: HistoryFilter) => void;
   onSave: () => void;
   onSelectWorkOrder: (id: string) => void;
@@ -216,6 +218,8 @@ export type SidebarViewModelArgs = {
   onSetListSort: (next: WorkOrderListSort) => void;
   onResetListControls: () => void;
   dbConnectionStatus?: DbConnectionStatus;
+  showRepositoryBadges?: boolean;
+  showUserSwitchingTools?: boolean;
   writeLocked?: boolean;
   writeLockMessage?: string;
 };
@@ -259,6 +263,7 @@ export type ModalViewModelArgs = {
   onSetAttachmentPreviewId: (next: string | null) => void;
   onSetPermissionTargetUserId: (next: string) => void;
   onSetCurrentUserId: (next: string) => void;
+  showUserSwitchingTools?: boolean;
   onSetHistoryFilter: (next: HistoryFilter) => void;
   onCreateWorkOrder: ModalProps["createWorkOrder"]["onCreate"];
   onConfirmOrderRequest: (payload: { factoryName: string; quantity: number }) => void;
@@ -277,6 +282,8 @@ export type MobileViewModelArgs = {
   version: string;
   drawerOpen: boolean;
   dbConnectionStatus?: DbConnectionStatus;
+  showRepositoryBadges?: boolean;
+  showUserSwitchingTools?: boolean;
   sidebarListProps: SidebarListProps;
   onSetDrawerOpen: (next: boolean) => void;
   onSetPermissionModalOpen: (next: boolean) => void;

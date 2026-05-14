@@ -10,7 +10,7 @@ import { getFactoryOrderRowsValidationMessage, getOrderSubmissionSnapshot } from
 import { getOrderRequestDocumentPreview } from "@/lib/workorder/presentation/orderRequestDocumentPresentation";
 import { buildOrderRequestPrintHtml } from "@/lib/workorder/presentation/orderRequestDocumentPrint";
 import { useI18n } from "@/lib/i18n";
-import { isDebugFeatureEnabled } from "@/lib/constants/runtimeMode";
+import { isDebugFeatureEnabled } from "@/lib/runtime/runtimeMode";
 import type { WorkOrder } from "@/types/workorder";
 
 function PrintIcon() {

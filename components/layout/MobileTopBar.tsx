@@ -13,14 +13,16 @@ type Props = {
   onOpen: () => void;
   onOpenSettings: () => void;
   dbConnectionStatus?: DbConnectionStatus;
+  showRepositoryBadges?: boolean;
+  showUserSwitchingTools?: boolean;
   homeNavigation: WorkOrderHomeNavigation;
 };
 
-export default function MobileTopBar({ companyName, version, onOpen, onOpenSettings, dbConnectionStatus, homeNavigation }: Props) {
+export default function MobileTopBar({ companyName, version, onOpen, onOpenSettings, dbConnectionStatus, showRepositoryBadges = true, showUserSwitchingTools = true, homeNavigation }: Props) {
   const { i18n } = useI18n();
   const copy = i18n.workorder.ui.layout.mobileTopBar;
 
-  const dbStatusPresentation = getDbConnectionStatusPresentation(dbConnectionStatus);
+  const dbStatusPresentation = showRepositoryBadges ? getDbConnectionStatusPresentation(dbConnectionStatus) : null;
 
   return (
     <div className="sticky top-0 z-30 border-b border-stone-200 bg-white/95 px-3 py-[max(env(safe-area-inset-top),0.75rem)] backdrop-blur md:hidden">
@@ -47,14 +49,16 @@ export default function MobileTopBar({ companyName, version, onOpen, onOpenSetti
           >
             ↻
           </button>
-          <button
-            type="button"
-            onClick={onOpenSettings}
-            aria-label={copy.openSettingsAria}
-            className="pbp-touch-target pbp-interactive-button inline-flex h-11 w-11 items-center justify-center rounded-xl border border-stone-300 bg-white text-base font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
-          >
-            ⚙️
-          </button>
+          {showUserSwitchingTools ? (
+            <button
+              type="button"
+              onClick={onOpenSettings}
+              aria-label={copy.openSettingsAria}
+              className="pbp-touch-target pbp-interactive-button inline-flex h-11 w-11 items-center justify-center rounded-xl border border-stone-300 bg-white text-base font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100"
+            >
+              ⚙️
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={onOpen}

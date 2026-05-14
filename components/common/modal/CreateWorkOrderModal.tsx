@@ -5,7 +5,7 @@ import ModalShell from "@/components/common/modal/ModalShell";
 import { MODAL_INPUT_CLASS } from "@/components/common/modal/modalFieldClassNames";
 import { MODAL_ACTION_LABELS, createModalActionHandler, getModalActionDisabledState, renderModalFooterActions } from "@/components/common/modal/modalActions";
 import { DEFAULT_CATEGORY1, DEFAULT_CATEGORY2, DEFAULT_CATEGORY3 } from "@/lib/constants/workorderCategories";
-import { WORKORDER_CATEGORY_RECOMMENDATION_ENABLED } from "@/lib/constants/runtimeMode";
+import { WORKORDER_CATEGORY_RECOMMENDATION_ENABLED } from "@/lib/runtime/runtimeMode";
 import { fetchAdminStandardsFromApi } from "@/lib/admin/settings/standardsApiClient";
 import CreateWorkOrderCategoryFields from "@/components/common/modal/createWorkOrder/CreateWorkOrderCategoryFields";
 import CreateWorkOrderRecommendationPanel from "@/components/common/modal/createWorkOrder/CreateWorkOrderRecommendationPanel";

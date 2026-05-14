@@ -35,6 +35,8 @@ type Props = {
   onSortChange: (value: WorkOrderListSort) => void;
   onResetListControls: () => void;
   dbConnectionStatus?: DbConnectionStatus;
+  showRepositoryBadges?: boolean;
+  showUserSwitchingTools?: boolean;
   writeLocked?: boolean;
   writeLockMessage?: string;
 };
@@ -62,6 +64,8 @@ export default function SidebarContent({
   onSortChange,
   onResetListControls,
   dbConnectionStatus,
+  showRepositoryBadges = true,
+  showUserSwitchingTools = true,
   writeLocked = false,
   writeLockMessage,
 }: Props) {
@@ -69,7 +73,7 @@ export default function SidebarContent({
   const sidebarUi = i18n.workorder.ui.layout.sidebar;
   const controlsUi = i18n.workorder.ui.layout.sidebarControls;
 
-  const dbStatusPresentation = getDbConnectionStatusPresentation(dbConnectionStatus);
+  const dbStatusPresentation = showRepositoryBadges ? getDbConnectionStatusPresentation(dbConnectionStatus) : null;
   const statusOptions = getWorkOrderListStatusFilterOptions(controlsUi);
   const sortOptions = getWorkOrderListSortOptions(controlsUi);
   const statusLabel = statusOptions.find((option) => option.value === statusFilter)?.label ?? controlsUi.statusFilters.active;
@@ -103,16 +107,18 @@ export default function SidebarContent({
             >
               ↻
             </button>
-            <button
-              type="button"
-              onClick={() => { if (!writeLocked) onOpenSettings(); }}
-              disabled={writeLocked}
-              title={writeLocked ? writeLockMessage ?? "상태 변경 처리 중입니다." : controlsUi.openSettingsAria}
-            aria-label={controlsUi.openSettingsAria}
-            className="pbp-interactive-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stone-300 bg-white text-base font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            ⚙️
-          </button>
+            {showUserSwitchingTools ? (
+              <button
+                type="button"
+                onClick={() => { if (!writeLocked) onOpenSettings(); }}
+                disabled={writeLocked}
+                title={writeLocked ? writeLockMessage ?? "상태 변경 처리 중입니다." : controlsUi.openSettingsAria}
+                aria-label={controlsUi.openSettingsAria}
+                className="pbp-interactive-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stone-300 bg-white text-base font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                ⚙️
+              </button>
+            ) : null}
           </div>
         </div>
         <div className="mt-2.5 flex items-center gap-2">

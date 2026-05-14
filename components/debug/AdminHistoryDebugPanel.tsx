@@ -1,4 +1,4 @@
-import { APP_RUNTIME_MODE, DEBUG_FLAGS } from "@/lib/constants/runtimeMode";
+import { APP_RUNTIME_MODE, DEV_DEBUG_FLAGS } from "@/lib/runtime/runtimeMode";
 import type { AdminHistoryEvent } from "@/lib/admin/history/types";
 
 type Props = {
@@ -35,7 +35,7 @@ export default function AdminHistoryDebugPanel({ historyEvents }: Props) {
         <div className="rounded-2xl bg-white px-3 py-2">
           <div className="text-[11px] font-semibold text-stone-500">활성 플래그</div>
           <div className="mt-1 font-medium text-stone-900">
-            {Object.entries(DEBUG_FLAGS)
+            {Object.entries(DEV_DEBUG_FLAGS)
               .filter(([, enabled]) => enabled)
               .map(([key]) => key)
               .join(", ") || "없음"}

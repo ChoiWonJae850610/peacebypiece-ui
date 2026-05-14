@@ -24,6 +24,8 @@ export function buildSidebarListProps({
   onSetListSort,
   onResetListControls,
   dbConnectionStatus,
+  showRepositoryBadges,
+  showUserSwitchingTools,
   writeLocked,
   writeLockMessage,
 }: SidebarViewModelArgs): SidebarListProps {
@@ -50,6 +52,8 @@ export function buildSidebarListProps({
     onSortChange: onSetListSort,
     onResetListControls,
     dbConnectionStatus,
+    showRepositoryBadges,
+    showUserSwitchingTools,
     writeLocked,
     writeLockMessage,
   };
@@ -61,13 +65,17 @@ export function buildMobileTopBarProps({
   onSetDrawerOpen,
   onSetPermissionModalOpen,
   dbConnectionStatus,
-}: Pick<MobileViewModelArgs, "companyName" | "version" | "onSetDrawerOpen" | "onSetPermissionModalOpen" | "dbConnectionStatus">): MobileTopBarProps {
+  showRepositoryBadges,
+  showUserSwitchingTools,
+}: Pick<MobileViewModelArgs, "companyName" | "version" | "onSetDrawerOpen" | "onSetPermissionModalOpen" | "dbConnectionStatus" | "showRepositoryBadges" | "showUserSwitchingTools">): MobileTopBarProps {
   return {
     companyName,
     version,
     onOpen: () => onSetDrawerOpen(true),
     onOpenSettings: () => onSetPermissionModalOpen(true),
     dbConnectionStatus,
+    showRepositoryBadges,
+    showUserSwitchingTools,
   };
 }
 

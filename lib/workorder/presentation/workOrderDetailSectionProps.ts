@@ -1,5 +1,5 @@
 import type { ComponentProps } from "react";
-import { isDebugFeatureEnabled } from "@/lib/constants/runtimeMode";
+import { isDebugFeatureEnabled } from "@/lib/runtime/runtimeMode";
 import { getAvailableOrderTypeOptions } from "@/lib/constants/workorderOptions";
 import { canEditManagerInWorkflow } from "@/lib/constants/workorderStates";
 import WorkOrderActionSection from "@/components/workorder/detail/WorkOrderActionSection";

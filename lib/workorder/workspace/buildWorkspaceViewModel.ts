@@ -52,6 +52,8 @@ export function buildWorkspaceViewModel(
     onSetListSort: args.onSetListSort,
     onResetListControls: args.onResetListControls,
     dbConnectionStatus: args.dbConnectionStatus,
+    showRepositoryBadges: args.showRepositoryBadges,
+    showUserSwitchingTools: args.showUserSwitchingTools,
     writeLocked: isWorkspaceWriteLocked,
     writeLockMessage: workspaceWriteLockMessage,
   });
@@ -205,6 +207,7 @@ export function buildWorkspaceViewModel(
     onSetAttachmentPreviewId: args.onSetAttachmentPreviewId,
     onSetPermissionTargetUserId: args.onSetPermissionTargetUserId,
     onSetCurrentUserId: args.onSetCurrentUserId,
+    showUserSwitchingTools: args.showUserSwitchingTools,
     onSetHistoryFilter: args.onSetHistoryFilter,
     onCreateWorkOrder: args.onCreateWorkOrder,
     onConfirmOrderRequest: args.onConfirmOrderRequest,
@@ -224,6 +227,8 @@ export function buildWorkspaceViewModel(
     onSetDrawerOpen: args.onSetDrawerOpen,
     onSetPermissionModalOpen: args.onSetPermissionModalOpen,
     dbConnectionStatus: args.dbConnectionStatus,
+    showRepositoryBadges: args.showRepositoryBadges,
+    showUserSwitchingTools: args.showUserSwitchingTools,
   });
 
   const mobileDrawerProps = buildMobileDrawerProps({
