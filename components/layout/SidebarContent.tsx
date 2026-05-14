@@ -104,7 +104,7 @@ export default function SidebarContent({
               aria-label="새로고침"
               title={writeLocked ? writeLockMessage ?? "상태 변경 처리 중입니다." : "새로고침"}
               disabled={writeLocked}
-              className="pbp-interactive-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stone-300 bg-white text-base font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50"
+              className="pbp-interactive-button pbp-action-secondary inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-base font-medium shadow-sm active:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50"
             >
               ↻
             </button>
@@ -127,7 +127,7 @@ export default function SidebarContent({
                 disabled={writeLocked}
                 title={writeLocked ? writeLockMessage ?? "상태 변경 처리 중입니다." : controlsUi.openSettingsAria}
                 aria-label={controlsUi.openSettingsAria}
-                className="pbp-interactive-button inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-full border border-stone-300 bg-white px-2.5 text-xs font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50"
+                className="pbp-interactive-button pbp-action-secondary inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-full px-2.5 text-xs font-medium shadow-sm active:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <span aria-hidden="true">⚙️</span>
                 <span>{controlsUi.openSettingsAria}</span>
@@ -151,7 +151,7 @@ export default function SidebarContent({
               type="button"
               onClick={() => onSearchQueryChange("")}
               disabled={writeLocked}
-              className="pbp-interactive-button inline-flex h-9 shrink-0 items-center justify-center rounded-xl border border-stone-300 bg-white px-2.5 text-xs font-medium text-stone-600 hover:border-stone-400 hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="pbp-interactive-button pbp-action-secondary inline-flex h-9 shrink-0 items-center justify-center rounded-xl px-2.5 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
             >
               {controlsUi.clearSearch}
             </button>
@@ -192,7 +192,7 @@ export default function SidebarContent({
               type="button"
               onClick={onResetListControls}
               disabled={writeLocked}
-              className="pbp-interactive-button shrink-0 rounded-full border border-stone-300 bg-white px-2 py-0.5 text-[10px] font-semibold text-stone-600 hover:border-stone-400 hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="pbp-interactive-button pbp-action-secondary shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold disabled:cursor-not-allowed disabled:opacity-50"
             >
               {controlsUi.resetControls}
             </button>
@@ -204,7 +204,7 @@ export default function SidebarContent({
             onClick={() => { if (!writeLocked) onCreate(); }}
             disabled={writeLocked}
             title={writeLocked ? writeLockMessage ?? "상태 변경 처리 중입니다." : undefined}
-            className="pbp-touch-target pbp-interactive-button mt-2.5 w-full rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 active:bg-black disabled:cursor-not-allowed disabled:opacity-50"
+            className="pbp-touch-target pbp-interactive-button pbp-action-primary mt-2.5 w-full rounded-xl px-4 py-2 text-sm font-medium active:bg-black disabled:cursor-not-allowed disabled:opacity-50"
           >
             {controlsUi.create}
           </button>
@@ -229,7 +229,7 @@ export default function SidebarContent({
             />
           ))}
         </div>
-        {workOrders.length === 0 ? <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center text-sm text-stone-500">{controlsUi.empty}</div> : null}
+        {workOrders.length === 0 ? <div className="pbp-empty-state rounded-2xl border border-dashed px-4 py-6 text-center text-sm">{controlsUi.empty}</div> : null}
       </div>
     </div>
   );

@@ -1,8 +1,8 @@
 export const SEMANTIC_THEME_TOKEN_GROUPS = {
-  surface: ["page", "card", "cardMuted", "selected", "emptyState"],
-  text: ["primary", "secondary", "muted", "subtle", "inverse"],
+  surface: ["page", "card", "cardMuted", "selected", "selectedSoft", "emptyState"],
+  text: ["primary", "secondary", "muted", "subtle", "inverse", "selectedMuted"],
   action: ["primary", "secondary", "add", "danger", "dangerSoft"],
-  status: ["success", "warning", "danger", "pending", "neutral"],
+  status: ["draft", "reviewRequested", "reviewCompleted", "requestOrder", "inspection", "completed", "rejected", "success", "warning", "danger", "pending", "neutral"],
   field: ["editable", "selectable", "calculated", "readonly", "disabled"],
   border: ["default", "strong", "selected", "focus"],
   feedback: ["focusRing", "hover", "pressed"],
@@ -31,5 +31,29 @@ export const WORKORDER_FIELD_SEMANTICS = {
   disabled: {
     description: "상태나 권한 때문에 현재 수정할 수 없는 필드",
     examples: ["잠긴 작업지시서의 생산구성 값"],
+  },
+} as const;
+
+
+export const WORKORDER_LIST_SEMANTICS = {
+  createAction: {
+    description: "작업지시서 목록에서 새 작업지시서를 생성하는 주요 액션",
+    token: "action.primary",
+  },
+  selectedCard: {
+    description: "현재 열려 있는 작업지시서 목록 카드",
+    token: "surface.selected",
+  },
+  idleCard: {
+    description: "선택되지 않은 작업지시서 목록 카드",
+    token: "surface.cardMuted",
+  },
+  cardStatusBadge: {
+    description: "작업지시서 workflow 상태를 나타내는 뱃지",
+    token: "status.*",
+  },
+  emptyList: {
+    description: "검색/필터 결과 또는 목록이 비었을 때 표시하는 상태",
+    token: "surface.emptyState",
   },
 } as const;

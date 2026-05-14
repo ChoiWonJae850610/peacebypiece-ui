@@ -15,6 +15,17 @@
   --pbp-accent-soft: #ecfdf5;
   --pbp-accent-border: #a7f3d0;
   --pbp-focus-ring: #10b981;
+  --pbp-action-primary-surface: #1c1917;
+  --pbp-action-primary-surface-hover: #292524;
+  --pbp-action-primary-text: #ffffff;
+  --pbp-action-secondary-surface: #ffffff;
+  --pbp-action-secondary-surface-hover: #f5f5f4;
+  --pbp-action-secondary-text: #44403c;
+  --pbp-selected-surface: #1c1917;
+  --pbp-selected-surface-soft: rgba(255, 255, 255, 0.14);
+  --pbp-selected-text: #ffffff;
+  --pbp-selected-muted-text: #e7e5e4;
+  --pbp-selected-border: #1c1917;
   --pbp-danger: #dc2626;
   --pbp-danger-soft: #fef2f2;
   --pbp-warning: #d97706;
@@ -27,6 +38,27 @@
   --pbp-status-danger-soft: #fef2f2;
   --pbp-status-neutral: #57534e;
   --pbp-status-neutral-soft: #f5f5f4;
+  --pbp-workorder-status-draft-bg: #f5f5f4;
+  --pbp-workorder-status-draft-text: #57534e;
+  --pbp-workorder-status-draft-dot: #78716c;
+  --pbp-workorder-status-review-requested-bg: #f5f3ff;
+  --pbp-workorder-status-review-requested-text: #6d28d9;
+  --pbp-workorder-status-review-requested-dot: #8b5cf6;
+  --pbp-workorder-status-review-completed-bg: #fdf4ff;
+  --pbp-workorder-status-review-completed-text: #a21caf;
+  --pbp-workorder-status-review-completed-dot: #d946ef;
+  --pbp-workorder-status-request-order-bg: #fffbeb;
+  --pbp-workorder-status-request-order-text: #b45309;
+  --pbp-workorder-status-request-order-dot: #f59e0b;
+  --pbp-workorder-status-inspection-bg: #ecfdf5;
+  --pbp-workorder-status-inspection-text: #047857;
+  --pbp-workorder-status-inspection-dot: #10b981;
+  --pbp-workorder-status-completed-bg: #1c1917;
+  --pbp-workorder-status-completed-text: #ffffff;
+  --pbp-workorder-status-completed-dot: #ffffff;
+  --pbp-workorder-status-rejected-bg: #fef2f2;
+  --pbp-workorder-status-rejected-text: #be123c;
+  --pbp-workorder-status-rejected-dot: #f43f5e;
   --pbp-field-editable-surface: #fffdf7;
   --pbp-field-editable-surface-strong: #fef7e6;
   --pbp-field-editable-border: #eadfc7;
@@ -127,6 +159,111 @@ body {
   border: 1px solid var(--pbp-border-strong);
   background: var(--pbp-surface);
   color: var(--pbp-text-primary);
+}
+
+.pbp-action-primary {
+  background: var(--pbp-action-primary-surface);
+  color: var(--pbp-action-primary-text);
+}
+
+.pbp-action-primary:hover {
+  background: var(--pbp-action-primary-surface-hover);
+}
+
+.pbp-action-secondary {
+  border: 1px solid var(--pbp-border-strong);
+  background: var(--pbp-action-secondary-surface);
+  color: var(--pbp-action-secondary-text);
+}
+
+.pbp-action-secondary:hover {
+  border-color: var(--pbp-border-strong);
+  background: var(--pbp-action-secondary-surface-hover);
+}
+
+.pbp-workorder-list-card {
+  border-color: var(--pbp-border);
+  background: var(--pbp-surface-muted);
+  color: var(--pbp-text-primary);
+}
+
+.pbp-workorder-list-card:hover {
+  border-color: var(--pbp-border-strong);
+  background: var(--pbp-surface);
+  box-shadow: 0 10px 24px rgba(28, 25, 23, 0.08);
+}
+
+.pbp-workorder-list-card-selected {
+  border-color: var(--pbp-selected-border);
+  background: var(--pbp-selected-surface);
+  color: var(--pbp-selected-text);
+  box-shadow: 0 10px 28px rgba(28, 25, 23, 0.18);
+}
+
+.pbp-workorder-list-card-selected .pbp-workorder-list-muted {
+  color: var(--pbp-selected-muted-text);
+}
+
+.pbp-workorder-list-muted {
+  color: var(--pbp-text-muted);
+}
+
+.pbp-workorder-status-badge {
+  background: var(--pbp-workorder-status-bg);
+  color: var(--pbp-workorder-status-text);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pbp-workorder-status-text) 10%, transparent);
+}
+
+.pbp-workorder-status-dot {
+  background: var(--pbp-workorder-status-dot);
+}
+
+.pbp-workorder-status-active {
+  --pbp-workorder-status-bg: var(--pbp-selected-surface-soft);
+  --pbp-workorder-status-text: var(--pbp-selected-text);
+  --pbp-workorder-status-dot: var(--pbp-selected-text);
+}
+
+.pbp-workorder-status-draft {
+  --pbp-workorder-status-bg: var(--pbp-workorder-status-draft-bg);
+  --pbp-workorder-status-text: var(--pbp-workorder-status-draft-text);
+  --pbp-workorder-status-dot: var(--pbp-workorder-status-draft-dot);
+}
+
+.pbp-workorder-status-review-requested {
+  --pbp-workorder-status-bg: var(--pbp-workorder-status-review-requested-bg);
+  --pbp-workorder-status-text: var(--pbp-workorder-status-review-requested-text);
+  --pbp-workorder-status-dot: var(--pbp-workorder-status-review-requested-dot);
+}
+
+.pbp-workorder-status-review-completed {
+  --pbp-workorder-status-bg: var(--pbp-workorder-status-review-completed-bg);
+  --pbp-workorder-status-text: var(--pbp-workorder-status-review-completed-text);
+  --pbp-workorder-status-dot: var(--pbp-workorder-status-review-completed-dot);
+}
+
+.pbp-workorder-status-request-order {
+  --pbp-workorder-status-bg: var(--pbp-workorder-status-request-order-bg);
+  --pbp-workorder-status-text: var(--pbp-workorder-status-request-order-text);
+  --pbp-workorder-status-dot: var(--pbp-workorder-status-request-order-dot);
+}
+
+.pbp-workorder-status-inspection {
+  --pbp-workorder-status-bg: var(--pbp-workorder-status-inspection-bg);
+  --pbp-workorder-status-text: var(--pbp-workorder-status-inspection-text);
+  --pbp-workorder-status-dot: var(--pbp-workorder-status-inspection-dot);
+}
+
+.pbp-workorder-status-completed {
+  --pbp-workorder-status-bg: var(--pbp-workorder-status-completed-bg);
+  --pbp-workorder-status-text: var(--pbp-workorder-status-completed-text);
+  --pbp-workorder-status-dot: var(--pbp-workorder-status-completed-dot);
+}
+
+.pbp-workorder-status-rejected {
+  --pbp-workorder-status-bg: var(--pbp-workorder-status-rejected-bg);
+  --pbp-workorder-status-text: var(--pbp-workorder-status-rejected-text);
+  --pbp-workorder-status-dot: var(--pbp-workorder-status-rejected-dot);
 }
 
 .pbp-toast {
