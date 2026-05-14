@@ -2,6 +2,7 @@
 
 import { useState, type DragEvent } from "react";
 import WorkOrderDrawingModal from "@/components/workorder/drawing/WorkOrderDrawingModal";
+import WorkOrderTldrawDrawingModal from "@/components/workorder/drawing/WorkOrderTldrawDrawingModal";
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
 import { DeleteButton } from "@/components/workorder/detail/shared/detailEditorShared";
 import { useI18n } from "@/lib/i18n";
@@ -36,6 +37,7 @@ function AttachmentActionMenu({
   addButtonLabel,
   onOpenAttachmentPicker,
   onOpenDrawingPlaceholder,
+  onOpenAdvancedDrawing,
   isMobile,
   disabled = false,
   disabledReason,
@@ -44,6 +46,7 @@ function AttachmentActionMenu({
   addButtonLabel: string;
   onOpenAttachmentPicker: () => void;
   onOpenDrawingPlaceholder: () => void;
+  onOpenAdvancedDrawing: () => void;
   isMobile: boolean;
   disabled?: boolean;
   disabledReason?: string;
@@ -91,6 +94,20 @@ function AttachmentActionMenu({
             >
               <span aria-hidden="true">✎</span>
               <span>{ui.attachmentPanel.drawingAction}</span>
+            </button>
+          ) : null}
+          {canShowDrawingAction ? (
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                onOpenAdvancedDrawing();
+              }}
+              className="pbp-interactive-button flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-[13px] font-medium text-[var(--pbp-text-primary)] hover:bg-[var(--pbp-surface-muted)] active:bg-[var(--pbp-surface-soft)]"
+              title={ui.attachmentPanel.advancedDrawingActionPending}
+            >
+              <span aria-hidden="true">✦</span>
+              <span>{ui.attachmentPanel.advancedDrawingAction}</span>
             </button>
           ) : null}
         </div>
@@ -223,6 +240,7 @@ export default function WorkOrderAttachmentPanel({
 
   const [panelDragActive, setPanelDragActive] = useState(false);
   const [drawingModalOpen, setDrawingModalOpen] = useState(false);
+  const [advancedDrawingModalOpen, setAdvancedDrawingModalOpen] = useState(false);
 
   const handlePanelDragOver = (event: DragEvent<HTMLDivElement>) => {
     if (writeLocked || !canManageAttachments || !hasDroppedFiles(event)) return;
@@ -273,6 +291,7 @@ export default function WorkOrderAttachmentPanel({
             addButtonLabel={addButtonLabel}
             onOpenAttachmentPicker={onOpenAttachmentPicker}
             onOpenDrawingPlaceholder={() => setDrawingModalOpen(true)}
+            onOpenAdvancedDrawing={() => setAdvancedDrawingModalOpen(true)}
             isMobile={isMobile}
             disabled={writeLocked}
             disabledReason={writeLockMessage}
@@ -352,12 +371,20 @@ export default function WorkOrderAttachmentPanel({
       </WorkOrderPanelCard>
     </div>
     {uploadScope === "design" ? (
-      <WorkOrderDrawingModal
-        open={drawingModalOpen}
-        onClose={() => setDrawingModalOpen(false)}
-        onSaveDrawing={(file) => onUploadFiles([file])}
-        variant={variant}
-      />
+      <>
+        <WorkOrderDrawingModal
+          open={drawingModalOpen}
+          onClose={() => setDrawingModalOpen(false)}
+          onSaveDrawing={(file) => onUploadFiles([file])}
+          variant={variant}
+        />
+        <WorkOrderTldrawDrawingModal
+          open={advancedDrawingModalOpen}
+          onClose={() => setAdvancedDrawingModalOpen(false)}
+          onSaveDrawing={(file) => onUploadFiles([file])}
+          variant={variant}
+        />
+      </>
     ) : null}
     </>
   );
