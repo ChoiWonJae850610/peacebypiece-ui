@@ -74,6 +74,7 @@ export default function SidebarContent({
   const controlsUi = i18n.workorder.ui.layout.sidebarControls;
 
   const dbStatusPresentation = showRepositoryBadges ? getDbConnectionStatusPresentation(dbConnectionStatus) : null;
+  const showDevelopmentToolbar = Boolean(dbStatusPresentation || showUserSwitchingTools);
   const statusOptions = getWorkOrderListStatusFilterOptions(controlsUi);
   const sortOptions = getWorkOrderListSortOptions(controlsUi);
   const statusLabel = statusOptions.find((option) => option.value === statusFilter)?.label ?? controlsUi.statusFilters.active;
@@ -94,7 +95,7 @@ export default function SidebarContent({
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-lg font-semibold leading-6 text-stone-900">{companyName}</div>
-            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-stone-500"><span>{controlsUi.subtitle}</span><span className="text-[10px] leading-none text-stone-400">v{version}</span>{dbStatusPresentation ? <span title={dbStatusPresentation.title ?? undefined} className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${dbStatusPresentation.toneClass}`}>{dbStatusPresentation.label}</span> : null}</div>
+            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-stone-500"><span>{controlsUi.subtitle}</span><span className="text-[10px] leading-none text-stone-400">v{version}</span></div>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -107,6 +108,18 @@ export default function SidebarContent({
             >
               ↻
             </button>
+          </div>
+        </div>
+        {showDevelopmentToolbar ? (
+          <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-stone-100 pt-2">
+            {dbStatusPresentation ? (
+              <span
+                title={dbStatusPresentation.title ?? undefined}
+                className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${dbStatusPresentation.toneClass}`}
+              >
+                {dbStatusPresentation.label}
+              </span>
+            ) : null}
             {showUserSwitchingTools ? (
               <button
                 type="button"
@@ -114,13 +127,14 @@ export default function SidebarContent({
                 disabled={writeLocked}
                 title={writeLocked ? writeLockMessage ?? "상태 변경 처리 중입니다." : controlsUi.openSettingsAria}
                 aria-label={controlsUi.openSettingsAria}
-                className="pbp-interactive-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stone-300 bg-white text-base font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50"
+                className="pbp-interactive-button inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-full border border-stone-300 bg-white px-2.5 text-xs font-medium text-stone-700 shadow-sm hover:border-stone-400 hover:bg-stone-50 active:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                ⚙️
+                <span aria-hidden="true">⚙️</span>
+                <span>{controlsUi.openSettingsAria}</span>
               </button>
             ) : null}
           </div>
-        </div>
+        ) : null}
         <div className="mt-2.5 flex items-center gap-2">
           <label className="min-w-0 flex-1">
             <span className="sr-only">{controlsUi.searchAria}</span>
