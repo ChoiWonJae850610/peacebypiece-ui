@@ -41,16 +41,11 @@ function resolveStoredThemeId(storage: Storage | null | undefined, fallbackTheme
   return readStoredPersonalSettings(storage).theme ?? fallbackThemeId;
 }
 
-function resolveInitialClientThemeId(fallbackThemeId: PbpThemeId): PbpThemeId {
-  if (typeof window === "undefined") return fallbackThemeId;
-  return resolveStoredThemeId(window.localStorage, fallbackThemeId);
-}
-
 export function PbpThemeProvider({
   children,
   initialThemeId = DEFAULT_PBP_THEME_ID,
 }: PbpThemeProviderProps) {
-  const [themeId, setThemeIdState] = useState<PbpThemeId>(() => resolveInitialClientThemeId(initialThemeId));
+  const [themeId, setThemeIdState] = useState<PbpThemeId>(initialThemeId);
   const theme = useMemo(() => getPbpThemeDefinition(themeId), [themeId]);
   const setThemeId = useCallback((nextThemeId: PbpThemeId) => {
     setThemeIdState(getPbpThemeDefinition(nextThemeId).id);

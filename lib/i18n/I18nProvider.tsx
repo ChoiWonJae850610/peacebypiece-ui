@@ -46,10 +46,7 @@ type PersonalSettingsLanguageChangeEvent = CustomEvent<{
 
 
 export function I18nProvider({ children, initialLocale = DEFAULT_LOCALE }: I18nProviderProps) {
-  const [locale, setLocaleState] = useState<Locale>(() => {
-    if (typeof window === "undefined") return initialLocale;
-    return resolveStoredLocale(window.localStorage, initialLocale);
-  });
+  const [locale, setLocaleState] = useState<Locale>(initialLocale);
 
   useEffect(() => {
     const syncLocale = (nextLocale: Locale) => {
