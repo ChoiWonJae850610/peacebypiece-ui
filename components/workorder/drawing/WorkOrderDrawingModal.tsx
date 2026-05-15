@@ -1,9 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import WorkOrderDrawingDesktopEditor from "./WorkOrderDrawingDesktopEditor";
 import WorkOrderDrawingMobileEditor from "./WorkOrderDrawingMobileEditor";
 import WorkOrderDrawingTabletEditor from "./WorkOrderDrawingTabletEditor";
-import { type DrawingDeviceVariant } from "./drawingDevicePolicy";
+import { resolveRuntimeDrawingDeviceVariant, type DrawingDeviceVariant } from "./drawingDevicePolicy";
 
 export type WorkOrderDrawingModalProps = {
   open: boolean;
@@ -18,11 +19,29 @@ export default function WorkOrderDrawingModal({
   onSaveDrawing,
   variant = "desktop",
 }: WorkOrderDrawingModalProps) {
-  if (variant === "tablet") {
+  const [drawingVariant, setDrawingVariant] = useState<DrawingDeviceVariant>(() => resolveRuntimeDrawingDeviceVariant(variant));
+
+  useEffect(() => {
+    if (!open || typeof window === "undefined") return;
+
+    const syncDrawingVariant = () => {
+      setDrawingVariant(resolveRuntimeDrawingDeviceVariant(variant));
+    };
+
+    syncDrawingVariant();
+    window.addEventListener("resize", syncDrawingVariant);
+    window.addEventListener("orientationchange", syncDrawingVariant);
+    return () => {
+      window.removeEventListener("resize", syncDrawingVariant);
+      window.removeEventListener("orientationchange", syncDrawingVariant);
+    };
+  }, [open, variant]);
+
+  if (drawingVariant === "tablet") {
     return <WorkOrderDrawingTabletEditor open={open} onClose={onClose} onSaveDrawing={onSaveDrawing} />;
   }
 
-  if (variant === "mobile") {
+  if (drawingVariant === "mobile") {
     return <WorkOrderDrawingMobileEditor open={open} onClose={onClose} onSaveDrawing={onSaveDrawing} />;
   }
 
