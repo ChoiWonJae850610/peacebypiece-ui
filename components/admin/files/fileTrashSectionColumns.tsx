@@ -13,14 +13,16 @@ import {
 import { TrashItemVisual } from "@/components/admin/files/fileTrashSectionPresentation";
 import { ADMIN_TRASH_RESTORE_POLICIES } from "@/lib/admin/files/trashPolicy";
 import {
-  TRASH_CELL_CENTER_CLASS,
-  TRASH_CELL_SELECT_CLASS,
-  TRASH_CELL_TARGET_CLASS,
-  TRASH_HEADER_CENTER_CLASS,
   type TrashSortKey,
   type TrashSortState,
   type UnifiedTrashRow,
 } from "@/components/admin/files/fileTrashSectionRows";
+import {
+  TRASH_CELL_CENTER_CLASS,
+  TRASH_CELL_SELECT_CLASS,
+  TRASH_CELL_TARGET_CLASS,
+  TRASH_HEADER_CENTER_CLASS,
+} from "@/lib/admin/files/trashTablePresentation";
 
 type FileTrashColumnsInput = {
   t: ReturnType<typeof useAdminTranslation>;

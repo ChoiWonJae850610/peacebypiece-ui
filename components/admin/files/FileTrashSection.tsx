@@ -18,13 +18,13 @@ import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { formatAdminTermCount } from "@/lib/i18n/adminTermFormatters";
 import { createFileTrashColumns } from "@/components/admin/files/fileTrashSectionColumns";
 import {
-  TRASH_TABLE_GRID,
   createUnifiedRows,
   sortUnifiedTrashRows,
   type TrashSortKey,
   type TrashSortState,
   type UnifiedTrashRow,
 } from "@/components/admin/files/fileTrashSectionRows";
+import { TRASH_TABLE_GRID } from "@/lib/admin/files/trashTablePresentation";
 import {
   createTrashSelectionConfirmSummary,
   getTrashSelectionActionState,

@@ -3,7 +3,7 @@ import type {
   AdminTrashFileItem,
 } from "@/lib/admin/files/types";
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
-import { formatStorageSize } from "@/components/admin/files/fileTrashSectionRows";
+import { formatStorageSize } from "@/lib/admin/files/trashTablePresentation";
 import {
   ADMIN_TRASH_RESTORE_POLICIES,
   canAdminTrashItemPurge,

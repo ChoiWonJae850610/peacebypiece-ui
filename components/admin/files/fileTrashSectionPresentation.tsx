@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { formatAdminTermCount } from "@/lib/i18n/adminTermFormatters";
-import { WORKORDER_STAGE_STEPS, getWorkOrderStageIndex } from "@/components/admin/files/fileTrashSectionRows";
+import { WORKORDER_STAGE_STEPS, getWorkOrderStageIndex } from "@/lib/admin/files/trashTablePresentation";
 import {
   ADMIN_STORAGE_MUTED_TEXT_CLASS,
   ADMIN_STORAGE_SUBTLE_BOX_CLASS,
