@@ -2,12 +2,11 @@ import AdminStatsDashboard from "@/components/admin/dashboard/AdminStatsDashboar
 import AdminShell from "@/components/admin/layout/AdminShell";
 import { getAdminNavigationItems } from "@/lib/admin/adminDashboard.presentation";
 import { getAdminStatsSnapshot } from "@/lib/admin/stats/repository";
-import type { AdminStatsPeriodTopMode } from "@/lib/admin/stats/types";
+import { normalizeAdminPeriodTopMode, normalizeAdminStatsPageSection } from "@/lib/admin/stats/dashboardPresentation";
 import { APP_VERSION } from "@/lib/constants/app";
 import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
 import { getI18n } from "@/lib/i18n";
 
-type AdminStatsPageSectionKey = "production" | "factory" | "period";
 
 type AdminStatsPageProps = {
   searchParams?: Promise<{
@@ -18,18 +17,6 @@ type AdminStatsPageProps = {
     topMode?: string | string[];
   }>;
 };
-
-function normalizeAdminStatsPageSection(value: string | string[] | undefined): AdminStatsPageSectionKey {
-  const rawValue = Array.isArray(value) ? value[0] : value;
-  if (rawValue === "factory" || rawValue === "period") return rawValue;
-  return "production";
-}
-
-function normalizeAdminPeriodTopMode(value: string | string[] | undefined): AdminStatsPeriodTopMode {
-  const rawValue = Array.isArray(value) ? value[0] : value;
-  if (rawValue === "completed" || rawValue === "defect") return rawValue;
-  return "reorder";
-}
 
 export default async function AdminStatsPage({ searchParams }: AdminStatsPageProps) {
   const pageText = getI18n().admin.dashboardPage;

@@ -31,13 +31,28 @@ import { AdminBasicBarChart, AdminBasicDonutChart } from "@/components/admin/das
 import type { AdminTableColumn } from "@/lib/admin/common/types";
 import type { AdminStatsPeriodTopMode, AdminStatsSnapshot } from "@/lib/admin/stats/types";
 import { buildAdminStatsDashboardViewModel } from "@/lib/admin/stats/presentation";
+import {
+  buildAdminFactoryMetricTooltip,
+  buildAdminStatsPeriodSummaryItems,
+  buildAdminStatsPeriodTopBasisMap,
+  buildAdminStatsPeriodTopEmptyMap,
+  buildAdminStatsPeriodTopSuffixMap,
+  buildAdminStatsPeriodTopTitleMap,
+  buildAdminStatsRatioBars,
+  buildAdminStatsSectionTabs,
+  formatAdminStatsCount,
+  formatAdminStatsPercent,
+  formatAdminStatsStorageGb,
+  formatAdminStatsStorageMb,
+  translateAdminStatsLabel,
+  translateAdminStatsText,
+  type AdminStatsSectionKey,
+} from "@/lib/admin/stats/dashboardPresentation";
 import type { getI18n } from "@/lib/i18n";
 import { useI18n } from "@/lib/i18n";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type CategoryDepthKey = "first" | "second";
-type AdminStatsSectionKey = "production" | "factory" | "period";
-
 type AdminStatsDashboardProps = {
   stats: AdminStatsSnapshot;
   pageText: ReturnType<typeof getI18n>["admin"]["dashboardPage"];
@@ -47,74 +62,6 @@ type AdminStatsDashboardProps = {
 type AdminStatsFactoryPerformanceItem = AdminStatsSnapshot["factoryPerformance"][number];
 
 
-function translateStatsLabel(label: string, t: ReturnType<typeof useAdminTranslation>) {
-  const map: Record<string, string> = {
-    "전체 작업지시서": t("statsUi.summaries.totalWorkorders.label", label),
-    "DB 기준 전체 작업지시서 수": t("statsUi.summaries.totalWorkorders.description", label),
-    "협력업체 수": t("statsUi.summaries.partnerCount.label", label),
-    "활성 협력업체 수": t("statsUi.summaries.partnerCount.description", label),
-    "파일 사용량": t("statsUi.summaries.fileUsage.label", label),
-    "현재 첨부파일 사용량": t("statsUi.summaries.fileUsage.description", label),
-    "완료된 작업지시서": t("statsUi.summaries.completedInPeriod.label", label),
-    "선택 기간 안에 완료 처리된 작업": t("statsUi.summaries.completedInPeriod.description", label),
-    "작성": t("statsUi.flowBuckets.writing", label),
-    "검토": t("statsUi.flowBuckets.review", label),
-    "발주": t("statsUi.flowBuckets.order", label),
-    "입고": t("statsUi.flowBuckets.inbound", label),
-    "완료": t("statsUi.flowBuckets.completed", label),
-    "공장": t("statsUi.partnerBuckets.factory", label),
-    "원단": t("statsUi.partnerBuckets.fabric", label),
-    "부자재": t("statsUi.partnerBuckets.subsidiary", label),
-    "외주": t("statsUi.partnerBuckets.outsourcing", label),
-    "전체 사용량": t("statsUi.fileUsage.total", label),
-    "첨부파일": t("statsUi.fileUsage.active", label),
-    "휴지통": t("statsUi.fileUsage.trash", label),
-    "1차": t("statsUi.productionRounds.first", label),
-    "2차": t("statsUi.productionRounds.second", label),
-    "3차 이상": t("statsUi.productionRounds.thirdOrMore", label),
-    "3차": t("statsUi.productionRounds.thirdOrMore", label),
-    "분류 미지정": t("statsUi.unknownLabel", label),
-    "7일": t("statsUi.periods.sevenDays", label),
-    "30일": t("statsUi.periods.thirtyDays", label),
-  };
-  return map[label] ?? label;
-}
-
-function translateStatsText<T extends { label: string; description?: string }>(items: readonly T[], t: ReturnType<typeof useAdminTranslation>): T[] {
-  return items.map((item) => ({ ...item, label: translateStatsLabel(item.label, t), description: item.description ? translateStatsLabel(item.description, t) : item.description }));
-}
-
-function formatCount(value: number | undefined, suffix = "") {
-  const normalizedValue = Math.max(0, Math.round(value ?? 0)).toLocaleString("ko-KR");
-  if (!suffix) return normalizedValue;
-  const shouldUseSpacing = /^[A-Za-z%]+$/.test(suffix);
-  return shouldUseSpacing ? `${normalizedValue} ${suffix}` : `${normalizedValue}${suffix}`;
-}
-
-function formatPercent(value: number | null | undefined, pendingLabel: string) {
-  if (value === null || value === undefined) return pendingLabel;
-  return `${value.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}%`;
-}
-
-function formatStorageGb(bytes: number, limitBytes: number) {
-  const usedGb = bytes / 1024 / 1024 / 1024;
-  const limitGb = limitBytes / 1024 / 1024 / 1024;
-  return `${usedGb.toFixed(2)}GB / ${limitGb.toFixed(2)}GB`;
-}
-
-function formatStorageMb(bytes: number, usedSuffix: string) {
-  return `${(bytes / 1024 / 1024).toLocaleString("ko-KR", { maximumFractionDigits: 2 })}MB ${usedSuffix}`;
-}
-
-function buildAdminStatsRatioBars(points: Array<{ label: string; value: number; valueLabel?: string }>) {
-  const total = points.reduce((sum, item) => sum + item.value, 0);
-  return points.map((item) => ({
-    ...item,
-    limit: total,
-    valueLabel: item.valueLabel ?? String(item.value),
-    widthPercent: total > 0 ? Math.max(4, Math.round((item.value / total) * 100)) : 0,
-  }));
-}
 
 function PeriodSummaryCard({
   title,
@@ -179,7 +126,7 @@ function PeriodTopCard({
           <div key={`${item.label}-${index}`} className={`${ADMIN_STATS_ITEM_MUTED_CLASS} px-3 py-2`}>
             <div className={`flex items-start justify-between gap-2 text-sm font-semibold ${ADMIN_STATS_BODY_CLASS}`}>
               <span className="truncate pr-3">{index + 1}. {item.label}</span>
-              <span className={`shrink-0 ${ADMIN_STATS_TITLE_CLASS}`}>{formatCount(item.value, valueSuffix)}</span>
+              <span className={`shrink-0 ${ADMIN_STATS_TITLE_CLASS}`}>{formatAdminStatsCount(item.value, valueSuffix)}</span>
             </div>
             <div className={`mt-1.5 h-1.5 rounded-full ${ADMIN_STATS_TRACK_INSET_CLASS}`}>
               <div className={`h-1.5 rounded-full ${ADMIN_STATS_ACCENT_BAR_CLASS}`} style={{ width: `${item.widthPercent}%` }} />
@@ -246,31 +193,31 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
 
   const translatedStats = {
     ...stats,
-    summaries: translateStatsText(stats.summaries, t),
-    workorderFlow: translateStatsText(stats.workorderFlow, t),
-    partnerDistribution: translateStatsText(stats.partnerDistribution, t),
-    fileUsagePoints: translateStatsText(stats.fileUsagePoints, t),
-    keyMetrics: translateStatsText(stats.keyMetrics, t),
-    productionRoundDistribution: translateStatsText(stats.productionRoundDistribution, t),
-    factoryProductionDistribution: translateStatsText(stats.factoryProductionDistribution, t),
-    productionCategoryDistribution: translateStatsText(stats.productionCategoryDistribution, t),
+    summaries: translateAdminStatsText(stats.summaries, t),
+    workorderFlow: translateAdminStatsText(stats.workorderFlow, t),
+    partnerDistribution: translateAdminStatsText(stats.partnerDistribution, t),
+    fileUsagePoints: translateAdminStatsText(stats.fileUsagePoints, t),
+    keyMetrics: translateAdminStatsText(stats.keyMetrics, t),
+    productionRoundDistribution: translateAdminStatsText(stats.productionRoundDistribution, t),
+    factoryProductionDistribution: translateAdminStatsText(stats.factoryProductionDistribution, t),
+    productionCategoryDistribution: translateAdminStatsText(stats.productionCategoryDistribution, t),
     productionCategoryByRound: {
-      first: translateStatsText(stats.productionCategoryByRound.first, t),
-      second: translateStatsText(stats.productionCategoryByRound.second, t),
-      third: translateStatsText(stats.productionCategoryByRound.third, t),
+      first: translateAdminStatsText(stats.productionCategoryByRound.first, t),
+      second: translateAdminStatsText(stats.productionCategoryByRound.second, t),
+      third: translateAdminStatsText(stats.productionCategoryByRound.third, t),
     },
     productionCategoryDrilldown: {
-      firstToSecond: Object.fromEntries(Object.entries(stats.productionCategoryDrilldown.firstToSecond).map(([label, items]) => [translateStatsLabel(label, t), translateStatsText(items, t)])),
-      secondToThird: Object.fromEntries(Object.entries(stats.productionCategoryDrilldown.secondToThird).map(([label, items]) => [translateStatsLabel(label, t), translateStatsText(items, t)])),
+      firstToSecond: Object.fromEntries(Object.entries(stats.productionCategoryDrilldown.firstToSecond).map(([label, items]) => [translateAdminStatsLabel(label, t), translateAdminStatsText(items, t)])),
+      secondToThird: Object.fromEntries(Object.entries(stats.productionCategoryDrilldown.secondToThird).map(([label, items]) => [translateAdminStatsLabel(label, t), translateAdminStatsText(items, t)])),
     },
-    reorderTopProducts: translateStatsText(stats.reorderTopProducts, t),
+    reorderTopProducts: translateAdminStatsText(stats.reorderTopProducts, t),
     periodTopProducts: {
-      completed: translateStatsText(stats.periodTopProducts.completed, t),
-      reorder: translateStatsText(stats.periodTopProducts.reorder, t),
-      defect: translateStatsText(stats.periodTopProducts.defect, t),
+      completed: translateAdminStatsText(stats.periodTopProducts.completed, t),
+      reorder: translateAdminStatsText(stats.periodTopProducts.reorder, t),
+      defect: translateAdminStatsText(stats.periodTopProducts.defect, t),
     },
     factoryPerformance: stats.factoryPerformance,
-    attachmentTrashCards: translateStatsText(stats.attachmentTrashCards, t),
+    attachmentTrashCards: translateAdminStatsText(stats.attachmentTrashCards, t),
   };
 
   const viewModel = buildAdminStatsDashboardViewModel({
@@ -297,7 +244,7 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
 
   const totalReorderCount = stats.currentOverview.reorderCount;
   const activePeriodOptions = stats.periodOptions.filter((item) => item.key === "7d" || item.key === "30d");
-  const activePeriodLabel = translateStatsLabel(stats.selectedPeriodRange.label, t);
+  const activePeriodLabel = translateAdminStatsLabel(stats.selectedPeriodRange.label, t);
   const buildPeriodSectionHref = (href: string) => {
     const separator = href.includes("?") ? "&" : "?";
     return `${href}${separator}section=period&topMode=${selectedPeriodTopMode}`;
@@ -316,26 +263,13 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
         ? pt("customPeriodInvalidOrder", pageText.customPeriodInvalidOrder)
         : "";
   const storageUsePercent = stats.currentOverview.storageLimitBytes > 0 ? Math.round((stats.currentOverview.storageUsedBytes / stats.currentOverview.storageLimitBytes) * 1000) / 10 : 0;
-  const periodSummaryItems = [
-    {
-      key: "completed" as const,
-      label: pt("periodSummaryCompletedLabel", pageText.periodSummaryCompletedLabel),
-      value: formatCount(stats.periodSummary.completedCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)),
-      description: pt("periodSummaryCompletedDescription", pageText.periodSummaryCompletedDescription),
-    },
-    {
-      key: "reorder" as const,
-      label: pt("periodSummaryReorderLabel", pageText.periodSummaryReorderLabel),
-      value: formatCount(stats.periodSummary.reorderCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)),
-      description: pt("periodSummaryReorderDescription", pageText.periodSummaryReorderDescription),
-    },
-    {
-      key: "defect" as const,
-      label: pt("periodSummaryDefectLabel", pageText.periodSummaryDefectLabel),
-      value: formatCount(stats.periodSummary.qualityIssueCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)),
-      description: pt("periodSummaryDefectDescription", pageText.periodSummaryDefectDescription),
-    },
-  ];
+  const periodSummaryItems = buildAdminStatsPeriodSummaryItems({
+    pageText,
+    translate: pt,
+    completedCount: stats.periodSummary.completedCount,
+    reorderCount: stats.periodSummary.reorderCount,
+    qualityIssueCount: stats.periodSummary.qualityIssueCount,
+  });
   const categoryDepthLabels: Record<CategoryDepthKey, string> = {
     first: pt("categoryDepthFirst", pageText.categoryDepthFirst),
     second: pt("categoryDepthSecond", pageText.categoryDepthSecond),
@@ -358,31 +292,16 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
     ? pt("categoryDetailTitleFirst", pageText.categoryDetailTitleFirst).replace("{label}", fallbackSelectedCategory)
     : pt("categoryDetailTitleSecond", pageText.categoryDetailTitleSecond).replace("{label}", fallbackSelectedCategory);
   const categoryDetailEmptyLabel = categoryDepth === "first" ? pt("categoryDetailEmptyFirst", pageText.categoryDetailEmptyFirst) : pt("categoryDetailEmptySecond", pageText.categoryDetailEmptySecond);
-  const periodTopModeTitle: Record<AdminStatsPeriodTopMode, string> = {
-    completed: pt("periodTopCompletedTitle", pageText.periodTopCompletedTitle),
-    reorder: pt("periodTopReorderTitle", pageText.reorderTopTitle),
-    defect: pt("periodTopDefectTitle", pageText.periodTopDefectTitle),
-  };
-  const periodTopModeEmpty: Record<AdminStatsPeriodTopMode, string> = {
-    completed: pt("periodTopCompletedEmpty", pageText.periodTopCompletedEmpty),
-    reorder: pt("periodTopReorderEmpty", pageText.reorderEmpty),
-    defect: pt("periodTopDefectEmpty", pageText.periodTopDefectEmpty),
-  };
-  const periodTopModeBasis: Record<AdminStatsPeriodTopMode, string> = {
-    completed: pt("periodTopCompletedBasis", pageText.periodTopCompletedBasis),
-    reorder: pt("periodTopReorderBasis", pageText.periodTopReorderBasis),
-    defect: pt("periodTopDefectBasis", pageText.periodTopDefectBasis),
-  };
-  const periodTopValueSuffixByMode: Record<AdminStatsPeriodTopMode, string> = {
-    completed: pt("quantityCountSuffix", "pcs"),
-    reorder: pt("reorderRoundSuffix", pageText.reorderRoundSuffix),
-    defect: pt("workorderCountSuffix", pageText.workorderCountSuffix),
-  };
+  const periodTopModeTitle = buildAdminStatsPeriodTopTitleMap(pageText, pt);
+  const periodTopModeEmpty = buildAdminStatsPeriodTopEmptyMap(pageText, pt);
+  const periodTopModeBasis = buildAdminStatsPeriodTopBasisMap(pageText, pt);
+  const periodTopValueSuffixByMode = buildAdminStatsPeriodTopSuffixMap(pageText, pt);
   const periodTopValueSuffix = periodTopValueSuffixByMode[selectedPeriodTopMode];
   const selectedPeriodTopProducts = useMemo(
     () => buildAdminStatsRatioBars(translatedStats.periodTopProducts[selectedPeriodTopMode] ?? []).slice(0, 5),
     [selectedPeriodTopMode, translatedStats.periodTopProducts],
   );
+  const getFactoryMetricTooltip = (item: AdminStatsFactoryPerformanceItem) => buildAdminFactoryMetricTooltip(item, pageText, pt);
   const factoryPerformanceColumns = useMemo<AdminTableColumn<AdminStatsFactoryPerformanceItem>[]>(
     () => [
       {
@@ -390,8 +309,8 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
         label: pt("factoryColumn", pageText.factoryColumn),
         className: "min-w-0",
         render: (item) => (
-          <span className={`block truncate text-xs font-semibold ${ADMIN_STATS_BODY_CLASS}`} title={buildFactoryMetricTooltip(item)}>
-            {item.label} · {formatCount(item.productionCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))}
+          <span className={`block truncate text-xs font-semibold ${ADMIN_STATS_BODY_CLASS}`} title={getFactoryMetricTooltip(item)}>
+            {item.label} · {formatAdminStatsCount(item.productionCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))}
           </span>
         ),
       },
@@ -399,8 +318,8 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
         key: "delayRate",
         label: pt("delayRateColumn", pageText.delayRateColumn),
         render: (item) => (
-          <AdminStatusBadge tone={item.dueDelayRate && item.dueDelayRate > 0 ? "warning" : "success"} size="xs" className="cursor-help" title={buildFactoryMetricTooltip(item)}>
-            {formatPercent(item.dueDelayRate, pt("pendingLabel", pageText.pendingLabel))}
+          <AdminStatusBadge tone={item.dueDelayRate && item.dueDelayRate > 0 ? "warning" : "success"} size="xs" className="cursor-help" title={getFactoryMetricTooltip(item)}>
+            {formatAdminStatsPercent(item.dueDelayRate, pt("pendingLabel", pageText.pendingLabel))}
           </AdminStatusBadge>
         ),
       },
@@ -408,8 +327,8 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
         key: "qualityRate",
         label: pt("qualityRateColumn", pageText.qualityRateColumn),
         render: (item) => (
-          <AdminStatusBadge tone={item.qualityIssueRate && item.qualityIssueRate > 0 ? "warning" : "success"} size="xs" className="cursor-help" title={buildFactoryMetricTooltip(item)}>
-            {formatPercent(item.qualityIssueRate, pt("pendingLabel", pageText.pendingLabel))}
+          <AdminStatusBadge tone={item.qualityIssueRate && item.qualityIssueRate > 0 ? "warning" : "success"} size="xs" className="cursor-help" title={getFactoryMetricTooltip(item)}>
+            {formatAdminStatsPercent(item.qualityIssueRate, pt("pendingLabel", pageText.pendingLabel))}
           </AdminStatusBadge>
         ),
       },
@@ -417,11 +336,7 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
     [pageText, t],
   );
 
-  const statsSectionTabs: Array<{ key: AdminStatsSectionKey; label: string; description: string }> = [
-    { key: "production", label: pt("statsSectionProductionLabel", "생산 구성"), description: pt("statsSectionProductionDescription", "생산품 유형과 상위 품목") },
-    { key: "factory", label: pt("statsSectionFactoryLabel", "업체 성과"), description: pt("statsSectionFactoryDescription", "업체별 생산·납기·검수") },
-    { key: "period", label: pt("statsSectionPeriodLabel", "기간 분석"), description: pt("statsSectionPeriodDescription", "기간별 리오더와 요약") },
-  ];
+  const statsSectionTabs = buildAdminStatsSectionTabs(pageText, pt);
   const activeStatsSectionIndex = statsSectionTabs.findIndex((item) => item.key === activeStatsSection);
   const changeStatsSection = (nextKey: AdminStatsSectionKey) => {
     if (nextKey === activeStatsSection) return;
@@ -461,7 +376,7 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
         {points.length > 0 ? points.map((item) => (
           <div key={item.label}>
             <div className={`flex items-center justify-between text-xs font-semibold ${ADMIN_STATS_BODY_CLASS}`}>
-              <span className="truncate pr-2">{translateStatsLabel(item.label, t)}</span>
+              <span className="truncate pr-2">{translateAdminStatsLabel(item.label, t)}</span>
               <span>{item.value}</span>
             </div>
             <div className={`mt-2.5 h-2.5 rounded-full ${ADMIN_STATS_TRACK_CLASS}`}>
@@ -473,32 +388,7 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
     </AdminCard>
   );
 
-  const buildFactoryMetricTooltip = (item: {
-    label: string;
-    productionCount: number;
-    dueDelayCount: number;
-    dueDateTargetCount: number;
-    qualityIssueCount: number;
-    qualityTargetCount: number;
-    dueDelayExamples?: string[];
-    qualityIssueExamples?: string[];
-  }) => {
-    const dueExamples = item.dueDelayExamples?.slice(0, 3) ?? [];
-    const qualityExamples = item.qualityIssueExamples?.slice(0, 3) ?? [];
-    const countSuffix = pt("workorderCountSuffix", pageText.workorderCountSuffix);
-    const lines = [
-      pt("factoryTooltipProduction", pageText.factoryTooltipProduction).replace("{label}", item.label).replace("{count}", formatCount(item.productionCount, countSuffix)),
-      pt("factoryTooltipDelay", pageText.factoryTooltipDelay).replace("{count}", formatCount(item.dueDelayCount, countSuffix)).replace("{target}", formatCount(item.dueDateTargetCount, countSuffix)),
-      dueExamples.length > 0
-        ? pt("factoryTooltipDelayExamples", pageText.factoryTooltipDelayExamples).replace("{items}", dueExamples.join(", "))
-        : pt("factoryTooltipDelayNone", pageText.factoryTooltipDelayNone),
-      pt("factoryTooltipQuality", pageText.factoryTooltipQuality).replace("{count}", formatCount(item.qualityIssueCount, countSuffix)).replace("{target}", formatCount(item.qualityTargetCount, countSuffix)),
-      qualityExamples.length > 0
-        ? pt("factoryTooltipQualityExamples", pageText.factoryTooltipQualityExamples).replace("{items}", qualityExamples.join(", "))
-        : pt("factoryTooltipQualityNone", pageText.factoryTooltipQualityNone),
-    ];
-    return lines.join("\n");
-  };
+
 
   return (
     <>
@@ -521,10 +411,10 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
 
       <section>
         <div className="grid auto-rows-fr gap-2.5 sm:grid-cols-2 sm:gap-3 xl:grid-cols-4">
-          <CurrentSummaryCard label={pt("currentProducedLabel", pageText.currentProducedLabel)} value={formatCount(stats.currentOverview.totalProducedCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))} description={pt("currentReorderDescription", pageText.currentReorderDescription).replace("{count}", formatCount(totalReorderCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)))} />
-          <CurrentSummaryCard label={pt("currentDelayRateLabel", pageText.currentDelayRateLabel)} value={formatPercent(stats.currentOverview.dueDelayRate, pt("pendingLabel", pageText.pendingLabel))} description={pt("currentRateBasis", pageText.currentRateBasis).replace("{count}", formatCount(stats.currentOverview.dueDelayCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))).replace("{target}", formatCount(stats.currentOverview.dueDateTargetCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)))} />
-          <CurrentSummaryCard label={pt("currentQualityRateLabel", pageText.currentQualityRateLabel)} value={formatPercent(stats.currentOverview.qualityIssueRate, pt("pendingLabel", pageText.pendingLabel))} description={pt("currentRateBasis", pageText.currentRateBasis).replace("{count}", formatCount(stats.currentOverview.qualityIssueCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))).replace("{target}", formatCount(stats.currentOverview.qualityTargetCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)))} />
-          <CurrentSummaryCard label={pt("currentStorageUsageLabel", pageText.currentStorageUsageLabel)} value={`${storageUsePercent}%`} description={formatStorageGb(stats.currentOverview.storageUsedBytes, stats.currentOverview.storageLimitBytes)} />
+          <CurrentSummaryCard label={pt("currentProducedLabel", pageText.currentProducedLabel)} value={formatAdminStatsCount(stats.currentOverview.totalProducedCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))} description={pt("currentReorderDescription", pageText.currentReorderDescription).replace("{count}", formatAdminStatsCount(totalReorderCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)))} />
+          <CurrentSummaryCard label={pt("currentDelayRateLabel", pageText.currentDelayRateLabel)} value={formatAdminStatsPercent(stats.currentOverview.dueDelayRate, pt("pendingLabel", pageText.pendingLabel))} description={pt("currentRateBasis", pageText.currentRateBasis).replace("{count}", formatAdminStatsCount(stats.currentOverview.dueDelayCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))).replace("{target}", formatAdminStatsCount(stats.currentOverview.dueDateTargetCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)))} />
+          <CurrentSummaryCard label={pt("currentQualityRateLabel", pageText.currentQualityRateLabel)} value={formatAdminStatsPercent(stats.currentOverview.qualityIssueRate, pt("pendingLabel", pageText.pendingLabel))} description={pt("currentRateBasis", pageText.currentRateBasis).replace("{count}", formatAdminStatsCount(stats.currentOverview.qualityIssueCount, pt("workorderCountSuffix", pageText.workorderCountSuffix))).replace("{target}", formatAdminStatsCount(stats.currentOverview.qualityTargetCount, pt("workorderCountSuffix", pageText.workorderCountSuffix)))} />
+          <CurrentSummaryCard label={pt("currentStorageUsageLabel", pageText.currentStorageUsageLabel)} value={`${storageUsePercent}%`} description={formatAdminStatsStorageGb(stats.currentOverview.storageUsedBytes, stats.currentOverview.storageLimitBytes)} />
         </div>
       </section>
 
@@ -585,7 +475,7 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
                 <div className="mt-1.5 min-w-0 flex-1">
                   <AdminBasicDonutChart points={selectedCategoryDepthBars} totalLabel={pt("workorderCountSuffix", pageText.workorderCountSuffix)} valueSuffix={pt("workorderCountSuffix", pageText.workorderCountSuffix)} emptyLabel={pt("productionMixEmpty", pageText.productionMixEmpty)} compact selectedLabel={normalizedSelectedCategoryLabel} onSelectPoint={setSelectedCategoryLabel} />
                 </div>
-                <p className={`mt-1 text-[11px] font-semibold ${ADMIN_STATS_BODY_CLASS}`}>{selectedCategoryDepthLabel} · {formatCount(selectedCategoryDepthTotal, pt("workorderCountSuffix", pageText.workorderCountSuffix))}</p>
+                <p className={`mt-1 text-[11px] font-semibold ${ADMIN_STATS_BODY_CLASS}`}>{selectedCategoryDepthLabel} · {formatAdminStatsCount(selectedCategoryDepthTotal, pt("workorderCountSuffix", pageText.workorderCountSuffix))}</p>
                 {normalizedSelectedCategoryLabel ? <p className={`mt-0.5 text-[11px] font-semibold ${ADMIN_STATS_ACCENT_TEXT_CLASS}`}>{pt("selectedItemLabel", pageText.selectedItemLabel)}: {normalizedSelectedCategoryLabel}</p> : null}
               </AdminCard>
 
@@ -640,7 +530,7 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
                       size="sm"
                       className="min-h-8 shrink-0 px-3 py-1.5 text-xs"
                     >
-                      {translateStatsLabel(item.label, t)}
+                      {translateAdminStatsLabel(item.label, t)}
                     </AdminLinkButton>
                   ))}
                   <AdminLinkButton
