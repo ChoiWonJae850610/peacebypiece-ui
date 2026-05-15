@@ -122,7 +122,49 @@ export function resolveRuntimeDrawingDeviceVariant(fallbackVariant: DrawingDevic
   return resolved === "ipad" ? "tablet" : resolved;
 }
 
+function getDocumentOrientationSize() {
+  if (typeof document === "undefined") return { width: 0, height: 0 };
+  return {
+    width: document.documentElement.clientWidth || 0,
+    height: document.documentElement.clientHeight || 0,
+  };
+}
+
+function getVisualViewportOrientationSize() {
+  if (typeof window === "undefined") return { width: 0, height: 0 };
+  return {
+    width: window.visualViewport?.width || 0,
+    height: window.visualViewport?.height || 0,
+  };
+}
+
+function shouldBlockIpadDrawingForLandscape() {
+  if (matchesMediaQuery("(orientation: portrait)")) return false;
+  if (matchesMediaQuery("(orientation: landscape)")) return true;
+
+  if (typeof window !== "undefined") {
+    const orientationType = window.screen?.orientation?.type || "";
+    if (orientationType.includes("portrait")) return false;
+    if (orientationType.includes("landscape")) return true;
+
+    const visualViewportSize = getVisualViewportOrientationSize();
+    if (visualViewportSize.width > 0 && visualViewportSize.height > 0) {
+      return visualViewportSize.width > visualViewportSize.height;
+    }
+
+    const documentSize = getDocumentOrientationSize();
+    if (documentSize.width > 0 && documentSize.height > 0) {
+      return documentSize.width > documentSize.height;
+    }
+
+    return window.innerWidth > window.innerHeight;
+  }
+
+  return false;
+}
+
 export function shouldBlockDrawingForLandscape(policy: DrawingDevicePolicy) {
   if (typeof window === "undefined" || !policy.blockLandscape) return false;
+  if (policy.variant === "ipad") return shouldBlockIpadDrawingForLandscape();
   return window.innerWidth > window.innerHeight;
 }
