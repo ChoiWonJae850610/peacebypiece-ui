@@ -152,7 +152,7 @@ function CurrentSummaryCard({ label, value, description, subValue }: { label: st
 export default function AdminStatsDashboard({ stats, pageText, initialSection = "production", initialPeriodTopMode = "reorder" }: AdminStatsDashboardProps) {
   const t = useAdminTranslation();
   const { locale } = useI18n();
-  const pt = (key: string, fallback: string) => t(`dashboardPage.${key}`, fallback);
+  const pt = (key: string, fallback = "") => t(`dashboardPage.${key}`, fallback);
   const [categoryDepth, setCategoryDepth] = useState<CategoryDepthKey>("first");
   const [selectedCategoryLabel, setSelectedCategoryLabel] = useState<string | null>(null);
   const [selectedPeriodTopMode, setSelectedPeriodTopMode] = useState<AdminStatsPeriodTopMode>(initialPeriodTopMode);
