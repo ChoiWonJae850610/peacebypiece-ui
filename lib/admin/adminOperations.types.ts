@@ -11,11 +11,27 @@ export type AdminDashboardPoint = {
   value: number;
 };
 
-export type AdminDashboardQueueId = "reviewWaiting" | "orderWaiting" | "inspectionWaiting" | "inboundDelayed";
+export type AdminDashboardQueueId =
+  | "reviewWaiting"
+  | "orderWaiting"
+  | "inspectionWaiting"
+  | "inboundDelayed";
 
-export type AdminDashboardTaskStatusKey = "reviewRequested" | "inspection" | "reviewCompleted" | "rejected" | "draft";
+export type AdminDashboardTaskStatusKey =
+  | "reviewRequested"
+  | "inspection"
+  | "reviewCompleted"
+  | "rejected"
+  | "draft";
 
 export type AdminDashboardTaskPriorityKey = "review" | "inspection" | "order";
+
+export type AdminDashboardTaskDueKey =
+  | "pending"
+  | "overdue"
+  | "today"
+  | "tomorrow"
+  | "after";
 
 export type AdminDashboardInsight = {
   id: AdminDashboardQueueId;
@@ -30,6 +46,8 @@ export type AdminDashboardTodayTask = {
   statusLabel: string;
   statusKey: AdminDashboardTaskStatusKey;
   dueLabel: string;
+  dueKey: AdminDashboardTaskDueKey;
+  dueDays: number | null;
   priorityLabel: string;
   priorityKey: AdminDashboardTaskPriorityKey;
   factoryName: string;
@@ -37,6 +55,7 @@ export type AdminDashboardTodayTask = {
   quantityCount: number | null;
   attachmentCount: number;
   thumbnailUrl: string | null;
+  previewUrls: string[];
   updatedLabel: string;
   actionHref: string;
 };
@@ -51,7 +70,10 @@ export type AdminOperationalDashboardSnapshot = {
   sourceState: "db" | "not_configured" | "error";
 };
 
-export type AdminOperationalDashboardSnapshots = Record<AdminDashboardPeriod, AdminOperationalDashboardSnapshot>;
+export type AdminOperationalDashboardSnapshots = Record<
+  AdminDashboardPeriod,
+  AdminOperationalDashboardSnapshot
+>;
 
 export const ADMIN_DASHBOARD_PERIOD_OPTIONS: AdminDashboardPeriodOption[] = [
   { value: "today", label: "오늘" },

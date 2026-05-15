@@ -2,7 +2,11 @@ import "server-only";
 
 import { getAdminCompanyId } from "@/lib/admin/settings/companyScope";
 import { ADMIN_WORKORDER_FLOW_BUCKETS } from "@/lib/constants/adminStats";
-import { isDatabaseConfigured, queryDb, type DbQueryResultRow } from "@/lib/db/client";
+import {
+  isDatabaseConfigured,
+  queryDb,
+  type DbQueryResultRow,
+} from "@/lib/db/client";
 import { getI18n } from "@/lib/i18n";
 import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
 
@@ -10,6 +14,7 @@ import {
   ADMIN_DASHBOARD_PERIOD_OPTIONS,
   type AdminDashboardPeriod,
   type AdminDashboardQueueId,
+  type AdminDashboardTaskDueKey,
   type AdminDashboardTaskPriorityKey,
   type AdminDashboardTaskStatusKey,
   type AdminDashboardTodayTask,
@@ -31,9 +36,17 @@ const ADMIN_DASHBOARD_STATUS_DISTRIBUTION_BUCKETS = [
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
-const ADMIN_DASHBOARD_QUEUE_IDS: readonly AdminDashboardQueueId[] = ["reviewWaiting", "orderWaiting", "inspectionWaiting", "inboundDelayed"] as const;
+const ADMIN_DASHBOARD_QUEUE_IDS: readonly AdminDashboardQueueId[] = [
+  "reviewWaiting",
+  "orderWaiting",
+  "inspectionWaiting",
+  "inboundDelayed",
+] as const;
 
-function createEmptyQueueTasks(): Record<AdminDashboardQueueId, AdminDashboardTodayTask[]> {
+function createEmptyQueueTasks(): Record<
+  AdminDashboardQueueId,
+  AdminDashboardTodayTask[]
+> {
   return {
     reviewWaiting: [],
     orderWaiting: [],
@@ -62,49 +75,129 @@ function getPeriodStart(period: AdminDashboardPeriod, now: Date): Date {
 function parseDate(value: unknown): Date | null {
   if (value instanceof Date) return value;
   if (typeof value !== "string" || value.trim().length === 0) return null;
-  const normalized = value.includes("T") ? value : value.replace(/\./g, "-").replace(/\//g, "-");
+  const normalized = value.includes("T")
+    ? value
+    : value.replace(/\./g, "-").replace(/\//g, "-");
   const parsed = new Date(normalized);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
 function parseDueDateAtStartOfDay(value: unknown, now: Date): Date | null {
-  if (value instanceof Date) return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+  if (value instanceof Date)
+    return new Date(value.getFullYear(), value.getMonth(), value.getDate());
   if (typeof value !== "string") return null;
   const text = value.trim();
   if (!text) return null;
 
   const fullDateMatch = text.match(/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})$/);
   if (fullDateMatch) {
-    return new Date(Number(fullDateMatch[1]), Number(fullDateMatch[2]) - 1, Number(fullDateMatch[3]));
+    return new Date(
+      Number(fullDateMatch[1]),
+      Number(fullDateMatch[2]) - 1,
+      Number(fullDateMatch[3]),
+    );
   }
 
   const monthDayMatch = text.match(/^(\d{1,2})[-./](\d{1,2})$/);
   if (monthDayMatch) {
-    return new Date(now.getFullYear(), Number(monthDayMatch[1]) - 1, Number(monthDayMatch[2]));
+    return new Date(
+      now.getFullYear(),
+      Number(monthDayMatch[1]) - 1,
+      Number(monthDayMatch[2]),
+    );
   }
 
   return parseDate(text);
 }
 
-function isWithinPeriod(value: unknown, period: AdminDashboardPeriod, now: Date): boolean {
+function isWithinPeriod(
+  value: unknown,
+  period: AdminDashboardPeriod,
+  now: Date,
+): boolean {
   const date = parseDate(value);
   if (!date) return false;
   return date >= getPeriodStart(period, now) && date <= now;
 }
 
-function countByStatuses(rows: WorkorderRow[], statuses: readonly string[], period: AdminDashboardPeriod, now: Date): number {
-  return rows.filter((row) => statuses.includes(row.status ?? "") && isWithinPeriod(row.created_at, period, now)).length;
+function countByStatuses(
+  rows: WorkorderRow[],
+  statuses: readonly string[],
+  period: AdminDashboardPeriod,
+  now: Date,
+): number {
+  return rows.filter(
+    (row) =>
+      statuses.includes(row.status ?? "") &&
+      isWithinPeriod(row.created_at, period, now),
+  ).length;
 }
 
-function formatDueLabel(value: unknown, now: Date): string {
+type DuePresentation = {
+  dueKey: AdminDashboardTaskDueKey;
+  dueDays: number | null;
+  dueLabel: string;
+};
+
+function formatDueLabel(input: DuePresentation): string {
+  if (input.dueKey === "pending") return adminOpsText.todayTasks.duePending;
+  if (input.dueKey === "overdue") return adminOpsText.todayTasks.overdue;
+  if (input.dueKey === "today") return adminOpsText.todayTasks.dueToday;
+  if (input.dueKey === "tomorrow") return adminOpsText.todayTasks.dueTomorrow;
+  return adminOpsText.todayTasks.dueAfter.replace(
+    "{days}",
+    String(input.dueDays ?? 0),
+  );
+}
+
+function getDuePresentation(value: unknown, now: Date): DuePresentation {
   const dueDate = parseDueDateAtStartOfDay(value, now);
   const today = startOfToday(now);
-  if (!dueDate) return adminOpsText.todayTasks.duePending;
-  const diffDays = Math.round((dueDate.getTime() - today.getTime()) / ONE_DAY_MS);
-  if (diffDays < 0) return adminOpsText.todayTasks.overdue;
-  if (diffDays === 0) return adminOpsText.todayTasks.dueToday;
-  if (diffDays === 1) return adminOpsText.todayTasks.dueTomorrow;
-  return adminOpsText.todayTasks.dueAfter.replace("{days}", String(diffDays));
+  if (!dueDate) {
+    const pending: DuePresentation = {
+      dueKey: "pending",
+      dueDays: null,
+      dueLabel: "",
+    };
+    return { ...pending, dueLabel: formatDueLabel(pending) };
+  }
+
+  const diffDays = Math.round(
+    (dueDate.getTime() - today.getTime()) / ONE_DAY_MS,
+  );
+  if (diffDays < 0) {
+    const overdue: DuePresentation = {
+      dueKey: "overdue",
+      dueDays: diffDays,
+      dueLabel: "",
+    };
+    return { ...overdue, dueLabel: formatDueLabel(overdue) };
+  }
+  if (diffDays === 0) {
+    const todayPresentation: DuePresentation = {
+      dueKey: "today",
+      dueDays: 0,
+      dueLabel: "",
+    };
+    return {
+      ...todayPresentation,
+      dueLabel: formatDueLabel(todayPresentation),
+    };
+  }
+  if (diffDays === 1) {
+    const tomorrow: DuePresentation = {
+      dueKey: "tomorrow",
+      dueDays: 1,
+      dueLabel: "",
+    };
+    return { ...tomorrow, dueLabel: formatDueLabel(tomorrow) };
+  }
+  const after: DuePresentation = {
+    dueKey: "after",
+    dueDays: diffDays,
+    dueLabel: "",
+  };
+  return { ...after, dueLabel: formatDueLabel(after) };
 }
 
 function getStatusKey(status: string | null): AdminDashboardTaskStatusKey {
@@ -129,16 +222,49 @@ function getPriorityLabel(status: string | null): string {
   return adminOpsText.todayTasks.priority[getPriorityKey(status)];
 }
 
-function emptySnapshot(period: AdminDashboardPeriod, sourceState: AdminOperationalDashboardSnapshot["sourceState"]): AdminOperationalDashboardSnapshot {
+function emptySnapshot(
+  period: AdminDashboardPeriod,
+  sourceState: AdminOperationalDashboardSnapshot["sourceState"],
+): AdminOperationalDashboardSnapshot {
   return {
     period,
-    statusFlow: ADMIN_WORKORDER_FLOW_BUCKETS.map((bucket) => ({ id: bucket.labelKey, label: adminStatsText.flowBuckets[bucket.labelKey], value: 0 })),
-    statusDistribution: ADMIN_DASHBOARD_STATUS_DISTRIBUTION_BUCKETS.map((bucket) => ({ id: bucket.labelKey, label: adminOpsText.statusDistribution[bucket.labelKey], value: 0 })),
+    statusFlow: ADMIN_WORKORDER_FLOW_BUCKETS.map((bucket) => ({
+      id: bucket.labelKey,
+      label: adminStatsText.flowBuckets[bucket.labelKey],
+      value: 0,
+    })),
+    statusDistribution: ADMIN_DASHBOARD_STATUS_DISTRIBUTION_BUCKETS.map(
+      (bucket) => ({
+        id: bucket.labelKey,
+        label: adminOpsText.statusDistribution[bucket.labelKey],
+        value: 0,
+      }),
+    ),
     insights: [
-      { id: "reviewWaiting", label: adminOpsText.insights.reviewWaiting, value: "0", description: adminOpsText.insights.reviewWaitingDescription },
-      { id: "orderWaiting", label: adminOpsText.insights.orderWaiting, value: "0", description: adminOpsText.insights.orderWaitingDescription },
-      { id: "inspectionWaiting", label: adminOpsText.insights.inspectionWaiting, value: "0", description: adminOpsText.insights.inspectionWaitingDescription },
-      { id: "inboundDelayed", label: adminOpsText.insights.inboundDelayed, value: "0", description: adminOpsText.insights.inboundDelayedDescription },
+      {
+        id: "reviewWaiting",
+        label: adminOpsText.insights.reviewWaiting,
+        value: "0",
+        description: adminOpsText.insights.reviewWaitingDescription,
+      },
+      {
+        id: "orderWaiting",
+        label: adminOpsText.insights.orderWaiting,
+        value: "0",
+        description: adminOpsText.insights.orderWaitingDescription,
+      },
+      {
+        id: "inspectionWaiting",
+        label: adminOpsText.insights.inspectionWaiting,
+        value: "0",
+        description: adminOpsText.insights.inspectionWaitingDescription,
+      },
+      {
+        id: "inboundDelayed",
+        label: adminOpsText.insights.inboundDelayed,
+        value: "0",
+        description: adminOpsText.insights.inboundDelayedDescription,
+      },
     ],
     todayTasks: [],
     queueTasks: createEmptyQueueTasks(),
@@ -170,19 +296,45 @@ type AttachmentSummaryRow = DbQueryResultRow & {
   storage_key: string | null;
 };
 
-
-function createAttachmentPreviewUrl(value: string | null | undefined): string | null {
+function createAttachmentPreviewUrl(
+  value: string | null | undefined,
+): string | null {
   if (!value) return null;
   const cleanValue = String(value).trim();
   if (!cleanValue) return null;
-  if (cleanValue.startsWith("/") || cleanValue.startsWith("http://") || cleanValue.startsWith("https://")) {
+  if (
+    cleanValue.startsWith("/") ||
+    cleanValue.startsWith("http://") ||
+    cleanValue.startsWith("https://")
+  ) {
     return cleanValue;
   }
   return createAttachmentFileProxyUrl(cleanValue);
 }
 
+function createAttachmentPreviewUrls(
+  ...values: Array<string | null | undefined>
+): string[] {
+  const seen = new Set<string>();
+  const urls: string[] = [];
+
+  for (const value of values) {
+    const url = createAttachmentPreviewUrl(value);
+    if (!url || seen.has(url)) continue;
+    seen.add(url);
+    urls.push(url);
+  }
+
+  return urls;
+}
+
 function parseQuantityCount(value: unknown): number | null {
-  const quantity = typeof value === "number" ? value : typeof value === "string" ? Number(value) : 0;
+  const quantity =
+    typeof value === "number"
+      ? value
+      : typeof value === "string"
+        ? Number(value)
+        : 0;
   if (!Number.isFinite(quantity) || quantity <= 0) return null;
   return quantity;
 }
@@ -190,7 +342,10 @@ function parseQuantityCount(value: unknown): number | null {
 function formatQuantityLabel(value: unknown): string {
   const quantity = parseQuantityCount(value);
   if (quantity === null) return adminOpsText.todayTasks.quantityPending;
-  return adminOpsText.todayTasks.quantityValue.replace("{count}", String(quantity));
+  return adminOpsText.todayTasks.quantityValue.replace(
+    "{count}",
+    String(quantity),
+  );
 }
 
 function formatUpdatedLabel(value: unknown, now: Date): string {
@@ -198,14 +353,30 @@ function formatUpdatedLabel(value: unknown, now: Date): string {
   if (!date) return adminOpsText.todayTasks.updatedPending;
   const diffMs = Math.max(0, now.getTime() - date.getTime());
   const diffMinutes = Math.floor(diffMs / (60 * 1000));
-  if (diffMinutes < 60) return adminOpsText.todayTasks.updatedMinutes.replace("{minutes}", String(Math.max(1, diffMinutes)));
+  if (diffMinutes < 60)
+    return adminOpsText.todayTasks.updatedMinutes.replace(
+      "{minutes}",
+      String(Math.max(1, diffMinutes)),
+    );
   const diffHours = Math.floor(diffMinutes / 60);
-  if (diffHours < 24) return adminOpsText.todayTasks.updatedHours.replace("{hours}", String(diffHours));
+  if (diffHours < 24)
+    return adminOpsText.todayTasks.updatedHours.replace(
+      "{hours}",
+      String(diffHours),
+    );
   const diffDays = Math.floor(diffHours / 24);
-  return adminOpsText.todayTasks.updatedDays.replace("{days}", String(diffDays));
+  return adminOpsText.todayTasks.updatedDays.replace(
+    "{days}",
+    String(diffDays),
+  );
 }
 
-function isInboundDelayed(row: OrderDueRow, workorderStatusById: Map<string, string>, selectedPeriodStart: Date, now: Date): boolean {
+function isInboundDelayed(
+  row: OrderDueRow,
+  workorderStatusById: Map<string, string>,
+  selectedPeriodStart: Date,
+  now: Date,
+): boolean {
   if (!row.spec_sheet_id) return false;
   const status = workorderStatusById.get(row.spec_sheet_id);
   if (status !== "inspection") return false;
@@ -215,58 +386,104 @@ function isInboundDelayed(row: OrderDueRow, workorderStatusById: Map<string, str
   return delayedAt <= now && dueDate >= selectedPeriodStart;
 }
 
-function sortTasksByUpdatedAt(tasks: Array<AdminDashboardTodayTask & { updatedAt: number }>): AdminDashboardTodayTask[] {
+function sortTasksByUpdatedAt(
+  tasks: Array<AdminDashboardTodayTask & { updatedAt: number }>,
+): AdminDashboardTodayTask[] {
   return tasks
     .sort((a, b) => b.updatedAt - a.updatedAt)
     .slice(0, 8)
     .map(({ updatedAt, ...task }) => task);
 }
 
-function buildSnapshot(period: AdminDashboardPeriod, workorders: WorkorderRow[], orders: OrderDueRow[], attachments: AttachmentSummaryRow[], now = new Date()): AdminOperationalDashboardSnapshot {
-  const workorderStatusById = new Map(workorders.map((row) => [row.id, row.status ?? ""]));
-  const orderDueByWorkorderId = new Map(orders.map((row) => [row.spec_sheet_id ?? "", row.due_date]));
-  const orderFactoryByWorkorderId = new Map(orders.map((row) => [row.spec_sheet_id ?? "", row.factory_name]));
-  const orderQuantityByWorkorderId = new Map(orders.map((row) => [row.spec_sheet_id ?? "", row.quantity]));
-  const attachmentByWorkorderId = new Map(attachments.map((row) => [row.order_id ?? "", row]));
+function buildSnapshot(
+  period: AdminDashboardPeriod,
+  workorders: WorkorderRow[],
+  orders: OrderDueRow[],
+  attachments: AttachmentSummaryRow[],
+  now = new Date(),
+): AdminOperationalDashboardSnapshot {
+  const workorderStatusById = new Map(
+    workorders.map((row) => [row.id, row.status ?? ""]),
+  );
+  const orderDueByWorkorderId = new Map(
+    orders.map((row) => [row.spec_sheet_id ?? "", row.due_date]),
+  );
+  const orderFactoryByWorkorderId = new Map(
+    orders.map((row) => [row.spec_sheet_id ?? "", row.factory_name]),
+  );
+  const orderQuantityByWorkorderId = new Map(
+    orders.map((row) => [row.spec_sheet_id ?? "", row.quantity]),
+  );
+  const attachmentByWorkorderId = new Map(
+    attachments.map((row) => [row.order_id ?? "", row]),
+  );
   const selectedPeriodStart = getPeriodStart(period, now);
 
   const delayedWorkorderIds = new Set(
     orders
-      .filter((row) => isInboundDelayed(row, workorderStatusById, selectedPeriodStart, now))
+      .filter((row) =>
+        isInboundDelayed(row, workorderStatusById, selectedPeriodStart, now),
+      )
       .map((row) => row.spec_sheet_id)
       .filter((id): id is string => Boolean(id)),
   );
 
-  const reviewWaitingCount = workorders.filter((row) => row.status === "review_requested").length;
-  const orderWaitingCount = workorders.filter((row) => row.status === "review_completed").length;
-  const inspectionWaitingCount = workorders.filter((row) => row.status === "inspection").length;
+  const reviewWaitingCount = workorders.filter(
+    (row) => row.status === "review_requested",
+  ).length;
+  const orderWaitingCount = workorders.filter(
+    (row) => row.status === "review_completed",
+  ).length;
+  const inspectionWaitingCount = workorders.filter(
+    (row) => row.status === "inspection",
+  ).length;
   const inboundDelayedCount = delayedWorkorderIds.size;
 
-  const buildTask = (row: WorkorderRow): AdminDashboardTodayTask & { updatedAt: number } => {
+  const buildTask = (
+    row: WorkorderRow,
+  ): AdminDashboardTodayTask & { updatedAt: number } => {
     const attachment = attachmentByWorkorderId.get(row.id);
+    const duePresentation = getDuePresentation(
+      orderDueByWorkorderId.get(row.id),
+      now,
+    );
+    const previewUrls = createAttachmentPreviewUrls(
+      attachment?.thumbnail_url,
+      attachment?.preview_url,
+      attachment?.thumbnail_key,
+      attachment?.storage_key,
+    );
+
     return {
       id: row.id,
       title: row.title,
       statusLabel: getStatusLabel(row.status),
       statusKey: getStatusKey(row.status),
-      dueLabel: formatDueLabel(orderDueByWorkorderId.get(row.id), now),
+      dueLabel: duePresentation.dueLabel,
+      dueKey: duePresentation.dueKey,
+      dueDays: duePresentation.dueDays,
       priorityLabel: getPriorityLabel(row.status),
       priorityKey: getPriorityKey(row.status),
-      factoryName: orderFactoryByWorkorderId.get(row.id) || adminOpsText.todayTasks.factoryPending,
-      quantityLabel: formatQuantityLabel(orderQuantityByWorkorderId.get(row.id)),
+      factoryName:
+        orderFactoryByWorkorderId.get(row.id) ||
+        adminOpsText.todayTasks.factoryPending,
+      quantityLabel: formatQuantityLabel(
+        orderQuantityByWorkorderId.get(row.id),
+      ),
       quantityCount: parseQuantityCount(orderQuantityByWorkorderId.get(row.id)),
       attachmentCount: Number(attachment?.attachment_count ?? 0),
-      thumbnailUrl: createAttachmentPreviewUrl(attachment?.thumbnail_url)
-        ?? createAttachmentPreviewUrl(attachment?.preview_url)
-        ?? createAttachmentPreviewUrl(attachment?.thumbnail_key)
-        ?? createAttachmentPreviewUrl(attachment?.storage_key),
+      thumbnailUrl: previewUrls[0] ?? null,
+      previewUrls,
       updatedLabel: formatUpdatedLabel(row.updated_at, now),
       actionHref: `/worker?workOrderId=${encodeURIComponent(row.id)}`,
       updatedAt: parseDate(row.updated_at)?.getTime() ?? 0,
     };
   };
 
-  const queueSourceTasks: Record<AdminDashboardQueueId, Array<AdminDashboardTodayTask & { updatedAt: number }>> = {
+  const queueSourceTasks: Record<
+    AdminDashboardQueueId,
+    Array<AdminDashboardTodayTask & { updatedAt: number }>
+  > = {
     reviewWaiting: [],
     orderWaiting: [],
     inspectionWaiting: [],
@@ -274,16 +491,21 @@ function buildSnapshot(period: AdminDashboardPeriod, workorders: WorkorderRow[],
   };
 
   for (const row of workorders) {
-    if (row.status === "review_requested") queueSourceTasks.reviewWaiting.push(buildTask(row));
-    if (row.status === "review_completed") queueSourceTasks.orderWaiting.push(buildTask(row));
+    if (row.status === "review_requested")
+      queueSourceTasks.reviewWaiting.push(buildTask(row));
+    if (row.status === "review_completed")
+      queueSourceTasks.orderWaiting.push(buildTask(row));
     if (row.status === "inspection") {
       const task = buildTask(row);
       queueSourceTasks.inspectionWaiting.push(task);
-      if (delayedWorkorderIds.has(row.id)) queueSourceTasks.inboundDelayed.push(task);
+      if (delayedWorkorderIds.has(row.id))
+        queueSourceTasks.inboundDelayed.push(task);
     }
   }
 
-  const queueTasks = ADMIN_DASHBOARD_QUEUE_IDS.reduce<Record<AdminDashboardQueueId, AdminDashboardTodayTask[]>>((acc, queueId) => {
+  const queueTasks = ADMIN_DASHBOARD_QUEUE_IDS.reduce<
+    Record<AdminDashboardQueueId, AdminDashboardTodayTask[]>
+  >((acc, queueId) => {
     acc[queueId] = sortTasksByUpdatedAt(queueSourceTasks[queueId]);
     return acc;
   }, createEmptyQueueTasks());
@@ -297,16 +519,38 @@ function buildSnapshot(period: AdminDashboardPeriod, workorders: WorkorderRow[],
       label: adminStatsText.flowBuckets[bucket.labelKey],
       value: countByStatuses(workorders, bucket.statuses, period, now),
     })),
-    statusDistribution: ADMIN_DASHBOARD_STATUS_DISTRIBUTION_BUCKETS.map((bucket) => ({
-      id: bucket.labelKey,
-      label: adminOpsText.statusDistribution[bucket.labelKey],
-      value: countByStatuses(workorders, bucket.statuses, period, now),
-    })),
+    statusDistribution: ADMIN_DASHBOARD_STATUS_DISTRIBUTION_BUCKETS.map(
+      (bucket) => ({
+        id: bucket.labelKey,
+        label: adminOpsText.statusDistribution[bucket.labelKey],
+        value: countByStatuses(workorders, bucket.statuses, period, now),
+      }),
+    ),
     insights: [
-      { id: "reviewWaiting", label: adminOpsText.insights.reviewWaiting, value: String(reviewWaitingCount), description: adminOpsText.insights.reviewWaitingDescription },
-      { id: "orderWaiting", label: adminOpsText.insights.orderWaiting, value: String(orderWaitingCount), description: adminOpsText.insights.orderWaitingDescription },
-      { id: "inspectionWaiting", label: adminOpsText.insights.inspectionWaiting, value: String(inspectionWaitingCount), description: adminOpsText.insights.inspectionWaitingDescription },
-      { id: "inboundDelayed", label: adminOpsText.insights.inboundDelayed, value: String(inboundDelayedCount), description: adminOpsText.insights.inboundDelayedDescription },
+      {
+        id: "reviewWaiting",
+        label: adminOpsText.insights.reviewWaiting,
+        value: String(reviewWaitingCount),
+        description: adminOpsText.insights.reviewWaitingDescription,
+      },
+      {
+        id: "orderWaiting",
+        label: adminOpsText.insights.orderWaiting,
+        value: String(orderWaitingCount),
+        description: adminOpsText.insights.orderWaitingDescription,
+      },
+      {
+        id: "inspectionWaiting",
+        label: adminOpsText.insights.inspectionWaiting,
+        value: String(inspectionWaitingCount),
+        description: adminOpsText.insights.inspectionWaitingDescription,
+      },
+      {
+        id: "inboundDelayed",
+        label: adminOpsText.insights.inboundDelayed,
+        value: String(inboundDelayedCount),
+        description: adminOpsText.insights.inboundDelayedDescription,
+      },
     ],
     todayTasks,
     queueTasks,
@@ -325,25 +569,26 @@ export async function getAdminOperationalDashboardSnapshots(): Promise<AdminOper
 
   try {
     const companyId = getAdminCompanyId();
-    const [workordersResult, ordersResult, attachmentsResult] = await Promise.all([
-      queryDb<WorkorderRow>(
-        `SELECT id, title, status, created_at, updated_at
+    const [workordersResult, ordersResult, attachmentsResult] =
+      await Promise.all([
+        queryDb<WorkorderRow>(
+          `SELECT id, title, status, created_at, updated_at
            FROM spec_sheets
           WHERE company_id = $1
             AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true`,
-        [companyId],
-      ),
-      queryDb<OrderDueRow>(
-        `SELECT spec_sheet_id, due_date, factory_name, quantity
+          [companyId],
+        ),
+        queryDb<OrderDueRow>(
+          `SELECT spec_sheet_id, due_date, factory_name, quantity
            FROM orders
           WHERE company_id = $1
             AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true`,
-        [companyId],
-      ),
-      queryDb<AttachmentSummaryRow>(
-        `SELECT order_id,
+          [companyId],
+        ),
+        queryDb<AttachmentSummaryRow>(
+          `SELECT order_id,
                 COUNT(*) AS attachment_count,
                 (ARRAY_AGG(NULLIF(thumbnail_url, '') ORDER BY is_primary DESC, (type = 'design') DESC, created_at ASC)
                   FILTER (WHERE thumbnail_url IS NOT NULL AND thumbnail_url <> ''))[1] AS thumbnail_url,
@@ -358,18 +603,36 @@ export async function getAdminOperationalDashboardSnapshots(): Promise<AdminOper
             AND deleted_at IS NULL
             AND COALESCE(is_active, true) = true
           GROUP BY order_id`,
-        [companyId],
-      ),
-    ]);
+          [companyId],
+        ),
+      ]);
 
     return {
-      today: buildSnapshot("today", workordersResult.rows, ordersResult.rows, attachmentsResult.rows),
-      week: buildSnapshot("week", workordersResult.rows, ordersResult.rows, attachmentsResult.rows),
-      month: buildSnapshot("month", workordersResult.rows, ordersResult.rows, attachmentsResult.rows),
+      today: buildSnapshot(
+        "today",
+        workordersResult.rows,
+        ordersResult.rows,
+        attachmentsResult.rows,
+      ),
+      week: buildSnapshot(
+        "week",
+        workordersResult.rows,
+        ordersResult.rows,
+        attachmentsResult.rows,
+      ),
+      month: buildSnapshot(
+        "month",
+        workordersResult.rows,
+        ordersResult.rows,
+        attachmentsResult.rows,
+      ),
     };
   } catch (error) {
     if (process.env.NODE_ENV !== "production") {
-      console.warn("[admin-dashboard] failed to load operational dashboard", error);
+      console.warn(
+        "[admin-dashboard] failed to load operational dashboard",
+        error,
+      );
     }
     return {
       today: emptySnapshot("today", "error"),
