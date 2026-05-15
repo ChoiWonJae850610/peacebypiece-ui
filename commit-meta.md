@@ -1,17 +1,16 @@
 Version :
-0.12.49
+0.12.50
 
 Summary :
-직접 그리기 안내 문구와 테스트용 환경설정 진입 유지
+직접 그리기 iPad 화면 전환 시 모달 유지 보정
 
 Description :
-직접 그리기 tablet landscape 차단 안내 문구를 태블릿 세로모드 기준으로 정리했다. 로그인/멤버/권한 기능이 완성되기 전 iPad와 iPhone 테스트를 위해 작업지시서 사용자 전환용 환경설정 진입 도구가 runtime mode와 무관하게 노출되도록 임시 유지했다.
+직접 그리기 모달이 열린 상태에서 iPad 가로/세로 전환 시 editor variant가 다시 계산되어 모달 shell이 흔들리는 문제를 줄이도록, 모달 open 중에는 drawing editor variant를 고정했다. tablet 판정은 viewport 변화보다 screen 기준을 우선하도록 보정해 iPad Safari의 주소창/툴바 resize 영향을 줄였다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- lib/i18n/ko/workorder.ts
-- lib/i18n/en/workorder.ts
-- lib/runtime/runtimeMode.ts
+- components/workorder/drawing/WorkOrderDrawingModal.tsx
+- components/workorder/drawing/drawingDevicePolicy.ts
 
 추가 파일 목록 :
 없음

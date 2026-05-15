@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import WorkOrderDrawingDesktopEditor from "./WorkOrderDrawingDesktopEditor";
 import WorkOrderDrawingMobileEditor from "./WorkOrderDrawingMobileEditor";
 import WorkOrderDrawingTabletEditor from "./WorkOrderDrawingTabletEditor";
@@ -20,21 +20,14 @@ export default function WorkOrderDrawingModal({
   variant = "desktop",
 }: WorkOrderDrawingModalProps) {
   const [drawingVariant, setDrawingVariant] = useState<DrawingDeviceVariant>(() => resolveRuntimeDrawingDeviceVariant(variant));
+  const previousOpenRef = useRef(open);
 
   useEffect(() => {
-    if (!open || typeof window === "undefined") return;
+    const wasOpen = previousOpenRef.current;
+    previousOpenRef.current = open;
 
-    const syncDrawingVariant = () => {
-      setDrawingVariant(resolveRuntimeDrawingDeviceVariant(variant));
-    };
-
-    syncDrawingVariant();
-    window.addEventListener("resize", syncDrawingVariant);
-    window.addEventListener("orientationchange", syncDrawingVariant);
-    return () => {
-      window.removeEventListener("resize", syncDrawingVariant);
-      window.removeEventListener("orientationchange", syncDrawingVariant);
-    };
+    if (!open || wasOpen) return;
+    setDrawingVariant(resolveRuntimeDrawingDeviceVariant(variant));
   }, [open, variant]);
 
   if (drawingVariant === "tablet") {

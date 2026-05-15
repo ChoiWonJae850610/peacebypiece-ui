@@ -15,6 +15,8 @@ export type DrawingDevicePolicy = {
 const DESKTOP_CANVAS_SIZE: DrawingCanvasSize = { width: 1280, height: 900 };
 const PORTRAIT_CANVAS_SIZE: DrawingCanvasSize = { width: 900, height: 1280 };
 const TABLET_SHORT_EDGE_MIN = 700;
+const TABLET_SCREEN_SHORT_EDGE_MIN = 600;
+const TABLET_SCREEN_LONG_EDGE_MIN = 900;
 
 export const DRAWING_DEVICE_POLICIES: Record<DrawingDeviceVariant, DrawingDevicePolicy> = {
   desktop: {
@@ -51,6 +53,16 @@ function getViewportShortEdge() {
   return Math.min(window.innerWidth || 0, window.innerHeight || 0);
 }
 
+function getScreenEdges() {
+  if (typeof window === "undefined" || !window.screen) return { shortEdge: 0, longEdge: 0 };
+  const width = window.screen.width || 0;
+  const height = window.screen.height || 0;
+  return {
+    shortEdge: Math.min(width, height),
+    longEdge: Math.max(width, height),
+  };
+}
+
 function hasFineHoverPointer() {
   return matchesMediaQuery("(hover: hover) and (pointer: fine)");
 }
@@ -59,17 +71,32 @@ function hasCoarsePrimaryPointer() {
   return matchesMediaQuery("(pointer: coarse)");
 }
 
+function hasTouchCapableRuntime() {
+  if (typeof navigator === "undefined") return false;
+  return (navigator.maxTouchPoints ?? 0) > 0;
+}
+
 function hasTouchOnlyRuntime() {
   if (hasFineHoverPointer()) return false;
   if (hasCoarsePrimaryPointer()) return true;
-  if (typeof navigator === "undefined") return false;
-  return (navigator.maxTouchPoints ?? 0) > 0;
+  return hasTouchCapableRuntime();
+}
+
+function isTabletSizedRuntime() {
+  const screenEdges = getScreenEdges();
+  if (
+    screenEdges.shortEdge >= TABLET_SCREEN_SHORT_EDGE_MIN &&
+    screenEdges.longEdge >= TABLET_SCREEN_LONG_EDGE_MIN
+  ) {
+    return true;
+  }
+  return getViewportShortEdge() >= TABLET_SHORT_EDGE_MIN;
 }
 
 export function resolveRuntimeDrawingDeviceVariant(fallbackVariant: DrawingDeviceVariant = "desktop"): DrawingDeviceVariant {
   if (typeof window === "undefined") return fallbackVariant;
   if (!hasTouchOnlyRuntime()) return "desktop";
-  return getViewportShortEdge() >= TABLET_SHORT_EDGE_MIN ? "tablet" : "mobile";
+  return isTabletSizedRuntime() ? "tablet" : "mobile";
 }
 
 export function shouldBlockDrawingForLandscape(policy: DrawingDevicePolicy) {
