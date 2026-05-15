@@ -42,9 +42,9 @@ export default function PartnerMasterFilters({
   ];
 
   return (
-    <AdminFilterBar className="mt-3 block shrink-0 space-y-4 border-[var(--admin-theme-border)] bg-[var(--admin-theme-soft)] transition-colors">
-      <div className="grid gap-y-4 gap-x-8 xl:grid-cols-[minmax(260px,0.9fr)_minmax(380px,1.45fr)_minmax(260px,0.8fr)] xl:items-start">
-        <label className="space-y-2">
+    <AdminFilterBar className="mt-3 block shrink-0 border-[var(--admin-theme-border)] bg-[var(--admin-theme-soft)] px-3 py-3 transition-colors md:px-4">
+      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-[minmax(240px,1fr)_minmax(360px,1.55fr)_minmax(250px,1fr)_minmax(120px,0.55fr)] xl:items-end">
+        <label className="min-w-0 space-y-2">
           <span className="text-[13px] font-semibold text-[var(--pbp-text-muted)]">{filterText.searchLabel}</span>
           <input
             value={searchTerm}
@@ -54,7 +54,7 @@ export default function PartnerMasterFilters({
           />
         </label>
 
-        <div className="space-y-2">
+        <div className="min-w-0 space-y-2">
           <p className="text-[13px] font-semibold text-[var(--pbp-text-muted)]">{filterText.typeLabel}</p>
           <div className="flex flex-wrap gap-2">
             {filterOptions.map((item) => {
@@ -75,7 +75,7 @@ export default function PartnerMasterFilters({
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="min-w-0 space-y-2">
           <p className="text-[13px] font-semibold text-[var(--pbp-text-muted)]">{filterText.statusLabel}</p>
           <div className="flex flex-wrap gap-2">
             {statusOptions.map((item) => (
@@ -92,13 +92,15 @@ export default function PartnerMasterFilters({
             ))}
           </div>
         </div>
-      </div>
 
-      <p className="text-sm text-[var(--pbp-text-muted)]">
-        {filterText.currentListPrefix} <span className="font-semibold text-[var(--pbp-text-primary)]">{filteredCount}</span>
-        {filterText.currentListSuffix}
-        {hasSearch ? filterText.searchResultSuffix : ""}
-      </p>
+        <div className="flex min-w-0 items-end lg:col-span-2 xl:col-span-1 xl:justify-end">
+          <p className="w-full rounded-2xl bg-[var(--pbp-surface)] px-3 py-2 text-sm text-[var(--pbp-text-muted)] xl:text-right">
+            {filterText.currentListPrefix} <span className="font-semibold text-[var(--pbp-text-primary)]">{filteredCount}</span>
+            {filterText.currentListSuffix}
+            {hasSearch ? filterText.searchResultSuffix : ""}
+          </p>
+        </div>
+      </div>
     </AdminFilterBar>
   );
 }
