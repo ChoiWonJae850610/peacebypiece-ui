@@ -2,9 +2,18 @@ export const adminKo = {
   description:
     "이 페이지는 고객사 운영을 위한 관리자 작업공간입니다. 현재 단계에서는 협력업체/공장 마스터 확장, 사용자 운영, 기본 설정 화면으로 확장될 구조를 먼저 안정화합니다.",
   sections: [
-    { title: "마스터 데이터", description: "공장, 협력업체, 외주처, 공정 마스터 영역으로 확장할 구간" },
-    { title: "사용자", description: "초대, 권한 변경, 사용자 활성 상태 관리 영역" },
-    { title: "운영 설정", description: "알림, 기본값, 운영 설정을 다루는 영역" },
+    {
+      title: "마스터 데이터",
+      description: "공장, 협력업체, 외주처, 공정 마스터 영역으로 확장할 구간",
+    },
+    {
+      title: "사용자",
+      description: "초대, 권한 변경, 사용자 활성 상태 관리 영역",
+    },
+    {
+      title: "운영 설정",
+      description: "알림, 기본값, 운영 설정을 다루는 영역",
+    },
   ],
   common: {
     loadingList: "목록을 불러오는 중입니다.",
@@ -17,53 +26,194 @@ export const adminKo = {
   filesPage: {
     title: "저장소 관리",
     tabGroupLabel: "저장소 파일 상태",
-    tabs: { attachments: "첨부파일 목록", trash: "휴지통", storage: "용량 관리" },
+    tabs: {
+      attachments: "첨부파일 목록",
+      trash: "휴지통",
+      storage: "용량 관리",
+    },
     snapshotLoadFailed: "파일 목록 DB 조회 실패",
     snapshotLoadFailedWithMessage: "파일 목록 DB 조회 실패: {message}",
   },
   auditSummary: {
     title: "관리자 점검",
-    closedDescription: "대시보드는 운영 통계를 우선 표시하고, DB/구조 점검은 필요할 때만 펼쳐 확인합니다.",
+    closedDescription:
+      "대시보드는 운영 통계를 우선 표시하고, DB/구조 점검은 필요할 때만 펼쳐 확인합니다.",
     open: "점검 펼치기",
-    chips: { db: "데이터", domain: "구조", sample: "샘플", finalAudit: "마감점검" },
+    chips: {
+      db: "데이터",
+      domain: "구조",
+      sample: "샘플",
+      finalAudit: "마감점검",
+    },
     close: "점검 닫기",
   },
   completionAudit: {
     title: "관리자 완료 검증",
-    description: "관리자 영역을 WorkOrder 리팩토링 전 마감 가능한 상태인지 점검합니다.",
-    chips: { domain: "구조", legacyRemoved: "이전 경로 제거", legacyKept: "이전 경로 유지", db: "데이터", sample: "샘플", finalAudit: "마감점검" },
+    description:
+      "관리자 영역을 WorkOrder 리팩토링 전 마감 가능한 상태인지 점검합니다.",
+    chips: {
+      domain: "구조",
+      legacyRemoved: "이전 경로 제거",
+      legacyKept: "이전 경로 유지",
+      db: "데이터",
+      sample: "샘플",
+      finalAudit: "마감점검",
+    },
     decision: "완료 판정",
   },
   dbConnectionAudit: {
     title: "데이터 연결 점검",
-    description: "관리자 화면별 실제 데이터 조회/저장 경계와 안전 표시 상태입니다.",
+    description:
+      "관리자 화면별 실제 데이터 조회/저장 경계와 안전 표시 상태입니다.",
     read: "조회",
     write: "저장",
     alternateDisplay: "안전 표시",
     nextCheck: "다음 확인",
-    repository: { workorder: "작업지시서", partner: "협력업체", attachmentMemo: "메모/첨부" },
+    repository: {
+      workorder: "작업지시서",
+      partner: "협력업체",
+      attachmentMemo: "메모/첨부",
+    },
     repositoryModes: { db: "실제 데이터", mock: "샘플 데이터" },
-    statuses: { "db-connected": "실제 데이터 사용", "db-prepared": "데이터 연결 준비", "fallback-guarded": "안전 표시 보호", "mock-only": "샘플 데이터", "not-applicable": "대상 아님" },
-    sourceTypes: { "actual-db": "실제 데이터 조회/저장", "db-with-fallback": "실제 데이터 조회 + 안전 표시", "db-prepared-fallback": "데이터 연결 준비 + 안전 표시", "mock-only": "샘플 데이터", "not-applicable": "대상 아님" },
+    statuses: {
+      "db-connected": "실제 데이터 사용",
+      "db-prepared": "데이터 연결 준비",
+      "fallback-guarded": "안전 표시 보호",
+      "mock-only": "샘플 데이터",
+      "not-applicable": "대상 아님",
+    },
+    sourceTypes: {
+      "actual-db": "실제 데이터 조회/저장",
+      "db-with-fallback": "실제 데이터 조회 + 안전 표시",
+      "db-prepared-fallback": "데이터 연결 준비 + 안전 표시",
+      "mock-only": "샘플 데이터",
+      "not-applicable": "대상 아님",
+    },
   },
   historyModal: {
     title: "작업지시서 히스토리",
-    description: "관리자 화면을 벗어나지 않고 전체 작업지시서 히스토리를 모달에서 확인합니다.",
+    description:
+      "관리자 화면을 벗어나지 않고 전체 작업지시서 히스토리를 모달에서 확인합니다.",
   },
   notificationModal: {
     title: "알림 이벤트 설정",
-    description: "관리자 화면을 벗어나지 않고 알림 이벤트 ON/OFF 상태를 모달에서 관리합니다.",
+    description:
+      "관리자 화면을 벗어나지 않고 알림 이벤트 ON/OFF 상태를 모달에서 관리합니다.",
   },
   historySection: {
     title: "히스토리",
     summary: "관리자에게 필요한 주요 작업 기록만 표시합니다.",
     countSuffix: "건",
   },
-  navigation: { dashboard: "대시보드", workorder: "작업지시서", partners: "협력업체 관리", storage: "저장소 관리", statistics: "통계정보", history: "히스토리", settings: "환경설정", dbConnected: "DB 상태 점검" },
-  operationsDashboard: { title: "운영 대시보드", workorderStatusTitle: "작업지시서 현황", sourceDb: "DB 기준 업무 대기 항목을 표시합니다.", sourceNotConfigured: "DB 연결 설정이 없어 0건으로 표시됩니다.", sourceError: "DB 조회 실패로 0건으로 표시됩니다.", periodAria: "대시보드 기간 선택", periods: { today: "오늘", week: "이번주", month: "이번달" }, todayWorkTitle: "검토·발주 대기", todayWorkDescription: "관리자 검토와 발주 처리가 필요한 작업지시서를 확인합니다.", priorityTitle: "주요 대기 현황", dueLabel: "납기", statusFlowTitle: "상태 흐름", statusDistributionTitle: "상태 분포", todayCheckTitle: "오늘 체크", previewEmpty: "미리보기", attachmentLabel: "첨부", factoryLabel: "공장", quantityLabel: "수량", updatedLabel: "업데이트", openWorkorder: "열기", actions: { openWorkorderShort: "업무화면", openWorkorderWorkspace: "작업지시서 업무 화면으로 이동" }, todayTasksEmpty: "오늘 확인할 검토·발주 대기 작업지시서가 없습니다.", countSuffix: "건", statusDistribution: { working: "작업중", reviewWaiting: "검토대기", inboundWaiting: "검수대기", completed: "완료" }, insights: { reviewWaiting: "검토 대기", reviewWaitingDescription: "관리자 검토가 필요한 작업지시서", orderWaiting: "발주 대기", orderWaitingDescription: "검토 완료 후 발주 처리가 필요한 작업지시서", inspectionWaiting: "검수 대기", inspectionWaitingDescription: "검수 또는 입고 확인이 필요한 작업지시서", inboundDelayed: "입고 지연", inboundDelayedDescription: "납기일 0시 기준 24시간이 지난 검수대기 작업지시서" }, queues: { reviewWaiting: { title: "검토 대기 목록", empty: "검토 대기 작업지시서가 없습니다." }, orderWaiting: { title: "발주 대기 목록", empty: "발주 대기 작업지시서가 없습니다." }, inspectionWaiting: { title: "검수 대기 목록", empty: "검수 대기 작업지시서가 없습니다." }, inboundDelayed: { title: "입고 지연 목록", empty: "입고 지연 작업지시서가 없습니다." } }, todayTasks: { duePending: "납기 미정", overdue: "지연", dueToday: "오늘", dueTomorrow: "내일", dueAfter: "D-{days}", status: { reviewRequested: "검토대기", inspection: "검수대기", reviewCompleted: "발주대기", rejected: "반려", draft: "작성중" }, priority: { review: "검토 필요", inspection: "검수 필요", order: "발주 확인" }, factoryPending: "공장 미정", quantityPending: "수량 미정", quantityValue: "{count}장", updatedPending: "기록 없음", updatedMinutes: "{minutes}분 전", updatedHours: "{hours}시간 전", updatedDays: "{days}일 전" } },
+  navigation: {
+    dashboard: "대시보드",
+    workorder: "작업지시서",
+    partners: "협력업체 관리",
+    storage: "저장소 관리",
+    statistics: "통계정보",
+    history: "히스토리",
+    settings: "환경설정",
+    dbConnected: "DB 상태 점검",
+  },
+  operationsDashboard: {
+    title: "운영 대시보드",
+    workorderStatusTitle: "작업지시서 현황",
+    sourceDb: "DB 기준 업무 대기 항목을 표시합니다.",
+    sourceNotConfigured: "DB 연결 설정이 없어 0건으로 표시됩니다.",
+    sourceError: "DB 조회 실패로 0건으로 표시됩니다.",
+    periodAria: "대시보드 기간 선택",
+    periods: { today: "오늘", week: "이번주", month: "이번달" },
+    todayWorkTitle: "검토·발주 대기",
+    todayWorkDescription:
+      "관리자 검토와 발주 처리가 필요한 작업지시서를 확인합니다.",
+    priorityTitle: "주요 대기 현황",
+    dueLabel: "납기",
+    statusFlowTitle: "상태 흐름",
+    statusDistributionTitle: "상태 분포",
+    todayCheckTitle: "오늘 체크",
+    previewEmpty: "미리보기",
+    attachmentLabel: "첨부",
+    factoryLabel: "공장",
+    quantityLabel: "수량",
+    updatedLabel: "업데이트",
+    openWorkorder: "열기",
+    actions: {
+      openWorkorderShort: "업무화면",
+      openWorkorderWorkspace: "작업지시서 업무 화면으로 이동",
+    },
+    todayTasksEmpty: "오늘 확인할 검토·발주 대기 작업지시서가 없습니다.",
+    countSuffix: "건",
+    statusDistribution: {
+      working: "작업중",
+      reviewWaiting: "검토대기",
+      inboundWaiting: "검수대기",
+      completed: "완료",
+    },
+    insights: {
+      reviewWaiting: "검토 대기",
+      reviewWaitingDescription: "관리자 검토가 필요한 작업지시서",
+      orderWaiting: "발주 대기",
+      orderWaitingDescription: "검토 완료 후 발주 처리가 필요한 작업지시서",
+      inspectionWaiting: "검수 대기",
+      inspectionWaitingDescription: "검수 또는 입고 확인이 필요한 작업지시서",
+      inboundDelayed: "입고 지연",
+      inboundDelayedDescription:
+        "납기일 0시 기준 24시간이 지난 검수대기 작업지시서",
+    },
+    queues: {
+      reviewWaiting: {
+        title: "검토 대기 목록",
+        empty: "검토 대기 작업지시서가 없습니다.",
+      },
+      orderWaiting: {
+        title: "발주 대기 목록",
+        empty: "발주 대기 작업지시서가 없습니다.",
+      },
+      inspectionWaiting: {
+        title: "검수 대기 목록",
+        empty: "검수 대기 작업지시서가 없습니다.",
+      },
+      inboundDelayed: {
+        title: "입고 지연 목록",
+        empty: "입고 지연 작업지시서가 없습니다.",
+      },
+    },
+    todayTasks: {
+      duePending: "납기 미정",
+      overdue: "지연",
+      dueToday: "오늘",
+      dueTomorrow: "내일",
+      dueAfter: "D-{days}",
+      status: {
+        reviewRequested: "검토대기",
+        inspection: "검수대기",
+        reviewCompleted: "발주대기",
+        rejected: "반려",
+        draft: "작성중",
+      },
+      priority: {
+        review: "검토 필요",
+        inspection: "검수 필요",
+        order: "발주 확인",
+      },
+      factoryPending: "공장 미정",
+      quantityPending: "수량 미정",
+      quantityValue: "{count}장",
+      updatedPending: "기록 없음",
+      updatedMinutes: "{minutes}분 전",
+      updatedHours: "{hours}시간 전",
+      updatedDays: "{days}일 전",
+    },
+  },
   adminConsole: {
     actions: { open: "열기" },
-    statuses: { available: "사용 가능", planned: "준비 중", linked: "화면 연결", api: "API 준비", legacy: "기존 기능" },
+    statuses: {
+      available: "사용 가능",
+      planned: "준비 중",
+      linked: "화면 연결",
+      api: "API 준비",
+      legacy: "기존 기능",
+    },
     permissionLabel: "권한",
     managementCards: {
       title: "운영 관리",
@@ -75,155 +225,408 @@ export const adminKo = {
       description: "",
     },
     links: {
-      "workorder-entry": { label: "작업지시서 업무 화면", description: "작업지시서 목록과 상세 업무 화면으로 이동합니다." },
-      partners: { label: "협력업체 관리", description: "공장, 원단, 부자재, 외주처 기준정보를 관리합니다." },
-      files: { label: "저장소 관리", description: "문서/디자인, 휴지통, 용량 사용량을 관리합니다." },
-      stats: { label: "통계정보", description: "작업지시서, 협력업체, 파일 사용량 지표를 확인합니다." },
-      settings: { label: "환경설정", description: "고객사별 화면, 파일, 알림 정책을 관리합니다." },
-      "member-management": { label: "멤버 관리", description: "멤버 초대와 역할 설정을 관리합니다." },
-      "standard-units": { label: "단위표준", description: "원단, 부자재, 생산 수량에 사용하는 단위 기준을 관리합니다." },
-      "outsourcing-processes": { label: "외주공정", description: "나염, 자수, 워싱 등 외주공정 기준을 관리합니다." },
-      "product-types": { label: "생산품유형", description: "작업지시서 품목과 생산품 분류 기준을 관리합니다." }
-    }
+      "workorder-entry": {
+        label: "작업지시서 업무 화면",
+        description: "작업지시서 목록과 상세 업무 화면으로 이동합니다.",
+      },
+      partners: {
+        label: "협력업체 관리",
+        description: "공장, 원단, 부자재, 외주처 기준정보를 관리합니다.",
+      },
+      files: {
+        label: "저장소 관리",
+        description: "문서/디자인, 휴지통, 용량 사용량을 관리합니다.",
+      },
+      stats: {
+        label: "통계정보",
+        description: "작업지시서, 협력업체, 파일 사용량 지표를 확인합니다.",
+      },
+      settings: {
+        label: "환경설정",
+        description: "고객사별 화면, 파일, 알림 정책을 관리합니다.",
+      },
+      "member-management": {
+        label: "멤버 관리",
+        description: "멤버 초대와 역할 설정을 관리합니다.",
+      },
+      "standard-units": {
+        label: "단위표준",
+        description:
+          "원단, 부자재, 생산 수량에 사용하는 단위 기준을 관리합니다.",
+      },
+      "outsourcing-processes": {
+        label: "외주공정",
+        description: "나염, 자수, 워싱 등 외주공정 기준을 관리합니다.",
+      },
+      "product-types": {
+        label: "생산품유형",
+        description: "작업지시서 품목과 생산품 분류 기준을 관리합니다.",
+      },
+    },
   },
   memberManagement: {
     title: "멤버 관리",
-    description: "고객사 멤버 초대, 가입 신청 승인, 권한 부여를 한 화면에서 처리합니다.",
+    description:
+      "고객사 멤버 초대, 가입 신청 승인, 권한 부여를 한 화면에서 처리합니다.",
     eyebrow: "멤버 권한",
     permissionCount: "권한 {count}개",
     systemOnlyCount: "시스템 전용 {count}개",
     matrixEnabledCount: "기본 체크 {count}개",
-    actions: { openOrganizationSettings: "조직 설정 보기", createInvite: "초대 링크 생성" },
+    actions: {
+      openOrganizationSettings: "조직 설정 보기",
+      createInvite: "초대 링크 생성",
+    },
     tabs: {
-      invite: { label: "멤버 초대", description: "이메일 또는 문자 초대를 생성합니다.", count: "초대 {count}건" },
-      approval: { label: "승인", description: "가입 신청을 승인하거나 거절합니다.", count: "승인 대기 {count}건" },
-      members: { label: "전체 멤버", description: "멤버 목록과 역할 기본값을 확인합니다.", count: "멤버 {count}명" },
-      permissions: { label: "권한 관리", description: "권한 코드와 홈 카드 노출 기준을 관리합니다.", count: "권한 {count}개" }
+      invite: {
+        label: "멤버 초대",
+        description: "이메일 또는 문자 초대를 생성합니다.",
+        count: "초대 {count}건",
+      },
+      approval: {
+        label: "승인",
+        description: "가입 신청을 승인하거나 거절합니다.",
+        count: "승인 대기 {count}건",
+      },
+      members: {
+        label: "전체 멤버",
+        description: "멤버 목록과 역할 기본값을 확인합니다.",
+        count: "멤버 {count}명",
+      },
+      permissions: {
+        label: "권한 관리",
+        description: "권한 코드와 홈 카드 노출 기준을 관리합니다.",
+        count: "권한 {count}개",
+      },
     },
     inviteBuilder: {
       eyebrow: "멤버 초대",
       title: "직원 초대 생성",
-      description: "이메일 또는 휴대폰으로 초대 링크를 발송할 대상을 입력하고 기본 권한 묶음과 만료 기간을 지정합니다.",
-      fields: { method: "초대 방식", email: "이메일 주소", phone: "휴대폰 번호", roleTemplate: "기본 권한 묶음", expires: "초대 만료" },
+      description:
+        "이메일 또는 휴대폰으로 초대 링크를 발송할 대상을 입력하고 기본 권한 묶음과 만료 기간을 지정합니다.",
+      fields: {
+        method: "초대 방식",
+        email: "이메일 주소",
+        phone: "휴대폰 번호",
+        roleTemplate: "기본 권한 묶음",
+        expires: "초대 만료",
+      },
       placeholders: { email: "member@example.com", phone: "010-1234-5678" },
-      validation: { required: "초대 대상을 입력해 주세요.", email: "이메일 형식으로 입력해 주세요.", phone: "휴대폰 번호 형식으로 입력해 주세요." },
+      validation: {
+        required: "초대 대상을 입력해 주세요.",
+        email: "이메일 형식으로 입력해 주세요.",
+        phone: "휴대폰 번호 형식으로 입력해 주세요.",
+      },
       expires: { "3d": "3일", "7d": "7일", "14d": "14일" },
       sendPolicyTitle: "발송 기준",
-      sendPolicy: { email: "초대 링크를 이메일로 발송합니다.", phone: "초대 링크를 문자/SMS로 발송합니다." },
-      actions: { copy: "링크 복사", create: "초대 생성", creating: "생성 중", cancel: "초대 취소" }
+      sendPolicy: {
+        email: "초대 링크를 이메일로 발송합니다.",
+        phone: "초대 링크를 문자/SMS로 발송합니다.",
+      },
+      actions: {
+        copy: "링크 복사",
+        create: "초대 생성",
+        creating: "생성 중",
+        cancel: "초대 취소",
+      },
+      feedback: {
+        created: "초대 링크가 생성되었습니다.",
+        copied: "링크가 복사되었습니다.",
+        cancelled: "초대를 취소했습니다.",
+      },
     },
 
     approvalWorkbench: {
       eyebrow: "가입 신청 승인",
       title: "멤버 승인/권한 부여 화면",
-      description: "가입 신청자를 확인하고 승인 또는 거절하기 전에 role template 기준 권한을 직접 조정하는 1차 화면입니다.",
-      previewApplicant: { name: "김디자이너", email: "designer@example.com", description: "초대 링크로 가입 신청한 멤버를 승인하기 전 상태 예시입니다." },
+      description:
+        "가입 신청자를 확인하고 승인 또는 거절하기 전에 role template 기준 권한을 직접 조정하는 1차 화면입니다.",
+      previewApplicant: {
+        name: "김디자이너",
+        email: "designer@example.com",
+        description:
+          "초대 링크로 가입 신청한 멤버를 승인하기 전 상태 예시입니다.",
+      },
       steps: {
-        review: { label: "신청 확인", description: "초대 token과 신청자 정보를 확인합니다." },
-        permission: { label: "권한 선택", description: "기본 역할 묶음에서 필요한 권한만 조정합니다." },
-        approve: { label: "승인/거절", description: "승인 시 멤버와 권한을 저장합니다." },
-        audit: { label: "감사 로그", description: "멤버 승인과 권한 변경 이벤트를 기록합니다." }
+        review: {
+          label: "신청 확인",
+          description: "초대 token과 신청자 정보를 확인합니다.",
+        },
+        permission: {
+          label: "권한 선택",
+          description: "기본 역할 묶음에서 필요한 권한만 조정합니다.",
+        },
+        approve: {
+          label: "승인/거절",
+          description: "승인 시 멤버와 권한을 저장합니다.",
+        },
+        audit: {
+          label: "감사 로그",
+          description: "멤버 승인과 권한 변경 이벤트를 기록합니다.",
+        },
       },
       permissionChecklistTitle: "권한 체크리스트",
-      permissionChecklistDescription: "기본 권한 묶음은 시작값이고 승인 저장 시 permission_code 목록을 직접 저장합니다.",
+      permissionChecklistDescription:
+        "기본 권한 묶음은 시작값이고 승인 저장 시 permission_code 목록을 직접 저장합니다.",
       actionsTitle: "승인 처리 액션",
-      actionsDescription: "가입 신청 승인/거절과 승인된 멤버 권한 저장 API가 실제 DB와 연결되어 있습니다.",
+      actionsDescription:
+        "가입 신청 승인/거절과 승인된 멤버 권한 저장 API가 실제 DB와 연결되어 있습니다.",
       actions: {
         approve: { label: "승인" },
         reject: { label: "거절" },
-        permissionUpdate: { label: "권한 수정" }
+        permissionUpdate: { label: "권한 수정" },
       },
       guardTitle: "저장 전제",
-      guardDescription: "승인 시 company_members를 approved로 만들고 member_permissions에 선택 권한을 저장합니다. 승인된 멤버의 권한 수정은 전체 교체 방식으로 저장합니다."
+      guardDescription:
+        "승인 시 company_members를 approved로 만들고 member_permissions에 선택 권한을 저장합니다. 승인된 멤버의 권한 수정은 전체 교체 방식으로 저장합니다.",
     },
     joinRequestStatuses: { pending: "승인 대기" },
     invitationMethods: { email: "이메일", phone: "문자" },
     memberStatuses: { approved: "승인", pending: "대기", suspended: "정지" },
-    invitationStatuses: { draft: "초안", active: "활성", pending: "가입 대기", sent: "발송 완료", expired: "만료" },
+    invitationStatuses: {
+      draft: "초안",
+      active: "활성",
+      pending: "가입 대기",
+      sent: "발송 완료",
+      expired: "만료",
+    },
     statuses: { ready: "기준 연결", planned: "연결 예정", pending: "대기" },
-    sourceState: { dbPending: "DB 연결 예정", dbLoading: "DB 조회 중", dbConnected: "DB 연결", dbFailed: "DB 조회 실패" },
+    sourceState: {
+      dbPending: "DB 연결 예정",
+      dbLoading: "DB 조회 중",
+      dbConnected: "DB 연결",
+      dbFailed: "DB 조회 실패",
+    },
     permissionGuards: {
       visible: "노출",
       hidden: "숨김",
       blocked: "권한 부족",
       allowedButDbPending: "권한 충족 · DB 연결 예정",
-      requiredPermissions: "필요 권한: {permissions}"
+      requiredPermissions: "필요 권한: {permissions}",
     },
     summary: {
-      members: { label: "전체 멤버", description: "승인된 멤버와 정지 멤버를 포함합니다." },
-      invitations: { label: "초대 대기", description: "이메일/문자로 발송한 활성 초대입니다." },
-      joinRequests: { label: "승인 대기", description: "가입 신청 후 고객관리자 승인을 기다리는 사용자입니다." },
-      permissionTemplates: { label: "권한 템플릿", description: "기본 역할 묶음으로 사용할 권한 preset입니다." }
+      members: {
+        label: "전체 멤버",
+        description: "승인된 멤버와 정지 멤버를 포함합니다.",
+      },
+      invitations: {
+        label: "초대 대기",
+        description: "이메일/문자로 발송한 활성 초대입니다.",
+      },
+      joinRequests: {
+        label: "승인 대기",
+        description: "가입 신청 후 고객관리자 승인을 기다리는 사용자입니다.",
+      },
+      permissionTemplates: {
+        label: "권한 템플릿",
+        description: "기본 역할 묶음으로 사용할 권한 preset입니다.",
+      },
     },
     sections: {
       members: "멤버 목록",
       membersDescription: "승인된 멤버와 정지된 멤버를 한 목록에서 관리합니다.",
       invitations: "초대 대기 목록",
-      invitationsDescription: "발송한 초대의 대상, 링크, 만료일, 상태를 확인합니다.",
+      invitationsDescription:
+        "발송한 초대의 대상, 링크, 만료일, 상태를 확인합니다.",
       joinRequests: "가입 신청/승인 대기",
-      joinRequestsDescription: "초대 링크로 가입 신청한 사용자를 승인하거나 거절하는 영역입니다.",
+      joinRequestsDescription:
+        "초대 링크로 가입 신청한 사용자를 승인하거나 거절하는 영역입니다.",
       roles: "역할 기본값",
-      rolesDescription: "역할은 기본 권한 묶음으로 사용하고, 실제 화면 노출은 권한 코드 기준으로 확장합니다.",
+      rolesDescription:
+        "역할은 기본 권한 묶음으로 사용하고, 실제 화면 노출은 권한 코드 기준으로 확장합니다.",
       nextSteps: "다음 구현 범위",
       workspaceCards: "메인화면 카드 권한",
-      workspaceCardsDescription: "관리자가 권한을 부여하면 해당 멤버의 메인화면에 표시될 카드 후보입니다.",
+      workspaceCardsDescription:
+        "관리자가 권한을 부여하면 해당 멤버의 메인화면에 표시될 카드 후보입니다.",
       permissionGroups: "권한 그룹",
-      permissionGroupsDescription: "실제 DB 권한 테이블을 만들 때 사용할 권한 그룹 기준입니다.",
+      permissionGroupsDescription:
+        "실제 DB 권한 테이블을 만들 때 사용할 권한 그룹 기준입니다.",
       permissionCatalog: "권한 카탈로그",
-      permissionCatalogDescription: "DB permission_catalog와 role template에 넣을 permission_code 기준입니다.",
+      permissionCatalogDescription:
+        "DB permission_catalog와 role template에 넣을 permission_code 기준입니다.",
       permissionMatrix: "권한 매트릭스",
-      permissionMatrixDescription: "role은 기본 체크값이고 실제 저장과 접근 제어는 permission_code 직접 부여 기준입니다."
+      permissionMatrixDescription:
+        "role은 기본 체크값이고 실제 저장과 접근 제어는 permission_code 직접 부여 기준입니다.",
     },
     tables: {
-      members: { columns: { member: "멤버", role: "역할", status: "상태", permissions: "권한", lastActive: "최근 활동", actions: "저장" } },
-      invitations: { columns: { target: "대상", type: "방식", link: "초대 링크", expires: "만료일", status: "상태", actions: "취소" } },
-      joinRequests: { columns: { applicant: "신청자", contact: "연락처", inviteEmail: "초대 이메일", emailMatch: "비교", memo: "메모", requestedRole: "요청 역할", status: "상태", requestedAt: "신청일", actions: "처리" } }
+      members: {
+        columns: {
+          member: "멤버",
+          role: "역할",
+          status: "상태",
+          permissions: "권한",
+          lastActive: "최근 활동",
+          actions: "저장",
+        },
+      },
+      invitations: {
+        columns: {
+          target: "대상",
+          type: "방식",
+          link: "초대 링크",
+          expires: "만료일",
+          status: "상태",
+          actions: "취소",
+        },
+      },
+      joinRequests: {
+        columns: {
+          applicant: "신청자",
+          contact: "연락처",
+          inviteEmail: "초대 이메일",
+          emailMatch: "비교",
+          memo: "메모",
+          requestedRole: "요청 역할",
+          status: "상태",
+          requestedAt: "신청일",
+          actions: "처리",
+        },
+      },
     },
     empty: {
-      members: { title: "등록된 멤버가 없습니다", description: "승인된 멤버가 생성되면 이 영역에서 권한을 직접 수정할 수 있습니다." },
-      invitations: { title: "생성된 초대가 없습니다", description: "초대를 생성하면 이 목록에서 링크 복사, 만료일 확인, 취소를 처리할 수 있습니다." },
-      joinRequests: { title: "승인 대기 신청이 없습니다", description: "초대 링크 가입 신청이 생성되면 승인/거절/권한 부여 대상이 이 영역에 표시됩니다." }
+      members: {
+        title: "등록된 멤버가 없습니다",
+        description:
+          "승인된 멤버가 생성되면 이 영역에서 권한을 직접 수정할 수 있습니다.",
+      },
+      invitations: {
+        title: "생성된 초대가 없습니다",
+        description:
+          "초대를 생성하면 이 목록에서 링크 복사, 만료일 확인, 취소를 처리할 수 있습니다.",
+      },
+      joinRequests: {
+        title: "승인 대기 신청이 없습니다",
+        description:
+          "초대 링크 가입 신청이 생성되면 승인/거절/권한 부여 대상이 이 영역에 표시됩니다.",
+      },
     },
     loading: {
-      members: { title: "멤버 목록을 불러오는 중입니다", description: "승인된 company_members와 member_permissions를 실제 DB 기준으로 조회하고 있습니다." },
-      joinRequests: { title: "승인 대기 신청을 불러오는 중입니다", description: "join_requests.pending 목록을 실제 DB 기준으로 조회하고 있습니다." }
+      members: {
+        title: "멤버 목록을 불러오는 중입니다",
+        description:
+          "승인된 company_members와 member_permissions를 실제 DB 기준으로 조회하고 있습니다.",
+      },
+      joinRequests: {
+        title: "승인 대기 신청을 불러오는 중입니다",
+        description:
+          "join_requests.pending 목록을 실제 DB 기준으로 조회하고 있습니다.",
+      },
     },
     loadErrors: {
       members: "멤버 목록을 불러오지 못했습니다.",
-      joinRequests: "승인 대기 신청 목록을 불러오지 못했습니다."
+      joinRequests: "승인 대기 신청 목록을 불러오지 못했습니다.",
     },
-    reviewActions: { approve: "승인", reject: "거절", processing: "처리 중", approveSuccess: "가입 신청을 승인했습니다.", rejectSuccess: "가입 신청을 거절했습니다.", error: "가입 신청 처리에 실패했습니다." },
-    memberActions: { savePermissions: "권한 저장", saving: "저장 중", permissionUpdateSuccess: "멤버 권한을 저장했습니다.", permissionUpdateError: "멤버 권한 저장에 실패했습니다." },
+    reviewActions: {
+      approve: "승인",
+      reject: "거절",
+      processing: "처리 중",
+      approveSuccess: "가입 신청을 승인했습니다.",
+      rejectSuccess: "가입 신청을 거절했습니다.",
+      error: "가입 신청 처리에 실패했습니다.",
+    },
+    memberActions: {
+      savePermissions: "권한 저장",
+      saving: "저장 중",
+      permissionUpdateSuccess: "멤버 권한을 저장했습니다.",
+      permissionUpdateError: "멤버 권한 저장에 실패했습니다.",
+    },
     emailMatchStatuses: {
       matched: "일치",
       mismatched: "불일치",
-      unknown: "확인 전"
+      unknown: "확인 전",
     },
     roles: {
-      admin: { label: "관리자", description: "조직 운영, 설정, 저장소, 통계, 멤버 권한을 관리하는 기본 역할입니다." },
-      company_admin: { label: "고객관리자", description: "조직 운영, 설정, 저장소, 통계, 멤버 권한을 관리하는 기본 권한 묶음입니다." },
-      designer: { label: "디자이너", description: "디자인 첨부, 수정 요청 대응, 작업지시서 확인 중심의 역할입니다." },
-      inspector: { label: "검수 담당", description: "입고 후 검수, 불량 확인, 완료 처리 중심의 역할입니다." },
-      inventory: { label: "발주/재고 담당", description: "발주, 입고, 외주공정, 기준정보 확인 중심의 역할입니다." },
-      inventory_manager: { label: "재고/자재 담당", description: "발주, 입고, 외주공정, 자재 확인 중심의 기본 권한 묶음입니다." },
-      viewer: { label: "조회 전용", description: "작업 흐름을 읽기 전용으로 확인하는 외부/내부 협업자 후보 역할입니다." }
+      admin: {
+        label: "관리자",
+        description:
+          "조직 운영, 설정, 저장소, 통계, 멤버 권한을 관리하는 기본 역할입니다.",
+      },
+      company_admin: {
+        label: "고객관리자",
+        description:
+          "조직 운영, 설정, 저장소, 통계, 멤버 권한을 관리하는 기본 권한 묶음입니다.",
+      },
+      designer: {
+        label: "디자이너",
+        description:
+          "디자인 첨부, 수정 요청 대응, 작업지시서 확인 중심의 역할입니다.",
+      },
+      inspector: {
+        label: "검수 담당",
+        description: "입고 후 검수, 불량 확인, 완료 처리 중심의 역할입니다.",
+      },
+      inventory: {
+        label: "발주/재고 담당",
+        description: "발주, 입고, 외주공정, 기준정보 확인 중심의 역할입니다.",
+      },
+      inventory_manager: {
+        label: "재고/자재 담당",
+        description:
+          "발주, 입고, 외주공정, 자재 확인 중심의 기본 권한 묶음입니다.",
+      },
+      viewer: {
+        label: "조회 전용",
+        description:
+          "작업 흐름을 읽기 전용으로 확인하는 외부/내부 협업자 후보 역할입니다.",
+      },
     },
     nextSteps: {
-      invite: { title: "초대 방식", description: "이메일 자동 발송보다 초대 링크와 QR 생성, 링크 복사를 먼저 연결합니다." },
-      role: { title: "역할 지정", description: "멤버별 기본 역할을 지정하고 기본 권한 묶음과 연결합니다." },
-      permission: { title: "권한 조정", description: "협력업체, 저장소, 기준정보 같은 기능 권한을 멤버별로 조정합니다." },
-      workspace: { title: "홈 카드 반영", description: "부여된 권한에 따라 멤버 홈의 카드 노출을 자동 구성합니다." }
+      invite: {
+        title: "초대 방식",
+        description:
+          "이메일 자동 발송보다 초대 링크와 QR 생성, 링크 복사를 먼저 연결합니다.",
+      },
+      role: {
+        title: "역할 지정",
+        description: "멤버별 기본 역할을 지정하고 기본 권한 묶음과 연결합니다.",
+      },
+      permission: {
+        title: "권한 조정",
+        description:
+          "협력업체, 저장소, 기준정보 같은 기능 권한을 멤버별로 조정합니다.",
+      },
+      workspace: {
+        title: "홈 카드 반영",
+        description:
+          "부여된 권한에 따라 멤버 홈의 카드 노출을 자동 구성합니다.",
+      },
     },
     permissionCards: {
-      workorder: { label: "작업지시서", description: "작업지시서 업무 화면 접근 권한입니다." },
-      partners: { label: "협력업체 관리", description: "공장, 원단, 부자재, 외주처 기준정보 관리 권한입니다." },
-      storage: { label: "저장소 관리", description: "문서/디자인, 휴지통, 용량 관리 권한입니다." },
-      stats: { label: "통계정보", description: "운영 통계와 파일 사용량 지표 조회 권한입니다." },
-      members: { label: "멤버 관리", description: "멤버 초대, 승인, 권한 부여 화면 접근 권한입니다." },
-      "organization-settings": { label: "환경설정", description: "조직 단위 정책과 기준 설정 관리 권한입니다." },
-      "standard-units": { label: "단위표준", description: "원단, 부자재, 수량 단위 기준 관리 권한입니다." },
-      "outsourcing-processes": { label: "외주공정", description: "나염, 자수, 워싱 등 외주공정 기준 관리 권한입니다." },
-      "product-types": { label: "생산품유형", description: "작업지시서 품목과 생산품 분류 기준 관리 권한입니다." }
+      workorder: {
+        label: "작업지시서",
+        description: "작업지시서 업무 화면 접근 권한입니다.",
+      },
+      partners: {
+        label: "협력업체 관리",
+        description: "공장, 원단, 부자재, 외주처 기준정보 관리 권한입니다.",
+      },
+      storage: {
+        label: "저장소 관리",
+        description: "문서/디자인, 휴지통, 용량 관리 권한입니다.",
+      },
+      stats: {
+        label: "통계정보",
+        description: "운영 통계와 파일 사용량 지표 조회 권한입니다.",
+      },
+      members: {
+        label: "멤버 관리",
+        description: "멤버 초대, 승인, 권한 부여 화면 접근 권한입니다.",
+      },
+      "organization-settings": {
+        label: "환경설정",
+        description: "조직 단위 정책과 기준 설정 관리 권한입니다.",
+      },
+      "standard-units": {
+        label: "단위표준",
+        description: "원단, 부자재, 수량 단위 기준 관리 권한입니다.",
+      },
+      "outsourcing-processes": {
+        label: "외주공정",
+        description: "나염, 자수, 워싱 등 외주공정 기준 관리 권한입니다.",
+      },
+      "product-types": {
+        label: "생산품유형",
+        description: "작업지시서 품목과 생산품 분류 기준 관리 권한입니다.",
+      },
     },
     permissionGroups: {
       workorder: { label: "작업지시서" },
@@ -240,46 +643,289 @@ export const adminKo = {
       personal: { label: "개인설정" },
       system: { label: "시스템" },
       operation: { label: "운영" },
-      "workspace-card": { label: "메인화면 카드" }
+      "workspace-card": { label: "메인화면 카드" },
     },
-    permissionCatalogColumns: { code: "권한 코드", group: "그룹", scope: "범위" },
-    scope: { company: "고객사", system: "시스템" }
+    permissionCatalogColumns: {
+      code: "권한 코드",
+      group: "그룹",
+      scope: "범위",
+    },
+    scope: { company: "고객사", system: "시스템" },
   },
-  filesSummary: { title: "저장소 사용 현황", description: "요금제 용량, 파일 상태, 파일 유형을 현재 기준으로 확인합니다.", periods: { 7: "7일", 15: "15일", 30: "30일" }, uploadAmount: "첨부량", count: "건수", fileType: "파일 유형", fileTypeLabel: "파일 유형", countSuffix: "개", totalUsage: "전체 사용량", attachments: "문서/디자인", trash: "휴지통", retentionPeriod: "보관 기간", usage: "사용량", refreshLabel: "저장소 데이터 새로고침", documents: "문서", designs: "디자인", memos: "작업메모", others: "기타", storagePlanLabel: "요금제 용량", currentPlan: "현재 요금제", pendingPlan: "확인 중", upgrade: "업그레이드", upgradeTitle: "요금제 업그레이드 화면은 후속 버전에서 연결합니다.", planCapacityPending: "요금제 확인 중", planCapacityLoading: "요금제 용량 확인 중", planCapacityLoadingDescription: "고객 정보의 요금제 용량을 불러오는 중", usedSuffix: "사용", remainingSuffix: "남음", fileOperationsLabel: "파일 운영", fileOperationsTitle: "파일 운영 요약", totalLabel: "전체", activeFiles: "사용중 파일", trashFiles: "휴지통 파일", purgeRequestedFiles: "삭제 요청", zeroTrashSize: "0MB 보관", zeroActiveSize: "0MB 사용", zeroPurgeRequestSize: "0MB 처리 대기", storedSuffix: "보관", waitingSuffix: "처리 대기", statuses: { normal: "정상", caution: "주의", danger: "위험" }, units: { count: "개", day: "일" } },
-  filesWorkOrders: { description: "삭제한 작업지시서와 함께 휴지통으로 이동한 문서·디자인·메모를 확인합니다.", summary: { deletedWorkOrders: "삭제한 작업지시서" } },
-  filesList: { title: "문서/디자인 목록", sort: { latest: "최신순", size: "용량순", workorder: "작업지시서명순" }, selectAll: "전체 선택", clearAll: "전체 해제", emptyTrash: "비우기", delete: "삭제", restore: "복원", purge: "삭제", refresh: "새로고침", refreshing: "새로고침 중", processing: "처리 중", close: "닫기", yes: "예", no: "아니오", empty: "표시할 문서/디자인이 없습니다.", trashEmpty: "휴지통에 보관 중인 항목이 없습니다.", restoreSkipsBlockedItems: "복원할 수 없는 선택 항목은 제외하고 처리합니다.", purgeSkipsBlockedItems: "삭제 요청할 수 없는 선택 항목은 제외하고 처리합니다.", selectWorkOrder: "작업지시서 선택", deselectWorkOrder: "작업지시서 선택 해제", selectItem: "선택", deselectItem: "선택 해제", countSuffix: "개", selectionConfirm: { restoreTitle: "복원 확인", purgeTitle: "삭제 확인", description: "선택한 항목의 처리 범위를 확인한 뒤 진행합니다.", restoreQuestion: "위 항목을 복원하시겠습니까?", purgeQuestion: "위 항목을 삭제 요청하시겠습니까?", skippedNotice: "처리할 수 없는 선택 항목 {count}개는 제외합니다.", purgePolicyNotice: "삭제는 고객관리자 삭제 요청으로 처리되며, 실제 파일 삭제는 시스템관리자 처리 단계에서 진행합니다.", emptyScope: "처리할 항목이 없습니다.", counts: { workorders: "작업지시서 {count}건", documents: "문서 {count}개", designs: "디자인 {count}개", memos: "메모 {count}개" } }, columns: { select: "선택", target: "삭제 대상", workorder: "작업지시서", createdAt: "생성일자", deletedAt: "삭제 일시", fileName: "파일명", type: "유형", size: "크기" }, selectedScope: { workorder: "작업지시서", workorderValue: "대표 row 1건", bundleAttachments: "문서/디자인/메모", restoreBlocked: "복원 제외 항목", totalSize: "파일 용량" }, emptyTrashConfirmTitle: "휴지통 비우기", emptyTrashConfirmDescription: "휴지통의 모든 항목을 삭제 요청하시겠습니까?", workorderPurgePreview: "삭제 범위 확인", workorderRestorePreview: "복원 범위 확인", workorderActionGuardTitle: "작업지시서 단위로 처리 범위를 확인합니다.", workorderRestoreConnectedNotice: "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.", workorderActionSkeletonNotice: "삭제는 고객관리자 삭제 요청으로 처리하고 휴지통 기본 목록에서 제외합니다. R2 파일 삭제는 시스템관리자 Worker 기반 purge 흐름에서만 처리됩니다.", workorderRestoreGuardDescription: "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.", workorderPurgeGuardDescription: "삭제 시 고객관리자 삭제 요청 상태로 전환합니다. 실제 파일 삭제는 시스템관리자 처리 단계에서 진행합니다.", fileTypes: { document: "문서", design: "디자인", other: "기타" }, attachmentCount: "문서/디자인", detailTitles: { workorder: "작업지시서 휴지통 상세", file: "파일 휴지통 상세" }, detail: { openPreview: "파일 미리보기 열기", previewFailed: "미리보기 실패", workorderActionHint: "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.", fileActionHint: "이 파일만 복원하거나 삭제 요청할 수 있습니다.", documentsDesigns: "문서/디자인", memos: "메모", documentDesignCount: "문서/디자인 {count}개", memoCount: "메모 {count}개" }, disabledReasons: { workorderRestorePreparing: "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.", workorderPurgePreparing: "작업지시서는 삭제 요청 상태로 전환하고 고객관리자 휴지통 기본 목록에서 제외합니다.", bundleRestoreRequired: "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.", bundlePurgeRequired: "작업지시서와 문서/디자인/메모를 함께 삭제 요청해야 합니다.", parentWorkOrderMissing: "해당 작업지시서를 찾을 수 없습니다.", purgeFailedNeedsSystemReview: "삭제 실패 상태는 시스템관리자 확인 후 처리해야 합니다.", restoreUnavailable: "복원 가능 상태가 아닙니다.", purgeUnavailable: "삭제 요청 가능 상태가 아닙니다." }, workorderStage: { currentStage: "현재 단계", deletedAtStage: "삭제 당시", steps: { draft: "작성중", review: "검토", order: "발주", inspection: "검수", completed: "완료" } }, visual: { workorder: "작업" }, types: { workorder: "작업지시서", specSheet: "작업지시서" }, restorePolicies: { workorderBundle: "작업지시서 단위 처리" }, sizeUnit: { byte: "B", kb: "KB", mb: "MB", gb: "GB" } },
+  filesSummary: {
+    title: "저장소 사용 현황",
+    description:
+      "요금제 용량, 파일 상태, 파일 유형을 현재 기준으로 확인합니다.",
+    periods: { 7: "7일", 15: "15일", 30: "30일" },
+    uploadAmount: "첨부량",
+    count: "건수",
+    fileType: "파일 유형",
+    fileTypeLabel: "파일 유형",
+    countSuffix: "개",
+    totalUsage: "전체 사용량",
+    attachments: "문서/디자인",
+    trash: "휴지통",
+    retentionPeriod: "보관 기간",
+    usage: "사용량",
+    refreshLabel: "저장소 데이터 새로고침",
+    documents: "문서",
+    designs: "디자인",
+    memos: "작업메모",
+    others: "기타",
+    storagePlanLabel: "요금제 용량",
+    currentPlan: "현재 요금제",
+    pendingPlan: "확인 중",
+    upgrade: "업그레이드",
+    upgradeTitle: "요금제 업그레이드 화면은 후속 버전에서 연결합니다.",
+    planCapacityPending: "요금제 확인 중",
+    planCapacityLoading: "요금제 용량 확인 중",
+    planCapacityLoadingDescription: "고객 정보의 요금제 용량을 불러오는 중",
+    usedSuffix: "사용",
+    remainingSuffix: "남음",
+    fileOperationsLabel: "파일 운영",
+    fileOperationsTitle: "파일 운영 요약",
+    totalLabel: "전체",
+    activeFiles: "사용중 파일",
+    trashFiles: "휴지통 파일",
+    purgeRequestedFiles: "삭제 요청",
+    zeroTrashSize: "0MB 보관",
+    zeroActiveSize: "0MB 사용",
+    zeroPurgeRequestSize: "0MB 처리 대기",
+    storedSuffix: "보관",
+    waitingSuffix: "처리 대기",
+    statuses: { normal: "정상", caution: "주의", danger: "위험" },
+    units: { count: "개", day: "일" },
+  },
+  filesWorkOrders: {
+    description:
+      "삭제한 작업지시서와 함께 휴지통으로 이동한 문서·디자인·메모를 확인합니다.",
+    summary: { deletedWorkOrders: "삭제한 작업지시서" },
+  },
+  filesList: {
+    title: "문서/디자인 목록",
+    sort: { latest: "최신순", size: "용량순", workorder: "작업지시서명순" },
+    selectAll: "전체 선택",
+    clearAll: "전체 해제",
+    emptyTrash: "비우기",
+    delete: "삭제",
+    restore: "복원",
+    purge: "삭제",
+    refresh: "새로고침",
+    refreshing: "새로고침 중",
+    processing: "처리 중",
+    close: "닫기",
+    yes: "예",
+    no: "아니오",
+    empty: "표시할 문서/디자인이 없습니다.",
+    trashEmpty: "휴지통에 보관 중인 항목이 없습니다.",
+    restoreSkipsBlockedItems: "복원할 수 없는 선택 항목은 제외하고 처리합니다.",
+    purgeSkipsBlockedItems:
+      "삭제 요청할 수 없는 선택 항목은 제외하고 처리합니다.",
+    selectWorkOrder: "작업지시서 선택",
+    deselectWorkOrder: "작업지시서 선택 해제",
+    selectItem: "선택",
+    deselectItem: "선택 해제",
+    countSuffix: "개",
+    selectionConfirm: {
+      restoreTitle: "복원 확인",
+      purgeTitle: "삭제 확인",
+      description: "선택한 항목의 처리 범위를 확인한 뒤 진행합니다.",
+      restoreQuestion: "위 항목을 복원하시겠습니까?",
+      purgeQuestion: "위 항목을 삭제 요청하시겠습니까?",
+      skippedNotice: "처리할 수 없는 선택 항목 {count}개는 제외합니다.",
+      purgePolicyNotice:
+        "삭제는 고객관리자 삭제 요청으로 처리되며, 실제 파일 삭제는 시스템관리자 처리 단계에서 진행합니다.",
+      emptyScope: "처리할 항목이 없습니다.",
+      counts: {
+        workorders: "작업지시서 {count}건",
+        documents: "문서 {count}개",
+        designs: "디자인 {count}개",
+        memos: "메모 {count}개",
+      },
+    },
+    columns: {
+      select: "선택",
+      target: "삭제 대상",
+      workorder: "작업지시서",
+      createdAt: "생성일자",
+      deletedAt: "삭제 일시",
+      fileName: "파일명",
+      type: "유형",
+      size: "크기",
+    },
+    selectedScope: {
+      workorder: "작업지시서",
+      workorderValue: "대표 row 1건",
+      bundleAttachments: "문서/디자인/메모",
+      restoreBlocked: "복원 제외 항목",
+      totalSize: "파일 용량",
+    },
+    emptyTrashConfirmTitle: "휴지통 비우기",
+    emptyTrashConfirmDescription: "휴지통의 모든 항목을 삭제 요청하시겠습니까?",
+    workorderPurgePreview: "삭제 범위 확인",
+    workorderRestorePreview: "복원 범위 확인",
+    workorderActionGuardTitle: "작업지시서 단위로 처리 범위를 확인합니다.",
+    workorderRestoreConnectedNotice:
+      "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.",
+    workorderActionSkeletonNotice:
+      "삭제는 고객관리자 삭제 요청으로 처리하고 휴지통 기본 목록에서 제외합니다. R2 파일 삭제는 시스템관리자 Worker 기반 purge 흐름에서만 처리됩니다.",
+    workorderRestoreGuardDescription:
+      "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.",
+    workorderPurgeGuardDescription:
+      "삭제 시 고객관리자 삭제 요청 상태로 전환합니다. 실제 파일 삭제는 시스템관리자 처리 단계에서 진행합니다.",
+    fileTypes: { document: "문서", design: "디자인", other: "기타" },
+    attachmentCount: "문서/디자인",
+    detailTitles: {
+      workorder: "작업지시서 휴지통 상세",
+      file: "파일 휴지통 상세",
+    },
+    detail: {
+      openPreview: "파일 미리보기 열기",
+      previewFailed: "미리보기 실패",
+      workorderActionHint:
+        "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.",
+      fileActionHint: "이 파일만 복원하거나 삭제 요청할 수 있습니다.",
+      documentsDesigns: "문서/디자인",
+      memos: "메모",
+      documentDesignCount: "문서/디자인 {count}개",
+      memoCount: "메모 {count}개",
+    },
+    disabledReasons: {
+      workorderRestorePreparing:
+        "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.",
+      workorderPurgePreparing:
+        "작업지시서는 삭제 요청 상태로 전환하고 고객관리자 휴지통 기본 목록에서 제외합니다.",
+      bundleRestoreRequired:
+        "작업지시서를 복원하면 함께 삭제된 문서, 디자인, 메모도 같이 복원됩니다.",
+      bundlePurgeRequired:
+        "작업지시서와 문서/디자인/메모를 함께 삭제 요청해야 합니다.",
+      parentWorkOrderMissing: "해당 작업지시서를 찾을 수 없습니다.",
+      purgeFailedNeedsSystemReview:
+        "삭제 실패 상태는 시스템관리자 확인 후 처리해야 합니다.",
+      restoreUnavailable: "복원 가능 상태가 아닙니다.",
+      purgeUnavailable: "삭제 요청 가능 상태가 아닙니다.",
+    },
+    workorderStage: {
+      currentStage: "현재 단계",
+      deletedAtStage: "삭제 당시",
+      steps: {
+        draft: "작성중",
+        review: "검토",
+        order: "발주",
+        inspection: "검수",
+        completed: "완료",
+      },
+    },
+    visual: { workorder: "작업" },
+    types: { workorder: "작업지시서", specSheet: "작업지시서" },
+    restorePolicies: { workorderBundle: "작업지시서 단위 처리" },
+    sizeUnit: { byte: "B", kb: "KB", mb: "MB", gb: "GB" },
+  },
   trashPage: { title: "휴지통" },
 
   historyPage: {
     title: "작업지시서 히스토리",
-    description: "관리자 전용 페이지에서 작업지시서 히스토리를 검색하고 필터링하며 상세 내용을 더 길게 확인합니다.",
+    description:
+      "관리자 전용 페이지에서 작업지시서 히스토리를 검색하고 필터링하며 상세 내용을 더 길게 확인합니다.",
     moveToAdminMain: "관리자 홈",
     moveToWorkspace: "작업지시서 화면으로 이동",
     searchLabel: "로그 검색",
     searchPlaceholder: "작업, 사용자, 시간, 상세 내용을 검색하세요",
-    filterDescription: "필터와 검색을 함께 사용해 전체 작업지시서 히스토리를 빠르게 추적할 수 있습니다.",
+    filterDescription:
+      "필터와 검색을 함께 사용해 전체 작업지시서 히스토리를 빠르게 추적할 수 있습니다.",
     emptySearch: "검색 조건에 맞는 히스토리가 없습니다.",
     guideTitle: "화면 안내",
-    guideDescription: "상세를 열면 상태 변경 전후 값과 추가 상세 라인을 함께 볼 수 있습니다.",
-    searchGuide: "검색은 작업, 사용자, 시간, 상세 텍스트를 함께 대상으로 삼습니다.",
+    guideDescription:
+      "상세를 열면 상태 변경 전후 값과 추가 상세 라인을 함께 볼 수 있습니다.",
+    searchGuide:
+      "검색은 작업, 사용자, 시간, 상세 텍스트를 함께 대상으로 삼습니다.",
     searchBoxTitle: "히스토리 검색",
-    searchBoxDescription: "날짜, 이벤트 타입, 사용자 기준으로 작업 기록을 확인합니다.",
+    searchBoxDescription:
+      "날짜, 이벤트 타입, 사용자 기준으로 작업 기록을 확인합니다.",
     dateLabel: "날짜",
     userLabel: "사용자",
     refreshLabel: "히스토리 새로고침",
-    dateFilters: { all: "전체 날짜", today: "오늘", week: "최근 7일", month: "최근 30일" },
-    filters: { all: "전체", work: "작업", inventory: "재고", attachment: "첨부" },
+    dateFilters: {
+      all: "전체 날짜",
+      today: "오늘",
+      week: "최근 7일",
+      month: "최근 30일",
+    },
+    filters: {
+      all: "전체",
+      work: "작업",
+      inventory: "재고",
+      attachment: "첨부",
+    },
     allUsers: "전체 사용자",
-    actions: { WORKORDER_CREATED: "작업지시서 생성", STATUS_CHANGED: "상태 변경", FILE_UPLOADED: "파일 업로드", FILE_DELETED: "파일 삭제", PARTNER_UPDATED: "협력업체 수정", SETTINGS_CHANGED: "환경설정 변경", PARTNER_CREATED: "협력업체 등록", PARTNER_DELETED: "협력업체 삭제" },
-    status: { draft: "작성중", review_requested: "검토요청", review_completed: "검토완료", inspection: "입고대기", completed: "완료", rejected: "반려", pending: "대기", active: "사용", inactive: "미사용" },
-    detailLabels: { status: "상태", from: "변경 전", to: "변경 후", actor: "작업자", user: "사용자", role: "역할", target: "대상", workOrderId: "작업지시서", fileName: "파일명", partnerName: "협력업체", source: "데이터 기준", type: "유형", memo: "메모", message: "내용", name: "이름", title: "작업명", quantity: "수량", reason: "사유" },
-    targetTypes: { workorder: "작업지시서", partner: "협력업체", file: "파일", settings: "환경설정", user: "사용자" },
+    actions: {
+      WORKORDER_CREATED: "작업지시서 생성",
+      STATUS_CHANGED: "상태 변경",
+      FILE_UPLOADED: "파일 업로드",
+      FILE_DELETED: "파일 삭제",
+      PARTNER_UPDATED: "협력업체 수정",
+      SETTINGS_CHANGED: "환경설정 변경",
+      PARTNER_CREATED: "협력업체 등록",
+      PARTNER_DELETED: "협력업체 삭제",
+    },
+    status: {
+      draft: "작성중",
+      review_requested: "검토요청",
+      review_completed: "검토완료",
+      inspection: "입고대기",
+      completed: "완료",
+      rejected: "반려",
+      pending: "대기",
+      active: "사용",
+      inactive: "미사용",
+    },
+    detailLabels: {
+      status: "상태",
+      from: "변경 전",
+      to: "변경 후",
+      actor: "작업자",
+      user: "사용자",
+      role: "역할",
+      target: "대상",
+      workOrderId: "작업지시서",
+      fileName: "파일명",
+      partnerName: "협력업체",
+      source: "데이터 기준",
+      type: "유형",
+      memo: "메모",
+      message: "내용",
+      name: "이름",
+      title: "작업명",
+      quantity: "수량",
+      reason: "사유",
+    },
+    targetTypes: {
+      workorder: "작업지시서",
+      partner: "협력업체",
+      file: "파일",
+      settings: "환경설정",
+      user: "사용자",
+    },
     systemActor: "시스템",
-    summaries: { WORKORDER_CREATED: "작업지시서 생성됨", STATUS_CHANGED: "상태 변경됨", FILE_UPLOADED: "첨부파일 등록됨", FILE_DELETED: "첨부파일 삭제됨", PARTNER_UPDATED: "협력업체 수정됨", SETTINGS_CHANGED: "환경설정 변경됨", PARTNER_CREATED: "협력업체 등록됨", PARTNER_DELETED: "협력업체 삭제됨" },
+    summaries: {
+      WORKORDER_CREATED: "작업지시서 생성됨",
+      STATUS_CHANGED: "상태 변경됨",
+      FILE_UPLOADED: "첨부파일 등록됨",
+      FILE_DELETED: "첨부파일 삭제됨",
+      PARTNER_UPDATED: "협력업체 수정됨",
+      SETTINGS_CHANGED: "환경설정 변경됨",
+      PARTNER_CREATED: "협력업체 등록됨",
+      PARTNER_DELETED: "협력업체 삭제됨",
+    },
     unknownLabel: "확인 필요",
   },
   topbar: {
-    actions: { home: "홈", personalSettings: "개인 설정", adminSettings: "환경설정", openWorkorder: "작업지시서" },
+    actions: {
+      home: "홈",
+      personalSettings: "개인 설정",
+      adminSettings: "환경설정",
+      openWorkorder: "작업지시서",
+    },
     summaries: {
       adminMain: "운영 통계 · 상태 흐름 · 오늘 체크",
       storage: "첨부파일 · 휴지통 · 용량 관리",
@@ -295,7 +941,8 @@ export const adminKo = {
     description: "기간별 작업 · 협력업체 · 파일 사용량 · 생산 단계 통계",
     workorderFlowTitle: "작업지시서 현황",
     dbSourceDescription: "DB 기준 상태별 작업량",
-    dbNotConfiguredDescription: "DB 연결 설정이 없어 실제 데이터 0건으로 표시됩니다.",
+    dbNotConfiguredDescription:
+      "DB 연결 설정이 없어 실제 데이터 0건으로 표시됩니다.",
     dbErrorDescription: "DB 조회 실패로 실제 데이터 0건으로 표시됩니다.",
     currentMonth: "이번달",
     partnersTitle: "협력업체 분포",
@@ -312,9 +959,11 @@ export const adminKo = {
     factoryProductionTitle: "공장별 제작 통계",
     categoryDistributionTitle: "단계별 카테고리 분포",
     cumulativeNoticeTitle: "누적 기준",
-    cumulativeNoticeDescription: "삭제되기 전 생성된 생산 단계 기록까지 통계 축으로 보존할 수 있도록 누적 보기를 분리했습니다.",
+    cumulativeNoticeDescription:
+      "삭제되기 전 생성된 생산 단계 기록까지 통계 축으로 보존할 수 있도록 누적 보기를 분리했습니다.",
     monthlyNoticeTitle: "월별 기준",
-    monthlyNoticeDescription: "선택한 월의 완료·지연·불량 흐름을 운영 지표로 확인하는 영역입니다.",
+    monthlyNoticeDescription:
+      "선택한 월의 완료·지연·불량 흐름을 운영 지표로 확인하는 영역입니다.",
     customPeriodInvalidOrder: "종료일은 시작일과 같거나 이후 날짜여야 합니다.",
     customPeriodFutureBlocked: "오늘 이후 날짜는 선택할 수 없습니다.",
     categoryDepthFirst: "대분류",
@@ -410,8 +1059,20 @@ export const adminKo = {
     updatedPrefix: "최근 설정 ",
     saveFailed: "환경설정을 저장하지 못했습니다.",
     refreshLabel: "환경설정 정보 새로고침",
-    badges: { idle: "설정", saving: "저장 중", saved: "저장됨", error: "저장 실패" },
-    summaryCards: { status: "운영 상태", statusValue: "DB 연결", joinedAt: "가입일", age: "사용 기간", members: "회원", memberValue: "관리자 1명" },
+    badges: {
+      idle: "설정",
+      saving: "저장 중",
+      saved: "저장됨",
+      error: "저장 실패",
+    },
+    summaryCards: {
+      status: "운영 상태",
+      statusValue: "DB 연결",
+      joinedAt: "가입일",
+      age: "사용 기간",
+      members: "회원",
+      memberValue: "관리자 1명",
+    },
     themeTitle: "화면 테마",
     themeCurrentPrefix: "현재 ",
     languageTitle: "언어 설정",
@@ -419,9 +1080,11 @@ export const adminKo = {
     organization: {
       badge: "조직 설정",
       title: "회사 운영 설정",
-      description: "이 화면은 고객사 전체에 적용되는 파일, 저장소, 알림, 기준정보, 멤버 권한 정책을 관리하는 영역입니다. 개인 언어와 색상은 개인 설정에서 변경합니다.",
+      description:
+        "이 화면은 고객사 전체에 적용되는 파일, 저장소, 알림, 기준정보, 멤버 권한 정책을 관리하는 영역입니다. 개인 언어와 색상은 개인 설정에서 변경합니다.",
       scopeTitle: "조직 설정 범위",
-      scopeDescription: "고객관리자가 회사 단위로 관리해야 하는 설정만 이 화면에 남깁니다.",
+      scopeDescription:
+        "고객관리자가 회사 단위로 관리해야 하는 설정만 이 화면에 남깁니다.",
       summaryUnits: { gb: "GB", days: "일", percent: "%", count: "개" },
       summaryCards: {
         "storage-limit": { label: "기본 용량" },
@@ -430,16 +1093,37 @@ export const adminKo = {
         "notification-events": { label: "알림 항목" },
       },
       scopes: {
-        "file-policy": { title: "파일 정책", description: "업로드, 삭제 요청, 휴지통 보관 같은 파일 처리 기준입니다." },
-        "storage-policy": { title: "저장소 정책", description: "저장소 한도, 용량 경고, 휴지통 용량 포함 여부를 관리합니다." },
-        "notification-policy": { title: "알림 정책", description: "검토 요청, 발주 준비, 저장소 경고 같은 조직 알림 기준입니다." },
-        standards: { title: "기준정보", description: "단위표준, 생산품유형, 외주공정처럼 작업지시서에서 공통으로 쓰는 기준입니다." },
-        "member-permissions": { title: "멤버 권한", description: "멤버가 볼 수 있는 카드와 기능을 권한 코드 기준으로 분리하는 후속 영역입니다." },
+        "file-policy": {
+          title: "파일 정책",
+          description:
+            "업로드, 삭제 요청, 휴지통 보관 같은 파일 처리 기준입니다.",
+        },
+        "storage-policy": {
+          title: "저장소 정책",
+          description:
+            "저장소 한도, 용량 경고, 휴지통 용량 포함 여부를 관리합니다.",
+        },
+        "notification-policy": {
+          title: "알림 정책",
+          description:
+            "검토 요청, 발주 준비, 저장소 경고 같은 조직 알림 기준입니다.",
+        },
+        standards: {
+          title: "기준정보",
+          description:
+            "단위표준, 생산품유형, 외주공정처럼 작업지시서에서 공통으로 쓰는 기준입니다.",
+        },
+        "member-permissions": {
+          title: "멤버 권한",
+          description:
+            "멤버가 볼 수 있는 카드와 기능을 권한 코드 기준으로 분리하는 후속 영역입니다.",
+        },
       },
       statusLabels: { active: "사용중", fixed: "고정", planned: "후속" },
       personalSettings: {
         title: "개인 설정은 분리됨",
-        description: "언어, 색상, 화면 밀도, 기본 진입 화면은 회사 전체 정책이 아니라 사용자별 선호 설정입니다.",
+        description:
+          "언어, 색상, 화면 밀도, 기본 진입 화면은 회사 전체 정책이 아니라 사용자별 선호 설정입니다.",
         note: "고객관리자와 일반 멤버는 /me/settings에서 각자 개인 설정을 변경합니다. 이후 DB 사용자 설정으로 옮길 수 있도록 현재는 분리된 진입점을 유지합니다.",
         actionLabel: "개인 설정 열기",
       },
@@ -447,8 +1131,14 @@ export const adminKo = {
   },
   userAccessPreview: {
     title: "사용자/권한 테스트 구조",
-    description: "사용자 구조와 현재 권한 기준이 맞는지 환경설정에서 확인하는 준비 패널입니다.",
-    sourceStates: { "db-connected": "실제 사용자 조회", "db-prepared": "사용자 구조 준비", "mock-adapter": "샘플 사용자 기준", "mock-fallback": "임시 사용자 기준" },
+    description:
+      "사용자 구조와 현재 권한 기준이 맞는지 환경설정에서 확인하는 준비 패널입니다.",
+    sourceStates: {
+      "db-connected": "실제 사용자 조회",
+      "db-prepared": "사용자 구조 준비",
+      "mock-adapter": "샘플 사용자 기준",
+      "mock-fallback": "임시 사용자 기준",
+    },
     userCountLabel: "사용자",
     testUsersTitle: "역할별 사용자",
     readOnlyBadge: "읽기 전용",
@@ -457,12 +1147,17 @@ export const adminKo = {
       title: "사용자 권한 관리",
       description: "환경설정에서 역할별 권한 결과를 점검하는 모달입니다.",
       sectionTitle: "역할 변경 테스트",
-      sectionDescription: "역할 버튼을 바꾸면 중앙 권한 기준으로 권한 뱃지가 즉시 재계산됩니다. 현재 단계에서는 저장 없이 화면 검증만 수행합니다.",
+      sectionDescription:
+        "역할 버튼을 바꾸면 중앙 권한 기준으로 권한 뱃지가 즉시 재계산됩니다. 현재 단계에서는 저장 없이 화면 검증만 수행합니다.",
       previewBadge: "권한 미리보기",
       resetButton: "초기값 복원",
       closeButton: "확인",
     },
-    permissionLabels: { canAssignRoles: "권한관리", canEditInventory: "재고수정", canSeeCostSections: "원가조회" },
+    permissionLabels: {
+      canAssignRoles: "권한관리",
+      canEditInventory: "재고수정",
+      canSeeCostSections: "원가조회",
+    },
     checklistTitle: "전환 체크리스트",
     checklist: {
       "users-table": "users 테이블 SQL 준비",
@@ -472,20 +1167,43 @@ export const adminKo = {
       "login-adapter": "실제 로그인 adapter 연결",
     },
     status: { ready: "준비", pending: "대기" },
-    nextStep: "다음 단계에서는 관리자 권한 변경 모달과 실제 로그인 연결 구조를 정리합니다.",
+    nextStep:
+      "다음 단계에서는 관리자 권한 변경 모달과 실제 로그인 연결 구조를 정리합니다.",
   },
   notificationSection: {
     items: {
-      created: { label: "작업지시서 생성", description: "새 작업지시서가 만들어졌을 때 알림 대상에 포함합니다." },
-      updated: { label: "기본사항 수정", description: "기본 정보 저장/수정 이벤트를 알림 대상으로 둡니다." },
-      status_changed: { label: "상태 변경", description: "작성중, 검토요청, 검수 등 단계 변경 알림입니다." },
-      materials_changed: { label: "원단/부자재 변경", description: "원단, 부자재, 단가 등 생산구성 변경 알림입니다." },
-      outsourcing_changed: { label: "외주 공정 변경", description: "외주 공정 추가/수정/삭제 알림입니다." },
-      stock_changed: { label: "재고 변경", description: "입고, 차감, 보정 같은 재고 수량 변경 알림입니다." },
-      comment_added: { label: "메모 작성", description: "작업메모와 댓글이 등록되었을 때 알림합니다." },
+      created: {
+        label: "작업지시서 생성",
+        description: "새 작업지시서가 만들어졌을 때 알림 대상에 포함합니다.",
+      },
+      updated: {
+        label: "기본사항 수정",
+        description: "기본 정보 저장/수정 이벤트를 알림 대상으로 둡니다.",
+      },
+      status_changed: {
+        label: "상태 변경",
+        description: "작성중, 검토요청, 검수 등 단계 변경 알림입니다.",
+      },
+      materials_changed: {
+        label: "원단/부자재 변경",
+        description: "원단, 부자재, 단가 등 생산구성 변경 알림입니다.",
+      },
+      outsourcing_changed: {
+        label: "외주 공정 변경",
+        description: "외주 공정 추가/수정/삭제 알림입니다.",
+      },
+      stock_changed: {
+        label: "재고 변경",
+        description: "입고, 차감, 보정 같은 재고 수량 변경 알림입니다.",
+      },
+      comment_added: {
+        label: "메모 작성",
+        description: "작업메모와 댓글이 등록되었을 때 알림합니다.",
+      },
     },
     title: "알림 이벤트 설정",
-    description: "현재는 상태 저장만 연결되어 있으며 실제 발송은 아직 연결되지 않았습니다.",
+    description:
+      "현재는 상태 저장만 연결되어 있으며 실제 발송은 아직 연결되지 않았습니다.",
     badge: "테스트",
     toggleOn: "ON",
     toggleOff: "OFF",
@@ -500,7 +1218,8 @@ export const adminKo = {
     header: {
       eyebrow: "",
       title: "협력업체 관리",
-      description: "협력업체와 원단·부자재 거래처를 한 화면에서 관리합니다. 행을 선택하면 수정 모달이 열립니다.",
+      description:
+        "협력업체와 원단·부자재 거래처를 한 화면에서 관리합니다. 행을 선택하면 수정 모달이 열립니다.",
       manageProcesses: "외주 공정 관리",
       createPartner: "업체 추가",
     },
@@ -539,7 +1258,8 @@ export const adminKo = {
       searchLabel: "검색",
       searchPlaceholder: "이름, 담당자, 연락처, 메모, 외주공정 검색",
       summaryLabel: "요약",
-      summaryDescription: "협력업체는 작업지시서에서 바로 선택되는 기준정보입니다. 업체 행을 선택하면 수정 모달이 열리고, 외주 공정은 별도 관리합니다.",
+      summaryDescription:
+        "협력업체는 작업지시서에서 바로 선택되는 기준정보입니다. 업체 행을 선택하면 수정 모달이 열리고, 외주 공정은 별도 관리합니다.",
       typeLabel: "유형",
       statusLabel: "사용 상태",
       statusOptions: {
@@ -611,12 +1331,14 @@ export const adminKo = {
       usageInactive: "미사용",
       usageSrLabel: "협력업체 사용 상태",
       saveFailed: "저장에 실패했습니다. DB 연결 상태를 확인하세요.",
-      outsourcingDescription: "이 협력업체가 외주처라면 공정을 연결해 작업지시서에서 바로 필터링할 수 있게 합니다.",
+      outsourcingDescription:
+        "이 협력업체가 외주처라면 공정을 연결해 작업지시서에서 바로 필터링할 수 있게 합니다.",
       outsourcingActive: "외주 사용",
       outsourcingInactive: "외주 미사용",
       outsourcingSrLabel: "외주 사용 여부",
       manageProcesses: "외주 공정 관리",
-      outsourcingProcessDescription: "왼쪽 목록에서 공정을 선택해 오른쪽 선택 목록으로 이동합니다.",
+      outsourcingProcessDescription:
+        "왼쪽 목록에서 공정을 선택해 오른쪽 선택 목록으로 이동합니다.",
       noAvailableProcesses: "추가 가능한 공정이 없습니다.",
       noAssignedProcesses: "선택된 공정이 없습니다.",
       addSelectedProcess: "선택한 공정을 오른쪽으로 추가",
@@ -649,7 +1371,8 @@ export const adminKo = {
     },
     confirm: {
       deleteProcessTitle: "외주 공정 삭제",
-      deleteProcessDescription: "삭제하면 현재 이 공정을 사용하는 협력업체에서도 함께 제거됩니다.",
+      deleteProcessDescription:
+        "삭제하면 현재 이 공정을 사용하는 협력업체에서도 함께 제거됩니다.",
       cancel: "취소",
       confirmDelete: "삭제",
       deleteProcessBody: '외주 공정 "{label}"을 삭제하시겠습니까?',
@@ -657,34 +1380,183 @@ export const adminKo = {
     },
   },
   statsUi: {
-    flowBuckets: { writing: "작성", review: "검토", order: "발주", inbound: "입고", completed: "완료" },
-    partnerBuckets: { factory: "공장", fabric: "원단", subsidiary: "부자재", outsourcing: "외주" },
-    fileUsage: { total: "전체 사용량", active: "첨부파일", trash: "휴지통", quotaLabel: "5.0GB" },
+    flowBuckets: {
+      writing: "작성",
+      review: "검토",
+      order: "발주",
+      inbound: "입고",
+      completed: "완료",
+    },
+    partnerBuckets: {
+      factory: "공장",
+      fabric: "원단",
+      subsidiary: "부자재",
+      outsourcing: "외주",
+    },
+    fileUsage: {
+      total: "전체 사용량",
+      active: "첨부파일",
+      trash: "휴지통",
+      quotaLabel: "5.0GB",
+    },
     summaries: {
-      totalWorkorders: { label: "전체 작업지시서", description: "DB 기준 전체 작업지시서 수" },
+      totalWorkorders: {
+        label: "전체 작업지시서",
+        description: "DB 기준 전체 작업지시서 수",
+      },
       partnerCount: { label: "협력업체 수", description: "활성 협력업체 수" },
       fileUsage: { label: "파일 사용량", description: "현재 첨부파일 사용량" },
-      completedInPeriod: { label: "완료된 작업지시서", description: "선택 기간 안에 완료 처리된 작업" }
+      completedInPeriod: {
+        label: "완료된 작업지시서",
+        description: "선택 기간 안에 완료 처리된 작업",
+      },
     },
     countSuffix: "개",
     flowCountSuffix: "건",
     unknownLabel: "분류 미지정",
-    productionRounds: { first: "대분류", second: "중분류", thirdOrMore: "세분류" },
-    periods: { sevenDays: "7일", fifteenDays: "15일", thirtyDays: "30일", monthly: "이번달", all: "누적", custom: "직접 선택" },
+    productionRounds: {
+      first: "대분류",
+      second: "중분류",
+      thirdOrMore: "세분류",
+    },
+    periods: {
+      sevenDays: "7일",
+      fifteenDays: "15일",
+      thirtyDays: "30일",
+      monthly: "이번달",
+      all: "누적",
+      custom: "직접 선택",
+    },
     metrics: {
-      reviewWaiting: { label: "검토대기", description: "발주 전 관리자 확인이 필요한 작업" },
-      inspectionWaiting: { label: "검수대기", description: "입고 후 검수 처리가 필요한 작업" },
-      inboundDelayed: { label: "입고지연", description: "입고대기 상태가 24시간 이상 지속된 작업" },
-      defectCount: { label: "불량", description: "불량/재작업으로 표시된 작업" }
-    }
+      reviewWaiting: {
+        label: "검토대기",
+        description: "발주 전 관리자 확인이 필요한 작업",
+      },
+      inspectionWaiting: {
+        label: "검수대기",
+        description: "입고 후 검수 처리가 필요한 작업",
+      },
+      inboundDelayed: {
+        label: "입고지연",
+        description: "입고대기 상태가 24시간 이상 지속된 작업",
+      },
+      defectCount: {
+        label: "불량",
+        description: "불량/재작업으로 표시된 작업",
+      },
+    },
   },
   standards: {
-    common: { resetDefaults: "기본값 복원", save: "저장", saving: "저장 중", add: "추가", active: "사용", inactive: "미사용", manage: "관리", inUseSuffix: "개 사용중" },
-    section: { policyTitle: "정책 관리", standardTitle: "기준 관리", saveProcessFailed: "저장에 실패했습니다. DB 연결 상태를 확인하세요.", saveUnitFailed: "단위 저장에 실패했습니다. DB 연결 상태를 확인하세요.", saveItemFailed: "품목 저장에 실패했습니다. DB 연결 상태를 확인하세요.", logEventsTitle: "로그 이벤트" },
-    actions: { notifications: { title: "알림 정책", description: "검토·발주·용량·삭제 결과" }, logs: { title: "로그 이벤트", description: "작업지시서 변경 기록 이벤트" }, filePolicy: { title: "저장 정책", description: "용량·휴지통·실제삭제 기준" }, items: { title: "생산품 유형" }, units: { title: "단위 표준" }, processes: { title: "외주 공정 유형" } },
-    units: { title: "단위 표준", addTitle: "단위 추가", usageTitle: "단위 사용 여부", nameRequired: "단위명과 코드를 입력하세요.", duplicate: "이미 등록된 단위입니다.", namePlaceholder: "단위명 예: 개", codePlaceholder: "코드 예: piece" },
-    itemCategories: { title: "생산품 유형", addTitle: "품목 추가", usageTitle: "품목 사용 여부", countSuffix: "개", active: "사용", inactive: "미사용", nameRequired: "추가할 품목명을 입력하세요.", selectLevel1: "1차 품목을 먼저 선택하세요.", selectLevel2: "2차 품목을 먼저 선택하세요.", duplicate: "이미 등록된 품목명입니다.", level1Placeholder: "1차 품목 추가", level2Placeholder: "선택한 1차 안에 2차 추가", level3Placeholder: "선택한 2차 안에 3차 추가", level1Title: "1차 품목", level2Title: "2차 품목", level3Title: "3차 품목", level1Empty: "1차 품목이 없습니다.", level2Empty: "선택한 1차 품목의 2차 품목이 없습니다.", level3Empty: "선택한 2차 품목의 3차 품목이 없습니다." },
-    notificationPolicy: { title: "알림 정책", loadFailed: "알림 정책을 불러오지 못했습니다.", saveFailed: "알림 정책을 저장하지 못했습니다.", items: { reviewRequestEnabled: "검토 요청", orderReadyEnabled: "발주 준비", storageWarningEnabled: "용량 경고", purgeResultEnabled: "삭제 결과" } },
-    filePolicy: { title: "파일 정책 관리", loadFailed: "파일 정책을 불러오지 못했습니다.", saveFailed: "파일 정책을 저장하지 못했습니다.", deleteMode: "삭제 방식", deleteModeDescription: "삭제 시 파일을 휴지통으로 이동할지 즉시 실제 삭제할지 정합니다.", fixedTrashPolicyDescription: "삭제한 파일은 휴지통으로 이동하며 30일 동안 복원할 수 있습니다.", softDelete: "휴지통", hardDelete: "즉시삭제", includeTrashInUsage: "휴지통 용량 포함", includeTrashDescription: "실제 삭제 전 파일을 사용량에 포함할지 정합니다.", includeTrashActive: "포함", includeTrashInactive: "제외", retentionDays: "삭제 파일 보관 기간", retentionDescription: "휴지통 파일이 실제 삭제 후보가 되기 전까지 보관되는 기간입니다.", retentionDisabledDescription: "즉시삭제 방식에서는 삭제 파일 보관 기간을 선택하지 않습니다.", disabled: "비활성", storageLimit: "기본 용량 한도(GB)", warningThreshold: "용량 주의 기준(%)", dangerThresholdDescription: "위험 기준은 주의 기준보다 10% 높게 계산됩니다.", storageStatus: "용량 상태", storageStatusLabels: { normal: "정상", caution: "주의", danger: "위험" }, storageStatusDescriptions: { normal: "{caution}% 미만 사용", caution: "{caution}% 이상 {danger}% 미만 사용", danger: "{danger}% 이상 또는 한도 초과" }, daySuffix: "일" },
+    common: {
+      resetDefaults: "기본값 복원",
+      save: "저장",
+      saving: "저장 중",
+      add: "추가",
+      active: "사용",
+      inactive: "미사용",
+      manage: "관리",
+      inUseSuffix: "개 사용중",
+    },
+    section: {
+      policyTitle: "정책 관리",
+      standardTitle: "기준 관리",
+      saveProcessFailed: "저장에 실패했습니다. DB 연결 상태를 확인하세요.",
+      saveUnitFailed: "단위 저장에 실패했습니다. DB 연결 상태를 확인하세요.",
+      saveItemFailed: "품목 저장에 실패했습니다. DB 연결 상태를 확인하세요.",
+      logEventsTitle: "로그 이벤트",
+    },
+    actions: {
+      notifications: {
+        title: "알림 정책",
+        description: "검토·발주·용량·삭제 결과",
+      },
+      logs: {
+        title: "로그 이벤트",
+        description: "작업지시서 변경 기록 이벤트",
+      },
+      filePolicy: {
+        title: "저장 정책",
+        description: "용량·휴지통·실제삭제 기준",
+      },
+      items: { title: "생산품 유형" },
+      units: { title: "단위 표준" },
+      processes: { title: "외주 공정 유형" },
+    },
+    units: {
+      title: "단위 표준",
+      addTitle: "단위 추가",
+      usageTitle: "단위 사용 여부",
+      nameRequired: "단위명과 코드를 입력하세요.",
+      duplicate: "이미 등록된 단위입니다.",
+      namePlaceholder: "단위명 예: 개",
+      codePlaceholder: "코드 예: piece",
+    },
+    itemCategories: {
+      title: "생산품 유형",
+      addTitle: "품목 추가",
+      usageTitle: "품목 사용 여부",
+      countSuffix: "개",
+      active: "사용",
+      inactive: "미사용",
+      nameRequired: "추가할 품목명을 입력하세요.",
+      selectLevel1: "1차 품목을 먼저 선택하세요.",
+      selectLevel2: "2차 품목을 먼저 선택하세요.",
+      duplicate: "이미 등록된 품목명입니다.",
+      level1Placeholder: "1차 품목 추가",
+      level2Placeholder: "선택한 1차 안에 2차 추가",
+      level3Placeholder: "선택한 2차 안에 3차 추가",
+      level1Title: "1차 품목",
+      level2Title: "2차 품목",
+      level3Title: "3차 품목",
+      level1Empty: "1차 품목이 없습니다.",
+      level2Empty: "선택한 1차 품목의 2차 품목이 없습니다.",
+      level3Empty: "선택한 2차 품목의 3차 품목이 없습니다.",
+    },
+    notificationPolicy: {
+      title: "알림 정책",
+      loadFailed: "알림 정책을 불러오지 못했습니다.",
+      saveFailed: "알림 정책을 저장하지 못했습니다.",
+      items: {
+        reviewRequestEnabled: "검토 요청",
+        orderReadyEnabled: "발주 준비",
+        storageWarningEnabled: "용량 경고",
+        purgeResultEnabled: "삭제 결과",
+      },
+    },
+    filePolicy: {
+      title: "파일 정책 관리",
+      loadFailed: "파일 정책을 불러오지 못했습니다.",
+      saveFailed: "파일 정책을 저장하지 못했습니다.",
+      deleteMode: "삭제 방식",
+      deleteModeDescription:
+        "삭제 시 파일을 휴지통으로 이동할지 즉시 실제 삭제할지 정합니다.",
+      fixedTrashPolicyDescription:
+        "삭제한 파일은 휴지통으로 이동하며 30일 동안 복원할 수 있습니다.",
+      softDelete: "휴지통",
+      hardDelete: "즉시삭제",
+      includeTrashInUsage: "휴지통 용량 포함",
+      includeTrashDescription:
+        "실제 삭제 전 파일을 사용량에 포함할지 정합니다.",
+      includeTrashActive: "포함",
+      includeTrashInactive: "제외",
+      retentionDays: "삭제 파일 보관 기간",
+      retentionDescription:
+        "휴지통 파일이 실제 삭제 후보가 되기 전까지 보관되는 기간입니다.",
+      retentionDisabledDescription:
+        "즉시삭제 방식에서는 삭제 파일 보관 기간을 선택하지 않습니다.",
+      disabled: "비활성",
+      storageLimit: "기본 용량 한도(GB)",
+      warningThreshold: "용량 주의 기준(%)",
+      dangerThresholdDescription:
+        "위험 기준은 주의 기준보다 10% 높게 계산됩니다.",
+      storageStatus: "용량 상태",
+      storageStatusLabels: { normal: "정상", caution: "주의", danger: "위험" },
+      storageStatusDescriptions: {
+        normal: "{caution}% 미만 사용",
+        caution: "{caution}% 이상 {danger}% 미만 사용",
+        danger: "{danger}% 이상 또는 한도 초과",
+      },
+      daySuffix: "일",
+    },
   },
 } as const;

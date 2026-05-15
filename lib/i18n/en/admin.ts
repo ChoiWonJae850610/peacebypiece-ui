@@ -2,9 +2,20 @@ export const adminEn = {
   description:
     "This page is a customer operations workspace for expanding master data management, user operations, and default settings. In this phase, the second master data step extends the partner master with contact fields and multi-select outsourcing process capabilities.",
   sections: [
-    { title: "Master Data", description: "Area to expand into factories, vendors, outsourcing partners, and process masters" },
-    { title: "Users", description: "Area to expand into invitations, role updates, and active user management" },
-    { title: "Operations Settings", description: "Area for notifications, defaults, and operations settings" },
+    {
+      title: "Master Data",
+      description:
+        "Area to expand into factories, vendors, outsourcing partners, and process masters",
+    },
+    {
+      title: "Users",
+      description:
+        "Area to expand into invitations, role updates, and active user management",
+    },
+    {
+      title: "Operations Settings",
+      description: "Area for notifications, defaults, and operations settings",
+    },
   ],
   common: {
     loadingList: "Loading list.",
@@ -17,59 +28,108 @@ export const adminEn = {
   filesPage: {
     title: "Storage",
     tabGroupLabel: "Document/design status",
-    tabs: { attachments: "Documents/designs", trash: "Recycle Bin", storage: "Storage policy" },
+    tabs: {
+      attachments: "Documents/designs",
+      trash: "Recycle Bin",
+      storage: "Storage policy",
+    },
     snapshotLoadFailed: "Could not load file list from DB",
-    snapshotLoadFailedWithMessage: "Could not load file list from DB: {message}",
+    snapshotLoadFailedWithMessage:
+      "Could not load file list from DB: {message}",
   },
   auditSummary: {
     title: "Admin Audit",
-    closedDescription: "The dashboard prioritizes operating metrics, while DB and structure checks stay collapsed until needed.",
+    closedDescription:
+      "The dashboard prioritizes operating metrics, while DB and structure checks stay collapsed until needed.",
     open: "Open audit",
-    chips: { db: "Data", domain: "Structure", sample: "Samples", finalAudit: "Final check" },
+    chips: {
+      db: "Data",
+      domain: "Structure",
+      sample: "Samples",
+      finalAudit: "Final check",
+    },
     close: "Close audit",
   },
   completionAudit: {
     title: "Admin Completion Audit",
-    description: "Checks whether the admin area can be closed before the WorkOrder refactor.",
-    chips: { domain: "Structure", legacyRemoved: "Legacy removed", legacyKept: "Legacy kept", db: "Data", sample: "Samples", finalAudit: "Final check" },
+    description:
+      "Checks whether the admin area can be closed before the WorkOrder refactor.",
+    chips: {
+      domain: "Structure",
+      legacyRemoved: "Legacy removed",
+      legacyKept: "Legacy kept",
+      db: "Data",
+      sample: "Samples",
+      finalAudit: "Final check",
+    },
     decision: "Completion decision",
   },
   dbConnectionAudit: {
     title: "Data connection audit",
-    description: "Actual data read/write boundaries and safe display status by admin screen.",
+    description:
+      "Actual data read/write boundaries and safe display status by admin screen.",
     read: "Read",
     write: "Write",
     alternateDisplay: "Safe display",
     nextCheck: "Next check",
-    repository: { workorder: "Work orders", partner: "Partners", attachmentMemo: "Memos/attachments" },
+    repository: {
+      workorder: "Work orders",
+      partner: "Partners",
+      attachmentMemo: "Memos/attachments",
+    },
     repositoryModes: { db: "Live data", mock: "Sample data" },
-    statuses: { "db-connected": "Live data", "db-prepared": "DB prepared", "fallback-guarded": "Safe display protected", "mock-only": "Sample data", "not-applicable": "N/A" },
-    sourceTypes: { "actual-db": "Live DB read/write", "db-with-fallback": "Live DB + safe display", "db-prepared-fallback": "DB prepared + safe display", "mock-only": "Sample data", "not-applicable": "N/A" },
+    statuses: {
+      "db-connected": "Live data",
+      "db-prepared": "DB prepared",
+      "fallback-guarded": "Safe display protected",
+      "mock-only": "Sample data",
+      "not-applicable": "N/A",
+    },
+    sourceTypes: {
+      "actual-db": "Live DB read/write",
+      "db-with-fallback": "Live DB + safe display",
+      "db-prepared-fallback": "DB prepared + safe display",
+      "mock-only": "Sample data",
+      "not-applicable": "N/A",
+    },
   },
   historyModal: {
-      title: "Work Order History",
-      description: "Review the full work order history in a modal without leaving the admin workspace.",
-    },
+    title: "Work Order History",
+    description:
+      "Review the full work order history in a modal without leaving the admin workspace.",
+  },
   notificationModal: {
-      title: "Notification Event Settings",
-      description: "Manage notification event ON/OFF states in a modal without leaving the admin workspace.",
-    },
+    title: "Notification Event Settings",
+    description:
+      "Manage notification event ON/OFF states in a modal without leaving the admin workspace.",
+  },
   historySection: {
     title: "History",
     summary: "Shows only admin-relevant operational history.",
     countSuffix: "items",
   },
-  navigation: { dashboard: "Dashboard", workorder: "Work Orders", partners: "Partners", storage: "Storage", statistics: "Statistics", history: "History", settings: "Settings", dbConnected: "DB status audit" },
+  navigation: {
+    dashboard: "Dashboard",
+    workorder: "Work Orders",
+    partners: "Partners",
+    storage: "Storage",
+    statistics: "Statistics",
+    history: "History",
+    settings: "Settings",
+    dbConnected: "DB status audit",
+  },
   operationsDashboard: {
     title: "Operations Dashboard",
     workorderStatusTitle: "Work order status",
     sourceDb: "Shows work queue items from DB.",
-    sourceNotConfigured: "No database connection is configured, so values are shown as zero.",
+    sourceNotConfigured:
+      "No database connection is configured, so values are shown as zero.",
     sourceError: "Database lookup failed, so values are shown as zero.",
     periodAria: "Dashboard period selector",
     periods: { today: "Today", week: "This week", month: "This month" },
     todayWorkTitle: "Review and order queue",
-    todayWorkDescription: "Shows work orders that need admin review or order handling.",
+    todayWorkDescription:
+      "Shows work orders that need admin review or order handling.",
     priorityTitle: "Current waiting status",
     dueLabel: "Due",
     statusFlowTitle: "Status flow",
@@ -81,25 +141,48 @@ export const adminEn = {
     quantityLabel: "Qty",
     updatedLabel: "Updated",
     openWorkorder: "Open",
-    actions: { openWorkorderShort: "Workspace", openWorkorderWorkspace: "Open work order workspace" },
+    actions: {
+      openWorkorderShort: "Workspace",
+      openWorkorderWorkspace: "Open work order workspace",
+    },
     todayTasksEmpty: "No review or order waiting work orders to check today.",
     countSuffix: "items",
-    statusDistribution: { working: "Working", reviewWaiting: "Review waiting", inboundWaiting: "Inspection waiting", completed: "Completed" },
+    statusDistribution: {
+      working: "Working",
+      reviewWaiting: "Review waiting",
+      inboundWaiting: "Inspection waiting",
+      completed: "Completed",
+    },
     insights: {
       reviewWaiting: "Review waiting",
       reviewWaitingDescription: "Work orders that require admin review",
       orderWaiting: "Order waiting",
-      orderWaitingDescription: "Work orders that need order handling after review completion",
+      orderWaitingDescription:
+        "Work orders that need order handling after review completion",
       inspectionWaiting: "Inspection waiting",
-      inspectionWaitingDescription: "Work orders requiring inspection or inbound confirmation",
+      inspectionWaitingDescription:
+        "Work orders requiring inspection or inbound confirmation",
       inboundDelayed: "Inbound delayed",
-      inboundDelayedDescription: "Inspection-waiting work orders more than 24 hours after the due date starts",
+      inboundDelayedDescription:
+        "Inspection-waiting work orders more than 24 hours after the due date starts",
     },
     queues: {
-      reviewWaiting: { title: "Review waiting list", empty: "No work orders are waiting for review." },
-      orderWaiting: { title: "Order waiting list", empty: "No work orders are waiting for order handling." },
-      inspectionWaiting: { title: "Inspection waiting list", empty: "No work orders are waiting for inspection." },
-      inboundDelayed: { title: "Inbound delayed list", empty: "No delayed inbound work orders." },
+      reviewWaiting: {
+        title: "Review waiting list",
+        empty: "No work orders are waiting for review.",
+      },
+      orderWaiting: {
+        title: "Order waiting list",
+        empty: "No work orders are waiting for order handling.",
+      },
+      inspectionWaiting: {
+        title: "Inspection waiting list",
+        empty: "No work orders are waiting for inspection.",
+      },
+      inboundDelayed: {
+        title: "Inbound delayed list",
+        empty: "No delayed inbound work orders.",
+      },
     },
     todayTasks: {
       duePending: "Due pending",
@@ -107,8 +190,18 @@ export const adminEn = {
       dueToday: "Today",
       dueTomorrow: "Tomorrow",
       dueAfter: "D-{days}",
-      status: { reviewRequested: "Review waiting", inspection: "Inspection waiting", reviewCompleted: "Order waiting", rejected: "Rejected", draft: "Draft" },
-      priority: { review: "Review needed", inspection: "Inspection needed", order: "Order check" },
+      status: {
+        reviewRequested: "Review waiting",
+        inspection: "Inspection waiting",
+        reviewCompleted: "Order waiting",
+        rejected: "Rejected",
+        draft: "Draft",
+      },
+      priority: {
+        review: "Review needed",
+        inspection: "Inspection needed",
+        order: "Order check",
+      },
       factoryPending: "Factory pending",
       quantityPending: "Quantity pending",
       quantityValue: "{count} pcs",
@@ -120,7 +213,13 @@ export const adminEn = {
   },
   adminConsole: {
     actions: { open: "Open" },
-    statuses: { available: "Available", planned: "Preparing", linked: "Connected", api: "API ready", legacy: "Existing" },
+    statuses: {
+      available: "Available",
+      planned: "Preparing",
+      linked: "Connected",
+      api: "API ready",
+      legacy: "Existing",
+    },
     permissionLabel: "Permission",
     managementCards: {
       title: "Operations",
@@ -132,155 +231,424 @@ export const adminEn = {
       description: "",
     },
     links: {
-      "workorder-entry": { label: "Work order workspace", description: "Open the work order list and detail workspace." },
-      partners: { label: "Partner management", description: "Manage factory, fabric, subsidiary, and outsourcing master data." },
-      files: { label: "Storage management", description: "Manage documents/designs, trash, and storage usage." },
-      stats: { label: "Statistics", description: "Review work order, partner, and file usage metrics." },
-      settings: { label: "Settings", description: "Manage customer screen, file, and notification policies." },
-      "member-management": { label: "Member management", description: "Manage member invitations and role settings." },
-      "standard-units": { label: "Standard units", description: "Manage units used for fabric, subsidiary materials, and production quantities." },
-      "outsourcing-processes": { label: "Outsourcing processes", description: "Manage printing, embroidery, washing, and other outsourcing process standards." },
-      "product-types": { label: "Product types", description: "Manage work order item and product classification standards." }
-    }
+      "workorder-entry": {
+        label: "Work order workspace",
+        description: "Open the work order list and detail workspace.",
+      },
+      partners: {
+        label: "Partner management",
+        description:
+          "Manage factory, fabric, subsidiary, and outsourcing master data.",
+      },
+      files: {
+        label: "Storage management",
+        description: "Manage documents/designs, trash, and storage usage.",
+      },
+      stats: {
+        label: "Statistics",
+        description: "Review work order, partner, and file usage metrics.",
+      },
+      settings: {
+        label: "Settings",
+        description: "Manage customer screen, file, and notification policies.",
+      },
+      "member-management": {
+        label: "Member management",
+        description: "Manage member invitations and role settings.",
+      },
+      "standard-units": {
+        label: "Standard units",
+        description:
+          "Manage units used for fabric, subsidiary materials, and production quantities.",
+      },
+      "outsourcing-processes": {
+        label: "Outsourcing processes",
+        description:
+          "Manage printing, embroidery, washing, and other outsourcing process standards.",
+      },
+      "product-types": {
+        label: "Product types",
+        description:
+          "Manage work order item and product classification standards.",
+      },
+    },
   },
   memberManagement: {
     title: "Member management",
-    description: "Manage company member invitations, join approvals, and direct permission assignment.",
+    description:
+      "Manage company member invitations, join approvals, and direct permission assignment.",
     eyebrow: "Member permissions",
     permissionCount: "{count} permissions",
     systemOnlyCount: "{count} system-only",
     matrixEnabledCount: "{count} default checks",
-    actions: { openOrganizationSettings: "Open organization settings", createInvite: "Create invitation link" },
+    actions: {
+      openOrganizationSettings: "Open organization settings",
+      createInvite: "Create invitation link",
+    },
     tabs: {
-      invite: { label: "Invite members", description: "Create email or SMS invitations.", count: "{count} invites" },
-      approval: { label: "Approvals", description: "Approve or reject join requests.", count: "{count} pending" },
-      members: { label: "All members", description: "Review members and role defaults.", count: "{count} members" },
-      permissions: { label: "Permissions", description: "Manage permission codes and home card visibility.", count: "{count} permissions" }
+      invite: {
+        label: "Invite members",
+        description: "Create email or SMS invitations.",
+        count: "{count} invites",
+      },
+      approval: {
+        label: "Approvals",
+        description: "Approve or reject join requests.",
+        count: "{count} pending",
+      },
+      members: {
+        label: "All members",
+        description: "Review members and role defaults.",
+        count: "{count} members",
+      },
+      permissions: {
+        label: "Permissions",
+        description: "Manage permission codes and home card visibility.",
+        count: "{count} permissions",
+      },
     },
     inviteBuilder: {
       eyebrow: "Member invitation",
       title: "Create employee invitation",
-      description: "Enter the email address or mobile phone number that will receive the invitation link, then choose the default permission bundle and expiry.",
-      fields: { method: "Invitation method", email: "Email address", phone: "Mobile phone", roleTemplate: "Default permission bundle", expires: "Invitation expiry" },
+      description:
+        "Enter the email address or mobile phone number that will receive the invitation link, then choose the default permission bundle and expiry.",
+      fields: {
+        method: "Invitation method",
+        email: "Email address",
+        phone: "Mobile phone",
+        roleTemplate: "Default permission bundle",
+        expires: "Invitation expiry",
+      },
       placeholders: { email: "member@example.com", phone: "010-1234-5678" },
-      validation: { required: "Enter an invitation target.", email: "Enter a valid email address.", phone: "Enter a valid mobile phone number." },
+      validation: {
+        required: "Enter an invitation target.",
+        email: "Enter a valid email address.",
+        phone: "Enter a valid mobile phone number.",
+      },
       expires: { "3d": "3 days", "7d": "7 days", "14d": "14 days" },
       sendPolicyTitle: "Delivery rule",
-      sendPolicy: { email: "Send the invitation link by email.", phone: "Send the invitation link by SMS." },
-      actions: { copy: "Copy link", create: "Create invitation", creating: "Creating", cancel: "Cancel invitation" }
+      sendPolicy: {
+        email: "Send the invitation link by email.",
+        phone: "Send the invitation link by SMS.",
+      },
+      actions: {
+        copy: "Copy link",
+        create: "Create invitation",
+        creating: "Creating",
+        cancel: "Cancel invitation",
+      },
+      feedback: {
+        created: "Invitation link created.",
+        copied: "Invitation link copied.",
+        cancelled: "Invitation cancelled.",
+      },
     },
 
     approvalWorkbench: {
       eyebrow: "Join request approval",
       title: "Member approval and permission assignment",
-      description: "A first-pass screen for reviewing a join request and adjusting role-template permissions before approval or rejection.",
-      previewApplicant: { name: "Designer Kim", email: "designer@example.com", description: "A preview state for a member who applied through an invitation link." },
+      description:
+        "A first-pass screen for reviewing a join request and adjusting role-template permissions before approval or rejection.",
+      previewApplicant: {
+        name: "Designer Kim",
+        email: "designer@example.com",
+        description:
+          "A preview state for a member who applied through an invitation link.",
+      },
       steps: {
-        review: { label: "Review request", description: "Check the invitation token and applicant profile." },
-        permission: { label: "Choose permissions", description: "Adjust only the permissions needed from the default role bundle." },
-        approve: { label: "Approve/reject", description: "Save the member and permissions when approved." },
-        audit: { label: "Audit log", description: "Record member approval and permission change events." }
+        review: {
+          label: "Review request",
+          description: "Check the invitation token and applicant profile.",
+        },
+        permission: {
+          label: "Choose permissions",
+          description:
+            "Adjust only the permissions needed from the default role bundle.",
+        },
+        approve: {
+          label: "Approve/reject",
+          description: "Save the member and permissions when approved.",
+        },
+        audit: {
+          label: "Audit log",
+          description: "Record member approval and permission change events.",
+        },
       },
       permissionChecklistTitle: "Permission checklist",
-      permissionChecklistDescription: "Role templates are only starting values; approval stores the direct permission_code list.",
+      permissionChecklistDescription:
+        "Role templates are only starting values; approval stores the direct permission_code list.",
       actionsTitle: "Approval actions",
-      actionsDescription: "Join-request approval/rejection and approved-member permission writes are connected to the live DB.",
+      actionsDescription:
+        "Join-request approval/rejection and approved-member permission writes are connected to the live DB.",
       actions: {
         approve: { label: "Approve" },
         reject: { label: "Reject" },
-        permissionUpdate: { label: "Edit permissions" }
+        permissionUpdate: { label: "Edit permissions" },
       },
       guardTitle: "Write contract",
-      guardDescription: "Approval marks company_members as approved and stores selected permissions in member_permissions. Approved-member permission edits are saved as a full replacement."
+      guardDescription:
+        "Approval marks company_members as approved and stores selected permissions in member_permissions. Approved-member permission edits are saved as a full replacement.",
     },
     joinRequestStatuses: { pending: "Pending approval" },
     invitationMethods: { email: "Email", phone: "SMS" },
-    memberStatuses: { approved: "Approved", pending: "Pending", suspended: "Suspended" },
-    invitationStatuses: { draft: "Draft", active: "Active", pending: "Waiting", sent: "Sent", expired: "Expired" },
+    memberStatuses: {
+      approved: "Approved",
+      pending: "Pending",
+      suspended: "Suspended",
+    },
+    invitationStatuses: {
+      draft: "Draft",
+      active: "Active",
+      pending: "Waiting",
+      sent: "Sent",
+      expired: "Expired",
+    },
     statuses: { ready: "Connected", planned: "Planned", pending: "Pending" },
-    sourceState: { dbPending: "DB connection planned", dbLoading: "Loading DB", dbConnected: "DB connected", dbFailed: "DB load failed" },
+    sourceState: {
+      dbPending: "DB connection planned",
+      dbLoading: "Loading DB",
+      dbConnected: "DB connected",
+      dbFailed: "DB load failed",
+    },
     permissionGuards: {
       visible: "Visible",
       hidden: "Hidden",
       blocked: "Permission missing",
       allowedButDbPending: "Allowed · DB connection planned",
-      requiredPermissions: "Required permissions: {permissions}"
+      requiredPermissions: "Required permissions: {permissions}",
     },
     summary: {
-      members: { label: "Members", description: "Includes approved and suspended members." },
-      invitations: { label: "Pending invitations", description: "Active invitation links and QR invitation candidates." },
-      joinRequests: { label: "Approval queue", description: "Users waiting for customer-admin approval after joining." },
-      permissionTemplates: { label: "Permission templates", description: "Permission presets used as default role bundles." }
+      members: {
+        label: "Members",
+        description: "Includes approved and suspended members.",
+      },
+      invitations: {
+        label: "Pending invitations",
+        description: "Active invitation links and QR invitation candidates.",
+      },
+      joinRequests: {
+        label: "Approval queue",
+        description: "Users waiting for customer-admin approval after joining.",
+      },
+      permissionTemplates: {
+        label: "Permission templates",
+        description: "Permission presets used as default role bundles.",
+      },
     },
     sections: {
       members: "Member list",
       membersDescription: "Manage approved and suspended members in one list.",
       invitations: "Invitation queue",
-      invitationsDescription: "Manage expiration and cancellation status for generated invitation links and QR codes.",
+      invitationsDescription:
+        "Manage expiration and cancellation status for generated invitation links and QR codes.",
       joinRequests: "Join requests / approval queue",
-      joinRequestsDescription: "Approve or reject users who applied through an invitation link.",
+      joinRequestsDescription:
+        "Approve or reject users who applied through an invitation link.",
       roles: "Role defaults",
-      rolesDescription: "Roles are used as default permission bundles, while screen exposure will expand by permission code.",
+      rolesDescription:
+        "Roles are used as default permission bundles, while screen exposure will expand by permission code.",
       nextSteps: "Next implementation scope",
       workspaceCards: "Home card permissions",
-      workspaceCardsDescription: "Cards that can appear on a member home screen when an admin grants the corresponding permissions.",
+      workspaceCardsDescription:
+        "Cards that can appear on a member home screen when an admin grants the corresponding permissions.",
       permissionGroups: "Permission groups",
-      permissionGroupsDescription: "Permission group standards for a future DB-backed permission table.",
+      permissionGroupsDescription:
+        "Permission group standards for a future DB-backed permission table.",
       permissionCatalog: "Permission catalog",
-      permissionCatalogDescription: "permission_code standards for DB permission_catalog and role templates.",
+      permissionCatalogDescription:
+        "permission_code standards for DB permission_catalog and role templates.",
       permissionMatrix: "Permission matrix",
-      permissionMatrixDescription: "Roles are default check presets; actual storage and access control use directly granted permission_code values."
+      permissionMatrixDescription:
+        "Roles are default check presets; actual storage and access control use directly granted permission_code values.",
     },
     tables: {
-      members: { columns: { member: "Member", role: "Role", status: "Status", permissions: "Permissions", lastActive: "Last active", actions: "Save" } },
-      invitations: { columns: { target: "Target", type: "Type", status: "Status", expires: "Expires" } },
-      joinRequests: { columns: { applicant: "Applicant", contact: "Contact", inviteEmail: "Invite email", emailMatch: "Match", memo: "Memo", requestedRole: "Requested role", status: "Status", requestedAt: "Requested", actions: "Actions" } }
+      members: {
+        columns: {
+          member: "Member",
+          role: "Role",
+          status: "Status",
+          permissions: "Permissions",
+          lastActive: "Last active",
+          actions: "Save",
+        },
+      },
+      invitations: {
+        columns: {
+          target: "Target",
+          type: "Type",
+          status: "Status",
+          expires: "Expires",
+        },
+      },
+      joinRequests: {
+        columns: {
+          applicant: "Applicant",
+          contact: "Contact",
+          inviteEmail: "Invite email",
+          emailMatch: "Match",
+          memo: "Memo",
+          requestedRole: "Requested role",
+          status: "Status",
+          requestedAt: "Requested",
+          actions: "Actions",
+        },
+      },
     },
     empty: {
-      members: { title: "No members registered", description: "Approved members can be edited here after they are created." },
-      invitations: { title: "No invitations created", description: "Active, expired, and cancelled invitations will appear after invitation-link generation is connected." },
-      joinRequests: { title: "No join requests waiting", description: "Invitation-link join requests will appear here as approval, rejection, and permission-assignment targets." }
+      members: {
+        title: "No members registered",
+        description:
+          "Approved members can be edited here after they are created.",
+      },
+      invitations: {
+        title: "No invitations created",
+        description:
+          "Active, expired, and cancelled invitations will appear after invitation-link generation is connected.",
+      },
+      joinRequests: {
+        title: "No join requests waiting",
+        description:
+          "Invitation-link join requests will appear here as approval, rejection, and permission-assignment targets.",
+      },
     },
     loading: {
-      members: { title: "Loading members", description: "Loading approved company_members and member_permissions from the DB." },
-      joinRequests: { title: "Loading join requests", description: "Loading the join_requests.pending list from the DB." }
+      members: {
+        title: "Loading members",
+        description:
+          "Loading approved company_members and member_permissions from the DB.",
+      },
+      joinRequests: {
+        title: "Loading join requests",
+        description: "Loading the join_requests.pending list from the DB.",
+      },
     },
     loadErrors: {
       members: "Could not load members.",
-      joinRequests: "Could not load the approval queue."
+      joinRequests: "Could not load the approval queue.",
     },
-    reviewActions: { approve: "Approve", reject: "Reject", processing: "Processing", approveSuccess: "The join request has been approved.", rejectSuccess: "The join request has been rejected.", error: "Failed to process the join request." },
-    memberActions: { savePermissions: "Save permissions", saving: "Saving", permissionUpdateSuccess: "Member permissions have been saved.", permissionUpdateError: "Failed to save member permissions." },
+    reviewActions: {
+      approve: "Approve",
+      reject: "Reject",
+      processing: "Processing",
+      approveSuccess: "The join request has been approved.",
+      rejectSuccess: "The join request has been rejected.",
+      error: "Failed to process the join request.",
+    },
+    memberActions: {
+      savePermissions: "Save permissions",
+      saving: "Saving",
+      permissionUpdateSuccess: "Member permissions have been saved.",
+      permissionUpdateError: "Failed to save member permissions.",
+    },
     emailMatchStatuses: {
       matched: "Matched",
       mismatched: "Mismatch",
-      unknown: "Unknown"
+      unknown: "Unknown",
     },
     roles: {
-      admin: { label: "Admin", description: "Default role for organization operations, settings, storage, statistics, and member permissions." },
-      company_admin: { label: "Company admin", description: "Default permission bundle for operations, settings, storage, statistics, and member permissions." },
-      designer: { label: "Designer", description: "Role focused on design files, revision requests, and work order review." },
-      inspector: { label: "Inspector", description: "Role focused on inbound inspection, defect checks, and completion handling." },
-      inventory: { label: "Order/inventory", description: "Role focused on ordering, inbound status, outsourcing processes, and master data." },
-      inventory_manager: { label: "Inventory/materials", description: "Default permission bundle for ordering, inbound status, outsourcing processes, and materials checks." },
-      viewer: { label: "Read-only", description: "Candidate role for internal or external collaborators who only need to read work flow status." }
+      admin: {
+        label: "Admin",
+        description:
+          "Default role for organization operations, settings, storage, statistics, and member permissions.",
+      },
+      company_admin: {
+        label: "Company admin",
+        description:
+          "Default permission bundle for operations, settings, storage, statistics, and member permissions.",
+      },
+      designer: {
+        label: "Designer",
+        description:
+          "Role focused on design files, revision requests, and work order review.",
+      },
+      inspector: {
+        label: "Inspector",
+        description:
+          "Role focused on inbound inspection, defect checks, and completion handling.",
+      },
+      inventory: {
+        label: "Order/inventory",
+        description:
+          "Role focused on ordering, inbound status, outsourcing processes, and master data.",
+      },
+      inventory_manager: {
+        label: "Inventory/materials",
+        description:
+          "Default permission bundle for ordering, inbound status, outsourcing processes, and materials checks.",
+      },
+      viewer: {
+        label: "Read-only",
+        description:
+          "Candidate role for internal or external collaborators who only need to read work flow status.",
+      },
     },
     nextSteps: {
-      invite: { title: "Invitation flow", description: "Connect invitation links, QR generation, and link copy before automated email sending." },
-      role: { title: "Role assignment", description: "Assign a default role to each member and connect it to a default permission bundle." },
-      permission: { title: "Permission adjustment", description: "Adjust feature permissions such as partners, storage, and master data per member." },
-      workspace: { title: "Home card reflection", description: "Automatically compose member home cards based on granted permissions." }
+      invite: {
+        title: "Invitation flow",
+        description:
+          "Connect invitation links, QR generation, and link copy before automated email sending.",
+      },
+      role: {
+        title: "Role assignment",
+        description:
+          "Assign a default role to each member and connect it to a default permission bundle.",
+      },
+      permission: {
+        title: "Permission adjustment",
+        description:
+          "Adjust feature permissions such as partners, storage, and master data per member.",
+      },
+      workspace: {
+        title: "Home card reflection",
+        description:
+          "Automatically compose member home cards based on granted permissions.",
+      },
     },
     permissionCards: {
-      workorder: { label: "Work orders", description: "Permission to access the work order workspace." },
-      partners: { label: "Partner management", description: "Permission to manage factory, fabric, subsidiary, and outsourcing master data." },
-      storage: { label: "Storage management", description: "Permission to manage documents/designs, trash, and storage usage." },
-      stats: { label: "Statistics", description: "Permission to view operational metrics and file usage indicators." },
-      members: { label: "Member management", description: "Permission to access member invitation, approval, and permission assignment screens." },
-      "organization-settings": { label: "Settings", description: "Permission to manage organization-level policies and standards." },
-      "standard-units": { label: "Standard units", description: "Permission to manage units for fabric, subsidiary materials, and quantities." },
-      "outsourcing-processes": { label: "Outsourcing processes", description: "Permission to manage printing, embroidery, washing, and other process standards." },
-      "product-types": { label: "Product types", description: "Permission to manage work order item and product classification standards." }
+      workorder: {
+        label: "Work orders",
+        description: "Permission to access the work order workspace.",
+      },
+      partners: {
+        label: "Partner management",
+        description:
+          "Permission to manage factory, fabric, subsidiary, and outsourcing master data.",
+      },
+      storage: {
+        label: "Storage management",
+        description:
+          "Permission to manage documents/designs, trash, and storage usage.",
+      },
+      stats: {
+        label: "Statistics",
+        description:
+          "Permission to view operational metrics and file usage indicators.",
+      },
+      members: {
+        label: "Member management",
+        description:
+          "Permission to access member invitation, approval, and permission assignment screens.",
+      },
+      "organization-settings": {
+        label: "Settings",
+        description:
+          "Permission to manage organization-level policies and standards.",
+      },
+      "standard-units": {
+        label: "Standard units",
+        description:
+          "Permission to manage units for fabric, subsidiary materials, and quantities.",
+      },
+      "outsourcing-processes": {
+        label: "Outsourcing processes",
+        description:
+          "Permission to manage printing, embroidery, washing, and other process standards.",
+      },
+      "product-types": {
+        label: "Product types",
+        description:
+          "Permission to manage work order item and product classification standards.",
+      },
     },
     permissionGroups: {
       workorder: { label: "Work orders" },
@@ -297,46 +665,289 @@ export const adminEn = {
       personal: { label: "Personal settings" },
       system: { label: "System" },
       operation: { label: "Operations" },
-      "workspace-card": { label: "Home cards" }
+      "workspace-card": { label: "Home cards" },
     },
-    permissionCatalogColumns: { code: "Permission code", group: "Group", scope: "Scope" },
-    scope: { company: "Company", system: "System" }
+    permissionCatalogColumns: {
+      code: "Permission code",
+      group: "Group",
+      scope: "Scope",
+    },
+    scope: { company: "Company", system: "System" },
   },
-  filesSummary: { title: "Storage usage", description: "Review plan capacity, file status, and file types based on current data.", periods: { 7: "7 days", 15: "15 days", 30: "30 days" }, uploadAmount: "Upload amount", count: "Count", fileType: "File type", fileTypeLabel: "File type", countSuffix: "items", totalUsage: "Total usage", attachments: "Documents/designs", trash: "Trash", retentionPeriod: "Retention period", usage: "Usage", refreshLabel: "Refresh storage data", documents: "Documents", designs: "Designs", memos: "Memos", others: "Other", storagePlanLabel: "Storage plan", currentPlan: "Current plan", pendingPlan: "Checking", upgrade: "Upgrade", upgradeTitle: "Plan upgrade screen will be connected in a later version.", planCapacityPending: "Checking plan", planCapacityLoading: "Checking plan capacity", planCapacityLoadingDescription: "Loading the plan capacity from customer information", usedSuffix: "used", remainingSuffix: "remaining", fileOperationsLabel: "File operations", fileOperationsTitle: "File operations summary", totalLabel: "Total", activeFiles: "Active files", trashFiles: "Trash files", purgeRequestedFiles: "Deletion requests", zeroTrashSize: "0MB stored", zeroActiveSize: "0MB used", zeroPurgeRequestSize: "0MB waiting", storedSuffix: "stored", waitingSuffix: "waiting", statuses: { normal: "Normal", caution: "Caution", danger: "Risk" }, units: { count: "items", day: "days" } },
-  filesWorkOrders: { description: "Review work orders you deleted and the documents, designs, and memos moved to trash with them.", summary: { deletedWorkOrders: "Deleted work orders" } },
-  filesList: { title: "Document/design list", sort: { latest: "Latest", size: "By size", workorder: "By work order" }, selectAll: "Select all", clearAll: "Clear all", emptyTrash: "Empty trash", delete: "Delete", restore: "Restore", purge: "Delete", refresh: "Refresh", refreshing: "Refreshing", processing: "Processing", close: "Close", yes: "Yes", no: "No", empty: "No documents or designs to display.", trashEmpty: "No items are stored in trash.", restoreSkipsBlockedItems: "Items that cannot be restored will be skipped.", purgeSkipsBlockedItems: "Items that cannot be requested for deletion will be skipped.", selectWorkOrder: "Select work order", deselectWorkOrder: "Deselect work order", selectItem: "Select", deselectItem: "Deselect", countSuffix: "items", selectionConfirm: { restoreTitle: "Confirm restore", purgeTitle: "Confirm deletion", description: "Review the selected processing scope before continuing.", restoreQuestion: "Restore the items above?", purgeQuestion: "Request deletion for the items above?", skippedNotice: "{count} selected items that cannot be processed will be skipped.", purgePolicyNotice: "Deletion is handled as a customer-admin deletion request. Actual file deletion is handled in the system-admin step.", emptyScope: "There are no items to process.", counts: { workorders: "{count} work orders", documents: "{count} documents", designs: "{count} designs", memos: "{count} memos" } }, columns: { select: "Select", target: "Deleted target", workorder: "Spec Sheet", createdAt: "Created", deletedAt: "Deleted Time", fileName: "File name", type: "Type", size: "Size" }, selectedScope: { workorder: "Work order", workorderValue: "1 representative row", bundleAttachments: "Documents/designs/memos", restoreBlocked: "Restore excluded items", totalSize: "File size" }, emptyTrashConfirmTitle: "Empty trash", emptyTrashConfirmDescription: "Request deletion for all items in trash?", workorderPurgePreview: "Review deletion scope", workorderRestorePreview: "Review restore scope", workorderActionGuardTitle: "Review the processing scope by work order.", workorderRestoreConnectedNotice: "Restoring the work order also restores the deleted documents, designs, and memos.", workorderActionSkeletonNotice: "Request deletion is handled as a customer-admin deletion request and hidden from the default trash list. R2 file deletion is handled only in the system-admin Worker purge flow.", workorderRestoreGuardDescription: "Restoring the work order also restores the deleted documents, designs, and memos.", workorderPurgeGuardDescription: "Request deletion switches the selected scope to customer-admin deletion request status. Actual file deletion is handled in the system-admin step.", fileTypes: { document: "Document", design: "Design", other: "Other" }, attachmentCount: "Documents/designs", detailTitles: { workorder: "Work order trash details", file: "File trash details" }, detail: { openPreview: "Open file preview", previewFailed: "Preview failed", workorderActionHint: "Restoring the work order also restores the deleted documents, designs, and memos.", fileActionHint: "Restore or request deletion for this file only.", documentsDesigns: "Documents/designs", memos: "Memos", documentDesignCount: "{count} documents/designs", memoCount: "{count} memos" }, disabledReasons: { workorderRestorePreparing: "Restoring the work order also restores the deleted documents, designs, and memos.", workorderPurgePreparing: "The work order will be moved to deletion-request status and hidden from the customer-admin trash list.", bundleRestoreRequired: "Restoring the work order also restores the deleted documents, designs, and memos.", bundlePurgeRequired: "Request deletion for the work order together with its documents/designs/memos.", parentWorkOrderMissing: "The related work order could not be found.", purgeFailedNeedsSystemReview: "Deletion failed and needs system-admin review.", restoreUnavailable: "This item is not available for restore.", purgeUnavailable: "This item is not available for deletion request." }, workorderStage: { currentStage: "Current stage", deletedAtStage: "At deletion", steps: { draft: "Draft", review: "Review", order: "Order", inspection: "Inspection", completed: "Completed" } }, visual: { workorder: "Work" }, types: { workorder: "Spec Sheet", specSheet: "Spec Sheet" }, restorePolicies: { workorderBundle: "Work order scope" }, sizeUnit: { byte: "B", kb: "KB", mb: "MB", gb: "GB" } },
+  filesSummary: {
+    title: "Storage usage",
+    description:
+      "Review plan capacity, file status, and file types based on current data.",
+    periods: { 7: "7 days", 15: "15 days", 30: "30 days" },
+    uploadAmount: "Upload amount",
+    count: "Count",
+    fileType: "File type",
+    fileTypeLabel: "File type",
+    countSuffix: "items",
+    totalUsage: "Total usage",
+    attachments: "Documents/designs",
+    trash: "Trash",
+    retentionPeriod: "Retention period",
+    usage: "Usage",
+    refreshLabel: "Refresh storage data",
+    documents: "Documents",
+    designs: "Designs",
+    memos: "Memos",
+    others: "Other",
+    storagePlanLabel: "Storage plan",
+    currentPlan: "Current plan",
+    pendingPlan: "Checking",
+    upgrade: "Upgrade",
+    upgradeTitle: "Plan upgrade screen will be connected in a later version.",
+    planCapacityPending: "Checking plan",
+    planCapacityLoading: "Checking plan capacity",
+    planCapacityLoadingDescription:
+      "Loading the plan capacity from customer information",
+    usedSuffix: "used",
+    remainingSuffix: "remaining",
+    fileOperationsLabel: "File operations",
+    fileOperationsTitle: "File operations summary",
+    totalLabel: "Total",
+    activeFiles: "Active files",
+    trashFiles: "Trash files",
+    purgeRequestedFiles: "Deletion requests",
+    zeroTrashSize: "0MB stored",
+    zeroActiveSize: "0MB used",
+    zeroPurgeRequestSize: "0MB waiting",
+    storedSuffix: "stored",
+    waitingSuffix: "waiting",
+    statuses: { normal: "Normal", caution: "Caution", danger: "Risk" },
+    units: { count: "items", day: "days" },
+  },
+  filesWorkOrders: {
+    description:
+      "Review work orders you deleted and the documents, designs, and memos moved to trash with them.",
+    summary: { deletedWorkOrders: "Deleted work orders" },
+  },
+  filesList: {
+    title: "Document/design list",
+    sort: { latest: "Latest", size: "By size", workorder: "By work order" },
+    selectAll: "Select all",
+    clearAll: "Clear all",
+    emptyTrash: "Empty trash",
+    delete: "Delete",
+    restore: "Restore",
+    purge: "Delete",
+    refresh: "Refresh",
+    refreshing: "Refreshing",
+    processing: "Processing",
+    close: "Close",
+    yes: "Yes",
+    no: "No",
+    empty: "No documents or designs to display.",
+    trashEmpty: "No items are stored in trash.",
+    restoreSkipsBlockedItems: "Items that cannot be restored will be skipped.",
+    purgeSkipsBlockedItems:
+      "Items that cannot be requested for deletion will be skipped.",
+    selectWorkOrder: "Select work order",
+    deselectWorkOrder: "Deselect work order",
+    selectItem: "Select",
+    deselectItem: "Deselect",
+    countSuffix: "items",
+    selectionConfirm: {
+      restoreTitle: "Confirm restore",
+      purgeTitle: "Confirm deletion",
+      description: "Review the selected processing scope before continuing.",
+      restoreQuestion: "Restore the items above?",
+      purgeQuestion: "Request deletion for the items above?",
+      skippedNotice:
+        "{count} selected items that cannot be processed will be skipped.",
+      purgePolicyNotice:
+        "Deletion is handled as a customer-admin deletion request. Actual file deletion is handled in the system-admin step.",
+      emptyScope: "There are no items to process.",
+      counts: {
+        workorders: "{count} work orders",
+        documents: "{count} documents",
+        designs: "{count} designs",
+        memos: "{count} memos",
+      },
+    },
+    columns: {
+      select: "Select",
+      target: "Deleted target",
+      workorder: "Spec Sheet",
+      createdAt: "Created",
+      deletedAt: "Deleted Time",
+      fileName: "File name",
+      type: "Type",
+      size: "Size",
+    },
+    selectedScope: {
+      workorder: "Work order",
+      workorderValue: "1 representative row",
+      bundleAttachments: "Documents/designs/memos",
+      restoreBlocked: "Restore excluded items",
+      totalSize: "File size",
+    },
+    emptyTrashConfirmTitle: "Empty trash",
+    emptyTrashConfirmDescription: "Request deletion for all items in trash?",
+    workorderPurgePreview: "Review deletion scope",
+    workorderRestorePreview: "Review restore scope",
+    workorderActionGuardTitle: "Review the processing scope by work order.",
+    workorderRestoreConnectedNotice:
+      "Restoring the work order also restores the deleted documents, designs, and memos.",
+    workorderActionSkeletonNotice:
+      "Request deletion is handled as a customer-admin deletion request and hidden from the default trash list. R2 file deletion is handled only in the system-admin Worker purge flow.",
+    workorderRestoreGuardDescription:
+      "Restoring the work order also restores the deleted documents, designs, and memos.",
+    workorderPurgeGuardDescription:
+      "Request deletion switches the selected scope to customer-admin deletion request status. Actual file deletion is handled in the system-admin step.",
+    fileTypes: { document: "Document", design: "Design", other: "Other" },
+    attachmentCount: "Documents/designs",
+    detailTitles: {
+      workorder: "Work order trash details",
+      file: "File trash details",
+    },
+    detail: {
+      openPreview: "Open file preview",
+      previewFailed: "Preview failed",
+      workorderActionHint:
+        "Restoring the work order also restores the deleted documents, designs, and memos.",
+      fileActionHint: "Restore or request deletion for this file only.",
+      documentsDesigns: "Documents/designs",
+      memos: "Memos",
+      documentDesignCount: "{count} documents/designs",
+      memoCount: "{count} memos",
+    },
+    disabledReasons: {
+      workorderRestorePreparing:
+        "Restoring the work order also restores the deleted documents, designs, and memos.",
+      workorderPurgePreparing:
+        "The work order will be moved to deletion-request status and hidden from the customer-admin trash list.",
+      bundleRestoreRequired:
+        "Restoring the work order also restores the deleted documents, designs, and memos.",
+      bundlePurgeRequired:
+        "Request deletion for the work order together with its documents/designs/memos.",
+      parentWorkOrderMissing: "The related work order could not be found.",
+      purgeFailedNeedsSystemReview:
+        "Deletion failed and needs system-admin review.",
+      restoreUnavailable: "This item is not available for restore.",
+      purgeUnavailable: "This item is not available for deletion request.",
+    },
+    workorderStage: {
+      currentStage: "Current stage",
+      deletedAtStage: "At deletion",
+      steps: {
+        draft: "Draft",
+        review: "Review",
+        order: "Order",
+        inspection: "Inspection",
+        completed: "Completed",
+      },
+    },
+    visual: { workorder: "Work" },
+    types: { workorder: "Spec Sheet", specSheet: "Spec Sheet" },
+    restorePolicies: { workorderBundle: "Work order scope" },
+    sizeUnit: { byte: "B", kb: "KB", mb: "MB", gb: "GB" },
+  },
   trashPage: { title: "Recycle Bin" },
 
   historyPage: {
     title: "Work Order History",
-    description: "Use a dedicated admin page to search, filter, and inspect detailed work order history without modal constraints.",
+    description:
+      "Use a dedicated admin page to search, filter, and inspect detailed work order history without modal constraints.",
     moveToAdminMain: "Admin Home",
     moveToWorkspace: "Open Workspace",
     searchLabel: "Search logs",
     searchPlaceholder: "Search by action, user, time, or detail text",
-    filterDescription: "Use filters and search together to trace the full work order history quickly.",
+    filterDescription:
+      "Use filters and search together to trace the full work order history quickly.",
     emptySearch: "No history matches the current search.",
     guideTitle: "Screen Guide",
-    guideDescription: "Open details to review transitions and additional detail lines in one place.",
+    guideDescription:
+      "Open details to review transitions and additional detail lines in one place.",
     searchGuide: "Search scans action, user, time, and detail text together.",
     searchBoxTitle: "History Search",
     searchBoxDescription: "Check work logs by date, event type, and user.",
     dateLabel: "Date",
     userLabel: "User",
     refreshLabel: "Refresh history",
-    dateFilters: { all: "All dates", today: "Today", week: "Last 7 days", month: "Last 30 days" },
-    filters: { all: "All", work: "Work", inventory: "Inventory", attachment: "Files" },
+    dateFilters: {
+      all: "All dates",
+      today: "Today",
+      week: "Last 7 days",
+      month: "Last 30 days",
+    },
+    filters: {
+      all: "All",
+      work: "Work",
+      inventory: "Inventory",
+      attachment: "Files",
+    },
     allUsers: "All users",
-    actions: { WORKORDER_CREATED: "Work Order Created", STATUS_CHANGED: "Status Changed", FILE_UPLOADED: "File Uploaded", FILE_DELETED: "File Deleted", PARTNER_UPDATED: "Partner Updated", SETTINGS_CHANGED: "Settings Changed", PARTNER_CREATED: "Partner Created", PARTNER_DELETED: "Partner Deleted" },
-    status: { draft: "Draft", review_requested: "Review Requested", review_completed: "Review Completed", inspection: "Inbound Pending", completed: "Completed", rejected: "Rejected", pending: "Pending", active: "Active", inactive: "Inactive" },
-    detailLabels: { status: "Status", from: "Before", to: "After", actor: "Actor", user: "User", role: "Role", target: "Target", workOrderId: "Work Order", fileName: "File Name", partnerName: "Partner", source: "Data Source", type: "Type", memo: "Memo", message: "Message", name: "Name", title: "Title", quantity: "Quantity", reason: "Reason" },
-    targetTypes: { workorder: "Work Order", partner: "Partner", file: "File", settings: "Settings", user: "User" },
+    actions: {
+      WORKORDER_CREATED: "Work Order Created",
+      STATUS_CHANGED: "Status Changed",
+      FILE_UPLOADED: "File Uploaded",
+      FILE_DELETED: "File Deleted",
+      PARTNER_UPDATED: "Partner Updated",
+      SETTINGS_CHANGED: "Settings Changed",
+      PARTNER_CREATED: "Partner Created",
+      PARTNER_DELETED: "Partner Deleted",
+    },
+    status: {
+      draft: "Draft",
+      review_requested: "Review Requested",
+      review_completed: "Review Completed",
+      inspection: "Inbound Pending",
+      completed: "Completed",
+      rejected: "Rejected",
+      pending: "Pending",
+      active: "Active",
+      inactive: "Inactive",
+    },
+    detailLabels: {
+      status: "Status",
+      from: "Before",
+      to: "After",
+      actor: "Actor",
+      user: "User",
+      role: "Role",
+      target: "Target",
+      workOrderId: "Work Order",
+      fileName: "File Name",
+      partnerName: "Partner",
+      source: "Data Source",
+      type: "Type",
+      memo: "Memo",
+      message: "Message",
+      name: "Name",
+      title: "Title",
+      quantity: "Quantity",
+      reason: "Reason",
+    },
+    targetTypes: {
+      workorder: "Work Order",
+      partner: "Partner",
+      file: "File",
+      settings: "Settings",
+      user: "User",
+    },
     systemActor: "System",
-    summaries: { WORKORDER_CREATED: "Work order created", STATUS_CHANGED: "Status changed", FILE_UPLOADED: "File uploaded", FILE_DELETED: "File deleted", PARTNER_UPDATED: "Partner updated", SETTINGS_CHANGED: "Settings changed", PARTNER_CREATED: "Partner created", PARTNER_DELETED: "Partner deleted" },
+    summaries: {
+      WORKORDER_CREATED: "Work order created",
+      STATUS_CHANGED: "Status changed",
+      FILE_UPLOADED: "File uploaded",
+      FILE_DELETED: "File deleted",
+      PARTNER_UPDATED: "Partner updated",
+      SETTINGS_CHANGED: "Settings changed",
+      PARTNER_CREATED: "Partner created",
+      PARTNER_DELETED: "Partner deleted",
+    },
     unknownLabel: "Needs Review",
   },
   topbar: {
-    actions: { home: "Home", personalSettings: "Personal settings", adminSettings: "Settings", openWorkorder: "Work orders" },
+    actions: {
+      home: "Home",
+      personalSettings: "Personal settings",
+      adminSettings: "Settings",
+      openWorkorder: "Work orders",
+    },
     summaries: {
       adminMain: "Operations, status flow, and today checks",
       storage: "Documents/designs · Trash · Storage usage",
@@ -349,11 +960,14 @@ export const adminEn = {
   },
   dashboardPage: {
     title: "Statistics",
-    description: "Period work · partners · file usage · production stage statistics",
+    description:
+      "Period work · partners · file usage · production stage statistics",
     workorderFlowTitle: "Work Order Status",
     dbSourceDescription: "Status volume based on DB data",
-    dbNotConfiguredDescription: "No database connection is configured, so real data is shown as zero.",
-    dbErrorDescription: "Database lookup failed, so real data is shown as zero.",
+    dbNotConfiguredDescription:
+      "No database connection is configured, so real data is shown as zero.",
+    dbErrorDescription:
+      "Database lookup failed, so real data is shown as zero.",
     currentMonth: "This month",
     partnersTitle: "Partner Distribution",
     partnerCountSuffix: "items",
@@ -369,10 +983,13 @@ export const adminEn = {
     factoryProductionTitle: "Production by factory",
     categoryDistributionTitle: "Category distribution by stage",
     cumulativeNoticeTitle: "Cumulative basis",
-    cumulativeNoticeDescription: "Cumulative view is separated so production round records can remain useful as a statistics axis even after work items are removed later.",
+    cumulativeNoticeDescription:
+      "Cumulative view is separated so production round records can remain useful as a statistics axis even after work items are removed later.",
     monthlyNoticeTitle: "Monthly basis",
-    monthlyNoticeDescription: "Review completed, delayed inbound, and defect flows are shown as operational indicators for the selected month.",
-    customPeriodInvalidOrder: "End date must be the same as or later than the start date.",
+    monthlyNoticeDescription:
+      "Review completed, delayed inbound, and defect flows are shown as operational indicators for the selected month.",
+    customPeriodInvalidOrder:
+      "End date must be the same as or later than the start date.",
     customPeriodFutureBlocked: "Future dates cannot be selected.",
     categoryDepthFirst: "Primary",
     categoryDepthSecond: "Item",
@@ -390,7 +1007,8 @@ export const adminEn = {
     factoryTooltipQualityNone: "Quality issue candidates: none",
     demoSeedEyebrow: "Demo seed required",
     demoSeedTitle: "No statistics data yet",
-    demoSeedDescription: "Run the development seed SQL before reviewing charts.",
+    demoSeedDescription:
+      "Run the development seed SQL before reviewing charts.",
     currentProducedLabel: "Cumulative production",
     currentReorderDescription: "Reorders {count}",
     currentDelayRateLabel: "Cumulative delay rate",
@@ -414,11 +1032,14 @@ export const adminEn = {
 
     periodSummaryTitle: "Period summary",
     periodSummaryCompletedLabel: "Completed work orders",
-    periodSummaryCompletedDescription: "Work orders completed in the selected period",
+    periodSummaryCompletedDescription:
+      "Work orders completed in the selected period",
     periodSummaryReorderLabel: "Reorders",
-    periodSummaryReorderDescription: "Reorder work orders in the selected period",
+    periodSummaryReorderDescription:
+      "Reorder work orders in the selected period",
     periodSummaryDefectLabel: "Defective work orders",
-    periodSummaryDefectDescription: "Work orders with one or more defects recorded",
+    periodSummaryDefectDescription:
+      "Work orders with one or more defects recorded",
     dateSelectYear: "Year",
     dateSelectMonth: "Month",
     dateSelectDay: "Day",
@@ -431,9 +1052,12 @@ export const adminEn = {
     periodTopCompletedEmpty: "No order quantity data.",
     periodTopReorderEmpty: "No reorder round data.",
     periodTopDefectEmpty: "No defective work order data.",
-    periodTopCompletedBasis: "Based on total order quantity for completed work orders",
-    periodTopReorderBasis: "Based on the highest reorder round in each reorder group",
-    periodTopDefectBasis: "Based on work orders with at least one defect or rework signal",
+    periodTopCompletedBasis:
+      "Based on total order quantity for completed work orders",
+    periodTopReorderBasis:
+      "Based on the highest reorder round in each reorder group",
+    periodTopDefectBasis:
+      "Based on work orders with at least one defect or rework signal",
     quantityCountSuffix: "pcs",
     reorderRoundSuffix: "round",
     reorderTopEyebrow: "Reorder top 5",
@@ -451,7 +1075,8 @@ export const adminEn = {
     statsSectionProductionLabel: "Production mix",
     statsSectionProductionDescription: "Production types and top items",
     statsSectionFactoryLabel: "Partner performance",
-    statsSectionFactoryDescription: "Production, delay, and inspection by partner",
+    statsSectionFactoryDescription:
+      "Production, delay, and inspection by partner",
     statsSectionPeriodLabel: "Period analysis",
     statsSectionPeriodDescription: "Period reorder and summary metrics",
     factoryColumn: "Factory",
@@ -467,8 +1092,20 @@ export const adminEn = {
     updatedPrefix: "Recently set ",
     saveFailed: "Could not save settings.",
     refreshLabel: "Refresh settings information",
-    badges: { idle: "Settings", saving: "Saving", saved: "Saved", error: "Save failed" },
-    summaryCards: { status: "Operation status", statusValue: "DB connected", joinedAt: "Joined", age: "Usage period", members: "Members", memberValue: "1 admin" },
+    badges: {
+      idle: "Settings",
+      saving: "Saving",
+      saved: "Saved",
+      error: "Save failed",
+    },
+    summaryCards: {
+      status: "Operation status",
+      statusValue: "DB connected",
+      joinedAt: "Joined",
+      age: "Usage period",
+      members: "Members",
+      memberValue: "1 admin",
+    },
     themeTitle: "Theme",
     themeCurrentPrefix: "Current ",
     languageTitle: "Language",
@@ -476,9 +1113,11 @@ export const adminEn = {
     organization: {
       badge: "Organization settings",
       title: "Company operation settings",
-      description: "This area manages company-wide file, storage, notification, master-data, and member permission policies. Personal language and color preferences are changed in Personal Settings.",
+      description:
+        "This area manages company-wide file, storage, notification, master-data, and member permission policies. Personal language and color preferences are changed in Personal Settings.",
       scopeTitle: "Organization setting scope",
-      scopeDescription: "Only company-level settings that a customer admin manages remain on this screen.",
+      scopeDescription:
+        "Only company-level settings that a customer admin manages remain on this screen.",
       summaryUnits: { gb: "GB", days: " days", percent: "%", count: "" },
       summaryCards: {
         "storage-limit": { label: "Storage limit" },
@@ -487,16 +1126,37 @@ export const adminEn = {
         "notification-events": { label: "Notifications" },
       },
       scopes: {
-        "file-policy": { title: "File policy", description: "Rules for upload, delete request, and trash retention flows." },
-        "storage-policy": { title: "Storage policy", description: "Storage limits, warning thresholds, and whether trash counts toward usage." },
-        "notification-policy": { title: "Notification policy", description: "Organization-level alerts such as review requests, order readiness, and storage warnings." },
-        standards: { title: "Master data", description: "Shared standards used by work orders, such as units, product types, and outsourcing processes." },
-        "member-permissions": { title: "Member permissions", description: "A later area for controlling which cards and features members can access by permission code." },
+        "file-policy": {
+          title: "File policy",
+          description:
+            "Rules for upload, delete request, and trash retention flows.",
+        },
+        "storage-policy": {
+          title: "Storage policy",
+          description:
+            "Storage limits, warning thresholds, and whether trash counts toward usage.",
+        },
+        "notification-policy": {
+          title: "Notification policy",
+          description:
+            "Organization-level alerts such as review requests, order readiness, and storage warnings.",
+        },
+        standards: {
+          title: "Master data",
+          description:
+            "Shared standards used by work orders, such as units, product types, and outsourcing processes.",
+        },
+        "member-permissions": {
+          title: "Member permissions",
+          description:
+            "A later area for controlling which cards and features members can access by permission code.",
+        },
       },
       statusLabels: { active: "Active", fixed: "Fixed", planned: "Planned" },
       personalSettings: {
         title: "Personal settings are separate",
-        description: "Language, color, screen density, and default home are per-user preferences, not company-wide policy.",
+        description:
+          "Language, color, screen density, and default home are per-user preferences, not company-wide policy.",
         note: "Customer admins and members change personal preferences in /me/settings. The separate entry point is kept so these settings can later move to DB-backed user settings.",
         actionLabel: "Open personal settings",
       },
@@ -504,22 +1164,34 @@ export const adminEn = {
   },
   userAccessPreview: {
     title: "User / Permission Test Structure",
-    description: "A preparation panel for checking whether the DB user structure and current permission policy match before real login is connected.",
-    sourceStates: { "db-connected": "Live user query", "db-prepared": "User structure prepared", "mock-adapter": "Test user source", "mock-fallback": "Temporary user source" },
+    description:
+      "A preparation panel for checking whether the DB user structure and current permission policy match before real login is connected.",
+    sourceStates: {
+      "db-connected": "Live user query",
+      "db-prepared": "User structure prepared",
+      "mock-adapter": "Test user source",
+      "mock-fallback": "Temporary user source",
+    },
     userCountLabel: "Users",
     testUsersTitle: "Users by role",
     readOnlyBadge: "Read only",
     manageRolesButton: "Manage roles",
     roleModal: {
       title: "User Role Management",
-      description: "A test modal for checking role-based permissions from Settings before real login is connected.",
+      description:
+        "A test modal for checking role-based permissions from Settings before real login is connected.",
       sectionTitle: "Role change test",
-      sectionDescription: "Changing a role recalculates permission badges through the central role policy. This step only validates the screen and does not save to DB yet.",
+      sectionDescription:
+        "Changing a role recalculates permission badges through the central role policy. This step only validates the screen and does not save to DB yet.",
       previewBadge: "Permission preview",
       resetButton: "Reset",
       closeButton: "Confirm",
     },
-    permissionLabels: { canAssignRoles: "Role admin", canEditInventory: "Inventory edit", canSeeCostSections: "Cost view" },
+    permissionLabels: {
+      canAssignRoles: "Role admin",
+      canEditInventory: "Inventory edit",
+      canSeeCostSections: "Cost view",
+    },
     checklistTitle: "Migration checklist",
     checklist: {
       "users-table": "users table SQL prepared",
@@ -529,20 +1201,47 @@ export const adminEn = {
       "login-adapter": "Real login adapter connected",
     },
     status: { ready: "Ready", pending: "Pending" },
-    nextStep: "Next, connect this structure to the role management modal and real login flow.",
+    nextStep:
+      "Next, connect this structure to the role management modal and real login flow.",
   },
   notificationSection: {
     items: {
-      created: { label: "Work order created", description: "Notify when a new work order is created." },
-      updated: { label: "Basic info updated", description: "Notify when basic information is saved or updated." },
-      status_changed: { label: "Status changed", description: "Notify when stages such as Draft, Review requested, or Inspection change." },
-      materials_changed: { label: "Fabric / trim changed", description: "Notify when production composition such as materials, trims, or unit cost changes." },
-      outsourcing_changed: { label: "Outsourcing changed", description: "Notify when outsourcing processes are added, edited, or removed." },
-      stock_changed: { label: "Inventory changed", description: "Notify when inventory quantities change through inbound, deduction, or adjustment." },
-      comment_added: { label: "Memo added", description: "Notify when work memos or replies are added." },
+      created: {
+        label: "Work order created",
+        description: "Notify when a new work order is created.",
+      },
+      updated: {
+        label: "Basic info updated",
+        description: "Notify when basic information is saved or updated.",
+      },
+      status_changed: {
+        label: "Status changed",
+        description:
+          "Notify when stages such as Draft, Review requested, or Inspection change.",
+      },
+      materials_changed: {
+        label: "Fabric / trim changed",
+        description:
+          "Notify when production composition such as materials, trims, or unit cost changes.",
+      },
+      outsourcing_changed: {
+        label: "Outsourcing changed",
+        description:
+          "Notify when outsourcing processes are added, edited, or removed.",
+      },
+      stock_changed: {
+        label: "Inventory changed",
+        description:
+          "Notify when inventory quantities change through inbound, deduction, or adjustment.",
+      },
+      comment_added: {
+        label: "Memo added",
+        description: "Notify when work memos or replies are added.",
+      },
     },
     title: "Notification Event Settings",
-    description: "Only the state is stored for now. Actual delivery is not connected yet.",
+    description:
+      "Only the state is stored for now. Actual delivery is not connected yet.",
     badge: "Test",
     toggleOn: "ON",
     toggleOff: "OFF",
@@ -550,14 +1249,16 @@ export const adminEn = {
   partnerMaster: {
     page: {
       title: "Partner / Factory Management",
-      description: "Primary partner types are managed as factory, fabric, and subsidiary, while outsourcing and process connections are handled as separate attributes.",
+      description:
+        "Primary partner types are managed as factory, fabric, and subsidiary, while outsourcing and process connections are handled as separate attributes.",
       moveToAdminMain: "Admin Home",
       moveToWorkspace: "Open Workspace",
     },
     header: {
       eyebrow: "",
       title: "Partner / Factory Management",
-      description: "Manage partners, fabric vendors, and material vendors in one screen. Select a row to edit details.",
+      description:
+        "Manage partners, fabric vendors, and material vendors in one screen. Select a row to edit details.",
       manageProcesses: "Manage Outsourcing Processes",
       createPartner: "Add partner",
     },
@@ -594,9 +1295,11 @@ export const adminEn = {
     },
     filters: {
       searchLabel: "Search",
-      searchPlaceholder: "Search by name, contact, phone, memo, or outsourcing process",
+      searchPlaceholder:
+        "Search by name, contact, phone, memo, or outsourcing process",
       summaryLabel: "Summary",
-      summaryDescription: "Partner records are master data used directly in work orders, so keep active vendors clean and operationally selectable.",
+      summaryDescription:
+        "Partner records are master data used directly in work orders, so keep active vendors clean and operationally selectable.",
       typeLabel: "Type",
       statusLabel: "Status",
       statusOptions: {
@@ -635,10 +1338,15 @@ export const adminEn = {
     form: {
       createTitle: "Add Partner / Factory",
       editTitle: "Edit Partner / Factory",
-      description: "Manage partner name, contact, phone, primary trade type, and outsourcing settings in the partner master.",
+      description:
+        "Manage partner name, contact, phone, primary trade type, and outsourcing settings in the partner master.",
       cancel: "Cancel",
       save: "Save",
-      sections: { basic: "Basic Information", category: "Category", memo: "Memo" },
+      sections: {
+        basic: "Basic Information",
+        category: "Category",
+        memo: "Memo",
+      },
       typeLabels: {
         factory: "Factory",
         material_vendor: "Fabric",
@@ -667,12 +1375,14 @@ export const adminEn = {
       usageInactive: "Inactive",
       usageSrLabel: "Partner active status",
       saveFailed: "Could not save. Check the database connection.",
-      outsourcingDescription: "If this partner is an outsourcing vendor, connect processes so work orders can filter it directly.",
+      outsourcingDescription:
+        "If this partner is an outsourcing vendor, connect processes so work orders can filter it directly.",
       outsourcingActive: "Outsourcing enabled",
       outsourcingInactive: "Outsourcing disabled",
       outsourcingSrLabel: "Outsourcing enabled",
       manageProcesses: "Manage Outsourcing Processes",
-      outsourcingProcessDescription: "Choose a process from the left list and move it to the selected list on the right.",
+      outsourcingProcessDescription:
+        "Choose a process from the left list and move it to the selected list on the right.",
       noAvailableProcesses: "No available processes to add.",
       noAssignedProcesses: "No selected processes.",
       addSelectedProcess: "Add selected process to the right",
@@ -680,7 +1390,8 @@ export const adminEn = {
     },
     processManagement: {
       title: "Manage Outsourcing Processes",
-      description: "Add outsourcing processes, move them between active/inactive, then save to apply changes.",
+      description:
+        "Add outsourcing processes, move them between active/inactive, then save to apply changes.",
       resetDefaults: "Reset Defaults",
       close: "Close",
       save: "Save",
@@ -705,7 +1416,8 @@ export const adminEn = {
     },
     confirm: {
       deleteProcessTitle: "Delete Outsourcing Process",
-      deleteProcessDescription: "Deleting this also removes the process from partners currently using it.",
+      deleteProcessDescription:
+        "Deleting this also removes the process from partners currently using it.",
       cancel: "Cancel",
       confirmDelete: "Delete",
       deleteProcessBody: 'Delete outsourcing process "{label}"?',
@@ -713,34 +1425,190 @@ export const adminEn = {
     },
   },
   statsUi: {
-    flowBuckets: { writing: "Writing", review: "Review", order: "Order", inbound: "Inbound", completed: "Completed" },
-    partnerBuckets: { factory: "Factory", fabric: "Fabric", subsidiary: "Subsidiary", outsourcing: "Outsourcing" },
-    fileUsage: { total: "Total usage", active: "Attachments", trash: "Trash", quotaLabel: "5.0GB" },
+    flowBuckets: {
+      writing: "Writing",
+      review: "Review",
+      order: "Order",
+      inbound: "Inbound",
+      completed: "Completed",
+    },
+    partnerBuckets: {
+      factory: "Factory",
+      fabric: "Fabric",
+      subsidiary: "Subsidiary",
+      outsourcing: "Outsourcing",
+    },
+    fileUsage: {
+      total: "Total usage",
+      active: "Attachments",
+      trash: "Trash",
+      quotaLabel: "5.0GB",
+    },
     summaries: {
-      totalWorkorders: { label: "Total work orders", description: "Total work orders from DB" },
+      totalWorkorders: {
+        label: "Total work orders",
+        description: "Total work orders from DB",
+      },
       partnerCount: { label: "Partners", description: "Active partner count" },
-      fileUsage: { label: "File usage", description: "Current attachment usage" },
-      completedInPeriod: { label: "Completed work orders", description: "Completed within the selected period" }
+      fileUsage: {
+        label: "File usage",
+        description: "Current attachment usage",
+      },
+      completedInPeriod: {
+        label: "Completed work orders",
+        description: "Completed within the selected period",
+      },
     },
     countSuffix: "items",
     flowCountSuffix: "items",
     unknownLabel: "Uncategorized",
-    productionRounds: { first: "Primary", second: "Secondary", thirdOrMore: "Tertiary" },
-    periods: { sevenDays: "7 days", fifteenDays: "15 days", thirtyDays: "30 days", monthly: "This month", all: "Cumulative", custom: "Custom" },
+    productionRounds: {
+      first: "Primary",
+      second: "Secondary",
+      thirdOrMore: "Tertiary",
+    },
+    periods: {
+      sevenDays: "7 days",
+      fifteenDays: "15 days",
+      thirtyDays: "30 days",
+      monthly: "This month",
+      all: "Cumulative",
+      custom: "Custom",
+    },
     metrics: {
-      reviewWaiting: { label: "Review waiting", description: "Work before order that needs admin review" },
-      inspectionWaiting: { label: "Inspection waiting", description: "Work that needs inbound inspection" },
-      inboundDelayed: { label: "Inbound delayed", description: "Inspection status lasting more than 24 hours" },
-      defectCount: { label: "Defects", description: "Work marked as rework or defect" }
-    }
+      reviewWaiting: {
+        label: "Review waiting",
+        description: "Work before order that needs admin review",
+      },
+      inspectionWaiting: {
+        label: "Inspection waiting",
+        description: "Work that needs inbound inspection",
+      },
+      inboundDelayed: {
+        label: "Inbound delayed",
+        description: "Inspection status lasting more than 24 hours",
+      },
+      defectCount: {
+        label: "Defects",
+        description: "Work marked as rework or defect",
+      },
+    },
   },
   standards: {
-    common: { resetDefaults: "Reset defaults", save: "Save", saving: "Saving", add: "Add", active: "Active", inactive: "Inactive", manage: "Manage", inUseSuffix: " active" },
-    section: { policyTitle: "Policy Management", standardTitle: "Standards Management", saveProcessFailed: "Save failed. Check the database connection.", saveUnitFailed: "Unit save failed. Check the database connection.", saveItemFailed: "Item save failed. Check the database connection.", logEventsTitle: "Log Events" },
-    actions: { notifications: { title: "Notification Policy", description: "Review, order, storage, and purge results" }, logs: { title: "Log Events", description: "Work order change record events" }, filePolicy: { title: "Storage Policy", description: "Capacity, trash, and purge rules" }, items: { title: "Product Types" }, units: { title: "Unit Standards" }, processes: { title: "Outsourcing Process Types" } },
-    units: { title: "Unit Standards", addTitle: "Add Unit", usageTitle: "Unit Usage", nameRequired: "Enter a unit name and code.", duplicate: "This unit is already registered.", namePlaceholder: "Unit name, e.g. piece", codePlaceholder: "Code, e.g. piece" },
-    itemCategories: { title: "Product Types", addTitle: "Add Product Type", usageTitle: "Product Type Usage", countSuffix: "items", active: "Active", inactive: "Inactive", nameRequired: "Enter an item name to add.", selectLevel1: "Select a level 1 item first.", selectLevel2: "Select a level 2 item first.", duplicate: "This item name is already registered.", level1Placeholder: "Add level 1 item", level2Placeholder: "Add level 2 under selected level 1", level3Placeholder: "Add level 3 under selected level 2", level1Title: "Level 1", level2Title: "Level 2", level3Title: "Level 3", level1Empty: "No level 1 items.", level2Empty: "No level 2 items under the selected level 1.", level3Empty: "No level 3 items under the selected level 2." },
-    notificationPolicy: { title: "Notification Policy", loadFailed: "Could not load notification policy.", saveFailed: "Could not save notification policy.", items: { reviewRequestEnabled: "Review request", orderReadyEnabled: "Order ready", storageWarningEnabled: "Storage warning", purgeResultEnabled: "Purge result" } },
-    filePolicy: { title: "File Policy", loadFailed: "Could not load file policy.", saveFailed: "Could not save file policy.", deleteMode: "Delete mode", deleteModeDescription: "Choose whether deleted files move to trash or are removed immediately.", fixedTrashPolicyDescription: "Deleted files move to trash and can be restored for 30 days.", softDelete: "Trash", hardDelete: "Immediate delete", includeTrashInUsage: "Include trash usage", includeTrashDescription: "Choose whether files waiting for purge count toward storage usage.", includeTrashActive: "Included", includeTrashInactive: "Excluded", retentionDays: "Deleted file retention period", retentionDescription: "Period before trash files become purge candidates.", retentionDisabledDescription: "Immediate delete mode does not use a deleted file retention period.", disabled: "Disabled", storageLimit: "Default storage limit (GB)", warningThreshold: "Storage caution threshold (%)", dangerThresholdDescription: "Danger is calculated 10% above the caution threshold.", storageStatus: "Storage status", storageStatusLabels: { normal: "Normal", caution: "Caution", danger: "Risk" }, storageStatusDescriptions: { normal: "Under {caution}% usage", caution: "{caution}% to under {danger}% usage", danger: "{danger}% or higher, or over limit" }, daySuffix: "days" },
+    common: {
+      resetDefaults: "Reset defaults",
+      save: "Save",
+      saving: "Saving",
+      add: "Add",
+      active: "Active",
+      inactive: "Inactive",
+      manage: "Manage",
+      inUseSuffix: " active",
+    },
+    section: {
+      policyTitle: "Policy Management",
+      standardTitle: "Standards Management",
+      saveProcessFailed: "Save failed. Check the database connection.",
+      saveUnitFailed: "Unit save failed. Check the database connection.",
+      saveItemFailed: "Item save failed. Check the database connection.",
+      logEventsTitle: "Log Events",
+    },
+    actions: {
+      notifications: {
+        title: "Notification Policy",
+        description: "Review, order, storage, and purge results",
+      },
+      logs: {
+        title: "Log Events",
+        description: "Work order change record events",
+      },
+      filePolicy: {
+        title: "Storage Policy",
+        description: "Capacity, trash, and purge rules",
+      },
+      items: { title: "Product Types" },
+      units: { title: "Unit Standards" },
+      processes: { title: "Outsourcing Process Types" },
+    },
+    units: {
+      title: "Unit Standards",
+      addTitle: "Add Unit",
+      usageTitle: "Unit Usage",
+      nameRequired: "Enter a unit name and code.",
+      duplicate: "This unit is already registered.",
+      namePlaceholder: "Unit name, e.g. piece",
+      codePlaceholder: "Code, e.g. piece",
+    },
+    itemCategories: {
+      title: "Product Types",
+      addTitle: "Add Product Type",
+      usageTitle: "Product Type Usage",
+      countSuffix: "items",
+      active: "Active",
+      inactive: "Inactive",
+      nameRequired: "Enter an item name to add.",
+      selectLevel1: "Select a level 1 item first.",
+      selectLevel2: "Select a level 2 item first.",
+      duplicate: "This item name is already registered.",
+      level1Placeholder: "Add level 1 item",
+      level2Placeholder: "Add level 2 under selected level 1",
+      level3Placeholder: "Add level 3 under selected level 2",
+      level1Title: "Level 1",
+      level2Title: "Level 2",
+      level3Title: "Level 3",
+      level1Empty: "No level 1 items.",
+      level2Empty: "No level 2 items under the selected level 1.",
+      level3Empty: "No level 3 items under the selected level 2.",
+    },
+    notificationPolicy: {
+      title: "Notification Policy",
+      loadFailed: "Could not load notification policy.",
+      saveFailed: "Could not save notification policy.",
+      items: {
+        reviewRequestEnabled: "Review request",
+        orderReadyEnabled: "Order ready",
+        storageWarningEnabled: "Storage warning",
+        purgeResultEnabled: "Purge result",
+      },
+    },
+    filePolicy: {
+      title: "File Policy",
+      loadFailed: "Could not load file policy.",
+      saveFailed: "Could not save file policy.",
+      deleteMode: "Delete mode",
+      deleteModeDescription:
+        "Choose whether deleted files move to trash or are removed immediately.",
+      fixedTrashPolicyDescription:
+        "Deleted files move to trash and can be restored for 30 days.",
+      softDelete: "Trash",
+      hardDelete: "Immediate delete",
+      includeTrashInUsage: "Include trash usage",
+      includeTrashDescription:
+        "Choose whether files waiting for purge count toward storage usage.",
+      includeTrashActive: "Included",
+      includeTrashInactive: "Excluded",
+      retentionDays: "Deleted file retention period",
+      retentionDescription:
+        "Period before trash files become purge candidates.",
+      retentionDisabledDescription:
+        "Immediate delete mode does not use a deleted file retention period.",
+      disabled: "Disabled",
+      storageLimit: "Default storage limit (GB)",
+      warningThreshold: "Storage caution threshold (%)",
+      dangerThresholdDescription:
+        "Danger is calculated 10% above the caution threshold.",
+      storageStatus: "Storage status",
+      storageStatusLabels: {
+        normal: "Normal",
+        caution: "Caution",
+        danger: "Risk",
+      },
+      storageStatusDescriptions: {
+        normal: "Under {caution}% usage",
+        caution: "{caution}% to under {danger}% usage",
+        danger: "{danger}% or higher, or over limit",
+      },
+      daySuffix: "days",
+    },
   },
 } as const;
