@@ -12,3 +12,4 @@ export * from "@/lib/admin/partner/dbMapper";
 export * from "@/lib/admin/partner/confirm";
 export * from "@/lib/admin/partner/selectors";
 export * from "@/lib/admin/partner/actionFlow";
+export * from "@/lib/admin/partner/tablePresentation";

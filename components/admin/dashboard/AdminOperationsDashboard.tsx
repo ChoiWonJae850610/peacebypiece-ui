@@ -14,6 +14,14 @@ import type {
   AdminDashboardTodayTask,
   AdminOperationalDashboardSnapshots,
 } from "@/lib/admin/adminOperations.types";
+import {
+  ADMIN_DASHBOARD_DEFAULT_QUEUE_ID,
+  ADMIN_DASHBOARD_QUEUE_ORDER,
+  formatAdminDashboardCount,
+  formatAdminDashboardDue,
+  formatAdminDashboardQuantity,
+  selectAdminDashboardQueueTasks,
+} from "@/lib/admin/adminOperations.presentation";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminOperationsDashboardProps = {
@@ -21,20 +29,6 @@ type AdminOperationsDashboardProps = {
 };
 
 type AdminTranslation = ReturnType<typeof useAdminTranslation>;
-
-const ADMIN_DASHBOARD_DEFAULT_QUEUE_ID: AdminDashboardQueueId = "reviewWaiting";
-
-const adminQueueOrder: readonly AdminDashboardQueueId[] = [
-  "reviewWaiting",
-  "orderWaiting",
-  "inspectionWaiting",
-  "inboundDelayed",
-] as const;
-
-function formatAdminCount(count: number, t: AdminTranslation): string {
-  const unit = t("operationsDashboard.countSuffix", "건");
-  return unit === "건" ? `${count}${unit}` : `${count} ${unit}`;
-}
 
 function translateInsightLabel(
   queueId: AdminDashboardQueueId,
@@ -86,47 +80,6 @@ function translateTodayTaskPriorityLabel(
   t: AdminTranslation,
 ): string {
   return t(`operationsDashboard.todayTasks.priority.${priorityKey}`, fallback);
-}
-
-function formatAdminQuantity(
-  task: AdminDashboardTodayTask,
-  t: AdminTranslation,
-): string {
-  if (typeof task.quantityCount !== "number") {
-    return t(
-      "operationsDashboard.todayTasks.quantityPending",
-      task.quantityLabel,
-    );
-  }
-  return t(
-    "operationsDashboard.todayTasks.quantityValue",
-    task.quantityLabel,
-  ).replace("{count}", String(task.quantityCount));
-}
-
-function formatAdminDue(
-  task: AdminDashboardTodayTask,
-  t: AdminTranslation,
-): string {
-  if (task.dueKey === "pending")
-    return t("operationsDashboard.todayTasks.duePending", task.dueLabel);
-  if (task.dueKey === "overdue")
-    return t("operationsDashboard.todayTasks.overdue", task.dueLabel);
-  if (task.dueKey === "today")
-    return t("operationsDashboard.todayTasks.dueToday", task.dueLabel);
-  if (task.dueKey === "tomorrow")
-    return t("operationsDashboard.todayTasks.dueTomorrow", task.dueLabel);
-  return t("operationsDashboard.todayTasks.dueAfter", task.dueLabel).replace(
-    "{days}",
-    String(task.dueDays ?? 0),
-  );
-}
-
-function getQueueTasks(
-  snapshot: AdminOperationalDashboardSnapshots["today"],
-  selectedQueueId: AdminDashboardQueueId,
-): AdminDashboardTodayTask[] {
-  return snapshot.queueTasks?.[selectedQueueId] ?? snapshot.todayTasks;
 }
 
 function WorkorderShortcutIcon() {
@@ -194,7 +147,7 @@ export default function AdminOperationsDashboard({
     ADMIN_DASHBOARD_DEFAULT_QUEUE_ID,
   );
   const selectedTasks = useMemo(
-    () => getQueueTasks(snapshot, selectedQueueId),
+    () => selectAdminDashboardQueueTasks(snapshot, selectedQueueId),
     [snapshot, selectedQueueId],
   );
   const insightsById = useMemo(
@@ -236,7 +189,7 @@ export default function AdminOperationsDashboard({
               </Link>
             </div>
             <AdminStatusBadge tone="neutral">
-              {formatAdminCount(selectedTasks.length, t)}
+              {formatAdminDashboardCount(selectedTasks.length, t)}
             </AdminStatusBadge>
           </div>
 
@@ -272,7 +225,7 @@ export default function AdminOperationsDashboard({
                       </AdminStatusBadge>
                       <AdminStatusBadge tone="neutral">
                         {t("operationsDashboard.attachmentLabel", "첨부")}{" "}
-                        {formatAdminCount(task.attachmentCount, t)}
+                        {formatAdminDashboardCount(task.attachmentCount, t)}
                       </AdminStatusBadge>
                     </div>
                     <p className="mt-2 truncate text-sm font-semibold pbp-text-primary">
@@ -285,7 +238,7 @@ export default function AdminOperationsDashboard({
                       </span>
                       <span>
                         {t("operationsDashboard.quantityLabel", "수량")} :{" "}
-                        {formatAdminQuantity(task, t)}
+                        {formatAdminDashboardQuantity(task, t)}
                       </span>
                     </div>
                   </div>
@@ -296,7 +249,7 @@ export default function AdminOperationsDashboard({
                         {t("operationsDashboard.dueLabel", "납기")}
                       </p>
                       <p className="mt-1 text-sm font-semibold pbp-text-primary">
-                        {formatAdminDue(task, t)}
+                        {formatAdminDashboardDue(task, t)}
                       </p>
                     </div>
                     <AdminLinkButton
@@ -324,7 +277,7 @@ export default function AdminOperationsDashboard({
             {t("operationsDashboard.priorityTitle", "주요 대기 현황")}
           </h2>
           <div className="mt-4 grid min-h-0 flex-1 grid-rows-4 gap-3">
-            {adminQueueOrder.map((queueId) => {
+            {ADMIN_DASHBOARD_QUEUE_ORDER.map((queueId) => {
               const item = insightsById.get(queueId);
               if (!item) return null;
               const isActive = selectedQueueId === queueId;
