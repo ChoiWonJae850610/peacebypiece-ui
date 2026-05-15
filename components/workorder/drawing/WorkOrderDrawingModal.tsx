@@ -56,7 +56,7 @@ type DrawingPoint = {
 const DRAWING_MIME_TYPE = "image/png";
 const DRAWING_FILE_EXTENSION = "png";
 const DRAWING_DRAFT_STORAGE_KEY = "peacebypiece.workorder.designDrawingDraft";
-const DRAWING_DRAFT_FORMAT_VERSION = 4;
+const DRAWING_DRAFT_FORMAT_VERSION = 6;
 const DESKTOP_CANVAS_WIDTH = 1280;
 const DESKTOP_CANVAS_HEIGHT = 900;
 const PORTRAIT_CANVAS_WIDTH = 900;
@@ -345,7 +345,7 @@ function isTabletLikeTouchViewport() {
   const maxSide = Math.max(viewportWidth, viewportHeight);
   const coarsePointer = window.matchMedia?.("(pointer: coarse)").matches ?? false;
   const multiTouch = window.navigator.maxTouchPoints >= 2;
-  return (coarsePointer || multiTouch) && minSide >= 600 && maxSide >= 900;
+  return (coarsePointer || multiTouch) && minSide >= 480 && maxSide >= 820;
 }
 
 function shouldBlockDrawingForLandscape(variant: WorkOrderDrawingModalProps["variant"]) {
@@ -497,7 +497,7 @@ export default function WorkOrderDrawingModal({
   const blankSnapshotRef = useRef("");
   const dirtyRef = useRef(false);
   const suppressDraftPersistRef = useRef(false);
-  const [tabletLikeTouchViewport, setTabletLikeTouchViewport] = useState(false);
+  const [tabletLikeTouchViewport, setTabletLikeTouchViewport] = useState(() => isTabletLikeTouchViewport());
   const effectiveVariant = variant === "desktop" && tabletLikeTouchViewport ? "tablet" : variant;
   const canvasSize = getCanvasSize(effectiveVariant);
   const [tool, setTool] = useState<DrawingTool>("pen");
@@ -619,7 +619,8 @@ export default function WorkOrderDrawingModal({
     if (typeof window === "undefined") return;
 
     const syncTabletLikeViewport = () => {
-      setTabletLikeTouchViewport(isTabletLikeTouchViewport());
+      const nextTabletLike = isTabletLikeTouchViewport();
+      setTabletLikeTouchViewport((current) => current || nextTabletLike);
     };
 
     syncTabletLikeViewport();
@@ -700,6 +701,18 @@ export default function WorkOrderDrawingModal({
       document.removeEventListener("visibilitychange", persistBeforeViewportChange);
     };
   }, [open]);
+
+  useEffect(() => {
+    if (!open || !landscapeBlocked) return;
+    persistCurrentDraftSnapshot();
+    drawingRef.current = false;
+    strokeDirtyRef.current = false;
+    lastPointRef.current = null;
+    shapeStartPointRef.current = null;
+    shapeBaseImageDataRef.current = null;
+    hideEraserCursor();
+    closeToolPopovers();
+  }, [landscapeBlocked, open]);
 
   useEffect(() => {
     if (!open) return;
