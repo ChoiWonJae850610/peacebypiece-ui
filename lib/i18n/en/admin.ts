@@ -62,6 +62,7 @@ export const adminEn = {
   navigation: { dashboard: "Dashboard", workorder: "Work Orders", partners: "Partners", storage: "Storage", statistics: "Statistics", history: "History", settings: "Settings", dbConnected: "DB status audit" },
   operationsDashboard: {
     title: "Operations Dashboard",
+    workorderStatusTitle: "Work order status",
     sourceDb: "Shows work queue items from DB.",
     sourceNotConfigured: "No database connection is configured, so values are shown as zero.",
     sourceError: "Database lookup failed, so values are shown as zero.",
@@ -79,7 +80,7 @@ export const adminEn = {
     factoryLabel: "Factory",
     quantityLabel: "Qty",
     updatedLabel: "Updated",
-    openWorkorder: "Open work order",
+    openWorkorder: "Open",
     actions: { openWorkorderShort: "Workspace", openWorkorderWorkspace: "Open work order workspace" },
     todayTasksEmpty: "No review or order waiting work orders to check today.",
     countSuffix: "items",

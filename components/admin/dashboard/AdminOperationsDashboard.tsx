@@ -205,7 +205,15 @@ export default function AdminOperationsDashboard({
 
   return (
     <AdminCard className="shrink-0 overflow-hidden">
-      <div className="grid gap-4 xl:h-[360px] xl:grid-cols-[1.35fr_0.65fr]">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="truncate text-lg font-semibold tracking-tight pbp-text-primary">
+            {t("operationsDashboard.workorderStatusTitle", "작업지시서 현황")}
+          </h2>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-4 xl:h-[360px] xl:grid-cols-[1.35fr_0.65fr]">
         <section className="flex min-h-[320px] flex-col overflow-hidden rounded-[24px] border p-4 pbp-card-muted xl:h-full xl:min-h-0">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2">
@@ -297,10 +305,7 @@ export default function AdminOperationsDashboard({
                       size="sm"
                       className="px-3 py-1.5 text-xs"
                     >
-                      {t(
-                        "operationsDashboard.openWorkorder",
-                        "작업지시서 열기",
-                      )}
+                      {t("operationsDashboard.openWorkorder", "열기")}
                     </AdminLinkButton>
                   </div>
                 </article>
@@ -314,7 +319,7 @@ export default function AdminOperationsDashboard({
           </div>
         </section>
 
-        <section className="flex min-h-[320px] flex-col overflow-hidden rounded-[24px] border border-stone-100 bg-[var(--admin-theme-surface)] p-4 text-[var(--admin-theme-text-on-surface)] shadow-sm transition-colors xl:h-full xl:min-h-0">
+        <section className="flex min-h-[320px] flex-col overflow-hidden rounded-[24px] border border-[var(--admin-theme-border)] bg-[var(--admin-theme-surface)] p-4 text-[var(--admin-theme-text-on-surface)] shadow-sm transition-colors xl:h-full xl:min-h-0">
           <h2 className="text-base font-semibold">
             {t("operationsDashboard.priorityTitle", "주요 대기 현황")}
           </h2>
@@ -329,7 +334,7 @@ export default function AdminOperationsDashboard({
                   type="button"
                   onClick={() => setSelectedQueueId(queueId)}
                   aria-pressed={isActive}
-                  className={`min-h-0 overflow-hidden rounded-2xl px-4 py-3 text-left transition ${isActive ? "bg-white/20 ring-1 ring-white/40" : "bg-white/10 hover:bg-white/15"}`}
+                  className={`min-h-0 overflow-hidden rounded-2xl border px-4 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-theme-ring)] ${isActive ? "border-[var(--admin-theme-text-on-surface)]/40 bg-[var(--admin-theme-text-on-surface)]/20 shadow-sm" : "border-transparent bg-[var(--admin-theme-text-on-surface)]/10 hover:bg-[var(--admin-theme-text-on-surface)]/15"}`}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-sm font-semibold">
@@ -337,7 +342,7 @@ export default function AdminOperationsDashboard({
                     </span>
                     <span className="text-lg font-semibold">{item.value}</span>
                   </div>
-                  <p className="mt-1 max-h-8 overflow-hidden text-xs text-[var(--pbp-action-primary-text)]/70">
+                  <p className="mt-1 max-h-8 overflow-hidden text-xs text-[var(--admin-theme-muted-on-surface)]">
                     {translateInsightDescription(queueId, item.description, t)}
                   </p>
                 </button>
