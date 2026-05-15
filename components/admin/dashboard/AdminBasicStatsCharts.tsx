@@ -13,6 +13,7 @@ import {
 } from "recharts";
 
 import type { AdminStatChartPoint } from "@/lib/admin/adminDashboard.presentation";
+import { getAdminStatsChartColor } from "@/lib/admin/stats/chartPalette";
 import {
   ADMIN_STATS_BODY_CLASS,
   ADMIN_STATS_ITEM_CLASS,
@@ -42,15 +43,6 @@ type BasicDonutChartProps = {
   onSelectPoint?: (label: string) => void;
 };
 
-const CHART_SEGMENT_COLORS = [
-  "var(--pbp-text-primary)",
-  "var(--admin-theme-primary)",
-  "var(--pbp-status-warning)",
-  "var(--pbp-status-success)",
-  "var(--pbp-status-danger)",
-  "var(--pbp-text-muted)",
-] as const;
-
 function formatTooltipValue(value: number | string, suffix: string) {
   const normalizedValue = typeof value === "number" ? value.toLocaleString("ko-KR") : value;
   return suffix ? `${normalizedValue}${suffix}` : normalizedValue;
@@ -63,6 +55,37 @@ function getPointValueLabel(point: ChartPoint, suffix: string) {
 
 function getDonutTooltipPosition(compact: boolean) {
   return compact ? { x: 142, y: 8 } : { x: 154, y: 8 };
+}
+
+type AdminDonutTooltipPayload = {
+  color?: string;
+  name?: string;
+  value?: number | string;
+  payload?: ChartPoint;
+};
+
+type AdminDonutTooltipProps = {
+  active?: boolean;
+  payload?: AdminDonutTooltipPayload[];
+  valueSuffix: string;
+};
+
+function AdminDonutTooltip({ active, payload, valueSuffix }: AdminDonutTooltipProps) {
+  if (!active || !payload?.length) return null;
+  const item = payload[0];
+  const label = item.payload?.label ?? item.name ?? "";
+  const value = item.payload?.value ?? item.value ?? 0;
+  const color = item.color ?? "var(--pbp-chart-1, var(--pbp-text-primary))";
+
+  return (
+    <div className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-3 py-2 text-xs font-semibold text-[var(--pbp-text-primary)] shadow-[0_12px_30px_rgb(15_23_42_/_0.14)]">
+      <div className="flex items-center gap-2">
+        <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
+        <span className="max-w-[132px] truncate">{label}</span>
+        <span className="shrink-0 text-[var(--pbp-text-muted)]">{formatTooltipValue(value, valueSuffix)}</span>
+      </div>
+    </div>
+  );
 }
 
 export function AdminBasicBarChart({ points, emptyLabel, valueSuffix = "" }: BasicBarChartProps) {
@@ -120,23 +143,14 @@ export function AdminBasicDonutChart({ points, totalLabel, valueSuffix = "", emp
           <PieChart>
             <Pie data={points} dataKey="value" nameKey="label" cx="50%" cy="50%" innerRadius={innerRadius} outerRadius={outerRadius} paddingAngle={2} strokeWidth={0}>
               {points.map((item, index) => (
-                <Cell key={item.label} fill={CHART_SEGMENT_COLORS[index % CHART_SEGMENT_COLORS.length]} />
+                <Cell key={item.label} fill={getAdminStatsChartColor(index)} />
               ))}
             </Pie>
             <Tooltip
               cursor={false}
               allowEscapeViewBox={{ x: true, y: true }}
               position={getDonutTooltipPosition(compact)}
-              formatter={(value) => formatTooltipValue(value as number | string, valueSuffix)}
-              contentStyle={{
-                borderRadius: 16,
-                borderColor: "var(--pbp-border)",
-                background: "var(--pbp-surface)",
-                boxShadow: "0 12px 30px rgb(15 23 42 / 0.14)",
-                color: "var(--pbp-text-primary)",
-                fontSize: 12,
-                fontWeight: 600,
-              }}
+              content={(props) => <AdminDonutTooltip active={props.active} payload={props.payload as AdminDonutTooltipPayload[] | undefined} valueSuffix={valueSuffix} />}
               wrapperStyle={{ pointerEvents: "none", zIndex: 20 }}
             />
           </PieChart>
@@ -154,7 +168,7 @@ export function AdminBasicDonutChart({ points, totalLabel, valueSuffix = "", emp
           const content = (
             <>
               <span className="flex min-w-0 items-center gap-2">
-                <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: CHART_SEGMENT_COLORS[index % CHART_SEGMENT_COLORS.length] }} />
+                <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: getAdminStatsChartColor(index) }} />
                 <span className="truncate">{item.label}</span>
               </span>
               <span className="shrink-0">{getPointValueLabel(item, valueSuffix)}</span>

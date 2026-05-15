@@ -8,6 +8,7 @@ export const SEMANTIC_THEME_TOKEN_GROUPS = {
   modal: ["overlay", "surface", "chrome", "body", "section", "sectionMuted"],
   border: ["default", "strong", "selected", "focus"],
   feedback: ["focusRing", "hover", "pressed", "toggle"],
+  chart: ["segment1", "segment2", "segment3", "segment4", "segment5", "segment6"],
 } as const;
 
 export type SemanticThemeTokenGroup = keyof typeof SEMANTIC_THEME_TOKEN_GROUPS;
@@ -404,7 +405,7 @@ export const PBP_THEME_DIRECT_COLOR_CLASS_AUDIT_CHECKS = {
     ],
     deferUntilFeatureQA: [
       "저장소/휴지통/purge 동작 관련 화면은 기능 회귀 위험이 있으므로 시각 token 정리는 별도 버전에서만 진행한다.",
-      "통계 차트 색상은 chart palette token 설계 이후 진행한다.",
+      "통계 차트 색상은 chart palette token으로 분리해 도넛/범례/툴팁 색상 동기화 기준을 적용한다.",
     ],
   },
   commonCandidates: {
@@ -431,7 +432,7 @@ export const PBP_THEME_DIRECT_COLOR_CLASS_AUDIT_CHECKS = {
     "삭제/오류/반려는 danger 의미색으로 유지하되 실제 색상값은 theme variable을 사용한다.",
     "검수완료/완료/성공은 success 의미색으로 유지하되 실제 색상값은 theme variable을 사용한다.",
     "warning/pending/info는 상태 의미색으로 유지하고, 브랜드 theme 색상과 섞지 않는다.",
-    "chart 색상은 action/status/surface token과 분리한 chart palette token 설계 후 적용한다.",
+    "chart 색상은 action/status/surface token과 분리한 chart palette token을 사용한다.",
   ],
   nextRecommendations: [
     "작업지시서 개별 modal content semantic token 정리",
