@@ -1,10 +1,22 @@
-Version : 0.12.46
-Summary : 직접 그리기 가로모드 차단 후 세로 복귀 시 draft 유지 보정
-Description : 태블릿에서 직접 그리기를 세로모드로 사용하다가 가로모드 안내 화면을 확인한 뒤 다시 세로모드로 돌아왔을 때 기존 그림이 사라지지 않도록 viewport 판정과 draft snapshot 저장 흐름을 보정합니다. touch tablet-like viewport는 한 번 감지되면 해당 세션에서 유지하고, landscape 차단 진입 시 canvas snapshot을 저장하며 진행 중인 pointer 상태만 정리합니다.
+Version :
+0.12.47
+
+Summary :
+직접 그리기 PC/tablet/mobile editor 파일 분리
+
+Description :
+작업지시서 직접 그리기 모달의 진입 파일을 device별 editor 분기만 담당하도록 줄이고, 공통 canvas editor와 device policy 파일을 분리했다. PC 정책은 landscape 차단을 false로 고정해 PC 창 크기 변경 시 세로모드 안내가 나오지 않도록 정리했다. tablet/mobile은 별도 editor와 portrait canvas 정책을 사용하도록 분리했다.
+
 수정 파일 목록 :
 - lib/constants/app.ts
 - components/workorder/drawing/WorkOrderDrawingModal.tsx
+
 추가 파일 목록 :
-- docs/workorder-drawing-native-landscape-draft-restore-0.12.46.md
+- components/workorder/drawing/WorkOrderDrawingCanvasEditor.tsx
+- components/workorder/drawing/WorkOrderDrawingDesktopEditor.tsx
+- components/workorder/drawing/WorkOrderDrawingTabletEditor.tsx
+- components/workorder/drawing/WorkOrderDrawingMobileEditor.tsx
+- components/workorder/drawing/drawingDevicePolicy.ts
+
 삭제 파일 목록 :
-- 없음
+없음
