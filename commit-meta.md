@@ -1,18 +1,10 @@
-Version : 0.12.74
-Summary : 테마 팔레트 규칙과 저장소·작업지시서 색상 연동 정리
-Description : 테마 추가 시 chart/workflow palette를 함께 정의해야 하는 규칙 문서를 추가하고, 저장소 파일 유형 도넛을 공통 chart palette 기준으로 정리했습니다. 작업지시서 workflow 진행 단계와 상태 뱃지가 theme workflow token을 사용하도록 색상 presentation을 정리했습니다.
+Version : 0.12.75
+Summary : 통계 도넛 툴팁 payload 타입 오류 수정
+Description : Recharts Tooltip payload가 readonly 배열로 전달되는 타입 특성에 맞춰 통계 도넛 툴팁 props 타입을 readonly 배열로 보정하고, Tooltip payload 캐스팅을 unknown 경유 방식으로 수정하여 TypeScript 빌드 오류를 해소했습니다. APP_VERSION을 0.12.75로 갱신했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- components/admin/files/FileStorageSummary.tsx
-- components/workorder/detail/WorkOrderActionSection.tsx
-- lib/constants/workorderStates.ts
-- lib/admin/stats/chartPalette.ts
-- lib/theme/themes/beigeAtelier.ts
-- lib/theme/themes/blackAndWhite.ts
-- lib/theme/themes/coldWinter.ts
-- lib/theme/themes/softEmerald.ts
+- components/admin/dashboard/AdminBasicStatsCharts.tsx
 추가 파일 목록 :
-- lib/admin/chartPalette.ts
-- docs/theme-and-palette-policy.md
+- 없음
 삭제 파일 목록 :
 - 없음

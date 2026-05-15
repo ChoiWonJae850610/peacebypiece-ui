@@ -66,7 +66,7 @@ type AdminDonutTooltipPayload = {
 
 type AdminDonutTooltipProps = {
   active?: boolean;
-  payload?: AdminDonutTooltipPayload[];
+  payload?: readonly AdminDonutTooltipPayload[];
   valueSuffix: string;
 };
 
@@ -150,7 +150,7 @@ export function AdminBasicDonutChart({ points, totalLabel, valueSuffix = "", emp
               cursor={false}
               allowEscapeViewBox={{ x: true, y: true }}
               position={getDonutTooltipPosition(compact)}
-              content={(props) => <AdminDonutTooltip active={props.active} payload={props.payload as AdminDonutTooltipPayload[] | undefined} valueSuffix={valueSuffix} />}
+              content={(props) => <AdminDonutTooltip active={props.active} payload={props.payload as unknown as readonly AdminDonutTooltipPayload[] | undefined} valueSuffix={valueSuffix} />}
               wrapperStyle={{ pointerEvents: "none", zIndex: 20 }}
             />
           </PieChart>
