@@ -55,8 +55,10 @@ type DrawingPoint = {
 const DRAWING_MIME_TYPE = "image/png";
 const DRAWING_FILE_EXTENSION = "png";
 const DRAWING_DRAFT_STORAGE_KEY = "peacebypiece.workorder.designDrawingDraft";
-const DEFAULT_CANVAS_WIDTH = 1280;
-const DEFAULT_CANVAS_HEIGHT = 900;
+const DESKTOP_CANVAS_WIDTH = 1280;
+const DESKTOP_CANVAS_HEIGHT = 900;
+const PORTRAIT_CANVAS_WIDTH = 900;
+const PORTRAIT_CANVAS_HEIGHT = 1280;
 const MAX_HISTORY_LENGTH = 24;
 const ERASER_LINE_WIDTH_BY_STROKE_SIZE: Record<DrawingStrokeSizeId, number> = {
   thin: 20,
@@ -95,8 +97,12 @@ const PICKER_PANEL_CLASS =
 const TOOLBAR_GROUP_CLASS =
   "flex items-center gap-1.5 rounded-2xl border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface)] p-1.5 shadow-sm";
 
-function getCanvasSize(_variant: WorkOrderDrawingModalProps["variant"]) {
-  return { width: DEFAULT_CANVAS_WIDTH, height: DEFAULT_CANVAS_HEIGHT };
+function getCanvasSize(variant: WorkOrderDrawingModalProps["variant"]) {
+  if (variant === "desktop") {
+    return { width: DESKTOP_CANVAS_WIDTH, height: DESKTOP_CANVAS_HEIGHT };
+  }
+
+  return { width: PORTRAIT_CANVAS_WIDTH, height: PORTRAIT_CANVAS_HEIGHT };
 }
 
 function isShapeTool(tool: DrawingTool) {
@@ -282,10 +288,20 @@ function restoreCanvasSnapshot(canvas: HTMLCanvasElement, snapshot: string, onRe
   if (!context) return;
   const image = new Image();
   image.onload = () => {
+    const sourceWidth = image.naturalWidth || image.width || canvas.width;
+    const sourceHeight = image.naturalHeight || image.height || canvas.height;
+    const scale = Math.min(canvas.width / sourceWidth, canvas.height / sourceHeight);
+    const targetWidth = sourceWidth * scale;
+    const targetHeight = sourceHeight * scale;
+    const targetX = (canvas.width - targetWidth) / 2;
+    const targetY = (canvas.height - targetHeight) / 2;
+
     context.save();
     context.setTransform(1, 0, 0, 1, 0, 0);
     context.clearRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, targetX, targetY, targetWidth, targetHeight);
     context.restore();
     onRestored?.();
   };
@@ -878,6 +894,8 @@ export default function WorkOrderDrawingModal({
           >
             <canvas
               ref={canvasRef}
+              width={canvasSize.width}
+              height={canvasSize.height}
               className="block touch-none select-none bg-white shadow-sm"
               style={{
                 width: `${canvasDisplaySize.width}px`,
