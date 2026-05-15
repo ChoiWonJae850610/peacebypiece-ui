@@ -63,6 +63,14 @@ function sortPartnerItems(items: PartnerListItemViewModel[], sort: PartnerSortSt
   });
 }
 
+
+function splitOutsourcingProcessBadges(label: string) {
+  return label
+    .split(/[,.،，、]/)
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
 function toggleSort(current: PartnerSortState, nextKey: PartnerSortKey): PartnerSortState {
   if (current.key !== nextKey) {
     return { key: nextKey, direction: "asc" };
@@ -141,9 +149,11 @@ export default function PartnerMasterList({ items, isLoading = false, onEditPart
         {
           key: "type",
           label: buildHeader("type", listText.columns.type),
-          render: (item) => (
-            <div className="min-w-0 space-y-1.5" aria-label={item.typeDisplayLabel || listText.typeMissing}>
-              <div className="flex min-h-7 flex-wrap items-center gap-1.5">
+          render: (item) => {
+            const outsourcingBadges = item.hasOutsourcingProcesses ? splitOutsourcingProcessBadges(item.outsourcingProcessLabel) : [];
+
+            return (
+              <div className="flex min-w-0 flex-wrap items-center gap-1.5" aria-label={item.typeDisplayLabel || listText.typeMissing}>
                 {item.hasBaseTypes ? (
                   item.baseTypeBadges.map((badge) => (
                     <AdminStatusBadge key={badge.key} tone="info" size="xs">
@@ -153,14 +163,14 @@ export default function PartnerMasterList({ items, isLoading = false, onEditPart
                 ) : (
                   <span className="text-xs text-[var(--pbp-text-muted)]">{listText.noBaseType}</span>
                 )}
+                {outsourcingBadges.map((label) => (
+                  <AdminStatusBadge key={`outsourcing-${label}`} tone="warning" size="xs" title={label}>
+                    {label}
+                  </AdminStatusBadge>
+                ))}
               </div>
-              {item.hasOutsourcingProcesses ? (
-                <div className="max-w-full rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-2.5 py-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
-                  <span className="block max-w-[160px] truncate" title={item.outsourcingProcessLabel}>{item.outsourcingProcessLabel}</span>
-                </div>
-              ) : null}
-            </div>
-          ),
+            );
+          },
         },
         {
           key: "status",
