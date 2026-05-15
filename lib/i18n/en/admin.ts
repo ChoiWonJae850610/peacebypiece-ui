@@ -94,6 +94,12 @@ export const adminEn = {
       inboundDelayed: "Inbound delayed",
       inboundDelayedDescription: "Inspection-waiting work orders more than 24 hours after the due date starts",
     },
+    queues: {
+      reviewWaiting: { title: "Review waiting list", empty: "No work orders are waiting for review." },
+      orderWaiting: { title: "Order waiting list", empty: "No work orders are waiting for order handling." },
+      inspectionWaiting: { title: "Inspection waiting list", empty: "No work orders are waiting for inspection." },
+      inboundDelayed: { title: "Inbound delayed list", empty: "No delayed inbound work orders." },
+    },
     todayTasks: {
       duePending: "Due pending",
       overdue: "Overdue",

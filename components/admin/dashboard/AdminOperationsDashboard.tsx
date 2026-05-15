@@ -1,45 +1,63 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { AdminLinkButton } from "@/components/admin/common/AdminButton";
 import { ADMIN_SURFACE_ITEM_CLASS } from "@/components/admin/common/adminSemanticClassNames";
 import { AdminEmptyState } from "@/components/admin/common/AdminEmptyState";
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
-import type { AdminOperationalDashboardSnapshots } from "@/lib/admin/adminOperations.types";
+import type {
+  AdminDashboardQueueId,
+  AdminDashboardTaskPriorityKey,
+  AdminDashboardTaskStatusKey,
+  AdminDashboardTodayTask,
+  AdminOperationalDashboardSnapshots,
+} from "@/lib/admin/adminOperations.types";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminOperationsDashboardProps = {
   snapshots: AdminOperationalDashboardSnapshots;
 };
 
-function formatAdminCount(count: number, t: ReturnType<typeof useAdminTranslation>): string {
+type AdminTranslation = ReturnType<typeof useAdminTranslation>;
+
+const ADMIN_DASHBOARD_DEFAULT_QUEUE_ID: AdminDashboardQueueId = "reviewWaiting";
+
+const adminQueueOrder: readonly AdminDashboardQueueId[] = ["reviewWaiting", "orderWaiting", "inspectionWaiting", "inboundDelayed"] as const;
+
+function formatAdminCount(count: number, t: AdminTranslation): string {
   const unit = t("operationsDashboard.countSuffix", "건");
   return unit === "건" ? `${count}${unit}` : `${count} ${unit}`;
 }
 
-function translateInsightLabel(index: number, fallback: string, t: ReturnType<typeof useAdminTranslation>): string {
-  const keys = ["reviewWaiting", "orderWaiting", "inspectionWaiting", "inboundDelayed"] as const;
-  const key = keys[index];
-  return key ? t(`operationsDashboard.insights.${key}`, fallback) : fallback;
+function translateInsightLabel(queueId: AdminDashboardQueueId, fallback: string, t: AdminTranslation): string {
+  return t(`operationsDashboard.insights.${queueId}`, fallback);
 }
 
-function translateInsightDescription(index: number, fallback: string, t: ReturnType<typeof useAdminTranslation>): string {
-  const keys = ["reviewWaitingDescription", "orderWaitingDescription", "inspectionWaitingDescription", "inboundDelayedDescription"] as const;
-  const key = keys[index];
-  return key ? t(`operationsDashboard.insights.${key}`, fallback) : fallback;
+function translateInsightDescription(queueId: AdminDashboardQueueId, fallback: string, t: AdminTranslation): string {
+  return t(`operationsDashboard.insights.${queueId}Description`, fallback);
 }
 
-function translateTodayTaskStatusLabel(label: string, t: ReturnType<typeof useAdminTranslation>): string {
-  const normalized = label.trim().toLowerCase();
-  if (["검토대기", "검토 대기", "review waiting"].includes(normalized)) return t("operationsDashboard.todayTasks.status.reviewRequested", label);
-  if (["검수대기", "검수 대기", "inspection waiting"].includes(normalized)) return t("operationsDashboard.todayTasks.status.inspection", label);
-  if (["발주대기", "발주 대기", "order waiting"].includes(normalized)) return t("operationsDashboard.todayTasks.status.reviewCompleted", label);
-  if (["반려", "rejected"].includes(normalized)) return t("operationsDashboard.todayTasks.status.rejected", label);
-  if (["작성중", "draft"].includes(normalized)) return t("operationsDashboard.todayTasks.status.draft", label);
-  return label;
+function translateQueueTitle(queueId: AdminDashboardQueueId, t: AdminTranslation): string {
+  return t(`operationsDashboard.queues.${queueId}.title`, t(`operationsDashboard.insights.${queueId}`, "대기 목록"));
 }
 
+function translateQueueEmpty(queueId: AdminDashboardQueueId, t: AdminTranslation): string {
+  return t(`operationsDashboard.queues.${queueId}.empty`, t("operationsDashboard.todayTasksEmpty", "표시할 작업지시서가 없습니다."));
+}
+
+function translateTodayTaskStatusLabel(statusKey: AdminDashboardTaskStatusKey, fallback: string, t: AdminTranslation): string {
+  return t(`operationsDashboard.todayTasks.status.${statusKey}`, fallback);
+}
+
+function translateTodayTaskPriorityLabel(priorityKey: AdminDashboardTaskPriorityKey, fallback: string, t: AdminTranslation): string {
+  return t(`operationsDashboard.todayTasks.priority.${priorityKey}`, fallback);
+}
+
+function getQueueTasks(snapshot: AdminOperationalDashboardSnapshots["today"], selectedQueueId: AdminDashboardQueueId): AdminDashboardTodayTask[] {
+  return snapshot.queueTasks?.[selectedQueueId] ?? snapshot.todayTasks;
+}
 
 function WorkorderShortcutIcon() {
   return (
@@ -52,25 +70,21 @@ function WorkorderShortcutIcon() {
   );
 }
 
-function translateTodayTaskPriorityLabel(label: string, t: ReturnType<typeof useAdminTranslation>): string {
-  const normalized = label.trim().toLowerCase();
-  if (["관리자 검토", "review needed"].includes(normalized)) return t("operationsDashboard.todayTasks.priority.review", label);
-  if (["검수 필요", "inspection needed"].includes(normalized)) return t("operationsDashboard.todayTasks.priority.inspection", label);
-  if (["발주 확인", "order check"].includes(normalized)) return t("operationsDashboard.todayTasks.priority.order", label);
-  return label;
-}
-
 export default function AdminOperationsDashboard({ snapshots }: AdminOperationsDashboardProps) {
   const t = useAdminTranslation();
   const snapshot = snapshots.today;
+  const [selectedQueueId, setSelectedQueueId] = useState<AdminDashboardQueueId>(ADMIN_DASHBOARD_DEFAULT_QUEUE_ID);
+  const selectedTasks = useMemo(() => getQueueTasks(snapshot, selectedQueueId), [snapshot, selectedQueueId]);
+  const insightsById = useMemo(() => new Map(snapshot.insights.map((item) => [item.id, item])), [snapshot.insights]);
+  const queueTitle = translateQueueTitle(selectedQueueId, t);
 
   return (
     <AdminCard className="shrink-0 overflow-hidden">
       <div className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
-        <section className="flex min-h-[270px] max-h-[310px] flex-col rounded-[24px] border p-4 pbp-card-muted">
+        <section className="flex min-h-[360px] flex-col rounded-[24px] border p-4 pbp-card-muted">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2">
-              <h2 className="truncate text-base font-semibold pbp-text-primary">{t("operationsDashboard.actionQueueTitle", "검토·발주 대기")}</h2>
+              <h2 className="truncate text-base font-semibold pbp-text-primary">{queueTitle}</h2>
               <Link
                 href="/worker"
                 aria-label={t("operationsDashboard.actions.openWorkorderWorkspace", "작업지시서 업무 화면으로 이동")}
@@ -81,13 +95,13 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
               </Link>
             </div>
             <AdminStatusBadge tone="neutral">
-              {formatAdminCount(snapshot.todayTasks.length, t)}
+              {formatAdminCount(selectedTasks.length, t)}
             </AdminStatusBadge>
           </div>
 
           <div className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
-            {snapshot.todayTasks.length > 0 ? (
-              snapshot.todayTasks.map((task) => (
+            {selectedTasks.length > 0 ? (
+              selectedTasks.map((task) => (
                 <article key={task.id} className={`${ADMIN_SURFACE_ITEM_CLASS} grid gap-3 rounded-2xl p-3 sm:grid-cols-[64px_1fr_auto] sm:items-center`}>
                   <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[var(--pbp-surface-soft)] text-[11px] font-semibold pbp-text-subtle ring-1 ring-[var(--pbp-border)]">
                     {task.thumbnailUrl ? (
@@ -100,8 +114,8 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
 
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <AdminStatusBadge tone="neutral">{translateTodayTaskStatusLabel(task.statusLabel, t)}</AdminStatusBadge>
-                      <AdminStatusBadge tone="maintenance">{translateTodayTaskPriorityLabel(task.priorityLabel, t)}</AdminStatusBadge>
+                      <AdminStatusBadge tone="neutral">{translateTodayTaskStatusLabel(task.statusKey, task.statusLabel, t)}</AdminStatusBadge>
+                      <AdminStatusBadge tone="maintenance">{translateTodayTaskPriorityLabel(task.priorityKey, task.priorityLabel, t)}</AdminStatusBadge>
                       <AdminStatusBadge tone="neutral">
                         {t("operationsDashboard.attachmentLabel", "첨부")} {formatAdminCount(task.attachmentCount, t)}
                       </AdminStatusBadge>
@@ -126,25 +140,36 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
               ))
             ) : (
               <AdminEmptyState
-                title={t("operationsDashboard.todayTasksEmpty", "오늘 확인할 검토·발주 대기 작업지시서가 없습니다.")}
-                className="flex min-h-[170px] items-center justify-center border-dashed text-center"
+                title={translateQueueEmpty(selectedQueueId, t)}
+                className="flex min-h-[250px] items-center justify-center border-dashed text-center"
               />
             )}
           </div>
         </section>
 
-        <section className="min-h-[270px] max-h-[310px] overflow-y-auto rounded-[24px] border border-stone-100 bg-[var(--admin-theme-surface)] p-4 text-[var(--admin-theme-text-on-surface)] shadow-sm transition-colors">
+        <section className="flex min-h-[360px] flex-col rounded-[24px] border border-stone-100 bg-[var(--admin-theme-surface)] p-4 text-[var(--admin-theme-text-on-surface)] shadow-sm transition-colors">
           <h2 className="text-base font-semibold">{t("operationsDashboard.priorityTitle", "주요 대기 현황")}</h2>
-          <div className="mt-4 grid gap-3">
-            {snapshot.insights.map((item, index) => (
-              <div key={`${item.label}-${index}`} className="rounded-2xl bg-white/10 px-4 py-3">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-sm font-semibold">{translateInsightLabel(index, item.label, t)}</span>
-                  <span className="text-lg font-semibold">{item.value}</span>
-                </div>
-                <p className="mt-1 text-xs text-[var(--pbp-action-primary-text)]/70">{translateInsightDescription(index, item.description, t)}</p>
-              </div>
-            ))}
+          <div className="mt-4 grid flex-1 grid-rows-4 gap-3">
+            {adminQueueOrder.map((queueId) => {
+              const item = insightsById.get(queueId);
+              if (!item) return null;
+              const isActive = selectedQueueId === queueId;
+              return (
+                <button
+                  key={queueId}
+                  type="button"
+                  onClick={() => setSelectedQueueId(queueId)}
+                  aria-pressed={isActive}
+                  className={`rounded-2xl px-4 py-3 text-left transition ${isActive ? "bg-white/20 ring-1 ring-white/40" : "bg-white/10 hover:bg-white/15"}`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm font-semibold">{translateInsightLabel(queueId, item.label, t)}</span>
+                    <span className="text-lg font-semibold">{item.value}</span>
+                  </div>
+                  <p className="mt-1 text-xs text-[var(--pbp-action-primary-text)]/70">{translateInsightDescription(queueId, item.description, t)}</p>
+                </button>
+              );
+            })}
           </div>
         </section>
       </div>

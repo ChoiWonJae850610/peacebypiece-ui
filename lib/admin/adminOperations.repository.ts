@@ -8,6 +8,10 @@ import { getI18n } from "@/lib/i18n";
 import {
   ADMIN_DASHBOARD_PERIOD_OPTIONS,
   type AdminDashboardPeriod,
+  type AdminDashboardQueueId,
+  type AdminDashboardTaskPriorityKey,
+  type AdminDashboardTaskStatusKey,
+  type AdminDashboardTodayTask,
   type AdminOperationalDashboardSnapshot,
   type AdminOperationalDashboardSnapshots,
 } from "@/lib/admin/adminOperations.types";
@@ -25,6 +29,17 @@ const ADMIN_DASHBOARD_STATUS_DISTRIBUTION_BUCKETS = [
 ] as const;
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+const ADMIN_DASHBOARD_QUEUE_IDS: readonly AdminDashboardQueueId[] = ["reviewWaiting", "orderWaiting", "inspectionWaiting", "inboundDelayed"] as const;
+
+function createEmptyQueueTasks(): Record<AdminDashboardQueueId, AdminDashboardTodayTask[]> {
+  return {
+    reviewWaiting: [],
+    orderWaiting: [],
+    inspectionWaiting: [],
+    inboundDelayed: [],
+  };
+}
 
 function startOfToday(now: Date): Date {
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -91,12 +106,26 @@ function formatDueLabel(value: unknown, now: Date): string {
   return adminOpsText.todayTasks.dueAfter.replace("{days}", String(diffDays));
 }
 
+function getStatusKey(status: string | null): AdminDashboardTaskStatusKey {
+  if (status === "review_requested") return "reviewRequested";
+  if (status === "inspection") return "inspection";
+  if (status === "review_completed") return "reviewCompleted";
+  if (status === "rejected") return "rejected";
+  return "draft";
+}
+
 function getStatusLabel(status: string | null): string {
-  if (status === "review_requested") return adminOpsText.todayTasks.status.reviewRequested;
-  if (status === "inspection") return adminOpsText.todayTasks.status.inspection;
-  if (status === "review_completed") return adminOpsText.todayTasks.status.reviewCompleted;
-  if (status === "rejected") return adminOpsText.todayTasks.status.rejected;
-  return adminOpsText.todayTasks.status.draft;
+  return adminOpsText.todayTasks.status[getStatusKey(status)];
+}
+
+function getPriorityKey(status: string | null): AdminDashboardTaskPriorityKey {
+  if (status === "review_requested") return "review";
+  if (status === "inspection") return "inspection";
+  return "order";
+}
+
+function getPriorityLabel(status: string | null): string {
+  return adminOpsText.todayTasks.priority[getPriorityKey(status)];
 }
 
 function emptySnapshot(period: AdminDashboardPeriod, sourceState: AdminOperationalDashboardSnapshot["sourceState"]): AdminOperationalDashboardSnapshot {
@@ -105,12 +134,13 @@ function emptySnapshot(period: AdminDashboardPeriod, sourceState: AdminOperation
     statusFlow: ADMIN_WORKORDER_FLOW_BUCKETS.map((bucket) => ({ id: bucket.labelKey, label: adminStatsText.flowBuckets[bucket.labelKey], value: 0 })),
     statusDistribution: ADMIN_DASHBOARD_STATUS_DISTRIBUTION_BUCKETS.map((bucket) => ({ id: bucket.labelKey, label: adminOpsText.statusDistribution[bucket.labelKey], value: 0 })),
     insights: [
-      { label: adminOpsText.insights.reviewWaiting, value: "0", description: adminOpsText.insights.reviewWaitingDescription },
-      { label: adminOpsText.insights.orderWaiting, value: "0", description: adminOpsText.insights.orderWaitingDescription },
-      { label: adminOpsText.insights.inspectionWaiting, value: "0", description: adminOpsText.insights.inspectionWaitingDescription },
-      { label: adminOpsText.insights.inboundDelayed, value: "0", description: adminOpsText.insights.inboundDelayedDescription },
+      { id: "reviewWaiting", label: adminOpsText.insights.reviewWaiting, value: "0", description: adminOpsText.insights.reviewWaitingDescription },
+      { id: "orderWaiting", label: adminOpsText.insights.orderWaiting, value: "0", description: adminOpsText.insights.orderWaitingDescription },
+      { id: "inspectionWaiting", label: adminOpsText.insights.inspectionWaiting, value: "0", description: adminOpsText.insights.inspectionWaitingDescription },
+      { id: "inboundDelayed", label: adminOpsText.insights.inboundDelayed, value: "0", description: adminOpsText.insights.inboundDelayedDescription },
     ],
     todayTasks: [],
+    queueTasks: createEmptyQueueTasks(),
     sourceState,
   };
 }
@@ -155,6 +185,23 @@ function formatUpdatedLabel(value: unknown, now: Date): string {
   return adminOpsText.todayTasks.updatedDays.replace("{days}", String(diffDays));
 }
 
+function isInboundDelayed(row: OrderDueRow, workorderStatusById: Map<string, string>, selectedPeriodStart: Date, now: Date): boolean {
+  if (!row.spec_sheet_id) return false;
+  const status = workorderStatusById.get(row.spec_sheet_id);
+  if (status !== "inspection") return false;
+  const dueDate = parseDueDateAtStartOfDay(row.due_date, now);
+  if (!dueDate) return false;
+  const delayedAt = new Date(dueDate.getTime() + ONE_DAY_MS);
+  return delayedAt <= now && dueDate >= selectedPeriodStart;
+}
+
+function sortTasksByUpdatedAt(tasks: Array<AdminDashboardTodayTask & { updatedAt: number }>): AdminDashboardTodayTask[] {
+  return tasks
+    .sort((a, b) => b.updatedAt - a.updatedAt)
+    .slice(0, 8)
+    .map(({ updatedAt, ...task }) => task);
+}
+
 function buildSnapshot(period: AdminDashboardPeriod, workorders: WorkorderRow[], orders: OrderDueRow[], attachments: AttachmentSummaryRow[], now = new Date()): AdminOperationalDashboardSnapshot {
   const workorderStatusById = new Map(workorders.map((row) => [row.id, row.status ?? ""]));
   const orderDueByWorkorderId = new Map(orders.map((row) => [row.spec_sheet_id ?? "", row.due_date]));
@@ -163,41 +210,61 @@ function buildSnapshot(period: AdminDashboardPeriod, workorders: WorkorderRow[],
   const attachmentByWorkorderId = new Map(attachments.map((row) => [row.order_id ?? "", row]));
   const selectedPeriodStart = getPeriodStart(period, now);
 
-  const inboundDelayedCount = orders.filter((row) => {
-    if (!row.spec_sheet_id) return false;
-    const status = workorderStatusById.get(row.spec_sheet_id);
-    if (status !== "inspection") return false;
-    const dueDate = parseDueDateAtStartOfDay(row.due_date, now);
-    if (!dueDate) return false;
-    const delayedAt = new Date(dueDate.getTime() + ONE_DAY_MS);
-    return delayedAt <= now && dueDate >= selectedPeriodStart;
-  }).length;
+  const delayedWorkorderIds = new Set(
+    orders
+      .filter((row) => isInboundDelayed(row, workorderStatusById, selectedPeriodStart, now))
+      .map((row) => row.spec_sheet_id)
+      .filter((id): id is string => Boolean(id)),
+  );
 
   const reviewWaitingCount = workorders.filter((row) => row.status === "review_requested").length;
   const orderWaitingCount = workorders.filter((row) => row.status === "review_completed").length;
   const inspectionWaitingCount = workorders.filter((row) => row.status === "inspection").length;
-  const todayTasks = workorders
-    .filter((row) => row.status === "review_requested" || row.status === "review_completed")
-    .map((row) => {
-      const attachment = attachmentByWorkorderId.get(row.id);
-      return {
-        id: row.id,
-        title: row.title,
-        statusLabel: getStatusLabel(row.status),
-        dueLabel: formatDueLabel(orderDueByWorkorderId.get(row.id), now),
-        priorityLabel: row.status === "review_requested" ? adminOpsText.todayTasks.priority.review : row.status === "inspection" ? adminOpsText.todayTasks.priority.inspection : adminOpsText.todayTasks.priority.order,
-        factoryName: orderFactoryByWorkorderId.get(row.id) || adminOpsText.todayTasks.factoryPending,
-        quantityLabel: formatQuantityLabel(orderQuantityByWorkorderId.get(row.id)),
-        attachmentCount: Number(attachment?.attachment_count ?? 0),
-        thumbnailUrl: attachment?.thumbnail_url ?? attachment?.preview_url ?? null,
-        updatedLabel: formatUpdatedLabel(row.updated_at, now),
-        actionHref: `/worker?workOrderId=${encodeURIComponent(row.id)}`,
-        updatedAt: parseDate(row.updated_at)?.getTime() ?? 0,
-      };
-    })
-    .sort((a, b) => b.updatedAt - a.updatedAt)
-    .slice(0, 6)
-    .map(({ updatedAt, ...task }) => task);
+  const inboundDelayedCount = delayedWorkorderIds.size;
+
+  const buildTask = (row: WorkorderRow): AdminDashboardTodayTask & { updatedAt: number } => {
+    const attachment = attachmentByWorkorderId.get(row.id);
+    return {
+      id: row.id,
+      title: row.title,
+      statusLabel: getStatusLabel(row.status),
+      statusKey: getStatusKey(row.status),
+      dueLabel: formatDueLabel(orderDueByWorkorderId.get(row.id), now),
+      priorityLabel: getPriorityLabel(row.status),
+      priorityKey: getPriorityKey(row.status),
+      factoryName: orderFactoryByWorkorderId.get(row.id) || adminOpsText.todayTasks.factoryPending,
+      quantityLabel: formatQuantityLabel(orderQuantityByWorkorderId.get(row.id)),
+      attachmentCount: Number(attachment?.attachment_count ?? 0),
+      thumbnailUrl: attachment?.thumbnail_url ?? attachment?.preview_url ?? null,
+      updatedLabel: formatUpdatedLabel(row.updated_at, now),
+      actionHref: `/worker?workOrderId=${encodeURIComponent(row.id)}`,
+      updatedAt: parseDate(row.updated_at)?.getTime() ?? 0,
+    };
+  };
+
+  const queueSourceTasks: Record<AdminDashboardQueueId, Array<AdminDashboardTodayTask & { updatedAt: number }>> = {
+    reviewWaiting: [],
+    orderWaiting: [],
+    inspectionWaiting: [],
+    inboundDelayed: [],
+  };
+
+  for (const row of workorders) {
+    if (row.status === "review_requested") queueSourceTasks.reviewWaiting.push(buildTask(row));
+    if (row.status === "review_completed") queueSourceTasks.orderWaiting.push(buildTask(row));
+    if (row.status === "inspection") {
+      const task = buildTask(row);
+      queueSourceTasks.inspectionWaiting.push(task);
+      if (delayedWorkorderIds.has(row.id)) queueSourceTasks.inboundDelayed.push(task);
+    }
+  }
+
+  const queueTasks = ADMIN_DASHBOARD_QUEUE_IDS.reduce<Record<AdminDashboardQueueId, AdminDashboardTodayTask[]>>((acc, queueId) => {
+    acc[queueId] = sortTasksByUpdatedAt(queueSourceTasks[queueId]);
+    return acc;
+  }, createEmptyQueueTasks());
+
+  const todayTasks = queueTasks.reviewWaiting;
 
   return {
     period,
@@ -212,12 +279,13 @@ function buildSnapshot(period: AdminDashboardPeriod, workorders: WorkorderRow[],
       value: countByStatuses(workorders, bucket.statuses, period, now),
     })),
     insights: [
-      { label: adminOpsText.insights.reviewWaiting, value: String(reviewWaitingCount), description: adminOpsText.insights.reviewWaitingDescription },
-      { label: adminOpsText.insights.orderWaiting, value: String(orderWaitingCount), description: adminOpsText.insights.orderWaitingDescription },
-      { label: adminOpsText.insights.inspectionWaiting, value: String(inspectionWaitingCount), description: adminOpsText.insights.inspectionWaitingDescription },
-      { label: adminOpsText.insights.inboundDelayed, value: String(inboundDelayedCount), description: adminOpsText.insights.inboundDelayedDescription },
+      { id: "reviewWaiting", label: adminOpsText.insights.reviewWaiting, value: String(reviewWaitingCount), description: adminOpsText.insights.reviewWaitingDescription },
+      { id: "orderWaiting", label: adminOpsText.insights.orderWaiting, value: String(orderWaitingCount), description: adminOpsText.insights.orderWaitingDescription },
+      { id: "inspectionWaiting", label: adminOpsText.insights.inspectionWaiting, value: String(inspectionWaitingCount), description: adminOpsText.insights.inspectionWaitingDescription },
+      { id: "inboundDelayed", label: adminOpsText.insights.inboundDelayed, value: String(inboundDelayedCount), description: adminOpsText.insights.inboundDelayedDescription },
     ],
     todayTasks,
+    queueTasks,
     sourceState: "db",
   };
 }

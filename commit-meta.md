@@ -1,15 +1,19 @@
 Version :
-0.12.56
+0.12.57
 
 Summary :
-모바일 직접 그리기 하단 도구막대 압축
+고객관리자 메인 대기현황 필터와 i18n 정리
 
 Description :
-모바일 직접 그리기 세로모드에서 캔버스 영역을 더 확보할 수 있도록 하단 도구막대 버튼 크기와 간격을 줄이고, 저장/전체 지우기 버튼은 아이콘 중심으로 정리했다. PC, tablet, iPad editor 파일과 DB/R2/첨부 흐름은 변경하지 않았다.
+고객관리자 메인화면의 주요 대기 현황 카드를 클릭하면 검토 대기, 발주 대기, 검수 대기, 입고 지연 목록이 좌측에 표시되도록 정리했다. 대기 목록 제목과 빈 상태 문구를 i18n으로 분리하고, 대표 이미지가 있으면 미리보기 영역에 표시되는 기존 흐름을 유지했다. 우측 주요 대기 현황 영역은 스크롤 없이 4개 항목이 보이도록 상단 카드 높이를 보정했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- components/workorder/drawing/WorkOrderDrawingCanvasEditor.tsx
+- lib/admin/adminOperations.types.ts
+- lib/admin/adminOperations.repository.ts
+- lib/i18n/ko/admin.ts
+- lib/i18n/en/admin.ts
+- components/admin/dashboard/AdminOperationsDashboard.tsx
 
 추가 파일 목록 :
 없음

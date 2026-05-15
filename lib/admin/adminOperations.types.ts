@@ -11,7 +11,14 @@ export type AdminDashboardPoint = {
   value: number;
 };
 
+export type AdminDashboardQueueId = "reviewWaiting" | "orderWaiting" | "inspectionWaiting" | "inboundDelayed";
+
+export type AdminDashboardTaskStatusKey = "reviewRequested" | "inspection" | "reviewCompleted" | "rejected" | "draft";
+
+export type AdminDashboardTaskPriorityKey = "review" | "inspection" | "order";
+
 export type AdminDashboardInsight = {
+  id: AdminDashboardQueueId;
   label: string;
   value: string;
   description: string;
@@ -21,8 +28,10 @@ export type AdminDashboardTodayTask = {
   id: string;
   title: string;
   statusLabel: string;
+  statusKey: AdminDashboardTaskStatusKey;
   dueLabel: string;
   priorityLabel: string;
+  priorityKey: AdminDashboardTaskPriorityKey;
   factoryName: string;
   quantityLabel: string;
   attachmentCount: number;
@@ -37,6 +46,7 @@ export type AdminOperationalDashboardSnapshot = {
   statusDistribution: AdminDashboardPoint[];
   insights: AdminDashboardInsight[];
   todayTasks: AdminDashboardTodayTask[];
+  queueTasks: Record<AdminDashboardQueueId, AdminDashboardTodayTask[]>;
   sourceState: "db" | "not_configured" | "error";
 };
 
