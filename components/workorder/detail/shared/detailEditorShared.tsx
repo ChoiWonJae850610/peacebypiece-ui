@@ -1,9 +1,11 @@
 import { type KeyboardEvent, type ReactNode } from "react";
+import { PbpSingleDatePicker, type PbpSingleDatePickerLabels } from "@/components/common/date/PbpSingleDatePicker";
 import { getDisplayValue, getEditingInitialValue } from "@/lib/workorder/detail/detailFormatting";
 import { isUnavailableWorkOrderSelectOption } from "@/lib/constants/workorderDomain";
 import { normalizeEditingValue } from "@/lib/workorder/detail/detailSanitizers";
 import { clampPastDateInputValue, getTodayDateInputValue } from "@/lib/workorder/datePolicy";
 import type { OrderEntry } from "@/types/workorder";
+import type { PbpDateLocale } from "@/lib/date/localDate";
 
 export type RowValue = string | number | null | undefined;
 export type EditableSectionKey = "material" | "outsourcing" | "order";
@@ -155,6 +157,8 @@ export function EditableValue({
   compact,
   disabled = false,
   displayValue,
+  datePickerLabels,
+  datePickerLocale,
 }: {
   section: EditableSectionKey;
   rowId: string;
@@ -171,6 +175,8 @@ export function EditableValue({
   compact?: boolean;
   disabled?: boolean;
   displayValue?: string;
+  datePickerLabels?: PbpSingleDatePickerLabels;
+  datePickerLocale?: PbpDateLocale;
   onStartEdit: (section: EditableSectionKey, rowId: string, field: string, value: string) => void;
   onCommit: (nextValue?: string) => void;
   onCancel: () => void;
@@ -245,6 +251,23 @@ export function EditableValue({
 
   if (editing) {
     const minDateValue = inputType === "date" ? getTodayDateInputValue() : undefined;
+
+    if (inputType === "date" && datePickerLabels && datePickerLocale) {
+      return (
+        <PbpSingleDatePicker
+          value={editingValue}
+          labels={datePickerLabels}
+          locale={datePickerLocale}
+          minDateValue={minDateValue}
+          onChange={(nextValue) => onCommit(clampPastDateInputValue(nextValue, minDateValue))}
+          onClose={onCancel}
+          commitOnSelect
+          popoverMode="fixed"
+          popoverAlign="center"
+          className={`${compact ? "mx-auto max-w-[11rem]" : ""} ${centered ? "text-center" : "text-left"}`}
+        />
+      );
+    }
 
     return (
       <input

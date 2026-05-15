@@ -400,6 +400,13 @@ export const workorderKo = {
         addButton: "+ 발주 추가",
         totalRow: "합계",
         empty: "등록된 발주 정보가 없습니다.",
+        datePicker: {
+          placeholder: "날짜 선택",
+          clear: "지우기",
+          done: "닫기",
+          selected: "선택일 {date}",
+          calendarAria: "납기일 달력 열기",
+        },
         fields: {
           type: "구분",
           factory: "공장",

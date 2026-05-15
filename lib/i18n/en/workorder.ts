@@ -400,6 +400,13 @@ export const workorderEn = {
         addButton: "+ Add order",
         totalRow: "Total",
         empty: "No order information registered.",
+        datePicker: {
+          placeholder: "Select date",
+          clear: "Clear",
+          done: "Close",
+          selected: "Selected {date}",
+          calendarAria: "Open due date calendar",
+        },
         fields: {
           type: "Type",
           factory: "Factory",
