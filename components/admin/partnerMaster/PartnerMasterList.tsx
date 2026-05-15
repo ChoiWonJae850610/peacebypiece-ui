@@ -100,21 +100,27 @@ export default function PartnerMasterList({ items, isLoading = false, onEditPart
           key: "type",
           label: buildHeader("type", listText.columns.type),
           render: (item) => (
-            <div className="flex min-w-0 flex-wrap items-center gap-1.5" aria-label={item.typeDisplayLabel || listText.typeMissing}>
-              {item.hasBaseTypes ? (
-                item.baseTypeBadges.map((badge) => (
-                  <AdminStatusBadge key={badge.key} tone="info" size="xs">
-                    {badge.label}
-                  </AdminStatusBadge>
-                ))
-              ) : (
-                <span className="text-xs text-[var(--pbp-text-muted)]">{listText.noBaseType}</span>
-              )}
-              {item.outsourcingProcessBadges.map((badge) => (
-                <AdminStatusBadge key={badge.key} tone="warning" size="xs" title={badge.label}>
-                  {badge.label}
-                </AdminStatusBadge>
-              ))}
+            <div className="flex min-w-0 flex-col gap-1" aria-label={item.typeDisplayLabel || listText.typeMissing}>
+              <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                {item.hasBaseTypes ? (
+                  item.baseTypeBadges.map((badge) => (
+                    <AdminStatusBadge key={badge.key} tone="info" size="xs">
+                      {badge.label}
+                    </AdminStatusBadge>
+                  ))
+                ) : (
+                  <span className="text-xs text-[var(--pbp-text-muted)]">{listText.noBaseType}</span>
+                )}
+              </div>
+              {item.outsourcingProcessBadges.length > 0 ? (
+                <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                  {item.outsourcingProcessBadges.map((badge) => (
+                    <AdminStatusBadge key={badge.key} tone="warning" size="xs" title={badge.label}>
+                      {badge.label}
+                    </AdminStatusBadge>
+                  ))}
+                </div>
+              ) : null}
             </div>
           ),
         },
