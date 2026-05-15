@@ -43,8 +43,8 @@ export default function PartnerMasterFilters({
 
   return (
     <AdminFilterBar className="mt-3 block shrink-0 border-[var(--admin-theme-border)] bg-[var(--admin-theme-soft)] px-3 py-3 transition-colors md:px-4">
-      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-[minmax(240px,1fr)_minmax(360px,1.55fr)_minmax(250px,1fr)_minmax(120px,0.55fr)] xl:items-end">
-        <label className="min-w-0 space-y-2">
+      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-[260px_minmax(360px,1fr)_minmax(260px,0.9fr)_180px] xl:items-end xl:gap-8">
+        <label className="min-w-0 space-y-2 xl:justify-self-start">
           <span className="text-[13px] font-semibold text-[var(--pbp-text-muted)]">{filterText.searchLabel}</span>
           <input
             value={searchTerm}
@@ -54,9 +54,9 @@ export default function PartnerMasterFilters({
           />
         </label>
 
-        <div className="min-w-0 space-y-2">
+        <div className="min-w-0 space-y-2 xl:w-full xl:max-w-[460px] xl:justify-self-center">
           <p className="text-[13px] font-semibold text-[var(--pbp-text-muted)]">{filterText.typeLabel}</p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 xl:justify-start">
             {filterOptions.map((item) => {
               const isSelected = selectedTypes.includes(item.value);
               return (
@@ -75,9 +75,9 @@ export default function PartnerMasterFilters({
           </div>
         </div>
 
-        <div className="min-w-0 space-y-2">
+        <div className="min-w-0 space-y-2 xl:w-full xl:max-w-[320px] xl:justify-self-center">
           <p className="text-[13px] font-semibold text-[var(--pbp-text-muted)]">{filterText.statusLabel}</p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 xl:justify-start">
             {statusOptions.map((item) => (
               <AdminButton
                 key={item.value}
@@ -93,8 +93,8 @@ export default function PartnerMasterFilters({
           </div>
         </div>
 
-        <div className="flex min-w-0 items-end lg:col-span-2 xl:col-span-1 xl:justify-end">
-          <p className="w-full rounded-2xl bg-[var(--pbp-surface)] px-3 py-2 text-sm text-[var(--pbp-text-muted)] xl:text-right">
+        <div className="flex min-w-0 items-end lg:col-span-2 xl:col-span-1 xl:justify-self-end">
+          <p className="w-full min-w-[150px] rounded-2xl bg-[var(--pbp-surface)] px-3 py-2 text-center text-sm text-[var(--pbp-text-muted)]">
             {filterText.currentListPrefix} <span className="font-semibold text-[var(--pbp-text-primary)]">{filteredCount}</span>
             {filterText.currentListSuffix}
             {hasSearch ? filterText.searchResultSuffix : ""}
