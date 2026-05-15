@@ -245,6 +245,14 @@ function clearDrawingDraftSnapshot() {
   window.sessionStorage.removeItem(DRAWING_DRAFT_STORAGE_KEY);
 }
 
+function persistDrawingDraftSnapshot(snapshot: string, blankSnapshot: string) {
+  if (!snapshot || snapshot === blankSnapshot) {
+    clearDrawingDraftSnapshot();
+    return;
+  }
+  writeDrawingDraftSnapshot(snapshot);
+}
+
 function drawBlankCanvas(canvas: HTMLCanvasElement) {
   const context = canvas.getContext("2d");
   if (!context) return;
@@ -450,6 +458,11 @@ export default function WorkOrderDrawingModal({
         : ui.strokeSizeStatusLabel;
 
   const closeToolPopovers = () => setActivePopover(null);
+  const persistCurrentDraftSnapshot = () => {
+    const canvas = canvasRef.current;
+    if (!canvas || suppressDraftPersistRef.current || !dirtyRef.current) return;
+    persistDrawingDraftSnapshot(canvas.toDataURL(DRAWING_MIME_TYPE), blankSnapshotRef.current);
+  };
   const togglePopover = (nextPopover: DrawingPopover) => {
     setActivePopover((current) => (current === nextPopover ? null : nextPopover));
   };
@@ -496,7 +509,9 @@ export default function WorkOrderDrawingModal({
     historyIndexRef.current = nextIndex;
     setHistoryIndex(nextIndex);
     const currentSnapshot = historyRef.current[nextIndex] ?? "";
-    setDirty(Boolean(currentSnapshot && currentSnapshot !== blankSnapshotRef.current));
+    const nextDirty = Boolean(currentSnapshot && currentSnapshot !== blankSnapshotRef.current);
+    dirtyRef.current = nextDirty;
+    setDirty(nextDirty);
   };
 
   const pushHistorySnapshot = () => {
@@ -512,6 +527,7 @@ export default function WorkOrderDrawingModal({
     }
     historyRef.current = nextHistory;
     syncHistoryState(nextHistory.length - 1);
+    persistDrawingDraftSnapshot(snapshot, blankSnapshotRef.current);
   };
 
   useEffect(() => {
@@ -519,12 +535,22 @@ export default function WorkOrderDrawingModal({
   }, [dirty]);
 
   useEffect(() => {
-    if (!open) return;
-    suppressDraftPersistRef.current = false;
+    if (!open || typeof window === "undefined") return;
+
+    const persistBeforeViewportChange = () => {
+      persistCurrentDraftSnapshot();
+    };
+
+    window.addEventListener("resize", persistBeforeViewportChange);
+    window.addEventListener("orientationchange", persistBeforeViewportChange);
+    window.addEventListener("pagehide", persistBeforeViewportChange);
+    document.addEventListener("visibilitychange", persistBeforeViewportChange);
+
     return () => {
-      const canvas = canvasRef.current;
-      if (!canvas || suppressDraftPersistRef.current || !dirtyRef.current) return;
-      writeDrawingDraftSnapshot(canvas.toDataURL(DRAWING_MIME_TYPE));
+      window.removeEventListener("resize", persistBeforeViewportChange);
+      window.removeEventListener("orientationchange", persistBeforeViewportChange);
+      window.removeEventListener("pagehide", persistBeforeViewportChange);
+      document.removeEventListener("visibilitychange", persistBeforeViewportChange);
     };
   }, [open]);
 
@@ -711,7 +737,10 @@ export default function WorkOrderDrawingModal({
     const nextIndex = historyIndexRef.current - 1;
     const snapshot = historyRef.current[nextIndex];
     if (!snapshot) return;
-    restoreCanvasSnapshot(canvas, snapshot, () => syncHistoryState(nextIndex));
+    restoreCanvasSnapshot(canvas, snapshot, () => {
+      syncHistoryState(nextIndex);
+      persistDrawingDraftSnapshot(snapshot, blankSnapshotRef.current);
+    });
   };
 
   const handleRedo = () => {
@@ -720,7 +749,10 @@ export default function WorkOrderDrawingModal({
     const nextIndex = historyIndexRef.current + 1;
     const snapshot = historyRef.current[nextIndex];
     if (!snapshot) return;
-    restoreCanvasSnapshot(canvas, snapshot, () => syncHistoryState(nextIndex));
+    restoreCanvasSnapshot(canvas, snapshot, () => {
+      syncHistoryState(nextIndex);
+      persistDrawingDraftSnapshot(snapshot, blankSnapshotRef.current);
+    });
   };
 
   const handleClear = () => {
@@ -728,6 +760,8 @@ export default function WorkOrderDrawingModal({
     if (!canvas) return;
     drawBlankCanvas(canvas);
     pushHistorySnapshot();
+    clearDrawingDraftSnapshot();
+    dirtyRef.current = false;
     setDirty(false);
   };
 

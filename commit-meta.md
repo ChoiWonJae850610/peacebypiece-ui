@@ -1,19 +1,18 @@
 Version :
-0.12.38
+0.12.39
 
 Summary :
-직접 그리기 태블릿 회전 안정화
+직접 그리기 태블릿 회전 시 draft 보존 보정
 
 Description :
-직접 그리기 전체 화면 작업창이 태블릿 세로/가로 전환 중 닫히는 문제를 줄이기 위해 open 상태와 canvas draft snapshot을 sessionStorage에 임시 유지하도록 보정했다. 회전 또는 responsive layout 전환으로 컴포넌트가 다시 mount되어도 직접 그리기 화면과 작성 중인 그림을 복구할 수 있게 했다. 하단 도구 영역 밀도와 캔버스 여백도 소폭 조정했다.
+직접 그리기 full-screen editor에서 태블릿 세로/가로 전환 시 canvas 내용이 사라지지 않도록 그리기 확정, undo/redo, orientationchange, resize, pagehide 시점에 draft snapshot을 저장하도록 보정했다. 원본 canvas 좌표 기준 복원 흐름은 유지하고 확대/축소, 손바닥 이동, 이미지 위에 그리기는 계속 제외했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
 - components/workorder/drawing/WorkOrderDrawingModal.tsx
-- components/workorder/sidepanel/WorkOrderAttachmentPanel.tsx
 
 추가 파일 목록 :
-- docs/workorder-drawing-native-orientation-stabilization-0.12.38.md
+- docs/workorder-drawing-native-orientation-draft-0.12.39.md
 
 삭제 파일 목록 :
 없음
