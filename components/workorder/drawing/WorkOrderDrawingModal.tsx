@@ -34,6 +34,7 @@ type DrawingLineStyleId = DrawingLineStyle;
 type DrawingPopover = "color" | "strokeSize" | null;
 type DrawingPointerEvent = PointerEvent<HTMLElement>;
 type EraserCursor = { x: number; y: number; diameter: number; visible: boolean };
+type CanvasDisplaySize = { width: number; height: number };
 type DrawingColor = {
   id: DrawingColorId;
   value: string;
@@ -136,6 +137,11 @@ function getEraserCursor(
   event: DrawingPointerEvent,
   eraserLineWidth: number,
 ): EraserCursor {
+  const canvasPoint = getPointerPosition(canvas, event);
+  if (!isPointInsideCanvas(canvasPoint, canvas)) {
+    return { x: 0, y: 0, diameter: 0, visible: false };
+  }
+
   const canvasRect = canvas.getBoundingClientRect();
   const containerRect = container.getBoundingClientRect();
   return {
@@ -143,6 +149,19 @@ function getEraserCursor(
     y: event.clientY - containerRect.top,
     diameter: Math.max(18, (eraserLineWidth / canvas.width) * canvasRect.width),
     visible: true,
+  };
+}
+
+function getContainedCanvasDisplaySize(
+  container: HTMLDivElement,
+  canvasSize: { width: number; height: number },
+): CanvasDisplaySize {
+  const safeWidth = Math.max(1, container.clientWidth);
+  const safeHeight = Math.max(1, container.clientHeight);
+  const scale = Math.min(safeWidth / canvasSize.width, safeHeight / canvasSize.height);
+  return {
+    width: Math.max(1, Math.floor(canvasSize.width * scale)),
+    height: Math.max(1, Math.floor(canvasSize.height * scale)),
   };
 }
 
@@ -422,6 +441,7 @@ export default function WorkOrderDrawingModal({
   const blankSnapshotRef = useRef("");
   const dirtyRef = useRef(false);
   const suppressDraftPersistRef = useRef(false);
+  const canvasSize = getCanvasSize(variant);
   const [tool, setTool] = useState<DrawingTool>("pen");
   const [strokeColor, setStrokeColor] = useState(DRAWING_COLORS[0]?.value ?? "#111827");
   const [strokeSize, setStrokeSize] = useState(variant === "mobile" ? 6 : 3);
@@ -433,9 +453,9 @@ export default function WorkOrderDrawingModal({
   const [eraserCursor, setEraserCursor] = useState<EraserCursor>({ x: 0, y: 0, diameter: 0, visible: false });
   const [closeConfirmVisible, setCloseConfirmVisible] = useState(false);
   const [navigationGuardVisible, setNavigationGuardVisible] = useState(false);
+  const [canvasDisplaySize, setCanvasDisplaySize] = useState<CanvasDisplaySize>(() => canvasSize);
   const navigationGuardTimerRef = useRef<number | null>(null);
   const historyGuardActiveRef = useRef(false);
-  const canvasSize = getCanvasSize(variant);
   const isMobile = variant === "mobile";
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < historyRef.current.length - 1;
@@ -533,6 +553,39 @@ export default function WorkOrderDrawingModal({
   useEffect(() => {
     dirtyRef.current = dirty;
   }, [dirty]);
+
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const container = canvasContainerRef.current;
+    if (!container) {
+      return;
+    }
+
+    const syncCanvasDisplaySize = () => {
+      setCanvasDisplaySize(getContainedCanvasDisplaySize(container, canvasSize));
+    };
+
+    syncCanvasDisplaySize();
+
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", syncCanvasDisplaySize);
+      window.addEventListener("orientationchange", syncCanvasDisplaySize);
+      return () => {
+        window.removeEventListener("resize", syncCanvasDisplaySize);
+        window.removeEventListener("orientationchange", syncCanvasDisplaySize);
+      };
+    }
+
+    const resizeObserver = new ResizeObserver(syncCanvasDisplaySize);
+    resizeObserver.observe(container);
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [canvasSize.height, canvasSize.width, open]);
 
   useEffect(() => {
     if (!open || typeof window === "undefined") return;
@@ -812,7 +865,7 @@ export default function WorkOrderDrawingModal({
         <div className="relative flex min-h-0 flex-1 overflow-hidden rounded-3xl border bg-[var(--pbp-surface-muted)] p-1.5 shadow-inner sm:p-2">
           <div
             ref={canvasContainerRef}
-            className={`relative min-h-0 flex-1 overflow-hidden rounded-2xl border border-[var(--pbp-border)] bg-white shadow-sm ${
+            className={`relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm ${
               tool === "eraser" ? "cursor-none" : "cursor-crosshair"
             }`}
             onPointerDown={handlePointerDown}
@@ -830,7 +883,11 @@ export default function WorkOrderDrawingModal({
           >
             <canvas
               ref={canvasRef}
-              className="h-full w-full touch-none select-none"
+              className="block touch-none select-none bg-white shadow-sm"
+              style={{
+                width: `${canvasDisplaySize.width}px`,
+                height: `${canvasDisplaySize.height}px`,
+              }}
             />
             {tool === "eraser" && eraserCursor.visible ? (
               <div
