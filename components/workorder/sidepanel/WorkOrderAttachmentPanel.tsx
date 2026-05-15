@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, type DragEvent } from "react";
-import WorkOrderDrawingModal from "@/components/workorder/drawing/WorkOrderDrawingModal";
 import WorkOrderTldrawDrawingModal from "@/components/workorder/drawing/WorkOrderTldrawDrawingModal";
 import WorkOrderPanelCard from "@/components/common/ui/WorkOrderPanelCard";
 import { DeleteButton } from "@/components/workorder/detail/shared/detailEditorShared";
@@ -33,21 +32,6 @@ function logAttachmentDropDebug(scope: AttachmentPanelScope, message: string, pa
   console.info(`[attachment-dnd:${scope}] ${message}`, payload ?? {});
 }
 
-const DESIGN_DRAWING_MODAL_OPEN_STORAGE_KEY = "peacebypiece.workorder.designDrawingModalOpen";
-
-function readDesignDrawingModalOpenState() {
-  if (typeof window === "undefined") return false;
-  return window.sessionStorage.getItem(DESIGN_DRAWING_MODAL_OPEN_STORAGE_KEY) === "true";
-}
-
-function writeDesignDrawingModalOpenState(open: boolean) {
-  if (typeof window === "undefined") return;
-  if (open) {
-    window.sessionStorage.setItem(DESIGN_DRAWING_MODAL_OPEN_STORAGE_KEY, "true");
-    return;
-  }
-  window.sessionStorage.removeItem(DESIGN_DRAWING_MODAL_OPEN_STORAGE_KEY);
-}
 
 function AttachmentActionMenu({
   scope,
@@ -138,6 +122,7 @@ function AttachmentUploadHint({
   scope,
   canManageAttachments,
   onOpenAttachmentPicker,
+  onOpenDesignDrawingModal,
   onUploadFiles,
   compact,
   disabled = false,
@@ -146,6 +131,7 @@ function AttachmentUploadHint({
   scope: AttachmentPanelScope;
   canManageAttachments: boolean;
   onOpenAttachmentPicker: () => void;
+  onOpenDesignDrawingModal?: () => void;
   onUploadFiles: (files: File[]) => void;
   compact: boolean;
   disabled?: boolean;
@@ -224,6 +210,7 @@ export default function WorkOrderAttachmentPanel({
   attachments,
   uploadScope,
   onOpenAttachmentPicker,
+  onOpenDesignDrawingModal,
   onUploadFiles,
   onPreviewAttachment,
   onDeleteAttachment,
@@ -240,6 +227,7 @@ export default function WorkOrderAttachmentPanel({
   attachments: AttachmentPanelItem[];
   uploadScope: AttachmentPanelScope;
   onOpenAttachmentPicker: () => void;
+  onOpenDesignDrawingModal?: () => void;
   onUploadFiles: (files: File[]) => void;
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;
@@ -257,17 +245,9 @@ export default function WorkOrderAttachmentPanel({
   };
 
   const [panelDragActive, setPanelDragActive] = useState(false);
-  const [drawingModalOpen, setDrawingModalOpen] = useState(() =>
-    uploadScope === "design" ? readDesignDrawingModalOpenState() : false,
-  );
   const [advancedDrawingModalOpen, setAdvancedDrawingModalOpen] = useState(false);
   const openDesignDrawingModal = () => {
-    writeDesignDrawingModalOpenState(true);
-    setDrawingModalOpen(true);
-  };
-  const closeDesignDrawingModal = () => {
-    writeDesignDrawingModalOpenState(false);
-    setDrawingModalOpen(false);
+    onOpenDesignDrawingModal?.();
   };
 
   const handlePanelDragOver = (event: DragEvent<HTMLDivElement>) => {
@@ -400,15 +380,6 @@ export default function WorkOrderAttachmentPanel({
     </div>
     {uploadScope === "design" ? (
       <>
-        <WorkOrderDrawingModal
-          open={drawingModalOpen}
-          onClose={closeDesignDrawingModal}
-          onSaveDrawing={(file) => {
-            writeDesignDrawingModalOpenState(false);
-            onUploadFiles([file]);
-          }}
-          variant={variant}
-        />
         {RUNTIME_VISIBILITY.showAdvancedDrawingTools ? (
           <WorkOrderTldrawDrawingModal
             open={advancedDrawingModalOpen}

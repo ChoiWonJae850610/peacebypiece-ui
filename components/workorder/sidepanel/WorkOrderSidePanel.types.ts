@@ -10,6 +10,7 @@ export type WorkOrderSidePanelProps = {
   writeLockMessage?: string;
   attachmentSections: AttachmentPanelSection[];
   onOpenAttachmentPicker: (scope?: "design" | "attachment") => void;
+  onOpenDesignDrawingModal?: () => void;
   onUploadAttachmentFiles: (scope: "design" | "attachment", files: File[]) => void;
   onPreviewAttachment: (attachmentId: string) => void;
   onDeleteAttachment: (attachmentId: string) => void;

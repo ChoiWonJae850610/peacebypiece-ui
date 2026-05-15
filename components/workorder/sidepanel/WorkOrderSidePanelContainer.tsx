@@ -1,5 +1,11 @@
 "use client";
 
+import { useState } from "react";
+import WorkOrderDrawingModal from "@/components/workorder/drawing/WorkOrderDrawingModal";
+import {
+  readDesignDrawingModalOpenState,
+  writeDesignDrawingModalOpenState,
+} from "@/components/workorder/drawing/workOrderDrawingModalSession";
 import { useWorkOrderDeviceType } from "@/components/workorder/layout/useWorkOrderDeviceType";
 import type { WorkOrderSidePanelProps } from "@/components/workorder/sidepanel/WorkOrderSidePanel.types";
 import WorkOrderSidePanelDesktopView from "@/components/workorder/sidepanel/views/WorkOrderSidePanelDesktopView";
@@ -8,18 +14,50 @@ import WorkOrderSidePanelTabletView from "@/components/workorder/sidepanel/views
 
 export default function WorkOrderSidePanelContainer(props: WorkOrderSidePanelProps) {
   const deviceType = useWorkOrderDeviceType();
+  const [drawingModalOpen, setDrawingModalOpen] = useState(readDesignDrawingModalOpenState);
+  const hasDesignAttachmentSection = props.attachmentSections.some((section) => section.uploadScope === "design");
+  const canRenderDesignDrawingModal = !props.isEmpty && props.canSeeAttachments && hasDesignAttachmentSection;
 
-  if (props.isEmpty) {
-    return null;
+  const openDesignDrawingModal = () => {
+    writeDesignDrawingModalOpenState(true);
+    setDrawingModalOpen(true);
+  };
+
+  const closeDesignDrawingModal = () => {
+    writeDesignDrawingModalOpenState(false);
+    setDrawingModalOpen(false);
+  };
+
+  const sidePanelProps: WorkOrderSidePanelProps = {
+    ...props,
+    onOpenDesignDrawingModal: openDesignDrawingModal,
+  };
+
+  let sidePanelView = null;
+  if (!props.isEmpty) {
+    if (deviceType === "mobile") {
+      sidePanelView = <WorkOrderSidePanelMobileView {...sidePanelProps} />;
+    } else if (deviceType === "tablet") {
+      sidePanelView = <WorkOrderSidePanelTabletView {...sidePanelProps} />;
+    } else {
+      sidePanelView = <WorkOrderSidePanelDesktopView {...sidePanelProps} />;
+    }
   }
 
-  if (deviceType === "mobile") {
-    return <WorkOrderSidePanelMobileView {...props} />;
-  }
-
-  if (deviceType === "tablet") {
-    return <WorkOrderSidePanelTabletView {...props} />;
-  }
-
-  return <WorkOrderSidePanelDesktopView {...props} />;
+  return (
+    <>
+      {sidePanelView}
+      {canRenderDesignDrawingModal ? (
+        <WorkOrderDrawingModal
+          open={drawingModalOpen}
+          onClose={closeDesignDrawingModal}
+          onSaveDrawing={(file) => {
+            closeDesignDrawingModal();
+            props.onUploadAttachmentFiles("design", [file]);
+          }}
+          variant={deviceType}
+        />
+      ) : null}
+    </>
+  );
 }

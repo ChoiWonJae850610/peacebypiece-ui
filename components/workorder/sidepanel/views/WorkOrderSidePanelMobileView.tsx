@@ -37,6 +37,7 @@ export default function WorkOrderSidePanelMobileView(props: WorkOrderSidePanelPr
           canSeeAttachments={props.canSeeAttachments}
           canManageAttachments={props.canManageAttachments}
           onOpenAttachmentPicker={props.onOpenAttachmentPicker}
+          onOpenDesignDrawingModal={props.onOpenDesignDrawingModal}
           onUploadAttachmentFiles={props.onUploadAttachmentFiles}
           onPreviewAttachment={props.onPreviewAttachment}
           onDeleteAttachment={props.onDeleteAttachment}

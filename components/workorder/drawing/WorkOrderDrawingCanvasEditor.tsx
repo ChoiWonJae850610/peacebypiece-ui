@@ -331,98 +331,6 @@ function restoreCanvasSnapshot(canvas: HTMLCanvasElement, snapshot: string, onRe
 }
 
 
-type IpadDrawingDebugSnapshot = {
-  orientationMedia: string;
-  screenOrientation: string;
-  landscapeBlocked: string;
-  windowSize: string;
-  documentSize: string;
-  visualViewportSize: string;
-  screenSize: string;
-  bodyStyle: string;
-  panelRect: string;
-  containerRect: string;
-  canvasRect: string;
-};
-
-function formatRect(rect: DOMRect | null) {
-  if (!rect) return "none";
-  return `${Math.round(rect.left)},${Math.round(rect.top)},${Math.round(rect.width)}x${Math.round(rect.height)}`;
-}
-
-function getElementRect(element: Element | null) {
-  return element ? element.getBoundingClientRect() : null;
-}
-
-function getOrientationMediaLabel() {
-  if (typeof window === "undefined" || typeof window.matchMedia !== "function") return "unknown";
-  if (window.matchMedia("(orientation: portrait)").matches) return "portrait";
-  if (window.matchMedia("(orientation: landscape)").matches) return "landscape";
-  return "unknown";
-}
-
-function createIpadDrawingDebugSnapshot(
-  landscapeBlocked: boolean,
-  container: HTMLDivElement | null,
-  canvas: HTMLCanvasElement | null,
-): IpadDrawingDebugSnapshot {
-  if (typeof window === "undefined" || typeof document === "undefined") {
-    return {
-      orientationMedia: "ssr",
-      screenOrientation: "ssr",
-      landscapeBlocked: String(landscapeBlocked),
-      windowSize: "ssr",
-      documentSize: "ssr",
-      visualViewportSize: "ssr",
-      screenSize: "ssr",
-      bodyStyle: "ssr",
-      panelRect: "ssr",
-      containerRect: "ssr",
-      canvasRect: "ssr",
-    };
-  }
-
-  const html = document.documentElement;
-  const body = document.body;
-  const visualViewport = window.visualViewport;
-  const panel = container?.closest(".pbp-modal-panel") ?? null;
-
-  return {
-    orientationMedia: getOrientationMediaLabel(),
-    screenOrientation: window.screen?.orientation?.type ?? "none",
-    landscapeBlocked: String(landscapeBlocked),
-    windowSize: `${Math.round(window.innerWidth)}x${Math.round(window.innerHeight)}`,
-    documentSize: `${Math.round(html.clientWidth)}x${Math.round(html.clientHeight)}`,
-    visualViewportSize: visualViewport
-      ? `${Math.round(visualViewport.width)}x${Math.round(visualViewport.height)}`
-      : "none",
-    screenSize: window.screen ? `${Math.round(window.screen.width)}x${Math.round(window.screen.height)}` : "none",
-    bodyStyle: `pos:${body.style.position || "-"} ov:${body.style.overflow || "-"} htmlOv:${html.style.overflow || "-"}`,
-    panelRect: formatRect(getElementRect(panel)),
-    containerRect: formatRect(getElementRect(container)),
-    canvasRect: formatRect(getElementRect(canvas)),
-  };
-}
-
-function IpadDrawingDebugOverlay({ snapshot }: { snapshot: IpadDrawingDebugSnapshot }) {
-  return (
-    <div className="pointer-events-none fixed bottom-3 right-3 z-[140] max-w-[min(92vw,360px)] rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)]/95 p-3 text-left text-[10px] font-semibold leading-4 text-[var(--pbp-text)] shadow-2xl backdrop-blur">
-      <div className="mb-1 text-[11px] font-bold text-[var(--pbp-danger)]">DRAW DEBUG · iPad</div>
-      <div>orientation: {snapshot.orientationMedia}</div>
-      <div>screenOrientation: {snapshot.screenOrientation}</div>
-      <div>blocked: {snapshot.landscapeBlocked}</div>
-      <div>window: {snapshot.windowSize}</div>
-      <div>document: {snapshot.documentSize}</div>
-      <div>visualViewport: {snapshot.visualViewportSize}</div>
-      <div>screen: {snapshot.screenSize}</div>
-      <div>body: {snapshot.bodyStyle}</div>
-      <div>panelRect: {snapshot.panelRect}</div>
-      <div>containerRect: {snapshot.containerRect}</div>
-      <div>canvasRect: {snapshot.canvasRect}</div>
-    </div>
-  );
-}
-
 function getToolButtonClass(active: boolean, disabled = false) {
   if (disabled) return `${TOOL_BUTTON_BASE_CLASS} ${TOOL_BUTTON_DISABLED_CLASS}`;
   return `${TOOL_BUTTON_BASE_CLASS} ${active ? TOOL_BUTTON_ACTIVE_CLASS : TOOL_BUTTON_INACTIVE_CLASS}`;
@@ -581,7 +489,6 @@ export default function WorkOrderDrawingCanvasEditor({
   const [closeConfirmVisible, setCloseConfirmVisible] = useState(false);
   const [navigationGuardVisible, setNavigationGuardVisible] = useState(false);
   const [landscapeBlocked, setLandscapeBlocked] = useState(false);
-  const [ipadDebugSnapshot, setIpadDebugSnapshot] = useState<IpadDrawingDebugSnapshot | null>(null);
   const [canvasDisplaySize, setCanvasDisplaySize] = useState<CanvasDisplaySize>(() => canvasSize);
   const navigationGuardTimerRef = useRef<number | null>(null);
   const historyGuardActiveRef = useRef(false);
@@ -701,37 +608,6 @@ export default function WorkOrderDrawingCanvasEditor({
       window.removeEventListener("orientationchange", syncLandscapeBlocked);
     };
   }, [devicePolicy]);
-
-
-  useEffect(() => {
-    if (!open || devicePolicy.variant !== "ipad" || typeof window === "undefined") {
-      setIpadDebugSnapshot(null);
-      return;
-    }
-
-    const syncDebugSnapshot = () => {
-      setIpadDebugSnapshot(
-        createIpadDrawingDebugSnapshot(landscapeBlocked, canvasContainerRef.current, canvasRef.current),
-      );
-    };
-
-    syncDebugSnapshot();
-    const interval = window.setInterval(syncDebugSnapshot, 300);
-    window.addEventListener("resize", syncDebugSnapshot);
-    window.addEventListener("orientationchange", syncDebugSnapshot);
-    window.visualViewport?.addEventListener("resize", syncDebugSnapshot);
-    window.visualViewport?.addEventListener("scroll", syncDebugSnapshot);
-    window.screen.orientation?.addEventListener?.("change", syncDebugSnapshot);
-
-    return () => {
-      window.clearInterval(interval);
-      window.removeEventListener("resize", syncDebugSnapshot);
-      window.removeEventListener("orientationchange", syncDebugSnapshot);
-      window.visualViewport?.removeEventListener("resize", syncDebugSnapshot);
-      window.visualViewport?.removeEventListener("scroll", syncDebugSnapshot);
-      window.screen.orientation?.removeEventListener?.("change", syncDebugSnapshot);
-    };
-  }, [devicePolicy.variant, landscapeBlocked, open]);
 
 
   useEffect(() => {
@@ -1319,7 +1195,6 @@ export default function WorkOrderDrawingCanvasEditor({
           </div>
         </div>
       </div>
-      {ipadDebugSnapshot ? <IpadDrawingDebugOverlay snapshot={ipadDebugSnapshot} /> : null}
     </ModalShell>
   );
 }

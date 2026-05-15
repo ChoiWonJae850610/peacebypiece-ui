@@ -15,6 +15,7 @@ export default function WorkOrderSidePanelSections({
   writeLockMessage,
   attachmentSections,
   onOpenAttachmentPicker,
+  onOpenDesignDrawingModal,
   onUploadAttachmentFiles,
   onPreviewAttachment,
   onDeleteAttachment,
@@ -38,6 +39,7 @@ export default function WorkOrderSidePanelSections({
       canSeeAttachments={canSeeAttachments}
       canManageAttachments={canManageAttachments}
       onOpenAttachmentPicker={onOpenAttachmentPicker}
+      onOpenDesignDrawingModal={onOpenDesignDrawingModal}
       onUploadAttachmentFiles={onUploadAttachmentFiles}
       onPreviewAttachment={onPreviewAttachment}
       onDeleteAttachment={onDeleteAttachment}

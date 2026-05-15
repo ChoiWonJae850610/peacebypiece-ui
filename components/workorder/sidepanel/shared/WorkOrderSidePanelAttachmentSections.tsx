@@ -7,6 +7,7 @@ type WorkOrderSidePanelAttachmentSectionsProps = Pick<
   | "canSeeAttachments"
   | "canManageAttachments"
   | "onOpenAttachmentPicker"
+  | "onOpenDesignDrawingModal"
   | "onUploadAttachmentFiles"
   | "onPreviewAttachment"
   | "onDeleteAttachment"
@@ -22,6 +23,7 @@ export default function WorkOrderSidePanelAttachmentSections({
   canSeeAttachments,
   canManageAttachments,
   onOpenAttachmentPicker,
+  onOpenDesignDrawingModal,
   onUploadAttachmentFiles,
   onPreviewAttachment,
   onDeleteAttachment,
@@ -41,6 +43,7 @@ export default function WorkOrderSidePanelAttachmentSections({
       attachments={section.items}
       uploadScope={section.uploadScope}
       onOpenAttachmentPicker={() => onOpenAttachmentPicker(section.uploadScope)}
+      onOpenDesignDrawingModal={section.uploadScope === "design" ? onOpenDesignDrawingModal : undefined}
       onUploadFiles={(files) => {
         if (typeof onUploadAttachmentFiles !== "function") return;
         onUploadAttachmentFiles(section.uploadScope, files);
