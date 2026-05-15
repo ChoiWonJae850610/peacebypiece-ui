@@ -13,6 +13,7 @@ type LockState = {
   previousBodyTop: string;
   previousBodyWidth: string;
   previousBodyTouchAction: string;
+  bodyPositionLocked: boolean;
 };
 
 const modalLockState: LockState = {
@@ -26,6 +27,7 @@ const modalLockState: LockState = {
   previousBodyTop: "",
   previousBodyWidth: "",
   previousBodyTouchAction: "",
+  bodyPositionLocked: false,
 };
 
 const modalStack: string[] = [];
@@ -53,7 +55,7 @@ export function getFocusableElements(container: HTMLElement) {
   ).filter((element) => !element.hasAttribute("inert") && !element.getAttribute("aria-hidden"));
 }
 
-function lockDocumentScroll() {
+function lockDocumentScroll({ lockBodyPosition = true }: { lockBodyPosition?: boolean } = {}) {
   const html = document.documentElement;
   const body = document.body;
 
@@ -72,10 +74,15 @@ function lockDocumentScroll() {
     html.style.overscrollBehavior = "none";
     body.style.overflow = "hidden";
     body.style.overscrollBehavior = "none";
-    body.style.position = "fixed";
-    body.style.top = `-${modalLockState.scrollY}px`;
     body.style.width = "100%";
     body.style.touchAction = "none";
+    modalLockState.bodyPositionLocked = lockBodyPosition;
+
+    if (lockBodyPosition) {
+      body.style.position = "fixed";
+      body.style.top = `-${modalLockState.scrollY}px`;
+    }
+
     body.dataset.pbpOverlayOpen = "true";
   }
 
@@ -98,17 +105,24 @@ function unlockDocumentScroll() {
   body.style.width = modalLockState.previousBodyWidth;
   body.style.touchAction = modalLockState.previousBodyTouchAction;
   delete body.dataset.pbpOverlayOpen;
-  window.scrollTo(0, modalLockState.scrollY);
+
+  if (modalLockState.bodyPositionLocked) {
+    window.scrollTo(0, modalLockState.scrollY);
+  }
+
+  modalLockState.bodyPositionLocked = false;
 }
 
 export function useModalEnvironment({
   open,
   dialogRef,
   onClose,
+  lockBodyPosition = true,
 }: {
   open: boolean;
   dialogRef: RefObject<HTMLElement | null>;
   onClose: () => void;
+  lockBodyPosition?: boolean;
 }) {
   const modalId = useMemo(() => `modal-${Math.random().toString(36).slice(2, 11)}`, []);
   const onCloseRef = useRef(onClose);
@@ -124,7 +138,7 @@ export function useModalEnvironment({
     const previousActive = document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
     pushModalStack(modalId);
-    lockDocumentScroll();
+    lockDocumentScroll({ lockBodyPosition });
 
     const focusTimer = window.setTimeout(() => {
       if (!isTopModal(modalId)) return;
@@ -176,7 +190,7 @@ export function useModalEnvironment({
         previousActive.focus();
       }
     };
-  }, [open, dialogRef, modalId]);
+  }, [open, dialogRef, modalId, lockBodyPosition]);
 }
 
 export const useModalFocusTrap = useModalEnvironment;

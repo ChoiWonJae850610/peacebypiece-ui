@@ -6,7 +6,7 @@ import { DRAWING_DEVICE_POLICIES } from "./drawingDevicePolicy";
 
 const IPAD_VIEWPORT_HEIGHT_CSS_VAR = "--pbp-drawing-ipad-viewport-height";
 const IPAD_VIEWPORT_WIDTH_CSS_VAR = "--pbp-drawing-ipad-viewport-width";
-const VIEWPORT_STABILIZATION_DELAYS = [0, 60, 140, 260, 420, 650, 900] as const;
+const VIEWPORT_STABILIZATION_DELAYS = [0, 60, 140, 260, 420, 650, 900, 1200] as const;
 
 function getViewportMetric(metric: "width" | "height") {
   if (typeof window === "undefined" || typeof document === "undefined") return 0;
@@ -15,8 +15,11 @@ function getViewportMetric(metric: "width" | "height") {
   const innerSize = metric === "height" ? window.innerHeight : window.innerWidth;
   const documentSize =
     metric === "height" ? document.documentElement.clientHeight : document.documentElement.clientWidth;
+  const candidates = [visualViewportSize, innerSize, documentSize].filter(
+    (size): size is number => typeof size === "number" && Number.isFinite(size) && size > 0,
+  );
 
-  return Math.round(visualViewportSize || innerSize || documentSize || 0);
+  return Math.round(Math.max(0, ...candidates));
 }
 
 function getStableViewportSize(metric: "width" | "height") {

@@ -20,6 +20,7 @@ export default function ModalShell({
   panelClassName,
   overlayClassName,
   closeOnBackdrop,
+  lockBodyPosition,
 }: {
   open: boolean;
   title: string;
@@ -33,11 +34,12 @@ export default function ModalShell({
   panelClassName?: string;
   overlayClassName?: string;
   closeOnBackdrop?: boolean;
+  lockBodyPosition?: boolean;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const titleId = useId();
 
-  useModalEnvironment({ open, dialogRef, onClose });
+  useModalEnvironment({ open, dialogRef, onClose, lockBodyPosition });
 
   return (
     <BaseModal

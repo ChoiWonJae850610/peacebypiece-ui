@@ -937,6 +937,7 @@ export default function WorkOrderDrawingCanvasEditor({
       panelClassName={`!inset-0 !h-[100dvh] !max-h-[100dvh] !w-screen !max-w-none !translate-x-0 !translate-y-0 !rounded-none !border-0 md:!left-0 md:!top-0 md:!bottom-0 md:!h-[100dvh] md:!max-h-[100dvh] md:!w-screen md:!max-w-none md:!translate-x-0 md:!translate-y-0 md:!rounded-none md:!border-0${stableViewportPanelClassName}`}
       overlayClassName="bg-[var(--pbp-bg)]"
       closeOnBackdrop={false}
+      lockBodyPosition={!useStableViewportHeight}
     >
       <div className="flex h-full min-h-0 flex-col gap-1.5">
         <div
