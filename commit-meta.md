@@ -1,18 +1,13 @@
-Version :
-0.12.40
-
-Summary :
-직접 그리기 캔버스 고정 비율 표시 보정
-
-Description :
-직접 그리기 화면에서 태블릿 세로/가로 전환 후 정사각형이 직사각형처럼 찌그러져 보이는 문제를 보정했다. canvas 원본 크기는 고정하고, 화면 표시 크기만 container 안에서 원본 비율을 유지하는 contain 방식으로 계산하도록 수정했다. 기존 PNG 저장과 R2 디자인 첨부 업로드 흐름은 변경하지 않았다.
+Version : 0.12.41
+Summary : 직접 그리기 모바일 정사각형 캔버스 분기 제거
+Description : 직접 그리기 native canvas에서 mobile variant에만 900x900 정사각형 원본 크기가 적용되던 분기를 제거하고, 모든 variant가 1280x900 원본 canvas 비율을 사용하도록 정리했습니다. 세로/가로 회전 시 원본 비율 유지와 기존 PNG 저장 흐름은 유지했습니다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
 - components/workorder/drawing/WorkOrderDrawingModal.tsx
 
 추가 파일 목록 :
-- docs/workorder-drawing-native-fixed-canvas-ratio-0.12.40.md
+- docs/workorder-drawing-native-canvas-ratio-fix-0.12.41.md
 
 삭제 파일 목록 :
-없음
+- 없음

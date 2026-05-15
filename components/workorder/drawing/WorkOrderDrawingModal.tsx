@@ -57,8 +57,6 @@ const DRAWING_FILE_EXTENSION = "png";
 const DRAWING_DRAFT_STORAGE_KEY = "peacebypiece.workorder.designDrawingDraft";
 const DEFAULT_CANVAS_WIDTH = 1280;
 const DEFAULT_CANVAS_HEIGHT = 900;
-const MOBILE_CANVAS_WIDTH = 900;
-const MOBILE_CANVAS_HEIGHT = 900;
 const MAX_HISTORY_LENGTH = 24;
 const ERASER_LINE_WIDTH_BY_STROKE_SIZE: Record<DrawingStrokeSizeId, number> = {
   thin: 20,
@@ -97,10 +95,7 @@ const PICKER_PANEL_CLASS =
 const TOOLBAR_GROUP_CLASS =
   "flex items-center gap-1.5 rounded-2xl border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface)] p-1.5 shadow-sm";
 
-function getCanvasSize(variant: WorkOrderDrawingModalProps["variant"]) {
-  if (variant === "mobile") {
-    return { width: MOBILE_CANVAS_WIDTH, height: MOBILE_CANVAS_HEIGHT };
-  }
+function getCanvasSize(_variant: WorkOrderDrawingModalProps["variant"]) {
   return { width: DEFAULT_CANVAS_WIDTH, height: DEFAULT_CANVAS_HEIGHT };
 }
 
