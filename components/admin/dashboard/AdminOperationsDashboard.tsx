@@ -55,6 +55,13 @@ function translateTodayTaskPriorityLabel(priorityKey: AdminDashboardTaskPriority
   return t(`operationsDashboard.todayTasks.priority.${priorityKey}`, fallback);
 }
 
+function formatAdminQuantity(task: AdminDashboardTodayTask, t: AdminTranslation): string {
+  if (typeof task.quantityCount !== "number") {
+    return t("operationsDashboard.todayTasks.quantityPending", task.quantityLabel);
+  }
+  return t("operationsDashboard.todayTasks.quantityValue", task.quantityLabel).replace("{count}", String(task.quantityCount));
+}
+
 function getQueueTasks(snapshot: AdminOperationalDashboardSnapshots["today"], selectedQueueId: AdminDashboardQueueId): AdminDashboardTodayTask[] {
   return snapshot.queueTasks?.[selectedQueueId] ?? snapshot.todayTasks;
 }
@@ -80,8 +87,8 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
 
   return (
     <AdminCard className="shrink-0 overflow-hidden">
-      <div className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
-        <section className="flex min-h-[360px] flex-col rounded-[24px] border p-4 pbp-card-muted">
+      <div className="grid gap-4 xl:h-[360px] xl:grid-cols-[1.35fr_0.65fr]">
+        <section className="flex min-h-[320px] flex-col overflow-hidden rounded-[24px] border p-4 pbp-card-muted xl:h-full xl:min-h-0">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2">
               <h2 className="truncate text-base font-semibold pbp-text-primary">{queueTitle}</h2>
@@ -123,7 +130,7 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
                     <p className="mt-2 truncate text-sm font-semibold pbp-text-primary">{task.title}</p>
                     <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium pbp-text-muted">
                       <span>{t("operationsDashboard.factoryLabel", "공장")} : {task.factoryName}</span>
-                      <span>{t("operationsDashboard.quantityLabel", "수량")} : {task.quantityLabel}</span>
+                      <span>{t("operationsDashboard.quantityLabel", "수량")} : {formatAdminQuantity(task, t)}</span>
                     </div>
                   </div>
 
@@ -147,9 +154,9 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
           </div>
         </section>
 
-        <section className="flex min-h-[360px] flex-col rounded-[24px] border border-stone-100 bg-[var(--admin-theme-surface)] p-4 text-[var(--admin-theme-text-on-surface)] shadow-sm transition-colors">
+        <section className="flex min-h-[320px] flex-col overflow-hidden rounded-[24px] border border-stone-100 bg-[var(--admin-theme-surface)] p-4 text-[var(--admin-theme-text-on-surface)] shadow-sm transition-colors xl:h-full xl:min-h-0">
           <h2 className="text-base font-semibold">{t("operationsDashboard.priorityTitle", "주요 대기 현황")}</h2>
-          <div className="mt-4 grid flex-1 grid-rows-4 gap-3">
+          <div className="mt-4 grid min-h-0 flex-1 grid-rows-4 gap-3">
             {adminQueueOrder.map((queueId) => {
               const item = insightsById.get(queueId);
               if (!item) return null;
@@ -160,13 +167,13 @@ export default function AdminOperationsDashboard({ snapshots }: AdminOperationsD
                   type="button"
                   onClick={() => setSelectedQueueId(queueId)}
                   aria-pressed={isActive}
-                  className={`rounded-2xl px-4 py-3 text-left transition ${isActive ? "bg-white/20 ring-1 ring-white/40" : "bg-white/10 hover:bg-white/15"}`}
+                  className={`min-h-0 overflow-hidden rounded-2xl px-4 py-3 text-left transition ${isActive ? "bg-white/20 ring-1 ring-white/40" : "bg-white/10 hover:bg-white/15"}`}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-sm font-semibold">{translateInsightLabel(queueId, item.label, t)}</span>
                     <span className="text-lg font-semibold">{item.value}</span>
                   </div>
-                  <p className="mt-1 text-xs text-[var(--pbp-action-primary-text)]/70">{translateInsightDescription(queueId, item.description, t)}</p>
+                  <p className="mt-1 max-h-8 overflow-hidden text-xs text-[var(--pbp-action-primary-text)]/70">{translateInsightDescription(queueId, item.description, t)}</p>
                 </button>
               );
             })}

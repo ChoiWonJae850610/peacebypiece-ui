@@ -4,6 +4,7 @@ import { getAdminCompanyId } from "@/lib/admin/settings/companyScope";
 import { ADMIN_WORKORDER_FLOW_BUCKETS } from "@/lib/constants/adminStats";
 import { isDatabaseConfigured, queryDb, type DbQueryResultRow } from "@/lib/db/client";
 import { getI18n } from "@/lib/i18n";
+import { createAttachmentFileProxyUrl } from "@/lib/storage/r2/r2Client";
 
 import {
   ADMIN_DASHBOARD_PERIOD_OPTIONS,
@@ -165,11 +166,30 @@ type AttachmentSummaryRow = DbQueryResultRow & {
   attachment_count: number | string | null;
   thumbnail_url: string | null;
   preview_url: string | null;
+  thumbnail_key: string | null;
+  storage_key: string | null;
 };
 
-function formatQuantityLabel(value: unknown): string {
+
+function createAttachmentPreviewUrl(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const cleanValue = String(value).trim();
+  if (!cleanValue) return null;
+  if (cleanValue.startsWith("/") || cleanValue.startsWith("http://") || cleanValue.startsWith("https://")) {
+    return cleanValue;
+  }
+  return createAttachmentFileProxyUrl(cleanValue);
+}
+
+function parseQuantityCount(value: unknown): number | null {
   const quantity = typeof value === "number" ? value : typeof value === "string" ? Number(value) : 0;
-  if (!Number.isFinite(quantity) || quantity <= 0) return adminOpsText.todayTasks.quantityPending;
+  if (!Number.isFinite(quantity) || quantity <= 0) return null;
+  return quantity;
+}
+
+function formatQuantityLabel(value: unknown): string {
+  const quantity = parseQuantityCount(value);
+  if (quantity === null) return adminOpsText.todayTasks.quantityPending;
   return adminOpsText.todayTasks.quantityValue.replace("{count}", String(quantity));
 }
 
@@ -234,8 +254,12 @@ function buildSnapshot(period: AdminDashboardPeriod, workorders: WorkorderRow[],
       priorityKey: getPriorityKey(row.status),
       factoryName: orderFactoryByWorkorderId.get(row.id) || adminOpsText.todayTasks.factoryPending,
       quantityLabel: formatQuantityLabel(orderQuantityByWorkorderId.get(row.id)),
+      quantityCount: parseQuantityCount(orderQuantityByWorkorderId.get(row.id)),
       attachmentCount: Number(attachment?.attachment_count ?? 0),
-      thumbnailUrl: attachment?.thumbnail_url ?? attachment?.preview_url ?? null,
+      thumbnailUrl: createAttachmentPreviewUrl(attachment?.thumbnail_url)
+        ?? createAttachmentPreviewUrl(attachment?.preview_url)
+        ?? createAttachmentPreviewUrl(attachment?.thumbnail_key)
+        ?? createAttachmentPreviewUrl(attachment?.storage_key),
       updatedLabel: formatUpdatedLabel(row.updated_at, now),
       actionHref: `/worker?workOrderId=${encodeURIComponent(row.id)}`,
       updatedAt: parseDate(row.updated_at)?.getTime() ?? 0,
@@ -321,8 +345,14 @@ export async function getAdminOperationalDashboardSnapshots(): Promise<AdminOper
       queryDb<AttachmentSummaryRow>(
         `SELECT order_id,
                 COUNT(*) AS attachment_count,
-                MAX(thumbnail_url) FILTER (WHERE thumbnail_url IS NOT NULL AND thumbnail_url <> '') AS thumbnail_url,
-                MAX(preview_url) FILTER (WHERE preview_url IS NOT NULL AND preview_url <> '') AS preview_url
+                (ARRAY_AGG(NULLIF(thumbnail_url, '') ORDER BY is_primary DESC, (type = 'design') DESC, created_at ASC)
+                  FILTER (WHERE thumbnail_url IS NOT NULL AND thumbnail_url <> ''))[1] AS thumbnail_url,
+                (ARRAY_AGG(NULLIF(preview_url, '') ORDER BY is_primary DESC, (type = 'design') DESC, created_at ASC)
+                  FILTER (WHERE preview_url IS NOT NULL AND preview_url <> ''))[1] AS preview_url,
+                (ARRAY_AGG(NULLIF(thumbnail_key, '') ORDER BY is_primary DESC, (type = 'design') DESC, created_at ASC)
+                  FILTER (WHERE thumbnail_key IS NOT NULL AND thumbnail_key <> ''))[1] AS thumbnail_key,
+                (ARRAY_AGG(NULLIF(storage_key, '') ORDER BY is_primary DESC, (type = 'design') DESC, created_at ASC)
+                  FILTER (WHERE storage_key IS NOT NULL AND storage_key <> ''))[1] AS storage_key
            FROM attachments
           WHERE company_id = $1
             AND deleted_at IS NULL

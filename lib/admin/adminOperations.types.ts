@@ -34,6 +34,7 @@ export type AdminDashboardTodayTask = {
   priorityKey: AdminDashboardTaskPriorityKey;
   factoryName: string;
   quantityLabel: string;
+  quantityCount: number | null;
   attachmentCount: number;
   thumbnailUrl: string | null;
   updatedLabel: string;
