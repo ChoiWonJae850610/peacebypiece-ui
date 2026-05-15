@@ -92,6 +92,8 @@ const DEFAULT_STROKE_SIZE: DrawingStrokeSize = DRAWING_STROKE_SIZES[0] ?? {
 
 const TOOL_BUTTON_BASE_CLASS =
   "pbp-interactive-button inline-flex h-10 w-10 items-center justify-center rounded-full border text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-45";
+const MOBILE_TOOL_BUTTON_BASE_CLASS =
+  "pbp-interactive-button inline-flex h-8 w-8 items-center justify-center rounded-full border text-[10px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-45";
 const TOOL_BUTTON_ACTIVE_CLASS = "pbp-action-primary border-[var(--pbp-accent)] shadow-sm";
 const TOOL_BUTTON_INACTIVE_CLASS = "pbp-action-secondary border-[var(--pbp-border)]";
 const TOOL_BUTTON_DISABLED_CLASS = "border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-muted)] text-[var(--pbp-text-muted)]";
@@ -331,9 +333,10 @@ function restoreCanvasSnapshot(canvas: HTMLCanvasElement, snapshot: string, onRe
 }
 
 
-function getToolButtonClass(active: boolean, disabled = false) {
-  if (disabled) return `${TOOL_BUTTON_BASE_CLASS} ${TOOL_BUTTON_DISABLED_CLASS}`;
-  return `${TOOL_BUTTON_BASE_CLASS} ${active ? TOOL_BUTTON_ACTIVE_CLASS : TOOL_BUTTON_INACTIVE_CLASS}`;
+function getToolButtonClass(active: boolean, disabled = false, compact = false) {
+  const baseClassName = compact ? MOBILE_TOOL_BUTTON_BASE_CLASS : TOOL_BUTTON_BASE_CLASS;
+  if (disabled) return `${baseClassName} ${TOOL_BUTTON_DISABLED_CLASS}`;
+  return `${baseClassName} ${active ? TOOL_BUTTON_ACTIVE_CLASS : TOOL_BUTTON_INACTIVE_CLASS}`;
 }
 
 function DrawingIcon({ name, className = "h-4 w-4" }: { name: DrawingIconName; className?: string }) {
@@ -500,6 +503,14 @@ export default function WorkOrderDrawingCanvasEditor({
   const shapeToolSelected = isShapeTool(tool);
   const colorEnabled = isColorEnabled(tool);
   const selectedStrokeSize = DRAWING_STROKE_SIZES.find((size) => size.value === strokeSize) ?? DEFAULT_STROKE_SIZE;
+  const toolButtonCompact = isMobile;
+  const toolIconClassName = isMobile ? "h-3.5 w-3.5" : "h-4 w-4";
+  const toolbarGroupClassName = isMobile
+    ? "flex items-center gap-1 rounded-2xl border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface)] p-1 shadow-sm"
+    : TOOLBAR_GROUP_CLASS;
+  const pickerPanelClassName = isMobile
+    ? "absolute bottom-full left-1/2 z-20 mb-2 -translate-x-1/2 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-1.5 shadow-xl"
+    : PICKER_PANEL_CLASS;
   const selectedLineStyleId: DrawingLineStyleId = lineStyle;
   const eraserLineWidth = getEraserLineWidth(selectedStrokeSize.id);
   const strokeSizeControlLabel =
@@ -996,9 +1007,9 @@ export default function WorkOrderDrawingCanvasEditor({
           </div>
         </div>
 
-        <div className="shrink-0 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-1.5 shadow-sm sm:p-2">
-          <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
-            <div className={TOOLBAR_GROUP_CLASS} aria-label={ui.toolGroupAria}>
+        <div className={isMobile ? "shrink-0 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-1 shadow-sm" : "shrink-0 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-1.5 shadow-sm sm:p-2"}>
+          <div className={isMobile ? "flex flex-wrap items-center justify-center gap-1" : "flex flex-wrap items-center justify-center gap-1.5 sm:gap-2"}>
+            <div className={toolbarGroupClassName} aria-label={ui.toolGroupAria}>
               {([
                 ["pen", ui.pen, "pen"],
                 ["eraser", ui.eraser, "eraser"],
@@ -1012,35 +1023,35 @@ export default function WorkOrderDrawingCanvasEditor({
                   type="button"
                   onClick={() => handleToolSelect(toolId)}
                   disabled={toolbarDisabled}
-                  className={getToolButtonClass(tool === toolId, toolbarDisabled)}
+                  className={getToolButtonClass(tool === toolId, toolbarDisabled, toolButtonCompact)}
                   aria-label={label}
                   title={label}
                   aria-pressed={tool === toolId}
                 >
-                  <DrawingIcon name={iconName} />
+                  <DrawingIcon name={iconName} className={toolIconClassName} />
                 </button>
               ))}
             </div>
 
-            <div className={TOOLBAR_GROUP_CLASS}>
+            <div className={toolbarGroupClassName}>
               <div className="relative">
                 <button
                   type="button"
                   onClick={() => colorEnabled && !toolbarDisabled && togglePopover("color")}
                   disabled={!colorEnabled || toolbarDisabled}
-                  className={getToolButtonClass(activePopover === "color", !colorEnabled || toolbarDisabled)}
+                  className={getToolButtonClass(activePopover === "color", !colorEnabled || toolbarDisabled, toolButtonCompact)}
                   aria-label={ui.colorGroupAria}
                   title={ui.colorGroupAria}
                   aria-expanded={activePopover === "color"}
                 >
                   <span
-                    className="h-5 w-5 rounded-md border border-black/10 shadow-sm"
+                    className={isMobile ? "h-4 w-4 rounded-md border border-black/10 shadow-sm" : "h-5 w-5 rounded-md border border-black/10 shadow-sm"}
                     style={{ backgroundColor: strokeColor }}
                     aria-hidden="true"
                   />
                 </button>
                 {activePopover === "color" && colorEnabled && !toolbarDisabled ? (
-                  <div className={`${PICKER_PANEL_CLASS} flex gap-1.5`} aria-label={ui.colorGroupAria}>
+                  <div className={`${pickerPanelClassName} flex gap-1.5`} aria-label={ui.colorGroupAria}>
                     {DRAWING_COLORS.map((color) => (
                       <button
                         key={color.id}
@@ -1049,7 +1060,7 @@ export default function WorkOrderDrawingCanvasEditor({
                           setStrokeColor(color.value);
                           closeToolPopovers();
                         }}
-                        className={`h-9 w-9 rounded-xl border shadow-sm transition ${
+                        className={`${isMobile ? "h-8 w-8" : "h-9 w-9"} rounded-xl border shadow-sm transition ${
                           strokeColor === color.value
                             ? "ring-2 ring-[var(--pbp-accent)] ring-offset-2 ring-offset-[var(--pbp-surface)]"
                             : "border-[var(--pbp-border)]"
@@ -1069,15 +1080,15 @@ export default function WorkOrderDrawingCanvasEditor({
                   type="button"
                   onClick={() => !toolbarDisabled && togglePopover("strokeSize")}
                   disabled={toolbarDisabled}
-                  className={getToolButtonClass(activePopover === "strokeSize", toolbarDisabled)}
+                  className={getToolButtonClass(activePopover === "strokeSize", toolbarDisabled, toolButtonCompact)}
                   aria-label={strokeSizeControlLabel}
                   title={strokeSizeControlLabel}
                   aria-expanded={activePopover === "strokeSize"}
                 >
-                  <DrawingIcon name="stroke" />
+                  <DrawingIcon name="stroke" className={toolIconClassName} />
                 </button>
                 {activePopover === "strokeSize" && !toolbarDisabled ? (
-                  <div className={`${PICKER_PANEL_CLASS} grid w-36 gap-1.5`} aria-label={strokeSizeControlLabel}>
+                  <div className={`${pickerPanelClassName} grid w-32 gap-1.5 sm:w-36`} aria-label={strokeSizeControlLabel}>
                     {DRAWING_STROKE_SIZES.map((size) => (
                       <button
                         key={size.id}
@@ -1086,7 +1097,7 @@ export default function WorkOrderDrawingCanvasEditor({
                           setStrokeSize(size.value);
                           closeToolPopovers();
                         }}
-                        className={`pbp-interactive-button flex h-9 items-center gap-2 rounded-xl px-2 text-xs font-semibold ${
+                        className={`pbp-interactive-button flex ${isMobile ? "h-8" : "h-9"} items-center gap-2 rounded-xl px-2 text-xs font-semibold ${
                           strokeSize === size.value ? "pbp-action-primary" : "pbp-action-secondary"
                         }`}
                         aria-label={ui.strokeSizeLabels[size.id] ?? size.id}
@@ -1105,62 +1116,62 @@ export default function WorkOrderDrawingCanvasEditor({
                 type="button"
                 onClick={toggleLineStyle}
                 disabled={!shapeToolSelected || toolbarDisabled}
-                className={getToolButtonClass(shapeToolSelected && lineStyle === "dashed", !shapeToolSelected || toolbarDisabled)}
+                className={getToolButtonClass(shapeToolSelected && lineStyle === "dashed", !shapeToolSelected || toolbarDisabled, toolButtonCompact)}
                 aria-label={ui.lineStyleToggleAria}
                 title={shapeToolSelected ? (ui.lineStyleLabels[selectedLineStyleId] ?? selectedLineStyleId) : ui.lineStyleDisabledLabel}
                 aria-pressed={lineStyle === "dashed"}
               >
-                <DrawingIcon name={lineStyle === "dashed" ? "dashed" : "solid"} />
+                <DrawingIcon name={lineStyle === "dashed" ? "dashed" : "solid"} className={toolIconClassName} />
               </button>
             </div>
 
-            <div className={TOOLBAR_GROUP_CLASS}>
+            <div className={toolbarGroupClassName}>
               <button
                 type="button"
                 onClick={handleUndo}
                 disabled={!canUndo}
-                className={getToolButtonClass(false, !canUndo)}
+                className={getToolButtonClass(false, !canUndo, toolButtonCompact)}
                 aria-label={ui.undo}
                 title={ui.undo}
               >
-                <DrawingIcon name="undo" />
+                <DrawingIcon name="undo" className={toolIconClassName} />
               </button>
               <button
                 type="button"
                 onClick={handleRedo}
                 disabled={!canRedo}
-                className={getToolButtonClass(false, !canRedo)}
+                className={getToolButtonClass(false, !canRedo, toolButtonCompact)}
                 aria-label={ui.redo}
                 title={ui.redo}
               >
-                <DrawingIcon name="redo" />
+                <DrawingIcon name="redo" className={toolIconClassName} />
               </button>
             </div>
 
-            <div className="min-w-[150px] rounded-2xl border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface)] px-3 py-2 text-center text-[11px] leading-5 text-[var(--pbp-text-muted)]">
+            <div className={isMobile ? "hidden" : "min-w-[150px] rounded-2xl border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface)] px-3 py-2 text-center text-[11px] leading-5 text-[var(--pbp-text-muted)]"}>
               <span className="font-semibold text-[var(--pbp-text)]">{ui.toolLabels[tool] ?? tool}</span>
               <span> · {strokeSizeStatusLabel} {ui.strokeSizeLabels[selectedStrokeSize.id] ?? selectedStrokeSize.id}</span>
               {shapeToolSelected ? <span> · {ui.lineStyleLabels[selectedLineStyleId] ?? selectedLineStyleId}</span> : null}
             </div>
 
-            <div className={TOOLBAR_GROUP_CLASS}>
+            <div className={toolbarGroupClassName}>
               <button
                 type="button"
                 onClick={handleClear}
                 disabled={toolbarDisabled}
-                className="pbp-interactive-button pbp-action-secondary inline-flex h-10 items-center justify-center gap-2 rounded-full px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+                className={isMobile ? "pbp-interactive-button pbp-action-secondary inline-flex h-8 w-8 items-center justify-center rounded-full text-[10px] font-semibold disabled:cursor-not-allowed disabled:opacity-50" : "pbp-interactive-button pbp-action-secondary inline-flex h-10 items-center justify-center gap-2 rounded-full px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50"}
               >
-                <DrawingIcon name="trash" />
-                <span>{ui.clear}</span>
+                <DrawingIcon name="trash" className={toolIconClassName} />
+                <span className={isMobile ? "sr-only" : undefined}>{ui.clear}</span>
               </button>
               <button
                 type="button"
                 onClick={handleSave}
                 disabled={toolbarDisabled || saving || !dirty}
-                className="pbp-interactive-button pbp-action-primary inline-flex h-10 items-center justify-center gap-2 rounded-full px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+                className={isMobile ? "pbp-interactive-button pbp-action-primary inline-flex h-8 w-8 items-center justify-center rounded-full text-[10px] font-semibold disabled:cursor-not-allowed disabled:opacity-50" : "pbp-interactive-button pbp-action-primary inline-flex h-10 items-center justify-center gap-2 rounded-full px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50"}
               >
-                <DrawingIcon name="save" />
-                <span>{saving ? ui.saving : ui.save}</span>
+                <DrawingIcon name="save" className={toolIconClassName} />
+                <span className={isMobile ? "sr-only" : undefined}>{saving ? ui.saving : ui.save}</span>
               </button>
             </div>
 
