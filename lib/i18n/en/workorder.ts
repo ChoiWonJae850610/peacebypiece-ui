@@ -334,6 +334,8 @@ export const workorderEn = {
           ellipse: "Ellipse",
           pan: "Pan",
         },
+        landscapeBlockedTitle: "Use portrait mode.",
+        landscapeBlockedMessage: "Direct drawing is stabilized for tablet portrait mode. Rotate the device to portrait to continue drawing.",
         canvasAria: "Direct drawing canvas",
         navigationBlockedMessage: "Browser back is disabled while drawing. Use the close button instead.",
         unsavedCloseTitle: "There is an unsaved drawing.",

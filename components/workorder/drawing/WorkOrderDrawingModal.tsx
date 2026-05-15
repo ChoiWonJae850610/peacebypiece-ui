@@ -56,7 +56,7 @@ type DrawingPoint = {
 const DRAWING_MIME_TYPE = "image/png";
 const DRAWING_FILE_EXTENSION = "png";
 const DRAWING_DRAFT_STORAGE_KEY = "peacebypiece.workorder.designDrawingDraft";
-const DRAWING_DRAFT_FORMAT_VERSION = 3;
+const DRAWING_DRAFT_FORMAT_VERSION = 4;
 const DESKTOP_CANVAS_WIDTH = 1280;
 const DESKTOP_CANVAS_HEIGHT = 900;
 const PORTRAIT_CANVAS_WIDTH = 900;
@@ -348,6 +348,11 @@ function isTabletLikeTouchViewport() {
   return (coarsePointer || multiTouch) && minSide >= 600 && maxSide >= 900;
 }
 
+function shouldBlockDrawingForLandscape(variant: WorkOrderDrawingModalProps["variant"]) {
+  if (typeof window === "undefined" || variant === "desktop") return false;
+  return window.innerWidth > window.innerHeight;
+}
+
 function getToolButtonClass(active: boolean, disabled = false) {
   if (disabled) return `${TOOL_BUTTON_BASE_CLASS} ${TOOL_BUTTON_DISABLED_CLASS}`;
   return `${TOOL_BUTTON_BASE_CLASS} ${active ? TOOL_BUTTON_ACTIVE_CLASS : TOOL_BUTTON_INACTIVE_CLASS}`;
@@ -506,12 +511,15 @@ export default function WorkOrderDrawingModal({
   const [eraserCursor, setEraserCursor] = useState<EraserCursor>({ x: 0, y: 0, diameter: 0, visible: false });
   const [closeConfirmVisible, setCloseConfirmVisible] = useState(false);
   const [navigationGuardVisible, setNavigationGuardVisible] = useState(false);
+  const [landscapeBlocked, setLandscapeBlocked] = useState(false);
   const [canvasDisplaySize, setCanvasDisplaySize] = useState<CanvasDisplaySize>(() => canvasSize);
   const navigationGuardTimerRef = useRef<number | null>(null);
   const historyGuardActiveRef = useRef(false);
   const isMobile = effectiveVariant === "mobile";
-  const canUndo = historyIndex > 0;
-  const canRedo = historyIndex < historyRef.current.length - 1;
+  const drawingInputDisabled = landscapeBlocked;
+  const toolbarDisabled = drawingInputDisabled;
+  const canUndo = !toolbarDisabled && historyIndex > 0;
+  const canRedo = !toolbarDisabled && historyIndex < historyRef.current.length - 1;
   const shapeToolSelected = isShapeTool(tool);
   const colorEnabled = isColorEnabled(tool);
   const selectedStrokeSize = DRAWING_STROKE_SIZES.find((size) => size.value === strokeSize) ?? DEFAULT_STROKE_SIZE;
@@ -622,6 +630,23 @@ export default function WorkOrderDrawingModal({
       window.removeEventListener("orientationchange", syncTabletLikeViewport);
     };
   }, []);
+
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const syncLandscapeBlocked = () => {
+      setLandscapeBlocked(shouldBlockDrawingForLandscape(effectiveVariant));
+    };
+
+    syncLandscapeBlocked();
+    window.addEventListener("resize", syncLandscapeBlocked);
+    window.addEventListener("orientationchange", syncLandscapeBlocked);
+    return () => {
+      window.removeEventListener("resize", syncLandscapeBlocked);
+      window.removeEventListener("orientationchange", syncLandscapeBlocked);
+    };
+  }, [effectiveVariant]);
 
 
   useEffect(() => {
@@ -793,6 +818,7 @@ export default function WorkOrderDrawingModal({
   };
 
   const handlePointerMove = (event: PointerEvent<HTMLCanvasElement>) => {
+    if (drawingInputDisabled) return;
     updateEraserCursor(event);
     if (isShapeTool(tool)) {
       drawShapePreview(event);
@@ -803,7 +829,7 @@ export default function WorkOrderDrawingModal({
 
   const handlePointerDown = (event: PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || drawingInputDisabled) return;
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
     strokeDirtyRef.current = false;
@@ -831,6 +857,11 @@ export default function WorkOrderDrawingModal({
 
   const stopDrawing = (event: PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
+    if (drawingInputDisabled) {
+      drawingRef.current = false;
+      hideEraserCursor();
+      return;
+    }
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
@@ -855,7 +886,7 @@ export default function WorkOrderDrawingModal({
 
   const handleUndo = () => {
     const canvas = canvasRef.current;
-    if (!canvas || historyIndexRef.current <= 0) return;
+    if (!canvas || toolbarDisabled || historyIndexRef.current <= 0) return;
     const nextIndex = historyIndexRef.current - 1;
     const snapshot = historyRef.current[nextIndex];
     if (!snapshot) return;
@@ -867,7 +898,7 @@ export default function WorkOrderDrawingModal({
 
   const handleRedo = () => {
     const canvas = canvasRef.current;
-    if (!canvas || historyIndexRef.current >= historyRef.current.length - 1) return;
+    if (!canvas || toolbarDisabled || historyIndexRef.current >= historyRef.current.length - 1) return;
     const nextIndex = historyIndexRef.current + 1;
     const snapshot = historyRef.current[nextIndex];
     if (!snapshot) return;
@@ -879,7 +910,7 @@ export default function WorkOrderDrawingModal({
 
   const handleClear = () => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || toolbarDisabled) return;
     drawBlankCanvas(canvas);
     pushHistorySnapshot();
     clearDrawingDraftSnapshot();
@@ -889,7 +920,7 @@ export default function WorkOrderDrawingModal({
 
   const handleSave = () => {
     const canvas = canvasRef.current;
-    if (!canvas || saving || !dirty) return;
+    if (!canvas || toolbarDisabled || saving || !dirty) return;
     setSaving(true);
     canvas.toBlob((blob) => {
       if (!blob) {
@@ -908,13 +939,14 @@ export default function WorkOrderDrawingModal({
   };
 
   const handleToolSelect = (nextTool: DrawingTool) => {
+    if (toolbarDisabled) return;
     setTool(nextTool);
     setActivePopover(null);
     hideEraserCursor();
   };
 
   const toggleLineStyle = () => {
-    if (!shapeToolSelected) return;
+    if (toolbarDisabled || !shapeToolSelected) return;
     closeToolPopovers();
     setLineStyle((current) => (current === "solid" ? "dashed" : "solid"));
   };
@@ -947,7 +979,7 @@ export default function WorkOrderDrawingModal({
               width={canvasSize.width}
               height={canvasSize.height}
               className={`block h-full w-full touch-none select-none bg-white ${
-                tool === "eraser" ? "cursor-none" : "cursor-crosshair"
+                landscapeBlocked ? "pointer-events-none cursor-not-allowed" : tool === "eraser" ? "cursor-none" : "cursor-crosshair"
               }`}
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
@@ -962,7 +994,15 @@ export default function WorkOrderDrawingModal({
               }}
               aria-label={ui.canvasAria}
             />
-            {tool === "eraser" && eraserCursor.visible ? (
+            {landscapeBlocked ? (
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-[var(--pbp-surface)]/92 px-5 text-center backdrop-blur-sm">
+                <div className="max-w-xs rounded-3xl border border-[var(--pbp-warning)] bg-[var(--pbp-warning-soft)] px-5 py-4 text-[var(--pbp-warning-text)] shadow-xl">
+                  <div className="text-sm font-bold">{ui.landscapeBlockedTitle}</div>
+                  <div className="mt-2 text-xs font-semibold leading-5">{ui.landscapeBlockedMessage}</div>
+                </div>
+              </div>
+            ) : null}
+            {tool === "eraser" && eraserCursor.visible && !landscapeBlocked ? (
               <div
                 className="pointer-events-none absolute rounded-full border border-[var(--pbp-danger)] bg-[var(--pbp-danger-soft)]/35 shadow-sm"
                 style={{
@@ -993,7 +1033,8 @@ export default function WorkOrderDrawingModal({
                   key={toolId}
                   type="button"
                   onClick={() => handleToolSelect(toolId)}
-                  className={getToolButtonClass(tool === toolId)}
+                  disabled={toolbarDisabled}
+                  className={getToolButtonClass(tool === toolId, toolbarDisabled)}
                   aria-label={label}
                   title={label}
                   aria-pressed={tool === toolId}
@@ -1007,9 +1048,9 @@ export default function WorkOrderDrawingModal({
               <div className="relative">
                 <button
                   type="button"
-                  onClick={() => colorEnabled && togglePopover("color")}
-                  disabled={!colorEnabled}
-                  className={getToolButtonClass(activePopover === "color", !colorEnabled)}
+                  onClick={() => colorEnabled && !toolbarDisabled && togglePopover("color")}
+                  disabled={!colorEnabled || toolbarDisabled}
+                  className={getToolButtonClass(activePopover === "color", !colorEnabled || toolbarDisabled)}
                   aria-label={ui.colorGroupAria}
                   title={ui.colorGroupAria}
                   aria-expanded={activePopover === "color"}
@@ -1020,7 +1061,7 @@ export default function WorkOrderDrawingModal({
                     aria-hidden="true"
                   />
                 </button>
-                {activePopover === "color" && colorEnabled ? (
+                {activePopover === "color" && colorEnabled && !toolbarDisabled ? (
                   <div className={`${PICKER_PANEL_CLASS} flex gap-1.5`} aria-label={ui.colorGroupAria}>
                     {DRAWING_COLORS.map((color) => (
                       <button
@@ -1048,16 +1089,16 @@ export default function WorkOrderDrawingModal({
               <div className="relative">
                 <button
                   type="button"
-                  onClick={() => togglePopover("strokeSize")}
-                  disabled={false}
-                  className={getToolButtonClass(activePopover === "strokeSize")}
+                  onClick={() => !toolbarDisabled && togglePopover("strokeSize")}
+                  disabled={toolbarDisabled}
+                  className={getToolButtonClass(activePopover === "strokeSize", toolbarDisabled)}
                   aria-label={strokeSizeControlLabel}
                   title={strokeSizeControlLabel}
                   aria-expanded={activePopover === "strokeSize"}
                 >
                   <DrawingIcon name="stroke" />
                 </button>
-                {activePopover === "strokeSize" ? (
+                {activePopover === "strokeSize" && !toolbarDisabled ? (
                   <div className={`${PICKER_PANEL_CLASS} grid w-36 gap-1.5`} aria-label={strokeSizeControlLabel}>
                     {DRAWING_STROKE_SIZES.map((size) => (
                       <button
@@ -1085,8 +1126,8 @@ export default function WorkOrderDrawingModal({
               <button
                 type="button"
                 onClick={toggleLineStyle}
-                disabled={!shapeToolSelected}
-                className={getToolButtonClass(shapeToolSelected && lineStyle === "dashed", !shapeToolSelected)}
+                disabled={!shapeToolSelected || toolbarDisabled}
+                className={getToolButtonClass(shapeToolSelected && lineStyle === "dashed", !shapeToolSelected || toolbarDisabled)}
                 aria-label={ui.lineStyleToggleAria}
                 title={shapeToolSelected ? (ui.lineStyleLabels[selectedLineStyleId] ?? selectedLineStyleId) : ui.lineStyleDisabledLabel}
                 aria-pressed={lineStyle === "dashed"}
@@ -1128,7 +1169,8 @@ export default function WorkOrderDrawingModal({
               <button
                 type="button"
                 onClick={handleClear}
-                className="pbp-interactive-button pbp-action-secondary inline-flex h-10 items-center justify-center gap-2 rounded-full px-3 text-xs font-semibold"
+                disabled={toolbarDisabled}
+                className="pbp-interactive-button pbp-action-secondary inline-flex h-10 items-center justify-center gap-2 rounded-full px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <DrawingIcon name="trash" />
                 <span>{ui.clear}</span>
@@ -1136,7 +1178,7 @@ export default function WorkOrderDrawingModal({
               <button
                 type="button"
                 onClick={handleSave}
-                disabled={saving || !dirty}
+                disabled={toolbarDisabled || saving || !dirty}
                 className="pbp-interactive-button pbp-action-primary inline-flex h-10 items-center justify-center gap-2 rounded-full px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <DrawingIcon name="save" />
