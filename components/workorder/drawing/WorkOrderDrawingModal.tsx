@@ -53,6 +53,7 @@ type DrawingPoint = {
 
 const DRAWING_MIME_TYPE = "image/png";
 const DRAWING_FILE_EXTENSION = "png";
+const DRAWING_DRAFT_STORAGE_KEY = "peacebypiece.workorder.designDrawingDraft";
 const DEFAULT_CANVAS_WIDTH = 1280;
 const DEFAULT_CANVAS_HEIGHT = 900;
 const MOBILE_CANVAS_WIDTH = 900;
@@ -229,6 +230,21 @@ function createDrawingFileName() {
   return `workorder-drawing-${stamp}.${DRAWING_FILE_EXTENSION}`;
 }
 
+function readDrawingDraftSnapshot() {
+  if (typeof window === "undefined") return "";
+  return window.sessionStorage.getItem(DRAWING_DRAFT_STORAGE_KEY) ?? "";
+}
+
+function writeDrawingDraftSnapshot(snapshot: string) {
+  if (typeof window === "undefined" || !snapshot) return;
+  window.sessionStorage.setItem(DRAWING_DRAFT_STORAGE_KEY, snapshot);
+}
+
+function clearDrawingDraftSnapshot() {
+  if (typeof window === "undefined") return;
+  window.sessionStorage.removeItem(DRAWING_DRAFT_STORAGE_KEY);
+}
+
 function drawBlankCanvas(canvas: HTMLCanvasElement) {
   const context = canvas.getContext("2d");
   if (!context) return;
@@ -396,6 +412,8 @@ export default function WorkOrderDrawingModal({
   const historyRef = useRef<string[]>([]);
   const historyIndexRef = useRef(0);
   const blankSnapshotRef = useRef("");
+  const dirtyRef = useRef(false);
+  const suppressDraftPersistRef = useRef(false);
   const [tool, setTool] = useState<DrawingTool>("pen");
   const [strokeColor, setStrokeColor] = useState(DRAWING_COLORS[0]?.value ?? "#111827");
   const [strokeSize, setStrokeSize] = useState(variant === "mobile" ? 6 : 3);
@@ -436,6 +454,8 @@ export default function WorkOrderDrawingModal({
     setActivePopover((current) => (current === nextPopover ? null : nextPopover));
   };
   const closeModalAndReleaseHistoryGuard = () => {
+    suppressDraftPersistRef.current = true;
+    clearDrawingDraftSnapshot();
     historyGuardActiveRef.current = false;
     if (
       typeof window !== "undefined" &&
@@ -495,6 +515,20 @@ export default function WorkOrderDrawingModal({
   };
 
   useEffect(() => {
+    dirtyRef.current = dirty;
+  }, [dirty]);
+
+  useEffect(() => {
+    if (!open) return;
+    suppressDraftPersistRef.current = false;
+    return () => {
+      const canvas = canvasRef.current;
+      if (!canvas || suppressDraftPersistRef.current || !dirtyRef.current) return;
+      writeDrawingDraftSnapshot(canvas.toDataURL(DRAWING_MIME_TYPE));
+    };
+  }, [open]);
+
+  useEffect(() => {
     if (!open) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -502,11 +536,13 @@ export default function WorkOrderDrawingModal({
     canvas.height = canvasSize.height;
     drawBlankCanvas(canvas);
     const blankSnapshot = canvas.toDataURL(DRAWING_MIME_TYPE);
+    const draftSnapshot = readDrawingDraftSnapshot();
     blankSnapshotRef.current = blankSnapshot;
     historyRef.current = [blankSnapshot];
     historyIndexRef.current = 0;
     setHistoryIndex(0);
     setDirty(false);
+    dirtyRef.current = false;
     setSaving(false);
     drawingRef.current = false;
     strokeDirtyRef.current = false;
@@ -521,6 +557,12 @@ export default function WorkOrderDrawingModal({
     setCloseConfirmVisible(false);
     setNavigationGuardVisible(false);
     hideEraserCursor();
+    if (draftSnapshot && draftSnapshot !== blankSnapshot) {
+      restoreCanvasSnapshot(canvas, draftSnapshot, () => {
+        historyRef.current = [blankSnapshot, draftSnapshot];
+        syncHistoryState(1);
+      });
+    }
   }, [canvasSize.height, canvasSize.width, isMobile, open]);
 
   useEffect(() => {
@@ -699,9 +741,12 @@ export default function WorkOrderDrawingModal({
         return;
       }
       const file = new File([blob], createDrawingFileName(), { type: DRAWING_MIME_TYPE });
+      suppressDraftPersistRef.current = true;
+      clearDrawingDraftSnapshot();
       onSaveDrawing(file);
       setSaving(false);
       setDirty(false);
+      dirtyRef.current = false;
       closeModalAndReleaseHistoryGuard();
     }, DRAWING_MIME_TYPE);
   };
@@ -724,13 +769,13 @@ export default function WorkOrderDrawingModal({
       title={ui.title}
       onClose={requestClose}
       maxWidthClass="!max-w-none md:!max-w-none"
-      bodyClassName="flex min-h-0 flex-1 flex-col !overflow-hidden !px-2 !py-2 md:!px-3 md:!py-3"
+      bodyClassName="flex min-h-0 flex-1 flex-col !overflow-hidden !px-1.5 !py-1.5 md:!px-2 md:!py-2"
       panelClassName="!inset-0 !h-[100dvh] !max-h-[100dvh] !w-screen !max-w-none !translate-x-0 !translate-y-0 !rounded-none !border-0 md:!left-0 md:!top-0 md:!bottom-0 md:!h-[100dvh] md:!max-h-[100dvh] md:!w-screen md:!max-w-none md:!translate-x-0 md:!translate-y-0 md:!rounded-none md:!border-0"
       overlayClassName="bg-[var(--pbp-bg)]"
       closeOnBackdrop={false}
     >
-      <div className="flex h-full min-h-0 flex-col gap-2">
-        <div className="relative flex min-h-0 flex-1 overflow-hidden rounded-3xl border bg-[var(--pbp-surface-muted)] p-2 shadow-inner sm:p-3">
+      <div className="flex h-full min-h-0 flex-col gap-1.5">
+        <div className="relative flex min-h-0 flex-1 overflow-hidden rounded-3xl border bg-[var(--pbp-surface-muted)] p-1.5 shadow-inner sm:p-2">
           <div
             ref={canvasContainerRef}
             className={`relative min-h-0 flex-1 overflow-hidden rounded-2xl border border-[var(--pbp-border)] bg-white shadow-sm ${
@@ -769,8 +814,8 @@ export default function WorkOrderDrawingModal({
           </div>
         </div>
 
-        <div className="shrink-0 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-2 shadow-sm">
-          <div className="flex flex-wrap items-center justify-center gap-2">
+        <div className="shrink-0 rounded-3xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-1.5 shadow-sm sm:p-2">
+          <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
             <div className={TOOLBAR_GROUP_CLASS} aria-label={ui.toolGroupAria}>
               {([
                 ["pen", ui.pen, "pen"],
