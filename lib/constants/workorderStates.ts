@@ -168,33 +168,33 @@ export const WORKFLOW_STATE_TO_STAGE: Record<WorkflowStateValue, DisplayStageVal
 };
 
 export const WORKFLOW_STATE_BADGE_TONE: Record<WorkflowStateValue | DisplayStageValue, string> = {
-  draft: "bg-stone-100 text-stone-700",
-  review_requested: "bg-violet-100 text-violet-700",
-  review_completed: "bg-fuchsia-100 text-fuchsia-700",
-  request_order: "bg-amber-100 text-amber-700",
-  inspection: "bg-emerald-100 text-emerald-700",
-  completed: "bg-stone-900 text-white",
-  rejected: "bg-rose-100 text-rose-700",
+  draft: "bg-[var(--pbp-workorder-status-draft-bg)] text-[var(--pbp-workorder-status-draft-text)]",
+  review_requested: "bg-[var(--pbp-workorder-status-review-requested-bg)] text-[var(--pbp-workorder-status-review-requested-text)]",
+  review_completed: "bg-[var(--pbp-workorder-status-review-completed-bg)] text-[var(--pbp-workorder-status-review-completed-text)]",
+  request_order: "bg-[var(--pbp-workorder-status-request-order-bg)] text-[var(--pbp-workorder-status-request-order-text)]",
+  inspection: "bg-[var(--pbp-workorder-status-inspection-bg)] text-[var(--pbp-workorder-status-inspection-text)]",
+  completed: "bg-[var(--pbp-workorder-status-completed-bg)] text-[var(--pbp-workorder-status-completed-text)]",
+  rejected: "bg-[var(--pbp-workorder-status-rejected-bg)] text-[var(--pbp-workorder-status-rejected-text)]",
 };
 
 export const WORKFLOW_STATE_DOT_TONE: Record<WorkflowStateValue | DisplayStageValue, string> = {
-  draft: "bg-stone-500",
-  review_requested: "bg-violet-500",
-  review_completed: "bg-fuchsia-500",
-  request_order: "bg-amber-500",
-  inspection: "bg-emerald-500",
-  completed: "bg-white",
-  rejected: "bg-rose-500",
+  draft: "bg-[var(--pbp-workorder-status-draft-dot)]",
+  review_requested: "bg-[var(--pbp-workorder-status-review-requested-dot)]",
+  review_completed: "bg-[var(--pbp-workorder-status-review-completed-dot)]",
+  request_order: "bg-[var(--pbp-workorder-status-request-order-dot)]",
+  inspection: "bg-[var(--pbp-workorder-status-inspection-dot)]",
+  completed: "bg-[var(--pbp-workorder-status-completed-dot)]",
+  rejected: "bg-[var(--pbp-workorder-status-rejected-dot)]",
 };
 
 export const WORKFLOW_STATE_TEXT_TONE: Record<WorkflowStateValue | DisplayStageValue, string> = {
-  draft: "text-stone-700",
-  review_requested: "text-violet-700",
-  review_completed: "text-fuchsia-700",
-  request_order: "text-amber-700",
-  inspection: "text-emerald-700",
-  completed: "text-stone-900",
-  rejected: "text-rose-700",
+  draft: "text-[var(--pbp-workorder-status-draft-text)]",
+  review_requested: "text-[var(--pbp-workorder-status-review-requested-text)]",
+  review_completed: "text-[var(--pbp-workorder-status-review-completed-text)]",
+  request_order: "text-[var(--pbp-workorder-status-request-order-text)]",
+  inspection: "text-[var(--pbp-workorder-status-inspection-text)]",
+  completed: "text-[var(--pbp-workorder-status-completed-bg)]",
+  rejected: "text-[var(--pbp-workorder-status-rejected-text)]",
 };
 
 export const MANAGER_ASSIGNABLE_STATES = ["draft", "rejected", "review_requested"] as const;

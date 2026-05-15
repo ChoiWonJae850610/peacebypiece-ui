@@ -5,7 +5,7 @@ import type { DisplayStage } from "@/types/workflow";
 import type { WorkflowAction } from "@/types/workorder";
 
 function getStageStepFillTone(stage: DisplayStage) {
-  return stage === "completed" ? "bg-stone-900" : getStageDotTone(stage);
+  return stage === "completed" ? "bg-[var(--pbp-workorder-status-completed-bg)]" : getStageDotTone(stage);
 }
 
 function getProcessingLabel(label: string, format: string) {

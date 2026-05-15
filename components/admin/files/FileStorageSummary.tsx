@@ -17,6 +17,7 @@ import type {
 } from "@/lib/admin/files/types";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 import { translateAdminFileTypeTerm } from "@/lib/i18n/adminTermFormatters";
+import { getAdminChartColor } from "@/lib/admin/chartPalette";
 import {
   buildFileStatusItems,
   formatCountWithUnit,
@@ -224,15 +225,7 @@ function DonutChart({
                       strokeDasharray={strokeDasharray}
                       strokeDashoffset={strokeDashoffset}
                       strokeLinecap="butt"
-                      className={
-                        index === 0
-                          ? "text-[var(--admin-theme-surface)]"
-                          : index === 1
-                            ? "text-[var(--pbp-text-muted)]"
-                            : index === 2
-                              ? "text-[var(--pbp-border-strong)]"
-                              : "text-[var(--pbp-border)]"
-                      }
+                      style={{ color: getAdminChartColor(index) }}
                     />
                   );
                 })
@@ -249,7 +242,8 @@ function DonutChart({
               <div className="flex items-center justify-between gap-2 text-xs">
                 <span className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} flex min-w-0 items-center gap-2 font-semibold`}>
                   <span
-                    className={`h-2 w-2 shrink-0 rounded-full ${index === 0 ? "bg-[var(--admin-theme-surface)]" : index === 1 ? "bg-[var(--pbp-text-muted)]" : index === 2 ? "bg-[var(--pbp-border-strong)]" : "bg-[var(--pbp-border)]"}`}
+                    className="h-2 w-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: getAdminChartColor(index) }}
                   />
                   <span className="truncate" title={item.label}>{item.label}</span>
                 </span>
@@ -259,8 +253,8 @@ function DonutChart({
               </div>
               <div className="mt-1 h-1.5 max-w-[360px] overflow-hidden rounded-full bg-[var(--pbp-surface-muted)]">
                 <div
-                  className={index === 0 ? "h-full rounded-full bg-[var(--admin-theme-surface)]" : index === 1 ? "h-full rounded-full bg-[var(--pbp-text-muted)]" : "h-full rounded-full bg-[var(--pbp-border-strong)]"}
-                  style={{ width: `${Math.max(2, item.percent)}%` }}
+                  className="h-full rounded-full"
+                  style={{ width: `${Math.max(2, item.percent)}%`, backgroundColor: getAdminChartColor(index) }}
                 />
               </div>
             </div>
