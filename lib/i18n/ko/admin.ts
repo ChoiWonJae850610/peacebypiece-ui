@@ -499,9 +499,9 @@ export const adminKo = {
     header: {
       eyebrow: "",
       title: "협력업체 관리",
-      description: "공장, 원단, 부자재, 외주 업체를 한 화면에서 관리합니다. 행을 선택하면 바로 수정할 수 있고 외주 공정은 별도 기준정보로 유지합니다.",
+      description: "협력업체와 원단·부자재 거래처를 한 화면에서 관리합니다. 행을 선택하면 수정 모달이 열립니다.",
       manageProcesses: "외주 공정 관리",
-      createPartner: "업체추가",
+      createPartner: "업체 추가",
     },
     typeLabels: {
       all: "전체",
@@ -509,6 +509,30 @@ export const adminKo = {
       material_vendor: "원단",
       subsidiary_vendor: "부자재",
       outsourcing_vendor: "외주",
+    },
+    summaryCards: {
+      ariaLabel: "협력업체 요약",
+      total: {
+        label: "전체 업체",
+        helper: "등록된 협력업체",
+        filteredHelper: "전체 {total}개 중 현재 조건",
+      },
+      active: {
+        label: "사용중",
+        helper: "미사용 {inactive}개",
+      },
+      factory: {
+        label: "공장",
+        helper: "생산 발주 대상",
+      },
+      materials: {
+        label: "원단·부자재",
+        helper: "원단 {fabric} · 부자재 {subsidiary}",
+      },
+      outsourcing: {
+        label: "외주",
+        helper: "연결 공정 {processes}개",
+      },
     },
     filters: {
       searchLabel: "검색",

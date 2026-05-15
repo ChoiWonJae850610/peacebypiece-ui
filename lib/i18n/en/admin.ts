@@ -556,9 +556,9 @@ export const adminEn = {
     header: {
       eyebrow: "",
       title: "Partner / Factory Management",
-      description: "Manage factories, fabric vendors, and subsidiary vendors in one partner master, while outsourcing availability and supported processes stay separate attributes.",
+      description: "Manage partners, fabric vendors, and material vendors in one screen. Select a row to edit details.",
       manageProcesses: "Manage Outsourcing Processes",
-      createPartner: "Add Partner / Factory",
+      createPartner: "Add partner",
     },
     typeLabels: {
       all: "All",
@@ -566,6 +566,30 @@ export const adminEn = {
       material_vendor: "Fabric",
       subsidiary_vendor: "Subsidiary",
       outsourcing_vendor: "Outsourcing",
+    },
+    summaryCards: {
+      ariaLabel: "Partner summary",
+      total: {
+        label: "Total partners",
+        helper: "Registered partners",
+        filteredHelper: "Current filter of {total} total",
+      },
+      active: {
+        label: "Active",
+        helper: "Inactive {inactive}",
+      },
+      factory: {
+        label: "Factories",
+        helper: "Production vendors",
+      },
+      materials: {
+        label: "Fabric & materials",
+        helper: "Fabric {fabric} · subsidiary {subsidiary}",
+      },
+      outsourcing: {
+        label: "Outsourcing",
+        helper: "Linked processes {processes}",
+      },
     },
     filters: {
       searchLabel: "Search",

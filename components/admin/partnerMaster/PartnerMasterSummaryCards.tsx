@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n";
 import type { PartnerSummaryViewModel } from "@/lib/admin/partner";
 
 type PartnerMasterSummaryCardsProps = {
@@ -10,14 +11,21 @@ type PartnerMasterSummaryCardsProps = {
 };
 
 type SummaryCard = {
+  key: "total" | "active" | "factory" | "materials" | "outsourcing";
   label: string;
   value: number;
   helper: string;
-  tone: string;
 };
 
 function formatCount(value: number) {
   return value.toLocaleString("ko-KR");
+}
+
+function formatMessage(template: string, values: Record<string, number>) {
+  return Object.entries(values).reduce(
+    (message, [key, value]) => message.replaceAll(`{${key}}`, formatCount(value)),
+    template,
+  );
 }
 
 export default function PartnerMasterSummaryCards({
@@ -26,48 +34,60 @@ export default function PartnerMasterSummaryCards({
   hasFilter,
   className = "mt-3",
 }: PartnerMasterSummaryCardsProps) {
+  const { i18n } = useI18n();
+  const summaryText = i18n.admin.partnerMaster.summaryCards;
   const source = hasFilter ? filteredSummary : summary;
   const cards: SummaryCard[] = [
     {
-      label: "전체 업체",
+      key: "total",
+      label: summaryText.total.label,
       value: source.total,
-      helper: hasFilter ? `전체 ${formatCount(summary.total)}개 중 현재 조건` : "등록된 협력업체",
-      tone: "border-stone-200 bg-white",
+      helper: hasFilter
+        ? formatMessage(summaryText.total.filteredHelper, { total: summary.total })
+        : summaryText.total.helper,
     },
     {
-      label: "사용중",
+      key: "active",
+      label: summaryText.active.label,
       value: source.active,
-      helper: `미사용 ${formatCount(source.inactive)}개`,
-      tone: "border-teal-100 bg-teal-50/70",
+      helper: formatMessage(summaryText.active.helper, { inactive: source.inactive }),
     },
     {
-      label: "공장",
+      key: "factory",
+      label: summaryText.factory.label,
       value: source.typeCounts.factory,
-      helper: "생산 발주 대상",
-      tone: "border-sky-100 bg-sky-50/70",
+      helper: summaryText.factory.helper,
     },
     {
-      label: "원단/부자재",
+      key: "materials",
+      label: summaryText.materials.label,
       value: source.typeCounts.material_vendor + source.typeCounts.subsidiary_vendor,
-      helper: `원단 ${formatCount(source.typeCounts.material_vendor)} · 부자재 ${formatCount(source.typeCounts.subsidiary_vendor)}`,
-      tone: "border-emerald-100 bg-emerald-50/70",
+      helper: formatMessage(summaryText.materials.helper, {
+        fabric: source.typeCounts.material_vendor,
+        subsidiary: source.typeCounts.subsidiary_vendor,
+      }),
     },
     {
-      label: "외주",
+      key: "outsourcing",
+      label: summaryText.outsourcing.label,
       value: source.typeCounts.outsourcing_vendor,
-      helper: `연결 공정 ${formatCount(source.outsourcingProcessCount)}개`,
-      tone: "border-violet-100 bg-violet-50/70",
+      helper: formatMessage(summaryText.outsourcing.helper, { processes: source.outsourcingProcessCount }),
     },
   ];
 
   return (
-    <section className={`${className} shrink-0`} aria-label="협력업체 요약">
+    <section className={`${className} shrink-0`} aria-label={summaryText.ariaLabel}>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
         {cards.map((card) => (
-          <article key={card.label} className={`rounded-3xl border px-4 py-3 shadow-sm ${card.tone}`}>
-            <p className="text-xs font-semibold text-stone-500">{card.label}</p>
-            <p className="mt-1 text-2xl font-semibold tracking-tight text-stone-950">{formatCount(card.value)}</p>
-            <p className="mt-1 text-xs leading-5 text-stone-500">{card.helper}</p>
+          <article
+            key={card.key}
+            className="rounded-3xl border border-[var(--admin-theme-border)] bg-[var(--admin-theme-surface)] px-4 py-3 shadow-sm transition-colors"
+          >
+            <p className="text-xs font-semibold text-[var(--pbp-text-muted)]">{card.label}</p>
+            <p className="mt-1 text-2xl font-semibold tracking-tight text-[var(--pbp-text-strong)]">
+              {formatCount(card.value)}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">{card.helper}</p>
           </article>
         ))}
       </div>

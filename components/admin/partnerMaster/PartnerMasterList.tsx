@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo, useState, type ReactNode } from "react";
+
 import { AdminStatusBadge } from "@/components/admin/common/AdminStatusBadge";
 import AdminTable from "@/components/admin/common/AdminTable";
 import type { PartnerListItemViewModel } from "@/lib/admin/partner";
@@ -12,45 +14,133 @@ type PartnerMasterListProps = {
   className?: string;
 };
 
+type PartnerSortKey = "name" | "contact" | "phone" | "email" | "type" | "status";
+type PartnerSortDirection = "asc" | "desc";
+type PartnerSortState = {
+  key: PartnerSortKey;
+  direction: PartnerSortDirection;
+};
+
+type SortableHeaderProps = {
+  label: string;
+  sortKey: PartnerSortKey;
+  activeSort: PartnerSortState;
+  onSort: (sortKey: PartnerSortKey) => void;
+};
+
 const PARTNER_TABLE_GRID = "minmax(0,1.18fr) minmax(0,0.72fr) minmax(0,0.82fr) minmax(0,1.02fr) minmax(0,1.08fr) 84px";
+const PARTNER_SORT_KEYS = new Set<PartnerSortKey>(["name", "contact", "phone", "email", "type", "status"]);
+
+function normalizeSortValue(value: string) {
+  return value.trim().toLocaleLowerCase("ko-KR");
+}
+
+function getPartnerSortValue(item: PartnerListItemViewModel, key: PartnerSortKey) {
+  switch (key) {
+    case "name":
+      return item.name;
+    case "contact":
+      return item.contactName;
+    case "phone":
+      return item.phone;
+    case "email":
+      return item.email;
+    case "type":
+      return item.typeDisplayLabel;
+    case "status":
+      return item.isActive ? "1" : "0";
+    default:
+      return "";
+  }
+}
+
+function sortPartnerItems(items: PartnerListItemViewModel[], sort: PartnerSortState) {
+  return [...items].sort((a, b) => {
+    const left = normalizeSortValue(getPartnerSortValue(a, sort.key));
+    const right = normalizeSortValue(getPartnerSortValue(b, sort.key));
+    const result = left.localeCompare(right, "ko-KR", { numeric: true, sensitivity: "base" });
+    return sort.direction === "asc" ? result : -result;
+  });
+}
+
+function toggleSort(current: PartnerSortState, nextKey: PartnerSortKey): PartnerSortState {
+  if (current.key !== nextKey) {
+    return { key: nextKey, direction: "asc" };
+  }
+
+  return { key: nextKey, direction: current.direction === "asc" ? "desc" : "asc" };
+}
+
+function SortableHeader({ label, sortKey, activeSort, onSort }: SortableHeaderProps) {
+  const isActive = activeSort.key === sortKey;
+  const marker = isActive ? (activeSort.direction === "asc" ? "↑" : "↓") : "↕";
+
+  return (
+    <button
+      type="button"
+      onClick={() => onSort(sortKey)}
+      className="inline-flex max-w-full items-center gap-1 rounded-full px-1.5 py-1 text-left transition hover:bg-[var(--admin-theme-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-theme-ring)]"
+      aria-sort={isActive ? (activeSort.direction === "asc" ? "ascending" : "descending") : "none"}
+    >
+      <span className="truncate">{label}</span>
+      <span className={isActive ? "text-[var(--admin-theme-primary)]" : "text-[var(--pbp-text-muted)]"} aria-hidden="true">
+        {marker}
+      </span>
+    </button>
+  );
+}
 
 export default function PartnerMasterList({ items, isLoading = false, onEditPartner, className = "mt-5" }: PartnerMasterListProps) {
   const { i18n } = useI18n();
   const listText = i18n.admin.partnerMaster.list;
+  const [sortState, setSortState] = useState<PartnerSortState>({ key: "name", direction: "asc" });
+  const sortedItems = useMemo(() => sortPartnerItems(items, sortState), [items, sortState]);
+
+  const handleSort = (sortKey: PartnerSortKey) => {
+    setSortState((current) => toggleSort(current, sortKey));
+  };
+
+  const buildHeader = (key: PartnerSortKey, label: string): ReactNode => {
+    if (!PARTNER_SORT_KEYS.has(key)) return label;
+    return <SortableHeader label={label} sortKey={key} activeSort={sortState} onSort={handleSort} />;
+  };
 
   return (
     <AdminTable
       className={`${className} rounded-[28px] bg-white shadow-sm`}
-      items={items}
+      items={sortedItems}
       isLoading={isLoading}
       loadingLabel={listText.loading}
       emptyLabel={listText.empty}
       getRowKey={(item) => item.id}
       gridTemplateColumns={PARTNER_TABLE_GRID}
-      rowClassName={(item) => ["px-4 py-3 md:gap-3 transition hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-theme-ring)]", item.isActive ? "bg-white" : "bg-stone-50/80"].join(" ")}
+      rowClassName={(item) => [
+        "px-4 py-3 md:gap-3 transition hover:bg-[var(--admin-theme-soft)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-theme-ring)]",
+        item.isActive ? "bg-white" : "bg-[var(--pbp-surface-muted)]",
+      ].join(" ")}
       onRowClick={(item) => onEditPartner(item.id)}
       columns={[
         {
           key: "name",
-          label: listText.columns.name,
+          label: buildHeader("name", listText.columns.name),
           render: (item) => (
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <p className="min-w-0 max-w-full truncate text-sm font-semibold text-stone-900 md:text-base" title={item.name}>{item.name}</p>
+                <p className="min-w-0 max-w-full truncate text-sm font-semibold text-[var(--pbp-text-strong)] md:text-base" title={item.name}>{item.name}</p>
                 {!item.isActive ? (
                   <AdminStatusBadge tone="neutral" size="xs">{listText.inactiveBadge}</AdminStatusBadge>
                 ) : null}
               </div>
-              {item.memo ? <p className="mt-1 truncate text-xs text-stone-500">{item.memo}</p> : null}
+              {item.memo ? <p className="mt-1 truncate text-xs text-[var(--pbp-text-muted)]">{item.memo}</p> : null}
             </div>
           ),
         },
-        { key: "contact", label: listText.columns.contact, className: "min-w-0", render: (item) => <p className="min-w-0 truncate text-sm text-stone-600" title={item.contactName}>{item.contactName}</p> },
-        { key: "phone", label: listText.columns.phone, className: "min-w-0", render: (item) => <p className="min-w-0 truncate text-sm text-stone-600" title={item.phone}>{item.phone}</p> },
-        { key: "email", label: listText.columns.email, className: "min-w-0", render: (item) => <p className="min-w-0 truncate text-sm text-stone-600" title={item.email}>{item.email}</p> },
+        { key: "contact", label: buildHeader("contact", listText.columns.contact), className: "min-w-0", render: (item) => <p className="min-w-0 truncate text-sm text-[var(--pbp-text-muted)]" title={item.contactName}>{item.contactName}</p> },
+        { key: "phone", label: buildHeader("phone", listText.columns.phone), className: "min-w-0", render: (item) => <p className="min-w-0 truncate text-sm text-[var(--pbp-text-muted)]" title={item.phone}>{item.phone}</p> },
+        { key: "email", label: buildHeader("email", listText.columns.email), className: "min-w-0", render: (item) => <p className="min-w-0 truncate text-sm text-[var(--pbp-text-muted)]" title={item.email}>{item.email}</p> },
         {
           key: "type",
-          label: listText.columns.type,
+          label: buildHeader("type", listText.columns.type),
           render: (item) => (
             <div className="min-w-0 space-y-1.5" aria-label={item.typeDisplayLabel || listText.typeMissing}>
               <div className="flex min-h-7 flex-wrap items-center gap-1.5">
@@ -61,11 +151,11 @@ export default function PartnerMasterList({ items, isLoading = false, onEditPart
                     </AdminStatusBadge>
                   ))
                 ) : (
-                  <span className="text-xs text-stone-400">{listText.noBaseType}</span>
+                  <span className="text-xs text-[var(--pbp-text-muted)]">{listText.noBaseType}</span>
                 )}
               </div>
               {item.hasOutsourcingProcesses ? (
-                <div className="max-w-full rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium leading-5 text-slate-600">
+                <div className="max-w-full rounded-xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-2.5 py-1 text-xs font-medium leading-5 text-[var(--pbp-text-muted)]">
                   <span className="block max-w-[160px] truncate" title={item.outsourcingProcessLabel}>{item.outsourcingProcessLabel}</span>
                 </div>
               ) : null}
@@ -74,7 +164,7 @@ export default function PartnerMasterList({ items, isLoading = false, onEditPart
         },
         {
           key: "status",
-          label: listText.columns.status,
+          label: buildHeader("status", listText.columns.status),
           render: (item) => (
             <AdminStatusBadge tone={item.isActive ? "success" : "neutral"} size="sm">
               {item.isActive ? listText.active : listText.inactive}
