@@ -1,19 +1,20 @@
 Version :
-0.12.50
+0.12.51
 
 Summary :
-직접 그리기 iPad 화면 전환 시 모달 유지 보정
+iPad 전용 직접 그리기 editor 분리
 
 Description :
-직접 그리기 모달이 열린 상태에서 iPad 가로/세로 전환 시 editor variant가 다시 계산되어 모달 shell이 흔들리는 문제를 줄이도록, 모달 open 중에는 drawing editor variant를 고정했다. tablet 판정은 viewport 변화보다 screen 기준을 우선하도록 보정해 iPad Safari의 주소창/툴바 resize 영향을 줄였다.
+iPad Safari의 화면 회전 복귀 시 직접 그리기 모달 표시가 흔들리는 문제를 줄이기 위해 iPad 전용 editor를 추가했다. PC, Android tablet, mobile editor는 기존 파일을 유지하고, iPad에서만 안정화된 viewport 높이 기준을 사용하도록 분리했다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
 - components/workorder/drawing/WorkOrderDrawingModal.tsx
+- components/workorder/drawing/WorkOrderDrawingCanvasEditor.tsx
 - components/workorder/drawing/drawingDevicePolicy.ts
 
 추가 파일 목록 :
-없음
+- components/workorder/drawing/WorkOrderDrawingIpadEditor.tsx
 
 삭제 파일 목록 :
 없음

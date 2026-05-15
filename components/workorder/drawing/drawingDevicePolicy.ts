@@ -1,4 +1,5 @@
 export type DrawingDeviceVariant = "desktop" | "tablet" | "mobile";
+export type DrawingRuntimeEditorVariant = DrawingDeviceVariant | "ipad";
 
 export type DrawingCanvasSize = {
   width: number;
@@ -6,7 +7,7 @@ export type DrawingCanvasSize = {
 };
 
 export type DrawingDevicePolicy = {
-  variant: DrawingDeviceVariant;
+  variant: DrawingRuntimeEditorVariant;
   canvasSize: DrawingCanvasSize;
   blockLandscape: boolean;
   initialStrokeSize: number;
@@ -18,7 +19,7 @@ const TABLET_SHORT_EDGE_MIN = 700;
 const TABLET_SCREEN_SHORT_EDGE_MIN = 600;
 const TABLET_SCREEN_LONG_EDGE_MIN = 900;
 
-export const DRAWING_DEVICE_POLICIES: Record<DrawingDeviceVariant, DrawingDevicePolicy> = {
+export const DRAWING_DEVICE_POLICIES: Record<DrawingRuntimeEditorVariant, DrawingDevicePolicy> = {
   desktop: {
     variant: "desktop",
     canvasSize: DESKTOP_CANVAS_SIZE,
@@ -31,6 +32,12 @@ export const DRAWING_DEVICE_POLICIES: Record<DrawingDeviceVariant, DrawingDevice
     blockLandscape: true,
     initialStrokeSize: 3,
   },
+  ipad: {
+    variant: "ipad",
+    canvasSize: PORTRAIT_CANVAS_SIZE,
+    blockLandscape: true,
+    initialStrokeSize: 3,
+  },
   mobile: {
     variant: "mobile",
     canvasSize: PORTRAIT_CANVAS_SIZE,
@@ -39,7 +46,7 @@ export const DRAWING_DEVICE_POLICIES: Record<DrawingDeviceVariant, DrawingDevice
   },
 };
 
-export function resolveDrawingDevicePolicy(variant: DrawingDeviceVariant = "desktop") {
+export function resolveDrawingDevicePolicy(variant: DrawingRuntimeEditorVariant = "desktop") {
   return DRAWING_DEVICE_POLICIES[variant] ?? DRAWING_DEVICE_POLICIES.desktop;
 }
 
@@ -82,6 +89,16 @@ function hasTouchOnlyRuntime() {
   return hasTouchCapableRuntime();
 }
 
+export function isIpadDrawingRuntime() {
+  if (typeof navigator === "undefined") return false;
+  const userAgent = navigator.userAgent || "";
+  const platform = navigator.platform || "";
+  const maxTouchPoints = navigator.maxTouchPoints ?? 0;
+
+  if (/iPad/i.test(userAgent)) return true;
+  return /Mac/i.test(platform) && maxTouchPoints > 1;
+}
+
 function isTabletSizedRuntime() {
   const screenEdges = getScreenEdges();
   if (
@@ -93,10 +110,16 @@ function isTabletSizedRuntime() {
   return getViewportShortEdge() >= TABLET_SHORT_EDGE_MIN;
 }
 
-export function resolveRuntimeDrawingDeviceVariant(fallbackVariant: DrawingDeviceVariant = "desktop"): DrawingDeviceVariant {
+export function resolveRuntimeDrawingEditorVariant(fallbackVariant: DrawingDeviceVariant = "desktop"): DrawingRuntimeEditorVariant {
   if (typeof window === "undefined") return fallbackVariant;
+  if (isIpadDrawingRuntime()) return "ipad";
   if (!hasTouchOnlyRuntime()) return "desktop";
   return isTabletSizedRuntime() ? "tablet" : "mobile";
+}
+
+export function resolveRuntimeDrawingDeviceVariant(fallbackVariant: DrawingDeviceVariant = "desktop"): DrawingDeviceVariant {
+  const resolved = resolveRuntimeDrawingEditorVariant(fallbackVariant);
+  return resolved === "ipad" ? "tablet" : resolved;
 }
 
 export function shouldBlockDrawingForLandscape(policy: DrawingDevicePolicy) {

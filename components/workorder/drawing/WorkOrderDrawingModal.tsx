@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import WorkOrderDrawingDesktopEditor from "./WorkOrderDrawingDesktopEditor";
+import WorkOrderDrawingIpadEditor from "./WorkOrderDrawingIpadEditor";
 import WorkOrderDrawingMobileEditor from "./WorkOrderDrawingMobileEditor";
 import WorkOrderDrawingTabletEditor from "./WorkOrderDrawingTabletEditor";
-import { resolveRuntimeDrawingDeviceVariant, type DrawingDeviceVariant } from "./drawingDevicePolicy";
+import { resolveRuntimeDrawingEditorVariant, type DrawingDeviceVariant, type DrawingRuntimeEditorVariant } from "./drawingDevicePolicy";
 
 export type WorkOrderDrawingModalProps = {
   open: boolean;
@@ -19,7 +20,7 @@ export default function WorkOrderDrawingModal({
   onSaveDrawing,
   variant = "desktop",
 }: WorkOrderDrawingModalProps) {
-  const [drawingVariant, setDrawingVariant] = useState<DrawingDeviceVariant>(() => resolveRuntimeDrawingDeviceVariant(variant));
+  const [drawingVariant, setDrawingVariant] = useState<DrawingRuntimeEditorVariant>(() => resolveRuntimeDrawingEditorVariant(variant));
   const previousOpenRef = useRef(open);
 
   useEffect(() => {
@@ -27,8 +28,12 @@ export default function WorkOrderDrawingModal({
     previousOpenRef.current = open;
 
     if (!open || wasOpen) return;
-    setDrawingVariant(resolveRuntimeDrawingDeviceVariant(variant));
+    setDrawingVariant(resolveRuntimeDrawingEditorVariant(variant));
   }, [open, variant]);
+
+  if (drawingVariant === "ipad") {
+    return <WorkOrderDrawingIpadEditor open={open} onClose={onClose} onSaveDrawing={onSaveDrawing} />;
+  }
 
   if (drawingVariant === "tablet") {
     return <WorkOrderDrawingTabletEditor open={open} onClose={onClose} onSaveDrawing={onSaveDrawing} />;

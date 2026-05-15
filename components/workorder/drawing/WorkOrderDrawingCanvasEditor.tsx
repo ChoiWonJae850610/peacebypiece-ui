@@ -30,6 +30,7 @@ export type WorkOrderDrawingEditorProps = {
 
 type WorkOrderDrawingCanvasEditorProps = WorkOrderDrawingEditorProps & {
   devicePolicy: DrawingDevicePolicy;
+  useStableViewportHeight?: boolean;
 };
 
 type DrawingColorId = "black" | "red" | "blue" | "green";
@@ -458,6 +459,7 @@ export default function WorkOrderDrawingCanvasEditor({
   onClose,
   onSaveDrawing,
   devicePolicy,
+  useStableViewportHeight = false,
 }: WorkOrderDrawingCanvasEditorProps) {
   const { i18n } = useI18n();
   const ui = i18n.workorder.ui.attachmentPanel.drawingModal;
@@ -921,6 +923,10 @@ export default function WorkOrderDrawingCanvasEditor({
     setLineStyle((current) => (current === "solid" ? "dashed" : "solid"));
   };
 
+  const stableViewportPanelClassName = useStableViewportHeight
+    ? " !h-[var(--pbp-drawing-ipad-viewport-height,100dvh)] !max-h-[var(--pbp-drawing-ipad-viewport-height,100dvh)] md:!h-[var(--pbp-drawing-ipad-viewport-height,100dvh)] md:!max-h-[var(--pbp-drawing-ipad-viewport-height,100dvh)]"
+    : "";
+
   return (
     <ModalShell
       open={open}
@@ -928,7 +934,7 @@ export default function WorkOrderDrawingCanvasEditor({
       onClose={requestClose}
       maxWidthClass="!max-w-none md:!max-w-none"
       bodyClassName="flex min-h-0 flex-1 flex-col !overflow-hidden !px-1.5 !py-1.5 md:!px-2 md:!py-2"
-      panelClassName="!inset-0 !h-[100dvh] !max-h-[100dvh] !w-screen !max-w-none !translate-x-0 !translate-y-0 !rounded-none !border-0 md:!left-0 md:!top-0 md:!bottom-0 md:!h-[100dvh] md:!max-h-[100dvh] md:!w-screen md:!max-w-none md:!translate-x-0 md:!translate-y-0 md:!rounded-none md:!border-0"
+      panelClassName={`!inset-0 !h-[100dvh] !max-h-[100dvh] !w-screen !max-w-none !translate-x-0 !translate-y-0 !rounded-none !border-0 md:!left-0 md:!top-0 md:!bottom-0 md:!h-[100dvh] md:!max-h-[100dvh] md:!w-screen md:!max-w-none md:!translate-x-0 md:!translate-y-0 md:!rounded-none md:!border-0${stableViewportPanelClassName}`}
       overlayClassName="bg-[var(--pbp-bg)]"
       closeOnBackdrop={false}
     >
