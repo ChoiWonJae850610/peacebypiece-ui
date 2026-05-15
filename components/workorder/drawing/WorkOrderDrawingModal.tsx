@@ -35,6 +35,7 @@ type DrawingPopover = "color" | "strokeSize" | null;
 type DrawingPointerEvent = PointerEvent<HTMLElement>;
 type EraserCursor = { x: number; y: number; diameter: number; visible: boolean };
 type CanvasDisplaySize = { width: number; height: number };
+type DrawingDraftSnapshot = { snapshot: string; width: number; height: number };
 type DrawingColor = {
   id: DrawingColorId;
   value: string;
@@ -55,6 +56,7 @@ type DrawingPoint = {
 const DRAWING_MIME_TYPE = "image/png";
 const DRAWING_FILE_EXTENSION = "png";
 const DRAWING_DRAFT_STORAGE_KEY = "peacebypiece.workorder.designDrawingDraft";
+const DRAWING_DRAFT_FORMAT_VERSION = 2;
 const DESKTOP_CANVAS_WIDTH = 1280;
 const DESKTOP_CANVAS_HEIGHT = 900;
 const PORTRAIT_CANVAS_WIDTH = 900;
@@ -250,14 +252,46 @@ function createDrawingFileName() {
   return `workorder-drawing-${stamp}.${DRAWING_FILE_EXTENSION}`;
 }
 
-function readDrawingDraftSnapshot() {
-  if (typeof window === "undefined") return "";
-  return window.sessionStorage.getItem(DRAWING_DRAFT_STORAGE_KEY) ?? "";
+function readDrawingDraftSnapshot(): DrawingDraftSnapshot | null {
+  if (typeof window === "undefined") return null;
+  const rawSnapshot = window.sessionStorage.getItem(DRAWING_DRAFT_STORAGE_KEY);
+  if (!rawSnapshot) return null;
+
+  if (rawSnapshot.startsWith("data:")) {
+    window.sessionStorage.removeItem(DRAWING_DRAFT_STORAGE_KEY);
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(rawSnapshot) as Partial<DrawingDraftSnapshot> & { version?: number };
+    if (
+      parsed.version === DRAWING_DRAFT_FORMAT_VERSION &&
+      typeof parsed.snapshot === "string" &&
+      parsed.snapshot.startsWith("data:") &&
+      typeof parsed.width === "number" &&
+      typeof parsed.height === "number"
+    ) {
+      return { snapshot: parsed.snapshot, width: parsed.width, height: parsed.height };
+    }
+  } catch {
+    // Invalid or legacy draft data should not be restored into the fixed portrait editor.
+  }
+
+  window.sessionStorage.removeItem(DRAWING_DRAFT_STORAGE_KEY);
+  return null;
 }
 
-function writeDrawingDraftSnapshot(snapshot: string) {
+function writeDrawingDraftSnapshot(snapshot: string, canvasWidth: number, canvasHeight: number) {
   if (typeof window === "undefined" || !snapshot) return;
-  window.sessionStorage.setItem(DRAWING_DRAFT_STORAGE_KEY, snapshot);
+  window.sessionStorage.setItem(
+    DRAWING_DRAFT_STORAGE_KEY,
+    JSON.stringify({
+      version: DRAWING_DRAFT_FORMAT_VERSION,
+      snapshot,
+      width: canvasWidth,
+      height: canvasHeight,
+    }),
+  );
 }
 
 function clearDrawingDraftSnapshot() {
@@ -265,12 +299,17 @@ function clearDrawingDraftSnapshot() {
   window.sessionStorage.removeItem(DRAWING_DRAFT_STORAGE_KEY);
 }
 
-function persistDrawingDraftSnapshot(snapshot: string, blankSnapshot: string) {
+function persistDrawingDraftSnapshot(canvas: HTMLCanvasElement, blankSnapshot: string) {
+  const snapshot = canvas.toDataURL(DRAWING_MIME_TYPE);
   if (!snapshot || snapshot === blankSnapshot) {
     clearDrawingDraftSnapshot();
     return;
   }
-  writeDrawingDraftSnapshot(snapshot);
+  writeDrawingDraftSnapshot(snapshot, canvas.width, canvas.height);
+}
+
+function canRestoreDraftSnapshot(draftSnapshot: DrawingDraftSnapshot, canvas: HTMLCanvasElement) {
+  return draftSnapshot.width === canvas.width && draftSnapshot.height === canvas.height;
 }
 
 function drawBlankCanvas(canvas: HTMLCanvasElement) {
@@ -288,24 +327,27 @@ function restoreCanvasSnapshot(canvas: HTMLCanvasElement, snapshot: string, onRe
   if (!context) return;
   const image = new Image();
   image.onload = () => {
-    const sourceWidth = image.naturalWidth || image.width || canvas.width;
-    const sourceHeight = image.naturalHeight || image.height || canvas.height;
-    const scale = Math.min(canvas.width / sourceWidth, canvas.height / sourceHeight);
-    const targetWidth = sourceWidth * scale;
-    const targetHeight = sourceHeight * scale;
-    const targetX = (canvas.width - targetWidth) / 2;
-    const targetY = (canvas.height - targetHeight) / 2;
-
     context.save();
     context.setTransform(1, 0, 0, 1, 0, 0);
     context.clearRect(0, 0, canvas.width, canvas.height);
     context.fillStyle = "#ffffff";
     context.fillRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(image, targetX, targetY, targetWidth, targetHeight);
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
     context.restore();
     onRestored?.();
   };
   image.src = snapshot;
+}
+
+function isTabletLikeTouchViewport() {
+  if (typeof window === "undefined") return false;
+  const viewportWidth = window.innerWidth || 0;
+  const viewportHeight = window.innerHeight || 0;
+  const minSide = Math.min(viewportWidth, viewportHeight);
+  const maxSide = Math.max(viewportWidth, viewportHeight);
+  const coarsePointer = window.matchMedia?.("(pointer: coarse)").matches ?? false;
+  const multiTouch = window.navigator.maxTouchPoints >= 2;
+  return (coarsePointer || multiTouch) && minSide >= 600 && maxSide >= 900;
 }
 
 function getToolButtonClass(active: boolean, disabled = false) {
@@ -452,7 +494,9 @@ export default function WorkOrderDrawingModal({
   const blankSnapshotRef = useRef("");
   const dirtyRef = useRef(false);
   const suppressDraftPersistRef = useRef(false);
-  const canvasSize = getCanvasSize(variant);
+  const [tabletLikeTouchViewport, setTabletLikeTouchViewport] = useState(false);
+  const effectiveVariant = variant === "desktop" && tabletLikeTouchViewport ? "tablet" : variant;
+  const canvasSize = getCanvasSize(effectiveVariant);
   const [tool, setTool] = useState<DrawingTool>("pen");
   const [strokeColor, setStrokeColor] = useState(DRAWING_COLORS[0]?.value ?? "#111827");
   const [strokeSize, setStrokeSize] = useState(variant === "mobile" ? 6 : 3);
@@ -467,7 +511,7 @@ export default function WorkOrderDrawingModal({
   const [canvasDisplaySize, setCanvasDisplaySize] = useState<CanvasDisplaySize>(() => canvasSize);
   const navigationGuardTimerRef = useRef<number | null>(null);
   const historyGuardActiveRef = useRef(false);
-  const isMobile = variant === "mobile";
+  const isMobile = effectiveVariant === "mobile";
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < historyRef.current.length - 1;
   const shapeToolSelected = isShapeTool(tool);
@@ -492,7 +536,7 @@ export default function WorkOrderDrawingModal({
   const persistCurrentDraftSnapshot = () => {
     const canvas = canvasRef.current;
     if (!canvas || suppressDraftPersistRef.current || !dirtyRef.current) return;
-    persistDrawingDraftSnapshot(canvas.toDataURL(DRAWING_MIME_TYPE), blankSnapshotRef.current);
+    persistDrawingDraftSnapshot(canvas, blankSnapshotRef.current);
   };
   const togglePopover = (nextPopover: DrawingPopover) => {
     setActivePopover((current) => (current === nextPopover ? null : nextPopover));
@@ -558,12 +602,29 @@ export default function WorkOrderDrawingModal({
     }
     historyRef.current = nextHistory;
     syncHistoryState(nextHistory.length - 1);
-    persistDrawingDraftSnapshot(snapshot, blankSnapshotRef.current);
+    persistDrawingDraftSnapshot(canvas, blankSnapshotRef.current);
   };
 
   useEffect(() => {
     dirtyRef.current = dirty;
   }, [dirty]);
+
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const syncTabletLikeViewport = () => {
+      setTabletLikeTouchViewport(isTabletLikeTouchViewport());
+    };
+
+    syncTabletLikeViewport();
+    window.addEventListener("resize", syncTabletLikeViewport);
+    window.addEventListener("orientationchange", syncTabletLikeViewport);
+    return () => {
+      window.removeEventListener("resize", syncTabletLikeViewport);
+      window.removeEventListener("orientationchange", syncTabletLikeViewport);
+    };
+  }, []);
 
 
   useEffect(() => {
@@ -647,11 +708,13 @@ export default function WorkOrderDrawingModal({
     setCloseConfirmVisible(false);
     setNavigationGuardVisible(false);
     hideEraserCursor();
-    if (draftSnapshot && draftSnapshot !== blankSnapshot) {
-      restoreCanvasSnapshot(canvas, draftSnapshot, () => {
-        historyRef.current = [blankSnapshot, draftSnapshot];
+    if (draftSnapshot && canRestoreDraftSnapshot(draftSnapshot, canvas)) {
+      restoreCanvasSnapshot(canvas, draftSnapshot.snapshot, () => {
+        historyRef.current = [blankSnapshot, draftSnapshot.snapshot];
         syncHistoryState(1);
       });
+    } else if (draftSnapshot) {
+      clearDrawingDraftSnapshot();
     }
   }, [canvasSize.height, canvasSize.width, isMobile, open]);
 
@@ -803,7 +866,7 @@ export default function WorkOrderDrawingModal({
     if (!snapshot) return;
     restoreCanvasSnapshot(canvas, snapshot, () => {
       syncHistoryState(nextIndex);
-      persistDrawingDraftSnapshot(snapshot, blankSnapshotRef.current);
+      persistDrawingDraftSnapshot(canvas, blankSnapshotRef.current);
     });
   };
 
@@ -815,7 +878,7 @@ export default function WorkOrderDrawingModal({
     if (!snapshot) return;
     restoreCanvasSnapshot(canvas, snapshot, () => {
       syncHistoryState(nextIndex);
-      persistDrawingDraftSnapshot(snapshot, blankSnapshotRef.current);
+      persistDrawingDraftSnapshot(canvas, blankSnapshotRef.current);
     });
   };
 
