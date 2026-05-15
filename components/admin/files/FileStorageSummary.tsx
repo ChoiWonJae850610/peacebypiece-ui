@@ -102,20 +102,20 @@ function formatBytes(bytes: number): string {
 function StorageCylinder({ percent }: { percent: number }) {
   const safePercent = Math.min(100, Math.max(0, percent));
   return (
-    <div className="relative mx-auto mt-3 h-[94px] w-[96px]" aria-hidden="true">
-      <div className="absolute inset-x-3 bottom-0 h-[74px] overflow-hidden rounded-b-[24px] border-x border-b border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] shadow-inner">
+    <div className="relative mx-auto mt-4 h-[126px] w-[128px]" aria-hidden="true">
+      <div className="absolute inset-x-4 bottom-0 h-[98px] overflow-hidden rounded-b-[32px] border-x border-b border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] shadow-inner">
         <div
           className="absolute inset-x-0 bottom-0 rounded-b-[28px] bg-[var(--admin-theme-surface)]/20"
           style={{ height: `${Math.max(6, safePercent)}%` }}
         />
       </div>
-      <div className="absolute inset-x-3 top-0 h-8 rounded-[50%] border border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] shadow-sm" />
+      <div className="absolute inset-x-4 top-0 h-10 rounded-[50%] border border-[var(--pbp-border-strong)] bg-[var(--pbp-surface)] shadow-sm" />
       <div
-        className="absolute inset-x-3 rounded-[50%] border border-[var(--admin-theme-surface)] bg-[var(--admin-theme-surface)]/20"
-        style={{ bottom: `${Math.max(0, Math.min(66, safePercent * 0.66))}px`, height: 32 }}
+        className="absolute inset-x-4 rounded-[50%] border border-[var(--admin-theme-surface)] bg-[var(--admin-theme-surface)]/20"
+        style={{ bottom: `${Math.max(0, Math.min(88, safePercent * 0.88))}px`, height: 40 }}
       />
       <div className="absolute inset-0 flex items-center justify-center pt-2">
-        <span className="rounded-full bg-[var(--pbp-surface)]/90 px-2.5 py-1 text-sm font-bold text-[var(--pbp-text-primary)] shadow-sm">
+        <span className="rounded-full bg-[var(--pbp-surface)]/90 px-3 py-1 text-base font-bold text-[var(--pbp-text-primary)] shadow-sm">
           {safePercent}%
         </span>
       </div>
@@ -240,7 +240,7 @@ function DonutChart({
         ]
   ).map((item) => ({ ...item, label: translateAdminFileTypeTerm(item.label, t) }));
   const total = normalizedItems.reduce((sum, item) => sum + item.value, 0);
-  const radius = 40;
+  const radius = 52;
   const circumference = 2 * Math.PI * radius;
   let offset = 0;
 
@@ -259,20 +259,20 @@ function DonutChart({
           {formatCountWithUnit(total, t)}
         </span>
       </div>
-      <div className="mt-4 flex min-h-0 flex-1 flex-col items-center justify-center gap-3 sm:flex-row sm:gap-6">
-        <div className="relative h-[112px] w-[112px] shrink-0">
+      <div className="mt-4 flex min-h-0 flex-1 flex-col items-center justify-center gap-3 sm:flex-row sm:gap-7">
+        <div className="relative h-[148px] w-[148px] shrink-0">
           <svg
-            viewBox="0 0 112 112"
-            className="h-[112px] w-[112px] -rotate-90"
+            viewBox="0 0 148 148"
+            className="h-[148px] w-[148px] -rotate-90"
             aria-hidden="true"
           >
             <circle
-              cx="56"
-              cy="56"
+              cx="74"
+              cy="74"
               r={radius}
               fill="none"
               stroke="var(--pbp-border)"
-              strokeWidth="12"
+              strokeWidth="16"
             />
             {total > 0
               ? normalizedItems.map((item, index) => {
@@ -283,12 +283,12 @@ function DonutChart({
                   return (
                     <circle
                       key={item.label}
-                      cx="56"
-                      cy="56"
+                      cx="74"
+                      cy="74"
                       r={radius}
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="12"
+                      strokeWidth="16"
                       strokeDasharray={strokeDasharray}
                       strokeDashoffset={strokeDashoffset}
                       strokeLinecap="butt"
@@ -307,8 +307,8 @@ function DonutChart({
               : null}
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-            <span className={`${ADMIN_STORAGE_VALUE_CLASS} text-lg`}>{total}</span>
-            <span className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] font-semibold`}>{t("filesSummary.totalLabel", "전체")}</span>
+            <span className={`${ADMIN_STORAGE_VALUE_CLASS} text-2xl`}>{total}</span>
+            <span className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[11px] font-semibold`}>{t("filesSummary.totalLabel", "전체")}</span>
           </div>
         </div>
         <div className="min-w-0 flex-[0.85] space-y-2">

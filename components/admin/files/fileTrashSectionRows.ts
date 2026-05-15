@@ -334,7 +334,7 @@ export function createUnifiedRows(input: {
     targetLabel: item.title,
     deletedAt: item.deletedAt || "-",
     workorderTitle: item.title,
-    typeLabel: t("terms.workOrder.singular", "작업지시서"),
+    typeLabel: t("filesList.types.specSheet", "작업지시서"),
     sizeLabel: "-",
     visualLabel: t("terms.workOrder.short", "작업"),
     visualTone: getTrashVisualInfo({ kind: "workorder" }).tone,

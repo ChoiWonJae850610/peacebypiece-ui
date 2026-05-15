@@ -138,7 +138,7 @@ function TrashTargetCell({
       />
       <div className="min-w-0 text-left">
         <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] md:hidden`}>
-          {t("filesList.columns.target", "대상")}
+          {t("filesList.columns.target", "삭제 대상")}
         </p>
         <p
           className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} truncate text-left text-[13px] font-medium`}
@@ -237,7 +237,7 @@ export function createFileTrashColumns({
       key: "target",
       label: (
         <SortableHeader
-          label={t("filesList.columns.target", "대상")}
+          label={t("filesList.columns.target", "삭제 대상")}
           sortKey="target"
           sortState={sortState}
           onSort={onSort}
@@ -251,7 +251,7 @@ export function createFileTrashColumns({
       key: "deletedAt",
       label: (
         <SortableHeader
-          label={t("filesList.columns.deletedAt", "삭제일시")}
+          label={t("filesList.columns.deletedAt", "삭제 일시")}
           sortKey="deletedAt"
           sortState={sortState}
           onSort={onSort}

@@ -8,7 +8,7 @@ import {
   ADMIN_STORAGE_PANEL_TIGHT_CLASS,
   ADMIN_STORAGE_ROW_CLASS,
   ADMIN_STORAGE_SELECTED_ROW_CLASS,
-  ADMIN_STORAGE_TABLE_HEADER_COMPACT_CLASS,
+  ADMIN_STORAGE_TABLE_HEADER_CLASS,
 } from "@/components/admin/common/adminSemanticClassNames";
 import type {
   AdminStorageWorkOrderItem,
@@ -200,8 +200,8 @@ export default function FileTrashSection({
           title={t("filesSummary.refreshLabel", "저장소 데이터 새로고침")}
         >
           {isRefreshing
-            ? t("filesPage.refreshing", "새로고침 중")
-            : t("terms.actions.refresh", "새로고침")}
+            ? t("filesList.refreshing", "새로고침 중")
+            : t("filesList.refresh", "새로고침")}
         </AdminButton>
         <AdminButton
           variant="primary"
@@ -296,7 +296,7 @@ export default function FileTrashSection({
 
       <AdminTable
         className="mt-2 min-h-0 flex-1"
-        headerClassName={ADMIN_STORAGE_TABLE_HEADER_COMPACT_CLASS}
+        headerClassName={ADMIN_STORAGE_TABLE_HEADER_CLASS}
         rowBaseClassName="grid w-full gap-2 px-3 py-3 text-left text-[11px] md:items-center md:gap-3 md:px-3.5 md:py-1.5"
         items={sortedRows}
         getRowKey={(row) => row.rowId}
