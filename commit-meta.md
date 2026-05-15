@@ -1,10 +1,11 @@
-Version : 0.12.81
-Summary : 작업지시서 태블릿·모바일 납기일 단일 달력 적용
-Description : 작업지시서 태블릿과 모바일 발주 정보 카드의 납기일 입력을 공통 단일 날짜 선택기로 교체하고, 기존 YYYY-MM-DD 저장 형식과 한/영 locale 연동을 유지했습니다. PC 납기일 달력 흐름과 동일한 공통 EditableValue 경로를 사용하며 DB/R2/첨부/workflow 로직은 변경하지 않았습니다.
+Version : 0.13.1
+Summary : 고객사 멤버관리 초대 탭 단순화
+Description : 고객사 멤버관리의 멤버 초대 탭에서 QR 미리보기, 초대 링크 미리보기, 안내 카드, 초대 대상 이름 입력을 제거하고 이메일/문자 방식 선택과 대상 입력, 기본 권한 묶음, 초대 만료 중심의 2컬럼 구조로 정리했습니다. 초대 대기 목록을 우측 카드로 이동하고 대상, 방식, 초대 링크, 만료일, 상태, 취소 컬럼을 구성했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- components/workorder/detail/sections/device/WorkOrderDetailTabletOrderInfoSection.tsx
-- components/workorder/detail/sections/device/WorkOrderDetailMobileOrderInfoSection.tsx
+- components/admin/members/AdminMemberManagementDashboard.tsx
+- lib/i18n/ko/admin.ts
+- lib/i18n/en/admin.ts
 추가 파일 목록 :
 - 없음
 삭제 파일 목록 :

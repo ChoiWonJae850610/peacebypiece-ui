@@ -88,36 +88,29 @@ export const adminKo = {
   },
   memberManagement: {
     title: "멤버 관리",
-    description: "고객사 멤버 초대, 가입 신청 승인, 권한 부여를 한 화면에서 처리하는 멤버관리 IA입니다.",
+    description: "고객사 멤버 초대, 가입 신청 승인, 권한 부여를 한 화면에서 처리합니다.",
     eyebrow: "멤버 권한",
     permissionCount: "권한 {count}개",
     systemOnlyCount: "시스템 전용 {count}개",
     matrixEnabledCount: "기본 체크 {count}개",
     actions: { openOrganizationSettings: "조직 설정 보기", createInvite: "초대 링크 생성" },
     tabs: {
-      invite: { label: "멤버 초대", description: "초대 링크와 QR을 생성합니다.", count: "초대 {count}건" },
+      invite: { label: "멤버 초대", description: "이메일 또는 문자 초대를 생성합니다.", count: "초대 {count}건" },
       approval: { label: "승인", description: "가입 신청을 승인하거나 거절합니다.", count: "승인 대기 {count}건" },
       members: { label: "전체 멤버", description: "멤버 목록과 역할 기본값을 확인합니다.", count: "멤버 {count}명" },
       permissions: { label: "권한 관리", description: "권한 코드와 홈 카드 노출 기준을 관리합니다.", count: "권한 {count}개" }
     },
     inviteBuilder: {
-      eyebrow: "초대 링크와 QR",
-      title: "초대 링크/QR 생성 화면",
-      description: "고객관리자가 내부 멤버에게 전달할 링크와 QR을 생성하기 전 입력값, 기본 권한 묶음, 승인 대기 흐름을 한 화면에서 확인합니다.",
-      cards: {
-        link: { label: "초대 링크", description: "token 기반 가입 신청 링크를 생성합니다." },
-        qr: { label: "QR", description: "같은 초대 링크를 QR로 공유합니다." },
-        approval: { label: "승인 대기", description: "가입 신청 후 고객관리자가 승인합니다." }
-      },
-      fields: { targetName: "초대 대상 이름", targetContact: "이메일 또는 휴대폰", roleTemplate: "기본 권한 묶음", expires: "초대 만료" },
-      placeholders: { targetName: "예: 디자이너 김00", targetContact: "선택 입력" },
+      eyebrow: "멤버 초대",
+      title: "직원 초대 생성",
+      description: "이메일 또는 휴대폰으로 초대 링크를 발송할 대상을 입력하고 기본 권한 묶음과 만료 기간을 지정합니다.",
+      fields: { method: "초대 방식", email: "이메일 주소", phone: "휴대폰 번호", roleTemplate: "기본 권한 묶음", expires: "초대 만료" },
+      placeholders: { email: "member@example.com", phone: "010-1234-5678" },
+      validation: { required: "초대 대상을 입력해 주세요.", email: "이메일 형식으로 입력해 주세요.", phone: "휴대폰 번호 형식으로 입력해 주세요." },
       expires: { "3d": "3일", "7d": "7일", "14d": "14일" },
-      previewLinkLabel: "초대 링크 미리보기",
-      actions: { copy: "링크 복사", create: "초대 생성" },
-      disabledNotice: "실제 token 생성, 저장, 복사 기능은 invitations API 연결 후 활성화합니다.",
-      qrTitle: "QR 미리보기",
-      qrDescription: "QR은 초대 링크 token 생성 API와 연결한 뒤 실제 값으로 렌더링합니다.",
-      selectedRole: "선택 권한 {role} · {count}개"
+      sendPolicyTitle: "발송 기준",
+      sendPolicy: { email: "초대 링크를 이메일로 발송합니다.", phone: "초대 링크를 문자/SMS로 발송합니다." },
+      actions: { copy: "링크 복사", create: "초대 생성", creating: "생성 중", cancel: "초대 취소" }
     },
 
     approvalWorkbench: {
@@ -144,7 +137,9 @@ export const adminKo = {
       guardDescription: "승인 시 company_members를 approved로 만들고 member_permissions에 선택 권한을 저장합니다. 승인된 멤버의 권한 수정은 전체 교체 방식으로 저장합니다."
     },
     joinRequestStatuses: { pending: "승인 대기" },
+    invitationMethods: { email: "이메일", phone: "문자" },
     memberStatuses: { approved: "승인", pending: "대기", suspended: "정지" },
+    invitationStatuses: { draft: "초안", active: "활성", pending: "가입 대기", sent: "발송 완료", expired: "만료" },
     statuses: { ready: "기준 연결", planned: "연결 예정", pending: "대기" },
     sourceState: { dbPending: "DB 연결 예정", dbLoading: "DB 조회 중", dbConnected: "DB 연결", dbFailed: "DB 조회 실패" },
     permissionGuards: {
@@ -156,7 +151,7 @@ export const adminKo = {
     },
     summary: {
       members: { label: "전체 멤버", description: "승인된 멤버와 정지 멤버를 포함합니다." },
-      invitations: { label: "초대 대기", description: "활성 초대 링크와 QR 초대 후보입니다." },
+      invitations: { label: "초대 대기", description: "이메일/문자로 발송한 활성 초대입니다." },
       joinRequests: { label: "승인 대기", description: "가입 신청 후 고객관리자 승인을 기다리는 사용자입니다." },
       permissionTemplates: { label: "권한 템플릿", description: "기본 역할 묶음으로 사용할 권한 preset입니다." }
     },
@@ -164,7 +159,7 @@ export const adminKo = {
       members: "멤버 목록",
       membersDescription: "승인된 멤버와 정지된 멤버를 한 목록에서 관리합니다.",
       invitations: "초대 대기 목록",
-      invitationsDescription: "생성된 초대 링크와 QR의 만료, 취소 상태를 관리합니다.",
+      invitationsDescription: "발송한 초대의 대상, 링크, 만료일, 상태를 확인합니다.",
       joinRequests: "가입 신청/승인 대기",
       joinRequestsDescription: "초대 링크로 가입 신청한 사용자를 승인하거나 거절하는 영역입니다.",
       roles: "역할 기본값",
@@ -181,12 +176,12 @@ export const adminKo = {
     },
     tables: {
       members: { columns: { member: "멤버", role: "역할", status: "상태", permissions: "권한", lastActive: "최근 활동", actions: "저장" } },
-      invitations: { columns: { target: "대상", type: "방식", status: "상태", expires: "만료" } },
+      invitations: { columns: { target: "대상", type: "방식", link: "초대 링크", expires: "만료일", status: "상태", actions: "취소" } },
       joinRequests: { columns: { applicant: "신청자", contact: "연락처", inviteEmail: "초대 이메일", emailMatch: "비교", memo: "메모", requestedRole: "요청 역할", status: "상태", requestedAt: "신청일", actions: "처리" } }
     },
     empty: {
       members: { title: "등록된 멤버가 없습니다", description: "승인된 멤버가 생성되면 이 영역에서 권한을 직접 수정할 수 있습니다." },
-      invitations: { title: "생성된 초대가 없습니다", description: "초대 링크 생성 기능을 연결하면 활성/만료/취소 초대가 표시됩니다." },
+      invitations: { title: "생성된 초대가 없습니다", description: "초대를 생성하면 이 목록에서 링크 복사, 만료일 확인, 취소를 처리할 수 있습니다." },
       joinRequests: { title: "승인 대기 신청이 없습니다", description: "초대 링크 가입 신청이 생성되면 승인/거절/권한 부여 대상이 이 영역에 표시됩니다." }
     },
     loading: {

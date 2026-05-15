@@ -2,11 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  getInvitationTableColumns,
   getJoinRequestTableColumns,
-  getMemberInvitationPreviews,
-  getMemberInvitationSetupCards,
-  getMemberInviteQrPreviewRows,
   getMemberInviteRoleOptions,
   toMemberJoinRequestPreviews,
   toMemberListPreviews,
@@ -17,7 +13,6 @@ import {
   getMemberPermissionMatrixPreviews,
   getMemberRolePreviews,
   getMemberTableColumns,
-  type MemberInvitationPreview,
   type MemberJoinRequestLoadStatus,
   type MemberListLoadStatus,
   type MemberManagementStatus,
@@ -54,15 +49,6 @@ function getStatusTone(status: MemberManagementStatus): AdminStatusBadgeTone {
   if (status === "pending") return "warning";
   return "neutral";
 }
-
-type CreatedInvitationResult = {
-  inviteUrl: string;
-  rawToken: string;
-  invitation?: {
-    id: string;
-    expiresAt: string;
-  };
-};
 
 type JoinRequestListResponse = {
   ok?: boolean;
@@ -102,14 +88,33 @@ function getMemberStatusTone(status: "approved" | "pending" | "suspended"): Admi
   return "warning";
 }
 
-const invitationStatusToneMap: Record<MemberInvitationPreview["status"], AdminStatusBadgeTone> = {
-  draft: "neutral",
-  active: "success",
-  expired: "warning",
+type MemberInviteMethod = "email" | "phone";
+
+type PendingMemberInvitationRow = {
+  id: string;
+  target: string;
+  method: MemberInviteMethod;
+  inviteUrl: string;
+  expiresAt: string;
+  status: "pending" | "sent" | "expired";
 };
 
-function getInvitationStatusTone(status: MemberInvitationPreview["status"]): AdminStatusBadgeTone {
-  return invitationStatusToneMap[status];
+function normalizePhoneNumber(value: string): string {
+  return value.replace(/[^0-9]/g, "");
+}
+
+function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+function isValidKoreanMobilePhone(value: string): boolean {
+  return /^01[016789][0-9]{7,8}$/.test(normalizePhoneNumber(value));
+}
+
+function getPendingInvitationExpiresLabel(expiresAt: string): string {
+  const date = new Date(expiresAt);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" });
 }
 
 const editableMemberPermissionCodes = MEMBER_PERMISSION_CATALOG.filter((permission) => !permission.systemOnly).map((permission) => permission.code);
@@ -145,35 +150,17 @@ function resolveExpiresAt(expiresInDays: string): string {
   return expiresAt.toISOString();
 }
 
-function QrPreview({ rows }: { rows: readonly (readonly boolean[])[] }) {
-  return (
-    <div className="grid size-36 grid-cols-9 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-2 shadow-inner" aria-hidden="true">
-      {rows.flatMap((row, rowIndex) =>
-        row.map((enabled, columnIndex) => (
-          <span
-            key={`${rowIndex}-${columnIndex}`}
-            className={enabled ? "m-0.5 rounded-sm bg-[var(--pbp-action-primary-surface)]" : "m-0.5 rounded-sm bg-[var(--pbp-surface-soft)]"}
-          />
-        )),
-      )}
-    </div>
-  );
-}
-
 export default function AdminMemberManagementDashboard() {
   const t = useAdminTranslation();
   const baseSummaryCards = getMemberManagementSummaryCards();
   const roles = getMemberRolePreviews();
   const permissionCards = getMemberManagementPermissionCards();
   const currentPermissionCodes = getMemberRoleTemplatePermissions("company_admin");
-  const invitationSetupCards = getMemberInvitationSetupCards();
   const inviteRoleOptions = getMemberInviteRoleOptions();
-  const inviteQrPreviewRows = getMemberInviteQrPreviewRows();
   const groups = getMemberPermissionGroupPreviews();
   const catalogItems = getMemberPermissionCatalogPreviews();
   const matrixItems = getMemberPermissionMatrixPreviews();
   const memberColumns = getMemberTableColumns();
-  const invitationColumns = getInvitationTableColumns();
   const joinRequestColumns = getJoinRequestTableColumns();
   const [selectedRoleId, setSelectedRoleId] = useState<string>(inviteRoleOptions[1]?.id ?? inviteRoleOptions[0]?.id ?? "viewer");
   const [activeTab, setActiveTab] = useState<MemberManagementTab>("invite");
@@ -181,10 +168,10 @@ export default function AdminMemberManagementDashboard() {
     () => inviteRoleOptions.find((role) => role.id === selectedRoleId) ?? inviteRoleOptions[0],
     [inviteRoleOptions, selectedRoleId],
   );
-  const [targetName, setTargetName] = useState("");
+  const [inviteMethod, setInviteMethod] = useState<MemberInviteMethod>("email");
   const [targetContact, setTargetContact] = useState("");
   const [expiresInDays, setExpiresInDays] = useState("7d");
-  const [createdInvitation, setCreatedInvitation] = useState<CreatedInvitationResult | null>(null);
+  const [pendingInvitations, setPendingInvitations] = useState<PendingMemberInvitationRow[]>([]);
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [isCreatingInvite, setIsCreatingInvite] = useState(false);
   const [memberRecords, setMemberRecords] = useState<AdminCompanyMemberRecord[]>([]);
@@ -200,46 +187,86 @@ export default function AdminMemberManagementDashboard() {
   const [reviewingJoinRequestId, setReviewingJoinRequestId] = useState<string | null>(null);
   const [joinRequestReviewMessage, setJoinRequestReviewMessage] = useState<string | null>(null);
   const [joinRequestReviewError, setJoinRequestReviewError] = useState<string | null>(null);
-  const previewInviteLink = createdInvitation?.inviteUrl
-    ? getAbsoluteInviteUrl(createdInvitation.inviteUrl)
-    : `/invite/member/preview-${selectedRole?.id ?? "viewer"}`;
   const canCreateInvite = hasEveryMemberPermission(
     { permissionCodes: currentPermissionCodes },
     ["member.invite"],
   );
 
   const members = useMemo(() => toMemberListPreviews(memberRecords), [memberRecords]);
-  const invitations = getMemberInvitationPreviews();
-  const invitationTableColumns = useMemo<AdminTableColumn<MemberInvitationPreview>[]>(
-    () =>
-      invitationColumns.map((column) => ({
-        key: column.id,
-        label: t(`memberManagement.tables.invitations.columns.${column.id}`, column.id),
-        render: (invitation) => {
-          if (column.id === "target") {
-            return <span className="truncate font-semibold pbp-text-primary">{invitation.targetLabel}</span>;
-          }
-
-          if (column.id === "type") {
-            return (
-              <span className="font-semibold pbp-text-primary">
-                {t(`memberManagement.invitationTypes.${invitation.inviteType}`, invitation.inviteType)}
-              </span>
-            );
-          }
-
-          if (column.id === "status") {
-            return (
-              <AdminStatusBadge tone={getInvitationStatusTone(invitation.status)}>
-                {t(`memberManagement.invitationStatuses.${invitation.status}`, invitation.status)}
-              </AdminStatusBadge>
-            );
-          }
-
-          return <span className="pbp-text-muted">{invitation.expiresLabel}</span>;
-        },
-      })),
-    [invitationColumns, t],
+  const invitations = pendingInvitations;
+  const invitationValidationError = useMemo(() => {
+    const value = targetContact.trim();
+    if (!value) return t("memberManagement.inviteBuilder.validation.required", "초대 대상을 입력해 주세요.");
+    if (inviteMethod === "email" && !isValidEmail(value)) {
+      return t("memberManagement.inviteBuilder.validation.email", "이메일 형식으로 입력해 주세요.");
+    }
+    if (inviteMethod === "phone" && !isValidKoreanMobilePhone(value)) {
+      return t("memberManagement.inviteBuilder.validation.phone", "휴대폰 번호 형식으로 입력해 주세요.");
+    }
+    return null;
+  }, [inviteMethod, targetContact, t]);
+  const invitationTableColumns = useMemo<AdminTableColumn<PendingMemberInvitationRow>[]>(
+    () => [
+      {
+        key: "target",
+        label: t("memberManagement.tables.invitations.columns.target", "대상"),
+        render: (invitation) => <span className="truncate font-semibold pbp-text-primary">{invitation.target}</span>,
+      },
+      {
+        key: "type",
+        label: t("memberManagement.tables.invitations.columns.type", "방식"),
+        render: (invitation) => (
+          <span className="font-semibold pbp-text-primary">
+            {t(`memberManagement.invitationMethods.${invitation.method}`, invitation.method)}
+          </span>
+        ),
+      },
+      {
+        key: "link",
+        label: t("memberManagement.tables.invitations.columns.link", "초대 링크"),
+        className: "min-w-0",
+        render: (invitation) => (
+          <button
+            type="button"
+            onClick={() => void handleCopyInviteLink(invitation.inviteUrl)}
+            className="max-w-full truncate rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-3 py-1 text-[11px] font-semibold pbp-text-primary transition hover:border-[var(--pbp-accent-border)]"
+          >
+            {t("memberManagement.inviteBuilder.actions.copy", "링크 복사")}
+          </button>
+        ),
+      },
+      {
+        key: "expires",
+        label: t("memberManagement.tables.invitations.columns.expires", "만료일"),
+        render: (invitation) => <span className="pbp-text-muted">{getPendingInvitationExpiresLabel(invitation.expiresAt)}</span>,
+      },
+      {
+        key: "status",
+        label: t("memberManagement.tables.invitations.columns.status", "상태"),
+        render: (invitation) => (
+          <AdminStatusBadge tone={invitation.status === "expired" ? "warning" : "success"}>
+            {t(`memberManagement.invitationStatuses.${invitation.status}`, invitation.status)}
+          </AdminStatusBadge>
+        ),
+      },
+      {
+        key: "actions",
+        label: t("memberManagement.tables.invitations.columns.actions", "취소"),
+        headerClassName: "text-center",
+        className: "flex justify-center",
+        render: (invitation) => (
+          <button
+            type="button"
+            onClick={() => handleCancelPendingInvitation(invitation.id)}
+            className="inline-flex size-8 items-center justify-center rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] text-sm font-semibold pbp-text-muted transition hover:border-[var(--pbp-danger-border)] hover:text-[var(--pbp-danger)]"
+            aria-label={t("memberManagement.inviteBuilder.actions.cancel", "초대 취소")}
+          >
+            ×
+          </button>
+        ),
+      },
+    ],
+    [t],
   );
   const joinRequests = useMemo(() => toMemberJoinRequestPreviews(joinRequestRecords), [joinRequestRecords]);
   const summaryCards = useMemo(
@@ -247,20 +274,22 @@ export default function AdminMemberManagementDashboard() {
       baseSummaryCards.map((card) =>
         card.id === "members"
           ? { ...card, value: String(members.length), status: memberListLoadStatus === "loaded" ? "ready" : card.status }
-          : card.id === "joinRequests"
-            ? { ...card, value: String(joinRequests.length), status: joinRequestLoadStatus === "loaded" ? "ready" : card.status }
-            : card,
+          : card.id === "invitations"
+            ? { ...card, value: String(invitations.length), status: invitations.length > 0 ? "pending" : card.status }
+            : card.id === "joinRequests"
+              ? { ...card, value: String(joinRequests.length), status: joinRequestLoadStatus === "loaded" ? "ready" : card.status }
+              : card,
       ),
-    [baseSummaryCards, joinRequestLoadStatus, joinRequests.length, memberListLoadStatus, members.length],
+    [baseSummaryCards, invitations.length, joinRequestLoadStatus, joinRequests.length, memberListLoadStatus, members.length],
   );
-  const canSubmitInvite = canCreateInvite && targetContact.trim().length > 0 && !isCreatingInvite;
+  const canSubmitInvite = canCreateInvite && !invitationValidationError && !isCreatingInvite;
   const tabPreviews: MemberManagementTabPreview[] = [
     {
       id: "invite",
       labelKey: "memberManagement.tabs.invite.label",
       fallbackLabel: "멤버 초대",
       descriptionKey: "memberManagement.tabs.invite.description",
-      fallbackDescription: "초대 링크와 QR을 생성합니다.",
+      fallbackDescription: "이메일 또는 문자 초대를 생성합니다.",
       countLabel: t("memberManagement.tabs.invite.count", "초대 {count}건").replace("{count}", String(invitations.length)),
     },
     {
@@ -435,10 +464,29 @@ export default function AdminMemberManagementDashboard() {
   async function handleCreateInvite() {
     if (!canSubmitInvite || !selectedRole) return;
 
+    const target = inviteMethod === "phone" ? normalizePhoneNumber(targetContact) : targetContact.trim();
+    const expiresAt = resolveExpiresAt(expiresInDays);
+
     setIsCreatingInvite(true);
     setInviteError(null);
 
     try {
+      if (inviteMethod === "phone") {
+        setPendingInvitations((previous) => [
+          {
+            id: `local-sms-${Date.now()}`,
+            target,
+            method: "phone",
+            inviteUrl: getAbsoluteInviteUrl(`/invite/member/sms-delivery-pending-${Date.now()}`),
+            expiresAt,
+            status: "pending",
+          },
+          ...previous,
+        ]);
+        setTargetContact("");
+        return;
+      }
+
       const response = await fetch("/api/invitations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -446,10 +494,10 @@ export default function AdminMemberManagementDashboard() {
           scope: "company_to_member",
           companyId: WORKSPACE_COMPANY_ID,
           inviterCompanyId: WORKSPACE_COMPANY_ID,
-          recipientEmail: targetContact.trim(),
+          recipientEmail: target,
           recipientRole: selectedRole.id as "designer" | "inspector" | "inventory_manager" | "viewer",
           permissionPreset: selectedRole.id,
-          expiresAt: resolveExpiresAt(expiresInDays),
+          expiresAt,
           createdByUserId: "user-sample-admin",
         }),
       });
@@ -459,11 +507,18 @@ export default function AdminMemberManagementDashboard() {
         throw new Error(payload?.error ?? "INVITATION_CREATE_FAILED");
       }
 
-      setCreatedInvitation({
-        inviteUrl: payload.inviteUrl,
-        rawToken: payload.rawToken,
-        invitation: payload.invitation,
-      });
+      setPendingInvitations((previous) => [
+        {
+          id: payload.invitation?.id ?? `local-${Date.now()}`,
+          target,
+          method: "email",
+          inviteUrl: getAbsoluteInviteUrl(payload.inviteUrl ?? `/invite/member/${payload.rawToken ?? "pending"}`),
+          expiresAt: payload.invitation?.expiresAt ?? expiresAt,
+          status: "pending",
+        },
+        ...previous,
+      ]);
+      setTargetContact("");
     } catch (error) {
       setInviteError(error instanceof Error ? error.message : "INVITATION_CREATE_FAILED");
     } finally {
@@ -471,9 +526,13 @@ export default function AdminMemberManagementDashboard() {
     }
   }
 
-  async function handleCopyInviteLink() {
-    if (!createdInvitation?.inviteUrl || typeof navigator === "undefined") return;
-    await navigator.clipboard.writeText(getAbsoluteInviteUrl(createdInvitation.inviteUrl));
+  function handleCancelPendingInvitation(invitationId: string) {
+    setPendingInvitations((previous) => previous.filter((invitation) => invitation.id !== invitationId));
+  }
+
+  async function handleCopyInviteLink(inviteUrl: string) {
+    if (!inviteUrl || typeof navigator === "undefined") return;
+    await navigator.clipboard.writeText(inviteUrl);
   }
 
   return (
@@ -530,198 +589,152 @@ export default function AdminMemberManagementDashboard() {
       </section>
 
       {activeTab === "invite" ? (
-        <>
-      <section id="member-invite-builder" className={ADMIN_SURFACE_PANEL_CLASS}>
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-          <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] pbp-text-subtle">
-              {t("memberManagement.inviteBuilder.eyebrow", "Invitation link and QR")}
-            </p>
-            <h3 className="mt-2 text-lg font-semibold pbp-text-primary">
-              {t("memberManagement.inviteBuilder.title", "초대 링크/QR 생성 화면")}
-            </h3>
-            <p className="mt-2 max-w-3xl text-sm leading-6 pbp-text-muted">
-              {t(
-                "memberManagement.inviteBuilder.description",
-                "고객관리자가 내부 멤버에게 전달할 링크와 QR을 생성하기 전 입력값과 기본 권한 묶음을 한 화면에서 확인합니다.",
-              )}
-            </p>
-          </div>
-          <div className="grid gap-2 sm:grid-cols-3 xl:min-w-[420px]">
-            {invitationSetupCards.map((card) => (
-              <div key={card.id} className={ADMIN_SURFACE_SUBTLE_BOX_CLASS}>
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs font-semibold pbp-text-primary">
-                    {t(`memberManagement.inviteBuilder.cards.${card.id}.label`, card.id)}
-                  </p>
-                  <AdminStatusBadge tone={getStatusTone(card.status)} size="xs">
-                    {t(`memberManagement.statuses.${card.status}`, card.status)}
-                  </AdminStatusBadge>
-                </div>
-                <p className="mt-2 text-[11px] leading-4 pbp-text-muted">
-                  {t(`memberManagement.inviteBuilder.cards.${card.id}.description`, "")}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_260px]">
-          <div className="grid gap-3 md:grid-cols-2">
-            <label className={ADMIN_FIELD_CONTAINER_CLASS}>
-              <span className="text-xs font-semibold pbp-text-muted">
-                {t("memberManagement.inviteBuilder.fields.targetName", "초대 대상 이름")}
-              </span>
-              <input
-                type="text"
-                value={targetName}
-                onChange={(event) => setTargetName(event.target.value)}
-                className={ADMIN_INPUT_CLASS}
-                placeholder={t("memberManagement.inviteBuilder.placeholders.targetName", "예: 디자이너 김00")}
-              />
-            </label>
-            <label className={ADMIN_FIELD_CONTAINER_CLASS}>
-              <span className="text-xs font-semibold pbp-text-muted">
-                {t("memberManagement.inviteBuilder.fields.targetContact", "이메일 또는 휴대폰")}
-              </span>
-              <input
-                type="email"
-                value={targetContact}
-                onChange={(event) => setTargetContact(event.target.value)}
-                className={ADMIN_INPUT_CLASS}
-                placeholder={t("memberManagement.inviteBuilder.placeholders.targetContact", "designer@example.com") }
-              />
-            </label>
-            <label className={ADMIN_FIELD_CONTAINER_CLASS}>
-              <span className="text-xs font-semibold pbp-text-muted">
-                {t("memberManagement.inviteBuilder.fields.roleTemplate", "기본 권한 묶음")}
-              </span>
-              <select
-                value={selectedRoleId}
-                onChange={(event) => setSelectedRoleId(event.target.value)}
-                className={ADMIN_INPUT_CLASS}
-              >
-                {inviteRoleOptions.map((role) => (
-                  <option key={role.id} value={role.id}>
-                    {t(`memberManagement.roles.${role.id}.label`, role.id)} · {t("memberManagement.permissionCount", "권한 {count}개").replace("{count}", String(role.permissionCount))}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className={ADMIN_FIELD_CONTAINER_CLASS}>
-              <span className="text-xs font-semibold pbp-text-muted">
-                {t("memberManagement.inviteBuilder.fields.expires", "초대 만료") }
-              </span>
-              <select
-                value={expiresInDays}
-                onChange={(event) => setExpiresInDays(event.target.value)}
-                className={ADMIN_INPUT_CLASS}
-              >
-                <option value="3d">{t("memberManagement.inviteBuilder.expires.3d", "3일")}</option>
-                <option value="7d">{t("memberManagement.inviteBuilder.expires.7d", "7일")}</option>
-                <option value="14d">{t("memberManagement.inviteBuilder.expires.14d", "14일")}</option>
-              </select>
-            </label>
-            <div className="rounded-2xl border border-stone-200 bg-white p-4 md:col-span-2">
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold pbp-text-muted">
-                    {t("memberManagement.inviteBuilder.previewLinkLabel", "초대 링크 미리보기")}
-                  </p>
-                  <code className="mt-2 block truncate rounded-xl bg-stone-100 px-3 py-2 text-xs font-semibold text-stone-700">
-                    {previewInviteLink}
-                  </code>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <AdminButton
-                    onClick={handleCopyInviteLink}
-                    variant="secondary"
-                    disabled={!createdInvitation}
-                  >
-                    {t("memberManagement.inviteBuilder.actions.copy", "링크 복사")}
-                  </AdminButton>
-                  <AdminButton
-                    onClick={handleCreateInvite}
-                    variant="primary"
-                    disabled={!canSubmitInvite}
-                  >
-                    {isCreatingInvite
-                      ? t("memberManagement.inviteBuilder.actions.creating", "생성 중")
-                      : t("memberManagement.inviteBuilder.actions.create", "초대 생성")}
-                  </AdminButton>
-                </div>
-              </div>
-              <p className="mt-3 text-xs leading-5 pbp-text-muted">
-                {createdInvitation
-                  ? t("memberManagement.inviteBuilder.createdNotice", "초대가 생성되었습니다. raw token은 이 응답에서만 확인되며 DB에는 token_hash만 저장됩니다.")
-                  : t("memberManagement.inviteBuilder.disabledNotice", "이메일을 입력하면 invitations API로 실제 초대 링크를 생성합니다.")}
+        <section id="member-invite-builder" className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+          <article className={ADMIN_SURFACE_PANEL_CLASS}>
+            <div className="border-b border-[var(--pbp-border)] pb-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] pbp-text-subtle">
+                {t("memberManagement.inviteBuilder.eyebrow", "멤버 초대")}
               </p>
-              {targetName.trim() ? (
-                <p className="mt-2 text-xs leading-5 pbp-text-muted">
-                  {t("memberManagement.inviteBuilder.targetNameNotice", "초대 대상")}: {targetName.trim()}
-                </p>
-              ) : null}
-              {inviteError ? (
-                <p className="mt-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">
-                  {inviteError}
-                </p>
-              ) : null}
-              {createdInvitation?.invitation ? (
-                <p className="mt-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
-                  ID {createdInvitation.invitation.id} · expires {new Date(createdInvitation.invitation.expiresAt).toLocaleString()}
-                </p>
-              ) : null}
-            </div>
-          </div>
-
-          <aside className="flex flex-col items-center justify-center rounded-3xl border border-stone-200 bg-stone-50 p-5 text-center">
-            <QrPreview rows={inviteQrPreviewRows} />
-            <p className="mt-4 text-sm font-semibold pbp-text-primary">
-              {t("memberManagement.inviteBuilder.qrTitle", "QR 미리보기")}
-            </p>
-            <p className="mt-2 text-xs leading-5 pbp-text-muted">
-              {t("memberManagement.inviteBuilder.qrDescription", "QR은 초대 링크 token 생성 API와 연결한 뒤 실제 값으로 렌더링합니다.")}
-            </p>
-            <p className="mt-3 text-xs font-semibold pbp-text-muted">
-              {t("memberManagement.inviteBuilder.selectedRole", "선택 권한 {role} · {count}개")
-                .replace("{role}", t(`memberManagement.roles.${selectedRole?.id ?? "viewer"}.label`, selectedRole?.id ?? "viewer"))
-                .replace("{count}", String(selectedRole?.permissionCount ?? 0))}
-            </p>
-          </aside>
-        </div>
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-1">
-        <article className={ADMIN_SURFACE_PANEL_CLASS}>
-          <div className="flex flex-col gap-3 border-b border-[var(--pbp-border)] pb-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <h3 className="text-base font-semibold pbp-text-primary">
-                {t("memberManagement.sections.invitations", "초대 대기 목록")}
+              <h3 className="mt-2 text-lg font-semibold pbp-text-primary">
+                {t("memberManagement.inviteBuilder.title", "직원 초대 생성")}
               </h3>
-              <p className="mt-1 text-xs leading-5 pbp-text-muted">
-                {t("memberManagement.sections.invitationsDescription", "생성된 초대 링크와 QR의 만료, 취소 상태를 관리합니다.")}
+              <p className="mt-2 max-w-3xl text-sm leading-6 pbp-text-muted">
+                {t(
+                  "memberManagement.inviteBuilder.description",
+                  "이메일 또는 휴대폰으로 초대 링크를 발송할 대상을 입력하고 기본 권한 묶음과 만료 기간을 지정합니다.",
+                )}
               </p>
             </div>
-            <span className="text-xs font-semibold pbp-text-subtle">
-              {t("memberManagement.sourceState.dbPending", "DB 연결 예정")}
-            </span>
-          </div>
-          <div className="mt-4 overflow-x-auto">
-            <AdminTable
-              items={invitations}
-              columns={invitationTableColumns}
-              getRowKey={(invitation) => invitation.id}
-              emptyLabel={t("memberManagement.empty.invitations.title", "생성된 초대가 없습니다")}
-              emptyDescription={t("memberManagement.empty.invitations.description", "초대 링크 생성 기능을 연결하면 활성/만료/취소 초대가 표시됩니다.")}
-              gridTemplateColumns="minmax(150px,1.2fr) 90px 90px 110px"
-              rowBaseClassName="grid w-full gap-3 px-4 py-3 text-left text-xs text-[var(--pbp-text-muted)] md:items-center"
-              className="min-w-[520px]"
-            />
-          </div>
-        </article>
 
-      </section>
-        </>
+            <div className="mt-5 grid gap-3 md:grid-cols-[180px_minmax(0,1fr)]">
+              <label className={ADMIN_FIELD_CONTAINER_CLASS}>
+                <span className="text-xs font-semibold pbp-text-muted">
+                  {t("memberManagement.inviteBuilder.fields.method", "초대 방식")}
+                </span>
+                <select
+                  value={inviteMethod}
+                  onChange={(event) => {
+                    setInviteMethod(event.target.value as MemberInviteMethod);
+                    setTargetContact("");
+                    setInviteError(null);
+                  }}
+                  className={ADMIN_INPUT_CLASS}
+                >
+                  <option value="email">{t("memberManagement.invitationMethods.email", "이메일")}</option>
+                  <option value="phone">{t("memberManagement.invitationMethods.phone", "문자")}</option>
+                </select>
+              </label>
+
+              <label className={ADMIN_FIELD_CONTAINER_CLASS}>
+                <span className="text-xs font-semibold pbp-text-muted">
+                  {inviteMethod === "email"
+                    ? t("memberManagement.inviteBuilder.fields.email", "이메일 주소")
+                    : t("memberManagement.inviteBuilder.fields.phone", "휴대폰 번호")}
+                </span>
+                <input
+                  type={inviteMethod === "email" ? "email" : "tel"}
+                  inputMode={inviteMethod === "email" ? "email" : "tel"}
+                  value={targetContact}
+                  onChange={(event) => setTargetContact(event.target.value)}
+                  className={ADMIN_INPUT_CLASS}
+                  placeholder={
+                    inviteMethod === "email"
+                      ? t("memberManagement.inviteBuilder.placeholders.email", "member@example.com")
+                      : t("memberManagement.inviteBuilder.placeholders.phone", "010-1234-5678")
+                  }
+                />
+              </label>
+
+              <label className={ADMIN_FIELD_CONTAINER_CLASS}>
+                <span className="text-xs font-semibold pbp-text-muted">
+                  {t("memberManagement.inviteBuilder.fields.roleTemplate", "기본 권한 묶음")}
+                </span>
+                <select
+                  value={selectedRoleId}
+                  onChange={(event) => setSelectedRoleId(event.target.value)}
+                  className={ADMIN_INPUT_CLASS}
+                >
+                  {inviteRoleOptions.map((role) => (
+                    <option key={role.id} value={role.id}>
+                      {t(`memberManagement.roles.${role.id}.label`, role.id)} · {t("memberManagement.permissionCount", "권한 {count}개").replace("{count}", String(role.permissionCount))}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className={ADMIN_FIELD_CONTAINER_CLASS}>
+                <span className="text-xs font-semibold pbp-text-muted">
+                  {t("memberManagement.inviteBuilder.fields.expires", "초대 만료")}
+                </span>
+                <select
+                  value={expiresInDays}
+                  onChange={(event) => setExpiresInDays(event.target.value)}
+                  className={ADMIN_INPUT_CLASS}
+                >
+                  <option value="3d">{t("memberManagement.inviteBuilder.expires.3d", "3일")}</option>
+                  <option value="7d">{t("memberManagement.inviteBuilder.expires.7d", "7일")}</option>
+                  <option value="14d">{t("memberManagement.inviteBuilder.expires.14d", "14일")}</option>
+                </select>
+              </label>
+            </div>
+
+            <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold pbp-text-primary">
+                  {t("memberManagement.inviteBuilder.sendPolicyTitle", "발송 기준")}
+                </p>
+                <p className="mt-1 text-xs leading-5 pbp-text-muted">
+                  {inviteMethod === "email"
+                    ? t("memberManagement.inviteBuilder.sendPolicy.email", "초대 링크를 이메일로 발송합니다.")
+                    : t("memberManagement.inviteBuilder.sendPolicy.phone", "초대 링크를 문자/SMS로 발송합니다.")}
+                </p>
+                {targetContact.trim() && invitationValidationError ? (
+                  <p className="mt-2 text-xs font-semibold text-[var(--pbp-danger)]">{invitationValidationError}</p>
+                ) : null}
+                {inviteError ? (
+                  <p className="mt-2 text-xs font-semibold text-[var(--pbp-danger)]">{inviteError}</p>
+                ) : null}
+              </div>
+              <AdminButton
+                onClick={handleCreateInvite}
+                variant="primary"
+                disabled={!canSubmitInvite}
+                className="min-w-[120px]"
+              >
+                {isCreatingInvite
+                  ? t("memberManagement.inviteBuilder.actions.creating", "생성 중")
+                  : t("memberManagement.inviteBuilder.actions.create", "초대 생성")}
+              </AdminButton>
+            </div>
+          </article>
+
+          <article className={ADMIN_SURFACE_PANEL_CLASS}>
+            <div className="flex items-start justify-between gap-3 border-b border-[var(--pbp-border)] pb-4">
+              <div>
+                <h3 className="text-base font-semibold pbp-text-primary">
+                  {t("memberManagement.sections.invitations", "초대 대기 목록")}
+                </h3>
+                <p className="mt-1 text-xs leading-5 pbp-text-muted">
+                  {t("memberManagement.sections.invitationsDescription", "발송한 초대의 대상, 링크, 만료일, 상태를 확인합니다.")}
+                </p>
+              </div>
+              <span className="text-xs font-semibold pbp-text-subtle">
+                {t("memberManagement.tabs.invite.count", "초대 {count}건").replace("{count}", String(invitations.length))}
+              </span>
+            </div>
+            <div className="mt-4 h-[360px]">
+              <AdminTable
+                items={invitations}
+                columns={invitationTableColumns}
+                getRowKey={(invitation) => invitation.id}
+                emptyLabel={t("memberManagement.empty.invitations.title", "생성된 초대가 없습니다")}
+                emptyDescription={t("memberManagement.empty.invitations.description", "초대를 생성하면 이 목록에서 링크 복사, 만료일 확인, 취소를 처리할 수 있습니다.")}
+                gridTemplateColumns="minmax(120px,1.4fr) 64px 82px 96px 76px 52px"
+                rowBaseClassName="grid w-full gap-2 px-3 py-3 text-left text-[11px] md:items-center"
+              />
+            </div>
+          </article>
+        </section>
       ) : null}
 
       {activeTab === "approval" ? (

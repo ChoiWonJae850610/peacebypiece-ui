@@ -145,36 +145,29 @@ export const adminEn = {
   },
   memberManagement: {
     title: "Member management",
-    description: "A member-management IA for handling company member invitations, join approvals, and direct permission assignment in one screen.",
+    description: "Manage company member invitations, join approvals, and direct permission assignment.",
     eyebrow: "Member permissions",
     permissionCount: "{count} permissions",
     systemOnlyCount: "{count} system-only",
     matrixEnabledCount: "{count} default checks",
     actions: { openOrganizationSettings: "Open organization settings", createInvite: "Create invitation link" },
     tabs: {
-      invite: { label: "Invite members", description: "Create invitation links and QR codes.", count: "{count} invites" },
+      invite: { label: "Invite members", description: "Create email or SMS invitations.", count: "{count} invites" },
       approval: { label: "Approvals", description: "Approve or reject join requests.", count: "{count} pending" },
       members: { label: "All members", description: "Review members and role defaults.", count: "{count} members" },
       permissions: { label: "Permissions", description: "Manage permission codes and home card visibility.", count: "{count} permissions" }
     },
     inviteBuilder: {
-      eyebrow: "Invitation link and QR",
-      title: "Invitation link/QR screen",
-      description: "Review the fields, default permission bundle, and approval-waiting flow before creating a link and QR for an internal member.",
-      cards: {
-        link: { label: "Invitation link", description: "Create a token-based join-request link." },
-        qr: { label: "QR", description: "Share the same invitation link as a QR code." },
-        approval: { label: "Approval waiting", description: "A customer admin approves the user after the join request." }
-      },
-      fields: { targetName: "Invitee name", targetContact: "Email or phone", roleTemplate: "Default permission bundle", expires: "Invitation expiry" },
-      placeholders: { targetName: "Example: Designer Kim", targetContact: "Optional" },
+      eyebrow: "Member invitation",
+      title: "Create employee invitation",
+      description: "Enter the email address or mobile phone number that will receive the invitation link, then choose the default permission bundle and expiry.",
+      fields: { method: "Invitation method", email: "Email address", phone: "Mobile phone", roleTemplate: "Default permission bundle", expires: "Invitation expiry" },
+      placeholders: { email: "member@example.com", phone: "010-1234-5678" },
+      validation: { required: "Enter an invitation target.", email: "Enter a valid email address.", phone: "Enter a valid mobile phone number." },
       expires: { "3d": "3 days", "7d": "7 days", "14d": "14 days" },
-      previewLinkLabel: "Invitation link preview",
-      actions: { copy: "Copy link", create: "Create invitation" },
-      disabledNotice: "Actual token creation, persistence, and copy actions will be enabled after the invitations API is connected.",
-      qrTitle: "QR preview",
-      qrDescription: "The QR will render the real invitation token after the invitation-link API is connected.",
-      selectedRole: "Selected role {role} · {count} permissions"
+      sendPolicyTitle: "Delivery rule",
+      sendPolicy: { email: "Send the invitation link by email.", phone: "Send the invitation link by SMS." },
+      actions: { copy: "Copy link", create: "Create invitation", creating: "Creating", cancel: "Cancel invitation" }
     },
 
     approvalWorkbench: {
@@ -201,7 +194,9 @@ export const adminEn = {
       guardDescription: "Approval marks company_members as approved and stores selected permissions in member_permissions. Approved-member permission edits are saved as a full replacement."
     },
     joinRequestStatuses: { pending: "Pending approval" },
+    invitationMethods: { email: "Email", phone: "SMS" },
     memberStatuses: { approved: "Approved", pending: "Pending", suspended: "Suspended" },
+    invitationStatuses: { draft: "Draft", active: "Active", pending: "Waiting", sent: "Sent", expired: "Expired" },
     statuses: { ready: "Connected", planned: "Planned", pending: "Pending" },
     sourceState: { dbPending: "DB connection planned", dbLoading: "Loading DB", dbConnected: "DB connected", dbFailed: "DB load failed" },
     permissionGuards: {
