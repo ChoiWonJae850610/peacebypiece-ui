@@ -56,7 +56,7 @@ type DrawingPoint = {
 const DRAWING_MIME_TYPE = "image/png";
 const DRAWING_FILE_EXTENSION = "png";
 const DRAWING_DRAFT_STORAGE_KEY = "peacebypiece.workorder.designDrawingDraft";
-const DRAWING_DRAFT_FORMAT_VERSION = 2;
+const DRAWING_DRAFT_FORMAT_VERSION = 3;
 const DESKTOP_CANVAS_WIDTH = 1280;
 const DESKTOP_CANVAS_HEIGHT = 900;
 const PORTRAIT_CANVAS_WIDTH = 900;
@@ -136,7 +136,6 @@ function isPointInsideCanvas(point: DrawingPoint, canvas: HTMLCanvasElement) {
 
 function getEraserCursor(
   canvas: HTMLCanvasElement,
-  container: HTMLDivElement,
   event: DrawingPointerEvent,
   eraserLineWidth: number,
 ): EraserCursor {
@@ -146,10 +145,9 @@ function getEraserCursor(
   }
 
   const canvasRect = canvas.getBoundingClientRect();
-  const containerRect = container.getBoundingClientRect();
   return {
-    x: event.clientX - containerRect.left,
-    y: event.clientY - containerRect.top,
+    x: event.clientX - canvasRect.left,
+    y: event.clientY - canvasRect.top,
     diameter: Math.max(18, (eraserLineWidth / canvas.width) * canvasRect.width),
     visible: true,
   };
@@ -572,12 +570,11 @@ export default function WorkOrderDrawingModal({
   const hideEraserCursor = () => setEraserCursor((current) => ({ ...current, visible: false }));
   const updateEraserCursor = (event: DrawingPointerEvent) => {
     const canvas = canvasRef.current;
-    const container = canvasContainerRef.current;
-    if (!canvas || !container || tool !== "eraser") {
+    if (!canvas || tool !== "eraser") {
       hideEraserCursor();
       return;
     }
-    setEraserCursor(getEraserCursor(canvas, container, event, eraserLineWidth));
+    setEraserCursor(getEraserCursor(canvas, event, eraserLineWidth));
   };
 
   const syncHistoryState = (nextIndex: number) => {
@@ -795,7 +792,7 @@ export default function WorkOrderDrawingModal({
     strokeDirtyRef.current = true;
   };
 
-  const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
+  const handlePointerMove = (event: PointerEvent<HTMLCanvasElement>) => {
     updateEraserCursor(event);
     if (isShapeTool(tool)) {
       drawShapePreview(event);
@@ -804,12 +801,11 @@ export default function WorkOrderDrawingModal({
     drawFreehandLine(event);
   };
 
-  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+  const handlePointerDown = (event: PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
-    const container = canvasContainerRef.current;
-    if (!canvas || !container) return;
+    if (!canvas) return;
     event.preventDefault();
-    container.setPointerCapture(event.pointerId);
+    event.currentTarget.setPointerCapture(event.pointerId);
     strokeDirtyRef.current = false;
     closeToolPopovers();
     updateEraserCursor(event);
@@ -833,11 +829,10 @@ export default function WorkOrderDrawingModal({
     drawFreehandLine(event);
   };
 
-  const stopDrawing = (event: PointerEvent<HTMLDivElement>) => {
+  const stopDrawing = (event: PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
-    const container = canvasContainerRef.current;
-    if (container?.hasPointerCapture(event.pointerId)) {
-      container.releasePointerCapture(event.pointerId);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
     }
 
 
@@ -936,34 +931,36 @@ export default function WorkOrderDrawingModal({
       closeOnBackdrop={false}
     >
       <div className="flex h-full min-h-0 flex-col gap-1.5">
-        <div className="relative flex min-h-0 flex-1 overflow-hidden rounded-3xl border bg-[var(--pbp-surface-muted)] p-1.5 shadow-inner sm:p-2">
+        <div
+          ref={canvasContainerRef}
+          className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-3xl bg-[var(--pbp-surface-muted)] p-1.5 shadow-inner sm:p-2"
+        >
           <div
-            ref={canvasContainerRef}
-            className={`relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] shadow-sm ${
-              tool === "eraser" ? "cursor-none" : "cursor-crosshair"
-            }`}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={stopDrawing}
-            onPointerCancel={(event) => {
-              stopDrawing(event);
-              hideEraserCursor();
+            className="relative overflow-hidden bg-white shadow-sm"
+            style={{
+              width: `${canvasDisplaySize.width}px`,
+              height: `${canvasDisplaySize.height}px`,
             }}
-            onPointerLeave={(event) => {
-              if (drawingRef.current) stopDrawing(event);
-              hideEraserCursor();
-            }}
-            aria-label={ui.canvasAria}
           >
             <canvas
               ref={canvasRef}
               width={canvasSize.width}
               height={canvasSize.height}
-              className="block touch-none select-none bg-white shadow-sm"
-              style={{
-                width: `${canvasDisplaySize.width}px`,
-                height: `${canvasDisplaySize.height}px`,
+              className={`block h-full w-full touch-none select-none bg-white ${
+                tool === "eraser" ? "cursor-none" : "cursor-crosshair"
+              }`}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={stopDrawing}
+              onPointerCancel={(event) => {
+                stopDrawing(event);
+                hideEraserCursor();
               }}
+              onPointerLeave={(event) => {
+                if (drawingRef.current) stopDrawing(event);
+                hideEraserCursor();
+              }}
+              aria-label={ui.canvasAria}
             />
             {tool === "eraser" && eraserCursor.visible ? (
               <div
