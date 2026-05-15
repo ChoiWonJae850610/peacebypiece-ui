@@ -479,7 +479,7 @@ export const PBP_RESPONSIVE_THEME_REGRESSION_CHECKS = {
     { label: "pc", width: "1280px 이상", checks: ["sidebar/list/detail density", "admin card grid balance", "chart/card contrast"] },
   ],
   themes: ["default-light", "beige-atelier", "cold-winter", "black-and-white", "soft-emerald"],
-  priorityScreens: ["/worker", "/me/settings", "/admin", "/admin/files", "/admin/dashboard", "/system"],
+  priorityScreens: ["/worker", "/me/settings", "/admin", "/admin/files", "/admin/stats", "/system"],
   status: {
     completedThisPass: [
       "theme 후보 5종의 PC/tablet/mobile 회귀 확인 항목을 고정 목록으로 분리",

@@ -43,12 +43,12 @@ type BasicDonutChartProps = {
 };
 
 const CHART_SEGMENT_COLORS = [
-  "var(--admin-theme-surface)",
   "var(--pbp-text-primary)",
+  "var(--admin-theme-primary)",
+  "var(--pbp-status-warning)",
+  "var(--pbp-status-success)",
+  "var(--pbp-status-danger)",
   "var(--pbp-text-muted)",
-  "var(--pbp-text-subtle)",
-  "var(--pbp-border-strong)",
-  "var(--pbp-border)",
 ] as const;
 
 function formatTooltipValue(value: number | string, suffix: string) {
@@ -59,6 +59,10 @@ function formatTooltipValue(value: number | string, suffix: string) {
 function getPointValueLabel(point: ChartPoint, suffix: string) {
   if (point.valueLabel) return point.valueLabel;
   return formatTooltipValue(point.value, suffix);
+}
+
+function getDonutTooltipPosition(compact: boolean) {
+  return compact ? { x: 142, y: 8 } : { x: 154, y: 8 };
 }
 
 export function AdminBasicBarChart({ points, emptyLabel, valueSuffix = "" }: BasicBarChartProps) {
@@ -120,15 +124,27 @@ export function AdminBasicDonutChart({ points, totalLabel, valueSuffix = "", emp
               ))}
             </Pie>
             <Tooltip
+              cursor={false}
+              allowEscapeViewBox={{ x: true, y: true }}
+              position={getDonutTooltipPosition(compact)}
               formatter={(value) => formatTooltipValue(value as number | string, valueSuffix)}
-              contentStyle={{ borderRadius: 16, borderColor: "var(--pbp-border)", background: "var(--pbp-surface)", color: "var(--pbp-text-primary)", fontSize: 12 }}
+              contentStyle={{
+                borderRadius: 16,
+                borderColor: "var(--pbp-border)",
+                background: "var(--pbp-surface)",
+                boxShadow: "0 12px 30px rgb(15 23 42 / 0.14)",
+                color: "var(--pbp-text-primary)",
+                fontSize: 12,
+                fontWeight: 600,
+              }}
+              wrapperStyle={{ pointerEvents: "none", zIndex: 20 }}
             />
           </PieChart>
         </ResponsiveContainer>
         {total > 0 ? (
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-            <span className={`text-2xl font-bold ${ADMIN_STATS_TITLE_CLASS}`}>{formatTooltipValue(total, valueSuffix)}</span>
-            <span className={`text-xs font-semibold ${ADMIN_STATS_SUBTLE_TEXT_CLASS}`}>{totalLabel}</span>
+            <span className={`text-2xl font-bold leading-none ${ADMIN_STATS_TITLE_CLASS}`}>{total.toLocaleString("ko-KR")}</span>
+            {totalLabel ? <span className={`mt-1 text-xs font-semibold leading-none ${ADMIN_STATS_SUBTLE_TEXT_CLASS}`}>{totalLabel}</span> : null}
           </div>
         ) : null}
       </div>

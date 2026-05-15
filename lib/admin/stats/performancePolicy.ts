@@ -36,7 +36,7 @@ export const ADMIN_STATS_PERFORMANCE_TARGETS: AdminStatsPerformanceTarget[] = [
     key: "stats-overview-api",
     label: "통계 overview 집계",
     target: "500ms 이하",
-    measureAt: "/admin/dashboard 서버 snapshot 생성 또는 향후 /api/admin/stats/overview 응답",
+    measureAt: "/admin/stats 서버 snapshot 생성 또는 향후 /api/admin/stats/overview 응답",
     recordPolicy: "서버 로그에 company, period, query duration을 기록할 수 있는 구조로 준비합니다.",
     escalation: "800ms를 반복 초과하면 summary table 사용 또는 index 추가 여부를 검토합니다.",
   },

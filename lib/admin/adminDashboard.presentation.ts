@@ -91,7 +91,7 @@ export const ADMIN_NAVIGATION_ITEMS: AdminNavigationItem[] = [
   { label: "작업지시서", href: "/worker", icon: "workorder", translationKey: "workorder" },
   { label: "협력업체 관리", href: "/admin/partners", icon: "partners", translationKey: "partners" },
   { label: "저장소 관리", href: "/admin/files", icon: "storage", translationKey: "storage" },
-  { label: "통계정보", href: "/admin/dashboard", icon: "statistics", translationKey: "statistics" },
+  { label: "통계정보", href: "/admin/stats", icon: "statistics", translationKey: "statistics" },
   { label: "환경설정", href: "/admin/settings", icon: "settings", translationKey: "settings" },
 ];
 
@@ -123,7 +123,7 @@ export const ADMIN_DASHBOARD_STATUS_PANEL: AdminDashboardStatusPanel = {
   title: "파일 / 시스템 상태",
   items: [
     { label: "파일/용량 관리", description: "첨부파일 사용량, 휴지통, purge 상태 확인", href: "/admin/files", icon: "▤" },
-    { label: "통계 화면", description: "작업지시서, 협력업체, 파일 사용량 지표 확인", href: "/admin/dashboard", icon: "▥" },
+    { label: "통계 화면", description: "작업지시서, 협력업체, 파일 사용량 지표 확인", href: "/admin/stats", icon: "▥" },
     { label: "알림 설정", description: "검토, 발주, 용량 이벤트 기준 설정", href: "/admin/settings", icon: "⚙" },
   ],
 };

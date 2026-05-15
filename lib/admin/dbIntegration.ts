@@ -24,7 +24,7 @@ export const ADMIN_DB_INTEGRATION_POINTS: readonly AdminDbIntegrationPoint[] = [
     tables: ["spec_sheets", "partners", "partner_items", "attachments"],
     repositoryPath: "lib/admin/stats/repository.ts",
     adapterPath: null,
-    apiRoutes: ["app/admin/dashboard/page.tsx"],
+    apiRoutes: ["app/admin/stats/page.tsx"],
     readBoundary: "getAdminStatsSnapshot",
     writeBoundary: null,
     fallback: "DB 미설정/조회 실패 시 빈 통계 snapshot 반환",

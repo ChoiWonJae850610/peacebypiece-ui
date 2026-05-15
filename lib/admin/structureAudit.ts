@@ -19,7 +19,7 @@ export type AdminDomainAuditItem = {
 };
 
 export const ADMIN_ROUTE_AUDIT_ITEMS: AdminRouteAuditItem[] = [
-  { key: "stats", routePath: "app/admin/dashboard/page.tsx", uiPath: "components/admin/dashboard", legacyPaths: ["lib/admin/adminDashboard.presentation.ts", "lib/admin/adminStats.repository.ts"] },
+  { key: "stats", routePath: "app/admin/stats/page.tsx", uiPath: "components/admin/dashboard", legacyPaths: ["lib/admin/adminDashboard.presentation.ts", "lib/admin/adminStats.repository.ts"] },
   { key: "history", routePath: "app/admin/history/page.tsx", uiPath: "components/admin/history", legacyPaths: ["lib/admin/historyPresentation.ts"] },
   { key: "files", routePath: "app/admin/files/page.tsx", uiPath: "components/admin/files", legacyPaths: ["lib/admin/adminFiles.*"] },
   { key: "partner", routePath: "app/admin/partners/page.tsx", uiPath: "components/admin/partnerMaster", legacyPaths: [] },

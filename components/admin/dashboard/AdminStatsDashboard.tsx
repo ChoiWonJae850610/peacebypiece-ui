@@ -307,7 +307,7 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
   const isCustomPeriodNotFuture = (!customStartDate || customStartDate <= todayDateValue) && (!customEndDate || customEndDate <= todayDateValue);
   const isCustomEndSelectable = !customEndDate || !customStartDate || customEndDate >= customStartDate;
   const isCustomPeriodValid = isCustomPeriodReady && isCustomPeriodOrderValid && isCustomPeriodNotFuture && isCustomEndSelectable;
-  const customPeriodHref = buildPeriodSectionHref(isCustomPeriodValid ? `/admin/dashboard?period=custom&startDate=${customStartDate}&endDate=${customEndDate}` : "/admin/dashboard?period=30d");
+  const customPeriodHref = buildPeriodSectionHref(isCustomPeriodValid ? `/admin/stats?period=custom&startDate=${customStartDate}&endDate=${customEndDate}` : "/admin/stats?period=30d");
   const customPeriodMessage = !isCustomPeriodOrderValid
     ? pt("customPeriodInvalidOrder", pageText.customPeriodInvalidOrder)
     : !isCustomPeriodNotFuture
@@ -644,7 +644,7 @@ export default function AdminStatsDashboard({ stats, pageText, initialSection = 
                     </AdminLinkButton>
                   ))}
                   <AdminLinkButton
-                    href={buildPeriodSectionHref("/admin/dashboard?period=30d")}
+                    href={buildPeriodSectionHref("/admin/stats?period=30d")}
                     variant="secondary"
                     size="sm"
                     className="min-h-8 shrink-0 px-3 py-1.5 text-xs"

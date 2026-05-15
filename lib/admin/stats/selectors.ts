@@ -159,11 +159,11 @@ export function buildAdminPeriodRange(selectedPeriod: AdminStatsPeriodKey, start
 
 export function buildAdminPeriodOptions(selectedPeriod: AdminStatsPeriodKey, selectedRange?: AdminStatsPeriodRange) {
   const customHref = selectedRange?.isCustom
-    ? `/admin/dashboard?period=custom&startDate=${selectedRange.startDate}&endDate=${selectedRange.endDate}`
-    : "/admin/dashboard?period=custom";
+    ? `/admin/stats?period=custom&startDate=${selectedRange.startDate}&endDate=${selectedRange.endDate}`
+    : "/admin/stats?period=custom";
   return [
-    { key: "7d" as const, label: adminStatsText.periods.sevenDays, href: "/admin/dashboard?period=7d", active: selectedPeriod === "7d" },
-    { key: "30d" as const, label: adminStatsText.periods.thirtyDays, href: "/admin/dashboard?period=30d", active: selectedPeriod === "30d" },
+    { key: "7d" as const, label: adminStatsText.periods.sevenDays, href: "/admin/stats?period=7d", active: selectedPeriod === "7d" },
+    { key: "30d" as const, label: adminStatsText.periods.thirtyDays, href: "/admin/stats?period=30d", active: selectedPeriod === "30d" },
     { key: "custom" as const, label: selectedRange?.isCustom ? selectedRange.label : adminStatsText.periods.custom, href: customHref, active: selectedPeriod === "custom" },
   ];
 }
