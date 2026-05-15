@@ -262,6 +262,7 @@ export function EditableValue({
           onChange={(nextValue) => onCommit(clampPastDateInputValue(nextValue, minDateValue))}
           onClose={onCancel}
           commitOnSelect
+          defaultOpen
           popoverMode="fixed"
           popoverAlign="center"
           className={`${compact ? "mx-auto max-w-[11rem]" : ""} ${centered ? "text-center" : "text-left"}`}

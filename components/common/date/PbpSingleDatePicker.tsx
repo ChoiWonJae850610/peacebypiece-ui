@@ -33,6 +33,7 @@ type PbpSingleDatePickerProps = {
   popoverMode?: "inline" | "fixed";
   popoverAlign?: "start" | "center" | "end";
   disabled?: boolean;
+  defaultOpen?: boolean;
   className?: string;
 };
 
@@ -48,9 +49,10 @@ export function PbpSingleDatePicker({
   popoverMode = "inline",
   popoverAlign = "start",
   disabled = false,
+  defaultOpen = false,
   className = "",
 }: PbpSingleDatePickerProps) {
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(defaultOpen && !disabled);
   const [fixedPopoverStyle, setFixedPopoverStyle] = useState<CSSProperties | null>(null);
   const pickerRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
@@ -59,6 +61,12 @@ export function PbpSingleDatePicker({
   const minDate = parsePbpLocalDateValue(minDateValue);
   const maxDate = parsePbpLocalDateValue(maxDateValue);
   const dayPickerLocale = locale === "ko" ? ko : enUS;
+
+  useEffect(() => {
+    if (defaultOpen && !disabled) {
+      setIsCalendarOpen(true);
+    }
+  }, [defaultOpen, disabled]);
 
   const closeCalendar = () => {
     setIsCalendarOpen(false);
