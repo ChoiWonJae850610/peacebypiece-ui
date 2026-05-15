@@ -3,7 +3,7 @@ import { calculateOrderEntryTotals } from "@/lib/workorder/detail/detailCalculat
 import { formatCurrencySummaryParts, formatOrderSummary } from "@/lib/workorder/detail/detailFormatting";
 import { getInspectionStatusTone } from "@/lib/workorder/presentation/statusPresentation";
 import { translateInspectionStatusLabel, translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
-import { DeleteButton, SectionHeader } from "@/components/workorder/detail/shared/detailEditorShared";
+import { DeleteButton, EditableValue, SectionHeader } from "@/components/workorder/detail/shared/detailEditorShared";
 import type { WorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
 
 type OrderInfoProps = WorkOrderDetailViewModel["orderInfoProps"];
@@ -14,6 +14,11 @@ export default function WorkOrderDetailTabletOrderInfoSection({
   onToggle,
   onAdd,
   onRemove,
+  editingCell,
+  editingValue,
+  onStartEdit,
+  onCommitEdit,
+  onCancelEdit,
   canOpenInspectionModal,
   onOpenInspectionModal,
   locked = false,
@@ -23,6 +28,13 @@ export default function WorkOrderDetailTabletOrderInfoSection({
   const common = i18n.workorder.ui.common;
   const totals = calculateOrderEntryTotals(orderEntries);
   const totalCostSummary = formatCurrencySummaryParts(totals.totalCost, i18n);
+  const dueDatePickerLabels = {
+    placeholder: copy.datePicker.placeholder,
+    clear: copy.datePicker.clear,
+    done: copy.datePicker.done,
+    selected: copy.datePicker.selected,
+    calendarAria: copy.datePicker.calendarAria,
+  };
 
   return (
     <section className="overflow-hidden rounded-2xl bg-stone-50 p-4">
@@ -50,14 +62,36 @@ export default function WorkOrderDetailTabletOrderInfoSection({
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="text-base font-semibold text-stone-900">{item.factory || copy.fallbackItem.replace("{index}", String(index + 1))}</div>
-                  <div className="mt-1 text-sm text-stone-500">{translateWorkOrderDisplayText(item.type, locale)} · {item.dueDate || "-"}</div>
+                  <div className="mt-1 text-sm text-stone-500">{translateWorkOrderDisplayText(item.type, locale)}</div>
                 </div>
                 <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium ${getInspectionStatusTone(item.inspectionStatus)}`}>
                   {translateInspectionStatusLabel(item.inspectionStatus, i18n)}
                 </span>
               </div>
 
-              <dl className="mt-4 grid grid-cols-3 gap-3 text-sm">
+              <dl className="mt-4 grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
+                <div className="pbp-workorder-editable-panel rounded-xl border px-3 py-3">
+                  <dt className="text-xs text-stone-500">{copy.fields.dueDate}</dt>
+                  <dd className="mt-1">
+                    <EditableValue
+                      section="order"
+                      rowId={item.id}
+                      field="dueDate"
+                      value={item.dueDate}
+                      editingCell={editingCell}
+                      editingValue={editingValue}
+                      inputType="date"
+                      datePickerLabels={dueDatePickerLabels}
+                      datePickerLocale={locale}
+                      centered
+                      compact
+                      onStartEdit={onStartEdit}
+                      onCommit={onCommitEdit}
+                      onCancel={onCancelEdit}
+                      disabled={locked}
+                    />
+                  </dd>
+                </div>
                 <div className="pbp-workorder-editable-panel rounded-xl border px-3 py-3">
                   <dt className="text-xs text-stone-500">{copy.fields.quantity}</dt>
                   <dd className="mt-1 font-semibold tabular-nums text-stone-900">{item.quantity.toLocaleString()}{common.quantitySuffix}</dd>
