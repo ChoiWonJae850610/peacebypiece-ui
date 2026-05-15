@@ -1,18 +1,11 @@
-Version :
-0.12.77
-
-Summary :
-통계정보 번역 함수 타입 오류 수정
-
-Description :
-/admin/stats 통계정보 화면에서 presentation 유틸이 허용하는 optional fallback 타입과 컴포넌트 내부 번역 함수 타입이 맞지 않아 발생한 TypeScript 빌드 오류를 수정했다. 화면 동작과 통계 계산 로직은 변경하지 않았다.
-
+Version : 0.12.78
+Summary : 작업지시서 단일 날짜 선택기 기반 추가
+Description : 작업지시서 납기일 달력 교체를 준비하기 위해 react-day-picker 기반 공통 단일 날짜 선택 컴포넌트와 로컬 날짜 유틸을 추가하고, 기존 통계 기간 선택기의 날짜 유틸도 공통 유틸을 재사용하도록 정리했습니다. 작업지시서 실제 납기일 입력 적용은 다음 버전으로 분리했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- components/admin/dashboard/AdminStatsDashboard.tsx
-
+- components/admin/common/AdminDateRangePicker.tsx
 추가 파일 목록 :
-없음
-
+- lib/date/localDate.ts
+- components/common/date/PbpSingleDatePicker.tsx
 삭제 파일 목록 :
-없음
+- 없음

@@ -5,6 +5,12 @@ import { DayPicker, type DateRange } from "react-day-picker";
 import { enUS, ko } from "date-fns/locale";
 
 import { AdminButton } from "@/components/admin/common/AdminButton";
+import {
+  formatPbpDateDisplay,
+  getTodayPbpLocalDateValue,
+  parsePbpLocalDateValue,
+  toPbpLocalDateValue,
+} from "@/lib/date/localDate";
 
 export type AdminDateRangePickerLabels = {
   start: string;
@@ -16,34 +22,10 @@ export type AdminDateRangePickerLabels = {
   calendarAria: string;
 };
 
-export function parseAdminLocalDateValue(value: string) {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (!match) return undefined;
-  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
-  return Number.isNaN(date.getTime()) ? undefined : date;
-}
-
-export function toAdminLocalDateValue(date: Date | undefined) {
-  if (!date) return "";
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-export function getTodayAdminLocalDateValue() {
-  return toAdminLocalDateValue(new Date());
-}
-
-export function formatAdminDateDisplay(value: string, locale: "ko" | "en") {
-  const date = parseAdminLocalDateValue(value);
-  if (!date) return "—";
-  return date.toLocaleDateString(locale === "ko" ? "ko-KR" : "en-US", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-}
+export const parseAdminLocalDateValue = parsePbpLocalDateValue;
+export const toAdminLocalDateValue = toPbpLocalDateValue;
+export const getTodayAdminLocalDateValue = getTodayPbpLocalDateValue;
+export const formatAdminDateDisplay = formatPbpDateDisplay;
 
 type AdminDateRangePickerProps = {
   startDate: string;
