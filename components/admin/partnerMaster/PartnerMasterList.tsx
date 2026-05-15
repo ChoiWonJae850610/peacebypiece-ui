@@ -26,19 +26,22 @@ type SortableHeaderProps = {
   sortKey: PartnerSortKey;
   activeSort: PartnerSortState;
   onSort: (sortKey: PartnerSortKey) => void;
+  align?: "left" | "center";
 };
 
 const PARTNER_TABLE_GRID = "minmax(0,1.18fr) minmax(0,0.72fr) minmax(0,0.82fr) minmax(0,1.02fr) minmax(0,1.08fr) 84px";
 
-function SortableHeader({ label, sortKey, activeSort, onSort }: SortableHeaderProps) {
+function SortableHeader({ label, sortKey, activeSort, onSort, align = "left" }: SortableHeaderProps) {
   const isActive = activeSort.key === sortKey;
   const marker = isActive ? (activeSort.direction === "asc" ? "↑" : "↓") : "↕";
+
+  const alignClassName = align === "center" ? "justify-center text-center" : "justify-start text-left";
 
   return (
     <button
       type="button"
       onClick={() => onSort(sortKey)}
-      className="inline-flex max-w-full items-center gap-1 rounded-full px-1.5 py-1 text-left transition hover:bg-[var(--admin-theme-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-theme-ring)]"
+      className={`inline-flex w-full max-w-full items-center gap-1 rounded-full px-1.5 py-1 transition hover:bg-[var(--admin-theme-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-theme-ring)] ${alignClassName}`}
       aria-sort={isActive ? (activeSort.direction === "asc" ? "ascending" : "descending") : "none"}
     >
       <span className="truncate">{label}</span>
@@ -59,9 +62,10 @@ export default function PartnerMasterList({ items, isLoading = false, onEditPart
     setSortState((current) => togglePartnerSort(current, sortKey));
   };
 
-  const buildHeader = (key: PartnerSortKey, label: string): ReactNode => (
-    <SortableHeader label={label} sortKey={key} activeSort={sortState} onSort={handleSort} />
+  const buildHeader = (key: PartnerSortKey, label: string, align: "left" | "center" = "left"): ReactNode => (
+    <SortableHeader label={label} sortKey={key} activeSort={sortState} onSort={handleSort} align={align} />
   );
+  const centerCellClassName = "flex h-full min-w-0 items-center justify-center text-center";
 
   return (
     <AdminTable
@@ -93,15 +97,17 @@ export default function PartnerMasterList({ items, isLoading = false, onEditPart
             </div>
           ),
         },
-        { key: "contact", label: buildHeader("contact", listText.columns.contact), className: "min-w-0", render: (item) => <p className="min-w-0 truncate text-sm text-[var(--pbp-text-muted)]" title={item.contactName}>{item.contactName}</p> },
-        { key: "phone", label: buildHeader("phone", listText.columns.phone), className: "min-w-0", render: (item) => <p className="min-w-0 truncate text-sm text-[var(--pbp-text-muted)]" title={item.phone}>{item.phone}</p> },
-        { key: "email", label: buildHeader("email", listText.columns.email), className: "min-w-0", render: (item) => <p className="min-w-0 truncate text-sm text-[var(--pbp-text-muted)]" title={item.email}>{item.email}</p> },
+        { key: "contact", label: buildHeader("contact", listText.columns.contact, "center"), headerClassName: "text-center", className: centerCellClassName, render: (item) => <p className="min-w-0 max-w-full truncate text-center text-sm text-[var(--pbp-text-muted)]" title={item.contactName}>{item.contactName}</p> },
+        { key: "phone", label: buildHeader("phone", listText.columns.phone, "center"), headerClassName: "text-center", className: centerCellClassName, render: (item) => <p className="min-w-0 max-w-full truncate text-center text-sm text-[var(--pbp-text-muted)]" title={item.phone}>{item.phone}</p> },
+        { key: "email", label: buildHeader("email", listText.columns.email, "center"), headerClassName: "text-center", className: centerCellClassName, render: (item) => <p className="min-w-0 max-w-full truncate text-center text-sm text-[var(--pbp-text-muted)]" title={item.email}>{item.email}</p> },
         {
           key: "type",
-          label: buildHeader("type", listText.columns.type),
+          label: buildHeader("type", listText.columns.type, "center"),
+          headerClassName: "text-center",
+          className: centerCellClassName,
           render: (item) => (
-            <div className="flex min-w-0 flex-col gap-1" aria-label={item.typeDisplayLabel || listText.typeMissing}>
-              <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+            <div className="flex min-w-0 max-w-full flex-col items-center gap-1 text-center" aria-label={item.typeDisplayLabel || listText.typeMissing}>
+              <div className="flex min-w-0 flex-wrap items-center justify-center gap-1.5">
                 {item.hasBaseTypes ? (
                   item.baseTypeBadges.map((badge) => (
                     <AdminStatusBadge key={badge.key} tone="info" size="xs">
@@ -113,7 +119,7 @@ export default function PartnerMasterList({ items, isLoading = false, onEditPart
                 )}
               </div>
               {item.outsourcingProcessBadges.length > 0 ? (
-                <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                <div className="flex min-w-0 flex-wrap items-center justify-center gap-1.5">
                   {item.outsourcingProcessBadges.map((badge) => (
                     <AdminStatusBadge key={badge.key} tone="warning" size="xs" title={badge.label}>
                       {badge.label}
@@ -126,7 +132,9 @@ export default function PartnerMasterList({ items, isLoading = false, onEditPart
         },
         {
           key: "status",
-          label: buildHeader("status", listText.columns.status),
+          label: buildHeader("status", listText.columns.status, "center"),
+          headerClassName: "text-center",
+          className: centerCellClassName,
           render: (item) => (
             <AdminStatusBadge tone={item.isActive ? "success" : "neutral"} size="sm">
               {item.isActive ? listText.active : listText.inactive}

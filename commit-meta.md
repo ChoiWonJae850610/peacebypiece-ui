@@ -1,20 +1,16 @@
 Version :
-0.12.69
+0.12.70
 
 Summary :
-저장소 관리 그래프와 휴지통 문구 정리
+관리자 파일과 협력업체 테이블 데이터 정렬 보정
 
 Description :
-저장소 관리 화면의 저장소 사용량 원통 그래프와 파일 유형 도넛 그래프를 확대하고, 휴지통 영역의 영어 문구와 테이블 헤더를 정리했다. 휴지통 테이블의 작업지시서 유형 표시는 영어 화면에서 Spec Sheet로 보이도록 조정하고, 새로고침 버튼 i18n과 테이블 헤더 높이를 보정했다.
+저장소 관리 휴지통 테이블에서 삭제 대상을 제외한 삭제 일시, 작업지시서, 유형, 크기 데이터 셀을 중앙 정렬 기준으로 보정했다. 협력업체 관리 테이블에서도 업체명을 제외한 담당자명, 연락처, 이메일, 유형, 상태 데이터 셀과 헤더를 중앙 정렬 기준으로 정리했다. 테이블 정렬, 필터, 협력업체 CRUD, 휴지통 복원/삭제 흐름은 변경하지 않았다.
 
 수정 파일 목록 :
 - lib/constants/app.ts
-- components/admin/files/FileStorageSummary.tsx
-- components/admin/files/FileTrashSection.tsx
 - components/admin/files/fileTrashSectionColumns.tsx
-- components/admin/files/fileTrashSectionRows.ts
-- lib/i18n/ko/admin.ts
-- lib/i18n/en/admin.ts
+- components/admin/partnerMaster/PartnerMasterList.tsx
 
 추가 파일 목록 :
 없음

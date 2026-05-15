@@ -163,12 +163,12 @@ function CenterTextCell({
   isStrong?: boolean;
 }) {
   return (
-    <div className="min-w-0 text-center">
+    <div className="flex min-w-0 w-full flex-col items-center justify-center text-center">
       {mobileLabel ? (
         <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] md:hidden`}>{mobileLabel}</p>
       ) : null}
       <p
-        className={`truncate text-center text-[12px] ${isStrong ? `font-semibold ${ADMIN_STORAGE_MUTED_TEXT_CLASS}` : ADMIN_STORAGE_MUTED_TEXT_CLASS}`}
+        className={`mx-auto max-w-full truncate text-center text-[12px] ${isStrong ? `font-semibold ${ADMIN_STORAGE_MUTED_TEXT_CLASS}` : ADMIN_STORAGE_MUTED_TEXT_CLASS}`}
         title={title ?? value}
       >
         {value}
@@ -185,7 +185,7 @@ function WorkOrderCell({
   mobileLabel: string;
 }) {
   return (
-    <div className="min-w-0 text-center">
+    <div className="flex min-w-0 w-full flex-col items-center justify-center text-center">
       <p className={`${ADMIN_STORAGE_SUBTLE_TEXT_CLASS} text-[10px] md:hidden`}>{mobileLabel}</p>
       <p
         className={`${ADMIN_STORAGE_MUTED_TEXT_CLASS} mx-auto max-w-[220px] truncate text-center text-[12px] font-medium`}
@@ -199,7 +199,7 @@ function WorkOrderCell({
 
 function TypeBadgeCell({ value }: { value: string }) {
   return (
-    <div className="flex min-w-0 justify-center">
+    <div className="flex min-w-0 w-full items-center justify-center text-center">
       <AdminStatusBadge
         size="xs"
         tone="neutral"
