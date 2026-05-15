@@ -13,8 +13,8 @@ export default function PartnerMasterHeader({ onOpenCreateModal }: PartnerMaster
 
   return (
     <div className="flex shrink-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
-      <p className="min-w-0 max-w-3xl text-sm leading-6 text-stone-500 md:text-[13px]">{headerText.description}</p>
-      <AdminButton type="button" onClick={onOpenCreateModal} variant="primary" size="md">
+      <p className="min-w-0 max-w-3xl text-sm leading-6 text-[var(--pbp-text-muted)] md:text-[13px]">{headerText.description}</p>
+      <AdminButton type="button" onClick={onOpenCreateModal} variant="primary" size="md" className="whitespace-nowrap">
         + {headerText.createPartner}
       </AdminButton>
     </div>

@@ -43,19 +43,19 @@ export default function PartnerMasterFilters({
 
   return (
     <AdminFilterBar className="mt-3 block shrink-0 space-y-4 border-[var(--admin-theme-border)] bg-[var(--admin-theme-soft)] transition-colors">
-      <div className="grid gap-y-4 gap-x-8 xl:grid-cols-[minmax(260px,0.9fr)_minmax(360px,1.4fr)_minmax(220px,0.7fr)] xl:items-start">
+      <div className="grid gap-y-4 gap-x-8 xl:grid-cols-[minmax(260px,0.9fr)_minmax(380px,1.45fr)_minmax(260px,0.8fr)] xl:items-start">
         <label className="space-y-2">
-          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">{filterText.searchLabel}</span>
+          <span className="text-[13px] font-semibold text-[var(--pbp-text-muted)]">{filterText.searchLabel}</span>
           <input
             value={searchTerm}
             onChange={(event) => onSearchTermChange(event.target.value)}
             placeholder={filterText.searchPlaceholder}
-            className="h-11 w-full rounded-2xl border border-stone-200 bg-white px-4 text-sm outline-none transition focus:border-[var(--admin-theme-border)] focus:ring-4 focus:ring-[var(--admin-theme-ring)]"
+            className="h-11 w-full rounded-2xl border border-[var(--pbp-field-search-border)] bg-[var(--pbp-field-search-surface)] px-4 text-sm outline-none transition focus:border-[var(--admin-theme-border)] focus:ring-4 focus:ring-[var(--admin-theme-ring)]"
           />
         </label>
 
         <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">{filterText.typeLabel}</p>
+          <p className="text-[13px] font-semibold text-[var(--pbp-text-muted)]">{filterText.typeLabel}</p>
           <div className="flex flex-wrap gap-2">
             {filterOptions.map((item) => {
               const isSelected = selectedTypes.includes(item.value);
@@ -66,6 +66,7 @@ export default function PartnerMasterFilters({
                   onClick={() => onToggleType(item.value)}
                   variant={isSelected ? "primary" : "secondary"}
                   size="sm"
+                  className="whitespace-nowrap"
                 >
                   {item.label}
                 </AdminButton>
@@ -75,7 +76,7 @@ export default function PartnerMasterFilters({
         </div>
 
         <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">{filterText.statusLabel}</p>
+          <p className="text-[13px] font-semibold text-[var(--pbp-text-muted)]">{filterText.statusLabel}</p>
           <div className="flex flex-wrap gap-2">
             {statusOptions.map((item) => (
               <AdminButton
@@ -84,6 +85,7 @@ export default function PartnerMasterFilters({
                 onClick={() => onStatusChange(item.value)}
                 variant={selectedStatus === item.value ? "primary" : "secondary"}
                 size="sm"
+                className="whitespace-nowrap"
               >
                 {item.label}
               </AdminButton>
@@ -92,8 +94,8 @@ export default function PartnerMasterFilters({
         </div>
       </div>
 
-      <p className="text-sm text-stone-600">
-        {filterText.currentListPrefix} <span className="font-semibold text-stone-900">{filteredCount}</span>
+      <p className="text-sm text-[var(--pbp-text-muted)]">
+        {filterText.currentListPrefix} <span className="font-semibold text-[var(--pbp-text-primary)]">{filteredCount}</span>
         {filterText.currentListSuffix}
         {hasSearch ? filterText.searchResultSuffix : ""}
       </p>

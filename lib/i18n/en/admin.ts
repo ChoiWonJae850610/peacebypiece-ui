@@ -599,7 +599,7 @@ export const adminEn = {
       typeLabel: "Type",
       statusLabel: "Status",
       statusOptions: {
-        all: "All Statuses",
+        all: "All",
         active: "Active",
         inactive: "Inactive",
       },

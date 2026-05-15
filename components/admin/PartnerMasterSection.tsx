@@ -18,12 +18,7 @@ export default function PartnerMasterSection() {
     <section className="flex min-h-0 flex-1 flex-col overflow-visible rounded-[32px] border border-stone-200 bg-white/95 p-5 shadow-sm backdrop-blur md:h-full md:max-h-full md:overflow-hidden md:p-5 xl:p-6">
       <PartnerMasterHeader onOpenCreateModal={controller.openCreateModal} />
 
-      <PartnerMasterSummaryCards
-        summary={controller.listViewModel.summary}
-        filteredSummary={controller.listViewModel.filteredSummary}
-        hasFilter={controller.listViewModel.hasSearch || controller.selectedStatus !== "all" || !controller.selectedTypes.includes("all")}
-      />
-
+      <PartnerMasterSummaryCards summary={controller.listViewModel.summary} />
 
       <PartnerMasterFilters
         searchTerm={controller.searchTerm}

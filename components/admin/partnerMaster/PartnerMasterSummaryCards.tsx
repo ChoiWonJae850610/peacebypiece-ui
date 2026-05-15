@@ -5,8 +5,6 @@ import type { PartnerSummaryViewModel } from "@/lib/admin/partner";
 
 type PartnerMasterSummaryCardsProps = {
   summary: PartnerSummaryViewModel;
-  filteredSummary: PartnerSummaryViewModel;
-  hasFilter: boolean;
   className?: string;
 };
 
@@ -30,48 +28,43 @@ function formatMessage(template: string, values: Record<string, number>) {
 
 export default function PartnerMasterSummaryCards({
   summary,
-  filteredSummary,
-  hasFilter,
   className = "mt-3",
 }: PartnerMasterSummaryCardsProps) {
   const { i18n } = useI18n();
   const summaryText = i18n.admin.partnerMaster.summaryCards;
-  const source = hasFilter ? filteredSummary : summary;
   const cards: SummaryCard[] = [
     {
       key: "total",
       label: summaryText.total.label,
-      value: source.total,
-      helper: hasFilter
-        ? formatMessage(summaryText.total.filteredHelper, { total: summary.total })
-        : summaryText.total.helper,
+      value: summary.total,
+      helper: summaryText.total.helper,
     },
     {
       key: "active",
       label: summaryText.active.label,
-      value: source.active,
-      helper: formatMessage(summaryText.active.helper, { inactive: source.inactive }),
+      value: summary.active,
+      helper: formatMessage(summaryText.active.helper, { inactive: summary.inactive }),
     },
     {
       key: "factory",
       label: summaryText.factory.label,
-      value: source.typeCounts.factory,
+      value: summary.typeCounts.factory,
       helper: summaryText.factory.helper,
     },
     {
       key: "materials",
       label: summaryText.materials.label,
-      value: source.typeCounts.material_vendor + source.typeCounts.subsidiary_vendor,
+      value: summary.typeCounts.material_vendor + summary.typeCounts.subsidiary_vendor,
       helper: formatMessage(summaryText.materials.helper, {
-        fabric: source.typeCounts.material_vendor,
-        subsidiary: source.typeCounts.subsidiary_vendor,
+        fabric: summary.typeCounts.material_vendor,
+        subsidiary: summary.typeCounts.subsidiary_vendor,
       }),
     },
     {
       key: "outsourcing",
       label: summaryText.outsourcing.label,
-      value: source.typeCounts.outsourcing_vendor,
-      helper: formatMessage(summaryText.outsourcing.helper, { processes: source.outsourcingProcessCount }),
+      value: summary.typeCounts.outsourcing_vendor,
+      helper: formatMessage(summaryText.outsourcing.helper, { processes: summary.outsourcingProcessCount }),
     },
   ];
 
@@ -81,13 +74,14 @@ export default function PartnerMasterSummaryCards({
         {cards.map((card) => (
           <article
             key={card.key}
-            className="rounded-3xl border border-[var(--admin-theme-border)] bg-[var(--admin-theme-surface)] px-4 py-3 shadow-sm transition-colors"
+            className="group relative overflow-hidden rounded-[26px] border border-[var(--admin-theme-border)] bg-[var(--pbp-surface)] px-4 py-3 shadow-sm transition-colors hover:border-[var(--admin-theme-surface)]"
           >
-            <p className="text-xs font-semibold text-[var(--pbp-text-muted)]">{card.label}</p>
-            <p className="mt-1 text-2xl font-semibold tracking-tight text-[var(--pbp-text-strong)]">
+            <span className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[var(--admin-theme-surface)] opacity-70" />
+            <p className="text-[13px] font-semibold leading-5 text-[var(--pbp-text-primary)]">{card.label}</p>
+            <p className="mt-1 text-[26px] font-bold leading-none tracking-tight text-[var(--pbp-text-primary)]">
               {formatCount(card.value)}
             </p>
-            <p className="mt-1 text-xs leading-5 text-[var(--pbp-text-muted)]">{card.helper}</p>
+            <p className="mt-2 text-xs leading-5 text-[var(--pbp-text-muted)]">{card.helper}</p>
           </article>
         ))}
       </div>
