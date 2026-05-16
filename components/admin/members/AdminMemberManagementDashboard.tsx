@@ -133,6 +133,9 @@ const editableMemberPermissionCodes = MEMBER_PERMISSION_CATALOG.filter(
 ).map((permission) => permission.code);
 
 const MEMBER_INVITE_PANEL_HEIGHT_CLASS = "h-[452px] min-h-[452px]";
+const MEMBER_INVITE_PANEL_CONTENT_CLASS = "flex flex-1 flex-col pt-4";
+const MEMBER_INVITATION_TABLE_CONTENT_CLASS =
+  "grid min-h-0 flex-1 grid-rows-[1fr] overflow-hidden pt-4";
 
 type MemberManagementTab = "invite" | "approval" | "members" | "permissions";
 
@@ -805,7 +808,7 @@ export default function AdminMemberManagementDashboard() {
                   "memberManagement.inviteBuilder.description",
                   "이메일 또는 휴대폰으로 초대 링크를 발송할 대상을 입력하고 기본 권한 묶음과 만료 기간을 지정합니다.",
                 )}
-                contentClassName="flex flex-1 flex-col pt-4"
+                contentClassName={MEMBER_INVITE_PANEL_CONTENT_CLASS}
               >
                 <div className="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)]">
                   <label className={ADMIN_FIELD_CONTAINER_CLASS}>
@@ -1000,7 +1003,7 @@ export default function AdminMemberManagementDashboard() {
                   "memberManagement.tabs.invite.count",
                   "초대 {count}건",
                 ).replace("{count}", String(invitations.length))}
-                contentClassName="flex flex-1 flex-col overflow-hidden pt-4"
+                contentClassName={MEMBER_INVITATION_TABLE_CONTENT_CLASS}
               >
                 <AdminTable
                   items={invitations}
@@ -1017,7 +1020,7 @@ export default function AdminMemberManagementDashboard() {
                   gridTemplateColumns="minmax(96px,1.2fr) 44px 72px 78px 70px 30px"
                   headerClassName="hidden shrink-0 gap-2 bg-[var(--pbp-surface-muted)] px-3 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] md:grid"
                   rowBaseClassName="grid w-full min-w-0 gap-2 px-3 py-2.5 text-left text-[11px] md:items-center"
-                  className="h-full min-h-0 flex-1"
+                  className="h-full min-h-0 flex-1 self-stretch"
                 />
               </AdminPanelSection>
             </section>
