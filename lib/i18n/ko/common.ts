@@ -31,13 +31,13 @@ export const commonKo = {
       },
       personalSettings: {
         label: "개인 환경설정",
-        description: "언어, 색상, 알림 선호를 사용자별로 관리할 영역입니다.",
+        description: "언어와 테마를 사용자별로 관리합니다.",
       },
     },
   },
   personalSettings: {
     title: "개인 환경설정",
-    description: "언어, 테마, 화면 밀도, 기본 진입 화면처럼 사용자별로 달라지는 설정을 관리합니다.",
+    description: "언어와 테마처럼 개인별로 달라지는 화면 설정만 관리합니다.",
     loading: "저장된 개인 설정을 불러오는 중입니다.",
     actions: {
       openDefaultHome: "기본 진입 화면 열기",
@@ -54,11 +54,11 @@ export const commonKo = {
     sections: {
       language: {
         title: "언어",
-        description: "현재 사용자에게 적용할 화면 언어입니다. 조직 설정과 분리해서 저장합니다.",
+        description: "현재 사용자에게 적용할 화면 언어입니다.",
       },
       theme: {
         title: "테마",
-        description: "개인별 화면 테마입니다. 색상 하나가 아니라 배경, 카드, 버튼, 상태, 입력 필드 톤을 함께 바꿉니다.",
+        description: "개인별 화면 테마입니다. 배경, 카드, 버튼, 상태, 입력 필드 톤을 함께 바꿉니다.",
       },
       density: {
         title: "화면 밀도",

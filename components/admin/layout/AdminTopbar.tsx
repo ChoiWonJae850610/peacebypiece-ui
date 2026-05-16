@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
+import { AdminModal } from "@/components/admin/layout/AdminModal";
+import { PersonalSettingsPanel } from "@/components/me/PersonalSettingsPage";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminTopbarProps = {
@@ -80,6 +83,7 @@ function LogoutIcon() {
 
 export default function AdminTopbar({ companyName, appVersion, title, description }: AdminTopbarProps) {
   const t = useAdminTranslation();
+  const [personalSettingsOpen, setPersonalSettingsOpen] = useState(false);
   const localizedTitle = getLocalizedTopbarTitle(title, t);
   const summary = getTopbarSummary(localizedTitle, description, t);
 
@@ -111,14 +115,15 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
           >
             <HomeIcon />
           </Link>
-          <Link
-            href="/me/settings"
+          <button
+            type="button"
+            onClick={() => setPersonalSettingsOpen(true)}
             aria-label={t("topbar.actions.personalSettings", "개인 설정")}
             title={t("topbar.actions.personalSettings", "개인 설정")}
             className="pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition"
           >
             <UserIcon />
-          </Link>
+          </button>
           <Link href="/admin/settings" aria-label={t("topbar.actions.adminSettings", "환경설정")} title={t("topbar.actions.adminSettings", "환경설정")} className="pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition">
             <SettingsIcon />
           </Link>
@@ -134,6 +139,17 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
           </form>
         </div>
       </div>
+      <AdminModal
+        open={personalSettingsOpen}
+        title={t("topbar.actions.personalSettings", "개인 설정")}
+        description={t("topbar.personalSettingsDescription", "언어와 테마만 개인별로 변경합니다.")}
+        onClose={() => setPersonalSettingsOpen(false)}
+        maxWidthClass="md:max-w-2xl"
+        bodyClassName="space-y-4 [scrollbar-gutter:stable]"
+        minHeightClassName="md:min-h-[420px]"
+      >
+        <PersonalSettingsPanel />
+      </AdminModal>
     </header>
   );
 }

@@ -972,6 +972,7 @@ export const adminKo = {
     unknownLabel: "확인 필요",
   },
   topbar: {
+    personalSettingsDescription: "개인 설정에서는 언어와 테마만 변경합니다.",
     actions: {
       home: "홈",
       personalSettings: "개인 설정",

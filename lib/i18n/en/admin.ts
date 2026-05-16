@@ -994,6 +994,7 @@ export const adminEn = {
     unknownLabel: "Needs Review",
   },
   topbar: {
+    personalSettingsDescription: "Personal settings only change language and theme.",
     actions: {
       home: "Home",
       personalSettings: "Personal settings",
