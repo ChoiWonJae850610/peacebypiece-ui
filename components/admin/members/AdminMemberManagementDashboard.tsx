@@ -133,9 +133,9 @@ const editableMemberPermissionCodes = MEMBER_PERMISSION_CATALOG.filter(
 ).map((permission) => permission.code);
 
 const MEMBER_INVITE_PANEL_HEIGHT_CLASS = "h-[452px] min-h-[452px]";
-const MEMBER_INVITE_PANEL_CONTENT_CLASS = "flex flex-1 flex-col pt-4";
+const MEMBER_INVITE_PANEL_CONTENT_CLASS = "flex min-h-0 flex-1 flex-col pt-4";
 const MEMBER_INVITATION_TABLE_CONTENT_CLASS =
-  "grid min-h-0 flex-1 grid-rows-[1fr] overflow-hidden pt-4";
+  "flex min-h-0 flex-1 flex-col overflow-hidden pt-4";
 
 type MemberManagementTab = "invite" | "approval" | "members" | "permissions";
 
