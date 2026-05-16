@@ -11,6 +11,8 @@ export interface JoinRequestDraft {
   applicantName: string;
   applicantEmail: string;
   applicantPhone?: string | null;
+  googleSub?: string | null;
+  googlePictureUrl?: string | null;
   requestedCompanyName?: string | null;
   businessName?: string | null;
   requestMemo?: string | null;
@@ -38,6 +40,8 @@ export interface JoinRequestRecord {
   businessName: string | null;
   applicantName: string | null;
   applicantPhone: string | null;
+  googleSub: string | null;
+  googlePictureUrl: string | null;
   requestMemo: string | null;
   status: JoinRequestStatus;
   reviewedByUserId: string | null;

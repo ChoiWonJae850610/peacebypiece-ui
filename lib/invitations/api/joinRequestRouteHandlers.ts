@@ -42,6 +42,8 @@ interface CreateJoinRequestBody {
   applicantName?: string | null;
   applicantEmail?: string | null;
   applicantPhone?: string | null;
+  googleSub?: string | null;
+  googlePictureUrl?: string | null;
   requestedCompanyName?: string | null;
   businessName?: string | null;
   requestMemo?: string | null;
@@ -390,6 +392,8 @@ function toJoinRequestDraft(body: CreateJoinRequestBody): JoinRequestDraft {
     applicantName: body.applicantName ?? "",
     applicantEmail: body.applicantEmail ?? "",
     applicantPhone: body.applicantPhone ?? null,
+    googleSub: body.googleSub ?? null,
+    googlePictureUrl: body.googlePictureUrl ?? null,
     requestedCompanyName: body.requestedCompanyName ?? null,
     businessName: body.businessName ?? null,
     requestMemo: body.requestMemo ?? null,

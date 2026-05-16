@@ -27,6 +27,7 @@ export interface InvitationDraft {
 export interface InvitationRecord {
   id: string;
   companyId: string | null;
+  companyName?: string | null;
   recipientEmail: string;
   recipientRole: InvitationRecipientRole;
   permissionPreset: InvitationPermissionPreset;

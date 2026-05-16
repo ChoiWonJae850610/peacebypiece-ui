@@ -14,9 +14,9 @@ import type {
   InvitationScope,
 } from "../invitationTypes";
 
-const SAMPLE_COMPANY_ID = "company-sample-customer";
-const SAMPLE_ADMIN_USER_ID = "user-sample-admin";
-const SAMPLE_SYSTEM_USER_ID = "system-user-sample-admin";
+import { WORKSPACE_ADMIN_USER_ID, WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
+
+const SYSTEM_ADMIN_USER_ID = "system-user-seed-admin";
 
 interface CreateInvitationRequestBody {
   companyId?: string | null;
@@ -46,7 +46,7 @@ function toInvitationDraft(body: CreateInvitationRequestBody): InvitationDraft {
   const permissionPreset =
     body.permissionPreset ??
     (recipientRole === "admin" ? "company_admin" : recipientRole);
-  const inviterCompanyId = body.inviterCompanyId ?? (scope === "company_to_member" ? SAMPLE_COMPANY_ID : null);
+  const inviterCompanyId = body.inviterCompanyId ?? (scope === "company_to_member" ? WORKSPACE_COMPANY_ID : null);
 
   return {
     companyId: body.companyId ?? inviterCompanyId ?? null,
@@ -56,8 +56,8 @@ function toInvitationDraft(body: CreateInvitationRequestBody): InvitationDraft {
     permissionPreset,
     scope,
     expiresAt: body.expiresAt ?? getDefaultInvitationExpiresAt(),
-    createdByUserId: body.createdByUserId ?? (scope === "company_to_member" ? SAMPLE_ADMIN_USER_ID : null),
-    createdBySystemUserId: body.createdBySystemUserId ?? (scope === "system_to_company_admin" ? SAMPLE_SYSTEM_USER_ID : null),
+    createdByUserId: body.createdByUserId ?? (scope === "company_to_member" ? WORKSPACE_ADMIN_USER_ID : null),
+    createdBySystemUserId: body.createdBySystemUserId ?? (scope === "system_to_company_admin" ? SYSTEM_ADMIN_USER_ID : null),
   };
 }
 

@@ -91,6 +91,8 @@ type JoinRequestDbRow = {
   business_name: string | null;
   applicant_name: string | null;
   applicant_phone: string | null;
+  google_sub: string | null;
+  google_picture_url: string | null;
   request_memo: string | null;
   status: JoinRequestRecord["status"];
   reviewed_by_user_id: string | null;
@@ -126,6 +128,8 @@ function toJoinRequestRecord(row: JoinRequestDbRow): JoinRequestRecord {
     businessName: row.business_name,
     applicantName: row.applicant_name,
     applicantPhone: row.applicant_phone,
+    googleSub: row.google_sub,
+    googlePictureUrl: row.google_picture_url,
     requestMemo: row.request_memo,
     status: row.status,
     reviewedByUserId: row.reviewed_by_user_id,
@@ -177,6 +181,8 @@ function createInMemoryJoinRequest(
     businessName: normalizeText(draft.businessName),
     applicantName: normalizeText(draft.applicantName),
     applicantPhone: normalizeText(draft.applicantPhone),
+    googleSub: normalizeText(draft.googleSub),
+    googlePictureUrl: normalizeText(draft.googlePictureUrl),
     requestMemo: normalizeText(draft.requestMemo),
     status: "pending",
     reviewedByUserId: null,
@@ -205,6 +211,8 @@ async function createDbJoinRequest(
         business_name,
         applicant_name,
         applicant_phone,
+        google_sub,
+        google_picture_url,
         request_memo,
         status,
         reviewed_by_user_id,
@@ -238,10 +246,12 @@ async function createDbJoinRequest(
         business_name,
         applicant_name,
         applicant_phone,
+        google_sub,
+        google_picture_url,
         request_memo,
         status
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'pending')
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'pending')
       RETURNING
         id,
         invitation_id,
@@ -252,6 +262,8 @@ async function createDbJoinRequest(
         business_name,
         applicant_name,
         applicant_phone,
+        google_sub,
+        google_picture_url,
         request_memo,
         status,
         reviewed_by_user_id,
@@ -271,6 +283,8 @@ async function createDbJoinRequest(
       normalizeText(draft.businessName),
       normalizeText(draft.applicantName),
       normalizeText(draft.applicantPhone),
+      normalizeText(draft.googleSub),
+      normalizeText(draft.googlePictureUrl),
       normalizeText(draft.requestMemo),
     ],
   );
@@ -355,6 +369,8 @@ async function listDbJoinRequests(input: JoinRequestLookupInput): Promise<JoinRe
         join_requests.business_name,
         join_requests.applicant_name,
         join_requests.applicant_phone,
+        join_requests.google_sub,
+        join_requests.google_picture_url,
         join_requests.request_memo,
         join_requests.status,
         join_requests.reviewed_by_user_id,
@@ -396,6 +412,10 @@ type UserDbRow = {
   email: string | null;
   name: string;
   role: string;
+  google_sub?: string | null;
+  google_picture_url?: string | null;
+  phone?: string | null;
+  birthday?: string | Date | null;
 };
 
 type CompanyMemberDbRow = {
@@ -527,6 +547,8 @@ async function selectDbJoinRequestById(
         join_requests.business_name,
         join_requests.applicant_name,
         join_requests.applicant_phone,
+        join_requests.google_sub,
+        join_requests.google_picture_url,
         join_requests.request_memo,
         join_requests.status,
         join_requests.reviewed_by_user_id,
@@ -562,6 +584,9 @@ async function findOrCreateMemberUser(
     companyId: string;
     applicantEmail: string;
     applicantName: string | null;
+    applicantPhone?: string | null;
+    googleSub?: string | null;
+    googlePictureUrl?: string | null;
     roleTemplateCode: MemberPermissionRoleTemplateCode;
     preferredUserId?: string | null;
   },
@@ -570,16 +595,30 @@ async function findOrCreateMemberUser(
 
   if (input.preferredUserId?.trim()) {
     const preferred = await client.query<UserDbRow>(
-      `SELECT id, company_id, email, name, role FROM users WHERE id = $1 LIMIT 1`,
+      `SELECT id, company_id, email, name, role, google_sub, google_picture_url, phone, birthday FROM users WHERE id = $1 LIMIT 1`,
       [input.preferredUserId.trim()],
     );
 
     if (preferred.rows[0]) return preferred.rows[0];
   }
 
+  if (input.googleSub?.trim()) {
+    const existingGoogleUser = await client.query<UserDbRow>(
+      `
+        SELECT id, company_id, email, name, role, google_sub, google_picture_url, phone, birthday
+          FROM users
+         WHERE google_sub = $1
+         LIMIT 1
+      `,
+      [input.googleSub.trim()],
+    );
+
+    if (existingGoogleUser.rows[0]) return existingGoogleUser.rows[0];
+  }
+
   const existing = await client.query<UserDbRow>(
     `
-      SELECT id, company_id, email, name, role
+      SELECT id, company_id, email, name, role, google_sub, google_picture_url, phone, birthday
         FROM users
        WHERE company_id = $1
          AND lower(email) = lower($2)
@@ -588,16 +627,59 @@ async function findOrCreateMemberUser(
     [input.companyId, normalizedEmail],
   );
 
-  if (existing.rows[0]) return existing.rows[0];
+  if (existing.rows[0]) {
+    if (input.googleSub?.trim() && !existing.rows[0].google_sub) {
+      await client.query(
+        `
+          UPDATE users
+             SET google_sub = $2,
+                 google_picture_url = COALESCE($3, google_picture_url),
+                 phone = COALESCE($4, phone),
+                 phone_source = CASE WHEN $4 IS NULL THEN phone_source ELSE COALESCE(phone_source, 'user') END,
+                 updated_at = now()
+           WHERE id = $1
+        `,
+        [
+          existing.rows[0].id,
+          input.googleSub.trim(),
+          normalizeText(input.googlePictureUrl),
+          normalizeText(input.applicantPhone),
+        ],
+      );
+    }
+    return existing.rows[0];
+  }
 
   const displayName = input.applicantName?.trim() || normalizedEmail;
   const result = await client.query<UserDbRow>(
     `
-      INSERT INTO users (id, company_id, email, name, role, is_active)
-      VALUES ($1, $2, $3, $4, $5, true)
-      RETURNING id, company_id, email, name, role
+      INSERT INTO users (
+        id,
+        company_id,
+        email,
+        name,
+        role,
+        google_sub,
+        google_picture_url,
+        phone,
+        phone_source,
+        birthday,
+        birthday_source,
+        is_active
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CASE WHEN $8 IS NULL THEN NULL ELSE 'user' END, NULL, NULL, true)
+      RETURNING id, company_id, email, name, role, google_sub, google_picture_url, phone, birthday
     `,
-    [randomUUID(), input.companyId, normalizedEmail, displayName, input.roleTemplateCode],
+    [
+      randomUUID(),
+      input.companyId,
+      normalizedEmail,
+      displayName,
+      input.roleTemplateCode,
+      normalizeText(input.googleSub),
+      normalizeText(input.googlePictureUrl),
+      normalizeText(input.applicantPhone),
+    ],
   );
 
   const row = result.rows[0];
@@ -1001,6 +1083,9 @@ async function approveDbMemberJoinRequest(
       companyId,
       applicantEmail: joinRequest.applicantEmail,
       applicantName: joinRequest.applicantName,
+      applicantPhone: joinRequest.applicantPhone,
+      googleSub: joinRequest.googleSub,
+      googlePictureUrl: joinRequest.googlePictureUrl,
       roleTemplateCode,
       preferredUserId: joinRequest.userId,
     });

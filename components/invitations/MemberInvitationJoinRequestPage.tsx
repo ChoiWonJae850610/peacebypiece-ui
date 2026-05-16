@@ -6,7 +6,7 @@ interface MemberInvitationJoinRequestPageProps {
   token: string;
 }
 
-type SubmitState = "idle" | "submitting" | "success" | "error";
+type SubmitState = "idle" | "redirecting";
 
 type VerifyState = "idle" | "loading" | "valid" | "invalid";
 
@@ -43,7 +43,7 @@ function formatDate(value?: string | null): string {
 }
 
 function readCompanyName(invitation: PublicMemberInvitation | null): string {
-  return invitation?.companyName || invitation?.customerName || "Seolo Seoul";
+  return invitation?.companyName || invitation?.customerName || "초대한 고객사";
 }
 
 function readFriendlyError(error: string | null): string {
@@ -78,22 +78,13 @@ function WaffleGridMark() {
 export default function MemberInvitationJoinRequestPage({
   token,
 }: MemberInvitationJoinRequestPageProps) {
-  const [verifyState, setVerifyState] = useState<VerifyState>(token.startsWith("preview-") ? "valid" : "idle");
+  const [verifyState, setVerifyState] = useState<VerifyState>("idle");
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [message, setMessage] = useState<string | null>(null);
-  const [invitation, setInvitation] = useState<PublicMemberInvitation | null>(
-    token.startsWith("preview-")
-      ? {
-          companyName: "Seolo Seoul",
-          permissionPreset: "검수 담당",
-          status: "pending",
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        }
-      : null,
-  );
+  const [invitation, setInvitation] = useState<PublicMemberInvitation | null>(null);
 
   useEffect(() => {
-    if (!token || token.startsWith("preview-")) return;
+    if (!token) return;
 
     const controller = new AbortController();
 
@@ -128,18 +119,12 @@ export default function MemberInvitationJoinRequestPage({
 
   const companyName = readCompanyName(invitation);
   const expiresAtLabel = formatDate(invitation?.expiresAt);
-  const isJoinable = verifyState === "valid" && submitState !== "submitting";
+  const isJoinable = verifyState === "valid" && submitState !== "redirecting";
 
-  async function handleMockGoogleJoin() {
+  function handleGoogleJoin() {
     if (!isJoinable) return;
-
-    setSubmitState("submitting");
-    setMessage(null);
-
-    window.setTimeout(() => {
-      setSubmitState("success");
-      setMessage("가입 신청이 접수되었어요.");
-    }, 520);
+    setSubmitState("redirecting");
+    window.location.href = `/api/auth/google/start?requestType=member&token=${encodeURIComponent(token)}`;
   }
 
   return (
@@ -198,23 +183,15 @@ export default function MemberInvitationJoinRequestPage({
                 </div>
               ) : null}
 
-              {submitState === "success" ? (
-                <div className="rounded-3xl border border-[#8DBE7C]/70 bg-[#F1FAEA] px-5 py-4 text-sm font-bold text-[#346C2C]">
-                  {message}
-                </div>
-              ) : null}
-
-              {submitState !== "success" ? (
-                <button
+              <button
                   type="button"
                   disabled={!isJoinable}
-                  onClick={handleMockGoogleJoin}
+                  onClick={handleGoogleJoin}
                   className="flex w-full items-center justify-center gap-3 rounded-[1.4rem] bg-[#2A2016] px-5 py-4 text-sm font-black text-[#FFF8E7] shadow-[0_14px_30px_rgba(72,42,16,0.22)] transition hover:-translate-y-0.5 hover:bg-[#3A2A1B] disabled:translate-y-0 disabled:bg-[#D8CDBB] disabled:text-[#857464]"
                 >
                   <GoogleMark />
-                  {submitState === "submitting" ? "Google 계정 확인 중" : "Google로 계속하기"}
+                  {submitState === "redirecting" ? "Google로 이동 중" : "Google로 계속하기"}
                 </button>
-              ) : null}
             </div>
           </aside>
         </div>

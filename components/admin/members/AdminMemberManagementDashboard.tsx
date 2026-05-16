@@ -23,7 +23,7 @@ import {
   getMemberRoleTemplatePermissions,
   hasEveryMemberPermission,
 } from "@/lib/permissions";
-import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
+import { WORKSPACE_ADMIN_USER_ID, WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 import { AdminButton } from "@/components/admin/common/AdminButton";
 import AdminPanelSection from "@/components/admin/common/AdminPanelSection";
 import AdminSegmentedTabs from "@/components/admin/common/AdminSegmentedTabs";
@@ -386,7 +386,7 @@ export default function AdminMemberManagementDashboard() {
       source: "member",
       name: member.name,
       email: member.email || "-",
-      phone: "-",
+      phone: member.phone || "-",
       roleId: member.roleId,
       status: member.status,
       requestedAt: "-",
@@ -693,7 +693,7 @@ export default function AdminMemberManagementDashboard() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            actorUserId: "user-sample-admin",
+            actorUserId: WORKSPACE_ADMIN_USER_ID,
             roleTemplateCode: request.requestedRoleId,
             permissionCodes: getMemberRoleTemplatePermissions(
               request.requestedRoleId,
@@ -783,7 +783,7 @@ export default function AdminMemberManagementDashboard() {
             | "viewer",
           permissionPreset: selectedRole.id,
           expiresAt,
-          createdByUserId: "user-sample-admin",
+          createdByUserId: undefined,
         }),
       });
       const payload = await response.json();

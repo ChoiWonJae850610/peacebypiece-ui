@@ -28,6 +28,8 @@ type AdminCompanyMemberDbRow = {
   company_id: string;
   user_id: string;
   email: string | null;
+  phone: string | null;
+  birthday: string | Date | null;
   user_name: string | null;
   display_name: string | null;
   role_template_code: string | null;
@@ -99,6 +101,8 @@ function toAdminCompanyMemberRecord(row: AdminCompanyMemberDbRow): AdminCompanyM
     companyId: row.company_id,
     userId: row.user_id,
     email: row.email,
+    phone: row.phone,
+    birthday: toIso(row.birthday),
     name,
     displayName: row.display_name,
     roleTemplateCode: toRoleTemplateCode(row.role_template_code),
@@ -122,6 +126,8 @@ async function selectCompanyMemberById(
              company_members.company_id,
              company_members.user_id,
              users.email,
+             users.phone,
+             users.birthday,
              users.name AS user_name,
              company_members.display_name,
              company_members.role_template_code,
@@ -172,6 +178,8 @@ async function listDbCompanyMembers(input: ListAdminCompanyMembersInput): Promis
              company_members.company_id,
              company_members.user_id,
              users.email,
+             users.phone,
+             users.birthday,
              users.name AS user_name,
              company_members.display_name,
              company_members.role_template_code,

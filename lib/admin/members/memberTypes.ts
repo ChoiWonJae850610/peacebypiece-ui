@@ -7,6 +7,8 @@ export interface AdminCompanyMemberRecord {
   companyId: string;
   userId: string;
   email: string | null;
+  phone: string | null;
+  birthday: string | null;
   name: string;
   displayName: string | null;
   roleTemplateCode: MemberPermissionRoleTemplateCode;

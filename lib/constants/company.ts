@@ -4,9 +4,10 @@ export {
   SAMPLE_SYSTEM_COMPANY_SUMMARIES as SYSTEM_COMPANY_SUMMARIES,
 } from "@/lib/data/sample/system";
 
-export const WORKSPACE_COMPANY_ID = "company-sample-customer";
-export const WORKSPACE_COMPANY_NAME = "샘플 고객사"
-export const WORKSPACE_COMPANY_NAME_EN = "CUSTOMER NAME";
+export const WORKSPACE_COMPANY_ID = "company-seolo-seoul";
+export const WORKSPACE_COMPANY_NAME = "Seolo Seoul";
+export const WORKSPACE_COMPANY_NAME_EN = "Seolo Seoul";
+export const WORKSPACE_ADMIN_USER_ID = "user-seolo-seoul-admin";
 
 export type WorkspaceCompanyContext = {
   companyId: string;

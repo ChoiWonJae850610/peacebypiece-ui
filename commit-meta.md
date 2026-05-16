@@ -1,13 +1,28 @@
-Version : 0.13.15
-Summary : 고객사 멤버관리 승인과 멤버 목록 탭 통합
-Description : 승인 탭과 전체 멤버 탭을 멤버 관리 탭으로 통합하고, 승인 대기와 등록 멤버를 한 테이블에서 상태 기준으로 관리하도록 UI 구조와 컬럼을 정리했습니다. 생일/메모/요청 역할 컬럼은 제외하고 이름, 이메일, 연락처, 권한, 상태, 신청일, 승인일, 마지막 접속일시, 액션 컬럼으로 재구성했습니다.
+Version : 0.13.16
+Summary : Google OAuth 기반 초대 가입 신청과 Seolo Seoul 테스트 DB 기준 추가
+Description : 초대 링크에서 Google 이름과 이메일로 가입 신청을 생성하는 OAuth 시작/콜백 route를 추가하고, users/join_requests에 Google 식별자·프로필·연락처·생일 준비 필드를 반영했습니다. Seolo Seoul 고객사와 관리자 seed SQL을 추가하고, 초대 생성 기본 고객사/관리자 기준을 WAFL 테스트 기준으로 정리했습니다. 실제 Google phone scope, SMS/email 발송, 관리자 세션 인증은 포함하지 않았습니다.
 수정 파일 목록 :
-- lib/constants/app.ts
+- .env.example
 - components/admin/members/AdminMemberManagementDashboard.tsx
+- components/invitations/MemberInvitationJoinRequestPage.tsx
+- db/schema/full_reset.sql
 - lib/admin/members/memberManagementPresentation.ts
-- lib/i18n/ko/admin.ts
-- lib/i18n/en/admin.ts
+- lib/admin/members/memberRepository.ts
+- lib/admin/members/memberTypes.ts
+- lib/constants/app.ts
+- lib/constants/company.ts
+- lib/invitations/api/invitationRouteHandlers.ts
+- lib/invitations/api/joinRequestRouteHandlers.ts
+- lib/invitations/invitationRepository.ts
+- lib/invitations/invitationTypes.ts
+- lib/invitations/joinRequestRepository.ts
+- lib/invitations/joinRequestTypes.ts
 추가 파일 목록 :
-- 없음
+- app/api/auth/google/callback/route.ts
+- app/api/auth/google/start/route.ts
+- app/invite/error/page.tsx
+- db/schema/patch_0_13_16_google_oauth_member_join.sql
+- db/seed/seolo_seoul_admin_seed.sql
+- lib/auth/googleOAuth.ts
 삭제 파일 목록 :
 - 없음

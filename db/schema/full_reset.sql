@@ -1,5 +1,5 @@
 -- =========================================
--- PeaceByPiece full DB reset schema
+-- WAFL full DB reset schema
 -- Version: 0.10.79
 --
 -- 기준:
@@ -169,11 +169,20 @@ CREATE TABLE users (
   company_id text NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
   email text,
   name text NOT NULL,
+  google_sub text,
+  google_picture_url text,
+  phone text,
+  phone_source text,
+  birthday date,
+  birthday_source text,
   role text NOT NULL DEFAULT 'designer',
   is_active boolean NOT NULL DEFAULT true,
   last_login_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT users_google_sub_unique UNIQUE (google_sub),
+  CONSTRAINT users_phone_source_check CHECK (phone_source IS NULL OR phone_source IN ('google', 'user', 'invitation')),
+  CONSTRAINT users_birthday_source_check CHECK (birthday_source IS NULL OR birthday_source IN ('user')),
   CONSTRAINT users_role_check CHECK (
     role IN ('admin', 'designer', 'inspector', 'inventory_manager', 'viewer', 'system')
   )
@@ -1673,6 +1682,8 @@ CREATE TABLE join_requests (
   business_name text,
   applicant_name text,
   applicant_phone text,
+  google_sub text,
+  google_picture_url text,
   request_memo text,
   status text NOT NULL DEFAULT 'pending',
   reviewed_by_user_id text REFERENCES users(id),
@@ -1924,5 +1935,18 @@ COMMENT ON TABLE storage_usage_snapshots IS '고객사별 저장공간 사용량
 COMMENT ON TABLE company_workorder_daily_stats IS '고객사별 일 단위 작업지시서/발주/메모/첨부 통계 summary table. 초기 통계 API의 선택적 캐시/집계 저장소로 사용한다.';
 COMMENT ON TABLE company_workorder_monthly_stats IS '고객사별 월 단위 작업지시서 통계 summary table. stats_month는 해당 월 1일로 저장한다.';
 COMMENT ON TABLE company_storage_daily_stats IS '고객사별 일 단위 저장소/휴지통/purge 통계 summary table. 실제 R2 list 조회가 아니라 DB metadata 기준 집계를 저장한다.';
+
+
+CREATE INDEX IF NOT EXISTS users_google_sub_idx
+  ON users (google_sub)
+  WHERE google_sub IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS users_company_email_idx
+  ON users (company_id, lower(email))
+  WHERE email IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS join_requests_google_sub_idx
+  ON join_requests (google_sub)
+  WHERE google_sub IS NOT NULL;
 
 COMMIT;

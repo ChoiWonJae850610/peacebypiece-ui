@@ -40,6 +40,7 @@ function createInvitationRecord(
   return {
     id: randomUUID(),
     companyId: draft.companyId ?? null,
+    companyName: null,
     recipientEmail: normalizeEmail(draft.recipientEmail),
     recipientRole: draft.recipientRole,
     permissionPreset: draft.permissionPreset,
@@ -61,6 +62,7 @@ type InvitationDbRow = {
   id: string;
   company_id: string | null;
   recipient_email: string;
+  company_name?: string | null;
   recipient_role: InvitationRecord["recipientRole"];
   permission_preset: InvitationRecord["permissionPreset"];
   scope: InvitationRecord["scope"];
@@ -85,6 +87,7 @@ function toInvitationRecord(row: InvitationDbRow): InvitationRecord {
   return {
     id: row.id,
     companyId: row.company_id,
+    companyName: row.company_name ?? null,
     recipientEmail: row.recipient_email,
     recipientRole: row.recipient_role,
     permissionPreset: row.permission_preset,
@@ -164,6 +167,7 @@ async function listDbInvitations(companyId: string): Promise<InvitationRecord[]>
         id,
         company_id,
         recipient_email,
+        company_name,
         recipient_role,
         permission_preset,
         scope,
@@ -177,7 +181,11 @@ async function listDbInvitations(companyId: string): Promise<InvitationRecord[]>
         accepted_user_id,
         created_at,
         updated_at
-      FROM invitations
+      FROM (
+        SELECT invitations.*, companies.name AS company_name
+          FROM invitations
+          LEFT JOIN companies ON companies.id = invitations.company_id
+      ) invitations
       WHERE company_id = $1
       ORDER BY created_at DESC
     `,
@@ -195,6 +203,7 @@ async function findDbInvitationByRawToken(rawToken: string): Promise<InvitationR
         id,
         company_id,
         recipient_email,
+        company_name,
         recipient_role,
         permission_preset,
         scope,
@@ -208,7 +217,11 @@ async function findDbInvitationByRawToken(rawToken: string): Promise<InvitationR
         accepted_user_id,
         created_at,
         updated_at
-      FROM invitations
+      FROM (
+        SELECT invitations.*, companies.name AS company_name
+          FROM invitations
+          LEFT JOIN companies ON companies.id = invitations.company_id
+      ) invitations
       WHERE token_hash = $1
       LIMIT 1
     `,
