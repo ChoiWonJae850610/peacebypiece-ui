@@ -230,12 +230,6 @@ export default function AdminMemberManagementDashboard() {
   const [reviewingJoinRequestId, setReviewingJoinRequestId] = useState<
     string | null
   >(null);
-  const [joinRequestReviewMessage, setJoinRequestReviewMessage] = useState<
-    string | null
-  >(null);
-  const [joinRequestReviewError, setJoinRequestReviewError] = useState<
-    string | null
-  >(null);
   const canCreateInvite = hasEveryMemberPermission(
     { permissionCodes: currentPermissionCodes },
     ["member.invite"],
@@ -683,8 +677,6 @@ export default function AdminMemberManagementDashboard() {
     if (reviewingJoinRequestId) return;
 
     setReviewingJoinRequestId(request.id);
-    setJoinRequestReviewError(null);
-    setJoinRequestReviewMessage(null);
 
     try {
       const response = await fetch(
@@ -709,7 +701,7 @@ export default function AdminMemberManagementDashboard() {
         throw new Error(payload.error ?? "JOIN_REQUEST_REVIEW_FAILED");
       }
 
-      setJoinRequestReviewMessage(
+      setFeedbackMessage(
         action === "approve"
           ? t(
               "memberManagement.reviewActions.approveSuccess",
@@ -723,8 +715,17 @@ export default function AdminMemberManagementDashboard() {
       await loadMemberJoinRequests();
       await loadCompanyMembers();
     } catch (error) {
-      setJoinRequestReviewError(
-        error instanceof Error ? error.message : "JOIN_REQUEST_REVIEW_FAILED",
+      console.error("[admin:members] join request review failed", error);
+      setFeedbackMessage(
+        action === "approve"
+          ? t(
+              "memberManagement.reviewActions.approveError",
+              "승인 처리에 실패했습니다.",
+            )
+          : t(
+              "memberManagement.reviewActions.rejectError",
+              "거절 처리에 실패했습니다.",
+            ),
       );
     } finally {
       setReviewingJoinRequestId(null);
@@ -1222,21 +1223,6 @@ export default function AdminMemberManagementDashboard() {
                   {joinRequestLoadError}
                 </p>
               ) : null}
-              {joinRequestReviewMessage ? (
-                <p className="mb-3 rounded-2xl border border-[var(--pbp-accent-border)] bg-[var(--pbp-accent-soft)] px-4 py-3 text-xs font-semibold text-[var(--pbp-accent)]">
-                  {joinRequestReviewMessage}
-                </p>
-              ) : null}
-              {joinRequestReviewError ? (
-                <p className="mb-3 rounded-2xl border px-4 py-3 text-xs font-semibold pbp-action-danger-soft">
-                  {t(
-                    "memberManagement.reviewActions.error",
-                    "가입 신청 처리에 실패했습니다.",
-                  )}{" "}
-                  {joinRequestReviewError}
-                </p>
-              ) : null}
-
               <AdminTable
                 items={filteredMemberDirectoryRows}
                 columns={memberDirectoryColumns}

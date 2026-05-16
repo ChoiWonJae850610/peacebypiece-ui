@@ -570,6 +570,8 @@ export const adminKo = {
       processing: "처리 중",
       approveSuccess: "가입 신청을 승인했습니다.",
       rejectSuccess: "가입 신청을 거절했습니다.",
+      approveError: "승인 처리에 실패했습니다.",
+      rejectError: "거절 처리에 실패했습니다.",
       error: "가입 신청 처리에 실패했습니다.",
     },
     memberActions: {

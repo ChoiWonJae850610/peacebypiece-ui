@@ -635,7 +635,7 @@ async function findOrCreateMemberUser(
              SET google_sub = $2,
                  google_picture_url = COALESCE($3, google_picture_url),
                  phone = COALESCE($4, phone),
-                 phone_source = CASE WHEN $4 IS NULL THEN phone_source ELSE COALESCE(phone_source, 'user') END,
+                 phone_source = CASE WHEN $4::text IS NULL THEN phone_source ELSE COALESCE(phone_source, 'user') END,
                  updated_at = now()
            WHERE id = $1
         `,
@@ -667,7 +667,7 @@ async function findOrCreateMemberUser(
         birthday_source,
         is_active
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CASE WHEN $8 IS NULL THEN NULL ELSE 'user' END, NULL, NULL, true)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8::text, CASE WHEN $8::text IS NULL THEN NULL ELSE 'user' END, NULL, NULL, true)
       RETURNING id, company_id, email, name, role, google_sub, google_picture_url, phone, birthday
     `,
     [

@@ -581,6 +581,8 @@ export const adminEn = {
       processing: "Processing",
       approveSuccess: "The join request has been approved.",
       rejectSuccess: "The join request has been rejected.",
+      approveError: "Could not approve the request.",
+      rejectError: "Could not reject the request.",
       error: "Failed to process the join request.",
     },
     memberActions: {

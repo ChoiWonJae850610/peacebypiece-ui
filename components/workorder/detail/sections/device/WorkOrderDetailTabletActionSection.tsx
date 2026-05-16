@@ -1,6 +1,6 @@
 import { useI18n } from "@/lib/i18n";
 import { getStageDotTone } from "@/lib/workorder/presentation/statusPresentation";
-import { translateDisplayStageLabel, translateWorkflowActionLabel, translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
+import { translateDisplayStageLabel, translateWorkflowActionLabel } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import type { WorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
 
 type ActionProps = WorkOrderDetailViewModel["actionProps"];
@@ -17,23 +17,11 @@ export default function WorkOrderDetailTabletActionSection({
   onAction,
   workflowProcessingLabel = null,
   isWorkspaceWriteLocked = false,
-  workspaceWriteLockMessage,
 }: ActionProps) {
   const { i18n, locale } = useI18n();
   const copy = i18n.workorder.ui.actionSection;
   const isWorkflowProcessing = Boolean(workflowProcessingLabel);
   const isActionLocked = isWorkflowProcessing || Boolean(isWorkspaceWriteLocked);
-  const processingAction = workflowProcessingLabel
-    ? actions.find((action) => action.label === workflowProcessingLabel)
-    : undefined;
-  const processingMessage = workflowProcessingLabel
-    ? getProcessingLabel(
-        processingAction
-          ? translateWorkflowActionLabel(processingAction, i18n, locale)
-          : translateWorkOrderDisplayText(workflowProcessingLabel, locale),
-        copy.processingFormat,
-      )
-    : workspaceWriteLockMessage;
 
   return (
     <section className="pbp-workflow-panel rounded-2xl border p-4">
@@ -61,11 +49,6 @@ export default function WorkOrderDetailTabletActionSection({
           </div>
         ) : null}
       </div>
-      {processingMessage ? (
-        <div className="pbp-workflow-message mt-4 rounded-xl border px-3 py-2 text-xs font-medium">
-          {processingMessage}
-        </div>
-      ) : null}
       <div className="mt-4 grid grid-cols-3 gap-2">
         {stages.map((stage) => {
           const isCurrent = stage === currentStage;

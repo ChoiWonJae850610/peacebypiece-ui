@@ -1,6 +1,6 @@
 import { useI18n } from "@/lib/i18n";
 import { getStageDotTone, getStageTextTone } from "@/lib/workorder/presentation/statusPresentation";
-import { translateDisplayStageLabel, translateWorkflowActionLabel, translateWorkOrderDisplayText } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
+import { translateDisplayStageLabel, translateWorkflowActionLabel } from "@/lib/workorder/presentation/workOrderDisplayTranslation";
 import type { DisplayStage } from "@/types/workflow";
 import type { WorkflowAction } from "@/types/workorder";
 
@@ -21,7 +21,6 @@ export default function WorkOrderActionSection({
   onSave,
   workflowProcessingLabel = null,
   isWorkspaceWriteLocked = false,
-  workspaceWriteLockMessage,
 }: {
   stages: DisplayStage[];
   currentStage: DisplayStage;
@@ -38,17 +37,6 @@ export default function WorkOrderActionSection({
   const currentIndex = stages.indexOf(currentStage);
   const isWorkflowProcessing = Boolean(workflowProcessingLabel);
   const isActionLocked = isWorkflowProcessing || Boolean(isWorkspaceWriteLocked);
-  const processingAction = workflowProcessingLabel
-    ? actions.find((action) => action.label === workflowProcessingLabel)
-    : undefined;
-  const processingMessage = workflowProcessingLabel
-    ? getProcessingLabel(
-        processingAction
-          ? translateWorkflowActionLabel(processingAction, i18n, locale)
-          : translateWorkOrderDisplayText(workflowProcessingLabel, locale),
-        copy.processingFormat,
-      )
-    : workspaceWriteLockMessage;
   const primaryActionIndex = actions.findIndex((action) => action.actionType !== "reject_review");
   const doneTrackTone = "bg-[var(--pbp-selected-border)]";
   const stageGroups: Array<{ label: string; stages: DisplayStage[] }> = [
@@ -100,12 +88,6 @@ export default function WorkOrderActionSection({
           </div>
         ) : null}
       </div>
-
-      {processingMessage ? (
-        <div className="pbp-workflow-message mt-3 rounded-2xl border px-3 py-2 text-xs font-medium shadow-sm">
-          {processingMessage}
-        </div>
-      ) : null}
 
       <div className="mt-4">
         <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${stages.length}, minmax(0, 1fr))` }}>

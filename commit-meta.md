@@ -1,14 +1,16 @@
-Version : 0.13.19
-Summary : 통계 빈 데이터 표시와 로그아웃 진입 정리
-Description : /admin/stats의 개발용 seed 안내와 준비 중 문구를 제거하고 빈 데이터는 0값과 일반 empty state로 표시되도록 정리했습니다. 관리자 상단바에 로그아웃 버튼을 추가하고 /api/auth/logout route에서 wafl_auth_session 쿠키를 삭제한 뒤 루트 로그인 화면으로 이동하도록 구성했습니다.
+Version : 0.13.20
+Summary : 승인 실패 처리와 진행단계 카드 처리중 메시지 정리
+Description : 멤버 가입 신청 승인 SQL의 null 파라미터 타입 추론 오류를 보정하고, 승인/거절 실패 상세 메시지를 화면 내부 빨간 박스 대신 하단 toast와 로그로 분리했습니다. 작업지시서 진행단계 카드 내부의 처리중 안내 메시지 노출을 제거해 하단 toast 중심 메시지 흐름과 맞췄습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- components/admin/dashboard/AdminStatsDashboard.tsx
-- components/admin/layout/AdminTopbar.tsx
-- lib/admin/stats/dashboardPresentation.ts
+- components/admin/members/AdminMemberManagementDashboard.tsx
+- lib/invitations/joinRequestRepository.ts
 - lib/i18n/ko/admin.ts
 - lib/i18n/en/admin.ts
+- components/workorder/detail/WorkOrderActionSection.tsx
+- components/workorder/detail/sections/device/WorkOrderDetailTabletActionSection.tsx
+- components/workorder/detail/sections/device/WorkOrderDetailMobileActionSection.tsx
 추가 파일 목록 :
-- app/api/auth/logout/route.ts
+- 없음
 삭제 파일 목록 :
 - 없음
