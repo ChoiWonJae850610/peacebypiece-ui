@@ -136,6 +136,8 @@ const MEMBER_INVITE_PANEL_HEIGHT_CLASS = "h-[452px] min-h-[452px]";
 const MEMBER_INVITE_PANEL_CONTENT_CLASS = "flex min-h-0 flex-1 flex-col pt-4";
 const MEMBER_INVITATION_TABLE_CONTENT_CLASS =
   "flex min-h-0 flex-1 flex-col overflow-hidden pt-4";
+const MEMBER_INVITATION_TABLE_VIEWPORT_CLASS =
+  "min-h-0 flex-1 self-stretch -mb-2";
 
 type MemberManagementTab = "invite" | "approval" | "members" | "permissions";
 
@@ -1020,7 +1022,7 @@ export default function AdminMemberManagementDashboard() {
                   gridTemplateColumns="minmax(96px,1.2fr) 44px 72px 78px 70px 30px"
                   headerClassName="hidden shrink-0 gap-2 bg-[var(--pbp-surface-muted)] px-3 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] md:grid"
                   rowBaseClassName="grid w-full min-w-0 gap-2 px-3 py-2.5 text-left text-[11px] md:items-center"
-                  className="h-full min-h-0 flex-1 self-stretch"
+                  className={MEMBER_INVITATION_TABLE_VIEWPORT_CLASS}
                 />
               </AdminPanelSection>
             </section>
