@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-import { APP_VERSION } from "@/lib/constants/app";
-
 interface MemberInvitationJoinRequestPageProps {
   token: string;
 }
@@ -32,28 +30,20 @@ type VerifyInvitationPayload = {
 };
 
 function formatDate(value?: string | null): string {
-  if (!value) return "만료일 확인 중";
+  if (!value) return "만료일을 확인하고 있어요.";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "만료일 확인 중";
+  if (Number.isNaN(date.getTime())) return "만료일을 확인하고 있어요.";
   return new Intl.DateTimeFormat("ko-KR", {
     year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   }).format(date);
 }
 
 function readCompanyName(invitation: PublicMemberInvitation | null): string {
   return invitation?.companyName || invitation?.customerName || "초대한 고객사";
-}
-
-function readPermissionLabel(invitation: PublicMemberInvitation | null): string {
-  const preset = invitation?.permissionPreset || invitation?.recipientRole;
-  if (!preset) return "초대 권한 확인 중";
-  return preset
-    .split(/[_.-]/)
-    .filter(Boolean)
-    .map((part) => part.slice(0, 1).toUpperCase() + part.slice(1))
-    .join(" ");
 }
 
 function readFriendlyError(error: string | null): string {
@@ -95,7 +85,6 @@ export default function MemberInvitationJoinRequestPage({
     token.startsWith("preview-")
       ? {
           companyName: "샘플 고객사",
-          recipientEmail: "member@example.com",
           permissionPreset: "검수 담당",
           status: "pending",
           expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
@@ -138,127 +127,104 @@ export default function MemberInvitationJoinRequestPage({
   }, [token]);
 
   const companyName = readCompanyName(invitation);
-  const permissionLabel = readPermissionLabel(invitation);
   const expiresAtLabel = formatDate(invitation?.expiresAt);
-  const recipientEmail = invitation?.recipientEmail || "Google 계정으로 확인 예정";
   const isJoinable = verifyState === "valid" && submitState !== "submitting";
 
   async function handleMockGoogleJoin() {
     if (!isJoinable) return;
 
     setSubmitState("submitting");
-    setMessage("Google 계정 확인 화면으로 이동하는 중이에요.");
+    setMessage(null);
 
     window.setTimeout(() => {
       setSubmitState("success");
-      setMessage("가입 신청이 접수되었어요. 관리자 승인을 기다려 주세요.");
+      setMessage("가입 신청이 접수되었어요.");
     }, 520);
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#FFF8E7] px-4 py-8 text-[#2B2118] sm:px-6 lg:px-8">
-      <div className="pointer-events-none absolute inset-0 opacity-[0.28] [background-image:linear-gradient(#D79C4A_1px,transparent_1px),linear-gradient(90deg,#D79C4A_1px,transparent_1px)] [background-size:56px_56px]" />
-      <div className="pointer-events-none absolute -left-24 top-24 h-72 w-72 rounded-full bg-[#F5B544]/25 blur-3xl" />
-      <div className="pointer-events-none absolute -right-24 bottom-20 h-72 w-72 rounded-full bg-[#B8742B]/20 blur-3xl" />
+    <main className="relative min-h-screen overflow-hidden bg-[#FFF7E3] px-5 py-6 text-[#2A2016] sm:px-8 sm:py-8 lg:px-10">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.2] [background-image:linear-gradient(#D89B43_1px,transparent_1px),linear-gradient(90deg,#D89B43_1px,transparent_1px)] [background-size:58px_58px]" />
+      <div className="pointer-events-none absolute left-[-8rem] top-[-6rem] h-80 w-80 rounded-full bg-[#F3C05E]/35 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-[-7rem] right-[-8rem] h-96 w-96 rounded-full bg-[#9F6227]/25 blur-3xl" />
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[38rem] w-[38rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/30 blur-3xl" />
 
-      <section className="relative mx-auto flex min-h-[calc(100vh-4rem)] max-w-4xl items-center justify-center">
-        <div className="w-full overflow-hidden rounded-[2rem] border border-[#D9A45A]/70 bg-[#FFFDF5]/90 shadow-[0_28px_80px_rgba(86,52,20,0.18)] backdrop-blur">
-          <div className="flex flex-col gap-8 p-7 sm:p-9 lg:flex-row lg:items-stretch lg:p-10">
-            <aside className="flex flex-col justify-between rounded-[1.6rem] bg-[#2B2118] p-6 text-[#FFF8E7] lg:w-72">
-              <div className="space-y-6">
-                <div className="flex items-center gap-3">
-                  <WaffleGridMark />
-                  <div>
-                    <p className="text-2xl font-black tracking-tight">WAFL</p>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#F6D58A]">
-                      Work Assignment Flow
-                    </p>
-                  </div>
-                </div>
-                <div className="h-px bg-[#FFF8E7]/20" />
-                <div className="space-y-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#F6D58A]">Invitation</p>
-                  <h1 className="text-3xl font-black leading-tight tracking-[-0.04em]">
-                    따뜻한 초대장이 도착했어요.
-                  </h1>
-                  <p className="text-sm leading-6 text-[#FFE7A8]">
-                    WAFL은 작업지시서, 디자인, 파일, 생산 흐름을 한곳에서 확인하는 의류 생산관리 워크플로우입니다.
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-8 rounded-2xl border border-[#FFF8E7]/15 bg-[#FFF8E7]/10 p-4 text-xs leading-5 text-[#FFE7A8]">
-                v{APP_VERSION} · 초대 링크는 만료일 이후 사용할 수 없어요.
-              </div>
-            </aside>
-
-            <article className="flex min-h-[560px] flex-1 flex-col justify-between gap-8">
-              <div className="space-y-7">
-                <div className="space-y-3">
-                  <span className="inline-flex rounded-full bg-[#FFE7A8] px-3 py-1 text-xs font-bold text-[#6F3D14]">
-                    WAFL 초대장
-                  </span>
-                  <h2 className="max-w-2xl text-3xl font-black leading-tight tracking-[-0.04em] text-[#2B2118] sm:text-4xl">
-                    {companyName}에서 당신을 초대했어요.
-                  </h2>
-                  <p className="max-w-xl text-sm leading-6 text-[#6A5948]">
-                    Google 계정으로 가입 신청하면 고객사 관리자의 승인 후 WAFL 업무 화면을 사용할 수 있어요.
-                  </p>
-                </div>
-
-                <dl className="grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-2xl border border-[#E7BF80] bg-[#FFF8E7] p-4">
-                    <dt className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#9C6424]">Company</dt>
-                    <dd className="mt-2 truncate text-sm font-black text-[#2B2118]">{companyName}</dd>
-                  </div>
-                  <div className="rounded-2xl border border-[#E7BF80] bg-[#FFF8E7] p-4">
-                    <dt className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#9C6424]">Role</dt>
-                    <dd className="mt-2 truncate text-sm font-black text-[#2B2118]">{permissionLabel}</dd>
-                  </div>
-                  <div className="rounded-2xl border border-[#E7BF80] bg-[#FFF8E7] p-4">
-                    <dt className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#9C6424]">Until</dt>
-                    <dd className="mt-2 truncate text-sm font-black text-[#2B2118]">{expiresAtLabel}</dd>
-                  </div>
-                </dl>
-
-                <div className="rounded-[1.4rem] border border-[#E7BF80] bg-white/70 p-4">
-                  <p className="text-xs font-bold text-[#9C6424]">초대 대상</p>
-                  <p className="mt-1 text-sm font-semibold text-[#2B2118]">{recipientEmail}</p>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                {verifyState === "invalid" ? (
-                  <div className="rounded-2xl border border-[#E08A70] bg-[#FFF1EA] px-4 py-3 text-sm font-semibold text-[#9B3F24]">
-                    {message ?? "초대 링크를 확인할 수 없어요."}
-                  </div>
-                ) : null}
-
-                {submitState === "success" ? (
-                  <div className="rounded-2xl border border-[#7CB68A] bg-[#EEF9EE] px-4 py-3 text-sm font-semibold text-[#2B6A3A]">
-                    {message}
-                  </div>
-                ) : null}
-
-                {submitState !== "success" ? (
-                  <button
-                    type="button"
-                    disabled={!isJoinable}
-                    onClick={handleMockGoogleJoin}
-                    className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[#2B2118] px-5 py-4 text-sm font-black text-[#FFF8E7] shadow-[0_12px_28px_rgba(86,52,20,0.22)] transition hover:-translate-y-0.5 hover:bg-[#3B2A1C] disabled:translate-y-0 disabled:bg-[#D8CDBB] disabled:text-[#857464]"
-                  >
-                    <GoogleMark />
-                    {submitState === "submitting" ? "Google 계정 확인 중" : "Google로 가입 신청하기"}
-                  </button>
-                ) : null}
-
-                <p className="text-center text-xs leading-5 text-[#7D6A58]">
-                  실제 Google OAuth 연결은 다음 단계에서 추가됩니다. 지금은 가입 신청 흐름을 미리 확인하는 화면입니다.
-                </p>
-              </div>
-            </article>
+      <section className="relative mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl flex-col justify-between gap-8 lg:min-h-[calc(100vh-4rem)]">
+        <header className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <WaffleGridMark />
+            <div>
+              <p className="text-2xl font-black tracking-[-0.04em] text-[#2A2016]">WAFL</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#9C6424]">
+                Work Assignment Flow
+              </p>
+            </div>
           </div>
+          <p className="hidden rounded-full border border-[#D9A45A]/50 bg-white/40 px-4 py-2 text-xs font-bold text-[#8B5A24] backdrop-blur sm:inline-flex">
+            Invitation
+          </p>
+        </header>
+
+        <div className="grid flex-1 items-center gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(320px,0.54fr)] lg:gap-14">
+          <article className="max-w-3xl space-y-8 sm:space-y-10">
+            <div className="space-y-5 sm:space-y-6">
+              <p className="text-sm font-black uppercase tracking-[0.22em] text-[#B87524]">WAFL invitation</p>
+              <h1 className="text-5xl font-black leading-[0.95] tracking-[-0.07em] text-[#2A2016] sm:text-6xl lg:text-7xl">
+                {companyName}에서
+                <br />
+                당신을
+                <br className="sm:hidden" /> 초대했어요.
+              </h1>
+            </div>
+
+            <div className="space-y-5 text-3xl font-black leading-tight tracking-[-0.04em] text-[#4A321C] sm:text-4xl lg:text-5xl">
+              <p>함께 시작해요.</p>
+              <p>WAFL에서.</p>
+            </div>
+          </article>
+
+          <aside className="w-full rounded-[2rem] border border-[#E1AF68]/60 bg-[#FFFDF7]/75 p-5 shadow-[0_24px_70px_rgba(89,53,18,0.14)] backdrop-blur sm:p-6 lg:p-7">
+            <div className="space-y-5">
+              {verifyState === "loading" ? (
+                <div className="rounded-3xl bg-[#FFF4D8] px-5 py-4 text-sm font-bold text-[#8B5A24]">
+                  초대장을 확인하고 있어요.
+                </div>
+              ) : null}
+
+              {verifyState === "invalid" ? (
+                <div className="rounded-3xl border border-[#E08A70]/70 bg-[#FFF1EA] px-5 py-4 text-sm font-bold text-[#9B3F24]">
+                  {message ?? "초대 링크를 확인할 수 없어요."}
+                </div>
+              ) : null}
+
+              {submitState === "success" ? (
+                <div className="rounded-3xl border border-[#8DBE7C]/70 bg-[#F1FAEA] px-5 py-4 text-sm font-bold text-[#346C2C]">
+                  {message}
+                </div>
+              ) : null}
+
+              {submitState !== "success" ? (
+                <button
+                  type="button"
+                  disabled={!isJoinable}
+                  onClick={handleMockGoogleJoin}
+                  className="flex w-full items-center justify-center gap-3 rounded-[1.4rem] bg-[#2A2016] px-5 py-4 text-sm font-black text-[#FFF8E7] shadow-[0_14px_30px_rgba(72,42,16,0.22)] transition hover:-translate-y-0.5 hover:bg-[#3A2A1B] disabled:translate-y-0 disabled:bg-[#D8CDBB] disabled:text-[#857464]"
+                >
+                  <GoogleMark />
+                  {submitState === "submitting" ? "Google 계정 확인 중" : "Google로 계속하기"}
+                </button>
+              ) : null}
+            </div>
+          </aside>
         </div>
+
+        <footer className="relative flex flex-col gap-3 text-xs font-semibold leading-5 text-[#8B6A45] sm:flex-row sm:items-end sm:justify-between">
+          <p>
+            {expiresAtLabel} 이후
+            <br />이 초대장은 사라집니다.
+          </p>
+          <p className="text-[#B87524]">WAFL · Work Assignment Flow</p>
+        </footer>
       </section>
     </main>
   );
