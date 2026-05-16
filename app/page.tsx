@@ -1,17 +1,11 @@
-import WorkOrderWorkspace from "@/components/workorder/WorkOrderWorkspace";
+import WaflLoginPage from "@/components/auth/WaflLoginPage";
+import { readLoginErrorParam, type LoginPageSearchParams } from "@/lib/auth/loginPageParams";
 
-type HomePageProps = {
-  searchParams?: Promise<{ workOrderId?: string | string[] }>;
+type RootPageProps = {
+  searchParams?: Promise<LoginPageSearchParams>;
 };
 
-function readWorkOrderId(value: string | string[] | undefined): string | null {
-  if (Array.isArray(value)) return value[0]?.trim() || null;
-  return value?.trim() || null;
-}
-
-export default async function Home({ searchParams }: HomePageProps) {
-  const resolvedSearchParams = await searchParams;
-  const initialWorkOrderId = readWorkOrderId(resolvedSearchParams?.workOrderId);
-
-  return <WorkOrderWorkspace initialWorkOrderId={initialWorkOrderId} />;
+export default async function RootPage({ searchParams }: RootPageProps) {
+  const resolvedSearchParams = (await searchParams) || {};
+  return <WaflLoginPage error={readLoginErrorParam(resolvedSearchParams)} />;
 }

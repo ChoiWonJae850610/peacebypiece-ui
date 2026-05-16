@@ -1,16 +1,11 @@
-Version : 0.13.17
-Summary : WAFL 공통 로그인 페이지와 Google 로그인 분기 추가
-Description : /login 공통 로그인 페이지를 추가하고 Google OAuth 시작/콜백 흐름을 초대 가입 신청과 일반 로그인으로 분기했습니다. Google 로그인 성공 시 DB의 기존 사용자와 매칭해 고객사 관리자 또는 멤버 화면으로 이동할 수 있는 1차 세션 쿠키를 발급합니다.
+Version : 0.13.18
+Summary : 루트 경로를 WAFL 로그인 진입점으로 변경
+Description : 앱 루트 경로(/)를 WAFL 공통 로그인 화면으로 전환하고, /login과 동일한 오류 파라미터 처리 유틸을 공유하도록 정리했습니다. 기존 Google 로그인/초대 가입 신청 흐름과 DB schema는 변경하지 않았습니다.
 수정 파일 목록 :
-- .env.example
-- app/api/auth/google/start/route.ts
-- app/api/auth/google/callback/route.ts
-- lib/auth/googleOAuth.ts
+- app/page.tsx
+- app/login/page.tsx
 - lib/constants/app.ts
 추가 파일 목록 :
-- app/login/page.tsx
-- components/auth/WaflLoginPage.tsx
-- lib/auth/loginRepository.ts
-- lib/auth/session.ts
+- lib/auth/loginPageParams.ts
 삭제 파일 목록 :
 - 없음
