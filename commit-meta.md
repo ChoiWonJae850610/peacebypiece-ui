@@ -1,6 +1,6 @@
-Version : 0.13.13
-Summary : WAFL 초대장 페이지 문구와 반응형 구성 단순화
-Description : 초대 링크 페이지의 권한·버전·개발 예정 안내와 기능 설명 문구를 제거하고, 고객사 초대 문구와 Google 계속하기 중심의 WAFL 초대장 화면으로 정리했습니다. PC, 태블릿, 모바일에서 자연스럽게 보이도록 여백과 타이포그래피를 반응형으로 재구성했습니다.
+Version : 0.13.14
+Summary : WAFL 초대장 페이지 불필요한 라벨과 보조 문구 정리
+Description : 초대장 페이지에서 WAFL INVITATION, Invitation 배지, WAFL Work Assignment Flow 보조 문구를 제거하고, 테스트 고객사명을 Seolo Seoul로 조정했습니다. 메인 문구의 WAFL에서을 와플에서으로 바꾸고 와플 단어에 부드러운 하이라이트를 적용했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
 - components/invitations/MemberInvitationJoinRequestPage.tsx

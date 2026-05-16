@@ -43,7 +43,7 @@ function formatDate(value?: string | null): string {
 }
 
 function readCompanyName(invitation: PublicMemberInvitation | null): string {
-  return invitation?.companyName || invitation?.customerName || "초대한 고객사";
+  return invitation?.companyName || invitation?.customerName || "Seolo Seoul";
 }
 
 function readFriendlyError(error: string | null): string {
@@ -84,7 +84,7 @@ export default function MemberInvitationJoinRequestPage({
   const [invitation, setInvitation] = useState<PublicMemberInvitation | null>(
     token.startsWith("preview-")
       ? {
-          companyName: "샘플 고객사",
+          companyName: "Seolo Seoul",
           permissionPreset: "검수 담당",
           status: "pending",
           expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
@@ -160,15 +160,11 @@ export default function MemberInvitationJoinRequestPage({
               </p>
             </div>
           </div>
-          <p className="hidden rounded-full border border-[#D9A45A]/50 bg-white/40 px-4 py-2 text-xs font-bold text-[#8B5A24] backdrop-blur sm:inline-flex">
-            Invitation
-          </p>
         </header>
 
         <div className="grid flex-1 items-center gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(320px,0.54fr)] lg:gap-14">
           <article className="max-w-3xl space-y-8 sm:space-y-10">
             <div className="space-y-5 sm:space-y-6">
-              <p className="text-sm font-black uppercase tracking-[0.22em] text-[#B87524]">WAFL invitation</p>
               <h1 className="text-5xl font-black leading-[0.95] tracking-[-0.07em] text-[#2A2016] sm:text-6xl lg:text-7xl">
                 {companyName}에서
                 <br />
@@ -179,7 +175,12 @@ export default function MemberInvitationJoinRequestPage({
 
             <div className="space-y-5 text-3xl font-black leading-tight tracking-[-0.04em] text-[#4A321C] sm:text-4xl lg:text-5xl">
               <p>함께 시작해요.</p>
-              <p>WAFL에서.</p>
+              <p>
+                <span className="inline-block rounded-[1.2rem] bg-[#FFE1A6]/85 px-3 py-1 text-[#7A4516] shadow-[0_12px_34px_rgba(184,116,43,0.2)] ring-1 ring-[#D89B43]/25 sm:px-4">
+                  와플
+                </span>
+                에서.
+              </p>
             </div>
           </article>
 
@@ -218,12 +219,11 @@ export default function MemberInvitationJoinRequestPage({
           </aside>
         </div>
 
-        <footer className="relative flex flex-col gap-3 text-xs font-semibold leading-5 text-[#8B6A45] sm:flex-row sm:items-end sm:justify-between">
+        <footer className="relative flex flex-col gap-3 text-xs font-semibold leading-5 text-[#8B6A45] sm:flex-row sm:items-end sm:justify-start">
           <p>
             {expiresAtLabel} 이후
             <br />이 초대장은 사라집니다.
           </p>
-          <p className="text-[#B87524]">WAFL · Work Assignment Flow</p>
         </footer>
       </section>
     </main>
