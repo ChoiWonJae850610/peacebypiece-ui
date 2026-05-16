@@ -28,10 +28,11 @@ import {
 } from "@/lib/permissions";
 import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 import { AdminButton } from "@/components/admin/common/AdminButton";
+import AdminSegmentedTabs from "@/components/admin/common/AdminSegmentedTabs";
+import AdminSummaryMetricCards from "@/components/admin/common/AdminSummaryMetricCards";
 import {
   ADMIN_FIELD_CONTAINER_CLASS,
   ADMIN_INPUT_CLASS,
-  ADMIN_SURFACE_ITEM_CLASS,
   ADMIN_SURFACE_PANEL_CLASS,
   ADMIN_TABLE_HEADER_CLASS,
   ADMIN_TABLE_ROW_CLASS,
@@ -743,31 +744,19 @@ export default function AdminMemberManagementDashboard() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1">
-      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {summaryCards.map((card) => (
-          <article
-            key={card.id}
-            className={`${ADMIN_SURFACE_ITEM_CLASS} min-h-[92px]`}
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold pbp-text-muted">
-                  {t(`memberManagement.summary.${card.id}.label`, card.id)}
-                </p>
-                <p className="mt-2 text-2xl font-semibold pbp-text-primary">
-                  {card.value}
-                </p>
-              </div>
-              <AdminStatusBadge tone={getStatusTone(card.status)}>
-                {t(`memberManagement.statuses.${card.status}`, card.status)}
-              </AdminStatusBadge>
-            </div>
-            <p className="mt-3 text-xs leading-5 pbp-text-muted">
-              {t(`memberManagement.summary.${card.id}.description`, "")}
-            </p>
-          </article>
-        ))}
-      </section>
+      <AdminSummaryMetricCards
+        cards={summaryCards.map((card) => ({
+          id: card.id,
+          label: t(`memberManagement.summary.${card.id}.label`, card.id),
+          value: card.value,
+          helper: t(`memberManagement.summary.${card.id}.description`, ""),
+          badge: (
+            <AdminStatusBadge tone={getStatusTone(card.status)}>
+              {t(`memberManagement.statuses.${card.status}`, card.status)}
+            </AdminStatusBadge>
+          ),
+        }))}
+      />
 
       <section className="rounded-3xl border p-4 shadow-sm pbp-admin-card">
         <div className="flex flex-col gap-3 border-b border-[var(--pbp-border)] pb-3 xl:flex-row xl:items-center xl:justify-between">
@@ -784,35 +773,22 @@ export default function AdminMemberManagementDashboard() {
               )}
             </h2>
           </div>
-          <div className="flex w-full justify-start overflow-x-auto xl:w-auto xl:justify-end">
-            <div className="inline-flex min-w-max rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] p-1">
-              {tabPreviews.map((tab) => {
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setActiveTab(tab.id)}
-                    className={[
-                      "rounded-full px-4 py-2 text-xs font-semibold transition",
-                      isActive
-                        ? "bg-[var(--pbp-action-primary)] text-[var(--pbp-action-primary-text)] shadow-sm"
-                        : "pbp-text-muted hover:bg-[var(--pbp-surface)] hover:text-[var(--pbp-text-primary)]",
-                    ].join(" ")}
-                  >
-                    {t(tab.labelKey, tab.fallbackLabel)}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <AdminSegmentedTabs
+            items={tabPreviews.map((tab) => ({
+              id: tab.id,
+              label: t(tab.labelKey, tab.fallbackLabel),
+              title: t(tab.descriptionKey, tab.fallbackDescription),
+            }))}
+            activeId={activeTab}
+            onChange={setActiveTab}
+          />
         </div>
 
         <div className="mt-4">
           {activeTab === "invite" ? (
             <section
               id="member-invite-builder"
-              className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_430px]"
+              className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_520px]"
             >
               <article
                 className={`${ADMIN_SURFACE_PANEL_CLASS} flex min-h-[430px] flex-col`}
@@ -1013,7 +989,7 @@ export default function AdminMemberManagementDashboard() {
               </article>
 
               <article
-                className={`${ADMIN_SURFACE_PANEL_CLASS} flex min-h-[430px] flex-col`}
+                className={`${ADMIN_SURFACE_PANEL_CLASS} flex h-[430px] min-h-0 flex-col overflow-hidden`}
               >
                 <div className="flex min-h-[96px] items-start justify-between gap-3 border-b border-[var(--pbp-border)] pb-4">
                   <div>
@@ -1037,7 +1013,7 @@ export default function AdminMemberManagementDashboard() {
                     ).replace("{count}", String(invitations.length))}
                   </span>
                 </div>
-                <div className="mt-4 min-h-0 flex-1">
+                <div className="mt-4 min-h-0 flex-1 overflow-hidden">
                   <AdminTable
                     items={invitations}
                     columns={invitationTableColumns}
@@ -1050,8 +1026,8 @@ export default function AdminMemberManagementDashboard() {
                       "memberManagement.empty.invitations.description",
                       "초대를 생성하면 이 목록에서 링크 복사, 만료일 확인, 취소를 처리할 수 있습니다.",
                     )}
-                    gridTemplateColumns="minmax(120px,1.4fr) 64px 82px 96px 76px 52px"
-                    rowBaseClassName="grid w-full gap-2 px-3 py-3 text-left text-[11px] md:items-center"
+                    gridTemplateColumns="minmax(116px,1.35fr) 56px 78px 88px 68px 44px"
+                    rowBaseClassName="grid w-full gap-2 px-3 py-2.5 text-left text-[11px] md:items-center"
                     className="h-full"
                   />
                 </div>
