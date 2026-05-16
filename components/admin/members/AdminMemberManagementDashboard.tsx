@@ -132,7 +132,7 @@ const editableMemberPermissionCodes = MEMBER_PERMISSION_CATALOG.filter(
   (permission) => !permission.systemOnly,
 ).map((permission) => permission.code);
 
-const MEMBER_INVITE_PANEL_HEIGHT_CLASS = "h-[500px] min-h-[500px]";
+const MEMBER_INVITE_PANEL_HEIGHT_CLASS = "h-[452px] min-h-[452px]";
 
 type MemberManagementTab = "invite" | "approval" | "members" | "permissions";
 
@@ -805,7 +805,7 @@ export default function AdminMemberManagementDashboard() {
                   "memberManagement.inviteBuilder.description",
                   "이메일 또는 휴대폰으로 초대 링크를 발송할 대상을 입력하고 기본 권한 묶음과 만료 기간을 지정합니다.",
                 )}
-                contentClassName="flex flex-1 flex-col pt-5"
+                contentClassName="flex flex-1 flex-col pt-4"
               >
                 <div className="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)]">
                   <label className={ADMIN_FIELD_CONTAINER_CLASS}>
@@ -935,7 +935,7 @@ export default function AdminMemberManagementDashboard() {
                   </label>
                 </div>
 
-                <div className="mt-auto pt-5">
+                <div className="mt-auto pt-3">
                   <div className="flex flex-col gap-3 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0">
                       <p className="text-xs font-semibold pbp-text-primary">
