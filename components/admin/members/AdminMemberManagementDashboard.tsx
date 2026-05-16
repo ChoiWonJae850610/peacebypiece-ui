@@ -137,7 +137,7 @@ const MEMBER_INVITE_PANEL_CONTENT_CLASS = "flex min-h-0 flex-1 flex-col pt-4";
 const MEMBER_INVITATION_TABLE_CONTENT_CLASS =
   "flex min-h-0 flex-1 flex-col overflow-hidden pt-4";
 const MEMBER_INVITATION_TABLE_VIEWPORT_CLASS =
-  "min-h-0 flex-1 self-stretch -mb-2";
+  "relative min-h-0 flex-1 self-stretch -mb-2 after:absolute after:bottom-2 after:left-0 after:right-0 after:h-px after:bg-[var(--pbp-border)] after:content-['']";
 
 type MemberManagementTab = "invite" | "approval" | "members" | "permissions";
 

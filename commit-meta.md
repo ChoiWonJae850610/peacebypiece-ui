@@ -1,6 +1,6 @@
-Version : 0.13.9
-Summary : 멤버 초대 대기 목록 테이블 하단선 추가 보정
-Description : 멤버 초대 탭에서 좌측 발송 기준 카드 하단선과 우측 초대 대기 목록 테이블 하단선이 맞도록 우측 테이블 viewport 하단 기준을 보정했습니다. 외곽 카드 높이, 초대 생성 로직, SMS/email 발송, invitation token 검증, DB schema는 변경하지 않았습니다.
+Version : 0.13.10
+Summary : 멤버 초대 대기 목록 테이블 하단선 복구
+Description : 멤버 초대 탭의 우측 초대 대기 목록 테이블 viewport 하단선이 보이지 않던 문제를 보정했습니다. 좌우 카드 높이와 기존 스크롤 구조는 유지하고, 테이블 viewport wrapper에 하단선을 명시적으로 표시하도록 정리했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
 - components/admin/members/AdminMemberManagementDashboard.tsx
