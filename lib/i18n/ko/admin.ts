@@ -282,15 +282,10 @@ export const adminKo = {
         description: "이메일 또는 문자 초대를 생성합니다.",
         count: "초대 {count}건",
       },
-      approval: {
-        label: "승인",
-        description: "가입 신청을 승인하거나 거절합니다.",
-        count: "승인 대기 {count}건",
-      },
       members: {
-        label: "전체 멤버",
-        description: "멤버 목록과 역할 기본값을 확인합니다.",
-        count: "멤버 {count}명",
+        label: "멤버 관리",
+        description: "승인 대기와 전체 멤버를 한 목록에서 관리합니다.",
+        count: "대상 {count}명",
       },
       permissions: {
         label: "권한 관리",
@@ -335,6 +330,34 @@ export const adminKo = {
       },
     },
 
+    memberDirectory: {
+      eyebrow: "멤버 관리",
+      title: "멤버 관리",
+      description: "승인 대기와 전체 멤버를 한 목록에서 확인하고 처리합니다.",
+      none: "없음",
+      filters: {
+        search: "검색",
+        searchPlaceholder: "이름, 이메일, 연락처 검색",
+        status: "상태",
+        role: "권한",
+      },
+      statusFilters: {
+        all: "전체",
+        pending: "승인 대기",
+        approved: "사용 중",
+        suspended: "비활성",
+        withdrawalRequested: "탈퇴 요청",
+      },
+      roleFilters: { all: "전체" },
+      statuses: {
+        pending: "승인 대기",
+        approved: "사용 중",
+        suspended: "비활성",
+        withdrawalRequested: "탈퇴 요청",
+        withdrawn: "탈퇴 완료",
+        rejected: "거절됨",
+      },
+    },
     approvalWorkbench: {
       eyebrow: "가입 신청 승인",
       title: "멤버 승인/권한 부여 화면",
@@ -381,7 +404,7 @@ export const adminKo = {
     },
     joinRequestStatuses: { pending: "승인 대기" },
     invitationMethods: { email: "이메일", phone: "문자" },
-    memberStatuses: { approved: "승인", pending: "대기", suspended: "정지" },
+    memberStatuses: { approved: "사용 중", pending: "승인 대기", suspended: "비활성" },
     invitationStatuses: {
       draft: "초안",
       active: "활성",
@@ -422,8 +445,8 @@ export const adminKo = {
       },
     },
     sections: {
-      members: "멤버 목록",
-      membersDescription: "승인된 멤버와 정지된 멤버를 한 목록에서 관리합니다.",
+      members: "멤버 관리",
+      membersDescription: "승인 대기와 전체 멤버를 한 목록에서 관리합니다.",
       invitations: "초대 대기 목록",
       invitationsDescription:
         "발송한 초대의 대상, 링크, 만료일, 상태를 확인합니다.",
@@ -450,12 +473,28 @@ export const adminKo = {
     tables: {
       members: {
         columns: {
-          member: "멤버",
-          role: "역할",
+          name: "이름",
+          email: "이메일",
+          phone: "연락처",
+          role: "권한",
           status: "상태",
-          permissions: "권한",
-          lastActive: "최근 활동",
-          actions: "저장",
+          requestedAt: "신청일",
+          approvedAt: "승인일",
+          lastActive: "마지막 접속",
+          actions: "액션",
+        },
+      },
+      memberDirectory: {
+        columns: {
+          name: "이름",
+          email: "이메일",
+          phone: "연락처",
+          role: "권한",
+          status: "상태",
+          requestedAt: "신청일",
+          approvedAt: "승인일",
+          lastActiveAt: "마지막 접속",
+          actions: "액션",
         },
       },
       invitations: {
@@ -484,9 +523,14 @@ export const adminKo = {
     },
     empty: {
       members: {
-        title: "등록된 멤버가 없습니다",
+        title: "표시할 멤버가 없습니다",
         description:
-          "승인된 멤버가 생성되면 이 영역에서 권한을 직접 수정할 수 있습니다.",
+          "승인 대기 신청 또는 등록된 멤버가 생성되면 이 목록에 표시됩니다.",
+      },
+      memberDirectory: {
+        title: "표시할 멤버가 없습니다",
+        description:
+          "승인 대기 신청 또는 등록된 멤버가 생성되면 이 목록에 표시됩니다.",
       },
       invitations: {
         title: "생성된 초대가 없습니다",
@@ -503,7 +547,12 @@ export const adminKo = {
       members: {
         title: "멤버 목록을 불러오는 중입니다",
         description:
-          "승인된 company_members와 member_permissions를 실제 DB 기준으로 조회하고 있습니다.",
+          "company_members와 승인 대기 신청을 실제 DB 기준으로 조회하고 있습니다.",
+      },
+      memberDirectory: {
+        title: "멤버 목록을 불러오는 중입니다",
+        description:
+          "company_members와 승인 대기 신청을 실제 DB 기준으로 조회하고 있습니다.",
       },
       joinRequests: {
         title: "승인 대기 신청을 불러오는 중입니다",
@@ -524,6 +573,7 @@ export const adminKo = {
       error: "가입 신청 처리에 실패했습니다.",
     },
     memberActions: {
+      managePermissions: "권한 관리",
       savePermissions: "권한 저장",
       saving: "저장 중",
       permissionUpdateSuccess: "멤버 권한을 저장했습니다.",

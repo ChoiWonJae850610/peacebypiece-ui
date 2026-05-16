@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  getJoinRequestTableColumns,
   getMemberInviteRoleOptions,
   toMemberJoinRequestPreviews,
   toMemberListPreviews,
@@ -12,7 +11,6 @@ import {
   getMemberPermissionGroupPreviews,
   getMemberPermissionMatrixPreviews,
   getMemberRolePreviews,
-  getMemberTableColumns,
   type MemberJoinRequestLoadStatus,
   type MemberListLoadStatus,
   type MemberManagementStatus,
@@ -24,7 +22,6 @@ import {
   MEMBER_PERMISSION_CATALOG,
   getMemberRoleTemplatePermissions,
   hasEveryMemberPermission,
-  type MemberPermissionCode,
 } from "@/lib/permissions";
 import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 import { AdminButton } from "@/components/admin/common/AdminButton";
@@ -75,12 +72,6 @@ type MemberListResponse = {
   error?: string;
 };
 
-type MemberPermissionUpdateResponse = {
-  ok?: boolean;
-  member?: AdminCompanyMemberRecord;
-  error?: string;
-};
-
 type JoinRequestReviewAction = "approve" | "reject";
 
 function getEmailMatchTone(
@@ -91,13 +82,6 @@ function getEmailMatchTone(
   return "neutral";
 }
 
-function getMemberStatusTone(
-  status: "approved" | "pending" | "suspended",
-): AdminStatusBadgeTone {
-  if (status === "approved") return "success";
-  if (status === "suspended") return "danger";
-  return "warning";
-}
 
 type MemberInviteMethod = "email" | "phone";
 
@@ -108,6 +92,29 @@ type PendingMemberInvitationRow = {
   inviteUrl: string;
   expiresAt: string;
   status: "pending" | "sent" | "expired";
+};
+
+
+type MemberDirectoryStatusFilter =
+  | "all"
+  | "pending"
+  | "approved"
+  | "suspended"
+  | "withdrawalRequested";
+
+type MemberDirectoryRow = {
+  id: string;
+  source: "joinRequest" | "member";
+  name: string;
+  email: string;
+  phone: string;
+  roleId: string | null;
+  status: "pending" | "approved" | "suspended" | "withdrawalRequested" | "withdrawn" | "rejected";
+  requestedAt: string;
+  approvedAt: string;
+  lastActiveAt: string;
+  joinRequest?: ReturnType<typeof toMemberJoinRequestPreviews>[number];
+  member?: ReturnType<typeof toMemberListPreviews>[number];
 };
 
 function isValidEmail(value: string): boolean {
@@ -138,7 +145,7 @@ const MEMBER_INVITATION_TABLE_CONTENT_CLASS =
   "flex min-h-0 flex-1 flex-col pt-4";
 const MEMBER_INVITATION_TABLE_VIEWPORT_CLASS = "min-h-0 flex-1";
 
-type MemberManagementTab = "invite" | "approval" | "members" | "permissions";
+type MemberManagementTab = "invite" | "members" | "permissions";
 
 type MemberManagementTabPreview = {
   id: MemberManagementTab;
@@ -181,12 +188,14 @@ export default function AdminMemberManagementDashboard() {
   const groups = getMemberPermissionGroupPreviews();
   const catalogItems = getMemberPermissionCatalogPreviews();
   const matrixItems = getMemberPermissionMatrixPreviews();
-  const memberColumns = getMemberTableColumns();
-  const joinRequestColumns = getJoinRequestTableColumns();
   const [selectedRoleId, setSelectedRoleId] = useState<string>(
     inviteRoleOptions[1]?.id ?? inviteRoleOptions[0]?.id ?? "viewer",
   );
   const [activeTab, setActiveTab] = useState<MemberManagementTab>("invite");
+  const [memberSearchQuery, setMemberSearchQuery] = useState("");
+  const [memberStatusFilter, setMemberStatusFilter] =
+    useState<MemberDirectoryStatusFilter>("all");
+  const [memberRoleFilter, setMemberRoleFilter] = useState<string>("all");
   const selectedRole = useMemo(
     () =>
       inviteRoleOptions.find((role) => role.id === selectedRoleId) ??
@@ -210,14 +219,6 @@ export default function AdminMemberManagementDashboard() {
   const [memberListLoadError, setMemberListLoadError] = useState<string | null>(
     null,
   );
-  const [memberPermissionDrafts, setMemberPermissionDrafts] = useState<
-    Record<string, MemberPermissionCode[]>
-  >({});
-  const [updatingMemberId, setUpdatingMemberId] = useState<string | null>(null);
-  const [memberPermissionUpdateMessage, setMemberPermissionUpdateMessage] =
-    useState<string | null>(null);
-  const [memberPermissionUpdateError, setMemberPermissionUpdateError] =
-    useState<string | null>(null);
   const [joinRequestRecords, setJoinRequestRecords] = useState<
     JoinRequestRecord[]
   >([]);
@@ -364,6 +365,176 @@ export default function AdminMemberManagementDashboard() {
     () => toMemberJoinRequestPreviews(joinRequestRecords),
     [joinRequestRecords],
   );
+
+  const memberDirectoryRows = useMemo<MemberDirectoryRow[]>(() => {
+    const pendingRows: MemberDirectoryRow[] = joinRequests.map((request) => ({
+      id: `join-${request.id}`,
+      source: "joinRequest",
+      name: request.applicantName,
+      email: request.applicantEmail || "-",
+      phone: request.applicantPhoneLabel || "-",
+      roleId: null,
+      status: "pending",
+      requestedAt: request.requestedAtLabel,
+      approvedAt: "-",
+      lastActiveAt: "-",
+      joinRequest: request,
+    }));
+
+    const memberRows: MemberDirectoryRow[] = members.map((member) => ({
+      id: `member-${member.id}`,
+      source: "member",
+      name: member.name,
+      email: member.email || "-",
+      phone: "-",
+      roleId: member.roleId,
+      status: member.status,
+      requestedAt: "-",
+      approvedAt: member.approvedAtLabel,
+      lastActiveAt: member.lastActiveLabel,
+      member,
+    }));
+
+    return [...pendingRows, ...memberRows];
+  }, [joinRequests, members]);
+
+  const filteredMemberDirectoryRows = useMemo(() => {
+    const query = memberSearchQuery.trim().toLowerCase();
+    return memberDirectoryRows.filter((row) => {
+      const matchesQuery =
+        !query ||
+        row.name.toLowerCase().includes(query) ||
+        row.email.toLowerCase().includes(query) ||
+        row.phone.toLowerCase().includes(query);
+      const matchesStatus =
+        memberStatusFilter === "all" || row.status === memberStatusFilter;
+      const matchesRole =
+        memberRoleFilter === "all" ||
+        (memberRoleFilter === "none" && !row.roleId) ||
+        row.roleId === memberRoleFilter;
+      return matchesQuery && matchesStatus && matchesRole;
+    });
+  }, [memberDirectoryRows, memberRoleFilter, memberSearchQuery, memberStatusFilter]);
+
+  const memberDirectoryColumns = useMemo<AdminTableColumn<MemberDirectoryRow>[]>(
+    () => [
+      {
+        key: "name",
+        label: t("memberManagement.tables.memberDirectory.columns.name", "이름"),
+        className: "min-w-0",
+        render: (row) => (
+          <span className="block truncate font-semibold pbp-text-primary" title={row.name}>
+            {row.name || "-"}
+          </span>
+        ),
+      },
+      {
+        key: "email",
+        label: t("memberManagement.tables.memberDirectory.columns.email", "이메일"),
+        className: "min-w-0",
+        render: (row) => (
+          <span className="block truncate pbp-text-muted" title={row.email}>
+            {row.email || "-"}
+          </span>
+        ),
+      },
+      {
+        key: "phone",
+        label: t("memberManagement.tables.memberDirectory.columns.phone", "연락처"),
+        className: "min-w-0",
+        render: (row) => <span className="pbp-text-muted">{row.phone || "-"}</span>,
+      },
+      {
+        key: "role",
+        label: t("memberManagement.tables.memberDirectory.columns.role", "권한"),
+        className: "min-w-0",
+        render: (row) => (
+          <span className="font-semibold pbp-text-primary">
+            {row.roleId
+              ? t(`memberManagement.roles.${row.roleId}.label`, row.roleId)
+              : t("memberManagement.memberDirectory.none", "없음")}
+          </span>
+        ),
+      },
+      {
+        key: "status",
+        label: t("memberManagement.tables.memberDirectory.columns.status", "상태"),
+        className: "whitespace-nowrap",
+        render: (row) => (
+          <AdminStatusBadge
+            tone={
+              row.status === "approved"
+                ? "success"
+                : row.status === "suspended" || row.status === "withdrawn" || row.status === "rejected"
+                  ? "danger"
+                  : "warning"
+            }
+          >
+            {t(`memberManagement.memberDirectory.statuses.${row.status}`, row.status)}
+          </AdminStatusBadge>
+        ),
+      },
+      {
+        key: "requestedAt",
+        label: t("memberManagement.tables.memberDirectory.columns.requestedAt", "신청일"),
+        className: "whitespace-nowrap",
+        render: (row) => <span className="pbp-text-muted">{row.requestedAt}</span>,
+      },
+      {
+        key: "approvedAt",
+        label: t("memberManagement.tables.memberDirectory.columns.approvedAt", "승인일"),
+        className: "whitespace-nowrap",
+        render: (row) => <span className="pbp-text-muted">{row.approvedAt}</span>,
+      },
+      {
+        key: "lastActiveAt",
+        label: t("memberManagement.tables.memberDirectory.columns.lastActiveAt", "마지막 접속"),
+        className: "whitespace-nowrap",
+        render: (row) => <span className="pbp-text-muted">{row.lastActiveAt}</span>,
+      },
+      {
+        key: "actions",
+        label: t("memberManagement.tables.memberDirectory.columns.actions", "액션"),
+        headerClassName: "text-center",
+        className: "flex justify-center",
+        render: (row) =>
+          row.source === "joinRequest" && row.joinRequest ? (
+            <div className="flex flex-wrap justify-center gap-1.5">
+              <AdminButton
+                onClick={() => void handleReviewJoinRequest(row.joinRequest!, "approve")}
+                disabled={reviewingJoinRequestId !== null}
+                variant="primary"
+                size="sm"
+                className="px-2.5 py-1 text-[11px]"
+              >
+                {reviewingJoinRequestId === row.joinRequest.id
+                  ? t("memberManagement.reviewActions.processing", "처리 중")
+                  : t("memberManagement.reviewActions.approve", "승인")}
+              </AdminButton>
+              <AdminButton
+                onClick={() => void handleReviewJoinRequest(row.joinRequest!, "reject")}
+                disabled={reviewingJoinRequestId !== null}
+                variant="secondary"
+                size="sm"
+                className="px-2.5 py-1 text-[11px]"
+              >
+                {t("memberManagement.reviewActions.reject", "거절")}
+              </AdminButton>
+            </div>
+          ) : (
+            <AdminButton
+              onClick={() => setActiveTab("permissions")}
+              variant="secondary"
+              size="sm"
+              className="px-2.5 py-1 text-[11px]"
+            >
+              {t("memberManagement.memberActions.managePermissions", "권한 관리")}
+            </AdminButton>
+          ),
+      },
+    ],
+    [reviewingJoinRequestId, t],
+  );
   const summaryCards = useMemo(
     () =>
       baseSummaryCards.map((card) =>
@@ -412,26 +583,15 @@ export default function AdminMemberManagementDashboard() {
       ).replace("{count}", String(invitations.length)),
     },
     {
-      id: "approval",
-      labelKey: "memberManagement.tabs.approval.label",
-      fallbackLabel: "승인",
-      descriptionKey: "memberManagement.tabs.approval.description",
-      fallbackDescription: "가입 신청을 승인하거나 거절합니다.",
-      countLabel: t(
-        "memberManagement.tabs.approval.count",
-        "승인 대기 {count}건",
-      ).replace("{count}", String(joinRequests.length)),
-    },
-    {
       id: "members",
       labelKey: "memberManagement.tabs.members.label",
-      fallbackLabel: "전체 멤버",
+      fallbackLabel: "멤버 관리",
       descriptionKey: "memberManagement.tabs.members.description",
-      fallbackDescription: "멤버 목록과 역할 기본값을 확인합니다.",
+      fallbackDescription: "승인 대기와 전체 멤버를 한 목록에서 관리합니다.",
       countLabel: t(
         "memberManagement.tabs.members.count",
-        "멤버 {count}명",
-      ).replace("{count}", String(members.length)),
+        "대상 {count}명",
+      ).replace("{count}", String(members.length + joinRequests.length)),
     },
     {
       id: "permissions",
@@ -452,7 +612,7 @@ export default function AdminMemberManagementDashboard() {
 
     try {
       const response = await fetch(
-        `/api/admin/members?companyId=${encodeURIComponent(WORKSPACE_COMPANY_ID)}&status=approved&limit=50`,
+        `/api/admin/members?companyId=${encodeURIComponent(WORKSPACE_COMPANY_ID)}&status=all&limit=50`,
         {
           cache: "no-store",
           headers: {
@@ -469,15 +629,6 @@ export default function AdminMemberManagementDashboard() {
 
       const nextMembers = payload.members ?? [];
       setMemberRecords(nextMembers);
-      setMemberPermissionDrafts((previous) => {
-        const nextDrafts: Record<string, MemberPermissionCode[]> = {};
-        for (const member of nextMembers) {
-          nextDrafts[member.id] = previous[member.id] ?? [
-            ...member.permissionCodes,
-          ];
-        }
-        return nextDrafts;
-      });
       setMemberListLoadStatus("loaded");
     } catch (error) {
       setMemberRecords([]);
@@ -577,65 +728,6 @@ export default function AdminMemberManagementDashboard() {
       );
     } finally {
       setReviewingJoinRequestId(null);
-    }
-  }
-
-  function handleToggleMemberPermission(
-    memberId: string,
-    permissionCode: MemberPermissionCode,
-  ) {
-    setMemberPermissionDrafts((previous) => {
-      const current = previous[memberId] ?? [];
-      const next = current.includes(permissionCode)
-        ? current.filter((code) => code !== permissionCode)
-        : [...current, permissionCode];
-      return { ...previous, [memberId]: next };
-    });
-  }
-
-  async function handleUpdateMemberPermissions(memberId: string) {
-    if (updatingMemberId) return;
-
-    setUpdatingMemberId(memberId);
-    setMemberPermissionUpdateError(null);
-    setMemberPermissionUpdateMessage(null);
-
-    try {
-      const response = await fetch(
-        `/api/admin/members/${encodeURIComponent(memberId)}/permissions`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            "x-peacebypiece-permissions": "member.permission.update",
-          },
-          body: JSON.stringify({
-            actorUserId: "user-sample-admin",
-            permissionCodes: memberPermissionDrafts[memberId] ?? [],
-          }),
-        },
-      );
-      const payload = (await response.json()) as MemberPermissionUpdateResponse;
-
-      if (!response.ok || !payload.ok || !payload.member) {
-        throw new Error(payload.error ?? "MEMBER_PERMISSION_UPDATE_FAILED");
-      }
-
-      setMemberPermissionUpdateMessage(
-        t(
-          "memberManagement.memberActions.permissionUpdateSuccess",
-          "멤버 권한을 저장했습니다.",
-        ),
-      );
-      await loadCompanyMembers();
-    } catch (error) {
-      setMemberPermissionUpdateError(
-        error instanceof Error
-          ? error.message
-          : "MEMBER_PERMISSION_UPDATE_FAILED",
-      );
-    } finally {
-      setUpdatingMemberId(null);
     }
   }
 
@@ -1029,406 +1121,148 @@ export default function AdminMemberManagementDashboard() {
             </section>
           ) : null}
 
-          {activeTab === "approval" ? (
-            <>
-              <section className="rounded-3xl border p-4 shadow-sm pbp-card-muted">
-                <p className="text-sm font-semibold pbp-text-primary">
-                  {t(
-                    "memberManagement.approvalWorkbench.guardTitle",
-                    "저장 전제",
-                  )}
-                </p>
-                <p className="mt-2 text-xs leading-5 pbp-text-muted">
-                  {t(
-                    "memberManagement.approvalWorkbench.guardDescription",
-                    "승인 시 company_members를 approved로 만들고 member_permissions에 선택 권한을 저장해야 합니다. 거절 시 join_requests만 rejected 처리합니다.",
-                  )}
-                </p>
-              </section>
-
-              <section className="grid gap-4 xl:grid-cols-1">
-                <article className={ADMIN_SURFACE_PANEL_CLASS}>
-                  <div className="flex flex-col gap-3 border-b border-[var(--pbp-border)] pb-4 lg:flex-row lg:items-end lg:justify-between">
-                    <div>
-                      <h3 className="text-base font-semibold pbp-text-primary">
-                        {t(
-                          "memberManagement.sections.joinRequests",
-                          "가입 신청/승인 대기",
-                        )}
-                      </h3>
-                      <p className="mt-1 text-xs leading-5 pbp-text-muted">
-                        {t(
-                          "memberManagement.sections.joinRequestsDescription",
-                          "초대 링크로 가입 신청한 사용자를 승인하거나 거절하는 영역입니다.",
-                        )}
-                      </p>
-                    </div>
-                    <span className="text-xs font-semibold pbp-text-subtle">
-                      {t(
-                        `memberManagement.sourceState.${getLoadStatusLabelKey(joinRequestLoadStatus)}`,
-                        "DB 연결 상태 확인",
-                      )}
-                    </span>
-                  </div>
-                  {joinRequestLoadError ? (
-                    <p className="mt-3 rounded-2xl border px-4 py-3 text-xs font-semibold pbp-action-danger-soft">
-                      {t(
-                        "memberManagement.loadErrors.joinRequests",
-                        "승인 대기 신청 목록을 불러오지 못했습니다.",
-                      )}{" "}
-                      {joinRequestLoadError}
-                    </p>
-                  ) : null}
-                  {joinRequestReviewMessage ? (
-                    <p className="mt-3 rounded-2xl border border-[var(--pbp-accent-border)] bg-[var(--pbp-accent-soft)] px-4 py-3 text-xs font-semibold text-[var(--pbp-accent)]">
-                      {joinRequestReviewMessage}
-                    </p>
-                  ) : null}
-                  {joinRequestReviewError ? (
-                    <p className="mt-3 rounded-2xl border px-4 py-3 text-xs font-semibold pbp-action-danger-soft">
-                      {t(
-                        "memberManagement.reviewActions.error",
-                        "가입 신청 처리에 실패했습니다.",
-                      )}{" "}
-                      {joinRequestReviewError}
-                    </p>
-                  ) : null}
-                  <div className="mt-4 overflow-x-auto rounded-2xl border border-[var(--pbp-border)]">
-                    <div className="min-w-[980px]">
-                      <div
-                        className={`grid grid-cols-[minmax(150px,1.2fr)_130px_170px_100px_minmax(130px,1fr)_110px_90px_110px_150px] ${ADMIN_TABLE_HEADER_CLASS}`}
-                      >
-                        {joinRequestColumns.map((column) => (
-                          <div key={column.id} className="px-3 py-2">
-                            {t(
-                              `memberManagement.tables.joinRequests.columns.${column.id}`,
-                              column.id,
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                      <div className="divide-y divide-[var(--pbp-border)]">
-                        {joinRequestLoadStatus === "loading" ? (
-                          <div className="p-3">
-                            <AdminEmptyState
-                              title={t(
-                                "memberManagement.loading.joinRequests.title",
-                                "승인 대기 신청을 불러오는 중입니다",
-                              )}
-                              description={t(
-                                "memberManagement.loading.joinRequests.description",
-                                "join_requests.pending 목록을 실제 DB 기준으로 조회하고 있습니다.",
-                              )}
-                            />
-                          </div>
-                        ) : joinRequests.length ? (
-                          joinRequests.map((request) => (
-                            <div
-                              key={request.id}
-                              className={`grid grid-cols-[minmax(150px,1.2fr)_130px_170px_100px_minmax(130px,1fr)_110px_90px_110px_150px] px-3 py-3 ${ADMIN_TABLE_ROW_CLASS}`}
-                            >
-                              <div className="min-w-0">
-                                <p className="truncate font-semibold pbp-text-primary">
-                                  {request.applicantName}
-                                </p>
-                                <p className="mt-1 truncate pbp-text-muted">
-                                  {request.applicantEmail}
-                                </p>
-                              </div>
-                              <span className="truncate pbp-text-muted">
-                                {request.applicantPhoneLabel}
-                              </span>
-                              <span className="truncate pbp-text-muted">
-                                {request.invitationEmailLabel}
-                              </span>
-                              <AdminStatusBadge
-                                tone={getEmailMatchTone(
-                                  request.emailMatchStatus,
-                                )}
-                              >
-                                {t(
-                                  `memberManagement.emailMatchStatuses.${request.emailMatchStatus}`,
-                                  request.emailMatchStatus,
-                                )}
-                              </AdminStatusBadge>
-                              <span
-                                className="truncate pbp-text-muted"
-                                title={request.requestMemoLabel}
-                              >
-                                {request.requestMemoLabel}
-                              </span>
-                              <span className="font-semibold pbp-text-primary">
-                                {t(
-                                  `memberManagement.roles.${request.requestedRoleId}.label`,
-                                  request.requestedRoleId,
-                                )}
-                              </span>
-                              <AdminStatusBadge tone="warning">
-                                {t(
-                                  `memberManagement.joinRequestStatuses.${request.status}`,
-                                  request.status,
-                                )}
-                              </AdminStatusBadge>
-                              <span className="pbp-text-muted">
-                                {request.requestedAtLabel}
-                              </span>
-                              <div className="flex flex-wrap gap-1.5">
-                                <AdminButton
-                                  onClick={() =>
-                                    void handleReviewJoinRequest(
-                                      request,
-                                      "approve",
-                                    )
-                                  }
-                                  disabled={reviewingJoinRequestId !== null}
-                                  variant="primary"
-                                  className="px-2.5 py-1 text-[11px]"
-                                >
-                                  {reviewingJoinRequestId === request.id
-                                    ? t(
-                                        "memberManagement.reviewActions.processing",
-                                        "처리 중",
-                                      )
-                                    : t(
-                                        "memberManagement.reviewActions.approve",
-                                        "승인",
-                                      )}
-                                </AdminButton>
-                                <AdminButton
-                                  onClick={() =>
-                                    void handleReviewJoinRequest(
-                                      request,
-                                      "reject",
-                                    )
-                                  }
-                                  disabled={reviewingJoinRequestId !== null}
-                                  variant="secondary"
-                                  className="px-2.5 py-1 text-[11px]"
-                                >
-                                  {t(
-                                    "memberManagement.reviewActions.reject",
-                                    "거절",
-                                  )}
-                                </AdminButton>
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="p-3">
-                            <AdminEmptyState
-                              title={t(
-                                "memberManagement.empty.joinRequests.title",
-                                "승인 대기 신청이 없습니다",
-                              )}
-                              description={t(
-                                "memberManagement.empty.joinRequests.description",
-                                "초대 링크 가입 신청이 생성되면 승인/거절/권한 부여 대상이 이 영역에 표시됩니다.",
-                              )}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </article>
-              </section>
-            </>
-          ) : null}
-
           {activeTab === "members" ? (
-            <>
-              <section className="grid gap-4">
-                <article className={ADMIN_SURFACE_PANEL_CLASS}>
-                  <div className="flex flex-col gap-3 border-b border-[var(--pbp-border)] pb-4 lg:flex-row lg:items-end lg:justify-between">
-                    <div>
-                      <h3 className="text-base font-semibold pbp-text-primary">
-                        {t("memberManagement.sections.members", "멤버 목록")}
-                      </h3>
-                      <p className="mt-1 text-xs leading-5 pbp-text-muted">
+            <AdminPanelSection
+              className={MEMBER_INVITE_PANEL_HEIGHT_CLASS}
+              eyebrow={t("memberManagement.memberDirectory.eyebrow", "멤버 관리")}
+              title={t("memberManagement.memberDirectory.title", "멤버 관리")}
+              description={t(
+                "memberManagement.memberDirectory.description",
+                "승인 대기와 전체 멤버를 한 목록에서 확인하고 처리합니다.",
+              )}
+              meta={t(
+                "memberManagement.tabs.members.count",
+                "대상 {count}명",
+              ).replace("{count}", String(memberDirectoryRows.length))}
+              contentClassName="flex min-h-0 flex-1 flex-col pt-4"
+            >
+              <div className="mb-3 grid shrink-0 gap-3 lg:grid-cols-[minmax(0,1fr)_180px_190px]">
+                <label className={ADMIN_FIELD_CONTAINER_CLASS}>
+                  <span className="text-xs font-semibold pbp-text-muted">
+                    {t("memberManagement.memberDirectory.filters.search", "검색")}
+                  </span>
+                  <input
+                    value={memberSearchQuery}
+                    onChange={(event) => setMemberSearchQuery(event.target.value)}
+                    className={ADMIN_INPUT_CLASS}
+                    placeholder={t(
+                      "memberManagement.memberDirectory.filters.searchPlaceholder",
+                      "이름, 이메일, 연락처 검색",
+                    )}
+                  />
+                </label>
+                <label className={ADMIN_FIELD_CONTAINER_CLASS}>
+                  <span className="text-xs font-semibold pbp-text-muted">
+                    {t("memberManagement.memberDirectory.filters.status", "상태")}
+                  </span>
+                  <select
+                    value={memberStatusFilter}
+                    onChange={(event) =>
+                      setMemberStatusFilter(
+                        event.target.value as MemberDirectoryStatusFilter,
+                      )
+                    }
+                    className={ADMIN_INPUT_CLASS}
+                  >
+                    {[
+                      "all",
+                      "pending",
+                      "approved",
+                      "suspended",
+                      "withdrawalRequested",
+                    ].map((status) => (
+                      <option key={status} value={status}>
                         {t(
-                          "memberManagement.sections.membersDescription",
-                          "승인된 멤버와 정지된 멤버를 한 목록에서 관리합니다.",
+                          `memberManagement.memberDirectory.statusFilters.${status}`,
+                          status,
                         )}
-                      </p>
-                    </div>
-                    <span className="text-xs font-semibold pbp-text-subtle">
-                      {t(
-                        `memberManagement.sourceState.${getLoadStatusLabelKey(memberListLoadStatus)}`,
-                        "DB 연결 상태 확인",
-                      )}
-                    </span>
-                  </div>
-                  {memberListLoadError ? (
-                    <p className="mt-3 rounded-2xl border px-4 py-3 text-xs font-semibold pbp-action-danger-soft">
-                      {t(
-                        "memberManagement.loadErrors.members",
-                        "멤버 목록을 불러오지 못했습니다.",
-                      )}{" "}
-                      {memberListLoadError}
-                    </p>
-                  ) : null}
-                  {memberPermissionUpdateMessage ? (
-                    <p className="mt-3 rounded-2xl border border-[var(--pbp-accent-border)] bg-[var(--pbp-accent-soft)] px-4 py-3 text-xs font-semibold text-[var(--pbp-accent)]">
-                      {memberPermissionUpdateMessage}
-                    </p>
-                  ) : null}
-                  {memberPermissionUpdateError ? (
-                    <p className="mt-3 rounded-2xl border px-4 py-3 text-xs font-semibold pbp-action-danger-soft">
-                      {t(
-                        "memberManagement.memberActions.permissionUpdateError",
-                        "멤버 권한 저장에 실패했습니다.",
-                      )}{" "}
-                      {memberPermissionUpdateError}
-                    </p>
-                  ) : null}
-                  <div className="mt-4 overflow-x-auto rounded-2xl border border-[var(--pbp-border)]">
-                    <div className="min-w-[1080px]">
-                      <div className="grid grid-cols-[minmax(150px,1fr)_110px_90px_100px_110px_140px] bg-stone-50 text-xs font-semibold text-stone-500">
-                        {memberColumns.map((column) => (
-                          <div key={column.id} className="px-3 py-2">
-                            {t(
-                              `memberManagement.tables.members.columns.${column.id}`,
-                              column.id,
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                      <div className="divide-y divide-[var(--pbp-border)]">
-                        {memberListLoadStatus === "loading" ? (
-                          <div className="p-3">
-                            <AdminEmptyState
-                              title={t(
-                                "memberManagement.loading.members.title",
-                                "멤버 목록을 불러오는 중입니다",
-                              )}
-                              description={t(
-                                "memberManagement.loading.members.description",
-                                "승인된 company_members와 member_permissions를 실제 DB 기준으로 조회하고 있습니다.",
-                              )}
-                            />
-                          </div>
-                        ) : members.length ? (
-                          members.map((member) => {
-                            const draftPermissionCodes = memberPermissionDrafts[
-                              member.id
-                            ] ?? [...member.permissionCodes];
-                            const hasPermissionChanged =
-                              draftPermissionCodes.slice().sort().join("|") !==
-                              member.permissionCodes.slice().sort().join("|");
-                            return (
-                              <div
-                                key={member.id}
-                                className="grid grid-cols-[minmax(150px,1fr)_110px_90px_100px_110px_140px] px-3 py-3 text-xs text-stone-600"
-                              >
-                                <div className="min-w-0">
-                                  <p className="truncate font-semibold pbp-text-primary">
-                                    {member.name}
-                                  </p>
-                                  <p className="mt-1 truncate pbp-text-muted">
-                                    {member.email}
-                                  </p>
-                                </div>
-                                <span className="font-semibold pbp-text-primary">
-                                  {t(
-                                    `memberManagement.roles.${member.roleId}.label`,
-                                    member.roleId,
-                                  )}
-                                </span>
-                                <AdminStatusBadge
-                                  tone={getMemberStatusTone(member.status)}
-                                >
-                                  {t(
-                                    `memberManagement.memberStatuses.${member.status}`,
-                                    member.status,
-                                  )}
-                                </AdminStatusBadge>
-                                <span className="font-semibold pbp-text-primary">
-                                  {t(
-                                    "memberManagement.permissionCount",
-                                    "권한 {count}개",
-                                  ).replace(
-                                    "{count}",
-                                    String(draftPermissionCodes.length),
-                                  )}
-                                </span>
-                                <span className="pbp-text-muted">
-                                  {member.lastActiveLabel}
-                                </span>
-                                <AdminButton
-                                  onClick={() =>
-                                    void handleUpdateMemberPermissions(
-                                      member.id,
-                                    )
-                                  }
-                                  disabled={
-                                    !hasPermissionChanged ||
-                                    updatingMemberId !== null ||
-                                    draftPermissionCodes.length === 0
-                                  }
-                                  variant="primary"
-                                  size="sm"
-                                  className="px-3 py-1 text-[11px]"
-                                >
-                                  {updatingMemberId === member.id
-                                    ? t(
-                                        "memberManagement.memberActions.saving",
-                                        "저장 중",
-                                      )
-                                    : t(
-                                        "memberManagement.memberActions.savePermissions",
-                                        "권한 저장",
-                                      )}
-                                </AdminButton>
-                                <div className="col-span-6 mt-3 grid gap-2 rounded-2xl border border-stone-100 bg-stone-50 p-3 md:grid-cols-2 xl:grid-cols-3">
-                                  {editableMemberPermissionCodes.map(
-                                    (permissionCode) => (
-                                      <label
-                                        key={`${member.id}-${permissionCode}`}
-                                        className="flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-3 py-2 text-[11px] text-stone-700"
-                                      >
-                                        <input
-                                          type="checkbox"
-                                          checked={draftPermissionCodes.includes(
-                                            permissionCode,
-                                          )}
-                                          onChange={() =>
-                                            handleToggleMemberPermission(
-                                              member.id,
-                                              permissionCode,
-                                            )
-                                          }
-                                          className="size-4 rounded border-stone-300"
-                                        />
-                                        <span className="min-w-0 flex-1 truncate font-semibold">
-                                          {permissionCode}
-                                        </span>
-                                      </label>
-                                    ),
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })
-                        ) : (
-                          <div className="p-3">
-                            <AdminEmptyState
-                              title={t(
-                                "memberManagement.empty.members.title",
-                                "등록된 멤버가 없습니다",
-                              )}
-                              description={t(
-                                "memberManagement.empty.members.description",
-                                "초대/가입 승인 API를 연결하면 승인된 멤버가 이 영역에 표시됩니다.",
-                              )}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </article>
-              </section>
-            </>
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className={ADMIN_FIELD_CONTAINER_CLASS}>
+                  <span className="text-xs font-semibold pbp-text-muted">
+                    {t("memberManagement.memberDirectory.filters.role", "권한")}
+                  </span>
+                  <select
+                    value={memberRoleFilter}
+                    onChange={(event) => setMemberRoleFilter(event.target.value)}
+                    className={ADMIN_INPUT_CLASS}
+                  >
+                    <option value="all">
+                      {t("memberManagement.memberDirectory.roleFilters.all", "전체")}
+                    </option>
+                    <option value="none">
+                      {t("memberManagement.memberDirectory.none", "없음")}
+                    </option>
+                    {inviteRoleOptions.map((role) => (
+                      <option key={role.id} value={role.id}>
+                        {t(`memberManagement.roles.${role.id}.label`, role.id)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              {memberListLoadError ? (
+                <p className="mb-3 rounded-2xl border px-4 py-3 text-xs font-semibold pbp-action-danger-soft">
+                  {t(
+                    "memberManagement.loadErrors.members",
+                    "멤버 목록을 불러오지 못했습니다.",
+                  )}{" "}
+                  {memberListLoadError}
+                </p>
+              ) : null}
+              {joinRequestLoadError ? (
+                <p className="mb-3 rounded-2xl border px-4 py-3 text-xs font-semibold pbp-action-danger-soft">
+                  {t(
+                    "memberManagement.loadErrors.joinRequests",
+                    "승인 대기 신청 목록을 불러오지 못했습니다.",
+                  )}{" "}
+                  {joinRequestLoadError}
+                </p>
+              ) : null}
+              {joinRequestReviewMessage ? (
+                <p className="mb-3 rounded-2xl border border-[var(--pbp-accent-border)] bg-[var(--pbp-accent-soft)] px-4 py-3 text-xs font-semibold text-[var(--pbp-accent)]">
+                  {joinRequestReviewMessage}
+                </p>
+              ) : null}
+              {joinRequestReviewError ? (
+                <p className="mb-3 rounded-2xl border px-4 py-3 text-xs font-semibold pbp-action-danger-soft">
+                  {t(
+                    "memberManagement.reviewActions.error",
+                    "가입 신청 처리에 실패했습니다.",
+                  )}{" "}
+                  {joinRequestReviewError}
+                </p>
+              ) : null}
+
+              <AdminTable
+                items={filteredMemberDirectoryRows}
+                columns={memberDirectoryColumns}
+                getRowKey={(row) => row.id}
+                emptyLabel={t(
+                  "memberManagement.empty.memberDirectory.title",
+                  "표시할 멤버가 없습니다",
+                )}
+                emptyDescription={t(
+                  "memberManagement.empty.memberDirectory.description",
+                  "승인 대기 신청 또는 등록된 멤버가 생성되면 이 목록에 표시됩니다.",
+                )}
+                isLoading={
+                  memberListLoadStatus === "loading" ||
+                  joinRequestLoadStatus === "loading"
+                }
+                loadingLabel={t(
+                  "memberManagement.loading.memberDirectory.title",
+                  "멤버 목록을 불러오는 중입니다",
+                )}
+                gridTemplateColumns="minmax(120px,1fr) minmax(160px,1.2fr) 110px 110px 96px 110px 110px 120px 140px"
+                rowBaseClassName="grid w-full min-w-[1120px] gap-3 px-4 py-3 text-left text-xs md:items-center"
+                headerClassName="hidden min-w-[1120px] gap-3 bg-[var(--pbp-surface-muted)] px-4 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] md:grid"
+                className="min-h-0 flex-1"
+              />
+            </AdminPanelSection>
           ) : null}
 
           {activeTab === "permissions" ? (

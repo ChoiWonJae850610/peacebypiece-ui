@@ -77,6 +77,7 @@ export type MemberListPreview = {
   status: "approved" | "pending" | "suspended";
   permissionCount: number;
   permissionCodes: readonly MemberPermissionCode[];
+  approvedAtLabel: string;
   lastActiveLabel: string;
 };
 
@@ -144,10 +145,13 @@ export const MEMBER_MANAGEMENT_PERMISSION_CARDS: readonly MemberPermissionCard[]
 ] as const;
 
 export const MEMBER_TABLE_COLUMNS: readonly MemberManagementTableColumn[] = [
-  { id: "member" },
+  { id: "name" },
+  { id: "email" },
+  { id: "phone" },
   { id: "role" },
   { id: "status" },
-  { id: "permissions" },
+  { id: "requestedAt" },
+  { id: "approvedAt" },
   { id: "lastActive" },
   { id: "actions" },
 ] as const;
@@ -271,7 +275,8 @@ export function toMemberListPreview(member: AdminCompanyMemberRecord): MemberLis
     status: member.status === "suspended" ? "suspended" : member.status === "pending" ? "pending" : "approved",
     permissionCount: member.permissionCount,
     permissionCodes: member.permissionCodes,
-    lastActiveLabel: toRelativeDateLabel(member.lastActiveAt ?? member.approvedAt ?? member.updatedAt),
+    approvedAtLabel: toCompactDateTimeLabel(member.approvedAt),
+    lastActiveLabel: toCompactDateTimeLabel(member.lastActiveAt),
   };
 }
 

@@ -291,15 +291,10 @@ export const adminEn = {
         description: "Create email or SMS invitations.",
         count: "{count} invites",
       },
-      approval: {
-        label: "Approvals",
-        description: "Approve or reject join requests.",
-        count: "{count} pending",
-      },
       members: {
-        label: "All members",
-        description: "Review members and role defaults.",
-        count: "{count} members",
+        label: "Members",
+        description: "Manage pending approvals and members in one list.",
+        count: "{count} people",
       },
       permissions: {
         label: "Permissions",
@@ -344,6 +339,34 @@ export const adminEn = {
       },
     },
 
+    memberDirectory: {
+      eyebrow: "Member management",
+      title: "Member management",
+      description: "Review and process pending approvals and all members in one list.",
+      none: "None",
+      filters: {
+        search: "Search",
+        searchPlaceholder: "Search name, email, or contact",
+        status: "Status",
+        role: "Permission",
+      },
+      statusFilters: {
+        all: "All",
+        pending: "Pending approval",
+        approved: "Active",
+        suspended: "Inactive",
+        withdrawalRequested: "Withdrawal requested",
+      },
+      roleFilters: { all: "All" },
+      statuses: {
+        pending: "Pending approval",
+        approved: "Active",
+        suspended: "Inactive",
+        withdrawalRequested: "Withdrawal requested",
+        withdrawn: "Withdrawn",
+        rejected: "Rejected",
+      },
+    },
     approvalWorkbench: {
       eyebrow: "Join request approval",
       title: "Member approval and permission assignment",
@@ -436,8 +459,8 @@ export const adminEn = {
       },
     },
     sections: {
-      members: "Member list",
-      membersDescription: "Manage approved and suspended members in one list.",
+      members: "Member management",
+      membersDescription: "Manage pending approvals and all members in one list.",
       invitations: "Invitation queue",
       invitationsDescription:
         "Manage expiration and cancellation status for generated invitation links and QR codes.",
@@ -464,12 +487,28 @@ export const adminEn = {
     tables: {
       members: {
         columns: {
-          member: "Member",
-          role: "Role",
+          name: "Name",
+          email: "Email",
+          phone: "Contact",
+          role: "Permission",
           status: "Status",
-          permissions: "Permissions",
-          lastActive: "Last active",
-          actions: "Save",
+          requestedAt: "Requested",
+          approvedAt: "Approved",
+          lastActive: "Last login",
+          actions: "Action",
+        },
+      },
+      memberDirectory: {
+        columns: {
+          name: "Name",
+          email: "Email",
+          phone: "Contact",
+          role: "Permission",
+          status: "Status",
+          requestedAt: "Requested",
+          approvedAt: "Approved",
+          lastActiveAt: "Last login",
+          actions: "Action",
         },
       },
       invitations: {
@@ -496,9 +535,14 @@ export const adminEn = {
     },
     empty: {
       members: {
-        title: "No members registered",
+        title: "No members to show",
         description:
-          "Approved members can be edited here after they are created.",
+          "Pending approvals or registered members will appear in this list.",
+      },
+      memberDirectory: {
+        title: "No members to show",
+        description:
+          "Pending approvals or registered members will appear in this list.",
       },
       invitations: {
         title: "No invitations created",
@@ -515,7 +559,12 @@ export const adminEn = {
       members: {
         title: "Loading members",
         description:
-          "Loading approved company_members and member_permissions from the DB.",
+          "Loading company_members and pending join requests from the DB.",
+      },
+      memberDirectory: {
+        title: "Loading members",
+        description:
+          "Loading company_members and pending join requests from the DB.",
       },
       joinRequests: {
         title: "Loading join requests",
@@ -535,6 +584,7 @@ export const adminEn = {
       error: "Failed to process the join request.",
     },
     memberActions: {
+      managePermissions: "Manage permissions",
       savePermissions: "Save permissions",
       saving: "Saving",
       permissionUpdateSuccess: "Member permissions have been saved.",
