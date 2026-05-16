@@ -1,5 +1,5 @@
 export const commonEn = {
-  appName: "PeaceByPiece",
+  appName: "WAFL",
   adminLabel: "Admin",
   moveToWorkspace: "Go to work order workspace",
   viewWorkOrderHistory: "Open work order history",

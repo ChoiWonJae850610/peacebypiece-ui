@@ -161,7 +161,7 @@ body {
 }
 
 
-/* PeaceByPiece theme primitives.
+/* WAFL theme primitives.
    Keep new shared UI styles on these variables so future accent/theme changes
    do not require editing each work-order component. */
 .pbp-surface {

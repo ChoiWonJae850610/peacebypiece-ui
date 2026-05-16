@@ -1,9 +1,24 @@
-Version : 0.13.11
-Summary : 멤버 초대 탭 레이아웃 보정 누적 구조 정리
-Description : 멤버 초대 탭의 좌측 발송 기준 영역을 AdminPanelSection footer로 분리하고 우측 초대 대기 목록 테이블은 기본 viewport border/flex 구조를 사용하도록 정리했습니다. 반복 보정용 pseudo border와 음수 margin을 제거해 좌우 패널 정렬 기준을 단순화했습니다.
+Version : 0.13.12
+Summary : WAFL 브랜드 표기 전환과 초대장형 가입 페이지 구성
+Description : PeaceByPiece 화면 표기를 WAFL로 변경하고, 멤버 초대 링크 페이지를 개발자용 처리 흐름 화면에서 와플 톤의 초대장형 랜딩 페이지로 재구성했습니다. Google OAuth 실제 연결은 보류하고, 가입 신청 버튼은 연결 예정 흐름처럼 보이는 UI 상태만 제공합니다.
 수정 파일 목록 :
+- app/globals.css
+- app/layout.tsx
 - lib/constants/app.ts
-- components/admin/members/AdminMemberManagementDashboard.tsx
+- lib/i18n/en/common.ts
+- lib/i18n/en/system.ts
+- lib/i18n/en/workorder.ts
+- lib/i18n/ko/common.ts
+- lib/i18n/ko/system.ts
+- lib/i18n/ko/workorder.ts
+- lib/data/sample/attachments.ts
+- lib/admin/settings/adminFeedbackContact.ts
+- components/invitations/MemberInvitationJoinRequestPage.tsx
+- components/invitations/PendingApprovalDashboard.tsx
+- components/me/PersonalSettingsPage.tsx
+- components/workspace/MemberWorkspaceHome.tsx
+- components/admin/layout/AdminSidebar.tsx
+- components/admin/layout/AdminTopbar.tsx
 추가 파일 목록 :
 - 없음
 삭제 파일 목록 :

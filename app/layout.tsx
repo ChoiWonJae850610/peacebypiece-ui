@@ -14,7 +14,7 @@ const baseI18n = getI18n(DEFAULT_LOCALE);
 const initialThemeRootAttributes = buildPbpThemeRootAttributes(DEFAULT_PBP_THEME_ID);
 
 export const metadata: Metadata = {
-  title: "PeaceByPiece",
+  title: "WAFL",
   description: baseI18n.common.metadataDescription,
 };
 

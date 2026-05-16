@@ -79,7 +79,7 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <span className="pbp-topbar-chip-primary rounded-full px-3 py-1.5 text-xs font-semibold">
-              PeacebyPiece
+              WAFL
             </span>
             <span className="pbp-topbar-chip-muted rounded-full px-3 py-1.5 text-xs font-semibold">{companyName}</span>
             <span className="pbp-topbar-chip-muted rounded-full px-3 py-1.5 text-xs font-semibold">v{appVersion}</span>

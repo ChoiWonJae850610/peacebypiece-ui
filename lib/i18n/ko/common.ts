@@ -1,5 +1,5 @@
 export const commonKo = {
-  appName: "PeaceByPiece",
+  appName: "WAFL",
   adminLabel: "관리자",
   moveToWorkspace: "작업지시서 워크스페이스로 이동",
   viewWorkOrderHistory: "작업지시서 히스토리 보기",

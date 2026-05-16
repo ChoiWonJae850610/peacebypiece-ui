@@ -125,7 +125,7 @@ function PersonalSettingsSummary({ copy, draft, onReset }: { copy: PersonalSetti
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-[var(--pbp-action-primary-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--pbp-action-primary-text)]">PeacebyPiece</span>
+            <span className="rounded-full bg-[var(--pbp-action-primary-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--pbp-action-primary-text)]">WAFL</span>
             <span className="rounded-full bg-[var(--pbp-surface-muted)] px-3 py-1.5 text-xs font-semibold text-[var(--pbp-text-muted)]">{WORKSPACE_COMPANY_NAME}</span>
             <span className="rounded-full bg-[var(--pbp-surface-muted)] px-3 py-1.5 text-xs font-semibold text-[var(--pbp-text-muted)]">v{APP_VERSION}</span>
           </div>

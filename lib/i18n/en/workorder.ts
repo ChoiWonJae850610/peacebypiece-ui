@@ -534,7 +534,7 @@ export const workorderEn = {
     },
     layout: {
       sidebar: {
-        title: "PeacebyPiece",
+        title: "WAFL",
         workList: "Work list",
       },
       sidebarControls: {
@@ -573,7 +573,7 @@ export const workorderEn = {
         loadingSideDescription: "Checking design files, attachments, and work memos.",
       },
       mobileTopBar: {
-        title: "PeacebyPiece",
+        title: "WAFL",
         subtitle: "Mobile work menu",
         openAdminPanelAria: "Open admin panel",
         openSettingsAria: "Open settings",

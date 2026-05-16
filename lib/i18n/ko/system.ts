@@ -1,5 +1,5 @@
 export const systemKo = {
-  eyebrow: "PeaceByPiece System",
+  eyebrow: "WAFL System",
   title: "최고관리자 운영 화면",
   description: "고객사 초대, 고객사별 운영 현황, 작업지시서 추천 규칙을 최고관리자 기준으로 확장하기 위한 기본 화면입니다.",
   versionLabel: "버전",

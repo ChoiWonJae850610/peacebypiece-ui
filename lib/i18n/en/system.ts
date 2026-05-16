@@ -1,5 +1,5 @@
 export const systemEn = {
-  eyebrow: "PeaceByPiece System",
+  eyebrow: "WAFL System",
   title: "Super admin operations",
   description: "A base page for expanding customer invitations, tenant operations, and work-order recommendation rules from the super-admin perspective.",
   versionLabel: "Version",

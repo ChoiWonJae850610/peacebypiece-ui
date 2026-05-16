@@ -8,9 +8,9 @@ export type AdminFeedbackMailtoInput = {
 };
 
 const FEEDBACK_SUBJECT_BY_TYPE: Record<AdminFeedbackRequestType, string> = {
-  improvement: "PeaceByPiece 개선 요청",
-  bug: "PeaceByPiece 오류 제보",
-  feature: "PeaceByPiece 기능 제안",
+  improvement: "WAFL 개선 요청",
+  bug: "WAFL 오류 제보",
+  feature: "WAFL 기능 제안",
 };
 
 const FEEDBACK_BODY_TEMPLATE = [

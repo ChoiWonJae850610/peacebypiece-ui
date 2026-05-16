@@ -116,7 +116,7 @@ export default function AdminSidebar({ companyName, appVersion, navigationItems 
       <div className="rounded-[24px] bg-[var(--admin-theme-surface)] p-4 text-[var(--admin-theme-text-on-surface)] transition-colors">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">PeacebyPiece</p>
+            <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">WAFL</p>
             <p className="mt-2 truncate text-lg font-semibold">{companyName}</p>
           </div>
           <span className="shrink-0 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-stone-300">v{appVersion}</span>

@@ -534,7 +534,7 @@ export const workorderKo = {
     },
     layout: {
       sidebar: {
-        title: "PeacebyPiece",
+        title: "WAFL",
         workList: "작업 리스트",
       },
       sidebarControls: {
@@ -573,7 +573,7 @@ export const workorderKo = {
         loadingSideDescription: "디자인, 첨부파일, 작업메모 정보를 확인하고 있습니다.",
       },
       mobileTopBar: {
-        title: "PeacebyPiece",
+        title: "WAFL",
         subtitle: "모바일 작업 메뉴",
         openAdminPanelAria: "관리자 패널 열기",
         openSettingsAria: "환경 설정 열기",
