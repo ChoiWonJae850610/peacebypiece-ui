@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { WaflCurrentUser, WaflCurrentUserResponse } from "@/lib/auth/currentUser";
 
 type CurrentUserContextValue = {
@@ -30,16 +30,29 @@ async function fetchCurrentUser(): Promise<WaflCurrentUser | null> {
 export function CurrentUserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<WaflCurrentUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const refreshInFlightRef = useRef<Promise<WaflCurrentUser | null> | null>(null);
 
   const refreshCurrentUser = useCallback(async () => {
+    if (refreshInFlightRef.current) return refreshInFlightRef.current;
+
     setIsLoading(true);
-    try {
-      const nextUser = await fetchCurrentUser();
-      setUser(nextUser);
-      return nextUser;
-    } finally {
-      setIsLoading(false);
-    }
+    const nextRefresh = fetchCurrentUser()
+      .then((nextUser) => {
+        setUser(nextUser);
+        return nextUser;
+      })
+      .catch((error) => {
+        console.error("Current user refresh failed", error);
+        setUser(null);
+        return null;
+      })
+      .finally(() => {
+        refreshInFlightRef.current = null;
+        setIsLoading(false);
+      });
+
+    refreshInFlightRef.current = nextRefresh;
+    return nextRefresh;
   }, []);
 
   const clearCurrentUser = useCallback(() => {
@@ -48,24 +61,36 @@ export function CurrentUserProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
+    void refreshCurrentUser();
+  }, [refreshCurrentUser]);
 
-    setIsLoading(true);
-    fetchCurrentUser()
-      .then((nextUser) => {
-        if (!cancelled) setUser(nextUser);
-      })
-      .catch(() => {
-        if (!cancelled) setUser(null);
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoading(false);
-      });
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        void refreshCurrentUser();
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void refreshCurrentUser();
+      }
+    };
+
+    const handleWindowFocus = () => {
+      void refreshCurrentUser();
+    };
+
+    window.addEventListener("pageshow", handlePageShow);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleWindowFocus);
 
     return () => {
-      cancelled = true;
+      window.removeEventListener("pageshow", handlePageShow);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleWindowFocus);
     };
-  }, []);
+  }, [refreshCurrentUser]);
 
   const value = useMemo<CurrentUserContextValue>(
     () => ({

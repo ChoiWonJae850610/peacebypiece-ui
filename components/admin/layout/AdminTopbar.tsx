@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { AdminModal } from "@/components/admin/layout/AdminModal";
 import { PersonalSettingsPanel } from "@/components/me/PersonalSettingsPage";
+import { useCurrentUser } from "@/components/auth/CurrentUserProvider";
 import { useAdminTranslation } from "@/lib/i18n/useAdminTranslation";
 
 type AdminTopbarProps = {
@@ -83,7 +84,9 @@ function LogoutIcon() {
 
 export default function AdminTopbar({ companyName, appVersion, title, description }: AdminTopbarProps) {
   const t = useAdminTranslation();
+  const { user } = useCurrentUser();
   const [personalSettingsOpen, setPersonalSettingsOpen] = useState(false);
+  const displayCompanyName = user?.companyName ?? companyName;
   const localizedTitle = getLocalizedTopbarTitle(title, t);
   const summary = getTopbarSummary(localizedTitle, description, t);
 
@@ -95,7 +98,7 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
             <span className="pbp-topbar-chip-primary rounded-full px-3 py-1.5 text-xs font-semibold">
               WAFL
             </span>
-            <span className="pbp-topbar-chip-muted rounded-full px-3 py-1.5 text-xs font-semibold">{companyName}</span>
+            <span className="pbp-topbar-chip-muted rounded-full px-3 py-1.5 text-xs font-semibold">{displayCompanyName}</span>
             <span className="pbp-topbar-chip-muted rounded-full px-3 py-1.5 text-xs font-semibold">v{appVersion}</span>
           </div>
           {summary ? (
