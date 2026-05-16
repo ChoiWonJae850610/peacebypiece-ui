@@ -68,6 +68,16 @@ function SettingsIcon() {
   );
 }
 
+function LogoutIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9.5 4.75H6.75A1.75 1.75 0 0 0 5 6.5v11a1.75 1.75 0 0 0 1.75 1.75H9.5" />
+      <path d="M14 8.25 17.75 12 14 15.75" />
+      <path d="M17.5 12H9.75" />
+    </svg>
+  );
+}
+
 export default function AdminTopbar({ companyName, appVersion, title, description }: AdminTopbarProps) {
   const t = useAdminTranslation();
   const localizedTitle = getLocalizedTopbarTitle(title, t);
@@ -112,6 +122,16 @@ export default function AdminTopbar({ companyName, appVersion, title, descriptio
           <Link href="/admin/settings" aria-label={t("topbar.actions.adminSettings", "환경설정")} title={t("topbar.actions.adminSettings", "환경설정")} className="pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition">
             <SettingsIcon />
           </Link>
+          <form action="/api/auth/logout" method="post">
+            <button
+              type="submit"
+              aria-label={t("topbar.actions.logout", "로그아웃")}
+              title={t("topbar.actions.logout", "로그아웃")}
+              className="pbp-topbar-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition"
+            >
+              <LogoutIcon />
+            </button>
+          </form>
         </div>
       </div>
     </header>

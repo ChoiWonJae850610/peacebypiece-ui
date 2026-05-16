@@ -78,8 +78,8 @@ export function formatAdminStatsCount(value: number | undefined, suffix = "") {
   return shouldUseSpacing ? `${normalizedValue} ${suffix}` : `${normalizedValue}${suffix}`;
 }
 
-export function formatAdminStatsPercent(value: number | null | undefined, pendingLabel: string) {
-  if (value === null || value === undefined) return pendingLabel;
+export function formatAdminStatsPercent(value: number | null | undefined, fallbackLabel: string) {
+  if (value === null || value === undefined) return fallbackLabel;
   return `${value.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}%`;
 }
 

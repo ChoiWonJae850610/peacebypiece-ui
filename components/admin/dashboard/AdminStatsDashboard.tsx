@@ -19,7 +19,6 @@ import {
   ADMIN_STATS_ACCENT_TEXT_CLASS,
   ADMIN_STATS_BODY_CLASS,
   ADMIN_STATS_IDLE_ITEM_CLASS,
-  ADMIN_STATS_ITEM_CLASS,
   ADMIN_STATS_ITEM_MUTED_CLASS,
   ADMIN_STATS_MUTED_PANEL_CLASS,
   ADMIN_STATS_PANEL_CLASS,
@@ -29,15 +28,11 @@ import {
   ADMIN_STATS_TITLE_CLASS,
   ADMIN_STATS_TRACK_CLASS,
   ADMIN_STATS_TRACK_INSET_CLASS,
-  ADMIN_STATS_WARNING_PANEL_CLASS,
   ADMIN_STATS_WARNING_TEXT_CLASS,
 } from "@/components/admin/common/adminSemanticClassNames";
 import AdminTable from "@/components/admin/common/AdminTable";
 import { AdminCard } from "@/components/admin/layout/AdminCard";
-import {
-  AdminBasicBarChart,
-  AdminBasicDonutChart,
-} from "@/components/admin/dashboard/AdminBasicStatsCharts";
+import { AdminBasicDonutChart } from "@/components/admin/dashboard/AdminBasicStatsCharts";
 import type { AdminTableColumn } from "@/lib/admin/common/types";
 import type {
   AdminStatsPeriodTopMode,
@@ -329,15 +324,6 @@ export default function AdminStatsDashboard({
     attachmentTrashCards: translatedStats.attachmentTrashCards,
   });
 
-  const hasVisibleStatsData =
-    viewModel.totalFlowValue > 0 ||
-    viewModel.totalPartnerCount > 0 ||
-    viewModel.totalRoundCount > 0 ||
-    viewModel.totalCategoryCount > 0 ||
-    viewModel.totalFactoryProductionCount > 0 ||
-    translatedStats.fileUsagePoints.some((item) => item.value > 0) ||
-    translatedStats.keyMetrics.some((item) => item.value > 0);
-
   const totalReorderCount = stats.currentOverview.reorderCount;
   const activePeriodOptions = stats.periodOptions.filter(
     (item) => item.key === "7d" || item.key === "30d",
@@ -383,6 +369,18 @@ export default function AdminStatsDashboard({
             1000,
         ) / 10
       : 0;
+  const zeroPercentLabel = "0%";
+  const workorderSuffix = pt("workorderCountSuffix", pageText.workorderCountSuffix);
+  const formatCurrentRateBasis = (count: number, target: number) => {
+    const normalizedTarget = Math.max(0, Math.round(target));
+    if (normalizedTarget <= 0) {
+      return `${formatAdminStatsCount(0, workorderSuffix)} ${pt("currentRateBasisTargetSuffix", "기준")}`;
+    }
+
+    return pt("currentRateBasis", pageText.currentRateBasis)
+      .replace("{count}", formatAdminStatsCount(count, workorderSuffix))
+      .replace("{target}", formatAdminStatsCount(normalizedTarget, workorderSuffix));
+  };
   const currentSummaryCards = [
     {
       id: "produced",
@@ -407,46 +405,24 @@ export default function AdminStatsDashboard({
       label: pt("currentDelayRateLabel", pageText.currentDelayRateLabel),
       value: formatAdminStatsPercent(
         stats.currentOverview.dueDelayRate,
-        pt("pendingLabel", pageText.pendingLabel),
+        zeroPercentLabel,
       ),
-      helper: pt("currentRateBasis", pageText.currentRateBasis)
-        .replace(
-          "{count}",
-          formatAdminStatsCount(
-            stats.currentOverview.dueDelayCount,
-            pt("workorderCountSuffix", pageText.workorderCountSuffix),
-          ),
-        )
-        .replace(
-          "{target}",
-          formatAdminStatsCount(
-            stats.currentOverview.dueDateTargetCount,
-            pt("workorderCountSuffix", pageText.workorderCountSuffix),
-          ),
-        ),
+      helper: formatCurrentRateBasis(
+        stats.currentOverview.dueDelayCount,
+        stats.currentOverview.dueDateTargetCount,
+      ),
     },
     {
       id: "quality",
       label: pt("currentQualityRateLabel", pageText.currentQualityRateLabel),
       value: formatAdminStatsPercent(
         stats.currentOverview.qualityIssueRate,
-        pt("pendingLabel", pageText.pendingLabel),
+        zeroPercentLabel,
       ),
-      helper: pt("currentRateBasis", pageText.currentRateBasis)
-        .replace(
-          "{count}",
-          formatAdminStatsCount(
-            stats.currentOverview.qualityIssueCount,
-            pt("workorderCountSuffix", pageText.workorderCountSuffix),
-          ),
-        )
-        .replace(
-          "{target}",
-          formatAdminStatsCount(
-            stats.currentOverview.qualityTargetCount,
-            pt("workorderCountSuffix", pageText.workorderCountSuffix),
-          ),
-        ),
+      helper: formatCurrentRateBasis(
+        stats.currentOverview.qualityIssueCount,
+        stats.currentOverview.qualityTargetCount,
+      ),
     },
     {
       id: "storage",
@@ -572,10 +548,7 @@ export default function AdminStatsDashboard({
             className="cursor-help"
             title={getFactoryMetricTooltip(item)}
           >
-            {formatAdminStatsPercent(
-              item.dueDelayRate,
-              pt("pendingLabel", pageText.pendingLabel),
-            )}
+            {formatAdminStatsPercent(item.dueDelayRate, zeroPercentLabel)}
           </AdminStatusBadge>
         ),
       },
@@ -593,10 +566,7 @@ export default function AdminStatsDashboard({
             className="cursor-help"
             title={getFactoryMetricTooltip(item)}
           >
-            {formatAdminStatsPercent(
-              item.qualityIssueRate,
-              pt("pendingLabel", pageText.pendingLabel),
-            )}
+            {formatAdminStatsPercent(item.qualityIssueRate, zeroPercentLabel)}
           </AdminStatusBadge>
         ),
       },
@@ -690,37 +660,6 @@ export default function AdminStatsDashboard({
 
   return (
     <>
-      {!hasVisibleStatsData ? (
-        <AdminCard className={`${ADMIN_STATS_WARNING_PANEL_CLASS} px-5 py-5`}>
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p
-                className={`text-xs font-semibold uppercase tracking-[0.14em] ${ADMIN_STATS_WARNING_TEXT_CLASS}`}
-              >
-                {pt("demoSeedEyebrow", pageText.demoSeedEyebrow)}
-              </p>
-              <h2
-                className={`mt-2 text-lg font-semibold ${ADMIN_STATS_TITLE_CLASS}`}
-              >
-                {pt("demoSeedTitle", pageText.demoSeedTitle)}
-              </h2>
-              <p
-                className={`mt-2 max-w-3xl text-sm leading-6 ${ADMIN_STATS_BODY_CLASS}`}
-              >
-                {pt("demoSeedDescription", pageText.demoSeedDescription)}
-              </p>
-            </div>
-            <div
-              className={`${ADMIN_STATS_ITEM_CLASS} px-4 py-3 text-xs font-semibold leading-5 ${ADMIN_STATS_BODY_CLASS}`}
-            >
-              <p>1. db/schema/full_reset.sql</p>
-              <p>2. db/seed/system_standards_seed.sql</p>
-              <p>3. db/schema/full_reset_smoke_test.sql</p>
-            </div>
-          </div>
-        </AdminCard>
-      ) : null}
-
       <AdminSummaryMetricCards cards={currentSummaryCards} />
 
       <section
