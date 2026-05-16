@@ -11,6 +11,8 @@ import { useI18n } from "@/lib/i18n";
 import type { DbConnectionStatus } from "@/lib/repositories/dbConnectionStatusStore";
 import { getDbConnectionStatusPresentation } from "@/lib/repositories/dbConnectionStatusPresentation";
 
+const MOBILE_WORKORDER_TOOLBAR_ICON_BUTTON_CLASS =
+  "pbp-touch-target pbp-topbar-icon-button inline-flex h-10 w-10 items-center justify-center rounded-full transition";
 
 function PersonalSettingsIcon() {
   return (
@@ -55,14 +57,19 @@ export default function MobileTopBar({ companyName, version, onOpen, onOpenSetti
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-semibold text-[var(--pbp-text-primary)]">{companyName}</div>
-          <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-[11px] text-[var(--pbp-text-muted)]"><span>{copy.subtitle}</span><span className="text-[10px] leading-none text-[var(--pbp-text-subtle)]">v{version}</span></div>
+          {showDevelopmentToolbar ? (
+            <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-[11px] text-[var(--pbp-text-muted)]">
+              <span>{copy.subtitle}</span>
+              <span className="text-[10px] leading-none text-[var(--pbp-text-subtle)]">v{version}</span>
+            </div>
+          ) : null}
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
           <Link
             href={homeNavigation.href}
             aria-label={homeNavigation.ariaLabel}
             title={homeNavigation.label}
-            className="pbp-touch-target pbp-interactive-button pbp-topbar-icon-button inline-flex h-11 w-11 items-center justify-center rounded-xl text-base font-medium shadow-sm"
+            className={MOBILE_WORKORDER_TOOLBAR_ICON_BUTTON_CLASS}
           >
             ⌂
           </Link>
@@ -71,7 +78,7 @@ export default function MobileTopBar({ companyName, version, onOpen, onOpenSetti
             onClick={() => setPersonalSettingsOpen(true)}
             aria-label={i18n.common.personalSettings.title}
             title={i18n.common.personalSettings.title}
-            className="pbp-touch-target pbp-interactive-button pbp-topbar-icon-button inline-flex h-11 w-11 items-center justify-center rounded-xl text-base font-medium shadow-sm"
+            className={MOBILE_WORKORDER_TOOLBAR_ICON_BUTTON_CLASS}
           >
             <PersonalSettingsIcon />
           </button>
@@ -80,7 +87,7 @@ export default function MobileTopBar({ companyName, version, onOpen, onOpenSetti
             onClick={() => window.location.reload()}
             aria-label="새로고침"
             title="새로고침"
-            className="pbp-touch-target pbp-interactive-button pbp-topbar-icon-button inline-flex h-11 w-11 items-center justify-center rounded-xl text-base font-medium shadow-sm"
+            className={MOBILE_WORKORDER_TOOLBAR_ICON_BUTTON_CLASS}
           >
             ↻
           </button>
@@ -89,7 +96,7 @@ export default function MobileTopBar({ companyName, version, onOpen, onOpenSetti
               type="submit"
               aria-label={i18n.common.workorderToolbar.logout}
               title={i18n.common.workorderToolbar.logout}
-              className="pbp-touch-target pbp-interactive-button pbp-topbar-icon-button inline-flex h-11 w-11 items-center justify-center rounded-xl text-base font-medium shadow-sm"
+              className={MOBILE_WORKORDER_TOOLBAR_ICON_BUTTON_CLASS}
             >
               <LogoutIcon />
             </button>
@@ -98,7 +105,7 @@ export default function MobileTopBar({ companyName, version, onOpen, onOpenSetti
             type="button"
             onClick={onOpen}
             aria-label={copy.openMenuAria}
-            className="pbp-touch-target pbp-interactive-button pbp-topbar-icon-button inline-flex h-11 items-center justify-center rounded-xl px-3.5 text-sm font-medium shadow-sm"
+            className="pbp-touch-target pbp-topbar-icon-button inline-flex h-10 items-center justify-center rounded-full px-3 text-sm font-medium transition"
           >
             {copy.menu}
           </button>

@@ -1,4 +1,7 @@
 import WorkOrderWorkspace from "@/components/workorder/WorkOrderWorkspace";
+import { getCurrentWaflSession } from "@/lib/auth/currentSession";
+import { ROLE } from "@/lib/constants/roles";
+import type { RoleType } from "@/types/permission";
 import {
   normalizeWorkOrderListSort,
   normalizeWorkOrderListStatusFilter,
@@ -12,6 +15,12 @@ type WorkerPageProps = {
     q?: string | string[];
   }>;
 };
+
+
+function resolveSessionHomeRole(sessionRole: string | null | undefined): RoleType | null {
+  if (sessionRole === "company_admin" || sessionRole === "system_admin") return ROLE.admin;
+  return null;
+}
 
 function readQueryValue(value: string | string[] | undefined): string | null {
   if (Array.isArray(value)) return value[0]?.trim() || null;
@@ -28,9 +37,12 @@ export default async function WorkerPage({ searchParams }: WorkerPageProps) {
       : normalizeWorkOrderListStatusFilter(null);
   const initialListSort = normalizeWorkOrderListSort(readQueryValue(resolvedSearchParams?.sort));
   const initialSearchQuery = readQueryValue(resolvedSearchParams?.q) ?? "";
+  const session = await getCurrentWaflSession();
+  const initialHomeRole = resolveSessionHomeRole(session?.role);
 
   return (
     <WorkOrderWorkspace
+      initialHomeRole={initialHomeRole}
       initialWorkOrderId={initialWorkOrderId}
       initialListStatusFilter={initialListStatusFilter}
       initialListSort={initialListSort}

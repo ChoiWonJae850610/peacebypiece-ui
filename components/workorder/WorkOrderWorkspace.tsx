@@ -16,6 +16,7 @@ import {
 } from "@/lib/workorder/list/workOrderListControls";
 import type { WorkOrderListSort, WorkOrderListStatusFilter } from "@/lib/workorder/list/workOrderListControls";
 import { buildWorkspaceHomeNavigation } from "@/lib/navigation/workspaceHomeRoutes";
+import type { RoleType } from "@/types/permission";
 import { RUNTIME_VISIBILITY } from "@/lib/runtime/runtimeMode";
 
 import { buildWorkspaceViewModel } from "@/lib/workorder/workspace/buildWorkspaceViewModel";
@@ -25,6 +26,7 @@ type WorkOrderWorkspaceProps = {
   initialListStatusFilter?: WorkOrderListStatusFilter;
   initialListSort?: WorkOrderListSort;
   initialSearchQuery?: string;
+  initialHomeRole?: RoleType | null;
 };
 
 export default function WorkOrderWorkspace({
@@ -32,6 +34,7 @@ export default function WorkOrderWorkspace({
   initialListStatusFilter,
   initialListSort,
   initialSearchQuery,
+  initialHomeRole = null,
 }: WorkOrderWorkspaceProps) {
   const { i18n } = useI18n();
   const workOrder = useWorkOrder({
@@ -141,7 +144,8 @@ export default function WorkOrderWorkspace({
     sideDescription: loadingCopy.loadingSideDescription,
   };
   const homeNavigationCopy = i18n.workorder.ui.layout.homeNavigation;
-  const homeNavigation = buildWorkspaceHomeNavigation(identity.currentRole, {
+  const workspaceHomeRole = initialHomeRole ?? identity.currentRole;
+  const homeNavigation = buildWorkspaceHomeNavigation(workspaceHomeRole, {
     fallbackLabel: homeNavigationCopy.label,
     fallbackAriaLabel: homeNavigationCopy.ariaLabel,
     targetLabels: homeNavigationCopy.targetLabels,

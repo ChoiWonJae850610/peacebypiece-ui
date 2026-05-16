@@ -20,6 +20,9 @@ import type { DbConnectionStatus } from "@/lib/repositories/dbConnectionStatusSt
 import { getDbConnectionStatusPresentation } from "@/lib/repositories/dbConnectionStatusPresentation";
 
 
+const WORKORDER_TOOLBAR_ICON_BUTTON_CLASS =
+  "pbp-topbar-icon-button inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition";
+
 function PersonalSettingsIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -135,7 +138,12 @@ export default function SidebarContent({
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-lg font-semibold leading-6 text-[var(--pbp-text-primary)]">{companyName}</div>
-            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[var(--pbp-text-muted)]"><span>{controlsUi.subtitle}</span><span className="text-[10px] leading-none text-[var(--pbp-text-subtle)]">v{version}</span></div>
+            {showDevelopmentToolbar ? (
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[var(--pbp-text-muted)]">
+                <span>{controlsUi.subtitle}</span>
+                <span className="text-[10px] leading-none text-[var(--pbp-text-subtle)]">v{version}</span>
+              </div>
+            ) : null}
           </div>
           <div className="flex items-center gap-2">
             {homeNavigation ? (
@@ -143,7 +151,7 @@ export default function SidebarContent({
                 href={homeNavigation.href}
                 aria-label={homeNavigation.ariaLabel}
                 title={homeNavigation.label}
-                className="pbp-interactive-button pbp-action-secondary inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-base font-medium shadow-sm"
+                className={WORKORDER_TOOLBAR_ICON_BUTTON_CLASS}
               >
                 <HomeIcon />
               </Link>
@@ -153,7 +161,7 @@ export default function SidebarContent({
               onClick={() => setPersonalSettingsOpen(true)}
               aria-label={i18n.common.personalSettings.title}
               title={i18n.common.personalSettings.title}
-              className="pbp-interactive-button pbp-action-secondary inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-base font-medium shadow-sm"
+              className={WORKORDER_TOOLBAR_ICON_BUTTON_CLASS}
             >
               <PersonalSettingsIcon />
             </button>
@@ -163,7 +171,7 @@ export default function SidebarContent({
               aria-label={i18n.common.workorderToolbar.refresh}
               title={writeLocked ? writeLockMessage ?? i18n.common.workorderToolbar.writeLocked : i18n.common.workorderToolbar.refresh}
               disabled={writeLocked}
-              className="pbp-interactive-button pbp-action-secondary inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-base font-medium shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+              className={`${WORKORDER_TOOLBAR_ICON_BUTTON_CLASS} disabled:cursor-not-allowed disabled:opacity-50`}
             >
               ↻
             </button>
@@ -172,7 +180,7 @@ export default function SidebarContent({
                 type="submit"
                 aria-label={i18n.common.workorderToolbar.logout}
                 title={i18n.common.workorderToolbar.logout}
-                className="pbp-interactive-button pbp-action-secondary inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-base font-medium shadow-sm"
+                className={WORKORDER_TOOLBAR_ICON_BUTTON_CLASS}
               >
                 <LogoutIcon />
               </button>
