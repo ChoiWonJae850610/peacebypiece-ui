@@ -135,9 +135,8 @@ const editableMemberPermissionCodes = MEMBER_PERMISSION_CATALOG.filter(
 const MEMBER_INVITE_PANEL_HEIGHT_CLASS = "h-[452px] min-h-[452px]";
 const MEMBER_INVITE_PANEL_CONTENT_CLASS = "flex min-h-0 flex-1 flex-col pt-4";
 const MEMBER_INVITATION_TABLE_CONTENT_CLASS =
-  "flex min-h-0 flex-1 flex-col overflow-hidden pt-4";
-const MEMBER_INVITATION_TABLE_VIEWPORT_CLASS =
-  "relative min-h-0 flex-1 self-stretch -mb-2 after:absolute after:bottom-2 after:left-0 after:right-0 after:h-px after:bg-[var(--pbp-border)] after:content-['']";
+  "flex min-h-0 flex-1 flex-col pt-4";
+const MEMBER_INVITATION_TABLE_VIEWPORT_CLASS = "min-h-0 flex-1";
 
 type MemberManagementTab = "invite" | "approval" | "members" | "permissions";
 
@@ -811,6 +810,57 @@ export default function AdminMemberManagementDashboard() {
                   "이메일 또는 휴대폰으로 초대 링크를 발송할 대상을 입력하고 기본 권한 묶음과 만료 기간을 지정합니다.",
                 )}
                 contentClassName={MEMBER_INVITE_PANEL_CONTENT_CLASS}
+                footer={
+                  <div className="pt-3">
+                    <div className="flex flex-col gap-3 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold pbp-text-primary">
+                          {t(
+                            "memberManagement.inviteBuilder.sendPolicyTitle",
+                            "발송 기준",
+                          )}
+                        </p>
+                        <p className="mt-1 text-xs leading-5 pbp-text-muted">
+                          {inviteMethod === "email"
+                            ? t(
+                                "memberManagement.inviteBuilder.sendPolicy.email",
+                                "초대 링크를 이메일로 발송합니다.",
+                              )
+                            : t(
+                                "memberManagement.inviteBuilder.sendPolicy.phone",
+                                "초대 링크를 문자/SMS로 발송합니다.",
+                              )}
+                        </p>
+                        {targetContact.trim() && invitationValidationError ? (
+                          <p className="mt-2 text-xs font-semibold text-[var(--pbp-danger)]">
+                            {invitationValidationError}
+                          </p>
+                        ) : null}
+                        {inviteError ? (
+                          <p className="mt-2 text-xs font-semibold text-[var(--pbp-danger)]">
+                            {inviteError}
+                          </p>
+                        ) : null}
+                      </div>
+                      <AdminButton
+                        onClick={handleCreateInvite}
+                        variant="primary"
+                        disabled={!canSubmitInvite}
+                        className="min-w-[120px]"
+                      >
+                        {isCreatingInvite
+                          ? t(
+                              "memberManagement.inviteBuilder.actions.creating",
+                              "생성 중",
+                            )
+                          : t(
+                              "memberManagement.inviteBuilder.actions.create",
+                              "초대 생성",
+                            )}
+                      </AdminButton>
+                    </div>
+                  </div>
+                }
               >
                 <div className="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)]">
                   <label className={ADMIN_FIELD_CONTAINER_CLASS}>
@@ -940,55 +990,6 @@ export default function AdminMemberManagementDashboard() {
                   </label>
                 </div>
 
-                <div className="mt-auto pt-3">
-                  <div className="flex flex-col gap-3 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold pbp-text-primary">
-                        {t(
-                          "memberManagement.inviteBuilder.sendPolicyTitle",
-                          "발송 기준",
-                        )}
-                      </p>
-                      <p className="mt-1 text-xs leading-5 pbp-text-muted">
-                        {inviteMethod === "email"
-                          ? t(
-                              "memberManagement.inviteBuilder.sendPolicy.email",
-                              "초대 링크를 이메일로 발송합니다.",
-                            )
-                          : t(
-                              "memberManagement.inviteBuilder.sendPolicy.phone",
-                              "초대 링크를 문자/SMS로 발송합니다.",
-                            )}
-                      </p>
-                      {targetContact.trim() && invitationValidationError ? (
-                        <p className="mt-2 text-xs font-semibold text-[var(--pbp-danger)]">
-                          {invitationValidationError}
-                        </p>
-                      ) : null}
-                      {inviteError ? (
-                        <p className="mt-2 text-xs font-semibold text-[var(--pbp-danger)]">
-                          {inviteError}
-                        </p>
-                      ) : null}
-                    </div>
-                    <AdminButton
-                      onClick={handleCreateInvite}
-                      variant="primary"
-                      disabled={!canSubmitInvite}
-                      className="min-w-[120px]"
-                    >
-                      {isCreatingInvite
-                        ? t(
-                            "memberManagement.inviteBuilder.actions.creating",
-                            "생성 중",
-                          )
-                        : t(
-                            "memberManagement.inviteBuilder.actions.create",
-                            "초대 생성",
-                          )}
-                    </AdminButton>
-                  </div>
-                </div>
               </AdminPanelSection>
 
               <AdminPanelSection
