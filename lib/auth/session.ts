@@ -10,6 +10,7 @@ export type WaflSessionPayload = {
   userId: string;
   companyId: string | null;
   companyMemberId: string | null;
+  companyName: string | null;
   role: WaflSessionRole;
   email: string;
   name: string;
@@ -67,6 +68,7 @@ export function verifyWaflSessionCookieValue(value: string | null | undefined): 
       userId: parsed.userId,
       companyId: parsed.companyId ?? null,
       companyMemberId: parsed.companyMemberId ?? null,
+      companyName: typeof parsed.companyName === "string" ? parsed.companyName : null,
       role: parsed.role,
       email: parsed.email,
       name: parsed.name,

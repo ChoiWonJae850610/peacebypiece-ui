@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { WORKSPACE_COMPANY_NAME } from "@/lib/constants/company";
 import { DEFAULT_LOCALE, getI18n } from "@/lib/i18n";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
+import { CurrentUserProvider } from "@/components/auth/CurrentUserProvider";
 import { WorkorderRepositoryProvider } from "@/lib/repositories/WorkorderRepositoryProvider";
 import { PbpThemeProvider } from "@/lib/theme/PbpThemeProvider";
 import { buildPbpThemeRootAttributes } from "@/lib/theme/themeDocument";
@@ -34,7 +34,9 @@ export default function RootLayout({
       <body className="min-h-full">
         <PbpThemeProvider initialThemeId={DEFAULT_PBP_THEME_ID}>
           <I18nProvider initialLocale={DEFAULT_LOCALE}>
-            <WorkorderRepositoryProvider>{children}</WorkorderRepositoryProvider>
+            <CurrentUserProvider>
+              <WorkorderRepositoryProvider>{children}</WorkorderRepositoryProvider>
+            </CurrentUserProvider>
           </I18nProvider>
         </PbpThemeProvider>
       </body>

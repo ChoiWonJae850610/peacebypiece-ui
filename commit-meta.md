@@ -1,14 +1,19 @@
-Version : 0.13.23
-Summary : 작업지시서 상단 버튼과 세션 기준 홈 이동 보정
-Description : 작업지시서 상단 버튼 크기를 관리자 상단 버튼과 맞추고, 일반 화면에서 작업지시서 목록/버전 개발 표시를 숨겼습니다. 현재 세션 조회 유틸과 /api/auth/me를 추가하고, 고객사 관리자 세션으로 작업지시서 화면에 들어온 경우 홈 버튼이 /admin으로 이동하도록 보정했습니다.
+Version : 0.13.24
+Summary : 전역 현재 사용자 상태와 보호 route 기준 추가
+Description : /api/auth/me 응답 구조를 현재 사용자 정보 기준으로 정리하고, CurrentUserProvider를 루트에 연결했습니다. admin, system, worker, workspace route에 세션 기반 1차 보호 layout을 추가해 로그인 상태와 권한별 진입 기준을 통일했습니다.
 수정 파일 목록 :
 - lib/constants/app.ts
-- app/worker/page.tsx
-- components/workorder/WorkOrderWorkspace.tsx
-- components/layout/SidebarContent.tsx
-- components/layout/MobileTopBar.tsx
-추가 파일 목록 :
-- lib/auth/currentSession.ts
+- app/layout.tsx
 - app/api/auth/me/route.ts
+- lib/auth/session.ts
+- lib/auth/loginRepository.ts
+추가 파일 목록 :
+- app/admin/layout.tsx
+- app/system/layout.tsx
+- app/worker/layout.tsx
+- app/workspace/layout.tsx
+- components/auth/CurrentUserProvider.tsx
+- lib/auth/currentUser.ts
+- lib/auth/routeGuard.ts
 삭제 파일 목록 :
 - 없음
