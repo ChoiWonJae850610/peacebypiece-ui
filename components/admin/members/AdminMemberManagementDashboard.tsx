@@ -28,6 +28,7 @@ import {
 } from "@/lib/permissions";
 import { WORKSPACE_COMPANY_ID } from "@/lib/constants/company";
 import { AdminButton } from "@/components/admin/common/AdminButton";
+import AdminPanelSection from "@/components/admin/common/AdminPanelSection";
 import AdminSegmentedTabs from "@/components/admin/common/AdminSegmentedTabs";
 import AdminSummaryMetricCards from "@/components/admin/common/AdminSummaryMetricCards";
 import {
@@ -266,8 +267,9 @@ export default function AdminMemberManagementDashboard() {
       {
         key: "target",
         label: t("memberManagement.tables.invitations.columns.target", "대상"),
+        className: "min-w-0",
         render: (invitation) => (
-          <span className="truncate font-semibold pbp-text-primary">
+          <span className="block truncate font-semibold pbp-text-primary" title={invitation.target}>
             {invitation.target}
           </span>
         ),
@@ -275,6 +277,7 @@ export default function AdminMemberManagementDashboard() {
       {
         key: "type",
         label: t("memberManagement.tables.invitations.columns.type", "방식"),
+        className: "whitespace-nowrap",
         render: (invitation) => (
           <span className="font-semibold pbp-text-primary">
             {t(
@@ -295,7 +298,7 @@ export default function AdminMemberManagementDashboard() {
           <button
             type="button"
             onClick={() => void handleCopyInviteLink(invitation.inviteUrl)}
-            className="max-w-full truncate rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-3 py-1 text-[11px] font-semibold pbp-text-primary transition hover:border-[var(--pbp-accent-border)]"
+            className="max-w-full truncate rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-2.5 py-1 text-[11px] font-semibold pbp-text-primary transition hover:border-[var(--pbp-accent-border)]"
           >
             {t("memberManagement.inviteBuilder.actions.copy", "링크 복사")}
           </button>
@@ -307,6 +310,7 @@ export default function AdminMemberManagementDashboard() {
           "memberManagement.tables.invitations.columns.expires",
           "만료일",
         ),
+        className: "whitespace-nowrap",
         render: (invitation) => (
           <span className="pbp-text-muted">
             {getPendingInvitationExpiresLabel(invitation.expiresAt)}
@@ -316,6 +320,7 @@ export default function AdminMemberManagementDashboard() {
       {
         key: "status",
         label: t("memberManagement.tables.invitations.columns.status", "상태"),
+        className: "whitespace-nowrap",
         render: (invitation) => (
           <AdminStatusBadge
             tone={invitation.status === "expired" ? "warning" : "success"}
@@ -788,30 +793,19 @@ export default function AdminMemberManagementDashboard() {
           {activeTab === "invite" ? (
             <section
               id="member-invite-builder"
-              className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_520px]"
+              className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,1fr)_520px]"
             >
-              <article
-                className={`${ADMIN_SURFACE_PANEL_CLASS} flex min-h-[430px] flex-col`}
+              <AdminPanelSection
+                className="h-[430px] min-h-[430px]"
+                eyebrow={t("memberManagement.inviteBuilder.eyebrow", "멤버 초대")}
+                title={t("memberManagement.inviteBuilder.title", "직원 초대 생성")}
+                description={t(
+                  "memberManagement.inviteBuilder.description",
+                  "이메일 또는 휴대폰으로 초대 링크를 발송할 대상을 입력하고 기본 권한 묶음과 만료 기간을 지정합니다.",
+                )}
+                contentClassName="flex flex-1 flex-col pt-5"
               >
-                <div className="min-h-[96px] border-b border-[var(--pbp-border)] pb-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] pbp-text-subtle">
-                    {t("memberManagement.inviteBuilder.eyebrow", "멤버 초대")}
-                  </p>
-                  <h3 className="mt-2 text-lg font-semibold pbp-text-primary">
-                    {t(
-                      "memberManagement.inviteBuilder.title",
-                      "직원 초대 생성",
-                    )}
-                  </h3>
-                  <p className="mt-2 max-w-3xl text-sm leading-6 pbp-text-muted">
-                    {t(
-                      "memberManagement.inviteBuilder.description",
-                      "이메일 또는 휴대폰으로 초대 링크를 발송할 대상을 입력하고 기본 권한 묶음과 만료 기간을 지정합니다.",
-                    )}
-                  </p>
-                </div>
-
-                <div className="mt-5 grid gap-3 md:grid-cols-[180px_minmax(0,1fr)]">
+                <div className="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)]">
                   <label className={ADMIN_FIELD_CONTAINER_CLASS}>
                     <span className="text-xs font-semibold pbp-text-muted">
                       {t(
@@ -939,99 +933,91 @@ export default function AdminMemberManagementDashboard() {
                   </label>
                 </div>
 
-                <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold pbp-text-primary">
-                      {t(
-                        "memberManagement.inviteBuilder.sendPolicyTitle",
-                        "발송 기준",
-                      )}
-                    </p>
-                    <p className="mt-1 text-xs leading-5 pbp-text-muted">
-                      {inviteMethod === "email"
+                <div className="mt-auto pt-5">
+                  <div className="flex flex-col gap-3 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-soft)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold pbp-text-primary">
+                        {t(
+                          "memberManagement.inviteBuilder.sendPolicyTitle",
+                          "발송 기준",
+                        )}
+                      </p>
+                      <p className="mt-1 text-xs leading-5 pbp-text-muted">
+                        {inviteMethod === "email"
+                          ? t(
+                              "memberManagement.inviteBuilder.sendPolicy.email",
+                              "초대 링크를 이메일로 발송합니다.",
+                            )
+                          : t(
+                              "memberManagement.inviteBuilder.sendPolicy.phone",
+                              "초대 링크를 문자/SMS로 발송합니다.",
+                            )}
+                      </p>
+                      {targetContact.trim() && invitationValidationError ? (
+                        <p className="mt-2 text-xs font-semibold text-[var(--pbp-danger)]">
+                          {invitationValidationError}
+                        </p>
+                      ) : null}
+                      {inviteError ? (
+                        <p className="mt-2 text-xs font-semibold text-[var(--pbp-danger)]">
+                          {inviteError}
+                        </p>
+                      ) : null}
+                    </div>
+                    <AdminButton
+                      onClick={handleCreateInvite}
+                      variant="primary"
+                      disabled={!canSubmitInvite}
+                      className="min-w-[120px]"
+                    >
+                      {isCreatingInvite
                         ? t(
-                            "memberManagement.inviteBuilder.sendPolicy.email",
-                            "초대 링크를 이메일로 발송합니다.",
+                            "memberManagement.inviteBuilder.actions.creating",
+                            "생성 중",
                           )
                         : t(
-                            "memberManagement.inviteBuilder.sendPolicy.phone",
-                            "초대 링크를 문자/SMS로 발송합니다.",
+                            "memberManagement.inviteBuilder.actions.create",
+                            "초대 생성",
                           )}
-                    </p>
-                    {targetContact.trim() && invitationValidationError ? (
-                      <p className="mt-2 text-xs font-semibold text-[var(--pbp-danger)]">
-                        {invitationValidationError}
-                      </p>
-                    ) : null}
-                    {inviteError ? (
-                      <p className="mt-2 text-xs font-semibold text-[var(--pbp-danger)]">
-                        {inviteError}
-                      </p>
-                    ) : null}
+                    </AdminButton>
                   </div>
-                  <AdminButton
-                    onClick={handleCreateInvite}
-                    variant="primary"
-                    disabled={!canSubmitInvite}
-                    className="min-w-[120px]"
-                  >
-                    {isCreatingInvite
-                      ? t(
-                          "memberManagement.inviteBuilder.actions.creating",
-                          "생성 중",
-                        )
-                      : t(
-                          "memberManagement.inviteBuilder.actions.create",
-                          "초대 생성",
-                        )}
-                  </AdminButton>
                 </div>
-              </article>
+              </AdminPanelSection>
 
-              <article
-                className={`${ADMIN_SURFACE_PANEL_CLASS} flex h-[430px] min-h-0 flex-col overflow-hidden`}
+              <AdminPanelSection
+                className="h-[430px] min-h-[430px]"
+                title={t(
+                  "memberManagement.sections.invitations",
+                  "초대 대기 목록",
+                )}
+                description={t(
+                  "memberManagement.sections.invitationsDescription",
+                  "발송한 초대의 대상, 링크, 만료일, 상태를 확인합니다.",
+                )}
+                meta={t(
+                  "memberManagement.tabs.invite.count",
+                  "초대 {count}건",
+                ).replace("{count}", String(invitations.length))}
+                contentClassName="flex flex-1 flex-col overflow-hidden pt-4"
               >
-                <div className="flex min-h-[96px] items-start justify-between gap-3 border-b border-[var(--pbp-border)] pb-4">
-                  <div>
-                    <h3 className="text-base font-semibold pbp-text-primary">
-                      {t(
-                        "memberManagement.sections.invitations",
-                        "초대 대기 목록",
-                      )}
-                    </h3>
-                    <p className="mt-1 text-xs leading-5 pbp-text-muted">
-                      {t(
-                        "memberManagement.sections.invitationsDescription",
-                        "발송한 초대의 대상, 링크, 만료일, 상태를 확인합니다.",
-                      )}
-                    </p>
-                  </div>
-                  <span className="text-xs font-semibold pbp-text-subtle">
-                    {t(
-                      "memberManagement.tabs.invite.count",
-                      "초대 {count}건",
-                    ).replace("{count}", String(invitations.length))}
-                  </span>
-                </div>
-                <div className="mt-4 min-h-0 flex-1 overflow-hidden">
-                  <AdminTable
-                    items={invitations}
-                    columns={invitationTableColumns}
-                    getRowKey={(invitation) => invitation.id}
-                    emptyLabel={t(
-                      "memberManagement.empty.invitations.title",
-                      "생성된 초대가 없습니다",
-                    )}
-                    emptyDescription={t(
-                      "memberManagement.empty.invitations.description",
-                      "초대를 생성하면 이 목록에서 링크 복사, 만료일 확인, 취소를 처리할 수 있습니다.",
-                    )}
-                    gridTemplateColumns="minmax(116px,1.35fr) 56px 78px 88px 68px 44px"
-                    rowBaseClassName="grid w-full gap-2 px-3 py-2.5 text-left text-[11px] md:items-center"
-                    className="h-full"
-                  />
-                </div>
-              </article>
+                <AdminTable
+                  items={invitations}
+                  columns={invitationTableColumns}
+                  getRowKey={(invitation) => invitation.id}
+                  emptyLabel={t(
+                    "memberManagement.empty.invitations.title",
+                    "생성된 초대가 없습니다",
+                  )}
+                  emptyDescription={t(
+                    "memberManagement.empty.invitations.description",
+                    "초대를 생성하면 이 목록에서 링크 복사, 만료일 확인, 취소를 처리할 수 있습니다.",
+                  )}
+                  gridTemplateColumns="minmax(96px,1.2fr) 44px 72px 78px 70px 30px"
+                  headerClassName="hidden shrink-0 gap-2 bg-[var(--pbp-surface-muted)] px-3 py-2 text-[10px] font-semibold text-[var(--pbp-text-muted)] md:grid"
+                  rowBaseClassName="grid w-full min-w-0 gap-2 px-3 py-2.5 text-left text-[11px] md:items-center"
+                  className="h-full min-h-0 flex-1"
+                />
+              </AdminPanelSection>
             </section>
           ) : null}
 
