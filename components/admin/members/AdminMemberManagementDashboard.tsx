@@ -132,6 +132,8 @@ const editableMemberPermissionCodes = MEMBER_PERMISSION_CATALOG.filter(
   (permission) => !permission.systemOnly,
 ).map((permission) => permission.code);
 
+const MEMBER_INVITE_PANEL_HEIGHT_CLASS = "h-[500px] min-h-[500px]";
+
 type MemberManagementTab = "invite" | "approval" | "members" | "permissions";
 
 type MemberManagementTabPreview = {
@@ -796,7 +798,7 @@ export default function AdminMemberManagementDashboard() {
               className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,1fr)_520px]"
             >
               <AdminPanelSection
-                className="h-[430px] min-h-[430px]"
+                className={MEMBER_INVITE_PANEL_HEIGHT_CLASS}
                 eyebrow={t("memberManagement.inviteBuilder.eyebrow", "멤버 초대")}
                 title={t("memberManagement.inviteBuilder.title", "직원 초대 생성")}
                 description={t(
@@ -985,7 +987,7 @@ export default function AdminMemberManagementDashboard() {
               </AdminPanelSection>
 
               <AdminPanelSection
-                className="h-[430px] min-h-[430px]"
+                className={MEMBER_INVITE_PANEL_HEIGHT_CLASS}
                 title={t(
                   "memberManagement.sections.invitations",
                   "초대 대기 목록",
