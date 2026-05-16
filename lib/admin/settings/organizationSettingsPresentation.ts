@@ -19,7 +19,6 @@ export type OrganizationSettingScopeCard = {
 export type OrganizationSettingsViewModel = {
   summaryCards: OrganizationSettingSummaryCard[];
   scopeCards: OrganizationSettingScopeCard[];
-  personalSettingsHref: string;
 };
 
 function countEnabledNotificationPolicies(settings: CompanySettings): number {
@@ -41,6 +40,5 @@ export function buildOrganizationSettingsViewModel(settings: CompanySettings): O
       { id: "standards", status: "active" },
       { id: "member-permissions", status: "planned" },
     ],
-    personalSettingsHref: "/me/settings",
   };
 }

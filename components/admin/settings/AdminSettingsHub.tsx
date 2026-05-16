@@ -159,14 +159,6 @@ function AccountSettingsPanel() {
               </>
             );
 
-            if (action.id === "open-personal-settings") {
-              return (
-                <a key={action.id} className={`${ADMIN_SURFACE_ITEM_CLASS} block transition hover:border-[var(--pbp-border-strong)]`} href={account.personalSettingsHref}>
-                  {body}
-                </a>
-              );
-            }
-
             return (
               <div key={action.id} className={ADMIN_SURFACE_ITEM_CLASS}>
                 {body}

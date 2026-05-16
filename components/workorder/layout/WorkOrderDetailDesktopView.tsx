@@ -5,7 +5,6 @@ import DesktopWorkspaceLayout from "@/components/workorder/layout/DesktopWorkspa
 import type { WorkOrderLayoutViewProps } from "@/components/workorder/layout/types";
 import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
 import WorkOrderLoadingState from "@/components/workorder/WorkOrderLoadingState";
-import WorkOrderHomeButton from "@/components/workorder/layout/WorkOrderHomeButton";
 
 export default function WorkOrderDetailDesktopView({
   appShellRef,
@@ -21,10 +20,9 @@ export default function WorkOrderDetailDesktopView({
   return (
     <DesktopWorkspaceLayout
       appShellRef={appShellRef}
-      sidebar={<SidebarContent {...sidebarListProps} />}
+      sidebar={<SidebarContent {...sidebarListProps} homeNavigation={homeNavigation} />}
       detail={(
         <>
-          <WorkOrderHomeButton homeNavigation={homeNavigation} />
           {isLoading ? (
             <WorkOrderLoadingState
               title={loadingState?.detailTitle ?? ""}

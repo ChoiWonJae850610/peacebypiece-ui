@@ -17,7 +17,6 @@ export const ADMIN_ACCOUNT_SETTINGS_PLACEHOLDER = {
   description:
     "고객관리자 환경설정에서는 회사 계정과 대표 담당자 정보를 읽기 전용으로 확인하고, 개인 이름·언어·테마 같은 항목은 개인 설정 화면에서 다루는 구조로 유지합니다.",
   readOnlyLabel: "읽기 전용",
-  personalSettingsHref: "/me/settings",
   metrics: [
     {
       id: "company-name",
@@ -40,8 +39,8 @@ export const ADMIN_ACCOUNT_SETTINGS_PLACEHOLDER = {
     {
       id: "personal-settings",
       label: "개인 설정",
-      value: "별도 화면",
-      description: "언어, 화면 색상, 개인 표시명은 /me/settings에서 관리하는 방향입니다.",
+      value: "상단 모달",
+      description: "언어와 테마는 상단 사람 아이콘의 개인 설정 모달에서 관리합니다.",
     },
   ] satisfies AdminAccountSettingsMetric[],
   actions: [

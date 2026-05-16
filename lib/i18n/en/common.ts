@@ -29,11 +29,16 @@ export const commonEn = {
         label: "Work order workspace",
         description: "Review assigned work orders and active work items.",
       },
-      personalSettings: {
+  personalSettings: {
         label: "Personal settings",
         description: "A future area for language, color, and notification preferences per user.",
       },
     },
+  },
+  workorderToolbar: {
+    refresh: "Refresh",
+    logout: "Log out",
+    writeLocked: "A status change is being processed.",
   },
   personalSettings: {
     title: "Personal settings",

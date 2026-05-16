@@ -1,4 +1,3 @@
-import Link from "next/link";
 
 import { AdminCard } from "@/components/admin/layout/AdminCard";
 import { buildOrganizationSettingsViewModel, type OrganizationSettingSummaryUnit } from "@/lib/admin/settings/organizationSettingsPresentation";
@@ -38,12 +37,6 @@ export default function AdminOrganizationSettingsSummary({ settings, companyName
             <h2 className="mt-4 text-2xl font-semibold tracking-tight">{text.organization.title}</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--admin-theme-muted-on-surface)]">{text.organization.description}</p>
           </div>
-          <Link
-            href={viewModel.personalSettingsHref}
-            className="inline-flex shrink-0 items-center justify-center rounded-full bg-white px-4 py-2 text-sm font-semibold text-stone-900 transition hover:bg-white/90"
-          >
-            {text.organization.personalSettings.actionLabel}
-          </Link>
         </div>
         <div className="mt-5 grid gap-2 sm:grid-cols-4">
           {viewModel.summaryCards.map((card) => {

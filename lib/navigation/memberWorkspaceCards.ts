@@ -6,9 +6,7 @@ export const MEMBER_WORKSPACE_CARD_STATUS = {
 export type MemberWorkspaceCardStatus =
   (typeof MEMBER_WORKSPACE_CARD_STATUS)[keyof typeof MEMBER_WORKSPACE_CARD_STATUS];
 
-export type MemberWorkspaceCardId =
-  | "workorder"
-  | "personalSettings";
+export type MemberWorkspaceCardId = "workorder";
 
 export type MemberWorkspaceCard = {
   id: MemberWorkspaceCardId;
@@ -23,12 +21,6 @@ export const MEMBER_WORKSPACE_CARDS: readonly MemberWorkspaceCard[] = [
     href: "/worker",
     status: MEMBER_WORKSPACE_CARD_STATUS.available,
     section: "work",
-  },
-  {
-    id: "personalSettings",
-    href: "/me/settings",
-    status: MEMBER_WORKSPACE_CARD_STATUS.available,
-    section: "settings",
   },
 ] as const;
 

@@ -1,6 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
+
+import { AdminModal } from "@/components/admin/layout/AdminModal";
+import { PersonalSettingsPanel } from "@/components/me/PersonalSettingsPage";
+import type { WorkOrderHomeNavigation } from "@/components/workorder/layout/WorkOrderHomeButton";
 
 import WorkOrderListCard from "@/components/workorder/list/WorkOrderListCard";
 import { useI18n } from "@/lib/i18n";
@@ -23,6 +28,26 @@ function PersonalSettingsIcon() {
     </svg>
   );
 }
+function HomeIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3.5 10.6 12 3.75l8.5 6.85" />
+      <path d="M5.75 9.5v9.25a1.5 1.5 0 0 0 1.5 1.5h9.5a1.5 1.5 0 0 0 1.5-1.5V9.5" />
+      <path d="M9.75 20.25v-5.5a1.25 1.25 0 0 1 1.25-1.25h2a1.25 1.25 0 0 1 1.25 1.25v5.5" />
+    </svg>
+  );
+}
+
+function LogoutIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9.5 4.75H6.75A1.75 1.75 0 0 0 5 6.5v11a1.75 1.75 0 0 0 1.75 1.75H9.5" />
+      <path d="M14 8.25 17.75 12 14 15.75" />
+      <path d="M17.5 12H9.75" />
+    </svg>
+  );
+}
+
 
 type Props = {
   companyName: string;
@@ -33,6 +58,7 @@ type Props = {
   onSelect: (id: string) => void;
   onCreate: () => void;
   onOpenSettings: () => void;
+  homeNavigation?: WorkOrderHomeNavigation;
   onReorder?: (id: string) => void;
   onDelete?: (id: string) => void;
   onRework?: (id: string) => void;
@@ -62,6 +88,7 @@ export default function SidebarContent({
   onSelect,
   onCreate,
   onOpenSettings,
+  homeNavigation,
   onReorder,
   onDelete,
   onRework,
@@ -82,6 +109,7 @@ export default function SidebarContent({
   writeLockMessage,
 }: Props) {
   const { i18n } = useI18n();
+  const [personalSettingsOpen, setPersonalSettingsOpen] = useState(false);
   const sidebarUi = i18n.workorder.ui.layout.sidebar;
   const controlsUi = i18n.workorder.ui.layout.sidebarControls;
 
@@ -110,24 +138,45 @@ export default function SidebarContent({
             <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[var(--pbp-text-muted)]"><span>{controlsUi.subtitle}</span><span className="text-[10px] leading-none text-[var(--pbp-text-subtle)]">v{version}</span></div>
           </div>
           <div className="flex items-center gap-2">
-            <Link
-              href="/me/settings"
+            {homeNavigation ? (
+              <Link
+                href={homeNavigation.href}
+                aria-label={homeNavigation.ariaLabel}
+                title={homeNavigation.label}
+                className="pbp-interactive-button pbp-action-secondary inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-base font-medium shadow-sm"
+              >
+                <HomeIcon />
+              </Link>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => setPersonalSettingsOpen(true)}
               aria-label={i18n.common.personalSettings.title}
               title={i18n.common.personalSettings.title}
               className="pbp-interactive-button pbp-action-secondary inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-base font-medium shadow-sm"
             >
               <PersonalSettingsIcon />
-            </Link>
+            </button>
             <button
               type="button"
               onClick={() => { if (!writeLocked) window.location.reload(); }}
-              aria-label="새로고침"
-              title={writeLocked ? writeLockMessage ?? "상태 변경 처리 중입니다." : "새로고침"}
+              aria-label={i18n.common.workorderToolbar.refresh}
+              title={writeLocked ? writeLockMessage ?? i18n.common.workorderToolbar.writeLocked : i18n.common.workorderToolbar.refresh}
               disabled={writeLocked}
               className="pbp-interactive-button pbp-action-secondary inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-base font-medium shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
             >
               ↻
             </button>
+            <form action="/api/auth/logout" method="post" className="shrink-0">
+              <button
+                type="submit"
+                aria-label={i18n.common.workorderToolbar.logout}
+                title={i18n.common.workorderToolbar.logout}
+                className="pbp-interactive-button pbp-action-secondary inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-base font-medium shadow-sm"
+              >
+                <LogoutIcon />
+              </button>
+            </form>
           </div>
         </div>
         {showDevelopmentToolbar ? (
@@ -251,6 +300,18 @@ export default function SidebarContent({
         </div>
         {workOrders.length === 0 ? <div className="pbp-empty-state rounded-2xl border border-dashed px-4 py-6 text-center text-sm">{controlsUi.empty}</div> : null}
       </div>
+
+      <AdminModal
+        open={personalSettingsOpen}
+        title={i18n.common.personalSettings.title}
+        description={i18n.common.personalSettings.description}
+        onClose={() => setPersonalSettingsOpen(false)}
+        maxWidthClass="md:max-w-2xl"
+        bodyClassName="space-y-4 [scrollbar-gutter:stable]"
+        minHeightClassName="md:min-h-[420px]"
+      >
+        <PersonalSettingsPanel />
+      </AdminModal>
     </div>
   );
 }

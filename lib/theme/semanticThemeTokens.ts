@@ -301,7 +301,7 @@ export const PBP_THEME_PROVIDER_STRUCTURE_CHECKS = {
 
 export const PBP_PERSONAL_THEME_SETTINGS_CHECKS = {
   checkedAtVersion: "0.12.6",
-  personalSettingsRoute: "/me/settings",
+  personalSettingsRoute: "personal-settings-modal",
   adminNavigation: {
     personalSettingsIcon: "사람 아이콘",
     adminSettingsIcon: "톱니바퀴",
@@ -328,15 +328,15 @@ export const PBP_PERSONAL_THEME_SETTINGS_CHECKS = {
 
 export const PBP_PERSONAL_THEME_REGRESSION_CHECKS = {
   checkedAtVersion: "0.12.7",
-  route: "/me/settings",
+  route: "personal-settings-modal",
   storage: {
     phase: "localStorage",
     key: "peacebypiece.personal.settings",
     expectedRefreshBehavior: "선택한 theme id가 새로고침 후에도 유지되어야 한다.",
   },
   navigation: {
-    admin: ["사람 아이콘은 /me/settings", "톱니바퀴는 /admin/settings"],
-    worker: ["사람 아이콘은 /me/settings", "개발 전용 톱니바퀴는 runtimeMode 규칙 유지"],
+    admin: ["사람 아이콘은 개인 설정 모달", "톱니바퀴는 /admin/settings"],
+    worker: ["사람 아이콘은 개인 설정 모달", "개발 전용 톱니바퀴는 runtimeMode 규칙 유지"],
   },
   themeApplication: [
     "PbpThemeProvider가 초기 client state에서 localStorage theme id를 우선 읽어 깜빡임을 줄인다.",
@@ -455,7 +455,7 @@ export const PERSONAL_LANGUAGE_SYNC_CHECKS = {
     "window storage event",
   ],
   expectedBehavior: [
-    "현재 탭에서 /me/settings 언어 변경 시 i18n context가 즉시 갱신된다.",
+    "현재 탭에서 개인 설정 모달 언어 변경 시 i18n context가 즉시 갱신된다.",
     "다른 탭에서 개인 설정 언어 변경 시 새로고침 없이 현재 탭 문구가 갱신된다.",
     "document.documentElement.lang도 변경된 언어로 갱신된다.",
     "기존 peacebypiece.admin.locale 값은 personal settings language가 없을 때만 fallback으로 사용한다.",
@@ -480,7 +480,7 @@ export const PBP_RESPONSIVE_THEME_REGRESSION_CHECKS = {
     { label: "pc", width: "1280px 이상", checks: ["sidebar/list/detail density", "admin card grid balance", "chart/card contrast"] },
   ],
   themes: ["default-light", "beige-atelier", "cold-winter", "black-and-white", "soft-emerald"],
-  priorityScreens: ["/worker", "/me/settings", "/admin", "/admin/files", "/admin/stats", "/system"],
+  priorityScreens: ["/worker", "personal-settings-modal", "/admin", "/admin/files", "/admin/stats", "/system"],
   status: {
     completedThisPass: [
       "theme 후보 5종의 PC/tablet/mobile 회귀 확인 항목을 고정 목록으로 분리",

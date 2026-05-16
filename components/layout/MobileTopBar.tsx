@@ -1,6 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
+
+import { AdminModal } from "@/components/admin/layout/AdminModal";
+import { PersonalSettingsPanel } from "@/components/me/PersonalSettingsPage";
 
 import type { WorkOrderHomeNavigation } from "@/components/workorder/layout/WorkOrderHomeButton";
 import { useI18n } from "@/lib/i18n";
@@ -16,6 +20,16 @@ function PersonalSettingsIcon() {
     </svg>
   );
 }
+function LogoutIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9.5 4.75H6.75A1.75 1.75 0 0 0 5 6.5v11a1.75 1.75 0 0 0 1.75 1.75H9.5" />
+      <path d="M14 8.25 17.75 12 14 15.75" />
+      <path d="M17.5 12H9.75" />
+    </svg>
+  );
+}
+
 
 type Props = {
   companyName: string;
@@ -30,6 +44,7 @@ type Props = {
 
 export default function MobileTopBar({ companyName, version, onOpen, onOpenSettings, dbConnectionStatus, showRepositoryBadges = false, showUserSwitchingTools = false, homeNavigation }: Props) {
   const { i18n } = useI18n();
+  const [personalSettingsOpen, setPersonalSettingsOpen] = useState(false);
   const copy = i18n.workorder.ui.layout.mobileTopBar;
 
   const dbStatusPresentation = showRepositoryBadges ? getDbConnectionStatusPresentation(dbConnectionStatus) : null;
@@ -51,14 +66,15 @@ export default function MobileTopBar({ companyName, version, onOpen, onOpenSetti
           >
             ⌂
           </Link>
-          <Link
-            href="/me/settings"
+          <button
+            type="button"
+            onClick={() => setPersonalSettingsOpen(true)}
             aria-label={i18n.common.personalSettings.title}
             title={i18n.common.personalSettings.title}
             className="pbp-touch-target pbp-interactive-button pbp-topbar-icon-button inline-flex h-11 w-11 items-center justify-center rounded-xl text-base font-medium shadow-sm"
           >
             <PersonalSettingsIcon />
-          </Link>
+          </button>
           <button
             type="button"
             onClick={() => window.location.reload()}
@@ -68,6 +84,16 @@ export default function MobileTopBar({ companyName, version, onOpen, onOpenSetti
           >
             ↻
           </button>
+          <form action="/api/auth/logout" method="post" className="shrink-0">
+            <button
+              type="submit"
+              aria-label={i18n.common.workorderToolbar.logout}
+              title={i18n.common.workorderToolbar.logout}
+              className="pbp-touch-target pbp-interactive-button pbp-topbar-icon-button inline-flex h-11 w-11 items-center justify-center rounded-xl text-base font-medium shadow-sm"
+            >
+              <LogoutIcon />
+            </button>
+          </form>
           <button
             type="button"
             onClick={onOpen}
@@ -102,6 +128,18 @@ export default function MobileTopBar({ companyName, version, onOpen, onOpenSetti
           ) : null}
         </div>
       ) : null}
+
+      <AdminModal
+        open={personalSettingsOpen}
+        title={i18n.common.personalSettings.title}
+        description={i18n.common.personalSettings.description}
+        onClose={() => setPersonalSettingsOpen(false)}
+        maxWidthClass="md:max-w-2xl"
+        bodyClassName="space-y-4 [scrollbar-gutter:stable]"
+        minHeightClassName="md:min-h-[420px]"
+      >
+        <PersonalSettingsPanel />
+      </AdminModal>
     </div>
   );
 }

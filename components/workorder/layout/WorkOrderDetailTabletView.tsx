@@ -5,7 +5,6 @@ import type { WorkOrderLayoutViewProps } from "@/components/workorder/layout/typ
 import TabletSplitLayout from "@/components/workorder/layout/TabletSplitLayout";
 import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
 import WorkOrderLoadingState from "@/components/workorder/WorkOrderLoadingState";
-import WorkOrderHomeButton from "@/components/workorder/layout/WorkOrderHomeButton";
 
 export default function WorkOrderDetailTabletView({
   appShellRef,
@@ -21,10 +20,9 @@ export default function WorkOrderDetailTabletView({
   return (
     <TabletSplitLayout
       appShellRef={appShellRef}
-      sidebar={<SidebarContent {...sidebarListProps} />}
+      sidebar={<SidebarContent {...sidebarListProps} homeNavigation={homeNavigation} />}
       detail={(
         <>
-          <WorkOrderHomeButton homeNavigation={homeNavigation} />
           {isLoading ? (
             <WorkOrderLoadingState
               title={loadingState?.detailTitle ?? ""}

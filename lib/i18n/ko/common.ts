@@ -29,11 +29,16 @@ export const commonKo = {
         label: "작업지시서 업무 화면",
         description: "나에게 배정된 작업지시서와 진행 중인 업무를 확인합니다.",
       },
-      personalSettings: {
+  personalSettings: {
         label: "개인 환경설정",
         description: "언어와 테마를 사용자별로 관리합니다.",
       },
     },
+  },
+  workorderToolbar: {
+    refresh: "새로고침",
+    logout: "로그아웃",
+    writeLocked: "상태 변경 처리 중입니다.",
   },
   personalSettings: {
     title: "개인 환경설정",

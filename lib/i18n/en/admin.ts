@@ -1207,7 +1207,7 @@ export const adminEn = {
         title: "Personal settings are separate",
         description:
           "Language, color, screen density, and default home are per-user preferences, not company-wide policy.",
-        note: "Customer admins and members change personal preferences in /me/settings. The separate entry point is kept so these settings can later move to DB-backed user settings.",
+        note: "Customer admins and members change language and theme from the personal settings modal opened by the top user icon. The modal structure can later move to DB-backed user settings.",
         actionLabel: "Open personal settings",
       },
     },
