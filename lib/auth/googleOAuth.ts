@@ -6,11 +6,11 @@ const GOOGLE_USERINFO_URL = "https://openidconnect.googleapis.com/v1/userinfo";
 
 export const GOOGLE_OAUTH_STATE_COOKIE = "wafl_google_oauth_state";
 
-export type GoogleOAuthRequestType = "member";
+export type GoogleOAuthRequestType = "member" | "login";
 
 export type GoogleOAuthStatePayload = {
   nonce: string;
-  token: string;
+  token: string | null;
   requestType: GoogleOAuthRequestType;
 };
 
@@ -59,11 +59,12 @@ export function decodeGoogleOAuthState(value: string | null): GoogleOAuthStatePa
 
   try {
     const parsed = JSON.parse(fromBase64Url(value)) as Partial<GoogleOAuthStatePayload>;
-    const requestType = parsed.requestType === "member" ? parsed.requestType : null;
+    const requestType = parsed.requestType === "member" || parsed.requestType === "login" ? parsed.requestType : null;
     const nonce = typeof parsed.nonce === "string" ? parsed.nonce.trim() : "";
-    const token = typeof parsed.token === "string" ? parsed.token.trim() : "";
+    const token = typeof parsed.token === "string" ? parsed.token.trim() : null;
 
-    if (!requestType || !nonce || !token) return null;
+    if (!requestType || !nonce) return null;
+    if (requestType === "member" && !token) return null;
     return { requestType, nonce, token };
   } catch {
     return null;

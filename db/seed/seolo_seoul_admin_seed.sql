@@ -112,12 +112,21 @@ ON CONFLICT (company_id, user_id) DO UPDATE SET
   updated_at = now();
 
 INSERT INTO member_permissions (company_member_id, permission_code, is_enabled, granted_by, granted_at)
-SELECT cm.id, p.permission_code, true, 'user-seolo-seoul-admin', now()
-  FROM company_members cm
- CROSS JOIN role_template_permissions p
- WHERE cm.company_id = 'company-seolo-seoul'
-   AND cm.user_id = 'user-seolo-seoul-admin'
-   AND p.role_template_code = 'company_admin'
+SELECT
+  cm.id,
+  p.permission_code,
+  true,
+  'user-seolo-seoul-admin',
+  now()
+FROM company_members cm
+JOIN role_templates rt
+  ON rt.role_code = 'company_admin'
+ AND rt.company_id IS NULL
+JOIN role_template_permissions p
+  ON p.role_template_id = rt.id
+ AND p.is_enabled = true
+WHERE cm.company_id = 'company-seolo-seoul'
+  AND cm.user_id = 'user-seolo-seoul-admin'
 ON CONFLICT (company_member_id, permission_code) DO UPDATE SET
   is_enabled = true,
   granted_by = EXCLUDED.granted_by,
