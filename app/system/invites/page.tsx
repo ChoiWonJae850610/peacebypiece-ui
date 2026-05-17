@@ -1,5 +1,5 @@
-import SystemCustomerInviteSkeleton from "@/components/system/invitations/SystemCustomerInviteSkeleton";
+import { redirect } from "next/navigation";
 
 export default function SystemInvitesPage() {
-  return <SystemCustomerInviteSkeleton />;
+  redirect("/system/companies");
 }

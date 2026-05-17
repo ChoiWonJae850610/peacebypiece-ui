@@ -23,7 +23,9 @@ import {
   SYSTEM_VALUE_TEXT_CLASS,
 } from "@/components/system/systemSemanticClassNames";
 import { APP_VERSION } from "@/lib/constants/app";
+import InvitationQrPreview from "@/components/invitations/InvitationQrPreview";
 import type { JoinRequestRecord } from "@/lib/invitations/joinRequestTypes";
+import { INVITATION_QR_PREVIEW_CELLS, SYSTEM_CUSTOMER_INVITE_QR_PREVIEW } from "@/lib/invitations/invitationQrPreview";
 import {
   SYSTEM_COMPANY_APPROVAL_ACTIONS,
   SYSTEM_COMPANY_APPROVAL_PERMISSION_ITEMS,
@@ -48,6 +50,27 @@ type CompanyJoinRequestReviewResponse = {
   ok?: boolean;
   error?: string;
 };
+
+
+type CreatedSystemInvitationResult = {
+  inviteUrl: string;
+  rawToken: string;
+  invitation?: {
+    id: string;
+    expiresAt: string;
+  };
+};
+
+function getAbsoluteInviteUrl(inviteUrl: string): string {
+  if (typeof window === "undefined") return inviteUrl;
+  return new URL(inviteUrl, window.location.origin).toString();
+}
+
+function getDefaultInvitationExpiresAt(days: number): string {
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + days);
+  return expiresAt.toISOString();
+}
 
 function getCompanyStepStatusTone(status: SystemCompanyApprovalStepStatus) {
   if (status === "ready") return "success";
@@ -93,8 +116,14 @@ export default function SystemCompanyApprovalConsole() {
   const [reviewActionMessage, setReviewActionMessage] = useState<string | null>(null);
   const [approvingRequestId, setApprovingRequestId] = useState<string | null>(null);
   const [rejectingRequestId, setRejectingRequestId] = useState<string | null>(null);
+  const [systemInviteRecipientEmail, setSystemInviteRecipientEmail] = useState("");
+  const [systemInviteExpiresInDays, setSystemInviteExpiresInDays] = useState(7);
+  const [createdSystemInvite, setCreatedSystemInvite] = useState<CreatedSystemInvitationResult | null>(null);
+  const [systemInviteError, setSystemInviteError] = useState<string | null>(null);
+  const [isCreatingSystemInvite, setIsCreatingSystemInvite] = useState(false);
 
   const joinRequests = useMemo(() => toSystemCompanyJoinRequestPreviews(joinRequestRecords), [joinRequestRecords]);
+  const canCreateSystemInvite = systemInviteRecipientEmail.trim().length > 0 && !isCreatingSystemInvite;
   const summaryItems = useMemo(
     () => getSystemCompanyApprovalSummaryItems(joinRequests.length, joinRequestLoadStatus),
     [joinRequestLoadStatus, joinRequests.length],
@@ -183,6 +212,53 @@ export default function SystemCompanyApprovalConsole() {
     ],
     [approvingRequestId, rejectingRequestId],
   );
+
+  async function createSystemCompanyAdminInvite() {
+    if (!canCreateSystemInvite) return;
+
+    setIsCreatingSystemInvite(true);
+    setSystemInviteError(null);
+    setCreatedSystemInvite(null);
+
+    try {
+      const response = await fetch("/api/invitations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          scope: "system_to_company_admin",
+          recipientEmail: systemInviteRecipientEmail.trim(),
+          recipientRole: "admin",
+          permissionPreset: "company_admin",
+          expiresAt: getDefaultInvitationExpiresAt(systemInviteExpiresInDays),
+        }),
+      });
+      const payload = (await response.json()) as CreatedSystemInvitationResult & {
+        ok?: boolean;
+        error?: string;
+      };
+
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.error ?? "SYSTEM_COMPANY_ADMIN_INVITATION_CREATE_FAILED");
+      }
+
+      setCreatedSystemInvite({
+        inviteUrl: payload.inviteUrl,
+        rawToken: payload.rawToken,
+        invitation: payload.invitation,
+      });
+    } catch (error) {
+      setSystemInviteError(
+        error instanceof Error ? error.message : "SYSTEM_COMPANY_ADMIN_INVITATION_CREATE_FAILED",
+      );
+    } finally {
+      setIsCreatingSystemInvite(false);
+    }
+  }
+
+  async function copyCreatedSystemInviteLink() {
+    if (!createdSystemInvite?.inviteUrl || typeof navigator === "undefined") return;
+    await navigator.clipboard.writeText(getAbsoluteInviteUrl(createdSystemInvite.inviteUrl));
+  }
 
   async function loadCompanyJoinRequests() {
     setJoinRequestLoadStatus("loading");
@@ -284,7 +360,6 @@ export default function SystemCompanyApprovalConsole() {
             <div className="flex flex-col gap-2 text-xs font-medium sm:flex-row sm:flex-wrap">
               <AdminStatusBadge tone="neutral">v{APP_VERSION}</AdminStatusBadge>
               <AdminLinkButton href="/system">시스템 콘솔</AdminLinkButton>
-              <AdminLinkButton href="/system/invites">고객 초대</AdminLinkButton>
             </div>
           </div>
         </header>
@@ -297,6 +372,119 @@ export default function SystemCompanyApprovalConsole() {
               <p className={SYSTEM_SMALL_TEXT_CLASS}>{item.description}</p>
             </article>
           ))}
+        </section>
+
+        <section className={SYSTEM_CARD_CLASS}>
+          <div className={`flex flex-col gap-3 ${SYSTEM_SECTION_HEADER_CLASS} lg:flex-row lg:items-start lg:justify-between`}>
+            <div>
+              <h2 className={SYSTEM_SECTION_TITLE_CLASS}>고객사 관리자 초대</h2>
+              <p className="mt-2 text-sm leading-6 text-[var(--pbp-text-muted)]">
+                시스템관리자는 초대 대상과 만료일만 정합니다. 회사명, 주소, 로고, 신청 요금제는 고객사 관리자가 초대 링크로 로그인한 뒤 직접 입력합니다.
+              </p>
+            </div>
+            <AdminStatusBadge tone="success">고객사관리 통합</AdminStatusBadge>
+          </div>
+
+          <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_0.8fr]">
+            <article className={SYSTEM_MUTED_CARD_CLASS}>
+              <div className="grid gap-4 md:grid-cols-[0.7fr_1fr_0.6fr]">
+                <label className="grid gap-2">
+                  <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">초대 방식</span>
+                  <select
+                    className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3 text-sm text-[var(--pbp-text-primary)]"
+                    defaultValue="email"
+                    disabled
+                  >
+                    <option value="email">이메일</option>
+                    <option value="phone">휴대폰 문자 준비 중</option>
+                  </select>
+                </label>
+                <label className="grid gap-2">
+                  <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">초대 이메일</span>
+                  <input
+                    value={systemInviteRecipientEmail}
+                    onChange={(event) => setSystemInviteRecipientEmail(event.target.value)}
+                    placeholder="customer-admin@example.com"
+                    type="email"
+                    className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3 text-sm text-[var(--pbp-text-primary)] outline-none focus:border-[var(--pbp-accent)]"
+                  />
+                </label>
+                <label className="grid gap-2">
+                  <span className="text-xs font-semibold text-[var(--pbp-text-muted)]">초대 만료</span>
+                  <select
+                    value={systemInviteExpiresInDays}
+                    onChange={(event) => setSystemInviteExpiresInDays(Number(event.target.value))}
+                    className="rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-3 text-sm text-[var(--pbp-text-primary)]"
+                  >
+                    <option value={3}>3일</option>
+                    <option value={7}>7일</option>
+                    <option value={14}>14일</option>
+                  </select>
+                </label>
+              </div>
+
+              {systemInviteError ? (
+                <div className={`mt-4 ${SYSTEM_DANGER_BOX_CLASS}`}>
+                  {systemInviteError}
+                </div>
+              ) : null}
+
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                <p className={SYSTEM_SMALL_TEXT_CLASS}>
+                  생성된 링크는 고객사 관리자 후보에게 직접 전달합니다. 자동 이메일/SMS 발송은 후속 연결입니다.
+                </p>
+                <AdminButton
+                  onClick={() => void createSystemCompanyAdminInvite()}
+                  disabled={!canCreateSystemInvite}
+                  variant="primary"
+                >
+                  {isCreatingSystemInvite ? "초대 생성 중" : "초대 링크 생성"}
+                </AdminButton>
+              </div>
+            </article>
+
+            <article className={SYSTEM_MUTED_CARD_CLASS}>
+              <div className={SYSTEM_SECTION_HEADER_CLASS}>
+                <h3 className={`text-sm font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>초대 결과</h3>
+                <p className={SYSTEM_SMALL_TEXT_CLASS}>
+                  raw token은 생성 응답에서만 확인합니다. DB에는 token_hash만 저장합니다.
+                </p>
+              </div>
+
+              {createdSystemInvite ? (
+                <div className="mt-4 grid gap-4 md:grid-cols-[auto_1fr] md:items-center">
+                  <InvitationQrPreview
+                    model={{
+                      title: "고객사 초대 QR",
+                      description: "생성된 초대 링크를 QR 미리보기로 표시합니다.",
+                      inviteUrl: getAbsoluteInviteUrl(createdSystemInvite.inviteUrl),
+                      cells: INVITATION_QR_PREVIEW_CELLS,
+                    }}
+                  />
+                  <div className="min-w-0 space-y-3">
+                    <div className={SYSTEM_CODE_BLOCK_CLASS}>
+                      {getAbsoluteInviteUrl(createdSystemInvite.inviteUrl)}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <AdminButton onClick={() => void copyCreatedSystemInviteLink()}>
+                        링크 복사
+                      </AdminButton>
+                      <AdminLinkButton href={createdSystemInvite.inviteUrl}>
+                        가입 화면 열기
+                      </AdminLinkButton>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-4 grid gap-4 md:grid-cols-[auto_1fr] md:items-center">
+                  <InvitationQrPreview model={SYSTEM_CUSTOMER_INVITE_QR_PREVIEW} />
+                  <p className={SYSTEM_SMALL_TEXT_CLASS}>
+                    초대 링크를 생성하면 이 영역에 실제 링크와 QR이 표시됩니다.
+                  </p>
+                </div>
+              )}
+            </article>
+          </div>
         </section>
 
         <section className={SYSTEM_CARD_CLASS}>

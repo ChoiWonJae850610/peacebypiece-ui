@@ -15,8 +15,7 @@ import type {
 } from "../invitationTypes";
 
 import { requireAdminMemberCompanyScope } from "@/lib/admin/members/sessionScope";
-
-const SYSTEM_ADMIN_USER_ID = "system-user-seed-admin";
+import { requireSystemAdminScope } from "@/lib/system/sessionScope";
 
 interface CreateInvitationRequestBody {
   companyId?: string | null;
@@ -43,6 +42,7 @@ function getRequestIpAddress(request: Request): string | null {
 function toInvitationDraft(
   body: CreateInvitationRequestBody,
   sessionCompanyScope?: { companyId: string; userId: string } | null,
+  systemScope?: { userId: string } | null,
 ): InvitationDraft {
   const scope = body.scope ?? "company_to_member";
   const recipientRole = body.recipientRole ?? (scope === "system_to_company_admin" ? "admin" : "viewer");
@@ -66,7 +66,9 @@ function toInvitationDraft(
     createdByUserId: scope === "company_to_member"
       ? sessionCompanyScope?.userId ?? null
       : body.createdByUserId ?? null,
-    createdBySystemUserId: body.createdBySystemUserId ?? (scope === "system_to_company_admin" ? SYSTEM_ADMIN_USER_ID : null),
+    createdBySystemUserId: scope === "system_to_company_admin"
+      ? systemScope?.userId ?? body.createdBySystemUserId ?? null
+      : body.createdBySystemUserId ?? null,
   };
 }
 
@@ -118,8 +120,12 @@ export async function handleCreateInvitation(request: Request) {
     const companyScope = requestedScope === "company_to_member"
       ? await requireAdminMemberCompanyScope()
       : null;
+    const systemScope = requestedScope === "system_to_company_admin"
+      ? await requireSystemAdminScope()
+      : null;
 
     if (companyScope && !companyScope.ok) return companyScope.response;
+    if (systemScope && !systemScope.ok) return systemScope.response;
 
     const draft = toInvitationDraft(
       body,
@@ -127,6 +133,11 @@ export async function handleCreateInvitation(request: Request) {
         ? {
             companyId: companyScope.companyScope.companyId,
             userId: companyScope.companyScope.userId,
+          }
+        : null,
+      systemScope?.ok
+        ? {
+            userId: systemScope.systemScope.userId,
           }
         : null,
     );
