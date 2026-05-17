@@ -20,8 +20,8 @@ function HomeIcon() {
 function PersonalSettingsIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" />
-      <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.05.05a2.05 2.05 0 0 1-2.9 2.9l-.05-.05A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .92V20.5a2.05 2.05 0 0 1-4.1 0v-.08A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.05.05a2.05 2.05 0 0 1-2.9-2.9l.05-.05A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.92-1H3.5a2.05 2.05 0 0 1 0-4.1h.08A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.05-.05a2.05 2.05 0 0 1 2.9-2.9l.05.05A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.92V3.5a2.05 2.05 0 0 1 4.1 0v.08A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.05-.05a2.05 2.05 0 0 1 2.9 2.9l-.05.05A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 .92 1h.18a2.05 2.05 0 0 1 0 4.1h-.08a1.7 1.7 0 0 0-1.02.9Z" />
+      <path d="M12 12.25a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
+      <path d="M4.75 20.25a7.25 7.25 0 0 1 14.5 0" />
     </svg>
   );
 }
@@ -56,6 +56,27 @@ export default function MemberWorkspaceTopbarActions({
   const personalSettingsDescription = i18n.common.personalSettings.description;
 
   useEffect(() => {
+    let alive = true;
+
+    async function openIncompleteProfile() {
+      try {
+        const response = await fetch("/api/me/profile", {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+        });
+        if (!response.ok) return;
+        const payload = (await response.json()) as { profile?: { profileComplete?: boolean } | null };
+        if (alive && payload.profile && !payload.profile.profileComplete) {
+          setPersonalSettingsOpen(true);
+        }
+      } catch {
+        // 개인 프로필 안내는 보조 UX이므로 조회 실패 시 상단 버튼만 유지합니다.
+      }
+    }
+
+    void openIncompleteProfile();
+
     const reviveWorkspaceActions = () => {
       setPersonalSettingsOpen(false);
       setReviveKey((current) => current + 1);
@@ -66,7 +87,10 @@ export default function MemberWorkspaceTopbarActions({
     };
 
     window.addEventListener("pageshow", handlePageShow);
-    return () => window.removeEventListener("pageshow", handlePageShow);
+    return () => {
+      alive = false;
+      window.removeEventListener("pageshow", handlePageShow);
+    };
   }, []);
 
   return (

@@ -59,9 +59,35 @@ export const commonKo = {
     writeLocked: "상태 변경 처리 중입니다.",
   },
   personalSettings: {
-    title: "개인 환경설정",
-    description: "언어와 테마처럼 개인별로 달라지는 화면 설정만 관리합니다.",
+    title: "내 프로필",
+    description: "업무 표시 이름, 연락처, 생년월일과 개인 화면 설정을 관리합니다.",
     loading: "저장된 개인 설정을 불러오는 중입니다.",
+    profile: {
+      title: "업무 프로필",
+      description: "이름, 연락처, 생년월일은 작업지시서 담당자와 멤버 목록에 표시되는 앱 내부 정보입니다.",
+      requiredNotice: "업무에서 사용할 기본 정보를 입력해주세요. 저장된 이름은 담당자 변경 목록과 업무 화면 표시명으로 사용됩니다.",
+      complete: "입력 완료",
+      incomplete: "입력 필요",
+      loading: "프로필 정보를 불러오는 중입니다.",
+      helper: "이메일은 로그인 계정 기준이라 여기서 수정하지 않습니다.",
+      save: "프로필 저장",
+      saving: "저장 중",
+      saved: "프로필을 저장했습니다.",
+      fields: {
+        name: "이름",
+        phone: "연락처",
+        birthday: "생년월일",
+        email: "이메일",
+      },
+      placeholders: {
+        name: "업무에서 사용할 이름",
+        phone: "010-1234-5678",
+      },
+      errors: {
+        load: "프로필 정보를 불러오지 못했습니다.",
+        save: "프로필 저장에 실패했습니다. 이름, 연락처, 생년월일을 확인해주세요.",
+      },
+    },
     actions: {
       openDefaultHome: "기본 진입 화면 열기",
       workspaceHome: "내 업무 홈",

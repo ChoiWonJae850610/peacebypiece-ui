@@ -3,12 +3,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { buildOutsourcingProcessDbInputs, mapOutsourcingProcessRecordsToDefinitions } from "@/lib/admin/partner/dbMapper";
 import { createAdminHistoryLogSafe } from "@/lib/admin/history/repository";
 import { createPartnerRepository } from "@/lib/partners/partnerAdapter";
+import type { PartnerRepository, PartnerWritableRepository } from "@/lib/partners/partnerRepository";
 import { requireAdminSettingsCompanyScope } from "@/lib/admin/settings/sessionScope";
 import { requireApiPermission } from "@/lib/permissions";
 import type { OutsourcingProcessDefinition } from "@/lib/admin/partner/types";
 
 function isProcessRequestBody(value: unknown): value is { processDefinitions?: OutsourcingProcessDefinition[] } {
   return typeof value === "object" && value !== null;
+}
+
+function isWritablePartnerRepository(repository: PartnerRepository): repository is PartnerWritableRepository {
+  return "createPartner" in repository && "updatePartner" in repository;
 }
 
 async function buildStandardProcessesResponse(companyId: string, companyName: string | null) {
@@ -71,7 +76,7 @@ export async function PUT(request: NextRequest) {
       companyName: scopeResult.companyScope.companyName,
     });
 
-    if (!repository.replaceOutsourcingProcesses) {
+    if (!isWritablePartnerRepository(repository) || !repository.replaceOutsourcingProcesses) {
       return NextResponse.json(
         { processDefinitions: [], error: "ADMIN_STANDARD_PROCESSES_WRITE_UNSUPPORTED" },
         { status: 400 },

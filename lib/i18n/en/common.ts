@@ -59,9 +59,35 @@ export const commonEn = {
     writeLocked: "A status change is being processed.",
   },
   personalSettings: {
-    title: "Personal settings",
-    description: "Manage user-specific settings such as language, theme, screen density, and the default entry screen.",
+    title: "My profile",
+    description: "Manage your work display name, contact information, birthday, and personal screen settings.",
     loading: "Loading saved personal settings.",
+    profile: {
+      title: "Work profile",
+      description: "Name, contact, and birthday are app profile fields used in assignee lists and member views.",
+      requiredNotice: "Enter the basic information used at work. The saved name is used as the display name in assignee lists and work screens.",
+      complete: "Complete",
+      incomplete: "Required",
+      loading: "Loading profile information.",
+      helper: "Email is tied to the login account and cannot be edited here.",
+      save: "Save profile",
+      saving: "Saving",
+      saved: "Profile saved.",
+      fields: {
+        name: "Name",
+        phone: "Contact",
+        birthday: "Birthday",
+        email: "Email",
+      },
+      placeholders: {
+        name: "Name used at work",
+        phone: "010-1234-5678",
+      },
+      errors: {
+        load: "Could not load profile information.",
+        save: "Could not save the profile. Check name, contact, and birthday.",
+      },
+    },
     actions: {
       openDefaultHome: "Open default entry",
       workspaceHome: "My workspace home",
